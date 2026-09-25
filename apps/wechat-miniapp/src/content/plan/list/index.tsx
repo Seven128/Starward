@@ -10,7 +10,7 @@ import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
 import { currentDraftUserId, getPlans } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
-import { nextPlanListBoundary, planEndLabel, planListEntries, type PlanPartition } from "./plan-list-model";
+import { nextPlanListBoundary, planEndLabel, planListEmptyState, planListEntries, type PlanPartition } from "./plan-list-model";
 import { planTravelModeLabel } from "../detail/plan-travel-fields";
 import "./index.scss";
 
@@ -48,7 +48,11 @@ export default function PlanListPage() {
       title: "计划数据异常", body: "观星计划暂时无法同步，可在页面中重试。",
       dedupeKey: `plan-list-failed:${owner ?? "signed-out"}` });
   }, [notify, owner, pageVisible, query.data?.dataState, query.isError, query.refreshError]);
-  const entries = planListEntries((query.data?.data.plans ?? []).filter(plan => !spotId || plan.spotId === spotId), now, partition);
+  const plans = (query.data?.data.plans ?? []).filter(plan => !spotId || plan.spotId === spotId);
+  const entries = planListEntries(plans, now, partition);
+  const otherPartition: PlanPartition = partition === "past" ? "upcoming" : "past";
+  const hasPlansInOtherPartition = !entries.length && planListEntries(plans, now, otherPartition).length > 0;
+  const emptyState = planListEmptyState(partition, hasPlansInOtherPartition);
   const choosePartition = (next: PlanPartition) => { setPartition(next); setScrollTop(scrollPositions.current[next]); };
   useEffect(() => { scrollPositions.current = { upcoming: 0, past: 0 }; setScrollTop(0); setPartition("upcoming"); }, [owner]);
   const open = async (url: string) => {
@@ -87,10 +91,8 @@ export default function PlanListPage() {
           </View>;
         })}
         {query.data && !query.isError && !query.refreshError && query.data.dataState !== "STALE_USABLE" && !entries.length ? <StatusPanel state="EMPTY" emptyLevel="page"
-          title={partition === "past" ? "暂无过往计划" : "暂无观星计划"}
-          detail={partition === "past" ? "已结束的计划会显示在这里。" : "新建计划后会显示在这里。"}
-          recoveryLabel={partition === "past" ? "查看接下来" : "＋ 新建计划"}
-          onRecover={partition === "past" ? () => choosePartition("upcoming") : () => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)} /> : null}
+          title={emptyState.title} detail={emptyState.detail} recoveryLabel={emptyState.actionLabel}
+          onRecover={emptyState.action === "switch" ? () => choosePartition(otherPartition) : () => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)} /> : null}
       </View>
     </ScrollView>
   </View>;

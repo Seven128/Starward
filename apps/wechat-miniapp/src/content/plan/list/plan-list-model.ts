@@ -2,6 +2,14 @@ import type { ObservationPlan } from "@starward/miniapp-contracts";
 import { planInterval } from "../../../features/plan/plan-interval";
 
 export type PlanPartition = "upcoming" | "past";
+export function planListEmptyState(partition: PlanPartition, hasPlansInOtherPartition: boolean) {
+  if (hasPlansInOtherPartition) return partition === "past"
+    ? { title: "暂无过往计划", detail: "接下来的计划可在“接下来”查看。", actionLabel: "查看接下来", action: "switch" as const }
+    : { title: "接下来暂无计划", detail: "已结束的计划可在“过往”查看。", actionLabel: "查看过往", action: "switch" as const };
+  return partition === "past"
+    ? { title: "暂无过往计划", detail: "已结束的计划会显示在这里。", actionLabel: "＋ 新建计划", action: "create" as const }
+    : { title: "暂无观星计划", detail: "新建计划后会显示在这里。", actionLabel: "＋ 新建计划", action: "create" as const };
+}
 export function planListEntries(plans: readonly ObservationPlan[], now: Date, partition: PlanPartition) {
   return plans.map(plan => {
     const interval = planInterval(plan);

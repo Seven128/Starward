@@ -1,13 +1,24 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ObservationPlan } from "@starward/miniapp-contracts";
-import { nextPlanListBoundary, planEndLabel, planListEntries } from "./plan-list-model";
+import { nextPlanListBoundary, planEndLabel, planListEmptyState, planListEntries } from "./plan-list-model";
 
 const plan = (id: string, date: string, start: string, endDate = date, end = "23:59") => ({
   planId: id, localDate: date, localTime: start,
   contextSnapshot: { selectedAtUtc: `${date}T${start}:00Z`, timezone: "UTC" },
   timing: { endLocalDate: endDate, endLocalTime: end },
 } as ObservationPlan);
+
+test("an empty time partition points to existing plans, while a wholly empty list offers creation", () => {
+  assert.deepEqual(planListEmptyState("upcoming", true), {
+    title: "接下来暂无计划", detail: "已结束的计划可在“过往”查看。", actionLabel: "查看过往", action: "switch",
+  });
+  assert.deepEqual(planListEmptyState("past", true), {
+    title: "暂无过往计划", detail: "接下来的计划可在“接下来”查看。", actionLabel: "查看接下来", action: "switch",
+  });
+  assert.equal(planListEmptyState("upcoming", false).action, "create");
+  assert.equal(planListEmptyState("past", false).action, "create");
+});
 
 test("all-plan partitions retain distant and cross-midnight ongoing plans and use ending boundary", () => {
   const current = plan("current", "2026-09-09", "23:00", "2026-09-10", "02:00");
