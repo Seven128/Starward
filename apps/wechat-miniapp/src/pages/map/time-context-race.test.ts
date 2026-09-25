@@ -25,7 +25,7 @@ function runtime(bypassOwnershipGuard = false) {
   const activeContext = { contextId: "a", revision: 1, contextFingerprint: "first", selectedAtUtc: "2026-09-06T12:00:00Z" };
   const state = { mapResetVersion: 0, selectedSpotId: "a", observationContext: { ...activeContext } };
   const generation = { current: 0 }, busy = { current: false };
-  const contexts: unknown[] = [], notifications: unknown[] = [], saving: boolean[] = [];
+  const contexts: unknown[] = [], failures: unknown[] = [], saving: boolean[] = [];
   const requests: { resolve(value: unknown): void; reject(error: Error): void }[] = [];
   const commit = vm.runInNewContext(ts.transpileModule(declaration + "\ncommitMapTime;", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
@@ -35,18 +35,18 @@ function runtime(bypassOwnershipGuard = false) {
     useAppStore: { getState: () => state },
     setPanelPreviewFrameIndex() {}, setTimePreviewing() {}, setAnnouncement() {},
     setTimeSaving: (value: boolean) => saving.push(value),
+    setTemporalFailure: (value: unknown) => failures.push(value),
     setObservationContext: (value: unknown) => contexts.push(value),
-    notify: (value: unknown) => notifications.push(value),
     nearestMapTimeFrameIndex: () => 0, formatContextTime: () => "time", errorMessage: () => "failure",
     isMiniappRequestCancelled: () => false,
     updateObservationContext: () => new Promise((resolve, reject) => requests.push({ resolve, reject })),
   }) as (index: number) => Promise<void>;
-  return { commit, state, generation, busy, requests, contexts, notifications, saving };
+  return { commit, state, generation, busy, requests, contexts, failures, saving };
 }
 
 function assertNoStaleEffects(map: ReturnType<typeof runtime>) {
   assert.deepEqual(map.contexts, []);
-  assert.deepEqual(map.notifications, []);
+  assert.deepEqual(map.failures, [null]);
   assert.equal(map.busy.current, false);
 }
 
@@ -96,5 +96,7 @@ test("current time failure remains actionable", async () => {
   const pending = map.commit(0);
   map.requests[0]!.reject(new Error("current"));
   await pending;
-  assert.equal(map.notifications.length, 1);
+  assert.equal(map.failures.length, 2);
+  assert.equal((map.failures[1] as { kind: string; target: string }).kind, "time");
+  assert.equal((map.failures[1] as { kind: string; target: string }).target, "2026-09-06T13:00:00Z");
 });

@@ -73,6 +73,7 @@ import { requestOneShotLocation } from "@/services/one-shot-location";
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import { userMapRegionEnd } from "./map-region-event";
 import { MapTimeRuler } from "./time-ruler";
+import { MapTemporalFeedback, type MapTemporalFailure } from "./map-temporal-feedback";
 import { ObservationDateControl } from "@/components/observation-date-control";
 import {
   civilDateForInstant,
@@ -205,6 +206,14 @@ export default function MapPage() {
   const mapRuntimeError = nativeMap.error;
   const [announcement, setAnnouncement] = useState("");
   const [timeSaving, setTimeSaving] = useState(false);
+  const [temporalFailure, setTemporalFailure] = useState<(MapTemporalFailure & {
+    contextId: string;
+    revision: number;
+    contextFingerprint: string;
+    selectedSpotId: string | null;
+    requestGeneration: number;
+    mapResetVersion: number;
+  }) | null>(null);
   const [layerDatePickerOpen, setLayerDatePickerOpen] = useState(false);
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [eventModalPresent, setEventModalPresent] = useState(false);
@@ -781,6 +790,17 @@ export default function MapPage() {
     ? civilDateForInstant(activeContext.selectedAtUtc, activeContext.timezone)
     : localDateForNow();
   const mapTodayCivilDate = mapDateOptions[7] ?? selectedMapCivilDate;
+  const visibleTemporalFailure = temporalFailure && activeContext &&
+    temporalFailure.contextId === activeContext.contextId &&
+    temporalFailure.revision === activeContext.revision &&
+    temporalFailure.contextFingerprint === activeContext.contextFingerprint &&
+    temporalFailure.selectedSpotId === selectedSpotId &&
+    temporalFailure.requestGeneration === detailRequestGeneration.current &&
+    temporalFailure.mapResetVersion === mapResetVersion &&
+    (temporalFailure.kind === "date"
+      ? mapDateOptions.includes(temporalFailure.target)
+      : timeFrames.some(frame => frame.atUtc === temporalFailure.target))
+    ? temporalFailure : null;
   const visibleLayer = layerSheetOverlay(analysisOverlay);
   const cloudLayerOwnsSceneError = bottomPresentation === "layer-sheet" &&
     visibleLayer === "TOTAL_CLOUD" && mapSceneFailed && !mapContextFailed && !cloudTimeChoices.length;
@@ -1336,6 +1356,7 @@ export default function MapPage() {
         current.observationContext.contextFingerprint === activeContext.contextFingerprint;
     };
     if (!isCurrentTimeRequest()) return;
+    setTemporalFailure(null);
     setPanelPreviewFrameIndex(frameIndex);
     setTimePreviewing(false);
     if (Date.parse(nextTime) === Date.parse(activeContext.selectedAtUtc)) return;
@@ -1361,14 +1382,16 @@ export default function MapPage() {
       setPanelPreviewFrameIndex(
         nearestMapTimeFrameIndex(timeFrames, activeContext.selectedAtUtc),
       );
-      notify({
-        owner: "map",
-        placement: "inline",
-        tone: "error",
-        title: "观测时间未保存",
-        body: `${errorMessage(error)}。仍使用已确认的观测时刻。`,
-        dismissible: true,
-        dedupeKey: "map-time-update-failed",
+      setTemporalFailure({
+        kind: "time",
+        target: nextTime,
+        detail: `${errorMessage(error)}。仍使用已确认的观测时刻。`,
+        contextId: activeContext.contextId,
+        revision: activeContext.revision,
+        contextFingerprint: activeContext.contextFingerprint,
+        selectedSpotId: requestSelection,
+        requestGeneration,
+        mapResetVersion,
       });
     } finally {
       timeRequestBusy.current = false;
@@ -1485,6 +1508,7 @@ export default function MapPage() {
         current.observationContext.contextFingerprint === activeContext.contextFingerprint;
     };
     if (!isCurrentDateRequest()) return;
+    setTemporalFailure(null);
     setTimePreviewing(false);
     timeRequestBusy.current = true;
     setTimeSaving(true);
@@ -1501,19 +1525,31 @@ export default function MapPage() {
       setAnnouncement(`观测日期已更新为${formatContextTime(response.data.selectedAtUtc, response.data.timezone)}。`);
     } catch (error) {
       if (!isCurrentDateRequest() || isMiniappRequestCancelled(error)) return;
-      notify({
-        owner: "map",
-        placement: "inline",
-        tone: "error",
-        title: "观测日期未保存",
-        body: `${errorMessage(error)}。仍使用已确认的日期和时间。`,
-        dismissible: true,
-        dedupeKey: "map-date-update-failed",
+      setTemporalFailure({
+        kind: "date",
+        target: nextDate,
+        detail: `${errorMessage(error)}。仍使用已确认的日期和时间。`,
+        contextId: activeContext.contextId,
+        revision: activeContext.revision,
+        contextFingerprint: activeContext.contextFingerprint,
+        selectedSpotId: requestSelection,
+        requestGeneration,
+        mapResetVersion,
       });
     } finally {
       timeRequestBusy.current = false;
       setTimeSaving(false);
     }
+  };
+
+  const retryTemporalFailure = () => {
+    if (!visibleTemporalFailure || timeRequestBusy.current) return;
+    if (visibleTemporalFailure.kind === "date") {
+      void commitMapDate(visibleTemporalFailure.target);
+      return;
+    }
+    const index = timeFrames.findIndex(frame => frame.atUtc === visibleTemporalFailure.target);
+    if (index >= 0) void commitMapTime(index);
   };
 
   const onPanelShare = async () => {
@@ -2102,6 +2138,8 @@ export default function MapPage() {
                 skyStale={spotSkyProjection.stale}
                 timeFrames={timeFrames}
                 timeSaving={timeSaving}
+                temporalFailure={visibleTemporalFailure}
+                onTemporalRetry={retryTemporalFailure}
                 dateOptions={mapDateOptions}
                 selectedDate={selectedMapCivilDate}
                 todayDate={mapTodayCivilDate}
@@ -2239,6 +2277,7 @@ export default function MapPage() {
                       onCommit={(index) => { const choice = cloudTimeChoices[index]; if (choice) void commitMapTime(choice.sourceIndex); }}
                       onCancel={() => setTimePreviewing(false)}
                     />
+                    <MapTemporalFeedback failure={visibleTemporalFailure} onRetry={retryTemporalFailure} />
                     <Text className="map-layer-sheet__source-note type-caption">
                       云量预报 · 仅覆盖有效数据区域
                     </Text>

@@ -23,6 +23,7 @@ import { SemanticIcon } from "@/components/semantic-asset";
 import { SelectionTabs } from "@/components/selection-tabs";
 import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { MapTimeRuler } from "./time-ruler";
+import { MapTemporalFeedback, type MapTemporalFailure } from "./map-temporal-feedback";
 import { ObservationDateControl } from "@/components/observation-date-control";
 import { MoonPhaseImage, moonPhaseLabel } from "@/components/moon-phase";
 import {
@@ -165,6 +166,8 @@ export function SpotInformationPanel({
   skyStale = false,
   timeFrames,
   timeSaving,
+  temporalFailure,
+  onTemporalRetry,
   dateOptions,
   selectedDate,
   todayDate,
@@ -208,6 +211,8 @@ export function SpotInformationPanel({
   skyStale?: boolean;
   timeFrames: readonly MapSceneTimeFrame[];
   timeSaving: boolean;
+  temporalFailure: MapTemporalFailure | null;
+  onTemporalRetry: () => void;
   dateOptions: readonly string[];
   selectedDate: string;
   todayDate: string;
@@ -610,6 +615,7 @@ export function SpotInformationPanel({
                 onCancel={onTimeCancel}
                 control="sky-time-scrubber"
               />
+              <MapTemporalFeedback failure={temporalFailure} onRetry={onTemporalRetry} />
             </View>
             {skyReport ? (
             <View className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--moon" data-control="sky-lunar-facts">
