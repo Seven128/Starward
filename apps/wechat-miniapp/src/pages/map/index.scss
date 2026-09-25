@@ -1899,6 +1899,15 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16rpx;
 }
+.spot-panel__proposal-pair-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  min-width: 0;
+}
+.spot-panel__proposal-pair-label {
+  color: var(--text-secondary);
+}
 .spot-panel__proposal-fact {
   display: grid;
   grid-template-columns: 150rpx minmax(0, 1fr);

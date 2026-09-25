@@ -156,12 +156,18 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
         </View>
         <View className="spot-panel__section" ariaLabel="提交资料">
           <View className="spot-panel__block">
-            <Text className="type-label">开放时间</Text>
-            <View className="spot-panel__proposal-pair"><Text>{model.opening[0]}</Text><Text>{model.opening[1]}</Text></View>
+            <Text className="type-label">开放信息</Text>
+            <View className="spot-panel__proposal-pair">
+              <View className="spot-panel__proposal-pair-item"><Text className="spot-panel__proposal-pair-label type-secondary">开放状态</Text><Text className="type-body">{model.opening[0]}</Text></View>
+              <View className="spot-panel__proposal-pair-item"><Text className="spot-panel__proposal-pair-label type-secondary">开放时段</Text><Text className="type-body">{model.opening[1]}</Text></View>
+            </View>
           </View>
           <View className="spot-panel__block">
             <Text className="type-label">到达与安全</Text>
-            <View className="spot-panel__proposal-pair"><Text>{model.access[0]}</Text><Text>{model.safety}</Text></View>
+            <View className="spot-panel__proposal-pair">
+              <View className="spot-panel__proposal-pair-item"><Text className="spot-panel__proposal-pair-label type-secondary">合法进入</Text><Text className="type-body">{model.access[0]}</Text></View>
+              <View className="spot-panel__proposal-pair-item"><Text className="spot-panel__proposal-pair-label type-secondary">夜间安全</Text><Text className="type-body">{model.safety}</Text></View>
+            </View>
             {model.access[1] ? <Text className="type-caption">{model.access[1]}</Text> : null}
             {model.road ? <Text className="type-caption">{model.road}</Text> : null}
           </View>
