@@ -1,4 +1,4 @@
-import Taro, { useDidShow, useRouter, useShareAppMessage } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow, useRouter, useShareAppMessage } from "@tarojs/taro";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
 import type { PlanPublicShareData, SpotPublicShareData } from "@starward/miniapp-contracts";
@@ -15,7 +15,8 @@ import { planSpotRiskMessage } from "@/utils/public-share-copy";
 import "./index.scss";
 
 type Shared = PlanPublicShareData | SpotPublicShareData;
-type ShareState = { kind: "loading" } | { kind: "missing" } | { kind: "error" } | { kind: "ready"; data: Shared; path: string };
+type ShareState = { kind: "loading" } | { kind: "missing" } | { kind: "error" } |
+  { kind: "ready"; data: Shared; path: string; expiresInMs?: number };
 
 function decode(value: string | undefined): string {
   try { return decodeURIComponent(value ?? ""); } catch { return ""; }
@@ -38,8 +39,11 @@ export default function SharedJourneyPage() {
   const [attempt, setAttempt] = useState(0);
   const hasShown = useRef(false);
   const requestEpoch = useRef(0);
+  const pageVisible = useRef(true);
+  const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useDidShow(() => {
+    pageVisible.current = true;
     if (!hasShown.current) {
       hasShown.current = true;
       return;
@@ -48,23 +52,51 @@ export default function SharedJourneyPage() {
     setState({ kind: "loading" });
     setAttempt(value => value + 1);
   });
+  useDidHide(() => {
+    pageVisible.current = false;
+    if (expiryTimer.current) clearTimeout(expiryTimer.current);
+    expiryTimer.current = null;
+  });
+
+  useEffect(() => {
+    if (state.kind !== "ready" || state.data.kind !== "PLAN" || !pageVisible.current) return;
+    const epoch = requestEpoch.current;
+    const timer = setTimeout(() => {
+      if (!pageVisible.current || requestEpoch.current !== epoch) return;
+      requestEpoch.current += 1;
+      setState({ kind: "missing" });
+    }, state.expiresInMs);
+    expiryTimer.current = timer;
+    return () => {
+      clearTimeout(timer);
+      if (expiryTimer.current === timer) expiryTimer.current = null;
+    };
+  }, [state]);
 
   useEffect(() => {
     let cancelled = false;
     const epoch = ++requestEpoch.current;
     const stillCurrent = () => !cancelled && requestEpoch.current === epoch;
+    const showPlan = (response: Awaited<ReturnType<typeof getSharedPlan>>, publicToken: string) => {
+      if (!stillCurrent()) return;
+      const expiresInMs = Date.parse(response.data.expiresAt) - Date.parse(response.generatedAt);
+      if (!Number.isFinite(expiresInMs) || expiresInMs <= 0) {
+        setState({ kind: "missing" });
+        return;
+      }
+      setState({ kind: "ready", data: response.data,
+        path: `/content/share/index?token=${encodeURIComponent(publicToken)}`, expiresInMs });
+    };
     setState({ kind: "loading" });
     void (async () => {
       try {
         if (planId && !token && !spotId) {
           const link = await createPlanShare(planId);
           const publicPlan = await getSharedPlan(link.data.token);
-          if (stillCurrent()) setState({ kind: "ready", data: publicPlan.data,
-            path: `/content/share/index?token=${encodeURIComponent(link.data.token)}` });
+          showPlan(publicPlan, link.data.token);
         } else if (token && !planId && !spotId) {
           const publicPlan = await getSharedPlan(token);
-          if (stillCurrent()) setState({ kind: "ready", data: publicPlan.data,
-            path: `/content/share/index?token=${encodeURIComponent(token)}` });
+          showPlan(publicPlan, token);
         } else if (spotId && !planId && !token) {
           const publicSpot = await getSharedSpot(spotId);
           if (stillCurrent()) setState({ kind: "ready", data: publicSpot.data,
