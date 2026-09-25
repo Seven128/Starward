@@ -1,6 +1,6 @@
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import { Button, Picker, ScrollView, Text, View } from "@tarojs/components";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { FloatingNotificationHost } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
@@ -14,11 +14,12 @@ import "./index.scss";
 export default function AchievementPage() {
   const themeClass = useThemeClass();
   const owner = currentDraftUserId();
+  const mountId = useId();
   const [now, setNow] = useState(() => new Date());
   const [visible, setVisible] = useState(true);
   const [year, setYear] = useState<number | null>(null);
   const [navigationError, setNavigationError] = useState(false);
-  const plans = useResourceQuery({ queryKey: ["plans", owner ?? "unresolved:achievements"],
+  const plans = useResourceQuery({ queryKey: ["plans", owner ?? `unresolved:${mountId}`],
     queryFn: signal => getPlans(signal, owner ?? undefined), staleTime: 30_000 });
   useDidShow(() => { setVisible(true); setNow(new Date()); void plans.refetch(); });
   useDidHide(() => setVisible(false));
