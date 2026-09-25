@@ -43,6 +43,17 @@ export default function PermissionPage() {
             ? "定位权限未授予；原地图和手动搜索仍可使用。"
             : "暂时无法取得位置；请检查系统定位服务后重试，原地图和手动搜索仍可使用。",
       );
+      notify({
+        owner: "map", placement: "inline", tone: result.state === "GRANTED" ? "success" : "warning",
+        title: result.state === "GRANTED" ? "本次位置已取得" : result.state === "DENIED" ? "定位权限未授予" : "暂时无法取得位置",
+        body: result.state === "GRANTED"
+          ? "地图视野未改变；点击地图定位可重新获取并移动到当前位置。"
+          : result.state === "DENIED"
+            ? "地图未移动；可查看权限说明后重试，或继续手动搜索。"
+            : "地图未移动；请检查系统定位服务后重试，仍可手动搜索。",
+        action: result.state === "GRANTED" ? undefined : { label: "查看权限说明", route: "/pages/auth/index" },
+        dismissible: true, dedupeKey: "map-location-request",
+      });
     } finally {
       locationRequestBusy.current = false;
       setBusy(false);
@@ -62,7 +73,11 @@ export default function PermissionPage() {
       if (typeof permission === "boolean") notify({
         owner: "map", placement: "inline", tone: permission ? "info" : "warning",
         title: permission ? "定位权限已开启" : "定位权限未开启",
-        body: permission ? "尚未重新获取位置；点击定位按钮获取本次位置。" : "原地图仍可浏览，也可手动搜索地点。",
+        body: permission
+          ? locationState === "GRANTED"
+            ? "本次已取得过一次位置；可在地图重新定位。"
+            : "尚未重新获取位置；点击定位按钮获取本次位置。"
+          : "原地图仍可浏览，也可手动搜索地点。",
         action: undefined, dismissible: true, dedupeKey: "map-location-request",
       });
       setFeedbackState(permission === false ? "PERMISSION_DENIED" : permission === true && locationState === "GRANTED" ? "READY" : "INITIAL");

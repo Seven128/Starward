@@ -90,17 +90,22 @@ test("granting permission after a denial clears the stale denial without claimin
 
 test("reopening settings after a successful one-shot fix keeps the acquired-location state", async () => {
   const states: string[] = [], panels: string[] = [], feedback: string[] = [];
+  let queue: NotificationRecord[] = [];
   const run = actualCallback("auth", "openPermissions", {
     Taro: { openSetting: async () => ({ authSetting: { "scope.userLocation": true } }) },
     locationRequestBusy: { current: false }, locationState: "GRANTED",
     setBusy: () => {}, setFeedbackState: (value: string) => panels.push(value),
     setFeedback: (value: string) => feedback.push(value),
-    setLocationState: (state: string) => states.push(state), notify: () => {},
+    setLocationState: (state: string) => states.push(state),
+    notify: (intent: NotificationIntent) => { queue = enqueueNotification(queue, intent); },
   });
   await run();
   assert.deepEqual(states, []);
   assert.equal(panels.at(-1), "READY");
   assert.match(feedback.at(-1) ?? "", /本次位置已获取/u);
+  assert.equal(queue[0]?.title, "定位权限已开启");
+  assert.match(queue[0]?.body ?? "", /本次已取得过一次位置/u);
+  assert.doesNotMatch(queue[0]?.body ?? "", /尚未重新获取位置/u);
 });
 
 function mapHarness(native: Port, resolveContext: (point: unknown, source: string) => Promise<unknown>) {
@@ -226,6 +231,13 @@ test("actual permission request distinguishes outcomes, never claims map update,
     const pending = deferred<OneShotLocationResult>();
     const states: string[] = [];
     const feedback: string[] = [];
+    let queue: NotificationRecord[] = enqueueNotification([], {
+      owner: "map", placement: "inline", tone: "info", title: "定位权限已开启",
+      body: "尚未重新获取位置；点击定位按钮获取本次位置。", dedupeKey: "map-location-request",
+    });
+    queue = enqueueNotification(queue, {
+      owner: "settings", placement: "inline", tone: "warning", title: "设置同步失败", body: "重试设置",
+    });
     let calls = 0;
     const run = actualCallback("auth", "requestOnce", {
       Taro: {}, locationRequestBusy: { current: false },
@@ -233,6 +245,7 @@ test("actual permission request distinguishes outcomes, never claims map update,
       setLocationState: (value: string) => states.push(value),
       setFeedback: (value: string) => feedback.push(value),
       setBusy() {}, setFeedbackState() {},
+      notify: (intent: NotificationIntent) => { queue = enqueueNotification(queue, intent); },
     });
     const first = run();
     await run();
@@ -241,6 +254,11 @@ test("actual permission request distinguishes outcomes, never claims map update,
     await first;
     assert.deepEqual(states, ["REQUESTING", state]);
     assert.match(feedback.at(-1)!, state === "GRANTED" ? /地图位置未改变/ : state === "DENIED" ? /权限未授予/ : /暂时无法取得位置/);
+    assert.equal(queue.length, 2, "replace the one old location notice without discarding another owner");
+    assert.equal(selectNotification(queue, "inline", "settings").current?.title, "设置同步失败");
+    const location = selectNotification(queue, "inline", "map").current;
+    assert.equal(location?.title, state === "GRANTED" ? "本次位置已取得" : state === "DENIED" ? "定位权限未授予" : "暂时无法取得位置");
+    assert.doesNotMatch(location?.body ?? "", /尚未重新获取位置/u);
     await run();
     assert.equal(calls, 2);
   }
