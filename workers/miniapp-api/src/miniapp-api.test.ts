@@ -52,6 +52,31 @@ test("clear map-point timezone regions are not overridden by the device hint", a
   } finally { await service.onModuleDestroy(); }
 });
 
+test("Hong Kong and Shenzhen border map points use the location, not the phone zone", async () => {
+  const service = testService();
+  try {
+    for (const [latitude, longitude, hint, expected] of [
+      [22.516, 114.111, "Asia/Shanghai", "Asia/Hong_Kong"], // northern Hong Kong
+      [22.5431, 114.0579, "Asia/Hong_Kong", "Asia/Shanghai"], // default Shenzhen center
+      [22.483, 113.922, "Asia/Hong_Kong", "Asia/Shanghai"], // Shekou
+    ] as const) {
+      const context = (await service.resolveObservationContext({
+        location: { kind: "MAP_POINT", displayName: "港深交界测试地点",
+          wgs84: { system: "WGS84", latitude, longitude }, source: "MAP_VIEWPORT", timezoneHint: hint },
+        localDate: "2026-09-26",
+      })).data;
+      assert.equal(context.timezone, expected, `${latitude},${longitude}`);
+    }
+    const withoutHint = (await service.resolveObservationContext({
+      location: { kind: "MAP_POINT", displayName: "深圳无设备时区",
+        wgs84: { system: "WGS84", latitude: 22.5431, longitude: 114.0579 },
+        source: "MAP_VIEWPORT" },
+      localDate: "2026-09-26",
+    })).data;
+    assert.equal(withoutHint.timezone, "Asia/Shanghai");
+  } finally { await service.onModuleDestroy(); }
+});
+
 async function user(service: MiniappService, suffix: string) {
   return (
     await service.login({

@@ -9,6 +9,7 @@ import type {
   SpotId,
 } from "@starward/miniapp-contracts";
 import { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.ts";
+import { isHongKongDistrictPoint } from "./hong-kong-boundary.ts";
 import type { CachePort, MiniappRepositoryPort } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
 
@@ -18,7 +19,6 @@ const PRECISE_CONTEXT_TTL_SECONDS = 2 * 60 * 60;
 function timezoneForTrialPoint(
   latitude: number,
   longitude: number,
-  hint?: "Asia/Shanghai" | "Asia/Hong_Kong",
 ) {
   if (
     !Number.isFinite(latitude) ||
@@ -42,11 +42,10 @@ function timezoneForTrialPoint(
     return "Asia/Hong_Kong" as const;
   if (!inHongKongLongitude || latitude >= 22.58)
     return "Asia/Shanghai" as const;
-  // The Shenzhen/Hong Kong land border cannot be classified safely by a
-  // broad bounding box. Preserve the existing hint in this narrow band;
-  // other map points use the supported geographic region, not device zone.
-  if (hint) return hint;
-  throw new Error("observation_timezone_resolution_ambiguous");
+  // In the remaining border band, the published HKSAR district geometry
+  // identifies its side. A client's timezone hint is not location evidence.
+  return isHongKongDistrictPoint(latitude, longitude)
+    ? "Asia/Hong_Kong" as const : "Asia/Shanghai" as const;
 }
 
 function digest(value: unknown) {
@@ -284,7 +283,6 @@ export class ObservationContextService {
     const timezone = timezoneForTrialPoint(
       location.wgs84.latitude,
       location.wgs84.longitude,
-      location.timezoneHint,
     );
     return {
       location: {
