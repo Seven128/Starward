@@ -862,7 +862,9 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     <View className={`${themeClass} plan-page`}>
       <FloatingNotificationHost />
       <CustomNav title="观星计划" back backFallbackTab="/pages/my/index" />
-      <StatusPanel state="PERMISSION_DENIED" detail="当前账号已变化，请返回后重新打开计划。原账号的编辑内容不会转存到其他账号。" />
+      <StatusPanel state="PERMISSION_DENIED" title="账号已变化"
+        detail="请从我的重新打开计划。原账号的编辑内容不会转存到其他账号。"
+        recoveryLabel="返回我的" onRecover={() => void Taro.switchTab({ url: "/pages/my/index" })} />
     </View>
   );
   return (
