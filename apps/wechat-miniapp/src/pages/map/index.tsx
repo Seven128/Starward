@@ -206,6 +206,11 @@ export default function MapPage() {
   const mapRuntimeError = nativeMap.error;
   const [announcement, setAnnouncement] = useState("");
   const [timeSaving, setTimeSaving] = useState(false);
+  const [spotContextAttempt, setSpotContextAttempt] = useState<{
+    spotId: string;
+    pending: boolean;
+    error: unknown;
+  } | null>(null);
   const [temporalFailure, setTemporalFailure] = useState<(MapTemporalFailure & {
     contextId: string;
     revision: number;
@@ -606,6 +611,11 @@ export default function MapPage() {
       activeContext?.location.kind === "FORMAL_SPOT" &&
       activeContext.location.spotId === selected.spotId,
   );
+  const visibleSpotContextAttempt = !detailContextReady && selected &&
+    spotContextAttempt?.spotId === selected.spotId ? spotContextAttempt : null;
+  useEffect(() => {
+    if (detailContextReady) setSpotContextAttempt(null);
+  }, [detailContextReady]);
   const spotOverview = useResourceQuery({
     queryKey: [
       "spot-overview",
@@ -887,32 +897,22 @@ export default function MapPage() {
     setBottomPresentation("none");
   };
 
-  const openDetail = async (spot: SpotSummary) => {
-    privateTransitionGeneration.current += 1;
+  const resolveSpotContext = async (spot: SpotSummary) => {
     const requestGeneration = ++detailRequestGeneration.current;
     const isCurrentRequest = () =>
       requestGeneration === detailRequestGeneration.current &&
       useAppStore.getState().selectedSpotId === spot.spotId &&
       useAppStore.getState().mapResetVersion === mapResetVersion;
-    lastHandledSelectedId.current = spot.spotId;
-    if (panelCloseTimer.current) clearTimeout(panelCloseTimer.current);
-    extentBeforeLayer.current = null;
-    setPanelPhase("idle");
-    setPanelExtent("medium");
-    setPanelDragOffset(0);
-    setSelectedFallback(spot);
-    setSelectedProposal(null);
-    selectSpot(spot.spotId);
-    setBottomPresentation("spot-panel");
-    markerTapAt.current = Date.now();
     const current = useAppStore.getState().observationContext;
     if (
       current?.location.kind === "FORMAL_SPOT" &&
       current.location.spotId === spot.spotId
     ) {
+      setSpotContextAttempt(null);
       setAnnouncement(`已选择${spot.name}；正在加载同一观测时刻的点位信息。`);
       return;
     }
+    setSpotContextAttempt({ spotId: spot.spotId, pending: true, error: null });
     try {
       const response = await resolveObservationContext({
         location: { kind: "FORMAL_SPOT", spotId: spot.spotId },
@@ -930,16 +930,24 @@ export default function MapPage() {
       setAnnouncement(`已选择${spot.name}；正在加载同一观测时刻的点位信息。`);
     } catch (error) {
       if (!isCurrentRequest() || isMiniappRequestCancelled(error)) return;
-      notify({
-        owner: "map",
-        placement: "inline",
-        tone: "warning",
-        title: "观测条件未更新",
-        body: `${errorMessage(error)}。地点资料仍可查看，请稍后重试观测条件。`,
-        dismissible: true,
-        dedupeKey: `map-formal-context:${spot.spotId}`,
-      });
+      setSpotContextAttempt({ spotId: spot.spotId, pending: false, error });
     }
+  };
+
+  const openDetail = async (spot: SpotSummary) => {
+    privateTransitionGeneration.current += 1;
+    lastHandledSelectedId.current = spot.spotId;
+    if (panelCloseTimer.current) clearTimeout(panelCloseTimer.current);
+    extentBeforeLayer.current = null;
+    setPanelPhase("idle");
+    setPanelExtent("medium");
+    setPanelDragOffset(0);
+    setSelectedFallback(spot);
+    setSelectedProposal(null);
+    selectSpot(spot.spotId);
+    setBottomPresentation("spot-panel");
+    markerTapAt.current = Date.now();
+    await resolveSpotContext(spot);
   };
 
   const onMarkerTap = async (
@@ -2126,10 +2134,13 @@ export default function MapPage() {
                 detailPending={spotOverviewProjection.pending}
                 detailError={spotOverviewProjection.error}
                 detailStale={spotOverviewProjection.stale}
+                contextPending={Boolean(visibleSpotContextAttempt?.pending)}
+                contextError={visibleSpotContextAttempt?.error ?? null}
+                onContextRecover={() => { if (selected) void resolveSpotContext(selected); }}
                 extent={panelExtent}
                 phase={panelPhase}
                 favorite={favoriteIds.includes(selected.spotId)}
-                context={activeContext}
+                context={detailContextReady ? activeContext : null}
                 astronomyAt={projectedAt}
                 skyReport={spotSkyReport}
                 skyPending={spotSkyProjection.pending}

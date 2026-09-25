@@ -154,6 +154,9 @@ export function SpotInformationPanel({
   detailPending,
   detailError,
   detailStale = false,
+  contextPending,
+  contextError,
+  onContextRecover,
   extent,
   phase,
   favorite,
@@ -199,6 +202,9 @@ export function SpotInformationPanel({
   detailPending: boolean;
   detailError: unknown;
   detailStale?: boolean;
+  contextPending: boolean;
+  contextError: unknown;
+  onContextRecover: () => void;
   extent: SpotPanelExtent;
   phase: SpotPanelPhase;
   favorite: boolean;
@@ -329,8 +335,8 @@ export function SpotInformationPanel({
   const visibleFacilities = prominentFacilities.length ? prominentFacilities : facilities.slice(0, 2);
   const mediaById = new Map(media.map((item) => [item.id, item]));
   const formalFacts = detail?.formalFacts;
-  const detailLoading = !detail && detailPending;
-  const detailUnavailable = !detail && Boolean(detailError);
+  const detailLoading = !detail && (detailPending || contextPending);
+  const detailUnavailable = !detail && Boolean(detailError || contextError);
   const detailFieldFallback = detailLoading ? "正在加载" : detailUnavailable ? "暂未获取" : null;
   const detailMissingFallback = detailFieldFallback ?? "待核验";
   const address = formalFacts?.address ?? effectiveSpot.address;
@@ -483,6 +489,15 @@ export function SpotInformationPanel({
 
           <SpotPlanEntry spotId={effectiveSpot.spotId} />
 
+          {contextPending ? <StatusPanel state="LOADING" detail="正在确认地点的观测条件；已确认的地图摘要仍可查看。" /> : null}
+          {contextError ? <StatusPanel
+            state="ERROR"
+            title="观测条件未更新"
+            detail="地点的观测条件暂未确认；当前仅显示已确认的地图摘要，详情和天文时间暂不可用。"
+            recoveryLabel="重试观测条件"
+            onRecover={onContextRecover}
+          /> : null}
+
           <View className="spot-panel__section" ariaLabel="场地资料">
             {detailPending ? <StatusPanel state="LOADING" detail="正在加载地点信息" /> : null}
             {detailError || detailStale ? (
@@ -590,7 +605,7 @@ export function SpotInformationPanel({
             <WeatherAlerts evidence={skyReport?.weatherEvidence} timezone={context?.timezone ?? effectiveSpot.timezone}
               active={visible} refreshing={skyRefreshing} scopeKey={effectiveSpot.spotId} refreshFailed={Boolean(skyError || skyStale)} onRecover={onSkyRecover} />
             <View className="spot-panel__block spot-panel__block--astronomy-card">
-              <ObservationDateControl
+              {context ? <><ObservationDateControl
                 dates={dateOptions}
                 selectedDate={selectedDate}
                 today={todayDate}
@@ -614,7 +629,7 @@ export function SpotInformationPanel({
                 onCommit={onTimeCommit}
                 onCancel={onTimeCancel}
                 control="sky-time-scrubber"
-              />
+              /></> : <Text className="type-caption">观测条件尚未确认；请回基本信息重试后选择日期与时间。</Text>}
               <MapTemporalFeedback failure={temporalFailure} onRetry={onTemporalRetry} />
             </View>
             {skyReport ? (
