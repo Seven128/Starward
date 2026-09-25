@@ -52,6 +52,7 @@ export default function DataSourcePage() {
         ).values(),
       ]
     : [];
+  const incomplete = overview.data && ["PARTIAL", "UNAVAILABLE", "EXPIRED"].includes(overview.data.dataState);
 
   return (
     <View className={themeClass + " sources-page"}>
@@ -86,6 +87,14 @@ export default function DataSourcePage() {
                 onRecover={() => void overview.refetch()}
               />
             ) : null}
+            {incomplete && !overview.refreshError ? (
+              <StatusPanel
+                state="PARTIAL"
+                detail={overview.data?.dataState === "EXPIRED" ? "部分地点或观测资料已过期；以下只列出已取得的来源，适用时段须逐项核对。" : "地点或观测资料尚未齐全；以下仅列出当前已取得的来源。"}
+                recoveryLabel="重新获取来源"
+                onRecover={() => void overview.refetch()}
+              />
+            ) : null}
             {sources.length ? (
               groupSources(sources).map((group) => (
                 <View className="source-group" key={group.kind}>
@@ -93,7 +102,7 @@ export default function DataSourcePage() {
                   {group.sources.map((source) => <Provenance source={source} showKind={false} key={source.id} />)}
                 </View>
               ))
-            ) : !overview.refreshError && overview.data?.dataState !== "STALE_USABLE" ? (
+            ) : !overview.refreshError && !incomplete && overview.data?.dataState !== "STALE_USABLE" ? (
               <StatusPanel
                 state="EMPTY"
                 detail="当前没有符合来源与时效要求的记录。"
