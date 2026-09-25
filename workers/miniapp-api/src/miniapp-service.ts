@@ -2022,7 +2022,7 @@ export class MiniappService {
     if (!plan || !plan.timing || plan.revision !== binding.revision) throw new Error("share_not_found");
     const detail = await this.publicShareSpot(plan.spotId);
     return envelope({ kind: "PLAN", spotId: detail.spot.spotId, spotGcj02: detail.spot.gcj02, spotName: detail.spot.name,
-      spotRegion: detail.spot.region, spotStatus: detail.spot.status as PlanPublicShareData["spotStatus"],
+      spotRegion: detail.spot.region, spotStatus: detail.spot.status as NonNullable<PlanPublicShareData["spotStatus"]>,
       spotSource: detail.spot.source,
       localDate: plan.localDate, localTime: plan.localTime,
       endLocalDate: plan.timing.endLocalDate, endLocalTime: plan.timing.endLocalTime,

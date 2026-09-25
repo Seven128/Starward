@@ -5,7 +5,7 @@ import type { DisplayMode, PlanPublicShareData, SourceSummary, SpotPublicShareDa
 import { EMPTY_FIELD_VALUE, StatusPanel } from "./status-panel";
 import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
-import { CLOSED_PLAN_SPOT_MESSAGE } from "@/utils/public-share-copy";
+import { planSpotRiskMessage } from "@/utils/public-share-copy";
 import "./share-poster.scss";
 
 type PublicShare = PlanPublicShareData | SpotPublicShareData;
@@ -13,21 +13,24 @@ const ID = "public-share-poster";
 const WIDTH = 320;
 
 function posterLines(data: PublicShare): { heading: string; lines: string[]; sources: SourceSummary[] } {
-  if (data.kind === "PLAN") return {
-    heading: data.spotName,
-    lines: [
-      `公开行程 · ${data.spotRegion}`,
-      ...(data.spotStatus === "TEMPORARILY_CLOSED" ? [CLOSED_PLAN_SPOT_MESSAGE] : []),
-      `计划出发  ${data.departureLocalDate} ${data.departureLocalTime}`,
-      `观测时段  ${data.localDate} ${data.localTime}`,
-      `至 ${data.endLocalDate} ${data.endLocalTime}`,
-      `地点时区  ${data.timezone}`,
-      ...data.events.map(event => `关联天象  ${event.displayName}`),
-      "计划结束不代表已到访或观测成功。",
-      `分享有效至  ${displayZonedShareExpiry(data.expiresAt, data.timezone)}`,
-    ],
-    sources: [data.spotSource, ...data.events.flatMap(event => event.source ? [event.source] : [])],
-  };
+  if (data.kind === "PLAN") {
+    const risk = planSpotRiskMessage(data.spotStatus);
+    return {
+      heading: data.spotName,
+      lines: [
+        `公开行程 · ${data.spotRegion}`,
+        ...(risk ? [risk] : []),
+        `计划出发  ${data.departureLocalDate} ${data.departureLocalTime}`,
+        `观测时段  ${data.localDate} ${data.localTime}`,
+        `至 ${data.endLocalDate} ${data.endLocalTime}`,
+        `地点时区  ${data.timezone}`,
+        ...data.events.map(event => `关联天象  ${event.displayName}`),
+        "计划结束不代表已到访或观测成功。",
+        `分享有效至  ${displayZonedShareExpiry(data.expiresAt, data.timezone)}`,
+      ],
+      sources: [data.spotSource, ...data.events.flatMap(event => event.source ? [event.source] : [])],
+    };
+  }
   return {
     heading: data.name,
     lines: [
