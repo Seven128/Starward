@@ -167,18 +167,37 @@ export default function SettingsPage() {
     if (accountActionPending.current) return;
     accountActionPending.current = true;
     setDataAction("CACHE");
+    const currentState = useAppStore.getState();
+    for (const notification of currentState.notifications) {
+      if (notification.owner === "settings" && ["settings-cache-cleared", "settings-cache-cleanup-incomplete"].includes(notification.dedupeKey ?? ""))
+        currentState.dismissNotification(notification.id);
+    }
     try {
-      const [, stateSaved] = await Promise.all([clearTemporaryApiCache(), clearLocalCache()]);
-      if (!stateSaved) throw new Error("local_state_cleanup_incomplete");
-      notify({ owner: "settings", placement: "floating", tone: "success",
-        title: "临时缓存已清除",
-        body: "本地地图、筛选、搜索与夜空临时缓存已清除；远端数据和草稿保持不变。",
-        dismissible: true, dedupeKey: "settings-cache-cleared" });
+      const [responseResult, stateResult] = await Promise.allSettled([clearTemporaryApiCache(), clearLocalCache()]);
+      const responseCleared = responseResult.status === "fulfilled";
+      const stateSaved = stateResult.status === "fulfilled" && stateResult.value;
+      if (responseCleared && stateSaved) {
+        notify({ owner: "settings", placement: "floating", tone: "success",
+          title: "临时缓存已清除",
+          body: "本地地图、筛选、搜索与夜空临时缓存已清除；远端数据和草稿保持不变。",
+          dismissible: true, dedupeKey: "settings-cache-cleared" });
+      } else {
+        notify({ owner: "settings", placement: "inline", tone: "warning",
+          title: stateSaved ? "响应缓存尚未清完" : responseCleared ? "本机状态尚未清完" : "临时缓存尚未清完",
+          body: stateSaved
+            ? "本机地图状态已重置，部分响应缓存可能仍有残留。请在下方重新点击清理本机缓存，或通过微信清理本小程序的数据。"
+            : responseCleared
+              ? "响应缓存已清除，本机状态未能完整保存清理结果。请在下方重新点击清理本机缓存，或通过微信清理本小程序的数据。"
+              : "本机状态与响应缓存可能仍有残留。请在下方重新点击清理本机缓存，或通过微信清理本小程序的数据。",
+          dismissible: true, dedupeKey: "settings-cache-cleanup-incomplete" });
+        setScrollTop(0);
+      }
     } catch {
       notify({ owner: "settings", placement: "inline", tone: "warning",
         title: "临时缓存尚未清完",
-        body: "当前地图状态已重置，但本地存储清理失败。请稍后重试，或通过微信清理本小程序的数据。",
+        body: "本机状态与响应缓存可能仍有残留。请在下方重新点击清理本机缓存，或通过微信清理本小程序的数据。",
         dismissible: true, dedupeKey: "settings-cache-cleanup-incomplete" });
+      setScrollTop(0);
     } finally {
       accountActionPending.current = false;
       setDataAction(null);

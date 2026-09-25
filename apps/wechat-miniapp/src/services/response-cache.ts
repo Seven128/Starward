@@ -182,9 +182,10 @@ export function createResponseCache(storage: Storage, now = Date.now) {
   function invalidate(matches?: (key: string) => boolean) {
     load();
     const selected = matches ?? (() => true);
-    // A full explicit retry also attempts leftover owned chunks from an earlier
-    // failed purge; only this sweep can clear the incomplete-cleanup state.
-    if (!matches) cleanupFailed = false;
+    // A retry after native cleanup failed must also remove chunks whose disk
+    // descriptor was already removed. Keep chunks owned by unrelated entries.
+    const sweepOrphans = !matches || cleanupFailed;
+    if (sweepOrphans) cleanupFailed = false;
     generation++;
     for (const request of requests) if (selected(request.key)) request.valid = false;
     for (const key of memory.keys()) if (selected(key)) { memory.delete(key); dirty.delete(key); }
@@ -198,10 +199,11 @@ export function createResponseCache(storage: Storage, now = Date.now) {
     for (const [key, item] of previous) if (!disk.has(key)) removeChunks(item);
     // A clear of an uncommitted legacy cache must remove its single old payload.
     if (!disk.size && !dirty.size) remove(RESPONSE_CACHE_STORAGE_KEY);
-    if (!matches) {
+    if (sweepOrphans) {
       try {
+        const active = new Set([...disk.values()].flatMap(item => Array.from({ length: item.chunks }, (_, i) => chunkKey(item, i))));
         for (const key of storage.getStorageInfoSync().keys)
-          if (key.startsWith(CHUNK_PREFIX)) remove(key);
+          if (key.startsWith(CHUNK_PREFIX) && !active.has(key)) remove(key);
       } catch { cleanupFailed = true; }
     }
     return !cleanupFailed;

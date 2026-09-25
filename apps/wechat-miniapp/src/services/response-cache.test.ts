@@ -411,6 +411,26 @@ test("scope removal reports failed native cleanup, including a late orphan chunk
   }
 });
 
+test("selective cache cleanup retries orphan removal without discarding unrelated responses", async () => {
+  const storage = storageFixture(), cache = createResponseCache(storage, () => clock);
+  const temporary = "map-scene:temporary", retained = "plans:retained";
+  cache.set(temporary, envelope({ kind: "temporary" }));
+  cache.set(retained, envelope({ kind: "retained" }));
+  await cache.flush();
+  storage.setFailure(false, false, true);
+  cache.invalidate(key => key === temporary);
+  await cache.flush();
+  assert.equal(cache.cleanupComplete(), false);
+  assert.equal(cache.get(temporary), undefined);
+  assert.ok(cache.get(retained));
+  storage.setFailure(false);
+  cache.invalidate(key => key === temporary);
+  await cache.flush();
+  assert.equal(cache.cleanupComplete(), true, "the visible retry must be able to finish native cleanup");
+  assert.ok(cache.get(retained), "selective retry must keep unrelated cached responses");
+  assert.equal(storage.data.size, 2, "only the retained manifest and body remain");
+});
+
 test("every terminal transport path releases its per-request cache fence", async () => {
   for (const terminal of ["200", "500", "offline", "cancel", "timeout"]) {
     const h = transportHarness();
