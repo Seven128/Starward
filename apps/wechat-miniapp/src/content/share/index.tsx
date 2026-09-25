@@ -12,6 +12,7 @@ import { createPlanShare, getSharedPlan, getSharedSpot, MiniappApiError } from "
 import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
 import { planSpotRiskMessage } from "@/utils/public-share-copy";
+import { remainingPublicPlanLifetimeMs } from "./share-lifetime";
 import "./index.scss";
 
 type Shared = PlanPublicShareData | SpotPublicShareData;
@@ -77,10 +78,10 @@ export default function SharedJourneyPage() {
     let cancelled = false;
     const epoch = ++requestEpoch.current;
     const stillCurrent = () => !cancelled && requestEpoch.current === epoch;
-    const showPlan = (response: Awaited<ReturnType<typeof getSharedPlan>>, publicToken: string) => {
+    const showPlan = (response: Awaited<ReturnType<typeof getSharedPlan>>, publicToken: string, requestStartedAtMs: number) => {
       if (!stillCurrent()) return;
-      const expiresInMs = Date.parse(response.data.expiresAt) - Date.parse(response.generatedAt);
-      if (!Number.isFinite(expiresInMs) || expiresInMs <= 0) {
+      const expiresInMs = remainingPublicPlanLifetimeMs(response.generatedAt, response.data.expiresAt, requestStartedAtMs, Date.now());
+      if (expiresInMs <= 0) {
         setState({ kind: "missing" });
         return;
       }
@@ -92,11 +93,13 @@ export default function SharedJourneyPage() {
       try {
         if (planId && !token && !spotId) {
           const link = await createPlanShare(planId);
+          const requestStartedAtMs = Date.now();
           const publicPlan = await getSharedPlan(link.data.token);
-          showPlan(publicPlan, link.data.token);
+          showPlan(publicPlan, link.data.token, requestStartedAtMs);
         } else if (token && !planId && !spotId) {
+          const requestStartedAtMs = Date.now();
           const publicPlan = await getSharedPlan(token);
-          showPlan(publicPlan, token);
+          showPlan(publicPlan, token, requestStartedAtMs);
         } else if (spotId && !planId && !token) {
           const publicSpot = await getSharedSpot(spotId);
           if (stillCurrent()) setState({ kind: "ready", data: publicSpot.data,
