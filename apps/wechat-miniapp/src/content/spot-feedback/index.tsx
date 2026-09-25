@@ -433,7 +433,7 @@ export default function FormalFeedbackEditor() {
         </>}
       </View>
     </ScrollView>
-    <View className="formal-feedback-submit safe-bottom"><Button disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || submitted || !hasChanges} onClick={() => void submit()}>{busy ? "提交中…" : submitted ? "审核中" : "提交反馈"}</Button></View>
+    {!ownerChanged ? <View className="formal-feedback-submit safe-bottom"><Button disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || submitted || !hasChanges} onClick={() => void submit()}>{busy ? "提交中…" : submitted ? "审核中" : "提交反馈"}</Button></View> : null}
   </View>;
 }
 
