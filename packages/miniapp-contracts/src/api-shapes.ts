@@ -358,6 +358,8 @@ export interface PlanPublicShareData {
   spotGcj02: import("./types.ts").Gcj02Point;
   spotName: string;
   spotRegion: string;
+  /** Current formal publication state; never inferred from saved plan facts. */
+  spotStatus: "PUBLISHED" | "TEMPORARILY_CLOSED";
   spotSource: SourceSummary;
   localDate: string;
   localTime: string;

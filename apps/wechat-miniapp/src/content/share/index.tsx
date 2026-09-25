@@ -11,6 +11,7 @@ import { useThemeClass } from "@/hooks/use-theme";
 import { createPlanShare, getSharedPlan, getSharedSpot, MiniappApiError } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
+import { CLOSED_PLAN_SPOT_MESSAGE } from "@/utils/public-share-copy";
 import "./index.scss";
 
 type Shared = PlanPublicShareData | SpotPublicShareData;
@@ -108,6 +109,7 @@ export default function SharedJourneyPage() {
             <Text className="type-page-title">{data.kind === "PLAN" ? data.spotName : data.name}</Text>
             <Text className="type-secondary">{data.kind === "PLAN" ? data.spotRegion : data.region}</Text>
             {data.kind === "PLAN" ? <>
+              {data.spotStatus === "TEMPORARILY_CLOSED" ? <Text className="shared-journey__alert">{CLOSED_PLAN_SPOT_MESSAGE}</Text> : null}
               <View className="shared-journey__row"><Text>计划出发</Text><Text>{data.departureLocalDate} {data.departureLocalTime}</Text></View>
               <View className="shared-journey__row"><Text>观测时段</Text><Text>{data.localDate} {data.localTime} — {data.endLocalDate} {data.endLocalTime}</Text></View>
               <Text className="type-caption">时间均为 {data.timezone}；计划结束不代表已到访或观测成功。</Text>

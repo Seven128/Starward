@@ -5,6 +5,7 @@ import type { DisplayMode, PlanPublicShareData, SourceSummary, SpotPublicShareDa
 import { EMPTY_FIELD_VALUE, StatusPanel } from "./status-panel";
 import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
+import { CLOSED_PLAN_SPOT_MESSAGE } from "@/utils/public-share-copy";
 import "./share-poster.scss";
 
 type PublicShare = PlanPublicShareData | SpotPublicShareData;
@@ -16,6 +17,7 @@ function posterLines(data: PublicShare): { heading: string; lines: string[]; sou
     heading: data.spotName,
     lines: [
       `公开行程 · ${data.spotRegion}`,
+      ...(data.spotStatus === "TEMPORARILY_CLOSED" ? [CLOSED_PLAN_SPOT_MESSAGE] : []),
       `计划出发  ${data.departureLocalDate} ${data.departureLocalTime}`,
       `观测时段  ${data.localDate} ${data.localTime}`,
       `至 ${data.endLocalDate} ${data.endLocalTime}`,
