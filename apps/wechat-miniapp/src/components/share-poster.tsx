@@ -53,7 +53,7 @@ function wrap(text: string, maxWidth: number, fontSize: number): string[] {
   for (const paragraph of text.split("\n")) {
     let row = "";
     let rowWidth = 0;
-    for (const token of paragraph.match(/[A-Za-z0-9:/._-]+|\s+|./gu) ?? []) {
+    for (const token of paragraph.match(/(?:\([A-Za-z0-9:/._-]+\)|（[A-Za-z0-9:/._-]+）)|[A-Za-z0-9:/._-]+|\s+|./gu) ?? []) {
       const tokenWidth = [...token].reduce((sum, char) => sum + advance(char), 0);
       if (row && rowWidth + tokenWidth > maxWidth) {
         rows.push(row.trimEnd());
