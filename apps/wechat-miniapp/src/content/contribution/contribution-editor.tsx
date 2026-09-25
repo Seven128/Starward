@@ -1,6 +1,6 @@
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import type { BaseEventOrig, ScrollViewProps } from "@tarojs/components";
-import Taro from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import type { ContributionMediaKind, ContributionSubmission } from "@starward/miniapp-contracts";
 import { parseCoordinateInput } from "./coordinate-input";
@@ -21,6 +21,7 @@ import { SpotDocumentFields } from "../spot-document-fields";
 import { SPOT_DOCUMENT_CHAPTERS, type SpotDocumentChapter } from "../spot-document";
 import { contributionSavedState } from "./contribution-save-state";
 import { getContributionMedia } from "@/services/api-client";
+import { loadAvailableMediaPreviews } from "./media-preview";
 import { confirmContributionEditorLeave } from "./leave-editor";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
 import "./index.scss";
@@ -58,6 +59,10 @@ export function ContributionEditor({ renderRecords, embedded = false, embeddedHe
   const commands = useContributionCommands(form);
   const [validationAnchor, setValidationAnchor] = useState("");
   const [resumeAttempt, setResumeAttempt] = useState(0);
+  const [pageVisible, setPageVisible] = useState(true);
+  const [previewFailures, setPreviewFailures] = useState<readonly string[]>([]);
+  useDidShow(() => { setPageVisible(true); setPreviewFailures([]); });
+  useDidHide(() => setPageVisible(false));
   const [documentChapter, setDocumentChapter] = useState<SpotDocumentChapter>("place");
   const [recordsScrollTop, setRecordsScrollTop] = useState(0);
   const recordsScrollPosition = useRef(0);
@@ -111,21 +116,30 @@ export function ContributionEditor({ renderRecords, embedded = false, embeddedHe
     });
   }, [embedded, form.candidateName, form.candidateSelectionVersion, form.kind, form.latitude, form.longitude, onCandidateChange]);
   useEffect(() => {
-    if (form.kind !== "NEW_SPOT_PROPOSAL" || !form.draft) return;
+    setPreviewFailures([]);
+  }, [form.draft?.submissionId]);
+  const previewDraftId = form.draft?.submissionId;
+  const previewMediaKey = form.currentMedia.map(media => `${media.uploadId}:${media.state}`).join("|");
+  const previewPathKey = Object.keys(form.candidateMediaPreviews).sort().join("|");
+  const previewFailureKey = [...previewFailures].sort().join("|");
+  useEffect(() => {
+    if (!pageVisible || form.kind !== "NEW_SPOT_PROPOSAL" || !previewDraftId) return;
     const missing = form.currentMedia.filter((media) =>
       (media.state === "UPLOADED" || media.state === "ATTACHED") &&
-      !form.candidateMediaPreviews[media.uploadId]);
+      !form.candidateMediaPreviews[media.uploadId] &&
+      !previewFailures.includes(media.uploadId));
     if (!missing.length) return;
     let active = true;
-    void Promise.all(missing.map(async (media) => {
-      const response = await getContributionMedia(form.draft!.submissionId, media.uploadId);
-      return [media.uploadId, `data:${response.data.mimeType};base64,${response.data.dataBase64}`] as const;
-    })).then((entries) => {
+    void loadAvailableMediaPreviews(missing.map(media => media.uploadId), async id => {
+      const response = await getContributionMedia(previewDraftId, id as typeof missing[number]["uploadId"]);
+      return `data:${response.data.mimeType};base64,${response.data.dataBase64}`;
+    }).then(({ paths, failedIds }) => {
       if (!active) return;
-      for (const [uploadId, path] of entries) form.setCandidateMediaPreview(uploadId, path);
-    }).catch(() => undefined);
+      for (const [uploadId, path] of Object.entries(paths)) form.setCandidateMediaPreview(uploadId, path);
+      setPreviewFailures(current => [...new Set([...current.filter(id => !(id in paths)), ...failedIds])]);
+    });
     return () => { active = false; };
-  }, [form.candidateMediaPreviews, form.currentMedia, form.draft, form.kind]);
+  }, [form.kind, pageVisible, previewDraftId, previewFailureKey, previewMediaKey, previewPathKey]);
 
   const leaveState = useRef({ busy: form.commandBusy, dirty: form.hasUnsavedChanges });
   leaveState.current = { busy: form.commandBusy, dirty: form.hasUnsavedChanges };
@@ -235,7 +249,7 @@ export function ContributionEditor({ renderRecords, embedded = false, embeddedHe
               onChange={form.setCandidateField}
               addressControl={<ContributionCandidateAddressControl form={form} commands={commands} />}
               textareaFixed={embedded}
-              renderPhotoGroup={(kind) => <CandidatePhotoGroup kind={kind} form={form} commands={commands} />}
+              renderPhotoGroup={(kind) => <CandidatePhotoGroup kind={kind} form={form} commands={commands} failedIds={previewFailures} onRetry={ids => setPreviewFailures(current => current.filter(id => !ids.includes(id)))} />}
               notesFooter={<>
                 <ContributionCandidateCoordinateConsent form={form} commands={commands} />
                 {form.currentMedia.length ? <ToggleField disabled={form.commandBusy} id="contribution-photo-rights" label="我有权使用这些照片" checked={form.rightsConfirmed} onChange={form.setRightsConfirmed} stateLabels={{ checked: "已确认", unchecked: "未确认" }} /> : null}
@@ -255,10 +269,12 @@ export function ContributionEditor({ renderRecords, embedded = false, embeddedHe
   </View>;
 }
 
-function CandidatePhotoGroup({ kind, form, commands }: {
+function CandidatePhotoGroup({ kind, form, commands, failedIds, onRetry }: {
   kind: ContributionMediaKind;
   form: ReturnType<typeof useContributionForm>;
   commands: ReturnType<typeof useContributionCommands>;
+  failedIds: readonly string[];
+  onRetry(ids: readonly string[]): void;
 }) {
   const label = kind === "parking" ? "停车" : kind === "toilet" ? "洗手间" : "现场";
   const media = form.currentMedia.filter((item) => item.kind === kind);
@@ -271,6 +287,9 @@ function CandidatePhotoGroup({ kind, form, commands }: {
         <Button disabled={form.commandBusy} aria-label={`移除${label}照片`} onClick={() => void commands.removeMedia(item.uploadId)}><Text className="formal-feedback-photo__remove-glyph">×</Text></Button>
       </View>)}
     </View>
+    {media.some(item => failedIds.includes(item.uploadId) && !form.candidateMediaPreviews[item.uploadId])
+      ? <StatusPanel state="ERROR" detail={`${label}照片暂时无法预览，其他资料仍可查看。`} recoveryLabel="重试照片预览" onRecover={() => onRetry(media.map(item => item.uploadId))} />
+      : null}
     <Button className="formal-feedback-photo-action" disabled={form.commandBusy || media.length >= 3} onClick={() => void commands.addMedia(kind)}>＋ 添加{label}照片</Button>
   </View>;
 }

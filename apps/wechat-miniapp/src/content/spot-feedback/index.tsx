@@ -28,7 +28,7 @@ import { useAppStore } from "@/state/app-store";
 import { ToggleField } from "@/components/toggle-field";
 import { mediaFileName, mediaMimeType, readBase64 } from "../contribution/contribution-model";
 import { appendFormalMedia, createFormalMediaSelection, formalMediaProposal, removeFormalMedia, type FormalMediaSelection } from "./formal-media-selection";
-import { loadAvailableMediaPreviews } from "./formal-media-preview";
+import { loadAvailableMediaPreviews } from "../contribution/media-preview";
 import { retryFailedFormalResources } from "./formal-feedback-resources";
 import { confirmEditorLeave } from "@/hooks/editor-leave";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";

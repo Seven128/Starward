@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { loadAvailableMediaPreviews } from "./formal-media-preview";
+import { loadAvailableMediaPreviews } from "./media-preview";
 
-test("one failed feedback photo does not hide independently loaded photos", async () => {
+test("one failed contribution photo does not hide independently loaded photos", async () => {
   const result = await loadAvailableMediaPreviews(["parking", "toilet", "site"], async id => {
     if (id === "toilet") throw new Error("media unavailable");
     return `data:image/png;base64,${id}`;
