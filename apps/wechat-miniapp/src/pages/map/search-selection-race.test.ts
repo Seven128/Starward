@@ -13,7 +13,7 @@ for (const hasContext of [true, false]) test(`only the latest visible search sel
   const pending: Array<{ resolve(value: unknown): void; reject(error: unknown): void }> = [];
   const adopted: unknown[] = [];
   let navigations = 0;
-  let notices = 0;
+  const notices: any[] = [];
   const centers: unknown[] = [];
   let selections = 0;
   const requests: any[] = [];
@@ -26,7 +26,7 @@ for (const hasContext of [true, false]) test(`only the latest visible search sel
     resolveObservationContext: (input: any) => { requests.push(input); return new Promise((resolve, reject) => pending.push({ resolve, reject })); },
     setObservationContext: (value: unknown) => adopted.push(value), setAnnouncement() {},
     leaveSearch: async () => { navigations++; selectionVersion.current++; },
-    isMiniappRequestCancelled: () => false, errorMessage: () => "network failed", notify: () => notices++,
+    isMiniappRequestCancelled: () => false, errorMessage: () => "network failed", notify: (value: unknown) => notices.push(value),
   });
   const old = move({ label: "旧候选", location: { latitude: 22, longitude: 114 } });
   const latest = move({ label: "新候选", location: { latitude: 23, longitude: 115 } });
@@ -47,12 +47,22 @@ for (const hasContext of [true, false]) test(`only the latest visible search sel
   selectionVersion.current++;
   pending[2]!.reject(new Error("late failure"));
   await hidden;
-  assert.equal(notices, 0);
+  assert.equal(notices.length, 0);
   assert.equal(navigations, 1);
   const failed = move({ label: "失败候选", location: { latitude: 25, longitude: 117 } });
   pending[3]!.reject(new Error("current failure"));
   await failed;
-  assert.equal(notices, 1);
+  assert.equal(notices.length, 1);
+  assert.equal(selections, 1);
+  assert.equal(centers.length, 1);
+  assert.deepEqual(adopted, ["latest-context"]);
+  const unsupported = move({ label: "范围外候选", location: { latitude: 33.6833, longitude: 73.05 } });
+  pending[4]!.reject({ code: "INVALID_INPUT", recovery: ["CHOOSE_SUPPORTED_LOCATION"] });
+  await unsupported;
+  assert.equal(notices.length, 2);
+  assert.match(notices[1].body, /不在当前支持范围|不支持.*地点/u);
+  assert.match(notices[1].body, /改选/u);
+  assert.doesNotMatch(notices[1].body, /重试/u);
   assert.equal(selections, 1);
   assert.equal(centers.length, 1);
   assert.deepEqual(adopted, ["latest-context"]);

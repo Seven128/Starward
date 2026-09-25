@@ -35,6 +35,16 @@ test("invalid plan wall times are input errors rather than provider outages", ()
     assert.deepEqual(classifyExceptionMessage(message), { status: 400, code: "INVALID_INPUT", retryable: false });
 });
 
+test("out-of-region observation locations require a new choice, not a provider retry", () => {
+  assert.deepEqual(classifyExceptionMessage("observation_timezone_resolution_unavailable"), {
+    status: 400,
+    code: "INVALID_INPUT",
+    retryable: false,
+    message: "OBSERVATION_LOCATION_OUTSIDE_SUPPORTED_REGION",
+    recovery: ["CHOOSE_SUPPORTED_LOCATION"],
+  });
+});
+
 test("erased evidence and deleted accounts cannot enter a retry loop", () => {
   for (const message of ["contribution_account_deleted", "operation_receipt_privacy_erased"])
     assert.deepEqual(classifyExceptionMessage(message), { status: 410, code: "STALE_REJECTED", retryable: false });

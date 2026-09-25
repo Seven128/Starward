@@ -4,6 +4,10 @@ import { requestIdFromHeaders } from "./request-id.ts";
 import { SpotPublicationBlockedError } from "./spot-completeness-policy.ts";
 
 export function classifyExceptionMessage(message: string) {
+  if (message === "observation_timezone_resolution_unavailable")
+    return { status: 400, code: "INVALID_INPUT", retryable: false, message: "OBSERVATION_LOCATION_OUTSIDE_SUPPORTED_REGION", recovery: ["CHOOSE_SUPPORTED_LOCATION"] } as const;
+  if (message === "observation_timezone_resolution_ambiguous")
+    return { status: 400, code: "INVALID_INPUT", retryable: false } as const;
   if (/^(?:plan_(?:end_must_follow_start|departure_must_precede_start|timing_invalid)|observation_local_(?:date_invalid|time_invalid|time_nonexistent_or_ambiguous))$/u.test(message))
     return { status: 400, code: "INVALID_INPUT", retryable: false } as const;
   if (/^event_article_(?:source_unavailable|dns_unavailable|timeout)$/u.test(message)) return { status: 503, code: "PROVIDER_UNAVAILABLE", retryable: true } as const;
@@ -67,10 +71,12 @@ export class ApiExceptionFilter implements ExceptionFilter {
         : classifyExceptionMessage(message);
     response.status(classified.status).send({
       code: classified.code,
-      message: classified.code,
+      message: "message" in classified ? classified.message : classified.code,
       retryable: classified.retryable,
       recovery:
-        classified.code === "CONFLICT"
+        "recovery" in classified
+          ? classified.recovery
+          : classified.code === "CONFLICT"
           ? ["REFETCH", "PRESERVE_DRAFT", "RETRY"]
           : classified.retryable
             ? ["RETRY", "USE_STABLE_FALLBACK"]

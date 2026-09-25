@@ -433,7 +433,15 @@ export function MapSearchSurface() {
     } catch (error) {
       if (version !== selectionVersion.current) return;
       if (isMiniappRequestCancelled(error)) return;
-      notify({ owner: "search", placement: "floating", tone: "warning", title: "地点未切换", body: "地点资料暂未更新，原地点与搜索结果已保留，请重试。", dismissible: true, dedupeKey: "search-map-reference-context-failed" });
+      const outsideSupportedRegion = typeof error === "object" && error !== null
+        && "code" in error && error.code === "INVALID_INPUT"
+        && "recovery" in error && Array.isArray(error.recovery)
+        && error.recovery.includes("CHOOSE_SUPPORTED_LOCATION");
+      notify({ owner: "search", placement: "floating", tone: "warning", title: "地点未切换",
+        body: outsideSupportedRegion
+          ? "该地点不在当前支持范围，请改选大湾区内地点。原地点与搜索结果已保留。"
+          : "地点资料暂未更新，原地点与搜索结果已保留，请重试。",
+        dismissible: true, dedupeKey: "search-map-reference-context-failed" });
     }
   };
 
