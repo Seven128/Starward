@@ -10,6 +10,7 @@ import type {
 } from "@starward/miniapp-contracts";
 import { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.ts";
 import { isHongKongDistrictPoint } from "./hong-kong-boundary.ts";
+import { isMacaoTimezonePoint, MACAO_TIMEZONE_SOURCE } from "./macao-boundary.ts";
 import type { CachePort, MiniappRepositoryPort } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
 
@@ -37,6 +38,8 @@ function timezoneForTrialPoint(
     longitude <= 116.8;
   if (!inTrialRegion)
     throw new Error("observation_timezone_resolution_unavailable");
+  if (isMacaoTimezonePoint(latitude, longitude))
+    return "Asia/Macau" as const;
   const inHongKongLongitude = longitude >= 113.78 && longitude <= 114.52;
   if (inHongKongLongitude && latitude >= 22.12 && latitude <= 22.45)
     return "Asia/Hong_Kong" as const;
@@ -164,6 +167,8 @@ export class ObservationContextService {
       contextFingerprint: digest(fingerprintInput),
       revision: 1,
       ...fingerprintInput,
+      ...(input.location.kind === "MAP_POINT" && resolvedLocation.timezone === "Asia/Macau"
+        ? { timezoneSource: MACAO_TIMEZONE_SOURCE } : {}),
       nightStartUtc,
       nightEndUtc,
       selectedAtUtc,

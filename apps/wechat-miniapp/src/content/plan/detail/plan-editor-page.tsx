@@ -164,7 +164,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   wgs84: planSnapshot.routeOrigin.wgs84,
                   source: planSnapshot.routeOrigin.source,
                   ...(planSnapshot.timezone === "Asia/Shanghai" ||
-                  planSnapshot.timezone === "Asia/Hong_Kong"
+                  planSnapshot.timezone === "Asia/Hong_Kong" ||
+                  planSnapshot.timezone === "Asia/Macau"
                     ? { timezoneHint: planSnapshot.timezone }
                     : {}),
                 },

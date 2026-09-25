@@ -36,8 +36,8 @@ export function localParts(date: Date, timezone: string) {
 }
 
 /**
- * Current Mini Program location contracts admit modern Shanghai and Hong Kong
- * dates. Both are UTC+8 throughout the supported 2000–2100 range. Some Android
+ * Current Mini Program location contracts admit modern Shanghai, Hong Kong
+ * and Macao dates. All are UTC+8 throughout the supported 2000–2100 range. Some Android
  * WeChat runtimes construct Intl.DateTimeFormat but omit formatToParts, so keep
  * the exact same bounded fallback used by the Mini Program presentation layer.
  */
@@ -46,7 +46,7 @@ function fixedEastEightLocalParts(
   timezone: string,
   required = true,
 ) {
-  const supported = timezone === "Asia/Shanghai" || timezone === "Asia/Hong_Kong";
+  const supported = timezone === "Asia/Shanghai" || timezone === "Asia/Hong_Kong" || timezone === "Asia/Macau";
   const year = date.getUTCFullYear();
   if (!supported || year < 2000 || year > 2100) {
     if (required) throw new Error("zoned_date_intl_unavailable");

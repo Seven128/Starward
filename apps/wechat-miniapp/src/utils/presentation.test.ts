@@ -93,6 +93,7 @@ test("modern supported zones survive an Android runtime without Intl formatToPar
   const serialize = zonedDateWithFormatter(function () { return {}; });
   assert.equal(serialize(new Date("2026-09-11T16:05:00Z"), "Asia/Shanghai"), "2026-09-12");
   assert.equal(serialize(new Date("2026-09-11T16:05:00Z"), "Asia/Hong_Kong"), "2026-09-12");
+  assert.equal(serialize(new Date("2026-09-11T16:05:00Z"), "Asia/Macau"), "2026-09-12");
   assert.throws(() => serialize(new Date("1991-08-31T15:30:00Z"), "Asia/Shanghai"), /intl_unavailable/u);
   assert.throws(() => serialize(new Date(), "Europe/London"), /intl_unavailable/u);
 });

@@ -18,7 +18,8 @@ export function observationContextRecoveryInput(
             wgs84: context.location.wgs84,
             source: context.location.source,
             ...(context.timezone === "Asia/Hong_Kong" ||
-            context.timezone === "Asia/Shanghai"
+            context.timezone === "Asia/Shanghai" ||
+            context.timezone === "Asia/Macau"
               ? { timezoneHint: context.timezone }
               : {}),
           },

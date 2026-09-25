@@ -50,3 +50,13 @@ test("source link explicitly copies the actual official URL, without claiming na
   assert.equal(h.copied(), "https://www.qweather.com/");
   assert.ok(nodes(h.render({ sources: [source()] })).some(node => node.children?.includes("来源链接已复制，可在浏览器中查看。")));
 });
+
+test("compact map credit keeps the legal notice and exact link action", async () => {
+  const h = harness();
+  const tree = h.render({ sources: [source()], compact: true });
+  const button = nodes(tree).find(node => node.type === "SoftButton");
+  assert.equal(button.children[0], "复制来源链接");
+  assert.equal(nodes(tree).find(node => node.type === "Text" && node.props?.selectable)?.children[0], notice);
+  button.props.onClick(); await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(h.copied(), "https://www.qweather.com/");
+});

@@ -13,9 +13,9 @@ test("history timestamps show Beijing calendar rollover and reject unavailable i
   assert.equal(displayBeijingTimestamp("invalid"), "时间暂不可用");
 });
 
-test("modern Shanghai and Hong Kong dates retain protocol semantics", () => {
+test("modern Shanghai, Hong Kong and Macao dates retain protocol semantics", () => {
   const instant = new Date("2026-09-11T16:05:00Z");
-  for (const timezone of ["Asia/Shanghai", "Asia/Hong_Kong"]) {
+  for (const timezone of ["Asia/Shanghai", "Asia/Hong_Kong", "Asia/Macau"]) {
     assert.equal(calendarDateInTimezone(instant, timezone), "2026-09-12");
     assert.equal(clockTimeInTimezone(instant, timezone), "00:05");
   }
@@ -24,5 +24,7 @@ test("modern Shanghai and Hong Kong dates retain protocol semantics", () => {
 test("public share expiry keeps its plan timezone across the UTC day boundary", () => {
   assert.equal(displayZonedShareExpiry("2026-09-06T18:05:00Z", "Asia/Shanghai"),
     "2026-09-07 02:05（Asia/Shanghai）");
+  assert.equal(displayZonedShareExpiry("2026-09-06T18:05:00Z", "Asia/Macau"),
+    "2026-09-07 02:05（Asia/Macau）");
   assert.equal(displayZonedShareExpiry("invalid", "Asia/Shanghai"), "有效期暂不可用");
 });

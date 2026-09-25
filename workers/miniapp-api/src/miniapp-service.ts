@@ -202,6 +202,11 @@ function uniqueSources(sources: readonly SourceSummary[]) {
   return [...new Map(sources.map((source) => [source.id, source])).values()];
 }
 
+function browsingTimezoneSources(context: ObservationContext): readonly SourceSummary[] {
+  return context.location.kind === "MAP_POINT" && context.timezoneSource
+    ? [context.timezoneSource] : [];
+}
+
 function rankSpotsByPreferences(
   spots: readonly SpotSummary[],
   preferences?: SpotRankingPreferences,
@@ -812,7 +817,7 @@ export class MiniappService {
 
   async resolveObservationContext(input: ObservationContextResolveRequest) {
     const context = await this.observationContexts.resolve(input);
-    return envelope(context, "FRESH", [], [], {
+    return envelope(context, "FRESH", browsingTimezoneSources(context), [], {
       validAt: context.selectedAtUtc,
       contextRevision: context.revision,
     });
@@ -820,7 +825,7 @@ export class MiniappService {
 
   async getObservationContext(contextId: string) {
     const context = await this.observationContexts.get(contextId);
-    return envelope(context, "FRESH", [], [], {
+    return envelope(context, "FRESH", browsingTimezoneSources(context), [], {
       validAt: context.selectedAtUtc,
       contextRevision: context.revision,
     });
@@ -834,7 +839,7 @@ export class MiniappService {
     await this.cache.deleteByPrefix(
       "map:" + context.contextFingerprint.slice(0, 16),
     );
-    return envelope(context, "FRESH", [], [], {
+    return envelope(context, "FRESH", browsingTimezoneSources(context), [], {
       validAt: context.selectedAtUtc,
       contextRevision: context.revision,
     });
@@ -1309,6 +1314,7 @@ export class MiniappService {
         activeFilter(filters, group) && byGroup[group].state === "UNAVAILABLE",
     );
     const sources = uniqueSources([
+      ...browsingTimezoneSources(context),
       ...allCandidates.map((spot) => spot.source),
       ...Object.values(reports).flatMap((report) => report.sources),
       ...(layer.source ? [layer.source] : []),
@@ -1686,7 +1692,7 @@ export class MiniappService {
       name: fields.name?.trim() || submission.candidateLocation.displayName,
       region: submission.candidateLocation.region,
       address: fields.address?.trim() || submission.candidateLocation.region,
-      timezone: timezone === "Asia/Hong_Kong" ? "Asia/Hong_Kong" : "Asia/Shanghai",
+      timezone: timezone === "Asia/Hong_Kong" || timezone === "Asia/Macau" ? timezone : "Asia/Shanghai",
       wgs84: { ...point },
       gcj02: { system: "GCJ02", latitude: converted.lat, longitude: converted.lon, derivedFrom: "WGS84", transformVersion: "gcj02-standard-v1" },
       altitudeM: null,

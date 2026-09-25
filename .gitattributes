@@ -21,6 +21,7 @@ Makefile text eol=lf
 workers/miniapp-api/assets/constellations/*.fab text eol=lf
 workers/miniapp-api/assets/constellations/*.ini text eol=lf
 workers/miniapp-api/assets/timezone/hksar_18_district_boundary.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+workers/miniapp-api/assets/timezone/asia-macau-2026d.geojson -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
 tools/miniapp/semantic-art.mjs text eol=lf
 # Preserve exported resources and evidence exactly for their recorded content hashes.
 docs/design-resources/wechat-miniapp/** -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol

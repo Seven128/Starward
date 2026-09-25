@@ -1,8 +1,7 @@
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { ringContainsOrBorders, type Ring } from "./timezone-polygon.ts";
 
-type Point = readonly [longitude: number, latitude: number];
-type Ring = Point[];
 type District = { ring: Ring; west: number; east: number; south: number; north: number };
 
 // The packaged HKSAR district geometry is the location owner for the narrow
@@ -43,30 +42,11 @@ const districts: District[] = (() => {
   });
 })();
 
-function containsOrBorders(ring: Ring, longitude: number, latitude: number) {
-  let inside = false;
-  for (let index = 0, previous = ring.length - 1; index < ring.length; previous = index++) {
-    const [ax, ay] = ring[previous]!;
-    const [bx, by] = ring[index]!;
-    // District borders inside Hong Kong also occur in this publication.
-    // Treat a point on any published district edge as within the union.
-    const cross = (longitude - ax) * (by - ay) - (latitude - ay) * (bx - ax);
-    if (Math.abs(cross) < 1e-12 &&
-      longitude >= Math.min(ax, bx) && longitude <= Math.max(ax, bx) &&
-      latitude >= Math.min(ay, by) && latitude <= Math.max(ay, by))
-      return true;
-    if ((ay > latitude) !== (by > latitude) &&
-      longitude < ((bx - ax) * (latitude - ay)) / (by - ay) + ax)
-      inside = !inside;
-  }
-  return inside;
-}
-
 export function isHongKongDistrictPoint(latitude: number, longitude: number) {
   for (const district of districts) {
     if (longitude < district.west || longitude > district.east ||
       latitude < district.south || latitude > district.north) continue;
-    if (containsOrBorders(district.ring, longitude, latitude)) return true;
+    if (ringContainsOrBorders(district.ring, longitude, latitude)) return true;
   }
   return false;
 }

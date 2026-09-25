@@ -77,6 +77,33 @@ test("Hong Kong and Shenzhen border map points use the location, not the phone z
   } finally { await service.onModuleDestroy(); }
 });
 
+test("Macao map points retain the Macao zone while neighboring Zhuhai remains mainland", async () => {
+  const service = testService();
+  try {
+    for (const [latitude, longitude, expected] of [
+      [22.198, 113.543, "Asia/Macau"], // Macao peninsula
+      [22.156, 113.559, "Asia/Macau"], // Taipa
+      [22.224, 113.549, "Asia/Shanghai"], // Zhuhai Gongbei
+    ] as const) {
+      const resolved = await service.resolveObservationContext({
+        location: { kind: "MAP_POINT", displayName: "澳珠时区测试",
+          wgs84: { system: "WGS84", latitude, longitude }, source: "MAP_VIEWPORT",
+          timezoneHint: "Asia/Shanghai" },
+        localDate: "2026-09-26",
+      });
+      const context = resolved.data;
+      assert.equal(context.timezone, expected, `${latitude},${longitude}`);
+      assert.equal(resolved.sources.some((source) => source.id === "tz-boundary:asia-macau:2026d"),
+        expected === "Asia/Macau");
+      if (expected === "Asia/Macau") {
+        const scene = await service.getMapScene({ contextId: context.contextId, layer: "NORMAL" });
+        assert.ok(scene.sources.some((source) => source.id === "tz-boundary:asia-macau:2026d" &&
+          source.attribution?.statements.some((statement) => statement.includes("ODbL"))));
+      }
+    }
+  } finally { await service.onModuleDestroy(); }
+});
+
 async function user(service: MiniappService, suffix: string) {
   return (
     await service.login({

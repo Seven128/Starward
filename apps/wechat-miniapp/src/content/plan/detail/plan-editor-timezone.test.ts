@@ -3,7 +3,7 @@ import test from "node:test";
 import type { ObservationPlan, SpotId } from "@starward/miniapp-contracts";
 import { planEditorTimezone } from "./plan-editor-timezone";
 
-const spot = (spotId: string, timezone: "Asia/Shanghai" | "Asia/Hong_Kong") => ({ spotId: spotId as SpotId, timezone });
+const spot = (spotId: string, timezone: "Asia/Shanghai" | "Asia/Hong_Kong" | "Asia/Macau") => ({ spotId: spotId as SpotId, timezone });
 const saved = { spotId: "spot:main" as SpotId, contextSnapshot: { timezone: "Asia/Shanghai" } } as ObservationPlan;
 
 test("editing uses the selected destination's timezone for the visible time label and validation", () => {
@@ -31,4 +31,10 @@ test("an unselected new plan and an unrelated context never claim a destination 
 
 test("a matching formal observation context can supply the selected spot timezone while its list is unavailable", () => {
   assert.equal(planEditorTimezone({ editing: true, selectedSpotId: "spot:hk" as SpotId, formalSpots: [], activePlan: null, contextTimezone: "Asia/Hong_Kong", contextSpotId: "spot:hk" as SpotId }), "Asia/Hong_Kong");
+});
+
+test("a Macao formal destination keeps its own zone in the editor", () => {
+  assert.equal(planEditorTimezone({ editing: true, selectedSpotId: "spot:macao" as SpotId,
+    formalSpots: [spot("spot:macao", "Asia/Macau")], activePlan: null,
+    contextTimezone: "Asia/Shanghai", contextSpotId: null }), "Asia/Macau");
 });

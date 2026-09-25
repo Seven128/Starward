@@ -78,7 +78,7 @@ function assertUsableDate(date: Date) {
 }
 
 /**
- * Current Mini Program spot contracts admit Shanghai and Hong Kong. Both have
+ * Current Mini Program spot contracts admit Shanghai, Hong Kong and Macao. All have
  * stayed at UTC+8 throughout the product's supported modern observation range.
  * This path is used only when a phone runtime lacks usable Intl time-zone parts;
  * historical dates and every other IANA zone continue to require Intl.
@@ -88,7 +88,7 @@ function fixedEastEightParts(
   timezone: string,
   required = true,
 ): { date: string; time: string } | null {
-  const supported = timezone === "Asia/Shanghai" || timezone === "Asia/Hong_Kong";
+  const supported = timezone === "Asia/Shanghai" || timezone === "Asia/Hong_Kong" || timezone === "Asia/Macau";
   const year = date.getUTCFullYear();
   if (!supported || year < 2000 || year > 2100) {
     if (required) throw new RangeError("zoned_date_intl_unavailable");

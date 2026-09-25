@@ -630,7 +630,8 @@ export async function restoreObservationContext(
             wgs84: context.routeOrigin.wgs84,
             source: context.routeOrigin.source,
             ...(context.timezone === "Asia/Hong_Kong" ||
-            context.timezone === "Asia/Shanghai"
+            context.timezone === "Asia/Shanghai" ||
+            context.timezone === "Asia/Macau"
               ? { timezoneHint: context.timezone }
               : {}),
           },
