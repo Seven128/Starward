@@ -5,6 +5,7 @@ import type {
   ContributionMediaUpload,
   ContributionSubmission,
   ContributionFormalSubmitRequest,
+  ContributionFormalBaseline,
   ContributionFormalUploadIntent,
   ContributionFormalMediaUpload,
   ContributionUploadId,
@@ -49,6 +50,8 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
   #contributions = new InMemoryContributionStore();
   #formalUploadIntents = new Map<string, { userId: UserId; value: ContributionFormalUploadIntent; objects: Map<ContributionUploadId, { objectKey: string; mimeType: ContributionMediaUpload["mimeType"] }> }>();
   #formalUploadReceipts = new Map<string, ContributionFormalUploadIntent>();
+  #formalBaselines = new Map<SpotId, Map<number, ContributionFormalBaseline>>();
+  #formalCurrentRevisions = new Map<SpotId, number>();
   #formalPendingDeletion = new Set<string>();
   #reminderSchedules = new Map<string, StoredPlanReminderSchedule[]>();
   #avatarObjects = new Map<UserId, { objectKey: string; version: string; mimeType: "image/jpeg" | "image/png" | "image/webp"; zoom: number }>();
@@ -66,6 +69,8 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     this.#contributions.reset();
     this.#formalUploadIntents.clear();
     this.#formalUploadReceipts.clear();
+    this.#formalBaselines.clear();
+    this.#formalCurrentRevisions.clear();
     this.#formalPendingDeletion.clear();
     this.#reminderSchedules.clear();
     this.#avatarObjects.clear();
@@ -113,8 +118,24 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     return spot && detail ? { ...detail, spot } : null;
   }
   async getContributionFormalBaseline(spotId: SpotId) {
+    const revision = this.#formalCurrentRevisions.get(spotId);
+    if (revision !== undefined) return structuredClone(this.#formalBaselines.get(spotId)!.get(revision)!);
     const detail = await this.getDetail(spotId);
-    return detail ? contributionFormalBaseline(detail, 1) : null;
+    if (!detail) return null;
+    const baseline = contributionFormalBaseline(detail, 1);
+    this.#formalBaselines.set(spotId, new Map([[1, baseline]]));
+    this.#formalCurrentRevisions.set(spotId, 1);
+    return structuredClone(baseline);
+  }
+
+  /** Test-only revision transition: preserve the old snapshot as Postgres spot_revisions does. */
+  setFormalBaselineForAcceptance(next: ContributionFormalBaseline) {
+    const previous = this.#formalCurrentRevisions.get(next.spotId);
+    const history = this.#formalBaselines.get(next.spotId);
+    if (previous === undefined || !history || next.revision !== previous + 1)
+      throw new Error("acceptance_formal_baseline_sequence_invalid");
+    history.set(next.revision, structuredClone(next));
+    this.#formalCurrentRevisions.set(next.spotId, next.revision);
   }
 
   async ensureUser(userId: UserId) {
@@ -406,8 +427,9 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
   async submitFormalContribution(userId: UserId, input: ContributionFormalSubmitRequest, idempotencyKey: string) {
     const baseline = await this.getContributionFormalBaseline(input.baseline.spotId);
     if (!baseline) throw new Error("formal_spot_not_found");
-    if (input.baseline.revision !== baseline.revision) throw new Error("contribution_baseline_revision_not_found");
-    assertContributionBaselineMatches(input.baseline, baseline);
+    const historical = this.#formalBaselines.get(input.baseline.spotId)?.get(input.baseline.revision);
+    if (!historical) throw new Error("contribution_baseline_revision_not_found");
+    assertContributionBaselineMatches(input.baseline, historical);
     const existing = input.submissionId ? this.#contributions.get(userId, input.submissionId) : null;
     const existingMedia = existing?.media ?? [];
     const intent = input.uploadIntentId ? this.#formalUploadIntents.get(input.uploadIntentId) : undefined;
@@ -416,10 +438,10 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
       if (intent.value.revision !== input.expectedUploadIntentRevision) throw new Error("formal_upload_intent_revision_conflict");
       if (intent.value.spotId !== input.baseline.spotId || intent.value.baselineRevision !== input.baseline.revision) throw new Error("formal_upload_intent_scope_invalid");
       if (intent.value.uploads.some(value => value.state !== "UPLOADED")) throw new Error("formal_upload_incomplete");
-      const allowed = new Set([...Object.values(baseline.media).flat(), ...existingMedia.map(value => value.uploadId), ...intent.value.uploads.map(value => value.uploadId)]);
+      const allowed = new Set([...Object.values(input.baseline.media).flat(), ...existingMedia.map(value => value.uploadId), ...intent.value.uploads.map(value => value.uploadId)]);
       if (Object.values(input.proposal.media).flatMap(value => value ?? []).some(id => !allowed.has(id as never))) throw new Error("contribution_formal_media_unknown");
     } else if (Object.keys(input.proposal.media).length) {
-      const allowed = new Set([...Object.values(baseline.media).flat(), ...existingMedia.map(value => value.uploadId)]);
+      const allowed = new Set([...Object.values(input.baseline.media).flat(), ...existingMedia.map(value => value.uploadId)]);
       if (Object.values(input.proposal.media).flatMap(value => value ?? []).some(id => !allowed.has(id as never))) throw new Error("formal_upload_intent_required");
     }
     const result = this.#contributions.submitFormal(userId, input, baseline, idempotencyKey, [...existingMedia, ...(intent?.value.uploads ?? [])]);

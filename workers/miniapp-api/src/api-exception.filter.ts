@@ -18,6 +18,8 @@ export function classifyExceptionMessage(message: string) {
     return { status: 400, code: "INVALID_INPUT", retryable: false } as const;
   if (/^(?:contribution_account_deleted|operation_receipt_privacy_erased)$/u.test(message))
     return { status: 410, code: "STALE_REJECTED", retryable: false } as const;
+  if (message === "contribution_formal_changes_obsolete")
+    return { status: 409, code: "CONFLICT", retryable: false, message: "CONTRIBUTION_NO_REMAINING_CHANGES", recovery: ["REFETCH", "REVIEW_CHANGES"] } as const;
   if (message === "account_not_active")
     return { status: 403, code: "PERMISSION_DENIED", retryable: false } as const;
   if (/not_found/u.test(message))

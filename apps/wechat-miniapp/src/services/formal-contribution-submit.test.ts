@@ -94,7 +94,7 @@ test("feedback submit takes a synchronous busy lock until the first request sett
   let submitted = false;
   const notices: { title: string; tone: string }[] = [];
   const submit = vm.runInNewContext(code, {
-    baseline: { revision: 1 }, proposal: { fields: { name: "新地点" } }, hasChanges: true, busy: false, uploading: false, sessionUnconfirmed: false,
+    baseline: { revision: 1 }, proposal: { fields: { name: "新地点" } }, hasChanges: true, noRemainingChanges: false, conflictOutcome: null, busy: false, uploading: false, sessionUnconfirmed: false,
     submitted: false, activeConflicts: [], resolutions: {}, mediaProposal: {}, rightsConfirmed: true,
     uploadIntent: null, activeSubmissionId: "", resubmissionRevision: null,
     MiniappApiError: class extends Error {},
@@ -135,7 +135,7 @@ test("formal photo handoff locks other photos and submit before native selection
   let handoffs = 0;
   let submissions = 0;
   const api = vm.runInNewContext(code, {
-    baseline: { revision: 1, spotId: "spot:test" }, proposal: { fields: { name: "新地点" } }, hasChanges: true,
+    baseline: { revision: 1, spotId: "spot:test" }, proposal: { fields: { name: "新地点" } }, hasChanges: true, noRemainingChanges: false, conflictOutcome: null,
     busy: false, uploading: false, sessionUnconfirmed: false, submitted: false, rightsConfirmed: true, uploadIntent: null,
     mediaBusy: { current: false }, submitBusy: { current: false },
     assertEditorOwner: () => undefined,

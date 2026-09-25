@@ -19,6 +19,7 @@ import {
 import { CustomNav } from "@/components/custom-nav";
 import { FloatingNotificationHost, NotificationRegion } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
+import { SoftButton } from "@/components/soft-button";
 import { SelectionTabs } from "@/components/selection-tabs";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
@@ -31,6 +32,7 @@ import { appendFormalMedia, createFormalMediaSelection, formalMediaProposal, rem
 import { loadAvailableMediaPreviews } from "../contribution/media-preview";
 import { formalFeedbackFrozenView } from "../contribution/formal-feedback-snapshot";
 import { resolveRequestedFormalFeedback, retryFailedFormalResources } from "./formal-feedback-resources";
+import { assessFormalFeedbackConflict } from "./formal-feedback-conflict-state";
 import { confirmEditorLeave } from "@/hooks/editor-leave";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
 import { SpotDocumentFields } from "../spot-document-fields";
@@ -211,13 +213,17 @@ export default function FormalFeedbackEditor() {
     return same ? [] : [{ ...conflict, proposedValue: proposed } as ContributionFormalConflict];
   }), [conflicts, mediaProposal, proposal]);
   const hasChanges = changedKeys.length > 0 || Object.keys(mediaProposal).length > 0;
+  const conflictOutcome = useMemo(() => baseline && currentBaseline && proposal
+    ? assessFormalFeedbackConflict({ baseline, current: currentBaseline, proposal: { ...proposal, media: mediaProposal }, choices: resolutions })
+    : null, [baseline, currentBaseline, proposal, mediaProposal, resolutions]);
+  const noRemainingChanges = Boolean(hasChanges && conflictOutcome?.noRemainingChanges);
   const retryResourceFailures = () => { void retryFailedFormalResources(
     { isError: query.isError, refreshError: query.refreshError, dataState: query.data?.dataState, refetch: () => query.refetch() },
     { isError: history.isError, refreshError: history.refreshError, dataState: history.data?.dataState, refetch: () => history.refetch() },
     { isError: site.isError, refreshError: site.refreshError, dataState: site.data?.dataState, refetch: () => site.refetch() },
   ); };
-  const leaveState = useRef({ busy: busy || uploading, dirty: hasChanges && !submitted });
-  leaveState.current = { busy: busy || uploading, dirty: hasChanges && !submitted };
+  const leaveState = useRef({ busy: busy || uploading, dirty: hasChanges && !noRemainingChanges && !submitted });
+  leaveState.current = { busy: busy || uploading, dirty: hasChanges && !noRemainingChanges && !submitted };
   const confirmLeave = useCallback(() => confirmEditorLeave({
     ...leaveState.current,
     busy: leaveState.current.busy || mediaBusy.current || submitBusy.current,
@@ -229,7 +235,7 @@ export default function FormalFeedbackEditor() {
       cancelText: "继续编辑",
     })).confirm,
   }), []);
-  const nativeLeaveGuard = useNativeEditorLeaveGuard(hasChanges && !submitted && !ownerChanged, "当前反馈尚未提交，确定离开吗？");
+  const nativeLeaveGuard = useNativeEditorLeaveGuard(hasChanges && !noRemainingChanges && !submitted && !ownerChanged, "当前反馈尚未提交，确定离开吗？");
   const assertEditorOwner = () => {
     if (!editorOwner.current || currentDraftUserId() !== editorOwner.current ||
       useAppStore.getState().accountOwnerId !== editorOwner.current)
@@ -335,7 +341,7 @@ export default function FormalFeedbackEditor() {
     }
   };
   const submit = async () => {
-    if (!baseline || !proposal || !hasChanges || busy || submitBusy.current || uploading || mediaBusy.current || sessionUnconfirmed || uploadIntent?.uploads.some(value => value.state === "PENDING") || submitted) return;
+    if (!baseline || !proposal || !hasChanges || noRemainingChanges || busy || submitBusy.current || uploading || mediaBusy.current || sessionUnconfirmed || uploadIntent?.uploads.some(value => value.state === "PENDING") || submitted) return;
     if (activeConflicts.length && activeConflicts.some(conflict => !resolutions[`${conflict.kind}:${conflict.key}`])) {
       notify({ owner: "contribution", placement: "floating", tone: "warning", title: "请先处理资料冲突", body: "每一项冲突都要选择使用当前资料或我的修改。", dismissible: true });
       return;
@@ -344,17 +350,11 @@ export default function FormalFeedbackEditor() {
     setBusy(true);
     try {
       assertEditorOwner();
-      const fieldResolutions: Record<string, ContributionConflictResolution> = {};
-      const mediaResolutions: Record<string, ContributionConflictResolution> = {};
-      for (const [key, value] of Object.entries(resolutions)) {
-        if (!value) continue;
-        (key.startsWith("FIELD:") ? fieldResolutions : mediaResolutions)[key.slice(key.indexOf(":") + 1)] = value;
-      }
       const response = await submitFormalContribution({
         kind: "CORRECTION", baseline, proposal: { ...proposal, media: mediaProposal }, observedAt: null, rightsConfirmed,
         ...(uploadIntent ? { uploadIntentId: uploadIntent.intentId, expectedUploadIntentRevision: uploadIntent.revision } : {}),
         ...(activeSubmissionId && resubmissionRevision ? { submissionId: activeSubmissionId as never, expectedSubmissionRevision: resubmissionRevision } : {}),
-        ...(Object.keys(resolutions).length ? { resolutions: { fields: fieldResolutions, media: mediaResolutions } } : {}),
+        ...(conflictOutcome ? { resolutions: conflictOutcome.resolutions } : {}),
       });
       assertEditorOwner();
       if (response.data.state === "CONFLICT") {
@@ -377,11 +377,12 @@ export default function FormalFeedbackEditor() {
       }
     } catch (error) {
       const rejected = error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408 && !error.retryable;
-      notify({ owner: "contribution", placement: "floating", tone: rejected ? "error" : "warning", title: rejected ? "提交失败" : "提交结果未确认", body: rejected ? `${errorMessage(error)}；本页输入仍保留。` : `${errorMessage(error)}；本页输入仍保留，请原样重试或到“我的”核对待审记录。`, dismissible: true });
+      const obsolete = error instanceof MiniappApiError && error.message === "CONTRIBUTION_NO_REMAINING_CHANGES";
+      notify({ owner: "contribution", placement: "floating", tone: rejected ? "error" : "warning", title: obsolete ? "本次无需提交" : rejected ? "提交失败" : "提交结果未确认", body: obsolete ? "当前正式资料中已没有需要提交的差异；请核对资料后继续修改或返回地图。" : rejected ? `${errorMessage(error)}；本页输入仍保留。` : `${errorMessage(error)}；本页输入仍保留，请原样重试或到“我的”核对待审记录。`, dismissible: true });
     } finally { submitBusy.current = false; setBusy(false); }
   };
 
-  const showSubmit = !ownerChanged && hasEditorContent && !submitted;
+  const showSubmit = !ownerChanged && hasEditorContent && !submitted && !noRemainingChanges;
   return <View className={`${themeClass} formal-feedback-page`} data-route="formal-spot-feedback" data-od-id="formal-feedback-editor">
     {mediaHandoff.warning}
     <FloatingNotificationHost />
@@ -427,6 +428,11 @@ export default function FormalFeedbackEditor() {
               {!hasChanges ? <Text className="formal-feedback-empty">尚未修改任何信息</Text> : null}
             </View>
             {activeConflicts.length ? <View className="formal-feedback-conflicts"><Text className="formal-feedback-section-title">资料冲突</Text><Text className="formal-feedback-empty">正式资料已从版本 {baseline.revision} 更新到版本 {currentBaseline?.revision ?? "—"}，请逐项选择。</Text>{activeConflicts.map(conflict => <Conflict key={`${conflict.kind}:${conflict.key}`} conflict={conflict} value={resolutions[`${conflict.kind}:${conflict.key}`]} onChange={value => setResolutions(current => ({ ...current, [`${conflict.kind}:${conflict.key}`]: value }))} />)}</View> : null}
+            {noRemainingChanges ? <View className="formal-feedback-conflict formal-feedback-no-change" role="status" aria-live="polite">
+              <Text className="formal-feedback-conflict__label">本次无需提交</Text>
+              <Text>当前正式资料中已没有需要提交的差异。可继续修改、选择保留我的修改，或返回地图。</Text>
+              <SoftButton label="返回地图" onClick={() => void Taro.switchTab({ url: "/pages/map/index" })}>返回地图</SoftButton>
+            </View> : null}
             </>}
           />
         </>}

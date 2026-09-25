@@ -50,3 +50,13 @@ test("erased evidence and deleted accounts cannot enter a retry loop", () => {
     assert.deepEqual(classifyExceptionMessage(message), { status: 410, code: "STALE_REJECTED", retryable: false });
   assert.deepEqual(classifyExceptionMessage("account_not_active"), { status: 403, code: "PERMISSION_DENIED", retryable: false });
 });
+
+test("formal feedback with no remaining difference is a terminal conflict, not a provider outage", () => {
+  assert.deepEqual(classifyExceptionMessage("contribution_formal_changes_obsolete"), {
+    status: 409,
+    code: "CONFLICT",
+    retryable: false,
+    message: "CONTRIBUTION_NO_REMAINING_CHANGES",
+    recovery: ["REFETCH", "REVIEW_CHANGES"],
+  });
+});

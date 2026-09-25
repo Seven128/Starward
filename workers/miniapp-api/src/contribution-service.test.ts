@@ -7,6 +7,7 @@ import type {
 } from "@starward/miniapp-contracts";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
+import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts";
 import { MemoryMediaObjectStore } from "./media-object-store.ts";
 import { assertReceiptNotErased, eraseContributionContent } from "./account-data-erasure.ts";
 
@@ -194,6 +195,52 @@ test("formal feedback submits atomically without creating an editable draft", as
     const replay = await service.submitFormalContribution(userId, input, "formal:atomic");
     assert.deepEqual(replay.data, first.data);
     assert.equal(replay.etag, first.etag);
+  } finally { await service.onModuleDestroy(); }
+});
+
+test("formal feedback fixture retains the old baseline and freezes the selected conflict resolution", async () => {
+  const repository = new InMemoryTestRepository();
+  const service = createTestMiniappService({ repository });
+  try {
+    const currentUser = await identity(service, "formal-current-resolution");
+    const proposedUser = await identity(service, "formal-proposed-resolution");
+    const old = (await service.getContributionFormalBaseline(TEST_PUBLISHED_SPOT.spotId)).data;
+    const current = {
+      ...old,
+      revision: old.revision + 1,
+      fields: { ...old.fields, parkingNote: "正式资料已改为东侧停车入口。" },
+    };
+    repository.setFormalBaselineForAcceptance(current);
+    const request = {
+      kind: "CORRECTION" as const,
+      baseline: old,
+      proposal: { fields: { parkingNote: "我建议继续使用原停车入口。", detail: "请补充夜间停车引导。" }, media: {} },
+      observedAt: null,
+      rightsConfirmed: false,
+    };
+    const first = await service.submitFormalContribution(currentUser, request, "formal:conflict:first");
+    assert.equal(first.data.state, "CONFLICT");
+    if (first.data.state !== "CONFLICT") return;
+    assert.equal(first.data.currentBaseline.revision, current.revision);
+    assert.deepEqual(first.data.conflicts.map(item => item.key), ["parkingNote"]);
+    assert.equal((await service.listContributions(currentUser)).data.submissions.length, 0);
+
+    const keptCurrent = await service.submitFormalContribution(currentUser, {
+      ...request, resolutions: { fields: { parkingNote: "CURRENT" } },
+    }, "formal:conflict:current");
+    assert.equal(keptCurrent.data.state, "SUBMITTED");
+    if (keptCurrent.data.state !== "SUBMITTED") return;
+    assert.deepEqual(keptCurrent.data.submission.formalFeedback?.resolvedProposal.fields, { detail: request.proposal.fields.detail });
+    assert.equal(keptCurrent.data.submission.formalFeedback?.resolvedBaseline?.fields.parkingNote, current.fields.parkingNote);
+    assert.equal(keptCurrent.data.submission.formalFeedback?.proposal.fields.parkingNote, request.proposal.fields.parkingNote);
+    assert.equal((await service.listContributions(currentUser)).data.submissions[0]?.formalFeedback?.resolvedBaseline?.revision, current.revision);
+
+    const keptProposed = await service.submitFormalContribution(proposedUser, {
+      ...request, resolutions: { fields: { parkingNote: "PROPOSED" } },
+    }, "formal:conflict:proposed");
+    assert.equal(keptProposed.data.state, "SUBMITTED");
+    if (keptProposed.data.state === "SUBMITTED")
+      assert.equal(keptProposed.data.submission.formalFeedback?.resolvedProposal.fields.parkingNote, request.proposal.fields.parkingNote);
   } finally { await service.onModuleDestroy(); }
 });
 

@@ -12,7 +12,7 @@ test("standalone editors guard both custom and native Back while dirty", () => {
   assert.match(sharedSource, /restoreAfterFailedProgrammaticLeave/u);
   assert.match(contributionSource, /useNativeEditorLeaveGuard\(!embedded && form\.hasUnsavedChanges/u);
   assert.match(contributionSource, /beforeBack=\{confirmLeave\} onBackAuthorized=\{nativeLeaveGuard\.suspendForProgrammaticLeave\} onBackFailure=\{nativeLeaveGuard\.restoreAfterFailedProgrammaticLeave\}/u);
-  assert.match(formalFeedbackSource, /useNativeEditorLeaveGuard\(hasChanges && !submitted && !ownerChanged/u);
+  assert.match(formalFeedbackSource, /useNativeEditorLeaveGuard\(hasChanges && !noRemainingChanges && !submitted && !ownerChanged/u);
   assert.match(formalFeedbackSource, /beforeBack=\{ownerChanged \? undefined : confirmLeave\} onBackAuthorized=\{nativeLeaveGuard\.suspendForProgrammaticLeave\} onBackFailure=\{nativeLeaveGuard\.restoreAfterFailedProgrammaticLeave\}/u);
   assert.match(planSource, /useNativeEditorLeaveGuard\(editing && isDirty/u);
   assert.match(planSource, /beforeBack=\{beforeLeavingEditor\}/u);
