@@ -397,7 +397,7 @@ export default function FormalFeedbackEditor() {
     <ScrollView scrollY scrollIntoView={scrollAnchor} enhanced bounces={false} showScrollbar={false} className="formal-feedback-scroll">
       <View className="formal-feedback-body safe-bottom">
         <NotificationRegion owner="contribution" placement="inline" />
-        {!ownerChanged && (query.refreshError || query.data?.dataState === "STALE_USABLE" ||
+        {!ownerChanged && !query.isError && !history.isError && (query.refreshError || query.data?.dataState === "STALE_USABLE" ||
         history.refreshError || history.data?.dataState === "STALE_USABLE" ||
         site.isError || site.refreshError || site.data?.dataState === "STALE_USABLE") ? (
           <StatusPanel state="STALE" detail="部分正式地点或反馈资料尚未确认最新状态，当前输入仍会保留。"
