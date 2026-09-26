@@ -1,4 +1,5 @@
-import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { mkdir, readdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { crc32, inflateSync } from "node:zlib";
 import type { AccountAvatarMimeType, ContributionMediaUpload } from "@starward/miniapp-contracts";
@@ -303,13 +304,14 @@ export class LocalFilesystemMediaObjectStore implements MediaObjectStorePort {
   async put(input: { objectKey: string; bytes: Uint8Array }) {
     const destination = this.#path(input.objectKey);
     await mkdir(path.dirname(destination), { recursive: true });
-    const temporary = destination + ".pending";
-    await writeFile(temporary, input.bytes, { flag: "wx" });
+    const temporary = destination + `.pending-${randomUUID()}`;
     try {
+      await writeFile(temporary, input.bytes, { flag: "wx" });
       await rename(temporary, destination);
-    } catch (error) {
-      await unlink(temporary).catch(() => undefined);
-      throw error;
+    } finally {
+      await unlink(temporary).catch((error: NodeJS.ErrnoException) => {
+        if (error.code !== "ENOENT") throw error;
+      });
     }
   }
 
@@ -321,7 +323,18 @@ export class LocalFilesystemMediaObjectStore implements MediaObjectStorePort {
   }
 
   async delete(objectKey: string) {
-    await unlink(this.#path(objectKey)).catch((error: NodeJS.ErrnoException) => {
+    // The lifecycle owner retires the upload before cleanup, excluding active writers.
+    const destination = this.#path(objectKey);
+    const directory = path.dirname(destination);
+    const prefix = path.basename(destination) + ".pending";
+    const entries = await readdir(directory).catch((error: NodeJS.ErrnoException) => {
+      if (error.code === "ENOENT") return [];
+      throw error;
+    });
+    const files = [destination, ...entries.filter(name => name === prefix ||
+      (name.startsWith(prefix + "-") && /^[0-9a-f-]{36}$/u.test(name.slice(prefix.length + 1))))
+      .map(name => path.join(directory, name))];
+    for (const file of files) await unlink(file).catch((error: NodeJS.ErrnoException) => {
       if (error.code !== "ENOENT") throw error;
     });
   }

@@ -30,6 +30,7 @@ import { sanitizeContributionImage } from "./media-object-store.ts";
 import type { MediaObjectStorePort, MiniappRepositoryPort } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
 import { isContributionEditable } from "./contribution-attempts.ts";
+import { contributionMediaObjectKey } from "./contribution-media-object.ts";
 
 export class ContributionService {
   constructor(
@@ -185,34 +186,20 @@ export class ContributionService {
     }
     if (upload.state !== "PENDING")
       throw new Error("contribution_upload_not_pending");
-    const extension = upload.mimeType === "image/jpeg" ? "jpg" : "png";
-    const scope = createHash("sha256").update(userId).digest("hex").slice(0, 24);
-    const uploadObjectId = String(upload.uploadId).replace(/^upload:/u, "");
-    if (!/^[a-zA-Z0-9_-]{10,160}$/u.test(uploadObjectId))
-      throw new Error("contribution_upload_object_id_invalid");
-    const objectKey = `contributions/${scope}/${uploadObjectId}.${extension}`;
-    await this.mediaStore.put({
-      objectKey,
-      bytes: sanitized,
-      mimeType: upload.mimeType,
-    });
-    try {
-      return await this.repository.completeContributionUpload(
-        userId,
-        submissionId,
-        uploadId,
-        {
-          byteSize: sanitized.length,
-          sha256,
-          objectKey,
-          uploadedAt: new Date().toISOString(),
-        },
-        idempotencyKey,
-      );
-    } catch (error) {
-      await this.mediaStore.delete(objectKey);
-      throw error;
-    }
+    const objectKey = contributionMediaObjectKey(userId, uploadId, upload.mimeType);
+    return this.repository.completeContributionUpload(
+      userId,
+      submissionId,
+      uploadId,
+      {
+        byteSize: sanitized.length,
+        sha256,
+        objectKey,
+        uploadedAt: new Date().toISOString(),
+      },
+      idempotencyKey,
+      () => this.mediaStore.put({ objectKey, bytes: sanitized, mimeType: upload.mimeType }),
+    );
   }
 
   async submit(
@@ -347,19 +334,15 @@ export class ContributionService {
       if (upload.sha256 !== sha256) throw new Error("contribution_upload_content_conflict");
       return intent;
     }
-    const extension = upload.mimeType === "image/jpeg" ? "jpg" : "png";
-    const scope = createHash("sha256").update(userId).digest("hex").slice(0, 24);
-    const objectKey = `contributions/${scope}/${String(uploadId).replace(/^upload:/u, "")}.${extension}`;
-    await this.mediaStore.put({ objectKey, bytes: sanitized, mimeType: upload.mimeType });
-    try {
-      return await this.repository.completeFormalContributionUpload(userId, intentId, uploadId, { byteSize: sanitized.length, sha256, objectKey, uploadedAt: new Date().toISOString() }, idempotencyKey);
-    } catch (error) { await this.mediaStore.delete(objectKey); throw error; }
+    const objectKey = contributionMediaObjectKey(userId, uploadId, upload.mimeType);
+    return this.repository.completeFormalContributionUpload(userId, intentId, uploadId,
+      { byteSize: sanitized.length, sha256, objectKey, uploadedAt: new Date().toISOString() }, idempotencyKey,
+      () => this.mediaStore.put({ objectKey, bytes: sanitized, mimeType: upload.mimeType }));
   }
 
   async removeFormalUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
-    const object = await this.repository.getContributionUploadObject(uploadId);
     const intent = await this.repository.removeFormalContributionUpload(userId, intentId, uploadId, expectedRevision, idempotencyKey);
-    if (object) await this.mediaStore.delete(object.objectKey);
+    await this.cleanupExpiredUploads();
     return intent;
   }
 

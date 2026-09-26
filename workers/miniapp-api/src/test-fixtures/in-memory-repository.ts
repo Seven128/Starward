@@ -1,3 +1,4 @@
+import { assertContributionUploadContent, contributionMediaObjectKey } from "../contribution-media-object.ts";
 import { randomUUID } from "node:crypto";
 import type {
   AccountDeletionReceipt,
@@ -189,41 +190,49 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
   }
 
   async deleteAccount(userId: UserId, _idempotencyKey: string) {
-    const deletedAt = new Date().toISOString();
-    this.#library.deleteUser(userId);
-    this.#contributions.deleteUser(userId);
-    for (const [intentId, item] of this.#formalUploadIntents) if (item.userId === userId) this.#formalUploadIntents.delete(intentId);
-    for (const key of this.#formalUploadReceipts.keys()) if (key.startsWith(`${userId}|`)) this.#formalUploadReceipts.delete(key);
-    this.#users.delete(userId);
-    this.#deliveryIdentities.delete(userId);
-    this.#reminderSchedules.delete(userId);
-    this.#avatarObjects.delete(userId);
-    for (const [identity, value] of this.#wechatUsers)
-      if (value === userId) this.#wechatUsers.delete(identity);
-    for (const [token, session] of this.#sessions)
-      if (session.userId === userId) this.#sessions.delete(token);
-    return {
-      schemaVersion: "starward-account-deletion-receipt-v1",
-      userId,
-      accountState: "DELETED",
-      deletedAt,
-      sessionsRevoked: true,
-      externalIdentityUnlinked: true,
-      mediaCleanupState: "NOT_REQUIRED",
-      mutableDataDeleted: [
-        "preferences",
-        "favorites",
-        "plans",
-        "notification-schedules",
-        "profile-links",
-        "imports",
-        "media",
-      ],
-      retainedDeidentifiedEvidence: [
-        "moderation-history",
-        "merge-publication-audit",
-      ],
-    } satisfies AccountDeletionReceipt;
+    return this.#withContributionMutation(async () => {
+      const deletedAt = new Date().toISOString();
+      this.#library.deleteUser(userId);
+      let cleanupRequired = this.#contributions.deleteUser(userId);
+      for (const [intentId, item] of this.#formalUploadIntents) if (item.userId === userId) {
+        for (const upload of item.value.uploads) {
+          cleanupRequired ||= upload.state === "PENDING" || item.objects.has(upload.uploadId);
+          this.#queueFormalDeletion(userId, upload, item.objects.get(upload.uploadId));
+        }
+        this.#formalUploadIntents.delete(intentId);
+      }
+      for (const key of this.#formalUploadReceipts.keys()) if (key.startsWith(`${userId}|`)) this.#formalUploadReceipts.delete(key);
+      this.#users.delete(userId);
+      this.#deliveryIdentities.delete(userId);
+      this.#reminderSchedules.delete(userId);
+      this.#avatarObjects.delete(userId);
+      for (const [identity, value] of this.#wechatUsers)
+        if (value === userId) this.#wechatUsers.delete(identity);
+      for (const [token, session] of this.#sessions)
+        if (session.userId === userId) this.#sessions.delete(token);
+      return {
+        schemaVersion: "starward-account-deletion-receipt-v1",
+        userId,
+        accountState: "DELETED",
+        deletedAt,
+        sessionsRevoked: true,
+        externalIdentityUnlinked: true,
+        mediaCleanupState: cleanupRequired ? "QUEUED" : "NOT_REQUIRED",
+        mutableDataDeleted: [
+          "preferences",
+          "favorites",
+          "plans",
+          "notification-schedules",
+          "profile-links",
+          "imports",
+          "media",
+        ],
+        retainedDeidentifiedEvidence: [
+          "moderation-history",
+          "merge-publication-audit",
+        ],
+      } satisfies AccountDeletionReceipt;
+    });
   }
 
   async getAccountProfile(userId: UserId) { return this.#library.getAccountProfile(userId); }
@@ -354,12 +363,14 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     expectedRevision: number | null,
     idempotencyKey: string,
   ) {
-    return this.#contributions.saveDraft(
-      userId,
-      submission,
-      expectedRevision,
-      idempotencyKey,
-    );
+    return this.#withContributionMutation(async () => {
+      return this.#contributions.saveDraft(
+        userId,
+        submission,
+        expectedRevision,
+        idempotencyKey,
+      );
+    });
   }
   async withdrawContributionDraft(
     userId: UserId,
@@ -367,12 +378,14 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     expectedRevision: number,
     idempotencyKey: string,
   ) {
-    return this.#contributions.withdrawDraft(
-      userId,
-      submissionId,
-      expectedRevision,
-      idempotencyKey,
-    );
+    return this.#withContributionMutation(async () => {
+      return this.#contributions.withdrawDraft(
+        userId,
+        submissionId,
+        expectedRevision,
+        idempotencyKey,
+      );
+    });
   }
   async createContributionUpload(
     userId: UserId,
@@ -382,14 +395,16 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     idempotencyKey: string,
     replaceUploadId?: ContributionUploadId,
   ) {
-    return this.#contributions.createUpload(
-      userId,
-      submissionId,
-      upload,
-      expectedRevision,
-      idempotencyKey,
-      replaceUploadId,
-    );
+    return this.#withContributionMutation(async () => {
+      return this.#contributions.createUpload(
+        userId,
+        submissionId,
+        upload,
+        expectedRevision,
+        idempotencyKey,
+        replaceUploadId,
+      );
+    });
   }
   async completeContributionUpload(
     userId: UserId,
@@ -402,14 +417,18 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
       uploadedAt: string;
     },
     idempotencyKey: string,
+    writeObject: () => Promise<void>,
   ) {
-    return this.#contributions.completeUpload(
-      userId,
-      submissionId,
-      uploadId,
-      completion,
-      idempotencyKey,
-    );
+    return this.#withContributionMutation(async () => {
+      return this.#contributions.completeUpload(
+        userId,
+        submissionId,
+        uploadId,
+        completion,
+        idempotencyKey,
+        writeObject,
+      );
+    });
   }
   async submitContribution(
     userId: UserId,
@@ -417,97 +436,172 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
     expectedRevision: number,
     idempotencyKey: string,
   ) {
-    return this.#contributions.submit(
-      userId,
-      submissionId,
-      expectedRevision,
-      idempotencyKey,
-    );
+    return this.#withContributionMutation(async () => {
+      return this.#contributions.submit(
+        userId,
+        submissionId,
+        expectedRevision,
+        idempotencyKey,
+      );
+    });
   }
   async submitFormalContribution(userId: UserId, input: ContributionFormalSubmitRequest, idempotencyKey: string) {
-    const baseline = await this.getContributionFormalBaseline(input.baseline.spotId);
-    if (!baseline) throw new Error("formal_spot_not_found");
-    const historical = this.#formalBaselines.get(input.baseline.spotId)?.get(input.baseline.revision);
-    if (!historical) throw new Error("contribution_baseline_revision_not_found");
-    assertContributionBaselineMatches(input.baseline, historical);
-    const existing = input.submissionId ? this.#contributions.get(userId, input.submissionId) : null;
-    const existingMedia = existing?.media ?? [];
-    const intent = input.uploadIntentId ? this.#formalUploadIntents.get(input.uploadIntentId) : undefined;
-    if (input.uploadIntentId) {
-      if (!intent || intent.userId !== userId) throw new Error("formal_upload_intent_not_found");
-      if (intent.value.revision !== input.expectedUploadIntentRevision) throw new Error("formal_upload_intent_revision_conflict");
-      if (intent.value.spotId !== input.baseline.spotId || intent.value.baselineRevision !== input.baseline.revision) throw new Error("formal_upload_intent_scope_invalid");
-      if (intent.value.uploads.some(value => value.state !== "UPLOADED")) throw new Error("formal_upload_incomplete");
-      const allowed = new Set([...Object.values(input.baseline.media).flat(), ...existingMedia.map(value => value.uploadId), ...intent.value.uploads.map(value => value.uploadId)]);
-      if (Object.values(input.proposal.media).flatMap(value => value ?? []).some(id => !allowed.has(id as never))) throw new Error("contribution_formal_media_unknown");
-    } else if (Object.keys(input.proposal.media).length) {
-      const allowed = new Set([...Object.values(input.baseline.media).flat(), ...existingMedia.map(value => value.uploadId)]);
-      if (Object.values(input.proposal.media).flatMap(value => value ?? []).some(id => !allowed.has(id as never))) throw new Error("formal_upload_intent_required");
-    }
-    const result = this.#contributions.submitFormal(userId, input, baseline, idempotencyKey, [...existingMedia, ...(intent?.value.uploads ?? [])]);
-    if (result.state === "SUBMITTED" && intent) intent.value = { ...intent.value, uploads: intent.value.uploads.map(value => ({ ...value, state: "ATTACHED" as const })), revision: intent.value.revision + 1 };
-    return result;
+    return this.#withContributionMutation(async () => {
+      const baseline = await this.getContributionFormalBaseline(input.baseline.spotId);
+      if (!baseline) throw new Error("formal_spot_not_found");
+      const historical = this.#formalBaselines.get(input.baseline.spotId)?.get(input.baseline.revision);
+      if (!historical) throw new Error("contribution_baseline_revision_not_found");
+      assertContributionBaselineMatches(input.baseline, historical);
+      const existing = input.submissionId ? this.#contributions.get(userId, input.submissionId) : null;
+      const existingMedia = existing?.media ?? [];
+      const intent = input.uploadIntentId ? this.#formalUploadIntents.get(input.uploadIntentId) : undefined;
+      if (input.uploadIntentId) {
+        if (!intent || intent.userId !== userId) throw new Error("formal_upload_intent_not_found");
+        if (intent.value.revision !== input.expectedUploadIntentRevision) throw new Error("formal_upload_intent_revision_conflict");
+        if (intent.value.spotId !== input.baseline.spotId || intent.value.baselineRevision !== input.baseline.revision) throw new Error("formal_upload_intent_scope_invalid");
+        if (intent.value.uploads.some(value => value.state !== "UPLOADED")) throw new Error("formal_upload_incomplete");
+        const allowed = new Set([...Object.values(input.baseline.media).flat(), ...existingMedia.map(value => value.uploadId), ...intent.value.uploads.map(value => value.uploadId)]);
+        if (Object.values(input.proposal.media).flatMap(value => value ?? []).some(id => !allowed.has(id as never))) throw new Error("contribution_formal_media_unknown");
+      } else if (Object.keys(input.proposal.media).length) {
+        const allowed = new Set([...Object.values(input.baseline.media).flat(), ...existingMedia.map(value => value.uploadId)]);
+        if (Object.values(input.proposal.media).flatMap(value => value ?? []).some(id => !allowed.has(id as never))) throw new Error("formal_upload_intent_required");
+      }
+      const result = this.#contributions.submitFormal(userId, input, baseline, idempotencyKey, [...existingMedia, ...(intent?.value.uploads ?? [])]);
+      if (result.state === "SUBMITTED" && intent) {
+        const acceptedIds = new Set(result.submission.media.map(upload => upload.uploadId));
+        intent.value = {
+          ...intent.value, uploads: intent.value.uploads.map(upload => {
+            if (acceptedIds.has(upload.uploadId)) return { ...upload, state: "ATTACHED" as const };
+            this.#queueFormalDeletion(userId, upload, intent.objects.get(upload.uploadId));
+            intent.objects.delete(upload.uploadId);
+            return { ...upload, state: "EXPIRED" as const };
+          }), revision: intent.value.revision + 1
+        };
+      }
+      return result;
+    });
   }
   async saveFormalUploadIntent(userId: UserId, intent: ContributionFormalUploadIntent, idempotencyKey: string) {
-    const key = `${userId}|${idempotencyKey}`; const replay = this.#formalUploadReceipts.get(key); if (replay) return structuredClone(replay);
-    this.#formalUploadIntents.set(intent.intentId, { userId, value: structuredClone(intent), objects: new Map() }); this.#formalUploadReceipts.set(key, structuredClone(intent)); return structuredClone(intent);
+    return this.#withContributionMutation(async () => {
+      const key = `${userId}|${idempotencyKey}`; const replay = this.#formalUploadReceipts.get(key); if (replay) return structuredClone(replay);
+      this.#formalUploadIntents.set(intent.intentId, { userId, value: structuredClone(intent), objects: new Map() }); this.#formalUploadReceipts.set(key, structuredClone(intent)); return structuredClone(intent);
+    });
   }
   async getFormalUploadIntent(userId: UserId, intentId: string) { const item=this.#formalUploadIntents.get(intentId); return item?.userId===userId ? structuredClone(item.value) : null; }
   async createFormalContributionUpload(userId: UserId, intentId: string, upload: ContributionFormalMediaUpload, expectedRevision: number, idempotencyKey: string) {
-    const key=`${userId}|${idempotencyKey}`; const replay=this.#formalUploadReceipts.get(key); if(replay)return structuredClone(replay);
-    const item=this.#formalUploadIntents.get(intentId); if(!item||item.userId!==userId)throw new Error("formal_upload_intent_not_found"); if(item.value.revision!==expectedRevision)throw new Error("formal_upload_intent_revision_conflict"); if(Date.parse(item.value.expiresAt)<=Date.now())throw new Error("formal_upload_intent_expired"); if(item.value.uploads.length>=9)throw new Error("contribution_media_count_invalid");
-    item.value={...item.value,uploads:[...item.value.uploads,structuredClone(upload)],revision:item.value.revision+1}; this.#formalUploadReceipts.set(key,structuredClone(item.value)); return structuredClone(item.value);
+    return this.#withContributionMutation(async () => {
+      const key = `${userId}|${idempotencyKey}`; const replay = this.#formalUploadReceipts.get(key); if (replay) return structuredClone(replay);
+      const item = this.#formalUploadIntents.get(intentId); if (!item || item.userId !== userId) throw new Error("formal_upload_intent_not_found"); if (item.value.revision !== expectedRevision) throw new Error("formal_upload_intent_revision_conflict"); if (Date.parse(item.value.expiresAt) <= Date.now()) throw new Error("formal_upload_intent_expired"); if (item.value.uploads.length >= 9) throw new Error("contribution_media_count_invalid");
+      item.value = { ...item.value, uploads: [...item.value.uploads, structuredClone(upload)], revision: item.value.revision + 1 }; this.#formalUploadReceipts.set(key, structuredClone(item.value)); return structuredClone(item.value);
+    });
   }
-  async completeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, completion: { byteSize: number; sha256: string; objectKey: string; uploadedAt: string }, idempotencyKey: string) {
-    const key=`${userId}|${idempotencyKey}`; const replay=this.#formalUploadReceipts.get(key); if(replay)return structuredClone(replay);
-    const item=this.#formalUploadIntents.get(intentId); if(!item||item.userId!==userId)throw new Error("formal_upload_intent_not_found"); const upload=item.value.uploads.find(value=>value.uploadId===uploadId); if(!upload)throw new Error("contribution_upload_not_found"); if(upload.state!=="PENDING")throw new Error("contribution_upload_not_pending");
-    item.value={...item.value,uploads:item.value.uploads.map(value=>value.uploadId===uploadId?{...value,state:"UPLOADED" as const,byteSize:completion.byteSize,sha256:completion.sha256,uploadedAt:completion.uploadedAt}:value),revision:item.value.revision+1}; item.objects.set(uploadId,{objectKey:completion.objectKey,mimeType:upload.mimeType}); this.#formalUploadReceipts.set(key,structuredClone(item.value)); return structuredClone(item.value);
+  async completeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, completion: { byteSize: number; sha256: string; objectKey: string; uploadedAt: string }, idempotencyKey: string, writeObject: () => Promise<void>) {
+    return this.#withContributionMutation(async () => {
+      const key = `${userId}|${idempotencyKey}`;
+      const item = this.#formalUploadIntents.get(intentId);
+      if (!item || item.userId !== userId) throw new Error("formal_upload_intent_not_found");
+      const upload = item.value.uploads.find(value => value.uploadId === uploadId);
+      if (!upload) throw new Error("contribution_upload_not_found");
+      const replay = this.#formalUploadReceipts.get(key);
+      if (replay) {
+        assertContributionUploadContent(replay.uploads.find(value => value.uploadId === uploadId), completion.sha256);
+        return structuredClone(replay);
+      }
+      if (["UPLOADED", "ATTACHED"].includes(upload.state)) {
+        assertContributionUploadContent(upload, completion.sha256);
+        return structuredClone(item.value);
+      }
+      if (upload.state !== "PENDING") throw new Error("contribution_upload_not_pending");
+      if (Date.parse(item.value.expiresAt) <= Date.now()) throw new Error("formal_upload_intent_expired");
+      if (completion.objectKey !== contributionMediaObjectKey(userId, uploadId, upload.mimeType)) throw new Error("contribution_upload_object_key_invalid");
+      await writeObject();
+      item.value = { ...item.value, uploads: item.value.uploads.map(value => value.uploadId === uploadId ? { ...value, state: "UPLOADED" as const, byteSize: completion.byteSize, sha256: completion.sha256, uploadedAt: completion.uploadedAt } : value), revision: item.value.revision + 1 };
+      item.objects.set(uploadId, { objectKey: completion.objectKey, mimeType: upload.mimeType });
+      this.#formalUploadReceipts.set(key, structuredClone(item.value));
+      return structuredClone(item.value);
+    });
   }
   async removeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
-    const key=`${userId}|${idempotencyKey}`; const replay=this.#formalUploadReceipts.get(key); if(replay)return structuredClone(replay); const item=this.#formalUploadIntents.get(intentId); if(!item||item.userId!==userId)throw new Error("formal_upload_intent_not_found"); if(item.value.revision!==expectedRevision)throw new Error("formal_upload_intent_revision_conflict"); if(!item.value.uploads.some(value=>value.uploadId===uploadId))throw new Error("contribution_upload_not_found"); item.value={...item.value,uploads:item.value.uploads.filter(value=>value.uploadId!==uploadId),revision:item.value.revision+1}; item.objects.delete(uploadId); this.#formalUploadReceipts.set(key,structuredClone(item.value)); return structuredClone(item.value);
+    return this.#withContributionMutation(async () => {
+      const key = `${userId}|${idempotencyKey}`;
+      const replay = this.#formalUploadReceipts.get(key);
+      if (replay) return structuredClone(replay);
+      const item = this.#formalUploadIntents.get(intentId);
+      if (!item || item.userId !== userId) throw new Error("formal_upload_intent_not_found");
+      if (item.value.revision !== expectedRevision) throw new Error("formal_upload_intent_revision_conflict");
+      const upload = item.value.uploads.find(value => value.uploadId === uploadId);
+      if (!upload) throw new Error("contribution_upload_not_found");
+      if (upload.state === "ATTACHED") throw new Error("contribution_upload_not_editable");
+      this.#queueFormalDeletion(userId, upload, item.objects.get(uploadId));
+      item.value = { ...item.value, uploads: item.value.uploads.filter(value => value.uploadId !== uploadId), revision: item.value.revision + 1 };
+      item.objects.delete(uploadId);
+      this.#formalUploadReceipts.set(key, structuredClone(item.value));
+      return structuredClone(item.value);
+    });
   }
   async expireContributionUploads(now: string) {
-    const objectKeys = new Set(await this.#contributions.expireUploads(now));
-    for (const item of this.#formalUploadIntents.values()) {
-      if (Date.parse(item.value.expiresAt) > Date.parse(now)) continue;
-      const expired = item.value.uploads
-        .filter(upload => upload.state === "PENDING" || upload.state === "UPLOADED")
-        .map(upload => upload.uploadId);
-      if (!expired.length) continue;
-      const expiredIds = new Set(expired);
-      item.value = {
-        ...item.value,
-        uploads: item.value.uploads.map(upload =>
-          expiredIds.has(upload.uploadId) ? { ...upload, state: "EXPIRED" as const } : upload),
-        revision: item.value.revision + 1,
-      };
-      for (const uploadId of expired) {
-        const object = item.objects.get(uploadId);
-        if (object) this.#formalPendingDeletion.add(object.objectKey);
-      }
-    }
-    for (const key of this.#formalPendingDeletion) objectKeys.add(key);
-    return [...objectKeys];
-  }
-  async removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
-    return this.#contributions.removeUpload(userId, submissionId, uploadId, expectedRevision, idempotencyKey);
-  }
-  async acknowledgeContributionMediaDeletion(objectKeys: readonly string[]) {
-    this.#contributions.acknowledgeMediaDeletion(objectKeys);
-    for (const key of objectKeys) {
-      this.#formalPendingDeletion.delete(key);
+    return this.#withContributionMutation(async () => {
+      const objectKeys = new Set(await this.#contributions.expireUploads(now));
       for (const item of this.#formalUploadIntents.values()) {
-        for (const [uploadId, object] of item.objects) {
-          if (object.objectKey === key) item.objects.delete(uploadId);
+        if (Date.parse(item.value.expiresAt) > Date.parse(now)) continue;
+        const expired = item.value.uploads
+          .filter(upload => upload.state === "PENDING" || upload.state === "UPLOADED")
+          .map(upload => upload.uploadId);
+        if (!expired.length) continue;
+        for (const upload of item.value.uploads) if (expired.includes(upload.uploadId))
+          this.#queueFormalDeletion(item.userId, upload, item.objects.get(upload.uploadId));
+        const expiredIds = new Set(expired);
+        item.value = {
+          ...item.value,
+          uploads: item.value.uploads.map(upload =>
+            expiredIds.has(upload.uploadId) ? { ...upload, state: "EXPIRED" as const } : upload),
+          revision: item.value.revision + 1,
+        };
+        for (const uploadId of expired) {
+          const object = item.objects.get(uploadId);
+          if (object) this.#formalPendingDeletion.add(object.objectKey);
         }
       }
-    }
+      for (const key of this.#formalPendingDeletion) objectKeys.add(key);
+      return [...objectKeys];
+    });
+  }
+  async removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
+    return this.#withContributionMutation(async () => {
+      return this.#contributions.removeUpload(userId, submissionId, uploadId, expectedRevision, idempotencyKey);
+    });
+  }
+  async acknowledgeContributionMediaDeletion(objectKeys: readonly string[]) {
+    return this.#withContributionMutation(async () => {
+      this.#contributions.acknowledgeMediaDeletion(objectKeys);
+      for (const key of objectKeys) {
+        this.#formalPendingDeletion.delete(key);
+        for (const item of this.#formalUploadIntents.values()) {
+          for (const [uploadId, object] of item.objects) {
+            if (object.objectKey === key) item.objects.delete(uploadId);
+          }
+        }
+      }
+    });
   }
   async getContributionUploadObject(uploadId: ContributionUploadId) {
     const legacy = this.#contributions.getUploadObject(uploadId);
     if (legacy) return legacy;
     for (const item of this.#formalUploadIntents.values()) { const object=item.objects.get(uploadId); if(object)return structuredClone(object); }
     return null;
+  }
+
+  #queueFormalDeletion(userId: UserId, upload: ContributionMediaUpload, object?: { objectKey: string }) {
+    if (object) this.#formalPendingDeletion.add(object.objectKey);
+    else if (upload.state === "PENDING") this.#formalPendingDeletion.add(contributionMediaObjectKey(userId, upload.uploadId, upload.mimeType));
+  }
+
+  // Fixture serialization mirrors transaction exclusion, not PostgreSQL throughput.
+  #contributionMutation: Promise<unknown> = Promise.resolve();
+  #withContributionMutation<T>(operation: () => Promise<T>): Promise<T> {
+    const result = this.#contributionMutation.then(operation);
+    this.#contributionMutation = result.catch(() => undefined);
+    return result;
   }
 
   async operationsSnapshot() {

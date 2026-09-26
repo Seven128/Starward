@@ -1,5 +1,6 @@
 import type { AccountProfileRecord } from "@starward/miniapp-contracts";
 import { createHash, randomUUID } from "node:crypto";
+import { assertContributionUploadContent, contributionMediaObjectKey } from "./contribution-media-object.ts";
 import { assertContributionBaselineMatches, assertContributionSubmittable, assertContributionUploadFits } from "./contribution-validation.ts";
 import {
   appendContributionAttempt,
@@ -803,6 +804,12 @@ export class PostgresMiniappRepository
       if (user.rows[0].state !== "ACTIVE")
         throw new Error("account_not_active");
 
+      const submissions = await client.query<{ payload: ContributionSubmission }>(
+        "SELECT payload FROM user_submissions WHERE user_id=$1 ORDER BY submission_id FOR UPDATE", [userId]);
+      for (const row of submissions.rows) await this.#registerPendingMediaKeys(client,userId,row.payload.media,"contribution_media_uploads");
+      const intents = await client.query<{ payload: ContributionFormalUploadIntent }>(
+        "SELECT payload FROM formal_feedback_upload_intents WHERE user_id=$1 ORDER BY intent_id FOR UPDATE", [userId]);
+      for (const row of intents.rows) await this.#registerPendingMediaKeys(client,userId,row.payload.uploads,"formal_feedback_media_uploads");
       const media = await client.query<{ object_key: string | null }>(
         `SELECT object_key FROM contribution_media_uploads
           WHERE user_id = $1 AND object_key IS NOT NULL
@@ -1517,6 +1524,7 @@ export class PostgresMiniappRepository
 
   async saveFormalUploadIntent(userId: UserId, intent: ContributionFormalUploadIntent, idempotencyKey: string) {
     return this.#transaction(async client => {
+      await this.#lockContributionOwner(client, userId);
       const replay=await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey); if(replay)return clone(replay);
       await client.query(`INSERT INTO formal_feedback_upload_intents(intent_id,user_id,spot_id,baseline_revision,revision,payload,expires_at,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,[intent.intentId,userId,intent.spotId,intent.baselineRevision,intent.revision,intent,intent.expiresAt,intent.createdAt]);
       await this.#recordMutation(client,{idempotencyKey,operation:"formal-upload-intent.create",response:intent,eventType:"FormalUploadIntentCreated",scopeId:userId,payload:{userId,intentId:intent.intentId,spotId:intent.spotId}}); return clone(intent);
@@ -1525,31 +1533,66 @@ export class PostgresMiniappRepository
 
   async createFormalContributionUpload(userId: UserId, intentId: string, upload: ContributionFormalMediaUpload, expectedRevision: number, idempotencyKey: string) {
     return this.#transaction(async client => {
+      await this.#lockContributionOwner(client, userId);
       const replay=await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey); if(replay)return clone(replay);
       const result=await client.query<{revision:number;payload:ContributionFormalUploadIntent;expires_at:string}>("SELECT revision,payload,expires_at FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE",[intentId,userId]); const row=result.rows[0];
       if(!row)throw new Error("formal_upload_intent_not_found"); if(row.revision!==expectedRevision)throw new Error("formal_upload_intent_revision_conflict"); if(Date.parse(row.expires_at)<=Date.now())throw new Error("formal_upload_intent_expired"); if(row.payload.uploads.length>=9)throw new Error("contribution_media_count_invalid");
       const next={...row.payload,uploads:[...row.payload.uploads,clone(upload)],revision:row.revision+1};
-      await client.query("INSERT INTO formal_feedback_media_uploads(upload_id,intent_id,user_id,state,mime_type,payload,expires_at) VALUES($1,$2,$3,'PENDING',$4,$5,$6)",[upload.uploadId,intentId,userId,upload.mimeType,upload,upload.expiresAt]);
+      await client.query("INSERT INTO formal_feedback_media_uploads(upload_id,intent_id,user_id,state,mime_type,payload,expires_at,object_key) VALUES($1,$2,$3,'PENDING',$4,$5,$6,$7)",[upload.uploadId,intentId,userId,upload.mimeType,upload,upload.expiresAt,contributionMediaObjectKey(userId,upload.uploadId,upload.mimeType)]);
       await client.query("UPDATE formal_feedback_upload_intents SET revision=$3,payload=$4 WHERE intent_id=$1 AND user_id=$2",[intentId,userId,next.revision,next]);
       await this.#recordMutation(client,{idempotencyKey,operation:"formal-upload.create",response:next,eventType:"FormalUploadCreated",scopeId:userId,payload:{userId,intentId,uploadId:upload.uploadId}}); return clone(next);
     });
   }
 
-  async completeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, completion: { byteSize: number; sha256: string; objectKey: string; uploadedAt: string }, idempotencyKey: string) {
+  async completeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, completion: { byteSize: number; sha256: string; objectKey: string; uploadedAt: string }, idempotencyKey: string, writeObject: () => Promise<void>) {
     return this.#transaction(async client => {
-      const replay=await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey); if(replay)return clone(replay);
-      const result=await client.query<{revision:number;payload:ContributionFormalUploadIntent}>("SELECT revision,payload FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE",[intentId,userId]); const row=result.rows[0]; if(!row)throw new Error("formal_upload_intent_not_found");
-      const target=row.payload.uploads.find(value=>value.uploadId===uploadId); if(!target)throw new Error("contribution_upload_not_found"); if(target.state!=="PENDING")throw new Error("contribution_upload_not_pending");
-      const uploads=row.payload.uploads.map(value=>value.uploadId===uploadId?{...value,state:"UPLOADED" as const,byteSize:completion.byteSize,sha256:completion.sha256,uploadedAt:completion.uploadedAt}:value); const next={...row.payload,uploads,revision:row.revision+1};
-      await client.query("UPDATE formal_feedback_media_uploads SET state='UPLOADED',object_key=$4,payload=$5 WHERE upload_id=$1 AND intent_id=$2 AND user_id=$3",[uploadId,intentId,userId,completion.objectKey,uploads.find(value=>value.uploadId===uploadId)]);
-      await client.query("UPDATE formal_feedback_upload_intents SET revision=$3,payload=$4 WHERE intent_id=$1 AND user_id=$2",[intentId,userId,next.revision,next]);
-      await this.#recordMutation(client,{idempotencyKey,operation:"formal-upload.complete",response:next,eventType:"FormalUploadCompleted",scopeId:userId,payload:{userId,intentId,uploadId}}); return clone(next);
+      await this.#lockContributionOwner(client, userId);
+      const result = await client.query<{ revision: number; payload: ContributionFormalUploadIntent }>(
+        "SELECT revision,payload FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE", [intentId,userId]);
+      const row = result.rows[0];
+      if (!row) throw new Error("formal_upload_intent_not_found");
+      const target = row.payload.uploads.find(value => value.uploadId === uploadId);
+      if (!target) throw new Error("contribution_upload_not_found");
+      const replay = await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey);
+      if (replay) { assertContributionUploadContent(replay.uploads.find(value => value.uploadId === uploadId), completion.sha256); return clone(replay); }
+      if (target.state === "UPLOADED" || target.state === "ATTACHED") {
+        assertContributionUploadContent(target, completion.sha256); return clone(row.payload);
+      }
+      if (target.state !== "PENDING") throw new Error("contribution_upload_not_pending");
+      if (Date.parse(row.payload.expiresAt) <= Date.now()) throw new Error("formal_upload_intent_expired");
+      if (completion.objectKey !== contributionMediaObjectKey(userId, uploadId, target.mimeType)) throw new Error("contribution_upload_object_id_invalid");
+      // The parent lock also excludes removal/expiry. Only the winning pending
+      // completion writes this object's bytes; errors do not establish rollback.
+      await writeObject();
+      const uploads = row.payload.uploads.map(value => value.uploadId === uploadId ? { ...value, state: "UPLOADED" as const, byteSize: completion.byteSize, sha256: completion.sha256, uploadedAt: completion.uploadedAt } : value);
+      const next = { ...row.payload, uploads, revision: row.revision + 1 };
+      await client.query("UPDATE formal_feedback_media_uploads SET state='UPLOADED',object_key=$4,payload=$5 WHERE upload_id=$1 AND intent_id=$2 AND user_id=$3", [uploadId,intentId,userId,completion.objectKey,uploads.find(value=>value.uploadId===uploadId)]);
+      await client.query("UPDATE formal_feedback_upload_intents SET revision=$3,payload=$4 WHERE intent_id=$1 AND user_id=$2", [intentId,userId,next.revision,next]);
+      await this.#recordMutation(client,{idempotencyKey,operation:"formal-upload.complete",response:next,eventType:"FormalUploadCompleted",scopeId:userId,payload:{userId,intentId,uploadId}});
+      return clone(next);
     });
   }
 
   async removeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
     return this.#transaction(async client => {
-      const replay=await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey); if(replay)return clone(replay); const result=await client.query<{revision:number;payload:ContributionFormalUploadIntent}>("SELECT revision,payload FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE",[intentId,userId]); const row=result.rows[0]; if(!row)throw new Error("formal_upload_intent_not_found"); if(row.revision!==expectedRevision)throw new Error("formal_upload_intent_revision_conflict"); if(!row.payload.uploads.some(value=>value.uploadId===uploadId))throw new Error("contribution_upload_not_found"); const next={...row.payload,uploads:row.payload.uploads.filter(value=>value.uploadId!==uploadId),revision:row.revision+1}; await client.query("DELETE FROM formal_feedback_media_uploads WHERE upload_id=$1 AND intent_id=$2 AND user_id=$3",[uploadId,intentId,userId]); await client.query("UPDATE formal_feedback_upload_intents SET revision=$3,payload=$4 WHERE intent_id=$1 AND user_id=$2",[intentId,userId,next.revision,next]); await this.#recordMutation(client,{idempotencyKey,operation:"formal-upload.remove",response:next,eventType:"FormalUploadRemoved",scopeId:userId,payload:{userId,intentId,uploadId}}); return clone(next);
+      await this.#lockContributionOwner(client, userId);
+      const replay = await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey);
+      if (replay) return clone(replay);
+      const result = await client.query<{ revision: number; payload: ContributionFormalUploadIntent }>(
+        "SELECT revision,payload FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE", [intentId,userId]);
+      const row = result.rows[0];
+      if (!row) throw new Error("formal_upload_intent_not_found");
+      if (row.revision !== expectedRevision) throw new Error("formal_upload_intent_revision_conflict");
+      const upload = row.payload.uploads.find(value => value.uploadId === uploadId);
+      if (!upload) throw new Error("contribution_upload_not_found");
+      await this.#registerPendingMediaKeys(client,userId,[upload],"formal_feedback_media_uploads");
+      const next = { ...row.payload, uploads: row.payload.uploads.filter(value => value.uploadId !== uploadId), revision: row.revision+1 };
+      // Keep the cleanup anchor until object deletion is acknowledged, including
+      // a pending upload whose write succeeded but transaction rolled back.
+      await client.query("UPDATE formal_feedback_media_uploads SET state='EXPIRED',payload=payload||jsonb_build_object('state','EXPIRED') WHERE upload_id=$1 AND intent_id=$2 AND user_id=$3", [uploadId,intentId,userId]);
+      await client.query("UPDATE formal_feedback_upload_intents SET revision=$3,payload=$4 WHERE intent_id=$1 AND user_id=$2", [intentId,userId,next.revision,next]);
+      await this.#recordMutation(client,{idempotencyKey,operation:"formal-upload.remove",response:next,eventType:"FormalUploadRemoved",scopeId:userId,payload:{userId,intentId,uploadId}});
+      return clone(next);
     });
   }
 
@@ -1560,6 +1603,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
+      await this.#lockContributionOwner(client, userId);
       const replay = await this.#replay<ContributionSubmission>(
         client,
         userId,
@@ -1652,6 +1696,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
+      await this.#lockContributionOwner(client, userId);
       const replay = await this.#replay<ContributionSubmission>(client, userId, idempotencyKey);
       if (replay) return clone(replay);
       const result = await client.query<{
@@ -1671,6 +1716,7 @@ export class PostgresMiniappRepository
       if (current.revision !== expectedRevision)
         throw new Error("contribution_revision_conflict");
       const normalized = normalizeContributionSubmission(current.payload);
+      await this.#registerPendingMediaKeys(client,userId,normalized.media,"contribution_media_uploads");
       const now = new Date().toISOString();
       const next: ContributionSubmission = {
         ...normalized,
@@ -1735,6 +1781,7 @@ export class PostgresMiniappRepository
     replaceUploadId?: ContributionUploadId,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
+      await this.#lockContributionOwner(client, userId);
       const replay = await this.#replay<ContributionSubmission>(
         client,
         userId,
@@ -1778,8 +1825,8 @@ export class PostgresMiniappRepository
       await client.query(
         `INSERT INTO contribution_media_uploads(
            upload_id, submission_id, user_id, state, mime_type, original_name,
-           declared_byte_size, expires_at, payload
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+           declared_byte_size, expires_at, payload, object_key
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
         [
           upload.uploadId,
           submissionId,
@@ -1790,6 +1837,7 @@ export class PostgresMiniappRepository
           upload.declaredByteSize,
           upload.expiresAt,
           upload,
+          contributionMediaObjectKey(userId, upload.uploadId, upload.mimeType),
         ],
       );
       await client.query(
@@ -1839,14 +1887,10 @@ export class PostgresMiniappRepository
       uploadedAt: string;
     },
     idempotencyKey: string,
+    writeObject: () => Promise<void>,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      const replay = await this.#replay<ContributionSubmission>(
-        client,
-        userId,
-        idempotencyKey,
-      );
-      if (replay) return clone(replay);
+      await this.#lockContributionOwner(client, userId);
       const submissionResult = await client.query<{
         user_id: string;
         revision: number;
@@ -1873,8 +1917,17 @@ export class PostgresMiniappRepository
       );
       if (!uploadResult.rows[0])
         throw new Error("contribution_upload_not_found");
-      if (uploadResult.rows[0].state !== "PENDING")
-        throw new Error("contribution_upload_not_pending");
+      const upload = current.payload.media.find(item => item.uploadId === uploadId);
+      if (!upload) throw new Error("contribution_upload_not_found");
+      const replay = await this.#replay<ContributionSubmission>(client, userId, idempotencyKey);
+      if (replay) { assertContributionUploadContent(replay.media.find(item => item.uploadId === uploadId), completion.sha256); return clone(replay); }
+      if (upload.state === "UPLOADED" || upload.state === "ATTACHED") {
+        assertContributionUploadContent(upload, completion.sha256); return clone(current.payload);
+      }
+      if (uploadResult.rows[0].state !== "PENDING") throw new Error("contribution_upload_not_pending");
+      if (Date.parse(upload.expiresAt) <= Date.now()) throw new Error("contribution_upload_expired");
+      if (completion.objectKey !== contributionMediaObjectKey(userId, uploadId, upload.mimeType)) throw new Error("contribution_upload_object_id_invalid");
+      await writeObject();
       const media = normalizeContributionSubmission(current.payload).media.map((item) =>
         item.uploadId === uploadId
           ? {
@@ -1960,6 +2013,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
+      await this.#lockContributionOwner(client, userId);
       const replay = await this.#replay<ContributionSubmission>(
         client,
         userId,
@@ -1984,12 +2038,13 @@ export class PostgresMiniappRepository
       if (current.revision !== expectedRevision)
         throw new Error("contribution_revision_conflict");
       assertContributionSubmittable(normalizeContributionSubmission(current.payload));
+      const uploadIds = current.payload.media.map(item => item.uploadId);
       const uploads = await client.query<{ state: string }>(
         `SELECT state FROM contribution_media_uploads
-          WHERE submission_id = $1 AND user_id = $2 FOR UPDATE`,
-        [submissionId, userId],
+          WHERE submission_id = $1 AND user_id = $2 AND upload_id = ANY($3::text[]) FOR UPDATE`,
+        [submissionId, userId, uploadIds],
       );
-      if (uploads.rows.some((row) => row.state !== "UPLOADED" && row.state !== "ATTACHED"))
+      if (uploads.rows.length !== uploadIds.length || uploads.rows.some((row) => row.state !== "UPLOADED" && row.state !== "ATTACHED"))
         throw new Error("contribution_media_upload_incomplete");
       const now = new Date().toISOString();
       const next: ContributionSubmission = {
@@ -2019,8 +2074,8 @@ export class PostgresMiniappRepository
         `UPDATE contribution_media_uploads
             SET state = 'ATTACHED',
                 payload = payload || jsonb_build_object('state', 'ATTACHED')
-          WHERE submission_id = $1 AND user_id = $2`,
-        [submissionId, userId],
+          WHERE submission_id = $1 AND user_id = $2 AND upload_id = ANY($3::text[])`,
+        [submissionId, userId, uploadIds],
       );
       await client.query(
         `UPDATE user_submissions
@@ -2082,6 +2137,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ContributionFormalSubmitResult> {
     return this.#transaction(async (client) => {
+      await this.#lockContributionOwner(client, userId);
       const replay = await this.#replay<ContributionFormalSubmitResult>(client, userId, idempotencyKey);
       if (replay) return clone(replay);
       // Serialize the user/spot subject so two first submissions cannot both pass
@@ -2182,7 +2238,15 @@ export class PostgresMiniappRepository
         [submission.submissionId, userId, submission.spotId, submission, submission.revision, submission.createdAt, submission.updatedAt],
       );
       if (uploadIntent && input.uploadIntentId) {
-        await client.query("UPDATE formal_feedback_media_uploads SET state='ATTACHED',submission_id=$3,payload=payload||jsonb_build_object('state','ATTACHED') WHERE intent_id=$1 AND user_id=$2",[input.uploadIntentId,userId,submission.submissionId]);
+        const acceptedIds = submission.media.map(upload => upload.uploadId);
+        await client.query(`UPDATE formal_feedback_media_uploads
+          SET state='ATTACHED',submission_id=$3,payload=payload||jsonb_build_object('state','ATTACHED')
+          WHERE intent_id=$1 AND user_id=$2 AND state='UPLOADED' AND upload_id=ANY($4::text[])`,
+          [input.uploadIntentId,userId,submission.submissionId,acceptedIds]);
+        await client.query(`UPDATE formal_feedback_media_uploads
+          SET state='EXPIRED',payload=payload||jsonb_build_object('state','EXPIRED')
+          WHERE intent_id=$1 AND user_id=$2 AND state IN ('PENDING','UPLOADED') AND NOT (upload_id=ANY($3::text[]))`,
+          [input.uploadIntentId,userId,acceptedIds]);
       }
       await client.query(
         `INSERT INTO contribution_revisions(revision_id, submission_id, revision_no, submission_state, merge_state, publication_impact, payload, payload_digest, actor_id)
@@ -2215,6 +2279,7 @@ export class PostgresMiniappRepository
 
   async removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
+      await this.#lockContributionOwner(client, userId);
       const replay = await this.#replay<ContributionSubmission>(client, userId, idempotencyKey);
       if (replay) return clone(replay);
       const result = await client.query<{ user_id: string; state: string; revision: number; payload: ContributionSubmission }>(
@@ -2227,6 +2292,7 @@ export class PostgresMiniappRepository
       const upload = current.payload.media.find((item) => item.uploadId === uploadId);
       if (!upload) throw new Error("contribution_upload_not_found");
       if (upload.state === "ATTACHED") throw new Error("contribution_upload_not_editable");
+      await this.#registerPendingMediaKeys(client,userId,[upload],"contribution_media_uploads");
       const now = new Date().toISOString();
       const candidateProfile = removeCandidateProfileMedia(normalizeContributionSubmission(current.payload), upload);
       const next: ContributionSubmission = {
@@ -2252,6 +2318,18 @@ export class PostgresMiniappRepository
 
   async expireContributionUploads(now: string): Promise<readonly string[]> {
     return this.#transaction(async (client) => {
+      const parents = await client.query<{ user_id: UserId; payload: ContributionSubmission }>(
+        `SELECT user_id,payload FROM user_submissions parent WHERE EXISTS
+          (SELECT 1 FROM contribution_media_uploads media WHERE media.submission_id=parent.submission_id
+           AND media.state IN ('PENDING','UPLOADED') AND media.expires_at <= $1)
+         ORDER BY submission_id FOR UPDATE`, [now]);
+      for (const row of parents.rows) await this.#registerPendingMediaKeys(client,row.user_id,row.payload.media,"contribution_media_uploads");
+      const intents = await client.query<{ user_id: UserId; payload: ContributionFormalUploadIntent }>(
+        `SELECT user_id,payload FROM formal_feedback_upload_intents parent WHERE EXISTS
+          (SELECT 1 FROM formal_feedback_media_uploads media WHERE media.intent_id=parent.intent_id
+           AND media.state IN ('PENDING','UPLOADED') AND media.expires_at <= $1)
+         ORDER BY intent_id FOR UPDATE`, [now]);
+      for (const row of intents.rows) await this.#registerPendingMediaKeys(client,row.user_id,row.payload.uploads,"formal_feedback_media_uploads");
       const retry = await client.query<{ object_key: string }>(
         "SELECT object_key FROM contribution_media_uploads WHERE state = 'EXPIRED' AND object_key IS NOT NULL",
       );
@@ -3833,6 +3911,18 @@ export class PostgresMiniappRepository
 
   async close() {
     await this.pool.end();
+  }
+
+  async #registerPendingMediaKeys(client: PoolClient, userId: UserId, uploads: readonly ContributionMediaUpload[], table: "contribution_media_uploads" | "formal_feedback_media_uploads") {
+    for (const upload of uploads) if (upload.state === "PENDING") {
+      await client.query(`UPDATE ${table} SET object_key=$3 WHERE upload_id=$1 AND user_id=$2 AND state='PENDING' AND object_key IS NULL`,
+        [upload.uploadId,userId,contributionMediaObjectKey(userId,upload.uploadId,upload.mimeType)]);
+    }
+  }
+
+  async #lockContributionOwner(client: PoolClient, userId: UserId) {
+    const user = await client.query<{ state: string }>("SELECT state FROM users WHERE user_id=$1 FOR KEY SHARE", [userId]);
+    if (user.rows[0]?.state !== "ACTIVE") throw new Error("account_not_active");
   }
 
   async #transaction<T>(operation: (client: PoolClient) => Promise<T>) {

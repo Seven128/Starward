@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { crc32, deflateSync } from "node:zlib";
@@ -21,13 +22,13 @@ function pngChunk(type: string, data: Buffer) {
   return output;
 }
 
-function privateMetadataPng() {
+function privateMetadataPng(red = 0x20) {
   const header = Buffer.alloc(13);
   header.writeUInt32BE(1, 0);
   header.writeUInt32BE(1, 4);
   header[8] = 8;
   header[9] = 6;
-  const pixels = deflateSync(Buffer.from([0, 0x20, 0x40, 0x60, 0xff]));
+  const pixels = deflateSync(Buffer.from([0, red, 0x40, 0x60, 0xff]));
   return Buffer.concat([
     Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     pngChunk("IHDR", header),
@@ -842,3 +843,165 @@ test("declared MIME cannot bypass server-side magic and pixel validation", async
   }
 });
 import { readFileSync } from "node:fs";
+
+// These tests use real sanitization, service calls and object bytes. The memory
+// repository models transaction exclusion; PostgreSQL locking remains integration evidence.
+async function pendingUploadScenario(formal: boolean, mediaStore: MemoryMediaObjectStore) {
+  const service = createTestMiniappService({ mediaStore });
+  const userId = await identity(service, `integrity-${formal}`);
+  const bytes = privateMetadataPng();
+  const file = { originalName: "integrity.png", mimeType: "image/png" as const, byteSize: bytes.length };
+  if (formal) {
+    const baseline = (await service.getContributionFormalBaseline(TEST_PUBLISHED_SPOT.spotId)).data;
+    let intent = (await service.createFormalUploadIntent(userId, { spotId: baseline.spotId, baselineRevision: baseline.revision }, "integrity:intent")).data;
+    intent = (await service.createFormalUpload(userId, intent.intentId, { ...file, kind: "site", expectedRevision: intent.revision }, "integrity:slot")).data;
+    const upload = intent.uploads[0]!;
+    return { service, userId, bytes, upload,
+      complete: (key: string, data = bytes) => service.completeFormalUpload(userId, intent.intentId, upload.uploadId, { dataBase64: data.toString("base64") }, key),
+      read: async () => (await service.repository.getFormalUploadIntent(userId, intent.intentId))?.uploads[0],
+      remove: () => service.removeFormalUpload(userId, intent.intentId, upload.uploadId, intent.revision, "integrity:remove"),
+    };
+  }
+  const draft = (await service.createContributionDraft(userId, reportInput(true), "integrity:draft")).data;
+  const pending = (await service.createContributionUpload(userId, draft.submissionId, { ...file, expectedRevision: draft.revision }, "integrity:slot")).data;
+  const upload = pending.media[0]!;
+  return { service, userId, bytes, upload,
+    complete: (key: string, data = bytes) => service.completeContributionUpload(userId, draft.submissionId, upload.uploadId, { dataBase64: data.toString("base64") }, key),
+    read: async () => (await service.repository.getContribution(userId, draft.submissionId))?.media[0],
+    remove: () => service.removeContributionUpload(userId, draft.submissionId, upload.uploadId, pending.revision, "integrity:remove"),
+  };
+}
+
+for (const formal of [false, true]) {
+  for (const contender of ["same-key", "new-key", "different-image"] as const) {
+    test(`${formal ? "formal" : "draft"} concurrent upload ${contender} preserves committed image`, async () => {
+      let entered!: () => void;
+      let release!: () => void;
+      const arrived = new Promise<void>(resolve => { entered = resolve; });
+      const gate = new Promise<void>(resolve => { release = resolve; });
+      class PausedStore extends MemoryMediaObjectStore {
+        puts = 0;
+        override async put(input: { objectKey: string; bytes: Uint8Array }) {
+          this.puts++;
+          if (this.puts === 1) { entered(); await gate; }
+          return super.put(input);
+        }
+      }
+      const store = new PausedStore();
+      const scenario = await pendingUploadScenario(formal, store);
+      try {
+        const first = scenario.complete("integrity:first");
+        await arrived;
+        const nextBytes = contender === "different-image" ? privateMetadataPng(0x21) : scenario.bytes;
+        assert.equal(nextBytes.length, scenario.bytes.length);
+        const second = scenario.complete(contender === "same-key" ? "integrity:first" : "integrity:second", nextBytes);
+        const outcomes = Promise.allSettled([first, second]);
+        await new Promise(resolve => setImmediate(resolve));
+        release();
+        const [winner, other] = await outcomes;
+        assert.equal(winner.status, "fulfilled");
+        assert.equal(other.status, contender === "different-image" ? "rejected" : "fulfilled");
+        if (other.status === "rejected") assert.match(String(other.reason), /content_conflict/);
+        assert.equal(store.puts, 1, "a contender must never overwrite committed bytes");
+        const upload = await scenario.read();
+        assert.equal(upload?.state, "UPLOADED");
+        const object = await scenario.service.repository.getContributionUploadObject(scenario.upload.uploadId);
+        assert.ok(object);
+        const stored = await store.read(object.objectKey);
+        assert.ok(stored);
+        assert.equal(createHash("sha256").update(stored).digest("hex"), upload?.sha256);
+        assert.equal(await scenario.service.contributions.cleanupExpiredUploads(), 0);
+      } finally { release(); await scenario.service.onModuleDestroy(); }
+    });
+  }
+
+  test(`${formal ? "formal" : "draft"} lost completion receipt retains image and retries without rewriting`, async (context) => {
+    const store = new MemoryMediaObjectStore();
+    const scenario = await pendingUploadScenario(formal, store);
+    const repository = scenario.service.repository;
+    const method = formal ? "completeFormalContributionUpload" : "completeContributionUpload";
+    const original = repository[method].bind(repository);
+    const fault = context.mock.method(repository, method, async (...args: Parameters<typeof original>) => {
+      await (original as (...args: Parameters<typeof original>) => Promise<unknown>)(...args);
+      throw new Error("synthetic_commit_receipt_lost");
+    });
+    try {
+      await assert.rejects(scenario.complete("integrity:lost"), /receipt_lost/);
+      fault.mock.restore();
+      const before = await scenario.read();
+      await scenario.complete("integrity:lost");
+      assert.deepEqual(await scenario.read(), before);
+      const object = await repository.getContributionUploadObject(scenario.upload.uploadId);
+      assert.ok(object);
+      const stored = await store.read(object.objectKey);
+      assert.ok(stored);
+      assert.equal(createHash("sha256").update(stored).digest("hex"), before?.sha256);
+    } finally { fault.mock.restore(); await scenario.service.onModuleDestroy(); }
+  });
+
+  for (const retirement of ["remove", "expire", "account-delete"] as const) {
+    test(`${formal ? "formal" : "draft"} failed completion residue remains tracked through ${retirement} and cleanup retry`, async () => {
+      class FailingStore extends MemoryMediaObjectStore {
+        key = "";
+        failDelete = true;
+        override async put(input: { objectKey: string; bytes: Uint8Array }) {
+          this.key = input.objectKey;
+          await super.put(input);
+          throw new Error("synthetic_write_receipt_lost");
+        }
+        override async delete(key: string) {
+          if (this.failDelete) throw new Error("synthetic_delete_unavailable");
+          return super.delete(key);
+        }
+      }
+      const store = new FailingStore();
+      const scenario = await pendingUploadScenario(formal, store);
+      try {
+        await assert.rejects(scenario.complete("integrity:failed"), /write_receipt_lost/);
+        assert.equal((await scenario.read())?.state, "PENDING");
+        assert.equal(await scenario.service.repository.getContributionUploadObject(scenario.upload.uploadId), null);
+        assert.ok(await store.read(store.key));
+        if (retirement === "remove") await assert.rejects(scenario.remove(), /delete_unavailable/);
+        else if (retirement === "expire") await scenario.service.repository.expireContributionUploads(new Date(Date.parse(scenario.upload.expiresAt) + 1).toISOString());
+        else assert.equal((await scenario.service.repository.deleteAccount(scenario.userId, "integrity:erase")).mediaCleanupState, "QUEUED");
+        await assert.rejects(scenario.service.contributions.cleanupExpiredUploads(), /delete_unavailable/);
+        assert.ok(await store.read(store.key));
+        store.failDelete = false;
+        assert.equal(await scenario.service.contributions.cleanupExpiredUploads(), 1);
+        assert.equal(await store.read(store.key), null);
+        assert.equal(await scenario.service.contributions.cleanupExpiredUploads(), 0, "acknowledged cleanup must not recreate the queue");
+      } finally { await scenario.service.onModuleDestroy(); }
+    });
+  }
+}
+
+test("formal submission retires uploaded images excluded from the accepted snapshot", async () => {
+  const store = new MemoryMediaObjectStore();
+  const service = createTestMiniappService({ mediaStore: store });
+  try {
+    const userId = await identity(service, "formal-unused-media");
+    const baseline = (await service.getContributionFormalBaseline(TEST_PUBLISHED_SPOT.spotId)).data;
+    let intent = (await service.createFormalUploadIntent(userId, { spotId: baseline.spotId, baselineRevision: baseline.revision }, "unused:intent")).data;
+    const bytes = privateMetadataPng();
+    for (const index of [0, 1]) {
+      intent = (await service.createFormalUpload(userId, intent.intentId, { kind: "site", originalName: "image.png", mimeType: "image/png", byteSize: bytes.length, expectedRevision: intent.revision }, `unused:slot:${index}`)).data;
+      intent = (await service.completeFormalUpload(userId, intent.intentId, intent.uploads[index]!.uploadId, { dataBase64: bytes.toString("base64") }, `unused:complete:${index}`)).data;
+    }
+    const [accepted, discarded] = intent.uploads;
+    assert.ok(accepted && discarded);
+    const acceptedObject = await service.repository.getContributionUploadObject(accepted.uploadId);
+    const discardedObject = await service.repository.getContributionUploadObject(discarded.uploadId);
+    assert.ok(acceptedObject && discardedObject);
+    const result = (await service.submitFormalContribution(userId, { kind: "CORRECTION", baseline,
+      proposal: { fields: {}, media: { site: [accepted.uploadId] } }, observedAt: null, rightsConfirmed: true,
+      uploadIntentId: intent.intentId, expectedUploadIntentRevision: intent.revision }, "unused:submit")).data;
+    assert.equal(result.state, "SUBMITTED");
+    if (result.state === "SUBMITTED") {
+      assert.deepEqual(result.submission.media.map(upload => upload.uploadId), [accepted.uploadId]);
+      assert.deepEqual(result.submission.attempts[0]!.snapshot.media.map(upload => upload.uploadId), [accepted.uploadId]);
+    }
+    assert.equal(await service.contributions.cleanupExpiredUploads(), 1);
+    assert.equal(await store.read(discardedObject.objectKey), null);
+    assert.ok(await store.read(acceptedObject.objectKey));
+  } finally { await service.onModuleDestroy(); }
+});

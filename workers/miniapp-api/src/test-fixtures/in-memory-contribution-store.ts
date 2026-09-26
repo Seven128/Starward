@@ -1,3 +1,4 @@
+import { assertContributionUploadContent, contributionMediaObjectKey } from "../contribution-media-object.ts";
 import { randomUUID } from "node:crypto";
 import { assertContributionSubmittable, assertContributionUploadFits } from "../contribution-validation.ts";
 import type {
@@ -39,11 +40,17 @@ export class InMemoryContributionStore {
 
   deleteUser(userId: UserId) {
     const records = this.#records.get(userId);
+    let cleanupRequired = false;
     for (const submission of records?.values() ?? [])
-      for (const upload of submission.media) this.#objects.delete(upload.uploadId);
+      for (const upload of submission.media) {
+        cleanupRequired ||= upload.state === "PENDING" || this.#objects.has(upload.uploadId);
+        this.#queueDeletion(userId, upload);
+        this.#objects.delete(upload.uploadId);
+      }
     this.#records.delete(userId);
     for (const key of this.#idempotency.keys())
       if (key.startsWith(`${userId}|`)) this.#idempotency.delete(key);
+    return cleanupRequired;
   }
 
   ensureUser(userId: UserId) {
@@ -120,7 +127,7 @@ export class InMemoryContributionStore {
     return structuredClone(next);
   }
 
-  completeUpload(
+  async completeUpload(
     userId: UserId,
     submissionId: ContributionId,
     uploadId: ContributionUploadId,
@@ -131,17 +138,29 @@ export class InMemoryContributionStore {
       uploadedAt: string;
     },
     idempotencyKey: string,
+    writeObject: () => Promise<void>,
   ) {
     this.ensureUser(userId);
     const replay = this.#replay<ContributionSubmission>(userId, idempotencyKey);
-    if (replay) return structuredClone(replay);
+    if (replay) {
+      assertContributionUploadContent(replay.media.find(item => item.uploadId === uploadId), completion.sha256);
+      return structuredClone(replay);
+    }
     const records = this.#records.get(userId)!;
     const current = records.get(submissionId);
     if (!current) throw new Error("contribution_not_found");
     const upload = current.media.find((item) => item.uploadId === uploadId);
     if (!upload) throw new Error("contribution_upload_not_found");
+    if (["UPLOADED", "ATTACHED"].includes(upload.state)) {
+      assertContributionUploadContent(upload, completion.sha256);
+      return structuredClone(current);
+    }
+    if (!isContributionEditable(current.state)) throw new Error("contribution_not_editable");
+    if (Date.parse(upload.expiresAt) <= Date.now()) throw new Error("contribution_upload_expired");
+    if (completion.objectKey !== contributionMediaObjectKey(userId, uploadId, upload.mimeType)) throw new Error("contribution_upload_object_key_invalid");
     if (upload.state !== "PENDING")
       throw new Error("contribution_upload_not_pending");
+    await writeObject();
     const next = {
       ...structuredClone(current),
       media: current.media.map((item) =>
@@ -229,8 +248,7 @@ export class InMemoryContributionStore {
     if (upload.state === "ATTACHED") throw new Error("contribution_upload_not_editable");
     const candidateProfile = removeCandidateProfileMedia(current, upload);
     const next = { ...structuredClone(current), media: current.media.filter((item) => item.uploadId !== uploadId).map((item) => structuredClone(item)), ...(candidateProfile ? { candidateProfile } : {}), revision: current.revision + 1, updatedAt: new Date().toISOString() };
-    const object = this.#objects.get(uploadId);
-    if (object) this.#pendingDeletion.add(object.objectKey);
+    this.#queueDeletion(userId, upload);
     this.#objects.delete(uploadId);
     records.set(submissionId, next);
     this.#remember(userId, idempotencyKey, next);
@@ -254,8 +272,7 @@ export class InMemoryContributionStore {
       throw new Error("contribution_revision_conflict");
     const now = new Date().toISOString();
     for (const upload of current.media) {
-      const object = this.#objects.get(upload.uploadId);
-      if (object) this.#pendingDeletion.add(object.objectKey);
+      this.#queueDeletion(userId, upload);
       this.#objects.delete(upload.uploadId);
     }
     const next: ContributionSubmission = {
@@ -304,9 +321,9 @@ export class InMemoryContributionStore {
 
   expireUploads(now: string) {
     const expiredObjects: string[] = [];
-    for (const records of this.#records.values())
+    for (const [userId, records] of this.#records)
       for (const [submissionId, submission] of records)
-        this.#expireSubmission(records, submissionId, submission, now, expiredObjects);
+        this.#expireSubmission(userId, records, submissionId, submission, now, expiredObjects);
     for (const key of expiredObjects) this.#pendingDeletion.add(key);
     return [...this.#pendingDeletion];
   }
@@ -316,6 +333,7 @@ export class InMemoryContributionStore {
   }
 
   #expireSubmission(
+    userId: UserId,
     records: Map<ContributionId, ContributionSubmission>,
     submissionId: ContributionId,
     submission: ContributionSubmission,
@@ -330,6 +348,7 @@ export class InMemoryContributionStore {
       changed = true;
       const object = this.#objects.get(item.uploadId);
       if (object) expiredObjects.push(object.objectKey);
+      else if (item.state === "PENDING") expiredObjects.push(contributionMediaObjectKey(userId, item.uploadId, item.mimeType));
       this.#objects.delete(item.uploadId);
       return { ...structuredClone(item), state: "EXPIRED" as const };
     });
@@ -340,6 +359,12 @@ export class InMemoryContributionStore {
         revision: submission.revision + 1,
         updatedAt: now,
       });
+  }
+
+  #queueDeletion(userId: UserId, upload: ContributionMediaUpload) {
+    const object = this.#objects.get(upload.uploadId);
+    if (object) this.#pendingDeletion.add(object.objectKey);
+    else if (upload.state === "PENDING") this.#pendingDeletion.add(contributionMediaObjectKey(userId, upload.uploadId, upload.mimeType));
   }
 
   getUploadObject(uploadId: ContributionUploadId) {

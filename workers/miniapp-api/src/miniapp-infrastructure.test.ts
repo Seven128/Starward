@@ -1,3 +1,4 @@
+import { contributionMediaObjectKey } from "./contribution-media-object.ts";
 import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
 import { createServer } from "node:http";
@@ -387,10 +388,10 @@ test(
         assert.deepEqual(replacement.media[2], recovery.media[2]);
         assert.notEqual(replacement.media[1]!.uploadId, recovery.media[1]!.uploadId);
         assert.deepEqual((await first.createContributionUpload(firstIdentity.userId, recovery.submissionId, replaceInput, `infra:replacement:${runId}`)).data, replacement);
-        const cleanupKey = `contributions/${"c".repeat(24)}/${String(replacement.media[1]!.uploadId).replace(/^upload:/u, "")}.png`;
+        const cleanupKey = contributionMediaObjectKey(firstIdentity.userId, replacement.media[1]!.uploadId, "image/png");
         const readyRecovery = await first.repository.completeContributionUpload(firstIdentity.userId, replacement.submissionId, replacement.media[1]!.uploadId, {
           byteSize: 32, sha256: "c".repeat(64), objectKey: cleanupKey, uploadedAt: new Date().toISOString(),
-        }, `infra:ready-remove:${runId}`);
+        }, `infra:ready-remove:${runId}`, async () => {});
         const removedRecovery = { data: await first.repository.removeContributionUpload(firstIdentity.userId, replacement.submissionId, replacement.media[1]!.uploadId, readyRecovery.revision, `infra:remove:${runId}`) };
         assert.deepEqual(removedRecovery.data.media, [replacement.media[0], replacement.media[2]]);
         assert.ok((await first.repository.expireContributionUploads(new Date().toISOString())).includes(cleanupKey));
@@ -460,10 +461,11 @@ test(
           {
             byteSize: 32,
             sha256: "a".repeat(64),
-            objectKey: `contributions/${"b".repeat(24)}/${String(upload.uploadId).replace(/^upload:/u, "")}.png`,
+            objectKey: contributionMediaObjectKey(firstIdentity.userId, upload.uploadId, "image/png"),
             uploadedAt: new Date().toISOString(),
           },
           "infra:contribution-upload-complete:" + runId,
+          async () => {}, // Metadata case; service tests verify actual bytes.
         );
         const submitted = await first.submitContribution(
           firstIdentity.userId,
@@ -586,10 +588,10 @@ test(
           byteSize: null, sha256: null, createdAt: new Date().toISOString(), expiresAt: formalIntent.expiresAt, uploadedAt: null,
         };
         const formalWithSlot = await first.repository.createFormalContributionUpload(secondIdentity.userId, formalIntent.intentId, formalUpload, formalIntent.revision, `infra:formal-upload:${runId}`);
-        const formalObjectKey = `contributions/${"d".repeat(24)}/${String(formalUpload.uploadId).replace(/^upload:/u, "")}.png`;
+        const formalObjectKey = contributionMediaObjectKey(secondIdentity.userId, formalUpload.uploadId, "image/png");
         const formalReady = await first.repository.completeFormalContributionUpload(secondIdentity.userId, formalIntent.intentId, formalUpload.uploadId, {
           byteSize: 32, sha256: "d".repeat(64), objectKey: formalObjectKey, uploadedAt: new Date().toISOString(),
-        }, `infra:formal-complete:${runId}`);
+        }, `infra:formal-complete:${runId}`, async () => {});
         const formalSubmitted = await first.submitFormalContribution(secondIdentity.userId, {
           kind: "CORRECTION", baseline: formalBaseline,
           proposal: { fields: {
@@ -670,10 +672,10 @@ test(
           expiresAt: expiryIntent.expiresAt,
         };
         const expirySlot = await first.repository.createFormalContributionUpload(firstIdentity.userId, expiryIntent.intentId, expiryUpload, expiryIntent.revision, `infra:formal-expiry-upload:${runId}`);
-        const expiryObjectKey = `contributions/${"e".repeat(24)}/${String(expiryUpload.uploadId).replace(/^upload:/u, "")}.png`;
+        const expiryObjectKey = contributionMediaObjectKey(firstIdentity.userId, expiryUpload.uploadId, "image/png");
         await first.repository.completeFormalContributionUpload(firstIdentity.userId, expiryIntent.intentId, expiryUpload.uploadId, {
           byteSize: 32, sha256: "e".repeat(64), objectKey: expiryObjectKey, uploadedAt: new Date().toISOString(),
-        }, `infra:formal-expiry-complete:${runId}`);
+        }, `infra:formal-expiry-complete:${runId}`, async () => {});
         assert.deepEqual(await first.repository.expireContributionUploads(new Date(Date.parse(expirySlot.expiresAt)+1).toISOString()), [expiryObjectKey]);
         assert.equal((await first.repository.getFormalUploadIntent(firstIdentity.userId, expiryIntent.intentId))?.uploads[0]?.state, "EXPIRED");
         await first.repository.acknowledgeContributionMediaDeletion([expiryObjectKey]);
