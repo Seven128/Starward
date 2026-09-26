@@ -80,6 +80,8 @@ Owner: miniapp-api-maintainers. Tracking: WECHAT-MINIAPP-MOD-001.
 
 The current BFF use-case orchestration keeps cross-domain transaction and failure semantics visible behind one facade; domain-service extraction remains bounded follow-up work and does not preserve a superseded product implementation.
 
+Account plan aggregates read the repository directly, as does My's user library. A private TTL result cache with write-time invalidation was removed because an older in-flight read could repopulate deleted or superseded plans as fresh. Preserve the existing client request-generation and mutation-invalidation owners; do not restore the server cache without a cross-process consistency contract and measured need.
+
 Revisit when: Split catalog, observation, profile and import services before adding another BFF use case.
 
 ## apps/wechat-miniapp/src/content/plan/detail/index.tsx

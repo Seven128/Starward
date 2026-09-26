@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
+import { createHmac, randomBytes, randomUUID } from "node:crypto";
 import { Module } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { FastifyAdapter } from "@nestjs/platform-fastify";
@@ -62,12 +62,9 @@ test("reminder subscription HTTP uses session identity and persists one reported
     for (const malformed of ["-".repeat(36), "a".repeat(36)])
       assert.equal((await invoke(`/v2/me/reminder-subscriptions/${malformed}`,"PUT",{choice:"accept"},token)).status,400);
     assert.equal((await (await invoke(reportPath,"PUT",{choice:"accept"},otherToken)).json()).data.recorded,false);
-    await service.getPlans(userId); // Populate the actual plan cache before mutation.
-    const cacheKey = "plans:" + createHash("sha256").update(JSON.stringify(userId)).digest("hex").slice(0,24);
-    assert.ok(await service.cache.get(cacheKey));
+    assert.equal((await service.getPlans(userId)).data.plans[0]!.planId, plan.planId);
     const accepted = await (await invoke(reportPath,"PUT",{choice:"accept",userId:otherId},token)).json();
     assert.equal(accepted.data.recorded,true);
-    assert.equal(await service.cache.get(cacheKey),null,"recording authorization invalidates the existing plan response");
     assert.equal((await (await invoke(reportPath,"PUT",{choice:"accept"},token)).json()).data.recorded,true);
     const stored = await repository.pool.query("SELECT state FROM plan_reminder_subscription_challenges WHERE challenge_id=$1 AND user_id=$2",[prepared.data.challengeId,userId]);
     assert.deepEqual(stored.rows,[{state:"CLIENT_ACCEPTED"}]);

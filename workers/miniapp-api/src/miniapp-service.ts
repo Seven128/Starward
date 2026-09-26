@@ -1974,17 +1974,12 @@ export class MiniappService {
     if (!input || !["accept", "reject", "ban", "filter"].includes(input.choice)) throw new Error("reminder_subscription_choice_invalid");
     const binding = this.reminderSubscriptionBinding();
     const recorded = binding ? await this.reminderSubscriptions!.record(userId, challengeId, input.choice, binding) : false;
-    if (recorded) await this.cache.deleteByPrefix("plans:" + hash(userId).slice(0, 24));
     return envelope({ recorded }, "FRESH", []);
   }
 
   async getPlans(userId: UserId) {
-    const cacheKey = "plans:" + hash(userId).slice(0, 24);
-    const cached =
-      await this.cache.get<ApiEnvelope<import("@starward/miniapp-contracts").PlansData>>(
-        cacheKey,
-      );
-    if (cached) return cached;
+    // Account plans are mutable repository facts, as in getUserLibrary. A TTL
+    // cache can be repopulated by a read that began before a committed mutation.
     const plans = await this.repository.listPlans(userId);
     const storedSchedules = await this.repository.listPlanReminderSchedules(userId);
     const schedules = plans.flatMap(plan => {
@@ -2002,7 +1997,6 @@ export class MiniappService {
       "FRESH",
       [],
     );
-    await this.cache.set(cacheKey, result, 300);
     return result;
   }
 
@@ -2169,9 +2163,6 @@ export class MiniappService {
       expectedRevision,
       idempotencyKey,
     );
-    await this.cache.deleteByPrefix(
-      "plans:" + hash(userId).slice(0, 24),
-    );
     return envelope(plan, "FRESH", []);
   }
 
@@ -2193,7 +2184,6 @@ export class MiniappService {
     const receipt = await this.repository.getPlanSaveReceipt(userId, planId, key);
     if (receipt) {
       validateReceipt(receipt);
-      await this.cache.deleteByPrefix("plans:" + hash(userId).slice(0, 24));
       return envelope(receipt, "FRESH", []);
     }
     const current = (await this.repository.listPlans(userId)).find(plan => plan.planId === planId);
@@ -2203,7 +2193,6 @@ export class MiniappService {
     const reminders = current.reminders.map(group => group.reminderId === input.reminderId
       ? { ...group, items: group.items.map(item => item.itemId === input.itemId ? { ...item, completed: input.completed } : item) } : group);
     const saved = validateReceipt(await this.repository.savePlan(userId, { ...current, reminders }, input.expectedRevision, key));
-    await this.cache.deleteByPrefix("plans:" + hash(userId).slice(0, 24));
     return envelope(saved, "FRESH", []);
   }
 
@@ -2214,9 +2203,6 @@ export class MiniappService {
   ) {
     assertIdempotencyKey(idempotencyKey);
     await this.repository.deletePlan(userId, planId, idempotencyKey);
-    await this.cache.deleteByPrefix(
-      "plans:" + hash(userId).slice(0, 24),
-    );
     return this.getPlans(userId);
   }
 
