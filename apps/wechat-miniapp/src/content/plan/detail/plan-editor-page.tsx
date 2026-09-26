@@ -1372,7 +1372,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           <View className="plan-reminder-status-dialog" role="dialog" aria-modal="true" aria-label={`${statusReminder.title}的通知状态`}
             onClick={event => event.stopPropagation()}>
             <Text className="plan-reminder-status-dialog__title">{planReminderStatusLabel(selectedReminderNotification)}</Text>
-            <Text className="plan-reminder-status-dialog__detail">{planReminderStatusDetail(selectedReminderNotification)}</Text>
+            <Text className="plan-reminder-status-dialog__detail">{planReminderStatusDetail(selectedReminderNotification, activePlan?.contextSnapshot.timezone)}</Text>
             <Button className="plan-reminder-status-dialog__close" onClick={() => setStatusReminderId(null)}>知道了</Button>
           </View>
         </View>
