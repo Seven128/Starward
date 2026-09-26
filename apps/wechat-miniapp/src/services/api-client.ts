@@ -8,7 +8,8 @@ import { createPlanChecklistClient } from "./plan-checklist-client";
 import { createPlanSubscriptionClient } from "./plan-subscription-client";
 import { createAuthenticatedOperationRequester } from "./authenticated-operation";
 import Taro from "@tarojs/taro";
-import { clearPlanSaveRecovery, createPlanSaveRetry, planSaveBelongsTo } from "./plan-save-retry";
+import { planSaveBelongsTo } from "./local-draft-keys";
+import type { PlanSaveInput } from "./plan-save-retry";
 import { planChecklistBelongsTo } from "../content/plan/detail/plan-checklist";
 import { planEventSelectionBelongsTo } from "../content/plan/detail/plan-event-selection";
 import { importLocalDraftBelongsTo } from "../content/import/local-draft";
@@ -1092,9 +1093,6 @@ export function getSharedSpot(spotId: string, signal?: AbortSignal) {
   }, false);
 }
 
-const retryPlanSave = createPlanSaveRetry(Taro, () => idempotencyKey("plan-save"),
-  error => error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408);
-
 export const planReminderSubscription = createPlanSubscriptionClient({
   request: requestOperation, currentUser: currentDraftUserId,
   confirmed: async owner => {
@@ -1114,52 +1112,36 @@ export const setPlanChecklistCompletion = createPlanChecklistClient({
   },
 });
 
-export function clearObservationPlanSaveRecovery(expectedUserId: string) {
-  if (currentDraftUserId() !== expectedUserId) throw new Error("账号已变化，请重新打开计划。");
-  clearPlanSaveRecovery(Taro, expectedUserId);
+/** Single authenticated HTTP attempt; the plan editor owns durable recovery. */
+export async function sendObservationPlanSave(original: PlanSaveInput, retryKey: string, owner: string) {
+  const session = await ensureSession();
+  if (session.userId !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  const result = await requestOperation("plan-mutation:" + original.planId, "planPut", {
+    auth: "REQUIRED", pathParams: { planId: original.planId },
+    body: {
+      spotId: original.spotId as SpotId,
+      observationContextId: original.observationContextId as ObservationContext["contextId"],
+      localDate: original.localDate, localTime: original.localTime,
+      ...(original.timing ? { timing: original.timing } : {}),
+      ...(original.travel ? { travel: original.travel } : {}),
+      ...(original.reminders === undefined ? {} : { reminders: original.reminders }),
+      ...(original.eventOccurrenceIds === undefined ? {} : { eventOccurrenceIds: original.eventOccurrenceIds }),
+      notes: original.notes, expectedRevision: original.expectedRevision,
+    }, idempotencyKey: retryKey,
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  return result;
 }
 
-export async function saveObservationPlan(
-  plan: Omit<
-    ObservationPlan,
-    "revision" | "updatedAt" | "contextSnapshot"
-  >,
-  observationContextId: ObservationContext["contextId"],
-  expectedRevision: number | null,
-  expectedUserId?: string,
-  contextIdentity = observationContextId as string,
-) {
-  const session = await ensureSession();
-  if (expectedUserId && session.userId !== expectedUserId) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
-  const result = await retryPlanSave(session.userId, { ...plan, observationContextId, expectedRevision, contextIdentity }, (retryKey, original) => requestOperation(
-    "plan-mutation:" + original.planId,
-    "planPut",
-    {
-      auth: "REQUIRED",
-      pathParams: { planId: original.planId },
-      body: {
-        spotId: original.spotId as SpotId,
-        observationContextId: original.observationContextId as ObservationContext["contextId"],
-        localDate: original.localDate,
-        localTime: original.localTime,
-        ...(original.timing ? { timing: original.timing } : {}),
-        ...(original.travel ? { travel: original.travel } : {}),
-        ...(original.reminders === undefined ? {} : { reminders: original.reminders }),
-        ...(original.eventOccurrenceIds === undefined ? {} : { eventOccurrenceIds: original.eventOccurrenceIds }),
-        notes: original.notes,
-        expectedRevision: original.expectedRevision,
-      },
-      idempotencyKey: retryKey,
-    },
-    false,
-    session.userId,
-  ));
-  if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
-  miniappQueryClient.setQueryData<MiniappApiResponse<"plansGet">>(["plans", session.userId], (previous) => previous ? {
-    ...previous, data: { ...previous.data, plans: [...previous.data.plans.filter((item) => item.planId !== result.data.planId), result.data] },
-  } : previous);
+/** A historical receipt must never be installed as the current plan list. */
+export async function getCurrentPlansAfterSave(owner: string) {
+  const current = await requestOperation("plans", "plansGet", { auth: "REQUIRED", cache: false }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  if (current.dataState !== "FRESH") throw new Error("暂时无法确认当前计划，上次保存请求仍保留。");
+  miniappQueryClient.setQueryData(["plans", owner], current);
   await invalidateAfter("PLAN");
-  return result;
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  return current;
 }
 
 export async function deleteObservationPlan(planId: string, expectedUserId?: string) {

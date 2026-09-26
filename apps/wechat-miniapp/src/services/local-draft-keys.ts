@@ -1,6 +1,8 @@
 const PLAN_DRAFT_PREFIX = "starward.plan-draft.v1:";
 const CONTRIBUTION_DRAFT_PREFIX = "starward.contribution-draft.v1:";
 const PROFILE_DRAFT_PREFIX = "starward.profile-draft.v1:";
+export const planSaveStorageKey = (owner: string) => "starward.plan-save.v1:" + JSON.stringify([owner]);
+export const planSaveBelongsTo = (key: string, owner: string) => key === planSaveStorageKey(owner);
 
 export function profileDraftKey(userId: string | null): string | null {
   return userId ? PROFILE_DRAFT_PREFIX + JSON.stringify([userId]) : null;

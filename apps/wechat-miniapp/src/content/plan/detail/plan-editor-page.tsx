@@ -24,7 +24,6 @@ import { useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
   currentDraftUserId,
-  clearObservationPlanSaveRecovery,
   deleteObservationPlan,
   getSpotSite,
   getAstronomicalEvents,
@@ -34,22 +33,22 @@ import {
   MiniappApiError,
   resolveObservationContext,
   restoreObservationContext,
-  saveObservationPlan,
   setPlanChecklistCompletion,
 } from "@/services/api-client";
+import { clearObservationPlanSaveRecovery, saveObservationPlan } from "./plan-save-client";
 import { useAppStore } from "@/state/app-store";
 import { resolvePlanSaveSpotId } from "./plan-save-spot";
 import { planEditorTimezone } from "./plan-editor-timezone";
 import { PlanReference } from "./plan-reference";
 import { initialPlanSelection, planIdFromRoute } from "./plan-selection";
-import { clearPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey as scopedPlanDraftKey, type PlanDraft } from "./plan-draft";
+import { clearPlanDraft, clearUnchangedPlanDraft, createDraftOwner, parsePlanDraft, planDraftMatchesInput, planDraftKey as scopedPlanDraftKey, type PlanDraft } from "./plan-draft";
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
 import { PlanDepartureTimeFields, PlanObservationEndField, emptyPlanTiming } from "./plan-timing-fields";
 import { PlanTravelFields, emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel, planTravelNeedsExplicitOrigin } from "./plan-travel-fields";
 import { planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
-import { planContextIdentity, PlanSaveRecoveryError } from "@/services/plan-save-retry";
+import { acknowledgePlanSave, planContextIdentity, PlanSaveRecoveryError, PlanSaveReviewRequired, resolvePlanCreationId, selectPlanSaveRecovery, type PlanSaveReceipt } from "@/services/plan-save-retry";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
 import { AstronomicalEventModal } from "@/components/astronomical-event-modal";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
@@ -110,13 +109,17 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     try { return key ? parsePlanDraft(Taro.getStorageSync(key)) : null; } catch { return null; }
   };
   const restoredDraft = useRef(readDraft(initialSelection.planId)).current;
+  const draftScopePlanId = useRef<string | null>(initialSelection.planId);
+  const creationPlanId = useRef<string | null>(restoredDraft?.creationPlanId ?? null);
+  const creationConfirmed = useRef(Boolean(restoredDraft?.creationConfirmed));
+  const recoveredSaveReceipt = useRef<PlanSaveReceipt | null>(null);
   const existing = initialSelection.plan;
   const [conflictPlan, setConflictPlan] = useState<ObservationPlan | null>(
     restoredDraft && restoredDraft.baseRevision === undefined ? existing : null,
   );
   const draftBaseRevision = useRef<number | null>(restoredDraft?.baseRevision ?? existing?.revision ?? null);
   const [activePlanId, setActivePlanId] = useState<PlanId | null>(
-    initialSelection.planId,
+    initialSelection.planId ?? (restoredDraft?.creationConfirmed ? restoredDraft.creationPlanId as PlanId : null),
   );
   const [editing, setEditing] = useState(dedicatedEditor || explicitNew || (!requestedPlanId && Boolean(restoredDraft)));
   const [recoveredLocalDraft, setRecoveredLocalDraft] = useState(Boolean(restoredDraft));
@@ -296,6 +299,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const [deleting, setDeleting] = useState(false);
   const [saveRecoveryError, setSaveRecoveryError] = useState(false);
   const [saveRecoveryReviewed, setSaveRecoveryReviewed] = useState(false);
+  const [pendingSaveChoices, setPendingSaveChoices] = useState<PlanSaveRecoveryError["pending"]>([]);
   const mutationBusy = useRef(false);
   const planRouteOrigin = activePlan?.contextSnapshot.schemaVersion === "observation-context-snapshot-v2"
     ? activePlan.contextSnapshot.routeOrigin?.displayName ?? null : null;
@@ -389,6 +393,10 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     setFieldError(null);
     setValidationAnchor("");
     const draft = readDraft(plan.planId);
+    draftScopePlanId.current = plan.planId;
+    creationPlanId.current = draft?.creationPlanId ?? null;
+    creationConfirmed.current = Boolean(draft?.creationConfirmed);
+    recoveredSaveReceipt.current = null;
     setConflictPlan(draft && draft.baseRevision === undefined ? plan : null);
     draftBaseRevision.current = draft?.baseRevision ?? plan.revision;
     setRecoveredLocalDraft(Boolean(draft));
@@ -453,7 +461,12 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       notes: "",
     };
     const draft = readDraft(null);
-    draftBaseRevision.current = null;
+    draftScopePlanId.current = null;
+    creationPlanId.current = draft?.creationPlanId ?? null;
+    creationConfirmed.current = Boolean(draft?.creationConfirmed);
+    recoveredSaveReceipt.current = null;
+    draftBaseRevision.current = draft?.baseRevision ?? null;
+    if (draft?.creationConfirmed) setActivePlanId(draft.creationPlanId as PlanId);
     setRecoveredLocalDraft(Boolean(draft));
     if (draft) {
       appliedContextDefaults.current = true;
@@ -590,17 +603,28 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   };
   const retainDraft = (patch: Partial<PlanDraft>) => {
     appliedContextDefaults.current = true;
-    const key = planDraftKey(scopedDraftUserId(), activePlanId);
+    const key = planDraftKey(scopedDraftUserId(), draftScopePlanId.current);
     if (!key) {
       setDraftStorageFailed(true);
       announce("warning", "草稿尚未保存在本机", "账户尚未恢复或已切换，请返回对应账户后重新打开计划。");
-      return;
+      return false;
     }
     try {
-      Taro.setStorageSync(key, { selectedSpotId, localDate, localTime, timing, travel, eventOccurrenceIds, reminders, notes, ...patch, baseRevision: draftBaseRevision.current });
+      // A second mounted editor can have reserved this draft before this one.
+      // Preserve its identity and any confirmed-create fact on every edit.
+      const stored = parsePlanDraft(Taro.getStorageSync(key));
+      const wantedId = patch.creationPlanId ?? creationPlanId.current;
+      if (stored?.creationPlanId && wantedId && stored.creationPlanId !== wantedId)
+        throw new Error("draft_identity_changed");
+      creationPlanId.current = stored?.creationPlanId ?? wantedId ?? null;
+      creationConfirmed.current ||= Boolean(stored?.creationConfirmed || patch.creationConfirmed);
+      Taro.setStorageSync(key, { selectedSpotId, localDate, localTime, timing, travel, eventOccurrenceIds, reminders, notes, ...patch,
+        ...(creationPlanId.current ? { creationPlanId: creationPlanId.current } : {}),
+        ...(creationConfirmed.current ? { creationConfirmed: true } : {}), baseRevision: draftBaseRevision.current });
       setDraftStorageFailed(false);
+      return true;
     }
-    catch { setDraftStorageFailed(true); announce("warning", "草稿暂未保存在本机", "当前输入仍在页面中，请保存成功后再离开。"); }
+    catch { setDraftStorageFailed(true); announce("warning", "草稿暂未保存在本机", "当前输入仍在页面中，请保存成功后再离开。"); return false; }
   };
   const showFieldError = (field: PlanValidationField, message: string) => {
     const token = ++validationToken.current;
@@ -702,14 +726,13 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       showFieldError("reminders", "请填写提醒名称、清单内容与有效提前小时；最多5组、每组20项。");
       return;
     }
-    const planId =
-      activePlanId ??
+    const planId = activePlanId ?? creationPlanId.current ??
       (`plan:${Date.now()}-${Math.random().toString(16).slice(2)}` as PlanId);
     const plan: Omit<
       ObservationPlan,
       "revision" | "updatedAt" | "contextSnapshot"
     > = {
-      planId,
+      planId: planId as PlanId,
       spotId,
       localDate,
       localTime,
@@ -721,8 +744,32 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     };
     mutationBusy.current = true;
     setSaving(true);
-    const savedDraftKey = planDraftKey(scopedDraftUserId(), activePlanId);
+    const savedDraftKey = planDraftKey(scopedDraftUserId(), draftScopePlanId.current);
     try {
+      if (!activePlanId) {
+        // Re-read before reserving, since another editor may have saved this scope.
+        const stored = readDraft(draftScopePlanId.current);
+        plan.planId = (stored?.creationPlanId ?? creationPlanId.current ?? resolvePlanCreationId(Taro, savingOwner,
+          { ...plan, observationContextId: activeContext.contextId, expectedRevision: draftBaseRevision.current,
+            contextIdentity: planContextIdentity(activeContext, travel) })) as PlanId;
+        if (!retainDraft({ creationPlanId: plan.planId })) return;
+        if (creationConfirmed.current) {
+          const current = await planQuery.refetch();
+          if (scopedDraftUserId() !== savingOwner) return;
+          if (current?.dataState !== "FRESH") throw new Error("暂时无法核对上次保存的计划。");
+          hydratedPlanId.current = plan.planId;
+          setActivePlanId(plan.planId);
+          const latest = current.data.plans.find(item => item.planId === plan.planId);
+          setConflictPlan(latest ?? null);
+          announce("warning", latest ? "请核对已保存计划" : "原计划已删除", "当前输入保留，不会另建一份计划。");
+          return;
+        }
+      }
+      const savedDraftValue = savedDraftKey ? Taro.getStorageSync(savedDraftKey) : undefined;
+      const savedDraft = parsePlanDraft(savedDraftValue);
+      const ownsDraft = !savedDraftValue || Boolean(savedDraft && planDraftMatchesInput(savedDraft,
+        { selectedSpotId, localDate, localTime, timing, travel, reminders, eventOccurrenceIds, notes, baseRevision: draftBaseRevision.current }));
+      const savedDraftVersion = JSON.stringify(savedDraftValue);
       const response = await saveObservationPlan(
         plan,
         activeContext.contextId,
@@ -736,7 +783,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       }
       savePlan(response.data);
       draftBaseRevision.current = response.data.revision;
-      const draftCleared = clearPlanDraft(Taro, savedDraftKey);
+      const draftCleared = ownsDraft && clearUnchangedPlanDraft(Taro, savedDraftKey, savedDraftVersion);
+      if (draftCleared) { try { acknowledgePlanSave(Taro, response.saveReceipt); } catch { /* The original receipt stays recoverable. */ } }
       setRecoveredLocalDraft(false);
       hydratedPlanId.current = response.data.planId;
       newPlanRequested.current = false;
@@ -747,7 +795,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         "计划已保存",
         draftCleared
           ? "计划已安全保存；天气与夜空条件仍以打开页面时的最新数据为准。"
-          : "计划已安全保存，但本机旧草稿清理失败；重新打开时请核对已保存内容，避免重复建立计划。",
+          : "计划已安全保存；本机仍有另一版本的草稿或暂时无法清理，已保留供下次核对。",
       );
       if (dedicatedEditor) {
         nativeLeaveGuard.suspendForProgrammaticLeave();
@@ -764,13 +812,29 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       }
     } catch (error) {
       if (scopedDraftUserId() !== savingOwner) return;
-      if (error instanceof PlanSaveRecoveryError) { setSaveRecoveryError(true); setSaveRecoveryReviewed(false); }
-      if (error instanceof MiniappApiError && error.code === "CONFLICT") {
+      if (error instanceof PlanSaveRecoveryError) { setSaveRecoveryError(true); setSaveRecoveryReviewed(false); setPendingSaveChoices(error.pending); }
+      if (error instanceof PlanSaveReviewRequired) {
+        recoveredSaveReceipt.current = error.receipt;
+        creationPlanId.current ??= error.planId;
+        creationConfirmed.current = true;
+        retainDraft({ creationPlanId: error.planId, creationConfirmed: true });
+        hydratedPlanId.current = error.planId as PlanId;
+        setActivePlanId(error.planId as PlanId);
+        setConflictPlan(error.current);
+        announce("warning", error.current ? "请核对已保存计划" : "未找到原计划", error.message);
+      } else if (error instanceof MiniappApiError && error.code === "CONFLICT") {
         const current = await planQuery.refetch().catch(() => undefined);
         if (scopedDraftUserId() !== savingOwner) return;
         if (current) replacePlans(current.data.plans);
-        const latestPlan = current?.data.plans.find((item) => item.planId === activePlanId);
-        if (latestPlan) setConflictPlan(latestPlan);
+        const latestPlan = current?.dataState === "FRESH" ? current.data.plans.find((item) => item.planId === plan.planId) : null;
+        if (latestPlan) {
+          creationPlanId.current ??= latestPlan.planId;
+          creationConfirmed.current = true;
+          retainDraft({ creationPlanId: latestPlan.planId, creationConfirmed: true });
+          hydratedPlanId.current = latestPlan.planId;
+          setActivePlanId(latestPlan.planId);
+          setConflictPlan(latestPlan);
+        }
         announce(
           "warning",
           "计划已在其他位置更新",
@@ -788,21 +852,54 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       setSaving(false);
     }
   };
+  const confirmPlanConflict = () => {
+    const owner = scopedDraftUserId();
+    if (!owner || !conflictPlan || mutationBusy.current) return;
+    const previousRevision = draftBaseRevision.current;
+    draftBaseRevision.current = conflictPlan.revision;
+    if (!retainDraft({})) { draftBaseRevision.current = previousRevision; return; }
+    try {
+      if (recoveredSaveReceipt.current?.owner === owner) acknowledgePlanSave(Taro, recoveredSaveReceipt.current);
+      recoveredSaveReceipt.current = null;
+    } catch {
+      announce("warning", "核对信息未能保存", "当前输入保留，请检查本机存储后再次确认。");
+      return;
+    }
+    setConflictPlan(null);
+  };
   const clearSaveRecovery = async () => {
     const owner = scopedDraftUserId();
     if (!owner || mutationBusy.current) return;
     mutationBusy.current = true; setSaving(true);
     try {
-      await planQuery.refetch();
+      const current = await planQuery.refetch();
       if (scopedDraftUserId() !== owner) return;
+      if (current?.dataState !== "FRESH") throw new Error("当前计划尚未确认最新状态，请恢复网络后重试。");
       if (!saveRecoveryReviewed) {
         setSaveRecoveryReviewed(true);
-        announce("warning", "请核对已保存计划", "列表已刷新。清理后不能沿用旧请求身份，重复保存可能新增计划；核对后可确认清理本机恢复信息。");
+        announce("warning", "请核对已保存计划", "列表已刷新。上次请求可能已经保存，请先查看计划列表；继续将另建一份计划。");
         return;
       }
+      const confirmation = await Taro.showModal({ title: "另建一份计划？", content: "将清理当前账号全部本机计划恢复信息。原请求可能已成功，无法撤销；继续可能保留两份计划，已保存计划不会删除。", confirmText: "另建一份", cancelText: "返回核对" });
+      if (!confirmation.confirm || scopedDraftUserId() !== owner) return;
+      const draftKey = planDraftKey(owner, draftScopePlanId.current);
+      const newDraftKey = planDraftKey(owner, null);
+      if (newDraftKey !== draftKey && newDraftKey && Taro.getStorageSync(newDraftKey))
+        throw new Error("本机已有另一份新建草稿，请先处理该草稿；当前输入和恢复记录均保留。");
+      if (!clearPlanDraft(Taro, draftKey)) throw new Error("原草稿无法清理，尚未开始另一份计划。");
       clearObservationPlanSaveRecovery(owner);
+      creationPlanId.current = null;
+      creationConfirmed.current = false;
+      draftBaseRevision.current = null;
+      recoveredSaveReceipt.current = null;
+      setActivePlanId(null);
+      setConflictPlan(null);
+      newPlanRequested.current = true;
+      draftScopePlanId.current = null;
+      setPendingSaveChoices([]);
+      retainDraft({});
       setSaveRecoveryError(false); setSaveRecoveryReviewed(false);
-      announce("success", "恢复信息已清理", "当前输入与服务器计划保留；不会自动重发保存请求。");
+      announce("info", "已开始另一份计划", "当前输入和已保存计划保留。确认内容后再保存，不会自动提交。");
     } catch (error) {
       if (scopedDraftUserId() === owner) {
         setSaveRecoveryReviewed(false);
@@ -930,10 +1027,27 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           detail="地点列表尚未确认最新状态，暂时显示上次列表，当前选择和输入已保留。"
           recoveryLabel="重新获取地点"
           onRecover={() => void spotsQuery.refetch()} /> : null}
-        {saveRecoveryError ? <StatusPanel state="ERROR"
-          detail="本机计划重试信息暂不可用。清理前请核对已保存计划，避免重复建立；当前输入和服务器计划保留。"
-          recoveryLabel={saveRecoveryReviewed ? "已核对，确认清理恢复信息" : "刷新计划列表并核对"}
-          onRecover={saving || deleting ? undefined : () => void clearSaveRecovery()} /> : null}
+        {saveRecoveryError ? <>
+          {pendingSaveChoices.map(entry => <View className="form-group" key={entry.key}>
+            <Text className="type-section">未确认的保存 · {entry.input.localDate} {entry.input.localTime}</Text>
+            <Text className="type-body">{formalSpots.find(spot => spot.spotId === entry.input.spotId)?.name ?? "地点名称暂不可用"}</Text>
+            <Text className="type-body">{entry.input.notes || "没有备注"}</Text>
+            <SoftButton disabled={saving || deleting} label="核对这次保存" onClick={() => {
+              const owner = scopedDraftUserId();
+              if (!owner) return;
+              try {
+                selectPlanSaveRecovery(Taro, { owner, key: entry.key, planId: entry.input.planId });
+                if (!retainDraft({ creationPlanId: entry.input.planId })) return;
+                setPendingSaveChoices([]); setSaveRecoveryError(false);
+                announce("info", "已关联原保存记录", "当前输入保留，再次保存将先核对这次请求的结果。");
+              } catch (error) { announce("warning", "暂时无法关联", errorMessage(error)); }
+            }}>核对这次保存</SoftButton>
+          </View>)}
+          <StatusPanel state="ERROR" detail="本机保存信息尚未解决，当前输入保留。请核对上方旧请求或已保存计划。"
+            recoveryLabel={saveRecoveryReviewed ? "另建一份计划" : "刷新计划列表并核对"}
+            onRecover={saving || deleting ? undefined : () => void clearSaveRecovery()} />
+          <SoftButton label="查看已保存计划" onClick={() => void Taro.navigateTo({ url: "/content/plan/list/index" })}>查看已保存计划</SoftButton>
+        </> : null}
         <View
           className="plan-notification-state"
           data-od-id="my-plan-notification-state"
@@ -1318,11 +1432,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 <SoftButton
                   disabled={saving || deleting}
                   label="已核对，保留本页修改"
-                  onClick={() => {
-                    draftBaseRevision.current = conflictPlan.revision;
-                    setConflictPlan(null);
-                    retainDraft({});
-                  }}
+                  onClick={confirmPlanConflict}
                 >已核对，保留本页修改</SoftButton>
               </View>
             ) : null}
