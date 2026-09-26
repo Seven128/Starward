@@ -530,15 +530,20 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const toggleReminderItem = async (reminderId: string, itemId: string, completed: boolean) => {
     const owner = scopedDraftUserId();
     if (!owner || !activePlan || mutationBusy.current) return;
+    const noticeKey = `plan-checklist:${JSON.stringify([owner, activePlan.planId, reminderId, itemId])}`;
     mutationBusy.current = true;
     setChecklistSaving(true);
     try {
       await setPlanChecklistCompletion(owner, activePlan.planId, { reminderId, itemId, completed, expectedRevision: activePlan.revision });
       if (scopedDraftUserId() !== owner) return;
+      const state = useAppStore.getState();
+      const prior = state.notifications.find(item => item.owner === "plan" && item.dedupeKey === noticeKey);
+      if (prior) state.dismissNotification(prior.id);
       await planQuery.refetch();
     } catch (error) {
       if (scopedDraftUserId() !== owner) return;
-      announce("error", "清单状态未确认", `${errorMessage(error)}；当前勾选保持已确认状态，可重试。`);
+      notify({ owner: "plan", placement: "floating", tone: "error", title: "清单状态未确认",
+        body: `${errorMessage(error)}；当前勾选保持已确认状态，可重试。`, dismissible: true, dedupeKey: noticeKey });
       if (error instanceof MiniappApiError && error.statusCode === 409) await planQuery.refetch().catch(() => undefined);
     } finally {
       mutationBusy.current = false;

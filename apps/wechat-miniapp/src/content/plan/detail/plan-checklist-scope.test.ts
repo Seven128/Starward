@@ -34,6 +34,7 @@ test("server checklist action rejects stale owners, serializes mutations and ign
         if (scenario === "deferred-change") owner = null;
       },
       planQuery: { refetch: async () => { refreshes++; } },
+      useAppStore: { getState: () => ({ notifications: [] }) },
     });
     await toggle("group", "item", true);
     assert.equal(requests, scenario === "same" || scenario === "deferred-change" ? 1 : 0);
