@@ -1,14 +1,14 @@
 .plan-reminder-editor { display: flex; flex-direction: column; gap: 10Px; }
 .plan-reminder-editor__heading, .plan-reminder-editor__row { display: flex; align-items: center; gap: 8Px; }
-.plan-reminder-editor__heading { justify-content: space-between; color: var(--text-secondary); font-size: 13Px; line-height: 20Px; }
+.plan-reminder-editor__heading { justify-content: space-between; color: var(--text-secondary); font-size: 14Px; line-height: 21Px; }
 .plan-reminder-editor__group { padding: 10Px 12Px; border-radius: 12Px; background: var(--surface-subtle); }
 .plan-reminder-editor input { min-width: 0; min-height: 44Px; color: var(--text-primary); font-size: 14Px; }
 .plan-reminder-editor__group > input { width: 100%; border-bottom: 1Px solid var(--border); font-weight: 500; }
 .plan-reminder-editor__row { min-height: 48Px; border-bottom: 1Px solid var(--border); color: var(--text-primary); font-size: 14Px; }
 .plan-reminder-editor__row input { flex: 1; }
 .plan-reminder-editor__row > text:first-child { flex: none; }
-.plan-reminder-editor button, .plan-reminder-editor__row button { min-width: 44Px; min-height: 44Px; margin: 0; padding: 0 6Px; border: 0; background: transparent; color: var(--text-secondary); font-size: 13Px; }
+.plan-reminder-editor button, .plan-reminder-editor__row button { min-width: 44Px; min-height: 44Px; margin: 0; padding: 0 6Px; border: 0; background: transparent; color: var(--text-secondary); font-size: 14Px; }
 .plan-reminder-editor button::after, .plan-reminder-editor__row button::after { border: 0; }
 .plan-reminder-editor__remove-item { width: 44Px; color: var(--text-tertiary) !important; font-size: 16Px !important; }
 .plan-reminder-editor .plan-reminder-editor__notification { width: 100%; min-height: 44Px; margin-top: 6Px; padding: 0; color: var(--primary); text-align: left; }
-.plan-reminder-editor__notice { display: block; padding-top: 5Px; color: var(--text-secondary); font-size: 13Px; line-height: 20Px; }
+.plan-reminder-editor__notice { display: block; padding-top: 5Px; color: var(--text-secondary); font-size: 14Px; line-height: 21Px; }
