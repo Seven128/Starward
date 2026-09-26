@@ -65,7 +65,7 @@ function sameConflictValue(left: string | null | readonly string[], right: strin
 }
 
 function mediaKindOf(feedback: NonNullable<ContributionSubmission["formalFeedback"]>, uploadId: ContributionUploadId): ContributionMediaKind {
-  return (["parking", "toilet", "site"] as const).find(kind => feedback.resolvedProposal.media[kind]?.includes(uploadId)) ?? "site";
+  return (["parking", "toilet", "site"] as const).find(kind => formalFeedbackFrozenView(feedback).proposal.media[kind]?.includes(uploadId)) ?? "site";
 }
 
 export default function FormalFeedbackEditor() {
@@ -145,10 +145,10 @@ export default function FormalFeedbackEditor() {
     if (submissionId) {
       if (requestedFeedback.status !== "READY") return;
       const record = requestedFeedback.record;
-      const prior = record.formalFeedback;
+      const prior = formalFeedbackFrozenView(record.formalFeedback);
       const restored = valuesFrom(prior.baseline);
       for (const [key,value] of Object.entries(prior.proposal.fields)) restored[key as ContributionFormalFieldKey] = value ?? "";
-      const restoredMedia = record.media.map(media => ({ ...media, kind: mediaKindOf(prior, media.uploadId) }));
+      const restoredMedia = record.media.map(media => ({ ...media, kind: mediaKindOf(record.formalFeedback, media.uploadId) }));
       setBaseline(prior.baseline); setValues(restored); setResubmissionRevision(record.revision); setReviewReason(record.review?.reason ?? ""); setActiveSubmissionId(record.submissionId);
       setPriorMedia(restoredMedia); setMediaSelection(createFormalMediaSelection(prior.baseline, prior.proposal, restoredMedia.map(media => media.uploadId)));
       setRightsConfirmed(record.rightsConfirmed);

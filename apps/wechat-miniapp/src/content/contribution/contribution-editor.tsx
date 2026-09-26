@@ -94,15 +94,15 @@ export function ContributionEditor({ renderRecords, embedded = false, embeddedHe
     return () => clearTimeout(timer);
   }, [resumeAttempt]);
   useEffect(() => {
-    if (!embedded || !form.draft || form.draft.submissionState !== "PENDING_REVIEW" || submittedId.current === form.draft.submissionId) return;
+    if (form.ownerChanged || !embedded || !form.draft || form.draft.submissionState !== "PENDING_REVIEW" || submittedId.current === form.draft.submissionId) return;
     submittedId.current = form.draft.submissionId;
     onSubmitted?.(form.draft);
-  }, [embedded, form.draft, onSubmitted]);
+  }, [embedded, form.draft, form.ownerChanged, onSubmitted]);
   useEffect(() => {
     if (!embedded || form.kind !== "NEW_SPOT_PROPOSAL") return;
     const latitude = parseCoordinateInput(form.latitude);
     const longitude = parseCoordinateInput(form.longitude);
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+    if (form.ownerChanged || !Number.isFinite(latitude) || !Number.isFinite(longitude) ||
         Math.abs(latitude) > 90 || Math.abs(longitude) > 180 ||
         (latitude === 0 && longitude === 0)) {
       onCandidateChange?.(null);
@@ -114,7 +114,7 @@ export function ContributionEditor({ renderRecords, embedded = false, embeddedHe
       longitude,
       selectionVersion: form.candidateSelectionVersion,
     });
-  }, [embedded, form.candidateName, form.candidateSelectionVersion, form.kind, form.latitude, form.longitude, onCandidateChange]);
+  }, [embedded, form.candidateName, form.candidateSelectionVersion, form.kind, form.latitude, form.longitude, form.ownerChanged, onCandidateChange]);
   useEffect(() => {
     setPreviewFailures([]);
   }, [form.draft?.submissionId]);
@@ -123,7 +123,7 @@ export function ContributionEditor({ renderRecords, embedded = false, embeddedHe
   const previewPathKey = Object.keys(form.candidateMediaPreviews).sort().join("|");
   const previewFailureKey = [...previewFailures].sort().join("|");
   useEffect(() => {
-    if (!pageVisible || form.kind !== "NEW_SPOT_PROPOSAL" || !previewDraftId) return;
+    if (form.ownerChanged || !pageVisible || form.kind !== "NEW_SPOT_PROPOSAL" || !previewDraftId) return;
     const missing = form.currentMedia.filter((media) =>
       (media.state === "UPLOADED" || media.state === "ATTACHED") &&
       !form.candidateMediaPreviews[media.uploadId] &&
@@ -139,10 +139,10 @@ export function ContributionEditor({ renderRecords, embedded = false, embeddedHe
       setPreviewFailures(current => [...new Set([...current.filter(id => !(id in paths)), ...failedIds])]);
     });
     return () => { active = false; };
-  }, [form.kind, pageVisible, previewDraftId, previewFailureKey, previewMediaKey, previewPathKey]);
+  }, [form.kind, form.ownerChanged, pageVisible, previewDraftId, previewFailureKey, previewMediaKey, previewPathKey]);
 
-  const leaveState = useRef({ busy: form.commandBusy, dirty: form.hasUnsavedChanges });
-  leaveState.current = { busy: form.commandBusy, dirty: form.hasUnsavedChanges };
+  const leaveState = useRef({ busy: !form.ownerChanged && form.commandBusy, dirty: form.hasUnsavedChanges });
+  leaveState.current = { busy: !form.ownerChanged && form.commandBusy, dirty: form.hasUnsavedChanges };
   const confirmLeave = useCallback(() => confirmContributionEditorLeave({
     ...leaveState.current,
     confirm: async () => {
@@ -221,6 +221,9 @@ export function ContributionEditor({ renderRecords, embedded = false, embeddedHe
   return <View className={`${themeClass} contribution-page${embedded ? " contribution-page--embedded" : ""}`} style={embedded ? { height: embeddedHeightPx === undefined ? "calc(100vh - 184Px)" : `${embeddedHeightPx}px`, minHeight: 0, maxHeight: "none" } : {}} data-route="contribution-intake">
     {commands.handoffWarning}
     {embedded ? <View className="contribution-editor-header"><Text className="type-section">{title}</Text><Text className="contribution-editor-save-state">{savedState}</Text><Button className="contribution-editor-close focus-ring" aria-label="关闭新增观星点" onClick={() => void requestClose()}>×</Button></View> : <CustomNav title={managesRecords ? "观星点创建与反馈" : form.hasFormalSpot ? "现场反馈与纠错" : title} back backFallbackTab={managesRecords ? "/pages/my/index" : "/pages/map/index"} beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} />}
+    {form.ownerChanged && !managesRecords ? <StatusPanel state="ERROR" title="账号已变化"
+      detail="请返回地图后重新打开，原账号的输入不会交给当前账号。" recoveryLabel="返回地图"
+      onRecover={() => embedded ? onClose?.() : void Taro.switchTab({ url: "/pages/map/index" })} /> : <>
     {isNewSpotDocument ? <SelectionTabs
       className="formal-feedback-tabs contribution-document-tabs"
       items={SPOT_DOCUMENT_CHAPTERS.map(([id, label]) => ({ id, label }))}
@@ -266,6 +269,7 @@ export function ContributionEditor({ renderRecords, embedded = false, embeddedHe
       </View>
     </ScrollView>
     {isNewSpotDocument ? <View className="contribution-document-actions safe-bottom"><ContributionActions form={form} commands={commands} onWithdrawn={leaveAfterWithdrawal} /></View> : null}
+    </>}
   </View>;
 }
 

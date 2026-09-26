@@ -72,7 +72,7 @@ export function ContributionMediaSection({
             ) : null}
             <SoftButton
               label="移除媒体"
-              disabled={form.commandBusy || item.state === "ATTACHED" || contributionSubmissionState(form.draft ?? form.matchingDraft!) !== "DRAFT"}
+              disabled={form.commandBusy || !["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(form.draft ?? form.matchingDraft!))}
               onClick={() => void commands.removeMedia(item.uploadId)}
             >
               移除

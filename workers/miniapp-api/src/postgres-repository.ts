@@ -9,6 +9,7 @@ import {
   normalizeContributionAttempts,
   reviewLatestContributionAttempt,
   removeCandidateProfileMedia,
+  contributionMediaHasHistory,
 } from "./contribution-attempts.ts";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -2291,7 +2292,7 @@ export class PostgresMiniappRepository
       if (current.revision !== expectedRevision) throw new Error("contribution_revision_conflict");
       const upload = current.payload.media.find((item) => item.uploadId === uploadId);
       if (!upload) throw new Error("contribution_upload_not_found");
-      if (upload.state === "ATTACHED") throw new Error("contribution_upload_not_editable");
+      const retainedForHistory = contributionMediaHasHistory(current.payload, upload);
       await this.#registerPendingMediaKeys(client,userId,[upload],"contribution_media_uploads");
       const now = new Date().toISOString();
       const candidateProfile = removeCandidateProfileMedia(normalizeContributionSubmission(current.payload), upload);
@@ -2301,7 +2302,7 @@ export class PostgresMiniappRepository
         ...(candidateProfile ? { candidateProfile } : {}),
         revision: current.revision + 1, updatedAt: now,
       };
-      await client.query(
+      if (!retainedForHistory) await client.query(
         "UPDATE contribution_media_uploads SET state = 'EXPIRED', expires_at = $4, payload = payload || jsonb_build_object('state', 'EXPIRED') WHERE upload_id = $1 AND submission_id = $2 AND user_id = $3",
         [uploadId, submissionId, userId, now],
       );
@@ -2467,6 +2468,17 @@ export class PostgresMiniappRepository
         [objectKeys],
       );
     });
+  }
+
+  async getOwnedContributionUploadObject(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId) {
+    const result = await this.pool.query<{ object_key: string; mime_type: ContributionMediaUpload["mimeType"] }>(
+      `SELECT object_key,mime_type FROM contribution_media_uploads
+       WHERE user_id=$1 AND submission_id=$2 AND upload_id=$3 AND state='ATTACHED' AND object_key IS NOT NULL
+       UNION ALL
+       SELECT object_key,mime_type FROM formal_feedback_media_uploads
+       WHERE user_id=$1 AND submission_id=$2 AND upload_id=$3 AND state='ATTACHED' AND object_key IS NOT NULL
+       LIMIT 1`, [userId, submissionId, uploadId]);
+    return result.rows[0] ? { objectKey: result.rows[0].object_key, mimeType: result.rows[0].mime_type } : null;
   }
 
   async getContributionUploadObject(uploadId: ContributionUploadId) {

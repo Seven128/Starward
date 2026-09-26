@@ -431,8 +431,8 @@ function createSubmit(
 function createRemoveMedia(form: ContributionForm, assertAccount: () => void) {
   return async (uploadId: ContributionUploadId) => {
     const draft = activeDraft(form);
-    if (!draft || contributionSubmissionState(draft) !== "DRAFT" || !draft.media.some((item) => item.uploadId === uploadId)) return;
-    const confirmation = await Taro.showModal({ title: "移除这张图片？", content: "只从当前草稿移除这张图片，已填写的文字和其他图片会保留。", confirmText: "移除" });
+    if (!draft || !["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(draft)) || !draft.media.some((item) => item.uploadId === uploadId)) return;
+    const confirmation = await Taro.showModal({ title: "移除这张图片？", content: "只从本次修改中移除这张图片；文字、其他图片和原审核记录会保留。", confirmText: "移除" });
     if (!confirmation.confirm) return;
     try {
       assertAccount();

@@ -49,7 +49,7 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
   #sessions = new Map<string, { userId: UserId; expiresAt: string }>();
   #library = new InMemoryLibraryStore();
   #contributions = new InMemoryContributionStore();
-  #formalUploadIntents = new Map<string, { userId: UserId; value: ContributionFormalUploadIntent; objects: Map<ContributionUploadId, { objectKey: string; mimeType: ContributionMediaUpload["mimeType"] }> }>();
+  #formalUploadIntents = new Map<string, { userId: UserId; value: ContributionFormalUploadIntent; objects: Map<ContributionUploadId, { objectKey: string; mimeType: ContributionMediaUpload["mimeType"]; submissionId?: ContributionId }> }>();
   #formalUploadReceipts = new Map<string, ContributionFormalUploadIntent>();
   #formalBaselines = new Map<SpotId, Map<number, ContributionFormalBaseline>>();
   #formalCurrentRevisions = new Map<SpotId, number>();
@@ -471,7 +471,11 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
         const acceptedIds = new Set(result.submission.media.map(upload => upload.uploadId));
         intent.value = {
           ...intent.value, uploads: intent.value.uploads.map(upload => {
-            if (acceptedIds.has(upload.uploadId)) return { ...upload, state: "ATTACHED" as const };
+            if (acceptedIds.has(upload.uploadId)) {
+              const object = intent.objects.get(upload.uploadId);
+              if (object) object.submissionId = result.submission.submissionId;
+              return { ...upload, state: "ATTACHED" as const };
+            }
             this.#queueFormalDeletion(userId, upload, intent.objects.get(upload.uploadId));
             intent.objects.delete(upload.uploadId);
             return { ...upload, state: "EXPIRED" as const };
@@ -584,10 +588,19 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
       }
     });
   }
+  async getOwnedContributionUploadObject(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId) {
+    if (this.#contributions.ownsUpload(userId, submissionId, uploadId)) return this.#contributions.getUploadObject(uploadId);
+    for (const intent of this.#formalUploadIntents.values()) {
+      const object = intent.objects.get(uploadId);
+      if (intent.userId === userId && object?.submissionId === submissionId)
+        return { objectKey: object.objectKey, mimeType: object.mimeType };
+    }
+    return null;
+  }
   async getContributionUploadObject(uploadId: ContributionUploadId) {
     const legacy = this.#contributions.getUploadObject(uploadId);
     if (legacy) return legacy;
-    for (const item of this.#formalUploadIntents.values()) { const object=item.objects.get(uploadId); if(object)return structuredClone(object); }
+    for (const item of this.#formalUploadIntents.values()) { const object=item.objects.get(uploadId); if(object)return { objectKey: object.objectKey, mimeType: object.mimeType }; }
     return null;
   }
 

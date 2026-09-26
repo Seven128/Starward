@@ -333,6 +333,7 @@ export interface MiniappRepositoryPort {
   expireContributionUploads(now: string): Promise<readonly string[]>;
   removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionSubmission>;
   acknowledgeContributionMediaDeletion(objectKeys: readonly string[]): Promise<void>;
+  getOwnedContributionUploadObject(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId): Promise<{ objectKey: string; mimeType: ContributionMediaUpload["mimeType"] } | null>;
   getContributionUploadObject(
     uploadId: ContributionUploadId,
   ): Promise<{

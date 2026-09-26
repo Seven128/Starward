@@ -55,6 +55,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
   const hasFormalSpot = boundSpotId.startsWith("spot:");
   const initialSelection = initialContributionSelection(hasFormalSpot);
   const notify = useAppStore((state) => state.notify);
+  const accountOwnerId = useAppStore(state => state.accountOwnerId);
   const notificationVisible = useRef(true);
   const [pageVisible, setPageVisible] = useState(true);
   const hideNotifications = () => {
@@ -151,6 +152,9 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     candidateName, candidateRegion, latitude, longitude, rightsConfirmed, preciseLocationConsent,
     candidateProfile: spotDocumentProposal(candidateFields, candidateMedia),
   }, initialSpotId, Boolean(pendingSubmission) || Boolean(draft && !["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(draft))), !overrides.disableLocalPersistence);
+
+  const ownerChanged = localDraft.owner !== null &&
+    (accountOwnerId !== localDraft.owner || currentDraftUserId() !== localDraft.owner);
 
   const announce = (
     tone: "error" | "warning" | "info" | "success",
@@ -344,7 +348,8 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     submissionRecovery,
     restorePendingSubmission,
     localRecovery: localDraft.recovery,
-    hasUnsavedChanges: localDraft.hasUnsavedChanges,
+    ownerChanged,
+    hasUnsavedChanges: !ownerChanged && localDraft.hasUnsavedChanges,
     localStorageError: localDraft.storageError,
     restoreLocalDraft,
     discardLocalDraft: localDraft.clear,

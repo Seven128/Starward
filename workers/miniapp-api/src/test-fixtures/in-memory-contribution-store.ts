@@ -16,6 +16,7 @@ import {
   appendCandidateProfileMedia,
   isContributionEditable,
   removeCandidateProfileMedia,
+  contributionMediaHasHistory,
 } from "../contribution-attempts.ts";
 import { buildFormalContributionResult } from "../formal-contribution-submission.ts";
 
@@ -26,7 +27,7 @@ export class InMemoryContributionStore {
   >();
   #objects = new Map<
     ContributionUploadId,
-    { objectKey: string; mimeType: ContributionMediaUpload["mimeType"] }
+    { objectKey: string; mimeType: ContributionMediaUpload["mimeType"]; userId: UserId; submissionId: ContributionId; attached: boolean }
   >();
   #idempotency = new Map<string, unknown>();
   #pendingDeletion = new Set<string>();
@@ -42,11 +43,18 @@ export class InMemoryContributionStore {
     const records = this.#records.get(userId);
     let cleanupRequired = false;
     for (const submission of records?.values() ?? [])
-      for (const upload of submission.media) {
+      for (const upload of [...submission.media, ...(submission.attempts ?? []).flatMap(attempt => attempt.snapshot.media)]) {
         cleanupRequired ||= upload.state === "PENDING" || this.#objects.has(upload.uploadId);
         this.#queueDeletion(userId, upload);
         this.#objects.delete(upload.uploadId);
       }
+    // Includes legacy ATTACHED media removed from the working copy before
+    // explicit attempt snapshots existed.
+    for (const [uploadId, object] of this.#objects) if (object.userId === userId) {
+      cleanupRequired = true;
+      this.#pendingDeletion.add(object.objectKey);
+      this.#objects.delete(uploadId);
+    }
     this.#records.delete(userId);
     for (const key of this.#idempotency.keys())
       if (key.startsWith(`${userId}|`)) this.#idempotency.delete(key);
@@ -179,6 +187,9 @@ export class InMemoryContributionStore {
     };
     records.set(submissionId, next);
     this.#objects.set(uploadId, {
+      userId,
+      submissionId,
+      attached: false,
       objectKey: completion.objectKey,
       mimeType: upload.mimeType,
     });
@@ -229,6 +240,10 @@ export class InMemoryContributionStore {
       revision: current.revision + 1,
       updatedAt: now,
     };
+    for (const upload of next.media) {
+      const object = this.#objects.get(upload.uploadId);
+      if (object) object.attached = true;
+    }
     records.set(submissionId, next);
     this.#remember(userId, idempotencyKey, next);
     return structuredClone(next);
@@ -245,11 +260,13 @@ export class InMemoryContributionStore {
     if (current.revision !== expectedRevision) throw new Error("contribution_revision_conflict");
     const upload = current.media.find((item) => item.uploadId === uploadId);
     if (!upload) throw new Error("contribution_upload_not_found");
-    if (upload.state === "ATTACHED") throw new Error("contribution_upload_not_editable");
+    const retainedForHistory = contributionMediaHasHistory(current, upload);
     const candidateProfile = removeCandidateProfileMedia(current, upload);
     const next = { ...structuredClone(current), media: current.media.filter((item) => item.uploadId !== uploadId).map((item) => structuredClone(item)), ...(candidateProfile ? { candidateProfile } : {}), revision: current.revision + 1, updatedAt: new Date().toISOString() };
-    this.#queueDeletion(userId, upload);
-    this.#objects.delete(uploadId);
+    if (!retainedForHistory) {
+      this.#queueDeletion(userId, upload);
+      this.#objects.delete(uploadId);
+    }
     records.set(submissionId, next);
     this.#remember(userId, idempotencyKey, next);
     return structuredClone(next);
@@ -367,9 +384,14 @@ export class InMemoryContributionStore {
     else if (upload.state === "PENDING") this.#pendingDeletion.add(contributionMediaObjectKey(userId, upload.uploadId, upload.mimeType));
   }
 
+  ownsUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId) {
+    const object = this.#objects.get(uploadId);
+    return Boolean(object?.attached && object.userId === userId && object.submissionId === submissionId);
+  }
+
   getUploadObject(uploadId: ContributionUploadId) {
     const value = this.#objects.get(uploadId);
-    return value ? structuredClone(value) : null;
+    return value ? { objectKey: value.objectKey, mimeType: value.mimeType } : null;
   }
 
   #key(userId: UserId, idempotencyKey: string) {

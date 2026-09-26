@@ -221,6 +221,10 @@ export class ContributionService {
   async readForAdmin(uploadId: ContributionUploadId) {
     const record = await this.repository.getContributionUploadObject(uploadId);
     if (!record) throw new Error("contribution_upload_not_found");
+    return this.#readObject(record);
+  }
+
+  async #readObject(record: { objectKey: string; mimeType: ContributionMediaUpload["mimeType"] }) {
     const bytes = await this.mediaStore.read(record.objectKey);
     if (!bytes) throw new Error("contribution_media_object_missing");
     return {
@@ -263,9 +267,12 @@ export class ContributionService {
       submission.media.some(media => media.uploadId === uploadId) ||
       submission.attempts.some(attempt => attempt.snapshot.media.some(media => media.uploadId === uploadId))
     );
-    if (!ownsUpload)
-      throw new Error("contribution_upload_not_found");
-    return this.readForAdmin(uploadId);
+    // Legacy attached uploads may lack an attempt snapshot. Their registered
+    // account + submission identity remains the authorization boundary.
+    const record = ownsUpload ? await this.repository.getContributionUploadObject(uploadId)
+      : submission ? await this.repository.getOwnedContributionUploadObject(userId, submissionId, uploadId) : null;
+    if (!record) throw new Error("contribution_upload_not_found");
+    return this.#readObject(record);
   }
 
   async readForPublishedSpot(spotId: SpotId, uploadId: ContributionUploadId) {
