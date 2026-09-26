@@ -124,7 +124,7 @@ Astronomical events extend the existing reviewed meteor-event owner rather than 
 
 2026-09-13修订替换事件独立页面的入口/返回表达。地图和计划复用[共享modal契约](shared-state-and-recovery.md#shared-astronomical-event-modal)，计划事件选择由多关联追加改为可选的单选（0或1项）：新选择确认后替换计划草稿中的关联，最终计划保存才持久化。查看详情、切换目录日期、取消modal不能覆盖计划地点、观察时段、出发安排或其他未保存字段。计划只读详情中查看已关联事件也在同modal内，修改关联沿用既有“编辑计划”流程进入select-one，不能从只读详情暗中写库。
 
-历史多关联数据不得自动截断。读取保留既有ID与来源；新建和用户明确修改事件选择时使用0/1语义。旧计划仅修改其他字段时不顺带丢弃历史关联；明确替换时才收敛为单项，服务端迁移和兼容由技术owner维护。其他事件资料、年度范围、可见性及安全约束继续适用。
+历史多关联数据不得自动截断。读取保留既有ID与来源；新建和用户明确修改事件选择时使用0/1语义。旧计划仅修改其他字段时不顺带丢弃历史关联；其中事件退出当前目录时，关联原样保留仍可保存，页面如实说明资料不可用，不将历史身份当作可新增的目录选项。明确替换时才收敛为单项，服务端迁移和兼容由技术owner维护。其他事件资料、年度范围、可见性及安全约束继续适用。
 
 <!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/contributions/ADOPTED.md" -->
 <!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/feedback/ADOPTED.md" -->

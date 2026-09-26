@@ -2086,10 +2086,13 @@ export class MiniappService {
       if (input.eventOccurrenceIds !== undefined)
         eventOccurrenceIds = parsePlanEventOccurrenceIds(input.eventOccurrenceIds);
     } catch { throw new Error("plan_event_occurrence_invalid"); }
-    if (eventOccurrenceIds?.some(id => !this.eventCatalog.find(id)))
+    const preservesEventHistory = eventOccurrenceIds !== undefined &&
+      JSON.stringify(eventOccurrenceIds) === JSON.stringify(existingPlan?.eventOccurrenceIds ?? []);
+    // Catalog withdrawal must not force unrelated edits to discard saved history.
+    // Changed selections still require current catalog identities and 0/1 semantics.
+    if (!preservesEventHistory && eventOccurrenceIds?.some(id => !this.eventCatalog.find(id)))
       throw new Error("plan_event_occurrence_invalid");
-    if (eventOccurrenceIds && eventOccurrenceIds.length > 1 &&
-        JSON.stringify(eventOccurrenceIds) !== JSON.stringify(existingPlan?.eventOccurrenceIds ?? []))
+    if (eventOccurrenceIds && eventOccurrenceIds.length > 1 && !preservesEventHistory)
       throw new Error("plan_event_occurrence_single_selection_required");
     if (eventOccurrenceIds === undefined && existingPlan?.eventOccurrenceIds?.length)
       throw new Error("plan_event_occurrences_required");

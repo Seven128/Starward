@@ -1052,7 +1052,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 const event = eventCatalog.find(item => item.occurrenceId === id);
                 return <Button key={id} className="plan-event-row" onClick={() => { setEventDetailId(id); setEventModalOpen(true); }}>
                   <Text>{event?.displayName ?? "事件资料暂不可用"}</Text>
-                  <Text className="type-caption">{event ? `${eventDatePresentation(event).date} ${event.peakDate}` : id}</Text>
+                  <Text className="type-caption">{event ? `${eventDatePresentation(event).date} ${event.peakDate}` : "原有关联仍保留；编辑计划可重新选择。"}</Text>
                 </Button>;
               })}
               {!activePlan.eventOccurrenceIds?.length ? <StatusPanel state="EMPTY" emptyLevel="section"
@@ -1276,7 +1276,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
               {eventOccurrenceIds.map(id => {
                 const event = eventCatalog.find(item => item.occurrenceId === id);
                 return <View key={id} className="plan-event-selection">
-                  <View><Text>{event?.displayName ?? "事件资料暂不可用"}</Text><Text className="type-caption">{event ? `${eventDatePresentation(event).date} ${event.peakDate}` : id}</Text></View>
+                  <View><Text>{event?.displayName ?? "事件资料暂不可用"}</Text><Text className="type-caption">{event ? `${eventDatePresentation(event).date} ${event.peakDate}` : "原有关联仍保留；可在事件目录中重新选择。"}</Text></View>
                 </View>;
               })}
               {eventsQuery.isError || eventsQuery.refreshError || eventsQuery.data?.dataState === "STALE_USABLE" ? <StatusPanel
