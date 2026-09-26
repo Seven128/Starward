@@ -6559,9 +6559,8 @@ const journeys = [
       {
         key: "plan-open-editor",
         screenshot: true,
-        tap: ".plan-actions .soft-button",
-        index: 1,
-        minimum: 2,
+        tap: ".plan-actions .soft-button--primary",
+        minimum: 1,
         expectedPath: "content/plan/edit/index",
         waitFor: [
           { selector: "[data-od-id='plan-editor-form']", minimum: 1 },
