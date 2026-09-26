@@ -550,8 +550,14 @@
 .plan-reminder__offset { color: var(--text-secondary); font-size: 14Px; line-height: 21Px; }
 .plan-reminder__heading > text:last-child { color: var(--text-tertiary); font-size: 14Px; }
 .plan-reminder__status { display: flex; min-height: 44Px; align-items: center; gap: 8Px; color: var(--text-secondary); font-size: 14Px; }
-.plan-reminder__status > text:last-child { color: var(--accent-warm); text-decoration: underline; text-underline-offset: 4Px; }
-.plan-reminder__status-detail { display: block; margin: -2Px 0 5Px; color: var(--text-tertiary); font-size: 14Px; line-height: 21Px; }
+.plan-reminder__status-action { width: auto; min-height: 44Px; margin: 0; padding: 0 8Px; border: 0; background: transparent; color: var(--accent-warm); font-size: 14Px; line-height: 21Px; text-decoration: underline; text-underline-offset: 4Px; }
+.plan-reminder__status-action::after { border: 0; }
+.plan-reminder-status-overlay { position: fixed; inset: 0; z-index: 1200; display: flex; align-items: center; justify-content: center; padding: 20Px; box-sizing: border-box; background: rgba(0, 0, 0, .4); }
+.plan-reminder-status-dialog { display: flex; flex-direction: column; width: 100%; max-width: 350Px; padding: 20Px; box-sizing: border-box; border-radius: 14Px; background: var(--canvas); color: var(--text-primary); }
+.plan-reminder-status-dialog__title { display: block; font-size: 16Px; line-height: 24Px; font-weight: 600; }
+.plan-reminder-status-dialog__detail { display: block; margin-top: 12Px; color: var(--text-secondary); font-size: 14Px; line-height: 21Px; }
+.plan-reminder-status-dialog__close { align-self: flex-end; width: auto; min-height: 44Px; margin: 12Px 0 0; padding: 0 12Px; border: 0; background: transparent; color: var(--primary); font-size: 14Px; line-height: 44Px; }
+.plan-reminder-status-dialog__close::after { border: 0; }
 .plan-check { display: flex; width: 100%; min-height: 48Px; margin: 0; padding: 0; align-items: flex-start; gap: 12Px; border: 0; border-bottom: 1Px solid var(--border); border-radius: 0; background: transparent; color: var(--text-primary); font-size: 14.5Px; line-height: 22Px; text-align: left; }
 .plan-check::after { border: 0; }
 .plan-check__box { display: grid; width: 18Px; height: 18Px; min-width: 18Px; margin-top: 1Px; place-items: center; border: 1Px solid var(--border-strong, var(--border)); border-radius: 4Px; color: transparent; box-sizing: border-box; }

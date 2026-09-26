@@ -52,6 +52,7 @@ import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 import { planContextIdentity, PlanSaveRecoveryError } from "@/services/plan-save-retry";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
 import { AstronomicalEventModal } from "@/components/astronomical-event-modal";
+import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { eventDatePresentation } from "@/content/event/event-model";
 import "./index.scss";
 
@@ -76,8 +77,11 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const mountId = useId();
   const [, refreshIdentity] = useState(0);
   const [pageVisible, setPageVisible] = useState(true);
+  const [statusReminderId, setStatusReminderId] = useState<string | null>(null);
+  // Preserve the native document offset across overlay/state updates without rendering on every scroll frame.
+  const documentScrollTop = useRef(0);
   useDidShow(() => { setPageVisible(true); refreshIdentity((value) => value + 1); });
-  useDidHide(() => { setPageVisible(false); useAppStore.getState().clearNotifications("plan"); });
+  useDidHide(() => { setPageVisible(false); setStatusReminderId(null); useAppStore.getState().clearNotifications("plan"); });
   const planOwner = currentDraftUserId();
   const formOwner = useRef(planOwner);
   formOwner.current ??= planOwner;
@@ -366,12 +370,18 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     notes,
   });
   const themeClass = useThemeClass();
+  useEffect(() => { setStatusReminderId(null); }, [activePlan?.planId, editing]);
+  const statusReminder = !editing ? activePlan?.reminders?.find(reminder => reminder.reminderId === statusReminderId) : null;
+  const selectedReminderNotification = statusReminder
+    ? reminderNotifications.find(status => status.planId === activePlan?.planId && status.reminderId === statusReminder.reminderId)
+    : undefined;
   const selectedSpotIndex = Math.max(
     0,
     formalSpots.findIndex((spot) => spot.spotId === selectedSpotId),
   );
   const applyPlan = (plan: ObservationPlan) => {
     if (mutationBusy.current || !scopedDraftUserId()) return;
+    documentScrollTop.current = 0;
     hydratedPlanId.current = plan.planId;
     newPlanRequested.current = false;
     setActivePlanId(plan.planId);
@@ -409,6 +419,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   };
   const startNewPlan = () => {
     if (mutationBusy.current || !scopedDraftUserId()) return;
+    documentScrollTop.current = 0;
     setConflictPlan(null);
     newPlanRequested.current = true;
     setEditing(true);
@@ -898,7 +909,9 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         backOdId="my-plan-back-action"
         backFallbackTab="/pages/my/index"
       />
-      <ScrollView className="plan-editor__scroll hide-scrollbar" scrollY enhanced showScrollbar={false} scrollIntoView={validationAnchor}>
+      <ScrollView className="plan-editor__scroll hide-scrollbar" scrollY enhanced showScrollbar={false} scrollIntoView={validationAnchor}
+        scrollTop={documentScrollTop.current}
+        onScroll={event => { documentScrollTop.current = event.detail.scrollTop; }}>
       <View className="plan-content safe-bottom">
         {contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE" ? <StatusPanel state="STALE"
           detail="以下仍使用上次的地点与时间资料，尚未确认最新状态。"
@@ -1050,8 +1063,10 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                   <Text className="plan-reminder__title">{reminder.title?.trim() || "个人提醒"}</Text>
                   <Text className="plan-reminder__offset">出发前 {reminder.hoursBeforeDeparture} 小时</Text>
                 </View><Text>{reminder.items.filter(item => item.completed).length}/{reminder.items.length}</Text></View>
-                <View className="plan-reminder__status"><Text>提醒与清单已保存</Text><Text>{planReminderStatusLabel(notification)}</Text></View>
-                <Text className="plan-reminder__status-detail">{planReminderStatusDetail(notification)}</Text>
+                <View className="plan-reminder__status"><Text>提醒与清单已保存</Text>
+                  <Button className="plan-reminder__status-action" aria-label={`查看${reminder.title || "个人提醒"}的通知状态说明`}
+                    onClick={() => setStatusReminderId(reminder.reminderId)}>{planReminderStatusLabel(notification)}</Button>
+                </View>
                 {reminder.items.map(item => <Button key={item.itemId} className={`plan-check ${item.completed ? "plan-check--done" : ""}`} disabled={checklistSaving} aria-pressed={item.completed} aria-label={`${item.text}，${item.completed ? "已完成" : "未完成"}`}
                     onClick={() => { void toggleReminderItem(reminder.reminderId, item.itemId, !item.completed); }}><View className="plan-check__box"><Text>✓</Text></View><Text>{item.text}</Text></Button>)}
               </View>})}
@@ -1351,6 +1366,17 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           {saving ? "保存中…" : "保存计划"}
         </SoftButton>
       </View> : null}
+      <NativeBackBoundary active={Boolean(statusReminder)} onBack={() => setStatusReminderId(null)} />
+      {statusReminder ?
+        <View className="plan-reminder-status-overlay" catchMove onClick={() => setStatusReminderId(null)}>
+          <View className="plan-reminder-status-dialog" role="dialog" aria-modal="true" aria-label={`${statusReminder.title}的通知状态`}
+            onClick={event => event.stopPropagation()}>
+            <Text className="plan-reminder-status-dialog__title">{planReminderStatusLabel(selectedReminderNotification)}</Text>
+            <Text className="plan-reminder-status-dialog__detail">{planReminderStatusDetail(selectedReminderNotification)}</Text>
+            <Button className="plan-reminder-status-dialog__close" onClick={() => setStatusReminderId(null)}>知道了</Button>
+          </View>
+        </View>
+      : null}
     </View>
   );
 }
