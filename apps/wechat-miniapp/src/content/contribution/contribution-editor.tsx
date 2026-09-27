@@ -18,7 +18,8 @@ import { useContributionForm, type ContributionForm } from "./use-contribution-f
 import { contributionRecordPrimaryAction, resolveContributionEditorRecord, type ContributionRecordGroup } from "./contribution-record-model";
 import { ToggleField } from "@/components/toggle-field";
 import { SpotDocumentFields } from "../spot-document-fields";
-import { SPOT_DOCUMENT_CHAPTERS, type SpotDocumentChapter } from "../spot-document";
+import { SPOT_DOCUMENT_CHAPTERS } from "../spot-document";
+import { useSpotDocumentNavigation } from "../use-spot-document-navigation";
 import { contributionSavedState } from "./contribution-save-state";
 import { contributionSubmissionState } from "./contribution-model";
 import { currentDraftUserId, getContributionMedia } from "@/services/api-client";
@@ -73,12 +74,13 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
     (readonlyEntered.current || Boolean(form.requestedSubmissionId && !form.forceNew && editorRecord?.state !== "CURRENT"));
   const isNewSpotDocument = !managesRecords && form.kind === "NEW_SPOT_PROPOSAL";
   const validationTarget = contributionValidationAnchor(form.validationField, isNewSpotDocument ? form.currentMedia : undefined);
-  const [validationAnchor, setValidationAnchor] = useState("");
   const [pageVisible, setPageVisible] = useState(true);
   const [previewFailures, setPreviewFailures] = useState<readonly string[]>([]);
   useDidShow(() => { setPageVisible(true); setPreviewFailures([]); });
   useDidHide(() => setPageVisible(false));
-  const [documentChapter, setDocumentChapter] = useState<SpotDocumentChapter>("place");
+  const { chapter: documentChapter, anchor: validationAnchor, jump: jumpDocumentChapter,
+    scrollTo: scrollToValidation, onScroll: onDocumentScroll } = useSpotDocumentNavigation(
+      ".contribution-page__scroll", pageVisible && !commands.handoffActive && !form.ownerChanged && !readonlyRecord && !managesRecords);
   const [recordsScrollTop, setRecordsScrollTop] = useState(0);
   const recordsScrollPosition = useRef(0);
   const recordsSavedPosition = useRef(0);
@@ -92,17 +94,13 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
     if (commands.handoffActive) { handoffWasOpen.current = true; return; }
     if (!handoffWasOpen.current) return;
     handoffWasOpen.current = false;
-    setValidationAnchor("");
-    const timer = setTimeout(() => setValidationAnchor(`formal-feedback-${documentChapter}`), 32);
-    return () => clearTimeout(timer);
-  }, [commands.handoffActive, documentChapter]);
+    jumpDocumentChapter(documentChapter);
+  }, [commands.handoffActive, documentChapter, jumpDocumentChapter]);
   useEffect(() => {
-    setValidationAnchor("");
     const target = validationTarget;
     if (!target) return;
-    const timer = setTimeout(() => setValidationAnchor(target), 0);
-    return () => clearTimeout(timer);
-  }, [validationTarget, form.validationAttempt]);
+    scrollToValidation(target);
+  }, [validationTarget, form.validationAttempt, scrollToValidation]);
   useEffect(() => {
     if (form.ownerChanged || !embedded || !form.draft || form.draft.submissionState !== "PENDING_REVIEW" || submittedId.current === form.draft.submissionId) return;
     submittedId.current = form.draft.submissionId;
@@ -198,10 +196,6 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
     : form.draft
       ? contributionSavedState(form.draft.updatedAt)
       : "尚未保存";
-  const jumpDocumentChapter = (chapter: SpotDocumentChapter) => {
-    setDocumentChapter(chapter);
-    setValidationAnchor(`formal-feedback-${chapter}`);
-  };
   const openRecordDetail = () => {
     recordsScrollTransition.current++;
     recordsSavedPosition.current = recordsScrollPosition.current;
@@ -253,8 +247,8 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
       activeItemClassName="is-active"
       indicatorClassName="formal-feedback-tabs__line"
     /> : null}
-    <ScrollView scrollY {...(managesRecords ? { scrollTop: recordsScrollTop, onScroll: onRecordsScroll } : {})} scrollIntoView={validationAnchor} scrollWithAnimation={false} enhanced bounces={false} showScrollbar={false} className="contribution-page__scroll hide-scrollbar">
-      <View className={`contribution-content${isNewSpotDocument && !readonlyRecord ? "" : " page-inset"} safe-bottom`}><NotificationRegion owner="contribution" placement="inline" />
+    <ScrollView scrollY {...(managesRecords ? { scrollTop: recordsScrollTop, onScroll: onRecordsScroll } : { onScroll: onDocumentScroll })} scrollIntoView={validationAnchor} scrollWithAnimation={false} enhanced bounces={false} showScrollbar={false} className="contribution-page__scroll hide-scrollbar">
+      <View className={`contribution-content spot-document-scroll-content${isNewSpotDocument && !readonlyRecord ? "" : " page-inset"} safe-bottom`}><NotificationRegion owner="contribution" placement="inline" />
         {form.capabilities.isError || form.capabilities.refreshError || form.capabilities.data?.dataState === "STALE_USABLE" ? (
           <StatusPanel state={form.capabilities.isError ? "ERROR" : "STALE"}
             detail="投稿能力状态暂时无法更新；当前输入仍会保留。"

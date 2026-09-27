@@ -47,6 +47,7 @@ import { MEDIA_RIGHTS_MODAL } from "../contribution/media-rights-modal";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { ContributionPhotoGallery } from "../contribution/photo-gallery";
 import { formalPhotoGroups } from "../contribution/photo-groups";
+import { useSpotDocumentNavigation } from "../use-spot-document-navigation";
 
 function valuesFrom(baseline: ContributionFormalBaseline) {
   const values = emptySpotDocumentValues();
@@ -92,17 +93,15 @@ export default function FormalFeedbackEditor() {
   const ownerChanged = editorOwner.current !== null &&
     (accountOwnerId !== editorOwner.current || currentDraftUserId() !== editorOwner.current);
   const [values, setValues] = useState<SpotDocumentValues | null>(null);
-  const [chapter, setChapter] = useState<(typeof CHAPTERS)[number][0]>("place");
-  const [scrollAnchor, setScrollAnchor] = useState("formal-feedback-place");
+  const { chapter, anchor: scrollAnchor, jump, onScroll } = useSpotDocumentNavigation(
+    ".formal-feedback-scroll", pageVisible && !mediaHandoff.active && !ownerChanged && Boolean(baseline && values));
   const handoffWasOpen = useRef(false);
   useEffect(() => {
     if (mediaHandoff.active) { handoffWasOpen.current = true; return; }
     if (!handoffWasOpen.current) return;
     handoffWasOpen.current = false;
-    setScrollAnchor("");
-    const timer = setTimeout(() => setScrollAnchor(`formal-feedback-${chapter}`), 32);
-    return () => clearTimeout(timer);
-  }, [mediaHandoff.active, chapter]);
+    jump(chapter);
+  }, [mediaHandoff.active, chapter, jump]);
   const [busy, setBusy] = useState(false);
   const submitBusy = useRef(false);
   const mediaBusy = useRef(false);
@@ -253,7 +252,6 @@ export default function FormalFeedbackEditor() {
     setPreviewRetry(value => value + 1);
   };
   const setField = (key: ContributionFormalFieldKey, value: string) => setValues(current => current ? { ...current, [key]: value } : current);
-  const jump = (next: typeof chapter) => { setChapter(next); setScrollAnchor(`formal-feedback-${next}`); };
   const syncMediaProposal = (intent: ContributionFormalUploadIntent) => {
     if (!baseline) return;
     setValues(current => current ? { ...current } : current);
@@ -408,8 +406,8 @@ export default function FormalFeedbackEditor() {
       onSelect={jump}
       activeItemClassName="is-active"
       indicatorClassName="formal-feedback-tabs__line" /> : null}
-    <ScrollView scrollY scrollIntoView={scrollAnchor} enhanced bounces={false} showScrollbar={false} className="formal-feedback-scroll">
-      <View className={`formal-feedback-body safe-bottom${showSubmit ? "" : " formal-feedback-body--without-submit"}`}>
+    <ScrollView scrollY scrollIntoView={scrollAnchor} onScroll={onScroll} enhanced bounces={false} showScrollbar={false} className="formal-feedback-scroll">
+      <View className={`formal-feedback-body spot-document-scroll-content safe-bottom${showSubmit ? "" : " formal-feedback-body--without-submit"}`}>
         <NotificationRegion owner="contribution" placement="inline" />
         {!ownerChanged && !query.isError && !history.isError && (query.refreshError || query.data?.dataState === "STALE_USABLE" ||
         history.refreshError || history.data?.dataState === "STALE_USABLE" ||

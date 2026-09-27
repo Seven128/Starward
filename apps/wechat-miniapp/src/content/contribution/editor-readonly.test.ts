@@ -36,6 +36,7 @@ function render(form: ContributionForm, props: Record<string, unknown> = {}, sou
     useCallback: (callback: unknown) => callback, useEffect() {}, useDidShow() {}, useDidHide() {},
     currentDraftUserId: () => "owner", contributionRecordPrimaryAction, contributionSubmissionState, resolveContributionEditorRecord, contributionValidationAnchor,
     useNativeEditorLeaveGuard: () => ({}), contributionSavedState: () => "已保存", SPOT_DOCUMENT_CHAPTERS: [["place", "地点"]],
+    useSpotDocumentNavigation: () => ({ chapter: "place", anchor: "", jump() {}, scrollTo() {}, onScroll() {} }),
   });
   return nodes(component({ ...(props.embedded ? {} : { renderRecordDetail: (item: unknown, onBack: unknown) =>
     ({ type: "ContributionRecordDetail", props: { item, onBack }, children: [] }) }), ...props }));
