@@ -7,13 +7,13 @@ import ts from "typescript";
 function runtime() {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declarations: string[] = [];
-  const names = new Set(["resolveSpotContext", "openDetail", "closeSpotPanel", "openLayerSheet"]);
+  const names = new Set(["invalidateMapPointIntent", "dismissMapRegionFailure", "resolveSpotContext", "openDetail", "closeSpotPanel", "openLayerSheet"]);
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && names.has(node.name.getText(source))) declarations.push(`const ${node.getText(source)};`);
     ts.forEachChild(node, visit);
   };
   visit(source);
-  assert.equal(declarations.length, 4);
+  assert.equal(declarations.length, names.size);
   let selectedSpotId: string | null = null;
   const contexts: unknown[] = [], presentations: string[] = [], extents: string[] = [];
   const attempts: { spotId: string; pending: boolean; error: unknown }[] = [];
@@ -24,9 +24,11 @@ function runtime() {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
     detailRequestGeneration: { current: 0 }, privateTransitionGeneration: { current: 0 }, lastHandledSelectedId: { current: null },
+    mapPointIntent: { current: 0 }, regionTimer: { current: null },
+    failedMapRegion: { current: null },
     panelCloseTimer: { current: null }, extentBeforeLayer: { current: null }, markerTapAt: { current: 0 },
     mapResetVersion: 0, bottomPresentation: "spot-panel", panelExtent: "medium", selectedSpotId: "a", analysisOverlay: "TOTAL_CLOUD",
-    useAppStore: { getState: () => ({ selectedSpotId, mapResetVersion: 0, observationContext: null }) },
+    useAppStore: { getState: () => ({ selectedSpotId, mapResetVersion: 0, observationContext: null, notifications: [] }) },
     selectSpot: (id: string | null) => { selectedSpotId = id; },
     setPanelPhase() {}, setPanelExtent: (value: string) => extents.push(value), setPanelDragOffset() {}, setSelectedFallback() {}, setSelectedProposal() {}, setAnnouncement() {}, setAnalysisOverlay() {},
     setBottomPresentation: (value: string) => presentations.push(value),

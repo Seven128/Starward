@@ -116,22 +116,45 @@ function mapHarness(native: Port, resolveContext: (point: unknown, source: strin
   let queue: NotificationRecord[] = [];
   let tick = 0;
   let mapResetVersion = 0;
+  let locationState = "DEFAULT_REGION";
+  const mapPointIntent = { current: 0 };
   const notify = (intent: NotificationIntent) => { queue = enqueueNotification(queue, intent, ++tick); };
   const run = actualCallback("map", "locateMap", {
     Taro: native, requestOneShotLocation, locationRequestBusy: { current: false },
-    useAppStore: { getState: () => ({ mapResetVersion }) },
-    setLocationState: (state: string) => states.push(state),
+    mapPointIntent, invalidateMapPointIntent: () => ++mapPointIntent.current, nativeMap: { isCurrent: () => true }, currentDraftUserId: () => "owner",
+    useAppStore: { getState: () => ({ mapResetVersion, locationState, notifications: queue,
+      dismissNotification: (id: string) => { queue = queue.filter(item => item.id !== id); } }) },
+    setLocationState: (state: string) => { states.push(state); locationState = state; },
     setLocationBusy: (value: boolean) => busy.push(value),
     setViewport: (viewport: unknown) => viewports.push(viewport),
     setAnnouncement: (message: string) => announcements.push(message),
     notify, resolveMapPoint: resolveContext, errorMessage: () => "暂时不可用",
   });
   return { run, states, viewports, busy, announcements, notify,
+    supersede: () => { mapPointIntent.current++; },
     reset: () => { mapResetVersion++; },
     get queue() { return queue; },
     visible: () => selectNotification(queue, "inline", "map"),
   };
 }
+
+test("a newer map selection cancels GPS/context progress without leaving REQUESTING or its old notice", async () => {
+  for (const phase of ["GPS", "CONTEXT"] as const) {
+    const fix = deferred<typeof center>(), context = deferred<void>(), entered = deferred<void>();
+    const map = mapHarness(platform(() => fix.promise, async () => ({})), async () => { entered.resolve(); await context.promise; });
+    map.notify({ owner: "map", placement: "inline", tone: "warning", title: "无关资料错误", body: "保留", dedupeKey: "unrelated" });
+    const pending = map.run();
+    if (phase === "CONTEXT") { fix.resolve(center); await entered.promise; }
+    map.supersede();
+    if (phase === "GPS") fix.resolve(center); else context.resolve();
+    await pending;
+    assert.equal(map.states.at(-1), phase === "GPS" ? "DEFAULT_REGION" : "GRANTED");
+    assert.equal(map.queue.some(item => item.dedupeKey === "map-location-request"), false);
+    assert.equal(map.queue.some(item => item.dedupeKey === "unrelated"), true);
+    assert.equal(map.announcements.length, 0);
+    assert.equal(map.busy.at(-1), false);
+  }
+});
 
 test("actual Map failure keeps viewport/context untouched and presents the right recovery", async () => {
   for (const permission of [false, true, undefined]) {

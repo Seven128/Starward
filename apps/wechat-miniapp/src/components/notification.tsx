@@ -153,10 +153,12 @@ export function NotificationRegion({
   owner,
   placement = "inline",
   pageRoute,
+  actionHandlers,
 }: {
   owner?: string;
   placement?: NotificationRecord["placement"];
   pageRoute?: string;
+  actionHandlers?: Readonly<Record<string, () => void>>;
 }) {
   const queue = useAppStore((state) => state.notifications);
   const dismiss = useAppStore((state) => state.dismissNotification);
@@ -177,10 +179,12 @@ export function NotificationRegion({
   }
   const selection = selectNotification(queue, placement, owner);
   if (!selection.current) return null;
+  const onAction = selection.current.dedupeKey ? actionHandlers?.[selection.current.dedupeKey] : undefined;
   return (
     <NotificationComponent
       notification={selection.current}
       residualCount={selection.residualCount}
+      {...(onAction ? { onAction } : {})}
       onDismiss={() => dismiss(selection.current!.id)}
     />
   );

@@ -77,6 +77,7 @@ async function retryMap(activeContext: object | null, mapContextFailed: boolean,
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
     activeContext, mapContextFailed,
+    failedMapRegion: { current: null }, mapPointIntent: { current: 0 },
     bootstrapContext: { refetch: refetch("context") }, scene: { refetch: refetch("scene") },
     setAnnouncement: (text: string) => announcements.push(text), notify: (notice: unknown) => notices.push(notice),
   });

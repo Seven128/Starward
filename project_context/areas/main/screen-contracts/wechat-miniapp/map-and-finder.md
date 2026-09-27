@@ -6,6 +6,8 @@ The adopted daytime layer composition is reached through the sole [Map resource 
 
 ## Cross-Control And State Invariants
 
+- Map 的位置解析按当前选择意图、账号、默认区域重置及原生实例判断结果是否仍有效；新正式点、私人点、定位或编辑选择须撤销旧拖图队列及迟到响应。取消正式点解析时结束加载并提供重试，不留下永久 pending。拖图解析失败保留未确认的目标中心，通过行内“重试此位置”重新解析；单纯隐藏返回不丢失该恢复目标，换号或重置不能重试旧范围。成功仅清除对应位置失败提示，保留无关消息。持续恢复卡须避开地图工具的完整命中区域。
+
 - 2026-09-13新增`map-astronomical-event-entry`：在既有地图悬浮工具组加入采用的小流星`meteor`图标，与其他工具同尺度和44px命中区，标题/可访问名称为“天文事件”。主导航仍只有地图/我的，不把事件入口塞入搜索框。它打开[共享事件modal](shared-state-and-recovery.md#shared-astronomical-event-modal)的browse模式，只浏览，不选择或关联计划。随其余地图工具在大档点位面板中退场；modal打开时底层地图/面板保留位置但不可交互，关闭原样恢复。
 - 2026-09-13地形层需求：在现有`map-layer-selector`中增加独立的“地形”复选开关，优先呈现有来源的山体阴影/高程信息；观测叠加仍是光污染/云量单选，可以地形+光污染或地形+云量。没有新增“纯地形/无叠加”选项，不改变既有云量共享日期责任。地形与年度夜光不随小时标尺伪更新。开关以覆盖和实际原生地图能力为前提：当前视野无数据、加载失败或不支持时明确反馈，不把未显示当成平地。地形影像及夜光配准、层次/合法标识由[技术owner](../../../../architecture/runtime-and-domain.md#mini-program-terrain-and-directional-light-evidence)负责，设计预览不证明地图能力已接入。
 

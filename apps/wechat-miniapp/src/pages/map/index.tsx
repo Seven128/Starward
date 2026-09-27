@@ -240,6 +240,35 @@ export default function MapPage() {
   const [locationBusy, setLocationBusy] = useState(false);
   const locationRequestBusy = useRef(false);
   const regionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mapPointIntent = useRef(0);
+  const failedMapRegion = useRef<{
+    center: { latitude: number; longitude: number };
+    intent: number;
+    owner: string | null;
+    resetVersion: number;
+  } | null>(null);
+  const invalidateMapPointIntent = (preserveFailure = false) => {
+    if (regionTimer.current) clearTimeout(regionTimer.current);
+    regionTimer.current = null;
+    setSpotContextAttempt(attempt => attempt?.pending
+      ? { ...attempt, pending: false, error: new Error("观测条件更新已中断，请重试。") }
+      : attempt);
+    const intent = ++mapPointIntent.current;
+    if (failedMapRegion.current) {
+      if (preserveFailure && failedMapRegion.current.owner === currentDraftUserId() &&
+        failedMapRegion.current.resetVersion === useAppStore.getState().mapResetVersion)
+        failedMapRegion.current = { ...failedMapRegion.current, intent };
+      else dismissMapRegionFailure();
+    }
+    return intent;
+  };
+  const dismissMapRegionFailure = () => {
+    failedMapRegion.current = null;
+    const state = useAppStore.getState();
+    for (const item of state.notifications) {
+      if (item.owner === "map" && item.dedupeKey === "map-context-region-failed") state.dismissNotification(item.id);
+    }
+  };
   // Packet A owns one bottom presentation coordinator. Panel extent and layer
   // sheet are mutually exclusive derived modes, never parallel booleans.
   const [bottomPresentation, setBottomPresentation] =
@@ -327,7 +356,7 @@ export default function MapPage() {
   } | null>(null);
 
   useDidShow(() => setPageVisible(true));
-  useDidHide(() => { stopPanelSpring(); navigationEpoch.current += 1; setPageVisible(false); panelDrag.current = null; setPanelDragOffset(0); setPanelDragging(false); });
+  useDidHide(() => { invalidateMapPointIntent(true); stopPanelSpring(); navigationEpoch.current += 1; setPageVisible(false); panelDrag.current = null; setPanelDragOffset(0); setPanelDragging(false); });
 
   useEffect(() => {
     const timer = setTimeout(
@@ -480,14 +509,14 @@ export default function MapPage() {
 
   useEffect(
     () => () => {
+      mapPointIntent.current += 1;
       if (regionTimer.current) clearTimeout(regionTimer.current);
       if (panelCloseTimer.current) clearTimeout(panelCloseTimer.current);
     },
     [],
   );
   useEffect(() => {
-    if (regionTimer.current) clearTimeout(regionTimer.current);
-    regionTimer.current = null;
+    invalidateMapPointIntent(true);
   }, [nativeMap.mapId]);
 
   const spots = scene.data?.data.spots ?? [];
@@ -505,6 +534,7 @@ export default function MapPage() {
   const handleCandidateChange = useCallback((candidate: ContributionCandidatePreview | null) => {
     setCandidatePreview(candidate);
     if (!candidate || candidate.selectionVersion <= candidateSelectionVersion.current) return;
+    invalidateMapPointIntent();
     candidateSelectionVersion.current = candidate.selectionVersion;
     const point = wgs84ToGcj02({
       lat: candidate.latitude,
@@ -860,8 +890,15 @@ export default function MapPage() {
     center: { latitude: number; longitude: number },
     source: "MAP_VIEWPORT" | "USER_LOCATION",
     displayName?: string,
+    intent = invalidateMapPointIntent(),
   ) => {
     const resetVersion = useAppStore.getState().mapResetVersion;
+    const owner = currentDraftUserId();
+    const selection = useAppStore.getState().selectedSpotId;
+    const isCurrent = () => intent === mapPointIntent.current && nativeMap.isCurrent() &&
+      useAppStore.getState().mapResetVersion === resetVersion && currentDraftUserId() === owner &&
+      useAppStore.getState().selectedSpotId === selection;
+    if (!isCurrent()) return null;
     const point = gcj02ToWgs84({
       lat: center.latitude,
       lon: center.longitude,
@@ -886,11 +923,12 @@ export default function MapPage() {
       eventInstanceId: activeContext?.eventInstanceId ?? null,
       targetProfile: activeContext?.targetProfile ?? "DAILY",
     }).catch((error: unknown) => {
-      if (useAppStore.getState().mapResetVersion !== resetVersion || isMiniappRequestCancelled(error)) return null;
+      if (!isCurrent() || isMiniappRequestCancelled(error)) return null;
       throw error;
     });
-    if (!response || useAppStore.getState().mapResetVersion !== resetVersion) return null;
+    if (!response || !isCurrent()) return null;
     setObservationContext(response.data);
+    dismissMapRegionFailure();
     leaveSelectedLocationForMapPoint();
     return response.data;
   };
@@ -916,8 +954,10 @@ export default function MapPage() {
   };
 
   const resolveSpotContext = async (spot: SpotSummary) => {
+    const intent = invalidateMapPointIntent();
     const requestGeneration = ++detailRequestGeneration.current;
     const isCurrentRequest = () =>
+      intent === mapPointIntent.current &&
       requestGeneration === detailRequestGeneration.current &&
       useAppStore.getState().selectedSpotId === spot.spotId &&
       useAppStore.getState().mapResetVersion === mapResetVersion;
@@ -927,6 +967,7 @@ export default function MapPage() {
       current.location.spotId === spot.spotId
     ) {
       setSpotContextAttempt(null);
+      dismissMapRegionFailure();
       setAnnouncement(`已选择${spot.name}；正在加载同一观测时刻的点位信息。`);
       return;
     }
@@ -945,6 +986,7 @@ export default function MapPage() {
       });
       if (!isCurrentRequest()) return;
       setObservationContext(response.data);
+      dismissMapRegionFailure();
       setAnnouncement(`已选择${spot.name}；正在加载同一观测时刻的点位信息。`);
     } catch (error) {
       if (!isCurrentRequest() || isMiniappRequestCancelled(error)) return;
@@ -976,6 +1018,7 @@ export default function MapPage() {
       const entry = privateMarkers[markerId - 100_000];
       if (!entry) return;
       if (!(await confirmEditorLeave()) || !nativeMap.isCurrent()) return;
+      invalidateMapPointIntent();
       privateTransitionGeneration.current += 1;
       editorLeaveGuard.current = null;
       setCandidatePreview(null);
@@ -995,6 +1038,7 @@ export default function MapPage() {
       : undefined;
     if (!group) return;
     if (!(await confirmEditorLeave()) || !nativeMap.isCurrent()) return;
+    invalidateMapPointIntent();
     privateTransitionGeneration.current += 1;
     editorLeaveGuard.current = null;
     setCandidatePreview(null);
@@ -1311,17 +1355,24 @@ export default function MapPage() {
       ) return;
     }
     candidateCameraGuard.current = null;
-    if (regionTimer.current) clearTimeout(regionTimer.current);
+    const intent = invalidateMapPointIntent();
     const resetVersion = useAppStore.getState().mapResetVersion;
+    const selection = useAppStore.getState().selectedSpotId;
+    const owner = currentDraftUserId();
+    const isCurrentRegion = () => intent === mapPointIntent.current && nativeMap.isCurrent() &&
+      useAppStore.getState().mapResetVersion === resetVersion &&
+      useAppStore.getState().selectedSpotId === selection && currentDraftUserId() === owner;
     regionTimer.current = setTimeout(() => {
-      if (!nativeMap.isCurrent() || useAppStore.getState().mapResetVersion !== resetVersion) return;
+      if (!isCurrentRegion()) return;
       setViewport({
         center: region.center,
         ...(region.zoom === undefined ? {} : { zoom: region.zoom }),
         loadedViewport: "viewport:" + String(Date.now()),
       });
-      void resolveMapPoint(region.center, "MAP_VIEWPORT").catch(
-        (error) =>
+      void resolveMapPoint(region.center, "MAP_VIEWPORT", undefined, intent).catch(
+        (error) => {
+          if (!isCurrentRegion()) return;
+          failedMapRegion.current = { center: region.center, intent, owner, resetVersion };
           notify({
             owner: "map",
             placement: "inline",
@@ -1331,16 +1382,23 @@ export default function MapPage() {
               errorMessage(error) +
               "。当前显示的是上次观测条件，请刷新后再判断。",
             dismissible: true,
+            action: { label: "重试此位置" },
             dedupeKey: "map-context-region-failed",
-          }),
+          });
+        },
       );
     }, 250);
   };
 
   const locateMap = async () => {
     if (locationRequestBusy.current) return;
+    const intent = invalidateMapPointIntent();
     locationRequestBusy.current = true;
     const resetVersion = useAppStore.getState().mapResetVersion;
+    const owner = currentDraftUserId();
+    const previousLocationState = useAppStore.getState().locationState;
+    const isCurrentLocation = () => intent === mapPointIntent.current && nativeMap.isCurrent() &&
+      useAppStore.getState().mapResetVersion === resetVersion && currentDraftUserId() === owner;
     setLocationBusy(true);
     setLocationState("REQUESTING");
     const locationNotice = (title: string, body: string, tone: "info" | "success" | "warning") =>
@@ -1349,7 +1407,7 @@ export default function MapPage() {
     locationNotice("正在获取一次位置", "只请求本次位置；地图仍可手动浏览。", "info");
     try {
       const result = await requestOneShotLocation(Taro);
-      if (useAppStore.getState().mapResetVersion !== resetVersion) return;
+      if (!isCurrentLocation()) return;
       setLocationState(result.state);
       if (result.state !== "GRANTED") {
         notify({ owner: "map", placement: "inline", tone: "warning",
@@ -1364,8 +1422,8 @@ export default function MapPage() {
       setViewport({ center: result.center, zoom: 10 });
       locationNotice("已定位，正在更新观测条件", "地图已移动到本次位置；天气和天文结果尚未确认。", "info");
       try {
-        const context = await resolveMapPoint(result.center, "USER_LOCATION");
-        if (useAppStore.getState().mapResetVersion !== resetVersion) return;
+        const context = await resolveMapPoint(result.center, "USER_LOCATION", undefined, intent);
+        if (!isCurrentLocation()) return;
         if (context === null) {
           locationNotice("已定位，观测条件更新已取消", "请查看当前地点的条件，或重新定位。", "info");
           return;
@@ -1373,11 +1431,18 @@ export default function MapPage() {
         locationNotice("观测位置已更新", "已更新地图位置和观测地点；天气、天文以各自加载状态为准。", "success");
         setAnnouncement("观测位置已更新。");
       } catch (error) {
-        if (useAppStore.getState().mapResetVersion !== resetVersion) return;
+        if (!isCurrentLocation()) return;
         locationNotice("位置已获取，动态条件未更新",
           errorMessage(error) + "。上次观测条件不适用于当前位置，请重试。", "warning");
       }
     } finally {
+      if (!isCurrentLocation() && useAppStore.getState().mapResetVersion === resetVersion && currentDraftUserId() === owner) {
+        const state = useAppStore.getState();
+        if (state.locationState === "REQUESTING") setLocationState(previousLocationState);
+        for (const item of state.notifications) {
+          if (item.owner === "map" && item.dedupeKey === "map-location-request") state.dismissNotification(item.id);
+        }
+      }
       locationRequestBusy.current = false;
       setLocationBusy(false);
     }
@@ -1386,6 +1451,27 @@ export default function MapPage() {
   const refreshMap = async () => {
     setAnnouncement("正在刷新当前区域");
     try {
+      let failedRegion = failedMapRegion.current;
+      if (failedRegion && (failedRegion.owner !== currentDraftUserId() ||
+        failedRegion.resetVersion !== useAppStore.getState().mapResetVersion)) {
+        dismissMapRegionFailure();
+        failedRegion = null;
+      }
+      if (failedRegion?.intent === mapPointIntent.current) {
+        const intent = invalidateMapPointIntent(true);
+        const retry = resolveMapPoint(failedRegion.center, "MAP_VIEWPORT", undefined, intent);
+        try {
+          if (await retry) setAnnouncement("地图观测位置已恢复，正在更新当前地点的资料。");
+        } catch (error) {
+          if (intent === mapPointIntent.current && failedRegion.owner === currentDraftUserId() &&
+            failedRegion.resetVersion === useAppStore.getState().mapResetVersion)
+            failedMapRegion.current = { ...failedRegion, intent };
+          throw error;
+        }
+        // The restored Context drives its own scene query; do not refresh the
+        // previous render's scene with the old location after this await.
+        return;
+      }
       // Retry each failed owner; a cached context must not hide its own failure.
       // A restored context triggers the scene query with its current identity.
       const refreshed = await Promise.all([
@@ -2040,6 +2126,7 @@ export default function MapPage() {
               onClick={(event) => {
                 event.stopPropagation();
                 setSpotEditorTarget({ forceNew: true });
+                invalidateMapPointIntent();
                 setBottomPresentation("spot-editor");
               }}
             >
@@ -2064,7 +2151,7 @@ export default function MapPage() {
               <View className="map-source-attribution"><SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /></View> : null}
             {analysisOverlay === "LIGHT" && layerPolygons.length > 0 && bottomPresentation !== "layer-sheet" && scene.data?.data.layer?.source ?
               <View className="map-source-attribution"><SourceAttribution sources={[scene.data.data.layer.source]} /></View> : null}
-            <NotificationRegion owner="map" placement="inline" />
+            <NotificationRegion owner="map" placement="inline" actionHandlers={{ "map-context-region-failed": () => void refreshMap() }} />
             {mapRuntimeError || nativeMap.pending ? (
               <StatusPanel
                 state={nativeMap.pending ? "LOADING" : "ERROR"}
@@ -2129,6 +2216,7 @@ export default function MapPage() {
                 onLeaveGuardChange={(guard) => { editorLeaveGuard.current = guard; }}
                 onClose={closeSpotEditor}
                 onSubmitted={(submission) => {
+                  invalidateMapPointIntent();
                   const marker = privateContributionMarkers([submission])[0];
                   if (marker) {
                     setViewport({
@@ -2172,6 +2260,7 @@ export default function MapPage() {
                 onClose={closeSpotPanel}
                 onCloud={() => void onProposalCloud(selectedProposal)}
                 onEdit={() => {
+                  invalidateMapPointIntent();
                   setSpotEditorTarget({ forceNew: false, submissionId: selectedProposal.submissionId });
                   setBottomPresentation("spot-editor");
                 }}

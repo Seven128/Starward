@@ -22,7 +22,7 @@ function deferred<T>() {
 function mapRuntime(response: Promise<{ data: object }> | (() => Promise<{ data: object }>)) {
   const text = readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
   const source = ts.createSourceFile("map.tsx", text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const names = new Set(["resolveMapPoint", "onRegionChange"]);
+  const names = new Set(["invalidateMapPointIntent", "dismissMapRegionFailure", "resolveMapPoint", "onRegionChange"]);
   const declarations: string[] = [];
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && names.has(node.name.getText(source))) declarations.push(`const ${node.getText(source)};`);
@@ -38,7 +38,9 @@ function mapRuntime(response: Promise<{ data: object }> | (() => Promise<{ data:
   const functions = vm.runInNewContext(ts.transpileModule(declarations.join("\n") + "\n({resolveMapPoint, onRegionChange});", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
-    useAppStore: { getState: () => ({ mapResetVersion: version }) },
+    useAppStore: { getState: () => ({ mapResetVersion: version, notifications: [] }) },
+    mapPointIntent: { current: 0 }, currentDraftUserId: () => "owner",
+    failedMapRegion: { current: null }, setSpotContextAttempt() {},
     nativeMap: { isCurrent: () => true },
     gcj02ToWgs84: () => ({ lat: 20, lon: 110 }), activeContext: null,
     currentTimezoneHint: () => "UTC", localDateForNow: () => "2026-08-29",

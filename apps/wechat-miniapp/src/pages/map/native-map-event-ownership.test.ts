@@ -31,6 +31,8 @@ test("debounced native region commits only while its originating Map remains cur
     const writes: unknown[] = [], resolves: unknown[] = [];
     vm.runInNewContext(code("onRegionChange"), {
       event: {}, nativeMap: { isCurrent: () => current },
+      mapPointIntent: { current: 1 }, invalidateMapPointIntent: () => 1, currentDraftUserId: () => "owner",
+      failedMapRegion: { current: null },
       userMapRegionEnd: () => ({ center: { latitude: 23, longitude: 114 }, zoom: 11 }),
       candidateCameraGuard: { current: null }, regionTimer: { current: null },
       clearTimeout() {}, setTimeout(fn: () => void) { queued = fn; return 1; },
@@ -53,6 +55,7 @@ for (const privateMarker of [false, true]) {
       vm.runInNewContext(code("onMarkerTap"), {
         event: { detail: { markerId: privateMarker ? 100000 : 0 } }, nativeMap: { isCurrent: () => current },
         confirmEditorLeave: () => gate,
+        invalidateMapPointIntent() {},
         privateMarkers: [{ latitude: 23, longitude: 114, submission: {}, state: "DRAFT" }],
         groupedMarkers: [{ id: 0, spots: [{}, {}], latitude: 23, longitude: 114 }],
         privateTransitionGeneration: { current: 0 }, editorLeaveGuard: { current: {} }, markerTapAt: { current: 0 },

@@ -17,11 +17,13 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
     visit(source);
     let show: (() => void) | undefined, hide: (() => void) | undefined;
     let visible = false, stopped = 0, offset = 40, dragging = true;
+    let retainedFailure = false;
     const epoch = { current: 3 }, drag = { current: {} as object | null };
     vm.runInNewContext(ts.transpileModule(hooks.join("\n"), { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
       useDidShow: (callback: () => void) => { show = callback; },
       useDidHide: (callback: () => void) => { hide = callback; },
       setPageVisible: (value: boolean) => { visible = value; },
+      invalidateMapPointIntent: (preserveFailure: boolean) => { retainedFailure = preserveFailure; },
       stopPanelSpring: () => { stopped++; }, navigationEpoch: epoch, panelDrag: drag,
       setPanelDragOffset: (value: number) => { offset = value; },
       setPanelDragging: (value: boolean) => { dragging = value; },
@@ -36,5 +38,6 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
     assert.equal(drag.current, null);
     assert.equal(offset, 0);
     assert.equal(dragging, false);
+    assert.equal(retainedFailure, true, "hiding cancels in-flight work but retains the failed location for recovery");
   }
 });

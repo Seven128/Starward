@@ -216,15 +216,14 @@
 }
 .map-feedback-column {
   position: absolute;
-  z-index: 28;
+  z-index: 34;
   left: 24rpx;
-  // Keep feedback local to the conditions controls without covering the
-  // location/refresh action rail on the right.
-  right: 136rpx;
-  top: var(--map-chrome-bottom, calc(env(safe-area-inset-top) + 424rpx));
+  // Preserve the complete tool hit area beside persistent recovery messages.
+  right: calc(24rpx + var(--map-tool-size) + 8Px);
+  top: calc(var(--map-search-top) + var(--map-search-height) + 116Px);
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 8rpx;
   pointer-events: none;
 }
 .map-stage--analysis-focused .map-feedback-column {
@@ -1014,17 +1013,6 @@
   border-color: var(--primary);
   color: var(--primary);
 }
-.map-feedback-column {
-  position: absolute;
-  z-index: 34;
-  top: calc(env(safe-area-inset-top) + 320rpx);
-  left: 24rpx;
-  right: 24rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-  pointer-events: none;
-}
 .map-feedback-column .status-panel,
 .map-feedback-column .notification {
   pointer-events: auto;
@@ -1490,10 +1478,6 @@
   .map-top-tools {
     right: 16rpx;
   }
-  .map-feedback-column {
-    left: 16rpx;
-    right: 16rpx;
-  }
   .spot-panel__action-bar {
     right: 16rpx;
     left: 16rpx;
@@ -1688,17 +1672,6 @@
   border: 0;
   color: var(--choice-selected-label);
 }
-.map-feedback-column {
-  top: calc(var(--map-search-top) + var(--map-search-height) + 116Px);
-  left: 24rpx;
-  right: 24rpx;
-  gap: 8rpx;
-}
-.map-feedback-column .status-panel,
-.map-feedback-column .notification {
-  box-shadow: var(--elevation-floating);
-}
-
 /* One panel document, three viewport extents, and one live presentation. */
 .map-panel-layer,
 .map-layer-layer {
@@ -2547,12 +2520,12 @@
   .map-analysis-trigger {
     left: 16rpx;
   }
-  .map-top-tools,
-  .map-feedback-column {
+  .map-top-tools {
     right: 16rpx;
   }
   .map-feedback-column {
     left: 16rpx;
+    right: calc(16rpx + var(--map-tool-size) + 8Px);
   }
   .spot-panel .spot-panel__media {
     margin-left: -16rpx !important;
@@ -2642,10 +2615,11 @@
   font-weight: 400;
 }
 .map-search-entry > .semantic-icon { width: 22Px; height: 22Px; flex-basis: 22Px; }
-.map-tool { width: 52Px; min-width: 52Px; height: 52Px; min-height: 52Px; }
+.map-page { --map-tool-size: 52Px; }
+.map-tool { width: var(--map-tool-size); min-width: var(--map-tool-size); height: var(--map-tool-size); min-height: var(--map-tool-size); }
 .map-tool::before { inset: 4Px; }
 .map-tool > .semantic-icon { width: 22Px; height: 22Px; flex-basis: 22Px; }
-.map-tool--location { width: 52Px; min-width: 52Px; }
+.map-tool--location { width: var(--map-tool-size); min-width: var(--map-tool-size); }
 .map-search-entry > .semantic-icon {
   color: #94a3b8;
 }
