@@ -1,3 +1,4 @@
+import { mediaSource } from "@/utils/media-source";
 import { FloatingNotificationHost } from "@/components/notification";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
@@ -461,7 +462,7 @@ export function SpotDetailPage({
                         {thumbnail ? (
                           <Image
                             className="guide-card__media"
-                            src={thumbnail.thumbnailPath}
+                            src={mediaSource(thumbnail.thumbnailPath)}
                             mode="aspectFill"
                             aria-label={thumbnail.alt}
                           />

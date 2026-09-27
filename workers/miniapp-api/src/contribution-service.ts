@@ -225,12 +225,14 @@ export class ContributionService {
   }
 
   async #readObject(record: { objectKey: string; mimeType: ContributionMediaUpload["mimeType"] }) {
+    const result = await this.#readObjectBytes(record);
+    return { mimeType: result.mimeType, dataBase64: Buffer.from(result.bytes).toString("base64") };
+  }
+
+  async #readObjectBytes(record: { objectKey: string; mimeType: ContributionMediaUpload["mimeType"] }) {
     const bytes = await this.mediaStore.read(record.objectKey);
     if (!bytes) throw new Error("contribution_media_object_missing");
-    return {
-      mimeType: record.mimeType,
-      dataBase64: Buffer.from(bytes).toString("base64"),
-    };
+    return { mimeType: record.mimeType, bytes };
   }
 
   async removeUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
@@ -276,13 +278,20 @@ export class ContributionService {
   }
 
   async readForPublishedSpot(spotId: SpotId, uploadId: ContributionUploadId) {
+    const result = await this.readBytesForPublishedSpot(spotId, uploadId);
+    return { mimeType: result.mimeType, dataBase64: Buffer.from(result.bytes).toString("base64") };
+  }
+
+  async readBytesForPublishedSpot(spotId: SpotId, uploadId: ContributionUploadId) {
     const detail = await this.repository.getDetail(spotId);
     const formalMediaIds = detail
       ? Object.values(detail.formalMedia ?? {}).flatMap((ids) => ids ?? [])
       : [];
     if (!detail || (!detail.spot.media.some((media) => media.id === uploadId) && !formalMediaIds.includes(uploadId)))
       throw new Error("contribution_upload_not_found");
-    return this.readForAdmin(uploadId);
+    const record = await this.repository.getContributionUploadObject(uploadId);
+    if (!record) throw new Error("contribution_upload_not_found");
+    return this.#readObjectBytes(record);
   }
 
   async submitFormal(userId: UserId, input: ContributionFormalSubmitRequest, idempotencyKey: string) {

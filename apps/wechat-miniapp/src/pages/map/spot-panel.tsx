@@ -1,3 +1,4 @@
+import { mediaSource } from "@/utils/media-source";
 import { isProductSource, productSourceNames } from "@/utils/source-presentation";
 import type { PanelCssMotion } from "./panel-spring-style";
 import { Block, Button, Image, ScrollView, Text, View } from "@tarojs/components";
@@ -243,6 +244,7 @@ export function SpotInformationPanel({
   onViewerBackHandlerChange?: (handler: (() => void) | null) => void;
 }) {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [viewerKind, setViewerKind] = useState<"parking" | "toilet" | null>(null);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [section, setSection] = useState<
     (typeof PANEL_SECTIONS)[number]["id"]
@@ -327,6 +329,13 @@ export function SpotInformationPanel({
     mediaIsRenderable(item, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__),
   );
   const galleryPosition = useSpotMediaGalleryPosition(`${effectiveSpot.spotId}:${media.map(item => item.id).join("|")}`);
+  const openPhoto = (kind: typeof viewerKind, index: number) => {
+    setSectionRequest(null);
+    setScrollAnchor("");
+    if (!kind) galleryPosition.remember();
+    setViewerKind(kind);
+    setViewerIndex(index);
+  };
   useHiddenNativeScrollbar("spot-panel-scroll", extent !== "small", `${effectiveSpot.spotId}:${extent}`);
   useHiddenNativeScrollbar("spot-panel-media-strip", extent === "large" && media.length > 1, effectiveSpot.spotId);
   const route = detail?.route;
@@ -334,6 +343,8 @@ export function SpotInformationPanel({
   const prominentFacilities = facilities.filter((facility) => facility.type === "PARKING" || facility.type === "TOILET");
   const visibleFacilities = prominentFacilities.length ? prominentFacilities : facilities.slice(0, 2);
   const mediaById = new Map(media.map((item) => [item.id, item]));
+  const facilityPhotos = (kind: "parking" | "toilet") => (detail?.formalMedia?.[kind] ?? []).flatMap(id => mediaById.has(id) ? [mediaById.get(id)!] : []);
+  const viewerItems = viewerKind ? facilityPhotos(viewerKind) : media;
   const formalFacts = detail?.formalFacts;
   const detailLoading = !detail && (detailPending || contextPending);
   const detailUnavailable = !detail && Boolean(detailError || contextError);
@@ -425,13 +436,14 @@ export function SpotInformationPanel({
           className="spot-panel__scroll spot-panel__scroll--full-bleed-plan"
           id="spot-panel-scroll"
           scrollY={extent !== "small"}
-          {...(restoredScrollTop === undefined ? {} : { scrollTop: restoredScrollTop })}
+          scrollTop={restoredScrollTop ?? lastScroll.current.top}
           scrollIntoView={scrollAnchor}
           scrollWithAnimation={false}
           onScroll={event => {
             const top = event.detail.scrollTop;
             if (!visible || !Number.isFinite(top)) return;
             lastScroll.current = { spotId: spot.spotId, top };
+            if (restoredScrollTop !== undefined) setRestoredScrollTop(undefined);
             // Native anchor scrolling can finish after the extent layout measurement.
             // Reconcile once after scrolling rests, never query geometry per frame.
             if (extent !== "small") {
@@ -456,10 +468,10 @@ export function SpotInformationPanel({
               <ScrollView id="spot-panel-media-strip" className="spot-panel__media-strip" scrollX={media.length > 1} scrollLeft={galleryPosition.returnLeft}
                 onScroll={galleryPosition.onScroll} enhanced showScrollbar={false} ariaLabel={`${effectiveSpot.name}现场照片`}>
                 <View className="spot-panel__media-track">
-                  {media.map((item, index) => <Button id={`spot-media-source-${index}`} className="spot-panel__media-slide" key={item.id} ariaLabel={`查看现场照片 ${index + 1}，共 ${media.length} 张`} onClick={() => { galleryPosition.remember(); setViewerIndex(index); }}>
+                  {media.map((item, index) => <Button id={`spot-media-source-${index}`} className="spot-panel__media-slide" key={item.id} ariaLabel={`查看现场照片 ${index + 1}，共 ${media.length} 张`} onClick={() => openPhoto(null, index)}>
                     <Image
                       className="spot-panel__media-image"
-                      src={item.thumbnailPath || item.localPath}
+                      src={mediaSource(item.thumbnailPath || item.localPath)}
                       mode="aspectFill"
                       lazyLoad
                       ariaLabel={item.alt || `${effectiveSpot.name}现场照片`}
@@ -550,9 +562,12 @@ export function SpotInformationPanel({
               <View className="spot-panel__facilities">
               {visibleFacilities.length ? visibleFacilities.map((facility) => {
                 const mediaKind = facility.type === "PARKING" ? "parking" : facility.type === "TOILET" ? "toilet" : null;
-                const facilityMedia = mediaKind ? detail?.formalMedia?.[mediaKind]?.map((id) => mediaById.get(id)).find(Boolean) : undefined;
-                return <View className={`spot-panel__facility${facilityMedia ? " spot-panel__facility--with-media" : ""}`} key={`${facility.type}-${facility.summary}`}>
-                  {facilityMedia ? <Image className="spot-panel__facility-image" src={facilityMedia.thumbnailPath || facilityMedia.localPath} mode="aspectFill" aria-hidden="true" /> : null}
+                const facilityImages = mediaKind ? facilityPhotos(mediaKind) : [];
+                const facilityMedia = facilityImages[0];
+                return <View id={`spot-facility-source-${mediaKind}`} className={`spot-panel__facility${facilityMedia ? " spot-panel__facility--with-media" : ""}`} key={`${facility.type}-${facility.summary}`}
+                  {...(facilityMedia ? { role: "button", ariaLabel: `查看${facilityLabel(facility.type)}照片，共 ${facilityImages.length} 张` } : {})}
+                  onClick={() => { if (facilityMedia && mediaKind) openPhoto(mediaKind, 0); }}>
+                  {facilityMedia ? <Image className="spot-panel__facility-image" src={mediaSource(facilityMedia.thumbnailPath || facilityMedia.localPath)} mode="aspectFill" aria-hidden="true" /> : null}
                   {facilityMedia ? <View className="spot-panel__facility-shade" aria-hidden="true" /> : null}
                   <View className="spot-panel__facility-content">
                     <View className="spot-panel__facility-heading">
@@ -561,6 +576,7 @@ export function SpotInformationPanel({
                     </View>
                     {facility.summary ? <Text className="spot-panel__facility-summary">{facility.summary}</Text> : null}
                   </View>
+                  {facilityMedia ? <View className="spot-panel__facility-count"><SemanticIcon name="images" /><Text>{facilityImages.length}</Text></View> : null}
                 </View>;
               }) : <Text className="type-caption">{`设施信息${detailMissingFallback}`}</Text>}
               </View>
@@ -748,18 +764,19 @@ export function SpotInformationPanel({
         />
       </View>
 
-      {viewerIndex !== null && media[viewerIndex] ? <SpotImageViewer
+      {viewerIndex !== null && viewerItems[viewerIndex] ? <SpotImageViewer
         name={effectiveSpot.name}
-        media={media.map(item => ({
+        {...(viewerKind ? { sourceSelector: `#spot-facility-source-${viewerKind}` } : {})}
+        media={viewerItems.map(item => ({
           id: item.id,
-          src: item.localPath || item.thumbnailPath,
+          src: mediaSource(item.localPath || item.thumbnailPath),
           alt: item.alt || `${effectiveSpot.name}现场照片`,
           caption: item.caption || item.alt || "现场资料",
           attribution: `${item.photographer || "来源未注明"} · ${item.license}`,
           state: "ready" as const,
         }))}
         index={viewerIndex}
-        onIndexChange={(index) => { galleryPosition.reveal(index, media.length, Taro.getWindowInfo().windowWidth); setViewerIndex(index); }}
+        onIndexChange={(index) => { if (!viewerKind) galleryPosition.reveal(index, media.length, Taro.getWindowInfo().windowWidth); setViewerIndex(index); }}
         onClose={() => setViewerIndex(null)}
         {...(onViewerBackHandlerChange ? { onBackHandlerChange: onViewerBackHandlerChange } : {})}
       /> : null}

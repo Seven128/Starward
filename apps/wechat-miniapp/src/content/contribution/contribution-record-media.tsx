@@ -1,3 +1,4 @@
+import { mediaSource } from "@/utils/media-source";
 import { Button, Image, Text, View } from "@tarojs/components";
 import { useDidHide, useDidShow } from "@tarojs/taro";
 import { useEffect, useMemo, useState } from "react";
@@ -45,7 +46,7 @@ export function ContributionRecordMedia({ item }: { item: ContributionSubmission
       const media = (await site).data.media.find(entry => entry.id === id);
       const path = media?.localPath || media?.thumbnailPath;
       if (!path) throw new Error("frozen_photo_unavailable");
-      return path;
+      return mediaSource(path);
     }).then(result => {
       if (controller.signal.aborted || currentDraftUserId() !== owner) return;
       setLoaded({ scope, paths: { ...paths, ...result.paths }, failed: result.failedIds });

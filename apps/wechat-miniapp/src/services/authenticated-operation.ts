@@ -1,4 +1,4 @@
-import { MINIAPP_API_BASE_PATH, MINIAPP_API_OPERATIONS, type ApiEnvelope, type AuthSessionData, type MiniappApiOperationId, type MiniappApiRequest, type MiniappApiResponse } from "@starward/miniapp-contracts";
+import { MINIAPP_API_BASE_PATH, MINIAPP_API_OPERATIONS, type ApiEnvelope, type AuthSessionData, type MiniappApiJsonOperationId, type MiniappApiRequest, type MiniappApiResponse } from "@starward/miniapp-contracts";
 export type AuthPolicy = "NONE" | "OPTIONAL" | "REQUIRED";
 interface OperationDependencies {
   resolveSession(policy: AuthPolicy): Promise<AuthSessionData | null>;
@@ -10,11 +10,11 @@ interface OperationDependencies {
 /** Generated endpoint projection and account-bound reauthentication; transport/cache stay injected. */
 export function createAuthenticatedOperationRequester(deps: OperationDependencies) {
   const { resolveSession, readStoredSession, clearStoredSession, request, isPermissionDenied } = deps;
-type OperationData<K extends MiniappApiOperationId> =
+type OperationData<K extends MiniappApiJsonOperationId> =
   MiniappApiResponse<K>["data"];
 
 function operationPath(
-  operationId: MiniappApiOperationId,
+  operationId: MiniappApiJsonOperationId,
   pathParams: Readonly<Record<string, string>> = {},
   query = "",
 ) {
@@ -32,7 +32,7 @@ function operationPath(
   return query ? path + "?" + query : path;
 }
 
-async function requestOperation<K extends MiniappApiOperationId>(
+async function requestOperation<K extends MiniappApiJsonOperationId>(
   key: string,
   operationId: K,
   options: {

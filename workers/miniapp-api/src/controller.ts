@@ -341,6 +341,16 @@ export class MiniappController {
     );
   }
 
+  @Get("spots/:spotId/media/:uploadId/image")
+  async spotContributionImage(@Param("spotId") spotId: string, @Param("uploadId") uploadId: string,
+    @Res() reply: FastifyReply) {
+    if (!uploadId.startsWith("upload:")) throw new Error("contribution_upload_not_found");
+    const image = await this.service.getSpotContributionImage(decodeURIComponent(spotId) as SpotId,
+      decodeURIComponent(uploadId) as ContributionUploadId);
+    return reply.header("content-type", image.mimeType).header("cache-control", "no-store")
+      .header("x-content-type-options", "nosniff").send(Buffer.from(image.bytes));
+  }
+
   @Get("spots/:spotId/contribution-baseline")
   contributionBaseline(@Param("spotId") spotId: string) {
     return this.service.getContributionFormalBaseline(decodeURIComponent(spotId));

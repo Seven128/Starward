@@ -1,3 +1,4 @@
+import { mediaSource } from "@/utils/media-source";
 import { FloatingNotificationHost } from "@/components/notification";
 import { choosePlatformLocation } from "@/services/platform-location";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
@@ -56,7 +57,7 @@ function localDateForNow(timezone = "Asia/Shanghai") {
 function partitionContentRevision(spots: readonly SpotSummary[], showEmpty: boolean, groups: readonly FilterGroupKey[], evidence?: Record<string, SpotFilterEvidence>) {
   return JSON.stringify([showEmpty, spots.map(spot => [
     spot.spotId, spot.name, spot.region, spot.address,
-    spot.media.filter(isRenderableMedia)[0]?.thumbnailPath,
+    mediaSource(spot.media.filter(isRenderableMedia)[0]?.thumbnailPath || ""),
     groups.filter(group => evidence?.[spot.spotId]?.[group].state === "UNKNOWN"),
   ])]);
 }
@@ -703,7 +704,7 @@ export function MapSearchSurface() {
 
 function SearchResultCard({ spot, evidence, activeGroups, onSelect }: { spot: SpotSummary; evidence: SpotFilterEvidence | undefined; activeGroups: readonly FilterGroupKey[]; onSelect: () => void }) {
   const media = spot.media.filter(isRenderableMedia)[0];
-  const mediaSrc = media ? media.thumbnailPath || media.localPath : null;
+  const mediaSrc = media ? mediaSource(media.thumbnailPath || media.localPath) : null;
   const address = spot.address;
   const unknown = activeGroups.filter((group) => evidence?.[group].state === "UNKNOWN");
   return <View className="spot-search-result-entry">

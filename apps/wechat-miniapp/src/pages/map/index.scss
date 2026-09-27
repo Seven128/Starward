@@ -2934,7 +2934,7 @@
 }
 .spot-panel__facility-image {
   position: absolute;
-  z-index: -3;
+  z-index: 0;
   inset: -4Px;
   width: calc(100% + 8Px);
   height: calc(100% + 8Px);
@@ -2942,13 +2942,29 @@
 }
 .spot-panel__facility-shade {
   position: absolute;
-  z-index: -2;
+  z-index: 1;
   inset: 0;
-  background: linear-gradient(90deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .85) 55%, rgba(255, 255, 255, .4));
+  background: linear-gradient(90deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .85) 55%, rgba(255, 255, 255, .15));
 }
 .spot-panel__facility-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+}
+.spot-panel__facility-count {
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 2Px;
+  .semantic-icon { width: 12Px; height: 12Px; }
+  position: absolute;
+  right: 8Px;
+  bottom: 6Px;
+  padding: 0 3Px;
+  border-radius: 3Px;
+  color: var(--text-secondary);
+  background: var(--surface-base);
+  font-size: 12Px;
+  line-height: 16Px;
 }
 .spot-panel__facility-heading {
   display: flex;

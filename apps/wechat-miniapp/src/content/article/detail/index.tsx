@@ -1,3 +1,4 @@
+import { mediaSource } from "@/utils/media-source";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { Image, ScrollView, Text, View } from "@tarojs/components";
@@ -171,7 +172,7 @@ export default function ArticlePage() {
                   {media ? (
                     <>
                       <Image
-                        src={media.localPath}
+                        src={mediaSource(media.localPath)}
                         mode="widthFix"
                         lazyLoad
                         aria-label={media.alt}

@@ -90,6 +90,11 @@ test("PostgreSQL and filesystem preserve reviewed media across publication and r
       expectedRevision: approved.result.submission!.revision,
     });
     assert.equal(reviewed.result.decision, "ACCEPTED");
+    const preview = await repository.adminCreateMergePreview({
+      caseId, spotId: spot.spotId, confirmedClaims: ["SITE_MEDIA_PROVENANCE"],
+      expectedSubmissionRevision: reviewed.receipt.resultingRevision!, expectedSpotRevision: baseline.revision,
+    });
+    assert.equal(preview.submissionRevision, reviewed.receipt.resultingRevision);
     assert.deepEqual(await repository.getDetail(spot.spotId), originalDetail,
       "review must not mutate the published canonical document");
     await assert.rejects(readPublic(), /contribution_upload_not_found/);
@@ -107,6 +112,19 @@ test("PostgreSQL and filesystem preserve reviewed media across publication and r
       expectedSpotRevision: mergedRow.version, assessmentDigest: assessment.result.assessmentDigest,
     });
     assertBytes(await readPublic());
+
+    // Publication must reach the actual public presentation, not only the object API.
+    for (const publicSpot of [await repository.getSpot(spot.spotId),
+      (await repository.getDetail(spot.spotId))?.spot,
+      (await repository.listSpots()).find(item => item.spotId === spot.spotId),
+      (await repository.listSpotsInRadius(spot.wgs84, 1)).find(item => item.spotId === spot.spotId)]) {
+      const photo = publicSpot?.media.find(item => item.id === uploadId);
+      assert.ok(photo, "published upload must reach every public spot projection");
+      assert.equal(photo.state, "FRESH");
+      assert.equal(photo.isSiteSpecific, true);
+      assert.match(photo.localPath, /\/image$/u);
+      assert.ok(photo.license);
+    }
 
     // New pools and stores must recover identity and bytes without warm process state.
     await repository.close();

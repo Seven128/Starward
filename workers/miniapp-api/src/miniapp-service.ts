@@ -2470,6 +2470,10 @@ export class MiniappService {
     return envelope(await this.contributions.readForPublishedSpot(spotId, uploadId), "FRESH", []);
   }
 
+  getSpotContributionImage(spotId: SpotId, uploadId: ContributionUploadId) {
+    return this.contributions.readBytesForPublishedSpot(spotId, uploadId);
+  }
+
   async createContributionDraft(
     userId: UserId,
     input: ContributionDraftRequest,

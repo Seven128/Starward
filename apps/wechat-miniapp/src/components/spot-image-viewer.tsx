@@ -27,7 +27,7 @@ function activeTouchCount(event: unknown): number {
   return (event as { touches?: ArrayLike<unknown> }).touches?.length ?? 0;
 }
 
-function readPhotoSource(index: number, callback: (rect: ViewerRect | null) => void) {
+function readPhotoSource(selector: string, callback: (rect: ViewerRect | null) => void) {
   const { windowWidth, windowHeight } = Taro.getWindowInfo();
   let finished = false;
   const finish = (rect: ViewerRect | null) => {
@@ -38,7 +38,7 @@ function readPhotoSource(index: number, callback: (rect: ViewerRect | null) => v
   };
   const deadline = setTimeout(() => finish(null), 300);
   try {
-    Taro.createSelectorQuery().select(`#spot-media-source-${index}`).boundingClientRect().exec(rows => {
+    Taro.createSelectorQuery().select(selector).boundingClientRect().exec(rows => {
       finish(viewerSourceRect(rows?.[0], windowWidth, windowHeight));
     });
   } catch { finish(null); }
@@ -46,7 +46,8 @@ function readPhotoSource(index: number, callback: (rect: ViewerRect | null) => v
 
 type PhotoFlight = { rect: ViewerRect; src: string; moving: boolean; closing: boolean };
 
-export function SpotImageViewer({ name, media, index, onIndexChange, onClose, onRetry, onBackHandlerChange }: {
+export function SpotImageViewer({ name, media, index, onIndexChange, onClose, onRetry, onBackHandlerChange, sourceSelector }: {
+  sourceSelector?: string;
   name: string;
   media: readonly SpotViewerMedia[];
   index: number;
@@ -104,7 +105,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     last.current = null;
     axis.current = null;
     if (reducedMotion) { onClose(); return; }
-    readPhotoSource(index, source => {
+    readPhotoSource(sourceSelector ?? `#spot-media-source-${index}`, source => {
       const ratio = imageRatio?.id === current?.id ? imageRatio?.value : null;
       if (!source || !current?.src || unavailable || !ratio) {
         setFlight(null);
@@ -165,7 +166,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
   useEffect(() => {
     if (reducedMotion) { setEntered(true); return; }
     let active = true;
-    Taro.nextTick(() => readPhotoSource(index, source => {
+    Taro.nextTick(() => readPhotoSource(sourceSelector ?? `#spot-media-source-${index}`, source => {
       if (!active) return;
       setSourceRect(source);
     }));

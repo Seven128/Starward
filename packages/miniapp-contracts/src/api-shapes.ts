@@ -140,6 +140,8 @@ export interface TerrainOverlayData {
 
 /** Binary PNG body; this route intentionally does not use ApiEnvelope at runtime. */
 export type TerrainAssetData = Uint8Array;
+/** Published, currently associated image bytes; delivered directly to native Image. */
+export type ContributionImageData = Uint8Array;
 
 export interface MapSpotTimeSignal {
   spotId: SpotSummary["spotId"];

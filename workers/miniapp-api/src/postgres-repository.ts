@@ -57,6 +57,7 @@ import { createMapCoordinateView } from "@starward/coordinate-system";
 import pg, { type PoolClient } from "pg";
 import { assertReceiptNotErased, eraseAccountContributionEvidence } from "./account-data-erasure.ts";
 import { derivePlanReminderSchedules, type StoredPlanReminderSchedule } from "./plan-reminder-schedule.ts";
+import { PUBLIC_SPOT_MEDIA_SQL, projectPublicSpotMedia, type PublicSpotMedia } from "./public-spot-media.ts";
 import { contributionFormalBaseline } from "./contribution-formal-baseline.ts";
 import { buildFormalContributionResult } from "./formal-contribution-submission.ts";
 import type {
@@ -515,8 +516,8 @@ export class PostgresMiniappRepository
   }
 
   async listSpots(): Promise<readonly SpotSummary[]> {
-    const result = await this.pool.query<{ payload: SpotSummary }>(
-      `SELECT s.payload
+    const result = await this.pool.query<{ payload: SpotSummary; public_media: PublicSpotMedia | null }>(
+      `SELECT s.payload, ${PUBLIC_SPOT_MEDIA_SQL}
          FROM spots s
          JOIN spot_publication_assessments a USING (spot_id)
         WHERE s.visibility_policy = 'PUBLIC_EXACT'
@@ -526,15 +527,15 @@ export class PostgresMiniappRepository
           AND a.assessed_at >= now() - interval '30 days'
         ORDER BY s.display_order`,
     );
-    return result.rows.map((row) => clone(row.payload));
+    return result.rows.map((row) => projectPublicSpotMedia(clone(row.payload), row.public_media));
   }
 
   async listSpotsInRadius(
     center: { system: "WGS84"; latitude: number; longitude: number },
     radiusKm: number,
   ): Promise<readonly SpotSummary[]> {
-    const result = await this.pool.query<{ payload: SpotSummary }>(
-      `SELECT s.payload
+    const result = await this.pool.query<{ payload: SpotSummary; public_media: PublicSpotMedia | null }>(
+      `SELECT s.payload, ${PUBLIC_SPOT_MEDIA_SQL}
          FROM spots s
          JOIN spot_publication_assessments a USING (spot_id)
         WHERE s.visibility_policy = 'PUBLIC_EXACT'
@@ -550,7 +551,7 @@ export class PostgresMiniappRepository
         ORDER BY s.display_order`,
       [center.longitude, center.latitude, radiusKm * 1_000],
     );
-    return result.rows.map((row) => clone(row.payload));
+    return result.rows.map((row) => projectPublicSpotMedia(clone(row.payload), row.public_media));
   }
 
   async listSpotPopulation(): Promise<readonly Pick<SpotSummary, "spotId" | "source">[]> {
@@ -636,8 +637,8 @@ export class PostgresMiniappRepository
   }
 
   async getSpot(spotId: SpotId): Promise<SpotSummary | null> {
-    const result = await this.pool.query<{ payload: SpotSummary }>(
-      `SELECT s.payload
+    const result = await this.pool.query<{ payload: SpotSummary; public_media: PublicSpotMedia | null }>(
+      `SELECT s.payload, ${PUBLIC_SPOT_MEDIA_SQL}
          FROM spots s
          JOIN spot_publication_assessments a USING (spot_id)
         WHERE s.spot_id = $1
@@ -649,13 +650,13 @@ export class PostgresMiniappRepository
       [spotId],
     );
     return result.rows[0]
-      ? clone(result.rows[0].payload)
+      ? projectPublicSpotMedia(clone(result.rows[0].payload), result.rows[0].public_media)
       : null;
   }
 
   async getDetail(spotId: SpotId): Promise<SpotDetail | null> {
-    const result = await this.pool.query<{ payload: SpotDetail; spot: SpotSummary }>(
-      `SELECT r.payload, s.payload AS spot
+    const result = await this.pool.query<{ payload: SpotDetail; spot: SpotSummary; public_media: PublicSpotMedia | null }>(
+      `SELECT r.payload, s.payload AS spot, ${PUBLIC_SPOT_MEDIA_SQL}
          FROM spot_overview_read_models r
          JOIN spots s USING (spot_id)
          JOIN spot_publication_assessments a USING (spot_id)
@@ -668,7 +669,7 @@ export class PostgresMiniappRepository
       [spotId],
     );
     return result.rows[0]
-      ? clone({ ...result.rows[0].payload, spot: result.rows[0].spot })
+      ? clone({ ...result.rows[0].payload, spot: projectPublicSpotMedia(result.rows[0].spot, result.rows[0].public_media) })
       : null;
   }
 
@@ -4367,16 +4368,17 @@ export class PostgresMiniappRepository
       state: string;
       subject_id: string;
       payload: Record<string, unknown>;
-    }>("SELECT state, subject_id, payload FROM moderation_cases WHERE case_id = $1", [input.caseId]);
+      submission: ContributionSubmission;
+    }>(`SELECT c.state, c.subject_id, c.payload, s.payload AS submission
+          FROM moderation_cases c JOIN user_submissions s ON s.submission_id = c.subject_id
+         WHERE c.case_id = $1 AND c.subject_type = 'USER_CONTRIBUTION'`, [input.caseId]);
     const currentCase = caseRow.rows[0];
     if (!currentCase) throw new Error("moderation_case_not_found");
     if (currentCase.state !== "APPROVED" && currentCase.state !== "ACCEPTED")
       throw new Error("contribution_moderation_not_approved");
     if (currentCase.subject_id !== input.caseId.replace(/^moderation:/u, "") && !currentCase.payload.submission)
       throw new Error("contribution_moderation_subject_invalid");
-    const submission = normalizeContributionSubmission(
-      currentCase.payload.submission as ContributionSubmission,
-    );
+    const submission = normalizeContributionSubmission(currentCase.submission);
     if (submission.revision !== input.expectedSubmissionRevision)
       throw new Error("contribution_revision_conflict");
     const selected = await this.pool.query<{ detail: SpotDetail; status: SpotSummary["status"]; version: number }>(
