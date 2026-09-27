@@ -191,7 +191,10 @@ button::after {
 .soft-button--ghost {
   background: transparent;
 }
-.soft-button--disabled {
+.soft-button--disabled,
+button.soft-button.soft-button--disabled[disabled],
+.theme-night button.soft-button.soft-button--disabled[disabled],
+.theme-observation button.soft-button.soft-button--disabled[disabled] {
   color: var(--text-tertiary);
   background: var(--surface-subtle);
   border-color: var(--border);
