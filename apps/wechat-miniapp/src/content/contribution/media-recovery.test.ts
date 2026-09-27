@@ -97,3 +97,41 @@ test("uploaded media distinguishes missing size from a reported zero", () => {
     assert.ok(describe({ state, byteSize: 2048 }).includes("2 KB"));
   }
 });
+
+test("failed retry reconciles expired or completed upload state without overwriting unsaved input or crossing accounts", async () => {
+  const source = ts.createSourceFile("commands.ts", readFileSync(new URL("./use-contribution-commands.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const declarations = source.statements.filter(node => ts.isFunctionDeclaration(node) && ["activeDraft", "createRetryMedia"].includes(node.name?.text ?? ""));
+  for (const scenario of ["EXPIRED", "UPLOADED", "READ_FAILED", "ACCOUNT_CHANGED", "WITHDRAWN", "MISSING"] as const) {
+    const draft = { submissionId: "draft:a", submissionState: "DRAFT", revision: 4, media: [{ uploadId: "upload:a", state: "PENDING" }] };
+    const latest = { ...draft, submissionState: scenario === "WITHDRAWN" ? "WITHDRAWN" : "DRAFT", revision: 5, media: [{ uploadId: "upload:a", state: scenario }] };
+    let valid = true;
+    let applied = false;
+    let readonly = false;
+    let busy = false;
+    const notices: string[] = [];
+    const form = { draft, rightsConfirmed: true, detail: "尚未保存的文字", history: { refetch: async () => {} },
+      setUploading(value: boolean) { busy = value; }, announce(_tone: string, title: string) { notices.push(title); },
+      applyDraft(value: typeof draft, phase: string) { assert.equal(value, latest); assert.equal(phase, "HISTORY"); readonly = true; },
+      applyMediaDraft(value: typeof draft) { assert.equal(value, latest); applied = true; },
+    };
+    const retry = vm.runInNewContext(ts.transpileModule(declarations.map(node => node.getText(source)).join("\n") + "\ncreateRetryMedia;", {
+      compilerOptions: { target: ts.ScriptTarget.ES2020 },
+    }).outputText, {
+      contributionSubmissionState: (item: typeof draft) => item.submissionState, currentDraftUserId: () => "owner",
+      chooseImage: async () => ({ tempFiles: [{ path: "image.png", size: 30 }] }),
+      uploadSelectedFile: async () => { throw new Error("upload outcome uncertain"); }, errorMessage: () => "上传失败",
+      getContributions: async (_signal: unknown, owner: string) => {
+        assert.equal(owner, "owner");
+        if (scenario === "READ_FAILED") throw new Error("offline");
+        if (scenario === "ACCOUNT_CHANGED") valid = false;
+        return { data: { submissions: scenario === "MISSING" ? [] : [latest] } };
+      },
+    })(form, () => { if (!valid) throw new Error("changed account"); }, async () => true);
+    await retry("upload:a");
+    assert.equal(applied, scenario === "EXPIRED" || scenario === "UPLOADED", scenario);
+    assert.equal(readonly, scenario === "WITHDRAWN");
+    assert.equal(form.detail, "尚未保存的文字");
+    assert.equal(busy, false);
+    assert.deepEqual(notices, [scenario === "WITHDRAWN" ? "记录已结束编辑" : scenario === "UPLOADED" ? "已同步上传状态" : scenario === "EXPIRED" ? "上传会话已过期" : "上传恢复失败"]);
+  }
+});

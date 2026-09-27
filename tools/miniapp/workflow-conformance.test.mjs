@@ -398,6 +398,7 @@ test("field evidence uses one native intake and an explicit canonical merge boun
           "contribution",
           "contribution-media-history.tsx",
         ),
+        text("apps", "wechat-miniapp", "src", "content", "contribution", "contribution-records.tsx"),
       ]),
       text("workers", "miniapp-api", "src", "admin.controller.ts"),
       text("workers", "miniapp-api", "src", "app.module.ts"),
@@ -419,7 +420,7 @@ test("field evidence uses one native intake and an explicit canonical merge boun
     "contribution-coordinate-consent",
     "contribution-media-rights",
     "contribution-submit",
-    "contribution-status-list",
+    "contribution-records",
   ]) assert.match(contributionPage, new RegExp(required, "u"));
   assert.doesNotMatch(contributionPage, />WGS84 |WGS84 纬度|WGS84 经度/u);
   assert.match(adminController, /moderation\/cases\/:caseId\/merge/u);

@@ -4,39 +4,52 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
-type Node = { type: string; props: Record<string, any>; children: any[] };
-const source = ts.createSourceFile("history.tsx", readFileSync(new URL("./contribution-media-history.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-const component = source.statements.find(n => ts.isFunctionDeclaration(n) && n.name?.text === "ContributionHistory");
+type Node = { type: string; props: Record<string, unknown> & { onRecover?: () => void }; children: unknown[] };
+const source = ts.createSourceFile("records.tsx", readFileSync(new URL("./contribution-records.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+const component = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "ContributionRecords");
 assert.ok(component);
-const code = ts.transpileModule(component.getText(source), { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, jsxFactory: "jsx" } }).outputText;
+const code = ts.transpileModule(component.getText(source).replace("export ", "") + "\nContributionRecords;", {
+  compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React, jsxFactory: "jsx", jsxFragmentFactory: "Fragment" },
+}).outputText;
 
 function render(history: Record<string, unknown>) {
-  const scope = { exports: {} as any, jsx: (type: string, props: any, ...children: any[]): Node => ({ type, props: props ?? {}, children }), View: "View", Text: "Text", Button: "Button", StatusPanel: "StatusPanel", MiniappApiError: Error, errorMessage: () => "读取失败" };
-  vm.runInNewContext(code, scope);
-  const tree = scope.exports.ContributionHistory({ form: { history, submissions: [], visibleSubmissions: [], historyFilter: "ALL", setHistoryFilter() {} } });
-  const texts: string[] = [], panels: Node[] = [];
-  function walk(node: any) { if (typeof node === "string") texts.push(node); else if (Array.isArray(node)) node.forEach(walk); else if (node && typeof node === "object") { if (node.type === "StatusPanel") panels.push(node); walk(node.children); } }
+  const panels: Node[] = [];
+  const scope = {
+    jsx: (type: string, props: Node["props"] | null, ...children: unknown[]): Node => ({ type, props: props ?? {}, children }),
+    Fragment: "Fragment", View: "View", Text: "Text", Button: "Button", StatusPanel: "StatusPanel", SelectionTabs: "Tabs",
+    useState: (value: unknown) => [value, () => {}], useRef: (current: unknown) => ({ current }), useEffect() {},
+  };
+  const tree = vm.runInNewContext(code, scope)({ form: { history, submissions: [] } });
+  function walk(value: unknown) {
+    if (Array.isArray(value)) value.forEach(walk);
+    else if (value && typeof value === "object" && "children" in value) {
+      const node = value as Node;
+      if (node.type === "StatusPanel") panels.push(node);
+      walk(node.children);
+    }
+  }
   walk(tree);
-  return { texts, panels };
+  return panels;
 }
 
-test("unloaded contribution history is unknown rather than an empty result", async () => {
+test("current contribution records distinguish an unread result from a confirmed empty list and retry failures", () => {
   for (const pending of [true, false]) {
-    const page = render({ isPending: pending, isError: !pending, error: new Error("offline"), refetch: async () => { throw Error("still offline"); } });
-    for (const label of ["全部 —", "待审核 —", "需补充 —"]) assert.ok(page.texts.includes(label));
-    assert.ok(!page.texts.includes("暂无符合当前筛选的投稿记录。"));
-    assert.ok(page.panels[0]);
-    assert.equal(page.panels[0].props.state, pending ? "LOADING" : "ERROR");
-    if (!pending) { page.panels[0].props.onRecover(); await new Promise(resolve => setImmediate(resolve)); }
+    let retried = 0;
+    const panels = render({ isPending: pending, isError: !pending, refetch: async () => { retried++; } });
+    assert(!panels.some(panel => panel.props.state === "EMPTY"));
+    assert.equal(panels[0]?.props.state, pending ? "LOADING" : "ERROR");
+    if (!pending) { panels[0]!.props.onRecover?.(); assert.equal(retried, 1); }
   }
 });
 
-test("real empty results retain zero counts while stale results explain recovery", async () => {
+test("current contribution records do not turn stale or failed refresh into a true empty result", () => {
   for (const stale of [false, true]) {
-    const page = render({ data: { dataState: "FRESH" }, refreshError: stale ? Error("refresh") : undefined, isPending: false, isError: false, refetch: async () => { throw Error("retry"); } });
-    assert.ok(page.texts.includes("全部 0"));
-    assert.ok(page.texts.includes("暂无符合当前筛选的投稿记录。"));
-    assert.equal(page.panels.length, stale ? 1 : 0);
-    if (stale) { assert.ok(page.panels[0]); assert.equal(page.panels[0].props.state, "STALE"); assert.equal(page.panels[0].props.recoveryLabel, "重新获取投稿"); page.panels[0].props.onRecover(); await new Promise(resolve => setImmediate(resolve)); }
+    let retried = 0;
+    const panels = render({ data: { dataState: stale ? "STALE_USABLE" : "FRESH" }, refreshError: stale ? Error("refresh") : undefined,
+      refetch: async () => { retried++; } });
+    assert.equal(panels.length, 1);
+    assert.equal(panels[0]?.props.state, stale ? "STALE" : "EMPTY");
+    if (stale) { panels[0]!.props.onRecover?.(); assert.equal(retried, 1); }
+    else assert.equal(panels[0]?.props.emptyLevel, "page");
   }
 });

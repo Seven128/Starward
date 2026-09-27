@@ -19,6 +19,19 @@ export function resolveContributionRecordDetail(
   return item ? { state: "CURRENT", item } as const : { state: "MISSING" } as const;
 }
 
+/** A fresh command receipt may advance a cached row, but cannot revive a missing private record. */
+export function resolveContributionEditorRecord(
+  selection: ContributionRecordDetailSelection,
+  currentOwner: string | null,
+  submissions: readonly ContributionSubmission[] | null,
+  receipt: ContributionSubmission | null,
+) {
+  const detail = resolveContributionRecordDetail(selection, currentOwner, submissions);
+  if (detail.state !== "CURRENT") return detail;
+  return { state: "CURRENT", item: receipt?.submissionId === detail.item.submissionId && receipt.revision > detail.item.revision
+    ? receipt : detail.item } as const;
+}
+
 export function contributionRecordGroup(item: ContributionSubmission): ContributionRecordGroup {
   return item.kind === "NEW_SPOT_PROPOSAL" ? "CREATION" : "FEEDBACK";
 }

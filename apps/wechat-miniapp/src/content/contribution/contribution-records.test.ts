@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
-import { contributionFrozenAttempt, contributionRecordCover, contributionRecordGroup, contributionRecordIdentity, contributionRecordPrimaryAction, contributionRecordStatus, contributionSubmittedPlaceFacts, resolveContributionRecordDetail } from "./contribution-record-model";
+import { contributionFrozenAttempt, contributionRecordCover, contributionRecordGroup, contributionRecordIdentity, contributionRecordPrimaryAction, contributionRecordStatus, contributionSubmittedPlaceFacts, resolveContributionRecordDetail, resolveContributionEditorRecord } from "./contribution-record-model";
 
 function record(patch: Partial<ContributionSubmission>): ContributionSubmission {
   return {
@@ -30,6 +30,20 @@ function record(patch: Partial<ContributionSubmission>): ContributionSubmission 
     ...patch,
   };
 }
+
+test("editor detail preserves a newer submit receipt while resolving current account, deletion and later review", () => {
+  const cached = record({ revision: 2 });
+  const receipt = record({ revision: 3, submissionState: "PENDING_REVIEW" });
+  const selection = { owner: "owner", submissionId: cached.submissionId };
+  assert.deepEqual(resolveContributionEditorRecord(selection, "owner", [cached], receipt), { state: "CURRENT", item: receipt });
+  const reviewed = record({ revision: 4, submissionState: "REJECTED" });
+  assert.deepEqual(resolveContributionEditorRecord(selection, "owner", [reviewed], receipt), { state: "CURRENT", item: reviewed });
+  assert.equal(resolveContributionEditorRecord(selection, "other", [cached], receipt).state, "ACCOUNT_CHANGED");
+  assert.equal(resolveContributionEditorRecord(selection, "owner", [], receipt).state, "MISSING");
+  assert.equal(resolveContributionEditorRecord(selection, "owner", null, receipt).state, "UNAVAILABLE");
+  const unrelated = record({ submissionId: "contribution:other" as ContributionSubmission["submissionId"], revision: 9 });
+  assert.deepEqual(resolveContributionEditorRecord(selection, "owner", [cached], unrelated), { state: "CURRENT", item: cached });
+});
 
 test("record groups and labels preserve creation, review and publication meaning", () => {
   assert.equal(contributionRecordGroup(record({ kind: "NEW_SPOT_PROPOSAL" })), "CREATION");

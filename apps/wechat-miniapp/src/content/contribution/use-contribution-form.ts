@@ -348,6 +348,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     submissionRecovery,
     restorePendingSubmission,
     localRecovery: localDraft.recovery,
+    owner: localDraft.owner,
     ownerChanged,
     hasUnsavedChanges: !ownerChanged && localDraft.hasUnsavedChanges,
     localStorageError: localDraft.storageError,

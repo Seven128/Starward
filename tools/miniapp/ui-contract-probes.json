@@ -41,9 +41,9 @@
   },
   {
     "key": "contribution-three-axes",
-    "path": "apps/wechat-miniapp/src/content/contribution/contribution-media-history.tsx",
+    "path": "apps/wechat-miniapp/src/content/contribution/contribution-record-detail.tsx",
     "all_of": [
-      "投稿审核",
+      "contributionRecordStatus(item)",
       "证据合并",
       "公开影响"
     ]

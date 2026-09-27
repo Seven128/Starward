@@ -317,10 +317,35 @@ function createRetryMedia(
         "图片已上传，可继续提交审核。",
       );
     } catch (error) {
+      // An upload may have expired or completed despite a lost response. Refresh only its
+      // server identity/media revision so the user's unsaved fields remain untouched.
+      let synchronized: ContributionSubmission | undefined;
+      try {
+        assertAccount();
+        const draft = activeDraft(form);
+        if (draft) {
+          const response = await getContributions(undefined, currentDraftUserId() ?? undefined);
+          assertAccount();
+          const current = response.data.submissions.find(item => item.submissionId === draft.submissionId);
+          if (current && ["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(current)))
+            form.applyMediaDraft(current);
+          else if (current) form.applyDraft(current, "HISTORY");
+          synchronized = current;
+          await form.history.refetch().catch(() => undefined);
+          assertAccount();
+        }
+      } catch { /* Keep the original failure and input if authoritative recovery is unavailable. */ }
+      const currentUpload = synchronized?.media.find(item => item.uploadId === uploadId);
+      const ready = currentUpload?.state === "UPLOADED" || currentUpload?.state === "ATTACHED";
+      const expired = currentUpload?.state === "EXPIRED";
+      const terminal = synchronized && !["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(synchronized));
       form.announce(
-        "error",
-        "上传恢复失败",
-        `${errorMessage(error)}；已保留当前草稿和服务端上传状态。`,
+        ready || terminal ? "info" : expired ? "warning" : "error",
+        terminal ? "记录已结束编辑" : ready ? "已同步上传状态" : expired ? "上传会话已过期" : "上传恢复失败",
+        terminal ? "当前记录已结束编辑，请查看本次提交内容或返回记录列表。"
+          : ready ? "图片已在服务端就绪，请核对后继续；未保存输入仍保留。"
+          : expired ? "请点击重选重新上传这张照片；其他照片和未保存输入仍保留。"
+          : `${errorMessage(error)}；已保留当前草稿和服务端上传状态。`,
       );
     } finally {
       form.setUploading(false);
