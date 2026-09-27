@@ -5141,7 +5141,9 @@ export class PostgresMiniappRepository
       actorId: String(row.actor_id),
       idempotencyKey: String(row.idempotency_key),
       requestId: String(row.request_id),
-      committedAt: new Date(String(row.created_at)).toISOString(),
+      committedAt: row.created_at instanceof Date
+        ? row.created_at.toISOString()
+        : new Date(String(row.created_at)).toISOString(),
       resultingRevision: row.resulting_revision === null ? null : Number(row.resulting_revision),
       assessmentDigest: row.assessment_digest === null ? null : String(row.assessment_digest),
       readback: row.readback_payload as T,

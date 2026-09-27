@@ -112,9 +112,9 @@ Revisit when: Never append functional schema changes here after baseline accepta
 
 Owner: miniapp-verification-maintainers. Tracking: WECHAT-MINIAPP-MOD-004.
 
-Infrastructure boot, migration and failure-semantics assertions share one baseline runner; adapter extraction is deferred without reducing current coverage.
+`infrastructure-runtime.mjs` owns explicit compose/external-local selection, service boot, native PostgreSQL command targeting and owned API-process teardown. The baseline runner retains the common migration, database/namespace lifecycle and failure-semantics assertions. `backup-restore.mjs` uses the same target owner for dump, restore and SQL fingerprint reads; external mode does not change service ownership or widen acceptance claims.
 
-Revisit when: Extract database and worker lifecycle adapters before adding another infrastructure target or lifecycle phase.
+Revisit when: Extend the existing runtime/lifecycle boundaries before adding another infrastructure target or lifecycle phase; do not fork the acceptance assertions or substitute a compatible runtime for deployment evidence.
 
 ## tools/miniapp/run-wechat-devtools-session.mjs
 

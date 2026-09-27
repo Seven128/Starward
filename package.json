@@ -48,7 +48,7 @@
     "miniapp:platform": "node tools/run-node.cjs tools/miniapp/upload-release-bundle.mjs",
     "miniapp:app-id": "node tools/run-node.cjs tools/miniapp/wechat-app-id-migration.mjs",
     "check:miniapp:app-id": "node tools/run-node.cjs tools/miniapp/wechat-app-id-migration.mjs check",
-    "test:miniapp:release": "node tools/run-node.cjs --test tools/miniapp/build-release-bundle.test.mjs tools/miniapp/infrastructure-readiness.test.mjs tools/miniapp/wechat-app-id-migration.test.mjs",
+    "test:miniapp:release": "node tools/run-node.cjs --test tools/miniapp/build-release-bundle.test.mjs tools/miniapp/infrastructure-readiness.test.mjs tools/miniapp/infrastructure-runtime.test.mjs tools/miniapp/wechat-app-id-migration.test.mjs",
     "test:miniapp:platform": "node tools/run-node.cjs --test tools/miniapp/upload-release-bundle.test.mjs",
     "check:miniapp:release-code": "npm run check:miniapp:sdk && npm run typecheck --workspace @starward/miniapp-contracts && npm run typecheck --workspace @starward/miniapp-api && npm run typecheck --workspace @starward/wechat-miniapp && npm run test --workspace @starward/miniapp-contracts && npm run test --workspace @starward/miniapp-api && npm run test --workspace @starward/wechat-miniapp",
     "build:miniapp:release": "npm run build:release --workspace @starward/coordinate-system && npm run build:release --workspace @starward/miniapp-contracts && npm run build:release --workspace @starward/astronomy-core && npm run build:release --workspace @starward/miniapp-api",
