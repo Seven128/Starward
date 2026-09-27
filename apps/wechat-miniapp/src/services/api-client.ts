@@ -300,6 +300,7 @@ async function request<T>(
     session?: AuthSessionData | null;
     reauthenticationCode?: string;
     cache?: boolean;
+    independent?: boolean;
   } = {},
 ): Promise<ApiEnvelope<T>> {
   if (options.signal?.aborted)
@@ -337,7 +338,7 @@ async function request<T>(
     const onAbort = () => cancel("query_signal");
 
     const method = options.method ?? "GET";
-    release = requests.register(key, cancel, method === "GET");
+    release = requests.register(key, cancel, method === "GET", options.independent === true && method === "GET");
     recordAcceptanceDiagnostic(key, "start", Taro.getEnv());
 
     const scope = options.session?.userId ?? "anonymous";
@@ -420,7 +421,7 @@ async function request<T>(
         ...(options.body === undefined ? (method === "POST" ? { data: {} } : {}) : { data: options.body }),
         success(response) {
           finish(() => {
-            if (response.statusCode === 304 && cached && responseCache.isCurrent(exactCacheKey, cached, cacheFence)) {
+            if (response.statusCode === 304 && cached && responseCache.isCurrent(exactCacheKey, cached, cacheFence, options.independent === true)) {
               recordAcceptanceDiagnostic(key, "success", "not_modified");
               resolve(cached.envelope as ApiEnvelope<T>);
               return;
@@ -830,9 +831,11 @@ export function getSpotSite(spotId: string, signal?: AbortSignal) {
 
 export const { getSpotRecentWeather, getSpotAirQuality } = createSpotEnvironmentClient(requestOperation);
 
-export function getSpotContributionMedia(spotId: string, uploadId: ContributionUploadId) {
+export function getSpotContributionMedia(spotId: string, uploadId: ContributionUploadId, signal?: AbortSignal) {
   return requestOperation(`spot-contribution-media:${spotId}:${uploadId}`, "spotContributionMediaGet", {
+    independent: true,
     pathParams: { spotId, uploadId },
+    ...(signal ? { signal } : {}),
   });
 }
 
@@ -1393,6 +1396,7 @@ export async function getContributionMedia(
   const session = await ensureSession();
   const owner = expectedUserId ?? session.userId;
   const result = await requestOperation(`contribution-media:${submissionId}:${uploadId}`, "contributionMediaGet", {
+    independent: true,
     pathParams: { submissionId, uploadId },
     auth: "REQUIRED",
     ...(signal ? { signal } : {}),

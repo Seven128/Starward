@@ -7,7 +7,7 @@ import { NativeBackBoundary } from "./native-back-boundary";
 type PendingHandoff = { resolve: (accepted: boolean) => void };
 
 /** An app-owned warning before an unthemed WeChat surface in observation mode. */
-export function useRedLightHandoff({ nativeBackBoundary = true }: { nativeBackBoundary?: boolean } = {}) {
+export function useRedLightHandoff({ nativeBackBoundary = true, title = "微信界面可能亮屏" }: { nativeBackBoundary?: boolean; title?: string } = {}) {
   const mode = useAppStore(state => state.mode);
   const pending = useRef<PendingHandoff | null>(null);
   const [detail, setDetail] = useState<string | null>(null);
@@ -34,9 +34,9 @@ export function useRedLightHandoff({ nativeBackBoundary = true }: { nativeBackBo
     {nativeBackBoundary ? <NativeBackBoundary active onBack={() => finish(false)} /> : null}
     <RootPortal>
       <View className="red-light-handoff__scrim" catchMove onClick={() => finish(false)}>
-        <View className="red-light-handoff__dialog" role="dialog" aria-modal="true" aria-label="微信界面可能亮屏"
+        <View className="red-light-handoff__dialog" role="dialog" aria-modal="true" aria-label={title}
           onClick={event => event.stopPropagation()}>
-          <Text className="red-light-handoff__title">微信界面可能亮屏</Text>
+          <Text className="red-light-handoff__title">{title}</Text>
           <Text className="red-light-handoff__detail">{detail} 可取消并在设置中切换日间或夜间后再操作。</Text>
           <View className="red-light-handoff__actions">
             <Button className="red-light-handoff__cancel" onClick={() => finish(false)}>取消</Button>

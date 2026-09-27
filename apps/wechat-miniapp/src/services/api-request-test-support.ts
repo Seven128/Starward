@@ -78,7 +78,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
       },
     },
   }, { timeout: 1000 }) as {
-    request(key: string, path: string, options?: { cache?: boolean; signal?: AbortSignal; method?: "DELETE"; body?: unknown; session?: { userId: string; accessToken: string } }): Promise<typeof response>;
+    request(key: string, path: string, options?: { independent?: boolean; cache?: boolean; signal?: AbortSignal; method?: "DELETE"; body?: unknown; session?: { userId: string; accessToken: string } }): Promise<typeof response>;
     requests: LatestRequestRegistry;
     responseCache: ReturnType<typeof createResponseCache>;
     invalidateApiCache(prefix?: string): void;

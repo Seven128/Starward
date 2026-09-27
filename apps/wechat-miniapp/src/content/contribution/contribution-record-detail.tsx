@@ -8,6 +8,7 @@ import { displayBeijingTimestamp } from "@/utils/zoned-date";
 import { KIND_LABEL, MERGE_STATE_LABEL, PUBLICATION_IMPACT_LABEL, TOPICS } from "./contribution-model";
 import { contributionFrozenAttempt, contributionRecordCover, contributionRecordIdentity, contributionRecordStatus, contributionSubmittedPlaceFacts } from "./contribution-record-model";
 import { formalFeedbackFrozenView } from "./formal-feedback-snapshot";
+import { ContributionRecordMedia } from "./contribution-record-media";
 
 const FORMAL_FIELD_LABELS: Record<(typeof CONTRIBUTION_FORMAL_FIELD_KEYS)[number], string> = {
   address:"地点地址",name:"地点名称",openness:"开放状态",hours:"开放时间",access:"进入规则",accessNote:"进入条件",road:"末段道路",safety:"夜间安全",parking:"停车设施",parkingNote:"停车说明",toilet:"洗手间",toiletNote:"洗手间说明",platform:"观测平台",horizon:"视野与遮挡",light:"现场灯光",signal:"通信与充电",camping:"露营条件",contact:"场地联系",detail:"补充说明",
@@ -79,7 +80,7 @@ export function ContributionRecordDetail({ item, onBack }: { item: ContributionS
           <Text className="type-caption">{FORMAL_FIELD_LABELS[key]}</Text><Text className="type-body">{value || "未填写"}</Text>
         </View>)}
       </View> : formalView ? <View className="contribution-frozen-diff">{CONTRIBUTION_FORMAL_FIELD_KEYS.filter(key => Object.prototype.hasOwnProperty.call(formalView.proposal.fields,key)).map(key => <View key={key}><Text className="type-caption">{FORMAL_FIELD_LABELS[key]}</Text><Text className="contribution-frozen-diff__old">{formalView.baseline.fields[key] || "未填写"}</Text><Text> → </Text><Text>{formalView.proposal.fields[key] || "已清空"}</Text></View>)}</View> : <><Text className="type-body">{frozen.detail || "没有文字说明"}</Text><Text className="type-caption">涉及事实：{frozen.topics.length ? frozen.topics.map((topic) => TOPICS.find((entry) => entry.key === topic)?.label ?? "其他").join(" · ") : "未提供"}</Text></>}
-      <Text className="type-caption">媒体：{frozen.media.length} 项</Text>
+      <ContributionRecordMedia item={item} />
     </View>
     <View className="contribution-readonly-section">
       <Text className="type-section">处理结果</Text>

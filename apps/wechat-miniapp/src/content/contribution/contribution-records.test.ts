@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
-import { contributionFrozenAttempt, contributionRecordCover, contributionRecordGroup, contributionRecordIdentity, contributionRecordPrimaryAction, contributionRecordStatus, contributionSubmittedPlaceFacts, resolveContributionRecordDetail, resolveContributionEditorRecord } from "./contribution-record-model";
+import { contributionFrozenAttempt, contributionRecordCover, contributionRecordGroup, contributionRecordIdentity, contributionRecordPhotos, contributionRecordPrimaryAction, contributionRecordStatus, contributionSubmittedPlaceFacts, resolveContributionRecordDetail, resolveContributionEditorRecord } from "./contribution-record-model";
 
 function record(patch: Partial<ContributionSubmission>): ContributionSubmission {
   return {
@@ -30,6 +30,37 @@ function record(patch: Partial<ContributionSubmission>): ContributionSubmission 
     ...patch,
   };
 }
+
+test("frozen photos retain all authored groups and order without admitting working-copy replacements", () => {
+  const original = record({ candidateProfile: { fields: {}, media: {
+    parking: ["upload:park-2", "upload:park-1"], toilet: ["upload:wc"], site: ["upload:site"],
+  } }, media: ["park-1", "park-2", "wc", "site"].map(id => ({ uploadId: `upload:${id}` } as never)) });
+  const item = record({ submissionState: "PENDING_REVIEW", media: [{ uploadId: "upload:new" } as never],
+    attempts: [{ attemptId: "attempt:frozen", snapshot: original } as never] });
+  assert.deepEqual(contributionRecordPhotos(item).map(photo => [photo.kind, photo.id, photo.owned]), [
+    ["parking", "upload:park-2", true], ["parking", "upload:park-1", true],
+    ["toilet", "upload:wc", true], ["site", "upload:site", true],
+  ]);
+});
+
+test("legacy photos use stored kinds while an explicitly empty frozen group stays empty", () => {
+  const media = [{ uploadId: "upload:park", kind: "parking" }, { uploadId: "upload:old" } ] as never;
+  assert.deepEqual(contributionRecordPhotos(record({ media })).map(photo => [photo.kind, photo.id]), [
+    ["parking", "upload:park"], ["site", "upload:old"],
+  ]);
+  assert.deepEqual(contributionRecordPhotos(record({ media, candidateProfile: { fields: {}, media: { parking: [] } } })).map(photo => photo.id), ["upload:old"]);
+});
+
+test("formal photo differences use accepted rebase and preserve removed originals without granting private ownership", () => {
+  const baseline = { media: { parking: ["canonical:original"], toilet: [], site: [] } };
+  const item = record({ kind: "CORRECTION", media: [{ uploadId: "upload:new", kind: "parking" } as never],
+    formalFeedback: { baseline, proposal: { media: { parking: ["upload:discarded"] } },
+      resolvedBaseline: baseline, resolvedProposal: { media: { parking: ["upload:new"] } } } as never });
+  assert.deepEqual(contributionRecordPhotos(item), [
+    { id: "upload:new", kind: "parking", owned: true, change: "added" },
+    { id: "canonical:original", kind: "parking", owned: false, change: "removed" },
+  ]);
+});
 
 test("editor detail preserves a newer submit receipt while resolving current account, deletion and later review", () => {
   const cached = record({ revision: 2 });

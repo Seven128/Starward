@@ -31,14 +31,19 @@ interface ActiveRequest {
  * release or cancel the newer request occupying the same transport slot.
  */
 export class LatestRequestRegistry {
-  readonly #active = new Map<string, ActiveRequest>();
+  readonly #active = new Map<string, Set<ActiveRequest>>();
 
-  register(key: string, cancel: ActiveRequest["cancel"], readOnly = false): () => void {
-    this.cancel(key, "superseded");
+  register(key: string, cancel: ActiveRequest["cancel"], readOnly = false, independent = false): () => void {
+    // Immutable media has multiple simultaneous consumers (cover and gallery).
+    // They share cache identity, but each owns its transport cancellation.
+    if (!independent) this.cancel(key, "superseded");
     const entry = { cancel, readOnly };
-    this.#active.set(key, entry);
+    const entries = this.#active.get(key) ?? new Set<ActiveRequest>();
+    entries.add(entry);
+    this.#active.set(key, entries);
     return () => {
-      if (this.#active.get(key) === entry) this.#active.delete(key);
+      entries.delete(entry);
+      if (!entries.size && this.#active.get(key) === entries) this.#active.delete(key);
     };
   }
 
@@ -46,10 +51,10 @@ export class LatestRequestRegistry {
     key: string,
     reason: RequestCancellationReason = "manual",
   ): boolean {
-    const entry = this.#active.get(key);
-    if (!entry) return false;
+    const entries = this.#active.get(key);
+    if (!entries) return false;
     this.#active.delete(key);
-    entry.cancel(reason);
+    for (const entry of entries) entry.cancel(reason);
     return true;
   }
 
@@ -59,13 +64,23 @@ export class LatestRequestRegistry {
 
   cancelAll(reason: RequestCancellationReason = "manual"): number {
     const keys = [...this.#active.keys()];
+    const count = [...this.#active.values()].reduce((total, entries) => total + entries.size, 0);
     for (const key of keys) this.cancel(key, reason);
-    return keys.length;
+    return count;
   }
 
   cancelReads(matches: (key: string) => boolean): number {
-    const keys = [...this.#active].filter(([key, entry]) => entry.readOnly && matches(key)).map(([key]) => key);
-    for (const key of keys) this.cancel(key);
-    return keys.length;
+    let count = 0;
+    for (const [key, entries] of [...this.#active]) {
+      if (!matches(key)) continue;
+      for (const entry of [...entries]) {
+        if (!entry.readOnly) continue;
+        entries.delete(entry);
+        entry.cancel("manual");
+        count++;
+      }
+      if (!entries.size && this.#active.get(key) === entries) this.#active.delete(key);
+    }
+    return count;
   }
 }

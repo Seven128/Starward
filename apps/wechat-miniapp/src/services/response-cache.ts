@@ -322,10 +322,21 @@ export function createResponseCache(storage: Storage, now = Date.now) {
       requests.add(fence);
       return fence;
     },
-    isCurrent: (key: string, item: CachedResponse, fence: RequestFence) => {
+    isCurrent: (key: string, item: CachedResponse, fence: RequestFence, allowEquivalent = false) => {
       if (!currentFence(key, fence)) return false;
       const current = get(key);
-      return current !== undefined && current.storedAt === item.storedAt && current.text === item.text;
+      if (!current) return false;
+      if (current.storedAt === item.storedAt && current.text === item.text) return true;
+      // Concurrent immutable-photo reads can refresh request metadata without
+      // changing the conditional response. Invalidation still fences every read.
+      if (!allowEquivalent || current.envelope.etag !== item.envelope.etag) return false;
+      const { generatedAt: currentTime, requestId: currentRequest, validAt: currentValidity, ...currentContent } = current.envelope;
+      const { generatedAt: priorTime, requestId: priorRequest, validAt: priorValidity, ...priorContent } = item.envelope;
+      // Unbound media envelopes use the retrieval time as validAt. Explicit
+      // domain validity must still match; it is not disposable request metadata.
+      const matchingValidity = currentValidity === priorValidity ||
+        (currentValidity === currentTime && priorValidity === priorTime);
+      return matchingValidity && JSON.stringify(currentContent) === JSON.stringify(priorContent);
     },
     cleanupComplete: () => !cleanupFailed,
     clear: () => invalidate(),

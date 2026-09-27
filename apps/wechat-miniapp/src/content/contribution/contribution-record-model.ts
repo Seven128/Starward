@@ -1,4 +1,5 @@
-import { CONTRIBUTION_FORMAL_FIELD_KEYS, type ContributionSubmission } from "@starward/miniapp-contracts";
+import { CONTRIBUTION_FORMAL_FIELD_KEYS, CONTRIBUTION_MEDIA_KINDS, type ContributionMediaKind, type ContributionSubmission } from "@starward/miniapp-contracts";
+import { formalFeedbackFrozenView } from "./formal-feedback-snapshot";
 
 export type ContributionRecordGroup = "CREATION" | "FEEDBACK";
 
@@ -105,4 +106,29 @@ export function contributionRecordCover(item: ContributionSubmission) {
   const media = recordSource(item).media;
   const ready = media.filter(value => value.state === "ATTACHED" || value.state === "UPLOADED");
   return ready.find(value => value.kind === "site") ?? ready[0] ?? null;
+}
+
+export type ContributionRecordPhoto = {
+  id: string;
+  kind: ContributionMediaKind;
+  owned: boolean;
+  change: "added" | "removed" | "retained";
+};
+
+/** Retain the frozen grouping and accepted differences, including removed originals. */
+export function contributionRecordPhotos(item: ContributionSubmission): ContributionRecordPhoto[] {
+  const frozen = recordSource(item);
+  const owned = new Set<string>(frozen.media.map(media => media.uploadId));
+  const formal = frozen.formalFeedback ? formalFeedbackFrozenView(frozen.formalFeedback) : null;
+  return CONTRIBUTION_MEDIA_KINDS.flatMap(kind => {
+    const before = formal?.baseline.media[kind] ?? [];
+    const after = formal
+      ? (Object.prototype.hasOwnProperty.call(formal.proposal.media, kind) ? formal.proposal.media[kind] ?? [] : before)
+      : frozen.candidateProfile?.media[kind] ?? frozen.media.filter(media => (media.kind ?? "site") === kind).map(media => media.uploadId);
+    return [...new Set([...after, ...before])].map(id => ({
+      id, kind, owned: owned.has(id),
+      change: formal && !after.includes(id) ? "removed" as const
+        : formal && !before.includes(id) ? "added" as const : "retained" as const,
+    }));
+  });
 }

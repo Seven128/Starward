@@ -32,6 +32,8 @@ Owner: wechat-miniapp-maintainers. Tracking: WECHAT-MINIAPP-MOD-006.
 
 The BFF client composes transport and account session storage/login. `response-cache.ts` owns bounded response persistence, representation identity and storage cleanup; `request-lifecycle.ts` owns request cancellation. `authenticated-operation.ts` owns generated endpoint projection and account-bound permission-retry orchestration through injected transport/session functions; all existing endpoints use it. `account-profile-client.ts` owns profile read/write intent, same-runtime retry and pre/post request account fences. Native request transport and session establishment remain in the client and should be inspected before materially extending those policies.
 
+Immutable contribution-photo GETs allow simultaneous cover/gallery readers under the existing registry and cache identity. Each reader owns its cancellation signal; key/global cancellation still reaches all matching readers. Conditional responses may reuse an equivalent photo envelope after another reader refreshes retrieval metadata, while invalidation, account scope, content, explicit validity and ETag checks remain enforced. Other endpoint families retain latest-request supersession.
+
 Revisit when: Review the existing response-cache and request-lifecycle adapters, then extract the affected remaining transport or identity-recovery responsibility before adding another endpoint family or transport policy. Do not create a second cache owner.
 
 ## packages/miniapp-contracts/src/catalog.ts

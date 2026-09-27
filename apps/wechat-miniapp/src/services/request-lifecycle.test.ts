@@ -9,6 +9,62 @@ import {
   isMiniappRequestCancelled,
 } from "./request-lifecycle";
 
+test("cover and frozen gallery may read the same immutable photo without cancelling each other", async () => {
+  const h = transportHarness();
+  const controller = new AbortController();
+  const cover = h.request("contribution-media:record:photo", "/photo", { independent: true, signal: controller.signal });
+  const coverOutcome = cover.catch((error: unknown) => error);
+  const gallery = h.request("contribution-media:record:photo", "/photo", { independent: true });
+  assert.equal(h.counts().aborts, 0);
+  controller.abort();
+  assert.ok(await coverOutcome instanceof MiniappRequestCancelled);
+  assert.equal(h.requests.has("contribution-media:record:photo"), true);
+  h.calls[1]!.success({ statusCode: 200, data: h.response });
+  assert.equal(await gallery, h.response);
+  assert.equal(h.requests.has("contribution-media:record:photo"), false);
+  assert.equal(h.timers.size, 0);
+});
+
+test("registry read cancellation cancels all matching independent photo readers and preserves writes", async () => {
+  const h = transportHarness();
+  const first = h.request("contribution-media:photo", "/photo", { independent: true });
+  const firstResult = first.catch((error: unknown) => error);
+  const second = h.request("contribution-media:photo", "/photo", { independent: true });
+  const secondResult = second.catch((error: unknown) => error);
+  const write = h.request("save", "/save", { method: "DELETE" });
+  assert.equal(h.requests.cancelReads(key => key.startsWith("contribution-media:")), 2);
+  assert.ok(await firstResult instanceof MiniappRequestCancelled);
+  assert.ok(await secondResult instanceof MiniappRequestCancelled);
+  h.calls[2]!.success({ statusCode: 200, data: h.response });
+  await write;
+  assert.equal(h.timers.size, 0);
+});
+
+test("independent photo 304 accepts identical content updated by another reader but respects invalidation", async () => {
+  for (const scenario of ["same", "invalidate", "changed-validity", "changed-data"]) {
+    const h = transportHarness();
+    const first = { ...h.response, generatedAt: "2026-09-27T10:00:00.000Z", validAt: "2026-09-27T10:00:00.000Z" };
+    const second = { ...first, requestId: "concurrent-reader", generatedAt: "2026-09-27T10:00:01.000Z", validAt: "2026-09-27T10:00:01.000Z" };
+    const a = h.request("photo", "/photo", { independent: true });
+    const b = h.request("photo", "/photo", { independent: true });
+    h.calls[0]!.success({ statusCode: 200, data: first });
+    await a;
+    const c = h.request("photo", "/photo", { independent: true });
+    const result = c.catch((error: unknown) => error);
+    assert.equal(h.calls[2]!.header["If-None-Match"], h.response.etag);
+    if (scenario === "changed-validity") second.validAt = "2026-09-26T00:00:00.000Z";
+    if (scenario === "changed-data") second.data = { value: "a different photo" };
+    h.calls[1]!.success({ statusCode: 200, data: second });
+    await b;
+    if (scenario === "invalidate") h.invalidateApiCache();
+    h.calls[2]!.success({ statusCode: 304, data: undefined });
+    const outcome = await result;
+    if (scenario !== "same") assert.match(String(outcome), /bff_http_304/u);
+    else assert.equal(outcome, first);
+    assert.equal(h.timers.size, 0);
+  }
+});
+
 test("Taro callback plus rejected task settles once without an unhandled rejection", async () => {
   for (const ending of ["cancel", "timeout", "network", "promise-only"] as const) {
     const h = transportHarness(false, () => {}, true);

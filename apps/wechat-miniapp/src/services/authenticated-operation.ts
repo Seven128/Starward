@@ -5,7 +5,7 @@ interface OperationDependencies {
   readStoredSession(): AuthSessionData | null;
   clearStoredSession(): void;
   isPermissionDenied(error: unknown): boolean;
-  request<T>(key: string, path: string, options: { method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown; idempotencyKey?: string; signal?: AbortSignal; session?: AuthSessionData | null; reauthenticationCode?: string; cache?: boolean }): Promise<ApiEnvelope<T>>;
+  request<T>(key: string, path: string, options: { method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown; idempotencyKey?: string; signal?: AbortSignal; session?: AuthSessionData | null; reauthenticationCode?: string; cache?: boolean; independent?: boolean }): Promise<ApiEnvelope<T>>;
 }
 /** Generated endpoint projection and account-bound reauthentication; transport/cache stay injected. */
 export function createAuthenticatedOperationRequester(deps: OperationDependencies) {
@@ -44,6 +44,7 @@ async function requestOperation<K extends MiniappApiOperationId>(
     auth?: AuthPolicy;
     reauthenticationCode?: string;
     cache?: boolean;
+    independent?: boolean;
   } = {},
   retried = false,
   expectedUserId?: string,
@@ -67,6 +68,7 @@ async function requestOperation<K extends MiniappApiOperationId>(
         ...(session ? { session } : {}),
         ...(options.reauthenticationCode ? { reauthenticationCode: options.reauthenticationCode } : {}),
         ...(options.cache === undefined ? {} : { cache: options.cache }),
+        ...(options.independent ? { independent: true } : {}),
       },
     )) as MiniappApiResponse<K>;
   } catch (error) {
