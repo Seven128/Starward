@@ -1308,9 +1308,6 @@
   flex: 0 0 var(--icon-small);
 }
 .spot-panel__action .favorite-star {
-  width: var(--icon-small);
-  height: var(--icon-small);
-  flex: 0 0 var(--icon-small);
   transform: none;
   transform-origin: center;
 }
@@ -3224,8 +3221,7 @@
 .spot-panel__action--cloud:disabled::before {
   opacity: .82;
 }
-.spot-panel__action .semantic-icon,
-.spot-panel__action .favorite-star {
+.spot-panel__action .semantic-icon {
   width: 14Px;
   height: 14Px;
   flex: 0 0 14Px;

@@ -39,7 +39,7 @@ import { StatusPanel } from "@/components/status-panel";
 import { SoftButton } from "@/components/soft-button";
 import { createTerrainGroundOverlayCoordinator, type TerrainGroundOverlayResult, type TerrainGroundOverlayContext } from "./terrain-ground-overlay";
 import { useNativeMapRecovery } from "./native-map-recovery";
-import { useFavoriteMutation } from "@/hooks/use-favorite-mutation";
+import { reconcileFavoriteSnapshot, useFavoriteMutation } from "@/hooks/use-favorite-mutation";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { SourceAttribution } from "@/components/source-attribution";
 import { Provenance } from "@/components/provenance";
@@ -209,7 +209,7 @@ export default function MapPage() {
   const selectSpot = useAppStore((state) => state.selectSpot);
   const setLocationState = useAppStore((state) => state.setLocationState);
   const notify = useAppStore((state) => state.notify);
-  const { toggleFavorite } = useFavoriteMutation();
+  const { toggleFavorite, isPending: favoritePending } = useFavoriteMutation();
   const [debouncedFinderQuery, setDebouncedFinderQuery] = useState("");
   const nativeMap = useNativeMapRecovery();
   const mapRuntimeError = nativeMap.error;
@@ -500,7 +500,7 @@ export default function MapPage() {
   useEffect(() => {
     if (accountOwnerId !== currentDraftUserId()) return;
     const ids = scene.data?.data.favoriteSpotIds;
-    if (ids) useAppStore.getState().replaceFavoriteIds(ids);
+    if (ids) useAppStore.getState().replaceFavoriteIds(reconcileFavoriteSnapshot(ids));
   }, [accountOwnerId, scene.data?.data.favoriteSpotIds]);
 
   useEffect(() => {
@@ -2284,6 +2284,7 @@ export default function MapPage() {
                 extent={panelExtent}
                 phase={panelPhase}
                 favorite={favoriteIds.includes(selected.spotId)}
+                favoritePending={favoritePending}
                 context={detailContextReady ? activeContext : null}
                 astronomyAt={projectedAt}
                 skyReport={spotSkyReport}

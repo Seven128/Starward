@@ -1038,6 +1038,10 @@ export async function deleteAccount() {
   return { ...result, localAccountReset, localCleanupComplete };
 }
 
+export async function ensureFavoriteOwner() {
+  return (await ensureSession()).userId;
+}
+
 export async function setFavoriteRelation(
   spotId: string,
   favorite: boolean,

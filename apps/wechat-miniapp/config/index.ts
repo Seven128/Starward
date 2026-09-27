@@ -60,6 +60,8 @@ const bIconFiles = {
     "cloud--day--default.png", "compass--day--default.png",
     "eye--day--default.png", "filter--day--default.png",
     "four-point-star--day--default.png", "horizon--day--default.png",
+    "favorite-star--day--default.png", "favorite-star--day--selected.png",
+    "favorite-trail--day--default.png", "favorite-satellite--day--default.png",
     "images--day--default.png", "info--day--default.png", "layers--day--default.png",
     "low-cloud--day--default.png", "bulb--day--default.png",
     "location--day--default.png", "meteor--day--default.png", "moon--day--default.png",

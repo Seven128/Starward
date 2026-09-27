@@ -161,6 +161,7 @@ export function SpotInformationPanel({
   extent,
   phase,
   favorite,
+  favoritePending,
   context,
   astronomyAt,
   skyReport,
@@ -209,6 +210,7 @@ export function SpotInformationPanel({
   extent: SpotPanelExtent;
   phase: SpotPanelPhase;
   favorite: boolean;
+  favoritePending: boolean;
   context: ObservationContext | null;
   astronomyAt: string;
   skyReport: SkyReport | null;
@@ -787,9 +789,9 @@ export function SpotInformationPanel({
           role="toolbar"
           ariaLabel="点位动作"
         >
-          <Button className={`spot-panel__action spot-panel__action--favorite${favorite ? " spot-panel__action--active" : ""}`} data-control="spot-favorite-action" ariaLabel={`${favorite ? "取消收藏" : "收藏"}${effectiveSpot.name}`} onClick={onFavorite}>
+          <Button className={`spot-panel__action spot-panel__action--favorite${favorite ? " spot-panel__action--active" : ""}`} data-control="spot-favorite-action" ariaLabel={`${favoritePending ? "正在保存" : favorite ? "已想去，取消收藏" : "未想去，收藏"}${effectiveSpot.name}`} onClick={onFavorite}>
             <FavoriteStar active={favorite} />
-            <Text>{favorite ? "已想去" : "想去"}</Text>
+            <Text>想去</Text>
           </Button>
           <Button className="spot-panel__action spot-panel__action--cloud" data-control="spot-cloud-stargazing-action" ariaLabel={`${cloudReady ? "打开" : "等待正式点位上下文后打开"}${effectiveSpot.name}云观星`} disabled={!cloudReady} onClick={onCloud}>
             <SemanticIcon name="eye" />

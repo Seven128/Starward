@@ -68,6 +68,7 @@ test("panel sections follow cached document geometry and ignore cancelled measur
   const query = { select: () => query, boundingClientRect: () => query, scrollOffset: () => query, exec: (callback: (results: unknown[]) => void) => callbacks.push(callback) };
   const { measure, onScroll } = vm.runInNewContext(ts.transpileModule(`({ measure: ${setup}, onScroll: ${scroll} });`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     visible: true, spot: { spotId: "spot:a" }, lastScroll: { current: { spotId: "spot:a", top: 0 } },
+    restoredScrollTop: undefined, setRestoredScrollTop: () => {},
     scrollMeasureTimer: { current: null }, setLayoutVersion: () => { layoutRefreshes++; },
     settling: false, extent: "large", terrainOffset: terrain, astronomyOffset: offset, SECTION_NAV_REVEAL_PX: 44, setSection: (value: string) => sections.push(value),
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; },
