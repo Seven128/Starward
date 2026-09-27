@@ -57,130 +57,134 @@ test(
       await new PostgresMiniappRepository(databaseUrl).initialize({
         migrate: true,
       });
-    const eventSourceId = `source:integration-events-${runId}`;
-    const eventCatalogVersion = `integration-events-${runId}`;
-    const eventStore = new PostgresAstronomicalEventCatalogStore(firstRepository.pool);
-    await eventStore.upsertSourceConfig({
-      sourceId: eventSourceId,
-      provider: "隔离事件目录集成测试",
-      endpoint: "https://example.com/starward-event-catalog.json",
-      enabled: true,
-      parserVersion: "integration-parser-1",
-      schemaVersion: EVENT_CATALOG_SCHEMA_VERSION,
-      autoPublishEligible: true,
-      approvedBaselineVersion: "builtin-reviewed-2026.1",
-      termsUrl: "https://example.com/terms",
-      coverage: "隔离数据库事务测试，不构成生产天象资料",
-    }, "admin:integration");
-    const eventOwner = await new AstronomicalEventCatalogOwner(eventStore).initialize();
-    const eventBaseline = eventOwner.snapshot();
-    const firstEvent = eventBaseline.events[0]!;
-    const integratedEventName = `${firstEvent.displayName}（数据库集成）`;
-    const eventImport = await eventOwner.importCandidate({
-      sourceId: eventSourceId,
-      trigger: "SCHEDULED",
-      actorId: "admin:scheduled-ingestion",
-      package: {
-        ...eventBaseline,
-        catalogVersion: eventCatalogVersion,
-        parserVersion: "integration-parser-1",
-        events: eventBaseline.events.map(event => event.occurrenceId === firstEvent.occurrenceId
-          ? { ...event, displayName: integratedEventName }
-          : event),
-      },
-    });
-    assert.equal(eventImport.state, "AUTO_PUBLISH_ELIGIBLE");
-    const eventPublication = await eventOwner.publishCandidate({
-      candidateId: eventImport.candidate!.candidateId,
-      actorId: "admin:integration",
-      reason: "验证事件目录原子发布与重启读回",
-    });
-    assert.equal(eventPublication.catalogVersion, eventCatalogVersion);
-    const reloadedEventOwner = await new AstronomicalEventCatalogOwner(eventStore).initialize();
-    assert.equal(reloadedEventOwner.find(firstEvent.occurrenceId)?.displayName, integratedEventName);
-    const eventAudit = await firstRepository.pool.query<{ action: string }>(
-      `SELECT action FROM audit_logs
-        WHERE subject_type='ASTRONOMICAL_EVENT_CATALOG' AND subject_id=$1
-        ORDER BY occurred_at DESC LIMIT 1`,
-      [eventCatalogVersion],
-    );
-    assert.equal(eventAudit.rows[0]?.action, "EVENT_CATALOG_PUBLISH");
-    const eventRollback = await reloadedEventOwner.rollback({
-      catalogVersion: eventBaseline.catalogVersion,
-      actorId: "admin:integration",
-      reason: "验证内置基线回滚创建追加版本",
-    });
-    assert.match(eventRollback.catalogVersion, new RegExp(`^${eventBaseline.catalogVersion.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}\\.rollback\\.`));
-    assert.equal(reloadedEventOwner.find(firstEvent.occurrenceId)?.displayName, firstEvent.displayName);
-    await assert.rejects(
-      firstRepository.pool.query(
-        "UPDATE astronomical_event_catalog_publications SET reason='tampered' WHERE catalog_version=$1",
-        [eventCatalogVersion],
-      ),
-      /event_catalog_publication_immutable/u,
-    );
-    const candidate = await firstRepository.adminCreateSpotCandidate({
-      actorId: "admin:integration",
-      requestId: `candidate:${runId}`,
-      candidate: {
-        spotId: `spot:integration-candidate-${runId}`,
-        name: "集成测试待核验点",
-        region: "测试区域",
-        address: "仅用于隔离数据库验证",
-        timezone: "Asia/Shanghai",
-        latitude: 22.54,
-        longitude: 114.06,
-        altitudeM: null,
-        visibilityPolicy: "PUBLIC_EXACT",
-        source: {
-          id: `source:integration-candidate-${runId}`,
-          kind: "USER_FIELD_REPORT",
-          provider: "隔离数据库集成测试",
-          title: "候选点录入测试来源",
-          sourceUrl: "",
-          license: "测试数据，不可发布",
-          licenseUrl: "",
-          publishedAt: null,
-          retrievedAt: new Date().toISOString(),
-          validFrom: null,
-          validTo: null,
-          state: "FRESH",
-          confidence: null,
-          precision: "只验证候选记录与发布门禁",
-          limitations: ["不构成真实地点事实"],
-        },
-        reason: "验证候选记录不会进入正式读模型",
-      },
-    });
-    assert.equal(candidate.detail.spot.status, "DATA_INSUFFICIENT");
-    assert.equal(candidate.assessment.complete, false);
-    assert.ok(candidate.assessment.issues.length > 0);
-    assert.equal(
-      await firstRepository.getSpot(candidate.detail.spot.spotId),
-      null,
-    );
-    const candidateRow = (await firstRepository.adminListSpots()).find(
-      (row) => row.spot_id === candidate.detail.spot.spotId,
-    );
-    assert.ok(candidateRow);
-    await assert.rejects(
-      firstRepository.adminChangeSpotLifecycle({
-        spotId: candidate.detail.spot.spotId,
-        action: "PUBLISH",
-        expectedSpotRevision: candidateRow.version,
-        reason: "验证资料不足时正式发布命令失败",
-        actorId: "admin:integration",
-        requestId: `candidate-publish:${runId}`,
-        idempotencyKey: `candidate-publish:${runId}`,
-      }),
-      /spot_publication_completeness_invalid/u,
-    );
-    const spot = await insertExplicitTestSpot(firstRepository);
-    const newPlaceTarget = await insertExplicitTestSpot(firstRepository, {
-      spotId: `spot:integration-new-place-${runId}`,
-      status: "DATA_INSUFFICIENT",
-    });
-    await firstRepository.close();
+    const { spot, newPlaceTarget } = await (async () => {
+      try {
+        const eventSourceId = `source:integration-events-${runId}`;
+        const eventCatalogVersion = `integration-events-${runId}`;
+        const eventStore = new PostgresAstronomicalEventCatalogStore(firstRepository.pool);
+        await eventStore.upsertSourceConfig({
+          sourceId: eventSourceId,
+          provider: "隔离事件目录集成测试",
+          endpoint: "https://example.com/starward-event-catalog.json",
+          enabled: true,
+          parserVersion: "integration-parser-1",
+          schemaVersion: EVENT_CATALOG_SCHEMA_VERSION,
+          autoPublishEligible: true,
+          approvedBaselineVersion: "builtin-reviewed-2026.1",
+          termsUrl: "https://example.com/terms",
+          coverage: "隔离数据库事务测试，不构成生产天象资料",
+        }, "admin:integration");
+        const eventOwner = await new AstronomicalEventCatalogOwner(eventStore).initialize();
+        const eventBaseline = eventOwner.snapshot();
+        const firstEvent = eventBaseline.events[0]!;
+        const integratedEventName = `${firstEvent.displayName}（数据库集成）`;
+        const eventImport = await eventOwner.importCandidate({
+          sourceId: eventSourceId,
+          trigger: "SCHEDULED",
+          actorId: "admin:scheduled-ingestion",
+          package: {
+            ...eventBaseline,
+            catalogVersion: eventCatalogVersion,
+            parserVersion: "integration-parser-1",
+            events: eventBaseline.events.map(event => event.occurrenceId === firstEvent.occurrenceId
+              ? { ...event, displayName: integratedEventName }
+              : event),
+          },
+        });
+        assert.equal(eventImport.state, "AUTO_PUBLISH_ELIGIBLE");
+        const eventPublication = await eventOwner.publishCandidate({
+          candidateId: eventImport.candidate!.candidateId,
+          actorId: "admin:integration",
+          reason: "验证事件目录原子发布与重启读回",
+        });
+        assert.equal(eventPublication.catalogVersion, eventCatalogVersion);
+        const reloadedEventOwner = await new AstronomicalEventCatalogOwner(eventStore).initialize();
+        assert.equal(reloadedEventOwner.find(firstEvent.occurrenceId)?.displayName, integratedEventName);
+        const eventAudit = await firstRepository.pool.query<{ action: string }>(
+          `SELECT action FROM audit_logs
+            WHERE subject_type='ASTRONOMICAL_EVENT_CATALOG' AND subject_id=$1
+            ORDER BY occurred_at DESC LIMIT 1`,
+          [eventCatalogVersion],
+        );
+        assert.equal(eventAudit.rows[0]?.action, "EVENT_CATALOG_PUBLISH");
+        const eventRollback = await reloadedEventOwner.rollback({
+          catalogVersion: eventBaseline.catalogVersion,
+          actorId: "admin:integration",
+          reason: "验证内置基线回滚创建追加版本",
+        });
+        assert.match(eventRollback.catalogVersion, new RegExp(`^${eventBaseline.catalogVersion.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}\\.rollback\\.`));
+        assert.equal(reloadedEventOwner.find(firstEvent.occurrenceId)?.displayName, firstEvent.displayName);
+        await assert.rejects(
+          firstRepository.pool.query(
+            "UPDATE astronomical_event_catalog_publications SET reason='tampered' WHERE catalog_version=$1",
+            [eventCatalogVersion],
+          ),
+          /event_catalog_publication_immutable/u,
+        );
+        const candidate = await firstRepository.adminCreateSpotCandidate({
+          actorId: "admin:integration",
+          requestId: `candidate:${runId}`,
+          candidate: {
+            spotId: `spot:integration-candidate-${runId}`,
+            name: "集成测试待核验点",
+            region: "测试区域",
+            address: "仅用于隔离数据库验证",
+            timezone: "Asia/Shanghai",
+            latitude: 22.54,
+            longitude: 114.06,
+            altitudeM: null,
+            visibilityPolicy: "PUBLIC_EXACT",
+            source: {
+              id: `source:integration-candidate-${runId}`,
+              kind: "USER_FIELD_REPORT",
+              provider: "隔离数据库集成测试",
+              title: "候选点录入测试来源",
+              sourceUrl: "",
+              license: "测试数据，不可发布",
+              licenseUrl: "",
+              publishedAt: null,
+              retrievedAt: new Date().toISOString(),
+              validFrom: null,
+              validTo: null,
+              state: "FRESH",
+              confidence: null,
+              precision: "只验证候选记录与发布门禁",
+              limitations: ["不构成真实地点事实"],
+            },
+            reason: "验证候选记录不会进入正式读模型",
+          },
+        });
+        assert.equal(candidate.detail.spot.status, "DATA_INSUFFICIENT");
+        assert.equal(candidate.assessment.complete, false);
+        assert.ok(candidate.assessment.issues.length > 0);
+        assert.equal(
+          await firstRepository.getSpot(candidate.detail.spot.spotId),
+          null,
+        );
+        const candidateRow = (await firstRepository.adminListSpots()).find(
+          (row) => row.spot_id === candidate.detail.spot.spotId,
+        );
+        assert.ok(candidateRow);
+        await assert.rejects(
+          firstRepository.adminChangeSpotLifecycle({
+            spotId: candidate.detail.spot.spotId,
+            action: "PUBLISH",
+            expectedSpotRevision: candidateRow.version,
+            reason: "验证资料不足时正式发布命令失败",
+            actorId: "admin:integration",
+            requestId: `candidate-publish:${runId}`,
+            idempotencyKey: `candidate-publish:${runId}`,
+          }),
+          /spot_publication_completeness_invalid/u,
+        );
+        const spot = await insertExplicitTestSpot(firstRepository);
+        const newPlaceTarget = await insertExplicitTestSpot(firstRepository, {
+          spotId: `spot:integration-new-place-${runId}`,
+          status: "DATA_INSUFFICIENT",
+        });
+        return { spot, newPlaceTarget };
+      } finally { await firstRepository.close(); }
+    })();
 
     const first = await MiniappService.createFromEnvironment();
     const firstRun = await (async () => {
@@ -904,9 +908,12 @@ test(
     } finally { await costLedger.close(); }
     const snapshot = await runOutboxOnce(options);
     assert.equal(snapshot.pending, 0);
+    assert.equal(snapshot.dispatched, 0, "dispatched work must finish before claiming the outbox drained");
     assert.equal(snapshot.dead_letter, 0, JSON.stringify(snapshot.dead_letters));
     assert.ok(snapshot.scheduled >= OPERATIONAL_JOB_KINDS.length);
     assert.ok(snapshot.effects >= OPERATIONAL_JOB_KINDS.length);
+    assert.deepEqual([...snapshot.effect_kinds].sort(), [...OPERATIONAL_JOB_KINDS].sort(),
+      "repeated effects from one job kind must not hide another kind with no effect");
     assert.ok(publicationWindows.length > 0, "WEATHER must supply its rolling window instead of borrowing the selected-night default");
 
     const runtime = new OutboxWorkerRuntime(options);
