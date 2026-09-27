@@ -40,8 +40,22 @@ for (const formal of [false, true]) test(`PostgreSQL ${formal ? "formal" : "draf
   try {
     const userId = await repository.findOrCreateWechatUser(`upload:${run}`);
     const spot = await insertExplicitTestSpot(repository, { spotId: `spot:upload-${run}` });
+    if (formal) {
+      const first = (await repository.pool.query(
+        "SELECT * FROM spot_revisions WHERE spot_id=$1 AND revision_no=1", [spot.spotId])).rows[0];
+      assert.ok(first, "formal fixtures require a trusted immutable baseline");
+      await insertExplicitTestSpot(repository, { spotId: spot.spotId });
+      const reseeded = (await repository.pool.query(
+        "SELECT version, active_revision_id FROM spots WHERE spot_id=$1", [spot.spotId])).rows[0];
+      assert.equal(reseeded.version, 2);
+      assert.equal(reseeded.active_revision_id, `spot-revision:${spot.spotId}:2`);
+      assert.deepEqual((await repository.pool.query(
+        "SELECT * FROM spot_revisions WHERE revision_id=$1", [first.revision_id])).rows[0], first,
+        "re-seeding must preserve the earlier baseline snapshot");
+    }
     const baseline = await repository.getContributionFormalBaseline(spot.spotId);
     assert.ok(baseline);
+    assert.equal(baseline.revision, formal ? 2 : 1);
     const bytes = await readFile(new URL("./test-fixtures/self-generated-transport-test.jpg", import.meta.url));
     const file = { originalName: "test.jpg", mimeType: "image/jpeg" as const, byteSize: bytes.length };
     const draft = formal ? null : await service.createDraft(userId, { kind: "FIELD_REPORT", spotId: spot.spotId, candidateLocation: null,

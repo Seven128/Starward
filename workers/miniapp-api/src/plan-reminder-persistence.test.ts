@@ -74,3 +74,52 @@ for (const initialState of ["WAITING_AUTHORIZATION", "SENT", "RESULT_UNKNOWN"] a
     } finally { if (service) await service.onModuleDestroy(); else await repository.close(); }
   });
 }
+
+test("Postgres plan creation receipts replay across restart without replacing newer checklist state", { skip: !databaseUrl }, async () => {
+  assert.ok(databaseUrl);
+  assert.match(new URL(databaseUrl).pathname, /^\/starward_reminder_[a-f0-9]+$/u);
+  const config = createTestRuntimeConfig({ storageMode: "POSTGRES", databaseUrl });
+  let repository = await new PostgresMiniappRepository(databaseUrl).initialize({ migrate: true });
+  let service: MiniappService | null = null;
+  try {
+    const spot = await insertExplicitTestSpot(repository);
+    const userId = await repository.findOrCreateWechatUser(`plan-receipt:${randomUUID()}`);
+    const otherUser = await repository.findOrCreateWechatUser(`plan-receipt-other:${randomUUID()}`);
+    service = new MiniappService({ repository, config, weather: createWeatherPort(config), route: new DisabledRouteAdapter() });
+    const localDate = new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10);
+    const context = (await service.resolveObservationContext({
+      location: { kind: "FORMAL_SPOT", spotId: spot.spotId }, localDate,
+    })).data;
+    const input = { planId: `plan:${randomUUID()}` as PlanId, spotId: spot.spotId,
+      observationContextId: context.contextId, localDate, localTime: "22:00", notes: "持久化保存回执验证",
+      expectedRevision: null, reminders: [{ reminderId: "equipment", title: "设备", hoursBeforeDeparture: 1,
+        notifyOnWechat: true, items: [{ itemId: "battery", text: "电池", completed: false }] }] };
+    const key = `save:${randomUUID()}`;
+    const saves = await Promise.all(Array.from({ length: 3 }, () => service!.savePlan(userId, input, key)));
+    const receipt = saves[0]!.data;
+    for (const saved of saves) assert.deepEqual(saved.data, receipt);
+    const edited = (await service.setPlanChecklistCompletion(userId, input.planId, {
+      reminderId: "equipment", itemId: "battery", completed: true, expectedRevision: receipt.revision,
+    }, `complete:${randomUUID()}`)).data;
+    assert.equal(edited.revision, receipt.revision + 1);
+    assert.equal(edited.reminders?.[0]?.items[0]?.completed, true);
+    await service.onModuleDestroy(); service = null;
+    repository = await new PostgresMiniappRepository(databaseUrl).initialize({ migrate: false });
+    service = new MiniappService({ repository, config, weather: createWeatherPort(config), route: new DisabledRouteAdapter() });
+    service.observationContexts.get = async () => { throw new Error("context_unavailable_for_replay_test"); };
+    assert.deepEqual((await service.savePlan(userId, input, key)).data, receipt,
+      "retrying an acknowledged command returns its immutable receipt even when the old context is unavailable");
+    assert.deepEqual((await service.getPlans(userId)).data.plans, [edited],
+      "authoritative readback retains the newer edit and exactly one plan");
+    const schedules = await repository.listPlanReminderSchedules(userId);
+    assert.equal(schedules.length, 1);
+    assert.equal(schedules[0]!.planRevision, edited.revision);
+    await assert.rejects(service.savePlan(otherUser, input, key), /context_unavailable_for_replay_test/);
+    assert.deepEqual(await repository.listPlans(otherUser), [], "receipts are scoped to the original account");
+    await assert.rejects(service.savePlan(userId, input, `save:${randomUUID()}`), /context_unavailable_for_replay_test/);
+    await service.deletePlan(userId, input.planId, `delete:${randomUUID()}`);
+    assert.deepEqual((await service.savePlan(userId, input, key)).data, receipt);
+    assert.deepEqual(await repository.listPlans(userId), [], "a late replay after deletion must not recreate the plan");
+    assert.deepEqual(await repository.listPlanReminderSchedules(userId), []);
+  } finally { if (service) await service.onModuleDestroy(); else await repository.close(); }
+});
