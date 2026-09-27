@@ -536,6 +536,64 @@ test("new-place photos retain their adopted section with three independent slots
   } finally { await service.onModuleDestroy(); }
 });
 
+test("completed new-place photos keep their section and distinct objects in the frozen submission", async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, "candidate-photo-sections");
+    let draft = (await service.createContributionDraft(userId, newSpotInput({
+      rightsConfirmed: true,
+      preciseLocationConsent: true,
+      candidateLocation: { displayName: "照片关联点", region: "广东省深圳市",
+        wgs84: { system: "WGS84", latitude: 22.588, longitude: 114.302 } },
+      candidateProfile: { fields: { name: "照片关联点", address: "深圳山顶步道",
+        openness: "开放", parking: "有", toilet: "有" }, media: {} },
+    }), "candidate-sections:create")).data;
+    const expectedGroups: Record<string, ContributionUploadId[]> = {};
+    const storedDigests = new Set<string>();
+    const expectedDigests = new Map<ContributionUploadId, string>();
+    for (const [index, kind] of (["site", "parking", "toilet"] as const).entries()) {
+      const source = privateMetadataPng(0x20 + index * 0x40);
+      draft = (await service.createContributionUpload(userId, draft.submissionId, {
+        originalName: `${kind}.png`, mimeType: "image/png", byteSize: source.length,
+        kind, expectedRevision: draft.revision,
+      }, `candidate-sections:${kind}:session`)).data;
+      const upload = draft.media.find(item => item.kind === kind)!;
+      assert.ok(upload, `missing ${kind} session`);
+      expectedGroups[kind] = [upload.uploadId];
+      draft = (await service.completeContributionUpload(userId, draft.submissionId, upload.uploadId,
+        { dataBase64: source.toString("base64") }, `candidate-sections:${kind}:complete`)).data;
+      assert.equal(draft.media.find(item => item.uploadId === upload.uploadId)?.state, "UPLOADED");
+      const stored = (await service.getContributionMedia(userId, draft.submissionId, upload.uploadId)).data;
+      const storedBytes = Buffer.from(stored.dataBase64, "base64");
+      assert.ok(storedBytes.length > 0);
+      const digest = createHash("sha256").update(storedBytes).digest("hex");
+      storedDigests.add(digest);
+      expectedDigests.set(upload.uploadId, digest);
+    }
+    assert.equal(storedDigests.size, 3, "three section photos must not reuse one object");
+    assert.deepEqual(draft.candidateProfile?.media, expectedGroups);
+    const submitted = (await service.submitContribution(userId, draft.submissionId,
+      draft.revision, "candidate-sections:submit")).data;
+    assert.equal(submitted.submissionState, "PENDING_REVIEW");
+    assert.equal(submitted.attempts.length, 1);
+    assert.deepEqual(submitted.attempts[0]?.snapshot.candidateProfile?.media, expectedGroups);
+    for (const [kind, [uploadId]] of Object.entries(expectedGroups))
+      assert.equal(submitted.attempts[0]?.snapshot.media.find(item => item.uploadId === uploadId)?.kind, kind);
+    const readback = (await service.listContributions(userId)).data.submissions.find(item => item.submissionId === submitted.submissionId);
+    assert.ok(readback, "submitted record must be readable from the account repository");
+    assert.deepEqual(readback.attempts[0]?.snapshot.candidateProfile?.media, expectedGroups);
+    const snapshot = readback.attempts[0]?.snapshot;
+    assert.ok(snapshot);
+    assert.equal(snapshot.media.length, 3);
+    for (const media of snapshot.media) {
+      const stored: Awaited<ReturnType<typeof service.getContributionMedia>>["data"] =
+        (await service.getContributionMedia(userId, readback.submissionId, media.uploadId)).data;
+      assert.equal(createHash("sha256").update(Buffer.from(stored.dataBase64, "base64")).digest("hex"),
+        expectedDigests.get(media.uploadId), "later uploads must not overwrite another section's frozen photo");
+    }
+  } finally { await service.onModuleDestroy(); }
+});
+
 test("a reviewed contribution keeps its frozen attempt while resubmission appends a new one", async () => {
   const service = createTestMiniappService();
   try {
