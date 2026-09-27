@@ -1244,7 +1244,8 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   );
   assert.match(
     mapStyles,
-    /\.map-feedback-column\s*\{[^}]*z-index: 34;[^}]*top: calc\(env\(safe-area-inset-top\) \+ 320rpx\);/su,
+    /\.map-feedback-column\s*\{[^}]*z-index: 34;[^}]*right: calc\(24rpx \+ var\(--map-tool-size\) \+ 8Px\);[^}]*top: calc\(var\(--map-search-top\) \+ var\(--map-search-height\) \+ 116Px\);/su,
+    "persistent recovery follows safe-area search metrics and reserves the complete map tool hit area",
   );
   assert.doesNotMatch(
     mapStyles,

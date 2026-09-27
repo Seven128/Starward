@@ -167,8 +167,8 @@ export default function SharedJourneyPage() {
             </>}
           </View>
           <View className="shared-journey__actions">
-            <Button className="shared-journey__button shared-journey__button--primary" openType="share">转发给微信好友</Button>
-            <Button className="shared-journey__button" onClick={openMap}>在地图查看观星点</Button>
+            <Button className="soft-button soft-button--primary focus-ring shared-journey__button shared-journey__button--primary" openType="share">转发给微信好友</Button>
+            <Button className="soft-button focus-ring shared-journey__button" onClick={openMap}>在地图查看观星点</Button>
           </View>
           <SharePoster data={data} />
         </> : null}

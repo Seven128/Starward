@@ -192,12 +192,12 @@ export function SharePoster({ data }: { data: PublicShare }) {
     <Text className="type-section">分享海报</Text>
     <Canvas key={mode} className="share-poster__canvas" canvasId={ID}
       style={{ height: `${posterLayout(data).height}px` }} />
-    <Button className="share-poster__save" disabled={busy} onClick={() => void save()}>{busy ? "正在保存…" : "保存海报到相册"}</Button>
+    <Button className="soft-button focus-ring share-poster__save" disabled={busy} onClick={() => void save()}>{busy ? "正在保存…" : "保存海报到相册"}</Button>
     {error === "red-light-warning" ? <View className="share-poster__handoff">
       <StatusPanel state="PARTIAL"
         detail="相册界面可能亮屏。微信相册授权及保存界面可能显示亮白色。可先取消，在设置中切换日间或夜间再保存。"
         recoveryLabel="仍要保存" onRecover={() => void save(true)} />
-      <Button className="share-poster__cancel" onClick={() => setError(null)}>暂不保存</Button>
+      <Button className="soft-button focus-ring share-poster__cancel" onClick={() => setError(null)}>暂不保存</Button>
     </View> : null}
     {error === "permission" ? <StatusPanel state="ERROR" title="相册权限未开启"
       detail="请在微信设置中允许保存到相册，再返回重试。" recoveryLabel="打开设置"
