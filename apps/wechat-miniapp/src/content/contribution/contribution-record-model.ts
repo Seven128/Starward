@@ -132,3 +132,8 @@ export function contributionRecordPhotos(item: ContributionSubmission): Contribu
     }));
   });
 }
+
+export function contributionRecordFormalView(item: ContributionSubmission) {
+  const formal = recordSource(item).formalFeedback;
+  return formal ? formalFeedbackFrozenView(formal) : null;
+}

@@ -29,7 +29,7 @@ import { useAppStore } from "@/state/app-store";
 import { ToggleField } from "@/components/toggle-field";
 import { mediaFileName, mediaMimeType, readBase64 } from "../contribution/contribution-model";
 import { appendFormalMedia, createFormalMediaSelection, formalMediaProposal, removeFormalMedia, type FormalMediaSelection } from "./formal-media-selection";
-import { loadAvailableMediaPreviews } from "../contribution/media-preview";
+import { loadAvailableMediaPreviews, recoverCompletedPhotoPreviews } from "../contribution/media-preview";
 import { formalFeedbackFrozenView } from "../contribution/formal-feedback-snapshot";
 import { resolveRequestedFormalFeedback, retryFailedFormalResources } from "./formal-feedback-resources";
 import { assessFormalFeedbackConflict } from "./formal-feedback-conflict-state";
@@ -45,6 +45,8 @@ import {
 import "./index.scss";
 import { MEDIA_RIGHTS_MODAL } from "../contribution/media-rights-modal";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
+import { ContributionPhotoGallery } from "../contribution/photo-gallery";
+import { formalPhotoGroups } from "../contribution/photo-groups";
 
 function valuesFrom(baseline: ContributionFormalBaseline) {
   const values = emptySpotDocumentValues();
@@ -115,6 +117,7 @@ export default function FormalFeedbackEditor() {
   const [previewPaths, setPreviewPaths] = useState<Record<string, string>>({});
   const [previewFailures, setPreviewFailures] = useState<readonly string[]>([]);
   const [previewRetry, setPreviewRetry] = useState(0);
+  const completedPreviewSources = useRef<Record<string, string>>({});
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [resubmissionRevision, setResubmissionRevision] = useState<number | null>(null);
@@ -172,34 +175,35 @@ export default function FormalFeedbackEditor() {
   }, [accountOwnerId, baseline, history.data, history.isFetching, history.refreshError, query.data, spotId, submissionId]);
   useEffect(() => {
     if (!pageVisible || ownerChanged || !activeSubmissionId || !priorMedia.length) return;
-    let active = true;
+    const controller = new AbortController();
+    const owner = editorOwner.current;
     void loadAvailableMediaPreviews(priorMedia.map(media => media.uploadId), async id => {
-      const response = await getContributionMedia(activeSubmissionId as never, id as ContributionUploadId);
+      const response = await getContributionMedia(activeSubmissionId as never, id as ContributionUploadId, controller.signal, owner ?? undefined);
       return `data:${response.data.mimeType};base64,${response.data.dataBase64}`;
     }).then(({ paths, failedIds }) => {
-      if (!active) return;
+      if (controller.signal.aborted || currentDraftUserId() !== owner) return;
       setPreviewPaths(current => ({ ...current, ...paths }));
       setPreviewFailures(current => [...new Set([...current.filter(id => !(id in paths)), ...failedIds])]);
     });
-    return () => { active = false; };
+    return () => controller.abort();
   }, [activeSubmissionId, ownerChanged, pageVisible, previewRetry, priorMedia]);
   useEffect(() => {
     if (!pageVisible || ownerChanged || !baseline || !site.data?.data) return;
-    let active = true;
-    const canonical = new Map(site.data.data.media.map(media => [media.id, media.thumbnailPath || media.localPath]));
+    const controller = new AbortController();
+    const canonical = new Map(site.data.data.media.map(media => [media.id, media.localPath || media.thumbnailPath]));
     const ids = [...new Set(Object.values(baseline.media).flat())];
     void loadAvailableMediaPreviews(ids, async id => {
       const known = canonical.get(id);
       if (known && !known.startsWith("/v2/spots/")) return known;
-      if (!id.startsWith("upload:")) return known ?? "";
-      const response = await getSpotContributionMedia(spotId, id as ContributionUploadId);
+      if (!id.startsWith("upload:")) throw new Error("frozen_photo_unavailable");
+      const response = await getSpotContributionMedia(spotId, id as ContributionUploadId, controller.signal);
       return `data:${response.data.mimeType};base64,${response.data.dataBase64}`;
     }).then(({ paths, failedIds }) => {
-      if (!active) return;
+      if (controller.signal.aborted) return;
       setPreviewPaths(current => ({ ...current, ...paths }));
       setPreviewFailures(current => [...new Set([...current.filter(id => !(id in paths)), ...failedIds])]);
     });
-    return () => { active = false; };
+    return () => controller.abort();
   }, [baseline, ownerChanged, pageVisible, previewRetry, site.data, spotId]);
   const proposal = useMemo(() => baseline && values ? proposalFrom(baseline, values) : null, [baseline, values]);
   const changedKeys = proposal ? Object.keys(proposal.fields) as ContributionFormalFieldKey[] : [];
@@ -240,6 +244,13 @@ export default function FormalFeedbackEditor() {
     if (!editorOwner.current || currentDraftUserId() !== editorOwner.current ||
       useAppStore.getState().accountOwnerId !== editorOwner.current)
       throw new Error("账号已变化，请返回并重新打开反馈页。");
+  };
+  const retryPhotoPreviews = () => {
+    if (ownerChanged) return;
+    const recovered = recoverCompletedPhotoPreviews(previewPaths, previewFailures, completedPreviewSources.current);
+    setPreviewPaths(recovered.paths);
+    setPreviewFailures(recovered.failedIds);
+    setPreviewRetry(value => value + 1);
   };
   const setField = (key: ContributionFormalFieldKey, value: string) => setValues(current => current ? { ...current, [key]: value } : current);
   const jump = (next: typeof chapter) => { setChapter(next); setScrollAnchor(`formal-feedback-${next}`); };
@@ -302,7 +313,9 @@ export default function FormalFeedbackEditor() {
       const completed = (await completeFormalContributionUpload(intent.intentId, upload.uploadId, { dataBase64 })).data;
       assertEditorOwner();
       completionSource.current = null;
-      setPreviewPaths(current => ({ ...current, [upload.uploadId]: file.path })); setMediaSelection(current => current ? appendFormalMedia(current, kind, upload.uploadId) : current); syncMediaProposal(completed);
+      const preview = `data:${mimeType};base64,${dataBase64}`;
+      completedPreviewSources.current[upload.uploadId] = preview;
+      setPreviewPaths(current => ({ ...current, [upload.uploadId]: preview })); setMediaSelection(current => current ? appendFormalMedia(current, kind, upload.uploadId) : current); syncMediaProposal(completed);
     } catch (error) {
       if (sessionAttempt.current) setSessionUnconfirmed(true);
       const message = errorMessage(error); if (!/cancel/iu.test(message)) notify({ owner: "contribution", placement: "floating", tone: "error", title: "图片尚未完成上传", body: `${message}；文字修改仍保留。`, dismissible: true });
@@ -329,6 +342,7 @@ export default function FormalFeedbackEditor() {
       }
       const next = (await removeFormalContributionUpload(uploadIntent.intentId, uploadId, uploadIntent.revision)).data;
       assertEditorOwner();
+      delete completedPreviewSources.current[uploadId];
       if (completionSource.current?.uploadId === uploadId) completionSource.current = null;
       setMediaSelection(current => current ? removeFormalMedia(current, currentUpload.kind, uploadId) : current);
       setPreviewPaths(current => { const copy = { ...current }; delete copy[uploadId]; return copy; });
@@ -411,7 +425,7 @@ export default function FormalFeedbackEditor() {
             baseline={baseline}
             disabled={busy || submitted}
             onChange={setField}
-            renderPhotoGroup={(kind) => <PhotoGroup kind={kind} ids={mediaSelection?.[kind] ?? []} uploads={visibleUploads} paths={previewPaths} failedIds={previewFailures} onRetry={() => setPreviewRetry(current => current + 1)} disabled={busy||uploading||submitted} readOnly={submitted} onAdd={addPhoto} onRemove={removePhoto} />}
+            renderPhotoGroup={(kind) => <PhotoGroup kind={kind} ids={mediaSelection?.[kind] ?? []} uploads={visibleUploads} paths={previewPaths} failedIds={previewFailures} onRetry={retryPhotoPreviews} disabled={busy||uploading||submitted} readOnly={submitted} onAdd={addPhoto} onRemove={removePhoto} />}
             notesFooter={<>
               {!submitted && visibleUploads.length ? <ToggleField disabled={busy||uploading} id="formal-feedback-photo-rights" label="我有权使用这些照片" checked={rightsConfirmed} onChange={setRightsConfirmed} stateLabels={{checked:"已确认",unchecked:"未确认"}} /> : null}
               {pendingUpload ? <View className="formal-feedback-upload-recovery">
@@ -424,7 +438,14 @@ export default function FormalFeedbackEditor() {
             <View className="formal-feedback-changes">
               <Text className="formal-feedback-section-title">本次修改</Text>
               {changedKeys.map(key => <View className="formal-feedback-delta" key={key}><Text>{LABELS[key]}</Text><View><Text className="formal-feedback-delta__old">{baseline.fields[key] || "未填写"}</Text><Text className="formal-feedback-delta__arrow">→</Text><Text>{values[key] || "已清空"}</Text></View></View>)}
-              {Object.entries(mediaProposal).map(([kind, ids]) => <View className="formal-feedback-delta" key={kind}><Text>{kind === "parking" ? "停车照片" : kind === "toilet" ? "洗手间照片" : "现场照片"}</Text><View><Text>{baseline.media[kind as ContributionMediaKind].length} 张</Text><Text className="formal-feedback-delta__arrow">→</Text><Text>{ids?.length ?? 0} 张</Text></View></View>)}
+              <ContributionPhotoGallery groups={formalPhotoGroups(baseline, { fields: {}, media: mediaProposal })}
+                scope={`${editorOwner.current}:${spotId}:${activeSubmissionId}:${baseline.revision}`}
+                name={baseline.fields.name || spotName || "观星点"} paths={previewPaths} failedIds={previewFailures}
+                onRetry={retryPhotoPreviews} onImageError={id => {
+                  if (ownerChanged) return;
+                  setPreviewPaths(current => { const next = { ...current }; delete next[id]; return next; });
+                  setPreviewFailures(current => [...new Set([...current, id])]);
+                }} />
               {!hasChanges ? <Text className="formal-feedback-empty">尚未修改任何信息</Text> : null}
             </View>
             {activeConflicts.length ? <View className="formal-feedback-conflicts"><Text className="formal-feedback-section-title">资料冲突</Text><Text className="formal-feedback-empty">正式资料已从版本 {baseline.revision} 更新到版本 {currentBaseline?.revision ?? "—"}，请逐项选择。</Text>{activeConflicts.map(conflict => <Conflict key={`${conflict.kind}:${conflict.key}`} conflict={conflict} value={resolutions[`${conflict.kind}:${conflict.key}`]} onChange={value => setResolutions(current => ({ ...current, [`${conflict.kind}:${conflict.key}`]: value }))} />)}</View> : null}

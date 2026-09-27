@@ -173,6 +173,8 @@ test("formal photo completion failure keeps the created session and retries its 
   const retained: unknown[] = [];
   const notices: string[] = [];
   let dataBase64 = "Zm9ybWFsLWltYWdl";
+  const completedPreviewSources = { current: {} as Record<string, string> };
+  let previewPaths: Record<string, string> = {};
   const base = {
     baseline: { revision: 1, spotId: "spot:test" }, busy: false, uploading: false, submitted: false,
     rightsConfirmed: true, mediaHandoff: { confirm: async () => true },
@@ -180,9 +182,10 @@ test("formal photo completion failure keeps the created session and retries its 
     mediaFileName: () => "image.png", mediaMimeType: () => "image/png", readBase64: async () => dataBase64,
     setUploading: () => undefined, setRightsConfirmed: () => undefined,
     sessionAttempt: { current: null }, completionSource: { current: null }, setSessionUnconfirmed: () => undefined,
+    completedPreviewSources,
     assertEditorOwner: () => undefined,
     setUploadIntent: (value: unknown) => { retained.push(value); },
-    setPreviewPaths: () => undefined, setMediaSelection: () => undefined, appendFormalMedia: (current: unknown) => current,
+    setPreviewPaths: (update: (current: Record<string, string>) => Record<string, string>) => { previewPaths = update(previewPaths); }, setMediaSelection: () => undefined, appendFormalMedia: (current: unknown) => current,
     notify: (notice: { title: string }) => { notices.push(notice.title); }, errorMessage: (error: Error) => error.message,
   };
   const first = vm.runInNewContext(code, {
@@ -212,6 +215,8 @@ test("formal photo completion failure keeps the created session and retries its 
   assert.equal(newSessions, 0);
   assert.equal(completedId, "upload:one");
   assert.equal(synced, completed);
+  assert.equal(previewPaths["upload:one"], "data:image/png;base64,Zm9ybWFsLWltYWdl");
+  assert.equal(completedPreviewSources.current["upload:one"], previewPaths["upload:one"], "decode retry retains the successful source independently of the picker file");
 });
 
 test("lost photo-session receipt reuses the first request despite a new WeChat temporary filename", async () => {

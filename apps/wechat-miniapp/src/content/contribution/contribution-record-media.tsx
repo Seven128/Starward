@@ -1,18 +1,14 @@
 import { Button, Image, Text, View } from "@tarojs/components";
 import { useDidHide, useDidShow } from "@tarojs/taro";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CONTRIBUTION_MEDIA_KINDS, type ContributionSubmission, type ContributionUploadId } from "@starward/miniapp-contracts";
-import { NativeBackBoundary } from "@/components/native-back-boundary";
-import { SpotImageViewer, type SpotViewerMedia } from "@/components/spot-image-viewer";
-import { StatusPanel } from "@/components/status-panel";
-import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { currentDraftUserId, getContributionMedia, getSpotContributionMedia, getSpotSite } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
-import { contributionFrozenAttempt, contributionRecordIdentity, contributionRecordPhotos } from "./contribution-record-model";
+import { contributionFrozenAttempt, contributionRecordIdentity, contributionRecordPhotos, contributionRecordFormalView } from "./contribution-record-model";
 import { loadAvailableMediaPreviews } from "./media-preview";
 
-const labels = { site: "现场照片", parking: "停车照片", toilet: "洗手间照片" };
-const changes = { added: "本次新增", removed: "本次移除", retained: "" };
+import { ContributionPhotoGallery } from "./photo-gallery";
+import { formalPhotoGroups } from "./photo-groups";
 
 /** One read-only media consumer for record lists and submitted standalone editors. */
 export function ContributionRecordMedia({ item }: { item: ContributionSubmission }) {
@@ -23,18 +19,11 @@ export function ContributionRecordMedia({ item }: { item: ContributionSubmission
   const [visible, setVisible] = useState(true);
   const [retry, setRetry] = useState(0);
   const [loaded, setLoaded] = useState<{ scope: string; paths: Record<string, string>; failed: string[] }>({ scope: "", paths: {}, failed: [] });
-  const [viewer, setViewer] = useState<{ scope: string; index: number } | null>(null);
-  const back = useRef<(() => void) | null>(null);
-  const registerBack = useCallback((handler: (() => void) | null) => { back.current = handler; }, []);
   const authorized = Boolean(owner && owner === accountOwner);
-  const liveScope = useRef<string | null>(null);
-  liveScope.current = authorized && visible ? scope : null;
-  const handoff = useRedLightHandoff({ nativeBackBoundary: false, title: "照片可能较亮" });
   const paths = loaded.scope === scope ? loaded.paths : {};
   const failed = loaded.scope === scope ? loaded.failed : [];
-  useDidHide(() => { setVisible(false); setViewer(null); });
+  useDidHide(() => { setVisible(false); });
   useDidShow(() => setVisible(true));
-  useEffect(() => { handoff.cancel(); }, [scope]);
   useEffect(() => {
     if (!visible || !authorized || !owner || !photos.length) return;
     const controller = new AbortController();
@@ -64,37 +53,18 @@ export function ContributionRecordMedia({ item }: { item: ContributionSubmission
     return () => controller.abort();
     // Completion does not trigger a new fetch. Retry only the remaining failures.
   }, [scope, visible, authorized, retry]);
-  if (!authorized || !visible || !photos.length) return null;
-  const media: SpotViewerMedia[] = photos.map(photo => ({
-    id: `${photo.kind}:${photo.id}`, ...(paths[photo.id] ? { src: paths[photo.id]! } : {}), alt: labels[photo.kind],
-    caption: [labels[photo.kind], changes[photo.change]].filter(Boolean).join(" · "),
-    state: paths[photo.id] ? "ready" : failed.includes(photo.id) ? "error" : "loading",
-  }));
-  const index = viewer?.scope === scope ? viewer.index : null;
-  return <>
-    {CONTRIBUTION_MEDIA_KINDS.map(kind => photos.some(photo => photo.kind === kind) ? <View className="contribution-frozen-media" data-media-kind={kind} key={kind}>
-      <Text className="type-label">{labels[kind]}</Text>
-      <View className="contribution-frozen-media__list">{photos.map((photo, photoIndex) => photo.kind === kind ? <Button
-        id={`spot-media-source-${photoIndex}`} className="contribution-frozen-media__photo focus-ring" key={photo.id}
-        aria-label={`查看${labels[kind]}第${photos.slice(0, photoIndex + 1).filter(entry => entry.kind === kind).length}张${changes[photo.change] ? `，${changes[photo.change]}` : ""}`}
-        onClick={() => { void handoff.confirm("照片和查看器保留原始颜色，可能影响暗适应。").then(accepted => {
-          if (accepted && liveScope.current === scope) setViewer({ scope, index: photoIndex });
-        }); }}>
-        {paths[photo.id] ? <><Image src={paths[photo.id]!} mode="aspectFill" onError={() => setLoaded(current => {
-          if (current.scope !== scope) return current;
-          const remaining = { ...current.paths }; delete remaining[photo.id];
-          return { ...current, paths: remaining, failed: [...new Set([...current.failed, photo.id])] };
-        })} /><Text className="contribution-frozen-media__red-label">{labels[kind]}</Text></> : <Text>{failed.includes(photo.id) ? "暂不可读" : "读取中"}</Text>}
-        {changes[photo.change] ? <Text className="contribution-frozen-media__change">{changes[photo.change]}</Text> : null}
-      </Button> : null)}</View>
-    </View> : null)}
-    {failed.length ? <StatusPanel state="ERROR" detail="部分提交照片暂时无法读取，其他照片仍可查看。" recoveryLabel="重试照片" onRecover={() => setRetry(value => value + 1)} /> : null}
-    {handoff.warning}
-    <NativeBackBoundary active={index !== null || handoff.active} onBack={() => {
-      if (handoff.active) handoff.cancel(); else if (back.current) back.current(); else setViewer(null);
-    }} />
-    {index !== null && media[index] ? <SpotImageViewer name={contributionRecordIdentity(item).name} media={media} index={index}
-      onIndexChange={next => setViewer({ scope, index: next })} onClose={() => setViewer(null)}
-      onRetry={() => setRetry(value => value + 1)} onBackHandlerChange={registerBack} /> : null}
-  </>;
+  if (!authorized || !visible) return null;
+  const formal = contributionRecordFormalView(item);
+  const groups = formal ? formalPhotoGroups(formal.baseline, formal.proposal, true)
+    : CONTRIBUTION_MEDIA_KINDS.flatMap(kind => {
+      const after = photos.filter(photo => photo.kind === kind).map(photo => photo.id);
+      return after.length ? [{ kind, after }] : [];
+    });
+  return <ContributionPhotoGallery groups={groups} paths={paths} failedIds={failed} scope={scope}
+    name={contributionRecordIdentity(item).name} onRetry={() => setRetry(value => value + 1)}
+    onImageError={id => setLoaded(current => {
+      if (current.scope !== scope) return current;
+      const remaining = { ...current.paths }; delete remaining[id];
+      return { ...current, paths: remaining, failed: [...new Set([...current.failed, id])] };
+    })} />;
 }

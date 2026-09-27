@@ -12,3 +12,10 @@ export async function loadAvailableMediaPreviews(
   });
   return { paths, failedIds };
 }
+
+/** Completed uploads keep a page-owned decoded source, independent of temporary picker files. */
+export function recoverCompletedPhotoPreviews(paths: Readonly<Record<string, string>>, failedIds: readonly string[], completed: Readonly<Record<string, string>>) {
+  const restored = { ...paths };
+  for (const id of failedIds) if (completed[id]) restored[id] = completed[id]!;
+  return { paths: restored, failedIds: failedIds.filter(id => !restored[id]) };
+}
