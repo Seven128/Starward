@@ -1,16 +1,18 @@
-import Taro, { useDidShow } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import { Button, Canvas, Text, View } from "@tarojs/components";
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DisplayMode, PlanPublicShareData, SourceSummary, SpotPublicShareData } from "@starward/miniapp-contracts";
 import { EMPTY_FIELD_VALUE, StatusPanel } from "./status-panel";
 import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
 import { planSpotRiskMessage } from "@/utils/public-share-copy";
+import { createSharePosterOwner } from "./share-poster-owner";
+import { drawSharePoster, POSTER_WIDTH, POSTER_EXPORT_SCALE, type PosterPalette } from "./share-poster-drawing";
 import "./share-poster.scss";
 
 type PublicShare = PlanPublicShareData | SpotPublicShareData;
-const ID = "public-share-poster";
-const WIDTH = 320;
+let canvasSequence = 0;
+const WIDTH = POSTER_WIDTH;
 
 function posterLines(data: PublicShare): { heading: string; lines: string[]; sources: SourceSummary[] } {
   if (data.kind === "PLAN") {
@@ -100,60 +102,71 @@ function posterLayout(data: PublicShare) {
   return { heading, body, credits, bodyTop, divider, creditsTop, height };
 }
 
-const POSTER_COLORS: Record<DisplayMode, { background: string; accent: string; text: string; divider: string; muted: string }> = {
+const POSTER_COLORS: Record<DisplayMode, PosterPalette> = {
   DAY: { background: "#fffdf8", accent: "#4859b8", text: "#282b29", divider: "#d9dce7", muted: "#5c6473" },
   NIGHT: { background: "#07152b", accent: "#1677ff", text: "#edf5ff", divider: "#56779e", muted: "#a7bdd9" },
   OBSERVATION: { background: "#170000", accent: "#a63f3f", text: "#ff9b9b", divider: "#a63f3f", muted: "#e77474" },
 };
 
-function paint(data: PublicShare, mode: DisplayMode, onDrawn?: () => void) {
-  const layout = posterLayout(data);
-  const colors = POSTER_COLORS[mode];
-  const ctx = Taro.createCanvasContext(ID);
-  ctx.setFillStyle(colors.background);
-  ctx.fillRect(0, 0, WIDTH, layout.height);
-  ctx.setFillStyle(colors.accent);
-  ctx.fillRect(0, 0, WIDTH, 8);
-  ctx.setFillStyle(colors.text);
-  ctx.setFontSize(16);
-  ctx.fillText("今晚去观星", 22, 42);
-  ctx.setFontSize(22);
-  for (const [index, row] of layout.heading.entries())
-    ctx.fillText(row, 22, 83 + index * 28);
-  let y = layout.bodyTop;
-  ctx.setFontSize(13);
-  for (const lines of layout.body) {
-    for (const row of lines) {
-      ctx.fillText(row, 22, y);
-      y += 21;
-    }
-    y += 8;
-  }
-  ctx.setStrokeStyle(colors.divider);
-  ctx.beginPath();
-  ctx.moveTo(22, layout.divider);
-  ctx.lineTo(WIDTH - 22, layout.divider);
-  ctx.stroke();
-  ctx.setFillStyle(colors.muted);
-  ctx.setFontSize(11);
-  ctx.fillText("资料与许可", 22, layout.divider + 22);
-  let sourceY = layout.creditsTop;
-  for (const rows of layout.credits) {
-    for (const row of rows) {
-      ctx.fillText(row, 22, sourceY);
-      sourceY += 16;
-    }
-    sourceY += 5;
-  }
-  ctx.draw(false, onDrawn);
-}
-
 export function SharePoster({ data }: { data: PublicShare }) {
   const mode = useAppStore(state => state.mode);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<"red-light-warning" | "permission" | "export" | null>(null);
-  useEffect(() => { setError(null); Taro.nextTick(() => paint(data, mode)); }, [data, mode]);
-  useDidShow(() => { Taro.nextTick(() => paint(data, useAppStore.getState().mode)); });
+  const [canvasRevision, setCanvasRevision] = useState(0);
+  const content = useMemo(() => ({ data, mode }), [data, mode]);
+  const committedContent = useRef<typeof content | null>(null);
+  // Each snapshot has its own native node: a late command from an expired
+  // instance/theme cannot target the fixed ID of a newly mounted poster.
+  const frame = useMemo(() => ({ ...content, canvasId: `public-share-poster-2d-live-${++canvasSequence}`,
+    canvas: null as Taro.Canvas | null }), [content, canvasRevision]);
+  const owner = useMemo(() => createSharePosterOwner<typeof frame>({
+    nextTick: callback => Taro.nextTick(callback),
+    draw: (value, done, fail, current) => {
+      const paint = (canvas: Taro.Canvas) => {
+        if (!current()) return;
+        try {
+          drawSharePoster(canvas, posterLayout(value.data), POSTER_COLORS[value.mode]);
+          value.canvas = canvas;
+          done();
+        } catch (cause) { fail(cause); }
+      };
+      if (value.canvas) { paint(value.canvas); return; }
+      Taro.createSelectorQuery().select(`#${value.canvasId}`).node(result => {
+        if (!current()) return;
+        if (!result?.node || typeof result.node.getContext !== "function" ||
+          typeof result.node.width !== "number" || typeof result.node.height !== "number") {
+          fail(new Error("poster_canvas_unavailable"));
+          return;
+        }
+        paint(result.node as Taro.Canvas);
+      }).exec();
+    },
+    export: async value => {
+      if (!value.canvas) throw new Error("poster_canvas_unavailable");
+      const width = WIDTH * POSTER_EXPORT_SCALE, height = posterLayout(value.data).height * POSTER_EXPORT_SCALE;
+      return (await Taro.canvasToTempFilePath({ canvas: value.canvas, fileType: "png",
+        x: 0, y: 0, width, height, destWidth: width, destHeight: height })).tempFilePath;
+    },
+    save: image => Taro.saveImageToPhotosAlbum({ filePath: image }),
+    albumFailure: async () => {
+      const settings = await Taro.getSetting().catch(() => null);
+      return settings?.authSetting?.["scope.writePhotosAlbum"] === false ? "permission" : "export";
+    },
+    retire: () => setCanvasRevision(value => value + 1),
+    busy: setBusy,
+    error: setError,
+    saved: () => useAppStore.getState().notify({ owner: "share-poster", placement: "floating", tone: "success",
+      title: "海报已保存", body: "可在相册查看公开分享海报。", dedupeKey: "share-poster-saved" }),
+  }), []);
+  useLayoutEffect(() => { setError(null); }, [data, mode]);
+  useLayoutEffect(() => {
+    const contentChanged = committedContent.current !== content;
+    committedContent.current = content;
+    owner.update(frame, contentChanged);
+  }, [owner, frame, content]);
+  useLayoutEffect(() => () => owner.dispose(), [owner]);
+  useDidShow(() => owner.show());
+  useDidHide(() => owner.hide());
 
   const save = async (allowUnthemedHandoff = false) => {
     if (busy) return;
@@ -161,37 +174,16 @@ export function SharePoster({ data }: { data: PublicShare }) {
       setError("red-light-warning");
       return;
     }
-    setBusy(true);
     setError(null);
-    let failureStage: "export" | "album" = "export";
-    try {
-      const image = await new Promise<string>((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error("poster_draw_timeout")), 6000);
-        paint(data, mode, () => {
-          void Taro.canvasToTempFilePath({ canvasId: ID, fileType: "png", width: WIDTH, height: posterLayout(data).height,
-            destWidth: WIDTH * 2, destHeight: posterLayout(data).height * 2 }).then(result => {
-            clearTimeout(timeout);
-            resolve(result.tempFilePath);
-          }, cause => { clearTimeout(timeout); reject(cause); });
-        });
-      });
-      failureStage = "album";
-      await Taro.saveImageToPhotosAlbum({ filePath: image });
-      useAppStore.getState().notify({ owner: "share-poster", placement: "floating", tone: "success",
-        title: "海报已保存", body: "可在相册查看公开分享海报。", dedupeKey: "share-poster-saved" });
-    } catch {
-      if (failureStage === "export") setError("export");
-      else {
-        const settings = await Taro.getSetting().catch(() => null);
-        setError(settings?.authSetting?.["scope.writePhotosAlbum"] === false ? "permission" : "export");
-      }
-    } finally { setBusy(false); }
+    await owner.save();
   };
 
   return <View className="share-poster">
     <Text className="type-section">分享海报</Text>
-    <Canvas key={mode} className="share-poster__canvas" canvasId={ID}
-      style={{ height: `${posterLayout(data).height}px` }} />
+    <View id="public-share-poster-2d-live-slot" className="share-poster__canvas-slot"
+      style={{ height: `${posterLayout(data).height}px` }}>
+      <Canvas key={frame.canvasId} id={frame.canvasId} type="2d" className="share-poster__canvas" />
+    </View>
     <Button className="soft-button focus-ring share-poster__save" disabled={busy} onClick={() => void save()}>{busy ? "正在保存…" : "保存海报到相册"}</Button>
     {error === "red-light-warning" ? <View className="share-poster__handoff">
       <StatusPanel state="PARTIAL"
