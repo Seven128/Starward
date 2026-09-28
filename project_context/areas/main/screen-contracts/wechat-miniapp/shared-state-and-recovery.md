@@ -74,6 +74,8 @@ The [shared date/calendar/ruler resource](../../../../../docs/design-resources/w
 
 `ObservationDateControl` 默认维护日历的原生返回层；同页已有统一弹层返回 owner 时，消费者以 `nativeBackBoundary=false` 交回页面管理。云观星以页面唯一 `NativeBackBoundary` 同时处理日期、天体详情和重叠候选，不能叠挂多个 PageContainer；日期内容和选择仍由公共组件负责。
 
+`NativeBackBoundary` 持有自定义呈现的原生返回层、单次 leave 委派、确认期间去重及存活时重新布防。Map 复用其既有全屏原生前景容器变体并持续保留事件 Modal 子树；其它消费者仍使用原有隐藏容器生命周期。返回优先级和关闭确认由调用者持有，嵌入表单将媒体交接返回也交给 Map，不能另挂一层。异步委派失败不泄露错误细节，卸载后不重新布防；这一共享实现不承诺各设备上未验证的拦截能力。
+
 Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-settlement.ts` for user-scroll completion. Only a user-started, actually scrolled sequence can submit; after release, native momentum must settle before one commit. A missing native scrollend cannot leave an indefinite preview, and a late end signal cannot replace the newest scroll position. Multi-touch, cancel, hidden/unmounted pages, disabled state and changed input identity discard pending work. `components/ruler-scroll-position.ts` owns explicit enhanced ScrollViewContext positioning for snap/cancel, including return to an unchanged committed tick; regrabbing or leaving invalidates pending native queries. Continuous scroll events update preview without driving native scrollLeft back on every frame. Date/time identity, persistence and failure recovery remain with each existing observation-context owner; this shared mechanism does not merge their data axes.
 
 ## Settings adopted design

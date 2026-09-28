@@ -9,11 +9,11 @@ test("custom modal owners share one native WEAPP Back boundary", () => {
   const boundary = source("./native-back-boundary.tsx");
   assert.match(boundary, /<PageContainer/u);
   assert.match(boundary, /useState\(false\)/u);
-  assert.match(boundary, /if \(!present\) return null/u);
+  assert.match(boundary, /if \(!present && !nativeMapContent\) return null/u);
   assert.match(boundary, /<PageContainer\s+show=\{active && armed\}/u);
   assert.doesNotMatch(boundary, /RootPortal/u);
   assert.match(boundary, /onBeforeLeave=\{handleLeave\}/u);
-  assert.match(boundary, /onAfterLeave=\{handleLeave\}/u);
+  assert.match(boundary, /onAfterLeave: handleLeave/u);
   assert.match(boundary, /leaveHandled\.current/u);
   assert.match(boundary, /if \(activeRef\.current\) setArmed\(true\)/u);
 

@@ -7,6 +7,7 @@ import ts from "typescript";
 test("map foreground/hide callbacks stop pending interaction and invalidate late navigation", () => {
   const text = readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
   for (const sourceText of [text, text.replaceAll(" => ", "  =>  ")]) {
+    for (const editorClosing of [false, true]) {
     const source = ts.createSourceFile("map.tsx", sourceText, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     const hooks: string[] = [];
     const visit = (node: ts.Node) => {
@@ -19,6 +20,8 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
     let visible = false, stopped = 0, offset = 40, dragging = true;
     let retainedFailure = false;
     const epoch = { current: 3 }, drag = { current: {} as object | null };
+    const editorScope = {current: "visible owner" as string | null};
+    let cancelledEditor = 0, presentation = "spot-editor";
     vm.runInNewContext(ts.transpileModule(hooks.join("\n"), { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
       useDidShow: (callback: () => void) => { show = callback; },
       useDidHide: (callback: () => void) => { hide = callback; },
@@ -27,6 +30,9 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
       stopPanelSpring: () => { stopped++; }, navigationEpoch: epoch, panelDrag: drag,
       setPanelDragOffset: (value: number) => { offset = value; },
       setPanelDragging: (value: boolean) => { dragging = value; },
+      editorPresentationScope: editorScope,
+      editorPresentation: {isClosing: () => editorClosing, cancel: () => {cancelledEditor++;}},
+      setBottomPresentation: (next: string) => {presentation = next; cancelledEditor++;},
     });
     assert.ok(show && hide);
     show();
@@ -39,5 +45,9 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
     assert.equal(offset, 0);
     assert.equal(dragging, false);
     assert.equal(retainedFailure, true, "hiding cancels in-flight work but retains the failed location for recovery");
+    assert.equal(editorScope.current, null, "a late confirmation or exit cannot retain the hidden page's scope");
+    assert.equal(cancelledEditor, 1);
+    assert.equal(presentation, editorClosing ? "none" : "spot-editor", "only an already approved exit is finalized on hide");
+    }
   }
 });

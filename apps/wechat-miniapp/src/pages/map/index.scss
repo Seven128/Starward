@@ -1802,11 +1802,31 @@
   left: 0;
   min-height: 0;
   pointer-events: auto;
-  animation: map-spot-editor-enter 180ms ease-out both;
+  transform: translateY(calc(100% + 70Px));
+  transition: transform var(--spot-editor-motion-duration, 300ms) cubic-bezier(.22,.75,.25,1);
 }
-@keyframes map-spot-editor-enter {
-  from { transform: translateY(100%); opacity: .85; }
-  to { transform: translateY(0); opacity: 1; }
+.map-spot-editor-layer--open {
+  transform: translateY(0);
+}
+.map-spot-editor-layer--closing {
+  pointer-events: none;
+}
+.map-editor-exit-shield {
+  position: absolute;
+  inset: 0;
+  z-index: 41;
+  background: transparent;
+}
+.reduced-motion .map-spot-editor-layer {
+  transition: none;
+  transform: none;
+}
+.reduced-motion .map-spot-editor-layer--closing {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-spot-editor-layer { transition: none; transform: none; }
+  .map-spot-editor-layer--closing { opacity: 0; }
 }
 .spot-panel.spot-panel--large:not(.spot-panel--with-media) .spot-panel__scroll {
   padding-top: 8Px;

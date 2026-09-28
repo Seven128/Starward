@@ -1,6 +1,8 @@
 import { useMapForecastQuery, useSkyForecastQuery } from "@/hooks/use-forecast-query";
 import { WEATHER_ALERT_REFRESH_MS } from "@/components/weather-alert-state";
 import { MapLayerSheet } from "./map-layer-sheet";
+import { createSpotEditorPresentation, SPOT_EDITOR_ENTER_MS, SPOT_EDITOR_EXIT_MS, type SpotEditorPhase } from "./spot-editor-presentation";
+import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { panelSpringStyle, type PanelCssMotion } from "./panel-spring-style";
 import { createPanelAnimation, type PanelAnimationHost } from "./panel-animation";
 import { panelDragHeight, panelSpringFrames } from "./panel-spring";
@@ -18,7 +20,6 @@ import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import {
   Button,
   Map,
-  PageContainer,
   Text,
   View,
 } from "@tarojs/components";
@@ -271,12 +272,31 @@ export default function MapPage() {
   };
   // Packet A owns one bottom presentation coordinator. Panel extent and layer
   // sheet are mutually exclusive derived modes, never parallel booleans.
-  const [bottomPresentation, setBottomPresentation] =
+  const [bottomPresentation, setBottomPresentationState] =
     useState<BottomPresentation>("none");
   const bottomPresentationRef = useRef<BottomPresentation>("none");
   bottomPresentationRef.current = bottomPresentation;
-  const [mapPresentationBackBoundaryVisible, setMapPresentationBackBoundaryVisible] = useState(false);
-  const mapPresentationBackBoundaryRearm = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [spotEditorPhase, setSpotEditorPhase] = useState<SpotEditorPhase>("open");
+  const editorPresentationScope = useRef<string | null>(null);
+  const editorPresentationRef = useRef<ReturnType<typeof createSpotEditorPresentation> | null>(null);
+  if (!editorPresentationRef.current) editorPresentationRef.current = createSpotEditorPresentation({
+    getScope: () => editorPresentationScope.current === null ? null :
+      JSON.stringify([editorPresentationScope.current, currentDraftUserId(), useAppStore.getState().mapResetVersion]),
+    onPhase: setSpotEditorPhase,
+  });
+  const editorPresentation = editorPresentationRef.current;
+  editorPresentationScope.current = pageVisible
+    ? JSON.stringify([currentDraftUserId(), nativeMap.mapId, mapResetVersion, navigationEpoch.current])
+    : null;
+  const setBottomPresentation = useCallback((presentation: BottomPresentation) => {
+    if (presentation !== "spot-editor") editorPresentation.cancel();
+    else if (bottomPresentationRef.current !== "spot-editor") editorPresentation.enter(useAppStore.getState().preferences.reducedMotion);
+    bottomPresentationRef.current = presentation;
+    setBottomPresentationState(presentation);
+  }, [editorPresentation]);
+  const editorHandoffBack = useRef<(() => void) | null>(null);
+  const registerEditorHandoffBack = useCallback((handler: (() => void) | null) => {editorHandoffBack.current = handler;}, []);
+  useEffect(() => () => editorPresentation.dispose(), [editorPresentation]);
   const imageViewerBack = useRef<(() => void) | null>(null);
   const registerImageViewerBack = useCallback((handler: (() => void) | null) => { imageViewerBack.current = handler; }, []);
   const [spotEditorTarget, setSpotEditorTarget] = useState<{ forceNew: boolean; submissionId?: string }>({ forceNew: true });
@@ -356,7 +376,13 @@ export default function MapPage() {
   } | null>(null);
 
   useDidShow(() => setPageVisible(true));
-  useDidHide(() => { invalidateMapPointIntent(true); stopPanelSpring(); navigationEpoch.current += 1; setPageVisible(false); panelDrag.current = null; setPanelDragOffset(0); setPanelDragging(false); });
+  useDidHide(() => {
+    invalidateMapPointIntent(true); stopPanelSpring(); navigationEpoch.current += 1;
+    editorPresentationScope.current = null;
+    if (editorPresentation.isClosing()) setBottomPresentation("none");
+    else editorPresentation.cancel();
+    setPageVisible(false); panelDrag.current = null; setPanelDragOffset(0); setPanelDragging(false);
+  });
 
   useEffect(() => {
     const timer = setTimeout(
@@ -934,11 +960,17 @@ export default function MapPage() {
   };
 
   const confirmEditorLeave = async () => {
-    if (bottomPresentation !== "spot-editor") return true;
+    if (bottomPresentationRef.current !== "spot-editor") return true;
+    if (editorPresentation.isClosing()) return false;
     if (editorLeaveRequest.current) return editorLeaveRequest.current;
     const guard = editorLeaveGuard.current;
     if (!guard) return false;
-    const request = guard();
+    const scope = editorPresentationScope.current;
+    const owner = currentDraftUserId(), resetVersion = useAppStore.getState().mapResetVersion;
+    const request = Promise.resolve().then(guard).then(accepted => accepted && scope !== null &&
+      scope === editorPresentationScope.current && bottomPresentationRef.current === "spot-editor" &&
+      owner === currentDraftUserId() && resetVersion === useAppStore.getState().mapResetVersion &&
+      !editorPresentation.isClosing()).catch(() => false);
     editorLeaveRequest.current = request;
     try {
       return await request;
@@ -947,11 +979,18 @@ export default function MapPage() {
     }
   };
 
-  const closeSpotEditor = () => {
-    editorLeaveGuard.current = null;
-    setCandidatePreview(null);
-    setBottomPresentation("none");
+  const finishSpotEditorPresentation = (afterExit?: () => void) => {
+    if (bottomPresentationRef.current !== "spot-editor") {afterExit?.(); return;}
+    editorPresentation.close(() => {
+      editorLeaveGuard.current = null;
+      editorHandoffBack.current = null;
+      setCandidatePreview(null);
+      setBottomPresentation("none");
+      afterExit?.();
+    }, useAppStore.getState().preferences.reducedMotion);
   };
+  const closeSpotEditor = () => finishSpotEditorPresentation();
+  const requestSpotEditorClose = async () => {if (await confirmEditorLeave()) closeSpotEditor();};
 
   const resolveSpotContext = async (spot: SpotSummary) => {
     const intent = invalidateMapPointIntent();
@@ -1013,6 +1052,7 @@ export default function MapPage() {
   const onMarkerTap = async (
     event: BaseEventOrig<MapProps.onMarkerTapEventDetail>,
   ) => {
+    if (editorPresentation.isClosing()) return;
     const markerId = Number(event.detail.markerId);
     if (Number.isInteger(markerId) && markerId >= 100_000) {
       const entry = privateMarkers[markerId - 100_000];
@@ -1020,17 +1060,18 @@ export default function MapPage() {
       if (!(await confirmEditorLeave()) || !nativeMap.isCurrent()) return;
       invalidateMapPointIntent();
       privateTransitionGeneration.current += 1;
-      editorLeaveGuard.current = null;
-      setCandidatePreview(null);
-      markerTapAt.current = Date.now();
-      selectSpot(null);
-      setSelectedFallback(null);
-      setSelectedProposal(entry.submission);
-      setPanelExtent("medium");
-      setPanelPhase("idle");
-      setBottomPresentation("spot-panel");
-      setViewport({ center: { latitude: entry.latitude, longitude: entry.longitude }, zoom: Math.max(viewport.zoom, 9) });
-      setAnnouncement(`已选择${entry.submission.candidateProfile?.fields.name ?? entry.submission.candidateLocation?.displayName ?? (entry.state === "DRAFT" ? "草稿观星点" : "审核中观星点")}。`);
+      finishSpotEditorPresentation(() => {
+        if (!nativeMap.isCurrent()) return;
+        markerTapAt.current = Date.now();
+        selectSpot(null);
+        setSelectedFallback(null);
+        setSelectedProposal(entry.submission);
+        setPanelExtent("medium");
+        setPanelPhase("idle");
+        setViewport({ center: { latitude: entry.latitude, longitude: entry.longitude }, zoom: Math.max(viewport.zoom, 9) });
+        setBottomPresentation("spot-panel");
+        setAnnouncement(`已选择${entry.submission.candidateProfile?.fields.name ?? entry.submission.candidateLocation?.displayName ?? (entry.state === "DRAFT" ? "草稿观星点" : "审核中观星点")}。`);
+      });
       return;
     }
     const group = Number.isInteger(markerId)
@@ -1040,21 +1081,19 @@ export default function MapPage() {
     if (!(await confirmEditorLeave()) || !nativeMap.isCurrent()) return;
     invalidateMapPointIntent();
     privateTransitionGeneration.current += 1;
-    editorLeaveGuard.current = null;
-    setCandidatePreview(null);
-    markerTapAt.current = Date.now();
-    if (group.spots.length > 1) {
-      setViewport({
-        center: { latitude: group.latitude, longitude: group.longitude },
-        zoom: Math.max(9, viewport.zoom + 2),
-      });
-      setAnnouncement(
-        "已放大 " + String(group.spots.length) + " 个正式观星点的聚合区域。",
-      );
-      return;
-    }
-    const spot = group.spots[0]!;
-    await openDetail(spot);
+    finishSpotEditorPresentation(() => {
+      if (!nativeMap.isCurrent()) return;
+      markerTapAt.current = Date.now();
+      if (group.spots.length > 1) {
+        setViewport({
+          center: { latitude: group.latitude, longitude: group.longitude },
+          zoom: Math.max(9, viewport.zoom + 2),
+        });
+        setAnnouncement("已放大 " + String(group.spots.length) + " 个正式观星点的聚合区域。");
+        return;
+      }
+      void openDetail(group.spots[0]!);
+    });
   };
 
   const openLayerSheet = () => {
@@ -1546,38 +1585,26 @@ export default function MapPage() {
     }
   };
 
-  const handleMapPresentationSystemBack = () => {
-    setMapPresentationBackBoundaryVisible(false);
+  const handleMapPresentationSystemBack = async () => {
     if (navigationHandoff.active) {
       navigationHandoff.cancel();
-      if (mapPresentationBackBoundaryRearm.current) clearTimeout(mapPresentationBackBoundaryRearm.current);
-      mapPresentationBackBoundaryRearm.current = setTimeout(() => {
-        mapPresentationBackBoundaryRearm.current = null;
-        if (bottomPresentationRef.current === "spot-panel") setMapPresentationBackBoundaryVisible(true);
-      }, 0);
       return;
     }
     if (eventModalOpenRef.current) {
-      const remainsOpen = eventModalRef.current?.back() ?? false;
-      if (remainsOpen) {
-        if (mapPresentationBackBoundaryRearm.current) clearTimeout(mapPresentationBackBoundaryRearm.current);
-        mapPresentationBackBoundaryRearm.current = setTimeout(() => {
-          mapPresentationBackBoundaryRearm.current = null;
-          if (eventModalOpenRef.current) setMapPresentationBackBoundaryVisible(true);
-        }, 0);
-      }
+      eventModalRef.current?.back();
       return;
     }
     if (imageViewerBack.current) {
       imageViewerBack.current();
-      if (mapPresentationBackBoundaryRearm.current) clearTimeout(mapPresentationBackBoundaryRearm.current);
-      mapPresentationBackBoundaryRearm.current = setTimeout(() => {
-        mapPresentationBackBoundaryRearm.current = null;
-        if (bottomPresentationRef.current === "spot-panel") setMapPresentationBackBoundaryVisible(true);
-      }, 0);
       return;
     }
     const presentation = bottomPresentationRef.current;
+    if (presentation === "spot-editor") {
+      if (editorHandoffBack.current) {editorHandoffBack.current(); return;}
+      if (editorPresentation.isClosing()) return;
+      if (await confirmEditorLeave()) closeSpotEditor();
+      return;
+    }
     if (presentation === "layer-sheet") {
       closeLayerSheet();
       return;
@@ -1586,28 +1613,10 @@ export default function MapPage() {
     const previousExtent = previousPanelExtent(panelExtentRef.current);
     if (previousExtent) {
       setPanelExtent(previousExtent);
-      if (mapPresentationBackBoundaryRearm.current) clearTimeout(mapPresentationBackBoundaryRearm.current);
-      mapPresentationBackBoundaryRearm.current = setTimeout(() => {
-        mapPresentationBackBoundaryRearm.current = null;
-        if (bottomPresentationRef.current === "spot-panel") {
-          setMapPresentationBackBoundaryVisible(true);
-        }
-      }, 0);
       return;
     }
     closeSpotPanel();
   };
-
-  useEffect(() => {
-    const shouldArm = eventModalOpen || eventModalPresent || bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet";
-    if (!shouldArm) { setMapPresentationBackBoundaryVisible(false); return; }
-    const timer = setTimeout(() => setMapPresentationBackBoundaryVisible(true), 32);
-    return () => clearTimeout(timer);
-  }, [bottomPresentation, eventModalOpen, eventModalPresent]);
-
-  useEffect(() => () => {
-    if (mapPresentationBackBoundaryRearm.current) clearTimeout(mapPresentationBackBoundaryRearm.current);
-  }, []);
 
   useEffect(() => {
     if (!selectedProposal || !contributionHistory.data) return;
@@ -1914,12 +1923,7 @@ export default function MapPage() {
     })) {
       void (async () => {
         if (!(await confirmEditorLeave())) return;
-        editorLeaveGuard.current = null;
-        setCandidatePreview(null);
-        setPanelExtent("medium");
-        setPanelPhase("idle");
-        setBottomPresentation("spot-panel");
-        await openDetail(selected);
+        finishSpotEditorPresentation(() => {if (nativeMap.isCurrent()) void openDetail(selected);});
       })();
     }
   }, [
@@ -1996,6 +2000,7 @@ export default function MapPage() {
       "--map-search-top": `${mapSafeTop ?? mapCapsuleBottom! + 4}px`,
     }),
     "--map-chrome-opacity": String(panelChromeOpacity),
+    "--spot-editor-motion-duration": `${spotEditorPhase === "closing" ? SPOT_EDITOR_EXIT_MS : SPOT_EDITOR_ENTER_MS}ms`,
     "--panel-media-reveal": String(panelMediaReveal),
     "--panel-media-height": `${panelMediaHeightRpx}rpx`,
     "--panel-media-margin-top": panelMediaReveal ? "-40rpx" : "0rpx",
@@ -2024,21 +2029,13 @@ export default function MapPage() {
     >
       {!eventModalPresent ? <FloatingNotificationHost /> : null}
       {navigationHandoff.warning}
-      <PageContainer
-        show={mapPresentationBackBoundaryVisible}
-        duration={1}
-        zIndex={1200}
-        overlay={false}
-        position="center"
-        round={false}
-        closeOnSlideDown={false}
-        customStyle="width:100vw;height:100vh;min-height:100vh;overflow:visible;background:transparent;pointer-events:none;"
-        onBeforeLeave={handleMapPresentationSystemBack}
-      >
-        <AstronomicalEventModal ref={eventModalRef} open={eventModalOpen} mode="browse" onPresenceChange={setEventModalPresent}
+      <NativeBackBoundary
+        active={pageVisible && (eventModalOpen || eventModalPresent || bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet" || bottomPresentation === "spot-editor")}
+        onBack={handleMapPresentationSystemBack}
+        nativeMapContent={<AstronomicalEventModal ref={eventModalRef} open={eventModalOpen} mode="browse" onPresenceChange={setEventModalPresent}
           context={observationContext} onClose={() => setEventModalOpen(false)}
-          nativeBackBoundary={false} portal={false} />
-      </PageContainer>
+          nativeBackBoundary={false} portal={false} />}
+      />
       <View className="map-workspace">
         <View
           className="map-stage"
@@ -2054,13 +2051,13 @@ export default function MapPage() {
             markers={markerList}
             polygons={layerPolygons}
             showLocation={locationState === "GRANTED"}
-            enableZoom
-            enableScroll
+            enableZoom={spotEditorPhase !== "closing"}
+            enableScroll={spotEditorPhase !== "closing"}
             enableRotate={false}
             enableOverlooking={false}
             onTap={() => { if (nativeMap.isCurrent()) onMapTap(); }}
             onMarkerTap={event => { if (nativeMap.isCurrent()) void onMarkerTap(event); }}
-            onRegionChange={event => { if (nativeMap.isCurrent()) onRegionChange(event); }}
+            onRegionChange={event => { if (nativeMap.isCurrent() && !editorPresentation.isClosing()) onRegionChange(event); }}
             onError={nativeMap.onError}
             onUpdated={nativeMap.onUpdated}
             aria-label="正式观星点地图；搜索提供等价可访问结果"
@@ -2202,7 +2199,8 @@ export default function MapPage() {
 
           {bottomPresentation === "spot-editor" ? (
             <View
-              className="map-spot-editor-layer"
+              className={`map-spot-editor-layer map-spot-editor-layer--${spotEditorPhase}`}
+              aria-hidden={spotEditorPhase === "closing"}
               onClick={(event) => event.stopPropagation()}
             >
               <ContributionEditor
@@ -2214,31 +2212,28 @@ export default function MapPage() {
                   : {})}
                 onCandidateChange={handleCandidateChange}
                 onLeaveGuardChange={(guard) => { editorLeaveGuard.current = guard; }}
+                onHandoffBackChange={registerEditorHandoffBack}
                 onClose={closeSpotEditor}
+                onRequestClose={requestSpotEditorClose}
                 onSubmitted={(submission) => {
                   invalidateMapPointIntent();
-                  const marker = privateContributionMarkers([submission])[0];
-                  if (marker) {
-                    setViewport({
-                      center: {
-                        latitude: marker.latitude,
-                        longitude: marker.longitude,
-                      },
-                      zoom: Math.max(viewport.zoom, 9),
-                    });
-                  }
-                  selectSpot(null);
-                  setSelectedFallback(null);
-                  setSelectedProposal(submission);
-                  setPanelExtent("medium");
-                  setPanelPhase("idle");
-                  setBottomPresentation("spot-panel");
-                  setCandidatePreview(null);
                   void contributionHistory.refetch().catch(() => undefined);
+                  finishSpotEditorPresentation(() => {
+                    const marker = privateContributionMarkers([submission])[0];
+                    if (marker) setViewport({center: {latitude: marker.latitude, longitude: marker.longitude}, zoom: Math.max(viewport.zoom, 9)});
+                    selectSpot(null);
+                    setSelectedFallback(null);
+                    setSelectedProposal(submission);
+                    setPanelExtent("medium");
+                    setPanelPhase("idle");
+                    setBottomPresentation("spot-panel");
+                  });
                 }}
               />
             </View>
           ) : null}
+          {bottomPresentation === "spot-editor" && spotEditorPhase === "closing"
+            ? <View className="map-editor-exit-shield" catchMove onClick={event => event.stopPropagation()} /> : null}
 
           {bottomPresentation === "spot-panel" && (selected || selectedProposal) ? (
             <View

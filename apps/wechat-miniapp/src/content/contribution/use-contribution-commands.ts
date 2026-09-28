@@ -525,8 +525,8 @@ function createChooseCandidateLocation(form: ContributionForm, assertAccount: ()
   };
 }
 
-export function useContributionCommands(form: ContributionForm) {
-  const handoff = useRedLightHandoff();
+export function useContributionCommands(form: ContributionForm, {nativeBackBoundary = true}: {nativeBackBoundary?: boolean} = {}) {
+  const handoff = useRedLightHandoff({nativeBackBoundary});
   const exclusive = useRef(createContributionCommandLock(form.setCommandBusy)).current;
   const assertAccount = useRef(createContributionAccountGuard(currentDraftUserId)).current;
   const guard = <A extends unknown[], R,>(command: (...args: A) => Promise<R>, allowPending = false) =>
@@ -550,6 +550,7 @@ export function useContributionCommands(form: ContributionForm) {
     chooseCandidateLocation: guard(createChooseCandidateLocation(form, assertAccount, handoff.confirm)),
     handoffWarning: handoff.warning,
     handoffActive: handoff.active,
+    cancelHandoff: handoff.cancel,
     useCurrentLocation: guard(createUseCurrentLocation(form, assertAccount)),
     addMedia: guard(createAddMedia(form, saveDraft, assertAccount, handoff.confirm)),
     retryMedia: guard(createRetryMedia(form, assertAccount, handoff.confirm)),

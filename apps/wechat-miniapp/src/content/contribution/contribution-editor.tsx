@@ -44,13 +44,15 @@ export interface ContributionRecordsNavigation {
   onFilterChange(): void;
 }
 
-export function ContributionEditor({ renderRecords, renderRecordDetail, embedded = false, embeddedHeightPx, forceNew, submissionId, onClose, onSubmitted, onCandidateChange, onLeaveGuardChange }: {
+export function ContributionEditor({ renderRecords, renderRecordDetail, embedded = false, embeddedHeightPx, forceNew, submissionId, onClose, onRequestClose, onSubmitted, onCandidateChange, onLeaveGuardChange, onHandoffBackChange }: {
   renderRecords?: (form: ContributionForm, navigation: ContributionRecordsNavigation) => ReactNode;
   renderRecordDetail?: (item: ContributionSubmission, onBack: () => void) => ReactNode;
   embedded?: boolean; embeddedHeightPx?: number; forceNew?: boolean; submissionId?: string;
   onClose?: () => void; onSubmitted?: (submission: ContributionSubmission) => void;
+  onRequestClose?: () => void | Promise<void>;
   onCandidateChange?: (candidate: ContributionCandidatePreview | null) => void;
   onLeaveGuardChange?: (guard: ContributionLeaveGuard | null) => void;
+  onHandoffBackChange?: (handler: (() => void) | null) => void;
 }) {
   const managesRecords = renderRecords !== undefined;
   const themeClass = useThemeClass();
@@ -59,7 +61,12 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
     ...(submissionId ? { requestedSubmissionId: submissionId } : {}),
     ...(embedded ? { disableLocalPersistence: true } : {}),
   });
-  const commands = useContributionCommands(form);
+  const commands = useContributionCommands(form, {nativeBackBoundary: !embedded});
+  useEffect(() => {
+    if (!embedded) return;
+    onHandoffBackChange?.(commands.handoffActive ? commands.cancelHandoff : null);
+    return () => onHandoffBackChange?.(null);
+  }, [embedded, commands.handoffActive, commands.cancelHandoff, onHandoffBackChange]);
   const readonlyEntered = useRef(false);
   const recordId = !form.forceNew ? form.requestedSubmissionId || form.draft?.submissionId : form.draft?.submissionId;
   const editorRecord = recordId ? resolveContributionEditorRecord({ owner: form.owner,
@@ -165,6 +172,7 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
   }, [confirmLeave, embedded, onLeaveGuardChange]);
   const nativeLeaveGuard = useNativeEditorLeaveGuard(!embedded && form.hasUnsavedChanges, "当前有未保存的观星点修改，确定离开吗？");
   const requestClose = async () => {
+    if (embedded && onRequestClose) {await onRequestClose(); return;}
     if (await confirmLeave()) onClose?.();
   };
   const leaveAfterWithdrawal = () => {
