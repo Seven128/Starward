@@ -11,20 +11,32 @@ const NIGHT_POINTS = {
   favorite: [[9, 20], [27, 75], [44, 16], [60, 83], [76, 25], [90, 68], [18, 49], [91, 10]],
   cloud: [[13, 76], [30, 20], [48, 79], [66, 15], [82, 65], [94, 30], [9, 36], [72, 86]],
 } as const;
+// Normal DAY labels use the center band; the existing large-text column needs
+// a separate leading field. Verify both against the target's actual bounds.
+const DAY_FAVORITE_POINTS = [[9, 20], [27, 75], [44, 2], [60, 94], [76, 2], [90, 94], [18, 49], [91, 2]] as const;
+const DAY_LARGE_FAVORITE_POINTS = [[9, 20], [27, 75], [24, 16], [20, 83], [14, 25], [6, 68], [18, 49], [25, 10]] as const;
 
-function ActionScene({ kind, progress, breathing }: {
+function ActionScene({ kind, progress, breathing, dayContrast = false, largeText = false }: {
   kind: keyof typeof NIGHT_POINTS;
   progress: number;
   breathing: boolean;
+  dayContrast?: boolean;
+  largeText?: boolean;
 }) {
+  // A uniform middle surface lets the ink switch without a low-contrast gap.
+  // Decorations fade with their surface so none remain at the ink crossover.
+  const readableDay = kind === "favorite" && dayContrast;
+  const dayOpacity = readableDay ? Math.max(0, 1 - 2 * progress) : 1 - progress;
+  const nightOpacity = readableDay ? Math.max(0, 2 * progress - 1) : progress;
+  const points = readableDay ? largeText ? DAY_LARGE_FAVORITE_POINTS : DAY_FAVORITE_POINTS : NIGHT_POINTS[kind];
   return (
-    <View className={`spot-action-scene spot-action-scene--${kind}`} aria-hidden="true">
-      {kind === "favorite" ? <View className="spot-action-scene__day" style={{ opacity: 1 - progress }}>
+    <View className={`spot-action-scene spot-action-scene--${kind}${readableDay ? " spot-action-scene--readable-day" : ""}`} aria-hidden="true">
+      {kind === "favorite" ? <View className="spot-action-scene__day" style={{ opacity: dayOpacity }}>
         <View className="spot-action-scene__cloud spot-action-scene__cloud--one" />
         <View className="spot-action-scene__cloud spot-action-scene__cloud--two" />
       </View> : null}
-      <View className="spot-action-scene__night" style={{ opacity: progress }}>
-        {NIGHT_POINTS[kind].map(([left, top], index) => <View
+      <View className="spot-action-scene__night" style={{ opacity: nightOpacity }}>
+        {points.map(([left, top], index) => <View
           key={index}
           className="spot-action-scene__spark"
           style={{
@@ -54,6 +66,8 @@ export function SpotPanelActions({
   onShare: () => void;
 }) {
   const reduced = useAppStore(state => state.preferences.reducedMotion);
+  const dayMode = useAppStore(state => state.mode === "DAY");
+  const largeText = useAppStore(state => state.preferences.largeText);
   const [pageVisible, setPageVisible] = useState(true);
   const live = useRef(favorite ? 1 : 0);
   const [progress, setProgress] = useState(live.current);
@@ -82,12 +96,12 @@ export function SpotPanelActions({
     <View className={`spot-panel__action-bar${reduced ? " spot-panel__action-bar--reduced" : ""}`}
       data-control="map-spot-panel-action-bar" role="toolbar" ariaLabel="点位动作">
       <Button
-        className={`spot-panel__action spot-panel__action--favorite${favorite ? " spot-panel__action--active" : ""}${progress > .48 ? " spot-panel__action--night-contrast" : ""}`}
+        className={`spot-panel__action spot-panel__action--favorite${favorite ? " spot-panel__action--active" : ""}${(dayMode ? progress >= .5 : progress > .48) ? " spot-panel__action--night-contrast" : ""}${dayMode && progress > 0 && progress < .5 ? " spot-panel__action--transition-dark" : ""}`}
         data-control="spot-favorite-action"
         ariaLabel={`${favoritePending ? "正在保存" : favorite ? "已想去，取消收藏" : "未想去，收藏"}${spotName}`}
         onClick={onFavorite}
       >
-        <ActionScene kind="favorite" progress={progress} breathing={breathing && favorite} />
+        <ActionScene kind="favorite" progress={progress} breathing={breathing && favorite} dayContrast={dayMode} largeText={largeText} />
         <FavoriteStar active={favorite} visible={shown} />
         <Text>想去</Text>
       </Button>

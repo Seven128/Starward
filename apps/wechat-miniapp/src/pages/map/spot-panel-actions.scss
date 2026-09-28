@@ -49,7 +49,11 @@
   animation-direction: alternate;
 }
 @keyframes spot-action-star-breath { from { opacity: .22; } to { opacity: .88; } }
-.spot-panel__action--favorite > text { transition: color 130ms; }
+// Black and white both exceed 4.5 on this uniform crossover surface. The
+// original day/night gradients remain fully opaque at their respective ends.
+.spot-panel__action > .spot-action-scene--readable-day { background: #757575; }
+.spot-panel__action--favorite > text { transition: none; }
+.theme-day.map-page .spot-panel__action--favorite.spot-panel__action--transition-dark { color: #000; }
 .spot-panel__action-bar--reduced .spot-action-scene__spark { animation: none; }
 .spot-panel__action-bar--reduced .spot-panel__action--favorite > text { transition: none; }
 @media (prefers-reduced-motion: reduce) {
