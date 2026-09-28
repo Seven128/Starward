@@ -1,0 +1,58 @@
+// The scene clips to the adopted 32px visual surface, inside the 44px target.
+.spot-panel__action > .spot-action-scene {
+  position: absolute;
+  z-index: 0;
+  top: 6Px;
+  right: 0;
+  bottom: 6Px;
+  left: 0;
+  overflow: hidden;
+  border-radius: 7Px;
+  pointer-events: none;
+  background: var(--spot-action-day-surface);
+}
+.spot-panel__action > .spot-action-scene--cloud { background: var(--spot-action-night-surface); }
+.spot-action-scene__day,
+.spot-action-scene__night {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.spot-action-scene__day { background: var(--spot-action-day-surface); }
+.spot-action-scene__night { background: var(--spot-action-night-surface); }
+.spot-action-scene__cloud {
+  position: absolute;
+  width: 40Px;
+  height: 9Px;
+  border-radius: 40Px;
+  background: var(--spot-action-cloud);
+}
+.spot-action-scene__cloud::before,
+.spot-action-scene__cloud::after {
+  position: absolute;
+  content: "";
+  border-radius: 50%;
+  background: inherit;
+}
+.spot-action-scene__cloud::before { width: 18Px; height: 16Px; left: 7Px; bottom: 2Px; }
+.spot-action-scene__cloud::after { width: 13Px; height: 12Px; left: 21Px; bottom: 1Px; }
+.spot-action-scene__cloud--one { left: -9Px; bottom: 2Px; transform: scale(.85); }
+.spot-action-scene__cloud--two { right: -11Px; top: 14Px; transform: scale(.72); }
+.spot-action-scene__spark {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--spot-action-star);
+  opacity: .65;
+  animation-name: spot-action-star-breath;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+@keyframes spot-action-star-breath { from { opacity: .22; } to { opacity: .88; } }
+.spot-panel__action--favorite > text { transition: color 130ms; }
+.spot-panel__action-bar--reduced .spot-action-scene__spark { animation: none; }
+.spot-panel__action-bar--reduced .spot-panel__action--favorite > text { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .spot-action-scene__spark { animation: none; }
+  .spot-panel__action--favorite > text { transition: none; }
+}

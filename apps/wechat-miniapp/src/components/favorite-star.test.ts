@@ -21,9 +21,10 @@ function harness() {
       useEffect: (effect: () => (() => void)) => { pendingEffect = effect; },
     } : name.includes("app-store") ? { useAppStore: (select: (state: unknown) => unknown) => select({ mode: "DAY", preferences: { reducedMotion: reduced } }) } : {},
   });
-  const render = (active: boolean) => exports.FavoriteStar({ active });
+  let visible = true;
+  const render = (active: boolean) => exports.FavoriteStar({ active, visible });
   return {
-    change(active: boolean, reduce = false) { reduced = reduce; cleanup?.(); render(active); cleanup = pendingEffect!(); },
+    change(active: boolean, reduce = false, shown = true) { reduced = reduce; visible = shown; cleanup?.(); render(active); cleanup = pendingEffect!(); },
     advance(ms: number) {
       const end = now + ms;
       for (;;) {
@@ -47,6 +48,18 @@ test("favorite motion reverses from its visible progress without a jump or stale
   h.change(true); h.advance(840); assert.equal(h.progress(), 1);
   const rotor = h.render(true).props.children[1];
   assert.equal(rotor.props.style.transform, "rotate(360deg) scale(0.94)");
+});
+
+test("a hidden Map consumer settles its icon and cancels the interrupted timer", () => {
+  const h = harness(); h.change(true); h.advance(240);
+  assert.ok(h.progress() > 0 && h.progress() < 1);
+  h.change(true, false, false);
+  assert.equal(h.progress(), 1); assert.equal(h.pending(), 0);
+  assert.equal(h.render(true).props.children[1].props.style.transform, "none");
+  h.change(false, false, false);
+  assert.equal(h.progress(), 0); assert.equal(h.pending(), 0);
+  h.change(false, false, true); h.advance(1000);
+  assert.equal(h.progress(), 0); assert.equal(h.pending(), 0);
 });
 
 test("reduced motion settles immediately and unmount cancels in-flight work", () => {

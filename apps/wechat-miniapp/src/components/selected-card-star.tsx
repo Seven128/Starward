@@ -27,9 +27,11 @@ export function SelectedCardStar({ className = "" }: { className?: string }) {
 /** Shared Favorite ritual owner, kept beside the selected-choice star. */
 export function FavoriteStar({
   active,
+  visible = true,
   className = "",
 }: {
   active: boolean;
+  visible?: boolean;
   className?: string;
 }) {
   const mode = useAppStore(state => state.mode);
@@ -38,7 +40,7 @@ export function FavoriteStar({
   const [progress, setProgress] = useState(live.current);
   useEffect(() => {
     const target = active ? 1 : 0, from = live.current;
-    const duration = reduced ? 0 : 820 * Math.abs(target - from);
+    const duration = reduced || !visible ? 0 : 820 * Math.abs(target - from);
     const started = Date.now();
     let timer: ReturnType<typeof setTimeout> | undefined;
     const frame = () => {
@@ -49,10 +51,10 @@ export function FavoriteStar({
     };
     frame();
     return () => clearTimeout(timer);
-  }, [active, reduced]);
+  }, [active, reduced, visible]);
   const satellite = (index: number) => {
     const p = Math.min(1, progress / (index ? .9 : .72));
-    return { opacity: progress * p, transform: reduced ? "none" : `translate(${- (index ? 7 : 10) * (1 - p)}px, ${- (index ? 6 : 8) * (1 - p)}px)` };
+    return { opacity: progress * p, transform: reduced || !visible ? "none" : `translate(${- (index ? 7 : 10) * (1 - p)}px, ${- (index ? 6 : 8) * (1 - p)}px)` };
   };
   const image = (part: string, state = "default") => `/assets/b-icons/favorite-${part}--day--${state}.png`;
   return (
@@ -65,7 +67,7 @@ export function FavoriteStar({
       <View className="favorite-star__trail" style={{ opacity: progress }}>
         {mode === "DAY" ? <Image src={image("trail")} mode="aspectFit" /> : <View />}
       </View>
-      <View className="favorite-star__rotor" style={{ transform: reduced ? "none" : `rotate(${360 * progress}deg) scale(${1 - .06 * progress})` }}>
+      <View className="favorite-star__rotor" style={{ transform: reduced || !visible ? "none" : `rotate(${360 * progress}deg) scale(${1 - .06 * progress})` }}>
         {mode === "DAY" ? <>
           <Image className="favorite-star__head" src={image("star")} mode="aspectFit" style={{ opacity: 1 - progress }} />
           <Image className="favorite-star__head" src={image("star", "selected")} mode="aspectFit" style={{ opacity: progress }} />

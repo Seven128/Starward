@@ -18,7 +18,7 @@ import { RecentWeather } from "@/components/recent-weather";
 import { SourceAttribution } from "@/components/source-attribution";
 import { AirQuality } from "@/components/air-quality";
 import { DataStateBadge } from "@/components/data-state-badge";
-import { FavoriteStar } from "@/components/selected-card-star";
+import { SpotPanelActions } from "./spot-panel-actions";
 import { SpotAdditionalInformation } from "./spot-additional-information";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SelectionTabs } from "@/components/selection-tabs";
@@ -783,25 +783,10 @@ export function SpotInformationPanel({
         {...(onViewerBackHandlerChange ? { onBackHandlerChange: onViewerBackHandlerChange } : {})}
       /> : null}
       <View className="spot-panel__action-lane">
-        <View
-          className="spot-panel__action-bar"
-          data-control="map-spot-panel-action-bar"
-          role="toolbar"
-          ariaLabel="点位动作"
-        >
-          <Button className={`spot-panel__action spot-panel__action--favorite${favorite ? " spot-panel__action--active" : ""}`} data-control="spot-favorite-action" ariaLabel={`${favoritePending ? "正在保存" : favorite ? "已想去，取消收藏" : "未想去，收藏"}${effectiveSpot.name}`} onClick={onFavorite}>
-            <FavoriteStar active={favorite} />
-            <Text>想去</Text>
-          </Button>
-          <Button className="spot-panel__action spot-panel__action--cloud" data-control="spot-cloud-stargazing-action" ariaLabel={`${cloudReady ? "打开" : "等待正式点位上下文后打开"}${effectiveSpot.name}云观星`} disabled={!cloudReady} onClick={onCloud}>
-            <SemanticIcon name="eye" />
-            <Text>云观星</Text>
-          </Button>
-          <Button className="spot-panel__action spot-panel__action--share" data-control="spot-share-action" ariaLabel={`分享${effectiveSpot.name}`} onClick={onShare}>
-            <SemanticIcon name="share" />
-            <Text>分享</Text>
-          </Button>
-        </View>
+        <SpotPanelActions key={effectiveSpot.spotId} spotName={effectiveSpot.name}
+          favorite={favorite} favoritePending={favoritePending} cloudReady={cloudReady}
+          visible={visible && phase !== "closing" && viewerIndex === null}
+          onFavorite={onFavorite} onCloud={onCloud} onShare={onShare} />
       </View>
     </View>
   );
