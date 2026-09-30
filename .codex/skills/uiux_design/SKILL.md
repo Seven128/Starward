@@ -38,6 +38,10 @@ Do not start from animation values. Start from the task, state transition, and r
 
 ### 2. Find The Shared Owner And Select Target Primitives
 
+For an adopted Mini Program design, read its editable source as well as its image. Trace the changed region's hierarchy, dimensions, assets and state variants into existing component owners; implement that concrete structure rather than redescribing the image and generating a new layout. Keep only unresolved mappings in the current task notes. Reuse already inspected unchanged references; reopen the relevant source when scope, adoption or the input changes.
+
+Check the full style path when the result differs: adopted value -> generated token -> shared component -> page override -> compiled WXSS -> rendered geometry. Inspect the current Taro `designWidth`/`deviceRatio` and px transformation, including `px` versus `Px`, before transferring prototype CSS. Do not change global conversion settings to repair a local mismatch. Fix a shared consumer or unintended override at its owner, then compare affected variants; generated-token checks alone cannot establish that consumers use the token.
+
 Apply AGENTS.md's ownership and reuse rules to state transitions, gesture arbitration, cleanup and accessibility. Shared viewers, disclosures and time rulers keep one interaction implementation while instances may own separate presentation state. Keep domain commands with their owners; verify affected consumers' distinct inputs and return/focus paths.
 
 Identify the target from the task and current route. Consult `project_context/architecture.md` for existing substrate decisions and the actual package manifest for installed capabilities. A design prototype supplies appearance and motion references; it does not choose production runtime dependencies. A mature component must support the adopted geometry, controlled state, gestures, theming and accessibility without overriding domain ownership. Use a small target-runtime check for an uncertain requirement before broad integration.
