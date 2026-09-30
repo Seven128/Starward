@@ -110,3 +110,9 @@ export function reviewLatestContributionAttempt(
     workingCopyFromAttemptId: latest?.attemptId ?? null,
   };
 }
+
+/** Legacy attached uploads may predate explicit attempt snapshots. */
+export function contributionMediaHasHistory(value: ContributionSubmission, upload: ContributionMediaUpload) {
+  return upload.state === "ATTACHED" || (value.attempts ?? []).some(attempt =>
+    attempt.snapshot.media.some(media => media.uploadId === upload.uploadId));
+}

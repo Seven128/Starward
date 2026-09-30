@@ -13,7 +13,7 @@ test("map navigation respects travel warning cancellation and changing selection
   };
   visit(source);
   assert.ok(declaration);
-  for (const scenario of ["confirm", "cancel", "changed", "hidden", "failed"] as const) {
+  for (const scenario of ["confirm", "cancel", "changed", "hidden", "failed", "redCancel"] as const) {
     const epoch = { current: 0 }, calls: string[] = [];
     let selectedSpotId = "spot:a";
     const navigate = vm.runInNewContext(ts.transpileModule(declaration + "\nonPanelNavigate;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
@@ -21,6 +21,10 @@ test("map navigation respects travel warning cancellation and changing selection
       selected: { spotId: "spot:a", visibilityPolicy: "PUBLIC_EXACT", gcj02: { latitude: 22, longitude: 114 } },
       spotDetail: { accessAndSafety: { openness: "CLOSED", restrictions: ["关闭"], guidance: [] } },
       useAppStore: { getState: () => ({ selectedSpotId }) },
+      navigationHandoff: { confirm: async () => {
+        if (scenario === "redCancel") { calls.push("handoff"); return false; }
+        return true;
+      } },
       notify: () => calls.push("notice"), errorMessage: () => "unavailable",
       Taro: {
         showModal: async () => {
@@ -34,6 +38,6 @@ test("map navigation respects travel warning cancellation and changing selection
       },
     }) as () => Promise<void>;
     await navigate();
-    assert.deepEqual(calls, scenario === "confirm" ? ["warning", "open"] : scenario === "failed" ? ["warning", "notice"] : ["warning"]);
+    assert.deepEqual(calls, scenario === "confirm" ? ["warning", "open"] : scenario === "failed" ? ["warning", "notice"] : scenario === "redCancel" ? ["handoff"] : ["warning"]);
   }
 });

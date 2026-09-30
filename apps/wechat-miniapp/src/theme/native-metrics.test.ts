@@ -24,7 +24,7 @@ test("navigation clears both native status bar and capsule across device widths"
       });
       assert.equal(result.statusBarHeight, statusBarHeight);
       assert.equal(result.capsuleBottom, bottom);
-      assert.equal(result.safeTop, Math.max(bottom + 4, statusBarHeight + windowWidth * 96 / 750));
+      assert.equal(result.safeTop, Math.max(bottom + 8, statusBarHeight + windowWidth * 96 / 750));
     }
   }
 });
@@ -34,7 +34,7 @@ test("missing or invalid native metrics preserve CSS fallbacks independently", (
   assert.deepEqual({ ...nativeNavigationInsets({ getWindowInfo: missing, getMenuButtonBoundingClientRect: missing }) },
     { statusBarHeight: undefined, capsuleBottom: undefined, safeTop: undefined });
   assert.equal(nativeNavigationInsets({ getWindowInfo: missing,
-    getMenuButtonBoundingClientRect: () => ({ bottom: 92 }) }).safeTop, 96);
+    getMenuButtonBoundingClientRect: () => ({ bottom: 92 }) }).safeTop, 100);
   assert.equal(nativeNavigationInsets({ getWindowInfo: () => ({ windowWidth: 375, statusBarHeight: 44 }),
     getMenuButtonBoundingClientRect: missing }).safeTop, 92);
   for (const invalid of [NaN, Infinity, -1]) {

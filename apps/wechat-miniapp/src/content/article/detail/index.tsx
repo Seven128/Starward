@@ -1,5 +1,6 @@
+import { mediaSource } from "@/utils/media-source";
 import { FloatingNotificationHost } from "@/components/notification";
-import { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { Image, ScrollView, Text, View } from "@tarojs/components";
 import { articleMedia } from "@/features/spot/guide-media";
 import { FacilityEvidenceDetails } from "@/components/facility-evidence";
@@ -91,7 +92,7 @@ export default function ArticlePage() {
       title: failed[0]!, body: failed[1]!, dedupeKey: `article-resource-failed:${articleId}:${failed[2]}` });
   }, [articleId, guides.data?.dataState, guides.isError, guides.refreshError, notify, overview.data?.dataState,
     overview.isError, overview.refreshError, pageVisible, site.data?.dataState, site.isError, site.refreshError, validRoute]);
-  const loading = guides.isPending && !article;
+  const loading = (guides.isPending || guides.isFetching) && !article;
 
   return (
     <View className={themeClass + " article-page"}>
@@ -105,14 +106,27 @@ export default function ArticlePage() {
       <View className="article-content page-inset safe-bottom">
         {!validRoute ? (
           <StatusPanel
-            state="EMPTY"
-            detail="请从正式观星点详情中的攻略入口打开本文。"
+            state="ERROR"
+            title="攻略入口不可用"
+            detail="无法确认当前观星点或文章，请返回地图重新选择正式观星点。"
+            recoveryLabel="返回地图"
+            onRecover={() => void Taro.switchTab({ url: "/pages/map/index" })}
           />
         ) : loading ? (
           <StatusPanel state="LOADING" detail="正在加载攻略。" />
-        ) : !article ? (
+        ) : !article && guides.data?.data?.spotId === spotId &&
+          !guides.isError && !guides.refreshError &&
+          (guides.data.dataState === "FRESH" || guides.data.dataState === "PARTIAL") ? (
           <StatusPanel
             state="EMPTY"
+            title="这篇攻略暂无内容"
+            detail="这篇攻略不在当前观星点资料中，可查看本地点的其它攻略。"
+            recoveryLabel="查看本地点攻略"
+            onRecover={() => void Taro.redirectTo({ url: `/spot/guides/index?spotId=${encodeURIComponent(spotId)}&contextId=${encodeURIComponent(contextId)}` })}
+          />
+        ) : !article ? (
+          <StatusPanel
+            state="ERROR"
             detail="攻略暂不可用，请重试。"
             recoveryLabel="重试攻略"
             onRecover={() => void guides.refetch()}
@@ -158,7 +172,7 @@ export default function ArticlePage() {
                   {media ? (
                     <>
                       <Image
-                        src={media.localPath}
+                        src={mediaSource(media.localPath)}
                         mode="widthFix"
                         lazyLoad
                         aria-label={media.alt}
@@ -185,8 +199,10 @@ export default function ArticlePage() {
                     {FACILITY_LABEL[block.facilityType]}
                   </Text> : null}
                   {site.isPending ? <StatusPanel state="LOADING" detail="正在读取设施记录。" />
-                    : site.isError ? <StatusPanel state="EMPTY" detail="设施资料暂不可用，正文仍可阅读。" recoveryLabel="重试设施资料" onRecover={() => void site.refetch()} />
+                    : site.isError ? <StatusPanel state="ERROR" detail="设施资料暂不可用，正文仍可阅读。" recoveryLabel="重试设施资料" onRecover={() => void site.refetch()} />
                     : facility ? <FacilityEvidenceDetails evidence={facility} title={FACILITY_LABEL[block.facilityType]} />
+                    : site.refreshError || site.data?.dataState === "STALE_USABLE"
+                      ? <StatusPanel state="PARTIAL" detail="设施记录尚未确认最新状态，暂不能判断是否缺失。" />
                     : <StatusPanel state="EMPTY" detail="暂无该设施的核验记录，不代表设施可用。" />}
                 </View>
               );

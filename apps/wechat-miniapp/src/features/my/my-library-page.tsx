@@ -114,6 +114,7 @@ export function MyLibraryPage() {
   const openSettings = () =>
     openPage("/content/settings/index", "设置", "settings");
   const openPlan = () => openPage("/content/plan/list/index", "观星计划", "plan");
+  const openAchievements = () => openPage("/content/achievement/index", "个人行程成就", "achievements");
   const openContribution = () =>
     openPage("/content/contribution/index?manage=1", "观星点创建与反馈", "contribution");
   return (
@@ -136,7 +137,7 @@ export function MyLibraryPage() {
           {library.isError || library.refreshError || library.data?.dataState === "STALE_USABLE" ? (
             <StatusPanel
               state={library.data ? "STALE" : "ERROR"}
-              detail={library.data ? "账户资料尚未确认最新状态，暂时显示上次记录。" : `账户资料暂不可用：${errorMessage(library.error)}。`}
+              detail={library.data ? "账户资料尚未确认最新状态，暂时显示上次记录。" : `账户资料暂不可用：${errorMessage(library.error)}。计划与偏好尚未同步。`}
               recoveryLabel="重试同步"
               onRecover={() => void library.refetch()}
             />
@@ -158,6 +159,11 @@ export function MyLibraryPage() {
                 loading={library.isPending} unavailable={library.isError || Boolean(library.refreshError)}
                 onOpenAll={openPlan}
                 onOpen={(plan) => void openPage(`/content/plan/detail/index?planId=${encodeURIComponent(plan.planId)}`, "观星计划", "plan")} />
+              <Button className="routine-entry focus-ring" ariaLabel="打开个人行程成就" onClick={openAchievements}>
+                <View className="routine-entry__icon" aria-hidden="true"><SemanticIcon name="star" /></View>
+                <View className="account-row__copy"><Text className="type-section">个人行程成就</Text><Text className="type-caption">按已结束的计划自动统计</Text></View>
+                <View className="account-row__chevron" aria-hidden="true"><SemanticIcon name="chevron-right" /></View>
+              </Button>
               <Button
                 className="routine-entry routine-entry--contribution focus-ring"
                 data-od-id="my-contribution-entry"
@@ -184,12 +190,6 @@ export function MyLibraryPage() {
             <StatusPanel
               state="LOADING"
               detail="正在回读计划与偏好；账户摘要保持可用。"
-            />
-          ) : null}
-          {library.isError ? (
-            <StatusPanel
-              state="PARTIAL"
-              detail="本页不会因服务端失败伪造新的计划或偏好；现有本机投影保持只读，联网后可重试。"
             />
           ) : null}
         </View>

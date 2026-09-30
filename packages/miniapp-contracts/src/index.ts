@@ -1,5 +1,6 @@
 export * from "./types.ts";
 export * from "./plan.ts";
+export * from "./plan-timing.ts";
 export * from "./plan-reminders.ts";
 export * from "./local-time.ts";
 export * from "./contribution-feedback.ts";

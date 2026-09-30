@@ -8,6 +8,7 @@
 @use "./components/liquid-glass-surface.scss";
 @use "./components/spot-identity-card.scss";
 @use "./components/selection-tabs.scss";
+@use "./components/red-light-handoff.scss";
 @use "./pages/map/spot-terrain-overview.scss";
 
 page {
@@ -190,7 +191,10 @@ button::after {
 .soft-button--ghost {
   background: transparent;
 }
-.soft-button--disabled {
+.soft-button--disabled,
+button.soft-button.soft-button--disabled[disabled],
+.theme-night button.soft-button.soft-button--disabled[disabled],
+.theme-observation button.soft-button.soft-button--disabled[disabled] {
   color: var(--text-tertiary);
   background: var(--surface-subtle);
   border-color: var(--border);

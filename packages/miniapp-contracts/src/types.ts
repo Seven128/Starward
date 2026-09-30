@@ -123,6 +123,8 @@ export interface ObservationContext {
     source: "MAP_VIEWPORT" | "USER_LOCATION";
   } | null;
   timezone: string;
+  /** Provenance of a derived browsing zone, when it came from external boundary data. */
+  timezoneSource?: SourceSummary | null;
   localDate: string;
   nightStartUtc: string;
   nightEndUtc: string;
@@ -155,7 +157,7 @@ export interface ObservationContextResolveRequest {
         displayName: string;
         wgs84: Wgs84Point;
         source: "MAP_VIEWPORT" | "USER_LOCATION";
-        timezoneHint?: "Asia/Shanghai" | "Asia/Hong_Kong";
+        timezoneHint?: "Asia/Shanghai" | "Asia/Hong_Kong" | "Asia/Macau";
       };
   routeOriginContextId?: string | null;
   localDate: string;
@@ -313,7 +315,7 @@ export interface SpotSummary {
   name: string;
   region: string;
   address: string;
-  timezone: "Asia/Shanghai" | "Asia/Hong_Kong";
+  timezone: "Asia/Shanghai" | "Asia/Hong_Kong" | "Asia/Macau";
   wgs84: Wgs84Point;
   gcj02: Gcj02Point;
   altitudeM: number | null;

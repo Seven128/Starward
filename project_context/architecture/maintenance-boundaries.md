@@ -32,6 +32,8 @@ Owner: wechat-miniapp-maintainers. Tracking: WECHAT-MINIAPP-MOD-006.
 
 The BFF client composes transport and account session storage/login. `response-cache.ts` owns bounded response persistence, representation identity and storage cleanup; `request-lifecycle.ts` owns request cancellation. `authenticated-operation.ts` owns generated endpoint projection and account-bound permission-retry orchestration through injected transport/session functions; all existing endpoints use it. `account-profile-client.ts` owns profile read/write intent, same-runtime retry and pre/post request account fences. Native request transport and session establishment remain in the client and should be inspected before materially extending those policies.
 
+Immutable contribution-photo GETs allow simultaneous cover/gallery readers under the existing registry and cache identity. Each reader owns its cancellation signal; key/global cancellation still reaches all matching readers. Conditional responses may reuse an equivalent photo envelope after another reader refreshes retrieval metadata, while invalidation, account scope, content, explicit validity and ETag checks remain enforced. Other endpoint families retain latest-request supersession.
+
 Revisit when: Review the existing response-cache and request-lifecycle adapters, then extract the affected remaining transport or identity-recovery responsibility before adding another endpoint family or transport policy. Do not create a second cache owner.
 
 ## packages/miniapp-contracts/src/catalog.ts
@@ -80,6 +82,8 @@ Owner: miniapp-api-maintainers. Tracking: WECHAT-MINIAPP-MOD-001.
 
 The current BFF use-case orchestration keeps cross-domain transaction and failure semantics visible behind one facade; domain-service extraction remains bounded follow-up work and does not preserve a superseded product implementation.
 
+Account plan aggregates read the repository directly, as does My's user library. A private TTL result cache with write-time invalidation was removed because an older in-flight read could repopulate deleted or superseded plans as fresh. Preserve the existing client request-generation and mutation-invalidation owners; do not restore the server cache without a cross-process consistency contract and measured need.
+
 Revisit when: Split catalog, observation, profile and import services before adding another BFF use case.
 
 ## apps/wechat-miniapp/src/content/plan/detail/index.tsx
@@ -110,9 +114,9 @@ Revisit when: Never append functional schema changes here after baseline accepta
 
 Owner: miniapp-verification-maintainers. Tracking: WECHAT-MINIAPP-MOD-004.
 
-Infrastructure boot, migration and failure-semantics assertions share one baseline runner; adapter extraction is deferred without reducing current coverage.
+`infrastructure-runtime.mjs` owns explicit compose/external-local selection, service boot, native PostgreSQL command targeting and owned API-process teardown. The baseline runner retains the common migration, database/namespace lifecycle and failure-semantics assertions. `backup-restore.mjs` uses the same target owner for dump, restore and SQL fingerprint reads; external mode does not change service ownership or widen acceptance claims.
 
-Revisit when: Extract database and worker lifecycle adapters before adding another infrastructure target or lifecycle phase.
+Revisit when: Extend the existing runtime/lifecycle boundaries before adding another infrastructure target or lifecycle phase; do not fork the acceptance assertions or substitute a compatible runtime for deployment evidence.
 
 ## tools/miniapp/run-wechat-devtools-session.mjs
 

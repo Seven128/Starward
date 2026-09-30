@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { crc32, deflateSync } from "node:zlib";
@@ -7,6 +8,7 @@ import type {
 } from "@starward/miniapp-contracts";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
+import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts";
 import { MemoryMediaObjectStore } from "./media-object-store.ts";
 import { assertReceiptNotErased, eraseContributionContent } from "./account-data-erasure.ts";
 
@@ -20,13 +22,13 @@ function pngChunk(type: string, data: Buffer) {
   return output;
 }
 
-function privateMetadataPng() {
+function privateMetadataPng(red = 0x20) {
   const header = Buffer.alloc(13);
   header.writeUInt32BE(1, 0);
   header.writeUInt32BE(1, 4);
   header[8] = 8;
   header[9] = 6;
-  const pixels = deflateSync(Buffer.from([0, 0x20, 0x40, 0x60, 0xff]));
+  const pixels = deflateSync(Buffer.from([0, red, 0x40, 0x60, 0xff]));
   return Buffer.concat([
     Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     pngChunk("IHDR", header),
@@ -194,6 +196,52 @@ test("formal feedback submits atomically without creating an editable draft", as
     const replay = await service.submitFormalContribution(userId, input, "formal:atomic");
     assert.deepEqual(replay.data, first.data);
     assert.equal(replay.etag, first.etag);
+  } finally { await service.onModuleDestroy(); }
+});
+
+test("formal feedback fixture retains the old baseline and freezes the selected conflict resolution", async () => {
+  const repository = new InMemoryTestRepository();
+  const service = createTestMiniappService({ repository });
+  try {
+    const currentUser = await identity(service, "formal-current-resolution");
+    const proposedUser = await identity(service, "formal-proposed-resolution");
+    const old = (await service.getContributionFormalBaseline(TEST_PUBLISHED_SPOT.spotId)).data;
+    const current = {
+      ...old,
+      revision: old.revision + 1,
+      fields: { ...old.fields, parkingNote: "正式资料已改为东侧停车入口。" },
+    };
+    repository.setFormalBaselineForAcceptance(current);
+    const request = {
+      kind: "CORRECTION" as const,
+      baseline: old,
+      proposal: { fields: { parkingNote: "我建议继续使用原停车入口。", detail: "请补充夜间停车引导。" }, media: {} },
+      observedAt: null,
+      rightsConfirmed: false,
+    };
+    const first = await service.submitFormalContribution(currentUser, request, "formal:conflict:first");
+    assert.equal(first.data.state, "CONFLICT");
+    if (first.data.state !== "CONFLICT") return;
+    assert.equal(first.data.currentBaseline.revision, current.revision);
+    assert.deepEqual(first.data.conflicts.map(item => item.key), ["parkingNote"]);
+    assert.equal((await service.listContributions(currentUser)).data.submissions.length, 0);
+
+    const keptCurrent = await service.submitFormalContribution(currentUser, {
+      ...request, resolutions: { fields: { parkingNote: "CURRENT" } },
+    }, "formal:conflict:current");
+    assert.equal(keptCurrent.data.state, "SUBMITTED");
+    if (keptCurrent.data.state !== "SUBMITTED") return;
+    assert.deepEqual(keptCurrent.data.submission.formalFeedback?.resolvedProposal.fields, { detail: request.proposal.fields.detail });
+    assert.equal(keptCurrent.data.submission.formalFeedback?.resolvedBaseline?.fields.parkingNote, current.fields.parkingNote);
+    assert.equal(keptCurrent.data.submission.formalFeedback?.proposal.fields.parkingNote, request.proposal.fields.parkingNote);
+    assert.equal((await service.listContributions(currentUser)).data.submissions[0]?.formalFeedback?.resolvedBaseline?.revision, current.revision);
+
+    const keptProposed = await service.submitFormalContribution(proposedUser, {
+      ...request, resolutions: { fields: { parkingNote: "PROPOSED" } },
+    }, "formal:conflict:proposed");
+    assert.equal(keptProposed.data.state, "SUBMITTED");
+    if (keptProposed.data.state === "SUBMITTED")
+      assert.equal(keptProposed.data.submission.formalFeedback?.resolvedProposal.fields.parkingNote, request.proposal.fields.parkingNote);
   } finally { await service.onModuleDestroy(); }
 });
 
@@ -485,6 +533,64 @@ test("new-place photos retain their adopted section with three independent slots
     )).data;
     assert.deepEqual(removed.candidateProfile?.media.parking, []);
     assert.equal(removed.media.some((media) => media.uploadId === parking.uploadId), false);
+  } finally { await service.onModuleDestroy(); }
+});
+
+test("completed new-place photos keep their section and distinct objects in the frozen submission", async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, "candidate-photo-sections");
+    let draft = (await service.createContributionDraft(userId, newSpotInput({
+      rightsConfirmed: true,
+      preciseLocationConsent: true,
+      candidateLocation: { displayName: "照片关联点", region: "广东省深圳市",
+        wgs84: { system: "WGS84", latitude: 22.588, longitude: 114.302 } },
+      candidateProfile: { fields: { name: "照片关联点", address: "深圳山顶步道",
+        openness: "开放", parking: "有", toilet: "有" }, media: {} },
+    }), "candidate-sections:create")).data;
+    const expectedGroups: Record<string, ContributionUploadId[]> = {};
+    const storedDigests = new Set<string>();
+    const expectedDigests = new Map<ContributionUploadId, string>();
+    for (const [index, kind] of (["site", "parking", "toilet"] as const).entries()) {
+      const source = privateMetadataPng(0x20 + index * 0x40);
+      draft = (await service.createContributionUpload(userId, draft.submissionId, {
+        originalName: `${kind}.png`, mimeType: "image/png", byteSize: source.length,
+        kind, expectedRevision: draft.revision,
+      }, `candidate-sections:${kind}:session`)).data;
+      const upload = draft.media.find(item => item.kind === kind)!;
+      assert.ok(upload, `missing ${kind} session`);
+      expectedGroups[kind] = [upload.uploadId];
+      draft = (await service.completeContributionUpload(userId, draft.submissionId, upload.uploadId,
+        { dataBase64: source.toString("base64") }, `candidate-sections:${kind}:complete`)).data;
+      assert.equal(draft.media.find(item => item.uploadId === upload.uploadId)?.state, "UPLOADED");
+      const stored = (await service.getContributionMedia(userId, draft.submissionId, upload.uploadId)).data;
+      const storedBytes = Buffer.from(stored.dataBase64, "base64");
+      assert.ok(storedBytes.length > 0);
+      const digest = createHash("sha256").update(storedBytes).digest("hex");
+      storedDigests.add(digest);
+      expectedDigests.set(upload.uploadId, digest);
+    }
+    assert.equal(storedDigests.size, 3, "three section photos must not reuse one object");
+    assert.deepEqual(draft.candidateProfile?.media, expectedGroups);
+    const submitted = (await service.submitContribution(userId, draft.submissionId,
+      draft.revision, "candidate-sections:submit")).data;
+    assert.equal(submitted.submissionState, "PENDING_REVIEW");
+    assert.equal(submitted.attempts.length, 1);
+    assert.deepEqual(submitted.attempts[0]?.snapshot.candidateProfile?.media, expectedGroups);
+    for (const [kind, [uploadId]] of Object.entries(expectedGroups))
+      assert.equal(submitted.attempts[0]?.snapshot.media.find(item => item.uploadId === uploadId)?.kind, kind);
+    const readback = (await service.listContributions(userId)).data.submissions.find(item => item.submissionId === submitted.submissionId);
+    assert.ok(readback, "submitted record must be readable from the account repository");
+    assert.deepEqual(readback.attempts[0]?.snapshot.candidateProfile?.media, expectedGroups);
+    const snapshot = readback.attempts[0]?.snapshot;
+    assert.ok(snapshot);
+    assert.equal(snapshot.media.length, 3);
+    for (const media of snapshot.media) {
+      const stored: Awaited<ReturnType<typeof service.getContributionMedia>>["data"] =
+        (await service.getContributionMedia(userId, readback.submissionId, media.uploadId)).data;
+      assert.equal(createHash("sha256").update(Buffer.from(stored.dataBase64, "base64")).digest("hex"),
+        expectedDigests.get(media.uploadId), "later uploads must not overwrite another section's frozen photo");
+    }
   } finally { await service.onModuleDestroy(); }
 });
 
@@ -795,3 +901,210 @@ test("declared MIME cannot bypass server-side magic and pixel validation", async
   }
 });
 import { readFileSync } from "node:fs";
+
+// These tests use real sanitization, service calls and object bytes. The memory
+// repository models transaction exclusion; PostgreSQL locking remains integration evidence.
+async function pendingUploadScenario(formal: boolean, mediaStore: MemoryMediaObjectStore) {
+  const service = createTestMiniappService({ mediaStore });
+  const userId = await identity(service, `integrity-${formal}`);
+  const bytes = privateMetadataPng();
+  const file = { originalName: "integrity.png", mimeType: "image/png" as const, byteSize: bytes.length };
+  if (formal) {
+    const baseline = (await service.getContributionFormalBaseline(TEST_PUBLISHED_SPOT.spotId)).data;
+    let intent = (await service.createFormalUploadIntent(userId, { spotId: baseline.spotId, baselineRevision: baseline.revision }, "integrity:intent")).data;
+    intent = (await service.createFormalUpload(userId, intent.intentId, { ...file, kind: "site", expectedRevision: intent.revision }, "integrity:slot")).data;
+    const upload = intent.uploads[0]!;
+    return { service, userId, bytes, upload,
+      complete: (key: string, data = bytes) => service.completeFormalUpload(userId, intent.intentId, upload.uploadId, { dataBase64: data.toString("base64") }, key),
+      read: async () => (await service.repository.getFormalUploadIntent(userId, intent.intentId))?.uploads[0],
+      remove: () => service.removeFormalUpload(userId, intent.intentId, upload.uploadId, intent.revision, "integrity:remove"),
+    };
+  }
+  const draft = (await service.createContributionDraft(userId, reportInput(true), "integrity:draft")).data;
+  const pending = (await service.createContributionUpload(userId, draft.submissionId, { ...file, expectedRevision: draft.revision }, "integrity:slot")).data;
+  const upload = pending.media[0]!;
+  return { service, userId, bytes, upload,
+    complete: (key: string, data = bytes) => service.completeContributionUpload(userId, draft.submissionId, upload.uploadId, { dataBase64: data.toString("base64") }, key),
+    read: async () => (await service.repository.getContribution(userId, draft.submissionId))?.media[0],
+    remove: () => service.removeContributionUpload(userId, draft.submissionId, upload.uploadId, pending.revision, "integrity:remove"),
+  };
+}
+
+for (const formal of [false, true]) {
+  for (const contender of ["same-key", "new-key", "different-image"] as const) {
+    test(`${formal ? "formal" : "draft"} concurrent upload ${contender} preserves committed image`, async () => {
+      let entered!: () => void;
+      let release!: () => void;
+      const arrived = new Promise<void>(resolve => { entered = resolve; });
+      const gate = new Promise<void>(resolve => { release = resolve; });
+      class PausedStore extends MemoryMediaObjectStore {
+        puts = 0;
+        override async put(input: { objectKey: string; bytes: Uint8Array }) {
+          this.puts++;
+          if (this.puts === 1) { entered(); await gate; }
+          return super.put(input);
+        }
+      }
+      const store = new PausedStore();
+      const scenario = await pendingUploadScenario(formal, store);
+      try {
+        const first = scenario.complete("integrity:first");
+        await arrived;
+        const nextBytes = contender === "different-image" ? privateMetadataPng(0x21) : scenario.bytes;
+        assert.equal(nextBytes.length, scenario.bytes.length);
+        const second = scenario.complete(contender === "same-key" ? "integrity:first" : "integrity:second", nextBytes);
+        const outcomes = Promise.allSettled([first, second]);
+        await new Promise(resolve => setImmediate(resolve));
+        release();
+        const [winner, other] = await outcomes;
+        assert.equal(winner.status, "fulfilled");
+        assert.equal(other.status, contender === "different-image" ? "rejected" : "fulfilled");
+        if (other.status === "rejected") assert.match(String(other.reason), /content_conflict/);
+        assert.equal(store.puts, 1, "a contender must never overwrite committed bytes");
+        const upload = await scenario.read();
+        assert.equal(upload?.state, "UPLOADED");
+        const object = await scenario.service.repository.getContributionUploadObject(scenario.upload.uploadId);
+        assert.ok(object);
+        const stored = await store.read(object.objectKey);
+        assert.ok(stored);
+        assert.equal(createHash("sha256").update(stored).digest("hex"), upload?.sha256);
+        assert.equal(await scenario.service.contributions.cleanupExpiredUploads(), 0);
+      } finally { release(); await scenario.service.onModuleDestroy(); }
+    });
+  }
+
+  test(`${formal ? "formal" : "draft"} lost completion receipt retains image and retries without rewriting`, async (context) => {
+    const store = new MemoryMediaObjectStore();
+    const scenario = await pendingUploadScenario(formal, store);
+    const repository = scenario.service.repository;
+    const method = formal ? "completeFormalContributionUpload" : "completeContributionUpload";
+    const original = repository[method].bind(repository);
+    const fault = context.mock.method(repository, method, async (...args: Parameters<typeof original>) => {
+      await (original as (...args: Parameters<typeof original>) => Promise<unknown>)(...args);
+      throw new Error("synthetic_commit_receipt_lost");
+    });
+    try {
+      await assert.rejects(scenario.complete("integrity:lost"), /receipt_lost/);
+      fault.mock.restore();
+      const before = await scenario.read();
+      await scenario.complete("integrity:lost");
+      assert.deepEqual(await scenario.read(), before);
+      const object = await repository.getContributionUploadObject(scenario.upload.uploadId);
+      assert.ok(object);
+      const stored = await store.read(object.objectKey);
+      assert.ok(stored);
+      assert.equal(createHash("sha256").update(stored).digest("hex"), before?.sha256);
+    } finally { fault.mock.restore(); await scenario.service.onModuleDestroy(); }
+  });
+
+  for (const retirement of ["remove", "expire", "account-delete"] as const) {
+    test(`${formal ? "formal" : "draft"} failed completion residue remains tracked through ${retirement} and cleanup retry`, async () => {
+      class FailingStore extends MemoryMediaObjectStore {
+        key = "";
+        failDelete = true;
+        override async put(input: { objectKey: string; bytes: Uint8Array }) {
+          this.key = input.objectKey;
+          await super.put(input);
+          throw new Error("synthetic_write_receipt_lost");
+        }
+        override async delete(key: string) {
+          if (this.failDelete) throw new Error("synthetic_delete_unavailable");
+          return super.delete(key);
+        }
+      }
+      const store = new FailingStore();
+      const scenario = await pendingUploadScenario(formal, store);
+      try {
+        await assert.rejects(scenario.complete("integrity:failed"), /write_receipt_lost/);
+        assert.equal((await scenario.read())?.state, "PENDING");
+        assert.equal(await scenario.service.repository.getContributionUploadObject(scenario.upload.uploadId), null);
+        assert.ok(await store.read(store.key));
+        if (retirement === "remove") await assert.rejects(scenario.remove(), /delete_unavailable/);
+        else if (retirement === "expire") await scenario.service.repository.expireContributionUploads(new Date(Date.parse(scenario.upload.expiresAt) + 1).toISOString());
+        else assert.equal((await scenario.service.repository.deleteAccount(scenario.userId, "integrity:erase")).mediaCleanupState, "QUEUED");
+        await assert.rejects(scenario.service.contributions.cleanupExpiredUploads(), /delete_unavailable/);
+        assert.ok(await store.read(store.key));
+        store.failDelete = false;
+        assert.equal(await scenario.service.contributions.cleanupExpiredUploads(), 1);
+        assert.equal(await store.read(store.key), null);
+        assert.equal(await scenario.service.contributions.cleanupExpiredUploads(), 0, "acknowledged cleanup must not recreate the queue");
+      } finally { await scenario.service.onModuleDestroy(); }
+    });
+  }
+}
+
+test("formal submission retires uploaded images excluded from the accepted snapshot", async () => {
+  const store = new MemoryMediaObjectStore();
+  const service = createTestMiniappService({ mediaStore: store });
+  try {
+    const userId = await identity(service, "formal-unused-media");
+    const baseline = (await service.getContributionFormalBaseline(TEST_PUBLISHED_SPOT.spotId)).data;
+    let intent = (await service.createFormalUploadIntent(userId, { spotId: baseline.spotId, baselineRevision: baseline.revision }, "unused:intent")).data;
+    const bytes = privateMetadataPng();
+    for (const index of [0, 1]) {
+      intent = (await service.createFormalUpload(userId, intent.intentId, { kind: "site", originalName: "image.png", mimeType: "image/png", byteSize: bytes.length, expectedRevision: intent.revision }, `unused:slot:${index}`)).data;
+      intent = (await service.completeFormalUpload(userId, intent.intentId, intent.uploads[index]!.uploadId, { dataBase64: bytes.toString("base64") }, `unused:complete:${index}`)).data;
+    }
+    const [accepted, discarded] = intent.uploads;
+    assert.ok(accepted && discarded);
+    const acceptedObject = await service.repository.getContributionUploadObject(accepted.uploadId);
+    const discardedObject = await service.repository.getContributionUploadObject(discarded.uploadId);
+    assert.ok(acceptedObject && discardedObject);
+    const result = (await service.submitFormalContribution(userId, { kind: "CORRECTION", baseline,
+      proposal: { fields: {}, media: { site: [accepted.uploadId] } }, observedAt: null, rightsConfirmed: true,
+      uploadIntentId: intent.intentId, expectedUploadIntentRevision: intent.revision }, "unused:submit")).data;
+    assert.equal(result.state, "SUBMITTED");
+    if (result.state === "SUBMITTED") {
+      assert.deepEqual(result.submission.media.map(upload => upload.uploadId), [accepted.uploadId]);
+      assert.deepEqual(result.submission.attempts[0]!.snapshot.media.map(upload => upload.uploadId), [accepted.uploadId]);
+    }
+    assert.equal(await service.contributions.cleanupExpiredUploads(), 1);
+    assert.equal(await store.read(discardedObject.objectKey), null);
+    assert.ok(await store.read(acceptedObject.objectKey));
+  } finally { await service.onModuleDestroy(); }
+});
+
+for (const legacy of [false, true]) for (const state of ["REJECTED", "CHANGES_REQUESTED"] as const) test(`new-place ${state} ${legacy ? "legacy" : "current"} photo removal edits the working copy while keeping prior evidence`, async () => {
+  const service = createTestMiniappService();
+  try {
+    const userId = await identity(service, `remove-history-${state}`);
+    const input = newSpotInput({ rightsConfirmed: true, preciseLocationConsent: true,
+      candidateLocation: { displayName: "照片修订测试点", region: "广东深圳", wgs84: { system: "WGS84", latitude: 22.588, longitude: 114.302 } },
+      candidateProfile: { fields: { name: "照片修订测试点", address: "广东深圳山顶步道", openness: "有条件开放", detail: "东南方向可观测，返程需要照明。" }, media: {} } });
+    let draft = (await service.createContributionDraft(userId, input, "history-media:create")).data;
+    const bytes = privateMetadataPng();
+    draft = (await service.createContributionUpload(userId, draft.submissionId, { kind: "site", originalName: "old.png", mimeType: "image/png", byteSize: bytes.length, expectedRevision: draft.revision }, "history-media:slot")).data;
+    const upload = draft.media[0]!;
+    draft = (await service.completeContributionUpload(userId, draft.submissionId, upload.uploadId, { dataBase64: bytes.toString("base64") }, "history-media:complete")).data;
+    const submitted = (await service.submitContribution(userId, draft.submissionId, draft.revision, "history-media:submit")).data;
+    const review = { resolution: state, reason: "请更换现场照片", reviewedAt: new Date().toISOString() };
+    const reviewed = { ...submitted, state, submissionState: state, review, attempts: legacy ? [] : submitted.attempts.map(attempt => ({ ...attempt, review })), workingCopyFromAttemptId: legacy ? null : submitted.attempts[0]!.attemptId, revision: submitted.revision + 1 };
+    await service.repository.saveContributionDraft(userId, reviewed, submitted.revision, "history-media:review-fixture");
+    const frozen = structuredClone(reviewed.attempts);
+    const removed = (await service.removeContributionUpload(userId, draft.submissionId, upload.uploadId, reviewed.revision, "history-media:remove")).data;
+    assert.deepEqual(removed.media, []);
+    assert.deepEqual(removed.candidateProfile?.media.site, []);
+    assert.equal(removed.submissionState, state);
+    assert.deepEqual(removed.attempts, frozen);
+    assert.deepEqual((await service.removeContributionUpload(userId, draft.submissionId, upload.uploadId, reviewed.revision, "history-media:remove")).data, removed);
+    const retainedImage = await service.getContributionMedia(userId, draft.submissionId, upload.uploadId);
+    assert.ok(Buffer.from(retainedImage.data.dataBase64, "base64").length);
+    const stranger = await identity(service, `history-stranger-${state}`);
+    await assert.rejects(service.getContributionMedia(stranger, draft.submissionId, upload.uploadId), /contribution_upload_not_found/);
+    const otherDraft = (await service.createContributionDraft(userId, input, "history-media:other")).data;
+    await assert.rejects(service.getContributionMedia(userId, otherDraft.submissionId, upload.uploadId), /contribution_upload_not_found/);
+    const next = (await service.submitContribution(userId, draft.submissionId, removed.revision, "history-media:resubmit")).data;
+    assert.deepEqual(next.attempts.slice(0, frozen.length), frozen);
+    assert.deepEqual(next.attempts[frozen.length]!.snapshot.media, []);
+    await service.repository.expireContributionUploads(new Date(Date.parse(upload.expiresAt) + 1).toISOString());
+    await service.contributions.cleanupExpiredUploads();
+    const priorImage = await service.getContributionMedia(userId, draft.submissionId, upload.uploadId);
+    assert.ok(Buffer.from(priorImage.data.dataBase64, "base64").length);
+    const object = await service.repository.getContributionUploadObject(upload.uploadId);
+    assert.ok(object);
+    await service.repository.deleteAccount(userId, "history-media:erase");
+    await service.contributions.cleanupExpiredUploads();
+    assert.equal(await service.contributions.mediaStore.read(object.objectKey), null, "account erasure still owns removed historical media");
+    await assert.rejects(service.getContributionMedia(userId, draft.submissionId, upload.uploadId), /contribution_upload_not_found/);
+  } finally { await service.onModuleDestroy(); }
+});

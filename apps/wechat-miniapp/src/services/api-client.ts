@@ -12,7 +12,8 @@ import { createPlanChecklistClient } from "./plan-checklist-client";
 import { createPlanSubscriptionClient } from "./plan-subscription-client";
 import { createAuthenticatedOperationRequester } from "./authenticated-operation";
 import Taro from "@tarojs/taro";
-import { clearPlanSaveRecovery, createPlanSaveRetry, planSaveBelongsTo } from "./plan-save-retry";
+import { planSaveBelongsTo } from "./local-draft-keys";
+import type { PlanSaveInput } from "./plan-save-retry";
 import { planChecklistBelongsTo } from "../content/plan/detail/plan-checklist";
 import { planEventSelectionBelongsTo } from "../content/plan/detail/plan-event-selection";
 import { importLocalDraftBelongsTo } from "../content/import/local-draft";
@@ -69,6 +70,7 @@ import {
 import { recordAcceptanceDiagnostic } from "./acceptance-diagnostics";
 import { createDeviceFailureReporter } from "./device-request-diagnostic";
 import { miniappQueryClient } from "./query-client";
+import { useAppStore } from "@/state/app-store";
 import { createResponseCache, isResponseEnvelope, MAX_STALE_AGE_MS, type CachedResponse } from "./response-cache";
 import { createMutationRetry } from "./mutation-retry";
 import {
@@ -169,7 +171,7 @@ function isEnvelope(value: unknown): value is AnyEnvelope {
   return isResponseEnvelope(value);
 }
 
-function idempotencyKey(prefix: string) {
+export function idempotencyKey(prefix: string) {
   return (
     prefix +
     ":" +
@@ -226,7 +228,8 @@ function readStoredSession(): AuthSessionData | null {
       !Number.isFinite(Date.parse(session.expiresAt)) ||
       Date.parse(session.expiresAt) <= Date.now() + SESSION_EXPIRY_SKEW_MS
     ) {
-      Taro.removeStorageSync(SESSION_STORAGE_KEY);
+      try { Taro.removeStorageSync(SESSION_STORAGE_KEY); } catch { /* No stale identity may remain active in memory. */ }
+      useAppStore.getState().bindAccount(null);
       return null;
     }
     return session;
@@ -242,6 +245,8 @@ export function currentDraftUserId(): string | null {
 
 function clearStoredSession() {
   sessionPromise = null;
+  if (useAppStore.getState().accountOwnerId !== erasedStoredAccountId)
+    useAppStore.getState().bindAccount(null);
   try {
     Taro.removeStorageSync(SESSION_STORAGE_KEY);
     return true;
@@ -305,6 +310,7 @@ async function request<T>(
     session?: AuthSessionData | null;
     reauthenticationCode?: string;
     cache?: boolean;
+    independent?: boolean;
   } = {},
 ): Promise<ApiEnvelope<T>> {
   if (options.signal?.aborted)
@@ -342,12 +348,13 @@ async function request<T>(
     const onAbort = () => cancel("query_signal");
 
     const method = options.method ?? "GET";
-    release = requests.register(key, cancel, method === "GET");
+    release = requests.register(key, cancel, method === "GET", options.independent === true && method === "GET");
     recordAcceptanceDiagnostic(key, "start", Taro.getEnv());
 
     const scope = options.session?.userId ?? "anonymous";
+    const apiBase = __MINIAPP_API_BASE__.replace(/\/+$/u, "");
     const exactCacheKey =
-      responseCacheKey(key, path) + ":" + String(scope);
+      responseCacheKey(key, apiBase, path) + ":" + String(scope);
     const cached =
       method === "GET" && options.cache !== false
         ? responseCache.get(exactCacheKey)
@@ -415,14 +422,16 @@ async function request<T>(
         return;
       }
       task = Taro.request<ApiEnvelope<T> | ApiError>({
-        url: __MINIAPP_API_BASE__.replace(/\/+$/u, "") + path,
+        url: apiBase + path,
         method,
         timeout: 10_000,
         header,
-        ...(options.body === undefined ? {} : { data: options.body }),
+        // WeChat's request transport can send a bodyless POST as invalid input.
+        // An empty object preserves the operation's no-payload contract.
+        ...(options.body === undefined ? (method === "POST" ? { data: {} } : {}) : { data: options.body }),
         success(response) {
           finish(() => {
-            if (response.statusCode === 304 && cached && responseCache.isCurrent(exactCacheKey, cached, cacheFence)) {
+            if (response.statusCode === 304 && cached && responseCache.isCurrent(exactCacheKey, cached, cacheFence, options.independent === true)) {
               recordAcceptanceDiagnostic(key, "success", "not_modified");
               resolve(cached.envelope as ApiEnvelope<T>);
               return;
@@ -532,7 +541,10 @@ export const { getAccountProfile, saveAccountNickname, getAccountAvatar, saveAcc
 async function ensureSession(force = false): Promise<AuthSessionData> {
   if (!force) {
     const stored = readStoredSession();
-    if (stored) return stored;
+    if (stored) {
+      useAppStore.getState().bindAccount(stored.userId);
+      return stored;
+    }
     if (sessionPromise) return sessionPromise;
   } else {
     clearStoredSession();
@@ -554,6 +566,7 @@ async function ensureSession(force = false): Promise<AuthSessionData> {
     if (result.data.userId === erasedStoredAccountId)
       throw new Error("account_identity_revoked");
     Taro.setStorageSync(SESSION_STORAGE_KEY, result.data);
+    useAppStore.getState().bindAccount(result.data.userId);
     return result.data;
   })();
   try {
@@ -629,7 +642,8 @@ export async function restoreObservationContext(
             wgs84: context.routeOrigin.wgs84,
             source: context.routeOrigin.source,
             ...(context.timezone === "Asia/Hong_Kong" ||
-            context.timezone === "Asia/Shanghai"
+            context.timezone === "Asia/Shanghai" ||
+            context.timezone === "Asia/Macau"
               ? { timezoneHint: context.timezone }
               : {}),
           },
@@ -852,9 +866,11 @@ export function getSpotSite(spotId: string, signal?: AbortSignal) {
 
 export const { getSpotRecentWeather, getSpotAirQuality } = createSpotEnvironmentClient(requestOperation);
 
-export function getSpotContributionMedia(spotId: string, uploadId: ContributionUploadId) {
+export function getSpotContributionMedia(spotId: string, uploadId: ContributionUploadId, signal?: AbortSignal) {
   return requestOperation(`spot-contribution-media:${spotId}:${uploadId}`, "spotContributionMediaGet", {
+    independent: true,
     pathParams: { spotId, uploadId },
+    ...(signal ? { signal } : {}),
   });
 }
 
@@ -1041,6 +1057,7 @@ export async function getUserLibrary(signal?: AbortSignal, expectedUserId?: stri
 export function getPreferences(signal?: AbortSignal) {
   return requestOperation("preferences", "preferencesGet", {
     auth: "REQUIRED",
+    cache: false,
     ...(signal ? { signal } : {}),
   });
 }
@@ -1121,6 +1138,10 @@ export async function deleteAccount() {
   return { ...result, localAccountReset, localCleanupComplete };
 }
 
+export async function ensureFavoriteOwner() {
+  return (await ensureSession()).userId;
+}
+
 export async function setFavoriteRelation(
   spotId: string,
   favorite: boolean,
@@ -1156,8 +1177,28 @@ export async function getPlans(signal?: AbortSignal, expectedUserId?: string) {
   return result;
 }
 
-const retryPlanSave = createPlanSaveRetry(Taro, () => idempotencyKey("plan-save"),
-  error => error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408);
+export async function createPlanShare(planId: string, expectedUserId?: string) {
+  const session = await ensureSession();
+  const owner = expectedUserId ?? session.userId;
+  if (session.userId !== owner) throw new Error("账号已变化，请重新打开计划。");
+  const result = await requestOperation("plan-share:" + planId, "planSharePost", {
+    auth: "REQUIRED", pathParams: { planId },
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开计划。");
+  return result;
+}
+
+export function getSharedPlan(token: string, signal?: AbortSignal) {
+  return requestOperation("shared-plan:" + token, "sharedPlanGet", {
+    auth: "NONE", cache: false, pathParams: { token }, ...(signal ? { signal } : {}),
+  }, false);
+}
+
+export function getSharedSpot(spotId: string, signal?: AbortSignal) {
+  return requestOperation("shared-spot:" + spotId, "sharedSpotGet", {
+    auth: "NONE", cache: false, pathParams: { spotId }, ...(signal ? { signal } : {}),
+  }, false);
+}
 
 export const planReminderSubscription = createPlanSubscriptionClient({
   request: requestOperation, currentUser: currentDraftUserId,
@@ -1178,52 +1219,36 @@ export const setPlanChecklistCompletion = createPlanChecklistClient({
   },
 });
 
-export function clearObservationPlanSaveRecovery(expectedUserId: string) {
-  if (currentDraftUserId() !== expectedUserId) throw new Error("账号已变化，请重新打开计划。");
-  clearPlanSaveRecovery(Taro, expectedUserId);
+/** Single authenticated HTTP attempt; the plan editor owns durable recovery. */
+export async function sendObservationPlanSave(original: PlanSaveInput, retryKey: string, owner: string) {
+  const session = await ensureSession();
+  if (session.userId !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  const result = await requestOperation("plan-mutation:" + original.planId, "planPut", {
+    auth: "REQUIRED", pathParams: { planId: original.planId },
+    body: {
+      spotId: original.spotId as SpotId,
+      observationContextId: original.observationContextId as ObservationContext["contextId"],
+      localDate: original.localDate, localTime: original.localTime,
+      ...(original.timing ? { timing: original.timing } : {}),
+      ...(original.travel ? { travel: original.travel } : {}),
+      ...(original.reminders === undefined ? {} : { reminders: original.reminders }),
+      ...(original.eventOccurrenceIds === undefined ? {} : { eventOccurrenceIds: original.eventOccurrenceIds }),
+      notes: original.notes, expectedRevision: original.expectedRevision,
+    }, idempotencyKey: retryKey,
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  return result;
 }
 
-export async function saveObservationPlan(
-  plan: Omit<
-    ObservationPlan,
-    "revision" | "updatedAt" | "contextSnapshot"
-  >,
-  observationContextId: ObservationContext["contextId"],
-  expectedRevision: number | null,
-  expectedUserId?: string,
-  contextIdentity = observationContextId as string,
-) {
-  const session = await ensureSession();
-  if (expectedUserId && session.userId !== expectedUserId) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
-  const result = await retryPlanSave(session.userId, { ...plan, observationContextId, expectedRevision, contextIdentity }, (retryKey, original) => requestOperation(
-    "plan-mutation:" + original.planId,
-    "planPut",
-    {
-      auth: "REQUIRED",
-      pathParams: { planId: original.planId },
-      body: {
-        spotId: original.spotId as SpotId,
-        observationContextId: original.observationContextId as ObservationContext["contextId"],
-        localDate: original.localDate,
-        localTime: original.localTime,
-        ...(original.timing ? { timing: original.timing } : {}),
-        ...(original.travel ? { travel: original.travel } : {}),
-        ...(original.reminders === undefined ? {} : { reminders: original.reminders }),
-        ...(original.eventOccurrenceIds === undefined ? {} : { eventOccurrenceIds: original.eventOccurrenceIds }),
-        notes: original.notes,
-        expectedRevision: original.expectedRevision,
-      },
-      idempotencyKey: retryKey,
-    },
-    false,
-    session.userId,
-  ));
-  if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
-  miniappQueryClient.setQueryData<MiniappApiResponse<"plansGet">>(["plans", session.userId], (previous) => previous ? {
-    ...previous, data: { ...previous.data, plans: [...previous.data.plans.filter((item) => item.planId !== result.data.planId), result.data] },
-  } : previous);
+/** A historical receipt must never be installed as the current plan list. */
+export async function getCurrentPlansAfterSave(owner: string) {
+  const current = await requestOperation("plans", "plansGet", { auth: "REQUIRED", cache: false }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  if (current.dataState !== "FRESH") throw new Error("暂时无法确认当前计划，上次保存请求仍保留。");
+  miniappQueryClient.setQueryData(["plans", owner], current);
   await invalidateAfter("PLAN");
-  return result;
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  return current;
 }
 
 export async function deleteObservationPlan(planId: string, expectedUserId?: string) {
@@ -1449,12 +1474,18 @@ export async function createContributionDraft(
   });
 }
 
-export async function submitFormalContribution(input: ContributionFormalSubmitRequest) {
+export async function ensureContributionOwner() {
+  const initiatingOwner = currentDraftUserId();
+  const session = await ensureSession();
+  if (initiatingOwner && initiatingOwner !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈。");
+  return session.userId;
+}
+
+export async function submitFormalContribution(input: ContributionFormalSubmitRequest, retryKey: string, owner: string) {
   const response = await requestOperation("formal-contribution-submit", "formalContributionSubmitPost", {
-    body: input,
-    auth: "REQUIRED",
-    idempotencyKey: idempotencyKey("formal-contribution-submit"),
-  });
+    body: input, auth: "REQUIRED", idempotencyKey: retryKey,
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对反馈结果。");
   invalidateApiCache("contributions");
   await miniappQueryClient.invalidateQueries({ queryKey: ["contributions"] });
   return response;
@@ -1469,6 +1500,7 @@ export async function getContributionMedia(
   const session = await ensureSession();
   const owner = expectedUserId ?? session.userId;
   const result = await requestOperation(`contribution-media:${submissionId}:${uploadId}`, "contributionMediaGet", {
+    independent: true,
     pathParams: { submissionId, uploadId },
     auth: "REQUIRED",
     ...(signal ? { signal } : {}),
@@ -1478,17 +1510,17 @@ export async function getContributionMedia(
   return result;
 }
 
-export function createFormalUploadIntent(input: ContributionFormalUploadIntentRequest) {
-  return requestOperation("formal-upload-intent", "formalContributionUploadIntentPost", { body: input, auth: "REQUIRED", idempotencyKey: idempotencyKey("formal-upload-intent") });
+export function createFormalUploadIntent(input: ContributionFormalUploadIntentRequest, retryKey: string, owner: string) {
+  return requestOperation("formal-upload-intent", "formalContributionUploadIntentPost", { body: input, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
 }
-export function createFormalContributionUpload(intentId: string, input: ContributionFormalUploadSessionRequest) {
-  return requestOperation(`formal-upload:${intentId}`, "formalContributionUploadPost", { pathParams: { intentId }, body: input, auth: "REQUIRED", idempotencyKey: idempotencyKey("formal-upload") });
+export function createFormalContributionUpload(intentId: string, input: ContributionFormalUploadSessionRequest, retryKey: string, owner: string) {
+  return requestOperation(`formal-upload:${intentId}`, "formalContributionUploadPost", { pathParams: { intentId }, body: input, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
 }
-export function completeFormalContributionUpload(intentId: string, uploadId: string, input: ContributionFormalUploadCompleteRequest) {
-  return requestOperation(`formal-upload-complete:${uploadId}`, "formalContributionUploadPut", { pathParams: { intentId, uploadId }, body: input, auth: "REQUIRED", idempotencyKey: idempotencyKey("formal-upload-complete") });
+export function completeFormalContributionUpload(intentId: string, uploadId: string, input: ContributionFormalUploadCompleteRequest, retryKey: string, owner: string) {
+  return requestOperation(`formal-upload-complete:${uploadId}`, "formalContributionUploadPut", { pathParams: { intentId, uploadId }, body: input, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
 }
-export function removeFormalContributionUpload(intentId: string, uploadId: string, expectedRevision: number) {
-  return requestOperation(`formal-upload-remove:${uploadId}`, "formalContributionUploadDelete", { pathParams: { intentId, uploadId }, body: { expectedRevision }, auth: "REQUIRED", idempotencyKey: idempotencyKey("formal-upload-remove") });
+export function removeFormalContributionUpload(intentId: string, uploadId: string, expectedRevision: number, retryKey: string, owner: string) {
+  return requestOperation(`formal-upload-remove:${uploadId}`, "formalContributionUploadDelete", { pathParams: { intentId, uploadId }, body: { expectedRevision }, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
 }
 
 const retryContributionUpdate = createMutationRetry(() => idempotencyKey("contribution-update"));

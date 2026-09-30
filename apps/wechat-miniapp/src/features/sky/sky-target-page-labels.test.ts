@@ -8,6 +8,7 @@ import { resolvedSkyBodyReferences, skyTargetLabelSuppressed } from "./sky-body-
 import { paintedSkyPointVisible, type SkyPickSnapshot } from "./sky-object-picking";
 import { createSkyViewBasis } from "./sky-view-projection";
 import type { SkyScenePaintedSources } from "./sky-scene-render";
+import { skyPresentedTimeCurrent } from "./sky-observation-time";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
   readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -35,10 +36,14 @@ assert.ok(initializer);
 assert.ok(presentedSceneInitializer);
 assert.ok(visibilityInitializer);
 const selection = ts.transpileModule(
-  `const presentedSceneCurrent = ${presentedSceneInitializer.getText(source)};
+  `const rawReportData = orientationData;
+   const presentedSceneCurrent = ${presentedSceneInitializer.getText(source)};
    const presentedSkyVisibility = ${visibilityInitializer.getText(source)};
    const selected = ${initializer.getText(source)}; selected`,
   { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+const evaluateSelection = (context: object) => vm.runInNewContext(selection, {
+  skyPresentedTimeCurrent, timePlaying: false, timeIntent: { runStartAt: null }, ...context,
+});
 const openSnapshot: SkyPickSnapshot = { frameAt: "t", catalogVersion: "v", catalogHash: "h",
   width: 390, height: 844, objects: [] };
 
@@ -52,7 +57,7 @@ test("planet and other target labels only follow the native frame actually prese
     presentedFov: 45, currentViewBasis: createSkyViewBasis(0,135,0)!, presentedCenter: { x: 195, y: 422 } };
   const labels = (frame: { data: object; frameAt: string; mode: string;
     suppressedBodyReferences?: readonly string[] } | null,
-    canvasError: string | null = null) => vm.runInNewContext(selection,
+    canvasError: string | null = null) => evaluateSelection(
     { ...context, skyTargetLabelSuppressed, paintedSkyPointVisible,
       paintedSkyObjectsRef: { current: openSnapshot }, presentedSkyFrame: frame, canvasError }) as Array<{ target: { targetId: string } }>;
   const current = { data: reportData, frameAt: at, mode: "NIGHT",landscape:null };
@@ -136,7 +141,7 @@ test("a submitted resolved Venus disc replaces only its old label, and failure r
   const at = "2026-09-21T04:00:00.000Z", data = {};
   const targets = [{ targetId: "target:venus", type: "PLANET" },
     { targetId: "target:jupiter", type: "PLANET" }, { targetId: "other", type: "EVENT" }];
-  const labels = (resolvedBodyReferences: readonly string[]) => Array.from(vm.runInNewContext(selection, {
+  const labels = (resolvedBodyReferences: readonly string[]) => Array.from(evaluateSelection( {
     skyTargetLabelSuppressed, paintedSkyPointVisible, paintedSkyObjectsRef: { current: openSnapshot },
     orientationTargets: targets, orientationData: data, row: { at }, mode: "NIGHT", canvasError: null,
     presentedSkyFrame: { data, frameAt: at, mode: "NIGHT", resolvedBodyReferences,landscape:null },
@@ -152,7 +157,7 @@ test("target labels use the completed virtual scene mask rather than the current
   const at = "2026-09-28T16:00:00.000Z", data = {};
   const target = { targetId: "other", type: "EVENT" };
   const view = { basis: createSkyViewBasis(324.462322, 100, 0)!, verticalFovDeg: 85 };
-  const labels = (enabled: boolean, intent: boolean) => { const landscape = enabled ? PROCEDURAL_SKY_LANDSCAPE : null; return Array.from(vm.runInNewContext(selection, {
+  const labels = (enabled: boolean, intent: boolean) => { const landscape = enabled ? PROCEDURAL_SKY_LANDSCAPE : null; return Array.from(evaluateSelection( {
     skyTargetLabelSuppressed, paintedSkyPointVisible,
     paintedSkyObjectsRef: { current: { ...openSnapshot, view: { ...view, landscape } } },
     landscapeEnabled: intent, orientationTargets: [target], orientationData: data, row: { at },
@@ -168,7 +173,7 @@ test("target labels use the completed virtual scene mask rather than the current
 test("a later native mask cannot hide a label before its corresponding DOM camera commit", () => {
   const at="2026-09-28T16:00:00.000Z",data={};
   const view={basis:createSkyViewBasis(324.462322,100,0)!,verticalFovDeg:85};
-  const selected=vm.runInNewContext(selection,{
+  const selected=evaluateSelection({
     skyTargetLabelSuppressed,paintedSkyPointVisible,
     // The mutable Canvas ref has advanced; React is still presenting the
     // previous camera and its successfully painted unobstructed scene.

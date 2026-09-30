@@ -2,13 +2,15 @@ import { Input, Picker, Text, View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { useEffect, useRef, useState } from "react";
 import { SoftButton } from "@/components/soft-button";
+import { SemanticIcon } from "@/components/semantic-asset";
+import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { choosePlatformLocation } from "@/services/platform-location";
 import { currentDraftUserId, errorMessage } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { PLAN_TRAVEL_ORIGIN_MAX_LENGTH, type PlanTravel, type PlanTravelMode } from "@starward/miniapp-contracts";
 import { emptyPlanTravel, planTravelModeLabel } from "./plan-travel";
 
-export { emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel } from "./plan-travel";
+export { emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel, planTravelNeedsExplicitOrigin } from "./plan-travel";
 
 const modes: readonly { value: PlanTravelMode; label: string }[] = [
   { value: "DRIVING", label: "驾车" },
@@ -23,6 +25,7 @@ export function PlanTravelFields({ value, disabled, ownerKey, onChange }: {
   onChange(value: PlanTravel): void;
 }) {
   const [choosing, setChoosing] = useState(false);
+  const handoff = useRedLightHandoff();
   const pending = useRef(false);
   const live = useRef({ value, disabled, ownerKey });
   live.current = { value, disabled, ownerKey };
@@ -38,7 +41,9 @@ export function PlanTravelFields({ value, disabled, ownerKey, onChange }: {
     const current = () => mounted.current && !live.current.disabled && live.current.ownerKey === original.ownerKey &&
       live.current.value === original.value && currentDraftUserId() === account && Taro.getCurrentPages().at(-1) === page;
     try {
-      const selected = await choosePlatformLocation({ isCurrent: current });
+      const allowed = await handoff.confirm("微信选点界面可能较亮，无法跟随红光模式。");
+      if (!allowed || !current()) return;
+      const selected = await choosePlatformLocation({ isCurrent: current, allowUnthemedHandoff: true });
       if (!selected || !current()) return;
       onChange({ ...original.value, origin: selected.label.slice(0, PLAN_TRAVEL_ORIGIN_MAX_LENGTH),
         originLocation: { source: "WECHAT_CHOOSE_LOCATION", address: selected.address.slice(0, 500), wgs84: selected.wgs84 } });
@@ -49,7 +54,8 @@ export function PlanTravelFields({ value, disabled, ownerKey, onChange }: {
     } finally { pending.current = false; if (mounted.current) setChoosing(false); }
   };
   const modeIndex = Math.max(0, modes.findIndex(item => item.value === value.mode));
-  return <View className="plan-fields-card plan-travel-fields">
+  return <View className="plan-travel-fields">
+    {handoff.warning}
     <View className="plan-field-row">
       <Text className="plan-field-row__label">出发地</Text>
       <Input className="plan-field-input" value={value.origin} maxlength={PLAN_TRAVEL_ORIGIN_MAX_LENGTH}
@@ -67,7 +73,7 @@ export function PlanTravelFields({ value, disabled, ownerKey, onChange }: {
       <Picker mode="selector" range={modes.map(item => item.label)} value={modeIndex} disabled={disabled}
         aria-label={`交通方式：${planTravelModeLabel(value.mode)}`}
         onChange={event => onChange({ ...value, mode: modes[Number(event.detail.value)]?.value ?? value.mode })}>
-        <View className="plan-field-value plan-field-value--select focus-ring"><Text>{planTravelModeLabel(value.mode)}</Text><Text aria-hidden="true">⌄</Text></View>
+        <View className="plan-field-value plan-field-value--select focus-ring"><Text>{planTravelModeLabel(value.mode)}</Text><SemanticIcon name="chevron-down" className="plan-field-row__chevron" /></View>
       </Picker>
     </View>
   </View>;

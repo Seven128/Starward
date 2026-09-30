@@ -36,6 +36,19 @@ function writeJsonFile(filePath: string, data: string) {
   });
 }
 
+function removeJsonFile(filePath: string) {
+  return new Promise<void>((resolve, reject) => {
+    Taro.getFileSystemManager().unlink({
+      filePath,
+      success: () => resolve(),
+      fail: (result) => {
+        if (/ENOENT|no such file|file not exist|文件不存在/iu.test(result.errMsg)) resolve();
+        else reject(new Error(result.errMsg));
+      },
+    });
+  });
+}
+
 export default function SettingsPage() {
   const themeClass = useThemeClass();
   const preferences = useAppStore((state) => state.preferences);
@@ -53,11 +66,15 @@ export default function SettingsPage() {
   const sheetCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const accountActionPending = useRef(false);
   const [modeGestureCaptured, setModeGestureCaptured] = useState(false);
+  const [scrollTop, setScrollTop] = useState(0);
   const {
     updatePreference,
     syncNow,
     status: preferenceSyncStatus,
   } = usePreferencesSync();
+  const needsAccountRecovery = preferenceSyncStatus.startsWith("账户尚未恢复");
+  const canRetryPreferenceSync = preferenceSyncStatus.includes("仅保存在本机") ||
+    preferenceSyncStatus.includes("等待重试");
 
   useEffect(() => () => { if (sheetCloseTimer.current) clearTimeout(sheetCloseTimer.current); }, []);
   useDidHide(() => {
@@ -89,6 +106,7 @@ export default function SettingsPage() {
     accountActionPending.current = true;
     setDataAction("EXPORT");
     let filePath: string | null = null;
+    let fileWritten = false;
     try {
       const response = await exportAccountData();
       const root = Taro.env.USER_DATA_PATH;
@@ -96,32 +114,45 @@ export default function SettingsPage() {
       const fileName = `starward-account-${response.data.generatedAt
         .replace(/[:.]/gu, "-")}.json`;
       const destination = `${root}/${fileName}`;
-      await writeJsonFile(destination, JSON.stringify(response.data, null, 2));
       filePath = destination;
+      await writeJsonFile(destination, JSON.stringify(response.data, null, 2));
+      fileWritten = true;
       await Taro.shareFileMessage({ filePath, fileName });
+      let cleanupFailed = false;
+      try { await removeJsonFile(filePath); filePath = null; }
+      catch { cleanupFailed = true; }
       const currentState = useAppStore.getState();
       for (const notification of currentState.notifications) {
-        if (notification.owner === "settings" && notification.dedupeKey === "settings-account-export-failed")
+        if (notification.owner === "settings" && ["settings-account-export-failed", "settings-account-export-cleanup-failed", "settings-account-exported"].includes(notification.dedupeKey ?? ""))
           currentState.dismissNotification(notification.id);
       }
       notify({
         owner: "settings",
-        placement: "floating",
-        tone: "success",
-        title: "账户数据已生成",
-        body: "账户数据文件已分享。",
+        placement: cleanupFailed ? "inline" : "floating",
+        tone: cleanupFailed ? "warning" : "success",
+        title: cleanupFailed ? "本机临时文件未清除" : "账户数据已生成",
+        body: cleanupFailed
+          ? "文件已分享，但账户数据仍留在本机临时文件中；请通过微信清理本小程序的数据。"
+          : "账户数据文件已分享。",
         dismissible: true,
-        dedupeKey: "settings-account-exported",
+        dedupeKey: cleanupFailed ? "settings-account-export-cleanup-failed" : "settings-account-exported",
       });
     } catch (error) {
+      let cleanupFailed = false;
+      if (filePath) {
+        try { await removeJsonFile(filePath); }
+        catch { cleanupFailed = true; }
+      }
       notify({
         owner: "settings",
         placement: "inline",
-        tone: filePath ? "warning" : "error",
-        title: filePath ? "文件已生成，尚未分享" : "账户数据导出失败",
-        body: filePath
-          ? "微信文件分享未完成；可再次点击下载并重试。"
-          : errorMessage(error),
+        tone: fileWritten || cleanupFailed ? "warning" : "error",
+        title: cleanupFailed ? "本机临时文件未清除" : fileWritten ? "文件分享未完成" : "账户数据导出失败",
+        body: cleanupFailed
+          ? "账户数据可能仍留在本机临时文件中；请通过微信清理本小程序的数据后重试。"
+          : fileWritten
+            ? "微信文件分享未完成；已清理本次临时文件，可重新下载。"
+            : errorMessage(error),
         dismissible: true,
         dedupeKey: "settings-account-export-failed",
       });
@@ -136,18 +167,37 @@ export default function SettingsPage() {
     if (accountActionPending.current) return;
     accountActionPending.current = true;
     setDataAction("CACHE");
+    const currentState = useAppStore.getState();
+    for (const notification of currentState.notifications) {
+      if (notification.owner === "settings" && ["settings-cache-cleared", "settings-cache-cleanup-incomplete"].includes(notification.dedupeKey ?? ""))
+        currentState.dismissNotification(notification.id);
+    }
     try {
-      const [, stateSaved] = await Promise.all([clearTemporaryApiCache(), clearLocalCache()]);
-      if (!stateSaved) throw new Error("local_state_cleanup_incomplete");
-      notify({ owner: "settings", placement: "floating", tone: "success",
-        title: "临时缓存已清除",
-        body: "本地地图、筛选、搜索与夜空临时缓存已清除；远端数据和草稿保持不变。",
-        dismissible: true, dedupeKey: "settings-cache-cleared" });
+      const [responseResult, stateResult] = await Promise.allSettled([clearTemporaryApiCache(), clearLocalCache()]);
+      const responseCleared = responseResult.status === "fulfilled";
+      const stateSaved = stateResult.status === "fulfilled" && stateResult.value;
+      if (responseCleared && stateSaved) {
+        notify({ owner: "settings", placement: "floating", tone: "success",
+          title: "临时缓存已清除",
+          body: "本地地图、筛选、搜索与夜空临时缓存已清除；远端数据和草稿保持不变。",
+          dismissible: true, dedupeKey: "settings-cache-cleared" });
+      } else {
+        notify({ owner: "settings", placement: "inline", tone: "warning",
+          title: stateSaved ? "响应缓存尚未清完" : responseCleared ? "本机状态尚未清完" : "临时缓存尚未清完",
+          body: stateSaved
+            ? "本机地图状态已重置，部分响应缓存可能仍有残留。请在下方重新点击清理本机缓存，或通过微信清理本小程序的数据。"
+            : responseCleared
+              ? "响应缓存已清除，本机状态未能完整保存清理结果。请在下方重新点击清理本机缓存，或通过微信清理本小程序的数据。"
+              : "本机状态与响应缓存可能仍有残留。请在下方重新点击清理本机缓存，或通过微信清理本小程序的数据。",
+          dismissible: true, dedupeKey: "settings-cache-cleanup-incomplete" });
+        setScrollTop(0);
+      }
     } catch {
       notify({ owner: "settings", placement: "inline", tone: "warning",
         title: "临时缓存尚未清完",
-        body: "当前地图状态已重置，但本地存储清理失败。请稍后重试，或通过微信清理本小程序的数据。",
+        body: "本机状态与响应缓存可能仍有残留。请在下方重新点击清理本机缓存，或通过微信清理本小程序的数据。",
         dismissible: true, dedupeKey: "settings-cache-cleanup-incomplete" });
+      setScrollTop(0);
     } finally {
       accountActionPending.current = false;
       setDataAction(null);
@@ -245,6 +295,8 @@ export default function SettingsPage() {
       />
       <ScrollView
         scrollY={!modeGestureCaptured}
+        scrollTop={scrollTop}
+        onScroll={event => setScrollTop(event.detail.scrollTop)}
         enhanced
         bounces={false}
         showScrollbar={false}
@@ -255,24 +307,17 @@ export default function SettingsPage() {
           {preferenceSyncStatus ? (
             <StatusPanel
               state={
+                needsAccountRecovery ||
                 preferenceSyncStatus.includes("仅保存在本机") ||
                 preferenceSyncStatus.includes("云端偏好已有更新")
                   ? "STALE"
                   : "READY"
               }
               detail={preferenceSyncStatus}
-              recoveryLabel={
-                preferenceSyncStatus.includes("仅保存在本机") ||
-                preferenceSyncStatus.includes("等待重试")
-                  ? "重试同步"
-                  : undefined
-              }
-              onRecover={
-                preferenceSyncStatus.includes("仅保存在本机") ||
-                preferenceSyncStatus.includes("等待重试")
-                  ? () => void syncNow()
-                  : undefined
-              }
+              recoveryLabel={needsAccountRecovery ? "返回我的" : canRetryPreferenceSync ? "重试同步" : undefined}
+              onRecover={needsAccountRecovery
+                ? () => void Taro.switchTab({ url: "/pages/my/index" })
+                : canRetryPreferenceSync ? () => void syncNow() : undefined}
             />
           ) : null}
 
@@ -288,7 +333,7 @@ export default function SettingsPage() {
           <SettingsDataActions dataAction={dataAction} openSheet={openSheet} />
         </View>
       </ScrollView>
-      {sheet ? <SettingsSheet sheet={sheet} locationPreference={preferences.locationPreference}
+      {sheet ? <SettingsSheet sheet={sheet} mode={mode} locationPreference={preferences.locationPreference}
         closing={sheetClosing}
         busy={dataAction !== null}
         close={closeSheet}

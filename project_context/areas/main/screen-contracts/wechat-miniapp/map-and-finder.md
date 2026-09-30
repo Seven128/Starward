@@ -6,6 +6,10 @@ The adopted daytime layer composition is reached through the sole [Map resource 
 
 ## Cross-Control And State Invariants
 
+正式点面板底部动作的装饰呈现由 `pages/map/spot-panel-actions` 负责：想去/云观星/分享顺序、32px可见面与44px命中保留；想去背景沿独立360ms实时进度原位淡化，不延迟共享820ms星体。DAY为修复正常取消文字近消失，含装饰的日/夜层在前/后半段分别淡出/淡入，中点为整面#757575；前半黑字、后半白字即时切换，不增加文字贴片或进度owner。普通字号DAY夜星的右侧点移至上下边缘，既有largeText使用左侧点集，真实避字矩形与窄屏仍须目标验证；当前设置无大字入口，不展开暂停的大字整组设计。日云与两套稀疏夜星为装饰，不代表天气；NIGHT/OBSERVATION原层轨迹与点集保持。仅在可见前台播放星点呼吸，隐藏、照片查看器、退出及减弱动效结束呈现工作；Map将同一可见性传给共享`FavoriteStar`，换点重建局部呈现身份。私有草稿/审核中面板保留静态动作背景与原业务。此前74058f6a/d056背景批已取得三主题未选中静态及账户偏好减弱的DAY添加/取消与样式/关系读回，本次整面修订未重验这些组合；2026-09-29本机normal DAY的新包添加识别序列及可见代绑定后的正常取消原生序列经独立实看，旧文字近消失缺陷在已观测范围复测通过。普通开发反馈不证明手机包字节/AppID、逐帧4.5、精确820ms/360ms/.94/360°、途中反向、largeText/≤340px、其它主题连续、隐藏返回及私有消费者，代码/静态样本不替代验收。最新实现与证据边界同见[采用资源记录](../../../../../docs/design-resources/wechat-miniapp/map/adopted/spot-information/README.md)。系统级减弱输入缺口由[共享状态与恢复](shared-state-and-recovery.md)记录，不以账户样本替代。
+
+- Map 的位置解析按当前选择意图、账号、默认区域重置及原生实例判断结果是否仍有效；新正式点、私人点、定位或编辑选择须撤销旧拖图队列及迟到响应。取消正式点解析时结束加载并提供重试，不留下永久 pending。拖图解析失败保留未确认的目标中心，通过行内“重试此位置”重新解析；单纯隐藏返回不丢失该恢复目标，换号或重置不能重试旧范围。成功仅清除对应位置失败提示，保留无关消息。持续恢复卡须避开地图工具的完整命中区域。
+
 - 2026-09-13新增`map-astronomical-event-entry`：在既有地图悬浮工具组加入采用的小流星`meteor`图标，与其他工具同尺度和44px命中区，标题/可访问名称为“天文事件”。主导航仍只有地图/我的，不把事件入口塞入搜索框。它打开[共享事件modal](shared-state-and-recovery.md#shared-astronomical-event-modal)的browse模式，只浏览，不选择或关联计划。随其余地图工具在大档点位面板中退场；modal打开时底层地图/面板保留位置但不可交互，关闭原样恢复。
 - 2026-09-13地形层需求：在现有`map-layer-selector`中增加独立的“地形”复选开关，优先呈现有来源的山体阴影/高程信息；观测叠加仍是光污染/云量单选，可以地形+光污染或地形+云量。没有新增“纯地形/无叠加”选项，不改变既有云量共享日期责任。地形与年度夜光不随小时标尺伪更新。开关以覆盖和实际原生地图能力为前提：当前视野无数据、加载失败或不支持时明确反馈，不把未显示当成平地。地形影像及夜光配准、层次/合法标识由[技术owner](../../../../architecture/runtime-and-domain.md#mini-program-terrain-and-directional-light-evidence)负责，设计预览不证明地图能力已接入。
 
@@ -13,6 +17,9 @@ The adopted daytime layer composition is reached through the sole [Map resource 
 - `spot-contribution-entry` and `my-contribution-entry` converge on one contribution owner. The information panel passes only its formal `spot_id` and display label; Map opens new-place intake; My opens the account’s creation and feedback records, including private drafts. Editable new-place drafts are explicitly saved to the remote database, support multiple account-scoped records and are owned by the existing contribution owner; upload sessions and submitted reports retain server revision/idempotency state. Approval means accepted for canonical owner processing, not that the report itself became a published fact; only an audited operations merge followed by a fresh complete publication assessment can change formal output.
 - `map-search-entry` is one fixed floating Search field on the Map. It contains no embedded filters, result list, filter summary grid, content Sheet or additional product launcher. A valid tap/keyboard/accessibility activation pushes `spot/search`, preserving the physical Map instance, camera, committed filters, selected time and analysis layer behind the child route. The entry is visible while the information panel is hidden, small or medium; it is absent at large. During large-to-smaller direct manipulation, Search and the other Map controls return in their near-top phase before media retracts; their hit/semantic state follows the same live transition without covering readable media. Search never overlaps readable media or appears as a disabled large-state duplicate. Map and Search states contain no trailing clear/close glyph.
 - `spot-search-shell` owns the dedicated child page and a keyboard-safe vertical content owner. `spot-search-field` is the same visual rectangle and rendered text as `map-search-entry`: route activation preserves its size, position, fill, border, radius, query-or-placeholder string, typography and input origin as a stationary transition anchor while the remaining Search content reveals below it. Only the leading slot crossfades from Search to a named Back glyph. That glyph, WeChat/system Back and the platform edge-back gesture all reverse the same child reveal and return to Map; cancellation restores the live Search state, and commit alone pops the route. The field receives entry autofocus and owns query/submit semantics without a trailing `x` action. A valid outside tap may blur the field, dismiss its IME and close `spot-search-query-overlay` without leaving Search or trapping focus; the field can be focused again. The compact overlay anchors directly below the field with body-level rows and quiet dividers; it does not introduce card-sized rows or move the filters. Pointer/keyboard suggestion choice commits before blur cleanup.
+- Search's native location choice can become a browsing `MAP_POINT` only after Observation Context accepts its location and timezone within declared coverage. The current Greater Bay Area trial does not assign the device timezone to an unsupported external coordinate. Outside the supported location range, the API reports a nonretryable input boundary with `CHOOSE_SUPPORTED_LOCATION`; Search keeps the prior formal point/viewport/context and result list, states that another supported place is needed, and allows a fresh choice. An actual transient provider or network failure remains separately retryable. A plan's independently saved departure origin is not a browsing Context and retains its own location semantics.
+
+2026-09-26 地点时区责任补查：Map/Search 目前会给`MAP_POINT`附设备时区提示；服务端在已能明确判为香港或内地的试点内部区域，必须先按地点判定，不能让用户设备时区覆盖地点身份。当前官方WEAPP模拟器在香港内部受控原生选点后实际取得`Asia/Hong_Kong`，地图仍是非正式点；边境狭窄二义带尚依赖提示，不据此声称行政边界精确解析，后续可信边界能力见架构owner。
 - `spot-search-filter-group` exposes the 14 current terminal filters in one compact horizontal scrolling line immediately below the field, with a fixed named filter trigger at its trailing edge. It is one filter family and one committed Map/Search store. Every strip `spot-search-filter-choice` commits immediately; retired driving-range and low-cloud parameters have no editor. Horizontal drag scrolls without selecting on release and does not steal vertical result scroll or platform Back; every terminal value remains keyboard/assistive reachable. Prefix icon and label keep normal flow; selected fill, boundary, small ornament and programmatic checked state communicate selection without changing geometry. The adopted resource owns the daytime composition; no “筛选条件” heading or extra explanatory band is added.
 - The filter trigger opens one modal sheet with exactly two classification levels: a category and its terminal choices. The five categories are `观测条件`, `到达方式`, `设施配套`, `场地偏好`, and `资料更新`; the 14 current values and their meaning are owned by the Filter semantics section below; the adopted Search visual structure supplies grouping/layout, not business predicates. Retired recommendation, driving-range and low-cloud controls are absent. Opening copies the committed selection into a sheet-local draft. Choice taps and `清空选择` edit only that draft; `确定` replaces the single committed selection and updates the strip/results. Close, backdrop, Escape or system Back cancels the draft, then restores trigger focus and the preserved query, committed filters, partition and scroll state. Back closes this sheet before attempting the Search route transition. Category switching only changes which terminal choices are visible, retains all draft selections and introduces no third level. The modal traps its own focus/interaction while open; it is separate from Map's bottom-presentation coordinator and cannot become a second persistent filter store.
 - `spot-search-result-list` has exactly two first-level partitions: `想去` contains favorited matching formal spots and `其他观星点` contains the remainder. Each compact body-level partition header remains a full 44px operable row, exposes expanded state and count, and uses a stable chevron. Expand/collapse preserves one retained item tree and animates the current measured block geometry plus opacity; it never remounts results, toggles the outgoing tree before measurement, changes card width, resets scroll or flashes a replacement surface. Rapid reversal retargets from the live block. City names are group headings or sticky labels inside the partition, not another disclosure layer. The page restores useful query/filter/partition/scroll state when returning from Map and hides scrollbar chrome without clipping touch/wheel/keyboard reachability. Empty/no-results, stale-summary, partial and dynamic-provider failure states preserve static formal-spot/favorite identity and expose safe recovery.
@@ -39,24 +46,40 @@ Avatar opens album / camera / cancel actions, then preview and explicit save; ni
 
 “观星点创建与反馈”替代“已提交”，具体状态与重提规则见下节。新地点的空白创建入口仍属 Map，正式点的首次反馈入口仍属该点信息组件；My 只管理已有记录，编辑与只读详情复用原表单职责。当前采用的 My 布局仍有效，入口新名称依本产品合同迁移；设计候选并不表示生产路由与 API 已完成迁移。
 
+2026-09-25 计划编辑恢复本机未保存草稿时，在首个可见字段前说明当前值来自草稿并需核对后保存；尤其过期日期不能被误认作新建默认值。草稿持久化失败也在该位置给出离开可能丢失输入的后果。普通编辑过程中的暂存状态可留在表单末尾，避免每次输入改变首屏布局。此提示只反映本机编辑状态，不声称计划已保存到服务端。
+
 
 ### 观星点创建与反馈
 
 本页管理本账号的创建记录与反馈编辑记录；不是公共动态或观星点修改历史。一级分组“创建的观星点”“反馈编辑”分别保留状态筛选与滚动位置；按最近保存/提交/审核变化时间倒序展示，返回编辑前的组、筛选、滚动和焦点。
 
 - 创建状态为“草稿、审核中、已上线、审核未通过”；反馈状态为“审核中、已通过、审核未通过”。“全部”只属筛选，不是业务状态。创建的已上线必须有正式发布回执与 formal spot_id；审查通过而尚未发布时，保留处理中语义（主状态审核中、实际详情可说明待发布），不能提前标为已上线。反馈已通过表示本次审核结论，不自行宣布正式内容已经合并上线。
-- 记录中的观星点卡片复用搜索页的基础卡片：区域、地点名称、地址与有图/无图构图保持一致，审核状态、时间、修改字段摘要、原因及操作扩展在其下方。点击仍按本记录状态进入编辑或只读内容，由明确动作文案解释目的，不因为外观复用改变权限或路由。设计预览共同实现由 [公共观星点卡片](../../../../../docs/design-resources/wechat-miniapp/shared/spot-card/README.md) 承载，生产组件仍需按现有Taro owner迁移。每条记录展示对应保存/提交/审核时间、文字与图标共同表达的状态；使用可归属的照片时才显示缩略图，不用附近点照片冒充。草稿“继续编辑”，审核中“查看提交内容/本次反馈”只读；已上线打开正式点信息组件；反馈已通过查看本次冻结快照和结果。空列表区分本筛选无记录与读取失败，失败可重试，不把失败当空。
+- 记录中的观星点卡片复用搜索页的基础卡片：区域、地点名称、地址与有图/无图构图保持一致，审核状态、时间、修改字段摘要、原因及操作扩展在其下方。点击仍按本记录状态进入编辑或只读内容，由明确动作文案解释目的，不因为外观复用改变权限或路由。设计预览共同实现由 [公共观星点卡片](../../../../../docs/design-resources/wechat-miniapp/shared/spot-card/README.md) 承载，生产组件仍需按现有Taro owner迁移。每条记录展示对应保存/提交/审核时间、文字与图标共同表达的状态；使用可归属的照片时才显示缩略图，不用附近点照片冒充。草稿“继续编辑”，审核中“查看提交内容/本次反馈”只读；已上线打开正式点信息组件，若当前正式点已不可公开查看，应明确说明并保留本次冻结记录入口，不能误报网络失败；反馈已通过查看本次冻结快照和结果。空列表区分本筛选无记录与读取失败，失败可重试，不把失败当空。
 - 两类审核未通过都显示服务端公开给提交者的具体原因，并提供“修改后再提交”。打开原表单，回填该次提交内容与必要审核意见；不要求重建地点或重复填所有字段。创建重提复用编辑观星点及手动远端保存；反馈重提复用完整反馈编辑、浅黄差异及文末原值→新值，无存草稿。
 - 未通过的旧提交和审核意见保持不可变；打开编辑得到工作副本。创建的手动保存更新同一逻辑记录的工作副本，主状态仍为审核未通过，不能清掉拒绝证据或伪装成新地点；首次未提交的草稿仍为草稿。再次提交生成新审核批次，成功回执后才进入审核中并冻结；传输重试不生成新批次。失败保留输入、媒体及原审核结果，返回/关闭未保存编辑仍走现有放弃修改确认。
-- 反馈重提以最新正式版本核对：保留用户已改字段；若正式资料期间改变，展示受影响的原值、当前正式值和用户修改，要求处理冲突后重提，不能全量覆盖别人已通过的修改。新批次绑定核对后的 baseline/baseRevision；旧批次对比不随之重算。同一用户×同一正式点最多一份审核中反馈的约束保持。
+- 反馈重提以最新正式版本核对：保留用户已改字段；若正式资料期间改变，展示受影响的原值、当前正式值和用户修改，要求处理冲突后重提，不能全量覆盖别人已通过的修改。选择当前资料后若已无实际差异，应说明本次无需提交并保留重新选择或返回入口，不创建空的审核提案，也不提示为可重试的服务故障。新批次同时冻结原始 baseline/用户提议与核对后的正式版本/实际接受的差异；本人只读页及审核摘要按实际接受的差异展示，已放弃的冲突值不得伪装成待审修改。旧批次对比不随之重算，缺少核对后版本的历史快照只能按其原始提交内容兼容显示。同一用户×同一正式点最多一份审核中反馈的约束保持。
 - 列表发起的重提成功展示该记录的审核中只读内容，并保留回到本列表的路径；Map/点信息组件发起的首次提交仍按各自原返回合同。涉及未提交草稿的地图展示继续由新增观星点合同拥有，不把列表作为第二草稿源。
 - 观星点修改历史由后续管理后台展示；小程序只展示当前记录内容、本次差异、审核原因与结果，不增加版本历史、审核批次时间线或后台操作入口。服务端历史保留与权限边界由 [Contribution revision](../../../../architecture/runtime-and-domain.md#contribution-revision-remote-drafts-and-frozen-field-edits) 拥有。
 
 2026-09-08 用户确认采用：[观星点创建与反馈唯一资源入口](../../../../../docs/design-resources/wechat-miniapp/contributions/ADOPTED.md)。覆盖两组状态列表、公共观星点卡片、审核意见扩展、两类未通过编辑及只读结果；返回保留组/筛选/滚动。复用反馈完整表单与搜索基础卡片。设计采用不证明服务端重提、冲突处理或生产页面迁移完成。
 
+2026-09-24 生产局部核查：创建记录卡片按冻结提交的候选名称/地址显示，草稿按当前编辑字段显示，选点原名只作选点来源；只读创建记录呈交本批冻结结构化字段，不再退到旧文字反馈说明。正式反馈仍保持正式点身份和原值→新值。WEAPP本机内存样本已核对无图、有图待审创建与一条正式反馈；有图卡片通过当前账户授权媒体接口懒读冻结提交所属照片，单次媒体失败显示可点重试并恢复。审核决定/重提后的照片归属、正式持久化、其它视口与真机尚未验证。搜索与记录当前共用Taro身份内容和样式，交互、审核扩展与媒体授权仍由各消费者负责；采用资源状态不因本次局部迁移改变。
+
+2026-09-25 生产局部核查：记录页的滚动容器保存创建/反馈各自位置，打开冻结详情再返回恢复当前筛选与原位置。官方 WEAPP 用只读无照片长列表和现有反馈记录抽样；真实审核历史规模、原生辅助焦点及真机滚动仍未验证。
+
+2026-09-25 记录详情局部修复：打开后的私有详情只保存当前账号和记录 ID，审核状态及意见从当前账号最新记录结果读取；记录消失或账号变化时不继续展示旧快照，提供明确返回/重取入口。官方 WEAPP 用受控只读审核变化、记录消失与恢复验证同一详情的显示，默认账户真实待审数据未更改。账号切换只有模型回归，真实双账号、正式审核转移和真机仍未验证；采用范围不变。
+
+2026-09-25 正式点反馈提交由内容分包的操作 owner 按账户与原样请求绑定重试键，主包接口只负责带身份的传输；页面同步拦截同帧重复提交，回执不明保留输入并提示核对或原样重试。照片意图/会话/完成/移除也按同一原则重试；会话回执不明时保留原请求参数和原图身份，已确认的未完成会话保留在当前编辑页，提供重新选择原图或放弃入口，完成前禁用提交。官方 WEAPP 在隔离 MEMORY_TEST 服务下验证正常上传、服务端201回执被代理丢弃后换临时文件名续传、完成503后续传及放弃未完成照片；默认服务的正式反馈已待审，重建后只读回显正常。正式 Postgres 持久化、冷启动续传、审核转移及真机仍未在此候选验证。采用设计范围未变，证据见任务 A11 台账。
+
+上传恢复动作由创建与反馈共用的媒体责任提供；新增点位的现场、停车、洗手间分组保留各自关联，缩略图可见也不能隐藏未完成状态。校验定位到实际未完成分组。恢复失败时有界回读同账号、同记录的媒体状态和版本，保留未保存字段；已过期会话要求重新选图，不持续重试旧会话，记录进入不可编辑状态则退出旧表单。记录读取失败与已确认空列表分别显示，失败不得当作没有记录。
+
+独立编辑页在成功提交及冷重开后使用记录页同一冻结详情；详情仍受当前账号、记录身份及最新审核版本约束，缺失、失败或换号不展示旧私有快照。Map 正常提交继续执行下节既有标记/面板流程；在编辑期间记录已接受或撤回时，旧表单不再可写，提供返回地图入口。可编辑新增点位的底部保持保存/提交一行，删除草稿在正文，审核原因位于编辑字段之前。内容分包持有完整记录详情，主包编辑责任不反向引入记录列表。
+
 
 ## 新增观星点
 唯一采用入口为 [Map ADOPTED](../../../../../docs/design-resources/wechat-miniapp/map/ADOPTED.md) 的 add-spot 包。此采用不表示生产实现完成。
+
+当前生产呈现责任由 Map 的 `bottomPresentation` 与 `pages/map/spot-editor-presentation.ts` 协作：阶段仅描述同一个编辑器的入场、打开、退出，不成为第二可见状态。退出节点保留到动画完成，随后才清候选、切点，或处理成功提交后的居中与 medium 面板。表单忙碌/未保存确认及红光媒体交接仍归 contribution；Map 的唯一原生返回 owner 委派这些动作。隐藏、卸载及身份变化必须取消迟到的退出消费者；平台返回能力仍按实际嵌入形态和设备验证，不能由独立编辑页或合成事件替代。
 - 地图工具栏增加与定位、图层同尺寸的加号。点击后加号、搜索框及其余工具淡出；新增弹层上滑至原加号顶部位置，无拖动横杠、无拖动改变高度，关闭和系统返回下滑退出。
 - 地图保持可平移/缩放；选择地址只提交坐标和地址元数据并将候选点居中于弹层上方可见地图。候选灰色简化标记的名称实时来自“地点名称”，不是地址；空名称显示未命名状态，不生成正式点身份。手动地图操作不与自动居中竞争。
 - 新增/编辑表单、点信息、图层由同一个 bottomPresentation 协调器互斥，spot-editor 内区分新建与编辑，不新增旁路可见布尔。点击其他点、关闭或返回时，有未保存修改先确认放弃；确认前不提交选点、相机移动、Observation Context 或依赖请求切换。取消保留表单、媒体、候选位置和原呈现；确认后才关闭编辑并切到目标点的 medium 信息组件。关闭、切点和返回不触发隐式保存。常规正式点信息的搜索/工具可见性仍遵守其既有 extent 规则。
@@ -67,18 +90,42 @@ Avatar opens album / camera / cancel actions, then preview and explicit save; ni
 - 已保存且坐标有效的远端草稿作为灰色草稿点留在地图，只对拥有者可见，名称使用地点名称。点击展示复用的信息组件（草稿状态），无“我要反馈”；从编辑动作打开回填的“编辑观星点”表单。加号不恢复任何草稿。重新进入地图从服务端读取本账号的所有草稿；无有效坐标时不生成标记。草稿不开放想去/分享/计划/云观星，不伪造正式点身份。
 - 新增提交得到真实成功回执后，将该草稿原子转为审核中提案、从草稿集合移出（保留提交证据），将地图标记替换为正常星形点针加右上角微型时钟审核角标；其身份仍是 proposal_id，不是 formal spot_id。默认只在提交者账号地图可见，不进入公共点位查询。审查通过与正式发布仍按审核/发布职责区分，不由前端本地修改状态充当通过。
 - 提交成功按顺序收起新增弹层、居中对应提交点、弹起 medium 观星点信息组件。审核中复用正式组件的布局、extent与内容映射，标题紧邻“审核中”tag；底部隐藏“想去”和“分享”，保留“云观星”。缺失事实按正常缺失规则处理，不把附近正式点的数值复制为提案事实。
+- 已选中的草稿或审核中提案有自己的同一信息组件；此时正式点查询因新视野没有结果，也不能把地图整页“暂无数据”块叠在该组件后方。关闭组件后再按当前视野真实查询状态显示地图空态。
 - 审核中云观星使用经授权的提案坐标和同一Observation Context，不伪造正式spot_id；此范围扩大了原本仅正式点的云观星输入身份，仍由既有天空/报告职责接入与校验，不另起事实源。审核失败、待补充或后续发布从服务端状态更新，不能长期把终态仍标为审核中。
 - 点选其他正式观星点时恢复完整正式底栏且移除审核标签；提案信息组件不残留到正式点。提交失败不改变草稿点身份、不弹审核面板、不清草稿。
+
+2026-09-25 生产局部复核：本人有图审核中点位在官方 WEAPP 同一连接中连续完成中/小/大档拖动与返回，正式点完成中/大档往返，原内容和各自底部动作保留。返回中档后原生滚动指示条曾静置不消失；现在两个消费者都在可滚动档位变化时复用公共隐藏责任，模拟器原图复测无该竖条。此样本不证明真机手势、其他屏宽或待审弹性资源整体视觉采用。
 
 本轮地图增量的完整可编辑消费者由[当前Map资源入口](../../../../../docs/design-resources/wechat-miniapp/map/ADOPTED.md)导航。地形插入原基本信息之后、天文之前，不压缩或删去开放/合法进入/安全、路线、设施照片、联系方式、来源和更多场地信息；沿用原同一信息组件及三档拖动。流星工具遵循现有地图工具的extent/编辑互斥规则，不为使其常驻而重构工具栏。
 
 ## 观星计划：出行与观测的组织职责
+
+计划列表的“接下来/过往”和“进行中”由有效计划起止时刻决定；前台停留时在下一有效开始或结束边界更新，页面隐藏时释放计时器，返回时重新核对。不能用已选分区或定期轮询的旧标签代替当前时刻状态。无效历史时间仍留在可编辑入口供核对，不计入成就。
+
+列表空态须区分当前分区没有计划与整个列表没有计划；若另一分区有记录，说明其所在分区并提供切换入口，不把“接下来”为空写成“暂无观星计划”。当前点位筛选下只依据该点位的计划判断。
+
+### 2026-09-22 新增：个人行程成就与分享
+
+用户确认新增“个人行程成就”（入口在“我的”）、单个行程分享页、观星点分享页，沿用当前设计系统与已确认的舒适尺寸。成就按**已结束的计划自动统计**，不增加签到或实际完成确认门槛。计划时间经过不等于实际到访或观测成功；指标用“已结束计划 / 计划地点 / 关联天象”，不转换成已打卡或已观测。
+
+当前[可编辑待审资源](../../../../../docs/design-resources/wechat-miniapp/shared/journey-sharing-2026-09-22/README.md)包含成就票册、行程票、地点名片、海报和空/错/失效状态。资源审阅仍未构成整组视觉采用。2026-09-24 已补入成就、两类公开分享/接收页和原生微信转发入口。两类海报当前复用 `SharePoster` 的原生 Canvas2D 绘制和对象导出；持久外框负责尺寸、圆角与裁切，明确 bitmap 尺寸、绝对缩放与分段文字样式。单一 `createSharePosterOwner` 串行负责预览、导出与相册交接，同代有效绘制及导出完成后保留可见表面；未完成导出的失败/超时退休并暂停，显式重试、新内容或重新显示才能恢复。晚到节点查询须在改变尺寸/绘制前核对当前代，隐藏、换内容和卸载使旧结果失效。2026-09-29 日间正式点的单设备开发反馈已完整回读一份新相册 PNG 并查看字段、来源与稳定页；保存连续过程暴露闪空和忙碌文字不可读，当前修订后的连续保存、计划消费者及真实微信接收仍待复测。小程序码尚未实施。
+
+- 成就由现有计划身份与结束时刻派生，不维护第二份手工完成账本。当前设计按地点时区的结束年份分组、同一计划去重，地点按formal spot_id、天象按occurrence identity去重；无效时间、与已存开始快照不符、结束不晚于开始、已删除/取消和未结束计划不计入；列表、我的与成就共用有效时段判断。年份筛选作用于同组统计与记录，读取失败与无记录分开。前台停留的成就页应在下一份计划按当地时区结束时更新，隐藏时释放计时器；最新修订的结束时刻控制该边界。统计口径细节随本轮资源审阅，代表数字不是账户数据。
+- 行程票、成就记录和接收页共用计划公开摘要职责，保留具体计划/地点身份、显式日期、当地时区、计划时段和可选关联天象。默认不含出发地、当前位置、私人备注、清单、提醒、头像昵称。已保存计划可处于未来/进行中/已结束，统一明确计划时间语义，不把关联天象或算法预测宣称为观测实绩。公开行程读取时还须取正式地点**当前**发布状态；暂时关闭在接收页及海报显式警示，真正下架则旧行程凭据失效，不沿用保存计划时的旧场地状态。旧服务响应没有此新增字段时，以“开放状态未确认”提示核实，不推断开放。
+- 地点名片只使用正式公开信息；缺少可归属照片时用现有图标与抽象构图，不冒充实拍/真实地图。不复制陈旧天气，不恢复评分/最佳窗口；保留开放、进入、安全和来源。草稿、审核中提案仍不开放分享。
+- 两类分享共用公开对象摘要呈现、来源归因、失效恢复和海报组件；页面几何与字段是变体，不统一私人计划与地点事实的业务存储。流星雨、日月食等来源分别归因，海报保留适用署名。缺少身份、失效或下架不展示其他对象作为回退。行程分享保持前台时也须在服务端给定有效期耗尽后撤下公开卡、转发和海报；本页按服务端响应生成时间与有效期的相对时长安排清除，避免设备绝对时钟偏差。传输中已耗尽有效期的响应直接呈失效，不在收包后重新获得完整时长；隐藏页释放计时器，返回前台沿原请求重新校验。
+- 分享及公共海报动作沿用公共按钮的居中、按压、焦点与44px触控下限，保留原生转发、保存忙碌保护及红光明确继续/取消。保存开始取消尚未执行的旧预览 tick，忙碌按钮明确保留当前主题的文字/表面色，仍使用原生 disabled 与同步业务锁；已发出的相册调用保持锁至 settled，失效只阻止后续旧结果，不能撤销系统已发出的写入。2026-09-27 官方模拟器的两类分享/海报及红光取消局部复审继续有效；整体票面视觉采用和最新真机结果仍以共享资源入口的范围为准。
+- 关闭分享恢复原列表/计划详情/地图抽屉与滚动；查看地点保留对应formal spot身份，不无条件打开默认点。原型共用 `share-shell.mjs` 保留宿主；生产已实现计划分享凭据并在读取时核对修订和删除、地点公开状态；正式持久化、显式撤销及真机冷启动仍待验证。
+
+My保留原账号、近期计划及创建反馈职责，仅增加成就入口；不是新增一级Tab或公共动态。共享定义、可编辑资源、消费者及验证边界见上述资源包。
 
 天文事件更新采用自动获取为主、后台核对和补录为辅。已接入且稳定的结构化来源经校验可自动发布；首次接入、解析异常、关键时刻明显变化或来源冲突进入后台核对，上传不直接发布。小程序只读服务端已发布事件库，不依赖用户或生产服务访问海外。当前服务无法访问海外接口：优先验证国内权威资料；海外独有数据在采集能力未具备前使用已核对版本及必要的后台导入，不承诺持续自动更新。来源暂时失败不删除事件或用户关联；超出资料覆盖范围显示未获取，不能显示“没有天象”。事件更新保留来源和版本，不能自动修改用户计划的时间。技术与发布规则由 [事件采集与网络边界](../../../../architecture/runtime-and-domain.md#astronomical-event-ingestion-and-network-boundary) 统一维护。
 
 2026-09-08 requirement: 观星计划 organizes departure, travel, arrival and the chosen observing interval. It does not duplicate the full spot document or promise favorable weather. Display observing reference near the top, then travel arrangements, associated events, personal reminder checklists and remarks. Detail and editor share this information hierarchy. New plans have no mandatory system-authored checklist.
 
 A formal spot information panel exposes 观星计划 when the current account has associated plans, otherwise 去这观星 opens a new editor with that spot prefilled. Multiple associated plans must remain reachable; the adopted interaction uses a spot-filtered plan list, opening directly when there is only one. Back restores the actual opener, including selected spot, panel extent, observation context and useful scroll position; never hardcode My as the destination. Returning from plan editor/detail follows the same navigation stack; astronomical events now use the shared modal and its internal return stack. Existing formal-spot scope is retained; extending planning to private drafts or pending proposals needs a separate decision.
+
+计划新建身份随账户下的原草稿持久保留。保存结果未知后，即使修改输入或冷重开，也先核对原请求；当前权威计划与本页输入不一致时并列展示，用户确认后以同一计划身份和最新版本保存，不隐式另建或复活已删除计划。旧恢复记录不能可靠关联时提供明确选择；清除恢复信息并另建必须先取得最新列表、说明可能已有计划并由用户确认。成功保存只清理本次提交且期间未被其它编辑改写的草稿与对应请求。保存恢复编排由内容分包的 `content/plan/detail/plan-save-client.ts` 承担，账户 HTTP 与当前计划读回仍由 `services/api-client.ts` 负责；`plan-save-retry.ts` 和 `plan-draft.ts` 分别维护请求及草稿的持久恢复责任。
 
 Users choose observation start/end and departure time separately. End follows start, including crossing midnight; departure precedes observing start. Display the spot timezone and explicit dates. Departure origin and driving/public-transit/walking preference are manual plan fields. The adopted external-capability scheme removes road-distance/duration estimates and automatic arrival/departure calculation. Plan detail always displays saved travel choices even when origin differs from the current map, weather is missing or site information fails. It may show explicitly labelled straight-line distance only for the matching origin, and attributable last-road/parking/site facts independently. External navigation uses WeChat after the existing safety and coordinate-visibility checks. No route-provider availability condition blocks saving.
 
@@ -90,7 +137,7 @@ Astronomical events extend the existing reviewed meteor-event owner rather than 
 
 2026-09-13修订替换事件独立页面的入口/返回表达。地图和计划复用[共享modal契约](shared-state-and-recovery.md#shared-astronomical-event-modal)，计划事件选择由多关联追加改为可选的单选（0或1项）：新选择确认后替换计划草稿中的关联，最终计划保存才持久化。查看详情、切换目录日期、取消modal不能覆盖计划地点、观察时段、出发安排或其他未保存字段。计划只读详情中查看已关联事件也在同modal内，修改关联沿用既有“编辑计划”流程进入select-one，不能从只读详情暗中写库。
 
-历史多关联数据不得自动截断。读取保留既有ID与来源；新建和用户明确修改事件选择时使用0/1语义。旧计划仅修改其他字段时不顺带丢弃历史关联；明确替换时才收敛为单项，服务端迁移和兼容由技术owner维护。其他事件资料、年度范围、可见性及安全约束继续适用。
+历史多关联数据不得自动截断。读取保留既有ID与来源；新建和用户明确修改事件选择时使用0/1语义。旧计划仅修改其他字段时不顺带丢弃历史关联；其中事件退出当前目录时，关联原样保留仍可保存，页面如实说明资料不可用，不将历史身份当作可新增的目录选项。明确替换时才收敛为单项，服务端迁移和兼容由技术owner维护。其他事件资料、年度范围、可见性及安全约束继续适用。
 
 <!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/contributions/ADOPTED.md" -->
 <!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/feedback/ADOPTED.md" -->
@@ -149,6 +196,8 @@ The 2026-09-09 rules for Search, My ongoing plans, arrival/reminder states, sky 
 ## External Location And Travel Capabilities
 
 2026-09-14 adopts WeChat default native map with no custom base-map themes, platform location picking, own published-spot search and external navigation handoff. App-owned day/night/red-light UI themes remain independent. Do not purchase or request national POI, reverse geocoding or road-routing services for this scope. Retain origin, travel preference, manual departure and observation interval, notes/checklists, actual parking/entry/observing-position distinctions and verified last-segment access facts; remove road-distance/time filters and automatic departure/arrival inference. Labeled straight-line distance does not promise access. Formal/private-draft/pending identities and action authorization still govern their existing flows.
+
+The native map tiles remain brightly colored in the current WeChat simulator even when app chrome is themed. In observation mode, cover the native map with an opaque black/red app surface and keep formal-spot Search available, including a clear explanation and a route back to the map by changing mode. Do not present the unthemed map as a red-light-safe surface. Night mode retains the adopted native map; its tile luminance is a platform limitation that needs target-device review rather than an assumed dark map theme. System status bars, native sheets and handoffs also require device-level verification of their own color behavior.
 
 ## Selected Event Data
 

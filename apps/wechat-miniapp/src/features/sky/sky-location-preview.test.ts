@@ -6,6 +6,7 @@ import ts from "typescript";
 import { civilDateForInstant } from "../../components/observation-date.ts";
 import { exactSkyTimeFrame } from "./sky-time-frame.ts";
 import { createSkyObjectSelection } from "./sky-object-selection.ts";
+import { presentSkyTime } from "./sky-time-presentation.ts";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
   readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -67,7 +68,7 @@ test("locating and tracking a preview-time object keep the shared time ruler ava
 
 test("cross-midnight preview and cancel use the same report frame and local calendar date", () => {
   const names = ["committedAt", "committedRow", "committedIndex", "activeIndex", "row",
-    "isPreviewing", "presentedAt", "selectedCivilDate"];
+    "isPreviewing", "presentedAt", "selectedCivilDate", "timePresentation"];
   const declarations = page.body!.statements.filter(statement => ts.isVariableStatement(statement) &&
     statement.declarationList.declarations.some(declaration => names.includes(declaration.name.getText(source))));
   assert.equal(declarations.length, names.length);
@@ -79,7 +80,9 @@ test("cross-midnight preview and cancel use the same report frame and local cale
   const selected = (previewIndex: number | null) => vm.runInNewContext(selection, {
     contextComplete: true,
     activeContext: { selectedAtUtc: beforeMidnight }, routeContext: { selectedAt: beforeMidnight, timezone: "Asia/Shanghai" },
-    reportData: { hourly: [{ at: beforeMidnight }, { at: afterMidnight }] },
+    rawReportData: { hourly: [{ at: beforeMidnight }, { at: afterMidnight }] },
+    requestedAt: previewIndex === null ? beforeMidnight : afterMidnight,
+    presentSkyTime, useMemo: (compute: () => unknown) => compute(),
     previewIndex, exactSkyTimeFrame, civilDateForInstant,
   }) as { rowAt: string; selectedCivilDate: string; isPreviewing: boolean; activeIndex: number };
   assert.deepEqual({ ...selected(1) }, { rowAt: afterMidnight, selectedCivilDate: "2026-09-25", isPreviewing: true, activeIndex: 1 });

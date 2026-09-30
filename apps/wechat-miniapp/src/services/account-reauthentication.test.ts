@@ -17,6 +17,46 @@ function codeFor(names: string[], expression: string) {
   return ts.transpileModule(declarations.join("\n") + "\n" + expression, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
 }
 
+test("session restoration and fresh login bind the matching private store before returning", async () => {
+  for (const stored of [true, false]) {
+    const bound: string[] = [];
+    const saved: unknown[] = [];
+    let sessionPromise: Promise<unknown> | null = null;
+    const run = vm.runInNewContext(codeFor(["ensureSession"], "ensureSession;"), {
+      readStoredSession: () => stored ? { userId: "user:a" } : null,
+      useAppStore: { getState: () => ({ bindAccount: (owner: string) => bound.push(owner) }) },
+      get sessionPromise() { return sessionPromise; }, set sessionPromise(value: Promise<unknown> | null) { sessionPromise = value; },
+      requestOperation: async (_key: string, operation: string) => operation === "capabilitiesGet"
+        ? { data: { flags: { WECHAT_AUTH_ENABLED: false } } }
+        : { data: { userId: "user:b", accessToken: "token", expiresAt: "2999-01-01T00:00:00.000Z" } },
+      installationIdentity: () => "local:synthetic", erasedStoredAccountId: null,
+      Taro: { setStorageSync: (_key: string, value: unknown) => saved.push(value) },
+      SESSION_STORAGE_KEY: "auth",
+      clearStoredSession: () => assert.fail("no forced login expected"),
+    }) as () => Promise<{ userId: string }>;
+    assert.equal((await run()).userId, stored ? "user:a" : "user:b");
+    assert.deepEqual(bound, [stored ? "user:a" : "user:b"]);
+    assert.equal(saved.length, stored ? 0 : 1);
+  }
+});
+
+test("an expired native session hides its private store before reauthentication", () => {
+  const bound: (string | null)[] = [];
+  let removed = false;
+  const read = vm.runInNewContext(codeFor(["readStoredSession"], "readStoredSession;"), {
+    SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000,
+    erasedStoredAccountId: null,
+    Taro: {
+      getStorageSync: () => ({ userId: "user:a", accessToken: "old", expiresAt: "2020-01-01T00:00:00.000Z" }),
+      removeStorageSync: () => { removed = true; },
+    },
+    useAppStore: { getState: () => ({ bindAccount: (owner: string | null) => bound.push(owner) }) },
+  }) as () => unknown;
+  assert.equal(read(), null);
+  assert.equal(removed, true);
+  assert.deepEqual(bound, [null]);
+});
+
 test("account export obtains a fresh native code and refuses account changes or failed identity checks", async () => {
   for (const scenario of ["success", "login-failed", "changed-before-request", "changed-after-request"]) {
     let owner = "a", logins = 0, requests = 0;
@@ -135,6 +175,7 @@ test("confirmed remote deletion reports failed native erasure and cannot restore
     const run = vm.runInNewContext(codeFor(["readStoredSession", "clearStoredSession", "markAccountErased", "currentDraftUserId", "deleteAccount"], "({deleteAccount, currentDraftUserId});"), {
       SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, INSTALLATION_STORAGE_KEY: "installation",
       erasedStoredAccountId: null, sessionPromise: null, responseCache, Taro: taro,
+      useAppStore: { getState: () => ({ accountOwnerId: switched ? "b" : "a", bindAccount: () => undefined }) },
       accountReauthentication: async () => ({ userId: "a", code: "synthetic" }), idempotencyKey: () => "synthetic",
       requestOperation: async () => {
         serverDeleted = true;

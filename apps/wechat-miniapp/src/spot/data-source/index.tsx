@@ -1,5 +1,5 @@
 import { FloatingNotificationHost } from "@/components/notification";
-import { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { ScrollView, Text, View } from "@tarojs/components";
 import { CustomNav } from "@/components/custom-nav";
 import { Provenance, SOURCE_KIND_LABEL, isProductSource } from "@/components/provenance";
@@ -52,6 +52,7 @@ export default function DataSourcePage() {
         ).values(),
       ]
     : [];
+  const incomplete = overview.data && ["PARTIAL", "UNAVAILABLE", "EXPIRED"].includes(overview.data.dataState);
 
   return (
     <View className={themeClass + " sources-page"}>
@@ -61,14 +62,17 @@ export default function DataSourcePage() {
       <View className="sources-content page-inset safe-bottom">
         {!validRoute ? (
           <StatusPanel
-            state="EMPTY"
-            detail="请从正式观星点详情中的来源入口打开本页。"
+            state="ERROR"
+            title="来源入口不可用"
+            detail="无法确认当前观星点，请返回地图重新选择正式观星点。"
+            recoveryLabel="返回地图"
+            onRecover={() => void Taro.switchTab({ url: "/pages/map/index" })}
           />
         ) : overview.isPending ? (
           <StatusPanel state="LOADING" detail="正在加载来源与适用时间。" />
         ) : overview.isError || !detail ? (
           <StatusPanel
-            state="EMPTY"
+            state="ERROR"
             detail="来源暂时无法加载，请重试。"
             recoveryLabel="重试"
             onRecover={() => void overview.refetch()}
@@ -83,6 +87,14 @@ export default function DataSourcePage() {
                 onRecover={() => void overview.refetch()}
               />
             ) : null}
+            {incomplete && !overview.refreshError ? (
+              <StatusPanel
+                state="PARTIAL"
+                detail={overview.data?.dataState === "EXPIRED" ? "部分地点或观测资料已过期；以下只列出已取得的来源，适用时段须逐项核对。" : "地点或观测资料尚未齐全；以下仅列出当前已取得的来源。"}
+                recoveryLabel="重新获取来源"
+                onRecover={() => void overview.refetch()}
+              />
+            ) : null}
             {sources.length ? (
               groupSources(sources).map((group) => (
                 <View className="source-group" key={group.kind}>
@@ -90,12 +102,12 @@ export default function DataSourcePage() {
                   {group.sources.map((source) => <Provenance source={source} showKind={false} key={source.id} />)}
                 </View>
               ))
-            ) : (
+            ) : !overview.refreshError && !incomplete && overview.data?.dataState !== "STALE_USABLE" ? (
               <StatusPanel
                 state="EMPTY"
                 detail="当前没有符合来源与时效要求的记录。"
               />
-            )}
+            ) : null}
             <View className="source-principles card">
               <Text className="type-section">使用这些资料前</Text>
               <Text className="type-body">

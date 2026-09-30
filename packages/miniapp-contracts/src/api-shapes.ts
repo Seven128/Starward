@@ -101,6 +101,7 @@ export interface CelestialObjectSearchData {
 export type CelestialObjectImageData = Uint8Array;
 /** Machine-readable publication download; no ApiEnvelope. */
 export type DeepSkyManifestData = Record<string, unknown>;
+export type SdssOpticalImageData = Uint8Array;
 /** A fixed, low-resolution infrared all-sky copy from the CDS HiPS master.
  * The twelve listed order-0 files are the complete published coverage. */
 export interface WideFieldW3ManifestData {
@@ -319,6 +320,8 @@ export interface TerrainOverlayData {
 
 /** Binary PNG body; this route intentionally does not use ApiEnvelope at runtime. */
 export type TerrainAssetData = Uint8Array;
+/** Published, currently associated image bytes; delivered directly to native Image. */
+export type ContributionImageData = Uint8Array;
 
 export interface MapSpotTimeSignal {
   spotId: SpotSummary["spotId"];
@@ -529,6 +532,45 @@ export interface PlansData {
   plans: readonly ObservationPlan[];
   reminderNotifications: readonly import("./plan-reminders.ts").PlanReminderNotificationStatus[];
 }
+
+/** Explicit public projections; private plan notes, travel, reminders and account data never cross this boundary. */
+export interface PlanPublicShareData {
+  kind: "PLAN";
+  spotId: SpotId;
+  spotGcj02: import("./types.ts").Gcj02Point;
+  spotName: string;
+  spotRegion: string;
+  /** Current formal publication state; absent on older servers and treated as unknown by clients. */
+  spotStatus?: "PUBLISHED" | "TEMPORARILY_CLOSED";
+  spotSource: SourceSummary;
+  localDate: string;
+  localTime: string;
+  endLocalDate: string;
+  endLocalTime: string;
+  departureLocalDate: string;
+  departureLocalTime: string;
+  timezone: string;
+  events: readonly { occurrenceId: string; displayName: string; kind: string | null; source: SourceSummary | null }[];
+  expiresAt: string;
+}
+
+export interface SpotPublicShareData {
+  kind: "SPOT";
+  spotId: SpotId;
+  spotGcj02: import("./types.ts").Gcj02Point;
+  name: string;
+  region: string;
+  address: string;
+  status: "PUBLISHED" | "TEMPORARILY_CLOSED";
+  opening: string | null;
+  access: string | null;
+  safety: string | null;
+  parking: string | null;
+  horizon: string | null;
+  source: SourceSummary;
+}
+
+export interface PlanShareLinkData { token: string; expiresAt: string; }
 
 /** Reviewed editorial text; numerical event data retains its own independent source. */
 export interface AstronomicalEventArticle {

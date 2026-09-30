@@ -137,6 +137,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   }, [pageVisible, mounted, versionMismatch, detail.data?.data.catalogVersion]);
   const catalogYear = catalog.data?.data.events[0]?.peakDate.slice(0, 4) ?? "2026";
   const catalogFailed = catalog.isError || Boolean(catalog.refreshError) || catalog.data?.dataState === "STALE_USABLE" || catalog.data?.dataState === "UNAVAILABLE";
+  const canKeepCatalog = Boolean(catalog.data?.data.events.length) && catalog.data?.dataState !== "UNAVAILABLE";
   const recordFailed = eventRecord.isError || Boolean(eventRecord.refreshError) || eventRecord.data?.dataState === "STALE_USABLE" || eventRecord.data?.dataState === "UNAVAILABLE";
   const geometryFailed = Boolean(context && previewDate) && (detail.isError || Boolean(detail.refreshError) || versionMismatch || detail.data?.dataState === "STALE_USABLE" || detail.data?.dataState === "UNAVAILABLE");
   const detailFailed = recordFailed || geometryFailed;
@@ -186,8 +187,9 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
           <ScrollView scrollY enhanced showScrollbar={false} className="event-modal__page event-modal__list" ariaLabel="天文事件列表">
             <View className="event-modal__content">
               {catalog.isPending ? <StatusPanel state="LOADING" detail="正在读取事件目录。" /> : null}
-              {catalogFailed ? <StatusPanel state={catalog.data ? "STALE" : "EMPTY"} detail={catalog.data ? "目录尚未确认最新状态，以下保留上次资料。" : "事件目录暂不可用。"} recoveryLabel="重试事件目录" onRecover={() => void catalog.refetch()} /> : null}
-              {catalog.data && !catalog.data.data.events.length ? <StatusPanel state="EMPTY" detail="当前目录没有可显示的事件。" recoveryLabel="刷新" onRecover={() => void catalog.refetch()} /> : null}
+              {catalogFailed ? <StatusPanel state={canKeepCatalog ? "STALE" : "ERROR"} detail={canKeepCatalog ? "目录尚未确认最新状态，以下保留上次资料。" : "事件目录暂不可用。"} recoveryLabel="重试事件目录" onRecover={() => void catalog.refetch()} /> : null}
+              {catalog.data?.dataState === "PARTIAL" && !catalogFailed ? <StatusPanel state="PARTIAL" detail="事件目录仅有部分资料，重试可检查是否有新内容。" recoveryLabel="重试事件目录" onRecover={() => void catalog.refetch()} /> : null}
+              {catalog.data?.dataState === "FRESH" && !catalogFailed && !catalog.data.data.events.length ? <StatusPanel state="EMPTY" detail="当前目录没有可显示的事件。" recoveryLabel="刷新" onRecover={() => void catalog.refetch()} /> : null}
               {mode === "select-one" && initialOccurrenceIds.length > 1 ? <StatusPanel state="PARTIAL" detail={`此历史计划保留了 ${initialOccurrenceIds.length} 个关联；只有确认新选择或清除时才会改为最多一个。`} /> : null}
               {catalog.data ? <View className="event-modal__catalogue"><Text>{catalogYear} 事件目录</Text><Text>{catalog.data.data.coverage === "ANNUAL_METEOR_REFERENCES_AND_ECLIPSES" ? "常年参考与食事件" : "年度资料"}</Text></View> : null}
               {groups.map((group) => <View key={group.month} className="event-modal__month">
@@ -210,7 +212,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
           <ScrollView scrollY enhanced showScrollbar={false} className="event-modal__page event-modal__detail" ariaLabel="天文事件详情">
             <View className="event-modal__content">
               {eventRecord.isPending ? <StatusPanel state="LOADING" detail="正在读取事件资料。" /> : null}
-              {recordFailed ? <StatusPanel state={record ? "STALE" : "EMPTY"} detail="事件资料暂未更新；可以返回列表或重试。" recoveryLabel="重试事件资料" onRecover={() => void eventRecord.refetch()} /> : null}
+              {recordFailed ? <StatusPanel state={record ? "STALE" : "ERROR"} detail="事件资料暂未更新；可以返回列表或重试。" recoveryLabel="重试事件资料" onRecover={() => void eventRecord.refetch()} /> : null}
               {selectedDetail ? <EventModalDetail event={selectedDetail} visibility={context ? matchingGeometry : record?.localVisibility ?? null} mode={mode}
                 locationName={context ? (context.location.kind === "FORMAL_SPOT" ? "已选观星点" : context.location.displayName) : null} pending={Boolean(context && previewDate) && detail.isPending}
                 timezone={context?.timezone ?? "Asia/Shanghai"} source={record?.source ?? catalog.data?.data.sources.find(source => source.id === selectedDetail.sourceId)}
@@ -218,6 +220,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
                 articleSource={record?.articleSource}
                 failed={geometryFailed} onRetry={() => { void eventRecord.refetch(); if (context && previewDate) void detail.refetch(); }}
                 previewDate={previewDate ?? selectedDetail.peakDate}
+                canPreviewDate={Boolean(context)}
                 onPreviewDate={(date) => setPreviewSelection({ occurrenceId: selectedDetail.occurrenceId, date })} /> : null}
               {mode === "select-one" && selectedDetail ? <Button className="event-modal-detail__select" disabled={phase === "closing"}
                 onClick={() => { setDraftSelection(selectedDetail.occurrenceId); setDetailId(null); }}>选择此事件</Button> : null}
@@ -236,11 +239,12 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   </>;
 });
 
-function EventModalDetail({ event, visibility, mode, previewDate, onPreviewDate, locationName, pending, timezone, source, articleSource, catalogVersion, failed, onRetry }: {
+function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate, onPreviewDate, locationName, pending, timezone, source, articleSource, catalogVersion, failed, onRetry }: {
   event: AstronomicalEventOccurrence;
   visibility: AstronomicalEventLocalVisibility | null;
   mode: ModalMode;
   previewDate: string;
+  canPreviewDate?: boolean;
   onPreviewDate: (date: string) => void;
   locationName: string | null;
   pending: boolean;
@@ -254,7 +258,8 @@ function EventModalDetail({ event, visibility, mode, previewDate, onPreviewDate,
   const shortDate = (value: string) => value.slice(5).replace("-", ".");
   const presentation = eventDatePresentation(event);
   const previewDays = useMemo(() => eventPreviewDays(event), [event.activeStartDate, event.activeEndDate]);
-  const eclipseDate = event.kind !== "METEOR_SHOWER" && event.peakAtUtc
+  const hasLocalContext = Boolean(locationName || visibility?.locationName);
+  const eclipseDate = hasLocalContext && event.kind !== "METEOR_SHOWER" && event.peakAtUtc
     ? visibility?.localDate ?? calendarDateInTimezone(new Date(event.peakAtUtc), timezone) : null;
   return <View className="event-modal-detail">
     <View className="event-modal-detail__hero"><SemanticIcon name={event.kind === "METEOR_SHOWER" ? "meteor" : "moon"} /><View><Text>{eventKindLabel(event)} · {event.peakDate.slice(0, 4)}</Text><Text>{event.displayName}</Text></View></View>
@@ -264,19 +269,19 @@ function EventModalDetail({ event, visibility, mode, previewDate, onPreviewDate,
     <View className="event-modal-detail__axis"><Text>{shortDate(event.activeStartDate)} 开始</Text><Text>{shortDate(event.peakDate)} {presentation.ticket}</Text><Text>{shortDate(event.activeEndDate)} 结束</Text></View>
     <View className="event-modal-detail__section"><Text className="type-section">当地观测条件</Text>
       <View className="event-modal-detail__context-row"><Text>观星点</Text><Text>{visibility?.locationName ?? locationName ?? "尚未选择地点"}</Text></View>
-      <View className="event-modal-detail__context-row"><Text>{eclipseDate ? "事件当地日期" : "观测日期"}</Text><Text>{(eclipseDate ?? previewDate).replaceAll("-", "/")}</Text></View>
-      <Text className="type-caption">以下时刻采用 {visibility?.timezone ?? timezone} 时区。</Text>
+      <View className="event-modal-detail__context-row"><Text>{eclipseDate ? "事件当地日期" : hasLocalContext ? "观测日期" : presentation.date}</Text><Text>{(eclipseDate ?? previewDate).replaceAll("-", "/")}</Text></View>
+      {hasLocalContext ? <Text className="type-caption">以下时刻采用 {visibility?.timezone ?? timezone} 时区。</Text> : null}
       {eclipseDate ? <Text className="type-caption">按这次日月食实际发生时刻计算；{mode === "select-one" ? "计划" : "地图"}日期仍为 {previewDate.replaceAll("-", "/")}，不会随事件改变。</Text> : null}
-      {mode === "browse" && event.kind === "METEOR_SHOWER" ? <ScrollView scrollX enhanced showScrollbar={false} className="event-modal-detail__days" ariaLabel="弹窗内预览日期">
+      {mode === "browse" && event.kind === "METEOR_SHOWER" && canPreviewDate ? <ScrollView scrollX enhanced showScrollbar={false} className="event-modal-detail__days" ariaLabel="弹窗内预览日期">
         <View className="event-modal-detail__day-strip" role="group">
         {previewDays.map((day) => <Button key={day.value} className={previewDate === day.value ? "is-selected" : ""}
           ariaLabel={`${day.value}${day.value === event.peakDate ? `，${presentation.date}` : ""}`}
           aria-pressed={previewDate === day.value} onClick={() => onPreviewDate(day.value)}><Text>{day.weekday}</Text><Text>{day.day}</Text></Button>)}
         </View>
-      </ScrollView> : mode === "select-one" ? <Text className="type-caption">地点和日期沿用当前计划；关联事件不改变计划安排。</Text> : null}
-      {failed && visibility ? <StatusPanel state="STALE" detail="当地条件尚未确认最新状态，以下保留上次结果。" recoveryLabel="重试事件详情" onRecover={onRetry} /> : null}
+      </ScrollView> : mode === "browse" && event.kind === "METEOR_SHOWER" ? <Text className="type-caption">取得观测位置后可逐夜查看当地条件。</Text> : mode === "select-one" ? <Text className="type-caption">地点和日期沿用当前计划；关联事件不改变计划安排。</Text> : null}
+      {failed && visibility && visibility.state !== "UNAVAILABLE" ? <StatusPanel state="STALE" detail="当地条件尚未确认最新状态，以下保留上次结果。" recoveryLabel="重试事件详情" onRecover={onRetry} /> : null}
       {pending ? <StatusPanel state="LOADING" detail="正在计算当地观测条件。" /> : !visibility || visibility.state === "UNAVAILABLE"
-        ? <StatusPanel state="EMPTY" detail={visibility?.reason ?? (locationName ? "当地观测条件暂不可用。" : "选择地点后可计算当地几何条件。")} recoveryLabel={failed && !visibility ? "重试事件详情" : undefined} onRecover={onRetry} />
+        ? <StatusPanel state={failed ? "ERROR" : "PARTIAL"} detail={visibility?.reason ?? (locationName ? "当地观测条件暂不可用。" : "选择地点后可计算当地几何条件。")} recoveryLabel={failed ? "重试事件详情" : undefined} onRecover={onRetry} />
         : <>
           <Text className="type-caption">{visibility.reason}</Text>
           {visibility.state === "AVAILABLE" ? <>

@@ -115,27 +115,27 @@ test("request diagnostic wait requires the declared ordered subsequence", async 
 });
 
 test("native workspace admits only the physical canonical checkout", async () => {
-  const canonicalRoot = "E:\\Dev\\Starward";
+  const canonicalRoot = "D:\\dev\\Starward";
   const verify = (workspaceRoot, physicalRoot = workspaceRoot) =>
     verifyWechatWorkspaceLocation({
       platform: "win32",
       workspaceRoot,
       resolveRealPath: async () => physicalRoot,
     });
-  const location = await verify("e:/dev/STARWARD/", `\\\\?\\${canonicalRoot}`);
+  const location = await verify("d:/DEV/STARWARD/", `\\\\?\\${canonicalRoot}`);
   assert.equal(location.status, "passed");
   assert.equal(location.mode, "canonical_workspace");
   assert.equal(location.root_path_sha256, location.physical_path_sha256);
   assert.equal(location.direct_physical_path, true);
   for (const copiedRoot of [
-    "E:\\Dev\\Starward-copy",
-    "E:\\Dev\\worktrees\\Starward\\candidate",
-    "E:\\Dev\\.starward-tmp\\run-012345abcdef\\ty-context-candidate",
+    "D:\\dev\\Starward-copy",
+    "D:\\dev\\worktrees\\Starward\\candidate",
+    "D:\\dev\\.starward-tmp\\run-012345abcdef\\ty-context-candidate",
   ]) {
     await assert.rejects(verify(copiedRoot), /wechat_canonical_workspace_required/u);
   }
   await assert.rejects(
-    verify(canonicalRoot, "E:\\Dev\\another-checkout"),
+    verify(canonicalRoot, "D:\\dev\\another-checkout"),
     /wechat_workspace_location_must_be_physical/u,
   );
   await assert.rejects(
@@ -167,17 +167,17 @@ test("DevTools temp remains a physical directory outside candidate and reserved 
     /wechat_process_temp_environment_must_be_physical/u,
   );
   for (const overlappingTemp of [
-    "E:\\Dev\\Starward",
-    "E:\\Dev\\Starward\\tmp",
-    "E:\\Dev\\.starward-tmp",
-    "E:\\Dev\\.starward-tmp\\run-012345abcdef",
+    "D:\\dev\\Starward",
+    "D:\\dev\\Starward\\tmp",
+    "D:\\dev\\.starward-tmp",
+    "D:\\dev\\.starward-tmp\\run-012345abcdef",
   ]) {
     await assert.rejects(
       verify(overlappingTemp),
       /wechat_process_temp_must_be_outside_candidate_and_run_roots/u,
     );
   }
-  assert.equal((await verify("E:\\Dev\\Starward-other\\temp")).status, "passed");
+  assert.equal((await verify("D:\\dev\\Starward-other\\temp")).status, "passed");
 });
 
 test("DevTools child environment binds both temp variables without changing the parent", () => {

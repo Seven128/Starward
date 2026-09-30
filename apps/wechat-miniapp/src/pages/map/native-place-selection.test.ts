@@ -22,7 +22,7 @@ function selection(mode = "DAY", confirm = true, moveWait?: Promise<unknown>) {
   const version = { current: 0 }, nativePending = { current: null as number | null };
   const platformAst = ts.createSourceFile("platform.ts", readFileSync(new URL("../../services/platform-location.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const platform = platformAst.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "choosePlatformLocation")!;
-  const Taro = { getCurrentPages: () => [page], showModal: async () => { calls.push({ action: "warning" }); return { confirm }; },
+  const Taro = { getCurrentPages: () => [page],
     chooseLocation: (value: unknown) => {
       calls.push({ action: "choose", value });
       if (pickerCount > 0) {
@@ -37,6 +37,7 @@ function selection(mode = "DAY", confirm = true, moveWait?: Promise<unknown>) {
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, { Taro, useAppStore, normalizePlatformLocation });
   const run = vm.runInNewContext(ts.transpileModule(`const ${declaration}; chooseMapLocation;`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
     nativeSelectionPending: nativePending, selectionVersion: version,
+    handoff: { confirm: async () => { if (mode === "OBSERVATION") { calls.push({ action: "warning" }); return confirm; } return true; } },
     viewport: { center: { latitude: 22, longitude: 113 } },
     useAppStore, Taro, choosePlatformLocation,
     setFinderQuery: (value: unknown) => calls.push({ action: "query", value }),
@@ -44,7 +45,8 @@ function selection(mode = "DAY", confirm = true, moveWait?: Promise<unknown>) {
     notify: () => calls.push({ action: "notice" }),
     errorMessage: (error: any) => error?.errMsg ?? error?.message ?? String(error),
   }) as () => Promise<void>;
-  return { run, resolve, reject, calls, nativePending, resolveAt: (index: number, value: unknown) => pickers[index]!.resolve(value),
+  return { run, resolve, reject, calls, nativePending, choosePlatformLocation,
+    resolveAt: (index: number, value: unknown) => pickers[index]!.resolve(value),
     leave: () => { page = {}; }, supersede: () => version.current++ };
 }
 
@@ -53,7 +55,7 @@ test("a finished old Context request cannot release a newer native picker lock",
   const moveWait = new Promise<void>(resolve => { finishContext = resolve; });
   const f = selection("DAY", true, moveWait);
   const first = f.run(); f.resolve({ latitude: 22, longitude: 113 });
-  for (let i = 0; i < 10 && !f.calls.some(c => c.action === "move"); i++) await Promise.resolve();
+  for (let i = 0; i < 20 && !f.calls.some(c => c.action === "move"); i++) await Promise.resolve();
   assert.ok(f.calls.some(c => c.action === "move"));
   const second = f.run(); const secondToken = f.nativePending.current;
   finishContext(); await first;
@@ -83,6 +85,8 @@ test("unnamed platform points show coordinates instead of an invented address", 
 test("cancel, invalid coordinates and late page results never move the map", async () => {
   for (const scenario of ["cancel", "invalid", "leave", "supersede"]) {
     const flow = selection(); const running = flow.run();
+    for (let i = 0; i < 10 && !flow.calls.some(item => item.action === "choose"); i++) await Promise.resolve();
+    assert.ok(flow.calls.some(item => item.action === "choose"), "picker opened before the late result or cancellation");
     if (scenario === "leave") flow.leave();
     if (scenario === "supersede") flow.supersede();
     if (scenario === "cancel") flow.reject({ errMsg: "chooseLocation:fail cancel" });
@@ -96,4 +100,11 @@ test("cancel, invalid coordinates and late page results never move the map", asy
 test("observation mode explains the native bright surface and cancellation stays in place", async () => {
   const flow = selection("OBSERVATION", false); await flow.run();
   assert.deepEqual(flow.calls.map(item => item.action), ["warning"]);
+});
+
+test("observation mode does not open the native picker without explicit handoff approval", async () => {
+  const flow = selection("OBSERVATION");
+  const result = await flow.choosePlatformLocation({ isCurrent: () => true });
+  assert.equal(result, null);
+  assert.deepEqual(flow.calls, []);
 });

@@ -7,7 +7,9 @@ import { SoftButton } from "./soft-button";
 import "./source-attribution.scss";
 
 /** Required credits beside supplied content; detailed provenance stays with its disclosure. */
-export function SourceAttribution({ sources }: { sources: readonly SourceSummary[] }) {
+export function SourceAttribution({ sources, compact = false }: {
+  sources: readonly SourceSummary[]; compact?: boolean;
+}) {
   const [message, setMessage] = useState("");
   const credits = sourceAttributions(sources);
   const copy = async (url: string) => {
@@ -20,7 +22,7 @@ export function SourceAttribution({ sources }: { sources: readonly SourceSummary
   return <View className="source-attribution" aria-label="数据来源声明">
     {credits.map(credit => <View className="source-attribution__credit" key={JSON.stringify([credit.name, credit.url])}>
       <SoftButton className="source-attribution__link" variant="ghost" label={`复制${credit.name}官方链接`} onClick={() => void copy(credit.url)}>
-        <Text className="source-attribution__link-text">{credit.name} · {credit.url}</Text>
+        <Text className="source-attribution__link-text">{compact ? "复制来源链接" : `复制链接 · ${credit.name} · ${credit.url}`}</Text>
       </SoftButton>
       {credit.statements.map(statement => <Text className="type-caption" selectable key={statement}>{statement}</Text>)}
     </View>)}

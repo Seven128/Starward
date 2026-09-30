@@ -46,7 +46,7 @@ export class AuthService {
       throw new Error("wechat_login_code_invalid");
     const userId =
       this.config.authMode === "WECHAT"
-        ? await this.#wechatUser(input.code)
+        ? await this.#wechatUser(input.code, true)
         : await this.#localTestUser(input.code);
     const accessToken = randomBytes(32).toString("base64url");
     const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
@@ -77,15 +77,17 @@ export class AuthService {
     const userId = await this.requirePrincipal(authorization);
     if (!code || code.length > 512) throw new Error("auth_reauthentication_required");
     const verifiedUserId = this.config.authMode === "WECHAT"
-      ? await this.#wechatUser(code)
-      : await this.#localTestUser(code);
+      ? await this.#wechatUser(code, false)
+      : this.#localTestUserId(code);
     if (verifiedUserId !== userId) throw new Error("auth_reauthentication_identity_mismatch");
     // The native code proves identity for this operation; it does not replace
     // the current session or authorize an operation on a different account.
     return userId;
   }
 
-  async #wechatUser(code: string): Promise<UserId> {
+  async #wechatUser(code: string, createIfMissing: true): Promise<UserId>;
+  async #wechatUser(code: string, createIfMissing: false): Promise<UserId | null>;
+  async #wechatUser(code: string, createIfMissing: boolean): Promise<UserId | null> {
     const { appId, appSecret } = this.config.wechat;
     if (!appId || !appSecret) throw new Error("wechat_auth_not_configured");
     const url = new URL("https://api.weixin.qq.com/sns/jscode2session");
@@ -107,8 +109,10 @@ export class AuthService {
       if (data.errcode || !data.openid || !data.session_key)
         throw new Error(`wechat_auth_rejected:${data.errcode ?? "missing_identity"}`);
       const identityDigest = this.#digest(`wechat-openid:${data.openid}`);
-      const userId = await this.repository.findOrCreateWechatUser(identityDigest);
-      if (this.config.wechat.deliveryIdentityKey) {
+      const userId = createIfMissing
+        ? await this.repository.findOrCreateWechatUser(identityDigest)
+        : await this.repository.findWechatUser(identityDigest);
+      if (userId && createIfMissing && this.config.wechat.deliveryIdentityKey) {
         await this.repository.saveWechatDeliveryIdentity({
           userId, identityDigest, appId,
           ciphertext: encryptWechatDeliveryIdentity(data.openid, userId, appId, this.config.wechat.deliveryIdentityKey),
@@ -121,10 +125,15 @@ export class AuthService {
   }
 
   async #localTestUser(code: string): Promise<UserId> {
+    const userId = this.#localTestUserId(code);
+    await this.repository.ensureUser(userId);
+    return userId;
+  }
+
+  #localTestUserId(code: string): UserId {
     if (!code.startsWith("local:") || code.length < 22)
       throw new Error("local_test_identity_invalid");
     const userId = `user:local:${this.#digest(code).slice(0, 24)}` as UserId;
-    await this.repository.ensureUser(userId);
     return userId;
   }
 

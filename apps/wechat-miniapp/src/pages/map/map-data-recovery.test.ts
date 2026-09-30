@@ -5,12 +5,13 @@ import test from "node:test";
 import ts from "typescript";
 
 // Exercise the actual page's projection, notification effect and recovery JSX.
-function renderFailure(owner: "scene" | "context", cached: boolean, visible = true) {
+function renderFailure(owner: "scene" | "context", cached: boolean, visible = true,
+  presentation: "none" | "layer-sheet" = "none", layer: "TOTAL_CLOUD" | "LIGHT" = "TOTAL_CLOUD") {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declarations: string[] = [];
   let effect = "", recovery = "";
   const visit = (node: ts.Node) => {
-    if (ts.isVariableDeclaration(node) && ["pageState", "mapContextFailed", "mapSceneFailed", "mapDataStale"].includes(node.name.getText(source)))
+    if (ts.isVariableDeclaration(node) && ["pageState", "mapContextFailed", "mapSceneFailed", "mapDataStale", "cloudLayerOwnsSceneError"].includes(node.name.getText(source)))
       declarations.push(`const ${node.getText(source)};`);
     if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" && node.arguments[0]?.getText(source).includes('title: "地图数据异常"'))
       effect = node.arguments[0]!.getText(source);
@@ -30,10 +31,18 @@ function renderFailure(owner: "scene" | "context", cached: boolean, visible = tr
   const code = `${declarations.join("\n")}\n(${effect})();\n({ recovery: Boolean(${recovery}), pageState });`;
   const result = vm.runInNewContext(ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     scene, bootstrapContext, pageVisible: visible, activeContext: {}, spots: [{}],
+    bottomPresentation: presentation, visibleLayer: layer, lightLayerState: "STALE", cloudTimeChoices: [],
     isPermissionError: () => false, notify: (notice: { placement: string; tone: string }) => notices.push(notice),
   });
   return { ...result, notices };
 }
+
+test("light and cloud layer failures own their visible retries while a failed map context keeps global recovery", () => {
+  assert.equal(renderFailure("scene", true, true, "layer-sheet", "LIGHT").recovery, false);
+  assert.equal(renderFailure("context", true, true, "layer-sheet", "LIGHT").recovery, true);
+  assert.equal(renderFailure("scene", true, true, "layer-sheet", "TOTAL_CLOUD").recovery, false);
+  assert.equal(renderFailure("context", true, true, "layer-sheet", "TOTAL_CLOUD").recovery, true);
+});
 
 for (const owner of ["scene", "context"] as const) {
   for (const cached of [false, true]) {
@@ -68,6 +77,7 @@ async function retryMap(activeContext: object | null, mapContextFailed: boolean,
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
     activeContext, mapContextFailed,
+    failedMapRegion: { current: null }, mapPointIntent: { current: 0 },
     bootstrapContext: { refetch: refetch("context") }, scene: { refetch: refetch("scene") },
     setAnnouncement: (text: string) => announcements.push(text), notify: (notice: unknown) => notices.push(notice),
   });
@@ -95,7 +105,7 @@ test("Map empty/error panel keeps concise recovery instead of rendering provider
   let expression = "";
   const visit = (node: ts.Node) => {
     if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(source) === "StatusPanel" &&
-      node.getText(source).includes('state={pageState === "ERROR"')) {
+      node.getText(source).includes('state={pageState}')) {
       const detail = node.attributes.properties.find(item => ts.isJsxAttribute(item) && item.name.getText(source) === "detail") as ts.JsxAttribute;
       expression = (detail.initializer as ts.JsxExpression).expression!.getText(source);
     }

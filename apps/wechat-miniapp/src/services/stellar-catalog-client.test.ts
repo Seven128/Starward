@@ -5,13 +5,14 @@ import vm from "node:vm";
 import ts from "typescript";
 import { createStellarCatalogClient } from "./stellar-catalog-client";
 import { createAuthenticatedOperationRequester } from "./authenticated-operation";
-import { transportHarness } from "./api-request-test-support";
+import { TEST_API_BASE, transportHarness } from "./api-request-test-support";
+import { responseCacheKey } from "./cache-policy";
 import { STELLAR_GEOMETRY_FORMAT, STELLAR_GEOMETRY_REFERENCE_AT, type ApiEnvelope, type StellarCatalogPublication } from "@starward/miniapp-contracts";
 
 const reference = { catalogVersion: "bsc5p-bright-stars.v1", catalogHash: "a".repeat(64) };
 const group = `stellar-catalog:${reference.catalogVersion}:${reference.catalogHash}`;
 const path = `/v2/sky/catalogs/${reference.catalogVersion}/${reference.catalogHash}`;
-const key = `${group}:${path}:anonymous`;
+const key = responseCacheKey(group, TEST_API_BASE, path) + ":anonymous";
 function fixture(h: ReturnType<typeof transportHarness>): ApiEnvelope<StellarCatalogPublication> {
   // Cache/failure mechanism fixture; astronomical accuracy is covered with real HTTP publication.
   const sources = [{ id: "test:publication", kind: "OPEN_DATA" as const, title: "Synthetic contract test", provider: "Test",

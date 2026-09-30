@@ -22,7 +22,7 @@ test("batch validation precedes draft writes and valid files use consecutive rec
     await create({ rightsConfirmed: true, currentMedia: Array(existing).fill({}),
       setUploading() {}, announce(tone: string) { calls.push(tone); },
       history: { refetch: async () => { calls.push("read"); } },
-    }, async () => { calls.push("save"); return { revision: 1 }; }, () => { if (switched) throw new Error("owner changed"); })();
+    }, async () => { calls.push("save"); return { revision: 1 }; }, () => { if (switched) throw new Error("owner changed"); }, async () => true)();
     return calls;
   };
   for (const sizes of [[1, 2, 3, 4], [100, -1], [NaN], [1.5], [0], [1_200_001]])

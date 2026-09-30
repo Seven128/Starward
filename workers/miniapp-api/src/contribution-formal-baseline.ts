@@ -4,6 +4,7 @@ import {
   type FacilityEvidence,
   type SpotDetail,
 } from "@starward/miniapp-contracts";
+import { spotMediaGroups } from "./public-spot-media.ts";
 
 function statusLabel(status: FacilityEvidence["status"]) {
   if (status === "AVAILABLE") return "有";
@@ -61,16 +62,6 @@ export function contributionFormalBaseline(detail: SpotDetail, revision: number)
       fields[key] = detail.formalFacts?.[key] ?? null;
   }
 
-  const media = { parking: [] as string[], toilet: [] as string[], site: [] as string[] };
-  for (const item of detail.spot.media) {
-    const label = `${item.alt} ${item.caption}`;
-    if (/停车/u.test(label)) media.parking.push(item.id);
-    else if (/洗手间|厕所/u.test(label)) media.toilet.push(item.id);
-    else if (item.isSiteSpecific) media.site.push(item.id);
-  }
-  for (const kind of ["parking", "toilet", "site"] as const) {
-    if (detail.formalMedia && Object.prototype.hasOwnProperty.call(detail.formalMedia, kind))
-      media[kind] = [...(detail.formalMedia[kind] ?? [])];
-  }
+  const media = spotMediaGroups(detail.spot, detail.formalMedia);
   return { spotId: detail.spot.spotId, revision, fields, media };
 }

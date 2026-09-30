@@ -32,6 +32,8 @@ function harness() {
 const text = (value: any): string => value == null || typeof value === "boolean" ? "" : Array.isArray(value) ? value.map(text).join("") : typeof value === "object" ? text(value.children) : String(value);
 const find = (value: any, predicate: (node: any) => boolean): any => Array.isArray(value) ? value.map(child => find(child, predicate)).find(Boolean)
   : value && typeof value === "object" ? predicate(value) ? value : find(value.children, predicate) : null;
+const typesInReadingOrder = (value: any): string[] => Array.isArray(value) ? value.flatMap(typesInReadingOrder)
+  : value && typeof value === "object" ? [String(value.type), ...typesInReadingOrder(value.children)] : [];
 const source = { retrievedAt: "2026-09-15T00:00:00Z" };
 const body = { spotId: "spot:a", current: { value: null, state: "UNAVAILABLE", unavailableReason: "REQUEST_FAILED", source },
   forecast: { value: [{ at: "2026-09-15T01:00:00Z", indexes: [{ code: "cn-mee", name: "中国 AQI", display: "32", category: "优" }], pollutants: [] }], state: "FRESH", source } };
@@ -40,8 +42,11 @@ test("visible AQ retains forecast on current error, offers persistent retry and 
   const h = harness(); h.set({ data: body, dataState: "PARTIAL", sources: [] });
   const tree = h.render();
   assert.match(text(tree), /所选时刻.*对应小时.*中国 AQI.*32.*优/s);
-  assert.ok(find(tree, node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
+  assert.ok(find(tree, node => node.type === "StatusPanel" && node.props.state === "ERROR" && /当前区域参考/.test(node.props.detail)));
+  assert.ok(!find(tree, node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
   assert.equal(h.notifications.length, 1);
+  const order = typesInReadingOrder(tree);
+  assert.ok(order.indexOf("SoftButton") < order.indexOf("Provenance"), "failed readings must offer retry before the long source disclosure");
   find(tree, node => node.type === "SoftButton").props.onClick(); assert.equal(h.retries, 1);
   assert.equal(find(tree, node => node.type === "ForecastCoverageNote").props.scope, "air");
   h.render(); assert.equal(h.notifications.length, 1);
@@ -52,10 +57,26 @@ test("visible AQ retains forecast on current error, offers persistent retry and 
 
 test("unsupported AQ emits no error, changing spot rejects old readings and pending proposal does not query", () => {
   const h = harness(); h.set({ data: { ...body, current: { ...body.current, unavailableReason: "NO_DATA" } }, dataState: "PARTIAL", sources: [] });
-  h.render(); assert.equal(h.notifications.length, 0);
+  assert.ok(find(h.render(), node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
+  assert.equal(h.notifications.length, 0);
   assert.doesNotMatch(text(h.render("spot:b")), /中国 AQI|32/);
   assert.equal(h.render("contribution:private"), null); assert.equal(h.options.enabled, false);
   h.show(); assert.equal(h.retries, 0);
+});
+
+test("forecast request failure keeps a valid current reading without claiming an empty forecast", () => {
+  const h = harness();
+  h.set({ data: { ...body,
+    current: { value: { indexes: [{ code: "cn-mee", name: "中国 AQI", display: "26", category: "优" }], pollutants: [] }, state: "FRESH", unavailableReason: null, source },
+    forecast: { value: null, state: "UNAVAILABLE", unavailableReason: "REQUEST_FAILED", source },
+  }, dataState: "PARTIAL", sources: [] });
+  const tree = h.render();
+  assert.match(text(tree), /当前区域参考.*中国 AQI.*26.*优/s);
+  assert.ok(find(tree, node => node.type === "StatusPanel" && node.props.state === "ERROR" && /空气质量预报/.test(node.props.detail)));
+  assert.ok(!find(tree, node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
+  assert.ok(!find(tree, node => node.type === "ForecastCoverageNote"));
+  find(tree, node => node.type === "SoftButton").props.onClick();
+  assert.equal(h.retries, 1);
 });
 
 test("sample AQ keeps values and ordinary failure recovery without adding test explanations", () => {
@@ -66,4 +87,17 @@ test("sample AQ keeps values and ordinary failure recovery without adding test e
   assert.equal(h.notifications.length, 1);
   find(tree, node => node.type === "SoftButton").props.onClick();
   assert.equal(h.retries, 1);
+});
+
+test("positive current retrieval and selected-hour heading remain separate reading rows", () => {
+  const h = harness();
+  h.set({ data: { ...body,
+    current: { value: { indexes: [{ code: "cn-mee", name: "中国 AQI", display: "0", category: "优" }], pollutants: [] },
+      state: "FRESH", unavailableReason: null, source },
+  }, dataState: "FRESH", sources: [] });
+  const tree = h.render();
+  assert.match(text(tree), /中国 AQI.*0.*获取于.*所选时刻的空气质量预报/s);
+  assert.ok(find(tree, node => node.type === "View" && node.props?.className === "air-quality__retrieved-at"));
+  assert.ok(find(tree, node => node.type === "View" && node.props?.className === "air-quality__segment-heading" &&
+    /所选时刻的空气质量预报/.test(text(node))));
 });

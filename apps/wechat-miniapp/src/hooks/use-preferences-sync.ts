@@ -5,6 +5,7 @@ import {
 } from "@starward/miniapp-contracts";
 import {
   errorMessage,
+  currentDraftUserId,
   getPreferences,
   MiniappApiError,
   savePreferences,
@@ -26,6 +27,11 @@ export function usePreferencesSync() {
     }
     const before = useAppStore.getState();
     if (!before.preferencesDirty) return true;
+    const owner = currentDraftUserId();
+    if (!owner) {
+      setStatus("账户尚未恢复，本机偏好暂不上传。请返回“我的”恢复账户后重新打开设置。");
+      return false;
+    }
     if (before.preferencesRevision < 1) {
       setStatus("偏好已保存在本机，连接服务后会自动同步。");
       return false;
@@ -39,6 +45,10 @@ export function usePreferencesSync() {
         snapshot,
         before.preferencesRevision,
       );
+      if (currentDraftUserId() !== owner) {
+        setStatus("账户已变化；本次偏好同步结果未应用，请在当前账户重新打开设置。");
+        return false;
+      }
       const current = useAppStore.getState();
       if (JSON.stringify(current.preferences) === snapshotText)
         current.markPreferencesSynced(response.data);
@@ -48,13 +58,15 @@ export function usePreferencesSync() {
     } catch (error) {
       if (error instanceof MiniappApiError && error.code === "CONFLICT") {
         const latest = await getPreferences().catch(() => null);
-        if (latest) {
-          useAppStore.getState().applyServerPreferences(latest.data);
+        if (latest?.dataState === "FRESH" && currentDraftUserId() === owner) {
+          useAppStore.getState().rebasePreferencesAfterConflict(latest.data);
           setStatus("云端偏好已有更新；本机编辑保持不变，正在重新同步。");
           rerun.current = true;
         } else {
           rerun.current = false;
-          setStatus("暂时无法读取云端最新偏好；本机编辑保持不变，恢复网络后可重试同步。");
+          setStatus(currentDraftUserId() !== owner
+            ? "账户已变化；本次偏好同步结果未应用，请在当前账户重新打开设置。"
+            : "暂时无法读取云端最新偏好；本机编辑保持不变，恢复网络后可重试同步。");
         }
       } else {
         setStatus(`偏好仅保存在本机：${errorMessage(error)}。可重试同步。`);

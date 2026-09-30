@@ -31,7 +31,8 @@ function nativeElement(nativeMap: any, events: string[] = []) {
   assert.ok(jsx);
   return vm.runInNewContext(ts.transpileModule(`(${jsx})`, { compilerOptions: { jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2020 } }).outputText, {
     nativeMap, Map: "Map", viewport: { center: { latitude: 22, longitude: 113 }, zoom: 9 },
-    markerList: [], layerPolygons: [], locationState: "GRANTED",
+    markerList: [], layerPolygons: [], locationState: "GRANTED", spotEditorPhase: "open",
+    editorPresentation: {isClosing: () => false},
     onMapTap: () => events.push("tap"), onMarkerTap: () => events.push("marker"), onRegionChange: () => events.push("region"),
     React: { createElement: (_type: any, props: any) => props },
   });

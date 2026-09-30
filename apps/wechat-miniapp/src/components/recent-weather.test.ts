@@ -82,9 +82,9 @@ test("foreign regional date cleanup waits for explicit retry instead of fetching
       assert.equal(calls, afterFailure, "date cleanup must not automatically retry");
       assert.doesNotMatch(text(tree), /纽约实时地区|降水 12|正在加载地区天气/);
       assert.ok(client.getQueryCache().getAll().every(query => query.state.data === undefined));
-      const retry = find(tree, node => node.type === "SoftButton" && node.props.label === "重试近期天气");
+      const retry = find(tree, node => node.type === "StatusPanel" && node.props.recoveryLabel === "重试近期天气");
       assert.ok(retry);
-      fail = false; retry.props.onClick(); render(); await settle(); render(); await settle(); tree = render();
+      fail = false; retry.props.onRecover(); render(); await settle(); render(); await settle(); tree = render();
       assert.ok(calls > afterFailure, "the actual retry button releases the failure lock");
       assert.match(text(tree), /纽约实时地区.*降水 12/s);
     } finally { unsubscribe(); client.clear(); }
@@ -144,7 +144,7 @@ test("refresh failure discards stored Geo data without automatically retrying an
     h.set({ ...result, refreshError: result.error });
     const tree = h.render();
     assert.doesNotMatch(text(tree), /区域甲|降水 12/);
-    assert.ok(find(tree, node => node.type === "SoftButton"));
+    assert.ok(find(tree, node => node.type === "StatusPanel" && node.props.state === "ERROR" && node.props.recoveryLabel === "重试近期天气"));
     assert.equal(client.getQueryData(options.queryKey), undefined, "the actual stored payload must be gone");
     await settle(); assert.equal(calls, 2, "discarding Geo must not start a retry loop");
     fail = false; await observer.refetch();
@@ -196,7 +196,7 @@ test("Geo-bearing stale responses and older day sets cannot restore recent facts
   const tree = next.render();
   assert.doesNotMatch(text(tree), /降水 12|可能湿滑/);
   assert.equal(next.notifications.length, 1);
-  assert.ok(find(tree, node => node.type === "SoftButton"));
+  assert.ok(find(tree, node => node.type === "StatusPanel" && node.props.state === "ERROR" && node.props.recoveryLabel === "重试近期天气"));
 });
 
 test("a valid regional calendar day differing from the spot day never emits a false failure", () => {

@@ -4,35 +4,26 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
-import { dockerComposeInvocation } from "./docker-compose-runtime.mjs";
+import { assertPostgresTools, databaseUrlFor, postgresToolInvocation, readInfrastructureRuntime } from "./infrastructure-runtime.mjs";
 
 const { Client } = pg;
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-const composePath = path.join(root, "infra", "miniapp", "docker-compose.yml");
-const defaultAdminUrl =
-  "postgresql://starward_miniapp:local_demo_only@127.0.0.1:55432/starward_miniapp";
 
 function assertDatabaseName(databaseName) {
   if (!/^starward_[a-z0-9_]{1,55}$/u.test(databaseName))
     throw new Error("backup_database_name_not_owned");
 }
 
-function runDockerPostgres(args, options = {}) {
-  const compose = dockerComposeInvocation([
-    "-f",
-    composePath,
-    "exec",
-    "-T",
-    "postgres",
-    ...args,
-  ]);
+function runPostgres(runtime, tool, databaseName, args, options = {}) {
+  const invocation = postgresToolInvocation(runtime, tool, databaseName, args);
   const result = spawnSync(
-    compose.command,
-    compose.args,
+    invocation.command,
+    invocation.args,
     {
       cwd: root,
       windowsHide: true,
       maxBuffer: 256 * 1024 * 1024,
+      env: invocation.env,
       ...options,
     },
   );
@@ -41,15 +32,9 @@ function runDockerPostgres(args, options = {}) {
   return result;
 }
 
-function databaseUrl(databaseName) {
-  const url = new URL(process.env.MINIAPP_ADMIN_DATABASE_URL ?? defaultAdminUrl);
-  url.pathname = `/${databaseName}`;
-  return url.toString();
-}
-
-async function fingerprint(databaseName) {
+async function fingerprint(runtime, databaseName) {
   assertDatabaseName(databaseName);
-  const client = new Client({ connectionString: databaseUrl(databaseName) });
+  const client = new Client({ connectionString: databaseUrlFor(runtime, databaseName) });
   await client.connect();
   try {
     const result = await client.query(`SELECT jsonb_build_object(
@@ -72,12 +57,11 @@ async function fingerprint(databaseName) {
 
 export async function createBackup({ databaseName, outputPath }) {
   assertDatabaseName(databaseName);
+  const runtime = readInfrastructureRuntime();
+  assertPostgresTools(runtime);
   const resolved = path.resolve(outputPath);
   await mkdir(path.dirname(resolved), { recursive: true });
-  const result = runDockerPostgres([
-    "pg_dump",
-    "--username=starward_miniapp",
-    `--dbname=${databaseName}`,
+  const result = runPostgres(runtime, "pg_dump", databaseName, [
     "--format=custom",
     "--no-owner",
     "--no-privileges",
@@ -91,7 +75,7 @@ export async function createBackup({ databaseName, outputPath }) {
     created_at: new Date().toISOString(),
     byte_length: bytes.length,
     sha256: createHash("sha256").update(bytes).digest("hex"),
-    fingerprint: await fingerprint(databaseName),
+    fingerprint: await fingerprint(runtime, databaseName),
     restore_policy: "new-owned-database-only",
   };
   await writeFile(
@@ -103,6 +87,8 @@ export async function createBackup({ databaseName, outputPath }) {
 
 export async function restoreBackup({ inputPath, targetDatabase }) {
   assertDatabaseName(targetDatabase);
+  const runtime = readInfrastructureRuntime();
+  assertPostgresTools(runtime);
   if (!targetDatabase.startsWith("starward_restore_"))
     throw new Error("restore_target_must_be_new_restore_database");
   const resolved = path.resolve(inputPath);
@@ -113,7 +99,7 @@ export async function restoreBackup({ inputPath, targetDatabase }) {
   if (digest !== manifest.sha256 || bytes.length !== manifest.byte_length)
     throw new Error("backup_manifest_integrity_mismatch");
   const admin = new Client({
-    connectionString: process.env.MINIAPP_ADMIN_DATABASE_URL ?? defaultAdminUrl,
+    connectionString: runtime.adminUrl,
   });
   await admin.connect();
   let created = false;
@@ -125,18 +111,15 @@ export async function restoreBackup({ inputPath, targetDatabase }) {
     if (exists.rowCount) throw new Error("restore_target_already_exists");
     await admin.query(`CREATE DATABASE "${targetDatabase}"`);
     created = true;
-    runDockerPostgres(
+    runPostgres(runtime, "pg_restore", targetDatabase,
       [
-        "pg_restore",
-        "--username=starward_miniapp",
-        `--dbname=${targetDatabase}`,
         "--no-owner",
         "--no-privileges",
         "--exit-on-error",
       ],
       { input: bytes },
     );
-    const restoredFingerprint = await fingerprint(targetDatabase);
+    const restoredFingerprint = await fingerprint(runtime, targetDatabase);
     if (JSON.stringify(restoredFingerprint) !== JSON.stringify(manifest.fingerprint))
       throw new Error("backup_restore_fingerprint_mismatch");
     return {

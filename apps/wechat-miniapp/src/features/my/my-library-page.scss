@@ -4,30 +4,30 @@
   color: #273640;
 }
 .my-page__scroll { flex: 1; min-height: 0; }
-.my-content { padding: 8Px 16Px 24Px; display: flex; flex-direction: column; gap: 12Px; }
+.my-content { padding: 12Px 18Px 24Px; display: flex; flex-direction: column; gap: 16Px; }
 .profile-summary { display: flex; flex-direction: column; gap: 8Px; }
-.profile-summary__header { display: flex; align-items: center; gap: 12Px; padding: 4Px; }
-.profile-summary__avatar { box-sizing: border-box; width: 56Px; height: 56Px; min-height: 56Px; padding: 0; margin: 0; flex: none; display: flex; align-items: center; justify-content: center; border: 1Px solid var(--border); border-radius: 50%; background: var(--surface); overflow: hidden; }
+.profile-summary__header { display: flex; align-items: center; gap: 16Px; padding: 8Px 6Px 12Px; }
+.profile-summary__avatar { box-sizing: border-box; width: 64Px; height: 64Px; min-height: 64Px; padding: 0; margin: 0; flex: none; display: flex; align-items: center; justify-content: center; border: 1Px solid var(--border); border-radius: 50%; background: var(--surface); overflow: hidden; }
 .profile-summary__avatar::after { border: 0; }
 .profile-summary__avatar-image { width: 100%; height: 100%; transform-origin: center; }
 .theme-day .profile-summary__avatar { border-color: white; background: #ffffffe0; box-shadow: 0 3Px 12Px #657b8a0c; }
-.profile-summary__avatar .semantic-icon { width: 24Px; height: 24Px; flex-basis: 24Px; }
+.profile-summary__avatar .semantic-icon { width: 28Px; height: 28Px; flex-basis: 28Px; }
 .profile-summary__copy { flex: 1; min-width: 0; }
 .my-nickname { padding: 0; margin: 0; min-height: 44Px; display: flex; align-items: center; gap: 7Px; border: 0; background: transparent; color: var(--text-primary); text-align: left; white-space: normal; }
 .my-nickname::after, .my-settings-gear::after, .routine-entry::after { border: 0; }
-.my-nickname .type-section { font-size: 17Px; font-weight: 600; overflow-wrap: anywhere; }
-.my-nickname .semantic-icon { width: 13Px; height: 13Px; flex-basis: 13Px; }
-.my-settings-gear { margin: 0; padding: 0; flex: none; width: 44Px; height: 44Px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; }
-.my-settings-gear .semantic-icon { width: 20Px; height: 20Px; flex-basis: 20Px; }
+.my-nickname .type-section { font-size: 20Px; line-height: 28Px; font-weight: 700; overflow-wrap: anywhere; }
+.my-nickname .semantic-icon { width: 16Px; height: 16Px; flex-basis: 16Px; }
+.my-settings-gear { margin: 0; padding: 0; flex: none; width: 48Px; height: 48Px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; }
+.my-settings-gear .semantic-icon { width: 24Px; height: 24Px; flex-basis: 24Px; }
 .my-focus-actions { display: flex; flex-direction: column; gap: 18Px; }
 .my-focus-actions .my-plan-card { width: 100%; }
-.routine-entry { width: 100%; min-height: 72Px; margin: 0; padding: 14Px 16Px; display: flex; align-items: center; gap: 12Px; border: 0; border-radius: 18Px; background: var(--surface); color: var(--text-primary); text-align: left; white-space: normal; }
+.routine-entry { width: 100%; min-height: 74Px; margin: 0; padding: 14Px 18Px; display: flex; align-items: center; gap: 14Px; border: 0; border-radius: 20Px; background: var(--surface); color: var(--text-primary); text-align: left; white-space: normal; }
 .theme-day .routine-entry { background: #ffffffe0; }
-.routine-entry__icon { width: 32Px; height: 32Px; flex: none; border: 1Px solid var(--border); border-radius: 7Px; display: flex; align-items: center; justify-content: center; }
-.routine-entry__icon .semantic-icon { width: 16Px; height: 16Px; flex-basis: 16Px; }
+.routine-entry__icon { width: 40Px; height: 40Px; flex: none; border: 1Px solid var(--border); border-radius: 12Px; display: flex; align-items: center; justify-content: center; }
+.routine-entry__icon .semantic-icon { width: 22Px; height: 22Px; flex-basis: 22Px; }
 .account-row__copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1Px; }
-.account-row__copy .type-section { font-size: 13Px; font-weight: 400; }
-.account-row__copy .type-caption { font-size: 11Px; color: var(--text-secondary); }
+.account-row__copy .type-section { font-size: 16Px; line-height: 22Px; font-weight: 600; }
+.account-row__copy .type-caption { font-size: 13Px; line-height: 18Px; color: var(--text-secondary); }
 .account-row__chevron { display: flex; align-items: center; justify-content: center; width: 14Px; height: 14Px; }
 .account-row__chevron .semantic-icon { width: 14Px; height: 14Px; flex-basis: 14Px; }
 .my-nickname:active, .my-settings-gear:active, .routine-entry:active { background: var(--pressed-overlay); }

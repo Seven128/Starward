@@ -1,4 +1,6 @@
+import { mediaSource } from "@/utils/media-source";
 import { FloatingNotificationHost } from "@/components/notification";
+import { useRedLightHandoff } from "@/components/red-light-handoff";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
@@ -105,6 +107,7 @@ export function SpotDetailPage({
   const spotId = safeParam(router.params.spotId);
   const routeContextId = safeParam(router.params.contextId);
   const themeClass = useThemeClass();
+  const navigationHandoff = useRedLightHandoff();
   const segment = initialSegment;
   const [mapReturnFailed, setMapReturnFailed] = useState(false);
   const favoriteIds = useAppStore((state) => state.favoriteIds);
@@ -151,6 +154,12 @@ export function SpotDetailPage({
     queryFn: (signal) => getSpotGuides(spotId, signal),
     enabled: validRoute && pageVisible && segment === "GUIDES" && overview.data?.data.spot.spotId === spotId,
   });
+  const confirmedGuidesEmpty = Boolean(
+    guides.data &&
+    !guides.refreshError &&
+    guides.data.dataState !== "STALE_USABLE" &&
+    guides.data.data.guides.length === 0,
+  );
   const site = useResourceQuery({
     queryKey: ["spot-site", spotId],
     queryFn: (signal) => getSpotSite(spotId, signal),
@@ -202,8 +211,9 @@ export function SpotDetailPage({
         <CustomNav title="观星点详情" back />
         <View className="page-inset">
           <StatusPanel
-            state="EMPTY"
-            detail={mapReturnFailed ? "地图暂未打开，请重试。" : "无法确认当前观星点，请返回地图重新选择。"}
+            state="ERROR"
+            title="观星点无法确认"
+            detail={mapReturnFailed ? "地图暂未打开，请重试。" : "缺少当前地点或观测上下文，请返回地图重新选择。"}
             recoveryLabel={mapReturnFailed ? "重试返回地图" : "返回地图"}
             onRecover={() => void returnToMap()}
           />
@@ -242,6 +252,8 @@ export function SpotDetailPage({
       notify({ owner: "spot-detail", placement: "inline", tone: "warning", title: "坐标不对外开放", body: "该点位不允许向外部地图发送精确坐标；请查看公开的到达说明。", dismissible: true, dedupeKey: `spot-navigation-restricted:${detail.spot.spotId}` });
       return;
     }
+    const allowed = await navigationHandoff.confirm("微信导航选项和地图界面可能较亮，无法跟随红光模式。");
+    if (!allowed || !current()) return;
     const hasTravelBlocker = Boolean(
       detail.accessAndSafety.explicitDanger ||
         detail.accessAndSafety.openness === "CLOSED" ||
@@ -330,6 +342,7 @@ export function SpotDetailPage({
       data-spot-id={spotId}
     >
       <FloatingNotificationHost />
+      {navigationHandoff.warning}
       <CustomNav
         title={segment === "GUIDES" ? "观星攻略" : segment === "SITE" ? "场地资料" : "地点概览"}
         back
@@ -361,7 +374,7 @@ export function SpotDetailPage({
       ) : overview.isError || !detail ? (
         <View className="page-inset">
           <StatusPanel
-            state="EMPTY"
+            state="ERROR"
             detail="地点资料暂时无法加载，请重试。"
             recoveryLabel="重试概览"
             onRecover={() => void overview.refetch()}
@@ -435,13 +448,13 @@ export function SpotDetailPage({
                     <StatusPanel state="LOADING" detail="正在加载攻略。" />
                   ) : guides.isError ? (
                     <StatusPanel
-                      state="EMPTY"
+                      state="ERROR"
                       detail="攻略暂时无法加载，请重试。"
                       recoveryLabel="重试攻略"
                       onRecover={() => void guides.refetch()}
                     />
                   ) : !guides.data?.data.guides.length ? (
-                    <StatusPanel state="EMPTY" detail="暂无本地点的攻略；可继续查看场地与来源资料。" />
+                    confirmedGuidesEmpty ? <StatusPanel state="EMPTY" detail="暂无本地点的攻略；可继续查看场地与来源资料。" /> : null
                   ) : (
                     guides.data.data.guides.map((guide) => {
                       const thumbnail = guideThumbnail(guide, detail.spot.media);
@@ -449,7 +462,7 @@ export function SpotDetailPage({
                         {thumbnail ? (
                           <Image
                             className="guide-card__media"
-                            src={thumbnail.thumbnailPath}
+                            src={mediaSource(thumbnail.thumbnailPath)}
                             mode="aspectFill"
                             aria-label={thumbnail.alt}
                           />
@@ -514,7 +527,7 @@ export function SpotDetailPage({
                     />
                   ) : site.isError ? (
                     <StatusPanel
-                      state="EMPTY"
+                      state="ERROR"
                       detail="场地信息暂时无法加载，请重试。"
                       recoveryLabel="重试场地"
                       onRecover={() => void site.refetch()}

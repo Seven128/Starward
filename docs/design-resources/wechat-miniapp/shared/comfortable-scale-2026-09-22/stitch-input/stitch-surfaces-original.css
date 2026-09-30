@@ -1,0 +1,1384 @@
+/* ==========================================================================
+   Starward 微信小程序 · 全产品视觉尺寸与舒适圆润覆盖 (2026-09-22)
+   规则全部按页面通过 body[data-scale-surface="key"] 隔离，不改变原生布局机理
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. 全局共享来源归因区 (Shared Source Attribution & Disclosures)
+   -------------------------------------------------------------------------- */
+.source-credit {
+  font-size: 13px !important;
+  line-height: 20px !important;
+  color: #64748b;
+  overflow-wrap: anywhere !important;
+}
+
+.source-disclosure {
+  font-size: 14px !important;
+  line-height: 22px !important;
+  color: #475569;
+  overflow-wrap: anywhere !important;
+}
+
+.source-disclosure a,
+.source-credit a,
+.celestial-source-link {
+  overflow-wrap: anywhere !important;
+  word-break: break-all;
+}
+
+button[data-action="copy-link"],
+.copy-link-btn,
+.source-disclosure button,
+.source-credit button {
+  min-height: 44px !important;
+  height: 44px !important;
+  font-size: 13px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   1. SURFACE: my (我的 · 观星计划)
+   -------------------------------------------------------------------------- */
+body[data-scale-surface="my"] {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+}
+
+body[data-scale-surface="my"] main {
+  padding: 12px 18px 24px !important;
+  gap: 16px !important;
+}
+
+/* 顶部账号栏与头像 */
+body[data-scale-surface="my"] #account {
+  gap: 16px !important;
+  padding: 8px 6px 12px !important;
+}
+
+body[data-scale-surface="my"] #avatar {
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  min-height: 64px !important;
+}
+
+body[data-scale-surface="my"] #avatar svg {
+  width: 28px !important;
+  height: 28px !important;
+}
+
+body[data-scale-surface="my"] #display-name {
+  font-size: 20px !important;
+  line-height: 28px !important;
+  font-weight: 700 !important;
+}
+
+body[data-scale-surface="my"] #nickname svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+body[data-scale-surface="my"] #account > [aria-label="设置"] {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+body[data-scale-surface="my"] #account > [aria-label="设置"] svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* 玻璃质感「观星计划」卡片 */
+body[data-scale-surface="my"] #plan-card {
+  border-radius: 22px !important;
+  margin-top: 10px !important;
+}
+
+body[data-scale-surface="my"] #plan-card > div:first-child {
+  padding: 12px 16px 10px !important;
+}
+
+body[data-scale-surface="my"] #plan-card h2 {
+  font-size: 18px !important;
+  line-height: 26px !important;
+  font-weight: 600 !important;
+}
+
+body[data-scale-surface="my"] #plan-card .plan-suv {
+  width: 32px !important;
+  height: 26px !important;
+}
+
+body[data-scale-surface="my"] #all-plans {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+}
+
+body[data-scale-surface="my"] #all-plans svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+body[data-scale-surface="my"] .plan-row {
+  min-height: 68px !important;
+  padding: 12px 16px !important;
+  gap: 14px !important;
+}
+
+body[data-scale-surface="my"] .plan-name {
+  font-size: 16px !important;
+  line-height: 22px !important;
+  font-weight: 600 !important;
+}
+
+body[data-scale-surface="my"] .plan-time {
+  font-size: 13px !important;
+  line-height: 18px !important;
+  margin-top: 4px !important;
+}
+
+body[data-scale-surface="my"] .plan-row[data-ongoing="true"] .plan-time > span:first-child {
+  font-size: 12px !important;
+  line-height: 18px !important;
+  padding: 2px 8px !important;
+  border-radius: 6px !important;
+}
+
+body[data-scale-surface="my"] .plan-dot {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+body[data-scale-surface="my"] .chevron,
+body[data-scale-surface="my"] .plan-row .chevron {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+body[data-scale-surface="my"] #more-plans {
+  min-height: 48px !important;
+}
+
+/* 观星点创建与反馈入口 */
+body[data-scale-surface="my"] #submitted {
+  border-radius: 20px !important;
+  margin-top: 16px !important;
+}
+
+body[data-scale-surface="my"] #submitted button {
+  min-height: 74px !important;
+  padding: 14px 18px !important;
+}
+
+body[data-scale-surface="my"] #submitted button > div > div:first-child {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+}
+
+body[data-scale-surface="my"] #submitted button > div > div:first-child svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+body[data-scale-surface="my"] #submitted button > div > div:last-child > div:first-child {
+  font-size: 16px !important;
+  line-height: 22px !important;
+  font-weight: 600 !important;
+}
+
+body[data-scale-surface="my"] #submitted button > div > div:last-child > div:last-child {
+  font-size: 13px !important;
+  margin-top: 4px !important;
+}
+
+/* 底部导航栏 */
+body[data-scale-surface="my"] body > footer,
+body[data-scale-surface="my"] footer {
+  padding-bottom: 12px !important;
+}
+
+body[data-scale-surface="my"] footer nav {
+  height: 52px !important;
+}
+
+body[data-scale-surface="my"] footer nav button {
+  min-height: 48px !important;
+  gap: 6px !important;
+}
+
+body[data-scale-surface="my"] footer nav button span {
+  font-size: 14px !important;
+}
+
+body[data-scale-surface="my"] footer nav button svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   2. SURFACE: search (搜索页)
+   -------------------------------------------------------------------------- */
+body[data-scale-surface="search"] {
+  font-size: 15px !important;
+}
+
+/* 顶部搜索框 */
+body[data-scale-surface="search"] .search-frame {
+  height: 44px !important;
+  top: 92px !important;
+  left: 18px !important;
+  right: 18px !important;
+}
+
+body[data-scale-surface="search"] .search-leading {
+  width: 44px !important;
+  height: 44px !important;
+  left: 0 !important;
+  top: 0 !important;
+}
+
+body[data-scale-surface="search"] .search-leading svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+body[data-scale-surface="search"] .search-input {
+  left: 44px !important;
+  height: 42px !important;
+  font-size: 15px !important;
+  line-height: 22px !important;
+  width: calc(100% - 56px) !important;
+}
+
+/* 筛选滑动胶囊行 */
+body[data-scale-surface="search"] .search-surface {
+  top: 142px !important;
+}
+
+body[data-scale-surface="search"] .filter-row {
+  height: 58px !important;
+  min-height: 58px !important;
+  padding: 0 14px 0 18px !important;
+  gap: 8px !important;
+}
+
+body[data-scale-surface="search"] .filter-scroll {
+  height: 52px !important;
+  gap: 8px !important;
+}
+
+body[data-scale-surface="search"] .filter-chip {
+  height: 44px !important;
+  min-width: 44px !important;
+}
+
+body[data-scale-surface="search"] .filter-chip .chip-face {
+  height: 36px !important;
+  padding: 0 14px !important;
+  font-size: 13.5px !important;
+  gap: 6px !important;
+  border-radius: 999px !important;
+}
+
+body[data-scale-surface="search"] .filter-prefix svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+body[data-scale-surface="search"] .filter-open {
+  flex: 0 0 44px !important;
+  width: 44px !important;
+  height: 44px !important;
+}
+
+body[data-scale-surface="search"] .filter-trigger-face {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+body[data-scale-surface="search"] .filter-open svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+body[data-scale-surface="search"] .filter-count {
+  font-size: 11px !important;
+  min-width: 16px !important;
+  height: 16px !important;
+}
+
+/* 搜索结果分组与折叠栏 */
+body[data-scale-surface="search"] .results-scroll {
+  padding: 8px 18px 36px !important;
+}
+
+body[data-scale-surface="search"] .group-toggle {
+  min-height: 46px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+
+body[data-scale-surface="search"] .group-count {
+  font-size: 12px !important;
+  padding: 2px 7px !important;
+  border-radius: 8px !important;
+}
+
+body[data-scale-surface="search"] .group-toggle > svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+/* 观星点卡片 (共享 spot-card) */
+body[data-scale-surface="search"] .card-stack {
+  gap: 12px !important;
+}
+
+body[data-scale-surface="search"] .spot-card {
+  min-height: 102px !important;
+  border-radius: 18px !important;
+}
+
+body[data-scale-surface="search"] .spot-copy {
+  padding: 16px !important;
+}
+
+body[data-scale-surface="search"] .spot-region {
+  font-size: 13px !important;
+  line-height: 18px !important;
+  margin-bottom: 4px !important;
+}
+
+body[data-scale-surface="search"] .spot-copy h3 {
+  font-size: 17px !important;
+  line-height: 24px !important;
+  font-weight: 600 !important;
+}
+
+body[data-scale-surface="search"] .spot-copy p {
+  font-size: 13.5px !important;
+  line-height: 19px !important;
+  margin-top: 8px !important;
+  gap: 6px !important;
+}
+
+body[data-scale-surface="search"] .spot-copy p svg,
+body[data-scale-surface="search"] .spot-address-icon svg {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+/* 筛选抽屉弹窗 (Filter Dialog) */
+body[data-scale-surface="search"] .filter-dialog {
+  border-radius: 24px 24px 0 0 !important;
+  max-height: calc(100svh - 120px) !important;
+}
+
+body[data-scale-surface="search"] .filter-heading {
+  min-height: 54px !important;
+  padding: 0 12px 0 20px !important;
+}
+
+body[data-scale-surface="search"] .filter-heading h2 {
+  font-size: 18px !important;
+  line-height: 24px !important;
+  font-weight: 600 !important;
+}
+
+body[data-scale-surface="search"] .filter-category {
+  height: 54px !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  padding-left: 18px !important;
+}
+
+body[data-scale-surface="search"] .filter-option {
+  min-height: 48px !important;
+  border-radius: 14px !important;
+  font-size: 13.5px !important;
+}
+
+body[data-scale-surface="search"] .filter-option .chip-face {
+  min-height: 38px !important;
+  padding: 6px 8px !important;
+}
+
+body[data-scale-surface="search"] .filter-footer {
+  padding: 12px 18px 28px !important;
+  gap: 14px !important;
+}
+
+body[data-scale-surface="search"] .filter-footer > button {
+  height: 48px !important;
+  font-size: 15px !important;
+  border-radius: 12px !important;
+}
+
+body[data-scale-surface="search"] .drive-input-row input {
+  height: 44px !important;
+  min-height: 44px !important;
+  font-size: 16px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. SURFACE: plan (观星计划 · 列表/详情/编辑)
+   -------------------------------------------------------------------------- */
+body[data-scale-surface="plan"] {
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+}
+
+body[data-scale-surface="plan"] header nav h1,
+body[data-scale-surface="plan"] h1 {
+  font-size: 18px !important;
+  line-height: 26px !important;
+  font-weight: 600 !important;
+}
+
+body[data-scale-surface="plan"] #back {
+  width: 44px !important;
+  min-height: 44px !important;
+}
+
+body[data-scale-surface="plan"] main {
+  padding: 8px 18px 24px !important;
+}
+
+/* 计划列表 Tab (接下来 / 过往 / 新建) */
+body[data-scale-surface="plan"] .filter {
+  margin: 6px 0 16px !important;
+  gap: 20px !important;
+}
+
+body[data-scale-surface="plan"] .filter button {
+  font-size: 15px !important;
+  min-height: 44px !important;
+}
+
+body[data-scale-surface="plan"] .filter .new {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+}
+
+body[data-scale-surface="plan"] .date-group {
+  font-size: 13px !important;
+  margin: 20px 0 8px !important;
+}
+
+body[data-scale-surface="plan"] .plan-row {
+  padding: 16px 14px !important;
+  border-radius: 16px !important;
+  margin-bottom: 12px !important;
+}
+
+body[data-scale-surface="plan"] .plan-row b {
+  font-size: 17px !important;
+  line-height: 24px !important;
+  font-weight: 600 !important;
+}
+
+body[data-scale-surface="plan"] .plan-row p {
+  font-size: 14px !important;
+  line-height: 20px !important;
+  margin: 6px 0 4px !important;
+}
+
+body[data-scale-surface="plan"] .plan-row small {
+  font-size: 12.5px !important;
+}
+
+/* 计划详情板块与英雄区 */
+body[data-scale-surface="plan"] .hero h2 {
+  font-size: 22px !important;
+  line-height: 30px !important;
+  font-weight: 700 !important;
+}
+
+body[data-scale-surface="plan"] .hero p {
+  font-size: 13.5px !important;
+  line-height: 20px !important;
+  margin-top: 4px !important;
+}
+
+body[data-scale-surface="plan"] .period {
+  border-radius: 18px !important;
+  padding: 16px 18px !important;
+  margin-top: 14px !important;
+}
+
+body[data-scale-surface="plan"] .period .date {
+  font-size: 13px !important;
+}
+
+body[data-scale-surface="plan"] .period strong {
+  font-size: 28px !important;
+  line-height: 1.4 !important;
+}
+
+body[data-scale-surface="plan"] .period strong span {
+  font-size: 16px !important;
+}
+
+body[data-scale-surface="plan"] .section-title h3 {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+
+body[data-scale-surface="plan"] .facts {
+  border-radius: 16px !important;
+  padding: 6px 14px !important;
+}
+
+body[data-scale-surface="plan"] .fact small {
+  font-size: 13px !important;
+}
+
+body[data-scale-surface="plan"] .fact strong {
+  font-size: 15px !important;
+}
+
+body[data-scale-surface="plan"] .travel-stop strong {
+  font-size: 15px !important;
+  line-height: 22px !important;
+}
+
+body[data-scale-surface="plan"] .travel-stop p {
+  font-size: 13px !important;
+}
+
+body[data-scale-surface="plan"] .travel-label {
+  font-size: 14px !important;
+}
+
+body[data-scale-surface="plan"] .event-entry {
+  font-size: 15px !important;
+  min-height: 52px !important;
+}
+
+body[data-scale-surface="plan"] .event-entry small {
+  font-size: 13px !important;
+}
+
+/* 提醒清单与 Checkbox */
+body[data-scale-surface="plan"] .reminder-head {
+  font-size: 14px !important;
+  min-height: 40px !important;
+}
+
+body[data-scale-surface="plan"] .check {
+  min-height: 48px !important;
+  font-size: 14.5px !important;
+  line-height: 22px !important;
+  gap: 12px !important;
+}
+
+body[data-scale-surface="plan"] .check i {
+  width: 20px !important;
+  height: 20px !important;
+  flex: 0 0 20px !important;
+  border-radius: 6px !important;
+}
+
+body[data-scale-surface="plan"] .notes {
+  font-size: 14px !important;
+  line-height: 22px !important;
+}
+
+/* 编辑计划表单 (Fields, Input, Select, Textarea) */
+body[data-scale-surface="plan"] .edit-section > h3 {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  margin: 14px 0 8px !important;
+}
+
+body[data-scale-surface="plan"] .fields {
+  border-radius: 16px !important;
+  padding: 0 14px !important;
+}
+
+body[data-scale-surface="plan"] .field {
+  min-height: 54px !important;
+  gap: 12px !important;
+}
+
+body[data-scale-surface="plan"] .field > span {
+  font-size: 13.5px !important;
+  width: 76px !important;
+}
+
+body[data-scale-surface="plan"] .field input,
+body[data-scale-surface="plan"] .field select {
+  font-size: 14.5px !important;
+  min-height: 46px !important;
+}
+
+body[data-scale-surface="plan"] textarea {
+  border-radius: 14px !important;
+  padding: 14px !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+}
+
+body[data-scale-surface="plan"] .reminder-edit {
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+  margin: 10px 0 !important;
+}
+
+body[data-scale-surface="plan"] .reminder-edit input {
+  font-size: 14px !important;
+}
+
+body[data-scale-surface="plan"] .delete {
+  font-size: 13px !important;
+  min-height: 44px !important;
+}
+
+body[data-scale-surface="plan"] .add {
+  font-size: 14px !important;
+  min-height: 44px !important;
+}
+
+/* 底部操作区按钮 */
+body[data-scale-surface="plan"] footer {
+  padding: 10px 18px max(14px, env(safe-area-inset-bottom)) !important;
+  gap: 12px !important;
+}
+
+body[data-scale-surface="plan"] footer button,
+body[data-scale-surface="plan"] .primary {
+  min-height: 48px !important;
+  height: 48px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  border-radius: 14px !important;
+}
+
+body[data-scale-surface="plan"] .quiet {
+  font-size: 14px !important;
+  min-height: 48px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   4. SURFACE: settings (设置页)
+   -------------------------------------------------------------------------- */
+body[data-scale-surface="settings"] {
+  font-size: 15px !important;
+}
+
+body[data-scale-surface="settings"] #phone > header h1,
+body[data-scale-surface="settings"] #page-title {
+  font-size: 18px !important;
+  line-height: 26px !important;
+  font-weight: 600 !important;
+}
+
+body[data-scale-surface="settings"] #back {
+  width: 44px !important;
+  height: 44px !important;
+}
+
+body[data-scale-surface="settings"] main {
+  padding: 12px 18px 36px !important;
+}
+
+/* 三态显示模式滑动面板 (日间 / 夜间 / 观测) */
+body[data-scale-surface="settings"] .mode-panel {
+  padding: 16px 18px 14px !important;
+  border-radius: 20px !important;
+}
+
+body[data-scale-surface="settings"] .mode-panel h2 {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin-bottom: 12px !important;
+}
+
+body[data-scale-surface="settings"] .mode-track {
+  height: 52px !important;
+  max-width: 310px !important;
+}
+
+body[data-scale-surface="settings"] .mode-track:before {
+  inset: 4px 0 !important;
+  border-radius: 26px !important;
+}
+
+body[data-scale-surface="settings"] .mode-thumb {
+  top: 4px !important;
+  height: 44px !important;
+  border-radius: 24px !important;
+}
+
+body[data-scale-surface="settings"] .mode-track button {
+  min-height: 48px !important;
+  font-size: 13.5px !important;
+  gap: 6px !important;
+}
+
+body[data-scale-surface="settings"] .celestial {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+/* 分组标题与设置条目 */
+body[data-scale-surface="settings"] .section-title {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  margin: 24px 6px 10px !important;
+}
+
+body[data-scale-surface="settings"] .row-group {
+  border-radius: 18px !important;
+}
+
+body[data-scale-surface="settings"] .setting-row {
+  min-height: 60px !important;
+  padding: 12px 16px !important;
+  gap: 12px !important;
+}
+
+body[data-scale-surface="settings"] .icon-well {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 11px !important;
+}
+
+body[data-scale-surface="settings"] .icon-well svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+body[data-scale-surface="settings"] .row-copy strong {
+  font-size: 15px !important;
+  line-height: 22px !important;
+}
+
+body[data-scale-surface="settings"] .row-copy small {
+  font-size: 12.5px !important;
+  line-height: 18px !important;
+  margin-top: 3px !important;
+}
+
+body[data-scale-surface="settings"] .row-value {
+  font-size: 13.5px !important;
+}
+
+body[data-scale-surface="settings"] .setting-row > .chevron svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* 开关控件 (Toggle switch) */
+body[data-scale-surface="settings"] .toggle {
+  width: 44px !important;
+  height: 26px !important;
+}
+
+body[data-scale-surface="settings"] .toggle-track {
+  border-radius: 16px !important;
+}
+
+body[data-scale-surface="settings"] .toggle-track:after {
+  top: 3px !important;
+  left: 3px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+body[data-scale-surface="settings"] .toggle input:checked + .toggle-track:after {
+  transform: translateX(18px) !important;
+}
+
+/* 弹层与底部操作 (Settings Dialog / Sheet) */
+body[data-scale-surface="settings"] dialog {
+  border-radius: 24px 24px 0 0 !important;
+  padding: 0 20px 30px !important;
+}
+
+body[data-scale-surface="settings"] .sheet-header {
+  min-height: 52px !important;
+}
+
+body[data-scale-surface="settings"] .sheet-header h2 {
+  font-size: 18px !important;
+}
+
+body[data-scale-surface="settings"] #sheet-body {
+  font-size: 14px !important;
+  line-height: 22px !important;
+}
+
+body[data-scale-surface="settings"] .sheet-choice {
+  min-height: 52px !important;
+  font-size: 14.5px !important;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+}
+
+body[data-scale-surface="settings"] #sheet-actions button {
+  min-height: 48px !important;
+  font-size: 15px !important;
+  border-radius: 12px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   5. SURFACE: sky (云观星)
+   -------------------------------------------------------------------------- */
+body[data-scale-surface="sky"] {
+  font-size: 15px !important;
+}
+
+/* 顶部与返回按钮 */
+body[data-scale-surface="sky"] #phone > header #back {
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 30px !important;
+}
+
+/* 底部常驻地点与天体入口 */
+body[data-scale-surface="sky"] #selected-place {
+  font-size: 14px !important;
+  line-height: 20px !important;
+  margin-bottom: 6px !important;
+}
+
+body[data-scale-surface="sky"] #objects {
+  height: 48px !important;
+  font-size: 22px !important;
+  gap: 6px !important;
+  right: 16px !important;
+}
+
+body[data-scale-surface="sky"] #objects span {
+  font-size: 13px !important;
+}
+
+/* 天体详情弹层 (Liquid Glass Dark Sheet) */
+body[data-scale-surface="sky"] #details {
+  border-radius: 24px !important;
+  padding: 22px !important;
+  max-width: 340px !important;
+}
+
+body[data-scale-surface="sky"] #details h2 {
+  font-size: 20px !important;
+  line-height: 28px !important;
+  font-weight: 600 !important;
+}
+
+body[data-scale-surface="sky"] #close-details {
+  width: 44px !important;
+  height: 44px !important;
+  font-size: 26px !important;
+}
+
+body[data-scale-surface="sky"] #detail-body .celestial-kind {
+  font-size: 12px !important;
+  line-height: 20px !important;
+  padding: 2px 8px !important;
+}
+
+body[data-scale-surface="sky"] #detail-body .celestial-alias {
+  font-size: 13px !important;
+  margin-top: 10px !important;
+}
+
+body[data-scale-surface="sky"] #detail-body .celestial-intro {
+  font-size: 14px !important;
+  line-height: 22px !important;
+  margin: 16px 0 !important;
+}
+
+body[data-scale-surface="sky"] .celestial-facts {
+  padding: 14px 0 !important;
+  gap: 16px !important;
+}
+
+body[data-scale-surface="sky"] .celestial-facts dt {
+  font-size: 12px !important;
+  margin-bottom: 6px !important;
+}
+
+body[data-scale-surface="sky"] .celestial-facts dd {
+  font-size: 20px !important;
+  line-height: 26px !important;
+}
+
+body[data-scale-surface="sky"] #detail-body .celestial-context,
+body[data-scale-surface="sky"] #detail-body .celestial-horizon {
+  font-size: 13px !important;
+  line-height: 20px !important;
+}
+
+body[data-scale-surface="sky"] #detail-body .celestial-source {
+  font-size: 12px !important;
+}
+
+body[data-scale-surface="sky"] .celestial-source-link {
+  min-height: 44px !important;
+  font-size: 13px !important;
+}
+
+body[data-scale-surface="sky"] .object-row {
+  min-height: 68px !important;
+  font-size: 15px !important;
+}
+
+body[data-scale-surface="sky"] .object-row small {
+  font-size: 12px !important;
+}
+
+/* 恢复与授权卡片 */
+body[data-scale-surface="sky"] #recovery {
+  border-radius: 22px !important;
+  padding: 24px 22px 18px !important;
+}
+
+body[data-scale-surface="sky"] #recovery h2 {
+  font-size: 17px !important;
+}
+
+body[data-scale-surface="sky"] #recovery p {
+  font-size: 13px !important;
+  line-height: 20px !important;
+}
+
+body[data-scale-surface="sky"] #enable {
+  height: 48px !important;
+  font-size: 15px !important;
+  border-radius: 12px !important;
+}
+
+body[data-scale-surface="sky"] #defer {
+  min-height: 44px !important;
+  font-size: 13px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   6. SURFACE: contributions (观星点创建与反馈进度)
+   -------------------------------------------------------------------------- */
+body[data-scale-surface="contributions"] {
+  font-size: 15px !important;
+}
+
+body[data-scale-surface="contributions"] header h1 {
+  font-size: 18px !important;
+  line-height: 26px !important;
+  font-weight: 600 !important;
+}
+
+body[data-scale-surface="contributions"] header #back {
+  width: 44px !important;
+  min-height: 44px !important;
+}
+
+/* Tab 切换栏 (创建的观星点 / 反馈编辑) */
+body[data-scale-surface="contributions"] .groups {
+  margin: 8px 18px 0 !important;
+  gap: 28px !important;
+}
+
+body[data-scale-surface="contributions"] .groups button {
+  min-height: 50px !important;
+  font-size: 15px !important;
+  padding-bottom: 8px !important;
+}
+
+/* 状态筛选胶囊 (全部 / 待审核 / 已通过 / 需修改) */
+body[data-scale-surface="contributions"] #filters {
+  padding: 12px 18px 8px !important;
+  gap: 8px !important;
+}
+
+body[data-scale-surface="contributions"] #filters button {
+  min-height: 44px !important;
+  padding: 0 14px !important;
+  font-size: 13px !important;
+  border-radius: 10px !important;
+}
+
+/* 记录条目卡片 */
+body[data-scale-surface="contributions"] #records {
+  padding: 4px 18px 36px !important;
+}
+
+body[data-scale-surface="contributions"] .record {
+  border-radius: 18px !important;
+  margin: 10px 0 16px !important;
+}
+
+body[data-scale-surface="contributions"] .record > .spot-card {
+  border-radius: 18px 18px 0 0 !important;
+}
+
+body[data-scale-surface="contributions"] .record-review {
+  padding: 12px 16px 6px !important;
+}
+
+body[data-scale-surface="contributions"] .record-meta .badge {
+  font-size: 12px !important;
+  gap: 5px !important;
+}
+
+body[data-scale-surface="contributions"] .record-meta .badge svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+body[data-scale-surface="contributions"] .record-meta time {
+  font-size: 12px !important;
+}
+
+body[data-scale-surface="contributions"] .field-summary {
+  font-size: 12px !important;
+  gap: 6px !important;
+  margin-top: 10px !important;
+}
+
+body[data-scale-surface="contributions"] .field-summary span {
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+}
+
+body[data-scale-surface="contributions"] .reason {
+  font-size: 13px !important;
+  line-height: 20px !important;
+  margin-top: 12px !important;
+}
+
+body[data-scale-surface="contributions"] .record-bottom {
+  min-height: 44px !important;
+}
+
+body[data-scale-surface="contributions"] .record-action {
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   7. SURFACE: feedback (观星点创建与编辑地图抽屉)
+   -------------------------------------------------------------------------- */
+body[data-scale-surface="feedback"] {
+  font-size: 15px !important;
+}
+
+/* 顶部地图搜索栏 */
+body[data-scale-surface="feedback"] .map-search {
+  height: 42px !important;
+  top: 92px !important;
+  left: 18px !important;
+  right: 18px !important;
+  font-size: 14px !important;
+  border-radius: 999px !important;
+}
+
+/* 地图悬浮工具按钮 (定位 / 图层 / 新增) */
+body[data-scale-surface="feedback"] [data-purpose="floating-map-tools"] {
+  right: 18px !important;
+  top: 144px !important;
+  gap: 10px !important;
+}
+
+body[data-scale-surface="feedback"] [data-purpose="floating-map-tools"] button {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+}
+
+body[data-scale-surface="feedback"] [data-purpose="floating-map-tools"] button svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* 抽屉面板外壳 */
+body[data-scale-surface="feedback"] #add-sheet {
+  border-radius: 24px 24px 0 0 !important;
+}
+
+body[data-scale-surface="feedback"] .sheet-heading {
+  min-height: 58px !important;
+  padding: 10px 18px 0 !important;
+}
+
+body[data-scale-surface="feedback"] .sheet-heading h2 {
+  font-size: 20px !important;
+  line-height: 28px !important;
+  font-weight: 700 !important;
+}
+
+body[data-scale-surface="feedback"] .sheet-heading button {
+  width: 44px !important;
+  height: 44px !important;
+  font-size: 26px !important;
+}
+
+/* 章节导航 Tab (地点 / 到达 / 设施 / 说明) */
+body[data-scale-surface="feedback"] .chapter-nav {
+  height: 46px !important;
+  padding: 0 18px !important;
+  gap: 26px !important;
+}
+
+body[data-scale-surface="feedback"] .chapter-nav button {
+  font-size: 14px !important;
+}
+
+body[data-scale-surface="feedback"] .chapter-nav button[aria-current="location"] {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+
+/* 表单字段、地址搜索与选项组 */
+body[data-scale-surface="feedback"] .form-scroll {
+  padding: 10px 18px 24px !important;
+}
+
+body[data-scale-surface="feedback"] .chapter > h3 {
+  font-size: 17px !important;
+  line-height: 24px !important;
+  margin: 22px 0 12px !important;
+}
+
+body[data-scale-surface="feedback"] .address-field {
+  height: 46px !important;
+  border-radius: 12px !important;
+  padding: 0 14px !important;
+  gap: 10px !important;
+}
+
+body[data-scale-surface="feedback"] .address-field svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+body[data-scale-surface="feedback"] .address-field input {
+  font-size: 15px !important;
+}
+
+body[data-scale-surface="feedback"] #selected-address {
+  font-size: 13px !important;
+  line-height: 20px !important;
+  margin: 8px 4px !important;
+}
+
+body[data-scale-surface="feedback"] .field-row {
+  min-height: 52px !important;
+  font-size: 14px !important;
+  gap: 14px !important;
+}
+
+body[data-scale-surface="feedback"] .field-row > span {
+  font-size: 14px !important;
+  width: 80px !important;
+}
+
+body[data-scale-surface="feedback"] .field-row input,
+body[data-scale-surface="feedback"] .field-row select {
+  font-size: 14.5px !important;
+}
+
+body[data-scale-surface="feedback"] .section-fields,
+body[data-scale-surface="feedback"] .facility-block {
+  border-radius: 16px !important;
+  padding: 6px 14px 12px !important;
+  margin-bottom: 16px !important;
+}
+
+body[data-scale-surface="feedback"] .facility-block h4 {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  margin: 12px 0 4px !important;
+}
+
+body[data-scale-surface="feedback"] .photo-upload {
+  min-height: 48px !important;
+  font-size: 13.5px !important;
+}
+
+body[data-scale-surface="feedback"] .evidence textarea {
+  min-height: 100px !important;
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+}
+
+body[data-scale-surface="feedback"] .consent,
+body[data-scale-surface="feedback"] #photo-rights {
+  min-height: 44px !important;
+  font-size: 13px !important;
+  gap: 10px !important;
+}
+
+body[data-scale-surface="feedback"] .consent input,
+body[data-scale-surface="feedback"] #photo-rights input {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* 底部保存与提交按钮 */
+body[data-scale-surface="feedback"] .sheet-actions {
+  padding: 10px 18px max(14px, env(safe-area-inset-bottom)) !important;
+  gap: 12px !important;
+}
+
+body[data-scale-surface="feedback"] .sheet-actions button,
+body[data-scale-surface="feedback"] #save-draft,
+body[data-scale-surface="feedback"] #submit {
+  height: 48px !important;
+  min-height: 48px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  border-radius: 14px !important;
+}
+
+body[data-scale-surface="feedback"] [data-purpose="bottom-tab-bar"] {
+  height: 72px !important;
+}
+
+body[data-scale-surface="feedback"] [data-purpose="bottom-tab-bar"] button span {
+  font-size: 14px !important;
+}
+
+body[data-scale-surface="feedback"] [data-purpose="bottom-tab-bar"] button svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   8. SURFACE: layers (图层与时间面板)
+   -------------------------------------------------------------------------- */
+body[data-scale-surface="layers"] {
+  font-size: 15px !important;
+}
+
+/* 悬浮工具栏 (图层激活态 & 定位) */
+body[data-scale-surface="layers"] #map-tool-dock {
+  right: 18px !important;
+  top: 144px !important;
+  gap: 10px !important;
+}
+
+body[data-scale-surface="layers"] #map-tool-dock > button,
+body[data-scale-surface="layers"] #layer-toggle {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+}
+
+body[data-scale-surface="layers"] #map-tool-dock > button svg,
+body[data-scale-surface="layers"] #layer-toggle svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* 底部图层面板容器 */
+body[data-scale-surface="layers"] #layer-panel {
+  border-radius: 24px 24px 0 0 !important;
+  padding-top: 10px !important;
+}
+
+/* 图层说明与图例 */
+body[data-scale-surface="layers"] #layer-source {
+  font-size: 12.5px !important;
+  line-height: 20px !important;
+  padding: 8px 18px 6px !important;
+}
+
+body[data-scale-surface="layers"] #layer-legend {
+  font-size: 13px !important;
+  gap: 18px !important;
+  padding: 4px 18px !important;
+}
+
+body[data-scale-surface="layers"] #layer-legend i,
+body[data-scale-surface="layers"] #layer-legend span > span {
+  width: 9px !important;
+  height: 9px !important;
+}
+
+/* 图层单选双卡片 (光污染 vs 云量) */
+body[data-scale-surface="layers"] [role="radiogroup"] {
+  gap: 14px !important;
+  padding: 10px 18px 14px !important;
+}
+
+body[data-scale-surface="layers"] [data-layer] {
+  height: 64px !important;
+  min-height: 64px !important;
+  border-radius: 16px !important;
+  padding: 0 16px !important;
+}
+
+body[data-scale-surface="layers"] [data-layer] .layer-title,
+body[data-scale-surface="layers"] [data-layer] span.font-semibold,
+body[data-scale-surface="layers"] [data-layer] span.font-bold {
+  font-size: 16px !important;
+  line-height: 22px !important;
+}
+
+body[data-scale-surface="layers"] [data-layer] .layer-subtitle,
+body[data-scale-surface="layers"] [data-layer] span.font-normal,
+body[data-scale-surface="layers"] [data-layer] span.font-medium {
+  font-size: 12.5px !important;
+  margin-top: 2px !important;
+}
+
+body[data-scale-surface="layers"] [data-layer] .layer-check {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+body[data-scale-surface="layers"] [data-layer] .layer-icon {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+/* 地形开关选项行 (Terrain Overlay Toggle) */
+body[data-scale-surface="layers"] .terrain-layer-choice {
+  min-height: 68px !important;
+  padding: 10px 18px !important;
+  font-size: 15px !important;
+}
+
+body[data-scale-surface="layers"] .terrain-layer-choice img {
+  width: 30px !important;
+  height: 30px !important;
+}
+
+body[data-scale-surface="layers"] .terrain-layer-choice small {
+  font-size: 12px !important;
+  margin-top: 4px !important;
+}
+
+/* 底部主导航条 (地图 / 我的) */
+body[data-scale-surface="layers"] #primary-nav {
+  height: 72px !important;
+}
+
+body[data-scale-surface="layers"] #primary-nav > div {
+  font-size: 14px !important;
+  gap: 6px !important;
+}
+
+body[data-scale-surface="layers"] #primary-nav svg {
+  width: 22px !important;
+  height: 22px !important;
+}

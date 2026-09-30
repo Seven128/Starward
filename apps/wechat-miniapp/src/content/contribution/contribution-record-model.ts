@@ -1,6 +1,37 @@
-import type { ContributionSubmission } from "@starward/miniapp-contracts";
+import { CONTRIBUTION_FORMAL_FIELD_KEYS, CONTRIBUTION_MEDIA_KINDS, type ContributionMediaKind, type ContributionSubmission } from "@starward/miniapp-contracts";
+import { formalFeedbackFrozenView } from "./formal-feedback-snapshot";
 
 export type ContributionRecordGroup = "CREATION" | "FEEDBACK";
+
+export interface ContributionRecordDetailSelection {
+  owner: string | null;
+  submissionId: ContributionSubmission["submissionId"];
+}
+
+/** Resolve private detail from the latest account result, never from a clicked row snapshot. */
+export function resolveContributionRecordDetail(
+  selection: ContributionRecordDetailSelection,
+  currentOwner: string | null,
+  submissions: readonly ContributionSubmission[] | null,
+) {
+  if (!selection.owner || currentOwner !== selection.owner) return { state: "ACCOUNT_CHANGED" } as const;
+  if (!submissions) return { state: "UNAVAILABLE" } as const;
+  const item = submissions.find(value => value.submissionId === selection.submissionId);
+  return item ? { state: "CURRENT", item } as const : { state: "MISSING" } as const;
+}
+
+/** A fresh command receipt may advance a cached row, but cannot revive a missing private record. */
+export function resolveContributionEditorRecord(
+  selection: ContributionRecordDetailSelection,
+  currentOwner: string | null,
+  submissions: readonly ContributionSubmission[] | null,
+  receipt: ContributionSubmission | null,
+) {
+  const detail = resolveContributionRecordDetail(selection, currentOwner, submissions);
+  if (detail.state !== "CURRENT") return detail;
+  return { state: "CURRENT", item: receipt?.submissionId === detail.item.submissionId && receipt.revision > detail.item.revision
+    ? receipt : detail.item } as const;
+}
 
 export function contributionRecordGroup(item: ContributionSubmission): ContributionRecordGroup {
   return item.kind === "NEW_SPOT_PROPOSAL" ? "CREATION" : "FEEDBACK";
@@ -21,6 +52,88 @@ export function contributionRecordStatus(item: ContributionSubmission) {
   return { key: "PENDING", label: "审核中", tone: "neutral" } as const;
 }
 
+export function contributionRecordPrimaryAction(item: ContributionSubmission) {
+  if (item.submissionState === "DRAFT" || (!item.submissionState && item.state === "DRAFT")) return "EDIT" as const;
+  const status = contributionRecordStatus(item);
+  if (status.key === "REJECTED") return "REVIEW_AND_EDIT" as const;
+  if (status.key === "ONLINE" && item.spotId) return "OPEN_PUBLISHED_SPOT" as const;
+  return "READ_SUBMISSION" as const;
+}
+
 export function contributionFrozenAttempt(item: ContributionSubmission) {
   return item.attempts?.at(-1) ?? null;
+}
+
+function present(value: string | null | undefined) {
+  return value?.trim() || null;
+}
+
+function recordSource(item: ContributionSubmission) {
+  return item.submissionState === "DRAFT" ? item : contributionFrozenAttempt(item)?.snapshot ?? item;
+}
+
+/** A creation record names the authored place, not the map picker label. */
+export function contributionRecordIdentity(item: ContributionSubmission) {
+  const submitted = recordSource(item);
+  const candidate = submitted.candidateLocation ?? item.candidateLocation;
+  const profile = submitted.candidateProfile ?? item.candidateProfile;
+  return {
+    name: item.kind === "NEW_SPOT_PROPOSAL"
+      ? present(profile?.fields.name) ?? present(candidate?.displayName) ?? "地点待定"
+      : present(item.spotNameSnapshot) ?? present(candidate?.displayName) ?? "地点待定",
+    region: candidate?.region ?? (item.spotId ? "正式观星点" : "地区资料未提供"),
+    address: item.kind === "NEW_SPOT_PROPOSAL" ? present(profile?.fields.address) : null,
+  };
+}
+
+/** A submitted creation record shows its structured frozen proposal, not legacy report text. */
+export function contributionSubmittedPlaceFacts(item: ContributionSubmission) {
+  if (item.kind !== "NEW_SPOT_PROPOSAL") return null;
+  const submitted = recordSource(item);
+  const location = submitted.candidateLocation ?? item.candidateLocation;
+  const profile = submitted.candidateProfile ?? item.candidateProfile;
+  return {
+    selectedLocation: location ? `${location.displayName} · ${location.region}` : null,
+    fields: CONTRIBUTION_FORMAL_FIELD_KEYS.filter(key =>
+      Object.prototype.hasOwnProperty.call(profile?.fields ?? {}, key)).map(key => ({
+      key, value: profile?.fields[key] ?? "",
+    })),
+  };
+}
+
+/** Use a completed upload from this draft or frozen attempt; never borrow nearby-spot media. */
+export function contributionRecordCover(item: ContributionSubmission) {
+  const media = recordSource(item).media;
+  const ready = media.filter(value => value.state === "ATTACHED" || value.state === "UPLOADED");
+  return ready.find(value => value.kind === "site") ?? ready[0] ?? null;
+}
+
+export type ContributionRecordPhoto = {
+  id: string;
+  kind: ContributionMediaKind;
+  owned: boolean;
+  change: "added" | "removed" | "retained";
+};
+
+/** Retain the frozen grouping and accepted differences, including removed originals. */
+export function contributionRecordPhotos(item: ContributionSubmission): ContributionRecordPhoto[] {
+  const frozen = recordSource(item);
+  const owned = new Set<string>(frozen.media.map(media => media.uploadId));
+  const formal = frozen.formalFeedback ? formalFeedbackFrozenView(frozen.formalFeedback) : null;
+  return CONTRIBUTION_MEDIA_KINDS.flatMap(kind => {
+    const before = formal?.baseline.media[kind] ?? [];
+    const after = formal
+      ? (Object.prototype.hasOwnProperty.call(formal.proposal.media, kind) ? formal.proposal.media[kind] ?? [] : before)
+      : frozen.candidateProfile?.media[kind] ?? frozen.media.filter(media => (media.kind ?? "site") === kind).map(media => media.uploadId);
+    return [...new Set([...after, ...before])].map(id => ({
+      id, kind, owned: owned.has(id),
+      change: formal && !after.includes(id) ? "removed" as const
+        : formal && !before.includes(id) ? "added" as const : "retained" as const,
+    }));
+  });
+}
+
+export function contributionRecordFormalView(item: ContributionSubmission) {
+  const formal = recordSource(item).formalFeedback;
+  return formal ? formalFeedbackFrozenView(formal) : null;
 }

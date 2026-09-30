@@ -73,6 +73,41 @@ function actualCallback(page: "map" | "auth", name: string, ports: object): () =
   }).outputText, ports, { timeout: 1000 });
 }
 
+test("granting permission after a denial clears the stale denial without claiming a GPS fix", async () => {
+  const states: string[] = [];
+  const feedback: string[] = [];
+  const run = actualCallback("auth", "openPermissions", {
+    Taro: { openSetting: async () => ({ authSetting: { "scope.userLocation": true } }) },
+    locationRequestBusy: { current: false }, locationState: "DENIED",
+    setBusy: () => {}, setFeedbackState: () => {},
+    setFeedback: (value: string) => feedback.push(value),
+    setLocationState: (state: string) => states.push(state), notify: () => {},
+  });
+  await run();
+  assert.deepEqual(states, ["AUTHORIZED"]);
+  assert.match(feedback.at(-1) ?? "", /已开启.*尚未获取位置/u);
+});
+
+test("reopening settings after a successful one-shot fix keeps the acquired-location state", async () => {
+  const states: string[] = [], panels: string[] = [], feedback: string[] = [];
+  let queue: NotificationRecord[] = [];
+  const run = actualCallback("auth", "openPermissions", {
+    Taro: { openSetting: async () => ({ authSetting: { "scope.userLocation": true } }) },
+    locationRequestBusy: { current: false }, locationState: "GRANTED",
+    setBusy: () => {}, setFeedbackState: (value: string) => panels.push(value),
+    setFeedback: (value: string) => feedback.push(value),
+    setLocationState: (state: string) => states.push(state),
+    notify: (intent: NotificationIntent) => { queue = enqueueNotification(queue, intent); },
+  });
+  await run();
+  assert.deepEqual(states, []);
+  assert.equal(panels.at(-1), "READY");
+  assert.match(feedback.at(-1) ?? "", /本次位置已获取/u);
+  assert.equal(queue[0]?.title, "定位权限已开启");
+  assert.match(queue[0]?.body ?? "", /本次已取得过一次位置/u);
+  assert.doesNotMatch(queue[0]?.body ?? "", /尚未重新获取位置/u);
+});
+
 function mapHarness(native: Port, resolveContext: (point: unknown, source: string) => Promise<unknown>) {
   const states: string[] = [];
   const viewports: unknown[] = [];
@@ -81,22 +116,45 @@ function mapHarness(native: Port, resolveContext: (point: unknown, source: strin
   let queue: NotificationRecord[] = [];
   let tick = 0;
   let mapResetVersion = 0;
+  let locationState = "DEFAULT_REGION";
+  const mapPointIntent = { current: 0 };
   const notify = (intent: NotificationIntent) => { queue = enqueueNotification(queue, intent, ++tick); };
   const run = actualCallback("map", "locateMap", {
     Taro: native, requestOneShotLocation, locationRequestBusy: { current: false },
-    useAppStore: { getState: () => ({ mapResetVersion }) },
-    setLocationState: (state: string) => states.push(state),
+    mapPointIntent, invalidateMapPointIntent: () => ++mapPointIntent.current, nativeMap: { isCurrent: () => true }, currentDraftUserId: () => "owner",
+    useAppStore: { getState: () => ({ mapResetVersion, locationState, notifications: queue,
+      dismissNotification: (id: string) => { queue = queue.filter(item => item.id !== id); } }) },
+    setLocationState: (state: string) => { states.push(state); locationState = state; },
     setLocationBusy: (value: boolean) => busy.push(value),
     setViewport: (viewport: unknown) => viewports.push(viewport),
     setAnnouncement: (message: string) => announcements.push(message),
     notify, resolveMapPoint: resolveContext, errorMessage: () => "暂时不可用",
   });
   return { run, states, viewports, busy, announcements, notify,
+    supersede: () => { mapPointIntent.current++; },
     reset: () => { mapResetVersion++; },
     get queue() { return queue; },
     visible: () => selectNotification(queue, "inline", "map"),
   };
 }
+
+test("a newer map selection cancels GPS/context progress without leaving REQUESTING or its old notice", async () => {
+  for (const phase of ["GPS", "CONTEXT"] as const) {
+    const fix = deferred<typeof center>(), context = deferred<void>(), entered = deferred<void>();
+    const map = mapHarness(platform(() => fix.promise, async () => ({})), async () => { entered.resolve(); await context.promise; });
+    map.notify({ owner: "map", placement: "inline", tone: "warning", title: "无关资料错误", body: "保留", dedupeKey: "unrelated" });
+    const pending = map.run();
+    if (phase === "CONTEXT") { fix.resolve(center); await entered.promise; }
+    map.supersede();
+    if (phase === "GPS") fix.resolve(center); else context.resolve();
+    await pending;
+    assert.equal(map.states.at(-1), phase === "GPS" ? "DEFAULT_REGION" : "GRANTED");
+    assert.equal(map.queue.some(item => item.dedupeKey === "map-location-request"), false);
+    assert.equal(map.queue.some(item => item.dedupeKey === "unrelated"), true);
+    assert.equal(map.announcements.length, 0);
+    assert.equal(map.busy.at(-1), false);
+  }
+});
 
 test("actual Map failure keeps viewport/context untouched and presents the right recovery", async () => {
   for (const permission of [false, true, undefined]) {
@@ -196,6 +254,13 @@ test("actual permission request distinguishes outcomes, never claims map update,
     const pending = deferred<OneShotLocationResult>();
     const states: string[] = [];
     const feedback: string[] = [];
+    let queue: NotificationRecord[] = enqueueNotification([], {
+      owner: "map", placement: "inline", tone: "info", title: "定位权限已开启",
+      body: "尚未重新获取位置；点击定位按钮获取本次位置。", dedupeKey: "map-location-request",
+    });
+    queue = enqueueNotification(queue, {
+      owner: "settings", placement: "inline", tone: "warning", title: "设置同步失败", body: "重试设置",
+    });
     let calls = 0;
     const run = actualCallback("auth", "requestOnce", {
       Taro: {}, locationRequestBusy: { current: false },
@@ -203,6 +268,7 @@ test("actual permission request distinguishes outcomes, never claims map update,
       setLocationState: (value: string) => states.push(value),
       setFeedback: (value: string) => feedback.push(value),
       setBusy() {}, setFeedbackState() {},
+      notify: (intent: NotificationIntent) => { queue = enqueueNotification(queue, intent); },
     });
     const first = run();
     await run();
@@ -211,6 +277,11 @@ test("actual permission request distinguishes outcomes, never claims map update,
     await first;
     assert.deepEqual(states, ["REQUESTING", state]);
     assert.match(feedback.at(-1)!, state === "GRANTED" ? /地图位置未改变/ : state === "DENIED" ? /权限未授予/ : /暂时无法取得位置/);
+    assert.equal(queue.length, 2, "replace the one old location notice without discarding another owner");
+    assert.equal(selectNotification(queue, "inline", "settings").current?.title, "设置同步失败");
+    const location = selectNotification(queue, "inline", "map").current;
+    assert.equal(location?.title, state === "GRANTED" ? "本次位置已取得" : state === "DENIED" ? "定位权限未授予" : "暂时无法取得位置");
+    assert.doesNotMatch(location?.body ?? "", /尚未重新获取位置/u);
     await run();
     assert.equal(calls, 2);
   }
@@ -245,7 +316,8 @@ test("actual permission settings never invent a GPS fix or treat unknown as refu
     let calls = 0;
     const run = actualCallback("auth", "openPermissions", {
       Taro: { openSetting: () => { calls++; return pending.promise; } },
-      locationRequestBusy: { current: false }, setBusy: (value: boolean) => busy.push(value),
+      locationRequestBusy: { current: false }, locationState: "DEFAULT_REGION",
+      setBusy: (value: boolean) => busy.push(value),
       setLocationState: (value: string) => states.push(value),
       setFeedback: (value: string) => feedback.push(value), setFeedbackState: (value: string) => panels.push(value),
       notify: (intent: NotificationIntent) => { queue = enqueueNotification(queue, intent); },
@@ -254,7 +326,7 @@ test("actual permission settings never invent a GPS fix or treat unknown as refu
     if (permission === "ERROR") pending.reject(new Error("synthetic settings failure"));
     else pending.resolve({ authSetting: { "scope.userLocation": permission } });
     await first;
-    assert.deepEqual(states, permission === false ? ["DENIED"] : []);
+    assert.deepEqual(states, permission === false ? ["DENIED"] : permission === true ? ["AUTHORIZED"] : []);
     assert.equal(panels.at(-1), permission === false ? "PERMISSION_DENIED" : permission === "ERROR" ? "ERROR" : "INITIAL");
     assert.match(feedback.at(-1)!, permission === true ? /尚未获取位置/ : permission === false ? /未开启/ : permission === "ERROR" ? /请重试/ : /尚未取得/);
     assert.deepEqual(busy, [true, false]);

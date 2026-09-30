@@ -7,7 +7,7 @@
 
 日期、切片与事实由调用方提供；组件处理日期选择、保留同一钟表时间、日历取消/焦点返回、横拖预览、释放提交、方向竞争与取消恢复。日历来自实际传入的日期数组；浏览器样本使用原观星点隔离数据，不是生产能力。每个独立预览实例的选择由其调用方持有，不把跨iframe页面当作已接入真实Observation Context。
 
-提取保留已采用字号、66px刻度间距、浅弧和暖黄中心轴，移除了各原型重复的控制器与样式。日期栏与日历使用所选切片的实际当地日期；跨午夜底部说明保留起始观测夜，不再重复中心时间；窄屏省略视觉星期以容纳日期与图标，日期名的辅助语义仍完整。日期箭头、今晚和日历格保持至少44px，移除月相槽时不留空占位。
+提取保留已采用字号、66px刻度间距、浅弧和暖黄中心轴，移除了各原型重复的控制器与样式。日期栏与日历使用所选切片的实际当地日期；跨午夜底部说明保留起始观测夜，不再重复中心时间；窄屏省略视觉星期以容纳日期与图标，日期名的辅助语义仍完整。日期箭头、返回“今天”和日历格保持至少44px，移除月相槽时不留空占位。返回“今天”只选择地点当地的今天这一自然日；可用时保留当前钟表时间，缺少该时刻样本时由事实 owner 选择并告知实际可用时刻。选中清晨时刻不暗示跳到今晚。
 
 这是可交互设计资源的共享实现。生产实现仍应使用现有Taro enhanced ScrollView、公共components层和唯一Observation Context，不能直接把DOM控制器移植到WEAPP。产品语义由 [Spot and sky](../../../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#lunar-facts-and-date-selection) 与 [Map and Search](../../../../../project_context/areas/main/screen-contracts/wechat-miniapp/map-and-finder.md) 拥有。
 

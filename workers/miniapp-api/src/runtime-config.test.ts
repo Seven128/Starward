@@ -62,6 +62,19 @@ test("delivery identity encryption requires a distinct valid key and defaults to
   assert.throws(() => withEnvironment({ ...environment, MINIAPP_SESSION_SECRET: key, WECHAT_DELIVERY_IDENTITY_KEY: key }, loadRuntimeConfig), /wechat_delivery_key_must_be_independent/);
 });
 
+test("local memory test sharing has an isolated signing key without release credentials", () => {
+  const local = { MINIAPP_RELEASE_PROFILE: "LOCAL", MINIAPP_STORAGE_MODE: "MEMORY_TEST",
+    MINIAPP_AUTH_MODE: "LOCAL_TEST", MINIAPP_DEVELOPMENT_FIXTURE_MODE: "1" };
+  const fixture = withEnvironment(local, loadRuntimeConfig);
+  assert.ok(fixture.wechat.sessionSecret.length >= 32);
+  assert.match(fixture.wechat.sessionSecret, /test-only/u);
+  assert.equal(withEnvironment({ ...local, MINIAPP_SESSION_SECRET: "explicit-local-signing-secret-at-least-32" }, loadRuntimeConfig)
+    .wechat.sessionSecret, "explicit-local-signing-secret-at-least-32");
+  assert.equal(withEnvironment({ ...local, MINIAPP_STORAGE_MODE: "POSTGRES",
+    MINIAPP_DEVELOPMENT_FIXTURE_MODE: "0", DATABASE_URL: "postgresql://local:test@localhost:5432/starward" }, loadRuntimeConfig)
+    .wechat.sessionSecret, "");
+});
+
 test("reminder template defaults to unavailable and rejects malformed IDs", () => {
   const environment = releaseEnvironment("TRIAL", "OPEN_METEO_COMMERCIAL");
   assert.equal(withEnvironment(environment, loadRuntimeConfig).wechat.subscriptionTemplateId, null);

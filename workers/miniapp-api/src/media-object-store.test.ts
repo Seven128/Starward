@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -44,4 +44,30 @@ test("local media object keys are portable across Windows and POSIX", async () =
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test("local upload retries ignore crash residue and retirement removes only their own temporary files", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "starward-media-residue-"));
+  const store = new LocalFilesystemMediaObjectStore(root);
+  const key = "contributions/0123456789abcdef01234567/residue-upload.png";
+  const destination = path.join(root, ...key.split("/"));
+  try {
+    await mkdir(path.dirname(destination), { recursive: true });
+    const legacy = destination + ".pending";
+    const crash = destination + ".pending-01234567-89ab-cdef-0123-456789abcdef";
+    const unrelated = destination + ".pending-unrelated";
+    for (const file of [legacy, crash, unrelated]) await writeFile(file, "partial");
+    // Contribution writers are serialized by the repository transaction.
+    await store.put({ objectKey: key, bytes: Buffer.from("first") });
+    await store.put({ objectKey: key, bytes: Buffer.from("second") });
+    assert.equal(Buffer.from((await store.read(key))!).toString(), "second");
+    assert.equal((await readdir(path.dirname(destination))).length, 4, "successful writers leave no own temporary file");
+    await store.delete(key);
+    assert.equal(await store.read(key), null);
+    assert.deepEqual(await readdir(path.dirname(destination)), [path.basename(unrelated)]);
+    await store.delete(key);
+    await mkdir(destination);
+    await assert.rejects(store.put({ objectKey: key, bytes: Buffer.from("rename must fail") }));
+    assert.deepEqual((await readdir(path.dirname(destination))).sort(), [path.basename(destination), path.basename(unrelated)].sort());
+  } finally { await rm(root, { recursive: true, force: true }); }
 });

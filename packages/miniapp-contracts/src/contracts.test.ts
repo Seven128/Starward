@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { ApiEnvelope, ContributionMediaData, MiniappApiJsonOperationId, MiniappApiResponse } from "./index.ts";
 import {
   EMPTY_FILTER_STATE,
   FEATURE_FLAG_KEYS,
@@ -16,6 +17,15 @@ import {
   TEST_SPOTS,
   buildTestSpotDetail,
 } from "./catalog.ts";
+
+test("published image transport is raw bytes and excluded from the JSON requester", () => {
+  const image: MiniappApiResponse<"spotContributionImageGet"> = new Uint8Array([0xff, 0xd8]);
+  const json: MiniappApiResponse<"spotContributionMediaGet"> extends ApiEnvelope<ContributionMediaData> ? true : false = true;
+  const imageIsJson: "spotContributionImageGet" extends MiniappApiJsonOperationId ? true : false = false;
+  assert.equal(image.byteLength, 2);
+  assert.equal(json, true);
+  assert.equal(imageIsJson, false);
+});
 
 test("the current filter schema has the exact ordered 14-option population", () => {
   assert.equal(FILTER_OPTIONS.length, 14);

@@ -101,9 +101,9 @@ export function Provenance({
           ))}
           {source.sourceUrl || source.licenseUrl || downloadUrl ? (
             <View className="provenance__links">
-              {source.sourceUrl ? <SoftButton label={`复制${source.provider}的原始出处链接`} disabled={copying} onClick={() => void copyLink(source.sourceUrl)}>原始出处</SoftButton> : null}
-              {source.licenseUrl ? <SoftButton label={`复制${source.provider}的许可链接`} disabled={copying} onClick={() => void copyLink(source.licenseUrl)}>许可说明</SoftButton> : null}
-              {downloadUrl ? <SoftButton label="复制本次使用的数据下载链接" disabled={copying} onClick={() => void copyLink(downloadUrl,true)}>下载数据</SoftButton> : null}
+              {source.sourceUrl ? <SoftButton label={`复制${source.provider}的原始出处链接`} disabled={copying} onClick={() => void copyLink(source.sourceUrl)}>复制原始出处</SoftButton> : null}
+              {source.licenseUrl ? <SoftButton label={`复制${source.provider}的许可链接`} disabled={copying} onClick={() => void copyLink(source.licenseUrl)}>复制许可说明</SoftButton> : null}
+              {downloadUrl ? <SoftButton label="复制本次使用的数据下载链接" disabled={copying} onClick={() => void copyLink(downloadUrl,true)}>复制下载链接</SoftButton> : null}
             </View>
           ) : null}
           {copyState ? <View role="status"><Text className="type-secondary">{copyState}</Text></View> : null}

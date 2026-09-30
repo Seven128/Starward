@@ -31,8 +31,7 @@ const retainedLegacyIconFiles = [
   "account-user-night.svg", "account-user-observation.svg",
   "arrow-left-light.png", "bulb-night.svg", "bulb-observation.svg",
   "chevron-right-night.svg", "chevron-right-observation.svg",
-  "cloud-night.svg", "cloud-observation.svg", "download-night.svg",
-  "download-observation.svg", "draft-marker.png", "eye-night.svg",
+  "cloud-night.svg", "cloud-observation.svg", "draft-marker.png", "eye-night.svg",
   "eye-observation.svg", "filter-night.svg", "filter-observation.svg",
   "formal-spot-marker-night.png", "formal-spot-marker-observation.png",
   "formal-spot-marker-selected-night.png", "formal-spot-marker-selected-observation.png",
@@ -42,11 +41,16 @@ const retainedLegacyIconFiles = [
   "tab-map-night.png", "tab-map-observation.png", "tab-map-selected-night.png",
   "tab-map-selected-observation.png", "tab-my-night.png", "tab-my-observation.png",
   "tab-my-selected-night.png", "tab-my-selected-observation.png",
-  "trash-2-night.svg", "trash-2-observation.svg", "wifi-off-night.svg",
+  "wifi-off-night.svg",
   "wifi-off-observation.svg",
-  "wind-night.svg", "wind-observation.svg",
   "telescope-night.svg", "telescope-observation.svg",
   "sun-night.svg", "sun-observation.svg", "moon-night.svg", "moon-observation.svg",
+] as const;
+// These legacy night/observation icons are used only by content pages.
+const contentLegacyIconFiles = [
+  "download-night.svg", "download-observation.svg",
+  "trash-2-night.svg", "trash-2-observation.svg",
+  "wind-night.svg", "wind-observation.svg",
 ] as const;
 const bIconFiles = {
   main: [
@@ -57,7 +61,9 @@ const bIconFiles = {
     "cloud--day--default.png", "compass--day--default.png",
     "eye--day--default.png", "filter--day--default.png",
     "four-point-star--day--default.png", "horizon--day--default.png",
-    "images--day--default.png", "layers--day--default.png",
+    "favorite-star--day--default.png", "favorite-star--day--selected.png",
+    "favorite-trail--day--default.png", "favorite-satellite--day--default.png",
+    "images--day--default.png", "info--day--default.png", "layers--day--default.png",
     "low-cloud--day--default.png", "bulb--day--default.png",
     // Native Map tabs use the dedicated weapp-tabbar files above. The runtime
     // icon adapter has no map subject, so copying these larger twins is unused.
@@ -74,7 +80,8 @@ const bIconFiles = {
     "account-user--day--default.png", "arrow-left--day--default.png",
     "bell--day--default.png", "bell-off--day--default.png",
     "calendar--day--default.png", "check--day--default.png",
-    "checklist--day--default.png", "chevron-right--day--default.png",
+    "checklist--day--default.png", "chevron-down--day--default.png",
+    "chevron-right--day--default.png",
     "close--day--default.png", "compass--day--default.png",
     "download--day--default.png", "four-point-star--day--default.png",
     "horizon--day--default.png", "images--day--default.png",
@@ -98,6 +105,7 @@ const bIconFiles = {
   sky: [
     "arrow-left--day--default.png", "close--day--default.png",
     "compass--day--default.png", "horizon--day--default.png",
+    "info--day--default.png",
   ],
 } as const;
 
@@ -225,6 +233,10 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
           from: path.resolve(here, "../src/assets/icons", file),
           to: path.resolve(here, "..", outputRoot, "assets/icons", file),
         })),
+        ...contentLegacyIconFiles.map((file) => ({
+          from: path.resolve(here, "../src/assets/icons", file),
+          to: path.resolve(here, "..", outputRoot, "content/assets/icons", file),
+        })),
         ...["night", "observation"].map((theme) => ({
           from: path.resolve(here, "../src/assets/semantic", `five-point-star-${theme}.svg`),
           to: path.resolve(here, "..", outputRoot, "assets/semantic", `five-point-star-${theme}.svg`),
@@ -241,10 +253,14 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
           from: path.resolve(here, "../THIRD_PARTY_NOTICES/three-sky-r146-LICENSE.txt"),
           to: path.resolve(here, "..", outputRoot, "sky/assets/licenses/three-sky-r146-LICENSE.txt"),
         },
-        ...["noble-hashes", "runtime-dependencies"].map((name) => ({
+        ...["noble-hashes"].map((name) => ({
           from: path.resolve(here, `../src/assets/licenses/${name}.json`),
           to: path.resolve(here, "..", outputRoot, `assets/licenses/${name}.json`),
         })),
+        {
+          from: path.resolve(here, "../src/assets/licenses/runtime-dependencies.json"),
+          to: path.resolve(here, "..", outputRoot, "content/assets/licenses/runtime-dependencies.json"),
+        },
         ...adoptedBIconCopyPatterns(outputRoot),
       ],
       options: {},

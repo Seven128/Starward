@@ -36,6 +36,84 @@ function testService() {
   });
 }
 
+test("clear map-point timezone regions are not overridden by the device hint", async () => {
+  const service = testService();
+  try {
+    for (const [latitude, longitude, hint, expected] of [
+      [22.282, 114.16, "Asia/Shanghai", "Asia/Hong_Kong"],
+      [22.56, 114.59, "Asia/Hong_Kong", "Asia/Shanghai"],
+    ] as const) {
+      const context = (await service.resolveObservationContext({
+        location: { kind: "MAP_POINT", displayName: "时区测试地点",
+          wgs84: { system: "WGS84", latitude, longitude }, source: "MAP_VIEWPORT", timezoneHint: hint },
+        localDate: "2026-09-26",
+      })).data;
+      assert.equal(context.timezone, expected);
+    }
+  } finally { await service.onModuleDestroy(); }
+});
+
+test("Hong Kong and Shenzhen border map points use the location, not the phone zone", async () => {
+  const service = testService();
+  try {
+    for (const [latitude, longitude, hint, expected] of [
+      [22.516, 114.111, "Asia/Shanghai", "Asia/Hong_Kong"], // northern Hong Kong
+      [22.5431, 114.0579, "Asia/Hong_Kong", "Asia/Shanghai"], // default Shenzhen center
+      [22.483, 113.922, "Asia/Hong_Kong", "Asia/Shanghai"], // Shekou
+    ] as const) {
+      const context = (await service.resolveObservationContext({
+        location: { kind: "MAP_POINT", displayName: "港深交界测试地点",
+          wgs84: { system: "WGS84", latitude, longitude }, source: "MAP_VIEWPORT", timezoneHint: hint },
+        localDate: "2026-09-26",
+      })).data;
+      assert.equal(context.timezone, expected, `${latitude},${longitude}`);
+    }
+    const withoutHint = (await service.resolveObservationContext({
+      location: { kind: "MAP_POINT", displayName: "深圳无设备时区",
+        wgs84: { system: "WGS84", latitude: 22.5431, longitude: 114.0579 },
+        source: "MAP_VIEWPORT" },
+      localDate: "2026-09-26",
+    })).data;
+    assert.equal(withoutHint.timezone, "Asia/Shanghai");
+  } finally { await service.onModuleDestroy(); }
+});
+
+test("Macao map points retain the Macao zone while neighboring Zhuhai remains mainland", async () => {
+  const service = testService();
+  try {
+    for (const [latitude, longitude, expected] of [
+      [22.198, 113.543, "Asia/Macau"], // Macao peninsula
+      [22.156, 113.559, "Asia/Macau"], // Taipa
+      [22.224, 113.549, "Asia/Shanghai"], // Zhuhai Gongbei
+    ] as const) {
+      const resolved = await service.resolveObservationContext({
+        location: { kind: "MAP_POINT", displayName: "澳珠时区测试",
+          wgs84: { system: "WGS84", latitude, longitude }, source: "MAP_VIEWPORT",
+          timezoneHint: "Asia/Shanghai" },
+        localDate: "2026-09-26",
+      });
+      const context = resolved.data;
+      assert.equal(context.timezone, expected, `${latitude},${longitude}`);
+      assert.equal(resolved.sources.some((source) => source.id === "tz-boundary:asia-macau:2026d"),
+        expected === "Asia/Macau");
+      if (expected === "Asia/Macau") {
+        const scene = await service.getMapScene({ contextId: context.contextId, layer: "NORMAL" });
+        assert.ok(scene.sources.some((source) => source.id === "tz-boundary:asia-macau:2026d" &&
+          source.attribution?.statements.some((statement) => statement.includes("ODbL"))));
+        const changedTime = await service.updateObservationContext(context.contextId, {
+          expectedRevision: context.revision,
+          selectedAt: "2026-09-26T15:30:00.000Z",
+        });
+        assert.equal(changedTime.data.timezone, "Asia/Macau");
+        assert.equal(changedTime.data.timezoneSource?.id, "tz-boundary:asia-macau:2026d");
+        assert.ok(changedTime.sources.some((source) => source.id === "tz-boundary:asia-macau:2026d"));
+        const readback = await service.getObservationContext(context.contextId);
+        assert.equal(readback.data.timezoneSource?.id, "tz-boundary:asia-macau:2026d");
+      }
+    }
+  } finally { await service.onModuleDestroy(); }
+});
+
 async function user(service: MiniappService, suffix: string) {
   return (
     await service.login({

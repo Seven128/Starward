@@ -38,7 +38,7 @@ export function FilterSheet({ capabilities, initialCategory = "OBSERVATION" }: {
             const selected = draft[option.group].includes(option.id);
             const capability = capabilities?.[option.group];
             const unavailable = capability?.state === "UNAVAILABLE";
-            return <Button key={option.id} className={`filter-option${selected ? " filter-option--selected" : ""}`} ariaLabel={`${option.label}${selected ? "，已选择" : "，未选择"}`} disabled={unavailable && !selected} onClick={() => toggle(option.id)}><Text>{option.label}</Text>{selected ? <SelectedCardStar /> : null}</Button>;
+            return <Button key={option.id} className={`filter-option${selected ? " filter-option--selected" : ""}${unavailable && !selected ? " filter-option--unavailable" : ""}`} ariaLabel={`${option.label}${unavailable && !selected ? "，当前不可用" : selected ? "，已选择" : "，未选择"}`} disabled={unavailable && !selected} onClick={() => { if (!unavailable || selected) toggle(option.id); }}><Text>{option.label}</Text>{selected ? <SelectedCardStar /> : null}</Button>;
           })}
         </View></ScrollView>
       </View>

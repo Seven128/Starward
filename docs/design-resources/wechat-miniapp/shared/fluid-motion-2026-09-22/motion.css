@@ -1,0 +1,22 @@
+/* Shared visual feedback, scoped to current review resources. Hit boxes never scale. */
+.fluid-press{--fluid-press:1}
+.fluid-press>img,.fluid-press>svg,.fluid-press>span:not(.starward-tab-label),.fluid-press>strong{scale:var(--fluid-press);transform-origin:center}
+.fluid-press[data-fluid-held=true]{filter:brightness(.97)}
+.starward-tab-label.fluid-tab-label{transition:none!important;will-change:transform}
+.fluid-detail-body{overflow:hidden;box-sizing:border-box}
+details[data-fluid-details] summary{cursor:pointer}
+details[data-fluid-details][data-expanded=false] .fluid-detail-body{pointer-events:none}
+.fluid-managed-surface{animation:none!important;transition:none!important;will-change:opacity,translate}
+dialog.fluid-managed-surface::backdrop{opacity:var(--fluid-reveal,1);transition:none!important;animation:none!important}
+#layer-time-region[data-fluid-height]{transition:none!important;display:block!important;overflow:hidden}
+#mode-track{touch-action:pan-y;user-select:none}
+.fluid-viewer-chrome{transition:opacity 100ms ease}
+@media(prefers-reduced-motion:reduce){.fluid-press>*{scale:1!important}.fluid-managed-surface{translate:none!important}.fluid-tab-label{transition:none!important}}
+
+.source-details[data-fluid-details]>summary>span,.more-site[data-fluid-details]>summary>.disclosure-chevron{transform:rotate(calc(var(--fluid-expansion,0)*90deg))!important;transition:none!important;display:inline-block}
+.weather-supplement>details[data-fluid-details]:not(.source-details)>summary::after{transform:rotate(calc(var(--fluid-expansion,0)*90deg));transition:none}
+.weather-supplement>details:not(.source-details)>.fluid-detail-body>p{margin:0 0 12px;font-size:14px;line-height:23px;color:#657181}
+
+/* Bounded layer content scrolls; flex must not erase the time ruler when sources expand. */
+#layer-panel>*{flex-shrink:0}
+#layer-time-region[data-fluid-height]{flex:none!important}

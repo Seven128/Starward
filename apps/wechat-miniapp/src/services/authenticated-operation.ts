@@ -1,20 +1,20 @@
-import { MINIAPP_API_BASE_PATH, MINIAPP_API_OPERATIONS, type ApiEnvelope, type AuthSessionData, type MiniappApiOperationId, type MiniappApiRequest, type MiniappApiResponse } from "@starward/miniapp-contracts";
+import { MINIAPP_API_BASE_PATH, MINIAPP_API_OPERATIONS, type ApiEnvelope, type AuthSessionData, type MiniappApiJsonOperationId, type MiniappApiRequest, type MiniappApiResponse } from "@starward/miniapp-contracts";
 export type AuthPolicy = "NONE" | "OPTIONAL" | "REQUIRED";
 interface OperationDependencies {
   resolveSession(policy: AuthPolicy): Promise<AuthSessionData | null>;
   readStoredSession(): AuthSessionData | null;
   clearStoredSession(): void;
   isPermissionDenied(error: unknown): boolean;
-  request<T>(key: string, path: string, options: { method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown; idempotencyKey?: string; signal?: AbortSignal; session?: AuthSessionData | null; reauthenticationCode?: string; cache?: boolean }): Promise<ApiEnvelope<T>>;
+  request<T>(key: string, path: string, options: { method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown; idempotencyKey?: string; signal?: AbortSignal; session?: AuthSessionData | null; reauthenticationCode?: string; cache?: boolean; independent?: boolean }): Promise<ApiEnvelope<T>>;
 }
 /** Generated endpoint projection and account-bound reauthentication; transport/cache stay injected. */
 export function createAuthenticatedOperationRequester(deps: OperationDependencies) {
   const { resolveSession, readStoredSession, clearStoredSession, request, isPermissionDenied } = deps;
-type OperationData<K extends MiniappApiOperationId> =
+type OperationData<K extends MiniappApiJsonOperationId> =
   MiniappApiResponse<K>["data"];
 
 function operationPath(
-  operationId: MiniappApiOperationId,
+  operationId: MiniappApiJsonOperationId,
   pathParams: Readonly<Record<string, string>> = {},
   query = "",
 ) {
@@ -32,7 +32,7 @@ function operationPath(
   return query ? path + "?" + query : path;
 }
 
-async function requestOperation<K extends MiniappApiOperationId>(
+async function requestOperation<K extends MiniappApiJsonOperationId>(
   key: string,
   operationId: K,
   options: {
@@ -44,6 +44,7 @@ async function requestOperation<K extends MiniappApiOperationId>(
     auth?: AuthPolicy;
     reauthenticationCode?: string;
     cache?: boolean;
+    independent?: boolean;
   } = {},
   retried = false,
   expectedUserId?: string,
@@ -67,6 +68,7 @@ async function requestOperation<K extends MiniappApiOperationId>(
         ...(session ? { session } : {}),
         ...(options.reauthenticationCode ? { reauthenticationCode: options.reauthenticationCode } : {}),
         ...(options.cache === undefined ? {} : { cache: options.cache }),
+        ...(options.independent ? { independent: true } : {}),
       },
     )) as MiniappApiResponse<K>;
   } catch (error) {

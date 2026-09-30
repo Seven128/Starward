@@ -9,6 +9,8 @@ import type {
   SpotId,
 } from "@starward/miniapp-contracts";
 import { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.ts";
+import { isHongKongDistrictPoint } from "./hong-kong-boundary.ts";
+import { isMacaoTimezonePoint, MACAO_TIMEZONE_SOURCE } from "./macao-boundary.ts";
 import type { CachePort, MiniappRepositoryPort } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
 
@@ -18,7 +20,6 @@ const PRECISE_CONTEXT_TTL_SECONDS = 2 * 60 * 60;
 function timezoneForTrialPoint(
   latitude: number,
   longitude: number,
-  hint?: "Asia/Shanghai" | "Asia/Hong_Kong",
 ) {
   if (
     !Number.isFinite(latitude) ||
@@ -37,16 +38,17 @@ function timezoneForTrialPoint(
     longitude <= 116.8;
   if (!inTrialRegion)
     throw new Error("observation_timezone_resolution_unavailable");
-  if (hint) return hint;
+  if (isMacaoTimezonePoint(latitude, longitude))
+    return "Asia/Macau" as const;
   const inHongKongLongitude = longitude >= 113.78 && longitude <= 114.52;
   if (inHongKongLongitude && latitude >= 22.12 && latitude <= 22.45)
     return "Asia/Hong_Kong" as const;
   if (!inHongKongLongitude || latitude >= 22.58)
     return "Asia/Shanghai" as const;
-  // The Shenzhen/Hong Kong land border cannot be classified safely by a
-  // broad bounding box. Require an explicit map/geocoder timezone hint in
-  // this narrow band rather than silently attaching the wrong IANA zone.
-  throw new Error("observation_timezone_resolution_ambiguous");
+  // In the remaining border band, the published HKSAR district geometry
+  // identifies its side. A client's timezone hint is not location evidence.
+  return isHongKongDistrictPoint(latitude, longitude)
+    ? "Asia/Hong_Kong" as const : "Asia/Shanghai" as const;
 }
 
 function digest(value: unknown) {
@@ -165,6 +167,8 @@ export class ObservationContextService {
       contextFingerprint: digest(fingerprintInput),
       revision: 1,
       ...fingerprintInput,
+      ...(input.location.kind === "MAP_POINT" && resolvedLocation.timezone === "Asia/Macau"
+        ? { timezoneSource: MACAO_TIMEZONE_SOURCE } : {}),
       nightStartUtc,
       nightEndUtc,
       selectedAtUtc,
@@ -285,7 +289,6 @@ export class ObservationContextService {
     const timezone = timezoneForTrialPoint(
       location.wgs84.latitude,
       location.wgs84.longitude,
-      location.timezoneHint,
     );
     return {
       location: {

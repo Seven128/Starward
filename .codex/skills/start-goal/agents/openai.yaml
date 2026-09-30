@@ -1,0 +1,6 @@
+interface:
+  display_name: "Start Goal"
+  short_description: "建立 Goal 与持久索引，保存需求、执行计划、进度及验收证据"
+  default_prompt: "使用 $start-goal，为当前任务创建或续用 Goal，持久保存必要信息与执行计划，并持续推进至完成。"
+policy:
+  allow_implicit_invocation: false

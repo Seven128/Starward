@@ -15,10 +15,11 @@ import { createSkyObjectSelection } from "./sky-object-selection.ts";
 // Execute the actual page handlers. Native rendering/pointing are separate checks.
 let pageSource = readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8").replaceAll("\r\n", "\n");
 if (process.env.MUTATE_SKY_BROWSING_RESTORE === "1") pageSource = pageSource.replace("gesture.startedManual ? gesture.originalManualBasis", "gesture.startedManual ? gesture.startBasis");
-if (process.env.MUTATE_SKY_PICK_SUPPLEMENT === "1") pageSource = pageSource.replace(
-  "skyPickIdentity(reportData,currentStellarSupplement(stellarSupplement.frame,reportData?.skyScene,row?.at))",
-  "skyPickIdentity(reportData,stellarSupplement.frame)",
-);
+if (process.env.MUTATE_SKY_PICK_SUPPLEMENT === "1") {
+  const binding = "skyPickIdentity(paintedData,currentStellarSupplement(presentedSkyFrame?.stellarSupplement,paintedData?.skyScene,paintedAt))";
+  assert(pageSource.includes(binding), "bounded mutation must reach the actual painted-frame identity");
+  pageSource = pageSource.replace(binding, "skyPickIdentity(paintedData,presentedSkyFrame?.stellarSupplement)");
+}
 if (process.env.MUTATE_SKY_EMPTY_SELECTION === "1") {
   const clearBranch = "} else {\n      setSelectionState(objectSelection.clear());\n      stopObjectTracking();";
   assert(pageSource.includes(clearBranch), "bounded mutation must reach the production blank-tap branch");
@@ -63,6 +64,10 @@ function harness(kind: "manual"|"follow"|"permission"|"calibrating") {
     stopCompass:()=>{counts.stops++;state.sensorBasis=null;state.compassLifecycle.active=false;},startCompass:()=>{counts.starts++;state.compassLifecycle.active=true;},
     pinchFieldOfView,
     row:{at:"2026-09-15T12:00:00Z"},reportData:{context:{spotId:"spot:test"}},routeContext:{spotId:"spot:test"},stellarSupplement:{frame:null},skyPickIdentity:()=>({catalogVersion:"actual",catalogHash:"hash"}),
+    get paintedData() { return state.reportData; },
+    get paintedRow() { return state.row; },
+    get paintedAt() { return state.row.at; },
+    get presentedSkyFrame() { return { data: state.reportData, frameAt: state.row.at, stellarSupplement: state.stellarSupplement.frame }; },
     currentStellarSupplement,
     objectSelection:createSkyObjectSelection(), selectionState:null,
     setSelectionState:(value:unknown)=>{state.selectionState=value;},

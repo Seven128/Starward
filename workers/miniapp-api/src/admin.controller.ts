@@ -133,7 +133,7 @@ export class AdminController {
       !/^spot:[a-zA-Z0-9._:-]+$/u.test(body.spotId)
     )
       throw new Error("admin_spot_id_invalid");
-    if (!body.timezone || !["Asia/Shanghai", "Asia/Hong_Kong"].includes(body.timezone))
+    if (!body.timezone || !["Asia/Shanghai", "Asia/Hong_Kong", "Asia/Macau"].includes(body.timezone))
       throw new Error("admin_timezone_invalid");
     if (
       !Number.isFinite(body.latitude) ||
@@ -211,7 +211,7 @@ export class AdminController {
     if (body.address !== undefined) requireText(body.address, "address", 500);
     if (
       body.timezone !== undefined &&
-      !["Asia/Shanghai", "Asia/Hong_Kong"].includes(body.timezone)
+      !["Asia/Shanghai", "Asia/Hong_Kong", "Asia/Macau"].includes(body.timezone)
     )
       throw new Error("admin_timezone_invalid");
     if (

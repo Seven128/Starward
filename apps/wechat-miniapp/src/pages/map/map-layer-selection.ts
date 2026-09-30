@@ -12,3 +12,14 @@ export function mapLayerKindForOverlay(overlay: AnalysisOverlay): MapLayerKind {
   if (overlay === "TOTAL_CLOUD" || overlay === "OPPORTUNITY") return "CLOUD";
   return "NORMAL";
 }
+
+export function lightLayerContentState(input: {
+  pending: boolean;
+  failed: boolean;
+  hasData: boolean;
+  unavailable: boolean;
+}): "LOADING" | "READY" | "EMPTY" | "STALE" | "ERROR" {
+  if (input.failed) return input.hasData ? "STALE" : "ERROR";
+  if (input.pending || !input.hasData) return "LOADING";
+  return input.unavailable ? "EMPTY" : "READY";
+}

@@ -4,16 +4,18 @@ import { mkdir, rm, writeFile, stat, readFile } from "node:fs/promises";
 import path from "node:path";
 import { createServer } from "node:net";
 import { crc32, deflateSync } from "node:zlib";
+import { isDeepStrictEqual } from "node:util";
 import { fileURLToPath } from "node:url";
 import Redis from "ioredis";
 import pg from "pg";
 import { createBackup, restoreBackup } from "./backup-restore.mjs";
-import { dockerComposeInvocation } from "./docker-compose-runtime.mjs";
+import { assertPostgresTools, databaseUrlFor, readInfrastructureRuntime, startInfrastructure, stopOwnedProcessTree } from "./infrastructure-runtime.mjs";
 import { connectResourceWithRetry } from "./infrastructure-readiness.mjs";
 
 const { Client } = pg;
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-const composePath = path.join(root, "infra", "miniapp", "docker-compose.yml");
+const runtime = readInfrastructureRuntime();
+assertPostgresTools(runtime);
 const artifactPath = path.join(
   root,
   "artifacts",
@@ -38,10 +40,9 @@ const mediaStorageRoot = path.join(
   "miniapp-infrastructure-media",
   runId,
 );
-const adminUrl =
-  "postgresql://starward_miniapp:local_demo_only@127.0.0.1:55432/starward_miniapp";
-const databaseUrl = `postgresql://starward_miniapp:local_demo_only@127.0.0.1:55432/${databaseName}`;
-const redisUrl = "redis://127.0.0.1:56379";
+const adminUrl = runtime.adminUrl;
+const databaseUrl = databaseUrlFor(runtime, databaseName);
+const redisUrl = runtime.redisUrl;
 const cachePrefix = `starward:miniapp:${runId}:`;
 const queueName = `starward-miniapp-${runId}`;
 const startedAt = new Date().toISOString();
@@ -114,30 +115,9 @@ async function waitForUrl(url, timeoutMs = 30_000) {
   throw new Error("infrastructure_api_start_timeout");
 }
 
-function stopProcessTree(pid) {
-  if (!pid) return;
-  if (process.platform === "win32")
-    spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], {
-      windowsHide: true,
-      stdio: "ignore",
-    });
-  else {
-    try {
-      process.kill(pid, "SIGTERM");
-    } catch {}
-  }
-}
-
-stage("compose:start");
-const composeUp = dockerComposeInvocation([
-  "-f",
-  composePath,
-  "up",
-  "-d",
-  "--wait",
-]);
-run(composeUp.command, composeUp.args);
-stage("compose:ready");
+stage("infrastructure:start", { mode: runtime.mode });
+startInfrastructure(runtime, run);
+stage("infrastructure:ready", { mode: runtime.mode });
 const admin = await connectResourceWithRetry({
   label: "infrastructure_postgres",
   create: () => new Client({ connectionString: adminUrl, connectionTimeoutMillis: 2_000 }),
@@ -173,8 +153,11 @@ try {
   await admin.end().catch(() => {});
   throw error;
 }
+let databaseCreated = false;
+let restoreCreated = false;
 try {
   await admin.query(`CREATE DATABASE "${databaseName}"`);
+  databaseCreated = true;
   stage("integration:start");
   const npmCli = process.env.npm_execpath;
   if (!npmCli) throw new Error("npm_execpath_missing");
@@ -193,6 +176,8 @@ try {
         DATABASE_URL: databaseUrl,
         REDIS_URL: redisUrl,
         MINIAPP_STORAGE_MODE: "postgres",
+        MINIAPP_AUTH_MODE: "LOCAL_TEST",
+        MINIAPP_RELEASE_PROFILE: "LOCAL",
         MINIAPP_AUTO_MIGRATE: "1",
         MINIAPP_CACHE_PREFIX: cachePrefix,
         MINIAPP_QUEUE_NAME: queueName,
@@ -210,11 +195,16 @@ try {
     inputPath: backupPath,
     targetDatabase: restoreDatabaseName,
   });
+  restoreCreated = true;
+  run(process.execPath, ["--test", "tools/miniapp/backup-restore.test.mjs"], {
+    env: { ...process.env, MINIAPP_BACKUP_RECOVERY_TEST: "1" },
+  });
   backupRestore = {
     status: restored.status,
     sha256: backup.manifest.sha256,
     byte_length: backup.manifest.byte_length,
     fingerprint_match: true,
+    failed_restore_cleanup_and_existing_target_preserved: true,
   };
   stage("backup-restore:complete");
   const apiPort = await freePort();
@@ -233,7 +223,12 @@ try {
         MINIAPP_CACHE_PREFIX: cachePrefix,
         MINIAPP_QUEUE_NAME: queueName,
         MINIAPP_ADMIN_TOKEN: adminToken,
+        MINIAPP_ADMIN_RBAC: JSON.stringify({
+          "admin:infrastructure-check": ["OWNER"],
+          "admin:infrastructure-auditor": ["AUDITOR"],
+        }),
         MINIAPP_API_PORT: String(apiPort),
+        MINIAPP_API_HOST: "127.0.0.1",
         MINIAPP_AUTH_MODE: "LOCAL_TEST",
         MINIAPP_RELEASE_PROFILE: "LOCAL",
         MINIAPP_MEDIA_STORAGE_MODE: "LOCAL_FILESYSTEM",
@@ -438,6 +433,7 @@ try {
       throw new Error(
         `admin_suspend_failed:${suspendResponse.status}:${await suspendResponse.text()}`,
       );
+    const suspendReceipt = (await suspendResponse.json()).data?.receipt;
     const suspendedDashboard = await (
       await fetch(`${base}/v2/admin/dashboard`, { headers })
     ).json();
@@ -467,25 +463,66 @@ try {
       assessmentEnvelope.data?.readback?.assessmentDigest ??
       assessmentEnvelope.data?.result?.assessmentDigest;
     if (!assessmentDigest) throw new Error("admin_assessment_digest_missing");
+    const publishBody = {
+      reason: "infrastructure publish check",
+      expectedRevision: suspendedSpot.version,
+      assessmentDigest,
+    };
     const publishResponse = await fetch(
       `${base}/v2/admin/spots/${encodeURIComponent(spotId)}/publish`,
       {
         method: "POST",
         headers: lifecycleHeaders("publish"),
-        body: JSON.stringify({
-          reason: "infrastructure publish check",
-          expectedRevision: suspendedSpot.version,
-          assessmentDigest,
-        }),
+        body: JSON.stringify(publishBody),
       },
     );
     if (!publishResponse.ok)
       throw new Error(`admin_publish_failed:${publishResponse.status}`);
+    const publishReceipt = (await publishResponse.json()).data?.receipt;
+    const lifecycleReceipts = { suspend: suspendReceipt, publish: publishReceipt };
+    for (const [operation, receipt] of Object.entries(lifecycleReceipts)) {
+      if (!receipt?.receiptId || !receipt.requestId || receipt.operation !== `spot.${operation}` ||
+          receipt.status !== "COMMITTED" || receipt.actorId !== headers["x-admin-actor"] ||
+          receipt.idempotencyKey !== lifecycleHeaders(operation)["idempotency-key"])
+        throw new Error(`admin_${operation}_receipt_invalid`);
+      const storedResponse = await fetch(`${base}/v2/admin/receipts/${encodeURIComponent(receipt.receiptId)}`, { headers });
+      const stored = await storedResponse.json();
+      if (!storedResponse.ok || !isDeepStrictEqual(stored.data, receipt)) {
+        stage("api-http:receipt-mismatch", {
+          operation, status: storedResponse.status,
+          fields: Object.keys(receipt).filter(key => !isDeepStrictEqual(stored.data?.[key], receipt[key])),
+          committed_at: { response: receipt.committedAt, stored: stored.data?.committedAt },
+        });
+        throw new Error("admin_receipt_readback_failed");
+      }
+    }
+    const replayResponse = await fetch(`${base}/v2/admin/spots/${encodeURIComponent(spotId)}/publish`, {
+      method: "POST", headers: lifecycleHeaders("publish"), body: JSON.stringify(publishBody),
+    });
+    const roleDenied = await fetch(`${base}/v2/admin/spots/${encodeURIComponent(spotId)}/suspend`, {
+      method: "POST",
+      headers: { ...lifecycleHeaders("auditor-denied"), "x-admin-actor": "admin:infrastructure-auditor" },
+      body: JSON.stringify({ reason: "auditor cannot mutate published places", expectedRevision: currentRevision }),
+    });
+    if (roleDenied.status !== 403) throw new Error(`admin_role_mutation_not_denied:${roleDenied.status}`);
+    const replay = await replayResponse.json();
+    if (!replayResponse.ok || replay.data?.receipt?.status !== "REPLAYED" ||
+        !isDeepStrictEqual({ ...replay.data.receipt, status: "COMMITTED" }, publishReceipt) ||
+        !isDeepStrictEqual(replay.data.readback, publishReceipt.readback))
+      throw new Error("admin_publication_receipt_replay_changed");
+    const publishedResponse = await fetch(`${base}/v2/admin/dashboard`, { headers });
+    const publishedDashboard = await publishedResponse.json();
+    const publishedSpot = publishedDashboard.data?.spots?.find(spot => spot.spot_id === spotId);
+    if (!publishedResponse.ok || publishedSpot?.status !== "PUBLISHED" || publishedSpot.version <= suspendedSpot.version ||
+        publishedSpot.version !== publishReceipt.resultingRevision)
+      throw new Error("admin_publish_readback_failed");
     const auditsResponse = await fetch(`${base}/v2/admin/audit-logs`, {
       headers,
     });
     const audits = await auditsResponse.json();
-    if (!auditsResponse.ok || audits.data.length < 2)
+    if (!auditsResponse.ok || !["suspend", "publish"].every(operation => audits.data?.filter(audit =>
+      audit.subject_id === spotId && audit.action === `SPOT_${operation.toUpperCase()}` &&
+      audit.actor_id === headers["x-admin-actor"] && audit.request_id === lifecycleReceipts[operation].requestId).length === 1))
       throw new Error("admin_audit_missing");
     const costsResponse = await fetch(`${base}/v2/admin/costs`, { headers });
     const costs = await costsResponse.json();
@@ -507,40 +544,44 @@ try {
       rbac_denial: "passed",
       population: dashboard.data.spots.length,
       audited_status_roundtrip: "passed",
+      durable_operation_receipt_readback: "passed",
+      idempotent_publication_receipt_replay: "passed",
       provider_cost_month_and_unknown_amount: "passed",
     };
     stage("api-http:complete");
   } finally {
-    stopProcessTree(api.pid);
+    stopOwnedProcessTree(api.pid);
   }
 } finally {
-  let cursor = "0";
-  do {
-    const [next, keys] = await redis.scan(
-      cursor,
-      "MATCH",
-      `*${runId}*`,
-      "COUNT",
-      200,
-    );
-    cursor = next;
-    if (keys.length) await redis.del(...keys);
-  } while (cursor !== "0");
-  await redis.quit();
-  await admin.query(
-    "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()",
-    [restoreDatabaseName],
-  );
-  await admin.query(`DROP DATABASE IF EXISTS "${restoreDatabaseName}"`);
-  await admin.query(
-    "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()",
-    [databaseName],
-  );
-  await admin.query(`DROP DATABASE IF EXISTS "${databaseName}"`);
-  await admin.end();
-  await rm(backupPath, { force: true });
-  await rm(`${backupPath}.manifest.json`, { force: true });
-  await rm(mediaStorageRoot, { recursive: true, force: true });
+  const cleanupResults = await Promise.allSettled([
+    (async () => {
+      try {
+        let cursor = "0";
+        do {
+          const [next, keys] = await redis.scan(cursor, "MATCH", `*${runId}*`, "COUNT", 200);
+          cursor = next;
+          if (keys.length) await redis.del(...keys);
+        } while (cursor !== "0");
+        await redis.quit();
+      } finally { redis.disconnect(); }
+    })(),
+    (async () => {
+      try {
+        const owned = [restoreCreated && restoreDatabaseName, databaseCreated && databaseName].filter(Boolean);
+        const drops = await Promise.allSettled(owned.map(async (name) => {
+          await admin.query("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()", [name]);
+          await admin.query(`DROP DATABASE IF EXISTS "${name}"`);
+        }));
+        const failed = drops.filter(result => result.status === "rejected");
+        if (failed.length) throw new AggregateError(failed.map(result => result.reason), "infrastructure_database_cleanup_failed");
+      } finally { await admin.end(); }
+    })(),
+    rm(backupPath, { force: true }),
+    rm(`${backupPath}.manifest.json`, { force: true }),
+    rm(mediaStorageRoot, { recursive: true, force: true }),
+  ]);
+  const failed = cleanupResults.filter(result => result.status === "rejected");
+  if (failed.length) throw new AggregateError(failed.map(result => result.reason), "infrastructure_cleanup_failed");
 }
 
 const result = {
@@ -550,6 +591,7 @@ const result = {
   started_at: startedAt,
   completed_at: new Date().toISOString(),
   services: {
+    mode: runtime.mode,
     postgres_postgis: "isolated_run_database",
     redis_bullmq: "isolated_key_namespace",
   },

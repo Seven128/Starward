@@ -54,7 +54,7 @@ export function nativeNavigationInsets(runtime: {
     const { bottom } = runtime.getMenuButtonBoundingClientRect();
     if (Number.isFinite(bottom) && bottom > 0) {
       capsuleBottom = bottom;
-      safeTop = Math.max(safeTop ?? 0, bottom + 4);
+      safeTop = Math.max(safeTop ?? 0, bottom + 8);
     }
   } catch { /* Capsule geometry is optional on older runtimes. */ }
   return { statusBarHeight, capsuleBottom, safeTop };

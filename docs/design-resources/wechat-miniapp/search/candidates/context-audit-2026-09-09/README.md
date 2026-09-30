@@ -9,7 +9,7 @@
 - 上游规则：[Map/Search Screen Contract](../../../../../../project_context/areas/main/screen-contracts/wechat-miniapp/map-and-finder.md#filter-semantics-and-coverage)。
 - 参考：当前采用包 `../../adopted/search-page/reference/filters.png`，实际通过剪贴板图像附到 Stitch，显示附件 clipboard.png；旧 Stitch 探索画板不是当前采用稿。
 - [完整输入](stitch-prompt.md)、[重试与精修输入](stitch-revisions.md)。
-- [Stitch 项目](https://stitch.withgoogle.com/projects/5585184579244766246)。首稿 DOM 导出的实际 screenId 为 `f46ac9ab614c47d0ad9521298d496123`。
+- 旧 Stitch 项目已删除（ID `5585184579244766246`）。首稿 DOM 导出的实际 screenId 为 `f46ac9ab614c47d0ad9521298d496123`。
 - [未改动首稿](stitch-original/index.html)：从实际画板 iframe srcdoc 保存，包含 Stitch 注入的编辑辅助代码，尚非独立交互原型。原稿含多余步进按钮、常驻范围说明及设备壳，已提交精修；不把此原稿作为最终候选。
 - Stitch 网页显示“均衡”；服务模型和单次费用未提供，不推断。
 

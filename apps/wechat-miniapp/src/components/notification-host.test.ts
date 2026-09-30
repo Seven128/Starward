@@ -12,7 +12,8 @@ test("the production floating host stops rendering on page hide and resumes on s
   let cursor = 0;
   const states: unknown[] = [];
   let safeTop: number | undefined = 97;
-  let notifications: { id: string }[] = [];
+  let route = "pages/map/index";
+  let notifications: { id: string; pageRoute: string }[] = [];
   let show = () => {};
   let hide = () => {};
   let resize = () => {};
@@ -26,11 +27,12 @@ test("the production floating host stops rendering on page hide and resumes on s
       return [states[index], (value: unknown) => { states[index] = value; }];
     },
     nativeNavigationInsets: () => ({ safeTop }),
+    currentNotificationPageRoute: () => route,
     useResize: (callback: () => void) => { resize = callback; },
     useDidShow: (callback: () => void) => { show = callback; },
     useDidHide: (callback: () => void) => { hide = callback; },
     useAppStore: (select: any) => select({ notifications }),
-    selectNotifications: (queue: any[]) => queue,
+    selectNotifications: (queue: any[], _placement: string, _owner: unknown, pageRoute: string) => queue.filter(item => item.pageRoute === pageRoute),
     floatingNotificationNodeId: (item: any) => item.id,
     React: { createElement: (type: unknown, props: unknown, ...children: unknown[]) => ({ type, props, children }) },
     View: "View", ScrollView: "ScrollView", NotificationRegion: "NotificationRegion",
@@ -48,10 +50,14 @@ test("the production floating host stops rendering on page hide and resumes on s
   assert.equal(render().props.style?.["--notification-top"], "105px", "show rechecks the current native inset");
   safeTop = undefined; resize();
   assert.equal(render().props.style?.["--notification-top"], undefined, "unavailable metrics retain the stylesheet fallback");
-  notifications = [{ id: "first-notice" }];
+  notifications = [{ id: "first-notice", pageRoute: route }];
   assert.equal(render().children[0].props.scrollIntoView, "first-notice");
-  notifications = [{ id: "new-head-after-scrolling" }, ...notifications];
+  notifications = [{ id: "new-head-after-scrolling", pageRoute: route }, ...notifications];
   assert.equal(render().children[0].props.scrollIntoView, "new-head-after-scrolling", "new queue head asks native scroller to reveal it");
+  route = "pages/my/index";
+  assert.equal(render().children[0].props.scrollIntoView, "", "the destination must not scroll to a notice from the previous page");
+  notifications = [{ id: "my-notice", pageRoute: route }, ...notifications];
+  assert.equal(render().children[0].props.scrollIntoView, "my-notice");
 });
 
 test("page and event-modal composition keeps one floating host outside scroll content", () => {
@@ -120,6 +126,7 @@ test("floating entries expire, animate, preserve close across page hide, and can
   }).outputText;
   const mount = (notification: any = {}, initiallyVisible = true) => {
     let cursor = 0, dismissed = false, commits = 0;
+    let now = 0;
     let visible = initiallyVisible;
     const slots: any[] = [];
     const timers: { callback: () => void; delay: number }[] = [];
@@ -137,6 +144,7 @@ test("floating entries expire, animate, preserve close across page hide, and can
       },
       setTimeout: (callback: () => void, delay: number) => { timers.push({ callback, delay }); return timers.length; },
       clearTimeout: () => {},
+      Date: { now: () => now },
       React: { createElement: (type: unknown, props: any, ...children: any[]) => ({ type, props, children }) },
       View: "View", NotificationComponent: "NotificationComponent",
       floatingNotificationNodeId: () => "notice-test",
@@ -145,7 +153,7 @@ test("floating entries expire, animate, preserve close across page hide, and can
     const render = () => { cursor = 0; return renderFunction({ notification, onDismiss: () => {
       if (!dismissed) { dismissed = true; commits++; }
     } }); };
-    return { render, timers, setVisible: (value: boolean) => { visible = value; }, unmount: () => slots.forEach(slot => slot.cleanup?.()), commits: () => commits };
+    return { render, timers, advance: (elapsed: number) => { now += elapsed; }, setVisible: (value: boolean) => { visible = value; }, unmount: () => slots.forEach(slot => slot.cleanup?.()), commits: () => commits };
   };
   for (const tone of ["error", "warning", "info", "success"]) {
     const entry = mount({ tone }); entry.render();
@@ -169,13 +177,15 @@ test("floating entries expire, animate, preserve close across page hide, and can
   exiting.timers.at(-1)!.callback();
   assert.equal(exiting.commits(), 1, "cancelled exit cannot commit twice");
   const actionable = mount({ action: { label: "重试" } }); actionable.render();
-  assert.equal(actionable.timers.length, 0, "sole recovery action stays available");
+  assert.equal(actionable.timers[0]?.delay, 3000, "an actionable floating notice still expires");
   const paused = mount();
+  paused.render(); paused.advance(1200);
   paused.render().props.onTouchStart(); paused.render();
   paused.timers[0]!.callback();
   assert.doesNotMatch(paused.render().props.className, /--closing/);
+  paused.advance(4000);
   paused.render().props.onTouchEnd(); paused.render();
-  assert.equal(paused.timers.at(-1)!.delay, 3000, "release grants a fresh readable interval");
+  assert.equal(paused.timers.at(-1)!.delay, 1800, "touch pauses the remaining visible interval");
   paused.timers.at(-1)!.callback();
   assert.match(paused.render().props.className, /--closing/);
   const offscreen = mount({}, false); offscreen.render();

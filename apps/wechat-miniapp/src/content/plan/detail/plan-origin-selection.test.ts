@@ -23,6 +23,7 @@ function fixture() {
   const run = vm.runInNewContext(ts.transpileModule(`const ${declaration}; chooseOrigin;`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
     live, mounted, pending, disabled: false, setChoosing: (v: boolean) => busy.push(v), currentDraftUserId: () => account,
     Taro: { getCurrentPages: () => [page] }, choosePlatformLocation: () => { calls++; return wait; },
+    handoff: { confirm: async () => true },
     onChange: (value: unknown) => values.push(value), PLAN_TRAVEL_ORIGIN_MAX_LENGTH: 120,
     errorMessage: (error: any) => error.errMsg ?? error.message, useAppStore: { getState: () => ({ notify: () => notices++ }) },
   });
@@ -44,6 +45,7 @@ test("plan chooses once, preserves travel mode and stores normalized coordinates
 test("cancel, page/account/plan changes, manual edits and unmount cannot replace departure input", async () => {
   for (const scenario of ["cancel", "page", "account", "plan", "edit", "unmount", "busy", "error"]) {
     const f = fixture(), running = f.run();
+    await Promise.resolve();
     if (scenario === "page") f.leave();
     if (scenario === "account") f.changeAccount();
     if (scenario === "plan") f.live.current = { ...f.live.current, ownerKey: "first:plan-2" };

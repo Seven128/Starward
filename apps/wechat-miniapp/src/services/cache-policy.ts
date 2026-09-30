@@ -13,11 +13,11 @@ export interface MutationInvalidationPolicy {
 /**
  * Latest-request cancellation is grouped by resource owner, while conditional
  * response reuse must be keyed by the exact HTTP representation. Keeping these
- * identities separate prevents one map viewport or filter URL from supplying
- * another URL's ETag/body.
+ * identities separate prevents one map viewport, filter URL, or API origin
+ * from supplying another representation's ETag/body.
  */
-export function responseCacheKey(group: string, path: string): string {
-  return `${group}:${path}`;
+export function responseCacheKey(group: string, apiBase: string, path: string): string {
+  return `${group}:${apiBase}${path}`;
 }
 
 const TEMPORARY_QUERY_ROOTS = new Set([

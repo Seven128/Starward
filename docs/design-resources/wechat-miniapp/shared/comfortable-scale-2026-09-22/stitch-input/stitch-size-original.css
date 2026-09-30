@@ -1,0 +1,463 @@
+/* ==========================================================================
+   Starward 微信小程序 · 舒适尺度与自然圆润覆盖 (2026-09-22)
+   纯 CSS 覆盖：仅调整字号、行高、留白、圆角与热区，严禁重排与侵入布局
+   ========================================================================== */
+
+/* 全局中文系统字体与平滑渲染 */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 1. 抽屉面板外壳与圆角基线 (不硬编码高度) */
+#extent-panel {
+  border-radius: 28px 28px 0 0 !important;
+}
+.small #extent-panel,
+body[data-extent="small"] #extent-panel {
+  border-radius: 28px 28px 0 0 !important;
+}
+body[data-extent="medium"] #extent-panel {
+  border-radius: 28px 28px 0 0 !important;
+}
+.large #extent-panel,
+body[data-extent="large"] #extent-panel {
+  border-radius: 0 !important;
+}
+
+/* 顶部把手感应区与指示条 */
+#handle-band {
+  min-height: 44px !important;
+  padding: 10px 16px 4px !important;
+}
+#handle-band > div > div {
+  width: 36px !important;
+  height: 4px !important;
+  border-radius: 999px !important;
+}
+
+/* 2. 文档容器与内容滚动 */
+#document {
+  padding: 12px 18px 20px !important;
+}
+body[data-extent="medium"] #document {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+body[data-extent="large"] #document {
+  padding: 16px 18px 28px !important;
+}
+
+/* 3. 地点标题与地点身份层级 */
+#overview {
+  margin-bottom: 8px !important;
+}
+#overview h2 {
+  font-size: 22px !important;
+  line-height: 30px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+}
+#overview span,
+.location-facts {
+  font-size: 13px !important;
+  line-height: 20px !important;
+  color: #64748b;
+}
+
+/* 4. 章节 Tab (基本信息 / 地形 / 天文) */
+#section-nav {
+  height: 48px !important;
+  min-height: 48px !important;
+  padding: 0 18px !important;
+  gap: 24px !important;
+}
+#section-nav > div {
+  height: 48px !important;
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+#section-nav > div > span,
+.starward-tab-label {
+  font-size: 15px !important;
+  line-height: 22px !important;
+}
+#section-nav > div[aria-current="location"] > span {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+#chapter-indicator {
+  height: 4px !important;
+  border-radius: 999px !important;
+}
+
+/* 5. 路线与导航条目 */
+.route-row {
+  min-height: 64px !important;
+  padding: 12px 0 !important;
+}
+.route-row h3 {
+  font-size: 16px !important;
+  line-height: 24px !important;
+  font-weight: 600 !important;
+}
+.route-row h3 small {
+  font-size: 13px !important;
+}
+.route-duration {
+  font-size: 13px !important;
+  margin-left: 10px !important;
+}
+.route-row p {
+  font-size: 13px !important;
+  line-height: 20px !important;
+  margin-top: 4px !important;
+}
+.navigation-icon {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  border-radius: 12px !important;
+}
+
+/* 6. 开放时间与进入安全简报 */
+.hours-row {
+  min-height: 44px !important;
+  font-size: 14px !important;
+  line-height: 22px !important;
+}
+.hours-row > span:first-child {
+  font-size: 14px !important;
+  gap: 8px !important;
+}
+.hours-row > span:last-child {
+  font-size: 14px !important;
+}
+.access-compact {
+  padding: 10px 14px !important;
+  margin: 6px 0 14px !important;
+  border-radius: 16px !important;
+}
+.access-compact dt {
+  font-size: 13px !important;
+  line-height: 18px !important;
+}
+.access-compact dd {
+  font-size: 15px !important;
+  line-height: 22px !important;
+  margin-top: 4px !important;
+}
+.access-compact p {
+  font-size: 13px !important;
+  line-height: 20px !important;
+  margin-top: 8px !important;
+}
+
+/* 7. 设施卡片 (停车、洗手间) 质感与圆润 */
+.facility-stack {
+  gap: 12px !important;
+  margin-top: 8px !important;
+}
+.facility-card,
+.photo-card {
+  min-height: 84px !important;
+  padding: 14px 16px !important;
+  border-radius: 18px !important;
+}
+.facility-title {
+  font-size: 15px !important;
+  line-height: 22px !important;
+  gap: 8px !important;
+}
+.facility-title strong {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+.facility-title > span {
+  font-size: 13px !important;
+}
+.facility-description {
+  font-size: 13px !important;
+  line-height: 20px !important;
+  margin-top: 6px !important;
+  max-width: 100% !important;
+}
+.photo-count {
+  font-size: 12px !important;
+  padding: 2px 6px !important;
+  border-radius: 6px !important;
+  bottom: 12px !important;
+  right: 14px !important;
+}
+
+/* 8. 场地联系与折叠指引 */
+.contact-row {
+  min-height: 44px !important;
+  font-size: 14px !important;
+}
+.source-row {
+  min-height: 44px !important;
+  font-size: 12px !important;
+}
+.source-row button {
+  font-size: 13px !important;
+  min-height: 44px !important;
+}
+.more-site {
+  font-size: 13px !important;
+}
+.more-site summary {
+  min-height: 48px !important;
+  font-size: 14px !important;
+}
+.more-site p {
+  font-size: 13px !important;
+  line-height: 22px !important;
+}
+
+/* 9. 地形板块 (北向上、滑块与图层选择) */
+#terrain.content-card {
+  margin-bottom: 14px !important;
+}
+#terrain h3,
+.chapter-title {
+  font-size: 18px !important;
+  line-height: 26px !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+}
+.terrain-sample {
+  font-size: 13px !important;
+  line-height: 20px !important;
+}
+#terrain .terrain-box {
+  border-radius: 18px !important;
+  padding: 16px !important;
+}
+#terrain .terrain-map-title {
+  font-size: 15px !important;
+}
+#terrain .terrain-map-title small {
+  font-size: 12px !important;
+}
+#terrain .radius-heading {
+  font-size: 13px !important;
+}
+#terrain #radius-value {
+  font-size: 26px !important;
+}
+#terrain #radius-value small {
+  font-size: 13px !important;
+}
+#terrain .terrain-layer-chip {
+  min-height: 48px !important;
+  border-radius: 14px !important;
+  font-size: 14px !important;
+  padding: 0 12px !important;
+}
+#terrain .terrain-layer-chip img {
+  width: 24px !important;
+  height: 24px !important;
+}
+#terrain .terrain-legends {
+  font-size: 11px !important;
+}
+
+/* 10. 天文板块与气象数据 (指标卡、月相与观测时间轴) */
+.content-card {
+  border-radius: 18px !important;
+  margin-bottom: 12px !important;
+  padding: 16px !important;
+}
+.astronomy-heading h3,
+.moon-card h3,
+.weather-card > h3,
+.targets h3 {
+  font-size: 16px !important;
+  line-height: 24px !important;
+  font-weight: 600 !important;
+  margin-bottom: 10px !important;
+}
+.astronomy-heading > span {
+  font-size: 13px !important;
+}
+
+/* 观测时间轴与日期栏 */
+.observation-time {
+  padding: 10px 14px !important;
+}
+.observation-time .date-bar {
+  min-height: 46px !important;
+}
+.observation-time #date-open {
+  font-size: 15px !important;
+}
+.observation-time #time-track button {
+  width: 72px !important;
+  min-width: 72px !important;
+  font-size: 13px !important;
+}
+.observation-time #time-track button[aria-pressed="true"] {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+.observation-time #night-time-label {
+  font-size: 12px !important;
+}
+
+/* 月相卡与气象指标卡 */
+.moon-summary strong {
+  font-size: 16px !important;
+}
+.moon-summary p {
+  font-size: 13px !important;
+  margin-top: 4px !important;
+}
+.moon-events {
+  padding: 12px 0 !important;
+}
+.moon-events span {
+  font-size: 13px !important;
+}
+.moon-events strong {
+  font-size: 14px !important;
+}
+.evidence-group h4 {
+  font-size: 14px !important;
+  line-height: 20px !important;
+  margin-bottom: 8px !important;
+}
+.metric-group dt {
+  font-size: 13px !important;
+  line-height: 18px !important;
+}
+.metric-group dd {
+  font-size: 16px !important;
+  line-height: 24px !important;
+  font-weight: 600 !important;
+}
+.metric-group dd > span {
+  font-size: 12px !important;
+}
+.metric-group dd.missing {
+  font-size: 13px !important;
+}
+.measurement-note {
+  font-size: 12px !important;
+}
+.night-light {
+  min-height: 52px !important;
+  font-size: 14px !important;
+  padding: 12px 14px !important;
+  border-radius: 14px !important;
+}
+.night-light strong {
+  font-size: 14px !important;
+}
+.night-light > span:last-child {
+  font-size: 12px !important;
+}
+.target-row {
+  min-height: 36px !important;
+  font-size: 14px !important;
+}
+.target-row > span:nth-child(2) {
+  font-size: 13px !important;
+}
+.weather-source {
+  font-size: 12px !important;
+  line-height: 18px !important;
+}
+
+/* 11. 磨砂拟物图标（B批256px素材）覆盖内联与显式放大 */
+.matte-control-icon,
+[data-matte-icon] {
+  width: 24px !important;
+  height: 24px !important;
+  object-fit: contain !important;
+}
+.hours-row .matte-control-icon,
+.evidence-group h4 .matte-control-icon,
+.targets h3 .matte-control-icon,
+.night-light .matte-control-icon {
+  width: 22px !important;
+  height: 22px !important;
+  margin-right: 6px !important;
+}
+.navigation-icon .matte-control-icon,
+[data-photo] .facility-title .matte-control-icon {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* 12. 底部固定三大操作按钮 (想去 / 分享 / 云观星) */
+#fixed-actions {
+  padding: 8px 18px 12px !important;
+}
+#fixed-actions > div {
+  gap: 12px !important;
+  padding: 0 !important;
+  align-items: center !important;
+}
+#fixed-actions button {
+  height: 48px !important;
+  min-height: 48px !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  border-radius: 14px !important;
+}
+#fixed-actions .star-stage {
+  width: 26px !important;
+  height: 26px !important;
+}
+#fixed-actions .star-stage svg,
+#fixed-actions .star-stage img {
+  width: 24px !important;
+  height: 24px !important;
+}
+#fixed-actions button > svg,
+#fixed-actions button > .matte-control-icon {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* 13. 底部主导航条 (地图 / 我的) */
+footer {
+  height: 72px !important;
+}
+footer > div:first-child {
+  height: 52px !important;
+  padding: 0 48px !important;
+}
+footer button {
+  font-size: 14px !important;
+  gap: 6px !important;
+}
+footer button svg,
+footer button .matte-control-icon {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+/* 14. 顶部搜索框与地图悬浮按钮 */
+.search-entry {
+  height: 42px !important;
+  padding: 0 16px !important;
+  font-size: 15px !important;
+  border-radius: 999px !important;
+}
+.search-entry span {
+  font-size: 14px !important;
+}
+.map-tool {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 999px !important;
+}
+.map-tool svg,
+.map-tool .matte-control-icon {
+  width: 22px !important;
+  height: 22px !important;
+}

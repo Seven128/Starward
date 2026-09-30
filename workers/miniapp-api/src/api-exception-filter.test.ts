@@ -29,8 +29,34 @@ test("ordinary malformed product input remains an input error", () => {
   });
 });
 
+test("invalid plan wall times are input errors rather than provider outages", () => {
+  for (const message of ["plan_end_must_follow_start", "plan_departure_must_precede_start", "plan_timing_invalid",
+    "observation_local_date_invalid", "observation_local_time_invalid", "observation_local_time_nonexistent_or_ambiguous"])
+    assert.deepEqual(classifyExceptionMessage(message), { status: 400, code: "INVALID_INPUT", retryable: false });
+});
+
+test("out-of-region observation locations require a new choice, not a provider retry", () => {
+  assert.deepEqual(classifyExceptionMessage("observation_timezone_resolution_unavailable"), {
+    status: 400,
+    code: "INVALID_INPUT",
+    retryable: false,
+    message: "OBSERVATION_LOCATION_OUTSIDE_SUPPORTED_REGION",
+    recovery: ["CHOOSE_SUPPORTED_LOCATION"],
+  });
+});
+
 test("erased evidence and deleted accounts cannot enter a retry loop", () => {
   for (const message of ["contribution_account_deleted", "operation_receipt_privacy_erased"])
     assert.deepEqual(classifyExceptionMessage(message), { status: 410, code: "STALE_REJECTED", retryable: false });
   assert.deepEqual(classifyExceptionMessage("account_not_active"), { status: 403, code: "PERMISSION_DENIED", retryable: false });
+});
+
+test("formal feedback with no remaining difference is a terminal conflict, not a provider outage", () => {
+  assert.deepEqual(classifyExceptionMessage("contribution_formal_changes_obsolete"), {
+    status: 409,
+    code: "CONFLICT",
+    retryable: false,
+    message: "CONTRIBUTION_NO_REMAINING_CHANGES",
+    recovery: ["REFETCH", "REVIEW_CHANGES"],
+  });
 });

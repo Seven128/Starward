@@ -13,7 +13,7 @@ export function readPanelSnapGeometry(rows: unknown): PanelSnapGeometry | null {
   if (!heights.every(height => typeof height === "number" && Number.isFinite(height) && height > 0)) return null;
   const [startHeight, small, medium, large] = heights as [number, number, number, number];
   if (!(small < medium && medium < large)) return null;
-  return { small, medium, large, startHeight: Math.max(small, Math.min(large, startHeight)) };
+  return { small, medium, large, startHeight: Math.max(small - 72, Math.min(large + 72, startHeight)) };
 }
 
 export function nearestPanelExtent(geometry: PanelSnapGeometry, height: number, current: PanelExtent): PanelExtent {
@@ -29,6 +29,14 @@ export function panelHeightProgress(geometry: PanelSnapGeometry, height: number)
     ? (height - geometry.small) / (geometry.medium - geometry.small) * 0.5
     : 0.5 + (height - geometry.medium) / (geometry.large - geometry.medium) * 0.5;
   return Math.max(0, Math.min(1, fraction));
+}
+
+/** Native geometry can lag the final move; never restart a release from a stale frame. */
+export function panelReleaseStartHeight(geometry: PanelSnapGeometry, visualHeight: number, measuredHeight: unknown): number {
+  const current = Math.max(geometry.small, Math.min(geometry.large, visualHeight));
+  return typeof measuredHeight === "number" && Number.isFinite(measuredHeight) &&
+    Math.abs(measuredHeight - current) <= 2
+    ? Math.max(geometry.small, Math.min(geometry.large, measuredHeight)) : current;
 }
 
 

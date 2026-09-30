@@ -1,19 +1,38 @@
-import { zonedLocalToUtc, type ObservationPlan } from "@starward/miniapp-contracts";
+import type { ObservationPlan } from "@starward/miniapp-contracts";
+import { planInterval } from "../../../features/plan/plan-interval";
 
 export type PlanPartition = "upcoming" | "past";
+export function planListEmptyState(partition: PlanPartition, hasPlansInOtherPartition: boolean) {
+  if (hasPlansInOtherPartition) return partition === "past"
+    ? { title: "暂无过往计划", detail: "接下来的计划可在“接下来”查看。", actionLabel: "查看接下来", action: "switch" as const }
+    : { title: "接下来暂无计划", detail: "已结束的计划可在“过往”查看。", actionLabel: "查看过往", action: "switch" as const };
+  return partition === "past"
+    ? { title: "暂无过往计划", detail: "已结束的计划会显示在这里。", actionLabel: "＋ 新建计划", action: "create" as const }
+    : { title: "暂无观星计划", detail: "新建计划后会显示在这里。", actionLabel: "＋ 新建计划", action: "create" as const };
+}
 export function planListEntries(plans: readonly ObservationPlan[], now: Date, partition: PlanPartition) {
   return plans.map(plan => {
-    try {
-      const start = Date.parse(zonedLocalToUtc({ localDate: plan.localDate, localTime: plan.localTime, timezone: plan.contextSnapshot.timezone }));
-      if (start !== Date.parse(plan.contextSnapshot.selectedAtUtc)) throw new Error("time_mismatch");
-      const end = plan.timing ? Date.parse(zonedLocalToUtc({ localDate: plan.timing.endLocalDate, localTime: plan.timing.endLocalTime, timezone: plan.contextSnapshot.timezone })) : null;
-      if (end !== null && end <= start) throw new Error("time_order");
-      return { plan, start, ongoing: end !== null && start <= now.getTime() && now.getTime() < end,
-        past: (end ?? start) <= now.getTime(), invalid: false };
-    } catch { return { plan, start: Infinity, ongoing: false, past: false, invalid: true }; }
+    const interval = planInterval(plan);
+    if (!interval) return { plan, start: Infinity, ongoing: false, past: false, invalid: true };
+    const { start, end } = interval;
+    return { plan, start, ongoing: end !== null && start <= now.getTime() && now.getTime() < end,
+      past: (end ?? start) <= now.getTime(), invalid: false };
   }).filter(entry => partition === "past" ? entry.past : !entry.past)
     .sort((a, b) => Number(a.invalid) - Number(b.invalid) ||
       (partition === "past" ? b.start - a.start : a.start - b.start) || a.plan.planId.localeCompare(b.plan.planId));
+}
+
+/** Recompute the visible partition as soon as a valid plan starts or ends. */
+export function nextPlanListBoundary(plans: readonly ObservationPlan[], now: Date): number | null {
+  let next: number | null = null;
+  for (const plan of plans) {
+    const interval = planInterval(plan);
+    if (!interval) continue;
+    for (const boundary of [interval.start, interval.end]) {
+      if (boundary !== null && boundary > now.getTime() && (next === null || boundary < next)) next = boundary;
+    }
+  }
+  return next;
 }
 
 export function planEndLabel(plan: ObservationPlan) {

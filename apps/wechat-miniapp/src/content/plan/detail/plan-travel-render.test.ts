@@ -17,7 +17,7 @@ function render(siteRoute: unknown, failure = false, distanceOriginMatches = tru
   let recovered = false;
   const tree = vm.runInNewContext(ts.transpileModule(`(${element})`, { compilerOptions: { jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2022 } }).outputText, {
     React: { createElement: (type: string, props: unknown, ...children: unknown[]) => ({ type, props, children }) },
-    Text: "Text", View: "View", SoftButton: "SoftButton", planTravelModeLabel,
+    Text: "Text", View: "View", SoftButton: "SoftButton", EMPTY_FIELD_VALUE: "暂无数据", planTravelModeLabel,
     activePlan: { travel: { origin: "手填出发地", mode: "TRANSIT" },
       timing: { departureLocalDate: "2026-09-15", departureLocalTime: "23:00" }, localDate: "2026-09-16", localTime: "01:30" },
     selectedSpot: { name: "观星点A" }, siteRoute, straightDistanceKm: distanceOriginMatches && siteRoute ? 12.3 : null,
@@ -33,7 +33,8 @@ function render(siteRoute: unknown, failure = false, distanceOriginMatches = tru
 test("missing or failed site data preserves the manual cross-midnight travel timeline and usable retry", () => {
   for (const failure of [false, true]) {
     const view = render(null, failure);
-    for (const value of ["手填出发地", "公共交通", "2026-09-15 23:00", "2026-09-16", "01:30", "暂无数据"]) assert.ok(view.text.includes(value), value);
+    for (const value of ["手填出发地", "公共交通", "2026-09-15 23:00", "2026-09-16", "01:30", failure ? "场地信息暂未获取" : "暂无数据"]) assert.ok(view.text.includes(value), value);
+    if (failure) assert.doesNotMatch(view.text, /暂无数据/);
     assert.doesNotMatch(view.text, /预计|路线估算|分钟/);
     view.retry(); assert.equal(view.recovered(), failure);
   }

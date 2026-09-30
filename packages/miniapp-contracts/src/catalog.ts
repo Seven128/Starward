@@ -27,7 +27,7 @@ interface OsmSpotSeed {
   osmId: number;
   lat: number;
   lon: number;
-  timezone?: "Asia/Shanghai" | "Asia/Hong_Kong";
+  timezone?: "Asia/Shanghai" | "Asia/Hong_Kong" | "Asia/Macau";
 }
 
 const OSM_LICENSE = "Open Data Commons Open Database License 1.0";

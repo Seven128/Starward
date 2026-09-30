@@ -44,7 +44,7 @@ export default function PlanSpotPage() {
     <CustomNav title="观星点详情" back />
     <View className="page-inset">
       {query.isPending ? <StatusPanel state="LOADING" detail="正在恢复这份计划的观星点资料。" /> :
-        <StatusPanel state="EMPTY" detail="暂时无法恢复这份计划的观星点资料；计划内容保持不变。" recoveryLabel="重试" onRecover={() => void query.refetch()} />}
+        <StatusPanel state="ERROR" detail="暂时无法恢复这份计划的观星点资料；计划内容保持不变。" recoveryLabel="重试" onRecover={() => void query.refetch()} />}
     </View>
   </View>;
 }

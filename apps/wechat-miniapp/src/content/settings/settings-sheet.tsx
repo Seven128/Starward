@@ -1,5 +1,5 @@
 import { SemanticIcon } from "@/components/semantic-asset";
-import type { UserPreferences } from "@starward/miniapp-contracts";
+import type { DisplayMode, UserPreferences } from "@starward/miniapp-contracts";
 import { Button, Text, View } from "@tarojs/components";
 import type { SettingsSheetKind } from "./settings-sections";
 
@@ -26,6 +26,7 @@ const CONTENT: Record<Exclude<OpenSettingsSheet, "LOCATION" | "DELETE" | "DELETE
 
 export function SettingsSheet({
   sheet,
+  mode,
   closing,
   locationPreference,
   busy,
@@ -37,6 +38,7 @@ export function SettingsSheet({
   confirmDelete,
 }: {
   sheet: OpenSettingsSheet;
+  mode: DisplayMode;
   closing: boolean;
   locationPreference: UserPreferences["locationPreference"];
   busy: boolean;
@@ -54,7 +56,9 @@ export function SettingsSheet({
   const body = sheet === "LOCATION" ? "仅在使用附近地点时询问定位权限，也可以一直手动选择地点。"
     : sheet === "DELETE" ? "账户资料、偏好、个人计划与相关个人数据将被删除。公共观星点所需的审核记录会去标识化保留。"
     : sheet === "DELETE_FINAL" ? "此操作不可撤销。再次进入时，将按新账户开始。"
-    : CONTENT[sheet].body;
+    : sheet === "EXPORT" && mode === "OBSERVATION"
+      ? `${CONTENT.EXPORT.body} 微信文件分享界面可能亮屏；可取消并先切换日间或夜间。`
+      : CONTENT[sheet].body;
 
   return <View className={`settings-sheet-scrim${closing ? " settings-sheet-scrim--closing" : ""}`} onClick={() => { if (!busy) close(); }}>
     <View className={`settings-sheet${closing ? " settings-sheet--closing" : ""}`} role="dialog" aria-modal="true" aria-label={title}

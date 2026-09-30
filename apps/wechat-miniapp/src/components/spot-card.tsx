@@ -1,3 +1,4 @@
+import { mediaSource } from "@/utils/media-source";
 import { Button, Image, Text, View } from "@tarojs/components";
 import type {
   FacilityType,
@@ -236,7 +237,7 @@ export function SpotCard({
       {media ? (
         <Image
           className="spot-card__media"
-          src={media.thumbnailPath}
+          src={mediaSource(media.thumbnailPath)}
           mode="aspectFill"
           lazyLoad
           aria-label={media.alt}

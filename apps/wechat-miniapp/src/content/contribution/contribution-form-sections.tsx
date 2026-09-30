@@ -252,6 +252,7 @@ function CoordinateField({
         type="digit"
         value={value}
         placeholder={placeholder}
+        placeholderClass="contribution-coordinate-placeholder"
         onInput={(event) => onInput(event.detail.value)}
       />
     </View>

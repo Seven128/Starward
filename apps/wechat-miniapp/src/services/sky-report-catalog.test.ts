@@ -4,7 +4,8 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import { projectAdoptedSkyCatalog } from "./sky-report-catalog";
-import { transportHarness } from "./api-request-test-support";
+import { TEST_API_BASE, transportHarness } from "./api-request-test-support";
+import { responseCacheKey } from "./cache-policy";
 import { isCelestialObjectReference, SKY_PLANET_ORDER } from "@starward/miniapp-contracts";
 
 const source = ts.createSourceFile("api-client.ts", readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -51,7 +52,7 @@ test("upgraded client rejects retired star cache after restart on offline and 30
     assert.equal(result.sources.some((item: any) => item.id === "catalog:stars"), false);
     assert.ok(result.warnings.some((message: string) => message.includes("联网后刷新")));
     // Retired bytes cannot leak via an untouched cached object after projection.
-    assert.equal((current.responseCache.get("scene:/scene:anonymous")?.envelope.data as any).skyScene.catalog.entries[0].objectRef, "HIP:32349");
+    assert.equal((current.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).skyScene.catalog.entries[0].objectRef, "HIP:32349");
     old.queryClient.clear(); current.queryClient.clear();
   }
 });
@@ -73,7 +74,7 @@ test("old or malformed solar positions stay missing across offline, 304 and old 
     assert.equal(degraded.data.offlineReady, false);
     assert.equal(degraded.dataState, outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
     assert.ok(degraded.warnings.some((warning: string) => warning.includes("太阳精确位置")));
-    assert.equal((h.responseCache.get("scene:/scene:anonymous")?.envelope.data as any).hourly[0].sunAltitudeDeg, outcome === "null-pair" ? null : -7.25,
+    assert.equal((h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).hourly[0].sunAltitudeDeg, outcome === "null-pair" ? null : -7.25,
       "presentation projection cannot rewrite the cached original");
     const fresh = skyEnvelope(h, false);
     const next = call("spot:published", "context:unchanged");
@@ -99,7 +100,7 @@ test("missing solar diameter does not invent a disc or discard a still-valid twi
       degraded.data.hourly[0].sunAngularDiameterDeg],[279.5,-7.25,null]);
     assert.equal(degraded.dataState,outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
     assert.ok(degraded.warnings.some((warning:string)=>warning.includes("太阳盘角直径")));
-    assert.equal((h.responseCache.get("scene:/scene:anonymous")?.envelope.data as any).hourly[0].sunAngularDiameterDeg,
+    assert.equal((h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).hourly[0].sunAngularDiameterDeg,
       outcome === "bad-diameter" ? 2 : undefined,"presentation must not rewrite cached bytes");
     const next=call("spot:published","context:unchanged");
     h.calls.at(-1)!.success({statusCode:200,data:skyEnvelope(h,false)});
@@ -124,7 +125,7 @@ test("old or malformed lunar disc geometry cannot survive offline, 304 or old se
     assert.deepEqual([degraded.data.hourly[0].moonAzimuthDeg,degraded.data.hourly[0].moonAngularDiameterDeg],[null,null]);
     assert.equal(degraded.dataState,outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
     assert.ok(degraded.warnings.some((warning:string)=>warning.includes("月球精确位置")));
-    assert.equal((h.responseCache.get("scene:/scene:anonymous")?.envelope.data as any).hourly[0].moonAngularDiameterDeg,
+    assert.equal((h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).hourly[0].moonAngularDiameterDeg,
       outcome === "bad-diameter" ? 2 : .51,"presentation must not rewrite the cached original");
     const next = call("spot:published","context:unchanged");
     h.calls.at(-1)!.success({statusCode:200,data:skyEnvelope(h,false)});
@@ -148,7 +149,7 @@ test("retired or mixed planetary rows lose their geometry on offline, 304 and se
     assert.equal(degraded.data.hourly[0].planets,null);
     assert.equal(degraded.dataState,outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
     assert.ok(degraded.warnings.some((warning:string)=>warning.includes("行星精确位置")));
-    assert.equal((h.responseCache.get("scene:/scene:anonymous")?.envelope.data as any).hourly[0].planets?.[2]?.body,
+    assert.equal((h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).hourly[0].planets?.[2]?.body,
       outcome === "mixed" ? "JUPITER" : undefined,"projection cannot rewrite the cached source");
     const next = call("spot:published","context:unchanged");
     h.calls.at(-1)!.success({statusCode:200,data:skyEnvelope(h,false)});
@@ -179,7 +180,7 @@ for (const outcome of ["200", "304", "offline"] as const) {
       assert.equal(result.dataState, outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
       assert.equal(result.data.offlineReady, false);
       assert.ok(result.warnings.some((warning: string) => warning.includes("行星精确位置")));
-      const cached = h.responseCache.get("scene:/scene:anonymous")?.envelope.data as any;
+      const cached = h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any;
       assert.deepEqual(cached.hourly[0].planets, damaged.data.hourly[0]!.planets,
         "presentation degradation must not replace the stored response");
 
@@ -212,7 +213,7 @@ test("a null target frame is isolated across network/cache reads without losing 
       assert.deepEqual(result.data.skyScene, damaged.data.skyScene);
       assert.equal(result.dataState, outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
       assert.ok(result.warnings.some((warning: string) => warning.includes("天体精确方位")));
-      const cached = h.responseCache.get("scene:/scene:anonymous")?.envelope.data as any;
+      const cached = h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any;
       assert.deepEqual(cached.targetFrames, damaged.data.targetFrames);
       const recovering = call("spot:published", "context:unchanged");
       h.calls.at(-1)!.success({ statusCode: 200, data: skyEnvelope(h, false) });
@@ -277,7 +278,7 @@ test("a mirrored optical frame is removed from network and offline projections w
  assert.equal(degraded.data.skyScene.state,"AVAILABLE");
  assert.equal(degraded.data.observationFrames,undefined);
  assert.ok(degraded.warnings.some((warning:string)=>warning.includes("巡天影像观测几何")));
- assert.equal((h.responseCache.get("scene:/scene:anonymous")?.envelope.data as any).observationFrames[0].equatorialToEnu[0],-1);
+ assert.equal((h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).observationFrames[0].equatorialToEnu[0],-1);
  const fresh=skyEnvelope(h,false);
  const frame={format:"eqj-enu-observer-v1",at,observer:{latitude:0,longitude:0,elevationM:0},
    equatorialToEnu:[1,0,0,0,1,0,0,0,1]};

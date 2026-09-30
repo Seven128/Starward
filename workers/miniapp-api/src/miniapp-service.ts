@@ -10,6 +10,7 @@ import {
   type DeepSkyImageSelection,
 } from "@starward/miniapp-contracts";
 import { createHash, randomUUID } from "node:crypto";
+import { openPlanShare, sealPlanShare } from "./plan-share-token.ts";
 import { observationFrameTimes } from "./observation-time-axis.ts";
 import {
   type AccountDataExportData,
@@ -46,6 +47,8 @@ import {
   type ObservationContextResolveRequest,
   type ObservationContextUpdateRequest,
   type ObservationPlan,
+  type PlanPublicShareData,
+  type SpotPublicShareData,
   type PlatformKind,
   type PreferenceRankingDisclosure,
   type ProfileLink,
@@ -211,6 +214,11 @@ const FILTER_GROUP_LABELS = Object.freeze(
 
 function uniqueSources(sources: readonly SourceSummary[]) {
   return [...new Map(sources.map((source) => [source.id, source])).values()];
+}
+
+function browsingTimezoneSources(context: ObservationContext): readonly SourceSummary[] {
+  return context.location.kind === "MAP_POINT" && context.timezoneSource
+    ? [context.timezoneSource] : [];
 }
 
 function rankSpotsByPreferences(
@@ -875,7 +883,7 @@ export class MiniappService {
 
   async resolveObservationContext(input: ObservationContextResolveRequest) {
     const context = await this.observationContexts.resolve(input);
-    return envelope(context, "FRESH", [], [], {
+    return envelope(context, "FRESH", browsingTimezoneSources(context), [], {
       validAt: context.selectedAtUtc,
       contextRevision: context.revision,
     });
@@ -883,7 +891,7 @@ export class MiniappService {
 
   async getObservationContext(contextId: string) {
     const context = await this.observationContexts.get(contextId);
-    return envelope(context, "FRESH", [], [], {
+    return envelope(context, "FRESH", browsingTimezoneSources(context), [], {
       validAt: context.selectedAtUtc,
       contextRevision: context.revision,
     });
@@ -897,7 +905,7 @@ export class MiniappService {
     await this.cache.deleteByPrefix(
       "map:" + context.contextFingerprint.slice(0, 16),
     );
-    return envelope(context, "FRESH", [], [], {
+    return envelope(context, "FRESH", browsingTimezoneSources(context), [], {
       validAt: context.selectedAtUtc,
       contextRevision: context.revision,
     });
@@ -1372,6 +1380,7 @@ export class MiniappService {
         activeFilter(filters, group) && byGroup[group].state === "UNAVAILABLE",
     );
     const sources = uniqueSources([
+      ...browsingTimezoneSources(context),
       ...allCandidates.map((spot) => spot.source),
       ...Object.values(reports).flatMap((report) => report.sources),
       ...(layer.source ? [layer.source] : []),
@@ -1761,7 +1770,7 @@ export class MiniappService {
       name: fields.name?.trim() || submission.candidateLocation.displayName,
       region: submission.candidateLocation.region,
       address: fields.address?.trim() || submission.candidateLocation.region,
-      timezone: timezone === "Asia/Hong_Kong" ? "Asia/Hong_Kong" : "Asia/Shanghai",
+      timezone: timezone === "Asia/Hong_Kong" || timezone === "Asia/Macau" ? timezone : "Asia/Shanghai",
       wgs84: { ...point },
       gcj02: { system: "GCJ02", latitude: converted.lat, longitude: converted.lon, derivedFrom: "WGS84", transformVersion: "gcj02-standard-v1" },
       altitudeM: null,
@@ -2044,17 +2053,12 @@ export class MiniappService {
     if (!input || !["accept", "reject", "ban", "filter"].includes(input.choice)) throw new Error("reminder_subscription_choice_invalid");
     const binding = this.reminderSubscriptionBinding();
     const recorded = binding ? await this.reminderSubscriptions!.record(userId, challengeId, input.choice, binding) : false;
-    if (recorded) await this.cache.deleteByPrefix("plans:" + hash(userId).slice(0, 24));
     return envelope({ recorded }, "FRESH", []);
   }
 
   async getPlans(userId: UserId) {
-    const cacheKey = "plans:" + hash(userId).slice(0, 24);
-    const cached =
-      await this.cache.get<ApiEnvelope<import("@starward/miniapp-contracts").PlansData>>(
-        cacheKey,
-      );
-    if (cached) return cached;
+    // Account plans are mutable repository facts, as in getUserLibrary. A TTL
+    // cache can be repopulated by a read that began before a committed mutation.
     const plans = await this.repository.listPlans(userId);
     const storedSchedules = await this.repository.listPlanReminderSchedules(userId);
     const schedules = plans.flatMap(plan => {
@@ -2072,8 +2076,53 @@ export class MiniappService {
       "FRESH",
       [],
     );
-    await this.cache.set(cacheKey, result, 300);
     return result;
+  }
+
+  private async publicShareSpot(spotId: SpotId) {
+    const detail = await this.repository.getDetail(spotId);
+    if (!detail || !["PUBLISHED", "TEMPORARILY_CLOSED"].includes(detail.spot.status)) throw new Error("share_not_found");
+    return detail;
+  }
+
+  async createPlanShare(userId: UserId, planId: string) {
+    const plan = (await this.repository.listPlans(userId)).find(item => item.planId === planId);
+    if (!plan || !plan.timing) throw new Error("share_not_found");
+    await this.publicShareSpot(plan.spotId);
+    const expiresAt = Date.now() + 7 * 86_400_000;
+    return envelope({ token: sealPlanShare({ userId, planId, revision: plan.revision, expiresAt }, this.config.wechat.sessionSecret),
+      expiresAt: new Date(expiresAt).toISOString() }, "FRESH", []);
+  }
+
+  async getSharedPlan(token: string): Promise<ApiEnvelope<PlanPublicShareData>> {
+    const binding = openPlanShare(token, this.config.wechat.sessionSecret);
+    if (!binding) throw new Error("share_not_found");
+    const plan = (await this.repository.listPlans(binding.userId as UserId)).find(item => item.planId === binding.planId);
+    if (!plan || !plan.timing || plan.revision !== binding.revision) throw new Error("share_not_found");
+    const detail = await this.publicShareSpot(plan.spotId);
+    return envelope({ kind: "PLAN", spotId: detail.spot.spotId, spotGcj02: detail.spot.gcj02, spotName: detail.spot.name,
+      spotRegion: detail.spot.region, spotStatus: detail.spot.status as NonNullable<PlanPublicShareData["spotStatus"]>,
+      spotSource: detail.spot.source,
+      localDate: plan.localDate, localTime: plan.localTime,
+      endLocalDate: plan.timing.endLocalDate, endLocalTime: plan.timing.endLocalTime,
+      departureLocalDate: plan.timing.departureLocalDate, departureLocalTime: plan.timing.departureLocalTime,
+      timezone: plan.contextSnapshot.timezone,
+      events: (plan.eventOccurrenceIds ?? []).map(occurrenceId => {
+        const event = this.eventCatalog.find(occurrenceId);
+        return { occurrenceId, displayName: event?.displayName ?? "天象资料暂不可用", kind: event?.kind ?? null,
+          source: event ? this.eventCatalog.sourceFor(event) : null };
+      }), expiresAt: new Date(binding.expiresAt).toISOString() }, "FRESH", []);
+  }
+
+  async getSharedSpot(spotId: SpotId): Promise<ApiEnvelope<SpotPublicShareData>> {
+    const detail = await this.publicShareSpot(spotId);
+    const facts = detail.formalFacts;
+    return envelope({ kind: "SPOT", spotId: detail.spot.spotId, spotGcj02: detail.spot.gcj02, name: detail.spot.name,
+      region: detail.spot.region, address: detail.spot.address,
+      status: detail.spot.status as SpotPublicShareData["status"],
+      opening: facts?.hours ?? null, access: facts?.accessNote ?? facts?.access ?? null,
+      safety: facts?.safety ?? null, parking: facts?.parkingNote ?? facts?.parking ?? null,
+      horizon: facts?.horizon ?? null, source: detail.spot.source }, "FRESH", []);
   }
 
   async savePlan(
@@ -2110,10 +2159,13 @@ export class MiniappService {
       if (input.eventOccurrenceIds !== undefined)
         eventOccurrenceIds = parsePlanEventOccurrenceIds(input.eventOccurrenceIds);
     } catch { throw new Error("plan_event_occurrence_invalid"); }
-    if (eventOccurrenceIds?.some(id => !this.eventCatalog.find(id)))
+    const preservesEventHistory = eventOccurrenceIds !== undefined &&
+      JSON.stringify(eventOccurrenceIds) === JSON.stringify(existingPlan?.eventOccurrenceIds ?? []);
+    // Catalog withdrawal must not force unrelated edits to discard saved history.
+    // Changed selections still require current catalog identities and 0/1 semantics.
+    if (!preservesEventHistory && eventOccurrenceIds?.some(id => !this.eventCatalog.find(id)))
       throw new Error("plan_event_occurrence_invalid");
-    if (eventOccurrenceIds && eventOccurrenceIds.length > 1 &&
-        JSON.stringify(eventOccurrenceIds) !== JSON.stringify(existingPlan?.eventOccurrenceIds ?? []))
+    if (eventOccurrenceIds && eventOccurrenceIds.length > 1 && !preservesEventHistory)
       throw new Error("plan_event_occurrence_single_selection_required");
     if (eventOccurrenceIds === undefined && existingPlan?.eventOccurrenceIds?.length)
       throw new Error("plan_event_occurrences_required");
@@ -2190,9 +2242,6 @@ export class MiniappService {
       expectedRevision,
       idempotencyKey,
     );
-    await this.cache.deleteByPrefix(
-      "plans:" + hash(userId).slice(0, 24),
-    );
     return envelope(plan, "FRESH", []);
   }
 
@@ -2214,7 +2263,6 @@ export class MiniappService {
     const receipt = await this.repository.getPlanSaveReceipt(userId, planId, key);
     if (receipt) {
       validateReceipt(receipt);
-      await this.cache.deleteByPrefix("plans:" + hash(userId).slice(0, 24));
       return envelope(receipt, "FRESH", []);
     }
     const current = (await this.repository.listPlans(userId)).find(plan => plan.planId === planId);
@@ -2224,7 +2272,6 @@ export class MiniappService {
     const reminders = current.reminders.map(group => group.reminderId === input.reminderId
       ? { ...group, items: group.items.map(item => item.itemId === input.itemId ? { ...item, completed: input.completed } : item) } : group);
     const saved = validateReceipt(await this.repository.savePlan(userId, { ...current, reminders }, input.expectedRevision, key));
-    await this.cache.deleteByPrefix("plans:" + hash(userId).slice(0, 24));
     return envelope(saved, "FRESH", []);
   }
 
@@ -2235,9 +2282,6 @@ export class MiniappService {
   ) {
     assertIdempotencyKey(idempotencyKey);
     await this.repository.deletePlan(userId, planId, idempotencyKey);
-    await this.cache.deleteByPrefix(
-      "plans:" + hash(userId).slice(0, 24),
-    );
     return this.getPlans(userId);
   }
 
@@ -2503,6 +2547,10 @@ export class MiniappService {
 
   async getSpotContributionMedia(spotId: SpotId, uploadId: ContributionUploadId) {
     return envelope(await this.contributions.readForPublishedSpot(spotId, uploadId), "FRESH", []);
+  }
+
+  getSpotContributionImage(spotId: SpotId, uploadId: ContributionUploadId) {
+    return this.contributions.readBytesForPublishedSpot(spotId, uploadId);
   }
 
   async createContributionDraft(

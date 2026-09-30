@@ -30,7 +30,7 @@
 
 本轮尺度修订的明确边界：观星点仍是地图上的原信息抽屉，保留原档位/拖动、内部Tab及其内容组织和切换/定位行为、底部动作、媒体和返回逻辑；仅调整内容的尺寸、间距与圆润表达，不重构为独立详情页或改变业务。缺失态不能替换完整原内容作为本轮交付。
 
-2026-09-22 真机反馈更新：此前“小巧”的尺度在手机上过小。小程序设计资源后续修订以正常移动端的舒适可读尺寸、自然圆润和高级感为目标；保留清楚层级与有效信息组织，不以压小文字、图标和按钮换取密度，也不整体等比放大。先在 Stitch 校准页面样板，再逐步延展；具体新几何仍待视觉确认，本次设计迭代不自动更改并行开发中的生产令牌或采用入口。个人行程成就页（入口在“我的”）、单个行程分享页及观星点分享页是本次后续设计议题，其业务细节与视觉方案尚待逐项细化。
+2026-09-22 真机反馈更新：此前“小巧”的尺度在手机上过小。小程序设计资源后续修订以正常移动端的舒适可读尺寸、自然圆润和高级感为目标；保留清楚层级与有效信息组织，不以压小文字、图标和按钮换取密度，也不整体等比放大。观星点大档样板的尺寸方向已获确认，整组舒适尺度与来源披露仍是待审设计资源，未自动更改并行开发中的生产令牌或各页采用入口。用户后续明确新增“我的”个人行程成就、单个行程分享和观星点分享；成就按已结束计划自动统计，分享与缺失/失效边界由[计划与分享 owner](areas/main/screen-contracts/wechat-miniapp/map-and-finder.md#2026-09-22-新增个人行程成就与分享)维护。连续动效扩展到适合的公共组件，以原任务与状态规则为先，公共责任见[共享 owner](areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md#公共连续动效2026-09-22-候选扩展)；整组视觉仍待用户审阅。
 
 The primary goal is to continuously refine the project’s understanding of the owner’s visual preferences and UIUX principles from accumulating design resources, explicit feedback and adopted revisions. Design decisions should become better grounded as that understanding improves. Adoption of a page records acceptance within its scope; it supplies no objective quality score, completion level or universal template. Follow [continuous design calibration](context-maintenance.md#持续校准设计系统与用户偏好) to update existing owners, distinguish general principles from page-specific choices and replace obsolete rules.
 

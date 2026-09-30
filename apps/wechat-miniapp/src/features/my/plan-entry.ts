@@ -1,4 +1,5 @@
-import { localParts, zonedLocalToUtc, type ObservationPlan } from "@starward/miniapp-contracts";
+import { localParts, type ObservationPlan } from "@starward/miniapp-contracts";
+import { planInterval } from "../plan/plan-interval";
 
 export function myPlanTimeLabel(plan: ObservationPlan, now: Date, ongoing: boolean) {
   const today = localParts(now, plan.contextSnapshot.timezone);
@@ -18,16 +19,12 @@ export function myPlanTimeLabel(plan: ObservationPlan, now: Date, ongoing: boole
 export function selectPlanEntry<T extends Pick<ObservationPlan, "planId" | "localDate" | "localTime" | "timing" | "contextSnapshot">>(plans: readonly T[], now: Date) {
   const instant = now.getTime();
   const eligible = plans.flatMap((plan) => {
-    try {
-      const timezone = plan.contextSnapshot.timezone;
-      const start = Date.parse(plan.contextSnapshot.selectedAtUtc);
-      if (!Number.isFinite(start) || start !== Date.parse(zonedLocalToUtc({ localDate: plan.localDate, localTime: plan.localTime, timezone }))) return [];
-      const end = plan.timing ? Date.parse(zonedLocalToUtc({ localDate: plan.timing.endLocalDate, localTime: plan.timing.endLocalTime, timezone })) : null;
-      if (end !== null && (!Number.isFinite(end) || end <= start)) return [];
-      const ongoing = end !== null && start <= instant && instant < end;
-      if (!ongoing && !(instant <= start && start <= instant + 24 * 60 * 60_000)) return [];
-      return [{ plan, start, end, ongoing }];
-    } catch { return []; }
+    const interval = planInterval(plan);
+    if (!interval) return [];
+    const { start, end } = interval;
+    const ongoing = end !== null && start <= instant && instant < end;
+    if (!ongoing && !(instant <= start && start <= instant + 24 * 60 * 60_000)) return [];
+    return [{ plan, start, end, ongoing }];
   }).sort((a, b) => Number(b.ongoing) - Number(a.ongoing) || a.start - b.start || a.plan.planId.localeCompare(b.plan.planId));
   return { title: "观星计划", plan: eligible[0]?.plan ?? null,
     entries: eligible.slice(0, 3), hasMore: eligible.length > 3 };

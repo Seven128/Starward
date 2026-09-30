@@ -1,25 +1,27 @@
-/** Critically damped height trajectory. Units are logical px and milliseconds. */
-export type PanelSpringFrame = { height: number; duration: number };
+import { elasticPosition, elasticSpringFrames, type ElasticFrame } from "@/components/elastic-motion";
+
+export type PanelSpringFrame = ElasticFrame;
+/** The large snap is the top stop; releasing there must not move the sheet down. */
+export function panelDragHeight(raw: number, min: number, max: number): number {
+  return Math.min(max, elasticPosition(raw, min, max));
+}
+
 export function panelSpringFrames(input: {
   from: number; to: number; velocity: number; min: number; max: number; reducedMotion?: boolean;
 }): PanelSpringFrame[] {
   const { from, to, velocity, min, max } = input;
   if (![from, to, velocity, min, max].every(Number.isFinite) || min > max) return [];
-  const clamp = (height: number) => Math.max(min, Math.min(max, height));
-  const start = clamp(from), target = clamp(to);
-  if (input.reducedMotion) return [{ height: target, duration: 0 }];
-  const omega = 0.024;
-  const displacement = start - target;
-  const initialVelocity = Math.max(-3, Math.min(3, velocity));
-  const coefficient = initialVelocity + omega * displacement;
-  const frames: PanelSpringFrame[] = [{ height: start, duration: 0 }];
-  for (let elapsed = 16; elapsed <= 640; elapsed += 16) {
-    const decay = Math.exp(-omega * elapsed);
-    const offset = (displacement + coefficient * elapsed) * decay;
-    const speed = (coefficient - omega * (displacement + coefficient * elapsed)) * decay;
-    const settled = Math.abs(offset) < 0.25 && Math.abs(speed) < 0.005;
-    frames.push({ height: settled || elapsed === 640 ? target : clamp(target + offset), duration: 16 });
-    if (settled) break;
-  }
-  return frames;
+  const target = Math.max(min, Math.min(max, to));
+  if (Math.abs(from - target) < 0.5) return [{ height: target, duration: 0 }];
+  const frames = elasticSpringFrames({ from, to: target, velocity,
+    ...(input.reducedMotion === undefined ? {} : { reducedMotion: input.reducedMotion }) });
+  // A boundary snap must not pass the stop and then recoil. Preserve the
+  // release position (including the user's elastic pull), but constrain every
+  // subsequent sample to the approach side of that boundary.
+  return frames.map((frame, index) => {
+    if (index === 0) return frame;
+    const bounded = Math.max(min, Math.min(max, frame.height));
+    return { ...frame, height: target === max && from > max ? Math.min(from, Math.max(target, frame.height))
+      : target === min && from < min ? Math.max(from, Math.min(target, frame.height)) : bounded };
+  });
 }

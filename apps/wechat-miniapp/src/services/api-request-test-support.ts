@@ -8,7 +8,8 @@ import { createResponseCache, isResponseEnvelope, MAX_STALE_AGE_MS } from "./res
 import { LatestRequestRegistry, MiniappRequestCancelled } from "./request-lifecycle";
 // Execute the production transport/cache functions; only native I/O and time
 // delivery are synthetic. No phone, persistent user cache or credentials.
-export function transportHarness(abortThrows = false, onDispatch = () => {}, promiseTask = false) {
+export const TEST_API_BASE = "https://synthetic.invalid";
+export function transportHarness(abortThrows = false, onDispatch = () => {}, promiseTask = false, apiBase = TEST_API_BASE) {
   const source = ts.createSourceFile("api-client.ts",
     readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"),
     ts.ScriptTarget.Latest, true);
@@ -43,7 +44,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
     "\n({request, requests, responseCache, invalidateApiCache, clearTemporaryApiCache, MiniappApiError});", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     LatestRequestRegistry, MiniappRequestCancelled, responseCacheKey, createResponseCache, isResponseEnvelope, MAX_STALE_AGE_MS, Date, Error,
     isTemporaryCacheKey, miniappQueryClient: queryClient,
-    __MINIAPP_API_BASE__: "https://synthetic.invalid", __MINIAPP_OPERATOR_PREVIEW_TOKEN__: "",
+    __MINIAPP_API_BASE__: apiBase, __MINIAPP_OPERATOR_PREVIEW_TOKEN__: "",
     __MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__: false,
     recordAcceptanceDiagnostic: (...parts: string[]) => diagnostics.push(parts),
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; },
@@ -78,7 +79,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
       },
     },
   }, { timeout: 1000 }) as {
-    request(key: string, path: string, options?: { cache?: boolean; signal?: AbortSignal; method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown;
+    request(key: string, path: string, options?: { independent?: boolean; cache?: boolean; signal?: AbortSignal; method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown;
       idempotencyKey?: string; session?: { userId: string; accessToken: string } }): Promise<typeof response>;
     MiniappApiError: new (error: unknown, statusCode: number) => Error & { code: string; statusCode: number };
     requests: LatestRequestRegistry;

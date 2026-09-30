@@ -4,7 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
-function navigation(options: { warningFails?: boolean; copyFails?: boolean; restricted?: boolean } = {}) {
+function navigation(options: { warningFails?: boolean; copyFails?: boolean; restricted?: boolean; handoffCancelled?: boolean } = {}) {
   const source = ts.createSourceFile("spot.tsx", readFileSync(new URL("./spot-detail-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let declaration = "", cancelDeclaration = "";
   const visit = (node: ts.Node) => {
@@ -21,6 +21,10 @@ function navigation(options: { warningFails?: boolean; copyFails?: boolean; rest
     Error,
     detail: { spot: { spotId: "spot:a", visibilityPolicy: options.restricted ? "PUBLIC_APPROXIMATE" : "PUBLIC_EXACT", gcj02: {}, wgs84: {} }, accessAndSafety: { explicitDanger: options.warningFails, restrictions: [], guidance: [] } },
     navigationEpoch: epoch, navigationScope: { current: "scope" }, scope: "scope",
+    navigationHandoff: { confirm: async () => {
+      if (options.handoffCancelled) { calls.push("handoff"); return false; }
+      return true;
+    } },
     observationContext: { contextId: "ctx:a" }, effectiveRoute: { originLabel: "origin" },
     Taro: {
       showActionSheet: () => choice,
@@ -68,6 +72,12 @@ test("restricted spot coordinates never reach external map or clipboard", async 
   const page = navigation({ restricted: true });
   await page.open();
   assert.deepEqual(page.calls, ["notice"]);
+});
+
+test("cancelled red-light handoff does not open native navigation options", async () => {
+  const page = navigation({ handoffCancelled: true });
+  await page.open();
+  assert.deepEqual(page.calls, ["handoff"]);
 });
 
 for (const result of [{ errMsg: 'showActionSheet:fail cancel' }, new Error('showActionSheet:fail cancel')]) {

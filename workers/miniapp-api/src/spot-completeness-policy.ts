@@ -132,7 +132,7 @@ export function evaluateSpotCompleteness(input: {
     !isText(spot.name, 120) ||
     !isText(spot.region, 120) ||
     !isText(spot.address, 500) ||
-    !["Asia/Shanghai", "Asia/Hong_Kong"].includes(spot.timezone)
+    !["Asia/Shanghai", "Asia/Hong_Kong", "Asia/Macau"].includes(spot.timezone)
   )
     add(
       "identity_incomplete",

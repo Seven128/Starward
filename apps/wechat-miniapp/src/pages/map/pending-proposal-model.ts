@@ -1,10 +1,16 @@
 import type { ContributionFormalFieldKey, ContributionSubmission, ContributionUploadId } from "@starward/miniapp-contracts";
 
+function submittedField(submission: ContributionSubmission, key: ContributionFormalFieldKey) {
+  return submission.candidateProfile?.fields[key]?.trim() || undefined;
+}
+
 function value(submission: ContributionSubmission, key: ContributionFormalFieldKey) {
-  return submission.candidateProfile?.fields[key]?.trim() || "暂无数据";
+  return submittedField(submission, key) ?? "暂无数据";
 }
 
 export function pendingProposalPanelValues(submission: ContributionSubmission) {
+  const name = submittedField(submission, "name");
+  const address = submittedField(submission, "address");
   const media = (["parking", "toilet", "site"] as const).flatMap((kind) =>
     (submission.candidateProfile?.media[kind] ?? []).map((uploadId) => ({
       uploadId: uploadId as ContributionUploadId,
@@ -12,19 +18,15 @@ export function pendingProposalPanelValues(submission: ContributionSubmission) {
     })),
   );
   return {
-    name: value(submission, "name") === "暂无数据"
-      ? submission.candidateLocation?.displayName.trim() || "未命名观星点"
-      : value(submission, "name"),
-    address: value(submission, "address") === "暂无数据"
-      ? submission.candidateLocation?.region.trim() || "暂无数据"
-      : value(submission, "address"),
+    name: name ?? (submission.candidateLocation?.displayName.trim() || "未命名观星点"),
+    address: address ?? (submission.candidateLocation?.region.trim() || "暂无数据"),
     opening: [value(submission, "openness"), value(submission, "hours")],
-    access: [value(submission, "access"), value(submission, "accessNote")],
-    road: value(submission, "road"),
+    access: [value(submission, "access"), submittedField(submission, "accessNote")],
+    road: submittedField(submission, "road"),
     safety: value(submission, "safety"),
     facilities: [
-      ["停车", value(submission, "parking"), value(submission, "parkingNote")],
-      ["洗手间", value(submission, "toilet"), value(submission, "toiletNote")],
+      ["停车", value(submission, "parking"), submittedField(submission, "parkingNote")],
+      ["洗手间", value(submission, "toilet"), submittedField(submission, "toiletNote")],
       ["观测平台", value(submission, "platform"), ""],
       ["通信与充电", value(submission, "signal"), ""],
     ] as const,

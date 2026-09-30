@@ -8,6 +8,9 @@ import { skyStarAppearance } from "./sky-star-appearance";
 import { paintedSkyPointVisible, type SkyPickSnapshot } from "./sky-object-picking";
 import { createSkyViewBasis } from "./sky-view-projection";
 import { resolveSkyDeepSkyScene } from "./sky-stellar-scene";
+import { skyPresentedTimeCurrent } from "./sky-observation-time";
+import { skySolarLightAt } from "./sky-solar-light";
+import { deepSkyAuxiliaryOpacity } from "./sky-deep-auxiliary-visibility";
 
 // Exercise the page's rendered-label eligibility, including the shared selection owner.
 const source = ts.createSourceFile("spot-sky-page.tsx",
@@ -35,6 +38,8 @@ assert.ok(presentedSceneInitializer);
 assert.ok(visibilityInitializer);
 const selection = ts.transpileModule(
   `const presentedSceneCurrent = ${presentedSceneInitializer.getText(source)};
+   const paintedData = presentedSceneCurrent ? presentedSkyFrame?.data : undefined;
+   const paintedAt = presentedSceneCurrent ? presentedSkyFrame?.frameAt : undefined;
    const presentedSkyVisibility = ${visibilityInitializer.getText(source)};
    const visibleNamedCatalogObjects = ${initializer.getText(source)}; ${visibleLabelsInitializer.getText(source)}`,
   { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
@@ -47,7 +52,7 @@ function labels(sunAltitudeDeg: number, mode: "NIGHT" | "OBSERVATION",
   starLayer: "available" | "catalog-missing" | "frame-unavailable" = "available",
   selectedReference: string | null = null) {
   const basis = paintedView?.basis ?? { forward: [0, 1, 0], right: [1, 0, 0], up: [0, 0, 1] };
-  const reportData = { skyScene: { catalog: starLayer === "catalog-missing" ? null : { entries: [entry] },
+  const reportData = { context: {}, hourly: [{ at, sunAltitudeDeg, sunAzimuthDeg: 180 }], skyScene: { catalog: starLayer === "catalog-missing" ? null : { entries: [entry] },
     deepSky: deepAltitude === null ? null : { state: "AVAILABLE", catalog: { entries: [
       { objectRef: "M:31", displayName: "Andromeda Galaxy", kind: "GALAXY", magnitude: 3.44 },
     ] }, frames: [{ at, state: "AVAILABLE", points: [[0,160,deepAltitude]] }] } } };
@@ -58,7 +63,9 @@ function labels(sunAltitudeDeg: number, mode: "NIGHT" | "OBSERVATION",
     landscape: paintedView?.landscape ?? null,
   };
   return vm.runInNewContext(selection, {
-    reportData, orientationData: reportData, presentedSkyFrame,
+    reportData, rawReportData: reportData, orientationData: reportData, presentedSkyFrame,
+    skyPresentedTimeCurrent, timePlaying: false, timeIntent: { runStartAt: null },
+    skySolarLightAt, deepSkyAuxiliaryOpacity,
     row: { at }, currentViewBasis: basis, canvasSize: { width: 390, height: 844 },
     presentedFov: 45, presentedCenter: { x: 195, y: 422 },
     sensorHeadingForScene: null, devicePose: null, mode, skySceneReady, canvasError,

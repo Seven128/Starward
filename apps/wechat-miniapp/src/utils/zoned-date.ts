@@ -6,6 +6,14 @@ export function displayBeijingTimestamp(value: string): string {
   } catch { return "时间暂不可用"; }
 }
 
+/** Keep public share page and poster expiry in the plan's local timezone. */
+export function displayZonedShareExpiry(value: string, timezone: string): string {
+  try {
+    const date = new Date(value);
+    return `${calendarDateInTimezone(date, timezone)} ${clockTimeInTimezone(date, timezone)}（${timezone}）`;
+  } catch { return "有效期暂不可用"; }
+}
+
 /** Serialize a Gregorian calendar date in the requested IANA zone, not a display locale. */
 export function calendarDateInTimezone(date: Date, timezone: string): string {
   assertUsableDate(date);
@@ -70,7 +78,7 @@ function assertUsableDate(date: Date) {
 }
 
 /**
- * Current Mini Program spot contracts admit Shanghai and Hong Kong. Both have
+ * Current Mini Program spot contracts admit Shanghai, Hong Kong and Macao. All have
  * stayed at UTC+8 throughout the product's supported modern observation range.
  * This path is used only when a phone runtime lacks usable Intl time-zone parts;
  * historical dates and every other IANA zone continue to require Intl.
@@ -80,7 +88,7 @@ function fixedEastEightParts(
   timezone: string,
   required = true,
 ): { date: string; time: string } | null {
-  const supported = timezone === "Asia/Shanghai" || timezone === "Asia/Hong_Kong";
+  const supported = timezone === "Asia/Shanghai" || timezone === "Asia/Hong_Kong" || timezone === "Asia/Macau";
   const year = date.getUTCFullYear();
   if (!supported || year < 2000 || year > 2100) {
     if (required) throw new RangeError("zoned_date_intl_unavailable");

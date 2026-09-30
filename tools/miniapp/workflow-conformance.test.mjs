@@ -398,6 +398,7 @@ test("field evidence uses one native intake and an explicit canonical merge boun
           "contribution",
           "contribution-media-history.tsx",
         ),
+        text("apps", "wechat-miniapp", "src", "content", "contribution", "contribution-records.tsx"),
       ]),
       text("workers", "miniapp-api", "src", "admin.controller.ts"),
       text("workers", "miniapp-api", "src", "app.module.ts"),
@@ -419,7 +420,7 @@ test("field evidence uses one native intake and an explicit canonical merge boun
     "contribution-coordinate-consent",
     "contribution-media-rights",
     "contribution-submit",
-    "contribution-status-list",
+    "contribution-records",
   ]) assert.match(contributionPage, new RegExp(required, "u"));
   assert.doesNotMatch(contributionPage, />WGS84 |WGS84 纬度|WGS84 经度/u);
   assert.match(adminController, /moderation\/cases\/:caseId\/merge/u);
@@ -579,7 +580,7 @@ test("native acceptance owns a clean build, exclusive current session and fail-c
     'const bootstrapPage = await waitForCurrentPageReady(',
     "resolveOfficialCli(cliPath)",
     "assertWechatDevtoolsLoginReady(officialCliInvocation)",
-    '"E:\\\\微信开发者工具\\\\cli.bat"',
+    '"D:\\\\微信web开发者工具\\\\cli.bat"',
     '"[data-od-id=\'my-settings-action\']",\n    ".my-settings-gear"',
     "cwd: invocation.cwd ?? root",
     "cwd: root",
@@ -1217,10 +1218,10 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   assert.match(sky, /data-sky-scene-frame-at/u);
   // Wiring only; sky-canvas-time.test.ts executes the production drawing
   // function to establish exact-time selection and missing-frame behavior.
-  assert.match(sky, /exactSkyTimeFrame\(data\.skyScene\.frames, frameAt\)/u);
-  assert.match(sky, /exactSkyTimeFrame\(data\.targetFrames, frameAt\)/u);
+  assert.match(sky, /resolveSkySceneFrame\(reportData\?\.skyScene, row\?\.at\)/u);
+  assert.match(sky, /exactSkyTimeFrame\(reportData\?\.targetFrames, row\?\.at\)/u);
   assert.match(sky, /catalog\.entries\[catalogIndex\]/u);
-  assert.match(sky, /altitudeDeg <= 0/u);
+  assert.match(sky, /altitude <= 0/u);
   assert.match(sky, /星图暂不可用，仍可在对象列表查看天体与事件/u);
   assert.doesNotMatch(sky, /Math\.random/u);
   assert.match(sourceLift, /nativeNavigationInsets\(\)/u);
@@ -1244,7 +1245,8 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   );
   assert.match(
     mapStyles,
-    /\.map-feedback-column\s*\{[^}]*z-index: 34;[^}]*top: calc\(env\(safe-area-inset-top\) \+ 320rpx\);/su,
+    /\.map-feedback-column\s*\{[^}]*z-index: 34;[^}]*right: calc\(24rpx \+ var\(--map-tool-size\) \+ 8Px\);[^}]*top: calc\(var\(--map-search-top\) \+ var\(--map-search-height\) \+ 116Px\);/su,
+    "persistent recovery follows safe-area search metrics and reserves the complete map tool hit area",
   );
   assert.doesNotMatch(
     mapStyles,

@@ -2,6 +2,22 @@
 
 This on-demand subdomain node normatively continues shared manipulation, accessibility, Settings, import, notification and recovery invariants across Mini Program Surfaces.
 
+## 当前尺寸设计修订
+
+2026-09-22 用户确认观星点大档样板的舒适尺度，授权扩展现有页面并补入当前商业化来源披露。[整组可编辑候选与审阅入口](../../../../../docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/README.md)仍待整体审查，未替代各页采用资源或生产令牌。共享尺寸覆盖地图/点位、搜索、My/Settings、计划/事件、天空、创建/反馈；共享来源呈现遵从下文 SourceAttribution / Provenance 责任，各消费者保留自己的数据及状态。三档抽屉、章节出现与滚动规则、当前 B 批图标不变。Stitch 保存静态总览，可编辑交互源在候选包；不把静态重复画面视为原生共享组件。
+
+## 公共弹性抽屉：2026-09-22 用户修订
+
+用户要求观星点底部抽屉采用上下边界橡皮筋阻尼、释放速度选择吸附锚点，并作为公共组件。此要求替代小档向下完全不动的旧硬边界，**不改变拖到底不关闭**。保留三档、同一连续文档、基本信息/地形/天文 Tab、照片、固定底部动作及原导航；中/大档仅可见顶部带拖档，小档内容可展开，不将所有滚动区域改成拖区。
+
+共享职责是实时显示高度/目标档位、阻尼位移、最近速度样本、投影吸附、可中断回弹、取消/第二触点/视窗变化、键盘和减少动态效果；内容与业务操作仍归消费者。地图、计划和记录中的点信息引用同一资源，不把不可拖动图层/筛选/编辑表单改为三档抽屉。[公共交互资源与参数](../../../../../docs/design-resources/wechat-miniapp/shared/elastic-sheet/README.md)及当前舒适尺寸原型为待审参考；生产现有 panel-snap/panel-spring 尚未完成此迁移。Web观察不证明WEAPP滚动竞争、帧率或触觉。
+
+## 公共连续动效：2026-09-22 候选扩展
+
+用户授权将适合的阻尼交互扩展至共享组件。[公共动效可编辑候选及消费者映射](../../../../../docs/design-resources/wechat-miniapp/shared/fluid-motion-2026-09-22/README.md)统一承载图片查看器、公共时间尺、设置三态模式、Tab/按压、面板/来源展开及双分享外壳进入；各职责与允许变体以该映射为准，当前仍待整体审阅，未替代采用资源或生产实现。
+
+图片可直接操控；时间尺和模式控件按各自有效刻度/模式吸附；普通筛选、编辑和来源说明仅改善原进入/展开，不增加拖拽关闭。数据、确认/取消、日期身份、导航与分享导出仍由既有owner负责。Tab沿用现有文字比例与稳定命中区，事件Modal保留既有动效owner。共享文件由当前舒适尺寸消费者直接引用；Stitch只保存静态总览与动效建议，不能当作原生共享交互。生产迁移需验证目标运行时滚动竞争、生命周期和减少动态效果；浏览器结果不能替代真机证据。
+
 ## 测试数据不增加产品说明
 
 2026-09-15用户明确：所有小程序页面均不显示专门的测试横幅、测试状态徽标、测试说明、测试来源卡片或请求诊断弹窗。测试身份保留在数据本身（如示例地点名称、`SAMPLE_DATA`、`TEST_FIXTURE`）及内部诊断；不把测试身份改写为真实来源，也不放宽测试数据与正式发布的隔离。`DataStateBadge`不呈现`SAMPLE_DATA`标签；`utils/source-presentation`统一排除内部测试来源，供来源页、Provenance、地图、星空与事件摘要消费。数据内容按普通产品布局显示，正常缺测、部分覆盖、异常通知、重试、真实来源许可与安全提示保留。来源为空使用普通暂无数据状态，不添加测试原因说明。
@@ -15,6 +31,8 @@ This on-demand subdomain node normatively continues shared manipulation, accessi
 EOG 小幅夜光地图复用 `SourceAttribution` 的供应方许可短署名，绑定当前 Map 图层或点位图 `lightPollution.source`，仅在相应内容显示时呈现；完整产品名派生通知与 Starward 加工说明保留在同一来源的详细披露中。不得把短署名许可推及大幅导出或其他供应商声明。地图声明须留出右侧动作栏，不遮挡已有按钮；数据获取、不可变版本发布及完整条件仍归[夜光发布 owner](../../../../../data-pipelines/dark-sky/README.md)。
 
 官方外链的目标交互是点击打开网页。当前个人主体的网页容器条件不满足，用户同意先记录待办、保留现有明确标注的复制入口，不用失效的网页路由替代。条件具备后统一在 `SourceAttribution` 完成跳转及实际打开验证；这一延期不阻塞其余外部能力迁移，也不等于供应商免除超链接要求。
+
+2026-09-25 当前复制交互的可见名称已与实际动作一致：`Provenance` 的原始出处、许可和下载入口直接写明“复制”，供应商 `SourceAttribution` 的链接行也写明“复制链接”，继续保留原网址、来源声明与复制后的成功/失败反馈。官方WEAPP已抽样从正式点来源页复制Astronomy Engine原始出处和MIT许可链接，并从地图天气归因行复制和风天气官方地址；这不证明网页已直接打开、所有供应商组合或真机外部跳转，目标交互仍按上段条件处理。
 
 `SourceAttribution` 的长名称和官方网址由同一受限宽度的 Text 承载，在当前消费者剩余空间自然换行、左对齐，不通过按钮横向裁切、省略或缩字号隐藏内容。声明原文、网址、去重和复制语义继续由既有 owner 保留；Provenance 与 Map/天气/搜索/计划不各自实现另一条归因路径。当前月球来源页有DAY与OBSERVATION模式的原生换行/复制/返回观察，其它已批准显示模式、适用消费者及目标手机组合仍需相应实际输出。2026-09-29用户明确继续暂停大字号适配，沿用DESIGN.md的标准字号范围；大字不作为当前云观星交付硬依赖，已有偏好/样式保留，暂停不代表大字验证完成。恢复适配以用户新指令为准，标准字号、完整来源与其余质量义务不受影响。
 
@@ -48,6 +66,7 @@ EOG 小幅夜光地图复用 `SourceAttribution` 的供应方许可短署名，�
 - 手机使用避开微信胶囊、安全区的大尺寸弹窗，保留少量外侧留白；平板限制阅读宽度、居中并保持卡片单列，不机械放大字体/图标。头部固定，内容滚动，select-one确认区固定在弹窗内安全区。默认不以整块内容拖拽关闭，避免与卡片竖向滚动争抢。
 - 打开地图modal时保持物理Map、相机、选点、观察时间和原bottomPresentation，临时屏蔽底层操作；关闭原样恢复。它是route-owned modal覆盖层，不是新的BottomSheet extent，也不新增第五种地图底部内容。计划同理保持未保存表单和观察时段。账户/计划owner改变时取消旧选择会话，晚响应不能写入另一账户/计划或重开弹窗。
 - 事件目录、详情和地点投影分别保留loading/error/partial/stale/unavailable/真实空结果；进入详情先显示选定身份再加载，不闪回上一事件的资料。网络失败保留列表及可返回路径，失败/未获取不冒充无事件。详情查询使用modal-local上下文副本，不能更改地图的全局日期/地点或计划既定安排。太阳事件安全说明继续适用。
+  生产共享Modal当前将当地条件不可用留在详情的非空结果状态，失败可重试；目录仅在新鲜确认且无事件时使用公共空态。模拟器的只读注入与正常目录/返回证据见本次任务记录，不代表真机或正式供应商故障已验收。
 - 日期票及详情必须按资料含义区分：GMN 为“参考／常年参考日（UTC）／监测参考期”，获权审核年度资料为“极大／活动期”，日月食为“食甚／食甚日期（北京时间）／事件期”；现有食事件日期与稳定ID不因展示说明改变。常年日期不是当年精确极大；未知流量、速度或辐射方向展示“暂无数据”，不套旧目录值。横向日期条覆盖整个目录时段，包含参考日之后，不截为固定六天；跨月日期保留月日识别。日期选择真正发起弹窗内地点与日期的独立查询，不能只改选中样式；查询期间保留当前事件身份与已有地点，晚响应不能覆盖新日期。具体资料和计算边界由 [事件 owner](map-and-finder.md#selected-event-data) 维护。
 - 流星雨日期条用于切换所选夜晚；日月食具有固定发生时刻，不显示可移动事件的日期条。食事件展示其当地发生日期及各食相时刻／高度，明确原地图或计划日期保持不变，不能把事件当天的几何结果标成调用者另一日期的条件。可用流星雨结果展示几何窗口、最佳时刻／方向／高度及该时刻月面照明；真实不可见保留计算结论，方向缺测使用共享暂无数据占位。详情来源绑定当前事件的实际source，复用Provenance保留许可和精度，测试源不产生来源卡或版本说明。刷新失败保留有效资料并在对应数据区提供重试；顶部通知由当前可见层唯一宿主展示，Map／Plan宿主在modal整个存在期（含退出）让出，不重复计时或叠出两份。
 
@@ -58,6 +77,8 @@ EOG 小幅夜光地图复用 `SourceAttribution` 的供应方许可短署名，�
 The [shared date/calendar/ruler resource](../../../../../docs/design-resources/wechat-miniapp/shared/observation-time/README.md) owns the adopted reusable browser composition and demonstrated motion for the consumers linked from current page entries, within those entries' theme/state scope. Date, slicing and commit semantics remain with the relevant Map and Spot/Sky contracts; production uses the existing Taro component and Observation Context owners. Consumer pages follow this shared owner rather than redeclaring the same resource. Its browser implementation is not WEAPP verification.
 
 `ObservationDateControl` 默认维护日历的原生返回层；同页已有统一弹层返回 owner 时，消费者以 `nativeBackBoundary=false` 交回页面管理。云观星以页面唯一 `NativeBackBoundary` 同时处理日期、天体详情和重叠候选，不能叠挂多个 PageContainer；日期内容和选择仍由公共组件负责。
+
+`NativeBackBoundary` 持有自定义呈现的原生返回层、单次 leave 委派、确认期间去重及存活时重新布防。Map 复用其既有全屏原生前景容器变体并持续保留事件 Modal 子树；其它消费者仍使用原有隐藏容器生命周期。返回优先级和关闭确认由调用者持有，嵌入表单将媒体交接返回也交给 Map，不能另挂一层。异步委派失败不泄露错误细节，卸载后不重新布防；这一共享实现不承诺各设备上未验证的拦截能力。
 
 云观星在地点、时刻、时区和活动 Context 的既有完整性校验通过后，才通过共享 `observation-date` owner 派生民用日期及日期选项；待确认或无效路由不提前调用时区格式化，以免在既有 Context 恢复内容呈现前抛出异常。日期选项的 memo 同时跟随完整性状态和时区，保证同区 Context 查询完成后刷新正常选项。没有猜测默认时区或新建另一时钟；代码/日期消费者检查不等于原生恢复界面已验证。
 
@@ -78,6 +99,20 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
 - The panel keeps medium/large document-header-only dragging across the full-width compact white band, the DESIGN-defined handle region, one document, navigation-safe height, three extents, interruption and nested-scroll arbitration. Its existing coordinator owns these semantics. The shared observation-date/time component owns one calendar/ruler interaction implementation across the Map TOTAL_CLOUD layer and panel astronomy, while their common Observation Context owns the committed value. Full-sky orientation reuses its ruler core. Date/calendar rules remain at [Spot and sky](spot-and-sky.md#lunar-facts-and-date-selection); the TOTAL_CLOUD consumer hides lunar tick imagery; LIGHT hides the whole time component, cancels previews and preserves committed time as specified by the Map contract. Its arrowless time ruler uses enhanced horizontal ScrollView with bounded projection and real-sample selection; Picker/Slider are not equivalent. Date-navigation arrows are local calendar-date inputs, and modal date selection closes before its parent layer while restoring the opener focus. The three-state mode selector is not a binary Switch. Layer imagery uses the existing local asset pipeline.
 - `display-mode-switcher` is the sole Settings owner for `day | night | observation`, defaults to day, preserves route and content state, and consumes tap, adjacent horizontal drag, keyboard and direct assistive selection. The former `observation-mode-control` is retired rather than rendered elsewhere. Day-to-night may animate its Sun/Moon and track; night-to-observation binds the closed black/warm-red target tokens atomically before its Moon/Star transition so no disallowed intermediate hue appears. The information panel and orientation route consume active presentation but do not own another entry or mode store.
 - Settings presents the unified three-state display mode first, then permission/privacy and reminder ownership before data actions, without a spot-selection preference page or an in-app reduced-motion switch. Platform reduced-motion adaptation remains a shared accessibility responsibility; retiring these settings does not authorize deletion of stored preferences. Its celestial track remains one single-choice control, not day/night tabs plus a bottom observation CTA. `nearby-location-preference` writes `ASK_ONCE | MANUAL_ONLY`; orientation access and precise contribution coordinates remain per-use controls rather than durable grants. `departure-condition-reminder` and `contribution-status-reminder` are revisioned identity-scoped intent fields; UI acknowledgement says only that intent was saved and never claims WeChat subscription delivery without a receipt. `account-data-export` consumes a server-generated identity-scoped versioned snapshot and exposes a real platform file/share result; it cannot compose authority from local cache. `account-delete` requires explicit destructive confirmation, an idempotent server receipt and session-invalidating readback before local reset.
+
+2026-09-24 设置偏好生产局部状态：当前WEAPP在本机内存服务版本低于本地修订号时，冲突后用当前账户新鲜服务端读回修订号、保留本机未同步编辑并重试；单条审核提醒意向最终服务端读回及恢复原值已验证。正常My旧响应防倒退仍保留；不同账户切换、正式持久化与实际微信订阅回执未由本机样本证明。
+
+共享本机状态的账户边界由`state/app-store`负责：偏好及修订、收藏、计划和地图恢复快照只在有效会话的同一账户下恢复；认证建立、失效和删除触发绑定或隐藏，换号时各自保留未同步快照。Map/Search的场景响应含账户相关资料，两处查询键随账户更换；Map收藏回填还要校验当前账户。私人计划消费者按账户隔离查询，在身份尚未确立时不得共用固定的匿名缓存键；成就统计沿用此规则。本人正式反馈的投稿历史也按发起请求的认证身份隔离查询，并在请求完成时确认同一身份；认证会话与store归属尚不一致时不得冻结历史到编辑页。已打开的编辑页换号后隐藏旧正文与审核状态，要求重新打开，并在保存动作处再次检查归属。首次认证时保留本次匿名浏览的活动地图选点/时间/视野，同时绑定新账号的私人资料；失效身份清空旧账号上下文，不能借此把旧账号地图资料交给新账号。无账户标记的旧全局快照不能据当前会话推断归属，首次覆写前单独隔离保存，不自动显示或上传给新账户；服务端当前账户资料照常读取。旧快照的人工归属/恢复途径尚未设计，不能把隔离当作数据迁移完成。当前官方模拟器已抽样检查两个本机内存服务身份的切换、原身份本机存储恢复，以及有待审投稿的账户切到无投稿账户并重开同一正式反馈页后不再显示旧审核状态；同一页面实例离开再返回的抽样中，已结束计划成就与投稿记录不显示旧账号内容，正式反馈页隐藏旧正文、审核标记、章节页签和固定提交栏，明确显示账号变化，只保留正文恢复入口并能返回地图；计划详情同实例换号后隐藏旧计划，明确显示账号变化，并可从状态卡返回“我的”。首次授权匿名选点仅有共享store回归，正式持久化、真实微信换号和真机仍未验证。
+
+收藏关系由 `hooks/use-favorite-mutation` 统一提交：同一账户/点位串行写入最新意图，快速反向立即更新显示，旧回执与 Map 场景回填均不得覆盖尚待确认的新意图；失败只恢复该点最后确认的关系并提供重试说明。首次匿名动作先绑定真实账户，离开账户永久取消旧任务的后续写入，即使随后切回同一账户也不续写。共享 `FavoriteStar` 以单一可反向进度呈现已采用DAY四分件，其他模式沿各主题回退，减弱动效取消旋转和位移；Map可见性输入为false时取消未结束计时器并静态呈现当前意图，其他卡片/详情默认输入保持原行为。Map背景由其局部动作owner独立呈现，不改变收藏关系或让星体等待背景；成功不重复Info。Map信息面板的原生收藏按钮用有效的ariaLabel表达保存中/选中/未选，不依赖当前Taro模板未投影的aria-pressed或aria-busy。
+
+2026-09-28 减弱动效输入补查：当前`FavoriteStar`与Map动作背景的JavaScript进度读取账户`preferences.reducedMotion`；已有CSS媒体查询只覆盖该背景的星点呼吸与文字过渡，没有把系统偏好接入上述进度计时器。隔离账户偏好API→My实际读取→Map的DAY选中静态及transform/animation-name/opacity读回已验证，偏好和收藏业务值已恢复；该样本不证明系统设置自动适配。保留既有系统级减少动态效果要求、无设置页开关及账户数据兼容边界；系统输入桥接和目标设备验证仍未完成，不据本轮代码检查断言平台无法实现。
+
+一次定位状态须区分微信权限与本次坐标：设置回执明确已授权时，若尚无有效本次位置，清除旧拒绝并标记“已授权、未取得位置”，不显示 Map 原生定位蓝点、不移动视野；已有有效一次位置则保留其结果。2026-09-25 官方 WEAPP 受控拒绝→微信设置确认开启→重开权限页的同一机制，修前误报“权限未授予”，修后明确“定位已授权，尚未取得本次位置”，同进程 Map 原生 `show-location=false`；原始387×836图和定位定向回归见任务 A01 台账。真机系统权限往返、真实GPS及后台回前台仍未验证。
+
+权限页一次定位的结果通知须更新 Map 同一定位消息身份：成功取得有效坐标后清除“尚未重新获取位置”的旧含义，说明地图尚未移动及地图定位会重新请求；明确拒绝和暂不可用各给正确失败文案/恢复。已有一次位置后再打开微信设置，授权回执也不能重新声称尚未取得位置。2026-09-25 官方 WEAPP 受控拒绝→设置开启→一次定位成功→Map 的同一流程中，通知显示“本次位置已取得”，原生 `show-location=true` 而地图中心/缩放不变；这是受控微信API回执的消费验证，实际系统定位许可与GPS蓝点仍待真机。共享队列按 Map 现有去重身份替换该消息，其他 owner 通知不受清除。
+
+2026-09-24 设置导出生产局部状态：本机内存账户的 JSON 在官方 WEAPP 私有文件区实际生成并读回，包含当前计划/投稿且排除会话凭据等内部材料；模拟器无法完成微信文件分享时，页面报告未分享并清理这次临时文件，保留重试入口。2026-09-25 补查发现分享成功回执原会留下完整 JSON，现设置 owner 在成功回执后也删除本次临时文件；若删除失败，明确提示私人文件仍在本机及微信清理入口。官方 WEAPP 受控分享回调期间回读文件存在、回调后目录确认清除；真实微信交付、正式存储和账户删除后身份恢复仍未验证。导出临时文件由设置 owner 管理，失败不得无提示遗留完整私人 JSON。
 - `profile-link-open-copy` always retains Copy when Try Open is gated, denied or fails. URL save/open rejects dangerous schemes and invalid destinations without losing the draft. Import controls preserve edited fields across parser failure/retry. `import-spot-association` treats `spot_id` and `spot_proposal_id` as disjoint; proposal submission never creates a formal point before review.
 - `miniapp-contribution-intake` retains one form/document identity from either Panel feedback or Map new-place entry. Inline validation is inserted only for the affected field and submit focuses the first invalid control without resetting route scroll. Existing-spot feedback prefills the formal location and allows deliberate address/point correction through the same location owner; it never requests the contributor’s current device location automatically. Upload and submit state changes are local, interruptible and preserve draft, media identity and the same idempotency key across transport failure/retry; only a durable pending receipt may replace the editable submit state. A sticky final action, if used after native keyboard/safe-area proof, owns one lane and an equal scroll inset and cannot coexist with another submit control.
 - New-spot intake asks first for name, a selected geographic point, openness, legal entry, night safety and gate/responsible-party contact status. Record region/address metadata from the location owner where available instead of asking the user to duplicate it. Safety/entry answers are structured and may explicitly be unknown at intake; unknown is not permission or verified safety. Contact supports a publishable number and purpose, no applicable gate, no public number, or unknown; never force a fake phone number or expose the contributor's personal number as a site contact. Public contact ownership/permission and provenance travel with the reviewed fact.
@@ -87,8 +122,15 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
   Accepted Observation Context updates resolve prior Map/Sky inline time/date edit errors together with the committed value, preserving independent image, navigation and other recovery. A new selected time must not coexist with an obsolete “still using the previous committed time” error. A genuinely failed write retains its error and committed state; clearing the Context alone is not recovery. The shared state/notification ownership and uncertain-response reconciliation remain with [Runtime and domain](../../../../architecture/runtime-and-domain.md).
   Both placements share compact icon/title/optional-body/at-most-one-trailing-action/optional-dismiss anatomy, named 44px actions, non-color-only severity, stable-geometry state-swap motion and reduced-motion substitution. A transaction creates at most one floating acknowledgement. Mini Program floating notices use compact white/black borderless top stacks, at most three, individually dismissible and normally expiring after 3 seconds with upward fade; deduplicate the same transaction. Critical errors retain an inline recovery path. Draft saves use header-local status instead of floating notices. Screen readers announce commits, material state changes, failures and recovery only—not pointer, panel drag or ruler intermediate frames.
   The floating stack has one bounded vertical scroll owner, preserving the bottom action area. Its host reuses `theme/native-metrics.nativeNavigationInsets` at mount, page show and resize to place the first entry below the native menu capsule; the same top inset reduces the scrollable height. CSS safe-area is only the fallback when native metrics are unavailable, and rectangle visibility does not establish clearance from the native menu. Entries outside its visible area do not expire before the user can see them; returning to view gives a full reading interval, and touching a notice pauses expiry. The shared `notification-visibility` adapter observes the rendered WEAPP nodes; unavailable observation retains manual dismissal rather than asserting visibility. A new leading entry is brought into view. A native Map failure uses one floating notice and the existing “暂无数据 / 重试地图” recovery region; a second inline error card must not repeat the same failure.
+  Each floating notice belongs to the page route where it was produced. A destination page does not display a previous page's notice over its own actions; returning to the source may show a still-queued notice with the normal visible reading interval. A modal on the same page continues to use that page's one active floating host.
   “重试地图” recreates the native Map instance while retaining the application's viewport, selection and data. The `native-map-recovery` owner waits for that instance's native update or error and restores retry on timeout; clearing an error flag alone is not recovery. Each instance owns its native callbacks and terrain overlay context. Old drag debounce or leave-confirmation callbacks cannot commit after replacement, and old overlay cleanup cannot remove the new instance's overlay. Already committed user location/selection requests remain with their application data owners.
 - `page-state-recovery` is the shared recovery family for INITIAL/LOADING/READY/EMPTY/PARTIAL/STALE/ERROR/PERMISSION_DENIED. It never substitutes realistic fake values for missing data and never hides usable static content because a dynamic layer failed.
+
+<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/notification-and-empty-2026-09-23/README.md" -->
+
+2026-09-23 用户要求统一跨场景的悬浮 `info` 消息，并把“暂无数据”建立为可沿用的设计资源；审阅后确认采用[共享提示与空态资源](../../../../../docs/design-resources/wechat-miniapp/shared/notification-and-empty-2026-09-23/README.md)所示的日间视觉范围。`notification-feedback` 的浮动 info 由 Map/Search、点位天气与地形、Sky、My/Settings 及事件弹窗等实际数据或异步操作消费者共用同一紧凑表达；消息只交代受影响对象、结果及必要的下一步，合计一两句话，详细原因与可持续重试仍归受影响区域。缺测/无覆盖不因空态重复弹提醒，现有单宿主、去重、可见计时和安全区责任不变。
+
+`page-state-recovery` 的空内容按字段值、章节局部和列表/整页三个占用层级表达：点位事实值不另起状态卡，近期天气等局部空态留在原章节阅读轴上，计划/记录等真正空列表保留其页面身份与可执行入口。请求错误、旧值可用、权限或部分覆盖保留各自状态及实际恢复路径，不借“暂无数据”伪装成成功的空查询，也不在同一当前画面并列真实空结果和请求失败。共享资源只替代这些状态的日间视觉表达，不替代各页其余采用构图或生产实现。
 
 ## Responsive, Density, Motion And Accessibility Contract
 
@@ -100,6 +142,12 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
 - Panel/ruler/map gesture arbitration waits for directional intent, selects exactly one owner and does not transfer mid-gesture. At medium/large, only the actual full-width compact information-panel header band can initiate extent manipulation while it is visible; a scrolled-away band has no residual viewport-top hit region; pointer down or a sub-threshold tap cannot commit an extent. All direct manipulation is interruptible and retargets from live position. The Map bottom owner is exactly `none | spot-panel | layer-sheet | spot-editor`; it cannot expose two active states, and a marker intent while layer is open retargets directly to the new medium panel. Search/media phases, the three-state mode thumb, ruler drag, layer dismissal, disclosure and My flow use causal motion from live presentation rather than remounting or queued timeouts.
 - Day/night/observation retain semantic-role parity. Observation is a closed black/warm-red palette; media is opt-in, skeletons cannot flash white, and system/native boundaries avoid an unowned bright transition.
 
+微信原生选点无法随观测红光着色。`components/red-light-handoff.tsx`负责在打开不可着色界面之前显示应用内黑红确认和取消，`services/platform-location.ts`在红光模式只接受消费者已明确确认的交接；当前消费者为 Search 的微信地点选择、计划出发地选择、新增点位地址选择。各消费者仍负责自身页面/账户/草稿身份和异步结果，取消不调用原生选点、不改变当前输入。官方WEAPP 320×700 已抽样确认三处应用内提示、取消，以及 Search 显式继续后才打开微信选点；真机系统颜色、Back和其它原生交接仍需分别验证。此处实现映射不扩大任何视觉候选的采用范围。
+
+正式观星点地图面板“路线”和场地资料页“去这里”也复用该红光交接提示；地图已有页面级原生返回层，提示关闭由它接管，场地资料页使用共享返回边界。两处仅在显式继续后才进入原生地图或导航选项，已有公开坐标和出行阻断规则仍各自生效。当前官方WEAPP模拟器已确认两处提示原图与取消返回原上下文；原生返回键、真机亮度以及原生导航完成未验证。
+
+新增点位添加/重试照片、正式点反馈照片和“我的”头像相册/拍照使用同一红光交接提示，置于原生相册、相机及图片授权界面之前；照片权利、上传和账号规则仍由各自业务owner控制。头像沿用已有原生返回层。新增点位“说明”章节取消提示后恢复章节滚动位置，不能只保留高亮Tab而跳回地点字段。官方WEAPP模拟器已核对头像与新增点位提示及取消；正式反馈在隔离 MEMORY_TEST 服务上完成照片上传/恢复、照片连同文字提交及冻结回读，并通过桌面系统文件选择器实选图片；新增点位桌面文件选择器取消后保留了当前空表单和原草稿入口。手机相册/相机权限、真机红光界面及正式持久化仍未获证据；详见任务 A10/A11 台账。
+
 ## Shared Image Viewer And Disclosure
 
 - Site and facility albums reuse one image-viewer component family with an ordered authorized media list, initial index, source geometry/identity, caption, provenance and return context. Single media has no false next control; multiple media support horizontal paging, a truthful current/total count and named non-gesture previous/next controls. Facility albums retain their own subject association; site thumbnails do not silently reassign facility evidence.
@@ -109,15 +157,19 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
 - Close animation starts from the live dragged/animating geometry. For a paged site image, return to its matching thumbnail; for a facility album, return to that facility card. Keep source space stable and preserve spot, panel extent, scroll and focus. If the original source is unavailable, use a quiet fade to the retained context instead of flying to a stale coordinate. Underlying scroll and actions are inactive while the viewer is modal. Decode failure exposes retry/close; reduced motion uses a short fade without large geometric travel. These are shared UI semantics, not a second media upload/review owner.
 - In-place disclosures such as more-site-information and source details share one summary hit target, vertically centered chevron, expanded state and controlled content region. Expand/collapse animates actual content height and chevron rotation together from their live presentation; rapid reversal does not queue, snap or remount the document. Focus remains on the summary, collapse removes hidden descendants from interaction, and reduced motion retains state without travel.
 
+Current Map site and facility albums use `SpotImageViewer`; facility order follows its explicit `formalMedia` group and the return source is that facility card. Opening cancels pending document section navigation, while the document retains its last native scroll position through viewer rerenders and consumes a prior hide/show restoration once scrolling resumes. Official WEAPP simulator checks cover actual PostgreSQL/filesystem-published images, private pending images, facility paging, stable return geometry and a genuinely missing object followed by same-source retry. Physical Back, touch feel and continuous facility flight frames retain device/runtime evidence gaps.
+
 ## 观星点反馈：正式资料编辑（2026-09-08 产品修订）
 
 本节替代旧的“反馈类型/涉及主题/到访时间/说明”反馈表单；新增与反馈共用字段、媒体及校验职责，模式差异不建立第二业务 store。既有完整表单视觉采用见 Map/Feedback 资源入口；2026-09-09 身份转换的增补演示已随本对话收敛至 Map 当前资源入口，产品规则不由候选采用状态决定。
 
 - 正式点信息组件入口为纯文字“我要反馈 ↗”，无边框、无背景。打开“{正式地点名称}反馈页”，回填当前正式版本全部可编辑资料：名称、地址与选点、开放/进入/安全/道路、停车和洗手间各自状态/说明/照片、平台、视野、现场灯光、通信充电、露营、场地联系、补充说明及现场照片。气象、天文、路线估算等服务派生事实不成为用户编辑字段。
 - 反馈没有存草稿或自动保存。正式快照 baseline 与 baseRevision 在开始编辑时固定；输入与 baseline 不同才浅黄高亮，恢复原值立即取消。比较结构化值/坐标及稳定媒体身份，不依赖文本格式、上传顺序或 input 的 dirty 标志。
+- 正式反馈与新增点位的同文档四章导航共用 `useSpotDocumentNavigation`：按同一次原生查询取得的可视区、完整正文及章节位置回写当前章，短尾章在滚到底时也能选中；点击和校验定位仍移动同一正文，重复点击同一目标须重新定位。内容变化重新测量，连续滚动合并请求但不中断当前位置反馈；页面隐藏、归属变化或媒体交接期间停止旧测量，交接取消后回到原章节。记录列表的滚动恢复由记录自身拥有，不混入表单导航。
 - 文档最下方“本次修改”逐项列出旧值 → 新值；旧文字红色删除线；旧图片灰度、轻微倾斜、禁用符号，箭头指向新图片。新增/删除值有明确空值表示，不能只有颜色差异。没有修改不能提交。
-- 提交时锁定本次快照和重复操作，使用按钮内 loading。失败保留输入、媒体及幂等键；提交成功后关闭编辑页，打开同一正式点信息组件。公开信息不变；仅本人看到标题旁可点击的“我的反馈”，右上时钟图标表示审核中。正式点原有想去/分享不受本人反馈状态影响。
+- 提交时锁定本次快照和重复操作，使用按钮内 loading。失败保留输入、媒体及幂等键；提交成功后当前反馈页冻结只读，返回同一正式点信息组件时公开信息不变。仅本人看到标题旁可点击的“我的反馈”，右上时钟图标表示审核中。正式点原有想去/分享不受本人反馈状态影响。
 - “我的反馈”打开该提交记录的冻结快照，与当前正式资料分离；标题旁“审核中”，所有字段/媒体不可编辑，保留原始差异对比，移除提交与保存按钮。再次点“我要反馈”也进入这一记录，不能新建第二份待审反馈。
+- 记录列表与新增提交后的独立记录详情由 `ContributionRecordMedia` 读取冻结批次的停车、洗手间和现场照片；与正式反馈修改区复用 `ContributionPhotoGallery` 展示分组及旧图→新图，不能仅显示封面或数量。正式反馈按实际接受的 baseline/proposal 保留新增和移除身份；原照片灰度、微倾斜及⊘只表达旧值，仍可打开原色证据；明确清空显示“无图片”，未改分组保留普通照片。本人附件走本人授权读取，原正式照片仅按公开身份读取，不借用另一张当前照片替代不可得的历史图。单张失败保留其余照片并提供重试，完整查看复用公共照片查看器及红光交接。数据/授权由各消费者负责，公共gallery只拥有只读构图、显示位置身份、查看器和返回生命周期；可编辑页对本次成功上传保留页面内预览恢复源，使临时选图文件丢失后仍可恢复解码，不把该原始预览源冒充服务端清洗后对象。
 - 并发口径暂按**同一用户 × 同一正式观星点**最多一份审核中反馈；其他用户可以提交各自的反馈。服务端必须原子约束，不能仅前端隐藏入口。用户尚未明确全站互斥；此处为当前实现假设，不声称全站锁定已获确认。
 - 开始编辑后正式版本若改变，提交应返回版本冲突并保留修改，重新核对后再提交，不能悄悄覆盖。审核期间冻结记录不随正式点新版本重新回填或重算差异。
 - 审核未通过后的回填、重提、新旧批次与最新正式版本冲突，统一遵循 [观星点创建与反馈](map-and-finder.md#观星点创建与反馈)，不新增另一套反馈表单。小程序“本次修改”不是观星点版本历史，后者仅由后续管理后台展示。

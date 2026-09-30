@@ -1,6 +1,28 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { clearPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey } from "./plan-draft";
+import { clearPlanDraft, clearUnchangedPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey } from "./plan-draft";
+
+test("late save completion cannot delete another editor's newer draft or new plan", () => {
+  const original = { creationPlanId: "plan:a", notes: "old" };
+  let stored: unknown = original;
+  const storage = { getStorageSync: () => stored, setStorageSync: (_key: string, value: unknown) => { stored = value; }, removeStorageSync: () => { stored = null; } };
+  const version = JSON.stringify(original);
+  for (const newer of [{ ...original, notes: "unsaved later input" }, { creationPlanId: "plan:b", notes: "new draft" }]) {
+    stored = newer;
+    assert.equal(clearUnchangedPlanDraft(storage, "draft", version), false);
+    assert.deepEqual(stored, newer);
+  }
+  stored = original;
+  assert.equal(clearUnchangedPlanDraft(storage, "draft", version), true);
+  assert.equal(stored, null);
+});
+
+test("creation identity and confirmed deletion boundary survive serialization without accepting corrupt identities", () => {
+  const draft = { creationPlanId: "plan:reserved-1", creationConfirmed: true, selectedSpotId: null, localDate: "2026-09-06", localTime: "22:00", notes: "new input", baseRevision: null };
+  assert.deepEqual(parsePlanDraft(JSON.parse(JSON.stringify(draft))), draft);
+  for (const creationPlanId of ["", "plan:", "user:other", "plan:../invalid", "plan:" + "x".repeat(176)]) assert.equal(parsePlanDraft({ ...draft, creationPlanId }), null);
+  assert.equal(parsePlanDraft({ ...draft, creationPlanId: undefined }), null);
+});
 
 test("selected departure metadata survives a serialized draft restart and explicit clearing", () => {
   const draft = { selectedSpotId: null, localDate: "2026-09-15", localTime: "22:00", notes: "",

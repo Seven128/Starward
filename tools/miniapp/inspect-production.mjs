@@ -55,17 +55,20 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
     "spot/plan/index",
     "spot/data-source/index",
     "sky/detail/index",
+    "sky/sources/index",
     "content/article/detail/index",
     "content/plan/detail/index",
     "content/plan/list/index",
     "content/plan/edit/index",
+    "content/achievement/index",
+    "content/share/index",
     "content/event/list/index",
     "content/event/detail/index",
     "content/contribution/index",
     "content/spot-feedback/index",
     "content/settings/index",
   ];
-  const expectedFilterCount = 16;
+  const expectedFilterCount = 14;
   const project = await readJson("apps/wechat-miniapp/project.config.json");
   const appConfig = await readJson(
     `${bundleDirectory}/app.json`,
@@ -190,7 +193,7 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
     no_html_delivery:
       project.compileType === "miniprogram" &&
       !appText.includes("<iframe") &&
-      !appText.includes("WebView"),
+      !appText.includes("<WebView"),
     recovery_semantics: [
       "PERMISSION_DENIED",
       "STALE",

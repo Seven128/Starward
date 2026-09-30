@@ -10,7 +10,8 @@ from PIL import Image
 HERE = Path(__file__).resolve().parent
 SOURCE = HERE.parent.parent / "assets"
 OUTPUT = HERE / "assets"
-SIZE = 224
+UI_SIZE = 192
+LARGE_SIZE = 224
 
 
 def sha256(path: Path) -> str:
@@ -24,11 +25,12 @@ for source in sorted(SOURCE.glob("*.png")):
         rgba = image.convert("RGBA")
         if rgba.size != (256, 256):
             raise ValueError(f"unexpected source size: {source.name} {rgba.size}")
-        target = rgba.resize((SIZE, SIZE), Image.Resampling.LANCZOS)
+        size = LARGE_SIZE if source.name.startswith(("spot-marker", "map--", "account-user", "plan-suv")) else UI_SIZE
+        target = rgba.resize((size, size), Image.Resampling.LANCZOS)
         destination = OUTPUT / source.name
         target.save(destination, format="PNG", optimize=True, compress_level=9)
     with Image.open(destination) as written:
-        if written.mode != "RGBA" or written.size != (SIZE, SIZE):
+        if written.mode != "RGBA" or written.size != (size, size):
             raise ValueError(f"invalid derivative: {destination}")
     files.append(
         {
@@ -36,16 +38,18 @@ for source in sorted(SOURCE.glob("*.png")):
             "sourceSha256": sha256(source),
             "sha256": sha256(destination),
             "bytes": destination.stat().st_size,
+            "outputSize": [size, size],
         }
     )
 
 (HERE / "manifest.json").write_text(
     json.dumps(
         {
-            "schemaVersion": 1,
+            "schemaVersion": 2,
             "source": "../../assets",
             "sourceSize": [256, 256],
-            "outputSize": [SIZE, SIZE],
+            "uiSize": [UI_SIZE, UI_SIZE],
+            "largeSize": [LARGE_SIZE, LARGE_SIZE],
             "format": "RGBA PNG",
             "resampling": "Lanczos",
             "files": files,

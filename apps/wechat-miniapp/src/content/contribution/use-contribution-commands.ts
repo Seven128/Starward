@@ -1,5 +1,6 @@
 import Taro from "@tarojs/taro";
 import { choosePlatformLocation } from "@/services/platform-location";
+import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { ContributionSubmitStorageError } from "@/services/contribution-submit-retry";
 import { useRef } from "react";
 import { createContributionCommandLock } from "./command-lock";
@@ -67,7 +68,7 @@ function createSaveDraft(form: ContributionForm, assertAccount: () => void) {
       form.applyDraft(response.data, form.phase);
       await form.history.refetch().catch(() => undefined);
       assertAccount();
-      if (!quiet)
+      if (!quiet && form.kind !== "NEW_SPOT_PROPOSAL")
         form.announce(
           "success",
           "草稿已保存",
@@ -213,21 +214,16 @@ function createAddMedia(
   form: ContributionForm,
   saveDraft: ReturnType<typeof createSaveDraft>,
   assertAccount: () => void,
+  confirmHandoff: (message: string) => Promise<boolean>,
 ) {
   return async (kind?: ContributionMediaKind) => {
-    if (!form.rightsConfirmed) {
-      if (kind) {
-        const consent = await Taro.showModal(MEDIA_RIGHTS_MODAL);
-        if (!consent.confirm) return;
-        form.setRightsConfirmed(true);
-      } else {
+    if (!form.rightsConfirmed && !kind) {
       form.announce(
         "warning",
         "请先确认图片权利",
         "只有你有权提交且同意用于核验的图片才能上传。",
       );
       return;
-      }
     }
     const mediaInGroup = kind
       ? form.currentMedia.filter((item) => item.kind === kind)
@@ -236,6 +232,15 @@ function createAddMedia(
     if (availableSlots <= 0) {
       form.announce("warning", "图片已达上限", kind ? "这一组最多上传 3 张图片。" : "每条反馈最多上传 3 张图片。");
       return;
+    }
+    const allowed = await confirmHandoff("微信相册、相机及图片授权界面可能较亮，无法跟随红光模式。");
+    if (!allowed) return;
+    try { assertAccount(); } catch (error) { form.announce("error", "账号已变化", errorMessage(error)); return; }
+    if (!form.rightsConfirmed && kind) {
+      const consent = await Taro.showModal(MEDIA_RIGHTS_MODAL);
+      if (!consent.confirm) return;
+      assertAccount();
+      form.setRightsConfirmed(true);
     }
     let choice;
     try {
@@ -278,12 +283,16 @@ function createAddMedia(
 function createRetryMedia(
   form: ContributionForm,
   assertAccount: () => void,
+  confirmHandoff: (message: string) => Promise<boolean>,
 ) {
   return async (uploadId: ContributionUploadId) => {
     if (!form.rightsConfirmed) {
       form.announce("warning", "请先确认图片权利", "确认图片权利后才能继续上传。");
       return;
     }
+    const allowed = await confirmHandoff("微信相册或相机界面可能较亮，无法跟随红光模式。");
+    if (!allowed) return;
+    try { assertAccount(); } catch (error) { form.announce("error", "账号已变化", errorMessage(error)); return; }
     const choice = await chooseImage(1).catch((error) => {
       form.announce("error", "无法选择图片", errorMessage(error));
       return null;
@@ -308,10 +317,35 @@ function createRetryMedia(
         "图片已上传，可继续提交审核。",
       );
     } catch (error) {
+      // An upload may have expired or completed despite a lost response. Refresh only its
+      // server identity/media revision so the user's unsaved fields remain untouched.
+      let synchronized: ContributionSubmission | undefined;
+      try {
+        assertAccount();
+        const draft = activeDraft(form);
+        if (draft) {
+          const response = await getContributions(undefined, currentDraftUserId() ?? undefined);
+          assertAccount();
+          const current = response.data.submissions.find(item => item.submissionId === draft.submissionId);
+          if (current && ["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(current)))
+            form.applyMediaDraft(current);
+          else if (current) form.applyDraft(current, "HISTORY");
+          synchronized = current;
+          await form.history.refetch().catch(() => undefined);
+          assertAccount();
+        }
+      } catch { /* Keep the original failure and input if authoritative recovery is unavailable. */ }
+      const currentUpload = synchronized?.media.find(item => item.uploadId === uploadId);
+      const ready = currentUpload?.state === "UPLOADED" || currentUpload?.state === "ATTACHED";
+      const expired = currentUpload?.state === "EXPIRED";
+      const terminal = synchronized && !["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(synchronized));
       form.announce(
-        "error",
-        "上传恢复失败",
-        `${errorMessage(error)}；已保留当前草稿和服务端上传状态。`,
+        ready || terminal ? "info" : expired ? "warning" : "error",
+        terminal ? "记录已结束编辑" : ready ? "已同步上传状态" : expired ? "上传会话已过期" : "上传恢复失败",
+        terminal ? "当前记录已结束编辑，请查看本次提交内容或返回记录列表。"
+          : ready ? "图片已在服务端就绪，请核对后继续；未保存输入仍保留。"
+          : expired ? "请点击重选重新上传这张照片；其他照片和未保存输入仍保留。"
+          : `${errorMessage(error)}；已保留当前草稿和服务端上传状态。`,
       );
     } finally {
       form.setUploading(false);
@@ -401,7 +435,9 @@ function createSubmit(
       form.announce(
         "success",
         "已提交审核",
-        "反馈已进入审核，不会直接改变公开地点资料。",
+        form.kind === "NEW_SPOT_PROPOSAL"
+          ? "新增观星点已进入审核，审核结果不等于正式发布。"
+          : "反馈已进入审核，不会直接改变公开地点资料。",
       );
     } catch (error) {
       const uncertain = awaitingReceipt && !(error instanceof ContributionSubmitStorageError) && (!(error instanceof MiniappApiError) || error.statusCode >= 500 || error.statusCode === 408);
@@ -420,8 +456,8 @@ function createSubmit(
 function createRemoveMedia(form: ContributionForm, assertAccount: () => void) {
   return async (uploadId: ContributionUploadId) => {
     const draft = activeDraft(form);
-    if (!draft || contributionSubmissionState(draft) !== "DRAFT" || !draft.media.some((item) => item.uploadId === uploadId)) return;
-    const confirmation = await Taro.showModal({ title: "移除这张图片？", content: "只从当前草稿移除这张图片，已填写的文字和其他图片会保留。", confirmText: "移除" });
+    if (!draft || !["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(draft)) || !draft.media.some((item) => item.uploadId === uploadId)) return;
+    const confirmation = await Taro.showModal({ title: "移除这张图片？", content: "只从本次修改中移除这张图片；文字、其他图片和原审核记录会保留。", confirmText: "移除" });
     if (!confirmation.confirm) return;
     try {
       assertAccount();
@@ -462,15 +498,17 @@ function createWithdrawDraft(form: ContributionForm, assertAccount: () => void) 
   };
 }
 
-function createChooseCandidateLocation(form: ContributionForm, assertAccount: () => void) {
+function createChooseCandidateLocation(form: ContributionForm, assertAccount: () => void, confirmHandoff: (message: string) => Promise<boolean>) {
   return async () => {
     try {
       assertAccount();
       const ownerPage = Taro.getCurrentPages().at(-1);
+      const allowed = await confirmHandoff("微信选点界面可能较亮，无法跟随红光模式。");
+      if (!allowed) return;
       const selected = await choosePlatformLocation({ isCurrent: () => {
         assertAccount();
         return Taro.getCurrentPages().at(-1) === ownerPage;
-      } });
+      }, allowUnthemedHandoff: true });
       if (!selected) return;
       assertAccount();
       form.selectCandidateLocation({
@@ -487,7 +525,8 @@ function createChooseCandidateLocation(form: ContributionForm, assertAccount: ()
   };
 }
 
-export function useContributionCommands(form: ContributionForm) {
+export function useContributionCommands(form: ContributionForm, {nativeBackBoundary = true}: {nativeBackBoundary?: boolean} = {}) {
+  const handoff = useRedLightHandoff({nativeBackBoundary});
   const exclusive = useRef(createContributionCommandLock(form.setCommandBusy)).current;
   const assertAccount = useRef(createContributionAccountGuard(currentDraftUserId)).current;
   const guard = <A extends unknown[], R,>(command: (...args: A) => Promise<R>, allowPending = false) =>
@@ -508,10 +547,13 @@ export function useContributionCommands(form: ContributionForm) {
   const saveDraft = createSaveDraft(form, assertAccount);
   return {
     saveDraft: guard(saveDraft),
-    chooseCandidateLocation: guard(createChooseCandidateLocation(form, assertAccount)),
+    chooseCandidateLocation: guard(createChooseCandidateLocation(form, assertAccount, handoff.confirm)),
+    handoffWarning: handoff.warning,
+    handoffActive: handoff.active,
+    cancelHandoff: handoff.cancel,
     useCurrentLocation: guard(createUseCurrentLocation(form, assertAccount)),
-    addMedia: guard(createAddMedia(form, saveDraft, assertAccount)),
-    retryMedia: guard(createRetryMedia(form, assertAccount)),
+    addMedia: guard(createAddMedia(form, saveDraft, assertAccount, handoff.confirm)),
+    retryMedia: guard(createRetryMedia(form, assertAccount, handoff.confirm)),
     removeMedia: guard(createRemoveMedia(form, assertAccount)),
     withdrawDraft: guard(createWithdrawDraft(form, assertAccount)),
     submit: guard(createSubmit(form, saveDraft, assertAccount), true),

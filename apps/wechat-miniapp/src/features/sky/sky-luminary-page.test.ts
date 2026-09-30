@@ -6,6 +6,7 @@ import ts from "typescript";
 import * as contracts from "@starward/miniapp-contracts";
 import { createSkyObjectTracking } from "./sky-object-tracking";
 import { matchingCelestialSearchResponse } from "../../services/celestial-search-response";
+import { resolveSkyDeepSkyScene } from "./sky-stellar-scene";
 
 const source = ts.createSourceFile("spot-sky-page.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
   ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -23,7 +24,7 @@ const row = { at: "2026-09-28T04:00:00.000Z", sunAzimuthDeg: 90, sunAltitudeDeg:
   moonAzimuthDeg: 270, moonAltitudeDeg: 30, planets: null };
 const context = { ...contracts, row, orientationObjectListOpen: true, reportData: undefined,
   rawReportData: undefined, currentViewBasis: null, stellarSupplement: {},
-  resolveSkySceneFrame: () => null, exactSkyTimeFrame: () => null };
+  resolveSkySceneFrame: () => null, resolveSkyDeepSkyScene, exactSkyTimeFrame: () => null };
 
 test("actual page binds and lists Sun/Moon independently of unavailable star/planet publications", () => {
   const positionCatalog = vm.runInNewContext(positionCode, context);

@@ -1,7 +1,8 @@
 .spot-plan-entry {
   display: flex; align-items: center; justify-content: space-between;
-  width: 100%; min-height: 44Px; padding: 6Px 10Px; margin: 8Px 0;
-  background: var(--surface-subtle, #f1f4f5); border: 0; border-radius: 8Px;
-  color: var(--text-secondary, #567581); font-size: 12Px; text-align: left;
+  width: 100%; min-height: 48Px; padding: 8Px 12Px; margin: 8Px 0;
+  background: var(--surface-subtle, #f1f4f5); border: 0; border-radius: 12Px;
+  color: var(--text-primary, #304b59); font-size: 14Px; text-align: left;
 }
 .spot-plan-entry::after { border: 0; }
+.spot-plan-entry > text:last-child { color: var(--text-secondary, #567581); font-size: 13Px; }

@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { skyPresentedTimeCurrent } from "./sky-observation-time";
+import { exactSkyTimeFrame } from "./sky-time-frame";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
   readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -38,15 +40,19 @@ assert.ok(presentedCondition);
 assert.ok(touchStartCondition);
 assert.ok(touchEndCondition);
 const guard = ts.transpileModule(`const presentedSceneCurrent = ${presentedCondition.getText(source)};
+  const paintedData = presentedSceneCurrent ? presentedSkyFrame?.data : undefined;
+  const paintedRow = exactSkyTimeFrame(paintedData?.hourly, presentedSkyFrame?.frameAt);
   (${markerCondition.getText(source)})`,
   { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
 
 test("a current returned position waits for its matching native sky frame before showing the marker", () => {
-  const report = {}, at = "2026-10-08T12:00:00.000Z";
+  const at = "2026-10-08T12:00:00.000Z";
+  const report = { context: { spotId: "spot:test" }, hourly: [{ at }] };
   const context = {
     pageVisible: true, selectionState: { object: { reference: "PLANET:VENUS" }, spotId: "spot:test" },
     currentViewBasis: {}, canvasError: null, alignmentEditing: false,
-    orientationData: report, reportData: { context: { spotId: "spot:test" } }, row: { at }, mode: "NIGHT",
+    orientationData: report, rawReportData: report, row: { at }, mode: "NIGHT",
+    skyPresentedTimeCurrent, exactSkyTimeFrame, timePlaying: false, timeIntent: { runStartAt: null },
   };
   const visible = (presentedSkyFrame: object | null, canvasError: string | null = null) =>
     Boolean(vm.runInNewContext(guard, { ...context, presentedSkyFrame, canvasError }));
@@ -69,7 +75,7 @@ test("sky touch cannot pick an old native frame during report replacement", () =
     { orientationController: { snapshot: () => ({ alignment: { mode: "auto" } }) },
       skySceneReady: true, presentedSceneCurrent: current, selectedCatalogObject: null,
       selectedTargetId: null, orientationObjectListOpen: false, datePickerOpen: false,
-      timeSaving: false, gesture: {}, point: {}, row: { at: "2026-10-08T12:00:00.000Z" },
+      timeSaving: false, gesture: {}, point: {}, paintedRow: { at: "2026-10-08T12:00:00.000Z" },
       identity: { catalogVersion: "v1" }, isUnambiguousTapGesture: () => true },
   ));
   assert.equal(run(touchStartCondition!, false), true, "new gestures must wait for the replacement Canvas frame");

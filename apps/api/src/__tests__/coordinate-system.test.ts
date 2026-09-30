@@ -17,4 +17,30 @@ describe("WGS84 / GCJ-02 boundary", () => {
     expect(display).toEqual({ ...source, system: "GCJ-02" });
     expect(gcj02ToWgs84(display)).toEqual(source);
   });
+
+  it("keeps a WeChat selected Islamabad point stable despite the old rectangular overlap", () => {
+    const source = { lat: 33.6833, lon: 73.05, system: "WGS84" as const };
+    const display = wgs84ToGcj02(source);
+    expect(display).toEqual({ ...source, system: "GCJ-02" });
+    expect(gcj02ToWgs84({ ...source, system: "GCJ-02" })).toEqual(source);
+  });
+
+  it("separates nearby unaffected locations from mainland display points", () => {
+    for (const [lat, lon] of [[27.7172, 85.324], [22.3, 114.2], [25.03, 121.56], [37.5665, 126.978]]) {
+      const point = { lat, lon, system: "WGS84" as const };
+      expect(wgs84ToGcj02(point)).toEqual({ ...point, system: "GCJ-02" });
+      expect(gcj02ToWgs84({ ...point, system: "GCJ-02" })).toEqual(point);
+    }
+    for (const [lat, lon] of [[29.65, 91.1], [19.5, 109.8], [45.8, 126.5]]) {
+      const point = { lat, lon, system: "WGS84" as const };
+      const display = wgs84ToGcj02(point);
+      expect(display.lat).not.toBe(lat);
+      expect(createMapCoordinateView({ authoritative: point }).roundTripErrorMeters).toBeLessThan(0.2);
+    }
+  });
+
+  it("never publishes a shifted display point whose inverse is lost at the footprint edge", () => {
+    const point = { lat: 47.291317096637314, lon: 134.3485125158005, system: "WGS84" as const };
+    expect(createMapCoordinateView({ authoritative: point }).roundTripErrorMeters).toBeLessThan(0.2);
+  });
 });

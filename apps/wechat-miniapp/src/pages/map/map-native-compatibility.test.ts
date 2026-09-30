@@ -20,9 +20,11 @@ test("the native Map page stays outside Taro experimental local compile mode", (
 
 test("the Map root installs a native Back boundary for its non-modal bottom presentations", () => {
   const source = readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
-  assert.match(source, /show=\{mapPresentationBackBoundaryVisible\}/u);
-    assert.match(source, /onBeforeLeave=\{handleMapPresentationSystemBack\}/u);
-  assert.match(source, /setMapPresentationBackBoundaryVisible\(false\)[\s\S]*?setTimeout\([\s\S]*?setMapPresentationBackBoundaryVisible\(true\)/u);
+  assert.equal(source.match(/<NativeBackBoundary\b/gu)?.length, 1, "Map owns one shared native Back layer");
+  assert.match(source, /active=\{pageVisible && \(eventModalOpen \|\| eventModalPresent \|\| bottomPresentation === "spot-panel" \|\| bottomPresentation === "layer-sheet" \|\| bottomPresentation === "spot-editor"\)\}/u);
+  assert.match(source, /onBack=\{handleMapPresentationSystemBack\}/u);
+  assert.match(source, /nativeMapContent=\{/u);
+  assert.doesNotMatch(source, /<PageContainer\b/u, "the shared owner also carries Map's event modal instead of installing a second container");
   assert.doesNotMatch(source, /map-presentation-back-\$\{/u);
 });
 

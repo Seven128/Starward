@@ -3,6 +3,8 @@ import { useRouter } from "@tarojs/taro";
 import { FloatingNotificationHost } from "@/components/notification";
 import { useThemeClass } from "@/hooks/use-theme";
 import { ContributionEditor } from "./contribution-editor";
+import { ContributionRecords } from "./contribution-records";
+import { ContributionRecordDetail } from "./contribution-record-detail";
 import "./index.scss";
 
 export default function ContributionPage() {
@@ -12,9 +14,9 @@ export default function ContributionPage() {
     <View className={`${themeClass} contribution-route-root`}>
       <FloatingNotificationHost />
       {router.params.manage === "1" ? (
-        <ContributionEditor managesRecords />
+        <ContributionEditor renderRecords={(form, navigation) => <ContributionRecords form={form} {...navigation} />} />
       ) : (
-        <ContributionEditor />
+        <ContributionEditor renderRecordDetail={(item, onBack) => <ContributionRecordDetail item={item} onBack={onBack} />} />
       )}
     </View>
   );

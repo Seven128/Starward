@@ -218,6 +218,7 @@ export interface MiniappRepositoryPort {
   getDetail(spotId: SpotId): Promise<SpotDetail | null>;
   getContributionFormalBaseline(spotId: SpotId): Promise<ContributionFormalBaseline | null>;
   ensureUser(userId: UserId): Promise<void>;
+  findWechatUser(identityDigest: string): Promise<UserId | null>;
   findOrCreateWechatUser(identityDigest: string): Promise<UserId>;
   saveWechatDeliveryIdentity(input: { userId: UserId; identityDigest: string; appId: string; ciphertext: string }): Promise<void>;
   getWechatDeliveryIdentity(userId: UserId, appId: string): Promise<string | null>;
@@ -311,6 +312,7 @@ export interface MiniappRepositoryPort {
       uploadedAt: string;
     },
     idempotencyKey: string,
+    writeObject: () => Promise<void>,
   ): Promise<ContributionSubmission>;
   submitContribution(
     userId: UserId,
@@ -325,12 +327,13 @@ export interface MiniappRepositoryPort {
   ): Promise<ContributionFormalSubmitResult>;
   saveFormalUploadIntent(userId: UserId, intent: ContributionFormalUploadIntent, idempotencyKey: string): Promise<ContributionFormalUploadIntent>;
   createFormalContributionUpload(userId: UserId, intentId: string, upload: ContributionFormalMediaUpload, expectedRevision: number, idempotencyKey: string): Promise<ContributionFormalUploadIntent>;
-  completeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, completion: { byteSize: number; sha256: string; objectKey: string; uploadedAt: string }, idempotencyKey: string): Promise<ContributionFormalUploadIntent>;
+  completeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, completion: { byteSize: number; sha256: string; objectKey: string; uploadedAt: string }, idempotencyKey: string, writeObject: () => Promise<void>): Promise<ContributionFormalUploadIntent>;
   removeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionFormalUploadIntent>;
   getFormalUploadIntent(userId: UserId, intentId: string): Promise<ContributionFormalUploadIntent | null>;
   expireContributionUploads(now: string): Promise<readonly string[]>;
   removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionSubmission>;
   acknowledgeContributionMediaDeletion(objectKeys: readonly string[]): Promise<void>;
+  getOwnedContributionUploadObject(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId): Promise<{ objectKey: string; mimeType: ContributionMediaUpload["mimeType"] } | null>;
   getContributionUploadObject(
     uploadId: ContributionUploadId,
   ): Promise<{

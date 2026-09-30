@@ -16,7 +16,7 @@
       const clamp = n => Math.max(0, Math.min(days[selectedDay].hours.length - 1, n));
       root.classList.add('observation-time');
       root.dataset.moon = String(Boolean(moonSource));
-      root.innerHTML = '<div class="date-bar"><button id="date-prev" type="button" aria-label="前一天">‹</button><button id="date-open" type="button" aria-haspopup="dialog"><span id="date-label"></span>' + calendarIcon + '</button><button id="date-next" type="button" aria-label="后一天">›</button><button id="date-today" type="button">今晚</button></div><div id="time-ruler" role="slider" tabindex="0" aria-label="观测时间"><div id="time-track"></div><span class="time-center" aria-hidden="true"></span></div><p id="night-time-label" aria-live="polite"></p>';
+      root.innerHTML = '<div class="date-bar"><button id="date-prev" type="button" aria-label="前一天">‹</button><button id="date-open" type="button" aria-haspopup="dialog"><span id="date-label"></span>' + calendarIcon + '</button><button id="date-next" type="button" aria-label="后一天">›</button><button id="date-today" type="button" aria-label="返回今天的日期">今天</button></div><div id="time-ruler" role="slider" tabindex="0" aria-label="观测时间"><div id="time-track"></div><span class="time-center" aria-hidden="true"></span></div><p id="night-time-label" aria-live="polite"></p>';
       const get = id => root.querySelector('#' + id), ruler = get('time-ruler'), track = get('time-track');
       const calendar = document.createElement('dialog');
       calendar.className = 'observation-calendar'; calendar.id = 'date-picker'; calendar.setAttribute('aria-labelledby', 'calendar-title');

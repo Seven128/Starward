@@ -4,7 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
-test("removing media preserves form inputs and cannot cross a changed account", async () => {
+for (const state of ["DRAFT", "REJECTED", "CHANGES_REQUESTED"]) test(`removing ${state} media preserves form inputs and cannot cross a changed account`, async () => {
   const source = ts.createSourceFile("commands.ts", readFileSync(new URL("./use-contribution-commands.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const declarations = source.statements.filter((node) => ts.isFunctionDeclaration(node) && ["activeDraft", "createRemoveMedia"].includes(node.name?.text ?? ""));
   assert.equal(declarations.length, 2);
@@ -16,7 +16,7 @@ test("removing media preserves form inputs and cannot cross a changed account", 
   const next = { submissionId: "draft:a", revision: 5, media: [] };
   const create = vm.runInNewContext(ts.transpileModule(declarations.map((node) => node.getText(source)).join("\n") + "\ncreateRemoveMedia;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     Taro: { showModal: async () => ({ confirm }) },
-    contributionSubmissionState: () => "DRAFT",
+    contributionSubmissionState: () => state,
     removeContributionUpload: async (...args: unknown[]) => { requests.push(args); if (lateAccountChange) accountValid = false; return { data: next }; },
     errorMessage: () => "账号已变化",
   });
@@ -25,6 +25,7 @@ test("removing media preserves form inputs and cannot cross a changed account", 
     detail: "尚未保存的现场输入",
     applyDraft: () => assert.fail("media removal must not replace editable fields"),
     applyMediaDraft: (value: unknown) => adopted.push(value),
+    removeCandidateMediaPreview() {},
     history: { refetch: async () => {} }, announce() {},
   };
   const remove = create(form, () => { if (!accountValid) throw new Error("changed"); });

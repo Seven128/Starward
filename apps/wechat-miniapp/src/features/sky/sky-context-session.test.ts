@@ -4,12 +4,14 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { createSkyContextSession } from "./sky-context-session.ts";
+import { createSkyObservationTime } from "./sky-observation-time.ts";
+import { presentSkyTime } from "./sky-time-presentation.ts";
 import type { ObservationContext } from "@starward/miniapp-contracts";
 
 const source = ts.createSourceFile("sky.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const page = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotSkyPage") as ts.FunctionDeclaration;
 const statements = page.body!.statements;
-const commands = statements.filter(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(d => ["commitIndex", "commitCivilDate"].includes(d.name.getText(source))));
+const commands = statements.filter(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(d => ["commitInstant", "commitIndex", "commitCivilDate"].includes(d.name.getText(source))));
 const lookupEffect = statements.find(node => ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) && node.expression.expression.getText(source) === "useEffect" && node.expression.arguments[0]?.getText(source).includes("contextLookup.data?.data"))!;
 const compile = (text: string) => ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
 const commandCode = compile(commands.map(node => node.getText(source)).join("\n") + "\n({commitIndex, commitCivilDate});");
@@ -23,7 +25,8 @@ function harness(initial = context()) {
   const sandbox = {
     alignmentMode: "auto",
     orientationController: { snapshot: () => ({ alignment: { mode: sandbox.alignmentMode } }) },
-    activeContext: initial, timeSaving: false, reportData: { hourly: [{ at: "2026-09-15T13:00:00Z" }] },
+    activeContext: initial, timeSaving: false, rawReportData: { hourly: [{ at: "2026-09-15T13:00:00Z" }] },
+    presentSkyTime, observationTime: createSkyObservationTime(), setTimeIntent: () => {},
     committedAt: initial.selectedAtUtc, selectedCivilDate: "2026-09-15", contextSession: session,
     clampIndex: () => 0, setTimeSaving: (value: boolean) => saving.push(value),
     setPreviewIndex: () => {}, setDatePickerOpen: () => {},
@@ -32,7 +35,13 @@ function harness(initial = context()) {
     instantForCivilDate: (localDate: string) => ({ localDate, selectedAt: "2026-09-16T12:00:00Z" }),
     notify: (value: unknown) => notifications.push(value), errorMessage: () => "request failed", isMiniappRequestCancelled: () => false,
   };
-  const actions = vm.runInNewContext(commandCode, sandbox) as { commitIndex: (index: number) => Promise<void>; commitCivilDate: (date: string) => Promise<void> };
+  const commands = vm.runInNewContext(commandCode, sandbox) as { commitIndex: (index: number) => void; commitCivilDate: (date: string) => Promise<void> };
+  // The index event intentionally dispatches without returning the async commit.
+  // Drain that real completion before asserting late-response publication.
+  const actions = { ...commands, commitIndex: async (index: number) => {
+    commands.commitIndex(index);
+    await new Promise<void>(resolve => setImmediate(resolve));
+  } };
   return { session, sandbox, requests, writes, notifications, saving, actions,
     replace: () => { state = { ...state, observationContext: context("ctx:b"), selectedSpotId: "spot:b" }; },
     state: () => state,
@@ -108,13 +117,14 @@ test("hide cancels old requests but allows a fresh request after return", () => 
 test("actual page lifecycle hooks cancel publishing and reset the visible saving state", () => {
   const hooks = statements.filter(node => ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
     ["useDidHide", "useDidShow", "useEffect"].includes(node.expression.expression.getText(source)) &&
-    node.expression.arguments[0]?.getText(source).includes("contextSession." ) &&
+    /contextSession\.(show|hide)\(/.test(node.expression.arguments[0]?.getText(source) ?? "") &&
     !node.expression.arguments[0]?.getText(source).includes("contextLookup") &&
     !node.expression.arguments[0]?.getText(source).includes("restoreObservationContext"));
   const h = harness(); let hide = () => {}, show = () => {}, dispose = () => {};
   const visible: boolean[] = [], saving: boolean[] = [];
   vm.runInNewContext(compile(hooks.map(node => node.getText(source)).join("\n")), {
     contextSession: h.session, setPageVisible: (value: boolean) => visible.push(value),
+    observationTime: h.sandbox.observationTime, setTimeIntent: () => {},
     setTimeSaving: (value: boolean) => saving.push(value), setPreviewIndex: () => {},
     useDidHide: (fn: () => void) => { hide = fn; }, useDidShow: (fn: () => void) => { show = fn; },
     useEffect: (fn: () => () => void) => { dispose = fn(); },

@@ -6,12 +6,14 @@ import { selectNotification, selectNotifications } from "@/state/notification";
 import { useAppStore } from "@/state/app-store";
 import { floatingNotificationNodeId, useFloatingNotificationVisibility } from "./notification-visibility";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
+import { currentNotificationPageRoute } from "@/state/notification-page-route";
+import { SemanticIcon } from "./semantic-asset";
 
-const ICON: Readonly<Record<NotificationRecord["tone"], string>> = {
-  error: "!",
-  warning: "!",
-  info: "i",
-  success: "✓",
+const ICON: Readonly<Record<NotificationRecord["tone"], "info" | "check">> = {
+  error: "info",
+  warning: "info",
+  info: "info",
+  success: "check",
 };
 
 export function NotificationComponent({
@@ -39,13 +41,13 @@ export function NotificationComponent({
       aria-live={notification.tone === "error" ? "assertive" : "polite"}
       aria-atomic="true"
     >
-      <Text
+      <View
         className="notification__icon"
         data-od-id="notification-icon"
         aria-hidden="true"
       >
-        {ICON[notification.tone]}
-      </Text>
+        <SemanticIcon name={ICON[notification.tone]} />
+      </View>
       <View className="notification__copy" data-od-id="notification-feedback">
         <Text
           className="notification__title type-label"
@@ -104,6 +106,8 @@ export function FloatingNotification({ notification, onDismiss }: {
   const [paused, setPaused] = useState(false);
   const closingRef = useRef(false);
   const dismissRef = useRef(onDismiss);
+  const remainingVisibleMs = useRef(3000);
+  const wasVisible = useRef(false);
   dismissRef.current = onDismiss;
   const close = () => { closingRef.current = true; setClosing(true); };
   useEffect(() => () => {
@@ -111,11 +115,25 @@ export function FloatingNotification({ notification, onDismiss }: {
     if (closingRef.current) dismissRef.current();
   }, []);
   useEffect(() => {
-    // An action may be the only available recovery; its consumer must retain it.
-    if (notification.action || closing || paused || !visible) return;
+    // Floating notices are always transient; durable recovery stays inline with the failed task.
+    if (!visible) {
+      wasVisible.current = false;
+      remainingVisibleMs.current = 3000;
+      return;
+    }
+    if (!wasVisible.current) {
+      wasVisible.current = true;
+      remainingVisibleMs.current = 3000;
+    }
+    if (closing || paused) return;
     let cancelled = false;
-    const timer = setTimeout(() => { if (!cancelled) close(); }, 3000);
-    return () => { cancelled = true; clearTimeout(timer); };
+    const startedAt = Date.now();
+    const timer = setTimeout(() => { if (!cancelled) close(); }, remainingVisibleMs.current);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      remainingVisibleMs.current = Math.max(0, remainingVisibleMs.current - (Date.now() - startedAt));
+    };
   }, [notification.action, closing, paused, visible]);
   useEffect(() => {
     if (!closing) return;
@@ -134,15 +152,19 @@ export function FloatingNotification({ notification, onDismiss }: {
 export function NotificationRegion({
   owner,
   placement = "inline",
+  pageRoute,
+  actionHandlers,
 }: {
   owner?: string;
   placement?: NotificationRecord["placement"];
+  pageRoute?: string;
+  actionHandlers?: Readonly<Record<string, () => void>>;
 }) {
   const queue = useAppStore((state) => state.notifications);
   const dismiss = useAppStore((state) => state.dismissNotification);
   if (placement === "floating") {
     return <View className="notification-stack">
-      {selectNotifications(queue, placement, owner).slice(0, 3).map((notification) => (
+      {selectNotifications(queue, placement, owner, pageRoute).slice(0, 3).map((notification) => (
         <FloatingNotification
           key={`${notification.id}-${notification.createdAt}-${notification.occurrences}`}
           notification={notification}
@@ -157,10 +179,12 @@ export function NotificationRegion({
   }
   const selection = selectNotification(queue, placement, owner);
   if (!selection.current) return null;
+  const onAction = selection.current.dedupeKey ? actionHandlers?.[selection.current.dedupeKey] : undefined;
   return (
     <NotificationComponent
       notification={selection.current}
       residualCount={selection.residualCount}
+      {...(onAction ? { onAction } : {})}
       onDismiss={() => dismiss(selection.current!.id)}
     />
   );
@@ -169,8 +193,9 @@ export function NotificationRegion({
 export function FloatingNotificationHost() {
   const [visible, setVisible] = useState(true);
   const [safeTop, setSafeTop] = useState(() => nativeNavigationInsets().safeTop);
+  const pageRoute = currentNotificationPageRoute();
   const firstNodeId = useAppStore(state => {
-    const first = selectNotifications(state.notifications, "floating")[0];
+    const first = pageRoute ? selectNotifications(state.notifications, "floating", undefined, pageRoute)[0] : undefined;
     return first ? floatingNotificationNodeId(first) : "";
   });
   useDidShow(() => {
@@ -179,12 +204,12 @@ export function FloatingNotificationHost() {
   });
   useDidHide(() => setVisible(false));
   useResize(() => setSafeTop(nativeNavigationInsets().safeTop));
-  if (!visible) return null;
+  if (!visible || !pageRoute) return null;
   return (
     <View className="notification-host" aria-label="全局通知"
       style={{ ...(safeTop === undefined ? {} : { "--notification-top": `${safeTop}px` }) } as CSSProperties}>
       <ScrollView className="notification-host__scroll" scrollY enhanced showScrollbar={false} scrollIntoView={firstNodeId}>
-        <NotificationRegion placement="floating" />
+        <NotificationRegion placement="floating" pageRoute={pageRoute} />
       </ScrollView>
     </View>
   );

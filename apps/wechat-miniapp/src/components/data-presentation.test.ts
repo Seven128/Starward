@@ -56,7 +56,7 @@ test("internal provenance is absent from cards and summaries without losing real
     title: "星表", sourceUrl: "https://example.org/catalog", license: "开放许可", precision: "角秒",
     limitations: ["缺少部分字段"] } as SourceSummary;
   const tree = provenance({ source: actual });
-  assert.match(text(tree), /公开资料库.*部分数据.*星表.*开放数据.*开放许可.*角秒.*缺少部分字段.*原始出处/s);
+  assert.match(text(tree), /公开资料库.*部分数据.*星表.*开放数据.*开放许可.*角秒.*缺少部分字段.*复制原始出处/s);
   assert.equal(productSourceNames([sample, actual, actual]), "公开资料库");
   assert.equal(sample.kind, "TEST_FIXTURE");
   assert.equal(sample.state, "SAMPLE_DATA");

@@ -50,6 +50,7 @@ export function MapTimeRuler({
   selectedAt,
   timezone,
   disabled,
+  emptyMessage,
   onPreview,
   onCommit,
   onCancel,
@@ -60,6 +61,7 @@ export function MapTimeRuler({
   selectedAt: string;
   timezone: string;
   disabled: boolean;
+  emptyMessage: string;
   onPreview: (index: number) => void;
   onCommit: (index: number) => void;
   onCancel: () => void;
@@ -140,10 +142,10 @@ export function MapTimeRuler({
         <View className="map-time-ruler__heading">
           <Text className="type-label">观测时间</Text>
           <Text className="type-caption">
-            {selectedAt ? formatTime(selectedAt, timezone) : "时间暂无数据"}
+            {selectedAt ? formatTime(selectedAt, timezone) : "尚未确定观测时间"}
           </Text>
         </View>
-        <Text className="type-caption">暂无数据</Text>
+        <Text className="type-caption">{emptyMessage}</Text>
       </View>
     );
   }

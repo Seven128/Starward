@@ -83,8 +83,8 @@ export function ObservationDateControl({
           onClick={() => choose(dates[selectedIndex + 1])}
         >›</Button>
         {selectedDate !== today ? (
-          <Button className="observation-date__today" disabled={busy} onClick={() => choose(today)}>
-            今晚
+          <Button className="observation-date__today" ariaLabel="返回今天的日期" disabled={busy} onClick={() => choose(today)}>
+            今天
           </Button>
         ) : null}
       </View>
