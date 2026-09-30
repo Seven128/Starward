@@ -1,0 +1,30 @@
+{
+  "catalogVersion": "wikidata-bsc5p-chinese-aliases.v2",
+  "assetSha256": "7607c378c79c438e1b5f56c15fc4e7153471e68360848c9cff8b214fc84c4fce",
+  "rowCount": 3149,
+  "matchedChineseRows": 4030,
+  "sourceRowCount": 4258,
+  "excludedAmbiguousReferences": [
+    "HR:166",
+    "HR:4825"
+  ],
+  "excludedAmbiguousItems": [],
+  "sourceSha256": "fd7af9c8f12c4ae78d0fd4c442cf3b7e121cdaa35b84f3e2ea0905ed54fd3600",
+  "sourceRetrievedAt": "2026-09-23T09:44:37.411Z",
+  "sourceUrl": "https://www.wikidata.org/",
+  "queryUrl": "https://query.wikidata.org/sparql",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://www.wikidata.org/wiki/Wikidata:Licensing",
+  "limitations": [
+    "Wikidata社区中文标签，仅作检索别名，不是IAU正式中文名或已审中文介绍。",
+    "仅按Wikidata带Bright Star Catalogue限定符的HR编号与现行BSC5P精确匹配；冲突身份剔除。",
+    "同一个中文标签可能对应多颗恒星；结果保留独立HR身份。"
+  ],
+  "baseRebinding": {
+    "previousCatalogVersion": "wikidata-bsc5p-chinese-aliases.v1",
+    "previousAssetSha256": "612ad315268e736ea58768444091ab9dd3b79bd5703ec86613e0d7c61062f982",
+    "previousBaseCatalogVersion": "bsc5p-bright-stars.v2",
+    "previousBaseCatalogHash": "e7f329bf653f343d2da61da3aeeb0d1d35df5d9c4484d1ce8edc8241ed184995",
+    "reason": "BSC v3 changes only HR:4730 properName; exact HR aliases are unchanged"
+  }
+}

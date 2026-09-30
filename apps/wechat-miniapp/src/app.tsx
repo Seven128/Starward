@@ -1,4 +1,4 @@
-import { useLaunch } from "@tarojs/taro";
+import Taro, { useLaunch } from "@tarojs/taro";
 import { QueryClientProvider } from "@tanstack/react-query";
 import type { PropsWithChildren } from "react";
 import { miniappQueryClient } from "@/services/query-client";
@@ -10,6 +10,7 @@ import { useAppStore } from "@/state/app-store";
 import { resetAppStoreForAcceptance } from "@/state/app-store";
 import { syncNativeChrome } from "@/theme/native-chrome";
 import { inspectAcceptanceSkyScene } from "@/services/acceptance-diagnostics";
+import { skyImageFileSession } from "@/services/sky-image-file-session";
 import "./app.scss";
 
 if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
@@ -107,6 +108,13 @@ if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
 
 export default function App({ children }: PropsWithChildren) {
   useLaunch(() => {
+    try {
+      void skyImageFileSession.removePreviousFiles(Taro.getFileSystemManager(), Taro.env.USER_DATA_PATH).then(result => {
+        if (result.status !== "complete") console.warn("sky_image_file_cleanup_incomplete", result);
+      });
+    } catch {
+      console.warn("sky_image_file_cleanup_incomplete", { status: "unavailable" });
+    }
     void syncNativeChrome(useAppStore.getState().mode).catch(
       (error: unknown) => {
         console.warn("launch_native_chrome_sync_failed", error);

@@ -88,6 +88,15 @@ export function dismissNotification(
   return queue.filter((item) => item.id !== id);
 }
 
+/** Map and Sky share the accepted Context owner. A successful commit replaces
+ * these earlier edit errors; image, navigation and other recovery stay intact. */
+export function resolveObservationContextNotifications(queue: readonly NotificationRecord[]) {
+  return queue.filter(item => !(item.placement === "inline" && item.tone === "error" && (
+    (item.owner === "map" && (item.dedupeKey === "map-time-update-failed" || item.dedupeKey === "map-date-update-failed")) ||
+    (item.owner === "spot-night" && (item.dedupeKey === "spot-night-time-update-failed" || item.dedupeKey === "spot-night-date-update-failed"))
+  )));
+}
+
 export function selectNotification(
   queue: readonly NotificationRecord[],
   placement: NotificationPlacement,

@@ -4,6 +4,10 @@ import { projectAdoptedSkyCatalog } from "./sky-report-catalog";
 import { createStellarCatalogClient } from "./stellar-catalog-client";
 import { createSaoCatalogClient } from "./sao-catalog-client";
 import { createConstellationCatalogClient } from "./constellation-catalog-client";
+import { matchingCelestialSearchResponse } from "./celestial-search-response";
+import { matchingCelestialInformationResponse } from "./celestial-information-response";
+import { matchingCelestialPositionResponse, type CelestialPositionBinding } from "./celestial-position-response";
+import { matchingSkyTargetInstantResponse, type SkyTargetInstantBinding } from "./sky-target-instant-response";
 import { createPlanChecklistClient } from "./plan-checklist-client";
 import { createPlanSubscriptionClient } from "./plan-subscription-client";
 import { createAuthenticatedOperationRequester } from "./authenticated-operation";
@@ -21,6 +25,9 @@ import {
   MINIAPP_API_BASE_PATH,
   CONSTELLATION_CATALOG_VERSION,
   isCelestialObjectReference,
+  DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION,
+  SDSS_OPTICAL_PUBLICATIONS,
+  SKY_LUMINARY_CATALOG_VERSION,
   MINIAPP_API_OPERATIONS,
   type ApiEnvelope,
   type ApiError,
@@ -53,7 +60,7 @@ import {
   type UserPreferences,
 } from "@starward/miniapp-contracts";
 import { localFailureMessage } from "@/utils/presentation";
-import { observationContextRecoveryInput } from "./observation-context-recovery";
+import { confirmedObservationContextEdit, observationContextRecoveryInput } from "./observation-context-recovery";
 import {
   invalidationPolicy,
   isTemporaryCacheKey,
@@ -76,6 +83,9 @@ const SESSION_STORAGE_KEY = "starward.wechat-miniapp.auth.current";
 const INSTALLATION_STORAGE_KEY =
   "starward.wechat-miniapp.installation.current";
 const SESSION_EXPIRY_SKEW_MS = 60_000;
+// Position lookups rebuild the same Sky report; this is the report's BSC
+// selection, never the selected planet/SAO/deep-sky object's own publication.
+const ADOPTED_SKY_REPORT_CATALOG_VERSION = "bsc5p-bright-stars.v3";
 
 const requests = new LatestRequestRegistry();
 const reportDeviceFailure = __MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__
@@ -667,16 +677,41 @@ export async function updateObservationContext(
   input: Omit<ObservationContextUpdateRequest, "expectedRevision">,
   signal?: AbortSignal,
 ) {
-  const update = (current: ObservationContext) => requestOperation(
-      "observation-context:" + current.contextId,
-      "observationContextPut",
-      {
-        pathParams: { contextId: current.contextId },
-        body: { ...input, expectedRevision: current.revision },
-        idempotencyKey: idempotencyKey("observation-context"),
-        ...(signal ? { signal } : {}),
-      },
-    );
+  const update = async (current: ObservationContext) => {
+    try {
+      const response = await requestOperation(
+        "observation-context:" + current.contextId,
+        "observationContextPut",
+        {
+          pathParams: { contextId: current.contextId },
+          body: { ...input, expectedRevision: current.revision },
+          idempotencyKey: idempotencyKey("observation-context"),
+          ...(signal ? { signal } : {}),
+        },
+      );
+      // A successful status cannot acknowledge a different place/time or an
+      // unchanged revision. Normal and uncertain replies share one validator.
+      if (!confirmedObservationContextEdit(current, input, response))
+        throw new Error("bff_observation_context_update_invalid");
+      return response;
+    } catch (error) {
+      if (error instanceof MiniappRequestCancelled || signal?.aborted ||
+        (error instanceof MiniappApiError && error.code !== "CONFLICT" && error.statusCode !== 408 && error.statusCode < 500)) throw error;
+      // A PUT may be durable even when its reply is lost. Context PUT does
+      // not consume the idempotency header, so never replay it speculatively.
+      let readback;
+      try {
+        readback = await requestOperation("observation-context:" + current.contextId, "observationContextGet", {
+          pathParams: { contextId: current.contextId }, cache: false, ...(signal ? { signal } : {}),
+        });
+      } catch (readError) {
+        if (readError instanceof MiniappRequestCancelled || signal?.aborted) throw readError;
+        throw error;
+      }
+      if (!confirmedObservationContextEdit(current, input, readback)) throw error;
+      return readback;
+    }
+  };
   let result;
   try {
     result = await update(context);
@@ -871,24 +906,85 @@ export function getSkyReport(
 ) {
   if (!spotId.startsWith("spot:") && !spotId.startsWith("contribution:"))
     throw new Error("night_location_identity_invalid");
-  return requestOperation("spot-sky:" + spotId, "spotSkyGet", {
+  return requestOperation("spot-sky:v3:" + spotId, "spotSkyGet", {
     auth: spotId.startsWith("contribution:") ? "REQUIRED" : "NONE",
     pathParams: { spotId },
-    query: "contextId=" + encodeURIComponent(contextId),
+    query: "contextId=" + encodeURIComponent(contextId) + "&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION,
     ...(signal ? { signal } : {}),
   }).then(projectAdoptedSkyCatalog);
+}
+
+/** Requested only for a settled fine-time preview. Playback never polls this
+ * endpoint; the native sky continues from the already admitted time model. */
+export function getSkyTargetInstant(binding: SkyTargetInstantBinding, signal?: AbortSignal) {
+  const { spotId, contextId, at } = binding;
+  if (!spotId.startsWith("spot:") && !spotId.startsWith("contribution:"))
+    throw new Error("night_location_identity_invalid");
+  const key = `spot-sky-targets:v1:${spotId}:${contextId}:${binding.contextRevision}:${binding.contextFingerprint}:${at}`;
+  return requestOperation(key, "spotSkyTargetsGet", {
+    auth: spotId.startsWith("contribution:") ? "REQUIRED" : "NONE",
+    pathParams: { spotId },
+    query: "contextId=" + encodeURIComponent(contextId) + "&at=" + encodeURIComponent(at),
+    ...(signal ? { signal } : {}),
+  }).then(response => {
+    try { return matchingSkyTargetInstantResponse(response, binding); }
+    catch (error) { invalidateApiCache(key + ":"); throw error; }
+  });
 }
 
 export function getCelestialObjectInformation(
   reference: string,
   signal?: AbortSignal,
+  imagePublicationHash?: string,
 ) {
   if (!isCelestialObjectReference(reference))
     throw new Error("celestial_object_reference_invalid");
-  return requestOperation("celestial-object:" + reference, "celestialObjectGet", {
+  if (imagePublicationHash !== undefined && !/^[a-f0-9]{64}$/u.test(imagePublicationHash))
+    throw new Error("deep_sky_image_publication_hash_invalid");
+  const deepSky = reference.startsWith("M:");
+  const key = (reference==="SOLAR:MOON"?"celestial-object:v4:moon-coverage:":deepSky ?
+    `celestial-object:v5:${DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION}:${imagePublicationHash ?? "current"}:` : "celestial-object:v3:") + reference;
+  return requestOperation(key, "celestialObjectGet", {
     pathParams: { reference },
-    query: "locale=zh-CN",
+    query: "locale=zh-CN&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION+
+      (reference==="SOLAR:MOON"?"&moonTextureVersion=coverage-v2":"") +
+      (deepSky ? `&deepSkyImageVersion=${DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION}` +
+        (imagePublicationHash ? `&deepSkyPublicationHash=${imagePublicationHash}` : "") : ""),
     ...(signal ? { signal } : {}),
+  }).then(response => {
+    try { return matchingCelestialInformationResponse(response, reference, imagePublicationHash); }
+    catch (error) { invalidateApiCache(key + ":"); throw error; }
+  });
+}
+
+export function searchCelestialObjects(query: string, signal?: AbortSignal) {
+  const key = "celestial-search:v4:" + query.trim();
+  return requestOperation(key, "celestialObjectSearchGet", {
+    query: "q=" + encodeURIComponent(query.trim()) + "&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION + "&luminaryCatalogVersion=" + encodeURIComponent(SKY_LUMINARY_CATALOG_VERSION),
+    ...(signal ? { signal } : {}),
+  }).then(response => {
+    try { return matchingCelestialSearchResponse(response, query); }
+    catch (error) {
+      invalidateApiCache(key + ":");
+      throw error;
+    }
+  });
+}
+
+export function getCelestialObjectPosition(binding: CelestialPositionBinding,
+  catalog: { catalogVersion: string; catalogHash: string }, signal?: AbortSignal) {
+  if (!isCelestialObjectReference(binding.reference) ||
+    (!binding.spotId.startsWith("spot:") && !binding.spotId.startsWith("contribution:")))
+    throw new Error("celestial_position_identity_invalid");
+  const key = `celestial-position:${binding.spotId}:${binding.reference}`;
+  return requestOperation(key, "celestialObjectPositionGet", {
+    auth: binding.spotId.startsWith("contribution:") ? "REQUIRED" : "NONE",
+    pathParams: { spotId: binding.spotId, reference: binding.reference },
+    query: `contextId=${encodeURIComponent(binding.contextId)}&at=${encodeURIComponent(binding.at)}&catalogVersion=${ADOPTED_SKY_REPORT_CATALOG_VERSION}`,
+    ...(signal ? { signal } : {}),
+  }).then(response => {
+    try { return matchingCelestialPositionResponse(response, binding, catalog); }
+    catch (error) { invalidateApiCache(key + ":"); throw error; }
   });
 }
 
@@ -902,11 +998,11 @@ export const getStellarCatalog = createStellarCatalogClient({
 });
 
 export const saoCatalogClient = createSaoCatalogClient({
-  index: signal => requestOperation('sao-index', 'saoIndexGet', { ...(signal ? {signal} : {}) }),
+  index: signal => requestOperation('sao-index:v2', 'saoIndexGet', { ...(signal ? {signal} : {}) }),
   tile: (publicationHash, tileId, signal) => requestOperation(`sao-tile:${publicationHash}:${tileId}`, 'saoTileGet', {
     pathParams: {publicationHash, tileId}, ...(signal ? {signal} : {}),
   }),
-  invalidateIndex: () => invalidateApiCache('sao-index:'),
+  invalidateIndex: () => invalidateApiCache('sao-index:v2:'),
   invalidateTile: (publicationHash, tileId) => invalidateApiCache(`sao-tile:${publicationHash}:${tileId}:`),
 });
 
@@ -927,10 +1023,14 @@ export function deepSkyImageUrl(reference: string, level: "OVERVIEW" | "MEDIUM" 
   if (!/^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(reference))
     throw new Error("deep_sky_image_reference_invalid");
   return __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
-    "/celestial-objects/" + encodeURIComponent(reference) + "/image?level=" + level;
+    "/celestial-objects/" + encodeURIComponent(reference) + "/image?level=" + level + `&imageVersion=${DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION}`;
 }
 
 export function deepSkyManifestUrl(sourceId: string): string | undefined {
+  const optical = Object.values(SDSS_OPTICAL_PUBLICATIONS).find(publication =>
+    sourceId === `optical-imagery:${publication.publicationId}:${publication.publicationHash}`);
+  if (optical) return __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
+    "/sky/sdss-optical/" + optical.publicationHash + "/manifest";
   const match = /^imagery:[^:]+:([a-f0-9]{64})$/u.exec(sourceId);
   return match ? __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
     "/sky/deep-sky/" + match[1] + "/manifest" : undefined;

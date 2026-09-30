@@ -1,10 +1,11 @@
+import { resolvedSkyBodyReferences } from "./sky-body-label-presentation";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import {createSkyBrowsingCamera} from "./sky-browsing-camera.ts";
-import {clampSkyFieldOfView,skyDomeFieldOfView,skyDomeProgress} from "./sky-zoom.ts";
+import {clampSkyFieldOfView,remapSkyFieldOfView,skyDomeFieldOfView,skyDomeProgress} from "./sky-zoom.ts";
 import {createSkyViewBasis,projectSkyDirection} from "./sky-view-projection.ts";
 import {skyViewportCenter,NO_SKY_INSETS,skyInsetsFromControls} from "./sky-viewport.ts";
 import {selectNotification} from "../../state/notification.ts";
@@ -40,10 +41,11 @@ test("actual page paint uses dome basis for drawing and last-painted calibration
   const sandbox={orientation,orientationController:{snapshot:()=>orientation.latestPresentation.current},manualBasisRef:{current:null},
     paintedSkyObjectsRef:{current:null},SKY_VERTICAL_FOV_DEG:45,clampSkyFieldOfView,skyDomeProgress,
     browsingCamera:createSkyBrowsingCamera(),zoomRef:{current:fov},reducedMotionRef:{current:false},
-    setPresentedCamera(){},browsingTimerRef:{current:null},
+    objectTracking:{snapshot:()=>({target:null})},
+    setPresentedCamera(){},resolvedSkyBodyReferences, setPresentedSkyFrame:(change:any)=>change(null),browsingTimerRef:{current:null},
     viewportInsetsRef:{current:NO_SKY_INSETS},skyViewportCenter,
     canvasGenerationRef:{current:1},EMPTY_SKY_IMAGES:new Map(),
-    drawSkyScene:(_ctx:any,_data:any,_at:any,_heading:any,_pose:any,_w:any,_h:any,_mode:any,painted:any,done:any,fov:number,_image:any,basis:any)=>{actual.push({fov,basis});painted({objects:[]});done();}};
+    drawSkyScene:(_ctx:any,_data:any,_at:any,_heading:any,_pose:any,_w:any,_h:any,_mode:any,painted:any,done:any,fov:number,_image:any,basis:any)=>{actual.push({fov,basis});painted({objects:[]},{sdssOpticalImage:null});done();}};
   const fn=vm.runInNewContext(ts.transpileModule('('+paint+')',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,sandbox);
   const frame={orientationRevision:0,pose:{basis:raw},verticalFovDeg:fov,sceneReady:true};
   fn({},frame,{width:390,height:844},()=>{});
@@ -70,11 +72,13 @@ test("actual canvas writer gives the renderer a full horizon inside measured con
   const sandbox={orientation:{latestPresentation:{current:{presentationRevision:0,alignment:{mode:'auto',view:raw}}},presented:{current:null}},
     orientationController:{},manualBasisRef:{current:null},paintedSkyObjectsRef:{current:null},SKY_VERTICAL_FOV_DEG:45,
     clampSkyFieldOfView,skyDomeProgress,skyViewportCenter,browsingCamera:createSkyBrowsingCamera(),
+    objectTracking:{snapshot:()=>({target:null})},
     zoomRef:{current:skyDomeFieldOfView(width,height,insets)},viewportInsetsRef:{current:insets},reducedMotionRef:{current:false},
     canvasGenerationRef:{current:1},EMPTY_SKY_IMAGES:new Map(),
     browsingTimerRef:{current:null},setPresentedCamera:(fn:any)=>Object.assign(actualCamera,fn(null)),
+    resolvedSkyBodyReferences, setPresentedSkyFrame:(change:any)=>change(null),
     drawSkyScene:(_ctx:any,_data:any,_at:any,_heading:any,_pose:any,w:number,h:number,_mode:any,painted:any,done:any,fov:number,_image:any,basis:any,center:any)=>{
-      rendered={w,h,fov,basis,center};painted({objects:[]});done();
+      rendered={w,h,fov,basis,center};painted({objects:[]},{sdssOpticalImage:null});done();
     }};
   const fn=vm.runInNewContext(ts.transpileModule('('+paint+')',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,sandbox);
   fn({}, {orientationRevision:0,pose:{basis:raw},verticalFovDeg:45,sceneReady:true},{width,height},()=>{});
@@ -86,7 +90,7 @@ test("actual canvas writer gives the renderer a full horizon inside measured con
   }
 });
 
-test("actual native measurement includes back, native capsule, notifications and bottom controls, and rejects superseded results",()=>{
+test("actual native measurement includes quick settings, back, native capsule, notifications and bottom controls, and rejects superseded results",()=>{
   const callbacks:Array<(results:any[])=>void>=[];const selected:string[]=[];const updates:any[]=[];
   const query:any={select:(selector:string)=>{selected.push(selector);return query;},boundingClientRect:()=>query,exec:(callback:any)=>callbacks.push(callback)};
   const sandbox={useCallback:(callback:any)=>callback,viewportMeasurementRevision:{current:0},viewportActiveRef:{current:true},viewportMountedRef:{current:true},CANVAS_ID:'spot-night-sky-scene',skyInsetsFromControls,
@@ -94,10 +98,10 @@ test("actual native measurement includes back, native capsule, notifications and
     setControlsBottomReserve:()=>{},setViewportInsets:(fn:any)=>updates.push(fn(NO_SKY_INSETS))};
   const fn=vm.runInNewContext(ts.transpileModule('('+measure+')',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,sandbox);
   fn();fn();
-  const rects=[{top:620,bottom:830,height:210},{top:70,bottom:114,height:44},{top:125,bottom:205,height:80},{top:30,bottom:830,height:800}];
+  const rects=[{top:620,bottom:830,height:210},{top:70,bottom:114,height:44},{top:125,bottom:205,height:80},{top:30,bottom:830,height:800},null,{top:100,bottom:310,height:210}];
   callbacks[0]!(rects);assert.equal(updates.length,0);
-  callbacks[1]!(rects);assert.deepEqual(updates,[{top:183,bottom:218}]);
-  assert.ok(selected.includes('#sky-bottom-controls')&&selected.includes('.sky-orientation-back-layer')&&selected.includes('#spot-night-sky-scene'));
+  callbacks[1]!(rects);assert.deepEqual(updates,[{top:288,bottom:218}]);
+  assert.ok(selected.includes('#sky-bottom-controls')&&selected.includes('.sky-orientation-back-layer')&&selected.includes('#spot-night-sky-scene')&&selected.includes('.sky-quick-settings'));
   fn();sandbox.viewportActiveRef.current=false;
   callbacks[2]!(rects);assert.equal(updates.length,1,"an in-flight callback after hide is rejected");
   fn();assert.equal(callbacks.length,3,"an effect after hide must not issue a new query");
@@ -108,6 +112,31 @@ test("actual native measurement includes back, native capsule, notifications and
   sandbox.Taro.nextTick=(fn:any)=>{pendingTick=fn;};
   fn();sandbox.viewportActiveRef.current=false;
   (pendingTick as unknown as ()=>void)();assert.equal(callbacks.length,3,"hide before native nextTick also rejects the query");
+});
+
+test("actual viewport remap preserves the visible local zoom while ending an interrupted gesture",()=>{
+  let effect='';
+  const inspect=(node:ts.Node)=>{
+    if(ts.isCallExpression(node)&&node.expression.getText(source)==='useEffect'&&
+      node.arguments[1]?.getText(source).includes('canvasSize.width, canvasSize.height, viewportInsets') &&
+      node.arguments[0]?.getText(source).includes('remapSkyFieldOfView'))effect=node.getText(source);
+    ts.forEachChild(node,inspect);
+  };inspect(source);assert.ok(effect);
+  const previous={width:390,height:780,insets:NO_SKY_INSETS};
+  const next={width:390,height:780,insets:{top:180,bottom:0}};
+  let fov=.05,settled=0,cancelled=0;
+  vm.runInNewContext(ts.transpileModule(effect,{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{
+    __MINIAPP_SKY_FEEDBACK_ID__:"",
+    useEffect:(fn:()=>void)=>fn(),canvasSize:{width:next.width,height:next.height},viewportInsets:next.insets,
+    previousViewportRef:{current:previous},settleSkyGestureForViewportRef:{current:()=>settled++},
+    recordSkyFeedback:()=>{},
+    cancelSkyGestureRef:{current:()=>{cancelled++;fov=.18;}},
+    setVerticalFovDeg:(change:(value:number)=>number)=>{fov=change(fov);},
+    remapSkyFieldOfView,clampSkyFieldOfView,
+  });
+  assert.equal(settled,1);
+  assert.equal(cancelled,0,"layout movement is not a native touch cancellation");
+  assert.equal(fov,.05);
 });
 
 test("actual Sky subscriptions remeasure when its inline notice grows or disappears, without following unrelated notices",()=>{
@@ -131,13 +160,25 @@ test("actual Sky subscriptions remeasure when its inline notice grows or disappe
   queue=[];run();assert.equal(measurements,4,"dismissal must release the old top inset");
 });
 
-test("actual calibration action resets magnification without modifying Observation Context and respects a pending time commit",()=>{
+test("actual calibration action changes camera intent only after a current painted frame can freeze",()=>{
   const actions:string[]=[];
   const contextSession={busy:false};
   const skyTapRef={current:{dragged:true} as unknown};
-  const fn=vm.runInNewContext(ts.transpileModule('('+begin+')',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,
-    {contextSession,skyTapRef,SKY_VERTICAL_FOV_DEG:45,setVerticalFovDeg:(n:number)=>actions.push('fov:'+n),orientationController:{begin:()=>actions.push('begin')},
-      stopBrowsingAnimation(){},browsingCamera:createSkyBrowsingCamera(),orientation:{presented:{current:null}}});
-  fn();assert.deepEqual(actions,['fov:45','begin']);assert.equal(skyTapRef.current,null);
-  contextSession.busy=true;fn();assert.equal(actions.length,2);
+  let canBegin=false;
+  const sandbox={contextSession,skyTapRef,timeSaving:false,isPreviewing:false,skySceneReady:true,
+    presentedSceneCurrent:false,manualBasisRef:{current:null},SKY_VERTICAL_FOV_DEG:45,
+    setVerticalFovDeg:(n:number)=>actions.push('fov:'+n),
+    orientationController:{begin:()=>{actions.push('begin');return canBegin;}},
+    stopObjectTracking:()=>actions.push('tracking-stop'),
+    stopBrowsingAnimation:()=>actions.push('animation-stop'),
+    browsingCamera:{freeze:()=>actions.push('freeze')},orientation:{presented:{current:{}}}};
+  const fn=vm.runInNewContext(ts.transpileModule('('+begin+')',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,sandbox);
+  fn();assert.deepEqual(actions,[],"an old or absent frame cannot consume calibration intent");
+  assert.notEqual(skyTapRef.current,null);
+  sandbox.presentedSceneCurrent=true;
+  fn();assert.deepEqual(actions,['begin'],"a failed sensor begin preserves tracking, camera and zoom");
+  assert.notEqual(skyTapRef.current,null);
+  canBegin=true;fn();assert.deepEqual(actions,['begin','begin','tracking-stop','animation-stop','freeze','fov:45']);
+  assert.equal(skyTapRef.current,null);
+  contextSession.busy=true;fn();assert.equal(actions.length,6);
 });

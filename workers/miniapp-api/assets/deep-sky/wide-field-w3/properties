@@ -1,0 +1,14 @@
+creator_did = ivo://CDS/P/allWISE/W3
+obs_title = AllWISE W3 (12um) from raw Atlas Images — Starward order-0 partial copy
+hips_version = 1.4
+hips_release_date = 2019-05-20T08:23Z
+hips_frame = equatorial
+hips_order = 0
+hips_tile_width = 512
+hips_tile_format = jpeg
+hips_status = public partial unclonable
+hips_license = ODbL-1.0
+hips_copyright = CNRS/Unistra
+obs_copyright = IPAC/NASA
+obs_regime = Infrared
+obs_ack = WISE and NEOWISE are funded by NASA; see manifest.json for the full acknowledgment and source.

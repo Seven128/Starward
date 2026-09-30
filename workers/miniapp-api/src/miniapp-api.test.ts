@@ -16,6 +16,7 @@ import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts"
 import type { DarkSkyGridCellRecord } from "./ports.ts";
 import { createTestRuntimeConfig } from "./runtime-config.ts";
 import { ASTRONOMICAL_EVENT_CATALOG_VERSION } from "./astronomical-event-catalog.ts";
+import { createResponseCache, RESPONSE_CACHE_LIMITS } from "../../../apps/wechat-miniapp/src/services/response-cache.ts";
 
 async function contextFor(
   service: MiniappService,
@@ -815,6 +816,15 @@ test("pending proposal sky is owner-scoped and bound to the submitted coordinate
     const sky = await service.getSky(pending.submissionId, context.contextId, owner.userId);
     assert.equal(sky.data.context.spotId, pending.submissionId);
     assert.match(sky.warnings.at(-1) ?? "", /审核中提案坐标/u);
+    const fineAt = "2026-08-06T13:00:24.087Z";
+    const fine = await service.getSkyTargetInstant(pending.submissionId, context.contextId, fineAt, owner.userId);
+    assert.equal(fine.data.spotId, pending.submissionId);
+    assert.equal(fine.data.at, fineAt);
+    assert.match(fine.warnings.at(-1) ?? "", /审核中提案坐标/u);
+    await assert.rejects(() => service.getSkyTargetInstant(pending.submissionId, context.contextId, fineAt),
+      /authentication_required/u);
+    await assert.rejects(() => service.getSkyTargetInstant(pending.submissionId, context.contextId, fineAt, stranger.userId),
+      /contribution_not_found/u);
     await assert.rejects(() => service.getSky(pending.submissionId, context.contextId, stranger.userId), /contribution_not_found/u);
     const otherContext = (await service.resolveObservationContext({
       location: { kind: "MAP_POINT", displayName: "其他位置", wgs84: { system: "WGS84", latitude: 22.57, longitude: 114.59 }, source: "MAP_VIEWPORT", timezoneHint: "Asia/Shanghai" },
@@ -971,6 +981,12 @@ test("detail and sky reject context drift and share one selected time", async ()
       sky.sources.some((source) => source.id === sky.data.lunarFacts.source.id),
       "lunar provenance is included in the response source envelope",
     );
+    assert.ok(sky.sources.some((source) => source.id === "nasa-nssdca-sun-fact-sheet"),
+      "the solar radius reference travels with the computed disc diameter");
+    assert.ok(sky.sources.some((source) => source.id === "nasa-nssdca-jupiter-fact-sheet"),
+      "Jupiter's 1-bar shape radii travel with the report's body axes");
+    assert.ok(sky.sources.some((source) => source.id === "nasa-nssdca-saturnian-rings-fact-sheet"),
+      "the main-ring dimensions travel with the report's Saturn orientation");
     assert.equal(
       sky.data.context.eventCatalogVersion,
       ASTRONOMICAL_EVENT_CATALOG_VERSION,
@@ -1009,8 +1025,8 @@ test("sky report preserves exact selected time and binds targets and stars to ev
         selectedAt,
       })
     ).data;
-    const sky = (await service.getSky(TEST_PUBLISHED_SPOT.spotId, context.contextId))
-      .data;
+    const skyEnvelope = await service.getSky(TEST_PUBLISHED_SPOT.spotId, context.contextId);
+    const sky = skyEnvelope.data;
     assert.equal(sky.context.at, selectedAt);
     assert.ok(
       sky.hourly.some((row) => row.at === selectedAt),
@@ -1049,6 +1065,7 @@ test("sky report preserves exact selected time and binds targets and stars to ev
         );
       assert.ok(frameTarget);
       assert.equal(frameTarget.direction, target.direction);
+      assert.equal(frameTarget.azimuthDeg, target.azimuthDeg);
       assert.equal(frameTarget.altitudeDeg, target.altitudeDeg);
     }
     assert.ok(
@@ -1060,7 +1077,7 @@ test("sky report preserves exact selected time and binds targets and stars to ev
           return (
             frame.at !== selectedAt &&
             current !== undefined &&
-            (target.direction !== current.direction ||
+            (target.azimuthDeg !== current.azimuthDeg ||
               target.altitudeDeg !== current.altitudeDeg)
           );
         }),
@@ -1082,19 +1099,78 @@ test("sky report preserves exact selected time and binds targets and stars to ev
       new Set(meteorFrames.map((target) => `${target.direction}:${target.altitudeDeg}`)).size > 1,
       "meteor direction is recalculated while unavailable activity stays unavailable",
     );
+    const fineAt = "2026-08-06T13:00:24.087Z";
+    const fine = await service.getSkyTargetInstant(TEST_PUBLISHED_SPOT.spotId, context.contextId, fineAt);
+    const fineMeteor = fine.data.targets.find(target => target.targetId === meteorTarget.targetId);
+    assert.ok(fineMeteor, "the fine-time response retains the real active event identity");
+    assert.equal(fineMeteor.activity, null, "a fine instant cannot invent the missing activity curve");
+    assert.notEqual(fineMeteor.altitudeDeg, meteorTarget.altitudeDeg,
+      "the fine radiant must be recomputed instead of borrowed from committed advice");
     assert.ok(
       sky.hourly.every((row) => row.opportunityInput.at === row.at),
       "opportunity inputs retain the exact expanded presentation axis",
     );
     assert.ok(
-      Buffer.byteLength(JSON.stringify(sky), "utf8") < 1_048_576,
-      "target frames remain within the test report payload budget",
+      Buffer.byteLength(JSON.stringify(skyEnvelope), "utf8") <= RESPONSE_CACHE_LIMITS.persistedItemBytes,
+      "the complete meteor report fits the consumer's existing persisted-item limit",
     );
+    const stored = new Map<string, unknown>();
+    const storage = {
+      getStorageSync: (key: string) => stored.get(key),
+      setStorageSync: (key: string, data: unknown) => { stored.set(key, data); },
+      removeStorageSync: (key: string) => { stored.delete(key); },
+      getStorageInfoSync: () => ({ keys: [...stored.keys()] }),
+      setStorage: async ({ key, data }: { key: string; data: string }) => { stored.set(key, data); },
+    };
+    const cache = createResponseCache(storage);
+    cache.set("meteor-sky-report", skyEnvelope);
+    await cache.flush();
+    assert.deepEqual(createResponseCache(storage).get("meteor-sky-report")?.envelope, skyEnvelope,
+      "the complete model and meteor facts must survive a fresh cache owner, not merely fit a byte count");
     const selectedRow = sky.hourly.find((row) => row.at === selectedAt);
     assert.equal(selectedRow?.opportunityInput.at, selectedAt);
   } finally {
     await service.onModuleDestroy();
   }
+});
+
+test("fine-time sky targets are computed without changing the committed Context or sending a scene", async () => {
+  const service = testService();
+  try {
+    const spotId = TEST_PUBLISHED_SPOT.spotId;
+    const committedAt = "2026-08-06T13:00:00.000Z";
+    const fineAt = "2026-08-06T13:00:24.087Z";
+    const context = (await service.resolveObservationContext({
+      location: { kind: "FORMAL_SPOT", spotId }, localDate: "2026-08-06", selectedAt: committedAt,
+    })).data;
+    const original = (await service.getSky(spotId, context.contextId)).data;
+    assert.equal(original.targetFrames.some(frame => frame.at === fineAt), false);
+    const response = await service.getSkyTargetInstant(spotId, context.contextId, fineAt);
+    assert.equal(response.data.at, fineAt);
+    assert.equal(response.validAt, fineAt);
+    assert.equal(response.contextRevision, context.revision);
+    assert.deepEqual(response.data.targets.map(target => target.targetId), original.targets.map(target => target.targetId));
+    assert.deepEqual({ id: response.data.contextId, revision: response.data.contextRevision,
+      fingerprint: response.data.contextFingerprint },
+    { id: context.contextId, revision: context.revision, fingerprint: context.contextFingerprint });
+    assert.equal("skyScene" in response.data, false, "fine target response must not include the full star scene");
+    const fineContext = (await service.resolveObservationContext({
+      location: { kind: "FORMAL_SPOT", spotId }, localDate: "2026-08-06", selectedAt: fineAt,
+    })).data;
+    const exact = (await service.getSky(spotId, fineContext.contextId)).data;
+    const exactTargets = exact.targetFrames.find(frame => frame.at === fineAt)?.targets;
+    assert.ok(exactTargets);
+    assert.deepEqual(response.data.targets.map(target => [target.targetId, target.azimuthDeg,
+      target.altitudeDeg, target.activity ?? null]), exactTargets.map(target => [target.targetId,
+      target.azimuthDeg, target.altitudeDeg, target.activity ?? null]));
+    const stillCommitted = (await service.observationContexts.get(context.contextId));
+    assert.equal(stillCommitted.selectedAtUtc, committedAt);
+    assert.equal(stillCommitted.revision, context.revision);
+    await assert.rejects(() => service.getSkyTargetInstant(spotId, context.contextId,
+      "2026-08-06T13:00:24Z"), /sky_target_time_out_of_coverage/);
+    await assert.rejects(() => service.getSkyTargetInstant("spot:another", context.contextId, fineAt),
+      /spot_context_mismatch/);
+  } finally { await service.onModuleDestroy(); }
 });
 
 test("daylight and cross-midnight selected instants stay exact instead of nearest-sampled", async () => {

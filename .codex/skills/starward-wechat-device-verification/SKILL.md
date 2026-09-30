@@ -112,6 +112,8 @@ Do not read chats, unrestricted logs, clipboard, storage, exact location, QR con
 
 ## Report the run
 
+For public search queries in a visibly focused field, the guarded project `text --value` command is available; its character, pacing and privacy boundaries live in [settled-candidate command surface](../../../project_context/areas/main/verification/wechat-device/settled-candidate.md). Keep the same fresh capture and post-input inspection rules. It does not support credentials, arbitrary shell text or permission-dialog entry.
+
 Keep diagnostic-path status separate from product findings. Report exactly these headings, with no private artifact content:
 
 - `Candidate identity`: mode, revision/build lane, generation where applicable, and bundle fingerprint

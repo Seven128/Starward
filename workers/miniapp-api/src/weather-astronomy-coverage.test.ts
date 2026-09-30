@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
+import { SKY_PLANET_ORDER } from "@starward/miniapp-contracts";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts";
 import { DeterministicWeatherTestAdapter } from "./test-fixtures/deterministic-weather-adapter.ts";
@@ -47,6 +48,8 @@ test("official alerts bind their exact minute interval even inside one forecast 
         const row = report.hourly.find(row => Date.parse(row.at) === Date.parse(at))!;
         assert.equal(row.opportunityBlockers.includes("OFFICIAL_SEVERE_WEATHER_ALERT"), active, `${forecastAvailable}/${time}`);
         assert.ok(Number.isFinite(row.moonAltitudeDeg));
+        assert.ok(Number.isFinite(row.moonAzimuthDeg));
+        assert.ok(row.moonAngularDiameterDeg! > .45 && row.moonAngularDiameterDeg! < .6);
       }
     } finally { await service.onModuleDestroy(); }
   }
@@ -74,8 +77,24 @@ test("actual forecast holes remain empty through SkyReport and Map while celesti
       const row = report.hourly.find(row => Date.parse(row.at) === Date.parse(`2026-09-15T${time}:00Z`))!;
       assert.ok(row, `${time}: ${report.hourly.map(row => row.at).join(",")}`); assert.equal(row.cloudPercent, null); assert.equal(row.weatherAt, null); assert.equal(row.state, "UNAVAILABLE");
       assert.ok(Number.isFinite(row.moonAltitudeDeg));
+      assert.ok(Number.isFinite(row.moonAzimuthDeg));
+      assert.ok(row.moonAzimuthDeg! >= 0 && row.moonAzimuthDeg! < 360);
+      assert.ok(row.moonAngularDiameterDeg! > .45 && row.moonAngularDiameterDeg! < .6);
+      assert.deepEqual(row.planets?.map(planet => planet.body),SKY_PLANET_ORDER);
+      assert.ok(row.planets?.every(planet => planet.angularDiameterDeg > 0 &&
+        Number.isFinite(planet.visualMagnitude)),"weather gaps cannot erase independent planetary ephemerides");
+      assert.ok(Number.isFinite(row.sunAzimuthDeg));
+      assert.ok(row.sunAzimuthDeg! >= 0 && row.sunAzimuthDeg! < 360);
+      assert.ok(Number.isFinite(row.sunAltitudeDeg));
+      assert.equal(row.darkness, row.sunAltitudeDeg! <= -18 ? "ASTRONOMICAL_NIGHT" : row.sunAltitudeDeg! < 0 ? "TWILIGHT" : "DAY");
       assert.ok(report.targetFrames.some(frame => frame.at === row.at));
     }
+    assert.notEqual(report.hourly.find(row => row.at.endsWith("13:00:00.000Z"))!.sunAzimuthDeg,
+      report.hourly.find(row => row.at.endsWith("15:00:00.000Z"))!.sunAzimuthDeg,
+      "the solar direction must change with the actual report instant even without weather");
+    assert.notEqual(report.hourly.find(row => row.at.endsWith("13:00:00.000Z"))!.moonAzimuthDeg,
+      report.hourly.find(row => row.at.endsWith("15:00:00.000Z"))!.moonAzimuthDeg,
+      "the Moon must follow the same exact report instant even without weather");
     const actual = report.hourly.find(row => Date.parse(row.at) === Date.parse("2026-09-15T12:30:00Z"))!;
     assert.ok(actual.cloudPercent !== null); assert.equal(actual.weatherAt, "2026-09-15T12:00:00.000Z");
     const map = (await service.getMapScene({ contextId: context.contextId, layer: "CLOUD" })).data;

@@ -30,6 +30,7 @@ import {
 import {
   dismissNotification as removeNotification,
   enqueueNotification,
+  resolveObservationContextNotifications,
   type NotificationIntent,
   type NotificationRecord,
 } from "./notification";
@@ -554,7 +555,12 @@ export const useAppStore = create<AppState>((set, get) => {
       commit({ finderQuery });
     },
     setObservationContext(observationContext) {
-      set({ observationContext });
+      set(state => ({
+        observationContext,
+        notifications: observationContext
+          ? resolveObservationContextNotifications(state.notifications)
+          : state.notifications,
+      }));
       if (!get().accountOwnerId) return;
       try {
         // Observation Context binds every downstream request and route. Persist

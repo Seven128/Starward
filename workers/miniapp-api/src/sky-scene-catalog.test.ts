@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { BSC5P_PROJECTION_ALGORITHM, loadBsc5pStarCatalog } from "@starward/astronomy-core/bsc5p-catalog";
-import { STELLAR_SCENE_FORMAT, skySceneSerializedBytes } from "@starward/miniapp-contracts";
+import { assertSkyObservationFrames, STELLAR_SCENE_FORMAT, skySceneSerializedBytes } from "@starward/miniapp-contracts";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import { buildSkyScene, createBsc5pSkyCatalogProvider, type SkyCatalogProvider } from "./sky-scene-catalog.ts";
 import { bsc5pCatalogSources } from "./sky-scene-catalog-provider.ts";
@@ -9,6 +9,10 @@ import { createBsc5pGeometryFrame } from "./stellar-geometry-provider.ts";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts";
 import { MemoryCache } from "./cache.ts";
+import { StellarCatalogPublicationService } from "./stellar-catalog-publication.ts";
+import { SaoPublicationService } from "./sao-publication.ts";
+import { attachSkyCatalog, resolveSkySceneFrame } from "../../../apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts";
+import { resolveSkyStellarSupplement, supplementGeometry } from "../../../apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts";
 const spot = { wgs84: TEST_PUBLISHED_SPOT.wgs84, altitudeM: TEST_PUBLISHED_SPOT.altitudeM };
 const hourlyAt = Array.from({length:49}, (_,i)=> new Date(Date.parse("2026-09-04T04:00:00Z")+i*1800000).toISOString());
 
@@ -70,4 +74,68 @@ test("SkyReport cache invalidates v1/v2 publication changes and their geometry",
  assert.equal(second.data.skyScene.catalog?.catalogHash,owner.catalogHash);
  assert.notEqual(second.data.context.dataRevision,first.data.context.dataRevision);
  } finally{await service.onModuleDestroy();}
+});
+
+test("one Observation Context can serve isolated BSC v2 and Acrux v3 reports without cache cross-talk",async()=>{
+ const service=createTestMiniappService({repository:new InMemoryTestRepository([TEST_PUBLISHED_SPOT]),cache:new MemoryCache()});
+ try{
+  const context=(await service.resolveObservationContext({location:{kind:"FORMAL_SPOT",spotId:TEST_PUBLISHED_SPOT.spotId},localDate:"2026-09-04"})).data;
+  const old=(await service.getSky(TEST_PUBLISHED_SPOT.spotId,context.contextId)).data;
+  const revised=(await service.getSky(TEST_PUBLISHED_SPOT.spotId,context.contextId,undefined,"bsc5p-bright-stars.v3")).data;
+  const oldAgain=(await service.getSky(TEST_PUBLISHED_SPOT.spotId,context.contextId)).data;
+  const v3=loadBsc5pStarCatalog("bsc5p-bright-stars.v3");
+  assert.equal(old.skyScene.catalog?.catalogVersion,"bsc5p-bright-stars.v2");
+  assert.equal(revised.skyScene.catalog?.catalogVersion,v3.catalogVersion);
+  assert.equal(revised.skyScene.catalog?.catalogHash,v3.catalogHash);
+  assert.equal(revised.skyScene.catalog?.rowCount,8404);
+  assert.notEqual(revised.context.dataRevision,old.context.dataRevision);
+  assert.equal(oldAgain.skyScene.catalog?.catalogVersion,old.skyScene.catalog?.catalogVersion);
+  assert.equal(oldAgain.skyScene.catalog?.catalogHash,old.skyScene.catalog?.catalogHash);
+  assert.equal(oldAgain.context.catalogVersion,old.context.catalogVersion);
+  assert.deepEqual(revised.hourly.map(row=>row.at),old.hourly.map(row=>row.at));
+ }finally{await service.onModuleDestroy();}
+});
+
+test("v3 report, published BSC and SAO tile compose in the Mini scene while old SAO is rejected",async()=>{
+ const service=createTestMiniappService({repository:new InMemoryTestRepository([TEST_PUBLISHED_SPOT]),cache:new MemoryCache()});
+ try{
+  const context=(await service.resolveObservationContext({location:{kind:"FORMAL_SPOT",spotId:TEST_PUBLISHED_SPOT.spotId},localDate:"2026-09-04"})).data;
+  const report=(await service.getSky(TEST_PUBLISHED_SPOT.spotId,context.contextId,undefined,"bsc5p-bright-stars.v3")).data;
+  const staticCatalog=new StellarCatalogPublicationService().get(report.skyScene.catalog!).data;
+  const scene=attachSkyCatalog(report,staticCatalog).skyScene;
+  assert.equal(scene.state,"AVAILABLE");
+  const at=report.hourly[0]!.at;
+  assert.ok(resolveSkySceneFrame(scene,at));
+  const saoOwner=new SaoPublicationService(new URL("../assets/sao-v2/",import.meta.url));
+  const sao=await saoOwner.get();
+  assert.ok(supplementGeometry(sao.data,scene,at));
+  const visibleTile=sao.data.index.tiles.find(tile=>tile.id==="00-09-10-0");
+  assert.ok(visibleTile);
+  const first=await saoOwner.tile(sao.data.publicationHash,visibleTile.id);
+  const supplement=resolveSkyStellarSupplement(sao.data,[first.data],scene,at);
+  assert.equal(supplement?.catalogVersion,"sao-visual-supplement.v2");
+  assert.equal(supplement?.geometry.at,at);
+  assert.equal(supplement?.points.length,4);
+  const old=await new SaoPublicationService().get();
+  assert.throws(()=>supplementGeometry(old.data,scene,at),/sao_base_catalog_mismatch/u);
+ }finally{await service.onModuleDestroy();}
+});
+
+test("report observation frames survive a failed bright-star catalog and match the real star transform",async()=>{
+ const starless:SkyCatalogProvider={load:()=>{throw new Error("test_catalog_unavailable");},
+  frame:()=>{throw new Error("test_catalog_unavailable");},cacheKey:()=>"test-catalog-unavailable"};
+ const unavailable=createTestMiniappService({repository:new InMemoryTestRepository([TEST_PUBLISHED_SPOT]),skyCatalog:starless});
+ const available=createTestMiniappService({repository:new InMemoryTestRepository([TEST_PUBLISHED_SPOT]),skyCatalog:createBsc5pSkyCatalogProvider()});
+ try{
+  const request={location:{kind:"FORMAL_SPOT" as const,spotId:TEST_PUBLISHED_SPOT.spotId},localDate:"2026-09-04"};
+  const a=(await unavailable.resolveObservationContext(request)).data;
+  const b=(await available.resolveObservationContext(request)).data;
+  const failed=(await unavailable.getSky(TEST_PUBLISHED_SPOT.spotId,a.contextId)).data;
+  const good=(await available.getSky(TEST_PUBLISHED_SPOT.spotId,b.contextId)).data;
+  assert.equal(failed.skyScene.state,"UNAVAILABLE");
+  assertSkyObservationFrames(failed.observationFrames,failed.hourly.map(row=>row.at));
+  assertSkyObservationFrames(good.observationFrames,good.hourly.map(row=>row.at));
+  assert.deepEqual(failed.observationFrames,good.observationFrames);
+  assert.deepEqual(good.observationFrames[0]!.equatorialToEnu,good.skyScene.frames[0]!.geometry!.equatorialToEnu);
+ }finally{await unavailable.onModuleDestroy();await available.onModuleDestroy();}
 });

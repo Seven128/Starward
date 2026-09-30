@@ -134,6 +134,26 @@ test("resize, hide, removed canvas and unmount discard stale callbacks", () => {
   }
 });
 
+test("page hide and native-node removal release the old context before a fresh foreground draw", () => {
+  const h = canvasFixture();
+  h.canvas.ready(); h.canvas.request(1); h.tick(); h.measure();
+  const first = h.painted[0]!;
+  h.canvas.hide(); h.canvas.setMounted(false);
+  first.done();
+  assert.deepEqual(h.released, [first.context]);
+  assert.deepEqual(h.presented, [], "hidden page completion cannot publish a stale frame");
+
+  h.canvas.show(); h.canvas.request(2);
+  assert.equal(h.jobs.size, 0, "foreground waits for the replacement native node");
+  h.canvas.setMounted(true); h.tick(); h.measure();
+  const second = h.painted.at(-1)!;
+  assert.notEqual(second.context, first.context);
+  second.done();
+  assert.deepEqual(h.presented, [2]);
+  h.canvas.dispose();
+  assert.deepEqual(h.released, [first.context, second.context]);
+});
+
 test("measurement, context, draw and missing callback failures invalidate size and recover on retry", () => {
   for (const failure of ["invalid-size", "measure", "context", "paint", "measure-timeout", "paint-timeout"]) {
     const h = canvasFixture(); h.canvas.ready(); h.fail(failure); h.canvas.request(1); h.tick();

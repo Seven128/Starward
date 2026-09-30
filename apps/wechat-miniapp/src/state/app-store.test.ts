@@ -6,7 +6,7 @@ import ts from "typescript";
 import { create } from "zustand";
 import { DEFAULT_USER_PREFERENCES, EMPTY_FILTER_STATE, cloneFilterState } from "@starward/miniapp-contracts";
 import * as transitions from "./app-transitions";
-import { enqueueNotification, dismissNotification } from "./notification";
+import * as notifications from "./notification";
 import type { useAppStore } from "./app-store";
 
 const validObservationContext = {
@@ -58,7 +58,8 @@ function loadStore(storage: { value: unknown; failWrites?: boolean; session?: un
   const exports: Record<string, unknown> = {};
   vm.runInNewContext(ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText, {
     exports, create, ...transitions, cloneFilterState, DEFAULT_USER_PREFERENCES, EMPTY_FILTER_STATE,
-    enqueueNotification, removeNotification: dismissNotification,
+    ...notifications, removeNotification: notifications.dismissNotification,
+    currentNotificationPageRoute: () => "pages/spot-night/index",
     acceptanceBootstrapJson: {}, __MINIAPP_ACCEPTANCE_DIAGNOSTICS__: false,
     queueMicrotask: (fn: () => void) => scheduled.push(fn),
     Taro: {
@@ -271,6 +272,39 @@ test("legacy provider selections disappear on restart while the exact location a
   assert.equal(restored.contextId, legacy.contextId); assert.equal(restored.selectedAtUtc, legacy.selectedAtUtc);
   assert.deepEqual(JSON.parse(JSON.stringify(restored.location)), legacy.location);
   assert.deepEqual(JSON.parse(JSON.stringify(restored.weatherView)), { primaryPolicy: "QWEATHER", comparisonModels: [], selectedModel: null, cloudLayer: "TOTAL" });
+});
+
+test("accepted Context resolves prior Map and Sky time/date errors atomically and retains unrelated recovery", () => {
+  for (const failWrites of [false, true]) {
+    const { store, storage } = loadStore({ value: { accountOwnerId: "user:test", observationContext: validObservationContext }, failWrites });
+    const current = store.getState().observationContext!;
+    const next = { ...current, revision: current.revision + 1, selectedAtUtc: "2026-08-29T14:30:00.000Z" };
+    for (const owner of ["map", "spot-night"]) for (const field of ["time", "date"]) {
+      store.getState().notify({ owner, placement: "inline", tone: "error", title: "earlier edit failed", body: "old time retained",
+        dedupeKey: `${owner}-${field}-update-failed` });
+    }
+    for (const intent of [
+      { owner: "spot-night", placement: "inline", tone: "error", dedupeKey: "image-recovery" },
+      { owner: "map", placement: "inline", tone: "error", dedupeKey: "map-navigation-failed" },
+      { owner: "settings", placement: "inline", tone: "error", dedupeKey: "spot-night-time-update-failed" },
+      { owner: "spot-night", placement: "floating", tone: "error", dedupeKey: "spot-night-time-update-failed" },
+    ] as const) store.getState().notify({ ...intent, title: "retained", body: "independent recovery" });
+    const retained = store.getState().notifications.filter(item => item.title === "retained");
+    const queue = store.getState().notifications;
+    store.getState().setObservationContext(null);
+    assert.equal(store.getState().notifications, queue, "clearing a Context cannot claim that a failed edit recovered");
+    let transitions = 0;
+    const unsubscribe = store.subscribe(state => {
+      transitions++;
+      assert.equal(state.observationContext, next);
+      assert.deepEqual(state.notifications, retained, "an accepted time cannot render beside its obsolete edit error");
+    });
+    store.getState().setObservationContext(next);
+    unsubscribe();
+    assert.equal(transitions, 1);
+    assert.equal(store.getState().observationContext, next);
+    if (!failWrites) assert.equal((storage.value as { observationContext: unknown }).observationContext, next);
+  }
 });
 
 test("temporary cache reset is synchronous but reports durable write success only after native completion", async () => {

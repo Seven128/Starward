@@ -15,6 +15,7 @@ const help = `Mini Program owner-assisted physical-device diagnostics (not accep
   tap --session <directory> --x <0..1> --y <0..1> [--transport usb|wireless]
   swipe --session <directory> --x <0..1> --y <0..1> --to-x <0..1> --to-y <0..1> --ms <100..2000> [--transport usb|wireless]
   back --session <directory> [--transport usb|wireless]
+  text --session <directory> --value <non-secret ASCII query> [--transport usb|wireless]
   remote|inspect --session <directory> --endpoint ws://127.0.0.1:<port>
   stop --session <directory>
 Input requires a screenshot taken in the last 60 seconds. Review it first.
@@ -29,7 +30,8 @@ export function parseArguments(argv) {
   const [action = "help", ...rest] = argv;
   const options = {};
   const required = { help: [], doctor: [], start: ["project"], capture: ["session"], "capture-permissions": ["session"], "capture-location": ["session"], tap: ["session", "x", "y"], swipe: ["session", "x", "y", "to-x", "to-y", "ms"], back: ["session"], remote: ["session", "endpoint"], inspect: ["session", "endpoint"], stop: ["session"] };
-  const transportActions = new Set(["doctor", "capture", "capture-permissions", "capture-location", "tap", "swipe", "back"]);
+  required.text = ["session", "value"];
+  const transportActions = new Set(["doctor", "capture", "capture-permissions", "capture-location", "tap", "swipe", "back", "text"]);
   const allowed = Object.fromEntries(Object.entries(required).map(([key, values]) => [key, transportActions.has(key) ? [...values, "transport"] : values]));
   if (!allowed[action]) fail("action_invalid");
   for (let i = 0; i < rest.length; i += 2) {
@@ -85,7 +87,7 @@ export async function main(argv, { adb, emit = (value) => console.log(JSON.strin
       return { screenshot: screenshotPath, size: screenshot.size, screenScope: state.capture.permissionScope === "none" ? "miniapp" : state.capture.permissionScope, actualScreen: true, runtimeAppIdVerified: false, acceptance: "not_evaluated" };
     } else {
       assertCapture(state, serial);
-      const values = action === "tap" ? [Number(options.x), Number(options.y)] : action === "swipe" ? [Number(options.x), Number(options.y), Number(options["to-x"]), Number(options["to-y"]), Number(options.ms)] : [];
+      const values = action === "tap" ? [Number(options.x), Number(options.y)] : action === "swipe" ? [Number(options.x), Number(options.y), Number(options["to-x"]), Number(options["to-y"]), Number(options.ms)] : action === "text" ? [options.value] : [];
       const capture = state.capture;
       // Consume input authorization before sending: retries need a new observation.
       state.capture = null;

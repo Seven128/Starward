@@ -12,6 +12,8 @@ export interface SkyArtworkRegistration {
   readonly determinant: number;
   readonly anchorU: SkyVector;
   readonly anchorV: SkyVector;
+  /** Corner rays of the same affine image plane, in UV winding order. */
+  readonly corners: readonly SkyVector[];
   /** Conservative spherical cap of the whole image, independent of a label. */
   readonly bounds: { readonly center: SkyVector; readonly radius: number };
 }
@@ -44,7 +46,7 @@ export function registerSkyArtwork(anchors: readonly SkyArtworkAnchor[]): SkyArt
     const length=Math.hypot(...vector);
     return length > 1e-10 ? vector.map(n=>n/length) as unknown as SkyVector : null;
   };
-  const center=directionAt(.5,.5),corners=[[0,0],[1,0],[0,1],[1,1]].map(([u,v])=>directionAt(u!,v!));
+  const center=directionAt(.5,.5),corners=[[0,0],[1,0],[1,1],[0,1]].map(([u,v])=>directionAt(u!,v!));
   if (!center || corners.some(c=>!c)) return null;
   const radius=Math.max(...corners.map(c=>Math.acos(Math.max(-1,Math.min(1,dot(center,c!))))));
   // A <90° cap is convex, so the normalized affine image plane stays within
@@ -52,6 +54,7 @@ export function registerSkyArtwork(anchors: readonly SkyArtworkAnchor[]): SkyArt
   const bounds=Object.freeze({center:Object.freeze(center),radius:radius < Math.PI/2 ? radius : Math.PI});
   rows.forEach(Object.freeze);
   return Object.freeze({ rows:Object.freeze(rows), determinant,bounds,
+    corners:Object.freeze(corners.map(c=>Object.freeze(c!))),
     anchorU:Object.freeze([a.uv[0],b.uv[0],c.uv[0]] as const), anchorV:Object.freeze([a.uv[1],b.uv[1],c.uv[1]] as const) });
 }
 

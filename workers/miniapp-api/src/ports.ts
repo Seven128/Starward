@@ -437,6 +437,14 @@ export interface CachePort {
   readinessSnapshot(): Promise<Readonly<Record<string, unknown>>>;
   get<T>(key: string): Promise<T | null>;
   set<T>(key: string, value: T, ttlSeconds: number): Promise<void>;
+  /** Atomic existing-key revision check and replacement. Never extends the
+   * stored TTL or the caller's absolute deadline, and never creates a key. */
+  replaceIfRevision<T extends { revision: number }>(
+    key: string,
+    expectedRevision: number,
+    value: T,
+    expiresAtMs: number,
+  ): Promise<"updated" | "missing" | "conflict">;
   deleteByPrefix(prefix: string): Promise<void>;
   operationsSnapshot(): Promise<Readonly<Record<string, unknown>>>;
   close(): Promise<void>;

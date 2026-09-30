@@ -1,0 +1,10 @@
+USGS Astrogeology Science Center / NASA Ames / Viking Orbiter
+
+This fixed 1024x512 JPEG was exported from the USGS planetarymaps.gov WMS
+layer MDIM21_color (Mars Viking Colorized Global Mosaic 232m, MDIM 2.1).
+The USGS product record marks it public domain with no use constraints. The
+exact request, product record, east-longitude/planetocentric projection,
+SHA-256 and processing limitations are in manifest.json.
+
+It is historical artistically colorized cartography, not natural-color Mars
+photography, current surface conditions or calibrated visual photometry.

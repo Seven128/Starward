@@ -1,30 +1,45 @@
-import { assertStellarCatalogPublication, assertStellarGeometryFrame, type SkyReport, type SkyScene,
-  type SkySceneCatalog, type SkySceneCatalogReference, type SkyScenePoint, type SkyTargetFrame, type StellarCatalogPublication } from "@starward/miniapp-contracts";
+import { assertStellarCatalogPublication, assertStellarGeometryFrame, type SkyGeometryReport, type SkyScene,
+  type SkySceneCatalog, type SkySceneCatalogReference, type SkyScenePoint, type StellarCatalogPublication } from "@starward/miniapp-contracts";
 import { projectStellarMotion } from "@starward/astronomy-core/stellar-vectors";
 import { exactSkyTimeFrame } from "./sky-time-frame";
+import { exactSkyObservationFrame } from "./sky-observation-frame";
+import { skySolarLightAt } from "./sky-solar-light";
 
 export interface ResolvedStellarScene extends Omit<SkyScene, "catalog"> {
   catalog: (SkySceneCatalog & SkySceneCatalogReference) | null;
   publication: StellarCatalogPublication | null;
 }
-export interface ResolvedSkyReport extends Omit<SkyReport, "skyScene"> { skyScene: ResolvedStellarScene; }
+export interface ResolvedSkyReport extends Omit<SkyGeometryReport, "skyScene"> { skyScene: ResolvedStellarScene; }
 export interface ResolvedStellarFrame { at: string; state: "AVAILABLE"; points: readonly SkyScenePoint[]; }
 const catalogs = new WeakMap<StellarCatalogPublication, SkySceneCatalog & SkySceneCatalogReference>();
 // One current time per report: gestures reuse it; scrubbing never retains an entire day of star arrays.
 const currentFrames = new WeakMap<ResolvedStellarScene, ResolvedStellarFrame>();
 
-/** Input remains usable when one independently loaded layer is missing. */
-export function skySceneHasContent(scene: ResolvedStellarScene | undefined, at: string | undefined,
-  targetFrame: SkyTargetFrame | undefined): boolean {
-  if (!scene || !at || targetFrame?.at !== at) return false;
+/** Deep-sky availability/time belongs to its independent layer, never the
+ * separately downloaded bright-star publication. Retain a valid static
+ * catalog when one instant is missing, without inventing that instant's points. */
+export function resolveSkyDeepSkyScene(scene: Pick<SkyScene, "deepSky"> | undefined, at: string | undefined) {
+  const deep = scene?.deepSky;
+  if (deep?.state !== "AVAILABLE" || !deep.catalog) return undefined;
+  const frame = exactSkyTimeFrame(deep.frames, at);
+  return { catalog: deep.catalog,
+    frame: frame?.state === "AVAILABLE" && frame.points ? frame : undefined };
+}
+
+/** Drawing and gestures retain each independent exact report layer. A legacy
+ * suggestion list or failed external catalog cannot revoke native astronomy. */
+export function skySceneHasContent(report: ResolvedSkyReport | undefined, at: string | undefined): boolean {
+  if (!report?.skyScene || !at) return false;
+  const scene = report.skyScene;
   const stars = resolveSkySceneFrame(scene, at);
-  const deep = exactSkyTimeFrame(scene.deepSky?.frames, at);
-  return Boolean(stars || targetFrame.targets.length ||
-    (scene.deepSky?.state === "AVAILABLE" && scene.deepSky.catalog && deep?.state === "AVAILABLE" && deep.points));
+  const deep = resolveSkyDeepSkyScene(scene, at);
+  const targetFrame = exactSkyTimeFrame(report.targetFrames, at);
+  return Boolean(stars || deep?.frame?.points || targetFrame?.targets.length ||
+    skySolarLightAt(report.hourly, at) || exactSkyObservationFrame(report, at));
 }
 
 /** Local render model only. Never put expanded stars into the shared report query/cache. */
-export function attachSkyCatalog(report: SkyReport, publication: StellarCatalogPublication | undefined): ResolvedSkyReport {
+export function attachSkyCatalog(report: SkyGeometryReport, publication: StellarCatalogPublication | undefined): ResolvedSkyReport {
   const scene = report.skyScene;
   if (scene.state === "AVAILABLE" && scene.catalog && publication) {
     try {

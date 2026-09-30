@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "starward-allwise-w3-wide-v1",
+  "publicationId": "allwise-w3-order0-cds-2019",
+  "source": {
+    "title": "AllWISE W3 (12 μm) infrared HiPS, 2010 observations",
+    "masterUrl": "https://alasky.cds.unistra.fr/AllWISE/W3",
+    "recordUrl": "https://alasky.cds.unistra.fr/MocServer/query?ID=CDS%2FP%2FallWISE%2FW3&fmt=html&get=record",
+    "originalRightsUrl": "https://irsa.ipac.caltech.edu/data_use_terms.html",
+    "acknowledgmentUrl": "https://irsa.ipac.caltech.edu/data/WISE/docs/release/AllWISE/expsup/sec1_6b.html",
+    "originalCopyright": "IPAC/NASA",
+    "hipsCopyright": "CNRS/Unistra",
+    "hipsLicense": "ODbL-1.0",
+    "hipsLicenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "hipsDoi": "10.26093/cds/aladin/na1n-03",
+    "atlasDoi": "10.26131/IRSA153",
+    "acknowledgment": "This distribution makes use of data products from the Wide-field Infrared Survey Explorer, a joint project of UCLA and JPL/Caltech, and NEOWISE, a project of JPL/Caltech. WISE and NEOWISE are funded by NASA."
+  },
+  "processing": "Direct, unmodified JPEG tiles copied from the CDS public master; order 0 only. Starward selection and arrangement offered under ODbL-1.0.",
+  "limitations": [
+    "Historical 2010 12 μm infrared emission, not visible light, a live sky image or a naked-eye visibility forecast.",
+    "Only twelve 512×512 order-0 tiles are published; zoomed detail, photometric intensity and optical all-sky coverage are not claimed.",
+    "Original survey and tile processing may contain detector artifacts or gaps; source and derived database rights remain separately attributed."
+  ],
+  "hips": {
+    "frame": "equatorial",
+    "order": 0,
+    "tileWidth": 512,
+    "tileFormat": "jpeg",
+    "status": "public partial unclonable"
+  },
+  "tiles": [
+    {
+      "pixel": 0,
+      "file": "Norder0/Dir0/Npix0.jpg",
+      "sha256": "9ae4fd846e523e274c8618b97b24ce01be28e134718fa255b8dd5b24d19ac38c",
+      "bytes": 68725,
+      "sourceUrl": "https://alasky.cds.unistra.fr/AllWISE/W3/Norder0/Dir0/Npix0.jpg"
+    },
+    {
+      "pixel": 1,
+      "file": "Norder0/Dir0/Npix1.jpg",
+      "sha256": "fa465d45c7daa0aa8fc0d386b764bc91bbc49e9521729445d8db7e267138f945",
+      "bytes": 42902,
+      "sourceUrl": "https://alasky.cds.unistra.fr/AllWISE/W3/Norder0/Dir0/Npix1.jpg"
+    },
+    {
+      "pixel": 2,
+      "file": "Norder0/Dir0/Npix2.jpg",
+      "sha256": "ddbd11b0ebaea2864e3f314e042112d9e8947398cadf74e497f1ea738ffa3f32",
+      "bytes": 24663,
+      "sourceUrl": "https://alasky.cds.unistra.fr/AllWISE/W3/Norder0/Dir0/Npix2.jpg"
+    },
+    {
+      "pixel": 3,
+      "file": "Norder0/Dir0/Npix3.jpg",
+      "sha256": "f414683517af55d1870f947b5d09dc7fe90d29ab9bcf7e6c53621d8ae6742c3c",
+      "bytes": 73313,
+      "sourceUrl": "https://alasky.cds.unistra.fr/AllWISE/W3/Norder0/Dir0/Npix3.jpg"
+    },
+    {
+      "pixel": 4,
+      "file": "Norder0/Dir0/Npix4.jpg",
+      "sha256": "8f59bb8761eff33f2801b8e7391807b9c515b44f870a88190fccb23679ff2b53",
+      "bytes": 51958,
+      "sourceUrl": "https://alasky.cds.unistra.fr/AllWISE/W3/Norder0/Dir0/Npix4.jpg"
+    },
+    {
+      "pixel": 5,
+      "file": "Norder0/Dir0/Npix5.jpg",
+      "sha256": "1a7b8ea895d608932fc5f9f0ca481b307015ebcf2ad10fe6eacedefcebd804ca",
+      "bytes": 66710,
+      "sourceUrl": "https://alasky.cds.unistra.fr/AllWISE/W3/Norder0/Dir0/Npix5.jpg"
+    },
+    {
+      "pixel": 6,
+      "file": "Norder0/Dir0/Npix6.jpg",
+      "sha256": "95d7af625c8df9dc238a267c64bed3e840029446397f6389401013e7be58229c",
+      "bytes": 51221,
+      "sourceUrl": "https://alasky.cds.unistra.fr/AllWISE/W3/Norder0/Dir0/Npix6.jpg"
+    },
+    {
+      "pixel": 7,
+      "file": "Norder0/Dir0/Npix7.jpg",
+      "sha256": "d2773d3aaeaaf2c3ae5f1702b09c5de86e9dd50c3bca5b999dd13f8597b4e3fe",
+      "bytes": 79285,
+      "sourceUrl": "https://alasky.cds.unistra.fr/AllWISE/W3/Norder0/Dir0/Npix7.jpg"
+    },
+    {
+      "pixel": 8,
+      "file": "Norder0/Dir0/Npix8.jpg",
+      "sha256": "f070ca177175e5b2c9ee3c1a807624d4216a539ea8c109d32c4eedce2bc96627",
+      "bytes": 24827,
+      "sourceUrl": "https://alasky.cds.unistra.fr/AllWISE/W3/Norder0/Dir0/Npix8.jpg"
+    },
+    {
+      "pixel": 9,
+      "file": "Norder0/Dir0/Npix9.jpg",
+      "sha256": "9baba5899e251fe8ecd19cc1c1956acdcb5f2ba11e046415f674f3c98b51ea9c",
+      "bytes": 66700,
+      "sourceUrl": "https://alasky.cds.unistra.fr/AllWISE/W3/Norder0/Dir0/Npix9.jpg"
+    },
+    {
+      "pixel": 10,
+      "file": "Norder0/Dir0/Npix10.jpg",
+      "sha256": "af2505a4ec2c4e7726f9161d0251f08e9254068d1c11bbfd6c21e8c09ea184f7",
+      "bytes": 82669,
+      "sourceUrl": "https://alasky.cds.unistra.fr/AllWISE/W3/Norder0/Dir0/Npix10.jpg"
+    },
+    {
+      "pixel": 11,
+      "file": "Norder0/Dir0/Npix11.jpg",
+      "sha256": "48fe53d53e640223df92ef5a7a793a9552bd55f6e2a9619214d71cd1a13c0f4d",
+      "bytes": 45171,
+      "sourceUrl": "https://alasky.cds.unistra.fr/AllWISE/W3/Norder0/Dir0/Npix11.jpg"
+    }
+  ],
+  "propertiesSha256": "08a100c7d7af37e79141b2658154c83b3615dba79ed98a1727ee89321ba4ad7c"
+}

@@ -4,6 +4,8 @@ import { createHash } from "node:crypto";
 import raw from "../data/bsc5p-bright-stars.v1.json" with { type: "json" };
 import extended from "../data/bsc5p-bright-stars.v2.json" with { type: "json" };
 import extendedManifest from "../data/bsc5p-bright-stars.v2.manifest.json" with { type: "json" };
+import revised from "../data/bsc5p-bright-stars.v3.json" with { type: "json" };
+import revisedManifest from "../data/bsc5p-bright-stars.v3.manifest.json" with { type: "json" };
 import { bsc5pRowByReference, loadBsc5pBrightStarCatalog, loadBsc5pStarCatalog, positionBsc5pCatalog, propagateBsc5p, validateBsc5pPack } from "./bsc5p-catalog.ts";
 
 test("real BSC5P subset binds bytes, J2000 identity, original photometry and recognizable names", () => {
@@ -48,6 +50,23 @@ test("extended default preserves original astrometry and explicit v1 remains rea
   assert.equal(explicit.manifest.sources.nameIdentities?.responseSha256, extendedManifest.sources.nameIdentities.responseSha256);
   assert.throws(() => validateBsc5pPack({ ...extended, rows: extended.rows.slice(1) }, "bsc5p-bright-stars.v2"), /identity/);
   assert.equal(loadBsc5pBrightStarCatalog().rows.length, 8404);
+});
+
+test("Acrux revision has a distinct immutable hash and only names its explicit IAU component", () => {
+  const old = loadBsc5pStarCatalog("bsc5p-bright-stars.v2");
+  const next = loadBsc5pStarCatalog("bsc5p-bright-stars.v3");
+  assert.equal(loadBsc5pBrightStarCatalog(), old);
+  assert.equal(next.catalogHash, revisedManifest.derivedAssetSha256);
+  assert.notEqual(next.catalogHash, old.catalogHash);
+  assert.equal(revisedManifest.derivation.basePublication.assetSha256, old.catalogHash);
+  assert.equal(createHash("sha256").update(JSON.stringify(revised)).digest("hex"), next.catalogHash);
+  assert.equal(next.rows.length, old.rows.length);
+  const differences = next.rows.flatMap((row, index) => Object.entries(row)
+    .filter(([key, value]) => value !== old.rows[index]![key as keyof typeof row])
+    .map(([key]) => [row.sourceId, key]));
+  assert.deepEqual(differences, [["HR:4730", "properName"]]);
+  assert.equal(next.rows.find(row => row.sourceId === "HR:4730")?.properName, "Acrux");
+  assert.equal(next.rows.find(row => row.sourceId === "HR:4731")?.properName, null);
 });
 
 test("malformed identity, nonstellar rows, epoch, units and duplicate rows are rejected", () => {

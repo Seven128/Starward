@@ -26,6 +26,7 @@ function effectWith(marker: string) {
 const entry = { objectRef: "M:31", displayName: "M31" };
 const coarse = { reference: "M:31", level: "OVERVIEW", fieldDegrees: 4, tempFilePath: "/m31-overview.jpg", image: {}, canvasGeneration: 1, release() {} };
 const fine = { ...coarse, level: "DETAIL", tempFilePath: "/m31-detail.jpg" };
+const { image: _image, canvasGeneration: _generation, ...coarseFile } = coarse;
 
 function callbackWith(name: string, bindings: Record<string, unknown>) {
   let callback: ts.Expression | undefined;
@@ -41,13 +42,61 @@ test("file owners keep usable coarse recovery data but release replaced and clea
   const removed: string[] = [];
   const file = (tempFilePath: string) => { let released = false; return { tempFilePath, release() { if (!released) { released = true; removed.push(tempFilePath); } } }; };
   const a = file("coarse"), b = file("failed-fine"), c = file("retry-fine");
-  const bindings = { deepSkyImageFileRef: { current: null }, canvasDeepSkyImageRef: { current: null }, storeDeepSkyImageAsset() {}, storeCanvasDeepSkyImage() {} };
+  const bindings = { deepSkyImageFileRef: { current: null }, canvasDeepSkyImageRef: { current: null },
+    deepSkyRecoveryFileRef: { current: null }, storeDeepSkyImageAsset() {}, storeCanvasDeepSkyImage() {} };
   const requested = callbackWith("setDeepSkyImageAsset", bindings), decoded = callbackWith("setCanvasDeepSkyImage", bindings);
   requested(a); decoded(a); requested(b); assert.deepEqual(removed, []);
   requested(c); assert.deepEqual(removed, ["failed-fine"]);
   decoded(c); assert.deepEqual(removed, ["failed-fine", "coarse"]);
   requested(null); assert.deepEqual(removed, ["failed-fine", "coarse"], "decoded file remains owned for canvas recovery");
   decoded(null); assert.deepEqual(removed, ["failed-fine", "coarse", "retry-fine"]);
+});
+
+test("native retirement keeps only recovery metadata and later replacement releases the coarse file", () => {
+  const removed: string[] = [], shown: unknown[] = [];
+  const file = (tempFilePath: string) => ({ reference: "M:31", level: "OVERVIEW", fieldDegrees: 4,
+    tempFilePath, release() { removed.push(tempFilePath); } });
+  const old = file("old-coarse"), fine = file("new-fine");
+  const bindings = { deepSkyImageFileRef: { current: null }, canvasDeepSkyImageRef: { current: null as any },
+    deepSkyRecoveryFileRef: { current: null as any }, storeDeepSkyImageAsset() {}, storeCanvasDeepSkyImage(value: unknown) { shown.push(value); } };
+  const requested = callbackWith("setDeepSkyImageAsset", bindings), decoded = callbackWith("setCanvasDeepSkyImage", bindings);
+  const retire = callbackWith("retireDeepSkyDecode", bindings) as () => void;
+  const bitmap = { onload() {}, onerror() {} };
+  requested(old); decoded({ ...old, image: bitmap, canvasGeneration: 1 }); requested(fine);
+  retire(); retire();
+  assert.equal(bindings.canvasDeepSkyImageRef.current, null);
+  assert.equal(shown.at(-1), null); assert.deepEqual(removed, []);
+  assert.equal(bitmap.onload, null); assert.equal(bitmap.onerror, null);
+  assert.equal(bindings.deepSkyRecoveryFileRef.current.tempFilePath, old.tempFilePath);
+  assert.equal("image" in bindings.deepSkyRecoveryFileRef.current, false);
+  assert.equal("canvasGeneration" in bindings.deepSkyRecoveryFileRef.current, false);
+  decoded({ ...fine, image: { onload: null, onerror: null }, canvasGeneration: 2 });
+  assert.deepEqual(removed, [old.tempFilePath]);
+  requested(null); decoded(null);
+  assert.deepEqual(removed, [old.tempFilePath, fine.tempFilePath]);
+});
+
+test("the production Canvas release port retires deep-sky pixels on reset or GPU failure", () => {
+  let releasePort: ts.Expression | undefined;
+  function visit(node: ts.Node) {
+    if (ts.isPropertyAssignment(node) && node.name.getText(source) === "releaseContext") releasePort = node.initializer;
+    ts.forEachChild(node, visit);
+  }
+  visit(source); assert.ok(releasePort);
+  const bindings = { canvasNodeRef: { current: {} as object | null }, canvasGenerationRef: { current: 1 },
+    canvasDeepSkyImageRef: { current: { image: { onload() {}, onerror() {} } } as any },
+    storeCanvasDeepSkyImage(value: unknown) { assert.equal(value, null); }, retireDeepSkyDecodeRef: { current: () => {} } };
+  bindings.retireDeepSkyDecodeRef.current = callbackWith("retireDeepSkyDecode", bindings) as () => void;
+  const release = vm.runInNewContext(ts.transpileModule(`(${releasePort.getText(source)})`,
+    { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, bindings) as (context: { dispose(): void }) => void;
+  let released = false;
+  release({ dispose() {
+    assert.equal(bindings.canvasNodeRef.current, null);
+    assert.equal(bindings.canvasDeepSkyImageRef.current, null);
+    assert.equal(bindings.canvasGenerationRef.current, 2);
+    released = true;
+  } });
+  assert.equal(released, true);
 });
 
 test("hiding cancels an image request and showing restarts only the current level", () => {
@@ -73,45 +122,80 @@ function decoder() {
     pageVisible: true, selectedDeepSkyEntry: entry, desiredDeepSkyImageLevel: "DETAIL", deepSkyImageAsset: fine,
     deepSkyImageFailureRef: { current: null }, canvasNodeRevision: 1, canvasNodeRef: { current: { createImage() { const image = {}; images.push(image); return image; } } },
     canvasGenerationRef: { current: 1 }, canvasDeepSkyImageRef: { current: coarse as unknown },
-    setCanvasDeepSkyImage(value: unknown) { painted = typeof value === "function" ? value(painted) : value; bindings.canvasDeepSkyImageRef.current = painted; },
+    deepSkyRecoveryFileRef: { current: coarseFile as unknown },
+    setCanvasDeepSkyImage(value: unknown) {
+      painted = typeof value === "function" ? value(painted) : value;
+      bindings.canvasDeepSkyImageRef.current = painted;
+      if (painted) {
+        const { image, canvasGeneration, ...file } = painted as typeof coarse;
+        bindings.deepSkyRecoveryFileRef.current = file;
+      } else bindings.deepSkyRecoveryFileRef.current = null;
+    },
+    retireDeepSkyDecode() { painted = null; bindings.canvasDeepSkyImageRef.current = null; },
     setDeepSkyImageState(value: string) { state = value; },
   };
-  return { render, bindings, images, get painted() { return painted; }, get state() { return state; } };
+  return { render, bindings, images, painted() { return painted; }, get state() { return state; } };
 }
+
+test("hide retires the old native bitmap while preserving only its coarse recovery file through the node gap", () => {
+  const h = decoder(); h.render(h.bindings);
+  const pending = h.images[0]!.onload;
+  h.render({ ...h.bindings, pageVisible: false });
+  assert.equal(h.painted(), null, "hidden native pixels cannot keep the old Canvas image graph");
+  assert.equal(h.bindings.canvasDeepSkyImageRef.current, null);
+  assert.equal(h.bindings.deepSkyRecoveryFileRef.current, coarseFile);
+  assert.equal("image" in (h.bindings.deepSkyRecoveryFileRef.current as object), false);
+  pending?.(); assert.equal(h.painted(), null);
+  h.bindings.canvasGenerationRef.current = 2;
+  h.render({ ...h.bindings, canvasNodeRef: { current: null } });
+  assert.equal(h.painted(), null); assert.equal(h.images.length, 1);
+  assert.equal(h.bindings.deepSkyRecoveryFileRef.current, coarseFile, "a not-yet-rebuilt node cannot discard the recovery file");
+  h.render({ ...h.bindings, canvasNodeRevision: 2 });
+  assert.equal(h.images.length, 3, "coarse and fine re-decode into the new generation");
+  h.images[1]!.onload?.(); h.images[2]!.onerror?.();
+  assert.equal((h.painted() as typeof coarse).canvasGeneration, 2);
+  assert.equal((h.painted() as typeof coarse).tempFilePath, coarse.tempFilePath);
+  assert.notEqual((h.painted() as typeof coarse).image, coarse.image);
+  assert.equal(h.state, "ERROR", "fine failure preserves successfully re-decoded coarse pixels");
+});
 
 test("failed fine decode and retry keep the coarse image until successful replacement", () => {
   const h = decoder(); h.render(h.bindings);
-  assert.equal(h.painted, coarse); h.images[0]!.onerror?.();
-  assert.equal(h.painted, coarse); assert.equal(h.state, "ERROR");
-  h.render({ ...h.bindings, deepSkyImageAsset: null }); assert.equal(h.painted, coarse);
+  assert.equal(h.painted(), coarse); h.images[0]!.onerror?.();
+  assert.equal(h.painted(), coarse); assert.equal(h.state, "ERROR");
+  h.render({ ...h.bindings, deepSkyImageAsset: null }); assert.equal(h.painted(), coarse);
   h.render(h.bindings); h.images[1]!.onload?.();
-  assert.equal((h.painted as typeof fine).tempFilePath, fine.tempFilePath); assert.equal(h.state, "READY");
+  assert.equal((h.painted() as typeof fine).tempFilePath, fine.tempFilePath); assert.equal(h.state, "READY");
 });
 
-test("hidden decoding cannot publish late pixels or erase the retained view", () => {
+test("hidden decoding cannot publish late pixels or erase the retained recovery file", () => {
   const h = decoder(); h.render(h.bindings); const late = h.images[0]!.onload!;
   h.render({ ...h.bindings, pageVisible: false }); late();
-  assert.equal(h.painted, coarse);
-  h.render(h.bindings); assert.equal(h.images.length, 2);
-  h.images[1]!.onload?.(); assert.equal((h.painted as typeof fine).tempFilePath, fine.tempFilePath);
+  assert.equal(h.painted(), null);
+  assert.equal((h.bindings.deepSkyRecoveryFileRef.current as typeof coarseFile).tempFilePath, coarse.tempFilePath);
+  h.render(h.bindings); assert.equal(h.images.length, 3);
+  h.images[2]!.onload?.(); h.images[1]!.onload?.();
+  assert.equal((h.painted() as typeof fine).tempFilePath, fine.tempFilePath);
 });
 
 test("a retained coarse level cannot mark a pending fine request ready", () => {
   const h = decoder(); h.render({ ...h.bindings, deepSkyImageAsset: coarse });
-  assert.equal(h.painted, coarse); assert.equal(h.images.length, 0); assert.equal(h.state, "LOADING");
+  assert.equal(h.painted(), coarse); assert.equal(h.images.length, 0); assert.equal(h.state, "LOADING");
 });
 
 test("show before native canvas reconstruction retains coarse recovery until re-decode", () => {
   const h = decoder(); h.render(h.bindings); h.images[0]!.onerror?.();
   h.render({ ...h.bindings, pageVisible: false, canvasNodeRef: { current: null } });
   h.render({ ...h.bindings, canvasNodeRef: { current: null } });
-  assert.equal(h.painted, coarse, "show must not release the last usable file while the node is absent");
+  assert.equal(h.painted(), null, "the node gap cannot retain the retired native bitmap");
+  assert.equal((h.bindings.deepSkyRecoveryFileRef.current as typeof coarseFile).tempFilePath, coarse.tempFilePath,
+    "show must not release the last usable file while the node is absent");
   h.bindings.canvasGenerationRef.current = 2;
   h.render({ ...h.bindings, canvasNodeRevision: 2 });
   assert.equal(h.images[1]!.src, coarse.tempFilePath);
   h.images[1]!.onload?.(); h.images[2]!.onerror?.();
-  assert.equal((h.painted as typeof coarse).tempFilePath, coarse.tempFilePath);
-  assert.equal((h.painted as typeof coarse).canvasGeneration, 2);
+  assert.equal((h.painted() as typeof coarse).tempFilePath, coarse.tempFilePath);
+  assert.equal((h.painted() as typeof coarse).canvasGeneration, 2);
   assert.equal(h.state, "ERROR");
 });
 
@@ -121,27 +205,27 @@ test("resuming a failed decode starts a new loading transition before success or
   h.render({ ...h.bindings, pageVisible: false });
   h.render(h.bindings); assert.equal(h.state, "LOADING");
   assert.equal(h.bindings.deepSkyImageFailureRef.current, null);
-  h.images[1]!.onerror?.(); assert.equal(h.state, "ERROR");
-  assert.equal(h.painted, coarse);
+  h.images[1]!.onload?.(); h.images[2]!.onerror?.(); assert.equal(h.state, "ERROR");
+  assert.equal((h.painted() as typeof coarse).tempFilePath, coarse.tempFilePath);
 });
 
 test("switching object cannot retain the previous object's pixels", () => {
   const h = decoder(); h.render({ ...h.bindings, selectedDeepSkyEntry: { objectRef: "M:42" }, deepSkyImageAsset: null });
-  assert.equal(h.painted, null);
+  assert.equal(h.painted(), null);
 });
 
 test("native generation changes reject queued decode before React cleanup", () => {
   const h = decoder(); h.render(h.bindings);
   h.bindings.canvasGenerationRef.current = 2;
   h.images[0]!.onload?.(); h.images[0]!.onerror?.();
-  assert.equal(h.painted, coarse); assert.equal(h.state, "LOADING");
+  assert.equal(h.painted(), coarse); assert.equal(h.state, "LOADING");
 });
 
 test("synchronous native decoder failures are retryable and coarse failure cannot prevent fine decode", () => {
   const createFailure = decoder();
   createFailure.bindings.canvasNodeRef.current.createImage = () => { throw new Error("native image unavailable"); };
   assert.doesNotThrow(() => createFailure.render(createFailure.bindings));
-  assert.equal(createFailure.state, "ERROR"); assert.equal(createFailure.painted, coarse);
+  assert.equal(createFailure.state, "ERROR"); assert.equal(createFailure.painted(), coarse);
 
   const sourceFailure = decoder();
   const image = { onload: null, onerror: null };
@@ -158,7 +242,7 @@ test("synchronous native decoder failures are retryable and coarse failure canno
   };
   assert.doesNotThrow(() => fallbackFailure.render({ ...fallbackFailure.bindings, canvasNodeRevision: 2 }));
   assert.equal(creates, 2); fallbackFailure.images[0]!.onload?.();
-  assert.equal(fallbackFailure.state, "READY"); assert.equal((fallbackFailure.painted as typeof fine).tempFilePath, fine.tempFilePath);
+  assert.equal(fallbackFailure.state, "READY"); assert.equal((fallbackFailure.painted() as typeof fine).tempFilePath, fine.tempFilePath);
 });
 
 test("new native canvas redecodes retained coarse pixels and late coarse cannot replace fine", () => {
@@ -167,17 +251,17 @@ test("new native canvas redecodes retained coarse pixels and late coarse cannot 
   h.render({ ...h.bindings, canvasNodeRevision: 2 });
   assert.equal(h.images.length, 2);
   h.images[0]!.onload?.();
-  assert.notEqual((h.painted as typeof coarse).image, coarse.image);
-  assert.equal((h.painted as typeof coarse).canvasGeneration, 2);
-  assert.equal((h.painted as typeof coarse).tempFilePath, coarse.tempFilePath);
+  assert.notEqual((h.painted() as typeof coarse).image, coarse.image);
+  assert.equal((h.painted() as typeof coarse).canvasGeneration, 2);
+  assert.equal((h.painted() as typeof coarse).tempFilePath, coarse.tempFilePath);
   assert.equal(h.state, "LOADING");
   h.images[1]!.onerror?.(); assert.equal(h.state, "ERROR");
-  assert.equal((h.painted as typeof coarse).tempFilePath, coarse.tempFilePath);
+  assert.equal((h.painted() as typeof coarse).tempFilePath, coarse.tempFilePath);
 
   const fineFirst = decoder(); fineFirst.bindings.canvasGenerationRef.current = 2;
   fineFirst.render({ ...fineFirst.bindings, canvasNodeRevision: 2 });
   fineFirst.images[1]!.onload?.(); fineFirst.images[0]!.onload?.();
-  assert.equal((fineFirst.painted as typeof fine).tempFilePath, fine.tempFilePath);
+  assert.equal((fineFirst.painted() as typeof fine).tempFilePath, fine.tempFilePath);
   assert.equal(fineFirst.state, "READY");
 });
 

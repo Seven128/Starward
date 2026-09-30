@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "starward-clementine-moon-v1",
+  "publicationId": "moon-clementine-uv750-v2-wms-2048x1024-20260928-metadata",
+  "source": {
+    "title": "Clementine uv750 Global Basemap v2 Mosaic",
+    "provider": "USGS Astrogeology Science Center",
+    "recordUrl": "https://astrogeology.usgs.gov/search/map/moon_clementine_uvvis_global_mosaic_118m",
+    "rightsUrl": "https://www.usgs.gov/faqs/are-usgs-reportspublications-copyrighted",
+    "credit": "USGS Astrogeology Science Center / Clementine UVVIS",
+    "wmsUrl": "https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/earth/moon_simp_cyl.map&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=uv_v2&STYLES=&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TRANSPARENT=FALSE"
+  },
+  "projection": {
+    "kind": "simple-cylindrical",
+    "latitude": "planetocentric",
+    "longitude": "positive-east",
+    "bboxDeg": [-180, -90, 180, 90]
+  },
+  "image": {
+    "file": "clementine-uv750-v2-wms-2048x1024.jpg",
+    "sha256": "e071f796a1ec1f7c9f4d87660aabb1bb40adbfacc0ecb253919bee6c711efefb",
+    "bytes": 372399,
+    "width": 2048,
+    "height": 1024
+  },
+  "processing": "USGS WMS uv_v2 global 750 nm mosaic exported at 2048x1024 JPEG, EPSG:4326, without project recoloring; immutable SHA-256-bound copy.",
+  "limitations": [
+    "1994 Clementine 750 nm grayscale mosaic, not natural color or a current LROC image.",
+    "Original missing-data regions occur at middle and low latitudes as well as the poles. Some appear as dark rectangular patches in this opaque export; these patches are not lunar terrain or current shadows.",
+    "WMS resampling and JPEG artifacts limit surface detail; brightness is not calibrated visual photometry. This export has no validity mask, so near-black pixels must not be treated uniformly as missing data."
+  ]
+}

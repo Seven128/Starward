@@ -2,7 +2,9 @@ import { catalogJsonIntegrity } from './catalog-json-integrity.ts';
 import { isSaoStarReference } from './celestial-identity.ts';
 export { isSaoStarReference } from './celestial-identity.ts';
 
-export const SAO_SUPPLEMENT_VERSION='sao-visual-supplement.v1';
+export const SAO_SUPPLEMENT_VERSION='sao-visual-supplement.v2';
+export const SAO_LEGACY_SUPPLEMENT_VERSION='sao-visual-supplement.v1';
+export type SaoSupplementVersion=typeof SAO_SUPPLEMENT_VERSION|typeof SAO_LEGACY_SUPPLEMENT_VERSION;
 export const SAO_MAX_TILE_ROWS=768;
 export const SAO_MAX_TILE_BYTES=192*1024;
 export type SaoStellarRow=readonly [string,number,number,number,number,number,number,number];
@@ -12,8 +14,8 @@ export interface SaoTileReference {
   minMagnitude:number; maxMagnitude:number;
 }
 export interface SaoSpatialIndex {
-  schemaVersion:'sao-stellar-index-v1'; catalogVersion:typeof SAO_SUPPLEMENT_VERSION; catalogHash:string;
-  baseCatalogVersion:'bsc5p-bright-stars.v2'; baseAssetSha256:string;
+  schemaVersion:'sao-stellar-index-v1'; catalogVersion:SaoSupplementVersion; catalogHash:string;
+  baseCatalogVersion:'bsc5p-bright-stars.v2'|'bsc5p-bright-stars.v3'; baseAssetSha256:string;
   frame:'FK5';referenceEpoch:2000;magnitudeBand:'VISUAL';magnitudeLimit:10;rowCount:246280;
   maximumTileBytes:typeof SAO_MAX_TILE_BYTES;maximumTileRows:typeof SAO_MAX_TILE_ROWS;
   geometry:string;partition:string;coverage:string;
@@ -23,7 +25,7 @@ export interface SaoSpatialIndex {
 }
 export interface SaoIndexPublication { publicationHash:string; index:SaoSpatialIndex; }
 export interface SaoStellarTile {
-  schemaVersion:'sao-stellar-tile-v1';catalogVersion:typeof SAO_SUPPLEMENT_VERSION;catalogHash:string;
+  schemaVersion:'sao-stellar-tile-v1';catalogVersion:SaoSupplementVersion;catalogHash:string;
   tileId:string;rows:readonly SaoStellarRow[];
 }
 export interface SaoTilePublication { publicationHash:string;tile:SaoStellarTile; }
@@ -36,8 +38,10 @@ const fail=(reason:string):never=>{throw new TypeError(`sao_publication_invalid:
  */
 export function assertSaoIndexPublication(value:unknown):asserts value is SaoIndexPublication {
   const p=value as SaoIndexPublication,i=p?.index;
-  if(!p||!hash(p.publicationHash)||!i||i.schemaVersion!=='sao-stellar-index-v1'||i.catalogVersion!==SAO_SUPPLEMENT_VERSION||!hash(i.catalogHash)||
-    i.baseCatalogVersion!=='bsc5p-bright-stars.v2'||!hash(i.baseAssetSha256)||i.frame!=='FK5'||i.referenceEpoch!==2000||
+  const expectedBase=i?.catalogVersion===SAO_LEGACY_SUPPLEMENT_VERSION?'bsc5p-bright-stars.v2':
+    i?.catalogVersion===SAO_SUPPLEMENT_VERSION?'bsc5p-bright-stars.v3':null;
+  if(!p||!hash(p.publicationHash)||!i||i.schemaVersion!=='sao-stellar-index-v1'||!expectedBase||!hash(i.catalogHash)||
+    i.baseCatalogVersion!==expectedBase||!hash(i.baseAssetSha256)||i.frame!=='FK5'||i.referenceEpoch!==2000||
     i.magnitudeBand!=='VISUAL'||i.magnitudeLimit!==10||i.rowCount!==246280||i.maximumTileBytes!==SAO_MAX_TILE_BYTES||i.maximumTileRows!==SAO_MAX_TILE_ROWS||
     ![i.geometry,i.partition,i.coverage].every(v=>typeof v==='string'&&v.length>0&&v.length<1000)||
     !Array.isArray(i.tiles)||i.tiles.length<1||i.tiles.length>4096) fail('index_shape');
@@ -68,7 +72,7 @@ export function assertSaoIndexPublication(value:unknown):asserts value is SaoInd
 export function assertSaoTilePublication(value:unknown,expectedPublication:SaoIndexPublication,expectedTile:SaoTileReference):asserts value is SaoTilePublication {
   const p=value as SaoTilePublication,t=p?.tile;
   if(!p||p.publicationHash!==expectedPublication.publicationHash||!t||t.schemaVersion!=='sao-stellar-tile-v1'||
-    t.catalogVersion!==SAO_SUPPLEMENT_VERSION||t.catalogHash!==expectedPublication.index.catalogHash||t.tileId!==expectedTile.id||
+    t.catalogVersion!==expectedPublication.index.catalogVersion||t.catalogHash!==expectedPublication.index.catalogHash||t.tileId!==expectedTile.id||
     !Array.isArray(t.rows)||t.rows.length!==expectedTile.rowCount) fail('tile_identity');
   let previous=0;
   for(const r of t.rows){

@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { NotFoundException } from '@nestjs/common';
 import { saoCatalogSource } from './sao-catalog-source.ts';
-import { loadBsc5pBrightStarCatalog } from '@starward/astronomy-core/bsc5p-catalog';
+import { loadBsc5pStarCatalog } from '@starward/astronomy-core/bsc5p-catalog';
 import { assertSaoIndexPublication, assertSaoTilePublication, type ApiEnvelope, type SaoIndexPublication,
   type SaoTilePublication, type SourceSummary } from '@starward/miniapp-contracts';
 
@@ -34,7 +34,7 @@ export class SaoPublicationService {
       manifest.catalogHash!==index.catalogHash||manifest.catalogVersion!==index.catalogVersion||
       manifest.tileCount!==index.tiles?.length||manifest.rowCount!==index.rowCount)throw Error('sao_publication_manifest_invalid');
     const data={publicationHash:manifest.publicationHash,index};assertSaoIndexPublication(data);
-    const base=loadBsc5pBrightStarCatalog();
+    const base=loadBsc5pStarCatalog(data.index.baseCatalogVersion);
     if(data.index.baseCatalogVersion!==base.catalogVersion||data.index.baseAssetSha256!==base.catalogHash)throw Error('sao_base_catalog_mismatch');
     return envelope(data,data.publicationHash,[saoCatalogSource(data.index)]);
   }

@@ -43,6 +43,82 @@ test("published AllWISE service reads a verified local W3 asset without a runtim
   assert.equal(result.sourceLabel, "NASA/IPAC IRSA - AllWISE W3 12um");
 });
 
+test("new image opt-in and painted-image source binding retain both legacy publication offers", async () => {
+  const { root, manifestPath, manifestUrl } = await fixture();
+  const v1 = JSON.parse(await readFile(manifestPath, "utf8"));
+  const hash = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+  const v1Hash = hash(v1);
+  const v2 = structuredClone(v1);
+  v2.schemaVersion = "allwise-w3-deep-sky-publication-v2";
+  v2.previousPublicationHash = v1Hash;
+  for (const asset of Object.values(v2.entries[0].levels) as Array<Record<string, unknown>>) {
+    asset.validFraction = null;
+    asset.coverageState = "NOT_MEASURED";
+  }
+  const v2Hash = hash(v2);
+  await mkdir(join(root, "publications"));
+  await writeFile(join(root, "publications", `${v1Hash}.json`), JSON.stringify(v1));
+  await writeFile(join(root, "publications", `${v2Hash}.json`), JSON.stringify(v2));
+  const v3 = structuredClone(v2);
+  v3.schemaVersion = "allwise-w3-deep-sky-publication-v3";
+  delete v3.previousPublicationHash;
+  v3.previousPublicationHashes = [v2Hash, v1Hash];
+  v3.legacyPublicationHash = v2Hash;
+  v3.publicationId = "trial-source-finite";
+  v3.entries[0].levels.DETAIL.fieldDegrees = 1.5;
+  await writeFile(manifestPath, JSON.stringify(v3));
+  const service = new DeepSkyImageryService(manifestUrl);
+  assert.equal((await service.get("M:31", "DETAIL")).fieldDegrees, 1.9,
+    "an old client keeps its JPEG publication without opting in");
+  const current = await service.get("M:31", "DETAIL", undefined, "source-finite-v3");
+  assert.equal(current.fieldDegrees, 1.5);
+  assert.equal(current.publicationHash, hash(v3));
+  assert.equal(service.manifest(v1Hash).schemaVersion, v1.schemaVersion);
+  assert.equal(service.manifest(v2Hash).schemaVersion, v2.schemaVersion);
+  assert.equal((await service.get("M:31", "DETAIL", v1Hash, "source-finite-v3")).fieldDegrees, 1.9,
+    "a bound old source always returns its own image despite the new opt-in");
+  await assert.rejects(service.get("M:31", "DETAIL", "0".repeat(64), "source-finite-v3"), /not_found/u);
+});
+
+test("unmeasured JPEG coverage is distinct from full coverage and preserves the previous publication", async () => {
+  const { root, manifestPath, manifestUrl } = await fixture();
+  const previous = JSON.parse(await readFile(manifestPath, "utf8"));
+  const previousHash = createHash("sha256").update(JSON.stringify(previous)).digest("hex");
+  await mkdir(join(root, "publications"));
+  await writeFile(join(root, "publications", `${previousHash}.json`), JSON.stringify(previous));
+  const current = structuredClone(previous);
+  current.schemaVersion = "allwise-w3-deep-sky-publication-v2";
+  current.previousPublicationHash = previousHash;
+  for (const asset of Object.values(current.entries[0].levels) as Array<Record<string, unknown>>) {
+    asset.validFraction = null;
+    asset.coverageState = "NOT_MEASURED";
+  }
+  await writeFile(manifestPath, JSON.stringify(current));
+  const service = new DeepSkyImageryService(manifestUrl);
+  assert.deepEqual((await service.get("M:31", "DETAIL")).bytes, jpeg);
+  const historical = service.manifest(previousHash);
+  assert.equal(historical.schemaVersion, previous.schemaVersion);
+  assert.equal(historical.entries[0]!.levels.DETAIL.validFraction, 1);
+  assert.deepEqual((await service.get("M:31", "DETAIL", previousHash)).bytes, jpeg);
+  assert.equal(historical.entries[0]!.levels.DETAIL.downloadUrl,
+    `/v2/celestial-objects/M%3A31/image?level=DETAIL&publicationHash=${previousHash}`);
+  const forged = structuredClone(current);
+  forged.entries[0].levels.DETAIL.validFraction = 1;
+  await writeFile(manifestPath, JSON.stringify(forged));
+  await assert.rejects(new DeepSkyImageryService(manifestUrl).get("M:31"), /publication_invalid/u);
+  await writeFile(manifestPath, JSON.stringify(current));
+  previous.entries[0].levels.DETAIL.fieldDegrees = .3;
+  await writeFile(join(root, "publications", `${previousHash}.json`), JSON.stringify(previous));
+  const recovery = new DeepSkyImageryService(manifestUrl);
+  assert.throws(() => recovery.manifest(previousHash), /not_found/u);
+  assert.deepEqual((await recovery.get("M:31", "DETAIL")).bytes, jpeg,
+    "a damaged historical offer cannot remove independently valid current imagery");
+  previous.entries[0].levels.DETAIL.fieldDegrees = 1.9;
+  await writeFile(join(root, "publications", `${previousHash}.json`), JSON.stringify(previous));
+  assert.equal(recovery.manifest(previousHash).publicationHash, previousHash,
+    "failed historical metadata is not cached against a later recovery");
+});
+
 test("default publication serves representative galaxy and nebula detail assets", async () => {
   const service = new DeepSkyImageryService();
   const results = await Promise.all(["M:31", "M:42", "M:101"].map(reference => service.get(reference, "DETAIL")));

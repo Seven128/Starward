@@ -17,6 +17,7 @@ apps/wechat-miniapp/src/**/*.tsx text eol=lf
 apps/wechat-miniapp/src/**/*.scss text eol=lf
 Makefile text eol=lf
 *.png binary
+workers/miniapp-api/assets/deep-sky/wide-field-w3/properties text eol=lf
 *.woff2 binary
 workers/miniapp-api/assets/constellations/*.fab text eol=lf
 workers/miniapp-api/assets/constellations/*.ini text eol=lf
@@ -25,3 +26,16 @@ workers/miniapp-api/assets/timezone/asia-macau-2026d.geojson -text whitespace=-t
 tools/miniapp/semantic-art.mjs text eol=lf
 # Preserve exported resources and evidence exactly for their recorded content hashes.
 docs/design-resources/wechat-miniapp/** -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+# Preserve the original Cloud Sky requirement/Goal bytes and their recorded hashes.
+.codex/work-items/cloud-sky-native-2026-09-22/request-original.txt -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+.codex/work-items/cloud-sky-native-2026-09-22/GOAL-OBJECTIVE-CORRECTED-2026-09-28.md -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+.codex/work-items/cloud-sky-native-2026-09-22/GOAL-OBJECTIVE-HANDOFF-2026-09-28.md -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+# These existing publication/provenance bytes are part of recorded Sky identities.
+packages/astronomy-core/data/bsc5p-bright-stars.v3.manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+packages/astronomy-core/data/stellarium-modern-v24.4.v3.manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+workers/miniapp-api/assets/constellations/NOTICE.txt -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+workers/miniapp-api/assets/deep-sky/galactic-2mass/manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+workers/miniapp-api/assets/landscape/LICENSE.txt -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+workers/miniapp-api/assets/moon/coverage-manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+workers/miniapp-api/assets/neptune/manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+workers/miniapp-api/assets/uranus/manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol

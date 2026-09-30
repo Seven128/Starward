@@ -800,8 +800,8 @@
   color: var(--text-primary);
 }
 
-/* Current adopted Cloud Stargazing references keep the actual sky deep and
- * dark in both ordinary app modes without changing the global mode owner. */
+/* Keep the observing sky dark in ordinary app modes without changing the
+ * global mode owner. The former Cloud Stargazing mockup is no longer adopted. */
 .theme-day.sky-orientation-page,
 .theme-night.sky-orientation-page {
   --canvas: #080d17;
@@ -870,6 +870,8 @@
   background: var(--canvas);
 }
 
+
+
 .sky-zoom-status {
   position: absolute;
   z-index: 4;
@@ -886,12 +888,25 @@
   pointer-events: none;
 }
 
+.sky-zoom-status--feedback {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  max-width: 70%;
+  text-align: right;
+}
+
+.sky-image-status-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4rpx;
+  margin-top: 8rpx;
+  pointer-events: none;
+}
+
 .sky-image-status {
-  position: absolute;
-  z-index: 4;
-  top: calc(var(--sky-controls-top) + 48rpx);
-  right: 18rpx;
-  max-width: 62vw;
+  max-width: 100%;
   color: var(--text-secondary);
   font-size: 18rpx;
   line-height: 28rpx;
@@ -900,6 +915,7 @@
 }
 
 .sky-image-status button {
+  pointer-events: auto;
   min-height: var(--target-min);
   padding: 8rpx 12rpx;
   border: 0;
@@ -1304,6 +1320,106 @@
 .sky-catalog-row__more::after { border: 0; }
 .sky-catalog-row text:last-child { flex: 0 0 auto; color: var(--text-secondary); font-size: var(--type-metadata-size); }
 .sky-catalog-row__more { justify-content: center; color: var(--primary); border-bottom: 0; }
+.sky-object-search,
+.sky-object-search__results {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  min-width: 0;
+}
+.sky-object-search__input {
+  width: 100%;
+  min-height: var(--target-min);
+  box-sizing: border-box;
+  color: var(--text-primary);
+  background: var(--surface);
+}
+.sky-object-search__result {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2rpx;
+  white-space: normal;
+}
+.sky-object-search__result text { max-width: 100%; overflow-wrap: anywhere; }
+.sky-object-position-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8rpx;
+  padding-bottom: 12rpx;
+}
+.sky-selected-object {
+  position: absolute;
+  z-index: 5;
+  width: var(--target-min);
+  height: var(--target-min);
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  transform: translate(-50%, -50%);
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+}
+.sky-selected-object::after { border: 0; }
+.sky-selected-object__reticle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: sky-selection-breathe 2200ms ease-in-out infinite;
+}
+.sky-selected-object__ring {
+  position: absolute;
+  inset: 0;
+  border: 1Px solid currentColor;
+  border-radius: 50%;
+}
+.sky-selected-object__tick {
+  position: absolute;
+  width: 6Px;
+  height: 1Px;
+  background: currentColor;
+}
+.sky-selected-object__tick--left { left: -10Px; top: 50%; }
+.sky-selected-object__tick--right { right: -10Px; top: 50%; }
+.sky-selected-object__tick--top { left: 50%; top: -7Px; transform: translateX(-50%) rotate(90deg); }
+.sky-selected-object__tick--bottom { left: 50%; bottom: -7Px; transform: translateX(-50%) rotate(90deg); }
+.sky-selected-object--cross .sky-selected-object__tick--left { left: -3Px; width: 9Px; }
+.sky-selected-object--cross .sky-selected-object__tick--right { right: -3Px; width: 9Px; }
+.sky-selected-object--cross .sky-selected-object__tick--top { top: 1Px; width: 9Px; }
+.sky-selected-object--cross .sky-selected-object__tick--bottom { bottom: 1Px; width: 9Px; }
+.sky-selected-object__name {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 1Px 8Px var(--canvas);
+}
+.sky-selected-object--disc > .sky-selected-object__reticle,
+.sky-selected-object--disc > .sky-selected-object__name {
+  visibility: hidden;
+}
+.sky-selected-object--still .sky-selected-object__reticle { animation: none; }
+.sky-selection-status {
+  position: absolute;
+  top: var(--sky-controls-top);
+  right: var(--map-inset);
+  z-index: 6;
+  max-width: 55%;
+  color: var(--text-primary);
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+}
+@keyframes sky-selection-breathe {
+  0%, 100% { opacity: .58; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+}
 .large-text .sky-target-row {
   flex-direction: column;
   align-items: flex-start;
@@ -1607,6 +1723,36 @@
   background: rgba(8, 13, 23, .72);
   color: var(--text-primary);
   pointer-events: auto;
+}
+
+.sky-time-playback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8Px;
+  padding: 8Px 10Px 10Px;
+}
+
+.sky-time-playback__button {
+  min-width: var(--target-min);
+  min-height: var(--target-min);
+  margin: 0;
+  padding: 0 10Px;
+  border: 1Px solid var(--border);
+  border-radius: 10Px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: var(--type-action-size);
+}
+
+.sky-time-playback__button[disabled] { opacity: .48; }
+.sky-time-playback__status {
+  flex-basis: 100%;
+  color: var(--text-secondary);
+  text-align: center;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
 }
 
 .theme-night .sky-orientation-time-ruler {
@@ -1981,6 +2127,20 @@
   color: #ff6b58;
 }
 
+.sky-constellation-label {
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  white-space: nowrap;
+  color: #becbdf;
+  font-size: 12Px;
+  line-height: 18Px;
+  letter-spacing: 1rpx;
+  text-shadow: 0 1Px 6Px #080d17;
+}
+.theme-observation .sky-constellation-label { color: #d84a3c; }
+
 .sky-weather-alerts { max-height: 30vh; }
 
 // Explicit disclosures keep the observing surface free until a control is needed.
@@ -2028,3 +2188,12 @@
   left: 64Px;
 }
 .sky-quick-settings .sky-view-mode { justify-content: flex-end; }
+.sky-object-tracking-status {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 4Px;
+  margin-top: 4Px;
+  color: var(--text-primary);
+}

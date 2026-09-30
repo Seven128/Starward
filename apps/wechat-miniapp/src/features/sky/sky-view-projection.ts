@@ -32,6 +32,11 @@ export interface SkyDirectionProjection {
   readonly altitude: number;
 }
 
+export interface SkyDirectionProjector {
+  project(azimuthDeg: number, altitudeDeg: number): SkyDirectionProjection | null;
+  unclipped(azimuthDeg: number, altitudeDeg: number): SkyDirectionProjection | null;
+}
+
 const DEGREES_TO_RADIANS = Math.PI / 180;
 const BASIS_TOLERANCE = 1e-6;
 
@@ -42,6 +47,15 @@ function finite(value: unknown): value is number {
 function normalizeDegrees(value: number): number {
   const normalized = ((value % 360) + 360) % 360;
   return Object.is(normalized, -0) ? 0 : normalized;
+}
+
+/** Horizontal direction in the same east/north/up frame used by stars and picking. */
+export function skyHorizontalDirection(azimuthDeg: number, altitudeDeg: number): SkyVector | null {
+  if (!finite(azimuthDeg) || !finite(altitudeDeg) || altitudeDeg < -90 || altitudeDeg > 90) return null;
+  const azimuthRad = normalizeDegrees(azimuthDeg) * DEGREES_TO_RADIANS;
+  const altitudeRad = altitudeDeg * DEGREES_TO_RADIANS;
+  const cosAltitude = Math.cos(altitudeRad);
+  return [cosAltitude * Math.sin(azimuthRad), cosAltitude * Math.cos(azimuthRad), Math.sin(altitudeRad)];
 }
 
 function cleanZero(value: number): number {
@@ -185,8 +199,8 @@ export function projectSkyDirection(
   verticalFovDeg: number,
   center?: SkyProjectionCenter,
 ): SkyDirectionProjection | null {
-  const point = projectSkyDirectionUnclipped(azimuthDeg, altitudeDeg, basis, width, height, verticalFovDeg, center);
-  return point && point.x >= -1e-9 && point.x <= width+1e-9 && point.y >= -1e-9 && point.y <= height+1e-9 ? point : null;
+  if (!finite(azimuthDeg) || !finite(altitudeDeg) || altitudeDeg < -90 || altitudeDeg > 90) return null;
+  return createSkyDirectionProjector(basis,width,height,verticalFovDeg,center)?.project(azimuthDeg,altitudeDeg) ?? null;
 }
 
 /** Extended image anchors may leave the viewport while their bitmap still overlaps it.
@@ -202,12 +216,19 @@ export function projectSkyDirectionUnclipped(
   verticalFovDeg: number,
   center?: SkyProjectionCenter,
 ): SkyDirectionProjection | null {
-  if (
-    !finite(azimuthDeg) ||
-    !finite(altitudeDeg) ||
-    altitudeDeg < -90 ||
-    altitudeDeg > 90 ||
-    !validBasis(basis) ||
+  if (!finite(azimuthDeg) || !finite(altitudeDeg) || altitudeDeg < -90 || altitudeDeg > 90) return null;
+  return createSkyDirectionProjector(basis,width,height,verticalFovDeg,center)?.unclipped(azimuthDeg,altitudeDeg) ?? null;
+}
+
+/** One fixed view for a synchronous drawing/geometry job. Validate and retain
+ * its camera/scale once; each direction still uses the original formula and
+ * rejection rules. The next frame creates a new projector, not a global cache.
+ */
+export function createSkyDirectionProjector(
+  basis: SkyViewBasis, width: number, height: number, verticalFovDeg: number,
+  center?: SkyProjectionCenter,
+): SkyDirectionProjector | null {
+  if (!validBasis(basis) ||
     !finite(width) ||
     !finite(height) ||
     width <= 0 ||
@@ -215,38 +236,32 @@ export function projectSkyDirectionUnclipped(
     !finite(verticalFovDeg) ||
     verticalFovDeg <= 0 ||
     verticalFovDeg >= 360
-  )
-    return null;
-
-  const azimuthRad = normalizeDegrees(azimuthDeg) * DEGREES_TO_RADIANS;
-  const altitudeRad = altitudeDeg * DEGREES_TO_RADIANS;
-  const cosAltitude = Math.cos(altitudeRad);
-  // Azimuth is clockwise from north in ENU: x=east, y=north.
-  const direction: SkyVector = [
-    cosAltitude * Math.sin(azimuthRad),
-    cosAltitude * Math.cos(azimuthRad),
-    Math.sin(altitudeRad),
-  ];
-
-  const cameraRight = dot(direction, basis.right);
-  const cameraUp = dot(direction, basis.up);
-  const cameraForward = dot(direction, basis.forward);
-  const denominator = 1 + cameraForward;
-  if (!(denominator > 1e-9)) return null;
-
+  ) return null;
   const scale = skyProjectionScale(height, verticalFovDeg);
   if (scale === null) return null;
-  const x = (center?.x ?? width / 2) + (scale * cameraRight) / denominator;
-  const y = (center?.y ?? height / 2) - (scale * cameraUp) / denominator;
-  if (!finite(x) || !finite(y))
-    return null;
-
-  return {
-    x,
-    y,
-    degrees: normalizeDegrees(azimuthDeg),
-    altitude: altitudeDeg,
+  const originX = center?.x ?? width / 2, originY = center?.y ?? height / 2;
+  if (!finite(originX) || !finite(originY)) return null;
+  const { right, up, forward } = basis;
+  const acceptedRight: SkyVector = [...right];
+  const acceptedUp: SkyVector = [...up];
+  const acceptedForward: SkyVector = [...forward];
+  const unclipped = (azimuthDeg: number, altitudeDeg: number): SkyDirectionProjection | null => {
+    const direction = skyHorizontalDirection(azimuthDeg, altitudeDeg);
+    if (!direction) return null;
+    const cameraRight = dot(direction, acceptedRight);
+    const cameraUp = dot(direction, acceptedUp);
+    const cameraForward = dot(direction, acceptedForward);
+    const denominator = 1 + cameraForward;
+    if (!(denominator > 1e-9)) return null;
+    const x = originX + (scale * cameraRight) / denominator;
+    const y = originY - (scale * cameraUp) / denominator;
+    if (!finite(x) || !finite(y)) return null;
+    return { x, y, degrees: normalizeDegrees(azimuthDeg), altitude: altitudeDeg };
   };
+  return { unclipped, project(azimuthDeg, altitudeDeg) {
+    const point = unclipped(azimuthDeg,altitudeDeg);
+    return point && point.x >= -1e-9 && point.x <= width+1e-9 && point.y >= -1e-9 && point.y <= height+1e-9 ? point : null;
+  } };
 }
 
 /** Stereographic radius = scale * tan(angular distance from center / 2).

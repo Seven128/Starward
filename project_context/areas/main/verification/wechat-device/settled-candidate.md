@@ -2,6 +2,8 @@
 
 This on-demand verification node owns fixed-candidate physical-device verification plus its repeatable preparation and command surface.
 
+For a visibly focused Mini Program field, `miniapp:device -- text --session <directory> --value <public-query>` supports bounded non-secret ASCII queries (letters, digits, spaces, colon, dot, underscore and hyphen; at most 80 characters). It consumes the same fresh screenshot authority as tap, preserves device/bundle/display guards, and rechecks foreground/focus between paced characters. Shell syntax, Unicode and permission-scope text are rejected; a partial failure requires a fresh capture and inspection rather than replay. Text is neither retained in the session nor emitted in the command result. Inspect actual field contents and results: command success alone does not establish correct entry. This is a narrow search-testing aid, not a credential or arbitrary-shell input lane.
+
 ## 2. Settled-Candidate Device Verification
 
 Enter only after cheap checks, warm WEAPP/DevTools feedback and relevant targeted device feedback are stable. Use one clean ordinary preview or applicable experience build, record its complete candidate identity, keep all candidate inputs fixed and, where practical, turn off phone development/debug state. The existing `npm run miniapp:device -- start/capture/capture-permissions/capture-location/tap/swipe/back/remote/inspect/stop` path remains the evidence-level diagnostic mechanism.

@@ -2,6 +2,17 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CelestialObjectInformationService } from "./celestial-object-information.ts";
 
+test("Acrux detail and catalog sources follow the requested report version", () => {
+  const service = new CelestialObjectInformationService();
+  const old = service.get("HR:4730");
+  const revised = service.get("HR:4730", "zh-CN", "bsc5p-bright-stars.v3");
+  assert.equal(old.data.displayName, "HR 4730");
+  assert.equal(revised.data.displayName, "Acrux");
+  assert.notEqual(old.data.contentRevision, revised.data.contentRevision);
+  assert.ok(revised.sources.some(source => source.id.includes("bsc5p")));
+  assert.equal(service.get("HR:4730").data.displayName, "HR 4730");
+});
+
 test("stable HR references return attributable ready and basic-only states", () => {
   const service = new CelestialObjectInformationService();
   const sirius = service.get("HR:2491");
@@ -23,6 +34,32 @@ test("large numeric-like and unknown references stay strings and fail closed", (
   assert.throws(() => service.get("2940472157174944128"), /celestial_object_reference_invalid/u);
   assert.throws(() => service.get("HR:1"), /celestial_object_not_found/u);
   assert.throws(() => service.get("HR:2491", "en-US"), /celestial_object_locale_unsupported/u);
+});
+
+test("planet information distinguishes historical band profiles from current geometry and weather", () => {
+  const service = new CelestialObjectInformationService();
+  const mars = service.get("PLANET:MARS").data;
+  assert.ok(mars.limitations.some(value => value.includes("火星历史影像") && value.includes("独立来源")));
+  assert.ok(mars.limitations.every(value => !value.includes("球面外观尚无校准纹理")));
+  const mercury = service.get("PLANET:MERCURY").data;
+  assert.ok(mercury.limitations.some(value => value.includes("水星历史 750 nm 灰阶影像") && value.includes("独立来源")));
+  const saturn = service.get("PLANET:SATURN").data;
+  const jupiter = service.get("PLANET:JUPITER").data;
+  assert.ok(jupiter.limitations.some(value => value.includes("扁球轮廓") && value.includes("大红斑")));
+  assert.ok(jupiter.sources.some(source => source.sourceUrl ===
+    "https://nssdc.gsfc.nasa.gov/planetary/factsheet/jupiterfact.html"));
+  assert.ok(jupiter.sources.some(source=>source.sourceUrl===
+    "https://archive.stsci.edu/hlsp/opal/opal-jupiter-cycle-31"&&
+    source.licenseUrl==="https://creativecommons.org/licenses/by/4.0/"));
+  assert.ok(jupiter.limitations.some(value=>value.includes("历史纬度云带")&&value.includes("经度细节")));
+  assert.ok(saturn.limitations.some(value => value.includes("历史纬度云带") && value.includes("当前环影")));
+  assert.ok(saturn.sources.some(source=>source.sourceUrl===
+    "https://archive.stsci.edu/hlsp/opal/opal-saturn-cycle-32"&&
+    source.licenseUrl==="https://creativecommons.org/licenses/by/4.0/"));
+  assert.ok(saturn.sources.some(source=>source.sourceUrl===
+    "https://nssdc.gsfc.nasa.gov/planetary/factsheet/satringfact.html"));
+  assert.ok(saturn.limitations.every(value => !value.includes("尚未绘制")));
+  assert.notEqual(mars.contentRevision, saturn.contentRevision);
 });
 
 test("Messier galaxy and nebula references expose attributable catalog facts", () => {

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  createSkyDirectionProjector,
   createSkyViewBasis,
   projectSkyDirection,
   type SkyViewBasis,
@@ -180,4 +181,30 @@ test("invalid projection input is rejected without hidden defaults or clamping",
     ),
     null,
   );
+});
+
+test("a prepared projection preserves one accepted view and refreshes for the next view", () => {
+  const initial = createSkyViewBasis(0,90,0)!;
+  type MutableRay = [number, number, number];
+  const mutable: { right: MutableRay; up: MutableRay; forward: MutableRay } = {
+    right: [...initial.right], up: [...initial.up], forward: [...initial.forward],
+  };
+  const center = { x: 210, y: 410 };
+  const accepted = createSkyDirectionProjector(mutable,400,800,180,center)!;
+  assert(accepted);
+  assert.deepEqual(accepted.project(0,0), { x: 210, y: 410, degrees: 0, altitude: 0 });
+  assert.equal(accepted.project(90,0), null, "offscreen points cannot become selectable");
+  assert.equal(accepted.unclipped(180,0), null, "the stereographic antipode remains rejected");
+  assert.equal(accepted.project(NaN,0), null);
+  assert.equal(accepted.project(0,91), null);
+  const next = createSkyViewBasis(90,90,0)!;
+  for (const key of ["right","up","forward"] as const)
+    for (let index=0; index<3; index++) mutable[key][index] = next[key][index]!;
+  center.x = 230; center.y = 430;
+  assert.deepEqual(accepted.project(0,0), { x: 210, y: 410, degrees: 0, altitude: 0 }, "later mutable input cannot change accepted geometry");
+  assert.deepEqual(createSkyDirectionProjector(mutable,400,800,180,center)!.project(90,0),
+    { x: 230, y: 430, degrees: 90, altitude: 0 }, "the next job uses current camera and viewport values");
+  assert.equal(createSkyDirectionProjector(mutable,0,800,180), null);
+  assert.equal(createSkyDirectionProjector(mutable,400,800,360), null);
+  assert.equal(createSkyDirectionProjector(mutable,400,800,180,{x:NaN,y:0}), null);
 });

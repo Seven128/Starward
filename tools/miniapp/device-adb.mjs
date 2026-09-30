@@ -267,6 +267,19 @@ export class AdbDevice {
       const [x1, y1, x2, y2, ms] = values;
       if (!Number.isInteger(ms) || ms < 100 || ms > 2000) fail("swipe_duration_invalid");
       args = ["swipe", ...normalizedPoint(x1, y1, current.size), ...normalizedPoint(x2, y2, current.size), ms];
+    } else if (action === "text") {
+      // Android's remote shell joins arguments. Admit bounded public queries only;
+      // reject shell syntax and literal %s before encoding spaces for input text.
+      const [value] = values;
+      if (typeof value !== "string" || !/^[A-Za-z0-9][A-Za-z0-9 :._-]{0,79}$/u.test(value)) fail("text_invalid");
+      // A single burst can overrun the native input/JS value round trip. Pace
+      // characters and recheck focus, so navigation interrupts the remaining text.
+      for (const character of value) {
+        if (await this.foreground({ permissionScope }) !== activity) fail("foreground_changed");
+        await this.command(["shell", "input", "text", character === " " ? "%s" : character]);
+        await this.wait(150);
+      }
+      return;
     } else if (action === "back") args = ["keyevent", "KEYCODE_BACK"];
     else fail("unsupported_input");
     await this.command(["shell", "input", ...args.map(String)]);

@@ -771,7 +771,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - Loading/empty/partial/stale/error/offline/permission 使用 `notification-feedback` 与 `page-state-recovery`，保留可信地图、点位、filter 和 panel state，不用 fixture 补值。只有具体影响判断/动作/恢复的状态可见并说明其影响；Search/filter/panel/layer/selection 的局部状态已是反馈，不另弹 floating notification，也不展示操作教程或实现说明。
 - `320/375/390/430` 标准字号与 safe area 必须适配。每个 action 有 role/name/state/value/focus order；Search、filters、results、panel extents/sections/actions、layer/time/close 可 keyboard/assistive 操作。Back/Escape 先关闭 owning disclosure/panel，再返回逻辑 opener focus。
 
-云观星采用[唯一资源入口](docs/design-resources/wechat-miniapp/sky/ADOPTED.md)：全屏星空、轻量标签及目标焦点卡参考、透明公共时间尺与日期栏、紧凑罗盘恢复浮层。星点来自星表与投影，不是装饰壁纸；采用包画外姿态控件仅用于演示。
+云观星旧设计稿已由用户于2026-09-23明确撤销采用，见[资源状态](docs/design-resources/wechat-miniapp/sky/ADOPTED.md)；不再以旧稿确定页面构图或视觉验收。已独立确认的全屏天空、真实星表与投影、共享日期时间及传感器恢复等功能和交互要求仍按 Screen Contract 执行，具体呈现以目标运行时迭代。
 
 ### 5B. Settings 与 My
 
@@ -910,12 +910,12 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 6.12 Full-Sky Orientation Canvas
 
-- **Anatomy**：全屏sky canvas、独立quiet Back action、锚定在天空中的真实目标mark/label、底部Curved Time Ruler，以及仅在影响可用性时出现的recovery/object disclosure。普通following成功没有可见sensor state行。
+- **Anatomy**：全屏sky canvas、独立quiet Back action、锚定在天空中的真实对象mark/label；左下竖排重新校准、天体列表、时间轴入口，默认收起、互斥披露。模式与星座入口独立。时间轴展开时复用公共Curved Time Ruler；仅在影响可用性时出现recovery，天体资料由明确点选或列表打开。交互与状态以[云观星Screen Contract](project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)为准。普通following成功没有可见sensor state行。
 - **Variants**：permission required、calibrating、following、low accuracy、stale、denied、unavailable；day/night/observation；reduced motion/transparency。
-- **Layout**：canvas 从 top safe area 延伸到 bottom safe area；chrome 覆盖而不把天空缩成 card。Ruler 左右 inset `24rpx`、bottom=`safe-bottom + 24rpx`，使用 Day `rgba(255,255,255,.92)`、Night `rgba(24,26,23,.92)`、Observation `rgba(17,0,0,.96)`；reduced transparency 改为对应 opaque surface，不使用 blur/glass。所有scroll owner隐藏scrollbar chrome。
+- **Layout**：canvas 从 top safe area 延伸到 bottom safe area；chrome 覆盖而不把天空缩成 card。展开的时间轴按实际dock/面板尺寸避让，并复用公共 Ruler 的有效共享规则；其旧 Sky 设计稿特定 inset、颜色与材质不再作采用值。减少透明度时保持可读的实体表面，所有scroll owner隐藏scrollbar chrome。
 - **Motion**：前台设备姿态 `alpha/beta/gamma` 连续控制朝向/俯仰/横滚，绝对方位需要时与 compass owner 组合；新姿态立即接管，不叠加 inertia/bounce/ambient animation。离开/隐藏停止监听，不记录轨迹。Reduced motion 移除插值/settle，保留功能性直接跟随。
 - **A11y**：canvas targets 有同源文本语义；`sky-orientation-object-list` 只作 screen-reader equivalent、传感器降级或用户明确 disclosure，不是常驻主区。不可用状态不伪造 heading。
-- **Composition**：只渲染当前SkyReport的targets；可有低对比地平线/坐标网格，不用装饰星点冒充数据，不添加AR或完整深空目录；顶部不显示boxed title/地点·时间card/右侧target action，不显示“方向跟随中”、手势教程、实现说明或通用“部分数据”badge。
+- **Composition**：星点、星座、太阳系与动态天体、巡天影像、环境层、标签及低对比地平线/坐标网格共同服务当前地点与时刻的天空；功能范围及数据有效性遵循[已确认的Stellarium Web对齐目标](project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星对齐-stellarium-web)，不再受旧targets集合限制。真实数据、计算与同一相机投影决定呈现，不用装饰星点或示意影像冒充观测数据，不添加AR。顶部不显示boxed title/地点·时间card/右侧target action，不显示“方向跟随中”、手势教程、实现说明或通用“部分数据”badge。扩展范围不等于新增资源采用、数据授权或目标运行时已验证。
 
 ### 7. 通用组件合同
 

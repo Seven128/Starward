@@ -7,7 +7,7 @@ const delta = (a: SkyViewBasis, b: SkyViewBasis) => Math.max(...(["right", "up",
   .map(axis => Math.hypot(...a[axis].map((n, i) => n - b[axis][i]!))));
 function harness(start = view(20)) {
   const camera = createSkyBrowsingCamera(); let now = 0;
-  const frame = (progress: number, localView: SkyViewBasis | null = start, intent: "follow" | "manual" | "locked" = "follow", dt = 16) => {
+  const frame = (progress: number, localView: SkyViewBasis | null = start, intent: "follow" | "track" | "manual" | "locked" = "follow", dt = 16) => {
     now += dt; return camera.update({ progress, localView, intent, at: now });
   };
   frame(0);
@@ -24,6 +24,21 @@ test("captures entry orientation once, retains zenith and ignores subsequent pho
   const half=frame(.4,view(10)).view!;
   frame(.8,view(200));
   assert.ok(delta(frame(.4,view(310)).view!,half)<1e-12,"repeated pinches share the same path");
+});
+
+test("object tracking holds overview entry heading and returns to the newest time-dependent target", () => {
+  const { camera, frame, start } = harness(view(73, 120));
+  const overview = frame(1, start, "track").view!;
+  for (const target of [view(80, 110), view(100, 80), view(130, 70)])
+    assert.equal(frame(1, target, "track").view, overview);
+  assert.equal(frame(0, view(130, 70), "track").view, overview);
+  for (let i = 1; i <= 15; i++) frame(0, view(130 + i, 70), "track");
+  assert.equal(camera.snapshot().phase, "local");
+  assert.ok(delta(camera.snapshot().view!, view(145, 70)) < 1e-12);
+  assert.ok(delta(camera.snapshot().view!, start) > .3);
+  const dragged = view(210, 60);
+  camera.pan(dragged, 0);
+  assert.equal(frame(0, dragged, "manual").view, dragged, "ending tracking keeps explicit manual direction");
 });
 
 test("independent review near-nadir counterexample no longer produces a 180-degree flip", () => {

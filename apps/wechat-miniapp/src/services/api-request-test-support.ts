@@ -29,7 +29,8 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
   }
   assert.equal(names.size, 0, `missing production declarations: ${[...names]}`);
   type Response = { statusCode: number; data: unknown };
-  type Call = { header: Record<string, string>; data?: unknown; success(response: Response): void; fail(error: { errMsg: string }): void };
+  type Call = { url: string; method: "GET" | "POST" | "PUT" | "DELETE"; header: Record<string, string>; data?: unknown;
+    success(response: Response): void; fail(error: { errMsg: string }): void };
   const calls: Call[] = [];
   const taskRejections: ((error: { errMsg: string }) => void)[] = [];
   const timers = new Map<number, () => void>();
@@ -40,7 +41,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
   const storage = new Map<string, unknown>();
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   const actual = vm.runInNewContext(ts.transpileModule(declarations.join("\n") +
-    "\n({request, requests, responseCache, invalidateApiCache, clearTemporaryApiCache});", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    "\n({request, requests, responseCache, invalidateApiCache, clearTemporaryApiCache, MiniappApiError});", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     LatestRequestRegistry, MiniappRequestCancelled, responseCacheKey, createResponseCache, isResponseEnvelope, MAX_STALE_AGE_MS, Date, Error,
     isTemporaryCacheKey, miniappQueryClient: queryClient,
     __MINIAPP_API_BASE__: apiBase, __MINIAPP_OPERATOR_PREVIEW_TOKEN__: "",
@@ -62,7 +63,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
           rejectTask = reject;
         }) : null;
         const nativeCall: Call = promise ? {
-          header: call.header, data: call.data,
+          url: call.url, method: call.method, header: call.header, data: call.data,
           success: (response) => { call.success(response); resolveTask(response); },
           fail: (error) => { call.fail(error); rejectTask(error); },
         } : call;
@@ -78,7 +79,9 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
       },
     },
   }, { timeout: 1000 }) as {
-    request(key: string, path: string, options?: { independent?: boolean; cache?: boolean; signal?: AbortSignal; method?: "DELETE"; body?: unknown; session?: { userId: string; accessToken: string } }): Promise<typeof response>;
+    request(key: string, path: string, options?: { independent?: boolean; cache?: boolean; signal?: AbortSignal; method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown;
+      idempotencyKey?: string; session?: { userId: string; accessToken: string } }): Promise<typeof response>;
+    MiniappApiError: new (error: unknown, statusCode: number) => Error & { code: string; statusCode: number };
     requests: LatestRequestRegistry;
     responseCache: ReturnType<typeof createResponseCache>;
     invalidateApiCache(prefix?: string): void;

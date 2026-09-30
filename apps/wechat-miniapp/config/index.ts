@@ -12,6 +12,7 @@ const sharedSourceInclude = [
   path.resolve(repoRoot, "packages/miniapp-contracts/src"),
   path.resolve(repoRoot, "packages/coordinate-system/src"),
   path.resolve(repoRoot, "packages/astronomy-core/src/stellar-vectors.ts"),
+  path.resolve(repoRoot, "packages/astronomy-core/src/sky-time-model.ts"),
 ];
 
 const adoptedBRuntimeIconRoot = path.resolve(
@@ -64,6 +65,8 @@ const bIconFiles = {
     "favorite-trail--day--default.png", "favorite-satellite--day--default.png",
     "images--day--default.png", "info--day--default.png", "layers--day--default.png",
     "low-cloud--day--default.png", "bulb--day--default.png",
+    // Native Map tabs use the dedicated weapp-tabbar files above. The runtime
+    // icon adapter has no map subject, so copying these larger twins is unused.
     "location--day--default.png", "meteor--day--default.png", "moon--day--default.png",
     "pencil--day--default.png", "plan-suv--day--default.png",
     "search--day--default.png", "settings--day--default.png",
@@ -142,12 +145,18 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
   if (isolatedFixtureBuild && process.env.MINIAPP_DEVELOPMENT_FIXTURE_MODE !== "1")
     throw new Error("miniapp_isolated_build_requires_fixture_mode");
   const isolatedCheckBuild = process.env.MINIAPP_ISOLATED_CHECK_BUILD === "1";
+  const isolatedCheckSlot = process.env.MINIAPP_ISOLATED_CHECK_BUILD_SLOT?.trim() ?? "";
+  const skyFeedbackId = process.env.MINIAPP_SKY_FEEDBACK_ID?.trim() ?? "";
+  if (skyFeedbackId && (!isolatedCheckBuild || !/^[A-Z0-9]{6,16}$/u.test(skyFeedbackId)))
+    throw new Error("miniapp_sky_feedback_id_requires_isolated_check_build");
+  if (isolatedCheckSlot && (!isolatedCheckBuild || !/^[a-z0-9][a-z0-9-]{0,30}$/u.test(isolatedCheckSlot)))
+    throw new Error("miniapp_isolated_check_slot_invalid");
   if (isolatedCheckBuild && (command !== "build" || process.argv.includes("--watch") || isolatedFixtureBuild ||
       process.env.MINIAPP_DEVELOPMENT_FIXTURE_MODE === "1" ||
       process.env.MINIAPP_ACCEPTANCE_DIAGNOSTICS === "1" ||
       process.env.MINIAPP_DEVICE_REQUEST_DIAGNOSTICS === "1"))
     throw new Error("miniapp_isolated_check_requires_plain_build");
-  const outputRoot = isolatedCheckBuild ? "dist/weapp-check" :
+  const outputRoot = isolatedCheckBuild ? `dist/weapp-check${isolatedCheckSlot ? `-${isolatedCheckSlot}` : ""}` :
     isolatedFixtureBuild ? "dist/weapp-fixture" : "dist/weapp";
   const config: UserConfigExport = {
     projectName: "tonight-stargazing-wechat-miniapp",
@@ -177,6 +186,7 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
     ],
     alias: {
       "@starward/astronomy-core/stellar-vectors$": path.resolve(repoRoot, "packages/astronomy-core/src/stellar-vectors.ts"),
+      "@starward/astronomy-core/sky-time-model$": path.resolve(repoRoot, "packages/astronomy-core/src/sky-time-model.ts"),
       "@": path.resolve(here, "../src"),
       react: path.resolve(here, "../node_modules/react"),
       "@tarojs/plugin-framework-react": path.resolve(
@@ -211,6 +221,7 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
       __MINIAPP_DEVELOPMENT_FIXTURE_MODE__: JSON.stringify(
         process.env.MINIAPP_DEVELOPMENT_FIXTURE_MODE === "1",
       ),
+      __MINIAPP_SKY_FEEDBACK_ID__: JSON.stringify(skyFeedbackId),
     },
     copy: {
       patterns: [
@@ -234,10 +245,14 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
           from: path.resolve(here, "../src/assets/media"),
           to: path.resolve(here, "..", outputRoot, "sky/assets/media"),
         },
-        ...["twgl", "quaternion"].map((name) => ({
+        ...["twgl", "quaternion", "healpix-ts"].map((name) => ({
           from: path.resolve(here, `../src/assets/licenses/${name}.json`),
           to: path.resolve(here, "..", outputRoot, `sky/assets/licenses/${name}.json`),
         })),
+        {
+          from: path.resolve(here, "../THIRD_PARTY_NOTICES/three-sky-r146-LICENSE.txt"),
+          to: path.resolve(here, "..", outputRoot, "sky/assets/licenses/three-sky-r146-LICENSE.txt"),
+        },
         ...["noble-hashes"].map((name) => ({
           from: path.resolve(here, `../src/assets/licenses/${name}.json`),
           to: path.resolve(here, "..", outputRoot, `assets/licenses/${name}.json`),

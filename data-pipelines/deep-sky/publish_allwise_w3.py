@@ -120,14 +120,20 @@ def build_object(row: dict[str, Any], cache: Path, output: Path) -> dict[str, An
         jpeg, source = cached_image(cache, row["objectRef"], level, row["raDeg"], row["decDeg"], field_deg, pixels)
         filename = f"{row['objectRef'].replace(':', '-')}-{level.lower()}.jpg"
         relative = f"{row['objectRef'].replace(':', '-')}/{filename}"
-        (object_dir / filename).write_bytes(jpeg)
+        image_path = object_dir / filename
+        if image_path.exists() and image_path.read_bytes() != jpeg:
+            raise RuntimeError("allwise_published_image_changed: create a versioned asset instead")
+        image_path.write_bytes(jpeg)
         levels[level] = {
             "file": relative,
             "fieldDegrees": field_deg,
             "pixels": pixels,
             "sha256": sha256(jpeg),
             "bytes": len(jpeg),
-            "validFraction": 1,
+            # Extrema and JPEG decoding establish display usability, not which
+            # source pixels contain valid scientific measurements.
+            "validFraction": None,
+            "coverageState": "NOT_MEASURED",
             "source": source,
             "stretch": {"method": "1-99.7 percentile asinh", "colorMap": "gray"},
         }
@@ -146,6 +152,8 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=OUTPUT_DEFAULT)
     parser.add_argument("--objects", default="")
     parser.add_argument("--all", action="store_true")
+    parser.add_argument("--finite-candidate", type=Path,
+                        help="Verify cached source-bound TAN inputs and migrate the current v2 publication offline")
     args = parser.parse_args()
     if not args.all and not args.objects:
         parser.error("choose --all or --objects")
@@ -155,13 +163,31 @@ def main() -> None:
     rows = catalog["rows"] if args.all else [row for row in catalog["rows"] if row["objectRef"] in requested]
     if not rows or (requested and {row["objectRef"] for row in rows} != requested):
         raise RuntimeError("allwise_requested_object_not_found")
+    if args.finite_candidate:
+        if args.all or len(rows) != 1:
+            parser.error("finite candidate migration requires exactly one --objects identity")
+        from allwise_finite_tan import publish_finite_candidate
+        print(json.dumps(publish_finite_candidate(args.output, args.finite_candidate, rows[0]["objectRef"])))
+        return
     args.output.mkdir(parents=True, exist_ok=True)
+    previous_hash = None
+    manifest_path = args.output / "manifest.json"
+    if manifest_path.exists():
+        previous = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if previous.get("schemaVersion") == "allwise-w3-deep-sky-publication-v3":
+            raise RuntimeError("allwise_v3_requires_explicit_versioned_migration_before_regeneration")
+        if previous.get("schemaVersion") == "allwise-w3-deep-sky-publication-v1":
+            raise RuntimeError("allwise_v1_requires_archived_metadata_migration_before_regeneration")
+        previous_hash = previous.get("previousPublicationHash")
+        if previous_hash and not (args.output / "publications" / f"{previous_hash}.json").is_file():
+            raise RuntimeError("allwise_previous_publication_missing")
     entries = []
     for index, row in enumerate(rows, start=1):
         print(f"[{index}/{len(rows)}] {row['objectRef']}", flush=True)
         entries.append(build_object(row, args.cache, args.output))
     manifest = {
-        "schemaVersion": "allwise-w3-deep-sky-publication-v1",
+        "schemaVersion": "allwise-w3-deep-sky-publication-v2",
+        "previousPublicationHash": previous_hash,
         "publicationId": "allwise-w3-messier.v20260501",
         "catalogVersion": catalog["catalogVersion"],
         "catalogSha256": sha256(catalog_bytes),
@@ -198,6 +224,7 @@ def main() -> None:
             "limitations": [
                 "Historical 12 micrometer survey imagery; it is neither naked-eye appearance nor realtime sky data.",
                 "Source-survey saturation and detector artifacts may remain after bounded stretch and resampling.",
+                "JPEG display validation does not measure valid source-data coverage; black pixels can represent low brightness or missing data. No validity mask is published.",
             ],
         },
         "entryCount": len(entries), "entries": entries,

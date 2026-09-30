@@ -4,7 +4,7 @@ default_files = []
 path = "project_context/external-capabilities.md"
 role = "architecture"
 read_policy = "on-demand"
-triggers = ["external capabilities", "provider selection", "外部能力", "方案选型", "供应商", "成本预期"]
+triggers = ["external capabilities", "provider selection", "外部能力", "方案选型", "供应商", "成本预期", "Stellarium", "云观星引擎选型", "Agent开发成本"]
 # Schema v5 optional Context routing. Only global.md is default body text.
 # Keep only near-universal recovery facts in the default path; route specialized
 # facts through registered on-demand nodes and widen reads through bounded search.
@@ -103,7 +103,7 @@ triggers = ["wechat miniapp screen", "miniapp route", "miniapp surface", "miniap
 path = "project_context/architecture/runtime-and-domain.md"
 role = "foundation"
 read_policy = "on-demand"
-triggers = ["miniapp bff", "weather composition", "formal spot publication", "contribution moderation", "account data"]
+triggers = ["miniapp bff", "weather composition", "formal spot publication", "contribution moderation", "account data", "sky rendering", "云观星引擎"]
 
 [[context]]
 path = "project_context/architecture/assurance-and-lifecycle.md"
@@ -227,7 +227,7 @@ triggers = ["map finder", "finder sheet", "map time control", "地图查找器"]
 path = "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md"
 role = "subdomain"
 read_policy = "on-demand"
-triggers = ["spot night", "spot sky", "sky orientation", "点位夜空"]
+triggers = ["spot night", "spot sky", "sky orientation", "点位夜空", "云观星", "Stellarium能力对齐"]
 
 [[context]]
 path = "project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md"

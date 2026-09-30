@@ -1,3 +1,4 @@
+import { CelestialObjectSearchService } from "./celestial-object-search.ts";
 import {
   PLAN_NOTES_MAX_LENGTH,
   parsePlanEventOccurrenceIds,
@@ -6,6 +7,7 @@ import {
   normalizeAccountNickname,
   type AccountAvatarSaveRequest,
   type AccountNicknameSaveRequest,
+  type DeepSkyImageSelection,
 } from "@starward/miniapp-contracts";
 import { createHash, randomUUID } from "node:crypto";
 import { openPlanShare, sealPlanShare } from "./plan-share-token.ts";
@@ -73,6 +75,18 @@ import {
 } from "@starward/coordinate-system";
 import { CelestialObjectInformationService } from "./celestial-object-information.ts";
 import { DeepSkyImageryService } from "./deep-sky-imagery.ts";
+import { SdssOpticalImageryService } from "./sdss-optical-imagery.ts";
+import { OpticalHipsPublicationService } from "./optical-hips-publication.ts";
+import { WideFieldW3PublicationService } from "./wide-field-w3-publication.ts";
+import { MoonTexturePublicationService } from "./moon-texture-publication.ts";
+import { MarsTexturePublicationService } from "./mars-texture-publication.ts";
+import { MercuryTexturePublicationService } from "./mercury-texture-publication.ts";
+import { JupiterBandsPublicationService } from "./jupiter-bands-publication.ts";
+import { UranusBandsPublicationService } from "./uranus-bands-publication.ts";
+import { NeptuneBandsPublicationService } from "./neptune-bands-publication.ts";
+import { SaturnBandsPublicationService } from "./saturn-bands-publication.ts";
+import { SkyLandscapePublicationService } from "./sky-landscape-publication.ts";
+import { GalacticImagePublicationService } from "./galactic-image-publication.ts";
 import { AstronomyService, type AstronomyDecisionReport } from "./astronomy-service.ts";
 import type { SkyCatalogProvider } from "./sky-scene-catalog.ts";
 import { AuthService } from "./auth-service.ts";
@@ -640,7 +654,20 @@ export class MiniappService {
   readonly repository: MiniappRepositoryPort;
   readonly astronomy: AstronomyService;
   readonly celestialObjects: CelestialObjectInformationService;
+  readonly celestialSearch = new CelestialObjectSearchService();
   readonly deepSkyImages: DeepSkyImageryService;
+  readonly sdssOpticalImages: SdssOpticalImageryService;
+  readonly opticalHips: OpticalHipsPublicationService;
+  readonly wideFieldW3: WideFieldW3PublicationService;
+  readonly moonTexture: MoonTexturePublicationService;
+  readonly marsTexture: MarsTexturePublicationService;
+  readonly mercuryTexture: MercuryTexturePublicationService;
+  readonly jupiterBands: JupiterBandsPublicationService;
+  readonly uranusBands: UranusBandsPublicationService;
+  readonly neptuneBands: NeptuneBandsPublicationService;
+  readonly saturnBands: SaturnBandsPublicationService;
+  readonly galacticImage: GalacticImagePublicationService;
+  readonly landscape: SkyLandscapePublicationService;
   readonly telemetry: TelemetryPort;
   readonly cache: CachePort;
   readonly config: MiniappRuntimeConfig;
@@ -669,8 +696,28 @@ export class MiniappService {
     skyCatalog?: SkyCatalogProvider;
     eventCatalog?: AstronomicalEventCatalogOwner;
     deepSkyImages?: DeepSkyImageryService;
+    sdssOpticalImages?: SdssOpticalImageryService;
+    opticalHips?: OpticalHipsPublicationService;
+    wideFieldW3?: WideFieldW3PublicationService;
+    moonTexture?: MoonTexturePublicationService;
+    marsTexture?: MarsTexturePublicationService;
+    mercuryTexture?: MercuryTexturePublicationService;
+    jupiterBands?: JupiterBandsPublicationService;
+    uranusBands?: UranusBandsPublicationService;
+    neptuneBands?: NeptuneBandsPublicationService;
+    saturnBands?: SaturnBandsPublicationService;
+    galacticImage?: GalacticImagePublicationService;
+    landscape?: SkyLandscapePublicationService;
     usageStore?: PostgresVendorUsageStore;
   }) {
+    // Optical publications currently contain only bounded rights-unresolved
+    // trials. Keep the same release boundary even for direct service injection.
+    if (input.opticalHips) {
+      if (input.config.releaseProfile !== "LOCAL" || input.config.storageMode !== "MEMORY_TEST")
+        throw new Error("optical_trial_requires_local_memory_fixture");
+      if (input.opticalHips.manifest().scope !== "TRIAL")
+        throw new Error("optical_trial_scope_invalid");
+    }
     this.repository = input.repository;
     this.config = input.config;
     this.reminderSubscriptions = input.repository instanceof PostgresMiniappRepository
@@ -679,7 +726,19 @@ export class MiniappService {
       input.recentWeather ?? new QWeatherRecentWeatherAdapter(input.config),
       input.airQuality ?? new QWeatherAirQualityAdapter(input.config));
     this.deepSkyImages = input.deepSkyImages ?? new DeepSkyImageryService();
-    this.celestialObjects = new CelestialObjectInformationService(this.deepSkyImages);
+    this.sdssOpticalImages = input.sdssOpticalImages ?? new SdssOpticalImageryService();
+    this.opticalHips = input.opticalHips ?? new OpticalHipsPublicationService();
+    this.wideFieldW3 = input.wideFieldW3 ?? new WideFieldW3PublicationService();
+    this.moonTexture = input.moonTexture ?? new MoonTexturePublicationService();
+    this.marsTexture = input.marsTexture ?? new MarsTexturePublicationService();
+    this.mercuryTexture = input.mercuryTexture ?? new MercuryTexturePublicationService();
+    this.jupiterBands = input.jupiterBands ?? new JupiterBandsPublicationService();
+    this.uranusBands = input.uranusBands ?? new UranusBandsPublicationService();
+    this.neptuneBands = input.neptuneBands ?? new NeptuneBandsPublicationService();
+    this.saturnBands = input.saturnBands ?? new SaturnBandsPublicationService();
+    this.galacticImage = input.galacticImage ?? new GalacticImagePublicationService();
+    this.landscape = input.landscape ?? new SkyLandscapePublicationService();
+    this.celestialObjects = new CelestialObjectInformationService(this.deepSkyImages, this.sdssOpticalImages);
     this.usageStore = input.usageStore;
     this.route = input.route;
     this.placeSearch = input.placeSearch ?? createPlaceSearchPort(input.config);
@@ -712,6 +771,12 @@ export class MiniappService {
     const config = loadRuntimeConfig();
     const developmentFixtureMode =
       process.env.MINIAPP_DEVELOPMENT_FIXTURE_MODE === "1";
+    const opticalTrialPath=process.env.MINIAPP_OPTICAL_HIPS_TRIAL_MANIFEST?.trim();
+    if(opticalTrialPath && (!developmentFixtureMode || config.storageMode!=="MEMORY_TEST" ||
+      config.releaseProfile!=="LOCAL"))throw new Error("optical_trial_requires_local_memory_fixture");
+    const opticalHips=opticalTrialPath ? new OpticalHipsPublicationService(
+      (await import("node:url")).pathToFileURL((await import("node:path")).resolve(opticalTrialPath))) : undefined;
+    if(opticalHips && opticalHips.manifest().scope!=="TRIAL")throw new Error("optical_trial_scope_invalid");
     const repository =
       config.storageMode === "MEMORY_TEST"
         ? new (
@@ -749,6 +814,7 @@ export class MiniappService {
       airQuality: new QWeatherAirQualityAdapter(config, transport),
       placeSearch: createPlaceSearchPort(config, transport),
       deepSkyImages: new DeepSkyImageryService(),
+      ...(opticalHips ? {opticalHips} : {}),
       ...(usageStore ? { usageStore } : {}),
       mediaStore: createMediaObjectStore(config),
       eventCatalog,
@@ -1618,7 +1684,9 @@ export class MiniappService {
     );
   }
 
-  async getSky(spotId: string, contextId: string, userId?: UserId | null) {
+  async #skyAccess(spotId: string, contextId: string, userId?: UserId | null): Promise<{
+    context: ObservationContext; proposal: { detail: SpotDetail; id: string } | null;
+  }> {
     const context = await this.observationContexts.get(contextId);
     if (spotId.startsWith("contribution:")) {
       if (!userId) throw new Error("authentication_required");
@@ -1635,11 +1703,8 @@ export class MiniappService {
       if (Math.abs(context.location.wgs84.latitude - expected.latitude) > 0.000001 ||
           Math.abs(context.location.wgs84.longitude - expected.longitude) > 0.000001)
         throw new Error("proposal_sky_context_mismatch");
-      return this.astronomy.computeCandidate(
-        context,
-        this.#candidateSkyDetail(submission, context.timezone),
-        submission.submissionId,
-      );
+      return { context, proposal: { detail: this.#candidateSkyDetail(submission, context.timezone),
+        id: submission.submissionId } };
     }
     if (!spotId.startsWith("spot:")) throw new Error("night_location_identity_invalid");
     if (
@@ -1647,7 +1712,20 @@ export class MiniappService {
       context.location.spotId !== spotId
     )
       throw new Error("spot_context_mismatch");
-    return this.astronomy.compute(context);
+    return { context, proposal: null };
+  }
+
+  async getSky(spotId: string, contextId: string, userId?: UserId | null,
+    catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2") {
+    const { context, proposal } = await this.#skyAccess(spotId, contextId, userId);
+    return proposal ? this.astronomy.computeCandidate(context, proposal.detail, proposal.id,
+      undefined, undefined, catalogVersion)
+      : this.astronomy.compute(context, undefined, undefined, catalogVersion);
+  }
+
+  async getSkyTargetInstant(spotId: string, contextId: string, at: string, userId?: UserId | null) {
+    const { context, proposal } = await this.#skyAccess(spotId, contextId, userId);
+    return this.astronomy.computeTargetInstant(context, at, proposal?.detail, proposal?.id);
   }
 
   #candidateSkyDetail(submission: import("@starward/miniapp-contracts").ContributionSubmission, timezone: string): SpotDetail {
@@ -1736,12 +1814,13 @@ export class MiniappService {
     };
   }
 
-  getCelestialObject(reference: string, locale = "zh-CN") {
-    return this.celestialObjects.get(reference, locale);
+  getCelestialObject(reference: string, locale = "zh-CN", catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2",moonTextureVersion?:"coverage-v2",
+    imageSelection?: DeepSkyImageSelection) {
+    return this.celestialObjects.get(reference, locale, catalogVersion,moonTextureVersion,imageSelection);
   }
 
-  getDeepSkyImage(reference: string, level = "MEDIUM", publicationHash?: string) {
-    return this.deepSkyImages.get(reference, level, publicationHash);
+  getDeepSkyImage(reference: string, level = "MEDIUM", publicationHash?: string, imageVersion?: DeepSkyImageSelection["imageVersion"]) {
+    return this.deepSkyImages.get(reference, level, publicationHash, imageVersion);
   }
 
   async getFavorites(userId: UserId) {

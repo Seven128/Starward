@@ -89,6 +89,42 @@ test("background preserves presented calibration, rejects old callbacks and requ
   h.move(225); center(h.paint(), 45); h.controller.dispose();
 });
 
+test("repeated hide/show retains following intent without duplicating native streams", async () => {
+  const h = harness(); await h.controller.start(); h.move(0); h.paint();
+  h.controller.begin(); h.move(90); h.controller.commit(); h.paint();
+  const oldMotion = [...h.motion][0]!;
+  h.controller.hide(); h.controller.hide(); await settled();
+  assert.equal(h.controller.active, false);
+  assert.equal(h.motion.size, 0);
+  assert.equal(h.controller.commit(), false);
+  h.controller.show(); h.controller.show(); await settled();
+  assert.equal(h.controller.active, true, "duplicate hide must not erase the existing following request");
+  assert.equal(h.motion.size, 1);
+  assert.equal(h.calls.filter(call => call === "motion:game").length, 2);
+  oldMotion({ alpha: 270, beta: -90, gamma: 0 });
+  assert.equal(h.controller.snapshot().alignment.ready, false);
+  h.move(180); center(h.paint(), 0);
+  assert.equal(h.controller.snapshot().alignment.mode, "needs-alignment");
+  assert.equal(h.controller.begin(), true); assert.equal(h.controller.commit(), true);
+  h.move(225); center(h.paint(), 45); h.controller.dispose();
+});
+
+test("a late follow retry cannot acquire sensors while hidden, and explicit manual intent cancels it", async () => {
+  const h = harness(); await h.controller.start(); h.move(0); h.paint();
+  h.controller.hide(); await settled();
+  const before = h.calls.filter(call => call === "motion:game").length;
+  await h.controller.start(); await h.controller.start(); await settled();
+  assert.equal(h.controller.active, false, "a delayed UI retry cannot create a background sensor session");
+  assert.equal(h.motion.size, 0);
+  assert.equal(h.calls.filter(call => call === "motion:game").length, before);
+  h.controller.show(); await settled();
+  assert.equal(h.motion.size, 1, "the existing retry resumes only after returning to the page");
+  h.controller.hide(); await settled(); await h.controller.start();
+  h.controller.stopFollowing(); h.controller.show(); await settled();
+  assert.equal(h.controller.active, false);
+  assert.equal(h.motion.size, 0); h.controller.dispose();
+});
+
 test("expiry cannot confirm an old pose; reconnect keeps held view until recalibration", async () => {
   const h = harness(); await h.controller.start(); h.move(0); h.paint();
   h.controller.begin(); h.move(90); h.controller.commit(); h.paint();

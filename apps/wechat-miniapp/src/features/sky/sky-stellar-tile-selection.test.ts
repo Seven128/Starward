@@ -26,3 +26,10 @@ test('proper-motion bounds follow the exact selected epoch and wrong frame canno
   assert.throws(()=>selectSkyStellarTiles([moving],{...input,frame:future}),/time_binding/);
   assert.throws(()=>selectSkyStellarTiles(tiles,{...input,expected:{...input.expected,observer:{...frame.observer,longitude:20}}}),/observer_binding/);
 });
+
+test('twilight does not request a faint tile that the same-frame renderer cannot paint',()=>{
+  assert.deepEqual(selectSkyStellarTiles(tiles,{...input,sunAltitudeDeg:-12}),[]);
+  assert.deepEqual(selectSkyStellarTiles(tiles,{...input,sunAltitudeDeg:-18}).map(tile=>tile.id),['east-equatorial']);
+  // Observation mode deliberately omits the solar limit so chart stars remain available.
+  assert.deepEqual(selectSkyStellarTiles(tiles,input).map(tile=>tile.id),['east-equatorial']);
+});

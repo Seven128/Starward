@@ -19,6 +19,9 @@ function scene():SkyScene {
 test("constellation geometry uses the replacement J2000 epoch, preserves shared artwork and excludes no below-horizon anchors",()=>{
   const report=scene(),frame=resolveConstellationFrame(catalog,report,at)!;
   assert.ok(frame);assert.equal(frame.lines.length,676);assert.equal(frame.images.length,85);
+  assert.equal(frame.labels.length,88);
+  assert.deepEqual([frame.labels.find(label=>label.iau==='Ori')?.nameEn,frame.labels.find(label=>label.iau==='Ori')?.nameZh],['Orion','猎户座']);
+  for(const label of frame.labels)assert.ok(Math.abs(Math.hypot(...label.direction)-1)<1e-9);
   assert.strictEqual(resolveConstellationFrame(catalog,report,at),frame);
   for(const id of ['Tel','Tau','Car','Oph'])assert.ok(frame.images.some(a=>a.source.id===id));
   // Independent scalar proper-motion expectation for each real image anchor at
@@ -45,4 +48,18 @@ test("missing or mismatched observer/time never draws an old constellation frame
   const broken=structuredClone(report);broken.frames[0]!.geometry!.catalogHash='2'.repeat(64);
   assert.equal(resolveConstellationFrame(catalog,broken,at),null);
   assert.equal(resolveConstellationFrame(undefined,report,at),null);
+});
+
+test("name anchors rotate with the exact observation frame rather than retaining the previous hour",()=>{
+  const first=scene(),later='2000-01-01T13:00:00.000Z';
+  const rotated:SkyScene={...first,frames:[...first.frames,{
+    ...first.frames[0]!,at:later,geometry:{...first.frames[0]!.geometry!,at:later,
+      julianYears:(Date.parse(later)-Date.parse(at))/(365.25*86400000),
+      equatorialToEnu:[0,-1,0,1,0,0,0,0,1]},
+  }]};
+  const before=resolveConstellationFrame(catalog,rotated,at)!.labels.find(label=>label.iau==='Ori')!;
+  const after=resolveConstellationFrame(catalog,rotated,later)!.labels.find(label=>label.iau==='Ori')!;
+  assert.equal(after.nameZh,before.nameZh);
+  assert.ok(Math.hypot(...before.direction.map((value,index)=>value-after.direction[index]!))>1,
+    'the same named constellation must follow the changed physical frame');
 });

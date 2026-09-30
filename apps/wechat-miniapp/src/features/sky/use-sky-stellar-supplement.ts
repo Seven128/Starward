@@ -12,8 +12,9 @@ import type {SkyProjectionCenter} from './sky-viewport';
 type Loader=ReturnType<typeof createSkyStellarTileLoader>;
 const EMPTY:SkyStellarTileState={tiles:[],loading:false,failed:false};
 export function useSkyStellarSupplement(scene:ResolvedStellarScene|undefined,at:string|undefined,
-  view:{basis:SkyViewBasis;width:number;height:number;verticalFovDeg:number;center:SkyProjectionCenter}|null,active:boolean){
-  const index=useResourceQuery({queryKey:['sao-index'],queryFn:signal=>saoCatalogClient.getIndex(signal),
+  view:{basis:SkyViewBasis;width:number;height:number;verticalFovDeg:number;center:SkyProjectionCenter}|null,
+  active:boolean,sunAltitudeDeg?:number){
+  const index=useResourceQuery({queryKey:['sao-index','v2'],queryFn:signal=>saoCatalogClient.getIndex(signal),
     enabled:active&&Boolean(scene?.publication),staleTime:Infinity,structuralSharing:false});
   const publication=index.data?.data;
   const selection=useMemo(()=>{
@@ -21,10 +22,11 @@ export function useSkyStellarSupplement(scene:ResolvedStellarScene|undefined,at:
     try{
       const geometry=supplementGeometry(publication,scene,at);if(!geometry)return {ids:[],failed:false};
       const selected=selectSkyStellarTiles(publication.index.tiles,{...view,frame:geometry,
+        ...(sunAltitudeDeg===undefined?{}:{sunAltitudeDeg}),
         expected:{catalog:scene!.publication!,at:at!,observer:scene!.observer!}});
       return {ids:selected.map(tile=>tile.id),failed:false};
     }catch{return {ids:[],failed:true};}
-  },[publication,scene,at,active,view?.basis,view?.width,view?.height,view?.verticalFovDeg,view?.center.x,view?.center.y]);
+  },[publication,scene,at,active,sunAltitudeDeg,view?.basis,view?.width,view?.height,view?.verticalFovDeg,view?.center.x,view?.center.y]);
   const wantedRef=useRef(selection.ids);wantedRef.current=selection.ids;
   const loader=useRef<Loader|null>(null);
   const [state,setState]=useState<{owner:Loader;publication:SaoIndexPublication;value:SkyStellarTileState}|null>(null);
@@ -34,7 +36,10 @@ export function useSkyStellarSupplement(scene:ResolvedStellarScene|undefined,at:
     const owner=createSkyStellarTileLoader({publication,changed:value=>{if(live)setState({owner,publication,value});},
       load:(id,signal)=>saoCatalogClient.getTile(publication,id,signal)});
     loader.current=owner;owner.update(wantedRef.current);
-    return()=>{live=false;owner.dispose();if(loader.current===owner)loader.current=null;};
+    return()=>{
+      live=false;owner.dispose();if(loader.current===owner)loader.current=null;
+      setState(previous=>previous?.owner===owner?null:previous);
+    };
   },[publication?.publicationHash,active]);
   const key=selection.ids.join(':');
   useEffect(()=>{loader.current?.update(wantedRef.current);},[key]);
@@ -45,6 +50,6 @@ export function useSkyStellarSupplement(scene:ResolvedStellarScene|undefined,at:
     catch{return {frame:null,failed:true};}
   },[active,publication,loaded.tiles,scene,at,selection.failed]);
   const retry=useCallback(()=>{loader.current?.retry();void index.refetch();},[index.refetch]);
-  return {frame:resolved.frame,sources:index.data?.sources??[],retry,loading:active&&(index.isFetching||loaded.loading),
+  return {publication,frame:resolved.frame,sources:index.data?.sources??[],retry,loading:active&&(index.isFetching||loaded.loading),
     failed:active&&(index.isError||Boolean(index.refreshError)||index.data?.dataState==='STALE_USABLE'||selection.failed||loaded.failed||resolved.failed)};
 }

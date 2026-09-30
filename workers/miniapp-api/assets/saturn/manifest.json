@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "starward-opal-saturn-bands-v1",
+  "publicationId": "opal-saturn-2025a-median-bands-8x512-20260924",
+  "source": {
+    "title": "HST OPAL Cycle 32 Saturn 2025a F395N/F502N/F631N global map",
+    "provider": "MAST / HST OPAL",
+    "recordUrl": "https://archive.stsci.edu/hlsp/opal/opal-saturn-cycle-32",
+    "rightsUrl": "https://archive.stsci.edu/hlsp/opal",
+    "credit": "NASA / ESA / HST OPAL Team (PI Amy Simon) / STScI; adapted by Starward",
+    "sourceFile": "hlsp_opal_hst_wfc3-uvis_saturn-2025a_f395n-f502n-f631n_v1_globalmap.tif",
+    "sourceSha256": "c34a13a8253a39bcc1f8376b24c077b89f05ce0b5202706f535ded20314440d7",
+    "observationDate": "2025-08-29",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "doi": "10.17909/T9G593"
+  },
+  "projection": {
+    "kind": "latitude-profile",
+    "latitude": "planetographic",
+    "longitude": "none",
+    "boundsDeg": [-90, 90]
+  },
+  "image": {
+    "file": "saturn-opal-2025a-median-bands-8x512.png",
+    "sha256": "68da69457db865d4f0f517ecb034d0a208925b9fe5595ee8ac1e9a54ba43869c",
+    "bytes": 1003,
+    "width": 8,
+    "height": 512,
+    "format": "png"
+  },
+  "processing": "Starward took the RGB median across valid longitudes in each planetographic latitude row of the historical three-filter map, omitted rows with under 90% coverage including ring-obscured latitudes, and resized the resulting latitude profile to 8x512 RGBA PNG. This is an adaptation under CC BY 4.0.",
+  "limitations": [
+    "Historical band colors from an arbitrarily scaled three-filter composite, not natural color or live Saturnian weather.",
+    "Longitude-dependent clouds and 2025 moon/shadow positions were removed; no current feature longitude is claimed.",
+    "Transparent polar and ring-obscured rows lack source atmosphere coverage and must fall back to the plain computed globe."
+  ]
+}

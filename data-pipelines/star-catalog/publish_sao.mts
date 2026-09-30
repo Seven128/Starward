@@ -11,21 +11,24 @@ type SourceRow = [string, number, number, number, number, number, number, number
 export type PublishedRow = [string, number, number, number, number, number, number, number];
 const hash = (v:string|Buffer) => createHash('sha256').update(v).digest('hex');
 const encode = (v:unknown) => Buffer.from(JSON.stringify(v));
-const VERSION = 'sao-visual-supplement.v1';
+const DEFAULT_VERSION = 'sao-visual-supplement.v1';
 const MAX_TILE_BYTES = 192 * 1024;
 const MAX_TILE_ROWS = 768;
 const RAD = Math.PI/180;
 const vector = (ra:number,dec:number) => [Math.cos(dec*RAD)*Math.cos(ra*RAD),Math.cos(dec*RAD)*Math.sin(ra*RAD),Math.sin(dec*RAD)];
 
-export async function publishSao(sourceDirectory:string, outputDirectory:string) {
-  const raw = await readFile(path.join(sourceDirectory,`${VERSION}.json`));
-  const provenance = JSON.parse(await readFile(path.join(sourceDirectory,`${VERSION}.manifest.json`),'utf8'));
+export async function publishSao(sourceDirectory:string, outputDirectory:string, version=DEFAULT_VERSION) {
+  const expectedBase=version==='sao-visual-supplement.v1'?'bsc5p-bright-stars.v2':
+    version==='sao-visual-supplement.v2'?'bsc5p-bright-stars.v3':null;
+  if(!expectedBase)throw Error('sao_publication_version_unsupported');
+  const raw = await readFile(path.join(sourceDirectory,`${version}.json`));
+  const provenance = JSON.parse(await readFile(path.join(sourceDirectory,`${version}.manifest.json`),'utf8'));
   const data = JSON.parse(raw.toString('utf8'));
   const catalogHash=hash(raw);
   if(raw.length!==provenance.derivedAssetBytes || catalogHash!==provenance.derivedAssetSha256 ||
-    !raw.equals(encode(data)) || data.catalogVersion!==VERSION || provenance.catalogVersion!==VERSION ||
+    !raw.equals(encode(data)) || data.catalogVersion!==version || provenance.catalogVersion!==version ||
     data.frame!=='FK5' || data.referenceEpoch!==2000 || data.magnitudeBand!=='VISUAL' || data.magnitudeLimit!==10 ||
-    data.baseCatalogVersion!=='bsc5p-bright-stars.v2' || !/^[a-f0-9]{64}$/.test(data.baseAssetSha256) ||
+    data.baseCatalogVersion!==expectedBase || !/^[a-f0-9]{64}$/.test(data.baseAssetSha256) ||
     !Array.isArray(data.rows) || data.rows.length!==246280 || provenance.rowCount!==246280)
     throw Error('sao_source_publication_invalid');
   const cells = new Map<string,{center:number[];rows:PublishedRow[];radiusRad:number;maxMotionRadPerYear:number}>();
@@ -56,7 +59,7 @@ export async function publishSao(sourceDirectory:string, outputDirectory:string)
     cell.rows.sort((a,b)=>Number(a[0].slice(4))-Number(b[0].slice(4)));
     for(let start=0;start<cell.rows.length;start+=MAX_TILE_ROWS) {
       const id=`${cellId}-${Math.floor(start/MAX_TILE_ROWS)}`,rows=cell.rows.slice(start,start+MAX_TILE_ROWS);
-      const bytes=encode({schemaVersion:'sao-stellar-tile-v1',catalogVersion:VERSION,catalogHash,tileId:id,rows});
+      const bytes=encode({schemaVersion:'sao-stellar-tile-v1',catalogVersion:version,catalogHash,tileId:id,rows});
       if(bytes.length>MAX_TILE_BYTES) throw Error('sao_tile_size_exceeded');
       const file=`${id}.json`;
       await writeFile(path.join(outputDirectory,file),bytes);
@@ -65,7 +68,7 @@ export async function publishSao(sourceDirectory:string, outputDirectory:string)
         minMagnitude:Math.min(...rows.map(r=>r[1])),maxMagnitude:Math.max(...rows.map(r=>r[1]))});
     }
   }
-  const index={schemaVersion:'sao-stellar-index-v1',catalogVersion:VERSION,catalogHash,
+  const index={schemaVersion:'sao-stellar-index-v1',catalogVersion:version,catalogHash,
     baseCatalogVersion:data.baseCatalogVersion,baseAssetSha256:data.baseAssetSha256,
     frame:'FK5',referenceEpoch:2000,magnitudeBand:'VISUAL',magnitudeLimit:10,
     rowCount:data.rows.length,maximumTileBytes:MAX_TILE_BYTES,maximumTileRows:MAX_TILE_ROWS,
@@ -77,7 +80,7 @@ export async function publishSao(sourceDirectory:string, outputDirectory:string)
   const indexBytes=encode(index);
   if(indexBytes.length>=2*1024*1024) throw Error('sao_index_size_exceeded');
   await writeFile(path.join(outputDirectory,'index.json'),indexBytes);
-  const publication={schemaVersion:'sao-spatial-publication-v1',catalogVersion:VERSION,catalogHash,
+  const publication={schemaVersion:'sao-spatial-publication-v1',catalogVersion:version,catalogHash,
     publicationHash:hash(indexBytes),indexSha256:hash(indexBytes),indexBytes:indexBytes.length,tileCount:tiles.length,rowCount:data.rows.length,
     tileBytes:tiles.reduce((n,t)=>n+t.bytes,0),hashEncoding:'UTF-8 ECMAScript JSON.stringify, no trailing newline'};
   await writeFile(path.join(outputDirectory,'publication.json'),encode(publication));
@@ -85,7 +88,7 @@ export async function publishSao(sourceDirectory:string, outputDirectory:string)
 }
 
 if(process.argv[1] && import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href) {
-  const [, , source,output]=process.argv;
-  if(!source||!output) throw Error('usage: publish_sao.mts <generated-source-dir> <output-dir>');
-  console.log(JSON.stringify(await publishSao(source,output)));
+  const [, , source,output,version=DEFAULT_VERSION]=process.argv;
+  if(!source||!output||process.argv.length>5) throw Error('usage: publish_sao.mts <generated-source-dir> <output-dir> [catalog-version]');
+  console.log(JSON.stringify(await publishSao(source,output,version)));
 }

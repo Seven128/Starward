@@ -245,11 +245,12 @@ export class ObservationContextService {
       algorithmVersions: next.algorithmVersions,
     });
     const saved = { ...next, contextFingerprint: nextFingerprint };
-    const remainingTtlSeconds = Math.max(
-      1,
-      Math.floor((Date.parse(saved.expiresAt) - Date.now()) / 1_000),
+    const result = await this.cache.replaceIfRevision(
+      this.#key(contextId), input.expectedRevision, saved,
+      Date.parse(saved.expiresAt),
     );
-    await this.cache.set(this.#key(contextId), saved, remainingTtlSeconds);
+    if (result === "missing") throw new Error("observation_context_not_found");
+    if (result === "conflict") throw new Error("observation_context_conflict");
     return saved;
   }
 

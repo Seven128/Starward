@@ -28,9 +28,17 @@
       "production": "./dist/src/bsc5p-catalog.js",
       "default": "./src/bsc5p-catalog.ts"
     },
+    "./observation-frame": {
+      "production": "./dist/src/observation-frame.js",
+      "default": "./src/observation-frame.ts"
+    },
     "./stellar-vectors": {
       "production": "./dist/src/stellar-vectors.js",
       "default": "./src/stellar-vectors.ts"
+    },
+    "./sky-time-model": {
+      "production": "./dist/src/sky-time-model.js",
+      "default": "./src/sky-time-model.ts"
     },
     "./sao-catalog": {
       "production": "./dist/src/sao-catalog.js",
@@ -43,6 +51,10 @@
     "./deep-sky-catalog": {
       "production": "./dist/src/deep-sky-catalog.js",
       "default": "./src/deep-sky-catalog.ts"
+    },
+    "./satellite-omm": {
+      "production": "./dist/src/satellite-omm.js",
+      "default": "./src/satellite-omm.ts"
     }
   },
   "scripts": {
@@ -57,6 +69,9 @@
     "typescript": "5.9.3"
   },
   "dependencies": {
-    "astronomy-engine": "2.1.19"
+    "@starward/miniapp-contracts": "*",
+    "astronomy-engine": "2.1.19",
+    "quaternion": "2.2.0",
+    "satellite.js": "7.1.0"
   }
 }

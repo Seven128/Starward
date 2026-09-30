@@ -8,9 +8,11 @@ import type {
   SpotDetail,
   SpotSummary,
   SkyTarget,
+  SkyTargetInstantData,
   SourceSummary,
 } from "@starward/miniapp-contracts";
-import { assertSkyTargetFrames } from "@starward/miniapp-contracts";
+import { assertSkyObservationFrames, assertSkyTargetFrames, OBSERVATION_FRAME_FORMAT } from "@starward/miniapp-contracts";
+import { observationHorizontalFrame } from "@starward/astronomy-core/observation-frame";
 import {
   calculateEquatorialHorizontalAt,
   calculateMeteorRadiantAt,
@@ -34,6 +36,9 @@ import {
 } from "./sky-scene-catalog.ts";
 import { TripDecisionEngine } from "./trip-decision-engine.ts";
 import { deepSkySceneCacheKey } from "./deep-sky-scene-provider.ts";
+import { buildSkyTimeModel } from "./sky-time-model-provider.ts";
+import { evaluateSkyTimeModel } from "@starward/astronomy-core/sky-time-model";
+import { SKY_TIME_MODEL_FORMAT } from "@starward/miniapp-contracts";
 import type {
   AstronomyApplicationPort,
   CanonicalWeatherHour,
@@ -48,10 +53,11 @@ import { WEATHER_DEADLINES, waitForCaller, withDeadline } from "./provider-deadl
 import { unavailableWeatherResult } from "./weather-provider.ts";
 import { materialAlertAt, weatherHourAt } from "./weather-hour.ts";
 import { observationFrameTimes } from "./observation-time-axis.ts";
+import { skyJupiterShapeSource, skyPlanetSource, skySaturnRingSource } from "./sky-planet-catalog.ts";
 
 /** Map and overview consume decision evidence, not a star-scene rendering. */
 export type AstronomyDecisionReport = Omit<
-  SkyReport, "skyScene" | "targetFrames" | "precachedHours" | "offlineReady"
+  SkyReport, "skyScene" | "targetFrames" | "precachedHours" | "offlineReady" | "timeModel"
 >;
 
 type DecisionComputation = {
@@ -92,7 +98,9 @@ function nextWeatherBoundary(weather: WeatherEvidenceResult, now: number): numbe
   ].filter(end => Number.isFinite(end) && end > now));
 }
 
-const SKY_REPORT_TIME_AXIS_CACHE_VERSION = "sky-report-time-axis-v1";
+// Exact numeric target geometry supersedes the rounded, text-only bearings.
+const SKY_REPORT_TIME_AXIS_CACHE_VERSION = "sky-report-time-axis-v14";
+const PROPOSAL_SKY_WARNING = "该结果只按账号可见的审核中提案坐标计算；场地事实尚未审核，不构成正式点发布或出行建议。";
 
 function digest(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -153,6 +161,20 @@ function calculationSource(
     ],
   };
 }
+
+const solarRadiusSource: SourceSummary = {
+  id: "nasa-nssdca-sun-fact-sheet",
+  kind: "OFFICIAL_REFERENCE",
+  provider: "NASA Goddard Space Flight Center / NSSDCA",
+  title: "Sun Fact Sheet",
+  sourceUrl: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html",
+  license: "NASA published reference; see NASA media and data usage guidance",
+  licenseUrl: "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  publishedAt: null, retrievedAt: null, validFrom: null, validTo: null,
+  state: "FRESH", confidence: 1,
+  precision: "Static volumetric mean solar radius; apparent diameter uses the report's observer distance",
+  limitations: ["不是太阳实时位置、表面纹理或日冕图像的数据源"],
+};
 
 function localTime(iso: string, timezone: string): string {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -235,9 +257,11 @@ function stateFor(
 
 export class AstronomyService implements AstronomyApplicationPort {
   private readonly skyCatalog: SkyCatalogProvider;
+  private readonly revisedSkyCatalog = createBsc5pSkyCatalogProvider("bsc5p-bright-stars.v3");
   private readonly weatherCache: ComputationCache<{ weather: WeatherEvidenceResult; acquiredAt: number }>;
   private readonly decisionCache: ComputationCache<DecisionComputation>;
   private readonly sceneCache: ComputationCache<SkyReport["skyScene"]>;
+  private readonly timeModelCache: ComputationCache<NonNullable<SkyReport["timeModel"]> | null>;
   private readonly calculationCache: ComputationCache<ReturnType<typeof calculateMiniappNightSky>[]>;
   private readonly reportCache: ComputationCache<ApiEnvelope<SkyReport>>;
   private generation = 0;
@@ -254,6 +278,7 @@ export class AstronomyService implements AstronomyApplicationPort {
     this.weatherCache = new ComputationCache(ASTRONOMY_CACHE_POLICY.weatherEntries, now);
     this.decisionCache = new ComputationCache(ASTRONOMY_CACHE_POLICY.decisionEntries, now);
     this.sceneCache = new ComputationCache(ASTRONOMY_CACHE_POLICY.sceneEntries, now);
+    this.timeModelCache = new ComputationCache(ASTRONOMY_CACHE_POLICY.sceneEntries, now);
     this.calculationCache = new ComputationCache(ASTRONOMY_CACHE_POLICY.calculationEntries, now);
     this.reportCache = new ComputationCache(ASTRONOMY_CACHE_POLICY.reportEntries, now);
   }
@@ -263,17 +288,23 @@ export class AstronomyService implements AstronomyApplicationPort {
     this.weatherCache.clear();
     this.decisionCache.clear();
     this.sceneCache.clear();
+    this.timeModelCache.clear();
     this.calculationCache.clear();
     this.reportCache.clear();
   }
 
   /** Included in the BFF cache identity so a catalog replacement cannot
    * serve a report projected from a previous catalog or time-axis contract. */
-  catalogCacheKey(): string {
-    return `${SKY_REPORT_TIME_AXIS_CACHE_VERSION}:${this.skyCatalog.cacheKey()}:${deepSkySceneCacheKey()}`;
+  catalogCacheKey(provider: SkyCatalogProvider = this.skyCatalog): string {
+    return `${SKY_REPORT_TIME_AXIS_CACHE_VERSION}:${provider.cacheKey()}:${deepSkySceneCacheKey()}`;
   }
 
-  private async prepare(context: ObservationContext, suppliedDetail?: SpotDetail, signal?: AbortSignal, weatherDeadlineAt?: number): Promise<{
+  private skyCatalogFor(version: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3") {
+    return version === "bsc5p-bright-stars.v3" ? this.revisedSkyCatalog : this.skyCatalog;
+  }
+
+  private async prepare(context: ObservationContext, suppliedDetail?: SpotDetail, signal?: AbortSignal,
+    weatherDeadlineAt?: number, skyCatalog: SkyCatalogProvider = this.skyCatalog): Promise<{
     computation: DecisionComputation; spot: SpotSummary; key: string; generation: number; deliveryBoundary: number; expiresAt: number;
   }> {
     weatherDeadlineAt ??= this.now() + WEATHER_DEADLINES.overallMs;
@@ -318,7 +349,7 @@ export class AstronomyService implements AstronomyApplicationPort {
     if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
     const { weather, acquiredAt } = received;
     const deliveryBoundary = nextWeatherBoundary(weather, acquiredAt);
-    if (this.now() >= deliveryBoundary) return this.prepare(context, suppliedDetail, signal, weatherDeadlineAt);
+    if (this.now() >= deliveryBoundary) return this.prepare(context, suppliedDetail, signal, weatherDeadlineAt, skyCatalog);
     const effectiveInputs = {
       spot, accessAndSafety: detail.accessAndSafety, evidence: detail.evidence,
       route: detail.route, localDate: context.localDate,
@@ -328,7 +359,7 @@ export class AstronomyService implements AstronomyApplicationPort {
       algorithm: this.config.astronomyAlgorithmVersion,
       opportunity: this.config.opportunityRuleVersion,
       trip: this.config.tripDecisionRuleVersion,
-      events: this.eventCatalog?.snapshot().catalogVersion ?? this.config.eventCatalogVersion, catalog: this.catalogCacheKey(),
+      events: this.eventCatalog?.snapshot().catalogVersion ?? this.config.eventCatalogVersion, catalog: this.catalogCacheKey(skyCatalog),
       verificationExpired: this.now() - Date.parse(spot.lastVerifiedAt ?? "") > 30 * 86_400_000,
     };
     const key = digest(effectiveInputs);
@@ -346,11 +377,11 @@ export class AstronomyService implements AstronomyApplicationPort {
       contextFingerprint: semanticKey, revision: 1, routeOrigin: null, privacyClass: "PUBLIC_REFERENCE",
     };
     const computation = await this.decisionCache.get(key,
-      () => this.computeDecisionData(publicContext, detail, weather),
+      () => this.computeDecisionData(publicContext, detail, weather, skyCatalog),
       () => Math.min(this.now() + ASTRONOMY_CACHE_POLICY.computationTtlMs,
         weatherExpiry(weather, this.now())));
     if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
-    if (this.now() >= deliveryBoundary) return this.prepare(context, suppliedDetail, signal, weatherDeadlineAt);
+    if (this.now() >= deliveryBoundary) return this.prepare(context, suppliedDetail, signal, weatherDeadlineAt, skyCatalog);
     return { computation, spot, key, generation, deliveryBoundary, expiresAt: weatherExpiry(weather, this.now()) };
   }
 
@@ -365,18 +396,47 @@ export class AstronomyService implements AstronomyApplicationPort {
     return envelope(this.bindContext(structuredClone(report.data), context), report.dataState, structuredClone(report.sources), structuredClone(report.warnings));
   }
 
-  async compute(context: ObservationContext, signal?: AbortSignal, weatherDeadlineAt = this.now() + WEATHER_DEADLINES.overallMs): Promise<ApiEnvelope<SkyReport>> {
-    const { computation, spot, key, generation, expiresAt, deliveryBoundary } = await this.prepare(context, undefined, signal, weatherDeadlineAt);
+  /** A bounded read-only fine-time target result. Decision/target arithmetic
+   * stays at the service owner; no full scene, Context write or per-frame
+   * report response is needed when playback is paused. */
+  async computeTargetInstant(context: ObservationContext, at: string, detail?: SpotDetail,
+    proposalId?: string): Promise<ApiEnvelope<SkyTargetInstantData>> {
+    if (Boolean(detail) !== Boolean(proposalId)) throw new Error("proposal_sky_context_invalid");
+    const instant = Date.parse(at);
+    if (!Number.isFinite(instant) || new Date(instant).toISOString() !== at ||
+      instant < Date.parse(context.nightStartUtc) || instant >= Date.parse(context.nightEndUtc))
+      throw new Error("sky_target_time_out_of_coverage");
+    const calculationContext: ObservationContext = detail && proposalId ? {
+      ...context, selectedAtUtc: at,
+      location: { kind: "FORMAL_SPOT", spotId: proposalId as SpotDetail["spot"]["spotId"], locationVersion: 1 },
+    } : { ...context, selectedAtUtc: at };
+    const { computation, generation } = await this.prepare(calculationContext, detail);
+    if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
+    const targets = structuredClone(computation.targetsAt(at));
+    assertSkyTargetFrames([{ at, targets }], [at]);
+    const result = envelope({ spotId: detail && proposalId ? proposalId : context.location.kind === "FORMAL_SPOT"
+      ? context.location.spotId : "", contextId: context.contextId,
+      contextRevision: context.revision, contextFingerprint: context.contextFingerprint,
+      at, targets }, computation.report.dataState,
+      structuredClone(computation.report.sources), [...computation.report.warnings,
+        ...(proposalId ? [PROPOSAL_SKY_WARNING] : [])]);
+    return { ...result, validAt: at, contextRevision: context.revision };
+  }
+
+  async compute(context: ObservationContext, signal?: AbortSignal, weatherDeadlineAt = this.now() + WEATHER_DEADLINES.overallMs,
+    catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2"): Promise<ApiEnvelope<SkyReport>> {
+    const skyCatalog=this.skyCatalogFor(catalogVersion);
+    const { computation, spot, key, generation, expiresAt, deliveryBoundary } = await this.prepare(context, undefined, signal, weatherDeadlineAt, skyCatalog);
     signal?.throwIfAborted();
     const representationKey = digest({ key, contextId: context.contextId,
       contextFingerprint: context.contextFingerprint, revision: context.revision });
     const result = await waitForCaller(this.reportCache.get(representationKey,
       () => {
         if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
-        return this.projectReport(computation, spot, context);
+        return this.projectReport(computation, spot, context, skyCatalog);
       },
-      (report) => report.data.skyScene.state === "AVAILABLE" ? expiresAt : this.now()), signal);
-    if (this.now() >= deliveryBoundary) return this.compute(context, signal, weatherDeadlineAt);
+      (report) => report.data.skyScene.state === "AVAILABLE" && report.data.timeModel ? expiresAt : this.now()), signal);
+    if (this.now() >= deliveryBoundary) return this.compute(context, signal, weatherDeadlineAt, catalogVersion);
     return structuredClone(result);
   }
 
@@ -384,7 +444,10 @@ export class AstronomyService implements AstronomyApplicationPort {
    * The projected detail is calculation input only and never enters the formal
    * spot repository or publication cache. The returned identity remains the
    * proposal id supplied by the caller. */
-  async computeCandidate(context: ObservationContext, detail: SpotDetail, proposalId: string, signal?: AbortSignal, weatherDeadlineAt = this.now() + WEATHER_DEADLINES.overallMs): Promise<ApiEnvelope<SkyReport>> {
+  async computeCandidate(context: ObservationContext, detail: SpotDetail, proposalId: string, signal?: AbortSignal,
+    weatherDeadlineAt = this.now() + WEATHER_DEADLINES.overallMs,
+    catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2"): Promise<ApiEnvelope<SkyReport>> {
+    const skyCatalog=this.skyCatalogFor(catalogVersion);
     const calculationContext: ObservationContext = {
       ...context,
       location: {
@@ -393,17 +456,17 @@ export class AstronomyService implements AstronomyApplicationPort {
         locationVersion: 1,
       },
     };
-    const { computation, spot, key, generation, expiresAt, deliveryBoundary } = await this.prepare(calculationContext, detail, signal, weatherDeadlineAt);
+    const { computation, spot, key, generation, expiresAt, deliveryBoundary } = await this.prepare(calculationContext, detail, signal, weatherDeadlineAt, skyCatalog);
     signal?.throwIfAborted();
     const representationKey = digest({ key, proposalId, contextId: context.contextId,
       contextFingerprint: context.contextFingerprint, revision: context.revision });
     const result = await waitForCaller(this.reportCache.get(representationKey,
       () => {
         if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
-        return this.projectReport(computation, spot, calculationContext);
+        return this.projectReport(computation, spot, calculationContext, skyCatalog);
       },
-      (report) => report.data.skyScene.state === "AVAILABLE" ? expiresAt : this.now()), signal);
-    if (this.now() >= deliveryBoundary) return this.computeCandidate(context, detail, proposalId, signal, weatherDeadlineAt);
+      (report) => report.data.skyScene.state === "AVAILABLE" && report.data.timeModel ? expiresAt : this.now()), signal);
+    if (this.now() >= deliveryBoundary) return this.computeCandidate(context, detail, proposalId, signal, weatherDeadlineAt, catalogVersion);
     return structuredClone({
       ...result,
       data: {
@@ -418,18 +481,19 @@ export class AstronomyService implements AstronomyApplicationPort {
       },
       warnings: [
         ...result.warnings,
-        "该结果只按账号可见的审核中提案坐标计算；场地事实尚未审核，不构成正式点发布或出行建议。",
+        PROPOSAL_SKY_WARNING,
       ],
     });
   }
 
   private async projectReport(computation: DecisionComputation, spot: SpotSummary,
-    context: ObservationContext): Promise<ApiEnvelope<SkyReport>> {
+    context: ObservationContext, skyCatalog: SkyCatalogProvider): Promise<ApiEnvelope<SkyReport>> {
+    const generation = this.generation;
     const { report } = computation;
     const hourlyAt = report.data.hourly.map((row) => row.at);
-    const sceneKey = digest({ spot: { wgs84: spot.wgs84, altitudeM: spot.altitudeM }, hourlyAt, catalog: this.catalogCacheKey() });
+    const sceneKey = digest({ spot: { wgs84: spot.wgs84, altitudeM: spot.altitudeM }, hourlyAt, catalog: this.catalogCacheKey(skyCatalog) });
     const skyScene = await this.sceneCache.get(sceneKey, async () => buildSkyScene({
-      provider: this.skyCatalog, hourlyAt, spot,
+      provider: skyCatalog, hourlyAt, spot,
     }), (scene) => scene.state === "AVAILABLE" ? this.now() + ASTRONOMY_CACHE_POLICY.computationTtlMs : this.now());
     if (!computation.targetFrames) {
       const frames = hourlyAt.map((at) => ({ at, targets: computation.targetsAt(at) }));
@@ -437,6 +501,23 @@ export class AstronomyService implements AstronomyApplicationPort {
       computation.targetFrames = frames;
     }
     const targetFrames = structuredClone(computation.targetFrames);
+    const observer = { latitude: spot.wgs84.latitude, longitude: spot.wgs84.longitude, elevationM: spot.altitudeM ?? 0 };
+    const observationFrames = hourlyAt.map((at) => ({
+      format: OBSERVATION_FRAME_FORMAT, at, observer,
+      equatorialToEnu: observationHorizontalFrame({ ...observer, at }).equatorialToEnu,
+    }));
+    assertSkyObservationFrames(observationFrames, hourlyAt);
+    const timeModelKey = digest({ observer, hourlyAt, algorithm: this.config.astronomyAlgorithmVersion, model: SKY_TIME_MODEL_FORMAT });
+    const timeModel = await this.timeModelCache.get(timeModelKey, async () => {
+      try { return buildSkyTimeModel({ observer, hourlyAt }); }
+      catch { return null; } // Fine time may fail without erasing genuine discrete frames.
+    }, value => value ? this.now() + ASTRONOMY_CACHE_POLICY.computationTtlMs : this.now());
+    if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
+    // Sky alone uses the unrounded model's knots, so starting/stopping between
+    // an exact row and continuous presentation cannot jump at coarse rounding.
+    const hourly = report.data.hourly.map(row => timeModel ?
+      { ...row, ...evaluateSkyTimeModel(timeModel, row.at)!.hourly } : { ...row });
+    const selectedLunarRow = hourly.find(row => row.at === context.selectedAtUtc);
     const sources = structuredClone([
       ...report.sources,
       ...(skyScene.catalog?.sources ?? []),
@@ -445,23 +526,30 @@ export class AstronomyService implements AstronomyApplicationPort {
     const data: SkyReport = this.bindContext({ ...structuredClone(report.data),
       context: { ...report.data.context, catalogVersion: skyScene.catalog?.catalogVersion ?? "UNAVAILABLE",
         dataRevision: digest({ evidence: report.data.context.dataRevision, sceneState: skyScene.state,
+          timeModel: timeModel ? digest(timeModel) : null,
           catalog: skyScene.catalog ? { version: skyScene.catalog.catalogVersion, hash: skyScene.catalog.catalogHash } : null,
           deepSkyCatalog: skyScene.deepSky?.catalog ? {
             version: skyScene.deepSky.catalog.catalogVersion,
             hash: skyScene.deepSky.catalog.catalogHash,
           } : null }).slice(0, 24) },
       targetFrames, skyScene: structuredClone(skyScene), sources,
+      observationFrames,
+      timeModel: structuredClone(timeModel),
+      hourly,
+      lunarFacts: selectedLunarRow ? { ...report.data.lunarFacts, phase: selectedLunarRow.moonPhase,
+        phaseAngleDeg: selectedLunarRow.moonPhaseAngleDeg, illumination: selectedLunarRow.moonIllumination,
+        altitudeDeg: selectedLunarRow.moonAltitudeDeg } : report.data.lunarFacts,
       precachedHours: 0,
       offlineReady: false, // Static publication presence is a client cache fact, not implied by report availability.
     }, context);
-    return envelope(data, report.dataState === "FRESH" && skyScene.state === "UNAVAILABLE" ? "PARTIAL" : report.dataState,
+    return envelope(data, report.dataState === "FRESH" && (skyScene.state === "UNAVAILABLE" || !timeModel) ? "PARTIAL" : report.dataState,
       sources, [...report.warnings, ...(skyScene.state === "UNAVAILABLE" ? [
         "真实星场目录或场景当前不可用；不会使用图片、随机星点、代表性坐标或采样装饰替代。",
-      ] : [])]);
+      ] : []), ...(!timeModel ? ["连续时间几何暂不可用；仍可使用报告中明确提供的观测时刻。"] : [])]);
   }
 
   private async computeDecisionData(context: ObservationContext, detail: SpotDetail,
-    weather: WeatherEvidenceResult): Promise<DecisionComputation> {
+    weather: WeatherEvidenceResult, skyCatalog: SkyCatalogProvider): Promise<DecisionComputation> {
     const spot = detail.spot;
     const requests = ["jupiter", "venus", "milky-way-core"] as const;
     const frameTimes = observationFrameTimes(context);
@@ -530,6 +618,9 @@ export class AstronomyService implements AstronomyApplicationPort {
         const matchingWeather = weatherHourAt(weatherRows, sample.at);
         return {
           at: sample.at,
+          sunAzimuthDeg: sample.sunAzimuthDeg,
+          sunAltitudeDeg: sample.sunAltitudeDeg,
+          sunAngularDiameterDeg: sample.sunAngularDiameterDeg,
           weatherAt: matchingWeather?.at ?? null,
           cloudPercent: matchingWeather?.cloudPercent ?? null,
           precipitationMm: matchingWeather?.precipitationMm ?? null,
@@ -544,7 +635,11 @@ export class AstronomyService implements AstronomyApplicationPort {
           dewPointC: matchingWeather?.dewPointC ?? null,
           visibilityKm: matchingWeather?.visibilityKm ?? null,
           moonAltitudeDeg: sample.moonAltitudeDeg,
+          moonAzimuthDeg: sample.moonAzimuthDeg,
+          moonAngularDiameterDeg: sample.moonAngularDiameterDeg,
+          moonBodyFrame: sample.moonBodyFrame,
           moonIllumination: sample.moonIllumination,
+          planets: sample.planets,
           moonPhase: sample.moonPhase,
           moonPhaseAngleDeg: sample.moonPhaseAngleDeg,
           darkness:
@@ -642,7 +737,8 @@ export class AstronomyService implements AstronomyApplicationPort {
         type: descriptor.type,
         window: descriptor.window,
         direction: `${Math.round(sample.targetAzimuthDeg)}°`,
-        altitudeDeg: Math.round(sample.targetAltitudeDeg),
+        azimuthDeg: sample.targetAzimuthDeg,
+        altitudeDeg: sample.targetAltitudeDeg,
         reason:
           `当前时刻 ${localTime(sample.at, spot.timezone)} 的方向由地点和时间计算；` +
           `本夜几何高度最高约 ${Math.round(descriptor.bestAltitudeDeg)}°。` +
@@ -697,7 +793,7 @@ export class AstronomyService implements AstronomyApplicationPort {
       const source = this.eventCatalog?.sourceFor(descriptor.event) ?? eventCatalogSource;
       if (!direction) return {
         targetId: descriptor.targetId, displayName: descriptor.displayName, type: "METEOR_SHOWER",
-        window: descriptor.window, direction: "暂无数据", altitudeDeg: null,
+        window: descriptor.window, direction: "暂无数据", azimuthDeg: null, altitudeDeg: null,
         reason: "当前时刻的历史辐射方向暂无数据；常年事件参考仍可查看。", source, confidence: null, activity: null,
       };
       const current = calculateEquatorialHorizontalAt({
@@ -718,7 +814,8 @@ export class AstronomyService implements AstronomyApplicationPort {
         type: "METEOR_SHOWER",
         window: descriptor.window,
         direction: `${Math.round(current.azimuthDeg)}°`,
-        altitudeDeg: Math.round(current.altitudeDeg),
+        azimuthDeg: current.azimuthDeg,
+        altitudeDeg: current.altitudeDeg,
         reason:
           `当前时刻 ${localTime(current.at, spot.timezone)} 的辐射点方向由地点和时间计算；` +
           (descriptor.bestAltitudeDeg === null ? "本夜暂无可用几何观测窗口。" : `已计算时段最高约 ${Math.round(descriptor.bestAltitudeDeg)}°。`) +
@@ -745,7 +842,7 @@ export class AstronomyService implements AstronomyApplicationPort {
       buildEverydayTarget(descriptor, selectedAtIso),
     );
     const targets = [...eventTargets, ...everydayTargets];
-    const catalogCacheKey = this.catalogCacheKey();
+    const catalogCacheKey = this.catalogCacheKey(skyCatalog);
     const sourceRevision = `${astronomySource.id}:${weather.source.id}:${spot.source.id}:${spot.lightPollution.source.id}:${spot.lightPollution.datasetVersion}:catalog:${catalogCacheKey}`;
     const scoringEvent =
       selectedEvent ??
@@ -1013,6 +1110,10 @@ export class AstronomyService implements AstronomyApplicationPort {
       },
       sources: [
         astronomySource,
+        solarRadiusSource,
+        skyPlanetSource,
+        skyJupiterShapeSource,
+        skySaturnRingSource,
         ...eventTargets.map(target => target.source),
         ...eventTargets.flatMap((target) =>
           target.activity ? [target.activity.source] : [],

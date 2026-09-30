@@ -527,7 +527,11 @@ export interface SkyTarget {
     | "METEOR_SHOWER"
     | "CONJUNCTION";
   window: { start: string; end: string } | null;
+  /** Display copy only. Never parse this string to recover drawing coordinates. */
   direction: string;
+  /** Exact-frame geometric bearing, clockwise from north in [0, 360). */
+  azimuthDeg: number | null;
+  /** Exact-frame geometric altitude; formatting belongs to the presentation. */
   altitudeDeg: number | null;
   reason: string;
   source: SourceSummary;
@@ -560,8 +564,85 @@ export interface SkyOpportunitySliceInput {
   hardBlockers: readonly string[];
 }
 
+export type SkyPlanetBody = "MERCURY" | "VENUS" | "MARS" | "JUPITER" | "SATURN" | "URANUS" | "NEPTUNE";
+export const SKY_PLANET_ORDER: readonly SkyPlanetBody[] = [
+  "MERCURY", "VENUS", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE",
+];
+
+/** Airless observer-centred direction and apparent globe, at the containing row's instant. */
+export interface SkyPlanetGeometry {
+  body: SkyPlanetBody;
+  azimuthDeg: number;
+  altitudeDeg: number;
+  angularDiameterDeg: number;
+  illuminatedFraction: number;
+  visualMagnitude: number;
+  /** Saturn ring-plane tilt only; a globe diameter never includes rings. */
+  ringTiltDeg: number | null;
+  /** Saturn north-pole unit vector in the observer's east/north/up frame. */
+  ringPoleEnu: readonly [number, number, number] | null;
+  /** Optional Saturn-to-Sun unit direction at photon emission, expressed in the
+   * observer's reception-time ENU frame. Older reports omit it; absence means
+   * ring shadows are unavailable, never that the rings are unlit. */
+  ringSunEnu?: readonly [number, number, number] | null;
+  /** Optional IAU axes for Mercury/Mars surface orientation or Jupiter's pole.
+   * Absent/invalid axes never alter position or phase. */
+  bodyFrame?: SkyBodyFrame | null;
+}
+
+/** IAU body axes in the observer east/north/up frame at the containing row's instant. */
+export interface SkyBodyFrame {
+  /** Positive-east zero longitude on this body's equator. */
+  primeMeridianEnu: readonly [number, number, number];
+  poleEnu: readonly [number, number, number];
+}
+
+export type MoonBodyFrame = SkyBodyFrame;
+
+export function validSkyBodyFrame(value: unknown): value is SkyBodyFrame {
+  if (!value || typeof value !== "object") return false;
+  const frame = value as SkyBodyFrame;
+  const validUnit = (v: unknown): v is readonly [number, number, number] =>
+    Array.isArray(v) && v.length === 3 && v.every(Number.isFinite) &&
+    Math.abs(Math.hypot(...v) - 1) < .001;
+  return validUnit(frame.primeMeridianEnu) && validUnit(frame.poleEnu) &&
+    Math.abs(frame.primeMeridianEnu.reduce((sum, v, i) => sum + v * frame.poleEnu[i]!, 0)) < .001;
+}
+
+export const validMoonBodyFrame = validSkyBodyFrame;
+
+export function validSkyPlanetGeometry(value: unknown, index: number): value is SkyPlanetGeometry {
+  if (!value || typeof value !== "object") return false;
+  const p = value as SkyPlanetGeometry;
+  return p.body === SKY_PLANET_ORDER[index] &&
+    Number.isFinite(p.azimuthDeg) && p.azimuthDeg >= 0 && p.azimuthDeg < 360 &&
+    Number.isFinite(p.altitudeDeg) && p.altitudeDeg >= -90 && p.altitudeDeg <= 90 &&
+    Number.isFinite(p.angularDiameterDeg) && p.angularDiameterDeg > 0 && p.angularDiameterDeg < .1 &&
+    Number.isFinite(p.illuminatedFraction) && p.illuminatedFraction >= 0 && p.illuminatedFraction <= 1 &&
+    Number.isFinite(p.visualMagnitude) && p.visualMagnitude > -10 && p.visualMagnitude < 20 &&
+    (p.body === "SATURN"
+      ? (p.ringTiltDeg === null && p.ringPoleEnu === null) ||
+        (typeof p.ringTiltDeg === "number" && Number.isFinite(p.ringTiltDeg) && Math.abs(p.ringTiltDeg) <= 30 &&
+          Array.isArray(p.ringPoleEnu) && p.ringPoleEnu.length === 3 &&
+          p.ringPoleEnu.every(Number.isFinite) &&
+          Math.abs(Math.hypot(...p.ringPoleEnu) - 1) < .001)
+      : p.ringTiltDeg === null && p.ringPoleEnu === null) &&
+    (p.ringSunEnu == null || (p.body === "SATURN" && p.ringPoleEnu !== null &&
+      Array.isArray(p.ringSunEnu) && p.ringSunEnu.length === 3 &&
+      p.ringSunEnu.every(Number.isFinite) &&
+      Math.abs(Math.hypot(...p.ringSunEnu) - 1) < .001)) &&
+    (p.body === "MARS" || p.body === "MERCURY" || p.body === "JUPITER" ||
+      p.body === "URANUS" || p.body === "NEPTUNE"
+      ? p.bodyFrame == null || validSkyBodyFrame(p.bodyFrame) : p.bodyFrame == null);
+}
+
 export interface HourlySkyRow {
   at: string;
+  /** Geometric solar direction at this exact astronomy instant, independent of weather. */
+  sunAzimuthDeg: number | null;
+  sunAltitudeDeg: number | null;
+  /** Observer-centred photosphere diameter; independent of twilight/weather. */
+  sunAngularDiameterDeg: number | null;
   /** Actual provider hour used here; astronomy at stays independent. Null means no matching source hour. */
   weatherAt: string | null;
   cloudPercent: number | null;
@@ -575,7 +656,14 @@ export interface HourlySkyRow {
   dewPointC: number | null;
   visibilityKm: number | null;
   moonAltitudeDeg: number | null;
+  /** Same topocentric Moon at `at`; null pair means geometry unavailable. */
+  moonAzimuthDeg: number | null;
+  moonAngularDiameterDeg: number | null;
+  /** Absent on older cached reports; a texture must then fall back to a plain phase disc. */
+  moonBodyFrame?: MoonBodyFrame | null;
   moonIllumination: number | null;
+  /** Null on retired/invalid reports; an empty array is never a valid full ephemeris. */
+  planets: readonly SkyPlanetGeometry[] | null;
   moonPhase: MoonPhaseKey | null;
   moonPhaseAngleDeg: number | null;
   darkness: "DAY" | "TWILIGHT" | "ASTRONOMICAL_NIGHT";
@@ -586,6 +674,12 @@ export interface HourlySkyRow {
   opportunityInput: SkyOpportunitySliceInput;
   state: DataState;
 }
+
+/** Geometry-only render input. It carries no invented weather, activity or
+ * decision scores when evaluated between supplied report instants. */
+export type SkyGeometryRow = Pick<HourlySkyRow, "at" | "sunAzimuthDeg" | "sunAltitudeDeg" | "sunAngularDiameterDeg" |
+  "moonAzimuthDeg" | "moonAltitudeDeg" | "moonAngularDiameterDeg" | "moonBodyFrame" | "moonIllumination" |
+  "moonPhase" | "moonPhaseAngleDeg" | "planets" | "darkness">;
 
 export interface WeatherAlertEvidence {
   /** Original issuing authority, when supplied; never infer it from a headline. */
@@ -728,7 +822,7 @@ export interface DeepSkyScene {
   unavailableReason: string | null;
 }
 
-export type CelestialObjectKind = "STAR" | "PLANET" | "GALAXY" | "NEBULA" | "MILKY_WAY";
+export type CelestialObjectKind = "STAR" | "MOON" | "PLANET" | "GALAXY" | "NEBULA" | "MILKY_WAY";
 
 export interface CelestialObjectFact {
   label: string;
@@ -782,8 +876,17 @@ export interface SkyReport {
   offlineReady: boolean;
   weatherEvidence: WeatherEvidenceSummary;
   skyScene: SkyScene;
+  /** New reports carry an independent exact-time frame. Older offline caches
+   * omit it and cannot display catalog-independent survey imagery. */
+  observationFrames?: readonly import("./observation-frame.ts").SkyObservationFrame[];
+  /** Optional bounded provider geometry for continuous sky presentation. Old
+   * reports retain their exact discrete frames without inventing fine time. */
+  timeModel?: import("./sky-time-model.ts").SkyTimeModel | null;
   sources: readonly SourceSummary[];
 }
+
+/** Transient geometry view, never the persisted/API SkyReport read model. */
+export type SkyGeometryReport = Omit<SkyReport, "hourly"> & { hourly: readonly SkyGeometryRow[] };
 
 export type DisplayMode = "DAY" | "NIGHT" | "OBSERVATION";
 

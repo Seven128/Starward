@@ -71,6 +71,14 @@ test("real static catalog HTTP delivers all 8404 stars to client validation, wit
     const changedTag = await fetch(url, { headers: { "If-None-Match": "wrong" } });
     assert.equal(changedTag.status, 200);
     await changedTag.arrayBuffer();
+    const revised = loadBsc5pStarCatalog("bsc5p-bright-stars.v3");
+    const revisedResponse = await fetch(`${base}/v2/sky/catalogs/${revised.catalogVersion}/${revised.catalogHash}`);
+    assert.equal(revisedResponse.status, 200);
+    assert.notEqual(revisedResponse.headers.get("etag"), tag);
+    const revisedEnvelope = await revisedResponse.json();
+    assertStellarCatalogPublication(revisedEnvelope.data, revised);
+    assert.equal(revisedEnvelope.data.rows.find((row: readonly unknown[]) => row[0] === "HR:4730")?.[1], "Acrux");
+    assert.equal(revisedEnvelope.data.rows.find((row: readonly unknown[]) => row[0] === "HR:4731")?.[1], null);
     for (const suffix of [`${owner.catalogVersion}/${"0".repeat(64)}`, `bsc5p-bright-stars.v3/${owner.catalogHash}`,
       `bsc5p-bright-stars.v1/${owner.catalogHash}`]) {
       const denied = await fetch(`${base}/v2/sky/catalogs/${suffix}`);
