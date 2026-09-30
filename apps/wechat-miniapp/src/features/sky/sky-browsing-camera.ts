@@ -38,7 +38,7 @@ export interface SkyBrowsingCameraFrame {
   /** Already aligned and smoothed by the existing orientation owner, or the
    * current manual view. Null means unavailable, never a substitute direction. */
   readonly localView: SkyViewBasis | null;
-  readonly intent: "follow" | "manual" | "locked";
+  readonly intent: "follow" | "track" | "manual" | "locked";
   readonly progress: number;
   readonly at: number;
   readonly reducedMotion?: boolean;
@@ -93,7 +93,7 @@ export function createSkyBrowsingCamera() {
       // Background gaps and out-of-order timestamps cannot advance a return.
       const step = elapsed > 0 && elapsed <= 100 ? elapsed : 0;
       const input = validBasis(frame.localView) ? frame.localView : null;
-      canReturn = Boolean(input && frame.intent === "follow");
+      canReturn = Boolean(input && (frame.intent === "follow" || frame.intent === "track"));
       if (frame.intent === "locked") {
         state = { phase: "local", view: input ?? state.view, progress: 0, path: null, returnElapsed: 0 };
         return snapshot();
@@ -114,7 +114,7 @@ export function createSkyBrowsingCamera() {
         state = { ...state, phase: "returning", progress: 0, path: null, returnElapsed: 0 };
         return snapshot();
       }
-      if (state.phase === "returning" && frame.intent === "follow") {
+      if (state.phase === "returning" && (frame.intent === "follow" || frame.intent === "track")) {
         if (!input || !state.view) return snapshot();
         const nextElapsed = frame.reducedMotion ? RETURN_MS : Math.min(RETURN_MS, state.returnElapsed + step);
         const before = smooth(state.returnElapsed / RETURN_MS), after = smooth(nextElapsed / RETURN_MS);

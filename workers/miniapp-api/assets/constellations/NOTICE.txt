@@ -14,3 +14,8 @@ No Hipparcos numerical astrometry. Explicit multiple-system members use geometri
 HIP60718 component identification only: All Skies Encyclopaedia / IAU-WGSN, Susanne M Hoffmann, Youla Azkarrula, Ian Ridpath.
 https://ase.exopla.net/index.php/Acrux ; CC BY 4.0 https://creativecommons.org/licenses/by/4.0/ .
 Geometry and topology retain separate licenses; runtime projection/opacity/tint do not change original downloadable art.
+Constellation display names (publication v3):
+English names: Stellarium Modern v24.4, CC BY-SA 4.0, https://raw.githubusercontent.com/Stellarium/stellarium/ab961cbde42eec8121be0df6ff48292f8d492b54/skycultures/modern/constellation_names.eng.fab
+Simplified Chinese names adapted from https://zh.wikipedia.org/w/index.php?title=%E6%98%9F%E5%BA%A7%E5%88%97%E8%A1%A8&oldid=93845063 ; Wikipedia contributors, CC BY-SA 4.0.
+Only the 88 constellation names are reused; unrelated article fields and media are excluded.
+This name dataset and adapted names remain CC BY-SA 4.0; separate ODbL geometry and FAL art retain their own licenses.

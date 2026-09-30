@@ -1,3 +1,18 @@
 .source-attribution,
 .source-attribution__credit { display: flex; flex-direction: column; gap: 4Px; min-width: 0; }
 .source-attribution .type-caption { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.source-attribution__link.soft-button {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  justify-content: flex-start;
+  text-align: left;
+}
+.source-attribution__link-text {
+  min-width: 0;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

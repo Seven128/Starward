@@ -1,0 +1,513 @@
+{
+  "capturedAt": "2026-09-22T16:53:43.4993252+08:00",
+  "repoRoot": "E:\\dev\\worktrees\\Starward\\remote-main-20260908",
+  "head": "6f6139ce282e424f6da4792ea8e892e4a48d1895",
+  "branch": "codex/remote-main-20260908",
+  "note": "Historical input snapshots only. Current owners and later user corrections remain controlling. Review status is in STATE.md.",
+  "sources": [
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\AGENTS.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/AGENTS.md",
+      "bytes": 20643,
+      "sha256": "AADA2A1CDDB693397CFB1AB947F3E48B8441B46DF2C4E30B4C80178BBFB717FF"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\global.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/global.md",
+      "bytes": 5217,
+      "sha256": "A1C366425BA06AB550F6A16B541A0B0C5F56A9CA8E35D25743B4DC1D32FE7F76"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\context.toml",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/context.toml",
+      "bytes": 12167,
+      "sha256": "EFF23BA66A908D989271E6A80E80ECF3E53772C5D8259FACAF30B87C13664D08"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\external-capabilities.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/external-capabilities.md",
+      "bytes": 33935,
+      "sha256": "A1EED4E76CCB0876E5F1127022105C0F4CBABBA40D3AEFDBEDAD45587920CF76"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\product-profile.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/product-profile.md",
+      "bytes": 20871,
+      "sha256": "AC87C21703A4DD29874247C66B8C2117C2B526ED9C651AE274B43FC899C3B3F6"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\areas\\main\\screen-contracts\\wechat-miniapp.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/areas/main/screen-contracts/wechat-miniapp.md",
+      "bytes": 16278,
+      "sha256": "573C279D9AFCD2BF54D7BE4C0C779A02EE644378E8BC931834755E869374BFE0"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\areas\\main\\screen-contracts\\wechat-miniapp\\spot-and-sky.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+      "bytes": 64972,
+      "sha256": "A80831AC9AB8A98C1D40DAAAE9272524E55E503E01A6A7C3BD3FEA0477217253"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\areas\\main\\screen-contracts\\wechat-miniapp\\shared-state-and-recovery.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md",
+      "bytes": 39479,
+      "sha256": "3D540E4B394B52A8F21FAC28C0812113F197199C1FB795439C2625E21A11ECE9"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\areas\\main\\screen-contracts\\wechat-miniapp\\map-and-finder.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/areas/main/screen-contracts/wechat-miniapp/map-and-finder.md",
+      "bytes": 51627,
+      "sha256": "DC77032806E7A0FEB945D0BB16DBC4403988DB105CF1269436155760A7462E0F"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\architecture.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/architecture.md",
+      "bytes": 11455,
+      "sha256": "BC497D5B8A6A09C3E22D82310B263DCF6567846FEE60F5733E2E893C97089AED"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\architecture\\runtime-and-domain.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/architecture/runtime-and-domain.md",
+      "bytes": 126857,
+      "sha256": "748D19EE1EF260BC70C1FE42FB67A1477243B7569C97C56EA12AE9B103BD33DD"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\architecture\\maintenance-boundaries.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/architecture/maintenance-boundaries.md",
+      "bytes": 17403,
+      "sha256": "E0F1716A229B8983F8A0B4CC71D3EE4D1FC0E22039025719C0F5FE8000EFF509"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\context-maintenance.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/context-maintenance.md",
+      "bytes": 19199,
+      "sha256": "41FEC4E645EFBCB7D4DF85E5589A9875D0EDD94852504E2FF76CC4AF4410330F"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\development-workflow.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/development-workflow.md",
+      "bytes": 1609,
+      "sha256": "7E97C1A7DB0F4771FF4C069B52ABD229501340463C12BEBE851AC04E13770D72"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\development-workflow\\authority-and-scope.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/development-workflow/authority-and-scope.md",
+      "bytes": 6928,
+      "sha256": "197603BE79254DC979CD24DA904B8A942E32306760F026B5BFC7AF77A0C668E1"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\development-workflow\\development-feedback.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/development-workflow/development-feedback.md",
+      "bytes": 23457,
+      "sha256": "5706CBA3CC34DA34D56D85CAC43E90918E1A5DF7703B13D809B93E3BC815984A"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\development-workflow\\candidate-acceptance.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/development-workflow/candidate-acceptance.md",
+      "bytes": 15186,
+      "sha256": "00A839BB6237F160BF6D5A1F5D7F6C66C05C4E73CC783E6DB00F42A71032C7DE"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\development-workflow\\paths-and-lifecycle.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/development-workflow/paths-and-lifecycle.md",
+      "bytes": 14356,
+      "sha256": "C8BAC0DAB034AFB9B905C6B45CB25C310654BBBB381A33C86DDF32727866710C"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\areas\\main\\verification.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/areas/main/verification.md",
+      "bytes": 5563,
+      "sha256": "97183AEA448AB25E4AB3039CF45DC924E1481AA4A696F28ED843BBD2B7BF7B0E"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\areas\\main\\verification\\wechat-device.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/areas/main/verification/wechat-device.md",
+      "bytes": 15871,
+      "sha256": "CC428700402AD72A1AE0E86E663E7307936B049A0077EDD73942A8DB7BADCCAC"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\areas\\main\\verification\\wechat-device\\development-feedback.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/areas/main/verification/wechat-device/development-feedback.md",
+      "bytes": 26205,
+      "sha256": "059313E58AD22B370213D2EF3671CD96FE7879499D7986BCB52C8771126D6E05"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\areas\\main\\verification\\wechat-device\\settled-candidate.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/areas/main/verification/wechat-device/settled-candidate.md",
+      "bytes": 9054,
+      "sha256": "6BEF22D83CDD1CDAC22C3C1901DE3DE5781B5EA6DA7D924D0144BFA270EF1B73"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\project_context\\areas\\main\\verification\\wechat-device\\journey-and-evidence.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/project_context/areas/main/verification/wechat-device/journey-and-evidence.md",
+      "bytes": 12185,
+      "sha256": "655533FEACF66730C246107C33D1DC01C34BBF0403A340908FF4FFFEE4F7E1C7"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\DESIGN.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/DESIGN.md",
+      "bytes": 137022,
+      "sha256": "223731E187F5D268DE65D9CFC44299905DA6195EC614DDD7D2378D37FAE9006D"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\wechat-miniapp-v2-1-1-source.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/wechat-miniapp-v2-1-1-source.md",
+      "bytes": 2380155,
+      "sha256": "C140FFC13FE691ACB6DC81513C799D690C74369C9350A143C923F3DBE759FCE0"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\skills\\uiux_design\\SKILL.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/.codex/skills/uiux_design/SKILL.md",
+      "bytes": 18665,
+      "sha256": "CE5B347715048F9E1AD951FC192F9CB9D3290DE099C8D701CB0DCEE9192AD8CA"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\skills\\starward-wechat-device-verification\\SKILL.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/.codex/skills/starward-wechat-device-verification/SKILL.md",
+      "bytes": 30961,
+      "sha256": "BC7143D829551EEC910BE4E60B9320725D83BEF7EEF1E40405B4AC819C16C746"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.agents\\skills\\starward-design-resource\\SKILL.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/.agents/skills/starward-design-resource/SKILL.md",
+      "bytes": 6488,
+      "sha256": "B455372E394B63B3CB2F09570E565C8602B89A9266424C49CEA05180013536BA"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\stellarium-cost-research-2026-09-22\\research.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/.codex/work-items/stellarium-cost-research-2026-09-22/research.md",
+      "bytes": 34451,
+      "sha256": "A82E07218932464C16F799A27EAE735A6F322E555CBB902BBD65814DAEFEA4B4"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\stellarium-cost-research-2026-09-22\\cost-model.mjs",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/.codex/work-items/stellarium-cost-research-2026-09-22/cost-model.mjs",
+      "bytes": 7042,
+      "sha256": "88B0627C7949381E0EC792C14A9A25291A45386F32DB83D3C871D30325F30CC8"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\stellarium-cost-research-2026-09-22\\cost-model.json",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/.codex/work-items/stellarium-cost-research-2026-09-22/cost-model.json",
+      "bytes": 9869,
+      "sha256": "1BF016790B56FBED988F37C02484D8686D242B592D9C81EBECA84F323365DF4F"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\stellarium-cost-research-2026-09-22\\monthly-scenarios.csv",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/.codex/work-items/stellarium-cost-research-2026-09-22/monthly-scenarios.csv",
+      "bytes": 801,
+      "sha256": "6996928F5B0F5A3B2546DD69FBC0071D4D6191DFE15F4800BEA5325AE489A38A"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\stellarium-cost-research-2026-09-22\\inquiry-draft.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/.codex/work-items/stellarium-cost-research-2026-09-22/inquiry-draft.md",
+      "bytes": 2854,
+      "sha256": "5AE380AFC08B1F71BB7353513198A4AA74280300315A610D5579216B3AA5781B"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\ADOPTED.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/ADOPTED.md",
+      "bytes": 1477,
+      "sha256": "F9E0ACA570FB664A1B8D94C743AA1FFC1B094CBA6F884139738E499135B0BDD6"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\stitch-status.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/stitch-status.md",
+      "bytes": 3614,
+      "sha256": "6A567044BC069D10483B8B1DCB762B11C5D967BFD85EC0D7BD825D114DE66B5F"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\adopted\\cloud-stargazing\\README.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/README.md",
+      "bytes": 4524,
+      "sha256": "EB4E6B977768437392C4CA67F06EFE3CF478B6A8CD858F589DB9E06C43B274ED"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\adopted\\cloud-stargazing\\review.html",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/review.html",
+      "bytes": 3365,
+      "sha256": "AA24A15CADF7C97242C65A9AD8B1A701283219328E1861EA9C4E61C6C69B4084"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\adopted\\cloud-stargazing\\preview\\index.html",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/preview/index.html",
+      "bytes": 1362,
+      "sha256": "7F87F925ED0D9B54AE370092823992A88C776DDA22C7936771C19A5A3DDD4C83"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\adopted\\cloud-stargazing\\preview\\app.mjs",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/preview/app.mjs",
+      "bytes": 7210,
+      "sha256": "F3FE81876E8F0F6761F993164A86D5624073C1ABA76BA5404198FACBBBAF43EF"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\adopted\\cloud-stargazing\\preview\\camera.mjs",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/preview/camera.mjs",
+      "bytes": 6953,
+      "sha256": "994D5D531745D27C20E2FCAF8A610B59EBC8D1B0BDED1F669F2E3378E22F99F4"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\adopted\\cloud-stargazing\\preview\\style.css",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/preview/style.css",
+      "bytes": 7539,
+      "sha256": "550C35ABBF9C3672FE099D833BF76C0577EDFC7E6CBA7E689130E44F5ACF7B17"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\adopted\\cloud-stargazing\\reference\\interactive-a.png",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/reference/interactive-a.png",
+      "bytes": 42874,
+      "sha256": "6805EFAB8B1D8E0D79916EB18081E76CFA2487E5C4C007AB6CAAC602C38F8B2F"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\adopted\\cloud-stargazing\\reference\\interactive-b.png",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/reference/interactive-b.png",
+      "bytes": 43157,
+      "sha256": "1D55B3D516C93D7C8D3669370DBDB70ED14AB5F0056FE17335116F4BD1C3F8C5"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\candidates\\context-audit-2026-09-09\\CURRENT.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/CURRENT.md",
+      "bytes": 2832,
+      "sha256": "A90FDC0686E4DFD1D5C3249AACD1F953AB2528D54B74EEB4543B32888314E537"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\candidates\\context-audit-2026-09-09\\README.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/README.md",
+      "bytes": 4740,
+      "sha256": "4DBE2F881976B8EDF6A7267144CF96B7A3CE1D658E1374383926CF809640A890"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\candidates\\context-audit-2026-09-09\\review.html",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/review.html",
+      "bytes": 3701,
+      "sha256": "2C75978769E35A6B74AE37949745B9D940795F7909962F1A200A7366B22863D9"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\candidates\\context-audit-2026-09-09\\preview\\index.html",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/preview/index.html",
+      "bytes": 1838,
+      "sha256": "50D517C6FB039341ACF5AFC14E0B08C35CE06093D0445D3E465B38103436D0FE"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\candidates\\context-audit-2026-09-09\\preview\\app.mjs",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/preview/app.mjs",
+      "bytes": 9550,
+      "sha256": "DE219DF6F1E9B962A6C6EB0E3A4893D922E3F000497A0FF75FCA0731C897FA42"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\candidates\\context-audit-2026-09-09\\preview\\revision.css",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/preview/revision.css",
+      "bytes": 5659,
+      "sha256": "168BF57A5AB1CD8BE56404C6F568C07871940C6640D3EECCC5F273CD0DFB7721"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\candidates\\context-audit-2026-09-09\\reference\\sky-current-2026-09-09.png",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/reference/sky-current-2026-09-09.png",
+      "bytes": 60235,
+      "sha256": "856994D2307B5E07384A8FC1C2CA747475C0631FE789DE192BA053BBE8C6A8A2"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\candidates\\context-audit-2026-09-09\\reference\\sky-long-320.png",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/reference/sky-long-320.png",
+      "bytes": 20044,
+      "sha256": "2380C1BA8D7251E3D8129D84BB5988955877402F1F7C389F033E07E94ACBD13B"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\sky\\candidates\\context-audit-2026-09-09\\reference\\sky-red-320.png",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/reference/sky-red-320.png",
+      "bytes": 15458,
+      "sha256": "02A41F1731D00170D44103BF9DC43DD82D89BC2335C9F3C8A6E2CA819CA5B9D3"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\shared\\observation-time\\README.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/shared/observation-time/README.md",
+      "bytes": 2242,
+      "sha256": "A42C5C7CE4D34C3CA480B0AE522E5D765F8CCE45DE6DA5931D239203AF472956"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\shared\\observation-time\\control.js",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/shared/observation-time/control.js",
+      "bytes": 12296,
+      "sha256": "D4A8278A112B9B70FB09F50E2D77AD8D3DA27E36E2B028EF6EC0283DA13AD707"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\shared\\observation-time\\control.css",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/shared/observation-time/control.css",
+      "bytes": 4306,
+      "sha256": "52C988D3EEB682A687E5C544F5D3DDA7630B068D0E9C39934B87ABB21A4D170D"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\docs\\design-resources\\wechat-miniapp\\shared\\liquid-glass\\README.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/docs/design-resources/wechat-miniapp/shared/liquid-glass/README.md",
+      "bytes": 6236,
+      "sha256": "96764A926178D7DAC17063BD26C1E8CDC1820301D995C0DF99AFE3821A212D18"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\packages\\astronomy-core\\data\\bsc5p-bright-stars.v2.manifest.json",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/packages/astronomy-core/data/bsc5p-bright-stars.v2.manifest.json",
+      "bytes": 3003,
+      "sha256": "B34B9010162EBE1B225EAB838FCD1A3AB108BC5BCDD60B0A0E009CF74010E840"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\workers\\miniapp-api\\assets\\sao\\catalog.manifest.json",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/workers/miniapp-api/assets/sao/catalog.manifest.json",
+      "bytes": 120477,
+      "sha256": "DA2F5279F348902C76F0ECEBB6282EBC5068F3A6CDADC027EAE74E74247043D5"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\packages\\astronomy-core\\data\\stellarium-modern-v24.4.v2.manifest.json",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/packages/astronomy-core/data/stellarium-modern-v24.4.v2.manifest.json",
+      "bytes": 459,
+      "sha256": "9AEB68AA132B342AE8C22B9C64A3E4559DC2FF17F88F8B683424D918C7753813"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\packages\\astronomy-core\\data\\opengc-messier-deep-sky.v1.manifest.json",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/packages/astronomy-core/data/opengc-messier-deep-sky.v1.manifest.json",
+      "bytes": 1370,
+      "sha256": "83DF375FD631C1F27B643CF7355738704FFFD4E33C9846D039C0A8278FAB8B0B"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\workers\\miniapp-api\\assets\\deep-sky\\manifest.json",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/workers/miniapp-api/assets/deep-sky/manifest.json",
+      "bytes": 153185,
+      "sha256": "BE36A8B78F449ED788A2F0E0C5A9E46D3C9B0090F6D52AC40A756637EC6775C8"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\data-pipelines\\star-catalog\\README.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/data-pipelines/star-catalog/README.md",
+      "bytes": 12315,
+      "sha256": "06EB5764D2EC2882202B5570D71B0FA88D0F00A6E11B43CACDF3C05DB4DC16A1"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\data-pipelines\\deep-sky\\README.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/data-pipelines/deep-sky/README.md",
+      "bytes": 3233,
+      "sha256": "F7D8D920D1838CC8792742F1C754995F9C5133CE3F647A7FE4F323A4FCF0911A"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\package.json",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/package.json",
+      "bytes": 9508,
+      "sha256": "531C53C185901900A2BFAD8E652D3C8E5EEBE9BB06C3CA50AF639F5252107CB5"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\apps\\wechat-miniapp\\package.json",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/apps/wechat-miniapp/package.json",
+      "bytes": 1368,
+      "sha256": "74B162CD44F7D21B975F0222B8FAA568F0C04BF8AF7D6603A28A809BE7C0730F"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\packages\\astronomy-core\\package.json",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/packages/astronomy-core/package.json",
+      "bytes": 2220,
+      "sha256": "719004C7247D5CB9CADEB4EFF46DF8DF8B65FD557A98D5C9CECA72ACD35B6AF8"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\packages\\miniapp-contracts\\package.json",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/packages/miniapp-contracts/package.json",
+      "bytes": 1022,
+      "sha256": "DEF132493932883DCE95EC626D9DF8B8EDF4E50EE21CFF63F8FF24FBB1C91056"
+    },
+    {
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\workers\\miniapp-api\\package.json",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/workers/miniapp-api/package.json",
+      "bytes": 1939,
+      "sha256": "1DA55737545490C2A24187A52F975CF83ACC51FFEC1AEB30F8DA7087F04EB307"
+    },
+    {
+      "path": "C:/Users/777/.codex/AGENTS.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/external/global-AGENTS.md",
+      "bytes": 6595,
+      "sha256": "AF8BBBD7B30F62753584408C21F08CB8E73A115BED1609674C40E80A626728BD"
+    },
+    {
+      "path": "C:/Users/777/.codex/skills/wechatide-skill/SKILL.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/external/wechatide-skill/SKILL.md",
+      "bytes": 10806,
+      "sha256": "C82900BA18A783B9ECBE8DE5BD11E4EC22104357346DA0B030A70BA118D22F74"
+    },
+    {
+      "path": "C:/Users/777/.codex/skills/wechatide-skill/references/environment-readiness.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/external/wechatide-skill/references/environment-readiness.md",
+      "bytes": 10598,
+      "sha256": "29ECE30E23B10435C5D86224CEC6FC2A804DA8A910424ED2CDF363C0E5366065"
+    },
+    {
+      "path": "C:/Users/777/.codex/skills/wechatide-skill/references/tool-index.md",
+      "state": "ARCHIVED_NOT_PROOF_OF_REVIEW",
+      "snapshot": "baseline/sources/external/wechatide-skill/references/tool-index.md",
+      "bytes": 7500,
+      "sha256": "84674C12A4EEC4EEC80B3529EB24AAFD9EF07A0899471E6AAB5103C23A6938D6"
+    }
+  ]
+}

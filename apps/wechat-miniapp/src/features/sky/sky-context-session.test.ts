@@ -109,7 +109,8 @@ test("actual page lifecycle hooks cancel publishing and reset the visible saving
   const hooks = statements.filter(node => ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
     ["useDidHide", "useDidShow", "useEffect"].includes(node.expression.expression.getText(source)) &&
     node.expression.arguments[0]?.getText(source).includes("contextSession." ) &&
-    !node.expression.arguments[0]?.getText(source).includes("contextLookup"));
+    !node.expression.arguments[0]?.getText(source).includes("contextLookup") &&
+    !node.expression.arguments[0]?.getText(source).includes("restoreObservationContext"));
   const h = harness(); let hide = () => {}, show = () => {}, dispose = () => {};
   const visible: boolean[] = [], saving: boolean[] = [];
   vm.runInNewContext(compile(hooks.map(node => node.getText(source)).join("\n")), {
@@ -157,4 +158,45 @@ test("freeze rejects date and time commits synchronously before React catches up
   await h.actions.commitIndex(0); await h.actions.commitCivilDate("2026-09-16");
   assert.equal(h.requests.length, 0); assert.equal(h.writes.length, 0);
   assert.equal(h.session.busy, false);
+});
+
+test("an expired stored Context recovers the Sky read once and rejects a late old-place result", async () => {
+  const recoveryEffect = statements.find(node => ts.isExpressionStatement(node) &&
+    ts.isCallExpression(node.expression) && node.expression.expression.getText(source) === "useEffect" &&
+    node.expression.arguments[0]?.getText(source).includes("restoreObservationContext"));
+  assert.ok(recoveryEffect, "the Sky report read must recover a server-expired Context");
+  class ApiError extends Error { constructor(public code: string) { super(code); } }
+  const run = (h: ReturnType<typeof harness>, code: string) => {
+    const pending: { resolve: (value: { data: ReturnType<typeof context> }) => void }[] = [];
+    const attempted = { current: false };
+    const restoreAbortRef = { current: null as AbortController | null };
+    const writes: unknown[] = [];
+    const sandbox = {
+      useEffect: (effect: () => void) => effect(), pageVisible: true, contextComplete: true,
+      activeContext: h.state().observationContext, contextSession: h.session,
+      staleReportError: new ApiError(code), MiniappApiError: ApiError,
+      report: { isFetching: false }, autoRestoreAttemptedRef: attempted, restoreAbortRef,
+      AbortController,
+      restoreObservationContext: () => new Promise(resolve => pending.push({ resolve })),
+      setObservationContext: (value: unknown) => writes.push(value),
+      isMiniappRequestCancelled: () => false,
+    };
+    const invoke = () => vm.runInNewContext(compile(recoveryEffect.getText(source)), sandbox);
+    invoke(); invoke();
+    return { pending, writes, attempted };
+  };
+  const h = harness(); const stale = run(h, "NOT_FOUND");
+  assert.equal(stale.pending.length, 1, "a repeated render must not start another recovery");
+  stale.pending[0]!.resolve({ data: context("ctx:recovered", 2) });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(h.session.contextId, "ctx:recovered");
+  assert.equal(stale.writes.length, 1);
+
+  const offline = run(harness(), "PROVIDER_UNAVAILABLE");
+  assert.equal(offline.pending.length, 0, "transport/provider failures must keep the old offline behavior");
+  const replaced = harness(); const late = run(replaced, "STALE_REJECTED");
+  replaced.replace();
+  late.pending[0]!.resolve({ data: context("ctx:recovered", 2) });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(late.writes.length, 0, "an old place must not overwrite the new selection");
 });

@@ -16,6 +16,7 @@ export interface StellarGeometryIdentity {
 
 /** Stable HR identity, unit EQJ position, tangent velocity in radians/Julian year. */
 export type StellarGeometryRow = readonly [string, number, number, number, number, number, number];
+export type StellarGeometryMotion = readonly [number, number, number, number, number, number];
 export interface StellarGeometryCatalog extends StellarGeometryIdentity {
   rows: readonly StellarGeometryRow[];
 }
@@ -49,6 +50,17 @@ function assertIdentity(value: Record<string, unknown>, expected: Pick<StellarGe
   if (value.catalogVersion !== expected.catalogVersion || value.catalogHash !== expected.catalogHash) fail("catalog_binding");
 }
 
+/** Unit EQJ position and tangent velocity per Julian year, shared by catalog
+ * publications and the identity-bound lazy position response. */
+export function assertStellarGeometryMotion(value: unknown): asserts value is StellarGeometryMotion {
+  if (!Array.isArray(value) || value.length !== 6 || !Array.from(value).every(finite)) fail("row_finite");
+  const length = Math.hypot(value[0], value[1], value[2]);
+  if (Math.abs(length - 1) > ROTATION_TOLERANCE) fail("row_unit");
+  const speed = Math.hypot(value[3], value[4], value[5]);
+  const radial = value[0] * value[3] + value[1] * value[4] + value[2] * value[5];
+  if (!finite(speed) || !finite(radial) || Math.abs(radial) > Math.max(1e-15, speed * ROTATION_TOLERANCE)) fail("row_tangent");
+}
+
 export function assertStellarGeometryCatalog(
   value: unknown,
   expected: Pick<StellarGeometryIdentity, "catalogVersion" | "catalogHash">,
@@ -60,12 +72,7 @@ export function assertStellarGeometryCatalog(
   for (const row of catalog.rows) {
     if (!Array.isArray(row) || row.length !== 7 || !isBrightStarReference(row[0]) || seen.has(row[0])) fail("row_identity");
     seen.add(row[0]);
-    if (!Array.from(row).slice(1).every(finite)) fail("row_finite");
-    const length = Math.hypot(row[1], row[2], row[3]);
-    if (Math.abs(length - 1) > ROTATION_TOLERANCE) fail("row_unit");
-    const speed = Math.hypot(row[4], row[5], row[6]);
-    const radial = row[1] * row[4] + row[2] * row[5] + row[3] * row[6];
-    if (!finite(speed) || !finite(radial) || Math.abs(radial) > Math.max(1e-15, speed * ROTATION_TOLERANCE)) fail("row_tangent");
+    assertStellarGeometryMotion(Array.from(row).slice(1));
   }
 }
 

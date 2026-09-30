@@ -27,6 +27,7 @@ IP 版本仍仅限本人调试，不是公开体验版；正式发布的域名�
   手动路径同样执行产品检查，不绕过 CI。
 - **看结果**：`gh run list --workflow backend-staging.yml`，再用
   `gh run view <run-id> --log-failed` 查看失败节点。不要把 skipped/queued 当作部署成功。
+- **看 Sky 资源出口**：正式与 IP 内测 Caddy 共用 `sky-resource-logging.caddy`，访问日志仅附固定的 `sky_resource_class`；结合状态和 `size` 可按资源类汇总边缘响应体字节。日志继续删除完整 request 与 response headers，不含 URL/查询参数。此值不是微信实际下载量、CDN 命中或账单，不能以本机流量样本估算正式月费。
 - **当前开关**：GitHub 仓库级变量 `STARWARD_STAGING_CD_ENABLED=true` 才允许部署；
   `STARWARD_STAGING_LANE=operator-preview` 选择 IP 内测，`domain` 选择正式域名
   staging。`STARWARD_REMOTE_BASE_DEPLOY_ENV` 必须指向该模式的服务器私有基础配置。

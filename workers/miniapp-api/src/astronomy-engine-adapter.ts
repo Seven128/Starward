@@ -1,4 +1,6 @@
 import { createRequire } from "node:module";
+import { moonPhaseKey, type SkyTimeBodyName, type SkyTimeVector } from "@starward/miniapp-contracts";
+export { moonPhaseKey } from "@starward/miniapp-contracts";
 import type {
   AstronomicalEventLocalPhase,
   AstronomicalEventLocalVisibility,
@@ -28,7 +30,9 @@ const {
   NextGlobalSolarEclipse,
   NextLunarEclipse,
   Observer,
+  RotationAxis,
   RotateVector,
+  Rotation_EQJ_HOR,
   Rotation_EQJ_ECL,
   Rotation_ECL_EQJ,
   Rotation_EQJ_EQD,
@@ -42,7 +46,7 @@ const {
 } = engine;
 
 export const MINIAPP_ASTRONOMY_ALGORITHM =
-  "miniapp-astronomy-engine-adapter@1.1.0+astronomy-engine@2.1.19";
+  "miniapp-astronomy-engine-adapter@1.3.5+astronomy-engine@2.1.19";
 
 export const MINIAPP_EVENT_PROJECTION_ALGORITHM =
   "miniapp-event-projection@2.0.0+astronomy-engine@2.1.19";
@@ -294,29 +298,19 @@ export interface MiniappEquatorialHorizontalCalculation {
 export interface MiniappSkySample {
   at: string;
   sunAltitudeDeg: number;
+  sunAzimuthDeg: number;
+  sunAngularDiameterDeg: number;
   moonAltitudeDeg: number;
+  moonAzimuthDeg: number;
+  /** Observer-centred apparent diameter, not a fixed icon size. */
+  moonAngularDiameterDeg: number;
+  moonBodyFrame: import("@starward/miniapp-contracts").MoonBodyFrame;
   moonIllumination: number;
+  planets: readonly import("@starward/miniapp-contracts").SkyPlanetGeometry[];
   moonPhase: MoonPhaseKey;
   moonPhaseAngleDeg: number;
   targetAltitudeDeg: number;
   targetAzimuthDeg: number;
-}
-
-const MOON_PHASES: readonly MoonPhaseKey[] = [
-  "NEW",
-  "WAXING_CRESCENT",
-  "FIRST_QUARTER",
-  "WAXING_GIBBOUS",
-  "FULL",
-  "WANING_GIBBOUS",
-  "LAST_QUARTER",
-  "WANING_CRESCENT",
-];
-
-export function moonPhaseKey(angleDeg: number): MoonPhaseKey {
-  if (!Number.isFinite(angleDeg)) throw new RangeError("moon_phase_angle_invalid");
-  const normalized = ((angleDeg % 360) + 360) % 360;
-  return MOON_PHASES[Math.round(normalized / 45) % 8]!;
 }
 
 export interface MiniappNightSkyCalculation {
@@ -452,7 +446,149 @@ function round(value: number, digits = 3): number {
 
 function horizontal(body: EngineBody, at: Date, observer: EngineObserver) {
   const equator = Equator(body, at, observer, true, true);
-  return Horizon(at, observer, equator.ra, equator.dec, "");
+  return { ...Horizon(at, observer, equator.ra, equator.dec, ""), distanceAu: equator.dist };
+}
+
+// IAU 2012 astronomical unit (exact), NASA/IAU reference lunar sphere.
+const KM_PER_AU = 149_597_870.7;
+const MOON_REFERENCE_RADIUS_KM = 1737.4;
+// NASA Goddard NSSDCA Sun Fact Sheet: volumetric mean radius, km.
+// https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html
+const SUN_REFERENCE_RADIUS_KM = 695_700;
+function sphereAngularDiameterDeg(radiusKm: number, distanceAu: number): number {
+  return 2 * Math.asin(radiusKm / (distanceAu * KM_PER_AU)) * 180 / Math.PI;
+}
+
+/** IAU positive-east body prime meridian at the exact report instant. Rotation_EQJ_HOR
+ * yields north/west/up, so convert all axes to the renderer's east/north/up. */
+function bodyFrameAt(body:EngineBody,at: Date, observer: EngineObserver,
+  emittedAt:Date=at): import("@starward/miniapp-contracts").SkyBodyFrame {
+  // Body spin belongs to the photon emission instant; the ENU basis belongs
+  // to the observer's reception instant. Lunar light time is sub-second, but
+  // using reception spin for distant Mars shifts surface features by degrees.
+  const axis = RotationAxis(body, emittedAt);
+  const ra = axis.ra * Math.PI / 12, spin = axis.spin * Math.PI / 180;
+  const north = [axis.north.x, axis.north.y, axis.north.z] as const;
+  const node = [-Math.sin(ra), Math.cos(ra), 0] as const;
+  const cross = (a: readonly number[], b: readonly number[]): [number, number, number] =>
+    [a[1]! * b[2]! - a[2]! * b[1]!, a[2]! * b[0]! - a[0]! * b[2]!, a[0]! * b[1]! - a[1]! * b[0]!];
+  const quarter = cross(north, node);
+  const prime = node.map((v, i) => v * Math.cos(spin) + quarter[i]! * Math.sin(spin));
+  const rotation = Rotation_EQJ_HOR(at, observer);
+  const toEnu = (vector: readonly number[]): readonly [number, number, number] => {
+    const converted = RotateVector(rotation, new engine.Vector(vector[0]!, vector[1]!, vector[2]!, engine.MakeTime(at)));
+    return [round(-converted.y, 7), round(converted.x, 7), round(converted.z, 7)];
+  };
+  return { primeMeridianEnu: toEnu(prime), poleEnu: toEnu(north) };
+}
+
+// NASA Goddard NSSDCA individual Planetary Fact Sheets: volumetric mean radii, km.
+// https://nssdc.gsfc.nasa.gov/planetary/planetfact.html
+const PLANET_SPHERES = [
+  ["MERCURY", Body.Mercury, 2439.7], ["VENUS", Body.Venus, 6051.8],
+  ["MARS", Body.Mars, 3389.50], ["JUPITER", Body.Jupiter, 69911],
+  ["SATURN", Body.Saturn, 58232], ["URANUS", Body.Uranus, 25362],
+  ["NEPTUNE", Body.Neptune, 24622],
+] as const;
+
+function planetGeometryAt(at: Date, observer: EngineObserver): import("@starward/miniapp-contracts").SkyPlanetGeometry[] {
+  return PLANET_SPHERES.map(([bodyKey, body, radiusKm]) => {
+    const position = horizontal(body, at, observer);
+    const illumination = Illumination(body, at);
+    let ringPoleEnu: readonly [number, number, number] | null = null;
+    let ringSunEnu: readonly [number, number, number] | null = null;
+    if (bodyKey === "SATURN") {
+      // The rings and sunlight belong to the photons' emission instant; the
+      // local ENU basis belongs to the observer at report reception.
+      const emittedAt = new Date(at.getTime() - position.distanceAu / engine.C_AUDAY * 86_400_000);
+      const rotation = Rotation_EQJ_HOR(at, observer);
+      const pole = RotateVector(rotation, RotationAxis(Body.Saturn, emittedAt).north);
+      // Astronomy Engine HOR is north/west/up; the renderer owns east/north/up.
+      ringPoleEnu = [round(-pole.y, 6), round(pole.x, 6), round(pole.z, 6)];
+      try {
+        const sunToSaturn = engine.HelioVector(Body.Saturn, emittedAt);
+        const saturnToSun = RotateVector(rotation, new engine.Vector(
+          -sunToSaturn.x, -sunToSaturn.y, -sunToSaturn.z, engine.MakeTime(at)));
+        const length = Math.hypot(saturnToSun.x, saturnToSun.y, saturnToSun.z);
+        if (length > 0 && Number.isFinite(length)) ringSunEnu =
+          [round(-saturnToSun.y / length, 7), round(saturnToSun.x / length, 7),
+            round(saturnToSun.z / length, 7)];
+      } catch {
+        // Optional shadow geometry must not erase valid position, phase or rings.
+      }
+    }
+    return {
+      body: bodyKey,
+      azimuthDeg: round(position.azimuth, 6) % 360,
+      altitudeDeg: round(position.altitude, 6),
+      angularDiameterDeg: round(sphereAngularDiameterDeg(radiusKm, position.distanceAu), 8),
+      illuminatedFraction: round(illumination.phase_fraction, 6),
+      visualMagnitude: round(illumination.mag, 3),
+      ringTiltDeg: bodyKey === "SATURN" && typeof illumination.ring_tilt === "number"
+        ? round(illumination.ring_tilt, 3) : null,
+      ringPoleEnu,
+      ringSunEnu,
+      bodyFrame: bodyKey === "MARS" || bodyKey === "MERCURY" || bodyKey === "JUPITER" ||
+        bodyKey === "URANUS" || bodyKey === "NEPTUNE" ? bodyFrameAt(body,at,observer,
+        new Date(at.getTime()-position.distanceAu/engine.C_AUDAY*86_400_000)) : null,
+    };
+  });
+}
+
+export type MiniappSkyGeometry = Omit<MiniappSkySample, "targetAltitudeDeg" | "targetAzimuthDeg">;
+
+/** One geometry owner for discrete reports and the bounded continuous model.
+ * Legacy report rounding stays at its serialization boundary below. */
+function skyGeometryAt(at: Date, observer: EngineObserver): MiniappSkyGeometry {
+  const sun = horizontal(Body.Sun, at, observer);
+  const moon = horizontal(Body.Moon, at, observer);
+  const phaseAngle = MoonPhase(at);
+  return {
+    at: at.toISOString(),
+    sunAltitudeDeg: sun.altitude, sunAzimuthDeg: sun.azimuth,
+    sunAngularDiameterDeg: sphereAngularDiameterDeg(SUN_REFERENCE_RADIUS_KM, sun.distanceAu),
+    moonAltitudeDeg: moon.altitude, moonAzimuthDeg: moon.azimuth,
+    moonAngularDiameterDeg: sphereAngularDiameterDeg(MOON_REFERENCE_RADIUS_KM, moon.distanceAu),
+    moonBodyFrame: bodyFrameAt(Body.Moon, at, observer),
+    moonIllumination: Illumination(Body.Moon, at).phase_fraction,
+    planets: planetGeometryAt(at, observer),
+    moonPhase: moonPhaseKey(phaseAngle), moonPhaseAngleDeg: phaseAngle,
+  };
+}
+
+export function calculateMiniappSkyGeometryAt(input: Pick<MiniappHorizontalRequest,
+  "latitude" | "longitude" | "elevationM" | "at">): MiniappSkyGeometry {
+  assertObserver(input);
+  const at = new Date(input.at);
+  if (!Number.isFinite(at.getTime())) throw new TypeError("astronomy_instant_invalid");
+  return skyGeometryAt(at, new Observer(input.latitude, input.longitude, input.elevationM));
+}
+
+/** The provider supplies apparent EQJ direction/rate. Clients evaluate that
+ * explicit model; they never load Astronomy Engine or derive an ephemeris. */
+export function calculateMiniappBodyMotionAt(input: Pick<MiniappHorizontalRequest,
+  "latitude" | "longitude" | "elevationM" | "at"> & { body: SkyTimeBodyName }): {
+  directionEqj: SkyTimeVector; velocityEqjPerSecond: SkyTimeVector;
+} {
+  assertObserver(input);
+  const at = new Date(input.at);
+  if (!Number.isFinite(at.getTime())) throw new TypeError("astronomy_instant_invalid");
+  const body = input.body === "SUN" ? Body.Sun : input.body === "MOON" ? Body.Moon
+    : PLANET_SPHERES.find(([key]) => key === input.body)?.[1];
+  if (body === undefined) throw new TypeError("astronomy_body_not_supported");
+  const observer = new Observer(input.latitude, input.longitude, input.elevationM);
+  const directionAt = (instant: Date): SkyTimeVector => {
+    const position = Equator(body, instant, observer, false, true).vec;
+    const length = Math.hypot(position.x, position.y, position.z);
+    return [position.x / length, position.y / length, position.z / length];
+  };
+  const directionEqj = directionAt(at);
+  const before = directionAt(new Date(at.getTime() - 1000));
+  const after = directionAt(new Date(at.getTime() + 1000));
+  const velocity = after.map((value, index) => (value - before[index]!) / 2);
+  const radial = velocity.reduce((sum, value, index) => sum + value * directionEqj[index]!, 0);
+  const velocityEqjPerSecond = velocity.map((value, index) => value - radial * directionEqj[index]!) as unknown as SkyTimeVector;
+  return { directionEqj, velocityEqjPerSecond };
 }
 
 function targetHorizontal(
@@ -493,7 +629,8 @@ export function calculateTargetHorizontalAt(
     refraction: "none",
     at: at.toISOString(),
     target: input.target,
-    azimuthDeg: round(result.azimuth, 6),
+    // Rounding just west of north must retain the canonical [0, 360) interval.
+    azimuthDeg: round(result.azimuth, 6) % 360,
     altitudeDeg: round(result.altitude, 6),
   };
 }
@@ -541,7 +678,7 @@ export function calculateEquatorialHorizontalAt(
     at: at.toISOString(),
     rightAscensionDeg: input.rightAscensionDeg,
     declinationDeg: input.declinationDeg,
-    azimuthDeg: round(result.azimuth, 6),
+    azimuthDeg: round(result.azimuth, 6) % 360,
     altitudeDeg: round(result.altitude, 6),
   };
 }
@@ -761,19 +898,20 @@ export function calculateMiniappNightSky(
   const samples: MiniappSkySample[] = [];
   const cadenceMs = (input.cadenceMinutes ?? 30) * 60_000;
   const sampleAt = (at: Date): MiniappSkySample => {
-    const sun = horizontal(Body.Sun, at, observer);
-    const moon = horizontal(Body.Moon, at, observer);
+    const geometry = skyGeometryAt(at, observer);
     const target = targetHorizontal(input.target, at, observer);
-    const phaseAngle = MoonPhase(at);
     return {
-      at: at.toISOString(),
-      sunAltitudeDeg: round(sun.altitude),
-      moonAltitudeDeg: round(moon.altitude),
-      moonIllumination: round(Illumination(Body.Moon, at).phase_fraction, 4),
-      moonPhase: moonPhaseKey(phaseAngle),
-      moonPhaseAngleDeg: round(phaseAngle),
-      targetAltitudeDeg: round(target.altitude),
-      targetAzimuthDeg: round(target.azimuth),
+      ...geometry,
+      sunAltitudeDeg: round(geometry.sunAltitudeDeg),
+      sunAzimuthDeg: round(geometry.sunAzimuthDeg) % 360,
+      sunAngularDiameterDeg: round(geometry.sunAngularDiameterDeg, 6),
+      moonAltitudeDeg: round(geometry.moonAltitudeDeg),
+      moonAzimuthDeg: round(geometry.moonAzimuthDeg) % 360,
+      moonAngularDiameterDeg: round(geometry.moonAngularDiameterDeg, 5),
+      moonIllumination: round(geometry.moonIllumination, 4),
+      moonPhaseAngleDeg: round(geometry.moonPhaseAngleDeg),
+      targetAltitudeDeg: target.altitude,
+      targetAzimuthDeg: target.azimuth,
     };
   };
   if (dusk && dawn) {

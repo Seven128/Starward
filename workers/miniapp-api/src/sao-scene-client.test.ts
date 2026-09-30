@@ -27,7 +27,7 @@ test('real published stars reach drawing and picking with the selected observer/
   assert(selected.length>0);assert(selected.reduce((sum,t)=>sum+t.bytes,0)<SKY_STELLAR_VIEW_BYTES);
   const tiles=await Promise.all(selected.map(async t=>(await service.tile(publication.publicationHash,t.id)).data));
   const supplement=resolveSkyStellarSupplement(publication,tiles,report.skyScene,at[0])!;assert(supplement.points.length>0);
-  const surface:SkyRenderSurface={begin(){},image(){return true;},artwork(){return true;},segments(){},disc(){},finish(){}};
+  const surface:SkyRenderSurface={begin(){},image(){return true;},skyImageMesh(){return true;},artwork(){return true;},solarLight(){return true;},galacticBand(){return true;},landscape(){return false;},sun(){return true;},moon(){return true;},planet(){return true;},saturnRings(){return true;},segments(){},disc(){},finish(){}};
   function paint(fov:number,layer:typeof supplement|null,when=at[0]!){
     let snapshot:SkyPickSnapshot|null=null;
     drawSkyScene(surface,report,when,null,null,390,650,'NIGHT',s=>{snapshot=s;},undefined,fov,null,view.basis,undefined,undefined,undefined,layer);

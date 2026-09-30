@@ -45,6 +45,7 @@ export function createSkyOrientationController(options: {
   let telemetry: SkyOrientationSnapshot["telemetry"] = { accuracy: null, sampledAt: null };
   let lowSince: number | null = null, goodSamples = 0, lowQuality = false;
   let deadline: unknown, generation = 0, reference = 0, resume = false, disposed = false;
+  let hidden = false;
   let presentationRevision = 0;
   const lifecycle = createCompassLifecycle(options.port, { requireDeviceMotion: true,
     motionInterval: "game", compassOptional: options.platform.toLowerCase() === "android",
@@ -95,7 +96,11 @@ export function createSkyOrientationController(options: {
       : "天空图随手机方向更新；可使用可靠天体或方向参照重新校准";
   }
   async function start() {
-    if (disposed || lifecycle.active) return;
+    if (disposed) return;
+    // A delayed retry preserves user intent, but native acquisition belongs
+    // only to this page's foreground lifetime.
+    if (hidden) { resume = true; return; }
+    if (lifecycle.active) return;
     const session = ++generation;
     tracker.reset();
     reference = alignment.startReference();
@@ -147,8 +152,8 @@ export function createSkyOrientationController(options: {
   return {
     snapshot, start, stop,
     get active() { return lifecycle.active; },
-    hide() { resume = lifecycle.active; stop(); },
-    show() { if (resume) { resume = false; void start(); } },
+    hide() { if (hidden || disposed) return; hidden = true; resume = lifecycle.active; stop(); },
+    show() { if (!hidden || disposed) return; hidden = false; if (resume) { resume = false; void start(); } },
     stopFollowing() { resume = false; stop(); },
     begin() { const changed = alignment.begin(options.presented()); if (changed) { presentationRevision++; emit(); } return changed; },
     commit() { const changed = alignment.commit(); if (changed) { presentationRevision++; emit(); } return changed; },

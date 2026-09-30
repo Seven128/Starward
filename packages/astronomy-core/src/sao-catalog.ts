@@ -16,7 +16,9 @@ const FIELDS=['sourceId','visualMagnitude','raJ2000Deg','decJ2000Deg','pmRaCosDe
 export function parseSaoCatalog(bytes:Uint8Array,expected:{catalogHash:string;baseCatalogVersion:string;baseAssetSha256:string}){
   if(createHash('sha256').update(bytes).digest('hex')!==expected.catalogHash)fail('source_hash');
   const pack=JSON.parse(Buffer.from(bytes).toString('utf8'));
-  if(pack.schemaVersion!=='sao-visual-supplement-v1'||pack.catalogVersion!=='sao-visual-supplement.v1'||
+  const version=expected.baseCatalogVersion==='bsc5p-bright-stars.v2'?'sao-visual-supplement.v1':
+    expected.baseCatalogVersion==='bsc5p-bright-stars.v3'?'sao-visual-supplement.v2':null;
+  if(!version||pack.schemaVersion!=='sao-visual-supplement-v1'||pack.catalogVersion!==version||
     pack.frame!=='FK5'||pack.referenceEpoch!==2000||pack.magnitudeBand!=='VISUAL'||pack.magnitudeLimit!==10||
     pack.baseCatalogVersion!==expected.baseCatalogVersion||pack.baseAssetSha256!==expected.baseAssetSha256||
     JSON.stringify(pack.rowFields)!==JSON.stringify(FIELDS)||!Array.isArray(pack.rows)||pack.rows.length!==246280)fail('shape');
@@ -29,6 +31,7 @@ export function parseSaoCatalog(bytes:Uint8Array,expected:{catalogHash:string;ba
     previous=Number(r[0].slice(4));byId.set(r[0],Object.freeze(r) as unknown as RawRow);
   }
   return Object.freeze({catalogVersion:pack.catalogVersion as string,catalogHash:expected.catalogHash,rowCount:byId.size,
+    *references():IterableIterator<string>{ yield* byId.keys(); },
     get(reference:string):Readonly<SaoStarRow>|null{
       const r=byId.get(reference);if(!r)return null;
       return Object.freeze({sourceId:r[0],visualMagnitude:r[1],raDeg:r[2],decDeg:r[3],pmRaCosDecArcsecYr:r[4],pmDecArcsecYr:r[5],

@@ -4,9 +4,19 @@ import {
   assertSkyScene,
   assertSkyTargetFrames,
   skySceneSerializedBytes,
+  validSkyPlanetGeometry,
   type SkyScene,
   type SourceSummary,
 } from "./index.ts";
+
+test("Saturn ring orientation is optional as a pair, never a guessed half-orientation", () => {
+  const saturn = { body: "SATURN", azimuthDeg: 90, altitudeDeg: 25,
+    angularDiameterDeg: .02, illuminatedFraction: .8, visualMagnitude: 1,
+    ringTiltDeg: null, ringPoleEnu: null };
+  assert.equal(validSkyPlanetGeometry(saturn, 4), true);
+  assert.equal(validSkyPlanetGeometry({ ...saturn, ringTiltDeg: 5 }, 4), false);
+  assert.equal(validSkyPlanetGeometry({ ...saturn, ringPoleEnu: [0, 0, 1] }, 4), false);
+});
 
 const source: SourceSummary = {
   id: "source-gaia-test",
@@ -137,6 +147,21 @@ test("target frames bind actionable targets to every hourly instant", () => {
       ]),
     /sky_scene_invalid:target_frame_1:at/u,
   );
+});
+
+test("target frame coordinates are numeric facts, not display text or a half-present position", () => {
+  const at = "2026-09-22T13:00:00.000Z";
+  const check = (coordinates: unknown) => assertSkyTargetFrames([
+    { at, targets: [{ targetId: "target:jupiter", direction: "123°", ...coordinates as object } as any] },
+  ], [at]);
+  assert.doesNotThrow(() => check({ azimuthDeg: 123.256789, altitudeDeg: -36.123456 }));
+  assert.doesNotThrow(() => check({ azimuthDeg: null, altitudeDeg: null }));
+  for (const azimuthDeg of [undefined, null, NaN, -1, 360, "123"]) {
+    assert.throws(() => check({ azimuthDeg, altitudeDeg: 36.123456 }), /coordinates/);
+  }
+  for (const altitudeDeg of [undefined, null, Infinity, -91, 91, "36"]) {
+    assert.throws(() => check({ azimuthDeg: 123.256789, altitudeDeg }), /coordinates/);
+  }
 });
 
 test("deep-sky frames bind stable Messier identities and tangent samples to the same axis", () => {

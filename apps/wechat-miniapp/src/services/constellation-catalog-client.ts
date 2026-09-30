@@ -18,6 +18,7 @@ export function createConstellationCatalogClient(deps: {
       const p=envelope.data.provenance;
       const expected=[
         [p.definitions.provider,p.definitions.url,p.definitions.license,p.definitions.licenseUrl],
+        [p.names.provider,p.names.url,p.names.license,p.names.licenseUrl],
         [p.art.author,p.art.url,p.art.license,p.art.licenseUrl],
         [p.astrometry.provider,p.astrometry.url,p.astrometry.license,p.astrometry.licenseUrl],
       ];

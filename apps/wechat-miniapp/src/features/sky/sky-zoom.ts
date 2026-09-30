@@ -1,7 +1,17 @@
 import { skyVisibleViewport, type SkyViewportInsets } from "./sky-viewport";
 
 export const SKY_OBSERVING_VERTICAL_FOV_DEG = 45;
-export const SKY_MIN_VERTICAL_FOV_DEG = 1.5;
+// A 0.18-degree Android preview left the observed Saturn globe about 12
+// logical pixels in radius, too small to inspect its historical cloud bands
+// or illustrative ring shadow. The finite 0.05-degree floor projects that
+// same globe above 40 px on the observed logical canvas; phone cost remains
+// to verify at this new limit.
+export const SKY_MIN_VERTICAL_FOV_DEG = 0.05;
+// A reversed stereographic pinch can land a few ulps above 45 degrees.
+// Canonicalize only numerical noise so the camera can leave its overview path.
+const LOCAL_BOUNDARY_EPSILON_DEG = 1e-9;
+const localBoundary = (value: number) => Math.abs(value - SKY_OBSERVING_VERTICAL_FOV_DEG) < LOCAL_BOUNDARY_EPSILON_DEG
+  ? SKY_OBSERVING_VERTICAL_FOV_DEG : value;
 /** Full horizon circle fits the actual viewport, with a modest edge inset. */
 export function skyDomeFieldOfView(width: number, height: number, insets?: SkyViewportInsets): number {
   const viewport = skyVisibleViewport(width, height, insets);
@@ -11,13 +21,13 @@ export function skyDomeFieldOfView(width: number, height: number, insets?: SkyVi
 
 export function clampSkyFieldOfView(value: number, width: number, height: number, insets?: SkyViewportInsets) {
   if (!Number.isFinite(value)) return SKY_OBSERVING_VERTICAL_FOV_DEG;
-  return Math.max(SKY_MIN_VERTICAL_FOV_DEG, Math.min(skyDomeFieldOfView(width, height, insets), value));
+  return Math.max(SKY_MIN_VERTICAL_FOV_DEG, Math.min(skyDomeFieldOfView(width, height, insets), localBoundary(value)));
 }
 
 export function skyDomeProgress(fov: number, width: number, height: number, insets?: SkyViewportInsets): number {
   const maximum = skyDomeFieldOfView(width, height, insets);
   if (!Number.isFinite(fov) || maximum <= SKY_OBSERVING_VERTICAL_FOV_DEG) return 0;
-  return Math.max(0, Math.min(1, (fov - SKY_OBSERVING_VERTICAL_FOV_DEG) / (maximum - SKY_OBSERVING_VERTICAL_FOV_DEG)));
+  return Math.max(0, Math.min(1, (localBoundary(fov) - SKY_OBSERVING_VERTICAL_FOV_DEG) / (maximum - SKY_OBSERVING_VERTICAL_FOV_DEG)));
 }
 
 export function remapSkyFieldOfView(value: number,

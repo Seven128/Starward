@@ -27,6 +27,8 @@ test("pinned actual publication preserves shared figures, precise Tau identity a
   const service=new ConstellationPublicationService(),first=service.get(),p=first.data;
   assert.strictEqual(service.get(),first);
   assert.equal(p.stars.length,713);assert.equal(p.constellations.length,88);assert.equal(p.images.length,85);
+  assert.deepEqual([p.constellations.find(c=>c.iau==='Ori')?.nameEn,p.constellations.find(c=>c.iau==='Ori')?.nameZh],['Orion','猎户座']);
+  assert.equal(new Set(p.constellations.map(c=>c.nameZh)).size,88);
   assert.deepEqual(p.images.find(a=>a.id==='Tau')!.anchors.map(a=>a.hip),[26451,15900,17999]);
   assert.deepEqual(p.stars.find(s=>s[0]===91589)![6],['SAO:229184'],'Tel anchor is not discarded at BSC 6.5 magnitude limit');
   assert.deepEqual(p.images.find(a=>a.id==='Car')!.members,['Car','Pup','Vel']);
@@ -51,6 +53,7 @@ test("catalog validation rejects missing coverage, broken identity, local paths 
     (p:any)=>p.constellations.find((c:any)=>c.iau==='Pup').artId='Pup',
     (p:any)=>p.images[0].anchors[0].hip=999999,(p:any)=>p.images[0].file='../secret.png',
     (p:any)=>p.images[0].width=4096,(p:any)=>p.provenance.art.license='CC0',
+    (p:any)=>p.constellations[0].nameZh='',(p:any)=>p.provenance.names.license='NC',
     (p:any)=>p.provenance.astrometry.license='Public domain',
     (p:any)=>delete p.provenance.astrometry.licenseStatementUrl,
     (p:any)=>p.catalogVersion="stellarium-modern-v24.4.v1",
@@ -78,12 +81,14 @@ test("real HTTP serves all original PNG bytes and source files with immutable pu
     await app.listen(0,'127.0.0.1');const base=await app.getUrl(),url=base+'/v2/sky/constellations';
     const response=await fetch(url);assert.equal(response.status,200);const envelope=await response.json();assertConstellationCatalog(envelope.data);
     const astrometrySource=envelope.sources.find((s:any)=>s.id.startsWith('constellation-geometry:'));
+    const nameSource=envelope.sources.find((s:any)=>s.id.startsWith('constellation-names:'));
+    assert.equal(nameSource.license,'CC BY-SA 4.0');
     assert.equal(astrometrySource.license,'ODbL-1.0');
     assert.equal(astrometrySource.licenseUrl,'https://opendatacommons.org/licenses/odbl/1-0/');
     const client=createConstellationCatalogClient({request:async()=>envelope,invalidate(){assert.fail('real publication should validate');}});
     const p=(await client()).data;let total=0;
     for(const image of p.images){
-      const asset=await fetch(`${url}/${p.catalogHash}/assets/${image.file}`);assert.equal(asset.status,200);
+      const asset=await fetch(`${url}/${p.catalogHash}/assets/${image.file}`);assert.equal(asset.status,200,`${image.file}: ${await asset.clone().text()}`);
       assert.equal(asset.headers.get('content-type'),'image/png');assert.match(asset.headers.get('cache-control')!,/immutable/);
       const bytes=Buffer.from(await asset.arrayBuffer());total+=bytes.length;
       assert.equal(bytes.length,image.bytes);assert.equal(createHash('sha256').update(bytes).digest('hex'),image.sha256);

@@ -3,16 +3,7 @@ import type { SkyProjectionCenter } from "./sky-viewport";
 import type { DeviceOrientationFrame as DevicePose } from "./device-orientation-view";
 import type { ResolvedSkyReport as SkyReport } from "./sky-stellar-scene";
 import { SKY_OBSERVING_VERTICAL_FOV_DEG as SKY_VERTICAL_FOV_DEG } from "./sky-zoom";
-
-function extractDegrees(direction: string) {
-  const match = direction.match(/(\d{1,3}(?:\.\d+)?)\s*°/u) ??
-    direction.match(/(?:^|\s)(\d{1,3}(?:\.\d+)?)(?=\s|$)/u);
-  if (!match) return null;
-  const degrees = Number(match[1]);
-  return Number.isFinite(degrees) && degrees >= 0 && degrees <= 360
-    ? degrees
-    : null;
-}
+import { hasSkyTargetPosition } from "@starward/miniapp-contracts";
 
 export interface SkyTargetProjection {
   x: number;
@@ -48,12 +39,11 @@ export function projectSkyTarget(
   manualBasis: SkyViewBasis | null = null,
   center?: SkyProjectionCenter,
 ): SkyTargetProjection | null {
-  const degrees = extractDegrees(target.direction);
-  if (degrees === null || target.altitudeDeg === null) return null;
+  if (!hasSkyTargetPosition(target)) return null;
   // Stars and targets share the same projection and live view basis.
   // No synthetic direction is introduced for missing/stale sensor data.
   return projectHorizontalPoint(
-    degrees,
+    target.azimuthDeg,
     target.altitudeDeg,
     heading,
     pose,

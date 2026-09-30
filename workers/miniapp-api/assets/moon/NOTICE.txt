@@ -1,0 +1,27 @@
+USGS Astrogeology Science Center / Clementine UVVIS
+
+Coverage-aware publication: clementine-uv750-v21-coverage-2048x1024.png
+is derived from the complete USGS v2.1 GeoTIFF (see coverage-manifest.json).
+Starward averages nonzero source samples in each exact 45x45 footprint and
+encodes the measured area fraction as alpha. Original uint8 grayscale values
+are retained without contrast stretching or synthetic terrain. Missing regions
+use a uniform neutral display globe, not inferred local albedo or landforms.
+Source and output hashes, projection and limitations accompany the PNG.
+
+Legacy WMS publication (retained for existing clients):
+
+This fixed 2048x1024 JPEG was exported from the USGS planetarymaps.gov WMS
+layer uv_v2 (Clementine uv750 Global Basemap v2 Mosaic). The source product
+is marked public domain. Credit: USGS Astrogeology Science Center / Clementine
+UVVIS. The exact WMS request, source product record, public-domain policy,
+projection, SHA-256 and processing limitations are in manifest.json.
+
+The image is a historical 750 nm grayscale mosaic with WMS resampling and
+JPEG artifacts. It is not natural color, current lunar imagery or calibrated
+visual photometry.
+
+Original missing-data regions also occur at middle and low latitudes. Some
+appear as dark rectangular patches; these are not terrain or current shadows.
+This opaque JPEG has no validity mask. Do not infer a missing-data mask by
+thresholding near-black JPEG pixels: compression and real low-albedo terrain
+must be distinguished from the original product's explicit NoData values.

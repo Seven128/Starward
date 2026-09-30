@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "starward-messenger-mercury-v1",
+  "publicationId": "mercury-messenger-2013-usgs-wms-1024x512-20260924",
+  "source": {
+    "title": "Mercury MESSENGER MDIS Global Mosaic 250m (May 2013)",
+    "provider": "USGS Astrogeology Science Center",
+    "recordUrl": "https://astrogeology.usgs.gov/search/map/mercury_messenger_mdis_global_mosaic_250m",
+    "rightsUrl": "https://astrogeology.usgs.gov/search/map/mercury_messenger_mdis_global_mosaic_250m",
+    "credit": "MESSENGER Team / Arizona State University / USGS Astrogeology Science Center",
+    "wmsUrl": "https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MESSENGER_May2013&STYLES=&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=1024&HEIGHT=512&FORMAT=image/jpeg&TRANSPARENT=FALSE"
+  },
+  "projection": {
+    "kind": "simple-cylindrical",
+    "latitude": "planetocentric",
+    "longitude": "positive-east",
+    "bboxDeg": [-180, -90, 180, 90]
+  },
+  "image": {
+    "file": "mercury-messenger-2013-usgs-wms-1024x512.jpg",
+    "sha256": "b782316d7458df90198d8e9664abb3902841c0709085bd20f03e46706a252d81",
+    "bytes": 89984,
+    "width": 1024,
+    "height": 512
+  },
+  "processing": "USGS WMS MESSENGER_May2013 full-globe 750 nm monochrome mosaic exported at 1024x512 JPEG, EPSG:4326, without recoloring; immutable SHA-256-bound copy.",
+  "limitations": [
+    "Historical 2013 750 nm reflectance mosaic with polar image fills, not natural-color or live Mercury photography.",
+    "The 1024x512 WMS/JPEG resample limits detail; the shader's simple phase mask is not calibrated surface photometry."
+  ]
+}

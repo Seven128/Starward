@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "starward-opal-neptune-bands-v1",
+  "publicationId": "opal-neptune-2025b-median-bands-8x512-20260926",
+  "source": {
+    "title": "HST OPAL Cycle 32 Neptune 2025b F657N/F547M/F467M global map",
+    "provider": "MAST / HST OPAL",
+    "recordUrl": "https://archive.stsci.edu/hlsp/opal/opal-neptune-cycle-32",
+    "rightsUrl": "https://archive.stsci.edu/hlsp/opal",
+    "credit": "NASA / ESA / HST OPAL Team (PI Amy Simon) / STScI; adapted by Starward",
+    "sourceFile": "hlsp_opal_hst_wfc3-uvis_neptune-2025b_f467m-f547m-f657n_v1_globalmap.tif",
+    "sourceSha256": "8c17a2872b5d55577c63abe7ba1369997ff32bb83e0f9b9c350a46db96713cb8",
+    "observationDate": "2025-08-24",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "doi": "10.17909/T9G593"
+  },
+  "projection": {
+    "kind": "latitude-profile",
+    "latitude": "planetographic",
+    "longitude": "none",
+    "boundsDeg": [
+      -90,
+      90
+    ]
+  },
+  "image": {
+    "file": "neptune-opal-2025b-median-bands-8x512.png",
+    "sha256": "447b4fc50a47b025cbaf5c1e4e5a0a8df8b1403c3706ba4b46fd432e7de391e0",
+    "bytes": 527,
+    "width": 8,
+    "height": 512,
+    "format": "png"
+  },
+  "processing": "Starward took the RGB median across valid longitudes in each planetographic latitude row of the historical three-filter map, omitted rows with under 90% coverage, and resized the profile to 8x512 RGBA PNG. The missing-latitude mask uses nearest-neighbour resampling and binary alpha; hidden RGB is extended only to avoid interpolation fringes. This is an adaptation under CC BY 4.0.",
+  "limitations": [
+    "Historical band colors from an enhanced, arbitrarily scaled three-filter composite, not natural color or live Neptune weather.",
+    "Longitude-dependent clouds were removed; no current feature longitude is claimed.",
+    "Transparent latitudes lack source atmosphere coverage and must fall back to the plain computed globe; the nominal global map does not measure the entire planet."
+  ]
+}

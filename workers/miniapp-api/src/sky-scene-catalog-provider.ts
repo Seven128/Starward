@@ -1,4 +1,5 @@
-import { BSC5P_PROJECTION_ALGORITHM, loadBsc5pBrightStarCatalog } from "@starward/astronomy-core/bsc5p-catalog";
+import { BSC5P_PROJECTION_ALGORITHM, loadBsc5pStarCatalog,
+  type Bsc5pCatalogVersion } from "@starward/astronomy-core/bsc5p-catalog";
 import { STELLAR_GEOMETRY_FORMAT, STELLAR_GEOMETRY_REFERENCE_AT, STELLAR_SCENE_FORMAT,
   type SkySceneCatalogReference, type SourceSummary, type StellarGeometryFrame,
   type StellarGeometryObserver } from "@starward/miniapp-contracts";
@@ -12,7 +13,7 @@ export interface SkyCatalogProvider {
   cacheKey(): string;
 }
 
-export function bsc5pCatalogSources(catalog: ReturnType<typeof loadBsc5pBrightStarCatalog>): readonly SourceSummary[] {
+export function bsc5pCatalogSources(catalog: ReturnType<typeof loadBsc5pStarCatalog>): readonly SourceSummary[] {
   const manifest = catalog.manifest;
   return Object.freeze<SourceSummary[]>([
       {
@@ -66,11 +67,11 @@ export function bsc5pCatalogSources(catalog: ReturnType<typeof loadBsc5pBrightSt
 }
 
 
-export function createBsc5pSkyCatalogProvider(): SkyCatalogProvider {
+export function createBsc5pSkyCatalogProvider(version: Bsc5pCatalogVersion = "bsc5p-bright-stars.v2"): SkyCatalogProvider {
   let snapshot: SkyCatalogSnapshot | undefined;
   const load = () => {
     if (!snapshot) {
-      const owner = loadBsc5pBrightStarCatalog();
+      const owner = loadBsc5pStarCatalog(version);
       snapshot = Object.freeze({ catalogVersion: owner.catalogVersion, catalogHash: owner.catalogHash,
         magnitudeLimit: owner.magnitudeLimit, rowCount: owner.rows.length, sources: bsc5pCatalogSources(owner) });
     }

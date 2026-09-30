@@ -8,16 +8,20 @@ const unit = (v: SkyVector): SkyVector => v.map(n => n / Math.hypot(...v)) as un
 const direction = (az: number, alt: number): SkyVector =>
   [Math.sin(az * rad) * Math.cos(alt * rad), Math.cos(az * rad) * Math.cos(alt * rad), Math.sin(alt * rad)];
 
-/** CDS TAN cutouts have CDELT=2*tan(fov/2)/N (radians) and FITS
- * CRPIX=N/2, not (N+1)/2. JPEG rows are reversed from FITS rows.
+/** North-up square TAN cutouts use CDELT=2*tan(fov/2)/N (radians).
+ * The source's one-based FITS CRPIX is explicit: CDS W3 uses N/2,
+ * while the tested Legacy Surveys cutout uses (N+1)/2.
+ * JPEG rows are reversed from FITS rows.
  * Recover the ICRS north tangent from the exact +0.1° declination sample;
  * the old RA-offset east sample is only a handedness check, not a tangent.
  * Equal-radius corner anchors lie on one plane after normalization, so the
  * existing inverse ray/plane shader preserves the full TAN mapping.
  */
-export function registerSkySurvey(point: DeepSkyScenePoint, fieldDegrees: number, pixels: number) {
+export function registerSkySurvey(point: DeepSkyScenePoint, fieldDegrees: number, pixels: number,
+  crpixFitsOneBased: number) {
   if (!point.slice(1).every(Number.isFinite) || !Number.isFinite(fieldDegrees) || fieldDegrees <= 0 || fieldDegrees > 4 ||
-    ![256, 512].includes(pixels)) return null;
+    ![256, 512].includes(pixels) || !Number.isFinite(crpixFitsOneBased) ||
+    crpixFitsOneBased <= 0 || crpixFitsOneBased > pixels) return null;
   const c = direction(point[1], point[2]);
   const sample = direction(point[3], point[4]);
   const cosine = dot(c, sample);
@@ -27,7 +31,7 @@ export function registerSkySurvey(point: DeepSkyScenePoint, fieldDegrees: number
   const e: SkyVector = [n[1]*c[2]-n[2]*c[1], n[2]*c[0]-n[0]*c[2], n[0]*c[1]-n[1]*c[0]];
   if (dot(e, direction(point[5], point[6])) <= 0) return null;
   const half = Math.tan(fieldDegrees * rad / 2);
-  const u0 = .5 - .5 / pixels, v0 = .5 + .5 / pixels;
+  const u0 = (crpixFitsOneBased-.5)/pixels, v0 = 1-u0;
   return registerSkyArtwork(([[-1,-1],[1,-1],[-1,1]] as const).map(([x,y]) => ({
     uv: [u0+x/2, v0+y/2] as const,
     direction: unit(c.map((v,i) => v - half*x*e[i]! - half*y*n[i]!) as unknown as SkyVector),

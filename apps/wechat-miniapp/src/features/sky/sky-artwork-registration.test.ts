@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { registerSkyArtwork, skyArtworkUvAtDirection, skyArtworkViewParameters, type SkyArtworkAnchor } from "./sky-artwork-registration.ts";
 import { createSkyViewBasis, projectSkyDirectionUnclipped, unprojectSkyPoint, type SkyVector } from "./sky-view-projection.ts";
+import { skyArtworkViewRayHull, artworkCoversRayHull } from "./sky-artwork-visibility";
 
 const unit = (v: SkyVector): SkyVector => v.map(n=>n/Math.hypot(...v)) as unknown as SkyVector;
 const anchors: SkyArtworkAnchor[] = [
@@ -51,4 +52,30 @@ test("art camera uses actual logical size and offset, not research constants",()
   close([p.scale,p.center.x,p.center.y],[896/(2*Math.tan(Math.PI/16)),137,351]);
   assert.equal(skyArtworkViewParameters({basis,verticalFovDeg:360},414,896),null);
   assert.equal(skyArtworkViewParameters({basis,verticalFovDeg:45,center:{x:NaN,y:351}},414,896),null);
+});
+
+test("view ray hull includes curved viewport edges under roll and offset centers",()=>{
+  for(const fov of [.05,.3,45,85])for(const roll of [-65,0,70]) {
+    const view={basis:createSkyViewBasis(35,110,roll)!,verticalFovDeg:fov,center:{x:137,y:351}};
+    const rays=skyArtworkViewRayHull(view,390,844)!;assert.equal(rays.length,4);
+    const enclosing=registerSkyArtwork([0,1,2].map(index=>({
+      direction:rays[index]!,uv:([[0,0],[1,0],[1,1]] as const)[index]!,
+    })))!;
+    // An asymmetric tangent rectangle has unequal unit-ray corner lengths.
+    // A three-anchor affine texture does not reproduce its fourth corner;
+    // certify the actual ray cone instead of assuming a UV parallelogram.
+    const centre=rays.reduce<number[]>((sum,ray)=>sum.map((value,i)=>value+ray[i]!),[0,0,0]);
+    const planes=rays.map((ray,i)=>{
+      const next=rays[(i+1)%rays.length]!;
+      const normal=[ray[1]*next[2]-ray[2]*next[1],ray[2]*next[0]-ray[0]*next[2],ray[0]*next[1]-ray[1]*next[0]];
+      const dot=(point:readonly number[])=>normal.reduce((sum,value,index)=>sum+value*point[index]!,0);
+      return {dot,sign:Math.sign(dot(centre)),length:Math.hypot(...normal)};
+    });
+    for(let x=0;x<=390;x+=39)for(let y=0;y<=844;y+=84.4) {
+      const ray=unprojectSkyPoint(x,y,view.basis,390,844,fov,view.center)!;
+      assert.ok(planes.every(plane=>plane.sign*plane.dot(ray)>=-1e-9*plane.length),`outside ray hull ${fov},${roll},${x},${y}`);
+    }
+    assert.equal(artworkCoversRayHull(enclosing,rays),false,"an uncertain exact boundary is not certified opaque coverage");
+  }
+  assert.equal(skyArtworkViewRayHull({basis:createSkyViewBasis(0,180,0)!,verticalFovDeg:267.8},390,844),null);
 });

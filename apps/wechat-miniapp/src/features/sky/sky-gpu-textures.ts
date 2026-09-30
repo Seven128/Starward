@@ -1,10 +1,21 @@
 /** One native-image owner for survey imagery and constellation art. Identity is
  * the decoded image object, never a URL whose bytes may change after retry. */
+export const SKY_GPU_TEXTURE_BYTE_BUDGET = 16 * 1024 * 1024;
+
+/** The upload owner and source-resolution selection use the same RGBA cost.
+ * Unknown dimensions cannot be treated as an empty texture. */
+export function skyImageRgbaBytes(source: object): number | null {
+  const { width, height } = source as { width?: number; height?: number };
+  const bytes = Number(width) * Number(height) * 4;
+  return Number(width) > 0 && Number(height) > 0 && Number.isFinite(bytes) ? bytes : null;
+}
+
 export function createSkyGpuTextures(gl: WebGLRenderingContext, imageFailed?: (image: object) => void,
-  byteBudget = 16 * 1024 * 1024) {
+  byteBudget = SKY_GPU_TEXTURE_BYTE_BUDGET) {
   if (!Number.isFinite(byteBudget) || byteBudget <= 0) throw new Error("sky_gpu_invalid_texture_budget");
   const entries = new Map<object, { texture: WebGLTexture | null; bytes: number }>();
   const used = new Set<object>();
+  const previousFrame = new Set<object>();
   let bytes = 0;
   const remove = (source: object) => {
     const entry = entries.get(source);
@@ -13,7 +24,11 @@ export function createSkyGpuTextures(gl: WebGLRenderingContext, imageFailed?: (i
     entries.delete(source);
   };
   return {
-    begin() { used.clear(); },
+    begin() {
+      previousFrame.clear();
+      for (const source of used) previousFrame.add(source);
+      used.clear();
+    },
     get(source: object): WebGLTexture | null {
       used.add(source);
       const cached = entries.get(source);
@@ -27,14 +42,18 @@ export function createSkyGpuTextures(gl: WebGLRenderingContext, imageFailed?: (i
       if (priorError !== gl.NO_ERROR) throw new Error(`sky_gpu_draw_failed:${priorError}`);
       let texture: WebGLTexture | null = null;
       try {
-        const {width,height} = source as {width?: number; height?: number};
-        const size = Number(width)*Number(height)*4;
+        const size = skyImageRgbaBytes(source) ?? 0;
         if (Number.isFinite(size) && size > 0) {
-          // Eviction only drops cache ownership; already submitted draws keep
-          // their result. A single larger image may be drawn then freed by finish.
-          for (const key of entries.keys()) {
+          // Keep last frame's reusable textures through this submission. If
+          // the visible set exceeds retention, evicting them here creates a
+          // full cyclic re-upload even with an unchanged field. Temporary
+          // frame ownership is trimmed by finish; this allowance does not
+          // claim to cap upload/driver peak memory.
+          for (const [key, entry] of entries) {
             if (bytes+size <= byteBudget) break;
-            remove(key);
+            // A failed identity owns no texture bytes. Pressure must not
+            // discard its latch and implicitly retry that same decoded image.
+            if (entry.texture && !previousFrame.has(key)) remove(key);
           }
         }
         texture = gl.createTexture();
@@ -60,8 +79,12 @@ export function createSkyGpuTextures(gl: WebGLRenderingContext, imageFailed?: (i
     },
     finish() {
       for (const key of entries.keys()) if (!used.has(key)) remove(key);
-      for (const key of entries.keys()) { if (bytes <= byteBudget) break; remove(key); }
+      for (const [key, entry] of entries) {
+        if (bytes <= byteBudget) break;
+        if (entry.texture) remove(key);
+      }
+      previousFrame.clear();
     },
-    dispose() { for (const key of entries.keys()) remove(key); used.clear(); },
+    dispose() { for (const key of entries.keys()) remove(key); used.clear(); previousFrame.clear(); },
   };
 }

@@ -9,6 +9,7 @@ export interface ConstellationFrame {
   readonly at: string;
   readonly lines: readonly (readonly [SkyVector,SkyVector])[];
   readonly images: readonly { readonly source: ConstellationArtwork; readonly registration: SkyArtworkRegistration }[];
+  readonly labels: readonly { readonly iau: string; readonly nameEn: string; readonly nameZh: string; readonly direction: SkyVector }[];
 }
 const motions = new WeakMap<ConstellationCatalogPublication, ReadonlyMap<number,StellarMotion>>();
 // Per report, retain only the current instant. Gestures reuse astronomy; moving
@@ -38,6 +39,21 @@ export function resolveConstellationFrame(catalog: ConstellationCatalogPublicati
     for (const [hip,motion] of catalogMotions) directions.set(hip,Object.freeze(rotateStellarDirection(
       stellarDirectionAt(motion,years),frame.geometry.equatorialToEnu)));
     const lines=catalog.constellations.flatMap(c=>c.lines.map(([a,b])=>Object.freeze([directions.get(a)!,directions.get(b)!] as const)));
+    // Each identity gets its own label even when several definitions share an
+    // illustration. Use its unique line stars rather than an image midpoint.
+    const labels: ConstellationFrame["labels"][number][]=[];
+    for (const c of catalog.constellations) {
+      const ids=new Set(c.lines.flat());
+      const sum:[number,number,number]=[0,0,0];
+      for (const id of ids) {
+        const ray=directions.get(id)!;
+        sum[0]+=ray[0];sum[1]+=ray[1];sum[2]+=ray[2];
+      }
+      const length=Math.hypot(...sum);
+      if (!(length>1e-6)) continue;
+      labels.push(Object.freeze({iau:c.iau,nameEn:c.nameEn,nameZh:c.nameZh,
+        direction:Object.freeze([sum[0]/length,sum[1]/length,sum[2]/length] as SkyVector)}));
+    }
     const images: ConstellationFrame["images"][number][]=[];
     for (const source of catalog.images) {
       const registration=registerSkyArtwork(source.anchors.map(a=>({uv:[a.pixel[0]/source.width,a.pixel[1]/source.height] as const,
@@ -45,7 +61,7 @@ export function resolveConstellationFrame(catalog: ConstellationCatalogPublicati
       if (!registration) throw new Error("constellation_registration_invalid");
       images.push(Object.freeze({source,registration}));
     }
-    const result=Object.freeze({at,lines:Object.freeze(lines),images:Object.freeze(images)});
+    const result=Object.freeze({at,lines:Object.freeze(lines),images:Object.freeze(images),labels:Object.freeze(labels)});
     frames.set(scene,{catalog,frame:result});
     return result;
   } catch { return null; }

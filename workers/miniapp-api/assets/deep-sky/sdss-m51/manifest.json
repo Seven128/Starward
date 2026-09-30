@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "sdss-dr17-m51-optical-publication-v1",
+  "publicationId": "sdss-dr17-m51.v20260925",
+  "objectRef": "M:51",
+  "center": { "raDeg": 202.469625, "decDeg": 47.1951666667, "frame": "ICRS J2000" },
+  "orientation": "north-up/east-left",
+  "source": {
+    "provider": "Sloan Digital Sky Survey",
+    "dataset": "SDSS DR17 SkyServer ImgCutout",
+    "landingUrl": "https://skyserver.sdss.org/dr17",
+    "imageUsePolicyUrl": "https://www.sdss.org/collaboration/image-use-policy/",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "credit": "Sloan Digital Sky Survey",
+    "processingDocumentationUrl": "https://www.sdss4.org/dr16/imaging/jpg-images-on-skyserver/"
+  },
+  "processing": {
+    "runtimeNetwork": "forbidden",
+    "modification": "SDSS SkyServer generated north-up/east-left RGB JPEG cutouts from g/r/i imaging frames. Starward selected three image scales and renamed the original JPEG files for self-hosting; no pixel edits were made. These historical optical images are not a real-time view.",
+    "coverage": "Only M:51 at the three published scales; no whole-sky optical coverage is claimed."
+  },
+  "levels": {
+    "OVERVIEW": { "file": "M-51-overview.jpg", "scaleArcsecPerPixel": 1.6, "pixels": 512, "fieldDegrees": 0.22755555555555557, "bytes": 20492, "sha256": "c98129d2ea984cf4106b14b325f355df149f36fe30c2c8ecbcdd0d3733ff81c6", "requestUrl": "https://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?ra=202.469625&dec=47.1951666667&scale=1.6&width=512&height=512" },
+    "MEDIUM": { "file": "M-51-medium.jpg", "scaleArcsecPerPixel": 0.8, "pixels": 512, "fieldDegrees": 0.11377777777777778, "bytes": 24076, "sha256": "eee315a0e76c58d5ba67072764d54c7cfa7979c8f060cce8e548150aba497de0", "requestUrl": "https://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?ra=202.469625&dec=47.1951666667&scale=0.8&width=512&height=512" },
+    "DETAIL": { "file": "M-51-detail.jpg", "scaleArcsecPerPixel": 0.4, "pixels": 512, "fieldDegrees": 0.05688888888888889, "bytes": 19784, "sha256": "a9f3884874773293589bedac159ac0d1d479f9cf8130e21c74ebcaf6a7cc9447", "requestUrl": "https://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?ra=202.469625&dec=47.1951666667&scale=0.4&width=512&height=512" }
+  }
+}

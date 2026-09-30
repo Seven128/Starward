@@ -344,6 +344,40 @@ test("CLI capture/input is scoped, private and never claims acceptance or permit
   assert.ok(!(await readFile(path.join(state.directory, "session.json"), "utf8")).includes("private-serial"));
 });
 
+test("ASCII query input retains single-use capture and does not retain or emit the query", async (t) => {
+  const state = await session(t);
+  const { driver, calls } = adbDriver(); const output = [];
+  const context = { adb: driver, emit: (value) => output.push(value) };
+  await main(["capture", "--session", state.directory], context);
+  await main(["text", "--session", state.directory, "--value", "HR 4905"], context);
+  assert.deepEqual(calls.filter((args) => args.slice(2, 5).join(" ") === "shell input text").map(args => args[5]), ["H", "R", "%s", "4", "9", "0", "5"]);
+  assert.equal((await loadSession(state.directory)).capture, null);
+  await assert.rejects(main(["text", "--session", state.directory, "--value", "Neptune"], context), /recent_capture_required/u);
+  assert.ok(!JSON.stringify(output).includes("4905"));
+  assert.ok(!(await readFile(path.join(state.directory, "session.json"), "utf8")).includes("4905"));
+});
+
+test("text rejects shell syntax, Unicode, oversize and permission-scope input without sending", async () => {
+  const { driver, calls } = adbDriver();
+  await driver.select();
+  const capture = await driver.screenshot();
+  for (const value of ["", "x;id", "x\n", "$(id)", "`id`", "a&b", "x%sx", "'x'", "天王星", "a".repeat(81)]) {
+    await assert.rejects(driver.input("text", [value], capture), /text_invalid/u);
+  }
+  await assert.rejects(driver.input("text", ["Uranus"], { ...capture, permissionScope: "settings" }), /permission_input_invalid/u);
+  assert.ok(!calls.some((args) => args.includes("input")));
+});
+
+test("text stops before the next character if the foreground changes mid-query", async () => {
+  const { driver, calls } = adbDriver();
+  await driver.select();
+  const capture = await driver.screenshot();
+  const foreground = driver.foreground.bind(driver);
+  driver.foreground = async options => calls.some(args => args.includes("input")) ? `${activity}1` : foreground(options);
+  await assert.rejects(driver.input("text", ["AB"], capture), /foreground_changed/u);
+  assert.deepEqual(calls.filter(args => args.includes("input")).map(args => args.at(-1)), ["A"]);
+});
+
 test("post-capture drift suppresses successful output", async (t) => {
   const state = await session(t); const output = [];
   const driver = { select: async () => "serial", screenshot: async () => {

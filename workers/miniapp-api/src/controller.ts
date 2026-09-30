@@ -1,11 +1,13 @@
 import type { AccountAvatarSaveRequest, AccountNicknameSaveRequest } from "@starward/miniapp-contracts";
 import {
   Body,
+  BadRequestException,
   Controller,
   Delete,
   Get,
   Headers,
   Inject,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -14,8 +16,11 @@ import {
   Res,
 } from "@nestjs/common";
 import type { FastifyReply } from "fastify";
+import { celestialObjectPosition } from "./celestial-object-position.ts";
 import {
   assertFilterState,
+  DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION,
+  type DeepSkyImageSelection,
   type ContributionDraftRequest,
   type ContributionFormalSubmitRequest,
   type ContributionFormalUploadIntentRequest,
@@ -50,6 +55,14 @@ import { MiniappService } from "./miniapp-service.ts";
 function required(value: string | undefined, code: string) {
   if (!value?.trim()) throw new Error(code);
   return value.trim();
+}
+
+function deepSkyImageSelection(imageVersion?: string, publicationHash?: string): DeepSkyImageSelection {
+  if (imageVersion !== undefined && imageVersion !== DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION)
+    throw new BadRequestException("deep_sky_image_version_invalid");
+  if (publicationHash !== undefined && !/^[a-f0-9]{64}$/u.test(publicationHash))
+    throw new BadRequestException("deep_sky_image_publication_hash_invalid");
+  return { ...(imageVersion !== undefined ? { imageVersion } : {}), ...(publicationHash !== undefined ? { publicationHash } : {}) };
 }
 
 function parseJson<T>(value: string | undefined, code: string): T | undefined {
@@ -351,24 +364,74 @@ export class MiniappController {
     @Param("spotId") spotId: string,
     @Query("contextId") contextId?: string,
     @Headers("authorization") authorization?: string,
+    @Query("catalogVersion") catalogVersion?: string,
   ) {
+    if (catalogVersion !== undefined && catalogVersion !== "bsc5p-bright-stars.v2" &&
+        catalogVersion !== "bsc5p-bright-stars.v3") throw new BadRequestException("sky_catalog_version_invalid");
+    const selectedCatalog = catalogVersion ?? "bsc5p-bright-stars.v2";
     const locationId = decodeURIComponent(spotId);
     if (locationId.startsWith("contribution:")) {
       return this.service.auth.requirePrincipal(authorization).then((userId) => this.service.getSky(
         locationId,
         required(contextId, "observation_context_required"),
         userId,
+        selectedCatalog,
       ));
     }
-    return this.service.getSky(locationId, required(contextId, "observation_context_required"));
+    return this.service.getSky(locationId, required(contextId, "observation_context_required"), undefined, selectedCatalog);
   }
 
+  @Get("spots/:spotId/sky/targets")
+  skyTargets(
+    @Param("spotId") spotId: string,
+    @Query("contextId") contextId?: string,
+    @Query("at") at?: string,
+    @Headers("authorization") authorization?: string,
+  ) {
+    const locationId = decodeURIComponent(spotId);
+    if (locationId.startsWith("contribution:"))
+      return this.service.auth.requirePrincipal(authorization).then(userId =>
+        this.service.getSkyTargetInstant(locationId, required(contextId, "observation_context_required"),
+          required(at, "observation_time_required"), userId));
+    return this.service.getSkyTargetInstant(locationId, required(contextId, "observation_context_required"),
+      required(at, "observation_time_required"));
+  }
+
+  @Get("spots/:spotId/sky/objects/:reference")
+  async celestialPosition(
+    @Param("spotId") spotId: string,
+    @Param("reference") reference: string,
+    @Query("contextId") contextId?: string,
+    @Query("at") at?: string,
+    @Headers("authorization") authorization?: string,
+    @Query("catalogVersion") catalogVersion?: string,
+  ) {
+    const report = await this.sky(spotId, contextId, authorization, catalogVersion);
+    return celestialObjectPosition(decodeURIComponent(reference), required(at, "observation_time_required"), report);
+  }
+
+  @Get("celestial-objects")
+  celestialSearch(@Query("q") query = "", @Query("limit") limit = "20", @Query("catalogVersion") catalogVersion?: string,
+    @Query("luminaryCatalogVersion") luminaryCatalogVersion?: string) {
+    if (catalogVersion !== undefined && catalogVersion !== "bsc5p-bright-stars.v2" && catalogVersion !== "bsc5p-bright-stars.v3")
+      throw new BadRequestException("sky_catalog_version_invalid");
+    return this.service.celestialSearch.search(query, Number(limit), catalogVersion ?? "bsc5p-bright-stars.v2", luminaryCatalogVersion);
+  }
   @Get("celestial-objects/:reference")
   celestialObject(
     @Param("reference") reference: string,
     @Query("locale") locale = "zh-CN",
+    @Query("catalogVersion") catalogVersion?: string,
+    @Query("moonTextureVersion") moonTextureVersion?: string,
+    @Query("deepSkyImageVersion") deepSkyImageVersion?: string,
+    @Query("deepSkyPublicationHash") deepSkyPublicationHash?: string,
   ) {
-    return this.service.getCelestialObject(decodeURIComponent(reference), locale);
+    if (catalogVersion !== undefined && catalogVersion !== "bsc5p-bright-stars.v2" && catalogVersion !== "bsc5p-bright-stars.v3")
+      throw new BadRequestException("sky_catalog_version_invalid");
+    if(moonTextureVersion!==undefined&&moonTextureVersion!=="coverage-v2")
+      throw new BadRequestException("moon_texture_version_invalid");
+    return this.service.getCelestialObject(decodeURIComponent(reference), locale, catalogVersion ?? "bsc5p-bright-stars.v2",moonTextureVersion,
+      deepSkyImageSelection(deepSkyImageVersion, deepSkyPublicationHash));
   }
 
   @Get("sky/deep-sky/:publicationHash/manifest")
@@ -380,14 +443,310 @@ export class MiniappController {
       .send(this.service.deepSkyImages.manifest(publicationHash));
   }
 
+  @Get("sky/sdss-optical/manifest")
+  sdssOpticalCurrentManifest(@Query("reference") reference: string | undefined, @Res() reply: FastifyReply) {
+    return reply.header("content-type", "application/json; charset=utf-8")
+      .header("cache-control", "no-cache")
+      .header("x-content-type-options", "nosniff")
+      .send(this.service.sdssOpticalImages.currentManifest(reference));
+  }
+
+  @Get("sky/sdss-optical/:publicationHash/manifest")
+  sdssOpticalManifest(@Param("publicationHash") publicationHash: string, @Res() reply: FastifyReply) {
+    const manifest = this.service.sdssOpticalImages.manifest(publicationHash);
+    return reply.header("content-type", "application/json; charset=utf-8")
+      .header("content-disposition", `attachment; filename="sdss-${manifest.objectRef.replace(":", "").toLowerCase()}-optical-manifest.json"`)
+      .header("cache-control", "public, max-age=31536000, immutable")
+      .header("x-content-type-options", "nosniff")
+      .send(manifest);
+  }
+
+  @Get("sky/sdss-optical/:publicationHash/:file")
+  async sdssOpticalImage(@Param("publicationHash") publicationHash: string,
+    @Param("file") file: string, @Res() reply: FastifyReply) {
+    const image = await this.service.sdssOpticalImages.getByFile(publicationHash, file);
+    return reply.header("content-type", image.contentType)
+      .header("cache-control", "public, max-age=31536000, immutable")
+      .header("x-content-type-options", "nosniff")
+      .header("x-starward-image-source", image.sourceLabel)
+      .header("x-starward-image-field-degrees", String(image.fieldDegrees))
+      .send(image.bytes);
+  }
+
+  @Get("sky/wide-field/manifest")
+  wideFieldManifest(@Res() reply:FastifyReply){
+    return reply.header("content-type","application/json; charset=utf-8")
+      .header("cache-control","no-cache")
+      .header("x-content-type-options","nosniff")
+      .send(this.service.wideFieldW3.manifest());
+  }
+
+  @Get("sky/moon/manifest")
+  moonTextureManifest(@Res() reply:FastifyReply){
+    return reply.header("content-type","application/json; charset=utf-8")
+      .header("cache-control","no-cache")
+      .header("x-content-type-options","nosniff")
+      .send(this.service.moonTexture.manifest());
+  }
+
+  @Get("sky/moon/coverage/manifest")
+  moonCoverageManifest(@Res() reply:FastifyReply){
+    return reply.header("content-type","application/json; charset=utf-8")
+      .header("cache-control","no-cache").header("x-content-type-options","nosniff")
+      .send(this.service.moonTexture.coverageManifest());
+  }
+
+  @Get("sky/moon/coverage/:publicationHash/:file")
+  async moonCoverageImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
+    @Res() reply:FastifyReply){
+    const manifest=this.service.moonTexture.coverageManifest();
+    if(file!==manifest.image.file)throw new NotFoundException("moon_texture_image_unavailable");
+    const bytes=await this.service.moonTexture.coverageImage(publicationHash);
+    return reply.header("content-type","image/png").header("cache-control","public, max-age=31536000, immutable")
+      .header("x-content-type-options","nosniff").header("x-starward-image-source","USGS Clementine UVVIS 750 nm")
+      .send(bytes);
+  }
+
+  @Get("sky/moon/:publicationHash/:file")
+  async moonTextureImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
+    @Res() reply:FastifyReply){
+    if(file!=="clementine-uv750-v2-wms-2048x1024.jpg")throw new NotFoundException("moon_texture_image_unavailable");
+    const bytes=await this.service.moonTexture.image(publicationHash);
+    return reply.header("content-type","image/jpeg")
+      .header("cache-control","public, max-age=31536000, immutable")
+      .header("x-content-type-options","nosniff")
+      .header("x-starward-image-source","USGS Clementine UVVIS 750 nm")
+      .send(bytes);
+  }
+
+  @Get("sky/mars/manifest")
+  marsTextureManifest(@Res() reply:FastifyReply){
+    return reply.header("content-type","application/json; charset=utf-8")
+      .header("cache-control","no-cache")
+      .header("x-content-type-options","nosniff")
+      .send(this.service.marsTexture.manifest());
+  }
+
+  @Get("sky/mercury/manifest")
+  mercuryTextureManifest(@Res() reply:FastifyReply){
+    return reply.header("content-type","application/json; charset=utf-8")
+      .header("cache-control","no-cache")
+      .header("x-content-type-options","nosniff")
+      .send(this.service.mercuryTexture.manifest());
+  }
+
+  @Get("sky/jupiter/manifest")
+  jupiterBandsManifest(@Res() reply:FastifyReply){
+    return reply.header("content-type","application/json; charset=utf-8")
+      .header("cache-control","no-cache")
+      .header("x-content-type-options","nosniff")
+      .send(this.service.jupiterBands.manifest());
+  }
+
+  @Get("sky/saturn/manifest")
+  saturnBandsManifest(@Res() reply:FastifyReply){
+    return reply.header("content-type","application/json; charset=utf-8")
+      .header("cache-control","no-cache")
+      .header("x-content-type-options","nosniff")
+      .send(this.service.saturnBands.manifest());
+  }
+
+  @Get("sky/uranus/manifest")
+  uranusBandsManifest(@Res() reply:FastifyReply){
+    return reply.header("content-type","application/json; charset=utf-8")
+      .header("cache-control","no-cache")
+      .header("x-content-type-options","nosniff")
+      .send(this.service.uranusBands.manifest());
+  }
+
+  @Get("sky/uranus/:publicationHash/:file")
+  async uranusBandsImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
+    @Res() reply:FastifyReply){
+    if(file!=="uranus-opal-2025a-median-bands-8x512.png")
+      throw new NotFoundException("uranus_bands_image_unavailable");
+    const bytes=await this.service.uranusBands.image(publicationHash);
+    return reply.header("content-type","image/png")
+      .header("cache-control","public, max-age=31536000, immutable")
+      .header("x-content-type-options","nosniff")
+      .header("x-starward-image-source","HST OPAL 2025a CC BY 4.0 latitude-median adaptation")
+      .send(bytes);
+  }
+
+  @Get("sky/neptune/manifest")
+  neptuneBandsManifest(@Res() reply:FastifyReply){
+    return reply.header("content-type","application/json; charset=utf-8")
+      .header("cache-control","no-cache")
+      .header("x-content-type-options","nosniff")
+      .send(this.service.neptuneBands.manifest());
+  }
+
+  @Get("sky/neptune/:publicationHash/:file")
+  async neptuneBandsImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
+    @Res() reply:FastifyReply){
+    if(file!=="neptune-opal-2025b-median-bands-8x512.png")
+      throw new NotFoundException("neptune_bands_image_unavailable");
+    const bytes=await this.service.neptuneBands.image(publicationHash);
+    return reply.header("content-type","image/png")
+      .header("cache-control","public, max-age=31536000, immutable")
+      .header("x-content-type-options","nosniff")
+      .header("x-starward-image-source","HST OPAL 2025b CC BY 4.0 latitude-median adaptation")
+      .send(bytes);
+  }
+
+  @Get("sky/landscape/manifest")
+  skyLandscapeManifest(@Res() reply: FastifyReply) {
+    return reply.header("content-type", "application/json; charset=utf-8")
+      .header("cache-control", "no-cache").header("x-content-type-options", "nosniff")
+      .send(this.service.landscape.manifest());
+  }
+
+  @Get("sky/landscape/:publicationHash/:file")
+  async skyLandscapeAsset(@Param("publicationHash") publicationHash: string, @Param("file") file: string,
+    @Res() reply: FastifyReply) {
+    const asset = await this.service.landscape.asset(publicationHash, file);
+    return reply.header("content-type", asset.contentType)
+      .header("cache-control", "public, max-age=31536000, immutable")
+      .header("x-content-type-options", "nosniff")
+      .header("x-starward-image-source", "Generic simulated landscape; Lubomir Hambalek; CC BY-SA 4.0 derivative")
+      .send(asset.bytes);
+  }
+
+  @Get("sky/galactic/manifest")
+  galacticImageManifest(@Res() reply:FastifyReply){
+    return reply.header("content-type","application/json; charset=utf-8")
+      .header("cache-control","no-cache")
+      .header("x-content-type-options","nosniff")
+      .send(this.service.galacticImage.manifest());
+  }
+
+  @Get("sky/galactic/:publicationHash/:file")
+  async galacticImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
+    @Res() reply:FastifyReply){
+    if(file!=="2mass-galactic-2048x1024.jpg")throw new NotFoundException("galactic_image_unavailable");
+    const bytes=await this.service.galacticImage.image(publicationHash);
+    return reply.header("content-type","image/jpeg")
+      .header("cache-control","public, max-age=31536000, immutable")
+      .header("x-content-type-options","nosniff")
+      .header("x-starward-image-source","2MASS historical near-infrared false color")
+      .send(bytes);
+  }
+
+  @Get("sky/mars/:publicationHash/:file")
+  async marsTextureImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
+    @Res() reply:FastifyReply){
+    if(file!=="mars-mdim21-color-usgs-wms-1024x512.jpg")throw new NotFoundException("mars_texture_image_unavailable");
+    const bytes=await this.service.marsTexture.image(publicationHash);
+    return reply.header("content-type","image/jpeg")
+      .header("cache-control","public, max-age=31536000, immutable")
+      .header("x-content-type-options","nosniff")
+      .header("x-starward-image-source","USGS Viking MDIM 2.1 colorized mosaic")
+      .send(bytes);
+  }
+
+  @Get("sky/mercury/:publicationHash/:file")
+  async mercuryTextureImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
+    @Res() reply:FastifyReply){
+    if(file!=="mercury-messenger-2013-usgs-wms-1024x512.jpg")throw new NotFoundException("mercury_texture_image_unavailable");
+    const bytes=await this.service.mercuryTexture.image(publicationHash);
+    return reply.header("content-type","image/jpeg")
+      .header("cache-control","public, max-age=31536000, immutable")
+      .header("x-content-type-options","nosniff")
+      .header("x-starward-image-source","USGS MESSENGER 2013 750 nm mosaic")
+      .send(bytes);
+  }
+
+  @Get("sky/jupiter/:publicationHash/:file")
+  async jupiterBandsImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
+    @Res() reply:FastifyReply){
+    if(file!=="jupiter-opal-2024c-median-bands-8x512.png")
+      throw new NotFoundException("jupiter_bands_image_unavailable");
+    const bytes=await this.service.jupiterBands.image(publicationHash);
+    return reply.header("content-type","image/png")
+      .header("cache-control","public, max-age=31536000, immutable")
+      .header("x-content-type-options","nosniff")
+      .header("x-starward-image-source","HST OPAL 2024c CC BY 4.0 latitude-median adaptation")
+      .send(bytes);
+  }
+
+  @Get("sky/saturn/:publicationHash/:file")
+  async saturnBandsImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
+    @Res() reply:FastifyReply){
+    if(file!=="saturn-opal-2025a-median-bands-8x512.png")
+      throw new NotFoundException("saturn_bands_image_unavailable");
+    const bytes=await this.service.saturnBands.image(publicationHash);
+    return reply.header("content-type","image/png")
+      .header("cache-control","public, max-age=31536000, immutable")
+      .header("x-content-type-options","nosniff")
+      .header("x-starward-image-source","HST OPAL 2025a CC BY 4.0 latitude-median adaptation")
+      .send(bytes);
+  }
+
+  @Get("sky/wide-field/:publicationHash/properties")
+  async wideFieldProperties(@Param("publicationHash") publicationHash:string,@Res() reply:FastifyReply){
+    const properties=await this.service.wideFieldW3.properties(publicationHash);
+    return reply.header("content-type","text/plain; charset=utf-8")
+      .header("cache-control","public, max-age=31536000, immutable")
+      .header("x-content-type-options","nosniff").send(properties);
+  }
+
+  @Get("sky/wide-field/:publicationHash/Norder0/Dir0/:file")
+  async wideFieldTile(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
+    @Res() reply:FastifyReply){
+    const match=/^Npix(0|[1-9]|1[01])\.jpg$/u.exec(file);
+    if(!match)throw new NotFoundException("wide_field_w3_tile_unavailable");
+    const bytes=await this.service.wideFieldW3.tile(publicationHash,Number(match[1]));
+    return reply.header("content-type","image/jpeg")
+      .header("cache-control","public, max-age=31536000, immutable")
+      .header("x-content-type-options","nosniff")
+      .header("x-starward-image-source","AllWISE W3 12um infrared / CDS")
+      .send(bytes);
+  }
+
+  @Get("sky/optical/manifest")
+  opticalManifest(@Res() reply: FastifyReply) {
+    return reply.header("content-type", "application/json; charset=utf-8")
+      .header("cache-control", "no-cache")
+      .header("x-content-type-options", "nosniff")
+      .send(this.service.opticalHips.manifest());
+  }
+
+  @Get("sky/optical/:publicationHash/:sourceId/:order/:dir/index")
+  async opticalIndex(@Param("publicationHash") publicationHash: string,
+    @Param("sourceId") sourceId: string,@Param("order") order: string,@Param("dir") dir: string,
+    @Res() reply: FastifyReply) {
+    const index=await this.service.opticalHips.index(publicationHash,sourceId,Number(order),Number(dir));
+    return reply.header("content-type", "application/json; charset=utf-8")
+      .header("cache-control", "public, max-age=31536000, immutable")
+      .header("x-content-type-options", "nosniff").send(index);
+  }
+
+  @Get("sky/optical/:publicationHash/:sourceId/:order/:pixel")
+  async opticalTile(@Param("publicationHash") publicationHash: string,
+    @Param("sourceId") sourceId: string,@Param("order") order: string,@Param("pixel") pixel: string,
+    @Res() reply: FastifyReply) {
+    const tile=await this.service.opticalHips.tile(publicationHash,sourceId,Number(order),Number(pixel));
+    return reply.header("content-type",tile.contentType)
+      .header("cache-control", "public, max-age=31536000, immutable")
+      .header("x-content-type-options", "nosniff")
+      .header("x-starward-image-source",tile.sourceId)
+      .send(tile.bytes);
+  }
+
   @Get("celestial-objects/:reference/image")
   async celestialObjectImage(
     @Param("reference") reference: string,
     @Query("level") level = "MEDIUM",
     @Query("publicationHash") publicationHash: string | undefined,
+    @Query("imageVersion") imageVersion: string | undefined,
     @Res() reply: FastifyReply,
   ) {
-    const image = await this.service.getDeepSkyImage(decodeURIComponent(reference), level, publicationHash);
+    const selection = deepSkyImageSelection(imageVersion, publicationHash);
+    const image = await this.service.getDeepSkyImage(decodeURIComponent(reference), level, selection.publicationHash, selection.imageVersion);
+    if (image.publicationHash) reply.header("x-starward-image-publication-hash", image.publicationHash);
+    if (image.sourceId) reply.header("x-starward-image-source-id", image.sourceId);
+    if (image.pixelSize) reply.header("x-starward-image-pixels", String(image.pixelSize));
+    if (image.sourceMissingPixels !== undefined) reply.header("x-starward-image-missing-pixels", String(image.sourceMissingPixels));
+    if (image.displaySupport) reply.header("x-starward-image-display-support", JSON.stringify(image.displaySupport));
     reply
       .header("content-type", image.contentType)
       .header("cache-control", "public, max-age=86400")
@@ -396,6 +755,7 @@ export class MiniappController {
       .header("x-starward-image-field-degrees", String(image.fieldDegrees))
       .send(image.bytes);
   }
+
 
   @Get("me/favorites")
   async favorites(@Headers("authorization") authorization?: string) {

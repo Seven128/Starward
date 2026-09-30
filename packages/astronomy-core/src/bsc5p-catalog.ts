@@ -3,11 +3,14 @@ import rawPack from "../data/bsc5p-bright-stars.v1.json" with { type: "json" };
 import rawManifest from "../data/bsc5p-bright-stars.v1.manifest.json" with { type: "json" };
 import extendedPack from "../data/bsc5p-bright-stars.v2.json" with { type: "json" };
 import extendedManifest from "../data/bsc5p-bright-stars.v2.manifest.json" with { type: "json" };
-import { Observer, Rotation_EQJ_HOR } from "./astronomy-engine-runtime.ts";
-import { createStellarMotion, stellarDirectionAt, projectStellarMotion, type EquatorialToEnu } from "./stellar-vectors.ts";
+import revisedPack from "../data/bsc5p-bright-stars.v3.json" with { type: "json" };
+import revisedManifest from "../data/bsc5p-bright-stars.v3.manifest.json" with { type: "json" };
+import { observationHorizontalFrame } from "./observation-frame.ts";
+import { createStellarMotion, stellarDirectionAt, projectStellarMotion } from "./stellar-vectors.ts";
 
 export const BSC5P_CATALOG_VERSION = "bsc5p-bright-stars.v2";
-export type Bsc5pCatalogVersion = "bsc5p-bright-stars.v1" | typeof BSC5P_CATALOG_VERSION;
+export const BSC5P_REVISED_CATALOG_VERSION = "bsc5p-bright-stars.v3";
+export type Bsc5pCatalogVersion = "bsc5p-bright-stars.v1" | typeof BSC5P_CATALOG_VERSION | typeof BSC5P_REVISED_CATALOG_VERSION;
 export const BSC5P_PROJECTION_ALGORITHM = "starward-bsc5p-fk5-j2000@2+astronomy-engine@2.1.19";
 export interface Bsc5pStarRow {
   sourceId: string; hr: string; hip: string | null; hd: string | null;
@@ -24,7 +27,7 @@ export function validateBsc5pPack(value: unknown, version: Bsc5pCatalogVersion =
   const pack = value as typeof rawPack;
   const limit = version === "bsc5p-bright-stars.v1" ? 5 : 6.5;
   const count = version === "bsc5p-bright-stars.v1" ? 1630 : 8404;
-  if (!["bsc5p-bright-stars.v1", BSC5P_CATALOG_VERSION].includes(version) ||
+  if (!["bsc5p-bright-stars.v1", BSC5P_CATALOG_VERSION, BSC5P_REVISED_CATALOG_VERSION].includes(version) ||
     !pack || pack.schemaVersion !== "bsc5p-bright-stars-v1" || pack.catalogVersion !== version ||
     pack.frame !== "FK5" || pack.referenceEpoch !== 2000 || pack.magnitudeBand !== "V" || pack.magnitudeLimit !== limit ||
     !Array.isArray(pack.rows) || pack.rows.length !== count) fail("identity");
@@ -68,13 +71,16 @@ function freezeManifest<T>(value: T): T {
   return value;
 }
 
-/** Only the two checked-in, integrity-bound publications; no path or remote lookup. */
+/** Only the checked-in, integrity-bound publications; no path or remote lookup. */
 export function loadBsc5pStarCatalog(version: Bsc5pCatalogVersion): Readonly<Bsc5pCatalog> {
-  if (version !== "bsc5p-bright-stars.v1" && version !== BSC5P_CATALOG_VERSION) fail("version");
+  if (version !== "bsc5p-bright-stars.v1" && version !== BSC5P_CATALOG_VERSION &&
+    version !== BSC5P_REVISED_CATALOG_VERSION) fail("version");
   const cached = loadedCatalogs.get(version);
   if (cached) return cached;
-  const input = version === "bsc5p-bright-stars.v1" ? rawPack : extendedPack;
-  const manifest = version === "bsc5p-bright-stars.v1" ? rawManifest : extendedManifest;
+  const input = version === "bsc5p-bright-stars.v1" ? rawPack :
+    version === BSC5P_CATALOG_VERSION ? extendedPack : revisedPack;
+  const manifest = version === "bsc5p-bright-stars.v1" ? rawManifest :
+    version === BSC5P_CATALOG_VERSION ? extendedManifest : revisedManifest;
   const pack = validateBsc5pPack(input, version);
   const hash = createHash("sha256").update(JSON.stringify(pack)).digest("hex");
   if (manifest.catalogVersion !== version || manifest.rowCount !== pack.rows.length ||
@@ -100,18 +106,8 @@ export function propagateBsc5p(row: Bsc5pStarRow, at: Date) {
 }
 
 export function bsc5pHorizontalFrame(input: { at: Date | string; latitude: number; longitude: number; elevationM: number }) {
-  const at = new Date(input.at);
-  if (!Number.isFinite(at.getTime())) throw new Error("bsc5p_observation_instant_invalid");
-  if (!finite(input.latitude) || Math.abs(input.latitude) > 90 || !finite(input.longitude) || Math.abs(input.longitude) > 180 ||
-    !finite(input.elevationM)) throw new Error("bsc5p_observer_invalid");
-  const observer = new Observer(input.latitude, input.longitude, input.elevationM);
-  // Astronomy Engine's rot is indexed [input axis][output axis], with HOR
-  // axes north/west/up. Transpose and negate west to publish row-major ENU.
-  const m = Rotation_EQJ_HOR(at, observer).rot;
-  const equatorialToEnu: EquatorialToEnu = [-m[0][1], -m[1][1], -m[2][1],
-    m[0][0], m[1][0], m[2][0], m[0][2], m[1][2], m[2][2]];
-  return { at: at.toISOString(), julianYears: (at.getTime() - Date.UTC(2000, 0, 1, 12)) / (365.25 * 86_400_000),
-    equatorialToEnu };
+  const frame = observationHorizontalFrame(input);
+  return { ...frame, julianYears: (Date.parse(frame.at) - Date.UTC(2000, 0, 1, 12)) / (365.25 * 86_400_000) };
 }
 
 export function positionBsc5pCatalog(input: { at: Date | string; latitude: number; longitude: number; elevationM: number;

@@ -22,6 +22,8 @@ import type { AstronomicalEventCatalogOwner } from "../astronomical-event-catalo
 import type { RecentWeatherPort } from "../recent-weather-provider.ts";
 import type { AirQualityPort } from "../air-quality-provider.ts";
 import type { DeepSkyImageryService } from "../deep-sky-imagery.ts";
+import type { SdssOpticalImageryService } from "../sdss-optical-imagery.ts";
+import type { OpticalHipsPublicationService } from "../optical-hips-publication.ts";
 
 export function createTestMiniappService(
   input: {
@@ -37,6 +39,8 @@ export function createTestMiniappService(
     cache?: CachePort;
     eventCatalog?: AstronomicalEventCatalogOwner;
     deepSkyImages?: DeepSkyImageryService;
+    sdssOpticalImages?: SdssOpticalImageryService;
+    opticalHips?: OpticalHipsPublicationService;
   } = {},
 ) {
   const config = input.config ?? createTestRuntimeConfig();
@@ -53,5 +57,7 @@ export function createTestMiniappService(
     ...(input.eventCatalog ? { eventCatalog: input.eventCatalog } : {}),
     ...(input.cache ? { cache: input.cache } : {}),
     ...(input.deepSkyImages ? { deepSkyImages: input.deepSkyImages } : {}),
+    ...(input.sdssOpticalImages ? { sdssOpticalImages: input.sdssOpticalImages } : {}),
+    ...(input.opticalHips ? { opticalHips: input.opticalHips } : {}),
   });
 }

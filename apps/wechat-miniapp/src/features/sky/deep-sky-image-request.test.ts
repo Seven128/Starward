@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import {
   startDeepSkyImageRequest,
   type DeepSkyImageAsset,
@@ -14,7 +15,9 @@ const asset: DeepSkyImageAsset = {
   fieldDegrees: 4,
   tempFilePath: "/tmp/m31-medium.jpg",
 };
-const responseHeader = { "X-Starward-Image-Field-Degrees": "4" };
+const imageIdentity = { publicationHash: "a".repeat(64), sourceId: `imagery:test:${"a".repeat(64)}`, pixelSize: 512 };
+const responseHeader = { "X-Starward-Image-Field-Degrees": "4", "x-starward-image-publication-hash": imageIdentity.publicationHash,
+  "x-starward-image-source-id": imageIdentity.sourceId, "x-starward-image-pixels": "512" };
 
 function harness(files = new Map<string, ArrayBuffer>()) {
   let requestOptions: DeepSkyImageRequestOptions | null = null;
@@ -104,7 +107,7 @@ test("only active binary success publishes while active failures remain retryabl
   success.write.success();
   success.cancel();
   assert.equal(success.ready.length, 1);
-  assert.deepEqual({ ...success.ready[0], tempFilePath: asset.tempFilePath, release: undefined }, { ...asset, release: undefined });
+  assert.deepEqual({ ...success.ready[0], tempFilePath: asset.tempFilePath, release: undefined }, { ...asset, ...imageIdentity, release: undefined });
   assert.equal(success.aborts, 0);
   assert.equal(success.cancels, 0);
 
@@ -138,6 +141,13 @@ test("missing or invalid angular metadata cannot publish a misregistered image",
   }
 });
 
+test("an unbound successful reply cannot paint old bytes under the current publication's credit", () => {
+  const h = harness();
+  h.request.success({ statusCode: 200, data: new ArrayBuffer(4), header: { "x-starward-image-field-degrees": "4" } });
+  assert.equal(h.write, null);
+  assert.equal(h.errors, 1);
+});
+
 test("synchronous native request and filesystem failures stay in the retryable error channel", () => {
   for (const stage of ["request", "write"] as const) {
     let errors = 0, ready = 0;
@@ -153,4 +163,56 @@ test("synchronous native request and filesystem failures stay in the retryable e
     }));
     assert.equal(errors, 1); assert.equal(ready, 0);
   }
+});
+
+test("real published PNG bytes retain source binding and use their own cancellable file format", () => {
+  const root = new URL("../../../../../workers/miniapp-api/assets/deep-sky/", import.meta.url);
+  const manifest = JSON.parse(readFileSync(new URL("manifest.json", root), "utf8"));
+  const published = manifest.entries.find((entry: { objectRef: string }) => entry.objectRef === "M:42").levels.DETAIL;
+  const png = Uint8Array.from(readFileSync(new URL(published.file, root))).buffer;
+  const publicationHash = "a".repeat(64), sourceId = `imagery:${manifest.publicationId}:${publicationHash}`;
+  const header = { "content-type": "image/png", "x-starward-image-field-degrees": "0.9",
+    "x-starward-image-publication-hash": publicationHash, "x-starward-image-source-id": sourceId,
+    "x-starward-image-pixels": "512", "x-starward-image-missing-pixels": "5095",
+    "X-Starward-Image-Display-Support": JSON.stringify(published.displaySupport) };
+  const files = new Map<string, ArrayBuffer>(), h = harness(files);
+  h.request.success({ statusCode: 200, data: png, header });
+  const pending = h.write;
+  assert.ok(pending?.filePath.endsWith(".png"), "native decoding must receive the actual response format");
+  assert.ok(pending);
+  const ownPath = pending.filePath;
+  h.request.success({ statusCode: 200, data: new ArrayBuffer(4), header: responseHeader });
+  assert.equal(h.write?.filePath, ownPath, "a duplicate response cannot switch a pending write's format or owner");
+  h.commitWrite();
+  assert.equal(h.ready[0]?.publicationHash, publicationHash);
+  assert.equal(h.ready[0]?.sourceId, sourceId);
+  assert.equal(h.ready[0]?.sourceMissingPixels, 5095);
+  assert.deepEqual(h.ready[0]?.displaySupport, published.displaySupport);
+  h.ready[0]!.release();
+  assert.equal(files.size, 0);
+  const canceled = harness(files);
+  canceled.request.success({ statusCode: 200, data: png, header });
+  canceled.cancel(); canceled.commitWrite();
+  assert.equal(files.size, 0, "a canceled PNG write releases only its own late file");
+  assert.equal(canceled.ready.length, 0);
+  for (const invalid of [
+    { ...header, "x-starward-image-source-id": `imagery:other:${"b".repeat(64)}` },
+    { ...header, "x-starward-image-pixels": "256" },
+    { ...header, "x-starward-image-missing-pixels": "262145" },
+    { ...header, "x-starward-image-publication-hash": "" },
+    { ...header, "content-type": "image/jpeg" },
+    { ...header, "X-Starward-Image-Display-Support": "{" },
+    { ...header, "X-Starward-Image-Display-Support": JSON.stringify({ ...published.displaySupport, sourceSha256: "0".repeat(64) }) },
+    { ...header, "X-Starward-Image-Display-Support": JSON.stringify({ ...published.displaySupport, emptyRuns: [-1, 1] }) },
+  ]) {
+    const bad = harness(); bad.request.success({ statusCode: 200, data: png, header: invalid });
+    assert.equal(bad.errors, 1); assert.equal(bad.write, null);
+  }
+  const changedBytes = new Uint8Array(png.slice(0)); changedBytes[40] = changedBytes[40]! ^ 1;
+  const changed = harness(); changed.request.success({ statusCode: 200, data: changedBytes.buffer, header });
+  assert.equal(changed.errors, 1); assert.equal(changed.write, null, "an altered body must not inherit the original display support");
+  const oldHeader = { ...header }; delete (oldHeader as Partial<typeof header>)["X-Starward-Image-Display-Support"];
+  const old = harness(); old.request.success({ statusCode: 200, data: png, header: oldHeader }); old.commitWrite();
+  assert.equal(old.errors, 0); assert.equal(old.ready[0]?.displaySupport, undefined, "old v3 responses remain readable without claiming a spatial certificate");
+  old.ready[0]!.release();
 });

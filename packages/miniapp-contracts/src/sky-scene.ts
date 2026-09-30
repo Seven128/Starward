@@ -2,7 +2,8 @@ import type { SkyScene, DeepSkyScene, DeepSkyScenePoint, SkyTarget, SkyTargetFra
 import { assertStellarGeometryFrame } from "./stellar-geometry.ts";
 import { assertStellarCatalogReference } from "./stellar-catalog-publication.ts";
 import { STELLAR_SCENE_FORMAT } from "./stellar-scene.ts";
-export { isBrightStarReference, isCelestialObjectReference } from "./celestial-identity.ts";
+import { hasSkyTargetPosition } from "./sky-target-position.ts";
+export { isBrightStarReference, isCelestialObjectReference, celestialReferenceKindMatches } from "./celestial-identity.ts";
 
 export const SKY_SCENE_MAX_CATALOG_ENTRIES = 8_404;
 export const SKY_SCENE_MAX_MAGNITUDE_LIMIT = 6.5;
@@ -64,7 +65,7 @@ export function assertStellarScene(scene: SkyScene, hourlyAt: readonly string[])
   if (scene.state === "AVAILABLE") {
     if (!scene.catalog || !scene.observer || scene.unavailableReason !== null) fail("available_shape");
     assertStellarCatalogReference(scene.catalog);
-    const extended = scene.catalog.catalogVersion === "bsc5p-bright-stars.v2";
+    const extended = scene.catalog.catalogVersion !== "bsc5p-bright-stars.v1";
     if (scene.catalog.rowCount !== (extended ? 8404 : 1630) || scene.catalog.magnitudeLimit !== (extended ? 6.5 : 5) ||
       !Array.isArray(scene.catalog.sources) || scene.catalog.sources.length === 0) fail("catalog_identity");
     scene.frames.forEach((frame, index) => {
@@ -89,8 +90,8 @@ export function assertSkyScene(scene: SkyScene, hourlyAt: readonly string[]): as
 /**
  * Validate the target timeline's relationship to the report's real hourly
  * axis.  Target semantics remain actionable data, so this check deliberately
- * validates only the time binding and per-frame identity shape; astronomy
- * values remain owned and calculated by the BFF.
+ * validates time, identity and numeric coordinate representation; astronomy
+ * values remain owned and calculated by the BFF, independently of display copy.
  */
 export function assertSkyTargetFrames(
   targetFrames: readonly SkyTargetFrame[],
@@ -115,6 +116,9 @@ export function assertSkyTargetFrames(
         fail(`target_frame_${index}:target_${targetIndex}:id`);
       if (targetIds.has(target.targetId))
         fail(`target_frame_${index}:target_${targetIndex}:duplicate`);
+      if (!hasSkyTargetPosition(target) &&
+        !(target.azimuthDeg === null && target.altitudeDeg === null))
+        fail(`target_frame_${index}:target_${targetIndex}:coordinates`);
       targetIds.add(target.targetId);
     });
   });

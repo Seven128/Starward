@@ -1,0 +1,407 @@
+{
+  "assumptions": {
+    "date": "2026-09-22",
+    "currency": "CNY",
+    "days": 30,
+    "storageBudgetGB": 500,
+    "storagePerGBMonth": 0.118,
+    "byteCacheHit": 0.9,
+    "requestCacheHit": 0.9,
+    "averageResponseBytes": 64000,
+    "cosOriginPerGB": 0.15,
+    "cosReadPer10000": 0.01,
+    "httpsPer10000": 0.05,
+    "httpsFreeRequestsRemaining": 3000000,
+    "existingAccountCdnGB": 0,
+    "sources": {
+      "cdn": "https://cloud.tencent.com/document/product/228/75562",
+      "https": "https://cloud.tencent.com/document/product/228/75563",
+      "cos": "https://cloud.tencent.com/document/product/436/6241",
+      "cosStorage": "https://cloud.tencent.com/document/product/436/50201"
+    }
+  },
+  "agentWork": {
+    "unit": "active_agent_hours",
+    "hoursPerPlanningDay": 8,
+    "estimateConfidence": "low; uncalibrated against a native prototype",
+    "work": [
+      {
+        "responsibility": "runtime_and_rendering",
+        "stellariumNative": [
+          16,
+          40
+        ],
+        "extendCurrent": [
+          24,
+          56
+        ]
+      },
+      {
+        "responsibility": "visuals_and_controls",
+        "stellariumNative": [
+          12,
+          28
+        ],
+        "extendCurrent": [
+          48,
+          96
+        ]
+      },
+      {
+        "responsibility": "data_search_details",
+        "stellariumNative": [
+          20,
+          40
+        ],
+        "extendCurrent": [
+          24,
+          48
+        ]
+      },
+      {
+        "responsibility": "miniapp_product_integration",
+        "stellariumNative": [
+          12,
+          24
+        ],
+        "extendCurrent": [
+          12,
+          24
+        ]
+      },
+      {
+        "responsibility": "dynamic_objects",
+        "stellariumNative": [
+          12,
+          24
+        ],
+        "extendCurrent": [
+          24,
+          48
+        ]
+      },
+      {
+        "responsibility": "device_quality_and_recovery",
+        "stellariumNative": [
+          24,
+          56
+        ],
+        "extendCurrent": [
+          32,
+          72
+        ]
+      }
+    ],
+    "nativeBase": [
+      96,
+      212
+    ],
+    "customBase": [
+      164,
+      344
+    ],
+    "commercialNative": [
+      100,
+      220
+    ],
+    "agplNative": [
+      104,
+      228
+    ],
+    "extendCurrent": [
+      168,
+      352
+    ],
+    "conditionalRawDataPipelineExtra": [
+      32,
+      80
+    ],
+    "nativeFeasibilityTrialIncludedIfReused": [
+      8,
+      16
+    ],
+    "monthlyMaintenance": {
+      "stellariumNative": [
+        4,
+        12
+      ],
+      "extendCurrent": [
+        6,
+        16
+      ]
+    },
+    "agplSourceDeliveryPerRelevantRelease": [
+      1,
+      3
+    ],
+    "projectOwnerParticipationHours": {
+      "commercialNative": [
+        6,
+        12
+      ],
+      "agplNative": [
+        8,
+        16
+      ],
+      "extendCurrent": [
+        8,
+        16
+      ]
+    },
+    "notes": [
+      "One primary agent stream; no parallel-agent speedup is assumed or authorized by this estimate.",
+      "Active time includes investigation, editing, builds, automated checks, debugging and repairs.",
+      "Elapsed time also depends on account limits, downloads, data generation, devices and supplier replies.",
+      "Project owner time covers device assistance, visual acceptance and decisions, not external legal services.",
+      "No completed agent benchmark supports a fixed AI speedup or a guaranteed completion deadline.",
+      "Base assumes lawful complete datasets in usable formats, not the small repository sample.",
+      "Agent platform cash spend is actual incremental subscription/API/credit spend, not hours times a rate.",
+      "Web-view and hosted-site embedding are excluded by the user."
+    ]
+  },
+  "annualCash": {
+    "operatingMonths": 12,
+    "storageAndDeliveryOnly": [
+      {
+        "skyDau": 100,
+        "newMBPerUserDay": 30,
+        "annualCny": 952.6875
+      },
+      {
+        "skyDau": 500,
+        "newMBPerUserDay": 30,
+        "annualCny": 2173.3125
+      },
+      {
+        "skyDau": 1000,
+        "newMBPerUserDay": 30,
+        "annualCny": 3818.625
+      },
+      {
+        "skyDau": 10000,
+        "newMBPerUserDay": 30,
+        "annualCny": 32594.25
+      }
+    ],
+    "unknownCostsAreNotZero": {
+      "L": "First-year commercial engine licence including any recurring fee; route A only.",
+      "D": "First-year dataset and/or hosted API rights; may differ between routes.",
+      "X": "Incremental build/data processing compute, service capacity, required external services and other setup spend.",
+      "A": "Actual incremental agent subscription, credits or API charges; no token forecast available."
+    },
+    "formulas": {
+      "commercialNative": "storageAndDelivery + L + D_A + X_A + A_A",
+      "agplNative": "storageAndDelivery + D_B + X_B + A_B",
+      "extendCurrent": "storageAndDelivery + D_C + X_C + A_C"
+    },
+    "nonCashCost": "Core-source openness and business impact are recorded separately, never assigned a guessed CNY value."
+  },
+  "scenarios": [
+    {
+      "skyDau": 100,
+      "newMBPerUserDay": 10,
+      "cdnGB": 30,
+      "requests": 468750,
+      "storage": 59,
+      "cdn": 6.3,
+      "origin": 0.44999999999999984,
+      "https": 0,
+      "cosReads": 0.04687499999999999,
+      "monthlyCny": 65.796875
+    },
+    {
+      "skyDau": 100,
+      "newMBPerUserDay": 30,
+      "cdnGB": 90,
+      "requests": 1406250,
+      "storage": 59,
+      "cdn": 18.9,
+      "origin": 1.3499999999999996,
+      "https": 0,
+      "cosReads": 0.14062499999999997,
+      "monthlyCny": 79.390625
+    },
+    {
+      "skyDau": 100,
+      "newMBPerUserDay": 100,
+      "cdnGB": 300,
+      "requests": 4687500,
+      "storage": 59,
+      "cdn": 63,
+      "origin": 4.499999999999999,
+      "https": 8.4375,
+      "cosReads": 0.4687499999999999,
+      "monthlyCny": 135.40625
+    },
+    {
+      "skyDau": 500,
+      "newMBPerUserDay": 10,
+      "cdnGB": 150,
+      "requests": 2343750,
+      "storage": 59,
+      "cdn": 31.5,
+      "origin": 2.2499999999999996,
+      "https": 0,
+      "cosReads": 0.23437499999999994,
+      "monthlyCny": 92.984375
+    },
+    {
+      "skyDau": 500,
+      "newMBPerUserDay": 30,
+      "cdnGB": 450,
+      "requests": 7031250,
+      "storage": 59,
+      "cdn": 94.5,
+      "origin": 6.749999999999999,
+      "https": 20.15625,
+      "cosReads": 0.7031249999999999,
+      "monthlyCny": 181.109375
+    },
+    {
+      "skyDau": 500,
+      "newMBPerUserDay": 100,
+      "cdnGB": 1500,
+      "requests": 23437500,
+      "storage": 59,
+      "cdn": 315,
+      "origin": 22.499999999999996,
+      "https": 102.1875,
+      "cosReads": 2.3437499999999996,
+      "monthlyCny": 501.03125
+    },
+    {
+      "skyDau": 1000,
+      "newMBPerUserDay": 10,
+      "cdnGB": 300,
+      "requests": 4687500,
+      "storage": 59,
+      "cdn": 63,
+      "origin": 4.499999999999999,
+      "https": 8.4375,
+      "cosReads": 0.4687499999999999,
+      "monthlyCny": 135.40625
+    },
+    {
+      "skyDau": 1000,
+      "newMBPerUserDay": 30,
+      "cdnGB": 900,
+      "requests": 14062500,
+      "storage": 59,
+      "cdn": 189,
+      "origin": 13.499999999999998,
+      "https": 55.3125,
+      "cosReads": 1.4062499999999998,
+      "monthlyCny": 318.21875
+    },
+    {
+      "skyDau": 1000,
+      "newMBPerUserDay": 100,
+      "cdnGB": 3000,
+      "requests": 46875000,
+      "storage": 59,
+      "cdn": 620,
+      "origin": 44.99999999999999,
+      "https": 219.375,
+      "cosReads": 4.687499999999999,
+      "monthlyCny": 948.0625
+    },
+    {
+      "skyDau": 10000,
+      "newMBPerUserDay": 10,
+      "cdnGB": 3000,
+      "requests": 46875000,
+      "storage": 59,
+      "cdn": 620,
+      "origin": 44.99999999999999,
+      "https": 219.375,
+      "cosReads": 4.687499999999999,
+      "monthlyCny": 948.0625
+    },
+    {
+      "skyDau": 10000,
+      "newMBPerUserDay": 30,
+      "cdnGB": 9000,
+      "requests": 140625000,
+      "storage": 59,
+      "cdn": 1820,
+      "origin": 134.99999999999997,
+      "https": 688.125,
+      "cosReads": 14.062499999999996,
+      "monthlyCny": 2716.1875
+    },
+    {
+      "skyDau": 10000,
+      "newMBPerUserDay": 100,
+      "cdnGB": 30000,
+      "requests": 468750000,
+      "storage": 59,
+      "cdn": 5620,
+      "origin": 449.99999999999994,
+      "https": 2328.75,
+      "cosReads": 46.87499999999999,
+      "monthlyCny": 8504.625
+    }
+  ],
+  "sensitivity": {
+    "baseline": {
+      "skyDau": 1000,
+      "newMBPerUserDay": 30,
+      "cdnGB": 900,
+      "requests": 14062500,
+      "storage": 59,
+      "cdn": 189,
+      "origin": 13.499999999999998,
+      "https": 55.3125,
+      "cosReads": 1.4062499999999998,
+      "monthlyCny": 318.21875
+    },
+    "noHttpsFreeAllowance": {
+      "skyDau": 1000,
+      "newMBPerUserDay": 30,
+      "cdnGB": 900,
+      "requests": 14062500,
+      "storage": 59,
+      "cdn": 189,
+      "origin": 13.499999999999998,
+      "https": 70.3125,
+      "cosReads": 1.4062499999999998,
+      "monthlyCny": 333.21875
+    },
+    "lowerByteAndRequestHit": {
+      "skyDau": 1000,
+      "newMBPerUserDay": 30,
+      "cdnGB": 900,
+      "requests": 14062500,
+      "storage": 59,
+      "cdn": 189,
+      "origin": 67.5,
+      "https": 55.3125,
+      "cosReads": 7.03125,
+      "monthlyCny": 377.84375
+    },
+    "smallerResponses": {
+      "skyDau": 1000,
+      "newMBPerUserDay": 30,
+      "cdnGB": 900,
+      "requests": 56250000,
+      "storage": 59,
+      "cdn": 189,
+      "origin": 13.499999999999998,
+      "https": 266.25,
+      "cosReads": 5.624999999999999,
+      "monthlyCny": 533.375
+    },
+    "largerStorage": {
+      "skyDau": 1000,
+      "newMBPerUserDay": 30,
+      "cdnGB": 900,
+      "requests": 14062500,
+      "storage": 236,
+      "cdn": 189,
+      "origin": 13.499999999999998,
+      "https": 55.3125,
+      "cosReads": 1.4062499999999998,
+      "monthlyCny": 495.21875
+    }
+  }
+}

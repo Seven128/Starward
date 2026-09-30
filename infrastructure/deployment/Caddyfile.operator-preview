@@ -17,6 +17,7 @@
 }
 
 https://{$STARWARD_API_DOMAIN} {
+	import /etc/caddy/sky-resource-logging.caddy
 	tls {
 		issuer acme https://acme-v02.api.letsencrypt.org/directory {
 			profile shortlived

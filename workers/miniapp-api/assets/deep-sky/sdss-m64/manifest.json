@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "sdss-dr17-target-optical-publication-v1",
+  "publicationId": "sdss-dr17-m64.v20260929",
+  "objectRef": "M:64",
+  "center": {
+    "raDeg": 194.18183333333334,
+    "decDeg": 21.682972222222222,
+    "frame": "ICRS J2000"
+  },
+  "orientation": "north-up/east-left",
+  "source": {
+    "provider": "Sloan Digital Sky Survey",
+    "dataset": "SDSS DR17 SkyServer ImgCutout",
+    "landingUrl": "https://skyserver.sdss.org/dr17",
+    "imageUsePolicyUrl": "https://www.sdss.org/collaboration/image-use-policy/",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "credit": "Sloan Digital Sky Survey",
+    "processingDocumentationUrl": "https://www.sdss4.org/dr16/imaging/jpg-images-on-skyserver/"
+  },
+  "processing": {
+    "runtimeNetwork": "forbidden",
+    "modification": "SDSS SkyServer generated north-up/east-left RGB JPEG cutouts from g/r/i imaging frames. Starward selected three image scales and renamed the original JPEG files for self-hosting; no pixel edits were made. These historical optical images are not a real-time view.",
+    "coverage": "Only M:64 at the three published scales; no whole-sky or complete scientific pixel coverage is claimed. The requested center is in the SDSS imaging footprint; per-pixel and per-band coverage were not measured. The unmodified historical display composite can contain saturation, foreground-star and mosaic artifacts; fine cutouts show a limited central field, not the entire galaxy."
+  },
+  "levels": {
+    "OVERVIEW": {
+      "file": "M-64-overview.jpg",
+      "scaleArcsecPerPixel": 1.6,
+      "pixels": 512,
+      "fieldDegrees": 0.22755555555555557,
+      "bytes": 16609,
+      "sha256": "af1186455b01be1b1fea20045d2683add44859eac4e2b65ae3280c40709519b3",
+      "requestUrl": "https://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?ra=194.181833333333&dec=21.6829722222222&scale=1.6&width=512&height=512"
+    },
+    "MEDIUM": {
+      "file": "M-64-medium.jpg",
+      "scaleArcsecPerPixel": 0.8,
+      "pixels": 512,
+      "fieldDegrees": 0.11377777777777778,
+      "bytes": 18696,
+      "sha256": "cc6cbbc19c652d2ec659965dae76009349d9404187beebf44fb6a1f1c1b3ae4b",
+      "requestUrl": "https://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?ra=194.181833333333&dec=21.6829722222222&scale=0.8&width=512&height=512"
+    },
+    "DETAIL": {
+      "file": "M-64-detail.jpg",
+      "scaleArcsecPerPixel": 0.4,
+      "pixels": 512,
+      "fieldDegrees": 0.05688888888888889,
+      "bytes": 13809,
+      "sha256": "a47e2a53748e986ada08b8748362c28ef4d9ba387bef3f393bc01afe52e3c27a",
+      "requestUrl": "https://skyserver.sdss.org/dr17/SkyServerWS/ImgCutout/getjpeg?ra=194.181833333333&dec=21.6829722222222&scale=0.4&width=512&height=512"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "starward-opal-jupiter-bands-v1",
+  "publicationId": "opal-jupiter-2024c-median-bands-8x512-20260924",
+  "source": {
+    "title": "HST OPAL Cycle 31 Jupiter 2024c F395N/F467M/F658N global map",
+    "provider": "MAST / HST OPAL",
+    "recordUrl": "https://archive.stsci.edu/hlsp/opal/opal-jupiter-cycle-31",
+    "rightsUrl": "https://archive.stsci.edu/hlsp/opal",
+    "credit": "NASA / ESA / HST OPAL Team (PI Amy Simon) / STScI; adapted by Starward",
+    "sourceFile": "hlsp_opal_hst_wfc3-uvis_jupiter-2024c_f395n-f467m-f658n_v1_globalmap.tif",
+    "sourceSha256": "b352755811130a1ede851f9c62de48454cc249f2047a763782870ac8d8a158e2",
+    "observationDate": "2024-11-19/2024-11-20",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "doi": "10.17909/T9G593"
+  },
+  "projection": {
+    "kind": "latitude-profile",
+    "latitude": "planetographic",
+    "longitude": "none",
+    "boundsDeg": [-90, 90]
+  },
+  "image": {
+    "file": "jupiter-opal-2024c-median-bands-8x512.png",
+    "sha256": "8c3e6e19f2f620581a859e5496ab0361544c3a20b1c903b0c4236e85d4d75a47",
+    "bytes": 1026,
+    "width": 8,
+    "height": 512,
+    "format": "png"
+  },
+  "processing": "Starward took the RGB median across valid longitudes in each latitude row of the historical three-filter map, omitted rows with under 90% coverage, and resized the resulting latitude profile to 8x512 RGBA PNG. This is an adaptation under CC BY 4.0.",
+  "limitations": [
+    "Historical band colors from an arbitrarily scaled three-filter composite, not natural color or live Jovian weather.",
+    "Longitude-dependent features, including the 2024 Great Red Spot, were removed; no current feature longitude is claimed.",
+    "Transparent polar rows lack source coverage and must fall back to the plain computed globe."
+  ]
+}

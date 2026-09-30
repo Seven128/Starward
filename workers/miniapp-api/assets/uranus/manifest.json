@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "starward-opal-uranus-bands-v1",
+  "publicationId": "opal-uranus-2025a-median-bands-8x512-20260926",
+  "source": {
+    "title": "HST OPAL Cycle 33 Uranus 2025a F657N/F547M/F467M global map",
+    "provider": "MAST / HST OPAL",
+    "recordUrl": "https://archive.stsci.edu/hlsp/opal/opal-uranus-cycle-33",
+    "rightsUrl": "https://archive.stsci.edu/hlsp/opal",
+    "credit": "NASA / ESA / HST OPAL Team (PI Amy Simon) / STScI; adapted by Starward",
+    "sourceFile": "hlsp_opal_hst_wfc3-uvis_uranus-2025a_f657n-f547m-f467m_v1_globalmap.tif",
+    "sourceSha256": "854ba9d0b744c2d6e6b646d315847a3528b94b4f0b8970cc4285d71228e69c7b",
+    "observationDate": "2025-10-23",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "doi": "10.17909/T9G593"
+  },
+  "projection": {
+    "kind": "latitude-profile",
+    "latitude": "planetographic",
+    "longitude": "none",
+    "boundsDeg": [
+      -90,
+      90
+    ]
+  },
+  "image": {
+    "file": "uranus-opal-2025a-median-bands-8x512.png",
+    "sha256": "308d1521b5f0adebc14249c686664907335cdf8e0334a5a7008392b62b66c817",
+    "bytes": 421,
+    "width": 8,
+    "height": 512,
+    "format": "png"
+  },
+  "processing": "Starward took the RGB median across valid longitudes in each planetographic latitude row of the historical three-filter map, omitted rows with under 90% coverage, and resized the profile to 8x512 RGBA PNG. The missing-latitude mask uses nearest-neighbour resampling and binary alpha; hidden RGB is extended only to avoid interpolation fringes. This is an adaptation under CC BY 4.0.",
+  "limitations": [
+    "Historical band colors from an enhanced, arbitrarily scaled three-filter composite, not natural color or live Uranus weather.",
+    "Longitude-dependent clouds were removed; no current feature longitude is claimed.",
+    "Transparent latitudes lack source atmosphere coverage and must fall back to the plain computed globe; the nominal global map does not measure the entire planet."
+  ]
+}

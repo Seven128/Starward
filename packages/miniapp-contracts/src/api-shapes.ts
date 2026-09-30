@@ -34,6 +34,7 @@ import type {
   RouteOverview,
   RouteTravelMode,
   SkyReport,
+  SkyTarget,
   SiteMediaState,
   SpotDetail,
   SpotId,
@@ -54,10 +55,188 @@ export type MapLayerKind =
   | "OPPORTUNITY";
 
 export type CelestialObjectInformationData = CelestialObjectInformation;
-/** Binary JPEG body; this route intentionally does not use ApiEnvelope at runtime. */
+/** A selected object in one authorized report slice; negative altitude is
+ * meaningful and is not a promise of visibility, refraction or clear terrain. */
+export interface CelestialObjectPositionData {
+  reference: string;
+  spotId: string;
+  contextId: string;
+  contextRevision: number;
+  contextFingerprint: string;
+  dataRevision: string;
+  algorithmVersion: string;
+  at: string;
+  /** Fine instants use the report's explicit bounded provider model. */
+  timeModelAlgorithmVersion?: string;
+  /** Lazy star geometry for continuous local selection/tracking. Identity,
+   * catalogue and Context bindings are the same as this position response. */
+  stellarMotion?: {
+    referenceAt: typeof import("./stellar-geometry.ts").STELLAR_GEOMETRY_REFERENCE_AT;
+    factors: import("./stellar-geometry.ts").StellarGeometryMotion;
+  };
+  position: {
+    azimuthDeg: number;
+    altitudeDeg: number;
+    catalogVersion: string;
+    catalogHash: string;
+  } | null;
+  unavailableReason: "SKY_UNAVAILABLE" | "OBJECT_GEOMETRY_UNAVAILABLE" | null;
+}
+/** Static identity discovery. Positions/visibility must be resolved in the
+ * consumer's current Observation Context, never inferred from a search hit. */
+export interface CelestialObjectSearchData {
+  query: string;
+  results: Array<{
+    reference: string;
+    displayName: string;
+    kind: "STAR" | "MOON" | "GALAXY" | "NEBULA" | "PLANET";
+    matchedAlias: string;
+    aliases: readonly string[];
+  }>;
+  truncated: boolean;
+  catalogs: Array<{ catalogVersion: string; catalogHash: string; rowCount: number }>;
+  unavailableCatalogs: string[];
+}
+/** Binary JPEG or source-bound PNG body; no ApiEnvelope at runtime. */
 export type CelestialObjectImageData = Uint8Array;
 /** Machine-readable publication download; no ApiEnvelope. */
 export type DeepSkyManifestData = Record<string, unknown>;
+/** A fixed, low-resolution infrared all-sky copy from the CDS HiPS master.
+ * The twelve listed order-0 files are the complete published coverage. */
+export interface WideFieldW3ManifestData {
+  schemaVersion:"starward-allwise-w3-wide-v1";
+  publicationId:string;
+  publicationHash:string;
+  propertiesSha256:string;
+  propertiesUrl:string;
+  source:{title:string;masterUrl:string;recordUrl:string;originalRightsUrl:string;
+    acknowledgmentUrl:string;originalCopyright:"IPAC/NASA";hipsCopyright:"CNRS/Unistra";
+    hipsLicense:"ODbL-1.0";hipsLicenseUrl:string;hipsDoi:string;atlasDoi:string;
+    acknowledgment:string};
+  processing:string;
+  limitations:string[];
+  hips:{frame:"equatorial";order:0;tileWidth:512;tileFormat:"jpeg";
+    status:"public partial unclonable"};
+  tiles:Array<{pixel:number;file:string;sha256:string;bytes:number;sourceUrl:string;downloadUrl:string}>;
+}
+/** Binary JPEG body from the same immutable publication; no ApiEnvelope. */
+export type WideFieldW3TileData = Uint8Array;
+/** Plain text HiPS partial-copy properties; no ApiEnvelope. */
+export type WideFieldW3PropertiesData = string;
+/** Immutable, public-domain USGS Clementine 750 nm lunar surface publication. */
+export interface MoonTextureManifestData {
+  schemaVersion: "starward-clementine-moon-v1";
+  publicationId: string;
+  publicationHash: string;
+  source: {title:string;provider:"USGS Astrogeology Science Center";recordUrl:string;
+    rightsUrl:string;credit:string;wmsUrl:string};
+  projection: {kind:"simple-cylindrical";latitude:"planetocentric";
+    longitude:"positive-east";bboxDeg:readonly [-180,-90,180,90]};
+  image: {file:string;sha256:string;bytes:number;width:2048;height:1024;downloadUrl:string};
+  processing:string;
+  limitations:string[];
+}
+/** Binary JPEG body from the hash-bound Moon publication; no ApiEnvelope. */
+export type MoonTextureImageData = Uint8Array;
+/** Coverage-aware successor; the legacy JPEG contract remains separately served. */
+export interface MoonCoverageManifestData extends Omit<MoonTextureManifestData,"schemaVersion"|"source"> {
+  schemaVersion: "starward-clementine-moon-coverage-v2";
+  source: Omit<MoonTextureManifestData["source"],"wmsUrl"> & {
+    rasterUrl:string; sha256:string; bytes:number;
+  };
+  coverage: {kind:"measured-area-fraction";sourceNoData:0;footprintPixels:45;
+    fullyMissingOutputPixels:number;partialOutputPixels:number;fallback:"uniform-neutral-globe"};
+}
+/** Immutable USGS/NASA Ames Viking MDIM 2.1 colorized Mars surface publication. */
+export interface MarsTextureManifestData {
+  schemaVersion: "starward-viking-mars-v1";
+  publicationId: string;
+  publicationHash: string;
+  source: {title:string;provider:"USGS Astrogeology Science Center";recordUrl:string;
+    rightsUrl:string;credit:string;wmsUrl:string};
+  projection: {kind:"simple-cylindrical";latitude:"planetocentric";
+    longitude:"positive-east";bboxDeg:readonly [-180,-90,180,90]};
+  image: {file:string;sha256:string;bytes:number;width:1024;height:512;downloadUrl:string};
+  processing:string;
+  limitations:string[];
+}
+export type MarsTextureImageData = Uint8Array;
+/** Public-domain 2013 MESSENGER 750 nm grayscale Mercury mosaic. */
+export interface MercuryTextureManifestData {
+  schemaVersion: "starward-messenger-mercury-v1";
+  publicationId: string;
+  publicationHash: string;
+  source: {title:string;provider:"USGS Astrogeology Science Center";recordUrl:string;
+    rightsUrl:string;credit:string;wmsUrl:string};
+  projection: {kind:"simple-cylindrical";latitude:"planetocentric";
+    longitude:"positive-east";bboxDeg:readonly [-180,-90,180,90]};
+  image: {file:string;sha256:string;bytes:number;width:1024;height:512;downloadUrl:string};
+  processing:string;
+  limitations:string[];
+}
+export type MercuryTextureImageData = Uint8Array;
+/** Historical, longitude-neutral HST OPAL latitude profile; CC BY 4.0. */
+export interface OpalLatitudeBandsManifestData<Schema extends string, Bytes extends number> {
+  schemaVersion:Schema;
+  publicationId:string;
+  publicationHash:string;
+  source:{title:string;provider:"MAST / HST OPAL";recordUrl:string;rightsUrl:string;
+    credit:string;sourceFile:string;sourceSha256:string;observationDate:string;
+    license:"CC BY 4.0";licenseUrl:string;doi:string};
+  projection:{kind:"latitude-profile";latitude:"planetographic";longitude:"none";
+    boundsDeg:readonly [-90,90]};
+  image:{file:string;sha256:string;bytes:Bytes;width:8;height:512;format:"png";downloadUrl:string};
+  processing:string;
+  limitations:string[];
+}
+export type JupiterBandsManifestData=OpalLatitudeBandsManifestData<"starward-opal-jupiter-bands-v1",1026>;
+export type JupiterBandsImageData = Uint8Array;
+export type SaturnBandsManifestData=OpalLatitudeBandsManifestData<"starward-opal-saturn-bands-v1",1003>;
+export type SaturnBandsImageData = Uint8Array;
+export type NeptuneBandsManifestData=OpalLatitudeBandsManifestData<"starward-opal-neptune-bands-v1",527>;
+export type NeptuneBandsImageData = Uint8Array;
+export type UranusBandsManifestData=OpalLatitudeBandsManifestData<"starward-opal-uranus-bands-v1",421>;
+export type UranusBandsImageData = Uint8Array;
+/** Historical 2MASS near-infrared all-sky panorama, not visible-light photometry. */
+export interface GalacticImageManifestData {
+  schemaVersion: "starward-2mass-galactic-v1";
+  publicationId: string;
+  publicationHash: string;
+  source: {title:string;provider:"IPAC / Cool Cosmos";recordUrl:string;rightsUrl:string;
+    galleryRightsUrl:string;credit:string;sourceUrl:string;sourceSha256:string};
+  projection: {kind:"equirectangular";frame:"galactic";centerLongitudeDeg:0;
+    longitudeIncreases:"left";north:"up"};
+  image: {file:string;sha256:string;bytes:number;width:2048;height:1024;downloadUrl:string};
+  processing:string;
+  limitations:string[];
+}
+export type GalacticImageData = Uint8Array;
+/** Metadata for a bounded, same-origin optical HiPS publication. Coverage is
+ * exactly the listed tiles; a source name or declared maxOrder is not coverage. */
+export interface OpticalHipsManifestData {
+  schemaVersion: "starward-optical-hips-v1";
+  publicationId: string;
+  publicationHash: string;
+  scope: "TRIAL" | "PRODUCTION";
+  processing: string;
+  limitations: string[];
+  sources: Array<{ id:string; title:string; provider:string; originalDataUrl:string;
+    originalRights:string; originalRightsUrl:string; hipsRecordUrl:string;
+    hipsLicense:"ODbL-1.0"; hipsDoi:string; format:"jpeg"|"png";
+    tileWidth:512; maxOrder:number }>;
+  shards: Array<{ sourceId:string; order:number; dir:number; file:string;
+    sha256:string; bytes:number; tileCount:number; indexUrl:string }>;
+}
+export interface OpticalHipsIndexData {
+  schemaVersion: "starward-optical-hips-shard-v1";
+  publicationHash:string;
+  sourceId:string;
+  order:number;
+  dir:number;
+  tiles:Array<{ pixel:number; sha256:string; bytes:number; downloadUrl:string }>;
+}
+/** Binary JPEG or PNG body; no ApiEnvelope at runtime. */
+export type OpticalHipsTileData = Uint8Array;
 
 export type MapProjectionState =
   | "FRESH"
@@ -695,6 +874,17 @@ export interface OperationsAuditData {
 
 export type SpotDetailData = SpotDetail;
 export type SkyReportData = SkyReport;
+/** Read-only target calculation for one fine instant of an existing Context.
+ * The Context remains committed at its original selectedAt; `at` is only a
+ * presentation request and never changes the observation-night identity. */
+export interface SkyTargetInstantData {
+  spotId: string;
+  contextId: string;
+  contextRevision: number;
+  contextFingerprint: string;
+  at: string;
+  targets: readonly SkyTarget[];
+}
 export type ObservationContextData = ObservationContext;
 export type ObservationContextResolveData = ObservationContext;
 export type ObservationContextUpdateData = ObservationContext;

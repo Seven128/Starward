@@ -62,6 +62,57 @@ test('all actual published tiles preserve source identity, geometry and independ
   assert.equal(rows,246280);
 });
 
+test('legacy and Acrux-bound SAO publications coexist at distinct HTTP routes',async()=>{
+  class TestModule{}
+  Module({controllers:[SaoPublicationController],providers:[SaoPublicationService]})(TestModule);
+  const app=await NestFactory.create(TestModule,new FastifyAdapter(),{logger:false});
+  try{
+    await app.listen(0,'127.0.0.1');
+    const base=`${await app.getUrl()}/v2/sky/supplements/sao`;
+    const oldResponse=await fetch(base),newResponse=await fetch(`${base}/v2`);
+    assert.equal(oldResponse.status,200);assert.equal(newResponse.status,200);
+    const old=(await oldResponse.json() as ApiEnvelope<SaoIndexPublication>).data;
+    const next=(await newResponse.json() as ApiEnvelope<SaoIndexPublication>).data;
+    assertSaoIndexPublication(old);assertSaoIndexPublication(next);
+    assert.equal(old.index.catalogVersion,'sao-visual-supplement.v1');
+    assert.equal(old.index.baseCatalogVersion,'bsc5p-bright-stars.v2');
+    assert.equal(next.index.catalogVersion,'sao-visual-supplement.v2');
+    assert.equal(next.index.baseCatalogVersion,'bsc5p-bright-stars.v3');
+    assert.notEqual(old.publicationHash,next.publicationHash);
+    const tile=next.index.tiles.find(item=>item.rowCount>100)!;
+    const response=await fetch(`${base}/v2/${next.publicationHash}/tiles/${tile.id}`);
+    assert.equal(response.status,200);
+    const body=(await response.json() as ApiEnvelope<SaoTilePublication>).data;
+    assertSaoTilePublication(body,next,tile);
+    const client=createSaoCatalogClient({
+      async index(){const result=await fetch(`${base}/v2`);return await result.json() as ApiEnvelope<SaoIndexPublication>;},
+      async tile(hash,id){const result=await fetch(`${base}/v2/${hash}/tiles/${id}`);return await result.json() as ApiEnvelope<SaoTilePublication>;},
+      invalidateIndex(){assert.fail('valid revised index rejected');},
+      invalidateTile(){assert.fail('valid revised tile rejected');},
+    });
+    const accepted=(await client.getIndex()).data;
+    assert.equal(accepted.publicationHash,next.publicationHash);
+    assert.equal((await client.getTile(accepted,tile.id)).data.tile.rows.length,tile.rowCount);
+    assert.equal((await fetch(`${base}/v2/${old.publicationHash}/tiles/${tile.id}`)).status,404);
+    assert.equal((await fetch(`${base}/${next.publicationHash}/tiles/${tile.id}`)).status,404);
+  }finally{await app.close();}
+});
+
+test('revised SAO details pack matches its complete spatial publication and rejects the old base',async()=>{
+  const service=new SaoPublicationService(new URL('../assets/sao-v2/',import.meta.url));
+  const publication=(await service.get()).data;
+  const bytes=await readFile(new URL('../assets/sao-v2/catalog.json',import.meta.url));
+  const catalog=parseSaoCatalog(bytes,{catalogHash:publication.index.catalogHash,
+    baseCatalogVersion:publication.index.baseCatalogVersion,
+    baseAssetSha256:publication.index.baseAssetSha256});
+  assert.equal(catalog.rowCount,publication.index.rowCount);
+  const tile=await service.tile(publication.publicationHash,publication.index.tiles[0]!.id);
+  for(const row of tile.data.tile.rows.slice(0,12))
+    assert.equal(catalog.get(row[0])?.visualMagnitude,row[1]);
+  assert.throws(()=>parseSaoCatalog(bytes,{catalogHash:publication.index.catalogHash,
+    baseCatalogVersion:'bsc5p-bright-stars.v2',baseAssetSha256:publication.index.baseAssetSha256}),/shape/);
+});
+
 test('actual HTTP index/tile reach the client; 304 works, wrong publication is rejected, corruption evicts and retry recovers',async()=>{
   class TestModule{}
   Module({controllers:[SaoPublicationController],providers:[SaoPublicationService]})(TestModule);

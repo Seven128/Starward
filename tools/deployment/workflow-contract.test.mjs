@@ -75,6 +75,17 @@ test("manual staging rechecks product CI and selects an explicit protected lane"
   assert.doesNotMatch(source, /STARWARD_OPERATOR_PREVIEW_TOKEN|rejectUnauthorized|down -v/u);
 });
 
+test("staging and production control packages carry the edge resource classification", async () => {
+  const categories = await readFile("infrastructure/deployment/sky-resource-logging.caddy", "utf8");
+  assert.match(categories, /log_append @sky_catalog sky_resource_class "catalog"/u);
+  for (const name of ["backend-staging.yml", "backend-production.yml"]) {
+    const source = await workflow(name);
+    assert.match(source,
+      /tar [^\n]*-czf "\$archive" package\.json tools\/run-node\.cjs tools\/deployment infrastructure\/deployment/u,
+      `${name}: control archive must contain the complete deployment directory`);
+  }
+});
+
 test("WeChat platform operations use a protected dedicated runner and never publish from product CI", async () => {
   const product = await workflow("product-ci.yml");
   const source = await workflow("wechat-platform.yml");

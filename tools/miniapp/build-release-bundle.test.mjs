@@ -23,11 +23,19 @@ test("formal release builds clear an inherited operator-preview access token", (
     {
       MINIAPP_OPERATOR_PREVIEW_TOKEN: "inherited-preview-token",
       MINIAPP_DEVICE_REQUEST_DIAGNOSTICS: "1",
+      MINIAPP_ISOLATED_FIXTURE_BUILD: "1",
+      MINIAPP_ISOLATED_CHECK_BUILD: "1",
+      MINIAPP_ISOLATED_CHECK_BUILD_SLOT: "sky-provenance-0925",
+      MINIAPP_SKY_FEEDBACK_ID: "P1RING25A",
       UNRELATED: "preserved",
     },
   );
   assert.equal(environment.MINIAPP_OPERATOR_PREVIEW_TOKEN, "");
   assert.equal(environment.MINIAPP_DEVICE_REQUEST_DIAGNOSTICS, "0");
+  assert.equal(environment.MINIAPP_ISOLATED_FIXTURE_BUILD, "0");
+  assert.equal(environment.MINIAPP_ISOLATED_CHECK_BUILD, "0");
+  assert.equal(environment.MINIAPP_ISOLATED_CHECK_BUILD_SLOT, "");
+  assert.equal(environment.MINIAPP_SKY_FEEDBACK_ID, "");
   assert.equal(environment.MINIAPP_API_BASE, "https://api.starward-ci.invalid");
   assert.equal(environment.UNRELATED, "preserved");
 });

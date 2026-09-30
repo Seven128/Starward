@@ -1,0 +1,19 @@
+# Constant, path-only categories for egress accounting. Never log a URL, query,
+# route parameter, request/response header, user identity or location here.
+@sky_catalog path /v2/sky/catalogs/* /v2/sky/supplements/sao /v2/sky/supplements/sao/* /v2/sky/constellations /v2/sky/constellations/*
+log_append @sky_catalog sky_resource_class "catalog"
+
+@sky_fixed_image path /v2/sky/moon/* /v2/sky/mars/* /v2/sky/mercury/* /v2/sky/jupiter/* /v2/sky/saturn/* /v2/sky/uranus/* /v2/sky/neptune/* /v2/sky/galactic/*
+log_append @sky_fixed_image sky_resource_class "fixed_image"
+
+@sky_wide_field path /v2/sky/wide-field/*
+log_append @sky_wide_field sky_resource_class "wide_field"
+
+@sky_optical_published path /v2/sky/sdss-optical/*
+log_append @sky_optical_published sky_resource_class "optical_published"
+
+@sky_optical_trial path /v2/sky/optical/*
+log_append @sky_optical_trial sky_resource_class "optical_trial"
+
+@sky_deep_sky path /v2/sky/deep-sky/* /v2/celestial-objects/*/image
+log_append @sky_deep_sky sky_resource_class "deep_sky"

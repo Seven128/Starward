@@ -16,6 +16,7 @@ export function selectSkyStellarTiles<T extends StellarTileBounds>(tiles: readon
   height: number;
   verticalFovDeg: number;
   center?: SkyProjectionCenter;
+  sunAltitudeDeg?: number;
 }): readonly T[] {
   assertStellarGeometryFrame(input.frame,input.expected);
   const {width,height,verticalFovDeg,basis}=input;
@@ -30,7 +31,10 @@ export function selectSkyStellarTiles<T extends StellarTileBounds>(tiles: readon
   // EQJ -> ENU; applying it again would point at a different region of the sky.
   const eqjForward=[m[0]*f[0]+m[3]*f[1]+m[6]*f[2],m[1]*f[0]+m[4]*f[1]+m[7]*f[2],m[2]*f[0]+m[5]*f[1]+m[8]*f[2]];
   return tiles.filter(tile=>{
-    if(!skyStarAppearance(tile.minMagnitude,verticalFovDeg)) return false;
+    // A tile cannot contribute if even its brightest catalogued member is
+    // hidden by the same twilight curve used for painting. Missing solar data
+    // remains an unknown chart condition, so it does not suppress loading.
+    if(!skyStarAppearance(tile.minMagnitude,verticalFovDeg,input.sunAltitudeDeg)) return false;
     // Linear tangent motion changes a unit direction by atan(|v| * |years|).
     // Derive from the current frame instead of imposing the trial's +/-100y cap.
     const bound=Math.min(Math.PI,angularRadius+tile.radiusRad+Math.atan(tile.maxMotionRadPerYear*Math.abs(input.frame.julianYears)));

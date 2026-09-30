@@ -19,7 +19,7 @@ export interface StellarCatalogReference {
 
 export function assertStellarCatalogReference(value: unknown): asserts value is StellarCatalogReference {
   const reference = value as StellarCatalogReference;
-  if (!reference || !["bsc5p-bright-stars.v1", "bsc5p-bright-stars.v2"].includes(reference.catalogVersion) ||
+  if (!reference || !["bsc5p-bright-stars.v1", "bsc5p-bright-stars.v2", "bsc5p-bright-stars.v3"].includes(reference.catalogVersion) ||
     typeof reference.catalogHash !== "string" || !/^[a-f0-9]{64}$/u.test(reference.catalogHash))
     throw new TypeError("stellar_publication_invalid:reference");
 }

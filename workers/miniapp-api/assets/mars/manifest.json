@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "starward-viking-mars-v1",
+  "publicationId": "mars-viking-mdim21-color-usgs-wms-1024x512-20260923",
+  "source": {
+    "title": "Mars Viking Colorized Global Mosaic 232m (MDIM 2.1)",
+    "provider": "USGS Astrogeology Science Center",
+    "recordUrl": "https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m",
+    "rightsUrl": "https://astrogeology.usgs.gov/search/map/mars_viking_colorized_global_mosaic_232m",
+    "credit": "USGS Astrogeology Science Center / NASA Ames / Viking Orbiter",
+    "wmsUrl": "https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mars/mars_simp_cyl.map&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=MDIM21_color&STYLES=&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=1024&HEIGHT=512&FORMAT=image/jpeg&TRANSPARENT=FALSE"
+  },
+  "projection": {
+    "kind": "simple-cylindrical",
+    "latitude": "planetocentric",
+    "longitude": "positive-east",
+    "bboxDeg": [-180, -90, 180, 90]
+  },
+  "image": {
+    "file": "mars-mdim21-color-usgs-wms-1024x512.jpg",
+    "sha256": "cd324068ee22f66664d15ff5934ff6cfc195bb0e2ee8becba6092f078442d184",
+    "bytes": 94411,
+    "width": 1024,
+    "height": 512
+  },
+  "processing": "USGS WMS MDIM21_color global map exported at 1024x512 JPEG, EPSG:4326, without project recoloring; immutable SHA-256-bound copy.",
+  "limitations": [
+    "NASA Ames artistically colorized the Viking MDIM 2.1 mosaic; this is historical cartography, not natural-color or current Mars photography.",
+    "The 1024x512 WMS/JPEG resample limits detail; the shader's simple phase mask is not calibrated surface photometry or atmospheric scattering."
+  ]
+}

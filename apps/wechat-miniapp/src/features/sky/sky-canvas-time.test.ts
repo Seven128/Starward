@@ -38,7 +38,7 @@ test("dome never draws a below-horizon target or its label even when its project
   const marks: number[][]=[];
   const context=new Proxy({}, {get:(_o,key)=>key==="disc" ? (...args:number[])=>marks.push(args) : ()=>undefined});
   const data={skyScene:{state:"UNAVAILABLE",frames:[]},targetFrames:[{at:committed,
-    targets:[{type:"STAR",direction:"0°",altitudeDeg:-10}]}]};
+    targets:[{type:"STAR",direction:"0°",azimuthDeg:0,altitudeDeg:-10}]}]};
   exported.drawSkyScene(context,data,committed,null,null,400,800,"NIGHT",undefined,undefined,240,null,basis);
   assert.deepEqual(marks,[]);
 });
@@ -61,12 +61,16 @@ test("actual page invalidation clears hit testing synchronously before React hid
   visit(parsed);assert.ok(callback);
   const paintedSkyObjectsRef={current:{objects:[{reference:"HR:1"}] } as object|null};
   const invalidated=vm.runInNewContext(ts.transpileModule(`(${callback})`,{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText,
-    {paintedSkyObjectsRef,setCanvasSize(){}});
+    {paintedSkyObjectsRef,setPresentedSkyFrame(){},setCanvasSize(){}});
   invalidated();assert.equal(paintedSkyObjectsRef.current,null);
 });
 test("survey imagery uses a celestial plane beyond the camera hemisphere and stays hidden in red mode", () => {
-  const basis: projection.SkyViewBasis = {right:[1,0,0],up:[0,0,1],forward:[0,1,0]};
   for (const [azimuth,fov] of [[.4,1.5],[100,240]] as const) {
+    // Keep the narrow patch at the camera altitude. Rotate the wide camera's
+    // long axis into azimuth so the rear-hemisphere patch is actually visible.
+    const basis: projection.SkyViewBasis = fov < 2 ? projection.createSkyViewBasis(0,100,0)!
+      : {right:[0,0,1],up:[-1,0,0],forward:[0,1,0]};
+    assert.ok(projection.projectSkyDirection(azimuth,10,basis,390,844,fov) || fov < 2);
     let draws=0,affine=0;
     const context=new Proxy({}, {get:(_o,key)=>key === "artwork" ? ()=>{draws++;return true;}
       : key === "image" ? ()=>{affine++;return true;} : ()=>undefined});
@@ -125,8 +129,9 @@ test("production frame requests preserve exact data/time and clear expired or un
     previousCanvasModeRef: { current: "NIGHT" }, devicePoseRef: { current: pose },
     reportData: data, report: { data: { dataState: "FRESH" }, isError: false },
     row: { at: committed }, sensorHeadingForScene: 0 as number | null, sensorBasis: pose.basis as projection.SkyViewBasis | null, devicePose: pose as typeof pose | null, mode: "NIGHT",
-    verticalFovDeg: 45, canvasDeepSkyImage: null, canvasNodeRevision: 1, viewportInsets: { top:0, bottom:0 },
-    constellationFrame, artwork, constellationsEnabled: true,stellarSupplement:{frame:null},
+    verticalFovDeg: 45, canvasDeepSkyImage: null, sdssOptical: { image: null, fieldDegrees: null, renderedLevel: null, publication: null }, canvasNodeRevision: 1, viewportInsets: { top:0, bottom:0 },
+    constellationFrame, artwork, constellationsEnabled: true,landscapeEnabled:true,stellarSupplement:{frame:null},hipsTiles:[],moonTexture:{image:{id:"moon"}},marsTexture:{image:{id:"mars"}},mercuryTexture:{image:{id:"mercury"}},jupiterBands:{image:{id:"jupiter"}},saturnBands:{image:{id:"saturn"}},uranusBands:{image:{id:"uranus"}},neptuneBands:{image:{id:"neptune"}},galacticImage:{image:{id:"galactic"}},
+    coordinateGrids: { horizontal: true, equatorial: false }, landscapeImage: { panorama: null },
     manualBasis: null, manualBasisRef: { current: null },
     canvasFrameInfo: { catalog: {}, frame: { state: "AVAILABLE", points: [] }, targetFrame: { at: committed, targets: [target(0)] },
       inspection: { spotId: "spot:test", frameAt: committed, catalogVersion: "test", starCount: 0 } },
@@ -139,9 +144,28 @@ test("production frame requests preserve exact data/time and clear expired or un
   assert.equal(requests.at(-1)!.frame.data, data);
   assert.strictEqual(requests.at(-1)!.frame.constellations, constellationFrame);
   assert.strictEqual(requests.at(-1)!.frame.constellationImages, artwork.images);
+  assert.equal(requests.at(-1)!.frame.moonTexture.id,"moon");
+  assert.equal(requests.at(-1)!.frame.marsTexture.id,"mars");
+  assert.equal(requests.at(-1)!.frame.mercuryTexture.id,"mercury");
+  assert.equal(requests.at(-1)!.frame.jupiterBands.id,"jupiter");
+  assert.equal(requests.at(-1)!.frame.saturnBands.id,"saturn");
+  assert.equal(requests.at(-1)!.frame.uranusBands.id,"uranus");
+  assert.equal(requests.at(-1)!.frame.neptuneBands.id,"neptune");
+  assert.equal(requests.at(-1)!.frame.galacticImage.id,"galactic");
   assert.equal(requests.at(-1)!.frame.frameAt, committed);
   assert.equal(requests.at(-1)!.frame.sceneReady, true);
   assert.equal(requests.at(-1)!.hidden, false);
+  const sdssPixels = { id: "sdss-M51" };
+  sandbox.sdssOptical = { image: sdssPixels, fieldDegrees: 0.05688888888888889, renderedLevel: "DETAIL",
+    publication: { objectRef: "OPENNGC:NGC5194", publicationHash: "a".repeat(64) },
+    coarser: { image: { id: "sdss-parent" }, fieldDegrees: .1137777778, level: "MEDIUM" } };
+  request();
+  assert.strictEqual(requests.at(-1)!.frame.sdssOpticalImage.image, sdssPixels,
+    "the current native frame, rather than only the source label, must consume optical pixels");
+  assert.equal(requests.at(-1)!.frame.sdssOpticalImage.reference, sandbox.sdssOptical.publication.objectRef);
+  assert.equal(requests.at(-1)!.frame.sdssOpticalImage.publicationHash, sandbox.sdssOptical.publication.publicationHash);
+  assert.strictEqual(requests.at(-1)!.frame.sdssOpticalImage.coarser,sandbox.sdssOptical.coarser,
+    "the real queued frame must deliver the parent to rendering, with the same publication identity");
   sandbox.sensorHeadingForScene = null;
   sandbox.sensorBasis = { right: [1, 0, 0], up: [0, -1, 0], forward: [0, 0, 1] };
   sandbox.devicePose = { ...pose, basis: sandbox.sensorBasis };
@@ -155,6 +179,7 @@ test("production frame requests preserve exact data/time and clear expired or un
   for (const state of ["EXPIRED", "UNAVAILABLE"]) {
     sandbox.report.data.dataState = state; request();
     assert.equal(requests.at(-1)!.frame.data, undefined);
+    assert.equal(requests.at(-1)!.frame.sdssOpticalImage, null);
     assert.equal(requests.at(-1)!.frame.constellations, null);
     assert.equal(requests.at(-1)!.frame.sceneReady, false);
     assert.equal(requests.at(-1)!.hidden, true);
@@ -166,12 +191,13 @@ test("production frame requests preserve exact data/time and clear expired or un
   assert.equal(requests.at(-1)!.frame.heading, null);
   sandbox.devicePose = pose; sandbox.mode = "OBSERVATION"; request();
   assert.equal(requests.at(-1)!.frame.mode, "OBSERVATION");
+  assert.equal(requests.at(-1)!.frame.sdssOpticalImage, null);
   assert.equal(requests.at(-1)!.hidden, true, "mode change hides the previous palette until native completion");
   assert.ok(states.every(state => state === "PENDING"), "queueing a draw is not completion evidence");
 });
 
 const preview = "2026-09-05T13:20:26.000Z";
-const target = (degrees: number) => ({ type: "STAR", direction: `北 ${degrees}°`, altitudeDeg: 10 });
+const target = (degrees: number) => ({ type: "STAR", direction: `北 ${degrees}°`, azimuthDeg: degrees, altitudeDeg: 10 });
 const report = {
   targets: [target(0)],
   targetFrames: [
@@ -226,16 +252,41 @@ test("production sky canvas never borrows top-level targets for missing or dupli
 });
 
 // Isolated resolved-model fixture: publication admission is tested through full HTTP separately.
-function singleStarScene(magnitude=2, magnitudeLimit=5) {
+function singleStarScene(magnitude=2, magnitudeLimit=5, colorIndex: number | null = 1) {
   const identity={format:"bsc5p-stellar-geometry-v1",referenceAt:"2000-01-01T12:00:00.000Z",catalogVersion:"bsc5p-bright-stars.v1",catalogHash:"a".repeat(64)};
   const observer={latitude:0,longitude:0,elevationM:0};
   return {format:"stellar-scene-v2",state:"AVAILABLE",observer,
-    catalog:{...identity,magnitudeLimit,entries:[{sourceId:"HR:1",objectRef:"HR:1",displayName:"Alpha",magnitude,colorIndex:1}]},
-    publication:{...identity,rows:[["HR:1","Alpha",magnitude,1,0,Math.cos(Math.PI/18),Math.sin(Math.PI/18),0,0,0]]},
+    catalog:{...identity,magnitudeLimit,entries:[{sourceId:"HR:1",objectRef:"HR:1",displayName:"Alpha",magnitude,colorIndex}]},
+    publication:{...identity,rows:[["HR:1","Alpha",magnitude,colorIndex,0,Math.cos(Math.PI/18),Math.sin(Math.PI/18),0,0,0]]},
     frames:[committed,preview].map((at,i)=>{const a=i*5*Math.PI/180;return {at,state:"AVAILABLE",geometry:{...identity,at,observer,
       julianYears:(Date.parse(at)-Date.parse(identity.referenceAt))/(365.25*86400000),
       equatorialToEnu:[Math.cos(a),Math.sin(a),0,-Math.sin(a),Math.cos(a),0,0,0,1]}};})};
 }
+test("published B-V gives a continuous star tint while missing photometry stays neutral", () => {
+  const paint = (colorIndex: number | null, mode: "NIGHT" | "OBSERVATION" = "NIGHT") => {
+    const data = {...report, targets: [], targetFrames: [{at: committed, targets: []}],
+      skyScene: singleStarScene(0, 5, colorIndex)};
+    const colors: string[] = [];
+    const context = new Proxy({}, {get: (_object, key) => key === "disc"
+      ? (_x: number, _y: number, _radius: number, color: string) => colors.push(color) : () => undefined});
+    exported.drawSkyScene(context, data, committed, null, null, 400, 800, mode,
+      undefined, undefined, 45, null, projection.createSkyViewBasis(0, 90, 0)!);
+    assert.equal(colors.length, 1);
+    return colors[0]!;
+  };
+  // Catalog values: Vega 0, Arcturus 1.23, Betelgeuse 1.85.
+  const cool = paint(0), warm = paint(1.23), red = paint(1.85);
+  assert.notEqual(cool, warm);
+  assert.notEqual(warm, red);
+  assert.equal(paint(null), "#DCE4EF");
+  assert.equal(paint(0, "OBSERVATION"), paint(1.85, "OBSERVATION"));
+  const channelDistance = (a: string, b: string) => Math.max(...[1, 3, 5].map(offset =>
+    Math.abs(parseInt(a.slice(offset, offset + 2), 16) - parseInt(b.slice(offset, offset + 2), 16))));
+  assert.ok(channelDistance(paint(0.49), paint(0.51)) <= 3,
+    "nearby catalogue values should not jump at the former blue/white cutoff");
+  assert.ok(channelDistance(paint(1.49), paint(1.51)) <= 3,
+    "nearby catalogue values should not jump at the former white/orange cutoff");
+});
 test("production sky canvas uses the same instant and projection for catalog stars and targets", () => {
   const data = { ...report, skyScene: singleStarScene() };
   for (const at of [committed, preview, committed]) {
@@ -267,6 +318,63 @@ test("expanding catalog depth cannot resize or brighten an unchanged star", () =
   }
   assert.ok(paint(6.5, 0).radius > paint(6.5, 2).radius);
   assert.ok(paint(6.5, 2).radius > paint(6.5, 5).radius);
+});
+
+test("the exact Sun frame fades catalog stars and their touch targets through twilight", () => {
+  const paint = (sunAltitudeDeg: number, mode: "NIGHT" | "OBSERVATION") => {
+    const data = {
+      ...report,
+      targets: [],
+      targetFrames: [{ at: committed, targets: [] }],
+      skyScene: singleStarScene(2),
+      hourly: [{ at: committed, sunAzimuthDeg: 90, sunAltitudeDeg }],
+    };
+    const stars: number[][] = [];
+    let picked: { objects: Array<{ reference: string }> } | undefined;
+    const context = new Proxy({}, { get: (_object, key) => key === "disc"
+      ? (...args: number[]) => stars.push(args) : () => undefined });
+    exported.drawSkyScene(context, data, committed, null, null, 400, 800, mode,
+      (snapshot: typeof picked) => { picked = snapshot; }, undefined, 45, null,
+      projection.createSkyViewBasis(0, 90, 0)!);
+    return { stars, picked };
+  };
+  assert.equal(paint(0, "NIGHT").stars.length, 0);
+  assert.deepEqual(paint(0, "NIGHT").picked?.objects, []);
+  assert.equal(paint(-6, "NIGHT").stars.length, 0);
+  assert.equal(paint(-12, "NIGHT").stars.length, 1);
+  assert.equal(paint(-18, "NIGHT").picked?.objects[0]?.reference, "HR:1");
+  assert.equal(paint(0, "OBSERVATION").picked?.objects[0]?.reference, "HR:1",
+    "red observation mode remains a chart for deliberate object lookup");
+});
+
+test("BSC and SAO use the same reference low-altitude attenuation for painting and picking", () => {
+  const paint = (altitudeDeg: number, mode: "NIGHT" | "OBSERVATION") => {
+    const scene = singleStarScene(1);
+    scene.publication.rows[0] = ["HR:1", "Alpha", 1, 1, 0,
+      Math.cos(altitudeDeg * Math.PI / 180), Math.sin(altitudeDeg * Math.PI / 180), 0, 0, 0];
+    const data = { ...report, skyScene: scene, targets: [], targetFrames: [{ at: committed, targets: [] }],
+      hourly: [{ at: committed, sunAzimuthDeg: 90, sunAltitudeDeg: -25 }] };
+    const supplement = { publicationHash: "b".repeat(64), catalogVersion: "sao-test",
+      geometry: scene.frames[0]!.geometry,
+      points: [["SAO:1", 1, 0, altitudeDeg]] };
+    const stars: number[][] = [];
+    let picked: { objects: Array<{ reference: string }> } | undefined;
+    const context = new Proxy({}, { get: (_object, key) => key === "disc"
+      ? (...args: number[]) => stars.push(args) : () => undefined });
+    exported.drawSkyScene(context, data, committed, null, null, 400, 800, mode,
+      (snapshot: typeof picked) => { picked = snapshot; }, undefined, 180, null,
+      projection.createSkyViewBasis(0, 135, 0)!, undefined, undefined, undefined, supplement);
+    return { stars, references: picked?.objects.map((entry) => entry.reference) };
+  };
+  const high = paint(80, "NIGHT"), low = paint(0.1, "NIGHT"), red = paint(0.1, "OBSERVATION");
+  assert.equal(high.stars.length, 2);
+  assert.equal(low.stars.length, 2);
+  assert.ok(high.stars.every((star) => star[4]! > 0.8));
+  assert.ok(low.stars.every((star) => star[4]! < 0.1));
+  assert.deepEqual(high.references?.sort(), ["HR:1", "SAO:1"]);
+  assert.deepEqual(low.references, [], "subpixel low stars are not invisible touch targets");
+  assert.deepEqual(red.references?.sort(), ["HR:1", "SAO:1"],
+    "red observation mode remains a deliberate chart at the same altitude");
 });
 
 test("the real renderer reveals and fades a star with zoom and cannot pick the hidden star", () => {

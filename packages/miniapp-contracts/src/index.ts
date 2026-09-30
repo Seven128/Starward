@@ -10,7 +10,17 @@ export * from "./viewport.ts";
 export * from "./ranking.ts";
 export * from "./preferences.ts";
 export * from "./sky-scene.ts";
+export * from "./sky-planet-identity.ts";
+export * from "./sky-luminary-identity.ts";
+export * from "./moon-coverage-publication.ts";
+export * from "./deep-sky-image-publication.ts";
+export * from "./sky-image-display-support.ts";
+export * from "./sdss-optical-publication.ts";
+export * from "./sky-target-position.ts";
 export * from "./stellar-geometry.ts";
+export * from "./observation-frame.ts";
+export * from "./sky-time-model.ts";
+export * from "./sky-lunar-phase.ts";
 export * from "./stellar-catalog-publication.ts";
 export * from "./stellar-supplement.ts";
 export * from "./stellar-scene.ts";
@@ -22,3 +32,5 @@ export * from "./account-profile.ts";
 
 export * from "./recent-weather.ts";
 export * from "./air-quality.ts";
+
+export * from "./sky-landscape-publication.ts";

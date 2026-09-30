@@ -12,6 +12,7 @@
 }
 {$STARWARD_API_DOMAIN} {
 	encode zstd gzip
+	import /etc/caddy/sky-resource-logging.caddy
 
 	header {
 		-Server
