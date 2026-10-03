@@ -1,9 +1,9 @@
-import { elasticPosition, elasticSpringFrames, type ElasticFrame } from "@/components/elastic-motion";
+import { elasticSpringFrames, type ElasticFrame } from "@/components/elastic-motion";
 
 export type PanelSpringFrame = ElasticFrame;
-/** The large snap is the top stop; releasing there must not move the sheet down. */
+/** Both terminal snaps hold during a drag; small must not hide its content. */
 export function panelDragHeight(raw: number, min: number, max: number): number {
-  return Math.min(max, elasticPosition(raw, min, max));
+  return Math.max(min, Math.min(max, raw));
 }
 
 export function panelSpringFrames(input: {

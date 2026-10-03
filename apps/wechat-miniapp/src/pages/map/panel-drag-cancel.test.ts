@@ -7,7 +7,7 @@ import ts from "typescript";
 import { panelReleaseStartHeight, panelReleaseVelocity, releasePanelExtent, readPanelSnapGeometry, type PanelSnapGeometry } from "./panel-snap";
 import { elasticVelocityFactor } from "@/components/elastic-motion";
 
-test("panel cancellation and multi-touch never commit a pending drag", () => {
+test("panel cancellation and multi-touch never commit a pending drag", async t => {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const names = ["onHandleTouchStart", "onHandleTouchMove", "onHandleTouchEnd", "onHandleTouchCancel", "animatePanelExtent", "onPanelExtent"];
   const declarations: string[] = [];
@@ -33,7 +33,7 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
       : rows);
     if (delayed) pending.push(deliver); else deliver(geometryRows);
   } };
-  const handlers = vm.runInNewContext(ts.transpileModule(`(() => { ${declarations.join("\n")} return { ${names.join(",")} }; })()`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+  const environment = {
     Date: { now: () => now },
     stopPanelSpring: () => {}, panelSpringFrames,
     springTarget: { current: null }, springRequest: { current: 0 }, setPanelSettling: () => {},
@@ -44,7 +44,8 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
     setPanelExtent: (value: string) => commits.push(value), setPanelDragOffset: (value: number) => offsets.push(value),
     setPanelDragging: (value: boolean) => { dragging = value; },
     Taro: { createSelectorQuery: () => query, nextTick: () => {}, getWindowInfo: () => ({ windowWidth: 390, windowHeight: 844 }) }, panelDragHeight, panelReleaseStartHeight, panelReleaseVelocity, releasePanelExtent, readPanelSnapGeometry, elasticVelocityFactor,
-  }) as Record<string, (event?: unknown) => void>;
+  };
+  const handlers = vm.runInNewContext(ts.transpileModule(`(() => { ${declarations.join("\n")} return { ${names.join(",")} }; })()`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, environment) as Record<string, (event?: unknown) => void>;
   const touch = (y: number, count = 1) => ({ touches: Array.from({ length: count }, () => ({ clientY: y })) });
   for (const cancellation of ["cancel", "second-finger", "multi-start"]) {
     handlers.onHandleTouchStart!(touch(100, cancellation === "multi-start" ? 2 : 1));
@@ -176,4 +177,50 @@ test("panel cancellation and multi-touch never commit a pending drag", () => {
   assert.equal(commits.length, beforeSupersededExtent, "choosing the current extent cancels an older pending expansion");
   const panel = readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8");
   assert.match(panel, /onTouchCancel=\{onHandleTouchCancel\}/u);
+
+  for (const geometrySource of ["cached", "immediate", "delayed"] as const) {
+    await t.test(`small downward drag stays fixed with ${geometrySource} geometry and allows reversal`, () => {
+      environment.panelExtent = "small";
+      geometryRows[0]!.height = 220;
+      delayed = geometrySource === "delayed";
+      pending.length = 0;
+      panelSnapCache.current = geometrySource === "cached"
+        ? { identity: "formal:spot:a", width: 390, height: 844, geometry: { small: 220, medium: 350, large: 700, startHeight: 220 } }
+        : null;
+      const commitCount = commits.length;
+      const offsetCount = offsets.length;
+      handlers.onHandleTouchStart!(touch(100));
+      handlers.onHandleTouchMove!(touch(260));
+      if (delayed) pending.shift()!(geometryRows);
+      assert.equal(offsets.at(-1), 0, "the visible sheet must not move below its small stop during the drag");
+      handlers.onHandleTouchMove!(touch(500));
+      assert.ok(offsets.slice(offsetCount).every(offset => offset === 0), "every downward sample stays fixed, not just the release frame");
+      handlers.onHandleTouchMove!(touch(80));
+      assert.equal(offsets.at(-1), -20, "reversing upward follows the pointer without a dead zone");
+      handlers.onHandleTouchMove!(touch(130));
+      assert.equal(offsets.at(-1), 0, "reversing back down stops at small again");
+      if (delayed) {
+        handlers.onHandleTouchCancel!();
+        assert.equal(commits.length, commitCount, "cancellation cannot dismiss the panel");
+      } else {
+        handlers.onHandleTouchEnd!();
+        assert.equal(commits.at(-1), "small", "release at the stop retains small");
+      }
+      assert.equal(offsets.at(-1), 0);
+    });
+  }
+  await t.test("an interrupted collapse can be re-grabbed above small and cannot be dragged below it", () => {
+    environment.panelExtent = "small";
+    environment.panelSettling = true;
+    delayed = false;
+    geometryRows[0]!.height = 300;
+    panelSnapCache.current = null;
+    handlers.onHandleTouchStart!(touch(100));
+    assert.equal(offsets.at(-1), -80, "re-grab keeps the intermediate native height");
+    handlers.onHandleTouchMove!(touch(120));
+    assert.equal(offsets.at(-1), -60, "downward movement above small remains available");
+    handlers.onHandleTouchMove!(touch(260));
+    assert.equal(offsets.at(-1), 0, "the same gesture clamps when it reaches small");
+    handlers.onHandleTouchCancel!();
+  });
 });

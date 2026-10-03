@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { panelDragHeight, panelSpringFrames } from "./panel-spring";
 
-test("dragging beyond the large snap holds its top boundary before release", () => {
+test("dragging beyond either terminal snap holds its boundary before release", () => {
   assert.equal(panelDragHeight(608, 156, 661), 608);
   assert.equal(panelDragHeight(748, 156, 661), 661);
-  assert.ok(panelDragHeight(120, 156, 661) < 156, "the lower edge retains bounded elastic feedback");
+  assert.equal(panelDragHeight(120, 156, 661), 156, "small cannot move down and clip its address");
 });
 
 test("release already at a snap does not install a no-op CSS animation", () => {

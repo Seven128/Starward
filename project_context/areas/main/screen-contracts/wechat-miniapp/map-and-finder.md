@@ -4,6 +4,8 @@ This on-demand subdomain node normatively continues `Cross-Control And State Inv
 
 The adopted daytime layer composition is reached through the sole [Map resource entry](../../../../../docs/design-resources/wechat-miniapp/map/ADOPTED.md). Read its layer-selector package together with the [shared observation-time owner](shared-state-and-recovery.md#shared-observation-time-resource) and its resource before implementing this control.
 
+小档下拖的生产边界由 `pages/map/panel-spring.panelDragHeight` 负责：当前 Map 将拖动高度夹在实际小/大档测量值之间，两条缓存/延迟几何路径共用该规则。中途重抓仍从实时高度接续，不能仅按逻辑 `small` 档位禁掉整次手势；上拖和反向保持可用。2026-10-04 Android 普通预览连续样本确认旧下界弹性会裁掉地址并在释放时回跳，已做局部修复及独立代码审阅，修后原生连续复测仍待验证。共享弹性组件及三档采用范围保持，模拟检查不替代该原生复测。
+
 ## Cross-Control And State Invariants
 
 正式点面板底部动作的装饰呈现由 `pages/map/spot-panel-actions` 负责：想去/云观星/分享顺序、32px可见面与44px命中保留；想去背景沿独立360ms实时进度原位淡化，不延迟共享820ms星体。DAY为修复正常取消文字近消失，含装饰的日/夜层在前/后半段分别淡出/淡入，中点为整面#757575；前半黑字、后半白字即时切换，不增加文字贴片或进度owner。普通字号DAY夜星的右侧点移至上下边缘，既有largeText使用左侧点集，真实避字矩形与窄屏仍须目标验证；当前设置无大字入口，不展开暂停的大字整组设计。日云与两套稀疏夜星为装饰，不代表天气；NIGHT/OBSERVATION原层轨迹与点集保持。仅在可见前台播放星点呼吸，隐藏、照片查看器、退出及减弱动效结束呈现工作；Map将同一可见性传给共享`FavoriteStar`，换点重建局部呈现身份。私有草稿/审核中面板保留静态动作背景与原业务。此前74058f6a/d056背景批已取得三主题未选中静态及账户偏好减弱的DAY添加/取消与样式/关系读回，本次整面修订未重验这些组合；2026-09-29本机normal DAY的新包添加识别序列及可见代绑定后的正常取消原生序列经独立实看，旧文字近消失缺陷在已观测范围复测通过。普通开发反馈不证明手机包字节/AppID、逐帧4.5、精确820ms/360ms/.94/360°、途中反向、largeText/≤340px、其它主题连续、隐藏返回及私有消费者，代码/静态样本不替代验收。最新实现与证据边界同见[采用资源记录](../../../../../docs/design-resources/wechat-miniapp/map/adopted/spot-information/README.md)。系统级减弱输入缺口由[共享状态与恢复](shared-state-and-recovery.md)记录，不以账户样本替代。
