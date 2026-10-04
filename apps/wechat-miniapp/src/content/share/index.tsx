@@ -1,3 +1,4 @@
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import Taro, { useDidHide, useDidShow, useRouter, useShareAppMessage } from "@tarojs/taro";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
@@ -7,7 +8,7 @@ import { FloatingNotificationHost } from "@/components/notification";
 import { Provenance } from "@/components/provenance";
 import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { SharePoster } from "@/components/share-poster";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { createPlanShare, getSharedPlan, getSharedSpot, MiniappApiError } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
@@ -131,7 +132,7 @@ export default function SharedJourneyPage() {
     }
     void Taro.switchTab({ url: "/pages/map/index" });
   };
-  return <View className={`${themeClass} shared-journey`}>
+  return <><SystemMotionProbe /><View className={`${themeClass} shared-journey`}>
     <FloatingNotificationHost />
     <CustomNav title={shareTitle} back backFallbackTab="/pages/map/index" />
     <ScrollView scrollY enhanced showScrollbar={false} className="shared-journey__scroll">
@@ -174,5 +175,5 @@ export default function SharedJourneyPage() {
         </> : null}
       </View>
     </ScrollView>
-  </View>;
+  </View></>;
 }

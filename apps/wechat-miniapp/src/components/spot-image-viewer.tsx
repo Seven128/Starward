@@ -1,8 +1,8 @@
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import Taro from "@tarojs/taro";
 import { Button, Image, RootPortal, Text, View } from "@tarojs/components";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { SemanticIcon } from "./semantic-asset";
-import { useAppStore } from "@/state/app-store";
 import { REST_FRAME, viewerDragFrame, viewerEndPoint, viewerImageRect, viewerRelease, viewerSourceRect, type ViewerDragFrame, type ViewerGestureAxis, type ViewerRect, type ViewerTouchPoint } from "./spot-image-viewer-gesture";
 import "./spot-image-viewer.scss";
 
@@ -42,6 +42,7 @@ function readPhotoSource(selector: string, callback: (rect: ViewerRect | null) =
       finish(viewerSourceRect(rows?.[0], windowWidth, windowHeight));
     });
   } catch { finish(null); }
+  return () => { finished = true; clearTimeout(deadline); };
 }
 
 type PhotoFlight = { rect: ViewerRect; src: string; moving: boolean; closing: boolean };
@@ -66,7 +67,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
   const [exiting, setExiting] = useState(false);
   const [sourceRect, setSourceRect] = useState<ViewerRect | null | undefined>(undefined);
   const [imageRatio, setImageRatio] = useState<{ id: string; value: number } | null>(null);
-  const reducedMotion = useAppStore(state => state.preferences.reducedMotion);
+  const reducedMotion = useReducedMotion();
   const start = useRef<ViewerTouchPoint | null>(null);
   const last = useRef<ViewerTouchPoint | null>(null);
   const axis = useRef<ViewerGestureAxis | null>(null);
@@ -79,6 +80,10 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
   const openingStarted = useRef(false);
   const firstIndex = useRef(index);
   const closeRef = useRef<() => void>(() => undefined);
+  const alive = useRef(true);
+  const closeNotified = useRef(false);
+  const openingRead = useRef<(() => void) | null>(null);
+  const closingRead = useRef<(() => void) | null>(null);
   const current = media[index];
   const unavailable = Boolean(current && (current.state === "error" || (current.state === "ready" && !current.src) || decodeFailedId === current.id));
 
@@ -87,6 +92,8 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     return () => { void Taro.showTabBar({ animation: false }).catch(() => undefined); };
   }, []);
   const clearFlightTimers = () => {
+    openingRead.current?.(); openingRead.current = null;
+    closingRead.current?.(); closingRead.current = null;
     if (flightStartTimer.current !== null) clearTimeout(flightStartTimer.current);
     if (flightFinishTimer.current !== null) clearTimeout(flightFinishTimer.current);
     if (flightFallbackTimer.current !== null) clearTimeout(flightFallbackTimer.current);
@@ -95,8 +102,22 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     flightFallbackTimer.current = null;
   };
 
+  useLayoutEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+      clearFlightTimers();
+      if (reboundTimer.current !== null) clearTimeout(reboundTimer.current);
+    };
+  }, []);
+  const completeClose = () => {
+    if (!alive.current || closeNotified.current) return;
+    closeNotified.current = true;
+    onClose();
+  };
+
   const requestClose = () => {
-    if (closing.current) return;
+    if (!alive.current || closing.current) return;
     closing.current = true;
     clearFlightTimers();
     if (reboundTimer.current !== null) clearTimeout(reboundTimer.current);
@@ -104,13 +125,14 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     start.current = null;
     last.current = null;
     axis.current = null;
-    if (reducedMotion) { onClose(); return; }
-    readPhotoSource(sourceSelector ?? `#spot-media-source-${index}`, source => {
+    if (reducedMotion) { completeClose(); return; }
+    closingRead.current = readPhotoSource(sourceSelector ?? `#spot-media-source-${index}`, source => {
+      if (!alive.current || closeNotified.current) return;
       const ratio = imageRatio?.id === current?.id ? imageRatio?.value : null;
       if (!source || !current?.src || unavailable || !ratio) {
         setFlight(null);
         setExiting(true);
-        flightFinishTimer.current = setTimeout(onClose, 170);
+        flightFinishTimer.current = setTimeout(completeClose, 170);
         return;
       }
       const { windowWidth, windowHeight } = Taro.getWindowInfo();
@@ -119,9 +141,10 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
       setExiting(true);
       if (!flight) setFlight({ rect: from, src: current.src, moving: false, closing: true });
       flightStartTimer.current = setTimeout(() => {
+        if (!alive.current || closeNotified.current) return;
         setFlight({ rect: source, src: current.src!, moving: true, closing: true });
       }, 24);
-      flightFinishTimer.current = setTimeout(onClose, 340);
+      flightFinishTimer.current = setTimeout(completeClose, 340);
     });
   };
   const changeIndex = (next: number) => {
@@ -140,10 +163,11 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     onBackHandlerChange?.(handler);
     return () => onBackHandlerChange?.(null);
   }, [onBackHandlerChange]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!reducedMotion) return;
+    openingStarted.current = true;
     clearFlightTimers();
-    if (closing.current) { onClose(); return; }
+    if (closing.current) { completeClose(); return; }
     setFlight(null);
     setEntered(true);
   }, [reducedMotion]);
@@ -166,10 +190,13 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
   useEffect(() => {
     if (reducedMotion) { setEntered(true); return; }
     let active = true;
-    Taro.nextTick(() => readPhotoSource(sourceSelector ?? `#spot-media-source-${index}`, source => {
-      if (!active) return;
-      setSourceRect(source);
-    }));
+    Taro.nextTick(() => {
+      if (!active || !alive.current || openingStarted.current || closing.current) return;
+      openingRead.current = readPhotoSource(sourceSelector ?? `#spot-media-source-${index}`, source => {
+        if (!active || !alive.current || openingStarted.current || closing.current) return;
+        setSourceRect(source);
+      });
+    });
     flightFallbackTimer.current = setTimeout(() => {
       if (!active || openingStarted.current || closing.current) return;
       openingStarted.current = true;
@@ -182,7 +209,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     };
   }, []);
   useEffect(() => {
-    if (sourceRect === undefined || openingStarted.current || closing.current) return;
+    if (reducedMotion || sourceRect === undefined || openingStarted.current || closing.current) return;
     const opening = media[index];
     const ratio = imageRatio?.id === opening?.id ? imageRatio?.value : null;
     if (!sourceRect || !opening?.src || opening.state === "error") {
@@ -196,15 +223,15 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     const { windowWidth, windowHeight } = Taro.getWindowInfo();
     setFlight({ rect: sourceRect, src: opening.src, moving: false, closing: false });
     flightStartTimer.current = setTimeout(() => {
-      if (closing.current) return;
+      if (!alive.current || closing.current) return;
       setFlight({ rect: viewerImageRect(windowWidth, windowHeight, ratio), src: opening.src!, moving: true, closing: false });
     }, 24);
     flightFinishTimer.current = setTimeout(() => {
-      if (closing.current) return;
+      if (!alive.current || closing.current) return;
       setFlight(null);
       setEntered(true);
     }, 340);
-  }, [sourceRect, imageRatio, index]);
+  }, [sourceRect, imageRatio, index, reducedMotion]);
 
   const rebound = () => {
     setGestureActive(false);
@@ -276,6 +303,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
         {current.src && !unavailable
           ? <Image key={`${current.id}:${retryNonce}`} className="spot-media-viewer__image" src={current.src} mode="aspectFit" ariaLabel={current.alt}
               onLoad={(event) => {
+                if (!alive.current || closing.current) return;
                 const width = Number(event.detail.width), height = Number(event.detail.height);
                 if (width > 0 && height > 0) setImageRatio({ id: current.id, value: width / height });
               }}

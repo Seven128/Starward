@@ -9,7 +9,7 @@ import { StatusPanel } from "@/components/status-panel";
 import { SoftButton } from "@/components/soft-button";
 import { SelectionTabs } from "@/components/selection-tabs";
 import { CustomNav } from "@/components/custom-nav";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { contributionValidationAnchor } from "./validation-anchor";
 import { ContributionCandidateAddressControl, ContributionCandidateCoordinateConsent, ContributionContextSection, ContributionEvidenceSection, ContributionLocationSection } from "./contribution-form-sections";
 import { ContributionActions, ContributionDeleteDraftAction, ContributionMediaRecoveryAction, ContributionMediaSection } from "./contribution-media-history";

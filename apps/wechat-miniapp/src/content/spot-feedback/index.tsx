@@ -1,3 +1,4 @@
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
@@ -22,7 +23,7 @@ import { StatusPanel } from "@/components/status-panel";
 import { SoftButton } from "@/components/soft-button";
 import { SelectionTabs } from "@/components/selection-tabs";
 import { useResourceQuery } from "@/hooks/use-resource-query";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { currentDraftUserId, errorMessage, getContributionFormalBaseline, getContributionMedia, getContributions, getSpotContributionMedia, getSpotSite, MiniappApiError } from "@/services/api-client";
 import { completeFormalContributionUpload, createFormalContributionUpload, createFormalUploadIntent, removeFormalContributionUpload, submitFormalContribution } from "./formal-feedback-mutations";
 import { useAppStore } from "@/state/app-store";
@@ -395,7 +396,7 @@ export default function FormalFeedbackEditor() {
   };
 
   const showSubmit = !ownerChanged && hasEditorContent && !submitted && !noRemainingChanges;
-  return <View className={`${themeClass} formal-feedback-page`} data-route="formal-spot-feedback" data-od-id="formal-feedback-editor">
+  return <><SystemMotionProbe /><View className={`${themeClass} formal-feedback-page`} data-route="formal-spot-feedback" data-od-id="formal-feedback-editor">
     {mediaHandoff.warning}
     <FloatingNotificationHost />
     <CustomNav title={`${ownerChanged ? (spotName || "观星点") : (baseline?.fields.name ?? (spotName || "观星点"))}反馈页`} back beforeBack={ownerChanged ? undefined : confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} backFallbackTab="/pages/map/index" />
@@ -458,7 +459,7 @@ export default function FormalFeedbackEditor() {
       </View>
     </ScrollView>
     {showSubmit ? <View className="formal-feedback-submit safe-bottom"><Button disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || !hasChanges} onClick={() => void submit()}>{busy ? "提交中…" : "提交反馈"}</Button></View> : null}
-  </View>;
+  </View></>;
 }
 
 function Conflict({ conflict, value, onChange }: { conflict: ContributionFormalConflict; value: ContributionConflictResolution | undefined; onChange(value: ContributionConflictResolution): void }) {

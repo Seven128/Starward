@@ -1,3 +1,4 @@
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro from "@tarojs/taro";
 import { ScrollView, Text, View } from "@tarojs/components";
@@ -6,7 +7,7 @@ import type { PageState } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { useAppStore, type LocationState } from "@/state/app-store";
 import { requestOneShotLocation } from "@/services/one-shot-location";
 import "./index.scss";
@@ -112,7 +113,7 @@ export default function PermissionPage() {
     }
   };
   return (
-    <View className={`${themeClass} permission-page`}>
+    <><SystemMotionProbe /><View className={`${themeClass} permission-page`}>
       <FloatingNotificationHost />
       <CustomNav title="定位与隐私" back />
       <ScrollView scrollY enhanced showScrollbar={false} className="permission-scroll">
@@ -166,6 +167,6 @@ export default function PermissionPage() {
         </View>
       </View>
       </ScrollView>
-    </View>
+    </View></>
   );
 }

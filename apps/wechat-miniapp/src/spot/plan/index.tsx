@@ -1,9 +1,10 @@
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { CustomNav } from "@/components/custom-nav";
 import { FloatingNotificationHost } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
 import { SpotDetailPage } from "@/features/spot/spot-detail-page";
 import { useResourceQuery } from "@/hooks/use-resource-query";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { getObservationContext } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { View } from "@tarojs/components";
@@ -37,14 +38,14 @@ export default function PlanSpotPage() {
   }, [contextId, notify, pageVisible, query.data?.dataState, query.isError, query.refreshError, spotId]);
   const context = query.data?.data;
   if (context?.location.kind === "FORMAL_SPOT" && context.location.spotId === spotId)
-    return <SpotDetailPage initialSegment="SITE" observationContextOverride={context}
-      contextRefreshError={Boolean(query.refreshError || query.data?.dataState === "STALE_USABLE")} onContextRefresh={() => void query.refetch()} />;
-  return <View className={themeClass}>
+    return <><SystemMotionProbe /><SpotDetailPage initialSegment="SITE" observationContextOverride={context}
+      contextRefreshError={Boolean(query.refreshError || query.data?.dataState === "STALE_USABLE")} onContextRefresh={() => void query.refetch()} /></>;
+  return <><SystemMotionProbe /><View className={themeClass}>
     <FloatingNotificationHost />
     <CustomNav title="观星点详情" back />
     <View className="page-inset">
       {query.isPending ? <StatusPanel state="LOADING" detail="正在恢复这份计划的观星点资料。" /> :
         <StatusPanel state="ERROR" detail="暂时无法恢复这份计划的观星点资料；计划内容保持不变。" recoveryLabel="重试" onRecover={() => void query.refetch()} />}
     </View>
-  </View>;
+  </View></>;
 }

@@ -3,7 +3,7 @@ import { View } from "@tarojs/components";
 import { useState } from "react";
 
 import { AstronomicalEventModal } from "@/components/astronomical-event-modal";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { useAppStore } from "@/state/app-store";
 
 function decode(value: string | undefined) {

@@ -1,3 +1,5 @@
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import { ScrollView, View } from "@tarojs/components";
@@ -8,7 +10,7 @@ import { NotificationRegion } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { usePreferencesSync } from "@/hooks/use-preferences-sync";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import {
   deleteAccount as deleteAccountThroughApi,
   clearTemporaryApiCache,
@@ -53,6 +55,7 @@ function removeJsonFile(filePath: string) {
 
 export default function SettingsPage() {
   const themeClass = useThemeClass();
+  const reducedMotion = useReducedMotion();
   const preferences = useAppStore((state) => state.preferences);
   const mode = useAppStore((state) => state.mode);
   const setMode = useAppStore((state) => state.setMode);
@@ -394,11 +397,11 @@ export default function SettingsPage() {
       sheetCloseTimer.current = null;
       setSheet(null);
       setSheetClosing(false);
-    }, preferences.reducedMotion ? 0 : 180);
+    }, reducedMotion ? 0 : 180);
   };
 
   return (
-    <View
+    <><SystemMotionProbe /><View
       className={`${themeClass} settings-page`}
       data-route="my-settings"
       data-od-id="my-settings"
@@ -465,6 +468,6 @@ export default function SettingsPage() {
         confirmCache={() => void clearCache()}
         confirmExport={() => void downloadAccountData()}
         confirmDelete={() => void deleteAccount()} /> : null}
-    </View>
+    </View></>
   );
 }

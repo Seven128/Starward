@@ -6,6 +6,7 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState }
 
 import { eventDatePresentation, eventDayLabel, eventKindLabel, eventPreviewDays, groupEventsByPeakMonth, phaseLabel } from "@/content/event/event-model";
 import { useResourceQuery } from "@/hooks/use-resource-query";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { getAstronomicalEvent, getAstronomicalEvents, resolveObservationContext } from "@/services/api-client";
 import { eventPreviewContextInput } from "@/services/event-preview-context";
 import { useAppStore } from "@/state/app-store";
@@ -50,7 +51,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   portal?: boolean;
   onPresenceChange?: (present: boolean) => void;
 }, ref) {
-  const reducedMotion = useAppStore((state) => state.preferences.reducedMotion);
+  const reducedMotion = useReducedMotion();
   const themeClass = useAppStore((state) => `theme-${state.mode.toLowerCase()}`);
   const [pageVisible, setPageVisible] = useState(true);
   useDidHide(() => {
@@ -70,19 +71,29 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   const notify = useAppStore(state => state.notify);
   useEffect(() => { onPresenceChange?.(mounted); }, [mounted, onPresenceChange]);
 
+  // Only an actual open edge initializes business state. A motion input can
+  // change while the user is choosing an event or previewing another night.
+  useEffect(() => {
+    if (!open) return;
+    confirming.current = false;
+    setMounted(true);
+    setPhase("opening");
+    setDetailId(initialDetailId);
+    setPreviewSelection(null);
+    setDraftSelection(initialOccurrenceIds.length === 1 ? initialOccurrenceIds[0]! : null);
+  }, [open]);
+
   useEffect(() => {
     const current = ++generation.current;
+    const retire = (timer: ReturnType<typeof setTimeout>) => {
+      clearTimeout(timer);
+      if (generation.current === current) generation.current++;
+    };
     if (open) {
-      confirming.current = false;
-      setMounted(true);
-      setPhase("opening");
-      setDetailId(initialDetailId);
-      setPreviewSelection(null);
-      setDraftSelection(initialOccurrenceIds.length === 1 ? initialOccurrenceIds[0]! : null);
       const timer = setTimeout(() => {
         if (generation.current === current) setPhase("open");
       }, reducedMotion ? 0 : 16);
-      return () => clearTimeout(timer);
+      return () => retire(timer);
     }
     if (!mounted) return;
     setPhase("closing");
@@ -91,7 +102,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
       setMounted(false);
       setDetailId(null);
     }, reducedMotion ? 0 : 180);
-    return () => clearTimeout(timer);
+    return () => retire(timer);
   }, [open, reducedMotion]);
 
   useEffect(() => {

@@ -109,7 +109,7 @@ for (const scenario of cases) {
     MiniappRequestCancelled: class extends Error { constructor(reason) { super("cancelled:" + reason); this.reason = reason; } },
   });
   const actions = vm.runInNewContext(pageCode, {
-    useAppStore: store, useThemeClass: () => "theme-day", usePreferencesSync: () => ({ updatePreference() {}, syncNow() {}, status: "" }),
+    useReducedMotion: () => false, useAppStore: store, useThemeClass: () => "theme-day", usePreferencesSync: () => ({ updatePreference() {}, syncNow() {}, status: "" }),
     useState: initial => [initial, value => events.push({ kind: "ui-state", mounted, value })], useRef: current => ({ current }),
     useEffect: effect => { const cleanup = effect(); if (cleanup) cleanups.push(cleanup); }, useDidHide: callback => { hide = callback; }, useDidShow: callback => { show = callback; },
     deleteAccountThroughApi: async onDeleted => {

@@ -1,3 +1,4 @@
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { mediaSource } from "@/utils/media-source";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
@@ -9,7 +10,7 @@ import { CustomNav } from "@/components/custom-nav";
 import { Provenance } from "@/components/provenance";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { useAppStore } from "@/state/app-store";
 import {
   getSpotGuides,
@@ -95,7 +96,7 @@ export default function ArticlePage() {
   const loading = (guides.isPending || guides.isFetching) && !article;
 
   return (
-    <View className={themeClass + " article-page"}>
+    <><SystemMotionProbe /><View className={themeClass + " article-page"}>
       <FloatingNotificationHost />
       <CustomNav
         title="攻略"
@@ -212,6 +213,6 @@ export default function ArticlePage() {
         )}
       </View>
       </ScrollView>
-    </View>
+    </View></>
   );
 }

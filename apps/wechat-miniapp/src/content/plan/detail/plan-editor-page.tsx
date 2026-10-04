@@ -20,7 +20,7 @@ import { NotificationRegion } from "@/components/notification";
 import { SoftButton } from "@/components/soft-button";
 import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
   currentDraftUserId,

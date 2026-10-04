@@ -15,7 +15,7 @@ function render(dataState: string, sources: readonly { id: string; kind: string 
   const scope = {
     exports: {} as any,
     jsx: (type: string, props: any, ...children: any[]): Node => ({ type, props: props ?? {}, children }),
-    Fragment: "Fragment", View: "View", Text: "Text", ScrollView: "ScrollView",
+    Fragment: "Fragment", SystemMotionProbe: "SystemMotionProbe", View: "View", Text: "Text", ScrollView: "ScrollView",
     StatusPanel: "StatusPanel", Provenance: "Provenance", CustomNav: "CustomNav", FloatingNotificationHost: "FloatingNotificationHost",
     useRouter: () => ({ params: { spotId: "spot:a", contextId: "ctx:a" } }),
     useAppStore: (selector: (state: unknown) => unknown) => selector({ observationContext: { contextId: "ctx:a", location: { kind: "FORMAL_SPOT", spotId: "spot:a" } }, notify() {} }),

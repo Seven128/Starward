@@ -1,3 +1,4 @@
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { mediaSource } from "@/utils/media-source";
 import { FloatingNotificationHost } from "@/components/notification";
 import { choosePlatformLocation } from "@/services/platform-location";
@@ -34,7 +35,7 @@ import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useMapForecastQuery } from "@/hooks/use-forecast-query";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
   getMapScene,
@@ -124,6 +125,7 @@ const FILTER_LABEL_BY_GROUP = Object.fromEntries(
 export function MapSearchSurface() {
   const { statusBarHeight, safeTop } = nativeNavigationInsets();
   const themeClass = useThemeClass();
+  const reducedMotion = useReducedMotion();
   const handoff = useRedLightHandoff();
   const finderQuery = useAppStore((state) => state.finderQuery);
   const committedFilters = useAppStore((state) => state.committedFilters);
@@ -684,11 +686,11 @@ export function MapSearchSurface() {
               : formalSpots.length === 0 && (searchState === "ERROR" || searchState === "PERMISSION_DENIED") ? "搜索结果暂不可用"
               : `${formalSpots.length} 个${hasUnknownIncludedSpot ? "符合或待核验的" : ""}正式观星点`}</Text>
           </View>
-          <SearchResultPartition id="wanted" label="想去" count={wanted.length} contentRevision={partitionContentRevision(wanted, showPartitionEmpty, activeFilterGroups, visibleScene?.filterEvidence)} reducedMotion={preferences.reducedMotion}>
+          <SearchResultPartition id="wanted" label="想去" count={wanted.length} contentRevision={partitionContentRevision(wanted, showPartitionEmpty, activeFilterGroups, visibleScene?.filterEvidence)} reducedMotion={reducedMotion}>
             {wanted.length ? wanted.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
               : showPartitionEmpty ? <Text className="type-caption spot-search-empty">还没有想去的观星点。</Text> : null}
           </SearchResultPartition>
-          <SearchResultPartition id="other" label="其他观星点" count={other.length} contentRevision={partitionContentRevision(other, showPartitionEmpty, activeFilterGroups, visibleScene?.filterEvidence)} reducedMotion={preferences.reducedMotion}>
+          <SearchResultPartition id="other" label="其他观星点" count={other.length} contentRevision={partitionContentRevision(other, showPartitionEmpty, activeFilterGroups, visibleScene?.filterEvidence)} reducedMotion={reducedMotion}>
             {other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
               : showPartitionEmpty ? <Text className="type-caption spot-search-empty">{expiredEmptyFilter ? "刷新资料后重新核验候选点。" : "没有其他符合或待核验的观星点。"}</Text> : null}
           </SearchResultPartition>

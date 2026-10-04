@@ -56,7 +56,7 @@ function render({ initialOwner = "synthetic:A" as string | null, deferredApi = f
       if (synchronousShareHide) hide();
       return new Promise<void>((resolve, reject) => shares.push({ resolve, reject }));
     } },
-    useThemeClass: () => "theme-day", useAppStore: store,
+    useThemeClass: () => "theme-day", useReducedMotion: () => false, useAppStore: store,
     usePreferencesSync: () => ({ updatePreference() {}, syncNow() {}, status: "" }),
     useState: (initial: unknown) => [initial, (value: unknown) => events.push({ kind: "state", state: value })],
     useRef: (current: unknown) => ({ current }),

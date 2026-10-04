@@ -1,3 +1,4 @@
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidShow, useDidHide, useRouter } from "@tarojs/taro";
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
@@ -7,7 +8,7 @@ import { CustomNav } from "@/components/custom-nav";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { currentDraftUserId, getPlans } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { nextPlanListBoundary, planEndLabel, planListEmptyState, planListEntries, type PlanPartition } from "./plan-list-model";
@@ -61,7 +62,7 @@ export default function PlanListPage() {
     try { await Taro.navigateTo({ url }); } catch { setNavigationError(true); }
     finally { navigating.current = false; }
   };
-  return <View className={`${themeClass} plan-list-page`}>
+  return <><SystemMotionProbe /><View className={`${themeClass} plan-list-page`}>
     <FloatingNotificationHost />
     <CustomNav title="观星计划" back backFallbackTab="/pages/my/index" />
     <ScrollView scrollY scrollTop={scrollTop} onScroll={event => { scrollPositions.current[partition] = event.detail.scrollTop; setScrollTop(event.detail.scrollTop); }} className="plan-list-scroll" showScrollbar={false} enhanced>
@@ -95,5 +96,5 @@ export default function PlanListPage() {
           onRecover={emptyState.action === "switch" ? () => choosePartition(otherPartition) : () => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)} /> : null}
       </View>
     </ScrollView>
-  </View>;
+  </View></>;
 }

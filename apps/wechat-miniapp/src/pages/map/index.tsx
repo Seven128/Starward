@@ -1,3 +1,5 @@
+import { getReducedMotion, useReducedMotion } from "@/hooks/use-reduced-motion";
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { useMapForecastQuery, useSkyForecastQuery } from "@/hooks/use-forecast-query";
 import { WEATHER_ALERT_REFRESH_MS } from "@/components/weather-alert-state";
 import { MapLayerSheet } from "./map-layer-sheet";
@@ -44,7 +46,7 @@ import { reconcileFavoriteSnapshot, useFavoriteMutation } from "@/hooks/use-favo
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { SourceAttribution } from "@/components/source-attribution";
 import { Provenance } from "@/components/provenance";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
   MiniappApiError,
@@ -182,6 +184,7 @@ const overlayLabels: Record<AnalysisOverlay, string> = {
 
 export default function MapPage() {
   const themeClass = useThemeClass();
+  const reducedMotion = useReducedMotion();
   const navigationHandoff = useRedLightHandoff({ nativeBackBoundary: false });
   const [coverageExpanded, setCoverageExpanded] = useState(false);
   const [terrainSourceId, setTerrainSourceId] = useState<string | null>(null);
@@ -290,7 +293,7 @@ export default function MapPage() {
     : null;
   const setBottomPresentation = useCallback((presentation: BottomPresentation) => {
     if (presentation !== "spot-editor") editorPresentation.cancel();
-    else if (bottomPresentationRef.current !== "spot-editor") editorPresentation.enter(useAppStore.getState().preferences.reducedMotion);
+    else if (bottomPresentationRef.current !== "spot-editor") editorPresentation.enter(getReducedMotion());
     bottomPresentationRef.current = presentation;
     setBottomPresentationState(presentation);
   }, [editorPresentation]);
@@ -987,7 +990,7 @@ export default function MapPage() {
       setCandidatePreview(null);
       setBottomPresentation("none");
       afterExit?.();
-    }, useAppStore.getState().preferences.reducedMotion);
+    }, getReducedMotion());
   };
   const closeSpotEditor = () => finishSpotEditorPresentation();
   const requestSpotEditorClose = async () => {if (await confirmEditorLeave()) closeSpotEditor();};
@@ -1207,8 +1210,8 @@ export default function MapPage() {
     if (springTarget.current && springTarget.current !== panelExtent) stopPanelSpring();
   }, [panelExtent]);
   useEffect(() => {
-    if (preferences.reducedMotion) stopPanelSpring();
-  }, [preferences.reducedMotion]);
+    if (reducedMotion) stopPanelSpring();
+  }, [reducedMotion]);
 
   const onHandleTouchStart = (event: unknown) => {
     if (bottomPresentation !== "spot-panel") return;
@@ -1344,7 +1347,7 @@ export default function MapPage() {
   const animatePanelExtent = (target: SpotPanelExtent, geometry: PanelSnapGeometry, from: number, velocity = 0) => {
     const frames = panelSpringFrames({ from, to: geometry[target], velocity,
       min: geometry.small, max: geometry.large,
-      reducedMotion: useAppStore.getState().preferences.reducedMotion });
+      reducedMotion: getReducedMotion() });
     const host: PanelAnimationHost = {
       animate: (_selector, keyframes, duration) => {
         const style = panelSpringStyle(keyframes, duration, ++panelCssSequence.current);
@@ -2010,7 +2013,7 @@ export default function MapPage() {
   } as CSSProperties;
 
   return (
-    <View
+    <><SystemMotionProbe /><View
       className={
         themeClass +
         " map-page location-" +
@@ -2502,6 +2505,6 @@ export default function MapPage() {
       >
         <Text>{contextTimeLabel}</Text>
       </View>
-    </View>
+    </View></>
   );
 }

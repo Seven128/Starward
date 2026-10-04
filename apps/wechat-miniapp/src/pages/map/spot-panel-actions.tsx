@@ -1,3 +1,4 @@
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { Button, Text, View } from "@tarojs/components";
 import { useDidHide, useDidShow } from "@tarojs/taro";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
@@ -65,7 +66,7 @@ export function SpotPanelActions({
   onCloud: () => void;
   onShare: () => void;
 }) {
-  const reduced = useAppStore(state => state.preferences.reducedMotion);
+  const reduced = useReducedMotion();
   const dayMode = useAppStore(state => state.mode === "DAY");
   const largeText = useAppStore(state => state.preferences.largeText);
   const [pageVisible, setPageVisible] = useState(true);

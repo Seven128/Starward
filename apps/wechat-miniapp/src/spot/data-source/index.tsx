@@ -1,3 +1,4 @@
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { ScrollView, Text, View } from "@tarojs/components";
@@ -6,7 +7,7 @@ import { Provenance, SOURCE_KIND_LABEL, isProductSource } from "@/components/pro
 import { groupSources } from "./source-groups";
 import { StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { getSpotOverview } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { useEffect, useState } from "react";
@@ -55,7 +56,7 @@ export default function DataSourcePage() {
   const incomplete = overview.data && ["PARTIAL", "UNAVAILABLE", "EXPIRED"].includes(overview.data.dataState);
 
   return (
-    <View className={themeClass + " sources-page"}>
+    <><SystemMotionProbe /><View className={themeClass + " sources-page"}>
       <FloatingNotificationHost />
       <CustomNav title="来源与更新时间" subtitle={detail?.spot.name} back />
       <ScrollView scrollY enhanced showScrollbar={false} className="sources-scroll">
@@ -118,6 +119,6 @@ export default function DataSourcePage() {
         )}
       </View>
       </ScrollView>
-    </View>
+    </View></>
   );
 }

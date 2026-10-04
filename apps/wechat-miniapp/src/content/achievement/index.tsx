@@ -1,3 +1,4 @@
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import { Button, Picker, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useId, useMemo, useState } from "react";
@@ -6,7 +7,7 @@ import { FloatingNotificationHost } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { useResourceQuery } from "@/hooks/use-resource-query";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { currentDraftUserId, getPlans } from "@/services/api-client";
 import { achievementSummary, endedPlanRecords, nextPlanEndAt } from "@/features/my/plan-achievements";
 import "./index.scss";
@@ -41,7 +42,7 @@ export default function AchievementPage() {
     try { await Taro.navigateTo({ url: `/content/plan/detail/index?planId=${encodeURIComponent(planId)}` }); }
     catch { setNavigationError(true); }
   };
-  return <View className={`${themeClass} achievement-page`}>
+  return <><SystemMotionProbe /><View className={`${themeClass} achievement-page`}>
     <FloatingNotificationHost />
     <CustomNav title="我的星旅" back backFallbackTab="/pages/my/index" />
     <ScrollView scrollY enhanced showScrollbar={false} className="achievement-page__scroll">
@@ -77,5 +78,5 @@ export default function AchievementPage() {
         {navigationError ? <StatusPanel state="ERROR" detail="行程暂未打开，请再次点击。" /> : null}
       </View>
     </ScrollView>
-  </View>;
+  </View></>;
 }

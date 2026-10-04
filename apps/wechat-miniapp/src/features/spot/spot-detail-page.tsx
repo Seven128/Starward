@@ -16,7 +16,7 @@ import { StatusPanel } from "@/components/status-panel";
 import { FavoriteStar } from "@/components/selected-card-star";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useFavoriteMutation } from "@/hooks/use-favorite-mutation";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import {
   getSpotGuides,
   getSpotOverview,

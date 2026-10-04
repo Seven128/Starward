@@ -2,6 +2,7 @@ import { Image, View } from "@tarojs/components";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useAppStore } from "@/state/app-store";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import "./selected-card-star.scss";
 
 const MODE_FILE: Record<DisplayMode, string> = {
@@ -35,7 +36,7 @@ export function FavoriteStar({
   className?: string;
 }) {
   const mode = useAppStore(state => state.mode);
-  const reduced = useAppStore(state => state.preferences.reducedMotion);
+  const reduced = useReducedMotion();
   const live = useRef(active ? 1 : 0);
   const [progress, setProgress] = useState(live.current);
   useEffect(() => {

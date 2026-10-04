@@ -197,7 +197,7 @@ test("a tolerated icon failure cannot hide another item's unexpected failure", a
 
 test("deferred theme effects and returning pages apply the current mode, not the mounted mode", async () => {
   const source = readFileSync(new URL("../hooks/use-theme.ts", import.meta.url), "utf8")
-    .replace(/^import .*;\r?\n/gm, "").replace("export function", "function");
+    .replace(/^import .*;\r?\n/gm, "").replace(/^export function/gm, "function");
   let mode: DisplayMode = "DAY";
   let onShow: (() => void) | undefined;
   const effects: Array<() => void> = [];

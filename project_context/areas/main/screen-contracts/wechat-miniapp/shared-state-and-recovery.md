@@ -102,7 +102,7 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
 
 2026-09-24 设置偏好生产局部状态：当前WEAPP在本机内存服务版本低于本地修订号时，冲突后用当前账户新鲜服务端读回修订号、保留本机未同步编辑并重试；单条审核提醒意向最终服务端读回及恢复原值已验证。正常My旧响应防倒退仍保留；不同账户切换、正式持久化与实际微信订阅回执未由本机样本证明。
 
-原生导航栏、页面背景与Tab样式/图标由 `theme/native-chrome` 统一协调，各页面通过 `useThemeClass` 的模式变化和显示生命周期请求当前store模式。已派发的原生写入不可取消；共享owner等待该批所有调用终态，包括同步派发异常，再应用合并后的最新请求，过期批不继续派发Tab图标。执行时检查当前路由，保留子页无Tab的既有恢复语义；失败仍交给调用者。这一串行边界不能承诺原生调用原子切换或实际OBSERVATION连续过程无白闪，仍须对应目标运行结果。
+原生导航栏、页面背景与Tab样式/图标由 `theme/native-chrome` 统一协调，主题 hook 的共用 `useThemeInputs` 在模式变化和页面显示时请求当前store模式；范围内页面使用 `useMotionThemeClass`，云观星内部保留原账户输入的 `useThemeClass`。已派发的原生写入不可取消；共享owner等待该批所有调用终态，包括同步派发异常，再应用合并后的最新请求，过期批不继续派发Tab图标。执行时检查当前路由，保留子页无Tab的既有恢复语义；失败仍交给调用者。这一串行边界不能承诺原生调用原子切换或实际OBSERVATION连续过程无白闪，仍须对应目标运行结果。
 
 设置偏好同步由 `hooks/use-preferences-sync` 持有页面计时器、请求与重试生命周期，`state/app-store` 持有账户偏好和修订。卸载退休计时器及待重试意图，迟到回调不得清掉替换计时器、更新页面状态或发起新读取/保存；已派发保存的有效同账户回执仍可推进共享修订。只有请求起点的偏好对象仍是当前编辑意图、值匹配且回执修订不低于当前修订时才能清除dirty；跨My读回与新设置页编辑（包括改回原值）保留本机dirty，旧回执不得倒退修订或覆盖后编辑。账户变化拒绝旧回执，冲突恢复继续使用既有新鲜读回和本机编辑保留规则。
 
@@ -110,7 +110,11 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
 
 收藏关系由 `hooks/use-favorite-mutation` 统一提交：同一账户/点位串行写入最新意图，快速反向立即更新显示，旧回执与 Map 场景回填均不得覆盖尚待确认的新意图；失败只恢复该点最后确认的关系并提供重试说明。首次匿名动作先绑定真实账户，离开账户永久取消旧任务的后续写入，即使随后切回同一账户也不续写。共享 `FavoriteStar` 以单一可反向进度呈现已采用DAY四分件，其他模式沿各主题回退，减弱动效取消旋转和位移；Map可见性输入为false时取消未结束计时器并静态呈现当前意图，其他卡片/详情默认输入保持原行为。Map背景由其局部动作owner独立呈现，不改变收藏关系或让星体等待背景；成功不重复Info。Map信息面板的原生收藏按钮用有效的ariaLabel表达保存中/选中/未选，不依赖当前Taro模板未投影的aria-pressed或aria-busy。
 
-2026-09-28 减弱动效输入补查：当前`FavoriteStar`与Map动作背景的JavaScript进度读取账户`preferences.reducedMotion`；已有CSS媒体查询只覆盖该背景的星点呼吸与文字过渡，没有把系统偏好接入上述进度计时器。隔离账户偏好API→My实际读取→Map的DAY选中静态及transform/animation-name/opacity读回已验证，偏好和收藏业务值已恢复；该样本不证明系统设置自动适配。保留既有系统级减少动态效果要求、无设置页开关及账户数据兼容边界；系统输入桥接和目标设备验证仍未完成，不据本轮代码检查断言平台无法实现。
+系统减弱动效由 `theme/system-motion` 的有界 reader、非持久化的 `theme/system-motion-state` 与页面级 `SystemMotionProbe` 统一负责。注册的19条非云页面在稳定的页面根位置挂载同一 probe；ready/show 才发起四次有限公开 size 查询，三处隐藏 WXSS 布局哨兵给出 `unknown | no-preference | reduce`。隐藏、卸载、新页面和乱序回调退休旧读取，失败、缺值或无法识别的组合保持 unknown，不写入或同步账户偏好。`useReducedMotion` 与命令式 `getReducedMotion` 使用同一规则：账户 true、系统 reduce 或 unknown 均静态呈现；只有账户 false 且系统明确 normal 才允许运动。范围内 CSS 主题与 FavoriteStar、Map spring/编辑器/背景、Search、Settings、事件弹层和照片查看器消费该有效值。云观星内部、未调用组件和未注册页不扩张迁移。
+
+2026-10-05 同一 Android/微信的小型 Taro 真实路径已观察系统 normal→reduce→normal，以及真实页面 hide 后 unknown/静态、返回后重新读取 normal；前者精确恢复原系统三键，后者不修改系统设置。两者绑定实际生产输入模块，但使用独立诊断页面及账户 false 的合成 store，不证明最终产品包、真实账户或所有消费者连续动效。公开接口没有已确认的系统变化事件，本实现只在 ready/show 有界重读，不能承诺前台设置变化实时监听或其它平台兼容。既有2026-09-28账户偏好 API→My→Map 静态样本仍有效，不升级为系统或全设备验收。
+
+事件弹层的 `[open]` 业务初始化与动效阶段分离；减弱输入变化保留详情、日期和单选草稿。照片查看器的 source query、deadline 和 flight timer 同属 viewer 生命周期，减弱输入取消旧展开/收回并永久结算初始展开，迟到回调不得重启动画、重复关闭或在卸载后通知。正常展开/关闭的原内容、动作及几何继续保留；消费者端口回归不能替代设施照片的真实连续 WEAPP 验收。
 
 一次定位状态须区分微信权限与本次坐标：设置回执明确已授权时，若尚无有效本次位置，清除旧拒绝并标记“已授权、未取得位置”，不显示 Map 原生定位蓝点、不移动视野；已有有效一次位置则保留其结果。2026-09-25 官方 WEAPP 受控拒绝→微信设置确认开启→重开权限页的同一机制，修前误报“权限未授予”，修后明确“定位已授权，尚未取得本次位置”，同进程 Map 原生 `show-location=false`；原始387×836图和定位定向回归见任务 A01 台账。真机系统权限往返、真实GPS及后台回前台仍未验证。
 
