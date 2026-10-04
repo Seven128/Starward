@@ -885,16 +885,16 @@ export class MiniappService {
     return this.auth.login(input);
   }
 
-  async resolveObservationContext(input: ObservationContextResolveRequest) {
-    const context = await this.observationContexts.resolve(input);
+  async resolveObservationContext(input: ObservationContextResolveRequest, userId?: UserId | null) {
+    const context = await this.observationContexts.resolve(input, userId);
     return envelope(context, "FRESH", browsingTimezoneSources(context), [], {
       validAt: context.selectedAtUtc,
       contextRevision: context.revision,
     });
   }
 
-  async getObservationContext(contextId: string) {
-    const context = await this.observationContexts.get(contextId);
+  async getObservationContext(contextId: string, userId?: UserId | null) {
+    const context = await this.observationContexts.get(contextId, userId);
     return envelope(context, "FRESH", browsingTimezoneSources(context), [], {
       validAt: context.selectedAtUtc,
       contextRevision: context.revision,
@@ -904,15 +904,24 @@ export class MiniappService {
   async updateObservationContext(
     contextId: string,
     input: ObservationContextUpdateRequest,
+    userId?: UserId | null,
   ) {
-    const context = await this.observationContexts.update(contextId, input);
+    const context = await this.observationContexts.update(contextId, input, userId);
     await this.cache.deleteByPrefix(
       "map:" + context.contextFingerprint.slice(0, 16),
     );
+    await this.#assertPrivateContextCurrent(context, userId);
     return envelope(context, "FRESH", browsingTimezoneSources(context), [], {
       validAt: context.selectedAtUtc,
       contextRevision: context.revision,
     });
+  }
+
+  async #assertPrivateContextCurrent(context: ObservationContext, userId?: UserId | null) {
+    if (!context.privateProposal) return;
+    const current = await this.observationContexts.get(context.contextId, userId);
+    if (current.revision !== context.revision || current.contextFingerprint !== context.contextFingerprint)
+      throw new Error("observation_context_conflict");
   }
 
   getCapabilities() {
@@ -980,7 +989,7 @@ export class MiniappService {
     );
   }
 
-  async getAstronomicalEvent(occurrenceId: string, contextId?: string) {
+  async getAstronomicalEvent(occurrenceId: string, contextId?: string, userId?: UserId | null) {
     const catalog = this.eventCatalog.snapshot();
     const event = catalog.events.find(event => event.occurrenceId === occurrenceId);
     if (!event) throw new Error("astronomical_event_not_found");
@@ -992,7 +1001,7 @@ export class MiniappService {
     };
     let context: ObservationContext | null = null;
     if (contextId) {
-      context = await this.observationContexts.get(contextId);
+      context = await this.observationContexts.get(contextId, userId);
       const spot = context.location.kind === "FORMAL_SPOT"
         ? await this.repository.getSpot(context.location.spotId)
         : null;
@@ -1015,6 +1024,7 @@ export class MiniappService {
         ? projectMeteorShowerAtLocation(event, projectionInput)
         : projectEclipseAtLocation(event, projectionInput);
     }
+    if (context) await this.#assertPrivateContextCurrent(context, userId);
     return envelope(
       {
         catalogVersion: catalog.catalogVersion,
@@ -1129,7 +1139,7 @@ export class MiniappService {
     userId?: UserId | null;
   }, weatherDeadlineAt = Date.now() + WEATHER_DEADLINES.mapBudgetMs): Promise<ApiEnvelope<MapSceneData>> {
     const startedAt = Date.now();
-    const context = await this.observationContexts.get(input.contextId);
+    const context = await this.observationContexts.get(input.contextId, input.userId);
     const filters = input.filters ?? EMPTY_FILTER_STATE;
     const layerKind = input.layer ?? "NORMAL";
     const cloudLayer = "TOTAL" as const;
@@ -1291,7 +1301,10 @@ export class MiniappService {
     cacheKey += ":evidence:" + hash({ spots: queryMatched, population: allCandidates, favoriteSpotIds, evaluations, filterEvidence,
       revisions: Object.values(reports).map((report) => report.data.context.dataRevision) });
     const cached = await this.cache.get<ApiEnvelope<MapSceneData>>(cacheKey);
-    if (cached) return Date.now() >= deliveryBoundary ? this.getMapScene(input, weatherDeadlineAt) : cached;
+    if (cached) {
+      await this.#assertPrivateContextCurrent(context, input.userId);
+      return Date.now() >= deliveryBoundary ? this.getMapScene(input, weatherDeadlineAt) : cached;
+    }
     const routeCapability = { state: "UNAVAILABLE" as const, reason: "道路距离与行程时长未接入；距离仅供直线参考", recovery: "NONE" as const };
     const allFilterEvidence = queryMatched.map((spot) => filterEvidence[spot.spotId]!);
     const byGroup = Object.fromEntries(
@@ -1450,6 +1463,7 @@ export class MiniappService {
       layer: layerKind,
     });
     await this.cache.set(cacheKey, result, 120);
+    await this.#assertPrivateContextCurrent(context, input.userId);
     // Repository/cache waits are part of delivery too. A re-projection shares
     // the original weather budget; it must not silently buy another deadline.
     return Date.now() >= deliveryBoundary ? this.getMapScene(input, weatherDeadlineAt) : result;
@@ -1509,8 +1523,8 @@ export class MiniappService {
     );
   }
 
-  async getSpotOverview(spotId: string, contextId: string) {
-    const context = await this.observationContexts.get(contextId);
+  async getSpotOverview(spotId: string, contextId: string, userId?: UserId | null) {
+    const context = await this.observationContexts.get(contextId, userId);
     if (
       context.location.kind !== "FORMAL_SPOT" ||
       context.location.spotId !== spotId
@@ -1576,6 +1590,7 @@ export class MiniappService {
         contextRevision: context.revision,
       },
     );
+    await this.#assertPrivateContextCurrent(context, userId);
     this.telemetry.event("spot_detail_loaded", {
       spotId,
       contextId,
@@ -1584,8 +1599,8 @@ export class MiniappService {
     return result;
   }
 
-  async estimateRoute(input: RouteEstimateRequest) {
-    const context = await this.observationContexts.get(input.contextId);
+  async estimateRoute(input: RouteEstimateRequest, userId?: UserId | null) {
+    const context = await this.observationContexts.get(input.contextId, userId);
     if (
       context.location.kind !== "FORMAL_SPOT" ||
       context.location.spotId !== input.spotId
@@ -1596,6 +1611,7 @@ export class MiniappService {
     if (!detail || detail.spot.status === "DATA_INSUFFICIENT")
       throw new Error("formal_spot_not_found");
     const result = await createRoutePort(this.config).estimate({ origin: context.routeOrigin.wgs84, destination: detail.spot.wgs84 });
+    await this.#assertPrivateContextCurrent(context, userId);
     const route: SpotDetail["route"] = {
       ...(result.value ?? detail.route),
       originLabel: context.routeOrigin.displayName,
@@ -1691,10 +1707,20 @@ export class MiniappService {
   async #skyAccess(spotId: string, contextId: string, userId?: UserId | null): Promise<{
     context: ObservationContext; proposal: { detail: SpotDetail; id: string } | null;
   }> {
-    const context = await this.observationContexts.get(contextId);
+    const context = await this.observationContexts.get(contextId, userId);
     if (spotId.startsWith("contribution:")) {
       if (!userId) throw new Error("authentication_required");
       const submission = await this.contributions.getForOwner(userId, spotId as ContributionId);
+      if (context.privateProposal) {
+        const binding = context.privateProposal;
+        const attempt = submission.attempts.at(-1);
+        if (binding.submissionId !== spotId || !attempt || attempt.attemptId !== binding.attemptId ||
+            attempt.baseRevision !== binding.attemptBaseRevision || !["PENDING_REVIEW", "ACCEPTED"].includes(submission.submissionState) ||
+            !submission.preciseLocationConsent) throw new Error("observation_proposal_permission_denied");
+        if (context.location.kind === "FORMAL_SPOT") return { context, proposal: null };
+        if (context.location.kind !== "PENDING_PROPOSAL") throw new Error("proposal_sky_context_invalid");
+        return { context, proposal: { detail: this.#candidateSkyDetail({ ...submission, ...attempt.snapshot }, context.timezone), id: spotId } };
+      }
       if (
         submission.kind !== "NEW_SPOT_PROPOSAL" ||
         !["PENDING_REVIEW", "ACCEPTED"].includes(submission.submissionState) ||
@@ -1722,14 +1748,18 @@ export class MiniappService {
   async getSky(spotId: string, contextId: string, userId?: UserId | null,
     catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2") {
     const { context, proposal } = await this.#skyAccess(spotId, contextId, userId);
-    return proposal ? this.astronomy.computeCandidate(context, proposal.detail, proposal.id,
+    const result = await (proposal ? this.astronomy.computeCandidate(context, proposal.detail, proposal.id,
       undefined, undefined, catalogVersion)
-      : this.astronomy.compute(context, undefined, undefined, catalogVersion);
+      : this.astronomy.compute(context, undefined, undefined, catalogVersion));
+    await this.#assertPrivateContextCurrent(context, userId);
+    return result;
   }
 
   async getSkyTargetInstant(spotId: string, contextId: string, at: string, userId?: UserId | null) {
     const { context, proposal } = await this.#skyAccess(spotId, contextId, userId);
-    return this.astronomy.computeTargetInstant(context, at, proposal?.detail, proposal?.id);
+    const result = await this.astronomy.computeTargetInstant(context, at, proposal?.detail, proposal?.id);
+    await this.#assertPrivateContextCurrent(context, userId);
+    return result;
   }
 
   #candidateSkyDetail(submission: import("@starward/miniapp-contracts").ContributionSubmission, timezone: string): SpotDetail {
@@ -2234,7 +2264,9 @@ export class MiniappService {
     }
     const sourceContext = await this.observationContexts.get(
       input.observationContextId,
+      userId,
     );
+    if (sourceContext.location.kind === "PENDING_PROPOSAL") throw new Error("formal_spot_context_required");
     let routeOriginContextId =
       sourceContext.location.kind === "MAP_POINT"
         ? sourceContext.contextId

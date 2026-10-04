@@ -7,6 +7,8 @@ import type {
   ObservationContextResolveRequest,
   ObservationContextUpdateRequest,
   SpotId,
+  UserId,
+  ContributionId,
 } from "@starward/miniapp-contracts";
 import { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.ts";
 import { isHongKongDistrictPoint } from "./hong-kong-boundary.ts";
@@ -55,6 +57,14 @@ function digest(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
 
+function fingerprint(context: ObservationContext) {
+  return digest({ location: context.location, routeOrigin: context.routeOrigin,
+    timezone: context.timezone, localDate: context.localDate, eventInstanceId: context.eventInstanceId,
+    targetProfile: context.targetProfile, weatherView: context.weatherView,
+    algorithmVersions: context.algorithmVersions,
+    ...(context.privateProposal ? { privateProposal: context.privateProposal } : {}) });
+}
+
 function assertSelectedAt(
   selectedAt: string,
   nightStartUtc: string,
@@ -93,15 +103,17 @@ export class ObservationContextService {
     private readonly eventCatalog: AstronomicalEventCatalogOwner = new AstronomicalEventCatalogOwner(),
   ) {}
 
-  async resolve(input: ObservationContextResolveRequest) {
+  async resolve(input: ObservationContextResolveRequest, actor?: UserId | null) {
     const resolvedLocation =
       input.location.kind === "FORMAL_SPOT"
         ? await this.#formalLocation(input.location.spotId)
+        : input.location.kind === "PENDING_PROPOSAL"
+        ? await this.#proposalLocation(input.location, actor)
         : this.#mapLocation(input.location);
-    if (input.location.kind === "MAP_POINT" && input.routeOriginContextId)
+    if (input.location.kind !== "FORMAL_SPOT" && input.routeOriginContextId)
       throw new Error("observation_route_origin_invalid");
     const originContext = input.routeOriginContextId
-      ? await this.get(input.routeOriginContextId)
+      ? await this.get(input.routeOriginContextId, actor)
       : null;
     if (originContext && originContext.location.kind !== "MAP_POINT")
       throw new Error("observation_route_origin_invalid");
@@ -162,11 +174,12 @@ export class ObservationContextService {
       },
     };
     const context: ObservationContext = {
-      schemaVersion: "observation-context-v2",
+      schemaVersion: input.location.kind === "PENDING_PROPOSAL" ? "observation-context-v3" : "observation-context-v2",
       contextId: `ctx:${randomUUID()}` as ObservationContextId,
       contextFingerprint: digest(fingerprintInput),
       revision: 1,
       ...fingerprintInput,
+      ...("privateProposal" in resolvedLocation ? { privateProposal: resolvedLocation.privateProposal } : {}),
       ...(input.location.kind === "MAP_POINT" && resolvedLocation.timezone === "Asia/Macau"
         ? { timezoneSource: MACAO_TIMEZONE_SOURCE } : {}),
       nightStartUtc,
@@ -178,19 +191,26 @@ export class ObservationContextService {
         now.getTime() + ttlSeconds * 1_000,
       ).toISOString(),
     };
+    context.contextFingerprint = fingerprint(context);
     await this.cache.set(
       this.#key(context.contextId),
       context,
       ttlSeconds,
     );
-    return context;
+    return context.privateProposal ? this.get(context.contextId, actor) : context;
   }
 
-  async get(contextId: string) {
+  async get(contextId: string, actor?: UserId | null): Promise<ObservationContext> {
     if (!/^ctx:[0-9a-f-]{36}$/iu.test(contextId))
       throw new Error("observation_context_not_found");
     const context = await this.cache.get<ObservationContext>(this.#key(contextId));
     if (!context) throw new Error("observation_context_not_found");
+    if (context.schemaVersion === "observation-context-v3") {
+      if (!actor || !context.privateProposal || context.privateProposal.ownerId !== actor || context.privacyClass !== "ACCOUNT_PRIVATE" || context.routeOrigin !== null)
+        throw new Error("observation_proposal_permission_denied");
+    } else if (context.privateProposal || context.location.kind === "PENDING_PROPOSAL" || context.privacyClass === "ACCOUNT_PRIVATE") {
+      throw new Error("observation_context_invalid");
+    }
     if (Date.parse(context.expiresAt) <= Date.now()) {
       await this.cache.deleteByPrefix(this.#key(contextId));
       throw new Error("observation_context_expired");
@@ -202,11 +222,40 @@ export class ObservationContextService {
       await this.cache.deleteByPrefix(this.#key(contextId));
       throw new Error("observation_context_expired");
     }
-    return context;
+    if (!context.privateProposal) return context;
+    const resolved = await this.#proposalLocation({ kind: "PENDING_PROPOSAL", ...context.privateProposal,
+      ...(context.location.kind === "FORMAL_SPOT" ? { formalSpotId: context.location.spotId } : {}) }, actor);
+    if (Date.parse(context.expiresAt) <= Date.now()) throw new Error("observation_context_expired");
+    if (JSON.stringify(resolved.location) === JSON.stringify(context.location) && resolved.timezone === context.timezone) return context;
+    const bounds = observationNightBounds({ localDate: context.localDate, timezone: resolved.timezone });
+    assertSelectedAt(context.selectedAtUtc, bounds.nightStartUtc, bounds.nightEndUtc);
+    const next: ObservationContext = { ...context, location: resolved.location, timezone: resolved.timezone, timezoneSource: null,
+      ...bounds, revision: context.revision + 1 };
+    next.contextFingerprint = fingerprint(next);
+    const result = await this.cache.replaceIfRevision(this.#key(contextId), context.revision, next, Date.parse(context.expiresAt));
+    if (result === "missing") throw new Error("observation_context_not_found");
+    // Another reader may have committed this same authoritative transition. One
+    // readback suffices; never recurse or overwrite its newer user time edit.
+    if (result === "conflict") {
+      const latest = await this.cache.get<ObservationContext>(this.#key(contextId));
+      if (!latest || latest.revision <= context.revision || latest.privateProposal?.ownerId !== actor ||
+          JSON.stringify(latest.privateProposal) !== JSON.stringify(context.privateProposal) ||
+          JSON.stringify(latest.location) !== JSON.stringify(resolved.location)) throw new Error("observation_context_conflict");
+      const confirmed = await this.#proposalLocation({ kind: "PENDING_PROPOSAL", ...context.privateProposal,
+        ...(latest.location.kind === "FORMAL_SPOT" ? { formalSpotId: latest.location.spotId } : {}) }, actor);
+      if (Date.parse(latest.expiresAt) <= Date.now() || JSON.stringify(confirmed.location) !== JSON.stringify(latest.location))
+        throw new Error("observation_context_conflict");
+      return latest;
+    }
+    const confirmed = await this.#proposalLocation({ kind: "PENDING_PROPOSAL", ...context.privateProposal,
+      ...(next.location.kind === "FORMAL_SPOT" ? { formalSpotId: next.location.spotId } : {}) }, actor);
+    if (Date.parse(next.expiresAt) <= Date.now() || JSON.stringify(confirmed.location) !== JSON.stringify(next.location))
+      throw new Error("observation_context_conflict");
+    return next;
   }
 
-  async update(contextId: string, input: ObservationContextUpdateRequest) {
-    const current = await this.get(contextId);
+  async update(contextId: string, input: ObservationContextUpdateRequest, actor?: UserId | null) {
+    const current = await this.get(contextId, actor);
     if (current.revision !== input.expectedRevision)
       throw new Error("observation_context_conflict");
     const localDate = input.localDate ?? current.localDate;
@@ -234,16 +283,7 @@ export class ObservationContextService {
       },
     };
     assertEventSelection(next.eventInstanceId, next.localDate, this.eventCatalog);
-    const nextFingerprint = digest({
-      location: next.location,
-      routeOrigin: next.routeOrigin,
-      timezone: next.timezone,
-      localDate: next.localDate,
-      eventInstanceId: next.eventInstanceId,
-      targetProfile: next.targetProfile,
-      weatherView: next.weatherView,
-      algorithmVersions: next.algorithmVersions,
-    });
+    const nextFingerprint = fingerprint(next);
     const saved = { ...next, contextFingerprint: nextFingerprint };
     const result = await this.cache.replaceIfRevision(
       this.#key(contextId), input.expectedRevision, saved,
@@ -251,11 +291,67 @@ export class ObservationContextService {
     );
     if (result === "missing") throw new Error("observation_context_not_found");
     if (result === "conflict") throw new Error("observation_context_conflict");
+    if (saved.privateProposal) {
+      const confirmed = await this.#proposalLocation({ kind: "PENDING_PROPOSAL", ...saved.privateProposal,
+        ...(saved.location.kind === "FORMAL_SPOT" ? { formalSpotId: saved.location.spotId } : {}) }, actor);
+      if (JSON.stringify(confirmed.location) !== JSON.stringify(saved.location)) throw new Error("observation_context_conflict");
+      if (Date.parse(saved.expiresAt) <= Date.now()) throw new Error("observation_context_expired");
+    }
     return saved;
   }
 
   #key(contextId: string) {
     return `observation-context:${contextId}`;
+  }
+
+  async #proposalLocation(input: Extract<ObservationContextResolveRequest["location"], { kind: "PENDING_PROPOSAL" }>, actor?: UserId | null) {
+    if (!actor) throw new Error("observation_proposal_permission_denied");
+    if (typeof input.submissionId !== "string" || !input.submissionId.startsWith("contribution:") ||
+        typeof input.attemptId !== "string" || !input.attemptId.startsWith("contribution-attempt:") ||
+        !Number.isInteger(input.attemptBaseRevision) || input.attemptBaseRevision < 1)
+      throw new Error("observation_proposal_identity_invalid");
+    // This owner-scoped aggregate read binds current state, latest immutable
+    // attempt and durable publication mapping in one repository snapshot.
+    const submission = await this.repository.getContribution(actor, input.submissionId as ContributionId);
+    if (!submission) throw new Error("contribution_not_found");
+    const attempt = submission.attempts.at(-1);
+    if (submission.kind !== "NEW_SPOT_PROPOSAL" || !["PENDING_REVIEW", "ACCEPTED"].includes(submission.submissionState) ||
+        !submission.preciseLocationConsent || !attempt || attempt.attemptId !== input.attemptId ||
+        attempt.baseRevision !== input.attemptBaseRevision || attempt.snapshot.kind !== "NEW_SPOT_PROPOSAL" ||
+        !attempt.snapshot.preciseLocationConsent || !attempt.snapshot.candidateLocation ||
+        (attempt.review && !["APPROVED", "ACCEPTED"].includes(attempt.review.resolution)))
+      throw new Error("observation_proposal_permission_denied");
+    const privateProposal = { ownerId: actor, submissionId: submission.submissionId,
+      attemptId: attempt.attemptId, attemptBaseRevision: attempt.baseRevision };
+    const hasMapping = submission.mergeState === "MERGED" && submission.spotId !== null;
+    const mappedSpot = hasMapping ? await this.repository.getSpot(submission.spotId!) : null;
+    if (hasMapping) {
+      // Canonical eligibility is an awaited read. Close it against the latest
+      // owned aggregate before returning private location data; a withdrawal or
+      // replacement during that read cannot inherit the earlier authorization.
+      const latest = await this.repository.getContribution(actor, submission.submissionId);
+      const latestAttempt = latest?.attempts.at(-1);
+      if (!latest || latest.kind !== "NEW_SPOT_PROPOSAL" || !["PENDING_REVIEW", "ACCEPTED"].includes(latest.submissionState) ||
+          !latest.preciseLocationConsent || !latestAttempt || latestAttempt.attemptId !== input.attemptId ||
+          latestAttempt.baseRevision !== input.attemptBaseRevision || !latestAttempt.snapshot.preciseLocationConsent ||
+          (latestAttempt.review && !["APPROVED", "ACCEPTED"].includes(latestAttempt.review.resolution)))
+        throw new Error("observation_proposal_permission_denied");
+      if (latest.mergeState !== submission.mergeState || latest.spotId !== submission.spotId || latest.publicationImpact !== submission.publicationImpact)
+        throw new Error("observation_context_conflict");
+    }
+    const publicMapping = mappedSpot && ["PUBLISHED", "TEMPORARILY_CLOSED"].includes(mappedSpot.status);
+    if (input.formalSpotId !== undefined && (!publicMapping || mappedSpot!.spotId !== input.formalSpotId))
+      throw new Error("formal_spot_not_found");
+    if (publicMapping) {
+      const formal = { location: { kind: "FORMAL_SPOT" as const, spotId: mappedSpot!.spotId, locationVersion: 1 }, timezone: mappedSpot!.timezone };
+      return { ...formal, privateProposal, privacyClass: "ACCOUNT_PRIVATE" as const, ttlSeconds: PRECISE_CONTEXT_TTL_SECONDS };
+    }
+    if (submission.publicationImpact === "SPOT_PUBLISHED") throw new Error("formal_spot_not_found");
+    const snapshot = attempt.snapshot;
+    const map = this.#mapLocation({ kind: "MAP_POINT", displayName: snapshot.candidateProfile?.fields.name ?? snapshot.candidateLocation!.displayName,
+      wgs84: snapshot.candidateLocation!.wgs84, source: "MAP_VIEWPORT" });
+    return { ...map, location: { kind: "PENDING_PROPOSAL" as const, displayName: map.location.displayName, wgs84: map.location.wgs84 },
+      privateProposal, privacyClass: "ACCOUNT_PRIVATE" as const, ttlSeconds: PRECISE_CONTEXT_TTL_SECONDS };
   }
 
   async #formalLocation(spotId: string) {

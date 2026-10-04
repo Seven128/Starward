@@ -622,29 +622,53 @@ export function getCapabilities(signal?: AbortSignal) {
 export function resolveObservationContext(
   input: ObservationContextResolveRequest,
   signal?: AbortSignal,
+  expectedUserId?: string,
 ) {
+  const privateOwner = input.location.kind === "PENDING_PROPOSAL" ? expectedUserId ?? currentDraftUserId() : null;
+  const privateReset = privateOwner ? useAppStore.getState().mapResetVersion : null;
+  if (input.location.kind === "PENDING_PROPOSAL" && (!privateOwner || currentDraftUserId() !== privateOwner))
+    throw new Error("账户已变化，请回到原账号核对待审点。");
   return requestOperation(
     "observation-context:resolve",
     "observationContextPost",
     {
       body: input,
+      auth: input.location.kind === "PENDING_PROPOSAL" ? "REQUIRED" : "OPTIONAL",
+      cache: false,
       ...(signal ? { signal } : {}),
-    },
-  );
+    }, false, privateOwner ?? undefined,
+  ).then(response => {
+    if (privateOwner && (currentDraftUserId() !== privateOwner || useAppStore.getState().mapResetVersion !== privateReset ||
+        response.data.schemaVersion !== "observation-context-v3" || response.data.privacyClass !== "ACCOUNT_PRIVATE" || response.data.privateProposal?.ownerId !== privateOwner))
+      throw new Error("账户已变化，请回到原账号核对待审点。");
+    return response;
+  });
 }
 
 export function getObservationContext(
   contextId: string,
   signal?: AbortSignal,
+  expectedUserId?: string,
 ) {
+  const owner = expectedUserId ?? currentDraftUserId();
+  const ownerReset = owner ? useAppStore.getState().mapResetVersion : null;
+  if (expectedUserId && currentDraftUserId() !== expectedUserId) throw new Error("账户已变化，请回到原账号核对待审点。");
   return requestOperation(
     "observation-context:" + contextId,
     "observationContextGet",
     {
       pathParams: { contextId },
+      auth: "OPTIONAL", cache: false,
       ...(signal ? { signal } : {}),
-    },
-  );
+    }, false, owner ?? undefined,
+  ).then(response => {
+    if (response.data.schemaVersion === "observation-context-v3" && !response.data.privateProposal)
+      throw new Error("observation_proposal_identity_invalid");
+    if (response.data.privateProposal && (!owner || currentDraftUserId() !== owner || useAppStore.getState().mapResetVersion !== ownerReset ||
+        response.data.schemaVersion !== "observation-context-v3" || response.data.privacyClass !== "ACCOUNT_PRIVATE" || response.data.privateProposal.ownerId !== owner))
+      throw new Error("账户已变化，请回到原账号核对待审点。");
+    return response;
+  });
 }
 
 /**
@@ -657,14 +681,20 @@ export async function restoreObservationContext(
   context: ObservationContext,
   signal?: AbortSignal,
 ) {
+  const privateReset = context.privateProposal ? useAppStore.getState().mapResetVersion : null;
+  if (context.privateProposal && currentDraftUserId() !== context.privateProposal.ownerId)
+    throw new Error("账户已变化，请回到原账号核对待审点。");
+  if (context.privateProposal && context.routeOrigin !== null) throw new Error("observation_proposal_identity_invalid");
   try {
-    return await getObservationContext(context.contextId, signal);
+    return await getObservationContext(context.contextId, signal, context.privateProposal?.ownerId);
   } catch (error) {
     if (
       !(error instanceof MiniappApiError) ||
       (error.code !== "NOT_FOUND" && error.code !== "STALE_REJECTED")
     )
       throw error;
+    if (context.privateProposal && (currentDraftUserId() !== context.privateProposal.ownerId || useAppStore.getState().mapResetVersion !== privateReset))
+      throw new Error("账户已变化，请回到原账号核对待审点。");
     let routeOriginContextId: string | null = null;
     let recoveredRouteOrigin: Awaited<ReturnType<typeof resolveObservationContext>> | null = null;
     if (context.routeOrigin) {
@@ -694,9 +724,10 @@ export async function restoreObservationContext(
       return await resolveObservationContext(
         observationContextRecoveryInput(context, routeOriginContextId),
         signal,
+        context.privateProposal?.ownerId,
       );
     } catch (recoveryError) {
-      if (context.location.kind === "FORMAL_SPOT" && recoveredRouteOrigin &&
+      if (!context.privateProposal && context.location.kind === "FORMAL_SPOT" && recoveredRouteOrigin &&
         recoveryError instanceof MiniappApiError && recoveryError.code === "NOT_FOUND")
         return recoveredRouteOrigin;
       throw recoveryError;
@@ -711,22 +742,30 @@ export async function updateObservationContext(
   input: Omit<ObservationContextUpdateRequest, "expectedRevision">,
   signal?: AbortSignal,
 ) {
-  const update = async (current: ObservationContext) => {
+  const privateReset = context.privateProposal ? useAppStore.getState().mapResetVersion : null;
+  if (context.privateProposal && currentDraftUserId() !== context.privateProposal.ownerId)
+    throw new Error("账户已变化，请回到原账号核对待审点。");
+  const update = async (current: ObservationContext, allowPublicationRetry = true): Promise<ApiEnvelope<ObservationContext>> => {
+    if (current.privateProposal && (currentDraftUserId() !== current.privateProposal.ownerId || useAppStore.getState().mapResetVersion !== privateReset))
+      throw new Error("账户已变化，请回到原账号核对待审点。");
     try {
       const response = await requestOperation(
         "observation-context:" + current.contextId,
         "observationContextPut",
         {
           pathParams: { contextId: current.contextId },
+          auth: current.privateProposal ? "REQUIRED" : "OPTIONAL", cache: false,
           body: { ...input, expectedRevision: current.revision },
           idempotencyKey: idempotencyKey("observation-context"),
           ...(signal ? { signal } : {}),
-        },
+        }, false, current.privateProposal?.ownerId,
       );
       // A successful status cannot acknowledge a different place/time or an
       // unchanged revision. Normal and uncertain replies share one validator.
       if (!confirmedObservationContextEdit(current, input, response))
         throw new Error("bff_observation_context_update_invalid");
+      if (current.privateProposal && (currentDraftUserId() !== current.privateProposal.ownerId || useAppStore.getState().mapResetVersion !== privateReset))
+        throw new Error("账户已变化，请回到原账号核对待审点。");
       return response;
     } catch (error) {
       if (error instanceof MiniappRequestCancelled || signal?.aborted ||
@@ -736,13 +775,23 @@ export async function updateObservationContext(
       let readback;
       try {
         readback = await requestOperation("observation-context:" + current.contextId, "observationContextGet", {
-          pathParams: { contextId: current.contextId }, cache: false, ...(signal ? { signal } : {}),
-        });
+          pathParams: { contextId: current.contextId }, auth: current.privateProposal ? "REQUIRED" : "OPTIONAL", cache: false, ...(signal ? { signal } : {}),
+        }, false, current.privateProposal?.ownerId);
       } catch (readError) {
         if (readError instanceof MiniappRequestCancelled || signal?.aborted) throw readError;
         throw error;
       }
-      if (!confirmedObservationContextEdit(current, input, readback)) throw error;
+      if (!confirmedObservationContextEdit(current, input, readback)) {
+        // An explicit conflict establishes that this PUT did not commit. Only
+        // the exact same pending identity's authoritative publication, with all
+        // prior time/event values intact, permits one edit on its new revision.
+        if (allowPublicationRetry && error instanceof MiniappApiError && error.code === "CONFLICT" &&
+            current.privateProposal && current.location.kind === "PENDING_PROPOSAL" && readback.data.location.kind === "FORMAL_SPOT" &&
+            confirmedObservationContextEdit(current, {}, readback)) return update(readback.data, false);
+        throw error;
+      }
+      if (current.privateProposal && (currentDraftUserId() !== current.privateProposal.ownerId || useAppStore.getState().mapResetVersion !== privateReset))
+        throw new Error("账户已变化，请回到原账号核对待审点。");
       return readback;
     }
   };
@@ -874,6 +923,7 @@ export function getSpotOverview(
     "spotOverviewGet",
     {
       pathParams: { spotId },
+      auth: "OPTIONAL",
       query: "contextId=" + encodeURIComponent(contextId),
       ...(signal ? { signal } : {}),
     },
@@ -927,6 +977,7 @@ export function getAstronomicalEvent(
   contextId?: string,
 ) {
   return requestOperation(`astronomical-event:${occurrenceId}:${contextId ?? "catalog"}`, "astronomicalEventGet", {
+    auth: contextId ? "OPTIONAL" : "NONE", cache: contextId ? false : true,
     pathParams: { occurrenceId },
     ...(contextId ? { query: "contextId=" + encodeURIComponent(contextId) } : {}),
     ...(signal ? { signal } : {}),
@@ -941,7 +992,7 @@ export function getSkyReport(
   if (!spotId.startsWith("spot:") && !spotId.startsWith("contribution:"))
     throw new Error("night_location_identity_invalid");
   return requestOperation("spot-sky:v3:" + spotId, "spotSkyGet", {
-    auth: spotId.startsWith("contribution:") ? "REQUIRED" : "NONE",
+    auth: spotId.startsWith("contribution:") ? "REQUIRED" : "OPTIONAL",
     pathParams: { spotId },
     query: "contextId=" + encodeURIComponent(contextId) + "&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION,
     ...(signal ? { signal } : {}),
@@ -956,7 +1007,7 @@ export function getSkyTargetInstant(binding: SkyTargetInstantBinding, signal?: A
     throw new Error("night_location_identity_invalid");
   const key = `spot-sky-targets:v1:${spotId}:${contextId}:${binding.contextRevision}:${binding.contextFingerprint}:${at}`;
   return requestOperation(key, "spotSkyTargetsGet", {
-    auth: spotId.startsWith("contribution:") ? "REQUIRED" : "NONE",
+    auth: spotId.startsWith("contribution:") ? "REQUIRED" : "OPTIONAL",
     pathParams: { spotId },
     query: "contextId=" + encodeURIComponent(contextId) + "&at=" + encodeURIComponent(at),
     ...(signal ? { signal } : {}),

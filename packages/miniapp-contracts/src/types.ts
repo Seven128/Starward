@@ -108,14 +108,28 @@ export type ObservationLocation =
       displayName: string;
       wgs84: Wgs84Point;
       source: "MAP_VIEWPORT" | "USER_LOCATION";
+    }
+  | {
+      /** Identity/authorization remain in Context.privateProposal, including after publication. */
+      kind: "PENDING_PROPOSAL";
+      displayName: string;
+      wgs84: Wgs84Point;
     };
 
 export interface ObservationContext {
-  schemaVersion: "observation-context-v2";
+  /** v2 remains the public/formal protocol. Private pending and mapped contexts use v3. */
+  schemaVersion: "observation-context-v2" | "observation-context-v3";
   contextId: ObservationContextId;
   contextFingerprint: string;
   revision: number;
   location: ObservationLocation;
+  /** Mandatory in v3; never inferred from coordinates or accepted from a client owner field. */
+  privateProposal?: {
+    ownerId: UserId;
+    submissionId: ContributionId;
+    attemptId: string;
+    attemptBaseRevision: number;
+  };
   routeOrigin: {
     contextId: ObservationContextId;
     displayName: string;
@@ -144,7 +158,7 @@ export interface ObservationContext {
     darkSky: string;
     eventCatalog: string;
   };
-  privacyClass: "PUBLIC_REFERENCE" | "SESSION_PRECISE";
+  privacyClass: "PUBLIC_REFERENCE" | "SESSION_PRECISE" | "ACCOUNT_PRIVATE";
   createdAt: string;
   expiresAt: string;
 }
@@ -152,6 +166,14 @@ export interface ObservationContext {
 export interface ObservationContextResolveRequest {
   location:
     | { kind: "FORMAL_SPOT"; spotId: string }
+    | {
+        kind: "PENDING_PROPOSAL";
+        submissionId: string;
+        attemptId: string;
+        attemptBaseRevision: number;
+        /** A previously mapped recovery cannot fall back to a retired pending identity. */
+        formalSpotId?: string;
+      }
     | {
         kind: "MAP_POINT";
         displayName: string;

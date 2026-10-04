@@ -82,6 +82,23 @@ function loadStore(storage: { value: unknown; failWrites?: boolean; session?: un
   return { store: exports.useAppStore as typeof useAppStore, flush: () => { while (scheduled.length) scheduled.shift()!(); }, storage };
 }
 
+test("same-account expired private Context survives actual hydrate and is hidden across accounts", () => {
+  const context = { ...validObservationContext, schemaVersion: "observation-context-v3", privacyClass: "ACCOUNT_PRIVATE", routeOrigin: null,
+    location: { kind: "PENDING_PROPOSAL", displayName: "冻结位置", wgs84: { system: "WGS84", latitude: 22.6, longitude: 114.2 } },
+    privateProposal: { ownerId: "user:a", submissionId: "contribution:one", attemptId: "contribution-attempt:one", attemptBaseRevision: 1 },
+    expiresAt: "2026-10-01T00:00:00.000Z" };
+  const storage = { value: { accountOwnerId: "user:a", observationContext: context }, accounts: {}, session: {
+    userId: "user:a", accessToken: "test-token", expiresAt: "2999-01-01T00:00:00.000Z" } };
+  const { store } = loadStore(storage);
+  store.getState().hydrate();
+  assert.equal(store.getState().observationContext?.privateProposal?.attemptId, context.privateProposal.attemptId);
+  assert.equal(store.getState().observationContext?.selectedAtUtc, context.selectedAtUtc);
+  store.getState().bindAccount("user:b");
+  assert.equal(store.getState().observationContext, null);
+  store.getState().setObservationContext(context as never);
+  assert.equal(store.getState().observationContext, null);
+});
+
 test("switching accounts isolates and restores local preferences and private projections", () => {
   const storage = { value: {}, accounts: {} as Record<string, unknown>, session: {
     userId: "user:a", accessToken: "test-token", expiresAt: "2999-01-01T00:00:00.000Z",

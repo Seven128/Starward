@@ -16,7 +16,7 @@ export async function restoreMapBootstrapContext(input: {
   try {
     return await input.restore(input.storedContext, input.signal);
   } catch (error) {
-    if (input.storedContext.location.kind !== "FORMAL_SPOT" || !input.shouldFallback(error))
+    if ((!input.storedContext.privateProposal && input.storedContext.location.kind !== "FORMAL_SPOT") || !input.shouldFallback(error))
       throw error;
     return input.resolve(input.fallback, input.signal);
   }

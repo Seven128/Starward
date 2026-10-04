@@ -220,6 +220,7 @@ function persisted(state: AppState): PersistedState {
   const durableMode = restoreStartupMode(state.mode, state.priorMode);
   const durableContext =
     state.observationContext?.privacyClass === "SESSION_PRECISE"
+      || (state.observationContext?.privateProposal && state.observationContext.privateProposal.ownerId !== state.accountOwnerId)
       ? null
       : state.observationContext;
   return {
@@ -286,6 +287,7 @@ function isObservationLocation(value: unknown) {
       Number.isInteger(value.locationVersion) &&
       (value.locationVersion as number) >= 0
     );
+  if (value.kind === "PENDING_PROPOSAL") return isNonEmptyString(value.displayName) && isWgs84Point(value.wgs84);
   return (
     value.kind === "MAP_POINT" &&
     isNonEmptyString(value.displayName) &&
@@ -305,9 +307,17 @@ function isRouteOrigin(value: unknown) {
   );
 }
 
-function usableObservationContext(value: unknown): ObservationContext | null {
-  if (!isRecord(value) || value.schemaVersion !== "observation-context-v2")
+function usableObservationContext(value: unknown, ownerId: string | null = null): ObservationContext | null {
+  if (!isRecord(value) || !["observation-context-v2", "observation-context-v3"].includes(String(value.schemaVersion)))
     return null;
+  const binding = value.privateProposal;
+  const privateContext = value.schemaVersion === "observation-context-v3" && isRecord(binding) &&
+    ownerId !== null && binding.ownerId === ownerId && isNonEmptyString(binding.submissionId) &&
+    binding.submissionId.startsWith("contribution:") && isNonEmptyString(binding.attemptId) && binding.attemptId.startsWith("contribution-attempt:") &&
+    Number.isInteger(binding.attemptBaseRevision) && (binding.attemptBaseRevision as number) >= 1 && value.privacyClass === "ACCOUNT_PRIVATE";
+  if (privateContext && value.routeOrigin !== null) return null;
+  if (value.schemaVersion === "observation-context-v3" ? !privateContext : Boolean(binding) ||
+      (isRecord(value.location) && value.location.kind === "PENDING_PROPOSAL")) return null;
   const weatherView = value.weatherView;
   const algorithmVersions = value.algorithmVersions;
   if (!isRecord(weatherView) || !isRecord(algorithmVersions)) return null;
@@ -337,10 +347,10 @@ function usableObservationContext(value: unknown): ObservationContext | null {
     ["astronomy", "opportunity", "tripDecision", "darkSky", "eventCatalog"].every(
       (key) => isNonEmptyString(algorithmVersions[key]),
     ) &&
-    value.privacyClass === "PUBLIC_REFERENCE" &&
+    (value.privacyClass === "PUBLIC_REFERENCE" || privateContext) &&
     isTimestamp(value.createdAt) &&
     isTimestamp(value.expiresAt) &&
-    Date.parse(value.expiresAt) > Date.now();
+    (Date.parse(value.expiresAt) > Date.now() || privateContext);
   // A persisted Context remains a recovery hint until the server restores it.
   // Keep its location/time/identity, but never restore retired display selections.
   return valid ? { ...(value as unknown as ObservationContext), weatherView: {
@@ -391,6 +401,7 @@ export const useAppStore = create<AppState>((set, get) => {
     finderQuery: BOOTSTRAP_STATE.finderQuery ?? "",
     observationContext: usableObservationContext(
       BOOTSTRAP_STATE.observationContext,
+      BOOTSTRAP_STATE.accountOwnerId ?? null,
     ),
     analysisOverlay: BOOTSTRAP_STATE.analysisOverlay ?? "NONE",
     terrainEnabled: BOOTSTRAP_STATE.terrainEnabled ?? false,
@@ -435,6 +446,7 @@ export const useAppStore = create<AppState>((set, get) => {
         finderQuery: saved.finderQuery ?? "",
         observationContext: usableObservationContext(
           saved.observationContext,
+          saved.accountOwnerId ?? null,
         ),
         analysisOverlay: saved.analysisOverlay ?? "NONE",
         terrainEnabled: saved.terrainEnabled ?? false,
@@ -555,6 +567,10 @@ export const useAppStore = create<AppState>((set, get) => {
       commit({ finderQuery });
     },
     setObservationContext(observationContext) {
+      if (observationContext?.schemaVersion === "observation-context-v3" && (!observationContext.privateProposal ||
+          observationContext.privacyClass !== "ACCOUNT_PRIVATE" || observationContext.routeOrigin !== null || observationContext.location.kind === "MAP_POINT")) return;
+      if (observationContext?.schemaVersion === "observation-context-v2" && (observationContext.privateProposal || observationContext.location.kind === "PENDING_PROPOSAL")) return;
+      if (observationContext?.privateProposal && observationContext.privateProposal.ownerId !== get().accountOwnerId) return;
       set(state => ({
         observationContext,
         notifications: observationContext
@@ -770,7 +786,7 @@ export const useAppStore = create<AppState>((set, get) => {
         preferencesUpdatedAt: saved.preferencesUpdatedAt ?? null,
         viewport: retainAnonymousMap ? previous.viewport : { ...DEFAULT_VIEWPORT, ...saved.viewport },
         finderQuery: retainAnonymousMap ? previous.finderQuery : saved.finderQuery ?? "",
-        observationContext: retainAnonymousMap ? previous.observationContext : usableObservationContext(saved.observationContext),
+        observationContext: retainAnonymousMap ? previous.observationContext : usableObservationContext(saved.observationContext, ownerId),
         analysisOverlay: retainAnonymousMap ? previous.analysisOverlay : saved.analysisOverlay ?? "NONE",
         terrainEnabled: retainAnonymousMap ? previous.terrainEnabled : saved.terrainEnabled ?? false,
         committedFilters: filters,

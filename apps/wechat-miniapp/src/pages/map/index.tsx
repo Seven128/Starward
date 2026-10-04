@@ -91,7 +91,7 @@ import { projectSpotPanelResource } from "./spot-panel-resource-projection";
 import { shouldOpenSpotForSelection } from "./spot-open-intent";
 import { mediaIsRenderable } from "./spot-panel-media";
 import { PendingProposalPanel } from "./pending-proposal-panel";
-import { privateContributionSelectionTransition } from "./private-contribution-transition";
+import { privateContributionSelectionTransition, pendingProposalContextLocation, samePendingProposalIntent } from "./private-contribution-transition";
 import {
   layerSheetOverlay,
   lightLayerContentState,
@@ -398,6 +398,7 @@ export default function MapPage() {
   const bootstrapContext = useResourceQuery({
     queryKey: [
       "map-observation-context",
+      accountOwnerId,
       mapResetVersion,
       observationContext?.contextId,
       observationContext?.contextFingerprint,
@@ -433,7 +434,8 @@ export default function MapPage() {
         fallback,
         restore: restoreObservationContext,
         resolve: resolveObservationContext,
-        shouldFallback: (error) => error instanceof MiniappApiError && error.code === "NOT_FOUND",
+        shouldFallback: (error) => error instanceof MiniappApiError && (error.code === "NOT_FOUND" ||
+          Boolean(observationContext?.privateProposal && error.code === "PERMISSION_DENIED")),
         ...(signal ? { signal } : {}),
       });
     },
@@ -462,15 +464,16 @@ export default function MapPage() {
     ) {
       const removedFormalSpot = observationContext?.location.kind === "FORMAL_SPOT" &&
         bootstrapContext.data.data.location.kind === "MAP_POINT";
+      const removedPrivateSpot = Boolean(observationContext?.privateProposal && bootstrapContext.data.data.location.kind === "MAP_POINT");
       setObservationContext(bootstrapContext.data.data);
-      if (removedFormalSpot) {
+      if (removedFormalSpot || removedPrivateSpot) {
         selectSpot(null);
         setSelectedFallback(null);
         setSelectedProposal(null);
         setBottomPresentation("none");
         notify({ owner: "map", placement: "floating", tone: "warning",
-          title: "原观星点已失效", body: "已回到当前地图中心。", dismissible: true,
-          dedupeKey: `map-removed-formal:${observationContext.contextId}` });
+          title: removedPrivateSpot ? "原待审点位已不可用" : "原观星点已失效", body: "已回到当前地图中心。", dismissible: true,
+          dedupeKey: `map-removed-location:${observationContext!.contextId}` });
       }
     }
   }, [
@@ -1626,6 +1629,8 @@ export default function MapPage() {
     const transition = privateContributionSelectionTransition(
       selectedProposal,
       contributionHistory.data.data.submissions,
+      activeContext,
+      currentContributionOwner,
     );
     if (transition.kind === "PRIVATE") {
       if (transition.submission !== selectedProposal) setSelectedProposal(transition.submission);
@@ -1633,6 +1638,8 @@ export default function MapPage() {
     }
     if (transition.kind === "NONE") return;
     const generation = ++privateTransitionGeneration.current;
+    const transitionOwner = currentDraftUserId();
+    const transitionReset = useAppStore.getState().mapResetVersion;
     setSelectedProposal(null);
     if (transition.kind === "REMOVE") {
       setBottomPresentation("none");
@@ -1642,7 +1649,8 @@ export default function MapPage() {
     void (async () => {
       const currentSpot = spots.find((spot) => spot.spotId === transition.spotId);
       const refreshed = currentSpot ? undefined : await scene.refetch().catch(() => undefined);
-      if (generation !== privateTransitionGeneration.current) return;
+      if (generation !== privateTransitionGeneration.current || transitionOwner !== currentDraftUserId() ||
+          transitionReset !== useAppStore.getState().mapResetVersion) return;
       const formal = currentSpot ?? refreshed?.data.spots.find((spot) => spot.spotId === transition.spotId);
       if (!formal) {
         setBottomPresentation("none");
@@ -1651,7 +1659,7 @@ export default function MapPage() {
       }
       await openDetail(formal);
     })();
-  }, [contributionHistory.data, selectedProposal]);
+  }, [contributionHistory.data, selectedProposal, activeContext, currentContributionOwner]);
 
   const commitMapDate = async (nextDate: string) => {
     if (!activeContext || timeRequestBusy.current || nextDate === selectedMapCivilDate) return;
@@ -1860,8 +1868,9 @@ export default function MapPage() {
   };
 
   const onProposalCloud = async (submission: import("@starward/miniapp-contracts").ContributionSubmission) => {
-    const location = submission.candidateLocation;
-    if (!location || !submission.preciseLocationConsent) {
+    const location = pendingProposalContextLocation(submission);
+    const owner = currentDraftUserId();
+    if (!location || !owner) {
       notify({ owner: "map", placement: "floating", tone: "warning", title: "观测位置不可用", body: "该审核中点位没有可用于本账号云观星的精确坐标。", dismissible: true, dedupeKey: `proposal-cloud:${submission.submissionId}` });
       return;
     }
@@ -1869,27 +1878,32 @@ export default function MapPage() {
     try {
       const current = useAppStore.getState().observationContext;
       const response = await resolveObservationContext({
-        location: { kind: "MAP_POINT", displayName: submission.candidateProfile?.fields.name ?? location.displayName,
-          wgs84: location.wgs84, source: "MAP_VIEWPORT", timezoneHint: currentTimezoneHint() },
+        location,
         localDate: current?.localDate ?? localDateForNow(),
         selectedAt: current?.selectedAtUtc ?? null,
         eventInstanceId: current?.eventInstanceId ?? null,
         targetProfile: current?.targetProfile ?? "DAILY",
-      });
-      if (operation !== navigationEpoch.current || selectedProposalRef.current?.submissionId !== submission.submissionId) return;
+      }, undefined, owner);
+      if (operation !== navigationEpoch.current || !samePendingProposalIntent(submission, selectedProposalRef.current, owner, currentDraftUserId())) return;
+      const binding = response.data.privateProposal;
+      if (response.dataState !== "FRESH" || response.data.schemaVersion !== "observation-context-v3" || !binding ||
+          binding.ownerId !== owner || binding.submissionId !== location.submissionId || binding.attemptId !== location.attemptId ||
+          binding.attemptBaseRevision !== location.attemptBaseRevision) throw new Error("待审地点身份尚未确认");
       setObservationContext(response.data);
       const params = [
-        ["spotId", submission.submissionId],
-        ["locationName", submission.candidateProfile?.fields.name ?? location.displayName],
+        ["spotId", response.data.location.kind === "FORMAL_SPOT" ? response.data.location.spotId : submission.submissionId],
+        ["locationName", response.data.location.kind === "PENDING_PROPOSAL" ? response.data.location.displayName : ""],
         ["contextId", response.data.contextId],
         ["date", response.data.localDate],
         ["selectedAt", response.data.selectedAtUtc],
         ["timezone", response.data.timezone],
-        ["dataRevision", `proposal:${submission.revision}`],
+        ["dataRevision", response.data.contextFingerprint],
+        ["proposalAttemptId", location.attemptId],
+        ["proposalAttemptBaseRevision", location.attemptBaseRevision],
       ].map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`).join("&");
       await openMapPage(`/sky/detail/index?${params}`, "云观星", "proposal-sky");
     } catch (error) {
-      if (operation !== navigationEpoch.current || selectedProposalRef.current?.submissionId !== submission.submissionId || isMiniappRequestCancelled(error)) return;
+      if (operation !== navigationEpoch.current || !samePendingProposalIntent(submission, selectedProposalRef.current, owner, currentDraftUserId()) || isMiniappRequestCancelled(error)) return;
       notify({ owner: "map", placement: "floating", tone: "warning", title: "观测信息暂不可用", body: `${errorMessage(error)}。提案和当前地图状态已保留。`, dismissible: true, dedupeKey: `proposal-cloud:${submission.submissionId}` });
     }
   };

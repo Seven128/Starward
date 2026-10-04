@@ -192,23 +192,25 @@ export class MiniappController {
   }
 
   @Post("observation-contexts/resolve")
-  resolveContext(@Body() body: ObservationContextResolveRequest) {
-    return this.service.resolveObservationContext(body);
+  async resolveContext(@Body() body: ObservationContextResolveRequest, @Headers("authorization") authorization?: string) {
+    return this.service.resolveObservationContext(body, await this.service.auth.optionalPrincipal(authorization));
   }
 
   @Get("observation-contexts/:contextId")
-  getContext(@Param("contextId") contextId: string) {
-    return this.service.getObservationContext(decodeURIComponent(contextId));
+  async getContext(@Param("contextId") contextId: string, @Headers("authorization") authorization?: string) {
+    return this.service.getObservationContext(decodeURIComponent(contextId), await this.service.auth.optionalPrincipal(authorization));
   }
 
   @Put("observation-contexts/:contextId")
-  updateContext(
+  async updateContext(
     @Param("contextId") contextId: string,
     @Body() body: ObservationContextUpdateRequest,
+    @Headers("authorization") authorization?: string,
   ) {
     return this.service.updateObservationContext(
       decodeURIComponent(contextId),
       body,
+      await this.service.auth.optionalPrincipal(authorization),
     );
   }
 
@@ -300,24 +302,28 @@ export class MiniappController {
   }
 
   @Get("astronomical-events/:occurrenceId")
-  astronomicalEvent(
+  async astronomicalEvent(
     @Param("occurrenceId") occurrenceId: string,
     @Query("contextId") contextId?: string,
+    @Headers("authorization") authorization?: string,
   ) {
     return this.service.getAstronomicalEvent(
       decodeURIComponent(occurrenceId),
       contextId ? decodeURIComponent(contextId) : undefined,
+      await this.service.auth.optionalPrincipal(authorization),
     );
   }
 
   @Get("spots/:spotId/overview")
-  overview(
+  async overview(
     @Param("spotId") spotId: string,
     @Query("contextId") contextId?: string,
+    @Headers("authorization") authorization?: string,
   ) {
     return this.service.getSpotOverview(
       decodeURIComponent(spotId),
       required(contextId, "observation_context_required"),
+      await this.service.auth.optionalPrincipal(authorization),
     );
   }
 
@@ -370,7 +376,7 @@ export class MiniappController {
   }
 
   @Get("spots/:spotId/sky")
-  sky(
+  async sky(
     @Param("spotId") spotId: string,
     @Query("contextId") contextId?: string,
     @Headers("authorization") authorization?: string,
@@ -388,11 +394,11 @@ export class MiniappController {
         selectedCatalog,
       ));
     }
-    return this.service.getSky(locationId, required(contextId, "observation_context_required"), undefined, selectedCatalog);
+    return this.service.getSky(locationId, required(contextId, "observation_context_required"), await this.service.auth.optionalPrincipal(authorization), selectedCatalog);
   }
 
   @Get("spots/:spotId/sky/targets")
-  skyTargets(
+  async skyTargets(
     @Param("spotId") spotId: string,
     @Query("contextId") contextId?: string,
     @Query("at") at?: string,
@@ -404,7 +410,7 @@ export class MiniappController {
         this.service.getSkyTargetInstant(locationId, required(contextId, "observation_context_required"),
           required(at, "observation_time_required"), userId));
     return this.service.getSkyTargetInstant(locationId, required(contextId, "observation_context_required"),
-      required(at, "observation_time_required"));
+      required(at, "observation_time_required"), await this.service.auth.optionalPrincipal(authorization));
   }
 
   @Get("spots/:spotId/sky/objects/:reference")
