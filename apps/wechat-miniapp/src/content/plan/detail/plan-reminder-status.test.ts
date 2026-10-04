@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { canAuthorizePlanReminder, planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
 import type { PlanReminderNotificationStatus } from "@starward/miniapp-contracts";
+import { planReminderRecoveryAction } from './plan-reminder-status';
 
 const status = (state: PlanReminderNotificationStatus["state"], reason: PlanReminderNotificationStatus["reason"]): PlanReminderNotificationStatus => ({
   planId: "p", reminderId: "r", planRevision: 1, scheduleVersion: "v", triggerAtUtc: null,
@@ -45,4 +46,20 @@ test("renders server-owned reminder states without treating intent as authorizat
   assert.match(planReminderStatusDetail({ ...base, state: "CAPABILITY_UNAVAILABLE", reason: "TEMPLATE_NOT_CONFIGURED" }), /清单仍可保存和勾选/u);
   assert.doesNotMatch(planReminderStatusDetail({ ...base, state: "CAPABILITY_UNAVAILABLE", reason: "TEMPLATE_NOT_CONFIGURED" }), /AppID|模板/u, "legacy server status must not imply current platform inventory was checked");
   assert.equal(planReminderStatusLabel({ ...base, state: "RESULT_UNKNOWN", reason: "PROVIDER_OUTCOME_UNKNOWN" }), "结果待确认");
+});
+
+test('recovery distinguishes editable title, account identity and operator-owned spot fields without enabling subscription',()=>{
+  const identity=status('CAPABILITY_UNAVAILABLE','DELIVERY_IDENTITY_REQUIRED');
+  const title=status('CAPABILITY_UNAVAILABLE','REMINDER_TITLE_NOT_SUPPORTED');
+  const spot=status('CAPABILITY_UNAVAILABLE','SPOT_NAME_NOT_SUPPORTED');
+  assert.equal(planReminderRecoveryAction(identity,1,true),'VERIFY_IDENTITY');
+  assert.equal(planReminderRecoveryAction(title,1,true),'EDIT_TITLE');
+  for(const row of [spot,status('CAPABILITY_UNAVAILABLE','DELIVERY_NOT_CONFIGURED'),{...identity,state:'SENT' as const}])
+    assert.equal(planReminderRecoveryAction(row,1,true),null);
+  assert.equal(planReminderRecoveryAction(identity,2,true),null);
+  assert.equal(planReminderRecoveryAction(identity,1,false),null);
+  assert.equal(canAuthorizePlanReminder(identity,1,true),false);
+  assert.match(planReminderStatusDetail(identity),/不代表已订阅或已发送/);
+  assert.match(planReminderStatusDetail(title),/20个字符.*不会自动截短/);
+  assert.doesNotMatch(planReminderStatusDetail(spot),/请编辑/);
 });

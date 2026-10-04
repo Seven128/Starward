@@ -1,4 +1,5 @@
 import type { AccountProfileRecord } from "@starward/miniapp-contracts";
+import { CURRENT_PUBLIC_SPOT_PREDICATE } from './current-public-spot-query.ts';
 import { createHash, randomUUID } from "node:crypto";
 import { assertContributionUploadContent, contributionMediaObjectKey } from "./contribution-media-object.ts";
 import { assertContributionBaselineMatches, assertContributionSubmittable, assertContributionUploadFits } from "./contribution-validation.ts";
@@ -642,11 +643,7 @@ export class PostgresMiniappRepository
          FROM spots s
          JOIN spot_publication_assessments a USING (spot_id)
         WHERE s.spot_id = $1
-          AND s.visibility_policy = 'PUBLIC_EXACT'
-          AND s.status IN ('PUBLISHED', 'TEMPORARILY_CLOSED')
-          AND a.complete = true
-          AND a.spot_revision = s.version
-          AND a.assessed_at >= now() - interval '30 days'`,
+          AND ${CURRENT_PUBLIC_SPOT_PREDICATE}`,
       [spotId],
     );
     return result.rows[0]

@@ -84,6 +84,7 @@
     { "id": "planChecklistCompletionPut", "method": "PUT", "path": "/me/observation-plans/{planId}/checklist-completion", "requestType": "PlanChecklistCompletionRequest", "responseType": "ObservationPlan" },
     { "id": "reminderSubscriptionPreparePost", "method": "POST", "path": "/me/observation-plans/{planId}/reminder-subscription", "requestType": "ReminderSubscriptionPrepareRequest", "responseType": "ReminderSubscriptionPrepareData" },
     { "id": "reminderSubscriptionReportPut", "method": "PUT", "path": "/me/reminder-subscriptions/{challengeId}", "requestType": "ReminderSubscriptionReportRequest", "responseType": "ReminderSubscriptionReportData" },
+    { "id": "reminderDestinationReverifyPost", "method": "POST", "path": "/me/reminder-destination/reverify", "requestType": "void", "responseType": "ReminderDestinationData" },
     { "id": "planDelete", "method": "DELETE", "path": "/me/observation-plans/{planId}", "requestType": "void", "responseType": "PlansData" },
     { "id": "profileLinksGet", "method": "GET", "path": "/me/profile-links", "requestType": "void", "responseType": "ProfileLinksData" },
     { "id": "profileLinkPost", "method": "POST", "path": "/me/profile-links", "requestType": "ProfileLinkSaveRequest", "responseType": "ProfileLink" },

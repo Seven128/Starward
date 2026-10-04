@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { AuthService } from './auth-service.ts';
+import { InMemoryTestRepository } from './test-fixtures/in-memory-repository.ts';
+import { createTestRuntimeConfig } from './runtime-config.ts';
+import { decryptWechatDeliveryIdentity } from './wechat-delivery-identity.ts';
+
+test('destination re-verification refreshes the same account under a new key without creating accounts or replacing its session',async()=>{
+  const repository=new InMemoryTestRepository([]);
+  const base=createTestRuntimeConfig();
+  const config=createTestRuntimeConfig({authMode:'WECHAT',wechat:{...base.wechat,appId:'synthetic-app',appSecret:'synthetic',deliveryIdentityKey:'15'.repeat(32)}});
+  let creates=0,exchanges=0;
+  const create=repository.findOrCreateWechatUser.bind(repository);
+  repository.findOrCreateWechatUser=async digest=>{creates++;return create(digest);};
+  const transport:typeof fetch=async input=>{
+    exchanges++;
+    const code=new URL(String(input)).searchParams.get('js_code');
+    if(code==='rejected')return Response.json({errcode:40029});
+    return Response.json({openid:code?.startsWith('other')?'synthetic-other':'synthetic-same',session_key:'synthetic-session'});
+  };
+  const auth=new AuthService(repository,config,transport);
+  const first=(await auth.login({code:'initial'})).data;
+  const second=(await auth.login({code:'other-initial'})).data;
+  const original=await repository.getWechatDeliveryIdentity(first.userId,config.wechat.appId!);
+  config.wechat.deliveryIdentityKey='37'.repeat(32);
+  await assert.rejects(auth.refreshWechatDeliveryIdentity(first.userId),/reauthentication_required/);
+  assert.equal(exchanges,2);
+  await assert.rejects(auth.refreshWechatDeliveryIdentity(first.userId,'other-fresh'),/identity_mismatch/);
+  await assert.rejects(auth.refreshWechatDeliveryIdentity(first.userId,'rejected'),/wechat_auth_rejected/);
+  assert.equal(await repository.getWechatDeliveryIdentity(first.userId,config.wechat.appId!),original);
+  await auth.refreshWechatDeliveryIdentity(first.userId,'same-fresh');
+  const ciphertext=await repository.getWechatDeliveryIdentity(first.userId,config.wechat.appId!);
+  assert.ok(ciphertext);
+  assert.equal(decryptWechatDeliveryIdentity(ciphertext,first.userId,config.wechat.appId!,config.wechat.deliveryIdentityKey!),'synthetic-same');
+  assert.equal(creates,2,'refresh cannot create accounts even for a rejected different identity');
+  assert.equal(await auth.requirePrincipal(`Bearer ${first.accessToken}`),first.userId);
+  assert.equal(await auth.requirePrincipal(`Bearer ${second.accessToken}`),second.userId);
+  await repository.deleteAccount(first.userId,'synthetic-delete');
+  await assert.rejects(auth.refreshWechatDeliveryIdentity(first.userId,'same-after-erasure'),/identity_mismatch|account_unavailable/);
+});

@@ -7,6 +7,7 @@ import { PostgresReminderAttemptStore } from "./postgres-reminder-attempt-store.
 import { decryptWechatDeliveryIdentity } from "./wechat-delivery-identity.ts";
 import { WechatAccessTokenProvider } from "./wechat-access-token.ts";
 import { WechatSubscriptionSender } from "./wechat-subscription-sender.ts";
+import { CURRENT_PLAN_SPOT_NAME_SQL } from './current-public-spot-query.ts';
 
 const BATCH_SIZE = 20;
 interface Candidate {
@@ -45,9 +46,9 @@ export class PlanReminderDispatcher {
       // Rotating keyset pagination keeps an invalid first page from starving
       // later valid reminders, and leaves invalid content editable/recoverable.
       const candidates = await this.pool.query<Candidate>(`SELECT s.user_id,s.schedule_version,s.reminder_id,s.trigger_at,
-        p.payload,sp.name,i.delivery_identity_ciphertext
+        p.payload,${CURRENT_PLAN_SPOT_NAME_SQL} AS name,i.delivery_identity_ciphertext
         FROM plan_reminder_schedules s JOIN observation_plans p ON p.plan_id=s.plan_id AND p.user_id=s.user_id
-        JOIN users u ON u.user_id=s.user_id JOIN spots sp ON sp.spot_id=p.spot_id
+        JOIN users u ON u.user_id=s.user_id
         JOIN wechat_identities i ON i.user_id=s.user_id AND i.delivery_app_id=$2
         WHERE s.active AND s.state='SCHEDULED' AND s.attempt_count=0 AND s.trigger_at<=$1 AND s.departure_at>$1
           AND u.state='ACTIVE' AND p.revision=s.plan_revision AND i.delivery_identity_ciphertext IS NOT NULL
@@ -70,9 +71,9 @@ export class PlanReminderDispatcher {
         // Reload actual content after the awaited token. Queue/candidate payloads
         // are navigation hints, never the authoritative send snapshot.
         const fresh = await this.pool.query<Candidate>(`SELECT s.user_id,s.schedule_version,s.reminder_id,s.trigger_at,
-          p.payload,sp.name,i.delivery_identity_ciphertext FROM plan_reminder_schedules s
+          p.payload,${CURRENT_PLAN_SPOT_NAME_SQL} AS name,i.delivery_identity_ciphertext FROM plan_reminder_schedules s
           JOIN observation_plans p ON p.plan_id=s.plan_id AND p.user_id=s.user_id
-          JOIN spots sp ON sp.spot_id=p.spot_id JOIN users u ON u.user_id=s.user_id
+          JOIN users u ON u.user_id=s.user_id
           JOIN wechat_identities i ON i.user_id=s.user_id AND i.delivery_app_id=$3
           WHERE s.user_id=$1 AND s.schedule_version=$2 AND s.active AND s.state='SCHEDULED'
             AND u.state='ACTIVE' AND p.revision=s.plan_revision`, [candidate.user_id,candidate.schedule_version,delivery.appId]);
@@ -86,7 +87,8 @@ export class PlanReminderDispatcher {
         } catch { counts.invalidContent++; advance(); continue; }
         if (!data) { counts.invalidContent++; advance(); continue; }
         const qualification = { planRevision: row.payload.revision, identityCiphertext: row.delivery_identity_ciphertext,
-          maxLatenessMs: delivery.maxLatenessMs };
+          maxLatenessMs: delivery.maxLatenessMs,
+          ...(Object.values(delivery.fields).includes('SPOT_NAME') ? {spotName:row.name} : {}) };
         const attempt = await this.attempts.reserve(row.user_id,row.schedule_version,delivery,qualification);
         if (!attempt) { counts.invalidated++; advance(); continue; }
         counts.reserved++;

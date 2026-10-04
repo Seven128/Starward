@@ -45,8 +45,9 @@ import { clearPlanDraft, clearUnchangedPlanDraft, createDraftOwner, parsePlanDra
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
 import { PlanDepartureTimeFields, PlanObservationEndField, emptyPlanTiming } from "./plan-timing-fields";
 import { PlanTravelFields, emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel, planTravelNeedsExplicitOrigin } from "./plan-travel-fields";
-import { canAuthorizePlanReminder, planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
+import { canAuthorizePlanReminder, planReminderRecoveryAction, planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
 import { PlanReminderSubscription } from "./plan-reminder-subscription";
+import { PlanReminderDestination } from './plan-reminder-destination';
 import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 import { acknowledgePlanSave, planContextIdentity, PlanSaveRecoveryError, PlanSaveReviewRequired, resolvePlanCreationId, selectPlanSaveRecovery, type PlanSaveReceipt } from "@/services/plan-save-retry";
@@ -1489,6 +1490,17 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             onClick={event => event.stopPropagation()}>
             <Text className="plan-reminder-status-dialog__title">{planReminderStatusLabel(selectedReminderNotification)}</Text>
             <Text className="plan-reminder-status-dialog__detail">{planReminderStatusDetail(selectedReminderNotification, activePlan?.contextSnapshot.timezone)}</Text>
+            {pageVisible && planOwner && activePlan &&
+              !planQuery.isPending && !planQuery.isError && !planQuery.refreshError && planQuery.data?.dataState==='FRESH' ? <>
+              {planReminderRecoveryAction(selectedReminderNotification,activePlan.revision,statusReminder.notifyOnWechat)==='VERIFY_IDENTITY'
+                ? <PlanReminderDestination key={`${planOwner}:${activePlan.planId}:${activePlan.revision}:${statusReminder.reminderId}`} owner={planOwner} /> : null}
+              {planReminderRecoveryAction(selectedReminderNotification,activePlan.revision,statusReminder.notifyOnWechat)==='EDIT_TITLE'
+                ? <Button className="plan-reminder-status-dialog__close" onClick={()=>{
+                  setStatusReminderId(null);
+                  void Taro.navigateTo({url:`/content/plan/edit/index?planId=${encodeURIComponent(activePlan.planId)}`})
+                    .catch(()=>announce('warning','编辑页暂未打开','请重试，已保存计划保持不变。'));
+                }}>编辑提醒标题</Button> : null}
+            </> : null}
             {pageVisible && planOwner && activePlan &&
               !planQuery.isPending && !planQuery.isError && !planQuery.refreshError && planQuery.data?.dataState === "FRESH" &&
               canAuthorizePlanReminder(selectedReminderNotification, activePlan.revision, statusReminder.notifyOnWechat) && selectedReminderNotification ?

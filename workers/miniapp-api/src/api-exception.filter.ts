@@ -4,6 +4,8 @@ import { requestIdFromHeaders } from "./request-id.ts";
 import { SpotPublicationBlockedError } from "./spot-completeness-policy.ts";
 
 export function classifyExceptionMessage(message: string) {
+  if(message==='auth_reauthentication_identity_mismatch')
+    return {status:403,code:'PERMISSION_DENIED',retryable:false,message:'WECHAT_IDENTITY_MISMATCH',recovery:['RETURN_TO_ORIGINAL_WECHAT_ACCOUNT']} as const;
   if (message === "observation_timezone_resolution_unavailable")
     return { status: 400, code: "INVALID_INPUT", retryable: false, message: "OBSERVATION_LOCATION_OUTSIDE_SUPPORTED_REGION", recovery: ["CHOOSE_SUPPORTED_LOCATION"] } as const;
   if (message === "observation_timezone_resolution_ambiguous")

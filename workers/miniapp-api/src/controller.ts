@@ -940,6 +940,14 @@ export class MiniappController {
     return this.service.reportReminderSubscription(await this.service.auth.requirePrincipal(authorization), decodeURIComponent(challengeId), body);
   }
 
+  @Post("me/reminder-destination/reverify")
+  async reverifyReminderDestination(
+    @Headers("authorization") authorization?: string,
+    @Headers("x-wechat-reauth-code") code?: string,
+  ) {
+    return this.service.reverifyReminderDestination(await this.service.auth.requirePrincipal(authorization),code);
+  }
+
   @Delete("me/observation-plans/:planId")
   async deletePlan(
     @Param("planId") planId: string,

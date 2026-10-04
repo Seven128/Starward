@@ -40,7 +40,10 @@ export function createPlanSubscriptionFlow(deps: {
       if (!current()) return;
       if (data.state === "UNAVAILABLE") {
         publish({ phase: "unavailable", detail: data.reason === "NOT_CONFIGURED"
-          ? "微信通知当前不可开通，清单仍可使用。" : "本组提醒当前不能授权，请核对出发时间与通知意向。" });
+          ? "微信通知当前不可开通，清单仍可使用。" : data.reason === 'IDENTITY_REQUIRED'
+          ? '请重新打开通知说明，验证当前微信身份后再授权。' : data.reason === 'CONTENT_NOT_SUPPORTED'
+          ? '提醒内容暂不符合通知要求，请重新打开说明查看修改提示。'
+          : "本组提醒当前不能授权，请核对出发时间与通知意向。" });
         return;
       }
       if (data.scheduleVersion !== deps.scheduleVersion || typeof data.challengeId !== "string" || !data.challengeId ||

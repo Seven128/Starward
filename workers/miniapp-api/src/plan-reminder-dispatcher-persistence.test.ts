@@ -11,6 +11,9 @@ import { encryptWechatDeliveryIdentity } from './wechat-delivery-identity.ts';
 import { insertExplicitTestSpot } from './test-fixtures/infrastructure-spot.ts';
 import { OutboxWorkerRuntime } from './outbox-worker.ts';
 import { Queue } from 'bullmq';
+import { MiniappService } from './miniapp-service.ts';
+import { createWeatherPort } from './weather-provider.ts';
+import { DisabledRouteAdapter } from './route-provider.ts';
 
 const databaseUrl=process.env.PLAN_REMINDER_TEST_DATABASE_URL;
 test('production reminder dispatcher uses durable PostgreSQL authorization, current content and bounded recovery', {skip:!databaseUrl},async t=> {
@@ -51,6 +54,48 @@ test('production reminder dispatcher uses durable PostgreSQL authorization, curr
     repository.savePlan(row.userId,{...row.plan,...change},row.plan.revision,randomUUID());
   try {
     await flag(true);
+    await t.test('spot fields use the same current published payload and eligibility in API, preparation and final dispatch',async()=>{
+      const mapped={...config,wechat:{...config.wechat,reminderDelivery:{...config.wechat.reminderDelivery!,fields:{
+        thing1:'REMINDER_TITLE' as const,time2:'DEPARTURE_LOCAL_TIME' as const,thing3:'SPOT_NAME' as const}}}};
+      const service=new MiniappService({repository,config:mapped,weather:createWeatherPort(mapped),route:new DisabledRouteAdapter()});
+      const row=await makePlan();
+      const currentName=(await repository.getSpot(spot.spotId))!.name;
+      let tokens=0,sends=0;
+      const transport:typeof fetch=async(url,init)=>{
+        if(String(url).endsWith('/stable_token')) {tokens++;return Response.json({access_token:'synthetic-token',expires_in:7200});}
+        sends++;assert.equal(JSON.parse(String(init?.body)).data.thing3.value,currentName);return Response.json({errcode:0});
+      };
+      await repository.pool.query("UPDATE spots SET name='synthetic-denormalized-name' WHERE spot_id=$1",[spot.spotId]);
+      try {
+        await repository.pool.query("UPDATE spot_publication_assessments SET assessed_at=now()-interval '31 days' WHERE spot_id=$1",[spot.spotId]);
+        assert.equal(await repository.getSpot(spot.spotId),null);
+        assert.equal((await service.getPlans(row.userId)).data.reminderNotifications[0]!.reason,'SPOT_NAME_NOT_SUPPORTED');
+        assert.deepEqual((await service.prepareReminderSubscription(row.userId,row.plan.planId,{reminderId:'equipment'})).data,
+          {state:'UNAVAILABLE',reason:'CONTENT_NOT_SUPPORTED'});
+        assert.equal(await subscriptions.prepare(row.userId,row.plan.planId,'equipment',{...binding,templateId:'synthetic-new-template'},
+          {planRevision:row.plan.revision,fields:mapped.wechat.reminderDelivery.fields}),null);
+        const dispatcher=new PlanReminderDispatcher(repository.pool,mapped,transport,clock);
+        assert.equal((await dispatcher.run()).resultPayload.invalidContent,1);
+        assert.equal(tokens,0);assert.equal(sends,0);assert.equal(await attemptCount(),0);
+        await repository.pool.query('UPDATE spot_publication_assessments SET assessed_at=now() WHERE spot_id=$1',[spot.spotId]);
+        assert.equal((await service.getPlans(row.userId)).data.reminderNotifications[0]!.state,'SCHEDULED');
+        await dispatcher.run();assert.equal(sends,1,'restored qualified facts recover without another grant');
+        await cleanup();
+        await makePlan();
+        const original=PostgresReminderAttemptStore.prototype.eligibleBeforeSend;
+        t.mock.method(PostgresReminderAttemptStore.prototype,'eligibleBeforeSend',async function(this:PostgresReminderAttemptStore,...args:Parameters<typeof original>){
+          await repository.pool.query("UPDATE spot_publication_assessments SET assessed_at=now()-interval '31 days' WHERE spot_id=$1",[spot.spotId]);
+          return original.apply(this,args);
+        });
+        try {assert.equal((await new PlanReminderDispatcher(repository.pool,mapped,transport,clock).run()).resultPayload.invalidated,1);}
+        finally {t.mock.restoreAll();}
+        assert.equal(sends,1,'spot data losing qualification after mapping cannot reach the provider');
+      } finally {
+        await repository.pool.query('UPDATE spot_publication_assessments SET assessed_at=now() WHERE spot_id=$1',[spot.spotId]);
+        await repository.pool.query('UPDATE spots SET name=$2 WHERE spot_id=$1',[spot.spotId,currentName]);
+        await cleanup();
+      }
+    });
     await t.test('missing configuration or existing flag performs zero token/reservation/send',async()=> {
       for(const disabled of [{...config,wechat:{...config.wechat,subscriptionTemplateId:null}},
         {...config,wechat:{...config.wechat,reminderDelivery:{...config.wechat.reminderDelivery!,fields:null}}},config]) {

@@ -1,5 +1,9 @@
 import { randomUUID } from "node:crypto";
 import type pg from "pg";
+import type { ObservationPlan } from '@starward/miniapp-contracts';
+import type { ReminderFieldSource } from './plan-reminder-delivery-config.ts';
+import { inspectReminderDeliveryFields } from './plan-reminder-delivery-payload.ts';
+import { CURRENT_PLAN_SPOT_NAME_SQL } from './current-public-spot-query.ts';
 import { snapshotReminderSubscriptionBinding, validateReminderSubscriptionChallengeId, type ReminderSubscriptionBinding } from "./reminder-subscription-binding.ts";
 
 export interface ReminderSubscriptionChallenge {
@@ -20,21 +24,27 @@ export class PostgresReminderSubscriptionStore {
     return new Set(result.rows.map(row=>row.schedule_version));
   }
 
-  async prepare(userId: string, planId: string, reminderId: string, binding: ReminderSubscriptionBinding): Promise<ReminderSubscriptionChallenge | null> {
+  async prepare(userId: string, planId: string, reminderId: string, binding: ReminderSubscriptionBinding,
+    content?: {planRevision:number;fields:Readonly<Record<string,ReminderFieldSource>>}): Promise<ReminderSubscriptionChallenge | null> {
     binding = snapshotReminderSubscriptionBinding(binding);
+    content = content ? {planRevision:content.planRevision,fields:Object.freeze({...content.fields})} : undefined;
     return this.transaction(async client => {
       if (!await this.lockActiveUser(client, userId)) return null;
-      const selected = await client.query<{ schedule_version: string }>(`SELECT s.schedule_version
+      const selected = await client.query<{ schedule_version: string;payload:ObservationPlan;name:string }>(`SELECT s.schedule_version,p.payload,${CURRENT_PLAN_SPOT_NAME_SQL} AS name
         FROM plan_reminder_schedules s JOIN observation_plans p ON p.plan_id=s.plan_id AND p.user_id=s.user_id
         WHERE s.user_id=$1 AND s.plan_id=$2 AND s.reminder_id=$3 AND s.active
           AND s.state IN ('WAITING_AUTHORIZATION','SCHEDULED') AND s.attempt_count=0 AND s.trigger_at>clock_timestamp()
-          AND p.revision=s.plan_revision
+          AND p.revision=s.plan_revision AND ($6::int IS NULL OR p.revision=$6)
           AND EXISTS(SELECT 1 FROM wechat_identities i WHERE i.user_id=s.user_id
             AND i.delivery_app_id=$4 AND i.delivery_identity_ciphertext IS NOT NULL)
           AND NOT EXISTS(SELECT 1 FROM plan_reminder_subscription_challenges c WHERE c.user_id=s.user_id
             AND c.schedule_version=s.schedule_version AND c.app_id=$4 AND c.template_id=$5
             AND c.state='CLIENT_ACCEPTED' AND c.consumed_at IS NULL)
-        FOR UPDATE OF s`, [userId, planId, reminderId, binding.appId, binding.templateId]);
+        FOR UPDATE OF s`, [userId, planId, reminderId, binding.appId, binding.templateId,content?.planRevision ?? null]);
+      if(content && selected.rows[0]) {
+        const fields=inspectReminderDeliveryFields(selected.rows[0].payload,reminderId,selected.rows[0].name,content.fields);
+        if(!fields || !('data' in fields))return null;
+      }
       const version = selected.rows[0]?.schedule_version;
       if (!version) return null;
       await client.query(`UPDATE plan_reminder_subscription_challenges SET state='EXPIRED',resolved_at=clock_timestamp()

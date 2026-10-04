@@ -10,6 +10,7 @@ import { matchingCelestialPositionResponse, type CelestialPositionBinding } from
 import { matchingSkyTargetInstantResponse, type SkyTargetInstantBinding } from "./sky-target-instant-response";
 import { createPlanChecklistClient } from "./plan-checklist-client";
 import { createPlanSubscriptionClient } from "./plan-subscription-client";
+import { createPlanDestinationClient } from "./plan-destination-client";
 import { createAuthenticatedOperationRequester } from "./authenticated-operation";
 import Taro from "@tarojs/taro";
 import { planSaveBelongsTo } from "./local-draft-keys";
@@ -1200,12 +1201,19 @@ export function getSharedSpot(spotId: string, signal?: AbortSignal) {
   }, false);
 }
 
+async function refreshAccountPlans(owner:string) {
+  invalidateApiCache('plans');
+  await miniappQueryClient.invalidateQueries({queryKey:['plans',owner],exact:true});
+}
+
+export const reverifyPlanReminderDestination = createPlanDestinationClient({
+  request:requestOperation,currentUser:currentDraftUserId,
+  login:()=>Taro.login(),confirmed:refreshAccountPlans,
+});
+
 export const planReminderSubscription = createPlanSubscriptionClient({
   request: requestOperation, currentUser: currentDraftUserId,
-  confirmed: async owner => {
-    invalidateApiCache("plans");
-    await miniappQueryClient.invalidateQueries({ queryKey: ["plans", owner], exact: true });
-  },
+  confirmed: refreshAccountPlans,
 });
 
 export const setPlanChecklistCompletion = createPlanChecklistClient({

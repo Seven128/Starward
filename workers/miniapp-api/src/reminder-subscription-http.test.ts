@@ -24,15 +24,23 @@ test("reminder subscription HTTP uses session identity and shared delivery readi
   const config = createTestRuntimeConfig({ storageMode:"POSTGRES",authMode:"WECHAT", wechat:{ ...base.wechat, appId:"synthetic-app", appSecret:"synthetic",
     deliveryIdentityKey:randomBytes(32).toString("hex"), subscriptionTemplateId:"synthetic-template",
     reminderDelivery:{enabled:true,fields:{thing1:'REMINDER_TITLE',time2:'DEPARTURE_LOCAL_TIME'},maxLatenessMs:300000,miniprogramState:'developer'} } });
-  const service = new MiniappService({ repository, config, weather:createWeatherPort(config), route:new DisabledRouteAdapter() });
+  let authExchanges=0;
+  const authTransport:typeof fetch=async input=>{
+    authExchanges++;
+    const code=new URL(String(input)).searchParams.get('js_code');
+    if(code==='rejected')return Response.json({errcode:40029});
+    return Response.json({openid:code==='other-fresh'?'synthetic-other':'synthetic-recipient',session_key:'synthetic-session'});
+  };
+  const service = new MiniappService({ repository, config, authTransport, weather:createWeatherPort(config), route:new DisabledRouteAdapter() });
   class TestModule {}
   Module({ controllers:[MiniappController],providers:[{provide:MiniappService,useValue:service}] })(TestModule);
   const app = await NestFactory.create(TestModule,new FastifyAdapter(),{logger:false});
   app.useGlobalFilters(new ApiExceptionFilter());
   try {
     const spot = await insertExplicitTestSpot(repository);
-    const userId = await repository.findOrCreateWechatUser(`http:${randomUUID()}`);
-    const otherId = await repository.findOrCreateWechatUser(`http-other:${randomUUID()}`);
+    const digest=(openid:string)=>createHmac('sha256',config.wechat.sessionSecret).update(`wechat-openid:${openid}`).digest('hex');
+    const userId = await repository.findOrCreateWechatUser(digest('synthetic-recipient'));
+    const otherId = await repository.findOrCreateWechatUser(digest('synthetic-other'));
     const identity = (await repository.pool.query("SELECT identity_digest FROM wechat_identities WHERE user_id=$1",[userId])).rows[0].identity_digest;
     await repository.saveWechatDeliveryIdentity({userId,identityDigest:identity,appId:config.wechat.appId!,
       ciphertext:encryptWechatDeliveryIdentity("synthetic-recipient",userId,config.wechat.appId!,config.wechat.deliveryIdentityKey!)});
@@ -41,14 +49,14 @@ test("reminder subscription HTTP uses session identity and shared delivery readi
       await repository.createSession({userId:id,tokenDigest:createHmac("sha256",config.wechat.sessionSecret).update(`session:${value}`).digest("hex"),expiresAt:new Date(Date.now()+3600_000).toISOString()});
     const departure = new Date(Date.now()+86400_000);
     const date = departure.toISOString().slice(0,10), time=departure.toISOString().slice(11,16);
-    const plan = await repository.savePlan(userId,{planId:`plan:${randomUUID()}`,spotId:spot.spotId,localDate:date,localTime:time,notes:"",
+    let plan = await repository.savePlan(userId,{planId:`plan:${randomUUID()}`,spotId:spot.spotId,localDate:date,localTime:time,notes:"",
       timing:{departureLocalDate:date,departureLocalTime:time,endLocalDate:date,endLocalTime:"23:59"},
       contextSnapshot:{timezone:"UTC",spotId:spot.spotId,localDate:date},revision:0,updatedAt:new Date().toISOString(),
       reminders:[{reminderId:"equipment",title:"设备",hoursBeforeDeparture:1,notifyOnWechat:true,items:[]}] } as unknown as ObservationPlan,null,randomUUID());
     await app.listen(0,"127.0.0.1");
     const url = await app.getUrl();
     const preparePath=`/v2/me/observation-plans/${encodeURIComponent(plan.planId)}/reminder-subscription`;
-    const invoke = (path:string, method:string, body:unknown, bearer?:string) => fetch(url+path,{method,headers:{"content-type":"application/json",...(bearer?{authorization:`Bearer ${bearer}`}:{})},body:JSON.stringify(body)});
+    const invoke = (path:string, method:string, body:unknown, bearer?:string,code?:string) => fetch(url+path,{method,headers:{"content-type":"application/json",...(bearer?{authorization:`Bearer ${bearer}`}:{ }),...(code?{'X-Wechat-Reauth-Code':code}:{})},body:JSON.stringify(body)});
     assert.equal((await invoke(preparePath,"POST",{reminderId:"equipment"})).status,403);
     assert.equal((await invoke(preparePath,"POST",null,token)).status,400);
     await repository.pool.query("INSERT INTO feature_flags(flag_key,payload) VALUES('NOTIFICATION_ENABLED','{\"value\":false}') ON CONFLICT(flag_key) DO UPDATE SET payload=EXCLUDED.payload");
@@ -56,8 +64,23 @@ test("reminder subscription HTTP uses session identity and shared delivery readi
     assert.equal((await service.getPlans(userId)).data.reminderNotifications![0]!.state,'CAPABILITY_UNAVAILABLE');
     await repository.pool.query("UPDATE feature_flags SET payload='{\"value\":true}' WHERE flag_key='NOTIFICATION_ENABLED'");
     assert.equal((await service.getPlans(userId)).data.reminderNotifications![0]!.state,'AUTHORIZATION_REQUIRED');
+    const originalGetSpot=repository.getSpot.bind(repository);
+    const beforeRace=plan;
+    let changed=false;
+    repository.getSpot=async id=>{
+      const result=await originalGetSpot(id);
+      if(!changed) {changed=true;plan=await repository.savePlan(userId,{...plan,
+        reminders:[{...plan.reminders![0]!,title:'长'.repeat(21)}]},plan.revision,randomUUID());}
+      return result;
+    };
+    try {
+      assert.deepEqual((await service.prepareReminderSubscription(userId,plan.planId,{reminderId:'equipment'})).data,
+        {state:'UNAVAILABLE',reason:'REMINDER_NOT_ELIGIBLE'},'title change between inspection and locked preparation cannot create a native grant challenge');
+      assert.equal((await repository.pool.query('SELECT count(*)::int AS count FROM plan_reminder_subscription_challenges WHERE user_id=$1',[userId])).rows[0].count,0);
+    } finally {repository.getSpot=originalGetSpot;}
+    plan=await repository.savePlan(userId,{...plan,reminders:beforeRace.reminders!},plan.revision,randomUUID());
     const foreign = await (await invoke(preparePath,"POST",{reminderId:"equipment"},otherToken)).json();
-    assert.deepEqual(foreign.data,{state:"UNAVAILABLE",reason:"NOT_CONFIGURED"},'the other account has no notification destination');
+    assert.deepEqual(foreign.data,{state:"UNAVAILABLE",reason:"IDENTITY_REQUIRED"},'the other account has no notification destination');
     const prepared = await (await invoke(preparePath,"POST",{reminderId:"equipment",userId:otherId},token)).json();
     assert.equal(prepared.data.state,"READY");
     assert.equal(prepared.data.templateId,"synthetic-template");
@@ -87,7 +110,34 @@ test("reminder subscription HTTP uses session identity and shared delivery readi
     assert.equal((await rotated.getPlans(userId)).data.reminderNotifications![0]!.state,'SCHEDULED');
     const wrongKey=new MiniappService({repository,config:{...config,wechat:{...config.wechat,deliveryIdentityKey:randomBytes(32).toString('hex')}},weather:createWeatherPort(config),route:new DisabledRouteAdapter()});
     assert.equal((await wrongKey.getPlans(userId)).data.reminderNotifications![0]!.state,'CAPABILITY_UNAVAILABLE','unusable encrypted destination cannot offer native authorization');
-    assert.deepEqual((await wrongKey.prepareReminderSubscription(userId,plan.planId,{reminderId:'equipment'})).data,{state:'UNAVAILABLE',reason:'NOT_CONFIGURED'});
+    assert.equal((await wrongKey.getPlans(userId)).data.reminderNotifications![0]!.reason,'DELIVERY_IDENTITY_REQUIRED');
+    assert.deepEqual((await wrongKey.prepareReminderSubscription(userId,plan.planId,{reminderId:'equipment'})).data,{state:'UNAVAILABLE',reason:'IDENTITY_REQUIRED'});
+    const invalid=await repository.savePlan(userId,{...plan,reminders:[{...plan.reminders![0]!,title:'长'.repeat(21)}]},plan.revision,randomUUID());
+    assert.equal((await service.getPlans(userId)).data.reminderNotifications[0]!.reason,'REMINDER_TITLE_NOT_SUPPORTED');
+    assert.deepEqual((await service.prepareReminderSubscription(userId,plan.planId,{reminderId:'equipment'})).data,{state:'UNAVAILABLE',reason:'CONTENT_NOT_SUPPORTED'});
+    plan=await repository.savePlan(userId,{...invalid,reminders:plan.reminders!},invalid.revision,randomUUID());
+    assert.equal((await service.getPlans(userId)).data.reminderNotifications[0]!.state,'SCHEDULED','editing the title restores existing matching local acceptance, without another grant');
+    await repository.pool.query('UPDATE wechat_identities SET delivery_app_id=NULL,delivery_identity_ciphertext=NULL,delivery_identity_updated_at=NULL WHERE user_id=$1',[userId]);
+    const refreshPath='/v2/me/reminder-destination/reverify';
+    assert.equal((await service.getPlans(userId)).data.reminderNotifications[0]!.reason,'DELIVERY_IDENTITY_REQUIRED');
+    assert.equal((await invoke(refreshPath,'POST',{},undefined,'fresh')).status,403);
+    assert.equal((await invoke(refreshPath,'POST',{},token)).status,403);
+    assert.equal(authExchanges,0,'missing session or code cannot exchange a native code');
+    assert.equal((await invoke(refreshPath,'POST',{},token,'other-fresh')).status,403);
+    assert.equal(await repository.getWechatDeliveryIdentity(userId,config.wechat.appId!),null,'different identity cannot write a destination');
+    assert.equal((await invoke(refreshPath,'POST',{},token,'rejected')).status,403);
+    const sessionsBefore=(await repository.pool.query('SELECT count(*)::int AS count FROM user_sessions')).rows[0].count;
+    const refreshed=await (await invoke(refreshPath,'POST',{},token,'fresh')).json();
+    assert.deepEqual(refreshed.data,{state:'READY'});
+    assert.ok(!JSON.stringify(refreshed).includes('synthetic-recipient'));
+    assert.equal(await service.auth.requirePrincipal(`Bearer ${token}`),userId,'refresh retains the same session');
+    assert.equal((await repository.pool.query('SELECT count(*)::int AS count FROM user_sessions')).rows[0].count,sessionsBefore);
+    assert.equal((await service.getPlans(userId)).data.reminderNotifications[0]!.state,'SCHEDULED');
+    await repository.pool.query("UPDATE feature_flags SET payload='{\"value\":false}' WHERE flag_key='NOTIFICATION_ENABLED'");
+    const exchangesBefore=authExchanges;
+    assert.deepEqual((await (await invoke(refreshPath,'POST',{},token,'unused-code')).json()).data,{state:'UNAVAILABLE'});
+    assert.equal(authExchanges,exchangesBefore,'disabled capability cannot initiate an exchange');
+    await repository.pool.query("UPDATE feature_flags SET payload='{\"value\":true}' WHERE flag_key='NOTIFICATION_ENABLED'");
     const noTemplate = new MiniappService({repository,config:createTestRuntimeConfig({ ...config,wechat:{...config.wechat,subscriptionTemplateId:null} }),weather:createWeatherPort(config),route:new DisabledRouteAdapter()});
     assert.deepEqual((await noTemplate.prepareReminderSubscription(userId,plan.planId,{reminderId:"equipment"})).data,{state:"UNAVAILABLE",reason:"NOT_CONFIGURED"});
     assert.equal((await noTemplate.reportReminderSubscription(userId,prepared.data.challengeId,{choice:"accept"})).data.recorded,false);

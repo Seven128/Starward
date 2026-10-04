@@ -86,8 +86,8 @@ export class AuthService {
   }
 
   async #wechatUser(code: string, createIfMissing: true): Promise<UserId>;
-  async #wechatUser(code: string, createIfMissing: false): Promise<UserId | null>;
-  async #wechatUser(code: string, createIfMissing: boolean): Promise<UserId | null> {
+  async #wechatUser(code: string, createIfMissing: false, refreshFor?: UserId): Promise<UserId | null>;
+  async #wechatUser(code: string, createIfMissing: boolean, refreshFor?: UserId): Promise<UserId | null> {
     const { appId, appSecret } = this.config.wechat;
     if (!appId || !appSecret) throw new Error("wechat_auth_not_configured");
     const url = new URL("https://api.weixin.qq.com/sns/jscode2session");
@@ -112,7 +112,9 @@ export class AuthService {
       const userId = createIfMissing
         ? await this.repository.findOrCreateWechatUser(identityDigest)
         : await this.repository.findWechatUser(identityDigest);
-      if (userId && createIfMissing && this.config.wechat.deliveryIdentityKey) {
+      // A refresh cannot create/switch accounts or store the other identity.
+      if (refreshFor && userId !== refreshFor) throw new Error('auth_reauthentication_identity_mismatch');
+      if (userId && (createIfMissing || refreshFor) && this.config.wechat.deliveryIdentityKey) {
         await this.repository.saveWechatDeliveryIdentity({
           userId, identityDigest, appId,
           ciphertext: encryptWechatDeliveryIdentity(data.openid, userId, appId, this.config.wechat.deliveryIdentityKey),
@@ -122,6 +124,13 @@ export class AuthService {
     } finally {
       clearTimeout(timeout);
     }
+  }
+
+  async refreshWechatDeliveryIdentity(userId: UserId, code?: string): Promise<void> {
+    if (typeof code !== 'string' || !code || code.length > 512) throw new Error('auth_reauthentication_required');
+    if (this.config.authMode !== 'WECHAT' || !this.config.wechat.deliveryIdentityKey)
+      throw new Error('wechat_delivery_capability_unavailable');
+    await this.#wechatUser(code,false,userId);
   }
 
   async #localTestUser(code: string): Promise<UserId> {
