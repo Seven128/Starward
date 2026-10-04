@@ -1,6 +1,6 @@
 /** Transport only. Authorization, atomic schedule claiming and approved content
  * mapping belong to the reminder owner, before calling this adapter.
- * No production worker enables this adapter until those boundaries are wired. */
+ * The production dispatcher supplies its final account/schedule gate. */
 export interface WechatSubscriptionSenderConfig {
   enabled: boolean;
   templateId: string;
@@ -9,7 +9,7 @@ export interface WechatSubscriptionSenderConfig {
 }
 
 export type WechatSubscriptionSendResult =
-  | { state: "NOT_ATTEMPTED"; reason: "DISABLED" | "INVALID_PAYLOAD" | "TOKEN_UNAVAILABLE" }
+  | { state: "NOT_ATTEMPTED"; reason: "DISABLED" | "INVALID_PAYLOAD" | "TOKEN_UNAVAILABLE" | "NO_LONGER_ELIGIBLE" }
   | { state: "ACCEPTED" }
   | { state: "REJECTED"; errorCode: number }
   | { state: "UNKNOWN" };
@@ -32,7 +32,7 @@ export class WechatSubscriptionSender {
     if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new Error("wechat_subscription_timeout_invalid");
   }
 
-  async send(input: WechatSubscriptionPayload): Promise<WechatSubscriptionSendResult> {
+  async send(input: WechatSubscriptionPayload, beforeSubmit?: (signal: AbortSignal) => Promise<boolean>): Promise<WechatSubscriptionSendResult> {
     if (this.config.enabled !== true) return { state: "NOT_ATTEMPTED", reason: "DISABLED" };
     if (!input || typeof input !== "object") return { state: "NOT_ATTEMPTED", reason: "INVALID_PAYLOAD" };
     const { templateId, fieldNames, miniprogramState } = this.config;
@@ -63,6 +63,9 @@ export class WechatSubscriptionSender {
         (async (): Promise<WechatSubscriptionSendResult> => {
           const token = await this.getAccessToken(controller.signal);
           if (controller.signal.aborted || typeof token !== "string" || !/^[A-Za-z0-9_-]{1,2048}$/u.test(token)) return uncertain();
+          if (beforeSubmit && !await beforeSubmit(controller.signal))
+            return { state: "NOT_ATTEMPTED", reason: "NO_LONGER_ELIGIBLE" };
+          if (controller.signal.aborted) return uncertain();
           const url = new URL("https://api.weixin.qq.com/cgi-bin/message/subscribe/send");
           url.searchParams.set("access_token", token);
           attempted = true;

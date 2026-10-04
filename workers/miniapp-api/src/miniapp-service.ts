@@ -114,6 +114,8 @@ import {
 } from "./media-object-store.ts";
 import { decodeContributionBase64 } from "./contribution-validation.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
+import { configuredReminderDelivery, reminderDeliveryEnabled } from "./plan-reminder-delivery-config.ts";
+import { decryptWechatDeliveryIdentity } from "./wechat-delivery-identity.ts";
 import { PostgresReminderSubscriptionStore } from "./postgres-reminder-subscription-store.ts";
 import { validateReminderSubscriptionChallengeId } from "./reminder-subscription-binding.ts";
 import type { ReminderSubscriptionPrepareRequest, ReminderSubscriptionPrepareData,
@@ -2033,16 +2035,22 @@ export class MiniappService {
     return this.getFavorites(userId);
   }
 
-  private reminderSubscriptionBinding() {
-    const { appId, subscriptionTemplateId, deliveryIdentityKey } = this.config.wechat;
-    return this.config.authMode === "WECHAT" && appId && subscriptionTemplateId && deliveryIdentityKey && this.reminderSubscriptions
-      ? { appId, templateId: subscriptionTemplateId } : null;
+  private async reminderSubscriptionBinding(userId: UserId) {
+    const delivery = configuredReminderDelivery(this.config);
+    if (!delivery || !(this.repository instanceof PostgresMiniappRepository)
+      || !await reminderDeliveryEnabled(this.repository.pool)) return null;
+    const ciphertext=await this.repository.getWechatDeliveryIdentity(userId,delivery.appId);
+    if (!ciphertext) return null;
+    try {
+      const recipient=decryptWechatDeliveryIdentity(ciphertext,userId,delivery.appId,delivery.identityKey);
+      return /^[A-Za-z0-9_-]{1,128}$/u.test(recipient) ? delivery : null;
+    } catch { return null; }
   }
 
   async prepareReminderSubscription(userId: UserId, planId: string, input: ReminderSubscriptionPrepareRequest): Promise<ApiEnvelope<ReminderSubscriptionPrepareData>> {
     if (!input || typeof input.reminderId !== "string" || !/^[A-Za-z0-9:_-]{1,128}$/u.test(input.reminderId))
       throw new Error("reminder_subscription_request_invalid");
-    const binding = this.reminderSubscriptionBinding();
+    const binding = await this.reminderSubscriptionBinding(userId);
     if (!binding) return envelope({ state: "UNAVAILABLE", reason: "NOT_CONFIGURED" }, "FRESH", []);
     const challenge = await this.reminderSubscriptions!.prepare(userId, planId, input.reminderId, binding);
     return envelope(challenge ? { state: "READY", ...challenge } : { state: "UNAVAILABLE", reason: "REMINDER_NOT_ELIGIBLE" }, "FRESH", []);
@@ -2051,7 +2059,7 @@ export class MiniappService {
   async reportReminderSubscription(userId: UserId, challengeId: string, input: ReminderSubscriptionReportRequest): Promise<ApiEnvelope<ReminderSubscriptionReportData>> {
     validateReminderSubscriptionChallengeId(challengeId);
     if (!input || !["accept", "reject", "ban", "filter"].includes(input.choice)) throw new Error("reminder_subscription_choice_invalid");
-    const binding = this.reminderSubscriptionBinding();
+    const binding = await this.reminderSubscriptionBinding(userId);
     const recorded = binding ? await this.reminderSubscriptions!.record(userId, challengeId, input.choice, binding) : false;
     return envelope({ recorded }, "FRESH", []);
   }
@@ -2061,6 +2069,8 @@ export class MiniappService {
     // cache can be repopulated by a read that began before a committed mutation.
     const plans = await this.repository.listPlans(userId);
     const storedSchedules = await this.repository.listPlanReminderSchedules(userId);
+    const delivery = await this.reminderSubscriptionBinding(userId);
+    const acceptedSchedules = delivery ? await this.reminderSubscriptions!.acceptedScheduleVersions(userId,delivery) : null;
     const schedules = plans.flatMap(plan => {
       const derived = derivePlanReminderSchedules(userId, plan);
       return derived.map(row => storedSchedules.find(stored => stored.planId === row.planId && stored.reminderId === row.reminderId && stored.scheduleVersion === row.scheduleVersion) ?? row);
@@ -2069,9 +2079,11 @@ export class MiniappService {
       {
         plans,
         planSpots: await this.planSpotLabels(plans),
-        // Optional encrypted recipient registration is not subscription authorization.
-        // The approved template, authorization flow and sender are still unavailable.
-        reminderNotifications: schedules.map(row => publicReminderStatus(row, false)),
+        // Configuration is capability readiness, never provider quota or delivery.
+        reminderNotifications: schedules.map(row => publicReminderStatus(
+          row.state === 'SCHEDULED' && row.attemptCount === 0 && acceptedSchedules && !acceptedSchedules.has(row.scheduleVersion)
+            ? {...row,state:'WAITING_AUTHORIZATION',reason:'AUTHORIZATION_NOT_GRANTED'} : row,
+          !!delivery, new Date(), delivery?.maxLatenessMs)),
       },
       "FRESH",
       [],

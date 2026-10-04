@@ -63,6 +63,7 @@ if (replayIndex >= 0) {
     try {
       await runtime.enqueueOperationalSweep();
       await runtime.enqueueEventCatalogSweep();
+      await runtime.enqueueReminderSweep();
       await runtime.dispatchBatch();
       await heartbeat.write("ready");
     } catch (error) {

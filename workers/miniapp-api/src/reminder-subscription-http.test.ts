@@ -17,12 +17,13 @@ import { insertExplicitTestSpot } from "./test-fixtures/infrastructure-spot.ts";
 import { encryptWechatDeliveryIdentity } from "./wechat-delivery-identity.ts";
 
 const databaseUrl = process.env.PLAN_REMINDER_TEST_DATABASE_URL;
-test("reminder subscription HTTP uses session identity and persists one reported choice without enabling delivery", { skip: !databaseUrl }, async () => {
+test("reminder subscription HTTP uses session identity and shared delivery readiness without claiming delivery", { skip: !databaseUrl }, async () => {
   assert.ok(databaseUrl); assert.match(new URL(databaseUrl).pathname, /^\/starward_reminder_[a-f0-9]+$/u);
   const repository = await new PostgresMiniappRepository(databaseUrl).initialize({ migrate: true });
   const base = createTestRuntimeConfig();
-  const config = createTestRuntimeConfig({ authMode:"WECHAT", wechat:{ ...base.wechat, appId:"synthetic-app", appSecret:"synthetic",
-    deliveryIdentityKey:randomBytes(32).toString("hex"), subscriptionTemplateId:"synthetic-template" } });
+  const config = createTestRuntimeConfig({ storageMode:"POSTGRES",authMode:"WECHAT", wechat:{ ...base.wechat, appId:"synthetic-app", appSecret:"synthetic",
+    deliveryIdentityKey:randomBytes(32).toString("hex"), subscriptionTemplateId:"synthetic-template",
+    reminderDelivery:{enabled:true,fields:{thing1:'REMINDER_TITLE',time2:'DEPARTURE_LOCAL_TIME'},maxLatenessMs:300000,miniprogramState:'developer'} } });
   const service = new MiniappService({ repository, config, weather:createWeatherPort(config), route:new DisabledRouteAdapter() });
   class TestModule {}
   Module({ controllers:[MiniappController],providers:[{provide:MiniappService,useValue:service}] })(TestModule);
@@ -50,8 +51,13 @@ test("reminder subscription HTTP uses session identity and persists one reported
     const invoke = (path:string, method:string, body:unknown, bearer?:string) => fetch(url+path,{method,headers:{"content-type":"application/json",...(bearer?{authorization:`Bearer ${bearer}`}:{})},body:JSON.stringify(body)});
     assert.equal((await invoke(preparePath,"POST",{reminderId:"equipment"})).status,403);
     assert.equal((await invoke(preparePath,"POST",null,token)).status,400);
+    await repository.pool.query("INSERT INTO feature_flags(flag_key,payload) VALUES('NOTIFICATION_ENABLED','{\"value\":false}') ON CONFLICT(flag_key) DO UPDATE SET payload=EXCLUDED.payload");
+    assert.deepEqual((await service.prepareReminderSubscription(userId,plan.planId,{reminderId:'equipment'})).data,{state:'UNAVAILABLE',reason:'NOT_CONFIGURED'});
+    assert.equal((await service.getPlans(userId)).data.reminderNotifications![0]!.state,'CAPABILITY_UNAVAILABLE');
+    await repository.pool.query("UPDATE feature_flags SET payload='{\"value\":true}' WHERE flag_key='NOTIFICATION_ENABLED'");
+    assert.equal((await service.getPlans(userId)).data.reminderNotifications![0]!.state,'AUTHORIZATION_REQUIRED');
     const foreign = await (await invoke(preparePath,"POST",{reminderId:"equipment"},otherToken)).json();
-    assert.deepEqual(foreign.data,{state:"UNAVAILABLE",reason:"REMINDER_NOT_ELIGIBLE"});
+    assert.deepEqual(foreign.data,{state:"UNAVAILABLE",reason:"NOT_CONFIGURED"},'the other account has no notification destination');
     const prepared = await (await invoke(preparePath,"POST",{reminderId:"equipment",userId:otherId},token)).json();
     assert.equal(prepared.data.state,"READY");
     assert.equal(prepared.data.templateId,"synthetic-template");
@@ -69,7 +75,19 @@ test("reminder subscription HTTP uses session identity and persists one reported
     const stored = await repository.pool.query("SELECT state FROM plan_reminder_subscription_challenges WHERE challenge_id=$1 AND user_id=$2",[prepared.data.challengeId,userId]);
     assert.deepEqual(stored.rows,[{state:"CLIENT_ACCEPTED"}]);
     assert.equal((await repository.listPlanReminderSchedules(userId))[0]!.state,"SCHEDULED");
-    assert.equal((await service.getPlans(userId)).data.reminderNotifications![0]!.state,"CAPABILITY_UNAVAILABLE","authorization storage alone does not connect a sender");
+    assert.equal((await service.getPlans(userId)).data.reminderNotifications![0]!.state,"SCHEDULED","local acceptance schedules work; it does not claim a provider received it");
+    const rotated=new MiniappService({repository,config:{...config,wechat:{...config.wechat,subscriptionTemplateId:'synthetic-next-template'}},weather:createWeatherPort(config),route:new DisabledRouteAdapter()});
+    assert.equal((await rotated.getPlans(userId)).data.reminderNotifications![0]!.state,'AUTHORIZATION_REQUIRED','old-template acceptance cannot promise a send under a new binding');
+    const nextChallenge=(await rotated.prepareReminderSubscription(userId,plan.planId,{reminderId:'equipment'})).data;
+    assert.equal(nextChallenge.state,'READY');
+    if(nextChallenge.state!=='READY') throw new Error('new_binding_challenge_required');
+    assert.equal(nextChallenge.templateId,'synthetic-next-template');
+    assert.equal((await rotated.reportReminderSubscription(userId,prepared.data.challengeId,{choice:'accept'})).data.recorded,false);
+    assert.equal((await rotated.reportReminderSubscription(userId,nextChallenge.challengeId,{choice:'accept'})).data.recorded,true);
+    assert.equal((await rotated.getPlans(userId)).data.reminderNotifications![0]!.state,'SCHEDULED');
+    const wrongKey=new MiniappService({repository,config:{...config,wechat:{...config.wechat,deliveryIdentityKey:randomBytes(32).toString('hex')}},weather:createWeatherPort(config),route:new DisabledRouteAdapter()});
+    assert.equal((await wrongKey.getPlans(userId)).data.reminderNotifications![0]!.state,'CAPABILITY_UNAVAILABLE','unusable encrypted destination cannot offer native authorization');
+    assert.deepEqual((await wrongKey.prepareReminderSubscription(userId,plan.planId,{reminderId:'equipment'})).data,{state:'UNAVAILABLE',reason:'NOT_CONFIGURED'});
     const noTemplate = new MiniappService({repository,config:createTestRuntimeConfig({ ...config,wechat:{...config.wechat,subscriptionTemplateId:null} }),weather:createWeatherPort(config),route:new DisabledRouteAdapter()});
     assert.deepEqual((await noTemplate.prepareReminderSubscription(userId,plan.planId,{reminderId:"equipment"})).data,{state:"UNAVAILABLE",reason:"NOT_CONFIGURED"});
     assert.equal((await noTemplate.reportReminderSubscription(userId,prepared.data.challengeId,{choice:"accept"})).data.recorded,false);

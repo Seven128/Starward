@@ -78,3 +78,15 @@ test("token timeout cannot cause a late send; send/body timeout is unknown", asy
   const hangingBody = new WechatSubscriptionSender(config, async () => "synthetic-token", async () => ({ ok: true, json: () => new Promise(() => {}) }) as Response, 10);
   assert.deepEqual(await hangingBody.send(payload), { state: "UNKNOWN" });
 });
+
+test('last qualification runs after the token; rejected or timed-out qualification never submits', async () => {
+  let sends=0;
+  const order:string[]=[];
+  const sender=new WechatSubscriptionSender(config,async()=> {order.push('token');return 'synthetic-token';},async()=> {sends++;return Response.json({errcode:0});},10);
+  assert.deepEqual(await sender.send(payload,async()=> {order.push('qualification');return false;}),
+    {state:'NOT_ATTEMPTED',reason:'NO_LONGER_ELIGIBLE'});
+  assert.deepEqual(order,['token','qualification']); assert.equal(sends,0);
+  let resolve!: (value:boolean)=>void;
+  assert.deepEqual(await sender.send(payload,()=>new Promise(r=>{resolve=r;})),{state:'NOT_ATTEMPTED',reason:'TOKEN_UNAVAILABLE'});
+  resolve(true); await new Promise(r=>setImmediate(r)); assert.equal(sends,0);
+});

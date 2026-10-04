@@ -910,7 +910,7 @@ test(
     assert.equal(snapshot.pending, 0);
     assert.equal(snapshot.dispatched, 0, "dispatched work must finish before claiming the outbox drained");
     assert.equal(snapshot.dead_letter, 0, JSON.stringify(snapshot.dead_letters));
-    assert.ok(snapshot.scheduled >= OPERATIONAL_JOB_KINDS.length);
+    assert.ok(snapshot.scheduled >= OPERATIONAL_JOB_KINDS.length - 1, 'notification sweep creates work only when reminders are due');
     assert.ok(snapshot.effects >= OPERATIONAL_JOB_KINDS.length);
     assert.deepEqual([...snapshot.effect_kinds].sort(), [...OPERATIONAL_JOB_KINDS].sort(),
       "repeated effects from one job kind must not hide another kind with no effect");

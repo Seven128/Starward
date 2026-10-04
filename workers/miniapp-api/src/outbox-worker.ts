@@ -16,6 +16,7 @@ import { createVendorUsageTransport } from "./vendor-usage.ts";
 import { PostgresVendorUsageStore, readVendorUsageBudget } from "./postgres-vendor-usage.ts";
 import { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.ts";
 import { PostgresAstronomicalEventCatalogStore } from "./postgres-astronomical-event-catalog-store.ts";
+import { PlanReminderDispatcher } from "./plan-reminder-dispatcher.ts";
 
 const { Pool } = pg;
 const DEFAULT_QUEUE_NAME = "starward-miniapp-current";
@@ -32,7 +33,7 @@ export const OPERATIONAL_JOB_KINDS = Object.freeze([
   "BACKUP",
   "EVENT_CATALOG",
 ] as const);
-const HOURLY_OPERATIONAL_JOB_KINDS = OPERATIONAL_JOB_KINDS.filter(kind => kind !== "EVENT_CATALOG");
+const HOURLY_OPERATIONAL_JOB_KINDS = OPERATIONAL_JOB_KINDS.filter(kind => kind !== "EVENT_CATALOG" && kind !== "NOTIFICATION");
 type OperationalJobKind = (typeof OPERATIONAL_JOB_KINDS)[number];
 
 function isOperationalJobKind(value: unknown): value is OperationalJobKind {
@@ -106,12 +107,15 @@ export interface OutboxWorkerOptions {
   queueName?: string;
   runtimeConfig?: MiniappRuntimeConfig;
   weather?: WeatherPort;
+  reminderDispatcher?: PlanReminderDispatcher;
 }
 
 export class OutboxWorkerRuntime {
   readonly pool: pg.Pool;
   readonly queue: Queue;
   readonly worker: Worker;
+  private readonly reminderQueue: Queue;
+  private readonly reminderWorker: Worker;
   readonly config: MiniappRuntimeConfig;
   readonly repository: PostgresMiniappRepository;
   readonly cache = new MemoryCache();
@@ -121,6 +125,7 @@ export class OutboxWorkerRuntime {
   readonly astronomy: AstronomyService;
   readonly eventCatalog: AstronomicalEventCatalogOwner;
   private readonly usageStore: PostgresVendorUsageStore;
+  private readonly reminderDispatcher: PlanReminderDispatcher;
 
   constructor(options: OutboxWorkerOptions) {
     this.config = options.runtimeConfig ?? loadRuntimeConfig();
@@ -153,6 +158,7 @@ export class OutboxWorkerRuntime {
       max: 4,
       application_name: "starward-miniapp-worker",
     });
+    this.reminderDispatcher = options.reminderDispatcher ?? new PlanReminderDispatcher(this.pool,this.config);
     this.queue = new Queue(queueName, {
       connection,
       defaultJobOptions: {
@@ -167,6 +173,12 @@ export class OutboxWorkerRuntime {
       async (job) => this.#process(job),
       { connection, concurrency: 1 },
     );
+    // Same existing broker/outbox/processor, separate execution capacity. A
+    // long weather/media task cannot occupy the only reminder consumer.
+    this.reminderQueue = new Queue(`${queueName}-reminders`,{
+      connection,defaultJobOptions:{attempts:3,backoff:{type:'exponential',delay:250},removeOnComplete:100,removeOnFail:100},
+    });
+    this.reminderWorker = new Worker(`${queueName}-reminders`,async job=>this.#process(job),{connection,concurrency:1});
   }
 
   async enqueueOperationalSweep(bucket = hourBucket()) {
@@ -213,6 +225,49 @@ export class OutboxWorkerRuntime {
     return result.rowCount ?? 0;
   }
 
+  async enqueueReminderSweep(at = new Date()) {
+    // The existing reminder contract supports offsets as small as 36 seconds.
+    // A minute bucket could miss one even with an otherwise idle worker.
+    const bucket = new Date(Math.floor(at.getTime()/5000)*5000).toISOString();
+    await this.recoverReminderSweeps();
+    // Existing one-second worker loop schedules a bounded notification check
+    // only while due work exists. An idle reminder module produces no jobs.
+    const client=await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      // Acquire before the next statement's READ COMMITTED snapshot, so two
+      // workers crossing a bucket boundary cannot both enqueue a pending check.
+      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('starward:plan-reminder-due-sweep',0))");
+      const result = await client.query(`INSERT INTO outbox_events(event_id,event_type,idempotency_key,payload)
+      SELECT $1,'OperationalNOTIFICATIONRequested',$2,$3
+      WHERE EXISTS (SELECT 1 FROM plan_reminder_schedules WHERE active
+        AND state IN ('WAITING_AUTHORIZATION','SCHEDULED') AND trigger_at<=$4)
+        AND NOT EXISTS (SELECT 1 FROM outbox_events WHERE event_type='OperationalNOTIFICATIONRequested'
+          AND state IN ('PENDING','DISPATCHED'))
+      ON CONFLICT (idempotency_key) DO NOTHING`,
+      [randomUUID(),`operational:${bucket}:NOTIFICATION`,{jobKind:'NOTIFICATION',scheduleBucket:bucket,trigger:'DUE_REMINDER_SWEEP'},at.toISOString()]);
+      await client.query('COMMIT');
+      return result.rowCount ?? 0;
+    } catch(error) {await client.query('ROLLBACK');throw error;}
+    finally {client.release();}
+  }
+
+  private async recoverReminderSweeps() {
+    const retired=await this.pool.query<{event_id:string}>(`SELECT event_id FROM outbox_events
+      WHERE event_type='OperationalNOTIFICATIONRequested' AND state='DISPATCHED'
+      ORDER BY dispatched_at,event_id LIMIT 20`);
+    for (const event of retired.rows) {
+      // A failed read is not absence. Check both current and legacy handles
+      // outside any database lock, and never remove an active/waiting job.
+      const jobs=await Promise.all([this.queue,this.reminderQueue].map(queue=>queue.getJob(event.event_id)));
+      const states=await Promise.all(jobs.map(job=>job?.getState()));
+      if (states.some(state=>state!==undefined && state!=='failed' && state!=='completed')) continue;
+      for (const job of jobs) if (job) await job.remove();
+      await this.pool.query(`UPDATE outbox_events SET state='PENDING',available_at=now(),dispatched_at=NULL,
+        last_error_code='REMINDER_QUEUE_HANDLE_RECOVERED' WHERE event_id=$1 AND state='DISPATCHED'`,[event.event_id]);
+    }
+  }
+
   async dispatchBatch(limit = 50) {
     const client = await this.pool.connect();
     try {
@@ -232,7 +287,7 @@ export class OutboxWorkerRuntime {
       );
       for (const event of result.rows) {
         const jobKind = mapEventToJob(event.event_type, event.payload);
-        await this.queue.add(
+        await (jobKind==='NOTIFICATION' ? this.reminderQueue : this.queue).add(
           jobKind,
           {
             eventId: event.event_id,
@@ -261,13 +316,12 @@ export class OutboxWorkerRuntime {
   async waitForIdle(timeoutMs = 15_000) {
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
-      const counts = await this.queue.getJobCounts(
-        "active",
-        "waiting",
-        "delayed",
-        "prioritized",
-      );
-      if (Object.values(counts).every((count) => count === 0)) return;
+      const counts = await Promise.all([this.queue,this.reminderQueue].map(queue=>queue.getJobCounts(
+        "active","waiting","delayed","prioritized")));
+      if (counts.every(result=>Object.values(result).every(count=>count===0))) {
+        const remaining=await this.pool.query<{count:number}>("SELECT count(*)::int AS count FROM outbox_events WHERE state='DISPATCHED'");
+        if (remaining.rows[0]!.count===0) return;
+      }
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
     throw new Error("outbox_worker_idle_timeout");
@@ -334,8 +388,12 @@ export class OutboxWorkerRuntime {
   async replayDeadLetter(eventId: string) {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(eventId))
       throw new Error("dead_letter_event_id_invalid");
-    const existingJob = await this.queue.getJob(eventId);
-    if (existingJob) await existingJob.remove();
+    const eligible=await this.pool.query("SELECT event_id FROM outbox_events WHERE event_id=$1 AND state='DEAD_LETTER'",[eventId]);
+    if (!eligible.rowCount) throw new Error("dead_letter_event_not_replayable");
+    // Both current reminder routing and legacy default-queue jobs own this same
+    // event ID. Remove only these exact retired jobs before re-adding the ID.
+    const existingJobs=await Promise.all([this.queue,this.reminderQueue].map(queue=>queue.getJob(eventId)));
+    for (const existingJob of existingJobs) if (existingJob) await existingJob.remove();
     const replay = await this.pool.query(
       `UPDATE outbox_events
           SET state = 'PENDING', available_at = now(), dispatched_at = NULL,
@@ -352,9 +410,9 @@ export class OutboxWorkerRuntime {
   }
 
   async close() {
-    await this.worker.close();
+    await Promise.all([this.worker.close(),this.reminderWorker.close()]);
     await this.usageStore.close();
-    await this.queue.close();
+    await Promise.all([this.queue.close(),this.reminderQueue.close()]);
     await this.pool.end();
     await this.repository.close();
     await this.cache.close();
@@ -922,43 +980,7 @@ export class OutboxWorkerRuntime {
         break;
       }
       case "NOTIFICATION": {
-        const flag = await client.query<{ payload: { value?: unknown } }>(
-          "SELECT payload FROM feature_flags WHERE flag_key = 'NOTIFICATION_ENABLED'",
-        );
-        const enabled = flag.rows[0]?.payload.value === true;
-        await client.query(
-          `UPDATE plan_reminder_schedules
-              SET state = 'SKIPPED', reason = CASE
-                    WHEN departure_at <= now() THEN 'DEPARTURE_EXPIRED'
-                    ELSE 'TRIGGER_MISSED' END,
-                  updated_at = now()
-            WHERE active = true
-              AND state IN ('WAITING_AUTHORIZATION', 'SCHEDULED')
-              AND trigger_at <= now()`,
-        );
-        const schedules = await client.query<{ waiting: string; scheduled: string; skipped: string }>(
-          `SELECT
-             count(*) FILTER (WHERE active AND state = 'WAITING_AUTHORIZATION')::text AS waiting,
-             count(*) FILTER (WHERE active AND state = 'SCHEDULED')::text AS scheduled,
-             count(*) FILTER (WHERE state = 'SKIPPED')::text AS skipped
-           FROM plan_reminder_schedules`,
-        );
-        outcome = {
-          resultState: "CAPABILITY_GATED",
-          resultPayload: {
-            enabled,
-            schedulingConnected: true,
-            waitingAuthorization: Number(schedules.rows[0]?.waiting ?? 0),
-            scheduled: Number(schedules.rows[0]?.scheduled ?? 0),
-            skipped: Number(schedules.rows[0]?.skipped ?? 0),
-            authorizationConnected: false,
-            deliveryAttempted: false,
-            reason: enabled
-              ? "Scheduling is connected; approved template mapping, subscription authorization and the sender are not connected"
-              : "Notification capability is disabled by the current feature flag",
-          },
-        };
-        break;
+        throw new Error("notification_requires_external_dispatch_phase");
       }
       case "EVENT_CATALOG": {
         await this.eventCatalog.initialize();
@@ -1034,12 +1056,32 @@ export class OutboxWorkerRuntime {
         [eventId],
       );
       if (!event.rows[0]) throw new Error("outbox_event_not_found");
-      const outcome = await this.#applyEffect(client, {
+      const input = {
         eventId,
         eventType: event.rows[0].event_type,
         jobKind: job.name,
         payload: event.rows[0].payload,
-      });
+      };
+      let outcome: JobOutcome;
+      if (job.name === 'NOTIFICATION') {
+        const effectKey = `${eventId}:NOTIFICATION:current`;
+        const prior = await client.query<{result_state:string;result_payload:Readonly<Record<string,unknown>>}>(
+          'SELECT result_state,result_payload FROM job_effects WHERE effect_key=$1',[effectKey]);
+        if (typeof input.payload === 'object' && input.payload !== null && 'forceFailure' in input.payload
+          && input.payload.forceFailure === true) throw new Error('forced_operational_job_failure');
+        // Release outbox locks before token/HTTP or account/schedule transactions.
+        await client.query('COMMIT');
+        outcome = prior.rows[0] ? {resultState:prior.rows[0].result_state,resultPayload:prior.rows[0].result_payload}
+          : await this.reminderDispatcher.run();
+        await client.query('BEGIN');
+        await client.query('SELECT event_id FROM outbox_events WHERE event_id=$1 FOR UPDATE',[eventId]);
+        await client.query(`INSERT INTO job_effects(effect_key,event_id,job_kind,result_state,result_payload)
+          VALUES($1,$2,'NOTIFICATION',$3,$4) ON CONFLICT(effect_key) DO NOTHING`,
+          [effectKey,eventId,outcome.resultState,outcome.resultPayload]);
+        const recorded = await client.query<{result_state:string;result_payload:Readonly<Record<string,unknown>>}>(
+          'SELECT result_state,result_payload FROM job_effects WHERE effect_key=$1',[effectKey]);
+        outcome = {resultState:recorded.rows[0]!.result_state,resultPayload:recorded.rows[0]!.result_payload};
+      } else outcome = await this.#applyEffect(client,input);
       await client.query(
         `UPDATE outbox_events
             SET state = 'COMPLETE', completed_at = now(), attempts = attempts + 1,
@@ -1094,7 +1136,7 @@ export class OutboxWorkerRuntime {
 export async function runOutboxOnce(options: OutboxWorkerOptions) {
   const runtime = new OutboxWorkerRuntime(options);
   try {
-    const scheduled = await runtime.enqueueOperationalSweep() + await runtime.enqueueEventCatalogSweep();
+    const scheduled = await runtime.enqueueOperationalSweep() + await runtime.enqueueEventCatalogSweep() + await runtime.enqueueReminderSweep();
     let enqueued = 0;
     let dispatched = 0;
     do {

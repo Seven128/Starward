@@ -5,6 +5,7 @@ import {
 } from "@starward/miniapp-contracts";
 import { ASTRONOMICAL_EVENT_CATALOG_VERSION } from "./astronomical-event-catalog.ts";
 import { validateDeliveryIdentityKey } from "./wechat-delivery-identity.ts";
+import { parseReminderFields, type ReminderDeliverySettings } from "./plan-reminder-delivery-config.ts";
 
 export type ReleaseProfile = "LOCAL" | "TRIAL" | "COMMERCIAL";
 export type StorageMode = "MEMORY_TEST" | "POSTGRES";
@@ -47,6 +48,7 @@ export interface MiniappRuntimeConfig {
     sessionSecret: string;
     deliveryIdentityKey?: string | null;
     subscriptionTemplateId?: string | null;
+    reminderDelivery?: ReminderDeliverySettings;
   };
   trialRegion: string;
   eventCatalogVersion: string;
@@ -172,6 +174,15 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     ),
     deliveryIdentityKey: value("WECHAT_DELIVERY_IDENTITY_KEY"),
     subscriptionTemplateId: value("WECHAT_REMINDER_TEMPLATE_ID"),
+    reminderDelivery: {
+      enabled: process.env.WECHAT_REMINDER_DELIVERY_ENABLED === "1",
+      fields: value("WECHAT_REMINDER_FIELDS_JSON") ? parseReminderFields(value("WECHAT_REMINDER_FIELDS_JSON")!) : null,
+      // No guessed lateness policy enables production sending.
+      maxLatenessMs: value("WECHAT_REMINDER_MAX_LATENESS_SECONDS") === null ? null
+        : boundedInteger("WECHAT_REMINDER_MAX_LATENESS_SECONDS", 300, 300, 3600) * 1000,
+      miniprogramState: value("WECHAT_REMINDER_MINIPROGRAM_STATE") === null ? null
+        : oneOf("WECHAT_REMINDER_MINIPROGRAM_STATE",value("WECHAT_REMINDER_MINIPROGRAM_STATE"),['DEVELOPER','TRIAL','FORMAL'] as const,'DEVELOPER').toLowerCase() as 'developer'|'trial'|'formal',
+    },
   };
   if (wechat.deliveryIdentityKey) {
     validateDeliveryIdentityKey(wechat.deliveryIdentityKey);

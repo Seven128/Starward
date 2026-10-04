@@ -12,6 +12,14 @@ export type ReminderSubscriptionChoice = "accept" | "reject" | "ban" | "filter";
 export class PostgresReminderSubscriptionStore {
   constructor(private readonly pool: pg.Pool) {}
 
+  async acceptedScheduleVersions(userId: string, binding: ReminderSubscriptionBinding): Promise<Set<string>> {
+    binding = snapshotReminderSubscriptionBinding(binding);
+    const result = await this.pool.query<{schedule_version:string}>(`SELECT DISTINCT c.schedule_version
+      FROM plan_reminder_subscription_challenges c WHERE c.user_id=$1 AND c.app_id=$2 AND c.template_id=$3
+        AND c.state='CLIENT_ACCEPTED' AND c.consumed_at IS NULL`,[userId,binding.appId,binding.templateId]);
+    return new Set(result.rows.map(row=>row.schedule_version));
+  }
+
   async prepare(userId: string, planId: string, reminderId: string, binding: ReminderSubscriptionBinding): Promise<ReminderSubscriptionChallenge | null> {
     binding = snapshotReminderSubscriptionBinding(binding);
     return this.transaction(async client => {
@@ -19,11 +27,14 @@ export class PostgresReminderSubscriptionStore {
       const selected = await client.query<{ schedule_version: string }>(`SELECT s.schedule_version
         FROM plan_reminder_schedules s JOIN observation_plans p ON p.plan_id=s.plan_id AND p.user_id=s.user_id
         WHERE s.user_id=$1 AND s.plan_id=$2 AND s.reminder_id=$3 AND s.active
-          AND s.state='WAITING_AUTHORIZATION' AND s.attempt_count=0 AND s.trigger_at>clock_timestamp()
+          AND s.state IN ('WAITING_AUTHORIZATION','SCHEDULED') AND s.attempt_count=0 AND s.trigger_at>clock_timestamp()
           AND p.revision=s.plan_revision
           AND EXISTS(SELECT 1 FROM wechat_identities i WHERE i.user_id=s.user_id
             AND i.delivery_app_id=$4 AND i.delivery_identity_ciphertext IS NOT NULL)
-        FOR UPDATE OF s`, [userId, planId, reminderId, binding.appId]);
+          AND NOT EXISTS(SELECT 1 FROM plan_reminder_subscription_challenges c WHERE c.user_id=s.user_id
+            AND c.schedule_version=s.schedule_version AND c.app_id=$4 AND c.template_id=$5
+            AND c.state='CLIENT_ACCEPTED' AND c.consumed_at IS NULL)
+        FOR UPDATE OF s`, [userId, planId, reminderId, binding.appId, binding.templateId]);
       const version = selected.rows[0]?.schedule_version;
       if (!version) return null;
       await client.query(`UPDATE plan_reminder_subscription_challenges SET state='EXPIRED',resolved_at=clock_timestamp()
