@@ -178,7 +178,7 @@ export function ContributionLocationSection({
 
 export function ContributionCandidateAddressControl({ form, commands }: { form: ContributionForm; commands: ContributionCommands }) {
   return <View className="contribution-document-address contribution-address-group" data-field="address">
-    <Text className="formal-feedback-field__label">地点地址 <Text className="formal-feedback-required">*</Text></Text>
+    <Text className="formal-feedback-field__label">观星位置 <Text className="formal-feedback-required">*</Text></Text>
     <Button disabled={form.commandBusy} className="contribution-address-picker focus-ring" aria-label="搜索地址，确定观星位置" onClick={() => void commands.chooseCandidateLocation()}>
       <Text className={form.candidateFields.address ? "" : "contribution-placeholder"}>{form.candidatePlaceLabel || form.candidateFields.address || "搜索地址，确定观星位置"}</Text>
       <Text aria-hidden="true">⌖</Text>

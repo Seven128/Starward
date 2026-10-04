@@ -30,6 +30,7 @@ export * from "./api-shapes.ts";
 export * from "./generated/miniapp-api.generated.ts";
 
 export * from "./account-profile.ts";
+export * from "./contribution-intake.ts";
 
 export * from "./recent-weather.ts";
 export * from "./air-quality.ts";

@@ -1,7 +1,7 @@
 import type { AccountAvatarData, AccountAvatarSaveRequest, AccountProfileRecord } from "./account-profile.ts";
 import type { FeatureFlags } from "./feature-flags.ts";
 import type { FilterGroupKey, FilterState } from "./filters.ts";
-import type { ContributionFormalProposal } from "./contribution-feedback.ts";
+import type { ContributionCandidateProfile } from "./contribution-intake.ts";
 import type { PreferenceRankingDisclosure, SpotRankingPreferences } from "./ranking.ts";
 import type {
   AccessAndSafetyState,
@@ -791,7 +791,7 @@ export interface ContributionDraftRequest {
   detail: string;
   rightsConfirmed: boolean;
   preciseLocationConsent: boolean;
-  candidateProfile?: ContributionFormalProposal;
+  candidateProfile?: ContributionCandidateProfile;
 }
 
 export interface ContributionUpdateRequest extends ContributionDraftRequest {

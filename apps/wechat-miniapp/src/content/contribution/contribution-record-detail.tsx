@@ -76,7 +76,10 @@ export function ContributionRecordDetail({ item, onBack }: { item: ContributionS
       {latestAttempt ? <Text className="type-caption">第 {latestAttempt.attemptNo} 次提交 · {displayBeijingTimestamp(latestAttempt.submittedAt)}</Text> : null}
       {submittedPlace ? <View className="contribution-submitted-facts">
         {submittedPlace.selectedLocation ? <Text className="type-secondary">选点：{submittedPlace.selectedLocation}</Text> : null}
-        {submittedPlace.fields.map(({ key, value }) => <View className="contribution-submitted-facts__row" key={key}>
+        {submittedPlace.intakeFacts.map(({ key, label, value }) => <View className="contribution-submitted-facts__row" key={key}>
+          <Text className="type-caption">{label}</Text><Text className="type-body">{value || "未填写"}</Text>
+        </View>)}
+        {submittedPlace.fields.filter(({ key }) => !submittedPlace.intakeFacts.length || !["openness", "access", "contact"].includes(key)).map(({ key, value }) => <View className="contribution-submitted-facts__row" key={key}>
           <Text className="type-caption">{FORMAL_FIELD_LABELS[key]}</Text><Text className="type-body">{value || "未填写"}</Text>
         </View>)}
       </View> : formalView ? <View className="contribution-frozen-diff">{CONTRIBUTION_FORMAL_FIELD_KEYS.filter(key => Object.prototype.hasOwnProperty.call(formalView.proposal.fields,key)).map(key => <View key={key}><Text className="type-caption">{FORMAL_FIELD_LABELS[key]}</Text><Text className="contribution-frozen-diff__old">{formalView.baseline.fields[key] || "未填写"}</Text><Text> → </Text><Text>{formalView.proposal.fields[key] || "已清空"}</Text></View>)}</View> : <><Text className="type-body">{frozen.detail || "没有文字说明"}</Text><Text className="type-caption">涉及事实：{frozen.topics.length ? frozen.topics.map((topic) => TOPICS.find((entry) => entry.key === topic)?.label ?? "其他").join(" · ") : "未提供"}</Text></>}

@@ -2,6 +2,10 @@ import { isDeepStrictEqual } from "node:util";
 import {
   CONTRIBUTION_FORMAL_FIELD_KEYS,
   CONTRIBUTION_MEDIA_KINDS,
+  normalizeCandidateIntake,
+  candidateIntakeIssues,
+  candidateIntakeFields,
+  type ContributionCandidateProfile,
   type ContributionDraftRequest,
   type ContributionKind,
   type ContributionMediaUpload,
@@ -112,7 +116,7 @@ function normalizeFormalProposal(value: ContributionFormalProposal): Contributio
   return { fields, media };
 }
 
-function normalizeCandidateProfile(value: ContributionFormalProposal): ContributionFormalProposal {
+function normalizeCandidateProfile(value: ContributionCandidateProfile): ContributionCandidateProfile {
   if (!value || typeof value !== "object" || !value.fields || !value.media)
     throw new Error("contribution_candidate_profile_invalid");
   const fields: Partial<Record<(typeof CONTRIBUTION_FORMAL_FIELD_KEYS)[number], string>> = {};
@@ -135,7 +139,14 @@ function normalizeCandidateProfile(value: ContributionFormalProposal): Contribut
       throw new Error("contribution_formal_media_invalid");
     media[typedKey] = [...ids];
   }
-  return { fields, media };
+  if (value.intake === undefined) return { fields, media };
+  const intake = normalizeCandidateIntake(value.intake), projected = candidateIntakeFields(intake);
+  for (const key of ["openness", "access", "contact"] as const) {
+    if (fields[key] && fields[key] !== projected[key]) throw new Error("contribution_candidate_intake_conflict");
+    delete fields[key];
+    if (projected[key] !== undefined) fields[key] = projected[key];
+  }
+  return { fields, media, intake };
 }
 
 export function normalizeFormalContributionInput(input: ContributionFormalSubmitRequest): ContributionFormalSubmitRequest {
@@ -256,11 +267,12 @@ export function assertContributionSubmittable(
     submission.kind === "NEW_SPOT_PROPOSAL" &&
     (!submission.candidateLocation ||
       !submission.candidateProfile?.fields.name?.trim() ||
-      !submission.candidateProfile.fields.address?.trim() ||
       !submission.preciseLocationConsent)
   )
     throw new Error("contribution_candidate_submission_incomplete");
   if (submission.kind === "NEW_SPOT_PROPOSAL") {
+    if (candidateIntakeIssues(submission.candidateProfile!).length)
+      throw new Error("contribution_candidate_intake_incomplete");
     for (const kind of CONTRIBUTION_MEDIA_KINDS) {
       const attachedIds = submission.media
         .filter((media) => media.kind === kind)

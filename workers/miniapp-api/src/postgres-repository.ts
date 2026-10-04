@@ -11,6 +11,7 @@ import {
   reviewLatestContributionAttempt,
   removeCandidateProfileMedia,
   contributionMediaHasHistory,
+  assertCandidateAttemptCurrent,
 } from "./contribution-attempts.ts";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -181,6 +182,32 @@ export function contributionResolvedProposal(submission: ContributionSubmission)
     (submission.kind === "NEW_SPOT_PROPOSAL" ? submission.candidateProfile : undefined);
 }
 
+/** Versioned new-point answers own core claims; retained notes cannot certify unknown answers. */
+function contributionFieldMergeClaims(submission: ContributionSubmission, field: string): readonly AdminContributionEvidenceClaim[] {
+  const topic = FORMAL_FIELD_TOPIC[field as keyof typeof FORMAL_FIELD_TOPIC];
+  if (!topic) return [];
+  const intake = submission.kind === "NEW_SPOT_PROPOSAL" ? submission.candidateProfile?.intake : undefined;
+  if (intake) {
+    if (field === "contact") return ["SPOT_DETAILS"];
+    if (topic === "OPENNESS" && (intake.openness === null || intake.openness === "UNKNOWN")) return [];
+    if (topic === "LEGAL_ACCESS" && (intake.legalEntry === null || intake.legalEntry === "UNKNOWN")) return [];
+    if (topic === "NIGHT_SAFETY" && (intake.nightSafety === null || intake.nightSafety === "UNKNOWN")) return [];
+  }
+  return CONTRIBUTION_TOPIC_CLAIMS[topic];
+}
+
+/** Only the operator's explicit selected claim may apply a contributor's structured rating. */
+export function applyReviewedCandidateNightSafety(
+  submission: ContributionSubmission,
+  claims: readonly AdminContributionEvidenceClaim[],
+  state: SpotDetail["accessAndSafety"],
+): SpotDetail["accessAndSafety"] {
+  const rating = submission.kind === "NEW_SPOT_PROPOSAL" ? submission.candidateProfile?.intake?.nightSafety : undefined;
+  if (!claims.includes("SAFETY_NIGHT") || rating === undefined || rating === null || rating === "UNKNOWN") return state;
+  const guidance = submission.candidateProfile?.fields.safety?.trim();
+  return { ...state, nightSafety: rating, guidance: guidance ? [guidance] : [] };
+}
+
 export function contributionAllowedMergeClaims(
   submission: ContributionSubmission,
 ): readonly AdminContributionEvidenceClaim[] {
@@ -188,10 +215,9 @@ export function contributionAllowedMergeClaims(
     return [...new Set(submission.topics.flatMap((topic) => CONTRIBUTION_TOPIC_CLAIMS[topic]))];
   const proposal = contributionResolvedProposal(submission);
   if (!proposal) return [];
-  const claims: AdminContributionEvidenceClaim[] = Object.keys(proposal.fields).flatMap((key) => {
-    const topic = FORMAL_FIELD_TOPIC[key as keyof typeof FORMAL_FIELD_TOPIC];
-    return topic ? CONTRIBUTION_TOPIC_CLAIMS[topic] : [];
-  });
+  const claims: AdminContributionEvidenceClaim[] = Object.keys(proposal.fields).flatMap((key) => contributionFieldMergeClaims(submission, key));
+  const rating = submission.candidateProfile?.intake?.nightSafety;
+  if (rating !== undefined && rating !== null && rating !== "UNKNOWN") claims.push("SAFETY_NIGHT");
   if (Object.values(proposal.media).some((ids) => Boolean(ids?.length)))
     claims.push("SITE_MEDIA_PROVENANCE");
   return [...new Set(claims)];
@@ -3222,6 +3248,7 @@ export class PostgresMiniappRepository
       if (!submission || (submission.state !== "APPROVED" && submission.submissionState !== "ACCEPTED"))
         throw new Error("contribution_review_state_conflict");
       const normalizedSubmission = normalizeContributionSubmission(submission);
+      assertCandidateAttemptCurrent(normalizedSubmission, true);
       if (
         input.expectedSubmissionRevision !== undefined &&
         normalizedSubmission.revision !== input.expectedSubmissionRevision
@@ -3343,14 +3370,13 @@ export class PostgresMiniappRepository
       const mergedFormalFacts = { ...(current.detail.formalFacts ?? {}) } as Record<string, string | null>;
       const mergedFormalFieldKeys = new Set<string>();
       for (const [field, value] of Object.entries(resolvedProposal?.fields ?? {})) {
-        const topic = FORMAL_FIELD_TOPIC[field as keyof typeof FORMAL_FIELD_TOPIC];
-        if (topic && CONTRIBUTION_TOPIC_CLAIMS[topic].some(claim => claims.includes(claim))) {
+        if (contributionFieldMergeClaims(normalizedSubmission, field).some(claim => claims.includes(claim))) {
           mergedFormalFacts[field] = value.trim() || null;
           mergedFormalFieldKeys.add(field);
         }
       }
       const nextRoute = clone(current.detail.route);
-      const nextAccessAndSafety = clone(current.detail.accessAndSafety);
+      const nextAccessAndSafety = applyReviewedCandidateNightSafety(normalizedSubmission, claims, clone(current.detail.accessAndSafety));
       let nextFacilities = current.detail.spot.facilities.map(clone);
       const upsertFacility = (
         type: FacilityEvidence["type"],

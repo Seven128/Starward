@@ -11,6 +11,7 @@ import { SelectionTabs } from "@/components/selection-tabs";
 import { CustomNav } from "@/components/custom-nav";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { contributionValidationAnchor } from "./validation-anchor";
+import { CandidateIntakeField } from "./candidate-intake-fields";
 import { ContributionCandidateAddressControl, ContributionCandidateCoordinateConsent, ContributionContextSection, ContributionEvidenceSection, ContributionLocationSection } from "./contribution-form-sections";
 import { ContributionActions, ContributionDeleteDraftAction, ContributionMediaRecoveryAction, ContributionMediaSection } from "./contribution-media-history";
 import { useContributionCommands } from "./use-contribution-commands";
@@ -289,6 +290,7 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
             <SpotDocumentFields
               values={form.candidateFields}
               disabled={form.commandBusy}
+              renderField={key => <CandidateIntakeField fieldKey={key} form={form} key={key} />}
               onChange={form.setCandidateField}
               addressControl={<ContributionCandidateAddressControl form={form} commands={commands} />}
               textareaFixed={embedded}

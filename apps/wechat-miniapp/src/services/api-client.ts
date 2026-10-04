@@ -137,6 +137,8 @@ function abortTask(task: unknown) {
 
 export function errorMessage(error: unknown): string {
   if (error instanceof MiniappApiError) {
+    if (error.message === "CONTRIBUTION_CORE_ANSWERS_REQUIRED") return "请补充开放、进入、夜间安全和联系情况；若看不到这些字段，请更新小程序后恢复原草稿";
+    if (error.message === "CONTRIBUTION_CORE_ANSWERS_CONFLICT") return "开放、进入或联系答案与提交内容不一致，请核对后再保存；原草稿仍保留";
     const labels: Record<ApiError["code"], string> = {
       INVALID_INPUT: "输入不符合服务端约束",
       NOT_FOUND: "目标不存在或已失效",

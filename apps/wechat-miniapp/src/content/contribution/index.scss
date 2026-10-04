@@ -597,3 +597,13 @@
 .contribution-photo-recovery { flex-shrink: 0; }
 .contribution-document-delete { padding: 16Px; }
 .contribution-document-delete:empty { display: none; }
+// New-point variation keeps the shared document density and permits long choices to wrap.
+.candidate-intake-group { padding: 10Px 0; border-bottom: 1Px solid var(--border); }
+.candidate-intake-group > .formal-feedback-field__label { display: block; width: auto; margin-bottom: 6Px; }
+.candidate-intake-choices { flex-wrap: wrap; overflow: visible; gap: 4Px 8Px; }
+.candidate-intake-choices button { min-height: 44Px; height: auto; white-space: normal; line-height: 20Px; padding: 10Px 8Px; }
+.candidate-intake-input { flex-wrap: wrap; }
+.candidate-intake-input input { min-width: 0; }
+.candidate-intake-error { display: block; flex-basis: 100%; color: var(--danger); font-size: 13Px; line-height: 20Px; margin: 4Px 0; }
+.candidate-intake-legacy { margin: 10Px 0; overflow-wrap: anywhere; }
+.candidate-intake-legacy text { display: block; }

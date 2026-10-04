@@ -5,12 +5,19 @@ import { crc32, deflateSync } from "node:zlib";
 import type {
   ContributionDraftRequest,
   ContributionUploadId,
+  ContributionCandidateIntake,
 } from "@starward/miniapp-contracts";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts";
 import { MemoryMediaObjectStore } from "./media-object-store.ts";
 import { assertReceiptNotErased, eraseContributionContent } from "./account-data-erasure.ts";
+
+function answeredCandidateIntake(openness: ContributionCandidateIntake["openness"]): ContributionCandidateIntake {
+  return { version: 1, openness, legalEntry: "UNKNOWN", nightSafety: "UNKNOWN", contact: {
+    kind: "UNKNOWN", number: "", purpose: "", publicPermissionConfirmed: false, source: "",
+  } };
+}
 
 function pngChunk(type: string, data: Buffer) {
   const name = Buffer.from(type, "ascii");
@@ -446,9 +453,11 @@ test("new-place drafts preserve partial structured content and validate complete
               name: "山顶候选点",
               address: "广东省深圳市盐田区山顶步道",
               openness: "有条件开放",
+              accessNote: "需预约进入",
               detail: "东南方向视野较开阔。",
             },
             media: {},
+            intake: answeredCandidateIntake("CONDITIONAL"),
           },
         }),
         expectedRevision: created.revision,
@@ -546,7 +555,7 @@ test("completed new-place photos keep their section and distinct objects in the 
       candidateLocation: { displayName: "照片关联点", region: "广东省深圳市",
         wgs84: { system: "WGS84", latitude: 22.588, longitude: 114.302 } },
       candidateProfile: { fields: { name: "照片关联点", address: "深圳山顶步道",
-        openness: "开放", parking: "有", toilet: "有" }, media: {} },
+        openness: "开放", parking: "有", toilet: "有" }, media: {}, intake: answeredCandidateIntake("OPEN") },
     }), "candidate-sections:create")).data;
     const expectedGroups: Record<string, ContributionUploadId[]> = {};
     const storedDigests = new Set<string>();
@@ -1070,7 +1079,7 @@ for (const legacy of [false, true]) for (const state of ["REJECTED", "CHANGES_RE
     const userId = await identity(service, `remove-history-${state}`);
     const input = newSpotInput({ rightsConfirmed: true, preciseLocationConsent: true,
       candidateLocation: { displayName: "照片修订测试点", region: "广东深圳", wgs84: { system: "WGS84", latitude: 22.588, longitude: 114.302 } },
-      candidateProfile: { fields: { name: "照片修订测试点", address: "广东深圳山顶步道", openness: "有条件开放", detail: "东南方向可观测，返程需要照明。" }, media: {} } });
+      candidateProfile: { fields: { name: "照片修订测试点", address: "广东深圳山顶步道", openness: "有条件开放", accessNote: "需提前确认开放时间", detail: "东南方向可观测，返程需要照明。" }, media: {}, intake: answeredCandidateIntake("CONDITIONAL") } });
     let draft = (await service.createContributionDraft(userId, input, "history-media:create")).data;
     const bytes = privateMetadataPng();
     draft = (await service.createContributionUpload(userId, draft.submissionId, { kind: "site", originalName: "old.png", mimeType: "image/png", byteSize: bytes.length, expectedRevision: draft.revision }, "history-media:slot")).data;

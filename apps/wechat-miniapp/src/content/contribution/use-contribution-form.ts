@@ -23,11 +23,12 @@ import {
 } from "./contribution-model";
 import {
   emptySpotDocumentValues,
-  spotDocumentProposal,
   spotDocumentValuesFromProposal,
   type SpotDocumentValues,
 } from "../spot-document";
 import type { ContributionFormalFieldKey } from "@starward/miniapp-contracts";
+import { emptyCandidateIntake, type ContributionCandidateIntake } from "@starward/miniapp-contracts";
+import { candidateDocumentProposal, candidateIntakeFromProfile } from "./candidate-document";
 import {
   contributionNeedsRecovery,
   countPendingContributions,
@@ -91,6 +92,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
   const [longitude, setLongitude] = useState("");
   const [candidateSelectionVersion, setCandidateSelectionVersion] = useState(0);
   const [candidateFields, setCandidateFields] = useState<SpotDocumentValues>(emptySpotDocumentValues);
+  const [candidateIntake, setCandidateIntake] = useState<ContributionCandidateIntake>(emptyCandidateIntake);
   const [candidateMedia, setCandidateMedia] = useState<NonNullable<ContributionSubmission["candidateProfile"]>["media"]>({});
   const [candidateMediaPreviews, setCandidateMediaPreviews] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -150,7 +152,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     schema: 1, baseSubmissionId: draft?.submissionId ?? null, baseRevision: draft?.revision ?? null,
     spotId: boundSpotId, spotName: boundSpotName, kind, topics, date, time, detail,
     candidateName, candidateRegion, latitude, longitude, rightsConfirmed, preciseLocationConsent,
-    candidateProfile: spotDocumentProposal(candidateFields, candidateMedia),
+    candidateProfile: candidateDocumentProposal(candidateFields, candidateMedia, candidateIntake),
   }, initialSpotId, Boolean(pendingSubmission) || Boolean(draft && !["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(draft))), !overrides.disableLocalPersistence);
 
   const ownerChanged = localDraft.owner !== null &&
@@ -200,7 +202,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
         detail,
         rightsConfirmed,
         preciseLocationConsent,
-        candidateProfile: spotDocumentProposal(candidateFields, candidateMedia),
+        candidateProfile: candidateDocumentProposal(candidateFields, candidateMedia, candidateIntake),
       },
       announce,
     );
@@ -240,6 +242,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     if (!nextCandidateFields.address && submission.candidateLocation?.region)
       nextCandidateFields.address = submission.candidateLocation.region;
     setCandidateFields(nextCandidateFields);
+    setCandidateIntake(candidateIntakeFromProfile(submission.candidateProfile));
     setCandidateMedia(submission.candidateProfile?.media ?? {});
     setCandidateMediaPreviews({});
     if (submission.observedAt) {
@@ -293,6 +296,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       if (!restoredCandidateFields.name) restoredCandidateFields.name = local.candidateName;
       if (!restoredCandidateFields.address) restoredCandidateFields.address = local.candidateRegion;
       setCandidateFields(restoredCandidateFields);
+      setCandidateIntake(candidateIntakeFromProfile(local.candidateProfile));
       setCandidateMedia(local.candidateProfile?.media ?? {});
       setPhase("FORM"); localDraft.accept();
       announce("info", "已恢复本机输入", "尚未自动保存到服务端或提交审核，请核对后继续。");
@@ -388,6 +392,9 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     longitude,
     candidateSelectionVersion,
     candidateFields,
+    candidateIntake,
+    candidateProfile: candidateDocumentProposal(candidateFields, candidateMedia, candidateIntake),
+    setCandidateIntake,
     candidateMedia,
     candidateMediaPreviews,
     saving,

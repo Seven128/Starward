@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { candidateIntakeFromProfile } from "./candidate-document";
 
 test("local recovery preserves editable draft revisions and refuses submitted or switched-account records", async () => {
   const source = ts.createSourceFile("form.ts", readFileSync(new URL("./use-contribution-form.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -33,8 +34,9 @@ test("local recovery preserves editable draft revisions and refuses submitted or
       contributionSubmissionState: (item: { state: string }) => item.state,
       spotDocumentValuesFromProposal: (proposal: { fields?: Record<string, string> } | undefined) => ({ name: "", address: "", ...(proposal?.fields ?? {}) }),
       announce: (_tone: string, title: string) => notices.push(title),
+      candidateIntakeFromProfile,
     };
-    for (const field of ["CommandBusy", "Draft", "ConflictDraft", "BoundSpotId", "BoundSpotName", "Kind", "Topics", "Date", "Time", "Detail", "CandidateName", "CandidateRegion", "CandidatePlaceLabel", "CandidateFields", "CandidateMedia", "Latitude", "Longitude", "RightsConfirmed", "PreciseLocationConsent", "Phase"]) {
+    for (const field of ["CommandBusy", "Draft", "ConflictDraft", "BoundSpotId", "BoundSpotName", "Kind", "Topics", "Date", "Time", "Detail", "CandidateName", "CandidateRegion", "CandidatePlaceLabel", "CandidateFields", "CandidateMedia", "CandidateIntake", "Latitude", "Longitude", "RightsConfirmed", "PreciseLocationConsent", "Phase"]) {
       sandbox[`set${field}`] = (value: unknown) => { fields[field] = value; };
     }
     await vm.runInNewContext(code, sandbox)();

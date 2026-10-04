@@ -1104,7 +1104,7 @@ export interface ContributionAttemptSnapshot {
   rightsConfirmed: boolean;
   preciseLocationConsent: boolean;
   media: readonly ContributionMediaUpload[];
-  candidateProfile?: import("./contribution-feedback.ts").ContributionFormalProposal;
+  candidateProfile?: import("./contribution-intake.ts").ContributionCandidateProfile;
   formalFeedback?: import("./contribution-feedback.ts").ContributionFormalFeedbackSnapshot;
 }
 
@@ -1130,7 +1130,7 @@ export interface ContributionSubmission {
   rightsConfirmed: boolean;
   preciseLocationConsent: boolean;
   media: readonly ContributionMediaUpload[];
-  candidateProfile?: import("./contribution-feedback.ts").ContributionFormalProposal;
+  candidateProfile?: import("./contribution-intake.ts").ContributionCandidateProfile;
   state: ContributionState;
   submissionState: ContributionSubmissionState;
   mergeState: ContributionMergeState;

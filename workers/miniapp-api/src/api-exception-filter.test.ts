@@ -2,6 +2,18 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { classifyExceptionMessage } from "./api-exception.filter.ts";
 
+test("candidate core input recovery preserves the draft and never retries an inconsistent body or unsubmitted review", () => {
+  const missing = classifyExceptionMessage("contribution_candidate_intake_incomplete");
+  assert.equal(missing.status, 400); assert.equal(missing.retryable, false);
+  assert.deepEqual("recovery" in missing ? missing.recovery : [], ["COMPLETE_CANDIDATE_INTAKE", "UPDATE_MINIAPP_IF_FIELDS_UNAVAILABLE", "PRESERVE_DRAFT"]);
+  const conflict = classifyExceptionMessage("contribution_candidate_intake_conflict");
+  assert.equal(conflict.status, 400); assert.equal(conflict.code, "INVALID_INPUT"); assert.equal(conflict.retryable, false);
+  assert.deepEqual("recovery" in conflict ? conflict.recovery : [], ["REVIEW_CANDIDATE_INTAKE", "PRESERVE_DRAFT"]);
+  const review = classifyExceptionMessage("contribution_review_attempt_mismatch");
+  assert.equal(review.status, 409); assert.equal(review.retryable, false);
+  assert.deepEqual("recovery" in review ? review.recovery : [], ["REFETCH", "PRESERVE_DRAFT", "REVIEW_SUBMITTED_ATTEMPT"]);
+});
+
 test("catalog concurrency and retired baseline failures preserve recovery meaning", () => {
   for (const reason of ["active_changed", "candidate_changed", "source_exists", "version_exists", "candidate_duplicate", "candidate_not_reviewable", "candidate_not_publishable", "already_active"])
     assert.deepEqual(classifyExceptionMessage(`event_catalog_${reason}`), { status: 409, code: "CONFLICT", retryable: true });

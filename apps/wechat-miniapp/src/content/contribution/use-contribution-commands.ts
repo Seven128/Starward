@@ -1,4 +1,7 @@
 import Taro from "@tarojs/taro";
+import { candidateIntakeIssues } from "@starward/miniapp-contracts";
+import { CANDIDATE_INTAKE_ERRORS } from "./candidate-document";
+import { parseCoordinateInput } from "./coordinate-input";
 import { choosePlatformLocation } from "@/services/platform-location";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { ContributionSubmitStorageError } from "@/services/contribution-submit-retry";
@@ -385,14 +388,12 @@ function createSubmit(
       return;
     }
     if (!form.pendingSubmission && form.kind === "NEW_SPOT_PROPOSAL") {
-      const parsedLatitude = Number(form.latitude);
-      const parsedLongitude = Number(form.longitude);
+      const parsedLatitude = parseCoordinateInput(form.latitude);
+      const parsedLongitude = parseCoordinateInput(form.longitude);
       const invalidCoordinate = !Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude) ||
         Math.abs(parsedLatitude) > 90 || Math.abs(parsedLongitude) > 180 ||
         (parsedLatitude === 0 && parsedLongitude === 0);
-      const missingField = !form.candidateFields.address.trim()
-        ? "contribution-candidate-address"
-        : !form.candidateFields.name.trim()
+      const missingField = !form.candidateFields.name.trim()
           ? "contribution-candidate-name"
           : invalidCoordinate
             ? "contribution-candidate-coordinate"
@@ -404,14 +405,18 @@ function createSubmit(
         form.announce(
           "error",
           "还不能提交",
-          missingField === "contribution-candidate-address"
-            ? "请先搜索并确定地点地址。"
-            : missingField === "contribution-candidate-name"
+          missingField === "contribution-candidate-name"
               ? "请填写地点名称。"
               : missingField === "contribution-candidate-coordinate"
                 ? "请先在地图中确定有效位置。"
                 : "请确认同意提交精确坐标；审核前不会公开。",
         );
+        return;
+      }
+      const issue = candidateIntakeIssues(form.candidateProfile)[0];
+      if (issue) {
+        const invalid = CANDIDATE_INTAKE_ERRORS[issue];
+        form.setValidationField(`contribution-intake-${invalid.field}`);
         return;
       }
     }
