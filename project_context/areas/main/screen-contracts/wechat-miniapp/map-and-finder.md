@@ -4,7 +4,7 @@ This on-demand subdomain node normatively continues `Cross-Control And State Inv
 
 The adopted daytime layer composition is reached through the sole [Map resource entry](../../../../../docs/design-resources/wechat-miniapp/map/ADOPTED.md). Read its layer-selector package together with the [shared observation-time owner](shared-state-and-recovery.md#shared-observation-time-resource) and its resource before implementing this control.
 
-小档下拖的生产边界由 `pages/map/panel-spring.panelDragHeight` 负责：当前 Map 将拖动高度夹在实际小/大档测量值之间，两条缓存/延迟几何路径共用该规则。中途重抓仍从实时高度接续，不能仅按逻辑 `small` 档位禁掉整次手势；上拖和反向保持可用。2026-10-04 Android 普通预览连续样本确认旧下界弹性会裁掉地址并在释放时回跳，已做局部修复及独立代码审阅，修后原生连续复测仍待验证。共享弹性组件及三档采用范围保持，模拟检查不替代该原生复测。
+小档下拖的生产边界由 `pages/map/panel-spring.panelDragHeight` 负责：当前 Map 将拖动高度夹在实际小/大档测量值之间，两条缓存/延迟几何路径共用该规则。中途重抓仍从实时高度接续，不能仅按逻辑 `small` 档位禁掉整次手势；上拖和反向保持可用。2026-10-04 Android 普通预览连续样本确认旧下界弹性会裁掉地址并在释放时回跳，已做局部修复及独立代码审阅。修后本次 Android、DAY、正式点 fixture 的四段真实手机录像，经约20Hz有序采样实看及独立审阅，小档下拖/释放无旧裁切或回跳，同手柄上拖经中档展开至大档，大档 Back 回中且三动作/Tab 保持。普通生产客户端和本地测试服务的限定观察不认证手机包字节、runtime AppID 或完整验收；Back 平滑插值、运动中重抓反向、多指及其他主题/设备/宽度仍未验，被浮动调试按钮遮挡的大档正文不据此认证完整可读性。共享弹性组件及三档采用范围保持，模拟检查不替代未覆盖的原生行为。
 
 ## Cross-Control And State Invariants
 
