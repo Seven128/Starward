@@ -66,6 +66,7 @@ export default function SettingsPage() {
   const accountActionPending = useRef(false);
   const pageAlive = useRef(true);
   const pageVisible = useRef(true);
+  const cacheAttempt = useRef<{ owner: string | null; active: boolean } | null>(null);
   const deletionAttempt = useRef<{
     owner: string | null;
     active: boolean;
@@ -93,6 +94,8 @@ export default function SettingsPage() {
   useEffect(() => {
     pageAlive.current = true;
     const unsubscribe = useAppStore.subscribe((state, previous) => {
+      if (cacheAttempt.current && state.accountOwnerId !== previous.accountOwnerId)
+        cacheAttempt.current.active = false;
       const deletion = deletionAttempt.current;
       if (deletion?.active && state.accountOwnerId !== previous.accountOwnerId) {
         if (deletion.clearingOwnAccount && !deletion.clearedOwnAccount &&
@@ -119,6 +122,7 @@ export default function SettingsPage() {
     return () => {
       pageAlive.current = false;
       pageVisible.current = false;
+      if (cacheAttempt.current) cacheAttempt.current.active = false;
       if (deletionAttempt.current) deletionAttempt.current.active = false;
       if (exportAttempt.current) {
         exportAttempt.current.active = false;
@@ -131,6 +135,7 @@ export default function SettingsPage() {
   useDidShow(() => { pageVisible.current = true; });
   useDidHide(() => {
     pageVisible.current = false;
+    if (cacheAttempt.current) cacheAttempt.current.active = false;
     if (deletionAttempt.current) deletionAttempt.current.active = false;
     if (exportAttempt.current) {
       exportAttempt.current.active = false;
@@ -260,7 +265,15 @@ export default function SettingsPage() {
   };
 
   const clearCache = async () => {
-    if (accountActionPending.current) return;
+    if (accountActionPending.current || !pageAlive.current || !pageVisible.current) return;
+    const attempt = { owner: currentDraftUserId(), active: true };
+    cacheAttempt.current = attempt;
+    const canApply = () => {
+      if (!pageAlive.current || !pageVisible.current || !attempt.active || cacheAttempt.current !== attempt) return false;
+      const owner = currentDraftUserId();
+      return pageAlive.current && pageVisible.current && attempt.active && cacheAttempt.current === attempt &&
+        owner === attempt.owner;
+    };
     accountActionPending.current = true;
     setDataAction("CACHE");
     const currentState = useAppStore.getState();
@@ -270,6 +283,7 @@ export default function SettingsPage() {
     }
     try {
       const [responseResult, stateResult] = await Promise.allSettled([clearTemporaryApiCache(), clearLocalCache()]);
+      if (!canApply()) return;
       const responseCleared = responseResult.status === "fulfilled";
       const stateSaved = stateResult.status === "fulfilled" && stateResult.value;
       if (responseCleared && stateSaved) {
@@ -289,15 +303,19 @@ export default function SettingsPage() {
         setScrollTop(0);
       }
     } catch {
+      if (!canApply()) return;
       notify({ owner: "settings", placement: "inline", tone: "warning",
         title: "临时缓存尚未清完",
         body: "本机状态与响应缓存可能仍有残留。请在下方重新点击清理本机缓存，或通过微信清理本小程序的数据。",
         dismissible: true, dedupeKey: "settings-cache-cleanup-incomplete" });
       setScrollTop(0);
     } finally {
-      accountActionPending.current = false;
-      setDataAction(null);
-      setSheet(null);
+      attempt.active = false;
+      if (cacheAttempt.current === attempt) {
+        cacheAttempt.current = null;
+        accountActionPending.current = false;
+        if (pageAlive.current) { setDataAction(null); setSheet(null); }
+      }
     }
   };
 
