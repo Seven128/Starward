@@ -1,5 +1,5 @@
 import { FloatingNotificationHost } from "@/components/notification";
-import Taro, { useDidHide } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import { ScrollView, View } from "@tarojs/components";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import { useEffect, useRef, useState } from "react";
@@ -12,8 +12,10 @@ import { useThemeClass } from "@/hooks/use-theme";
 import {
   deleteAccount as deleteAccountThroughApi,
   clearTemporaryApiCache,
+  currentDraftUserId,
   errorMessage,
   exportAccountData,
+  idempotencyKey,
 } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import {
@@ -65,6 +67,14 @@ export default function SettingsPage() {
   const [sheetClosing, setSheetClosing] = useState(false);
   const sheetCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const accountActionPending = useRef(false);
+  const pageAlive = useRef(true);
+  const pageVisible = useRef(true);
+  const exportAttempt = useRef<{
+    owner: string | null;
+    active: boolean;
+    requesting: boolean;
+    abort: AbortController;
+  } | null>(null);
   const [modeGestureCaptured, setModeGestureCaptured] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
   const {
@@ -76,8 +86,40 @@ export default function SettingsPage() {
   const canRetryPreferenceSync = preferenceSyncStatus.includes("仅保存在本机") ||
     preferenceSyncStatus.includes("等待重试");
 
-  useEffect(() => () => { if (sheetCloseTimer.current) clearTimeout(sheetCloseTimer.current); }, []);
+  useEffect(() => {
+    pageAlive.current = true;
+    const unsubscribe = useAppStore.subscribe((state, previous) => {
+      const attempt = exportAttempt.current;
+      if (!attempt?.active || state.accountOwnerId === previous.accountOwnerId) return;
+      // An explicitly initiated anonymous export may establish its first real
+      // identity. Any later departure permanently retires this attempt (ABA too).
+      if (attempt.requesting && previous.accountOwnerId === null &&
+        state.accountOwnerId !== null &&
+        (attempt.owner === null || attempt.owner === state.accountOwnerId)) {
+        attempt.owner = state.accountOwnerId;
+        return;
+      }
+      attempt.active = false;
+      attempt.abort.abort();
+    });
+    return () => {
+      pageAlive.current = false;
+      pageVisible.current = false;
+      if (exportAttempt.current) {
+        exportAttempt.current.active = false;
+        exportAttempt.current.abort.abort();
+      }
+      unsubscribe();
+      if (sheetCloseTimer.current) clearTimeout(sheetCloseTimer.current);
+    };
+  }, []);
+  useDidShow(() => { pageVisible.current = true; });
   useDidHide(() => {
+    pageVisible.current = false;
+    if (exportAttempt.current) {
+      exportAttempt.current.active = false;
+      exportAttempt.current.abort.abort();
+    }
     if (sheetCloseTimer.current) clearTimeout(sheetCloseTimer.current);
     sheetCloseTimer.current = null;
     setSheetClosing(false);
@@ -102,25 +144,44 @@ export default function SettingsPage() {
   };
 
   const downloadAccountData = async () => {
-    if (accountActionPending.current) return;
+    if (accountActionPending.current || !pageAlive.current || !pageVisible.current) return;
+    const attempt = { owner: currentDraftUserId(), active: true, requesting: true, abort: new AbortController() };
+    exportAttempt.current = attempt;
+    const canApply = () => {
+      if (!pageAlive.current || !pageVisible.current || !attempt.active || exportAttempt.current !== attempt) return false;
+      const owner = currentDraftUserId();
+      return pageAlive.current && pageVisible.current && attempt.active &&
+        exportAttempt.current === attempt && owner === attempt.owner;
+    };
     accountActionPending.current = true;
     setDataAction("EXPORT");
     let filePath: string | null = null;
     let fileWritten = false;
+    let cleanupAttempted = false;
     try {
-      const response = await exportAccountData();
+      const response = await exportAccountData(attempt.abort.signal);
+      attempt.requesting = false;
+      if (!canApply()) return;
+      if (!attempt.owner || response.data.account.userId !== attempt.owner)
+        throw new Error("账户已变化，请重新下载当前账户的数据。");
       const root = Taro.env.USER_DATA_PATH;
       if (!root) throw new Error("user_data_path_unavailable");
-      const fileName = `starward-account-${response.data.generatedAt
-        .replace(/[:.]/gu, "-")}.json`;
+      const generatedAt = new Date(response.data.generatedAt);
+      if (!Number.isFinite(generatedAt.getTime())) throw new Error("账户数据时间无效，请重试下载。");
+      // A retired page can finish writing after a new page starts an export.
+      // Its cleanup must never target the new page's file, even for equal snapshots.
+      const fileName = `starward-account-${generatedAt.toISOString()
+        .replace(/[:.]/gu, "-")}-${idempotencyKey("export").replace(/:/gu, "-")}.json`;
       const destination = `${root}/${fileName}`;
       filePath = destination;
       await writeJsonFile(destination, JSON.stringify(response.data, null, 2));
       fileWritten = true;
+      if (!canApply()) return;
       await Taro.shareFileMessage({ filePath, fileName });
       let cleanupFailed = false;
-      try { await removeJsonFile(filePath); filePath = null; }
+      try { cleanupAttempted = true; await removeJsonFile(filePath); filePath = null; }
       catch { cleanupFailed = true; }
+      if (!canApply()) return;
       const currentState = useAppStore.getState();
       for (const notification of currentState.notifications) {
         if (notification.owner === "settings" && ["settings-account-export-failed", "settings-account-export-cleanup-failed", "settings-account-exported"].includes(notification.dedupeKey ?? ""))
@@ -140,9 +201,11 @@ export default function SettingsPage() {
     } catch (error) {
       let cleanupFailed = false;
       if (filePath) {
-        try { await removeJsonFile(filePath); }
+        try { cleanupAttempted = true; await removeJsonFile(filePath); }
         catch { cleanupFailed = true; }
+        if (!cleanupFailed) filePath = null;
       }
+      if (!canApply()) return;
       notify({
         owner: "settings",
         placement: "inline",
@@ -157,9 +220,26 @@ export default function SettingsPage() {
         dedupeKey: "settings-account-export-failed",
       });
     } finally {
-      accountActionPending.current = false;
-      setDataAction(null);
-      setSheet(null);
+      // Cancellation cannot cancel native writeFile: unlink only after that
+      // promise settles, including a write failure that left a partial file.
+      if (filePath && !cleanupAttempted) {
+        try { await removeJsonFile(filePath); filePath = null; }
+        catch { /* Report the device's remaining private file below. */ }
+      }
+      if (filePath && !canApply()) {
+        notify({ owner: "settings", placement: "inline", tone: "warning",
+          title: "本机临时文件未清除",
+          body: "账户数据可能仍留在本机临时文件中；请通过微信清理本小程序的数据。",
+          dismissible: true, dedupeKey: "settings-account-export-cleanup-failed" });
+      }
+      if (exportAttempt.current === attempt) {
+        exportAttempt.current = null;
+        accountActionPending.current = false;
+        if (pageAlive.current) {
+          setDataAction(null);
+          setSheet(null);
+        }
+      }
     }
   };
 

@@ -27,12 +27,15 @@ function runCase(failure: "api" | "write" | "share" | "cleanup" | "cleanup-after
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
     accountActionPending: { current: false },
+    pageAlive: { current: true }, pageVisible: { current: true }, exportAttempt: { current: null },
+    currentDraftUserId: () => "synthetic:A", AbortController,
+    idempotencyKey: () => "export:synthetic:1",
     setDataAction: (value: unknown) => pending.push(value),
     setSheet() {},
     exportAccountData: async () => {
       calls.push("api");
       if (failure === "api") throw Error("api");
-      return { data: { generatedAt: "2026-09-06T12:00:00Z" } };
+      return { data: { generatedAt: "2026-09-06T12:00:00Z", account: { userId: "synthetic:A" } } };
     },
     useAppStore: { getState: () => ({
       notifications: [
