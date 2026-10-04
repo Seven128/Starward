@@ -58,9 +58,6 @@ export default function SettingsPage() {
   const setMode = useAppStore((state) => state.setMode);
   const enterObservation = useAppStore((state) => state.enterObservation);
   const clearLocalCache = useAppStore((state) => state.clearLocalCache);
-  const resetAfterAccountDeletion = useAppStore(
-    (state) => state.resetAfterAccountDeletion,
-  );
   const notify = useAppStore((state) => state.notify);
   const [dataAction, setDataAction] = useState<"CACHE" | "EXPORT" | "DELETE" | null>(null);
   const [sheet, setSheet] = useState<OpenSettingsSheet | null>(null);
@@ -69,6 +66,13 @@ export default function SettingsPage() {
   const accountActionPending = useRef(false);
   const pageAlive = useRef(true);
   const pageVisible = useRef(true);
+  const deletionAttempt = useRef<{
+    owner: string | null;
+    active: boolean;
+    requesting: boolean;
+    clearingOwnAccount: boolean;
+    clearedOwnAccount: boolean;
+  } | null>(null);
   const exportAttempt = useRef<{
     owner: string | null;
     active: boolean;
@@ -89,6 +93,16 @@ export default function SettingsPage() {
   useEffect(() => {
     pageAlive.current = true;
     const unsubscribe = useAppStore.subscribe((state, previous) => {
+      const deletion = deletionAttempt.current;
+      if (deletion?.active && state.accountOwnerId !== previous.accountOwnerId) {
+        if (deletion.clearingOwnAccount && !deletion.clearedOwnAccount &&
+          previous.accountOwnerId === deletion.owner && state.accountOwnerId === null) {
+          deletion.clearedOwnAccount = true;
+        } else if (deletion.requesting && previous.accountOwnerId === null &&
+          state.accountOwnerId !== null && deletion.owner === null) {
+          deletion.owner = state.accountOwnerId;
+        } else deletion.active = false;
+      }
       const attempt = exportAttempt.current;
       if (!attempt?.active || state.accountOwnerId === previous.accountOwnerId) return;
       // An explicitly initiated anonymous export may establish its first real
@@ -105,6 +119,7 @@ export default function SettingsPage() {
     return () => {
       pageAlive.current = false;
       pageVisible.current = false;
+      if (deletionAttempt.current) deletionAttempt.current.active = false;
       if (exportAttempt.current) {
         exportAttempt.current.active = false;
         exportAttempt.current.abort.abort();
@@ -116,6 +131,7 @@ export default function SettingsPage() {
   useDidShow(() => { pageVisible.current = true; });
   useDidHide(() => {
     pageVisible.current = false;
+    if (deletionAttempt.current) deletionAttempt.current.active = false;
     if (exportAttempt.current) {
       exportAttempt.current.active = false;
       exportAttempt.current.abort.abort();
@@ -286,24 +302,28 @@ export default function SettingsPage() {
   };
 
   const deleteAccount = async () => {
-    if (accountActionPending.current) return;
+    if (accountActionPending.current || !pageAlive.current || !pageVisible.current) return;
+    const attempt = { owner: currentDraftUserId(), active: true, requesting: true,
+      clearingOwnAccount: false, clearedOwnAccount: false };
+    deletionAttempt.current = attempt;
+    const canApply = () => {
+      if (!pageAlive.current || !pageVisible.current || !attempt.active || deletionAttempt.current !== attempt) return false;
+      const owner = currentDraftUserId();
+      return pageAlive.current && pageVisible.current && attempt.active && deletionAttempt.current === attempt &&
+        owner === (attempt.clearedOwnAccount ? null : attempt.owner);
+    };
     accountActionPending.current = true;
     setDataAction("DELETE");
     let accountDeleted = false;
     let localCleanupComplete = true;
     try {
-      const response = await deleteAccountThroughApi();
+      const response = await deleteAccountThroughApi((owner) => {
+        if (canApply() && owner === attempt.owner) attempt.clearingOwnAccount = true;
+      });
+      attempt.requesting = false;
       accountDeleted = true;
       localCleanupComplete = response.localCleanupComplete;
-      if (!response.localAccountReset) {
-        notify({ owner: "settings", placement: "inline", tone: localCleanupComplete ? "success" : "warning",
-          title: "原账户已删除", body: localCleanupComplete
-            ? "当前页面状态已保留。"
-            : "当前账号已保留。原账户的本地数据未能全部清除，请通过微信清理本小程序的数据后重新进入。", dismissible: true,
-          dedupeKey: "settings-account-deleted" });
-        return;
-      }
-      localCleanupComplete = resetAfterAccountDeletion() && localCleanupComplete;
+      if (!canApply() || !response.localAccountReset || !attempt.clearedOwnAccount) return;
       await Taro.showModal({
         title: "账户已删除",
         content:
@@ -315,8 +335,10 @@ export default function SettingsPage() {
         showCancel: false,
         confirmText: "完成",
       });
+      if (!canApply()) return;
       await Taro.reLaunch({ url: "/pages/auth/index?accountDeleted=1" });
     } catch (error) {
+      if (!canApply()) return;
       notify({
         owner: "settings",
         placement: "inline",
@@ -331,9 +353,12 @@ export default function SettingsPage() {
         dedupeKey: "settings-account-delete-failed",
       });
     } finally {
-      accountActionPending.current = false;
-      setDataAction(null);
-      setSheet(null);
+      attempt.active = false;
+      if (deletionAttempt.current === attempt) {
+        deletionAttempt.current = null;
+        accountActionPending.current = false;
+        if (pageAlive.current) { setDataAction(null); setSheet(null); }
+      }
     }
   };
 

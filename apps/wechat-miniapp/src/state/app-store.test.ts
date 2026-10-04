@@ -128,7 +128,7 @@ test("missing or unreadable auth hides mounted private state and same-account re
     }).join("\n");
     let unreadable = false;
     const run = vm.runInNewContext(ts.transpileModule(code + "\nensureFavoriteOwner;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-      SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, erasedStoredAccountId: null, invalidatedStoredSession: null, sessionPromise: null,
+      SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, erasedStoredAccountIds: new Set(), invalidatedStoredSession: null, sessionPromise: null,
       useAppStore: store, requestOperation: async () => { throw Error("synthetic offline"); },
       Taro: { getStorageSync: () => { if (unreadable) throw Error("synthetic read failed"); return storage.session; } },
     }) as () => Promise<string>;
@@ -265,10 +265,31 @@ test("account deletion removes only the deleted account's saved projection", () 
   store.getState().setPreference("equipment", "B 的望远镜");
   flush();
   store.getState().bindAccount("user:a");
-  assert.equal(store.getState().resetAfterAccountDeletion(), true);
+  assert.equal(store.getState().resetAfterAccountDeletion("user:a"), true);
   assert.equal(store.getState().accountOwnerId, null);
   assert.equal(storage.accounts["starward.wechat-miniapp.state.account.user:a"], undefined);
   assert.ok(storage.accounts["starward.wechat-miniapp.state.account.user:b"]);
+});
+
+test("a late deletion purges A recovery without replacing B or quarantined data", () => {
+  const unclaimed = { finderQuery: "unknown owner's private draft" };
+  const storage = { value: {}, unclaimed, accounts: {} as Record<string, unknown> };
+  const { store, flush } = loadStore(storage);
+  store.getState().bindAccount("user:a");
+  store.getState().setPreference("equipment", "A private edit");
+  flush();
+  store.getState().bindAccount("user:b");
+  store.getState().setPreference("equipment", "B private edit");
+  store.getState().replacePlans([{ planId: "B plan" }] as never);
+  flush();
+  const before = store.getState(), current = storage.value;
+  assert.ok(storage.accounts["starward.wechat-miniapp.state.account.user:a"]);
+  assert.equal(store.getState().resetAfterAccountDeletion("user:a"), true);
+  flush();
+  assert.equal(store.getState(), before, "deleted A cannot reset B's active projection");
+  assert.equal(storage.value, current, "deleted A cannot remove B's saved current projection");
+  assert.equal(storage.accounts["starward.wechat-miniapp.state.account.user:a"], undefined);
+  assert.equal(storage.unclaimed, unclaimed);
 });
 
 test("expired identity hides private state while preserving the same account's unsynced edit", () => {
@@ -365,7 +386,7 @@ test("temporary cache reset is synchronous but reports durable write success onl
     flush();
     assert.equal(await pending, !failWrites);
     store.getState().setPreference("equipment", "旧账号的望远镜");
-    assert.equal(store.getState().resetAfterAccountDeletion(), !failWrites);
+    assert.equal(store.getState().resetAfterAccountDeletion(store.getState().accountOwnerId!), !failWrites);
     assert.equal(store.getState().favoriteIds.length, 0);
     assert.equal(store.getState().plans.length, 0);
     assert.equal(store.getState().preferences.equipment, DEFAULT_USER_PREFERENCES.equipment);

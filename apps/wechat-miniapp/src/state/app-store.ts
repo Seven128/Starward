@@ -154,7 +154,7 @@ interface AppState extends PersistedState {
   replacePlans(plans: readonly ObservationPlan[]): void;
   deletePlan(planId: string): void;
   clearLocalCache(): Promise<boolean>;
-  resetAfterAccountDeletion(): boolean;
+  resetAfterAccountDeletion(deletedUserId: string): boolean;
 }
 
 const DEFAULT_VIEWPORT: MapViewportState = {
@@ -794,17 +794,25 @@ export const useAppStore = create<AppState>((set, get) => {
       }
       catch { /* In-memory account isolation remains in force. */ }
     },
-    resetAfterAccountDeletion() {
+    resetAfterAccountDeletion(deletedUserId) {
       let removed = true;
       try {
-        Taro.removeStorageSync(STORAGE_KEY);
-        persistedOwnerSeen = null;
-        if (get().accountOwnerId)
-          Taro.removeStorageSync(ACCOUNT_STORAGE_PREFIX + get().accountOwnerId);
+        Taro.removeStorageSync(ACCOUNT_STORAGE_PREFIX + deletedUserId);
+      } catch { removed = false; }
+      try {
+        const current = Taro.getStorageSync(STORAGE_KEY) as Partial<PersistedState> | null;
+        // A late receipt can arrive after another account saved its current
+        // projection. Unknown/unclaimed data is not deletion authority either.
+        if (current?.accountOwnerId === deletedUserId) {
+          Taro.removeStorageSync(STORAGE_KEY);
+          if (persistedOwnerSeen === deletedUserId) persistedOwnerSeen = null;
+        }
       } catch {
         // The server receipt remains authoritative; in-memory state is still reset.
         removed = false;
       }
+      freshlyStashedOwners.delete(deletedUserId);
+      if (get().accountOwnerId !== deletedUserId) return removed;
       set({
         accountOwnerId: null,
         mode: "DAY",

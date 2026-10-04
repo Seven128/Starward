@@ -101,7 +101,7 @@ const responseCache = createResponseCache(Taro);
 let sessionPromise: Promise<AuthSessionData> | null = null;
 // A server-confirmed erasure must stay revoked in this runtime even when the
 // native store cannot remove its old session. This is not a disk-erasure claim.
-let erasedStoredAccountId: string | null = null;
+const erasedStoredAccountIds = new Set<string>();
 // A rejected native record stays untrusted if deletion fails. A null token
 // means it could not be read; only a confirmed new login can lift that fence.
 let invalidatedStoredSession: { accessToken: string | null } | null = null;
@@ -231,7 +231,7 @@ function readStoredSession(): AuthSessionData | null {
       session = null;
     } else {
       session = value as AuthSessionData;
-      if (session.userId === erasedStoredAccountId) return null;
+      if (erasedStoredAccountIds.has(session.userId)) return null;
       if (invalidatedStoredSession && (
         invalidatedStoredSession.accessToken === null ||
         invalidatedStoredSession.accessToken === session.accessToken
@@ -267,7 +267,7 @@ function clearStoredSession(rejected?: AuthSessionData) {
   )) return false;
   invalidatedStoredSession = { accessToken: current?.accessToken ?? null };
   sessionPromise = null;
-  if (useAppStore.getState().accountOwnerId !== erasedStoredAccountId)
+  if (!erasedStoredAccountIds.has(useAppStore.getState().accountOwnerId ?? ""))
     useAppStore.getState().bindAccount(null);
   try {
     Taro.removeStorageSync(SESSION_STORAGE_KEY);
@@ -279,8 +279,9 @@ function clearStoredSession(rejected?: AuthSessionData) {
 }
 
 function markAccountErased(userId: string) {
-  erasedStoredAccountId = userId;
-  sessionPromise = null;
+  erasedStoredAccountIds.add(userId);
+  // A newer login has no verified identity yet. Its returned identity is checked
+  // by ensureSession; deleting A cannot retire a genuine successor B login.
 }
 
 function installationIdentity() {
@@ -592,7 +593,7 @@ async function ensureSession(force = false): Promise<AuthSessionData> {
       auth: "NONE",
       body: { code },
     });
-    if (result.data.userId === erasedStoredAccountId)
+    if (erasedStoredAccountIds.has(result.data.userId))
       throw new Error("account_identity_revoked");
     assertCurrentLogin();
     Taro.setStorageSync(SESSION_STORAGE_KEY, result.data);
@@ -1133,7 +1134,7 @@ export async function exportAccountData(signal?: AbortSignal) {
   return result;
 }
 
-export async function deleteAccount() {
+export async function deleteAccount(onCurrentAccountDeleted?: (userId: string) => void) {
   const { userId: deletedUserId, code } = await accountReauthentication();
   const result = await requestOperation("account-delete", "accountDelete", {
     auth: "REQUIRED",
@@ -1141,31 +1142,55 @@ export async function deleteAccount() {
     body: { confirmation: "DELETE_ACCOUNT" },
     idempotencyKey: idempotencyKey("account-delete"),
   }, false, deletedUserId);
-  const localAccountReset = currentDraftUserId() === deletedUserId;
+  let currentSession: AuthSessionData | null = null;
+  let acknowledgementComplete = true;
+  try { currentSession = readStoredSession(); }
+  catch { acknowledgementComplete = false; }
+  const resetCurrentAccount = currentSession?.userId === deletedUserId;
+  if (resetCurrentAccount) {
+    // This synchronous acknowledgement distinguishes our successful A -> null
+    // cleanup from an external account departure. UI cannot block revocation.
+    try { onCurrentAccountDeleted?.(deletedUserId); } catch { acknowledgementComplete = false; }
+  }
+  let localCleanupComplete = acknowledgementComplete;
+  try { localCleanupComplete = useAppStore.getState().resetAfterAccountDeletion(deletedUserId) && localCleanupComplete; }
+  catch { localCleanupComplete = false; }
   markAccountErased(deletedUserId);
-  let localCleanupComplete = !localAccountReset || clearStoredSession();
+  try {
+    const nativeSession = Taro.getStorageSync(SESSION_STORAGE_KEY) as unknown;
+    const nativeOwner = typeof nativeSession === "object" && nativeSession !== null &&
+      typeof (nativeSession as Partial<AuthSessionData>).userId === "string" &&
+      (nativeSession as AuthSessionData).userId.trim()
+      ? (nativeSession as Partial<AuthSessionData>).userId : null;
+    if (nativeOwner === deletedUserId) Taro.removeStorageSync(SESSION_STORAGE_KEY);
+    else if (nativeSession !== undefined && nativeSession !== null && nativeSession !== "" && !nativeOwner)
+      localCleanupComplete = false;
+  } catch { localCleanupComplete = false; }
   try {
     for (const key of Taro.getStorageInfoSync().keys) {
       if (!planDraftBelongsTo(key, deletedUserId) && !contributionDraftBelongsTo(key, deletedUserId) && !contributionSubmitBelongsTo(key, deletedUserId) && !profileDraftBelongsTo(key, deletedUserId) && !profileSaveBelongsTo(key, deletedUserId) && !importSaveBelongsTo(key, deletedUserId) && !importLocalDraftBelongsTo(key, deletedUserId) && !planChecklistBelongsTo(key, deletedUserId) && !planEventSelectionBelongsTo(key, deletedUserId) && !planSaveBelongsTo(key, deletedUserId)) continue;
       try { Taro.removeStorageSync(key); } catch { localCleanupComplete = false; }
     }
   } catch { localCleanupComplete = false; }
-  if (!localAccountReset) {
-    const cacheRemoved = await responseCache.removeScope(deletedUserId);
-    localCleanupComplete = cacheRemoved && localCleanupComplete;
-    miniappQueryClient.removeQueries({ predicate: query => query.queryKey.includes(deletedUserId) });
-    return { ...result, localAccountReset, localCleanupComplete };
-  }
-  responseCache.clear();
-  await responseCache.flush();
-  localCleanupComplete = responseCache.cleanupComplete() && localCleanupComplete;
+  try { miniappQueryClient.removeQueries({ predicate: query => query.queryKey.includes(deletedUserId) }); }
+  catch { localCleanupComplete = false; }
+  try { localCleanupComplete = await responseCache.removeScope(deletedUserId) && localCleanupComplete; }
+  catch { localCleanupComplete = false; }
+  let localAccountReset = false;
   try {
-    Taro.removeStorageSync(INSTALLATION_STORAGE_KEY);
-  } catch {
-    // Server deletion and session revocation remain authoritative.
-    localCleanupComplete = false;
+    localAccountReset = resetCurrentAccount && currentDraftUserId() === null &&
+      useAppStore.getState().accountOwnerId === null;
+  } catch { localCleanupComplete = false; }
+  // A successor may establish its identity while cache persistence waits.
+  // Rotate the installation only when no such session/login owns it; a failed
+  // native read is not evidence that the installation is still ours to remove.
+  if (localAccountReset && !sessionPromise) {
+    try {
+      const nativeSession = Taro.getStorageSync(SESSION_STORAGE_KEY) as Partial<AuthSessionData> | null;
+      if (!nativeSession || nativeSession.userId === deletedUserId)
+        Taro.removeStorageSync(INSTALLATION_STORAGE_KEY);
+    } catch { localCleanupComplete = false; }
   }
-  miniappQueryClient.clear();
   return { ...result, localAccountReset, localCleanupComplete };
 }
 

@@ -21,6 +21,8 @@ test("one pending data action excludes cache, export and deletion duplicates and
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
     accountActionPending: lock,
+    pageAlive: { current: true }, pageVisible: { current: true }, deletionAttempt: { current: null },
+    currentDraftUserId: () => "synthetic:a",
     setDataAction: (value: unknown) => busy.push(value),
     setSheet: (value: unknown) => sheets.push(value),
     deleteAccountThroughApi: () => { calls.push("delete"); return new Promise((_, reject) => { rejectDelete = reject; }); },

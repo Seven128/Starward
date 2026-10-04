@@ -26,7 +26,7 @@ function loadSessionRuntime(login: (attempt: number) => Promise<AuthSessionData>
   const state = { owner: null as string | null, readFails: false, removeFails: false, writeFails: false, logins: 0, capabilities: 0 };
   const run = vm.runInNewContext(codeFor(["readStoredSession", "clearStoredSession", "ensureSession", "currentDraftUserId"],
     "({ensureSession, clearStoredSession, readStoredSession, currentDraftUserId});"), {
-    SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, erasedStoredAccountId: null, sessionPromise: null, invalidatedStoredSession: null,
+    SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, erasedStoredAccountIds: new Set(), sessionPromise: null, invalidatedStoredSession: null,
     installationIdentity: () => "local:synthetic", MiniappRequestCancelled,
     useAppStore: { getState: () => ({ accountOwnerId: state.owner, bindAccount: (owner: string | null) => { state.owner = owner; } }) },
     Taro: {
@@ -268,7 +268,7 @@ test("session restoration and fresh login bind the matching private store before
       requestOperation: async (_key: string, operation: string) => operation === "capabilitiesGet"
         ? { data: { flags: { WECHAT_AUTH_ENABLED: false } } }
         : { data: { userId: "user:b", accessToken: "token", expiresAt: "2999-01-01T00:00:00.000Z" } },
-      installationIdentity: () => "local:synthetic", erasedStoredAccountId: null,
+      installationIdentity: () => "local:synthetic", erasedStoredAccountIds: new Set(),
       invalidatedStoredSession: null,
       Taro: { setStorageSync: (_key: string, value: unknown) => saved.push(value) },
       SESSION_STORAGE_KEY: "auth",
@@ -285,7 +285,7 @@ test("an expired native session hides its private store before reauthentication"
   let removed = false;
   const read = vm.runInNewContext(codeFor(["readStoredSession"], "readStoredSession;"), {
     SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000,
-    erasedStoredAccountId: null,
+    erasedStoredAccountIds: new Set(),
     invalidatedStoredSession: null,
     Taro: {
       getStorageSync: () => ({ userId: "user:a", accessToken: "old", expiresAt: "2020-01-01T00:00:00.000Z" }),
@@ -349,7 +349,7 @@ test("a failed sensitive request never reuses its native code or clears the curr
 
 test("deletion receipts clean only the initiating account after an account switch", async () => {
   for (const switched of [false, true]) {
-    let owner = "a", cleared = 0, queryClears = 0;
+    let owner: string | null = "a", cleared = 0, queryClears = 0;
     const removed: string[] = [];
     const cache = new Map([["private:a", {}], ["private:b", {}]]);
     const queries = [{ queryKey: ["plans", "a"] }, { queryKey: ["plans", "b"] }];
@@ -363,9 +363,14 @@ test("deletion receipts clean only the initiating account after an account switc
         return { data: { deleted: true } };
       },
       currentDraftUserId: () => owner,
-      clearStoredSession: () => { cleared++; return true; },
+      readStoredSession: () => ({ userId: owner }), sessionPromise: null,
+      useAppStore: { getState: () => ({ accountOwnerId: owner, resetAfterAccountDeletion: (deleted: string) => {
+        assert.equal(deleted, "a"); if (owner === deleted) owner = null; return true;
+      } }) },
       markAccountErased: (userId: string) => assert.equal(userId, "a"),
-      Taro: { getStorageInfoSync: () => ({ keys: ["draft:a", "draft:b"] }), removeStorageSync: (key: string) => removed.push(key) },
+      Taro: { getStorageSync: (key: string) => key === "auth" && !switched ? { userId: "a" } : null, getStorageInfoSync: () => ({ keys: ["draft:a", "draft:b"] }), removeStorageSync: (key: string) => {
+        removed.push(key); if (key === "auth") cleared++;
+      } }, SESSION_STORAGE_KEY: "auth",
       planDraftBelongsTo: belongs, contributionDraftBelongsTo: belongs, contributionSubmitBelongsTo: belongs,
       profileDraftBelongsTo: belongs, profileSaveBelongsTo: belongs, importSaveBelongsTo: belongs,
       importLocalDraftBelongsTo: belongs, planChecklistBelongsTo: belongs, planSaveBelongsTo: belongs,
@@ -388,12 +393,12 @@ test("deletion receipts clean only the initiating account after an account switc
     assert.equal(receipt.localAccountReset, !switched);
     assert.equal(receipt.localCleanupComplete, true);
     assert.equal(cleared, switched ? 0 : 1);
-    assert.equal(queryClears, switched ? 0 : 1);
+    assert.equal(queryClears, 0);
     assert.equal(removed.includes("draft:a"), true);
     assert.equal(removed.includes("draft:b"), false);
     assert.equal(removed.includes("installation"), !switched);
     assert.equal(cache.has("private:a"), false);
-    assert.equal(cache.has("private:b"), switched);
+    assert.equal(cache.has("private:b"), true);
   }
 });
 
@@ -415,8 +420,9 @@ test("confirmed remote deletion reports failed native erasure and cannot restore
     const belongs = (key: string, owner: string) => key === "draft:" + owner;
     const run = vm.runInNewContext(codeFor(["readStoredSession", "clearStoredSession", "markAccountErased", "currentDraftUserId", "deleteAccount"], "({deleteAccount, currentDraftUserId});"), {
       SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, INSTALLATION_STORAGE_KEY: "installation",
-      erasedStoredAccountId: null, invalidatedStoredSession: null, sessionPromise: null, responseCache, Taro: taro,
-      useAppStore: { getState: () => ({ accountOwnerId: switched ? "b" : "a", bindAccount: () => undefined }) },
+      erasedStoredAccountIds: new Set(), invalidatedStoredSession: null, sessionPromise: null, responseCache, Taro: taro,
+      useAppStore: { getState: () => ({ accountOwnerId: switched ? "b" : null, bindAccount: () => undefined,
+        resetAfterAccountDeletion: () => !failWrites }) },
       accountReauthentication: async () => ({ userId: "a", code: "synthetic" }), idempotencyKey: () => "synthetic",
       requestOperation: async () => {
         serverDeleted = true;
@@ -446,7 +452,7 @@ test("an old login response completing after erasure cannot rewrite the revoked 
   let finishLogin!: (value: unknown) => void;
   const writes: unknown[] = [];
   const run = vm.runInNewContext(codeFor(["ensureSession", "markAccountErased"], "({ensureSession, markAccountErased});"), {
-    erasedStoredAccountId: null, invalidatedStoredSession: null, sessionPromise: null, SESSION_STORAGE_KEY: "auth",
+    erasedStoredAccountIds: new Set(), invalidatedStoredSession: null, sessionPromise: null, SESSION_STORAGE_KEY: "auth",
     readStoredSession: () => null, installationIdentity: () => "synthetic-installation",
     requestOperation: async (_key: string, operation: string) => operation === "capabilitiesGet"
       ? { data: { flags: { WECHAT_AUTH_ENABLED: false } } }
@@ -460,4 +466,18 @@ test("an old login response completing after erasure cannot rewrite the revoked 
   finishLogin({ data: { userId: "a", accessToken: "synthetic", expiresAt: "2999-01-01" } });
   await rejection;
   assert.equal(writes.length, 0);
+});
+
+test("revoking another identity cannot make an earlier erased native session valid again", () => {
+  let value: AuthSessionData = { userId: "a" as UserId, accessToken: "synthetic:a", expiresAt: "2999-01-01" };
+  const run = vm.runInNewContext(codeFor(["readStoredSession", "markAccountErased"], "({readStoredSession,markAccountErased});"), {
+    erasedStoredAccountIds: new Set(), invalidatedStoredSession: null, SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000,
+    Taro: { getStorageSync: () => value }, useAppStore: { getState: () => ({ bindAccount() {} }) },
+  });
+  run.markAccountErased("a");
+  assert.equal(run.readStoredSession(), null);
+  run.markAccountErased("b");
+  assert.equal(run.readStoredSession(), null, "earlier erasure must remain authoritative in this runtime");
+  value = { userId: "c" as UserId, accessToken: "synthetic:c", expiresAt: "2999-01-01" };
+  assert.equal(run.readStoredSession(), value, "an independent identity remains usable");
 });
