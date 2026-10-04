@@ -30,7 +30,7 @@ function mapRuntime(response: Promise<{ data: object }> | (() => Promise<{ data:
   };
   visit(source);
   assert.equal(declarations.length, names.size);
-  assert.match(text, /"map-observation-context",\s*mapResetVersion/u);
+  assert.match(text, /"map-observation-context",\s*accountOwnerId,\s*mapResetVersion/u);
   let version = 0, calls = 0, mapPointSelections = 0;
   const contexts: object[] = [], viewports: object[] = [], notifications: object[] = [];
   const timers = new Map<number, () => void>();

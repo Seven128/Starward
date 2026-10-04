@@ -39,6 +39,7 @@ import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
   getMapScene,
+  MiniappApiError,
   resolveObservationContext,
   restoreObservationContext,
   searchPlaces,
@@ -47,7 +48,7 @@ import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import { useAppStore } from "@/state/app-store";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
-import { canApplyContextRestore } from "@/services/observation-context-version";
+import { canApplyContextRestore, sameContextVersion } from "@/services/observation-context-version";
 import { SearchResultPartition } from "./search-result-partition";
 import "./search-page.scss";
 
@@ -309,7 +310,11 @@ export function MapSearchSurface() {
     (!queryUnconfirmed && (scene.refreshError || scene.data?.dataState === "STALE_USABLE" ||
       placeSearch.refreshError || placeSearch.data?.dataState === "STALE_USABLE")),
   );
-  const searchState: PageState = contextQuery.isError
+  const contextFailure = contextQuery.error ?? contextQuery.refreshError;
+  const privateContextUnavailable = Boolean(observationContext?.privateProposal &&
+    contextFailure instanceof MiniappApiError && ((contextFailure.statusCode === 403 && contextFailure.code === "PERMISSION_DENIED") ||
+      (contextFailure.statusCode === 404 && contextFailure.code === "NOT_FOUND")));
+  const searchState: PageState = privateContextUnavailable ? "ERROR" : contextQuery.isError
     ? isPermissionError(contextQuery.error)
       ? "PERMISSION_DENIED"
       : "ERROR"
@@ -357,24 +362,36 @@ export function MapSearchSurface() {
     setSuggestionsOpen(false);
   };
 
+  const beginSelection = () => {
+    const version = ++selectionVersion.current;
+    const { accountOwnerId, mapResetVersion, observationContext } = useAppStore.getState();
+    const ownerPage = Taro.getCurrentPages().at(-1);
+    const owns = () => {
+      const current = useAppStore.getState();
+      return current.accountOwnerId === accountOwnerId && current.mapResetVersion === mapResetVersion;
+    };
+    return { version, owns, current: () => owns() && version === selectionVersion.current &&
+      Taro.getCurrentPages().at(-1) === ownerPage && sameContextVersion(observationContext, useAppStore.getState().observationContext) };
+  };
+
   const leaveSearch = async () => {
-    selectionVersion.current++;
+    const intent = beginSelection();
+    const failures = useAppStore.getState().notifications.filter(item => item.owner === "search" && item.dedupeKey === "search-return-failed");
     try {
       await Taro.navigateBack({ delta: 1 });
     } catch {
+      if (!intent.current()) return;
       try {
         await Taro.switchTab({ url: "/pages/map/index" });
       } catch (error) {
+        if (!intent.current()) return;
         notify({ owner: "search", placement: "inline", tone: "warning", title: "暂时无法返回地图", body: `${errorMessage(error)}。搜索内容和选择已保留，请再次返回。`, dismissible: true, dedupeKey: "search-return-failed" });
         return;
       }
     }
+    if (!intent.owns()) return;
     const state = useAppStore.getState();
-    for (const item of state.notifications) {
-      if (item.owner === "search" && item.dedupeKey === "search-return-failed") {
-        state.dismissNotification(item.id);
-      }
-    }
+    for (const failure of failures) if (state.notifications.includes(failure)) state.dismissNotification(failure.id);
   };
 
   const selectFormal = async (spot: SpotSummary) => {
@@ -393,7 +410,7 @@ export function MapSearchSurface() {
   const moveMapReference = async (
     result: Pick<OrdinaryPlaceRef | DarkSkyCandidateRef, "location" | "label">,
   ) => {
-    const version = ++selectionVersion.current;
+    const intent = beginSelection();
     setSuggestionsOpen(false);
     const center = {
       latitude: result.location.latitude,
@@ -424,9 +441,8 @@ export function MapSearchSurface() {
             targetProfile: activeContext.targetProfile,
           } : {}),
         });
-        if (version !== selectionVersion.current) return;
+        if (!intent.current()) return;
         setObservationContext(response.data);
-      if (version !== selectionVersion.current) return;
       selectSpot(null);
       setViewport({ center, zoom: Math.max(12, viewport.zoom) });
       if (finderQuery.trim()) addSearchHistory(finderQuery);
@@ -434,7 +450,7 @@ export function MapSearchSurface() {
       setAnnouncement(`地图已移动到${result.label}；正在查找附近正式观星点。`);
       await leaveSearch();
     } catch (error) {
-      if (version !== selectionVersion.current) return;
+      if (!intent.current()) return;
       if (isMiniappRequestCancelled(error)) return;
       const outsideSupportedRegion = typeof error === "object" && error !== null
         && "code" in error && error.code === "INVALID_INPUT"
@@ -450,10 +466,10 @@ export function MapSearchSurface() {
 
   const chooseMapLocation = async () => {
     if (nativeSelectionPending.current) return;
-    const version = ++selectionVersion.current;
+    const intent = beginSelection();
+    const version = intent.version;
     nativeSelectionPending.current = version;
-    const ownerPage = Taro.getCurrentPages().at(-1);
-    const current = () => version === selectionVersion.current && Taro.getCurrentPages().at(-1) === ownerPage;
+    const current = intent.current;
     try {
       const allowed = await handoff.confirm("微信选点界面可能较亮，无法跟随红光模式。");
       if (!allowed || !current()) return;
@@ -648,9 +664,9 @@ export function MapSearchSurface() {
             <StatusPanel
               state={searchState}
               emptyLevel={searchState === "EMPTY" ? "page" : undefined}
-              title={searchState === "EMPTY" ? "没有匹配的观星点" : undefined}
+              title={privateContextUnavailable ? "原观测位置不可用" : searchState === "EMPTY" ? "没有匹配的观星点" : undefined}
               detail={
-                (contextQuery.isError ? errorMessage(contextQuery.error) : queryUnconfirmed ? "" : scene.isError ? errorMessage(scene.error) : placeSearch.isError ? errorMessage(placeSearch.error) : "") ||
+                (privateContextUnavailable ? "原观测位置无法继续使用，请返回地图重新选择。" : contextQuery.isError ? errorMessage(contextQuery.error) : queryUnconfirmed ? "" : scene.isError ? errorMessage(scene.error) : placeSearch.isError ? errorMessage(placeSearch.error) : "") ||
                 (isOfflineError(contextQuery.error ?? (queryUnconfirmed ? null : scene.error ?? placeSearch.error))
                   ? "网络不可用，请连接后重试。"
                   : expiredEmptyFilter
@@ -659,8 +675,8 @@ export function MapSearchSurface() {
                     ? "换个名称搜索，或返回地图移动到其他区域。"
                     : "正在搜索观星点。")
               }
-              recoveryLabel={searchState === "EMPTY" ? "换个名称" : searchState === "ERROR" ? "重试搜索" : searchState === "PERMISSION_DENIED" ? "查看登录说明" : undefined}
-              onRecover={searchState === "ERROR" ? retrySearchResources : searchState === "PERMISSION_DENIED"
+              recoveryLabel={privateContextUnavailable ? "返回地图" : searchState === "EMPTY" ? "换个名称" : searchState === "ERROR" ? "重试搜索" : searchState === "PERMISSION_DENIED" ? "查看登录说明" : undefined}
+              onRecover={privateContextUnavailable ? () => void leaveSearch() : searchState === "ERROR" ? retrySearchResources : searchState === "PERMISSION_DENIED"
                 ? () => void Taro.navigateTo({ url: "/pages/auth/index" }) : searchState === "EMPTY"
                   ? () => { setFinderQuery(""); setFocused(true); setSuggestionsOpen(true); } : undefined}
             />

@@ -3,12 +3,17 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { sameContextVersion } from "../../services/observation-context-version";
 
 for (const hasContext of [true, false]) test(`only the latest visible search selection may publish context or navigate (existing context: ${hasContext})`, async () => {
   const source = ts.createSourceFile("search.tsx", readFileSync(new URL("./search-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const component = source.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "MapSearchSurface");
   const declaration = component?.body?.statements.find((node) => ts.isVariableStatement(node) && node.declarationList.declarations.some((item) => item.name.getText(source) === "moveMapReference"));
   assert.ok(declaration);
+  const ownerDeclaration = component?.body?.statements.find((node) => ts.isVariableStatement(node) && node.declarationList.declarations.some((item) => item.name.getText(source) === "beginSelection"));
+  assert.ok(ownerDeclaration);
+  const ownerPage = {};
+  const state = { accountOwnerId: "A", mapResetVersion: 0, observationContext: null };
   const selectionVersion = { current: 0 };
   const pending: Array<{ resolve(value: unknown): void; reject(error: unknown): void }> = [];
   const adopted: unknown[] = [];
@@ -17,7 +22,8 @@ for (const hasContext of [true, false]) test(`only the latest visible search sel
   const centers: unknown[] = [];
   let selections = 0;
   const requests: any[] = [];
-  const move = vm.runInNewContext(ts.transpileModule(declaration.getText(source) + "\nmoveMapReference;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+  const move = vm.runInNewContext(ts.transpileModule(ownerDeclaration.getText(source) + "\n" + declaration.getText(source) + "\nmoveMapReference;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    useAppStore: { getState: () => state }, Taro: { getCurrentPages: () => [ownerPage] }, sameContextVersion,
     selectionVersion, viewport: { zoom: 12 }, finderQuery: "测试",
     activeContext: hasContext ? { localDate: "2026-09-06", selectedAtUtc: "2026-09-06T12:00:00Z", eventInstanceId: null, targetProfile: "DAILY" } : null,
     localDateForNow: () => "2026-09-15",

@@ -4,12 +4,14 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { normalizePlatformLocation } from "../../services/platform-location-result";
+import { sameContextVersion } from "../../services/observation-context-version";
 
 function selection(mode = "DAY", confirm = true, moveWait?: Promise<unknown>) {
   const ast = ts.createSourceFile("search.tsx", readFileSync(new URL("./search-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  let declaration = "";
+  let declaration = "", ownerDeclaration = "";
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && node.name.getText(ast) === "chooseMapLocation") declaration = node.getText(ast);
+    if (ts.isVariableDeclaration(node) && node.name.getText(ast) === "beginSelection") ownerDeclaration = node.getText(ast);
     ts.forEachChild(node, visit);
   };
   visit(ast); assert.ok(declaration);
@@ -32,14 +34,14 @@ function selection(mode = "DAY", confirm = true, moveWait?: Promise<unknown>) {
       }
       return pickers[pickerCount++]!.pending;
     } };
-  const useAppStore = { getState: () => ({ mode }) };
+  const useAppStore = { getState: () => ({ mode, accountOwnerId: null, mapResetVersion: 0, observationContext: null }) };
   const choosePlatformLocation = vm.runInNewContext(ts.transpileModule(platform.getText(platformAst).replace(/^export /, "") + "; choosePlatformLocation;",
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, { Taro, useAppStore, normalizePlatformLocation });
-  const run = vm.runInNewContext(ts.transpileModule(`const ${declaration}; chooseMapLocation;`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
+  const run = vm.runInNewContext(ts.transpileModule(`const ${ownerDeclaration}; const ${declaration}; chooseMapLocation;`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
     nativeSelectionPending: nativePending, selectionVersion: version,
     handoff: { confirm: async () => { if (mode === "OBSERVATION") { calls.push({ action: "warning" }); return confirm; } return true; } },
     viewport: { center: { latitude: 22, longitude: 113 } },
-    useAppStore, Taro, choosePlatformLocation,
+    useAppStore, Taro, choosePlatformLocation, sameContextVersion,
     setFinderQuery: (value: unknown) => calls.push({ action: "query", value }),
     moveMapReference: async (value: unknown) => { calls.push({ action: "move", value }); await moveWait; },
     notify: () => calls.push({ action: "notice" }),
