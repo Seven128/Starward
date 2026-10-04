@@ -1,37 +1,33 @@
 import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
-import Taro, { useDidShow, useDidHide, useRouter } from "@tarojs/taro";
+import { useDidShow, useDidHide, useRouter } from "@tarojs/taro";
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
-import { useResourceQuery } from "@/hooks/use-resource-query";
+import { useAccountPlans } from "@/hooks/use-account-plans";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
-import { currentDraftUserId, getPlans } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { nextPlanListBoundary, planEndLabel, planListEmptyState, planListEntries, type PlanPartition } from "./plan-list-model";
 import { planTravelModeLabel } from "../detail/plan-travel-fields";
+import { usePlanNavigation } from "@/features/plan/use-plan-navigation";
 import "./index.scss";
 
 export default function PlanListPage() {
   const spotId = spotIdFromPlanRoute(useRouter().params.spotId);
-  const themeClass = useThemeClass(), mount = useId();
-  const [, refreshIdentity] = useState(0);
+  const themeClass = useThemeClass();
   const [partition, setPartition] = useState<PlanPartition>("upcoming");
   const [now, setNow] = useState(() => new Date());
-  const [navigationError, setNavigationError] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [scrollTop, setScrollTop] = useState(0);
   const scrollPositions = useRef({ upcoming: 0, past: 0 });
-  const navigating = useRef(false);
-  const owner = currentDraftUserId();
   const notify = useAppStore((state) => state.notify);
-  const query = useResourceQuery({ queryKey: ["plans", owner ?? `unresolved:${mount}`],
-    queryFn: signal => getPlans(signal, owner ?? undefined), enabled: pageVisible, staleTime: 15_000 });
+  const { owner, query } = useAccountPlans({ enabled: pageVisible, staleTime: 15_000 });
+  const { open, navigationError } = usePlanNavigation(owner);
   useDidShow(() => {
-    setPageVisible(true); refreshIdentity(v => v + 1); setNow(new Date());
+    setPageVisible(true); setNow(new Date());
     void query.refetch();
   });
   useDidHide(() => setPageVisible(false));
@@ -56,12 +52,6 @@ export default function PlanListPage() {
   const emptyState = planListEmptyState(partition, hasPlansInOtherPartition);
   const choosePartition = (next: PlanPartition) => { setPartition(next); setScrollTop(scrollPositions.current[next]); };
   useEffect(() => { scrollPositions.current = { upcoming: 0, past: 0 }; setScrollTop(0); setPartition("upcoming"); }, [owner]);
-  const open = async (url: string) => {
-    if (navigating.current) return;
-    navigating.current = true; setNavigationError(false);
-    try { await Taro.navigateTo({ url }); } catch { setNavigationError(true); }
-    finally { navigating.current = false; }
-  };
   return <><SystemMotionProbe /><View className={`${themeClass} plan-list-page`}>
     <FloatingNotificationHost />
     <CustomNav title="观星计划" back backFallbackTab="/pages/my/index" />

@@ -1,27 +1,24 @@
 import { SystemMotionProbe } from "@/components/system-motion-probe";
-import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
+import { useDidHide, useDidShow } from "@tarojs/taro";
 import { Button, Picker, ScrollView, Text, View } from "@tarojs/components";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { FloatingNotificationHost } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
 import { SemanticIcon } from "@/components/semantic-asset";
-import { useResourceQuery } from "@/hooks/use-resource-query";
+import { useAccountPlans } from "@/hooks/use-account-plans";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
-import { currentDraftUserId, getPlans } from "@/services/api-client";
 import { achievementSummary, endedPlanRecords, nextPlanEndAt } from "@/features/my/plan-achievements";
+import { usePlanNavigation } from "@/features/plan/use-plan-navigation";
 import "./index.scss";
 
 export default function AchievementPage() {
   const themeClass = useThemeClass();
-  const owner = currentDraftUserId();
-  const mountId = useId();
   const [now, setNow] = useState(() => new Date());
   const [visible, setVisible] = useState(true);
   const [year, setYear] = useState<number | null>(null);
-  const [navigationError, setNavigationError] = useState(false);
-  const plans = useResourceQuery({ queryKey: ["plans", owner ?? `unresolved:${mountId}`],
-    queryFn: signal => getPlans(signal, owner ?? undefined), staleTime: 30_000 });
+  const { owner, query: plans } = useAccountPlans({ enabled: visible, staleTime: 30_000 });
+  const { open, navigationError } = usePlanNavigation(owner);
   useDidShow(() => { setVisible(true); setNow(new Date()); void plans.refetch(); });
   useDidHide(() => setVisible(false));
   useEffect(() => {
@@ -37,11 +34,7 @@ export default function AchievementPage() {
   const selectedYear = year && years.includes(year) ? year : years[0] ?? null;
   const records = all.filter(record => record.year === selectedYear);
   const summary = achievementSummary(records);
-  const openPlan = async (planId: string) => {
-    setNavigationError(false);
-    try { await Taro.navigateTo({ url: `/content/plan/detail/index?planId=${encodeURIComponent(planId)}` }); }
-    catch { setNavigationError(true); }
-  };
+  const openPlan = (planId: string) => open(`/content/plan/detail/index?planId=${encodeURIComponent(planId)}`);
   return <><SystemMotionProbe /><View className={`${themeClass} achievement-page`}>
     <FloatingNotificationHost />
     <CustomNav title="我的星旅" back backFallbackTab="/pages/my/index" />
@@ -73,7 +66,7 @@ export default function AchievementPage() {
                 <View className="achievement-record__footer"><Text>计划已结束</Text><Text>查看行程 ›</Text></View>
               </Button>;
             })}
-          </> : !plans.isError && !plans.refreshError && plans.data.dataState !== "STALE_USABLE" ? <StatusPanel state="EMPTY" emptyLevel="page" title="暂无星旅记录" detail="已结束的观星计划会显示在这里；计划时间经过不代表已到访或观测成功。" recoveryLabel="＋ 新建计划" onRecover={() => void Taro.navigateTo({ url: "/content/plan/edit/index?new=1" })} /> : null}
+          </> : !plans.isError && !plans.refreshError && plans.data.dataState !== "STALE_USABLE" ? <StatusPanel state="EMPTY" emptyLevel="page" title="暂无星旅记录" detail="已结束的观星计划会显示在这里；计划时间经过不代表已到访或观测成功。" recoveryLabel="＋ 新建计划" onRecover={() => void open("/content/plan/edit/index?new=1")} /> : null}
         </> : null}
         {navigationError ? <StatusPanel state="ERROR" detail="行程暂未打开，请再次点击。" /> : null}
       </View>
