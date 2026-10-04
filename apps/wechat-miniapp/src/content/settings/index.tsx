@@ -85,8 +85,9 @@ export default function SettingsPage() {
   });
 
   const selectDisplayMode = (next: DisplayMode) => {
+    if (next === mode) return;
     if (next === "OBSERVATION") {
-      if (mode !== "OBSERVATION") enterObservation();
+      enterObservation();
       return;
     }
     setMode(next);

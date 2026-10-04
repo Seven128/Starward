@@ -225,7 +225,14 @@ export class OutboxWorkerRuntime {
         `SELECT event_id::text, event_type, payload
            FROM outbox_events
           WHERE state = 'PENDING' AND available_at <= now()
-          ORDER BY created_at
+          ORDER BY created_at,
+                   CASE event_type
+                     WHEN 'OperationalWEATHERRequested' THEN 0
+                     WHEN 'OperationalASTRONOMYRequested' THEN 1
+                     WHEN 'OperationalDECISIONRequested' THEN 2
+                     ELSE 0
+                   END,
+                   event_id
           FOR UPDATE SKIP LOCKED
           LIMIT $1`,
         [limit],

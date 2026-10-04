@@ -102,7 +102,7 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
         {DISPLAY_MODES.map((item) => (
           <Button key={item} id={`settings-mode-${item.toLowerCase()}`}
             className={`settings-display-mode-choice focus-ring${mode === item ? " settings-display-mode-choice--selected" : ""}`}
-            ariaLabel={`${DISPLAY_MODE_LABEL[item]}${mode === item ? "，当前已选，再次点击切换下一模式" : "，切换模式"}`}
+            ariaLabel={`${DISPLAY_MODE_LABEL[item]}${mode === item ? item === "OBSERVATION" ? "，当前已选" : "，当前已选，再次点击切换下一模式" : "，切换模式"}`}
             onClick={() => {
               recordAcceptanceDiagnostic("display-mode-control", "start", `tap:${item}:${suppressTap.current ? "suppressed" : "accepted"}`);
               if (suppressTap.current) { suppressTap.current = false; return; }

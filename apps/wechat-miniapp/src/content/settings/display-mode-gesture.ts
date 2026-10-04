@@ -6,9 +6,8 @@ export const DISPLAY_MODE_LABEL: Record<DisplayMode, string> = {
 };
 
 export function tappedMode(current: DisplayMode, target: DisplayMode): DisplayMode {
-  return current === target
-    ? DISPLAY_MODES[(DISPLAY_MODES.indexOf(current) + 1) % DISPLAY_MODES.length]!
-    : target;
+  if (current !== target) return target;
+  return DISPLAY_MODES[Math.min(DISPLAY_MODES.length - 1, DISPLAY_MODES.indexOf(current) + 1)]!;
 }
 
 export type ModeDrag = {

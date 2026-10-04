@@ -7,10 +7,10 @@ const start = (origin = 0): ModeDrag => ({
   step: 100, velocity: 0, axis: "pending",
 });
 
-test("tap advances the current station and selects another station directly", () => {
+test("tap selects another station directly; current thumb advances only if a next station exists", () => {
   assert.equal(tappedMode("DAY", "DAY"), "NIGHT");
   assert.equal(tappedMode("NIGHT", "NIGHT"), "OBSERVATION");
-  assert.equal(tappedMode("OBSERVATION", "OBSERVATION"), "DAY");
+  assert.equal(tappedMode("OBSERVATION", "OBSERVATION"), "OBSERVATION");
   assert.equal(tappedMode("DAY", "OBSERVATION"), "OBSERVATION");
 });
 

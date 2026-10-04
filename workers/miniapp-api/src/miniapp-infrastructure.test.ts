@@ -918,6 +918,24 @@ test(
 
     const runtime = new OutboxWorkerRuntime(options);
     try {
+      const orderedSweep = await runtime.pool.query<{
+        event_type: string;
+        started_at: Date;
+        completed_at: Date;
+      }>(`SELECT o.event_type, j.started_at, j.completed_at
+           FROM outbox_events o
+           JOIN job_executions j USING (event_id)
+          WHERE o.event_type IN (
+            'OperationalASTRONOMYRequested',
+            'OperationalDECISIONRequested'
+          ) AND j.state = 'COMPLETE'`);
+      const astronomyExecution = orderedSweep.rows.find(row => row.event_type === "OperationalASTRONOMYRequested");
+      const decisionExecution = orderedSweep.rows.find(row => row.event_type === "OperationalDECISIONRequested");
+      assert.ok(astronomyExecution && decisionExecution);
+      assert.ok(
+        astronomyExecution.completed_at <= decisionExecution.started_at,
+        "the hourly decision must consume the astronomy night published by the same sweep",
+      );
       const costOutcome = await runtime.pool.query<{ result_state: string; result_payload: { projectedMonthlyCny: number | null; hardMonthlyMax: number | null; knownEstimatedCostCny: number | null } }>(
         "SELECT result_state, result_payload FROM job_executions WHERE job_kind='COST' AND state='COMPLETE' ORDER BY completed_at DESC LIMIT 1");
       assert.equal(costOutcome.rows[0]?.result_state, "UNASSESSED", "a completed COST job cannot certify an unpriced or empty ledger as within budget");
