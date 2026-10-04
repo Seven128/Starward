@@ -12,7 +12,7 @@ export function useThemeClass() {
     hydrate();
   }, [hydrate]);
   useEffect(() => {
-    void syncNativeChrome(mode).catch((error: unknown) => {
+    void syncNativeChrome(useAppStore.getState().mode).catch((error: unknown) => {
       console.warn("tab_bar_theme_sync_failed", error);
     });
   }, [mode]);

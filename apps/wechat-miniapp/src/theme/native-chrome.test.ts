@@ -6,15 +6,21 @@ import ts from "typescript";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import { NATIVE_CHROME_THEME } from "./design-tokens";
 
-function chromeHarness(failure?: { errMsg: string }, initialRoute = "pages/map/index", navigateDuringStyle = false, failureMethod = "style") {
+function chromeHarness(failure?: { errMsg: string }, initialRoute = "pages/map/index", navigateDuringStyle = false, failureMethod = "style", beforeComplete?: (method: string, values: Record<string, unknown>) => Promise<void>, synchronousFailure?: { method: string; color: string; error: unknown }) {
   const source = readFileSync(new URL("./native-chrome.ts", import.meta.url), "utf8")
-    .replace(/^import .*;\r?\n/gm, "").replace("export async function", "async function");
+    .replace(/^import .*;\r?\n/gm, "").replace(/^export /gm, "");
   const calls: { method: string; values: Record<string, unknown> }[] = [];
+  const applied: typeof calls = [];
   let route = initialRoute;
-  const native = (method: string) => async (values: Record<string, unknown>) => {
+  const native = (method: string) => (values: Record<string, unknown>) => {
     calls.push({ method, values });
-    if (method === failureMethod && failure) throw failure;
-    if (method === "style" && navigateDuringStyle) route = "spot/search/index";
+    if (method === synchronousFailure?.method && values.backgroundColor === synchronousFailure.color) throw synchronousFailure.error;
+    return (async () => {
+      if (beforeComplete) await beforeComplete(method, values);
+      if (method === failureMethod && failure) throw failure;
+      applied.push({ method, values });
+      if (method === "style" && navigateDuringStyle) route = "spot/search/index";
+    })();
   };
   const sync = vm.runInNewContext(ts.transpileModule(source + "\nsyncNativeChrome;", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
@@ -25,8 +31,74 @@ function chromeHarness(failure?: { errMsg: string }, initialRoute = "pages/map/i
     setTabBarStyle: native("style"),
     setTabBarItem: native("item"),
   } }) as (mode: DisplayMode) => Promise<void>;
-  return { sync, calls };
+  return { sync, calls, applied, setRoute(value: string) { route = value; } };
 }
+
+function deferred() {
+  let resolve!: () => void;
+  const promise = new Promise<void>(done => { resolve = done; });
+  return { promise, resolve };
+}
+
+test("a late day native completion cannot leave day chrome after observation was requested", async () => {
+  const oldStyle = deferred();
+  const h = chromeHarness(undefined, "pages/map/index", false, "style", async (method, values) => {
+    if (method === "style" && values.color === NATIVE_CHROME_THEME.DAY.color) await oldStyle.promise;
+  });
+  const day = h.sync("DAY");
+  const observation = h.sync("OBSERVATION");
+  await new Promise(resolve => setImmediate(resolve));
+  oldStyle.resolve();
+  await Promise.all([day, observation]);
+  assert.equal(h.applied.filter(call => call.method === "style").at(-1)!.values.color, NATIVE_CHROME_THEME.OBSERVATION.color);
+  const icons = h.calls.filter(call => call.method === "item");
+  assert.equal(icons.length, 2);
+  assert.ok(icons.every(call => String(call.values.iconPath).endsWith("-observation.png")));
+});
+
+test("a synchronous native throw cannot abandon writes already dispatched by that batch", async () => {
+  const oldNavigation = deferred(), failure = { errMsg: "setBackgroundColor:fail unavailable" };
+  const h = chromeHarness(undefined, "pages/map/index", false, "style", async (method, values) => {
+    if (method === "navigation" && values.backgroundColor === NATIVE_CHROME_THEME.DAY.canvas) await oldNavigation.promise;
+  }, { method: "background", color: NATIVE_CHROME_THEME.DAY.canvas, error: failure });
+  const day = h.sync("DAY").catch(error => error), observation = h.sync("OBSERVATION");
+  await new Promise(resolve => setImmediate(resolve));oldNavigation.resolve();
+  assert.equal(await day, failure);await observation;
+  assert.equal(h.applied.filter(call => call.method === "navigation").at(-1)!.values.backgroundColor, "#000000");
+});
+
+test("a failed native batch waits for its other writes then applies only the latest pending mode", async () => {
+  const oldBackground = deferred();
+  const failure = { errMsg: "setTabBarStyle:fail unavailable" };
+  const h = chromeHarness(undefined, "pages/map/index", false, "style", async (method, values) => {
+    if (method === "background" && values.backgroundColor === NATIVE_CHROME_THEME.DAY.canvas) await oldBackground.promise;
+    if (method === "style" && values.color === NATIVE_CHROME_THEME.DAY.color) throw failure;
+  });
+  const day = h.sync("DAY").catch(error => error);
+  const night = h.sync("NIGHT");
+  const observation = h.sync("OBSERVATION");
+  await new Promise(resolve => setImmediate(resolve));
+  oldBackground.resolve();
+  assert.equal(await day, failure);
+  await Promise.all([night, observation]);
+  assert.equal(h.calls.some(call => call.values.backgroundColor === NATIVE_CHROME_THEME.NIGHT.canvas), false);
+  assert.equal(h.applied.filter(call => call.method === "background").at(-1)!.values.backgroundColor, NATIVE_CHROME_THEME.OBSERVATION.canvas);
+});
+
+test("queued chrome applies to the current child route without obsolete tab icons", async () => {
+  const oldStyle = deferred();
+  const h = chromeHarness(undefined, "pages/map/index", false, "style", async (method, values) => {
+    if (method === "style" && values.color === NATIVE_CHROME_THEME.DAY.color) await oldStyle.promise;
+  });
+  const day = h.sync("DAY");
+  h.setRoute("content/settings/index");
+  const observation = h.sync("OBSERVATION");
+  oldStyle.resolve();
+  await Promise.all([day, observation]);
+  assert.equal(h.calls.filter(call => call.method === "style").length, 1);
+  assert.equal(h.calls.some(call => call.method === "item"), false);
+  assert.equal(h.applied.filter(call => call.method === "background").at(-1)!.values.backgroundColor, "#000000");
+});
 
 test("native chrome uses the selected Field Signal palette and adopted day icons", async () => {
   const expected = {
@@ -106,24 +178,43 @@ test("navigation after icon dispatch tolerates only the native non-tab-page reje
   await assert.rejects(chromeHarness(failure, "pages/map/index", false, "item").sync("NIGHT"), (error: unknown) => error === failure);
 });
 
-test("returning to a page reapplies the current mode, not its mounted mode", async () => {
+test("a tolerated icon failure cannot hide another item's unexpected failure", async () => {
+  const secondItem = deferred(), unexpected = { errMsg: "setTabBarItem:fail unavailable" };
+  const h = chromeHarness(undefined, "pages/map/index", false, "item", async (method, values) => {
+    if (method !== "item") return;
+    if (values.index === 0) throw { errMsg: "setTabBarItem:fail not TabBar page" };
+    await secondItem.promise;
+    throw unexpected;
+  });
+  let settled = false;
+  const result = h.sync("DAY").then(() => { settled = true; }, error => { settled = true; return error; });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(settled, false);
+  assert.equal(h.calls.filter(call => call.method === "item").length, 2);
+  secondItem.resolve();
+  assert.equal(await result, unexpected);
+});
+
+test("deferred theme effects and returning pages apply the current mode, not the mounted mode", async () => {
   const source = readFileSync(new URL("../hooks/use-theme.ts", import.meta.url), "utf8")
     .replace(/^import .*;\r?\n/gm, "").replace("export function", "function");
   let mode: DisplayMode = "DAY";
   let onShow: (() => void) | undefined;
+  const effects: Array<() => void> = [];
   const synced: DisplayMode[] = [];
   const state = () => ({ mode, preferences: { largeText: false, reducedMotion: false }, hydrate() {} });
   const store = Object.assign((selector: (value: ReturnType<typeof state>) => unknown) => selector(state()), { getState: state });
   const hook = vm.runInNewContext(ts.transpileModule(source + "\nuseThemeClass;", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
-    useEffect() {}, useDidShow(callback: () => void) { onShow = callback; },
+    useEffect(callback: () => void) { effects.push(callback); }, useDidShow(callback: () => void) { onShow = callback; },
     useAppStore: store, syncNativeChrome: async (value: DisplayMode) => { synced.push(value); }, console,
   }) as () => string;
   assert.equal(hook(), "theme-page theme-day");
   mode = "OBSERVATION";
+  for (const effect of effects) effect();
   assert.ok(onShow);
   onShow();
   await Promise.resolve();
-  assert.deepEqual(synced, ["OBSERVATION"]);
+  assert.deepEqual(synced, ["OBSERVATION", "OBSERVATION"]);
 });
