@@ -7,7 +7,6 @@ import { skyObjectPositionIsCurrent } from "./sky-object-location";
 import { projectSkySelectionMarker } from "./sky-selection-marker";
 import type { SkyViewBasis } from "./sky-view-projection";
 import type { SkyProjectionCenter } from "./sky-viewport";
-import { SKY_OBSERVING_VERTICAL_FOV_DEG } from "./sky-zoom";
 
 /** Selection, disclosure and tracking subscribe to the same identity-bound
  * cancellable query. Zoom is presentation only and never changes its key. */
@@ -44,7 +43,6 @@ export function SkySelectedObject({ object, context, at, catalog, view,
         onClick={() => { onRetrySky(); if (catalog) void result.refetch(); }}>重试位置</Button>
     </View>;
   }
-  if (data.position!.altitudeDeg < 0 && view.verticalFovDeg > SKY_OBSERVING_VERTICAL_FOV_DEG) return null;
   const marker = projectSkySelectionMarker(object, data.position!, view, angularDiameterDeg);
   if (!marker) return null;
   const locationLabel = data.position!.altitudeDeg < 0 ? "地平线以下"

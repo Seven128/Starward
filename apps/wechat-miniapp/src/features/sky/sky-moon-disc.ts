@@ -23,7 +23,8 @@ export function skyMoonDiscAt(rows: readonly SkyGeometryRow[] | undefined, at: s
     row.moonAngularDiameterDeg <= 0 || row.moonAngularDiameterDeg >= 1 ||
     typeof row.moonIllumination !== "number" || !Number.isFinite(row.moonIllumination) ||
     row.moonIllumination < 0 || row.moonIllumination > 1) return null;
-  if(row.moonAltitudeDeg < -row.moonAngularDiameterDeg/2)return null;
+  // Full-sphere browsing and landscape occlusion share this unchanged body
+  // direction; a set Moon is not an invalid or missing geometry sample.
   const sun = skySolarLightAt(rows,at);
   const disc=sun ? projectSkyPhaseDisc({ azimuthDeg: row.moonAzimuthDeg, altitudeDeg: row.moonAltitudeDeg,
     angularDiameterDeg: row.moonAngularDiameterDeg, illuminatedFraction: row.moonIllumination },

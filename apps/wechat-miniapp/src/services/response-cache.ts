@@ -17,7 +17,13 @@ export interface CachedResponse {
   readonly text: string;
 }
 interface MemoryEntry extends CachedResponse { bytes: number }
-interface RequestFence { key: string; valid: boolean; release(): void }
+interface RequestFence {
+  key: string;
+  valid: boolean;
+  cached: CachedResponse | undefined;
+  latest: CachedResponse | undefined;
+  release(): void;
+}
 interface DiskEntry {
   id: string;
   storedAt: number;
@@ -187,7 +193,11 @@ export function createResponseCache(storage: Storage, now = Date.now) {
     const sweepOrphans = !matches || cleanupFailed;
     if (sweepOrphans) cleanupFailed = false;
     generation++;
-    for (const request of requests) if (selected(request.key)) request.valid = false;
+    for (const request of requests) if (selected(request.key)) {
+      request.valid = false;
+      request.cached = undefined;
+      request.latest = undefined;
+    }
     for (const key of memory.keys()) if (selected(key)) { memory.delete(key); dirty.delete(key); }
     const previous = disk;
     const next = new Map([...disk].filter(([key]) => !selected(key)));
@@ -247,8 +257,14 @@ export function createResponseCache(storage: Storage, now = Date.now) {
     try {
       const text = JSON.stringify(envelope);
       const bytes = utf8Bytes(text);
+      const item = { envelope, storedAt: now(), text, bytes };
+      // Retention pressure is not invalidation. Live readers remember the
+      // latest accepted response for their key even if both cache tiers evict
+      // it. A larger uncached replacement still revokes an older 304 body.
+      for (const request of requests) if (request.key === key)
+        request.latest = bytes <= RESPONSE_CACHE_LIMITS.memoryBytes ? item : undefined;
       if (bytes > RESPONSE_CACHE_LIMITS.memoryBytes) return;
-      memory.set(key, { envelope, storedAt: now(), text, bytes });
+      memory.set(key, item);
       dirty.add(key);
       boundMemory();
       schedule();
@@ -316,15 +332,21 @@ export function createResponseCache(storage: Storage, now = Date.now) {
 
   return {
     load, get, set, invalidate, flush,
-    beginRequest: (key: string): RequestFence => {
+    beginRequest: (key: string, readCached = true): RequestFence => {
       load();
-      const fence: RequestFence = { key, valid: true, release: () => { requests.delete(fence); } };
+      const cached = readCached ? get(key) : undefined;
+      const fence: RequestFence = { key, valid: true, cached, latest: cached, release: () => {
+        fence.valid = false;
+        fence.cached = undefined;
+        fence.latest = undefined;
+        requests.delete(fence);
+      } };
       requests.add(fence);
       return fence;
     },
     isCurrent: (key: string, item: CachedResponse, fence: RequestFence, allowEquivalent = false) => {
       if (!currentFence(key, fence)) return false;
-      const current = get(key);
+      const current = fence.latest;
       if (!current) return false;
       if (current.storedAt === item.storedAt && current.text === item.text) return true;
       // Concurrent immutable-photo reads can refresh request metadata without

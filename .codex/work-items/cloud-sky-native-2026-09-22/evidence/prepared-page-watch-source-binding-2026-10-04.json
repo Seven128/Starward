@@ -1,0 +1,12 @@
+{
+  "sourceMap": "apps/wechat-miniapp/dist/weapp/sky/detail/index.js.map",
+  "source": "webpack://@starward/wechat-miniapp/._src_features_sky_spot-sky-page.tsx",
+  "sourceMapBytes": 1515688,
+  "sourceMapSha256": "63d5304bec0f4527275ddb70c8b96a5f77262a94eab56fc2f1132397b4fa5b70",
+  "sourceContentBytes": 214480,
+  "sourceContentSha256": "caafc94693e4d73abdde122e0974ffaad455bcaf216a25f3b27711dfacc5cd60",
+  "currentBytes": 214480,
+  "currentSha256": "caafc94693e4d73abdde122e0974ffaad455bcaf216a25f3b27711dfacc5cd60",
+  "rawUtf8SourceExact": true,
+  "scope": "Existing WEAPP watch source inclusion only. No DevTools load/WXML/native presentation claim; known failure unchanged."
+}

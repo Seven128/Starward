@@ -2,7 +2,7 @@ import {useMemo} from "react";
 import type {SkyGeometryReport} from "@starward/miniapp-contracts";
 import {useResourceQuery} from "@/hooks/use-resource-query";
 import {getMarsTextureManifest,marsTextureImageUrl} from "@/services/mars-texture-client";
-import {useSkyNativeImages} from "./use-sky-artwork";
+import {useSkyFixedImage} from "./use-sky-fixed-image";
 import {skyPlanetDiscsAt} from "./sky-planet-disc";
 import {skyFixedImageStatus} from "./sky-fixed-image-status";
 import type {SkyArtworkView} from "./sky-artwork-registration";
@@ -19,10 +19,9 @@ export function useSkyMarsTexture(report:Pick<SkyGeometryReport,"hourly">|undefi
   const manifest=useResourceQuery({queryKey:["mars-texture-manifest"],queryFn:getMarsTextureManifest,
     enabled:wanted,staleTime:60_000,structuralSharing:false});
   const publication=manifest.data;
-  const assets=useMemo(()=>publication?[{...publication.image,id:"mars:mdim21"}]:[],[publication]);
-  const images=useSkyNativeImages(canvas,canvasRevision,publication?.publicationHash,wanted,assets,
+  const images=useSkyFixedImage(canvas,canvasRevision,publication,active,wanted,"mars:mdim21",
     asset=>({url:marsTextureImageUrl(asset.downloadUrl),format:"jpeg"}));
-  const image=images.images.get("mars:mdim21")??images.retainedImages.get("mars:mdim21")??null;
+  const image=images.image;
   const status=skyFixedImageStatus(wanted,image,manifest.isError,Boolean(manifest.refreshError),images.failed);
   return {image,publication,loading:wanted&&(manifest.isFetching||images.loading),
     ...status,

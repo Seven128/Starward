@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-hubble-m82-prepared-coverage-2026-10-04.py", line 86, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-hubble-m82-prepared-coverage-2026-10-04.py", line 74, in main
+    result={'state':'PREPARED_CANDIDATE_NOT_ADOPTED','source':asdict(source),'geometry':asdict(g),'bands':obs.bandpasses,
+                                                                                                          ^^^^^^^^^^^^^^
+AttributeError: 'PreparedRgbObservation' object has no attribute 'bandpasses'

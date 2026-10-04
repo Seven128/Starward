@@ -1,0 +1,33 @@
+✔ display frame/completion/source keep estimates and actual parent identity distinct from science and JPEG (2.085ms)
+✔ actual calibrated client pins display bytes, family/reference and URLs while strict science remains separate (78.7547ms)
+✔ real Scene needs calibrated intent, keeps joint alpha and admits only actual completed display participation (7.2196ms)
+✔ all actual ready primary/parent identities schedule a same-camera scene update (42.9888ms)
+✔ modal pins a live accepted completion while newer loader metadata advances (72.3351ms)
+✔ accepted page commits actual coarse completion without flattening the queued fine envelope (31.0567ms)
+✔ public recovery matches any live participating field of the completed publication (11.2293ms)
+✔ status and recovery share live accepted generation; IR remains independent (38.4151ms)
+﹣ science source consumers keep an independently live actual coarse field and original publication (0.1078ms) # SKIP
+✔ explicit Prepared accepted completion keeps full source, actual coarse and original hash through metadata advance (79.9388ms)
+✔ only matching same-surface intent admits exact publication/primary/parent descriptors (12.7658ms)
+✔ one actual group uses actual MEDIUM/OVERVIEW and exact observation without catalog registration gates (2.986ms)
+✔ HAS including valid black and submitted UNKNOWN block whole W3, while complete qualified EMPTY permits it (3.8942ms)
+✔ actual Scene captures one guarded model scalar for ring and snapshot through zoom out and return (2.1594ms)
+✔ local black, missing domain, unprepared expected source and retirement restore the actual Scene aid (1.4992ms)
+✔ an absent or wholly unselected prepared slot is neutral; failed expected preparation never is (0.6738ms)
+✔ failed original ready fine or coarse stays expected and cannot be replaced by prepared-only EMPTY (1.6149ms)
+✔ no successful submission is independent unavailable fallback, not an EMPTY probe (1.4978ms)
+✔ later alpha/retirement only changes completion, never backfills W3 or turns global science photo into aid suppression (0.9815ms)
+✔ ordinary group/later draw/finish errors propagate and never publish a completed frame (3.9292ms)
+✔ bounded helper mutations expose expected-ready and exact-context regressions (162.9738ms)
+✔ Prepared Scene needs its own same-surface/hash intent and never enters independent JPEG draws (2.5713ms)
+✔ Prepared original expected sources, black and UNKNOWN cannot authorize a spectral fallback or source credit (2.2498ms)
+✔ Prepared same-frame aid decisions survive late receipt changes while retired fine leaves actual coarse credit (1.9215ms)
+✔ Prepared ordinary draw/finish failures never publish an accepted painted source (0.728ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 1327.9728

@@ -1,0 +1,89 @@
+{
+  "width": 2048,
+  "height": 1024,
+  "alphaHistogram": {
+    "255": 2097152
+  },
+  "samples": [
+    {
+      "x": 866,
+      "y": 492,
+      "role": "observed_black_patch",
+      "center": 0,
+      "alpha": 255,
+      "min": 0,
+      "max": 2,
+      "mean": 0.6666666666666666
+    },
+    {
+      "x": 881,
+      "y": 492,
+      "role": "adjacent_control",
+      "center": 60,
+      "alpha": 255,
+      "min": 53,
+      "max": 60,
+      "mean": 56.55555555555556
+    },
+    {
+      "x": 1038,
+      "y": 461,
+      "role": "observed_black_patch",
+      "center": 0,
+      "alpha": 255,
+      "min": 0,
+      "max": 1,
+      "mean": 0.1111111111111111
+    },
+    {
+      "x": 1053,
+      "y": 461,
+      "role": "adjacent_control",
+      "center": 42,
+      "alpha": 255,
+      "min": 41,
+      "max": 50,
+      "mean": 43.888888888888886
+    },
+    {
+      "x": 1183,
+      "y": 646,
+      "role": "observed_black_patch",
+      "center": 0,
+      "alpha": 255,
+      "min": 0,
+      "max": 6,
+      "mean": 1.3333333333333333
+    },
+    {
+      "x": 1198,
+      "y": 646,
+      "role": "adjacent_control",
+      "center": 79,
+      "alpha": 255,
+      "min": 77,
+      "max": 82,
+      "mean": 80.22222222222223
+    },
+    {
+      "x": 1883,
+      "y": 682,
+      "role": "observed_black_patch",
+      "center": 1,
+      "alpha": 255,
+      "min": 0,
+      "max": 3,
+      "mean": 0.6666666666666666
+    },
+    {
+      "x": 1898,
+      "y": 682,
+      "role": "adjacent_control",
+      "center": 77,
+      "alpha": 255,
+      "min": 71,
+      "max": 86,
+      "mean": 79.22222222222223
+    }
+  ]
+}

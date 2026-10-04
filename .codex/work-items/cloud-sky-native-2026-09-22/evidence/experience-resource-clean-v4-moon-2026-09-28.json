@@ -1,0 +1,170 @@
+{
+  "scope": "Official SDK, exact CLI-bound clean-v4/9437; real DevTools file system and public hide/show recovery. Files are not decoded bitmap/GPU memory, phone FPS or physical-device acceptance.",
+  "candidate": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v4-0928",
+  "candidateHash": "9f62a19285905e7d08aac5fe8551f9d5a6c63514aee4e40815e4511ac4d8f62c",
+  "filesChecked": 257,
+  "baseline": {
+    "count": 161,
+    "bytes": 15802757
+  },
+  "scenario": "moon",
+  "canvasSize": {
+    "width": 390.3999938964844,
+    "height": 844
+  },
+  "before": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 1.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "月球定位标记，查看资料",
+    "sources": "",
+    "modal": false,
+    "choices": false
+  },
+  "cycles": [
+    {
+      "cycle": 1,
+      "loaded": {
+        "groups": {
+          "skyArtwork": {
+            "count": 4,
+            "bytes": 1719966
+          },
+          "deepSky": {
+            "count": 0,
+            "bytes": 0
+          }
+        },
+        "baselinePresent": 161
+      },
+      "hidden": {
+        "groups": {
+          "skyArtwork": {
+            "count": 0,
+            "bytes": 0
+          },
+          "deepSky": {
+            "count": 0,
+            "bytes": 0
+          }
+        },
+        "baselinePresent": 161
+      },
+      "recovered": {
+        "groups": {
+          "skyArtwork": {
+            "count": 4,
+            "bytes": 1719966
+          },
+          "deepSky": {
+            "count": 0,
+            "bytes": 0
+          }
+        },
+        "baselinePresent": 161
+      },
+      "samePage": true,
+      "sameSceneDescription": true,
+      "sameLocatedObject": true,
+      "sameCanvasSize": true
+    },
+    {
+      "cycle": 2,
+      "loaded": {
+        "groups": {
+          "skyArtwork": {
+            "count": 4,
+            "bytes": 1719966
+          },
+          "deepSky": {
+            "count": 0,
+            "bytes": 0
+          }
+        },
+        "baselinePresent": 161
+      },
+      "hidden": {
+        "groups": {
+          "skyArtwork": {
+            "count": 0,
+            "bytes": 0
+          },
+          "deepSky": {
+            "count": 0,
+            "bytes": 0
+          }
+        },
+        "baselinePresent": 161
+      },
+      "recovered": {
+        "groups": {
+          "skyArtwork": {
+            "count": 4,
+            "bytes": 1719966
+          },
+          "deepSky": {
+            "count": 0,
+            "bytes": 0
+          }
+        },
+        "baselinePresent": 161
+      },
+      "samePage": true,
+      "sameSceneDescription": true,
+      "sameLocatedObject": true,
+      "sameCanvasSize": true
+    },
+    {
+      "cycle": 3,
+      "loaded": {
+        "groups": {
+          "skyArtwork": {
+            "count": 4,
+            "bytes": 1719966
+          },
+          "deepSky": {
+            "count": 0,
+            "bytes": 0
+          }
+        },
+        "baselinePresent": 161
+      },
+      "hidden": {
+        "groups": {
+          "skyArtwork": {
+            "count": 0,
+            "bytes": 0
+          },
+          "deepSky": {
+            "count": 0,
+            "bytes": 0
+          }
+        },
+        "baselinePresent": 161
+      },
+      "recovered": {
+        "groups": {
+          "skyArtwork": {
+            "count": 4,
+            "bytes": 1719966
+          },
+          "deepSky": {
+            "count": 0,
+            "bytes": 0
+          }
+        },
+        "baselinePresent": 161
+      },
+      "samePage": true,
+      "sameSceneDescription": true,
+      "sameLocatedObject": true,
+      "sameCanvasSize": true
+    }
+  ],
+  "after": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 1.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "月球定位标记，查看资料",
+    "sources": "",
+    "modal": false,
+    "choices": false
+  },
+  "candidateFilesUnchanged": true
+}

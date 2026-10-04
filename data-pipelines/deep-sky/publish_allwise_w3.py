@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import io
 import json
 import time
 import urllib.parse
@@ -13,7 +12,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from PIL import Image
+from image_quality import QUALITY_VERSION, checked_image as checked_quality_image, inspect_image, write_report
 
 IRSA_HIPS = "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3"
 HIPS2FITS = "https://alasky.cds.unistra.fr/hips-image-services/hips2fits"
@@ -79,12 +78,10 @@ def request_bytes(url: str, *, attempts: int = 4) -> bytes:
 
 
 def checked_image(payload: bytes, pixels: int) -> None:
-    with Image.open(io.BytesIO(payload)) as image:
-        if image.format != "JPEG" or image.size != (pixels, pixels):
-            raise RuntimeError("allwise_derived_image_invalid")
-        extrema = image.convert("L").getextrema()
-        if extrema is None or extrema[1] <= extrema[0]:
-            raise RuntimeError("allwise_derived_image_empty")
+    image = checked_quality_image(payload, pixels, "jpeg")
+    extrema = image.convert("L").getextrema()
+    if extrema is None or extrema[1] <= extrema[0]:
+        raise RuntimeError("allwise_derived_image_empty")
 
 
 def cached_image(cache: Path, reference: str, level: str, ra_deg: float, dec_deg: float,
@@ -111,7 +108,8 @@ def cached_image(cache: Path, reference: str, level: str, ra_deg: float, dec_deg
     }
 
 
-def build_object(row: dict[str, Any], cache: Path, output: Path) -> dict[str, Any]:
+def build_object(row: dict[str, Any], cache: Path, output: Path,
+                 quality_reports: list[dict] | None = None) -> dict[str, Any]:
     object_dir = output / row["objectRef"].replace(":", "-")
     object_dir.mkdir(parents=True, exist_ok=True)
     levels: dict[str, Any] = {}
@@ -121,9 +119,6 @@ def build_object(row: dict[str, Any], cache: Path, output: Path) -> dict[str, An
         filename = f"{row['objectRef'].replace(':', '-')}-{level.lower()}.jpg"
         relative = f"{row['objectRef'].replace(':', '-')}/{filename}"
         image_path = object_dir / filename
-        if image_path.exists() and image_path.read_bytes() != jpeg:
-            raise RuntimeError("allwise_published_image_changed: create a versioned asset instead")
-        image_path.write_bytes(jpeg)
         levels[level] = {
             "file": relative,
             "fieldDegrees": field_deg,
@@ -137,6 +132,15 @@ def build_object(row: dict[str, Any], cache: Path, output: Path) -> dict[str, An
             "source": source,
             "stretch": {"method": "1-99.7 percentile asinh", "colorMap": "gray"},
         }
+        quality = inspect_image(jpeg, {"objectRef": row["objectRef"],
+            "center": {"raDeg": row["raDeg"], "decDeg": row["decDeg"], "frame": "ICRS J2000"},
+            "orientation": "north-up/east-left"}, level, levels[level], row=row,
+            source=source, processing={"stretch": levels[level]["stretch"], "sampling": "CDS hips2fits JPEG"})
+        if image_path.exists() and image_path.read_bytes() != jpeg:
+            raise RuntimeError("allwise_published_image_changed: create a versioned asset instead")
+        image_path.write_bytes(jpeg)
+        if quality_reports is not None:
+            quality_reports.append(quality)
     return {
         "objectRef": row["objectRef"],
         "center": {"raDeg": row["raDeg"], "decDeg": row["decDeg"], "frame": "ICRS J2000"},
@@ -154,6 +158,8 @@ def main() -> None:
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--finite-candidate", type=Path,
                         help="Verify cached source-bound TAN inputs and migrate the current v2 publication offline")
+    parser.add_argument("--quality-report", type=Path,
+                        help="Write separate byte-bound review diagnostics; never a quality acceptance certificate")
     args = parser.parse_args()
     if not args.all and not args.objects:
         parser.error("choose --all or --objects")
@@ -163,11 +169,19 @@ def main() -> None:
     rows = catalog["rows"] if args.all else [row for row in catalog["rows"] if row["objectRef"] in requested]
     if not rows or (requested and {row["objectRef"] for row in rows} != requested):
         raise RuntimeError("allwise_requested_object_not_found")
+    if args.quality_report and (args.quality_report.exists() or args.quality_report.resolve().is_relative_to(args.output.resolve())):
+        raise RuntimeError("allwise_quality_report_requires_new_external_path")
+    quality_reports = []
     if args.finite_candidate:
         if args.all or len(rows) != 1:
             parser.error("finite candidate migration requires exactly one --objects identity")
         from allwise_finite_tan import publish_finite_candidate
-        print(json.dumps(publish_finite_candidate(args.output, args.finite_candidate, rows[0]["objectRef"])))
+        result = publish_finite_candidate(args.output, args.finite_candidate, rows[0]["objectRef"],
+                                          quality_reports, rows[0])
+        if args.quality_report:
+            write_report(args.quality_report, {"version": QUALITY_VERSION, "publication": result,
+                                              "catalogSha256": sha256(catalog_bytes), "reports": quality_reports})
+        print(json.dumps(result))
         return
     args.output.mkdir(parents=True, exist_ok=True)
     previous_hash = None
@@ -184,7 +198,7 @@ def main() -> None:
     entries = []
     for index, row in enumerate(rows, start=1):
         print(f"[{index}/{len(rows)}] {row['objectRef']}", flush=True)
-        entries.append(build_object(row, args.cache, args.output))
+        entries.append(build_object(row, args.cache, args.output, quality_reports))
     manifest = {
         "schemaVersion": "allwise-w3-deep-sky-publication-v2",
         "previousPublicationHash": previous_hash,
@@ -230,6 +244,10 @@ def main() -> None:
         "entryCount": len(entries), "entries": entries,
     }
     (args.output / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    if args.quality_report:
+        write_report(args.quality_report, {"version": QUALITY_VERSION,
+            "publication": {"publicationId": manifest["publicationId"], "manifestSha256": sha256(manifest_path.read_bytes())},
+            "catalogSha256": sha256(catalog_bytes), "reports": quality_reports})
     print(json.dumps({"publicationId": manifest["publicationId"], "entryCount": len(entries)}))
 
 

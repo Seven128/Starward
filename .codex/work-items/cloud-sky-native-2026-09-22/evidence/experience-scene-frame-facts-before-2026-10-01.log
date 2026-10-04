@@ -1,0 +1,37 @@
+✔ exact frame facts distinguish a usable empty catalog frame from missing geometry (2.1839ms)
+✖ playing scene publication keeps the completed instant, catalog and count while the next native frame is queued (37.2007ms)
+✔ pausing or cancelling to a different instant cannot publish the retained playing frame as current (12.1207ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 919.3646
+
+✖ failing tests:
+
+test at apps\wechat-miniapp\src\features\sky\sky-scene-frame-facts.test.ts:2:609
+✖ playing scene publication keeps the completed instant, catalog and count while the next native frame is queued (37.2007ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '2026-10-01T00:00:01.000Z'
+  - '2026-10-01T00:00:00.000Z'
+                       ^
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-scene-frame-facts.test.ts:89:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '2026-10-01T00:00:01.000Z',
+    expected: '2026-10-01T00:00:00.000Z',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

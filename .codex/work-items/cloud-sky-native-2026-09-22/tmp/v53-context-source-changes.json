@@ -1,0 +1,12 @@
+[
+  {
+    "path": "project_context/architecture/runtime-and-domain.md",
+    "beforeSha256": "0ddda40782b888a960dc94cbb5399065dc8d04df42ad4b0904f4aa462c87c3bc",
+    "afterSha256": "0014d09febe93d330d1980ba33549d2bedab6efdf8e7c66b4fc537192ffb0b31"
+  },
+  {
+    "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+    "beforeSha256": "24bce41ad5cace1596ae8bc4abe94dea65308695e98c8c7fea8f0e6d05fd5ab2",
+    "afterSha256": "99ee5f7e1e1646c9abb406f9c4e05568c66dfc4c4104633a2f618f02b5027846"
+  }
+]

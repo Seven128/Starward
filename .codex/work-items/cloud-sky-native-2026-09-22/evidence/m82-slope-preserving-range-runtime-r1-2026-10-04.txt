@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-m82-slope-preserving-range-2026-10-04.py", line 233, in <module>
+    try:main()
+        ^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-m82-slope-preserving-range-2026-10-04.py", line 141, in main
+    regression_result=regression();consumers={};pool_i=[];pool_m=[];pool_records=[]
+                      ^^^^^^^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-m82-slope-preserving-range-2026-10-04.py", line 99, in regression
+    assert old[:,0,2].max()==old[:,0,3].max()==1 and new[:,0,3].max()>new[:,0,2].max()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

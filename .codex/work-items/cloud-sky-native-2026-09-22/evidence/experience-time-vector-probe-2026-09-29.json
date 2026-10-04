@@ -1,0 +1,235 @@
+{
+  "scope": "Bounded existing-server dependency trial of unrounded apparent EQJ directions plus derivative Hermite and actual observer rotation anchors; no production model adopted.",
+  "contextSha256": "1746aa900d82214c32e47f82da8ebaaed098805083f5a8db9203634ee5a50965",
+  "anchorSeconds": 1800,
+  "derivativeSeconds": 1,
+  "records": [
+    {
+      "input": {
+        "label": "Actual published Shenzhen observer, current observation night",
+        "latitude": 22.4826799,
+        "longitude": 114.5557147,
+        "elevationM": 0,
+        "start": "2026-09-29T04:00:00.000Z"
+      },
+      "intervals": 48,
+      "sampleInstantsPerInterval": 9,
+      "bodiesPerInstant": 9,
+      "maxRotationErrorArcsec": 0.000025428837050986292,
+      "maxima": [
+        {
+          "body": "Sun",
+          "maxAngularErrorArcsec": 0.000021098747751837564,
+          "at": "2026-09-30T01:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00009892968233349258
+        },
+        {
+          "body": "Moon",
+          "maxAngularErrorArcsec": 0.0022961511201873485,
+          "at": "2026-09-29T13:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.010766397303842053
+        },
+        {
+          "body": "Mercury",
+          "maxAngularErrorArcsec": 0.000025421778788109877,
+          "at": "2026-09-30T03:45:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00011919989420419479
+        },
+        {
+          "body": "Venus",
+          "maxAngularErrorArcsec": 0.00003268171505474544,
+          "at": "2026-09-30T03:45:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.000153240928158786
+        },
+        {
+          "body": "Mars",
+          "maxAngularErrorArcsec": 0.000013577517030226022,
+          "at": "2026-09-29T19:45:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00006366346773167428
+        },
+        {
+          "body": "Jupiter",
+          "maxAngularErrorArcsec": 0.000009451496779571296,
+          "at": "2026-09-29T18:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.000044317017529989724
+        },
+        {
+          "body": "Saturn",
+          "maxAngularErrorArcsec": 0.00002082622001774653,
+          "at": "2026-09-29T22:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00009765183008947284
+        },
+        {
+          "body": "Uranus",
+          "maxAngularErrorArcsec": 0.00002453718274532168,
+          "at": "2026-09-30T03:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00011505212171381657
+        },
+        {
+          "body": "Neptune",
+          "maxAngularErrorArcsec": 0.00001863961222010485,
+          "at": "2026-09-29T15:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00008739906924541804
+        }
+      ]
+    },
+    {
+      "input": {
+        "label": "Bounded numeric check at high northern latitude; not a field measurement",
+        "latitude": 78.2232,
+        "longitude": 15.6469,
+        "elevationM": 0,
+        "start": "2026-10-01T00:00:00.000Z"
+      },
+      "intervals": 48,
+      "sampleInstantsPerInterval": 9,
+      "bodiesPerInstant": 9,
+      "maxRotationErrorArcsec": 0.000028556755663100516,
+      "maxima": [
+        {
+          "body": "Sun",
+          "maxAngularErrorArcsec": 0.000017551543205951376,
+          "at": "2026-10-01T01:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00008229723461555263
+        },
+        {
+          "body": "Moon",
+          "maxAngularErrorArcsec": 0.0005201798966330424,
+          "at": "2026-10-01T22:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.002439065698849068
+        },
+        {
+          "body": "Mercury",
+          "maxAngularErrorArcsec": 0.00002462667900456791,
+          "at": "2026-10-01T00:45:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00011547175972273557
+        },
+        {
+          "body": "Venus",
+          "maxAngularErrorArcsec": 0.00002734132365489499,
+          "at": "2026-10-01T14:45:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00012820042665898933
+        },
+        {
+          "body": "Mars",
+          "maxAngularErrorArcsec": 0.000019013620095857348,
+          "at": "2026-10-01T22:45:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00008915275059056784
+        },
+        {
+          "body": "Jupiter",
+          "maxAngularErrorArcsec": 0.000012000157189532231,
+          "at": "2026-10-01T22:45:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.000056267402818207814
+        },
+        {
+          "body": "Saturn",
+          "maxAngularErrorArcsec": 0.000019103051771552218,
+          "at": "2026-10-01T00:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00008957208577439525
+        },
+        {
+          "body": "Uranus",
+          "maxAngularErrorArcsec": 0.000028477475653877192,
+          "at": "2026-10-01T23:45:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.0001335277170585858
+        },
+        {
+          "body": "Neptune",
+          "maxAngularErrorArcsec": 0.00001591737878543869,
+          "at": "2026-10-01T00:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00007463481934316114
+        }
+      ]
+    },
+    {
+      "input": {
+        "label": "Bounded southern numeric check across a UTC day; not a field measurement",
+        "latitude": -33.8688,
+        "longitude": 151.2093,
+        "elevationM": 0,
+        "start": "2026-10-10T02:00:00.000Z"
+      },
+      "intervals": 48,
+      "sampleInstantsPerInterval": 9,
+      "bodiesPerInstant": 9,
+      "maxRotationErrorArcsec": 0.000015029816787315027,
+      "maxima": [
+        {
+          "body": "Sun",
+          "maxAngularErrorArcsec": 0.000016091510991948034,
+          "at": "2026-10-11T01:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00007545130589850655
+        },
+        {
+          "body": "Moon",
+          "maxAngularErrorArcsec": 0.0019846451727122964,
+          "at": "2026-10-10T06:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.009305780551076878
+        },
+        {
+          "body": "Mercury",
+          "maxAngularErrorArcsec": 0.000017443957206165702,
+          "at": "2026-10-11T01:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00008179277582456108
+        },
+        {
+          "body": "Venus",
+          "maxAngularErrorArcsec": 0.000029179321675009966,
+          "at": "2026-10-10T19:45:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00013681859501657475
+        },
+        {
+          "body": "Mars",
+          "maxAngularErrorArcsec": 0.000009451559741165405,
+          "at": "2026-10-10T14:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00004431731274990408
+        },
+        {
+          "body": "Jupiter",
+          "maxAngularErrorArcsec": 0.00000892835129712617,
+          "at": "2026-10-10T21:15:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.000041864046528997944
+        },
+        {
+          "body": "Saturn",
+          "maxAngularErrorArcsec": 0.000014839596088491905,
+          "at": "2026-10-11T01:45:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00006958121611098854
+        },
+        {
+          "body": "Uranus",
+          "maxAngularErrorArcsec": 0.000011837317286657172,
+          "at": "2026-10-11T01:45:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.000055503864619063114
+        },
+        {
+          "body": "Neptune",
+          "maxAngularErrorArcsec": 0.000014407354755893559,
+          "at": "2026-10-11T01:45:00.000Z",
+          "centeredErrorCssPxAtMinFov": 0.00006755448456140472
+        }
+      ]
+    }
+  ],
+  "researchRunWallMs": 239.76139999999998,
+  "inputs": [
+    {
+      "file": "packages/astronomy-core/src/astronomy-engine-runtime.ts",
+      "sha256": "5fbecebefef5110e7cf7d5fb0a119b11865c3060b9dfd40230d0135f6cb359ab"
+    },
+    {
+      "file": "packages/astronomy-core/src/observation-frame.ts",
+      "sha256": "944127fecd69eff5c6129ad8e563b6fb0c075d2b45ca9d5c1b5db0593ee3133c"
+    },
+    {
+      "file": "node_modules/quaternion/dist/quaternion.mjs",
+      "sha256": "2276f9768978735c6bcc12d08ac10f769a7414ae64d9bf730b569fb8b813e0ad"
+    }
+  ],
+  "limits": [
+    "Three numerical observers/dates, including one actual current publication observer; not an all-date/all-location proof or target acceptance.",
+    "Existing versioned model/coverage and one shared presentation time remain required. These vectors do not establish phase/body-axis/weather/target/opportunity/selection/imagery/lifecycle behavior.",
+    "Research wall time includes truth comparisons and redundant calculator calls; it is not a production compute budget, endpoint latency, bill or device performance."
+  ]
+}

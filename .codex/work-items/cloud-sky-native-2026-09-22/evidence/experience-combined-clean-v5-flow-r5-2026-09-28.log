@@ -1,0 +1,17 @@
+{"event":"initial-vega-25-0000","description":"示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，可见星座 天琴座，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00","tracking":null}
+{"event":"tracked-vega-0000","description":"示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，可见星座 天琴座，3 个真实目标，已选择跟踪Vega，所选观测时刻 00:00","tracking":"Vega · 跟踪中停止跟踪"}
+{"event":"tracked-preview-0100","description":"示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4145 颗真实亮星目录对象，场景时刻 2026-09-28T17:00:00.000Z，可见星座 天琴座，3 个真实目标，已选择跟踪Vega，所选观测时刻 01:00","tracking":"Vega · 跟踪中停止跟踪"}
+{"event":"tracked-preview-cancelled","description":"示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，可见星座 天琴座，3 个真实目标，已选择跟踪Vega，所选观测时刻 00:00","tracking":"Vega · 跟踪中停止跟踪"}
+{"event":"tracked-committed-0030","description":"示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4125 颗真实亮星目录对象，场景时刻 2026-09-28T16:30:00.000Z，可见星座 天琴座，3 个真实目标，已选择跟踪Vega，所选观测时刻 00:30","tracking":"Vega · 跟踪中停止跟踪"}
+{"event":"tracked-all-sky","description":"示例观星点的方位高度天空图，已呈现垂直视场 267.8 度，4125 颗真实亮星目录对象，场景时刻 2026-09-28T16:30:00.000Z，3 个真实目标，已选择跟踪Vega，所选观测时刻 00:30","tracking":"Vega · 全天总览中保留跟踪停止跟踪"}
+{"event":"manual-pan-stopped-tracking","description":"示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4125 颗真实亮星目录对象，场景时刻 2026-09-28T16:30:00.000Z，可见星座 天琴座，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:30","tracking":null}
+{"event":"tracking-restarted","description":"示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4125 颗真实亮星目录对象，场景时刻 2026-09-28T16:30:00.000Z，可见星座 天琴座，3 个真实目标，已选择跟踪Vega，所选观测时刻 00:30","tracking":"Vega · 跟踪中停止跟踪"}
+file:///E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-combined-clean-v5-flow-2026-09-28.mjs:26
+ if(accept(value))return value;await new Promise(resolve=>setTimeout(resolve,120));}throw Error(label);}
+                                                                                          ^
+
+Error: public control missing:.sky-located-object
+    at until (file:///E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-combined-clean-v5-flow-2026-09-28.mjs:26:91)
+    at async file:///E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-combined-clean-v5-flow-2026-09-28.mjs:113:8
+
+Node.js v24.16.0

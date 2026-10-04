@@ -1,0 +1,76 @@
+{
+  "scope": "Official DevTools SDK + real local BFF through one controlled JPEG HTTP failure; not phone acceptance",
+  "marker": "IMGSEP28",
+  "port": 9433,
+  "action": "setup",
+  "run": "r4",
+  "failedOpen": {
+    "name": "experience-imagery-failed-open-native-2026-09-28-r4.png",
+    "bytes": 75380,
+    "sha256": "8a6c8bf8e7e702c62efcf6a2610c858db49f76e227293c13eaf825e3ee60259d",
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 0.05 度，4216 颗真实亮星目录对象，场景时刻 2026-09-28T22:30:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 06:30",
+    "sources": "Sloan Digital Sky Survey · CC BY 4.0 · 历史 g/r/i 光学影像影像更新失败，保留已载图 · 重试",
+    "located": "M 51定位标记，查看资料"
+  },
+  "failedCovered": {
+    "name": "experience-imagery-failed-covered-native-2026-09-28-r4.png",
+    "bytes": 4955,
+    "sha256": "fafe90b239313d6474527c7b5a7d37a3f21fc8b9b44612e830291d87a7e2008e",
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 0.05 度，4216 颗真实亮星目录对象，场景时刻 2026-09-28T22:30:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 06:30",
+    "sources": "",
+    "located": "M 51定位标记，模拟地景遮挡，查看资料"
+  },
+  "uncovered": {
+    "name": "experience-imagery-failed-uncovered-native-2026-09-28-r4.png",
+    "bytes": 75380,
+    "sha256": "8a6c8bf8e7e702c62efcf6a2610c858db49f76e227293c13eaf825e3ee60259d",
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 0.05 度，4216 颗真实亮星目录对象，场景时刻 2026-09-28T22:30:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 06:30",
+    "sources": "Sloan Digital Sky Survey · CC BY 4.0 · 历史 g/r/i 光学影像影像更新失败，保留已载图 · 重试",
+    "located": "M 51定位标记，查看资料"
+  },
+  "restoredOpen": {
+    "name": "experience-imagery-failed-restored-open-native-2026-09-28-r4.png",
+    "bytes": 75371,
+    "sha256": "6be0d23cc6f3ea67344c0f040d02e4be5e6770b8cf2bb931c407719743e6ce56",
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 0.05 度，4216 颗真实亮星目录对象，场景时刻 2026-09-28T22:30:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 06:30",
+    "sources": "Sloan Digital Sky Survey · CC BY 4.0 · 历史 g/r/i 光学影像影像更新失败，保留已载图 · 重试",
+    "located": "M 51定位标记，查看资料"
+  },
+  "terrainRestorePixels": {
+    "changedPixels": 0,
+    "maximumChannelDelta": 0,
+    "scope": "scene pixels excluding known simulator system chrome"
+  },
+  "zoomRestorePixels": {
+    "changedPixels": 12,
+    "maximumChannelDelta": 1,
+    "scope": "scene pixels excluding known simulator system chrome"
+  },
+  "initialFault": {
+    "mode": "fail",
+    "blocked": 1,
+    "forwarded": {
+      "OVERVIEW": 1,
+      "MEDIUM": 1,
+      "DETAIL": 0
+    }
+  },
+  "fault": {
+    "mode": "fail",
+    "blocked": 2,
+    "forwarded": {
+      "OVERVIEW": 1,
+      "MEDIUM": 1,
+      "DETAIL": 0
+    }
+  },
+  "afterCameraUpdates": {
+    "mode": "fail",
+    "blocked": 2,
+    "forwarded": {
+      "OVERVIEW": 1,
+      "MEDIUM": 1,
+      "DETAIL": 0
+    }
+  }
+}

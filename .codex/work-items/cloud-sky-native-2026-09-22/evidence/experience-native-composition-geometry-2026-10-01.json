@@ -1,0 +1,108 @@
+{
+  "rows": [
+    {
+      "selector": ".sky-orientation-page",
+      "styles": {
+        "opacity": 1,
+        "display": "block",
+        "visibility": "visible",
+        "z-index": "auto",
+        "position": "relative"
+      },
+      "offset": {
+        "left": 0,
+        "top": 0
+      },
+      "size": {
+        "success": true,
+        "width": 390.3999938964844,
+        "height": 844
+      }
+    },
+    {
+      "selector": ".sky-orientation-canvas__surface",
+      "styles": {
+        "opacity": 1,
+        "display": "block",
+        "visibility": "visible",
+        "z-index": "auto",
+        "position": "absolute"
+      },
+      "offset": {
+        "left": 0,
+        "top": 0
+      },
+      "size": {
+        "success": true,
+        "width": 390.3999938964844,
+        "height": 844
+      }
+    },
+    {
+      "selector": ".sky-control-dock",
+      "styles": {
+        "opacity": 1,
+        "display": "flex",
+        "visibility": "visible",
+        "z-index": 12,
+        "position": "absolute"
+      },
+      "offset": {
+        "left": 12,
+        "top": 662
+      },
+      "size": {
+        "success": true,
+        "width": 88,
+        "height": 148
+      }
+    },
+    {
+      "selector": ".sky-orientation-back-layer",
+      "styles": {
+        "opacity": 1,
+        "display": "block",
+        "visibility": "visible",
+        "z-index": 14,
+        "position": "absolute"
+      },
+      "offset": {
+        "left": 12,
+        "top": 96.9124984741211
+      },
+      "size": {
+        "success": true,
+        "width": 44,
+        "height": 44
+      }
+    },
+    {
+      "selector": ".sky-quick-settings",
+      "styles": {
+        "opacity": 1,
+        "display": "block",
+        "visibility": "visible",
+        "z-index": 10,
+        "position": "absolute"
+      },
+      "offset": {
+        "left": 64,
+        "top": 144.91250610351562
+      },
+      "size": {
+        "success": true,
+        "width": 314.3999938964844,
+        "height": 144
+      }
+    }
+  ],
+  "scope": "Official SDK element geometry/computed styles on the current live page; no state mutation or refresh",
+  "canvas": {
+    "sid": "_Ax",
+    "label": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4051 颗真实亮星目录对象，场景时刻 2026-09-30T13:50:33.000Z，2 个真实目标，手动视角，不代表手机朝向，所选观测时刻 21:50",
+    "scene": "READY",
+    "count": 4051,
+    "frameAt": "2026-09-30T13:50:33.000Z"
+  },
+  "route": "sky/detail/index"
+}

@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-m82-measured-stars-2026-10-04.py", line 192, in <module>
+    try:main()
+        ^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-m82-measured-stars-2026-10-04.py", line 83, in main
+    px,py=master.wcs.all_world2pix(*position,0);px,py=float(px),2047-float(py)
+          ^^^^^^^^^^
+AttributeError: 'GriMaster' object has no attribute 'wcs'

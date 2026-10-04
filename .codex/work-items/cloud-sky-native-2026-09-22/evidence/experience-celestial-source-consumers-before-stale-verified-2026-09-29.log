@@ -1,0 +1,15 @@
+evalmachine.<anonymous>:248
+    return match ? __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
+                                                               ^
+
+ReferenceError: MINIAPP_API_BASE_PATH is not defined
+    at deepSkyManifestUrl (evalmachine.<anonymous>:248:64)
+    at evalmachine.<anonymous>:31:53
+    at Array.map (<anonymous>)
+    at CelestialSourcesPage (evalmachine.<anonymous>:30:54)
+    at inspect (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-celestial-source-recovery-2026-09-29.mts:148:21)
+    at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-celestial-source-recovery-2026-09-29.mts:169:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v24.16.0
+Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c, line 94

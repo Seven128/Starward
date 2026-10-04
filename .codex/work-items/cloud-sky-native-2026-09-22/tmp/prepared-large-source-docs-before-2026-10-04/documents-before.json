@@ -1,0 +1,32 @@
+[
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+    "bytes": 171126,
+    "sha256": "640472b6be2d1b2d9ba4964cc8c658d85c8ea8368a2ae296ecc10d23170ae94b"
+  },
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+    "bytes": 99397,
+    "sha256": "5288e85ff4699c0a4a9a033a412c5f8551faa97d66f009c512357833315d12f5"
+  },
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/OPTICAL-DATA-RESEARCH.md",
+    "bytes": 33437,
+    "sha256": "ae7aff0e4b2df480cafda1f19c9f060a9ecdc9037cecb08927313b7106067997"
+  },
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+    "bytes": 8374,
+    "sha256": "dec602743c4544ea542fcdfd3cb2d1a232a929d704fea86d163284361b1255da"
+  },
+  {
+    "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+    "bytes": 158526,
+    "sha256": "df0dda0288f37948bd898c6bb78347354ce61ff1c91364ecfec5f6ee07c13b77"
+  },
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-prepared-native-extent-and-background-2026-10-04.md",
+    "bytes": 6763,
+    "sha256": "d998d999ef8025e901c4b75b6457347b831d326bf5f2c334dbb2b47750591c33"
+  }
+]

@@ -1,0 +1,73 @@
+E.EE.E..E.............................
+======================================================================
+ERROR: test_cancellation_during_regions_returns_no_partial_candidate_and_invalid_chunks_reject (test_sdss_recovered_interior.RecoveredInteriorTest.test_cancellation_during_regions_returns_no_partial_candidate_and_invalid_chunks_reject)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_interior.py", line 64, in test_cancellation_during_regions_returns_no_partial_candidate_and_invalid_chunks_reject
+    owner.refine_current_recovery_interior(master,parent,recovery,sources,chunk_rows=7,cancelled=stop)
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\sdss_display_recovery.py", line 380, in refine_current_recovery_interior
+    result=refine_current_recovery_display_region(master,parent,recovery,sources,target,batch_size=batch_size,cancelled=cancelled)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\sdss_display_recovery.py", line 320, in refine_current_recovery_display_region
+    requested=np.zeros(shape,bool);requested[local]=influence[local]&usable[local]&~protected[local]
+                       ^^^^^
+NameError: name 'shape' is not defined
+
+======================================================================
+ERROR: test_frozen_lod_alpha_and_exclusive_candidate_do_not_claim_completed_exterior (test_sdss_recovered_interior.RecoveredInteriorTest.test_frozen_lod_alpha_and_exclusive_candidate_do_not_claim_completed_exterior)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_interior.py", line 44, in test_frozen_lod_alpha_and_exclusive_candidate_do_not_claim_completed_exterior
+    result=owner.refine_current_recovery_interior(master,parent,recovery,sources)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\sdss_display_recovery.py", line 380, in refine_current_recovery_interior
+    result=refine_current_recovery_display_region(master,parent,recovery,sources,target,batch_size=batch_size,cancelled=cancelled)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\sdss_display_recovery.py", line 320, in refine_current_recovery_display_region
+    requested=np.zeros(shape,bool);requested[local]=influence[local]&usable[local]&~protected[local]
+                       ^^^^^
+NameError: name 'shape' is not defined
+
+======================================================================
+ERROR: test_partitioned_dependency_increment_keeps_unaffected_and_exterior_exact (test_sdss_recovered_interior.RecoveredInteriorTest.test_partitioned_dependency_increment_keeps_unaffected_and_exterior_exact)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_interior.py", line 18, in test_partitioned_dependency_increment_keeps_unaffected_and_exterior_exact
+    a=owner.refine_current_recovery_interior(master,parent,recovery,sources,chunk_rows=7,batch_size=5)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\sdss_display_recovery.py", line 380, in refine_current_recovery_interior
+    result=refine_current_recovery_display_region(master,parent,recovery,sources,target,batch_size=batch_size,cancelled=cancelled)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\sdss_display_recovery.py", line 320, in refine_current_recovery_display_region
+    requested=np.zeros(shape,bool);requested[local]=influence[local]&usable[local]&~protected[local]
+                       ^^^^^
+NameError: name 'shape' is not defined
+
+======================================================================
+ERROR: test_increment_uses_raw_samples_and_keeps_actual_unaffected_parent (test_sdss_recovered_apertures.RecoveredApertureTest.test_increment_uses_raw_samples_and_keeps_actual_unaffected_parent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_apertures.py", line 91, in test_increment_uses_raw_samples_and_keeps_actual_unaffected_parent
+    result = owner.refine_current_recovery_display_region(master, parent, recovery, sources, target, batch_size=7)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\sdss_display_recovery.py", line 320, in refine_current_recovery_display_region
+    requested=np.zeros(shape,bool);requested[local]=influence[local]&usable[local]&~protected[local]
+                       ^^^^^
+NameError: name 'shape' is not defined
+
+======================================================================
+ERROR: test_same_run_unknown_epoch_or_unavailable_model_has_no_increment (test_sdss_recovered_apertures.RecoveredApertureTest.test_same_run_unknown_epoch_or_unavailable_model_has_no_increment)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_apertures.py", line 110, in test_same_run_unknown_epoch_or_unavailable_model_has_no_increment
+    result = owner.refine_current_recovery_display_region(master, parent, recovery, sources, (slice(8,32),slice(8,32)))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\sdss_display_recovery.py", line 320, in refine_current_recovery_display_region
+    requested=np.zeros(shape,bool);requested[local]=influence[local]&usable[local]&~protected[local]
+                       ^^^^^
+NameError: name 'shape' is not defined
+
+----------------------------------------------------------------------
+Ran 38 tests in 10.384s
+
+FAILED (errors=5)

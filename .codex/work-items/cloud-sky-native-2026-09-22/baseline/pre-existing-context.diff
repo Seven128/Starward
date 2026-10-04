@@ -1,0 +1,108 @@
+diff --git a/project_context/architecture/runtime-and-domain.md b/project_context/architecture/runtime-and-domain.md
+index 2e439767..50acaf20 100644
+--- a/project_context/architecture/runtime-and-domain.md
++++ b/project_context/architecture/runtime-and-domain.md
+@@ -231,7 +231,11 @@ The Sky page queries that publication through the shared request/cache owner. `s
+ 
+ The Mini Program's shared zoned-date owner must not assume Android WeChat implements `Intl.DateTimeFormat.formatToParts`. For the product's supported `Asia/Shanghai` and `Asia/Hong_Kong` dates in 2000–2100 it may use the equivalent fixed UTC+08:00 calendar/clock fallback; invalid input, other zones and dates outside that bounded range fail closed. Map, shared observation controls and Sky context gates reuse this owner instead of constructing their own `Intl` formatter.
+ 
+-The current Mini Program source uses a native WEAPP `Canvas type="webgl"` node with TWGL (MIT) for GPU programs, buffers and uniform binding. The exact dependency version lives in the Mini Program manifest; its full license is shipped in the sky subpackage through `assets/licenses/twgl.json`. `sky-scene-render.ts` owns existing catalog/grid/target/registered-survey drawing and the painted picking snapshot; `sky-render-surface.ts` defines logical-pixel drawing operations, and `sky-gpu-renderer.ts` owns GPU submission and resources. The page retains its existing astronomy, pose, smoothing and calibration owners. Shared stereographic geometry follows the established projection logic represented by d3-geo (ISC); d3-geo is not an additional production runtime dependency. Direct Canvas2D subdivision of illustrations is not selected because its per-triangle clipping cost grows during camera movement. Aladin Lite and the complete Stellarium Web Engine are not adopted runtime dependencies; their browser integration and complete-engine responsibilities are unnecessary for this bounded native renderer. Expanded constellation artwork, deeper stars and composed native performance/recovery remain integration obligations, not established by this renderer migration. Reassess the selected path if target-device behavior or required image/data delivery cannot meet the product behavior, rather than narrowing that behavior to the research demo.
++The current Mini Program source uses a native WEAPP `Canvas type="webgl"` node with TWGL (MIT) for GPU programs, buffers and uniform binding. The exact dependency version lives in the Mini Program manifest; its full license is shipped in the sky subpackage through `assets/licenses/twgl.json`. `sky-scene-render.ts` owns existing catalog/grid/target/registered-survey drawing and the painted picking snapshot; `sky-render-surface.ts` defines logical-pixel drawing operations, and `sky-gpu-renderer.ts` owns GPU submission and resources. The page retains its existing astronomy, pose, smoothing and calibration owners. Shared stereographic geometry follows the established projection logic represented by d3-geo (ISC); d3-geo is not an additional production runtime dependency. Direct Canvas2D subdivision of illustrations is not selected because its per-triangle clipping cost grows during camera movement.
++
++On 2026-09-22 the user adopted extending this native renderer and the existing Astronomy Engine/data-service composition toward [Stellarium Web capability alignment](../areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星对齐-stellarium-web). The former rationale that a complete engine was unnecessary for a bounded renderer no longer defines the scope. The retained choice now follows [the engine selection, rejected alternatives and reassessment conditions](../external-capabilities.md#云观星引擎选型): autonomous source modification, reuse of the current native foundation, licence boundaries and separate Agent-effort/cash accounting. Stellarium Web Engine, WWT and Aladin Lite are not adopted replacement runtimes; suitable bounded libraries remain eligible under the existing reuse and commercial-use rules.
++
++Extend the existing catalog/computation/publication, rendering, camera and lifecycle owners rather than introducing another observation-time/place or object-identity source. Drawing, labels and picking must share the presented frame; the expanded layers must retain calibration, manual/following transitions, resource recovery and independent missing-data states. Current BSC/SAO stars, registered infrared cutouts and GPU infrastructure do not establish deeper complete catalogs, optical all-sky surveys, atmosphere/landscapes, detailed planets or dynamic-object delivery. Dataset rights/coverage and actual native quality/performance remain integration obligations; selection does not certify completion, and an unresolved mechanism must not silently narrow the product goal.
+ 
+ The GPU renderer batches points and line triangles. `sky-gpu-textures.ts` owns decoded-image identity, failed-upload latching, reuse and bounded texture retention for survey imagery and artwork; unused images are released after a frame and all resources on lifecycle reset, hide, removal, failure and disposal. The retention budget is not a claim about upload peak memory. `sky-artwork-registration.ts` defines the three-anchor image plane and the artwork shader uses the same ENU basis, stereographic FOV and actual center as stars. This primitive alone does not establish scene integration. The existing canvas lifecycle latches native failure: sensor requests retain the latest input but cannot repeatedly reinitialize; explicit retry or a real foreground/remount transition can recover. `isContextLost` and GL errors reject successful drawing/picking publication; retry builds a new resource generation once the native context is usable. No browser context event API is assumed on a WEAPP Canvas node, and actual WEAPP loss/restoration still requires observation. Invalidated surfaces clear their old picking snapshot synchronously. Failed image upload retains independently valid stars/targets and reports an object/level-bound retryable image failure. Cardinal labels remain native overlays projected from the same presented basis/FOV/center. `sky-scene-projection.ts` excludes below-horizon targets/labels from the visible sky while the information list retains its factual objects.
+ 
+diff --git a/project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md b/project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md
+index 31a54c5b..e1ba964e 100644
+--- a/project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md
++++ b/project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md
+@@ -14,6 +14,14 @@ This on-demand subdomain node normatively continues `Cross-Control And State Inv
+ 
+ ## Cross-Control And State Invariants
+ 
++### 云观星对齐 Stellarium Web
++
++2026-09-22用户确认通过**扩展现有原生引擎**推进云观星能力对齐Stellarium Web，排除网页嵌入，要求代码与功能可自主改造。[选型、成本口径及未采用其他方案的原因](../../../../external-capabilities.md#云观星引擎选型)由外部能力owner保存；[实现责任](../../../../architecture/runtime-and-domain.md#cloud-sky-progressive-imagery)继续复用现有天文、视角、渲染与数据发布owner。本次为技术路线采用，不是新版界面资源采用或功能完成声明。
++
++对齐目标是同一观察者地点/时刻下可交互的星空：完整天穹与连续缩放、分层真实恒星与星座、银河/大气/晨昏/地景、日月行星外观、渐进光学深空影像、搜索定位/跟踪及天体资料，保留网格与夜间模式。卫星、彗星和小行星等参考能力也需在该目标下落实数据与更新责任，具体对象覆盖、有效时段、精度和交付边界仍须明确；不能沿用早期合规迁移的排除项永久裁剪目标，也不能在轨道未取得或过期时伪装实时位置。星表深度、影像最大层级及天文时间范围由真实数据/算法与验证确定，当前少量红外切图或亮星目录不能被当作完整对齐。独立的网页社区业务、桌面望远镜插件和移动版全部付费功能不因引擎选型自动纳入。
++
++既有地点/时间共享、手机姿态跟随、手动浏览、完整旋转校准、总览朝向与返回上下文规则继续适用；不为模仿参考网站取消本产品交互。新能力不得把示意渲染、历史巡天或几何位置写成现场天气、实测天空或可见性保证。数据授权、资源采用和目标真机组合效果仍是待落实项，不能以本次记录或代码存在宣布完成。
++
+ ### 云观星全天天穹与分层星空（2026-09-19用户扩展）
+ 
+ 云观星支持从当前地点站在地上看完整天穹的广角总览，连续放大到局部天空；观察者地点与所选时刻保持同一 Observation Context，不把缩放解释为向恒星飞行。当前局部透视与1.5–45°范围只是旧实现限制，不是新需求上限。全天投影、最终缩放范围和目标运行时性能仍待技术验证，不能只扩大透视FOV数字冒充天穹。
+diff --git a/project_context/context.toml b/project_context/context.toml
+index a080e6ec..1ecd3561 100644
+--- a/project_context/context.toml
++++ b/project_context/context.toml
+@@ -4,7 +4,7 @@ default_files = []
+ path = "project_context/external-capabilities.md"
+ role = "architecture"
+ read_policy = "on-demand"
+-triggers = ["external capabilities", "provider selection", "外部能力", "方案选型", "供应商", "成本预期"]
++triggers = ["external capabilities", "provider selection", "外部能力", "方案选型", "供应商", "成本预期", "Stellarium", "云观星引擎选型", "Agent开发成本"]
+ # Schema v5 optional Context routing. Only global.md is default body text.
+ # Keep only near-universal recovery facts in the default path; route specialized
+ # facts through registered on-demand nodes and widen reads through bounded search.
+@@ -103,7 +103,7 @@ triggers = ["wechat miniapp screen", "miniapp route", "miniapp surface", "miniap
+ path = "project_context/architecture/runtime-and-domain.md"
+ role = "foundation"
+ read_policy = "on-demand"
+-triggers = ["miniapp bff", "weather composition", "formal spot publication", "contribution moderation", "account data"]
++triggers = ["miniapp bff", "weather composition", "formal spot publication", "contribution moderation", "account data", "sky rendering", "云观星引擎"]
+ 
+ [[context]]
+ path = "project_context/architecture/assurance-and-lifecycle.md"
+@@ -227,7 +227,7 @@ triggers = ["map finder", "finder sheet", "map time control", "地图查找器"]
+ path = "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md"
+ role = "subdomain"
+ read_policy = "on-demand"
+-triggers = ["spot night", "spot sky", "sky orientation", "点位夜空"]
++triggers = ["spot night", "spot sky", "sky orientation", "点位夜空", "云观星", "Stellarium能力对齐"]
+ 
+ [[context]]
+ path = "project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md"
+diff --git a/project_context/external-capabilities.md b/project_context/external-capabilities.md
+index ab8ce4d7..19d5c988 100644
+--- a/project_context/external-capabilities.md
++++ b/project_context/external-capabilities.md
+@@ -32,6 +32,7 @@
+ | 地形 | 指定Copernicus GLO-30-F免费开放版；当前`terrain:glo30:greater-bay-area:2021:v2`由2021 Public AWS COG真实源离线派生并仅覆盖大湾区中心85km，运行时核验成品完整性；保留2–50公里地形查看与各图层独立缺测，不恢复逐方向地平线分析 | [地形owner](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#地形以可获得数据为边界) |
+ | 光污染 | 许可覆盖的EOG年度VIIRS夜光；年度卫星夜光估算，不等于实时天空亮度、精确波特尔等级或实测SQM | [地形与夜光发布](architecture/runtime-and-domain.md#mini-program-terrain-and-directional-light-evidence) |
+ | 日月行星、晨昏、月相、几何窗口 | 复用Astronomy Engine和现有天文服务；算法计算不保证现场可见性 | [天文架构](architecture/runtime-and-domain.md) |
++| 云观星引擎 | 2026-09-22用户采用扩展现有原生Canvas/WebGL＋TWGL＋Astronomy Engine方案，对齐Stellarium Web能力；保留自主修改和自有业务代码的许可边界 | [选型理由与重评条件](#云观星引擎选型)、[能力目标](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星对齐-stellarium-web) |
+ | 亮星 | HEASARC具体发布的BSC5P，实际迁移数据、历元/自行/单位及身份；不以函数改名代替受限文件替换 | [目录迁移](architecture/runtime-and-domain.md#mini-program-external-capability-migration) |
+ | 深空目录与影像 | 保留指定OpenNGC及CC BY-SA 4.0数据义务；当前`allwise-w3-messier.v20260501`已离线发布采用的51个星系/星云目标各3级IRSA AllWISE W3 12µm JPEG，运行时仅由同源BFF校验并返回本地资产 | [渐进影像](architecture/runtime-and-domain.md#cloud-sky-progressive-imagery) |
+ | 天象 | 现有日月食算法及NASA参考；GMN获权高层资料整理成常年流星雨活动参考，不冒充当年特殊爆发、精确极大或现场流量预测 | [事件owner](areas/main/screen-contracts/wechat-miniapp/map-and-finder.md#selected-event-data) |
+@@ -40,7 +41,27 @@
+ 
+ 天气最多240小时的公开能力不保证当前账号和旧适配已取得相同范围；第11–15天仍可使用天文和计划，天气按实际覆盖缺失。过去保存的预报、地区历史再分析、现场实测分开。地图云量必须来自真实查询点或网格，不能把少量点伪装成全国连续高清云场。主地图保留地形开关与LIGHT/TOTAL_CLOUD选择，点位地形图保留地形/光污染两个独立开关，不因报告简写取消现有地形入口。
+ 
+-现有地点身份、正式点发布、草稿/提案隔离、安全动作检查、计划版本、来源披露和数据失败恢复继续适用。支付、短信、原生推送、AI、雷达、卫星云动画、科研级视宁度、空间站/彗星动态轨道、相机AR和全天无限高清不是本次新增采购或实现范围。
++现有地点身份、正式点发布、草稿/提案隔离、安全动作检查、计划版本、来源披露和数据失败恢复继续适用。支付、短信、原生推送、产品内AI、雷达、卫星云动画、科研级视宁度、相机AR和全天无限高清不因云观星引擎选型而新增。2026-09-14合规迁移中对空间站/彗星动态轨道的排除不再作为后续云观星能力对齐的上限；新目标见[云观星对齐Stellarium Web](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星对齐-stellarium-web)，具体数据覆盖、权益和验证仍须落实。
++
++## 云观星引擎选型
++
++2026-09-22用户明确采用**扩展现有引擎**，以Agent主导开发，使云观星能力对齐Stellarium Web。沿用原生WEAPP Canvas/WebGL、TWGL、Astronomy Engine及当前天文/数据服务，复用现有姿态校准、地点时间、绘制和点选责任；不接入网页容器或不可自主修改的成品页面/黑盒SDK。能力范围由[星空产品owner](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星对齐-stellarium-web)控制，实现边界见[天文与渲染架构](architecture/runtime-and-domain.md#cloud-sky-progressive-imagery)。本次采用是技术路线决定，不是功能、数据、设计资源或真机验收已完成。
++
++选择理由：当前已有可复用的小程序原生渲染与交互基础；现有MIT基础库无需购买商业引擎许可，也不要求开放我们的业务源码。接受更多Agent开发和维护投入，以保持功能改造及代码许可的自主性。这个选择不是认定所有第三方引擎不可用，也不是已证明自建完整成本最低；符合责任边界、目标运行时和商业条件的成熟库/算法仍可按需要复用。
++
++| 未采用的路线 | 决定性原因与保留边界 |
++| --- | --- |
++| H5/WebView、嵌入官方站点或成品页面 | 用户明确排除网页嵌入，要求在自己的项目中自主改造功能；不以网页方案替代原生交付 |
++| Stellarium Web Engine商业授权移植 | [源码提供商业许可选项](https://github.com/Stellarium/stellarium-web-engine/blob/29870744c470ddc62fa869e153178c82a7824fa4/src/js/pre.js)，但没有已取得的报价或覆盖源码修改/分发、完整数据及服务的合同；还要承担未经真机验证的WASM、浏览器胶水和网络适配。暂不采购；不能把“价格未知”写成“价格已证实很高” |
++| Stellarium Web Engine AGPL移植 | 可按AGPL商用且免引擎购买费，但不会消除原生适配工作；对应源码义务可能覆盖云观星乃至组合的小程序前端。用户把核心代码开放视为独立商业成本，本次不选择以此换免许可费。[AGPL](https://github.com/Stellarium/stellarium-web-engine/blob/29870744c470ddc62fa869e153178c82a7824fa4/LICENSE-AGPL-3.0.txt)不等于自动要求所有独立后端开源，也不能凭分包承诺只公开几个引擎文件 |
++| WorldWide Telescope整套替换 | [引擎MIT许可](https://github.com/WorldWideTelescope/wwt-webgl-engine/blob/4478bb6b56ead48bbc05f5d954d38d45f5462ae2/LICENSE)有利于闭源，但浏览器适配、完整观星表现和独立资源运行仍有差距/待验证项；没有证据表明完整替换比扩展现有方案更省投入，数据权益仍独立核查 |
++| Aladin Lite整套替换 | 更适合作为HiPS巡天子能力，未证明能替代完整观星引擎；Rust/WASM/WebGL2适配和双渲染职责也有成本。本次调研版本为[LGPL-3.0-or-later](https://github.com/cds-astro/aladin-lite/blob/60c5cf414d6d56a10b406761e62e8c2ce9f2a760/LICENSE)，不是笼统的GPL或MIT结论；实际采用时仍核对选定版本。必要子能力可另评，当前不引入 |
++
++**数据边界：** 自有引擎不自动取得任何第三方星表、巡天、纹理或接口权益。Stellarium前端的搜索/资料服务与引擎源码分开，官网公开URL不作为已获权的商用后端。新增深星表、光学巡天及动态轨道的字段、覆盖、时效、加工、分发权逐项落实；[MAST现行数据政策](https://archive.stsci.edu/publishing/data-use)要求DSS等版权数据的营利商业用途取得书面许可，CDS镜像或数据库许可不能自动替代原始影像权益。当前已有来源及各自归因继续保留，新数据尚未因本次选型而采用或采购。
++
++**成本口径：** Agent开发/维护有效时间、项目方参与时间单列，不用人日或Agent小时折算人民币；现金只记真实引擎/数据服务购买、云资源、必要外部服务和Agent新增使用费。已有订阅是否够用、数据费用和扩容未确定时不填零；核心代码开放的商业影响独立判断。详细工时、现金敏感性与公式保留在[任务调研第4–8节](../.codex/work-items/stellarium-cost-research-2026-09-22/research.md)和[可复算模型](../.codex/work-items/stellarium-cost-research-2026-09-22/cost-model.mjs)，都是未实测的规划假设，不是交付时限、采购授权或预算上限；旧整体月费算例不能与云观星新增项机械叠加。
++
++**重评条件：** 当前方案在真实目标设备上经必要优化仍无法满足能力、正确性或性能要求；所需数据的覆盖/商业权益无法落实；或第三方出现可自主修改、可部署、权益明确且经运行验证有显著优势的方案时，重评受影响边界。常规功能扩展不重复整套选型，也不因实现困难缩减已确定的能力目标；先复用本次调研，更新变化的证据。完整比较见上述任务调研，当前采用状态以本节为准。
+ 
+ ## 已研究但不采用
+ 

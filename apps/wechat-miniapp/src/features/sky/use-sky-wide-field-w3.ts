@@ -1,10 +1,11 @@
-import {useMemo} from "react";
+import {useEffect,useMemo} from "react";
 import type {SkyGeometryReport} from "@starward/miniapp-contracts";
 import {useResourceQuery} from "@/hooks/use-resource-query";
 import {getWideFieldW3Manifest,wideFieldW3TileUrl} from "@/services/wide-field-w3-client";
 import {exactSkyObservationFrame} from "./sky-observation-frame";
 import {skySolarLightAt} from "./sky-solar-light";
 import {selectSkyHipsTiles} from "./sky-hips-tile-selection";
+import {skyHipsTileIntersectsView} from "./sky-hips-tile-mesh";
 import type {SkyArtworkView} from "./sky-artwork-registration";
 import type {SkyArtworkCanvas} from "./sky-artwork-request";
 import {useSkyNativeImages} from "./use-sky-artwork";
@@ -21,8 +22,12 @@ export function useSkyWideFieldW3(report:Pick<SkyGeometryReport,"hourly"|"observ
     enabled:wantedWide,staleTime:60_000,structuralSharing:false});
   const publication=manifest.data;
   const frame=exactSkyObservationFrame(report,at);
-  const selection=useMemo(()=>wantedWide&&publication&&frame&&view&&width>0&&height>0
-    ? selectSkyHipsTiles({frame,view,width,height,maxOrder:0,minOrder:0}) : null,
+  const selection=useMemo(()=>{
+    if(!wantedWide||!publication||!frame||!view||!(width>0&&height>0))return null;
+    const selected=selectSkyHipsTiles({frame,view,width,height,maxOrder:0,minOrder:0});
+    return selected.state==="SELECTED" ? {...selected,pixels:selected.pixels.filter(pixel=>
+      skyHipsTileIntersectsView(selected.order,pixel,frame.equatorialToEnu,view,width,height))} : selected;
+  },
     [wantedWide,publication,frame,view?.basis,view?.verticalFovDeg,view?.center?.x,view?.center?.y,width,height]);
   const selected=selection?.state==="SELECTED"?selection.pixels:[];
   const wanted=useMemo(()=>publication?.tiles.filter(tile=>selected.includes(tile.pixel)).map(tile=>({
@@ -32,16 +37,18 @@ export function useSkyWideFieldW3(report:Pick<SkyGeometryReport,"hourly"|"observ
   const images=useSkyNativeImages(canvas,canvasRevision,publication?.publicationHash,
     wantedWide&&selection?.state==="SELECTED",wanted,
     asset=>({url:wideFieldW3TileUrl(asset.downloadUrl),format:"jpeg"}));
+  // W3 has one published resolution: an out-of-view face is not a coarse
+  // fallback. Keep its bounded encoded file while releasing its decoded image.
+  useEffect(()=>{images.suspendUnusedDecoded();},[images.images,images.retainedImages,images.suspendUnusedDecoded]);
   const tiles=useMemo(()=>{
     if(!wantedWide||selection?.state!=="SELECTED")return [] as SkyHipsCanvasTile[];
-    const ready=new Map([...images.retainedImages,...images.images]);
     const result:SkyHipsCanvasTile[]=[];
-    for(const [id,image] of ready){
+    for(const [id,image] of images.images){
       const match=/^w3:0:(\d+)$/u.exec(id);
       if(match)result.push({layer:"WIDE_FIELD_W3",order:0,pixel:Number(match[1]),image});
     }
     return result.sort((a,b)=>a.pixel-b.pixel);
-  },[wantedWide,selection,images.images,images.retainedImages]);
+  },[wantedWide,selection,images.images]);
   return {tiles,publication,loading:wantedWide&&(manifest.isFetching||images.loading),
     failed:wantedWide&&(manifest.isError||Boolean(manifest.refreshError)||images.failed),
     failedImage:images.failedImage,

@@ -1,0 +1,14 @@
+E
+======================================================================
+ERROR: test_empty_spatial_note_accepts_known_wire_form_without_changing_geometry_or_other_bytes (test_prepared_rgb_observation.PreparedRgbTest.test_empty_spatial_note_accepts_known_wire_form_without_changing_geometry_or_other_bytes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_prepared_rgb_observation.py", line 175, in test_empty_spatial_note_accepts_known_wire_form_without_changing_geometry_or_other_bytes
+    self.assertTrue(observation.removed_empty_spatial_notes)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'PreparedRgbObservation' object has no attribute 'removed_empty_spatial_notes'. Did you mean: 'removed_empty_spectral_notes'?
+
+----------------------------------------------------------------------
+Ran 1 test in 0.028s
+
+FAILED (errors=1)

@@ -1,0 +1,5 @@
+
+> starward@1.0.0 miniapp:device:feedback
+> node tools/run-node.cjs tools/miniapp/device-feedback.mjs doctor --cli E:/微信web开发者工具/cli.bat
+
+{"mode":"development_feedback","official":{"officialTool":"available","automaticUpdate":"available","ordinaryPreview":"available","login":"ready"},"android":{"adbVersion":"1.0.41","detected":0,"states":[],"usbReady":false},"evidenceMeaning":"readiness_only"}

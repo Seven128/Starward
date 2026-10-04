@@ -1,0 +1,12 @@
+✔ deep-sky image HTTP route preserves JPEG bytes and cache-safe ASCII headers (168.1954ms)
+✔ actual object provenance offers a hash-bound machine-readable collection and all 153 matching JPEGs over HTTP (497.4918ms)
+✔ MiniappService derives celestial provenance from its injected image owner (4.6706ms)
+✔ source-finite opt-in serves all M42 PNG levels and discloses the publication actually painted (77.4801ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2949.925

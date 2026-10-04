@@ -1,0 +1,1291 @@
+{
+  "scope": "Research only: actual published 30-minute body anchors, EQJ de-rotation and existing shortest rotation interpolation versus the current server calculator.",
+  "contextSha256": "1746aa900d82214c32e47f82da8ebaaed098805083f5a8db9203634ee5a50965",
+  "observer": {
+    "latitude": 22.4826799,
+    "longitude": 114.5557147,
+    "elevationM": 0
+  },
+  "algorithmVersion": "miniapp-astronomy-engine-adapter@1.3.5+astronomy-engine@2.1.19",
+  "interval": {
+    "start": "2026-09-29T13:00:00.000Z",
+    "end": "2026-09-29T13:30:00.000Z"
+  },
+  "samples": [
+    {
+      "at": "2026-09-29T13:00:00.000Z",
+      "seconds": 0,
+      "bodies": [
+        {
+          "body": "SUN",
+          "directionErrorArcsec": 1.67731892818099,
+          "centeredErrorCssPxAtMinFov": 7.864761960735893,
+          "publishedCoordinateErrorArcsec": 1.6773189281889596,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": null,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:00.000Z"
+        },
+        {
+          "body": "MOON",
+          "directionErrorArcsec": 1.7326684496294291,
+          "centeredErrorCssPxAtMinFov": 8.124289712747695,
+          "publishedCoordinateErrorArcsec": 1.7326684495953135,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.013244976705729659,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:00.000Z"
+        },
+        {
+          "body": "MERCURY",
+          "directionErrorArcsec": 2.3831487884443065e-11,
+          "centeredErrorCssPxAtMinFov": 1.1174319697419456e-10,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.00780838136214301,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:00.000Z"
+        },
+        {
+          "body": "VENUS",
+          "directionErrorArcsec": 2.3604773219508257e-11,
+          "centeredErrorCssPxAtMinFov": 1.1068015711769923e-10,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:00.000Z"
+        },
+        {
+          "body": "MARS",
+          "directionErrorArcsec": 8.56839306091421e-11,
+          "centeredErrorCssPxAtMinFov": 4.0176242381537486e-10,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.005659023760184848,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:00.000Z"
+        },
+        {
+          "body": "JUPITER",
+          "directionErrorArcsec": 9.776597765578054e-11,
+          "centeredErrorCssPxAtMinFov": 4.5841379906858873e-10,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.002797800511848458,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:00.000Z"
+        },
+        {
+          "body": "SATURN",
+          "directionErrorArcsec": 1.4023324923490618e-11,
+          "centeredErrorCssPxAtMinFov": 6.575381137581729e-11,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": 5.852393383725579e-11,
+          "exactRotationAt": "2026-09-29T13:00:00.000Z"
+        },
+        {
+          "body": "URANUS",
+          "directionErrorArcsec": 5.2470477287109814e-11,
+          "centeredErrorCssPxAtMinFov": 2.4602823404286727e-10,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.0009049826950055562,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:00.000Z"
+        },
+        {
+          "body": "NEPTUNE",
+          "directionErrorArcsec": 1.2801485653033704e-11,
+          "centeredErrorCssPxAtMinFov": 6.002474288745825e-11,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.009880484633397616,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T13:00:01.000Z",
+      "seconds": 1,
+      "bodies": [
+        {
+          "body": "SUN",
+          "directionErrorArcsec": 1.6768898883072652,
+          "centeredErrorCssPxAtMinFov": 7.862750240470978,
+          "publishedCoordinateErrorArcsec": 1.0838679709923709,
+          "diameterErrorDeg": 5.555556015224283e-10,
+          "phaseFractionError": null,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:01.000Z"
+        },
+        {
+          "body": "MOON",
+          "directionErrorArcsec": 1.7171009025723944,
+          "centeredErrorCssPxAtMinFov": 8.05129521548153,
+          "publishedCoordinateErrorArcsec": 0.7917479598026479,
+          "diameterErrorDeg": 5.888888888749833e-7,
+          "phaseFractionError": 7.777777777384642e-7,
+          "bodyAxesErrorArcsec": 0.02453342596494337,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:01.000Z"
+        },
+        {
+          "body": "MERCURY",
+          "directionErrorArcsec": 0.002389650621892415,
+          "centeredErrorCssPxAtMinFov": 0.011204806071548019,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.8333333332357094e-10,
+          "phaseFractionError": 1.1499999996722465e-7,
+          "bodyAxesErrorArcsec": 0.023403238427401475,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:01.000Z"
+        },
+        {
+          "body": "VENUS",
+          "directionErrorArcsec": 0.0005992394576483084,
+          "centeredErrorCssPxAtMinFov": 0.0028097671901726206,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 2.338888888120394e-9,
+          "phaseFractionError": 1.0388888888046566e-7,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:01.000Z"
+        },
+        {
+          "body": "MARS",
+          "directionErrorArcsec": 0.0021024514196697538,
+          "centeredErrorCssPxAtMinFov": 0.009858160944713614,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 7.222222212638352e-11,
+          "phaseFractionError": 4.999999969612645e-9,
+          "bodyAxesErrorArcsec": 0.005727386580712645,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:01.000Z"
+        },
+        {
+          "body": "JUPITER",
+          "directionErrorArcsec": 0.000930519844425011,
+          "centeredErrorCssPxAtMinFov": 0.004363104090192263,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.9999999920083944e-10,
+          "phaseFractionError": 1.1111110920225542e-9,
+          "bodyAxesErrorArcsec": 0.012096574420176911,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:01.000Z"
+        },
+        {
+          "body": "SATURN",
+          "directionErrorArcsec": 0.0006220910878000285,
+          "centeredErrorCssPxAtMinFov": 0.0029169159431840525,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.6666666310949374e-11,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": 0.0876918150399429,
+          "exactRotationAt": "2026-09-29T13:00:01.000Z"
+        },
+        {
+          "body": "URANUS",
+          "directionErrorArcsec": 0.0023266567314712827,
+          "centeredErrorCssPxAtMinFov": 0.010909434723370698,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.1111111163086829e-11,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.016449094219747898,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:01.000Z"
+        },
+        {
+          "body": "NEPTUNE",
+          "directionErrorArcsec": 0.0021749408515316427,
+          "centeredErrorCssPxAtMinFov": 0.010198055830940096,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.017207582667149356,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:01.000Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T13:00:10.000Z",
+      "seconds": 10,
+      "bodies": [
+        {
+          "body": "SUN",
+          "directionErrorArcsec": 1.6730301099358869,
+          "centeredErrorCssPxAtMinFov": 7.844652168838686,
+          "publishedCoordinateErrorArcsec": 2.1207440093207106,
+          "diameterErrorDeg": 5.5555555711350735e-9,
+          "phaseFractionError": null,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:10.000Z"
+        },
+        {
+          "body": "MOON",
+          "directionErrorArcsec": 1.5782002856682755,
+          "centeredErrorCssPxAtMinFov": 7.400005666542624,
+          "publishedCoordinateErrorArcsec": 1.5178290509915981,
+          "diameterErrorDeg": 0.000004111111111204657,
+          "phaseFractionError": 0.000007777777777828732,
+          "bodyAxesErrorArcsec": 0.011558299477283802,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:10.000Z"
+        },
+        {
+          "body": "MERCURY",
+          "directionErrorArcsec": 0.0025901822896739106,
+          "centeredErrorCssPxAtMinFov": 0.012145076765561173,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.8333333332357094e-9,
+          "phaseFractionError": 1.4999999997655777e-7,
+          "bodyAxesErrorArcsec": 0.023887910209621062,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:10.000Z"
+        },
+        {
+          "body": "VENUS",
+          "directionErrorArcsec": 0.0018440504229492358,
+          "centeredErrorCssPxAtMinFov": 0.008646547401535809,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 3.3888888882616097e-9,
+          "phaseFractionError": 3.888888888692321e-8,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:10.000Z"
+        },
+        {
+          "body": "MARS",
+          "directionErrorArcsec": 0.003334713536938825,
+          "centeredErrorCssPxAtMinFov": 0.0156361010029054,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 7.222222221311969e-10,
+          "phaseFractionError": 5.000000002919336e-8,
+          "bodyAxesErrorArcsec": 0.012595112195995474,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:10.000Z"
+        },
+        {
+          "body": "JUPITER",
+          "directionErrorArcsec": 0.0008758565474394586,
+          "centeredErrorCssPxAtMinFov": 0.004106793968393158,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 2.0000000006820118e-9,
+          "phaseFractionError": 1.1111111142270147e-8,
+          "bodyAxesErrorArcsec": 0.0268778035538139,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:10.000Z"
+        },
+        {
+          "body": "SATURN",
+          "directionErrorArcsec": 0.0006865809202874193,
+          "centeredErrorCssPxAtMinFov": 0.003219301597382987,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.666666665789407e-10,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": 0.1238483084138844,
+          "exactRotationAt": "2026-09-29T13:00:10.000Z"
+        },
+        {
+          "body": "URANUS",
+          "directionErrorArcsec": 0.003316308004183361,
+          "centeredErrorCssPxAtMinFov": 0.015549799506243444,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.1111111119718742e-10,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.017957929426281122,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:10.000Z"
+        },
+        {
+          "body": "NEPTUNE",
+          "directionErrorArcsec": 0.0007001430291505931,
+          "centeredErrorCssPxAtMinFov": 0.003282892817932519,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.009446391585827253,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:00:10.000Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T13:01:00.000Z",
+      "seconds": 60,
+      "bodies": [
+        {
+          "body": "SUN",
+          "directionErrorArcsec": 1.651946266110869,
+          "centeredErrorCssPxAtMinFov": 7.745792369359344,
+          "publishedCoordinateErrorArcsec": 1.8151264025365779,
+          "diameterErrorDeg": 3.333333331578814e-8,
+          "phaseFractionError": null,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:01:00.000Z"
+        },
+        {
+          "body": "MOON",
+          "directionErrorArcsec": 0.8622125586883398,
+          "centeredErrorCssPxAtMinFov": 4.042818822158796,
+          "publishedCoordinateErrorArcsec": 1.3360558763593071,
+          "diameterErrorDeg": 0.00000466666666665283,
+          "phaseFractionError": 0.00004666666666663932,
+          "bodyAxesErrorArcsec": 0.023808449302497835,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:01:00.000Z"
+        },
+        {
+          "body": "MERCURY",
+          "directionErrorArcsec": 0.0032803389128018274,
+          "centeredErrorCssPxAtMinFov": 0.015381144435996938,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.0000000001241655e-9,
+          "phaseFractionError": 1.0000000005838672e-7,
+          "bodyAxesErrorArcsec": 0.01993305601116079,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:01:00.000Z"
+        },
+        {
+          "body": "VENUS",
+          "directionErrorArcsec": 0.005676749393516767,
+          "centeredErrorCssPxAtMinFov": 0.026617646733965477,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 3.333333331578814e-10,
+          "phaseFractionError": 2.3333333332153927e-7,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:01:00.000Z"
+        },
+        {
+          "body": "MARS",
+          "directionErrorArcsec": 0.0025745481656787817,
+          "centeredErrorCssPxAtMinFov": 0.01207177009643595,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 5.66666666671975e-9,
+          "phaseFractionError": 2.9999999995311555e-7,
+          "bodyAxesErrorArcsec": 0.010326743356152275,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:01:00.000Z"
+        },
+        {
+          "body": "JUPITER",
+          "directionErrorArcsec": 0.00045681450518961296,
+          "centeredErrorCssPxAtMinFov": 0.0021419524236837247,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 2.0000000006820118e-9,
+          "phaseFractionError": 6.666666663157628e-8,
+          "bodyAxesErrorArcsec": 0.009798511004188222,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:01:00.000Z"
+        },
+        {
+          "body": "SATURN",
+          "directionErrorArcsec": 0.002113110863013973,
+          "centeredErrorCssPxAtMinFov": 0.009908141889379092,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 8.999999999599606e-9,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": 0.11044001040686037,
+          "exactRotationAt": "2026-09-29T13:01:00.000Z"
+        },
+        {
+          "body": "URANUS",
+          "directionErrorArcsec": 0.0011199316994519835,
+          "centeredErrorCssPxAtMinFov": 0.005251235218561431,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 6.666666667494436e-10,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.03042204589248703,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:01:00.000Z"
+        },
+        {
+          "body": "NEPTUNE",
+          "directionErrorArcsec": 0.0010909237742331719,
+          "centeredErrorCssPxAtMinFov": 0.005115220282471169,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.017115446936072615,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:01:00.000Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T13:05:00.000Z",
+      "seconds": 300,
+      "bodies": [
+        {
+          "body": "SUN",
+          "directionErrorArcsec": 1.5596887238890165,
+          "centeredErrorCssPxAtMinFov": 7.313207011575725,
+          "publishedCoordinateErrorArcsec": 0.7551954891220324,
+          "diameterErrorDeg": 1.66666666689963e-7,
+          "phaseFractionError": null,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:05:00.000Z"
+        },
+        {
+          "body": "MOON",
+          "directionErrorArcsec": 2.4893531187397726,
+          "centeredErrorCssPxAtMinFov": 11.672299993934725,
+          "publishedCoordinateErrorArcsec": 1.7294898503836242,
+          "diameterErrorDeg": 0.0000033333333333551707,
+          "phaseFractionError": 0.00003333333333321864,
+          "bodyAxesErrorArcsec": 0.011237853016616554,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:05:00.000Z"
+        },
+        {
+          "body": "MERCURY",
+          "directionErrorArcsec": 0.005977535458590497,
+          "centeredErrorCssPxAtMinFov": 0.028027999150046366,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 4.999999999970306e-9,
+          "phaseFractionError": 4.999999999588667e-7,
+          "bodyAxesErrorArcsec": 0.01743087296660134,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:05:00.000Z"
+        },
+        {
+          "body": "VENUS",
+          "directionErrorArcsec": 0.02375585949841547,
+          "centeredErrorCssPxAtMinFov": 0.11138858388089141,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.666666665789407e-9,
+          "phaseFractionError": 1.6666666666220742e-7,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:05:00.000Z"
+        },
+        {
+          "body": "MARS",
+          "directionErrorArcsec": 0.0009304615056190037,
+          "centeredErrorCssPxAtMinFov": 0.004362830546017324,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.6666666666567687e-9,
+          "phaseFractionError": 4.999999999588667e-7,
+          "bodyAxesErrorArcsec": 0.005502600893179872,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:05:00.000Z"
+        },
+        {
+          "body": "JUPITER",
+          "directionErrorArcsec": 0.0010368356634836646,
+          "centeredErrorCssPxAtMinFov": 0.00486160714498051,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 3.33333333379926e-7,
+          "bodyAxesErrorArcsec": 0.021060723881334353,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:05:00.000Z"
+        },
+        {
+          "body": "SATURN",
+          "directionErrorArcsec": 0.0020965873879378806,
+          "centeredErrorCssPxAtMinFov": 0.009830665151918177,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 4.999999999970306e-9,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": 0.09029558493301856,
+          "exactRotationAt": "2026-09-29T13:05:00.000Z"
+        },
+        {
+          "body": "URANUS",
+          "directionErrorArcsec": 0.0009116721214184187,
+          "centeredErrorCssPxAtMinFov": 0.0042747292126079075,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 3.3333333333135373e-9,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.012559007986957063,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:05:00.000Z"
+        },
+        {
+          "body": "NEPTUNE",
+          "directionErrorArcsec": 0.0013594020460245301,
+          "centeredErrorCssPxAtMinFov": 0.006374085048009252,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.019512595332541686,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:05:00.000Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T13:10:00.000Z",
+      "seconds": 600,
+      "bodies": [
+        {
+          "body": "SUN",
+          "directionErrorArcsec": 1.4681897106026802,
+          "centeredErrorCssPxAtMinFov": 6.8841783116340975,
+          "publishedCoordinateErrorArcsec": 1.3919069382578928,
+          "diameterErrorDeg": 6.666666666488297e-7,
+          "phaseFractionError": null,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:10:00.000Z"
+        },
+        {
+          "body": "MOON",
+          "directionErrorArcsec": 5.134144661772053,
+          "centeredErrorCssPxAtMinFov": 24.07343347783726,
+          "publishedCoordinateErrorArcsec": 1.5126907688314568,
+          "diameterErrorDeg": 0.000006666666666710341,
+          "phaseFractionError": 0.00003333333333332966,
+          "bodyAxesErrorArcsec": 0.015222504414324371,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:10:00.000Z"
+        },
+        {
+          "body": "MERCURY",
+          "directionErrorArcsec": 0.00872413981300383,
+          "centeredErrorCssPxAtMinFov": 0.0409065215853048,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 1.1102230246251565e-16,
+          "bodyAxesErrorArcsec": 0.01025720210022846,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:10:00.000Z"
+        },
+        {
+          "body": "VENUS",
+          "directionErrorArcsec": 0.038355697985565845,
+          "centeredErrorCssPxAtMinFov": 0.1798456032567593,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 3.3333333333135373e-9,
+          "phaseFractionError": 3.3333333332441484e-7,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:10:00.000Z"
+        },
+        {
+          "body": "MARS",
+          "directionErrorArcsec": 0.004161841812353264,
+          "centeredErrorCssPxAtMinFov": 0.01951441352165066,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 6.666666666843915e-9,
+          "phaseFractionError": 1.1102230246251565e-16,
+          "bodyAxesErrorArcsec": 0.00791463674678529,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:10:00.000Z"
+        },
+        {
+          "body": "JUPITER",
+          "directionErrorArcsec": 0.0009077821691911206,
+          "centeredErrorCssPxAtMinFov": 0.0042564896591204,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 6.666666666488297e-7,
+          "bodyAxesErrorArcsec": 0.010461335900347308,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:10:00.000Z"
+        },
+        {
+          "body": "SATURN",
+          "directionErrorArcsec": 0.0036456310327836945,
+          "centeredErrorCssPxAtMinFov": 0.01709395857140394,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": 0.0916306433378142,
+          "exactRotationAt": "2026-09-29T13:10:00.000Z"
+        },
+        {
+          "body": "URANUS",
+          "directionErrorArcsec": 0.0025312056199479696,
+          "centeredErrorCssPxAtMinFov": 0.011868541718566905,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 3.3333333333135373e-9,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.009393166514549368,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:10:00.000Z"
+        },
+        {
+          "body": "NEPTUNE",
+          "directionErrorArcsec": 0.0018884671263026467,
+          "centeredErrorCssPxAtMinFov": 0.008854812385066463,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.022516436021952316,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:10:00.000Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T13:15:00.000Z",
+      "seconds": 900,
+      "bodies": [
+        {
+          "body": "SUN",
+          "directionErrorArcsec": 1.4077787205766492,
+          "centeredErrorCssPxAtMinFov": 6.600917896224885,
+          "publishedCoordinateErrorArcsec": 0.8043396500720489,
+          "diameterErrorDeg": 5.00000000069889e-7,
+          "phaseFractionError": null,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:15:00.000Z"
+        },
+        {
+          "body": "MOON",
+          "directionErrorArcsec": 6.350526945559712,
+          "centeredErrorCssPxAtMinFov": 29.77691476355121,
+          "publishedCoordinateErrorArcsec": 2.0127442903745205,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.011594559775073092,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:15:00.000Z"
+        },
+        {
+          "body": "MERCURY",
+          "directionErrorArcsec": 0.007712269166586734,
+          "centeredErrorCssPxAtMinFov": 0.03616197262960147,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 4.9999999997534655e-9,
+          "phaseFractionError": 4.999999999588667e-7,
+          "bodyAxesErrorArcsec": 0.011678233035346892,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:15:00.000Z"
+        },
+        {
+          "body": "VENUS",
+          "directionErrorArcsec": 0.04140974658962608,
+          "centeredErrorCssPxAtMinFov": 0.19416569759526878,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 4.999999999102944e-9,
+          "phaseFractionError": 4.999999999866223e-7,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:15:00.000Z"
+        },
+        {
+          "body": "MARS",
+          "directionErrorArcsec": 0.004993067954182742,
+          "centeredErrorCssPxAtMinFov": 0.0234119404803927,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 4.999999999970306e-9,
+          "phaseFractionError": 4.999999999588667e-7,
+          "bodyAxesErrorArcsec": 0.011765264286460629,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:15:00.000Z"
+        },
+        {
+          "body": "JUPITER",
+          "directionErrorArcsec": 0.0013366212337276155,
+          "centeredErrorCssPxAtMinFov": 0.006267268352045084,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.734723475976807e-18,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.0363426263579501,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:15:00.000Z"
+        },
+        {
+          "body": "SATURN",
+          "directionErrorArcsec": 0.0028553368326937997,
+          "centeredErrorCssPxAtMinFov": 0.013388356936440294,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 4.999999999970306e-9,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": 0.09286918679575283,
+          "exactRotationAt": "2026-09-29T13:15:00.000Z"
+        },
+        {
+          "body": "URANUS",
+          "directionErrorArcsec": 0.0024251945147369574,
+          "centeredErrorCssPxAtMinFov": 0.011371467433130486,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 2.168404344971009e-19,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.02749287706100419,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:15:00.000Z"
+        },
+        {
+          "body": "NEPTUNE",
+          "directionErrorArcsec": 0.0019869889023326256,
+          "centeredErrorCssPxAtMinFov": 0.009316770038677846,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.014567352835717673,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:15:00.000Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T13:20:00.000Z",
+      "seconds": 1200,
+      "bodies": [
+        {
+          "body": "SUN",
+          "directionErrorArcsec": 1.3824047695597768,
+          "centeredErrorCssPxAtMinFov": 6.48194226112091,
+          "publishedCoordinateErrorArcsec": 1.5119756338120323,
+          "diameterErrorDeg": 3.33333333379926e-7,
+          "phaseFractionError": null,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:20:00.000Z"
+        },
+        {
+          "body": "MOON",
+          "directionErrorArcsec": 6.134216596210474,
+          "centeredErrorCssPxAtMinFov": 28.762659585795298,
+          "publishedCoordinateErrorArcsec": 0.3639711885794646,
+          "diameterErrorDeg": 0.0000033333333332441484,
+          "phaseFractionError": 0.00003333333333332966,
+          "bodyAxesErrorArcsec": 0.020331813175413254,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:20:00.000Z"
+        },
+        {
+          "body": "MERCURY",
+          "directionErrorArcsec": 0.008430922108616377,
+          "centeredErrorCssPxAtMinFov": 0.039531656370989876,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.006713873417556396,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:20:00.000Z"
+        },
+        {
+          "body": "VENUS",
+          "directionErrorArcsec": 0.03796668352168772,
+          "centeredErrorCssPxAtMinFov": 0.17802155768840353,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 3.3333333333135373e-9,
+          "phaseFractionError": 3.3333333332441484e-7,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:20:00.000Z"
+        },
+        {
+          "body": "MARS",
+          "directionErrorArcsec": 0.004696249160611207,
+          "centeredErrorCssPxAtMinFov": 0.022020190159282534,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 3.3333333333135373e-9,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.012134686930385497,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:20:00.000Z"
+        },
+        {
+          "body": "JUPITER",
+          "directionErrorArcsec": 0.0008700996393463403,
+          "centeredErrorCssPxAtMinFov": 0.0040798004664292465,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.734723475976807e-18,
+          "phaseFractionError": 3.33333333379926e-7,
+          "bodyAxesErrorArcsec": 0.0121586760617223,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:20:00.000Z"
+        },
+        {
+          "body": "SATURN",
+          "directionErrorArcsec": 0.0039343725334492095,
+          "centeredErrorCssPxAtMinFov": 0.01844783536415566,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": 0.13592764608345642,
+          "exactRotationAt": "2026-09-29T13:20:00.000Z"
+        },
+        {
+          "body": "URANUS",
+          "directionErrorArcsec": 0.0026517483769638865,
+          "centeredErrorCssPxAtMinFov": 0.012433753303607511,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 3.3333333335303778e-9,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.009957973243358878,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:20:00.000Z"
+        },
+        {
+          "body": "NEPTUNE",
+          "directionErrorArcsec": 0.00044052253953119966,
+          "centeredErrorCssPxAtMinFov": 0.0020655612081418155,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.012893343114427512,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:20:00.000Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T13:25:00.000Z",
+      "seconds": 1500,
+      "bodies": [
+        {
+          "body": "SUN",
+          "directionErrorArcsec": 1.3938769338200596,
+          "centeredErrorCssPxAtMinFov": 6.535733963799634,
+          "publishedCoordinateErrorArcsec": 0.4909684993526607,
+          "diameterErrorDeg": 1.66666666689963e-7,
+          "phaseFractionError": null,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:25:00.000Z"
+        },
+        {
+          "body": "MOON",
+          "directionErrorArcsec": 4.510989067212444,
+          "centeredErrorCssPxAtMinFov": 21.15152618041538,
+          "publishedCoordinateErrorArcsec": 1.050099950780208,
+          "diameterErrorDeg": 0.0000033333333333551707,
+          "phaseFractionError": 0.00003333333333332966,
+          "bodyAxesErrorArcsec": 0.02010150307077853,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:25:00.000Z"
+        },
+        {
+          "body": "MERCURY",
+          "directionErrorArcsec": 0.003258322803982153,
+          "centeredErrorCssPxAtMinFov": 0.015277913349613608,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 4.999999999970306e-9,
+          "phaseFractionError": 5.00000000069889e-7,
+          "bodyAxesErrorArcsec": 0.003993343176916598,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:25:00.000Z"
+        },
+        {
+          "body": "VENUS",
+          "directionErrorArcsec": 0.022909571560009716,
+          "centeredErrorCssPxAtMinFov": 0.10742043383265662,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.666666665789407e-9,
+          "phaseFractionError": 1.6666666666220742e-7,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:25:00.000Z"
+        },
+        {
+          "body": "MARS",
+          "directionErrorArcsec": 0.0032700787316915785,
+          "centeredErrorCssPxAtMinFov": 0.015333035587554373,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.6666666666567687e-9,
+          "phaseFractionError": 4.999999999588667e-7,
+          "bodyAxesErrorArcsec": 0.011196746653393187,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:25:00.000Z"
+        },
+        {
+          "body": "JUPITER",
+          "directionErrorArcsec": 0.0007434971101860906,
+          "centeredErrorCssPxAtMinFov": 0.003486175283562675,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 3.333333332689037e-7,
+          "bodyAxesErrorArcsec": 0.005622948028929578,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:25:00.000Z"
+        },
+        {
+          "body": "SATURN",
+          "directionErrorArcsec": 0.0029169975410902197,
+          "centeredErrorCssPxAtMinFov": 0.013677477142334249,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 4.999999999970306e-9,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": 0.11778389282378417,
+          "exactRotationAt": "2026-09-29T13:25:00.000Z"
+        },
+        {
+          "body": "URANUS",
+          "directionErrorArcsec": 0.001848091339337,
+          "centeredErrorCssPxAtMinFov": 0.008665494809186712,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 6.666666666843915e-9,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.010294950041837954,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:25:00.000Z"
+        },
+        {
+          "body": "NEPTUNE",
+          "directionErrorArcsec": 0.0005142698180074359,
+          "centeredErrorCssPxAtMinFov": 0.0024113539972886624,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.011351457879827333,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:25:00.000Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T13:29:59.000Z",
+      "seconds": 1799,
+      "bodies": [
+        {
+          "body": "SUN",
+          "directionErrorArcsec": 1.4410086054861948,
+          "centeredErrorCssPxAtMinFov": 6.756729131886148,
+          "publishedCoordinateErrorArcsec": 1.4543663299756524,
+          "diameterErrorDeg": 5.555556015224283e-10,
+          "phaseFractionError": null,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:29:59.000Z"
+        },
+        {
+          "body": "MOON",
+          "directionErrorArcsec": 1.7443193545292142,
+          "centeredErrorCssPxAtMinFov": 8.178919510412038,
+          "publishedCoordinateErrorArcsec": 0.3813960036295458,
+          "diameterErrorDeg": 5.888888888749833e-7,
+          "phaseFractionError": 7.777777777384642e-7,
+          "bodyAxesErrorArcsec": 0.011192875559005859,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:29:59.000Z"
+        },
+        {
+          "body": "MERCURY",
+          "directionErrorArcsec": 0.002518701697132516,
+          "centeredErrorCssPxAtMinFov": 0.011809912214740185,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.8333333332357094e-10,
+          "phaseFractionError": 1.1499999996722465e-7,
+          "bodyAxesErrorArcsec": 0.013924588263492129,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:29:59.000Z"
+        },
+        {
+          "body": "VENUS",
+          "directionErrorArcsec": 0.0005133623673161742,
+          "centeredErrorCssPxAtMinFov": 0.002407099061892697,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 2.338888888120394e-9,
+          "phaseFractionError": 1.0388888888046566e-7,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:29:59.000Z"
+        },
+        {
+          "body": "MARS",
+          "directionErrorArcsec": 0.0007538536139752544,
+          "centeredErrorCssPxAtMinFov": 0.003534735778336985,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 7.222222212638352e-11,
+          "phaseFractionError": 4.999999969612645e-9,
+          "bodyAxesErrorArcsec": 0.025719387638506275,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:29:59.000Z"
+        },
+        {
+          "body": "JUPITER",
+          "directionErrorArcsec": 0.0016251845914983418,
+          "centeredErrorCssPxAtMinFov": 0.007620309852570045,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.9999999920083944e-10,
+          "phaseFractionError": 1.1111110920225542e-9,
+          "bodyAxesErrorArcsec": 0.012302416553058441,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:29:59.000Z"
+        },
+        {
+          "body": "SATURN",
+          "directionErrorArcsec": 0.0030950262080063316,
+          "centeredErrorCssPxAtMinFov": 0.014512233767297086,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.6666666310949374e-11,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": 0.1455552847991457,
+          "exactRotationAt": "2026-09-29T13:29:59.000Z"
+        },
+        {
+          "body": "URANUS",
+          "directionErrorArcsec": 0.0004690494843320468,
+          "centeredErrorCssPxAtMinFov": 0.0021993208805302913,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 1.1111111163086829e-11,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.01232016691897615,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:29:59.000Z"
+        },
+        {
+          "body": "NEPTUNE",
+          "directionErrorArcsec": 0.0011798872350788012,
+          "centeredErrorCssPxAtMinFov": 0.005532360058929215,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.011424310815522807,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:29:59.000Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T13:30:00.000Z",
+      "seconds": 1800,
+      "bodies": [
+        {
+          "body": "SUN",
+          "directionErrorArcsec": 1.441223882135805,
+          "centeredErrorCssPxAtMinFov": 6.757738540160539,
+          "publishedCoordinateErrorArcsec": 1.4412238821784156,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": null,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:30:00.000Z"
+        },
+        {
+          "body": "MOON",
+          "directionErrorArcsec": 1.7352227591764653,
+          "centeredErrorCssPxAtMinFov": 8.136266586211768,
+          "publishedCoordinateErrorArcsec": 1.735222759172388,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.0026259283043190717,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:30:00.000Z"
+        },
+        {
+          "body": "MERCURY",
+          "directionErrorArcsec": 2.9331888506459064e-11,
+          "centeredErrorCssPxAtMinFov": 1.3753396392601976e-10,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.004608962456705125,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:30:00.000Z"
+        },
+        {
+          "body": "VENUS",
+          "directionErrorArcsec": 2.7004763568960998e-11,
+          "centeredErrorCssPxAtMinFov": 1.2662233383664717e-10,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:30:00.000Z"
+        },
+        {
+          "body": "MARS",
+          "directionErrorArcsec": 6.400742826516851e-11,
+          "centeredErrorCssPxAtMinFov": 3.0012371443729116e-10,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.001505625883081609,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:30:00.000Z"
+        },
+        {
+          "body": "JUPITER",
+          "directionErrorArcsec": 8.141785131474103e-11,
+          "centeredErrorCssPxAtMinFov": 3.8175925233009887e-10,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.004208544711570692,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:30:00.000Z"
+        },
+        {
+          "body": "SATURN",
+          "directionErrorArcsec": 5.120594261213482e-11,
+          "centeredErrorCssPxAtMinFov": 2.40098971549833e-10,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": null,
+          "ringAxesErrorArcsec": 5.76955222368185e-11,
+          "exactRotationAt": "2026-09-29T13:30:00.000Z"
+        },
+        {
+          "body": "URANUS",
+          "directionErrorArcsec": 6.928660904538383e-11,
+          "centeredErrorCssPxAtMinFov": 3.248772061473522e-10,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.003639520053752144,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:30:00.000Z"
+        },
+        {
+          "body": "NEPTUNE",
+          "directionErrorArcsec": 3.529126046812001e-11,
+          "centeredErrorCssPxAtMinFov": 1.6547679645848098e-10,
+          "publishedCoordinateErrorArcsec": 0,
+          "diameterErrorDeg": 0,
+          "phaseFractionError": 0,
+          "bodyAxesErrorArcsec": 0.005914498509794569,
+          "ringAxesErrorArcsec": null,
+          "exactRotationAt": "2026-09-29T13:30:00.000Z"
+        }
+      ]
+    }
+  ],
+  "maxima": [
+    {
+      "body": "SUN",
+      "directionErrorArcsec": 1.67731892818099,
+      "centeredErrorCssPxAtMinFov": 7.864761960735893,
+      "publishedCoordinateErrorArcsec": 2.1207440093207106,
+      "diameterErrorDeg": 6.666666666488297e-7,
+      "phaseFractionError": 0,
+      "bodyAxesErrorArcsec": 0,
+      "ringAxesErrorArcsec": 0
+    },
+    {
+      "body": "MOON",
+      "directionErrorArcsec": 6.350526945559712,
+      "centeredErrorCssPxAtMinFov": 29.77691476355121,
+      "publishedCoordinateErrorArcsec": 2.0127442903745205,
+      "diameterErrorDeg": 0.000006666666666710341,
+      "phaseFractionError": 0.00004666666666663932,
+      "bodyAxesErrorArcsec": 0.02453342596494337,
+      "ringAxesErrorArcsec": 0
+    },
+    {
+      "body": "MERCURY",
+      "directionErrorArcsec": 0.00872413981300383,
+      "centeredErrorCssPxAtMinFov": 0.0409065215853048,
+      "publishedCoordinateErrorArcsec": 0,
+      "diameterErrorDeg": 4.999999999970306e-9,
+      "phaseFractionError": 5.00000000069889e-7,
+      "bodyAxesErrorArcsec": 0.023887910209621062,
+      "ringAxesErrorArcsec": 0
+    },
+    {
+      "body": "VENUS",
+      "directionErrorArcsec": 0.04140974658962608,
+      "centeredErrorCssPxAtMinFov": 0.19416569759526878,
+      "publishedCoordinateErrorArcsec": 0,
+      "diameterErrorDeg": 4.999999999102944e-9,
+      "phaseFractionError": 4.999999999866223e-7,
+      "bodyAxesErrorArcsec": 0,
+      "ringAxesErrorArcsec": 0
+    },
+    {
+      "body": "MARS",
+      "directionErrorArcsec": 0.004993067954182742,
+      "centeredErrorCssPxAtMinFov": 0.0234119404803927,
+      "publishedCoordinateErrorArcsec": 0,
+      "diameterErrorDeg": 6.666666666843915e-9,
+      "phaseFractionError": 4.999999999588667e-7,
+      "bodyAxesErrorArcsec": 0.025719387638506275,
+      "ringAxesErrorArcsec": 0
+    },
+    {
+      "body": "JUPITER",
+      "directionErrorArcsec": 0.0016251845914983418,
+      "centeredErrorCssPxAtMinFov": 0.007620309852570045,
+      "publishedCoordinateErrorArcsec": 0,
+      "diameterErrorDeg": 2.0000000006820118e-9,
+      "phaseFractionError": 6.666666666488297e-7,
+      "bodyAxesErrorArcsec": 0.0363426263579501,
+      "ringAxesErrorArcsec": 0
+    },
+    {
+      "body": "SATURN",
+      "directionErrorArcsec": 0.0039343725334492095,
+      "centeredErrorCssPxAtMinFov": 0.01844783536415566,
+      "publishedCoordinateErrorArcsec": 0,
+      "diameterErrorDeg": 8.999999999599606e-9,
+      "phaseFractionError": 0,
+      "bodyAxesErrorArcsec": 0,
+      "ringAxesErrorArcsec": 0.1455552847991457
+    },
+    {
+      "body": "URANUS",
+      "directionErrorArcsec": 0.003316308004183361,
+      "centeredErrorCssPxAtMinFov": 0.015549799506243444,
+      "publishedCoordinateErrorArcsec": 0,
+      "diameterErrorDeg": 6.666666666843915e-9,
+      "phaseFractionError": 0,
+      "bodyAxesErrorArcsec": 0.03042204589248703,
+      "ringAxesErrorArcsec": 0
+    },
+    {
+      "body": "NEPTUNE",
+      "directionErrorArcsec": 0.0021749408515316427,
+      "centeredErrorCssPxAtMinFov": 0.010198055830940096,
+      "publishedCoordinateErrorArcsec": 0,
+      "diameterErrorDeg": 0,
+      "phaseFractionError": 0,
+      "bodyAxesErrorArcsec": 0.022516436021952316,
+      "ringAxesErrorArcsec": 0
+    }
+  ],
+  "inputs": [
+    {
+      "file": "workers/miniapp-api/src/astronomy-engine-adapter.ts",
+      "sha256": "f39d5e5fc509549e33b503636b912b3aa84bd77ae01184630dbd1b5d82a27120"
+    },
+    {
+      "file": "packages/astronomy-core/src/astronomy-engine-runtime.ts",
+      "sha256": "5fbecebefef5110e7cf7d5fb0a119b11865c3060b9dfd40230d0135f6cb359ab"
+    },
+    {
+      "file": "packages/astronomy-core/src/observation-frame.ts",
+      "sha256": "944127fecd69eff5c6129ad8e563b6fb0c075d2b45ca9d5c1b5db0593ee3133c"
+    },
+    {
+      "file": "packages/miniapp-contracts/src/types.ts",
+      "sha256": "44391cef5f426493d272be3edb4ea30c58377703e9ed71f882701ecd676219e7"
+    },
+    {
+      "file": "node_modules/quaternion/dist/quaternion.mjs",
+      "sha256": "2276f9768978735c6bcc12d08ac10f769a7414ae64d9bf730b569fb8b813e0ad"
+    }
+  ],
+  "limits": [
+    "One actual observer/date/half-hour. No production time model, HTTP fine-frame support or native playback is established.",
+    "Sun/Moon truth uses the existing unrounded server dependency; other scalar/axis truth retains existing adapter publication precision.",
+    "Center pixel error at0.05° is a geometry proxy, not a whole-viewport quality limit or device performance measurement.",
+    "Body-frame interpolation is a bounded capability trial, not an authorization to borrow adjacent frames, relabel a coarse row or move stars with stale bodies/details."
+  ]
+}

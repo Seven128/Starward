@@ -5,6 +5,7 @@ import test from "node:test";
 import { createSkyArtworkLoader, type SkyArtworkLoadState } from "./sky-artwork-loader";
 import { startSkyArtworkRequest, type SkyArtworkImage } from "./sky-artwork-request";
 import { createSkyGpuTextures } from "./sky-gpu-textures";
+type LegacyArtworkRequest = Extract<Parameters<typeof startSkyArtworkRequest>[0], { filePath: string }>;
 
 const root = new URL("../../../../../workers/miniapp-api/assets/deep-sky/wide-field-w3/", import.meta.url);
 const publication = JSON.parse(readFileSync(new URL("manifest.json", root), "utf8")) as {
@@ -16,8 +17,8 @@ const assets = publication.tiles.slice(0, 3).map(tile => ({
 
 function nativeFixture() {
   type Asset = (typeof assets)[number];
-  type Request = { asset: Asset; options: Parameters<Parameters<typeof startSkyArtworkRequest>[0]["request"]>[0]; aborted: boolean };
-  type Write = { options: Parameters<Parameters<typeof startSkyArtworkRequest>[0]["writeFile"]>[0] };
+  type Request = { asset: Asset; options: Parameters<LegacyArtworkRequest["request"]>[0]; aborted: boolean };
+  type Write = { options: Parameters<LegacyArtworkRequest["writeFile"]>[0] };
   const requests: Request[] = [], writes: Write[] = [], images: SkyArtworkImage[] = [];
   const files = new Map<string, ArrayBuffer>();
   const removed: string[] = [];
@@ -102,9 +103,9 @@ test("retention pressure does not retry a failed current image, and valid indepe
   assert.equal(new Set(gpu.deleted).size, gpu.deleted.length, "each resource releases once");
 });
 
-test("a stable field above texture retention reuses its retained images instead of uploading the full cycle", () => {
-  // The actual wide constellation field exceeds retention. Scale that case to
-  // three 1 MiB images and a 2 MiB allowance without changing its mechanism.
+test("a stable field above allocation pressure stays resident and a moving field retires unused images", () => {
+  // The actual wide constellation field exceeds the pressure target. Scale that
+  // case to three 1 MiB images and a 2 MiB target without changing its mechanism.
   const gpu = gpuFixture(2 * 1024 * 1024);
   const images = Array.from({ length: 3 }, () => ({ width: 512, height: 512 }));
   const paint = (field: readonly object[]) => {
@@ -112,12 +113,12 @@ test("a stable field above texture retention reuses its retained images instead 
     gpu.textures.begin();
     for (const image of field) assert.ok(gpu.textures.get(image), "every valid layer remains drawable");
     gpu.textures.finish();
-    assert.ok(gpu.uploaded.length - gpu.deleted.length <= 2, "completed frame respects texture retention");
+    assert.equal(gpu.uploaded.length - gpu.deleted.length, new Set(field).size, "only this completed frame's sources remain resident");
     return gpu.uploaded.length - start;
   };
   assert.equal(paint(images), 3);
-  assert.equal(paint(images), 1, "only the image outside retention needs another upload");
-  assert.equal(paint(images), 1, "unchanged ordering cannot evict the whole reusable set");
+  assert.equal(paint(images), 0, "every visible source remains reusable above the pressure target");
+  assert.equal(paint(images), 0, "an unchanged field does not cyclically upload its working set");
   const replacement = { width: 512, height: 512 };
   paint([replacement, images[1]!]);
   assert.equal(paint([replacement, images[1]!]), 0, "a smaller new field settles to full reuse");
@@ -190,8 +191,8 @@ test("published fixed-body and 2MASS files use the shared decode/GPU boundary wi
     assert.equal(file.byteLength, asset.bytes, candidate.dir);
     assert.equal(createHash("sha256").update(file).digest("hex"), asset.sha256, candidate.dir);
     const gpu = gpuFixture();
-    let request: Parameters<Parameters<typeof startSkyArtworkRequest>[0]["request"]>[0] | undefined;
-    let write: Parameters<Parameters<typeof startSkyArtworkRequest>[0]["writeFile"]>[0] | undefined;
+    let request: Parameters<LegacyArtworkRequest["request"]>[0] | undefined;
+    let write: Parameters<LegacyArtworkRequest["writeFile"]>[0] | undefined;
     let image: SkyArtworkImage | undefined, loaded: { image: object; release(): void } | undefined;
     const removed: string[] = [];
     startSkyArtworkRequest({ asset, format: candidate.format, url: `/published/${asset.file}`,

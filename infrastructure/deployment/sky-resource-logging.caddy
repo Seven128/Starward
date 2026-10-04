@@ -9,7 +9,10 @@ log_append @sky_fixed_image sky_resource_class "fixed_image"
 @sky_wide_field path /v2/sky/wide-field/*
 log_append @sky_wide_field sky_resource_class "wide_field"
 
-@sky_optical_published path /v2/sky/sdss-optical/*
+@sky_landscape path /v2/sky/landscape/*
+log_append @sky_landscape sky_resource_class "landscape"
+
+@sky_optical_published path /v2/sky/sdss-optical/* /v2/sky/prepared-optical/*
 log_append @sky_optical_published sky_resource_class "optical_published"
 
 @sky_optical_trial path /v2/sky/optical/*

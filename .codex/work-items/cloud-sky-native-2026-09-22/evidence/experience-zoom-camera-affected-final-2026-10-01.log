@@ -1,0 +1,32 @@
+✔ canvas measurement rejects missing geometry and accepts both platform result shapes (3.0221ms)
+✔ failed GPU surface does not reinitialize on every pose and explicit retry consumes the latest frame (2.1052ms)
+✔ every acquired GPU generation is released exactly once across reset, failure and late callbacks (0.8118ms)
+✔ ready, measurement and draw each retain only the latest requested frame (0.2976ms)
+✔ steady sensor frames reuse geometry/context and resizing reacquires both (0.433ms)
+✔ resize, hide, removed canvas and unmount discard stale callbacks (0.7355ms)
+✔ page hide and native-node removal release the old context before a fresh foreground draw (0.2319ms)
+✔ measurement, context, draw and missing callback failures invalidate size and recover on retry (0.4949ms)
+✔ expiry/denial hides the previous projection until the clearing draw completes (0.2897ms)
+✔ continuous poses with a slower native draw cannot starve visibility, while invalidation still fences old frames (0.6704ms)
+✔ motion bursts publish the latest real sample once while null/unmount cancel pending pose (0.5123ms)
+✔ reference changes replace a queued old pose, while ordinary frames keep their own pose (2.2953ms)
+✔ calibration replaces a queued overview with the frozen full rotation and observing scale (2.0608ms)
+✔ lost alignment never borrows a queued pose as a new device direction (0.4534ms)
+✔ explicit manual and tracking intent preserve their own view through sensor reference changes (0.3219ms)
+✔ a current returned position waits for its matching native sky frame before showing the marker (9.427ms)
+✔ sky touch cannot pick an old native frame during report replacement (21.0787ms)
+✔ completed view facts preserve full precision and expose only the submitted camera (4.4198ms)
+✔ missing, stale or invalid completed cameras remain unavailable (0.3472ms)
+✔ exact frame facts distinguish a usable empty catalog frame from missing geometry (2.316ms)
+✔ playing scene publication keeps the completed instant, catalog and count while the next native frame is queued (61.8383ms)
+✔ the actual public view attribute uses the completed snapshot and clears invalidated frames (34.3991ms)
+✔ pausing or cancelling to a different instant cannot publish the retained playing frame as current (19.0183ms)
+✔ fixed completed scenes retain independent target meaning and explicit bright-star availability (14.968ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1658.0554

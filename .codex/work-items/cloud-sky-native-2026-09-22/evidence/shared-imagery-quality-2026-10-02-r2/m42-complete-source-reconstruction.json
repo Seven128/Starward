@@ -1,0 +1,3616 @@
+{
+  "scope": "Existing 20-source production TAN/HiPS reconstruction; all three PNG bytes equal current publication. No pixels published or changed.",
+  "inputs": [
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/candidate-plan.json",
+      "bytes": 6210,
+      "sha256": "c20a5223e340e8c44ab01f826616bc8e193a099659111c0e71b1ed1e784a2dc5"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/candidate-result.json",
+      "bytes": 17046,
+      "sha256": "873e39b01647949cbed6204798cf90f4f66fe1d12f056fb3757de14429412307"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/properties",
+      "bytes": 2804,
+      "sha256": "eddbd837ee09ded51a44dbebfbcb58b86869353acb022aa6376a6c5eb5662ac1"
+    }
+  ],
+  "sourceTileCount": 20,
+  "sourceBytes": 21029120,
+  "sourceFiles": [
+    {
+      "path": "Norder3/Dir0/Npix334.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder3/Dir0/Npix334.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "049837aef8114492a0e6d31583934ee2f743b9aeb9d38f0889366bcb73541cc4",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 26
+    },
+    {
+      "path": "Norder3/Dir0/Npix335.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder3/Dir0/Npix335.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "188c22a0e6f9f8eb2fe8e5d491b348b4e2718238f161c6188eab28beebaec54b",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder3/Dir0/Npix356.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder3/Dir0/Npix356.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "12b7b8d562c04811e4d347d59f9e2775c926ffc592cab551cec706c593a52c94",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder3/Dir0/Npix357.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder3/Dir0/Npix357.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "26cc778aab707c4f2f5bab943ad9a17c79c791e9d8f53fa67fbe2bcb5d5d401f",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 9
+    },
+    {
+      "path": "Norder5/Dir0/Npix5358.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder5/Dir0/Npix5358.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "4a6d379d8ad68cf8c6985a4dff4eb7756882f26f16f32f168c34667e207d92ee",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder5/Dir0/Npix5359.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder5/Dir0/Npix5359.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "a04e08b2906b472564859c9b7e6fd718bf2dde0c4c6083912f09284d3ad9f108",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 987
+    },
+    {
+      "path": "Norder5/Dir0/Npix5370.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder5/Dir0/Npix5370.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "a4a37ec2bc5835c5e4e3bdf47d73cc3e4b46bae3870e9061a59bac59e782bde5",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder5/Dir0/Npix5700.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder5/Dir0/Npix5700.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "e88950b52b9bacb33cb78f58686961d25a4801472c01280dbcc9321f2dab33f6",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder5/Dir0/Npix5701.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder5/Dir0/Npix5701.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "04a3f277de83107c98cb081d65202859cc7d93d6b7b21f8e88f01059d454b5ea",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder5/Dir0/Npix5712.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder5/Dir0/Npix5712.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "13aace679595f2e5410cbe97b211a269048b4c7982289bbf4f7048dbe808aec9",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder7/Dir80000/Npix85753.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir80000/Npix85753.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "e466dafeac56ef65606a802619ace6b82d8e57218742562d17e36a678942ee20",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder7/Dir80000/Npix85754.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir80000/Npix85754.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "28db3c7974ce6bc9b40e66fcd64889419ebda3d154d3468fcf984a23ba822253",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder7/Dir80000/Npix85755.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir80000/Npix85755.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "b1b4e7027a62d059c441ed693548732aa9e8581be203049a05464a5403ba43fe",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder7/Dir80000/Npix85756.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir80000/Npix85756.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "2e55897581b3e6a533d34a2ae4a30fac3412ff424485ac42e73fb62d4f71541d",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder7/Dir80000/Npix85758.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir80000/Npix85758.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "37144d950292f0ca5c27205afada30ff304d82f486f82697ef463224edc12ad2",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 19664
+    },
+    {
+      "path": "Norder7/Dir80000/Npix85759.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir80000/Npix85759.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "ea1c91a08d60967b52309deffb78fa34c71e27d621872f4b262a90ed40abfbbc",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder7/Dir90000/Npix91217.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir90000/Npix91217.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "ee54a32eeaafa64899cfab6be0af19d77bb2765d97b5f6479864d5db0f1f964a",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder7/Dir90000/Npix91220.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir90000/Npix91220.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "cdca346aeafa84429f9d546f793d9b01a57cb3b261bb8e05c733567d718e6d3c",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 2
+    },
+    {
+      "path": "Norder7/Dir90000/Npix91221.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir90000/Npix91221.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "533ec82356462a72521e031304bb5c2ea49929b97178b4e68df95fc16b98e124",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    },
+    {
+      "path": "Norder7/Dir90000/Npix91222.fits",
+      "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir90000/Npix91222.fits",
+      "acquisition": "RECEIVED",
+      "state": "CHECKED",
+      "bytes": 1051456,
+      "sha256": "5dceee303a06bc44671082d7fb9a6c6be4032484a8657fbb7ba6357a53b168ce",
+      "receipt": {
+        "completeArrayReceived": true,
+        "missingEndPaddingBytes": 2624,
+        "readerWarnings": [
+          "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+        ]
+      },
+      "nonfinite": 0
+    }
+  ],
+  "reports": [
+    {
+      "version": "sky-image-quality-review-v1",
+      "objectRef": "M:42",
+      "level": "OVERVIEW",
+      "admission": "STRUCTURE_ACCEPTED_QUALITY_UNVERIFIED",
+      "asset": {
+        "file": "M-42/M-42-overview.e8379e54c69e88cf17d80000a2604b241d8d0a6eb82758985aacc35a22c1d13d.png",
+        "sha256": "e8379e54c69e88cf17d80000a2604b241d8d0a6eb82758985aacc35a22c1d13d",
+        "bytes": 41082,
+        "format": "png",
+        "requestUrl": null
+      },
+      "geometry": {
+        "center": {
+          "raDeg": 83.81866666666666,
+          "decDeg": -5.389666666666667,
+          "frame": "ICRS J2000"
+        },
+        "orientation": "north-up/east-left",
+        "fieldDegrees": 4,
+        "pixels": 256,
+        "displaySampleArcsec": 56.25,
+        "wcsHeader": {
+          "WCSAXES": 2,
+          "CRPIX1": 128.0,
+          "CRPIX2": 128.0,
+          "CDELT1": -0.015631349290831,
+          "CDELT2": 0.015631349290831,
+          "CUNIT1": "deg",
+          "CUNIT2": "deg",
+          "CTYPE1": "RA---TAN",
+          "CTYPE2": "DEC--TAN",
+          "CRVAL1": 83.818666666667,
+          "CRVAL2": -5.3896666666667,
+          "LONPOLE": 180.0,
+          "LATPOLE": -5.3896666666667,
+          "MJDREF": 0.0,
+          "RADESYS": "ICRS"
+        },
+        "catalogExtent": {
+          "meaning": "catalog-major-axis-conservative-bound",
+          "widthArcmin": 90,
+          "heightArcmin": 90,
+          "fullFieldContainsBound": true,
+          "limits": "Catalog extent is not a measured footprint in this survey band or a pixel-quality mask."
+        },
+        "registrationEvidence": "PUBLISHED_HEADER_GEOMETRY_CHECKED_ABSOLUTE_ASTROMETRY_UNVERIFIED"
+      },
+      "source": {
+        "dataSurvey": "IRSA AllWISE W3 HiPS",
+        "dataSurveyUrl": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3",
+        "processingService": "Starward HiPS TAN",
+        "propertiesUrl": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/properties",
+        "propertiesSha256": "eddbd837ee09ded51a44dbebfbcb58b86869353acb022aa6376a6c5eb5662ac1",
+        "sourceOrder": 3,
+        "tileWidth": 512,
+        "sampling": "nearest NESTED cell at order+9; FITS column=NW,row=511-NE",
+        "tiles": [
+          {
+            "path": "Norder3/Dir0/Npix334.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder3/Dir0/Npix334.fits",
+            "sha256": "049837aef8114492a0e6d31583934ee2f743b9aeb9d38f0889366bcb73541cc4",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder3/Dir0/Npix335.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder3/Dir0/Npix335.fits",
+            "sha256": "188c22a0e6f9f8eb2fe8e5d491b348b4e2718238f161c6188eab28beebaec54b",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder3/Dir0/Npix356.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder3/Dir0/Npix356.fits",
+            "sha256": "12b7b8d562c04811e4d347d59f9e2775c926ffc592cab551cec706c593a52c94",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder3/Dir0/Npix357.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder3/Dir0/Npix357.fits",
+            "sha256": "26cc778aab707c4f2f5bab943ad9a17c79c791e9d8f53fa67fbe2bcb5d5d401f",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          }
+        ]
+      },
+      "processing": {
+        "stretch": {
+          "method": "1-99.7 percentile asinh",
+          "colorMap": "gray",
+          "asinhScale": 0.1,
+          "finiteCutsDN": [
+            263.4253494262695,
+            3170.7881000977013
+          ]
+        },
+        "sampling": "nearest NESTED cell at order+9; FITS column=NW,row=511-NE"
+      },
+      "coverage": {
+        "scientificValidity": "UNKNOWN",
+        "sampleAvailability": "SOURCE_NONFINITE_SAMPLES_VERIFIED",
+        "finiteSamples": 65514,
+        "nonfiniteSamples": 22,
+        "meaning": "Only complete source-selected finite/nonfinite samples; artifacts, depth and confidence remain unmeasured."
+      },
+      "regions": {
+        "full": {
+          "bounds": [
+            0,
+            0,
+            256,
+            256
+          ],
+          "pixels": 65536,
+          "luminancePercentiles": [
+            0.0,
+            0.0,
+            4.0,
+            8.0,
+            17.0,
+            168.0,
+            254.99999999999997
+          ],
+          "rgbZeroPixels": 1117,
+          "anyChannel255Pixels": 199,
+          "alphaZeroPixels": 22,
+          "opaqueRgbZeroPixels": 1095
+        },
+        "centralHalf": {
+          "bounds": [
+            64,
+            64,
+            192,
+            192
+          ],
+          "pixels": 16384,
+          "luminancePercentiles": [
+            0.0,
+            0.0,
+            9.999999999999998,
+            23.0,
+            50.0,
+            254.99999999999997,
+            254.99999999999997
+          ],
+          "rgbZeroPixels": 251,
+          "anyChannel255Pixels": 199,
+          "alphaZeroPixels": 22,
+          "opaqueRgbZeroPixels": 229
+        }
+      },
+      "displayDiagnostics": {
+        "meaning": "Statistics of encoded display bytes, not photometry, science validity or a resolution pass.",
+        "edges": {
+          "top": {
+            "median": 6.0,
+            "mean": 9.05078125
+          },
+          "bottom": {
+            "median": 3.0,
+            "mean": 5.4453125
+          },
+          "left": {
+            "median": 12.0,
+            "mean": 12.14453125
+          },
+          "right": {
+            "median": 3.0,
+            "mean": 3.19140625
+          }
+        },
+        "rowMedianJumps": [
+          {
+            "between": [
+              140,
+              141
+            ],
+            "medianDifference": 4.500000000000002
+          },
+          {
+            "between": [
+              122,
+              123
+            ],
+            "medianDifference": 3.0
+          },
+          {
+            "between": [
+              139,
+              140
+            ],
+            "medianDifference": 2.0000000000000018
+          },
+          {
+            "between": [
+              121,
+              122
+            ],
+            "medianDifference": 2.000000000000001
+          },
+          {
+            "between": [
+              149,
+              150
+            ],
+            "medianDifference": 2.0
+          }
+        ],
+        "columnMedianJumps": [
+          {
+            "between": [
+              108,
+              109
+            ],
+            "medianDifference": 3.0
+          },
+          {
+            "between": [
+              95,
+              96
+            ],
+            "medianDifference": 3.0
+          },
+          {
+            "between": [
+              134,
+              135
+            ],
+            "medianDifference": 2.5000000000000018
+          },
+          {
+            "between": [
+              69,
+              70
+            ],
+            "medianDifference": 2.0000000000000018
+          },
+          {
+            "between": [
+              118,
+              119
+            ],
+            "medianDifference": 2.0
+          }
+        ],
+        "laplacianVariance": 332.78335544181937,
+        "cells": [
+          {
+            "bounds": [
+              0,
+              0,
+              32,
+              32
+            ],
+            "luminanceMean": 15.6220703125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              32,
+              0,
+              64,
+              32
+            ],
+            "luminanceMean": 14.36328125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              0,
+              96,
+              32
+            ],
+            "luminanceMean": 8.97265625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              96,
+              0,
+              128,
+              32
+            ],
+            "luminanceMean": 9.9658203125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              0,
+              160,
+              32
+            ],
+            "luminanceMean": 7.8818359375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 8,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              160,
+              0,
+              192,
+              32
+            ],
+            "luminanceMean": 5.1025390625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 36,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              0,
+              224,
+              32
+            ],
+            "luminanceMean": 5.25390625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              224,
+              0,
+              256,
+              32
+            ],
+            "luminanceMean": 5.6826171875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              32,
+              32,
+              64
+            ],
+            "luminanceMean": 19.7568359375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              32,
+              32,
+              64,
+              64
+            ],
+            "luminanceMean": 28.251953125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              32,
+              96,
+              64
+            ],
+            "luminanceMean": 24.2158203125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              96,
+              32,
+              128,
+              64
+            ],
+            "luminanceMean": 5.224609375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 44,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              32,
+              160,
+              64
+            ],
+            "luminanceMean": 3.8974609375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 146,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              160,
+              32,
+              192,
+              64
+            ],
+            "luminanceMean": 3.9921875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 10,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              32,
+              224,
+              64
+            ],
+            "luminanceMean": 9.52734375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              224,
+              32,
+              256,
+              64
+            ],
+            "luminanceMean": 8.0341796875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              64,
+              32,
+              96
+            ],
+            "luminanceMean": 17.734375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              32,
+              64,
+              64,
+              96
+            ],
+            "luminanceMean": 13.0078125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              64,
+              96,
+              96
+            ],
+            "luminanceMean": 19.1640625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 4,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              96,
+              64,
+              128,
+              96
+            ],
+            "luminanceMean": 51.58203125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              64,
+              160,
+              96
+            ],
+            "luminanceMean": 55.958984375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 1,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              160,
+              64,
+              192,
+              96
+            ],
+            "luminanceMean": 20.17578125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              64,
+              224,
+              96
+            ],
+            "luminanceMean": 8.623046875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              224,
+              64,
+              256,
+              96
+            ],
+            "luminanceMean": 6.541015625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              96,
+              32,
+              128
+            ],
+            "luminanceMean": 6.06640625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 58,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              32,
+              96,
+              64,
+              128
+            ],
+            "luminanceMean": 3.697265625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 313,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              96,
+              96,
+              128
+            ],
+            "luminanceMean": 8.888671875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 206,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              96,
+              96,
+              128,
+              128
+            ],
+            "luminanceMean": 93.9091796875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 12,
+            "anyChannel255Pixels": 71
+          },
+          {
+            "bounds": [
+              128,
+              96,
+              160,
+              128
+            ],
+            "luminanceMean": 90.94921875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 5,
+            "anyChannel255Pixels": 51
+          },
+          {
+            "bounds": [
+              160,
+              96,
+              192,
+              128
+            ],
+            "luminanceMean": 12.4072265625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 1,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              96,
+              224,
+              128
+            ],
+            "luminanceMean": 7.4833984375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              224,
+              96,
+              256,
+              128
+            ],
+            "luminanceMean": 3.3486328125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              128,
+              32,
+              160
+            ],
+            "luminanceMean": 5.8818359375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              32,
+              128,
+              64,
+              160
+            ],
+            "luminanceMean": 9.3798828125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              128,
+              96,
+              160
+            ],
+            "luminanceMean": 19.57421875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              96,
+              128,
+              128,
+              160
+            ],
+            "luminanceMean": 95.6640625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 17,
+            "anyChannel255Pixels": 57
+          },
+          {
+            "bounds": [
+              128,
+              128,
+              160,
+              160
+            ],
+            "luminanceMean": 102.8994140625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 5,
+            "anyChannel255Pixels": 20
+          },
+          {
+            "bounds": [
+              160,
+              128,
+              192,
+              160
+            ],
+            "luminanceMean": 32.2265625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              128,
+              224,
+              160
+            ],
+            "luminanceMean": 7.115234375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              224,
+              128,
+              256,
+              160
+            ],
+            "luminanceMean": 3.78515625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              160,
+              32,
+              192
+            ],
+            "luminanceMean": 9.0029296875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 16,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              32,
+              160,
+              64,
+              192
+            ],
+            "luminanceMean": 8.21484375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              160,
+              96,
+              192
+            ],
+            "luminanceMean": 9.57421875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              96,
+              160,
+              128,
+              192
+            ],
+            "luminanceMean": 29.2939453125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              160,
+              160,
+              192
+            ],
+            "luminanceMean": 18.0927734375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              160,
+              160,
+              192,
+              192
+            ],
+            "luminanceMean": 7.6875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              160,
+              224,
+              192
+            ],
+            "luminanceMean": 4.7470703125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              224,
+              160,
+              256,
+              192
+            ],
+            "luminanceMean": 2.634765625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              192,
+              32,
+              224
+            ],
+            "luminanceMean": 5.3818359375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 54,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              32,
+              192,
+              64,
+              224
+            ],
+            "luminanceMean": 5.302734375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 7,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              192,
+              96,
+              224
+            ],
+            "luminanceMean": 13.80078125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              96,
+              192,
+              128,
+              224
+            ],
+            "luminanceMean": 23.228515625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              192,
+              160,
+              224
+            ],
+            "luminanceMean": 9.7421875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              160,
+              192,
+              192,
+              224
+            ],
+            "luminanceMean": 1.2861328125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 174,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              192,
+              224,
+              224
+            ],
+            "luminanceMean": 2.4296875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              224,
+              192,
+              256,
+              224
+            ],
+            "luminanceMean": 2.181640625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              224,
+              32,
+              256
+            ],
+            "luminanceMean": 2.326171875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              32,
+              224,
+              64,
+              256
+            ],
+            "luminanceMean": 8.6103515625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              224,
+              96,
+              256
+            ],
+            "luminanceMean": 15.478515625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              96,
+              224,
+              128,
+              256
+            ],
+            "luminanceMean": 12.333984375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              224,
+              160,
+              256
+            ],
+            "luminanceMean": 5.6318359375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              160,
+              224,
+              192,
+              256
+            ],
+            "luminanceMean": 2.6611328125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              224,
+              224,
+              256
+            ],
+            "luminanceMean": 2.4228515625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              224,
+              224,
+              256,
+              256
+            ],
+            "luminanceMean": 2.748046875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          }
+        ],
+        "redChromaRowPeak": {
+          "index": 0,
+          "median": 0.0
+        },
+        "redChromaColumnPeak": {
+          "index": 0,
+          "median": 0.0
+        }
+      },
+      "review": [
+        "DISPLAY_METRICS_REQUIRE_REVIEW"
+      ]
+    },
+    {
+      "version": "sky-image-quality-review-v1",
+      "objectRef": "M:42",
+      "level": "MEDIUM",
+      "admission": "STRUCTURE_ACCEPTED_QUALITY_UNVERIFIED",
+      "asset": {
+        "file": "M-42/M-42-medium.3c113f59367fb49746c96d08b3218a949d70375a733de8dcfafa36b77659e02d.png",
+        "sha256": "3c113f59367fb49746c96d08b3218a949d70375a733de8dcfafa36b77659e02d",
+        "bytes": 124865,
+        "format": "png",
+        "requestUrl": null
+      },
+      "geometry": {
+        "center": {
+          "raDeg": 83.81866666666666,
+          "decDeg": -5.389666666666667,
+          "frame": "ICRS J2000"
+        },
+        "orientation": "north-up/east-left",
+        "fieldDegrees": 2.25,
+        "pixels": 512,
+        "displaySampleArcsec": 15.8203125,
+        "wcsHeader": {
+          "WCSAXES": 2,
+          "CRPIX1": 256.0,
+          "CRPIX2": 256.0,
+          "CDELT1": -0.0043950960803979,
+          "CDELT2": 0.0043950960803979,
+          "CUNIT1": "deg",
+          "CUNIT2": "deg",
+          "CTYPE1": "RA---TAN",
+          "CTYPE2": "DEC--TAN",
+          "CRVAL1": 83.818666666667,
+          "CRVAL2": -5.3896666666667,
+          "LONPOLE": 180.0,
+          "LATPOLE": -5.3896666666667,
+          "MJDREF": 0.0,
+          "RADESYS": "ICRS"
+        },
+        "catalogExtent": {
+          "meaning": "catalog-major-axis-conservative-bound",
+          "widthArcmin": 90,
+          "heightArcmin": 90,
+          "fullFieldContainsBound": true,
+          "limits": "Catalog extent is not a measured footprint in this survey band or a pixel-quality mask."
+        },
+        "registrationEvidence": "PUBLISHED_HEADER_GEOMETRY_CHECKED_ABSOLUTE_ASTROMETRY_UNVERIFIED"
+      },
+      "source": {
+        "dataSurvey": "IRSA AllWISE W3 HiPS",
+        "dataSurveyUrl": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3",
+        "processingService": "Starward HiPS TAN",
+        "propertiesUrl": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/properties",
+        "propertiesSha256": "eddbd837ee09ded51a44dbebfbcb58b86869353acb022aa6376a6c5eb5662ac1",
+        "sourceOrder": 5,
+        "tileWidth": 512,
+        "sampling": "nearest NESTED cell at order+9; FITS column=NW,row=511-NE",
+        "tiles": [
+          {
+            "path": "Norder5/Dir0/Npix5358.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder5/Dir0/Npix5358.fits",
+            "sha256": "4a6d379d8ad68cf8c6985a4dff4eb7756882f26f16f32f168c34667e207d92ee",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder5/Dir0/Npix5359.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder5/Dir0/Npix5359.fits",
+            "sha256": "a04e08b2906b472564859c9b7e6fd718bf2dde0c4c6083912f09284d3ad9f108",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder5/Dir0/Npix5370.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder5/Dir0/Npix5370.fits",
+            "sha256": "a4a37ec2bc5835c5e4e3bdf47d73cc3e4b46bae3870e9061a59bac59e782bde5",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder5/Dir0/Npix5700.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder5/Dir0/Npix5700.fits",
+            "sha256": "e88950b52b9bacb33cb78f58686961d25a4801472c01280dbcc9321f2dab33f6",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder5/Dir0/Npix5701.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder5/Dir0/Npix5701.fits",
+            "sha256": "04a3f277de83107c98cb081d65202859cc7d93d6b7b21f8e88f01059d454b5ea",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder5/Dir0/Npix5712.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder5/Dir0/Npix5712.fits",
+            "sha256": "13aace679595f2e5410cbe97b211a269048b4c7982289bbf4f7048dbe808aec9",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          }
+        ]
+      },
+      "processing": {
+        "stretch": {
+          "method": "1-99.7 percentile asinh",
+          "colorMap": "gray",
+          "asinhScale": 0.1,
+          "finiteCutsDN": [
+            259.92235565185547,
+            6296.875354003786
+          ]
+        },
+        "sampling": "nearest NESTED cell at order+9; FITS column=NW,row=511-NE"
+      },
+      "coverage": {
+        "scientificValidity": "UNKNOWN",
+        "sampleAvailability": "SOURCE_NONFINITE_SAMPLES_VERIFIED",
+        "finiteSamples": 261496,
+        "nonfiniteSamples": 648,
+        "meaning": "Only complete source-selected finite/nonfinite samples; artifacts, depth and confidence remain unmeasured."
+      },
+      "regions": {
+        "full": {
+          "bounds": [
+            0,
+            0,
+            512,
+            512
+          ],
+          "pixels": 262144,
+          "luminancePercentiles": [
+            0.0,
+            0.0,
+            4.0,
+            9.0,
+            19.0,
+            184.99999999999997,
+            254.99999999999997
+          ],
+          "rgbZeroPixels": 4664,
+          "anyChannel255Pixels": 797,
+          "alphaZeroPixels": 648,
+          "opaqueRgbZeroPixels": 4016
+        },
+        "centralHalf": {
+          "bounds": [
+            128,
+            128,
+            384,
+            384
+          ],
+          "pixels": 65536,
+          "luminancePercentiles": [
+            0.0,
+            0.0,
+            17.0,
+            34.0,
+            67.0,
+            254.99999999999997,
+            254.99999999999997
+          ],
+          "rgbZeroPixels": 767,
+          "anyChannel255Pixels": 797,
+          "alphaZeroPixels": 648,
+          "opaqueRgbZeroPixels": 119
+        }
+      },
+      "displayDiagnostics": {
+        "meaning": "Statistics of encoded display bytes, not photometry, science validity or a resolution pass.",
+        "edges": {
+          "top": {
+            "median": 4.0,
+            "mean": 5.484375
+          },
+          "bottom": {
+            "median": 4.999999999999999,
+            "mean": 6.1171875
+          },
+          "left": {
+            "median": 4.999999999999999,
+            "mean": 4.810546875
+          },
+          "right": {
+            "median": 4.0,
+            "mean": 4.3046875
+          }
+        },
+        "rowMedianJumps": [
+          {
+            "between": [
+              269,
+              270
+            ],
+            "medianDifference": 2.5
+          },
+          {
+            "between": [
+              318,
+              319
+            ],
+            "medianDifference": 2.0
+          },
+          {
+            "between": [
+              234,
+              235
+            ],
+            "medianDifference": 1.9999999999999982
+          },
+          {
+            "between": [
+              270,
+              271
+            ],
+            "medianDifference": 1.5000000000000036
+          },
+          {
+            "between": [
+              233,
+              234
+            ],
+            "medianDifference": 1.5000000000000018
+          }
+        ],
+        "columnMedianJumps": [
+          {
+            "between": [
+              248,
+              249
+            ],
+            "medianDifference": 3.5
+          },
+          {
+            "between": [
+              224,
+              225
+            ],
+            "medianDifference": 3.5
+          },
+          {
+            "between": [
+              223,
+              224
+            ],
+            "medianDifference": 3.0
+          },
+          {
+            "between": [
+              222,
+              223
+            ],
+            "medianDifference": 3.0
+          },
+          {
+            "between": [
+              289,
+              290
+            ],
+            "medianDifference": 2.5
+          }
+        ],
+        "laplacianVariance": 229.16828911365678,
+        "cells": [
+          {
+            "bounds": [
+              0,
+              0,
+              64,
+              64
+            ],
+            "luminanceMean": 9.91650390625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              0,
+              128,
+              64
+            ],
+            "luminanceMean": 12.638671875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              0,
+              192,
+              64
+            ],
+            "luminanceMean": 9.7099609375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              0,
+              256,
+              64
+            ],
+            "luminanceMean": 8.029541015625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              256,
+              0,
+              320,
+              64
+            ],
+            "luminanceMean": 8.6494140625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 265,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              320,
+              0,
+              384,
+              64
+            ],
+            "luminanceMean": 6.6083984375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              0,
+              448,
+              64
+            ],
+            "luminanceMean": 6.26123046875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              0,
+              512,
+              64
+            ],
+            "luminanceMean": 5.828369140625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              64,
+              64,
+              128
+            ],
+            "luminanceMean": 7.05029296875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              64,
+              128,
+              128
+            ],
+            "luminanceMean": 8.481201171875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 32,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              64,
+              192,
+              128
+            ],
+            "luminanceMean": 20.491455078125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              64,
+              256,
+              128
+            ],
+            "luminanceMean": 48.61279296875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              256,
+              64,
+              320,
+              128
+            ],
+            "luminanceMean": 54.625244140625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              320,
+              64,
+              384,
+              128
+            ],
+            "luminanceMean": 18.90478515625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              64,
+              448,
+              128
+            ],
+            "luminanceMean": 14.694091796875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              64,
+              512,
+              128
+            ],
+            "luminanceMean": 6.17333984375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              128,
+              64,
+              192
+            ],
+            "luminanceMean": 2.17529296875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 1198,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              128,
+              128,
+              192
+            ],
+            "luminanceMean": 2.52734375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 893,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              128,
+              192,
+              192
+            ],
+            "luminanceMean": 15.416015625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              128,
+              256,
+              192
+            ],
+            "luminanceMean": 62.909912109375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              256,
+              128,
+              320,
+              192
+            ],
+            "luminanceMean": 53.940673828125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 3
+          },
+          {
+            "bounds": [
+              320,
+              128,
+              384,
+              192
+            ],
+            "luminanceMean": 13.0732421875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              128,
+              448,
+              192
+            ],
+            "luminanceMean": 5.313232421875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              128,
+              512,
+              192
+            ],
+            "luminanceMean": 3.091796875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              192,
+              64,
+              256
+            ],
+            "luminanceMean": 3.99072265625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 1446,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              192,
+              128,
+              256
+            ],
+            "luminanceMean": 6.620361328125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 63,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              192,
+              192,
+              256
+            ],
+            "luminanceMean": 17.6015625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              192,
+              256,
+              256
+            ],
+            "luminanceMean": 109.68994140625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 286,
+            "anyChannel255Pixels": 342
+          },
+          {
+            "bounds": [
+              256,
+              192,
+              320,
+              256
+            ],
+            "luminanceMean": 111.435302734375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 117,
+            "anyChannel255Pixels": 165
+          },
+          {
+            "bounds": [
+              320,
+              192,
+              384,
+              256
+            ],
+            "luminanceMean": 39.67919921875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              192,
+              448,
+              256
+            ],
+            "luminanceMean": 7.412353515625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              192,
+              512,
+              256
+            ],
+            "luminanceMean": 6.09228515625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              256,
+              64,
+              320
+            ],
+            "luminanceMean": 5.439697265625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              256,
+              128,
+              320
+            ],
+            "luminanceMean": 12.4638671875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              256,
+              192,
+              320
+            ],
+            "luminanceMean": 37.28515625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              256,
+              256,
+              320
+            ],
+            "luminanceMean": 106.0224609375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 238,
+            "anyChannel255Pixels": 222
+          },
+          {
+            "bounds": [
+              256,
+              256,
+              320,
+              320
+            ],
+            "luminanceMean": 85.847900390625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 126,
+            "anyChannel255Pixels": 65
+          },
+          {
+            "bounds": [
+              320,
+              256,
+              384,
+              320
+            ],
+            "luminanceMean": 56.285400390625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              256,
+              448,
+              320
+            ],
+            "luminanceMean": 20.94775390625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              256,
+              512,
+              320
+            ],
+            "luminanceMean": 6.365966796875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              320,
+              64,
+              384
+            ],
+            "luminanceMean": 5.3134765625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              320,
+              128,
+              384
+            ],
+            "luminanceMean": 8.259765625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              320,
+              192,
+              384
+            ],
+            "luminanceMean": 11.20263671875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              320,
+              256,
+              384
+            ],
+            "luminanceMean": 45.320068359375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              256,
+              320,
+              320,
+              384
+            ],
+            "luminanceMean": 38.081787109375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              320,
+              320,
+              384,
+              384
+            ],
+            "luminanceMean": 36.208740234375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              320,
+              448,
+              384
+            ],
+            "luminanceMean": 14.26708984375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              320,
+              512,
+              384
+            ],
+            "luminanceMean": 5.13232421875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              384,
+              64,
+              448
+            ],
+            "luminanceMean": 2.455078125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              384,
+              128,
+              448
+            ],
+            "luminanceMean": 4.89794921875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              384,
+              192,
+              448
+            ],
+            "luminanceMean": 12.63818359375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              384,
+              256,
+              448
+            ],
+            "luminanceMean": 16.1435546875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              256,
+              384,
+              320,
+              448
+            ],
+            "luminanceMean": 9.23291015625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              320,
+              384,
+              384,
+              448
+            ],
+            "luminanceMean": 6.390869140625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              384,
+              448,
+              448
+            ],
+            "luminanceMean": 4.81689453125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              384,
+              512,
+              448
+            ],
+            "luminanceMean": 3.274658203125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              448,
+              64,
+              512
+            ],
+            "luminanceMean": 6.13232421875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              448,
+              128,
+              512
+            ],
+            "luminanceMean": 6.836181640625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              448,
+              192,
+              512
+            ],
+            "luminanceMean": 11.00537109375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              448,
+              256,
+              512
+            ],
+            "luminanceMean": 12.0234375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              256,
+              448,
+              320,
+              512
+            ],
+            "luminanceMean": 9.03662109375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              320,
+              448,
+              384,
+              512
+            ],
+            "luminanceMean": 2.447265625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              448,
+              448,
+              512
+            ],
+            "luminanceMean": 2.014404296875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              448,
+              512,
+              512
+            ],
+            "luminanceMean": 2.23828125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          }
+        ],
+        "redChromaRowPeak": {
+          "index": 0,
+          "median": 0.0
+        },
+        "redChromaColumnPeak": {
+          "index": 0,
+          "median": 0.0
+        }
+      },
+      "review": [
+        "DISPLAY_METRICS_REQUIRE_REVIEW"
+      ]
+    },
+    {
+      "version": "sky-image-quality-review-v1",
+      "objectRef": "M:42",
+      "level": "DETAIL",
+      "admission": "STRUCTURE_ACCEPTED_QUALITY_UNVERIFIED",
+      "asset": {
+        "file": "M-42/M-42-detail.6976db0ae39a46c2ee8cd165c0a375a55c819d4248c715b064983184020cc0ba.png",
+        "sha256": "6976db0ae39a46c2ee8cd165c0a375a55c819d4248c715b064983184020cc0ba",
+        "bytes": 145243,
+        "format": "png",
+        "requestUrl": null
+      },
+      "geometry": {
+        "center": {
+          "raDeg": 83.81866666666666,
+          "decDeg": -5.389666666666667,
+          "frame": "ICRS J2000"
+        },
+        "orientation": "north-up/east-left",
+        "fieldDegrees": 0.9,
+        "pixels": 512,
+        "displaySampleArcsec": 6.328125,
+        "wcsHeader": {
+          "WCSAXES": 2,
+          "CRPIX1": 256.0,
+          "CRPIX2": 256.0,
+          "CDELT1": -0.0017578486444626,
+          "CDELT2": 0.0017578486444626,
+          "CUNIT1": "deg",
+          "CUNIT2": "deg",
+          "CTYPE1": "RA---TAN",
+          "CTYPE2": "DEC--TAN",
+          "CRVAL1": 83.818666666667,
+          "CRVAL2": -5.3896666666667,
+          "LONPOLE": 180.0,
+          "LATPOLE": -5.3896666666667,
+          "MJDREF": 0.0,
+          "RADESYS": "ICRS"
+        },
+        "catalogExtent": {
+          "meaning": "catalog-major-axis-conservative-bound",
+          "widthArcmin": 90,
+          "heightArcmin": 90,
+          "fullFieldContainsBound": false,
+          "limits": "Catalog extent is not a measured footprint in this survey band or a pixel-quality mask."
+        },
+        "registrationEvidence": "PUBLISHED_HEADER_GEOMETRY_CHECKED_ABSOLUTE_ASTROMETRY_UNVERIFIED"
+      },
+      "source": {
+        "dataSurvey": "IRSA AllWISE W3 HiPS",
+        "dataSurveyUrl": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3",
+        "processingService": "Starward HiPS TAN",
+        "propertiesUrl": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/properties",
+        "propertiesSha256": "eddbd837ee09ded51a44dbebfbcb58b86869353acb022aa6376a6c5eb5662ac1",
+        "sourceOrder": 7,
+        "tileWidth": 512,
+        "sampling": "nearest NESTED cell at order+9; FITS column=NW,row=511-NE",
+        "tiles": [
+          {
+            "path": "Norder7/Dir80000/Npix85753.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir80000/Npix85753.fits",
+            "sha256": "e466dafeac56ef65606a802619ace6b82d8e57218742562d17e36a678942ee20",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder7/Dir80000/Npix85754.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir80000/Npix85754.fits",
+            "sha256": "28db3c7974ce6bc9b40e66fcd64889419ebda3d154d3468fcf984a23ba822253",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder7/Dir80000/Npix85755.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir80000/Npix85755.fits",
+            "sha256": "b1b4e7027a62d059c441ed693548732aa9e8581be203049a05464a5403ba43fe",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder7/Dir80000/Npix85756.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir80000/Npix85756.fits",
+            "sha256": "2e55897581b3e6a533d34a2ae4a30fac3412ff424485ac42e73fb62d4f71541d",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder7/Dir80000/Npix85758.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir80000/Npix85758.fits",
+            "sha256": "37144d950292f0ca5c27205afada30ff304d82f486f82697ef463224edc12ad2",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder7/Dir80000/Npix85759.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir80000/Npix85759.fits",
+            "sha256": "ea1c91a08d60967b52309deffb78fa34c71e27d621872f4b262a90ed40abfbbc",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder7/Dir90000/Npix91217.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir90000/Npix91217.fits",
+            "sha256": "ee54a32eeaafa64899cfab6be0af19d77bb2765d97b5f6479864d5db0f1f964a",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder7/Dir90000/Npix91220.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir90000/Npix91220.fits",
+            "sha256": "cdca346aeafa84429f9d546f793d9b01a57cb3b261bb8e05c733567d718e6d3c",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder7/Dir90000/Npix91221.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir90000/Npix91221.fits",
+            "sha256": "533ec82356462a72521e031304bb5c2ea49929b97178b4e68df95fc16b98e124",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          },
+          {
+            "path": "Norder7/Dir90000/Npix91222.fits",
+            "url": "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3/Norder7/Dir90000/Npix91222.fits",
+            "sha256": "5dceee303a06bc44671082d7fb9a6c6be4032484a8657fbb7ba6357a53b168ce",
+            "bytes": 1051456,
+            "receipt": {
+              "completeArrayReceived": true,
+              "missingEndPaddingBytes": 2624,
+              "readerWarnings": [
+                "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+              ]
+            }
+          }
+        ]
+      },
+      "processing": {
+        "stretch": {
+          "method": "1-99.7 percentile asinh",
+          "colorMap": "gray",
+          "asinhScale": 0.1,
+          "finiteCutsDN": [
+            315.4430236816406,
+            8483.870210937499
+          ]
+        },
+        "sampling": "nearest NESTED cell at order+9; FITS column=NW,row=511-NE"
+      },
+      "coverage": {
+        "scientificValidity": "UNKNOWN",
+        "sampleAvailability": "SOURCE_NONFINITE_SAMPLES_VERIFIED",
+        "finiteSamples": 257049,
+        "nonfiniteSamples": 5095,
+        "meaning": "Only complete source-selected finite/nonfinite samples; artifacts, depth and confidence remain unmeasured."
+      },
+      "regions": {
+        "full": {
+          "bounds": [
+            0,
+            0,
+            512,
+            512
+          ],
+          "pixels": 262144,
+          "luminancePercentiles": [
+            0.0,
+            0.0,
+            12.999999999999998,
+            31.0,
+            62.99999999999999,
+            241.99999999999997,
+            254.99999999999997
+          ],
+          "rgbZeroPixels": 9301,
+          "anyChannel255Pixels": 848,
+          "alphaZeroPixels": 5095,
+          "opaqueRgbZeroPixels": 4206
+        },
+        "centralHalf": {
+          "bounds": [
+            128,
+            128,
+            384,
+            384
+          ],
+          "pixels": 65536,
+          "luminancePercentiles": [
+            0.0,
+            0.0,
+            53.0,
+            92.0,
+            148.0,
+            254.99999999999997,
+            254.99999999999997
+          ],
+          "rgbZeroPixels": 5589,
+          "anyChannel255Pixels": 848,
+          "alphaZeroPixels": 5095,
+          "opaqueRgbZeroPixels": 494
+        }
+      },
+      "displayDiagnostics": {
+        "meaning": "Statistics of encoded display bytes, not photometry, science validity or a resolution pass.",
+        "edges": {
+          "top": {
+            "median": 20.5,
+            "mean": 39.580078125
+          },
+          "bottom": {
+            "median": 23.0,
+            "mean": 25.224609375
+          },
+          "left": {
+            "median": 4.0,
+            "mean": 5.01953125
+          },
+          "right": {
+            "median": 25.999999999999996,
+            "mean": 26.630859375
+          }
+        },
+        "rowMedianJumps": [
+          {
+            "between": [
+              265,
+              266
+            ],
+            "medianDifference": 15.500000000000007
+          },
+          {
+            "between": [
+              260,
+              261
+            ],
+            "medianDifference": 15.5
+          },
+          {
+            "between": [
+              264,
+              265
+            ],
+            "medianDifference": 10.500000000000007
+          },
+          {
+            "between": [
+              252,
+              253
+            ],
+            "medianDifference": 10.0
+          },
+          {
+            "between": [
+              247,
+              248
+            ],
+            "medianDifference": 9.500000000000007
+          }
+        ],
+        "columnMedianJumps": [
+          {
+            "between": [
+              285,
+              286
+            ],
+            "medianDifference": 7.500000000000007
+          },
+          {
+            "between": [
+              252,
+              253
+            ],
+            "medianDifference": 4.000000000000007
+          },
+          {
+            "between": [
+              255,
+              256
+            ],
+            "medianDifference": 4.0
+          },
+          {
+            "between": [
+              189,
+              190
+            ],
+            "medianDifference": 4.0
+          },
+          {
+            "between": [
+              259,
+              260
+            ],
+            "medianDifference": 3.999999999999993
+          }
+        ],
+        "laplacianVariance": 544.8442711646703,
+        "cells": [
+          {
+            "bounds": [
+              0,
+              0,
+              64,
+              64
+            ],
+            "luminanceMean": 7.786865234375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 76,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              0,
+              128,
+              64
+            ],
+            "luminanceMean": 20.63525390625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              0,
+              192,
+              64
+            ],
+            "luminanceMean": 44.33740234375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              0,
+              256,
+              64
+            ],
+            "luminanceMean": 60.611083984375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              256,
+              0,
+              320,
+              64
+            ],
+            "luminanceMean": 38.009521484375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              320,
+              0,
+              384,
+              64
+            ],
+            "luminanceMean": 9.638427734375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              0,
+              448,
+              64
+            ],
+            "luminanceMean": 3.36474609375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 185,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              0,
+              512,
+              64
+            ],
+            "luminanceMean": 2.26416015625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 676,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              64,
+              64,
+              128
+            ],
+            "luminanceMean": 2.156982421875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 1218,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              64,
+              128,
+              128
+            ],
+            "luminanceMean": 7.583984375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 12,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              64,
+              192,
+              128
+            ],
+            "luminanceMean": 37.21337890625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              64,
+              256,
+              128
+            ],
+            "luminanceMean": 74.785888671875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              256,
+              64,
+              320,
+              128
+            ],
+            "luminanceMean": 37.881591796875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              320,
+              64,
+              384,
+              128
+            ],
+            "luminanceMean": 12.919921875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              64,
+              448,
+              128
+            ],
+            "luminanceMean": 9.7958984375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 11,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              64,
+              512,
+              128
+            ],
+            "luminanceMean": 9.734375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              128,
+              64,
+              192
+            ],
+            "luminanceMean": 3.961669921875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 492,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              128,
+              128,
+              192
+            ],
+            "luminanceMean": 13.36328125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              128,
+              192,
+              192
+            ],
+            "luminanceMean": 63.015380859375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              128,
+              256,
+              192
+            ],
+            "luminanceMean": 160.2158203125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 425,
+            "anyChannel255Pixels": 42
+          },
+          {
+            "bounds": [
+              256,
+              128,
+              320,
+              192
+            ],
+            "luminanceMean": 133.39501953125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 69
+          },
+          {
+            "bounds": [
+              320,
+              128,
+              384,
+              192
+            ],
+            "luminanceMean": 68.3271484375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              128,
+              448,
+              192
+            ],
+            "luminanceMean": 32.828369140625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              128,
+              512,
+              192
+            ],
+            "luminanceMean": 22.534912109375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              192,
+              64,
+              256
+            ],
+            "luminanceMean": 16.8896484375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              192,
+              128,
+              256
+            ],
+            "luminanceMean": 35.116455078125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              192,
+              192,
+              256
+            ],
+            "luminanceMean": 106.16748046875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              192,
+              256,
+              256
+            ],
+            "luminanceMean": 119.18212890625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 1680,
+            "anyChannel255Pixels": 183
+          },
+          {
+            "bounds": [
+              256,
+              192,
+              320,
+              256
+            ],
+            "luminanceMean": 148.582275390625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 901,
+            "anyChannel255Pixels": 193
+          },
+          {
+            "bounds": [
+              320,
+              192,
+              384,
+              256
+            ],
+            "luminanceMean": 124.291015625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              192,
+              448,
+              256
+            ],
+            "luminanceMean": 73.468017578125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              192,
+              512,
+              256
+            ],
+            "luminanceMean": 48.477294921875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              256,
+              64,
+              320
+            ],
+            "luminanceMean": 35.173583984375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              256,
+              128,
+              320
+            ],
+            "luminanceMean": 60.38671875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              256,
+              192,
+              320
+            ],
+            "luminanceMean": 135.58984375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 41,
+            "anyChannel255Pixels": 51
+          },
+          {
+            "bounds": [
+              192,
+              256,
+              256,
+              320
+            ],
+            "luminanceMean": 113.415283203125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 1643,
+            "anyChannel255Pixels": 238
+          },
+          {
+            "bounds": [
+              256,
+              256,
+              320,
+              320
+            ],
+            "luminanceMean": 124.220703125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 899,
+            "anyChannel255Pixels": 72
+          },
+          {
+            "bounds": [
+              320,
+              256,
+              384,
+              320
+            ],
+            "luminanceMean": 64.919189453125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              256,
+              448,
+              320
+            ],
+            "luminanceMean": 88.564697265625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              256,
+              512,
+              320
+            ],
+            "luminanceMean": 46.286865234375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              320,
+              64,
+              384
+            ],
+            "luminanceMean": 26.801513671875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              320,
+              128,
+              384
+            ],
+            "luminanceMean": 42.78515625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              320,
+              192,
+              384
+            ],
+            "luminanceMean": 86.965576171875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              320,
+              256,
+              384
+            ],
+            "luminanceMean": 78.177490234375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              256,
+              320,
+              320,
+              384
+            ],
+            "luminanceMean": 86.33642578125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              320,
+              320,
+              384,
+              384
+            ],
+            "luminanceMean": 44.34814453125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              320,
+              448,
+              384
+            ],
+            "luminanceMean": 22.32373046875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              320,
+              512,
+              384
+            ],
+            "luminanceMean": 25.467529296875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              384,
+              64,
+              448
+            ],
+            "luminanceMean": 8.072509765625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 360,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              384,
+              128,
+              448
+            ],
+            "luminanceMean": 18.75048828125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              384,
+              192,
+              448
+            ],
+            "luminanceMean": 61.2744140625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              384,
+              256,
+              448
+            ],
+            "luminanceMean": 49.537353515625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              256,
+              384,
+              320,
+              448
+            ],
+            "luminanceMean": 29.767578125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              320,
+              384,
+              384,
+              448
+            ],
+            "luminanceMean": 23.356689453125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              384,
+              448,
+              448
+            ],
+            "luminanceMean": 19.97802734375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              384,
+              512,
+              448
+            ],
+            "luminanceMean": 43.873291015625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              0,
+              448,
+              64,
+              512
+            ],
+            "luminanceMean": 2.241943359375,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 682,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              64,
+              448,
+              128,
+              512
+            ],
+            "luminanceMean": 12.87158203125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              128,
+              448,
+              192,
+              512
+            ],
+            "luminanceMean": 41.972900390625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              192,
+              448,
+              256,
+              512
+            ],
+            "luminanceMean": 27.781494140625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              256,
+              448,
+              320,
+              512
+            ],
+            "luminanceMean": 26.0419921875,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              320,
+              448,
+              384,
+              512
+            ],
+            "luminanceMean": 25.5986328125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              384,
+              448,
+              448,
+              512
+            ],
+            "luminanceMean": 28.51806640625,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          },
+          {
+            "bounds": [
+              448,
+              448,
+              512,
+              512
+            ],
+            "luminanceMean": 34.098876953125,
+            "redChromaMean": 0.0,
+            "rgbZeroPixels": 0,
+            "anyChannel255Pixels": 0
+          }
+        ],
+        "redChromaRowPeak": {
+          "index": 0,
+          "median": 0.0
+        },
+        "redChromaColumnPeak": {
+          "index": 0,
+          "median": 0.0
+        }
+      },
+      "review": [
+        "DISPLAY_METRICS_REQUIRE_REVIEW",
+        "REFINEMENT_FIELD_CROPS_CATALOG_EXTENT"
+      ]
+    }
+  ]
+}

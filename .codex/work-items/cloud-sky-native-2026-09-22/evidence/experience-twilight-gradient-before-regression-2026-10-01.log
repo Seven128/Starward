@@ -1,0 +1,16 @@
+{"name":"before","output":"E:\\dev\\worktrees\\Starward\\remote-main-20260908\\output\\playwright\\cloud-sky-twilight-gradient-regression-1001-before","lumaMeanAbsoluteError":33.08766666666666,"transitions":[{"boundaryDeg":-18,"maxChannelDelta":0},{"boundaryDeg":-9,"maxChannelDelta":0},{"boundaryDeg":-6,"maxChannelDelta":1},{"boundaryDeg":0,"maxChannelDelta":0},{"boundaryDeg":3,"maxChannelDelta":0},{"boundaryDeg":20,"maxChannelDelta":0}],"retired":{"textures":0,"buffers":0,"programs":0,"shaders":0}}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The finite twilight hue comparison must improve alongside brightness
+    at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-twilight-gradient-regression-2026-10-01.mts:83:3) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.16.0

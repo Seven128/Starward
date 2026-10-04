@@ -9,6 +9,11 @@ import * as timeFrame from "./sky-time-frame.ts";
 import * as zoom from "./sky-zoom.ts";
 import * as sceneRender from "./sky-scene-render";
 import { projectHorizontalPoint } from "./sky-scene-projection";
+import type { SdssOpticalManifest, SkyReport } from "@starward/miniapp-contracts";
+import { presentSkyTime } from "./sky-time-presentation";
+import { exactSkyObservationFrame, skyEquatorialDirectionToEnu } from "./sky-observation-frame";
+import { registerSkyDeepSkyRegion, skyDeepSkyRegionCoordinates } from "./sky-deep-sky-region";
+import { skyTargetOpticalFrame } from "./sky-sdss-optical-frame";
 
 // Execute the production drawing function with a recorded native-canvas boundary.
 // This establishes call/data selection, not WEAPP rendering or physical pointing.
@@ -31,16 +36,49 @@ vm.runInNewContext(code, {
 }, { timeout: 1000 });
 
 const committed = "2026-09-05T13:00:00.000Z";
-test("dome never draws a below-horizon target or its label even when its projection fits the canvas", () => {
+test("continuous presentation preserves the static catalog center and leaves old missing centers unknown", () => {
+  const report = JSON.parse(readFileSync(new URL("../../../../../.codex/work-items/cloud-sky-native-2026-09-22/tmp/current-native-report-2026-10-01.json", import.meta.url), "utf8")).data as SkyReport;
+  const pack = JSON.parse(readFileSync(new URL("../../../../../packages/astronomy-core/data/opengc-messier-deep-sky.v1.json", import.meta.url), "utf8"));
+  const row = pack.rows.find((value: any) => value.objectRef === "M:51"); assert(row);
+  // The cached report predates the optional center contract. Supply only the
+  // source-bound catalog field here; never copy the image or time-model center.
+  const oldCatalog = report.skyScene.deepSky!.catalog!;
+  const catalog = { ...oldCatalog, entries: oldCatalog.entries.map(entry => entry.objectRef === row.objectRef
+    ? { ...entry, icrsCenter: { raDeg: row.raDeg, decDeg: row.decDeg } } : entry) };
+  const at = "2026-09-30T20:00:15.000Z";
+  const current = presentSkyTime({ ...report, skyScene: { ...report.skyScene, deepSky: { ...report.skyScene.deepSky!, catalog } } }, at)!;
+  assert.equal(current.mode, "MODEL"); assert.strictEqual(current.report.skyScene.deepSky!.catalog, catalog);
+  const entry = catalog.entries.find(value => value.objectRef === "M:51")!;
+  const observation = exactSkyObservationFrame(current.report, at); assert(observation);
+  const region = registerSkyDeepSkyRegion(entry, observation)!; assert(region); assert.equal(region.frameAt, at);
+  const ra = row.raDeg * Math.PI / 180, dec = row.decDeg * Math.PI / 180;
+  const center = skyEquatorialDirectionToEnu(observation.equatorialToEnu,
+    [Math.cos(dec) * Math.cos(ra), Math.cos(dec) * Math.sin(ra), Math.sin(dec)]);
+  assert(Math.hypot(...skyDeepSkyRegionCoordinates(region, center)!) < 1e-9);
+  const old = presentSkyTime(report, at)!; assert.equal(old.mode, "MODEL");
+  assert.strictEqual(old.report.skyScene.deepSky!.catalog, oldCatalog);
+  const missing = oldCatalog.entries.find(value => value.objectRef === "M:51")!;
+  assert.equal(missing.icrsCenter, undefined);
+  assert.equal(registerSkyDeepSkyRegion(missing, exactSkyObservationFrame(old.report, at)), null,
+    "continuous reprojection cannot reconstruct a catalog center from image or model geometry");
+});
+test("full-sphere browsing draws a below-horizon target only when the actual viewport contains it", () => {
   const basis: projection.SkyViewBasis = {right:[1,0,0],up:[0,-1,0],forward:[0,0,1]};
-  assert.ok(projection.projectSkyDirection(0,-10,basis,400,800,240), "fixture must expose the former outside-circle target");
-  assert.equal(projectHorizontalPoint(0,-10,null,null,400,800,240,basis),null);
+  const projected = projection.projectSkyDirection(0,-10,basis,400,800,240)!; assert(projected);
+  assert.deepEqual(projectHorizontalPoint(0,-10,null,null,400,800,240,basis),projected);
   const marks: number[][]=[];
   const context=new Proxy({}, {get:(_o,key)=>key==="disc" ? (...args:number[])=>marks.push(args) : ()=>undefined});
   const data={skyScene:{state:"UNAVAILABLE",frames:[]},targetFrames:[{at:committed,
     targets:[{type:"STAR",direction:"0°",azimuthDeg:0,altitudeDeg:-10}]}]};
   exported.drawSkyScene(context,data,committed,null,null,400,800,"NIGHT",undefined,undefined,240,null,basis);
-  assert.deepEqual(marks,[]);
+  assert.equal(marks.length,1);
+  assert(Math.hypot(marks[0]![0]! - projected.x, marks[0]![1]! - projected.y) < 1e-9);
+  const away = projection.createSkyViewBasis(180,90,0)!;
+  assert.equal(projectHorizontalPoint(0,-10,null,null,400,800,45,away),null);
+  marks.length=0;
+  exported.drawSkyScene(context,data,committed,null,null,400,800,"NIGHT",undefined,undefined,45,null,away);
+  assert.deepEqual(marks,[],"a valid lower-hemisphere coordinate does not bypass the current viewport");
+  assert.equal(projectHorizontalPoint(0,-10,null,null,400,800,240),null,"a missing actual view stays unavailable");
 });
 
 test("failed GPU submission cannot publish a picking snapshot or successful completion", () => {
@@ -60,9 +98,14 @@ test("actual page invalidation clears hit testing synchronously before React hid
   }
   visit(parsed);assert.ok(callback);
   const paintedSkyObjectsRef={current:{objects:[{reference:"HR:1"}] } as object|null};
+  const pendingSkyPaintRef={current:{snapshot:paintedSkyObjectsRef.current} as object|null};
+  let presented: object|null=paintedSkyObjectsRef.current, size={width:400,height:800};
   const invalidated=vm.runInNewContext(ts.transpileModule(`(${callback})`,{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText,
-    {paintedSkyObjectsRef,setPresentedSkyFrame(){},setCanvasSize(){}});
+    {paintedSkyObjectsRef,pendingSkyPaintRef,setPresentedSkyFrame(value:object|null){presented=value;},
+      setCanvasSize(update:(value:typeof size)=>typeof size){size=update(size);}});
   invalidated();assert.equal(paintedSkyObjectsRef.current,null);
+  assert.equal(pendingSkyPaintRef.current,null);assert.equal(presented,null);
+  assert.equal(size.width,0);assert.equal(size.height,0);
 });
 test("survey imagery uses a celestial plane beyond the camera hemisphere and stays hidden in red mode", () => {
   for (const [azimuth,fov] of [[.4,1.5],[100,240]] as const) {
@@ -124,12 +167,13 @@ test("production frame requests preserve exact data/time and clear expired or un
     orientation: { snapshot: { presentationRevision: 0 } },
     useCallback: (fn: unknown) => fn,
     skySceneHasContent: stellarScene.skySceneHasContent,
+    skyTargetOpticalFrame,
     canvasLifecycle: { request: (frame: unknown, hidden: boolean) => requests.push({ frame, hidden }) },
     canvasDrawRevisionRef: { current: 0 }, skySceneInspectionOwnerRef: { current: "test" },
     previousCanvasModeRef: { current: "NIGHT" }, devicePoseRef: { current: pose },
     reportData: data, report: { data: { dataState: "FRESH" }, isError: false },
     row: { at: committed }, sensorHeadingForScene: 0 as number | null, sensorBasis: pose.basis as projection.SkyViewBasis | null, devicePose: pose as typeof pose | null, mode: "NIGHT",
-    verticalFovDeg: 45, canvasDeepSkyImage: null, sdssOptical: { image: null, fieldDegrees: null, renderedLevel: null, publication: null }, canvasNodeRevision: 1, viewportInsets: { top:0, bottom:0 },
+    verticalFovDeg: 45, desiredDeepSkyImageLevel: null, canvasDeepSkyImage: null, sdssOptical: { image: null, fieldDegrees: null, renderedLevel: null, publication: null }, canvasNodeRevision: 1, viewportInsets: { top:0, bottom:0 },
     constellationFrame, artwork, constellationsEnabled: true,landscapeEnabled:true,stellarSupplement:{frame:null},hipsTiles:[],moonTexture:{image:{id:"moon"}},marsTexture:{image:{id:"mars"}},mercuryTexture:{image:{id:"mercury"}},jupiterBands:{image:{id:"jupiter"}},saturnBands:{image:{id:"saturn"}},uranusBands:{image:{id:"uranus"}},neptuneBands:{image:{id:"neptune"}},galacticImage:{image:{id:"galactic"}},
     coordinateGrids: { horizontal: true, equatorial: false }, landscapeImage: { panorama: null },
     manualBasis: null, manualBasisRef: { current: null },
@@ -156,16 +200,21 @@ test("production frame requests preserve exact data/time and clear expired or un
   assert.equal(requests.at(-1)!.frame.sceneReady, true);
   assert.equal(requests.at(-1)!.hidden, false);
   const sdssPixels = { id: "sdss-M51" };
-  sandbox.sdssOptical = { image: sdssPixels, fieldDegrees: 0.05688888888888889, renderedLevel: "DETAIL",
-    publication: { objectRef: "OPENNGC:NGC5194", publicationHash: "a".repeat(64) },
-    coarser: { image: { id: "sdss-parent" }, fieldDegrees: .1137777778, level: "MEDIUM" } };
+  // Already-admitted structural loader state, as in sky-sdss-optical-frame's
+  // legacy handoff control. The real owner needs exact descriptor identities.
+  const publication = { objectRef: "M:51", publicationHash: "a".repeat(64),
+    levels: { DETAIL: { fieldDegrees: .05688888888888889 }, MEDIUM: { fieldDegrees: .1137777778 } } } as SdssOpticalManifest;
+  sandbox.sdssOptical = { image: sdssPixels, renderedLevel: "DETAIL", renderedAsset: publication.levels.DETAIL,
+    publication, coarser: { image: { id: "sdss-parent" }, level: "MEDIUM", asset: publication.levels.MEDIUM } };
   request();
   assert.strictEqual(requests.at(-1)!.frame.sdssOpticalImage.image, sdssPixels,
     "the current native frame, rather than only the source label, must consume optical pixels");
   assert.equal(requests.at(-1)!.frame.sdssOpticalImage.reference, sandbox.sdssOptical.publication.objectRef);
   assert.equal(requests.at(-1)!.frame.sdssOpticalImage.publicationHash, sandbox.sdssOptical.publication.publicationHash);
-  assert.strictEqual(requests.at(-1)!.frame.sdssOpticalImage.coarser,sandbox.sdssOptical.coarser,
-    "the real queued frame must deliver the parent to rendering, with the same publication identity");
+  assert.strictEqual(requests.at(-1)!.frame.sdssOpticalImage.coarser.image,sandbox.sdssOptical.coarser.image,
+    "the real queued frame must deliver the parent's pixels with its own admitted descriptor");
+  assert.equal(requests.at(-1)!.frame.sdssOpticalImage.coarser.fieldDegrees,publication.levels.MEDIUM.fieldDegrees);
+  assert.equal(requests.at(-1)!.frame.sdssOpticalImage.coarser.level,"MEDIUM");
   sandbox.sensorHeadingForScene = null;
   sandbox.sensorBasis = { right: [1, 0, 0], up: [0, -1, 0], forward: [0, 0, 1] };
   sandbox.devicePose = { ...pose, basis: sandbox.sensorBasis };

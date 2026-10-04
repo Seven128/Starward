@@ -1,0 +1,8 @@
+file:///E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-time-collapse-binding-2026-10-01.mjs:36
+assert.equal(before.canvas.labelFacts.frameAt,committed);assert.equal(paused.canvas.labelFacts.frameAt,'2026-09-30T13:50:37.947Z');
+                                                                                    ^
+
+TypeError: Cannot read properties of undefined (reading 'labelFacts')
+    at file:///E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-time-collapse-binding-2026-10-01.mjs:36:85
+
+Node.js v24.16.0

@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\readback-m82-measured-stars-2026-10-04.py", line 146, in <module>
+    try:main()
+        ^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\readback-m82-measured-stars-2026-10-04.py", line 67, in main
+    np.testing.assert_allclose([wx,2047-wy],[px,py],rtol=0,atol=1e-10)
+  File "E:\dev\worktrees\Starward\remote-main-20260908\output\allwise-w3-atlas-0929\python-deps\numpy\testing\_private\utils.py", line 1780, in assert_allclose
+    assert_array_compare(compare, actual, desired, err_msg=str(err_msg),
+  File "E:\dev\worktrees\Starward\remote-main-20260908\output\allwise-w3-atlas-0929\python-deps\numpy\testing\_private\utils.py", line 988, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Not equal to tolerance rtol=0, atol=1e-10
+
+Mismatched elements: 2 / 2 (100%)
+Mismatch at indices:
+ [0]: 1938.7815650534967 (ACTUAL), 1938.7815650639209 (DESIRED)
+ [1]: 1802.348633596475 (ACTUAL), 1802.34863359555 (DESIRED)
+Max absolute difference among violations: 1.04241735e-08
+Max relative difference among violations: 5.37666218e-12
+ ACTUAL: array([1938.781565, 1802.348634])
+ DESIRED: array([1938.781565, 1802.348634])

@@ -1,0 +1,24 @@
+
+> @starward/wechat-miniapp@0.1.0 typecheck
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json
+
+
+> @starward/miniapp-contracts@0.1.0 typecheck
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json
+
+
+> @starward/miniapp-api@0.1.0 typecheck
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json
+
+src/event-article-extraction.ts(7,39): error TS7016: Could not find a declaration file for module 'jsdom'. 'E:/dev/worktrees/Starward/remote-main-20260908/node_modules/jsdom/lib/api.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/jsdom` if it exists or add a new declaration (.d.ts) file containing `declare module 'jsdom';`
+src/event-article-extraction.ts(8,29): error TS2307: Cannot find module '@mozilla/readability' or its corresponding type declarations.
+src/event-article-extraction.ts(126,19): error TS7006: Parameter 'element' implicitly has an 'any' type.
+src/event-article-extraction.ts(132,118): error TS7006: Parameter 'element' implicitly has an 'any' type.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api
+npm error workspace @starward/miniapp-api@0.1.0
+npm error location E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json

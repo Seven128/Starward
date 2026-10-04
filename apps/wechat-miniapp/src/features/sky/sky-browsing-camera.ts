@@ -80,9 +80,9 @@ export function createSkyBrowsingCamera() {
     pan(view: SkyViewBasis, progress: number) {
       if (!validBasis(view) || !Number.isFinite(progress)) return snapshot();
       const p = bounded(progress);
-      const displayed = p === 1 ? captureSkyDomeTarget(view) : view;
+      const displayed = view;
       state = { phase: p > 0 ? "overview" : "local", view: displayed, progress: p,
-        path: p > 0 ? capture(displayed, p) : null, returnElapsed: 0 };
+        path: p > 0 ? { ...capture(displayed, p), target: displayed } : null, returnElapsed: 0 };
       lastAt = null;
       return snapshot();
     },

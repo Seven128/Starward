@@ -24,7 +24,8 @@ export function configuration(deploy) {
       caddy: {
         ports: [{ published: "443", target: 443, protocol: "tcp" }],
         environment: { STARWARD_OPERATOR_PREVIEW_TOKEN: token, STARWARD_API_DOMAIN: "192.0.2.8" },
-        volumes: [{ source: "/release/Caddyfile.operator-preview", target: "/etc/caddy/Caddyfile", read_only: true }],
+        volumes: [{ source: "/release/Caddyfile.operator-preview", target: "/etc/caddy/Caddyfile", read_only: true },
+          {type: "bind", source: "/release/sky-static-empty.caddy", target: "/etc/caddy/sky-static-delivery.caddy", read_only: true}],
       },
       postgres: { volumes: [{ type: "volume", source: "postgres-data", target: "/var/lib/postgresql/data" }] },
       redis: { volumes: [{ type: "volume", source: "redis-data", target: "/data" }] },

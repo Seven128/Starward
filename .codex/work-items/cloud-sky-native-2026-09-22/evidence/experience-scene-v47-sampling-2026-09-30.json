@@ -1,0 +1,2493 @@
+{
+  "recordedAtUtc": "2026-09-30T01:45:13.847Z",
+  "scope": "Current original registered images and sampled source-to-physical-pixel Jacobian; estimates only",
+  "at": "2026-09-30T13:50:33.000Z",
+  "reportSha256": "52780cd95ed0d0747a28d599359ddbd8efd068f5dae3fa29d8452dcb23a3685f",
+  "catalogHash": "2a53d222e56b513e6b0b9bba753d7864e1535bf98252112ce8e4bebde16dc01e",
+  "logicalSize": {
+    "width": 390,
+    "height": 844
+  },
+  "step": 12,
+  "rows": [
+    {
+      "field": {
+        "name": "identification",
+        "fov": 84.63316191100171,
+        "azimuth": 252.54343616596475,
+        "altitude": 55.14430820107586
+      },
+      "eligibleImages": 17,
+      "measured": [
+        {
+          "id": "Aql",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 632,
+          "minTexelsPerLogicalPixel": 1.3609039629543016
+        },
+        {
+          "id": "Aqr",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 100,
+          "minTexelsPerLogicalPixel": 1.3399194702818518
+        },
+        {
+          "id": "Cap",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 5,
+          "minTexelsPerLogicalPixel": 2.6964581786199533
+        },
+        {
+          "id": "Cyg",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 276,
+          "minTexelsPerLogicalPixel": 1.4466308868421267
+        },
+        {
+          "id": "Del",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 38,
+          "minTexelsPerLogicalPixel": 3.327472222835379
+        },
+        {
+          "id": "Equ",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 44,
+          "minTexelsPerLogicalPixel": 3.174859609741822
+        },
+        {
+          "id": "Her",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Lac",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 30,
+          "minTexelsPerLogicalPixel": 1.4556917801059528
+        },
+        {
+          "id": "Lyr",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Oph",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 780,
+          "minTexelsPerLogicalPixel": 0.8139319681155424
+        },
+        {
+          "id": "Peg",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 476,
+          "minTexelsPerLogicalPixel": 0.9312243054902982
+        },
+        {
+          "id": "Psc",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 15,
+          "minTexelsPerLogicalPixel": 1.136987145975105
+        },
+        {
+          "id": "Sco",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 2,
+          "minTexelsPerLogicalPixel": 1.826539274795494
+        },
+        {
+          "id": "Sct",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 131,
+          "minTexelsPerLogicalPixel": 1.832032150147425
+        },
+        {
+          "id": "Sge",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 11,
+          "minTexelsPerLogicalPixel": 5.22703659217766
+        },
+        {
+          "id": "Sgr",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 106,
+          "minTexelsPerLogicalPixel": 1.5361250033891367
+        },
+        {
+          "id": "Vul",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 107,
+          "minTexelsPerLogicalPixel": 1.6757398077341985
+        }
+      ],
+      "trials": [
+        {
+          "pixelRatio": 1,
+          "originalBytes": 12320768,
+          "candidateBytes": 10944512,
+          "reducedImages": 4,
+          "assets": [
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 1.3609039629543016,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aqr",
+              "texelsPerPhysicalPixel": 1.3399194702818518,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cap",
+              "texelsPerPhysicalPixel": 2.6964581786199533,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cyg",
+              "texelsPerPhysicalPixel": 1.4466308868421267,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 3.327472222835379,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Equ",
+              "texelsPerPhysicalPixel": 3.174859609741822,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Her",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Lac",
+              "texelsPerPhysicalPixel": 1.4556917801059528,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Lyr",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Oph",
+              "texelsPerPhysicalPixel": 0.8139319681155424,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Peg",
+              "texelsPerPhysicalPixel": 0.9312243054902982,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Psc",
+              "texelsPerPhysicalPixel": 1.136987145975105,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Sco",
+              "texelsPerPhysicalPixel": 1.826539274795494,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Sct",
+              "texelsPerPhysicalPixel": 1.832032150147425,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Sge",
+              "texelsPerPhysicalPixel": 5.22703659217766,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Sgr",
+              "texelsPerPhysicalPixel": 1.5361250033891367,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Vul",
+              "texelsPerPhysicalPixel": 1.6757398077341985,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            }
+          ]
+        },
+        {
+          "pixelRatio": 2,
+          "originalBytes": 12320768,
+          "candidateBytes": 12124160,
+          "reducedImages": 1,
+          "assets": [
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 0.6804519814771508,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aqr",
+              "texelsPerPhysicalPixel": 0.6699597351409259,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cap",
+              "texelsPerPhysicalPixel": 1.3482290893099766,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cyg",
+              "texelsPerPhysicalPixel": 0.7233154434210634,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 1.6637361114176894,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Equ",
+              "texelsPerPhysicalPixel": 1.587429804870911,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Her",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Lac",
+              "texelsPerPhysicalPixel": 0.7278458900529764,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Lyr",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Oph",
+              "texelsPerPhysicalPixel": 0.4069659840577712,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Peg",
+              "texelsPerPhysicalPixel": 0.4656121527451491,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Psc",
+              "texelsPerPhysicalPixel": 0.5684935729875525,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Sco",
+              "texelsPerPhysicalPixel": 0.913269637397747,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Sct",
+              "texelsPerPhysicalPixel": 0.9160160750737125,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Sge",
+              "texelsPerPhysicalPixel": 2.61351829608883,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Sgr",
+              "texelsPerPhysicalPixel": 0.7680625016945684,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Vul",
+              "texelsPerPhysicalPixel": 0.8378699038670993,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            }
+          ]
+        },
+        {
+          "pixelRatio": 3,
+          "originalBytes": 12320768,
+          "candidateBytes": 12320768,
+          "reducedImages": 0,
+          "assets": [
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 0.4536346543181005,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aqr",
+              "texelsPerPhysicalPixel": 0.4466398234272839,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cap",
+              "texelsPerPhysicalPixel": 0.8988193928733178,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cyg",
+              "texelsPerPhysicalPixel": 0.4822102956140422,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 1.109157407611793,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Equ",
+              "texelsPerPhysicalPixel": 1.0582865365806073,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Her",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Lac",
+              "texelsPerPhysicalPixel": 0.48523059336865093,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Lyr",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Oph",
+              "texelsPerPhysicalPixel": 0.2713106560385141,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Peg",
+              "texelsPerPhysicalPixel": 0.3104081018300994,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Psc",
+              "texelsPerPhysicalPixel": 0.378995715325035,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Sco",
+              "texelsPerPhysicalPixel": 0.6088464249318314,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Sct",
+              "texelsPerPhysicalPixel": 0.610677383382475,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Sge",
+              "texelsPerPhysicalPixel": 1.7423455307258866,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Sgr",
+              "texelsPerPhysicalPixel": 0.5120416677963789,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Vul",
+              "texelsPerPhysicalPixel": 0.5585799359113995,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "field": {
+        "name": "recognition-45",
+        "fov": 45,
+        "azimuth": 252.54343616596475,
+        "altitude": 55.14430820107586
+      },
+      "eligibleImages": 9,
+      "measured": [
+        {
+          "id": "Aql",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 1471,
+          "minTexelsPerLogicalPixel": 0.699407933728117
+        },
+        {
+          "id": "Cyg",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 71,
+          "minTexelsPerLogicalPixel": 0.8113030419603614
+        },
+        {
+          "id": "Del",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 151,
+          "minTexelsPerLogicalPixel": 1.7092094441208305
+        },
+        {
+          "id": "Equ",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 74,
+          "minTexelsPerLogicalPixel": 1.6346336524384901
+        },
+        {
+          "id": "Oph",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 417,
+          "minTexelsPerLogicalPixel": 0.48470475230527404
+        },
+        {
+          "id": "Peg",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 125,
+          "minTexelsPerLogicalPixel": 0.6055922680966824
+        },
+        {
+          "id": "Sct",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 91,
+          "minTexelsPerLogicalPixel": 0.9659072561147364
+        },
+        {
+          "id": "Sge",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 40,
+          "minTexelsPerLogicalPixel": 2.685383735702516
+        },
+        {
+          "id": "Vul",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 45,
+          "minTexelsPerLogicalPixel": 0.860944477526864
+        }
+      ],
+      "trials": [
+        {
+          "pixelRatio": 1,
+          "originalBytes": 5505024,
+          "candidateBytes": 5308416,
+          "reducedImages": 1,
+          "assets": [
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 0.699407933728117,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cyg",
+              "texelsPerPhysicalPixel": 0.8113030419603614,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 1.7092094441208305,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Equ",
+              "texelsPerPhysicalPixel": 1.6346336524384901,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Oph",
+              "texelsPerPhysicalPixel": 0.48470475230527404,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Peg",
+              "texelsPerPhysicalPixel": 0.6055922680966824,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Sct",
+              "texelsPerPhysicalPixel": 0.9659072561147364,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Sge",
+              "texelsPerPhysicalPixel": 2.685383735702516,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Vul",
+              "texelsPerPhysicalPixel": 0.860944477526864,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            }
+          ]
+        },
+        {
+          "pixelRatio": 2,
+          "originalBytes": 5505024,
+          "candidateBytes": 5505024,
+          "reducedImages": 0,
+          "assets": [
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 0.3497039668640585,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cyg",
+              "texelsPerPhysicalPixel": 0.4056515209801807,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 0.8546047220604153,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Equ",
+              "texelsPerPhysicalPixel": 0.8173168262192451,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Oph",
+              "texelsPerPhysicalPixel": 0.24235237615263702,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Peg",
+              "texelsPerPhysicalPixel": 0.3027961340483412,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Sct",
+              "texelsPerPhysicalPixel": 0.4829536280573682,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Sge",
+              "texelsPerPhysicalPixel": 1.342691867851258,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Vul",
+              "texelsPerPhysicalPixel": 0.430472238763432,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            }
+          ]
+        },
+        {
+          "pixelRatio": 3,
+          "originalBytes": 5505024,
+          "candidateBytes": 5505024,
+          "reducedImages": 0,
+          "assets": [
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 0.23313597790937235,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cyg",
+              "texelsPerPhysicalPixel": 0.27043434732012045,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 0.5697364813736102,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Equ",
+              "texelsPerPhysicalPixel": 0.5448778841461633,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Oph",
+              "texelsPerPhysicalPixel": 0.16156825076842468,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Peg",
+              "texelsPerPhysicalPixel": 0.2018640893655608,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Sct",
+              "texelsPerPhysicalPixel": 0.3219690853715788,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Sge",
+              "texelsPerPhysicalPixel": 0.8951279119008387,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Vul",
+              "texelsPerPhysicalPixel": 0.28698149250895466,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "field": {
+        "name": "local-25",
+        "fov": 25,
+        "azimuth": 252.54343616596475,
+        "altitude": 55.14430820107586
+      },
+      "eligibleImages": 3,
+      "measured": [
+        {
+          "id": "Aql",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 1981,
+          "minTexelsPerLogicalPixel": 0.38678999469338243
+        },
+        {
+          "id": "Del",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 224,
+          "minTexelsPerLogicalPixel": 0.9475578757848678
+        },
+        {
+          "id": "Oph",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 2,
+          "minTexelsPerLogicalPixel": 0.29783285868891024
+        }
+      ],
+      "trials": [
+        {
+          "pixelRatio": 1,
+          "originalBytes": 2359296,
+          "candidateBytes": 2359296,
+          "reducedImages": 0,
+          "assets": [
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 0.38678999469338243,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 0.9475578757848678,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Oph",
+              "texelsPerPhysicalPixel": 0.29783285868891024,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            }
+          ]
+        },
+        {
+          "pixelRatio": 2,
+          "originalBytes": 2359296,
+          "candidateBytes": 2359296,
+          "reducedImages": 0,
+          "assets": [
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 0.19339499734669122,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 0.4737789378924339,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Oph",
+              "texelsPerPhysicalPixel": 0.14891642934445512,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            }
+          ]
+        },
+        {
+          "pixelRatio": 3,
+          "originalBytes": 2359296,
+          "candidateBytes": 2359296,
+          "reducedImages": 0,
+          "assets": [
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 0.12892999823112747,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 0.3158526252616226,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Oph",
+              "texelsPerPhysicalPixel": 0.09927761956297008,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "field": {
+        "name": "fading-pressure",
+        "fov": 115,
+        "azimuth": 30,
+        "altitude": 60
+      },
+      "eligibleImages": 25,
+      "measured": [
+        {
+          "id": "And",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 287,
+          "minTexelsPerLogicalPixel": 2.0872479503698846
+        },
+        {
+          "id": "Aql",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 70,
+          "minTexelsPerLogicalPixel": 1.455906181109878
+        },
+        {
+          "id": "Aqr",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 182,
+          "minTexelsPerLogicalPixel": 1.3964748616841927
+        },
+        {
+          "id": "Ari",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Aur",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 99,
+          "minTexelsPerLogicalPixel": 2.0550659953635657
+        },
+        {
+          "id": "Cam",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 395,
+          "minTexelsPerLogicalPixel": 0.9615617195130804
+        },
+        {
+          "id": "Cap",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Cas",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 135,
+          "minTexelsPerLogicalPixel": 3.533036147236457
+        },
+        {
+          "id": "Cep",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 309,
+          "minTexelsPerLogicalPixel": 2.186872716626364
+        },
+        {
+          "id": "Cet",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 1,
+          "minTexelsPerLogicalPixel": 1.7559776796316575
+        },
+        {
+          "id": "Cyg",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 237,
+          "minTexelsPerLogicalPixel": 2.0176107812123405
+        },
+        {
+          "id": "Del",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 30,
+          "minTexelsPerLogicalPixel": 3.841697215462951
+        },
+        {
+          "id": "Dra",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 6,
+          "minTexelsPerLogicalPixel": 1.4305289982467806
+        },
+        {
+          "id": "Equ",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 29,
+          "minTexelsPerLogicalPixel": 3.7677303484520928
+        },
+        {
+          "id": "Lac",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 70,
+          "minTexelsPerLogicalPixel": 2.2991354171173133
+        },
+        {
+          "id": "Lyn",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 77,
+          "minTexelsPerLogicalPixel": 1.0459003520855268
+        },
+        {
+          "id": "Peg",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 595,
+          "minTexelsPerLogicalPixel": 1.3385707079966758
+        },
+        {
+          "id": "Per",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 264,
+          "minTexelsPerLogicalPixel": 2.102770047430005
+        },
+        {
+          "id": "Psc",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 197,
+          "minTexelsPerLogicalPixel": 1.5908625189359604
+        },
+        {
+          "id": "Sge",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 1,
+          "minTexelsPerLogicalPixel": 6.156066626680278
+        },
+        {
+          "id": "Tau",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Tri",
+          "width": 128,
+          "height": 128,
+          "rgbaBytes": 65536,
+          "visibleProbes": 17,
+          "minTexelsPerLogicalPixel": 1.8231792499332657
+        },
+        {
+          "id": "UMa",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 76,
+          "minTexelsPerLogicalPixel": 1.045422534962211
+        },
+        {
+          "id": "UMi",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 1,
+          "minTexelsPerLogicalPixel": 1.7900817627194023
+        },
+        {
+          "id": "Vul",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 7,
+          "minTexelsPerLogicalPixel": 1.9979699768115913
+        }
+      ],
+      "trials": [
+        {
+          "pixelRatio": 1,
+          "originalBytes": 18939904,
+          "candidateBytes": 13434880,
+          "reducedImages": 10,
+          "assets": [
+            {
+              "id": "And",
+              "texelsPerPhysicalPixel": 2.0872479503698846,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 1.455906181109878,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aqr",
+              "texelsPerPhysicalPixel": 1.3964748616841927,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Ari",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Aur",
+              "texelsPerPhysicalPixel": 2.0550659953635657,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cam",
+              "texelsPerPhysicalPixel": 0.9615617195130804,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cap",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cas",
+              "texelsPerPhysicalPixel": 3.533036147236457,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cep",
+              "texelsPerPhysicalPixel": 2.186872716626364,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cet",
+              "texelsPerPhysicalPixel": 1.7559776796316575,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cyg",
+              "texelsPerPhysicalPixel": 2.0176107812123405,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 3.841697215462951,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Dra",
+              "texelsPerPhysicalPixel": 1.4305289982467806,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Equ",
+              "texelsPerPhysicalPixel": 3.7677303484520928,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Lac",
+              "texelsPerPhysicalPixel": 2.2991354171173133,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Lyn",
+              "texelsPerPhysicalPixel": 1.0459003520855268,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Peg",
+              "texelsPerPhysicalPixel": 1.3385707079966758,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Per",
+              "texelsPerPhysicalPixel": 2.102770047430005,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Psc",
+              "texelsPerPhysicalPixel": 1.5908625189359604,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Sge",
+              "texelsPerPhysicalPixel": 6.156066626680278,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Tau",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Tri",
+              "texelsPerPhysicalPixel": 1.8231792499332657,
+              "half": false,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "UMa",
+              "texelsPerPhysicalPixel": 1.045422534962211,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "UMi",
+              "texelsPerPhysicalPixel": 1.7900817627194023,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Vul",
+              "texelsPerPhysicalPixel": 1.9979699768115913,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            }
+          ]
+        },
+        {
+          "pixelRatio": 2,
+          "originalBytes": 18939904,
+          "candidateBytes": 18743296,
+          "reducedImages": 1,
+          "assets": [
+            {
+              "id": "And",
+              "texelsPerPhysicalPixel": 1.0436239751849423,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 0.727953090554939,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aqr",
+              "texelsPerPhysicalPixel": 0.6982374308420963,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Ari",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Aur",
+              "texelsPerPhysicalPixel": 1.0275329976817829,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cam",
+              "texelsPerPhysicalPixel": 0.4807808597565402,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cap",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cas",
+              "texelsPerPhysicalPixel": 1.7665180736182284,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cep",
+              "texelsPerPhysicalPixel": 1.093436358313182,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cet",
+              "texelsPerPhysicalPixel": 0.8779888398158288,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cyg",
+              "texelsPerPhysicalPixel": 1.0088053906061702,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 1.9208486077314755,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Dra",
+              "texelsPerPhysicalPixel": 0.7152644991233903,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Equ",
+              "texelsPerPhysicalPixel": 1.8838651742260464,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Lac",
+              "texelsPerPhysicalPixel": 1.1495677085586566,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Lyn",
+              "texelsPerPhysicalPixel": 0.5229501760427634,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Peg",
+              "texelsPerPhysicalPixel": 0.6692853539983379,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Per",
+              "texelsPerPhysicalPixel": 1.0513850237150024,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Psc",
+              "texelsPerPhysicalPixel": 0.7954312594679802,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Sge",
+              "texelsPerPhysicalPixel": 3.078033313340139,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Tau",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Tri",
+              "texelsPerPhysicalPixel": 0.9115896249666329,
+              "half": false,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "UMa",
+              "texelsPerPhysicalPixel": 0.5227112674811055,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "UMi",
+              "texelsPerPhysicalPixel": 0.8950408813597012,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Vul",
+              "texelsPerPhysicalPixel": 0.9989849884057956,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            }
+          ]
+        },
+        {
+          "pixelRatio": 3,
+          "originalBytes": 18939904,
+          "candidateBytes": 18743296,
+          "reducedImages": 1,
+          "assets": [
+            {
+              "id": "And",
+              "texelsPerPhysicalPixel": 0.6957493167899615,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 0.4853020603699593,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aqr",
+              "texelsPerPhysicalPixel": 0.46549162056139753,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Ari",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Aur",
+              "texelsPerPhysicalPixel": 0.6850219984545219,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cam",
+              "texelsPerPhysicalPixel": 0.32052057317102683,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cap",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cas",
+              "texelsPerPhysicalPixel": 1.1776787157454855,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cep",
+              "texelsPerPhysicalPixel": 0.7289575722087881,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cet",
+              "texelsPerPhysicalPixel": 0.5853258932105525,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cyg",
+              "texelsPerPhysicalPixel": 0.6725369270707802,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 1.2805657384876503,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Dra",
+              "texelsPerPhysicalPixel": 0.47684299941559355,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Equ",
+              "texelsPerPhysicalPixel": 1.2559101161506976,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Lac",
+              "texelsPerPhysicalPixel": 0.7663784723724377,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Lyn",
+              "texelsPerPhysicalPixel": 0.3486334506951756,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Peg",
+              "texelsPerPhysicalPixel": 0.4461902359988919,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Per",
+              "texelsPerPhysicalPixel": 0.700923349143335,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Psc",
+              "texelsPerPhysicalPixel": 0.5302875063119868,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Sge",
+              "texelsPerPhysicalPixel": 2.052022208893426,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Tau",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Tri",
+              "texelsPerPhysicalPixel": 0.607726416644422,
+              "half": false,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "UMa",
+              "texelsPerPhysicalPixel": 0.348474178320737,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "UMi",
+              "texelsPerPhysicalPixel": 0.5966939209064674,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Vul",
+              "texelsPerPhysicalPixel": 0.6659899922705305,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "field": {
+        "name": "near-hidden-pressure",
+        "fov": 139,
+        "azimuth": 60,
+        "altitude": 75
+      },
+      "eligibleImages": 34,
+      "measured": [
+        {
+          "id": "And",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 236,
+          "minTexelsPerLogicalPixel": 2.4912173966627003
+        },
+        {
+          "id": "Aql",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 302,
+          "minTexelsPerLogicalPixel": 1.704561878481
+        },
+        {
+          "id": "Aqr",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 194,
+          "minTexelsPerLogicalPixel": 1.8294631111271582
+        },
+        {
+          "id": "Ari",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 90,
+          "minTexelsPerLogicalPixel": 2.0792741842260667
+        },
+        {
+          "id": "Aur",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 67,
+          "minTexelsPerLogicalPixel": 2.2830276035032795
+        },
+        {
+          "id": "Cam",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 106,
+          "minTexelsPerLogicalPixel": 1.08593737410425
+        },
+        {
+          "id": "Cap",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 96,
+          "minTexelsPerLogicalPixel": 3.5652463625131032
+        },
+        {
+          "id": "Cas",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 100,
+          "minTexelsPerLogicalPixel": 3.9933438580570337
+        },
+        {
+          "id": "Cep",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 137,
+          "minTexelsPerLogicalPixel": 2.5574187497561085
+        },
+        {
+          "id": "Cet",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 172,
+          "minTexelsPerLogicalPixel": 1.6443981422720635
+        },
+        {
+          "id": "Cyg",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 204,
+          "minTexelsPerLogicalPixel": 2.5051526074672106
+        },
+        {
+          "id": "Del",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 15,
+          "minTexelsPerLogicalPixel": 5.346963416779472
+        },
+        {
+          "id": "Dra",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Equ",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 16,
+          "minTexelsPerLogicalPixel": 5.338925287142902
+        },
+        {
+          "id": "Eri",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Her",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Lac",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 44,
+          "minTexelsPerLogicalPixel": 2.9016973422809422
+        },
+        {
+          "id": "Lyn",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Lyr",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 9,
+          "minTexelsPerLogicalPixel": 3.157488634846278
+        },
+        {
+          "id": "Mic",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Oph",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 108,
+          "minTexelsPerLogicalPixel": 1.0983735601610454
+        },
+        {
+          "id": "Peg",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 415,
+          "minTexelsPerLogicalPixel": 1.9018836533090129
+        },
+        {
+          "id": "Per",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 260,
+          "minTexelsPerLogicalPixel": 2.3218230285442876
+        },
+        {
+          "id": "PsA",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Psc",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 307,
+          "minTexelsPerLogicalPixel": 1.9352911733661073
+        },
+        {
+          "id": "Scl",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Sct",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 17,
+          "minTexelsPerLogicalPixel": 2.3936586006570337
+        },
+        {
+          "id": "Sge",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 6,
+          "minTexelsPerLogicalPixel": 7.914356587091423
+        },
+        {
+          "id": "Sgr",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 42,
+          "minTexelsPerLogicalPixel": 2.0437563615413836
+        },
+        {
+          "id": "Tau",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 178,
+          "minTexelsPerLogicalPixel": 1.7707763859288095
+        },
+        {
+          "id": "Tri",
+          "width": 128,
+          "height": 128,
+          "rgbaBytes": 65536,
+          "visibleProbes": 21,
+          "minTexelsPerLogicalPixel": 2.185085388508407
+        },
+        {
+          "id": "UMa",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "UMi",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 0,
+          "minTexelsPerLogicalPixel": null
+        },
+        {
+          "id": "Vul",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "visibleProbes": 50,
+          "minTexelsPerLogicalPixel": 2.4678190114937304
+        }
+      ],
+      "trials": [
+        {
+          "pixelRatio": 1,
+          "originalBytes": 24444928,
+          "candidateBytes": 16531456,
+          "reducedImages": 17,
+          "assets": [
+            {
+              "id": "And",
+              "texelsPerPhysicalPixel": 2.4912173966627003,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 1.704561878481,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aqr",
+              "texelsPerPhysicalPixel": 1.8294631111271582,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Ari",
+              "texelsPerPhysicalPixel": 2.0792741842260667,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Aur",
+              "texelsPerPhysicalPixel": 2.2830276035032795,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cam",
+              "texelsPerPhysicalPixel": 1.08593737410425,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cap",
+              "texelsPerPhysicalPixel": 3.5652463625131032,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cas",
+              "texelsPerPhysicalPixel": 3.9933438580570337,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cep",
+              "texelsPerPhysicalPixel": 2.5574187497561085,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cet",
+              "texelsPerPhysicalPixel": 1.6443981422720635,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cyg",
+              "texelsPerPhysicalPixel": 2.5051526074672106,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 5.346963416779472,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Dra",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Equ",
+              "texelsPerPhysicalPixel": 5.338925287142902,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Eri",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Her",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Lac",
+              "texelsPerPhysicalPixel": 2.9016973422809422,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Lyn",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Lyr",
+              "texelsPerPhysicalPixel": 3.157488634846278,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Mic",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Oph",
+              "texelsPerPhysicalPixel": 1.0983735601610454,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Peg",
+              "texelsPerPhysicalPixel": 1.9018836533090129,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Per",
+              "texelsPerPhysicalPixel": 2.3218230285442876,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "PsA",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Psc",
+              "texelsPerPhysicalPixel": 1.9352911733661073,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Scl",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Sct",
+              "texelsPerPhysicalPixel": 2.3936586006570337,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Sge",
+              "texelsPerPhysicalPixel": 7.914356587091423,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Sgr",
+              "texelsPerPhysicalPixel": 2.0437563615413836,
+              "half": true,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Tau",
+              "texelsPerPhysicalPixel": 1.7707763859288095,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Tri",
+              "texelsPerPhysicalPixel": 2.185085388508407,
+              "half": true,
+              "candidateRgbaBytes": 16384
+            },
+            {
+              "id": "UMa",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "UMi",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Vul",
+              "texelsPerPhysicalPixel": 2.4678190114937304,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            }
+          ]
+        },
+        {
+          "pixelRatio": 2,
+          "originalBytes": 24444928,
+          "candidateBytes": 23855104,
+          "reducedImages": 3,
+          "assets": [
+            {
+              "id": "And",
+              "texelsPerPhysicalPixel": 1.2456086983313501,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 0.8522809392405,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aqr",
+              "texelsPerPhysicalPixel": 0.9147315555635791,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Ari",
+              "texelsPerPhysicalPixel": 1.0396370921130333,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Aur",
+              "texelsPerPhysicalPixel": 1.1415138017516397,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cam",
+              "texelsPerPhysicalPixel": 0.542968687052125,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cap",
+              "texelsPerPhysicalPixel": 1.7826231812565516,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cas",
+              "texelsPerPhysicalPixel": 1.9966719290285169,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cep",
+              "texelsPerPhysicalPixel": 1.2787093748780543,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cet",
+              "texelsPerPhysicalPixel": 0.8221990711360317,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cyg",
+              "texelsPerPhysicalPixel": 1.2525763037336053,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 2.673481708389736,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Dra",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Equ",
+              "texelsPerPhysicalPixel": 2.669462643571451,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Eri",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Her",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Lac",
+              "texelsPerPhysicalPixel": 1.4508486711404711,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Lyn",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Lyr",
+              "texelsPerPhysicalPixel": 1.578744317423139,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Mic",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Oph",
+              "texelsPerPhysicalPixel": 0.5491867800805227,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Peg",
+              "texelsPerPhysicalPixel": 0.9509418266545064,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Per",
+              "texelsPerPhysicalPixel": 1.1609115142721438,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "PsA",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Psc",
+              "texelsPerPhysicalPixel": 0.9676455866830537,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Scl",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Sct",
+              "texelsPerPhysicalPixel": 1.1968293003285169,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Sge",
+              "texelsPerPhysicalPixel": 3.9571782935457116,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Sgr",
+              "texelsPerPhysicalPixel": 1.0218781807706918,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Tau",
+              "texelsPerPhysicalPixel": 0.8853881929644047,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Tri",
+              "texelsPerPhysicalPixel": 1.0925426942542036,
+              "half": false,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "UMa",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "UMi",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Vul",
+              "texelsPerPhysicalPixel": 1.2339095057468652,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            }
+          ]
+        },
+        {
+          "pixelRatio": 3,
+          "originalBytes": 24444928,
+          "candidateBytes": 24248320,
+          "reducedImages": 1,
+          "assets": [
+            {
+              "id": "And",
+              "texelsPerPhysicalPixel": 0.8304057988875667,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aql",
+              "texelsPerPhysicalPixel": 0.568187292827,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Aqr",
+              "texelsPerPhysicalPixel": 0.6098210370423861,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Ari",
+              "texelsPerPhysicalPixel": 0.6930913947420222,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Aur",
+              "texelsPerPhysicalPixel": 0.7610092011677598,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cam",
+              "texelsPerPhysicalPixel": 0.36197912470141663,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Cap",
+              "texelsPerPhysicalPixel": 1.1884154541710343,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cas",
+              "texelsPerPhysicalPixel": 1.3311146193523447,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cep",
+              "texelsPerPhysicalPixel": 0.8524729165853695,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cet",
+              "texelsPerPhysicalPixel": 0.5481327140906879,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Cyg",
+              "texelsPerPhysicalPixel": 0.8350508691557369,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Del",
+              "texelsPerPhysicalPixel": 1.7823211389264906,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Dra",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Equ",
+              "texelsPerPhysicalPixel": 1.7796417623809673,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Eri",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Her",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Lac",
+              "texelsPerPhysicalPixel": 0.9672324474269808,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Lyn",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Lyr",
+              "texelsPerPhysicalPixel": 1.052496211615426,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Mic",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Oph",
+              "texelsPerPhysicalPixel": 0.3661245200536818,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Peg",
+              "texelsPerPhysicalPixel": 0.633961217769671,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Per",
+              "texelsPerPhysicalPixel": 0.7739410095147625,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "PsA",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Psc",
+              "texelsPerPhysicalPixel": 0.6450970577887024,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Scl",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Sct",
+              "texelsPerPhysicalPixel": 0.7978862002190112,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Sge",
+              "texelsPerPhysicalPixel": 2.638118862363808,
+              "half": true,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "Sgr",
+              "texelsPerPhysicalPixel": 0.6812521205137946,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Tau",
+              "texelsPerPhysicalPixel": 0.5902587953096031,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "Tri",
+              "texelsPerPhysicalPixel": 0.7283617961694691,
+              "half": false,
+              "candidateRgbaBytes": 65536
+            },
+            {
+              "id": "UMa",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 1048576
+            },
+            {
+              "id": "UMi",
+              "texelsPerPhysicalPixel": 0,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            },
+            {
+              "id": "Vul",
+              "texelsPerPhysicalPixel": 0.8226063371645768,
+              "half": false,
+              "candidateRgbaBytes": 262144
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "No production source or image change; no downsampling or new publication",
+    "A 12-logical-pixel probe grid does not bound every visible fragment or certify a production LOD rule",
+    "DPR1/2/3 are distinct tested inputs, not an assertion about the current simulator or a phone",
+    "Opaque pixels/alpha, transient decodes, native bitmap/driver/GC peak and target quality are separate evidence"
+  ]
+}

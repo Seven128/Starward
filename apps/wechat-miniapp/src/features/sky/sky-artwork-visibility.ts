@@ -1,5 +1,6 @@
 import { unprojectSkyPoint, type SkyVector } from "./sky-view-projection";
 import { skyArtworkViewParameters, skyArtworkUvAtDirection, type SkyArtworkView, type SkyArtworkRegistration } from "./sky-artwork-registration";
+import { skyArtworkRasterBounds } from "./sky-artwork-raster-bounds";
 import { skyImageDisplayEmptyRanges, type SkyImageDisplaySupport } from "@starward/miniapp-contracts";
 
 const dot = (a: SkyVector, b: SkyVector) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
@@ -131,12 +132,17 @@ export function artworkIntersectsView(registration: SkyArtworkRegistration, view
   width: number, height: number): boolean {
   const viewport = skyArtworkViewBounds(view,width,height);
   if (!viewport) return false;
+  // The tangent-plane hull below intentionally over-encloses curved viewport
+  // edges. Reuse the renderer's complete projected cap to reject a certified
+  // empty rectangle before requests, decode retention or texture upload. Keep
+  // its outward pixel/float margin; an unbounded cap stays eligible. The source
+  // image, UVs and scientific coverage do not change.
+  const raster = skyArtworkRasterBounds(registration,view,width,height,Math.ceil(width),Math.ceil(height));
+  if (raster && (raster.width === 0 || raster.height === 0)) return false;
   const { center, radius } = registration.bounds;
   if (radius >= Math.PI/2) return true;
   // Never drop a partial image merely because its center/anchors left the view.
-  if (Math.asin(Math.max(-1, Math.min(1, center[2]))) + radius < 0) return false;
   if (viewport.radius + radius < Math.PI && dot(center,view.basis.forward) < Math.cos(viewport.radius + radius) - 1e-9) return false;
-  if (registration.corners.every(ray => ray[2] < -1e-9)) return false;
   const hull = skyArtworkViewRayHull(view, width, height);
   // This enclosure certifies only a forward-hemisphere local viewport. Wider
   // views keep the previous conservative cap, never a corner-only rejection.

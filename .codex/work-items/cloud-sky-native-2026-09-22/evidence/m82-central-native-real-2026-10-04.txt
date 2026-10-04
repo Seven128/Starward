@@ -1,0 +1,17 @@
+{"band": "g", "candidates": 252, "insideTarget": 212, "qualified": 172}
+{"band": "r", "candidates": 291, "insideTarget": 245, "qualified": 242}
+{"band": "i", "candidates": 404, "insideTarget": 336, "qualified": 329}
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-m82-central-native-2026-10-04.py", line 163, in <module>
+    try:main()
+        ^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-m82-central-native-2026-10-04.py", line 132, in main
+    fits.append(row);save(OUT/'fit-progress.json',{'completedTriplets':len(fits),'totalTriplets':len(triplets)})
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-m82-central-native-2026-10-04.py", line 34, in save
+    with p.open('x',encoding='utf-8') as f:json.dump(v,f,indent=2,allow_nan=False);f.write('\n')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\777\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileExistsError: [Errno 17] File exists: 'E:\\dev\\worktrees\\Starward\\remote-main-20260908\\output\\sdss-m82-central-native-1004-r1\\fit-progress.json'

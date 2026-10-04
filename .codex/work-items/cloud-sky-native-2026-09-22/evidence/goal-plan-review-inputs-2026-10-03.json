@@ -1,0 +1,218 @@
+{
+  "capturedAt": "2026-10-03T05:16:54.583Z",
+  "scope": "Source/planning review only; no runtime or capacity certification; recommendations not implemented; Goal tool unchanged.",
+  "branch": "codex/remote-main-20260908",
+  "head": "72e65cf309d700cb7d40c5b7afd53660fd39fa35",
+  "protectedFilesUnchanged": 6,
+  "previousSourceBindingsUnchanged": 13,
+  "sourceFiles": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "bytes": 5667,
+      "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "bytes": 2041,
+      "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "bytes": 1770,
+      "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "bytes": 14895,
+      "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "bytes": 64272,
+      "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8"
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "bytes": 42510,
+      "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "bytes": 211294,
+      "sha256": "4b3045fcacecda5742867ff67d85f429208fd27e603a94ec4b31b613717263ae"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-target-image-visibility.ts",
+      "bytes": 2608,
+      "sha256": "9eca3e6ec4e3e0a75fe14ff108e5a811ec8fbb4a6044c963cd1f156aed99adf9"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-target-optical-visibility.ts",
+      "bytes": 1764,
+      "sha256": "32a25da40a5c41b97a30024a4b48c66a46a516934a9f625294d98cd63fc918f7"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/deep-sky-image-request.ts",
+      "bytes": 5555,
+      "sha256": "6e033e6b85b8bf9d8cf21673d33b3e06cb130949324128444742a14d01d20b75"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-target-optical.ts",
+      "bytes": 7797,
+      "sha256": "fd3ac6616058e4febbd8950a543d4c675cd398e9f37c7f97451d3f7d3f9e2aa0"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-artwork.ts",
+      "bytes": 4747,
+      "sha256": "8662e7522f21acfc5e65b7b7f109e95107cc47a1701966861f7b8e55de190385"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-fixed-image.ts",
+      "bytes": 1205,
+      "sha256": "756cd039b70203a81becf1c252ceddb5b2249fb71e163c7ec157989799010be9"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-landscape.ts",
+      "bytes": 6450,
+      "sha256": "f19ca03f7ca3f43388c09b8754649c5cb5fc0eb802e7a98f46f18050ae00c327"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape-resources.ts",
+      "bytes": 4983,
+      "sha256": "26d35fa3c635fe6ef478224d9457970c22f31c7a7a8098e8393308526fd49ff5"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-galactic-image.ts",
+      "bytes": 1775,
+      "sha256": "5f9adedc486347e90e0b6fbe1e37cf55400242fb31a061eb3fc5599be807ff60"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-loader.ts",
+      "bytes": 8711,
+      "sha256": "8160d556e166465ff3bf1a43445019a59bd915b2a0385b35952375a855bba4b0"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-textures.ts",
+      "bytes": 8751,
+      "sha256": "a353bc12a9e84757b54e2a14d39087bb2736e814e4440f814089c8d3942b2db3"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.ts",
+      "bytes": 26990,
+      "sha256": "bce43f58c32efbdcd20a14e327d5cb4df7037ae6d008b0176ee5362368b480da"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-public-image-cache.ts",
+      "bytes": 19079,
+      "sha256": "b66cd31758fe559fddf4b6b81506e43759028d87f6e46217ea2b54667d1d659b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-public-image-runtime.ts",
+      "bytes": 7497,
+      "sha256": "1a17d3abf84af05b51397c88935b2d30400d5ab82cfdd1446793a30839502fa4"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-publication-resource.ts",
+      "bytes": 2130,
+      "sha256": "dd9980212244df4f24203015f0bef378128a9344305fd30d22e06a920a7a1d9a"
+    },
+    {
+      "path": "workers/miniapp-api/src/sao-publication.ts",
+      "bytes": 4035,
+      "sha256": "07d0b9d4218d73d5505c05a9834fa9f9d94d1534e7d28a0d62457541d7e4c7db"
+    },
+    {
+      "path": "workers/miniapp-api/src/deep-sky-imagery.ts",
+      "bytes": 24120,
+      "sha256": "5689608aad59b88d54ed80b02ed1b8e032753b91119f44e9feee71d3541a511c"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-public-asset-export.ts",
+      "bytes": 6981,
+      "sha256": "f640bdef0dfc1e05095d0fef36f24899a15a52cb3a5cb0304dd37058697531bb"
+    },
+    {
+      "path": "workers/miniapp-api/src/prepared-optical-imagery.ts",
+      "bytes": 4924,
+      "sha256": "def0f73345340ecf154a40935853997fb8f844e5ff0dcc53abd321d07d6f12ed"
+    },
+    {
+      "path": "infrastructure/deployment/Caddyfile",
+      "bytes": 883,
+      "sha256": "fbf57f862f5787b92e0b0d3011ce440fde45482882577f79299525711bf4d8a2"
+    },
+    {
+      "path": "infrastructure/deployment/sky-resource-logging.caddy",
+      "bytes": 1144,
+      "sha256": "d00c398a8bbf675e636e41b38f132c97f5510cb81b72ac07a709ba78c61614aa"
+    },
+    {
+      "path": "tools/deployment/sky-static-bundle.mjs",
+      "bytes": 10304,
+      "sha256": "f245b81e229b2c1519938932c9095175330260ea648bfef720f96c75f5065b56"
+    },
+    {
+      "path": "tools/deployment/sky-static-release.mjs",
+      "bytes": 17106,
+      "sha256": "5b2a53f1d76bcc8dd1c357d775ad25144ba18b0fd9d9ea465f03e0991008b534"
+    }
+  ],
+  "documents": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+      "bytes": 71975,
+      "sha256": "8524d902e72eb77f144786876aa86bba07d9cadadc8ab546138a949a172d4ce3"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+      "bytes": 23308,
+      "sha256": "b4c3bba027131c3fc1f244a8cb4c48d1afdedaa68ea1af74515c4ee74d8c02cd"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/GOAL-CURRENT.md",
+      "bytes": 9097,
+      "sha256": "432f5b988e3b009c3f89d7089a5547893ecce4d51f3e8587debc295cee8880ab"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUATION-PROMPT.md",
+      "bytes": 9097,
+      "sha256": "432f5b988e3b009c3f89d7089a5547893ecce4d51f3e8587debc295cee8880ab"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/STATE.md",
+      "bytes": 241835,
+      "sha256": "d3ffaa9e03cd474476a968e65782f9fd083af5d4e13cd4d48f27eada56d6fc4f"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/INDEX.md",
+      "bytes": 45314,
+      "sha256": "a3215ad290ea9ad8f65d3036fece959e63390780631917564b54a27a35067db8"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PROGRESS.md",
+      "bytes": 323029,
+      "sha256": "f5c43f135a7f3c6beb6b9ded391c88430c0ca05ee14e044d2e943a4822975f1c"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/USER-UPDATES.md",
+      "bytes": 48344,
+      "sha256": "703edb7185b107d2de56a991a40db2a49af8ce4117304a67f4613f2c307eb268"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/goal-plan-architecture-review-2026-10-03.md",
+      "bytes": 12029,
+      "sha256": "22ab254c146396d5cc671d7e9afd5ddff1fa3ce036223eb07edcef6c340735b9"
+    }
+  ],
+  "goalCharacters": 3870,
+  "promptMatchesGoal": true,
+  "standaloneNoPreviousConversationDependency": true,
+  "documentationValidation": {
+    "localLinksChecked": 760,
+    "missing": [],
+    "scope": "Local destination existence only; not anchors or claims",
+    "trackedDiffCheckExit": 0,
+    "productionTestsRun": false,
+    "reason": "Documentation-only change; no business implementation in this review"
+  }
+}

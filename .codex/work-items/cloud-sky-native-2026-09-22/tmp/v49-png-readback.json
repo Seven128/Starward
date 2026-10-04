@@ -1,0 +1,74 @@
+{
+  "scope": "Fresh owned epoch with real compiled image/controller/contract chain; MEMORY_TEST formal spot/weather, no native page or device acceptance",
+  "contextIdSha256": "4a2a1a86d5a0c5a9502b41ba28030ca99fa14049f2b7321aa233f3d541be741e",
+  "revision": 1,
+  "fingerprint": "c602396c97d373a7a63f8a8b765776be23ff9f79df9c159dc2c1186faa613ef7",
+  "selectedAtUtc": "2026-09-30T13:50:33.000Z",
+  "priorContextStatus": 404,
+  "publicPort": 60065,
+  "localPort": 55700,
+  "imageReads": [
+    {
+      "route": "/v2/celestial-objects/M%3A42/image?level=OVERVIEW&imageVersion=source-finite-v3",
+      "bytes": 41082,
+      "sha256": "e8379e54c69e88cf17d80000a2604b241d8d0a6eb82758985aacc35a22c1d13d",
+      "publicationHash": "8b970f207d1b99b3b92e74eb68f0aa6a7ca1f7b5ac51ad86e9d0c6e239540054",
+      "supportBytes": 1190,
+      "supportSha256": "5fed0e63f6ddb12cbd9d63bacb15f409544a2026a29bdfb9ec327dbf58529a3b"
+    },
+    {
+      "route": "/v2/celestial-objects/M%3A42/image?level=MEDIUM&imageVersion=source-finite-v3",
+      "bytes": 124865,
+      "sha256": "3c113f59367fb49746c96d08b3218a949d70375a733de8dcfafa36b77659e02d",
+      "publicationHash": "8b970f207d1b99b3b92e74eb68f0aa6a7ca1f7b5ac51ad86e9d0c6e239540054",
+      "supportBytes": 2042,
+      "supportSha256": "3af84dfff4b7a95a878485dcce4e0f39237ceb344d4b43b3e12d00136f31f2b7"
+    },
+    {
+      "route": "/v2/celestial-objects/M%3A42/image?level=DETAIL&imageVersion=source-finite-v3",
+      "bytes": 145243,
+      "sha256": "6976db0ae39a46c2ee8cd165c0a375a55c819d4248c715b064983184020cc0ba",
+      "publicationHash": "8b970f207d1b99b3b92e74eb68f0aa6a7ca1f7b5ac51ad86e9d0c6e239540054",
+      "supportBytes": 3529,
+      "supportSha256": "29b6b13f191284938d56950ba138e099f9ef4b1f693a4e4ad3dd074135b0f39d"
+    },
+    {
+      "route": "/v2/celestial-objects/M%3A42/image?level=OVERVIEW&imageVersion=source-finite-v3&publicationHash=87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+      "bytes": 41082,
+      "sha256": "e8379e54c69e88cf17d80000a2604b241d8d0a6eb82758985aacc35a22c1d13d",
+      "publicationHash": "87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+      "supportBytes": 1190,
+      "supportSha256": "5fed0e63f6ddb12cbd9d63bacb15f409544a2026a29bdfb9ec327dbf58529a3b"
+    },
+    {
+      "route": "/v2/celestial-objects/M%3A42/image?level=MEDIUM&imageVersion=source-finite-v3&publicationHash=87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+      "bytes": 124865,
+      "sha256": "3c113f59367fb49746c96d08b3218a949d70375a733de8dcfafa36b77659e02d",
+      "publicationHash": "87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+      "supportBytes": 2042,
+      "supportSha256": "3af84dfff4b7a95a878485dcce4e0f39237ceb344d4b43b3e12d00136f31f2b7"
+    },
+    {
+      "route": "/v2/celestial-objects/M%3A42/image?level=DETAIL&imageVersion=source-finite-v3&publicationHash=87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+      "bytes": 145243,
+      "sha256": "6976db0ae39a46c2ee8cd165c0a375a55c819d4248c715b064983184020cc0ba",
+      "publicationHash": "87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+      "supportBytes": 3529,
+      "supportSha256": "29b6b13f191284938d56950ba138e099f9ef4b1f693a4e4ad3dd074135b0f39d"
+    }
+  ],
+  "modules": [
+    {
+      "path": "workers/miniapp-api/dist/controller.js",
+      "sha256": "af32d9ce9906af66e5a7e9d3a76465e76f4fbf8e3bb25fd71f61afba7260b776"
+    },
+    {
+      "path": "workers/miniapp-api/dist/deep-sky-imagery.js",
+      "sha256": "739771824139de6167e6f971fa976cd1b0cb2b722851366667a94557f8191874"
+    },
+    {
+      "path": "packages/miniapp-contracts/dist/sky-image-display-support.js",
+      "sha256": "cd551cde2e1d383d845e07d5810b06e7c50055656608ad1873a2d67de34ecaab"
+    }
+  ]
+}

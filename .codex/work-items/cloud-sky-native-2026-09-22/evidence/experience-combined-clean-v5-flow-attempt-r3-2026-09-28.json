@@ -1,0 +1,71 @@
+{
+  "scope": "Partial SDK development attempt; completed events only",
+  "message": "preview tick missing",
+  "events": [
+    {
+      "label": "initial-vega-25-0000",
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，可见星座 天琴座，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "Vega定位标记，查看资料",
+      "locatedStyle": "left: 195.19999694824207px; top: 422px;",
+      "tracking": null,
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "skyClass": "theme-page theme-day sky-orientation-page",
+      "modal": false,
+      "choices": false,
+      "list": false,
+      "timePanel": false
+    },
+    {
+      "capture": "vega-0000-before",
+      "filename": "experience-combined-clean-v5-flow-r3-vega-0000-before-2026-09-28.png",
+      "sha256": "498628b6e131612060d3cd6a54518e65652bc4b02b620e7bea7b0f175bda6dc4",
+      "state": {
+        "description": "示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，可见星座 天琴座，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+        "located": "Vega定位标记，查看资料",
+        "locatedStyle": "left: 195.19999694824207px; top: 422px;",
+        "tracking": null,
+        "landscape": "关闭通用模拟地景，不影响几何地平线",
+        "skyClass": "theme-page theme-day sky-orientation-page",
+        "modal": false,
+        "choices": false,
+        "list": false,
+        "timePanel": false
+      }
+    },
+    {
+      "label": "vega-0000-sources",
+      "sourceReference": "HR:7001",
+      "catalogueSourceRendered": true
+    },
+    {
+      "capture": "vega-0000-after",
+      "filename": "experience-combined-clean-v5-flow-r3-vega-0000-after-2026-09-28.png",
+      "sha256": "498628b6e131612060d3cd6a54518e65652bc4b02b620e7bea7b0f175bda6dc4",
+      "state": {
+        "description": "示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，可见星座 天琴座，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+        "located": "Vega定位标记，查看资料",
+        "locatedStyle": "left: 195.19999694824207px; top: 422px;",
+        "tracking": null,
+        "landscape": "关闭通用模拟地景，不影响几何地平线",
+        "skyClass": "theme-page theme-day sky-orientation-page",
+        "modal": false,
+        "choices": false,
+        "list": false,
+        "timePanel": false
+      }
+    },
+    {
+      "label": "tracked-vega-0000",
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，可见星座 天琴座，3 个真实目标，已选择跟踪Vega，所选观测时刻 00:00",
+      "located": "Vega定位标记，查看资料",
+      "locatedStyle": "left: 195.19999694824207px; top: 422px;",
+      "tracking": "Vega · 跟踪中停止跟踪",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "skyClass": "theme-page theme-day sky-orientation-page",
+      "modal": false,
+      "choices": false,
+      "list": false,
+      "timePanel": false
+    }
+  ]
+}

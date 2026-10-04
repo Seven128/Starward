@@ -14,7 +14,7 @@ export interface SkyRenderSurface {
   /** Draws a solar-direction cue below independent stars/images. False preserves the base sky. */
   solarLight(view: SkyArtworkView, sun: SkySolarLight): boolean;
   /** Original simulated ground below the geometric horizon; never site obstruction data. */
-  landscape(view: SkyArtworkView, sun: SkySolarLight, observationMode: boolean, panorama?: SkyLandscapePanorama | null): boolean;
+  landscape(view: SkyArtworkView, sun: SkySolarLight, observationMode: boolean, panorama?: SkyLandscapePanorama | null, opacity?: number): boolean;
   /** Registered historical infrared panorama when available; schematic fallback. */
   galacticBand(view: SkyArtworkView, band: SkyGalacticBand, image?: object | null): boolean;
   /** Observer-sized self-luminous solar photosphere, independent of twilight shader. */

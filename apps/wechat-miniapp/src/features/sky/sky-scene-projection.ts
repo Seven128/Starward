@@ -24,7 +24,7 @@ export function projectHorizontalPoint(
   center?: SkyProjectionCenter,
 ): SkyTargetProjection | null {
   const basis = manualBasis ?? pose?.basis ?? null;
-  return basis && altitudeDeg >= 0
+  return basis
     ? projectSkyDirection(azimuthDeg, altitudeDeg, basis, width, height, verticalFovDeg, center)
     : null;
 }

@@ -13,7 +13,6 @@ export function saturnRingFragment(skyRay: string): string {
   uniform float u_opening,u_pixelRatio,u_sunAvailable;
   uniform vec3 u_majorEnu,u_planeMinorEnu,u_poleEnu,u_sunEnu,u_tint,u_shadowTint;
   void main(){
-    if(skyRay(v_pixel).z<0.0)discard;
     vec2 delta=v_pixel-u_discCenter;
     float determinant=u_ringMajor.x*u_ringMinor.y-u_ringMajor.y*u_ringMinor.x;
     vec2 q=vec2(delta.x*u_ringMinor.y-delta.y*u_ringMinor.x,

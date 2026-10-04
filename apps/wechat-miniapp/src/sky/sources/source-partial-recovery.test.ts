@@ -47,25 +47,41 @@ test("source route retains valid credit and offers recovery for a partial inform
 });
 
 test("the source route reads the image-bound publication and rejects an invalid binding before enabling a request", () => {
-  const hash = "a".repeat(64), params = { reference: "M%3A42", imagePublicationHash: hash }, requests: unknown[][] = [];
+  const hash = "a".repeat(64), opticalHash = "b".repeat(64),
+    params: { reference: string; imagePublicationHash: string; opticalPublicationHash?: string } =
+      { reference: "M%3A42", imagePublicationHash: hash, opticalPublicationHash: opticalHash },
+    requests: unknown[][] = [], downloads: unknown[][] = [];
   const render = vm.runInNewContext(code, {
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
     View: "View", ScrollView: "ScrollView", CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
     useRouter: () => ({ params }), useState: (value: unknown) => [value, () => {}], useDidHide() {}, useDidShow() {},
     useThemeClass: () => "mode-night", isCelestialObjectReference: () => true, isProductSource: () => true,
-    deepSkyManifestUrl: (id: string) => `/manifest/${id.split(":").at(-1)}`,
+    deepSkyManifestUrl: (...args: string[]) => { downloads.push(args); return `/manifest/${args[0]!.split(":").at(-1)}`; },
     celestialInformationPartialDetail,
     useCelestialInformation: (...args: unknown[]) => { requests.push(args); return { isPending: false, isError: false,
-      data: { dataState: "FRESH", data: { displayName: "M 42", sources: [{ id: `imagery:painted:${hash}`, limitations: [] }] } } }; },
+      data: { dataState: "FRESH", data: { displayName: "M 42", sources: [{ id: `imagery:painted:${hash}`, limitations: [] },
+        { id: `optical-imagery:science:${opticalHash}`, limitations: [] }] } } }; },
   }) as () => any;
   const tree = render();
-  assert.deepEqual(Array.from(requests[0]!), ["M:42", true, hash]);
-  const stack = [tree]; let credit: any;
+  assert.deepEqual(Array.from(requests[0]!), ["M:42", true, hash, opticalHash]);
+  const stack = [tree]; const credits: any[] = [];
   while (stack.length) { const item = stack.pop(); if (Array.isArray(item)) stack.push(...item);
-    else if (item?.type === "Provenance") { credit = item; break; } else stack.push(...(item?.children ?? [])); }
-  assert.equal(credit?.props.downloadUrl, `/manifest/${hash}`);
-  assert.ok(credit.props.source.limitations.some((value: string) => value.includes("非有限样本留空")));
+    else if (item?.type === "Provenance") credits.push(item); else stack.push(...(item?.children ?? [])); }
+  assert.ok(downloads.some(args => args[0] === `optical-imagery:science:${opticalHash}` && args[1] === opticalHash));
+  assert.ok(downloads.some(args => args[0] === `imagery:painted:${hash}` && args[1] === opticalHash), "W3 download identity remains its own hash");
+  const infraredCredit = credits.find(credit => credit.props.source.id.startsWith("imagery:"));
+  const opticalCredit = credits.find(credit => credit.props.source.id.startsWith("optical-imagery:"));
+  assert.equal(infraredCredit?.props.downloadUrl, `/manifest/${hash}`);
+  assert.ok(infraredCredit.props.source.limitations.some((value: string) => value.includes("非有限样本留空")));
+  assert.equal(opticalCredit?.props.downloadUrl, `/manifest/${opticalHash}`);
   params.imagePublicationHash = "../outside";
   render();
   assert.equal(requests.at(-1)?.[1], false);
+  params.imagePublicationHash = hash;
+  params.opticalPublicationHash = "../outside"; render();
+  assert.equal(requests.at(-1)?.[1], false);
+  params.opticalPublicationHash = opticalHash; params.reference = "HR%3A7001"; render();
+  assert.equal(requests.at(-1)?.[1], false);
+  params.reference = "M%3A42"; delete params.opticalPublicationHash; render();
+  assert.deepEqual(Array.from(requests.at(-1)!), ["M:42", true, hash, undefined]);
 });

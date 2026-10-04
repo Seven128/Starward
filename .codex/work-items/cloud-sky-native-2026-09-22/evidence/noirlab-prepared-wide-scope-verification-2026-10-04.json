@@ -1,0 +1,141 @@
+{
+  "state": "PASSED_BOUNDED_PHASE_SCOPE",
+  "branch": "codex/remote-main-20260908",
+  "head": "72e65cf309d700cb7d40c5b7afd53660fd39fa35",
+  "stagedFiles": [],
+  "currentPreviouslyBoundSourceCount": 491,
+  "unchangedCurrentBindings": 491,
+  "changedCurrentBindings": [],
+  "changedDirectlyArchivedOfflineOwners": [
+    {
+      "path": "data-pipelines/deep-sky/prepared_rgb_observation.py",
+      "immediateBeforeArchive": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/noirlab-empty-spatial-before-2026-10-04/prepared_rgb_observation.py",
+        "bytes": 14502,
+        "sha256": "871eb0c06273a93a45f31d4759a40a7285f4cbfd983bca897d88bd366d7dee0c"
+      },
+      "after": {
+        "path": "data-pipelines/deep-sky/prepared_rgb_observation.py",
+        "bytes": 14967,
+        "sha256": "7762cfe41132595b1d1a3011d06b87cb49f3e8c76f0e5e9914f5414e3ec82f9e"
+      }
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_prepared_rgb_observation.py",
+      "immediateBeforeArchive": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/noirlab-empty-spatial-before-2026-10-04/test_prepared_rgb_observation.py",
+        "bytes": 10051,
+        "sha256": "5afcd77cb1e0c705fbf91f492cf570b5d8b8eba77b558e2c19734aabcd99b8cc"
+      },
+      "after": {
+        "path": "data-pipelines/deep-sky/test_prepared_rgb_observation.py",
+        "bytes": 12115,
+        "sha256": "dfe4bad9348c451977871163d5d30be489adb005da4e3bf193a2248d7b837aa7"
+      }
+    }
+  ],
+  "scopeReaderR1Failure": "Old 491 inventory excluded both edited offline owners. Corrected separate direct-archive comparison; R1 retained.",
+  "protectedBeforeAfterExact": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "bytes": 5667,
+      "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "bytes": 2041,
+      "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "bytes": 1770,
+      "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "bytes": 14895,
+      "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "bytes": 64272,
+      "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8"
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "bytes": 42510,
+      "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd"
+    }
+  ],
+  "taskFiles": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/acquire-noirlab-prepared-wide-2026-10-04.py",
+      "bytes": 7747,
+      "sha256": "6d53c3b8e4a17293e00eeafcd82cff37c9a1cc4a6d00477c2d43b6cb673a66ab"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-noirlab-prepared-wide-2026-10-04.py",
+      "bytes": 10734,
+      "sha256": "167adf6d3902dc8af2a0d58425fe9ee98c87f8a9bbd0f9800f690622cfc9b3fc"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/package-noirlab-prepared-wide-2026-10-04.py",
+      "bytes": 7322,
+      "sha256": "494e8be905224c683cc93193585c258974628c3c4086ab0427426b5976202502"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-noirlab-wide-scene-2026-10-04.mts",
+      "bytes": 11647,
+      "sha256": "99b863e9e5cf184a2d1141d9c21eeb95b4c03c2a65f74c17473a72214cd42983"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/readback-noirlab-wide-quality-2026-10-04.py",
+      "bytes": 7825,
+      "sha256": "a6d404ab91b6992f2c2ec38ea4ba31fdc6d3ca94d37ba537cde5d7a9c58eca17"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/check-noirlab-wide-scope-2026-10-04.py",
+      "bytes": 4476,
+      "sha256": "1bbccf8a245e8467c876d1d60b8b4e1b7f6a51696c2d74781c2310d42c4f0758"
+    }
+  ],
+  "changedOwningDocuments": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+      "bytes": 168391,
+      "sha256": "95f606c532d76229f925d6f1ad98a8f541a7d1067e1b1af1744869d44430f560"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+      "bytes": 99126,
+      "sha256": "1498e8e86d30c0bd3b10a0b0c3fb60514939c244e26d46aa9e195a5ad957cbd2"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/OPTICAL-DATA-RESEARCH.md",
+      "bytes": 31623,
+      "sha256": "b6560ae94c8c723ba1783e075e2c7515b8deb37b8ed5c743b3615b36d0a93aa7"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-noirlab-prepared-wide-2026-10-04.md",
+      "bytes": 8744,
+      "sha256": "f3dcdd79bbc77b923ae6b490851343aa9c5ea65e385b685962f8b82aed30bd78"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+      "bytes": 6516,
+      "sha256": "9524525958ad88b89bb35d5208711509157c9fcb771991c561b7ba7b12c262ba"
+    },
+    {
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+      "bytes": 156386,
+      "sha256": "ddd241d287226d0c2a6d47293ff2e90f53315079cd1407ad5c7bd9df7b0d324b"
+    },
+    {
+      "path": "project_context/external-capabilities.md",
+      "bytes": 79674,
+      "sha256": "c997aa526b8f3b2b746a1250fd03cb5b1591935ae2677693714c45f95ece6840"
+    }
+  ],
+  "goalCurrentCharacters": 3503,
+  "limits": "Bounded 491-source pre-phase inventory plus six protected items and listed new task/docs. Not an exhaustive attestation of every untracked repository path, native runtime, independent review or completion."
+}

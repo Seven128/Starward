@@ -1,0 +1,35 @@
+{
+  "owner": {
+    "path": "data-pipelines/deep-sky/sdss_gri_tan.py",
+    "bytes": 29448,
+    "sha256": "cd5cff37ba5179bb5003b66c6f75d3d2fa113400fd1fdb04d581b7bebfeb7a2f"
+  },
+  "script": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-sdss-m51-mosaic-independent-2026-10-02.py",
+    "bytes": 16581,
+    "sha256": "c8d11f4b1f27ec0df7c990a5c8db6d41fb9859598c85d52c8d458e0dadfe8f5b"
+  },
+  "actualPartialFixture": {
+    "coherentPixels": 737,
+    "perBand": {
+      "g": {
+        "maskDataMismatchPixels": 287,
+        "centerDataIsNaN": true,
+        "centerAvailabilityMask": true
+      },
+      "r": {
+        "maskDataMismatchPixels": 287,
+        "centerDataIsNaN": true,
+        "centerAvailabilityMask": true
+      },
+      "i": {
+        "maskDataMismatchPixels": 287,
+        "centerDataIsNaN": true,
+        "centerAvailabilityMask": true
+      }
+    },
+    "independentKnownGIInFieldSidecars": true,
+    "requireCompleteRejects": true
+  },
+  "invariant": "ProjectedBand footprint & finite_neighbors must not admit NaN coadd data; independent known fields retain their own sidecars"
+}

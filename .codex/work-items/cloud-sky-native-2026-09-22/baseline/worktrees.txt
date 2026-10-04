@@ -1,0 +1,8 @@
+worktree E:/dev/Starward
+HEAD 6f6139ce282e424f6da4792ea8e892e4a48d1895
+branch refs/heads/main
+
+worktree E:/dev/worktrees/Starward/remote-main-20260908
+HEAD 6f6139ce282e424f6da4792ea8e892e4a48d1895
+branch refs/heads/codex/remote-main-20260908
+

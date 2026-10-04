@@ -1,0 +1,26 @@
+{
+  "visible": 768,
+  "mismatched": 0,
+  "samples": []
+}
+{"field":45,"order1":"SELECTED"}
+{"field":60,"order1":"SELECTED"}
+{"field":90,"order1":"ZOOM_IN"}
+{"field":120,"order1":"ZOOM_IN"}
+{"field":150,"order1":"ZOOM_IN"}
+{"field":180,"order1":"ZOOM_IN"}
+{"field":210,"order1":"ZOOM_IN"}
+{"field":240,"order1":"ZOOM_IN"}
+{"field":267.8,"order1":"ZOOM_IN"}
+{"field":45,"divisions":8,"visibleCells":104,"maxScreenPx":3.404446507813134}
+{"field":45,"divisions":16,"visibleCells":404,"maxScreenPx":3.1155768780148385}
+{"field":60,"divisions":8,"visibleCells":176,"maxScreenPx":5.761633778649645}
+{"field":60,"divisions":16,"visibleCells":732,"maxScreenPx":2.312851802001828}
+{"field":120,"divisions":8,"visibleCells":360,"maxScreenPx":6.468890920045851}
+{"field":120,"divisions":16,"visibleCells":1448,"maxScreenPx":3.266256701819316}
+{"field":180,"divisions":8,"visibleCells":368,"maxScreenPx":3.734815914046777}
+{"field":180,"divisions":16,"visibleCells":1504,"maxScreenPx":1.9576191028524936}
+{"field":240,"divisions":8,"visibleCells":368,"maxScreenPx":2.156296973348617}
+{"field":240,"divisions":16,"visibleCells":1504,"maxScreenPx":1.1302319160026284}
+{"field":267.8,"divisions":8,"visibleCells":368,"maxScreenPx":1.698528123749995}
+{"field":267.8,"divisions":16,"visibleCells":1504,"maxScreenPx":0.9145098261429436}

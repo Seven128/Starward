@@ -61,6 +61,10 @@ export async function prepareReleaseCandidate({
   if (basePath === candidatePath)
     fail("release_candidate_path_reused", "outputPath");
   const base = await readEnvironmentFile(basePath);
+  for (const key of Object.keys(base)) {
+    if (key.startsWith("STARWARD_SKY_") && key !== "STARWARD_SKY_STATIC_DIRECTORY")
+      fail("sky_static_manual_identity_forbidden", key);
+  }
   for (const key of CANDIDATE_KEYS) {
     if (key in base) fail("release_candidate_base_identity_forbidden", key);
   }

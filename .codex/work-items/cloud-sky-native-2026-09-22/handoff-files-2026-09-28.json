@@ -1,0 +1,3497 @@
+{
+  "createdAt": "2026-09-27T19:49:06.135757+00:00",
+  "root": "E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22",
+  "purpose": "Task-local migration inventory; private device material and ignored external raw imagery remain separately indexed in HANDOFF. This is not a repository backup.",
+  "files": [
+    {
+      "path": "__pycache__/moon-derive-candidate.cpython-310.pyc",
+      "bytes": 1732,
+      "sha256": "8e851eaec594461d99f73ff3786b6d7ba92d5d1f7379274b953e0ce1e2d6b216"
+    },
+    {
+      "path": "__pycache__/terrain-horizon-probe.cpython-310.pyc",
+      "bytes": 6747,
+      "sha256": "b152365c86b4c41266bb7efd8a33a9b30bedaa98bc444ecb27e3cb4ed8f40113"
+    },
+    {
+      "path": "analyze-wikidata-chinese-names.mjs",
+      "bytes": 2970,
+      "sha256": "ef0d149a354cf8ee232b5c4c4aba1e95bde6b98009d9928a753bddcb566f9a8a"
+    },
+    {
+      "path": "ANDROID-FEEDBACK.md",
+      "bytes": 4836,
+      "sha256": "0a0c3e8822640f569f3a0bcb886c0a30032abba624253a63440a6c1cd5619657"
+    },
+    {
+      "path": "ATMOSPHERE-LANDSCAPE-RESEARCH.md",
+      "bytes": 10463,
+      "sha256": "dae53bb069ac0d13eac280e8b5bd6bbeb1bf64a588351637629b3fe50ac9c77d"
+    },
+    {
+      "path": "baseline/code-inventory.txt",
+      "bytes": 31719,
+      "sha256": "dda6bf47d1f25f9d8b91eb87e2933e1967b55239e493962c83bc6ba38b4b3582"
+    },
+    {
+      "path": "baseline/initial-state.md",
+      "bytes": 6767,
+      "sha256": "4283575fe19813c0c35096ed2e8325b6a6c8b82106c1b30d33bfd4e5125977fc"
+    },
+    {
+      "path": "baseline/initial-status.txt",
+      "bytes": 271,
+      "sha256": "8521f4b5749f6c11a8d3a611c449565833eef1dfe47238d146aa69764ef3f58c"
+    },
+    {
+      "path": "baseline/pre-existing-context.diff",
+      "bytes": 20082,
+      "sha256": "1bf0d7753897f6d412143f57202bcda3132b74b34d1592b10e8bcbf222dea457"
+    },
+    {
+      "path": "baseline/sources/.agents/skills/starward-design-resource/SKILL.md",
+      "bytes": 6488,
+      "sha256": "b455372e394b63b3cb2f09570e565c8602b89a9266424c49cea05180013536ba"
+    },
+    {
+      "path": "baseline/sources/.codex/skills/starward-wechat-device-verification/SKILL.md",
+      "bytes": 30961,
+      "sha256": "bc7143d829551eec910be4e60b9320725d83bef7eef1e40405b4ac819c16c746"
+    },
+    {
+      "path": "baseline/sources/.codex/skills/uiux_design/SKILL.md",
+      "bytes": 18665,
+      "sha256": "ce5b347715048f9e1ad951fc192f9cb9d3290de099c8d701cb0dcee9192ad8ca"
+    },
+    {
+      "path": "baseline/sources/.codex/work-items/stellarium-cost-research-2026-09-22/cost-model.json",
+      "bytes": 9869,
+      "sha256": "1bf016790b56fbed988f37c02484d8686d242b592d9c81ebeca84f323365df4f"
+    },
+    {
+      "path": "baseline/sources/.codex/work-items/stellarium-cost-research-2026-09-22/cost-model.mjs",
+      "bytes": 7042,
+      "sha256": "88b0627c7949381e0ec792c14a9a25291a45386f32db83d3c871d30325f30cc8"
+    },
+    {
+      "path": "baseline/sources/.codex/work-items/stellarium-cost-research-2026-09-22/inquiry-draft.md",
+      "bytes": 2854,
+      "sha256": "5ae380afc08b1f71bb7353513198a4aa74280300315a610d5579216b3aa5781b"
+    },
+    {
+      "path": "baseline/sources/.codex/work-items/stellarium-cost-research-2026-09-22/monthly-scenarios.csv",
+      "bytes": 801,
+      "sha256": "6996928f5b0f5a3b2546dd69fbc0071d4d6191dfe15f4800bea5325ae489a38a"
+    },
+    {
+      "path": "baseline/sources/.codex/work-items/stellarium-cost-research-2026-09-22/research.md",
+      "bytes": 34451,
+      "sha256": "a82e07218932464c16f799a27eae735a6f322e555cbb902bbd65814daefea4b4"
+    },
+    {
+      "path": "baseline/sources/AGENTS.md",
+      "bytes": 20643,
+      "sha256": "aada2a1cddb693397cfb1ab947f3e48b8441b46df2c4e30b4c80178bbfb717ff"
+    },
+    {
+      "path": "baseline/sources/apps/wechat-miniapp/package.json",
+      "bytes": 1368,
+      "sha256": "74b162cd44f7d21b975f0222b8faa568f0c04bf8af7d6603a28a809be7c0730f"
+    },
+    {
+      "path": "baseline/sources/data-pipelines/deep-sky/README.md",
+      "bytes": 3233,
+      "sha256": "f7d8d920d1838cc8792742f1c754995f9c5133ce3f647a7fe4f323a4fcf0911a"
+    },
+    {
+      "path": "baseline/sources/data-pipelines/star-catalog/README.md",
+      "bytes": 12315,
+      "sha256": "06eb5764d2ec2882202b5570d71b0fa88d0f00a6e11b43cacdf3c05db4dc16a1"
+    },
+    {
+      "path": "baseline/sources/DESIGN.md",
+      "bytes": 137022,
+      "sha256": "223731e187f5d268de65d9cfc44299905da6195ec614ddd7d2378d37fae9006d"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/shared/liquid-glass/README.md",
+      "bytes": 6236,
+      "sha256": "96764a926178d7dac17063bd26c1e8cdc1820301d995c0df99afe3821a212d18"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/shared/observation-time/control.css",
+      "bytes": 4306,
+      "sha256": "52c988d3eeb682a687e5c544f5d3dda7630b068d0e9c39934b87abb21a4d170d"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/shared/observation-time/control.js",
+      "bytes": 12296,
+      "sha256": "d4a8278a112b9b70fb09f50e2d77ad8d3da27e36e2b028ef6ec0283da13ad707"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/shared/observation-time/README.md",
+      "bytes": 2242,
+      "sha256": "a42c5c7ce4d34c3ca480b0ae522e5d765f8cce45de6da5931d239203af472956"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/preview/app.mjs",
+      "bytes": 7210,
+      "sha256": "f3fe81876e8f0f6761f993164a86d5624073c1aba76ba5404198facbbbaf43ef"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/preview/camera.mjs",
+      "bytes": 6953,
+      "sha256": "994d5d531745d27c20e2fcaf8a610b59ebc8d1b0bded1f669f2e3378e22f99f4"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/preview/index.html",
+      "bytes": 1362,
+      "sha256": "7f87f925ed0d9b54ae370092823992a88c776dda22c7936771c19a5a3ddd4c83"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/preview/style.css",
+      "bytes": 7539,
+      "sha256": "550c35abbf9c3672fe099d833bf76c0577edfc7e6cba7e689130e44f5acf7b17"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/README.md",
+      "bytes": 4524,
+      "sha256": "eb4e6b977768437392c4ca67f06efe3cf478b6a8cd858f589db9e06c43b274ed"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/reference/interactive-a.png",
+      "bytes": 42874,
+      "sha256": "6805efab8b1d8e0d79916eb18081e76cfa2487e5c4c007ab6caac602c38f8b2f"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/reference/interactive-b.png",
+      "bytes": 43157,
+      "sha256": "1d55b3d516c93d7c8d3669370dbdb70ed14ab5f0056fe17335116f4bd1c3f8c5"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/adopted/cloud-stargazing/review.html",
+      "bytes": 3365,
+      "sha256": "aa24a15cadf7c97242c65a9ad8b1a701283219328e1861ea9c4e61c6c69b4084"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/ADOPTED.md",
+      "bytes": 1477,
+      "sha256": "f9e0aca570fb664a1b8d94c743aa1ffc1b094cba6f884139738e499135b0bdd6"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/CURRENT.md",
+      "bytes": 2832,
+      "sha256": "a90fdc0686e4dfd1d5c3249aacd1f953ab2528d54b74eeb4543b32888314e537"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/preview/app.mjs",
+      "bytes": 9550,
+      "sha256": "de219df6f1e9b962a6c6eb0e3a4893d922e3f000497a0ff75fca0731c897fa42"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/preview/index.html",
+      "bytes": 1838,
+      "sha256": "50d517c6fb039341acf5afc14e0b08c35ce06093d0445d3e465b38103436d0fe"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/preview/revision.css",
+      "bytes": 5659,
+      "sha256": "168bf57a5ab1cd8be56404c6f568c07871940c6640d3eeccc5f273cd0dfb7721"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/README.md",
+      "bytes": 4740,
+      "sha256": "4dbe2f881976b8edf6a7267144cf96b7a3ce1d658e1374383926cf809640a890"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/reference/sky-current-2026-09-09.png",
+      "bytes": 60235,
+      "sha256": "856994d2307b5e07384a8fc1c2ca747475c0631fe789de192ba053bbe8c6a8a2"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/reference/sky-long-320.png",
+      "bytes": 20044,
+      "sha256": "2380c1ba8d7251e3d8129d84bb5988955877402f1f7c389f033e07e94acbd13b"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/reference/sky-red-320.png",
+      "bytes": 15458,
+      "sha256": "02a41f1731d00170d44103bf9dc43dd82d89bc2335c9f3c8a6e2ca819ca5b9d3"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/sky/candidates/context-audit-2026-09-09/review.html",
+      "bytes": 3701,
+      "sha256": "2c75978769e35a6b74ae37949745b9d940795f7909962f1a200a7366b22863d9"
+    },
+    {
+      "path": "baseline/sources/docs/design-resources/wechat-miniapp/stitch-status.md",
+      "bytes": 3614,
+      "sha256": "6a567044bc069d10483b8b1dcb762b11c5d967bfd85ec0d7bd825d114de66b5f"
+    },
+    {
+      "path": "baseline/sources/docs/wechat-miniapp-v2-1-1-source.md",
+      "bytes": 2380155,
+      "sha256": "c140ffc13fe691acb6dc81513c799d690c74369c9350a143c923f3dbe759fce0"
+    },
+    {
+      "path": "baseline/sources/external/global-AGENTS.md",
+      "bytes": 6595,
+      "sha256": "af8bbbd7b30f62753584408c21f08cb8e73a115bed1609674c40e80a626728bd"
+    },
+    {
+      "path": "baseline/sources/external/wechatide-skill/references/environment-readiness.md",
+      "bytes": 10598,
+      "sha256": "29ece30e23b10435c5d86224cec6fc2a804da8a910424ed2cdf363c0e5366065"
+    },
+    {
+      "path": "baseline/sources/external/wechatide-skill/references/tool-index.md",
+      "bytes": 7500,
+      "sha256": "84674c12a4eec4eec80b3529eb24aafd9ef07a0899471e6aab5103c23a6938d6"
+    },
+    {
+      "path": "baseline/sources/external/wechatide-skill/SKILL.md",
+      "bytes": 10806,
+      "sha256": "c82900ba18a783b9ecbe8de5bd11e4ec22104357346da0b030a70ba118d22f74"
+    },
+    {
+      "path": "baseline/sources/package.json",
+      "bytes": 9508,
+      "sha256": "531c53c185901900a2bfad8e652d3c8e5eebe9bb06c3ca50af639f5252107cb5"
+    },
+    {
+      "path": "baseline/sources/packages/astronomy-core/data/bsc5p-bright-stars.v2.manifest.json",
+      "bytes": 3003,
+      "sha256": "b34b9010162ebe1b225eab838fcd1a3ab108bc5bcdd60b0a0e009cf74010e840"
+    },
+    {
+      "path": "baseline/sources/packages/astronomy-core/data/opengc-messier-deep-sky.v1.manifest.json",
+      "bytes": 1370,
+      "sha256": "83df375fd631c1f27b643cf7355738704fffd4e33c9846d039c0a8278fab8b0b"
+    },
+    {
+      "path": "baseline/sources/packages/astronomy-core/data/stellarium-modern-v24.4.v2.manifest.json",
+      "bytes": 459,
+      "sha256": "9aeb68aa132b342ae8c22b9c64a3e4559dc2ff17f88f8b683424d918c7753813"
+    },
+    {
+      "path": "baseline/sources/packages/astronomy-core/package.json",
+      "bytes": 2220,
+      "sha256": "719004c7247d5cb9cadeb4eff46df8df8b65fd557a98d5c9ceca72acd35b6af8"
+    },
+    {
+      "path": "baseline/sources/packages/miniapp-contracts/package.json",
+      "bytes": 1022,
+      "sha256": "def132493932883dce95ec626d9df8b8edf4e50ee21cff63f8ff24fbb1c91056"
+    },
+    {
+      "path": "baseline/sources/project_context/architecture/maintenance-boundaries.md",
+      "bytes": 17403,
+      "sha256": "e0f1716a229b8983f8a0b4cc71d3ee4d1fc0e22039025719c0f5fe8000eff509"
+    },
+    {
+      "path": "baseline/sources/project_context/architecture/runtime-and-domain.md",
+      "bytes": 126857,
+      "sha256": "748d19ee1ef260bc70c1fe42fb67a1477243b7569c97c56ea12ae9b103bd33dd"
+    },
+    {
+      "path": "baseline/sources/project_context/architecture.md",
+      "bytes": 11455,
+      "sha256": "bc497d5b8a6a09c3e22d82310b263dcf6567846fee60f5733e2e893c97089aed"
+    },
+    {
+      "path": "baseline/sources/project_context/areas/main/screen-contracts/wechat-miniapp/map-and-finder.md",
+      "bytes": 51627,
+      "sha256": "dc77032806e7a0feb945d0bb16dbc4403988db105cf1269436155760a7462e0f"
+    },
+    {
+      "path": "baseline/sources/project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md",
+      "bytes": 39479,
+      "sha256": "3d540e4b394b52a8f21fac28c0812113f197199c1fb795439c2625e21a11ece9"
+    },
+    {
+      "path": "baseline/sources/project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+      "bytes": 64972,
+      "sha256": "a80831ac9ab8a98c1d40daaae9272524e55e503e01a6a7c3bd3fea0477217253"
+    },
+    {
+      "path": "baseline/sources/project_context/areas/main/screen-contracts/wechat-miniapp.md",
+      "bytes": 16278,
+      "sha256": "573c279d9afcd2bf54d7be4c0c779a02ee644378e8bc931834755e869374bfe0"
+    },
+    {
+      "path": "baseline/sources/project_context/areas/main/verification/wechat-device/development-feedback.md",
+      "bytes": 26205,
+      "sha256": "059313e58ad22b370213d2ef3671cd96fe7879499d7986bcb52c8771126d6e05"
+    },
+    {
+      "path": "baseline/sources/project_context/areas/main/verification/wechat-device/journey-and-evidence.md",
+      "bytes": 12185,
+      "sha256": "655533feacf66730c246107c33d1dc01c34bbf0403a340908ff4fffee4f7e1c7"
+    },
+    {
+      "path": "baseline/sources/project_context/areas/main/verification/wechat-device/settled-candidate.md",
+      "bytes": 9054,
+      "sha256": "6bef22d83cdd1cdac22c3c1901de3de5781b5ea6da7d924d0144bfa270ef1b73"
+    },
+    {
+      "path": "baseline/sources/project_context/areas/main/verification/wechat-device.md",
+      "bytes": 15871,
+      "sha256": "cc428700402ad72a1ae0e86e663e7307936b049a0077edd73942a8db7badccac"
+    },
+    {
+      "path": "baseline/sources/project_context/areas/main/verification.md",
+      "bytes": 5563,
+      "sha256": "97183aea448ab25e4ab3039cf45dc924e1481aa4a696f28ed843bbd2b7bf7b0e"
+    },
+    {
+      "path": "baseline/sources/project_context/context-maintenance.md",
+      "bytes": 19199,
+      "sha256": "41fec4e645efbcb7d4df85e5589a9875d0edd94852504e2ff76cc4af4410330f"
+    },
+    {
+      "path": "baseline/sources/project_context/context.toml",
+      "bytes": 12167,
+      "sha256": "eff23ba66a908d989271e6a80e80ecf3e53772c5d8259facaf30b87c13664d08"
+    },
+    {
+      "path": "baseline/sources/project_context/development-workflow/authority-and-scope.md",
+      "bytes": 6928,
+      "sha256": "197603be79254dc979cd24da904b8a942e32306760f026b5bfc7af77a0c668e1"
+    },
+    {
+      "path": "baseline/sources/project_context/development-workflow/candidate-acceptance.md",
+      "bytes": 15186,
+      "sha256": "00a839bb6237f160bf6d5a1f5d7f6c66c05c4e73cc783e6db00f42a71032c7de"
+    },
+    {
+      "path": "baseline/sources/project_context/development-workflow/development-feedback.md",
+      "bytes": 23457,
+      "sha256": "5706cba3cc34da34d56d85cac43e90918e1a5df7703b13d809b93e3bc815984a"
+    },
+    {
+      "path": "baseline/sources/project_context/development-workflow/paths-and-lifecycle.md",
+      "bytes": 14356,
+      "sha256": "c8bac0dab034afb9b905c6b45cb25c310654bbbb381a33c86ddf32727866710c"
+    },
+    {
+      "path": "baseline/sources/project_context/development-workflow.md",
+      "bytes": 1609,
+      "sha256": "7e97c1a7db0f4771ff4c069b52abd229501340463c12bebe851ac04e13770d72"
+    },
+    {
+      "path": "baseline/sources/project_context/external-capabilities.md",
+      "bytes": 33935,
+      "sha256": "a1eed4e76ccb0876e5f1127022105c0f4cbabba40d3aefdbedad45587920cf76"
+    },
+    {
+      "path": "baseline/sources/project_context/global.md",
+      "bytes": 5217,
+      "sha256": "a1c366425ba06ab550f6a16b541a0b0c5f56a9ca8e35d25743b4dc1d32fe7f76"
+    },
+    {
+      "path": "baseline/sources/project_context/product-profile.md",
+      "bytes": 20871,
+      "sha256": "ac87c21703a4dd29874247c66b8c2117c2b526ed9c651ae274b43fc899c3b3f6"
+    },
+    {
+      "path": "baseline/sources/workers/miniapp-api/assets/deep-sky/manifest.json",
+      "bytes": 153185,
+      "sha256": "be36a8b78f449ed788a2f0e0c5a9e46d3c9b0090f6d52ac40a756637ec6775c8"
+    },
+    {
+      "path": "baseline/sources/workers/miniapp-api/assets/sao/catalog.manifest.json",
+      "bytes": 120477,
+      "sha256": "da2f5279f348902c76f0ecebb6282ebc5068f3a6cdadc027eae74e74247043d5"
+    },
+    {
+      "path": "baseline/sources/workers/miniapp-api/package.json",
+      "bytes": 1939,
+      "sha256": "1da55737545490c2a24187a52f975cf83acc51ffec1aeb30f8da7087f04eb307"
+    },
+    {
+      "path": "baseline/worktrees.txt",
+      "bytes": 251,
+      "sha256": "1ab0a520eb58450aeb313c8b06ba75b04acd770f8a1db15907ccd0dc4e445878"
+    },
+    {
+      "path": "c07-postgres-sky-probe.mts",
+      "bytes": 3974,
+      "sha256": "634b90a8d6a3ee478e0a3d323e65f9cb250018117e16de00c9bac9bc5ecc4f9a"
+    },
+    {
+      "path": "d-current-pg-sky-probe.mts",
+      "bytes": 3934,
+      "sha256": "ae1a2eba384e680310e465a021c7358d05812e2dde314f706779ee7039255001"
+    },
+    {
+      "path": "d-release-http-probe.mjs",
+      "bytes": 5525,
+      "sha256": "64b73634998be5d47c3c1194c2f52c345fed1f671cf36de5ca0ca8acf0c8b15d"
+    },
+    {
+      "path": "d-sdss-egress-probe.caddy",
+      "bytes": 298,
+      "sha256": "79306a1eabf817a200d8f881d7f09a718a55f79fa3b29b48464e997086f4bc5d"
+    },
+    {
+      "path": "d-sdss-egress-probe.mjs",
+      "bytes": 5465,
+      "sha256": "0555d8c8232302de32b13bce0b6adec3b981acfe8936879d4a8aa78da3dd48a6"
+    },
+    {
+      "path": "d-sky-egress-probe.caddy",
+      "bytes": 334,
+      "sha256": "dc28bc655e488c08072164d804c4993323274501114dd9c04cdd37ed8e68d2c6"
+    },
+    {
+      "path": "d-sky-egress-probe.mjs",
+      "bytes": 2842,
+      "sha256": "47040af88a10ac83143fbda62263f77eacbff7a7358ecc587b38c1b87bf62a11"
+    },
+    {
+      "path": "d-sky-load-probe.mjs",
+      "bytes": 5122,
+      "sha256": "c9ddc902a917dc7b60928fecc2a5ba1bae45e4fff8950d15e4e3f1be42a9d7fd"
+    },
+    {
+      "path": "d-sky-load-selection.mts",
+      "bytes": 2051,
+      "sha256": "3992f0af5ef0841144e959008bb0f8c630bcfd1dbdbb285c00a0068d3138c333"
+    },
+    {
+      "path": "dual-catalog-http-burst.mjs",
+      "bytes": 1640,
+      "sha256": "9010fb38e8eb9813ebc629ce10ba17e97242cf1e44c5a32265b38601c97f396d"
+    },
+    {
+      "path": "evidence/a1-boundary-final-2026-09-24.log",
+      "bytes": 2978,
+      "sha256": "ee507378b96f09eeb39c135c86b46ae59369b1b891f48aad82e57ef5e58a54c6"
+    },
+    {
+      "path": "evidence/a1-planet-boundary-after-2026-09-24.log",
+      "bytes": 2872,
+      "sha256": "8c18873f9337ca4607f2a7bfc7a011dc886f8efe56e0a5ef1823cdcec2654b72"
+    },
+    {
+      "path": "evidence/a1-planet-boundary-before-2026-09-24.log",
+      "bytes": 3949,
+      "sha256": "0081f92c3cfd837e5abc6c62e6f16dc05163c15a838f753ffe19c89b5c92ac16"
+    },
+    {
+      "path": "evidence/a1-report-boundary-2026-09-24.md",
+      "bytes": 2412,
+      "sha256": "8a158fb4d85bef3a35aa9340758f525ce61e91087119c8d271c4223d241ae91b"
+    },
+    {
+      "path": "evidence/a1-target-boundary-before-2026-09-24.log",
+      "bytes": 1240,
+      "sha256": "8ecae923dc1ff8b5d20d3f6c8a0026041c657594eef48a15894289dd8ffea758"
+    },
+    {
+      "path": "evidence/a1-typecheck-2026-09-24.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/a1-typecheck-final-2026-09-24.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/a2-image-boundary-final-2026-09-24.log",
+      "bytes": 2586,
+      "sha256": "97725711747eec37488101f676621b3c1a184b674545d8d3d1ad578c41c3401c"
+    },
+    {
+      "path": "evidence/a2-native-image-chain-2026-09-24.log",
+      "bytes": 236,
+      "sha256": "6ef399d4c7ae1de9b2c59c16e97aea7bf99674db936602a907f7fecda43b2ce7"
+    },
+    {
+      "path": "evidence/a2-native-image-lifecycle-2026-09-24.md",
+      "bytes": 3180,
+      "sha256": "679cc2524cbec38ca17ca8331304654117cd87659d8ba5018dedd9dd1420f645"
+    },
+    {
+      "path": "evidence/a2-native-image-owner-2026-09-24.log",
+      "bytes": 253,
+      "sha256": "38f63b4c116328aa4fef2d364fc19d90c67dd076b150ef7b2e18a97dcb9de65f"
+    },
+    {
+      "path": "evidence/a2-native-image-typecheck-2026-09-24.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/a2-native-image-typecheck-final-2026-09-24.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/a2-native-production-assets-2026-09-24.log",
+      "bytes": 484,
+      "sha256": "4c5a422de1d6519bfb3cc36a8aa8fc14763c56a3344560b4cad3c6d8a4fa94ff"
+    },
+    {
+      "path": "evidence/a3-api-star-chain-2026-09-24.log",
+      "bytes": 508,
+      "sha256": "475e333814daf818c5f8f087f86df3badad80eea8723d6dfdb1cfa5c76c6bac2"
+    },
+    {
+      "path": "evidence/a3-isolated-weapp-build-2026-09-24.log",
+      "bytes": 65204,
+      "sha256": "9cdcbaea9e9333cdfb17b9468638af94a35b563239a5830c89c0b972e46f2a64"
+    },
+    {
+      "path": "evidence/a3-mini-star-boundary-2026-09-24.log",
+      "bytes": 3169,
+      "sha256": "5b8e0818a5462f7685c48b91928f5487ce67c1bcde6b7d235bcd158f5579dabd"
+    },
+    {
+      "path": "evidence/a3-stellar-data-chain-2026-09-24.md",
+      "bytes": 2779,
+      "sha256": "fa8f177414f68cb221a52ad67fb0dc29ebf1d51a74f718786703fdfedd5995e0"
+    },
+    {
+      "path": "evidence/a3-versioned-star-composition-2026-09-24.log",
+      "bytes": 2738,
+      "sha256": "e59bbb053506ff455cc2971c6678a4399ffc405c846e0705aa4d6f26cd2dfbd0"
+    },
+    {
+      "path": "evidence/acrux-dual-search-burst-2026-09-24.json",
+      "bytes": 1719,
+      "sha256": "3dd9530fe9434ecc39d58e085ad86158e98357aa07c682623fd288ad4ba638be"
+    },
+    {
+      "path": "evidence/acrux-v3-candidate-2026-09-24.md",
+      "bytes": 12521,
+      "sha256": "00b7fad7d67d4ebc4d229d50a3818f95b74c8854ffcfe397e1b53ff246b5a626"
+    },
+    {
+      "path": "evidence/adb-discovery-summary.log",
+      "bytes": 122,
+      "sha256": "6d7d404601e006380f7517b20bc1683704be518906a58ef8db0386955795c130"
+    },
+    {
+      "path": "evidence/altaz-grid-2026-09-23.json",
+      "bytes": 3011,
+      "sha256": "168640e3bddd1e3864e9a80a5e03855d6fd0f07571ef0d4cc324c4a27a6a8fa8"
+    },
+    {
+      "path": "evidence/altaz-grid-dome-2026-09-23.png",
+      "bytes": 132884,
+      "sha256": "32aa695ef489e34a121cb6739f16d1e6134424d3ce40bd6fbd13812cf799527b"
+    },
+    {
+      "path": "evidence/altaz-grid-local-2026-09-23.png",
+      "bytes": 61284,
+      "sha256": "96144d6b8f4084ea29baccbc7bda53679dd85475ee4b3f99a80d504f730fdacc"
+    },
+    {
+      "path": "evidence/altaz-grid-red-dome-2026-09-23.png",
+      "bytes": 93605,
+      "sha256": "10b8571fcef5b324d693ae77ffbff7ed0a5cbcefc67f68d88d7af27f4069e253"
+    },
+    {
+      "path": "evidence/android-canvas-diagnostic-build.log",
+      "bytes": 60685,
+      "sha256": "3eea3bad13ecc3ba3ecaea98bc0e9912ff3b1b49b0d45c1a2d2b82719250d929"
+    },
+    {
+      "path": "evidence/android-feedback-build.log",
+      "bytes": 62198,
+      "sha256": "28b2dbd5dc5a448a5afe2602b2145e1ee9e5492c050c2d9a430f7cf42f0ea6a1"
+    },
+    {
+      "path": "evidence/android-feedback-generation1.json",
+      "bytes": 831,
+      "sha256": "7c6555bc9c8a24569b94b735ca3ad001f933f7728cffcc86075c351d5228d5e2"
+    },
+    {
+      "path": "evidence/android-feedback-generation2.json",
+      "bytes": 1196,
+      "sha256": "2094057013f4ab55b07896fe4c24eed35b4b88ebe3778edc4696c39c6e11212a"
+    },
+    {
+      "path": "evidence/android-feedback.json",
+      "bytes": 824,
+      "sha256": "59a3f8a0298985e26746ce934c5cbdcdff03ef77f54e1704f8eb28b34a2f9984"
+    },
+    {
+      "path": "evidence/android-package-after-invalid-absolute.json",
+      "bytes": 207,
+      "sha256": "b582293488f2a7575feff85560ff1a567800114079f59a499b511fe2bf8665b1"
+    },
+    {
+      "path": "evidence/android-package-after.json",
+      "bytes": 488,
+      "sha256": "2b971f37b67b8c8a7714406f21adc8e67f00953a49d6f7b80710d44d2f57d72e"
+    },
+    {
+      "path": "evidence/android-package-before.json",
+      "bytes": 2789,
+      "sha256": "d721b06fb07cf92156dede75f1d8213f70c4dfa6ca019992de659c90f282445e"
+    },
+    {
+      "path": "evidence/android-package-owner-context-validate.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/android-package-repair-build.log",
+      "bytes": 60643,
+      "sha256": "2feb9a0b68b69e417e892c9a4f77e7462a077e2b489e85df9114ec13500125c8"
+    },
+    {
+      "path": "evidence/android-tabbar-regression.log",
+      "bytes": 729,
+      "sha256": "c59c57e8c3fc3e438d92fa24fda4135ebe302f9e9864793a2b600f1b7292b542"
+    },
+    {
+      "path": "evidence/artwork-identity-2026-09-23.md",
+      "bytes": 2062,
+      "sha256": "d74319bdef3e0397f1e8b3dd2ffdcad52d38e779ec51f599b3488277ed1e2de7"
+    },
+    {
+      "path": "evidence/artwork-identity-isolated-build-2026-09-23.log",
+      "bytes": 78376,
+      "sha256": "dba70758c41733cf1b082df2b170464547d7b5d896efa629f8f9143cfa678c31"
+    },
+    {
+      "path": "evidence/artwork-identity-mini-tests-2026-09-23.log",
+      "bytes": 78078,
+      "sha256": "61e551454a051e74ce2ee00153870af74dee4b4c05e70935ef9952718867adf9"
+    },
+    {
+      "path": "evidence/atmosphere-1830-2026-09-23.png",
+      "bytes": 33618,
+      "sha256": "11089f90cd7755f00588e52ff1b12619c228c043a3cc12fe8a6670d5eae61599"
+    },
+    {
+      "path": "evidence/atmosphere-1930-2026-09-23.png",
+      "bytes": 35561,
+      "sha256": "4d1f071f35fd5e07d6b09d4ca3fd161f784aa9675e4051641fae446ff663c4c6"
+    },
+    {
+      "path": "evidence/atmosphere-dark-near-sun-2026-09-23.json",
+      "bytes": 2279,
+      "sha256": "b88d1fcc59857c615d97151dd604d0e57f7140e88087f0d0c1a0c6ad0ce0f636"
+    },
+    {
+      "path": "evidence/atmosphere-dark-sun-aligned-1800-2026-09-23.png",
+      "bytes": 39707,
+      "sha256": "36585260c9bc1f823b36d32160c8a926fd3c84543d40d4c260ba1bebd5348dc1"
+    },
+    {
+      "path": "evidence/atmosphere-final2-1830-2026-09-23.png",
+      "bytes": 49705,
+      "sha256": "4d4a56caa773ad5aa001a6d9916719e3e684dc01bd3ca309a087224b057ebbf5"
+    },
+    {
+      "path": "evidence/atmosphere-final2-1930-2026-09-23.png",
+      "bytes": 49777,
+      "sha256": "9bc0a4112969cee477de599c898592e2bb9e801e9003534e3986dfc6573f5d62"
+    },
+    {
+      "path": "evidence/atmosphere-final2-1930-selected-2026-09-23.png",
+      "bytes": 22539,
+      "sha256": "07cccbe5315c3859b9e206b3af39a771d1504bb603e9ec818e230a383de615d7"
+    },
+    {
+      "path": "evidence/atmosphere-isolated-build-2026-09-23.log",
+      "bytes": 63976,
+      "sha256": "e9f5c84199df0e63df36547874059a8a0d4c4da6e3d60babee2bdb2fe5f59893"
+    },
+    {
+      "path": "evidence/atmosphere-near-sun-1830-2026-09-23.png",
+      "bytes": 95523,
+      "sha256": "673c87b1d4b6795cd196da896f26ed49a54fb6ac545faa8d50c95752043efdec"
+    },
+    {
+      "path": "evidence/atmosphere-near-sun-after-2026-09-23.png",
+      "bytes": 105485,
+      "sha256": "02964372d465c0cf96960137b763ad411035a5b78c29e8b5d88e62bfeeed1c8c"
+    },
+    {
+      "path": "evidence/atmosphere-near-sun-final-1800-2026-09-23.png",
+      "bytes": 105019,
+      "sha256": "93fcf34cb9aacb496bd8b86540780617dd775e6bafbb1482ab9e8c4d9a23d6c7"
+    },
+    {
+      "path": "evidence/atmosphere-near-sun-final-1800-selected-2026-09-23.png",
+      "bytes": 107247,
+      "sha256": "f2edf09b0bc5f2669e544c6a396e857389b35e4ab8835baae5c9aff284986584"
+    },
+    {
+      "path": "evidence/atmosphere-near-sun-final2-1800-2026-09-23.png",
+      "bytes": 66848,
+      "sha256": "4007da4cfe239dbd134168a47731d4b17f89b61dd1afed04a990bbec6c457612"
+    },
+    {
+      "path": "evidence/atmosphere-night-2026-09-23.png",
+      "bytes": 61392,
+      "sha256": "edd0f0754b9da90d0a3402d6ef7522a55c5b69e9585a1d03ea70fc3ad6c1411f"
+    },
+    {
+      "path": "evidence/atmosphere-noon-2026-09-23.png",
+      "bytes": 32935,
+      "sha256": "89077c230eb912920944ec9e4bf4b9195e03a9e158adf41df77c56a096002e47"
+    },
+    {
+      "path": "evidence/atmosphere-sun-aligned-1800-2026-09-23.png",
+      "bytes": 86733,
+      "sha256": "e0efe8422551a5368bae867db6b27c23a7dd8f74b84a385e298f2634ad85ede8"
+    },
+    {
+      "path": "evidence/atmosphere-sun-aligned-1830-2026-09-23.png",
+      "bytes": 72216,
+      "sha256": "d30e5269e43eadcf8187b09f1cf56050a6d992bb25b3676f8d94948ee9209ba7"
+    },
+    {
+      "path": "evidence/atmosphere-sun-aligned-1930-2026-09-23.png",
+      "bytes": 27599,
+      "sha256": "2242e5e10ef54c0922d1c4b3eec3d55a76616d3c4d63ff8ea6564b586b475ae3"
+    },
+    {
+      "path": "evidence/atmosphere-sunset-2026-09-23.png",
+      "bytes": 47500,
+      "sha256": "fa2e709c6bd5a0f09cff6a5ff09698e54cdc44cb1ea3c238b1e0631c6f738be1"
+    },
+    {
+      "path": "evidence/atmosphere-trial-2026-09-23.json",
+      "bytes": 9612,
+      "sha256": "5bd4495913626af7c48dcb7b0c8859c425cde3c95085f6543f87e97b7f313ee4"
+    },
+    {
+      "path": "evidence/atmosphere-twilight-2026-09-23.png",
+      "bytes": 18009,
+      "sha256": "15f627f472f10916f2305cdda77e2a3accf8a781f576a8711e59d57bebfbbd28"
+    },
+    {
+      "path": "evidence/atmosphere-west-after-2026-09-23.png",
+      "bytes": 94680,
+      "sha256": "cfff027a30e28a1684be6f84c8e0415ae6405becf0a5931f03df49052a8d1886"
+    },
+    {
+      "path": "evidence/atmosphere-west-before-2026-09-23.png",
+      "bytes": 96391,
+      "sha256": "02fe3f7835f478d075089d3155b137a29b9047a2b4891aaa5029b4137d33941a"
+    },
+    {
+      "path": "evidence/atmosphere-west-drag1-2026-09-23.png",
+      "bytes": 60653,
+      "sha256": "52ce8eae1912896a05dd341fbf1674bf5da046d5bdefd4036703e0db3f68976f"
+    },
+    {
+      "path": "evidence/atmosphere-west-near-sun-1800-2026-09-23.png",
+      "bytes": 12593,
+      "sha256": "5aa77728b733739bdf8722d7d33c1358d55a94e46b834e5345d3f256e984779c"
+    },
+    {
+      "path": "evidence/b1-isolated-weapp-build-2026-09-24.log",
+      "bytes": 57957,
+      "sha256": "9ff25e422e76ddb8dc8485c7c5a1a330d0fc96b4b3b46df23056a0ca2b8d6e93"
+    },
+    {
+      "path": "evidence/b1-star-label-after-2026-09-24.log",
+      "bytes": 2730,
+      "sha256": "84ac76c153cf256aaa017b0c3721cf4cf7f0ddddd273b52fd7fe97ad0551fa4a"
+    },
+    {
+      "path": "evidence/b1-star-label-before-2026-09-24.log",
+      "bytes": 1171,
+      "sha256": "204564937b4610a3fb5a7e5c27c95c95e94f19487e92319caf29de53ed6785de"
+    },
+    {
+      "path": "evidence/b1-star-label-canvas-before-2026-09-24.log",
+      "bytes": 1094,
+      "sha256": "d1828b62c7dd996fec94cb2f5f31fa9d2620775d2d295e957cf95e7b7f15806c"
+    },
+    {
+      "path": "evidence/b1-star-label-context-2026-09-24.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/b1-star-label-presentation-2026-09-24.md",
+      "bytes": 4053,
+      "sha256": "bbc8c3824ef4d1b7daf9dc159b04e7fe3bbaa8b6643ce1ae574dee5b0b2cc309"
+    },
+    {
+      "path": "evidence/b1-star-label-typecheck-2026-09-24.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/b2-b1-object-batch-2026-09-28.md",
+      "bytes": 4829,
+      "sha256": "ba5d1b93307589934bf8f0f4d4b1883a4e45933e15a455477091e81cff5276e1"
+    },
+    {
+      "path": "evidence/b2-batch-windows-2026-09-28.json",
+      "bytes": 2832,
+      "sha256": "c9c2f6ace372dd5173e3177c36c9b59ba642755b7544322b456199b55289e502"
+    },
+    {
+      "path": "evidence/b2-continuous-ring-2026-09-28.md",
+      "bytes": 3969,
+      "sha256": "49468db2bdef026e586c3827011995c4a42f239fe4648a1fa95202c36d64f8a3"
+    },
+    {
+      "path": "evidence/b2-continuous-ring-after-2026-09-28.log",
+      "bytes": 2043,
+      "sha256": "3ff64a49bfa566afc17be0876a9bd6e9d27fcbf6f8dc551f5787885c66c8c424"
+    },
+    {
+      "path": "evidence/b2-continuous-ring-before-2026-09-28.log",
+      "bytes": 3069,
+      "sha256": "eb4226f073b2e2177c44e802427e13d3ec9b0f9e49722be8493c52ed8d65b552"
+    },
+    {
+      "path": "evidence/b2-continuous-ring-build-2026-09-28.log",
+      "bytes": 68107,
+      "sha256": "c36b8911bddd2fd2f37aeb2dbbd53da8deca8b0aeb034b99b6028d9e9dcaedf8"
+    },
+    {
+      "path": "evidence/b2-continuous-ring-context-2026-09-28.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/b2-continuous-ring-mini-tests-2026-09-28.log",
+      "bytes": 86165,
+      "sha256": "0df5d3808bcf23f0d4f033de44efe1192ee36fb0d64054ca5f60f5126b64651c"
+    },
+    {
+      "path": "evidence/b2-continuous-ring-type-2026-09-28.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/b2-disc-chain-2026-09-24.md",
+      "bytes": 4869,
+      "sha256": "739f251e4072991ab19610a0940f711b5c668a7fe9354a9e1b7efdb6f7088ab4"
+    },
+    {
+      "path": "evidence/b2-ice-build-2026-09-26.log",
+      "bytes": 69376,
+      "sha256": "b3d21456e23fd5ec4b16e27706f0639852db70884fa6dcc92859434ff2ee6674"
+    },
+    {
+      "path": "evidence/b2-ice-giant-integration-2026-09-26.md",
+      "bytes": 5193,
+      "sha256": "128c1f843876aa2bb0dfe535f5c8efbf2cde99b803454988a8534820203e1f58"
+    },
+    {
+      "path": "evidence/b2-ice-giant-offline-publication-2026-09-24.md",
+      "bytes": 6505,
+      "sha256": "9bfa74423e804dc3f9ba8793c90226e5952d1bf4f40637f36c4366e607d82dbe"
+    },
+    {
+      "path": "evidence/b2-ice-image-build-2026-09-26.log",
+      "bytes": 8845,
+      "sha256": "afd31a5eac46eeaf2a80ea152e26c2cd1d8f5918c5d92f8c5d2052b5abc36fb7"
+    },
+    {
+      "path": "evidence/b2-ice-mini-tests-2026-09-26.log",
+      "bytes": 86035,
+      "sha256": "c8f2d4be51898352a33954ad4f2f9b43a2e7222ec27997d30d691d20da18ff02"
+    },
+    {
+      "path": "evidence/b2-ice-release-http-2026-09-26.json",
+      "bytes": 1263,
+      "sha256": "74662579f159c33b0af8f68f7a369e64953d5a00c681a60e93786bf79ec55a40"
+    },
+    {
+      "path": "evidence/b2-isolated-weapp-build-2026-09-24.log",
+      "bytes": 63533,
+      "sha256": "50eb6d43ad93f1319a74cf35aea591fb547703d3a936034c1890615c99057baa"
+    },
+    {
+      "path": "evidence/b2-moon-coverage-build-2026-09-28.log",
+      "bytes": 68155,
+      "sha256": "c3ed64723233ce6554be442f8b1b8fc4a7e6001feb1a20ad175ecade50af831d"
+    },
+    {
+      "path": "evidence/b2-moon-coverage-candidate-2026-09-28.json",
+      "bytes": 1050,
+      "sha256": "fdc23962d0242d176131cc98331afc1d272e4b8f9a1420ad78760a10f55facdb"
+    },
+    {
+      "path": "evidence/b2-moon-coverage-integration-2026-09-28.md",
+      "bytes": 4563,
+      "sha256": "4096b6e24532fde541bee7d309de99e1bf5aae8b8c1b802bf82f58395cc5e99f"
+    },
+    {
+      "path": "evidence/b2-moon-coverage-mutation-2026-09-28.log",
+      "bytes": 1753,
+      "sha256": "f5812c88ccbfa9e901e84f15f282503598ad5c5d32bc52cc8ba92fc212c6943a"
+    },
+    {
+      "path": "evidence/b2-moon-coverage-webgl-2026-09-28.json",
+      "bytes": 403,
+      "sha256": "562dce3044479efec74079e5d6f472d1fbd41d5cb5fb9cff86d6d653f3c1d7ea"
+    },
+    {
+      "path": "evidence/b2-moon-integrated-build-2026-09-28.log",
+      "bytes": 65303,
+      "sha256": "181e34730d6b83d76c6de75e738cc673156abcb1a75c57785e7448f7ed2fa4ae"
+    },
+    {
+      "path": "evidence/b2-moon-jpeg-samples-2026-09-28.json",
+      "bytes": 1359,
+      "sha256": "bde0ef2a15bf769d141cef4233f3ae046afef8dce5a9fbea21697ce88e2f1e31"
+    },
+    {
+      "path": "evidence/b2-moon-metadata-build-2026-09-28.log",
+      "bytes": 60813,
+      "sha256": "8ad43fd1bed5846cd9bced4fc189936e521f600bef566cdb5d6ea1ce63e9fa0d"
+    },
+    {
+      "path": "evidence/b2-moon-png-samples-2026-09-28.json",
+      "bytes": 1598,
+      "sha256": "cacebeae38ce354ef96008627aaf8db3a4edc98d504b27f47190277566812f98"
+    },
+    {
+      "path": "evidence/b2-moon-raster-install-2026-09-28.log",
+      "bytes": 1284,
+      "sha256": "e472d7512246b3aa245957e868516523a10e998dcfda0555f34dc3a968bbf5c5"
+    },
+    {
+      "path": "evidence/b2-moon-release-build-2026-09-28.log",
+      "bytes": 9119,
+      "sha256": "f5695e68aa6088190fcc0720d19fccffdf541ed1d479dd945b5b600cfb60eb6d"
+    },
+    {
+      "path": "evidence/b2-moon-release-http-2026-09-28.json",
+      "bytes": 778,
+      "sha256": "4337b85db2f7b83d25e4557f27765b8f7df0ef466fc7df7b717798f5f1903d11"
+    },
+    {
+      "path": "evidence/b2-moon-source-quality-2026-09-28.md",
+      "bytes": 11042,
+      "sha256": "1c2a516fb5c6c301a51c635092d069858108ca25f03e72b3a6e9d62b5aa73e84"
+    },
+    {
+      "path": "evidence/b2-moon-tiff-samples-2026-09-28.json",
+      "bytes": 4670,
+      "sha256": "f882f64d9d79602794ef6a7551a427c6ddbc1d0a29c5b57222dd996f3130b307"
+    },
+    {
+      "path": "evidence/b2-moon-white-fallback-mutation-2026-09-28.log",
+      "bytes": 394,
+      "sha256": "13d357e9712223981bb86f91a84f723720959b0b0c79aac8d5a2300926343965"
+    },
+    {
+      "path": "evidence/b2-moon-wms-alpha-2026-09-28.json",
+      "bytes": 412,
+      "sha256": "5635d97d687560714e59af7f26cac851efcee129441b222217b98fb3d2135331"
+    },
+    {
+      "path": "evidence/b2-planet-disc-benchmark-after-2026-09-24.json",
+      "bytes": 198,
+      "sha256": "576793ca428816923fb1050d6316427fdeebba3756691d27d50acb1cb4a40f92"
+    },
+    {
+      "path": "evidence/b2-planet-disc-benchmark-before-2026-09-24.json",
+      "bytes": 177,
+      "sha256": "0d3b0b16b72f73ede6e9d75939f9559fd152566eb0eb80198dbcbd1e321fe0c2"
+    },
+    {
+      "path": "evidence/b2-remaining-appearance-sources-2026-09-24.md",
+      "bytes": 4687,
+      "sha256": "ce043a542e688dda155175e0070c9b05783723b68278d400a4a50270b92ab77d"
+    },
+    {
+      "path": "evidence/b2-ring-isolated-weapp-build-2026-09-24.log",
+      "bytes": 62267,
+      "sha256": "81224bd5db98f39e3fede4aa4283294a53f42f6a63ef5e735dd920475dc75591"
+    },
+    {
+      "path": "evidence/b2-ring-recovery-isolated-build-2026-09-24.log",
+      "bytes": 66708,
+      "sha256": "f242fbda0abcdc4f3aa601f65fc2d42faff10baaa05617b5174c1483e4c2ccc9"
+    },
+    {
+      "path": "evidence/b2-saturn-opal-bands-2026-09-24.md",
+      "bytes": 4490,
+      "sha256": "2a68c8b78e683162299f8bfe34599510b933c0425f390f3538612f9569083a89"
+    },
+    {
+      "path": "evidence/b2-saturn-ring-recovery-2026-09-24.md",
+      "bytes": 2007,
+      "sha256": "b30b3c0ea32032c78057a05118ac814531251b05b9a5b3f79b72b10d61d736e8"
+    },
+    {
+      "path": "evidence/b2-saturn-ring-shadow-2026-09-24.md",
+      "bytes": 4555,
+      "sha256": "694ed7f598f8711767b66e1f50b441f28699d9d6eca2e673c555ff9d281ea95f"
+    },
+    {
+      "path": "evidence/b2-shadow-final-build-2026-09-24.log",
+      "bytes": 68134,
+      "sha256": "c9c674f147f4a5d833aa270c1679aa534b3d3ffc31a075b560fcba1ee8bed5b7"
+    },
+    {
+      "path": "evidence/b2-shadow-isolated-build-2026-09-24.log",
+      "bytes": 63674,
+      "sha256": "aa92372b889678548b192205487400570d2fde355219deb4dd5211fc21cbc85d"
+    },
+    {
+      "path": "evidence/b2-shadow-verified-build-2026-09-24.log",
+      "bytes": 61068,
+      "sha256": "3db64d2a9c296f8acb950730c9d0f343cc92b34e753eb0aaffb172b0ce615704"
+    },
+    {
+      "path": "evidence/b2-solar-build-2026-09-28.log",
+      "bytes": 63943,
+      "sha256": "61f2b5e783bb55d54d8ee35bfa53b346ae70a27c0b104a4a4ff2e60f014153e2"
+    },
+    {
+      "path": "evidence/b2-solar-limb-2026-09-28.md",
+      "bytes": 3540,
+      "sha256": "c9ba82e1c846eb8d2cc57303bed4657b6094b56e231e71ed5549db0c54ec0d5a"
+    },
+    {
+      "path": "evidence/b2-venus-phase-boundary-2026-09-28.md",
+      "bytes": 3720,
+      "sha256": "c5d997237cd75f38c0974b71ab1d0f89eb807517366e43a567e165dd7ef8fecc"
+    },
+    {
+      "path": "evidence/b4-batch-build-2026-09-28.log",
+      "bytes": 63608,
+      "sha256": "1fbdcb78f0685570ee83da19215c8e3fe14306bef47f8261d9391b456467985e"
+    },
+    {
+      "path": "evidence/b4-calibration-before-2026-09-24.log",
+      "bytes": 3974,
+      "sha256": "ebee8f4a4e4e774407f1052a044db00f58918df456901b5125660203d9d1ff27"
+    },
+    {
+      "path": "evidence/b4-calibration-entry-2026-09-24.md",
+      "bytes": 1758,
+      "sha256": "21a95d32c8c3fe7307e9c76c5b52151ee09c9e5d44cd9dec5d8d56af5eea1412"
+    },
+    {
+      "path": "evidence/b4-calibration-final-build-2026-09-24.log",
+      "bytes": 63537,
+      "sha256": "69445a0f965e257da54fe8434366fc45c3914b8fc604ac4432fe4b3dfe725ed1"
+    },
+    {
+      "path": "evidence/b4-information-identity-2026-09-24.md",
+      "bytes": 2472,
+      "sha256": "7be26b00026aa553b1da8b40d9f330013097deed87bb2787a23e44d9718ceba2"
+    },
+    {
+      "path": "evidence/b4-information-identity-build-2026-09-24.log",
+      "bytes": 62277,
+      "sha256": "c2342ba24a8c0adefbebc478a5db6befb550bc303fb39a0f64d4b46d1578d2d2"
+    },
+    {
+      "path": "evidence/b4-information-identity-final-build-2026-09-24.log",
+      "bytes": 64105,
+      "sha256": "1abd0343996f1f25b8583ffbb985022a02137928bf0203bf499a2edec0ba01eb"
+    },
+    {
+      "path": "evidence/b4-isolated-weapp-build-2026-09-24.log",
+      "bytes": 57995,
+      "sha256": "996133f0111384ceb803e0e18dc0d34bcadad1ebff6e2607e5383a78c03193ea"
+    },
+    {
+      "path": "evidence/b4-location-presentation-2026-09-24.md",
+      "bytes": 3689,
+      "sha256": "2c294c7d14f0dc8ab6bf08092f0df4bd1f5467240845ead05a2f0534fe9e58e1"
+    },
+    {
+      "path": "evidence/b4-luminary-api-tests.log",
+      "bytes": 3080,
+      "sha256": "b1f423415c1efbbd50ff1493d9a40a1a192c42bdfd6b7fe1d3206f8e691d7bd3"
+    },
+    {
+      "path": "evidence/b4-luminary-api-type.log",
+      "bytes": 141,
+      "sha256": "fe3ae035109bf5704a848c7b559cfce55992c61aa1d6ebc97aaa760f058d1c0b"
+    },
+    {
+      "path": "evidence/b4-luminary-build.log",
+      "bytes": 59247,
+      "sha256": "ceb2c32ae4d15d07a59480a0ac284dc706711f9da870d2d8e579cc3f54eb56ed"
+    },
+    {
+      "path": "evidence/b4-luminary-bundle.json",
+      "bytes": 43366,
+      "sha256": "b5eceb38605e2979a1ee2d8b7640548dd1b515e8d5ecc3be0c32bb415ef1419d"
+    },
+    {
+      "path": "evidence/b4-luminary-mini-tests.log",
+      "bytes": 31453,
+      "sha256": "965cb25903cd73c47f5ee50c16431aa3ad6072241fa28a45c445ebac14eb9bd9"
+    },
+    {
+      "path": "evidence/b4-luminary-mini-type.log",
+      "bytes": 1417,
+      "sha256": "f9a3d87113d964a348dd2dcc17255ae87f6496abc0427658567b3dff8271cd08"
+    },
+    {
+      "path": "evidence/b4-luminary-recovery-rerun.log",
+      "bytes": 221,
+      "sha256": "c3c561a1ef192d97bb114839890653b16ec2c1668fcbcff61cdbca080c452b63"
+    },
+    {
+      "path": "evidence/b4-mode-isolated-build-2026-09-24.log",
+      "bytes": 58050,
+      "sha256": "5893bd2bcc693c7ac66755a6bade0de6048f89c4c41ee555b8a827a15e0f8a86"
+    },
+    {
+      "path": "evidence/b4-mode-owner-2026-09-24.md",
+      "bytes": 2456,
+      "sha256": "72378993304e487b1e5be1fe86a6b9ac95d1a1f6c1d33a4c2a93fad8c5a455cc"
+    },
+    {
+      "path": "evidence/b4-painted-labels-and-image-credit-2026-09-28.md",
+      "bytes": 4615,
+      "sha256": "077600c599ec79ca6f0571872c310a67ff69db7f952458ab9af2f20dc32749c9"
+    },
+    {
+      "path": "evidence/b4-pick-isolated-build-2026-09-24.log",
+      "bytes": 68141,
+      "sha256": "e77b5f75d04a64559bf0040fe9184b4c303ea7dcf7d029f7611694ce1c43a443"
+    },
+    {
+      "path": "evidence/b4-presentation-build-2026-09-28.log",
+      "bytes": 63771,
+      "sha256": "732601ea5caa1ca432003cbeda7443a82758eb711958541314a0e5159ed8cac2"
+    },
+    {
+      "path": "evidence/b4-preview-isolated-build-2026-09-24.log",
+      "bytes": 59656,
+      "sha256": "674d757bcb9fbee9787f3d588000e58726fca14020d8428306edfe5ce5e78481"
+    },
+    {
+      "path": "evidence/b4-preview-return-recovery-2026-09-24.md",
+      "bytes": 2703,
+      "sha256": "5e35b705a149707fc1b6db689847b592b9f9f1d122a589f423f89ae96cd6d7d3"
+    },
+    {
+      "path": "evidence/b4-return-retry-isolated-build-2026-09-24.log",
+      "bytes": 60569,
+      "sha256": "912e286978b1369cba5eae12ea120cee244cdc66676f1eb61297e5eaac234786"
+    },
+    {
+      "path": "evidence/b4-search-confirm-2026-09-28.md",
+      "bytes": 3602,
+      "sha256": "ae37e6e804eb6b2fc888ccb1d9ee9b0ff60cc7a5ef75259caf31b58370e21191"
+    },
+    {
+      "path": "evidence/b4-search-confirm-build-2026-09-28.log",
+      "bytes": 59435,
+      "sha256": "dfdb81bfd234e3491a142fc749bd4dc270a7267db0f40805303203415a710215"
+    },
+    {
+      "path": "evidence/b4-source-return-back-2026-09-24.md",
+      "bytes": 1701,
+      "sha256": "767b9aaf32583a9c28099a0b6b860035df17a09f2d4519410b9e1d6bb8ebd19a"
+    },
+    {
+      "path": "evidence/b4-source-return-isolated-build-2026-09-24.log",
+      "bytes": 62312,
+      "sha256": "a91473527f528805edf78f13766cb9e350f9a098265f8836d3a9d71628843ddd"
+    },
+    {
+      "path": "evidence/b4-sun-moon-discovery-2026-09-28.md",
+      "bytes": 7878,
+      "sha256": "594b13f6597e643726c1f84df5517a330fe5bbf8073259330b101da7ee0382b3"
+    },
+    {
+      "path": "evidence/b4-time-binding-2026-09-24.md",
+      "bytes": 1601,
+      "sha256": "88fb6f5733904480540a85b88535c8ec3b33fda8e8de84c1289a6e7e256898ee"
+    },
+    {
+      "path": "evidence/b4-time-binding-final-build-2026-09-24.log",
+      "bytes": 60887,
+      "sha256": "9f7ad65f7efd8009679f66c5e2bbb7b366f4fbc687bfa3480c4b53a20b33248b"
+    },
+    {
+      "path": "evidence/b4-time-binding-isolated-build-2026-09-24.log",
+      "bytes": 59410,
+      "sha256": "7a4b5237b21526ed50ae680dadf5947c5090458c9830b9315ccae7cb66508b41"
+    },
+    {
+      "path": "evidence/bright-star-http-frame-2026-09-23.md",
+      "bytes": 1498,
+      "sha256": "ff4af6d91364957221e564784ab4b2817fbcbd3c0ed376d8e6b7749e237330e7"
+    },
+    {
+      "path": "evidence/c-composite-build-2026-09-28.log",
+      "bytes": 66621,
+      "sha256": "6ec3bbaf6b4010a125ab6e1b902ff456e07e8394941293448010ee4c3d96f0f7"
+    },
+    {
+      "path": "evidence/c-legacy-cutout-quality-2026-09-25.md",
+      "bytes": 13457,
+      "sha256": "b64fe99e86d069f07bf1a56695aa5d353c6ceef0249dc263bdcb5f7ebb50e29a"
+    },
+    {
+      "path": "evidence/c-legacy-tan-registration-2026-09-25.md",
+      "bytes": 2074,
+      "sha256": "a6d97c4de6c6655eb524a449785a366956369338807aa0c75b143ab0dd8d795f"
+    },
+    {
+      "path": "evidence/c-m51-phone-and-credit-layout-2026-09-28.md",
+      "bytes": 8067,
+      "sha256": "6e368dad70078654787b42d372d3207e5d40f0bab9bed7235f8dffef961a1db1"
+    },
+    {
+      "path": "evidence/c-optical-trial-client-gate-2026-09-24.md",
+      "bytes": 2520,
+      "sha256": "ec40a339c9a30eadc5b231d31313dd3959369ee5687f757e8f5fc6c4c9083de4"
+    },
+    {
+      "path": "evidence/c-sdss-acquisition-cost-2026-09-25.md",
+      "bytes": 4620,
+      "sha256": "3483b85b1c6bfdf9a11d9e37d734af5c04544acda2bfa55a1ec1ac55a3f19f3d"
+    },
+    {
+      "path": "evidence/c-sdss-catalog-registration-2026-09-25.md",
+      "bytes": 3983,
+      "sha256": "c1c07ea747220753495a7c506a095a4e1c198f1db7cf9a3ad9f7e16a55e50bf5"
+    },
+    {
+      "path": "evidence/c-sdss-target-source-2026-09-25.md",
+      "bytes": 9869,
+      "sha256": "1569e79603e6d625cc466081677c7b85e1a27f5b50adc0be1863a763087ba7ea"
+    },
+    {
+      "path": "evidence/c-skymapper-dr4-source-boundary-2026-09-25.md",
+      "bytes": 3991,
+      "sha256": "bd5502913bb23b5998f272a5ac3f83f8f237fd859c523a1718139272d2165889"
+    },
+    {
+      "path": "evidence/c01-manual-dome-roundtrip-2026-09-23.md",
+      "bytes": 2364,
+      "sha256": "ad67aeb22ae65d2c6d30b02ede114fcd4e28084d54aeb813c0291af0dadbbe96"
+    },
+    {
+      "path": "evidence/c05-moon-horizon-center-2026-09-23.png",
+      "bytes": 17876,
+      "sha256": "93d6a479bce8f2b887e9c3388158f001cec3eb049f4887781c77b01a7e080e37"
+    },
+    {
+      "path": "evidence/c05-moon-horizon-entry-2026-09-23.png",
+      "bytes": 48131,
+      "sha256": "a9bc8a6c5377a0fa66e78a708b8c4026a15c2a5c4f70a008662c8fed394789d6"
+    },
+    {
+      "path": "evidence/c05-moon-horizon-manual-2026-09-23.png",
+      "bytes": 26332,
+      "sha256": "e7ff024fbcd3d6c510784f7bfdacba954d46ddc492bef2e0e366f58af8857867"
+    },
+    {
+      "path": "evidence/c05-moon-horizon-native-2026-09-23.md",
+      "bytes": 2531,
+      "sha256": "68cbcb952444e4d33bc70e7cd667087a457428113f126c2e617f9e0f27868126"
+    },
+    {
+      "path": "evidence/c05-moon-horizon-pan-2026-09-23.png",
+      "bytes": 18426,
+      "sha256": "ddaddefaf057460c4ebb47e1619f1a94187abf5c4cba75437b1cc34e5253d96a"
+    },
+    {
+      "path": "evidence/c05-moon-horizon-zoom1-2026-09-23.png",
+      "bytes": 19428,
+      "sha256": "3520752615e29952803a5fe98aeb70129f93408b52ee111c8fc98e41257e3f40"
+    },
+    {
+      "path": "evidence/c05-moon-horizon-zoom2-2026-09-23.png",
+      "bytes": 36879,
+      "sha256": "76b663fcf18edb7b9880d717d88cc7ab5589c510b09234102c778c10d6d2a20e"
+    },
+    {
+      "path": "evidence/c05-saturn-horizon-native-2026-09-23.md",
+      "bytes": 2625,
+      "sha256": "9c008390812e788b34c0d53337805d11dc234dca81829d4aa13b956fff94981e"
+    },
+    {
+      "path": "evidence/c05-saturn-horizon-native-2026-09-23.png",
+      "bytes": 15725,
+      "sha256": "45a2784c718531134dfb8b1d252bfcaaf9b05cadd3402544d4f3aee8d4846aa7"
+    },
+    {
+      "path": "evidence/c05-saturn-oblate-2026-09-23.md",
+      "bytes": 2667,
+      "sha256": "753efc4b35288ea03211b4e3512f489cc108e3472aa96032a4e560b7b8714bdc"
+    },
+    {
+      "path": "evidence/c05-saturn-oblate-build-2026-09-23.log",
+      "bytes": 73645,
+      "sha256": "f2b0f9a6602e851f573cfbfc0aa32257cfeaf3c293ba498f2f3f25fbfa8c5c33"
+    },
+    {
+      "path": "evidence/c05-saturn-oblate-calendar-2026-09-24.png",
+      "bytes": 26108,
+      "sha256": "833341f219209c90dd7766858f99eca5c7d8c6a1d681b2d9ed9bcba7fe38de40"
+    },
+    {
+      "path": "evidence/c05-saturn-oblate-gpu-source-backup-2026-09-24.ts",
+      "bytes": 32103,
+      "sha256": "ef39ac81f893f6f8fb71843f23f095247be497f35f64c4017ac63d756485c585"
+    },
+    {
+      "path": "evidence/c05-saturn-oblate-locate-2026-09-24.png",
+      "bytes": 16305,
+      "sha256": "5f3f87ece521d19930e47f65846030405d984c30f52353c5267e0b55922374c1"
+    },
+    {
+      "path": "evidence/c05-saturn-oblate-mini-tests-2026-09-23.log",
+      "bytes": 79136,
+      "sha256": "7d5a23a5bae422f807a38619fabacd8e3cb320625cc89e2a6b1c14feb5754d81"
+    },
+    {
+      "path": "evidence/c05-saturn-oblate-native-2026-09-24.png",
+      "bytes": 15864,
+      "sha256": "4c6e569d682da14d6dc12dfd13c7937223af0575888cd625c0e7010e9ccc2bb4"
+    },
+    {
+      "path": "evidence/c05-saturn-oblate-native-ab-2026-09-24.md",
+      "bytes": 3191,
+      "sha256": "188c00fbacd427cbed69aa26ff72761bf6f14ed958ddf2d953db54b1606d239e"
+    },
+    {
+      "path": "evidence/c05-saturn-oblate-restored-build-2026-09-24.log",
+      "bytes": 60803,
+      "sha256": "6ca54005776969b7edb5dedc9aed15cf97d95b23259d455f987004627e93be2f"
+    },
+    {
+      "path": "evidence/c05-saturn-oblate-restored-native-2026-09-24.png",
+      "bytes": 15801,
+      "sha256": "9c065d5c0ddd0a438b6ff8c8316f3cb687e16a388ee915a513f5b8c639eb8621"
+    },
+    {
+      "path": "evidence/c05-saturn-oblate-start-2026-09-23.png",
+      "bytes": 48138,
+      "sha256": "bb81efdf5831b5e29faca5ea8375e08fb8ef9e801da16a540e438c053665cf4c"
+    },
+    {
+      "path": "evidence/c05-saturn-sphere-control-2026-09-24.png",
+      "bytes": 15972,
+      "sha256": "e90dbe56c2acc063dcfdc75baa3acdd0f34fb91988ce1e73480b878109ee6476"
+    },
+    {
+      "path": "evidence/c05-saturn-webgl-probe.html",
+      "bytes": 4432,
+      "sha256": "8e9abf56240d22b2cf63b065a2379c41013245a2840943426e09a8cc32168f76"
+    },
+    {
+      "path": "evidence/c07-painted-planet-picking-2026-09-24.md",
+      "bytes": 4460,
+      "sha256": "6eb507b90a181ba6b0a8beed5c30732285883c4a1acb1fe77d20e908baa56991"
+    },
+    {
+      "path": "evidence/c07-partial-recovered-native-2026-09-23.png",
+      "bytes": 142304,
+      "sha256": "ff2adb93e9f8e99f47c27495afa2f613cfb26c016b7da879eac7edc555b31233"
+    },
+    {
+      "path": "evidence/c07-partial-ui-native-2026-09-23.png",
+      "bytes": 131332,
+      "sha256": "f91ccc94f883a67b3bf818e119a1df5c01a8535c37566856c1827d309ac557e9"
+    },
+    {
+      "path": "evidence/c07-partial-ui-recovery-2026-09-23.md",
+      "bytes": 2664,
+      "sha256": "0b75f1a00b137fc9f60523b8c20e28b640d14be98132e533bc58097349dfefd5"
+    },
+    {
+      "path": "evidence/c07-postgres-integration-2026-09-23.log",
+      "bytes": 2335,
+      "sha256": "196dc7705f66d14cc2e91f8261924891127c8943e1d8db27cb170441f38dcc9a"
+    },
+    {
+      "path": "evidence/c07-postgres-integration-clean-2026-09-23.log",
+      "bytes": 1779,
+      "sha256": "80b2755e2486c1a776d547450a85b9812038e34652b984f610fa84e37098bf25"
+    },
+    {
+      "path": "evidence/c07-postgres-integration-order-2026-09-23.log",
+      "bytes": 471,
+      "sha256": "e80e131152deb36c1eef15bb6536b005668ea6c04a4749b6d4a8b975c4335eff"
+    },
+    {
+      "path": "evidence/c07-postgres-release-build-2026-09-23.log",
+      "bytes": 7740,
+      "sha256": "16a5e648f38cf600c76c0b0ba97a051efb2b37a80d7c71a1fe4d1337161b420e"
+    },
+    {
+      "path": "evidence/c07-postgres-service-2026-09-23.log",
+      "bytes": 16290,
+      "sha256": "6fcc290b94e6889d87654f74c625d6f4ab17c3f6f3a77eb9b43ae517944acb9c"
+    },
+    {
+      "path": "evidence/c07-postgres-service-restart-2026-09-23.log",
+      "bytes": 16289,
+      "sha256": "4cf226dfcbf0dba1d5c189cb58867011edbea242a1a99aba576028452099fd39"
+    },
+    {
+      "path": "evidence/c07-postgres-sky-2026-09-23.md",
+      "bytes": 3616,
+      "sha256": "744f7eeb2e68258fa3192e7f2af68423cce02c659d1e3b07968a7972cf5433a6"
+    },
+    {
+      "path": "evidence/c07-postgres-sky-after-2026-09-23.json",
+      "bytes": 590,
+      "sha256": "53b96ef63bbf27700282c57eed935f349db9d40b36e088d82198b0becfc82beb"
+    },
+    {
+      "path": "evidence/c07-postgres-sky-before-2026-09-23.json",
+      "bytes": 489,
+      "sha256": "1dd15d7d5d7da3220b28a85dc67f0ab4eb7fe8e20c3554331dc701aea26f0d46"
+    },
+    {
+      "path": "evidence/c07-postgres-sky-state-2026-09-23.json",
+      "bytes": 103,
+      "sha256": "a429435169b6dc40f6107cef575dd80af927534da7894f289614c0af2a68d8eb"
+    },
+    {
+      "path": "evidence/c07-postgres-worker-unit-2026-09-23.log",
+      "bytes": 36112,
+      "sha256": "9ee73db85e8912e7e510d000a6e76e4e10d135b7abd95f3eb37ea22132319a2b"
+    },
+    {
+      "path": "evidence/c07-release-image-postgres-2026-09-23.md",
+      "bytes": 2668,
+      "sha256": "72e26b01957497be4d385ad462ed3d152840be6dc0d30d9321da31bc7ffd7d59"
+    },
+    {
+      "path": "evidence/c07-release-sky-post-restart-2026-09-23.json",
+      "bytes": 589,
+      "sha256": "16ec772f3020419304236371f02a86d7de5ac8103a40f41c8a1ffeb77710399c"
+    },
+    {
+      "path": "evidence/c07-release-sky-pre-restart-2026-09-23.json",
+      "bytes": 589,
+      "sha256": "16ec772f3020419304236371f02a86d7de5ac8103a40f41c8a1ffeb77710399c"
+    },
+    {
+      "path": "evidence/c07-release-sky-state-2026-09-23.json",
+      "bytes": 102,
+      "sha256": "4b286fe600d4bb37329690bb5b9e6f988b5a91292c2c007e9ed327c9c193f6f1"
+    },
+    {
+      "path": "evidence/c07-release-worker-order-2026-09-23.json",
+      "bytes": 655,
+      "sha256": "456af859ceb3000c5db936e4eb2bb3f04791f094b697b9b931c70523d69d44cf"
+    },
+    {
+      "path": "evidence/c07-search-failure-native-2026-09-23.png",
+      "bytes": 146004,
+      "sha256": "b64845b8e79e3c4a241a439fa858f9dc208c95706744f670ed3014d1ed99661f"
+    },
+    {
+      "path": "evidence/c07-search-recovered-native-2026-09-23.png",
+      "bytes": 142466,
+      "sha256": "01ae4d91c43a0ddea80d8bf0edb431a61a93c9f3e83391c12bb3b1dfea76dea3"
+    },
+    {
+      "path": "evidence/c07-search-selected-native-2026-09-23.png",
+      "bytes": 125011,
+      "sha256": "815778664b68983fb764d553310d4aaa1020c2762ea090377a72187834990d19"
+    },
+    {
+      "path": "evidence/c07-search-ui-retry-2026-09-23.md",
+      "bytes": 2155,
+      "sha256": "1616fd1d097425cdbdf4f9a34ad524e503e07321a68a9ebccd4c7374ca294c23"
+    },
+    {
+      "path": "evidence/canvas-after-source-return-2026-09-23.png",
+      "bytes": 35651,
+      "sha256": "4eef8cac69124387d12e47b69ba90ca349f16cd264919af32d0786986e807dc3"
+    },
+    {
+      "path": "evidence/canvas-before-source-return-2026-09-23.png",
+      "bytes": 35677,
+      "sha256": "b88a584b2035a97aaa32edd8c0f3dec93e04c9bd39085d916698b4ac2940c9e8"
+    },
+    {
+      "path": "evidence/canvas-hidden-control-probe-2026-09-23.png",
+      "bytes": 12493,
+      "sha256": "7d1fe1851d1df251399674774d43f2e1e3ab504dbdd4afe4567ff2e1d53aaf2e"
+    },
+    {
+      "path": "evidence/canvas-omitted-control-probe-2026-09-23.png",
+      "bytes": 56580,
+      "sha256": "87d403184038e7a2e00071ba51ac56f01aca73d78747f5d5df44b4799c361546"
+    },
+    {
+      "path": "evidence/canvas-remount-after-source-2026-09-23.png",
+      "bytes": 35644,
+      "sha256": "025fc5ffcc9001219823f913ae69be1b065b6f943e9065653c905b3dd7dd5967"
+    },
+    {
+      "path": "evidence/canvas-remount-before-source-2026-09-23.png",
+      "bytes": 35692,
+      "sha256": "d2ee486f20c7bb82bdd6ee39d3dde26ee6c00908570ef4a4cb0efa01acfadde7"
+    },
+    {
+      "path": "evidence/canvas-remount-isolated-build-2026-09-23.log",
+      "bytes": 60888,
+      "sha256": "410036202fdf993747b56614cca61a806aac8337cee56d6601b6d44e8599ca67"
+    },
+    {
+      "path": "evidence/canvas-source-page-2026-09-23.png",
+      "bytes": 181354,
+      "sha256": "a8ed94e3d12da79ca4885552ec54e4dd7e0317e984979b9ee87bdcbc77a6cf79"
+    },
+    {
+      "path": "evidence/canvas-source-return-devtools.json",
+      "bytes": 956,
+      "sha256": "7ac2a90f3288b821c272369e77443e089e6d367b17d1c297ccf19c3141c9b2bb"
+    },
+    {
+      "path": "evidence/canvas-source-return-remount-2026-09-23.json",
+      "bytes": 2699,
+      "sha256": "9b174459ace1d8dd8931d9060f35b36e55360676e0e4787b507bcb4d52e685f0"
+    },
+    {
+      "path": "evidence/celestial-horizon-2026-09-23.md",
+      "bytes": 2501,
+      "sha256": "403f60f45c8f145df24ad388c5d3933cf847a3f2f0164500dcc320f562465ec6"
+    },
+    {
+      "path": "evidence/celestial-horizon-isolated-build-2026-09-23.log",
+      "bytes": 59405,
+      "sha256": "7db8af284779c5e7353fffe6508896e7860786ab38a6d9fe1a74a00efdb35419"
+    },
+    {
+      "path": "evidence/celestial-position-client-tests.log",
+      "bytes": 412,
+      "sha256": "70e3330b6cd4e91774145fb63e03d202ffd520ab79006e00c26d5dee6312d62d"
+    },
+    {
+      "path": "evidence/celestial-position-context-validate.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/celestial-position-final-tests.log",
+      "bytes": 1396,
+      "sha256": "261f48d86499ad25c927e7df866da66ff233b433dc3b0b1ca931b49783115229"
+    },
+    {
+      "path": "evidence/celestial-position-tests.log",
+      "bytes": 756,
+      "sha256": "31b7928cbf716a4377649c04b6139b5e402798f2876a418b9e78c6288820aa19"
+    },
+    {
+      "path": "evidence/celestial-position-typecheck.log",
+      "bytes": 141,
+      "sha256": "fe3ae035109bf5704a848c7b559cfce55992c61aa1d6ebc97aaa760f058d1c0b"
+    },
+    {
+      "path": "evidence/celestial-position-ui-catalogs.json",
+      "bytes": 739,
+      "sha256": "388b9925b5b59d8e2e71d69ff6efaa166829ef295e763ef987804beb5b428bd5"
+    },
+    {
+      "path": "evidence/celestial-position-ui-final.json",
+      "bytes": 336,
+      "sha256": "0853ae87a4a68fe0440e4d3d3c1c599da08109f6b69497d3f2cf9c6ea9b9f74b"
+    },
+    {
+      "path": "evidence/celestial-position-ui-typecheck.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/celestial-position-ui-vega.json",
+      "bytes": 571,
+      "sha256": "ed87e46ce161cb9fa0d6ff57e7dc2a22e77a9a825b8b22b31ebd410cda35d085"
+    },
+    {
+      "path": "evidence/celestial-search-benchmark-before.json",
+      "bytes": 1744,
+      "sha256": "0ec4d4ef35fd1fa6023fc7bcd28ebe8a19db615b34d6fc52911acc91cd413be6"
+    },
+    {
+      "path": "evidence/celestial-search-benchmark-wikidata-2026-09-23.json",
+      "bytes": 2133,
+      "sha256": "37bc9d77fd1d684b0fff3f65812c2e712366059cabdbc9057e6be3f2f2c3a255"
+    },
+    {
+      "path": "evidence/celestial-search-benchmark.json",
+      "bytes": 1946,
+      "sha256": "01349842bd9c49bcd27c22aff4ea864e1eadca39c535e06bfc25203bed113dbb"
+    },
+    {
+      "path": "evidence/celestial-search-client-typecheck.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/celestial-search-context-validate.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/celestial-search-final-tests.log",
+      "bytes": 1312,
+      "sha256": "7753af76e00e67bf87e8b20a1b5beda755d720f30b0910983d4904e662f810be"
+    },
+    {
+      "path": "evidence/celestial-search-final-typecheck.log",
+      "bytes": 141,
+      "sha256": "fe3ae035109bf5704a848c7b559cfce55992c61aa1d6ebc97aaa760f058d1c0b"
+    },
+    {
+      "path": "evidence/celestial-search-http-tests.log",
+      "bytes": 1217,
+      "sha256": "f81431f70e0715ca52d470d78ab40f04a3527cb49ecfd9ebf9510199df29e80b"
+    },
+    {
+      "path": "evidence/celestial-search-response-tests.log",
+      "bytes": 423,
+      "sha256": "bc8c99aaa144f3b0c52fac278f35890f4ce8ee90b09a3e85ec746673fa06fbe5"
+    },
+    {
+      "path": "evidence/celestial-search-sao-compact-probe.json",
+      "bytes": 3410,
+      "sha256": "ab1907c6bdfa9732b60daf4b4a24e0ac37412e7383d78499314b806c12265018"
+    },
+    {
+      "path": "evidence/celestial-search-sao-stream-probe.json",
+      "bytes": 2681,
+      "sha256": "64706571a8116f2c4e84d803d540122e239f84f93b703d5f9e69cc94bf6cd92b"
+    },
+    {
+      "path": "evidence/celestial-search-tests-after.log",
+      "bytes": 1102,
+      "sha256": "8c523b7f11520e1bca7381350a295cdf5bc425bacad5ad194cd80ff349efce04"
+    },
+    {
+      "path": "evidence/celestial-search-tests.log",
+      "bytes": 2017,
+      "sha256": "9e88992a2dd3ecf642a77026ee5a48b787323caefba3a03833c507d5fe97148c"
+    },
+    {
+      "path": "evidence/celestial-search-typecheck.log",
+      "bytes": 141,
+      "sha256": "fe3ae035109bf5704a848c7b559cfce55992c61aa1d6ebc97aaa760f058d1c0b"
+    },
+    {
+      "path": "evidence/celestial-search-ui-cleared.json",
+      "bytes": 1520,
+      "sha256": "9ee582b47e416bdd845183021c4a108349ee9f461e6a72a39a7bf7206f2f4027"
+    },
+    {
+      "path": "evidence/celestial-search-ui-context-validate.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/celestial-search-ui-error-recovery.json",
+      "bytes": 449,
+      "sha256": "f0601413e73ecb8e33084b096135d119bda8fe8da95d41f48cc07cffe1294242"
+    },
+    {
+      "path": "evidence/celestial-search-ui-final-tests.log",
+      "bytes": 586,
+      "sha256": "611428b9d62fd554770c5307147c6c6b01e51d3af21465a7e92cf485e8dd5ac2"
+    },
+    {
+      "path": "evidence/celestial-search-ui-query-states.json",
+      "bytes": 680,
+      "sha256": "56b29bb48051bc5fd718c6fe8e4b4d0cec7a1a25fe6e9174cb17c274963a6797"
+    },
+    {
+      "path": "evidence/celestial-search-ui-typecheck.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/celestial-search-ui-vega.json",
+      "bytes": 752,
+      "sha256": "d7adeb07ac26132706c88bc5d0c1051cab45a41381df2824720a7160861cdcce"
+    },
+    {
+      "path": "evidence/celestial-search-warm-api.json",
+      "bytes": 131,
+      "sha256": "91619247d21a8db0413a202317edb636535ffc8a771996f7772be6c10fd795ed"
+    },
+    {
+      "path": "evidence/celestial-tracking-context-validate.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/celestial-tracking-tests.log",
+      "bytes": 2038,
+      "sha256": "72e76f3b214463900ab06c9afedffa70d9e9799cf528fc85d175a480516ab7af"
+    },
+    {
+      "path": "evidence/celestial-tracking-typecheck.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/celestial-tracking-ui-cancel.json",
+      "bytes": 232,
+      "sha256": "a67ddaacdc7b7b9e133d7bb5fb5a7bdf987b81b49b034d12b8ffc9f3a9d1b8c2"
+    },
+    {
+      "path": "evidence/celestial-tracking-ui-commit.json",
+      "bytes": 354,
+      "sha256": "29332f218434cf871350bf823909efd5f163dbe0dea3b5bba437849451ef2e18"
+    },
+    {
+      "path": "evidence/celestial-tracking-ui-drag.json",
+      "bytes": 1516,
+      "sha256": "20b7f36ff9e98e9884ad9dda8378d08bcf7e5319d1f0d6e6916df3f201cba057"
+    },
+    {
+      "path": "evidence/celestial-tracking-ui-final-return.json",
+      "bytes": 2380,
+      "sha256": "73c7b3e81b41b8ccb39057065841bd42d3d9ba0b0598d8be564563d00a69f450"
+    },
+    {
+      "path": "evidence/celestial-tracking-ui-overview-client-coordinates.json",
+      "bytes": 617,
+      "sha256": "d411b2b6ffcd48cfca8034c39a09683fb2da4c23105e625164de490840928a0b"
+    },
+    {
+      "path": "evidence/celestial-tracking-ui-overview-return.json",
+      "bytes": 1898,
+      "sha256": "9a68e8911f5a8e72fce4b5ca55279619ec900bf4c11d6c914f1a4c4c9274635c"
+    },
+    {
+      "path": "evidence/celestial-tracking-ui-overview.json",
+      "bytes": 294,
+      "sha256": "420d984354c6820bc8df05fde7ceb229f8168782dd0852249415564672867e18"
+    },
+    {
+      "path": "evidence/celestial-tracking-ui-preview.json",
+      "bytes": 1342,
+      "sha256": "79b20f1c09e72f4d7aa22f62e0deed57364ef4abdde3e4df6678068dd064a262"
+    },
+    {
+      "path": "evidence/celestial-tracking-ui-start.json",
+      "bytes": 460,
+      "sha256": "5e2c31907bc8a13296590116f9cc5aec0314229561d5f4d424b7b905b821d90c"
+    },
+    {
+      "path": "evidence/celestial-tracking-ui-stop.json",
+      "bytes": 361,
+      "sha256": "122d4c749bad111095690a637c3563e30b1c5efcf1dad3042aa405817da625c3"
+    },
+    {
+      "path": "evidence/celestial-tracking-zoom-before.log",
+      "bytes": 1444,
+      "sha256": "f17d382c535cd39530505ff74dd3e48b92ee7c391b5cafbcd74ea39b2cdd532c"
+    },
+    {
+      "path": "evidence/chinese-alias-container-2026-09-23.json",
+      "bytes": 1061,
+      "sha256": "66fda40f07f6616eec4cbb5a02caac72c4ff6d84438e8f21b4f2dded49c044de"
+    },
+    {
+      "path": "evidence/chinese-alias-container-burst-2026-09-23.json",
+      "bytes": 870,
+      "sha256": "74f0edd899ff83c9ad60f7a001f482e86f4ba9c8d68632c03b4ae36d4f0b6830"
+    },
+    {
+      "path": "evidence/chinese-alias-http-burst-2026-09-23.json",
+      "bytes": 830,
+      "sha256": "2a8ca3490d0ad49599c3d1dba0e2b8d31c9e351a6e35ea25e05513ecabb47496"
+    },
+    {
+      "path": "evidence/chinese-alias-http-burst-notes-2026-09-23.md",
+      "bytes": 2013,
+      "sha256": "9ee871c7e76d74263340f1a8708071ba855f1b4783544326649cbe6ebdb3ade4"
+    },
+    {
+      "path": "evidence/chinese-alias-http-recovery-2026-09-23.json",
+      "bytes": 1342,
+      "sha256": "1994dc1113556a2677ff5859ffd257947c367815edc3b325b6c6641216370f15"
+    },
+    {
+      "path": "evidence/chinese-search-detail-devtools-2026-09-23.png",
+      "bytes": 12556,
+      "sha256": "0224d167192a8213163717f7b1e995b00016b35fd59c353f4e2bd2512aadc2cf"
+    },
+    {
+      "path": "evidence/chinese-search-map-before-2026-09-23.jpg",
+      "bytes": 45083,
+      "sha256": "7fa51721ea3b9e72a97f3c5d375b0f9ae47a28f456419031bfe38867dbd9e1f8"
+    },
+    {
+      "path": "evidence/chinese-search-sky-before-2026-09-23.jpg",
+      "bytes": 8800,
+      "sha256": "b58a7aa9232e9908e1645ee0d0adc688b69543118ccd29976d4f857b16e1dd48"
+    },
+    {
+      "path": "evidence/chinese-search-sky-reloaded-2026-09-23.jpg",
+      "bytes": 8815,
+      "sha256": "52ba5f5c61d66a41c9bbcfcbe4158f6d23e1c19ded6bc32f81fba3e0bb68e6b0"
+    },
+    {
+      "path": "evidence/chinese-star-alias-2026-09-23.json",
+      "bytes": 2720,
+      "sha256": "14c6cf8962df2d78afba4fd03f9ea0665cedf0acd3e59553ab3b8e0b8ca85081"
+    },
+    {
+      "path": "evidence/commercial-scope-image-2026-09-23.json",
+      "bytes": 1284,
+      "sha256": "4b6ac080b142f22b4e16282399590544b753209a0a1ad1acad3c4f83256b86df"
+    },
+    {
+      "path": "evidence/constellation-names-2026-09-23.json",
+      "bytes": 3473,
+      "sha256": "f3953623c2262860635e129e831f3b2170f3f530dcd1c1011a573764bb85cd4b"
+    },
+    {
+      "path": "evidence/context-validate.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/current-sky-byte-inventory-2026-09-24.md",
+      "bytes": 2590,
+      "sha256": "2a88f11aee6eaa9aa605a572289089e0afeb2489a77c188863e9f6e0b6386f67"
+    },
+    {
+      "path": "evidence/current-wait-audit-2026-09-28.md",
+      "bytes": 2539,
+      "sha256": "8f40405a1eccfc57bd7a1b59de0f9ab06ee92feea2d050e7aa4dc6785f84916b"
+    },
+    {
+      "path": "evidence/d-commercial-exclusions-2026-09-24.md",
+      "bytes": 2032,
+      "sha256": "7ac1daf48f864f58d61b6f9cffc0036ddeca87ff077105d09108fe0decb6f60b"
+    },
+    {
+      "path": "evidence/d-current-byte-audit-2026-09-24.md",
+      "bytes": 2074,
+      "sha256": "c410630d58ae02ac852f14f2538d3baf1ee2d8c526e4501c6ab83257427d12c3"
+    },
+    {
+      "path": "evidence/d-current-pg-sky-after-2026-09-24.json",
+      "bytes": 681,
+      "sha256": "178ae88b5577ebc87b70e722cce324ee0cd349923d0afccfbda97847f7e9c879"
+    },
+    {
+      "path": "evidence/d-current-pg-sky-before-2026-09-24.json",
+      "bytes": 682,
+      "sha256": "4f2ac529141b714d72940849a474f1ca036fd7e85b45bc10631f033853ed9e74"
+    },
+    {
+      "path": "evidence/d-current-pg-sky-state-2026-09-24.json",
+      "bytes": 95,
+      "sha256": "d5a7a2e45a26ef09ad2da09af1bea1195c7787ce2cab805388dd333222e2dcbf"
+    },
+    {
+      "path": "evidence/d-current-release-postgres-2026-09-24.md",
+      "bytes": 2196,
+      "sha256": "e2ab90481669bab2f7b1d5ee2a4ddc413b757a230e774c9e71910477fd1e56bd"
+    },
+    {
+      "path": "evidence/d-luminary-image-build-2026-09-28.log",
+      "bytes": 8972,
+      "sha256": "667fe42d95588554b8ff82ec77ce5aae9c4403b2af19914fd446e85692314933"
+    },
+    {
+      "path": "evidence/d-luminary-release-2026-09-28.md",
+      "bytes": 2812,
+      "sha256": "be729dc18d6597a959e72f6d148cca3afb70e4c966e804f938ed81c01316d72d"
+    },
+    {
+      "path": "evidence/d-luminary-release-http-2026-09-28.json",
+      "bytes": 2025,
+      "sha256": "b2086fa955c368026eaceb036feb45f85fe5a06da5b25a9b66b4ef43bb2223cc"
+    },
+    {
+      "path": "evidence/d-release-http-2026-09-24.json",
+      "bytes": 3060,
+      "sha256": "7a439b96375c3b2015caeb80ec38de52f913eee7bf2c7bbdc85427b6541d3833"
+    },
+    {
+      "path": "evidence/d-release-http-2026-09-24.md",
+      "bytes": 5280,
+      "sha256": "cb4370e591716a9637dc7a3126279d1d227124bf37b0148f3a08ea83ea8ecf99"
+    },
+    {
+      "path": "evidence/d-release-package-and-cost-inputs-2026-09-24.md",
+      "bytes": 4424,
+      "sha256": "2bdef3d8934a5e2c8c42d88e74ac7db90ba63c367fc9d6697e45df81ed0f59ba"
+    },
+    {
+      "path": "evidence/d-sdss-release-egress-2026-09-25.md",
+      "bytes": 2732,
+      "sha256": "b3c05bae4c2713b4faecf71bfb75fc47d9267ccfc96ebe2c827a2841a55d6c5e"
+    },
+    {
+      "path": "evidence/d-sky-bounded-load-2026-09-24.md",
+      "bytes": 2869,
+      "sha256": "b5eec7c7e21e28da1dc64d607742f493560c1a9dcf88b9ae7cf3de482341795d"
+    },
+    {
+      "path": "evidence/d-sky-egress-classification-2026-09-24.md",
+      "bytes": 3385,
+      "sha256": "e910f4c6650d674ffa65cc37e69c0aa21144a7adb980a5b64b6e2380d5f67a56"
+    },
+    {
+      "path": "evidence/d-sky-egress-probe-2026-09-24.json",
+      "bytes": 582,
+      "sha256": "575656fc3da794aa75cacad86ef4ad0b97922c4898af1e7a89e0cf2ac62f4a2f"
+    },
+    {
+      "path": "evidence/d-sky-load-probe-2026-09-24.json",
+      "bytes": 963,
+      "sha256": "7806177c4c976f021b70a799fb57e042b6438c8b4c5f1f3f406fd88cabd67f13"
+    },
+    {
+      "path": "evidence/d-sky-load-selection-2026-09-24.json",
+      "bytes": 708,
+      "sha256": "9c30b5c6d6f513c9f9e80b2dfed22745e20e1c1e53332649320f13966f879ff5"
+    },
+    {
+      "path": "evidence/dark-day-sky-2026-09-23.png",
+      "bytes": 22795,
+      "sha256": "b753336ea32c3189f86592f7a90bce9b1528b562ef3035fa5a77c9fbc6529456"
+    },
+    {
+      "path": "evidence/dark-sky-1800-2026-09-23.png",
+      "bytes": 25403,
+      "sha256": "5e891b8ae68292f6fd099a4cda3798f4c9f40d73b9894c63e80c35cf2e175e7c"
+    },
+    {
+      "path": "evidence/dark-sky-1830-2026-09-23.png",
+      "bytes": 19687,
+      "sha256": "193f086e4b7fc6d761c90cdf24ac93928d32da9bf7afb6b9dc5f963e521ad0fa"
+    },
+    {
+      "path": "evidence/dark-sky-1930-2026-09-23.png",
+      "bytes": 55722,
+      "sha256": "b5d040118b9033c1b4c42bd8f3bdbfb0ae7c9e5ecf5b390b8d1de3c8d33e0058"
+    },
+    {
+      "path": "evidence/dark-sky-2026-09-23.json",
+      "bytes": 1989,
+      "sha256": "7c9285fbe1defa4bffa128dd971ee073992491bcae201f193e0c9b4c8a923cd7"
+    },
+    {
+      "path": "evidence/dark-sky-context-validate-2026-09-23.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/dark-sky-focused-2026-09-23.log",
+      "bytes": 1086,
+      "sha256": "68571ca07a20c97f3db424da5abb18bab896cb76fbbb127b80220423e01a8a8d"
+    },
+    {
+      "path": "evidence/dark-sky-isolated-build-2026-09-23.log",
+      "bytes": 65162,
+      "sha256": "3071a4e4d0a49e376e378d30a416e44981918c4c75389aadcbac784256d0072c"
+    },
+    {
+      "path": "evidence/dark-sky-mars-same-view-2026-09-23.png",
+      "bytes": 13088,
+      "sha256": "d99a88043f351c31c66c192310c4a6d2566178855043dc15bc1d90a119670530"
+    },
+    {
+      "path": "evidence/dark-sky-typecheck-2026-09-23.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/dependency-pack.log",
+      "bytes": 4926,
+      "sha256": "a2f65639625c9cfbeace133dd94b229b5c88a4938a122450ae98c1af9246245e"
+    },
+    {
+      "path": "evidence/dependency-restore.json",
+      "bytes": 995,
+      "sha256": "38dc2017551ad43adbdc33e336045e789cb555451803ffde613ae55ae2473ea1"
+    },
+    {
+      "path": "evidence/dependency-restore.log",
+      "bytes": 2402,
+      "sha256": "f34aa33ce3768c5f8c04d332f1c28a1acef370011123388f851bd0726b959798"
+    },
+    {
+      "path": "evidence/dependency-types-pack.log",
+      "bytes": 55,
+      "sha256": "40708ae22d5d42c02fea419000585478916f252ea63edabbe5564e65257208c3"
+    },
+    {
+      "path": "evidence/dependency-types-restore.json",
+      "bytes": 614,
+      "sha256": "6f999aa1e13acff094c26df6f7e93f75ce62a5c1bdedfd515d88c836573ba412"
+    },
+    {
+      "path": "evidence/device-feedback-doctor.log",
+      "bytes": 416,
+      "sha256": "7e2fca6e40a3f81dd5bcc52c557b46bb70598812d5630b0d4088a350c4aa6184"
+    },
+    {
+      "path": "evidence/fixed-image-refresh-2026-09-24.md",
+      "bytes": 2452,
+      "sha256": "419bc7a0dc8c4dd93381fe50cf5ffc0e33efcd87e32ff3d376d5e5f40c6e0cf6"
+    },
+    {
+      "path": "evidence/fixed-image-refresh-build-2026-09-24.log",
+      "bytes": 60899,
+      "sha256": "67d4256f1cc41466a3dc4c46253dba2429e8c0c64e4f649db48da8f9a9709c0f"
+    },
+    {
+      "path": "evidence/fixed-image-refresh-mini-tests-2026-09-24.log",
+      "bytes": 79634,
+      "sha256": "d6e955e860103d34296503e1ba0fa65fc60d1803dd2a0f70f070f5205bf471b0"
+    },
+    {
+      "path": "evidence/galactic-2mass-2026-09-24.md",
+      "bytes": 6568,
+      "sha256": "7303374d6585bd1a47e426b1d62edd118a3197f864752023084737c82fb77b20"
+    },
+    {
+      "path": "evidence/galactic-2mass-build-2026-09-24.log",
+      "bytes": 83926,
+      "sha256": "af30c4916a95efe2ed17f5de8ea06a102015e6626d6fad30911a68e581f54afe"
+    },
+    {
+      "path": "evidence/galactic-2mass-build-final-2026-09-24.log",
+      "bytes": 78460,
+      "sha256": "d029c1385fe73bf8b85e96e43e9df0cc7c4b29b117243e916d2b564c975183ba"
+    },
+    {
+      "path": "evidence/galactic-2mass-docker-build-2026-09-24.log",
+      "bytes": 7830,
+      "sha256": "651fc4ffe1e5cdd596791507f4d0c7ee7d488e398170059d1c12e83474f9ffb8"
+    },
+    {
+      "path": "evidence/galactic-2mass-mini-tests-2026-09-24.log",
+      "bytes": 79572,
+      "sha256": "e3e39ff90bdb6e2092f827470e2cc99dfab48e8a3470148e62eaa762c0b51dce"
+    },
+    {
+      "path": "evidence/galactic-2mass-mini-tests-final-2026-09-24.log",
+      "bytes": 79536,
+      "sha256": "bb173ad1eff180046d28e313911d74379a1f2a947f354236cfb69b36faceedd9"
+    },
+    {
+      "path": "evidence/galactic-band-simulator-2026-09-23.json",
+      "bytes": 3964,
+      "sha256": "beff225505c81e21fe5583c32161313abbd61fcda25ab11397a3273b30225483"
+    },
+    {
+      "path": "evidence/galactic-image-container-http-2026-09-24.json",
+      "bytes": 750,
+      "sha256": "d4d8a8881c9c9f072a87ba841548541df7b61a7157d2e0fe11adf2b792d0773e"
+    },
+    {
+      "path": "evidence/galactic-landmark-2026-09-24.json",
+      "bytes": 1699,
+      "sha256": "7f2e8597f0ff8ad581f40cb6281e11009d17d649317edfc0eae7f9c04d4c57d7"
+    },
+    {
+      "path": "evidence/galactic-refresh-build-2026-09-24.log",
+      "bytes": 65194,
+      "sha256": "79fdd3317cfb34e0633fccd001b5b531bb3615b602db3952a0b4e76c507466a0"
+    },
+    {
+      "path": "evidence/galactic-webgl-probe-2026-09-24.html",
+      "bytes": 943020,
+      "sha256": "c823ccad7f024fdd388e4c593a65b0808b0cc3ec4fe2ab48bfc9e3f1c17a2fe5"
+    },
+    {
+      "path": "evidence/galactic-webgl-probe-2026-09-24.json",
+      "bytes": 460,
+      "sha256": "c4e14f9f56ec9662d02ad64b52f704dfc9ccd76469b84fe25ace76ef6349673f"
+    },
+    {
+      "path": "evidence/initial-sky-chain-tests.log",
+      "bytes": 8916,
+      "sha256": "357fd367ff1426bfcbcad2023a0fad5756d678cef47f94b1a172958e5dc21baf"
+    },
+    {
+      "path": "evidence/isolated-after-compile-2026-09-24.png",
+      "bytes": 24172,
+      "sha256": "819447c742f4944aef543af855b22fe4bd2806219a0392f8eb91d2b09a0166d0"
+    },
+    {
+      "path": "evidence/isolated-fullmode-connect-2026-09-24.png",
+      "bytes": 41613,
+      "sha256": "54ea315dba904bdf94dc90d92ca119fb6f3ab06e639764756845ab5305e84ae0"
+    },
+    {
+      "path": "evidence/isolated-mcp-2026-09-24.png",
+      "bytes": 41583,
+      "sha256": "d40fa4114b83d5d71e195fd8ef51d670e639a8db5e9a0a57913c7ab50be83bad"
+    },
+    {
+      "path": "evidence/isolated-native-sky-build-2026-09-24.log",
+      "bytes": 57805,
+      "sha256": "b9bfa7335baa7f308477cda70fc9793680822704326d783768f553d3d571fb46"
+    },
+    {
+      "path": "evidence/isolated-refreshed-2026-09-24.png",
+      "bytes": 24173,
+      "sha256": "c4c1da11e2e6019730a3ca243ab2b9640f0f8b94a314b04b3feee6d5fc77b7b6"
+    },
+    {
+      "path": "evidence/isolated-unique-project-2026-09-24.png",
+      "bytes": 24089,
+      "sha256": "52edcb515e904500fb7f28c2fd623eec20416c0c04586da6e42054c0414c97b7"
+    },
+    {
+      "path": "evidence/isolated-weapp-build-2026-09-24.md",
+      "bytes": 2980,
+      "sha256": "d501888a5cf191a9d442312ca604c428b3a0d0ecd40a7534f1c8d2840e1ea00a"
+    },
+    {
+      "path": "evidence/isolated-window-after-open-2026-09-24.png",
+      "bytes": 41810,
+      "sha256": "e8b85c4c2e1eae9f853d9118ac8425f0c8af7ee2605fd46ae0b6530202650861"
+    },
+    {
+      "path": "evidence/isolated-window-current-2026-09-24.png",
+      "bytes": 41620,
+      "sha256": "8286461095c4f30cf191d4b66c7933abaa76a8313f5cd5214ac94e016c71dd6d"
+    },
+    {
+      "path": "evidence/jupiter-bands-api-tests-2026-09-24.log",
+      "bytes": 37382,
+      "sha256": "880992757326a6174f9b2540ca1e6d60d0279ec0bd225b57d37f0130520bf1e3"
+    },
+    {
+      "path": "evidence/jupiter-bands-container-detail-2026-09-24.json",
+      "bytes": 395,
+      "sha256": "4b74fc5eb941600f8ec346e264d10329dc2208dad13bbb165079fc9a87b4f4b5"
+    },
+    {
+      "path": "evidence/jupiter-bands-container-http-2026-09-24.json",
+      "bytes": 768,
+      "sha256": "28bd1db2915d2cac8ef877f854fc7376e4dfdf0f5e4c2e203472c70b3275110b"
+    },
+    {
+      "path": "evidence/jupiter-bands-docker-build-2026-09-24.log",
+      "bytes": 8225,
+      "sha256": "73f44e186fe64c41504bf4619123163aa0011b9ab6c21693e049c572212aaf9b"
+    },
+    {
+      "path": "evidence/jupiter-bands-mini-tests-2026-09-24.log",
+      "bytes": 80383,
+      "sha256": "22bc94d1906dad2ebbb614b58fa7cbb963d7a48b206395475727a88ac00a97b2"
+    },
+    {
+      "path": "evidence/jupiter-bands-webgl-probe-2026-09-24.html",
+      "bytes": 7882,
+      "sha256": "4087d8a8c05d552fb9cfb0652f82f1fe137492367998c65fefc8a9e69c9af35d"
+    },
+    {
+      "path": "evidence/jupiter-nasa-3d-source.jpg",
+      "bytes": 225878,
+      "sha256": "ac2d387f8ea56a59f45dea37993c779a730f49d7d9fdbc8d36c307a351b1f1a1"
+    },
+    {
+      "path": "evidence/jupiter-oblate-2026-09-24.md",
+      "bytes": 3056,
+      "sha256": "167d140f0582ec445b4d96ebccb1a3a0737d8da289d434ed69c15567d2462553"
+    },
+    {
+      "path": "evidence/jupiter-pia00011-source.jpg",
+      "bytes": 97739,
+      "sha256": "c4781fc491e59e6996cc402ae6f1beeb9dfb4faa763da625a480facc5ceb5cf2"
+    },
+    {
+      "path": "evidence/legacy-surveys-tan-sample-2026-09-25.json",
+      "bytes": 1806,
+      "sha256": "60d695ced82864415e7cfd50c734bc1dad0cdd6659c9a0c19294ff86aec39173"
+    },
+    {
+      "path": "evidence/manual-pan-after-2026-09-23.png",
+      "bytes": 36194,
+      "sha256": "9e0c3187331d4b627f21ab8a02fee0bc58d7df142e84ea4bc1df75b079c9e3d4"
+    },
+    {
+      "path": "evidence/manual-pan-before-2026-09-23.png",
+      "bytes": 35533,
+      "sha256": "7279a42af602908ff66196917517614f3241419554e7de2c0fd8ead03aafe29a"
+    },
+    {
+      "path": "evidence/manual-pan-isolated-build-2026-09-23.log",
+      "bytes": 79480,
+      "sha256": "e8da262d21917f36831a88175f4f23ab2de3cdff0d01a0df7fd709ad9b67d44d"
+    },
+    {
+      "path": "evidence/manual-pan-level-2026-09-23.json",
+      "bytes": 3487,
+      "sha256": "ee2ab8d91d85e631aa0b4e2952d49dec1d9d32335a2af05bb6a63785fd7b74a7"
+    },
+    {
+      "path": "evidence/manual-pan-mini-tests-2026-09-23.log",
+      "bytes": 77818,
+      "sha256": "1496ec4d012969171f5f8f7d866fbc6c43fe017dc1fc51dfac3ba1023358352b"
+    },
+    {
+      "path": "evidence/map-before-canvas-lifecycle-trial-2026-09-23.png",
+      "bytes": 150958,
+      "sha256": "0268acd8489970e6a65f23b98d120cf6f4fb6c23f7c4508bb45d240050bb1627"
+    },
+    {
+      "path": "evidence/map-before-cover-trial-2026-09-23.png",
+      "bytes": 150884,
+      "sha256": "7e306e09e322b5a2a37bbf4d279812c5bd5223aa7f6587c6d9ca03819580abde"
+    },
+    {
+      "path": "evidence/mars-detail-http-2026-09-23.log",
+      "bytes": 706,
+      "sha256": "3e4b84b3d30ff7f63cb83adf3244129d7c3ea9f2c5d1de1ac23a88579aa3df10"
+    },
+    {
+      "path": "evidence/mars-detail-worker-tests-2026-09-23.log",
+      "bytes": 692,
+      "sha256": "809bc8b814a4f09f50db090f5e04ce292f70692aabc0d88e573ef05f27ba525e"
+    },
+    {
+      "path": "evidence/mars-detail-worker-typecheck-2026-09-23.log",
+      "bytes": 141,
+      "sha256": "fe3ae035109bf5704a848c7b559cfce55992c61aa1d6ebc97aaa760f058d1c0b"
+    },
+    {
+      "path": "evidence/mars-selectable-window-2026-09-23.json",
+      "bytes": 564,
+      "sha256": "0887b3ff82e1204b5c2e9f058e17d4968e0b48cdd65d0a5dfc0d407d8e735bc4"
+    },
+    {
+      "path": "evidence/mars-texture-2026-09-23.json",
+      "bytes": 5581,
+      "sha256": "0d8dece01e9a1e635ff99232c32c08ab23bf03f90d2d6c1bcf16f1bed08b935e"
+    },
+    {
+      "path": "evidence/mars-texture-ab-off-2026-09-23.png",
+      "bytes": 12946,
+      "sha256": "29c027542fd747a8f9597d53dcb96bfa786b4c0c1ffdbc53555fc7d286eebde2"
+    },
+    {
+      "path": "evidence/mars-texture-ab-on-2026-09-23.png",
+      "bytes": 12889,
+      "sha256": "8564b4dd4a183e2833d2973d3cba75742d8cf31f1edec29f55d230697e866f2d"
+    },
+    {
+      "path": "evidence/mars-texture-gpu-ab-2026-09-23.json",
+      "bytes": 2699,
+      "sha256": "bf4792c6c1150a995017b76d3e822cb92d0fe3fea5d720fb41686ecd0e1bcb54"
+    },
+    {
+      "path": "evidence/mars-zoom-context-validate-2026-09-23.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/mars-zoom-focused-final-2026-09-23.log",
+      "bytes": 497,
+      "sha256": "c8ab7f0fe32453f4993e22c7d8904a00c2d329860a1acbf0bc0878e0258608da"
+    },
+    {
+      "path": "evidence/mars-zoom-isolated-build-2026-09-23.log",
+      "bytes": 56391,
+      "sha256": "79d524e06708cfcbdbe5cb119aea08e3e6dccfde0c8e938cfcd99e7b4128a7d7"
+    },
+    {
+      "path": "evidence/mars-zoom-located-2026-09-23.png",
+      "bytes": 50404,
+      "sha256": "5114df82d035474a4e4c3b1ae15f61998e320e0a53feed92bfac9816bafa96a0"
+    },
+    {
+      "path": "evidence/mars-zoom-map-2026-09-23.png",
+      "bytes": 150978,
+      "sha256": "7d07b9b2770a841586b4f417d4845fb92768f3c585ca69bc5eb03b74748be96c"
+    },
+    {
+      "path": "evidence/mars-zoom-max-2026-09-23.png",
+      "bytes": 11817,
+      "sha256": "687844709eb17b223bee20bef56f3b83aa2f28658b0099ff9167e5add71cbd39"
+    },
+    {
+      "path": "evidence/mars-zoom-mini-tests-2026-09-23.log",
+      "bytes": 78544,
+      "sha256": "986da829e44539294d83d3a7229bbdfc9c6f55d51b5af718dce80780a8ecc78c"
+    },
+    {
+      "path": "evidence/mars-zoom-mini-typecheck-2026-09-23.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/mars-zoom-runtime-2026-09-23.json",
+      "bytes": 1847,
+      "sha256": "73557a6ebd04f88ea1898d0d8c426d5be51084e338a37ea64476b50f81cc9bea"
+    },
+    {
+      "path": "evidence/mars-zoom-sky-initial-2026-09-23.png",
+      "bytes": 48139,
+      "sha256": "3b33150e60e6785281072dc6ae4e591052a74b1efc1ad8b6183ba1e9efb12d71"
+    },
+    {
+      "path": "evidence/mars-zoom-sky-manual-2026-09-23.png",
+      "bytes": 35631,
+      "sha256": "c8d7495d222fc1ed680e45bc72afd5097fb4b0318af75adc7573466b2f370d13"
+    },
+    {
+      "path": "evidence/mercury-api-tests-2026-09-24.log",
+      "bytes": 36528,
+      "sha256": "ae68f2cea6d2c040ceee97175395b896497c5fd1455857418bd0df1b77aa5596"
+    },
+    {
+      "path": "evidence/mercury-context-validate-2026-09-24.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/mercury-image-container-http-2026-09-24.json",
+      "bytes": 821,
+      "sha256": "d027e5fa33158eda6605b001ed5a88f295f09914cb4ed05c135bf94df7334096"
+    },
+    {
+      "path": "evidence/mercury-isolated-weapp-build-2026-09-24.log",
+      "bytes": 65339,
+      "sha256": "1707e2525dab5a3218be9544946551122f3b9dbcd5b6fa68f8133bf5572350ff"
+    },
+    {
+      "path": "evidence/mercury-mini-tests-2026-09-24.log",
+      "bytes": 79887,
+      "sha256": "80b71e678daef93a2211613f24d9a726a70fa23960748f090e59db62eb2bb257"
+    },
+    {
+      "path": "evidence/mercury-release-image-build-2026-09-24.log",
+      "bytes": 7806,
+      "sha256": "1e449ab2e9eacbd087a8b85401c015e2115d21a7916d9d68a8c64cc366816432"
+    },
+    {
+      "path": "evidence/mercury-subobserver-2026-09-24.json",
+      "bytes": 1102,
+      "sha256": "5122ad63ce1308d0258f90f28e36822c8ce0e3a94f00bc708db7870437dbfad5"
+    },
+    {
+      "path": "evidence/mercury-texture-2026-09-24.md",
+      "bytes": 7791,
+      "sha256": "3c200832324e6d08caba7f42cca440ec3de27c0eb8de576e7a574eeb0bccebe7"
+    },
+    {
+      "path": "evidence/mercury-webgl-probe-2026-09-24.html",
+      "bytes": 127419,
+      "sha256": "6a48af9c2e2b7b2475bdae4cb6b26ef01b071b4616324abae4cb1855e84af756"
+    },
+    {
+      "path": "evidence/mercury-webgl-probe-2026-09-24.json",
+      "bytes": 663,
+      "sha256": "3a3685cc466e79c28dc9328ca873833b981d431d5c389f4e1378daac77ffdd93"
+    },
+    {
+      "path": "evidence/mercury-wms-0-360-1024x512.jpg",
+      "bytes": 102928,
+      "sha256": "d4aa6b34f6c3d2268c447873c5f47d97de308f0419171a475fce9f789763403a"
+    },
+    {
+      "path": "evidence/mercury-wms-capabilities.xml",
+      "bytes": 14721,
+      "sha256": "a751a510c9748b00c197dd583cb01c847cc219fe8a26cd452ba14f44de7ddfa7"
+    },
+    {
+      "path": "evidence/mercury-wms-MESSENGER-1024x512.jpg",
+      "bytes": 91748,
+      "sha256": "087f6f18ec4116d303bdd2cfc29c1651e24924a8aff584e9db2d769e0ce6cfe1"
+    },
+    {
+      "path": "evidence/mercury-wms-MESSENGER_May2013-1024x512.jpg",
+      "bytes": 89973,
+      "sha256": "4a047a09da2374973a27f4478fa1ce2c721e9e670eac8e8fc3711b8fda569d2a"
+    },
+    {
+      "path": "evidence/mercury-wms-MESSENGER_May2013-minus180-1024x512.jpg",
+      "bytes": 89984,
+      "sha256": "b782316d7458df90198d8e9664abb3902841c0709085bd20f03e46706a252d81"
+    },
+    {
+      "path": "evidence/moon-bff-typecheck.log",
+      "bytes": 141,
+      "sha256": "fe3ae035109bf5704a848c7b559cfce55992c61aa1d6ebc97aaa760f058d1c0b"
+    },
+    {
+      "path": "evidence/moon-clementine-v21-coverage-candidate.png",
+      "bytes": 1595187,
+      "sha256": "ba7b9eef33d3e4d25c251f79641c39ea5526c35edb5c262eecffb3dea67b23f6"
+    },
+    {
+      "path": "evidence/moon-client-typecheck.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/moon-context-validate.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/moon-final-tests.log",
+      "bytes": 5383,
+      "sha256": "df609016dcb9e83f513b69a6a0d71ce83ae2ffaf475bcaddedcaca632e6108e2"
+    },
+    {
+      "path": "evidence/moon-registration-native-2026-09-23.json",
+      "bytes": 1997,
+      "sha256": "b1db08c78a9193f32cdc3fea883c8475dd664cc0768ffbf8b8bfdb45b8191699"
+    },
+    {
+      "path": "evidence/moon-registration-native-2026-09-23.md",
+      "bytes": 2898,
+      "sha256": "3467f7a5801bdcae9cb2feb2059e2439607256900db0a5db4509fdcd956f75da"
+    },
+    {
+      "path": "evidence/moon-simulator-observation.json",
+      "bytes": 1617,
+      "sha256": "2b6855ddf6c7028bd8f4c7130a18cb5c12fa88ce56c2a404f7397cf8a05a3dde"
+    },
+    {
+      "path": "evidence/moon-texture-2026-09-23.json",
+      "bytes": 3608,
+      "sha256": "4f3ddc4e8abe87739dbacce7f28105da0467b678e5219631c2e96e89d5037b97"
+    },
+    {
+      "path": "evidence/moon-uv750-transparent-candidate.png",
+      "bytes": 2083099,
+      "sha256": "18ad9a0fceed3299958f02e2631c7ff35ec950901cc0bad9dbd791b7151b11b1"
+    },
+    {
+      "path": "evidence/neptune-opal-2025-readme.txt",
+      "bytes": 1541,
+      "sha256": "cfc2649e0242672fe6c78deba174b7572babb6a93ad7b45ec8956fb6c7c08859"
+    },
+    {
+      "path": "evidence/neptune-opal-2025b-candidate-8x512.png",
+      "bytes": 527,
+      "sha256": "447b4fc50a47b025cbaf5c1e4e5a0a8df8b1403c3706ba4b46fd432e7de391e0"
+    },
+    {
+      "path": "evidence/neptune-opal-2025b-source.tif",
+      "bytes": 789926,
+      "sha256": "8c17a2872b5d55577c63abe7ba1369997ff32bb83e0f9b9c350a46db96713cb8"
+    },
+    {
+      "path": "evidence/non-device-residual-audit-2026-09-24.md",
+      "bytes": 3160,
+      "sha256": "4ce0e93380901e8c796f0522c9b64adbe348c56b8dd5d83d981c38a11aaad2a3"
+    },
+    {
+      "path": "evidence/non-phone-blocked-audit-2026-09-26.md",
+      "bytes": 2100,
+      "sha256": "d222e8c51dbe1c810010b5c525144b34419dd5be9de7427bc0218d87989dfdfd"
+    },
+    {
+      "path": "evidence/official-preview-summary.json",
+      "bytes": 932,
+      "sha256": "1ba1c03597be9a18ee2a9c2c56c732785a3fe85e69e579282005e417639985ec"
+    },
+    {
+      "path": "evidence/opal-jupiter-2024c-preview.png",
+      "bytes": 1168745,
+      "sha256": "7e37cce672f86520d5d5cb28badcaebcc3fb2efc6f02f3d8922a4212fceef76f"
+    },
+    {
+      "path": "evidence/opal-jupiter-band-preview.png",
+      "bytes": 2769,
+      "sha256": "05a8b306b77d3d15d49e73381cf8011a47a1ed9bccbe9d3dcde46eb5fde0010f"
+    },
+    {
+      "path": "evidence/opal-jupiter-bands-2026-09-24.md",
+      "bytes": 7322,
+      "sha256": "8aba3ee4b149849dfbf29f6123755e0e100251dd23a0703cf1f139f012226700"
+    },
+    {
+      "path": "evidence/optical-budget-2026-09-23-isolated-build.log",
+      "bytes": 84194,
+      "sha256": "20c275fdad0014355c2f0a20c801a924ff8530567d9e95d22299bb6715b2888e"
+    },
+    {
+      "path": "evidence/optical-budget-2026-09-23-mini-tests.log",
+      "bytes": 78467,
+      "sha256": "21ec9a870895e74eaf2e669dd505f811bed0204dfc5eb2d95df7c71bafaa707d"
+    },
+    {
+      "path": "evidence/optical-budget-2026-09-23.md",
+      "bytes": 2159,
+      "sha256": "24266baf5ed58007873678fa0a61d2de049726d23a59c485408bc602d88626e7"
+    },
+    {
+      "path": "evidence/optical-fallback-isolated-build-2026-09-23.log",
+      "bytes": 84067,
+      "sha256": "d9efb8da4debd92c1527a606766a95dccccfe10d63d06d8d20d356174caa78dd"
+    },
+    {
+      "path": "evidence/optical-fallback-mini-tests-2026-09-23.log",
+      "bytes": 78272,
+      "sha256": "a107df57de50bc40a633e072631acc882f37a67cfde494aaba4689f03f92868c"
+    },
+    {
+      "path": "evidence/optical-frame-and-mesh-2026-09-23.json",
+      "bytes": 1733,
+      "sha256": "378b855cfc825f40a528a1940e086d666c0f47c54f45f49ea42177dcb54124d0"
+    },
+    {
+      "path": "evidence/optical-hips-candidate-2026-09-23.json",
+      "bytes": 4970,
+      "sha256": "42e9412338126a0ea723765e13505dd5574bef00d169df21f988a351a1905429"
+    },
+    {
+      "path": "evidence/optical-hips-m31-native-trial-2026-09-23.jpg",
+      "bytes": 36559,
+      "sha256": "9c30b341baf74b19a5650926a14a4a92ca0156c74577c98053f9a4befc61dbac"
+    },
+    {
+      "path": "evidence/optical-native-mesh-trial-2026-09-23.json",
+      "bytes": 1733,
+      "sha256": "96481419db0912ed037714664267bdd2db9827990a23b43f2c5a80908da0ba32"
+    },
+    {
+      "path": "evidence/optical-order0-full-mini-tests-2026-09-23.log",
+      "bytes": 79011,
+      "sha256": "ad4a106793ff77ef9680c7472ed93d6c045563299e91b7de1f63021dce76d18e"
+    },
+    {
+      "path": "evidence/optical-order0-isolated-build-2026-09-23.log",
+      "bytes": 69882,
+      "sha256": "8643a5519538052348f5a86cba084ef42c2606c5482924058a9672d0e5711bff"
+    },
+    {
+      "path": "evidence/optical-order0-mesh-probe-2026-09-23.jsonl",
+      "bytes": 1343,
+      "sha256": "0dcef5f894c222472851c91727760c4f0977dddfbadd903a401e0170f44da66a"
+    },
+    {
+      "path": "evidence/optical-order0-publication-2026-09-23.md",
+      "bytes": 3984,
+      "sha256": "7e013d6b8c78ca8d8ff34c97066157ad97d3732ce46517c781aecfb6fe8b9f7b"
+    },
+    {
+      "path": "evidence/optical-order0-real-tile-probe-2026-09-23.json",
+      "bytes": 691,
+      "sha256": "a96b8572514bbaa68ec2a1c6a00adfa3d21c47c1f0623805d89e73467295839e"
+    },
+    {
+      "path": "evidence/p1-canvas-touch-scroll-2026-09-25.md",
+      "bytes": 7992,
+      "sha256": "cdc844e84a8455faad8c7ee0c53a66123b92c293afb7c47f8d0e03bc0175237e"
+    },
+    {
+      "path": "evidence/p1-client-provenance-2026-09-25.md",
+      "bytes": 3608,
+      "sha256": "ac01972854284fee406b390ab9c9dd66a689510eeccb51a0d30536b63b97072d"
+    },
+    {
+      "path": "evidence/p1-resume-2026-09-27.md",
+      "bytes": 3006,
+      "sha256": "0383f5e59556c7af39e66180a9f7322c8e2e065b4a3d44c2001c64a9812e95da"
+    },
+    {
+      "path": "evidence/p1-resume-build-2026-09-27.log",
+      "bytes": 69935,
+      "sha256": "66415db70b7322129cbd1e701ab7ac4222f350dc3c68ef1ba0473e4b1c9c3471"
+    },
+    {
+      "path": "evidence/p1-saturn-ring-facets-2026-09-25.md",
+      "bytes": 10261,
+      "sha256": "34b948e159a11af84428bcee2a584aafbebd07e5e328179197cc3e81a5c8e973"
+    },
+    {
+      "path": "evidence/p1-saturn-zoom-2026-09-25.md",
+      "bytes": 3612,
+      "sha256": "17309477ea9cf28a1b8eb3a049b5bc2fa1f11090ac11b84034fdc19f17a15540"
+    },
+    {
+      "path": "evidence/planet-context-validate.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/planet-final-bff-tests.log",
+      "bytes": 1636,
+      "sha256": "09d8147e1a36686d42d9b0800b4d9c826a12dbe4303420d504f713541eb1d373"
+    },
+    {
+      "path": "evidence/planet-final-client-tests.log",
+      "bytes": 3269,
+      "sha256": "6f1c601c4800e5acb063e52efe2af133d3d6c77cca924070847b9b05f92aabfb"
+    },
+    {
+      "path": "evidence/planet-final-typecheck.log",
+      "bytes": 432,
+      "sha256": "fb04aa91c5ed1a806008723ea9c5e44d7b82d6d39ff80c535f631ccd97b5288a"
+    },
+    {
+      "path": "evidence/planet-identity-devtools-2026-09-23.json",
+      "bytes": 931,
+      "sha256": "89aa61b1400044d775a8cd154af1283cc0a6368129bfa11e48bdad76efce8126"
+    },
+    {
+      "path": "evidence/record-integrity.json",
+      "bytes": 328,
+      "sha256": "602dc97b03d42dbed1af3ad26813e0a4245cfad6bb22eccaa2f1a71c350ce041"
+    },
+    {
+      "path": "evidence/resume-context-validation-2026-09-24.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/sao-twilight-selection-2026-09-24.json",
+      "bytes": 1175,
+      "sha256": "72fa84880b6e24348ba3474854237e56529870e271d58ae135551e72c60eaefe"
+    },
+    {
+      "path": "evidence/sao-twilight-selection-2026-09-24.md",
+      "bytes": 2898,
+      "sha256": "a9805799ed158c8ab2b9ad172d721a6edbd9708042caf69a0abaaf4a58093fac"
+    },
+    {
+      "path": "evidence/sao-view-budget-2026-09-24.json",
+      "bytes": 90715,
+      "sha256": "ad6a168d23a901a09784f21c49f3169fc6ef4bfe4b02f464057c4a2bfbb6ab0f"
+    },
+    {
+      "path": "evidence/satellite-omm-trial-2026-09-23.json",
+      "bytes": 1869,
+      "sha256": "c9186aca55ed275b7c1cfad069641e307b1dbf8aef9dc89039394c1b1d371846"
+    },
+    {
+      "path": "evidence/saturn-opal-2025-readme.txt",
+      "bytes": 1625,
+      "sha256": "31059e9f106905f1ca34c924e005c3094e7c33e94d19a1f5178fcb7f186ca3ca"
+    },
+    {
+      "path": "evidence/saturn-opal-2025a-atomic-check.png",
+      "bytes": 1003,
+      "sha256": "68da69457db865d4f0f517ecb034d0a208925b9fe5595ee8ac1e9a54ba43869c"
+    },
+    {
+      "path": "evidence/saturn-opal-2025a-bands-candidate.png",
+      "bytes": 1003,
+      "sha256": "68da69457db865d4f0f517ecb034d0a208925b9fe5595ee8ac1e9a54ba43869c"
+    },
+    {
+      "path": "evidence/saturn-opal-2025a-bands-preview.png",
+      "bytes": 2321,
+      "sha256": "06a032ea66a37dd3b0d65ba4809a8bb9c3c59ec1880903c71cfe48666d4bab45"
+    },
+    {
+      "path": "evidence/saturn-opal-2025a-recheck.png",
+      "bytes": 1003,
+      "sha256": "68da69457db865d4f0f517ecb034d0a208925b9fe5595ee8ac1e9a54ba43869c"
+    },
+    {
+      "path": "evidence/saturn-opal-2025a-source-preview.png",
+      "bytes": 381982,
+      "sha256": "401b8c90978b21cea1143d1176f627524bed23fb6e221bef9ed3af2322d6bcd0"
+    },
+    {
+      "path": "evidence/saturn-opal-2025a-source.tif",
+      "bytes": 4885052,
+      "sha256": "c34a13a8253a39bcc1f8376b24c077b89f05ce0b5202706f535ded20314440d7"
+    },
+    {
+      "path": "evidence/saturn-ring-bands-simulator-2026-09-23.json",
+      "bytes": 1806,
+      "sha256": "7380b2d4895f730940d5dae1584ee46fdd04874923030a85110a6c95781856d3"
+    },
+    {
+      "path": "evidence/saturn-ring-simulator-2026-09-23.json",
+      "bytes": 2092,
+      "sha256": "6aa5ad5111958a01fbefb1f758e2885d3c80fb4a7631fc5b855b306a059af90e"
+    },
+    {
+      "path": "evidence/sky-before-cover-trial-2026-09-23.png",
+      "bytes": 47927,
+      "sha256": "cd8ec420113319d4dc53a1ee6bdc514b4c1c4f0cf81a1cb8f47c6391bf68a71a"
+    },
+    {
+      "path": "evidence/sky-canvas-control-covered-before-2026-09-23.png",
+      "bytes": 35535,
+      "sha256": "4044293eec9e1da9525f2eb56bb49ecb31d9a275709a2cb1e426e6b0fc9daedc"
+    },
+    {
+      "path": "evidence/sky-canvas-deferred-2026-09-23.json",
+      "bytes": 2473,
+      "sha256": "fbed273d5e882d6932efcfc986141d686fcd561756d49aaef2ff9cd55e6d9262"
+    },
+    {
+      "path": "evidence/sky-canvas-overlay-trial-2026-09-23.json",
+      "bytes": 1805,
+      "sha256": "5121bc10884bb38e167247d6315dbabdbeeb5bc90e16e54447fee6a877466f35"
+    },
+    {
+      "path": "evidence/sky-cover-view-trial-2026-09-23.png",
+      "bytes": 35657,
+      "sha256": "4435dccd4ee882527ec5c549e8e11a3b746f5258bd8c284847a6c492f750d10b"
+    },
+    {
+      "path": "evidence/sky-manual-canvas-after-defer-2026-09-23.png",
+      "bytes": 35535,
+      "sha256": "d8aaa4c98b7d9dee42ea1aaa387747cffdf80193a2e996473ff52dfb42fc6e72"
+    },
+    {
+      "path": "evidence/sky-manual-canvas-after-defer-final-2026-09-23.png",
+      "bytes": 35606,
+      "sha256": "67552915c62e94e1f7b8826664441c507c07e776e949da7b766372bc69bfe085"
+    },
+    {
+      "path": "evidence/sky-no-pose-canvas-deferred-2026-09-23.png",
+      "bytes": 47896,
+      "sha256": "fa756d4ed3e8051495b7f0ca54beed75caf3be2de101e7f92a84d7119dd079cf"
+    },
+    {
+      "path": "evidence/sky-no-pose-canvas-deferred-final-2026-09-23.png",
+      "bytes": 47845,
+      "sha256": "811ce36f0a7dfa0777d2cd807c7309dabcf532e407c886d50fd080bcdeae589a"
+    },
+    {
+      "path": "evidence/sky-no-pose-first-open-2026-09-23.json",
+      "bytes": 1859,
+      "sha256": "347fc9157cf3eb40f2f0103420df72f60c4245dbacfefe21acc0dfe2f03307de"
+    },
+    {
+      "path": "evidence/sky-owner-context-validate.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/sky-pick-simulator-2026-09-23.json",
+      "bytes": 1674,
+      "sha256": "69a89efca1c56f97e69468bf93586255efa00c87dcca38889d68b614c16921b7"
+    },
+    {
+      "path": "evidence/sky-root-portal-trial-2026-09-23.png",
+      "bytes": 35648,
+      "sha256": "55251d931a93de4c9e0654cf0b82d86b144d3ddbff626960bf57e3fa221e14dd"
+    },
+    {
+      "path": "evidence/sky-root-portal-trial-initial-2026-09-23.png",
+      "bytes": 47844,
+      "sha256": "932afb79e7604e90511c82f0ceb82f5e19d0b23d1cbbd230a674efb7369fc1c5"
+    },
+    {
+      "path": "evidence/skymapper-dr4-rights-metadata.json",
+      "bytes": 1887,
+      "sha256": "1ce7baab5db405f62b9f0de49cccbf14053e3f61cf6f4e15b0caa1b0aef7193f"
+    },
+    {
+      "path": "evidence/skymapper-dr4-sombrero-siap-metadata.csv",
+      "bytes": 6873,
+      "sha256": "bc03cc7caf688e0ea9521bf05717c47b3d25c4391f3b3aac1a6806a9e0b0d56a"
+    },
+    {
+      "path": "evidence/solar-light-client-tests.log",
+      "bytes": 1890,
+      "sha256": "afb2e227d07db2101de181f35051e0b5ddb7ce54cb9584919c69bbd3783b3f8a"
+    },
+    {
+      "path": "evidence/solar-light-context-validate.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/solar-light-final-client-tests.log",
+      "bytes": 2621,
+      "sha256": "43c32808663d69736be4c5c5590e9e5c23521306e52bdf3c6b8d46f220af92a8"
+    },
+    {
+      "path": "evidence/solar-light-final-typecheck.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/solar-light-simulator-pixels.json",
+      "bytes": 906,
+      "sha256": "0643eb22b638a2aa183b03c198a9766c21edde081ca9352402b46a855bcb1f0d"
+    },
+    {
+      "path": "evidence/solar-light-typecheck.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/solar-report-bff-tests.log",
+      "bytes": 1293,
+      "sha256": "96d09b94ee52bf7115cea5da6a7da8cd9e7ec3beb70969b7344b1683527bb9f8"
+    },
+    {
+      "path": "evidence/solar-report-bff-typecheck.log",
+      "bytes": 141,
+      "sha256": "fe3ae035109bf5704a848c7b559cfce55992c61aa1d6ebc97aaa760f058d1c0b"
+    },
+    {
+      "path": "evidence/solar-report-client-tests.log",
+      "bytes": 854,
+      "sha256": "7b352581dbc10be88388a2c42acd2abeb0f1a4ae0b46ef778c38fd0e929ed88f"
+    },
+    {
+      "path": "evidence/solar-report-client-typecheck.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "evidence/solar-report-context-validate.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/source-shape-open-2026-09-24.png",
+      "bytes": 41598,
+      "sha256": "1a3eeb7759642ff852158553f8dbd32993170fbecf0f6aa4265410b22e17dda4"
+    },
+    {
+      "path": "evidence/standalone-after-open-2026-09-24.png",
+      "bytes": 41669,
+      "sha256": "12a4bbb92b3a26ea076c7ee344b8fc954374e2ce45e9e52f7c6c34f8e54cabdd"
+    },
+    {
+      "path": "evidence/standalone-imported-2026-09-24.png",
+      "bytes": 41584,
+      "sha256": "dddd5da18e93d69d5f88c3dcdcb2cd7ae3d57a732896824a85bc8371d03834c6"
+    },
+    {
+      "path": "evidence/standalone-imported-refreshed-2026-09-24.png",
+      "bytes": 41845,
+      "sha256": "8d4ed82b158d8781d49269e5213588e52990fb286ddc1bd56efd5c5dc42d8417"
+    },
+    {
+      "path": "evidence/star-color-2026-09-23.json",
+      "bytes": 2786,
+      "sha256": "496e6c79d87011300a94fb290f6d943fe5c10e04b7c1d7e8adbfe2bd41ff8d36"
+    },
+    {
+      "path": "evidence/star-color-betelgeuse-located-night-2026-09-23.png",
+      "bytes": 85276,
+      "sha256": "56227ba472a6883163d60833460f01c4420d14607b6618ded3e28523cfb3ef5a"
+    },
+    {
+      "path": "evidence/star-color-build-2026-09-23.log",
+      "bytes": 63800,
+      "sha256": "39b6da225372f75eb2eeb28b3305eda05d58252fed82711b86c838b6034a073b"
+    },
+    {
+      "path": "evidence/star-color-full-mini-tests-2026-09-23.log",
+      "bytes": 78640,
+      "sha256": "79508a983b0dbf4afd2858126e5ce62dde926f8d64d28bef35e1027500de82ef"
+    },
+    {
+      "path": "evidence/star-color-map-2026-09-23.png",
+      "bytes": 150941,
+      "sha256": "e94dbbe4bceb283757e1d9a945a797785b05d2280cab721c3e426b7c596614ff"
+    },
+    {
+      "path": "evidence/star-color-sky-entry-2026-09-23.png",
+      "bytes": 47982,
+      "sha256": "cf2184b78e655f466d1dfb4ec80ed352a4b27e1806c1e40f042f250dada48c8b"
+    },
+    {
+      "path": "evidence/star-color-time-open-2026-09-23.png",
+      "bytes": 22703,
+      "sha256": "b37e7414f6f5ef86be4d73b8bfd865530ac63a227f2b4d4db0b440c631061473"
+    },
+    {
+      "path": "evidence/star-color-vega-2026-09-23.png",
+      "bytes": 21457,
+      "sha256": "816df5879a270883cd222b7476fbff1220afbb0c67ef5c5c35a4f30986b6362c"
+    },
+    {
+      "path": "evidence/star-color-vega-located-night-2026-09-23.png",
+      "bytes": 62561,
+      "sha256": "65b1c4d9335560394547a7a08a835450756efc03c471d53bef0030c0bb9f73a8"
+    },
+    {
+      "path": "evidence/star-color-vega-night-2026-09-23.png",
+      "bytes": 33386,
+      "sha256": "b5858a3c516d0afd573b8fe64c6fcea06a73afeabf0f0d57d65eb3607536f418"
+    },
+    {
+      "path": "evidence/stellar-extinction-2026-09-23.json",
+      "bytes": 3208,
+      "sha256": "37c411d96ff7de11570472d8e96ee88b6c19e95cc6d0f576313211e0ec8956c9"
+    },
+    {
+      "path": "evidence/sun-disc-simulator-2026-09-23.json",
+      "bytes": 1280,
+      "sha256": "394f2e97717339fde2a363a4f038d83770900730cb0166f8620d769aadbe7f1d"
+    },
+    {
+      "path": "evidence/target-north-after.log",
+      "bytes": 1163,
+      "sha256": "9b726d50a259fe8e8ead67738df23df019433bd722436b377c326ef69e2fb48c"
+    },
+    {
+      "path": "evidence/target-north-before.log",
+      "bytes": 1024,
+      "sha256": "ccace9f407eb84930a288974605fb70a555b088ec88ed2af307a01dddbcbe85b"
+    },
+    {
+      "path": "evidence/target-north-typecheck.log",
+      "bytes": 141,
+      "sha256": "fe3ae035109bf5704a848c7b559cfce55992c61aa1d6ebc97aaa760f058d1c0b"
+    },
+    {
+      "path": "evidence/target-position-after-initial.log",
+      "bytes": 1812,
+      "sha256": "20c83c3a6ecff18e8a3cc75565c3445d7afa821ebfc7aceaf22e1f0258eb5501"
+    },
+    {
+      "path": "evidence/target-position-after.log",
+      "bytes": 1938,
+      "sha256": "84f8002993180f269391dd505d2ae51a39c11adcadf4de05dcc0c0254e0380d5"
+    },
+    {
+      "path": "evidence/target-position-before.log",
+      "bytes": 2410,
+      "sha256": "9b30dfd7414744918849a68ced929cf437f6ac366f4f51784cf6d54b489c2f0f"
+    },
+    {
+      "path": "evidence/target-position-bff-typecheck.log",
+      "bytes": 141,
+      "sha256": "fe3ae035109bf5704a848c7b559cfce55992c61aa1d6ebc97aaa760f058d1c0b"
+    },
+    {
+      "path": "evidence/target-position-bff.log",
+      "bytes": 2337,
+      "sha256": "21abe9126f1b979c4198b489bd034ab93bebf06a11f5105a402460f97a927acf"
+    },
+    {
+      "path": "evidence/target-position-build-weapp.log",
+      "bytes": 57520,
+      "sha256": "2f8d55d2ad474ae4c3169b03d484532c3e6b5c617d279aa4fd693bf6029a6783"
+    },
+    {
+      "path": "evidence/target-position-consumers-after.log",
+      "bytes": 3340,
+      "sha256": "f9b4adb68ab7c6754a97935d606940f610abe8f872a8213cea52c4be46f7b054"
+    },
+    {
+      "path": "evidence/target-position-consumers.log",
+      "bytes": 5626,
+      "sha256": "9a2f97fcf7e24117fc478f6bc4e3cf541152cdb8014b286be8421d24f1e0e378"
+    },
+    {
+      "path": "evidence/target-position-context-validate.log",
+      "bytes": 303,
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    },
+    {
+      "path": "evidence/target-position-contract.log",
+      "bytes": 560,
+      "sha256": "383ac1225889852dc8eb747e7b4fa0c9ae5b6361c9ccb4ac14ccf8c109a500fa"
+    },
+    {
+      "path": "evidence/target-position-time-axis-after.log",
+      "bytes": 626,
+      "sha256": "8e9b72976fe83d50761bba51ba236e8576f524f11e40e571445f84f00064f149"
+    },
+    {
+      "path": "evidence/target-position-time-axis.log",
+      "bytes": 625,
+      "sha256": "2bd4843afd53c16873ee9ced2681414688b64455f6d757b30951fca163d8ea2b"
+    },
+    {
+      "path": "evidence/target-position-typecheck.log",
+      "bytes": 1596,
+      "sha256": "4423ae1c38f240a37011646682550c117ab727bf9831a73317ebf118d68f0d87"
+    },
+    {
+      "path": "evidence/terrain-horizon-probe-2026-09-23.json",
+      "bytes": 74264,
+      "sha256": "1f6b9a4952cf23e6b8f4a2c8c5299b97d6aea45f7a5683a021fd039cfd0d51f5"
+    },
+    {
+      "path": "evidence/terrain-horizon-probe-east100-2026-09-23.json",
+      "bytes": 74241,
+      "sha256": "b8013a14d71c7be7f3c3bf8bb54a8b84821604956ec685df86b03512d82729a3"
+    },
+    {
+      "path": "evidence/terrain-horizon-probe-north100-2026-09-23.json",
+      "bytes": 74225,
+      "sha256": "cc0731363526f268b94ff3188741df60462b9caecf1ce27e492c5125e93075ae"
+    },
+    {
+      "path": "evidence/terrain-horizon-probe-south100-2026-09-23.json",
+      "bytes": 74140,
+      "sha256": "baf1e310fb9f71631a68a2d1a4af31cf6fc592af970cc0b212850a90d05234ae"
+    },
+    {
+      "path": "evidence/terrain-horizon-probe-west100-2026-09-23.json",
+      "bytes": 74129,
+      "sha256": "2d5fc64e96800f40cfbaecc0ef0109535866a787e51e729e5dac7e8789a40be1"
+    },
+    {
+      "path": "evidence/twilight-star-attenuation-2026-09-23.json",
+      "bytes": 2987,
+      "sha256": "926c4588c0b637c1b659933254b428e28d9a5061fbcd94a9c90a1f48142075cd"
+    },
+    {
+      "path": "evidence/uranus-opal-2025-readme.txt",
+      "bytes": 1640,
+      "sha256": "52cfb90ecff487fb9b821ce1cce8a680c9705c001fc217319bc5b8c8865d96da"
+    },
+    {
+      "path": "evidence/uranus-opal-2025a-candidate-8x512.png",
+      "bytes": 421,
+      "sha256": "308d1521b5f0adebc14249c686664907335cdf8e0334a5a7008392b62b66c817"
+    },
+    {
+      "path": "evidence/uranus-opal-2025a-source.tif",
+      "bytes": 787756,
+      "sha256": "854ba9d0b744c2d6e6b646d315847a3528b94b4f0b8970cc4285d71228e69c7b"
+    },
+    {
+      "path": "evidence/w3-twilight-fade-2026-09-24.md",
+      "bytes": 1888,
+      "sha256": "813a779ccf5e3adc3b10eedc94d29aa6aca823676e1aa55f63259893e75a1542"
+    },
+    {
+      "path": "evidence/weapp-main-icon-copy-2026-09-24.md",
+      "bytes": 1582,
+      "sha256": "1574ed19da92318fa36550fcc17fef2082218d6b4f93e0fc2d1e9cccaa2e1901"
+    },
+    {
+      "path": "evidence/wechatide-auth-latest.json",
+      "bytes": 281,
+      "sha256": "a113da9b6f0df2a5918f1514cad773b69e55702f17a03719ea6d72c327067aad"
+    },
+    {
+      "path": "evidence/wechatide-status-latest.json",
+      "bytes": 419,
+      "sha256": "5752b64b17d2ac71db38dda94a45521320b7e08018586de753c4abcc381854f2"
+    },
+    {
+      "path": "evidence/wide-field-w3-2026-09-23.json",
+      "bytes": 4940,
+      "sha256": "d6879801bc9314f23f87d773df40b0aa468956d770454b43f937f6688c9199ab"
+    },
+    {
+      "path": "evidence/wikidata-chinese-name-analysis.json",
+      "bytes": 594077,
+      "sha256": "367a5be27a6eba8248cde6aa4775f6c49cdebfb0a46e779091ff840386896149"
+    },
+    {
+      "path": "evidence/wikidata-chinese-name-probe.json",
+      "bytes": 634384,
+      "sha256": "fd7af9c8f12c4ae78d0fd4c442cf3b7e121cdaa35b84f3e2ea0905ed54fd3600"
+    },
+    {
+      "path": "galactic-image-http-probe.ps1",
+      "bytes": 2275,
+      "sha256": "80fb6ca6679d854a4644933e48b08ee169d6be71f3faeb731593174d2d61b76c"
+    },
+    {
+      "path": "galactic-landmark-probe.py",
+      "bytes": 2022,
+      "sha256": "e1287eed1dbd2fcda7d6cd4650f56da80d7805b1c75de323f63873f74fa5f512"
+    },
+    {
+      "path": "galactic-webgl-probe.cjs",
+      "bytes": 5444,
+      "sha256": "52a64507fa34f085e5343e4d69305a712d281f4b5bf53154ac52a38a37c5c034"
+    },
+    {
+      "path": "goal-creation.json",
+      "bytes": 5618,
+      "sha256": "3f231cfd0c2de12fa0c543119e84952989eb638141cc0f6549de85860680a225"
+    },
+    {
+      "path": "GOAL-OBJECTIVE-HANDOFF-2026-09-28.md",
+      "bytes": 9113,
+      "sha256": "92fc11e1ac1968e75a1970ca5fd3ddd1e6594b7d48c5107b1680bcbd2392bd60"
+    },
+    {
+      "path": "GOAL.md",
+      "bytes": 9136,
+      "sha256": "c5033ca05f9c3a3594cbd885c7897c7a37e1a8fccfd31e23beb205a6bf8269f8"
+    },
+    {
+      "path": "HANDOFF-2026-09-28.md",
+      "bytes": 26997,
+      "sha256": "393ded0080a9082223109702af78ae23e4b6520647858e56496524585debea25"
+    },
+    {
+      "path": "handoff-git-status-2026-09-28.txt",
+      "bytes": 19494,
+      "sha256": "31bf4bf43843e929751762c818df82304b6c4e411cb2141c0ced7faf126e831f"
+    },
+    {
+      "path": "hips-wide-mesh-probe.mts",
+      "bytes": 3258,
+      "sha256": "808cf5ee8820b67c4a8c91e7f0574a4816ea07e333615c6e4231ab53a848b127"
+    },
+    {
+      "path": "INDEX-HISTORY-before-2026-09-24-resume.md",
+      "bytes": 60968,
+      "sha256": "2a1525bd598c43a72ddc46d190a9ff1b56186d709d791d4afcc46d75893130af"
+    },
+    {
+      "path": "INDEX-HISTORY-before-2026-09-28-handoff.md",
+      "bytes": 18757,
+      "sha256": "afb2b59133b83817dfb0f8bab7c84dd24ef78ee34bd96d4d43d29bf8dc4a378c"
+    },
+    {
+      "path": "INDEX.md",
+      "bytes": 17989,
+      "sha256": "fb4d569b53406599b061152e73b91f47f882e7382e2463ebc1ce5ba539eb41f6"
+    },
+    {
+      "path": "jupiter-bands-webgl-probe.cjs",
+      "bytes": 5561,
+      "sha256": "61f773b1f11b4062b1af331f064ef3ba78fc918eee2411430cd55691e3457018"
+    },
+    {
+      "path": "jupiter-oblate-composition-probe.mts",
+      "bytes": 2867,
+      "sha256": "f1b78bb5892f8274057ac8880191d4bd3848b482d4f2021ebd1c21ea102bb98f"
+    },
+    {
+      "path": "luminary-release-http-probe.mjs",
+      "bytes": 3629,
+      "sha256": "6aac07631191cd01449af5616c9cfa54dab1a0b07a26dc878f40605519846b87"
+    },
+    {
+      "path": "manual-level-drag-trial.mts",
+      "bytes": 4467,
+      "sha256": "964402b8c0a62fbbc9719a7c2ba0dd9de80e4b11b27e4379663f930088d0e9d7"
+    },
+    {
+      "path": "manual-view-drag-probe.mts",
+      "bytes": 808,
+      "sha256": "1f8abeb499f6df178b01f011f08ddaef036404bc2de1bb219e4c872ea9a35ae3"
+    },
+    {
+      "path": "mars-altitude-trial.mts",
+      "bytes": 1353,
+      "sha256": "efc70a653898f656f7ae45de70025deb6a19011c577233e77d0b28997d1d3137"
+    },
+    {
+      "path": "mars-selectable-window-probe.mts",
+      "bytes": 2699,
+      "sha256": "65a2b2c4dbc4fa90fd803d7e273e3b6c7804e01a14461af60f4ee8dd3a7a601c"
+    },
+    {
+      "path": "mercury-orientation-probe.mts",
+      "bytes": 1918,
+      "sha256": "f708059bcf1f481fb30296247575f7244524f24e4d8b2b6f34805c09be06ce2c"
+    },
+    {
+      "path": "mercury-visibility-probe.mts",
+      "bytes": 1643,
+      "sha256": "2d41118947bd4307b1c7929d5fb1fbb8e21b4914ef84d138063a2a63d1234cfa"
+    },
+    {
+      "path": "mercury-webgl-probe.cjs",
+      "bytes": 6483,
+      "sha256": "28e24dbd31ed055b2a860beccf6589cfc3eb9dc624ccb5b04292ebdc0a2e30bc"
+    },
+    {
+      "path": "moon-coverage-release-probe.mjs",
+      "bytes": 2044,
+      "sha256": "87e949ede2ed16b542bf850b7de433c86b113395121770a927f9e56ddbc2d6b9"
+    },
+    {
+      "path": "moon-coverage-webgl-probe.cjs",
+      "bytes": 4315,
+      "sha256": "ec5f4f14879669e60c571f1eef9cd69bcb8507201830fbe16c8ad745a011705c"
+    },
+    {
+      "path": "moon-derive-candidate.py",
+      "bytes": 1474,
+      "sha256": "f69b80b577091e9a184969cdcb654b82e49171178f164206b479a45144f36304"
+    },
+    {
+      "path": "moon-jpeg-samples.cjs",
+      "bytes": 1912,
+      "sha256": "d34621c0e0af4ad2c534c7d53021928274fff0217220bb911cff6720f8b795ef"
+    },
+    {
+      "path": "moon-registration-probe.mts",
+      "bytes": 7052,
+      "sha256": "b6d6fc36f2188791f308189105496ede5f09a5d39b65504a4a98becbf6e154da"
+    },
+    {
+      "path": "moon-source-tiff-metadata.py",
+      "bytes": 5899,
+      "sha256": "c0527f4d7599fdd8c8f6a3a3adce9e98282c3abab159fc440b355999a04971ca"
+    },
+    {
+      "path": "MOON-TEXTURE-SOURCE-RESEARCH.md",
+      "bytes": 4707,
+      "sha256": "2fccd5bfe5c0c2e30baaa9bea3260f347674b15ce889c69279ab1c4fe4845e3a"
+    },
+    {
+      "path": "moon-wms-alpha-probe.py",
+      "bytes": 1132,
+      "sha256": "ac24043b045cc4f3e2a19f48c29a485d63ef5f58de20be550a5931e691c9b313"
+    },
+    {
+      "path": "optical-composite-webgl-probe.cjs",
+      "bytes": 3828,
+      "sha256": "ce135b4155f89941015bad64f7fe23f38745857333688c22827e3b3cd84d28b1"
+    },
+    {
+      "path": "OPTICAL-DATA-RESEARCH.md",
+      "bytes": 29452,
+      "sha256": "468da1d9c4127775e5586440f17ef7ac0dbb3f8c7b4775952f2468f71903155d"
+    },
+    {
+      "path": "optical-local-trial.mts",
+      "bytes": 5912,
+      "sha256": "f822675fc87bdbfe721d9114efdfb68b76b85b17ee6d047cb308be1d5730d24f"
+    },
+    {
+      "path": "optical-order0-real-tile-probe.mts",
+      "bytes": 5816,
+      "sha256": "d6cc511d60b2b0aa64517e4d25dbb136b4a88ca8d7a3bd4fd2c86435c8efac2a"
+    },
+    {
+      "path": "optical-phone-source-fit.cjs",
+      "bytes": 3038,
+      "sha256": "60d2360c20802e06ea3115baa7f8760b10fb0904aa849759064d9a7816ba4809"
+    },
+    {
+      "path": "optical-sampling-webgl-probe.cjs",
+      "bytes": 4230,
+      "sha256": "8ee5900eae97331bc5b7f419929a36446b661e119c266ef84402bafe3f33fe82"
+    },
+    {
+      "path": "P1-TARGET-RISK-VERIFICATION.md",
+      "bytes": 23717,
+      "sha256": "18dacab18237c9a6b7fb50d067bcc55e657bee34114a5d066511bc29beb92bea"
+    },
+    {
+      "path": "phase-disc-webgl-probe.mts",
+      "bytes": 6565,
+      "sha256": "b640ad5c43906bbd9628bc94190c33e5e738f594d43615c895c26da0a3c3a900"
+    },
+    {
+      "path": "PLAN-HISTORY-before-2026-09-24-resume.md",
+      "bytes": 27694,
+      "sha256": "ed25a931f20ee33b9754727719a7deb7afa7c150b7db9d6ac987afbc91a51708"
+    },
+    {
+      "path": "PLAN-HISTORY-before-2026-09-26-nonphone.md",
+      "bytes": 34361,
+      "sha256": "413e4c682084ae4d2a6b04b053d26d0ab7c209422bb4136240b633e92bda41be"
+    },
+    {
+      "path": "PLAN-HISTORY-before-2026-09-27-device-resume.md",
+      "bytes": 34849,
+      "sha256": "67d96c5c382518184fd0a8bd21087027ee92532f7010cc531c15d8c21602cbba"
+    },
+    {
+      "path": "PLAN-HISTORY-before-2026-09-28-handoff.md",
+      "bytes": 38557,
+      "sha256": "4d85a614ad232e56a39914458ba48bda5fcffcacb4226a78f6408d5a6306a548"
+    },
+    {
+      "path": "PLAN.md",
+      "bytes": 30983,
+      "sha256": "d736c3d908fc11cfeec309de1a5c92aaf5657076b2108b695c554a68952c23b1"
+    },
+    {
+      "path": "PLANET-TEXTURE-SOURCE-RESEARCH.md",
+      "bytes": 11816,
+      "sha256": "8778e4fecf1cdbe6d9905e01dbe67c4af24d6f7088d35054b27be4e521e8492c"
+    },
+    {
+      "path": "PROGRESS.md",
+      "bytes": 136589,
+      "sha256": "c144399b6e8a3ad9e537eed8484fe012b153786bcbc5331851bbd8012c038220"
+    },
+    {
+      "path": "request-integrity.json",
+      "bytes": 460,
+      "sha256": "b95da40ed85221acc071503c47baf48630fce747033b830875394a997aea2d72"
+    },
+    {
+      "path": "request-original.txt",
+      "bytes": 16018,
+      "sha256": "2370eb26635352046bc3be983bf6bcb3ec23688b09406fd0d81e61308f91909a"
+    },
+    {
+      "path": "REQUIREMENTS.md",
+      "bytes": 36472,
+      "sha256": "cca78e5070a24560567d273fecae0b5e0a18f6dac4393db698d2d95eabb2bd11"
+    },
+    {
+      "path": "sao-twilight-selection-probe.mts",
+      "bytes": 2501,
+      "sha256": "3a0c42db8339b5bf3ff31a93a293a3aaf512b4f9401c93f6db8686b0b9a386ec"
+    },
+    {
+      "path": "sao-view-budget-probe.mts",
+      "bytes": 2020,
+      "sha256": "e199ad2f5d485bf9777cc50146101803a3a280030ee2e3a8ebfeb0d20452f990"
+    },
+    {
+      "path": "saturn-webgl-probe.cjs",
+      "bytes": 3651,
+      "sha256": "5978f3b5cdfee06201136ae85b4bac3403fe7be8962f49d4018cc51c5fde7ddd"
+    },
+    {
+      "path": "SCOPE-CHANGE-2026-09-23.md",
+      "bytes": 2484,
+      "sha256": "dd4d5ad2a38e051875d6ae099bf1a4c73edbb5addaa94d1f8e90659c47b6d732"
+    },
+    {
+      "path": "search-benchmark-wikidata.mjs",
+      "bytes": 1306,
+      "sha256": "bc9562921322b787b77469d8081eef58ba25004fec4b566118b0f7db75f4fbac"
+    },
+    {
+      "path": "search-benchmark.mjs",
+      "bytes": 1286,
+      "sha256": "51432432fb996b35deaf341e3b7554e88de46c9d15ad795092b59101d9fb9e46"
+    },
+    {
+      "path": "search-container-burst-trial.mjs",
+      "bytes": 2289,
+      "sha256": "33e72dab88079cc17295480c80b15e09c9a9bc3d75d1d12c863d7a7cac439052"
+    },
+    {
+      "path": "search-http-burst-trial.mjs",
+      "bytes": 1602,
+      "sha256": "32b3023089fcdeb042c89103c7817828ed1f8ac1553638785e6448457f6f6e92"
+    },
+    {
+      "path": "search-sao-compact-probe.mjs",
+      "bytes": 2825,
+      "sha256": "94701d162cc1eb3b1945a280adeb8cdf6819560eec4d422cfb1c24cfbfb6331e"
+    },
+    {
+      "path": "search-sao-stream-probe.mjs",
+      "bytes": 1919,
+      "sha256": "398899db0803f7dd832172f0b7061ce12eec783f4d2c55d5fc04fd9d6921ad94"
+    },
+    {
+      "path": "sky-credit-layout-probe.cjs",
+      "bytes": 3586,
+      "sha256": "28ea8a02e1d91dec86e7fe0542b04a941b32ad664201ade514b1ec5ab3da4004"
+    },
+    {
+      "path": "solar-aim-probe.mts",
+      "bytes": 1687,
+      "sha256": "5e4de685b71fdc584fe934289d672a3e1216e8de60da1d67fd7e1ce18f121499"
+    },
+    {
+      "path": "solar-batch-windows.mts",
+      "bytes": 2594,
+      "sha256": "b60c9570c8c6569e1c7efbdf5947c99d2bd75381d2f462748dc19ec5fd86bbfa"
+    },
+    {
+      "path": "solar-limb-webgl-probe.cjs",
+      "bytes": 5289,
+      "sha256": "164d50ab09093ffdcf0dea6440bc9219ce03d7179f6775a098f6c5f3cc57814a"
+    },
+    {
+      "path": "sources/constellation_names.eng.fab",
+      "bytes": 2491,
+      "sha256": "282f913ca5dc79f4d61efde2d0366f8385a3282a25c635d09026504cd5ccd4d5"
+    },
+    {
+      "path": "sources/hk-space-museum-constellations-sc.html",
+      "bytes": 68073,
+      "sha256": "875ee32e23beabcf69f342956c8c3a02f9fe6ed1785fe73d4c6722203ce61d78"
+    },
+    {
+      "path": "sources/moon-clementine-uv750-usgs-wms-2048x1024.jpg",
+      "bytes": 372399,
+      "sha256": "e071f796a1ec1f7c9f4d87660aabb1bb40adbfacc0ecb253919bee6c711efefb"
+    },
+    {
+      "path": "sources/wikipedia-zh-constellation-list.html",
+      "bytes": 213128,
+      "sha256": "c33bede99a4556d6151f7eb21698567c929cfae4d62dd7e78b1ee51ee83e1e98"
+    },
+    {
+      "path": "sources/wikipedia-zh-hans-constellation-list.html",
+      "bytes": 218567,
+      "sha256": "8150ce64ce6898a8fe8a6ef1230efc5e56e3defe44271603249de0939eaf69fe"
+    },
+    {
+      "path": "sources.json",
+      "bytes": 29387,
+      "sha256": "a060ad753c363c5733bbf139ad0be4c194152d6ac89b3588f9c650df4d9fa217"
+    },
+    {
+      "path": "STATE-HISTORY-before-2026-09-28-handoff.md",
+      "bytes": 218872,
+      "sha256": "85268d3a83b55be7b4f149c93676c782430ff47173cb87844632d811aeae8233"
+    },
+    {
+      "path": "STATE.md",
+      "bytes": 217983,
+      "sha256": "ec5435b4d2da01c2d4c038a71f9d57b21c6af655fe34c6cb24a6b34f18d131b1"
+    },
+    {
+      "path": "terrain-horizon-probe.py",
+      "bytes": 7664,
+      "sha256": "1cd2a4fdefdd2b9f454cb707cfddc9d136aec84270ab809cadf14c79eb6e615d"
+    },
+    {
+      "path": "tmp/dependencies/mozilla-readability-0.6.0.tgz",
+      "bytes": 43359,
+      "sha256": "6d3c3cc50dad51b543925deadc66d5b58cd2262d1d585f2ae0a44975627ad919"
+    },
+    {
+      "path": "tmp/dependencies/noble-hashes-2.0.1.tgz",
+      "bytes": 135794,
+      "sha256": "638ffb3053a7e7478c9e54a6e297f3601299ee570a41112e501af7050d086a0a"
+    },
+    {
+      "path": "tmp/dependencies/quaternion-2.2.0.tgz",
+      "bytes": 80772,
+      "sha256": "04521348c268dae1a87ff19ab4418f72cbac368eb4cca206076a28c5441161cf"
+    },
+    {
+      "path": "tmp/dependencies/twgl.js-7.0.0.tgz",
+      "bytes": 294758,
+      "sha256": "cbdc45e1886acfcbae499f4749e2307d5aa7d190649d3bf1e7926b4571a549a2"
+    },
+    {
+      "path": "tmp/dependencies/types-jsdom-30.0.0.tgz",
+      "bytes": 6363,
+      "sha256": "e2d7745e73f55ab3275e26d8df8026453c9ddd3cb85a017d273c329472da2468"
+    },
+    {
+      "path": "USER-UPDATES.md",
+      "bytes": 23644,
+      "sha256": "7084fed4a95cf070400bddf99051d9b831e39cb8e26ec7a737ec9c2b46d84ec8"
+    },
+    {
+      "path": "verify-sao-acrux-rebase.mjs",
+      "bytes": 2651,
+      "sha256": "507b3ea6a5c585791f2ecf5d63fd3d12328799f6ed943e337397e7b5c5d2a02d"
+    },
+    {
+      "path": "verify-tracking-ui.ps1",
+      "bytes": 4537,
+      "sha256": "a716b5dd77942933ea95a41d4f8d79f9952340cf7faeb7370ea57f015f8a4bd3"
+    },
+    {
+      "path": "wechatide-client.ps1",
+      "bytes": 2633,
+      "sha256": "d662e1ff5ea7f6fb102d4817d21b41ddf30c46050e288608af62cb24bd68e6e7"
+    },
+    {
+      "path": "wechatide-status.ps1",
+      "bytes": 2717,
+      "sha256": "9a5982d66b8b6c6bcd7074c854c46555083973cd9085422de8add631ee48f91d"
+    },
+    {
+      "path": "wikidata-chinese-name-probe.mjs",
+      "bytes": 1284,
+      "sha256": "821e6c340a670a419c53470e11d85a98a3253301bb7fca48d6e0eb0d79405758"
+    }
+  ]
+}

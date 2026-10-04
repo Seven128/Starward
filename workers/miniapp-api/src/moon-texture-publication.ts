@@ -2,6 +2,7 @@ import {MOON_COVERAGE_PUBLICATION,isMoonCoverageMetadata,type MoonTextureManifes
 import {FixedBodyTexturePublicationService} from "./fixed-body-texture-publication.ts";
 
 const DEFAULT_MANIFEST=new URL("../assets/moon/manifest.json",import.meta.url);
+export const LEGACY_MOON_TEXTURE_PUBLICATION_HASH="ccdcceac70cf74c041cff589f59ea6a2b06f8b741f0be97e67b59799b22b73e6";
 const WMS="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/earth/moon_simp_cyl.map&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=uv_v2&STYLES=&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/jpeg&TRANSPARENT=FALSE";
 
 export class MoonTexturePublicationService extends FixedBodyTexturePublicationService<MoonTextureManifestData>{
@@ -24,7 +25,6 @@ export class MoonTexturePublicationService extends FixedBodyTexturePublicationSe
     // The metadata-only correction retains exactly the original JPEG bytes.
     // Cached manifests must keep resolving their immutable image URL. Never
     // reuse this alias for a future image change; the base owner verifies bytes.
-    const original="ccdcceac70cf74c041cff589f59ea6a2b06f8b741f0be97e67b59799b22b73e6";
-    return super.image(publicationHash===original?this.manifest().publicationHash:publicationHash);
+    return super.image(publicationHash===LEGACY_MOON_TEXTURE_PUBLICATION_HASH?this.manifest().publicationHash:publicationHash);
   }
 }

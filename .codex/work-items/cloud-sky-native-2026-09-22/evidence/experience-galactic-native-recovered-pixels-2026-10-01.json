@@ -1,0 +1,115 @@
+{
+  "at": "2026-09-30T23:05:06.881Z",
+  "scope": "Original 427x919 native captures; central region only, no image edits. Same public North 45-degree label/time/base count; old full layer/pose/backing readiness not bound, causal conclusion unresolved.",
+  "images": [
+    {
+      "name": "sky-reentered",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-sky-reentered-2026-10-01.png",
+      "sha256": "e89ae0464c328eb3f25b745ca77a0cd1779f9139c473b688cd4f1d68a6ac4ed7"
+    },
+    {
+      "name": "galactic-production-ready",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-galactic-production-ready-2026-10-01.png",
+      "sha256": "c94fb1e7ae4f2814ab353bc8c3f22dda25f1dbff4e728a1cea05408f1a0b3efd"
+    },
+    {
+      "name": "galactic-samples-recovered",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-galactic-samples-recovered-2026-10-01.png",
+      "sha256": "530a0325bd820246899e8a0a490179e0524303e035e26dfdae46e0d5b30dc6fc"
+    }
+  ],
+  "region": {
+    "x": 0,
+    "y": 110,
+    "width": 427,
+    "height": 785
+  },
+  "comparisons": [
+    {
+      "before": "sky-reentered",
+      "after": "galactic-samples-recovered",
+      "maxDelta": 128,
+      "changedChannels": 3809,
+      "totalChannels": 1340780
+    },
+    {
+      "before": "galactic-production-ready",
+      "after": "galactic-samples-recovered",
+      "maxDelta": 1,
+      "changedChannels": 5,
+      "totalChannels": 1340780
+    }
+  ],
+  "atPoint": [
+    {
+      "x": 255,
+      "y": 250,
+      "colours": [
+        {
+          "name": "sky-reentered",
+          "rgb": [
+            21,
+            27,
+            39
+          ]
+        },
+        {
+          "name": "galactic-production-ready",
+          "rgb": [
+            147,
+            153,
+            164
+          ]
+        },
+        {
+          "name": "galactic-samples-recovered",
+          "rgb": [
+            147,
+            153,
+            164
+          ]
+        }
+      ]
+    },
+    {
+      "x": 197,
+      "y": 264,
+      "colours": [
+        {
+          "name": "sky-reentered",
+          "rgb": [
+            23,
+            28,
+            39
+          ]
+        },
+        {
+          "name": "galactic-production-ready",
+          "rgb": [
+            125,
+            131,
+            142
+          ]
+        },
+        {
+          "name": "galactic-samples-recovered",
+          "rgb": [
+            125,
+            131,
+            142
+          ]
+        }
+      ]
+    }
+  ],
+  "currentObservedPoint": {
+    "x": 255,
+    "y": 250,
+    "sum": 464,
+    "rgb": [
+      147,
+      153,
+      164
+    ]
+  }
+}

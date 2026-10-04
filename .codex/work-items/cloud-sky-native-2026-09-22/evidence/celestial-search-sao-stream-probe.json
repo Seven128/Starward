@@ -1,0 +1,140 @@
+{
+  "at": "2026-09-23T09:29:44.473Z",
+  "node": "v24.16.0",
+  "boundary": "local_node_real_sao_catalog_stream_scan_not_production_load",
+  "gcRequested": true,
+  "loadMs": 434.3775999999999,
+  "heapLoadDeltaBytes": 74004664,
+  "rssLoadDeltaBytes": 212688896,
+  "heapQueryDeltaBytes": 48248,
+  "samples": [
+    {
+      "query": "SAO 3607",
+      "trials": [
+        {
+          "ms": 232.53150000000005,
+          "matches": 11,
+          "first": [
+            "SAO:3607",
+            "SAO:36070",
+            "SAO:36071"
+          ]
+        },
+        {
+          "ms": 203.0872999999999,
+          "matches": 11,
+          "first": [
+            "SAO:3607",
+            "SAO:36070",
+            "SAO:36071"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "HD207929",
+      "trials": [
+        {
+          "ms": 211.88840000000005,
+          "matches": 2,
+          "first": [
+            "SAO:3607",
+            "SAO:3608"
+          ]
+        },
+        {
+          "ms": 197.1342000000002,
+          "matches": 2,
+          "first": [
+            "SAO:3607",
+            "SAO:3608"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "SAO 1",
+      "trials": [
+        {
+          "ms": 176.29459999999995,
+          "matches": 106812,
+          "first": [
+            "SAO:1",
+            "SAO:10",
+            "SAO:11"
+          ]
+        },
+        {
+          "ms": 176.63290000000006,
+          "matches": 106812,
+          "first": [
+            "SAO:1",
+            "SAO:10",
+            "SAO:11"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "SAO",
+      "trials": [
+        {
+          "ms": 150.26800000000003,
+          "matches": 246280,
+          "first": [
+            "SAO:1",
+            "SAO:2",
+            "SAO:3"
+          ]
+        },
+        {
+          "ms": 149.50109999999995,
+          "matches": 246280,
+          "first": [
+            "SAO:1",
+            "SAO:2",
+            "SAO:3"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "a",
+      "trials": [
+        {
+          "ms": 149.41699999999992,
+          "matches": 246280,
+          "first": [
+            "SAO:1",
+            "SAO:2",
+            "SAO:3"
+          ]
+        },
+        {
+          "ms": 156.1210000000001,
+          "matches": 246280,
+          "first": [
+            "SAO:1",
+            "SAO:2",
+            "SAO:3"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "没有此对象",
+      "trials": [
+        {
+          "ms": 186.2869999999998,
+          "matches": 0,
+          "first": []
+        },
+        {
+          "ms": 187.1315999999997,
+          "matches": 0,
+          "first": []
+        }
+      ]
+    }
+  ]
+}

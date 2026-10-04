@@ -1,0 +1,63 @@
+{
+  "scope": "Historical initial read-only native DevTools PNG comparison, same public observer/time/FOV/located object. Crop y=40 included the native capsule edge; measured values are preserved but are not an interior-only sky comparison. No phone composition or physical precision acceptance.",
+  "supersededBy": "experience-resource-native-pixels-bounds-2026-09-28.json",
+  "results": [
+    {
+      "scenario": "moon",
+      "transition": "after",
+      "before": "experience-combined-clean-v4-resources-moon-before-2026-09-28.png",
+      "after": "experience-combined-clean-v4-resources-moon-after-2026-09-28.png",
+      "imageSize": {
+        "width": 197,
+        "height": 423
+      },
+      "crop": {
+        "x": 4,
+        "y": 40,
+        "right": 193,
+        "bottom": 408
+      },
+      "wholeChanged": 46,
+      "skyChanged": 0,
+      "maxSkyChannelDelta": 0
+    },
+    {
+      "scenario": "m31",
+      "transition": "after",
+      "before": "experience-combined-clean-v4-resources-m31-before-2026-09-28.png",
+      "after": "experience-combined-clean-v4-resources-m31-after-2026-09-28.png",
+      "imageSize": {
+        "width": 197,
+        "height": 423
+      },
+      "crop": {
+        "x": 4,
+        "y": 40,
+        "right": 193,
+        "bottom": 408
+      },
+      "wholeChanged": 636,
+      "skyChanged": 79,
+      "maxSkyChannelDelta": 37
+    },
+    {
+      "scenario": "m31",
+      "transition": "source-back",
+      "before": "experience-combined-clean-v4-resources-m31-before-2026-09-28.png",
+      "after": "experience-combined-clean-v4-resources-m31-source-back-2026-09-28.png",
+      "imageSize": {
+        "width": 197,
+        "height": 423
+      },
+      "crop": {
+        "x": 4,
+        "y": 40,
+        "right": 193,
+        "bottom": 408
+      },
+      "wholeChanged": 34,
+      "skyChanged": 1,
+      "maxSkyChannelDelta": 1
+    }
+  ]
+}

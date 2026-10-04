@@ -1,0 +1,29 @@
+{
+  "scope": "Official SDK Canvas touch handlers and actual UI; CLI-bound clean-v3/9436; no phone or physical touch/composition claim",
+  "candidate": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v3-0928",
+  "candidateHash": "0d6923930bfcca46eeedbdde749dd5029733b2deefa44b45c9bb3e5c56dc7a38",
+  "filesChecked": 257,
+  "before": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "Rastaban定位标记，模拟地景遮挡，查看资料",
+    "modal": false,
+    "choices": false
+  },
+  "blocked": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "Rastaban定位标记，模拟地景遮挡，查看资料",
+    "modal": false,
+    "choices": false
+  },
+  "openSelection": {
+    "overlap": "选择天体Rastaban恒星 · HR 6536 · V 波段视星等 2.79SAO 30380恒星 · SAO 30380 · 视觉星等 6.60取消",
+    "title": "Rastaban",
+    "reference": "HR:6536"
+  },
+  "restored": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "Rastaban定位标记，模拟地景遮挡，查看资料",
+    "modal": false,
+    "choices": false
+  }
+}

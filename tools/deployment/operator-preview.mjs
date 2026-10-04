@@ -9,17 +9,20 @@ import { executeVerifiedBackup, readBackupKeyFile } from "./verified-backup.mjs"
 import { maintainTrialBackups } from "./backup-maintenance.mjs";
 import { checkPreviewCompose, checkPreviewContainers, checkPreviewReadiness, parseComposeRows } from "./operator-preview-checks.mjs";
 import { inspectPublicIpCertificate, waitForPublicIpCertificate } from "./operator-preview-tls.mjs";
+import { prepareSkyStaticDelivery, loadSkyStaticDelivery, verifySkyStaticDelivery, assertSkyStaticDeliveryIdentity } from "./sky-static-release.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-export async function operatePreview({ deployEnvPath, operation = "check", operator, execute = runProcess, backup = executeVerifiedBackup, readiness = checkPreviewReadiness, maintenance = maintainTrialBackups, certificate = inspectPublicIpCertificate }) {
+export async function operatePreview({ deployEnvPath, operation = "check", operator, execute = runProcess, backup = executeVerifiedBackup, readiness = checkPreviewReadiness, maintenance = maintainTrialBackups, certificate = inspectPublicIpCertificate,
+  prepareStatic = prepareSkyStaticDelivery, loadStatic = loadSkyStaticDelivery, verifyStatic = verifySkyStaticDelivery, fetchImpl }) {
   if (!["deploy", "check", "stop", "backup", "inspect-backups", "maintain-backups"].includes(operation)) throw new Error("operator_preview_operation_invalid");
   if (!/^[A-Za-z0-9._:@/-]{2,120}$/u.test(operator ?? "")) throw new Error("operator_preview_operator_invalid");
   const validation = await validateOperatorPreviewEnvironment({ deployEnvPath });
   const deploy = await readEnvironmentFile(deployEnvPath);
-  const run = composeExecutor({
+  const previewOverlay = path.join(root, "infrastructure/deployment/compose.operator-preview.yml");
+  let run = composeExecutor({
     composePath: path.join(root, "infrastructure/deployment/compose.yml"),
-    overlayPaths: [path.join(root, "infrastructure/deployment/compose.operator-preview.yml")],
+    overlayPaths: [previewOverlay],
     deployEnvPath, cwd: root, execute,
   });
   const directory = validation.operations.receiptDirectory;
@@ -32,14 +35,23 @@ export async function operatePreview({ deployEnvPath, operation = "check", opera
     throw error;
   }
   const receipt = {
-    schemaVersion: "starward-operator-preview-operation-v1", operation, operator,
+    schemaVersion: validation.operations.skyStaticDirectory ? "starward-operator-preview-operation-v2" : "starward-operator-preview-operation-v1", operation, operator,
     status: "running", environment: "staging", productionQualified: false,
     revision: validation.revision, imageDigest: validation.imageDigest,
     startedAt: new Date().toISOString(), writersStopped: false, steps: [],
+    ...(validation.operations.skyStaticDirectory ? {skyStaticDelivery: null} : {}),
   };
   const receiptPath = path.join(directory, `operator-preview-${randomUUID()}.json`);
   let currentStep = "lock";
   let receiptPersisted = false;
+  let delivery = null;
+  const useDelivery = selected => {
+    if (!selected) throw new Error("sky_static_configured_delivery_missing");
+    delivery = selected;
+    receipt.skyStaticDelivery = assertSkyStaticDeliveryIdentity(selected.identity, {revision: validation.revision, imageDigest: validation.imageDigest});
+    run = composeExecutor({composePath: path.join(root, "infrastructure/deployment/compose.yml"),
+      overlayPaths: [previewOverlay, ...selected.overlayPaths], deployEnvPath, cwd: root, execute});
+  };
   const perform = async (name, action) => {
     currentStep = name;
     const result = await action();
@@ -52,9 +64,17 @@ export async function operatePreview({ deployEnvPath, operation = "check", opera
   };
   try {
     await lock.writeFile(JSON.stringify({ pid: process.pid, operation, revision: validation.revision, startedAt: receipt.startedAt }));
+    if (validation.operations.skyStaticDirectory && operation !== "deploy") {
+      const observation = await perform("sky-static-load", async () => {
+        const selected = await loadStatic({validation, deploy, operation, execute});
+        useDelivery(selected);
+        return selected.observation;
+      });
+      if (observation) receipt.steps.at(-1).result = observation;
+    }
     await perform("compose-config", () => {
       const config = JSON.parse(run({ args: ["--profile", "operations", "config", "--format", "json"], step: "preview-compose-config" }).stdout.toString("utf8"));
-      checkPreviewCompose(config, validation, deploy);
+      checkPreviewCompose(config, validation, deploy, delivery);
     });
     if (["inspect-backups", "maintain-backups"].includes(operation)) {
       receipt.retention = await perform("backup-retention", async () => maintenance({
@@ -72,6 +92,13 @@ export async function operatePreview({ deployEnvPath, operation = "check", opera
         const result = execute({ command: "docker", args: ["image", "inspect", deploy.STARWARD_IMAGE_REF, "--format", '{{ index .Config.Labels "org.opencontainers.image.revision" }}'], cwd: root, step: "preview-image-revision" });
         if (result.stdout.toString("utf8").trim() !== validation.revision) throw new Error("operator_preview_image_revision_mismatch");
       });
+      if (validation.operations.skyStaticDirectory) {
+        await perform("sky-static-preparation", async () => useDelivery(await prepareStatic({validation, deploy, execute})));
+        await perform("sky-static-compose-config", () => {
+          const config = JSON.parse(run({args: ["--profile", "operations", "config", "--format", "json"], step: "preview-static-compose-config"}).stdout.toString("utf8"));
+          checkPreviewCompose(config, validation, deploy, delivery);
+        });
+      }
     }
     if (["deploy", "stop"].includes(operation)) {
       receipt.writersStopped = true;
@@ -95,6 +122,17 @@ export async function operatePreview({ deployEnvPath, operation = "check", opera
         ? waitForPublicIpCertificate({ ip: validation.domain, probe: certificate })
         : certificate(validation.domain));
       receipt.health = await perform("guarded-ip-readiness", () => readiness({ run, validation, deploy }));
+      if (delivery) {
+        const result = await perform("sky-static-verification", async () => {
+          const checkedResult = await verifyStatic({delivery, validation, deploy, fetchImpl});
+          const checked = assertSkyStaticDeliveryIdentity(checkedResult?.identity, {revision: validation.revision, imageDigest: validation.imageDigest});
+          if (checkedResult.status !== "passed" || checkedResult.checkedFiles !== receipt.skyStaticDelivery.files || checkedResult.checkedBytes !== receipt.skyStaticDelivery.bytes ||
+              checkedResult.unauthorizedStatus !== 404 || Object.keys(receipt.skyStaticDelivery).some(key => checked[key] !== receipt.skyStaticDelivery[key]))
+            throw new Error("sky_static_verification_invalid");
+          return checkedResult;
+        });
+        receipt.steps.at(-1).result = result;
+      }
       receipt.writersStopped = false;
     }
     receipt.status = "succeeded";
@@ -106,7 +144,8 @@ export async function operatePreview({ deployEnvPath, operation = "check", opera
       currentStep = "publish-current-pointer";
       const pointerPath = path.join(directory, "operator-preview-current.json");
       const temporaryPath = `${pointerPath}.${randomUUID()}.tmp`;
-      await writeFile(temporaryPath, JSON.stringify({ deployEnvPath, sourceRoot: root, revision: validation.revision, imageDigest: validation.imageDigest, receiptPath }), { mode: 0o600, flag: "wx" });
+      await writeFile(temporaryPath, JSON.stringify({ deployEnvPath, sourceRoot: root, revision: validation.revision, imageDigest: validation.imageDigest, receiptPath,
+        ...(delivery ? {skyStaticDelivery: receipt.skyStaticDelivery, skyStaticOverlayPaths: delivery.overlayPaths} : {}) }), { mode: 0o600, flag: "wx" });
       try { await rename(temporaryPath, pointerPath); }
       finally { await unlink(temporaryPath).catch((error) => { if (error.code !== "ENOENT") throw error; }); }
     }
@@ -121,7 +160,10 @@ export async function operatePreview({ deployEnvPath, operation = "check", opera
   } finally {
     receipt.finishedAt = new Date().toISOString();
     try { await writeFile(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, { mode: 0o600, flag: receiptPersisted ? "w" : "wx" }); }
-    finally { await lock.close(); await unlink(lockPath); }
+    finally {
+      try { await delivery?.dispose(); }
+      finally { await lock.close(); await unlink(lockPath); }
+    }
   }
   return { receiptPath, receipt };
 }

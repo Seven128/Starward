@@ -1,0 +1,362 @@
+{
+  "at": "2026-09-30T22:37:20.354Z",
+  "scope": "Production source and safe same-input native shader probe binding",
+  "probeSha256": "bc4f1cda81b8b4a1bc8f2c2c979632f473e0231f4128af656454ac019fcbf7ec",
+  "sourceHashes": [
+    {
+      "path": "node_modules/twgl.js/dist/7.x/twgl-full.module.js",
+      "sha256": "f518c84fa9d404b725fff024c91ad04e756e67bbc69e62c1725b08cce0ef6ef3"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+      "sha256": "648d6e3ea1dc4ed5c21e8cc42f31ff30b5eab69488812c3958286dd3f4c5c209"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-registration.ts",
+      "sha256": "85e16452de821088531ee9f19a4bfe6f791f6da26818ead6f3d53fd8e23c2513"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-raster-bounds.ts",
+      "sha256": "374f31d0bfa910a0c100442e5c74339a8711dcabaa46828f63a842e49b4b361e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-textures.ts",
+      "sha256": "a80298117e64ccc4819be8aecca22803b9855a5b1ad955989e69a26e74fc09c8"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/types.ts",
+      "sha256": "3218f6aaa44d9cd8178fdb41445bbd15f05becb14013628432038b49c7ae83eb"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/plan.ts",
+      "sha256": "373cf1316693b4b1b11cd954d532e3759086fa3ed301f1c3279d7df0b367fdd3"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/local-time.ts",
+      "sha256": "35a6b36273df279be7c5b164afeb9d77b17bde9a64e9c9f77efe666e6328193b"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/plan-timing.ts",
+      "sha256": "5f0f9380f2d4a508d949d8eff55d0d7098612d3f7bd777d6b851b398eb83c85a"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/plan-reminders.ts",
+      "sha256": "51fbf4fbaa1902997ffecd6254676c1b190cfc8873d480d6aed54157572fc8bd"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/contribution-feedback.ts",
+      "sha256": "ae442bf856f6147e64d030d05c249c6368346afbcd3c9fbc8b2bf846eeca427d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/filters.ts",
+      "sha256": "280e7b7f38d0a990e55166f931ef2ccbb4f6a1a3e168e0fdcd7afd292bfc3c6d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/feature-flags.ts",
+      "sha256": "440606adabca6f0f0e6785905c3202b09095aefaf58d28918bea0da4b1c66ef7"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/url-policy.ts",
+      "sha256": "7ff57fa707c8e5eb11d33426a72865df5b09493b07fbf03e9f6af16e622515e9"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/viewport.ts",
+      "sha256": "89efea05a6ec1530a4a9698011ab8fd384fc1feab38e7b83673a8088e663102b"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/ranking.ts",
+      "sha256": "6abf16ed0b6e99be580afee8a121d61813d4a548f3b036276c99ccd7972ba5f5"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/preferences.ts",
+      "sha256": "d7f1da44001610fac181cbab03880fbb74fadff2e652445f60ee6f4968da76ca"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-planet-identity.ts",
+      "sha256": "9e947673bb81c4b605361b8bffdc368330bdd5f978a71c83644804c6c77fa97e"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-target-position.ts",
+      "sha256": "d1920242e7b72c179bb2c242a8c08366dbe2771a63f03a449621c52801f93efa"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-luminary-identity.ts",
+      "sha256": "b215f288ff261d67989efa27c34cbf778ebe6c780b785d77815a29ceee1c5275"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/celestial-identity.ts",
+      "sha256": "c7e224fb9a4a918db7c0ce91d1e1733f0030727c2bc64f577f8ea49f53f59547"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-geometry.ts",
+      "sha256": "86576641382bc51ef4e14fd3ac1caebb134fcf0e72a6116b02a20bb1c33d392b"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-catalog-publication.ts",
+      "sha256": "a6024d6ad23765496393534ca67a43a671febc7719ee2a378e667d2fe7adc15d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-scene.ts",
+      "sha256": "a0cbbd7181159e5749038e467842e85314ef652f3ec8a20f5e838d11d51cea87"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-scene.ts",
+      "sha256": "8c87512639a2e2fc7a38cb63084e56513a6f9d3e71af085d2e0c5c2370ba05e7"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/moon-coverage-publication.ts",
+      "sha256": "4d7c8b550131ff0137f14a5ee4de5efd68a98e2685397979ac78238aefb58b50"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/deep-sky-image-publication.ts",
+      "sha256": "75bc21b6dc56338eea16132b243f00675b7b8aac2ae9df27bee6622d5236b113"
+    },
+    {
+      "path": "node_modules/@noble/hashes/utils.js",
+      "sha256": "11319ec0a8132a0c2ced8c98af33ae9274c001d6baf4f4709c4a6115e031a3c5"
+    },
+    {
+      "path": "node_modules/@noble/hashes/_md.js",
+      "sha256": "a112f0fe1b15db00f2638618c436a17be1c5e13baf19d02fcc29016ae1db2233"
+    },
+    {
+      "path": "node_modules/@noble/hashes/_u64.js",
+      "sha256": "e48c0cfc10810439a4807b46db136ce603a3fa09b62584f513ef2f3ca496af54"
+    },
+    {
+      "path": "node_modules/@noble/hashes/sha2.js",
+      "sha256": "3ddc587c588283cbceed4dd9929cefcce06a0c231b54d4c6f0f99c478c686c00"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-image-display-support.ts",
+      "sha256": "c90d5b7623d9844f8ca872b514509c19cd908d2d9206575286f26783ee88a26c"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sdss-optical-publication.ts",
+      "sha256": "0fd5f2c3b7e29cc478ef04dd9b9af7516916b71993a34aba2645852fcd3daa38"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/observation-frame.ts",
+      "sha256": "75be5650a8ee3fb025ed4a43a1ffa12dcf84dd2b946d284e91112401f6a67188"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-time-model.ts",
+      "sha256": "6c1f47586bdec67b5c24fa6dd182c400cd364294986c3c840f54892ba800ff60"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-lunar-phase.ts",
+      "sha256": "21e45cc998d4cebed9625e2067e02ce95dbf7c3cdbb16ce325a7d53718521392"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/catalog-json-integrity.ts",
+      "sha256": "cf5a8278773b78d06a4670dc3cda63d7c0edcbbfbb01b39369ea37011298ff4d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-supplement.ts",
+      "sha256": "4e9a37385e362d9ffd88b3a48229bd1b11e4f60ca7fd7d8ca54eabae580fa973"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/constellation-catalog.ts",
+      "sha256": "8c4fa3961030303ca54c3a1a89253dece291f29cbc72a9f0766bfb960b659a9e"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/api-shapes.ts",
+      "sha256": "ee35ed2cf9fb30e88d834036fa3b22652c1c401a7154b181a3c8fae17355eaaa"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts",
+      "sha256": "c05553b7b7847d318ea67ba6a2057fec6d5d2761b093cc4615bd490e5e5f4501"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/account-profile.ts",
+      "sha256": "a51bc104b8984c8339434ee9eb672d339df9ae7c2f3bb9e313eb0f0bdb1913b6"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/recent-weather.ts",
+      "sha256": "49f368afa7e5a3544c8e37745641c2eeacab7d1eef5de6ad76c3564815c87adb"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/air-quality.ts",
+      "sha256": "f4627ed64579f720cfb352a2d71523a9c0711021b4a5fde9faa8e9b52ee32611"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-landscape-publication.ts",
+      "sha256": "053a950b4d620be52034a696bb81fa638d1e6f85569652e5e0f949f91930e40d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/index.ts",
+      "sha256": "7d810d243e847a4495564a9eb0208fb7663ac1741a01189c6b7375215430cb0b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-visibility.ts",
+      "sha256": "7d17df6131c917e05f5bf9f698fb9bd3a38fe0a749495ecccb51ab3e35b7593f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-frame.ts",
+      "sha256": "40df40fd298fdf54585802827a70d6c8328df2f1e169014b7c03852cec972e2f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-observation-frame.ts",
+      "sha256": "fc391352e4d73553d7f8fdc7469481af6a1f5f56219d97fc59425cdc09c6acf6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-solar-light.ts",
+      "sha256": "a9b2a2988846256a92bc48344b840178de91ff80fac26e1ba18d5d81af4dec45"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-galactic-band.ts",
+      "sha256": "bc58c7e0a6e372f315e913f12c02ffd4cd88f3d0a18e1735026c940dec97ec39"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-galactic-image-window.ts",
+      "sha256": "a5b7700cb717888d2ceca8aab79ff23c4e073481381cda983c814b5027e634c4"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-saturn-rings.ts",
+      "sha256": "487a27a2eac32dfb526b6cb22d1aaf3ba73dce05f7073a1e1f5b571ada5a32ee"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-saturn-ring-fragment.ts",
+      "sha256": "1546479b0af3136a8a2dd1f95a3708281f97b7d70a076d9974fd5426be31682c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape-geometry.ts",
+      "sha256": "f743730e7924d4083da13115d61868eabe471be1ccf544e9784d26f7e204564f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape.ts",
+      "sha256": "fb87c22af6bfef2e955d1d54e2643fa205800e06c51cf2a69e912cc9cc1afdd0"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "sha256": "934f64f3110ca9a32c5719e2ccf0b41cdcbbb242456441f8f6e58c93da360504"
+    }
+  ],
+  "reportSha256": "c5f0dc230a53e6e296978604aa11bc7b3d7d4e38b1bd329e6b5097f3fb829b99",
+  "frameAt": "2026-09-30T13:50:33.000Z",
+  "sourcePublication": {
+    "sha256": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0",
+    "encodedBytes": 703555
+  },
+  "cases": [
+    {
+      "name": "north-45",
+      "view": {
+        "basis": {
+          "right": [
+            1,
+            0,
+            0
+          ],
+          "up": [
+            0,
+            -0.7071067811865476,
+            0.7071067811865476
+          ],
+          "forward": [
+            0,
+            0.7071067811865476,
+            0.7071067811865476
+          ]
+        },
+        "verticalFovDeg": 45
+      }
+    },
+    {
+      "name": "north-returned",
+      "view": {
+        "basis": {
+          "right": [
+            1,
+            0,
+            0
+          ],
+          "up": [
+            0,
+            -0.7071067811865476,
+            0.7071067811865476
+          ],
+          "forward": [
+            0,
+            0.7071067811865476,
+            0.7071067811865476
+          ]
+        },
+        "verticalFovDeg": 43.6
+      }
+    },
+    {
+      "name": "wide",
+      "view": {
+        "basis": {
+          "right": [
+            1,
+            0,
+            0
+          ],
+          "up": [
+            0,
+            -0.7071067811865476,
+            0.7071067811865476
+          ],
+          "forward": [
+            0,
+            0.7071067811865476,
+            0.7071067811865476
+          ]
+        },
+        "verticalFovDeg": 139
+      }
+    },
+    {
+      "name": "rolled-offset",
+      "view": {
+        "basis": {
+          "right": [
+            -0.6408563820557887,
+            0.42261826174069933,
+            0.6408563820557884
+          ],
+          "up": [
+            0.7071067811865475,
+            0,
+            0.7071067811865476
+          ],
+          "forward": [
+            -0.29883623873011966,
+            -0.9063077870366499,
+            0.29883623873011983
+          ]
+        },
+        "verticalFovDeg": 85,
+        "center": {
+          "x": 137,
+          "y": 351
+        }
+      }
+    },
+    {
+      "name": "dome",
+      "view": {
+        "basis": {
+          "right": [
+            1,
+            0,
+            0
+          ],
+          "up": [
+            0,
+            -1,
+            0
+          ],
+          "forward": [
+            0,
+            0,
+            1
+          ]
+        },
+        "verticalFovDeg": 274.9
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "date": "2026-09-23",
+  "scope": "Bounded read-only candidate trial; no product adoption or phone test",
+  "sources": {
+    "panstarrs": {
+      "record": "https://alasky.cds.unistra.fr/MocServer/query?ID=CDS%2FP%2FPanSTARRS%2FDR1%2Fcolor-i-r-g&fmt=html&get=record",
+      "base": "https://alasky.cds.unistra.fr/Pan-STARRS/DR1/color-i-r-g",
+      "mocRows": 22221,
+      "mocBestOrder": 11,
+      "tileFormat": "image/jpeg",
+      "sampleTileBytes": 101515,
+      "mocSkyFractionComputed": 0.7638629674911499
+    },
+    "skymapper": {
+      "record": "https://alasky.cds.unistra.fr/MocServer/query?ID=CDS%2FP%2FSkymapper%2FDR4%2Fcolor&fmt=html&get=record",
+      "base": "https://alasky.cds.unistra.fr/Skymapper/DR4/CDS_P_Skymapper_DR4_color",
+      "mocRows": 30461,
+      "mocBestOrder": 10,
+      "tileFormat": "image/png",
+      "sampleTileBytes": 64962,
+      "mocSkyFractionComputed": 0.6327091852823893
+    }
+  },
+  "mocMethod": "Read FITS BINTABLE UNIQ unsigned big-endian 1J rows; decode order=floor((bit_length(uniq)-3)/2) and nested pixel=uniq-4*4^order; expand each row to half-open intervals at common order 11, merge intervals, count overlap and union against 12*4^11 full-sky cells. Individual computed fractions match source properties to 4 digits.",
+  "mocOrder11Cells": 50331648,
+  "intersectionFraction": 0.3966745932896932,
+  "unionFraction": 0.9998975594838461,
+  "missingFraction": 0.00010244051615393435,
+  "missingApproxSquareDegrees": 4.2259,
+  "order8ActualTiles": {
+    "targets": {
+      "sombrero": { "raDeg": 189.99763, "decDeg": -11.62305, "nestedPixel": 401329, "ps1": { "httpStatus": 200, "bytes": 110318 }, "skymapper": { "httpStatus": 200, "bytes": 611836 } },
+      "m31": { "raDeg": 10.6847083, "decDeg": 41.26875, "nestedPixel": 43345, "ps1": { "httpStatus": 200, "bytes": 141203 }, "skymapper": { "httpStatus": 404 } },
+      "lmc": { "raDeg": 80.8939, "decDeg": -69.7561, "nestedPixel": 529551, "ps1": { "httpStatus": 404 }, "skymapper": { "httpStatus": 200, "bytes": 702322 } }
+    },
+    "visualObservation": "Sombrero appears in both order-8 tiles; PS1 and SkyMapper color/stretch and source artifacts differ substantially. SkyMapper LMC tile shows a conspicuous yellow-green strip/mosaic artifact. Neither coverage map nor download success establishes visual quality. Images visually inspected in ignored artifacts/miniapp/cloud-sky-native/optical-hips-{ps1,skymapper}-{sombrero,m31,lmc}-order8.*"
+  },
+  "geometryTrial": {
+    "candidateLibrary": "healpix-ts@1.1.0 (MIT, 476259 unpacked bytes, no declared dependencies); installed only under ignored artifacts/miniapp/cloud-sky-native/hips-trial, not product dependencies",
+    "mapping": "pixcoord2VecNest(nside, ipix, ne, nw) with source JPEG/PNG normalized image x=ne and top-down y=nw is consistent with Sombrero and M31 sky positions within their actual sample tiles; final registration still requires reference/WCS cross-check.",
+    "method": "Compare HEALPix exact vector at a 21x21 grid with normalized affine interpolation of the three source corner rays (0,0),(1,0),(0,1), as required by current registerSkyArtwork plane. Angular errors converted using approximate 58.6°/(2^order*512) angular pixel scale, so pixel numbers are indicative rather than a final screen-error bound.",
+    "worstSampledApproxTilePixels": { "order0Pixel0": 86.68, "order2Pixel4": 16.94, "order4Pixel1567": 1.97, "order8Sombrero": 0.12, "order8M31": 0.77 },
+    "triangularMeshTrial": { "method": "Regular per-tile cells, two triangles; compare normalized barycentric direction at cell center and quarter points with exact pixcoord2VecNest; approximate tile pixels from 58.6 degrees / 2^order / 512.", "order0PolarAt32x32WorstPixels": 3.74, "order1At8x8WorstPixels": 0.62, "order2At8x8WorstPixelsRange": [0.18, 0.32], "order3At8x8WorstPixelsRange": [0.05, 0.16], "limitation": "These are sampled sphere-direction errors, not final screen projection, horizon clipping, performance or measured image registration." },
+    "decision": "Current three-anchor TAN/artwork registration cannot map low-order HiPS as one plane. A multi-vertex mesh or equivalent exact HEALPix inverse mapping sharing current camera/texture lifecycle is needed; test distortion and edge continuity before page adoption. No second sky camera or image manager."
+  },
+  "evidenceFiles": {
+    "siapCsv": "evidence/skymapper-dr4-sombrero-siap-metadata.csv",
+    "localSamplesIgnored": "artifacts/miniapp/cloud-sky-native/optical-hips-{ps1,skymapper}-{properties,moc,tile0}.* and skymapper-dr4-sombrero-g-2018-{cutout.fits,preview.png}"
+  },
+  "limits": "MOC coverage does not establish image quality, seam color, depth at all orders, allowed production redistribution, complete full sky, native rendering or target-device performance. One order-0 SkyMapper tile is mostly black because that tile is mostly outside its footprint. Order-8 sample shows an actual LMC artifact. No product integration or phone use."
+}

@@ -1,0 +1,153 @@
+{
+  "scope": "v32 persistent selection and public interaction development evidence. Goal active; native visual composition and phone acceptance remain open.",
+  "candidate": {
+    "file": "experience-combined-clean-v32-candidate-2026-09-29.json",
+    "sha256": "16813aed60d16a7727e8c6625d68660b1a5e72889477496af717294fcafb70e6",
+    "sourceInputsVerified": 110,
+    "firstBoundOwners": [
+      "apps/wechat-miniapp/src/features/sky/spot-sky-page.scss"
+    ],
+    "priorSourceBindingGap": "v31 did not include the Sky SCSS source in its106 production-input list. It is bound here for the first time; no fabricated prior source hash. Compiled v31 CSS remains fingerprinted."
+  },
+  "trace": {
+    "file": "experience-selection-native-2026-09-29.jsonl",
+    "sha256": "00adcaa808b03f87be4a3f36970fba34e8bfa7c3e0e44039a524b0e01012c409",
+    "events": 56
+  },
+  "context": {
+    "locationKind": "FORMAL_SPOT",
+    "publicSpotId": "spot:test-published",
+    "localDate": "2026-09-29",
+    "selectedAtUtc": "2026-09-29T13:00:00Z",
+    "timezone": "Asia/Shanghai",
+    "revision": 1,
+    "contextFingerprint": "867d744574bff845a7dff8d4435c829d151b96c5aa74127e9a153debdfa1909d",
+    "astronomyVersion": "astronomy-engine-2.1.19",
+    "contextIdSha256": "6dc1c04956441e9fc33e6cae8e8b5cd9b2a747d4411ae2469810525362f9ac15"
+  },
+  "native": {
+    "platform": "devtools",
+    "SDKVersion": "3.17.3",
+    "enableDebug": false,
+    "windowWidth": 390,
+    "windowHeight": 762,
+    "pagePath": "sky/detail/index",
+    "pageDepth": 2,
+    "mode": "DAY",
+    "largeText": false
+  },
+  "finalFrame": "示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4039 颗真实亮星目录对象，场景时刻 2026-09-29T13:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 21:00",
+  "root": {
+    "hasTracking": false,
+    "hasTimePanel": false,
+    "hasChoices": false,
+    "hasList": false,
+    "hasDarkRetry": false,
+    "controls": "M 31|×|返回|模拟地景：开|星座：开|红外：关|地平网格：开|赤道网格：关|跟随手机|重新校准|天体列表|时间轴",
+    "hasModal": false,
+    "canvas": "<canvas id=\"spot-night-sky-scene\" class=\"sky-scene__canvas sky-orientation-canvas__surface\" style=\"width: 100%; height: 100%; visibility: visible;\" canvas-id=\"spot-night-sky-scene\" disable-scroll=\"true\" type=\"webgl\" data-sid=\"_bg\">",
+    "hasCanvasError": false
+  },
+  "runtime": {
+    "phase": "settled",
+    "forwardedPutStatuses": [
+      200,
+      200,
+      200,
+      200
+    ],
+    "epochStartedAt": "2026-09-29T09:14:20.175Z",
+    "resourceMode": "pass",
+    "activeCount": 0,
+    "puts": 4,
+    "totalObserved": 791,
+    "contextMode": "pass",
+    "heldResourceCount": 0,
+    "sourceMode": "pass"
+  },
+  "projectProcess": {
+    "Id": 25916,
+    "ProcessName": "微信开发者工具",
+    "title": "Starward-Sky-Combined-Clean-V32-0929"
+  },
+  "captures": [
+    {
+      "stage": "altair-selected",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-selection-v32-altair-selected-2026-09-29.png",
+      "sha256": "6a2ba8194be86b7f4c3476db1fb5c559279da209406409d9bfde9c1726170f73",
+      "width": 479,
+      "height": 1035,
+      "viewedBy": "root",
+      "scope": "Canvas/system pixels only; ordinary selection, labels, controls and modal composition absent."
+    },
+    {
+      "stage": "altair-disclosure",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-selection-v32-altair-disclosure-2026-09-29.png",
+      "sha256": "596c120ebac442f12c1d18ee53a1386c1370b0906c08e3b588b46408200a63ea",
+      "width": 479,
+      "height": 1035,
+      "viewedBy": "root",
+      "scope": "Canvas/system pixels only; ordinary selection, labels, controls and modal composition absent."
+    },
+    {
+      "stage": "m31-selected",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-selection-v32-m31-selected-2026-09-29.png",
+      "sha256": "4d72a06746daaf8b00db117fa1b7f958891355fa93067f7d77638a00becc21f5",
+      "width": 479,
+      "height": 1035,
+      "viewedBy": "root",
+      "scope": "Canvas/system pixels only; ordinary selection, labels, controls and modal composition absent."
+    },
+    {
+      "stage": "m31-local-selected",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-selection-v32-m31-local-selected-2026-09-29.png",
+      "sha256": "63553faaa1123a6749621627df5533fa6831b960187481bacce9b1cd1db4b0d9",
+      "width": 479,
+      "height": 1035,
+      "viewedBy": "root",
+      "scope": "Canvas/system pixels only; ordinary selection, labels, controls and modal composition absent."
+    },
+    {
+      "stage": "canvas-error-composition",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-selection-v32-canvas-error-composition-2026-09-29.png",
+      "sha256": "dd6d6ff01b0399ca576e0b3b6161e6181e658cf88288c79e3e0b471d2dae9b15",
+      "width": 479,
+      "height": 1035,
+      "viewedBy": "root",
+      "scope": "Still shows prior starfield despite hidden Canvas readback; not a current failure rendering proof."
+    }
+  ],
+  "publicInteraction": {
+    "closeRetainsSelection": true,
+    "wideNameOpacity": 0,
+    "returnNameOpacity": 0.9999999701115341,
+    "blankClears": true,
+    "naturalCanvasPick": "Altair / HR:7557",
+    "switchedObject": "M:31",
+    "circleDiameterPx": {
+      "at25": 99.64779051212865,
+      "at8_9": 280.0103065441277,
+      "return25": 99.64779051212865
+    },
+    "injectedCanvasError": "Official SDK error event invalidates presented selection; public retry restores same selected identity and Context. Not genuine GPU/context-loss evidence."
+  },
+  "scopeGuard": {
+    "file": "apps/wechat-miniapp/src/pages/map/index.scss",
+    "sha256": "81283f7b2849cd55eed4a82d322885e1c76d7f8aa81ab26fc2fc584d198c0e82"
+  },
+  "corrections": [
+    "One lookup assumed M31 remained in the visible-object list; actual list did not contain it. Public M31 search then supplied the real result.",
+    "Unsupported --expression was rejected before execution; native readback uses documented --fn-source and real preference owner.",
+    "A pipe-containing console command was parsed by the Windows wrapper; supported simple grep-i-error returned no matches, not proof of an empty console.",
+    "The resource-status route is absent. The first runtime record has null resourceMode; the final corrected record reads resourceMode from the actual traffic-status owner.",
+    "PowerShell ConvertFrom-Json without AsHashtable rejects distinct vConsole/vconsole keys; the candidate was read correctly and no missing sources were inferred."
+  ],
+  "limits": [
+    "Native WXML, computed style and public event results establish behavior and geometry, not visible marker/name/modal or breathing acceptance.",
+    "The original five PNGs were viewed without editing/rescaling. The error capture conflicts with hidden-Canvas/current-unavailable readback; the capture/compositing cause is unresolved.",
+    "Installed screenshot code was read only: CLI captures the project window under a host freeze, fits/transforms the simulator and disables host animation. This does not establish a product-layer defect or a harmless screenshot-only fault.",
+    "The rounded native vertical FOV and initial name/fade tuning are not universal Stellarium thresholds; no1.7-degree time switch is adopted.",
+    "Shared identity-bound queries reuse existing cancellation, catalogue and Context checks. The SDK error event is not asynchronous HTTP, real GPU or target-device failure evidence.",
+    "The full33 obligations, halo/spikes/pickability, continuous time, deep-sky helpers, registration/quality, late/failing stellar layers, phone/new Moon, pose/background, performance/cost and final review remain open."
+  ]
+}

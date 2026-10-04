@@ -1,0 +1,323 @@
+ M .codex/skills/starward-wechat-device-verification/SKILL.md
+ M .dockerignore
+ M .gitattributes
+ M DESIGN.md
+ M apps/wechat-miniapp/config/index.ts
+ M apps/wechat-miniapp/package.json
+ M apps/wechat-miniapp/src/components/native-back-boundary.test.ts
+ M apps/wechat-miniapp/src/content/settings/display-mode-control.tsx
+ M apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts
+ M apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts
+ M apps/wechat-miniapp/src/content/settings/index.tsx
+ M apps/wechat-miniapp/src/features/sky/sky-alignment-render.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-artwork-loader.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-artwork-loader.ts
+ M apps/wechat-miniapp/src/features/sky/sky-artwork-request.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-artwork-request.ts
+ M apps/wechat-miniapp/src/features/sky/sky-browsing-camera.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-browsing-camera.ts
+ M apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-canvas-time.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-constellation-render.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-constellation-render.ts
+ M apps/wechat-miniapp/src/features/sky/sky-constellation-scene.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-constellation-scene.ts
+ M apps/wechat-miniapp/src/features/sky/sky-constellation-visibility.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-constellation-visibility.ts
+ M apps/wechat-miniapp/src/features/sky/sky-context-session.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-dome-integration.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts
+ M apps/wechat-miniapp/src/features/sky/sky-manual-gesture.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-manual-view.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-manual-view.ts
+ M apps/wechat-miniapp/src/features/sky/sky-object-picking.ts
+ M apps/wechat-miniapp/src/features/sky/sky-render-surface.ts
+ M apps/wechat-miniapp/src/features/sky/sky-scene-projection.ts
+ M apps/wechat-miniapp/src/features/sky/sky-scene-render.ts
+ M apps/wechat-miniapp/src/features/sky/sky-star-appearance.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-star-appearance.ts
+ M apps/wechat-miniapp/src/features/sky/sky-stellar-tile-selection.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-stellar-tile-selection.ts
+ M apps/wechat-miniapp/src/features/sky/sky-survey-registration.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-survey-registration.ts
+ M apps/wechat-miniapp/src/features/sky/sky-view-projection.ts
+ M apps/wechat-miniapp/src/features/sky/sky-zoom.test.ts
+ M apps/wechat-miniapp/src/features/sky/sky-zoom.ts
+ M apps/wechat-miniapp/src/features/sky/spot-sky-page.scss
+ M apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx
+ M apps/wechat-miniapp/src/features/sky/stellar-page-recovery.test.ts
+ M apps/wechat-miniapp/src/features/sky/use-sky-artwork.ts
+ M apps/wechat-miniapp/src/features/sky/use-sky-stellar-supplement.ts
+ M apps/wechat-miniapp/src/services/api-client.ts
+ M apps/wechat-miniapp/src/services/constellation-catalog-client.ts
+ M apps/wechat-miniapp/src/services/sky-report-auth.test.ts
+ M apps/wechat-miniapp/src/services/sky-report-catalog.test.ts
+ M apps/wechat-miniapp/src/services/sky-report-catalog.ts
+ M apps/wechat-miniapp/src/sky/sources/index.tsx
+ M apps/wechat-miniapp/src/types/global.d.ts
+ M data-pipelines/deep-sky/README.md
+ M data-pipelines/deep-sky/requirements.txt
+ M data-pipelines/star-catalog/README.md
+ M data-pipelines/star-catalog/publish_sao.mts
+ M docs/design-resources/wechat-miniapp/sky/ADOPTED.md
+ M infrastructure/deployment/Caddyfile
+ M infrastructure/deployment/Caddyfile.operator-preview
+ M infrastructure/deployment/README.md
+ M infrastructure/deployment/compose.operator-preview.yml
+ M infrastructure/deployment/compose.yml
+ M infrastructure/deployment/miniapp-api.Dockerfile
+ M package-lock.json
+ M packages/astronomy-core/package.json
+ M packages/astronomy-core/src/bsc5p-catalog.test.ts
+ M packages/astronomy-core/src/bsc5p-catalog.ts
+ M packages/astronomy-core/src/constellation-catalog.ts
+ M packages/astronomy-core/src/sao-catalog.ts
+ M packages/miniapp-contracts/api/miniapp.operations.json
+ M packages/miniapp-contracts/src/api-shapes.ts
+ M packages/miniapp-contracts/src/celestial-identity.ts
+ M packages/miniapp-contracts/src/constellation-catalog.ts
+ M packages/miniapp-contracts/src/generated/miniapp-api.generated.ts
+ M packages/miniapp-contracts/src/index-types.ts
+ M packages/miniapp-contracts/src/index.ts
+ M packages/miniapp-contracts/src/sky-scene.test.ts
+ M packages/miniapp-contracts/src/sky-scene.ts
+ M packages/miniapp-contracts/src/stellar-catalog-publication.ts
+ M packages/miniapp-contracts/src/stellar-supplement.ts
+ M packages/miniapp-contracts/src/types.ts
+ M project_context/architecture/runtime-and-domain.md
+ M project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md
+ M project_context/areas/main/verification/wechat-device/settled-candidate.md
+ M project_context/context.toml
+ M project_context/deployment/data-and-operations.md
+ M project_context/external-capabilities.md
+ M tools/deployment/compose-contract.test.mjs
+ M tools/deployment/workflow-contract.test.mjs
+ M tools/miniapp/build-release-bundle.mjs
+ M tools/miniapp/build-release-bundle.test.mjs
+ M tools/miniapp/device-adb.mjs
+ M tools/miniapp/device-test.mjs
+ M tools/miniapp/device-test.test.mjs
+ M workers/miniapp-api/assets/constellations/NOTICE.txt
+ M workers/miniapp-api/src/astronomy-engine-adapter.ts
+ M workers/miniapp-api/src/astronomy-golden.test.ts
+ M workers/miniapp-api/src/astronomy-service.ts
+ M workers/miniapp-api/src/bsc5p-http.test.ts
+ M workers/miniapp-api/src/celestial-object-information.test.ts
+ M workers/miniapp-api/src/celestial-object-information.ts
+ M workers/miniapp-api/src/constellation-publication.test.ts
+ M workers/miniapp-api/src/constellation-publication.ts
+ M workers/miniapp-api/src/controller.ts
+ M workers/miniapp-api/src/miniapp-api.test.ts
+ M workers/miniapp-api/src/miniapp-infrastructure.test.ts
+ M workers/miniapp-api/src/miniapp-service.ts
+ M workers/miniapp-api/src/outbox-worker.ts
+ M workers/miniapp-api/src/sao-catalog-provider.ts
+ M workers/miniapp-api/src/sao-publication.controller.ts
+ M workers/miniapp-api/src/sao-publication.test.ts
+ M workers/miniapp-api/src/sao-publication.ts
+ M workers/miniapp-api/src/sao-scene-client.test.ts
+ M workers/miniapp-api/src/sky-scene-catalog-provider.ts
+ M workers/miniapp-api/src/sky-scene-catalog.test.ts
+ M workers/miniapp-api/src/stellar-catalog-http.test.ts
+ M workers/miniapp-api/src/test-fixtures/create-test-service.ts
+ M workers/miniapp-api/src/weather-astronomy-coverage.test.ts
+?? .codex/work-items/cloud-sky-native-2026-09-22/
+?? .codex/work-items/stellarium-cost-research-2026-09-22/
+?? apps/wechat-miniapp/THIRD_PARTY_NOTICES/
+?? apps/wechat-miniapp/src/assets/licenses/healpix-ts.json
+?? apps/wechat-miniapp/src/features/sky/sky-artwork-visibility.ts
+?? apps/wechat-miniapp/src/features/sky/sky-body-label-presentation.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-body-label-presentation.ts
+?? apps/wechat-miniapp/src/features/sky/sky-body-surface-orientation.ts
+?? apps/wechat-miniapp/src/features/sky/sky-catalog-information-recovery.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-constellation-labels.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-constellation-labels.ts
+?? apps/wechat-miniapp/src/features/sky/sky-constellation-page-labels.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-fixed-image-status.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-fixed-image-status.ts
+?? apps/wechat-miniapp/src/features/sky/sky-galactic-band.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-galactic-band.ts
+?? apps/wechat-miniapp/src/features/sky/sky-hips-scene.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-hips-tile-mesh.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-hips-tile-mesh.ts
+?? apps/wechat-miniapp/src/features/sky/sky-hips-tile-selection.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-hips-tile-selection.ts
+?? apps/wechat-miniapp/src/features/sky/sky-horizontal-grid.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-horizontal-grid.ts
+?? apps/wechat-miniapp/src/features/sky/sky-line-clip.ts
+?? apps/wechat-miniapp/src/features/sky/sky-located-object.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-located-object.ts
+?? apps/wechat-miniapp/src/features/sky/sky-located-page-marker.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-location-preview.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-luminary-page.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-luminary-picking.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-moon-disc.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-moon-disc.ts
+?? apps/wechat-miniapp/src/features/sky/sky-named-star-labels.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-native-image-chain.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-native-image-owner.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-object-location.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-object-location.ts
+?? apps/wechat-miniapp/src/features/sky/sky-object-position-action.tsx
+?? apps/wechat-miniapp/src/features/sky/sky-object-position-saving.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-object-search.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-object-search.tsx
+?? apps/wechat-miniapp/src/features/sky/sky-object-tracking-status.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-object-tracking-status.tsx
+?? apps/wechat-miniapp/src/features/sky/sky-object-tracking.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-object-tracking.ts
+?? apps/wechat-miniapp/src/features/sky/sky-observation-frame.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-observation-frame.ts
+?? apps/wechat-miniapp/src/features/sky/sky-opal-bands-source.tsx
+?? apps/wechat-miniapp/src/features/sky/sky-optical-tile-selection.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-optical-tile-selection.ts
+?? apps/wechat-miniapp/src/features/sky/sky-phase-disc.ts
+?? apps/wechat-miniapp/src/features/sky/sky-planet-disc.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-planet-disc.ts
+?? apps/wechat-miniapp/src/features/sky/sky-return-entry.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-saturn-ring-fragment.ts
+?? apps/wechat-miniapp/src/features/sky/sky-saturn-rings.ts
+?? apps/wechat-miniapp/src/features/sky/sky-sdss-optical-scene.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-sdss-optical-selection.ts
+?? apps/wechat-miniapp/src/features/sky/sky-solar-light.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-solar-light.ts
+?? apps/wechat-miniapp/src/features/sky/sky-source-return-back.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-sun-disc.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-sun-disc.ts
+?? apps/wechat-miniapp/src/features/sky/sky-target-page-labels.test.ts
+?? apps/wechat-miniapp/src/features/sky/sky-target-position.test.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-galactic-image.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-jupiter-bands.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-mars-texture.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-mercury-texture.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-moon-texture.test.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-moon-texture.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-neptune-bands.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-opal-bands.test.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-opal-bands.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-optical-hips.test.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-optical-hips.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-saturn-bands.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-sdss-optical.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-uranus-bands.ts
+?? apps/wechat-miniapp/src/features/sky/use-sky-wide-field-w3.ts
+?? apps/wechat-miniapp/src/hooks/use-celestial-position.ts
+?? apps/wechat-miniapp/src/services/bare-sky-resource.ts
+?? apps/wechat-miniapp/src/services/celestial-information-response.test.ts
+?? apps/wechat-miniapp/src/services/celestial-information-response.ts
+?? apps/wechat-miniapp/src/services/celestial-position-response.test.ts
+?? apps/wechat-miniapp/src/services/celestial-position-response.ts
+?? apps/wechat-miniapp/src/services/celestial-search-response.test.ts
+?? apps/wechat-miniapp/src/services/celestial-search-response.ts
+?? apps/wechat-miniapp/src/services/galactic-image-client.ts
+?? apps/wechat-miniapp/src/services/galactic-image-publication.test.ts
+?? apps/wechat-miniapp/src/services/galactic-image-publication.ts
+?? apps/wechat-miniapp/src/services/jupiter-bands-client.ts
+?? apps/wechat-miniapp/src/services/jupiter-bands-publication.test.ts
+?? apps/wechat-miniapp/src/services/jupiter-bands-publication.ts
+?? apps/wechat-miniapp/src/services/mars-texture-client.ts
+?? apps/wechat-miniapp/src/services/mars-texture-publication.test.ts
+?? apps/wechat-miniapp/src/services/mars-texture-publication.ts
+?? apps/wechat-miniapp/src/services/mercury-texture-client.ts
+?? apps/wechat-miniapp/src/services/mercury-texture-publication.test.ts
+?? apps/wechat-miniapp/src/services/mercury-texture-publication.ts
+?? apps/wechat-miniapp/src/services/moon-coverage-client.test.ts
+?? apps/wechat-miniapp/src/services/moon-texture-client.ts
+?? apps/wechat-miniapp/src/services/moon-texture-publication.test.ts
+?? apps/wechat-miniapp/src/services/moon-texture-publication.ts
+?? apps/wechat-miniapp/src/services/neptune-bands-client.ts
+?? apps/wechat-miniapp/src/services/neptune-bands-publication.test.ts
+?? apps/wechat-miniapp/src/services/neptune-bands-publication.ts
+?? apps/wechat-miniapp/src/services/opal-bands-publication.ts
+?? apps/wechat-miniapp/src/services/optical-hips-client.ts
+?? apps/wechat-miniapp/src/services/optical-hips-publication.test.ts
+?? apps/wechat-miniapp/src/services/optical-hips-publication.ts
+?? apps/wechat-miniapp/src/services/saturn-bands-client.ts
+?? apps/wechat-miniapp/src/services/saturn-bands-publication.test.ts
+?? apps/wechat-miniapp/src/services/saturn-bands-publication.ts
+?? apps/wechat-miniapp/src/services/sdss-optical-client.ts
+?? apps/wechat-miniapp/src/services/sdss-optical-publication.test.ts
+?? apps/wechat-miniapp/src/services/sdss-optical-publication.ts
+?? apps/wechat-miniapp/src/services/sky-report-moon.ts
+?? apps/wechat-miniapp/src/services/sky-report-planets.test.ts
+?? apps/wechat-miniapp/src/services/sky-report-planets.ts
+?? apps/wechat-miniapp/src/services/sky-report-solar.ts
+?? apps/wechat-miniapp/src/services/sky-report-targets.ts
+?? apps/wechat-miniapp/src/services/uranus-bands-client.ts
+?? apps/wechat-miniapp/src/services/uranus-bands-publication.test.ts
+?? apps/wechat-miniapp/src/services/uranus-bands-publication.ts
+?? apps/wechat-miniapp/src/services/wide-field-w3-client.ts
+?? apps/wechat-miniapp/src/services/wide-field-w3-publication.test.ts
+?? apps/wechat-miniapp/src/services/wide-field-w3-publication.ts
+?? apps/wechat-miniapp/src/sky/sources/source-partial-recovery.test.ts
+?? data-pipelines/deep-sky/publish_2mass_galactic.py
+?? data-pipelines/deep-sky/publish_allwise_w3_wide.py
+?? data-pipelines/planet-textures/
+?? data-pipelines/star-catalog/constellation-names.zh-CN.json
+?? data-pipelines/star-catalog/publish_bsc5p_acrux.py
+?? data-pipelines/star-catalog/publish_constellation_names.py
+?? data-pipelines/star-catalog/publish_wikidata_chinese_aliases.mjs
+?? data-pipelines/star-catalog/rebase_sao_for_bsc5p_acrux.mjs
+?? data-pipelines/star-catalog/rebase_wikidata_chinese_aliases.mjs
+?? data-pipelines/star-catalog/test_publish_bsc5p_acrux.py
+?? infrastructure/deployment/sky-resource-logging.caddy
+?? packages/astronomy-core/THIRD_PARTY_NOTICES/
+?? packages/astronomy-core/data/bsc5p-bright-stars.v3.json
+?? packages/astronomy-core/data/bsc5p-bright-stars.v3.manifest.json
+?? packages/astronomy-core/data/stellarium-modern-v24.4.v3.json
+?? packages/astronomy-core/data/stellarium-modern-v24.4.v3.manifest.json
+?? packages/astronomy-core/src/observation-frame.ts
+?? packages/astronomy-core/src/satellite-omm.test.ts
+?? packages/astronomy-core/src/satellite-omm.ts
+?? packages/miniapp-contracts/src/moon-coverage-publication.ts
+?? packages/miniapp-contracts/src/observation-frame.ts
+?? packages/miniapp-contracts/src/sky-luminary-identity.test.ts
+?? packages/miniapp-contracts/src/sky-luminary-identity.ts
+?? packages/miniapp-contracts/src/sky-planet-identity.ts
+?? packages/miniapp-contracts/src/sky-target-position.ts
+?? workers/miniapp-api/assets/celestial-names-v2/
+?? workers/miniapp-api/assets/celestial-names/
+?? workers/miniapp-api/assets/constellations/constellation_names.eng.fab
+?? workers/miniapp-api/assets/deep-sky/galactic-2mass/
+?? workers/miniapp-api/assets/deep-sky/sdss-m51/
+?? workers/miniapp-api/assets/deep-sky/wide-field-w3/
+?? workers/miniapp-api/assets/jupiter/
+?? workers/miniapp-api/assets/mars/
+?? workers/miniapp-api/assets/mercury/
+?? workers/miniapp-api/assets/moon/
+?? workers/miniapp-api/assets/neptune/
+?? workers/miniapp-api/assets/sao-v2/
+?? workers/miniapp-api/assets/saturn/
+?? workers/miniapp-api/assets/uranus/
+?? workers/miniapp-api/src/celestial-object-aliases.ts
+?? workers/miniapp-api/src/celestial-object-position.test.ts
+?? workers/miniapp-api/src/celestial-object-position.ts
+?? workers/miniapp-api/src/celestial-object-search.test.ts
+?? workers/miniapp-api/src/celestial-object-search.ts
+?? workers/miniapp-api/src/chinese-star-alias-publication.test.ts
+?? workers/miniapp-api/src/chinese-star-alias-publication.ts
+?? workers/miniapp-api/src/fixed-body-texture-publication.ts
+?? workers/miniapp-api/src/galactic-image-publication.test.ts
+?? workers/miniapp-api/src/galactic-image-publication.ts
+?? workers/miniapp-api/src/ice-giant-bands-publication.test.ts
+?? workers/miniapp-api/src/jupiter-bands-publication.test.ts
+?? workers/miniapp-api/src/jupiter-bands-publication.ts
+?? workers/miniapp-api/src/mars-texture-publication.test.ts
+?? workers/miniapp-api/src/mars-texture-publication.ts
+?? workers/miniapp-api/src/mercury-texture-publication.test.ts
+?? workers/miniapp-api/src/mercury-texture-publication.ts
+?? workers/miniapp-api/src/moon-texture-publication.test.ts
+?? workers/miniapp-api/src/moon-texture-publication.ts
+?? workers/miniapp-api/src/neptune-bands-publication.ts
+?? workers/miniapp-api/src/optical-hips-publication.test.ts
+?? workers/miniapp-api/src/optical-hips-publication.ts
+?? workers/miniapp-api/src/saturn-bands-publication.test.ts
+?? workers/miniapp-api/src/saturn-bands-publication.ts
+?? workers/miniapp-api/src/sdss-optical-image-http.test.ts
+?? workers/miniapp-api/src/sdss-optical-imagery.ts
+?? workers/miniapp-api/src/sky-luminary-catalog.ts
+?? workers/miniapp-api/src/sky-luminary-consumers.test.ts
+?? workers/miniapp-api/src/sky-planet-catalog.ts
+?? workers/miniapp-api/src/uranus-bands-publication.ts
+?? workers/miniapp-api/src/wide-field-w3-publication.test.ts
+?? workers/miniapp-api/src/wide-field-w3-publication.ts

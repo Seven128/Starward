@@ -1,0 +1,33 @@
+{
+  "scope": "Current production Context domain functions/class, real LOCAL/MEMORY_TEST BFF state and loopback streamed HTTP; successful PUT response is physically dropped before reaching the client. Transport projection is Node fetch, not native Taro/device/GPU proof. No private IDs, headers or bodies retained; GUI context unchanged.",
+  "phase": "before",
+  "ok": false,
+  "before": {
+    "selectedAtUtc": "2026-09-28T16:00:00.000Z",
+    "revision": 1
+  },
+  "serverReadback": {
+    "selectedAtUtc": "2026-09-28T16:30:00.000Z",
+    "revision": 2
+  },
+  "firstReadback": null,
+  "firstError": {
+    "name": "TypeError",
+    "code": null
+  },
+  "retryReadback": null,
+  "retryError": {
+    "name": "MiniappApiError",
+    "code": "CONFLICT"
+  },
+  "proxyStats": {
+    "puts": 2,
+    "gets": 0,
+    "upstreamStatus": [
+      200,
+      409
+    ],
+    "droppedSuccessfulResponse": 1
+  },
+  "invalidations": []
+}

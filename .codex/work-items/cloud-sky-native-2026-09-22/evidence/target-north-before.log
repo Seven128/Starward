@@ -1,0 +1,30 @@
+✖ rounding either side of the north meridian preserves a valid zero-degree bearing (3.8469ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 250.2626
+
+✖ failing tests:
+
+test at src\astronomy-golden.test.ts:1:391
+✖ rounding either side of the north meridian preserves a valid zero-degree bearing (3.8469ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  360 !== 0
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\astronomy-golden.test.ts:21:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 360,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,1 @@
+{"publicationHash": "c9b0592eb6409636739d58ed147266d7f0f1bf37bc4c91eeb0d99d78fccd667c", "output": "output\\hubble-m82-prepared-publication-1004-r2", "qualityAdopted": false, "runtimeRegistered": false}

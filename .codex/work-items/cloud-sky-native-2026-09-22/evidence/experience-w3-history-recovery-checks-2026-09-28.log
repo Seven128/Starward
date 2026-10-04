@@ -1,0 +1,13 @@
+✔ published AllWISE service reads a verified local W3 asset without a runtime transport (11.0559ms)
+✔ unmeasured JPEG coverage is distinct from full coverage and preserves the previous publication (15.4851ms)
+✔ default publication serves representative galaxy and nebula detail assets (2.7068ms)
+✔ publication rejects missing identities, invalid levels, cross-object paths, traversal, and altered bytes (17.7944ms)
+✔ catalog facts survive a missing image publication and recover its actual provenance without stale caching (14.4862ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1051.133

@@ -11,6 +11,7 @@ import { resetAppStoreForAcceptance } from "@/state/app-store";
 import { syncNativeChrome } from "@/theme/native-chrome";
 import { inspectAcceptanceSkyScene } from "@/services/acceptance-diagnostics";
 import { skyImageFileSession } from "@/services/sky-image-file-session";
+import { initializeSkyPublicImageCache } from "@/services/sky-public-image-runtime";
 import "./app.scss";
 
 if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
@@ -114,6 +115,13 @@ export default function App({ children }: PropsWithChildren) {
       });
     } catch {
       console.warn("sky_image_file_cleanup_incomplete", { status: "unavailable" });
+    }
+    try {
+      void initializeSkyPublicImageCache().catch(() => {
+        console.warn("sky_public_image_cache_initialize_failed", { status: "unavailable" });
+      });
+    } catch {
+      console.warn("sky_public_image_cache_initialize_failed", { status: "unavailable" });
     }
     void syncNativeChrome(useAppStore.getState().mode).catch(
       (error: unknown) => {

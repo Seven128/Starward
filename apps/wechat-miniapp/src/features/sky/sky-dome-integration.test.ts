@@ -5,6 +5,9 @@ import {readFileSync} from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import {createSkyBrowsingCamera} from "./sky-browsing-camera.ts";
+import {resolveSkyCanvasView} from "./sky-canvas-view.ts";
+import {liveSkyOpticalCompletion,sameSkyOpticalCompletion} from "./sky-sdss-optical-completion.ts";
+import {copySkyDeepAuxiliaryDecisions,sameSkyDeepAuxiliaryDecisions} from "./sky-deep-auxiliary-visibility.ts";
 import {clampSkyFieldOfView,remapSkyFieldOfView,skyDomeFieldOfView,skyDomeProgress} from "./sky-zoom.ts";
 import {createSkyViewBasis,projectSkyDirection} from "./sky-view-projection.ts";
 import {skyViewportCenter,NO_SKY_INSETS,skyInsetsFromControls} from "./sky-viewport.ts";
@@ -20,18 +23,32 @@ if(process.env.MUTATE_SKY_VIEWPORT_LIFECYCLE==='1')pageSource=pageSource
 if(process.env.MUTATE_SKY_MANUAL_PRIORITY==='1')pageSource=pageSource.replace('live.alignment.mode === "editing" ? "locked" : manualBasisRef.current ? "manual" : live.alignment.mode === "needs-alignment" ? "locked" : "follow"',
   'live.alignment.mode === "editing" || live.alignment.mode === "needs-alignment" ? "locked" : manualBasisRef.current ? "manual" : "follow"');
 const source=ts.createSourceFile('sky.tsx',pageSource,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
-let paint='',begin='',measure='';
+let paint='',presented='',begin='',measure='';
 function visit(node:ts.Node){
   if(ts.isCallExpression(node)&&node.expression.getText(source)==='createSkyCanvasLifecycle'){
     const options=node.arguments[0] as ts.ObjectLiteralExpression;
     const property=options.properties.find(p=>p.name?.getText(source)==='paint') as ts.PropertyAssignment;
     paint=property.initializer.getText(source);
+    presented=(options.properties.find(p=>p.name?.getText(source)==='presented') as ts.PropertyAssignment).initializer.getText(source);
   }
   if(ts.isVariableDeclaration(node)&&node.name.getText(source)==='beginSkyCalibration')begin=node.initializer!.getText(source);
   if(ts.isVariableDeclaration(node)&&node.name.getText(source)==='measureBottomControls')measure=node.initializer!.getText(source);
   ts.forEachChild(node,visit);
 }visit(source);
 assert.ok(paint&&begin);
+
+// Execute the page's accepted-completion port as well as its actual camera
+// writer. The renderer remains controlled; this does not claim native pixels.
+function acceptedPagePaint(bindings:Record<string,unknown>){
+  const context=vm.createContext({resolveSkyCanvasView,liveSkyOpticalCompletion,sameSkyOpticalCompletion,
+    copySkyDeepAuxiliaryDecisions,sameSkyDeepAuxiliaryDecisions,
+    pendingSkyPaintRef:{current:null},canvasDrawRevisionRef:{current:0},
+    setCanvasSize:()=>{},publishAcceptanceSkySceneInspection:()=>{},setCanvasError:()=>{},...bindings});
+  const compile=(expression:string)=>vm.runInContext(ts.transpileModule('('+expression+')',
+    {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,context);
+  const draw=compile(paint),accept=compile(presented);
+  return (renderer:unknown,frame:unknown,size:unknown)=>draw(renderer,frame,size,()=>accept(frame,size));
+}
 
 test("actual page paint uses dome basis for drawing and last-painted calibration reference; locked stale frame uses observing scale",()=>{
   const raw=createSkyViewBasis(31,100,25)!;
@@ -45,22 +62,22 @@ test("actual page paint uses dome basis for drawing and last-painted calibration
     setPresentedCamera(){},resolvedSkyBodyReferences, setPresentedSkyFrame:(change:any)=>change(null),browsingTimerRef:{current:null},
     viewportInsetsRef:{current:NO_SKY_INSETS},skyViewportCenter,
     canvasGenerationRef:{current:1},EMPTY_SKY_IMAGES:new Map(),
-    drawSkyScene:(_ctx:any,_data:any,_at:any,_heading:any,_pose:any,_w:any,_h:any,_mode:any,painted:any,done:any,fov:number,_image:any,basis:any)=>{actual.push({fov,basis});painted({objects:[]},{sdssOpticalImage:null});done();}};
-  const fn=vm.runInNewContext(ts.transpileModule('('+paint+')',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,sandbox);
+    drawSkyScene:(_ctx:any,_data:any,_at:any,_heading:any,_pose:any,_w:any,_h:any,_mode:any,painted:any,done:any,fov:number,_image:any,basis:any)=>{actual.push({fov,basis});painted({objects:[]},{sdssOptical:null,deepSkyImage:null});done();}};
+  const fn=acceptedPagePaint(sandbox);
   const frame={orientationRevision:0,pose:{basis:raw},verticalFovDeg:fov,sceneReady:true};
-  fn({},frame,{width:390,height:844},()=>{});
+  fn({},frame,{width:390,height:844});
   assert.ok(actual[0]!.basis.forward[2]>.999999999);
   assert.equal(orientation.presented.current,actual[0]!.basis);
   const frozen=orientation.presented.current;
   orientation.latestPresentation.current={presentationRevision:1,alignment:{mode:'editing',view:frozen}};
-  fn({},frame,{width:390,height:844},()=>{});
+  fn({},frame,{width:390,height:844});
   assert.equal(actual[1]!.fov,45,"queued pre-calibration wide frame cannot undo observing scale");
   assert.equal(actual[1]!.basis,frozen,"freezes the direction the user actually saw");
   // Stopping a previously calibrated sensor leaves needs-alignment in its
   // owner; that must not override the user's explicit manual browsing intent.
   orientation.latestPresentation.current={presentationRevision:2,alignment:{mode:'needs-alignment',view:raw}};
   sandbox.manualBasisRef.current=raw as any;
-  fn({},frame,{width:390,height:844},()=>{});
+  fn({},frame,{width:390,height:844});
   assert.ok(actual[2]!.basis.forward[2]>.999999999,"manual full dome still faces zenith after a calibrated sensor stops");
 });
 
@@ -78,10 +95,10 @@ test("actual canvas writer gives the renderer a full horizon inside measured con
     browsingTimerRef:{current:null},setPresentedCamera:(fn:any)=>Object.assign(actualCamera,fn(null)),
     resolvedSkyBodyReferences, setPresentedSkyFrame:(change:any)=>change(null),
     drawSkyScene:(_ctx:any,_data:any,_at:any,_heading:any,_pose:any,w:number,h:number,_mode:any,painted:any,done:any,fov:number,_image:any,basis:any,center:any)=>{
-      rendered={w,h,fov,basis,center};painted({objects:[]},{sdssOpticalImage:null});done();
+      rendered={w,h,fov,basis,center};painted({objects:[]},{sdssOptical:null,deepSkyImage:null});done();
     }};
-  const fn=vm.runInNewContext(ts.transpileModule('('+paint+')',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,sandbox);
-  fn({}, {orientationRevision:0,pose:{basis:raw},verticalFovDeg:45,sceneReady:true},{width,height},()=>{});
+  const fn=acceptedPagePaint(sandbox);
+  fn({}, {orientationRevision:0,pose:{basis:raw},verticalFovDeg:45,sceneReady:true},{width,height});
   assert.ok(rendered.center,"renderer must receive the shared shifted center");
   assert.equal(actualCamera.center,rendered.center,"labels receive the same center as actual painting");
   for(let az=0;az<360;az++){

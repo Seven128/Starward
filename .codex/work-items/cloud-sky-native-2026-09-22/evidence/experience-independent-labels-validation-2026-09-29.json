@@ -1,0 +1,27 @@
+{
+  "scope": "Final scope/source/immutable-candidate checks after current module documentation; no new runtime/device acceptance.",
+  "sourceInputsChecked": 94,
+  "sourceAndGpuInputsUnchanged": true,
+  "candidateSha256": "61f15816efa950b24c415a532c1c45fd47b6ed7e132bbe9cda955ad7cdab5515",
+  "previousCandidateUnchanged": "59c95f31e674bfda4b6e69d7cc8791f18a444fa0515f14c0e284fd36e453ab7f",
+  "scopedDiffCheckExit": 0,
+  "documents": [
+    {
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+      "sha256": "37b8f1113d3062937f029e26e8bee044ee27f7290a95801db1bb718563343d11"
+    },
+    {
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/STATE.md",
+      "sha256": "02be76294678362fa2ca32254fa491d9d623d8d6e6055a93532ab5cbc9ea0cf7"
+    },
+    {
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/INDEX.md",
+      "sha256": "12e80e68a02e24cae7f7062efabb3aedff8f00d330facca6715e85c163ce2c35"
+    }
+  ],
+  "contextValidationExit": 0,
+  "contextValidationScope": "Explicit controlling-source declarations and manifest paths only, observed in this module turn; not factual/experience certification.",
+  "goal": "active, unbudgeted, incomplete",
+  "nativeCandidate": "v23 prepared unopened; native v12 Frame/Context/4B state unknown; no RPC retry or new window",
+  "remaining": "Complete original journey, target composition/resources/performance, physical pose/calibration/background, Android/iOS/current Moon, environmental/source quality/coverage, costs and independent review remain open."
+}

@@ -1,0 +1,178 @@
+{
+  "scope": "compiled HTTP, actual Mini transport/cache and component functions; Node view/hook adapters, not native or full journey acceptance",
+  "rows": [
+    {
+      "phase": "both-publications-unavailable",
+      "dataState": "PARTIAL",
+      "sourceIds": [
+        "catalog:opengc-messier-deep-sky.v20260501:f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5"
+      ],
+      "sourceStates": [
+        "PARTIAL"
+      ],
+      "modalStates": [
+        "PARTIAL"
+      ],
+      "detail": "所选红外影像与光学影像的来源暂不可用。已取得的目录资料与来源仍可查看，请重试。",
+      "modalDetail": "所选红外影像与光学影像的来源暂不可用。已取得的目录资料与来源仍可查看，请重试。"
+    },
+    {
+      "phase": "optical-unavailable",
+      "dataState": "PARTIAL",
+      "sourceIds": [
+        "catalog:opengc-messier-deep-sky.v20260501:f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5",
+        "imagery:allwise-w3-messier.source-finite.v20260929:87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073"
+      ],
+      "sourceStates": [
+        "PARTIAL"
+      ],
+      "modalStates": [
+        "PARTIAL"
+      ],
+      "detail": "光学影像来源暂不可用。已取得的目录资料与来源仍可查看，请重试。",
+      "modalDetail": "光学影像来源暂不可用。已取得的目录资料与来源仍可查看，请重试。"
+    },
+    {
+      "phase": "still-unavailable-conditional",
+      "dataState": "PARTIAL",
+      "sourceIds": [
+        "catalog:opengc-messier-deep-sky.v20260501:f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5",
+        "imagery:allwise-w3-messier.source-finite.v20260929:87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073"
+      ],
+      "sourceStates": [
+        "PARTIAL"
+      ],
+      "modalStates": [
+        "PARTIAL"
+      ],
+      "detail": "光学影像来源暂不可用。已取得的目录资料与来源仍可查看，请重试。",
+      "modalDetail": "光学影像来源暂不可用。已取得的目录资料与来源仍可查看，请重试。"
+    },
+    {
+      "phase": "offline-retained-partial",
+      "dataState": "STALE_USABLE",
+      "sourceIds": [
+        "catalog:opengc-messier-deep-sky.v20260501:f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5",
+        "imagery:allwise-w3-messier.source-finite.v20260929:87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073"
+      ],
+      "sourceStates": [
+        "STALE",
+        "PARTIAL"
+      ],
+      "modalStates": [
+        "STALE",
+        "PARTIAL"
+      ],
+      "detail": "光学影像来源暂不可用。已取得的目录资料与来源仍可查看，请重试。",
+      "modalDetail": "光学影像来源暂不可用。已取得的目录资料与来源仍可查看，请重试。"
+    },
+    {
+      "phase": "optical-recovered",
+      "dataState": "FRESH",
+      "sourceIds": [
+        "catalog:opengc-messier-deep-sky.v20260501:f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5",
+        "imagery:allwise-w3-messier.source-finite.v20260929:87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+        "optical-imagery:sdss-dr17-m82.v20260929:450e5305189e0f31f5716513880ce480994e676379a79f8e571039b4bcde4b43"
+      ],
+      "sourceStates": [],
+      "modalStates": [],
+      "detail": null,
+      "modalDetail": null
+    },
+    {
+      "phase": "original-bound-return",
+      "dataState": "FRESH",
+      "sourceIds": [
+        "catalog:opengc-messier-deep-sky.v20260501:f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5",
+        "imagery:allwise-w3-messier.source-finite.v20260929:87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+        "optical-imagery:sdss-dr17-m82.v20260929:450e5305189e0f31f5716513880ce480994e676379a79f8e571039b4bcde4b43"
+      ],
+      "sourceStates": [],
+      "modalStates": [],
+      "detail": null,
+      "modalDetail": null
+    }
+  ],
+  "httpRows": [
+    {
+      "path": "/v2/celestial-objects/M%3A82",
+      "status": 200,
+      "conditional": false
+    },
+    {
+      "path": "/v2/celestial-objects/M%3A82",
+      "status": 200,
+      "conditional": true
+    },
+    {
+      "path": "/v2/celestial-objects/M%3A82",
+      "status": 304,
+      "conditional": true
+    },
+    {
+      "path": "/v2/celestial-objects/M%3A82",
+      "status": 200,
+      "conditional": true
+    },
+    {
+      "path": "/v2/celestial-objects/M%3A82",
+      "status": 200,
+      "conditional": false
+    },
+    {
+      "path": "/v2/celestial-objects/M%3A82",
+      "status": 304,
+      "conditional": true
+    }
+  ],
+  "sourceHashes": [
+    {
+      "file": "workers/miniapp-api/src/celestial-object-information.ts",
+      "sha256": "911897ef17be28be13d8b4f3cc9166ceb403f402ea7442e821df44536085fd3b"
+    },
+    {
+      "file": "workers/miniapp-api/dist/celestial-object-information.js",
+      "sha256": "3ae1fcda98d31ec91469e7c2e92aa1d8d314b8e4203dadb24359c5483ce67cd9"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/api-client.ts",
+      "sha256": "5afa9eb8364c8a5ec39e9cbd1c3dfb3306f7c771200fed9d8edfd93a9e568ca6"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/celestial-information-response.ts",
+      "sha256": "038373dd9bc761a9bf29b91db16213b845a05373ec9f908a02ae8e7e6859b212"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/celestial-information-presentation.ts",
+      "sha256": "e0e5f5c4a7ef0d55685f3f34d8b344a54e63dd271a4e89d991a87e346c6d458f"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/response-cache.ts",
+      "sha256": "d5ce663020e05eb05718a15abc094c5aeab8e39917c5e902edb6eb9f8fdea1c7"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/authenticated-operation.ts",
+      "sha256": "249f9f512b8ade77a6e90ad8424939bd6fc0f21f800ff20bdda2b67f4a480842"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/request-lifecycle.ts",
+      "sha256": "d3f8ca1cfb16987bdf4f89c435d4b963dd68d85acd01698acf08dba23ac11b89"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/hooks/use-celestial-information.ts",
+      "sha256": "70be075b1b0f1bf89b7a7796cea598c84e62aff9e715d75e64c55a7c61d91668"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "867571b4ff11457335580a198044919dc47fdcedfdf9d6bec074229507255448"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/sky/sources/index.tsx",
+      "sha256": "c63a767f23beafb4872023a54f4c6aa41299a91cc028cf34deb7f0e07d8ee38a"
+    }
+  ],
+  "routeIdentityPreserved": true,
+  "partialCreditNotSubstituted": true,
+  "requestsReleased": true,
+  "portRetiredOnExit": true
+}

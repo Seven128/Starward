@@ -1,0 +1,25 @@
+✔ Acrux detail and catalog sources follow the requested report version (103.9571ms)
+✔ stable HR references return attributable ready and basic-only states (0.6273ms)
+✔ large numeric-like and unknown references stay strings and fail closed (2.5758ms)
+✔ planet information distinguishes historical band profiles from current geometry and weather (0.8741ms)
+✔ Messier galaxy and nebula references expose attributable catalog facts (18.0089ms)
+✔ same identity and locale reuse a stable content revision without sharing mutable values (0.617ms)
+✔ SAO details interpret HD multiplicity codes instead of presenting them as names (712.3947ms)
+✔ each missing publication retains independent facts and credit and recovers without caching the partial result (27.8354ms)
+✔ actual HTTP retry replaces partial credit and its conditional response with the object's recovered publication (210.8294ms)
+✔ published AllWISE service reads a verified local W3 asset without a runtime transport (24.1331ms)
+✔ new image opt-in and painted-image source binding retain both legacy publication offers (29.5299ms)
+✔ unmeasured JPEG coverage is distinct from full coverage and preserves the previous publication (28.2279ms)
+✔ default publication serves representative galaxy and nebula detail assets (12.7828ms)
+✔ publication rejects missing identities, invalid levels, cross-object paths, traversal, and altered bytes (36.8785ms)
+✔ catalog facts survive a missing image publication and recover its actual provenance without stale caching (43.7774ms)
+✔ actual M51 optical publication serves three hash-bound JPEGs and scoped provenance (231.3375ms)
+✔ optical target discovery and immutable resources preserve each admitted object's identity (106.5465ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3546.6516

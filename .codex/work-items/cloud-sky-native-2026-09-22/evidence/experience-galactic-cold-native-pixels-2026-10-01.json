@@ -1,0 +1,89 @@
+{
+  "scope": "Actual finite native scene-region comparisons at the recorded original Context and view scale. Pixels do not measure file/decoded/GPU/OS memory or full composition.",
+  "rows": [
+    {
+      "name": "before-baseline",
+      "inputs": [
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-landscape-empty-view-mask-owner-final-2026-10-01.png",
+          "sha256": "feb813c22e807e8e68f5cb994b64d7d061c4956f554c9e779d05d681525e45ac"
+        },
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-galactic-cold-baseline-2026-10-01.png",
+          "sha256": "7da588eb7fec93cf6e00104794b2ff3fa7431dcfe4aedd786df2603f20706ded"
+        }
+      ],
+      "region": {
+        "x": 3,
+        "y": 96,
+        "width": 421,
+        "height": 799,
+        "changedPixels": 4,
+        "maxDelta": 1
+      }
+    },
+    {
+      "name": "before-noon",
+      "inputs": [
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-landscape-empty-view-noon-2026-10-01.png",
+          "sha256": "eb9a60d67048012390529889052e68da18f287a42461532ab6caabb84d1db308"
+        },
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-galactic-cold-noon-2026-10-01.png",
+          "sha256": "b8e62f5552116fbe2e7fa8123873511fdfc39f04f786cf1a5ee780ac45a22867"
+        }
+      ],
+      "region": {
+        "x": 3,
+        "y": 96,
+        "width": 421,
+        "height": 799,
+        "changedPixels": 0,
+        "maxDelta": 0
+      }
+    },
+    {
+      "name": "cancel-return",
+      "inputs": [
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-galactic-cold-baseline-2026-10-01.png",
+          "sha256": "7da588eb7fec93cf6e00104794b2ff3fa7431dcfe4aedd786df2603f20706ded"
+        },
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-galactic-cold-restored-2026-10-01.png",
+          "sha256": "d56df7f17f530b6557d3c023c38a25ec62feef3dc3133b0f2fd2bab056b45a2c"
+        }
+      ],
+      "region": {
+        "x": 3,
+        "y": 96,
+        "width": 421,
+        "height": 799,
+        "changedPixels": 14,
+        "maxDelta": 1
+      }
+    },
+    {
+      "name": "local-return",
+      "inputs": [
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-galactic-cold-baseline-2026-10-01.png",
+          "sha256": "7da588eb7fec93cf6e00104794b2ff3fa7431dcfe4aedd786df2603f20706ded"
+        },
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-galactic-cold-return-2026-10-01.png",
+          "sha256": "4f1b7320a42192772c3c695d88508b920df5319445c9277038a810e45e5a85e7"
+        }
+      ],
+      "region": {
+        "x": 3,
+        "y": 96,
+        "width": 421,
+        "height": 799,
+        "changedPixels": 209,
+        "maxDelta": 8
+      }
+    }
+  ]
+}

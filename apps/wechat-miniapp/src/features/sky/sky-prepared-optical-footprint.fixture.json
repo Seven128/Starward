@@ -1,0 +1,511 @@
+{
+  "scope": "Cached admitted Prepared publication, prior independently read nominal source/mother rows, and existing Astropy TAN world landmarks. Coordinates only; no new source decode, projection image or physical precision.",
+  "manifestSha256": "23faa1521ae39a6a7d92f36c87ebf691a75b6bd7b91a3654e9b24f63f4d793f1",
+  "publicationHash": "8eb8336aa5a75d104807327acab5990f38e0e22000713ab639a4c95cd443a802",
+  "nominalReferenceRowsResultSha256": "95f72b83ace5de05346f09a7e0414b3e8157f55f5593653d859f6468c6d77d83",
+  "wcsLandmarksFixtureSha256": "9edd295faa6cf21a9926b4a4e72cb62a8c776a913f80eab3bfd7b3aa56008009",
+  "publication": {
+    "schemaVersion": "prepared-observation-optical-publication-v1",
+    "imageVersion": "prepared-optical-v1",
+    "publicationId": "esa-hubble-heic0506a-m51.v20261003",
+    "objectRef": "M:51",
+    "center": {
+      "frame": "ICRS J2000",
+      "raDeg": 202.469625,
+      "decDeg": 47.1951666667
+    },
+    "orientation": "north-up/east-left",
+    "source": {
+      "resourceId": "heic0506a",
+      "sourceUrl": "https://cdn.esahubble.org/archives/images/publicationjpg/heic0506a.jpg",
+      "metadataReferenceUrl": "https://www.spacetelescope.org/images/heic0506a/",
+      "credit": "NASA, ESA, S. Beckwith (STScI), and The Hubble Heritage Team (STScI/AURA)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "policyUrl": "https://esahubble.org/copyright/",
+      "colourMeaning": "Retained published B/V/H-alpha+Nii/I composite; encoded RGB, not calibrated flux",
+      "encodedJpeg": {
+        "bytes": 4060187,
+        "sha256": "7b13a932bcf54653c591d369e8d1c4cbdbeb693ecc468242facb239fde52e4c2"
+      },
+      "rawXmp": {
+        "bytes": 10913,
+        "sha256": "cdbf74f5e358b11d6e28fa63b83144322f9340e6b5fc406ca8802b644373d52c"
+      },
+      "parserXmp": {
+        "bytes": 10803,
+        "sha256": "5ec4236506d60f8aae743b7ce4556a66eda2c0b4b90c81fe29980f440d602752"
+      },
+      "decodedRgb": {
+        "bytes": 33312000,
+        "sha256": "e9720f3cfcd75966deb94060b6a0711b295e094ae03c76ec1d58633a343b1710",
+        "shape": [
+          2776,
+          4000,
+          3
+        ],
+        "rowOrder": "top-first"
+      },
+      "nominalAvm": {
+        "referenceDimension": [
+          11477,
+          7965
+        ],
+        "referencePixel": [
+          5739.5,
+          3983.5
+        ],
+        "referenceValue": [
+          202.468074158,
+          47.213174399
+        ],
+        "scale": [
+          -0.0000138852130116,
+          0.0000138852130116
+        ],
+        "rotation": -91.90815078800014,
+        "decodedShapeWidthHeight": [
+          4000,
+          2776
+        ],
+        "resizeCommonXFactor": 0.3485231332229677,
+        "resizeYFactor": 0.3485247959824231,
+        "crpixFitsOneBased": [
+          2000.3485231332231,
+          1388.3419011936917
+        ],
+        "cdeltDegrees": [
+          -0.0000398401474335333,
+          0.0000398401474335333
+        ],
+        "spatialNotes": "Data calculated based on Simbad coordinates! Using this image as an overlay on a DSS background, a 5 arcsec (or so) difference is expected to be seen!",
+        "spatialQuality": "Full",
+        "accuracy": "UNVERIFIED_APPROXIMATE_PUBLISHER_AVM"
+      }
+    },
+    "processing": {
+      "runtimeNetwork": "forbidden",
+      "sourceAdapterVersion": "prepared-rgb-observation-avm-v1",
+      "producerVersion": "prepared-rgb-tan-master-v1",
+      "producerReceipt": {
+        "bytes": 18173,
+        "sha256": "794924fa3d190c8b9c6cc6d43084430f77878c245b6c37638daeb8dcd0f49021"
+      },
+      "sampleOffsetsDyDx": [
+        [
+          -0.25,
+          -0.25
+        ],
+        [
+          -0.25,
+          0.25
+        ],
+        [
+          0.25,
+          -0.25
+        ],
+        [
+          0.25,
+          0.25
+        ]
+      ],
+      "sampling": "encoded-RGB-bilinear-all-four-neighbours",
+      "levelResampling": "geometry-premultiplied-integer-box-round-to-nearest",
+      "validation": "BOUND_MASTER_AND_LEVELS_CHECKED",
+      "modification": "Starward projects one byte-bound historical prepared RGB observation with its uncorrected publisher AVM into one north-up TAN master using four target-pixel bilinear samples and common complete source stencils. Same-master centered crops use geometric-alpha-premultiplied integer boxes. Encoded colour is retained; no calibrated flux, astrometric fit, sky subtraction, source sharpening, PSF correction or synthetic detail is supplied.",
+      "coverage": "PNG alpha is box-averaged binary master-cell geometric support, not continuous source-footprint area, science/exposure coverage or an artifact mask. Approximate publisher AVM and original colour meaning remain; rectangular edges and full image quality are unadopted. Only these three target crops are provided."
+    },
+    "master": {
+      "pixels": 2048,
+      "fieldDegrees": 0.22755555555555557,
+      "crpixFitsOneBased": 1024.5,
+      "rgba": {
+        "bytes": 16777216,
+        "sha256": "2c9790bb218556a3e2474a4101e0dad4a389c7d45c1ff441210df0678a3694a9"
+      },
+      "rgbaNpy": {
+        "bytes": 16777344,
+        "sha256": "cf086879a92021445163ca4ff9d6ccd80d4f46d77e071f57ecec1ef0f46556ee",
+        "format": "npy",
+        "shape": [
+          2048,
+          2048,
+          4
+        ],
+        "dtype": "uint8",
+        "rowOrder": "top-first"
+      },
+      "geometricSupportPixels": 1425463,
+      "geometricBlackPixels": 0,
+      "scientificAvailability": "UNKNOWN",
+      "scientificValidity": "UNKNOWN",
+      "unit": "published-encoded-RGB"
+    },
+    "levels": {
+      "OVERVIEW": {
+        "bytes": 181742,
+        "sha256": "2462f47f20e444a2bf1a580a8891a57cd8ac4ea69a30288ed1413a60bcc413a4",
+        "file": "M-51-overview.png",
+        "format": "png",
+        "pixels": 512,
+        "fieldDegrees": 0.2275555555555556,
+        "crpixFitsOneBased": 256.5,
+        "displayAlpha": "geometric-source-area",
+        "scientificAvailability": "UNKNOWN",
+        "masterRgbaSha256": "2c9790bb218556a3e2474a4101e0dad4a389c7d45c1ff441210df0678a3694a9",
+        "masterCrop": {
+          "boundsXYExclusive": [
+            0,
+            0,
+            2048,
+            2048
+          ],
+          "boxFactor": 4
+        },
+        "geometricMasterSupportPixels": 1425463,
+        "alphaPixels": {
+          "opaque": 88625,
+          "partial": 934,
+          "zero": 172585
+        },
+        "downloadUrl": "/v2/sky/prepared-optical/8eb8336aa5a75d104807327acab5990f38e0e22000713ab639a4c95cd443a802/M-51-overview.png"
+      },
+      "MEDIUM": {
+        "bytes": 529695,
+        "sha256": "e523412f935e3b85e778c89ee60c33a05db616abe126d4d0efb8456c5c7bc4b5",
+        "file": "M-51-medium.png",
+        "format": "png",
+        "pixels": 512,
+        "fieldDegrees": 0.11377788994540003,
+        "crpixFitsOneBased": 256.5,
+        "displayAlpha": "geometric-source-area",
+        "scientificAvailability": "UNKNOWN",
+        "masterRgbaSha256": "2c9790bb218556a3e2474a4101e0dad4a389c7d45c1ff441210df0678a3694a9",
+        "masterCrop": {
+          "boundsXYExclusive": [
+            512,
+            512,
+            1536,
+            1536
+          ],
+          "boxFactor": 2
+        },
+        "geometricMasterSupportPixels": 1014375,
+        "alphaPixels": {
+          "opaque": 253400,
+          "partial": 387,
+          "zero": 8357
+        },
+        "downloadUrl": "/v2/sky/prepared-optical/8eb8336aa5a75d104807327acab5990f38e0e22000713ab639a4c95cd443a802/M-51-medium.png"
+      },
+      "DETAIL": {
+        "bytes": 603802,
+        "sha256": "14d606b399481ea518ad5c22a0173c1d931e75c86892eac105dc0a9bada80a19",
+        "file": "M-51-detail.png",
+        "format": "png",
+        "pixels": 512,
+        "fieldDegrees": 0.056888958993683895,
+        "crpixFitsOneBased": 256.5,
+        "displayAlpha": "geometric-source-area",
+        "scientificAvailability": "UNKNOWN",
+        "masterRgbaSha256": "2c9790bb218556a3e2474a4101e0dad4a389c7d45c1ff441210df0678a3694a9",
+        "masterCrop": {
+          "boundsXYExclusive": [
+            768,
+            768,
+            1280,
+            1280
+          ],
+          "boxFactor": 1
+        },
+        "geometricMasterSupportPixels": 262144,
+        "alphaPixels": {
+          "opaque": 262144,
+          "partial": 0,
+          "zero": 0
+        },
+        "downloadUrl": "/v2/sky/prepared-optical/8eb8336aa5a75d104807327acab5990f38e0e22000713ab639a4c95cd443a802/M-51-detail.png"
+      }
+    },
+    "publicationHash": "8eb8336aa5a75d104807327acab5990f38e0e22000713ab639a4c95cd443a802"
+  },
+  "nominalSourceBottomFirstRows": [
+    [
+      248.01748613029832,
+      89.61213815914523,
+      244.51509134243128
+    ],
+    [
+      185.9320681568397,
+      -483.6144128498174,
+      -11.354851708314943
+    ],
+    [
+      -0.6277107765217259,
+      -0.25959663341440203,
+      0.7338860735552899
+    ]
+  ],
+  "masterRows": [
+    [
+      -96.54562724679545,
+      232.54275883014944,
+      0.36683627293406335
+    ],
+    [
+      -171.01946435409658,
+      -70.73238433561775,
+      -170.7237535081211
+    ],
+    [
+      -0.627916863967574,
+      -0.2597017662329402,
+      0.7336725458681267
+    ]
+  ],
+  "wcsRows": [
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0,
+        0
+      ],
+      "raDeg": 202.63742712044797,
+      "decDeg": 47.30882198261623
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        1,
+        0
+      ],
+      "raDeg": 202.30182287955205,
+      "decDeg": 47.30882198261623
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0,
+        1
+      ],
+      "raDeg": 202.6367090931669,
+      "decDeg": 47.08126739878547
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        1,
+        1
+      ],
+      "raDeg": 202.30254090683312,
+      "decDeg": 47.08126739878547
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0.5,
+        0.5
+      ],
+      "raDeg": 202.469625,
+      "decDeg": 47.1951666667
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0.03,
+        0.07
+      ],
+      "raDeg": 202.62731161070624,
+      "decDeg": 47.29290744196074
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0.83,
+        0.88
+      ],
+      "raDeg": 202.35929266829473,
+      "decDeg": 47.10864253566057
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0.25,
+        0.75
+      ],
+      "raDeg": 202.5532566898267,
+      "decDeg": 47.13824728847179
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0.61,
+        0.38
+      ],
+      "raDeg": 202.43276862030743,
+      "decDeg": 47.22246745791318
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0,
+        0
+      ],
+      "raDeg": 202.55343619717786,
+      "decDeg": 47.25202505695107
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        1,
+        0
+      ],
+      "raDeg": 202.38581380282216,
+      "decDeg": 47.25202505695107
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0,
+        1
+      ],
+      "raDeg": 202.5532566898267,
+      "decDeg": 47.13824728847179
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        1,
+        1
+      ],
+      "raDeg": 202.38599331017332,
+      "decDeg": 47.13824728847179
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0.5,
+        0.5
+      ],
+      "raDeg": 202.469625,
+      "decDeg": 47.1951666667
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0.03,
+        0.07
+      ],
+      "raDeg": 202.54839569672697,
+      "decDeg": 47.24406417292878
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0.83,
+        0.88
+      ],
+      "raDeg": 202.4144138723933,
+      "decDeg": 47.1519177994427
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0.25,
+        0.75
+      ],
+      "raDeg": 202.51146326957766,
+      "decDeg": 47.16671457129836
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0.61,
+        0.38
+      ],
+      "raDeg": 202.45120155090575,
+      "decDeg": 47.20881854110737
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0,
+        0
+      ],
+      "raDeg": 202.51150814644865,
+      "decDeg": 47.22360351510876
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        1,
+        0
+      ],
+      "raDeg": 202.42774185355137,
+      "decDeg": 47.22360351510876
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0,
+        1
+      ],
+      "raDeg": 202.51146326957766,
+      "decDeg": 47.16671457129836
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        1,
+        1
+      ],
+      "raDeg": 202.42778673042235,
+      "decDeg": 47.16671457129836
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0.5,
+        0.5
+      ],
+      "raDeg": 202.469625,
+      "decDeg": 47.1951666667
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0.03,
+        0.07
+      ],
+      "raDeg": 202.50899220263426,
+      "decDeg": 47.21962217770059
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0.83,
+        0.88
+      ],
+      "raDeg": 202.44200818841122,
+      "decDeg": 47.17354554325036
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0.25,
+        0.75
+      ],
+      "raDeg": 202.4905497426794,
+      "decDeg": 47.18094252115016
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0.61,
+        0.38
+      ],
+      "raDeg": 202.4604144604218,
+      "decDeg": 47.20199297324238
+    }
+  ]
+}

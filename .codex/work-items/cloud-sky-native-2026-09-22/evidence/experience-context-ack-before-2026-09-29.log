@@ -1,0 +1,76 @@
+✔ an observation edit recovers a server-lost context once and preserves the requested change (2.2356ms)
+✔ a non-expiry update failure is not replayed (1.0278ms)
+✔ a lost successful edit response confirms the actual time with one fresh read and no replay (15.9371ms)
+✔ a conflict can confirm the requested state but cannot overwrite a different server intent (2.0269ms)
+✔ fresh edit recovery rejects wrong identity, unsolicited night/event changes and stale readback (4.9002ms)
+✔ cancelled and definite rejected edits neither read back nor replay (2.0177ms)
+✔ a lost date reply preserves location/profile and confirms the requested night and event reset (2.1467ms)
+✔ a matching normal edit response completes without an unnecessary readback (0.8984ms)
+✖ a mismatched 2xx response cannot publish old time, foreign identity, or contradictory binding (4.0291ms)
+✖ invalid direct and readback replies remain failed without replay or success invalidation (1.2919ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 8
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 835.862
+
+✖ failing tests:
+
+test at apps\wechat-miniapp\src\services\observation-context-update-recovery.test.ts:1:10123
+✖ a mismatched 2xx response cannot publish old time, foreign identity, or contradictory binding (4.0291ms)
+  AssertionError [ERR_ASSERTION]: only the actual requested state may be returned to Map/Sky
+  + actual - expected
+  ... Skipped lines
+  
+    {
+      algorithmVersions: {
+        astronomy: 'a',
+        darkSky: 'd',
+        eventCatalog: 'e',
+  ...
+      schemaVersion: 'observation-context-v2',
+  +   selectedAtUtc: '2026-09-13T13:00:00.000Z',
+  -   selectedAtUtc: '2026-09-13T13:30:00.000Z',
+      targetProfile: 'DAILY',
+      timezone: 'Asia/Shanghai',
+      weatherView: {
+        cloudLayer: 'TOTAL',
+        comparisonModels: [],
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\services\observation-context-update-recovery.test.ts:261:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { schemaVersion: 'observation-context-v2', contextId: 'ctx:current', contextFingerprint: 'same-night', revision: 4, location: { kind: 'FORMAL_SPOT', spotId: 'spot:current', locationVersion: 1 }, routeOrigin: null, timezone: 'Asia/Shanghai', localDate: '2026-09-13', nightStartUtc: '2026-09-13T04:00:00.000Z', nightEndUtc: '2026-09-14T04:00:00.000Z', selectedAtUtc: '2026-09-13T13:00:00.000Z', eventInstanceId: null, targetProfile: 'DAILY', weatherView: { primaryPolicy: 'QWEATHER', comparisonModels: [], selectedModel: null, cloudLayer: 'TOTAL' }, algorithmVersions: { astronomy: 'a', opportunity: 'o', tripDecision: 't', darkSky: 'd', eventCatalog: 'e' }, privacyClass: 'PUBLIC_REFERENCE', createdAt: '2026-09-13T03:00:00.000Z', expiresAt: '2026-09-15T03:00:00.000Z' },
+    expected: { schemaVersion: 'observation-context-v2', contextId: 'ctx:current', contextFingerprint: 'same-night', revision: 4, location: { kind: 'FORMAL_SPOT', spotId: 'spot:current', locationVersion: 1 }, routeOrigin: null, timezone: 'Asia/Shanghai', localDate: '2026-09-13', nightStartUtc: '2026-09-13T04:00:00.000Z', nightEndUtc: '2026-09-14T04:00:00.000Z', selectedAtUtc: '2026-09-13T13:30:00.000Z', eventInstanceId: null, targetProfile: 'DAILY', weatherView: { primaryPolicy: 'QWEATHER', comparisonModels: [], selectedModel: null, cloudLayer: 'TOTAL' }, algorithmVersions: { astronomy: 'a', opportunity: 'o', tripDecision: 't', darkSky: 'd', eventCatalog: 'e' }, privacyClass: 'PUBLIC_REFERENCE', createdAt: '2026-09-13T03:00:00.000Z', expiresAt: '2026-09-15T03:00:00.000Z' },
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at apps\wechat-miniapp\src\services\observation-context-update-recovery.test.ts:1:11830
+✖ invalid direct and readback replies remain failed without replay or success invalidation (1.2919ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /bff_observation_context_update_invalid/. Input:
+  
+  'AssertionError [ERR_ASSERTION]: unconfirmed response cannot mark success'
+  
+      at async TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\services\observation-context-update-recovery.test.ts:281:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: AssertionError [ERR_ASSERTION]: unconfirmed response cannot mark success
+        at invalidateApiCache (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\services\observation-context-update-recovery.test.ts:274:40)
+        at updateObservationContext (evalmachine.<anonymous>:47:5)
+        at async waitForActual (node:assert:646:5)
+        at async strict.rejects (node:assert:769:25)
+        at async TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\services\observation-context-update-recovery.test.ts:281:5)
+        at async Test.run (node:internal/test_runner/test:1313:7)
+        at async Test.processPendingSubtests (node:internal/test_runner/test:897:7),
+    expected: /bff_observation_context_update_invalid/,
+    operator: 'rejects',
+    diff: 'simple'
+  }

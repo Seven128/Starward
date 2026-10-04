@@ -1,0 +1,119 @@
+{
+  "sourceSha256": "6976db0ae39a46c2ee8cd165c0a375a55c819d4248c715b064983184020cc0ba",
+  "rows": [
+    {
+      "fov": 0.05,
+      "flip": false,
+      "fragments": 329160,
+      "alphaZero": 203529,
+      "finiteBlack": 125631,
+      "finiteColor": 0,
+      "filterOnlyAlpha": 125631,
+      "filterColor": 0,
+      "maxContribution": 0,
+      "minUv": [
+        0.47274712771950794,
+        0.47086393201319326
+      ],
+      "maxUv": [
+        0.5252997472806564,
+        0.5310891929868039
+      ]
+    },
+    {
+      "fov": 0.05,
+      "flip": true,
+      "fragments": 329160,
+      "alphaZero": 212355,
+      "finiteBlack": 116805,
+      "finiteColor": 0,
+      "filterOnlyAlpha": 116805,
+      "filterColor": 0,
+      "maxContribution": 0,
+      "minUv": [
+        0.47274712771950794,
+        0.47086393201319326
+      ],
+      "maxUv": [
+        0.5252997472806564,
+        0.5310891929868039
+      ]
+    },
+    {
+      "fov": 0.12,
+      "flip": false,
+      "fragments": 329160,
+      "alphaZero": 262459,
+      "finiteBlack": 53916,
+      "finiteColor": 12785,
+      "filterOnlyAlpha": 66701,
+      "filterColor": 12785,
+      "maxContribution": 0.58,
+      "minUv": [
+        0.43596027197538617,
+        0.4287062240608804
+      ],
+      "maxUv": [
+        0.5620866030247776,
+        0.5732469009391269
+      ]
+    },
+    {
+      "fov": 0.12,
+      "flip": true,
+      "fragments": 329160,
+      "alphaZero": 252426,
+      "finiteBlack": 58832,
+      "finiteColor": 17902,
+      "filterOnlyAlpha": 76734,
+      "filterColor": 17902,
+      "maxContribution": 0.58,
+      "minUv": [
+        0.43596027197538617,
+        0.4287062240608804
+      ],
+      "maxUv": [
+        0.5620866030247776,
+        0.5732469009391269
+      ]
+    },
+    {
+      "fov": 0.8,
+      "flip": false,
+      "fragments": 329160,
+      "alphaZero": 15281,
+      "finiteBlack": 2136,
+      "finiteColor": 311743,
+      "filterOnlyAlpha": 313879,
+      "filterColor": 311743,
+      "maxContribution": 0.58,
+      "minUv": [
+        0.07859460537141015,
+        0.019165449234435004
+      ],
+      "maxUv": [
+        0.9194522696287516,
+        0.9827876757655658
+      ]
+    },
+    {
+      "fov": 0.8,
+      "flip": true,
+      "fragments": 329160,
+      "alphaZero": 15271,
+      "finiteBlack": 2150,
+      "finiteColor": 311739,
+      "filterOnlyAlpha": 313889,
+      "filterColor": 311739,
+      "maxContribution": 0.58,
+      "minUv": [
+        0.07859460537141015,
+        0.019165449234435004
+      ],
+      "maxUv": [
+        0.9194522696287516,
+        0.9827876757655658
+      ]
+    }
+  ]
+}

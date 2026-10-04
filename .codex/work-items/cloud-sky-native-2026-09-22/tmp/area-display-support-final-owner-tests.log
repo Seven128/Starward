@@ -1,0 +1,27 @@
+✔ selection or level changes abort and ignore every late request callback (2.2737ms)
+✔ a canceled late write cannot overwrite the retry's published bytes (0.8482ms)
+✔ leaving during file persistence prevents the old asset becoming ready (0.2996ms)
+✔ only active binary success publishes while active failures remain retryable (0.6687ms)
+✔ missing or invalid angular metadata cannot publish a misregistered image (0.3816ms)
+✔ an unbound successful reply cannot paint old bytes under the current publication's credit (0.2632ms)
+✔ synchronous native request and filesystem failures stay in the retryable error channel (0.5993ms)
+✔ real published PNG bytes retain source binding and use their own cancellable file format (16.3677ms)
+✔ a long offscreen image does not enter the texture working set through its loose circular bound (4.0092ms)
+✔ an edge crossing remains visible even when image and viewport corners are outside each other (0.7386ms)
+✔ actual visible rays are never rejected under rolled and offset viewports (5.6455ms)
+✔ actual M42 color-empty local viewport retains its cue while source-bearing wider views remain eligible (3.6424ms)
+✔ isolated color and filter neighbors remain eligible in rolled and offset local views (5.1585ms)
+✔ published AllWISE service reads a verified local W3 asset without a runtime transport (15.9368ms)
+✔ new image opt-in and painted-image source binding retain both legacy publication offers (17.7494ms)
+✔ unmeasured JPEG coverage is distinct from full coverage and preserves the previous publication (32.5602ms)
+✔ default publication serves representative galaxy and nebula detail assets (19.9004ms)
+✔ publication rejects missing identities, invalid levels, cross-object paths, traversal, and altered bytes (42.0149ms)
+✔ catalog facts survive a missing image publication and recover its actual provenance without stale caching (24.9798ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1683.0276

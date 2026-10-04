@@ -8,29 +8,37 @@ import type { ResolvedSkyReport } from "./sky-stellar-scene";
 
 const width = 390, height = 844;
 
-function crossesCenter(lines: readonly SkyLineSegment[]) {
-  return lines.some(([x1, y1, x2, y2]) => {
+function distance(lines: readonly SkyLineSegment[], x: number, y: number) {
+  return Math.min(...lines.map(([x1, y1, x2, y2]) => {
     const lengthSquared = (x2 - x1) ** 2 + (y2 - y1) ** 2;
-    if (lengthSquared === 0) return false;
-    const t = Math.max(0, Math.min(1, ((width / 2 - x1) * (x2 - x1) + (height / 2 - y1) * (y2 - y1)) / lengthSquared));
-    return Math.hypot(x1 + t * (x2 - x1) - width / 2, y1 + t * (y2 - y1) - height / 2) < 0.5;
-  });
+    const t = lengthSquared ? Math.max(0, Math.min(1, ((x - x1) * (x2 - x1) + (y - y1) * (y2 - y1)) / lengthSquared)) : 0;
+    return Math.hypot(x1 + t * (x2 - x1) - x, y1 + t * (y2 - y1) - y);
+  }));
 }
+const crossesCenter = (lines: readonly SkyLineSegment[]) => distance(lines, width / 2, height / 2) < 0.5;
 
-test("alt-az grid joins each real horizon bearing to zenith in the full dome", () => {
+test("a disabled horizontal grid removes its horizon as well as all coordinate auxiliaries", () => {
+  const grid = skyHorizontalGrid(createSkyViewBasis(0, 180, 0)!, width, height, 267.8, undefined, false);
+  assert.deepEqual([grid.horizon.length, grid.altitude.length, grid.meridians.length], [0, 0, 0]);
+});
+
+test("horizontal parallels and meridians continue through the lower celestial hemisphere", () => {
+  const meridian = skyHorizontalGrid(createSkyViewBasis(0, 44.5, 0)!, width, height, 0.25);
+  const parallel = skyHorizontalGrid(createSkyViewBasis(45.5, 60, 0)!, width, height, 0.25);
+  assert.ok(crossesCenter(meridian.meridians), "north meridian crosses altitude -45.5° between base samples");
+  assert.ok(crossesCenter(parallel.altitude), "-30° parallel crosses halfway between sampled bearings");
+});
+
+test("the full-sphere alt-az grid retains all real horizon bearings and upper meridians", () => {
   const basis = createSkyViewBasis(0, 180, 0)!;
   const grid = skyHorizontalGrid(basis, width, height, 267.8);
   assert.equal(grid.horizon.length, 180);
-  assert.equal(grid.altitude.length, 360);
-  assert.equal(grid.meridians.length, 540);
   for (let index = 0; index < 12; index++) {
     const bearing = index * 30;
-    const horizon = projectSkyDirection(bearing, 0, basis, width, height, 267.8)!;
-    const zenith = projectSkyDirection(bearing, 90, basis, width, height, 267.8)!;
-    const first = grid.meridians[index * 45]!;
-    const last = grid.meridians[index * 45 + 44]!;
-    assert.ok(Math.hypot(first[0] - horizon.x, first[1] - horizon.y) < 1e-7);
-    assert.ok(Math.hypot(last[2] - zenith.x, last[3] - zenith.y) < 1e-7);
+    for (const altitude of [0, 30, 60, 90]) {
+      const point = projectSkyDirection(bearing, altitude, basis, width, height, 267.8)!;
+      assert.ok(distance(grid.meridians, point.x, point.y) < 1e-7, `${bearing}° bearing at ${altitude}° altitude`);
+    }
   }
 });
 
@@ -54,12 +62,16 @@ test("scene sends the same geographic grid through ordinary and warm-red palette
   const surface = new Proxy({}, {get: (_target, key) => key === "segments"
     ? (lines: readonly SkyLineSegment[], color: string, opacity = 1) => calls.push({lines, color, opacity})
     : () => true}) as SkyRenderSurface;
+  const expected = skyHorizontalGrid(basis, width, height, 267.8);
   for (const [mode, colors] of [["NIGHT", ["#536782", "#29374B", "#29374B"]],
     ["OBSERVATION", ["#7A1E18", "#240000", "#240000"]]] as const) {
     calls.length = 0;
-    drawSkyScene(surface, report, at, null, null, width, height, mode, undefined, undefined, 267.8, null, basis);
+    const args: unknown[] = [surface, report, at, null, null, width, height, mode, undefined, undefined, 267.8, null, basis];
+    args.length = 35; // Existing landscape argument remains at index 34.
+    args.push({ horizontal: true, equatorial: false });
+    (drawSkyScene as unknown as (...args: unknown[]) => void)(...args);
     assert.deepEqual(calls.map(call => call.color), colors);
-    assert.deepEqual(calls.map(call => call.lines.length), [180, 360, 540]);
+    assert.deepEqual(calls.map(call => call.lines), [expected.horizon, expected.altitude, expected.meridians]);
     assert.equal(calls[2]!.opacity, 0.65);
   }
 });

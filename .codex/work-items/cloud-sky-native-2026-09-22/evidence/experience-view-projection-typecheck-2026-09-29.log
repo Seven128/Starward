@@ -1,0 +1,13 @@
+
+> @starward/wechat-miniapp@0.1.0 typecheck
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json
+
+src/features/sky/sky-view-projection.test.ts(199,42): error TS2352: Conversion of type 'SkyVector' to type 'number[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  The type 'SkyVector' is 'readonly' and cannot be assigned to the mutable type 'number[]'.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp
+npm error workspace @starward/wechat-miniapp@0.1.0
+npm error location E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json

@@ -43,8 +43,19 @@ test("invalid photometry or projection cannot produce non-finite GPU geometry", 
   for (const mag of [NaN, Infinity, -Infinity]) assert.equal(skyStarAppearance(mag, 45), null);
   for (const fov of [NaN, Infinity, -1, 0, 360]) assert.equal(skyStarAppearance(2, fov), null);
   for (const sun of [NaN, Infinity, -91, 91]) assert.equal(skyStarAppearance(2, 45, sun), null);
-  for (const altitude of [NaN, Infinity, -1, 0, 91])
+  for (const altitude of [NaN, Infinity, -91, 91])
     assert.equal(skyStarAppearance(2, 45, -25, altitude), null);
+});
+
+test("full-sphere display joins the horizon continuously without extending physical air mass below ground", () => {
+  const samples = [-90, -45, -15, -10, -1, -.000001, 0, .000001];
+  for (const altitude of samples) assert(skyStarAppearance(2, 45, -25, altitude));
+  assert.equal(referenceAtmosphericTransmission(-45), 0);
+  assert.equal(referenceAtmosphericTransmission(0), 0);
+  assert.equal(skyStarAppearance(2, 45, -25, -15)!.opacity, skyStarAppearance(2, 45)!.opacity);
+  assert(Math.abs(skyStarAppearance(2, 45, -25, -.000001)!.opacity -
+    skyStarAppearance(2, 45, -25, .000001)!.opacity) < 1e-7);
+  assert(skyStarAppearance(2, 45, -25, -10)!.opacity > skyStarAppearance(2, 45, -25, -1)!.opacity);
 });
 
 test("reference air mass attenuates low stars continuously without changing their catalog magnitude or size", () => {

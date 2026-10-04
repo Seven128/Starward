@@ -1,0 +1,90 @@
+{
+  "mode": "pass",
+  "counts": {
+    "local": 288,
+    "errors": 0,
+    "reports": 27,
+    "targets": 11,
+    "contextPuts": 3
+  },
+  "targetReads": [
+    {
+      "at": "2026-09-29T13:00:05.822Z",
+      "contextId": "ctx:7c1d6ce0-5c47-461a-b172-e2841ebaa07f",
+      "status": 200,
+      "bytes": 9076,
+      "durationMs": 72
+    },
+    {
+      "at": "2026-09-29T13:00:10.064Z",
+      "contextId": "ctx:7c1d6ce0-5c47-461a-b172-e2841ebaa07f",
+      "status": 503,
+      "bytes": 86,
+      "durationMs": 1
+    },
+    {
+      "at": "2026-09-29T13:00:10.064Z",
+      "contextId": "ctx:7c1d6ce0-5c47-461a-b172-e2841ebaa07f",
+      "status": 503,
+      "bytes": 86,
+      "durationMs": 0
+    },
+    {
+      "at": "2026-09-29T13:00:10.064Z",
+      "contextId": "ctx:7c1d6ce0-5c47-461a-b172-e2841ebaa07f",
+      "status": 200,
+      "bytes": 9072,
+      "durationMs": 79
+    },
+    {
+      "at": "2026-09-29T13:00:03.997Z",
+      "contextId": "ctx:7c1d6ce0-5c47-461a-b172-e2841ebaa07f",
+      "status": 503,
+      "bytes": 86,
+      "durationMs": 1
+    },
+    {
+      "at": "2026-09-29T13:00:03.997Z",
+      "contextId": "ctx:7c1d6ce0-5c47-461a-b172-e2841ebaa07f",
+      "status": 503,
+      "bytes": 86,
+      "durationMs": 0
+    },
+    {
+      "at": "2026-09-29T13:00:03.997Z",
+      "contextId": "ctx:7c1d6ce0-5c47-461a-b172-e2841ebaa07f",
+      "status": 200,
+      "bytes": 9074,
+      "durationMs": 72
+    },
+    {
+      "at": "2026-09-29T13:00:49.33Z",
+      "contextId": "ctx:7c1d6ce0-5c47-461a-b172-e2841ebaa07f",
+      "status": 200,
+      "bytes": 9074,
+      "durationMs": 108
+    },
+    {
+      "at": "2026-09-29T13:00:49.33Z",
+      "contextId": "ctx:7c1d6ce0-5c47-461a-b172-e2841ebaa07f",
+      "status": 200,
+      "bytes": 9074,
+      "durationMs": 174
+    },
+    {
+      "at": "2026-09-29T13:00:55.952Z",
+      "contextId": "ctx:7c1d6ce0-5c47-461a-b172-e2841ebaa07f",
+      "status": 200,
+      "bytes": 9075,
+      "durationMs": 163
+    },
+    {
+      "at": "2026-09-29T16:00:05.153Z",
+      "contextId": "ctx:7c1d6ce0-5c47-461a-b172-e2841ebaa07f",
+      "status": 200,
+      "bytes": 9074,
+      "durationMs": 65
+    }
+  ],
+  "astronomyModuleSha256": "a189d24738a1cf33b664cb6968c3737455bbb8124eaf410b146058daa4b8bf17"
+}

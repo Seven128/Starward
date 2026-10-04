@@ -1,0 +1,11 @@
+# Public image demand type boundary — independent source review
+
+The three-file candidate has no adoption blocker. `SkyPublicImageDemand` is the existing `isCurrent`, `onRetire`, `release` interface, with no platform dependency. Its definition belongs alongside the public image cache's lease and acquisition contracts. Runtime imports that type and re-exports the same type for compatibility; the deep-sky request reads the platform-free contract directly. This preserves one definition and removes an unnecessary TypeScript dependency on the Taro runtime. Actual runtime value consumers in App, clear, image clients and the science resource remain runtime consumers.
+
+I read the actual probe, all three candidate texts, original diagnostic records, current consumers and the original 1,733-entry before/after inventory. The original seven worker diagnostics include missing Mini Program globals and timer ambient-type contamination; the saved candidate compiler observation has zero diagnostics. It does not suppress diagnostics. The three saved ESNext/ES2022 `removeComments` transpile outputs have matching JavaScript hashes within that declared check. No callback, byte, epoch, lease, cancellation or runtime policy is changed by the type move.
+
+My subsequent readback found root had already applied byte-exact copies of the three candidate texts. This is explicitly recorded as current/candidate equality rather than pretending the original three source hashes were still current. The readback did not invoke a compiler, tests, GPU, network or native runtime and edited no production files.
+
+Independent result: `output/public-image-demand-type-boundary-independent-1003-r1/result.json`, SHA256 `a9309b0787665c27c6376f20f200a65b9c6028f1e3fef9a07de161e30414637f`; the same directory retains the three observed source copies. The executable reader is `scripts/readback-public-image-demand-type-boundary-independent-2026-10-03.mjs` under this work item.
+
+This closes the portable type dependency review, not an entire build or runtime certificate. The original inventory includes the actual compilation source graph and listed tools but omits the Node executable. Real changed-source type checking remains the implementation owner's responsibility; the old seven-error state and old runtime/GPU evidence are not retrospectively upgraded.

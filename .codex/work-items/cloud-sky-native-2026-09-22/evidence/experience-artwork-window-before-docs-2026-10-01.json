@@ -1,0 +1,32 @@
+[
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+    "beforePath": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/artwork-window-before-PLAN.md",
+    "sha256": "fd32665bb1accd52429c1b0b47b07c7d6da5258194bb958980cee27869876c2f"
+  },
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/STATE.md",
+    "beforePath": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/artwork-window-before-STATE.md",
+    "sha256": "de1e85a3c982c57f2e55482ce6cf7fe85df9752b151ff3484b1b26453f5075e2"
+  },
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/INDEX.md",
+    "beforePath": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/artwork-window-before-INDEX.md",
+    "sha256": "466ddaad8994d3dd343d84dfd446c30133613a2a4709344b105d8b5e6c0c3ee8"
+  },
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/PROGRESS.md",
+    "beforePath": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/artwork-window-before-PROGRESS.md",
+    "sha256": "fdd4841d66c489a8d30db347996b5a0bd4bdbee70b8b7cb54510ba94ec7dba2e"
+  },
+  {
+    "path": "project_context/architecture/runtime-and-domain.md",
+    "beforePath": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/artwork-window-before-runtime-and-domain.md",
+    "sha256": "fa387576b316be1601a7a8eb3a4d931c8bf13952436b9ce9474fe0dfc0923034"
+  },
+  {
+    "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+    "beforePath": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/artwork-window-before-spot-and-sky.md",
+    "sha256": "4cf92a486f87ad47dcbadc9648b23fc803ce35b3e13ad19474528fca5c8e683a"
+  }
+]

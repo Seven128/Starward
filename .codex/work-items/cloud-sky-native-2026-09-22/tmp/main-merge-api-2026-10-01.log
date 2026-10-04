@@ -1,0 +1,620 @@
+
+> @starward/miniapp-api@0.1.0 test
+> node ../../tools/run-node.cjs --import tsx --test src/**/*.test.ts
+
+✔ acceptance reset is token-gated and clears explicit in-memory state (12.0561ms)
+✔ nickname identity isolation, revision conflicts, replay and export (22.9069ms)
+✔ avatar is sanitized, revisioned, replayable and isolated by account (43.8251ms)
+✔ HTTP export and delete enforce reauthentication before accessing or deleting account data (765.692ms)
+✔ sensitive account operations require a fresh code matching the session identity (133.244ms)
+✔ local fixture reauthentication still rejects a different installation (14.1047ms)
+✔ Operations controller exposes every required high-impact endpoint (2.1579ms)
+✔ Operations controller is registered in the production module (0.4578ms)
+✔ admin RBAC fails closed in production and denies unauthorized operations (1.5445ms)
+✔ request-changes forwards actor, expected revision and idempotency key (3.1584ms)
+✔ formal spot to HTTP AQ preserves independent failure and forecast identity (4092.373ms)
+✔ AQ standards, source display and concentration units survive; unknown is not zero (4.5007ms)
+✔ current concentrations never fill missing forecast pollutants; gaps and source attribution survive (154.8864ms)
+✔ unsupported current and failed forecast remain independently classified (97.7703ms)
+✔ invalid dates and duplicate instants cannot turn into invented forecast hours (4.6134ms)
+✔ current refresh is hourly; forecast cache never outlives its actual last hour (15.6316ms)
+✔ a repeated expired upstream package cannot become fresh future data; valid sibling hours survive (25.0549ms)
+✔ elapsed valid hours do not hide malformed or ambiguous hourly evidence (6.6798ms)
+✔ one canceled caller does not cancel shared AQ requests; failures can recover (7.1236ms)
+✔ an hour expiring while either request is in flight cannot be delivered as fresh (61.2477ms)
+✔ AQ attempts are counted by endpoint without retaining private coordinates (0.5878ms)
+✖ generated client operation manifest exactly matches the public Nest controller (19.2576ms)
+✔ catalog concurrency and retired baseline failures preserve recovery meaning (5.5386ms)
+✔ expired or missing sessions are permission failures that permit client re-authentication (2.0689ms)
+✔ ordinary malformed product input remains an input error (0.4439ms)
+✔ invalid plan wall times are input errors rather than provider outages (0.2911ms)
+✔ out-of-region observation locations require a new choice, not a provider retry (5.4517ms)
+✔ erased evidence and deleted accounts cannot enter a retry loop (0.386ms)
+✔ formal feedback with no remaining difference is a terminal conflict, not a provider outage (0.2944ms)
+✔ old publication confirmations and repeated rollback cannot overwrite a newer active catalog (318.6799ms)
+✔ late refresh cannot replace a newer runtime publication and old approvals need current review (261.6263ms)
+✔ manual source creation cannot reset existing automatic configuration; candidates paginate newest first (9304.0508ms)
+✔ automatic import binds the same baseline used for diff before asynchronous source lookup (303.0244ms)
+✔ newest refresh survives either return order across independent publication owners (868.2515ms)
+✔ exact retired persisted baseline migrates once through publication; operator edits survive (128.6195ms)
+✔ GMN source cannot be laundered into a precise annual peak or detached from direction validity (107.3407ms)
+✔ migration preserves a concurrent operator publication and retired rollback stays rejected after restart (162.713ms)
+✔ catalog package validation rejects duplicate identities, invalid precision and invented time scale (38.5462ms)
+✔ diff identifies removals, coverage collapse and critical-time changes (2.8128ms)
+✔ operator import always waits for review and publication changes all runtime consumers (244.3157ms)
+✔ approved stable scheduled source auto-publishes only a noncritical additive change (269.5817ms)
+✔ retrieval timestamps alone are no change and changed facts require a new version (192.0508ms)
+✔ retrieval sends validators, bounds failures and retains the published catalog (168.1715ms)
+✔ rollback creates an auditable new version instead of mutating history (320.7251ms)
+✔ rollback of a maximum-length version remains valid and survives owner restart (358.2184ms)
+✔ catalog publication changes Observation Context identity and report cache inputs (174.6759ms)
+✔ the pinned 2026 eclipse catalog has stable concrete occurrences and UTC peaks (3.1786ms)
+✔ public astronomical event reads expose the reviewed catalog without inventing local visibility (102.9291ms)
+✔ rounding either side of the north meridian preserves a valid zero-degree bearing (6.1149ms)
+✔ requested daytime positions remain available when no astronomical dusk exists (80.268ms)
+✔ the exact topocentric Moon moves and changes apparent diameter with the report instant (59.8523ms)
+✔ lunar body axes match the independent geocentric libration convention and change with the observer (52.3616ms)
+✔ the solar photosphere diameter follows the exact observer distance (62.3644ms)
+✔ seven physical planetary globes have time-dependent topocentric size and phase (31.4997ms)
+✔ Saturn ring pole and emitted sunlight match independent PDS season angles (35.0388ms)
+✔ Mars body longitude matches independent Horizons light-time-corrected sub-observer longitude (23.1161ms)
+✔ Mercury body longitude matches independent Horizons sub-observer longitude (17.6436ms)
+✔ ice-giant axes match independent Horizons sub-observer latitude and longitude (33.6352ms)
+✔ continuous phase angles map to all eight semantic lunar states (0.9459ms)
+✔ solar longitude is calculated on the J2000 ecliptic axis (0.5876ms)
+✔ airless topocentric positions stay within the frozen JPL Horizons tolerance (6.6875ms)
+✔ the same observation night spans UTC and local midnight without changing ownership (20.4362ms)
+✔ an exact off-grid or daylight instant is calculated without replacing regular samples (59.9392ms)
+✔ observer elevation participates in lunar parallax (0.5235ms)
+✔ no-rise/set and extreme-latitude cases fail closed without invented samples (19.0638ms)
+✔ map → layer → overview → sky shares public evidence and projects stars only for sky (1255.0841ms)
+✔ concurrent cold requests coalesce; exact time, factual edits and catalog change invalidate their own inputs (1872.4181ms)
+✔ weather expiry, official-alert validity and failures retry without expiring pure astronomy (1054.5969ms)
+✔ sky carries the warning feed deadline even with no alerts or forecast coverage (579.2889ms)
+✔ aborting one shared weather caller does not cancel its peer or retain private context (864.4151ms)
+✔ map weather budget returns attributable unavailable evidence and does not launch already-expired work (426.6289ms)
+✔ source and active-alert validity truncate TTL, and private origins cannot alter shared public evidence (1157.801ms)
+✔ cache reset invalidates an in-flight computation before it can repopulate child caches (615.189ms)
+✔ Geo-bearing recent weather is no-store and never becomes a conditional 304 (1144.2381ms)
+✔ real BSC5P catalog flows through a formal spot sky HTTP frame into the matching object details (4439.9413ms)
+✔ Mini Program production catalog/detail imports operate while retired Gaia and Hipparcos modules are unavailable (26606.5358ms)
+✔ Acrux detail and catalog sources follow the requested report version (481.2887ms)
+✔ stable HR references return attributable ready and basic-only states (1.3277ms)
+✔ large numeric-like and unknown references stay strings and fail closed (6.3436ms)
+✔ planet information distinguishes historical band profiles from current geometry and weather (3.176ms)
+✔ Messier galaxy and nebula references expose attributable catalog facts (172.3782ms)
+✔ same identity and locale reuse a stable content revision without sharing mutable values (0.8237ms)
+✔ SAO details interpret HD multiplicity codes instead of presenting them as names (1835.181ms)
+✔ the adopted v3 sky report resolves HR and SAO positions against matching publications (1779.2169ms)
+✔ selected HR stars use the exact rendered geometry and preserve below-horizon positions (28.395ms)
+✔ new time slices change location and cannot silently reuse the previous position (9.3984ms)
+✔ planet position uses the same exact report row and fails closed on retired geometry (61.9804ms)
+✔ deep-sky selection consumes the same registered center independently of the stellar layer (27.0157ms)
+✔ SAO selected positions match the real tile's propagated geometry without loading a visible scene (1763.6508ms)
+✔ stale, expired and wrong-catalog frames never become fresh selectable coordinates (36.4929ms)
+✔ authorized HTTP location lookup reaches the existing camera projection; private proposals retain auth (2008.4959ms)
+✔ Altair common Chinese names resolve its exact HR identity through the current publication (6994.2795ms)
+✔ Acrux is discoverable only through the v3 catalog and keeps revised SAO and Chinese sources (220.1033ms)
+✔ real catalogue names, Chinese aliases and normalized identifiers resolve the same component (626.7212ms)
+✔ fixed CC0 Chinese labels join only exact HR identities and remain attributable in details (380.0282ms)
+✔ seven planet identities search by Chinese and English names and preserve details (493.0593ms)
+✔ shared HD aliases preserve distinct SAO components and details use the same alias owner (401.9447ms)
+✔ results are bounded, detached from indexes and never carry invented observing coordinates (356.4535ms)
+✔ missing or incomplete publications cannot masquerade as an empty successful search (2.2603ms)
+✔ one unavailable publication preserves other results and a later query recovers it (1.2946ms)
+✔ public HTTP search and selected detail retain the same real identity; invalid input is rejected (1502.9954ms)
+✔ each missing publication retains independent facts and credit and recovers without caching the partial result (200.4836ms)
+✔ actual HTTP retry replaces partial credit and its conditional response with the object's recovered publication (1091.2437ms)
+✔ fixed CC0 Chinese aliases are hash-bound to BSC identities (74.7197ms)
+✔ revised CC0 aliases keep every HR label while binding only to BSC v3 (292.4672ms)
+✔ common-name enrichment preserves all other HR aliases and binds both source snapshots (84.5283ms)
+✔ computation cache coalesces, expires, evicts LRU and retries rejected work (4.1309ms)
+✔ clear invalidates pending writes and cancelling one waiter leaves other callers intact (1.3678ms)
+✔ provider deadline covers ignored aborts and removes listeners/timers after success or cancellation (34.2648ms)
+✔ core callers cannot change valid astrometry under the original verified hash (178.2264ms)
+✔ pinned actual publication preserves shared figures, precise Tau identity and fainter geometry anchors (107.5059ms)
+✔ catalog validation rejects missing coverage, broken identity, local paths and lost attribution (392.9296ms)
+✔ client evicts cached publications when attribution or geometry is invalid (43.3321ms)
+✔ real HTTP serves all original PNG bytes and source files with immutable publication binding (6685.5976ms)
+✔ formal contribution baseline projects only current canonical facts (4.423ms)
+✔ baseline revision must be a positive canonical revision (1.2128ms)
+✔ baseline comparison accepts PostgreSQL jsonb key reordering (3.101ms)
+✔ moderated formal facts and reference media override legacy projections, including explicit clears (0.7997ms)
+﹣ PostgreSQL and filesystem preserve reviewed media across publication and repository recreation (1.9398ms) # SKIP
+✔ account erasure keeps structural evidence but excludes private and future fields (16.6164ms)
+✔ draft save response-loss retry replays the original revision without an extra update (6.7513ms)
+✔ draft withdrawal is owner-scoped, revision-safe, idempotent, and rejects submitted records (38.9357ms)
+✔ formal feedback submits atomically without creating an editable draft (33.9069ms)
+✔ formal feedback fixture retains the old baseline and freezes the selected conflict resolution (29.892ms)
+✔ formal feedback enforces one pending subject and rejects a forged baseline (4.3497ms)
+✔ formal feedback media uses a short-lived intent without creating a draft (26.8977ms)
+✔ expired formal feedback media is marked expired and its private object deletion is retryable (5.6095ms)
+✔ field reports remain identity-scoped and pending review cannot change a formal spot (42.3658ms)
+✔ first-time submission still validates incomplete draft evidence before writing (60.0807ms)
+✔ new-place drafts preserve partial structured content and validate completeness only on submit (3.6727ms)
+✔ new-place structured content rejects unknown fields, invalid choices, and oversized media groups (2.8692ms)
+✔ new-place photos retain their adopted section with three independent slots per group (7.334ms)
+✔ completed new-place photos keep their section and distinct objects in the frozen submission (40.414ms)
+✔ a reviewed contribution keeps its frozen attempt while resubmission appends a new one (24.7764ms)
+✔ bounded media upload strips private PNG metadata before review (20.7842ms)
+✔ actual encoded JPEG is stored without a private comment after its scan (5.8545ms)
+✔ third upload receipt remains replayable while a fourth upload is rejected (3.4006ms)
+✔ expired upload replacement preserves the other two slots and is replayable (3.9265ms)
+✔ unsubmitted uploaded media cannot be confirmed after its temporary deadline (4.941ms)
+✔ failed private media deletion remains retryable after expiry state is committed (2.917ms)
+✔ media removal is scoped, revision checked, replayable and deletes only its private object (24.7164ms)
+✔ media cannot be uploaded before rights confirmation (13.0076ms)
+✔ declared MIME cannot bypass server-side magic and pixel validation (52.8447ms)
+✔ draft concurrent upload same-key preserves committed image (123.6036ms)
+✔ draft concurrent upload new-key preserves committed image (5.605ms)
+✔ draft concurrent upload different-image preserves committed image (4.1062ms)
+✔ draft lost completion receipt retains image and retries without rewriting (3.6009ms)
+✔ draft failed completion residue remains tracked through remove and cleanup retry (3.6957ms)
+✔ draft failed completion residue remains tracked through expire and cleanup retry (7.0505ms)
+✔ draft failed completion residue remains tracked through account-delete and cleanup retry (103.3033ms)
+✔ formal concurrent upload same-key preserves committed image (8.2775ms)
+✔ formal concurrent upload new-key preserves committed image (4.8345ms)
+✔ formal concurrent upload different-image preserves committed image (23.1219ms)
+✔ formal lost completion receipt retains image and retries without rewriting (40.8477ms)
+✔ formal failed completion residue remains tracked through remove and cleanup retry (4.7476ms)
+✔ formal failed completion residue remains tracked through expire and cleanup retry (3.6587ms)
+✔ formal failed completion residue remains tracked through account-delete and cleanup retry (2.5362ms)
+✔ formal submission retires uploaded images excluded from the accepted snapshot (4.7246ms)
+✔ new-place REJECTED current photo removal edits the working copy while keeping prior evidence (7.268ms)
+✔ new-place CHANGES_REQUESTED current photo removal edits the working copy while keeping prior evidence (18.4118ms)
+✔ new-place REJECTED legacy photo removal edits the working copy while keeping prior evidence (7.1402ms)
+✔ new-place CHANGES_REQUESTED legacy photo removal edits the working copy while keeping prior evidence (13.8104ms)
+﹣ PostgreSQL draft upload locking, rollback and retired media (32.7412ms) # SKIP
+﹣ PostgreSQL formal upload locking, rollback and retired media (0.3538ms) # SKIP
+✔ sky opportunity uses per-slice geometric inputs and a real continuous window (31.1378ms)
+✔ single-source confidence never uses a stale multi-model comparison factor (25.0778ms)
+✔ window extraction applies hysteresis and does not let a marginal slice open a window (1.0889ms)
+✔ window extraction permits only the configured small gap and retains a backup (1.0075ms)
+✔ critical missing weather and severe weather remain distinct sky outcomes (0.815ms)
+✔ trip decision references sky opportunity but never lets it override a blocker (1.8981ms)
+✔ trip decision does not invent route, site, or sample certainty (0.9677ms)
+✔ deep-sky image HTTP route preserves JPEG bytes and cache-safe ASCII headers (670.9291ms)
+✔ actual object provenance offers a hash-bound machine-readable collection and all 153 matching JPEGs over HTTP (10801.6411ms)
+✔ MiniappService derives celestial provenance from its injected image owner (17.9753ms)
+✔ source-finite opt-in serves all M42 PNG levels and discloses the publication actually painted (1153.7256ms)
+✔ published AllWISE service reads a verified local W3 asset without a runtime transport (233.219ms)
+✔ new image opt-in and painted-image source binding retain both legacy publication offers (575.8341ms)
+✔ unmeasured JPEG coverage is distinct from full coverage and preserves the previous publication (668.5771ms)
+✔ default publication serves representative galaxy and nebula detail assets (200.9081ms)
+✔ publication rejects missing identities, invalid levels, cross-object paths, traversal, and altered bytes (1354.8605ms)
+✔ catalog facts survive a missing image publication and recover its actual provenance without stale caching (492.931ms)
+✔ exact image planes retain all 51 identities across the horizon without millidegree rounding (12.09ms)
+✔ explicit resolver selection preserves system default; DoH returns checked public dual-family answers (35.2297ms)
+✔ IPv4-only NODATA is valid; any private result in either family rejects the destination (26.0649ms)
+✔ DoH rejects partial query failure, truncation, mismatched question and malformed addresses (16.3995ms)
+✔ DoH bounds streamed bytes and aborts the sibling request on failure (15.7154ms)
+✔ article deadline is propagated to both DoH requests (1.0233ms)
+✔ invalid HTTP status or response type cancels bodies without interpreting them as DNS (10.9643ms)
+✔ DNS service failure yields retryable HTTP recovery while private destinations remain invalid input (7.7702ms)
+✔ readability extracts actual paragraphs and preserves date-only precision without executing input (514.713ms)
+✔ missing, overlarge, malformed and media-only text is not reported as a complete article (702.0021ms)
+✔ nested block boundaries preserve parent text before and after children in original order (224.248ms)
+✔ HTTP-only charset is honored and manual Unicode HTML does not need a meta declaration (287.9792ms)
+✔ HTML file upload keeps original GB2312 bytes instead of prematurely decoding UTF-8 (505.4482ms)
+✔ URL and DNS validation reject internal, reserved and mixed answers including IPv4-mapped IPv6 (36.677ms)
+✔ article candidate freezes rights, preserves numerical records, and publication/rollback includes exact text (364.9838ms)
+✔ client-supplied rights cannot authorize changed text, source, actor or missing registered publisher (451.6308ms)
+✔ structured article imports require a bounded license description before rights confirmation (584.7285ms)
+✔ a legacy reviewed candidate with missing article license cannot change active or stored publications (131.8454ms)
+✔ legacy invalid rollback is rejected before persistence while valid article history still restores and initializes (514.3653ms)
+✔ structured feed removal is review-required and stale article form cannot overwrite current catalog (336.0568ms)
+✔ public list omits body and private evidence; detail returns article with its own provenance (320.5537ms)
+✔ HTTPS request pins the single checked DNS result and preserves real extracted text (661.5788ms)
+▶ redirect, unsupported content and encoded bodies are rejected without a second request
+  ✔ /source_unavailable/ (16.2282ms)
+  ✔ /content_type_invalid/ (13.5459ms)
+  ✔ /encoding_unsupported/ (49.1497ms)
+✔ redirect, unsupported content and encoded bodies are rejected without a second request (82.0393ms)
+▶ declared and streamed oversize bodies stop retrieval before extraction
+  ✔ declared length (35.8257ms)
+  ✔ chunked length (1.7676ms)
+✔ declared and streamed oversize bodies stop retrieval before extraction (40.4216ms)
+✔ a truncated body cannot yield a valid-looking partial article (65.0335ms)
+▶ one ten-second deadline covers both DNS lookup and a stalled response body
+  ✔ DNS (26.1078ms)
+  ✔ body (272.2109ms)
+✔ one ten-second deadline covers both DNS lookup and a stalled response body (300.0509ms)
+﹣ Postgres preserves publication, review and source preconditions, with complete candidate pagination (2.9073ms) # SKIP
+﹣ PostgreSQL preserves the full rollback target in immutable publication and audit across restart (3.1976ms) # SKIP
+✔ each search condition distinguishes match, explicit no-match and missing evidence (4.5096ms)
+✔ active filtering excludes only definite no-match and retains unknown for disclosure (1.4253ms)
+✔ coverage is computed over candidates before filtering, including known zero-match (1.1403ms)
+✔ explicit development fixture mode composes deterministic weather at the existing port (1579.2579ms)
+✔ formal feedback frozen summary excludes a detail edit abandoned during rebase (6.1232ms)
+✔ formal feedback frozen summary retains an accepted detail edit (0.6786ms)
+✔ 2MASS publication serves only the manifest-bound reviewed JPEG (89.8049ms)
+✔ corrupt image fails closed and exact-byte restoration recovers in the same publication owner (643.4891ms)
+✔ same-origin HTTP serves the exact 2MASS image and rejects another version (625.3579ms)
+✔ ice-giant HTTP returns the actual pinned adaptation and rejects foreign body/version/file (628.8972ms)
+✔ uranus: corrupted image is withheld; repair recovers with the same publication (725.5095ms)
+✔ neptune: corrupted image is withheld; repair recovers with the same publication (879.033ms)
+✔ CC BY OPAL Jupiter band PNG is hash-bound and credits the historical adaptation (646.5357ms)
+✔ HTTP context and map preserve an off-cadence selected instant (2532.7593ms)
+✔ viewport fetches radius candidates directly while preserving complete population metadata and search (1304.7874ms)
+﹣ PostGIS radius, compact population and detail all enforce current publication facts (0.267ms) # SKIP
+✔ USGS Viking colorized Mars copy is fixed to public-domain product and exact bytes (40.1992ms)
+✔ altering the Mars image prevents delivery (348.227ms)
+✔ same-origin HTTP serves the exact Mars JPEG and rejects a stale publication (1378.2238ms)
+✔ JPEG metadata is stripped between scans without changing entropy bytes (6.92ms)
+✔ local media object keys are portable across Windows and POSIX (384.6009ms)
+✔ local upload retries ignore crash residue and retirement removes only their own temporary files (205.7594ms)
+✔ public-domain MESSENGER Mercury JPEG is served at the published hash only (784.6936ms)
+﹣ persisted retired catalog migrates across repository restart without changing saved plans (1.751ms) # SKIP
+✔ GMN reference preserves 13 stable identities without old annual forecast values (3.1672ms)
+✔ no retired NASA activity shape is attached to GMN peak or tail (0.4159ms)
+✔ missing DRA direction retains the event; PER has a real drifting direction (2.2386ms)
+✔ annual calendar dates are rederived while event identity remains stable (41.5698ms)
+✔ catalog source is historical, licensed and never a local visible-count forecast (0.4768ms)
+✔ GMN drift and J2000-to-date geometry agree with independent Astropy (13.5653ms)
+✔ measured radiant interval is independent of the wider annual monitoring window (2.9029ms)
+✔ annual references cross the requested J2000 longitude across calendar years and zero (61.7036ms)
+✔ sun-centered angle wraps without a discontinuity and drift affects the returned direction (0.9641ms)
+✔ annual reference never leaks into neighboring years and repeated leap-year crossings choose the first (1.9927ms)
+✔ every repository migration self-registers its exact version (1628.1152ms)
+✔ migration plan is ordered and ignores non-migration files (515.4559ms)
+✔ PL/pgSQL bodies and quoted text do not become migration transaction owners (662.5236ms)
+✔ top-level transaction commands remain forbidden (2598.7502ms)
+✔ runner locks once, skips applied versions and commits each pending file (209.1726ms)
+✔ runner fails closed when another migration owner holds the lock (323.0957ms)
+✔ SQL failure rolls back the pending file and releases the advisory lock (296.576ms)
+✔ unknown applied versions and missing self-registration both fail closed (375.1428ms)
+✔ clear map-point timezone regions are not overridden by the device hint (52.4334ms)
+✔ Hong Kong and Shenzhen border map points use the location, not the phone zone (20.8644ms)
+✔ Macao map points retain the Macao zone while neighboring Zhuhai remains mainland (443.8625ms)
+✔ map time axis includes the exact off-cadence observing instant without duplicate ticks (466.2925ms)
+✔ map scene is context-bound and computes actual dynamic projections (730.769ms)
+✔ map light pollution draws only published grid geometry with a translucent fill (7.0888ms)
+✔ map, overview and the legacy route endpoint never invoke a road provider (241.141ms)
+✔ Observation Context enforces observation-night and optimistic revision (17.4763ms)
+✔ search never manufactures an ordinary place or formal spot id (5.1226ms)
+✔ own-spot search never invokes or exposes a retired ordinary-place provider (6.7704ms)
+✔ profile and parser URL boundaries fail closed (1.9962ms)
+✔ identity-bound data cannot leak between users (98.9589ms)
+✔ account export is server-owned and deletion revokes identity state (4.1601ms)
+✔ profile save replays before duplicate checks and still rejects a new duplicate intent (2.8163ms)
+✔ pending proposal sky is owner-scoped and bound to the submitted coordinate (659.2983ms)
+✔ runtime prerequisites can explicitly gate selected profile-content surfaces (1.6378ms)
+✔ all active filters have an explicit evidence disposition (175.9667ms)
+✔ empty formal population explains publication verification in user language (6.0062ms)
+✔ detail and sky reject context drift and share one selected time (511.4182ms)
+✔ sky report preserves exact selected time and binds targets and stars to every frame (994.7115ms)
+✔ fine-time sky targets are computed without changing the committed Context or sending a scene (854.0917ms)
+✔ daylight and cross-midnight selected instants stay exact instead of nearest-sampled (981.3254ms)
+✔ equivalent observation contexts never reuse another context identity (767.7718ms)
+﹣ PostgreSQL/PostGIS, Redis, identity isolation and Outbox survive restart (1.9813ms) # SKIP
+﹣ provider attempts commit before HTTP, survive caller rollback and use the Shanghai calendar month (0.3004ms) # SKIP
+✔ USGS lunar copy is fixed to its public-domain product, WMS and exact bytes (34.9857ms)
+✔ a changed local lunar image fails before delivery (461.2999ms)
+✔ lunar metadata correction preserves cached image URLs and rejects unknown hashes (755.3956ms)
+✔ new-place merge claims come from the structured proposal and its media (3.5629ms)
+✔ publishing a merged new place binds the owner record to the public spot (1.2942ms)
+✔ publishing refuses a contribution bound to another canonical spot (1.8561ms)
+✔ new-place merge binds the exact submitted WGS84 candidate to its canonical target (1.1021ms)
+✔ fixed NightChina corpus traverses the real rights-safe import state owner (98.8092ms)
+✔ import association rejects a catalog candidate that is not a current formal spot (10.5673ms)
+✔ memory: concurrent HTTP time edits have one durable winner and allow subsequent night editing (935.0511ms)
+✔ memory: Context expiry between reading and committing cannot recreate the context (1185.7687ms)
+✔ memory: revision replacement retains the original TTL and caps the absolute deadline (1355.3252ms)
+✔ memory: commit failure leaves the previous Context available for retry (24.8021ms)
+﹣ redis: concurrent HTTP time edits have one durable winner and allow subsequent night editing (0.1674ms) # SKIP
+﹣ redis: Context expiry between reading and committing cannot recreate the context (0.1464ms) # SKIP
+﹣ redis: revision replacement retains the original TTL and caps the absolute deadline (0.1466ms) # SKIP
+﹣ redis: commit failure leaves the previous Context available for retry (0.1266ms) # SKIP
+✔ operations migration preserves immutable revisions and append-only audit boundaries (2.0604ms)
+✔ a root version binds a directory index and exactly one local tile; tampering never serves changed bytes (240.7409ms)
+✔ same-origin HTTP exposes hash-bound shard metadata and unchanged tile bytes (724.0961ms)
+✔ order-zero publication serves only listed base pixels through the same HTTP boundary (295.2452ms)
+✔ rights-unresolved optical trials cannot enter trial or commercial service profiles by injection (129.2767ms)
+✔ retired place factory makes no external request and supplies no manufactured result (3.8607ms)
+✔ catalog withdrawal preserves unchanged plan history without allowing new unavailable associations (280.3606ms)
+✔ private selected plan origins survive readback, legacy edits and explicit clearing independently of browsing geography (58.6827ms)
+✔ a delayed plan read cannot republish data superseded by delete (31.3173ms)
+✔ a delayed plan read cannot republish data superseded by edit (29.6837ms)
+✔ reminder migration owns versioned schedules, bounded attempts and account erasure (1.6113ms)
+﹣ Postgres reminder setting roundtrip preserves WAITING_AUTHORIZATION across restart (2.0008ms) # SKIP
+﹣ Postgres reminder setting roundtrip preserves SENT across restart (0.2626ms) # SKIP
+﹣ Postgres reminder setting roundtrip preserves RESULT_UNKNOWN across restart (0.1809ms) # SKIP
+﹣ Postgres plan creation receipts replay across restart without replacing newer checklist state (0.1616ms) # SKIP
+✔ derives a stable departure-relative UTC trigger and keeps checklist-only revisions on the same schedule (53.6881ms)
+✔ classifies missing, missed and expired triggers without inventing delivery (6.6635ms)
+✔ plan share capability hides private identity, expires and rejects tampering (13.2653ms)
+✔ public plan sharing projects only approved facts and invalidates an edited plan (51.6222ms)
+✔ publication changes revoke both public receipts while temporary closure stays explicit (23.519ms)
+✔ plan times preserve a chosen cross-midnight interval independently of weather (54.4487ms)
+✔ end must follow start and departure must strictly precede it (10.5086ms)
+✔ invalid calendar dates and missing fields do not invent valid plan times (4.1439ms)
+✔ operation receipt preserves milliseconds from PostgreSQL Date (5.9856ms)
+✔ operation receipt preserves milliseconds from ISO text (0.5144ms)
+✔ current groups, order and canonical ownership govern public photos, including removals (3.8439ms)
+✔ remote limiter requires bounded explicit Redis-backed configuration (3.7373ms)
+✔ local development keeps the public limiter disabled (0.3064ms)
+✔ limiter normalizes equivalent IPv6 clients and returns stable 429 shape (239.938ms)
+✔ only exact internal liveness and readiness probes are exempt (21.6395ms)
+✔ startup registration applies the limiter to Nest-owned routes (82.5389ms)
+✔ formal spot → region → real HTTP contract preserves partial dated evidence without weather/astronomy dependency (652.1177ms)
+✔ completed requests never reuse GeoAPI data, while weather-only values remain reusable (78.7838ms)
+✔ region-local calendar days cross midnight and month without using sky time or rolling 48 hours (16.3008ms)
+✔ missing day, failed day and unknown region remain distinct; valid sibling day survives (10.8205ms)
+✔ wrong dates, invalid numeric values and foreign-hour conditions cannot become facts (1.2863ms)
+✔ wind max only covers returned valid hours and neither missing nor foreign samples become calm weather (0.453ms)
+✔ live ISO history hours use the region calendar and share hour identity with legacy values (4.0038ms)
+✔ weather cache cannot reuse hours interpreted under a different live region timezone (14.9547ms)
+✔ shared requests survive one caller cancellation and rejected source timezones never query history (5.4362ms)
+✔ Geo delay followed by a hanging history phase finishes within two source budgets (77.7369ms)
+✔ actual Geo and history transport attempts are classified without storing coordinates or dates (1.2812ms)
+✔ the default serial pipeline returns a truthful result before the Mini Program ten-second timeout (7.3985ms)
+✔ release metadata rejects unresolved or mutable remote identity (3.1077ms)
+✔ remote HTTP config accepts only HTTPS origins and one exact trusted proxy address (3.4063ms)
+✔ HTTP routing admits the catalog's 160-character version and retains a bounded parameter limit (278.7335ms)
+﹣ durable reminder attempts serialize, survive restart and respect cancellation and account erasure (2.2947ms) # SKIP
+﹣ reminder subscription HTTP uses session identity and persists one reported choice without enabling delivery (1.9847ms) # SKIP
+✔ retired route factory makes no external request and supplies no manufactured result (3.8172ms)
+✔ delivery identity encryption requires a distinct valid key and defaults to disabled (12.4648ms)
+✔ local memory test sharing has an isolated signing key without release credentials (6.5312ms)
+✔ reminder template defaults to unavailable and rejects malformed IDs (10.1144ms)
+✔ event catalog check interval is configurable within a bounded range (5.558ms)
+✔ article DNS uses an explicit bounded resolver mode without a private-address fallback (7.0463ms)
+✔ TRIAL and COMMERCIAL use QWeather alone without an Open-Meteo key (5.0162ms)
+✔ forecast hours support actual requested horizons from 1 through 240, rejecting invalid bounds (29.594ms)
+✔ retired provider selection fails explicitly instead of silently selecting another weather source (3.1054ms)
+✔ a leftover map key cannot enable retired providers; explicit old selections are rejected (13.6676ms)
+✔ published faint stars resolve to the same scientific identity and magnitude in details, without fabricated measurements (1546.3629ms)
+✔ portable canonical integrity matches Node for Unicode, surrogate escapes, small motions and negative zero (1.0893ms)
+✔ all actual published tiles preserve source identity, geometry and independent canonical integrity (7899.9341ms)
+✔ legacy and Acrux-bound SAO publications coexist at distinct HTTP routes (539.9816ms)
+✔ revised SAO details pack matches its complete spatial publication and rejects the old base (1316.2404ms)
+✔ actual HTTP index/tile reach the client; 304 works, wrong publication is rejected, corruption evicts and retry recovers (254.4286ms)
+✔ real published stars reach drawing and picking with the selected observer/time; zoom hides faint stars without changing BSC (1836.4186ms)
+✔ CC BY OPAL Saturn band PNG is hash-bound and discloses historical limits (520.1097ms)
+✔ actual M51 optical publication serves three hash-bound JPEGs and scoped provenance (732.9996ms)
+✔ optical target discovery and immutable resources preserve each admitted object's identity (242.2067ms)
+✔ landscape publication retains identity, virtual registration, both licenses and exact alpha (239.3795ms)
+✔ normal same-origin HTTP returns usable JSON alpha, exact image and original package (1065.7938ms)
+✔ real search opt-in resolves day/night luminaries; old clients never receive unknown identities (2999.9383ms)
+✔ coverage lunar facts recover without leaking the legacy publication cache (6.2486ms)
+✔ information shares scientific identity, real publication credit and recoverable lunar-source failure (4.1117ms)
+✔ authorized HTTP discovery, facts and exact report location reach Mini validators with independent failures (2262.2559ms)
+✔ full-day real report sends one exact transform per time without repeated star rows (215.6599ms)
+✔ unavailable or invalid star geometry retains independent deep sky without fallback stars (179.2502ms)
+✔ report cache identity includes wire format, source publication and projection algorithm (0.3582ms)
+✔ SkyReport cache invalidates v1/v2 publication changes and their geometry (1027.8939ms)
+✔ one Observation Context can serve isolated BSC v2 and Acrux v3 reports without cache cross-talk (705.4024ms)
+✔ v3 report, published BSC and SAO tile compose in the Mini scene while old SAO is rejected (685.7563ms)
+✔ report observation frames survive a failed bright-star catalog and match the real star transform (785.7225ms)
+✔ provided time geometry moves all bodies coherently and avoids coarse lunar interpolation error (19.3153ms)
+✔ time coverage, observer and handedness are enforced instead of borrowing a frame (7.0783ms)
+✔ lunar phase unwraps across zero and unsupported surface/ring axes remain absent (1.1201ms)
+✔ real v3 report and HTTP fine positions preserve identity, independent layers and legacy exact rows (3450.7219ms)
+✔ legacy optional fields do not crash or replace missing core evidence (8.1198ms)
+✔ complete production-shaped spot passes the current publication policy (1.6052ms)
+✔ sample sources can never satisfy the production publication policy (1.4242ms)
+✔ all UNKNOWN facilities and missing core evidence fail closed (1.0143ms)
+✔ verified core facts publish without optional facilities, light, horizon or photographs (1.2124ms)
+✔ each core claim requires current evidence attributable to this spot and a usable source (19.6686ms)
+✔ closed, prohibited and dangerous states cannot be published as unrestricted points (1.9891ms)
+✔ a published spot with an explicit safety blocker is rejected (0.706ms)
+✔ an explicit no-site-media assessment passes without claiming representative media as site truth (0.7836ms)
+✔ stale core evidence and missing operator review are independently rejected (0.9933ms)
+✔ optional photographs cannot bypass verification by leaving media status unknown (0.7303ms)
+✔ missing access fields in legacy records remain unknown, not implicitly safe (1.5362ms)
+{"publication":"bsc5p-bright-stars.v2","rows":8404,"envelopeBytes":1280196,"http304":true}
+✔ real static catalog HTTP delivers all 8404 stars to client validation, with conditional reuse and exact publication binding (1508.3251ms)
+✔ catalog publication is immutable and stable across service instances (203.7633ms)
+✔ publication validation rejects changed photometry, geometry, identity and provenance (508.929ms)
+✔ prepared catalog and time frames preserve actual BSC positions after JSON round trip (343.5874ms)
+✔ real report provider consumes prepared geometry and refuses mismatched source versions (74.9609ms)
+✔ current-frame resolution reuses gestures, switches exact time, and never borrows across time or catalog (267.8098ms)
+✔ static failure preserves independent data and usable deep-sky interaction; recovery restores stars (102.7891ms)
+✔ terrain outside coverage preserves independently available annual light cells, including zero radiance (41.8074ms)
+✔ light read failure preserves published terrain and distinguishes failed light from uncovered light (2.582ms)
+✔ published GLO-30 terrain is hash-bound, GCJ-02 registered and range gated (27.8162ms)
+✔ only adopted QWeather operations enter the runtime ledger (49.6266ms)
+✔ failed or late recording cannot send; cancelled wait after recording is NOT_SENT (35.6158ms)
+✔ failed completion retains the provider result; retries get distinct attempts and errors are enums (4.8908ms)
+✔ real weather factory meters misses below source caches across observation dates (20.8062ms)
+✔ retired route factory creates no metered city or route requests (1.0227ms)
+✔ old supplier Context is invalidated and can recover the same point and instant under current source selection (18.6891ms)
+✔ official alerts bind their exact minute interval even inside one forecast hour or without a forecast (2612.0166ms)
+✔ actual forecast holes remain empty through SkyReport and Map while celestial frames retain their exact time (240.1251ms)
+✔ invalid calendar instants do not roll into a real day or assume a timezone (69.7044ms)
+✔ conflicting timestamps including offset aliases cannot choose a first or last cloud value (3.5244ms)
+✔ a feed with only invalid or duplicate identities has no weather facts (9.5024ms)
+✔ expired intervals are absent while a current interval retains its real end-exclusive coverage (3.9459ms)
+✔ warm cache drops an elapsed hour without renewing the source or changing previously delivered rows (2.6535ms)
+✔ waiting for an independent warning response cannot deliver an hour that ended meanwhile (18.8608ms)
+✔ missing hours and outer edges never borrow a future or expired forecast (1.7555ms)
+✔ official warnings reject impossible and timezone-less source times without rewriting valid siblings (96.9803ms)
+✔ each hanging weather lane reaches its deadline without discarding other lanes (105.2564ms)
+✔ QWeather composition keeps the Weather API v1 timeline primary, exposes total cloud only and applies official alerts (15.4007ms)
+✔ QWeather v1 rejects an unexpected provider unit instead of mislabelling it (2.6836ms)
+✔ QWeather primary failure preserves alert status without requesting a fallback (5.3864ms)
+✔ missing future hours and internal gaps stay absent; the astronomy window is not shifted (8.424ms)
+✔ forecast JSON-body timeout and caller cancellation leave retry possible (63.5922ms)
+✔ different observation dates share source requests, preserve retrieval time and refresh forecasts independently (84.2764ms)
+✔ an expiring alert forces a fresh feed; failure cannot reuse its fresh state and retry is bounded (8.5229ms)
+✔ one cancelled date waiter does not cancel another source waiter (23.4556ms)
+✔ different actual request points and independently configured adapters remain isolated (9.0999ms)
+✔ a single current forecast hour remains cacheable until its coverage end (2.0527ms)
+✔ only explicit zero-result is a successful empty warning feed (6.3461ms)
+✔ unrecognized alert severity cannot certify a complete non-material warning feed (1.5231ms)
+✔ Map rechecks forecast expiry after awaiting favorites (336.968ms)
+✔ Map rechecks forecast expiry after awaiting cache get (163.6743ms)
+✔ Map rechecks forecast expiry after awaiting cache set (159.9051ms)
+✔ Map rechecks forecast expiry after awaiting favorites past original budget (153.7239ms)
+✔ HTTP empty less-cloud results retain the excluded weather deadline and regain unknown candidates after expiry (524.3156ms)
+✔ a waiter joining shared weather after an hour boundary cannot receive the earlier waiter's expired hour (270.8274ms)
+✔ HTTP Sky and Map retain celestial time when weather expires during warm cache (440.0424ms)
+✔ HTTP Sky and Map retain celestial time when weather expires during scene projection (370.241ms)
+✔ HTTP Sky and Map retain celestial time when weather expires during weather delivery (290.8348ms)
+✔ delivery destination is encrypted and authenticated to account, AppID and key (6.5363ms)
+✔ verified login upgrades an existing digest; disabled registration and erasure retain their boundaries (52.2591ms)
+✔ disabled or invalid payloads cannot obtain a token or send (3.6268ms)
+✔ runtime type mismatches fail before token acquisition (0.7633ms)
+✔ fixed REST endpoint sends the snapshot once and distinguishes acceptance from delivery (47.8269ms)
+✔ provider rejection, ambiguous responses and network loss never retry or leak response text (4.8483ms)
+✔ token timeout cannot cause a late send; send/body timeout is unknown (47.854ms)
+✔ published CDS master copy binds all twelve base faces, exact bytes and partial rights metadata (29.8567ms)
+✔ changed local tile is rejected before delivery and cannot keep the publication hash (55.3221ms)
+✔ same-origin HTTP serves one immutable manifest, properties and hash-bound JPEGs (339.1364ms)
+✔ worker heartbeat is atomic, release-bound and fails when stale (36.8489ms)
+ℹ tests 456
+ℹ suites 0
+ℹ pass 436
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 19
+ℹ todo 0
+ℹ duration_ms 129307.2038
+
+✖ failing tests:
+
+test at src\api-contract-route.test.ts:1:1778
+✖ generated client operation manifest exactly matches the public Nest controller (19.2576ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    [
+      'DELETE /v2/me/account',
+      'DELETE /v2/me/contributions/{}',
+      'DELETE /v2/me/contributions/{}/media-uploads/{}',
+      'DELETE /v2/me/formal-contribution-upload-intents/{}/uploads/{}',
+  ...
+      'GET /v2/sky/saturn/{}/{}',
+  +   'GET /v2/sky/sdss-optical/manifest',
+  +   'GET /v2/sky/sdss-optical/{}/manifest',
+  +   'GET /v2/sky/sdss-optical/{}/{}',
+      'GET /v2/sky/supplements/sao',
+      'GET /v2/sky/supplements/sao/v2',
+      'GET /v2/sky/supplements/sao/v2/{}/tiles/{}',
+      'GET /v2/sky/supplements/sao/{}/tiles/{}',
+      'GET /v2/sky/uranus/manifest',
+  
+      at TestContext.<anonymous> (E:\dev\Starward\workers\miniapp-api\src\api-contract-route.test.ts:71:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [
+      'DELETE /v2/me/account',                                       'DELETE /v2/me/contributions/{}',
+      'DELETE /v2/me/contributions/{}/media-uploads/{}',             'DELETE /v2/me/formal-contribution-upload-intents/{}/uploads/{}',
+      'DELETE /v2/me/observation-plans/{}',                          'DELETE /v2/me/profile-links/{}',
+      'GET /v2/astronomical-events',                                 'GET /v2/astronomical-events/{}',
+      'GET /v2/capabilities',                                        'GET /v2/celestial-objects',
+      'GET /v2/celestial-objects/{}',                                'GET /v2/celestial-objects/{}/image',
+      'GET /v2/map/scene',                                           'GET /v2/me/contributions',
+      'GET /v2/me/contributions/{}/media/{}',                        'GET /v2/me/data-export',
+      'GET /v2/me/favorites',                                        'GET /v2/me/imports',
+      'GET /v2/me/imports/{}',                                       'GET /v2/me/library',
+      'GET /v2/me/observation-plans',                                'GET /v2/me/preferences',
+      'GET /v2/me/profile',                                          'GET /v2/me/profile-links',
+      'GET /v2/me/profile/avatar',                                   'GET /v2/observation-contexts/{}',
+      'GET /v2/operations',                                          'GET /v2/places/search',
+      'GET /v2/shares/plans/{}',                                     'GET /v2/shares/spots/{}',
+      'GET /v2/sky/catalogs/{}/{}',                                  'GET /v2/sky/constellations',
+      'GET /v2/sky/constellations/{}/assets/{}',                     'GET /v2/sky/deep-sky/{}/manifest',
+      'GET /v2/sky/galactic/manifest',                               'GET /v2/sky/galactic/{}/{}',
+      'GET /v2/sky/jupiter/manifest',                                'GET /v2/sky/jupiter/{}/{}',
+      'GET /v2/sky/landscape/manifest',                              'GET /v2/sky/landscape/{}/{}',
+      'GET /v2/sky/mars/manifest',                                   'GET /v2/sky/mars/{}/{}',
+      'GET /v2/sky/mercury/manifest',                                'GET /v2/sky/mercury/{}/{}',
+      'GET /v2/sky/moon/coverage/manifest',                          'GET /v2/sky/moon/coverage/{}/{}',
+      'GET /v2/sky/moon/manifest',                                   'GET /v2/sky/moon/{}/{}',
+      'GET /v2/sky/neptune/manifest',                                'GET /v2/sky/neptune/{}/{}',
+      'GET /v2/sky/optical/manifest',                                'GET /v2/sky/optical/{}/{}/{}/{}',
+      'GET /v2/sky/optical/{}/{}/{}/{}/index',                       'GET /v2/sky/saturn/manifest',
+      'GET /v2/sky/saturn/{}/{}',                                    'GET /v2/sky/sdss-optical/manifest',
+      'GET /v2/sky/sdss-optical/{}/manifest',                        'GET /v2/sky/sdss-optical/{}/{}',
+      'GET /v2/sky/supplements/sao',                                 'GET /v2/sky/supplements/sao/v2',
+      'GET /v2/sky/supplements/sao/v2/{}/tiles/{}',                  'GET /v2/sky/supplements/sao/{}/tiles/{}',
+      'GET /v2/sky/uranus/manifest',                                 'GET /v2/sky/uranus/{}/{}',
+      'GET /v2/sky/wide-field/manifest',                             'GET /v2/sky/wide-field/{}/Norder0/Dir0/{}',
+      'GET /v2/sky/wide-field/{}/properties',                        'GET /v2/spots/{}/air-quality',
+      'GET /v2/spots/{}/contribution-baseline',                      'GET /v2/spots/{}/field',
+      'GET /v2/spots/{}/guides',                                     'GET /v2/spots/{}/media/{}',
+      'GET /v2/spots/{}/media/{}/image',                             'GET /v2/spots/{}/overview',
+      'GET /v2/spots/{}/recent-weather',                             'GET /v2/spots/{}/sky',
+      'GET /v2/spots/{}/sky/objects/{}',                             'GET /v2/spots/{}/sky/targets',
+      'GET /v2/terrain/assets/{}',                                   'GET /v2/terrain/overlay',
+      'POST /v2/auth/wechat/login',                                  'POST /v2/me/contributions',
+      'POST /v2/me/contributions/{}/media-uploads',                  'POST /v2/me/contributions/{}/submit',
+      'POST /v2/me/formal-contribution-upload-intents',              'POST /v2/me/formal-contribution-upload-intents/{}/uploads',
+      'POST /v2/me/formal-contributions/submit',                     'POST /v2/me/imports',
+      'POST /v2/me/observation-plans/{}/reminder-subscription',      'POST /v2/me/observation-plans/{}/share',
+      'POST /v2/me/profile-links',                                   'POST /v2/observation-contexts/resolve',
+      'POST /v2/routes/estimate',                                    'PUT /v2/me/contributions/{}',
+      'PUT /v2/me/contributions/{}/media-uploads/{}',                'PUT /v2/me/favorites/FORMAL_SPOT/{}',
+      'PUT /v2/me/formal-contribution-upload-intents/{}/uploads/{}', 'PUT /v2/me/imports/{}',
+      'PUT /v2/me/observation-plans/{}',                             'PUT /v2/me/observation-plans/{}/checklist-completion',
+      ... 5 more items
+    ],
+    expected: [
+      'DELETE /v2/me/account',                                     'DELETE /v2/me/contributions/{}',
+      'DELETE /v2/me/contributions/{}/media-uploads/{}',           'DELETE /v2/me/formal-contribution-upload-intents/{}/uploads/{}',
+      'DELETE /v2/me/observation-plans/{}',                        'DELETE /v2/me/profile-links/{}',
+      'GET /v2/astronomical-events',                               'GET /v2/astronomical-events/{}',
+      'GET /v2/capabilities',                                      'GET /v2/celestial-objects',
+      'GET /v2/celestial-objects/{}',                              'GET /v2/celestial-objects/{}/image',
+      'GET /v2/map/scene',                                         'GET /v2/me/contributions',
+      'GET /v2/me/contributions/{}/media/{}',                      'GET /v2/me/data-export',
+      'GET /v2/me/favorites',                                      'GET /v2/me/imports',
+      'GET /v2/me/imports/{}',                                     'GET /v2/me/library',
+      'GET /v2/me/observation-plans',                              'GET /v2/me/preferences',
+      'GET /v2/me/profile',                                        'GET /v2/me/profile-links',
+      'GET /v2/me/profile/avatar',                                 'GET /v2/observation-contexts/{}',
+      'GET /v2/operations',                                        'GET /v2/places/search',
+      'GET /v2/shares/plans/{}',                                   'GET /v2/shares/spots/{}',
+      'GET /v2/sky/catalogs/{}/{}',                                'GET /v2/sky/constellations',
+      'GET /v2/sky/constellations/{}/assets/{}',                   'GET /v2/sky/deep-sky/{}/manifest',
+      'GET /v2/sky/galactic/manifest',                             'GET /v2/sky/galactic/{}/{}',
+      'GET /v2/sky/jupiter/manifest',                              'GET /v2/sky/jupiter/{}/{}',
+      'GET /v2/sky/landscape/manifest',                            'GET /v2/sky/landscape/{}/{}',
+      'GET /v2/sky/mars/manifest',                                 'GET /v2/sky/mars/{}/{}',
+      'GET /v2/sky/mercury/manifest',                              'GET /v2/sky/mercury/{}/{}',
+      'GET /v2/sky/moon/coverage/manifest',                        'GET /v2/sky/moon/coverage/{}/{}',
+      'GET /v2/sky/moon/manifest',                                 'GET /v2/sky/moon/{}/{}',
+      'GET /v2/sky/neptune/manifest',                              'GET /v2/sky/neptune/{}/{}',
+      'GET /v2/sky/optical/manifest',                              'GET /v2/sky/optical/{}/{}/{}/{}',
+      'GET /v2/sky/optical/{}/{}/{}/{}/index',                     'GET /v2/sky/saturn/manifest',
+      'GET /v2/sky/saturn/{}/{}',                                  'GET /v2/sky/supplements/sao',
+      'GET /v2/sky/supplements/sao/v2',                            'GET /v2/sky/supplements/sao/v2/{}/tiles/{}',
+      'GET /v2/sky/supplements/sao/{}/tiles/{}',                   'GET /v2/sky/uranus/manifest',
+      'GET /v2/sky/uranus/{}/{}',                                  'GET /v2/sky/wide-field/manifest',
+      'GET /v2/sky/wide-field/{}/Norder0/Dir0/{}',                 'GET /v2/sky/wide-field/{}/properties',
+      'GET /v2/spots/{}/air-quality',                              'GET /v2/spots/{}/contribution-baseline',
+      'GET /v2/spots/{}/field',                                    'GET /v2/spots/{}/guides',
+      'GET /v2/spots/{}/media/{}',                                 'GET /v2/spots/{}/media/{}/image',
+      'GET /v2/spots/{}/overview',                                 'GET /v2/spots/{}/recent-weather',
+      'GET /v2/spots/{}/sky',                                      'GET /v2/spots/{}/sky/objects/{}',
+      'GET /v2/spots/{}/sky/targets',                              'GET /v2/terrain/assets/{}',
+      'GET /v2/terrain/overlay',                                   'POST /v2/auth/wechat/login',
+      'POST /v2/me/contributions',                                 'POST /v2/me/contributions/{}/media-uploads',
+      'POST /v2/me/contributions/{}/submit',                       'POST /v2/me/formal-contribution-upload-intents',
+      'POST /v2/me/formal-contribution-upload-intents/{}/uploads', 'POST /v2/me/formal-contributions/submit',
+      'POST /v2/me/imports',                                       'POST /v2/me/observation-plans/{}/reminder-subscription',
+      'POST /v2/me/observation-plans/{}/share',                    'POST /v2/me/profile-links',
+      'POST /v2/observation-contexts/resolve',                     'POST /v2/routes/estimate',
+      'PUT /v2/me/contributions/{}',                               'PUT /v2/me/contributions/{}/media-uploads/{}',
+      'PUT /v2/me/favorites/FORMAL_SPOT/{}',                       'PUT /v2/me/formal-contribution-upload-intents/{}/uploads/{}',
+      'PUT /v2/me/imports/{}',                                     'PUT /v2/me/observation-plans/{}',
+      'PUT /v2/me/observation-plans/{}/checklist-completion',      'PUT /v2/me/preferences',
+      'PUT /v2/me/profile/avatar',                                 'PUT /v2/me/profile/nickname',
+      ... 2 more items
+    ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path E:\dev\Starward\workers\miniapp-api
+npm error workspace @starward/miniapp-api@0.1.0
+npm error location E:\dev\Starward\workers\miniapp-api
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c node ../../tools/run-node.cjs --import tsx --test src/**/*.test.ts

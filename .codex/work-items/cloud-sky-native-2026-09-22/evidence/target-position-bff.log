@@ -1,0 +1,29 @@
+✔ requested daytime positions remain available when no astronomical dusk exists (84.7156ms)
+✔ continuous phase angles map to all eight semantic lunar states (2.4649ms)
+✔ solar longitude is calculated on the J2000 ecliptic axis (0.6206ms)
+✔ airless topocentric positions stay within the frozen JPL Horizons tolerance (5.2522ms)
+✔ the same observation night spans UTC and local midnight without changing ownership (50.1505ms)
+✔ an exact off-grid or daylight instant is calculated without replacing regular samples (32.2734ms)
+✔ observer elevation participates in lunar parallax (0.8009ms)
+✔ no-rise/set and extreme-latitude cases fail closed without invented samples (21.7303ms)
+✔ map → layer → overview → sky shares public evidence and projects stars only for sky (231.5865ms)
+✔ concurrent cold requests coalesce; exact time, factual edits and catalog change invalidate their own inputs (376.5858ms)
+✔ weather expiry, official-alert validity and failures retry without expiring pure astronomy (296.8184ms)
+✔ sky carries the warning feed deadline even with no alerts or forecast coverage (86.1456ms)
+✔ aborting one shared weather caller does not cancel its peer or retain private context (218.995ms)
+✔ map weather budget returns attributable unavailable evidence and does not launch already-expired work (39.7053ms)
+✔ source and active-alert validity truncate TTL, and private origins cannot alter shared public evidence (215.6294ms)
+✔ cache reset invalidates an in-flight computation before it can repopulate child caches (115.3865ms)
+✔ real BSC5P catalog flows through a formal spot sky HTTP frame into the matching object details (725.7314ms)
+✔ Mini Program production catalog/detail imports operate while retired Gaia and Hipparcos modules are unavailable (1275.4564ms)
+✔ real published stars reach drawing and picking with the selected observer/time; zoom hides faint stars without changing BSC (1056.6999ms)
+✔ current-frame resolution reuses gestures, switches exact time, and never borrows across time or catalog (191.6129ms)
+✔ static failure preserves independent data and usable deep-sky interaction; recovery restores stars (73.3545ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7882.7156

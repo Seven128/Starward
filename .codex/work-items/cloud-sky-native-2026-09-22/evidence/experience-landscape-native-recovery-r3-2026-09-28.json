@@ -1,0 +1,11 @@
+{
+  "status": "failed",
+  "message": "Error: normal request did not show model fallback",
+  "lastObservation": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 5.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "model": false,
+    "photo": true,
+    "retry": false
+  },
+  "sourceRestoredByFinally": true
+}

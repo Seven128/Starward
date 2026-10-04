@@ -1,0 +1,44 @@
+✔ recreated canvas rejects queued survey and constellation native images until their new owners publish (35.0733ms)
+✔ queued pre-calibration canvas frame cannot jump back after confirm or cancel (41.1616ms)
+✔ real alignment confirms raw input while queued painting retains stabilized geometry (22.644ms)
+✔ unused illustrations keep bounded files and return through a fresh decode without another request (3.7316ms)
+✔ a canceled cached decode cannot publish late or delete the file reused by its replacement (1.5821ms)
+✔ a cached file decode failure is latched and explicit retry replaces its file instead of looping (0.9469ms)
+✔ cold files still consume the original source-equivalent retention allowance (0.6263ms)
+✔ cached decodes share the two-load queue and disposing cancels every in-flight decode (0.7595ms)
+✔ a cached decode still checks native dimensions before making the image usable (0.7799ms)
+✔ landscape refinement keeps the correct overview mask while returning to its cached detail file (2.4756ms)
+✔ panorama LINEAR alpha wraps the real first/last texels and keeps partial transparency (1.9828ms)
+✔ all opaque corner samples cannot erase an interior sky hole or its image source (0.9677ms)
+✔ completed image mask replaces old tree geometry for labels, point picks and off/failure (1.2851ms)
+✔ source alpha certifies high-sky zero while retaining tiny alpha and LINEAR boundary neighbours (2.3548ms)
+✔ foreground detail shares the actual GPU budget without counting a decoded identity twice or guessing unknown inputs (1.7361ms)
+✔ a failed detail alpha request preserves the same valid coarse image/mask and retries only the failed resource (16.0979ms)
+✔ late canceled detail alpha cannot replace a valid overview or publish into a hidden canvas (17.881ms)
+✔ detail image failure still selects valid coarse alpha, without granting a missing mask or stale detail image credit (9.1549ms)
+✔ image demand follows each completed resolution alpha and resumes on a horizon return (20.0595ms)
+✔ simulated ground follows the current exact sun and camera in ordinary and red modes (30.4563ms)
+✔ virtual geometry paints after celestial layers and publishes only an actually successful mask (13.1587ms)
+✔ the final virtual mask never opens a fully covered Moon, while an unobstructed repaint restores it (15.0762ms)
+✔ missing exact illumination and GPU failure retain independent scene completion (7.7146ms)
+✔ completed transparent source with no bitmap cannot substitute a procedural tree and hide the Moon (9.1921ms)
+✔ corners on different trees cannot certify that open sky between them is covered (0.3895ms)
+✔ lobed canopy point hits cannot certify a hull across an open notch (0.2808ms)
+✔ a current returned position waits for its matching native sky frame before showing the marker (9.8ms)
+✔ sky touch cannot pick an old native frame during report replacement (20.8528ms)
+✔ shared artwork and selected-object requests use one runtime namespace with distinct file identities (79.2588ms)
+✔ a publication or Canvas generation switch fences old decoded images before effects and redecodes for the new owner (16.9796ms)
+✔ hide, Canvas removal and publication loss retire decoded images held by the Hook, not just its returned view (40.3371ms)
+✔ the page's constellation off intent retires ready files and decoded state, and re-enabling creates a fresh owner (32.8886ms)
+✔ the shared native consumer retains ready fallback bitmaps when its wanted set is temporarily empty (29.8283ms)
+✔ the production illustration wrapper retires unused decoded state and reuses its file on reverse zoom (42.8467ms)
+✔ an empty new Canvas generation cannot keep the old decoded-image state until another download finishes (8.8844ms)
+✔ repeated hide/show with a late canceled response releases retired state and preserves each new owner (10.5838ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3712.184

@@ -1,31 +1,85 @@
 import type { SkyLandscapeManifestData, SkyLandscapeResource } from "@starward/miniapp-contracts";
 import type { SkyVector } from "./sky-view-projection";
 import { skyLandscapeOccludes, skyLandscapeCoversRayHull } from "./sky-landscape-geometry";
+import { skyArtworkViewBounds } from "./sky-artwork-visibility";
+import type { SkyArtworkView } from "./sky-artwork-registration";
 
 export interface SkyPanoramaMask {
   kind: "panorama";
+  /** Effective alpha of the successful foreground pass; omitted means opaque. */
+  opacity?: number;
   publication: SkyLandscapeManifestData;
   resource: SkyLandscapeResource;
   alpha: Uint8Array;
   /** Every row at/after this index is opaque. Holes raise the bound, never fill it. */
   opaqueFromRow: Uint16Array;
+  /** First nonzero source alpha row; height means a genuinely empty panorama. */
+  firstNonzeroAlphaRow: number;
 }
-export type SkyLandscapeMask = { kind: "procedural" } | SkyPanoramaMask;
+export type SkyProceduralLandscapeMask = { kind: "procedural"; opacity?: number };
+export type SkyLandscapeMask = SkyProceduralLandscapeMask | SkyPanoramaMask | {
+  kind: "transition"; opacity?: number;
+  /** Actual source-over passes, in drawing order; never an invented photo mask. */
+  background: SkyProceduralLandscapeMask; foreground: SkyPanoramaMask;
+};
 export interface SkyLandscapePanorama { image: object; mask: SkyPanoramaMask }
 export const PROCEDURAL_SKY_LANDSCAPE: SkyLandscapeMask = { kind: "procedural" };
+
+export function skyLandscapeMaskWithOpacity(mask: SkyLandscapeMask, opacity: number): SkyLandscapeMask {
+  return opacity === (mask.opacity ?? 1) ? mask : { ...mask, opacity };
+}
+
+export function skyLandscapeHasPaintedModel(mask: SkyLandscapeMask | null | undefined): boolean {
+  return Boolean(mask && (mask.opacity ?? 1) > 0 && (mask.kind === "procedural" ||
+    mask.kind === "transition" && (mask.background.opacity ?? 1) > 0));
+}
+
+export function skyLandscapePaintedPanorama(mask: SkyLandscapeMask | null | undefined): SkyPanoramaMask | null {
+  if (!mask || (mask.opacity ?? 1) <= 0) return null;
+  const photo = mask?.kind === "transition" ? mask.foreground : mask?.kind === "panorama" ? mask : null;
+  return photo && (photo.opacity ?? 1) > 0 ? photo : null;
+}
+
+/** Effective source-over alpha of the actual successful material passes. */
+export function skyLandscapeMaskAlpha(mask: SkyLandscapeMask, ray: SkyVector): number {
+  const opacity = mask.opacity ?? 1;
+  if (mask.kind === "procedural") return opacity * (skyLandscapeOccludes(ray) ? 1 : 0);
+  if (mask.kind === "panorama") return opacity * skyPanoramaAlpha(mask, ray) / 255;
+  const foreground = skyLandscapeMaskAlpha(mask.foreground, ray);
+  return opacity * (foreground + (1 - foreground) * skyLandscapeMaskAlpha(mask.background, ray));
+}
 
 export function createSkyPanoramaMask(publication: SkyLandscapeManifestData, resource: SkyLandscapeResource,
   alpha: Uint8Array): SkyPanoramaMask {
   const { width, height } = resource.image;
   if (alpha.length !== width * height) throw new Error("sky_landscape_mask_size_invalid");
   const opaqueFromRow = new Uint16Array(width);
-  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++)
-    if (alpha[y * width + x] !== 255) opaqueFromRow[x] = y + 1;
-  return { kind: "panorama", publication, resource, alpha, opaqueFromRow };
+  let firstNonzeroAlphaRow = height;
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const value = alpha[y * width + x]!;
+    if (value !== 255) opaqueFromRow[x] = y + 1;
+    if (value > 0 && firstNonzeroAlphaRow === height) firstNonzeroAlphaRow = y;
+  }
+  return { kind: "panorama", publication, resource, alpha, opaqueFromRow, firstNonzeroAlphaRow };
 }
 
 const wrap = (x: number, width: number) => (x % width + width) % width;
 const clamp = (value: number, low: number, high: number) => Math.max(low, Math.min(high, value));
+
+/** Reject only a viewport certified above every nonzero source alpha texel.
+ * The shared spherical footprint encloses rolled/offset/curved view edges.
+ * Retain LINEAR neighbours plus one texel and float-uniform uncertainty; wide
+ * or invalid inputs stay eligible. This is source transparency, not terrain. */
+export function skyPanoramaMaskIntersectsView(mask: SkyPanoramaMask, view: SkyArtworkView,
+  width: number, height: number): boolean {
+  const bounds = skyArtworkViewBounds(view, width, height);
+  const first = mask.firstNonzeroAlphaRow, sourceHeight = mask.resource.image.height;
+  if (!bounds || !Number.isInteger(first) || first < 0 || first > sourceHeight) return true;
+  if (first === sourceHeight) return false;
+  const highestAlphaAltitude = Math.PI / 2 - (first - 1.5) * Math.PI / sourceHeight;
+  const lowestViewAltitude = Math.asin(clamp(bounds.center[2], -1, 1)) - bounds.radius;
+  return lowestViewAltitude <= highestAlphaAltitude + 1e-6;
+}
 
 /** Same texel-centred LINEAR sampling as the shader, including the horizontal seam. */
 export function skyPanoramaAlpha(mask: SkyPanoramaMask, ray: SkyVector): number {
@@ -44,11 +98,16 @@ export function skyPanoramaAlpha(mask: SkyPanoramaMask, ray: SkyVector): number 
 
 export function skyLandscapeMaskOccludes(mask: SkyLandscapeMask, ray: SkyVector): boolean {
   // Partially transparent foliage can leave an actual celestial fragment visible.
-  return mask.kind === "procedural" ? skyLandscapeOccludes(ray) : skyPanoramaAlpha(mask, ray) >= 254.5;
+  return skyLandscapeMaskAlpha(mask, ray) >= 254.5 / 255;
 }
 
 /** Certify an entire convex ray cone, never a union of sampled corner hits. */
 export function skyLandscapeMaskCoversRayHull(mask: SkyLandscapeMask, rays: readonly SkyVector[] | null): boolean {
+  if ((mask.opacity ?? 1) < 254.5 / 255) return false;
+  if (mask.kind === "transition") return skyLandscapeMaskCoversRayHull(
+    { ...mask.background, opacity: (mask.opacity ?? 1) * (mask.background.opacity ?? 1) }, rays) ||
+    skyLandscapeMaskCoversRayHull(
+      { ...mask.foreground, opacity: (mask.opacity ?? 1) * (mask.foreground.opacity ?? 1) }, rays);
   if (mask.kind === "procedural") return skyLandscapeCoversRayHull(rays);
   if (!rays?.length) return false;
   const sum: [number, number, number] = [0, 0, 0];

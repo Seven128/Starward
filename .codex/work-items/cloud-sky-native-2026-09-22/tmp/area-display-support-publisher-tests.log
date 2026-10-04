@@ -1,0 +1,19 @@
+E
+======================================================================
+ERROR: test_publish_allwise_w3 (unittest.loader._FailedTest)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_publish_allwise_w3
+Traceback (most recent call last):
+  File "C:\Users\777\AppData\Local\Programs\Python\Python310\lib\unittest\loader.py", line 436, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "C:\Users\777\AppData\Local\Programs\Python\Python310\lib\unittest\loader.py", line 377, in _get_module_from_name
+    __import__(name)
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_publish_allwise_w3.py", line 10, in <module>
+    from astropy.io import fits
+ModuleNotFoundError: No module named 'astropy'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

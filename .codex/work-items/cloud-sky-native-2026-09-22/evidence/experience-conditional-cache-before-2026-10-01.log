@@ -1,0 +1,28 @@
+✖ capacity reclamation during a conditional request preserves its valid response and bounded retention (107.2005ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 878.8096
+
+✖ failing tests:
+
+test at apps\wechat-miniapp\src\services\response-cache.test.ts:1:18473
+✖ capacity reclamation during a conditional request preserves its valid response and bounded retention (107.2005ms)
+  AssertionError [ERR_ASSERTION]: retention pressure does not revoke this live request
+  
+  true !== false
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\services\response-cache.test.ts:410:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

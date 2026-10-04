@@ -1,0 +1,77 @@
+[
+  {
+    "path": "data-pipelines/deep-sky/publish_prepared_optical.py",
+    "bytes": 23338,
+    "sha256": "2ff6503c96e8899a7fb6908ca7d406751c7ac4844829d3a5b5cedcc847981376"
+  },
+  {
+    "path": "data-pipelines/deep-sky/prepared_rgb_tan.py",
+    "bytes": 13383,
+    "sha256": "8ec8272dac8c5ddd143cf6a7588072257c8ec8cb9c7a329270ed8ebf4d415437"
+  },
+  {
+    "path": "data-pipelines/deep-sky/prepared_rgb_observation.py",
+    "bytes": 14967,
+    "sha256": "7762cfe41132595b1d1a3011d06b87cb49f3e8c76f0e5e9914f5414e3ec82f9e"
+  },
+  {
+    "path": "data-pipelines/deep-sky/sdss_gri_tan.py",
+    "bytes": 53400,
+    "sha256": "225d7e25d651b73c0592bf93fba86e7d052177257cdeb13238931758e153fd02"
+  },
+  {
+    "path": "data-pipelines/deep-sky/sdss_source_stencil.py",
+    "bytes": 3504,
+    "sha256": "5ecaea473e5e8ca63ac5428ab023cd62f1d6430124509afa7df5ebebf850d3d3"
+  },
+  {
+    "path": "packages/miniapp-contracts/src/optical-publication-content.ts",
+    "bytes": 2782,
+    "sha256": "7036d2c117cf774356e879069175ef3f708796e7da4b361b0c8e27d4199ebf16"
+  },
+  {
+    "path": "packages/miniapp-contracts/src/prepared-optical-publication.ts",
+    "bytes": 3977,
+    "sha256": "2252206b86829ae97fc0dadde5573022a9d4f16fc2dc74e6d729daa7d4acacc2"
+  },
+  {
+    "path": "data-pipelines/deep-sky/pack_prepared_rendered_optical_publication.mts",
+    "bytes": 1294,
+    "sha256": "dd950045ecbe0a21d8f6bb7d3d5f4f55941eb72596ae5cd0279c9dd66d43cf95"
+  },
+  {
+    "path": "tools/run-node.cjs",
+    "bytes": 4879,
+    "sha256": "56a6cec26cbc9cc0fa8af2a353ed4b6dd289cb9533fdd8565b4b03d7fe27c3ef"
+  },
+  {
+    "path": "data-pipelines/deep-sky/prepared_optical_levels.py",
+    "bytes": 2176,
+    "sha256": "ce805d140a22cd12bfdb42b52e7bf08d85d2962ad4da5cfccf59dfb41f343eb1"
+  },
+  {
+    "path": "data-pipelines/deep-sky/optical_publication_io.py",
+    "bytes": 4710,
+    "sha256": "de6378f2ab91e73a741129049b15ffdb9a68b6f4e76c86266e424d618f0c3567"
+  },
+  {
+    "path": "packages/miniapp-contracts/src/prepared-optical-common.ts",
+    "bytes": 10425,
+    "sha256": "e9ae9900a1a8423274c88e0f0cda1ea35c4e94fcb1cd9e693249cf3b40c3f5e6"
+  },
+  {
+    "path": "packages/miniapp-contracts/src/prepared-display-optical-publication.ts",
+    "bytes": 9334,
+    "sha256": "045263e73a9d7465f3c43f6ac24998cf48a9d2fd69024d72b2700a225ca5bcdd"
+  },
+  {
+    "path": "packages/miniapp-contracts/src/prepared-rendered-optical-publication.ts",
+    "bytes": 1880,
+    "sha256": "dc0ae51eb4c0e2ca1aefd501a4bcb838da70d2ef9952a34f34901ad5b2d2eb01"
+  },
+  {
+    "path": "data-pipelines/deep-sky/publish_prepared_display.py",
+    "bytes": 17250,
+    "sha256": "6a0f6c8afe8fa9556713c0fac0b7fa9f348aa45d0f7ca792397f4a25f1625b2c"
+  }
+]

@@ -1,0 +1,296 @@
+{
+  "at": "2026-10-01T02:25:45.574Z",
+  "scope": "Current native encoded file digests bound to existing individually verified local publications; no new upstream downloads or publication adoption",
+  "publicationReads": [
+    {
+      "path": "packages/astronomy-core/data/stellarium-modern-v24.4.v3.json",
+      "bytes": 124875,
+      "sha256": "4190a7cbba4e0ef1a53972fc14755f5812753980264e5aeb1da611fb5c80ce97"
+    },
+    {
+      "path": "workers/miniapp-api/assets/landscape/manifest.json",
+      "bytes": 3280,
+      "sha256": "e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5"
+    },
+    {
+      "path": "workers/miniapp-api/assets/deep-sky/galactic-2mass/manifest.json",
+      "bytes": 1769,
+      "sha256": "f6aeb37d4724ed296ffb4c22f242bbdc83541b54aa1cb67b83e82b9e2d91ac5e"
+    },
+    {
+      "path": "workers/miniapp-api/assets/deep-sky/manifest.json",
+      "bytes": 175604,
+      "sha256": "cacba21af333a11cfa1a36f638fdf057aceb918eba157b3418e580e6386d0f8b"
+    }
+  ],
+  "native": [
+    {
+      "stage": "resource-source-baseline-encoded-digests",
+      "at": "2026-10-01T02:22:13.0591687Z",
+      "count": 10,
+      "encodedBytes": 1789615,
+      "associatedSourceRgbaBytes": 16515072,
+      "files": [
+        {
+          "identity": "constellation:Dra",
+          "path": "workers/miniapp-api/assets/constellations/draco.png",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "encodedBytes": 43164,
+          "sha256": "624e24404ad3139806c898f2495638ec0bceedcb15daf4bfc9850e6c34da3367",
+          "sha1": "1dbca2ecdf5574d7858a76bcd2203302b9991b3f"
+        },
+        {
+          "identity": "constellation:Cep",
+          "path": "workers/miniapp-api/assets/constellations/cepheus.png",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "encodedBytes": 40144,
+          "sha256": "3efd152711397e3424e220f6a2ead2e590ce9782a7de9eac8f009100457198b6",
+          "sha1": "2d2b4078090b4aa3ee1cb66128f9fd04daddc8ea"
+        },
+        {
+          "identity": "constellation:Peg",
+          "path": "workers/miniapp-api/assets/constellations/pegasus.png",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "encodedBytes": 33947,
+          "sha256": "ad4a6926b939cd113aa78c06418513bc6b0e2342cca6df9d4fa0c9bd20743148",
+          "sha1": "667aba4fd1079fae8d81e86881cd145e501e587c"
+        },
+        {
+          "identity": "constellation:Cam",
+          "path": "workers/miniapp-api/assets/constellations/camelopardalis.png",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "encodedBytes": 8194,
+          "sha256": "18490202bf130ba4bfbeda97e20c3ab841b153d12e7c59a08cc3131230a273a8",
+          "sha1": "9341a87b75a5d04cdd227aaac723182a6e77f5eb"
+        },
+        {
+          "identity": "landscape:overview",
+          "path": "workers/miniapp-api/assets/landscape/panorama-1024.png",
+          "width": 1024,
+          "height": 512,
+          "rgbaBytes": 2097152,
+          "encodedBytes": 854784,
+          "sha256": "1e4222bb02d6b4c95c643047de6916581b5e2a665e00d9cc60edd94c3cb072d3",
+          "sha1": "a2bfaaa317d1de145fad2ad26cd18de5ce632294"
+        },
+        {
+          "identity": "constellation:Cyg",
+          "path": "workers/miniapp-api/assets/constellations/cygnus.png",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "encodedBytes": 29252,
+          "sha256": "d9ad9d2ffea6fb50eedf1ace1353efcca35bedf7fe4c45c6b67b8b01ec5e87a0",
+          "sha1": "c397a86a5b3b3963f6b08c5528b5f75743f8368b"
+        },
+        {
+          "identity": "constellation:UMi",
+          "path": "workers/miniapp-api/assets/constellations/ursa-minor.png",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "encodedBytes": 9042,
+          "sha256": "e95cd699568b7b8877086d746d86b79f78863634904e8388291983e31265b1b5",
+          "sha1": "de9eaae064d8c868482498f609119e7e3f2f7922"
+        },
+        {
+          "identity": "constellation:Cas",
+          "path": "workers/miniapp-api/assets/constellations/cassiopeia.png",
+          "width": 512,
+          "height": 512,
+          "rgbaBytes": 1048576,
+          "encodedBytes": 44222,
+          "sha256": "e0cf5e4d328b0105a44aea2001a9fc9a5e6cb99f041a29242d9d4e331410f004",
+          "sha1": "ed4835261c3d502c401113925bfba7957a43f348"
+        },
+        {
+          "identity": "constellation:Lac",
+          "path": "workers/miniapp-api/assets/constellations/lacerta.png",
+          "width": 256,
+          "height": 256,
+          "rgbaBytes": 262144,
+          "encodedBytes": 23311,
+          "sha256": "90b6b685d82a494fa5b798bbbf2a4742e0466924759af8da32ab5dbd6e256da8",
+          "sha1": "fa65c59041b130ef5bcbba581325b061d26a8ab9"
+        },
+        {
+          "identity": "galactic:2mass",
+          "path": "workers/miniapp-api/assets/deep-sky/galactic-2mass/2mass-galactic-2048x1024.jpg",
+          "width": 2048,
+          "height": 1024,
+          "rgbaBytes": 8388608,
+          "encodedBytes": 703555,
+          "sha256": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0",
+          "sha1": "fed3e44d011044225ed286bdd359ff5b1bcd044e"
+        }
+      ]
+    }
+  ],
+  "historicalHeaderCandidates": [
+    {
+      "width": 512,
+      "height": 512,
+      "encodedBytes": 124865,
+      "candidates": [
+        "infrared:M:42:MEDIUM"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    },
+    {
+      "width": 256,
+      "height": 256,
+      "encodedBytes": 9042,
+      "candidates": [
+        "constellation:UMi"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    },
+    {
+      "width": 512,
+      "height": 512,
+      "encodedBytes": 22399,
+      "candidates": [
+        "constellation:Eri"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    },
+    {
+      "width": 512,
+      "height": 512,
+      "encodedBytes": 30557,
+      "candidates": [
+        "constellation:Tau"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    },
+    {
+      "width": 2048,
+      "height": 1024,
+      "encodedBytes": 3316173,
+      "candidates": [
+        "landscape:detail"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    },
+    {
+      "width": 256,
+      "height": 256,
+      "encodedBytes": 8194,
+      "candidates": [
+        "constellation:Cam"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    },
+    {
+      "width": 512,
+      "height": 512,
+      "encodedBytes": 44222,
+      "candidates": [
+        "constellation:Cas"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    },
+    {
+      "width": 512,
+      "height": 512,
+      "encodedBytes": 40144,
+      "candidates": [
+        "constellation:Cep"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    },
+    {
+      "width": 512,
+      "height": 512,
+      "encodedBytes": 29252,
+      "candidates": [
+        "constellation:Cyg"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    },
+    {
+      "width": 1024,
+      "height": 512,
+      "encodedBytes": 854784,
+      "candidates": [
+        "landscape:overview"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    },
+    {
+      "width": 512,
+      "height": 512,
+      "encodedBytes": 43164,
+      "candidates": [
+        "constellation:Dra"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    },
+    {
+      "width": 256,
+      "height": 256,
+      "encodedBytes": 23311,
+      "candidates": [
+        "constellation:Lac"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    },
+    {
+      "width": 512,
+      "height": 512,
+      "encodedBytes": 33947,
+      "candidates": [
+        "constellation:Peg"
+      ],
+      "scope": "Historical header/size match only; these retired native bytes cannot receive a retrospective digest assertion"
+    }
+  ],
+  "m42": {
+    "source": "NASA/IPAC Infrared Science Archive (IRSA)",
+    "dataset": "AllWISE W3 HiPS from raw Atlas Images",
+    "wavelengthMicrometers": 12,
+    "sdssOpticalPublication": false,
+    "sourceFiniteLevels": {
+      "OVERVIEW": {
+        "fieldDegrees": 4,
+        "validFraction": null,
+        "coverageState": "NOT_MEASURED",
+        "format": null,
+        "sha256": "e8379e54c69e88cf17d80000a2604b241d8d0a6eb82758985aacc35a22c1d13d"
+      },
+      "MEDIUM": {
+        "fieldDegrees": 2.25,
+        "validFraction": null,
+        "coverageState": "NOT_MEASURED",
+        "format": null,
+        "sha256": "3c113f59367fb49746c96d08b3218a949d70375a733de8dcfafa36b77659e02d"
+      },
+      "DETAIL": {
+        "fieldDegrees": 0.9,
+        "validFraction": null,
+        "coverageState": "NOT_MEASURED",
+        "format": null,
+        "sha256": "6976db0ae39a46c2ee8cd165c0a375a55c819d4248c715b064983184020cc0ba"
+      }
+    }
+  },
+  "opticalContract": {
+    "path": "packages/miniapp-contracts/src/sdss-optical-publication.ts",
+    "sha256": "0fd5f2c3b7e29cc478ef04dd9b9af7516916b71993a34aba2645852fcd3daa38"
+  },
+  "limits": [
+    "SHA1 is a native readback identity cross-check; product integrity remains the SHA256 publication/server contract",
+    "Associated source RGBA bytes are declared image dimensions times four, not proof of live decoded bitmap/GPU/OS memory or current painted inputs",
+    "Historical size/header candidates do not retrospectively bind retired file contents",
+    "M42 finite sample alpha and zero encoded color are different; dark finite samples are not missing data",
+    "Total native resources, target performance, WXML composition, phone and whole acceptance remain open"
+  ]
+}

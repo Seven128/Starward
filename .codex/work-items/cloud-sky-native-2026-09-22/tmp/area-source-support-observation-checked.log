@@ -1,0 +1,12 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+page.evaluate: TypeError: Cannot read properties of undefined (reading 'createSkyGpuRenderer')
+    at eval (eval at evaluate (:311:30), <anonymous>:1:841)
+    at async <anonymous>:337:30
+    at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-area-source-support-2026-09-30.mts:50:26) {
+  log: []
+}
+
+Node.js v24.16.0

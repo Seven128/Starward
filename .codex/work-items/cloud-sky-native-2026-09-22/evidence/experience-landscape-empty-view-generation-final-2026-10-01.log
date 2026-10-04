@@ -1,0 +1,11 @@
+✔ recreated canvas rejects queued survey and constellation native images until their new owners publish (23.4844ms)
+✔ queued pre-calibration canvas frame cannot jump back after confirm or cancel (31.8829ms)
+✔ real alignment confirms raw input while queued painting retains stabilized geometry (14.3547ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1333.3403

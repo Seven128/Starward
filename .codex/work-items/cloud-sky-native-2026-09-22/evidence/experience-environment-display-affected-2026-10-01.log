@@ -1,0 +1,35 @@
+✔ recreated canvas rejects queued survey and constellation native images until their new owners publish (28.1566ms)
+✔ queued pre-calibration canvas frame cannot jump back after confirm or cancel (37.5953ms)
+✔ real alignment confirms raw input while queued painting retains stabilized geometry (17.4843ms)
+✔ turning both coordinate grids off removes their strokes while retaining the geometric horizon (19.8339ms)
+✔ an unavailable exact observation frame never displays an old equatorial grid (0.909ms)
+✔ equatorial curves cross analytically known directions even between base samples at 0.05° (25.5545ms)
+✔ polar full-dome curves remain in the visible hemisphere and the actual protected viewport (13.5029ms)
+✔ a declination arc grazing the horizon stays visible even when both base samples are below it (16.3824ms)
+✔ adjacent grid segments evaluate each shared endpoint once and release it between traces (0.5921ms)
+✔ scene uses each exact-time equatorial frame in ordinary and red modes without depending on stars (22.9889ms)
+✔ panorama LINEAR alpha wraps the real first/last texels and keeps partial transparency (3.8842ms)
+✔ all opaque corner samples cannot erase an interior sky hole or its image source (1.5028ms)
+✔ completed image mask replaces old tree geometry for labels, point picks and off/failure (1.9383ms)
+✔ simulated ground follows the current exact sun and camera in ordinary and red modes (39.7025ms)
+✔ virtual geometry paints after celestial layers and publishes only an actually successful mask (13.3158ms)
+✔ the final virtual mask never opens a fully covered Moon, while an unobstructed repaint restores it (16.0243ms)
+✔ missing exact illumination and GPU failure retain independent scene completion (7.1255ms)
+✔ corners on different trees cannot certify that open sky between them is covered (0.7158ms)
+✔ lobed canopy point hits cannot certify a hull across an open notch (0.7335ms)
+✔ solar light selects only the exact report instant and shares star ENU orientation (2.1196ms)
+✔ scene draws current solar light beneath other content; red and missing data suppress it (26.1554ms)
+✔ optional solar shader failure preserves independent scene completion (3.7855ms)
+✔ catalog-independent star sizes preserve magnitude order without coarse bright discs (3.5726ms)
+✔ zoom progressively reveals faint points and reverses without discrete level jumps (24.0286ms)
+✔ invalid photometry or projection cannot produce non-finite GPU geometry (0.2773ms)
+✔ reference air mass attenuates low stars continuously without changing their catalog magnitude or size (2.9711ms)
+✔ civil, nautical and astronomical twilight reveal faint stars after bright ones (0.4158ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1810.3434

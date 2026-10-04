@@ -1,0 +1,227 @@
+{
+  "capturedAtUtc": "2026-09-29T20:55:29.3760746+00:00",
+  "context": {
+    "idSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d",
+    "revision": 4,
+    "selectedAtUtc": "2026-09-29T16:00:05.153Z",
+    "localDate": "2026-09-29",
+    "timezone": "Asia/Shanghai",
+    "fingerprint": "d1efdde87fea86158e9e7b97de77233a2805db2d8c54d10d6094353e45ce8337"
+  },
+  "build": {
+    "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\apps\\wechat-miniapp\\dist\\weapp-check-sky-time-v41",
+    "files": 257,
+    "rawBytes": 4520719,
+    "treeSha256": "ed78f9dec1547430e5b22d3ac87ade347881f9c11a8c609fb9e6a4a0b3ee2fe4",
+    "skyPageSha256": "c94cc323a8987fc6d797aa0b184c34a441e4135b04dca269de8bed614e7c4d94"
+  },
+  "sourceHashes": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "6928873623f84e981e71e433f9f2a872d9c16844fff3d554fc3cc1f53f21c2f0"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "sha256": "12ef9aab80847f7deec1c517199b1f259aee92f31f99f8dbd2a4ecefd16bed7c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-observation-time.ts",
+      "sha256": "2ccada04a93fbe91ca95628c0e22d37e77d2d10c6793fe6d2a8e4145b3f8ec3a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-presentation-position.ts",
+      "sha256": "588da099d87377286b0b65bc3a307dad34fa52637806078e03bc7a38f561eadd"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-presentation-position.ts",
+      "sha256": "d95a18082968f69a5a5b20f443f6c18bf5997a27ccc16268c14348ecfbd5d222"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/api-client.ts",
+      "sha256": "2e0b1c64d040f113ee4fc59b814f5c9167058abbbd85e551a27b0207c3459d51"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-target-instant-response.ts",
+      "sha256": "566a6232e84967fbeafd5fb07a42b15d863d7c25783ab9b48f670f36efde1eaa"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-target-instant-response.test.ts",
+      "sha256": "bc4393eae3b8d64cc81db1a1d30408a73f10ab2efd004e99b2330340f1281004"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/api-shapes.ts",
+      "sha256": "91a73b238b5c81b6d323d029a9e6ae1db72ff0aa9e99715beb9b3642aefadde9"
+    },
+    {
+      "path": "packages/miniapp-contracts/api/miniapp.operations.json",
+      "sha256": "4f95b178f118f2aabf97e75f83076d7b38c72a8108f6d54d5f355303268ac039"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts",
+      "sha256": "fa39d2679ff989a6cee74d12caa8f34777ea2accda7905a3c41646207af3eff7"
+    },
+    {
+      "path": "workers/miniapp-api/src/astronomy-service.ts",
+      "sha256": "a2c0862dfc48c00a026ea64400eed8333cfbd4353858aa68f90fb617057ac10f"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-service.ts",
+      "sha256": "a8d2ae6c368ec7f6448548091a4b55cebe4e465a6f5df93df667b0b9e120efc9"
+    },
+    {
+      "path": "workers/miniapp-api/src/controller.ts",
+      "sha256": "fc609160eede723addde107651a0f508604a3110e66090c6fc44a1d6b38711e6"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-api.test.ts",
+      "sha256": "3d68c20f13657ea1a7d4f513ebf2ed077de8260bf03ae7f2d68949c8c621266c"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-time-model.test.ts",
+      "sha256": "c2ad1840f659eaf27946d012f9ff4167841033ecdc113b790bbb669ad3d27c62"
+    }
+  ],
+  "scope": "Cloud sky only; one isolated DevTools v41 candidate and loopback test BFF; development evidence, not phone or production acceptance.",
+  "service": {
+    "front": "http://127.0.0.1:60061",
+    "pidAtCapture": 16572,
+    "execSessionAtCapture": 9420,
+    "compiledAstronomySha256": "a189d24738a1cf33b664cb6968c3737455bbb8124eaf410b146058daa4b8bf17",
+    "weather": "SAMPLE_DATA",
+    "spot": "spot:test-published"
+  },
+  "nativeSnapshots": "experience-time-fine-target-native-v41-snapshots-2026-09-30.json",
+  "counters": {
+    "failedBaseline": {
+      "local": 84,
+      "errors": 0,
+      "reports": 8,
+      "targets": 4,
+      "contextPuts": 0
+    },
+    "targetFailure": {
+      "local": 84,
+      "errors": 0,
+      "reports": 8,
+      "targets": 6,
+      "contextPuts": 0
+    },
+    "retryBaseline": {
+      "local": 85,
+      "errors": 0,
+      "reports": 9,
+      "targets": 6,
+      "contextPuts": 0
+    },
+    "targetRecovered": {
+      "local": 86,
+      "errors": 0,
+      "reports": 9,
+      "targets": 7,
+      "contextPuts": 0
+    },
+    "trackingPrePlay": {
+      "local": 99,
+      "errors": 0,
+      "reports": 10,
+      "targets": 7,
+      "contextPuts": 0
+    },
+    "trackingPlaying": {
+      "local": 99,
+      "errors": 0,
+      "reports": 10,
+      "targets": 7,
+      "contextPuts": 0
+    },
+    "trackingPaused": {
+      "local": 100,
+      "errors": 0,
+      "reports": 10,
+      "targets": 8,
+      "contextPuts": 0
+    },
+    "hideReturn": {
+      "local": 144,
+      "errors": 0,
+      "reports": 12,
+      "targets": 10,
+      "contextPuts": 0
+    },
+    "midnightPrePlay": {
+      "local": 194,
+      "errors": 0,
+      "reports": 16,
+      "targets": 10,
+      "contextPuts": 2
+    },
+    "midnightFinePaused": {
+      "local": 195,
+      "errors": 0,
+      "reports": 16,
+      "targets": 11,
+      "contextPuts": 2
+    },
+    "fineCommitted": {
+      "local": 217,
+      "errors": 0,
+      "reports": 18,
+      "targets": 11,
+      "contextPuts": 3
+    },
+    "afterReentry": {
+      "local": 244,
+      "errors": 0,
+      "reports": 19,
+      "targets": 11,
+      "contextPuts": 3
+    }
+  },
+  "targetFailure": {
+    "at": "2026-09-29T13:00:03.997Z",
+    "injection": "Task proxy HTTP503 on /sky/targets only, max120s; controller successful responses unchanged.",
+    "attempts": 2,
+    "onlyRecovery": "重试目标"
+  },
+  "targetRecovery": {
+    "at": "2026-09-29T13:00:03.997Z",
+    "targets": 3,
+    "retainedBscObjects": 4039
+  },
+  "timing": {
+    "fixedAt": "2026-09-29T13:00:00.000Z",
+    "pausedAt": "2026-09-29T13:00:49.330Z",
+    "hiddenPauseAt": "2026-09-29T13:00:55.952Z",
+    "midnightAt": "2026-09-29T16:00:00.000Z",
+    "appliedFineAt": "2026-09-29T16:00:05.153Z",
+    "revisionSequence": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "contextPutsForThreeExplicitSelections": 3
+  },
+  "checks": [
+    "Fine target equals exact selected-time astronomy result, validAt and contextRevision agree, original Context unchanged.",
+    "Fine proposal shares owner authorization and visible not-public warning; warning assertion failed before repair.",
+    "Active meteor identity retained; unavailable activity stays null and radiant altitude changes with fine instant.",
+    "Whole actual meteor report fits existing 2MiB item budget; actual response-cache flush and fresh-owner readback retain full report.",
+    "Real v3 report / HTTP fine positions and local presentation missing-target semantics pass.",
+    "Fine target validator distinguishes genuine empty from missing or stale bindings.",
+    "Observation time / actual canvas and position consumers 18 relevant checks pass.",
+    "Mini and API typechecks; SDK generation check; final v41 build; git diff whitespace check pass."
+  ],
+  "limitations": [
+    "A whole-report refresh occurred during idle between failure capture and retry baseline; only the bounded retry interval establishes no whole-report requery.",
+    "Lifecycle and explicit Context changes may refresh whole reports; this evidence only rejects per-frame report/target/PUT traffic in measured playback intervals.",
+    "Official simulator network grep did not expose fine requests; task proxy records actual incoming routes/responses.",
+    "Canvas screenshots lack ordinary Sky WXML controls/labels/reticle; source-route screenshot shows ordinary WXML. Overlay visual acceptance and reticle breathing remain unverified.",
+    "Native cross-date case uses public discrete axis selections plus fine playback/application; it is not a 30-minute continuous midnight-crossing recording.",
+    "Source hide/return is not phone OS background or real sensor/calibration acceptance.",
+    "Map platform Back and explicit same-Context route reentry establish committed-time recovery, not a tested natural Map spot-entry tap or persistence of an unmounted page's tracking/selection.",
+    "Raw build sizes / mocked cache storage / local HTTP timing are not official package size, target resource usage or cloud cost.",
+    "Area-object scientific texture fading remains a reference/composition question; current catalogue-aid fading alone does not finish it.",
+    "Prior one-time v24 independent review does not certify v41 or final delivery."
+  ]
+}

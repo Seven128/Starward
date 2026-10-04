@@ -1,0 +1,84 @@
+{
+  "screenshot": {
+    "width": 427,
+    "height": 920,
+    "center": {
+      "x": 244,
+      "y": 453
+    },
+    "radius": 89.5,
+    "minimumGray": 55
+  },
+  "map": {
+    "width": 2048,
+    "height": 1024
+  },
+  "at": "2026-09-22T13:00:00.000Z",
+  "observerBody": [
+    0.9966453745212578,
+    -0.06469679366740708,
+    0.050122286565303986
+  ],
+  "sampledPixels": 4291,
+  "results": [
+    {
+      "flipLon": false,
+      "flipLat": false,
+      "angleDeg": 351,
+      "correlation": 0.8764815254998408
+    },
+    {
+      "flipLon": false,
+      "flipLat": true,
+      "angleDeg": 232,
+      "correlation": 0.2790701521115925
+    },
+    {
+      "flipLon": true,
+      "flipLat": false,
+      "angleDeg": 52,
+      "correlation": 0.23879541941462298
+    },
+    {
+      "flipLon": true,
+      "flipLat": true,
+      "angleDeg": 183,
+      "correlation": 0.4008433643405621
+    }
+  ],
+  "landmarks": [
+    {
+      "name": "Mare Tranquillitatis",
+      "latitudeDeg": 8.35,
+      "longitudeDeg": 30.83,
+      "source": "https://planetarynames.wr.usgs.gov/Feature/3691",
+      "x": 295.0527087418798,
+      "y": 451.64475096378015,
+      "facing": 0.8212126028701945,
+      "mapGray": 25,
+      "screenshotGray": 93.33333333333333
+    },
+    {
+      "name": "Mare Imbrium",
+      "latitudeDeg": 34.72,
+      "longitudeDeg": -14.91,
+      "source": "https://planetarynames.wr.usgs.gov/Feature/3678",
+      "x": 237.29094937716457,
+      "y": 404.0527550265625,
+      "facing": 0.8338374206777625,
+      "mapGray": 36.650666666666666,
+      "screenshotGray": 83.66666666666667
+    },
+    {
+      "name": "Mare Crisium",
+      "latitudeDeg": 16.18,
+      "longitudeDeg": 59.1,
+      "source": "https://planetarynames.wr.usgs.gov/Feature/3671",
+      "x": 323.10672129455736,
+      "y": 442.30332195812485,
+      "facing": 0.45219757793213183,
+      "mapGray": 35,
+      "screenshotGray": 105.33333333333333
+    }
+  ]
+}

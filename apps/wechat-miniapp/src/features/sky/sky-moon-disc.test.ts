@@ -14,6 +14,29 @@ const row = (moonAzimuthDeg: number | null, sunAzimuthDeg = 90, moonAngularDiame
   ({at,moonAzimuthDeg,moonAltitudeDeg:45,moonAngularDiameterDeg,moonIllumination:.5,
     sunAzimuthDeg,sunAltitudeDeg:0});
 
+test("full-sphere browsing retains a set Moon's measured phase, surface axes and projected scale",()=>{
+  const belowBasis=createSkyViewBasis(0,60,0)!;
+  const c=Math.sqrt(.75);
+  const belowRow={...row(0),moonAltitudeDeg:-30,
+    moonBodyFrame:{primeMeridianEnu:[0,-c,.5],poleEnu:[0,.5,c]}};
+  const below=skyMoonDiscAt([belowRow] as any,at,belowBasis,400,800,3);
+  assert.ok(below,"a set lunar globe remains available at its actual below-horizon direction");
+  assert.ok(Math.abs(below.x-200)<1e-9&&Math.abs(below.y-400)<1e-9);
+  assert.equal(below.illuminatedFraction,.5);
+  assert.ok(below.sunward[0]>.99,"the terminator still follows the same report's Sun");
+  assert.ok(below.surfaceOrientation,"a valid body frame remains usable below the horizon");
+  assert.ok(Math.abs(below.surfaceOrientation.observerBody[0]-1)<1e-9);
+  const above=skyMoonDiscAt([{...row(0),moonAltitudeDeg:30}] as any,
+    at,createSkyViewBasis(0,120,0)!,400,800,3)!;
+  assert.ok(Math.abs(below.radiusPx-above.radiusPx)<1e-9);
+  assert.equal(skyMoonDiscAt([belowRow] as any,at,createSkyViewBasis(180,120,0)!,400,800,3),null,
+    "the projection antipode remains excluded");
+  assert.equal(skyMoonDiscAt([belowRow] as any,at,basis,400,800,3),null,
+    "actual viewport clipping remains active");
+  assert.equal(skyMoonDiscAt([{...belowRow,moonAltitudeDeg:-91}] as any,
+    at,belowBasis,400,800,3),null,"invalid ephemeris coordinates still fail closed");
+});
+
 test("surface orientation maps the centre to zero longitude and screen axes to east/south",()=>{
   const d=Math.SQRT1_2;
   const oriented={...row(0),moonBodyFrame:{primeMeridianEnu:[0,-d,-d],poleEnu:[0,-d,d]}};
@@ -42,7 +65,7 @@ test("same-instant Moon phase points toward the actual Sun and scales with dista
   assert.equal(skyMoonDiscAt([{...row(0),moonAltitudeDeg:-1}] as any,at,basis,400,800,3),null);
 });
 
-test("a partly set lunar disc reaches the renderer with the exact horizon view",()=>{
+test("a lunar disc crossing the mathematical horizon retains its whole painted shape without landscape occlusion",()=>{
   const horizonBasis=createSkyViewBasis(0,90,0)!;
   const partlySet=skyMoonDiscAt([{...row(0),moonAltitudeDeg:-.1}] as any,
     at,horizonBasis,400,800,3)!;
@@ -50,8 +73,8 @@ test("a partly set lunar disc reaches the renderer with the exact horizon view",
   assert.ok(unprojectSkyPoint(partlySet.x,partlySet.y,horizonBasis,400,800,3)![2]<0);
   assert.ok(unprojectSkyPoint(partlySet.x,partlySet.y-partlySet.radiusPx*.8,
     horizonBasis,400,800,3)![2]>0);
-  assert.equal(skyMoonDiscAt([{...row(0),moonAltitudeDeg:-.3}] as any,
-    at,horizonBasis,400,800,3),null);
+  assert.ok(skyMoonDiscAt([{...row(0),moonAltitudeDeg:-.3}] as any,
+    at,horizonBasis,400,800,3),"an entirely set but in-viewport lunar disc is still valid");
   const views:unknown[]=[];
   const surface=new Proxy({}, {get:(_target,key)=>key==="moon"
     ? (_disc:unknown,view:unknown)=>{views.push(view);return true;}
@@ -66,11 +89,11 @@ test("a partly set lunar disc reaches the renderer with the exact horizon view",
   const pick=(radius:number)=>pickPaintedSkyObjects(painted,{
     x:partlySet.x,y:partlySet.y-partlySet.radiusPx*radius,frameAt:at,
     catalogVersion:painted.catalogVersion,catalogHash:painted.catalogHash,
-  }).map(object=>object.reference);
+  },0).map(object=>object.reference);
   assert.deepEqual(pick(.8),["SOLAR:MOON"],"the visible lunar limb still uses its successful draw identity");
-  assert.deepEqual(pick(0),[],"the true horizon rejects the hidden centre");
+  assert.deepEqual(pick(0),["SOLAR:MOON"],"the mathematical horizon does not hide the painted lunar centre");
   assert.ok(partlySet.radiusPx*.15<18);
-  assert.deepEqual(pick(1.15),[],"nearby empty sky does not revive the set lunar centre");
+  assert.deepEqual(pick(1.15),[],"shape-only picking still excludes nearby empty sky");
 });
 
 test("scene submits one lunar phase after stars, keeps red mode and does not invent missing geometry", () => {

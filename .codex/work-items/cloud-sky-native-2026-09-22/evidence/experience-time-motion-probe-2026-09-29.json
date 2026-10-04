@@ -1,0 +1,207 @@
+{
+  "scope": "Read-only actual current Context/report and bounded existing server calculator/camera probe. Research only; no live native playback or new client calculation.",
+  "contextSha256": "1746aa900d82214c32e47f82da8ebaaed098805083f5a8db9203634ee5a50965",
+  "contextFingerprint": "a4cf34cae79403a0887b7ce093a18f22f71b3c5e04e3466b51762082fab6953c",
+  "at": "2026-09-29T13:00:00.000Z",
+  "observer": {
+    "latitude": 22.4826799,
+    "longitude": 114.5557147,
+    "elevationM": 0
+  },
+  "catalogVersion": "bsc5p-bright-stars.v3",
+  "catalogHash": "ba9bef4144d4cfb4c706a5d1d8a0958d8303854e7bfabe780005b63e0c904c2c",
+  "reference": "HR:7557",
+  "nativeBundleSha256": "8d89d70f9c180b4652a095442a751b58d853c6929a9cbae2cd3c76edae8e3ad0",
+  "http": [
+    {
+      "at": "2026-09-29T13:00:00.000Z",
+      "status": 200,
+      "hasPosition": true,
+      "error": null
+    },
+    {
+      "at": "2026-09-29T13:00:01.000Z",
+      "status": 400,
+      "hasPosition": false,
+      "error": "INVALID_INPUT"
+    },
+    {
+      "at": "2026-09-29T13:01:00.000Z",
+      "status": 400,
+      "hasPosition": false,
+      "error": "INVALID_INPUT"
+    }
+  ],
+  "positions": [
+    {
+      "seconds": 0,
+      "at": "2026-09-29T13:00:00.000Z",
+      "azimuthDeg": 237.72195912046953,
+      "altitudeDeg": 66.63795278251226
+    },
+    {
+      "seconds": 1,
+      "at": "2026-09-29T13:00:01.000Z",
+      "azimuthDeg": 237.72832885203374,
+      "altitudeDeg": 66.63468872686892
+    },
+    {
+      "seconds": 60,
+      "at": "2026-09-29T13:01:00.000Z",
+      "azimuthDeg": 238.10135389419838,
+      "altitudeDeg": 66.44170721181092
+    }
+  ],
+  "viewport": {
+    "width": 390.3999938964844,
+    "height": 844
+  },
+  "projection": [
+    {
+      "fov": 45,
+      "rows": [
+        {
+          "seconds": 1,
+          "displacementCssPx": 0.07641294968199014,
+          "trackingCenterErrorCssPx": 5.684341886080802e-14,
+          "inViewport": true
+        },
+        {
+          "seconds": 60,
+          "displacementCssPx": 4.584783679342241,
+          "trackingCenterErrorCssPx": 2.842170943040401e-14,
+          "inViewport": true
+        }
+      ]
+    },
+    {
+      "fov": 8.9,
+      "rows": [
+        {
+          "seconds": 1,
+          "displacementCssPx": 0.39120372275166837,
+          "trackingCenterErrorCssPx": 2.8421709430404007e-13,
+          "inViewport": true
+        },
+        {
+          "seconds": 60,
+          "displacementCssPx": 23.472257658347306,
+          "trackingCenterErrorCssPx": 1.4210854715202004e-13,
+          "inViewport": true
+        }
+      ]
+    },
+    {
+      "fov": 2.67,
+      "rows": [
+        {
+          "seconds": 1,
+          "displacementCssPx": 1.3046092831057476,
+          "trackingCenterErrorCssPx": 1.0231815394945443e-12,
+          "inViewport": true
+        },
+        {
+          "seconds": 60,
+          "displacementCssPx": 78.27667134948966,
+          "trackingCenterErrorCssPx": 5.115907697472721e-13,
+          "inViewport": true
+        }
+      ]
+    },
+    {
+      "fov": 1.7,
+      "rows": [
+        {
+          "seconds": 1,
+          "displacementCssPx": 2.0490591149297246,
+          "trackingCenterErrorCssPx": 1.5916157281026244e-12,
+          "inViewport": true
+        },
+        {
+          "seconds": 60,
+          "displacementCssPx": 122.94372651802838,
+          "trackingCenterErrorCssPx": 7.958078640513122e-13,
+          "inViewport": true
+        }
+      ]
+    },
+    {
+      "fov": 0.5,
+      "rows": [
+        {
+          "seconds": 1,
+          "displacementCssPx": 6.966917714858852,
+          "trackingCenterErrorCssPx": 5.343281372915953e-12,
+          "inViewport": true
+        },
+        {
+          "seconds": 60,
+          "displacementCssPx": 418.01567361739563,
+          "trackingCenterErrorCssPx": 2.6716406864579767e-12,
+          "inViewport": false
+        }
+      ]
+    },
+    {
+      "fov": 0.05,
+      "rows": [
+        {
+          "seconds": 1,
+          "displacementCssPx": 69.66928657702921,
+          "trackingCenterErrorCssPx": 5.3660187404602766e-11,
+          "inViewport": true
+        },
+        {
+          "seconds": 60,
+          "displacementCssPx": 4180.163301889986,
+          "trackingCenterErrorCssPx": 2.6830093702301383e-11,
+          "inViewport": false
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "file": "packages/astronomy-core/src/bsc5p-catalog.ts",
+      "sha256": "4ee7e0367d7c77902481854a41a70fa37d2b85de3a1b3893228e9b574fe6583e"
+    },
+    {
+      "file": "packages/astronomy-core/src/observation-frame.ts",
+      "sha256": "944127fecd69eff5c6129ad8e563b6fb0c075d2b45ca9d5c1b5db0593ee3133c"
+    },
+    {
+      "file": "packages/astronomy-core/src/stellar-vectors.ts",
+      "sha256": "683c487671550c00b66a5b43c836c33b759e45260b1bae3eed6c5c94122f5f81"
+    },
+    {
+      "file": "packages/astronomy-core/src/astronomy-engine-runtime.ts",
+      "sha256": "5fbecebefef5110e7cf7d5fb0a119b11865c3060b9dfd40230d0135f6cb359ab"
+    },
+    {
+      "file": "packages/astronomy-core/data/bsc5p-bright-stars.v3.json",
+      "sha256": "ba9bef4144d4cfb4c706a5d1d8a0958d8303854e7bfabe780005b63e0c904c2c"
+    },
+    {
+      "file": "packages/astronomy-core/data/bsc5p-bright-stars.v3.manifest.json",
+      "sha256": "ef8bc5319428236e5d1a44793c0866377759102f137d4407cec4926ba638f8fa"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+      "sha256": "648d6e3ea1dc4ed5c21e8cc42f31ff30b5eab69488812c3958286dd3f4c5c209"
+    },
+    {
+      "file": "workers/miniapp-api/src/celestial-object-position.ts",
+      "sha256": "dc6075f847c8a575f55aecfc1e3f3b0de4daf086f738ab2bb216346d29618ac0"
+    },
+    {
+      "file": "workers/miniapp-api/src/controller.ts",
+      "sha256": "1011edce557716f7797ed86e21cbdfa833ba8dbaa069f01f616181794f00d72e"
+    }
+  ],
+  "limits": [
+    "Positive geometry at +1/+60 seconds comes from existing Node/server astronomy owners, not the current HTTP report or a client ephemeris.",
+    "Same time rate and fixed ENU camera; narrower FOV increases screen displacement continuously.1.7° is not an engine switch or universal perception threshold.",
+    "Off-viewport positions use the existing unclipped geometric probe only; production visibility/picking still uses the clipped owner.",
+    "The current selected-time page and report are fixed/half-hour samples. Playback, backend bounded frame supply, lifecycle/failure, source/position/track consistency and target experience are not delivered by this probe."
+  ]
+}

@@ -1,0 +1,14 @@
+evalmachine.<anonymous>:243
+    const optical = Object.values(SDSS_OPTICAL_PUBLICATIONS).find(publication => sourceId === `optical-imagery:${publication.publicationId}:${publication.publicationHash}`);
+                                  ^
+
+ReferenceError: SDSS_OPTICAL_PUBLICATIONS is not defined
+    at deepSkyManifestUrl (evalmachine.<anonymous>:243:35)
+    at evalmachine.<anonymous>:31:53
+    at Array.map (<anonymous>)
+    at CelestialSourcesPage (evalmachine.<anonymous>:30:54)
+    at inspect (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-celestial-source-recovery-2026-09-29.mts:147:21)
+    at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-celestial-source-recovery-2026-09-29.mts:163:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v24.16.0

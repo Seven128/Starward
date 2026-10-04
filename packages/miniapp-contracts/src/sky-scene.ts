@@ -41,6 +41,11 @@ function assertDeepSky(scene: DeepSkyScene, hourlyAt: readonly string[]) {
     references.add(entry.objectRef);
     for (const value of [entry.magnitude, entry.majorAxisArcmin, entry.minorAxisArcmin, entry.positionAngleDeg])
       if (value !== null && !finite(value)) fail(`deep_sky_entry_${index}_measurement`);
+    const center = entry.icrsCenter;
+    if (center !== undefined && center !== null &&
+      (typeof center !== "object" || Array.isArray(center) || !finite(center.raDeg) || !finite(center.decDeg) ||
+        center.raDeg < 0 || center.raDeg >= 360 || Math.abs(center.decDeg) > 90))
+      fail(`deep_sky_entry_${index}_icrs_center`);
   });
   scene.frames.forEach((frame, frameIndex) => {
     if (!frame || frame.at !== hourlyAt[frameIndex] || frame.state !== "AVAILABLE" || !Array.isArray(frame.points))

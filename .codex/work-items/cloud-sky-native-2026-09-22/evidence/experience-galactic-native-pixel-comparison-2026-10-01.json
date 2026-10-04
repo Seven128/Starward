@@ -1,0 +1,24 @@
+{
+  "scope": "Original ordinary WeChat captures of North manual 45 degrees, same current Context/frame 13:50:33, 4051 objects/2 targets; stated central region only. System bars excluded by coordinate iteration; no image edit. Neither WXML composition nor physical phone acceptance.",
+  "images": [
+    {
+      "file": "experience-current-native-sky-reentered-2026-10-01.png",
+      "sha256": "e89ae0464c328eb3f25b745ca77a0cd1779f9139c473b688cd4f1d68a6ac4ed7"
+    },
+    {
+      "file": "experience-current-native-galactic-production-ready-2026-10-01.png",
+      "sha256": "c94fb1e7ae4f2814ab353bc8c3f22dda25f1dbff4e728a1cea05408f1a0b3efd"
+    }
+  ],
+  "width": 427,
+  "height": 919,
+  "region": {
+    "x": 0,
+    "y": 110,
+    "width": 427,
+    "height": 785
+  },
+  "comparedChannels": 1340780,
+  "changedChannels": 3808,
+  "maxDelta": 128
+}

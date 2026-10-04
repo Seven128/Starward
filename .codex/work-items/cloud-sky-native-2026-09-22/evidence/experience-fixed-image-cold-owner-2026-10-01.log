@@ -1,0 +1,24 @@
+✔ the production Moon consumer keeps its immutable file across wide browsing and redecodes before returning pixels (82.9135ms)
+✔ galactic daylight and local fading release decoded state but return through the same bounded file without HTTP (26.3369ms)
+✔ galactic initial day, narrow or missing exact instant never acquire an image or enable its manifest (49.7187ms)
+✔ galactic cached decode cancellation, failure latch and explicit retry preserve current source ownership (9.6264ms)
+✔ galactic off intent, Canvas replacement and publication change retire cold files instead of reviving stale pixels (61.6468ms)
+✔ galactic manifest refresh failure retains valid current pixels and stays silent during daylight (5.0801ms)
+✔ shared artwork and selected-object requests use one runtime namespace with distinct file identities (5.2555ms)
+✔ a publication or Canvas generation switch fences old decoded images before effects and redecodes for the new owner (5.3418ms)
+✔ hide, Canvas removal and publication loss retire decoded images held by the Hook, not just its returned view (18.2961ms)
+✔ the page's constellation off intent retires ready files and decoded state, and re-enabling creates a fresh owner (17.9015ms)
+✔ the shared native consumer retains ready fallback bitmaps when its wanted set is temporarily empty (18.3331ms)
+✔ the production illustration wrapper retires unused decoded state and reuses its file on reverse zoom (18.0843ms)
+✔ an empty new Canvas generation cannot keep the old decoded-image state until another download finishes (4.0329ms)
+✔ repeated hide/show with a late canceled response releases retired state and preserves each new owner (4.7497ms)
+✔ Moon coverage uses exact geometry and PNG identity; current pixels recover without accepting legacy images (102.1846ms)
+✔ OPAL requests require the correct resolved body, exact time and valid axes; restored input recovers (95.7619ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1365.3604

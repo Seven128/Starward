@@ -1,0 +1,58 @@
+{
+  "scope": "failed bounded diagnostic; not acceptance",
+  "rows": [],
+  "httpRows": [
+    {
+      "path": "/v2/celestial-objects/M%3A82",
+      "status": 200,
+      "conditional": false
+    }
+  ],
+  "sourceHashes": [
+    {
+      "file": "workers/miniapp-api/src/celestial-object-information.ts",
+      "sha256": "911897ef17be28be13d8b4f3cc9166ceb403f402ea7442e821df44536085fd3b"
+    },
+    {
+      "file": "workers/miniapp-api/dist/celestial-object-information.js",
+      "sha256": "3ae1fcda98d31ec91469e7c2e92aa1d8d314b8e4203dadb24359c5483ce67cd9"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/api-client.ts",
+      "sha256": "5afa9eb8364c8a5ec39e9cbd1c3dfb3306f7c771200fed9d8edfd93a9e568ca6"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/celestial-information-response.ts",
+      "sha256": "038373dd9bc761a9bf29b91db16213b845a05373ec9f908a02ae8e7e6859b212"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/celestial-information-presentation.ts",
+      "sha256": "dd2ee3c3262c890b6a05a2f618dfecd5de4de458fab62419f15908115fa767d8"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/response-cache.ts",
+      "sha256": "d5ce663020e05eb05718a15abc094c5aeab8e39917c5e902edb6eb9f8fdea1c7"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/authenticated-operation.ts",
+      "sha256": "249f9f512b8ade77a6e90ad8424939bd6fc0f21f800ff20bdda2b67f4a480842"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/request-lifecycle.ts",
+      "sha256": "d3f8ca1cfb16987bdf4f89c435d4b963dd68d85acd01698acf08dba23ac11b89"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/hooks/use-celestial-information.ts",
+      "sha256": "70be075b1b0f1bf89b7a7796cea598c84e62aff9e715d75e64c55a7c61d91668"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "c699441fe14c21bf48bf0367c5062f3c739722c22cbf3b5f54c065292d101455"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/sky/sources/index.tsx",
+      "sha256": "ba528db0951fac3ebc6acf2a1c9827aa2f7d825c3da1c2da70f34dec904a0ce0"
+    }
+  ],
+  "failure": "ReferenceError: SDSS_OPTICAL_PUBLICATIONS is not defined"
+}

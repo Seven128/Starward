@@ -1,0 +1,417 @@
+{
+  "schemaVersion": "cloud-sky-current-execution-v1",
+  "checkedAt": "2026-10-03T07:04:52.8857778Z",
+  "workspace": "E:\\dev\\worktrees\\Starward\\remote-main-20260908",
+  "branch": "codex/remote-main-20260908",
+  "head": "72e65cf309d700cb7d40c5b7afd53660fd39fa35",
+  "goal": {
+    "status": "active",
+    "budget": null,
+    "basis": "Current Goal tool readback, no new Goal or status mutation in this checkpoint."
+  },
+  "protected": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "bytes": 5667,
+      "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "bytes": 2041,
+      "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "bytes": 1770,
+      "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "bytes": 14895,
+      "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "bytes": 64272,
+      "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8"
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "bytes": 42510,
+      "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd"
+    }
+  ],
+  "currentSources": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-landscape.ts",
+      "bytes": 6462,
+      "sha256": "99b4f958fade3fb63c53127d2fc9a48ac278858017a35eb8f56df7f658e732fb"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "bytes": 211571,
+      "sha256": "e3c55068adcade1981c8744916d61ef570046425a49ea0a3cb5356c366103b7e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-landscape.test.ts",
+      "bytes": 2648,
+      "sha256": "d917d5876bf2e824fb191d9bbb13489c695743d741e7c48866370b8f2cc5393a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-selected-image-retirement.test.ts",
+      "bytes": 3007,
+      "sha256": "663bc4f4b8cddbc203190938399edad08928bc737345e58e0600a3217421fd44"
+    },
+    {
+      "path": "workers/miniapp-api/src/sao-publication.ts",
+      "bytes": 4403,
+      "sha256": "fb371cd61f124d464433845ada54a56223215d609998773384c94d41391a135c"
+    },
+    {
+      "path": "workers/miniapp-api/src/sao-publication-concurrency.test.ts",
+      "bytes": 4069,
+      "sha256": "6d8f1554044b59a4538f57c1cb75aec30a4a2bbd584054b4caa27735f62f4136"
+    },
+    {
+      "path": "workers/miniapp-api/src/prepared-optical-imagery.ts",
+      "bytes": 5458,
+      "sha256": "32855e03341d81b0c94500bfb679f3598c33c5e0ec97eed8ef71fb4a4869141e"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-public-asset-export.ts",
+      "bytes": 7331,
+      "sha256": "e18408e7ef1bd1757148e5c6f2cd6079b40fb6336163a1227deaeb2aa0351bcf"
+    },
+    {
+      "path": "workers/miniapp-api/src/prepared-optical-static-export.test.ts",
+      "bytes": 3794,
+      "sha256": "27c69488143642fe81c98ef4adc07a0638663394120f3bc31f8c889d144f9e77"
+    },
+    {
+      "path": "infrastructure/deployment/sky-resource-logging.caddy",
+      "bytes": 1170,
+      "sha256": "7e8e286310c583cb0a18b5173d20e4ac08c3750bb616c0e495cc70c6e92db5be"
+    },
+    {
+      "path": "tools/deployment/compose-contract.test.mjs",
+      "bytes": 6041,
+      "sha256": "691739e4c9a353518d60cb76268bccb41fc0c195650a011f712729f9cf590b5c"
+    },
+    {
+      "path": "tools/deployment/sky-static-release.mjs",
+      "bytes": 22366,
+      "sha256": "ed5c039eedad40586448d4253cee2505e60cfa59c0bb433e702b817eee3211dd"
+    },
+    {
+      "path": "tools/deployment/sky-static-release.test.mjs",
+      "bytes": 17559,
+      "sha256": "75ba778029d02b986d83937b5a7b976ddaee78702c9fb76fe81e1abd1f9b74ce"
+    },
+    {
+      "path": "data-pipelines/deep-sky/image_quality.py",
+      "bytes": 23413,
+      "sha256": "1c79ef74624ed48a7b11ce9aed3f97556dde4bb5d706f19009c5b9a628800cbc"
+    },
+    {
+      "path": "data-pipelines/deep-sky/README.md",
+      "bytes": 32519,
+      "sha256": "08aa675a2c58b162eafe6884393456c47e9f3b773fc62013ddb36a389fbb59a5"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_image_quality.py",
+      "bytes": 14586,
+      "sha256": "fb144959dd1cbdbb498125db359c98f96b05bc58059e2f928a3479f1378210b9"
+    },
+    {
+      "path": "project_context/architecture/runtime-and-domain.md",
+      "bytes": 273329,
+      "sha256": "4dcf41f50acd2c6651959b6a161e07a7e7cf60cd2c3d6eacf881f52782af2cbb"
+    },
+    {
+      "path": "project_context/deployment/decisions-and-verification.md",
+      "bytes": 16417,
+      "sha256": "cf3e45139268fdb8cf1157de0abd0067c6dbdf3632990b380f330fafc45e28ac"
+    },
+    {
+      "path": "project_context/external-capabilities.md",
+      "bytes": 63387,
+      "sha256": "8d51f2920364312ff640f5e24b25f70795dd68cc7e344b805b026a1c9ed6ad6a"
+    },
+    {
+      "path": "infrastructure/deployment/README.md",
+      "bytes": 44655,
+      "sha256": "fee786309a8fdb14c6cf415b715017fab7aff60175a084de66a2e3c54295a5fe"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/capture-current-execution-2026-10-03.ps1",
+      "bytes": 8992,
+      "sha256": "420bbd0a3f5092328c56e6850d7faae70beb5a58f0d15fce4b5375218cb44efa"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-prepared-display-exposure-2026-10-03.py",
+      "bytes": 8884,
+      "sha256": "a79cd614356a799424816cc63e33307057bc6eecadd40b8fa802f4e0407e3fee"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-m51-science-metadata-2026-10-03.py",
+      "bytes": 6642,
+      "sha256": "840f9d2e229e5daa8887a9329b6360a7b2da8d5a9d9cb2abfd7cf85e76f5532a"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/complete-m51-science-headers-2026-10-03.py",
+      "bytes": 6950,
+      "sha256": "ba551cd8a3f3c47ee6923f266650e8b94815580f89ff4cea785508bbba668249"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/analyze-m51-cached-headers-2026-10-03.py",
+      "bytes": 5703,
+      "sha256": "b5ac9ca604e99cbeb299e08c0c7018075a56794d9bd0471df6d695674d32a757"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/sample-m51-science-strips-2026-10-03.py",
+      "bytes": 10111,
+      "sha256": "366537db5913204b6345dd28d2d09817a494085dce69916473bcbdcd380519e5"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-m51-paired-science-semantics-2026-10-03.py",
+      "bytes": 11682,
+      "sha256": "05563f4e8e66c485984be3ac7150bfd71a1de87c9422eadfd81e5e9e249ced01"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-prepared-static-egress-2026-10-03.mts",
+      "bytes": 15918,
+      "sha256": "f235538203c175e247fe5951516218f1f768635610662e56a7b85f04567d5ab9"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/analyze-prepared-static-inventory-2026-10-03.mjs",
+      "bytes": 4882,
+      "sha256": "076f79ab6f05eeabf101f46c8c312933b71ea128bafb18c77bf02d89c1f61c25"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-background-qualification-2026-10-03.py",
+      "bytes": 4566,
+      "sha256": "3ea2c664978f5621dfb065b8f96a724e9681dd3aa66e0150151d036ca9385ba6"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-static-file-allocation-2026-10-03.py",
+      "bytes": 5862,
+      "sha256": "661bbf2fc6080441445acea820d5c6ca6123849a8c0807c7c9ae944310017267"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-signed-science-lod-2026-10-03.py",
+      "bytes": 7843,
+      "sha256": "798e9713b176a195c15f87f20aecd1e67926cd3aaabc8db20e97b6ebf72b30da"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/verify-signed-science-lod-2026-10-03.py",
+      "bytes": 4987,
+      "sha256": "06c15009debef51e7dabd1d6eb5c77ed2a3f38784b986e372f8bc9d1305d7397"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+      "bytes": 75744,
+      "sha256": "644a9ea43fe89ae4af34c87710b7fb4d969021a76dd760cfbd0da92bd8e1406f"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+      "bytes": 28916,
+      "sha256": "6b02435185ee3dc82d5ea34def71ec785f5455ea7bcc1eb88ee4a17be5a220b4"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "output/playwright/cloud-sky-current-scene-1003-r5/result.json",
+      "bytes": 100294857,
+      "sha256": "1ab3dd10fd06e354fbb248e502d126f69936eb0f530eece67aa7defc19bd2b0e"
+    },
+    {
+      "path": "output/shared-quality-boundaries-1003-r1/result.json",
+      "bytes": 216115,
+      "sha256": "34caa4dae2d4452f2122d41fd75c7c84d9f0aaf1512d1a7b27b9aa9f36317747"
+    },
+    {
+      "path": "output/sky-static-retention-1003-r2/result.json",
+      "bytes": 12119,
+      "sha256": "a3c7c158d6a8bd8b6856376107c303ea334760ed8fb525d0510fd62dc6ce0629"
+    },
+    {
+      "path": "output/prepared-display-exposure-1003-r1/result.json",
+      "bytes": 16412,
+      "sha256": "1d8200ac43b045455951bfc2a56fb4a9e871a7a3944ff5f6905ea32a32364a9c"
+    },
+    {
+      "path": "output/m51-science-metadata-1003-r1/result.json",
+      "bytes": 9020,
+      "sha256": "076cdb4adf7d53d686c9bd1aae5235babf716267bfef796f31433612d87c7e8b"
+    },
+    {
+      "path": "output/m51-science-headers-1003-r1/records.json",
+      "bytes": 150178,
+      "sha256": "51d8f0c63eb6a8af250f37313e8bcbc93abe8e530b19139c4633e4bd3bbaff50"
+    },
+    {
+      "path": "output/m51-science-headers-1003-r2/result.json",
+      "bytes": 19695,
+      "sha256": "8f8a9ca6d5ec22776be2f4e1f929d357225b608f2a247471774d891b8109d244"
+    },
+    {
+      "path": "output/m51-science-strips-1003-r1/receipts.json",
+      "bytes": 26207,
+      "sha256": "98ddba8382706e786aea3fb6ab86fbc0007eabb0fd0b7d50cf190749fe841960"
+    },
+    {
+      "path": "output/m51-science-strips-1003-r2/result.json",
+      "bytes": 79879,
+      "sha256": "3f99e67d8819a138f128a1ba76e6c78a2b57618ab832a44a909e8cc22c4bb744"
+    },
+    {
+      "path": "output/m51-paired-science-1003-r2/result.json",
+      "bytes": 12521,
+      "sha256": "1c0d8f27bd38cd8439c108284bd06dfe46ea4d47f161a28636aefb1390a38d78"
+    },
+    {
+      "path": "output/prepared-static-egress-1003-r1/result.json",
+      "bytes": 3936,
+      "sha256": "4b2f7f962ea17abb839e57de1049654cd9ff62043c8539e087e731b031397db0"
+    },
+    {
+      "path": "output/prepared-static-egress-1003-r1/request-accounting.json",
+      "bytes": 44092,
+      "sha256": "9a2871a709a9f78f3fbb7bed6d6379b26f6cf4a47428fd48f9d519b1eccbd158"
+    },
+    {
+      "path": "output/prepared-static-egress-1003-r1/standard-export/publication/image-artifact.json",
+      "bytes": 383,
+      "sha256": "be9a276a1f00c5c86bcdadf27d6fcf87e74ae041fa95561eee101eb862d5b0ab"
+    },
+    {
+      "path": "output/prepared-static-inventory-1003-r1/result.json",
+      "bytes": 4003,
+      "sha256": "d89378c573fa425793ba88d81dd69e2784eeefda8061dc557cdf900b1e744f27"
+    },
+    {
+      "path": "output/background-allocation-initial-attempts-1003-r1/observed-failures.json",
+      "bytes": 394,
+      "sha256": "45166c284b2f6b810d60d6aa42db982b45586f9595eaae4709e7a72c0c9567f2"
+    },
+    {
+      "path": "output/background-qualification-1003-r1/result.json",
+      "bytes": 3396,
+      "sha256": "515e4761f620e9e2320106ec0761962565aa23bd15610e3b76320c9d11de898f"
+    },
+    {
+      "path": "output/static-file-allocation-1003-r1/result.json",
+      "bytes": 3483,
+      "sha256": "431fd93fc8f1e2a9dff2d2a983dc19fa655a646ad2f3b56e2f106dbaa6ed026f"
+    },
+    {
+      "path": "output/signed-science-lod-1003-r1/result.json",
+      "bytes": 13286,
+      "sha256": "178dc73b819ea1600eabbc6532c403fade534a0f2f8c148363de115e3e57d293"
+    },
+    {
+      "path": "output/signed-science-lod-readback-1003-r1/result.json",
+      "bytes": 5590,
+      "sha256": "89e32f67e7777f41ba21f082b92a192fe4d7b9a3bff58216c5f650d423c6d077"
+    },
+    {
+      "path": "output/signed-science-lod-readback-1003-r2/result.json",
+      "bytes": 5796,
+      "sha256": "b90419f2acd72f840f47b91be4abc3db776df0b72e5daed80680d4222b729689"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-scene-journey-and-repairs-2026-10-03.md",
+      "bytes": 6952,
+      "sha256": "eb6d8b5ffc718b1ab683e188d8ba0ef9871fef04f9a71a393da1bcdd6ed92f2d"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-standard-static-development-2026-10-03.md",
+      "bytes": 1796,
+      "sha256": "de9b78e1b8e6e82e1816ff52c3f08e86219dc2db5adfae2fb31217f9b1f6acc7"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-shared-quality-boundaries-2026-10-03.md",
+      "bytes": 2954,
+      "sha256": "06339dda26985ffcfb3b807fc10bd83aff4ddf1985d80703a4cabaa066f8d96c"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-static-retention-dry-run-2026-10-03.md",
+      "bytes": 3019,
+      "sha256": "5c06bfbdfe4874fd49cf7ee9c5c0b1e3f9c6aa181052e62cfd0da6748f93d6f6"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-prepared-srgb-exposure-2026-10-03.md",
+      "bytes": 2763,
+      "sha256": "d8ac7466aee5c0e1085d4b0f0d8e5228afcc2d229a337da885ca16ef17c91719"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-m51-science-source-bounded-2026-10-03.md",
+      "bytes": 7536,
+      "sha256": "4a01b563c48172b6f08a5158a97e5fe31548d5655a5ddf9ffc0065c23e5af382"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-m51-paired-science-semantics-2026-10-03.md",
+      "bytes": 4615,
+      "sha256": "371d79cece08fe7ea2c05fc887ee8dc369ea7c745fa06a3f9bb6684ca374f235"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-prepared-real-static-egress-2026-10-03.md",
+      "bytes": 6214,
+      "sha256": "ff76666cd410f8459ec6f9151af324ec97eb14cff0ad9920150b2273c59c9859"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-signed-science-lod-and-background-2026-10-03.md",
+      "bytes": 6667,
+      "sha256": "a8148e91e43fac73d4ad72f362959f67066f6aa3468c8d8bf3106154276dc93b"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-static-file-allocation-2026-10-03.md",
+      "bytes": 2589,
+      "sha256": "e7bb1521aca6b2e9eb07a5da1f061a74f665fce705472e861c2e5e6489936929"
+    }
+  ],
+  "worktree": {
+    "porcelainEntries": 382,
+    "stagedEntries": 0,
+    "meaning": "Includes all prior uncommitted work; not this increment attribution or a clean delivery candidate."
+  },
+  "processes": [
+    {
+      "ProcessId": 24040,
+      "Name": "node.exe",
+      "CreationDate": "2026-10-01T02:03:53.414608+08:00"
+    },
+    {
+      "ProcessId": 18132,
+      "Name": "node.exe",
+      "CreationDate": "2026-10-01T02:18:41.435922+08:00"
+    }
+  ],
+  "listeners": [
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 60065,
+      "OwningProcess": 24040
+    },
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 50722,
+      "OwningProcess": 24040
+    }
+  ],
+  "verification": {
+    "toolObserved": "Previous production TS5.9.3/affected regressions and paired scientific/API/static/HTTP evidence retain their original scope. Latest task-only increment: unqualified sky-statistic counterexample on cached calibrated SDSS; signed-science box before frozen fixed RGB comparison on actual three crops, signed conservation/common crop readback, balanced-noise/weak-constant controls, unchanged fine pixels and viewed black/blue/background-boundary comparisons. No source reproject/refit/adoption; full-joint only, not partial qualification. Current 904-payload/3-metadata Windows AllocationSize/FileIdInfo/hash/stability observed without exporter/HTTP/dry-run repetition. Initial Python ABI and missing delivery.caddy inventory failures preserved; cached runtime reused, metadata corrected. No unchanged production suites/GPU matrix repeated. Context/path/whitespace validation recorded by invoking turn.",
+    "build": "Existing watch reused; prior R5 exact current page/landscape source map binding. Existing CSS order warning retained.",
+    "liveServer": "Existing BFF process was not restarted; latest SAO/Prepared server source changes are not proven loaded in it.",
+    "independentReview": "MISSING_FOR_THIS_INCREMENT"
+  },
+  "remaining": {
+    "next": "PLAN top B: signed-science-before-fixed-display candidate observed on existing full coherent SDSS master. Next shared calibrated-source pyramid eligibility/partial/black/negative/unit-area/color, single/mosaic consumers and versioned reproducibility; then actual quality/scene/independent review, no silent old RGB contract replacement. HST sky/rights unresolved, no sparse-strip sky fit or second SDSS subtraction. D actual references/production disk/whole product costs/mixed capacity open; local file allocation/body accounting is not capacity. Native full journey remains unverified/failed.",
+    "preparedDefault": "EMPTY_NOT_ADOPTED",
+    "m51Quality": "FAILED_RECTANGLE_BACKGROUND",
+    "m82ScienceInputs": "INCOMPLETE_OV_MED",
+    "devtools": "FAILED_DEVTOOLS_WXML_CANVAS",
+    "physicalDevices": "UNVERIFIED_ANDROID_IOS_NEW_MOON",
+    "capacity": "UNVERIFIED_EXPECTED_4CORE_16GB_12MBPS_2000GB_MONTH_180GB_200DAU"
+  }
+}

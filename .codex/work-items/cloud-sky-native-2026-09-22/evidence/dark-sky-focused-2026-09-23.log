@@ -1,0 +1,16 @@
+✔ actual page paint uses dome basis for drawing and last-painted calibration reference; locked stale frame uses observing scale (74.3361ms)
+✔ actual canvas writer gives the renderer a full horizon inside measured controls, including a shifted center (20.0185ms)
+✔ actual native measurement includes back, native capsule, notifications and bottom controls, and rejects superseded results (13.3439ms)
+✔ actual Sky subscriptions remeasure when its inline notice grows or disappears, without following unrelated notices (11.2748ms)
+✔ actual calibration action resets magnification without modifying Observation Context and respects a pending time commit (4.1519ms)
+✔ solar light selects only the exact report instant and shares star ENU orientation (1.5748ms)
+✔ scene draws current solar light beneath other content; red and missing data suppress it (22.5417ms)
+✔ optional solar shader failure preserves independent scene completion (5.4981ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1198.7752

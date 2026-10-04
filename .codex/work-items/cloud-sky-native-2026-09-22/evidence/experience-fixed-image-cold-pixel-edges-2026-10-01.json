@@ -1,0 +1,189 @@
+{
+  "scope": "Spatial diagnosis only. The original ROI comparison remains failed; a narrower interior is reported separately and does not upgrade full screenshot/composition acceptance.",
+  "rows": [
+    {
+      "name": "active-ruler-source-cancel",
+      "originalRegion": {
+        "x": 1,
+        "y": 91,
+        "width": 425,
+        "height": 799,
+        "changedPixels": 799,
+        "maxDelta": 16,
+        "rgbMae": 0.012223122039804657
+      },
+      "columns": [
+        {
+          "x": 1,
+          "count": 799
+        }
+      ],
+      "samples": [
+        {
+          "x": 1,
+          "y": 91,
+          "before": [
+            44,
+            47,
+            56,
+            255
+          ],
+          "after": [
+            31,
+            33,
+            42,
+            255
+          ]
+        },
+        {
+          "x": 1,
+          "y": 92,
+          "before": [
+            44,
+            47,
+            56,
+            255
+          ],
+          "after": [
+            31,
+            33,
+            42,
+            255
+          ]
+        },
+        {
+          "x": 1,
+          "y": 93,
+          "before": [
+            44,
+            47,
+            56,
+            255
+          ],
+          "after": [
+            31,
+            33,
+            42,
+            255
+          ]
+        },
+        {
+          "x": 1,
+          "y": 94,
+          "before": [
+            44,
+            47,
+            56,
+            255
+          ],
+          "after": [
+            31,
+            33,
+            42,
+            255
+          ]
+        }
+      ],
+      "separatelyMeasuredInterior": {
+        "x": 3,
+        "y": 91,
+        "width": 421,
+        "height": 799,
+        "changedPixels": 0,
+        "maxDelta": 0
+      }
+    },
+    {
+      "name": "paused-source-return",
+      "originalRegion": {
+        "x": 1,
+        "y": 91,
+        "width": 425,
+        "height": 799,
+        "changedPixels": 799,
+        "maxDelta": 16,
+        "rgbMae": 0.012223122039804657
+      },
+      "columns": [
+        {
+          "x": 1,
+          "count": 799
+        }
+      ],
+      "samples": [
+        {
+          "x": 1,
+          "y": 91,
+          "before": [
+            44,
+            47,
+            56,
+            255
+          ],
+          "after": [
+            31,
+            33,
+            42,
+            255
+          ]
+        },
+        {
+          "x": 1,
+          "y": 92,
+          "before": [
+            44,
+            47,
+            56,
+            255
+          ],
+          "after": [
+            31,
+            33,
+            42,
+            255
+          ]
+        },
+        {
+          "x": 1,
+          "y": 93,
+          "before": [
+            44,
+            47,
+            56,
+            255
+          ],
+          "after": [
+            31,
+            33,
+            42,
+            255
+          ]
+        },
+        {
+          "x": 1,
+          "y": 94,
+          "before": [
+            44,
+            47,
+            56,
+            255
+          ],
+          "after": [
+            31,
+            33,
+            42,
+            255
+          ]
+        }
+      ],
+      "separatelyMeasuredInterior": {
+        "x": 3,
+        "y": 91,
+        "width": 421,
+        "height": 799,
+        "changedPixels": 0,
+        "maxDelta": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "scope": "Current requirement/owner consistency audit; not product acceptance",
+  "recordedAt": "2026-09-28T23:31:01.165Z",
+  "requirements": {
+    "file": ".codex/work-items/cloud-sky-native-2026-09-22/REQUIREMENTS.md",
+    "sha256": "278b13bcfe31cd70bfd8def651d6a5246b44fb7f58409b55daf3d9a24044e7ad",
+    "retainedIds": [
+      "C01",
+      "C02",
+      "C03",
+      "C04",
+      "C05",
+      "C06",
+      "C07",
+      "C08",
+      "C09",
+      "C10",
+      "D01",
+      "D02",
+      "D03",
+      "D04",
+      "I01",
+      "I02",
+      "I03",
+      "I04",
+      "I05",
+      "I06",
+      "I07",
+      "I08",
+      "I09",
+      "K01",
+      "K02",
+      "V01",
+      "V02",
+      "V03",
+      "V04",
+      "V05",
+      "V06",
+      "V07",
+      "V08"
+    ],
+    "complete": false
+  },
+  "owners": [
+    {
+      "file": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+      "sha256": "5b6a53a90419b6436ea1929838a7909c53b62ba378dd84a040d1ee7b4afde2df"
+    },
+    {
+      "file": "project_context/architecture/runtime-and-domain.md",
+      "sha256": "af3122188d708314de31736ced869b81784bfe9faf4113a4e76818a1671bce08"
+    }
+  ],
+  "candidate": {
+    "bundle": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v24-0929",
+    "sha256": "f0ab05103aea676957d9ccd435606b59a1cbf43e95bb029936f991659cdcbd61",
+    "fileCount": 257,
+    "totalBytes": 4484792,
+    "preparedUnopened": true,
+    "currentSourceInputsMatched": 78
+  },
+  "officialControlCheck": {
+    "operation": "check_wechatide_status",
+    "skillVersion": "0.3.11",
+    "cell": "2416",
+    "terminal": true,
+    "isError": true,
+    "result": "timed out awaiting tools/call after 300s",
+    "readyVerified": false,
+    "nativeFrameContextOrFixtureVerified": false
+  },
+  "independentReview": {
+    "candidate": "clean-v24",
+    "requestedAuthorization": "one read-only subagent review of requirements, shared code and actual outputs",
+    "replyReceived": false,
+    "authorized": false,
+    "completed": false
+  },
+  "contextValidation": {
+    "exitCode": 0,
+    "scope": "manifest paths and explicit controlling-source declarations only"
+  },
+  "implementationChanged": false,
+  "deviceUsed": false,
+  "newDevToolsWindow": false,
+  "goalCompleted": false
+}

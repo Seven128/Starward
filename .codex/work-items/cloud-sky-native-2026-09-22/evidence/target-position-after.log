@@ -1,0 +1,24 @@
+✔ recreated canvas rejects queued survey and constellation native images until their new owners publish (37.1694ms)
+✔ queued pre-calibration canvas frame cannot jump back after confirm or cancel (45.5166ms)
+✔ real alignment confirms raw input while queued painting retains stabilized geometry (23.3428ms)
+✔ actual page paint uses dome basis for drawing and last-painted calibration reference; locked stale frame uses observing scale (89.4021ms)
+✔ actual canvas writer gives the renderer a full horizon inside measured controls, including a shifted center (18.7027ms)
+✔ actual native measurement includes back, native capsule, notifications and bottom controls, and rejects superseded results (16.8519ms)
+✔ actual Sky subscriptions remeasure when its inline notice grows or disappears, without following unrelated notices (14.1788ms)
+✔ actual calibration action resets magnification without modifying Observation Context and respects a pending time commit (5.0546ms)
+✔ high-magnification target geometry uses numeric coordinates, independently of display text (3.8688ms)
+✔ missing, malformed, out-of-range and below-horizon geometry never borrows display-text coordinates (0.2801ms)
+✔ upgraded client rejects retired star cache after restart on offline and 304, and rejects a legacy server response (544.9072ms)
+✔ HTTP 503 remains a failure and cannot return the retired catalog (71.4814ms)
+✔ network recovery returns selectable HR stars and retains their provenance (48.4947ms)
+✔ retired-identity regression detects omission of the response projection (57.0242ms)
+✔ malformed source rows retire only stars and keep independent content (56.1177ms)
+✔ rounded-only target caches lose geometry independently on offline, 304 and old-server reads, then recover (165.8038ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3764.25

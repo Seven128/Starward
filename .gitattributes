@@ -30,6 +30,12 @@ docs/design-resources/wechat-miniapp/** -text whitespace=-trailing-space,-blank-
 .codex/work-items/cloud-sky-native-2026-09-22/request-original.txt -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
 .codex/work-items/cloud-sky-native-2026-09-22/GOAL-OBJECTIVE-CORRECTED-2026-09-28.md -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
 .codex/work-items/cloud-sky-native-2026-09-22/GOAL-OBJECTIVE-HANDOFF-2026-09-28.md -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+# Cloud Sky archived inputs and evidence retain their recorded byte identities.
+.codex/work-items/cloud-sky-native-2026-09-22/evidence/** -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+.codex/work-items/cloud-sky-native-2026-09-22/baseline/** -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+.codex/work-items/cloud-sky-native-2026-09-22/tmp/** -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+.codex/work-items/cloud-sky-native-2026-09-22/sources/** -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+.codex/work-items/cloud-sky-native-2026-09-22/*HISTORY*.md -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
 # These existing publication/provenance bytes are part of recorded Sky identities.
 packages/astronomy-core/data/bsc5p-bright-stars.v3.manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
 packages/astronomy-core/data/stellarium-modern-v24.4.v3.manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol

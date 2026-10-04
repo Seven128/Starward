@@ -1,0 +1,33 @@
+✔ same stereographic camera places one real name, while zoom/intent and horizon gate it (2.9577ms)
+✔ interactive object labels keep priority over constellation names (0.3616ms)
+✔ offscreen constellation arcs avoid fine clipping while a crossing with offscreen endpoints remains (68.8716ms)
+✔ a true curved constellation arc survives offscreen endpoints; clipping uses actual viewport and horizon (2.8155ms)
+✔ zoom and intent gate both artwork and lines, decoded failure is reported once per attempt without throwing (1.2338ms)
+✔ JPEG and PNG image pixels follow the CDS NESTED cell packaging on every face (29.7958ms)
+✔ real HiPS tile identities and source-image axes locate Sombrero without TAN assumptions (2.1039ms)
+✔ HEALPix triangles use the shared report rotation and stereographic sky camera (6.2426ms)
+✔ one HiPS mesh reuses its fixed camera regardless of source tessellation (3.8779ms)
+✔ alt-az grid joins each real horizon bearing to zenith in the full dome (12.608ms)
+✔ offscreen one-degree samples still render the correct grid crossing at minimum zoom (12.3501ms)
+✔ scene sends the same geographic grid through ordinary and warm-red palettes (11.6681ms)
+✔ picking uses only the exact painted catalog frame and deterministic ordering (3.5502ms)
+✔ pinch, drag and cancellation never become catalog taps (0.3465ms)
+✔ an above-horizon star covered by the painted virtual foreground cannot be picked (1.4934ms)
+✔ near-edge tap tolerance never revives a hidden point but exposed globe and ring pixels remain selectable (1.4968ms)
+✔ upright cardinal headings map ENU camera basis correctly (2.2797ms)
+✔ flat, face-down and gamma-tilted poses preserve real 3D direction (0.3512ms)
+✔ compound heading, beta and gamma use the declared rotation order (0.2326ms)
+✔ heading wraps while beta and gamma reject impossible platform ranges (0.2781ms)
+✔ stereographic projection preserves angular scale and canvas handedness (3.6838ms)
+✔ pole, frustum and behind-view directions return null rather than edge-clamped points (0.5562ms)
+✔ aspect ratio changes horizontal field without changing vertical field (0.2718ms)
+✔ invalid projection input is rejected without hidden defaults or clamping (0.2365ms)
+✔ a prepared projection preserves one accepted view and refreshes for the next view (2.8609ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1315.7274

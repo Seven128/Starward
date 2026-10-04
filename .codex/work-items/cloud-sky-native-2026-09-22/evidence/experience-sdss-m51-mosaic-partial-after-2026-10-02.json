@@ -1,0 +1,35 @@
+{
+  "owner": {
+    "path": "data-pipelines/deep-sky/sdss_gri_tan.py",
+    "bytes": 31108,
+    "sha256": "7dee99087fb3bda4c99064ee34944e2ce87b485addcce26a940cd731cd58e95f"
+  },
+  "script": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-sdss-m51-mosaic-independent-2026-10-02.py",
+    "bytes": 18008,
+    "sha256": "8ac5e4c6ea62d80c0f18b880bbfb373f38bab0fdd639163309dfecc08052f985"
+  },
+  "actualPartialFixture": {
+    "coherentPixels": 737,
+    "perBand": {
+      "g": {
+        "maskDataMismatchPixels": 0,
+        "centerDataIsNaN": true,
+        "centerAvailabilityMask": false
+      },
+      "r": {
+        "maskDataMismatchPixels": 0,
+        "centerDataIsNaN": true,
+        "centerAvailabilityMask": false
+      },
+      "i": {
+        "maskDataMismatchPixels": 0,
+        "centerDataIsNaN": true,
+        "centerAvailabilityMask": false
+      }
+    },
+    "independentKnownGIInFieldSidecars": true,
+    "requireCompleteRejects": true
+  },
+  "meaning": "Same g/i mutually missing control case as real preserved before snapshot; coadd masks now agree with finite data while all independent source unions remain full"
+}

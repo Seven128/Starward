@@ -1,0 +1,37 @@
+[
+  {
+    "status": 200,
+    "size": 1093,
+    "sky_resource_class": "fixed_image"
+  },
+  {
+    "status": 200,
+    "size": 568362,
+    "sky_resource_class": "catalog"
+  },
+  {
+    "status": 200,
+    "size": 1920,
+    "sky_resource_class": "wide_field"
+  },
+  {
+    "status": 404,
+    "size": 166,
+    "sky_resource_class": "optical_trial"
+  },
+  {
+    "status": 404,
+    "size": 166,
+    "sky_resource_class": "deep_sky"
+  },
+  {
+    "status": 200,
+    "size": 141,
+    "sky_resource_class": null
+  },
+  {
+    "status": 304,
+    "size": 0,
+    "sky_resource_class": "catalog"
+  }
+]

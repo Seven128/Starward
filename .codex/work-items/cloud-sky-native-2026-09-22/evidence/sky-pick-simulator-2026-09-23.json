@@ -1,0 +1,14 @@
+{
+  "dateLocal": "2026-09-23 09:02 +08:00",
+  "environment": "WeChat DevTools 3.17.3, SDK 3.17.3, 390.4x844 simulator, canonical dev:miniapp -- --no-open --memory, MEMORY_TEST BFF port 8787",
+  "route": "sky/detail/index, spot:test-published, 2026-09-22T10:00:00Z",
+  "visibleTarget": "Venus tracked at canvas CSS center 195.2,422; source screenshot artifacts/miniapp/cloud-sky-native/venus-after-session-recovery.jpg",
+  "toolActions": "Official wechatide automation_element_action touchstart/touchend on .sky-orientation-canvas__surface at 195,422; touchend sent empty touches and changedTouches containing clientX/clientY 195,422",
+  "pageEventProbe": {
+    "touchstart": { "touches": 1, "point": [195,422] },
+    "touchend": { "touches": 0, "point": [0,0], "changedTouches": { "screenX":0,"screenY":0,"clientX":0,"clientY":0,"pageX":0,"pageY":0 } }
+  },
+  "observation": "The official simulator touch command returned success but the page received zero release coordinates and opened no object modal. The temporary console probe was removed from source. This does not establish native phone touch behavior or a product regression.",
+  "separateCodeFinding": "Renderer excludes stale SAO supplement from painted pick identity; page touch had included the stale raw frame. Page now applies currentStellarSupplement before matching. A handler-level regression passes 10/10 normally and the focused mutation restoring raw supplement fails as expected.",
+  "remaining": "Actual canvas touch selection with a valid release point and target-device composition/lifecycle remain unverified. Android source-page return Canvas failure remains open; no phone operation occurred."
+}

@@ -1,0 +1,4 @@
+src/features/sky/spot-sky-page.tsx(1397,59): error TS2379: Argument of type '{ artworkContributions: Readonly<{ auxiliaryBytesLimit: number; maxGroups: number; }> | undefined; nativeNavigationHeightPx: number; imageFailed(image: object): void; }' is not assignable to parameter of type '{ imageFailed?(image: object): void; textureByteBudget?: number; nativeNavigationHeightPx?: number; artworkContributions?: SkyArtworkContributionBudget; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'artworkContributions' are incompatible.
+    Type 'Readonly<{ auxiliaryBytesLimit: number; maxGroups: number; }> | undefined' is not assignable to type 'SkyArtworkContributionBudget'.
+      Type 'undefined' is not assignable to type 'SkyArtworkContributionBudget'.

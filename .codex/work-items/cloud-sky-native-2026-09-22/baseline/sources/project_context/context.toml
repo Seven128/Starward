@@ -1,0 +1,297 @@
+default_files = []
+
+[[context]]
+path = "project_context/external-capabilities.md"
+role = "architecture"
+read_policy = "on-demand"
+triggers = ["external capabilities", "provider selection", "外部能力", "方案选型", "供应商", "成本预期", "Stellarium", "云观星引擎选型", "Agent开发成本"]
+# Schema v5 optional Context routing. Only global.md is default body text.
+# Keep only near-universal recovery facts in the default path; route specialized
+# facts through registered on-demand nodes and widen reads through bounded search.
+# `workspaces/<workspace-id>/**` is optional and only for workspace-local owners;
+# cross-workspace truth remains under `areas/**` or a project-root role node.
+# `ty-context context list --default` and doctor report structure, not product proof.
+
+[[areas]]
+id = "main"
+root = "."
+context = "project_context/areas/main.md"
+kind = "app"
+default = false
+
+[[context]]
+path = "project_context/development-workflow.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["miniapp environment", "miniapp development", "miniapp test", "miniapp acceptance", "微信小程序环境", "小程序开发", "小程序测试", "小程序验收"]
+
+[[context]]
+path = "project_context/deployment.md"
+role = "deployment"
+read_policy = "on-demand"
+triggers = ["deployment", "deploy", "release", "staging", "production", "cloud", "部署", "发布", "测试环境", "生产环境"]
+
+[[context]]
+path = "project_context/areas/main/verification.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["test", "verify", "smoke test", "测试", "验证"]
+
+[[context]]
+path = "project_context/areas/main/verification/development-loop.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["development loop", "debug", "metro", "expo web", "fast refresh", "warm session", "playwright", "开发循环", "调试", "热更新"]
+
+[[context]]
+path = "project_context/areas/main/verification/acceptance-runtime.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["acceptance runtime", "final gate", "counterfactual", "persistence readback", "restart recovery", "degraded runtime", "design verification", "验收运行时", "最终门禁", "持久化回读", "重启恢复"]
+
+[[context]]
+path = "project_context/areas/main/verification/android-native.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["android native", "apk build", "gradle", "avd emulator", "adb", "native verifier", "shard resume", "安卓原生", "安卓构建", "分片恢复"]
+
+[[context]]
+path = "project_context/areas/main/verification/wechat-device.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["wechat device", "miniapp device", "physical device", "小程序真机", "真机调试"]
+
+[[context]]
+path = "project_context/areas/main/implementation-index.md"
+role = "implementation-index"
+read_policy = "on-demand"
+triggers = ["implementation index", "entry point", "code navigation", "runtime root", "api entry", "current implementation", "实现索引", "代码入口"]
+
+[[context]]
+path = "project_context/areas/main/product-surface-contract.md"
+role = "contract"
+read_policy = "on-demand"
+triggers = ["product surface", "surface responsibility", "cross-surface", "产品接触面", "界面职责"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["screen contract", "surface key", "control key", "route ownership", "design target", "页面契约", "控件键"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts/mobile.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["mobile screen", "mobile route", "target.mobile", "移动端页面", "移动路由"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts/operations.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["operations screen", "admin operations", "data operations", "moderation", "release quality", "recovery metrics", "运营后台", "管理端"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts/wechat-miniapp.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["wechat miniapp screen", "miniapp route", "miniapp surface", "miniapp control", "微信小程序页面", "小程序路由"]
+
+# Cross-workspace architecture continuations. The default architecture root
+# remains the stable entry; specialized component detail is always on-demand.
+[[context]]
+path = "project_context/architecture/runtime-and-domain.md"
+role = "foundation"
+read_policy = "on-demand"
+triggers = ["miniapp bff", "weather composition", "formal spot publication", "contribution moderation", "account data", "sky rendering", "云观星引擎"]
+
+[[context]]
+path = "project_context/architecture/assurance-and-lifecycle.md"
+role = "foundation"
+read_policy = "on-demand"
+triggers = ["android verifier", "runtime carrier", "account erasure", "安卓验证", "账户擦除"]
+
+# Deployment continuations.
+[[context]]
+path = "project_context/deployment/current-state.md"
+role = "deployment"
+read_policy = "on-demand"
+triggers = ["deployment status", "current cloud status", "部署状态"]
+
+[[context]]
+path = "project_context/deployment/release-and-environments.md"
+role = "deployment"
+read_policy = "on-demand"
+triggers = ["release identity", "environment topology", "domain filing", "public ip certificate", "环境拓扑"]
+
+[[context]]
+path = "project_context/deployment/operator-preview.md"
+role = "deployment"
+read_policy = "on-demand"
+triggers = ["operator preview", "ip preview", "provider smoke", "运营者预览"]
+
+[[context]]
+path = "project_context/deployment/pipeline-and-host.md"
+role = "deployment"
+read_policy = "on-demand"
+triggers = ["release pipeline", "container registry", "host provisioning", "发布流水线", "主机初始化"]
+
+[[context]]
+path = "project_context/deployment/miniapp-and-promotion.md"
+role = "deployment"
+read_policy = "on-demand"
+triggers = ["weapp release bundle", "appid migration", "miniapp upload", "小程序发布包", "小程序上传"]
+
+[[context]]
+path = "project_context/deployment/data-and-operations.md"
+role = "deployment"
+read_policy = "on-demand"
+triggers = ["deployment secrets", "backup restore", "rollback monitoring", "部署密钥", "备份恢复"]
+
+[[context]]
+path = "project_context/deployment/decisions-and-verification.md"
+role = "deployment"
+read_policy = "on-demand"
+triggers = ["deployment decision", "provider capacity", "deployment verification", "部署决策"]
+
+# Mini Program workflow continuations.
+[[context]]
+path = "project_context/development-workflow/authority-and-scope.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["selected design authority", "workflow scope", "dependency direction", "选定设计权威"]
+
+[[context]]
+path = "project_context/development-workflow/development-feedback.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["native-first feedback", "warm devtools", "physical development feedback", "开发反馈"]
+
+[[context]]
+path = "project_context/development-workflow/candidate-acceptance.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["deterministic test", "candidate acceptance", "settled candidate", "候选验收"]
+
+[[context]]
+path = "project_context/development-workflow/paths-and-lifecycle.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["environment isolation", "resource lifecycle", "reserved paths", "环境隔离"]
+
+[[context]]
+path = "project_context/development-workflow/change-admission.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["environment change admission", "workflow decision", "repository verification boundary", "环境变更准入"]
+
+# Product Surface Contract continuations.
+[[context]]
+path = "project_context/areas/main/product-surfaces/mobile-core.md"
+role = "contract"
+read_policy = "on-demand"
+triggers = ["mobile core journey", "map route discovery", "spot detail trust", "移动核心旅程"]
+
+[[context]]
+path = "project_context/areas/main/product-surfaces/mobile-field-and-account.md"
+role = "contract"
+read_policy = "on-demand"
+triggers = ["mobile field safety", "community contribution", "identity privacy", "移动野外安全"]
+
+[[context]]
+path = "project_context/areas/main/product-surfaces/wechat-miniapp.md"
+role = "contract"
+read_policy = "on-demand"
+triggers = ["miniapp product surface", "miniapp map discovery", "miniapp profile content", "小程序产品界面"]
+
+[[context]]
+path = "project_context/areas/main/product-surfaces/operations.md"
+role = "contract"
+read_policy = "on-demand"
+triggers = ["owner operations surface", "admin data operations", "运营后台界面"]
+
+# Screen Contract continuations.
+[[context]]
+path = "project_context/areas/main/screen-contracts/wechat-miniapp/surfaces-and-controls.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["miniapp surface inventory", "miniapp control inventory", "小程序界面控件清单"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts/wechat-miniapp/map-and-finder.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["map finder", "finder sheet", "map time control", "地图查找器"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["spot night", "spot sky", "sky orientation", "点位夜空", "云观星", "Stellarium能力对齐"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["miniapp shared state", "notification feedback", "page state recovery", "小程序恢复"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts/mobile/core-journeys.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["mobile core screen", "tonight screen", "mobile map screen", "移动核心页面"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts/mobile/field-and-account.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["mobile field screen", "contribute screen", "me screen", "移动野外页面"]
+
+# WeChat physical-device verification continuations.
+[[context]]
+path = "project_context/areas/main/verification/wechat-device/development-feedback.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["device development feedback", "targeted device feedback", "真机开发反馈"]
+
+[[context]]
+path = "project_context/areas/main/verification/wechat-device/settled-candidate.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["settled-candidate device verification", "ordinary preview", "固定候选真机验证"]
+
+[[context]]
+path = "project_context/areas/main/verification/wechat-device/journey-and-evidence.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["device journey", "device evidence interpretation", "真机证据解释"]
+
+[[context]]
+path = "project_context/product-profile.md"
+role = "domain"
+read_policy = "on-demand"
+triggers = ["product goals", "release profile", "budget", "产品目标", "发布边界"]
+
+[[context]]
+path = "project_context/architecture.md"
+role = "architecture"
+read_policy = "on-demand"
+triggers = ["architecture", "dependency", "shared owner", "component reuse", "library selection", "架构", "依赖", "公共组件", "复用", "组件库", "技术选型"]
+
+[[context]]
+path = "project_context/context-maintenance.md"
+role = "verification"
+read_policy = "on-demand"
+triggers = ["Tiny Context", "context maintenance", "design resources", "Context 整理", "设计资源"]
+
+[[context]]
+path = "project_context/architecture/maintenance-boundaries.md"
+role = "decision-rationale"
+read_policy = "on-demand"
+triggers = ["technical debt", "owner extraction", "maintainability", "shared extraction", "技术债", "模块拆分", "公共能力抽取"]
+
+[[context]]
+path = "project_context/areas/main/screen-contracts/wechat-miniapp/information-design.md"
+role = "subdomain"
+read_policy = "on-demand"
+triggers = ["information density", "place details design", "visual hierarchy", "信息密度", "密而不挤", "地点详情设计", "小巧", "精致", "高级感"]

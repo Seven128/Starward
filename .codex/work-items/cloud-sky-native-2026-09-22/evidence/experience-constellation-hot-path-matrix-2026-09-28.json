@@ -1,0 +1,3551 @@
+{
+  "scope": "Actual published current-frame constellation arcs through production CPU owner; counted leaf clipping and host timings, not GPU/WeChat/phone frame-time acceptance",
+  "phase": "matrix",
+  "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.ts",
+  "sourceSha256": "c007ff9b4ac9d9064f324110a547499976aad4477b8fa11acfd424c33e4f110f",
+  "at": "2026-09-28T16:00:00.000Z",
+  "catalogVersion": "stellarium-modern-v24.4.v3",
+  "catalogHash": "2a53d222e56b513e6b0b9bba753d7864e1535bf98252112ce8e4bebde16dc01e",
+  "sourceArcs": 676,
+  "canvasSize": {
+    "width": 390.3999938964844,
+    "height": 844
+  },
+  "results": [
+    {
+      "scenario": {
+        "name": "arc-0-90-0.05",
+        "heading": 0,
+        "beta": 90,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 11186,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-90-0.5",
+        "heading": 0,
+        "beta": 90,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 3329,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-90-5",
+        "heading": 0,
+        "beta": 90,
+        "fov": 5
+      },
+      "visibleSegments": 3,
+      "clipAttempts": 4,
+      "previousAttempts": 1118,
+      "invisibleClipAttempts": 1,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-90-25",
+        "heading": 0,
+        "beta": 90,
+        "fov": 25
+      },
+      "visibleSegments": 8,
+      "clipAttempts": 12,
+      "previousAttempts": 633,
+      "invisibleClipAttempts": 4,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-90-39.9",
+        "heading": 0,
+        "beta": 90,
+        "fov": 39.9
+      },
+      "visibleSegments": 15,
+      "clipAttempts": 49,
+      "previousAttempts": 585,
+      "invisibleClipAttempts": 34,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-110-0.05",
+        "heading": 0,
+        "beta": 110,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 13629,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-110-0.5",
+        "heading": 0,
+        "beta": 110,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 4287,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-110-5",
+        "heading": 0,
+        "beta": 110,
+        "fov": 5
+      },
+      "visibleSegments": 1,
+      "clipAttempts": 2,
+      "previousAttempts": 1372,
+      "invisibleClipAttempts": 1,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-110-25",
+        "heading": 0,
+        "beta": 110,
+        "fov": 25
+      },
+      "visibleSegments": 5,
+      "clipAttempts": 21,
+      "previousAttempts": 787,
+      "invisibleClipAttempts": 16,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-110-39.9",
+        "heading": 0,
+        "beta": 110,
+        "fov": 39.9
+      },
+      "visibleSegments": 32,
+      "clipAttempts": 80,
+      "previousAttempts": 746,
+      "invisibleClipAttempts": 48,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-150-0.05",
+        "heading": 0,
+        "beta": 150,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 19254,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-150-0.5",
+        "heading": 0,
+        "beta": 150,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 6087,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-150-5",
+        "heading": 0,
+        "beta": 150,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1866,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-150-25",
+        "heading": 0,
+        "beta": 150,
+        "fov": 25
+      },
+      "visibleSegments": 8,
+      "clipAttempts": 12,
+      "previousAttempts": 1090,
+      "invisibleClipAttempts": 4,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-0-150-39.9",
+        "heading": 0,
+        "beta": 150,
+        "fov": 39.9
+      },
+      "visibleSegments": 23,
+      "clipAttempts": 69,
+      "previousAttempts": 1075,
+      "invisibleClipAttempts": 46,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-90-0.05",
+        "heading": 30,
+        "beta": 90,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 11818,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-90-0.5",
+        "heading": 30,
+        "beta": 90,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 3693,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-90-5",
+        "heading": 30,
+        "beta": 90,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1207,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-90-25",
+        "heading": 30,
+        "beta": 90,
+        "fov": 25
+      },
+      "visibleSegments": 6,
+      "clipAttempts": 22,
+      "previousAttempts": 669,
+      "invisibleClipAttempts": 16,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-90-39.9",
+        "heading": 30,
+        "beta": 90,
+        "fov": 39.9
+      },
+      "visibleSegments": 22,
+      "clipAttempts": 25,
+      "previousAttempts": 639,
+      "invisibleClipAttempts": 3,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-110-0.05",
+        "heading": 30,
+        "beta": 110,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 14517,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-110-0.5",
+        "heading": 30,
+        "beta": 110,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 4505,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-110-5",
+        "heading": 30,
+        "beta": 110,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1460,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-110-25",
+        "heading": 30,
+        "beta": 110,
+        "fov": 25
+      },
+      "visibleSegments": 15,
+      "clipAttempts": 17,
+      "previousAttempts": 824,
+      "invisibleClipAttempts": 2,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-110-39.9",
+        "heading": 30,
+        "beta": 110,
+        "fov": 39.9
+      },
+      "visibleSegments": 42,
+      "clipAttempts": 63,
+      "previousAttempts": 808,
+      "invisibleClipAttempts": 21,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-150-0.05",
+        "heading": 30,
+        "beta": 150,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 19071,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-150-0.5",
+        "heading": 30,
+        "beta": 150,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 6017,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-150-5",
+        "heading": 30,
+        "beta": 150,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1912,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-150-25",
+        "heading": 30,
+        "beta": 150,
+        "fov": 25
+      },
+      "visibleSegments": 10,
+      "clipAttempts": 24,
+      "previousAttempts": 1106,
+      "invisibleClipAttempts": 14,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-30-150-39.9",
+        "heading": 30,
+        "beta": 150,
+        "fov": 39.9
+      },
+      "visibleSegments": 31,
+      "clipAttempts": 75,
+      "previousAttempts": 1085,
+      "invisibleClipAttempts": 44,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-90-0.05",
+        "heading": 60,
+        "beta": 90,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 11997,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-90-0.5",
+        "heading": 60,
+        "beta": 90,
+        "fov": 0.5
+      },
+      "visibleSegments": 1,
+      "clipAttempts": 1,
+      "previousAttempts": 3900,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-90-5",
+        "heading": 60,
+        "beta": 90,
+        "fov": 5
+      },
+      "visibleSegments": 1,
+      "clipAttempts": 2,
+      "previousAttempts": 1227,
+      "invisibleClipAttempts": 1,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-90-25",
+        "heading": 60,
+        "beta": 90,
+        "fov": 25
+      },
+      "visibleSegments": 9,
+      "clipAttempts": 16,
+      "previousAttempts": 707,
+      "invisibleClipAttempts": 7,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-90-39.9",
+        "heading": 60,
+        "beta": 90,
+        "fov": 39.9
+      },
+      "visibleSegments": 28,
+      "clipAttempts": 59,
+      "previousAttempts": 679,
+      "invisibleClipAttempts": 31,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-110-0.05",
+        "heading": 60,
+        "beta": 110,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 13379,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-110-0.5",
+        "heading": 60,
+        "beta": 110,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 4269,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-110-5",
+        "heading": 60,
+        "beta": 110,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 2,
+      "previousAttempts": 1423,
+      "invisibleClipAttempts": 2,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-110-25",
+        "heading": 60,
+        "beta": 110,
+        "fov": 25
+      },
+      "visibleSegments": 19,
+      "clipAttempts": 39,
+      "previousAttempts": 824,
+      "invisibleClipAttempts": 20,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-110-39.9",
+        "heading": 60,
+        "beta": 110,
+        "fov": 39.9
+      },
+      "visibleSegments": 55,
+      "clipAttempts": 101,
+      "previousAttempts": 793,
+      "invisibleClipAttempts": 46,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-150-0.05",
+        "heading": 60,
+        "beta": 150,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 19705,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-150-0.5",
+        "heading": 60,
+        "beta": 150,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 2,
+      "previousAttempts": 6368,
+      "invisibleClipAttempts": 2,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-150-5",
+        "heading": 60,
+        "beta": 150,
+        "fov": 5
+      },
+      "visibleSegments": 5,
+      "clipAttempts": 5,
+      "previousAttempts": 1957,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-150-25",
+        "heading": 60,
+        "beta": 150,
+        "fov": 25
+      },
+      "visibleSegments": 17,
+      "clipAttempts": 39,
+      "previousAttempts": 1162,
+      "invisibleClipAttempts": 22,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-60-150-39.9",
+        "heading": 60,
+        "beta": 150,
+        "fov": 39.9
+      },
+      "visibleSegments": 56,
+      "clipAttempts": 96,
+      "previousAttempts": 1135,
+      "invisibleClipAttempts": 40,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-90-0.05",
+        "heading": 90,
+        "beta": 90,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 12027,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-90-0.5",
+        "heading": 90,
+        "beta": 90,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 3708,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-90-5",
+        "heading": 90,
+        "beta": 90,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 1,
+      "previousAttempts": 1232,
+      "invisibleClipAttempts": 1,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-90-25",
+        "heading": 90,
+        "beta": 90,
+        "fov": 25
+      },
+      "visibleSegments": 25,
+      "clipAttempts": 53,
+      "previousAttempts": 722,
+      "invisibleClipAttempts": 28,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-90-39.9",
+        "heading": 90,
+        "beta": 90,
+        "fov": 39.9
+      },
+      "visibleSegments": 49,
+      "clipAttempts": 111,
+      "previousAttempts": 686,
+      "invisibleClipAttempts": 62,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-110-0.05",
+        "heading": 90,
+        "beta": 110,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 1,
+      "previousAttempts": 14023,
+      "invisibleClipAttempts": 1,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-110-0.5",
+        "heading": 90,
+        "beta": 110,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 2,
+      "previousAttempts": 4406,
+      "invisibleClipAttempts": 2,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-110-5",
+        "heading": 90,
+        "beta": 110,
+        "fov": 5
+      },
+      "visibleSegments": 5,
+      "clipAttempts": 7,
+      "previousAttempts": 1440,
+      "invisibleClipAttempts": 2,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-110-25",
+        "heading": 90,
+        "beta": 110,
+        "fov": 25
+      },
+      "visibleSegments": 31,
+      "clipAttempts": 63,
+      "previousAttempts": 856,
+      "invisibleClipAttempts": 32,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-110-39.9",
+        "heading": 90,
+        "beta": 110,
+        "fov": 39.9
+      },
+      "visibleSegments": 78,
+      "clipAttempts": 156,
+      "previousAttempts": 841,
+      "invisibleClipAttempts": 78,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-150-0.05",
+        "heading": 90,
+        "beta": 150,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 19474,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-150-0.5",
+        "heading": 90,
+        "beta": 150,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 5986,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-150-5",
+        "heading": 90,
+        "beta": 150,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1973,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-150-25",
+        "heading": 90,
+        "beta": 150,
+        "fov": 25
+      },
+      "visibleSegments": 12,
+      "clipAttempts": 41,
+      "previousAttempts": 1162,
+      "invisibleClipAttempts": 29,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-90-150-39.9",
+        "heading": 90,
+        "beta": 150,
+        "fov": 39.9
+      },
+      "visibleSegments": 42,
+      "clipAttempts": 99,
+      "previousAttempts": 1138,
+      "invisibleClipAttempts": 57,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-90-0.05",
+        "heading": 120,
+        "beta": 90,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 13679,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-90-0.5",
+        "heading": 120,
+        "beta": 90,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 4248,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-90-5",
+        "heading": 120,
+        "beta": 90,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1351,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-90-25",
+        "heading": 120,
+        "beta": 90,
+        "fov": 25
+      },
+      "visibleSegments": 5,
+      "clipAttempts": 32,
+      "previousAttempts": 790,
+      "invisibleClipAttempts": 27,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-90-39.9",
+        "heading": 120,
+        "beta": 90,
+        "fov": 39.9
+      },
+      "visibleSegments": 25,
+      "clipAttempts": 74,
+      "previousAttempts": 764,
+      "invisibleClipAttempts": 49,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-110-0.05",
+        "heading": 120,
+        "beta": 110,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 15025,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-110-0.5",
+        "heading": 120,
+        "beta": 110,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 4783,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-110-5",
+        "heading": 120,
+        "beta": 110,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1528,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-110-25",
+        "heading": 120,
+        "beta": 110,
+        "fov": 25
+      },
+      "visibleSegments": 6,
+      "clipAttempts": 32,
+      "previousAttempts": 925,
+      "invisibleClipAttempts": 26,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-110-39.9",
+        "heading": 120,
+        "beta": 110,
+        "fov": 39.9
+      },
+      "visibleSegments": 56,
+      "clipAttempts": 115,
+      "previousAttempts": 907,
+      "invisibleClipAttempts": 59,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-150-0.05",
+        "heading": 120,
+        "beta": 150,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 19051,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-150-0.5",
+        "heading": 120,
+        "beta": 150,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 5905,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-150-5",
+        "heading": 120,
+        "beta": 150,
+        "fov": 5
+      },
+      "visibleSegments": 3,
+      "clipAttempts": 8,
+      "previousAttempts": 1882,
+      "invisibleClipAttempts": 5,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-150-25",
+        "heading": 120,
+        "beta": 150,
+        "fov": 25
+      },
+      "visibleSegments": 26,
+      "clipAttempts": 43,
+      "previousAttempts": 1158,
+      "invisibleClipAttempts": 17,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-120-150-39.9",
+        "heading": 120,
+        "beta": 150,
+        "fov": 39.9
+      },
+      "visibleSegments": 59,
+      "clipAttempts": 110,
+      "previousAttempts": 1136,
+      "invisibleClipAttempts": 51,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-90-0.05",
+        "heading": 150,
+        "beta": 90,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 14767,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-90-0.5",
+        "heading": 150,
+        "beta": 90,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 4680,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-90-5",
+        "heading": 150,
+        "beta": 90,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1474,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-90-25",
+        "heading": 150,
+        "beta": 90,
+        "fov": 25
+      },
+      "visibleSegments": 14,
+      "clipAttempts": 26,
+      "previousAttempts": 848,
+      "invisibleClipAttempts": 12,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-90-39.9",
+        "heading": 150,
+        "beta": 90,
+        "fov": 39.9
+      },
+      "visibleSegments": 38,
+      "clipAttempts": 68,
+      "previousAttempts": 808,
+      "invisibleClipAttempts": 30,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-110-0.05",
+        "heading": 150,
+        "beta": 110,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 16151,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-110-0.5",
+        "heading": 150,
+        "beta": 110,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 5073,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-110-5",
+        "heading": 150,
+        "beta": 110,
+        "fov": 5
+      },
+      "visibleSegments": 2,
+      "clipAttempts": 2,
+      "previousAttempts": 1622,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-110-25",
+        "heading": 150,
+        "beta": 110,
+        "fov": 25
+      },
+      "visibleSegments": 14,
+      "clipAttempts": 35,
+      "previousAttempts": 976,
+      "invisibleClipAttempts": 21,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-110-39.9",
+        "heading": 150,
+        "beta": 110,
+        "fov": 39.9
+      },
+      "visibleSegments": 40,
+      "clipAttempts": 118,
+      "previousAttempts": 945,
+      "invisibleClipAttempts": 78,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-150-0.05",
+        "heading": 150,
+        "beta": 150,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 19552,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-150-0.5",
+        "heading": 150,
+        "beta": 150,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 6192,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-150-5",
+        "heading": 150,
+        "beta": 150,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 2005,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-150-25",
+        "heading": 150,
+        "beta": 150,
+        "fov": 25
+      },
+      "visibleSegments": 17,
+      "clipAttempts": 45,
+      "previousAttempts": 1204,
+      "invisibleClipAttempts": 28,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-150-150-39.9",
+        "heading": 150,
+        "beta": 150,
+        "fov": 39.9
+      },
+      "visibleSegments": 45,
+      "clipAttempts": 94,
+      "previousAttempts": 1167,
+      "invisibleClipAttempts": 49,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-90-0.05",
+        "heading": 180,
+        "beta": 90,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 13199,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-90-0.5",
+        "heading": 180,
+        "beta": 90,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 4431,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-90-5",
+        "heading": 180,
+        "beta": 90,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 1,
+      "previousAttempts": 1422,
+      "invisibleClipAttempts": 1,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-90-25",
+        "heading": 180,
+        "beta": 90,
+        "fov": 25
+      },
+      "visibleSegments": 16,
+      "clipAttempts": 22,
+      "previousAttempts": 811,
+      "invisibleClipAttempts": 6,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-90-39.9",
+        "heading": 180,
+        "beta": 90,
+        "fov": 39.9
+      },
+      "visibleSegments": 27,
+      "clipAttempts": 64,
+      "previousAttempts": 784,
+      "invisibleClipAttempts": 37,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-110-0.05",
+        "heading": 180,
+        "beta": 110,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 15861,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-110-0.5",
+        "heading": 180,
+        "beta": 110,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 4984,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-110-5",
+        "heading": 180,
+        "beta": 110,
+        "fov": 5
+      },
+      "visibleSegments": 2,
+      "clipAttempts": 2,
+      "previousAttempts": 1623,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-110-25",
+        "heading": 180,
+        "beta": 110,
+        "fov": 25
+      },
+      "visibleSegments": 26,
+      "clipAttempts": 84,
+      "previousAttempts": 965,
+      "invisibleClipAttempts": 58,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-110-39.9",
+        "heading": 180,
+        "beta": 110,
+        "fov": 39.9
+      },
+      "visibleSegments": 79,
+      "clipAttempts": 152,
+      "previousAttempts": 928,
+      "invisibleClipAttempts": 73,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-150-0.05",
+        "heading": 180,
+        "beta": 150,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 19926,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-150-0.5",
+        "heading": 180,
+        "beta": 150,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 6194,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-150-5",
+        "heading": 180,
+        "beta": 150,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 2026,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-150-25",
+        "heading": 180,
+        "beta": 150,
+        "fov": 25
+      },
+      "visibleSegments": 4,
+      "clipAttempts": 27,
+      "previousAttempts": 1205,
+      "invisibleClipAttempts": 23,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-180-150-39.9",
+        "heading": 180,
+        "beta": 150,
+        "fov": 39.9
+      },
+      "visibleSegments": 28,
+      "clipAttempts": 84,
+      "previousAttempts": 1169,
+      "invisibleClipAttempts": 56,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-90-0.05",
+        "heading": 210,
+        "beta": 90,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 12951,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-90-0.5",
+        "heading": 210,
+        "beta": 90,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 3982,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-90-5",
+        "heading": 210,
+        "beta": 90,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1313,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-90-25",
+        "heading": 210,
+        "beta": 90,
+        "fov": 25
+      },
+      "visibleSegments": 15,
+      "clipAttempts": 27,
+      "previousAttempts": 765,
+      "invisibleClipAttempts": 12,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-90-39.9",
+        "heading": 210,
+        "beta": 90,
+        "fov": 39.9
+      },
+      "visibleSegments": 23,
+      "clipAttempts": 50,
+      "previousAttempts": 732,
+      "invisibleClipAttempts": 27,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-110-0.05",
+        "heading": 210,
+        "beta": 110,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 14335,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-110-0.5",
+        "heading": 210,
+        "beta": 110,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 4577,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-110-5",
+        "heading": 210,
+        "beta": 110,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1423,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-110-25",
+        "heading": 210,
+        "beta": 110,
+        "fov": 25
+      },
+      "visibleSegments": 17,
+      "clipAttempts": 42,
+      "previousAttempts": 885,
+      "invisibleClipAttempts": 25,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-110-39.9",
+        "heading": 210,
+        "beta": 110,
+        "fov": 39.9
+      },
+      "visibleSegments": 55,
+      "clipAttempts": 126,
+      "previousAttempts": 858,
+      "invisibleClipAttempts": 71,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-150-0.05",
+        "heading": 210,
+        "beta": 150,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 18574,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-150-0.5",
+        "heading": 210,
+        "beta": 150,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 5949,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-150-5",
+        "heading": 210,
+        "beta": 150,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1967,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-150-25",
+        "heading": 210,
+        "beta": 150,
+        "fov": 25
+      },
+      "visibleSegments": 33,
+      "clipAttempts": 54,
+      "previousAttempts": 1167,
+      "invisibleClipAttempts": 21,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-210-150-39.9",
+        "heading": 210,
+        "beta": 150,
+        "fov": 39.9
+      },
+      "visibleSegments": 64,
+      "clipAttempts": 110,
+      "previousAttempts": 1131,
+      "invisibleClipAttempts": 46,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-90-0.05",
+        "heading": 240,
+        "beta": 90,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 12371,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-90-0.5",
+        "heading": 240,
+        "beta": 90,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 3875,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-90-5",
+        "heading": 240,
+        "beta": 90,
+        "fov": 5
+      },
+      "visibleSegments": 2,
+      "clipAttempts": 10,
+      "previousAttempts": 1203,
+      "invisibleClipAttempts": 8,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-90-25",
+        "heading": 240,
+        "beta": 90,
+        "fov": 25
+      },
+      "visibleSegments": 24,
+      "clipAttempts": 33,
+      "previousAttempts": 712,
+      "invisibleClipAttempts": 9,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-90-39.9",
+        "heading": 240,
+        "beta": 90,
+        "fov": 39.9
+      },
+      "visibleSegments": 27,
+      "clipAttempts": 59,
+      "previousAttempts": 701,
+      "invisibleClipAttempts": 32,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-110-0.05",
+        "heading": 240,
+        "beta": 110,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 14121,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-110-0.5",
+        "heading": 240,
+        "beta": 110,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 4403,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-110-5",
+        "heading": 240,
+        "beta": 110,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 2,
+      "previousAttempts": 1425,
+      "invisibleClipAttempts": 2,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-110-25",
+        "heading": 240,
+        "beta": 110,
+        "fov": 25
+      },
+      "visibleSegments": 21,
+      "clipAttempts": 41,
+      "previousAttempts": 865,
+      "invisibleClipAttempts": 20,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-110-39.9",
+        "heading": 240,
+        "beta": 110,
+        "fov": 39.9
+      },
+      "visibleSegments": 61,
+      "clipAttempts": 107,
+      "previousAttempts": 832,
+      "invisibleClipAttempts": 46,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-150-0.05",
+        "heading": 240,
+        "beta": 150,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 18446,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-150-0.5",
+        "heading": 240,
+        "beta": 150,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 6059,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-150-5",
+        "heading": 240,
+        "beta": 150,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 4,
+      "previousAttempts": 1889,
+      "invisibleClipAttempts": 4,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-150-25",
+        "heading": 240,
+        "beta": 150,
+        "fov": 25
+      },
+      "visibleSegments": 29,
+      "clipAttempts": 46,
+      "previousAttempts": 1142,
+      "invisibleClipAttempts": 17,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-240-150-39.9",
+        "heading": 240,
+        "beta": 150,
+        "fov": 39.9
+      },
+      "visibleSegments": 60,
+      "clipAttempts": 124,
+      "previousAttempts": 1124,
+      "invisibleClipAttempts": 64,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-90-0.05",
+        "heading": 270,
+        "beta": 90,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 12085,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-90-0.5",
+        "heading": 270,
+        "beta": 90,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 3822,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-90-5",
+        "heading": 270,
+        "beta": 90,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1245,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-90-25",
+        "heading": 270,
+        "beta": 90,
+        "fov": 25
+      },
+      "visibleSegments": 10,
+      "clipAttempts": 22,
+      "previousAttempts": 699,
+      "invisibleClipAttempts": 12,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-90-39.9",
+        "heading": 270,
+        "beta": 90,
+        "fov": 39.9
+      },
+      "visibleSegments": 32,
+      "clipAttempts": 53,
+      "previousAttempts": 670,
+      "invisibleClipAttempts": 21,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-110-0.05",
+        "heading": 270,
+        "beta": 110,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 13853,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-110-0.5",
+        "heading": 270,
+        "beta": 110,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 4377,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-110-5",
+        "heading": 270,
+        "beta": 110,
+        "fov": 5
+      },
+      "visibleSegments": 2,
+      "clipAttempts": 4,
+      "previousAttempts": 1385,
+      "invisibleClipAttempts": 2,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-110-25",
+        "heading": 270,
+        "beta": 110,
+        "fov": 25
+      },
+      "visibleSegments": 28,
+      "clipAttempts": 44,
+      "previousAttempts": 845,
+      "invisibleClipAttempts": 16,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-110-39.9",
+        "heading": 270,
+        "beta": 110,
+        "fov": 39.9
+      },
+      "visibleSegments": 54,
+      "clipAttempts": 78,
+      "previousAttempts": 816,
+      "invisibleClipAttempts": 24,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-150-0.05",
+        "heading": 270,
+        "beta": 150,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 18261,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-150-0.5",
+        "heading": 270,
+        "beta": 150,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 5829,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-150-5",
+        "heading": 270,
+        "beta": 150,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1885,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-150-25",
+        "heading": 270,
+        "beta": 150,
+        "fov": 25
+      },
+      "visibleSegments": 10,
+      "clipAttempts": 38,
+      "previousAttempts": 1108,
+      "invisibleClipAttempts": 28,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-270-150-39.9",
+        "heading": 270,
+        "beta": 150,
+        "fov": 39.9
+      },
+      "visibleSegments": 55,
+      "clipAttempts": 100,
+      "previousAttempts": 1101,
+      "invisibleClipAttempts": 45,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-90-0.05",
+        "heading": 300,
+        "beta": 90,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 10720,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-90-0.5",
+        "heading": 300,
+        "beta": 90,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 1,
+      "previousAttempts": 3419,
+      "invisibleClipAttempts": 1,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-90-5",
+        "heading": 300,
+        "beta": 90,
+        "fov": 5
+      },
+      "visibleSegments": 3,
+      "clipAttempts": 6,
+      "previousAttempts": 1108,
+      "invisibleClipAttempts": 3,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-90-25",
+        "heading": 300,
+        "beta": 90,
+        "fov": 25
+      },
+      "visibleSegments": 14,
+      "clipAttempts": 29,
+      "previousAttempts": 627,
+      "invisibleClipAttempts": 15,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-90-39.9",
+        "heading": 300,
+        "beta": 90,
+        "fov": 39.9
+      },
+      "visibleSegments": 28,
+      "clipAttempts": 44,
+      "previousAttempts": 606,
+      "invisibleClipAttempts": 16,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-110-0.05",
+        "heading": 300,
+        "beta": 110,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 13153,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-110-0.5",
+        "heading": 300,
+        "beta": 110,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 3983,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-110-5",
+        "heading": 300,
+        "beta": 110,
+        "fov": 5
+      },
+      "visibleSegments": 6,
+      "clipAttempts": 11,
+      "previousAttempts": 1293,
+      "invisibleClipAttempts": 5,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-110-25",
+        "heading": 300,
+        "beta": 110,
+        "fov": 25
+      },
+      "visibleSegments": 21,
+      "clipAttempts": 34,
+      "previousAttempts": 773,
+      "invisibleClipAttempts": 13,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-110-39.9",
+        "heading": 300,
+        "beta": 110,
+        "fov": 39.9
+      },
+      "visibleSegments": 63,
+      "clipAttempts": 93,
+      "previousAttempts": 751,
+      "invisibleClipAttempts": 30,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-150-0.05",
+        "heading": 300,
+        "beta": 150,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 18582,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-150-0.5",
+        "heading": 300,
+        "beta": 150,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 5818,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-150-5",
+        "heading": 300,
+        "beta": 150,
+        "fov": 5
+      },
+      "visibleSegments": 1,
+      "clipAttempts": 1,
+      "previousAttempts": 1907,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-150-25",
+        "heading": 300,
+        "beta": 150,
+        "fov": 25
+      },
+      "visibleSegments": 12,
+      "clipAttempts": 37,
+      "previousAttempts": 1111,
+      "invisibleClipAttempts": 25,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-300-150-39.9",
+        "heading": 300,
+        "beta": 150,
+        "fov": 39.9
+      },
+      "visibleSegments": 55,
+      "clipAttempts": 72,
+      "previousAttempts": 1076,
+      "invisibleClipAttempts": 17,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-90-0.05",
+        "heading": 330,
+        "beta": 90,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 9799,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-90-0.5",
+        "heading": 330,
+        "beta": 90,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 3196,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-90-5",
+        "heading": 330,
+        "beta": 90,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1060,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-90-25",
+        "heading": 330,
+        "beta": 90,
+        "fov": 25
+      },
+      "visibleSegments": 10,
+      "clipAttempts": 18,
+      "previousAttempts": 600,
+      "invisibleClipAttempts": 8,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-90-39.9",
+        "heading": 330,
+        "beta": 90,
+        "fov": 39.9
+      },
+      "visibleSegments": 35,
+      "clipAttempts": 64,
+      "previousAttempts": 560,
+      "invisibleClipAttempts": 29,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-110-0.05",
+        "heading": 330,
+        "beta": 110,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 12899,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-110-0.5",
+        "heading": 330,
+        "beta": 110,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 4039,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-110-5",
+        "heading": 330,
+        "beta": 110,
+        "fov": 5
+      },
+      "visibleSegments": 3,
+      "clipAttempts": 4,
+      "previousAttempts": 1332,
+      "invisibleClipAttempts": 1,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-110-25",
+        "heading": 330,
+        "beta": 110,
+        "fov": 25
+      },
+      "visibleSegments": 19,
+      "clipAttempts": 46,
+      "previousAttempts": 777,
+      "invisibleClipAttempts": 27,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-110-39.9",
+        "heading": 330,
+        "beta": 110,
+        "fov": 39.9
+      },
+      "visibleSegments": 50,
+      "clipAttempts": 97,
+      "previousAttempts": 739,
+      "invisibleClipAttempts": 47,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-150-0.05",
+        "heading": 330,
+        "beta": 150,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 18006,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-150-0.5",
+        "heading": 330,
+        "beta": 150,
+        "fov": 0.5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 5749,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-150-5",
+        "heading": 330,
+        "beta": 150,
+        "fov": 5
+      },
+      "visibleSegments": 3,
+      "clipAttempts": 6,
+      "previousAttempts": 1788,
+      "invisibleClipAttempts": 3,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-150-25",
+        "heading": 330,
+        "beta": 150,
+        "fov": 25
+      },
+      "visibleSegments": 15,
+      "clipAttempts": 19,
+      "previousAttempts": 1062,
+      "invisibleClipAttempts": 4,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "arc-330-150-39.9",
+        "heading": 330,
+        "beta": 150,
+        "fov": 39.9
+      },
+      "visibleSegments": 33,
+      "clipAttempts": 72,
+      "previousAttempts": 1039,
+      "invisibleClipAttempts": 39,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "rolled-offset-0",
+        "heading": 0,
+        "beta": 110,
+        "gamma": 73,
+        "fov": 25,
+        "center": {
+          "x": 46.847999267578125,
+          "y": 616.12
+        }
+      },
+      "visibleSegments": 1,
+      "clipAttempts": 39,
+      "previousAttempts": 709,
+      "invisibleClipAttempts": 38,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "rolled-offset-90",
+        "heading": 90,
+        "beta": 110,
+        "gamma": 73,
+        "fov": 25,
+        "center": {
+          "x": 46.847999267578125,
+          "y": 616.12
+        }
+      },
+      "visibleSegments": 9,
+      "clipAttempts": 29,
+      "previousAttempts": 713,
+      "invisibleClipAttempts": 20,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "rolled-offset-180",
+        "heading": 180,
+        "beta": 110,
+        "gamma": 73,
+        "fov": 25,
+        "center": {
+          "x": 46.847999267578125,
+          "y": 616.12
+        }
+      },
+      "visibleSegments": 42,
+      "clipAttempts": 99,
+      "previousAttempts": 809,
+      "invisibleClipAttempts": 57,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "rolled-offset-270",
+        "heading": 270,
+        "beta": 110,
+        "gamma": 73,
+        "fov": 25,
+        "center": {
+          "x": 46.847999267578125,
+          "y": 616.12
+        }
+      },
+      "visibleSegments": 36,
+      "clipAttempts": 71,
+      "previousAttempts": 831,
+      "invisibleClipAttempts": 35,
+      "hostCpuMs": [],
+      "visibleSegmentsUnchanged": true
+    }
+  ],
+  "gpu": {
+    "scope": "Actual production TWGL line submission and framebuffer in software WebGL; no native/phone performance claim",
+    "rows": [
+      {
+        "name": "arc-0-90-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-0-90-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-0-90-5",
+        "changedPixels": 0,
+        "drawnPixels": 392
+      },
+      {
+        "name": "arc-0-90-25",
+        "changedPixels": 0,
+        "drawnPixels": 303
+      },
+      {
+        "name": "arc-0-90-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 361
+      },
+      {
+        "name": "arc-0-110-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-0-110-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-0-110-5",
+        "changedPixels": 0,
+        "drawnPixels": 22
+      },
+      {
+        "name": "arc-0-110-25",
+        "changedPixels": 0,
+        "drawnPixels": 219
+      },
+      {
+        "name": "arc-0-110-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 834
+      },
+      {
+        "name": "arc-0-150-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-0-150-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-0-150-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-0-150-25",
+        "changedPixels": 0,
+        "drawnPixels": 289
+      },
+      {
+        "name": "arc-0-150-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 548
+      },
+      {
+        "name": "arc-30-90-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-30-90-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-30-90-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-30-90-25",
+        "changedPixels": 0,
+        "drawnPixels": 229
+      },
+      {
+        "name": "arc-30-90-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 557
+      },
+      {
+        "name": "arc-30-110-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-30-110-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-30-110-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-30-110-25",
+        "changedPixels": 0,
+        "drawnPixels": 623
+      },
+      {
+        "name": "arc-30-110-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1157
+      },
+      {
+        "name": "arc-30-150-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-30-150-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-30-150-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-30-150-25",
+        "changedPixels": 0,
+        "drawnPixels": 502
+      },
+      {
+        "name": "arc-30-150-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 975
+      },
+      {
+        "name": "arc-60-90-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-60-90-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 113
+      },
+      {
+        "name": "arc-60-90-5",
+        "changedPixels": 0,
+        "drawnPixels": 198
+      },
+      {
+        "name": "arc-60-90-25",
+        "changedPixels": 0,
+        "drawnPixels": 426
+      },
+      {
+        "name": "arc-60-90-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 874
+      },
+      {
+        "name": "arc-60-110-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-60-110-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-60-110-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-60-110-25",
+        "changedPixels": 0,
+        "drawnPixels": 978
+      },
+      {
+        "name": "arc-60-110-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1645
+      },
+      {
+        "name": "arc-60-150-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-60-150-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-60-150-5",
+        "changedPixels": 0,
+        "drawnPixels": 1102
+      },
+      {
+        "name": "arc-60-150-25",
+        "changedPixels": 0,
+        "drawnPixels": 754
+      },
+      {
+        "name": "arc-60-150-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1674
+      },
+      {
+        "name": "arc-90-90-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-90-90-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-90-90-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-90-90-25",
+        "changedPixels": 0,
+        "drawnPixels": 979
+      },
+      {
+        "name": "arc-90-90-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1271
+      },
+      {
+        "name": "arc-90-110-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-90-110-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-90-110-5",
+        "changedPixels": 0,
+        "drawnPixels": 919
+      },
+      {
+        "name": "arc-90-110-25",
+        "changedPixels": 0,
+        "drawnPixels": 1299
+      },
+      {
+        "name": "arc-90-110-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 2108
+      },
+      {
+        "name": "arc-90-150-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-90-150-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-90-150-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-90-150-25",
+        "changedPixels": 0,
+        "drawnPixels": 501
+      },
+      {
+        "name": "arc-90-150-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1150
+      },
+      {
+        "name": "arc-120-90-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-120-90-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-120-90-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-120-90-25",
+        "changedPixels": 0,
+        "drawnPixels": 202
+      },
+      {
+        "name": "arc-120-90-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 664
+      },
+      {
+        "name": "arc-120-110-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-120-110-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-120-110-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-120-110-25",
+        "changedPixels": 0,
+        "drawnPixels": 227
+      },
+      {
+        "name": "arc-120-110-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1445
+      },
+      {
+        "name": "arc-120-150-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-120-150-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-120-150-5",
+        "changedPixels": 0,
+        "drawnPixels": 478
+      },
+      {
+        "name": "arc-120-150-25",
+        "changedPixels": 0,
+        "drawnPixels": 1346
+      },
+      {
+        "name": "arc-120-150-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1763
+      },
+      {
+        "name": "arc-150-90-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-150-90-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-150-90-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-150-90-25",
+        "changedPixels": 0,
+        "drawnPixels": 517
+      },
+      {
+        "name": "arc-150-90-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1021
+      },
+      {
+        "name": "arc-150-110-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-150-110-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-150-110-5",
+        "changedPixels": 0,
+        "drawnPixels": 314
+      },
+      {
+        "name": "arc-150-110-25",
+        "changedPixels": 0,
+        "drawnPixels": 600
+      },
+      {
+        "name": "arc-150-110-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1052
+      },
+      {
+        "name": "arc-150-150-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-150-150-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-150-150-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-150-150-25",
+        "changedPixels": 0,
+        "drawnPixels": 695
+      },
+      {
+        "name": "arc-150-150-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1336
+      },
+      {
+        "name": "arc-180-90-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-180-90-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-180-90-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-180-90-25",
+        "changedPixels": 0,
+        "drawnPixels": 630
+      },
+      {
+        "name": "arc-180-90-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 748
+      },
+      {
+        "name": "arc-180-110-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-180-110-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-180-110-5",
+        "changedPixels": 0,
+        "drawnPixels": 260
+      },
+      {
+        "name": "arc-180-110-25",
+        "changedPixels": 0,
+        "drawnPixels": 1005
+      },
+      {
+        "name": "arc-180-110-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 2177
+      },
+      {
+        "name": "arc-180-150-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-180-150-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-180-150-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-180-150-25",
+        "changedPixels": 0,
+        "drawnPixels": 168
+      },
+      {
+        "name": "arc-180-150-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 784
+      },
+      {
+        "name": "arc-210-90-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-210-90-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-210-90-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-210-90-25",
+        "changedPixels": 0,
+        "drawnPixels": 608
+      },
+      {
+        "name": "arc-210-90-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 666
+      },
+      {
+        "name": "arc-210-110-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-210-110-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-210-110-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-210-110-25",
+        "changedPixels": 0,
+        "drawnPixels": 701
+      },
+      {
+        "name": "arc-210-110-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1494
+      },
+      {
+        "name": "arc-210-150-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-210-150-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-210-150-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-210-150-25",
+        "changedPixels": 0,
+        "drawnPixels": 1423
+      },
+      {
+        "name": "arc-210-150-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1678
+      },
+      {
+        "name": "arc-240-90-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-240-90-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-240-90-5",
+        "changedPixels": 0,
+        "drawnPixels": 480
+      },
+      {
+        "name": "arc-240-90-25",
+        "changedPixels": 0,
+        "drawnPixels": 1017
+      },
+      {
+        "name": "arc-240-90-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 749
+      },
+      {
+        "name": "arc-240-110-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-240-110-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-240-110-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-240-110-25",
+        "changedPixels": 0,
+        "drawnPixels": 935
+      },
+      {
+        "name": "arc-240-110-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1672
+      },
+      {
+        "name": "arc-240-150-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-240-150-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-240-150-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-240-150-25",
+        "changedPixels": 0,
+        "drawnPixels": 1184
+      },
+      {
+        "name": "arc-240-150-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1553
+      },
+      {
+        "name": "arc-270-90-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-270-90-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-270-90-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-270-90-25",
+        "changedPixels": 0,
+        "drawnPixels": 445
+      },
+      {
+        "name": "arc-270-90-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 848
+      },
+      {
+        "name": "arc-270-110-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-270-110-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-270-110-5",
+        "changedPixels": 0,
+        "drawnPixels": 391
+      },
+      {
+        "name": "arc-270-110-25",
+        "changedPixels": 0,
+        "drawnPixels": 1130
+      },
+      {
+        "name": "arc-270-110-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1490
+      },
+      {
+        "name": "arc-270-150-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-270-150-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-270-150-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-270-150-25",
+        "changedPixels": 0,
+        "drawnPixels": 375
+      },
+      {
+        "name": "arc-270-150-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1423
+      },
+      {
+        "name": "arc-300-90-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-300-90-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-300-90-5",
+        "changedPixels": 0,
+        "drawnPixels": 451
+      },
+      {
+        "name": "arc-300-90-25",
+        "changedPixels": 0,
+        "drawnPixels": 524
+      },
+      {
+        "name": "arc-300-90-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 692
+      },
+      {
+        "name": "arc-300-110-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-300-110-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-300-110-5",
+        "changedPixels": 0,
+        "drawnPixels": 780
+      },
+      {
+        "name": "arc-300-110-25",
+        "changedPixels": 0,
+        "drawnPixels": 728
+      },
+      {
+        "name": "arc-300-110-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1564
+      },
+      {
+        "name": "arc-300-150-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-300-150-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-300-150-5",
+        "changedPixels": 0,
+        "drawnPixels": 87
+      },
+      {
+        "name": "arc-300-150-25",
+        "changedPixels": 0,
+        "drawnPixels": 548
+      },
+      {
+        "name": "arc-300-150-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1681
+      },
+      {
+        "name": "arc-330-90-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-330-90-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-330-90-5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-330-90-25",
+        "changedPixels": 0,
+        "drawnPixels": 390
+      },
+      {
+        "name": "arc-330-90-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 887
+      },
+      {
+        "name": "arc-330-110-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-330-110-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-330-110-5",
+        "changedPixels": 0,
+        "drawnPixels": 502
+      },
+      {
+        "name": "arc-330-110-25",
+        "changedPixels": 0,
+        "drawnPixels": 923
+      },
+      {
+        "name": "arc-330-110-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 1326
+      },
+      {
+        "name": "arc-330-150-0.05",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-330-150-0.5",
+        "changedPixels": 0,
+        "drawnPixels": 0
+      },
+      {
+        "name": "arc-330-150-5",
+        "changedPixels": 0,
+        "drawnPixels": 337
+      },
+      {
+        "name": "arc-330-150-25",
+        "changedPixels": 0,
+        "drawnPixels": 619
+      },
+      {
+        "name": "arc-330-150-39.9",
+        "changedPixels": 0,
+        "drawnPixels": 885
+      },
+      {
+        "name": "rolled-offset-0",
+        "changedPixels": 0,
+        "drawnPixels": 46
+      },
+      {
+        "name": "rolled-offset-90",
+        "changedPixels": 0,
+        "drawnPixels": 429
+      },
+      {
+        "name": "rolled-offset-180",
+        "changedPixels": 0,
+        "drawnPixels": 1866
+      },
+      {
+        "name": "rolled-offset-270",
+        "changedPixels": 0,
+        "drawnPixels": 1628
+      }
+    ],
+    "allocations": {
+      "createBuffer": 3,
+      "deleteBuffer": 3,
+      "createProgram": 3,
+      "deleteProgram": 3,
+      "createShader": 6,
+      "deleteShader": 6
+    },
+    "remaining": {
+      "createBuffer": 0,
+      "createProgram": 0,
+      "createShader": 0
+    },
+    "noGlError": true
+  }
+}

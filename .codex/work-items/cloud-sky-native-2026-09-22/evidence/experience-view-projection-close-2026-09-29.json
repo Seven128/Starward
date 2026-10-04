@@ -1,0 +1,41 @@
+{
+  "scope": "Current shared-view projection development checkpoint. Not current native/phone/target performance or whole-goal acceptance.",
+  "verifiedAt": "2026-09-28T19:36:14.893Z",
+  "candidate": {
+    "sha256": "ea976e39811d93d13eb7b9fc48a38aea81c73eb55199bec5aa777681fbae990a",
+    "fileCount": 257,
+    "rawBytes": 4479916,
+    "rawPackageBytes": {
+      "main": 2085621,
+      "content": 1012055,
+      "sky": 958623,
+      "spot": 423617
+    },
+    "opened": false
+  },
+  "unchangedV18": "db4c51efa1e2a44e518c4c69eb9c936a2e25a35cd0a21b127e9180d039e0dd7c",
+  "productionInputHashesCurrent": true,
+  "softwareScenes": 8,
+  "grids": 16,
+  "pixelsPicksSourcesEqual": true,
+  "softwareDomeSubmissionUnresolved": {
+    "beforeMedianMs": 13.600000023841858,
+    "afterMedianMs": 17.150000035762787
+  },
+  "retirement": {
+    "created": 64,
+    "deleted": 64
+  },
+  "runningProxy": {
+    "epochStartedAt": "2026-09-28T18:50:02.389Z",
+    "contextMode": "pass",
+    "resourceMode": "pass",
+    "held": 0,
+    "active": 0,
+    "currentPublicationHash": "87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073"
+  },
+  "native": "v19 unopened; v12 actual Frame/Context/4-byte fixture unknown; no RPC/elevation retry",
+  "phone": "unavailable; no actions; new Moon not accepted",
+  "independentReview": "unavailable; self-review is not independent",
+  "goal": "active, no budget"
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+    "beforePath": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/time-collapse-before-spot-sky-page.tsx",
+    "sha256": "3575fa3f4f9280f049a549088fed96b98080d38d3766c0e4e0946eca318c3106"
+  },
+  {
+    "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+    "beforePath": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/time-collapse-before-spot-and-sky.md",
+    "sha256": "c0c92376142a94ef84e0b1d2680135e444e0eb5063fe787b43cc123ea1d756f2"
+  }
+]

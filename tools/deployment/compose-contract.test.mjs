@@ -116,7 +116,7 @@ test("both edge profiles mount and import the same bounded sky egress categories
     assert.match(compose, /\.\/sky-resource-logging\.caddy:\/etc\/caddy\/sky-resource-logging\.caddy:ro/u);
   const declarations = [...categories.matchAll(/^log_append @\w+ sky_resource_class "([a-z_]+)"$/gmu)];
   assert.deepEqual(declarations.map(([, category]) => category),
-    ["catalog", "fixed_image", "wide_field", "optical_published", "optical_trial", "deep_sky"]);
-  assert.match(categories, /@sky_optical_published path \/v2\/sky\/sdss-optical\/\*/u);
+    ["catalog", "fixed_image", "wide_field", "landscape", "optical_published", "optical_trial", "deep_sky"]);
+  assert.match(categories, /@sky_optical_published path \/v2\/sky\/sdss-optical\/\* \/v2\/sky\/prepared-optical\/\*$/mu);
   assert.doesNotMatch(categories, /\{(?:http|uri|query|header|request|resp|env)\.|log_append\s+[^\n]*\b(?:url|path|query|identity|location|header)\b/iu);
 });

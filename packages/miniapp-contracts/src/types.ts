@@ -786,6 +786,9 @@ export interface DeepSkySceneCatalogEntry {
   majorAxisArcmin: number | null;
   minorAxisArcmin: number | null;
   positionAngleDeg: number | null;
+  /** Original catalog ICRS J2000 center, independent of any image publication.
+   * Older cached reports omit it; absence cannot authorize a guessed region. */
+  icrsCenter?: { readonly raDeg: number; readonly decDeg: number } | null;
 }
 
 /** Center plus two ICRS tangent-plane samples for native image registration. */

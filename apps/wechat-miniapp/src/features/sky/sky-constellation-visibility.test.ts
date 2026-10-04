@@ -33,7 +33,7 @@ test("local line visibility shares overview and intent while artwork and names r
   for(const fov of [.05,8.89,25,115])assert.equal(constellationLineVisibility(fov,false),0);
   for(const fov of [NaN,Infinity,0,-1])assert.equal(constellationLineVisibility(fov,true),0);
 });
-test("entire image bounds remain eligible with offscreen anchors; opposite sky and below horizon are culled",()=>{
+test("entire image bounds remain eligible with offscreen anchors; the camera admits either side of the horizon",()=>{
   const unit=(v:SkyVector)=>v.map(n=>n/Math.hypot(...v)) as unknown as SkyVector;
   const registration=registerSkyArtwork([
     {uv:[0,0],direction:unit([-1,1,1])},{uv:[1,0],direction:unit([1,1,1])},{uv:[0,1],direction:unit([-1,1,.1])},
@@ -43,5 +43,6 @@ test("entire image bounds remain eligible with offscreen anchors; opposite sky a
   const below=registerSkyArtwork([
     {uv:[0,0],direction:unit([-.1,1,-1])},{uv:[1,0],direction:unit([.1,1,-1])},{uv:[0,1],direction:unit([-.1,1,-1.2])},
   ])!;
-  assert.equal(artworkIntersectsView(below,{basis:createSkyViewBasis(0,40,0)!,verticalFovDeg:20},400,800),false);
+  assert.equal(artworkIntersectsView(below,{basis:createSkyViewBasis(0,40,0)!,verticalFovDeg:20},400,800),true);
+  assert.equal(artworkIntersectsView(below,{basis:createSkyViewBasis(180,40,0)!,verticalFovDeg:20},400,800),false);
 });

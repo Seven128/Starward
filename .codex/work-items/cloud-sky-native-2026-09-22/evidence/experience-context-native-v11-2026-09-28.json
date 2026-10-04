@@ -1,0 +1,74 @@
+{
+  "scope": "Final immutable clean-v11 normal public Map/Sky entry after missing/empty Context fingerprint contract guard. One reduced native capture and actual readback are normal-path evidence only. v9/v10 faults, eight v8 environment conditions and v10 notice/tracking recovery retain their original generations; no phone or final acceptance.",
+  "sdkPort": 9444,
+  "final": {
+    "scope": "Actual clean-v11 native DevTools Canvas and unchanged local BFF readback. No phone or final experience acceptance.",
+    "generation": "v11",
+    "sdkPort": 9444,
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 85.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "canvasSize": {
+      "width": 390.3999938964844,
+      "height": 844
+    },
+    "theme": "theme-page theme-day sky-orientation-page",
+    "located": "Vega定位标记，查看资料",
+    "trackingStatus": null,
+    "rulerState": null,
+    "inlineNotification": null,
+    "context": {
+      "schemaVersion": "observation-context-v2",
+      "revision": 2,
+      "locationKind": "FORMAL_SPOT",
+      "timezone": "Asia/Shanghai",
+      "localDate": "2026-09-28",
+      "selectedAtUtc": "2026-09-28T16:00:00.000Z",
+      "nightStartUtc": "2026-09-28T04:00:00.000Z",
+      "nightEndUtc": "2026-09-29T04:00:00.000Z",
+      "eventSelected": false,
+      "weatherView": {
+        "primaryPolicy": "QWEATHER",
+        "comparisonModels": [],
+        "selectedModel": null,
+        "cloudLayer": "TOTAL"
+      },
+      "algorithmVersions": {
+        "astronomy": "astronomy-engine-2.1.19",
+        "opportunity": "sky-opportunity-qweather-total-2",
+        "tripDecision": "trip-decision-1",
+        "darkSky": "UNAVAILABLE",
+        "eventCatalog": "gmn-annual-2022-2023.20260914.1+astronomy-engine-2.1.19-eclipses-2026.1"
+      }
+    },
+    "proxy": {
+      "mode": "pass",
+      "puts": 11,
+      "gets": 20,
+      "rejectedBeforeUpstream": 2,
+      "lostSuccessfulResponses": 2,
+      "forwardedPutStatuses": [
+        200,
+        200,
+        409,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "conditionalContextGets": 11
+    }
+  },
+  "captures": [
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 85.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "Vega定位标记，查看资料",
+      "sources": "",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v11-context-final-normal-2026-09-28.png",
+      "width": 193,
+      "height": 413
+    }
+  ],
+  "paintedPhotoSource": "模拟地景图片来源 · Lubomir HambalekStara Lesna Meadows — Lubomir Hambalek; resized and alpha encoded by Starward历史斯洛伐克草地全景经缩小、透明度编码及显示曝光处理；原包标注 CC BY 4.0，来源目录标注 CC BY-SA 4.0，图片派生物按 CC BY-SA 4.0 提供。它不是所选观星点的现场照片或遮挡测量。图片条款：https://creativecommons.org/licenses/by-sa/4.0/ · 原始来源：https://github.com/Stellarium/stellarium-data/releases/download/landscapes/stara_lesna.zip当前图片：http://127.0.0.1:8791/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/panorama-2048.png原包：http://127.0.0.1:8791/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/stara-lesna-original.zip"
+}

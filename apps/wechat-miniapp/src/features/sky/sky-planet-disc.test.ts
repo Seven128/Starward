@@ -19,6 +19,37 @@ const planets=SKY_PLANET_ORDER.map((body,index)=>({body,azimuthDeg:0,altitudeDeg
   ringPoleEnu:body==="SATURN"?[0,0,1]:null}));
 const row={at,sunAzimuthDeg:90,sunAltitudeDeg:0,planets};
 
+test("full-sphere browsing projects all seven set planets at their exact reported directions",()=>{
+  const belowBasis=createSkyViewBasis(0,60,0)!;
+  const belowPlanets=planets.map(p=>({...p,altitudeDeg:-30,angularDiameterDeg:.02}));
+  const belowRow={...row,planets:belowPlanets};
+  const below=skyPlanetDiscsAt([belowRow] as any,at,belowBasis,400,800,.25);
+  assert.ok(below);
+  assert.deepEqual(below.map(p=>p.body),SKY_PLANET_ORDER,
+    "the full ephemeris must survive a below-horizon camera, including Saturn's globe and rings");
+  for(const disc of below){
+    const original=belowPlanets.find(p=>p.body===disc.body)!;
+    assert.equal(disc.altitudeDeg,-30);
+    assert.equal(disc.angularDiameterDeg,original.angularDiameterDeg);
+    assert.equal(disc.illuminatedFraction,original.illuminatedFraction);
+    assert.equal(disc.visualMagnitude,original.visualMagnitude);
+    assert.ok(Math.abs(disc.x-200)<1e-9&&Math.abs(disc.y-400)<1e-9);
+    assert.deepEqual(skyPlanetDiscsAt([belowRow] as any,at,belowBasis,400,800,.25,undefined,disc.body),
+      [disc],"texture eligibility consumes the same full-sphere body geometry");
+  }
+  assert.ok(below.find(p=>p.body==="SATURN")!.rings.length>0,
+    "below-horizon rendering retains real ring geometry rather than an empty globe candidate");
+  assert.deepEqual(skyPlanetDiscsAt([belowRow] as any,at,createSkyViewBasis(180,120,0)!,400,800,.25),[],
+    "antipodal bodies remain excluded");
+  assert.deepEqual(skyPlanetDiscsAt([belowRow] as any,at,basis,400,800,.25),[],
+    "viewport culling remains active independently of altitude");
+  assert.equal(skyPlanetDiscsAt([{...belowRow,planets:belowPlanets.slice(0,6)}] as any,
+    at,belowBasis,400,800,.25),null,"a partial ephemeris cannot become a valid frame");
+  assert.equal(skyPlanetDiscsAt([{...belowRow,planets:belowPlanets.map((p,i)=>i===0?
+    {...p,altitudeDeg:-91}:p)}] as any,at,belowBasis,400,800,.25),null,
+    "full-sphere browsing preserves input validity");
+});
+
 test("unresolved planets share solar adaptation without returning as fallback target dots", () => {
   const small = planets.map(planet => ({ ...planet, altitudeDeg: planet.body === "JUPITER" ? 45 : -10,
     angularDiameterDeg: .001, visualMagnitude: -2 }));
@@ -47,7 +78,7 @@ test("unresolved planets share solar adaptation without returning as fallback ta
   assert.equal(dots.length,1);
 });
 
-test("partly risen resolved planets retain their drawn limb identity without selecting hidden or nearby empty rays", () => {
+test("resolved planets crossing the mathematical horizon retain the whole painted globe without landscape occlusion", () => {
   const horizonBasis = createSkyViewBasis(0,90,0)!;
   const width = 400, height = 800, fov = .25;
   for (const body of SKY_PLANET_ORDER) {
@@ -76,14 +107,15 @@ test("partly risen resolved planets retain their drawn limb identity without sel
     const snapshot = paint(true);
     const pick = (point: { x: number; y: number }) => pickPaintedSkyObjects(snapshot, {
       ...point, frameAt: at, catalogVersion: snapshot.catalogVersion, catalogHash: snapshot.catalogHash,
-    }).map(object => object.reference);
+    },0).map(object => object.reference);
     assert.equal(paintedSkyPointVisible(snapshot,visible.x,visible.y),true);
-    assert.equal(paintedSkyPointVisible(snapshot,disc.x,disc.y),false);
+    assert.equal(paintedSkyPointVisible(snapshot,disc.x,disc.y),true);
     assert.deepEqual(pick(visible),[`PLANET:${body}`], "a successfully drawn limb cannot lose its identity as the centre sets");
-    assert.deepEqual(pick({ x: disc.x, y: disc.y }),[], "the true horizon still rejects the hidden disc centre");
+    assert.deepEqual(pick({ x: disc.x, y: disc.y }),[`PLANET:${body}`],
+      "the below-horizon centre is part of the same successfully painted globe");
     assert.equal(paintedSkyPointVisible(snapshot,nearbyEmpty.x,nearbyEmpty.y),true);
     assert.ok(disc.radiusPx * .25 < 18, "the empty ray must lie within the existing centre-visible touch tolerance");
-    assert.deepEqual(pick(nearbyEmpty),[], "a hidden centre cannot resurrect its body through nearby empty sky");
+    assert.deepEqual(pick(nearbyEmpty),[], "shape-only picking still excludes nearby empty sky");
     assert.deepEqual(paint(false).objects,[], "a failed draw cannot publish a resolved pick shape");
   }
 });
@@ -376,13 +408,19 @@ test("Jupiter's reported pole projects the 1-bar oblate silhouette and orients a
     .some(object=>object.reference==="PLANET:JUPITER"));
   const horizonBasis=createSkyViewBasis(0,90,0)!;
   const nearSet=jupiter.map(p=>p.body==="JUPITER"?{...p,altitudeDeg:-.0101}:p);
-  assert.equal(skyPlanetDiscsAt([{...row,planets:nearSet}] as any,at,horizonBasis,400,800,.25)!
-    .some(p=>p.body==="JUPITER"),true,
-    "the 1-bar equatorial limb can remain above the horizon after the mean-radius sphere sets");
-  assert.equal(skyPlanetDiscsAt([{...row,planets:nearSet.map(p=>p.body==="JUPITER"?
+  const oblateNearSet=skyPlanetDiscsAt([{...row,planets:nearSet}] as any,at,horizonBasis,400,800,.25)!
+    .find(p=>p.body==="JUPITER")!;
+  assert.ok(oblateNearSet.oblate);
+  assert.ok(unprojectSkyPoint(oblateNearSet.x,oblateNearSet.y-oblateNearSet.oblate.majorRadiusPx,
+    horizonBasis,400,800,.25)![2]>0,
+    "the projected 1-bar equatorial limb remains above altitude zero");
+  const sphericalNearSet=skyPlanetDiscsAt([{...row,planets:nearSet.map(p=>p.body==="JUPITER"?
     {...p,bodyFrame:null}:p)}] as any,at,horizonBasis,400,800,.25)!
-    .some(p=>p.body==="JUPITER"),false,
-    "without a valid axis only the legacy spherical horizon bound is available");
+    .find(p=>p.body==="JUPITER")!;
+  assert.ok(sphericalNearSet,"a missing body axis changes the silhouette, not full-sphere display eligibility");
+  assert.equal(sphericalNearSet.oblate,null);
+  assert.ok(unprojectSkyPoint(sphericalNearSet.x,sphericalNearSet.y-sphericalNearSet.radiusPx,
+    horizonBasis,400,800,.25)![2]<0,"the mean-radius spherical limb is already below altitude zero");
   const image={id:"jupiter"},submitted:unknown[]=[];
   const textured=new Proxy({}, {get:(_target,key)=>key==="planet"
     ?(planet:{body:string},_view:unknown,_tint:unknown,_red:unknown,texture:unknown)=>{
@@ -469,7 +507,7 @@ test("a tap on the rendered Saturn globe rim or main ring selects Saturn",()=>{
   assert.ok(pick((ring[0]+ring[2])/2,(ring[1]+ring[3])/2).includes("PLANET:SATURN"));
 });
 
-test("partly set planetary globes and Saturn rings stop at the same true horizon",()=>{
+test("Saturn's painted globe and ring arcs continue across the mathematical horizon without landscape occlusion",()=>{
   const horizonBasis=createSkyViewBasis(0,90,0)!;
   const fov=.25;
   const saturn=planets.map(p=>p.body==="SATURN"?{...p,altitudeDeg:-.003,
@@ -499,11 +537,7 @@ test("partly set planetary globes and Saturn rings stop at the same true horizon
   },undefined,fov,null,horizonBasis);
   assert.equal(globe,1);
   assert.ok(picked.includes("PLANET:SATURN"),"visible rings remain selectable after the centre sets");
-  assert.ok(submitted.length>0&&submitted.length<original.length);
-  for(const [x0,y0,x1,y1] of submitted){
-    assert.ok(altitude(x0,y0)>-1e-7);
-    assert.ok(altitude(x1,y1)>-1e-7);
-  }
+  assert.deepEqual(submitted,original,"the scene must submit the actual complete sampled ring shape");
   assert.ok(pickedSnapshot);
   const pick=(x:number,y:number)=>pickPaintedSkyObjects(pickedSnapshot,{
     x,y,frameAt:at,catalogVersion:pickedSnapshot!.catalogVersion,
@@ -512,10 +546,10 @@ test("partly set planetary globes and Saturn rings stop at the same true horizon
   const visible=submitted.find(([x0,y0,x1,y1])=>altitude((x0+x1)/2,(y0+y1)/2)>0);
   assert.ok(visible);
   assert.ok(pick((visible[0]+visible[2])/2,(visible[1]+visible[3])/2).includes("PLANET:SATURN"));
-  const hidden=original.find(([x0,y0,x1,y1])=>altitude((x0+x1)/2,(y0+y1)/2)<0);
-  assert.ok(hidden);
-  assert.deepEqual(pick((hidden[0]+hidden[2])/2,(hidden[1]+hidden[3])/2),[],
-    "a clipped ring segment below the true horizon is not a pick target");
+  const below=submitted.find(([x0,y0,x1,y1])=>altitude((x0+x1)/2,(y0+y1)/2)<0);
+  assert.ok(below);
+  assert.ok(pick((below[0]+below[2])/2,(below[1]+below[3])/2).includes("PLANET:SATURN"),
+    "a painted ring segment below the mathematical horizon retains Saturn's identity");
   const ringOnly=saturn.map(p=>p.body==="SATURN"?{...p,altitudeDeg:-.015,
     ringPoleEnu:[Math.sqrt(.99),.1,0],ringTiltDeg:6}:p);
   const ringOnlyDiscs=skyPlanetDiscsAt([{...row,planets:ringOnly}] as any,
@@ -527,10 +561,10 @@ test("partly set planetary globes and Saturn rings stop at the same true horizon
     at,null,null,400,800,"NIGHT",undefined,undefined,fov,null,horizonBasis);
   assert.equal(globe,1);
   assert.ok(submitted.length>0,"the ring, not just an empty globe draw, must reach the surface");
-  assert.ok(submitted.every(([x0,y0,x1,y1])=>altitude(x0,y0)>-1e-7&&altitude(x1,y1)>-1e-7));
-  assert.deepEqual(skyPlanetDiscsAt([{...row,planets:ringOnly.map(p=>p.body==="SATURN"?
-    {...p,altitudeDeg:-.03}:p)}] as any,at,horizonBasis,400,800,fov),[],
-    "a wholly set globe and ring should leave no render candidate");
+  assert.ok(submitted.some(([x0,y0,x1,y1])=>altitude(x0,y0)<0||altitude(x1,y1)<0));
+  assert.ok(skyPlanetDiscsAt([{...row,planets:ringOnly.map(p=>p.body==="SATURN"?
+    {...p,altitudeDeg:-.03}:p)}] as any,at,horizonBasis,400,800,fov)!
+    .some(p=>p.body==="SATURN"),"a wholly set but in-viewport globe and ring remain render candidates");
 });
 
 test("real planetary phase replaces the old Venus target marker, but missing geometry preserves it",()=>{

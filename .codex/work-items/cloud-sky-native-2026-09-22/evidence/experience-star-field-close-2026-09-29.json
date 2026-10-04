@@ -1,0 +1,651 @@
+{
+  "scope": "B1/B3 local development boundary; original requirements remain open beyond this display change. No native RPC/phone/new window/service replacement/deployment/Git write.",
+  "candidate": {
+    "bundle": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v22-0929",
+    "sha256": "59c95f31e674bfda4b6e69d7cc8791f18a444fa0515f14c0e284fd36e453ab7f",
+    "files": 257,
+    "rawBytes": 4484284,
+    "rawPackageBytes": {
+      "main": 2089538,
+      "content": 1012055,
+      "sky": 959074,
+      "spot": 423617
+    },
+    "preparedUnopened": true
+  },
+  "oldCandidateUnchanged": "489239656cda6c95057b9ce5b6c5311aea0eb9be6bbfe0133992b061493d97d7",
+  "reference": "experience-star-field-reference-2026-09-29.json",
+  "actualSceneInputs": {
+    "observer": {
+      "name": "示例观星点",
+      "wgs84": {
+        "system": "WGS84",
+        "latitude": 22.4826799,
+        "longitude": 114.5557147
+      },
+      "timezone": "Asia/Shanghai"
+    },
+    "logicalCanvas": {
+      "width": 390.4,
+      "height": 844
+    },
+    "backing": {
+      "width": 390,
+      "height": 844
+    },
+    "catalogHash": "ba9bef4144d4cfb4c706a5d1d8a0958d8303854e7bfabe780005b63e0c904c2c",
+    "saoPublicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+    "saoTileCount": 42
+  },
+  "metadataCorrections": {
+    "originalResultPreserved": true,
+    "fixedLocalView": "Vega for ordinary local rows, zenith for dome rows, M42 only for the two named M42 rows; each original row retains its actual basis/time",
+    "referenceScope": "Current Browser appearance capture, same observer and converted FOV with CSS390.4x844; 14s clock offset, engine revision unknown and catalogue differs; no pixel registration/native/quality acceptance",
+    "performanceScope": "12 alternating warmup pairs and 30 alternating measured pairs in same software GL; point upload instrumentation only after timing. No additional grid-only timings; submission can include synchronous driver waits, not target FPS."
+  },
+  "checks": {
+    "miniTypeExit": 0,
+    "relevantBehaviorExit": 0,
+    "relevantBehaviorTests": 33,
+    "isolatedShaderExit": 0,
+    "wholeSceneExit": 0,
+    "buildExit": 0,
+    "buildWarnings": 3,
+    "radialProfile": [
+      {
+        "version": "before",
+        "pixelRatio": 1,
+        "haloFraction": 0,
+        "sum": 3744
+      },
+      {
+        "version": "after",
+        "pixelRatio": 1,
+        "haloFraction": 0.23714585519412382,
+        "sum": 3812
+      },
+      {
+        "version": "before",
+        "pixelRatio": 2,
+        "haloFraction": 0,
+        "sum": 15304
+      },
+      {
+        "version": "after",
+        "pixelRatio": 2,
+        "haloFraction": 0.23362273086029992,
+        "sum": 15204
+      },
+      {
+        "version": "before",
+        "pixelRatio": 3,
+        "haloFraction": 0,
+        "sum": 34672
+      },
+      {
+        "version": "after",
+        "pixelRatio": 3,
+        "haloFraction": 0.23489619780732446,
+        "sum": 34296
+      }
+    ],
+    "symbolsUnchanged": true,
+    "nightReturnPixelsEqual": true,
+    "textures": {
+      "created": 60,
+      "deleted": 60
+    }
+  },
+  "service": {
+    "informationModuleSha256": "3ae1fcda98d31ec91469e7c2e92aa1d8d314b8e4203dadb24359c5483ce67cd9",
+    "contextMode": "pass",
+    "resourceMode": "pass",
+    "held": 0,
+    "active": 0,
+    "contextPuts": 0,
+    "contextUpstream": 8789
+  },
+  "rows": [
+    {
+      "name": "noon",
+      "at": "2026-09-28T04:00:00.000Z",
+      "fov": 25,
+      "mode": "NIGHT",
+      "counts": {
+        "HR:": 0,
+        "SAO:": 0,
+        "PLANET:": 0,
+        "SOLAR:": 0,
+        "M:": 0
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 0,
+      "samePicks": true,
+      "pointCount": 0,
+      "luminous": 0,
+      "pointBytes": {
+        "before": 0,
+        "after": 0
+      },
+      "rasterAreaBound": {
+        "before": 0,
+        "after": 0
+      },
+      "submissionMedianMs": {
+        "before": 4.5,
+        "after": 4.400000035762787
+      },
+      "submissionP95Ms": {
+        "before": 5,
+        "after": 5.299999952316284
+      },
+      "pixelsChanged": false,
+      "error": 0
+    },
+    {
+      "name": "noon",
+      "at": "2026-09-28T04:00:00.000Z",
+      "fov": 85,
+      "mode": "NIGHT",
+      "counts": {
+        "HR:": 0,
+        "SAO:": 0,
+        "PLANET:": 1,
+        "SOLAR:": 0,
+        "M:": 1
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 0,
+      "samePicks": true,
+      "pointCount": 2,
+      "luminous": 1,
+      "pointBytes": {
+        "before": 64,
+        "after": 72
+      },
+      "rasterAreaBound": {
+        "before": 106.95124517140653,
+        "after": 216.5175410226152
+      },
+      "submissionMedianMs": {
+        "before": 4.299999952316284,
+        "after": 4.299999952316284
+      },
+      "submissionP95Ms": {
+        "before": 6.100000023841858,
+        "after": 4.800000071525574
+      },
+      "pixelsChanged": true,
+      "error": 0
+    },
+    {
+      "name": "noon",
+      "at": "2026-09-28T04:00:00.000Z",
+      "fov": 267.8,
+      "mode": "NIGHT",
+      "counts": {
+        "HR:": 0,
+        "SAO:": 0,
+        "PLANET:": 4,
+        "SOLAR:": 1,
+        "M:": 36
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 0,
+      "samePicks": true,
+      "pointCount": 40,
+      "luminous": 4,
+      "pointBytes": {
+        "before": 1280,
+        "after": 1440
+      },
+      "rasterAreaBound": {
+        "before": 2706.560868989989,
+        "after": 3229.9709040191638
+      },
+      "submissionMedianMs": {
+        "before": 4.949999988079071,
+        "after": 4.850000023841858
+      },
+      "submissionP95Ms": {
+        "before": 8.700000047683716,
+        "after": 8.799999952316284
+      },
+      "pixelsChanged": true,
+      "error": 0
+    },
+    {
+      "name": "dusk",
+      "at": "2026-09-28T10:30:00.000Z",
+      "fov": 25,
+      "mode": "NIGHT",
+      "counts": {
+        "HR:": 0,
+        "SAO:": 0,
+        "PLANET:": 0,
+        "SOLAR:": 0,
+        "M:": 2
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 0,
+      "samePicks": true,
+      "pointCount": 2,
+      "luminous": 0,
+      "pointBytes": {
+        "before": 64,
+        "after": 72
+      },
+      "rasterAreaBound": {
+        "before": 141.12000320434572,
+        "after": 141.12000320434572
+      },
+      "submissionMedianMs": {
+        "before": 4.200000047683716,
+        "after": 4.300000011920929
+      },
+      "submissionP95Ms": {
+        "before": 4.899999976158142,
+        "after": 4.5
+      },
+      "pixelsChanged": false,
+      "error": 0
+    },
+    {
+      "name": "dusk",
+      "at": "2026-09-28T10:30:00.000Z",
+      "fov": 85,
+      "mode": "NIGHT",
+      "counts": {
+        "HR:": 0,
+        "SAO:": 0,
+        "PLANET:": 0,
+        "SOLAR:": 0,
+        "M:": 10
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 0,
+      "samePicks": true,
+      "pointCount": 10,
+      "luminous": 0,
+      "pointBytes": {
+        "before": 320,
+        "after": 360
+      },
+      "rasterAreaBound": {
+        "before": 705.6000160217286,
+        "after": 705.6000160217286
+      },
+      "submissionMedianMs": {
+        "before": 4,
+        "after": 4
+      },
+      "submissionP95Ms": {
+        "before": 4.300000071525574,
+        "after": 4.399999976158142
+      },
+      "pixelsChanged": false,
+      "error": 0
+    },
+    {
+      "name": "dusk",
+      "at": "2026-09-28T10:30:00.000Z",
+      "fov": 267.8,
+      "mode": "NIGHT",
+      "counts": {
+        "HR:": 2,
+        "SAO:": 0,
+        "PLANET:": 2,
+        "SOLAR:": 0,
+        "M:": 37
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 2,
+      "samePicks": true,
+      "pointCount": 42,
+      "luminous": 4,
+      "pointBytes": {
+        "before": 1344,
+        "after": 1512
+      },
+      "rasterAreaBound": {
+        "before": 2922.2940165634,
+        "after": 3254.9394223259997
+      },
+      "submissionMedianMs": {
+        "before": 3.699999988079071,
+        "after": 3.75
+      },
+      "submissionP95Ms": {
+        "before": 4,
+        "after": 4.200000047683716
+      },
+      "pixelsChanged": true,
+      "error": 0
+    },
+    {
+      "name": "night",
+      "at": "2026-09-28T16:00:00.000Z",
+      "fov": 25,
+      "mode": "NIGHT",
+      "counts": {
+        "HR:": 70,
+        "SAO:": 187,
+        "PLANET:": 0,
+        "SOLAR:": 0,
+        "M:": 0
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 12,
+      "samePicks": true,
+      "pointCount": 311,
+      "luminous": 311,
+      "pointBytes": {
+        "before": 9952,
+        "after": 11196
+      },
+      "rasterAreaBound": {
+        "before": 4882.6985000011,
+        "after": 14935.384010536305
+      },
+      "submissionMedianMs": {
+        "before": 28.19999998807907,
+        "after": 26.100000023841858
+      },
+      "submissionP95Ms": {
+        "before": 60.699999928474426,
+        "after": 48.200000047683716
+      },
+      "pixelsChanged": true,
+      "error": 0
+    },
+    {
+      "name": "night",
+      "at": "2026-09-28T16:00:00.000Z",
+      "fov": 85,
+      "mode": "NIGHT",
+      "counts": {
+        "HR:": 419,
+        "SAO:": 2,
+        "PLANET:": 0,
+        "SOLAR:": 0,
+        "M:": 2
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 8,
+      "samePicks": true,
+      "pointCount": 509,
+      "luminous": 507,
+      "pointBytes": {
+        "before": 16288,
+        "after": 18324
+      },
+      "rasterAreaBound": {
+        "before": 8162.013455828903,
+        "after": 24751.491453146584
+      },
+      "submissionMedianMs": {
+        "before": 8.899999976158142,
+        "after": 10.75
+      },
+      "submissionP95Ms": {
+        "before": 35.199999928474426,
+        "after": 41.90000009536743
+      },
+      "pixelsChanged": true,
+      "error": 0
+    },
+    {
+      "name": "night",
+      "at": "2026-09-28T16:00:00.000Z",
+      "fov": 267.8,
+      "mode": "NIGHT",
+      "counts": {
+        "HR:": 1627,
+        "SAO:": 4,
+        "PLANET:": 2,
+        "SOLAR:": 1,
+        "M:": 15
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 10,
+      "samePicks": true,
+      "pointCount": 1995,
+      "luminous": 1980,
+      "pointBytes": {
+        "before": 63840,
+        "after": 71820
+      },
+      "rasterAreaBound": {
+        "before": 32628.124593264998,
+        "after": 98315.90646733073
+      },
+      "submissionMedianMs": {
+        "before": 11,
+        "after": 12.949999988079071
+      },
+      "submissionP95Ms": {
+        "before": 26.700000047683716,
+        "after": 34.39999997615814
+      },
+      "pixelsChanged": true,
+      "error": 0
+    },
+    {
+      "name": "red",
+      "at": "2026-09-28T16:00:00.000Z",
+      "fov": 25,
+      "mode": "OBSERVATION",
+      "counts": {
+        "HR:": 70,
+        "SAO:": 205,
+        "PLANET:": 0,
+        "SOLAR:": 0,
+        "M:": 0
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 12,
+      "samePicks": true,
+      "pointCount": 311,
+      "luminous": 311,
+      "pointBytes": {
+        "before": 9952,
+        "after": 11196
+      },
+      "rasterAreaBound": {
+        "before": 4882.6985000011,
+        "after": 14935.384010536305
+      },
+      "submissionMedianMs": {
+        "before": 17.049999952316284,
+        "after": 17.94999998807907
+      },
+      "submissionP95Ms": {
+        "before": 30.700000047683716,
+        "after": 47.700000047683716
+      },
+      "pixelsChanged": true,
+      "error": 0
+    },
+    {
+      "name": "red",
+      "at": "2026-09-28T16:00:00.000Z",
+      "fov": 85,
+      "mode": "OBSERVATION",
+      "counts": {
+        "HR:": 433,
+        "SAO:": 2,
+        "PLANET:": 0,
+        "SOLAR:": 0,
+        "M:": 2
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 8,
+      "samePicks": true,
+      "pointCount": 509,
+      "luminous": 507,
+      "pointBytes": {
+        "before": 16288,
+        "after": 18324
+      },
+      "rasterAreaBound": {
+        "before": 8162.013455828903,
+        "after": 24751.491453146584
+      },
+      "submissionMedianMs": {
+        "before": 5,
+        "after": 5
+      },
+      "submissionP95Ms": {
+        "before": 9.799999952316284,
+        "after": 9.600000023841858
+      },
+      "pixelsChanged": true,
+      "error": 0
+    },
+    {
+      "name": "red",
+      "at": "2026-09-28T16:00:00.000Z",
+      "fov": 267.8,
+      "mode": "OBSERVATION",
+      "counts": {
+        "HR:": 1685,
+        "SAO:": 4,
+        "PLANET:": 2,
+        "SOLAR:": 1,
+        "M:": 15
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 10,
+      "samePicks": true,
+      "pointCount": 1995,
+      "luminous": 1980,
+      "pointBytes": {
+        "before": 63840,
+        "after": 71820
+      },
+      "rasterAreaBound": {
+        "before": 32628.124593264998,
+        "after": 98315.90646733073
+      },
+      "submissionMedianMs": {
+        "before": 4.700000047683716,
+        "after": 4.75
+      },
+      "submissionP95Ms": {
+        "before": 5.200000047683716,
+        "after": 5.5
+      },
+      "pixelsChanged": true,
+      "error": 0
+    },
+    {
+      "name": "m42-layers",
+      "at": "2026-09-28T20:00:00.000Z",
+      "fov": 85,
+      "mode": "NIGHT",
+      "counts": {
+        "HR:": 700,
+        "SAO:": 4,
+        "PLANET:": 1,
+        "SOLAR:": 0,
+        "M:": 4
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 10,
+      "samePicks": true,
+      "pointCount": 814,
+      "luminous": 810,
+      "pointBytes": {
+        "before": 26048,
+        "after": 29304
+      },
+      "rasterAreaBound": {
+        "before": 13460.255423954468,
+        "after": 41282.960181726616
+      },
+      "submissionMedianMs": {
+        "before": 13.75,
+        "after": 13.650000035762787
+      },
+      "submissionP95Ms": {
+        "before": 74.69999992847443,
+        "after": 54.800000071525574
+      },
+      "pixelsChanged": true,
+      "error": 0
+    },
+    {
+      "name": "m42-detail",
+      "at": "2026-09-28T20:00:00.000Z",
+      "fov": 0.54,
+      "mode": "NIGHT",
+      "counts": {
+        "HR:": 2,
+        "SAO:": 5,
+        "PLANET:": 0,
+        "SOLAR:": 0,
+        "M:": 2
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 7,
+      "samePicks": true,
+      "pointCount": 9,
+      "luminous": 7,
+      "pointBytes": {
+        "before": 288,
+        "after": 324
+      },
+      "rasterAreaBound": {
+        "before": 343.7750148424118,
+        "after": 910.4471905243204
+      },
+      "submissionMedianMs": {
+        "before": 18.94999998807907,
+        "after": 19.899999976158142
+      },
+      "submissionP95Ms": {
+        "before": 50.90000009536743,
+        "after": 53.699999928474426
+      },
+      "pixelsChanged": true,
+      "error": 0
+    },
+    {
+      "name": "night-return",
+      "at": "2026-09-28T16:00:00.000Z",
+      "fov": 85,
+      "mode": "NIGHT",
+      "counts": {
+        "HR:": 419,
+        "SAO:": 2,
+        "PLANET:": 0,
+        "SOLAR:": 0,
+        "M:": 2
+      },
+      "samePaintedIdentity": true,
+      "pickSamples": 8,
+      "samePicks": true,
+      "pointCount": 509,
+      "luminous": 507,
+      "pointBytes": {
+        "before": 16288,
+        "after": 18324
+      },
+      "rasterAreaBound": {
+        "before": 8162.013455828903,
+        "after": 24751.491453146584
+      },
+      "submissionMedianMs": {
+        "before": 9.599999964237213,
+        "after": 8.850000023841858
+      },
+      "submissionP95Ms": {
+        "before": 36.39999997615814,
+        "after": 35.5
+      },
+      "pixelsChanged": true,
+      "error": 0
+    }
+  ],
+  "remaining": "Native combined journey/UI/labels, pose/full calibration/background, Android/iOS, current Moon on phone, environmental/source quality and broader alignment/coverage, target resources/performance/official package/costs and independent review remain unverified."
+}

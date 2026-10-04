@@ -1,0 +1,28 @@
+{
+  "navigation": {
+    "url": "/sky/sources/index?reference=M%3A82&opticalPublicationHash=69e8425904e3288624c9f77a1339574c3868f4a37540c2a5258f1942474e9d5a",
+    "action": "navigateTo",
+    "phase": "m82-source-before"
+  },
+  "text": "来源与许可M 82OpenNGC — Mattia Verga and contributors当前数据OpenNGC Messier galaxy and nebula subset时间 · 北京时间发布2026-05-01 08:00获取2026-09-10 08:15适用来源未提供许可：CC-BY-SA-4.0精度：ICRS J2000 positions and catalog angular extents· Starward 从指定 OpenNGC 版本筛选 51 个带 Messier 标识的星系／星云，统一类型和名称字段，将赤经／赤纬转换为十进制度并重排为 JSON；派生目录继续按 CC BY-SA 4.0 提供。· 仅含OpenNGC中带Messier交叉标识的51个星系/星云类对象；不表示肉眼可见、天气或山体遮挡复制原始出处复制许可说明NASA/IPAC Infrared Science Archive (IRSA)当前数据AllWISE W3 12 µm 巡天影像时间 · 北京时间发布来源未提供获取时间未知适用来源未提供许可：ODbL-1.0（HiPS 数据库）；AllWISE 影像另附声明精度：历史 W3 12 µm 红外巡天；按目标裁切，北向上，东向左· Contains information from AllWISE W3 HiPS (CDS/Aladin; CNRS/Unistra), made available under the Open Database License (ODbL). Starward offers its imagery selection and arrangement under ODbL; individual AllWISE images retain their separate WISE/NEOWISE acknowledgment and IPAC/NASA rights.· HiPS 数据库：https://alasky.cds.unistra.fr/MocServer/query?ID=CDS%2FP%2FallWISE%2FW3&fmt=html&get=record；许可：https://opendatacommons.org/licenses/odbl/1-0/· This publication makes use of data products from the Wide-field Infrared Survey Explorer, which is a joint project of the University of California, Los Angeles, and the Jet Propulsion Laboratory/California Institute of Technology, and NEOWISE, which is a project of the Jet Propulsion Laboratory/California Institute of Technology. WISE and NEOWISE are funded by the National Aeronautics and Space Administration.· AllWISE 声明：https://irsa.ipac.caltech.edu/data/WISE/docs/release/AllWISE/expsup/sec1_6b.html· 数据版权：IPAC/NASA；HiPS：CDS/Aladin — Thomas Boch，CNRS/Unistra。· Atlas 数据引用：https://doi.org/10.26131/IRSA153；HiPS：https://doi.org/10.26093/cds/aladin/na1n-03· 影像加工：CDS hips2fits and Starward HiPS TAN；https://alasky.cds.unistra.fr/hips-image-services/hips2fits· Starward retains the previously published CDS hips2fits JPEG cutouts and supplies three source-bound PNG TAN levels for M:42. The PNGs use nearest HiPS FITS sampling, north-up/east-left ICRS TAN geometry and 1-99.7 percentile asinh grayscale. Only nonfinite selected source samples have zero alpha; finite dark pixels remain data. These are historical 12 micrometer infrared images, not visible-light photographs. Byte-bound lossless encoded-color empty runs allow the additive display to retain catalog identification in a color-empty viewport. They do not alter images, alpha, source coverage or scientific validity.· Historical 12 micrometer survey imagery; neither naked-eye appearance nor realtime sky data.· Source-survey saturation and detector artifacts remain; finite samples are not a measurement of artifact-free scientific validity.· Unmasked JPEGs have unknown source-data coverage. PNG alpha marks only nonfinite nearest HiPS samples, not Atlas exposure depth or confidence; no inpainting is used.· Cached HiPS FITS inputs contain complete scientific arrays but omit 2624 bytes of FITS end padding; the input receipt preserves this standards limitation.· 此出版物未测量源数据有效覆盖比例；未带源缺测标记的JPEG中黑色可能来自低亮度或无数据，不能由JPEG推定全覆盖或缺测位置。· 星图对红外影像另作亮度透明过渡和边缘淡化，不据此判断是否缺测。带源缺测标记的PNG还会把非有限样本留空；对应范围见此版本说明。未经星图淡化的切图可从下载清单取得。复制原始出处复制许可说明复制下载链接esahubble.org当前数据M82 · 历史观测合成影像复制链接 · NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: J. Gallagher (University of Wisconsin), M. Mountain (STScI) and P. Puxley (NSF). · https://esahubble.org/images/heic0604a/NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: J. Gallagher (University of Wisconsin), M. Mountain (STScI) and P. Puxley (NSF).CC BY 4.0 · https://creativecommons.org/licenses/by/4.0/Starward reuses the original byte-bound encoded RGB wide TAN grid and one separately sampled finer TAN grid from exactly the same JPEG, decoded RGB and uncorrected publisher AVM. Overview PNG bytes are unchanged; medium is an exact 1024 wide-grid crop; detail uses the verified 1024 fine grid. No sky subtraction, colour fit, feathering, sharpening or synthetic detail.时间 · 北京时间发布来源未提供获取时间未知适用来源未提供许可：CC BY 4.0精度：仅此对象的三级历史观测 PNG；北上东左；使用出版方近似 AVM 位置，科学有效性未知；不是实时或肉眼观感· Historical Hubble ACS B/V/H-alpha/I published composite; B blue, V green, H-alpha and I red; encoded RGB, not SDSS gri or calibrated flux· 图片使用政策：https://esahubble.org/copyright/· WCS info from NASA/Hubble· Alpha retains complete source-stencil geometric support from the declared sampling grid, independent of science validity. The two grids are not one higher-resolution mother. Full boundary/weak-structure/absolute registration/quality and target-runtime adoption remain unverified or failed.复制原始出处复制许可说明复制下载链接",
+  "encoded": [
+    {
+      "entries": 55,
+      "leased": 0,
+      "bytes": 6181707,
+      "reserved": 0,
+      "running": 0,
+      "pending": 0,
+      "retired": 0,
+      "failures": 0,
+      "epoch": 0
+    }
+  ],
+  "resources": {
+    "gpuTextureUploadModelBytes": 0,
+    "gpuBufferUploadModelBytes": 0,
+    "activeDecodedImageHandles": 0,
+    "sourceRgbaEquivalentBytes": 0,
+    "decodedSourceIdentities": []
+  }
+}

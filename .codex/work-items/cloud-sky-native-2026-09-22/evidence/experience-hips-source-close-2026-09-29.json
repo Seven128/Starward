@@ -1,0 +1,58 @@
+{
+  "at": "2026-09-28T17:46:57.982Z",
+  "currentSources": [
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-hips-tile-mesh.ts",
+      "sha256": "bc157c3d3967537d1af0d68a02e4b1cecc992fb3d006d73b9054cbbd10e1a7b6"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-hips-tile-mesh.test.ts",
+      "sha256": "efa454e85829e45a461269c07a0ccc1964fad1db931696a8352d86a34f258a55"
+    }
+  ],
+  "originalManifestSha256": "46c520ab6160784c766b057cae5aed4bec1bfd0d7c4f65fc136a30716e7a1462",
+  "originalImages": 153,
+  "originalWideTiles": 12,
+  "sourceTileCount": 20,
+  "checkedSourceBytes": 21029120,
+  "candidatePngs": [
+    {
+      "level": "OVERVIEW",
+      "sha256": "e8379e54c69e88cf17d80000a2604b241d8d0a6eb82758985aacc35a22c1d13d"
+    },
+    {
+      "level": "MEDIUM",
+      "sha256": "3c113f59367fb49746c96d08b3218a949d70375a733de8dcfafa36b77659e02d"
+    },
+    {
+      "level": "DETAIL",
+      "sha256": "6976db0ae39a46c2ee8cd165c0a375a55c819d4248c715b064983184020cc0ba"
+    }
+  ],
+  "candidates": [
+    {
+      "generation": "v16",
+      "sha256": "1123034a5afeee5731523aa95278997e88c81ff1eab70da42c23299b9250d032",
+      "rawBytes": 4476370,
+      "opened": false,
+      "m42NewPngIncluded": false
+    },
+    {
+      "generation": "v17",
+      "sha256": "79fc7b725f35190c094862b58a34fa35cf57e602e8de5a60a9303194ceac7a9e",
+      "rawBytes": 4476370,
+      "opened": false,
+      "m42NewPngIncluded": false
+    }
+  ],
+  "localLinksChecked": 333,
+  "uniqueCurrentPlanDependency": true,
+  "newNativeWindows": 0,
+  "newResidentServices": 0,
+  "phoneTouched": false,
+  "nativeCurrentFrameOrContextVerified": false,
+  "m42PngPublished": false,
+  "newMoonPhoneVerified": false,
+  "independentReviewObtained": false,
+  "scope": "Input/artifact/document binding; shared axis implementation and software checks are development evidence, not whole journey/native/phone/quality/performance/cost or Goal completion"
+}

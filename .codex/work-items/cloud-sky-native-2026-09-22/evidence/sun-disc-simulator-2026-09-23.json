@@ -1,0 +1,11 @@
+{
+  "kind": "non-phone-native-simulator-solar-disc",
+  "at": "2026-09-23",
+  "runtime": "official WeChat DevTools source project, MEMORY_TEST, fixture published spot",
+  "observer": {"latitude": 22.4826799, "longitude": 114.5557147},
+  "near_horizon": {"at": "2026-09-22T10:00:00.000Z", "local": "18:00", "sunAzimuthDeg": 268.821, "sunAltitudeDeg": 3.441, "sunAngularDiameterDeg": 0.530918, "cameraTarget": "Mercury", "verticalFovDeg": 78.8, "image": "artifacts/miniapp/cloud-sky-native/sun-disc-final-18.png", "pixelRegion": [363,630,403,680], "brightPixelCount": 27, "peak": {"x":383,"y":647,"rgb":[250,233,187]}},
+  "below_horizon": {"local": "19:00", "image": "artifacts/miniapp/cloud-sky-native/sun-disc-19-near-mercury-wide.png", "sameRegionBrightPixelCount": 0},
+  "console": "No matching error/sky_gpu/shader lines in the observed DevTools console",
+  "tests": {"backend": "34/34", "client": "29/29", "typechecks": "contracts/API/client exit 0", "contextValidate": "exit 0", "diffCheck": "exit 0"},
+  "limits": ["No phone action or target-device validation", "Canvas overlays ordinary WXML controls in DevTools", "No full atmosphere, texture/corona or measured photometry", "Partial horizon clipping covered by code test but not separately observed on target runtime"]
+}

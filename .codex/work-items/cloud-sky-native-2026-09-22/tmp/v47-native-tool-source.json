@@ -1,0 +1,32 @@
+{
+  "scope": "read-only installed source/package index; no application module execution",
+  "package": {
+    "main": "js/electron/main.js",
+    "version": "2.02.2609232"
+  },
+  "paths": [],
+  "sourcePath": "js/extensions/agent/index.js",
+  "sourceBytes": 850877,
+  "excerpts": [
+    {
+      "term": "simulator_open_page",
+      "totalOccurrences": 0,
+      "values": []
+    },
+    {
+      "term": "simulator_refresh",
+      "totalOccurrences": 0,
+      "values": []
+    },
+    {
+      "term": "automation_runtime_info",
+      "totalOccurrences": 0,
+      "values": []
+    },
+    {
+      "term": "get_simulator_console",
+      "totalOccurrences": 0,
+      "values": []
+    }
+  ]
+}

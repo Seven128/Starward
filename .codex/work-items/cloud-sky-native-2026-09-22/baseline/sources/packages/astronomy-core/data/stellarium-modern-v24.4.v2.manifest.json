@@ -1,0 +1,15 @@
+{
+  "catalogVersion": "stellarium-modern-v24.4.v2",
+  "hashEncoding": "JSON.stringify(parsed catalog)",
+  "sha256": "4dcb6f3f731464a6b2bc99915ea3133415d0b9bd0deb1437bb3f4ed46e2f7905",
+  "bytes": 120580,
+  "constellations": 88,
+  "images": 85,
+  "geometryRows": 713,
+  "originalImageBytes": 1999008,
+  "geometryAsset": {
+    "file": "geometry-v2.json",
+    "sha256": "7d05402fcc7936930dc4f54f4d6055ed7a126f184273f8005eac4fbdcbdcb3e3",
+    "bytes": 70683
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "scope": "Requirement-derived development checks at current CachePort/Context/HTTP/client owners and actual native DevTools. Not phone, production Redis/PostgreSQL, official package/performance acceptance, full experience completion or independent review.",
+  "before": {
+    "file": "experience-context-concurrency-before-2026-09-28.json",
+    "exitCode": 1,
+    "escapedDefect": "Two real same-revision different time writes both succeeded in Memory and two independent Redis clients; durable readback retained only the second."
+  },
+  "after": {
+    "file": "experience-context-concurrency-after-2026-09-28.json",
+    "exitCode": 0
+  },
+  "storageAndHttp": {
+    "command": "REDIS_URL=local-task-redis node ../../tools/run-node.cjs --import tsx --test src/observation-context-concurrency.test.ts",
+    "exitCode": 0,
+    "redisVersion": "7.4",
+    "passedChecks": 8,
+    "skippedChecks": 0,
+    "results": [
+      "Memory and two independent real Redis clients: concurrent HTTP edits return one 200 and one 409, durable result equals the acknowledged winner, subsequent night edit and another instance readback preserve identity/expiry and update night fingerprint",
+      "Memory and Redis: storage expires between read and commit, update fails and cannot recreate the same Context",
+      "Memory and Redis: original cache TTL is retained, earlier absolute deadline is enforced, missing cache record is not recreated",
+      "Memory commit-boundary rejection and real Redis client disconnect: prior Context remains readable, valid reconnect/retry succeeds"
+    ],
+    "fixtureRepair": "Two early attempts failed during test cleanup because both app.close and the fixture retired the same Redis client. The fixture now delegates retirement once to the app. Final affected checks all passed; not a product concurrency failure."
+  },
+  "existingContextAndMapHttp": {
+    "command": "node ../../tools/run-node.cjs --import tsx --test --test-name-pattern='Observation Context|observation context|context and map preserve' src/miniapp-api.test.ts src/map-exact-time-http.test.ts",
+    "exitCode": 0,
+    "passedChecks": 3,
+    "results": [
+      "off-cadence exact selected instant reaches real HTTP Map consumer",
+      "observation-night and optimistic revision enforcement",
+      "equivalent contexts never reuse another identity"
+    ]
+  },
+  "clientAndSharedState": {
+    "chunk_id": "104ec8",
+    "wall_time_seconds": 2.0610502,
+    "exit_code": 0,
+    "original_token_count": 406,
+    "output": "✔ an observation edit recovers a server-lost context once and preserves the requested change (2.6638ms)\n✔ a non-expiry update failure is not replayed (1.0678ms)\n✔ a lost successful edit response confirms the actual time with one fresh read and no replay (16.8208ms)\n✔ a conflict can confirm the requested state but cannot overwrite a different server intent (2.2977ms)\n✔ fresh edit recovery rejects wrong identity, unsolicited night/event changes and stale readback (7.3992ms)\n✔ cancelled and definite rejected edits neither read back nor replay (2.8316ms)\n✔ a lost date reply preserves location/profile and confirms the requested night and event reset (2.3759ms)\n✔ legacy provider selections disappear on restart while the exact location and time remain recoverable (129.4184ms)\n✔ accepted Context resolves prior Map and Sky time/date errors atomically and retains unrelated recovery (82.9171ms)\n✔ temporary cache reset is synchronous but reports durable write success only after native completion (70.7026ms)\n✔ older account readback cannot roll back saved preferences or a newer local edit (37.2221ms)\n✔ default-region reset is atomic, retains user content and cannot be undone by focus restoration (54.0777ms)\n✔ startup recovery rejects a partial observation context and a non-array plan cache (24.1638ms)\n✔ startup recovery preserves a complete unexpired observation context (26.1663ms)\n✔ startup recovery never restores a session-precise observation context (25.2172ms)\nℹ tests 15\nℹ suites 0\nℹ pass 15\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1545.3981\n"
+  },
+  "typecheckAndReleaseBuild": {
+    "commands": [
+      "node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
+      "node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json"
+    ],
+    "exitCode": 0,
+    "note": "Current API source and tests; no client source/build changed in this turn."
+  },
+  "native": {
+    "snapshots": [
+      "experience-context-atomic-native-recovered-2026-09-28.json",
+      "experience-context-atomic-native-tracked-loss-2026-09-28.json",
+      "experience-context-atomic-native-final-2026-09-28.json"
+    ],
+    "binding": "experience-context-atomic-binding-2026-09-28.json",
+    "screenshotSize": [
+      193,
+      413
+    ],
+    "actualLogicalCanvasSize": [
+      390.3999938964844,
+      844
+    ],
+    "routeReadbackLimit": "The original route can retain the obsolete Context ID during accepted page-local recovery; the previous route-only script returned 404. New readback binds actual durable accepted Context and painted instant/location; public Map return/reentry gives the current route and GET200."
+  },
+  "unchanged": {
+    "candidateSha256": "99c50222cb3d64fc2201470c754d6e135c60b51b9711f8918b52f93469cc47db",
+    "candidateFiles": 257,
+    "rawBytes": 4469986,
+    "publicationHash": "e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5",
+    "sharedPorts": [
+      8787,
+      8788
+    ],
+    "phoneUnavailable": true
+  },
+  "documentationChecks": "experience-context-atomic-documentation-checks-2026-09-28.json"
+}

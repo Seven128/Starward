@@ -1,0 +1,115 @@
+{
+  "scope": "Finite native scene-region comparisons at separately checked completed cameras and instants. Not full overlay, physical input, target quality or memory acceptance.",
+  "rows": [
+    {
+      "name": "before-current-local",
+      "inputs": [
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-tracking-composition-moon-local-first-2026-10-01.png",
+          "sha256": "3aa5811ab3eafa86cb51e9a5aec22f709abdd451a2ec1326f12233df56c4a835"
+        },
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-fixed-image-cold-moon-local-2026-10-01.png",
+          "sha256": "ef162a95f4e38293c78f2ef0c2ade73e2b2c9aed7d70a8d91a6c9cfa4399e82c"
+        }
+      ],
+      "region": {
+        "x": 1,
+        "y": 91,
+        "width": 425,
+        "height": 799,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "rgbMae": 0
+      }
+    },
+    {
+      "name": "same-canvas-wide-return",
+      "inputs": [
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-fixed-image-cold-moon-local-2026-10-01.png",
+          "sha256": "ef162a95f4e38293c78f2ef0c2ade73e2b2c9aed7d70a8d91a6c9cfa4399e82c"
+        },
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-fixed-image-cold-moon-return-2026-10-01.png",
+          "sha256": "80a1ee28aa3d1a8a768eb22a0bea33f1587b267bca73a180e96db0f2fbba8de1"
+        }
+      ],
+      "region": {
+        "x": 1,
+        "y": 91,
+        "width": 425,
+        "height": 799,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "rgbMae": 0
+      }
+    },
+    {
+      "name": "active-ruler-source-cancel",
+      "inputs": [
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-fixed-image-cold-moon-return-2026-10-01.png",
+          "sha256": "80a1ee28aa3d1a8a768eb22a0bea33f1587b267bca73a180e96db0f2fbba8de1"
+        },
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-fixed-image-cold-source-return-2026-10-01.png",
+          "sha256": "31cb1c0766dbb39c1b5ce8a704369643fe7f36c890069ced81243a30d19bf392"
+        }
+      ],
+      "region": {
+        "x": 1,
+        "y": 91,
+        "width": 425,
+        "height": 799,
+        "changedPixels": 799,
+        "maxDelta": 16,
+        "rgbMae": 0.012223122039804657
+      }
+    },
+    {
+      "name": "paused-source-return",
+      "inputs": [
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-fixed-image-cold-moon-paused-2026-10-01.png",
+          "sha256": "da34580b07a6d204122e73e81f8456a1218599280a58b0c63c041b0ad65f3e53"
+        },
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-fixed-image-cold-paused-source-return-2026-10-01.png",
+          "sha256": "a03a2d9ad9f6cdf598557a00d69614b44dd19c0bdbb2db63cf69e3493536a89a"
+        }
+      ],
+      "region": {
+        "x": 1,
+        "y": 91,
+        "width": 425,
+        "height": 799,
+        "changedPixels": 799,
+        "maxDelta": 16,
+        "rgbMae": 0.012223122039804657
+      }
+    },
+    {
+      "name": "night-final",
+      "inputs": [
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-twilight-gradient-reentered-final-2026-10-01.png",
+          "sha256": "04c1212070f3d3263308424f03273356a3f2d0502d3fd9ebb2cee6bc79048503"
+        },
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-fixed-image-cold-final-2026-10-01.png",
+          "sha256": "5ef749844e53705f10e804a4220da3959818934e13dd33481a59319781b20fe8"
+        }
+      ],
+      "region": {
+        "x": 1,
+        "y": 91,
+        "width": 425,
+        "height": 799,
+        "changedPixels": 0,
+        "maxDelta": 0,
+        "rgbMae": 0
+      }
+    }
+  ]
+}

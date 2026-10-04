@@ -1,0 +1,91 @@
+{
+  "scope": "read-only installed source/package index; no application module execution",
+  "package": {
+    "main": "js/electron/main.js",
+    "version": "2.02.2609232"
+  },
+  "paths": [],
+  "matches": [
+    {
+      "path": "js/49d2849a76738dcf3562d0585b6f0758.js",
+      "bytes": 6438,
+      "terms": [
+        "SIMULATOR_OPEN_PAGE",
+        "SIMULATOR_REFRESH"
+      ],
+      "excerpts": [
+        {
+          "term": "SIMULATOR_OPEN_PAGE",
+          "index": 5208,
+          "source": "describe(\"要更新的 setting 键值对（已忽略，不会生效）\")},handler:async e=>y(\"project_setting_update\")},Object.assign(Object.assign({},i.MCP_TOOL_CONFIG[i.EMcpToolName.SIMULATOR_OPEN_PAGE]),{handler:async e=>{const t=e.project,c=(0,n.default)(a.ICLIUtilsService),{winId:o,type:i}=await c.openProjectWindow(t);if(!o)throw new Error(\"project window not found\");I(t),\"newopen\"===i&&await(0,g.wait)(1e3);const s=(0,n.default)(j.ITransferActionService);return await s.dispatchClientAction(o,r.ean.simulator.compile,{origin:6,condiction:{pathName:e.page,query:e.query||\"\",scene:e.scene||1001}}),{success:!0,page:e.page,query:e.query||\"\",scene:e.scene||1001}}}),Object.assign(Object.assign({},i.MCP_TOOL_CONFIG[i.EMcpToolName.SIMULATOR_REFRESH]),{handler:async e=>{const t=e.project;I(t);const c=(0,n.default)(a.ICLIUtilsService),{winId:o}=await c.openProjectWindow(t);if(!o)throw new Error(\"project window not found\");const i=(0,n.default)(j.ITransferActionService);return await i.dispatchClientAction(o,r.ean.simulator.compile,{origin:6}),{success:!0}}})];\n}(require(\"licia/lazyImport\")(require), require)"
+        },
+        {
+          "term": "SIMULATOR_REFRESH",
+          "index": 5759,
+          "source": "ne:e.scene||1001}}),{success:!0,page:e.page,query:e.query||\"\",scene:e.scene||1001}}}),Object.assign(Object.assign({},i.MCP_TOOL_CONFIG[i.EMcpToolName.SIMULATOR_REFRESH]),{handler:async e=>{const t=e.project;I(t);const c=(0,n.default)(a.ICLIUtilsService),{winId:o}=await c.openProjectWindow(t);if(!o)throw new Error(\"project window not found\");const i=(0,n.default)(j.ITransferActionService);return await i.dispatchClientAction(o,r.ean.simulator.compile,{origin:6}),{success:!0}}})];\n}(require(\"licia/lazyImport\")(require), require)"
+        }
+      ]
+    },
+    {
+      "path": "js/8a0f2b17adff4205812a237e041dae6b.js",
+      "bytes": 23471,
+      "terms": [
+        "SIMULATOR_OPEN_PAGE",
+        "SIMULATOR_REFRESH",
+        "GET_SIMULATOR_CONSOLE",
+        "AUTOMATION_RUNTIME_INFO"
+      ],
+      "excerpts": [
+        {
+          "term": "SIMULATOR_OPEN_PAGE",
+          "index": 7616,
+          "source": "EG）；false 时写原始 PNG\"),quality:o().min(1).max(100).optional().describe(\"JPEG 质量（默认 80，范围 1-100）；仅 optimize=true 时生效\")}},[_.SIMULATOR_OPEN_PAGE]:{name:_.SIMULATOR_OPEN_PAGE,description:\"触发项目窗口模拟器编译并打开指定页面。\",inputSchema:{project:a(\"项目绝对路径\"),page:a(\"页面路径（如 pages/index/index）\"),query:n(\"页面参数（如 id=1&type=test）\"),scene:e.number().optional().describe(\"场景值（默认 1001）\")}},[_.SIMULATOR_REFRESH]:{name:_.SIMULATOR_REFRESH,description:\"触发项目窗口模拟器重新编译/刷新当前页面；不返回编译结果\",inputSchema:{project:a(\"项目绝对路径\")}},[_.CLOUD_ENV_LIST]:{name:_.CLOUD_ENV_LIST,description:\"只读列出当前项目或 AppID 可用的云环境\",inputSchema:Object.assign({},s)},[_.CLOUD_FN_LIST]:{name:_.CLOUD_FN_LIST,description:\"只读列出指定云环境中的云函数\",inputSchema:Object.assign(Object.assign({},s),{env:a(\"云环境 ID\")})},[_.CLOUD_FN_INFO]:{name:_.CLOUD_FN_INFO,description:\"只读查询指定云函数的详情和状态\",inputSchema:Object.assign(Object.assign({},s),{env:a(\"云环境 ID\"),names:a(\"云函数名称（逗号分隔）\")})},[_.CLOUD_FN_DEPLOY]:{name:_.CLOUD_FN_DEPLOY,description:\"按云函数目录路径完整部署单个云函数到指定云环境，属于写操作；一次只允许部署一个云函数目录，目录名即函数名称\",inputSchema:{appid:a(\"小程序 AppID\"),env:a(\"云环境 ID\"),path:a(\"云函数目录绝对路径，目录名即函数名称；如 /path/to/function1\"),\"remote-npm-install\":e.boolean().optional().describe(\"是否远程安装 npm\")}},[_.CLOUD_FN_INC_DEPLOY]:{name:_.CLOUD_FN_INC_DEPLOY,description:\"按云函数目录路径增量部署变更文件或目录到指定云环境，属于写操作；函数目录名即函数名称\",inputSchema:{appid:a(\"小程序 AppID\"),env:a(\"云环境 ID\"),path:a(\"云函数目录绝对路径，目录名即函数名称\"),file:a(\"变更文件或目录路径，必须相对云函数所在的目录\")}},[_.AUTOMATION_NAVIGATE]:{name:_.AUTOMATION_NAVIGATE,description:\"在当前小程序运行时执行页面导航，不负责页面断言；支持 waitForSelector / wait 在导航前等待\",inputSchema:Object.assign({project:a(\"项目绝对路径\"),action:t([\"navigateTo\",\"redirectTo\",\"navigateBack\",\"reLaunch\",\"switchTab\"]).descri"
+        },
+        {
+          "term": "SIMULATOR_REFRESH",
+          "index": 7858,
+          "source": "a(\"页面路径（如 pages/index/index）\"),query:n(\"页面参数（如 id=1&type=test）\"),scene:e.number().optional().describe(\"场景值（默认 1001）\")}},[_.SIMULATOR_REFRESH]:{name:_.SIMULATOR_REFRESH,description:\"触发项目窗口模拟器重新编译/刷新当前页面；不返回编译结果\",inputSchema:{project:a(\"项目绝对路径\")}},[_.CLOUD_ENV_LIST]:{name:_.CLOUD_ENV_LIST,description:\"只读列出当前项目或 AppID 可用的云环境\",inputSchema:Object.assign({},s)},[_.CLOUD_FN_LIST]:{name:_.CLOUD_FN_LIST,description:\"只读列出指定云环境中的云函数\",inputSchema:Object.assign(Object.assign({},s),{env:a(\"云环境 ID\")})},[_.CLOUD_FN_INFO]:{name:_.CLOUD_FN_INFO,description:\"只读查询指定云函数的详情和状态\",inputSchema:Object.assign(Object.assign({},s),{env:a(\"云环境 ID\"),names:a(\"云函数名称（逗号分隔）\")})},[_.CLOUD_FN_DEPLOY]:{name:_.CLOUD_FN_DEPLOY,description:\"按云函数目录路径完整部署单个云函数到指定云环境，属于写操作；一次只允许部署一个云函数目录，目录名即函数名称\",inputSchema:{appid:a(\"小程序 AppID\"),env:a(\"云环境 ID\"),path:a(\"云函数目录绝对路径，目录名即函数名称；如 /path/to/function1\"),\"remote-npm-install\":e.boolean().optional().describe(\"是否远程安装 npm\")}},[_.CLOUD_FN_INC_DEPLOY]:{name:_.CLOUD_FN_INC_DEPLOY,description:\"按云函数目录路径增量部署变更文件或目录到指定云环境，属于写操作；函数目录名即函数名称\",inputSchema:{appid:a(\"小程序 AppID\"),env:a(\"云环境 ID\"),path:a(\"云函数目录绝对路径，目录名即函数名称\"),file:a(\"变更文件或目录路径，必须相对云函数所在的目录\")}},[_.AUTOMATION_NAVIGATE]:{name:_.AUTOMATION_NAVIGATE,description:\"在当前小程序运行时执行页面导航，不负责页面断言；支持 waitForSelector / wait 在导航前等待\",inputSchema:Object.assign({project:a(\"项目绝对路径\"),action:t([\"navigateTo\",\"redirectTo\",\"navigateBack\",\"reLaunch\",\"switchTab\"]).describe(\"导航操作类型\"),url:n(\"页面路径（navigateTo/redirectTo/reLaunch/switchTab 需要）\"),delta:e.number().optional().describe(\"返回的页面数（navigateBack 需要，默认 1）\")},l)},[_.AUTOMATION_RUNTIME_INFO]:{name:_.AUTOMATION_RUNTIME_INFO,description:\"读取当前小程序运行时信息\",inputSche"
+        },
+        {
+          "term": "GET_SIMULATOR_CONSOLE",
+          "index": 6877,
+          "source": "twork 流。要获取全部请求记录请用 grep -n .\",inputSchema:{project:a(\"项目绝对路径\"),command:a(\"grep 命令字符串（不含文件名），如 grep -n -i error\")}},[_.GET_SIMULATOR_CONSOLE]:{name:_.GET_SIMULATOR_CONSOLE,description:\"对小程序 console 缓冲区执行 grep 过滤并返回命中行；只读缓存日志，不是实时 console 流。要获取全部日志请用 grep -n .\",inputSchema:{project:a(\"项目绝对路径\"),command:a(\"grep 命令字符串（不含文件名），如 grep -n -i error\")}},[_.SIMULATOR_SCREENSHOT]:{name:_.SIMULATOR_SCREENSHOT,description:\"截图；返回 path + imageWidth/imageHeight；默认优化尺寸（长边 1280 JPEG）\",inputSchema:{project:a(\"项目绝对路径\"),path:n(\"可选，截图本地输出路径；不传则写入系统临时目录并返回该路径\"),wait:e.number().optional().describe(\"截图前固定等待秒数（可选；和 waitForSelector 可同时传；范围 0-10）\"),waitForSelector:n(\"截图前等待出现的选择器（可选；推荐优先使用）\"),optimize:e.boolean().optional().describe(\"是否优化截图尺寸和分辨率（默认 true，写 JPEG）；false 时写原始 PNG\"),quality:o().min(1).max(100).optional().describe(\"JPEG 质量（默认 80，范围 1-100）；仅 optimize=true 时生效\")}},[_.SIMULATOR_OPEN_PAGE]:{name:_.SIMULATOR_OPEN_PAGE,description:\"触发项目窗口模拟器编译并打开指定页面。\",inputSchema:{project:a(\"项目绝对路径\"),page:a(\"页面路径（如 pages/index/index）\"),query:n(\"页面参数（如 id=1&type=test）\"),scene:e.number().optional().describe(\"场景值（默认 1001）\")}},[_.SIMULATOR_REFRESH]:{name:_.SIMULATOR_REFRESH,description:\"触发项目窗口模拟器重新编译/刷新当前页面；不返回编译结果\",inputSchema:{project:a(\"项目绝对路径\")}},[_.CLOUD_ENV_LIST]:{name:_.CLOUD_ENV_LIST,description:\"只读列出当前项目或 AppID 可用的云环境\",inputSchema:Object.assign({},s)},[_.CLOUD_FN_LIST]:{name:_.CLOUD_FN_LIST,description:\"只读列出指定云环境中的云函数\",inputSchema:Object.assign(Object.assign({},s),{env:a(\"云环境 ID\")})},[_.CLOUD_FN_INFO]:{name:_.CLOUD_FN_INFO,description:\"只读查询指定云函数的详情和状态\",inputSchema:Object.assign(Object.assign({},s),{env:a(\"云环境 ID\"),names:a(\"云函数名称（逗号分隔）\")})},[_.CLOUD_FN_DEPLO"
+        },
+        {
+          "term": "AUTOMATION_RUNTIME_INFO",
+          "index": 9298,
+          "source": "eTo/redirectTo/reLaunch/switchTab 需要）\"),delta:e.number().optional().describe(\"返回的页面数（navigateBack 需要，默认 1）\")},l)},[_.AUTOMATION_RUNTIME_INFO]:{name:_.AUTOMATION_RUNTIME_INFO,description:\"读取当前小程序运行时信息\",inputSchema:{project:a(\"项目绝对路径\"),action:t([\"pageStack\",\"currentPage\",\"systemInfo\"]).describe(\"信息类型\")}},[_.AUTOMATION_EVALUATE]:{name:_.AUTOMATION_EVALUATE,description:\"在当前小程序或小游戏运行时执行一段 JS 函数字符串并返回结果。该工具会实际执行代码，不是只读查询\",inputSchema:{project:a(\"项目绝对路径\"),action:t([\"evaluate\"]).describe(\"执行方式\"),fnSource:a(\"函数源代码字符串，例如 function() { return wx.getSystemInfoSync(); }\"),args:e.array(e.unknown()).optional().describe(\"函数参数\")}},[_.AUTOMATION_WX_API]:{name:_.AUTOMATION_WX_API,description:\"调用、mock 或恢复 wx API。call 用于真实调用，mock 会改变当前运行时行为，restore 用于撤销对应 mock\",inputSchema:{project:a(\"项目绝对路径\"),action:t([\"call\",\"mock\",\"restore\"]).describe(\"操作类型\"),method:a(\"wx API 方法名\"),args:e.array(e.unknown()).optional().describe(\"方法参数（call/mock 需要）\"),result:e.unknown().optional().describe(\"模拟返回值（mock 需要；与 functionDeclaration 二选一）\"),functionDeclaration:n(\"函数声明字符串（mock 需要；支持 function/async function/箭头函数；MCP 消息是 JSON，不能直接传 JS function 对象）\")}},[_.AUTOMATION_TESTACCOUNT]:{name:_.AUTOMATION_TESTACCOUNT,description:\"管理小程序测试号与登录 ticket：列出测试号、获取/设置/刷新 ticket\",inputSchema:{project:a(\"项目绝对路径\"),action:t([\"list\",\"getTicket\",\"setTicket\",\"refreshTicket\"]).describe(\"操作类型\"),ticket:n(\"登录票据（setTicket 需要）\")}},[_.AUTOMATION_VIEWPORT_ACTION]:{name:_.AUTOMATION_VIEWPORT_ACTION,description:\"执行滚动、真机调试或关闭工具；支持操作前等待\",inputSchema:Object.assign(Object.assign({project:a(\"项目绝对路径\"),action:t([\"pageScrollTo\",\"screenshot\",\"stopAudits\",\"remote\",\"close\"]).describe(\"操作类型（screenshot 为兼容别名，等同 simula"
+        }
+      ]
+    },
+    {
+      "path": "js/d6d539cfa0c891e0ed30e883810ce030.js",
+      "bytes": 4321,
+      "terms": [
+        "GET_SIMULATOR_CONSOLE"
+      ],
+      "excerpts": [
+        {
+          "term": "GET_SIMULATOR_CONSOLE",
+          "index": 3197,
+          "source": "urn{content:[{type:\"text\",text:d(Array.isArray(s)?s.map(u):[u(s)],o).join(\"\\n\")}]}}}),Object.assign(Object.assign({},r.MCP_TOOL_CONFIG[r.EMcpToolName.GET_SIMULATOR_CONSOLE]),{handler:async t=>{const r=null==t?void 0:t.project,o=(null==t?void 0:t.command)||\"\",n=(0,e.default)(c.ITransferActionService),i=await p(r),s=await n.callClientService(i.winId,a.IWIWorkspaceService,\"getMcpCachedConsoleLogsLock\",[]);return{content:[{type:\"text\",text:d(Array.isArray(s)?s.map(u):[u(s)],o).join(\"\\n\")}]}}}),Object.assign(Object.assign({},r.MCP_TOOL_CONFIG[r.EMcpToolName.SIMULATOR_SCREENSHOT]),{handler:async e=>{const t=null==e?void 0:e.project;if(!t)throw new Error(\"project is required\");const n=Date.now(),i={project:t,path:e.path,wait:e.wait,waitForSelector:e.waitForSelector,optimize:e.optimize,quality:e.quality};try{await(0,s.awaitOptionalWait)(t,{wait:e.wait,waitForSelector:e.waitForSelector});const c=await(0,l.saveSimulatorScreenshot)({project:t,path:e.path,optimize:e.optimize,quality:e.quality});return o.AutomatorInvocationRecorder.recordSuccess(r.EMcpToolName.SIMULATOR_SCREENSHOT,i,c,Date.now()-n),c}catch(e){throw o.AutomatorInvocationRecorder.recordFailure(r.EMcpToolName.SIMULATOR_SCREENSHOT,i,e,Date.now()-n),e}}})];\n}(require(\"licia/lazyImport\")(require), require)"
+        }
+      ]
+    },
+    {
+      "path": "js/ebfd3866fd9e9dd811c891b5c690f726.js",
+      "bytes": 19594,
+      "terms": [
+        "AUTOMATION_RUNTIME_INFO"
+      ],
+      "excerpts": [
+        {
+          "term": "AUTOMATION_RUNTIME_INFO",
+          "index": 1331,
+          "source": "args:[{url:o}]}),{success:!0}})}),Object.assign(Object.assign({},r.MCP_TOOL_CONFIG[r.EMcpToolName.AUTOMATION_RUNTIME_INFO]),{handler:w(r.EMcpToolName.AUTOMATION_RUNTIME_INFO,async t=>{const{project:e,action:a}=t||{};if(\"pageStack\"===a){const t=await g(e,\"App.getPageStack\",{});return Object.assign({success:!0},t)}if(\"currentPage\"===a){return{success:!0,currentPage:await g(e,\"App.getCurrentPage\",{})}}if(\"systemInfo\"===a){return{success:!0,systemInfo:await g(e,\"App.callWxMethod\",{method:\"getSystemInfoSync\",args:[]})}}throw new Error(\"Unsupported automation_runtime_info action: \"+String(a))})}),Object.assign(Object.assign({},r.MCP_TOOL_CONFIG[r.EMcpToolName.AUTOMATION_EVALUATE]),{handler:w(r.EMcpToolName.AUTOMATION_EVALUATE,async t=>{const{project:e,action:a,fnSource:o,args:r}=t||{};if(\"evaluate\"!==a)throw new Error(\"Unsupported action\");if(!o)throw new Error(\"fnSource is required\");if((0,i.isGameProjectPath)(e))return(0,i.handleGameEvaluate)(e,o,r,g);return{success:!0,result:await g(e,\"App.callFunction\",{functionDeclaration:o,args:r||[]})}})}),Object.assign(Object.assign({},r.MCP_TOOL_CONFIG[r.EMcpToolName.AUTOMATION_WX_API]),{handler:w(r.EMcpToolName.AUTOMATION_WX_API,async t=>{const{project:e,action:a,method:o,args:r,result:n,functionDeclaration:s}=t||{};if((0,i.isGameProjectPath)(e))return(0,i.handleGameWxApi)({project:e,action:a,method:o,args:r,result:n,functionDeclaration:s},g);if(\"call\"===a){const t=await g(e,\"App.callWxMethod\",{method:o,args:r||[]});return Object.assign({success:!0},t)}if(\"mock\"===a){if(void 0===n&&!s)throw new Error(\"result or functionDeclaration is required for mock\");const t={method:o,args:r||[]};re"
+        }
+      ]
+    }
+  ],
+  "scannedFiles": 4659
+}

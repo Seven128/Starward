@@ -62,8 +62,9 @@ export function constellationLineSegments(lines:ConstellationFrame['lines'],view
     const clipped=clipSkyLineToViewport(pa,pb,width,height);if(clipped)result.push(clipped);
   };
   for(const [a,b] of lines){
-    const above=hemisphere(a,b,[0,0,1]);if(!above)continue;
-    const front=hemisphere(above[0],above[1],view.basis.forward);if(front)arc(front[0],front[1],0);
+    // Browsing covers the complete sphere. The simulated foreground is a
+    // separate compositing/visibility owner, not a change to these real arcs.
+    const front=hemisphere(a,b,view.basis.forward);if(front)arc(front[0],front[1],0);
   }
   return result;
 }

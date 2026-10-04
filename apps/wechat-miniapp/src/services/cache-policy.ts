@@ -24,6 +24,9 @@ const TEMPORARY_QUERY_ROOTS = new Set([
   "map-scene", "spot-overview", "spot-guides", "spot-site", "spot-sky",
   "observation-context", "place-search", "spot-search",
   "map-observation-context", "search-observation-context", "search-scene",
+  // This immutable index also carries the Sky file owner's generation. Keeping
+  // it after file clear would strand returning observers on a retired capability.
+  "sao-index",
 ]);
 
 /** Settings clears trip-discovery cache, never account/library data or drafts. */

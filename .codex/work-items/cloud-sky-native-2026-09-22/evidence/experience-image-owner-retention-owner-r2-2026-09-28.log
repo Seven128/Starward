@@ -1,0 +1,12 @@
+✔ a publication or Canvas generation switch fences old decoded images before effects and redecodes for the new owner (54.9521ms)
+✔ hide, Canvas removal and publication loss retire decoded images held by the Hook, not just its returned view (24.9362ms)
+✔ an empty new Canvas generation cannot keep the old decoded-image state until another download finishes (5.6709ms)
+✔ repeated hide/show with a late canceled response releases retired state and preserves each new owner (6.3192ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 918.9038

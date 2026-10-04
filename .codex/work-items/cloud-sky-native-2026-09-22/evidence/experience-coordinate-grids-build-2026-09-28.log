@@ -1,0 +1,1223 @@
+
+> @starward/wechat-miniapp@0.1.0 build:weapp
+> node ../../tools/run-node.cjs --bin @tarojs/cli taro build --type weapp
+
+👽 Taro v4.2.1
+
+Tips:
+1. 建议开启持久化缓存功能，能有效提升二次编译速度，详情请参考: https://docs.taro.zone/docs/config-detail#cache。
+
+
+提示  appid     wx2e43b8498cb45da7
+生成  工具配置  E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\dist\weapp-check-sky-combined-clean-v14-0928/project.config.json
+启动  开发者工具-项目目录  E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\dist\weapp-check-sky-combined-clean-v14-0928
+
+● Webpack █████████████████████████  (0%)  
+ 
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ setup (2%)  
+ run
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (10%) 0/42 entries 42/42 dependen
+cies 0/42 modules 1 active 
+ babel-loader › src\app.config.ts
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (10%) 0/42 entries 42/42 dependen
+cies 0/42 modules 1 active 
+ babel-loader › src\app.config.ts
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (10%) 0/42 entries 42/43 dependen
+cies 0/42 modules 42 active 
+ ...er › ..\..\node_modules\@tarojs\webpack5-runner\dist\template\custom-wrapp
+er.js
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 86/90 depende
+ncies 21/65 modules 25 active 
+ taro-loader › src\app.tsx
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 300/362 depen
+dencies 21/152 modules 44 active 
+ taro-loader › src\content\event\list\index.tsx
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 362/371 depen
+dencies 21/200 modules 131 active 
+ ...d\remote-main-20260908\node_modules\@babel\runtime\helpers\esm\slicedToArr
+ay.js
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 370/381 depen
+dencies 22/207 modules 130 active 
+ ...d\remote-main-20260908\node_modules\@babel\runtime\helpers\esm\slicedToArr
+ay.js
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 963/977 depen
+dencies 42/347 modules 111 active 
+ ...Starward\remote-main-20260908\node_modules\@babel\runtime\helpers\esm\type
+of.js
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%)  
+ node_modules\postcss-loader\dist\cjs.js
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 963/978 depen
+dencies 42/347 modules 156 active 
+ ... › postcss-loader › resolve-url-loader › sass-loader › src\pages\map\index
+.scss
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 984/994 depen
+dencies 43/365 modules 216 active 
+ babel-loader › src\services\local-draft-keys.ts
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 1345/1458 dep
+endencies 76/408 modules 183 active 
+ babel-loader › src\services\import-save-retry.ts
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 1490/1500 dep
+endencies 91/480 modules 270 active 
+ ...ader › resolve-url-loader › sass-loader › src\spot\data-source\data-source
+.scss
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 1547/1600 dep
+endencies 121/480 modules 240 active 
+ ...ader › resolve-url-loader › sass-loader › src\spot\data-source\data-source
+.scss
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 1721/1755 dep
+endencies 132/519 modules 230 active 
+ ...loader › resolve-url-loader › sass-loader › src\content\contribution\index
+.scss
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 1859/1889 dep
+endencies 176/538 modules 276 active 
+ babel-loader › ..\..\packages\miniapp-contracts\src\sky-scene.ts
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 1887/1932 dep
+endencies 193/544 modules 261 active 
+ ...abel-loader › ..\..\packages\miniapp-contracts\src\moon-coverage-publicati
+on.ts
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 1929/1932 dep
+endencies 221/546 modules 240 active 
+ babel-loader › ..\..\packages\miniapp-contracts\src\types.ts
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 1992/2000 dep
+endencies 235/552 modules 267 active 
+ babel-loader › src\features\sky\sky-artwork-request.ts
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 2033/2034 dep
+endencies 254/554 modules 255 active 
+ babel-loader › src\features\sky\sky-landscape-resources.ts
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 2073/2102 dep
+endencies 275/559 modules 277 active 
+ ...apps\wechat-miniapp\node_modules\@tanstack\react-query\build\modern\suspen
+se.js
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 2099/2126 dep
+endencies 293/562 modules 262 active 
+ ...s-loader › resolve-url-loader › sass-loader › src\features\my\my-plan-card
+.scss
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 2201/2244 dep
+endencies 328/573 modules 236 active 
+ babel-loader › src\services\optical-hips-publication.ts
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (36%) 20/42 entries 2241/2258 dep
+endencies 343/595 modules 231 active 
+ ...s\wechat-miniapp\node_modules\@tanstack\query-core\build\modern\focusManag
+er.js
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (41%) 24/42 entries 2274/2278 dep
+endencies 382/600 modules 216 active 
+ ...\dev\worktrees\Starward\remote-main-20260908\node_modules\@noble\hashes\sh
+a2.js
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (41%) 24/42 entries 2281/2347 dep
+endencies 403/601 modules 198 active 
+ babel-loader › src\services\opal-bands-publication.ts
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (41%) 24/42 entries 2357/2365 dep
+endencies 444/610 modules 166 active 
+ node_modules\scheduler\index.js
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (41%) 24/42 entries 2369/2369 dep
+endencies 502/613 modules 111 active 
+ node_modules\scheduler\index.js
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (41%) 24/42 entries 2371/2371 dep
+endencies 506/615 modules 108 active 
+ ..\..\node_modules\css-loader\dist\runtime\noSourceMaps.js
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (42%) 25/42 entries 2392/2392 dep
+endencies 519/622 modules 98 active 
+ ...esolve-url-loader › sass-loader › src\components\source-attribution.scss|0
+|||}}
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (42%) 25/42 entries 2410/2414 dep
+endencies 553/628 modules 73 active 
+ ...ss-loader › resolve-url-loader › sass-loader › src\pages\auth\index.scss|0
+|||}}
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ building (53%) 33/42 entries 2434/2434 dep
+endencies 596/636 modules 38 active 
+ ... resolve-url-loader › sass-loader › src\features\my\my-library-page.scss|0
+|||}}
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ sealing (70%) finish module graph 
+ InnerGraphPlugin
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ sealing (71%)  
+ dependencies optimization
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ sealing (75%) chunk optimization 
+ SplitChunksPlugin
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ sealing (78%)  
+ chunk modules optimization
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ sealing (87%)  
+ code generation
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ sealing (88%)  
+ runtime requirements
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ sealing (92%) asset processing 
+ TaroMiniPlugin
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ sealing (92%) asset processing 
+ CssMinimizerPlugin
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ sealing (92%) asset processing 
+ RealContentHashPlugin
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ sealing (92%) asset processing 
+ TaroMiniPlugin
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+● Webpack █████████████████████████ emitting (98%)  
+ after emit
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+√ Webpack
+  Compiled successfully in 26.19s
+
+编译  发现入口  src/app.tsx
+编译  发现页面  src/pages/map/index.tsx
+编译  发现页面  src/pages/my/index.tsx
+编译  发现页面  src/pages/auth/index.tsx
+编译  发现页面  src/spot/search/index.tsx
+编译  发现页面  src/spot/guides/index.tsx
+编译  发现页面  src/spot/field/index.tsx
+编译  发现页面  src/spot/plan/index.tsx
+编译  发现页面  src/spot/data-source/index.tsx
+编译  发现页面  src/sky/detail/index.tsx
+编译  发现页面  src/sky/sources/index.tsx
+编译  发现页面  src/content/article/detail/index.tsx
+编译  发现页面  src/content/plan/detail/index.tsx
+编译  发现页面  src/content/plan/list/index.tsx
+编译  发现页面  src/content/plan/edit/index.tsx
+编译  发现页面  src/content/event/list/index.tsx
+编译  发现页面  src/content/event/detail/index.tsx
+编译  发现页面  src/content/contribution/index.tsx
+编译  发现页面  src/content/spot-feedback/index.tsx
+编译  发现页面  src/content/settings/index.tsx
+⚠️ Warnings: 
+
+Error: chunk common [mini-css-extract-plugin]
+Conflicting order. Following module has been added:
+ * css ../../node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[1]!../../node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[2]!../../node_modules/resolve-url-loader/index.js!../../node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[4]!./src/components/provenance.scss
+despite it was not able to fulfill desired ordering with these modules:
+ * css ../../node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[1]!../../node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[2]!../../node_modules/resolve-url-loader/index.js!../../node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[4]!./src/components/forecast-coverage-note.scss
+   - couldn't fulfill desired order of chunk group(s) content/plan/detail/index, content/plan/edit/index
+   - while fulfilling desired order of chunk group(s) pages/map/index
+    at Array.forEach (<anonymous>)
+
+AssetsOverSizeLimitWarning: asset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
+This can impact web performance.
+Assets: 
+  sky/detail/index.js (345 KiB)
+  common.js (335 KiB)
+    at Generator.next (<anonymous>)
+
+NoAsyncChunksWarning: webpack performance recommendations: 
+You can limit the size of your bundles by using import() or require.ensure to lazy load some parts of your application.
+For more info visit https://webpack.js.org/guides/code-splitting/
+    at Generator.next (<anonymous>)
+
+ℹ Stats: 
+
+assets by path [1m[32massets/[39m[22m 1010 KiB 100 assets
+assets by path [1m[32mcontent/[39m[22m 988 KiB 69 assets
+assets by path [1m[32mspot/[39m[22m 414 KiB 37 assets
+assets by path [1m[32msky/[39m[22m 933 KiB 21 assets
+assets by path [1m[32mpages/[39m[22m 245 KiB 12 assets
+assets by path [1m[32m*.js[39m[22m 625 KiB 6 assets
+assets by path [1m[32m*.wxss[39m[22m 72.2 KiB 3 assets
+assets by path [1m[32m*.wxml[39m[22m 80.9 KiB
+  asset [1m[32mbase.wxml[39m[22m 80.7 KiB [1m[32m[emitted][39m[22m
+  asset [1m[32mcomp.wxml[39m[22m 140 bytes [1m[32m[emitted][39m[22m
+assets by path [1m[32m*.json[39m[22m 1.47 KiB
+  asset [1m[32mapp.json[39m[22m 1.39 KiB [1m[32m[emitted][39m[22m
+  asset [1m[32mcomp.json[39m[22m 86 bytes [1m[32m[emitted][39m[22m
+asset [1m[32mutils.wxs[39m[22m 997 bytes [1m[32m[emitted][39m[22m
+
+[1m[33mWARNING[39m[22m in [1mchunk common [mini-css-extract-plugin]
+[1m[31mConflicting[39m[22m[1m order. Following module has been added:
+ * css ../../node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[1]!../../node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[2]!../../node_modules/resolve-url-loader/index.js!../../node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[4]!./src/components/provenance.scss
+despite it was not able to fulfill desired ordering with these modules:
+ * css ../../node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[1]!../../node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[2]!../../node_modules/resolve-url-loader/index.js!../../node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[4]!./src/components/forecast-coverage-note.scss
+   - couldn't fulfill desired order of chunk group(s) content/plan/detail/index, content/plan/edit/index
+   - while fulfilling desired order of chunk group(s) pages/map/index[39m[22m
+
+[1m[33mWARNING[39m[22m in [1masset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
+This can impact web performance.
+Assets: 
+  sky/detail/index.js (345 KiB)
+  common.js (335 KiB)[39m[22m
+
+[1m[33mWARNING[39m[22m in [1mwebpack performance recommendations: 
+You can limit the size of your bundles by using import() or require.ensure to lazy load some parts of your application.
+For more info visit https://webpack.js.org/guides/code-splitting/[39m[22m
+
+webpack 5.91.0 compiled with [1m[33m3 warnings[39m[22m in 26429 ms

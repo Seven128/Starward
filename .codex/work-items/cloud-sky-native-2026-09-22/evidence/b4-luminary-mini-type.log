@@ -1,0 +1,15 @@
+
+> @starward/wechat-miniapp@0.1.0 typecheck
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json
+
+src/features/sky/sky-scene-render.ts(362,9): error TS2367: This comparison appears to be unintentional because the types '"STAR" | "PLANET" | "MILKY_WAY" | "CONSTELLATION" | "METEOR_SHOWER" | "CONJUNCTION"' and '"MOON"' have no overlap.
+src/features/sky/spot-sky-page.tsx(2368,87): error TS2367: This comparison appears to be unintentional because the types '"STAR" | "PLANET" | "MILKY_WAY" | "CONSTELLATION" | "METEOR_SHOWER" | "CONJUNCTION"' and '"MOON"' have no overlap.
+src/services/celestial-information-response.ts(1,38): error TS2305: Module '"@starward/miniapp-contracts"' has no exported member 'celestialReferenceKindMatches'.
+src/services/celestial-search-response.ts(1,38): error TS2305: Module '"@starward/miniapp-contracts"' has no exported member 'celestialReferenceKindMatches'.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp
+npm error workspace @starward/wechat-miniapp@0.1.0
+npm error location E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json

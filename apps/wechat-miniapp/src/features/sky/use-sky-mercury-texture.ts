@@ -2,7 +2,7 @@ import {useMemo} from "react";
 import type {SkyGeometryReport} from "@starward/miniapp-contracts";
 import {useResourceQuery} from "@/hooks/use-resource-query";
 import {getMercuryTextureManifest,mercuryTextureImageUrl} from "@/services/mercury-texture-client";
-import {useSkyNativeImages} from "./use-sky-artwork";
+import {useSkyFixedImage} from "./use-sky-fixed-image";
 import {skyPlanetDiscsAt} from "./sky-planet-disc";
 import {skyFixedImageStatus} from "./sky-fixed-image-status";
 import type {SkyArtworkView} from "./sky-artwork-registration";
@@ -19,10 +19,9 @@ export function useSkyMercuryTexture(report:Pick<SkyGeometryReport,"hourly">|und
   const manifest=useResourceQuery({queryKey:["mercury-texture-manifest"],queryFn:getMercuryTextureManifest,
     enabled:wanted,staleTime:60_000,structuralSharing:false});
   const publication=manifest.data;
-  const assets=useMemo(()=>publication?[{...publication.image,id:"mercury:messenger-2013"}]:[],[publication]);
-  const images=useSkyNativeImages(canvas,canvasRevision,publication?.publicationHash,wanted,assets,
+  const images=useSkyFixedImage(canvas,canvasRevision,publication,active,wanted,"mercury:messenger-2013",
     asset=>({url:mercuryTextureImageUrl(asset.downloadUrl),format:"jpeg"}));
-  const image=images.images.get("mercury:messenger-2013")??images.retainedImages.get("mercury:messenger-2013")??null;
+  const image=images.image;
   const status=skyFixedImageStatus(wanted,image,manifest.isError,Boolean(manifest.refreshError),images.failed);
   return {image,publication,loading:wanted&&(manifest.isFetching||images.loading),
     ...status,

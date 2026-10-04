@@ -1,0 +1,18 @@
+{
+  "at": "2026-09-28T16:29:03.013Z",
+  "sourcesStillMatchCausalComparison": true,
+  "latestCandidate": {
+    "bundle": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v15-0929",
+    "sha256": "b2fc818c76d64df748e0f016cd8090b8e0b7bebf7f84751a23c901616267bdbe",
+    "rawBytes": 4476095,
+    "opened": false
+  },
+  "uniqueCurrentPlanDependency": true,
+  "localLinksChecked": 313,
+  "phoneTouched": false,
+  "newNativeWindows": 0,
+  "nativeCurrentFrameOrContextVerified": false,
+  "newMoonPhoneVerified": false,
+  "independentReviewObtained": false,
+  "scope": "Artifact/document/source binding only. No native, target-quality, performance, operating-cost or Goal-completion certification."
+}

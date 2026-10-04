@@ -1,0 +1,259 @@
+{
+  "initialFinePaused": {
+    "route": "sky/detail/index",
+    "canvas": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4119 颗真实亮星目录对象，场景时刻 2026-09-29T16:00:10.779Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "selection": [],
+    "modal": [],
+    "actions": [],
+    "time": [
+      {
+        "sid": "_Cy",
+        "cl": "sky-orientation-time-ruler__current",
+        "text": "00:00:10 预览"
+      },
+      {
+        "sid": "_FZ",
+        "cl": "sky-time-playback__button sky-time-playback__toggle focus-ring",
+        "label": "以真实时间一倍速度播放天空",
+        "text": "播放 1×"
+      },
+      {
+        "sid": "_Fi",
+        "cl": "sky-time-playback__button sky-time-playback__apply focus-ring",
+        "text": "设为观测时间"
+      },
+      {
+        "sid": "_Fk",
+        "cl": "sky-time-playback__button sky-time-playback__cancel focus-ring",
+        "text": "取消"
+      }
+    ]
+  },
+  "sdk3174FineWarm": {
+    "route": "sky/detail/index",
+    "canvas": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4119 颗真实亮星目录对象，场景时刻 2026-09-29T16:00:10.581Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "selection": [],
+    "modal": [],
+    "actions": [],
+    "time": [
+      {
+        "sid": "_Cd",
+        "cl": "sky-orientation-time-ruler__current",
+        "text": "00:00:10 预览"
+      },
+      {
+        "sid": "_FE",
+        "cl": "sky-time-playback__button sky-time-playback__toggle focus-ring",
+        "label": "以真实时间一倍速度播放天空",
+        "text": "播放 1×"
+      },
+      {
+        "sid": "_FN",
+        "cl": "sky-time-playback__button sky-time-playback__apply focus-ring",
+        "text": "设为观测时间"
+      },
+      {
+        "sid": "_FP",
+        "cl": "sky-time-playback__button sky-time-playback__cancel focus-ring",
+        "text": "取消"
+      }
+    ]
+  },
+  "sdk3174VegaBeforeSource": {
+    "route": "sky/detail/index",
+    "canvas": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4119 颗真实亮星目录对象，场景时刻 2026-09-29T16:00:10.581Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "selection": [],
+    "modal": [
+      {
+        "label": "Vega天体信息",
+        "text": "Vega 恒星  ·  HR 7001 方位  305.2 ° · 高度  18.7 °  · 几何位置不保证可见 定位到星空 跟踪天体 已收录可核验的中文介绍与目录资料 织女星是天琴座 α 星，IAU 正式名称为 Vega。它是北半球夏季夜空中醒目的亮星之一。 Vega · HR 7001 · HIP 91262 · HD 172167 · 3Alp Lyr · 织女星 · 織女一 V 波段视星等 0.03  mag B−V 色指数 0.000  mag 光谱型 A0Va 目录资料是恒星的静态身份与测量值；当前地点和时刻的方位需使用对应天空帧。 来源 ·  HEASARC / NASA GSFC; Hoffleit & Warren · IAU Working Group on Star Names · Wikidata contributors 来源与许可"
+      }
+    ],
+    "actions": [
+      {
+        "sid": "_Lm",
+        "cl": "sky-object-modal__close",
+        "label": "关闭Vega信息",
+        "text": ""
+      },
+      {
+        "sid": "_Mm",
+        "cl": "sky-object-modal__source",
+        "text": "来源 ·  HEASARC / NASA GSFC; Hoffleit & Warren · IAU Working Group on Star Names · Wikidata contributors"
+      }
+    ],
+    "time": []
+  },
+  "sdk3174RefreshFailed": {
+    "canvas": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4119 颗真实亮星目录对象，场景时刻 2026-09-29T16:00:10.581Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "listText": [
+      "对象列表",
+      "所选地点与时刻的天体",
+      "搜索日月、行星、恒星与深空天体",
+      "当前天空 · ",
+      "3 个目标",
+      "目标资料尚未更新，当前保留同一地点与时刻的缓存计算。",
+      "重试目标",
+      "木星",
+      "行星",
+      " · ",
+      "02:55—04:55",
+      "50°",
+      " · ",
+      "-35°",
+      "金星",
+      "行星",
+      " · ",
+      "19:25—19:25",
+      "268°",
+      " · ",
+      "-62°",
+      "银河核心方向",
+      "银河",
+      " · ",
+      "19:25—22:30",
+      "245°",
+      " · ",
+      "-16°",
+      "目录天体",
+      "土星",
+      "行星",
+      " · ",
+      "PLANET SATURN",
+      " · 视觉星等 0.21",
+      "M 31",
+      "星系",
+      " · ",
+      "M 31",
+      " · V 波段视星等 3.44",
+      "M 42",
+      "星云",
+      " · ",
+      "M 42",
+      " · V 波段视星等 4.00",
+      "天王星",
+      "行星",
+      " · ",
+      "PLANET URANUS"
+    ],
+    "targetRows": [
+      "查看木星信息，行星，50°，-35°，02:55—04:55",
+      "查看金星信息，行星，268°，-62°，19:25—19:25",
+      "查看银河核心方向信息，银河，245°，-16°，19:25—22:30"
+    ],
+    "recovery": [
+      {
+        "sid": "_Ym",
+        "label": "重试目标"
+      }
+    ]
+  },
+  "sdk3174RefreshRecovered": {
+    "canvas": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4119 颗真实亮星目录对象，场景时刻 2026-09-29T16:00:10.581Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "listText": [
+      "对象列表",
+      "所选地点与时刻的天体",
+      "搜索日月、行星、恒星与深空天体",
+      "当前天空 · ",
+      "3 个目标",
+      "木星",
+      "行星",
+      " · ",
+      "02:55—04:55",
+      "50°",
+      " · ",
+      "-35°",
+      "金星",
+      "行星",
+      " · ",
+      "19:25—19:25",
+      "268°",
+      " · ",
+      "-62°",
+      "银河核心方向",
+      "银河",
+      " · ",
+      "19:25—22:30",
+      "245°",
+      " · ",
+      "-16°",
+      "目录天体",
+      "土星",
+      "行星",
+      " · ",
+      "PLANET SATURN",
+      " · 视觉星等 0.21",
+      "M 31",
+      "星系",
+      " · ",
+      "M 31",
+      " · V 波段视星等 3.44",
+      "M 42",
+      "星云",
+      " · ",
+      "M 42",
+      " · V 波段视星等 4.00",
+      "天王星",
+      "行星",
+      " · ",
+      "PLANET URANUS",
+      " · 视觉星等 5.64",
+      "M 33"
+    ],
+    "targetRows": [
+      "查看木星信息，行星，50°，-35°，02:55—04:55",
+      "查看金星信息，行星，268°，-62°，19:25—19:25",
+      "查看银河核心方向信息，银河，245°，-16°，19:25—22:30"
+    ],
+    "recovery": []
+  },
+  "sdk3174Canceled": {
+    "route": "sky/detail/index",
+    "canvas": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4120 颗真实亮星目录对象，场景时刻 2026-09-29T16:00:05.153Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "selection": [],
+    "modal": [],
+    "actions": [],
+    "time": [
+      {
+        "sid": "_fZ",
+        "cl": "sky-orientation-time-ruler__current",
+        "text": "00:00:05"
+      },
+      {
+        "sid": "_iD",
+        "cl": "sky-time-playback__button sky-time-playback__toggle focus-ring",
+        "label": "以真实时间一倍速度播放天空",
+        "text": "播放 1×"
+      }
+    ]
+  },
+  "diagnosticOnly": {
+    "originalSetData": {
+      "records": [
+        {
+          "keys": [
+            "root.cn.[0].cn"
+          ],
+          "callback": false,
+          "nonData": [],
+          "jsonBytes": 4854,
+          "error": "An object could not be cloned."
+        }
+      ]
+    },
+    "jsonNormalizedSetData": {
+      "records": [
+        {
+          "keys": [
+            "root.cn.[0].cn"
+          ],
+          "callback": false,
+          "jsonBytes": 17403,
+          "error": "An object could not be cloned.",
+          "stack": "Error: An object could not be cloned.\n    at f (ide:///extensions/appservice/index.js:1:15647)\n    at Object.T [as publish] (ide:///extensions/appservice/index.js:1:16833)\n    at le.multicast (http://127.0.0.1:10786/__dev__/WAServiceMainContext.js?t=wechat&v=3.17.3:1:139257)\n    at le.publish (http://127.0.0.1:10786/__dev__/WAServiceMainContext.js?t=wechat&v=3.17.3:1:138903)\n    at http://127.0.0.1:10786/__dev__/WAServiceMainContext.js?t=wechat&v=3.17.3:1:143000\n    at r.ready (http://127.0.0.1:10786/__dev__/WAServiceMainContext.js?t=wechat&v=3.17.3:1:124142)\n    at e.publish (http://127.0.0.1:10786/__dev__/WAServiceMainContext.js?t=wechat&v=3.17.3:1:142987)\n    at a (http://127.0.0.1:10786/__dev__/WAServiceMainContext.js?t=wechat&v=3.17.3:1:1298829)\n    at c (http://127.0.0.1:10786/__dev__/WAServiceMainContext.js?t=wechat&v=3.17.3:1:1306259)\n    at d (http://127.0.0.1:10786/__dev__/WAServiceMainContext.js?t=wechat&v=3.17.3:1:1306562)"
+        }
+      ]
+    },
+    "limits": "临时诊断已还原；普通 JSON 同样失败，未据此归因基础库、增加持久 setData 包装或作为产品正常证据。"
+  }
+}

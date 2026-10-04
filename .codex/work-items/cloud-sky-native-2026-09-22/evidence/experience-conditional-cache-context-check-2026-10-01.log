@@ -1,0 +1,5 @@
+
+> starward@1.0.0 context:validate
+> node tools/run-node.cjs --bin project-tiny-context-harness ty-context validate-context
+
+Checked manifest paths and explicit ty-context-controlling-source declarations. Ordinary Markdown links, examples, external links and factual correctness are not validated.

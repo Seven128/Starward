@@ -1,0 +1,43 @@
+✔ generated client operation manifest exactly matches the public Nest controller (2.1153ms)
+✔ stable HR references return attributable ready and basic-only states (41.4831ms)
+✔ large numeric-like and unknown references stay strings and fail closed (1.4486ms)
+✔ Messier galaxy and nebula references expose attributable catalog facts (10.2212ms)
+✔ same identity and locale reuse a stable content revision without sharing mutable values (1.0056ms)
+✔ SAO details interpret HD multiplicity codes instead of presenting them as names (723.3598ms)
+✖ real catalogue names, Chinese aliases and normalized identifiers resolve the same component (2081.6054ms)
+✔ shared HD aliases preserve distinct SAO components and details use the same alias owner (52.1163ms)
+✔ results are bounded, detached from indexes and never carry invented observing coordinates (118.7007ms)
+✔ one unavailable publication preserves other results and a later query recovers it (0.8874ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 9
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3489.0159
+
+✖ failing tests:
+
+test at src\celestial-object-search.test.ts:1:381
+✖ real catalogue names, Chinese aliases and normalized identifiers resolve the same component (2081.6054ms)
+  AssertionError [ERR_ASSERTION]: an exact catalogue number must not expand to HR 10/100/etc
+  + actual - expected
+  
+  + []
+  - [
+  -   'HR:1'
+  - ]
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\celestial-object-search.test.ts:19:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'HR:1' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

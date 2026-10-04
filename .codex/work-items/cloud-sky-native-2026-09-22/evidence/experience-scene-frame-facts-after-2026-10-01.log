@@ -1,0 +1,11 @@
+✔ exact frame facts distinguish a usable empty catalog frame from missing geometry (2.3452ms)
+✔ playing scene publication keeps the completed instant, catalog and count while the next native frame is queued (33.2236ms)
+✔ pausing or cancelling to a different instant cannot publish the retained playing frame as current (14.4943ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 947.6921

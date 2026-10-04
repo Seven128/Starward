@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "bsc5p-bright-stars-manifest-v1",
+  "catalogVersion": "bsc5p-bright-stars.v2",
+  "rowCount": 8404,
+  "namedRowCount": 467,
+  "rowOrder": "Vmag ASC, HR numeric ASC",
+  "derivedAssetSha256": "e7f329bf653f343d2da61da3aeeb0d1d35df5d9c4484d1ce8edc8241ed184995",
+  "derivedAssetBytes": 2568175,
+  "retrievedAt": "2026-09-19T10:42:19.214819Z",
+  "sources": {
+    "catalog": {
+      "queryUrl": "https://heasarc.gsfc.nasa.gov/xamin/vo/tap/sync?REQUEST=doQuery&LANG=ADQL&MAXREC=12000&QUERY=SELECT+hr%2Cra%2Cdec%2Cvmag%2Cvmag_code%2Cvmag_uncert%2Cbv_color%2Cbv_uncert%2Cpmra%2Cpmdec%2Chd%2Cspect_type%2Calt_name+FROM+bsc5p+WHERE+vmag+BETWEEN+-2+AND+6.5+ORDER+BY+vmag+ASC%2Chr+ASC",
+      "responseSha256": "afd06fd9d64e0705859a6dee2ba5eb85b772f5bfaeffaeb8e53e33ee836d0794",
+      "responseBytes": 755742,
+      "landingUrl": "https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/bsc5p.html",
+      "datasetMetadataUrl": "https://data.nasa.gov/dataset/bright-star-catalog",
+      "rightsUrl": "https://www.usa.gov/government-works",
+      "usagePolicyUrl": "https://heasarc.gsfc.nasa.gov/docs/heasarc/data_policy.html",
+      "credit": "Hoffleit & Warren (1991), Bright Star Catalog, 5th Revised Edition (Preliminary Version); HEASARC, NASA/GSFC"
+    },
+    "names": {
+      "sourceUrl": "https://exopla.net/star-names/modern-iau-star-names/",
+      "provider": "IAU Working Group on Star Names",
+      "responseSha256": "29463ff750298d7c5966565cbfd9fbafcae1dff85103e4780f7c5f5ba140ef67",
+      "responseBytes": 652326,
+      "usage": "Proper names and unambiguous published HR/HD/Bayer/Flamsteed identifiers; HIP aliases from the same IAU row"
+    },
+    "nameIdentities": {
+      "sourceUrl": "https://iauarchive.eso.org/public/themes/naming_stars/",
+      "provider": "IAU Working Group on Star Names",
+      "publication": "IAU-approved names as of 2021-01-01",
+      "responseSha256": "67392808893e0d45fc7e5ded7cdb4eb12987fed62b0d03e8d89d631181f7646d",
+      "responseBytes": 182898,
+      "usage": "Only explicit HR identity for the exact same active name when current designation matches multiple BSC components; no archived astrometry, photometry or retired names"
+    }
+  },
+  "derivation": {
+    "excludedNonStellarHr": [],
+    "nonStellarExclusionList": [
+      92,
+      95,
+      182,
+      1057,
+      1841,
+      2472,
+      2496,
+      3515,
+      3671,
+      6309,
+      6515,
+      7189,
+      7539,
+      8296
+    ],
+    "properMotion": "mu_alpha_cos_delta and mu_delta, arcsec/year at FK5 J2000 epoch; no copied Hipparcos astrometry",
+    "photometry": "Source V magnitude code and uncertainty retained; H is original HR photometry, not normalized to Johnson V",
+    "names": "Exact unambiguous HR or HD, otherwise exact Bayer including component digit or Flamsteed identity; missing/component/ambiguous names are not guessed; ambiguous matches may resolve only through one explicit archived IAU HR within the current candidate set",
+    "runtimeNetwork": "forbidden"
+  }
+}

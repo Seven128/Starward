@@ -1,0 +1,32 @@
+✔ portrait identification field renders the figure and real lines rather than an empty enabled layer (2.4134ms)
+✔ offscreen constellation arcs avoid fine clipping while a crossing with offscreen endpoints remains (62.9545ms)
+✔ a true curved constellation arc survives offscreen endpoints; clipping uses actual viewport and horizon (0.7529ms)
+✖ overview and intent gate the constellation; local artwork fades while real lines remain and image failure stays independent (2.4435ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 774.2122
+
+✖ failing tests:
+
+test at apps\wechat-miniapp\src\features\sky\sky-constellation-render.test.ts:1:4456
+✖ overview and intent gate the constellation; local artwork fades while real lines remain and image failure stays independent (2.4435ms)
+  AssertionError [ERR_ASSERTION]: the local reference retains real constellation arcs for identification
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-constellation-render.test.ts:94:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

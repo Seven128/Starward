@@ -1,0 +1,194 @@
+{
+  "scope": "Fixed v28 native development binding and actual public journey. Only two Sky source owners changed; original 2MASS bytes/publication unchanged. Original screenshots viewed by the primary agent; this is self-review. Native Canvas-only captures do not establish ordinary overlay composition, target performance, phone/iOS/new-Moon acceptance or overall completion.",
+  "candidate": {
+    "file": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\cloud-sky-native-2026-09-22\\evidence\\experience-combined-clean-v28-candidate-2026-09-29.json",
+    "sha256": "78d6a759e48b12aafa94c90c17fc2b17c01893d9073e6a2b4d424d34bcfd5a37",
+    "bundle": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v28-0929",
+    "fingerprint": "f08e89f4d6689dab8e24594d6873bd1a5500280be53da962c9fbd56eace616eb"
+  },
+  "trace": {
+    "file": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\cloud-sky-native-2026-09-22\\evidence\\experience-galactic-native-2026-09-29.jsonl",
+    "events": 64,
+    "sha256": "d3e4d645467f5f7d8f2d67c27ee64e161aded6307cc0259f5e41830f5defa374",
+    "frozen": true
+  },
+  "captures": [
+    {
+      "stage": "galactic-initial-ready",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-galactic-initial-ready-2026-09-29.png",
+      "sha256": "4540450609437826fe60f4ad78d96d84a59a9ca867128456bb0e7d9411418b86",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "stage": "galactic-polaris-local-45",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-galactic-polaris-local-45-2026-09-29.png",
+      "sha256": "12fc0d96b78a8f00529415fa7f75856b90a3e7f664db3e728f8f8a83710bd38d",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "stage": "galactic-polaris-modal",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-galactic-polaris-modal-2026-09-29.png",
+      "sha256": "999b7b6e4c69aa3110e67f9dcf8a586c6f22f07f2aa26fcedadedd3a44a48593",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "stage": "galactic-polaris-independent-sources",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-galactic-polaris-independent-sources-2026-09-29.png",
+      "sha256": "a7a2da515562ff9638c904ba048604b95731893f63b726da49e91b7a4d092ec3",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "stage": "galactic-source-back-45",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-galactic-source-back-45-2026-09-29.png",
+      "sha256": "fd7e4ee1370cb8cb6f51cee413db1ae45bb731167e9f339c167e648ccaba91b9",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "stage": "galactic-polaris-overview",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-galactic-polaris-overview-2026-09-29.png",
+      "sha256": "a449f206c54b5fb08e3cb1e56c34bf56c72856bfbae18e292648b080939b92c2",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "stage": "galactic-polaris-recognition",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-galactic-polaris-recognition-2026-09-29.png",
+      "sha256": "6d3ad1e8a0514a030a6e76cfdae27a7de8e00ba0246152ee446e7dea9fac9db7",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "stage": "galactic-full-dome",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-galactic-full-dome-2026-09-29.png",
+      "sha256": "1e0715582d70f43e594797b835ad0422bf7c5da1a8331fe6124c1d08a3b4cb27",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "stage": "galactic-final-polaris-45",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-galactic-final-polaris-45-2026-09-29.png",
+      "sha256": "f84d979d948e7d46514c4270563454ffb56936361d658db475c2d09a951b48db",
+      "width": 427,
+      "height": 919
+    }
+  ],
+  "context": {
+    "locationKind": "FORMAL_SPOT",
+    "publicSpotId": "spot:test-published",
+    "localDate": "2026-09-29",
+    "selectedAtUtc": "2026-09-29T21:00:00Z",
+    "timezone": "Asia/Shanghai",
+    "revision": 2,
+    "contextFingerprint": "552415196b8d546836843d25d9b8d5ddbf9482f380796e66c0a8e85e17260a28",
+    "astronomyVersion": "astronomy-engine-2.1.19",
+    "contextIdSha256": "fb3474ce89ebb481580f8c4c7cbd33dc79c16348b3d420a472ee32e98bca99e6"
+  },
+  "display": {
+    "mode": "DAY",
+    "largeText": false,
+    "pagePath": "sky/detail/index",
+    "pageDepth": 2
+  },
+  "runtime": {
+    "informationModuleSha256": "3ae1fcda98d31ec91469e7c2e92aa1d8d314b8e4203dadb24359c5483ce67cd9",
+    "resourceMode": "pass",
+    "active": 0,
+    "forwardedPutStatuses": [
+      200
+    ],
+    "epochStartedAt": "2026-09-29T06:26:06.812Z",
+    "contextUpstream": 8789,
+    "sourceMode": "pass",
+    "publicationHash": "87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+    "contextMode": "pass",
+    "windows": [
+      {
+        "Id": 25916,
+        "MainWindowTitle": "Starward-Sky-Combined-Clean-V28-0929"
+      }
+    ],
+    "puts": 1,
+    "publicationBackendPort": 59162,
+    "held": 0
+  },
+  "toolFailures": [
+    {
+      "tool": "automation_evaluate",
+      "errorType": "MCP_TOOL_ERROR",
+      "reason": "mcp_business_fail"
+    },
+    {
+      "tool": "automation_element_action",
+      "errorType": "MCP_TOOL_ERROR",
+      "reason": "mcp_business_fail"
+    },
+    {
+      "reason": "mcp_business_fail",
+      "tool": "automation_element_action",
+      "errorType": "MCP_TOOL_ERROR"
+    }
+  ],
+  "viewport": {
+    "success": true,
+    "width": 390.3999938964844,
+    "height": 844
+  },
+  "sameCandidatePixels": [
+    {
+      "leftStage": "galactic-polaris-local-45",
+      "rightStage": "galactic-source-back-45",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Same v28 original screenshots only; excludes capsule/system bars/rounded border. No resize, cross-candidate pixel comparison or invented pass tolerance."
+      }
+    },
+    {
+      "leftStage": "galactic-polaris-local-45",
+      "rightStage": "galactic-final-polaris-45",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Same v28 original screenshots only; excludes capsule/system bars/rounded border. No resize, cross-candidate pixel comparison or invented pass tolerance."
+      }
+    }
+  ],
+  "supporting": [
+    {
+      "file": "experience-galactic-causal-validation-2026-09-29.json",
+      "sha256": "417aeb25baf4b773085825429d5c0781ac2deb2cd66b7fb022050d6a9add217f"
+    },
+    {
+      "file": "experience-galactic-cost-2026-09-29.json",
+      "sha256": "79af0ab753e7bd3a9f977e1b2eb151a90c196d3f088716f7240d432c747b7780"
+    }
+  ],
+  "retained": [
+    {
+      "file": "experience-sky-whole-scene-review-native-2026-09-29.jsonl",
+      "sha256": "69e818624877befd897e1ab769d5f9cd9358c4faaf4baebb340be2394c63a4b6"
+    },
+    {
+      "file": "experience-large-text-consumers-native-2026-09-29.jsonl",
+      "sha256": "dc66f8eb4b9380c24b7137b12deb101d32189bc0bc6fa66bcf864e79c2ef37cf"
+    },
+    {
+      "file": "experience-map-theme-recovery-native-2026-09-29.jsonl",
+      "sha256": "30645226b665d0700b65dbd05c8e242dacbaa067cc6ba305a0de532044081512"
+    }
+  ],
+  "historyLimits": "Native v28 427x919 and v26 479x1035 are differently scaled host captures despite the same actual logical canvas. No cross-generation pixel equality. v28 Context differs from v26; same public observer/time are comparable. v27 remains unused. A legacy pinch-helper stage name includes v26; actions use the recorded explicit v28 project."
+}

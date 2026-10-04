@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\readback-prepared-m82-combination-2026-10-04.py", line 65, in <module>
+    assert phase['frameResources']['calls']['skyImageMesh']['submitted'] > 0
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+KeyError: 'skyImageMesh'

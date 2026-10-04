@@ -20,6 +20,8 @@ COPY packages/coordinate-system ./packages/coordinate-system
 COPY packages/miniapp-contracts ./packages/miniapp-contracts
 COPY workers/miniapp-api ./workers/miniapp-api
 COPY tools/run-node.cjs ./tools/run-node.cjs
+COPY tools/deployment/sky-static-bundle.mjs tools/deployment/sky-static-bundle.d.mts ./tools/deployment/
+ARG STARWARD_RELEASE_REVISION
 # The shared astronomy package also serves other products. Its Gaia DR3 pack
 # is not licensed for this Mini Program's commercial sky delivery, so keep it
 # out of the Mini API runtime image after compilation.
@@ -27,7 +29,9 @@ RUN npm run build:miniapp:release \
     && test -f packages/astronomy-core/dist/data/gaia-dr3-bright-stars.v1.json \
     && test -f packages/astronomy-core/dist/data/gaia-dr3-bright-stars.v1.manifest.json \
     && rm -- packages/astronomy-core/dist/data/gaia-dr3-bright-stars.v1.json \
-             packages/astronomy-core/dist/data/gaia-dr3-bright-stars.v1.manifest.json
+             packages/astronomy-core/dist/data/gaia-dr3-bright-stars.v1.manifest.json \
+    && node --conditions=production workers/miniapp-api/dist/sky-public-asset-export.js \
+         --output /app/sky-public --revision "${STARWARD_RELEASE_REVISION}"
 
 FROM node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df AS production-dependencies
 
@@ -73,8 +77,13 @@ COPY --from=build --chown=node:node /app/packages/miniapp-contracts/dist ./packa
 COPY --from=build --chown=node:node /app/workers/miniapp-api/package.json ./workers/miniapp-api/package.json
 COPY --from=build --chown=node:node /app/workers/miniapp-api/dist ./workers/miniapp-api/dist
 COPY --from=build --chown=node:node /app/workers/miniapp-api/assets ./workers/miniapp-api/assets
+COPY --from=build --chown=node:node /app/sky-public/publication ./sky-public/publication
+COPY --from=build --chown=node:node /app/tools/deployment/sky-static-bundle.mjs ./tools/deployment/sky-static-bundle.mjs
 COPY --chown=node:node database/miniapp/migrations ./database/miniapp/migrations
-RUN test ! -e packages/astronomy-core/dist/data/gaia-dr3-bright-stars.v1.json \
+RUN test -f sky-public/publication/image-artifact.json \
+    && test -f sky-public/publication/index.json \
+    && test -f sky-public/publication/delivery.caddy \
+    && test ! -e packages/astronomy-core/dist/data/gaia-dr3-bright-stars.v1.json \
     && test -f workers/miniapp-api/assets/moon/coverage-manifest.json \
     && test -f workers/miniapp-api/assets/moon/clementine-uv750-v21-coverage-2048x1024.png \
     && test ! -e packages/astronomy-core/dist/data/gaia-dr3-bright-stars.v1.manifest.json \

@@ -1,0 +1,1047 @@
+{
+  "scope": "Three actual cached corrected frames only; source structure admitted, scientific validity/quality unknown. No pixels published.",
+  "acquisition": {
+    "path": "output/sdss-corrected-m51-1002/frame-acquisition.json",
+    "bytes": 2165,
+    "sha256": "379bbf80f6d678b6597da3a0d274044f76200c688d65c44176e8024029a464c3"
+  },
+  "sourceBefore": [
+    {
+      "path": "output/sdss-corrected-m51-1002/sources/frame-g-003699-6-0100.fits.bz2",
+      "bytes": 2880390,
+      "sha256": "53374522cb666e0c32a57376a3bd4b53c1a9a2140c2c5111a66a77598a54ca64"
+    },
+    {
+      "path": "output/sdss-corrected-m51-1002/sources/frame-r-003699-6-0100.fits.bz2",
+      "bytes": 3056156,
+      "sha256": "80fb916ec554f7e6538690ba19da16249f69d4a5d2b0c79647fa84b8efb1a351"
+    },
+    {
+      "path": "output/sdss-corrected-m51-1002/sources/frame-i-003699-6-0100.fits.bz2",
+      "bytes": 3197532,
+      "sha256": "1d554a9b1753c746efd3632d13bd7f976c12e315b52bd2d4d449645b74b35ade"
+    }
+  ],
+  "sourceAfter": [
+    {
+      "path": "output/sdss-corrected-m51-1002/sources/frame-g-003699-6-0100.fits.bz2",
+      "bytes": 2880390,
+      "sha256": "53374522cb666e0c32a57376a3bd4b53c1a9a2140c2c5111a66a77598a54ca64"
+    },
+    {
+      "path": "output/sdss-corrected-m51-1002/sources/frame-r-003699-6-0100.fits.bz2",
+      "bytes": 3056156,
+      "sha256": "80fb916ec554f7e6538690ba19da16249f69d4a5d2b0c79647fa84b8efb1a351"
+    },
+    {
+      "path": "output/sdss-corrected-m51-1002/sources/frame-i-003699-6-0100.fits.bz2",
+      "bytes": 3197532,
+      "sha256": "1d554a9b1753c746efd3632d13bd7f976c12e315b52bd2d4d449645b74b35ade"
+    }
+  ],
+  "rawOriginalFilesUnchanged": true,
+  "receipts": [
+    {
+      "version": "sdss-corrected-frame-cached-admission-v1",
+      "admission": "STRUCTURE_ACCEPTED_SCIENTIFIC_VALIDITY_UNVERIFIED",
+      "source": {
+        "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\output\\sdss-corrected-m51-1002\\sources\\frame-g-003699-6-0100.fits.bz2",
+        "sourceUrl": "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/301/3699/6/frame-g-003699-6-0100.fits.bz2",
+        "sha256": "53374522cb666e0c32a57376a3bd4b53c1a9a2140c2c5111a66a77598a54ca64",
+        "bytes": 2880390,
+        "compressedFormat": "bzip2",
+        "dataModelUrl": "https://data.sdss.org/datamodel/files/BOSS_PHOTOOBJ/frames/RERUN/RUN/CAMCOL/frame.html",
+        "imagesUrl": "https://www.sdss4.org/dr17/imaging/images/"
+      },
+      "decompressed": {
+        "sha256": "76ba2a5f25130e1c3586ef09d817fa5b6965a2cccc00a53fbc0a7d22008e56c4",
+        "bytes": 12447360,
+        "maximumBytes": 33554432,
+        "singleCompleteBzip2Stream": true,
+        "completeScientificArrays": true,
+        "missingEndPaddingBytes": 0,
+        "readerWarnings": [
+          "RADECSYS= 'ICRS ' / International Celestial Ref. System \nthe RADECSYS keyword is deprecated, use RADESYSa."
+        ]
+      },
+      "identity": {
+        "run": 3699,
+        "rerun": "301",
+        "camcol": 6,
+        "field": 100,
+        "band": "g"
+      },
+      "scientificSamples": {
+        "shapeRowsColumns": [
+          1489,
+          2048
+        ],
+        "bitpix": -32,
+        "unit": "nanomaggies/pixel",
+        "actualBunit": "nanomaggy",
+        "calibrationAlreadyApplied": true,
+        "appliedNmgyPerCount": 0.00364695,
+        "skyAlreadySubtracted": true,
+        "finiteSamples": 3049472,
+        "nonfiniteSamples": 0,
+        "finiteZeroSamples": 0,
+        "finiteNegativeSamples": 725941,
+        "scientificValidity": "UNKNOWN",
+        "artifactMask": "NOT_SUPPLIED",
+        "meaning": "Finite/zero/negative sample values remain measurements; fpM artifacts, exposure/noise and confidence are not measured here."
+      },
+      "wcs": {
+        "primaryHeaderFitsCards": "SIMPLE  =                    T /                                                \nBITPIX  =                  -32 / 32 bit floating point                          \nNAXIS   =                    2                                                  \nNAXIS1  =                 2048                                                  \nNAXIS2  =                 1489                                                  \nEXTEND  =                    T /Extensions may be present                       \nBZERO   =              0.00000 /Set by MRD_SCALE                                \nBSCALE  =              1.00000 /Set by MRD_SCALE                                \nTAI     =        4553664308.61 / 1st row - Number of seconds since Nov 17 1858  \nRA      =            203.02452 / 1st row - Right ascension of telescope boresigh\nDEC     =            46.061354 / 1st row - Declination of telescope boresight (d\nSPA     =             103.187  / 1st row - Camera col position angle wrt north (\nIPA     =             331.855  / 1st row - Instrument rotator position angle (de\nIPARATE =              0.0029  / 1st row - Instrument rotator angular velocity (\nAZ      =            218.35414 / 1st row - Azimuth  (encoder) of tele (0=N?) (de\nALT     =            71.945842 / 1st row - Altitude (encoder) of tele        (de\nFOCUS   =           -279.20000 / 1st row - Focus piston (microns?)              \nDATE-OBS= '2003-03-06'         / 1st row - TAI date                             \nTAIHMS  = '10:45:08.61'        / 1st row - TAI time (HH:MM:SS.SS) (TAI-UT = appr\nCOMMENT  TAI,RA,DEC,SPA,IPA,IPARATE,AZ,ALT,FOCUS at reading of col 0, row 0     \nORIGIN  = 'SDSS    '                                                            \nTELESCOP= '2.5m    '                                                            \nTIMESYS = 'TAI     '                                                            \nRUN     =                 3699 / Run number                                     \nFRAME   =                  108 / Frame sequence number within the run           \nCCDLOC  =                   56 / Survey location of CCD (e.g., rowCol)          \nSTRIPE  =                   29 / Stripe index number (23 <--> eta=0)            \nSTRIP   = 'S       '           / Strip in the stripe being tracked.             \nFLAVOR  = 'science '           / Flavor of this run                             \nOBSERVER= 'prn     '           / Observer                                       \nSYS_SCN = 'mean    '           / System of the scan great circle (e.g., mean)   \nEQNX_SCN=           2000.00    / Equinox of the scan great circle. (years)      \nNODE    =           95.00000   / RA of the great circle's ascending node (deg)  \nINCL    =           47.50000   / Great circle's inclination wrt cel. eq. (deg)  \nXBORE   =           22.74      / Boresight x offset from the array center (mm)  \nYBORE   =           0.00       / Boresight x offset from the array center (mm)  \nOBJECT  = '29 S    '           / e.g., 'stripe 50.6 degrees, north strip'       \nEXPTIME = '53.907456'          / Exposure time (seconds)                        \nSYSTEM  = 'FK5     '           / System of the TCC coordinates (e.g., mean)     \nCCDMODE = 'DRIFT   '           / 'STARING' or 'DRIFT'                           \nC_OBS   =                26322 / CCD row clock rate (usec/row)                  \nCOLBIN  =                    1 / Binning factor perpendicular to the columns    \nROWBIN  =                    1 / Binning factor perpendicular to the rows       \nDAVERS  = 'v14_47  '           / Version of DA software                         \nSCDMETHD= 'sqrtDynamic'        / scdMethod                                      \nSCDWIDTH=                 1280 / scdDisplayWidth                                \nSCDDECMF=                    1 / scdDecimateFactor                              \nSCDOFSET=                  410 / scdDisplayOffset                               \nSCDDYNTH=                  -19 / scdDynamicThresh                               \nSCDSTTHL=                   30 / scdStaticThreshL                               \nSCDSTTHR=                   30 / scdStaticThreshR                               \nSCDREDSZ=                  480 / scdReduceSize                                  \nSCDSKYL =                 1323 / scdSkyLeft                                     \nSCDSKYR =                 1320 / scdSkyRight                                    \nCOMMENT  CCD-specific parameters                                                \nCAMROW  =                    5 / Row in the imaging camera                      \nBADLINES=                    0 / Number of bad lines in frame                   \nEQUINOX =              2000.00 /                                                \nSOFTBIAS=                 1000 / software \"bias\" added to all DN                \nBUNIT   = 'nanomaggy'          / 1 nanomaggy = 3.631e-6 Jy                      \nFILTER  = 'g       '           / filter used                                    \nCAMCOL  =                    6 / column in the imaging camera                   \nVERSION = 'v5_6_3  '                                                            \nDERV_VER= 'NOCVS:v8_23'                                                         \nASTR_VER= 'NOCVS:v5_24'                                                         \nASTRO_ID= '2009-05-27T00:43:51 25166'                                           \nBIAS_ID = 'PS      '                                                            \nFRAME_ID= '2009-10-06T11:35:18 01936'                                           \nKO_VER  = 'devel   '                                                            \nPS_ID   = '2009-05-26T23:29:46 08880 camCol 6'                                  \nATVSN   = 'NOCVS:v5_24'        / ASTROTOOLS version tag                         \nRADECSYS= 'ICRS    '           / International Celestial Ref. System            \nCTYPE1  = 'RA---TAN'           /Coordinate type                                 \nCTYPE2  = 'DEC--TAN'           /Coordinate type                                 \nCUNIT1  = 'deg     '           /Units                                           \nCUNIT2  = 'deg     '           /Units                                           \nCRPIX1  =        1025.00000000 /X of reference pixel                            \nCRPIX2  =        745.000000000 /Y of reference pixel                            \nCRVAL1  =        202.438857212 /RA of reference pixel (deg)                     \nCRVAL2  =        47.1225245661 /Dec of reference pixel (deg)                    \nCD1_1   =    2.43263430035E-05 /RA deg per column pixel                         \nCD1_2   =    0.000107279801885 /RA deg per row pixel                            \nCD2_1   =    0.000107245038435 /Dec deg per column pixel                        \nCD2_2   =   -2.42955306691E-05 /Dec deg per row pixel                           \nHISTORY GSSSPUTAST: Oct  6 11:35:25 2009                                        \nCOMMENT  Calibration parameters                                                 \nCOMMENT  Floats truncated at 10 binary digits with FLOATCOMPRESS                \nNMGY    =           0.00364695 / Calibration factor [nMgy per count]            \nNMGYIVAR=            0.0596681 / Calibration factor inverse variance            \nVERSIDL = '7.0     '           / Version of IDL                                 \nVERSUTIL= 'v5_5_5  '           / Version of idlutils                            \nVERSPOP = 'v1_11_1 '           / Version of photoop product                     \nPCALIB  = '/clusterfs/riemann/raid006/bosswork/groups/boss/calib/2009-06-14/cal'\nPSKY    = '/clusterfs/riemann/raid006/bosswork/groups/boss/photo/sky' / Value of\nRERUN   = '301     '           / rerun                                          \nHISTORY SDSS_FRAME_ASTROM: Astrometry fixed for dr9 Sat Jun 16 18:44:16 2012    \nEND                                                                             ",
+        "primaryHeaderSha256": "6d06f07ec3e13fb9e9c8e56efb7bd9396b7b1e8a1fc692c6451ce16eda548f97",
+        "celestialHeader": {
+          "WCSAXES": 2,
+          "CRPIX1": 1025.0,
+          "CRPIX2": 745.0,
+          "PC1_1": 2.43263430035e-05,
+          "PC1_2": 0.000107279801885,
+          "PC2_1": 0.000107245038435,
+          "PC2_2": -2.42955306691e-05,
+          "CDELT1": 1.0,
+          "CDELT2": 1.0,
+          "CUNIT1": "deg",
+          "CUNIT2": "deg",
+          "CTYPE1": "RA---TAN",
+          "CTYPE2": "DEC--TAN",
+          "CRVAL1": 202.438857212,
+          "CRVAL2": 47.1225245661,
+          "LONPOLE": 180.0,
+          "LATPOLE": 47.1225245661,
+          "TIMESYS": "TAI",
+          "MJDREF": 0.0,
+          "DATE-OBS": "2003-03-06",
+          "MJD-OBS": 52704.0,
+          "RADESYS": "ICRS"
+        },
+        "pixelToWorldSamples": [
+          [
+            202.28521117224358,
+            47.030678853096894
+          ],
+          [
+            202.3579343868353,
+            47.250283418211204
+          ],
+          [
+            202.51935638917237,
+            46.994601777992436
+          ],
+          [
+            202.59299795808482,
+            47.21405692700776
+          ],
+          [
+            202.4388393363793,
+            47.12247094357937
+          ]
+        ],
+        "roundtripMaximumPixelError": 2.091837814077735e-10,
+        "meaning": "Corrected-frame linear TAN approximation; complete asTrans polynomial/DCR astrometry is retained but not applied or certified."
+      },
+      "asTrans": {
+        "headerFitsCards": "XTENSION= 'BINTABLE'           /Binary table written by MWRFITS v1.11           \nBITPIX  =                    8 /Required value                                  \nNAXIS   =                    2 /Required value                                  \nNAXIS1  =                  216 /Number of bytes per row                         \nNAXIS2  =                    1 /Number of rows                                  \nPCOUNT  =                    0 /Normally 0 (no varying arrays)                  \nGCOUNT  =                    1 /Required value                                  \nTFIELDS =                   31 /Number of columns in table                      \nCOMMENT                                                                         \nCOMMENT  *** End of mandatory fields ***                                        \nCOMMENT                                                                         \nCOMMENT                                                                         \nCOMMENT  *** Column names ***                                                   \nCOMMENT                                                                         \nTTYPE1  = 'RUN     '           /                                                \nTTYPE2  = 'RERUN   '           /                                                \nTTYPE3  = 'CAMCOL  '           /                                                \nTTYPE4  = 'FILTER  '           /                                                \nTTYPE5  = 'NODE    '           /                                                \nTTYPE6  = 'INCL    '           /                                                \nTTYPE7  = 'NAXIS   '           /                                                \nTTYPE8  = 'FIELD   '           /                                                \nTTYPE9  = 'A       '           /                                                \nTTYPE10 = 'B       '           /                                                \nTTYPE11 = 'C       '           /                                                \nTTYPE12 = 'D       '           /                                                \nTTYPE13 = 'E       '           /                                                \nTTYPE14 = 'F       '           /                                                \nTTYPE15 = 'DROW0   '           /                                                \nTTYPE16 = 'DROW1   '           /                                                \nTTYPE17 = 'DROW2   '           /                                                \nTTYPE18 = 'DROW3   '           /                                                \nTTYPE19 = 'DCOL0   '           /                                                \nTTYPE20 = 'DCOL1   '           /                                                \nTTYPE21 = 'DCOL2   '           /                                                \nTTYPE22 = 'DCOL3   '           /                                                \nTTYPE23 = 'CSROW   '           /                                                \nTTYPE24 = 'CSCOL   '           /                                                \nTTYPE25 = 'CCROW   '           /                                                \nTTYPE26 = 'CCCOL   '           /                                                \nTTYPE27 = 'RICUT   '           /                                                \nTTYPE28 = 'MJD     '           /                                                \nTTYPE29 = 'AIRMASS '           /                                                \nTTYPE30 = 'MUERR   '           /                                                \nTTYPE31 = 'NUERR   '           /                                                \nCOMMENT                                                                         \nCOMMENT  *** Column formats ***                                                 \nCOMMENT                                                                         \nTFORM1  = 'J       '           /                                                \nTFORM2  = '3A      '           /                                                \nTFORM3  = 'J       '           /                                                \nTFORM4  = 'A       '           /                                                \nTFORM5  = 'D       '           /                                                \nTFORM6  = 'D       '           /                                                \nTFORM7  = '2J      '           /                                                \nTFORM8  = 'J       '           /                                                \nTFORM9  = 'D       '           /                                                \nTFORM10 = 'D       '           /                                                \nTFORM11 = 'D       '           /                                                \nTFORM12 = 'D       '           /                                                \nTFORM13 = 'D       '           /                                                \nTFORM14 = 'D       '           /                                                \nTFORM15 = 'D       '           /                                                \nTFORM16 = 'D       '           /                                                \nTFORM17 = 'D       '           /                                                \nTFORM18 = 'D       '           /                                                \nTFORM19 = 'D       '           /                                                \nTFORM20 = 'D       '           /                                                \nTFORM21 = 'D       '           /                                                \nTFORM22 = 'D       '           /                                                \nTFORM23 = 'D       '           /                                                \nTFORM24 = 'D       '           /                                                \nTFORM25 = 'D       '           /                                                \nTFORM26 = 'D       '           /                                                \nTFORM27 = 'D       '           /                                                \nTFORM28 = 'D       '           /                                                \nTFORM29 = 'D       '           /                                                \nTFORM30 = 'E       '           /                                                \nTFORM31 = 'E       '           /                                                \nEND                                                                             ",
+        "headerSha256": "0dc66cc5a3f549baa0bc261d8f1fab0a05a89c41f25c416a42154c75c4760c13",
+        "columns": [
+          {
+            "name": "RUN",
+            "format": "J",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "RERUN",
+            "format": "3A",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CAMCOL",
+            "format": "J",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "FILTER",
+            "format": "A",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "NODE",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "INCL",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "NAXIS",
+            "format": "2J",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "FIELD",
+            "format": "J",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "A",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "B",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "C",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "D",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "E",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "F",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DROW0",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DROW1",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DROW2",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DROW3",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DCOL0",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DCOL1",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DCOL2",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DCOL3",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CSROW",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CSCOL",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CCROW",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CCCOL",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "RICUT",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "MJD",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "AIRMASS",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "MUERR",
+            "format": "E",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "NUERR",
+            "format": "E",
+            "dim": null,
+            "unit": null
+          }
+        ],
+        "row": {
+          "RUN": 3699,
+          "RERUN": "301",
+          "CAMCOL": 6,
+          "FILTER": "g",
+          "NODE": 95.0010679999999,
+          "INCL": 47.502768,
+          "NAXIS": [
+            2048,
+            1489
+          ],
+          "FIELD": 100,
+          "A": 196.6861729712221,
+          "B": 0.00011001127740579503,
+          "C": 2.657025013440438e-08,
+          "D": 0.8281645676842962,
+          "E": 1.1697237442888546e-08,
+          "F": 0.00010996922139636519,
+          "DROW0": 0.05131401553867884,
+          "DROW1": -0.0001697761962661978,
+          "DROW2": 1.3567590605191227e-07,
+          "DROW3": -3.031874590919897e-11,
+          "DCOL0": 0.028534853776749965,
+          "DCOL1": 0.00032865531429435797,
+          "DCOL2": -7.571494068722257e-07,
+          "DCOL3": 3.2636336360416394e-10,
+          "CSROW": 0.08584996174742855,
+          "CSCOL": -0.07422892974511894,
+          "CCROW": 0.12877494262114283,
+          "CCCOL": -0.1113433946176784,
+          "RICUT": 1.5,
+          "MJD": 52704.44801770001,
+          "AIRMASS": 1.0579487385676962,
+          "MUERR": 0.03605589643120766,
+          "NUERR": 0.027068963274359703
+        }
+      },
+      "limitations": [
+        "Structure admission is not scientific validity, completeness across bands or image quality.",
+        "No RGB, reprojection, mosaic, stretch, mask, asset publication or runtime integration was performed."
+      ]
+    },
+    {
+      "version": "sdss-corrected-frame-cached-admission-v1",
+      "admission": "STRUCTURE_ACCEPTED_SCIENTIFIC_VALIDITY_UNVERIFIED",
+      "source": {
+        "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\output\\sdss-corrected-m51-1002\\sources\\frame-r-003699-6-0100.fits.bz2",
+        "sourceUrl": "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/301/3699/6/frame-r-003699-6-0100.fits.bz2",
+        "sha256": "80fb916ec554f7e6538690ba19da16249f69d4a5d2b0c79647fa84b8efb1a351",
+        "bytes": 3056156,
+        "compressedFormat": "bzip2",
+        "dataModelUrl": "https://data.sdss.org/datamodel/files/BOSS_PHOTOOBJ/frames/RERUN/RUN/CAMCOL/frame.html",
+        "imagesUrl": "https://www.sdss4.org/dr17/imaging/images/"
+      },
+      "decompressed": {
+        "sha256": "dbbf918c1b87e259499de5714a5caf7fa5e510547cfb78445cc5dc357dd2da77",
+        "bytes": 12447360,
+        "maximumBytes": 33554432,
+        "singleCompleteBzip2Stream": true,
+        "completeScientificArrays": true,
+        "missingEndPaddingBytes": 0,
+        "readerWarnings": [
+          "RADECSYS= 'ICRS ' / International Celestial Ref. System \nthe RADECSYS keyword is deprecated, use RADESYSa."
+        ]
+      },
+      "identity": {
+        "run": 3699,
+        "rerun": "301",
+        "camcol": 6,
+        "field": 100,
+        "band": "r"
+      },
+      "scientificSamples": {
+        "shapeRowsColumns": [
+          1489,
+          2048
+        ],
+        "bitpix": -32,
+        "unit": "nanomaggies/pixel",
+        "actualBunit": "nanomaggy",
+        "calibrationAlreadyApplied": true,
+        "appliedNmgyPerCount": 0.00502803,
+        "skyAlreadySubtracted": true,
+        "finiteSamples": 3049472,
+        "nonfiniteSamples": 0,
+        "finiteZeroSamples": 1,
+        "finiteNegativeSamples": 733494,
+        "scientificValidity": "UNKNOWN",
+        "artifactMask": "NOT_SUPPLIED",
+        "meaning": "Finite/zero/negative sample values remain measurements; fpM artifacts, exposure/noise and confidence are not measured here."
+      },
+      "wcs": {
+        "primaryHeaderFitsCards": "SIMPLE  =                    T /                                                \nBITPIX  =                  -32 / 32 bit floating point                          \nNAXIS   =                    2                                                  \nNAXIS1  =                 2048                                                  \nNAXIS2  =                 1489                                                  \nEXTEND  =                    T /Extensions may be present                       \nBZERO   =              0.00000 /Set by MRD_SCALE                                \nBSCALE  =              1.00000 /Set by MRD_SCALE                                \nTAI     =        4553664022.06 / 1st row - Number of seconds since Nov 17 1858  \nRA      =            201.33610 / 1st row - Right ascension of telescope boresigh\nDEC     =            46.322159 / 1st row - Declination of telescope boresight (d\nSPA     =             101.969  / 1st row - Camera col position angle wrt north (\nIPA     =             331.070  / 1st row - Instrument rotator position angle (de\nIPARATE =              0.0026  / 1st row - Instrument rotator angular velocity (\nAZ      =            218.43762 / 1st row - Azimuth  (encoder) of tele (0=N?) (de\nALT     =            71.520225 / 1st row - Altitude (encoder) of tele        (de\nFOCUS   =           -280.80000 / 1st row - Focus piston (microns?)              \nDATE-OBS= '2003-03-06'         / 1st row - TAI date                             \nTAIHMS  = '10:40:22.05'        / 1st row - TAI time (HH:MM:SS.SS) (TAI-UT = appr\nCOMMENT  TAI,RA,DEC,SPA,IPA,IPARATE,AZ,ALT,FOCUS at reading of col 0, row 0     \nORIGIN  = 'SDSS    '                                                            \nTELESCOP= '2.5m    '                                                            \nTIMESYS = 'TAI     '                                                            \nRUN     =                 3699 / Run number                                     \nFRAME   =                  100 / Frame sequence number within the run           \nCCDLOC  =                   16 / Survey location of CCD (e.g., rowCol)          \nSTRIPE  =                   29 / Stripe index number (23 <--> eta=0)            \nSTRIP   = 'S       '           / Strip in the stripe being tracked.             \nFLAVOR  = 'science '           / Flavor of this run                             \nOBSERVER= 'prn     '           / Observer                                       \nSYS_SCN = 'mean    '           / System of the scan great circle (e.g., mean)   \nEQNX_SCN=           2000.00    / Equinox of the scan great circle. (years)      \nNODE    =           95.00000   / RA of the great circle's ascending node (deg)  \nINCL    =           47.50000   / Great circle's inclination wrt cel. eq. (deg)  \nXBORE   =           22.74      / Boresight x offset from the array center (mm)  \nYBORE   =           0.00       / Boresight x offset from the array center (mm)  \nOBJECT  = '29 S    '           / e.g., 'stripe 50.6 degrees, north strip'       \nEXPTIME = '53.907456'          / Exposure time (seconds)                        \nSYSTEM  = 'FK5     '           / System of the TCC coordinates (e.g., mean)     \nCCDMODE = 'DRIFT   '           / 'STARING' or 'DRIFT'                           \nC_OBS   =                26322 / CCD row clock rate (usec/row)                  \nCOLBIN  =                    1 / Binning factor perpendicular to the columns    \nROWBIN  =                    1 / Binning factor perpendicular to the rows       \nDAVERS  = 'v14_47  '           / Version of DA software                         \nSCDMETHD= 'sqrtDynamic'        / scdMethod                                      \nSCDWIDTH=                 1280 / scdDisplayWidth                                \nSCDDECMF=                    1 / scdDecimateFactor                              \nSCDOFSET=                  410 / scdDisplayOffset                               \nSCDDYNTH=                  -19 / scdDynamicThresh                               \nSCDSTTHL=                   30 / scdStaticThreshL                               \nSCDSTTHR=                   30 / scdStaticThreshR                               \nSCDREDSZ=                  480 / scdReduceSize                                  \nSCDSKYL =                 1323 / scdSkyLeft                                     \nSCDSKYR =                 1320 / scdSkyRight                                    \nCOMMENT  CCD-specific parameters                                                \nCAMROW  =                    1 / Row in the imaging camera                      \nBADLINES=                    0 / Number of bad lines in frame                   \nEQUINOX =              2000.00 /                                                \nSOFTBIAS=                 1000 / software \"bias\" added to all DN                \nBUNIT   = 'nanomaggy'          / 1 nanomaggy = 3.631e-6 Jy                      \nFILTER  = 'r       '           / filter used                                    \nCAMCOL  =                    6 / column in the imaging camera                   \nVERSION = 'v5_6_3  '                                                            \nDERV_VER= 'NOCVS:v8_23'                                                         \nASTR_VER= 'NOCVS:v5_24'                                                         \nASTRO_ID= '2009-05-27T00:43:51 25166'                                           \nBIAS_ID = 'PS      '                                                            \nFRAME_ID= '2009-10-06T11:35:18 01936'                                           \nKO_VER  = 'devel   '                                                            \nPS_ID   = '2009-05-26T23:29:46 08880 camCol 6'                                  \nATVSN   = 'NOCVS:v5_24'        / ASTROTOOLS version tag                         \nRADECSYS= 'ICRS    '           / International Celestial Ref. System            \nCTYPE1  = 'RA---TAN'           /Coordinate type                                 \nCTYPE2  = 'DEC--TAN'           /Coordinate type                                 \nCUNIT1  = 'deg     '           /Units                                           \nCUNIT2  = 'deg     '           /Units                                           \nCRPIX1  =        1025.00000000 /X of reference pixel                            \nCRPIX2  =        745.000000000 /Y of reference pixel                            \nCRVAL1  =        202.440859522 /RA of reference pixel (deg)                     \nCRVAL2  =        47.1223548381 /Dec of reference pixel (deg)                    \nCD1_1   =    2.43094398756E-05 /RA deg per column pixel                         \nCD1_2   =    0.000107277865565 /RA deg per row pixel                            \nCD2_1   =    0.000107288484996 /Dec deg per column pixel                        \nCD2_2   =   -2.43000793243E-05 /Dec deg per row pixel                           \nHISTORY GSSSPUTAST: Oct  6 11:35:27 2009                                        \nCOMMENT  Calibration parameters                                                 \nCOMMENT  Floats truncated at 10 binary digits with FLOATCOMPRESS                \nNMGY    =           0.00502803 / Calibration factor [nMgy per count]            \nNMGYIVAR=             0.130394 / Calibration factor inverse variance            \nVERSIDL = '7.0     '           / Version of IDL                                 \nVERSUTIL= 'v5_5_5  '           / Version of idlutils                            \nVERSPOP = 'v1_11_1 '           / Version of photoop product                     \nPCALIB  = '/clusterfs/riemann/raid006/bosswork/groups/boss/calib/2009-06-14/cal'\nPSKY    = '/clusterfs/riemann/raid006/bosswork/groups/boss/photo/sky' / Value of\nRERUN   = '301     '           / rerun                                          \nHISTORY SDSS_FRAME_ASTROM: Astrometry fixed for dr9 Sat Jun 16 18:44:19 2012    \nEND                                                                             ",
+        "primaryHeaderSha256": "ae438f61dd43d575cff31e9be354aea0be6236d5e930ff003c3370cbc8d97ade",
+        "celestialHeader": {
+          "WCSAXES": 2,
+          "CRPIX1": 1025.0,
+          "CRPIX2": 745.0,
+          "PC1_1": 2.43094398756e-05,
+          "PC1_2": 0.000107277865565,
+          "PC2_1": 0.000107288484996,
+          "PC2_2": -2.43000793243e-05,
+          "CDELT1": 1.0,
+          "CDELT2": 1.0,
+          "CUNIT1": "deg",
+          "CUNIT2": "deg",
+          "CTYPE1": "RA---TAN",
+          "CTYPE2": "DEC--TAN",
+          "CRVAL1": 202.440859522,
+          "CRVAL2": 47.1223548381,
+          "LONPOLE": 180.0,
+          "LATPOLE": 47.1223548381,
+          "TIMESYS": "TAI",
+          "MJDREF": 0.0,
+          "DATE-OBS": "2003-03-06",
+          "MJD-OBS": 52704.0,
+          "RADESYS": "ICRS"
+        },
+        "pixelToWorldSamples": [
+          [
+            202.28724159676028,
+            47.030468057668024
+          ],
+          [
+            202.35991353136936,
+            47.250161503684026
+          ],
+          [
+            202.52138163588333,
+            46.994384160662165
+          ],
+          [
+            202.5949723163835,
+            47.21392829798236
+          ],
+          [
+            202.44084165885715,
+            47.12230119385613
+          ]
+        ],
+        "roundtripMaximumPixelError": 1.5347723092418164e-10,
+        "meaning": "Corrected-frame linear TAN approximation; complete asTrans polynomial/DCR astrometry is retained but not applied or certified."
+      },
+      "asTrans": {
+        "headerFitsCards": "XTENSION= 'BINTABLE'           /Binary table written by MWRFITS v1.11           \nBITPIX  =                    8 /Required value                                  \nNAXIS   =                    2 /Required value                                  \nNAXIS1  =                  216 /Number of bytes per row                         \nNAXIS2  =                    1 /Number of rows                                  \nPCOUNT  =                    0 /Normally 0 (no varying arrays)                  \nGCOUNT  =                    1 /Required value                                  \nTFIELDS =                   31 /Number of columns in table                      \nCOMMENT                                                                         \nCOMMENT  *** End of mandatory fields ***                                        \nCOMMENT                                                                         \nCOMMENT                                                                         \nCOMMENT  *** Column names ***                                                   \nCOMMENT                                                                         \nTTYPE1  = 'RUN     '           /                                                \nTTYPE2  = 'RERUN   '           /                                                \nTTYPE3  = 'CAMCOL  '           /                                                \nTTYPE4  = 'FILTER  '           /                                                \nTTYPE5  = 'NODE    '           /                                                \nTTYPE6  = 'INCL    '           /                                                \nTTYPE7  = 'NAXIS   '           /                                                \nTTYPE8  = 'FIELD   '           /                                                \nTTYPE9  = 'A       '           /                                                \nTTYPE10 = 'B       '           /                                                \nTTYPE11 = 'C       '           /                                                \nTTYPE12 = 'D       '           /                                                \nTTYPE13 = 'E       '           /                                                \nTTYPE14 = 'F       '           /                                                \nTTYPE15 = 'DROW0   '           /                                                \nTTYPE16 = 'DROW1   '           /                                                \nTTYPE17 = 'DROW2   '           /                                                \nTTYPE18 = 'DROW3   '           /                                                \nTTYPE19 = 'DCOL0   '           /                                                \nTTYPE20 = 'DCOL1   '           /                                                \nTTYPE21 = 'DCOL2   '           /                                                \nTTYPE22 = 'DCOL3   '           /                                                \nTTYPE23 = 'CSROW   '           /                                                \nTTYPE24 = 'CSCOL   '           /                                                \nTTYPE25 = 'CCROW   '           /                                                \nTTYPE26 = 'CCCOL   '           /                                                \nTTYPE27 = 'RICUT   '           /                                                \nTTYPE28 = 'MJD     '           /                                                \nTTYPE29 = 'AIRMASS '           /                                                \nTTYPE30 = 'MUERR   '           /                                                \nTTYPE31 = 'NUERR   '           /                                                \nCOMMENT                                                                         \nCOMMENT  *** Column formats ***                                                 \nCOMMENT                                                                         \nTFORM1  = 'J       '           /                                                \nTFORM2  = '3A      '           /                                                \nTFORM3  = 'J       '           /                                                \nTFORM4  = 'A       '           /                                                \nTFORM5  = 'D       '           /                                                \nTFORM6  = 'D       '           /                                                \nTFORM7  = '2J      '           /                                                \nTFORM8  = 'J       '           /                                                \nTFORM9  = 'D       '           /                                                \nTFORM10 = 'D       '           /                                                \nTFORM11 = 'D       '           /                                                \nTFORM12 = 'D       '           /                                                \nTFORM13 = 'D       '           /                                                \nTFORM14 = 'D       '           /                                                \nTFORM15 = 'D       '           /                                                \nTFORM16 = 'D       '           /                                                \nTFORM17 = 'D       '           /                                                \nTFORM18 = 'D       '           /                                                \nTFORM19 = 'D       '           /                                                \nTFORM20 = 'D       '           /                                                \nTFORM21 = 'D       '           /                                                \nTFORM22 = 'D       '           /                                                \nTFORM23 = 'D       '           /                                                \nTFORM24 = 'D       '           /                                                \nTFORM25 = 'D       '           /                                                \nTFORM26 = 'D       '           /                                                \nTFORM27 = 'D       '           /                                                \nTFORM28 = 'D       '           /                                                \nTFORM29 = 'D       '           /                                                \nTFORM30 = 'E       '           /                                                \nTFORM31 = 'E       '           /                                                \nEND                                                                             ",
+        "headerSha256": "0dc66cc5a3f549baa0bc261d8f1fab0a05a89c41f25c416a42154c75c4760c13",
+        "columns": [
+          {
+            "name": "RUN",
+            "format": "J",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "RERUN",
+            "format": "3A",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CAMCOL",
+            "format": "J",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "FILTER",
+            "format": "A",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "NODE",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "INCL",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "NAXIS",
+            "format": "2J",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "FIELD",
+            "format": "J",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "A",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "B",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "C",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "D",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "E",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "F",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DROW0",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DROW1",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DROW2",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DROW3",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DCOL0",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DCOL1",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DCOL2",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DCOL3",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CSROW",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CSCOL",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CCROW",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CCCOL",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "RICUT",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "MJD",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "AIRMASS",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "MUERR",
+            "format": "E",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "NUERR",
+            "format": "E",
+            "dim": null,
+            "unit": null
+          }
+        ],
+        "row": {
+          "RUN": 3699,
+          "RERUN": "301",
+          "CAMCOL": 6,
+          "FILTER": "r",
+          "NODE": 95.0010679999999,
+          "INCL": 47.502768,
+          "NAXIS": [
+            2048,
+            1489
+          ],
+          "FIELD": 100,
+          "A": 196.68756976837298,
+          "B": 0.0001100104013636048,
+          "C": -2.7744873105146124e-09,
+          "D": 0.8282595052517376,
+          "E": 9.611313091023161e-09,
+          "F": 0.00011000874725583002,
+          "DROW0": -0.02214086720375865,
+          "DROW1": 3.9373807581666034e-05,
+          "DROW2": 1.4485746295701829e-08,
+          "DROW3": -1.8655671015600825e-11,
+          "DCOL0": 0.06385953195769765,
+          "DCOL1": 0.0002046668215607675,
+          "DCOL2": -6.417431609365769e-07,
+          "DCOL3": 2.942148102782769e-10,
+          "CSROW": 0.009632149761157551,
+          "CSCOL": -0.006144430243269804,
+          "CCROW": 0.9632149761157551,
+          "CCCOL": -0.6144430243269804,
+          "RICUT": 100.0,
+          "MJD": 52704.444700640044,
+          "AIRMASS": 1.0542772632596806,
+          "MUERR": 0.05864592641592026,
+          "NUERR": 0.054565902799367905
+        }
+      },
+      "limitations": [
+        "Structure admission is not scientific validity, completeness across bands or image quality.",
+        "No RGB, reprojection, mosaic, stretch, mask, asset publication or runtime integration was performed."
+      ]
+    },
+    {
+      "version": "sdss-corrected-frame-cached-admission-v1",
+      "admission": "STRUCTURE_ACCEPTED_SCIENTIFIC_VALIDITY_UNVERIFIED",
+      "source": {
+        "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\output\\sdss-corrected-m51-1002\\sources\\frame-i-003699-6-0100.fits.bz2",
+        "sourceUrl": "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/301/3699/6/frame-i-003699-6-0100.fits.bz2",
+        "sha256": "1d554a9b1753c746efd3632d13bd7f976c12e315b52bd2d4d449645b74b35ade",
+        "bytes": 3197532,
+        "compressedFormat": "bzip2",
+        "dataModelUrl": "https://data.sdss.org/datamodel/files/BOSS_PHOTOOBJ/frames/RERUN/RUN/CAMCOL/frame.html",
+        "imagesUrl": "https://www.sdss4.org/dr17/imaging/images/"
+      },
+      "decompressed": {
+        "sha256": "6c596d4f02a42962b4aa2cfdebb8fd81e6c4f380a9ba137ec66b72f500f18e84",
+        "bytes": 12447360,
+        "maximumBytes": 33554432,
+        "singleCompleteBzip2Stream": true,
+        "completeScientificArrays": true,
+        "missingEndPaddingBytes": 0,
+        "readerWarnings": [
+          "RADECSYS= 'ICRS ' / International Celestial Ref. System \nthe RADECSYS keyword is deprecated, use RADESYSa."
+        ]
+      },
+      "identity": {
+        "run": 3699,
+        "rerun": "301",
+        "camcol": 6,
+        "field": 100,
+        "band": "i"
+      },
+      "scientificSamples": {
+        "shapeRowsColumns": [
+          1489,
+          2048
+        ],
+        "bitpix": -32,
+        "unit": "nanomaggies/pixel",
+        "actualBunit": "nanomaggy",
+        "calibrationAlreadyApplied": true,
+        "appliedNmgyPerCount": 0.00628516,
+        "skyAlreadySubtracted": true,
+        "finiteSamples": 3049472,
+        "nonfiniteSamples": 0,
+        "finiteZeroSamples": 2,
+        "finiteNegativeSamples": 764866,
+        "scientificValidity": "UNKNOWN",
+        "artifactMask": "NOT_SUPPLIED",
+        "meaning": "Finite/zero/negative sample values remain measurements; fpM artifacts, exposure/noise and confidence are not measured here."
+      },
+      "wcs": {
+        "primaryHeaderFitsCards": "SIMPLE  =                    T /                                                \nBITPIX  =                  -32 / 32 bit floating point                          \nNAXIS   =                    2                                                  \nNAXIS1  =                 2048                                                  \nNAXIS2  =                 1489                                                  \nEXTEND  =                    T /Extensions may be present                       \nBZERO   =              0.00000 /Set by MRD_SCALE                                \nBSCALE  =              1.00000 /Set by MRD_SCALE                                \nTAI     =        4553664093.72 / 1st row - Number of seconds since Nov 17 1858  \nRA      =            201.75984 / 1st row - Right ascension of telescope boresigh\nDEC     =            46.259267 / 1st row - Declination of telescope boresight (d\nSPA     =             102.275  / 1st row - Camera col position angle wrt north (\nIPA     =             331.261  / 1st row - Instrument rotator position angle (de\nIPARATE =              0.0027  / 1st row - Instrument rotator angular velocity (\nAZ      =            218.41046 / 1st row - Azimuth  (encoder) of tele (0=N?) (de\nALT     =            71.625823 / 1st row - Altitude (encoder) of tele        (de\nFOCUS   =           -280.00000 / 1st row - Focus piston (microns?)              \nDATE-OBS= '2003-03-06'         / 1st row - TAI date                             \nTAIHMS  = '10:41:33.72'        / 1st row - TAI time (HH:MM:SS.SS) (TAI-UT = appr\nCOMMENT  TAI,RA,DEC,SPA,IPA,IPARATE,AZ,ALT,FOCUS at reading of col 0, row 0     \nORIGIN  = 'SDSS    '                                                            \nTELESCOP= '2.5m    '                                                            \nTIMESYS = 'TAI     '                                                            \nRUN     =                 3699 / Run number                                     \nFRAME   =                  102 / Frame sequence number within the run           \nCCDLOC  =                   26 / Survey location of CCD (e.g., rowCol)          \nSTRIPE  =                   29 / Stripe index number (23 <--> eta=0)            \nSTRIP   = 'S       '           / Strip in the stripe being tracked.             \nFLAVOR  = 'science '           / Flavor of this run                             \nOBSERVER= 'prn     '           / Observer                                       \nSYS_SCN = 'mean    '           / System of the scan great circle (e.g., mean)   \nEQNX_SCN=           2000.00    / Equinox of the scan great circle. (years)      \nNODE    =           95.00000   / RA of the great circle's ascending node (deg)  \nINCL    =           47.50000   / Great circle's inclination wrt cel. eq. (deg)  \nXBORE   =           22.74      / Boresight x offset from the array center (mm)  \nYBORE   =           0.00       / Boresight x offset from the array center (mm)  \nOBJECT  = '29 S    '           / e.g., 'stripe 50.6 degrees, north strip'       \nEXPTIME = '53.907456'          / Exposure time (seconds)                        \nSYSTEM  = 'FK5     '           / System of the TCC coordinates (e.g., mean)     \nCCDMODE = 'DRIFT   '           / 'STARING' or 'DRIFT'                           \nC_OBS   =                26322 / CCD row clock rate (usec/row)                  \nCOLBIN  =                    1 / Binning factor perpendicular to the columns    \nROWBIN  =                    1 / Binning factor perpendicular to the rows       \nDAVERS  = 'v14_47  '           / Version of DA software                         \nSCDMETHD= 'sqrtDynamic'        / scdMethod                                      \nSCDWIDTH=                 1280 / scdDisplayWidth                                \nSCDDECMF=                    1 / scdDecimateFactor                              \nSCDOFSET=                  410 / scdDisplayOffset                               \nSCDDYNTH=                  -19 / scdDynamicThresh                               \nSCDSTTHL=                   30 / scdStaticThreshL                               \nSCDSTTHR=                   30 / scdStaticThreshR                               \nSCDREDSZ=                  480 / scdReduceSize                                  \nSCDSKYL =                 1323 / scdSkyLeft                                     \nSCDSKYR =                 1320 / scdSkyRight                                    \nCOMMENT  CCD-specific parameters                                                \nCAMROW  =                    2 / Row in the imaging camera                      \nBADLINES=                    0 / Number of bad lines in frame                   \nEQUINOX =              2000.00 /                                                \nSOFTBIAS=                 1000 / software \"bias\" added to all DN                \nBUNIT   = 'nanomaggy'          / 1 nanomaggy = 3.631e-6 Jy                      \nFILTER  = 'i       '           / filter used                                    \nCAMCOL  =                    6 / column in the imaging camera                   \nVERSION = 'v5_6_3  '                                                            \nDERV_VER= 'NOCVS:v8_23'                                                         \nASTR_VER= 'NOCVS:v5_24'                                                         \nASTRO_ID= '2009-05-27T00:43:51 25166'                                           \nBIAS_ID = 'PS      '                                                            \nFRAME_ID= '2009-10-06T11:35:18 01936'                                           \nKO_VER  = 'devel   '                                                            \nPS_ID   = '2009-05-26T23:29:46 08880 camCol 6'                                  \nATVSN   = 'NOCVS:v5_24'        / ASTROTOOLS version tag                         \nRADECSYS= 'ICRS    '           / International Celestial Ref. System            \nCTYPE1  = 'RA---TAN'           /Coordinate type                                 \nCTYPE2  = 'DEC--TAN'           /Coordinate type                                 \nCUNIT1  = 'deg     '           /Units                                           \nCUNIT2  = 'deg     '           /Units                                           \nCRPIX1  =        1025.00000000 /X of reference pixel                            \nCRPIX2  =        745.000000000 /Y of reference pixel                            \nCRVAL1  =        202.440372261 /RA of reference pixel (deg)                     \nCRVAL2  =        47.1221857611 /Dec of reference pixel (deg)                    \nCD1_1   =    2.43451137776E-05 /RA deg per column pixel                         \nCD1_2   =    0.000107253054876 /RA deg per row pixel                            \nCD2_1   =    0.000107335068646 /Dec deg per column pixel                        \nCD2_2   =   -2.43141845676E-05 /Dec deg per row pixel                           \nHISTORY GSSSPUTAST: Oct  6 11:35:30 2009                                        \nCOMMENT  Calibration parameters                                                 \nCOMMENT  Floats truncated at 10 binary digits with FLOATCOMPRESS                \nNMGY    =           0.00628516 / Calibration factor [nMgy per count]            \nNMGYIVAR=             0.268221 / Calibration factor inverse variance            \nVERSIDL = '7.0     '           / Version of IDL                                 \nVERSUTIL= 'v5_5_5  '           / Version of idlutils                            \nVERSPOP = 'v1_11_1 '           / Version of photoop product                     \nPCALIB  = '/clusterfs/riemann/raid006/bosswork/groups/boss/calib/2009-06-14/cal'\nPSKY    = '/clusterfs/riemann/raid006/bosswork/groups/boss/photo/sky' / Value of\nRERUN   = '301     '           / rerun                                          \nHISTORY SDSS_FRAME_ASTROM: Astrometry fixed for dr9 Sat Jun 16 18:44:22 2012    \nEND                                                                             ",
+        "primaryHeaderSha256": "5d5894abdcd74f27b129c57619c561367f6c807d426391dad4206dae46254b30",
+        "celestialHeader": {
+          "WCSAXES": 2,
+          "CRPIX1": 1025.0,
+          "CRPIX2": 745.0,
+          "PC1_1": 2.43451137776e-05,
+          "PC1_2": 0.000107253054876,
+          "PC2_1": 0.000107335068646,
+          "PC2_2": -2.43141845676e-05,
+          "CDELT1": 1.0,
+          "CDELT2": 1.0,
+          "CUNIT1": "deg",
+          "CUNIT2": "deg",
+          "CTYPE1": "RA---TAN",
+          "CTYPE2": "DEC--TAN",
+          "CRVAL1": 202.440372261,
+          "CRVAL2": 47.1221857611,
+          "LONPOLE": 180.0,
+          "LATPOLE": 47.1221857611,
+          "TIMESYS": "TAI",
+          "MJDREF": 0.0,
+          "DATE-OBS": "2003-03-06",
+          "MJD-OBS": 52704.0,
+          "RADESYS": "ICRS"
+        },
+        "pixelToWorldSamples": [
+          [
+            202.2867284177864,
+            47.03026173869383
+          ],
+          [
+            202.3595073966721,
+            47.25005063286202
+          ],
+          [
+            202.52081341182503,
+            46.994156944703754
+          ],
+          [
+            202.5945112228267,
+            47.21379634653297
+          ],
+          [
+            202.44035437169998,
+            47.12213209356428
+          ]
+        ],
+        "roundtripMaximumPixelError": 2.589786163298413e-10,
+        "meaning": "Corrected-frame linear TAN approximation; complete asTrans polynomial/DCR astrometry is retained but not applied or certified."
+      },
+      "asTrans": {
+        "headerFitsCards": "XTENSION= 'BINTABLE'           /Binary table written by MWRFITS v1.11           \nBITPIX  =                    8 /Required value                                  \nNAXIS   =                    2 /Required value                                  \nNAXIS1  =                  216 /Number of bytes per row                         \nNAXIS2  =                    1 /Number of rows                                  \nPCOUNT  =                    0 /Normally 0 (no varying arrays)                  \nGCOUNT  =                    1 /Required value                                  \nTFIELDS =                   31 /Number of columns in table                      \nCOMMENT                                                                         \nCOMMENT  *** End of mandatory fields ***                                        \nCOMMENT                                                                         \nCOMMENT                                                                         \nCOMMENT  *** Column names ***                                                   \nCOMMENT                                                                         \nTTYPE1  = 'RUN     '           /                                                \nTTYPE2  = 'RERUN   '           /                                                \nTTYPE3  = 'CAMCOL  '           /                                                \nTTYPE4  = 'FILTER  '           /                                                \nTTYPE5  = 'NODE    '           /                                                \nTTYPE6  = 'INCL    '           /                                                \nTTYPE7  = 'NAXIS   '           /                                                \nTTYPE8  = 'FIELD   '           /                                                \nTTYPE9  = 'A       '           /                                                \nTTYPE10 = 'B       '           /                                                \nTTYPE11 = 'C       '           /                                                \nTTYPE12 = 'D       '           /                                                \nTTYPE13 = 'E       '           /                                                \nTTYPE14 = 'F       '           /                                                \nTTYPE15 = 'DROW0   '           /                                                \nTTYPE16 = 'DROW1   '           /                                                \nTTYPE17 = 'DROW2   '           /                                                \nTTYPE18 = 'DROW3   '           /                                                \nTTYPE19 = 'DCOL0   '           /                                                \nTTYPE20 = 'DCOL1   '           /                                                \nTTYPE21 = 'DCOL2   '           /                                                \nTTYPE22 = 'DCOL3   '           /                                                \nTTYPE23 = 'CSROW   '           /                                                \nTTYPE24 = 'CSCOL   '           /                                                \nTTYPE25 = 'CCROW   '           /                                                \nTTYPE26 = 'CCCOL   '           /                                                \nTTYPE27 = 'RICUT   '           /                                                \nTTYPE28 = 'MJD     '           /                                                \nTTYPE29 = 'AIRMASS '           /                                                \nTTYPE30 = 'MUERR   '           /                                                \nTTYPE31 = 'NUERR   '           /                                                \nCOMMENT                                                                         \nCOMMENT  *** Column formats ***                                                 \nCOMMENT                                                                         \nTFORM1  = 'J       '           /                                                \nTFORM2  = '3A      '           /                                                \nTFORM3  = 'J       '           /                                                \nTFORM4  = 'A       '           /                                                \nTFORM5  = 'D       '           /                                                \nTFORM6  = 'D       '           /                                                \nTFORM7  = '2J      '           /                                                \nTFORM8  = 'J       '           /                                                \nTFORM9  = 'D       '           /                                                \nTFORM10 = 'D       '           /                                                \nTFORM11 = 'D       '           /                                                \nTFORM12 = 'D       '           /                                                \nTFORM13 = 'D       '           /                                                \nTFORM14 = 'D       '           /                                                \nTFORM15 = 'D       '           /                                                \nTFORM16 = 'D       '           /                                                \nTFORM17 = 'D       '           /                                                \nTFORM18 = 'D       '           /                                                \nTFORM19 = 'D       '           /                                                \nTFORM20 = 'D       '           /                                                \nTFORM21 = 'D       '           /                                                \nTFORM22 = 'D       '           /                                                \nTFORM23 = 'D       '           /                                                \nTFORM24 = 'D       '           /                                                \nTFORM25 = 'D       '           /                                                \nTFORM26 = 'D       '           /                                                \nTFORM27 = 'D       '           /                                                \nTFORM28 = 'D       '           /                                                \nTFORM29 = 'D       '           /                                                \nTFORM30 = 'E       '           /                                                \nTFORM31 = 'E       '           /                                                \nEND                                                                             ",
+        "headerSha256": "0dc66cc5a3f549baa0bc261d8f1fab0a05a89c41f25c416a42154c75c4760c13",
+        "columns": [
+          {
+            "name": "RUN",
+            "format": "J",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "RERUN",
+            "format": "3A",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CAMCOL",
+            "format": "J",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "FILTER",
+            "format": "A",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "NODE",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "INCL",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "NAXIS",
+            "format": "2J",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "FIELD",
+            "format": "J",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "A",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "B",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "C",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "D",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "E",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "F",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DROW0",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DROW1",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DROW2",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DROW3",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DCOL0",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DCOL1",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DCOL2",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "DCOL3",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CSROW",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CSCOL",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CCROW",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "CCCOL",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "RICUT",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "MJD",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "AIRMASS",
+            "format": "D",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "MUERR",
+            "format": "E",
+            "dim": null,
+            "unit": null
+          },
+          {
+            "name": "NUERR",
+            "format": "E",
+            "dim": null,
+            "unit": null
+          }
+        ],
+        "row": {
+          "RUN": 3699,
+          "RERUN": "301",
+          "CAMCOL": 6,
+          "FILTER": "i",
+          "NODE": 95.0010679999999,
+          "INCL": 47.502768,
+          "NAXIS": [
+            2048,
+            1489
+          ],
+          "FIELD": 100,
+          "A": 196.68727526732283,
+          "B": 0.00010998930941218177,
+          "C": 2.2632711515295037e-08,
+          "D": 0.8279812070138938,
+          "E": -1.0305697096187095e-08,
+          "F": 0.00011006148180633126,
+          "DROW0": 0.03155107427857472,
+          "DROW1": -0.0001383733293872217,
+          "DROW2": 1.4828826623380632e-07,
+          "DROW3": -4.4965327516944034e-11,
+          "DCOL0": 0.07295732144303475,
+          "DCOL1": 8.606490895777044e-05,
+          "DCOL2": -4.576577209022217e-07,
+          "DCOL3": 2.266199212220993e-10,
+          "CSROW": 0.007856697965405331,
+          "CSCOL": -0.004882103513513679,
+          "CCROW": 0.7856697965405331,
+          "CCCOL": -0.4882103513513679,
+          "RICUT": 100.0,
+          "MJD": 52704.4455299,
+          "AIRMASS": 1.0551668361225173,
+          "MUERR": 0.025783376768231392,
+          "NUERR": 0.030583608895540237
+        }
+      },
+      "limitations": [
+        "Structure admission is not scientific validity, completeness across bands or image quality.",
+        "No RGB, reprojection, mosaic, stretch, mask, asset publication or runtime integration was performed."
+      ]
+    }
+  ]
+}

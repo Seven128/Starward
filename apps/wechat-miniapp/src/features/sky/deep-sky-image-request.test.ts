@@ -1,218 +1,152 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readFileSync } from "node:fs";
-import {
-  startDeepSkyImageRequest,
-  type DeepSkyImageAsset,
-  type OwnedDeepSkyImageAsset,
-  type DeepSkyImageRequestOptions,
-  type DeepSkyImageWriteOptions,
-} from "./deep-sky-image-request.ts";
+import { startDeepSkyImageRequest, type OwnedDeepSkyImageAsset } from "./deep-sky-image-request.ts";
+import { publishedDeepSkyDiscovery, publishedDeepSkyBytes } from "./deep-sky-image-test-support.ts";
+import { createSkyPublicImageCache, type SkyPublicImageFileSystem } from "../../services/sky-public-image-cache.ts";
+import type { DeepSkyImageDescriptor, DeepSkyImageDiscoveryData } from "@starward/miniapp-contracts";
+import { skyDeepSkyImageIntersectsView, type SkyTargetImageView } from "./sky-target-image-visibility";
+import { createSkyViewBasis } from "./sky-view-projection";
 
-const asset: DeepSkyImageAsset = {
-  reference: "M:31",
-  level: "MEDIUM",
-  fieldDegrees: 4,
-  tempFilePath: "/tmp/m31-medium.jpg",
-};
-const imageIdentity = { publicationHash: "a".repeat(64), sourceId: `imagery:test:${"a".repeat(64)}`, pixelSize: 512 };
-const responseHeader = { "X-Starward-Image-Field-Degrees": "4", "x-starward-image-publication-hash": imageIdentity.publicationHash,
-  "x-starward-image-source-id": imageIdentity.sourceId, "x-starward-image-pixels": "512" };
-
-function harness(files = new Map<string, ArrayBuffer>()) {
-  let requestOptions: DeepSkyImageRequestOptions | null = null;
-  let writeOptions: DeepSkyImageWriteOptions | null = null;
-  let aborts = 0;
-  let cancels = 0;
-  let rejectionHandlers = 0;
-  const ready: OwnedDeepSkyImageAsset[] = [];
-  let errors = 0;
-  const cancel = startDeepSkyImageRequest({
-    asset: { reference: asset.reference, level: asset.level, tempFilePath: asset.tempFilePath },
-    url: "https://example.invalid/m31",
-    request: (options) => {
-      requestOptions = options;
-      return {
-        abort: () => { aborts += 1; },
-        catch: () => { rejectionHandlers += 1; },
-      };
-    },
-    writeFile: (options) => { writeOptions = options; },
-    removeFile: (path: string) => { files.delete(path); },
-    onReady: (value) => ready.push(value),
-    onError: () => { errors += 1; },
-    onCancel: () => { cancels += 1; },
-  });
-  return {
-    cancel,
-    get request() { return requestOptions as DeepSkyImageRequestOptions; },
-    get write() { return writeOptions as DeepSkyImageWriteOptions | null; },
-    get aborts() { return aborts; },
-    get cancels() { return cancels; },
-    get rejectionHandlers() { return rejectionHandlers; },
-    ready,
-    get errors() { return errors; },
-    commitWrite() { const write = writeOptions as DeepSkyImageWriteOptions; files.set(write.filePath, write.data); write.success(); },
+const turn = async () => { for (let i = 0; i < 16; i++) await new Promise<void>(resolve => setImmediate(resolve)); };
+function world() {
+  const files = new Map<string, ArrayBuffer>(), transfers: string[] = [];
+  const fs: SkyPublicImageFileSystem = {
+    async mkdir() {}, async list(root) { return [...files.keys()].filter(name => name.startsWith(root + "/")).map(name => name.slice(root.length + 1)); },
+    async size(name) { const data = files.get(name); if (!data) throw new Error("missing"); return data.byteLength; },
+    async read(name, length) { const data = files.get(name); if (!data) throw new Error("missing"); return data.slice(0, length); },
+    async write(name, data) { files.set(name, data.slice(0)); },
+    async rename(from, to) { const data = files.get(from); if (!data) throw new Error("missing"); files.set(to, data); files.delete(from); },
+    async remove(name) { files.delete(name); },
   };
+  const bodies = new Map<string, ArrayBuffer>();
+  for (const ref of ["M:31", "M:42"]) {
+    const publication = publishedDeepSkyDiscovery(ref);
+    for (const level of ["OVERVIEW", "MEDIUM", "DETAIL"] as const)
+      bodies.set(publication.levels[level].sha256, publishedDeepSkyBytes(publication, level));
+  }
+  const cache = createSkyPublicImageCache({ fs, root: "/public", session: "controlled", byteBudget: 2 * 1024 * 1024, maxFileBytes: 512 * 1024,
+    transfer(asset) { transfers.push(asset.url); return { promise: Promise.resolve(bodies.get(asset.sha256)!.slice(0)), cancel() {} }; } });
+  const acquire = (asset: DeepSkyImageDescriptor) => cache.acquire({ ...asset, environment: "e".repeat(64), url: "https://approved.fixture.invalid" + asset.downloadUrl });
+  const demand = () => {
+    const epoch = cache.inspect().epoch;
+    return { isCurrent: () => epoch === cache.inspect().epoch, onRetire: () => () => {}, release() {} };
+  };
+  function start(discovery = publishedDeepSkyDiscovery(), discover = async (_signal: AbortSignal) => discovery) {
+    const ready: OwnedDeepSkyImageAsset[] = []; let errors = 0, cancels = 0;
+    const cancel = startDeepSkyImageRequest({ reference: discovery.objectRef, level: "DETAIL", demand: demand(), discover, acquire,
+      onReady: value => ready.push(value), onError: () => { errors++; }, onCancel: () => { cancels++; } });
+    return { ready, cancel, get errors() { return errors; }, get cancels() { return cancels; } };
+  }
+  return { files, transfers, cache, start, acquire, bodies, demand };
 }
 
-test("selection or level changes abort and ignore every late request callback", () => {
-  const h = harness();
-  h.cancel();
-  h.cancel();
-  h.request.success({ statusCode: 200, data: new ArrayBuffer(4), header: responseHeader });
-  h.request.fail();
-  assert.equal(h.aborts, 1);
-  assert.equal(h.cancels, 1);
-  assert.equal(h.rejectionHandlers, 1);
-  assert.equal(h.write, null);
-  assert.deepEqual(h.ready, []);
-  assert.equal(h.errors, 0);
+test("latest fully-offscreen W3 discovery cancels demand before encoded transfer and a return reuses files", async () => {
+  const h = world(), discovery = publishedDeepSkyDiscovery();
+  const at = "2026-10-03T13:00:00.000Z";
+  const report = { hourly: [{ at }], skyScene: { deepSky: { state: "AVAILABLE", catalog: {
+    frame: "ICRS J2000", imageRegistration: "ICRS_TAN_NORTH_0_1_V1", entries: [{ objectRef: discovery.objectRef }] },
+    frames: [{ at, state: "AVAILABLE", points: [[0, 0, -10, 0, -9.9, 359.9, -10]] }] } } } as any;
+  let view: SkyTargetImageView = { report, at, width: 390, height: 844,
+    view: { basis: createSkyViewBasis(0, 80, 0)!, verticalFovDeg: .05 } };
+  const ready: OwnedDeepSkyImageAsset[] = []; let observed = 0, cancels = 0;
+  const start = (discover = async (_signal: AbortSignal) => discovery) => startDeepSkyImageRequest({
+    reference: discovery.objectRef, level: "DETAIL", demand: h.demand(), discover, acquire: h.acquire,
+    onDiscovered(data) { observed++; assert.equal(data.publicationHash, discovery.publicationHash); return skyDeepSkyImageIntersectsView(data, view); },
+    onReady: asset => ready.push(asset), onError() { assert.fail("geometric exclusion is not unavailable imagery"); },
+    onCancel() { cancels++; },
+  });
+  assert.equal(skyDeepSkyImageIntersectsView(discovery, view), true);
+  let complete!: (data: DeepSkyImageDiscoveryData) => void;
+  const cancel = start(() => new Promise(resolve => { complete = resolve; }));
+  view = { ...view, view: { ...view.view, basis: createSkyViewBasis(90, 80, 0)! } };
+  assert.equal(skyDeepSkyImageIntersectsView(discovery, view), false);
+  complete(discovery); await turn(); cancel();
+  assert.equal(h.transfers.length, 0); assert.equal(ready.length, 0); assert.equal(observed, 1); assert.equal(cancels, 1);
+  assert.equal(h.cache.inspect().leased, 0);
+  view = { ...view, view: { ...view.view, basis: createSkyViewBasis(0, 80, 0)! } };
+  start(); await turn(); assert.equal(ready.length, 1); assert.equal(h.transfers.length, 1);
+  const path = ready[0]!.tempFilePath; ready[0]!.release(); assert.equal(h.cache.inspect().leased, 0);
+  start(); await turn(); assert.equal(ready.length, 2); assert.equal(ready[1]!.tempFilePath, path);
+  assert.notEqual(ready[1]!.release, ready[0]!.release); assert.equal(h.transfers.length, 1);
+  ready[1]!.release(); await h.cache.clear(); assert.equal(h.cache.inspect().bytes, 0);
 });
 
-test("a canceled late write cannot overwrite the retry's published bytes", () => {
-  const files = new Map<string, ArrayBuffer>();
-  const old = harness(files), current = harness(files);
-  old.request.success({ statusCode: 200, data: new Uint8Array([1, 1, 1, 1]).buffer, header: responseHeader });
-  old.cancel();
-  current.request.success({ statusCode: 200, data: new Uint8Array([2, 2, 2, 2]).buffer, header: responseHeader });
-  current.commitWrite();
-  assert.equal(current.ready.length, 1);
-  old.commitWrite();
-  const actual = files.get(current.ready[0]!.tempFilePath);
-  assert(actual);
-  assert.deepEqual([...new Uint8Array(actual)], [2, 2, 2, 2]);
-  assert.equal(files.size, 1, "the canceled request removes only its own completed file");
-  current.ready[0]!.release(); current.ready[0]!.release();
-  assert.equal(files.size, 0, "published file ownership can be released idempotently");
+test("discover identity before transfer, preserve real PNG support, and reuse verified public files", async () => {
+  const h = world(), discovery = publishedDeepSkyDiscovery();
+  let complete!: (data: DeepSkyImageDiscoveryData) => void;
+  const first = h.start(discovery, () => new Promise(resolve => { complete = resolve; }));
+  assert.equal(h.transfers.length, 0);
+  complete(discovery); await turn();
+  const asset = first.ready[0]!; assert(asset); assert.equal(first.errors, 0);
+  assert.equal(asset.publicationHash, discovery.publicationHash); assert.equal(asset.sourceId, discovery.sourceId);
+  assert.equal(asset.sourceMissingPixels, discovery.levels.DETAIL.sourceFiniteMask!.missingPixels);
+  assert.deepEqual(asset.displaySupport, discovery.levels.DETAIL.displaySupport);
+  assert.ok(asset.tempFilePath.startsWith("/public/")); assert.ok(asset.tempFilePath.endsWith(".png"));
+  assert.ok(asset.tempFilePath.includes(discovery.levels.DETAIL.sha256));
+  assert.equal(asset.isCurrent(), true); assert.equal(h.transfers.length, 1);
+  first.cancel(); assert.equal(first.cancels, 0, "ready ownership belongs to the page");
+  asset.release(); asset.release(); assert.equal(asset.isCurrent(), false);
+  const next = h.start(discovery); await turn();
+  assert.equal(next.ready[0]!.tempFilePath, asset.tempFilePath); assert.equal(h.transfers.length, 1);
+  next.ready[0]!.release();
 });
 
-test("leaving during file persistence prevents the old asset becoming ready", () => {
-  const h = harness();
-  h.request.success({ statusCode: 200, data: new ArrayBuffer(4), header: responseHeader });
-  assert.ok(h.write);
-  h.cancel();
-  h.write.success();
-  h.write.fail();
-  assert.equal(h.aborts, 1);
-  assert.equal(h.cancels, 1);
-  assert.deepEqual(h.ready, []);
-  assert.equal(h.errors, 0);
+test("cancelled discovery or late acquisition cannot publish or retain a lease", async () => {
+  const h = world(), discovery = publishedDeepSkyDiscovery();
+  let complete!: (data: DeepSkyImageDiscoveryData) => void, signal!: AbortSignal;
+  const stopped = h.start(discovery, value => { signal = value; return new Promise(resolve => { complete = resolve; }); });
+  stopped.cancel(); stopped.cancel(); assert.equal(signal.aborted, true);
+  complete(discovery); await turn();
+  assert.equal(h.transfers.length, 0); assert.equal(stopped.ready.length, 0); assert.equal(stopped.cancels, 1);
+  let release = 0, cancel = 0, deliver!: (value: any) => void;
+  const stop = startDeepSkyImageRequest({ reference: discovery.objectRef, level: "DETAIL", demand: h.demand(), discover: async () => discovery,
+    acquire: () => ({ promise: new Promise(resolve => { deliver = resolve; }), cancel() { cancel++; throw new Error("abort failure"); } }),
+    onReady() { assert.fail("late image"); }, onError() { assert.fail("cancel is not error"); } });
+  await turn(); assert.doesNotThrow(stop);
+  deliver({ filePath: "/late", isCurrent: () => true, release() { release++; } }); await turn();
+  assert.equal(cancel, 1); assert.equal(release, 1);
 });
 
-test("only active binary success publishes while active failures remain retryable", () => {
-  const success = harness();
-  success.request.success({ statusCode: 200, data: new ArrayBuffer(4), header: responseHeader });
-  assert.ok(success.write);
-  success.write.success();
-  success.cancel();
-  assert.equal(success.ready.length, 1);
-  assert.deepEqual({ ...success.ready[0], tempFilePath: asset.tempFilePath, release: undefined }, { ...asset, ...imageIdentity, release: undefined });
-  assert.equal(success.aborts, 0);
-  assert.equal(success.cancels, 0);
+test("clear during undiscovered metadata fences acquisition even if the late provider ignores cancellation", async () => {
+  const h = world(), discovery = publishedDeepSkyDiscovery();
+  let complete!: (value: DeepSkyImageDiscoveryData) => void;
+  const request = h.start(discovery, () => new Promise(resolve => { complete = resolve; }));
+  await h.cache.clear(); complete(discovery); await turn();
+  assert.equal(request.ready.length, 0); assert.equal(request.errors, 1); assert.equal(h.transfers.length, 0);
+});
 
-  for (const finish of [
-    (h: ReturnType<typeof harness>) => h.request.success({ statusCode: 503, data: new ArrayBuffer(0) }),
-    (h: ReturnType<typeof harness>) => h.request.success({ statusCode: 200, data: "not binary", header: responseHeader }),
-    (h: ReturnType<typeof harness>) => h.request.fail(),
-    (h: ReturnType<typeof harness>) => {
-      h.request.success({ statusCode: 200, data: new ArrayBuffer(4), header: responseHeader });
-      assert.ok(h.write);
-      h.write.fail();
-    },
+test("wrong discovery identity, unsupported coverage and altered image bytes fail before ready", async () => {
+  for (const mutate of [
+    (data: DeepSkyImageDiscoveryData) => { data.sourceId = "wrong"; },
+    (data: DeepSkyImageDiscoveryData) => { data.levels.DETAIL.downloadUrl += "?current=1"; },
+    (data: DeepSkyImageDiscoveryData) => { (data.levels.DETAIL as any).validFraction = 1; },
+    (data: DeepSkyImageDiscoveryData) => { data.levels.DETAIL.displaySupport!.sourceSha256 = "0".repeat(64); },
   ]) {
-    const failure = harness();
-    finish(failure);
-    failure.cancel();
-    assert.equal(failure.errors, 1);
-    assert.equal(failure.aborts, 0);
-    assert.equal(failure.cancels, 0);
-    assert.deepEqual(failure.ready, []);
+    const h = world(), discovery = publishedDeepSkyDiscovery(); mutate(discovery);
+    const bad = h.start(discovery); await turn();
+    assert.equal(bad.errors, 1); assert.equal(bad.ready.length, 0); assert.equal(h.transfers.length, 0);
   }
+  const h = world(), discovery = publishedDeepSkyDiscovery("M:31");
+  const bytes = new Uint8Array(h.bodies.get(discovery.levels.DETAIL.sha256)!); bytes[40] = bytes[40]! ^ 1;
+  const bad = h.start(discovery); await turn(); assert.equal(bad.errors, 1); assert.equal(bad.ready.length, 0);
+  assert.equal([...h.files.keys()].some(name => /file-.*\.jpg$/.test(name)), false);
 });
 
-test("missing or invalid angular metadata cannot publish a misregistered image", () => {
-  for (const header of [undefined, { "x-starward-image-field-degrees": "0" }, { "x-starward-image-field-degrees": "not-a-number" }]) {
-    const h = harness();
-    h.request.success({ statusCode: 200, data: new ArrayBuffer(4), ...(header ? { header } : {}) });
-    assert.equal(h.errors, 1);
-    assert.equal(h.write, null);
-    assert.deepEqual(h.ready, []);
-  }
-});
-
-test("an unbound successful reply cannot paint old bytes under the current publication's credit", () => {
-  const h = harness();
-  h.request.success({ statusCode: 200, data: new ArrayBuffer(4), header: { "x-starward-image-field-degrees": "4" } });
-  assert.equal(h.write, null);
-  assert.equal(h.errors, 1);
-});
-
-test("synchronous native request and filesystem failures stay in the retryable error channel", () => {
-  for (const stage of ["request", "write"] as const) {
-    let errors = 0, ready = 0;
-    assert.doesNotThrow(() => startDeepSkyImageRequest({
-      asset, url: "https://example.invalid/image",
-      request(options) {
-        if (stage === "request") throw new Error("native request unavailable");
-        options.success({ statusCode: 200, data: new ArrayBuffer(4), header: responseHeader });
-        return {};
-      },
-      writeFile() { throw new Error("storage unavailable"); }, removeFile() {},
-      onReady() { ready++; }, onError() { errors++; },
-    }));
-    assert.equal(errors, 1); assert.equal(ready, 0);
-  }
-});
-
-test("real published PNG bytes retain source binding and use their own cancellable file format", () => {
-  const root = new URL("../../../../../workers/miniapp-api/assets/deep-sky/", import.meta.url);
-  const manifest = JSON.parse(readFileSync(new URL("manifest.json", root), "utf8"));
-  const published = manifest.entries.find((entry: { objectRef: string }) => entry.objectRef === "M:42").levels.DETAIL;
-  const png = Uint8Array.from(readFileSync(new URL(published.file, root))).buffer;
-  const publicationHash = "a".repeat(64), sourceId = `imagery:${manifest.publicationId}:${publicationHash}`;
-  const header = { "content-type": "image/png", "x-starward-image-field-degrees": "0.9",
-    "x-starward-image-publication-hash": publicationHash, "x-starward-image-source-id": sourceId,
-    "x-starward-image-pixels": "512", "x-starward-image-missing-pixels": "5095",
-    "X-Starward-Image-Display-Support": JSON.stringify(published.displaySupport) };
-  const files = new Map<string, ArrayBuffer>(), h = harness(files);
-  h.request.success({ statusCode: 200, data: png, header });
-  const pending = h.write;
-  assert.ok(pending?.filePath.endsWith(".png"), "native decoding must receive the actual response format");
-  assert.ok(pending);
-  const ownPath = pending.filePath;
-  h.request.success({ statusCode: 200, data: new ArrayBuffer(4), header: responseHeader });
-  assert.equal(h.write?.filePath, ownPath, "a duplicate response cannot switch a pending write's format or owner");
-  h.commitWrite();
-  assert.equal(h.ready[0]?.publicationHash, publicationHash);
-  assert.equal(h.ready[0]?.sourceId, sourceId);
-  assert.equal(h.ready[0]?.sourceMissingPixels, 5095);
-  assert.deepEqual(h.ready[0]?.displaySupport, published.displaySupport);
-  h.ready[0]!.release();
-  assert.equal(files.size, 0);
-  const canceled = harness(files);
-  canceled.request.success({ statusCode: 200, data: png, header });
-  canceled.cancel(); canceled.commitWrite();
-  assert.equal(files.size, 0, "a canceled PNG write releases only its own late file");
-  assert.equal(canceled.ready.length, 0);
-  for (const invalid of [
-    { ...header, "x-starward-image-source-id": `imagery:other:${"b".repeat(64)}` },
-    { ...header, "x-starward-image-pixels": "256" },
-    { ...header, "x-starward-image-missing-pixels": "262145" },
-    { ...header, "x-starward-image-publication-hash": "" },
-    { ...header, "content-type": "image/jpeg" },
-    { ...header, "X-Starward-Image-Display-Support": "{" },
-    { ...header, "X-Starward-Image-Display-Support": JSON.stringify({ ...published.displaySupport, sourceSha256: "0".repeat(64) }) },
-    { ...header, "X-Starward-Image-Display-Support": JSON.stringify({ ...published.displaySupport, emptyRuns: [-1, 1] }) },
-  ]) {
-    const bad = harness(); bad.request.success({ statusCode: 200, data: png, header: invalid });
-    assert.equal(bad.errors, 1); assert.equal(bad.write, null);
-  }
-  const changedBytes = new Uint8Array(png.slice(0)); changedBytes[40] = changedBytes[40]! ^ 1;
-  const changed = harness(); changed.request.success({ statusCode: 200, data: changedBytes.buffer, header });
-  assert.equal(changed.errors, 1); assert.equal(changed.write, null, "an altered body must not inherit the original display support");
-  const oldHeader = { ...header }; delete (oldHeader as Partial<typeof header>)["X-Starward-Image-Display-Support"];
-  const old = harness(); old.request.success({ statusCode: 200, data: png, header: oldHeader }); old.commitWrite();
-  assert.equal(old.errors, 0); assert.equal(old.ready[0]?.displaySupport, undefined, "old v3 responses remain readable without claiming a spatial certificate");
-  old.ready[0]!.release();
+test("equal encoded bytes keep separate immutable publication metadata and retire all leases on clear", async () => {
+  const h = world(), original = publishedDeepSkyDiscovery(), old = h.start(original); await turn();
+  const changed = structuredClone(original); changed.publicationHash = "f".repeat(64); changed.publicationId += "-controlled";
+  changed.sourceId = `imagery:${changed.publicationId}:${changed.publicationHash}`; changed.source.id = changed.sourceId;
+  for (const value of Object.values(changed.levels)) value.downloadUrl = value.downloadUrl.replace(original.publicationHash, changed.publicationHash);
+  delete changed.levels.DETAIL.displaySupport;
+  const next = h.start(changed); await turn();
+  const a = old.ready[0]!, b = next.ready[0]!;
+  assert.equal(a.tempFilePath, b.tempFilePath); assert.notEqual(a.release, b.release);
+  assert.equal(h.transfers.length, 1); assert.equal(a.sourceId, original.sourceId); assert.equal(b.sourceId, changed.sourceId);
+  assert(a.displaySupport); assert.equal(b.displaySupport, undefined);
+  let retired = 0;
+  a.onRetire(() => { retired++; a.release(); }); b.onRetire(() => { retired++; b.release(); });
+  const result = await h.cache.clear(); assert.equal(retired, 2); assert.equal(a.isCurrent(), false); assert.equal(b.isCurrent(), false);
+  assert.equal(result.status, "complete"); assert.equal(h.cache.inspect().leased, 0);
+  const retry = h.start(original); await turn(); assert.equal(retry.ready.length, 1); assert.equal(h.transfers.length, 2);
+  retry.ready[0]!.release();
 });

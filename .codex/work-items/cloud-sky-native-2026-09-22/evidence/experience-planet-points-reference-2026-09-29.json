@@ -1,0 +1,30 @@
+{
+  "url": "https://stellarium-web.org/?fov=40.78913364849271&date=2026-09-28T04%3A00%3A00Z&lat=22.4826799&lng=114.5557147&elev=0",
+  "off": {
+    "atmosphere": "bottom-button",
+    "canvas": [
+      {
+        "height": 796,
+        "width": 390.3999938964844
+      }
+    ],
+    "clock": "12:07:512026-09-28",
+    "timeMenu": "true"
+  },
+  "on": {
+    "atmosphere": "bottom-button",
+    "canvas": [
+      {
+        "height": 796,
+        "width": 390.3999938964844
+      }
+    ],
+    "clock": "12:07:512026-09-28",
+    "deepSky": "bottom-button on",
+    "timeMenu": "true"
+  },
+  "offScreenshotSha256": "4de60aecac73b045a1274b0ad46a7579d571a48d2c1491f4e29fe220841d4361",
+  "onScreenshotSha256": "4de60aecac73b045a1274b0ad46a7579d571a48d2c1491f4e29fe220841d4361",
+  "scope": "Reference appearance and UI only. Actual CSS390.4x796; clock paused at 12:07:51 local, 7m51s after report day4Z; default north camera not exact registered; time menu remains visible. No native/pixel/full-journey/quality acceptance. Different/deeper reference catalogs do not alter commercial exclusions.",
+  "interaction": "AX/locator clicks initially targeted a different control; documented same-tab CDP ordinary mouse events were used with fresh DOM bounds. No hidden engine reads/writes."
+}

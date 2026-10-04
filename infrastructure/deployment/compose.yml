@@ -40,6 +40,7 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./sky-resource-logging.caddy:/etc/caddy/sky-resource-logging.caddy:ro
+      - ./sky-static-empty.caddy:/etc/caddy/sky-static-delivery.caddy:ro
       - caddy-data:/data
       - caddy-config:/config
     tmpfs:

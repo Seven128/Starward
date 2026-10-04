@@ -1,0 +1,67 @@
+✔ shared artwork and selected-object requests use one runtime namespace with distinct file identities (41.6872ms)
+✔ a publication or Canvas generation switch fences old decoded images before effects and redecodes for the new owner (9.6192ms)
+✔ hide, Canvas removal and publication loss retire decoded images held by the Hook, not just its returned view (19.7504ms)
+✖ the page's constellation off intent retires ready files and decoded state, and re-enabling creates a fresh owner (16.9451ms)
+✖ an enabled layer with no currently wanted figures keeps its bounded bitmap cache for a reverse zoom (10.583ms)
+✔ an empty new Canvas generation cannot keep the old decoded-image state until another download finishes (4.1215ms)
+✔ repeated hide/show with a late canceled response releases retired state and preserves each new owner (4.2473ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 919.5137
+
+✖ failing tests:
+
+test at apps\wechat-miniapp\src\features\sky\sky-native-image-owner.test.ts:2:4652
+✖ the page's constellation off intent retires ready files and decoded state, and re-enabling creates a fresh owner (16.9451ms)
+  AssertionError [ERR_ASSERTION]: switching off releases the completed layer's request-owned file
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-native-image-owner.test.ts:184:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at apps\wechat-miniapp\src\features\sky\sky-native-image-owner.test.ts:2:6048
+✖ an enabled layer with no currently wanted figures keeps its bounded bitmap cache for a reverse zoom (10.583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - {
+  -   height: 512,
+  -   onerror: null,
+  -   onload: null,
+  -   src: '/owned/sky-art-munjx41z_1rvkjn6-10.jpg',
+  -   width: 512
+  - }
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-native-image-owner.test.ts:208:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: { src: '/owned/sky-art-munjx41z_1rvkjn6-10.jpg', onload: null, onerror: null, width: 512, height: 512 },
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,25 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+Error: Transform failed with 265 errors:
+E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\controller.ts:182:4: ERROR: Parameter decorators only work when experimental decorators are enabled
+E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\controller.ts:191:8: ERROR: Parameter decorators only work when experimental decorators are enabled
+E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\controller.ts:196:17: ERROR: Parameter decorators only work when experimental decorators are enabled
+E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\controller.ts:201:13: ERROR: Parameter decorators only work when experimental decorators are enabled
+E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\controller.ts:207:4: ERROR: Parameter decorators only work when experimental decorators are enabled
+...
+    at failureErrorWithLog (E:\dev\worktrees\Starward\remote-main-20260908\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\dev\worktrees\Starward\remote-main-20260908\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\dev\worktrees\Starward\remote-main-20260908\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\dev\worktrees\Starward\remote-main-20260908\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\dev\worktrees\Starward\remote-main-20260908\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v24.16.0

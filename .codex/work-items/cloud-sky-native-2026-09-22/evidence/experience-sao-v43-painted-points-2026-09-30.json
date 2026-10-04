@@ -1,0 +1,686 @@
+{
+  "at": "2026-09-29T16:00:05.153Z",
+  "fov": 8.934169016900768,
+  "width": 390.3999938964844,
+  "height": 844,
+  "basis": {
+    "right": [
+      -0.018058356383364994,
+      0.9998369345872012,
+      0
+    ],
+    "up": [
+      0.4453319568405361,
+      0.0080432747654476,
+      0.8953294108581636
+    ],
+    "forward": [
+      -0.8951834135981912,
+      -0.01616817758178494,
+      0.4454045869233652
+    ]
+  },
+  "sunAltitudeDeg": -69.90022381101714,
+  "timePresentation": "EXACT",
+  "reportSha256": "4c3dcbed16f56ba7b5d30feceb5043feda2ce8c95939ff41482e073d87643226",
+  "baseCatalog": {
+    "catalogVersion": "bsc5p-bright-stars.v3",
+    "catalogHash": "ba9bef4144d4cfb4c706a5d1d8a0958d8303854e7bfabe780005b63e0c904c2c",
+    "magnitudeLimit": 6.5,
+    "rowCount": 8404,
+    "sources": [
+      {
+        "id": "catalog:bsc5p-bright-stars.v3:ba9bef4144d4cfb4c706a5d1d8a0958d8303854e7bfabe780005b63e0c904c2c",
+        "kind": "OPEN_DATA",
+        "provider": "HEASARC / NASA GSFC; Hoffleit & Warren",
+        "title": "BSC5P Bright Star Catalog, 5th edition preliminary",
+        "sourceUrl": "https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/bsc5p.html",
+        "license": "Public dataset; HEASARC source-specific usage policy",
+        "licenseUrl": "https://heasarc.gsfc.nasa.gov/docs/heasarc/data_policy.html",
+        "publishedAt": null,
+        "retrievedAt": "2026-09-19T10:42:19.214819Z",
+        "validFrom": null,
+        "validTo": null,
+        "state": "FRESH",
+        "confidence": 0.98,
+        "precision": "FK5 J2000, published proper motion in arcsec/year; original V and nullable B-V",
+        "limitations": [
+          "V=-2..6.5 的完整有界子集；不表示天气、地形遮挡或肉眼可见性",
+          "保留目录原始测光系统及不确定标记；不统一宣称为 Johnson V",
+          "未计视差、径向速度与大气折射；不用于专业指向校准"
+        ]
+      },
+      {
+        "id": "catalog:wgsn:29463ff750298d7c5966565cbfd9fbafcae1dff85103e4780f7c5f5ba140ef67",
+        "kind": "OFFICIAL_REFERENCE",
+        "provider": "IAU Working Group on Star Names",
+        "title": "IAU Catalog of Star Names",
+        "sourceUrl": "https://exopla.net/star-names/modern-iau-star-names/",
+        "license": "IAU standardized names",
+        "licenseUrl": "https://exopla.net/star-names/wgsn-guidelines/",
+        "publishedAt": null,
+        "retrievedAt": "2026-09-19T10:42:19.214819Z",
+        "validFrom": null,
+        "validTo": null,
+        "state": "FRESH",
+        "confidence": 1,
+        "precision": "Exact published HR/HD/Bayer/Flamsteed identity, preserving component digits",
+        "limitations": [
+          "名称目录持续更新；当前包固定到清单哈希",
+          "组件身份不一致或映射不唯一时保留 HR 编号，不猜测名称"
+        ]
+      },
+      {
+        "id": "catalog:wgsn-identities:67392808893e0d45fc7e5ded7cdb4eb12987fed62b0d03e8d89d631181f7646d",
+        "kind": "OFFICIAL_REFERENCE",
+        "provider": "IAU Working Group on Star Names",
+        "title": "IAU-approved names as of 2021-01-01",
+        "sourceUrl": "https://iauarchive.eso.org/public/themes/naming_stars/",
+        "license": "IAU standardized name identities",
+        "licenseUrl": "https://exopla.net/star-names/wgsn-guidelines/",
+        "publishedAt": null,
+        "retrievedAt": "2026-09-19T10:42:19.214819Z",
+        "validFrom": null,
+        "validTo": null,
+        "state": "FRESH",
+        "confidence": 1,
+        "precision": "Explicit archived HR identity for a current active name",
+        "limitations": [
+          "仅用于当前同名、多分量候选的明确 HR 身份消歧，不导入旧坐标、测光或退役名称"
+        ]
+      }
+    ]
+  },
+  "saoPublicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+  "recoveredReads": [
+    {
+      "sequence": 45,
+      "tileId": "18-07-8-0",
+      "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+      "mode": "pass",
+      "delayMs": 0,
+      "ifNoneMatch": false,
+      "receivedAt": "2026-09-29T22:25:16.586Z",
+      "upstreamStatus": 200,
+      "status": 200,
+      "bytes": 42841,
+      "sha256": "95535c6a9f5b98a1cac44e965abe9b934b63cd579f5d292953dad806d9485945",
+      "aborted": false,
+      "durationMs": 12
+    },
+    {
+      "sequence": 46,
+      "tileId": "19-06-8-0",
+      "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+      "mode": "pass",
+      "delayMs": 0,
+      "ifNoneMatch": false,
+      "receivedAt": "2026-09-29T22:25:16.588Z",
+      "upstreamStatus": 200,
+      "status": 200,
+      "bytes": 19969,
+      "sha256": "cf4b964a32798e74f4b4c76b1437994644620778c90bb77b4c7fd231603977fe",
+      "aborted": false,
+      "durationMs": 10
+    },
+    {
+      "sequence": 47,
+      "tileId": "20-06-8-0",
+      "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+      "mode": "pass",
+      "delayMs": 0,
+      "ifNoneMatch": false,
+      "receivedAt": "2026-09-29T22:25:16.589Z",
+      "upstreamStatus": 200,
+      "status": 200,
+      "bytes": 23006,
+      "sha256": "eeb17218ba7014385f2172d0db4109b31026f0c01254d6359d773f7e70a69dbf",
+      "aborted": false,
+      "durationMs": 12
+    },
+    {
+      "sequence": 48,
+      "tileId": "18-07-9-0",
+      "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+      "mode": "pass",
+      "delayMs": 0,
+      "ifNoneMatch": false,
+      "receivedAt": "2026-09-29T22:25:16.666Z",
+      "upstreamStatus": 200,
+      "status": 200,
+      "bytes": 109486,
+      "sha256": "ff6928771acef927ca03ed909cf62cbc9f4ce6fd79dfc9608f03381774a00aaf",
+      "aborted": false,
+      "durationMs": 11
+    },
+    {
+      "sequence": 49,
+      "tileId": "18-07-9-1",
+      "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+      "mode": "pass",
+      "delayMs": 0,
+      "ifNoneMatch": false,
+      "receivedAt": "2026-09-29T22:25:16.669Z",
+      "upstreamStatus": 200,
+      "status": 200,
+      "bytes": 78969,
+      "sha256": "9cf4473a06b892cb93f22b890cad29c1bc1990299e4babf6969e14a397990974",
+      "aborted": false,
+      "durationMs": 17
+    },
+    {
+      "sequence": 50,
+      "tileId": "19-06-9-0",
+      "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+      "mode": "pass",
+      "delayMs": 0,
+      "ifNoneMatch": false,
+      "receivedAt": "2026-09-29T22:25:16.674Z",
+      "upstreamStatus": 200,
+      "status": 200,
+      "bytes": 111176,
+      "sha256": "aec285186fef70a4a18529a42d277c2f35ab9910211dee03d20d387ff0560b7e",
+      "aborted": false,
+      "durationMs": 18
+    },
+    {
+      "sequence": 51,
+      "tileId": "19-06-9-1",
+      "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+      "mode": "pass",
+      "delayMs": 0,
+      "ifNoneMatch": false,
+      "receivedAt": "2026-09-29T22:25:16.732Z",
+      "upstreamStatus": 200,
+      "status": 200,
+      "bytes": 79939,
+      "sha256": "07a95a04c5a2dd704d3b3eedfcdbf3ad63fe23d5487c1094820ed6f75ebbb9ec",
+      "aborted": false,
+      "durationMs": 6
+    },
+    {
+      "sequence": 52,
+      "tileId": "20-06-9-0",
+      "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+      "mode": "pass",
+      "delayMs": 0,
+      "ifNoneMatch": false,
+      "receivedAt": "2026-09-29T22:25:16.742Z",
+      "upstreamStatus": 200,
+      "status": 200,
+      "bytes": 110839,
+      "sha256": "d23d9712fa4dcf00f022691ae4b0124c0c9d23ff019bdb8528f872b4b4d26414",
+      "aborted": false,
+      "durationMs": 11
+    },
+    {
+      "sequence": 53,
+      "tileId": "20-06-9-1",
+      "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+      "mode": "pass",
+      "delayMs": 0,
+      "ifNoneMatch": false,
+      "receivedAt": "2026-09-29T22:25:16.756Z",
+      "upstreamStatus": 200,
+      "status": 200,
+      "bytes": 71722,
+      "sha256": "2f392ab613c028b10cdf1ee112d8c5b50bdffc9732db8e11ee3847abde01c0d4",
+      "aborted": false,
+      "durationMs": 5
+    }
+  ],
+  "newVisiblePointPredictions": 207,
+  "nativeCapture": {
+    "width": 192,
+    "height": 413,
+    "failedSha256": "5ec95aeb2bd2770660aec49372fecaa75bf19840e49f50bd49b114e2da9216c4",
+    "recoveredSha256": "d7b7833d77fd2ebf9a1e9c792ebf6705b90fd8c25aedb39a8ecd63657879bb87",
+    "crop": {
+      "x": 3,
+      "y": 42,
+      "width": 186,
+      "height": 349
+    },
+    "changed": 722,
+    "increased": 547,
+    "totalRgbDelta": 18336,
+    "limit": "同一候选、时刻、视角和缩放；原生官方截图Canvas像素，非WXML覆盖层、手机或测光验收"
+  },
+  "pickableCandidates": [
+    {
+      "reference": "SAO:125013",
+      "magnitude": 8.2,
+      "x": 99.59574413580916,
+      "y": 608.2404536264594,
+      "degrees": 267.8531431340897,
+      "altitude": 24.472748653055536,
+      "radiusPx": 0.85,
+      "opacity": 0.7642007599408814,
+      "nearestBase": 41.85560531889854,
+      "nearestOtherPickable": 36.30766170969114,
+      "pixel": {
+        "x": 48,
+        "y": 297,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          144,
+          149,
+          160
+        ],
+        "delta": 408
+      }
+    },
+    {
+      "reference": "SAO:125005",
+      "magnitude": 8.3,
+      "x": 267.75117253163216,
+      "y": 554.9641462870203,
+      "degrees": 269.8132215931487,
+      "altitude": 25.03862194710458,
+      "radiusPx": 0.85,
+      "opacity": 0.6503094005396862,
+      "nearestBase": 142.8598615586511,
+      "nearestOtherPickable": 23.623313998264145,
+      "pixel": {
+        "x": 131,
+        "y": 271,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          112,
+          117,
+          128
+        ],
+        "delta": 312
+      }
+    },
+    {
+      "reference": "SAO:124992",
+      "magnitude": 8.3,
+      "x": 44.53433410260834,
+      "y": 661.5863822790384,
+      "degrees": 267.22083795229116,
+      "altitude": 23.901880938922613,
+      "radiusPx": 0.85,
+      "opacity": 0.6435453244964157,
+      "nearestBase": 118.37444644931453,
+      "nearestOtherPickable": 31.70083053365841,
+      "pixel": {
+        "x": 21,
+        "y": 323,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          109,
+          114,
+          124
+        ],
+        "delta": 302
+      }
+    },
+    {
+      "reference": "SAO:125164",
+      "magnitude": 7.9,
+      "x": 204.32972285738,
+      "y": 376.5587261911195,
+      "degrees": 269.0737269381352,
+      "altitude": 26.930445881895125,
+      "radiusPx": 0.9378484372648224,
+      "opacity": 0.8148924955737331,
+      "nearestBase": 46.34933937554639,
+      "nearestOtherPickable": 31.374465125192792,
+      "pixel": {
+        "x": 100,
+        "y": 184,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          102,
+          107,
+          117
+        ],
+        "delta": 281
+      }
+    },
+    {
+      "reference": "SAO:125176",
+      "magnitude": 8.2,
+      "x": 104.15013757375208,
+      "y": 396.6793704435576,
+      "degrees": 267.8857767151816,
+      "altitude": 26.713329189821994,
+      "radiusPx": 0.85,
+      "opacity": 0.7787318910277335,
+      "nearestBase": 45.124987804427185,
+      "nearestOtherPickable": 24.445438504714424,
+      "pixel": {
+        "x": 50,
+        "y": 194,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          90,
+          94,
+          104
+        ],
+        "delta": 243
+      }
+    },
+    {
+      "reference": "SAO:105560",
+      "magnitude": 7.6,
+      "x": 275.1405595355708,
+      "y": 127.97424863045296,
+      "degrees": 269.9378720766308,
+      "altitude": 29.559077572982645,
+      "radiusPx": 1.0514949043768607,
+      "opacity": 0.8297359499047227,
+      "nearestBase": 136.57217300918595,
+      "nearestOtherPickable": 53.764899821294506,
+      "pixel": {
+        "x": 135,
+        "y": 63,
+        "before": [
+          8,
+          12,
+          22
+        ],
+        "after": [
+          88,
+          92,
+          102
+        ],
+        "delta": 240
+      }
+    },
+    {
+      "reference": "SAO:125380",
+      "magnitude": 7.8,
+      "x": 54.94070370943072,
+      "y": 172.7195273929631,
+      "degrees": 267.26650376457326,
+      "altitude": 29.07860176674645,
+      "radiusPx": 0.976575466860514,
+      "opacity": 0.8272114438392323,
+      "nearestBase": 47.34438268410841,
+      "nearestOtherPickable": 40.401029706143,
+      "pixel": {
+        "x": 26,
+        "y": 85,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          87,
+          92,
+          102
+        ],
+        "delta": 236
+      }
+    },
+    {
+      "reference": "SAO:125002",
+      "magnitude": 7.7,
+      "x": 135.89767818249982,
+      "y": 607.5955634845795,
+      "degrees": 268.2753721049037,
+      "altitude": 24.48217498719642,
+      "radiusPx": 1.014451387588488,
+      "opacity": 0.7984333362891497,
+      "nearestBase": 32.82488113482367,
+      "nearestOtherPickable": 35.49498053443353,
+      "pixel": {
+        "x": 66,
+        "y": 297,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          82,
+          87,
+          97
+        ],
+        "delta": 221
+      }
+    }
+  ],
+  "faintUnpickableCandidates": [
+    {
+      "reference": "SAO:125140",
+      "magnitude": 8.7,
+      "x": 60.074525731293534,
+      "y": 458.24653839748214,
+      "degrees": 267.3723285980317,
+      "altitude": 26.05654573009765,
+      "radiusPx": 0.85,
+      "opacity": 0.02537145448669815,
+      "nearestBase": 80.79725566805837,
+      "nearestOtherPickable": 36.53818240438427,
+      "pixel": {
+        "x": 29,
+        "y": 224,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          13,
+          17,
+          27
+        ],
+        "delta": 12
+      }
+    },
+    {
+      "reference": "SAO:124852",
+      "magnitude": 8.7,
+      "x": 322.71805570806816,
+      "y": 716.4685787391095,
+      "degrees": 270.43485858086115,
+      "altitude": 23.3240308356651,
+      "radiusPx": 0.85,
+      "opacity": 0.024751403620423187,
+      "nearestBase": 170.1406163947238,
+      "nearestOtherPickable": 27.67828575888315,
+      "pixel": {
+        "x": 158,
+        "y": 350,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          12,
+          16,
+          26
+        ],
+        "delta": 9
+      }
+    },
+    {
+      "reference": "SAO:125075",
+      "magnitude": 8.7,
+      "x": 48.95065568038825,
+      "y": 550.8255696957197,
+      "degrees": 267.25550238137566,
+      "altitude": 25.074871445454693,
+      "radiusPx": 0.85,
+      "opacity": 0.025162795944416706,
+      "nearestBase": 81.55344299996675,
+      "nearestOtherPickable": 29.86793097207887,
+      "pixel": {
+        "x": 23,
+        "y": 269,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          12,
+          16,
+          25
+        ],
+        "delta": 8
+      }
+    },
+    {
+      "reference": "SAO:124938",
+      "magnitude": 8.7,
+      "x": 161.33079053772235,
+      "y": 671.4436871878435,
+      "degrees": 268.5734189862735,
+      "altitude": 23.807347596867476,
+      "radiusPx": 0.85,
+      "opacity": 0.02487039298595159,
+      "nearestBase": 101.46645269222218,
+      "nearestOtherPickable": 31.607709247829508,
+      "pixel": {
+        "x": 78,
+        "y": 328,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          12,
+          15,
+          25
+        ],
+        "delta": 7
+      }
+    },
+    {
+      "reference": "SAO:105443",
+      "magnitude": 8.7,
+      "x": 273.2854216460329,
+      "y": 249.80398222578236,
+      "degrees": 269.90401908722674,
+      "altitude": 28.269666171264276,
+      "radiusPx": 0.85,
+      "opacity": 0.025792640377573263,
+      "nearestBase": 107.93344606657996,
+      "nearestOtherPickable": 22.725478260008423,
+      "pixel": {
+        "x": 134,
+        "y": 122,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          11,
+          15,
+          25
+        ],
+        "delta": 6
+      }
+    },
+    {
+      "reference": "SAO:125373",
+      "magnitude": 8.7,
+      "x": 208.64739084137625,
+      "y": 142.35241098976547,
+      "degrees": 269.12865603199975,
+      "altitude": 29.410185014353477,
+      "radiusPx": 0.85,
+      "opacity": 0.025986487656757012,
+      "nearestBase": 141.08980639517472,
+      "nearestOtherPickable": 45.22064043155215,
+      "pixel": {
+        "x": 101,
+        "y": 70,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          11,
+          15,
+          25
+        ],
+        "delta": 6
+      }
+    },
+    {
+      "reference": "SAO:125424",
+      "magnitude": 8.7,
+      "x": 43.866133948494564,
+      "y": 122.84713287176072,
+      "degrees": 267.1233222639653,
+      "altitude": 29.6046082572695,
+      "radiusPx": 0.85,
+      "opacity": 0.026018122435028844,
+      "nearestBase": 95.85455873689777,
+      "nearestOtherPickable": 31.578241952923136,
+      "pixel": {
+        "x": 21,
+        "y": 60,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          11,
+          15,
+          25
+        ],
+        "delta": 6
+      }
+    },
+    {
+      "reference": "SAO:105441",
+      "magnitude": 8.7,
+      "x": 297.7355650866802,
+      "y": 242.5124304619574,
+      "degrees": 270.19879394509553,
+      "altitude": 28.344604401064704,
+      "radiusPx": 0.85,
+      "opacity": 0.025805827791374376,
+      "nearestBase": 82.41929316976531,
+      "nearestOtherPickable": 44.028630892878816,
+      "pixel": {
+        "x": 146,
+        "y": 119,
+        "before": [
+          9,
+          13,
+          23
+        ],
+        "after": [
+          11,
+          15,
+          24
+        ],
+        "delta": 5
+      }
+    }
+  ],
+  "limits": "共享算法的预测位置需以实际像素和公开Canvas点击核查；不把4120亮星aria计数当SAO新增数，不推断恒星距离。"
+}

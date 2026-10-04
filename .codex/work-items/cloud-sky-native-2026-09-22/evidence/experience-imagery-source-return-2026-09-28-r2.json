@@ -1,0 +1,19 @@
+{
+  "scope": "Actual official DevTools UI/source route/native image return; not phone evidence",
+  "marker": "IMGSEP28",
+  "port": 9433,
+  "reference": "M:51",
+  "sourcePath": "sky/sources/index",
+  "sourceOpticalCredit": true,
+  "sourceLicense": true,
+  "before": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 0.05 度，4216 颗真实亮星目录对象，场景时刻 2026-09-28T22:30:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 06:30",
+    "located": "M 51定位标记，查看资料",
+    "sources": "Sloan Digital Sky Survey · CC BY 4.0 · 历史 g/r/i 光学影像"
+  },
+  "after": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 0.05 度，4216 颗真实亮星目录对象，场景时刻 2026-09-28T22:30:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 06:30",
+    "located": "M 51定位标记，查看资料",
+    "sources": "Sloan Digital Sky Survey · CC BY 4.0 · 历史 g/r/i 光学影像"
+  }
+}

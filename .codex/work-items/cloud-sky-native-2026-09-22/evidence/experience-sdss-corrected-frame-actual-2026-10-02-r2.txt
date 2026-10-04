@@ -1,0 +1,1 @@
+{"report": ".codex\\work-items\\cloud-sky-native-2026-09-22\\evidence\\sdss-corrected-frame-2026-10-02-r2", "frames": 3, "compressedBytes": 9134078, "rawFilesUnchanged": true, "scientificValidity": "UNKNOWN", "fullDistortionAstrometry": "NOT_APPLIED"}

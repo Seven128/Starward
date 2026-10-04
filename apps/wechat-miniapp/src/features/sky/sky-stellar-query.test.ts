@@ -7,6 +7,38 @@ import {QueryClient,QueryObserver} from '@tanstack/react-query';
 import {catalogJsonIntegrity} from '../../../../../packages/miniapp-contracts/src/catalog-json-integrity.ts';
 import type {ApiEnvelope,SaoIndexPublication} from '@starward/miniapp-contracts';
 import {createSaoCatalogClient} from '../../services/sao-catalog-client';
+import {saoCatalogSource} from '../../../../../workers/miniapp-api/src/sao-catalog-source.ts';
+
+function realSaoEnvelope():ApiEnvelope<SaoIndexPublication>{
+ const directory=new URL('../../../../../workers/miniapp-api/assets/sao-v2/',import.meta.url);
+ const index=JSON.parse(readFileSync(new URL('index.json',directory),'utf8'));
+ return {apiVersion:'v2',data:{publicationHash:catalogJsonIntegrity(index).sha256,index},dataState:'FRESH',
+  generatedAt:'2026-10-03T13:00:00.000Z',validAt:null,sources:[saoCatalogSource(index)],warnings:[],etag:'fixture-index',requestId:'fixture-index'};
+}
+
+test('SAO file consumer preserves real scientific/source binding and rejects clear-retired metadata or late tile',async()=>{
+ const envelope=realSaoEnvelope();let epoch=0,files=0,oldApi=0,release!:(v:unknown)=>void;
+ const client=createSaoCatalogClient({index:async()=>envelope,tile:async()=>{oldApi++;assert.fail('file consumer fell back to generic tile cache');},
+  fileTile:async()=>{files++;return new Promise(resolve=>{release=resolve;});},
+  generation(){const captured=epoch;return {isCurrent:()=>captured===epoch};},invalidateIndex(){assert.fail();},invalidateTile(){assert.fail();}});
+ const publication=(await client.getIndex()).data,tile=publication.index.tiles[0]!;
+ const body=JSON.parse(readFileSync(new URL(`../../../../../workers/miniapp-api/assets/sao-v2/${tile.file}`,import.meta.url),'utf8'));
+ const normal=client.getTile(publication,tile.id);release(body);const result=await normal;
+ assert.equal(result.data.tile.rows.length,tile.rowCount);assert.deepEqual(result.sources,envelope.sources);assert.equal(result.etag,`W/"${tile.sha256}"`);
+ const late=client.getTile(publication,tile.id);epoch++;release(body);await assert.rejects(late,/retired_index/);
+ await assert.rejects(client.getTile(publication,tile.id),/retired_index/);assert.equal(files,2);assert.equal(oldApi,0);
+ const fresh=(await client.getIndex()).data;
+ assert.notEqual(fresh,publication,'refresh cannot reuse a retired publication capability');
+ await assert.rejects(client.getTile(publication,tile.id),/retired_index/,'another observer refresh cannot revive a retired publication capability');
+ const recovered=client.getTile(fresh,tile.id);release(body);assert.equal((await recovered).data.tile.tileId,tile.id);
+});
+
+test('clear while SAO index delivery is pending cannot capture a new generation for old work',async()=>{
+ let epoch=0,release!:(v:ApiEnvelope<SaoIndexPublication>)=>void;
+ const client=createSaoCatalogClient({index:()=>new Promise(resolve=>{release=resolve;}),tile:async()=>{assert.fail();},
+  generation(){const captured=epoch;return {isCurrent:()=>captured===epoch};},invalidateIndex(){assert.fail();},invalidateTile(){assert.fail();}});
+ const pending=client.getIndex();epoch++;release(realSaoEnvelope());await assert.rejects(pending,/retired_index/);
+});
 
 function functionBody(file:URL,name:string){
   const source=ts.createSourceFile(file.href,readFileSync(file,'utf8'),ts.ScriptTarget.Latest,true);

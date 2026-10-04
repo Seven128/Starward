@@ -1,0 +1,1 @@
+{"status":"PASSED_BOUNDED_M82_PREPARED_SCENE_EXECUTION","frames":8,"inputsExact":true,"path":"output/playwright/cloud-sky-hubble-m82-scene-1004-r1/result.json","bytes":9139,"sha256":"d0e7caa9efb1b6d5fcaa56782789036b24b3d1d5e1952ae363c6fcbeab57b634"}

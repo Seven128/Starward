@@ -1,0 +1,16 @@
+node:internal/fs/promises:956
+  const result = await PromisePrototypeThen(
+                 ^
+
+Error: ENOENT: no such file or directory, scandir 'E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\dist-weapp'
+    at async readdir (node:internal/fs/promises:956:18)
+    at async listBundleFiles (file:///E:/dev/worktrees/Starward/remote-main-20260908/tools/miniapp/release-bundle-artifact.mjs:65:19)
+    at async fingerprintBundle (file:///E:/dev/worktrees/Starward/remote-main-20260908/tools/miniapp/release-bundle-artifact.mjs:78:17)
+    at async file:///E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-wide-resource-binding-2026-10-02.mjs:104:13 {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'scandir',
+  path: 'E:\\dev\\worktrees\\Starward\\remote-main-20260908\\apps\\wechat-miniapp\\dist-weapp'
+}
+
+Node.js v24.16.0

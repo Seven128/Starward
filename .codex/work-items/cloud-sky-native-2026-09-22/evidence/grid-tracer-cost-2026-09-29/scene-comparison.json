@@ -1,0 +1,144 @@
+{
+  "at": "2026-09-28T16:23:29.803Z",
+  "scope": "Current production Canvas/GPU comparison against pre-optimization production output, same public data/camera/time/images/palette. This certifies only these software-rendered samples; no Taro UI/control composition, sensor, native, phone, absolute astrometry, whole-scene quality or full-frame performance acceptance.",
+  "sourceChanges": [
+    "apps/wechat-miniapp/src/features/sky/sky-grid-projection.ts"
+  ],
+  "beforeSourceBundleSha256": "38040c8091ede3d4a93b9b42f96d68a69f5e4da1ecb4c01ece36ebc676043c60",
+  "afterSourceBundleSha256": "c3523b1d25b877f3113253421bb94378c92154de252da674a8777dc12c578091",
+  "preservedCandidates": [
+    {
+      "generation": "v13",
+      "sha256": "8ead104e31b41f6ab015d1e543069dda6c2acca5df86694676208401fae9915f",
+      "openedByThisDiagnostic": false
+    },
+    {
+      "generation": "v14",
+      "sha256": "bc14e4721887119bdfa12b132ed14a9c525dc96d4b82b01f9ae48e8987c8cf78",
+      "openedByThisDiagnostic": false
+    }
+  ],
+  "rows": [
+    {
+      "filename": "night-off-85.png",
+      "width": 390,
+      "height": 844,
+      "changedPixels": 0,
+      "maximumChannelDelta": 0,
+      "paintedObjectsSha256": "4daf32c4dcefaba85a6f425ad7758c9264483675356489bb69d187369f8873e0",
+      "snapshotObjectCount": 421,
+      "snapshotCountMeaning": "production pre-mask object entries, not a visible/pickable count",
+      "afterImageSha256": "745344fedb7be5dcd9e229eb0ed00e2b32c7d6471e480d69ad25ac28a4f4c85b"
+    },
+    {
+      "filename": "night-horizontal-85.png",
+      "width": 390,
+      "height": 844,
+      "changedPixels": 0,
+      "maximumChannelDelta": 0,
+      "paintedObjectsSha256": "4daf32c4dcefaba85a6f425ad7758c9264483675356489bb69d187369f8873e0",
+      "snapshotObjectCount": 421,
+      "snapshotCountMeaning": "production pre-mask object entries, not a visible/pickable count",
+      "afterImageSha256": "51efb3b4240b034ec2a3fff1cb5a2f5b7b6d6f9a0ad42879100041817444a703"
+    },
+    {
+      "filename": "night-equatorial-85.png",
+      "width": 390,
+      "height": 844,
+      "changedPixels": 0,
+      "maximumChannelDelta": 0,
+      "paintedObjectsSha256": "4daf32c4dcefaba85a6f425ad7758c9264483675356489bb69d187369f8873e0",
+      "snapshotObjectCount": 421,
+      "snapshotCountMeaning": "production pre-mask object entries, not a visible/pickable count",
+      "afterImageSha256": "3b766d56da142b54a1efb14dd321add28fde4cab126c4db3c0cfe13a0c349bc5"
+    },
+    {
+      "filename": "night-both-85.png",
+      "width": 390,
+      "height": 844,
+      "changedPixels": 0,
+      "maximumChannelDelta": 0,
+      "paintedObjectsSha256": "4daf32c4dcefaba85a6f425ad7758c9264483675356489bb69d187369f8873e0",
+      "snapshotObjectCount": 421,
+      "snapshotCountMeaning": "production pre-mask object entries, not a visible/pickable count",
+      "afterImageSha256": "e6bf7829fec195e7984b27ccfb493a5563f2674335c9a497aea80660a863e8b5"
+    },
+    {
+      "filename": "night-off-267.8.png",
+      "width": 390,
+      "height": 844,
+      "changedPixels": 0,
+      "maximumChannelDelta": 0,
+      "paintedObjectsSha256": "42a1ff194a726d1ac824deeade9ac290e7fb31849d5181f26daa3131bb77315a",
+      "snapshotObjectCount": 1645,
+      "snapshotCountMeaning": "production pre-mask object entries, not a visible/pickable count",
+      "afterImageSha256": "d83c47a3241c22f90a4bc4f754abfa7601f60df83c9e5f65be7198a3940f68ed"
+    },
+    {
+      "filename": "night-horizontal-267.8.png",
+      "width": 390,
+      "height": 844,
+      "changedPixels": 0,
+      "maximumChannelDelta": 0,
+      "paintedObjectsSha256": "42a1ff194a726d1ac824deeade9ac290e7fb31849d5181f26daa3131bb77315a",
+      "snapshotObjectCount": 1645,
+      "snapshotCountMeaning": "production pre-mask object entries, not a visible/pickable count",
+      "afterImageSha256": "8bd08902e04877b32975252c1f3e7576bd65e88886b3082fd781d8548f896ef0"
+    },
+    {
+      "filename": "night-equatorial-267.8.png",
+      "width": 390,
+      "height": 844,
+      "changedPixels": 0,
+      "maximumChannelDelta": 0,
+      "paintedObjectsSha256": "42a1ff194a726d1ac824deeade9ac290e7fb31849d5181f26daa3131bb77315a",
+      "snapshotObjectCount": 1645,
+      "snapshotCountMeaning": "production pre-mask object entries, not a visible/pickable count",
+      "afterImageSha256": "91a75de3e0fc0f4d2eda469333d7425ca08c811c4e8a2995f6bfddaf0a5dab09"
+    },
+    {
+      "filename": "night-both-267.8.png",
+      "width": 390,
+      "height": 844,
+      "changedPixels": 0,
+      "maximumChannelDelta": 0,
+      "paintedObjectsSha256": "42a1ff194a726d1ac824deeade9ac290e7fb31849d5181f26daa3131bb77315a",
+      "snapshotObjectCount": 1645,
+      "snapshotCountMeaning": "production pre-mask object entries, not a visible/pickable count",
+      "afterImageSha256": "1bfec3fc088fc2636916eb135bee0029d6753d0eb6bd9faf1b15e158af0453ef"
+    },
+    {
+      "filename": "red-equatorial-85.png",
+      "width": 390,
+      "height": 844,
+      "changedPixels": 0,
+      "maximumChannelDelta": 0,
+      "paintedObjectsSha256": "d709e663429c64c64a0cd3d9316542337ebabdc00d15900985fd06072ecacac8",
+      "snapshotObjectCount": 435,
+      "snapshotCountMeaning": "production pre-mask object entries, not a visible/pickable count",
+      "afterImageSha256": "3fa9f839c23d6e003731726b382f700d52a7eca989ee84b4e19049980b20a7e2"
+    },
+    {
+      "filename": "later-equatorial-85.png",
+      "width": 390,
+      "height": 844,
+      "changedPixels": 0,
+      "maximumChannelDelta": 0,
+      "paintedObjectsSha256": "1a45f424e23e3ed8e1ef9b5516cd9b38c7225671c308e48b4f39ad346e8e8701",
+      "snapshotObjectCount": 424,
+      "snapshotCountMeaning": "production pre-mask object entries, not a visible/pickable count",
+      "afterImageSha256": "e49eaaef187be35cacb1898b4c09e7192206f108687f6420b5463dafaa8692fe"
+    },
+    {
+      "filename": "pole-equatorial-0.05.png",
+      "width": 390,
+      "height": 844,
+      "changedPixels": 0,
+      "maximumChannelDelta": 0,
+      "paintedObjectsSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "snapshotObjectCount": 0,
+      "snapshotCountMeaning": "production pre-mask object entries, not a visible/pickable count",
+      "afterImageSha256": "7acf18aaddbe48c370300513688bd7c3562346888ae505a8bc3326b780b6558a"
+    }
+  ]
+}

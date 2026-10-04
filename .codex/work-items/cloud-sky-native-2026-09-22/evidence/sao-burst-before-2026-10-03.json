@@ -1,0 +1,14 @@
+{
+  "before": {
+    "distinct": 65,
+    "total": 66,
+    "first": 2,
+    "held": 66,
+    "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+    "burstSourceBytes": 2369537,
+    "allTiles": 826
+  },
+  "accepted": 66,
+  "sameEnvelope": false,
+  "scope": "Actual service/read/parse/hash/contract on real 65 v2 tiles. Slow-read adapter controls only settlement; not HTTP mixed-load frequency or production memory."
+}

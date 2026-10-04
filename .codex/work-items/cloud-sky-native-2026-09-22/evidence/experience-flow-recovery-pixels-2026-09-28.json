@@ -1,0 +1,43 @@
+{
+  "scope": "development_native_output_comparison",
+  "marker": "FLOW0928",
+  "port": 9430,
+  "inputs": [
+    {
+      "name": "experience-flow-recovery-manual-native-2026-09-28.png",
+      "sha256": "d371015d76a1a3a623858844e858122f13a9e93eff397dee98e79524060883c1"
+    },
+    {
+      "name": "experience-flow-recovery-returned-native-2026-09-28.png",
+      "sha256": "fd8e24c0f1b2025b62516c275928ed95c402e37a667eada4612726609e1f1272"
+    }
+  ],
+  "regions": [
+    {
+      "name": "sky",
+      "bounds": {
+        "x0": 2,
+        "y0": 50,
+        "x1": 194,
+        "y1": 329
+      },
+      "pixels": 54040,
+      "changed": 0,
+      "maximumChannelDelta": 0
+    },
+    {
+      "name": "ground",
+      "bounds": {
+        "x0": 2,
+        "y0": 341,
+        "x1": 194,
+        "y1": 410
+      },
+      "pixels": 13510,
+      "changed": 0,
+      "maximumChannelDelta": 0
+    }
+  ],
+  "phoneVerified": false,
+  "calibrationVerified": false
+}

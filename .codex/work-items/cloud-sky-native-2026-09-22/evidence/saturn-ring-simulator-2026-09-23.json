@@ -1,0 +1,69 @@
+{
+  "kind": "non-phone-native-simulator-saturn-ring-controlled-comparison",
+  "at": "2026-09-23",
+  "runtime": "official WeChat DevTools source project, MEMORY_TEST published fixture spot",
+  "reportInstant": "2026-09-22T13:00:00.000Z",
+  "localTime": "21:00",
+  "saturn": {
+    "azimuthDeg": 99.421228,
+    "altitudeDeg": 27.287532,
+    "globeAngularDiameterDeg": 0.00527468,
+    "ringTiltGeocentricDeg": 7.875,
+    "ringOpeningTopocentricDeg": -7.865004600196864,
+    "ringPoleEnu": [
+      0.110587,
+      0.918934,
+      0.37859
+    ]
+  },
+  "camera": {
+    "verticalFovDeg": 1.5,
+    "tracking": "PLANET:SATURN",
+    "imageSize": [
+      427,
+      920
+    ]
+  },
+  "region": {
+    "xMin": 202,
+    "xMax": 224,
+    "yMin": 450,
+    "yMax": 470,
+    "brightnessThreshold": 100
+  },
+  "ringEnabled": {
+    "image": "artifacts/miniapp/cloud-sky-native/saturn-ring-21-maxzoom.png",
+    "brightPixels": 14,
+    "brightBounds": {
+      "xMin": 212,
+      "xMax": 215,
+      "yMin": 457,
+      "yMax": 462
+    }
+  },
+  "ringDisabledControl": {
+    "image": "artifacts/miniapp/cloud-sky-native/saturn-no-ring-control-21-maxzoom.png",
+    "brightPixels": 8,
+    "brightBounds": {
+      "xMin": 212,
+      "xMax": 215,
+      "yMin": 458,
+      "yMax": 460
+    }
+  },
+  "controlledMutation": "Temporarily changed the Saturn ring submission condition to false, captured the same route/instant/tracking/FOV, then restored the source and confirmed watch compiled at 09:43:58.",
+  "checks": {
+    "backend": "34/34",
+    "client": "33/33",
+    "typechecks": "contracts/API/client exit 0",
+    "contextValidate": "exit 0",
+    "diffCheck": "exit 0",
+    "temporarySourceRestored": "confirmed if (planet.body === \"SATURN\") at sky-scene-render.ts:179"
+  },
+  "limits": [
+    "Desktop simulator, not Android/iOS",
+    "Line approximation at near edge-on 7.9 degrees",
+    "No full annular band widths, optical depth, Cassini/Encke gaps, rings shadows or calibrated color",
+    "Canvas/WXML desktop composition remains abnormal"
+  ]
+}

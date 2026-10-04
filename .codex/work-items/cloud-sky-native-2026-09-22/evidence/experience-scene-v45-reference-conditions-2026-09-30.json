@@ -1,0 +1,75 @@
+{
+  "recordedAtUtc": "2026-09-30T00:09:52.353Z",
+  "url": "https://stellarium-web.org/",
+  "chosenPublicFixtureNearbyLocation": {
+    "latitude": 22.48254,
+    "longitude": 114.55496,
+    "label": "龙岗区, 中国",
+    "limitation": "Public map geocoder snapped the requested fixture coordinate, not exact Mini observer"
+  },
+  "fixedLocalTime": "2026-09-30 21:50:33",
+  "observedAltairAzAlt": {
+    "azimuthDeg": 252.54947222222222,
+    "altitudeDeg": 55.15602777777778
+  },
+  "wideMinimumFovDeg": 40.6,
+  "middleMinimumFovDeg": 10.8,
+  "localMinimumFovDeg": 4.1,
+  "zoomInUi": [
+    "FOV 9.57°ObserveMy",
+    "FOV 8.48°ObserveMy",
+    "FOV 7.51°ObserveMy",
+    "FOV 6.65°ObserveMy",
+    "FOV 5.89°ObserveMy",
+    "FOV 5.22°ObserveMy",
+    "FOV 4.62°ObserveMy",
+    "FOV 4.10°ObserveMy"
+  ],
+  "restoreUi": [
+    "FOV 4.62°ObserveMy",
+    "FOV 5.22°ObserveMy",
+    "FOV 5.89°ObserveMy",
+    "FOV 6.65°ObserveMy",
+    "FOV 7.51°ObserveMy",
+    "FOV 8.48°ObserveMy",
+    "FOV 9.57°ObserveMy",
+    "FOV 10.8°ObserveMy",
+    "FOV 12.2°ObserveMy",
+    "FOV 13.8°ObserveMy",
+    "FOV 15.5°ObserveMy",
+    "FOV 17.5°ObserveMy",
+    "FOV 19.8°ObserveMy",
+    "FOV 22.3°ObserveMy",
+    "FOV 25.2°ObserveMy",
+    "FOV 28.5°ObserveMy",
+    "FOV 32.1°ObserveMy",
+    "FOV 36.3°ObserveMy",
+    "FOV 40.9°ObserveMy"
+  ],
+  "finalDom": {
+    "canvas": {
+      "bottom": 844,
+      "height": 844,
+      "left": 0,
+      "right": 390.3999938964844,
+      "top": 0,
+      "width": 390.3999938964844,
+      "x": 0,
+      "y": 0
+    },
+    "fov": "FOV 40.9°ObserveMy",
+    "time": "21:50:332026-09-30",
+    "viewport": {
+      "height": 844,
+      "width": 390
+    }
+  },
+  "referenceProjectionPrimary": "https://github.com/Stellarium/stellarium-web-engine/blob/29870744c470ddc62fa869e153178c82a7824fa4/src/projection.h",
+  "limits": [
+    "UI degrees are rounded; vertical equivalents use stereographic geometry and observed viewport",
+    "Browser timezone was not exposed by the read-only DOM evaluation; compare observed object azimuth/altitude before claiming the same UTC instant",
+    "Reference engine may differ from the current upstream source commit; no hidden engine state was accessed",
+    "Reference uses deeper data and a different Milky Way source, neither was imported",
+    "Canvas point clicks in this browser session did not produce selection; no nearest-picking conclusion"
+  ]
+}

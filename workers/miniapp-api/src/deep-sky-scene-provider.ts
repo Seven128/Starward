@@ -10,6 +10,9 @@ import type {
   SpotSummary,
 } from "@starward/miniapp-contracts";
 
+// Report shape changes independently of the catalog bytes and projection math.
+const DEEP_SKY_REPORT_GEOMETRY_VERSION = "catalog-icrs-center-v1";
+
 function fixed(value: number) {
   const rounded = Math.round(value * 1_000_000_000) / 1_000_000_000;
   return Object.is(rounded, -0) ? 0 : rounded;
@@ -58,6 +61,7 @@ export function buildDeepSkyScene(
       majorAxisArcmin: row.majorAxisArcmin,
       minorAxisArcmin: row.minorAxisArcmin,
       positionAngleDeg: row.positionAngleDeg,
+      icrsCenter: { raDeg: row.raDeg, decDeg: row.decDeg },
     }));
     const index = new Map(entries.map((entry, position) => [entry.objectRef, position] as const));
     const frames = hourlyAt.map((frameAt) => {
@@ -100,7 +104,7 @@ export function buildDeepSkyScene(
 export function deepSkySceneCacheKey() {
   try {
     const catalog = loadDeepSkyCatalog();
-    return `${catalog.catalogVersion}:${catalog.catalogHash}:${DEEP_SKY_PROJECTION_ALGORITHM}`;
+    return `${catalog.catalogVersion}:${catalog.catalogHash}:${DEEP_SKY_PROJECTION_ALGORITHM}:${DEEP_SKY_REPORT_GEOMETRY_VERSION}`;
   } catch {
     return "deep-sky-unavailable";
   }

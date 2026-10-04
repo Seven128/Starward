@@ -1,0 +1,46 @@
+{
+  "status": "DRAFT_SOURCE_ONLY_NOT_EXECUTED",
+  "base": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-selected-full-hook-resource-journey-2026-10-02.mts",
+    "bytes": 51989,
+    "sha256": "d4f2ee1bf8c72979acc32682a0578f592d2aecd91116fb34c325362800cbeeed"
+  },
+  "draft": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-continuous-camera-resource-journey-2026-10-02.draft.mts",
+    "bytes": 54019,
+    "sha256": "940736b3690c7f2e18c4933dc79aaef3177003cf4bbee91808afa1ce339eab61"
+  },
+  "changes": [
+    "Unconditional guard before all output/bootstrap side effects",
+    "New generation namespace, never overwrite selected/history outputs",
+    "Bind original d4 selected harness as reused input",
+    "Bind actual prepared project/attach/present output and canonical serialization before the one browser seed",
+    "Guard current reviewed page",
+    "Bundle existing shared camera/view/clamp/landscape owners without implementing substitutes",
+    "Expose exact extracted selected-entry identity to read-only diagnostics",
+    "Read-only reference ID registry",
+    "Reference identities preserve actual objects and release functions",
+    "Record mkdir I/O without changing callbacks",
+    "Record readdir I/O",
+    "Record stat I/O",
+    "Record real controlled request abort callback",
+    "Read-only native loader ownership/file IDs; IDs are owner wrappers, not public lease IDs",
+    "Read-only real GL texture identities",
+    "Assign identity only to actual created GL texture",
+    "Bind actual draw calls to real texture identities",
+    "Persist actual retained texture identities",
+    "Replace selected six cases with one 12-state camera journey; browser report/catalog seeded once; actual shared resolver/camera/clamp/centre",
+    "Persist exact browser report/entry/Canvas identities and real ground mask summaries",
+    "Separate actual centre-ray view fade, actual readiness and actually painted foreground alpha",
+    "Retire diagnostic control-frame setup from the normal journey",
+    "Persist camera/input/reference/fade provenance in each actual observation",
+    "Delete consumer-null executor, all contribution controls, hide/newCanvas branch and forced selected/credit/warm-zero assertions; preserve actual raw before postconditions",
+    "Only final exit uses the actual page release callback and full Hook cleanup",
+    "Measure full return differences without imposing exactness",
+    "Preserve actual GL/image failures and return observations; measurement status does not certify product acceptance",
+    "Replace historical selected-scope/result claims with explicit measured continuous-software scope"
+  ],
+  "noGPU": true,
+  "noProductionChanges": true,
+  "executionGuard": "Unconditional throw before any output/bootstrap; removing it requires the parent-authorized future script revision, new SHA and run receipt."
+}

@@ -1,0 +1,735 @@
+{
+  "scope": "Native Sky SDSS public HTTP failure/retry/coarse-preservation/source-return development evidence. Actual bytes/native encoded digests and original Canvas pixels; not phone, target memory/frame-time, native decode/GPU fault injection, weak-network cancellation or whole-experience acceptance.",
+  "candidate": {
+    "bundle": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v29-0929",
+    "fingerprint": "e5e2baaf4feab03c82ad8dc8bd8faa657e995207fe38a338d744630b6bea75b5"
+  },
+  "traces": [
+    {
+      "file": "experience-sdss-recovery-native-2026-09-29.jsonl",
+      "sha256": "b9a5f49fd3570adf9d54a7a7c4bc147e115a8457c4a7d9a54d24823fb0297bbf",
+      "events": 48,
+      "frozen": true
+    },
+    {
+      "file": "experience-sdss-recovery-v29-native-2026-09-29.jsonl",
+      "sha256": "012a9e5e418e1bdf04f243ab5dd1b91a0d30dcfafef656a2889f15b915d81099",
+      "events": 75,
+      "frozen": true
+    }
+  ],
+  "captures": [
+    {
+      "candidate": "v28",
+      "stage": "sdss-recovery-m82-overview",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-sdss-recovery-m82-overview-2026-09-29.png",
+      "sha256": "1d534892268228063591a7a4033912c0b77a7e5a5258114505df96eb5caa6b7a",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v28",
+      "stage": "sdss-recovery-m82-medium",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-sdss-recovery-m82-medium-2026-09-29.png",
+      "sha256": "78631824dee35d2ada533f6d8134ac8350ec01c6111fb1377cb56e62d075d3a9",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v28",
+      "stage": "sdss-recovery-m82-detail-http-failed",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-sdss-recovery-m82-detail-http-failed-2026-09-29.png",
+      "sha256": "26c8879ad8e59be5b168b732b18a937dab017a071ff20d9e8bde8893c86e8e5e",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v28",
+      "stage": "sdss-recovery-m82-retry-still-failed",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-sdss-recovery-m82-retry-still-failed-2026-09-29.png",
+      "sha256": "122a6344f1609c3cf7525cb73888ca25861e69f0712d36472d8a21026c626409",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v28",
+      "stage": "sdss-recovery-m82-v28-recovered",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-sdss-recovery-m82-v28-recovered-2026-09-29.png",
+      "sha256": "3239bf6b2bb9015409686561b2dee6569e071d31759dcf8414091ff5530d2b99",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v28",
+      "stage": "sdss-recovery-m82-v28-sources",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-sdss-recovery-m82-v28-sources-2026-09-29.png",
+      "sha256": "5615e7aa6ee191efb1956f71b764e323948f50d94efebaa0e001d07e3058de9c",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v28",
+      "stage": "sdss-recovery-m82-v28-source-back",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v28-native-sdss-recovery-m82-v28-source-back-2026-09-29.png",
+      "sha256": "b02e6cc58e4dbd54454fcac4cf742fb25ff041bf94546c74eebb1ec99e0d5a5c",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v29",
+      "stage": "sdss-v29-initial-ready",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v29-native-sdss-v29-initial-ready-2026-09-29.png",
+      "sha256": "2498e5676ffc34e8d066f835a56d9df1f597d9400f01beb4b64df0354d8fbdfb",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v29",
+      "stage": "sdss-m82-overview",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v29-native-sdss-m82-overview-2026-09-29.png",
+      "sha256": "a29b74f3caf367082ed5220bd14f170658cd45ad699c57217c0f80884b34b5e4",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v29",
+      "stage": "sdss-m82-medium",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v29-native-sdss-m82-medium-2026-09-29.png",
+      "sha256": "6a2e16d3513e7163ab4bf140c0acaf48bad996e429c39d8cdb28921c84a7e2d3",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v29",
+      "stage": "sdss-m82-detail-http-failed",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v29-native-sdss-m82-detail-http-failed-2026-09-29.png",
+      "sha256": "88b1f38fc2cb2176b5d0446d063bcdc6e4f52d7b1783ad45b239f13513756e37",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v29",
+      "stage": "sdss-m82-retry-still-failed",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v29-native-sdss-m82-retry-still-failed-2026-09-29.png",
+      "sha256": "88b1f38fc2cb2176b5d0446d063bcdc6e4f52d7b1783ad45b239f13513756e37",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v29",
+      "stage": "sdss-m82-recovered",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v29-native-sdss-m82-recovered-2026-09-29.png",
+      "sha256": "dab8ce3f0f0a699a419432f5b3b4166a3ec3ead204c23209930ad9d162f46402",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v29",
+      "stage": "sdss-m82-bound-sources",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v29-native-sdss-m82-bound-sources-2026-09-29.png",
+      "sha256": "2a1fbb702501d904222f0854eb1657c0dbd0d84dbc6e195d5e4a8e3fbe98f1b1",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v29",
+      "stage": "sdss-m82-source-back",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v29-native-sdss-m82-source-back-2026-09-29.png",
+      "sha256": "36e82d40e5501a6473a594608eb9bafb7c2a8f3939a9f6a6b9568ee91baaa45e",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v29",
+      "stage": "sdss-m82-optical-source-readable",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v29-native-sdss-m82-optical-source-readable-2026-09-29.png",
+      "sha256": "df70ed7cb95fe5d77fc64597d50e98a65653dcd23a855d90e8cbcf1cbbe840ac",
+      "width": 427,
+      "height": 919
+    },
+    {
+      "candidate": "v29",
+      "stage": "sdss-m82-second-source-back",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v29-native-sdss-m82-second-source-back-2026-09-29.png",
+      "sha256": "47e4c81fa2eeb685932a685ced477e831afb3436437f76fd3a60c78646d5ba05",
+      "width": 427,
+      "height": 919
+    }
+  ],
+  "published": {
+    "overview": {
+      "bytes": 19934,
+      "md5": "3b73a416d3da138263717ad000ba8610",
+      "sha256": "88bee46f84a10404bae49c06e886f6c3f30f3595b27751f47373dccbdd33c044"
+    },
+    "medium": {
+      "bytes": 23280,
+      "md5": "8d38c010f3213293e67398ff661103df",
+      "sha256": "3279b0120a893f7451de0ef5d9cb4e230fae3f9e7a91beac54b48d486a739b34"
+    },
+    "detail": {
+      "bytes": 19100,
+      "md5": "ef37eebf6c1b8c4f8174c49244057515",
+      "sha256": "a2126f35bed0c42a6189684a1238172aec0ca2d95e83df5a91e95fcec9730c6a"
+    }
+  },
+  "context": {
+    "locationKind": "FORMAL_SPOT",
+    "publicSpotId": "spot:test-published",
+    "localDate": "2026-09-29",
+    "selectedAtUtc": "2026-09-29T21:00:00Z",
+    "timezone": "Asia/Shanghai",
+    "revision": 2,
+    "contextFingerprint": "c197391ccb77d36ef51b359dc8a4908db8b51a703626d8cc1070cbf1b87fad12",
+    "astronomyVersion": "astronomy-engine-2.1.19",
+    "contextIdSha256": "c5c224f706fa553f9a3ea0be061a4fd00fc3d77fabc841d78db1b0ac8c35eb4d"
+  },
+  "display": {
+    "mode": "DAY",
+    "largeText": false,
+    "pagePath": "sky/detail/index",
+    "pageDepth": 2,
+    "viewport": {
+      "model": "iPhone 12/13 (Pro)",
+      "screenWidth": 390,
+      "screenHeight": 844,
+      "windowHeight": 762,
+      "pixelRatio": 3,
+      "SDKVersion": "3.17.4",
+      "platform": "devtools"
+    }
+  },
+  "runtime": {
+    "contextMode": "pass",
+    "transportPid": 4924,
+    "epoch": "2026-09-29T09:14:20.175Z",
+    "controllerPort": 64485,
+    "sourceMode": "pass",
+    "active": 0,
+    "windows": [
+      {
+        "Id": 25916,
+        "MainWindowTitle": "Starward-Sky-Combined-Clean-V29-0929"
+      }
+    ],
+    "forwardedPutStatuses": [
+      200
+    ],
+    "resourceMode": "pass",
+    "contextUpstream": 8789,
+    "informationModuleSha256": "3ae1fcda98d31ec91469e7c2e92aa1d8d314b8e4203dadb24359c5483ce67cd9",
+    "held": 0,
+    "puts": 1
+  },
+  "nativeOpticalImageRecords": [
+    {
+      "sequence": 2,
+      "phase": "native-image-fault",
+      "resourceKind": "sdss-optical_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 0,
+      "upstreamChunks": 0,
+      "upstreamEnded": false,
+      "downstreamFinished": true,
+      "status": 503,
+      "controlledFault": "sdss-detail-reject-before-upstream",
+      "downstreamFinishedMs": 0.64,
+      "observedDurationMs": 0.65
+    },
+    {
+      "sequence": 3,
+      "phase": "native-image-fault",
+      "resourceKind": "sdss-optical_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 0,
+      "upstreamChunks": 0,
+      "upstreamEnded": false,
+      "downstreamFinished": true,
+      "status": 503,
+      "controlledFault": "sdss-detail-reject-before-upstream",
+      "downstreamFinishedMs": 0.63,
+      "observedDurationMs": 0.63
+    },
+    {
+      "sequence": 4,
+      "phase": "native-image-fault",
+      "resourceKind": "sdss-optical_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 0,
+      "upstreamChunks": 0,
+      "upstreamEnded": false,
+      "downstreamFinished": true,
+      "status": 503,
+      "controlledFault": "sdss-detail-reject-before-upstream",
+      "downstreamFinishedMs": 0.48,
+      "observedDurationMs": 0.49
+    },
+    {
+      "sequence": 10,
+      "phase": "native-image-retry",
+      "resourceKind": "sdss-optical_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 19100,
+      "upstreamChunks": 1,
+      "upstreamEnded": true,
+      "downstreamFinished": true,
+      "status": 200,
+      "upstreamHeadersMs": 8.04,
+      "declaredContentLength": 19100,
+      "contentEncoding": "identity_or_other",
+      "immutable": true,
+      "maxAgeSeconds": 31536000,
+      "imageFieldDegrees": 0.05688888888888889,
+      "upstreamEndedMs": 8.41,
+      "downstreamFinishedMs": 8.58,
+      "observedDurationMs": 8.59
+    },
+    {
+      "sequence": 123,
+      "phase": "native-progression",
+      "resourceKind": "sdss-optical_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 19934,
+      "upstreamChunks": 1,
+      "upstreamEnded": true,
+      "downstreamFinished": true,
+      "status": 200,
+      "upstreamHeadersMs": 2.74,
+      "declaredContentLength": 19934,
+      "contentEncoding": "identity_or_other",
+      "immutable": true,
+      "maxAgeSeconds": 31536000,
+      "imageFieldDegrees": 0.22755555555555557,
+      "upstreamEndedMs": 2.89,
+      "downstreamFinishedMs": 3,
+      "observedDurationMs": 3
+    },
+    {
+      "sequence": 124,
+      "phase": "native-progression",
+      "resourceKind": "sdss-optical_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 23280,
+      "upstreamChunks": 1,
+      "upstreamEnded": true,
+      "downstreamFinished": true,
+      "status": 200,
+      "upstreamHeadersMs": 2.66,
+      "declaredContentLength": 23280,
+      "contentEncoding": "identity_or_other",
+      "immutable": true,
+      "maxAgeSeconds": 31536000,
+      "imageFieldDegrees": 0.11377777777777778,
+      "upstreamEndedMs": 2.85,
+      "downstreamFinishedMs": 2.95,
+      "observedDurationMs": 2.95
+    },
+    {
+      "sequence": 125,
+      "phase": "native-image-fault",
+      "resourceKind": "sdss-optical_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 0,
+      "upstreamChunks": 0,
+      "upstreamEnded": false,
+      "downstreamFinished": true,
+      "status": 503,
+      "controlledFault": "sdss-detail-reject-before-upstream",
+      "downstreamFinishedMs": 0.27,
+      "observedDurationMs": 0.27
+    },
+    {
+      "sequence": 126,
+      "phase": "native-image-fault",
+      "resourceKind": "sdss-optical_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 0,
+      "upstreamChunks": 0,
+      "upstreamEnded": false,
+      "downstreamFinished": true,
+      "status": 503,
+      "controlledFault": "sdss-detail-reject-before-upstream",
+      "downstreamFinishedMs": 0.31,
+      "observedDurationMs": 0.32
+    },
+    {
+      "sequence": 127,
+      "phase": "native-image-retry",
+      "resourceKind": "sdss-optical_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 19100,
+      "upstreamChunks": 1,
+      "upstreamEnded": true,
+      "downstreamFinished": true,
+      "status": 200,
+      "upstreamHeadersMs": 3.81,
+      "declaredContentLength": 19100,
+      "contentEncoding": "identity_or_other",
+      "immutable": true,
+      "maxAgeSeconds": 31536000,
+      "imageFieldDegrees": 0.05688888888888889,
+      "upstreamEndedMs": 3.93,
+      "downstreamFinishedMs": 4.03,
+      "observedDurationMs": 4.03
+    }
+  ],
+  "pixels": {
+    "beforeRetry": {
+      "leftStage": "sdss-recovery-m82-detail-http-failed",
+      "rightStage": "sdss-recovery-m82-retry-still-failed",
+      "changedPixels": 331010,
+      "maxChannelDifference": 232,
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Within each candidate only; no resizing or cross-SDK/candidate pixel equivalence; excludes host system bars/capsule/rounded border"
+      }
+    },
+    "beforeSourceBack": {
+      "leftStage": "sdss-recovery-m82-v28-recovered",
+      "rightStage": "sdss-recovery-m82-v28-source-back",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Within each candidate only; no resizing or cross-SDK/candidate pixel equivalence; excludes host system bars/capsule/rounded border"
+      }
+    },
+    "afterRetry": {
+      "leftStage": "sdss-m82-detail-http-failed",
+      "rightStage": "sdss-m82-retry-still-failed",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Within each candidate only; no resizing or cross-SDK/candidate pixel equivalence; excludes host system bars/capsule/rounded border"
+      }
+    },
+    "afterRecovery": {
+      "leftStage": "sdss-m82-retry-still-failed",
+      "rightStage": "sdss-m82-recovered",
+      "changedPixels": 318643,
+      "maxChannelDifference": 76,
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Within each candidate only; no resizing or cross-SDK/candidate pixel equivalence; excludes host system bars/capsule/rounded border"
+      }
+    },
+    "afterSourceBack": {
+      "leftStage": "sdss-m82-recovered",
+      "rightStage": "sdss-m82-source-back",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Within each candidate only; no resizing or cross-SDK/candidate pixel equivalence; excludes host system bars/capsule/rounded border"
+      }
+    },
+    "afterSecondSourceBack": {
+      "leftStage": "sdss-m82-recovered",
+      "rightStage": "sdss-m82-second-source-back",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Within each candidate only; no resizing or cross-SDK/candidate pixel equivalence; excludes host system bars/capsule/rounded border"
+      }
+    }
+  },
+  "toolFailures": [
+    {
+      "tool": "automation_evaluate",
+      "errorType": "MCP_TOOL_ERROR",
+      "reason": "mcp_business_fail"
+    },
+    {
+      "errorType": "MCP_TOOL_ERROR",
+      "tool": "automation_element_action",
+      "reason": "mcp_business_fail"
+    }
+  ],
+  "retiredTransport": {
+    "scope": "Owned local transport replacement only; original 8789 Context and native candidate preserved",
+    "oldContextStatus": {
+      "mode": "pass",
+      "puts": 1,
+      "gets": 12,
+      "rejectedBeforeUpstream": 0,
+      "lostSuccessfulResponses": 0,
+      "forwardedPutStatuses": [
+        200
+      ],
+      "conditionalContextGets": 7
+    },
+    "contextDataSha256": "a2da26f7078ee284dad210840138086eb7aa85d567272128ece1f8d0c94f550f",
+    "publication": {
+      "publicationHash": "87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+      "sdssPublications": [
+        {
+          "reference": "M:51",
+          "publicationHash": "5c068fae55a47444724767777532ce6af1b6555c41ca2afdcceed9e9ae762eff"
+        },
+        {
+          "reference": "M:63",
+          "publicationHash": "5199f79b27bd859891e1641e2103f8249956e71b180cd9d93072faafa8eb597a"
+        },
+        {
+          "reference": "M:64",
+          "publicationHash": "bb11a9d3645eb7179dfec84a96591def55b84a4f0c89cf5f442937c4dbf86845"
+        },
+        {
+          "reference": "M:81",
+          "publicationHash": "29e25248ce49a8c5aa0a9c4d591c0024438ac8376bcf777c16de9ae2dbb90c20"
+        },
+        {
+          "reference": "M:82",
+          "publicationHash": "450e5305189e0f31f5716513880ce480994e676379a79f8e571039b4bcde4b43"
+        },
+        {
+          "reference": "M:87",
+          "publicationHash": "333321a17a68e6fbf041aabcc06a34a0ec6e302778d5c2d5259d573518e348c8"
+        }
+      ],
+      "informationModuleSha256": "3ae1fcda98d31ec91469e7c2e92aa1d8d314b8e4203dadb24359c5483ce67cd9",
+      "contextUpstream": 8789,
+      "publicationBackendPort": 64485,
+      "scope": "task-only compiled publication reads; existing Context owner retained"
+    },
+    "beforeEpoch": "2026-09-29T06:26:06.812Z",
+    "afterEpoch": "2026-09-29T09:14:20.175Z",
+    "durableContextEqual": true,
+    "active": 0,
+    "source": {
+      "mode": "pass",
+      "target": "M:82",
+      "deadlineUtc": null,
+      "reads": {
+        "infrared": 0,
+        "optical": 0,
+        "infraredFailed": 0,
+        "opticalFailed": 0
+      },
+      "scope": "task-local source-provider exceptions, real compiled information response"
+    },
+    "transportScriptSha256": "11c7756196a4a1594dc607897720229a237faa649e97d02b45675c1b604b7693",
+    "held": 0,
+    "newContextStatus": {
+      "mode": "pass",
+      "puts": 0,
+      "gets": 1,
+      "rejectedBeforeUpstream": 0,
+      "lostSuccessfulResponses": 0,
+      "forwardedPutStatuses": [],
+      "conditionalContextGets": 0
+    }
+  },
+  "stagingTransport": {
+    "scope": "Task-local staging transport mechanism check only; no native, phone or product acceptance",
+    "epoch": "2026-09-29T09:11:56.897Z",
+    "publicationHash": "450e5305189e0f31f5716513880ce480994e676379a79f8e571039b4bcde4b43",
+    "rows": [
+      {
+        "level": "OVERVIEW",
+        "status": 200,
+        "bytes": 19934,
+        "publishedBytes": true,
+        "contentType": "image/jpeg"
+      },
+      {
+        "level": "MEDIUM",
+        "status": 200,
+        "bytes": 23280,
+        "publishedBytes": true,
+        "contentType": "image/jpeg"
+      },
+      {
+        "level": "DETAIL",
+        "status": 503,
+        "bytes": 192,
+        "publishedBytes": false,
+        "contentType": "application/json"
+      },
+      {
+        "level": "DETAIL",
+        "status": 200,
+        "bytes": 19100,
+        "publishedBytes": true,
+        "contentType": "image/jpeg"
+      }
+    ],
+    "heldBodyReleasedWithExactPublishedHash": true,
+    "records": [
+      {
+        "sequence": 1,
+        "phase": "transport-check",
+        "resourceKind": "sdss-optical_manifest",
+        "method": "GET",
+        "agentProbe": true,
+        "conditional": false,
+        "upstreamBodyBytes": 2884,
+        "upstreamChunks": 1,
+        "upstreamEnded": true,
+        "downstreamFinished": true,
+        "status": 200,
+        "upstreamHeadersMs": 11.56,
+        "declaredContentLength": 2884,
+        "contentEncoding": "identity_or_other",
+        "immutable": true,
+        "maxAgeSeconds": 31536000,
+        "upstreamEndedMs": 12.44,
+        "downstreamFinishedMs": 12.92,
+        "observedDurationMs": 12.93
+      },
+      {
+        "sequence": 2,
+        "phase": "transport-check",
+        "resourceKind": "sdss-optical_image",
+        "method": "GET",
+        "agentProbe": true,
+        "conditional": false,
+        "upstreamBodyBytes": 19934,
+        "upstreamChunks": 1,
+        "upstreamEnded": true,
+        "downstreamFinished": true,
+        "status": 200,
+        "upstreamHeadersMs": 2.92,
+        "declaredContentLength": 19934,
+        "contentEncoding": "identity_or_other",
+        "immutable": true,
+        "maxAgeSeconds": 31536000,
+        "imageFieldDegrees": 0.22755555555555557,
+        "upstreamEndedMs": 3.45,
+        "downstreamFinishedMs": 3.76,
+        "observedDurationMs": 3.76
+      },
+      {
+        "sequence": 3,
+        "phase": "transport-check",
+        "resourceKind": "sdss-optical_image",
+        "method": "GET",
+        "agentProbe": true,
+        "conditional": false,
+        "upstreamBodyBytes": 23280,
+        "upstreamChunks": 1,
+        "upstreamEnded": true,
+        "downstreamFinished": true,
+        "status": 200,
+        "upstreamHeadersMs": 2.42,
+        "declaredContentLength": 23280,
+        "contentEncoding": "identity_or_other",
+        "immutable": true,
+        "maxAgeSeconds": 31536000,
+        "imageFieldDegrees": 0.11377777777777778,
+        "upstreamEndedMs": 2.59,
+        "downstreamFinishedMs": 2.72,
+        "observedDurationMs": 2.72
+      },
+      {
+        "sequence": 4,
+        "phase": "transport-check",
+        "resourceKind": "sdss-optical_image",
+        "method": "GET",
+        "agentProbe": true,
+        "conditional": false,
+        "upstreamBodyBytes": 0,
+        "upstreamChunks": 0,
+        "upstreamEnded": false,
+        "downstreamFinished": true,
+        "status": 503,
+        "controlledFault": "sdss-detail-reject-before-upstream",
+        "downstreamFinishedMs": 0.31,
+        "observedDurationMs": 0.32
+      },
+      {
+        "sequence": 5,
+        "phase": "transport-check",
+        "resourceKind": "sdss-optical_image",
+        "method": "GET",
+        "agentProbe": true,
+        "conditional": false,
+        "upstreamBodyBytes": 19100,
+        "upstreamChunks": 1,
+        "upstreamEnded": true,
+        "downstreamFinished": true,
+        "status": 200,
+        "upstreamHeadersMs": 2.03,
+        "declaredContentLength": 19100,
+        "contentEncoding": "identity_or_other",
+        "immutable": true,
+        "maxAgeSeconds": 31536000,
+        "imageFieldDegrees": 0.05688888888888889,
+        "upstreamEndedMs": 2.27,
+        "downstreamFinishedMs": 2.44,
+        "observedDurationMs": 2.44
+      },
+      {
+        "sequence": 6,
+        "phase": "transport-check",
+        "resourceKind": "sdss-optical_image",
+        "method": "GET",
+        "agentProbe": true,
+        "conditional": false,
+        "upstreamBodyBytes": 19100,
+        "upstreamChunks": 1,
+        "upstreamEnded": true,
+        "downstreamFinished": true,
+        "status": 200,
+        "upstreamHeadersMs": 2.6,
+        "declaredContentLength": 19100,
+        "contentEncoding": "identity_or_other",
+        "immutable": true,
+        "maxAgeSeconds": 31536000,
+        "imageFieldDegrees": 0.05688888888888889,
+        "controlledResourceDelayMs": 30000,
+        "controlledResourceOutcome": "control-release",
+        "upstreamEndedMs": 7.01,
+        "downstreamFinishedMs": 7.16,
+        "observedDurationMs": 7.16
+      }
+    ],
+    "active": 0,
+    "held": 0,
+    "mode": "pass"
+  },
+  "limitations": [
+    "Historical v28 viewport evidence used SDK3.17.3; current v29 readback is SDK3.17.4. This round did not capture v28 SDK. No matched-SDK or cross-candidate pixel claim. The actual page regression fails before the source correction and within-v29 retry equality is independent of that cross-candidate limitation.",
+    "Native Sky screenshots remain Canvas-only: read native WXML and executed public SDK actions do not establish ordinary overlay composition. Source page native readability is viewed separately.",
+    "Only M82 is the native optical representative here; six admitted targets and actual broader scientific/quality coverage are not reduced to it.",
+    "GPU-reset branch has controlled shared-owner/decode/upload/page-consumer evidence; no injected native GPU fault or target acceptance. Final independent review of these changes remains open."
+  ]
+}

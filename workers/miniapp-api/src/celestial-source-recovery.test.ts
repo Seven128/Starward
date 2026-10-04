@@ -25,9 +25,9 @@ class RecoverableInfrared extends DeepSkyImageryService {
 }
 class RecoverableOptical extends SdssOpticalImageryService {
   unavailable = false;
-  override source(reference: string) {
+  override source(reference: string, expectedOpticalHash?: string) {
     if (reference === "M:82" && this.unavailable) throw new Error("test_optical_publication_unavailable");
-    return super.source(reference);
+    return super.source(reference, expectedOpticalHash);
   }
 }
 const selection: DeepSkyImageSelection = { imageVersion: "source-finite-v3" };
@@ -75,7 +75,9 @@ test("actual HTTP retry replaces partial credit and its conditional response wit
   try {
     await app.init();
     const http = app.getHttpAdapter().getInstance();
-    const url = "/v2/celestial-objects/M%3A82?deepSkyImageVersion=source-finite-v3";
+    const publication = optical.currentManifest("M:82");
+    const infrared = service.deepSkyImages.discovery("M:82");
+    const url = `/v2/celestial-objects/M%3A82?deepSkyImageVersion=source-finite-v3&deepSkyPublicationHash=${infrared.publicationHash}&opticalPublicationHash=${publication.publicationHash}`;
     const first = await http.inject({ method: "GET", url });
     assert.equal(first.statusCode, 200);
     assert.equal(first.json().dataState, "PARTIAL");
@@ -92,6 +94,37 @@ test("actual HTTP retry replaces partial credit and its conditional response wit
     assert.ok(result.data.sources.some((source: {id:string}) => source.id ===
       `optical-imagery:${ownPublication.publicationId}:${ownPublication.publicationHash}`));
     assert.ok(result.data.sources.some((source: {id:string}) => source.id.startsWith("imagery:")));
+    assert.ok(result.data.sources.some((source: {id:string}) => source.id.endsWith(`:${infrared.publicationHash}`)));
+    assert.notEqual(infrared.publicationHash, publication.publicationHash);
+    for (const invalid of ["../outside", "", "g".repeat(64)]) {
+      assert.equal((await http.inject({ method: "GET", url: `/v2/celestial-objects/M%3A82?opticalPublicationHash=${encodeURIComponent(invalid)}` })).statusCode, 400);
+    }
+    assert.equal((await http.inject({ method: "GET", url: `/v2/celestial-objects/HR%3A7001?opticalPublicationHash=${publication.publicationHash}` })).statusCode, 400);
     assert.equal((await http.inject({ method: "GET", url, headers: { "if-none-match": retried.headers.etag! } })).statusCode, 304);
   } finally { await app.close(); }
+});
+
+test("explicit optical selection never falls back to another object, an unknown version or the W3 version", () => {
+  const optical = new SdssOpticalImageryService(), information = new CelestialObjectInformationService(undefined, optical);
+  const own = optical.currentManifest("M:82"), other = optical.currentManifest("M:51");
+  const defaultResult = information.get("M:82", "zh-CN", "bsc5p-bright-stars.v3", undefined, selection);
+  const selected = information.get("M:82", "zh-CN", "bsc5p-bright-stars.v3", undefined, selection, own.publicationHash);
+  assert.deepEqual(selected.data, defaultResult.data);
+  assert.notEqual(selected.requestId, defaultResult.requestId, "the selected cache is independent of the default cache");
+  const w3 = selected.data.sources.find(source => source.id.startsWith("imagery:"))!;
+  const hashes = [other.publicationHash, "0".repeat(64), w3.id.split(":").at(-1)!];
+  for (const hash of hashes) {
+    const partial = information.get("M:82", "zh-CN", "bsc5p-bright-stars.v3", undefined, selection, hash);
+    assert.equal(partial.dataState, "PARTIAL");
+    assert.ok(!partial.data.sources.some(source => source.id.startsWith("optical-imagery:")));
+    assert.ok(partial.warnings.includes("sdss_optical_publication_unavailable"));
+    assert.deepEqual(partial.data.facts, selected.data.facts);
+    assert.deepEqual(partial.data.sources.find(source => source.id.startsWith("imagery:")), w3);
+    assert.deepEqual(partial.sources, partial.data.sources);
+    const repeated = information.get("M:82", "zh-CN", "bsc5p-bright-stars.v3", undefined, selection, hash);
+    assert.notEqual(partial.requestId, repeated.requestId, "a partial result is retried rather than service-cached");
+  }
+  assert.equal(information.get("M:82", "zh-CN", "bsc5p-bright-stars.v3", undefined, selection).dataState, "FRESH");
+  assert.throws(() => information.get("M:82", "zh-CN", "bsc5p-bright-stars.v3", undefined, selection, ""), /hash_invalid/u);
+  assert.throws(() => information.get("HR:7001", "zh-CN", "bsc5p-bright-stars.v3", undefined, selection, own.publicationHash), /hash_invalid/u);
 });

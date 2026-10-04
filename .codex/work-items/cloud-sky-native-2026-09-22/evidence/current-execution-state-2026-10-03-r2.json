@@ -1,0 +1,232 @@
+{
+  "schemaVersion": "cloud-sky-current-execution-v1",
+  "checkedAt": "2026-10-03T06:08:48.0870975Z",
+  "workspace": "E:\\dev\\worktrees\\Starward\\remote-main-20260908",
+  "branch": "codex/remote-main-20260908",
+  "head": "72e65cf309d700cb7d40c5b7afd53660fd39fa35",
+  "goal": {
+    "status": "active",
+    "budget": null,
+    "basis": "Current Goal tool readback, no new Goal or status mutation in this checkpoint."
+  },
+  "protected": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "bytes": 5667,
+      "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "bytes": 2041,
+      "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "bytes": 1770,
+      "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "bytes": 14895,
+      "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "bytes": 64272,
+      "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8"
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "bytes": 42510,
+      "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd"
+    }
+  ],
+  "currentSources": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-landscape.ts",
+      "bytes": 6462,
+      "sha256": "99b4f958fade3fb63c53127d2fc9a48ac278858017a35eb8f56df7f658e732fb"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "bytes": 211571,
+      "sha256": "e3c55068adcade1981c8744916d61ef570046425a49ea0a3cb5356c366103b7e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-landscape.test.ts",
+      "bytes": 2648,
+      "sha256": "d917d5876bf2e824fb191d9bbb13489c695743d741e7c48866370b8f2cc5393a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-selected-image-retirement.test.ts",
+      "bytes": 3007,
+      "sha256": "663bc4f4b8cddbc203190938399edad08928bc737345e58e0600a3217421fd44"
+    },
+    {
+      "path": "workers/miniapp-api/src/sao-publication.ts",
+      "bytes": 4403,
+      "sha256": "fb371cd61f124d464433845ada54a56223215d609998773384c94d41391a135c"
+    },
+    {
+      "path": "workers/miniapp-api/src/sao-publication-concurrency.test.ts",
+      "bytes": 4069,
+      "sha256": "6d8f1554044b59a4538f57c1cb75aec30a4a2bbd584054b4caa27735f62f4136"
+    },
+    {
+      "path": "workers/miniapp-api/src/prepared-optical-imagery.ts",
+      "bytes": 5458,
+      "sha256": "32855e03341d81b0c94500bfb679f3598c33c5e0ec97eed8ef71fb4a4869141e"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-public-asset-export.ts",
+      "bytes": 7331,
+      "sha256": "e18408e7ef1bd1757148e5c6f2cd6079b40fb6336163a1227deaeb2aa0351bcf"
+    },
+    {
+      "path": "workers/miniapp-api/src/prepared-optical-static-export.test.ts",
+      "bytes": 3794,
+      "sha256": "27c69488143642fe81c98ef4adc07a0638663394120f3bc31f8c889d144f9e77"
+    },
+    {
+      "path": "infrastructure/deployment/sky-resource-logging.caddy",
+      "bytes": 1170,
+      "sha256": "7e8e286310c583cb0a18b5173d20e4ac08c3750bb616c0e495cc70c6e92db5be"
+    },
+    {
+      "path": "tools/deployment/compose-contract.test.mjs",
+      "bytes": 6041,
+      "sha256": "691739e4c9a353518d60cb76268bccb41fc0c195650a011f712729f9cf590b5c"
+    },
+    {
+      "path": "tools/deployment/sky-static-release.mjs",
+      "bytes": 22366,
+      "sha256": "ed5c039eedad40586448d4253cee2505e60cfa59c0bb433e702b817eee3211dd"
+    },
+    {
+      "path": "tools/deployment/sky-static-release.test.mjs",
+      "bytes": 17559,
+      "sha256": "75ba778029d02b986d83937b5a7b976ddaee78702c9fb76fe81e1abd1f9b74ce"
+    },
+    {
+      "path": "data-pipelines/deep-sky/image_quality.py",
+      "bytes": 23413,
+      "sha256": "1c79ef74624ed48a7b11ce9aed3f97556dde4bb5d706f19009c5b9a628800cbc"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_image_quality.py",
+      "bytes": 14586,
+      "sha256": "fb144959dd1cbdbb498125db359c98f96b05bc58059e2f928a3479f1378210b9"
+    },
+    {
+      "path": "project_context/architecture/runtime-and-domain.md",
+      "bytes": 273329,
+      "sha256": "4dcf41f50acd2c6651959b6a161e07a7e7cf60cd2c3d6eacf881f52782af2cbb"
+    },
+    {
+      "path": "project_context/deployment/decisions-and-verification.md",
+      "bytes": 14647,
+      "sha256": "db221e956579be8c54792536d650a4f9bf6ddbcf8f36fbe5fa9bbafac48564af"
+    },
+    {
+      "path": "infrastructure/deployment/README.md",
+      "bytes": 44655,
+      "sha256": "fee786309a8fdb14c6cf415b715017fab7aff60175a084de66a2e3c54295a5fe"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/capture-current-execution-2026-10-03.ps1",
+      "bytes": 5624,
+      "sha256": "ad4c90a53c204572b9a005ada4c88f6327886c4b90f0a4a0cab6bfeced7c296e"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+      "bytes": 72920,
+      "sha256": "eabf81cb2e625fe8f31e024750952edb427b0f0dcf96788abf8e85032886e578"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+      "bytes": 25788,
+      "sha256": "26ae9b08f7ce9bec3ce3726ee84db75944b48e7159e82d9f8d3be6db6b4ffd37"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "output/playwright/cloud-sky-current-scene-1003-r5/result.json",
+      "bytes": 100294857,
+      "sha256": "1ab3dd10fd06e354fbb248e502d126f69936eb0f530eece67aa7defc19bd2b0e"
+    },
+    {
+      "path": "output/shared-quality-boundaries-1003-r1/result.json",
+      "bytes": 216115,
+      "sha256": "34caa4dae2d4452f2122d41fd75c7c84d9f0aaf1512d1a7b27b9aa9f36317747"
+    },
+    {
+      "path": "output/sky-static-retention-1003-r2/result.json",
+      "bytes": 12119,
+      "sha256": "a3c7c158d6a8bd8b6856376107c303ea334760ed8fb525d0510fd62dc6ce0629"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-scene-journey-and-repairs-2026-10-03.md",
+      "bytes": 6952,
+      "sha256": "eb6d8b5ffc718b1ab683e188d8ba0ef9871fef04f9a71a393da1bcdd6ed92f2d"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-standard-static-development-2026-10-03.md",
+      "bytes": 1796,
+      "sha256": "de9b78e1b8e6e82e1816ff52c3f08e86219dc2db5adfae2fb31217f9b1f6acc7"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-shared-quality-boundaries-2026-10-03.md",
+      "bytes": 2954,
+      "sha256": "06339dda26985ffcfb3b807fc10bd83aff4ddf1985d80703a4cabaa066f8d96c"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-static-retention-dry-run-2026-10-03.md",
+      "bytes": 3019,
+      "sha256": "5c06bfbdfe4874fd49cf7ee9c5c0b1e3f9c6aa181052e62cfd0da6748f93d6f6"
+    }
+  ],
+  "worktree": {
+    "porcelainEntries": 382,
+    "stagedEntries": 0,
+    "meaning": "Includes all prior uncommitted work; not this increment attribution or a clean delivery candidate."
+  },
+  "processes": [
+    {
+      "ProcessId": 24040,
+      "Name": "node.exe",
+      "CreationDate": "2026-10-01T02:03:53.414608+08:00"
+    },
+    {
+      "ProcessId": 18132,
+      "Name": "node.exe",
+      "CreationDate": "2026-10-01T02:18:41.435922+08:00"
+    }
+  ],
+  "listeners": [
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 60065,
+      "OwningProcess": 24040
+    },
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 50722,
+      "OwningProcess": 24040
+    }
+  ],
+  "verification": {
+    "toolObserved": "Miniapp and worker own TS5.9.3 noEmit; affected selected/landscape/request, SAO burst/Prepared standard export, shared Python QA, static retention/release regressions passed. Context path/declaration validator and scoped diff whitespace passed. No broad unchanged matrix repeated.",
+    "build": "Existing watch reused; prior R5 exact current page/landscape source map binding. Existing CSS order warning retained.",
+    "liveServer": "Existing BFF process was not restarted; latest SAO/Prepared server source changes are not proven loaded in it.",
+    "independentReview": "MISSING_FOR_THIS_INCREMENT"
+  },
+  "remaining": {
+    "next": "PLAN top: shared background/seam/weak-structure/coverage/registration candidates from existing inputs; adopt only after quality/source/complete ordinary chain. Native full journey and real disk/egress/mixed capacity remain open.",
+    "preparedDefault": "EMPTY_NOT_ADOPTED",
+    "m51Quality": "FAILED_RECTANGLE_BACKGROUND",
+    "m82ScienceInputs": "INCOMPLETE_OV_MED",
+    "devtools": "FAILED_DEVTOOLS_WXML_CANVAS",
+    "physicalDevices": "UNVERIFIED_ANDROID_IOS_NEW_MOON",
+    "capacity": "UNVERIFIED_EXPECTED_4CORE_16GB_12MBPS_2000GB_MONTH_180GB_200DAU"
+  }
+}

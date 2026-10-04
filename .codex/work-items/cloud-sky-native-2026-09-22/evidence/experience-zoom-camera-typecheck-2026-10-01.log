@@ -1,0 +1,18 @@
+
+> @starward/wechat-miniapp@0.1.0 typecheck
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json
+
+src/features/sky/sky-scene-frame-facts.test.ts(32,57): error TS2375: Type '{ center: undefined; basis: SkyViewBasis; verticalFovDeg: number; landscape?: SkyLandscapeMask | null; }' is not assignable to type '{ basis: SkyViewBasis; verticalFovDeg: number; center?: SkyProjectionCenter; landscape?: SkyLandscapeMask | null; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'center' are incompatible.
+    Type 'undefined' is not assignable to type 'SkyProjectionCenter'.
+src/features/sky/sky-scene-frame-facts.test.ts(42,40): error TS2345: Argument of type '{ width: number; catalogVersion: string; catalogHash: string; frameAt: string; height: number; view?: { basis: SkyViewBasis; verticalFovDeg: number; center?: SkyProjectionCenter; landscape?: SkyLandscapeMask | null; }; objects: readonly PaintedSkyObject[]; suppressedBodyReferences?: readonly string[]; } | { ...; } |...' is not assignable to parameter of type 'SkyPickSnapshot | null'.
+  Type '{ view: undefined; catalogVersion: string; catalogHash: string; frameAt: string; width: number; height: number; objects: readonly PaintedSkyObject[]; suppressedBodyReferences?: readonly string[]; }' is not assignable to type 'SkyPickSnapshot' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+    Types of property 'view' are incompatible.
+      Type 'undefined' is not assignable to type '{ basis: SkyViewBasis; verticalFovDeg: number; center?: SkyProjectionCenter; landscape?: SkyLandscapeMask | null; }'.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp
+npm error workspace @starward/wechat-miniapp@0.1.0
+npm error location E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json

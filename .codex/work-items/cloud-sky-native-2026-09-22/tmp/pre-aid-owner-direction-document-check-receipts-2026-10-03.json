@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-03",
+  "docs": [
+    ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+    ".codex/work-items/cloud-sky-native-2026-09-22/STATE.md",
+    ".codex/work-items/cloud-sky-native-2026-09-22/INDEX.md",
+    ".codex/work-items/cloud-sky-native-2026-09-22/HANDOFF-2026-10-01.md",
+    ".codex/work-items/cloud-sky-native-2026-09-22/PROGRESS.md",
+    "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+    ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-local-observation-edge-semantics-independent-2026-10-03.md"
+  ],
+  "commands": [
+    "node tools/run-node.cjs --bin project-tiny-context-harness ty-context validate-context",
+    "node tools/run-node.cjs .codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-touched-local-links-2026-10-02.mjs '.codex/work-items/cloud-sky-native-2026-09-22/PLAN.md' '.codex/work-items/cloud-sky-native-2026-09-22/STATE.md' '.codex/work-items/cloud-sky-native-2026-09-22/INDEX.md' '.codex/work-items/cloud-sky-native-2026-09-22/HANDOFF-2026-10-01.md' '.codex/work-items/cloud-sky-native-2026-09-22/PROGRESS.md' 'project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md' '.codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-local-observation-edge-semantics-independent-2026-10-03.md'",
+    "git diff --check -- '.codex/work-items/cloud-sky-native-2026-09-22/PLAN.md' '.codex/work-items/cloud-sky-native-2026-09-22/STATE.md' '.codex/work-items/cloud-sky-native-2026-09-22/INDEX.md' '.codex/work-items/cloud-sky-native-2026-09-22/HANDOFF-2026-10-01.md' '.codex/work-items/cloud-sky-native-2026-09-22/PROGRESS.md' 'project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md' '.codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-local-observation-edge-semantics-independent-2026-10-03.md'"
+  ],
+  "results": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "7ba544",
+        "wall_time_seconds": 1.3644203,
+        "exit_code": 0,
+        "original_token_count": 44,
+        "output": "Checked manifest paths and explicit ty-context-controlling-source declarations. Ordinary Markdown links, examples, external links and factual correctness are not validated.\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "953f7a",
+        "wall_time_seconds": 0.6287145,
+        "exit_code": 0,
+        "original_token_count": 163,
+        "output": "{\"scope\":\"Ordinary local Markdown destination existence; no anchors, remote pages or fact certification.\",\"files\":[\".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md\",\".codex/work-items/cloud-sky-native-2026-09-22/STATE.md\",\".codex/work-items/cloud-sky-native-2026-09-22/INDEX.md\",\".codex/work-items/cloud-sky-native-2026-09-22/HANDOFF-2026-10-01.md\",\".codex/work-items/cloud-sky-native-2026-09-22/PROGRESS.md\",\"project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md\",\".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-local-observation-edge-semantics-independent-2026-10-03.md\"],\"localLinks\":951,\"missing\":[]}\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "a3633e",
+        "wall_time_seconds": 0.4971093,
+        "exit_code": 0,
+        "original_token_count": 42,
+        "output": "warning: in the working copy of 'project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md', CRLF will be replaced by LF the next time Git touches it\n"
+      }
+    }
+  ],
+  "scope": "Original documentation-only check receipts; candidate remains unexecuted in GPU/unadopted, no code/typecheck/GPU repetition."
+}

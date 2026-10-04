@@ -1,0 +1,49 @@
+{
+  "scope": "Actual official DevTools Canvas handlers and UI; not phone composition or device acceptance",
+  "marker": "LAND0928",
+  "port": 9431,
+  "runTag": "r2",
+  "covered": {
+    "name": "experience-landscape-rastaban-covered-native-2026-09-28-r2.png",
+    "bytes": 63609,
+    "sha256": "cb8f0832c0f74aba35cc288d97f5ef51af7921f482016d3245902d648ca863cb",
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "locatedLabel": "Rastaban定位标记，模拟地景遮挡，查看资料",
+    "locatedStyle": "left: 195.1999969482422px; top: 421.99999999999994px;",
+    "modal": false,
+    "choices": false
+  },
+  "coveredTap": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "locatedLabel": "Rastaban定位标记，模拟地景遮挡，查看资料",
+    "locatedStyle": "left: 195.1999969482422px; top: 421.99999999999994px;",
+    "modal": false,
+    "choices": false
+  },
+  "open": {
+    "name": "experience-landscape-rastaban-open-native-2026-09-28-r2.png",
+    "bytes": 62973,
+    "sha256": "99e44168b1df5dbcfd0b35db87188c5b709917b913c8eab945ddee2245457d45",
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "locatedLabel": "Rastaban定位标记，查看资料",
+    "locatedStyle": "left: 195.1999969482422px; top: 421.99999999999994px;",
+    "modal": false,
+    "choices": false
+  },
+  "visibleTap": {
+    "modal": true,
+    "reference": "HR:6536",
+    "overlap": "选择天体Rastaban恒星 · HR 6536 · V 波段视星等 2.79SAO 30380恒星 · SAO 30380 · 视觉星等 6.60取消",
+    "title": "Rastaban"
+  },
+  "restored": {
+    "name": "experience-landscape-rastaban-restored-native-2026-09-28-r2.png",
+    "bytes": 63609,
+    "sha256": "cb8f0832c0f74aba35cc288d97f5ef51af7921f482016d3245902d648ca863cb",
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "locatedLabel": "Rastaban定位标记，模拟地景遮挡，查看资料",
+    "locatedStyle": "left: 195.1999969482422px; top: 421.99999999999994px;",
+    "modal": false,
+    "choices": false
+  }
+}

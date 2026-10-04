@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "tool": "project_list",
+  "clientName": "Codex",
+  "result": {
+    "success": true,
+    "scope": "miniprogram",
+    "count": 0,
+    "projects": []
+  }
+}

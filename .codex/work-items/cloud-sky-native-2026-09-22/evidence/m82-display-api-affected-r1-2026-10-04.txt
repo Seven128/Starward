@@ -1,0 +1,16 @@
+✔ explicit calibrated display intent preserves science-only admission and all old discovery (59.872ms)
+✔ a display descriptor never caches rejected metadata, foreign objects or incompatible fresh hashes (64.3244ms)
+✔ new display shares the byte gate: changed PNG is rejected and restoration is retryable (42.5443ms)
+✔ explicit optical hashes isolate same-object science archives from old default discovery and sources (66.7901ms)
+✔ internal descriptors reject remote, duplicate and foreign identities and copy mutable locators (24.9522ms)
+✔ failed science metadata is not cached and cannot silently replace another reference or hash (38.4718ms)
+✔ science PNG reads reject changed bytes and freshly pinned wrong geometry or encoding (83.0489ms)
+✔ standard export preserves six JPEG offers and only explicitly admitted v2/v3 science generations (19596.2507ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 21625.6324

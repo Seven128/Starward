@@ -1,0 +1,160 @@
+{
+  "archived": [
+    {
+      "path": "packages/miniapp-contracts/src/prepared-optical-publication.ts",
+      "bytes": 13166,
+      "sha256": "5de507970add61e8de6bf651742a13dfdcf06393895c583f12c9e176abfc598a"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/prepared-optical-publication.test.ts",
+      "bytes": 9678,
+      "sha256": "2cd72275a877251891e57d23bb46a2181ba8804e3c1df13ae477e9217105e458"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/index.ts",
+      "bytes": 1676,
+      "sha256": "279461e6a70d9720afd0ea77e7260239b60087fb0f343eb99da4f2e6b8026620"
+    },
+    {
+      "path": "packages/miniapp-contracts/api/miniapp.operations.json",
+      "bytes": 18495,
+      "sha256": "deb723f94dc122dea02694c64be615a5ef9e3da8c9aac11747b533a66e50e551"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts",
+      "bytes": 22541,
+      "sha256": "f895c5aa6835f92c6e31940dc3848fd94182e6b1596f6404f4116b4ebbe2550e"
+    },
+    {
+      "path": "data-pipelines/deep-sky/publish_prepared_optical.py",
+      "bytes": 20037,
+      "sha256": "2aaf4a2e4680f69ad80d3f3958b4d17dab88dacf236ed4a74f8df7ac74a6a606"
+    },
+    {
+      "path": "data-pipelines/deep-sky/prepared_rgb_tan.py",
+      "bytes": 13529,
+      "sha256": "6ab454989b401a2f99f1dfd8e258618cd1f3d979e9c72ec9c0040ee319a88194"
+    },
+    {
+      "path": "data-pipelines/deep-sky/pack_prepared_optical_publication.mts",
+      "bytes": 1265,
+      "sha256": "cf0c18600c1390ddf7038d683c53b1dadfb032c6f12188f6e63bd55c4baa880e"
+    },
+    {
+      "path": "workers/miniapp-api/src/prepared-optical-imagery.ts",
+      "bytes": 5458,
+      "sha256": "32855e03341d81b0c94500bfb679f3598c33c5e0ec97eed8ef71fb4a4869141e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/prepared-optical-client.ts",
+      "bytes": 971,
+      "sha256": "6995a759bbdf226f24019a1f2829522a1cd5afa5997e1180dee63c2d8799d42c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/prepared-optical-resource.ts",
+      "bytes": 643,
+      "sha256": "71bc683757f1e12639f47299137ec729df24aab89ce08f7fc5aa5b9f504d937a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-target-optical.ts",
+      "bytes": 8445,
+      "sha256": "c86622e16c7a04a6576ae982452c60329eeb8ded939cf138dcc838f410a1f5d7"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-prepared-optical.ts",
+      "bytes": 638,
+      "sha256": "fa8f671e35b22c247200bde1c62a51a4e85919068d37a946600c73c6831be107"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-sdss-optical-frame.ts",
+      "bytes": 6131,
+      "sha256": "c77eb24fdfe581862c90c0e1ee93eeb9ad5ddb1d453855ebb574be2ecd802670"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-sdss-optical-completion.ts",
+      "bytes": 11115,
+      "sha256": "4fbde2c39053d87747cd7f22e17794c98652050d594f8022169fc1f4710711de"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-target-optical-identity.ts",
+      "bytes": 3525,
+      "sha256": "5d95ddff45243a0acc737b3cc39ab1d80c8dd34327a22830194a6c8b80ec45a3"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-target-optical-visibility.ts",
+      "bytes": 1914,
+      "sha256": "82c592710af4f3c52c7119c006bd6cb96f6ae89b61f402391cd6e50f19a18fd7"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "bytes": 214480,
+      "sha256": "caafc94693e4d73abdde122e0974ffaad455bcaf216a25f3b27711dfacc5cd60"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+      "bytes": 172464,
+      "sha256": "00a4d83fff3f6be783ebcdd7002d358e3c5475b18ffa4e04407b0d29a08c7fe6"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+      "bytes": 99475,
+      "sha256": "377f2f387904eb6e8d9942139f6ea396404859ecbe4d325b680197159077929b"
+    },
+    {
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+      "bytes": 158881,
+      "sha256": "afa46198e0416e8cfd47fa05dee9a946612d8a01d034aa739c80923097f55a8a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-optical-source-credit.ts",
+      "bytes": 2647,
+      "sha256": "66a3198444de28a7749bf67dab4eb894f4ad26bfcdd22741e898d3a9742a0639"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/index-types.ts",
+      "bytes": 870,
+      "sha256": "c60afc2274455d9407a8f3b856b8681007222ce36d41779a5b62d3e480c1277e"
+    },
+    {
+      "path": "workers/miniapp-api/src/prepared-optical-imagery.test.ts",
+      "bytes": 8253,
+      "sha256": "5284e9bb6d7c82d4bf41e60b0c44a64df692f0ef7c7a3a9e7d657741940f86c9"
+    },
+    {
+      "path": "data-pipelines/deep-sky/README.md",
+      "bytes": 65162,
+      "sha256": "b1bd389ebff71c75290f1f0a25acad16afb2264a9444af771b723a05733e14ad"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+      "bytes": 9486,
+      "sha256": "6a2d7223c37a990c69b291092d476908efbc5be3d937d4eb9e279031d339a273"
+    }
+  ],
+  "protected": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8"
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd"
+    }
+  ]
+}

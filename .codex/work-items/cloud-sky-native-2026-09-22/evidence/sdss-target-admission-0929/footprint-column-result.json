@@ -1,0 +1,6 @@
+{
+  "body": "[\r\n  {\r\n    \"TableName\": \"Table1\",\r\n    \"Rows\": [\r\n      {\r\n        \"M_63\": true,\r\n        \"M_64\": true,\r\n        \"M_81\": true,\r\n        \"M_82\": true,\r\n        \"M_87\": true\r\n      }\r\n    ]\r\n  },\r\n  {\r\n    \"TableName\": \"SqlQuery\",\r\n    \"Rows\": [\r\n      {\r\n        \"query\": \"SELECT dbo.fInFootprintEq(198.95554166666668,42.02927777777778,0.001) AS M_63, dbo.fInFootprintEq(194.18183333333334,21.682972222222222,0.001) AS M_64, dbo.fInFootprintEq(148.88820833333332,69.06530555555555,0.001) AS M_81, dbo.fInFootprintEq(148.96970833333333,69.6793888888889,0.001) AS M_82, dbo.fInFootprintEq(187.70591666666667,12.39111111111111,0.001) AS M_87\"\r\n      }\r\n    ]\r\n  }\r\n]",
+  "contentType": "application/json",
+  "elapsedMs": 1243,
+  "status": 200
+}

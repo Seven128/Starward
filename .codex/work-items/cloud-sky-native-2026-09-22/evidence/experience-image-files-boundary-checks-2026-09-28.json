@@ -1,0 +1,8 @@
+{
+  "scope": "Final filename-boundary and consumer checks; no target acceptance",
+  "chunk_id": "84ce13",
+  "wall_time_seconds": 1.2088055,
+  "exit_code": 0,
+  "original_token_count": 282,
+  "output": "✔ shared artwork and selected-object requests use one runtime namespace with distinct file identities (39.2092ms)\n✔ a publication or Canvas generation switch fences old decoded images before effects and redecodes for the new owner (12.2839ms)\n✔ hide, Canvas removal and publication loss retire decoded images held by the Hook, not just its returned view (18.5033ms)\n✔ an empty new Canvas generation cannot keep the old decoded-image state until another download finishes (4.7125ms)\n✔ repeated hide/show with a late canceled response releases retired state and preserves each new owner (4.5239ms)\n✔ launch removes only generated files from previous runtimes, without clearing independent caches (2.058ms)\n✔ current writes during an asynchronous launch listing survive, and launch cleanup is coalesced (0.3192ms)\n✔ unavailable listing and partial deletion are distinct, bounded outcomes (0.4598ms)\n✔ the production App launch actually invokes cleanup and still initializes native chrome (55.4555ms)\nℹ tests 9\nℹ suites 0\nℹ pass 9\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 730.4711\n"
+}

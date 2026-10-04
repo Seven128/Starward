@@ -1,0 +1,30 @@
+✖ independent solar geometry remains drawable and touchable when both catalogs fail and legacy targets are empty (62.0425ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 983.5704
+
+✖ failing tests:
+
+test at src\features\sky\stellar-page-recovery.test.ts:1:3791
+✖ independent solar geometry remains drawable and touchable when both catalogs fail and legacy targets are empty (62.0425ms)
+  AssertionError [ERR_ASSERTION]: independent current geometry cannot depend on either external catalog or legacy suggestions
+  
+  false !== true
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\stellar-page-recovery.test.ts:71:9)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

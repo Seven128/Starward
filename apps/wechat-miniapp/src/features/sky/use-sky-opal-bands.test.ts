@@ -18,8 +18,8 @@ test("OPAL requests require the correct resolved body, exact time and valid axes
     if(name==="react")return {useMemo:(fn:()=>unknown)=>fn()};
     if(name==="@/hooks/use-resource-query")return {useResourceQuery(options:any){queryCalls.push(options);
       return {data:publication,isFetching:false,isError:false,refreshError:null,refetch(){}};}};
-    if(name==="./use-sky-artwork")return {useSkyNativeImages(...args:any[]){imageCalls.push(args);
-      return {images:new Map([[args[4][0]?.id,image]]),retainedImages:new Map(),failed:false,retryImages(){},failedImage(){}};}};
+    if(name==="./use-sky-fixed-image")return {useSkyFixedImage(...args:any[]){imageCalls.push(args);
+      return {image:args[3]&&args[4]?image:null,failed:false,retryImages(){},failedImage(){}};}};
     if(name==="./sky-planet-disc")return discs;
     if(name==="./sky-fixed-image-status")return status;
     throw new Error(name);
@@ -34,9 +34,9 @@ test("OPAL requests require the correct resolved body, exact time and valid axes
       bodyFrame:p===body?{poleEnu:[0,0,1],primeMeridianEnu:[1,0,0]}:null}))};
     const run=(input:unknown,time=at,fov=.25,active=true)=>exports_.useSkyOpalBands(profile,
       {hourly:[input]},time,{basis,verticalFovDeg:fov},400,800,{},1,active);
-    const enabled=()=>[queryCalls.at(-1).enabled,imageCalls.at(-1)[3]];
+    const enabled=()=>[queryCalls.at(-1).enabled,imageCalls.at(-1)[4]];
     assert.equal(run(row).image,image);assert.deepEqual(enabled(),[true,true]);
-    assert.equal(imageCalls.at(-1)[4][0].id,profile.id);
+    assert.equal(imageCalls.at(-1)[5],profile.id);
     run(row,at,45);assert.deepEqual(enabled(),[false,false]);
     run(row,at,.25,false);assert.deepEqual(enabled(),[false,false]);
     run(row,"2026-09-26T13:00:00Z");assert.deepEqual(enabled(),[false,false]);

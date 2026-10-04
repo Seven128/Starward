@@ -1,0 +1,5 @@
+ M project_context/architecture/runtime-and-domain.md
+ M project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md
+ M project_context/context.toml
+ M project_context/external-capabilities.md
+?? .codex/work-items/stellarium-cost-research-2026-09-22/

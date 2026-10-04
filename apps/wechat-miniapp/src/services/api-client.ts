@@ -70,6 +70,7 @@ import {
 import { recordAcceptanceDiagnostic } from "./acceptance-diagnostics";
 import { createDeviceFailureReporter } from "./device-request-diagnostic";
 import { miniappQueryClient } from "./query-client";
+import { clearSkyPublicImageCache, capturePublishedSkyImageGeneration, readPublishedSkyJson } from "./sky-public-image-runtime";
 import { useAppStore } from "@/state/app-store";
 import { createResponseCache, isResponseEnvelope, MAX_STALE_AGE_MS, type CachedResponse } from "./response-cache";
 import { createMutationRetry } from "./mutation-retry";
@@ -328,7 +329,6 @@ async function request<T>(
       if (watchdog) clearTimeout(watchdog);
       options.signal?.removeEventListener("abort", onAbort);
       release();
-      releaseCache();
       // Native abort may synchronously re-enter fail. Own the result first.
       if (abort) {
         try {
@@ -337,7 +337,8 @@ async function request<T>(
           recordAcceptanceDiagnostic(key, "failure", "transport_abort_failed");
         }
       }
-      callback();
+      try { callback(); }
+      finally { releaseCache(); }
     };
     const cancel = (reason: RequestCancellationReason) => {
       finish(() => {
@@ -355,11 +356,8 @@ async function request<T>(
     const apiBase = __MINIAPP_API_BASE__.replace(/\/+$/u, "");
     const exactCacheKey =
       responseCacheKey(key, apiBase, path) + ":" + String(scope);
-    const cached =
-      method === "GET" && options.cache !== false
-        ? responseCache.get(exactCacheKey)
-        : undefined;
-    const cacheFence = responseCache.beginRequest(exactCacheKey);
+    const cacheFence = responseCache.beginRequest(exactCacheKey, method === "GET" && options.cache !== false);
+    const cached = cacheFence.cached;
     releaseCache = cacheFence.release;
     const header: Record<string, string> = { Accept: "application/json" };
     // WeChat defaults to JSON; an empty DELETE body must not trigger JSON parsing.
@@ -485,13 +483,34 @@ export function invalidateApiCache(prefix = "") {
 }
 
 export async function clearTemporaryApiCache() {
-  const cancelled = requests.cancelReads(isTemporaryCacheKey);
-  responseCache.invalidate(isTemporaryCacheKey);
+  let incomplete = false;
+  let imageCleanup: Promise<void>;
+  // Start the shared file owner's epoch fence before any awaited work. Its
+  // native cleanup must not prevent the independent API/query cache cleanup.
+  try {
+    imageCleanup = clearSkyPublicImageCache().then(result => {
+      if (result.status !== "complete") incomplete = true;
+    }, () => { incomplete = true; });
+  } catch {
+    incomplete = true;
+    imageCleanup = Promise.resolve();
+  }
+  let cancelled = 0;
+  try { cancelled = requests.cancelReads(isTemporaryCacheKey); }
+  catch { incomplete = true; }
+  try { responseCache.invalidate(isTemporaryCacheKey); }
+  catch { incomplete = true; }
   const filters = { predicate: (query: { queryKey: readonly unknown[] }) => isTemporaryCacheKey(String(query.queryKey[0] ?? "")) };
-  await miniappQueryClient.cancelQueries(filters);
-  miniappQueryClient.removeQueries(filters);
-  await responseCache.flush();
-  if (!responseCache.cleanupComplete()) throw new Error("local_cache_cleanup_incomplete");
+  try { await miniappQueryClient.cancelQueries(filters); }
+  catch { incomplete = true; }
+  try { miniappQueryClient.removeQueries(filters); }
+  catch { incomplete = true; }
+  try { await responseCache.flush(); }
+  catch { incomplete = true; }
+  await imageCleanup;
+  try { if (!responseCache.cleanupComplete()) incomplete = true; }
+  catch { incomplete = true; }
+  if (incomplete) throw new Error("local_cache_cleanup_incomplete");
   return cancelled;
 }
 
@@ -936,23 +955,28 @@ export function getCelestialObjectInformation(
   reference: string,
   signal?: AbortSignal,
   imagePublicationHash?: string,
+  opticalPublicationHash?: string,
 ) {
   if (!isCelestialObjectReference(reference))
     throw new Error("celestial_object_reference_invalid");
   if (imagePublicationHash !== undefined && !/^[a-f0-9]{64}$/u.test(imagePublicationHash))
     throw new Error("deep_sky_image_publication_hash_invalid");
   const deepSky = reference.startsWith("M:");
+  if (opticalPublicationHash !== undefined && (!deepSky || !/^[a-f0-9]{64}$/u.test(opticalPublicationHash)))
+    throw new Error("sdss_optical_publication_hash_invalid");
   const key = (reference==="SOLAR:MOON"?"celestial-object:v4:moon-coverage:":deepSky ?
-    `celestial-object:v5:${DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION}:${imagePublicationHash ?? "current"}:` : "celestial-object:v3:") + reference;
+    (opticalPublicationHash ? `celestial-object:v6:${DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION}:${imagePublicationHash ?? "current"}:optical:${opticalPublicationHash}:` :
+      `celestial-object:v5:${DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION}:${imagePublicationHash ?? "current"}:`) : "celestial-object:v3:") + reference;
   return requestOperation(key, "celestialObjectGet", {
     pathParams: { reference },
     query: "locale=zh-CN&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION+
       (reference==="SOLAR:MOON"?"&moonTextureVersion=coverage-v2":"") +
       (deepSky ? `&deepSkyImageVersion=${DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION}` +
-        (imagePublicationHash ? `&deepSkyPublicationHash=${imagePublicationHash}` : "") : ""),
+        (imagePublicationHash ? `&deepSkyPublicationHash=${imagePublicationHash}` : "") +
+        (opticalPublicationHash ? `&opticalPublicationHash=${opticalPublicationHash}` : "") : ""),
     ...(signal ? { signal } : {}),
   }).then(response => {
-    try { return matchingCelestialInformationResponse(response, reference, imagePublicationHash); }
+    try { return matchingCelestialInformationResponse(response, reference, imagePublicationHash, opticalPublicationHash); }
     catch (error) { invalidateApiCache(key + ":"); throw error; }
   });
 }
@@ -1004,6 +1028,10 @@ export const saoCatalogClient = createSaoCatalogClient({
   }),
   invalidateIndex: () => invalidateApiCache('sao-index:v2:'),
   invalidateTile: (publicationHash, tileId) => invalidateApiCache(`sao-tile:${publicationHash}:${tileId}:`),
+  generation: capturePublishedSkyImageGeneration,
+  fileTile: (publication, tile, signal) => readPublishedSkyJson({format:'json',sha256:tile.sha256,bytes:tile.bytes},
+    `${__MINIAPP_API_BASE__.replace(/\/+$/, '')}/v2/sky/supplements/sao/v2/${publication.publicationHash}/assets/${tile.id}`,
+    publication.publicationHash, signal),
 });
 
 export const getConstellationCatalog = createConstellationCatalogClient({
@@ -1019,18 +1047,16 @@ export function constellationAssetUrl(catalogHash: string, file: string) {
     "/sky/constellations/"+catalogHash+"/assets/"+file;
 }
 
-export function deepSkyImageUrl(reference: string, level: "OVERVIEW" | "MEDIUM" | "DETAIL") {
-  if (!/^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(reference))
-    throw new Error("deep_sky_image_reference_invalid");
-  return __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
-    "/celestial-objects/" + encodeURIComponent(reference) + "/image?level=" + level + `&imageVersion=${DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION}`;
-}
-
-export function deepSkyManifestUrl(sourceId: string): string | undefined {
+export function deepSkyManifestUrl(sourceId: string, expectedOpticalHash?: string): string | undefined {
   const optical = Object.values(SDSS_OPTICAL_PUBLICATIONS).find(publication =>
     sourceId === `optical-imagery:${publication.publicationId}:${publication.publicationHash}`);
-  if (optical) return __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
-    "/sky/sdss-optical/" + optical.publicationHash + "/manifest";
+  if (optical) return expectedOpticalHash === undefined || expectedOpticalHash === optical.publicationHash
+    ? __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
+      "/sky/sdss-optical/" + optical.publicationHash + "/manifest" : undefined;
+  const boundOptical = /^(optical-imagery|prepared-optical-imagery):[^:/\\]+:([a-f0-9]{64})$/u.exec(sourceId);
+  if (expectedOpticalHash && boundOptical?.[2] === expectedOpticalHash)
+    return __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
+      (boundOptical[1] === "prepared-optical-imagery" ? "/sky/prepared-optical/" : "/sky/sdss-optical/") + expectedOpticalHash + "/manifest";
   const match = /^imagery:[^:]+:([a-f0-9]{64})$/u.exec(sourceId);
   return match ? __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
     "/sky/deep-sky/" + match[1] + "/manifest" : undefined;

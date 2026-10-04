@@ -1,0 +1,27 @@
+✔ observation date target is exactly local today minus 7 through plus 15 (23.9825ms)
+✔ date selection preserves local clock time and maps after-midnight civil time to the starting night (6.5697ms)
+✔ 1x sky time is one bounded intent across play, pause, hide, cancel and a replaced Context (3.7287ms)
+✔ coverage ends without extrapolation and withdrawn fine data returns to the committed time (0.3297ms)
+✔ interactive paint accepts only its own run and never a future or preceding frame (0.3709ms)
+✔ incomplete or invalid route time cannot throw before the existing Context recovery view (7.2183ms)
+✔ Context lookup completion refreshes memoized date choices without a timezone change (34.55ms)
+✔ resolved Context still uses the shared civil-date owner across midnight and timezone changes (4.7169ms)
+✔ sky frame selection never substitutes the nearest available instant (0.7236ms)
+✔ preview and cancellation select matching target and star identities without state (0.7468ms)
+✔ missing legacy target frames, duplicate identities and invalid times fail closed (0.1436ms)
+✔ the current public Sky instant keeps UTC+8 across seconds, fractions and midnight (16.5437ms)
+✔ zone offsets with zero, positive quarter-hours and negative half-hours do not inherit the instant seconds (1.4685ms)
+✔ the offset uses the exact instant at a daylight-saving transition, not one fixed offset for its date (0.3865ms)
+✔ missing or unsupported time keeps the existing explicit timezone fallback (0.2427ms)
+✔ the existing bounded phone fallback keeps all admitted modern east-eight zones without Intl parts (0.5558ms)
+✔ history timestamps show Beijing calendar rollover and reject unavailable instants (22.0586ms)
+✔ modern Shanghai, Hong Kong and Macao dates retain protocol semantics (1.4297ms)
+✔ public share expiry keeps its plan timezone across the UTC day boundary (1.1309ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1495.5354

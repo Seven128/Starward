@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { NotFoundException } from "@nestjs/common";
 import { deepSkyRowByReference, loadDeepSkyCatalog } from "@starward/astronomy-core/deep-sky-catalog";
 import type { SourceSummary } from "@starward/miniapp-contracts";
-import { DEEP_SKY_IMAGE_PIXELS, DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION, readSkyImageDisplaySupport, type SkyImageDisplaySupport, type DeepSkyImageSelection, type DeepSkyImageLevel } from "@starward/miniapp-contracts";
+import { DEEP_SKY_IMAGE_PIXELS, DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION, assertDeepSkyImageDiscovery, readSkyImageDisplaySupport, type SkyImageDisplaySupport, type DeepSkyImageSelection, type DeepSkyImageLevel, type DeepSkyImageDescriptor, type DeepSkyImageDiscoveryData } from "@starward/miniapp-contracts";
 
 export type { DeepSkyImageLevel } from "@starward/miniapp-contracts";
 
@@ -19,6 +19,10 @@ export interface DeepSkyImageResult {
   sourceId: string;
   sourceMissingPixels?: number;
   displaySupport?: SkyImageDisplaySupport;
+}
+
+export interface DeepSkyImmutableImageResult extends DeepSkyImageResult {
+  descriptor: DeepSkyImageDescriptor;
 }
 
 interface PublishedLevel {
@@ -217,6 +221,67 @@ export class DeepSkyImageryService {
     })) };
   }
 
+  /** Current metadata discovery performs no image-byte read or upstream fetch. */
+  discovery(reference: string): DeepSkyImageDiscoveryData {
+    const publication = this.publication({ imageVersion: DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION });
+    const entry = publication.entries.find(candidate => candidate.objectRef === reference);
+    if (!entry) throw new NotFoundException("deep_sky_image_not_published");
+    const publicationHash = this.hash(publication), source = this.source(reference, { publicationHash });
+    if (!source) throw new NotFoundException("deep_sky_image_source_unavailable");
+    const result: DeepSkyImageDiscoveryData = {
+      schemaVersion: "allwise-w3-selected-image-discovery-v1", imageVersion: DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION,
+      publicationHash, publicationId: publication.publicationId, sourceId: source.id, source,
+      objectRef: entry.objectRef, center: structuredClone(entry.center), orientation: entry.orientation,
+      levels: Object.fromEntries(Object.entries(entry.levels).map(([level, asset]) =>
+        [level, this.descriptor(publicationHash, asset)])) as DeepSkyImageDiscoveryData["levels"],
+    };
+    assertDeepSkyImageDiscovery(result, reference);
+    return result;
+  }
+
+  private descriptor(publicationHash: string, asset: PublishedLevel): DeepSkyImageDescriptor {
+    return {
+      file: asset.file, downloadUrl: `/v2/sky/deep-sky/${publicationHash}/${asset.file}`,
+      sha256: asset.sha256, bytes: asset.bytes, format: asset.imageFormat === "png" ? "png" : "jpeg",
+      pixels: asset.pixels, width: asset.pixels, height: asset.pixels, fieldDegrees: asset.fieldDegrees,
+      // The historical v1 display fraction never measured scientific availability.
+      validFraction: null, coverageState: "NOT_MEASURED",
+      ...(asset.sourceFiniteMask ? { sourceFiniteMask: structuredClone(asset.sourceFiniteMask) } : {}),
+      ...(asset.displaySupport ? { displaySupport: readSkyImageDisplaySupport(asset.displaySupport, asset.pixels, asset.sha256)! } : {}),
+    };
+  }
+
+  /** Only the exact admitted raw-publication file can supply an immutable route.
+   * In contrast to the legacy get(), no current metadata refinement is inherited. */
+  async getByFile(publicationHash: string, file: string): Promise<DeepSkyImmutableImageResult> {
+    if (!isHash(publicationHash) || typeof file !== "string") throw new NotFoundException("deep_sky_image_not_found");
+    const publication = this.publication({ publicationHash });
+    for (const entry of publication.entries) {
+      const asset = Object.values(entry.levels).find(candidate => candidate.file === file);
+      if (!asset) continue;
+      const bytes = await this.readAsset(asset), descriptor = this.descriptor(publicationHash, asset);
+      return { bytes, descriptor, contentType: descriptor.format === "png" ? "image/png" : "image/jpeg",
+        fieldDegrees: asset.fieldDegrees, pixelSize: asset.pixels, sourceLabel: SOURCE_LABEL,
+        publicationHash, sourceId: `imagery:${publication.publicationId}:${publicationHash}`,
+        ...(asset.sourceFiniteMask ? { sourceMissingPixels: asset.sourceFiniteMask.missingPixels } : {}),
+        ...(descriptor.displaySupport ? { displaySupport: descriptor.displaySupport } : {}),
+      };
+    }
+    throw new NotFoundException("deep_sky_image_not_found");
+  }
+
+  /** All and only admitted current/allowed archives; no filesystem crawl. */
+  async *publishedAssets(): AsyncGenerator<DeepSkyImmutableImageResult> {
+    const current = this.publication({ imageVersion: DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION });
+    const hashes = [this.hash(current), ...(current.previousPublicationHashes ??
+      (current.previousPublicationHash ? [current.previousPublicationHash] : []))];
+    for (const publicationHash of new Set(hashes)) {
+      const publication = this.publication({ publicationHash });
+      for (const entry of publication.entries) for (const asset of Object.values(entry.levels))
+        yield await this.getByFile(publicationHash, asset.file);
+    }
+  }
+
   async get(reference: string, levelInput = "MEDIUM", publicationHash?: string,
     imageVersion?: DeepSkyImageSelection["imageVersion"]): Promise<DeepSkyImageResult> {
     assertLevel(levelInput);
@@ -226,6 +291,22 @@ export class DeepSkyImageryService {
     const entry = publication.entries.find((candidate) => candidate.objectRef === reference);
     if (!entry) throw new Error("deep_sky_image_not_published");
     const asset = entry.levels[levelInput];
+    const bytes = await this.readAsset(asset);
+    const png = asset.imageFormat === "png";
+    const revision = this.hash(publication);
+    // An archived PNG may receive the same byte-bound display refinement without
+    // rewriting its manifest, source identity or bytes. Changed assets never inherit it.
+    const currentAsset = this.cachedPublication?.entries.find(candidate => candidate.objectRef === reference)?.levels[levelInput];
+    const displaySupport = (png && currentAsset?.sha256 === asset.sha256 && currentAsset.pixels === asset.pixels ?
+      currentAsset.displaySupport : undefined) ?? asset.displaySupport;
+    return { bytes, contentType: png ? "image/png" : "image/jpeg", fieldDegrees: asset.fieldDegrees,
+      pixelSize: asset.pixels, sourceLabel: SOURCE_LABEL, publicationHash: revision,
+      sourceId: `imagery:${publication.publicationId}:${revision}`,
+      ...(asset.sourceFiniteMask ? { sourceMissingPixels: asset.sourceFiniteMask.missingPixels } : {}),
+      ...(displaySupport ? { displaySupport } : {}) };
+  }
+
+  private async readAsset(asset: PublishedLevel): Promise<Buffer> {
     const assetUrl = new URL(asset.file, this.manifestUrl);
     const root = fileURLToPath(new URL("./", this.manifestUrl));
     const path = fileURLToPath(assetUrl);
@@ -238,17 +319,7 @@ export class DeepSkyImageryService {
       bytes[0] === 0xff && bytes[1] === 0xd8 && bytes.at(-2) === 0xff && bytes.at(-1) === 0xd9;
     if (bytes.length !== asset.bytes || createHash("sha256").update(bytes).digest("hex") !== asset.sha256 || !formatValid)
       throw new Error("deep_sky_image_asset_invalid");
-    const revision = this.hash(publication);
-    // An archived PNG may receive the same byte-bound display refinement without
-    // rewriting its manifest, source identity or bytes. Changed assets never inherit it.
-    const currentAsset = this.cachedPublication?.entries.find(candidate => candidate.objectRef === reference)?.levels[levelInput];
-    const displaySupport = (png && currentAsset?.sha256 === asset.sha256 && currentAsset.pixels === asset.pixels ?
-      currentAsset.displaySupport : undefined) ?? asset.displaySupport;
-    return { bytes, contentType: png ? "image/png" : "image/jpeg", fieldDegrees: asset.fieldDegrees,
-      pixelSize: asset.pixels, sourceLabel: SOURCE_LABEL, publicationHash: revision,
-      sourceId: `imagery:${publication.publicationId}:${revision}`,
-      ...(asset.sourceFiniteMask ? { sourceMissingPixels: asset.sourceFiniteMask.missingPixels } : {}),
-      ...(displaySupport ? { displaySupport } : {}) };
+    return bytes;
   }
 
   private publication({ publicationHash, imageVersion }: DeepSkyImageSelection = {}) {

@@ -1,0 +1,175 @@
+{
+  "scope": "Finite actual DevTools scene region, same current source/Context. Camera equality is checked before claiming return pixel equality. No threshold relaxation or old-camera reconstruction.",
+  "rows": [
+    {
+      "name": "legacy-ratio-return",
+      "inputs": [
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-zoom-camera-baseline-2026-10-01.png",
+          "sha256": "1f6ef26ec8e79c467b8f103c592a0aef9e38c052e5530049661a9d9905f3b6fc"
+        },
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-zoom-camera-return-2026-10-01.png",
+          "sha256": "09de2dda0f346db2be51f5ecb86ed4fce77a9f72d287facf9865c15b6173ebc7"
+        }
+      ],
+      "beforeView": {
+        "frameAt": "2026-09-30T13:50:33.000Z",
+        "width": 390.3999938964844,
+        "height": 844,
+        "verticalFovDeg": 45,
+        "basis": {
+          "right": [
+            1,
+            0,
+            0
+          ],
+          "up": [
+            0,
+            -0.7071067811865476,
+            0.7071067811865476
+          ],
+          "forward": [
+            0,
+            0.7071067811865476,
+            0.7071067811865476
+          ]
+        },
+        "center": {
+          "x": 195.1999969482422,
+          "y": 422
+        },
+        "scale": 2121.537265677108
+      },
+      "afterView": {
+        "frameAt": "2026-09-30T13:50:33.000Z",
+        "width": 390.3999938964844,
+        "height": 844,
+        "verticalFovDeg": 45.00001791950926,
+        "basis": {
+          "right": [
+            1,
+            0,
+            0
+          ],
+          "up": [
+            0,
+            -0.7071067811865581,
+            0.7071067811865378
+          ],
+          "forward": [
+            0,
+            0.7071067811865378,
+            0.7071067811865581
+          ]
+        },
+        "center": {
+          "x": 195.1999969482422,
+          "y": 422.00000000000097
+        },
+        "scale": 2121.536398746538
+      },
+      "exactCompletedCameraEqual": false,
+      "differences": {
+        "fovDeg": 0.000017919509261332678,
+        "scalePx": -0.000866930569827673,
+        "basisMax": 1.0547118733938987e-14,
+        "centerMax": 9.663381206337363e-13
+      },
+      "region": {
+        "x": 3,
+        "y": 96,
+        "width": 421,
+        "height": 799,
+        "changedPixels": 218,
+        "maxDelta": 8,
+        "totalChannelDelta": 320
+      }
+    },
+    {
+      "name": "matched-input-return",
+      "inputs": [
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-zoom-camera-matched-baseline-2026-10-01.png",
+          "sha256": "f1f369a5e3c87323b793e1e57870ff6c7ed9f611b64f06515e873d50f19ce166"
+        },
+        {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-zoom-camera-matched-return-2026-10-01.png",
+          "sha256": "7154ce7817034d578e17502d7240efb9e85751d6f5bc5161a5fad052d823b884"
+        }
+      ],
+      "beforeView": {
+        "frameAt": "2026-09-30T13:50:33.000Z",
+        "width": 390.3999938964844,
+        "height": 844,
+        "verticalFovDeg": 45,
+        "basis": {
+          "right": [
+            1,
+            0,
+            0
+          ],
+          "up": [
+            0,
+            -0.7071067811865476,
+            0.7071067811865476
+          ],
+          "forward": [
+            0,
+            0.7071067811865476,
+            0.7071067811865476
+          ]
+        },
+        "center": {
+          "x": 195.1999969482422,
+          "y": 422
+        },
+        "scale": 2121.537265677108
+      },
+      "afterView": {
+        "frameAt": "2026-09-30T13:50:33.000Z",
+        "width": 390.3999938964844,
+        "height": 844,
+        "verticalFovDeg": 45,
+        "basis": {
+          "right": [
+            1,
+            0,
+            0
+          ],
+          "up": [
+            0,
+            -0.7071067811865476,
+            0.7071067811865476
+          ],
+          "forward": [
+            0,
+            0.7071067811865476,
+            0.7071067811865476
+          ]
+        },
+        "center": {
+          "x": 195.1999969482422,
+          "y": 422
+        },
+        "scale": 2121.537265677108
+      },
+      "exactCompletedCameraEqual": true,
+      "differences": {
+        "fovDeg": 0,
+        "scalePx": 0,
+        "basisMax": 0,
+        "centerMax": 0
+      },
+      "region": {
+        "x": 3,
+        "y": 96,
+        "width": 421,
+        "height": 799,
+        "changedPixels": 11,
+        "maxDelta": 1,
+        "totalChannelDelta": 15
+      }
+    }
+  ]
+}

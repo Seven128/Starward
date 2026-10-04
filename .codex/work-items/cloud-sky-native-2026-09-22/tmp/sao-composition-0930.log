@@ -1,0 +1,25 @@
+{"name":"common-cold","fov":84.63316191100171,"sao":0,"loading":true,"failed":false,"points":500,"pointDraws":1}
+{"name":"common-ready","fov":84.63316191100171,"sao":1,"loading":false,"failed":false,"points":501,"pointDraws":1}
+{"name":"45-retained","fov":45,"sao":15,"loading":true,"failed":false,"points":216,"pointDraws":1}
+{"name":"45-partial","fov":45,"sao":32,"loading":true,"failed":true,"points":240,"pointDraws":1}
+{"name":"45-failed","fov":45,"sao":94,"loading":false,"failed":true,"points":328,"pointDraws":1}
+{"name":"45-retrying","fov":45,"sao":94,"loading":true,"failed":false,"points":328,"pointDraws":1}
+{"name":"45-ready","fov":45,"sao":125,"loading":false,"failed":false,"points":374,"pointDraws":1}
+{"name":"9.1-retained","fov":9.1,"sao":13,"loading":true,"failed":false,"points":26,"pointDraws":1}
+{"name":"9.1-ready","fov":9.1,"sao":159,"loading":false,"failed":false,"points":230,"pointDraws":1}
+{"name":"1.8-retained","fov":1.8,"sao":7,"loading":true,"failed":false,"points":8,"pointDraws":1}
+{"name":"1.8-ready","fov":1.8,"sao":8,"loading":false,"failed":false,"points":9,"pointDraws":1}
+{"name":"0.3-retained","fov":0.3,"sao":0,"loading":false,"failed":false,"points":1,"pointDraws":1}
+{"name":"0.3-ready","fov":0.3,"sao":0,"loading":false,"failed":false,"points":1,"pointDraws":1}
+{"name":"84.63316191100171-retained","fov":84.63316191100171,"sao":0,"loading":true,"failed":false,"points":500,"pointDraws":1}
+{"name":"84.63316191100171-ready","fov":84.63316191100171,"sao":1,"loading":false,"failed":false,"points":501,"pointDraws":1}
+E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\services\celestial-position-response.ts:31
+    throw new Error("celestial_position_geometry_invalid");
+          ^
+
+Error: celestial_position_geometry_invalid
+    at matchingCelestialPositionResponse (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\services\celestial-position-response.ts:31:11)
+    at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-sao-composition-2026-09-30.mts:215:20)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v24.16.0

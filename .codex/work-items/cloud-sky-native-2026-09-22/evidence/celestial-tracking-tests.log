@@ -1,0 +1,26 @@
+✔ captures entry orientation once, retains zenith and ignores subsequent phone rotation across separate pinches (5.3817ms)
+✔ object tracking holds overview entry heading and returns to the newest time-dependent target (1.0266ms)
+✔ independent review near-nadir counterexample no longer produces a 180-degree flip (3.2905ms)
+✔ each fixed interpolation path is continuous through near-nadir and rolled entry orientations (43.8336ms)
+✔ returning from overview starts at the displayed view and ends at the latest aligned pose, not entry pose (0.6686ms)
+✔ return reversal captures the actual intermediate view and cancels the old return (0.6044ms)
+✔ manual zoom round trip remains manual and does not adopt incoming phone directions (0.42ms)
+✔ explicit drag cancels recovery, full-dome dragging still keeps zenith, and cancellation restores captured state (0.197ms)
+✔ missing pose and background gaps cannot finish recovery; calibration cancels the browsing transition (0.389ms)
+✔ camera inputs do not mutate the sensor pose and invalid inputs do not fabricate a direction (0.4578ms)
+✔ located marker and camera reject changes of observer, report, time and source publication (1.0052ms)
+✔ tracking follows the selected report time, rejects late or foreign data and retains the last usable position on failure (1.4698ms)
+✔ explicit stop rejects delayed replies; canceled drag restores intent without accepting an old frame (2.3731ms)
+✔ pinch doubles projected separation and can reach the full dome without a perspective singularity (1.3794ms)
+✔ a reverse pinch reaches the local boundary despite floating point roundoff (0.5302ms)
+✔ progressive survey levels are deterministic (1.6392ms)
+✔ exact query/context/catalog binding preserves negative altitude and precision (2.8117ms)
+✔ malformed, expired or other-publication coordinates cannot move the camera (0.6187ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 423.923

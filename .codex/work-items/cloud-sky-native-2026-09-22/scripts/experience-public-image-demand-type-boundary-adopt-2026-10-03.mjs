@@ -1,0 +1,33 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+import assert from 'node:assert/strict';
+const ROOT=fileURLToPath(new URL('../../../../',import.meta.url));
+const probe='output/public-image-demand-type-boundary-probe-1003-r1';
+const out='output/public-image-demand-type-boundary-fix-1003-r1';
+await fs.mkdir(path.join(ROOT,out));
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const bind=async p=>{const b=await fs.readFile(path.join(ROOT,p));return {path:p,bytes:b.length,sha256:sha(b)};};
+const result=JSON.parse(await fs.readFile(path.join(ROOT,probe,'result.json'),'utf8'));
+assert.equal(result.originalDiagnostics.length,7);assert.equal(result.candidateDiagnostics.length,0);
+assert(result.emittedJavaScript.every(x=>x.identicalJavaScript));
+const retained=JSON.parse(await fs.readFile(path.join(ROOT,'.codex/work-items/cloud-sky-native-2026-09-22/tmp/resume-preserved-hashes-2026-10-01.json'),'utf8'));
+const before=await Promise.all([...result.candidateOriginalSourceBindings,...retained].map(x=>bind(x.path)));
+for(const x of [...result.candidateOriginalSourceBindings,...retained])assert.equal(before.find(y=>y.path===x.path).sha256,x.sha256,x.path);
+await fs.writeFile(path.join(ROOT,out,'sources-and-retained-before.json'),JSON.stringify(before,null,2),{flag:'wx'});
+const prepared=[];
+for(const source of result.candidateOriginalSourceBindings){
+ const actual=await fs.readFile(path.join(ROOT,source.path));
+ const candidatePath=probe+'/'+path.basename(source.path)+'.candidate.txt';
+ const candidate=await fs.readFile(path.join(ROOT,candidatePath));
+ await fs.writeFile(path.join(ROOT,out,path.basename(source.path)+'.original.txt'),actual,{flag:'wx'});
+ prepared.push({source:source.path,candidatePath,candidate,candidateSha256:sha(candidate)});
+}
+for(const x of prepared)await fs.writeFile(path.join(ROOT,x.source),x.candidate);
+const after=await Promise.all(before.map(x=>bind(x.path)));
+for(const x of retained)assert.equal(after.find(y=>y.path===x.path).sha256,x.sha256,x.path);
+for(const x of prepared)assert.equal(after.find(y=>y.path===x.source).sha256,x.candidateSha256,x.source);
+await fs.writeFile(path.join(ROOT,out,'sources-and-retained-after.json'),JSON.stringify(after,null,2),{flag:'wx'});
+await fs.writeFile(path.join(ROOT,out,'adoption.json'),JSON.stringify({scope:'Exact independently reviewed type-only candidate adoption; verification still pending',probe:await bind(probe+'/result.json'),files:prepared.map(({candidate,...x})=>x),before,after,retainedUnchanged:true},null,2),{flag:'wx'});
+console.log(JSON.stringify({out,modified:prepared.map(x=>x.source),retainedUnchanged:true,checks:'PENDING'}));

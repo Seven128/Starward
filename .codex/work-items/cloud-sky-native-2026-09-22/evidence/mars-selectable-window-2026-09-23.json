@@ -1,0 +1,23 @@
+{
+  "boundary": "local_calculation_not_native_pixels_or_device_verification",
+  "datePickerDays": {
+    "past": 7,
+    "future": 15
+  },
+  "samples": 544,
+  "location": {
+    "latitude": 22.5,
+    "longitude": 114.5,
+    "elevationM": 20
+  },
+  "largestVisible": {
+    "at": "2026-10-08T06:00:00.000Z",
+    "altitudeDeg": 4.988806,
+    "angularDiameterArcsec": 5.788404
+  },
+  "canvasHeightPx": 920,
+  "minFovDeg": 0.25,
+  "textureThresholdRadiusPx": 4,
+  "bestCenteredRadiusPx": 2.9585164265415766,
+  "conclusion": "texture_loader_not_reached_in_sampled_window"
+}

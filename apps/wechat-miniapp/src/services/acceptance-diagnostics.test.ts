@@ -57,10 +57,14 @@ test("late sky diagnostics publish and cleanup cannot affect a newer owner", () 
   const newOwner = acquireAcceptanceSkySceneInspection();
   assert.ok(newOwner);
   assert.equal(inspectAcceptanceSkyScene(), null);
-  assert.equal(publishAcceptanceSkySceneInspection(newOwner, inspection("READY", "new")), true);
+  assert.equal(publishAcceptanceSkySceneInspection(newOwner, {
+    ...inspection("READY", "new"), starCount: 0, starState: "UNAVAILABLE",
+  }), true);
   const current = inspectAcceptanceSkyScene();
   assert.equal(current?.spotId, "new");
   assert.equal(current?.state, "READY");
+  assert.equal(current?.starState, "UNAVAILABLE");
+  assert.equal(current?.starCount, 0);
 
   assert.equal(publishAcceptanceSkySceneInspection(oldOwner, inspection("ERROR", "stale")), false);
   assert.equal(clearAcceptanceSkySceneInspection(oldOwner), false);

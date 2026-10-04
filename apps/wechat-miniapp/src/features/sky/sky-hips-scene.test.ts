@@ -63,10 +63,13 @@ test("order-0 infrared background uses exact frame, precedes grid and disappears
       sequence.push("infrared");return true;
     } : key==="segments"?()=>{sequence.push("grid");} : ()=>true}) as SkyRenderSurface;
   const tiles=Array.from({length:12},(_,pixel)=>({layer:"WIDE_FIELD_W3" as const,order:0,pixel,image:{pixel}}));
-  const draw=(data:ResolvedSkyReport,when:string,mode:"NIGHT"|"OBSERVATION")=>
-    drawSkyScene(surface,data,when,null,null,390,844,mode,undefined,undefined,267.8,null,basis,
+  const draw=(data:ResolvedSkyReport,when:string,mode:"NIGHT"|"OBSERVATION")=>{
+    const args:Parameters<typeof drawSkyScene>=[surface,data,when,null,null,390,844,mode,undefined,undefined,267.8,null,basis,
       undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,
-      tiles,undefined,undefined);
+      tiles,undefined,undefined];
+    args[35]={horizontal:true,equatorial:false};
+    drawSkyScene(...args);
+  };
   draw(darkReport,at,"NIGHT");
   assert.ok(sequence.includes("infrared"));
   assert.ok(sequence.indexOf("infrared")<sequence.indexOf("grid"));

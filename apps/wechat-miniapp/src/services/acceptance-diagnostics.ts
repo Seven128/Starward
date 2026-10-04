@@ -23,6 +23,9 @@ export type AcceptanceSkySceneInspection = {
   frameAt: string;
   catalogVersion: string;
   starCount: number;
+  /** Older publishers omit availability. Their count alone is not evidence of
+   * a usable catalog; current publishers distinguish unavailable from zero. */
+  starState?: "AVAILABLE" | "UNAVAILABLE";
   drawRevision: number;
 };
 

@@ -1,0 +1,27 @@
+✔ ice-giant scene routes each historical profile to its own globe and preserves untextured geometry (25.3562ms)
+✔ a texture hook selects one body's exact painted geometry without accepting a partial ephemeris (11.7981ms)
+✔ one exact planetary frame projects a changing physical phase without stale or malformed rows (0.3026ms)
+✔ Saturn without ring orientation remains a phase disc alongside other valid planets (0.2094ms)
+✔ ice giants use sourced 1-bar axes only with a valid exact body frame (0.4289ms)
+✔ resolved Mars shares the Moon's IAU body-axis projection and passes only its own texture (3.0412ms)
+✔ resolved Mercury uses its own body axis and published image, never Mars' (3.689ms)
+✔ Saturn's observed pole and main-ring radial widths produce oriented bands only when resolvable (1.0574ms)
+✔ Saturn ring strokes stay below a few logical pixels at the phone's 0.05° limit (4.3339ms)
+✔ Sun geometry shades only the globe-facing ring sector and retains shadowed arcs as Saturn picks (14.9718ms)
+✔ Saturn's outer ring remains when the globe has left the viewport (8.4475ms)
+✔ Saturn's 1-bar equatorial and polar axes project an oriented oblate globe (0.7299ms)
+✔ Jupiter's reported pole projects the 1-bar oblate silhouette and orients a longitude-neutral profile (9.9136ms)
+✔ Saturn's ring pole orients only its latitude profile while preserving globe and ring identity (12.9744ms)
+✔ Saturn ring arcs require a successfully drawn globe and retain scene order (11.9908ms)
+✔ a tap on the rendered Saturn globe rim or main ring selects Saturn (10.1647ms)
+✔ partly set planetary globes and Saturn rings stop at the same true horizon (50.0005ms)
+✔ real planetary phase replaces the old Venus target marker, but missing geometry preserves it (5.8387ms)
+✔ resolved Saturn bands use one continuous surface; unavailable shader retains arcs and picking (27.5847ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 548.1922

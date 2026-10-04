@@ -1,0 +1,78 @@
+{
+  "width": 2048,
+  "height": 1024,
+  "samples": [
+    {
+      "x": 866,
+      "y": 492,
+      "role": "observed_black_patch",
+      "center": 2,
+      "min": 0,
+      "max": 3,
+      "mean": 1.4444444444444444
+    },
+    {
+      "x": 881,
+      "y": 492,
+      "role": "adjacent_control",
+      "center": 56,
+      "min": 53,
+      "max": 58,
+      "mean": 56
+    },
+    {
+      "x": 1038,
+      "y": 461,
+      "role": "observed_black_patch",
+      "center": 2,
+      "min": 0,
+      "max": 3,
+      "mean": 1.1111111111111112
+    },
+    {
+      "x": 1053,
+      "y": 461,
+      "role": "adjacent_control",
+      "center": 43,
+      "min": 41,
+      "max": 45,
+      "mean": 42.77777777777778
+    },
+    {
+      "x": 1183,
+      "y": 646,
+      "role": "observed_black_patch",
+      "center": 0,
+      "min": 0,
+      "max": 15,
+      "mean": 4.555555555555555
+    },
+    {
+      "x": 1198,
+      "y": 646,
+      "role": "adjacent_control",
+      "center": 80,
+      "min": 78,
+      "max": 83,
+      "mean": 80.33333333333333
+    },
+    {
+      "x": 1883,
+      "y": 682,
+      "role": "observed_black_patch",
+      "center": 0,
+      "min": 0,
+      "max": 6,
+      "mean": 3
+    },
+    {
+      "x": 1898,
+      "y": 682,
+      "role": "adjacent_control",
+      "center": 77,
+      "min": 75,
+      "max": 85,
+      "mean": 79.88888888888889
+    }
+  ]
+}

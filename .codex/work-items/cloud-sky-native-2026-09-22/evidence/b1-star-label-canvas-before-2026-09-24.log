@@ -1,0 +1,34 @@
+✖ a label withdraws when the Canvas has not presented or has failed (3.8ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 792.7543
+
+✖ failing tests:
+
+test at src\features\sky\sky-named-star-labels.test.ts:1:2312
+✖ a label withdraws when the Canvas has not presented or has failed (3.8ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'HR:2491'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:50:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'HR:2491' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

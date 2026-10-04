@@ -9,6 +9,8 @@ import { paintedSkyPointVisible, type SkyPickSnapshot } from "./sky-object-picki
 import { createSkyViewBasis } from "./sky-view-projection";
 import type { SkyScenePaintedSources } from "./sky-scene-render";
 import { skyPresentedTimeCurrent } from "./sky-observation-time";
+import { completeLegacySkyOptical } from "./sky-sdss-optical-completion";
+import { skyPagePaintCommit } from "./sky-optical-page-test-support";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
   readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -73,24 +75,23 @@ test("planet and other target labels only follow the native frame actually prese
 test("same-camera native redraw commits resolved labels and both credits, including failure recovery", () => {
   assert.ok(committed);
   const frame = { data: {}, frameAt: "2026-09-21T04:00:00.000Z", mode: "NIGHT",
-    deepSkyImage: { image: {} }, sdssOpticalImage: { image: {} } };
-  type Presented = typeof frame & { resolvedBodyReferences: readonly string[]; landscape: import("./sky-landscape-mask").SkyLandscapeMask | null };
+    deepSkyImage: { image: {} }, sdssOpticalImage: { image: {}, reference: "M:51", publicationHash: "legacy", level: "DETAIL" as const, fieldDegrees: .05 } };
+  type Presented = Omit<typeof frame, "sdssOpticalImage"> & { sdssOptical: import("./sky-sdss-optical-completion").SkySdssLegacyOpticalCompletion | null; resolvedBodyReferences: readonly string[]; landscape: import("./sky-landscape-mask").SkyLandscapeMask | null };
   const state: { current: Presented | null } = { current: null };
-  const commit = vm.runInNewContext(ts.transpileModule(`(${committed.getText(source)})`, {
-    compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
+  const commit = skyPagePaintCommit(source, {
     frame, resolvedSkyBodyReferences, paintedSkyObjectsRef: { current: null },
     setPresentedSkyFrame: (update: (previous: Presented | null) => Presented | null) => { state.current = update(state.current); },
     setPresentedCamera() {}, camera: { animating: false },
-  }) as (snapshot: SkyPickSnapshot | null, sources: SkyScenePaintedSources) => void;
+  });
   const snapshot: SkyPickSnapshot = { frameAt: frame.frameAt, catalogVersion: "v", catalogHash: "h",
     width: 390, height: 844, objects: [{ reference: "PLANET:VENUS", displayName: "金星", kind: "PLANET",
       magnitude: -4, x: 195, y: 422, hitDisc: { majorRadiusPx: 60, minorRadiusPx: 60, minorDirection: [0, 1] } }] };
-  const sources = { deepSkyImage: frame.deepSkyImage.image, sdssOpticalImage: frame.sdssOpticalImage.image };
+  const sources: SkyScenePaintedSources = { deepSkyImage: frame.deepSkyImage.image, sdssOptical: completeLegacySkyOptical(frame.sdssOpticalImage, frame.sdssOpticalImage.image) };
   commit(snapshot, sources);
   const visible = state.current!;
   assert.deepEqual(Array.from(visible.resolvedBodyReferences), ["PLANET:VENUS"]);
   assert.strictEqual(visible.deepSkyImage, frame.deepSkyImage);
-  assert.strictEqual(visible.sdssOpticalImage, frame.sdssOpticalImage);
+  assert.strictEqual(visible.sdssOptical!.field.image, frame.sdssOpticalImage.image);
   commit(snapshot, sources);
   assert.strictEqual(state.current, visible, "unchanged frames must not cause extra DOM commits");
   commit({ ...snapshot, suppressedBodyReferences: ["PLANET:JUPITER"] }, sources);
@@ -107,9 +108,9 @@ test("same-camera native redraw commits resolved labels and both credits, includ
   }) }, sources);
   assert.notStrictEqual(state.current, beforePoint, "same data/time/camera still needs the restored point label");
   assert.deepEqual(Array.from(state.current!.resolvedBodyReferences), []);
-  commit({ ...snapshot, objects: [] }, { sdssOpticalImage: null, deepSkyImage: null });
+  commit({ ...snapshot, objects: [] }, { sdssOptical: null, deepSkyImage: null });
   assert.equal(state.current!.deepSkyImage, null);
-  assert.equal(state.current!.sdssOpticalImage, null);
+  assert.equal(state.current!.sdssOptical, null);
   commit(snapshot, sources);
   assert.deepEqual(Array.from(state.current!.resolvedBodyReferences), ["PLANET:VENUS"]);
   const restored = state.current!;
@@ -119,7 +120,7 @@ test("same-camera native redraw commits resolved labels and both credits, includ
   assert.notStrictEqual(state.current, restored, "new occlusion must update same-camera DOM consumers");
   commit({ ...snapshot, view: { ...view, landscape: null } }, sources);
   assert.equal(state.current!.landscape, null, "GPU failure or off restores labels on the same frame");
-  commit(null, { sdssOpticalImage: null, deepSkyImage: null });
+  commit(null, { sdssOptical: null, deepSkyImage: null });
   assert.equal(state.current, null);
 });
 

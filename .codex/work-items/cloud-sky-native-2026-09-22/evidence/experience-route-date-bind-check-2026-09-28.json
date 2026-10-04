@@ -1,0 +1,18 @@
+{
+  "scope": "Candidate fingerprints, prior native evidence scope, source and current-plan links only; no new native recovery, quality or phone acceptance",
+  "previousNativeCandidateHash": "bf179db231d3a73314ac552b4eb8010babcc3cf6e359e232e447c13b7d7cebea",
+  "latestUnopenedCandidateHash": "8ead104e31b41f6ab015d1e543069dda6c2acca5df86694676208401fae9915f",
+  "candidateFiles": 257,
+  "changedPaths": [
+    "project.config.json",
+    "sky/detail/index.js"
+  ],
+  "pageSourceSha256": "f23c87751625d3ccfd12511a42e2bd25bcba629d2d69086c7eb5b0d0450f6633",
+  "recordedRegressionBeforeFixFailed": true,
+  "recordedAfterFixAndTypecheckPassed": true,
+  "currentPlanDependencies": 1,
+  "localLinksChecked": 297,
+  "nativeV13Recovery": "unverified",
+  "currentNativeContextAndGuardRelease": "unverified",
+  "targetPhoneNewMoon": "unverified"
+}

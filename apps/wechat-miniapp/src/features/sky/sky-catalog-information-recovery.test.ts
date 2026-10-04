@@ -4,7 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { skyObjectKindLabel } from "./sky-object-picking";
-import { celestialInformationPartialDetail } from "../../services/celestial-information-presentation";
+import { celestialInformationPartialDetail, celestialInformationSourceRoute } from "../../services/celestial-information-presentation";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
   readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -30,7 +30,7 @@ test("a retained stale object description offers an inline retry without losing 
     useRef: (current: unknown) => ({ current }), useEffect: () => {},
     useAppStore: (selector: (state: unknown) => unknown) => selector({ notify: () => {} }),
     useCelestialInformation: () => information, productSourceNames: () => "", skyObjectKindLabel,
-    celestialInformationPartialDetail,
+    celestialInformationPartialDetail, celestialInformationSourceRoute,
   }) as (props: Record<string, unknown>) => any;
   const tree = render({ reference: "HR:7001", knownName: "Vega", knownKind: "STAR",
     onClose: () => {}, positionAction: null });
@@ -77,7 +77,7 @@ test("a retained stale object description offers an inline retry without losing 
 });
 
 test("the actual object modal sends its painted publication to both details and the source route", async () => {
-  const publicationHash = "a".repeat(64), requests: unknown[][] = [], urls: string[] = [];
+  const publicationHash = "a".repeat(64), opticalPublicationHash = "b".repeat(64), requests: unknown[][] = [], urls: string[] = [];
   const render = vm.runInNewContext(code, {
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
     View: "View", Button: "Button", ScrollView: "ScrollView", Text: "Text", SemanticIcon: "SemanticIcon",
@@ -85,18 +85,21 @@ test("the actual object modal sends its painted publication to both details and 
     useAppStore: (select: (value: unknown) => unknown) => select({ notify() {} }), skyObjectKindLabel,
     Taro: { async navigateTo({ url }: { url: string }) { urls.push(url); } },
     productSourceNames: () => "IRSA",
-    celestialInformationPartialDetail,
+    celestialInformationPartialDetail, celestialInformationSourceRoute,
     useCelestialInformation: (...args: unknown[]) => { requests.push(args); return { isPending: false, isError: false,
       data: { dataState: "FRESH", data: { displayName: "M 42", kind: "NEBULA", contentState: "BASIC_ONLY", introduction: null,
         aliases: [], facts: [], limitations: [], sources: [{ id: `imagery:published:${publicationHash}` }] } } }; },
   }) as (props: Record<string, unknown>) => any;
-  const tree = render({ reference: "M:42", knownName: "M 42", knownKind: "NEBULA", imagePublicationHash: publicationHash, onClose() {} });
-  assert.deepEqual(Array.from(requests[0]!), ["M:42", true, publicationHash]);
+  const tree = render({ reference: "M:42", knownName: "M 42", knownKind: "NEBULA", imagePublicationHash: publicationHash,
+    opticalPublicationHash, onClose() {} });
+  assert.deepEqual(Array.from(requests[0]!), ["M:42", true, publicationHash, opticalPublicationHash]);
   const stack = [tree];
   let button: any;
   while (stack.length) { const item = stack.pop(); if (Array.isArray(item)) stack.push(...item);
     else if (item?.type === "SoftButton") { button = item; break; } else stack.push(...(item?.children ?? [])); }
   assert.ok(button); button.props.onClick();
   await new Promise(resolve => setImmediate(resolve));
-  assert.deepEqual(urls, [`/sky/sources/index?reference=M%3A42&imagePublicationHash=${publicationHash}`]);
+  assert.deepEqual(urls, [`/sky/sources/index?reference=M%3A42&imagePublicationHash=${publicationHash}&opticalPublicationHash=${opticalPublicationHash}`]);
+  render({ reference: "M:42", knownName: "M 42", knownKind: "NEBULA", imagePublicationHash: publicationHash, onClose() {} });
+  assert.deepEqual(Array.from(requests.at(-1)!), ["M:42", true, publicationHash, undefined], "old unpinned callers retain the default optical path");
 });

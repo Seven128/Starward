@@ -1,0 +1,57 @@
+{
+  "scope": "Bounded static source selection for native progressive-star verification; actual position must come from public selected-object service in current Context.",
+  "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+  "catalogVersion": "sao-visual-supplement.v2",
+  "catalogHash": "c3aabc21b952719aac71d767e69f1ea501599dc3003b8816a92ca6e62ae29f25",
+  "baseCatalogVersion": "bsc5p-bright-stars.v3",
+  "rows": 246280,
+  "tileCount": 826,
+  "tile": {
+    "id": "14-08-10-0",
+    "bytes": 55437,
+    "sha256": "b4fe328b9df084df82231666b0b343b71cc472cc9ed2a70929caa599ce0dd440",
+    "rowCount": 387
+  },
+  "chosen": {
+    "row": [
+      "SAO:67132",
+      9.1,
+      0.11947351690533677,
+      -0.7762247698197764,
+      0.6190324591461304,
+      1.9802685544294755e-7,
+      2.7443033424212953e-8,
+      -3.80755891517983e-9
+    ],
+    "separationDeg": 0.6583583442899077
+  },
+  "sources": [
+    {
+      "id": "sao:c3aabc21b952719aac71d767e69f1ea501599dc3003b8816a92ca6e62ae29f25",
+      "kind": "OPEN_DATA",
+      "provider": "SAO / ADC / USNO · NASA HEASARC",
+      "title": "SAO J2000 恒星目录",
+      "sourceUrl": "https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/sao.html",
+      "license": "U.S. government works (NASA dataset metadata)",
+      "licenseUrl": "https://www.usa.gov/government-works",
+      "publishedAt": null,
+      "retrievedAt": null,
+      "validFrom": null,
+      "validTo": null,
+      "state": "FRESH",
+      "confidence": null,
+      "precision": "FK5 J2000及原始自行；保留历史视觉星等",
+      "limitations": [
+        "Smithsonian Astrophysical Observatory Star Catalog (1966), ADC corrections through 1991; USNO FK5 J2000 astrometry; HEASARC, NASA/GSFC",
+        "历史天体测量与视觉测光；不是统一 Johnson V，也不保证完整至10等。",
+        "目录没有提供本层采用的 B−V 色指数或恒星距离；显示增强不表示肉眼实际可见。",
+        "原始获取时刻未记录；不由文件修改时间推定。"
+      ]
+    }
+  ],
+  "limits": [
+    "No new external download or catalogue research; uses existing publication.",
+    "No local static vector is treated as current horizontal position.",
+    "This source check does not establish native drawing, picking or data coverage completion."
+  ]
+}

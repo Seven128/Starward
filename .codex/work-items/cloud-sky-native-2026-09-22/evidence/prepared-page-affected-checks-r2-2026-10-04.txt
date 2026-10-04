@@ -1,0 +1,92 @@
+✔ continuous presentation preserves the static catalog center and leaves old missing centers unknown (19.7921ms)
+✔ full-sphere browsing draws a below-horizon target only when the actual viewport contains it (5.1263ms)
+✔ failed GPU submission cannot publish a picking snapshot or successful completion (0.7372ms)
+✔ actual page invalidation clears hit testing synchronously before React hides the failed surface (64.3589ms)
+✔ survey imagery uses a celestial plane beyond the camera hemisphere and stays hidden in red mode (5.5617ms)
+✔ stereographic anchors may cross the viewport but reject the antipode and invalid geometry (0.4982ms)
+✖ production frame requests preserve exact data/time and clear expired or untrusted input (53.6512ms)
+✔ explicit manual basis draws the same celestial target without fabricating device pose (0.3772ms)
+✔ production sky canvas switches exact target frames and restores committed geometry (0.4692ms)
+✔ production sky canvas never borrows top-level targets for missing or duplicate frames (0.4449ms)
+✔ published B-V gives a continuous star tint while missing photometry stays neutral (1.8352ms)
+✔ production sky canvas uses the same instant and projection for catalog stars and targets (0.4041ms)
+✔ expanding catalog depth cannot resize or brighten an unchanged star (0.9131ms)
+✔ the exact Sun frame fades catalog stars and their touch targets through twilight (0.682ms)
+✔ BSC and SAO use the same reference low-altitude attenuation for painting and picking (0.5382ms)
+✔ the real renderer reveals and fades a star with zoom and cannot pick the hidden star (0.4768ms)
+✔ actual pre-aid decisions survive final source retirement and freeze against later mutation (144.3588ms)
+✔ same scene and same sources still accept changed FOV, height and projected membership (37.8659ms)
+✔ records wait for accepted replacement; hide resize remount and throw reject stale decisions (156.8718ms)
+✔ absent ambiguous or invalid records cannot invent a source-derived opacity (43.0308ms)
+✖ actual lease onRetire emits new Hook maps and actual page dependencies queue the restoring Scene (74.9889ms)
+✔ full source-family credit and route belong to the painted publication, including surviving coarse (3.9561ms)
+✔ unknown/black, uncompleted, contradictory and foreign identities cannot borrow a caption (0.9488ms)
+✔ actual caption component renders the complete attribution and its captured exact-version action (0.6404ms)
+✔ actual page caption consumer follows accepted frame, Canvas generation and liveness, not latest focus (4.4393ms)
+✔ modal and caption route formatting preserves both optional identities and escapes values (0.269ms)
+✔ queued science frame retains each real descriptor and common immutable scientific mother (2.0785ms)
+✔ foreign and requested descriptors cannot relabel a ready native field (0.3437ms)
+✔ legacy handoff keeps exact admitted JPEG fields without science availability semantics (1.3787ms)
+✔ actual page hands science and Prepared envelopes to its queued frame, respecting page mode (258.8671ms)
+✔ actual page grants Prepared Scene only its current frame and Canvas generation (144.3092ms)
+✔ prepared ready frames retain original source/geometry without becoming science or legacy (0.4404ms)
+✔ a selected optical family outside the actual view starts no image jobs and retires ready images (194.9484ms)
+✔ normal page supplies the accepted camera and exact report to the optical demand owner (129.0923ms)
+✔ fine optical failure retains the nearest ready coarse level and an explicit retry (33.1265ms)
+✔ target switches fence prior discovery, cancel its owner and reject late decoded pixels (20.6225ms)
+✔ larger M81 overview selection follows its actual admitted footprint (0.4662ms)
+✔ the public page retry preserves coarse optical pixels through repeated HTTP failure and resets only a failed GPU owner (102.2797ms)
+✔ both exact-source wrappers retire only a certified offscreen family and preserve unknown observer demand (245.033ms)
+✔ explicit science cold metadata is independent, then exact PNG descriptors supply coarse recovery (32.1087ms)
+✔ retired metadata is fenced both at Hook render and at the later native-acquisition resolver (24.115ms)
+✔ new hash and reference transitions reject retained old metadata before images are relabeled (28.9398ms)
+✔ science refinement keeps the current angular policy without inventing a photograph-fills-viewport requirement (0.3446ms)
+✔ prepared source uses the same real progressive owner without science or legacy relabelling (25.8351ms)
+✔ prepared metadata retirement and hash/ref/source-kind transitions cannot revive or relabel native pixels (23.9532ms)
+✔ display uses the existing progressive owner with exact estimate descriptors, parent recovery and retirement (24.1213ms)
+ℹ tests 46
+ℹ suites 0
+ℹ pass 44
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2090.5793
+
+✖ failing tests:
+
+test at apps\wechat-miniapp\src\features\sky\sky-canvas-time.test.ts:2:7910
+✖ production frame requests preserve exact data/time and clear expired or untrusted input (53.6512ms)
+  evalmachine.<anonymous>:31
+  }, [canvasLifecycle, canvasNodeRevision, canvasFrameInfo, mode, report.data?.dataState, report.isError, reportData, row?.at, sensorHeadingForScene, sensorBasis, devicePose, manualBasis, verticalFovDeg, desiredDeepSkyImageLevel, canvasDeepSkyImage, sdssOptical.image, sdssOptical.renderedAsset, sdssOptical.renderedLevel, sdssOptical.coarser, sdssOptical.publication, orientation.snapshot.presentationRevision, viewportInsets, constellationFrame, artwork.images, constellationsEnabled, landscapeEnabled, coordinateGrids, stellarSupplement.frame, hipsTiles, moonTexture.image, marsTexture.image, mercuryTexture.image, jupiterBands.image, saturnBands.image, uranusBands.image, neptuneBands.image, galacticImage.image, landscapeImage.panorama, landscapeImage.mask, landscapeImage.opacity, landscapeImage.loading, landscapeImage.failed]);
+                                                                                                                                                                                                            ^
+  
+  ReferenceError: desiredDeepSkyImageLevel is not defined
+      at evalmachine.<anonymous>:31:203
+      at Script.runInContext (node:vm:149:12)
+      at Object.runInContext (node:vm:301:6)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-canvas-time.test.ts:185:6)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at apps\wechat-miniapp\src\features\sky\sky-deep-auxiliary-page.test.ts:1:12542
+✖ actual lease onRetire emits new Hook maps and actual page dependencies queue the restoring Scene (74.9889ms)
+  evalmachine.<anonymous>:31
+  }, [canvasLifecycle, canvasNodeRevision, canvasFrameInfo, mode, report.data?.dataState, report.isError, reportData, row?.at, sensorHeadingForScene, sensorBasis, devicePose, manualBasis, verticalFovDeg, desiredDeepSkyImageLevel, canvasDeepSkyImage, sdssOptical.image, sdssOptical.renderedAsset, sdssOptical.renderedLevel, sdssOptical.coarser, sdssOptical.publication, orientation.snapshot.presentationRevision, viewportInsets, constellationFrame, artwork.images, constellationsEnabled, landscapeEnabled, coordinateGrids, stellarSupplement.frame, hipsTiles, moonTexture.image, marsTexture.image, mercuryTexture.image, jupiterBands.image, saturnBands.image, uranusBands.image, neptuneBands.image, galacticImage.image, landscapeImage.panorama, landscapeImage.mask, landscapeImage.opacity, landscapeImage.loading, landscapeImage.failed]));
+                                                                                                                                                                                                            ^
+  
+  ReferenceError: desiredDeepSkyImageLevel is not defined
+      at evalmachine.<anonymous>:31:203
+      at Script.runInContext (node:vm:149:12)
+      at Object.runInContext (node:vm:301:6)
+      at evaluate (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-deep-auxiliary-page.test.ts:41:61)
+      at render (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-deep-auxiliary-page.test.ts:220:55)
+      at commit (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-deep-auxiliary-page.test.ts:221:26)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-deep-auxiliary-page.test.ts:222:3)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)

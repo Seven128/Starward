@@ -1,0 +1,35 @@
+✔ actual client requests the admitted immutable target through the existing bare resource boundary (52.3589ms)
+✖ source download links exist for each real target and reject forged publication identities (26.6587ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 959.2633
+
+✖ failing tests:
+
+test at src\services\sdss-optical-client.test.ts:1:2801
+✖ source download links exist for each real target and reject forged publication identities (26.6587ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'http://127.0.0.1:8791/v2/sky/sdss-optical/5199f79b27bd859891e1641e2103f8249956e71b180cd9d93072faafa8eb597a/manifest'
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\services\sdss-optical-client.test.ts:48:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'http://127.0.0.1:8791/v2/sky/sdss-optical/5199f79b27bd859891e1641e2103f8249956e71b180cd9d93072faafa8eb597a/manifest',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

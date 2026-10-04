@@ -73,7 +73,7 @@ export function resolveSkySceneFrame(scene: ResolvedStellarScene | undefined, at
     const points: SkyScenePoint[] = [];
     scene.publication.rows.forEach((row, index) => {
       const position = projectStellarMotion([row[4], row[5], row[6], row[7], row[8], row[9]], frame.geometry!.julianYears, frame.geometry!.equatorialToEnu);
-      if (position.altitudeDeg > 0) points.push(Object.freeze([index, position.azimuthDeg, position.altitudeDeg] as const));
+      points.push(Object.freeze([index, position.azimuthDeg, position.altitudeDeg] as const));
     });
     const resolved: ResolvedStellarFrame = Object.freeze({ at: at!, state: "AVAILABLE", points: Object.freeze(points) });
     currentFrames.set(scene, resolved);

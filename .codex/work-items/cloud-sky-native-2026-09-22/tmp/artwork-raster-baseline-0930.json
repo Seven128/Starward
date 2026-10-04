@@ -1,0 +1,393 @@
+{
+  "scope": "Current eligible source bounds and actual full-viewport artwork submission mechanism; projected bound is a candidate, not adopted/native timing",
+  "at": "2026-09-30T13:50:33.000Z",
+  "reportSha256": "197a5819cc175e249faab29208dc5ecb2b8a6ac17f3dd32a861abc6b20e90aa0",
+  "publicationHash": "2a53d222e56b513e6b0b9bba753d7864e1535bf98252112ce8e4bebde16dc01e",
+  "sourceHashes": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "sha256": "6bbfc8a768643a096bd248b12ca7d0be85e117d76f0cc63d5a05f80c1e06288c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-registration.ts",
+      "sha256": "85e16452de821088531ee9f19a4bfe6f791f6da26818ead6f3d53fd8e23c2513"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-visibility.ts",
+      "sha256": "d2288c6e9e533721a50d6e587ec1e48a4b04dc2272d14eab5213f19fb3bc10d8"
+    }
+  ],
+  "reads": [
+    {
+      "route": "/v2/sky/constellations",
+      "bytes": 130170,
+      "sha256": "1d3dbc921413ebb2d417cc25138b9c9ba80a2de8ea93043d832d796c03218167"
+    },
+    {
+      "route": "/v2/sky/catalogs/bsc5p-bright-stars.v3/ba9bef4144d4cfb4c706a5d1d8a0958d8303854e7bfabe780005b63e0c904c2c",
+      "bytes": 1280199,
+      "sha256": "7a3290abebd86ca5c4326dd13e3976ed4765e22c427ea07dec05e44a1603d9d1"
+    }
+  ],
+  "rows": [
+    {
+      "name": "common",
+      "fov": 84.63316191100171,
+      "images": [
+        {
+          "id": "Aql",
+          "determinant": 0.07171043036704215,
+          "radius": 0.4036761448799422,
+          "area": 176280,
+          "fullArea": 329160
+        },
+        {
+          "id": "Aqr",
+          "determinant": 0.161250983634588,
+          "radius": 0.4884275291783977,
+          "area": 65000,
+          "fullArea": 329160
+        },
+        {
+          "id": "Cap",
+          "determinant": 0.08084048038296412,
+          "radius": 0.23806708261833057,
+          "area": 10010,
+          "fullArea": 329160
+        },
+        {
+          "id": "Cyg",
+          "determinant": 0.20998991177940202,
+          "radius": 0.39461774691304646,
+          "area": 82944,
+          "fullArea": 329160
+        },
+        {
+          "id": "Del",
+          "determinant": -0.004643515668388158,
+          "radius": 0.09782259267126697,
+          "area": 12882,
+          "fullArea": 329160
+        },
+        {
+          "id": "Equ",
+          "determinant": 0.003251516118913046,
+          "radius": 0.09993074927112984,
+          "area": 13924,
+          "fullArea": 329160
+        },
+        {
+          "id": "Her",
+          "determinant": -0.1792610060400395,
+          "radius": 0.40341384698655247,
+          "area": 6292,
+          "fullArea": 329160
+        },
+        {
+          "id": "Lac",
+          "determinant": -0.009644176784909895,
+          "radius": 0.18610648236714689,
+          "area": 10403,
+          "fullArea": 329160
+        },
+        {
+          "id": "Lyr",
+          "determinant": 0.004226671266292864,
+          "radius": 0.15295462236143287,
+          "area": 0,
+          "fullArea": 329160
+        },
+        {
+          "id": "Oph",
+          "determinant": 0.40418073672178867,
+          "radius": 0.6346951493980337,
+          "area": 151320,
+          "fullArea": 329160
+        },
+        {
+          "id": "Peg",
+          "determinant": -0.21981434074551282,
+          "radius": 0.5599664048837687,
+          "area": 106860,
+          "fullArea": 329160
+        },
+        {
+          "id": "Psc",
+          "determinant": -0.31565655079100874,
+          "radius": 0.507482459790506,
+          "area": 23232,
+          "fullArea": 329160
+        },
+        {
+          "id": "Sco",
+          "determinant": -0.06668197302878616,
+          "radius": 0.3175675986122027,
+          "area": 8664,
+          "fullArea": 329160
+        },
+        {
+          "id": "Sct",
+          "determinant": 0.019698058338642205,
+          "radius": 0.1672587954053715,
+          "area": 36248,
+          "fullArea": 329160
+        },
+        {
+          "id": "Sge",
+          "determinant": 0.0011060887178105986,
+          "radius": 0.06282330565918312,
+          "area": 5625,
+          "fullArea": 329160
+        },
+        {
+          "id": "Sgr",
+          "determinant": -0.16095456778428668,
+          "radius": 0.36337302858728937,
+          "area": 39590,
+          "fullArea": 329160
+        },
+        {
+          "id": "Vul",
+          "determinant": 0.004131042784456855,
+          "radius": 0.19112614894656513,
+          "area": 33288,
+          "fullArea": 329160
+        }
+      ],
+      "fullRasterArea": 5595720,
+      "estimatedBoundedArea": 782562
+    },
+    {
+      "name": "wide",
+      "fov": 139,
+      "images": [
+        {
+          "id": "And",
+          "determinant": 0.039680615133061536,
+          "radius": 0.40521862924395496,
+          "area": 40430,
+          "fullArea": 329160
+        },
+        {
+          "id": "Aql",
+          "determinant": 0.07171043036704215,
+          "radius": 0.4036761448799422,
+          "area": 64770,
+          "fullArea": 329160
+        },
+        {
+          "id": "Aqr",
+          "determinant": 0.161250983634588,
+          "radius": 0.4884275291783977,
+          "area": 57120,
+          "fullArea": 329160
+        },
+        {
+          "id": "Ara",
+          "determinant": 0.021614919501602416,
+          "radius": 0.2083267794147121,
+          "area": 0,
+          "fullArea": 329160
+        },
+        {
+          "id": "Boo",
+          "determinant": 0.04657966136259674,
+          "radius": 0.5008462967702695,
+          "area": 10304,
+          "fullArea": 329160
+        },
+        {
+          "id": "Cap",
+          "determinant": 0.08084048038296412,
+          "radius": 0.23806708261833057,
+          "area": 17227,
+          "fullArea": 329160
+        },
+        {
+          "id": "Cas",
+          "determinant": -0.016963798454173007,
+          "radius": 0.24843037415885413,
+          "area": 6486,
+          "fullArea": 329160
+        },
+        {
+          "id": "Cep",
+          "determinant": 0.03873366823372177,
+          "radius": 0.3895133693447529,
+          "area": 26789,
+          "fullArea": 329160
+        },
+        {
+          "id": "Cet",
+          "determinant": -0.18518139890296947,
+          "radius": 0.5380414118093924,
+          "area": 38850,
+          "fullArea": 329160
+        },
+        {
+          "id": "CrA",
+          "determinant": 0.009594168787409828,
+          "radius": 0.09787573711210248,
+          "area": 1482,
+          "fullArea": 329160
+        },
+        {
+          "id": "CrB",
+          "determinant": -0.008576515706682691,
+          "radius": 0.09275122983522983,
+          "area": 0,
+          "fullArea": 329160
+        },
+        {
+          "id": "Cyg",
+          "determinant": 0.20998991177940202,
+          "radius": 0.39461774691304646,
+          "area": 52650,
+          "fullArea": 329160
+        },
+        {
+          "id": "Del",
+          "determinant": -0.004643515668388158,
+          "radius": 0.09782259267126697,
+          "area": 4225,
+          "fullArea": 329160
+        },
+        {
+          "id": "Dra",
+          "determinant": 0.2344124923693585,
+          "radius": 0.6114343311204785,
+          "area": 19950,
+          "fullArea": 329160
+        },
+        {
+          "id": "Equ",
+          "determinant": 0.003251516118913046,
+          "radius": 0.09993074927112984,
+          "area": 4624,
+          "fullArea": 329160
+        },
+        {
+          "id": "Gru",
+          "determinant": -0.038061755804467315,
+          "radius": 0.2596749986751957,
+          "area": 0,
+          "fullArea": 329160
+        },
+        {
+          "id": "Her",
+          "determinant": -0.1792610060400395,
+          "radius": 0.40341384698655247,
+          "area": 28482,
+          "fullArea": 329160
+        },
+        {
+          "id": "Ind",
+          "determinant": 0.016768774610137524,
+          "radius": 0.241288470706643,
+          "area": 0,
+          "fullArea": 329160
+        },
+        {
+          "id": "Lac",
+          "determinant": -0.009644176784909895,
+          "radius": 0.18610648236714689,
+          "area": 20164,
+          "fullArea": 329160
+        },
+        {
+          "id": "Lyr",
+          "determinant": 0.004226671266292864,
+          "radius": 0.15295462236143287,
+          "area": 9030,
+          "fullArea": 329160
+        },
+        {
+          "id": "Mic",
+          "determinant": 0.0016531317814486926,
+          "radius": 0.12308356217321743,
+          "area": 92,
+          "fullArea": 329160
+        },
+        {
+          "id": "Oph",
+          "determinant": 0.40418073672178867,
+          "radius": 0.6346951493980337,
+          "area": 157156,
+          "fullArea": 329160
+        },
+        {
+          "id": "Pav",
+          "determinant": -0.0696991314751082,
+          "radius": 0.32213204820224045,
+          "area": 0,
+          "fullArea": 329160
+        },
+        {
+          "id": "Peg",
+          "determinant": -0.21981434074551282,
+          "radius": 0.5599664048837687,
+          "area": 124465,
+          "fullArea": 329160
+        },
+        {
+          "id": "PsA",
+          "determinant": -0.023336851954770144,
+          "radius": 0.20511315492811416,
+          "area": 0,
+          "fullArea": 329160
+        },
+        {
+          "id": "Psc",
+          "determinant": -0.31565655079100874,
+          "radius": 0.507482459790506,
+          "area": 63900,
+          "fullArea": 329160
+        },
+        {
+          "id": "Sco",
+          "determinant": -0.06668197302878616,
+          "radius": 0.3175675986122027,
+          "area": 44935,
+          "fullArea": 329160
+        },
+        {
+          "id": "Sct",
+          "determinant": 0.019698058338642205,
+          "radius": 0.1672587954053715,
+          "area": 12656,
+          "fullArea": 329160
+        },
+        {
+          "id": "Sge",
+          "determinant": 0.0011060887178105986,
+          "radius": 0.06282330565918312,
+          "area": 1936,
+          "fullArea": 329160
+        },
+        {
+          "id": "Sgr",
+          "determinant": -0.16095456778428668,
+          "radius": 0.36337302858728937,
+          "area": 38514,
+          "fullArea": 329160
+        },
+        {
+          "id": "Tel",
+          "determinant": 0.002112141601131964,
+          "radius": 0.07639266902915486,
+          "area": 0,
+          "fullArea": 329160
+        },
+        {
+          "id": "Vul",
+          "determinant": 0.004131042784456855,
+          "radius": 0.19112614894656513,
+          "area": 15376,
+          "fullArea": 329160
+        }
+      ],
+      "fullRasterArea": 10533120,
+      "estimatedBoundedArea": 861613
+    }
+  ]
+}

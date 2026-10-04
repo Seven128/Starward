@@ -1,0 +1,32 @@
+✔ dome never draws a below-horizon target or its label even when its projection fits the canvas (8.2934ms)
+✔ failed GPU submission cannot publish a picking snapshot or successful completion (0.4801ms)
+✔ actual page invalidation clears hit testing synchronously before React hides the failed surface (54.5969ms)
+✔ survey imagery uses a celestial plane beyond the camera hemisphere and stays hidden in red mode (20.2607ms)
+✔ stereographic anchors may cross the viewport but reject the antipode and invalid geometry (0.3456ms)
+✔ production frame requests preserve exact data/time and clear expired or untrusted input (39.9293ms)
+✔ explicit manual basis draws the same celestial target without fabricating device pose (2.6066ms)
+✔ production sky canvas switches exact target frames and restores committed geometry (3.6499ms)
+✔ production sky canvas never borrows top-level targets for missing or duplicate frames (4.989ms)
+✔ production sky canvas uses the same instant and projection for catalog stars and targets (6.1526ms)
+✔ expanding catalog depth cannot resize or brighten an unchanged star (15.1924ms)
+✔ the real renderer reveals and fades a star with zoom and cannot pick the hidden star (6.7927ms)
+✔ a true curved constellation arc survives offscreen endpoints; clipping uses actual viewport and horizon (6.2462ms)
+✔ zoom and intent gate both artwork and lines, decoded failure is reported once per attempt without throwing (1.5851ms)
+✔ solar light selects only the exact report instant and shares star ENU orientation (1.9245ms)
+✔ scene draws current solar light beneath other content; red and missing data suppress it (15.0287ms)
+✔ optional solar shader failure preserves independent scene completion (2.9814ms)
+✔ upgraded client rejects retired star cache after restart on offline and 304, and rejects a legacy server response (294.627ms)
+✔ old or malformed solar positions stay missing across offline, 304 and old server, then recover from exact data (88.7539ms)
+✔ HTTP 503 remains a failure and cannot return the retired catalog (22.1735ms)
+✔ network recovery returns selectable HR stars and retains their provenance (23.0474ms)
+✔ retired-identity regression detects omission of the response projection (18.7004ms)
+✔ malformed source rows retire only stars and keep independent content (13.2645ms)
+✔ rounded-only target caches lose geometry independently on offline, 304 and old-server reads, then recover (67.8552ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2064.871

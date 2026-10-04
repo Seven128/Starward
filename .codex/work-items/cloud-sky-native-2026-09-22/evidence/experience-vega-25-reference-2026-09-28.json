@@ -1,0 +1,41 @@
+{
+  "schema": "task-reference-observation-v1",
+  "url": "https://stellarium-web.org/skysource/Vega?fov=11.600151166834817&date=2026-09-28T13%3A00%3A00Z&lat=22.4826799&lng=114.5557147&elev=0",
+  "site": {
+    "latitude": 22.4826799,
+    "longitude": 114.5557147,
+    "origin": "public fixture"
+  },
+  "at": "2026-09-28T13:00:00Z",
+  "nativeCanvas": {
+    "width": 390.4,
+    "height": 844,
+    "verticalFovDeg": 25
+  },
+  "referenceShortFovDeg": 11.600151166834817,
+  "canvasBefore": [
+    {
+      "height": 844,
+      "top": 0,
+      "width": 390.3999938964844
+    }
+  ],
+  "canvasAfter": [
+    {
+      "height": 844,
+      "top": 0,
+      "width": 390.3999938964844
+    }
+  ],
+  "screenshot": {
+    "fullPage": true,
+    "filename": "experience-vega-25-reference-2026-09-28.jpg",
+    "bytes": 34900,
+    "sha256": "5723f1f25efef12afe04bbe81a55668f99b43aa4b37bf09ee9f5d92bb8e5f4e3"
+  },
+  "limitations": [
+    "Tool screenshot contains padding and display scaling; not pixel alignment or physical-device acceptance.",
+    "Reference deployment engine revision unknown.",
+    "Reference Gaia depth is commercially excluded from this product."
+  ]
+}

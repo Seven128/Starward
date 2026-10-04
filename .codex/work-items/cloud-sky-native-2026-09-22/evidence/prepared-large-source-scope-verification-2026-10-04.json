@@ -1,0 +1,361 @@
+{
+  "status": "UNCHANGED_BOUNDED_PRODUCTION_AND_PROTECTED_SCOPE",
+  "branch": "codex/remote-main-20260908",
+  "head": "72e65cf309d700cb7d40c5b7afd53660fd39fa35",
+  "stagedFiles": [],
+  "unchangedPreviouslyBoundSourceCount": 491,
+  "unchangedSeparateOfflineOwners": [
+    {
+      "path": "data-pipelines/deep-sky/prepared_rgb_observation.py",
+      "bytes": 14967,
+      "sha256": "7762cfe41132595b1d1a3011d06b87cb49f3e8c76f0e5e9914f5414e3ec82f9e"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_prepared_rgb_observation.py",
+      "bytes": 12115,
+      "sha256": "dfe4bad9348c451977871163d5d30be489adb005da4e3bf193a2248d7b837aa7"
+    }
+  ],
+  "protected": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "bytes": 5667,
+      "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "bytes": 2041,
+      "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "bytes": 1770,
+      "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "bytes": 14895,
+      "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "bytes": 64272,
+      "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8"
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "bytes": 42510,
+      "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd"
+    }
+  ],
+  "unchangedCachedPhotos": [
+    {
+      "path": "output/noirlab-prepared-wide-source-1004-r1/noao-m81m82.jpg",
+      "bytes": 1163247,
+      "sha256": "85f615d5d56c04e4528716e61320f2c503fdcb2a62af44347e3402aca9a53eda"
+    },
+    {
+      "path": "output/noirlab-prepared-wide-source-1004-r1/noao1309a.jpg",
+      "bytes": 1162674,
+      "sha256": "57111359c5f7eb9e2aa79d794ca8b660686553cb8ca62d9064993077a7b29b97"
+    },
+    {
+      "path": "output/hubble-m82-prepared-source-1004-r1/heic0604a.jpg",
+      "bytes": 9657945,
+      "sha256": "a552168b5cad1f87fb552bed2637cedbd70fcae98bc5f2c7bcf27af95c9a1286"
+    },
+    {
+      "path": "output/hubble-m51-source-quality-trial-1002-r1/heic0506a.jpg",
+      "bytes": 4060187,
+      "sha256": "7b13a932bcf54653c591d369e8d1c4cbdbeb693ecc468242facb239fde52e4c2"
+    }
+  ],
+  "newTaskScripts": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/acquire-noirlab-m82-large-2026-10-04.py",
+      "bytes": 6174,
+      "sha256": "ae09bdb654123056a59e1d8aeccecadedd52f1129aa39c7c698ac4165ef4146a"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/trial-noirlab-m82-large-detail-2026-10-04.py",
+      "bytes": 13092,
+      "sha256": "f316faabdc6ddba0dab0d07d0fdae5e5ab20f547faf9b8b657f280657cfe2267"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-noirlab-m82-large-detail-2026-10-04.mts",
+      "bytes": 17311,
+      "sha256": "f9bab8820adde492b98c37716c3b1161e09eead4062a05ae92f1f9658a30106e"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/readback-noirlab-m82-large-detail-2026-10-04.py",
+      "bytes": 11622,
+      "sha256": "a761d239eefd388b828d486985841caac44268beb39d6f381334e767f3ecde92"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/check-prepared-large-source-scope-2026-10-04.py",
+      "bytes": 10187,
+      "sha256": "be40c314447922aa3e1b93c98e471262091345d67a9bd0bd3da79368e7e16040"
+    }
+  ],
+  "owningDocumentChanges": [
+    {
+      "before": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+        "bytes": 171126,
+        "sha256": "640472b6be2d1b2d9ba4964cc8c658d85c8ea8368a2ae296ecc10d23170ae94b"
+      },
+      "after": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+        "bytes": 172464,
+        "sha256": "00a4d83fff3f6be783ebcdd7002d358e3c5475b18ffa4e04407b0d29a08c7fe6"
+      },
+      "archived": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-large-source-docs-before-2026-10-04/.codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+        "bytes": 171126,
+        "sha256": "640472b6be2d1b2d9ba4964cc8c658d85c8ea8368a2ae296ecc10d23170ae94b"
+      }
+    },
+    {
+      "before": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+        "bytes": 99397,
+        "sha256": "5288e85ff4699c0a4a9a033a412c5f8551faa97d66f009c512357833315d12f5"
+      },
+      "after": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+        "bytes": 99475,
+        "sha256": "377f2f387904eb6e8d9942139f6ea396404859ecbe4d325b680197159077929b"
+      },
+      "archived": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-large-source-docs-before-2026-10-04/.codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+        "bytes": 99397,
+        "sha256": "5288e85ff4699c0a4a9a033a412c5f8551faa97d66f009c512357833315d12f5"
+      }
+    },
+    {
+      "before": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/OPTICAL-DATA-RESEARCH.md",
+        "bytes": 33437,
+        "sha256": "ae7aff0e4b2df480cafda1f19c9f060a9ecdc9037cecb08927313b7106067997"
+      },
+      "after": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/OPTICAL-DATA-RESEARCH.md",
+        "bytes": 33683,
+        "sha256": "8e2e60c6aaedaffa18ed8bdbd5a99be1acde6a75b35e94ad47469e644295e47a"
+      },
+      "archived": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-large-source-docs-before-2026-10-04/.codex/work-items/cloud-sky-native-2026-09-22/OPTICAL-DATA-RESEARCH.md",
+        "bytes": 33437,
+        "sha256": "ae7aff0e4b2df480cafda1f19c9f060a9ecdc9037cecb08927313b7106067997"
+      }
+    },
+    {
+      "before": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+        "bytes": 8374,
+        "sha256": "dec602743c4544ea542fcdfd3cb2d1a232a929d704fea86d163284361b1255da"
+      },
+      "after": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+        "bytes": 9486,
+        "sha256": "6a2d7223c37a990c69b291092d476908efbc5be3d937d4eb9e279031d339a273"
+      },
+      "archived": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-large-source-docs-before-2026-10-04/.codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+        "bytes": 8374,
+        "sha256": "dec602743c4544ea542fcdfd3cb2d1a232a929d704fea86d163284361b1255da"
+      }
+    },
+    {
+      "before": {
+        "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+        "bytes": 158526,
+        "sha256": "df0dda0288f37948bd898c6bb78347354ce61ff1c91364ecfec5f6ee07c13b77"
+      },
+      "after": {
+        "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+        "bytes": 158881,
+        "sha256": "afa46198e0416e8cfd47fa05dee9a946612d8a01d034aa739c80923097f55a8a"
+      },
+      "archived": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-large-source-docs-before-2026-10-04/project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+        "bytes": 158526,
+        "sha256": "df0dda0288f37948bd898c6bb78347354ce61ff1c91364ecfec5f6ee07c13b77"
+      }
+    },
+    {
+      "before": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-prepared-native-extent-and-background-2026-10-04.md",
+        "bytes": 6763,
+        "sha256": "d998d999ef8025e901c4b75b6457347b831d326bf5f2c334dbb2b47750591c33"
+      },
+      "after": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-prepared-native-extent-and-background-2026-10-04.md",
+        "bytes": 7141,
+        "sha256": "c3f8d1063e4107234c514aace844e063f868b968c20edd860b4e730e4a3f32ef"
+      },
+      "archived": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-large-source-docs-before-2026-10-04/.codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-prepared-native-extent-and-background-2026-10-04.md",
+        "bytes": 6763,
+        "sha256": "d998d999ef8025e901c4b75b6457347b831d326bf5f2c334dbb2b47750591c33"
+      }
+    }
+  ],
+  "newHumanEvidence": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-noirlab-m82-large-detail-2026-10-04.md",
+    "bytes": 6482,
+    "sha256": "29eb508554e9daeded5d1cb7c9b16bb5e0491ad329c1473653832a37aeb2d280"
+  },
+  "unchangedRightsReceipt": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-texture-rights-check-2026-10-04.json",
+    "bytes": 2848,
+    "sha256": "160dc72201cc8bffd95df6fc0f89a3d2a449fcb05ebce1a6881f2e0984129632"
+  },
+  "largerSourceAcquisition": {
+    "path": "output/noirlab-m82-large-source-1004-r1/result.json",
+    "bytes": 3046,
+    "sha256": "d9a4f580a52aa4e126feaca0db5e4a5f80f727f46ad95786d1cd97b5f771180a"
+  },
+  "largerSourceImage": {
+    "path": "output/noirlab-m82-large-source-1004-r1/noao-m81m82-large.jpg",
+    "bytes": 9250383,
+    "sha256": "71a539df75c8af574e98d3da13c1381e525093dd2e8814d9588f35b73b4e3479"
+  },
+  "contextChecks": {
+    "manifest": {
+      "path": "project_context/context.toml",
+      "bytes": 12167,
+      "sha256": "eff23ba66a908d989271e6a80e80ecf3e53772c5d8259facaf30b87c13664d08"
+    },
+    "declaredFileEntriesChecked": 47,
+    "affectedOwnerRegistered": true,
+    "addedLocalMarkdownLinks": [
+      {
+        "owner": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+        "target": "evidence/experience-noirlab-m82-large-detail-2026-10-04.md",
+        "occurrences": 2,
+        "exists": true
+      },
+      {
+        "owner": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+        "target": "evidence/experience-noirlab-m82-large-detail-2026-10-04.md",
+        "occurrences": 1,
+        "exists": true
+      },
+      {
+        "owner": ".codex/work-items/cloud-sky-native-2026-09-22/OPTICAL-DATA-RESEARCH.md",
+        "target": "evidence/experience-noirlab-m82-large-detail-2026-10-04.md",
+        "occurrences": 1,
+        "exists": true
+      },
+      {
+        "owner": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+        "target": "experience-noirlab-m82-large-detail-2026-10-04.md",
+        "occurrences": 1,
+        "exists": true
+      },
+      {
+        "owner": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+        "target": "../../../../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-noirlab-m82-large-detail-2026-10-04.md",
+        "occurrences": 1,
+        "exists": true
+      },
+      {
+        "owner": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-prepared-native-extent-and-background-2026-10-04.md",
+        "target": "experience-noirlab-m82-large-detail-2026-10-04.md",
+        "occurrences": 2,
+        "exists": true
+      },
+      {
+        "owner": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-noirlab-m82-large-detail-2026-10-04.md",
+        "target": "../../../../output/noirlab-m82-large-source-1004-r1/result.json",
+        "occurrences": 1,
+        "exists": true
+      },
+      {
+        "owner": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-noirlab-m82-large-detail-2026-10-04.md",
+        "target": "experience-prepared-native-extent-and-background-2026-10-04.md",
+        "occurrences": 1,
+        "exists": true
+      },
+      {
+        "owner": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-noirlab-m82-large-detail-2026-10-04.md",
+        "target": "../../../../output/noirlab-m82-large-detail-1004-r1/result.json",
+        "occurrences": 1,
+        "exists": true
+      },
+      {
+        "owner": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-noirlab-m82-large-detail-2026-10-04.md",
+        "target": "../../../../output/playwright/cloud-sky-noirlab-m82-large-detail-1004-r2/result.json",
+        "occurrences": 1,
+        "exists": true
+      },
+      {
+        "owner": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-noirlab-m82-large-detail-2026-10-04.md",
+        "target": "../../../../output/noirlab-m82-large-detail-readback-1004-r2/result.json",
+        "occurrences": 1,
+        "exists": true
+      },
+      {
+        "owner": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-noirlab-m82-large-detail-2026-10-04.md",
+        "target": "../PLAN.md",
+        "occurrences": 1,
+        "exists": true
+      }
+    ],
+    "tyContextCliDiscovery": "UNAVAILABLE_IN_THIS_COMMAND_PATH",
+    "validation": "Manual TOML parse, declared path existence and added local Markdown link existence only; no CLI installation or product/factual certification. Historical unchanged ordinary links and anchors are not revalidated."
+  },
+  "scopedGitDiffCheck": "PASS",
+  "scopedGitDiffWarnings": "warning: in the working copy of '.codex/work-items/cloud-sky-native-2026-09-22/OPTICAL-DATA-RESEARCH.md', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of '.codex/work-items/cloud-sky-native-2026-09-22/PLAN.md', CRLF will be replaced by LF the next time Git touches it\nwarning: in the working copy of 'project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md', CRLF will be replaced by LF the next time Git touches it\n",
+  "priorScopeCheckerRepair": "Prior native-background checker treated successful line-ending stderr warnings as failure; this checker retains warnings while checking exit code/whitespace separately. Preserved Scene-R1 double-serialization and Reader-R1 external-path failures are separate task-only evidence.",
+  "processes": [
+    {
+      "Id": 18132,
+      "ProcessName": "node",
+      "StartedUtc": "2026-09-30T18:18:41.4359228Z"
+    },
+    {
+      "Id": 24040,
+      "ProcessName": "node",
+      "StartedUtc": "2026-09-30T18:03:53.4146084Z"
+    }
+  ],
+  "goalCurrentCharacters": 3503,
+  "retainedOutputGroups": [
+    {
+      "directory": "output/noirlab-m82-large-source-1004-r1",
+      "files": 7,
+      "logicalBytes": 9277043
+    },
+    {
+      "directory": "output/noirlab-m82-large-detail-1004-r1",
+      "files": 19,
+      "logicalBytes": 122467950
+    },
+    {
+      "directory": "output/playwright/cloud-sky-noirlab-m82-large-detail-1004-r1",
+      "files": 2,
+      "logicalBytes": 17875
+    },
+    {
+      "directory": "output/playwright/cloud-sky-noirlab-m82-large-detail-1004-r2",
+      "files": 17,
+      "logicalBytes": 11204401
+    },
+    {
+      "directory": "output/noirlab-m82-large-detail-readback-1004-r1",
+      "files": 2,
+      "logicalBytes": 12005
+    },
+    {
+      "directory": "output/noirlab-m82-large-detail-readback-1004-r2",
+      "files": 5,
+      "logicalBytes": 1468247
+    }
+  ],
+  "retainedOutputLogicalBytes": 144447521,
+  "previousNativeBackgroundOutputLogicalBytes": 180009380,
+  "twoPhaseOutputLogicalBytes": 324456901,
+  "limits": "491-source inventory, two separate Prepared owners, six protected files, four cached source photos and the separately bound new larger-source photo; not exhaustive all-untracked inventory. Logical output bytes include diagnostics, not physical allocation, production stock, wire/RSS/GPU or 200DAU capacity. No source/registry adoption, independent review or native completion."
+}

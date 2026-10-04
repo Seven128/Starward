@@ -1,0 +1,385 @@
+{
+  "capturedAtUtc": "2026-09-29T22:55:23.420Z",
+  "scope": "云观星原生DevTools开发检查；目标设备／整体交付未完成",
+  "build": {
+    "path": "apps/wechat-miniapp/dist/weapp-check-sky-sao-v43",
+    "files": 257,
+    "rawBytes": 4521419,
+    "treeSha256": "7a6f2f323c6b91b48b1efb759f08c28fdb1b271f3610a8dbb78fe1170a054806",
+    "skyPageSha256": "8f639d27b78bca3f55f3334cd4ff934dae0dd7aa4574c7b2cf214997bcaca438"
+  },
+  "sourceHashes": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "457c009c89cb54f9bca323874f20bd3fe5145e8f37a8edb669a26852965f8889"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "sha256": "12ef9aab80847f7deec1c517199b1f259aee92f31f99f8dbd2a4ecefd16bed7c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-observation-time.ts",
+      "sha256": "2ccada04a93fbe91ca95628c0e22d37e77d2d10c6793fe6d2a8e4145b3f8ec3a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-presentation-position.ts",
+      "sha256": "588da099d87377286b0b65bc3a307dad34fa52637806078e03bc7a38f561eadd"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-presentation-position.ts",
+      "sha256": "d95a18082968f69a5a5b20f443f6c18bf5997a27ccc16268c14348ecfbd5d222"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/api-client.ts",
+      "sha256": "2e0b1c64d040f113ee4fc59b814f5c9167058abbbd85e551a27b0207c3459d51"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-target-instant-response.ts",
+      "sha256": "30bb179d6152e45abd7809c6f6633cc7f52497073740d0c562f9431e4de2b42c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-target-instant-response.test.ts",
+      "sha256": "5626a8d8e2505b4e718e8e3ffa77c4abb30932b86801624ae1e0503fd85cd9e5"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/api-shapes.ts",
+      "sha256": "91a73b238b5c81b6d323d029a9e6ae1db72ff0aa9e99715beb9b3642aefadde9"
+    },
+    {
+      "path": "packages/miniapp-contracts/api/miniapp.operations.json",
+      "sha256": "4f95b178f118f2aabf97e75f83076d7b38c72a8108f6d54d5f355303268ac039"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts",
+      "sha256": "fa39d2679ff989a6cee74d12caa8f34777ea2accda7905a3c41646207af3eff7"
+    },
+    {
+      "path": "workers/miniapp-api/src/astronomy-service.ts",
+      "sha256": "a2c0862dfc48c00a026ea64400eed8333cfbd4353858aa68f90fb617057ac10f"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-service.ts",
+      "sha256": "a8d2ae6c368ec7f6448548091a4b55cebe4e465a6f5df93df667b0b9e120efc9"
+    },
+    {
+      "path": "workers/miniapp-api/src/controller.ts",
+      "sha256": "fc609160eede723addde107651a0f508604a3110e66090c6fc44a1d6b38711e6"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-api.test.ts",
+      "sha256": "3d68c20f13657ea1a7d4f513ebf2ed077de8260bf03ae7f2d68949c8c621266c"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-time-model.test.ts",
+      "sha256": "c2ad1840f659eaf27946d012f9ff4167841033ecdc113b790bbb669ad3d27c62"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-stellar-supplement.ts",
+      "sha256": "3523819dd4b820d50b0743899a35207f6a166cadb45012b0e62ce83aa6335019"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-tile-loader.ts",
+      "sha256": "1ff9b0e2ba533f347dcfce9349f52c34fd83e588b28fecdb851804202d0972e1"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-tile-selection.ts",
+      "sha256": "1e9eb82bcbc3bd39ff9e34abb06dbb9d82943325985cf3d131369e5caec3b48c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+      "sha256": "878553232b938e8d4620721518f0fa617810a9a03186a343a37a960a1366fdc9"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "sha256": "6b3cc15e8ade8a6d257158e41163b98cfda142035c0d68ec7c02e57f5ffcc427"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-object-picking.ts",
+      "sha256": "8c2bb73f998242de517157476ef17bff67881b65a7c17c9840bb664cda755ff6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sao-catalog-client.ts",
+      "sha256": "cf8d4941d348a7d6f2aa6b026543b8fca39feaf3a446ddf274476297a14d3825"
+    }
+  ],
+  "context": {
+    "idSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d",
+    "revision": 4,
+    "selectedAtUtc": "2026-09-29T16:00:05.153Z",
+    "localDate": "2026-09-29",
+    "timezone": "Asia/Shanghai",
+    "fingerprint": "d1efdde87fea86158e9e7b97de77233a2805db2d8c54d10d6094353e45ce8337",
+    "currentReadbackSha256": "107460909a3b0f0a79fa0c7736d563964c96fb40f3d07149a5a0d09c495fa48f"
+  },
+  "report": {
+    "sha256": "4c3dcbed16f56ba7b5d30feceb5043feda2ce8c95939ff41482e073d87643226",
+    "at": "2026-09-29T16:00:05.153Z",
+    "dataRevision": "57f807b67cd6b4a2b5347557",
+    "catalog": "bsc5p-bright-stars.v3",
+    "limit": "按本次真实JSON原字节读取；route中的历史dataRevision提示不当成当前报告版本。开发地点及气象夹具不是现场观测。"
+  },
+  "runtime": {
+    "windowId": "s3",
+    "sdk": "3.17.3",
+    "logicalCanvas": {
+      "width": 390.3999938964844,
+      "height": 844
+    },
+    "source": ":60063 owned proxy -> existing :60061 epoch (PID16572; exec9420; internal52555)",
+    "proxyPid": 30852,
+    "proxyExec": 39111,
+    "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+    "mode": "pass",
+    "activeTiles": 0,
+    "selection": "SAO:125013",
+    "modeAndType": "手动／DAY／标准字号，无modal、列表、时间面板、播放或跟踪"
+  },
+  "transport": {
+    "counts": {
+      "other": 43,
+      "indexes": 3,
+      "tiles": 123,
+      "failedTiles": 9,
+      "delayedTiles": 17,
+      "abortedTiles": 8,
+      "activeTiles": 0,
+      "maxActiveTiles": 4,
+      "upstreamErrors": 0
+    },
+    "statuses": {
+      "200": 47,
+      "304": 59,
+      "503": 9,
+      "aborted": 8
+    },
+    "abortedReads": [
+      {
+        "sequence": 54,
+        "tileId": "19-06-10-0",
+        "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+        "mode": "delay",
+        "delayMs": 8000,
+        "ifNoneMatch": false,
+        "receivedAt": "2026-09-29T22:32:12.745Z",
+        "upstreamStatus": null,
+        "status": null,
+        "bytes": 0,
+        "sha256": null,
+        "aborted": true,
+        "durationMs": 3054
+      },
+      {
+        "sequence": 55,
+        "tileId": "20-06-10-0",
+        "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+        "mode": "delay",
+        "delayMs": 8000,
+        "ifNoneMatch": false,
+        "receivedAt": "2026-09-29T22:32:12.746Z",
+        "upstreamStatus": null,
+        "status": null,
+        "bytes": 0,
+        "sha256": null,
+        "aborted": true,
+        "durationMs": 3054
+      },
+      {
+        "sequence": 70,
+        "tileId": "12-09-7-0",
+        "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+        "mode": "delay",
+        "delayMs": 8000,
+        "ifNoneMatch": true,
+        "receivedAt": "2026-09-29T22:33:10.911Z",
+        "upstreamStatus": null,
+        "status": null,
+        "bytes": 0,
+        "sha256": null,
+        "aborted": true,
+        "durationMs": 3094
+      },
+      {
+        "sequence": 71,
+        "tileId": "14-08-7-0",
+        "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+        "mode": "delay",
+        "delayMs": 8000,
+        "ifNoneMatch": false,
+        "receivedAt": "2026-09-29T22:33:10.912Z",
+        "upstreamStatus": null,
+        "status": null,
+        "bytes": 0,
+        "sha256": null,
+        "aborted": true,
+        "durationMs": 3094
+      },
+      {
+        "sequence": 72,
+        "tileId": "11-09-7-0",
+        "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+        "mode": "delay",
+        "delayMs": 8000,
+        "ifNoneMatch": false,
+        "receivedAt": "2026-09-29T22:33:10.914Z",
+        "upstreamStatus": null,
+        "status": null,
+        "bytes": 0,
+        "sha256": null,
+        "aborted": true,
+        "durationMs": 3092
+      },
+      {
+        "sequence": 87,
+        "tileId": "18-06-7-0",
+        "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+        "mode": "delay",
+        "delayMs": 8000,
+        "ifNoneMatch": true,
+        "receivedAt": "2026-09-29T22:37:43.518Z",
+        "upstreamStatus": null,
+        "status": null,
+        "bytes": 0,
+        "sha256": null,
+        "aborted": true,
+        "durationMs": 4402
+      },
+      {
+        "sequence": 88,
+        "tileId": "17-04-7-0",
+        "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+        "mode": "delay",
+        "delayMs": 8000,
+        "ifNoneMatch": true,
+        "receivedAt": "2026-09-29T22:37:43.518Z",
+        "upstreamStatus": null,
+        "status": null,
+        "bytes": 0,
+        "sha256": null,
+        "aborted": true,
+        "durationMs": 4402
+      },
+      {
+        "sequence": 89,
+        "tileId": "15-08-7-0",
+        "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+        "mode": "delay",
+        "delayMs": 8000,
+        "ifNoneMatch": true,
+        "receivedAt": "2026-09-29T22:37:43.519Z",
+        "upstreamStatus": null,
+        "status": null,
+        "bytes": 0,
+        "sha256": null,
+        "aborted": true,
+        "durationMs": 4403
+      }
+    ],
+    "approximatePeakFromMillisecondIntervals": 4,
+    "overlapsAboveThree": [
+      {
+        "startUtc": "2026-09-29T22:33:14.002Z",
+        "durationMs": 3,
+        "active": 4
+      },
+      {
+        "startUtc": "2026-09-29T22:33:14.005Z",
+        "durationMs": 1,
+        "active": 4
+      }
+    ],
+    "limit": "loader上限3描述客户端owner。代理socket关闭可晚于下一请求到达，实际代理峰值4；不宣称native始终3或远端工作已终止。8秒等待放在转发前，已取消请求未读上游正文；不冒充迟到正文已送到客户端的检查。"
+  },
+  "baseState": {
+    "mode": "pass",
+    "counts": {
+      "local": 562,
+      "errors": 0,
+      "reports": 49,
+      "targets": 16,
+      "contextPuts": 3
+    },
+    "astronomyModuleSha256": "a189d24738a1cf33b664cb6968c3737455bbb8124eaf410b146058daa4b8bf17"
+  },
+  "captures": [
+    {
+      "file": "experience-sao-v43-altair-45-baseline-2026-09-30.png",
+      "sha256": "5ab2e01de097ede75c007faa8357cfd9022b0d1a02b6145c61f5c9b187d0a514",
+      "bytes": 64573,
+      "width": 192,
+      "height": 413
+    },
+    {
+      "file": "experience-sao-v43-altair-8-9-failed-2026-09-30.png",
+      "sha256": "5ec95aeb2bd2770660aec49372fecaa75bf19840e49f50bd49b114e2da9216c4",
+      "bytes": 7376,
+      "width": 192,
+      "height": 413
+    },
+    {
+      "file": "experience-sao-v43-altair-8-9-recovered-2026-09-30.png",
+      "sha256": "d7b7833d77fd2ebf9a1e9c792ebf6705b90fd8c25aedb39a8ecd63657879bb87",
+      "bytes": 11189,
+      "width": 192,
+      "height": 413
+    },
+    {
+      "file": "experience-sao-v43-sao-125013-sources-2026-09-30.png",
+      "sha256": "8f12570566e281f3911ba1958331a2de33374ba8dab894c875d623f06d12ec50",
+      "bytes": 37169,
+      "width": 192,
+      "height": 413
+    },
+    {
+      "file": "experience-sao-v43-source-back-current-sky-2026-09-30.png",
+      "sha256": "fdfeae186111b213c600868d1d0c7f9f121402d07ea89a6ad740b6a28a6dac07",
+      "bytes": 65283,
+      "width": 192,
+      "height": 413
+    },
+    {
+      "file": "experience-sao-v43-paired-source-before-2026-09-30.png",
+      "sha256": "25e906ccaeff443b574dfde9de61b0f3a4fa81c37ec92e4374670dad88c232e8",
+      "bytes": 65289,
+      "width": 192,
+      "height": 413
+    },
+    {
+      "file": "experience-sao-v43-paired-source-after-2026-09-30.png",
+      "sha256": "25e906ccaeff443b574dfde9de61b0f3a4fa81c37ec92e4374670dad88c232e8",
+      "bytes": 65289,
+      "width": 192,
+      "height": 413
+    }
+  ],
+  "nativeTrace": {
+    "file": "experience-sao-v43-native-events-2026-09-30.jsonl",
+    "sha256": "110e5f9787c8a6e0c9bb208d0e443660796cb02961029f56f8b619a44f473611",
+    "scope": "公开SDK输入及实际WXML/Canvas、页面状态和task HTTP；单个调用ok不认证效果"
+  },
+  "actualResults": {
+    "failureAndRecovery": "九个新增瓦片503；保亮星／目标／选择，实际重试暗星WXML公开tap后同九片200，画布新增点源",
+    "sameFramePick": "SAO125013的新原生亮点公开坐标tap -> 实际SAO125013资料WXML／8.20视觉星等／HD186536；SAO125140极淡光点tap后页面选择和modal为空，不计普通覆盖层视觉通过",
+    "obsoleteRequests": "两深层请求缩小取消，三不同视角请求拖动返回取消，三请求来源页hide取消；全部在8秒转发前结束",
+    "sourceBack": "第二次前后实际Canvas label、时刻、选择一致，完整原生PNG字节SHA相同；不认证不可见普通覆盖层",
+    "pixelAnalysis": "experience-sao-v43-painted-points-2026-09-30.json",
+    "boundaries": "源码未变；共享加载／位置／显示与点选owner沿用。未新建天体渲染器、模拟星点、目录、设备参数或预算。"
+  },
+  "developmentChecks": {
+    "build": "隔离v43通过，3项既有警告；不重跑无新源码变化的检查",
+    "console": "最终clone|recursive|Error的官方过滤返回空；先前双引号CLI参数解析失败不算通过，过滤也不是全日志或性能结论"
+  },
+  "investigationFailures": [
+    "首次SDK导航启动超时，地图就绪后新调用成功",
+    "牛郎星无匹配，Altair匹配HR7557／河鼓二；常用中文别名仍需核查，英文结果不认证中文体验",
+    "截图stage含下划线被任务helper拒绝，后以合法新名实际取证",
+    "初次分析以PowerShell对象再序列化改写ISO表示，严格几何失败；改读真实HTTP原JSON字节后成功",
+    "曾误点来源摘要文字，仍在Sky、请求未取消；只计后续实际来源与许可按钮进入Sources的观察",
+    "console初次参数在cmd shim解析失败，后修正命令获得空过滤"
+  ],
+  "limitations": [
+    "手机仍不可用，旧手机不认证新版月面或本次结果",
+    "Sky普通WXML覆盖层／呼吸／modal视觉仍不可由Canvas-only截图证明；Sources普通控件在本机截图可见",
+    "真实GC/GPU/native峰值、OS姿态/生命周期、目标帧时/首屏/官方包体/云成本及最终独立审查仍未验",
+    "全场深度、参考构图／面状纹理、配准及模拟环境质量不由两个SAO样本或局部图片完成"
+  ]
+}

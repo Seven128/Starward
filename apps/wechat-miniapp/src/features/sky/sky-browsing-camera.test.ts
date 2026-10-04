@@ -88,11 +88,15 @@ test("manual zoom round trip remains manual and does not adopt incoming phone di
   assert.equal(result.phase,"local");assert.equal(result.view,start);assert.equal(result.animating,false);
 });
 
-test("explicit drag cancels recovery, full-dome dragging still keeps zenith, and cancellation restores captured state", () => {
+test("explicit full-dome drag reaches the lower sphere, zoom preserves it, and cancellation restores captured entry", () => {
   const {camera,frame}=harness(); const original=frame(1).view!;
   const checkpoint=camera.checkpoint();
-  const dragged=camera.pan(view(120,70,30),1);
-  assert.deepEqual(dragged.view!.forward,[0,0,1]);assert.ok(validBasis(dragged.view));
+  const requested=view(120,45,30);
+  const dragged=camera.pan(requested,1);
+  assert.ok(delta(dragged.view!,requested)<1e-12);assert.ok(validBasis(dragged.view));
+  assert.ok(delta(frame(1,view(330),"manual").view!,requested)<1e-12);
+  assert.ok(delta(frame(.5,view(330),"manual").view!,requested)<1e-12);
+  assert.ok(delta(frame(0,view(330),"manual").view!,requested)<1e-12);
   assert.ok(delta(dragged.view!,original)>.1);
   camera.restore(checkpoint);assert.equal(frame(1,view(330)).view,original);
   frame(0);camera.pan(view(90),0);assert.equal(camera.snapshot().phase,"local");

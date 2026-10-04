@@ -1,0 +1,322 @@
+{
+  "scope": "Current-source offline read/hash consumer audit; no new rendering, runtime transition exercise, production edit or parameter matrix.",
+  "branch": "codex/remote-main-20260908",
+  "head": "72e65cf309d700cb7d40c5b7afd53660fd39fa35",
+  "script": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-sdss-progressive-consumer-audit-2026-10-02.py",
+    "bytes": 4434,
+    "sha256": "1a1f26718d3557b02dcb06df600364aecc8c034f2a22ea5ca3699ddbe0ec46d0"
+  },
+  "sources": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "bytes": 28002,
+      "sha256": "ea1b50bbfb4bdbdc9774ff537dc259e53d407a513a29ae0ce70bd739fec3808c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "bytes": 54720,
+      "sha256": "af28d3e14de225de0c42d6e7ea48772b9ec20b9b5a3bc8d06b885b69b363947b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-render-surface.ts",
+      "bytes": 3235,
+      "sha256": "a83b98b803f1aa24f69d1adcc3a3b10a9bfe337939dfe39323725638b3e9e301"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "bytes": 205332,
+      "sha256": "315a5a49959d31adc8d82cf359e0a4fcf962c74d1d0d4f4fef43bb40530836ad"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-sdss-optical.ts",
+      "bytes": 3978,
+      "sha256": "a86b7b4097df28bcc892c2fee52d2b48be52368a344b31619fd4a8d77736a03e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-sdss-optical-selection.ts",
+      "bytes": 1201,
+      "sha256": "25caef3642fb1e6faadf103db383e27e9fa31ccd9802ef484dd01522e3b132f0"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-wide-field-w3.ts",
+      "bytes": 3664,
+      "sha256": "03fee4625bc04e0c4f021919788af2c5d35eef51aa12d2da5b44de8bf8ecebd2"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-artwork.ts",
+      "bytes": 4094,
+      "sha256": "69789bb336b7f083e1e5dddac6ba2eb202a029a24f8b3ae641c481c2f6b162fb"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-loader.ts",
+      "bytes": 6674,
+      "sha256": "05a9a6f6b380ec38c0674b771b9d37ef2c5917b167979d81a31bbd4f18ac7ffe"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-request.ts",
+      "bytes": 5064,
+      "sha256": "9b7672439d080100b1bedeef1f5444a2175ab8a3cb5efc87b34ff77f8112fe14"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/deep-sky-image-request.ts",
+      "bytes": 6654,
+      "sha256": "e64073f411f220a1a852f9f4b24ce6ea86c7ebf1a2b52f42a94d030129f432f8"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-zoom.ts",
+      "bytes": 3396,
+      "sha256": "b9906780d2dfb4b651565cc13d5995c9632e2f7830fd5cabb35d1d97f67a182e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-galactic-band.ts",
+      "bytes": 2721,
+      "sha256": "bc58c7e0a6e372f315e913f12c02ffd4cd88f3d0a18e1735026c940dec97ec39"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/api-client.ts",
+      "bytes": 65575,
+      "sha256": "1dae3b41c317f0fb66c369a3a58412af3e5f1f43373cdac59f1ffd5716ad2b89"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sdss-optical-publication.ts",
+      "bytes": 5897,
+      "sha256": "0fd5f2c3b7e29cc478ef04dd9b9af7516916b71993a34aba2645852fcd3daa38"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/deep-sky-image-publication.ts",
+      "bytes": 623,
+      "sha256": "75bc21b6dc56338eea16132b243f00675b7b8aac2ae9df27bee6622d5236b113"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-image-display-support.ts",
+      "bytes": 3875,
+      "sha256": "c90d5b7623d9844f8ca872b514509c19cd908d2d9206575286f26783ee88a26c"
+    },
+    {
+      "path": "workers/miniapp-api/src/deep-sky-imagery.ts",
+      "bytes": 19640,
+      "sha256": "55afeed5854242e05b16907f56556bb7f54388ae9845721cef6973e2a71b7909"
+    },
+    {
+      "path": "data-pipelines/deep-sky/allwise_finite_tan.py",
+      "bytes": 19076,
+      "sha256": "6ce051e687cb2a66da3de0390c6b16015b5f44eb0f34457ff874142dd5edc354"
+    },
+    {
+      "path": "data-pipelines/deep-sky/sdss_gri_tan.py",
+      "bytes": 31108,
+      "sha256": "7dee99087fb3bda4c99064ee34944e2ce87b485addcce26a940cd731cd58e95f"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-sdss-mosaic-composition-2026-10-02.mts",
+      "bytes": 17656,
+      "sha256": "2b274a8ade807eb810db91edcb204e57c15e5b714c57bed22b5315d9a5af08e8"
+    },
+    {
+      "path": "output/playwright/cloud-sky-sdss-mosaic-candidate-1002-r2/result.json",
+      "bytes": 150237,
+      "sha256": "23669070f57b0794eec6589907d3e7fb30be1da53435d75501ab806a3fdf2ae3"
+    },
+    {
+      "path": "output/sdss-m51-gri-mosaic-candidate-1002-r2/candidate.json",
+      "bytes": 1028289,
+      "sha256": "73e65a693216b40079b512acdf17b32742be5db7091fb9bcf1db9de152650b52"
+    },
+    {
+      "path": "output/sdss-m51-gri-mosaic-candidate-1002-r2/overlap-diagnostics.json",
+      "bytes": 17563,
+      "sha256": "1cd849877efb72306d0c0ae1a57c04866d2f8a0256e6185b47a70accf424a3f9"
+    }
+  ],
+  "preservedFiles": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "bytes": 5667,
+      "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80",
+      "unchanged": true
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "bytes": 2041,
+      "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b",
+      "unchanged": true
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "bytes": 1770,
+      "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc",
+      "unchanged": true
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "bytes": 14895,
+      "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e",
+      "unchanged": true
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "bytes": 64272,
+      "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8",
+      "unchanged": true
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "bytes": 42510,
+      "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd",
+      "unchanged": true
+    }
+  ],
+  "overlapPairReadback": {
+    "allIntersectingPairs": 9,
+    "crossRunPairs": 5,
+    "crossRunOutsideStatistics": [
+      {
+        "fieldA": "301/3699/6/99",
+        "fieldB": "301/3716/6/116",
+        "outsideCatalogPixels": 0,
+        "statistics": {
+          "g": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          },
+          "r": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          },
+          "i": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          }
+        }
+      },
+      {
+        "fieldA": "301/3699/6/99",
+        "fieldB": "301/3716/6/117",
+        "outsideCatalogPixels": 0,
+        "statistics": {
+          "g": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          },
+          "r": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          },
+          "i": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          }
+        }
+      },
+      {
+        "fieldA": "301/3699/6/100",
+        "fieldB": "301/3716/6/117",
+        "outsideCatalogPixels": 0,
+        "statistics": {
+          "g": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          },
+          "r": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          },
+          "i": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          }
+        }
+      },
+      {
+        "fieldA": "301/3699/6/100",
+        "fieldB": "301/3716/6/118",
+        "outsideCatalogPixels": 0,
+        "statistics": {
+          "g": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          },
+          "r": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          },
+          "i": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          }
+        }
+      },
+      {
+        "fieldA": "301/3699/6/101",
+        "fieldB": "301/3716/6/118",
+        "outsideCatalogPixels": 0,
+        "statistics": {
+          "g": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          },
+          "r": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          },
+          "i": {
+            "samples": 0,
+            "median": null,
+            "p05": null,
+            "p95": null,
+            "mad": null
+          }
+        }
+      }
+    ]
+  },
+  "runtimeClaims": {
+    "currentV1OpaqueCoarseFineReplacement": "SOURCE_CONTRACT_ONLY",
+    "candidateForcedAdditiveAndSignalOver": "EXISTING_GPU_EVIDENCE_AND_SOURCE_ANALYSIS",
+    "livePageWideSelectedOverlap": "UNVERIFIED; stable eligibility domains disjoint",
+    "nativeAcceptance": "UNVERIFIED"
+  }
+}

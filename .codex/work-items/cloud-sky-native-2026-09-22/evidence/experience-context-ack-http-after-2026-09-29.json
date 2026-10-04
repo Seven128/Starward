@@ -1,0 +1,243 @@
+{
+  "at": "2026-09-28T16:37:47.605Z",
+  "phase": "after",
+  "scope": "Production Context domain, generated operation and real transport/cache functions with actual public LOCAL/MEMORY_TEST BFF HTTP state. Taro delivery is a Node fetch boundary with explicit response faults. No native UI, GUI Context, phone, private identifiers, headers, services, cloud deployment, exact-once/replay or final acceptance claim.",
+  "sourceHashes": [
+    {
+      "file": "apps/wechat-miniapp/src/services/api-client.ts",
+      "sha256": "a557dce8d93e9bf9b783bef280e1ba135c5989a8b949192967d10f6213056bca"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/observation-context-recovery.ts",
+      "sha256": "64681d9d8e6fc63943bd14f3daafc9415c953c567bcb01fa72011ca01f10ba38"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/api-request-test-support.ts",
+      "sha256": "8e7b6e80d64596d5a814bf18a294a780697c3c7f65b26be558bef2ba37640281"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/authenticated-operation.ts",
+      "sha256": "249f9f512b8ade77a6e90ad8424939bd6fc0f21f800ff20bdda2b67f4a480842"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/response-cache.ts",
+      "sha256": "d5ce663020e05eb05718a15abc094c5aeab8e39917c5e902edb6eb9f8fdea1c7"
+    },
+    {
+      "file": "workers/miniapp-api/src/observation-context-service.ts",
+      "sha256": "089068b16b73d160658c074b0581b25b76f9725c28902d99f1c2c9041b80c144"
+    }
+  ],
+  "domainCodeSha256": "d8eca1f1a48045b636d1cb28307ec36298a1440bff90e3e2a4d771acca95a5f5",
+  "rows": [
+    {
+      "mode": "normal",
+      "ok": true,
+      "calls": [
+        {
+          "method": "PUT",
+          "status": 200,
+          "hasIfNoneMatch": false,
+          "mutated": false
+        }
+      ],
+      "invalidations": [
+        "map-scene",
+        "spot-overview",
+        "spot-sky"
+      ],
+      "result": {
+        "selectedAtUtc": "2026-09-28T16:30:00.000Z",
+        "revision": 2,
+        "sameLocation": true,
+        "sameNight": true,
+        "matchingEnvelopeBinding": true
+      },
+      "failure": null,
+      "durable": {
+        "selectedAtUtc": "2026-09-28T16:30:00.000Z",
+        "revision": 2,
+        "sameLocation": true
+      },
+      "oldCacheSeeded": true
+    },
+    {
+      "mode": "old-time",
+      "ok": true,
+      "calls": [
+        {
+          "method": "PUT",
+          "status": 200,
+          "hasIfNoneMatch": false,
+          "mutated": true
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "hasIfNoneMatch": false,
+          "mutated": false
+        }
+      ],
+      "invalidations": [
+        "map-scene",
+        "spot-overview",
+        "spot-sky"
+      ],
+      "result": {
+        "selectedAtUtc": "2026-09-28T16:30:00.000Z",
+        "revision": 2,
+        "sameLocation": true,
+        "sameNight": true,
+        "matchingEnvelopeBinding": true
+      },
+      "failure": null,
+      "durable": {
+        "selectedAtUtc": "2026-09-28T16:30:00.000Z",
+        "revision": 2,
+        "sameLocation": true
+      },
+      "oldCacheSeeded": true
+    },
+    {
+      "mode": "foreign-location",
+      "ok": true,
+      "calls": [
+        {
+          "method": "PUT",
+          "status": 200,
+          "hasIfNoneMatch": false,
+          "mutated": true
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "hasIfNoneMatch": false,
+          "mutated": false
+        }
+      ],
+      "invalidations": [
+        "map-scene",
+        "spot-overview",
+        "spot-sky"
+      ],
+      "result": {
+        "selectedAtUtc": "2026-09-28T16:30:00.000Z",
+        "revision": 2,
+        "sameLocation": true,
+        "sameNight": true,
+        "matchingEnvelopeBinding": true
+      },
+      "failure": null,
+      "durable": {
+        "selectedAtUtc": "2026-09-28T16:30:00.000Z",
+        "revision": 2,
+        "sameLocation": true
+      },
+      "oldCacheSeeded": true
+    },
+    {
+      "mode": "wrong-night",
+      "ok": true,
+      "calls": [
+        {
+          "method": "PUT",
+          "status": 200,
+          "hasIfNoneMatch": false,
+          "mutated": true
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "hasIfNoneMatch": false,
+          "mutated": false
+        }
+      ],
+      "invalidations": [
+        "map-scene",
+        "spot-overview",
+        "spot-sky"
+      ],
+      "result": {
+        "selectedAtUtc": "2026-09-28T16:30:00.000Z",
+        "revision": 2,
+        "sameLocation": true,
+        "sameNight": true,
+        "matchingEnvelopeBinding": true
+      },
+      "failure": null,
+      "durable": {
+        "selectedAtUtc": "2026-09-28T16:30:00.000Z",
+        "revision": 2,
+        "sameLocation": true
+      },
+      "oldCacheSeeded": true
+    },
+    {
+      "mode": "wrong-envelope-binding",
+      "ok": true,
+      "calls": [
+        {
+          "method": "PUT",
+          "status": 200,
+          "hasIfNoneMatch": false,
+          "mutated": true
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "hasIfNoneMatch": false,
+          "mutated": false
+        }
+      ],
+      "invalidations": [
+        "map-scene",
+        "spot-overview",
+        "spot-sky"
+      ],
+      "result": {
+        "selectedAtUtc": "2026-09-28T16:30:00.000Z",
+        "revision": 2,
+        "sameLocation": true,
+        "sameNight": true,
+        "matchingEnvelopeBinding": true
+      },
+      "failure": null,
+      "durable": {
+        "selectedAtUtc": "2026-09-28T16:30:00.000Z",
+        "revision": 2,
+        "sameLocation": true
+      },
+      "oldCacheSeeded": true
+    },
+    {
+      "mode": "unchanged-write",
+      "ok": true,
+      "calls": [
+        {
+          "method": "PUT",
+          "status": 200,
+          "hasIfNoneMatch": false,
+          "mutated": false
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "hasIfNoneMatch": false,
+          "mutated": false
+        }
+      ],
+      "invalidations": [],
+      "result": null,
+      "failure": {
+        "name": "Error",
+        "message": "bff_observation_context_update_invalid"
+      },
+      "durable": {
+        "selectedAtUtc": "2026-09-28T16:00:00.000Z",
+        "revision": 1,
+        "sameLocation": true
+      },
+      "oldCacheSeeded": true
+    }
+  ]
+}

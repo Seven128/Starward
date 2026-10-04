@@ -1,0 +1,17 @@
+{
+  "scope": "Real production resolver/draw/picker with existing published SAO-v2 bytes; stub surface supplies coordinate candidates only, not pixels or native confirmation",
+  "at": "2026-09-30T13:50:33.000Z",
+  "width": 390.3999938964844,
+  "height": 844,
+  "fov": 45,
+  "supplementPaintedObjects": 129,
+  "candidate": {
+    "reference": "SAO:20150",
+    "displayName": "SAO 20150",
+    "kind": "STAR",
+    "magnitude": 6,
+    "magnitudeBand": "VISUAL",
+    "x": 238.91475959687858,
+    "y": 472.05282996705336
+  }
+}

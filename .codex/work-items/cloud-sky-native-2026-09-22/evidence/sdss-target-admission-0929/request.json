@@ -1,0 +1,84 @@
+{
+  "scope": "Bounded candidate acquisition; not publication/native/quality acceptance",
+  "targets": [
+    {
+      "reference": "M:63",
+      "center": {
+        "raDeg": 198.95554166666668,
+        "decDeg": 42.02927777777778,
+        "frame": "ICRS J2000"
+      },
+      "majorAxisArcmin": 11.83,
+      "levels": {
+        "OVERVIEW": 1.6,
+        "MEDIUM": 0.8,
+        "DETAIL": 0.4
+      }
+    },
+    {
+      "reference": "M:64",
+      "center": {
+        "raDeg": 194.18183333333334,
+        "decDeg": 21.682972222222222,
+        "frame": "ICRS J2000"
+      },
+      "majorAxisArcmin": 10.52,
+      "levels": {
+        "OVERVIEW": 1.6,
+        "MEDIUM": 0.8,
+        "DETAIL": 0.4
+      }
+    },
+    {
+      "reference": "M:81",
+      "center": {
+        "raDeg": 148.88820833333332,
+        "decDeg": 69.06530555555555,
+        "frame": "ICRS J2000"
+      },
+      "majorAxisArcmin": 21.63,
+      "levels": {
+        "OVERVIEW": 3.2,
+        "MEDIUM": 1.6,
+        "DETAIL": 0.4
+      }
+    },
+    {
+      "reference": "M:82",
+      "center": {
+        "raDeg": 148.96970833333333,
+        "decDeg": 69.6793888888889,
+        "frame": "ICRS J2000"
+      },
+      "majorAxisArcmin": 10.99,
+      "levels": {
+        "OVERVIEW": 1.6,
+        "MEDIUM": 0.8,
+        "DETAIL": 0.4
+      }
+    },
+    {
+      "reference": "M:87",
+      "center": {
+        "raDeg": 187.70591666666667,
+        "decDeg": 12.39111111111111,
+        "frame": "ICRS J2000"
+      },
+      "majorAxisArcmin": 7.11,
+      "levels": {
+        "OVERVIEW": 1.6,
+        "MEDIUM": 0.8,
+        "DETAIL": 0.4
+      }
+    }
+  ],
+  "query": "SELECT 'M:63' AS objectRef, dbo.fInFootprintEq(198.95554166666668,42.02927777777778,0.001) AS inFootprint UNION ALL SELECT 'M:64' AS objectRef, dbo.fInFootprintEq(194.18183333333334,21.682972222222222,0.001) AS inFootprint UNION ALL SELECT 'M:81' AS objectRef, dbo.fInFootprintEq(148.88820833333332,69.06530555555555,0.001) AS inFootprint UNION ALL SELECT 'M:82' AS objectRef, dbo.fInFootprintEq(148.96970833333333,69.6793888888889,0.001) AS inFootprint UNION ALL SELECT 'M:87' AS objectRef, dbo.fInFootprintEq(187.70591666666667,12.39111111111111,0.001) AS inFootprint",
+  "footprintUrl": "https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=SELECT+%27M%3A63%27+AS+objectRef%2C+dbo.fInFootprintEq%28198.95554166666668%2C42.02927777777778%2C0.001%29+AS+inFootprint+UNION+ALL+SELECT+%27M%3A64%27+AS+objectRef%2C+dbo.fInFootprintEq%28194.18183333333334%2C21.682972222222222%2C0.001%29+AS+inFootprint+UNION+ALL+SELECT+%27M%3A81%27+AS+objectRef%2C+dbo.fInFootprintEq%28148.88820833333332%2C69.06530555555555%2C0.001%29+AS+inFootprint+UNION+ALL+SELECT+%27M%3A82%27+AS+objectRef%2C+dbo.fInFootprintEq%28148.96970833333333%2C69.6793888888889%2C0.001%29+AS+inFootprint+UNION+ALL+SELECT+%27M%3A87%27+AS+objectRef%2C+dbo.fInFootprintEq%28187.70591666666667%2C12.39111111111111%2C0.001%29+AS+inFootprint&format=json",
+  "footprintScope": "Center-only query with radius argument 0.001; not full image or per-band validity",
+  "sourcePolicy": "https://www.sdss.org/collaboration/image-use-policy/",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "credit": "Sloan Digital Sky Survey",
+  "jpegDocumentation": "https://www.sdss4.org/dr16/imaging/jpg-images-on-skyserver/",
+  "acquisitionBudget": "One center-footprint query; only 3 JPEG requests for each supported target, serial, no overlays, no retry loop or runtime upstream calls"
+}

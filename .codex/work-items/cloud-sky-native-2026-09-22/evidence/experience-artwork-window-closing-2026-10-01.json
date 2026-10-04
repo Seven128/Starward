@@ -1,0 +1,62 @@
+{
+  "at": "2026-10-01T15:57:40.841Z",
+  "binding": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-artwork-window-binding-2026-10-01.json",
+    "bytes": 133953,
+    "sha256": "3673ce00e4d1c43e025b4b8a35bb7295ab11e2c87d53a276133aec4f8423d01a"
+  },
+  "verifiedRecords": 315,
+  "eventCount": 1325,
+  "traceUnchanged": true,
+  "documents": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+      "bytes": 49983,
+      "sha256": "7367cbc031eb4887f4e842a2837a86973b86cd769dccc3e019c4326959337ffb"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/STATE.md",
+      "bytes": 233470,
+      "sha256": "3ae3b77d7e1f8fca130b20159c057906af7e2e4f8814605a4c431bb3b8bbddf8"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/INDEX.md",
+      "bytes": 36903,
+      "sha256": "4e3c07c2c3983e9d8727ff999525837a4de995e07a53858ed052e16b1381b4a4"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PROGRESS.md",
+      "bytes": 260258,
+      "sha256": "d34875d72f500175821c241350926d43c95bdb41445942c59ab6c332d35b8088"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-artwork-window-2026-10-01.md",
+      "bytes": 6378,
+      "sha256": "7406b5fdb6b0a6a4b47e42ca3987269aa53af1a2b038e3f74917f5d93179096b"
+    }
+  ],
+  "logs": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-artwork-window-binding-check-2026-10-01.log",
+      "bytes": 599,
+      "sha256": "78156a40fb92413c6569798623890e040d6d42aaf46818b681a5e38ef25abf09"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-artwork-window-binding-check-final-2026-10-01.log",
+      "bytes": 351,
+      "sha256": "af36f3d71f1fdf1ec9ed18f937864a79b6bbb1c4844c388639e6abb6a6eabb43"
+    }
+  ],
+  "closingScript": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-artwork-window-close-2026-10-01.mjs",
+    "bytes": 3398,
+    "sha256": "6f57dc8110f02afc362de3eb165c666051b449d7ab59dc2c7cd9f49093a67bff"
+  },
+  "verifierCorrection": "First binder selected a screenshot event sharing a UI stage name; selecting the actual observed UI event corrected it. No source/native interactions replayed.",
+  "scope": "Current production/source/Context/input/capture/check/trace/protected configuration and6unrelated edits still bind. Source/final quality limits unchanged.",
+  "goal": "active,unbudgeted,incomplete",
+  "composition": "FAILED_DEVTOOLS",
+  "nativePixels": "DIFFERENT:5/max1 and4/max1 at equal completed North45 views",
+  "priorSourceRoi": "1254FAILED_X1_799_MAX16 retained",
+  "independentReview": "GAP"
+}

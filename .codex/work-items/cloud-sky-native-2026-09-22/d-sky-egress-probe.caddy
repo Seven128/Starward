@@ -1,0 +1,18 @@
+{
+    admin off
+    auto_https off
+}
+
+:8080 {
+    encode zstd gzip
+    import /etc/caddy/sky-resource-logging.caddy
+    reverse_proxy starward-cloudsky-d-egress-api-20260924:8787
+    log {
+        output stdout
+        format filter {
+            request delete
+            resp_headers delete
+            wrap json
+        }
+    }
+}

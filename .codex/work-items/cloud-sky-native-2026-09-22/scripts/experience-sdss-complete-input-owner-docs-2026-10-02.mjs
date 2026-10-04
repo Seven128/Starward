@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const task='.codex/work-items/cloud-sky-native-2026-09-22/';
+const status='当前共享路径已完成合法校准帧准入、真实 WCS 单field同母图/三级及[独立审查](evidence/experience-sdss-gri-tan-independent-review-2026-10-02.md)。原单field全场只有48.4369%，实际软件GPU仍缺伴星系/有斜切边，颜色偏暗棕；两套PNG较旧JPEG体积增大，均未采用。随后依[真实最小集合](evidence/experience-sdss-m51-field-geometry-2026-10-02.md)只补必要g/i，原帧不重取；[完整输入证据](evidence/experience-sdss-complete-inputs-2026-10-02.md)及独立逐band核已证这个2048²目标的实际线性TAN四邻供给完整。当前下一依赖是既有owner的多field共同权重/重叠、同一完整母图一次颜色/三级、接缝/真实背景和编码成本比较，写新generation后独立复核；不把输入完整升级成画质或出版通过。[asTrans诊断](evidence/experience-sdss-astrans-approximation-audit-2026-10-02.md)只保声明假设差异，精准polynomial/DCR、fpM/PSF与整体图质仍未验。新产品v1兼容和已绘来源绑定见[owner审计](evidence/experience-sdss-corrected-frame-owner-audit-2026-10-02.md)。旧资产/offer、6项其它修改、原生/手机暂停和容量/最终验收保持。';
+for(const file of ['PLAN.md','STATE.md','INDEX.md','HANDOFF-2026-10-01.md']){
+  const pathname=task+file,old=fs.readFileSync(pathname,'utf8');
+  const previous=/^\*\*M51新输入（2026-10-02）：\*\* [^\r\n]*/m;
+  assert(previous.test(old),file);assert(!old.includes('**M51共享影像（2026-10-02）：**'),file);
+  fs.writeFileSync(pathname,old.replace(previous,'**M51共享影像（2026-10-02）：** '+status));
+}
+fs.appendFileSync(task+'PROGRESS.md','\n\n## 2026-10-02 M51 完整输入与共享母图下一依赖\n\n'+status+'\n');
+const architecture='project_context/architecture/runtime-and-domain.md';
+const content=fs.readFileSync(architecture,'utf8');
+const anchor='Existing published SDSS JPEG v1 consumers remain unchanged.';
+assert(content.includes(anchor));assert(!content.includes('`sdss_gri_tan.py` owns the offline common'));
+const ownership=' `sdss_gri_tan.py` owns the offline common TAN projection, actual sample-availability arrays, one full-master RGB transfer and progressive crops; it consumes admitted calibrated source frames rather than downloading or duplicating calibration. Multi-field expansion belongs here with explicit coherent field/band contribution and overlap rules, preserving independent source availability and measured zero/negative values. All derived trial outputs stay outside runtime publication; availability, display alpha and scientific/detector quality remain separate. Source primary TAN is an approximation; retained full astrometric coefficients and diagnostic assumptions do not certify absolute alignment.';
+fs.writeFileSync(architecture,content.replace(anchor,anchor+ownership));
+const readme='data-pipelines/deep-sky/README.md';
+const previous=fs.readFileSync(readme,'utf8');
+assert(!previous.includes('## Cached SDSS scientific-frame trials'));
+const entry='\n\n## Cached SDSS scientific-frame trials\n\n`sdss_corrected_frame.py` admits byte-bound local DR17 corrected frames from\nthe exact official release/run/camcol/field/band SAS URL. It checks one complete\nbounded bzip2 stream, all scientific HDUs, source identity, asTrans and ICRS\nprimary WCS. Corrected samples are already calibrated and sky-subtracted;\nfinite zero/negative values remain measurements. Retained astrometric\ncoefficients, finite pixels and source completeness do not certify precise\npolynomial/DCR alignment, detector validity or a full output footprint.\n\n`sdss_gri_tan.py` consumes those frames offline and owns common north-up TAN\nprojection, independent geometry/finite-neighbor availability, one shared RGB\nmaster and geometrically consistent progressive crops. These are reviewable\ntrials outside release assets, not a replacement for the fixed SDSS JPEG v1\nproduct. Different bands must use their actual WCS; a complete center frame or\nr-only union does not prove a complete gri target. Multi-field inputs require\nexplicit coherent contributions and overlap treatment before color mapping.\nDisplay alpha is separate from sample availability and scientific validity.\n\nUse the existing pinned offline requirements and cached inputs; these owners\nperform no runtime source request. Each new generation binds source receipts,\nsource code, arrays and images and refuses to overwrite prior trial output.\nNew published pixels need reviewed quality/encoding, their own geometry,\nprocessing and immutable contract, preserved old offers, and actual painted\nsource attribution before switching consumers. See the task\n[complete-input evidence](../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-sdss-complete-inputs-2026-10-02.md)\nand [single-field independent review](../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-sdss-gri-tan-independent-review-2026-10-02.md).\n';
+fs.writeFileSync(readme,previous+entry);
+console.log('Updated the existing M51 dependency and offline owners without adopting trial images.');

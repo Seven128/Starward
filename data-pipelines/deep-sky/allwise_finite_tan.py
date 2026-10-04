@@ -13,10 +13,12 @@ import math
 import re
 import subprocess
 import warnings
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from PIL import Image
+from image_quality import checked_geometry, checked_source_files, inspect_image
 
 IRSA_HIPS = "https://irsa.ipac.caltech.edu/data/hips/CDS/AllWISE/W3"
 LEVELS = ("OVERVIEW", "MEDIUM", "DETAIL")
@@ -74,31 +76,60 @@ def finite_rgba(intensity):
                   "finiteCutsDN": [float(lo), float(hi)]}
 
 
-def render_cached_candidate(candidate: Path, entry: dict[str, Any]) -> dict[str, tuple[bytes, dict[str, Any]]]:
+@dataclass(frozen=True)
+class TanSamples:
+    intensity: Any
+    finite: Any
+    metadata: dict[str, Any]
+
+
+def sample_cached_tan(plan: dict, entry: dict, *, source_directory: Path,
+                      source_files: list[dict], source_count: int, properties: bytes,
+                      properties_sha256: str,
+                      source_paths: dict[str, str] | None = None) -> dict[str, TanSamples]:
+    """Sample the complete checked offline input set without a display receipt.
+
+    Canonical HiPS identities come from actual TAN demand. Optional source_paths
+    only locates those same immutable files within source_directory; it does not
+    supply coverage or permit missing required tiles.
+    """
     from astropy.wcs import WCS
     import numpy as np
-    plan = json.loads((candidate / "candidate-plan.json").read_text(encoding="utf-8"))
-    receipt = json.loads((candidate / "candidate-result.json").read_text(encoding="utf-8"))
     if plan["objectRef"] != entry["objectRef"] or plan["source"] != IRSA_HIPS or plan["tileWidth"] != 512:
         raise RuntimeError("allwise_candidate_identity_invalid")
-    if any(abs(plan["center"][key] - entry["center"][key]) > 1e-10 for key in ("raDeg", "decDeg")):
+    if plan["center"].get("frame") != "ICRS J2000" or any(
+            not isinstance(plan["center"][key], (int, float)) or
+            not math.isfinite(plan["center"][key]) or
+            abs(plan["center"][key] - entry["center"][key]) > 1e-10 for key in ("raDeg", "decDeg")):
         raise RuntimeError("allwise_candidate_center_invalid")
-    properties = (candidate.parent / "properties").read_bytes()
-    if sha256(properties) != receipt["sourcePropertiesSha256"]:
+    if sha256(properties) != properties_sha256:
         raise RuntimeError("allwise_source_properties_changed")
-    inputs = {item["path"]: item for item in receipt["sourceFiles"]}
-    if len(inputs) != receipt["sourceTileCount"] or len(inputs) > 32:
+    descriptor = dict(line.split("=", 1) for line in properties.decode("utf-8").splitlines()
+                      if "=" in line and not line.lstrip().startswith("#"))
+    descriptor = {key.strip(): value.strip() for key, value in descriptor.items()}
+    if (descriptor.get("creator_did") != "ivo://CDS/P/allWISE/W3" or
+            descriptor.get("hips_frame") != "equatorial" or descriptor.get("hips_tile_width") != "512" or
+            descriptor.get("hips_order") != "8" or descriptor.get("hips_pixel_bitpix") != "-32" or
+            "fits" not in descriptor.get("hips_tile_format", "").split()):
+        raise RuntimeError("allwise_source_properties_invalid")
+    inputs = {item["path"]: item for item in source_files}
+    if (not isinstance(source_count, int) or isinstance(source_count, bool) or not 0 < source_count <= 32 or
+            len(inputs) != len(source_files) or len(inputs) != source_count):
         raise RuntimeError("allwise_candidate_input_set_invalid")
     properties_url = IRSA_HIPS + "/properties"
-    rendered = {}
-    used_inputs = set()
-    for level in LEVELS:
+    prepared = {}
+    planned_paths = set()
+    profiles = plan["profiles"]
+    levels = [profile.get("level") for profile in profiles]
+    if not levels or len(levels) != len(set(levels)) or any(level not in LEVELS for level in levels):
+        raise RuntimeError("allwise_candidate_profile_invalid")
+    for profile in profiles:
+        level = profile["level"]
         original = entry["levels"][level]
-        expected = next(item for item in receipt["levels"] if item["level"] == level)
-        profile = next(item for item in plan["profiles"] if item["level"] == level)
         n, field = original["pixels"], original["fieldDegrees"]
         if n not in (256, 512) or n != profile["pixels"] or field != profile["fieldDegrees"]:
             raise RuntimeError("allwise_candidate_profile_invalid")
+        checked_geometry(entry, {**original, "wcsHeader": None}, None, level)
         target = WCS(naxis=2)
         target.wcs.ctype = ["RA---TAN", "DEC--TAN"]
         target.wcs.crval = [entry["center"]["raDeg"], entry["center"]["decDeg"]]
@@ -111,11 +142,44 @@ def render_cached_candidate(candidate: Path, entry: dict[str, Any]) -> dict[str,
         y, x = np.mgrid[0:n, 0:n]
         ra, dec = target.all_pix2world(x, n - 1 - y, 0)
         world = np.stack([ra, dec], axis=-1).astype("<f8").tobytes()
+        if "worldSha256" in profile and sha256(world) != profile["worldSha256"]:
+            raise RuntimeError("allwise_candidate_world_changed")
+        if "wcsHeader" in profile:
+            checked_geometry(entry, {**original, "wcsHeader": profile["wcsHeader"],
+                                      "source": {"processingService": "Starward HiPS TAN"}}, None, level)
         lookup = subprocess.run(["node", str(Path(__file__).with_name("hips_tan_lookup.mjs")), str(order), str(n)],
                                 input=world, capture_output=True, check=True, timeout=30).stdout
         if len(lookup) != n * n * 12:
             raise RuntimeError("allwise_lookup_samples_invalid")
+        if "lookupSha256" in profile and sha256(lookup) != profile["lookupSha256"]:
+            raise RuntimeError("allwise_candidate_lookup_changed")
         samples = np.frombuffer(lookup, dtype="<u4").reshape(n, n, 3)
+        if np.any(samples[:, :, 1:] >= 512) or np.any(samples[:, :, 0] >= 12 * 4 ** order):
+            raise RuntimeError("allwise_lookup_samples_invalid")
+        paths = {f"Norder{order}/Dir{int(pixel) // 10000 * 10000}/Npix{int(pixel)}.fits"
+                 for pixel in np.unique(samples[:, :, 0])}
+        if "tiles" in profile and (len(profile["tiles"]) != len(paths) or set(profile["tiles"]) != paths):
+            raise RuntimeError("allwise_candidate_planned_tiles_changed")
+        prepared[level] = (n, field, order, target, samples, sha256(world), sha256(lookup))
+        planned_paths.update(paths)
+    # Compute the entire actual sampling demand before any mask is made. Older
+    # candidate plans intentionally store lookups separately; no descriptive
+    # plan field or receipt is substituted for the real geometry's source set.
+    if set(inputs) != planned_paths:
+        raise RuntimeError("image_quality_source_set_incomplete")
+    if any(item.get("url") != IRSA_HIPS + "/" + path for path, item in inputs.items()):
+        raise RuntimeError("allwise_candidate_input_missing")
+    locations = {path: path for path in inputs} if source_paths is None else source_paths
+    if set(locations) != planned_paths or any(not isinstance(path, str) or not path for path in locations.values()):
+        raise RuntimeError("allwise_source_locations_invalid")
+    resolved = {(source_directory / path).resolve() for path in locations.values()}
+    if len(resolved) != len(planned_paths):
+        raise RuntimeError("allwise_source_locations_invalid")
+    checked_source_files(source_directory, [{**item, "path": locations[path]} for path, item in inputs.items()],
+                         set(locations.values()), source_count)
+    sampled = {}
+    used_inputs = set()
+    for level, (n, field, order, target, samples, world_hash, lookup_hash) in prepared.items():
         intensity = np.full((n, n), np.nan, dtype=np.float32)
         source_tiles = []
         for pixel in np.unique(samples[:, :, 0]):
@@ -123,7 +187,7 @@ def render_cached_candidate(candidate: Path, entry: dict[str, Any]) -> dict[str,
             item = inputs.get(path)
             if not item or item["state"] != "CHECKED" or item["url"] != IRSA_HIPS + "/" + path:
                 raise RuntimeError("allwise_candidate_input_missing")
-            raw = (candidate / "sources" / path).read_bytes()
+            raw = (source_directory / locations[path]).read_bytes()
             if len(raw) != item["bytes"] or sha256(raw) != item["sha256"]:
                 raise RuntimeError("allwise_source_tile_changed")
             data, fits_receipt = checked_fits(raw)
@@ -132,38 +196,73 @@ def render_cached_candidate(candidate: Path, entry: dict[str, Any]) -> dict[str,
             source_tiles.append({"path": path, "url": item["url"], "sha256": item["sha256"],
                                  "bytes": len(raw), "receipt": fits_receipt})
             used_inputs.add(path)
+        finite = np.isfinite(intensity)
+        sampled[level] = TanSamples(intensity, finite, {
+            "level": level, "fieldDegrees": field, "pixels": n, "wcsHeader": dict(target.to_header()),
+            "worldSha256": world_hash, "lookupSha256": lookup_hash,
+            "source": {"dataSurvey": "IRSA AllWISE W3 HiPS", "dataSurveyUrl": IRSA_HIPS,
+                       "processingService": "Starward HiPS TAN", "propertiesUrl": properties_url,
+                       "propertiesSha256": sha256(properties), "sourceOrder": order, "tileWidth": 512,
+                       "sampling": "nearest NESTED cell at order+9; FITS column=NW,row=511-NE",
+                       "tiles": source_tiles}})
+    if used_inputs != set(inputs):
+        raise RuntimeError("allwise_candidate_input_set_changed")
+    return sampled
+
+
+def render_cached_candidate(candidate: Path, entry: dict[str, Any],
+                            quality_reports: list[dict] | None = None,
+                            catalog_row: dict | None = None) -> dict[str, tuple[bytes, dict[str, Any]]]:
+    import numpy as np
+    plan = json.loads((candidate / "candidate-plan.json").read_text(encoding="utf-8"))
+    receipt = json.loads((candidate / "candidate-result.json").read_text(encoding="utf-8"))
+    sampled = sample_cached_tan(plan, entry, source_directory=candidate / "sources",
+                               source_files=receipt["sourceFiles"], source_count=receipt["sourceTileCount"],
+                               properties=(candidate.parent / "properties").read_bytes(),
+                               properties_sha256=receipt["sourcePropertiesSha256"])
+    if set(sampled) != set(LEVELS):
+        raise RuntimeError("allwise_candidate_profile_invalid")
+    rendered = {}
+    for level in LEVELS:
+        result = sampled[level]
+        intensity, finite, science_metadata = result.intensity, result.finite, result.metadata
+        n, field = science_metadata["pixels"], science_metadata["fieldDegrees"]
+        expected = next(item for item in receipt["levels"] if item["level"] == level)
         rgba, stretch = finite_rgba(intensity)
         encoded = io.BytesIO()
         Image.fromarray(rgba).save(encoded, format="PNG")
         payload = encoded.getvalue()
-        missing = int((~np.isfinite(intensity)).sum())
+        missing = int((~finite).sum())
         if sha256(payload) != expected["sha256"] or missing != expected["missingPixels"]:
             raise RuntimeError("allwise_candidate_pixels_changed")
         # Re-read the encoded output, not only the source array or mask counters.
         decoded = np.asarray(Image.open(io.BytesIO(payload)).convert("RGBA"))
-        if not np.array_equal(decoded[:, :, 3] > 0, np.isfinite(intensity)):
+        if not np.array_equal(decoded[:, :, 3] > 0, finite):
             raise RuntimeError("allwise_png_mask_changed")
         stem = entry["objectRef"].replace(":", "-")
         digest = sha256(payload)
-        rendered[level] = (payload, {
+        metadata = {
             "file": f"{stem}/{stem}-{level.lower()}.{digest}.png", "imageFormat": "png",
             "fieldDegrees": field, "pixels": n, "sha256": digest, "bytes": len(payload),
             "validFraction": None, "coverageState": "NOT_MEASURED",
             "sourceFiniteMask": {"kind": "NONFINITE_HIPS_SAMPLES", "missingPixels": missing,
                                  "finitePixels": n * n - missing},
-            "wcsHeader": dict(target.to_header()), "stretch": stretch,
-            "source": {"dataSurvey": "IRSA AllWISE W3 HiPS", "dataSurveyUrl": IRSA_HIPS,
-                       "processingService": "Starward HiPS TAN", "propertiesUrl": properties_url,
-                       "propertiesSha256": sha256(properties), "sourceOrder": order, "tileWidth": 512,
-                       "sampling": "nearest NESTED cell at order+9; FITS column=NW,row=511-NE",
-                       "tiles": source_tiles},
-        })
-    if used_inputs != set(inputs):
-        raise RuntimeError("allwise_candidate_input_set_changed")
+            "wcsHeader": science_metadata["wcsHeader"], "stretch": stretch,
+            "source": science_metadata["source"],
+        }
+        quality = inspect_image(payload, entry, level, metadata,
+            source=metadata["source"], processing={"stretch": stretch, "sampling": metadata["source"]["sampling"]},
+            row=catalog_row,
+            expected_finite=finite)
+        if quality_reports is not None:
+            quality_reports.append(quality)
+        rendered[level] = (payload, metadata)
     return rendered
 
 
-def publish_finite_candidate(output: Path, candidate: Path, reference: str) -> dict[str, Any]:
+def publish_finite_candidate(output: Path, candidate: Path, reference: str,
+                             quality_reports: list[dict] | None = None,
+                             catalog_row: dict | None = None) -> dict[str, Any]:
     manifest_path = output / "manifest.json"
     previous_raw = manifest_path.read_bytes()
     previous = json.loads(previous_raw)
@@ -172,7 +271,7 @@ def publish_finite_candidate(output: Path, candidate: Path, reference: str) -> d
     entry = next((item for item in previous["entries"] if item["objectRef"] == reference), None)
     if not entry:
         raise RuntimeError("allwise_candidate_not_published")
-    rendered = render_cached_candidate(candidate, entry)
+    rendered = render_cached_candidate(candidate, entry, quality_reports, catalog_row)
     v2_hash = publication_hash(previous_raw)
     v1_hash = previous.get("previousPublicationHash")
     if not re.fullmatch(r"[a-f0-9]{64}", v1_hash or ""):

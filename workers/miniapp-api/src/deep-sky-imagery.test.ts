@@ -7,6 +7,7 @@ import { pathToFileURL } from "node:url";
 import test from "node:test";
 import { DeepSkyImageryService } from "./deep-sky-imagery.ts";
 import { CelestialObjectInformationService } from "./celestial-object-information.ts";
+import { assertDeepSkyImageDiscovery } from "@starward/miniapp-contracts";
 
 const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
 
@@ -170,4 +171,56 @@ test("catalog facts survive a missing image publication and recover its actual p
   assert.deepEqual((await images.get("M:31")).bytes, jpeg);
   assert.ok(!objects.get("M:42").sources.some(source => source.id.startsWith("imagery:")),
     "an independently valid catalog object must not inherit another publication's image credit");
+});
+
+test("current selected discovery precedes bytes, validates identity and keeps caller mutations out of publication state", () => {
+  const service = new DeepSkyImageryService();
+  // Discovery may read the publication metadata, never the image-byte owner.
+  (service as unknown as { readAsset(): never }).readAsset = () => { throw new Error("unexpected_image_read"); };
+  const selected = service.discovery("M:42");
+  assertDeepSkyImageDiscovery(selected, "M:42");
+  assert.equal(selected.source.id, selected.sourceId);
+  assert.equal(selected.levels.DETAIL.format, "png");
+  assert.equal(selected.levels.DETAIL.sourceFiniteMask?.missingPixels, 5095);
+  const originalField = selected.levels.DETAIL.fieldDegrees;
+  selected.levels.DETAIL.fieldDegrees = 8;
+  selected.center.raDeg = 0;
+  selected.source.limitations = [];
+  assert.equal(service.discovery("M:42").levels.DETAIL.fieldDegrees, originalField);
+  assert.notEqual(service.discovery("M:42").center.raDeg, 0);
+  assert.ok(service.discovery("M:42").source.limitations.length > 0);
+  assert.throws(() => service.discovery("M:45"), /not_published/u);
+  for (const mutate of [
+    (d: typeof selected) => { d.objectRef = "M:31"; },
+    (d: typeof selected) => { d.levels.DETAIL.downloadUrl += "?other=1"; },
+    (d: typeof selected) => { d.levels.DETAIL.sourceFiniteMask!.finitePixels++; },
+    (d: typeof selected) => { d.levels.DETAIL.validFraction = 1 as never; },
+    (d: typeof selected) => { d.levels.DETAIL.displaySupport!.sourceSha256 = "0".repeat(64); },
+    (d: typeof selected) => { d.levels.DETAIL.width = 256; },
+  ]) {
+    const invalid = structuredClone(service.discovery("M:42")); mutate(invalid);
+    assert.throws(() => assertDeepSkyImageDiscovery(invalid, "M:42"), /discovery_/u);
+  }
+});
+
+test("immutable W3 archive metadata stays at its own snapshot despite identical bytes and current legacy refinement", async () => {
+  const service = new DeepSkyImageryService(), current = service.discovery("M:42");
+  const previousHash = "87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073";
+  const old = service.manifest(previousHash).entries.find(entry => entry.objectRef === "M:42")!;
+  const legacy = await service.get("M:42", "DETAIL", previousHash);
+  const immutable = await service.getByFile(previousHash, old.levels.DETAIL.file);
+  const now = await service.getByFile(current.publicationHash, current.levels.DETAIL.file);
+  assert.deepEqual(immutable.bytes, now.bytes);
+  assert.equal(immutable.publicationHash, previousHash);
+  assert.equal(immutable.descriptor.displaySupport, undefined);
+  assert.equal(immutable.displaySupport, undefined);
+  assert.deepEqual(legacy.displaySupport, current.levels.DETAIL.displaySupport, "the old endpoint keeps its compatibility refinement");
+  // A tempting getByFile→legacy-get delegation leaks current metadata despite
+  // exact byte/pub matches. The actual snapshot oracle must detect that error.
+  const incorrect = { ...immutable, displaySupport: legacy.displaySupport,
+    descriptor: { ...immutable.descriptor, displaySupport: legacy.displaySupport } };
+  assert.throws(() => assert.deepEqual(incorrect.descriptor.displaySupport, old.levels.DETAIL.displaySupport), /Expected values/u);
+  for (const file of ["../manifest.json", "M-31/M-42-detail.jpg", old.levels.DETAIL.file + "?level=DETAIL", "M-42/raw.fits"])
+    await assert.rejects(service.getByFile(previousHash, file), /not_found/u);
+  await assert.rejects(service.getByFile("0".repeat(64), old.levels.DETAIL.file), /not_found/u);
 });

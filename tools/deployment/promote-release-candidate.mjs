@@ -1,52 +1,13 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { prepareReleaseCandidate } from "./prepare-release-candidate.mjs";
 import { executeRelease } from "./release.mjs";
-import { validateReleaseEnvironment } from "./validate-release-environment.mjs";
+import { validateReleaseEnvironment, validateStagingQualification } from "./validate-release-environment.mjs";
 import { createVerifiedBackup } from "./verified-backup.mjs";
 
-const REQUIRED_STAGING_STEPS = Object.freeze([
-  "backup-verification",
-  "compose-version",
-  "compose-config",
-  "image-pull",
-  "migration",
-  "converge",
-  "worker-readiness",
-  "public-readiness",
-]);
+export { validateStagingQualification } from "./validate-release-environment.mjs";
 
 function fail(code, field) {
   throw new Error(field ? `${code}:${field}` : code);
-}
-
-function absolutePath(selected, field) {
-  if (!selected || !path.isAbsolute(selected))
-    fail("release_promotion_path_not_absolute", field);
-  return path.normalize(selected);
-}
-
-export async function validateStagingQualification({ receiptPath, revision, imageDigest }) {
-  const selectedPath = absolutePath(receiptPath, "stagingReceiptPath");
-  const receipt = JSON.parse(await readFile(selectedPath, "utf8"));
-  if (
-    receipt.schemaVersion !== "starward-release-receipt-v1" ||
-    receipt.status !== "succeeded" ||
-    receipt.environment !== "staging"
-  ) fail("release_promotion_staging_receipt_invalid");
-  if (receipt.revision !== revision)
-    fail("release_promotion_staging_revision_mismatch");
-  if (receipt.imageDigest !== imageDigest)
-    fail("release_promotion_staging_digest_mismatch");
-  if (!Array.isArray(receipt.steps))
-    fail("release_promotion_staging_steps_invalid");
-  const steps = new Map(receipt.steps.map((step) => [step?.name, step?.status]));
-  for (const name of REQUIRED_STAGING_STEPS) {
-    if (steps.get(name) !== "passed")
-      fail("release_promotion_staging_step_missing", name);
-  }
-  return Object.freeze({ receiptPath: selectedPath, revision, imageDigest });
 }
 
 export async function promoteReleaseCandidate({
@@ -80,6 +41,7 @@ export async function promoteReleaseCandidate({
       receiptPath: stagingReceiptPath,
       revision: validation.revision,
       imageDigest: validation.imageDigest,
+      requireSkyStatic: !!validation.operations.skyStaticDirectory,
     });
   }
   const verifiedBackup = await backup({ deployEnvPath: candidate.outputPath });
@@ -88,9 +50,10 @@ export async function promoteReleaseCandidate({
     backupManifestPath: verifiedBackup.manifestPath,
     operator,
     confirmProductionDigest,
+    ...(validation.operations.skyStaticDirectory && stagingQualification ? {stagingReceiptPath: stagingQualification.receiptPath} : {}),
   });
   return Object.freeze({
-    schemaVersion: "starward-release-promotion-v1",
+    schemaVersion: promoted.receipt.skyStaticDelivery ? "starward-release-promotion-v2" : "starward-release-promotion-v1",
     status: promoted.receipt.status,
     environment: validation.environment,
     revision: validation.revision,
@@ -99,6 +62,7 @@ export async function promoteReleaseCandidate({
     backupManifestPath: verifiedBackup.manifestPath,
     stagingReceiptPath: stagingQualification?.receiptPath ?? null,
     receiptPath: promoted.receiptPath,
+    ...(promoted.receipt.skyStaticDelivery ? {skyStaticDelivery: promoted.receipt.skyStaticDelivery} : {}),
   });
 }
 

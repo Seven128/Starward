@@ -1,0 +1,19 @@
+{
+  "scope": "Source identities for this resource batch, preserves pre-existing changes",
+  "sources": [
+    {
+      "owner": "shared native images",
+      "before": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-image-owner-before-2026-09-28.ts",
+      "current": "apps/wechat-miniapp/src/features/sky/use-sky-artwork.ts",
+      "beforeSha256": "ebdda277f23a3ef6d13ebf3d36003d5811e09633ad6fe90828642e463cbfa77b",
+      "currentSha256": "16694cf6a8111c62f3d7acc4d925643dae922d871a14ac6dee44f43faeaa8be7"
+    },
+    {
+      "owner": "page cutout recovery",
+      "before": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-deep-sky-owner-before-2026-09-28.tsx",
+      "current": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "beforeSha256": "42ddca39816e0708145973555b105548e762de69264ae786d00c4e9f4f89b38d",
+      "currentSha256": "1ee27142c1e9de8e51402605691ca37856f4cabbdc9ab2d9df7673949484eb6d"
+    }
+  ]
+}

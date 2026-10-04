@@ -1,0 +1,57 @@
+{
+  "scope": "Development checks only; no final visual/device acceptance or independent review.",
+  "regressionBefore": {
+    "chunk_id": "152b04",
+    "wall_time_seconds": 0.6712852,
+    "exit_code": 1,
+    "original_token_count": 613,
+    "output": "TAP version 13\n# Subtest: only two image loads start together and ready figures survive repeated camera updates\nok 1 - only two image loads start together and ready figures survive repeated camera updates\n  ---\n  duration_ms: 1.7597\n  type: 'test'\n  ...\n# Subtest: a ready coarse image remains canvas-owned while a finer replacement loads\nok 2 - a ready coarse image remains canvas-owned while a finer replacement loads\n  ---\n  duration_ms: 0.2261\n  type: 'test'\n  ...\n# Subtest: identical published bytes can belong to different tile identities without stale geometry\nok 3 - identical published bytes can belong to different tile identities without stale geometry\n  ---\n  duration_ms: 0.7366\n  type: 'test'\n  ...\n# Subtest: hidden/superseded late responses cannot restore unwanted figures\nok 4 - hidden/superseded late responses cannot restore unwanted figures\n  ---\n  duration_ms: 0.1706\n  type: 'test'\n  ...\n# Subtest: failure is latched through pose updates until explicit retry; GPU failures share recovery\nok 5 - failure is latched through pose updates until explicit retry; GPU failures share recovery\n  ---\n  duration_ms: 0.2868\n  type: 'test'\n  ...\n# Subtest: retry distinguishes download failure from GPU failure while keeping an independent coarse image\nnot ok 6 - retry distinguishes download failure from GPU failure while keeping an independent coarse image\n  ---\n  duration_ms: 2.5415\n  type: 'test'\n  location: 'E:\\\\dev\\\\worktrees\\\\Starward\\\\remote-main-20260908\\\\apps\\\\wechat-miniapp\\\\src\\\\features\\\\sky\\\\sky-artwork-loader.test.ts:1:3704'\n  failureType: 'testCodeFailure'\n  error: |-\n    a network retry must not retire the valid coarse canvas\n    + actual - expected\n    \n    + undefined\n    - false\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: false\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (E:\\dev\\worktrees\\Starward\\remote-main-20260908\\apps\\wechat-miniapp\\src\\features\\sky\\sky-artwork-loader.test.ts:68:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1306:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:897:18)\n    Test.postRun (node:internal/test_runner/test:1447:19)\n    Test.run (node:internal/test_runner/test:1372:12)\n    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)\n  ...\n1..6\n# tests 6\n# suites 0\n# pass 5\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 230.8785\n"
+  },
+  "regressionAfter": {
+    "chunk_id": "4e36de",
+    "wall_time_seconds": 0.6600116,
+    "exit_code": 0,
+    "original_token_count": 665,
+    "output": "TAP version 13\n# Subtest: only two image loads start together and ready figures survive repeated camera updates\nok 1 - only two image loads start together and ready figures survive repeated camera updates\n  ---\n  duration_ms: 1.5709\n  type: 'test'\n  ...\n# Subtest: a ready coarse image remains canvas-owned while a finer replacement loads\nok 2 - a ready coarse image remains canvas-owned while a finer replacement loads\n  ---\n  duration_ms: 0.1999\n  type: 'test'\n  ...\n# Subtest: identical published bytes can belong to different tile identities without stale geometry\nok 3 - identical published bytes can belong to different tile identities without stale geometry\n  ---\n  duration_ms: 0.7235\n  type: 'test'\n  ...\n# Subtest: hidden/superseded late responses cannot restore unwanted figures\nok 4 - hidden/superseded late responses cannot restore unwanted figures\n  ---\n  duration_ms: 0.2089\n  type: 'test'\n  ...\n# Subtest: failure is latched through pose updates until explicit retry; GPU failures share recovery\nok 5 - failure is latched through pose updates until explicit retry; GPU failures share recovery\n  ---\n  duration_ms: 0.3511\n  type: 'test'\n  ...\n# Subtest: retry distinguishes download failure from GPU failure while keeping an independent coarse image\nok 6 - retry distinguishes download failure from GPU failure while keeping an independent coarse image\n  ---\n  duration_ms: 0.2816\n  type: 'test'\n  ...\n# Subtest: foreground detail shares the actual GPU budget without counting a decoded identity twice or guessing unknown inputs\nok 7 - foreground detail shares the actual GPU budget without counting a decoded identity twice or guessing unknown inputs\n  ---\n  duration_ms: 0.8106\n  type: 'test'\n  ...\n# Subtest: a failed detail alpha request preserves the same valid coarse image/mask and retries only the failed resource\nok 8 - a failed detail alpha request preserves the same valid coarse image/mask and retries only the failed resource\n  ---\n  duration_ms: 7.8201\n  type: 'test'\n  ...\n# Subtest: late canceled detail alpha cannot replace a valid overview or publish into a hidden canvas\nok 9 - late canceled detail alpha cannot replace a valid overview or publish into a hidden canvas\n  ---\n  duration_ms: 1.7667\n  type: 'test'\n  ...\n# Subtest: detail image failure still selects valid coarse alpha, without granting a missing mask or stale detail image credit\nok 10 - detail image failure still selects valid coarse alpha, without granting a missing mask or stale detail image credit\n  ---\n  duration_ms: 6.7014\n  type: 'test'\n  ...\n1..10\n# tests 10\n# suites 0\n# pass 10\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 238.5856\n"
+  },
+  "affectedChecks": {
+    "status": "fulfilled",
+    "value": {
+      "chunk_id": "807617",
+      "wall_time_seconds": 0.9470981,
+      "exit_code": 0,
+      "original_token_count": 700,
+      "output": "✔ only two image loads start together and ready figures survive repeated camera updates (4.3994ms)\n✔ a ready coarse image remains canvas-owned while a finer replacement loads (0.3649ms)\n✔ identical published bytes can belong to different tile identities without stale geometry (0.822ms)\n✔ hidden/superseded late responses cannot restore unwanted figures (0.1934ms)\n✔ failure is latched through pose updates until explicit retry; GPU failures share recovery (0.3083ms)\n✔ retry distinguishes download failure from GPU failure while keeping an independent coarse image (0.297ms)\n✔ request and file success alone cannot claim decoded art; release clears file once (1.602ms)\n✔ cancellation during write removes the late file and cannot start decoding (0.2975ms)\n✔ wrong PNG identity/dimensions or native decode fail leave no usable image (0.2547ms)\n✔ published 512-pixel JPEG tile uses the same owned native decode and rejects wrong geometry (0.9416ms)\n✔ synchronous native failures enter the retry path and release a possibly partial owned file (0.3655ms)\n✔ canvas measurement rejects missing geometry and accepts both platform result shapes (1.8126ms)\n✔ failed GPU surface does not reinitialize on every pose and explicit retry consumes the latest frame (1.9164ms)\n✔ every acquired GPU generation is released exactly once across reset, failure and late callbacks (0.7972ms)\n✔ ready, measurement and draw each retain only the latest requested frame (0.2652ms)\n✔ steady sensor frames reuse geometry/context and resizing reacquires both (0.2599ms)\n✔ resize, hide, removed canvas and unmount discard stale callbacks (0.3715ms)\n✔ page hide and native-node removal release the old context before a fresh foreground draw (0.2412ms)\n✔ measurement, context, draw and missing callback failures invalidate size and recover on retry (0.3564ms)\n✔ expiry/denial hides the previous projection until the clearing draw completes (0.1807ms)\n✔ continuous poses with a slower native draw cannot starve visibility, while invalidation still fences old frames (0.4183ms)\n✔ motion bursts publish the latest real sample once while null/unmount cancel pending pose (0.32ms)\n✔ foreground detail shares the actual GPU budget without counting a decoded identity twice or guessing unknown inputs (0.7542ms)\n✔ a failed detail alpha request preserves the same valid coarse image/mask and retries only the failed resource (7.7878ms)\n✔ late canceled detail alpha cannot replace a valid overview or publish into a hidden canvas (1.9598ms)\n✔ detail image failure still selects valid coarse alpha, without granting a missing mask or stale detail image credit (5.0213ms)\nℹ tests 26\nℹ suites 0\nℹ pass 26\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 318.4865\n"
+    }
+  },
+  "miniTypecheck": {
+    "status": "fulfilled",
+    "value": {
+      "chunk_id": "aefabb",
+      "wall_time_seconds": 7.3802715,
+      "exit_code": 0,
+      "original_token_count": 35,
+      "output": "\n> @starward/wechat-miniapp@0.1.0 typecheck\n> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json\n\n"
+    }
+  },
+  "contextValidation": {
+    "status": "fulfilled",
+    "value": {
+      "chunk_id": "cf4ace",
+      "wall_time_seconds": 1.8479701,
+      "exit_code": 0,
+      "original_token_count": 75,
+      "output": "\n> starward@1.0.0 context:validate\n> node tools/run-node.cjs --bin project-tiny-context-harness ty-context validate-context\n\nChecked manifest paths and explicit ty-context-controlling-source declarations. Ordinary Markdown links, examples, external links and factual correctness are not validated.\n"
+    }
+  },
+  "diffCheck": {
+    "status": "fulfilled",
+    "value": {
+      "chunk_id": "399246",
+      "wall_time_seconds": 0.6001883,
+      "exit_code": 0,
+      "original_token_count": 18,
+      "output": "git diff --check: passed (line-ending notices retained in task log)\r\n"
+    }
+  }
+}

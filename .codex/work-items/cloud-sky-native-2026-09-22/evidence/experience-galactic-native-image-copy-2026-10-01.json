@@ -1,0 +1,30 @@
+{
+  "probeTemplateSha256": "e6f2584d052efe53eb7cbd41fa64de680012e0a06088bfde2c6069478ff33bf6",
+  "ordinaryProject": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp",
+  "at": "2026-09-30T21:28:17.7650082Z",
+  "result": {
+    "scope": "Current WEAPP native image uploaded from an existing owned publication file; copy/readback capability, not phone acceptance",
+    "available": true,
+    "pixelsEqual": true,
+    "resourcesReleased": true,
+    "matchingEncodedFiles": 1,
+    "imageWidth": 2048,
+    "imageHeight": 1024,
+    "uploadError": 0,
+    "sourceComplete": true,
+    "sourceReadError": 0,
+    "copyError": 0,
+    "cropComplete": true,
+    "cropReadError": 0,
+    "nonzeroColourChannels": 96918,
+    "comparedChannels": 131072,
+    "sourceRgbaBytes": 8388608,
+    "cropRgbaBytes": 131072,
+    "releaseError": 0
+  },
+  "sdk": "3.17.3",
+  "sourcePublication": {
+    "sha256": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0",
+    "encodedBytes": 703555
+  }
+}

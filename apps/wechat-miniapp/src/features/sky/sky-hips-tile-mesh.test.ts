@@ -1,11 +1,114 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { lonLat2PixNest, pix2VecNest, pixcoord2VecNest } from "healpix-ts";
-import { createSkyViewBasis } from "./sky-view-projection";
-import { prepareSkyHipsTile, projectSkyHipsTileMesh, skyHipsTilePath } from "./sky-hips-tile-mesh";
+import { lonLat2PixNest, pix2VecNest, pixcoord2VecNest, vec2PixNest } from "healpix-ts";
+import { createSkyViewBasis, unprojectSkyPoint } from "./sky-view-projection";
+import { prepareSkyHipsTile, projectSkyHipsTileMesh, skyHipsTilePath,
+  skyHipsRenderTileGeometry,skyHipsTileIntersectsView } from "./sky-hips-tile-mesh";
 
 const dot=(a:readonly number[],b:readonly number[])=>a.reduce((s,n,i)=>s+n*b[i]!,0);
 const norm=(a:readonly number[])=>a.map(n=>n/Math.hypot(...a));
+function weightsAt(mesh:readonly number[],i:number,x:number,y:number):readonly [number,number,number]|null{
+  const ax=mesh[i]!,ay=mesh[i+1]!,bx=mesh[i+4]!,by=mesh[i+5]!,cx=mesh[i+8]!,cy=mesh[i+9]!;
+  const denominator=(by-cy)*(ax-cx)+(cx-bx)*(ay-cy);
+  if(Math.abs(denominator)<1e-9)return null;
+  const a=((by-cy)*(x-cx)+(cx-bx)*(y-cy))/denominator;
+  const b=((cy-ay)*(x-cx)+(ax-cx)*(y-cy))/denominator;
+  const c=1-a-b;
+  return Math.min(a,b,c)>=-1e-10?[a,b,c]:null;
+}
+
+test("an opposite base face cannot paint through the stereographic antipode",()=>{
+  const matrix=[1,0,0,0,1,0,0,0,1] as const;
+  const current={basis:createSkyViewBasis(22,45,0)!,verticalFovDeg:45};
+  assert.equal(vec2PixNest(1,[...current.basis.forward]),8,"the real center ray belongs to base face 8");
+  const covers:number[]=[];
+  for(let pixel=0;pixel<12;pixel++){
+    const mesh=projectSkyHipsTileMesh(skyHipsRenderTileGeometry(0,pixel)!,matrix,current,390,844)!;
+    if(mesh.some((_value,i)=>i%12===0&&weightsAt(mesh,i,195,422)))covers.push(pixel);
+  }
+  assert.deepEqual(covers,[8],"the previously submitted opposite face 2 must not sample the center");
+});
+
+test("full-sphere local and 270-degree views keep the actual center face and original source coordinates",()=>{
+  const matrix=[1,0,0,0,1,0,0,0,1] as const;
+  for(const altitude of [-89,-45,0,45,89])for(const azimuth of [0,22,90,177,270])for(const fov of [45,85,270]){
+    const current={basis:createSkyViewBasis(azimuth,90+altitude,0)!,verticalFovDeg:fov};
+    const expected=vec2PixNest(1,[...current.basis.forward]);
+    let actualCenter=false,paintedCenter=false;
+    for(let pixel=0;pixel<12;pixel++){
+      const mesh=projectSkyHipsTileMesh(skyHipsRenderTileGeometry(0,pixel)!,matrix,current,390,844)!;
+      for(let i=0;i<mesh.length;i+=12){
+        const weights=weightsAt(mesh,i,195,422);if(!weights)continue;
+        paintedCenter=true;
+        actualCenter ||= pixel===expected;
+        const u=weights.reduce((sum,w,j)=>sum+w*mesh[i+j*4+2]!,0);
+        const v=weights.reduce((sum,w,j)=>sum+w*mesh[i+j*4+3]!,0);
+        assert.ok(u>=-1e-9&&u<=1+1e-9&&v>=-1e-9&&v<=1+1e-9);
+        // Image u is nw and v is ne; healpix-ts accepts (ne,nw).
+        // The independent source-packaging test below verifies that mapping.
+        const source=pixcoord2VecNest(1,pixel,v,u);
+        const vertices=[0,4,8].map(offset=>pixcoord2VecNest(1,pixel,mesh[i+offset+3]!,mesh[i+offset+2]!));
+        const span=Math.acos(Math.max(-1,Math.min(1,Math.min(dot(vertices[0]!,vertices[1]!),
+          dot(vertices[1]!,vertices[2]!),dot(vertices[2]!,vertices[0]!)))));
+        const separation=Math.acos(Math.max(-1,Math.min(1,dot(source,current.basis.forward))));
+        assert.ok(separation<=span+1e-6,`${altitude}/${azimuth}/${fov}: face ${pixel} samples another sky region`);
+      }
+    }
+    assert.ok(paintedCenter,`${altitude}/${azimuth}/${fov}: the true center ray must still paint`);
+    // Exact meridians lie on shared face edges. The installed lookup's edge
+    // tie-break can return a remote face at (longitude=180, latitude=45), so
+    // these cases use the independent source-coordinate check above instead.
+    if(Math.abs(current.basis.forward[0])>1e-12&&Math.abs(current.basis.forward[1])>1e-12)
+      assert.ok(actualCenter,`${altitude}/${azimuth}/${fov}: the true face ${expected} must still paint`);
+  }
+});
+
+test("base-face request footprints reuse actual render geometry and preserve unknown demand",()=>{
+  const matrix=[1,0,0,0,1,0,0,0,1] as const;
+  const view={basis:createSkyViewBasis(0,180,0)!,verticalFovDeg:85};
+  let visible=0,empty=0;
+  for(let pixel=0;pixel<12;pixel++){
+    const geometry=skyHipsRenderTileGeometry(0,pixel)!;
+    assert.equal(geometry,skyHipsRenderTileGeometry(0,pixel));
+    assert.equal(geometry.divisions,16);
+    const mesh=projectSkyHipsTileMesh(geometry,matrix,view,390,844)!;
+    assert.equal(skyHipsTileIntersectsView(0,pixel,matrix,view,390,844),mesh.length>0);
+    if(mesh.length)visible++;else empty++;
+  }
+  assert(visible>0&&empty>0,"the request gate must distinguish actual submitted and empty faces");
+  assert.equal(skyHipsTileIntersectsView(0,0,matrix,view,NaN,844),true);
+  assert.equal(skyHipsTileIntersectsView(0,12,matrix,view,390,844),true);
+  assert.equal(skyHipsTileIntersectsView(0,0,[-1,0,0,0,1,0,0,0,1],view,390,844),true);
+});
+
+test("a complete below-horizon HiPS tile remains both requested and projected",()=>{
+  const matrix=[1,0,0,0,1,0,0,0,1] as const;
+  const pixel=lonLat2PixNest(256,90,-30);
+  const tile=skyHipsRenderTileGeometry(8,pixel)!;
+  assert.ok(tile.directions.every(direction=>direction[2]<0),"the actual tile must be entirely below the geometric horizon");
+  const current={basis:createSkyViewBasis(0,60,0)!,verticalFovDeg:2};
+  const mesh=projectSkyHipsTileMesh(tile,matrix,current,390,844)!;
+  assert.ok(mesh.length>0&&mesh.length%12===0,"original source UV triangles must reach the painter");
+  assert.equal(skyHipsTileIntersectsView(8,pixel,matrix,current,390,844),true);
+  assert.equal(skyHipsTileIntersectsView(8,pixel,matrix,{...current,basis:createSkyViewBasis(90,60,0)!},390,844),false,
+    "a certified offscreen tile still retires demand");
+});
+
+test("a horizon-crossing HiPS face submits both sides of the same source mesh",()=>{
+  const matrix=[1,0,0,0,1,0,0,0,1] as const;
+  const tile=skyHipsRenderTileGeometry(0,5)!;
+  assert.ok(tile.directions.some(ray=>ray[2]<0)&&tile.directions.some(ray=>ray[2]>0));
+  const current={basis:createSkyViewBasis(0,90,0)!,verticalFovDeg:85};
+  const mesh=projectSkyHipsTileMesh(tile,matrix,current,390,844)!;
+  let below=false,above=false;
+  for(let i=0;i<mesh.length;i+=12){
+    const z=[0,4,8].map(offset=>unprojectSkyPoint(mesh[i+offset]!,mesh[i+offset+1]!,
+      current.basis,390,844,85)![2]);
+    below ||= z.every(up=>up < -1e-9);above ||= z.every(up=>up > 1e-9);
+  }
+  assert.ok(below&&above,"fully underground and above-ground cells must both reach the original texture sampler");
+  assert.equal(skyHipsTileIntersectsView(0,5,matrix,current,390,844),true);
+});
 
 test("JPEG and PNG image pixels follow the CDS NESTED cell packaging on every face", () => {
   // CDS/Aladin's published FITS mapping assigns each quadrant 2*column+row

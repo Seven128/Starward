@@ -1,0 +1,39 @@
+{
+  "recordedAtUtc": "2026-09-30T01:30:28.326Z",
+  "goal": "active/unbudgeted/incomplete",
+  "records": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+      "sha256": "8c60d342655d7d03feaf580153ed780521999d4caf4ce718775e6f7f855dadcf"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/STATE.md",
+      "sha256": "e13e6b0b816f5fd27a00e069e0172e5e7a82987bad8c2e9f138db3f511e0c6e2"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/INDEX.md",
+      "sha256": "f57420d68dff285f7030932d69b445b14d4c03c338889e20a2cd3f3affd7ecec"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-scene-v46-cache-2026-09-30.md",
+      "sha256": "7e1adf4ddec644ddfbff96df952e76a762b22a35c921de7cc3899df242af8ff7"
+    },
+    {
+      "path": "project_context/architecture/runtime-and-domain.md",
+      "sha256": "3f9fd4c740a87c763de758207d7e2872e6b3144186781dd6775f0fc61d89ada2"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/v46-context-validate.log",
+      "sha256": "6b60788f44a2a1e47e02d02b68d62e40080c9a96fe0aa3c6fa4f1d574a4854bd"
+    }
+  ],
+  "checks": {
+    "contextValidate": "passed: structural source/manifest validation only",
+    "scopedDiffCheck": "passed",
+    "candidateAndTrace": "frozen hashes unchanged",
+    "branch": "codex/remote-main-20260908",
+    "head": "7898962b80d20df371a758748bc62e8c48db33a7",
+    "native": "unverified",
+    "requirements": "all pre-existing PLAN requirement/result rows preserved"
+  }
+}

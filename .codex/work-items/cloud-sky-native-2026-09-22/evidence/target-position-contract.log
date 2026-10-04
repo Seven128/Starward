@@ -1,0 +1,13 @@
+✔ sky scene contract binds every frame to one hourly slice (6.6505ms)
+✔ unavailable sky scene is explicit and cannot carry fallback points (0.4784ms)
+✔ target frames bind actionable targets to every hourly instant (0.5221ms)
+✔ target frame coordinates are numeric facts, not display text or a half-present position (0.7305ms)
+✔ deep-sky frames bind stable Messier identities and tangent samples to the same axis (1.8877ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1522.3834

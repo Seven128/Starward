@@ -21,6 +21,7 @@ import { bsc5pCatalogSources } from "./sky-scene-catalog-provider.ts";
 import { deepSkyCatalogSource } from "./deep-sky-scene-provider.ts";
 import { DeepSkyImageryService } from "./deep-sky-imagery.ts";
 import { SdssOpticalImageryService } from "./sdss-optical-imagery.ts";
+import { PreparedOpticalImageryService } from "./prepared-optical-imagery.ts";
 import { skyJupiterBandSource, skyJupiterShapeSource, skyPlanetSource,
   skyUranusBandSource, skyNeptuneBandSource, skySaturnBandSource, skySaturnRingSource, skySaturnShapeSource } from "./sky-planet-catalog.ts";
 import { loadChineseStarAliasesForBase } from "./chinese-star-alias-publication.ts";
@@ -61,14 +62,18 @@ export class CelestialObjectInformationService {
 
   constructor(private readonly imagery = new DeepSkyImageryService(),
     private readonly optical = new SdssOpticalImageryService(),
-    private readonly moon = new MoonTexturePublicationService()) {}
+    private readonly moon = new MoonTexturePublicationService(),
+    private readonly preparedOptical = new PreparedOpticalImageryService()) {}
 
   get(reference: string, locale = "zh-CN", catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2",moonTextureVersion?:"coverage-v2",
-    imageSelection: DeepSkyImageSelection = {}) {
+    imageSelection: DeepSkyImageSelection = {}, opticalPublicationHash?: string) {
     if (!isCelestialObjectReference(reference))
       throw new Error("celestial_object_reference_invalid");
     if (locale !== "zh-CN") throw new Error("celestial_object_locale_unsupported");
-    const cacheKey = `${reference}:${locale}:${catalogVersion}:${moonTextureVersion??"legacy-v1"}:${imageSelection.imageVersion ?? "legacy-image"}:${imageSelection.publicationHash ?? "current"}`;
+    if (opticalPublicationHash !== undefined && (!reference.startsWith("M:") || !/^[a-f0-9]{64}$/u.test(opticalPublicationHash)))
+      throw new Error("sdss_optical_publication_hash_invalid");
+    const cacheKey = `${reference}:${locale}:${catalogVersion}:${moonTextureVersion??"legacy-v1"}:${imageSelection.imageVersion ?? "legacy-image"}:${imageSelection.publicationHash ?? "current"}` +
+      (opticalPublicationHash ? `:optical:${opticalPublicationHash}` : "");
     const cached = this.cache.get(cacheKey);
     if (cached) return structuredClone(cached);
     const luminary = skyLuminaryBody(reference);
@@ -150,7 +155,16 @@ export class CelestialObjectInformationService {
       catch { imageryUnavailable = true; /* Catalog facts remain independent of the selected image publication. */ }
       if (imageSelection.publicationHash && !imagerySource) imageryUnavailable = true;
       let opticalSource: SourceSummary | null = null, opticalUnavailable = false;
-      try { opticalSource = this.optical.source(reference); } catch { opticalUnavailable = true; }
+      const preparedSelected = opticalPublicationHash !== undefined &&
+        this.preparedOptical.hasRegisteredPublicationHash(opticalPublicationHash);
+      try {
+        if (preparedSelected && opticalPublicationHash !== undefined) {
+          // A conflicting declaration cannot lend another family's provenance.
+          if (this.optical.hasRegisteredPublicationHash(opticalPublicationHash)) throw new Error("optical_publication_family_ambiguous");
+          opticalSource = this.preparedOptical.source(reference, opticalPublicationHash);
+        } else opticalSource = this.optical.source(reference, opticalPublicationHash);
+      } catch { opticalUnavailable = true; }
+      if (opticalPublicationHash && !opticalSource) opticalUnavailable = true;
       const sources = [deepSkyCatalogSource(), ...(imagerySource ? [imagerySource] : []), ...(opticalSource ? [opticalSource] : [])];
       const introduction = INTRODUCTIONS[reference] ?? null;
       const aliases = deepSkyAliases(deepSkyRow);
@@ -182,7 +196,7 @@ export class CelestialObjectInformationService {
       };
       const warnings = [
         ...(imageryUnavailable ? ["deep_sky_image_publication_unavailable"] : []),
-        ...(opticalUnavailable ? ["sdss_optical_publication_unavailable"] : []),
+        ...(opticalUnavailable ? [preparedSelected ? "prepared_optical_publication_unavailable" : "sdss_optical_publication_unavailable"] : []),
       ];
       const result = envelope(data, sources, warnings.length ? "PARTIAL" : "FRESH", warnings);
       if (imagerySource && !warnings.length) this.cache.set(cacheKey, result);

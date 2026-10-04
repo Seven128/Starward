@@ -1,0 +1,9 @@
+{
+  "scope": "Read-only final original-file identity and changed current task references; neither Context structure nor candidate identity proves product acceptance",
+  "candidateOriginalHash": "9f62a19285905e7d08aac5fe8551f9d5a6c63514aee4e40815e4511ac4d8f62c",
+  "originalFilesChecked": 257,
+  "originalBytesChecked": 4450063,
+  "candidateFilesUnchanged": true,
+  "taskReferencesChecked": 66,
+  "currentTaskReferencesValid": true
+}

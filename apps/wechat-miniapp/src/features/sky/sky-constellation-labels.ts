@@ -26,7 +26,6 @@ export function projectConstellationLabels(frame:ConstellationFrame|null,view:Sk
   const candidates:SkyConstellationLabel[]=[];
   for (const label of frame.labels) {
     const ray=label.direction;
-    if (ray[2]<=0) continue;
     const denominator=1+dot(ray,view.basis.forward);
     if (!(denominator>1e-9)) continue;
     const x=center.x+scale*dot(ray,view.basis.right)/denominator;

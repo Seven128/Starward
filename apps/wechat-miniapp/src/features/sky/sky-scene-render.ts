@@ -1,6 +1,6 @@
 import { DEEP_SKY_IMAGE_PIXELS, type DisplayMode } from "@starward/miniapp-contracts";
 import type { DeviceOrientationFrame as DevicePose } from "./device-orientation-view";
-import { createSkyDirectionProjector, unprojectSkyPoint, type SkyViewBasis } from "./sky-view-projection";
+import { createSkyDirectionProjector, type SkyViewBasis } from "./sky-view-projection";
 import type { SkyProjectionCenter } from "./sky-viewport";
 import { resolveSkyDeepSkyScene, resolveSkySceneFrame, type ResolvedSkyReport as SkyReport } from "./sky-stellar-scene";
 import { exactSkyTimeFrame } from "./sky-time-frame";
@@ -14,11 +14,12 @@ import { skyStarAppearance } from "./sky-star-appearance";
 import {currentStellarSupplement,type SkyStellarSupplementFrame} from './sky-stellar-supplement-scene';
 import { registerSkySurvey } from "./sky-survey-registration";
 import { artworkIntersectsView, artworkDisplaySupportIntersectsView, skyArtworkViewRayHull } from "./sky-artwork-visibility";
-import { deepSkyAuxiliaryOpacity } from "./sky-deep-auxiliary-visibility";
+import { copySkyDeepAuxiliaryDecisions, deepSkyAuxiliaryOpacity, skyDeepAuxiliaryModelOpacity, type SkyDeepAuxiliaryDecision } from "./sky-deep-auxiliary-visibility";
 import type { SkyArtworkRegistration } from "./sky-artwork-registration";
-import { PROCEDURAL_SKY_LANDSCAPE, skyLandscapeMaskCoversRayHull,
-  type SkyLandscapeMask, type SkyLandscapePanorama } from "./sky-landscape-mask";
+import { PROCEDURAL_SKY_LANDSCAPE, skyLandscapeHasPaintedModel, skyLandscapeMaskWithOpacity, skyLandscapeMaskCoversRayHull, skyPanoramaMaskIntersectsView,
+  type SkyLandscapeMask, type SkyLandscapePanorama, type SkyPanoramaMask } from "./sky-landscape-mask";
 import { skySolarLightAt } from "./sky-solar-light";
+import { skyLandscapeViewOpacity } from "./sky-landscape-visibility";
 import { skyGalacticBandAt } from "./sky-galactic-band";
 import { skySunDiscAt } from "./sky-sun-disc";
 import { skyMoonDiscAt } from "./sky-moon-disc";
@@ -26,15 +27,22 @@ import { skyPlanetDiscsAt } from "./sky-planet-disc";
 import { exactSkyObservationFrame } from "./sky-observation-frame";
 import { skyHorizontalGrid } from "./sky-horizontal-grid";
 import { skyEquatorialGrid } from "./sky-equatorial-grid";
-import { prepareSkyHipsTile, projectSkyHipsTileMesh } from "./sky-hips-tile-mesh";
+import { skyHipsRenderTileGeometry, projectSkyHipsTileMesh } from "./sky-hips-tile-mesh";
 import { SKY_PLANET_CATALOG_HASH, SKY_PLANET_CATALOG_VERSION, SKY_PLANET_NAMES,
   SKY_LUMINARY_CATALOG_HASH, SKY_LUMINARY_CATALOG_VERSION, SKY_LUMINARY_NAMES } from "@starward/miniapp-contracts";
+import type { SkyTargetOpticalImage } from "./sky-sdss-optical-frame";
+import { completeLegacySkyOptical, completeTargetSkyOptical, type SkyTargetOpticalCompletion } from "./sky-sdss-optical-completion";
+import { submitSkySceneScienceOptical, submitSkySceneCalibratedOptical,
+  type SkySceneScienceOpticalPort, type SkySceneCalibratedOpticalPort } from "./sky-sdss-science-scene";
+import { submitSkyScenePreparedOptical, type SkyScenePreparedOpticalPort } from "./sky-prepared-optical-scene";
+import { skyTargetOpticalDisplayFacts } from "./sky-target-optical-scene";
+import { isSkyLegacyOpticalFrame } from "./sky-target-optical-identity";
+export type { SkyScenePreparedOpticalPort } from "./sky-prepared-optical-scene";
+export type { SkySceneScienceOpticalPort } from "./sky-sdss-science-scene";
+export type { SkySceneCalibratedOpticalPort } from "./sky-sdss-science-scene";
+export type { SkySdssOpticalField, SkySdssOpticalImage } from "./sky-sdss-optical-frame";
 type SkyCanvasImageAsset = DeepSkyImageAsset & { image: object };
-export type SkySdssOpticalField = { image: object; fieldDegrees: number; level: "OVERVIEW" | "MEDIUM" | "DETAIL" };
-export type SkySdssOpticalImage = SkySdssOpticalField & { reference: string; publicationHash: string;
-  /** A wider field of this same optical publication, never another spectrum. */
-  coarser?: SkySdssOpticalField | null };
-export type SkyScenePaintedSources = { sdssOpticalImage: object | null; deepSkyImage: object | null };
+export type SkyScenePaintedSources = { readonly sdssOptical: SkyTargetOpticalCompletion | null; readonly deepSkyImage: object | null };
 export interface SkyCoordinateGrids { horizontal: boolean; equatorial: boolean }
 export interface SkyHipsCanvasTile {
   layer:"WIDE_FIELD_W3"|"OPTICAL";
@@ -47,7 +55,6 @@ export function dispatchSkyHipsImageFailure(tile:SkyHipsCanvasTile,
   if(tile.layer==="WIDE_FIELD_W3")wideFieldFailed(tile.image);
   else opticalFailed(tile.image);
 }
-const WIDE_FIELD_GEOMETRY=Array.from({length:12},(_,pixel)=>prepareSkyHipsTile(0,pixel,16));
 
 // A restrained screen palette for catalogued Johnson B-V, not a measured RGB
 // colour or a temperature estimate. Missing SAO/BSC photometry stays neutral.
@@ -72,25 +79,6 @@ export function skyStarDisplayColor(colorIndex: number | null): string | null {
   const channel = (index: 1 | 2 | 3) => Math.round(lower[index] + (upper[index] - lower[index]) * fraction)
     .toString(16).padStart(2, "0");
   return `#${channel(1)}${channel(2)}${channel(3)}`.toUpperCase();
-}
-
-/** Keep CPU ring strokes on the same true horizon as the globe fragment shader. */
-function visibleRingSegment(segment:SkyLineSegment,basis:SkyViewBasis,width:number,height:number,
-  verticalFovDeg:number,center?:SkyProjectionCenter):SkyLineSegment|null{
-  const altitude=(x:number,y:number)=>unprojectSkyPoint(x,y,basis,width,height,verticalFovDeg,center)?.[2]??-1;
-  let [x0,y0,x1,y1]=segment;
-  let z0=altitude(x0,y0),z1=altitude(x1,y1);
-  if(z0<0&&z1<0)return null;
-  if(z0>=0&&z1>=0)return segment;
-  let low=0,high=1;
-  for(let i=0;i<18;i++){
-    const middle=(low+high)/2;
-    const z=altitude(x0+(x1-x0)*middle,y0+(y1-y0)*middle);
-    if((z>=0)===(z0>=0))low=middle;else high=middle;
-  }
-  const t=(low+high)/2,x=x0+(x1-x0)*t,y=y0+(y1-y0)*t;
-  if(z0<0){x0=x;y0=y;}else{x1=x;y1=y;}
-  return [x0,y0,x1,y1];
 }
 
 export function skyPickIdentity(data: SkyReport | undefined, supplement?:SkyStellarSupplementFrame|null) {
@@ -133,12 +121,18 @@ export function drawSkyScene(
   mercuryTexture?: object | null,
   jupiterBands?: object | null,
   saturnBands?: object | null,
-  sdssOpticalImage?: SkySdssOpticalImage | null,
+  sdssOpticalImage?: SkyTargetOpticalImage | null,
   sdssOpticalFailed?: (image: object) => void,
   uranusBands?: object | null,
   neptuneBands?: object | null,
-  landscape?: { enabled: boolean; panorama?: SkyLandscapePanorama | null; availability?: (available: boolean) => void },
-  grids: SkyCoordinateGrids = { horizontal: true, equatorial: false },
+  landscape?: { enabled: boolean; panorama?: SkyLandscapePanorama | null; mask?: SkyPanoramaMask | null;
+    readiness?: number; pending?: boolean; failed?: boolean;
+    /** Last actual completed material from this live canvas, not a requested source. */
+    previous?: SkyLandscapeMask | null; availability?: (available: boolean | null) => void },
+  grids: SkyCoordinateGrids = { horizontal: false, equatorial: false },
+  scienceOptical?: SkySceneScienceOpticalPort,
+  preparedOptical?: SkyScenePreparedOpticalPort,
+  calibratedOptical?: SkySceneCalibratedOpticalPort,
 ) {
   const palette =
     mode === "OBSERVATION"
@@ -169,7 +163,7 @@ export function drawSkyScene(
   // remain available outside this canvas until a trusted stream is present.
   if (!data || !basis) {
     context.finish();
-    painted?.(null, { sdssOpticalImage: null, deepSkyImage: null });
+    painted?.(null, { sdssOptical: null, deepSkyImage: null });
     completed?.();
     return;
   }
@@ -188,7 +182,7 @@ export function drawSkyScene(
     if(!observation)return;
     const view={basis,verticalFovDeg,...(center ? {center} : {})};
     for(const tile of tiles){
-      const geometry=tile.order===0?WIDE_FIELD_GEOMETRY[tile.pixel]:prepareSkyHipsTile(tile.order,tile.pixel);
+      const geometry=skyHipsRenderTileGeometry(tile.order,tile.pixel);
       const triangles=geometry&&projectSkyHipsTileMesh(geometry,observation.equatorialToEnu,view,width,height);
       if(triangles?.length&&!context.skyImageMesh(tile.image,triangles,view,opacity))hipsImageFailed?.(tile);
     }
@@ -198,6 +192,7 @@ export function drawSkyScene(
   if(hipsTiles?.length&&galacticBand?.strength)drawHips(
     hipsTiles.filter(tile=>tile.layer==="WIDE_FIELD_W3"),.48*galacticBand.strength);
   const paintedObjects: PaintedSkyObject[] = [];
+  const deepSkyAuxiliaryDecisions: SkyDeepAuxiliaryDecision[] = [];
   const projector = createSkyDirectionProjector(basis,width,height,verticalFovDeg,center);
   const project = (azimuth: number, altitude: number) =>
     projector?.project(azimuth,altitude) ?? null;
@@ -227,7 +222,20 @@ export function drawSkyScene(
     }
     return null;
   };
-  if (mode !== "OBSERVATION" && sdssOpticalImage && deepCatalog?.imageRegistration === "ICRS_TAN_NORTH_0_1_V1" &&
+  const opticalEntry = sdssOpticalImage && deepCatalog?.frame === "ICRS J2000"
+    ? deepCatalog.entries.find(candidate => candidate.objectRef === sdssOpticalImage.reference) : null;
+  const targetOpticalSubmission = mode === "OBSERVATION" ? null :
+    sdssOpticalImage && "preparedPublication" in sdssOpticalImage
+      ? submitSkyScenePreparedOptical(context, preparedOptical, sdssOpticalImage, observation, artworkView,
+        sdssOpticalFailed, opticalEntry)
+      : calibratedOptical ? submitSkySceneCalibratedOptical(context, calibratedOptical, sdssOpticalImage, observation, artworkView,
+        sdssOpticalFailed, opticalEntry)
+      : submitSkySceneScienceOptical(context, scienceOptical, sdssOpticalImage, observation, artworkView,
+        sdssOpticalFailed, opticalEntry);
+  // Exact PNG source coverage is not legacy display opacity. Each family needs
+  // its own matched intent; invalid/foreign envelopes never enter JPEG passes.
+  if (mode !== "OBSERVATION" && sdssOpticalImage && isSkyLegacyOpticalFrame(sdssOpticalImage) &&
+    deepCatalog?.imageRegistration === "ICRS_TAN_NORTH_0_1_V1" &&
     deepFrame?.state === "AVAILABLE" && deepFrame.points) {
     const index = deepCatalog.entries.findIndex(entry => entry.objectRef === sdssOpticalImage.reference);
     const point = deepFrame.points.find(candidate => candidate[0] === index);
@@ -254,15 +262,16 @@ export function drawSkyScene(
   // precedence; its edge must not blend with a different infrared spectrum
   // (including a retained previous target). Failure/offscreen optical keeps
   // the independent infrared path and its actual object/provenance.
-  const infraredSubmission = !paintedSdssOpticalImage ? drawInfraredCutout() : null;
+  const infraredSubmission = !paintedSdssOpticalImage && (!targetOpticalSubmission || targetOpticalSubmission.allowInfrared)
+    ? drawInfraredCutout() : null;
   paintedDeepSkyImage = infraredSubmission?.image ?? null;
   deepSkyRegistration = infraredSubmission?.registration ?? null;
   // Higher-resolution HiPS tiles cover the coarser registered object image.
   // Their observer transform is independent of bright-star catalog health.
   if(hipsTiles?.length)drawHips(hipsTiles.filter(tile=>tile.layer==="OPTICAL"),.8);
   const grid = skyHorizontalGrid(basis, width, height, verticalFovDeg, center, grids.horizontal);
-  context.segments(grid.horizon, palette.grid);
   if (grids.horizontal) {
+    context.segments(grid.horizon, palette.grid);
     context.segments(grid.altitude, palette.gridSoft);
     context.segments(grid.meridians, palette.gridSoft, 0.65);
   }
@@ -283,7 +292,6 @@ export function drawSkyScene(
   if (catalog && frame?.state === "AVAILABLE" && frame.points) {
     frame.points.forEach((point) => {
       const [catalogIndex, azimuthDeg, altitudeDeg] = point;
-      if (altitudeDeg <= 0) return;
       const entry = catalog.entries[catalogIndex];
       if (!entry) return;
       const appearance = skyStarAppearance(entry.magnitude, verticalFovDeg,
@@ -361,12 +369,7 @@ export function drawSkyScene(
       if (planet.body === "SATURN") for (const ring of planet.rings) {
         const ringTint=mode === "OBSERVATION" ? palette.target : "#D8C7A5";
         const paintRing=(allSegments:readonly SkyLineSegment[],color:string)=>{
-          // The outer A ring reaches 1.175 body diameters from the centre.
-          const segments=planet.altitudeDeg>1.2*planet.angularDiameterDeg?allSegments:
-            allSegments.flatMap(segment=>{
-            const visible=visibleRingSegment(segment,basis,width,height,verticalFovDeg,center);
-            return visible?[visible]:[];
-          });
+          const segments=allSegments;
           if(segments.length){if(!continuousRings)context.segments(segments,color,ring.opacity);hitSegments.push(...segments);}
         };
         paintRing([...ring.back,...ring.front],ringTint);
@@ -374,7 +377,6 @@ export function drawSkyScene(
           mode === "OBSERVATION" ? "#4B211D" : "#4E473B");
       }
     } else {
-      if(planet.altitudeDeg<=0)continue;
       const appearance = skyStarAppearance(planet.visualMagnitude,verticalFovDeg,
         mode === "OBSERVATION" ? undefined : sun?.altitudeDeg,
         mode === "OBSERVATION" ? undefined : planet.altitudeDeg);
@@ -400,9 +402,12 @@ export function drawSkyScene(
     });
   }
 
+  // One immutable model-domain input before aids. A permitted whole-source
+  // W3 alternative retains its actual-painted legacy rule and needs no local probe.
+  const preAidOpticalFacts = targetOpticalSubmission && !targetOpticalSubmission.allowInfrared
+    ? skyTargetOpticalDisplayFacts(targetOpticalSubmission) : null;
   if (deepCatalog && deepFrame?.state === "AVAILABLE" && deepFrame.points) {
     deepFrame.points.forEach(([catalogIndex, azimuthDeg, altitudeDeg]) => {
-      if (altitudeDeg <= 0) return;
       const entry = deepCatalog.entries[catalogIndex];
       if (!entry) return;
       const projection = project(azimuthDeg, altitudeDeg);
@@ -410,7 +415,10 @@ export function drawSkyScene(
       const imagePainted = Boolean(
         (paintedSdssOpticalImage && sdssOpticalImage?.reference === entry.objectRef) ||
         (paintedDeepSkyImage && deepSkyImage?.reference === entry.objectRef));
-      const auxiliaryOpacity = deepSkyAuxiliaryOpacity(verticalFovDeg, height, entry.majorAxisArcmin, imagePainted);
+      const auxiliaryOpacity = targetOpticalSubmission && !targetOpticalSubmission.allowInfrared && targetOpticalSubmission.frame.reference===entry.objectRef
+        ? skyDeepAuxiliaryModelOpacity(verticalFovDeg,height,entry.majorAxisArcmin,preAidOpticalFacts)
+        : deepSkyAuxiliaryOpacity(verticalFovDeg, height, entry.majorAxisArcmin, imagePainted);
+      deepSkyAuxiliaryDecisions.push({ reference: entry.objectRef, opacity: auxiliaryOpacity });
       if (auxiliaryOpacity > 0.01)
         context.disc(projection.x, projection.y, 3.2, mode === "OBSERVATION" ? palette.target : "#A9BDD6",
           0.9 * auxiliaryOpacity, 1);
@@ -445,15 +453,53 @@ export function drawSkyScene(
         [projection.x,projection.y-8,projection.x,projection.y+8]], mark);
     }
   });
-  // Opaque virtual geometry covers all earlier celestial layers. Publish its
-  // mask only when the actual pass succeeds, preserving the sky on failure.
+  // Completed source alpha can certify true zero foreground in the actual
+  // view without a bitmap/pass. Otherwise publish only a successful pass,
+  // preserving the sky on failure rather than inventing source transparency.
   let paintedLandscape: SkyLandscapeMask | null = null;
+  let landscapePending = false;
   if (landscape?.enabled && sun) {
-    if (landscape.panorama && context.landscape(artworkView, sun, mode === "OBSERVATION", landscape.panorama))
+    const viewOpacity = skyLandscapeViewOpacity(artworkView, width, height);
+    const readiness = Number.isFinite(landscape.readiness) ? Math.max(0, Math.min(1, landscape.readiness!)) : 1;
+    let opacity = viewOpacity * (landscape.panorama ? readiness : 1);
+    const retainModel = skyLandscapeHasPaintedModel(landscape.previous);
+    // A still-usable coarse bitmap keeps its own alpha while detail is absent.
+    const knownMask = landscape.panorama?.mask ?? landscape.mask;
+    if (viewOpacity === 0) paintedLandscape = knownMask ?? PROCEDURAL_SKY_LANDSCAPE;
+    else if (knownMask && !skyPanoramaMaskIntersectsView(knownMask, artworkView, width, height)) {
+      paintedLandscape = knownMask; opacity = 0;
+    }
+    else if (knownMask && !landscape.panorama && !retainModel && !(landscape.failed && !landscape.pending)) {
+      // A known photo awaiting its eligible coarse bitmap is neither opaque
+      // success nor permission to substitute a different terrain silhouette.
+      landscapePending = true;
+    }
+    else if (landscape.panorama && readiness < 1 && retainModel) {
+      const modelOpacity = viewOpacity * (1 - readiness);
+      const modelPainted = context.landscape(artworkView, sun, mode === "OBSERVATION", null, modelOpacity);
+      const photoPainted = readiness > 0 && context.landscape(artworkView, sun, mode === "OBSERVATION", landscape.panorama, opacity);
+      if (photoPainted) paintedLandscape = modelPainted ? { kind: "transition",
+        background: { kind: "procedural", opacity: modelOpacity },
+        foreground: { ...landscape.panorama.mask, opacity } } : landscape.panorama.mask;
+      else {
+        // A failed/zero photo cannot retire the valid material. Source-over
+        // the missing alpha only; redrawing viewOpacity over the partial pass
+        // would over-occlude a faded foreground.
+        opacity = viewOpacity;
+        const priorAlpha = modelPainted ? modelOpacity : 0;
+        const restoreOpacity = priorAlpha < 1 ? (viewOpacity - priorAlpha) / (1 - priorAlpha) : 0;
+        if (modelPainted && readiness === 0 || context.landscape(artworkView, sun, mode === "OBSERVATION", null, restoreOpacity))
+          paintedLandscape = PROCEDURAL_SKY_LANDSCAPE;
+        else if (modelPainted) { paintedLandscape = PROCEDURAL_SKY_LANDSCAPE; opacity = modelOpacity; }
+      }
+    }
+    else if (landscape.panorama && context.landscape(artworkView, sun, mode === "OBSERVATION", landscape.panorama, opacity))
       paintedLandscape = landscape.panorama.mask;
-    else if (context.landscape(artworkView, sun, mode === "OBSERVATION")) paintedLandscape = PROCEDURAL_SKY_LANDSCAPE;
+    else if (context.landscape(artworkView, sun, mode === "OBSERVATION", null, opacity)) paintedLandscape = PROCEDURAL_SKY_LANDSCAPE;
+    if (paintedLandscape && paintedLandscape.kind !== "transition")
+      paintedLandscape = skyLandscapeMaskWithOpacity(paintedLandscape, opacity);
   }
-  if (landscape?.enabled) landscape.availability?.(Boolean(paintedLandscape));
+  if (landscape?.enabled) landscape.availability?.(landscapePending ? null : Boolean(paintedLandscape));
   const imageViewHull=paintedSdssFields.length || deepSkyRegistration ? skyArtworkViewRayHull(artworkView,width,height) : null;
   if (paintedLandscape && (paintedSdssFields.length || deepSkyRegistration)) {
     const coveredView=skyLandscapeMaskCoversRayHull(paintedLandscape,imageViewHull);
@@ -463,6 +509,9 @@ export function drawSkyScene(
     if (deepSkyRegistration && (coveredView || skyLandscapeMaskCoversRayHull(paintedLandscape,deepSkyRegistration.corners))) paintedDeepSkyImage=null;
   }
   context.finish();
+  const completedOptical = targetOpticalSubmission?.draw.submitted ? completeTargetSkyOptical(targetOpticalSubmission.frame,
+    targetOpticalSubmission.draw, targetOpticalSubmission.surface.artworkLevelsContribution(targetOpticalSubmission.draw)) :
+    completeLegacySkyOptical(sdssOpticalImage, paintedSdssOpticalImage);
   const identity = skyPickIdentity(data,currentSupplement);
   painted?.(identity.catalogVersion && frameAt ? {
     catalogVersion: identity.catalogVersion,
@@ -473,6 +522,7 @@ export function drawSkyScene(
     view: {basis,verticalFovDeg,...(center?{center}:{}),landscape:paintedLandscape},
     objects: paintedObjects,
     suppressedBodyReferences,
-  } : null, { sdssOpticalImage: paintedSdssOpticalImage, deepSkyImage: paintedDeepSkyImage });
+    deepSkyAuxiliaryDecisions: copySkyDeepAuxiliaryDecisions(deepSkyAuxiliaryDecisions),
+  } : null, Object.freeze({ sdssOptical: completedOptical, deepSkyImage: paintedDeepSkyImage }));
   completed?.();
 }

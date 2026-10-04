@@ -1,0 +1,36 @@
+✔ one exact planetary frame projects a changing physical phase without stale or malformed rows (4.5439ms)
+✔ resolved Mars shares the Moon's IAU body-axis projection and passes only its own texture (27.4863ms)
+✔ resolved Mercury uses its own body axis and published image, never Mars' (15.6226ms)
+✔ Saturn's observed pole and main-ring radial widths produce oriented bands only when resolvable (6.6286ms)
+✔ Saturn's 1-bar equatorial and polar axes project an oriented oblate globe (0.972ms)
+✔ Jupiter's reported pole projects the 1-bar oblate silhouette and orients a longitude-neutral profile (17.8933ms)
+✔ Saturn ring arcs require a successfully drawn globe and retain scene order (14.8166ms)
+✔ a tap on the rendered Saturn globe rim or main ring selects Saturn (15.3846ms)
+✔ partly set planetary globes and Saturn rings stop at the same true horizon (42.9979ms)
+✔ real planetary phase replaces the old Venus target marker, but missing geometry preserves it (12.6682ms)
+✔ pending proposal sky requires owner authentication (1.9058ms)
+✔ published spot sky remains publicly readable (0.2774ms)
+✔ upgraded client rejects retired star cache after restart on offline and 304, and rejects a legacy server response (378.0996ms)
+✔ old or malformed solar positions stay missing across offline, 304 and old server, then recover from exact data (163.5998ms)
+✔ missing solar diameter does not invent a disc or discard a still-valid twilight direction (363.5926ms)
+✔ old or malformed lunar disc geometry cannot survive offline, 304 or old server recovery (193.3845ms)
+✔ retired or mixed planetary rows lose their geometry on offline, 304 and server recovery (119.6354ms)
+✔ a null planetary record preserves independent sky content on 200 and recovers from fresh data (31.6969ms)
+✔ a null planetary record preserves independent sky content on 304 and recovers from fresh data (29.7263ms)
+✔ a null planetary record preserves independent sky content on offline and recovers from fresh data (28.782ms)
+✔ a null target frame is isolated across network/cache reads without losing valid frames (80.1862ms)
+✔ HTTP 503 remains a failure and cannot return the retired catalog (27.8198ms)
+✔ network recovery returns selectable HR stars and retains their provenance (38.2037ms)
+✔ retired-identity regression detects omission of the response projection (43.9053ms)
+✔ malformed source rows retire only stars and keep independent content (27.6632ms)
+✔ a mirrored optical frame is removed from network and offline projections without retiring valid stars (34.7948ms)
+✔ rounded-only target caches lose geometry independently on offline, 304 and old-server reads, then recover (103.8007ms)
+✔ corrupt optional Mercury/Mars/Jupiter axes lose appearance detail without losing seven positions (1.8316ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3854.8858

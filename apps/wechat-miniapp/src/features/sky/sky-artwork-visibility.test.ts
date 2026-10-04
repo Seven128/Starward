@@ -25,6 +25,20 @@ test("a long offscreen image does not enter the texture working set through its 
   assert.equal(artworkIntersectsView(image, view, 390, 844), false);
 });
 
+test("a certified empty raster footprint stays out of both local and wide image demand", () => {
+  const camera = createSkyViewBasis(60, 120, 0)!;
+  // The ray-hull rectangle encloses curved viewport edges. These images lie
+  // inside that loose enclosure, but their complete projected caps are beyond
+  // the actual right edge. They previously downloaded and uploaded no pixels.
+  for (const [fov, left, right] of [[85, .425, .52], [139, .9, 1]]) {
+    const current = { basis: camera, verticalFovDeg: fov! };
+    assert.equal(artworkIntersectsView(plane(left!, right!, -.04, .04, camera), current, 390, 844), false);
+  }
+  const wide = { basis: camera, verticalFovDeg: 139 };
+  assert.equal(artworkIntersectsView(plane(.69, .9, -.01, .01, camera), wide, 390, 844), true,
+    "the same edge remains eligible when the original image enters it");
+});
+
 test("an edge crossing remains visible even when image and viewport corners are outside each other", () => {
   const image = plane(-1, 1, -.02, .02);
   assert.equal(artworkIntersectsView(image, view, 390, 844), true);
@@ -32,12 +46,25 @@ test("an edge crossing remains visible even when image and viewport corners are 
   assert.ok(uv.every(value => value > 0 && value < 1));
 });
 
+test("registered images below and crossing the horizon retain real source-plane demand", () => {
+  for (const altitude of [-35, 0]) {
+    const current={basis:createSkyViewBasis(0,90+altitude,0)!,verticalFovDeg:25};
+    const image=plane(-.05,.05,-.05,.05,current.basis);
+    if(altitude<0)assert.ok(image.corners.every(ray=>ray[2]<0),"the regression must be entirely below the horizon");
+    else assert.ok(image.corners.some(ray=>ray[2]<0)&&image.corners.some(ray=>ray[2]>0));
+    assert.equal(artworkIntersectsView(image,current,390,844),true);
+    const uv=skyArtworkUvAtDirection(image,current.basis.forward)!;
+    assert.ok(uv.every(value=>value>0&&value<1),"the admitted ray must sample the original image");
+    assert.equal(artworkIntersectsView(plane(.8,1,-.05,.05,current.basis),current,390,844),false,
+      "full-sphere browsing does not admit a certified offscreen source");
+  }
+});
+
 test("actual visible rays are never rejected under rolled and offset viewports", () => {
   for (const roll of [-67, 0, 71]) for (const fov of [.05, 25, 39.9, 85, 267.8]) {
     const current = { basis: createSkyViewBasis(60, 120, roll)!, verticalFovDeg: fov, center: { x: 120, y: 370 } };
     for (const [x, y] of [[10, 10], [120, 370], [380, 830]]) {
       const ray = unprojectSkyPoint(x!, y!, current.basis, 390, 844, fov, current.center)!;
-      if (ray[2] <= 0) continue;
       const right: SkyVector = [ray[1], -ray[0], 0], length = Math.hypot(...right);
       if (length < 1e-6) continue;
       const unitRight = right.map(value => value / length) as unknown as SkyVector;

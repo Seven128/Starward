@@ -1,0 +1,23 @@
+{
+  "result": "pass",
+  "beforeSha256": "7607c378c79c438e1b5f56c15fc4e7153471e68360848c9cff8b214fc84c4fce",
+  "afterSha256": "8380ab78a9f04426008e34c36abd268003906bffa3e3a0bfaab0500552db6cb0",
+  "primarySha256": "2fc6aba4cbbd7b9b7aabfcac59a330477967a156962d4ae0df71cba146e670df",
+  "sourceProvenanceSha256": "34dc7925057f204bf54a6c9838a97272bf9cc7ef1bbe51eb95ca6878c748fc1e",
+  "rowCount": 3149,
+  "changed": [
+    {
+      "reference": "HR:7557",
+      "wikidataItem": "Q12975",
+      "aliases": [
+        "河鼓二",
+        "牛郎星",
+        "天鹰座α"
+      ]
+    }
+  ],
+  "reproduction": "exact raw bytes",
+  "wrongHrRejected": true,
+  "previousBytesTamperRejected": true,
+  "limits": "Publication/source identity checks, not native or device acceptance"
+}

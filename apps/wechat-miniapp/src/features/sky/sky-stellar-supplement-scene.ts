@@ -35,7 +35,7 @@ export function resolveSkyStellarSupplement(publication:SaoIndexPublication,tile
       const positioned:SupplementPoint[]=[];
       for(const [reference,magnitude,x,y,z,vx,vy,vz] of tile.tile.rows){
         const position=projectStellarMotion([x,y,z,vx,vy,vz],geometry.julianYears,geometry.equatorialToEnu);
-        if(position.altitudeDeg>0)positioned.push(Object.freeze([reference,magnitude,position.azimuthDeg,position.altitudeDeg] as const));
+        positioned.push(Object.freeze([reference,magnitude,position.azimuthDeg,position.altitudeDeg] as const));
       }
       cached={geometry,points:Object.freeze(positioned)};transformed.set(tile,cached);
     }

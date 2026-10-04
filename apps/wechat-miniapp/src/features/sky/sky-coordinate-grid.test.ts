@@ -6,6 +6,7 @@ import type { SkyRenderSurface, SkyLineSegment } from "./sky-render-surface";
 import type { ResolvedSkyReport } from "./sky-stellar-scene";
 import { OBSERVATION_FRAME_FORMAT, type SkyObservationFrame } from "@starward/miniapp-contracts";
 import { skyEquatorialGrid } from "./sky-equatorial-grid";
+import { skyHorizontalGrid } from "./sky-horizontal-grid";
 import { createSkyGridTracer } from "./sky-grid-projection";
 import { skyHorizontalDirection } from "./sky-view-projection";
 
@@ -24,15 +25,16 @@ function render(grids: { horizontal: boolean; equatorial: boolean }, data = repo
   return strokes;
 }
 
-test("turning both coordinate grids off removes their strokes while retaining the geometric horizon", () => {
+test("turning both coordinate grids off removes every auxiliary including the horizon", () => {
   const off = render({ horizontal: false, equatorial: false });
-  assert.equal(off.length, 1);
-  assert.equal(off[0]!.lines.length, 180);
-  assert.deepEqual(render({ horizontal: true, equatorial: false }).map(stroke => stroke.lines.length), [180, 360, 540]);
+  assert.equal(off.length, 0);
+  const enabled = skyHorizontalGrid(createSkyViewBasis(0, 180, 0)!, 390, 844, 267.8);
+  assert.deepEqual(render({ horizontal: true, equatorial: false }).map(stroke => stroke.lines),
+    [enabled.horizon, enabled.altitude, enabled.meridians]);
 });
 
 test("an unavailable exact observation frame never displays an old equatorial grid", () => {
-  assert.equal(render({ horizontal: false, equatorial: true }).length, 1);
+  assert.equal(render({ horizontal: false, equatorial: true }).length, 0);
 });
 
 function observerFrame(latitude: number, siderealDegrees: number, instant = at): SkyObservationFrame {
@@ -58,6 +60,11 @@ test("equatorial curves cross analytically known directions even between base sa
     const grid = skyEquatorialGrid(frame, createSkyViewBasis(180, 90 + altitude, 0)!, 390, 844, 0.05);
     assert.ok(distance(grid[layer], 195, 422) < 0.5);
   }
+  // The same RA=180° circles culminate below the horizon at this latitude.
+  for (const [altitude, layer] of [[-45, "equator"], [-15, "parallels"]] as const) {
+    const grid = skyEquatorialGrid(frame, createSkyViewBasis(0, 90 + altitude, 0)!, 390, 844, 0.05);
+    assert.ok(distance(grid[layer], 195, 422) < 0.5, `${layer} at true altitude ${altitude}°`);
+  }
   // RA=30° and dec=0 have a known non-sampled point on the same meridian.
   const ra = 30 * Math.PI / 180, dec = 20.5 * Math.PI / 180, q = Math.SQRT1_2;
   const east = Math.cos(dec) * Math.sin(ra), north = q * (Math.sin(dec) - Math.cos(dec) * Math.cos(ra));
@@ -66,7 +73,7 @@ test("equatorial curves cross analytically known directions even between base sa
   assert.ok(distance(skyEquatorialGrid(frame, basis, 390, 844, 0.05).meridians, 195, 422) < 0.5);
 });
 
-test("polar full-dome curves remain in the visible hemisphere and the actual protected viewport", () => {
+test("polar full-sphere curves include lower declination parallels and retain viewport clipping", () => {
   const center = { x: 194, y: 450 };
   const basis = createSkyViewBasis(27, 180, 0)!;
   for (const latitude of [90, -90]) {
@@ -76,8 +83,12 @@ test("polar full-dome curves remain in the visible hemisphere and the actual pro
       assert.ok(lines.every(line => line.every(Number.isFinite)));
       assert.ok(lines.every(([ax, ay, bx, by]) => ax >= 0 && bx >= 0 && ax <= 390 && bx <= 390 && ay >= 0 && by >= 0 && ay <= 844 && by <= 844));
     }
-    // Exactly half the declination parallels are above either pole's horizon.
-    assert.equal(grid.parallels.length, 360);
+    // At either pole the +/-30° declination circles have the corresponding
+    // signed altitude. A southward point on the lower circle is still inside
+    // this stereographic viewport, so the grid must preserve that real ray.
+    const scale = 844 / (2 * Math.tan(267.8 * Math.PI / 720));
+    const lowerY = center.y - scale * Math.tan(120 * Math.PI / 360);
+    assert.ok(distance(grid.parallels, center.x, lowerY) < 0.5);
     assert.ok(distance(grid.meridians, center.x, center.y) < 0.01);
   }
 });
@@ -107,18 +118,41 @@ test("adjacent grid segments evaluate each shared endpoint once and release it b
   for (let endpoint = 0; endpoint <= 4; endpoint++) assert.equal(calls.get(endpoint), 1, `fresh endpoint ${endpoint}`);
 });
 
+test("coordinate tracing never joins through the stereographic antipode", () => {
+  const trace = createSkyGridTracer(createSkyViewBasis(0, 90, 0)!, 390, 844, 359, undefined, skyHorizontalDirection);
+  // Both endpoints fit this extremely wide viewport, but the true midpoint
+  // is the antipode. A straight bridge would wrongly cross the camera center.
+  assert.deepEqual(trace(1, index => [160 + index * 40, 0]), []);
+});
+
+test("upper and lower rolled cameras clip both coordinate grids to their offset viewport", () => {
+  const center = { x: 127, y: 477 };
+  for (const beta of [0, 90, 180]) for (const fov of [0.05, 45, 267.8]) {
+    const basis = createSkyViewBasis(37, beta, 27)!;
+    const horizontal = skyHorizontalGrid(basis, 390, 844, fov, center);
+    const equatorial = skyEquatorialGrid(observerFrame(45, 13), basis, 390, 844, fov, center);
+    for (const lines of [horizontal.horizon, horizontal.altitude, horizontal.meridians,
+      equatorial.equator, equatorial.parallels, equatorial.meridians]) {
+      for (const line of lines) {
+        assert.ok(line.every(Number.isFinite));
+        assert.ok(line.every((value, index) => value >= -1e-7 && value <= (index % 2 ? 844 : 390) + 1e-7));
+      }
+    }
+  }
+});
+
 test("scene uses each exact-time equatorial frame in ordinary and red modes without depending on stars", () => {
   const later = "2026-09-28T17:00:00.000Z";
   const data = { ...report, hourly: [{ at }, { at: later }], observationFrames: [observerFrame(45, 0), observerFrame(45, 15, later)] } as unknown as ResolvedSkyReport;
   const first = render({ horizontal: false, equatorial: true }, data);
   const next = render({ horizontal: false, equatorial: true }, data, "NIGHT", later);
   const red = render({ horizontal: false, equatorial: true }, data, "OBSERVATION");
-  assert.equal(first.length, 4);
-  assert.ok(first.slice(1).every(stroke => stroke.lines.length > 0));
-  assert.notDeepEqual(first.slice(1).map(stroke => stroke.lines), next.slice(1).map(stroke => stroke.lines));
+  assert.equal(first.length, 3);
+  assert.ok(first.every(stroke => stroke.lines.length > 0));
+  assert.notDeepEqual(first.map(stroke => stroke.lines), next.map(stroke => stroke.lines));
   assert.deepEqual(first.map(stroke => stroke.lines), red.map(stroke => stroke.lines));
-  assert.deepEqual(red.slice(1).map(stroke => stroke.color), ["#6B211B", "#6B211B", "#6B211B"]);
-  assert.equal(render({ horizontal: false, equatorial: true }, data, "NIGHT", "2026-09-28T18:00:00.000Z").length, 1);
+  assert.deepEqual(red.map(stroke => stroke.color), ["#6B211B", "#6B211B", "#6B211B"]);
+  assert.equal(render({ horizontal: false, equatorial: true }, data, "NIGHT", "2026-09-28T18:00:00.000Z").length, 0);
   const mirrored = { ...data, observationFrames: data.observationFrames!.map(frame => ({ ...frame, equatorialToEnu: [-1, 0, 0, 0, 1, 0, 0, 0, 1] })) } as unknown as ResolvedSkyReport;
-  assert.equal(render({ horizontal: false, equatorial: true }, mirrored).length, 1);
+  assert.equal(render({ horizontal: false, equatorial: true }, mirrored).length, 0);
 });

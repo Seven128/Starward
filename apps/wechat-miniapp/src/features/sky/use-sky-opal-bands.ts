@@ -1,7 +1,7 @@
 import {useMemo} from "react";
 import type {JupiterBandsManifestData,SaturnBandsManifestData,UranusBandsManifestData,NeptuneBandsManifestData,SkyGeometryReport} from "@starward/miniapp-contracts";
 import {useResourceQuery} from "@/hooks/use-resource-query";
-import {useSkyNativeImages} from "./use-sky-artwork";
+import {useSkyFixedImage} from "./use-sky-fixed-image";
 import {skyPlanetDiscsAt} from "./sky-planet-disc";
 import {skyFixedImageStatus} from "./sky-fixed-image-status";
 import type {SkyArtworkView} from "./sky-artwork-registration";
@@ -22,10 +22,9 @@ export function useSkyOpalBands(profile:Profile,report:Pick<SkyGeometryReport,"h
   const manifest=useResourceQuery({queryKey:[profile.queryKey],queryFn:profile.getManifest,
     enabled:wanted,staleTime:60_000,structuralSharing:false});
   const publication=manifest.data;
-  const assets=useMemo(()=>publication?[{...publication.image,id:profile.id}]:[],[publication,profile.id]);
-  const images=useSkyNativeImages(canvas,canvasRevision,publication?.publicationHash,wanted,assets,
+  const images=useSkyFixedImage(canvas,canvasRevision,publication,active,wanted,profile.id,
     asset=>({url:profile.imageUrl(asset.downloadUrl),format:"png"}));
-  const image=images.images.get(profile.id)??images.retainedImages.get(profile.id)??null;
+  const image=images.image;
   const status=skyFixedImageStatus(wanted,image,manifest.isError,Boolean(manifest.refreshError),images.failed);
   return {image,publication,loading:wanted&&(manifest.isFetching||images.loading),
     ...status,failedImage:images.failedImage,

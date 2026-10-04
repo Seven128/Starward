@@ -1,0 +1,15 @@
+{
+  "scope": "Public wx window and native capsule bounds of current clean-v4 DevTools; screenshot crop geometry only, no physical acceptance.",
+  "screenWidth": 390,
+  "screenHeight": 844,
+  "windowWidth": 390,
+  "windowHeight": 762,
+  "capsule": {
+    "width": 87,
+    "height": 32,
+    "left": 296,
+    "top": 51,
+    "right": 383,
+    "bottom": 83
+  }
+}

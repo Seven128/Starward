@@ -1,0 +1,20 @@
+{"scenario":{"fov":5,"roll":0},"samples":31,"noGlError":true,"maximumChannelDelta":0.49955522508885863,"wrongOriginMaximumChannelDelta":117.80358305550237}
+{"scenario":{"fov":2,"roll":45},"samples":0,"noGlError":true,"maximumChannelDelta":null,"wrongOriginMaximumChannelDelta":null}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert.ok(result.correct.noGlError&&result.correct.samples.length>=12)
+
+    at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-w3-wcs-webgl-2026-09-28.mts:83:10) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.16.0

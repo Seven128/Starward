@@ -1,6 +1,12 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 
+/** Encoded byte identity shared by publication metadata and native downloads.
+ * A matching digest is not image quality, scientific validity or authorization. */
+export function skyImageContentHash(bytes: Uint8Array): string {
+  return bytesToHex(sha256(bytes));
+}
+
 /** Conservative encoded-color support for the existing additive survey display.
  * This is neither an alpha/missing-data mask nor scientific validity. A cell
  * is occupied when any source RGB channel is nonzero, including zero-alpha
@@ -60,7 +66,7 @@ export function readSkyImageDisplaySupport(value: unknown, pixels: number, sourc
       cursor += skip + length;
     }
   } else return null;
-  const sourceSha256 = typeof source === "string" ? source : bytesToHex(sha256(source));
+  const sourceSha256 = typeof source === "string" ? source : skyImageContentHash(source);
   if (support.sourceSha256 !== sourceSha256) return null;
   if (support.version === "encoded-rgb-support-v1") return Object.freeze({ version: support.version, sourceSha256,
     pixels: support.pixels, cellSize: support.cellSize, occupiedHex: support.occupiedHex });

@@ -1,0 +1,381 @@
+{
+  "capturedAtUtc": "2026-09-29T22:02:08.661Z",
+  "scope": "云观星开发证据；大字号暂停；未触手机／发布",
+  "build": {
+    "path": "apps/wechat-miniapp/dist/weapp-check-sky-time-v42",
+    "files": 257,
+    "rawBytes": 4521419,
+    "treeSha256": "17f4f66498cdf790a02309e00e8ddcd2e2b4e71f2f58acbfa3819106f51c8a27",
+    "skyPageSha256": "e1b7e964530a18d08e98d0eb771df872807bcc8377adf494a97c5a8080f29c37"
+  },
+  "sourceHashes": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "457c009c89cb54f9bca323874f20bd3fe5145e8f37a8edb669a26852965f8889"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "sha256": "12ef9aab80847f7deec1c517199b1f259aee92f31f99f8dbd2a4ecefd16bed7c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-observation-time.ts",
+      "sha256": "2ccada04a93fbe91ca95628c0e22d37e77d2d10c6793fe6d2a8e4145b3f8ec3a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-presentation-position.ts",
+      "sha256": "588da099d87377286b0b65bc3a307dad34fa52637806078e03bc7a38f561eadd"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-presentation-position.ts",
+      "sha256": "d95a18082968f69a5a5b20f443f6c18bf5997a27ccc16268c14348ecfbd5d222"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/api-client.ts",
+      "sha256": "2e0b1c64d040f113ee4fc59b814f5c9167058abbbd85e551a27b0207c3459d51"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-target-instant-response.ts",
+      "sha256": "30bb179d6152e45abd7809c6f6633cc7f52497073740d0c562f9431e4de2b42c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-target-instant-response.test.ts",
+      "sha256": "5626a8d8e2505b4e718e8e3ffa77c4abb30932b86801624ae1e0503fd85cd9e5"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/api-shapes.ts",
+      "sha256": "91a73b238b5c81b6d323d029a9e6ae1db72ff0aa9e99715beb9b3642aefadde9"
+    },
+    {
+      "path": "packages/miniapp-contracts/api/miniapp.operations.json",
+      "sha256": "4f95b178f118f2aabf97e75f83076d7b38c72a8108f6d54d5f355303268ac039"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts",
+      "sha256": "fa39d2679ff989a6cee74d12caa8f34777ea2accda7905a3c41646207af3eff7"
+    },
+    {
+      "path": "workers/miniapp-api/src/astronomy-service.ts",
+      "sha256": "a2c0862dfc48c00a026ea64400eed8333cfbd4353858aa68f90fb617057ac10f"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-service.ts",
+      "sha256": "a8d2ae6c368ec7f6448548091a4b55cebe4e465a6f5df93df667b0b9e120efc9"
+    },
+    {
+      "path": "workers/miniapp-api/src/controller.ts",
+      "sha256": "fc609160eede723addde107651a0f508604a3110e66090c6fc44a1d6b38711e6"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-api.test.ts",
+      "sha256": "3d68c20f13657ea1a7d4f513ebf2ed077de8260bf03ae7f2d68949c8c621266c"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-time-model.test.ts",
+      "sha256": "c2ad1840f659eaf27946d012f9ff4167841033ecdc113b790bbb669ad3d27c62"
+    }
+  ],
+  "context": {
+    "idSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d",
+    "revision": 4,
+    "selectedAtUtc": "2026-09-29T16:00:05.153Z",
+    "localDate": "2026-09-29",
+    "timezone": "Asia/Shanghai",
+    "fingerprint": "d1efdde87fea86158e9e7b97de77233a2805db2d8c54d10d6094353e45ce8337"
+  },
+  "counters": {
+    "initialPreplay": {
+      "mode": "pass",
+      "counts": {
+        "local": 288,
+        "errors": 0,
+        "reports": 27,
+        "targets": 11,
+        "contextPuts": 3
+      },
+      "targetReads": [
+        {
+          "at": "2026-09-29T13:00:49.33Z",
+          "status": 200,
+          "bytes": 9074,
+          "durationMs": 174,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        },
+        {
+          "at": "2026-09-29T13:00:55.952Z",
+          "status": 200,
+          "bytes": 9075,
+          "durationMs": 163,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        },
+        {
+          "at": "2026-09-29T16:00:05.153Z",
+          "status": 200,
+          "bytes": 9074,
+          "durationMs": 65,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        }
+      ]
+    },
+    "initialPostpause": {
+      "mode": "pass",
+      "counts": {
+        "local": 290,
+        "errors": 0,
+        "reports": 28,
+        "targets": 12,
+        "contextPuts": 3
+      },
+      "targetReads": [
+        {
+          "at": "2026-09-29T13:00:55.952Z",
+          "status": 200,
+          "bytes": 9075,
+          "durationMs": 163,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        },
+        {
+          "at": "2026-09-29T16:00:05.153Z",
+          "status": 200,
+          "bytes": 9074,
+          "durationMs": 65,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        },
+        {
+          "at": "2026-09-29T16:00:10.779Z",
+          "status": 200,
+          "bytes": 9074,
+          "durationMs": 86,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        }
+      ]
+    },
+    "sdk3174Warm": {
+      "mode": "pass",
+      "counts": {
+        "local": 328,
+        "errors": 0,
+        "reports": 32,
+        "targets": 13,
+        "contextPuts": 3
+      },
+      "targetReads": [
+        {
+          "at": "2026-09-29T16:00:05.153Z",
+          "status": 200,
+          "bytes": 9074,
+          "durationMs": 65,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        },
+        {
+          "at": "2026-09-29T16:00:10.779Z",
+          "status": 200,
+          "bytes": 9074,
+          "durationMs": 86,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        },
+        {
+          "at": "2026-09-29T16:00:10.581Z",
+          "status": 200,
+          "bytes": 9074,
+          "durationMs": 90,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        }
+      ]
+    },
+    "beforeRefresh": {
+      "mode": "fail",
+      "counts": {
+        "local": 331,
+        "errors": 0,
+        "reports": 33,
+        "targets": 13,
+        "contextPuts": 3
+      },
+      "targetReads": [
+        {
+          "at": "2026-09-29T16:00:05.153Z",
+          "status": 200,
+          "bytes": 9074,
+          "durationMs": 65,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        },
+        {
+          "at": "2026-09-29T16:00:10.779Z",
+          "status": 200,
+          "bytes": 9074,
+          "durationMs": 86,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        },
+        {
+          "at": "2026-09-29T16:00:10.581Z",
+          "status": 200,
+          "bytes": 9074,
+          "durationMs": 90,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        }
+      ]
+    },
+    "failedRefresh": {
+      "mode": "fail",
+      "counts": {
+        "local": 354,
+        "errors": 0,
+        "reports": 34,
+        "targets": 15,
+        "contextPuts": 3
+      },
+      "targetReads": [
+        {
+          "at": "2026-09-29T16:00:10.581Z",
+          "status": 200,
+          "bytes": 9074,
+          "durationMs": 90,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        },
+        {
+          "at": "2026-09-29T16:00:10.581Z",
+          "status": 503,
+          "bytes": 86,
+          "durationMs": 0,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        },
+        {
+          "at": "2026-09-29T16:00:10.581Z",
+          "status": 503,
+          "bytes": 86,
+          "durationMs": 0,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        }
+      ]
+    },
+    "recoveredRefresh": {
+      "mode": "pass",
+      "counts": {
+        "local": 355,
+        "errors": 0,
+        "reports": 34,
+        "targets": 16,
+        "contextPuts": 3
+      },
+      "targetReads": [
+        {
+          "at": "2026-09-29T16:00:10.581Z",
+          "status": 503,
+          "bytes": 86,
+          "durationMs": 0,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        },
+        {
+          "at": "2026-09-29T16:00:10.581Z",
+          "status": 503,
+          "bytes": 86,
+          "durationMs": 0,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        },
+        {
+          "at": "2026-09-29T16:00:10.581Z",
+          "status": 200,
+          "bytes": 9074,
+          "durationMs": 7,
+          "contextIdSha256": "47f3d08c37f243693635ad71240219077c73e361e86def60847aa3d9334a724d"
+        }
+      ]
+    }
+  },
+  "nativeSnapshots": "experience-v42-native-snapshots-2026-09-30.json",
+  "captures": [
+    {
+      "file": "reference-stellarium-m31-5_83-2026-09-30.jpg",
+      "sha256": "70b8d2435c144ab346941c66786c6c7fff18bc800080fa37faeb11ba41308adb",
+      "bytes": 122204,
+      "width": 1280,
+      "height": 720,
+      "format": "jpg",
+      "dimensionsMethod": "image-size；原字节保留，无重编码或像素校验"
+    },
+    {
+      "file": "reference-stellarium-m31-0_828-2026-09-30.jpg",
+      "sha256": "fbac8430be1331f383af95d0b61c8c0bdb26a93eea6839b99b382ced2743ed9a",
+      "bytes": 138120,
+      "width": 1280,
+      "height": 720,
+      "format": "jpg",
+      "dimensionsMethod": "image-size；原字节保留，无重编码或像素校验"
+    },
+    {
+      "file": "reference-stellarium-m42-5_83-2026-09-30.jpg",
+      "sha256": "762d6836e274c966d08e40837214997399e605c279ee1250e125c08c31c01ee7",
+      "bytes": 125686,
+      "width": 1280,
+      "height": 720,
+      "format": "jpg",
+      "dimensionsMethod": "image-size；原字节保留，无重编码或像素校验"
+    },
+    {
+      "file": "reference-stellarium-m42-0_828-2026-09-30.jpg",
+      "sha256": "010016f93be123bfe4068a06bc0d18703a1e9d5adc70bc5452efc2e25a927275",
+      "bytes": 129129,
+      "width": 1280,
+      "height": 720,
+      "format": "jpg",
+      "dimensionsMethod": "image-size；原字节保留，无重编码或像素校验"
+    },
+    {
+      "file": "reference-stellarium-m42-return-5_83-2026-09-30.jpg",
+      "sha256": "2b1fefa10036759b8968d1cd6cc22fbff9613db9851949f7cb166fa018129d79",
+      "bytes": 126063,
+      "width": 1280,
+      "height": 720,
+      "format": "jpg",
+      "dimensionsMethod": "image-size；原字节保留，无重编码或像素校验"
+    },
+    {
+      "file": "experience-time-v42-controls-2026-09-30.png",
+      "sha256": "77148c4777bbf1b98235830a16a30f0d38e478d20138ddcafdd6ab9051b4d611",
+      "bytes": 59624,
+      "width": 192,
+      "height": 413,
+      "format": "png",
+      "dimensionsMethod": "image-size；原字节保留，无重编码或像素校验"
+    }
+  ],
+  "nativeRuntime": {
+    "initialSdk": "3.17.3",
+    "recoveryCombinationSdk": "3.17.4",
+    "restoredSdk": "3.17.3",
+    "comparisonScope": "隔离检查包临时固定本机已安装库；原 trial 配置已精确恢复，重新打开后实际WXML与页节点 _Fk 一致，console grep error/recursive无命中；不能据临时比较认定3.17.3根因",
+    "initialNavigationStartupTimeout": "记录失败，不计通过",
+    "setDataProbe": "两种参数转发均抛 native clone 错误；诊断包装已还原，未认定产品或SDK根因"
+  },
+  "reference": {
+    "url": "https://stellarium-web.org/",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "locationLabel": "NEAR SINGAPORE",
+    "uiTime": "2026-09-30 05:05:33",
+    "clockPaused": true,
+    "fovUiDegrees": [
+      5.83,
+      0.828
+    ],
+    "objects": [
+      "M31",
+      "M42"
+    ],
+    "limits": "未读出精确坐标、时区及FOV方向定义；与Mini测试地点/时刻不同，未作跨平台像素或几何验收。两样本高倍局部纹理保留，不外推全部对象/统一阈值。"
+  },
+  "checks": {
+    "validator": "新 availability/validAt/contextRevision 反例修前 Missing expected exception，修后1项通过；SAMPLE_DATA/PARTIAL标签保留",
+    "miniTypecheck": "通过",
+    "isolatedV42Build": "通过；既有3项警告",
+    "backend": "沿v41本代服务原绑定，无新backend改动"
+  },
+  "limitations": [
+    "当前Sky截图只见Canvas；实际WXML文字与事件检查不认证普通覆盖层、呼吸或手机合成",
+    "临时诊断失败和未产生效果的点击不计正常交互通过",
+    "独立审查／整场质量／SAO迟到失败／资源峰值／官方包体／实际成本和最终手机验收仍开放",
+    "旧手机未认证本代新月面，商业范围及排除理由保持"
+  ]
+}

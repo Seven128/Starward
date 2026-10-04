@@ -1,0 +1,130 @@
+{
+  "scope": "Existing production Canvas owners, current public epoch/resources and actual M31 LOD input correction; bounded self-reviewed software diagnosis, not ordinary native/device or whole-experience acceptance",
+  "baseBinding": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-area-display-support-binding-2026-09-30.json",
+    "sha256": "54496a47ff5fb867e3767efeebb57bb83e8111a960ba0f5dc818b608c9cceca6"
+  },
+  "inputs": [
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/result.json",
+      "sha256": "a901148cbf56448aeac611b41b408878cd8b24158ad6187d53a65f0e51513228"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-image-levels-0930/result.json",
+      "sha256": "073e7c4369ee63d3282b2626212f2580953c48992875690ade956b4f7769979d"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-current-composition-2026-09-30.mts",
+      "sha256": "1c0de59695c1d993da93cad3731473eea70c3f6b18ffb6d54b3d6effab43e596"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-current-image-levels-2026-09-30.mts",
+      "sha256": "8d03cb2ddba6e9ac211d0c693ee7e4b6c5755be068ce3228555d2050e8b34273"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/current-composition-0930.log",
+      "sha256": "93220494392979557c9ae2a41a91154e686109ddc714a386951f48e4c8d8ee49"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/current-image-levels-0930.log",
+      "sha256": "0d7b150929856cdc68b6c02e1c9cc4d91547f0c645607d840e8634ccc210a03a"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-composition-2026-09-30.md",
+      "sha256": "9f70120c78f06e5ffe00e334c60f0fa8e552ea876b9615462af097b3623213d7"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+      "sha256": "e8589e0d2fd951f2cbe81f79aadc04b2ad8adcdaa55b798ae935aae79e3a7e47"
+    }
+  ],
+  "captures": [
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/west-noon.png",
+      "sha256": "ac05592860b8e728624771da53b970dea8560a28ced6554c273c3b5a50498247"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/west-dusk.png",
+      "sha256": "dca0dfc833e0db6730381da587968551b34d5389863cf2e8d2a5fd16161197a3"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/west-night.png",
+      "sha256": "95f6dbb1d7122ae6129a749737790a0308bf2e66fde2a3458b210adeb5e1399d"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/west-red.png",
+      "sha256": "2955101b2d3efbc8d399bd4dd316ed28e5326a91cf75157d3701188a4f4afc99"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/night-dome.png",
+      "sha256": "821ee85ac6b3fda65ac242b1522dd348f13464bef48243b66243903c3bda9511"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/altair-wide.png",
+      "sha256": "9d037da46b96ad53d92be8d7e14c4f922b88837935941e4762d4461a27dee3bc"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/altair-without-galactic-image.png",
+      "sha256": "5d37e39bb30bceb21da9699e23710722d8eb06d69fe456cda5a0e519491a3dec"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/altair-local.png",
+      "sha256": "e735854a1b1af905ba7557cf43b26d11f3191a9a3b6e8ec91e09fbee863095fe"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/altair-wide-return.png",
+      "sha256": "9d037da46b96ad53d92be8d7e14c4f922b88837935941e4762d4461a27dee3bc"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/m31-wide.png",
+      "sha256": "ec2880c4df69b3fcb5252b569ea2a74db1edefc593018ef1b3babae8a33c1c1e"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/m31-local.png",
+      "sha256": "e1922945d3e10bfb2c14b874b076263d1af136a1c44fc09c0e6f27faacee2bb9"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-composition-0930/m31-without-image.png",
+      "sha256": "da20b988b48bf19e4c79a2120fa5070d435cd4c3456a0d1f10b72f1053f8fb5f"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-image-levels-0930/west-dusk.png",
+      "sha256": "7cb51639ca434c50d935e204763abaaa1695b891ec6ea0c9cbb7db78abbc9535"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-image-levels-0930/m31-wide.png",
+      "sha256": "2100fcc7f7e20cdfa625f4e30e916ba6d5f2e27041aabbeba3fb38e11a50a97f"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-image-levels-0930/m31-local.png",
+      "sha256": "6afb66e600bc3403ee5ce1758747f10fe6687f5efe155c2e514960b28c199989"
+    },
+    {
+      "path": "output/playwright/cloud-sky-current-image-levels-0930/m31-wide-return.png",
+      "sha256": "2100fcc7f7e20cdfa625f4e30e916ba6d5f2e27041aabbeba3fb38e11a50a97f"
+    }
+  ],
+  "visuallyInspected": [
+    "west-noon",
+    "west-dusk",
+    "west-night",
+    "west-red",
+    "night-dome",
+    "altair-wide",
+    "altair-without-galactic-image",
+    "m31-wide",
+    "m31-local"
+  ],
+  "firstDiagnosticLimits": "Fixed OVERVIEW high-zoom image and decoded preload are diagnostic inputs, not actual native demand/LOD/resource scheduling evidence",
+  "corrected": "Current M31 MEDIUM/DETAIL response owner, source imagery and production LOD owner; earlier OVERVIEW blur not a product fine-layer conclusion",
+  "controlling": "Original request requires dark ordinary sky AND complete atmosphere/twilight/landscape quality; shader constants are implementation, not requirements",
+  "actions": {
+    "productionSourceEdited": false,
+    "sourceImageEdited": false,
+    "contextWritten": false,
+    "nativeOpened": false,
+    "phonePreviewed": false,
+    "otherBusinessEdited": false
+  },
+  "remaining": "Comparable dawn/dusk/day aids and scene quality, other source correctness, ordinary native journey/composition/performance, phone and necessary independent review"
+}

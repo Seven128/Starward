@@ -1,0 +1,51 @@
+d03075a6b908e08e5bc806f6540e6e8bb1d990c0
+apps/wechat-miniapp/config/index.ts
+apps/wechat-miniapp/src/components/source-attribution.scss
+apps/wechat-miniapp/src/components/source-attribution.tsx
+apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx
+apps/wechat-miniapp/src/services/api-request-test-support.ts
+apps/wechat-miniapp/src/services/sky-report-catalog.test.ts
+apps/wechat-miniapp/src/state/app-store.ts
+docs/design-resources/wechat-miniapp/sky/ADOPTED.md
+packages/miniapp-contracts/src/generated/miniapp-api.generated.ts
+project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md
+
+Auto-merging .codex/skills/starward-wechat-device-verification/SKILL.md
+Auto-merging .gitattributes
+Auto-merging DESIGN.md
+Auto-merging apps/wechat-miniapp/config/index.ts
+CONFLICT (content): Merge conflict in apps/wechat-miniapp/config/index.ts
+Auto-merging apps/wechat-miniapp/src/components/native-back-boundary.test.ts
+Auto-merging apps/wechat-miniapp/src/components/source-attribution.scss
+CONFLICT (content): Merge conflict in apps/wechat-miniapp/src/components/source-attribution.scss
+Auto-merging apps/wechat-miniapp/src/components/source-attribution.tsx
+CONFLICT (content): Merge conflict in apps/wechat-miniapp/src/components/source-attribution.tsx
+Auto-merging apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx
+CONFLICT (content): Merge conflict in apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx
+Auto-merging apps/wechat-miniapp/src/services/api-client.ts
+Auto-merging apps/wechat-miniapp/src/services/api-request-test-support.ts
+CONFLICT (content): Merge conflict in apps/wechat-miniapp/src/services/api-request-test-support.ts
+Auto-merging apps/wechat-miniapp/src/services/observation-context-recovery.ts
+Auto-merging apps/wechat-miniapp/src/services/sky-report-catalog.test.ts
+CONFLICT (content): Merge conflict in apps/wechat-miniapp/src/services/sky-report-catalog.test.ts
+Auto-merging apps/wechat-miniapp/src/sky/sources/index.tsx
+Auto-merging apps/wechat-miniapp/src/state/app-store.test.ts
+Auto-merging apps/wechat-miniapp/src/state/app-store.ts
+CONFLICT (content): Merge conflict in apps/wechat-miniapp/src/state/app-store.ts
+Auto-merging apps/wechat-miniapp/src/state/notification.ts
+Auto-merging docs/design-resources/wechat-miniapp/sky/ADOPTED.md
+CONFLICT (content): Merge conflict in docs/design-resources/wechat-miniapp/sky/ADOPTED.md
+Auto-merging packages/miniapp-contracts/api/miniapp.operations.json
+Auto-merging packages/miniapp-contracts/src/api-shapes.ts
+Auto-merging packages/miniapp-contracts/src/generated/miniapp-api.generated.ts
+CONFLICT (content): Merge conflict in packages/miniapp-contracts/src/generated/miniapp-api.generated.ts
+Auto-merging packages/miniapp-contracts/src/index.ts
+Auto-merging packages/miniapp-contracts/src/types.ts
+Auto-merging project_context/architecture/runtime-and-domain.md
+Auto-merging project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md
+CONFLICT (content): Merge conflict in project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md
+Auto-merging workers/miniapp-api/src/controller.ts
+Auto-merging workers/miniapp-api/src/miniapp-api.test.ts
+Auto-merging workers/miniapp-api/src/miniapp-service.ts
+Auto-merging workers/miniapp-api/src/observation-context-service.ts
+Auto-merging workers/miniapp-api/src/ports.ts

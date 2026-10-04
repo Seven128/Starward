@@ -1,0 +1,41 @@
+✔ only two image loads start together and ready figures survive repeated camera updates (4.8656ms)
+✔ a ready coarse image remains canvas-owned while a finer replacement loads (1.7808ms)
+✔ identical published bytes can belong to different tile identities without stale geometry (3.5558ms)
+✔ hidden/superseded late responses cannot restore unwanted figures (0.5015ms)
+✔ failure is latched through pose updates until explicit retry; GPU failures share recovery (0.6773ms)
+✔ art preserves all three source anchors under roll, offset center and different FOVs (10.2267ms)
+✔ plane interior, extrapolated corners and reversed rays do not become screen billboards (1.3079ms)
+✔ invalid or degenerate anchors are unavailable without invented registration (0.4541ms)
+✔ art camera uses actual logical size and offset, not research constants (1.9937ms)
+✔ view ray hull includes curved viewport edges under roll and offset centers (23.8673ms)
+✔ request and file success alone cannot claim decoded art; release clears file once (2.5675ms)
+✔ cancellation during write removes the late file and cannot start decoding (0.5504ms)
+✔ wrong PNG identity/dimensions or native decode fail leave no usable image (0.4702ms)
+✔ published 512-pixel JPEG tile uses the same owned native decode and rejects wrong geometry (2.0372ms)
+✔ synchronous native failures enter the retry path and release a possibly partial owned file (0.9291ms)
+✔ simulated ground follows the current exact sun and camera in ordinary and red modes (54.0717ms)
+✔ virtual geometry paints after celestial layers and publishes only an actually successful mask (27.8938ms)
+✔ the final virtual mask never opens a fully covered Moon, while an unobstructed repaint restores it (36.1628ms)
+✔ missing exact illumination and GPU failure retain independent scene completion (14.2251ms)
+✔ corners on different trees cannot certify that open sky between them is covered (1.9191ms)
+✔ M51 optical level follows measured field while wider views keep W3 (1.8233ms)
+✔ fully covered M51 images lose visible credits only after the foreground actually paints (81.6556ms)
+✔ leaving the image's whole field clears both credits without reporting a load failure (15.592ms)
+✔ foreground coverage preserves exposed image edges, including a covered center (7.4697ms)
+✔ a fully covered narrow viewport loses credit even when image edges extend into open sky offscreen (7.5ms)
+✔ M51 optical draw is above W3, and optical failure preserves W3 and the scene (24.5371ms)
+✔ M51 optical pixels replace underlying infrared light without changing the W3 fallback (6.2007ms)
+✔ partial image edges remain eligible after their center leaves the narrow viewport (6.2269ms)
+✔ SDSS credit follows committed optical pixels across request and focus transitions (17.6132ms)
+✔ actual M31 FITS WCS pixels remain registered after observer and time rotations (19.0888ms)
+✔ all 51 source centers bind to FITS half-pixel origin at each published resolution (19.6994ms)
+✔ actual Legacy Surveys M104 TAN pixel origin preserves its centered JPEG registration (2.2475ms)
+✔ fine optical failure retains the nearest ready coarse level and an explicit retry (119.3645ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1813.1278

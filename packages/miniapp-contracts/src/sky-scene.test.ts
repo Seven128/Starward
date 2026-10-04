@@ -172,3 +172,21 @@ test("deep-sky frames bind stable Messier identities and tangent samples to the 
       { ...available.deepSky!.frames[1]!, points: [[1, 25, 31, 25, 31.1, 25.1, 31]] }] },
   }, available.frames.map((frame) => frame.at)), /deep_sky_point_1_0/u);
 });
+
+test("catalog ICRS centers are optional for old reports and validated independently of horizontal samples", () => {
+  const withCenter = (icrsCenter: unknown): SkyScene => ({
+    ...available,
+    deepSky: { ...available.deepSky!, catalog: { ...available.deepSky!.catalog!, entries: [
+      { ...available.deepSky!.catalog!.entries[0]!, icrsCenter } as any,
+    ] } },
+  });
+  const at = available.frames.map(frame => frame.at);
+  assert.doesNotThrow(() => assertSkyScene(available, at), "old cached entries remain usable");
+  for (const center of [undefined, null, { raDeg: 10.6847083333333, decDeg: 41.26875 },
+    { raDeg: 0, decDeg: -90 }, { raDeg: 359.999, decDeg: 90 }])
+    assert.doesNotThrow(() => assertSkyScene(withCenter(center), at));
+  for (const center of ["10,41", [], {}, { raDeg: 10 }, { decDeg: 41 },
+    { raDeg: NaN, decDeg: 41 }, { raDeg: 360, decDeg: 41 }, { raDeg: -1, decDeg: 41 },
+    { raDeg: 10, decDeg: Infinity }, { raDeg: 10, decDeg: 90.01 }, { raDeg: 10, decDeg: -90.01 }])
+    assert.throws(() => assertSkyScene(withCenter(center), at), /deep_sky_entry_0_icrs_center/u);
+});

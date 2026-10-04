@@ -1,0 +1,99 @@
+{
+  "scope": "C06 local publication/consumer/shared composition and running adoption; no goal/device/quality completion",
+  "candidate": {
+    "sha256": "f2447809394dcc6b45054a51114402777073255091b902d633e5402f0c3f6d9a",
+    "rawBytes": 4483231,
+    "rawMain": 2089538
+  },
+  "storage": [
+    {
+      "reference": "M:63",
+      "files": 4,
+      "bytes": 60745
+    },
+    {
+      "reference": "M:64",
+      "files": 4,
+      "bytes": 51890
+    },
+    {
+      "reference": "M:81",
+      "files": 4,
+      "bytes": 51385
+    },
+    {
+      "reference": "M:82",
+      "files": 4,
+      "bytes": 65088
+    },
+    {
+      "reference": "M:87",
+      "files": 4,
+      "bytes": 56734
+    }
+  ],
+  "resources": {
+    "created": 13,
+    "deleted": 13
+  },
+  "checkedScenes": 15,
+  "unchangedControls": [
+    {
+      "name": "M-82-optical-unavailable",
+      "sha256": "8f22a21972000ee60d66687a77f7df2631501a1790802f10f83025aba7bdbd63"
+    },
+    {
+      "name": "M-82-red",
+      "sha256": "759b37aa2844d2f638b37eb70e0ba8f2847d77fbe4e10fee3d97ae0a0e67f6e1"
+    },
+    {
+      "name": "M-82-next-frame",
+      "sha256": "c51e4be492d5e52ba9eec2865a5aefee79e9d4e1e2d7428ea33c8f3ab73a6eed"
+    }
+  ],
+  "currentProxy": {
+    "pid": 31448,
+    "execSession": 98346,
+    "internalPort": 53462,
+    "contextUpstream": 8789,
+    "epoch": "2026-09-28T20:37:04.113Z"
+  },
+  "independentReview": "unavailable",
+  "nativeAcceptance": "unverified",
+  "sourceQuality": "saturation/stripe restrictions remain",
+  "sourceHashes": [
+    {
+      "file": "packages/miniapp-contracts/src/sdss-optical-publication.ts",
+      "sha256": "0fd5f2c3b7e29cc478ef04dd9b9af7516916b71993a34aba2645852fcd3daa38"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/sdss-optical-client.ts",
+      "sha256": "df7f5220922f4c96e76373c3a8b82ce3325f443ce44001d1ec8bfc28a97e1ed2"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/services/api-client.ts",
+      "sha256": "5afa9eb8364c8a5ec39e9cbd1c3dfb3306f7c771200fed9d8edfd93a9e568ca6"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/use-sky-sdss-optical.ts",
+      "sha256": "8582286ccf68c26540ff791689c12422f0aa8cb4bbe09549ad470743a1ae4026"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-sdss-optical-selection.ts",
+      "sha256": "25caef3642fb1e6faadf103db383e27e9fa31ccd9802ef484dd01522e3b132f0"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "sha256": "7813e5f6a8ed9e700e7d2aae749e862ca1ad9be223b3b28a47bdcb296246b484"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "sha256": "6a78e5488b8c00ac46ffdc87d02e551ebbff6e8dec4ce729c312327a80de98b6"
+    },
+    {
+      "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "b0e1eaaa71c2b212a71e506a7647c28a48612ffbc64dc11e823bd9a478855b0a"
+    }
+  ],
+  "reportSha256": "1979315296773fa9922ddd98d7edd98af2ae5befe406daf489769c226292fa31"
+}

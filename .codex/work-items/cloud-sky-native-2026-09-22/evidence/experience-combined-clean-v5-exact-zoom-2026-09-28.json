@@ -1,0 +1,140 @@
+{
+  "scope": "Exact clean-v5 public locate canonical scale and native Canvas pinch; same actual 25 degree frame/UTC/identity, public viewport-derived full dome. Actual PNG comparison; no sensor, physical gesture, phone composition, resource or performance acceptance",
+  "candidateHash": "0787c3e850bbf05f7e36965b0aada21f0f8cf923edbc9aa815b3fb3738116826",
+  "metrics": {
+    "canvas": {
+      "id": "spot-night-sky-scene",
+      "dataset": {
+        "sid": "_AzK"
+      },
+      "left": 0,
+      "right": 390.3999938964844,
+      "top": 0,
+      "bottom": 844,
+      "width": 390.3999938964844,
+      "height": 844
+    },
+    "dock": {
+      "id": "sky-bottom-controls",
+      "dataset": {
+        "sid": "_bS"
+      },
+      "left": 12,
+      "right": 100,
+      "top": 662,
+      "bottom": 810,
+      "width": 88,
+      "height": 148
+    },
+    "back": {
+      "id": "_aj",
+      "dataset": {
+        "sid": "_aj"
+      },
+      "left": 12,
+      "right": 56,
+      "top": 96.9124984741211,
+      "bottom": 140.9124984741211,
+      "width": 44,
+      "height": 44
+    },
+    "notification": {
+      "id": "_ae",
+      "dataset": {
+        "sid": "_ae"
+      },
+      "left": 12,
+      "right": 378.3999938964844,
+      "top": 148.91250610351562,
+      "bottom": 148.91250610351562,
+      "width": 366.3999938964844,
+      "height": 0
+    },
+    "capsule": {
+      "width": 87,
+      "height": 32,
+      "left": 296,
+      "top": 51,
+      "right": 383,
+      "bottom": 83
+    },
+    "screenHeight": 844
+  },
+  "insets": {
+    "top": 156.91250610351562,
+    "bottom": 190
+  },
+  "fullDomeFov": 267.79041465577143,
+  "events": [
+    {
+      "action": "public pinch",
+      "from": 25,
+      "toRequested": 85,
+      "startSeparation": 220,
+      "endSeparation": 61.957408818699555
+    },
+    {
+      "action": "public pinch",
+      "from": 45,
+      "toRequested": 25,
+      "startSeparation": 197.10879267635735,
+      "endSeparation": 358
+    },
+    {
+      "capture": "before",
+      "filename": "experience-combined-clean-v5-exact-zoom-before-2026-09-28.png",
+      "sha256": "69a86013652b5da13f7843be17e4641b58b6135b710ddab9ca6bc28379fbe4b9",
+      "state": {
+        "description": "示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，可见星座 天琴座，3 个真实目标，已选择跟踪Vega，所选观测时刻 00:00",
+        "located": "Vega定位标记，查看资料",
+        "locatedStyle": "left: 195.19999694824207px; top: 422px;",
+        "tracking": "Vega · 跟踪中停止跟踪"
+      }
+    },
+    {
+      "action": "public pinch",
+      "from": 25,
+      "toRequested": 300,
+      "startSeparation": 220,
+      "endSeparation": 6.455946023416631
+    },
+    {
+      "capture": "all-sky",
+      "filename": "experience-combined-clean-v5-exact-zoom-all-sky-2026-09-28.png",
+      "sha256": "57e94cf0f834d12937091d26f91383b04a380a10bd1e3b6d46e230cb8b6bae78",
+      "state": {
+        "description": "示例观星点的方位高度天空图，已呈现垂直视场 267.8 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，已选择跟踪Vega，所选观测时刻 00:00",
+        "located": "Vega定位标记，查看资料",
+        "locatedStyle": "left: 195.1999969482422px; top: 528.4660963841792px;",
+        "tracking": "Vega · 全天总览中保留跟踪停止跟踪"
+      }
+    },
+    {
+      "action": "public pinch",
+      "from": 267.79041465577143,
+      "toRequested": 25,
+      "startSeparation": 16.68487536997728,
+      "endSeparation": 357.99999999999994
+    },
+    {
+      "capture": "after",
+      "filename": "experience-combined-clean-v5-exact-zoom-after-2026-09-28.png",
+      "sha256": "a6944d3a9e50e2ec9e1a307ce02e47f41e59938b9bcea906abf8627d64e1c433",
+      "state": {
+        "description": "示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，可见星座 天琴座，3 个真实目标，已选择跟踪Vega，所选观测时刻 00:00",
+        "located": "Vega定位标记，查看资料",
+        "locatedStyle": "left: 195.19999694824207px; top: 422px;",
+        "tracking": "Vega · 跟踪中停止跟踪"
+      }
+    }
+  ],
+  "crop": {
+    "x": 4,
+    "y": 108,
+    "right": 484,
+    "bottom": 1042
+  },
+  "skyChanged": 314,
+  "maxSkyChannelDelta": 144,
+  "candidateFilesUnchanged": true
+}

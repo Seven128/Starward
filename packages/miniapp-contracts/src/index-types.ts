@@ -3,6 +3,10 @@ export type * from "./api-shapes.ts";
 export * from "./moon-coverage-publication.ts";
 export * from "./deep-sky-image-publication.ts";
 export type * from "./sdss-optical-publication.ts";
+export type * from "./prepared-optical-publication.ts";
+export type * from "./prepared-progressive-optical-publication.ts";
+export type * from "./prepared-display-optical-publication.ts";
+export type * from "./prepared-rendered-optical-publication.ts";
 export type * from "./preferences.ts";
 export type * from "./contribution-feedback.ts";
 

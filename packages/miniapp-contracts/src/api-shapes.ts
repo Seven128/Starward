@@ -99,9 +99,11 @@ export interface CelestialObjectSearchData {
 }
 /** Binary JPEG or source-bound PNG body; no ApiEnvelope at runtime. */
 export type CelestialObjectImageData = Uint8Array;
+export type { DeepSkyImageDiscoveryData } from "./deep-sky-image-publication.ts";
 /** Machine-readable publication download; no ApiEnvelope. */
 export type DeepSkyManifestData = Record<string, unknown>;
 export type SdssOpticalImageData = Uint8Array;
+export type PreparedOpticalImageData = Uint8Array;
 /** A fixed, low-resolution infrared all-sky copy from the CDS HiPS master.
  * The twelve listed order-0 files are the complete published coverage. */
 export interface WideFieldW3ManifestData {

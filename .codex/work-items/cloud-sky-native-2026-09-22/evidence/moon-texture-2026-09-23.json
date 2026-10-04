@@ -1,0 +1,58 @@
+{
+  "scope": "C05 fixed USGS Clementine 750 nm lunar surface detail; local development and simulator only",
+  "source": {
+    "product": "https://astrogeology.usgs.gov/search/map/moon_clementine_uvvis_global_mosaic_118m",
+    "wmsLayer": "uv_v2 / Clementine uv750 Global Basemap v2 Mosaic",
+    "wmsCatalogue": "https://astrowebmaps.wr.usgs.gov/webmapatlas/Layers/maps.html",
+    "rights": "https://www.usgs.gov/faqs/are-usgs-reportspublications-copyrighted",
+    "manifest": "workers/miniapp-api/assets/moon/manifest.json",
+    "asset": "workers/miniapp-api/assets/moon/clementine-uv750-v2-wms-2048x1024.jpg",
+    "bytes": 372399,
+    "sha256": "e071f796a1ec1f7c9f4d87660aabb1bb40adbfacc0ecb253919bee6c711efefb",
+    "limitations": "1994 monochrome 750 nm WMS export, not natural color or an LROC product; WMS v2 is not asserted to be the v2.1 GeoTIFF."
+  },
+  "runtime": {
+    "localHttp": {
+      "manifestStatus": 200,
+      "imageStatus": 200,
+      "downloadBytes": 372399,
+      "downloadSha256MatchesManifest": true,
+      "publicationHash": "ccdcceac70cf74c041cff589f59ea6a2b06f8b741f0be97e67b59799b22b73e6"
+    },
+    "docker": {
+      "image": "starward-miniapp-api-moon-local:latest",
+      "buildSucceeded": true,
+      "moduleReadsManifestAndImage": true,
+      "imageSha256MatchesManifest": true,
+      "gaiaDr3PackPresent": false,
+      "deployed": false
+    },
+    "devtools": {
+      "kind": "WeChat DevTools native WEAPP simulator, not a phone",
+      "fixture": "MEMORY_TEST formal sample spot near Shenzhen Dapeng, 2026-09-22T13:00:00.000Z",
+      "action": "Map selected spot -> Sky -> manual view -> HR 8033 search/location -> pinch 45 to 9.6 degrees -> drag Moon into view -> pinch to 2.6 degrees",
+      "screenshot": "artifacts/miniapp/cloud-sky-native/moon-detail-21.png",
+      "screenshotSha256": "fded08e91c0c4fe913c8f83bb773ed4c1a1b7f127c4af628f568e109d9584c52",
+      "observed": "Moon disc has distinguishable gray surface features and a dark waxing-gibbous left side while surrounding stars remain; FOV aria reports 2.6 degrees and exact report instant. The image is visibly mapped to the sphere, not a flat fullscreen overlay.",
+      "network": "DevTools network records GET /v2/sky/moon/manifest and hash-bound JPEG as HTTP 200; no authorization field retained in this evidence.",
+      "sourceDisclosure": "Expanded native WXML includes USGS credit, 750 nm historical/grayscale and calculated-phase limits, product and policy links, and same-origin manifest URL. Canvas covers ordinary WXML in the simulator, so mobile visibility/usability is unproven.",
+      "consoleFilter": "grep error|sky_gpu|shader|moon returned no matching console lines; empty filter does not certify absence of other errors."
+    }
+  },
+  "checks": {
+    "miniappTests": "789/789 pass",
+    "apiTests": "345 pass, 11 existing skips, 0 fail (356 total)",
+    "contractTests": "29/29 pass before final documentation only",
+    "typecheck": "miniapp, miniapp-api and miniapp-contracts exit 0",
+    "sdkCheck": "miniapp_generated_sdk_current",
+    "isolatedWeappBuild": "exit 0; three existing CSS order, common.js 318 KiB and webpack performance warning groups",
+    "contextValidate": "exit 0 after owner updates",
+    "diffCheck": "exit 0 before documentation-only updates"
+  },
+  "notEstablished": [
+    "Android/iOS Canvas and WXML composition or source-panel touch usability",
+    "independent calibrated lunar surface orientation and photometry",
+    "physical-device frame cost, memory peak, upload budget and network charge",
+    "independent final review and commercial deployment"
+  ]
+}

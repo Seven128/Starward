@@ -1,0 +1,378 @@
+{
+  "at": "2026-10-01T03:06:22.019Z",
+  "scope": "Current production request/loader replay using existing exact published PNG/JPEG bytes. Native callbacks are modeled as synchronous; ownership references, not physical memory or rendered quality.",
+  "sourceHashes": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-loader.ts",
+      "sha256": "ebffe5fed0ff4746a80ecb596d6e41f1db0ca20538664fa85dba8327d200d81d"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-request.ts",
+      "sha256": "9b7672439d080100b1bedeef1f5444a2175ab8a3cb5efc87b34ff77f8112fe14"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-artwork.ts",
+      "sha256": "5f778dabc2a9c83faf1385e0dda0c3faf49328947f974d198998bbdd0b4f74aa"
+    }
+  ],
+  "assets": [
+    {
+      "id": "constellation:Dra",
+      "path": "workers/miniapp-api/assets/constellations/draco.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 43164,
+      "sha256": "624e24404ad3139806c898f2495638ec0bceedcb15daf4bfc9850e6c34da3367",
+      "format": "png"
+    },
+    {
+      "id": "constellation:Cep",
+      "path": "workers/miniapp-api/assets/constellations/cepheus.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 40144,
+      "sha256": "3efd152711397e3424e220f6a2ead2e590ce9782a7de9eac8f009100457198b6",
+      "format": "png"
+    },
+    {
+      "id": "constellation:Peg",
+      "path": "workers/miniapp-api/assets/constellations/pegasus.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 33947,
+      "sha256": "ad4a6926b939cd113aa78c06418513bc6b0e2342cca6df9d4fa0c9bd20743148",
+      "format": "png"
+    },
+    {
+      "id": "constellation:Cam",
+      "path": "workers/miniapp-api/assets/constellations/camelopardalis.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 8194,
+      "sha256": "18490202bf130ba4bfbeda97e20c3ab841b153d12e7c59a08cc3131230a273a8",
+      "format": "png"
+    },
+    {
+      "id": "constellation:Cyg",
+      "path": "workers/miniapp-api/assets/constellations/cygnus.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 29252,
+      "sha256": "d9ad9d2ffea6fb50eedf1ace1353efcca35bedf7fe4c45c6b67b8b01ec5e87a0",
+      "format": "png"
+    },
+    {
+      "id": "constellation:UMi",
+      "path": "workers/miniapp-api/assets/constellations/ursa-minor.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 9042,
+      "sha256": "e95cd699568b7b8877086d746d86b79f78863634904e8388291983e31265b1b5",
+      "format": "png"
+    },
+    {
+      "id": "constellation:Cas",
+      "path": "workers/miniapp-api/assets/constellations/cassiopeia.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 44222,
+      "sha256": "e0cf5e4d328b0105a44aea2001a9fc9a5e6cb99f041a29242d9d4e331410f004",
+      "format": "png"
+    },
+    {
+      "id": "constellation:Lac",
+      "path": "workers/miniapp-api/assets/constellations/lacerta.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 23311,
+      "sha256": "90b6b685d82a494fa5b798bbbf2a4742e0466924759af8da32ab5dbd6e256da8",
+      "format": "png"
+    },
+    {
+      "id": "constellation:Eri",
+      "path": "workers/miniapp-api/assets/constellations/eridanus.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 22399,
+      "sha256": "21d5ecce9bd6b998fbf597fb575b849995fb64ac8566146a99b0d5746db63691",
+      "format": "png"
+    },
+    {
+      "id": "constellation:Tau",
+      "path": "workers/miniapp-api/assets/constellations/taurus.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 30557,
+      "sha256": "019f267b9fee7fe3188944c2fe265c58c216119a919fd72475a8cd3c1676162a",
+      "format": "png"
+    },
+    {
+      "id": "landscape:overview",
+      "path": "workers/miniapp-api/assets/landscape/panorama-1024.png",
+      "width": 1024,
+      "height": 512,
+      "bytes": 854784,
+      "sha256": "1e4222bb02d6b4c95c643047de6916581b5e2a665e00d9cc60edd94c3cb072d3",
+      "format": "png"
+    },
+    {
+      "id": "landscape:detail",
+      "path": "workers/miniapp-api/assets/landscape/panorama-2048.png",
+      "width": 2048,
+      "height": 1024,
+      "bytes": 3316173,
+      "sha256": "fd6afeebba748eb84a15c0aea2a8ce0e363571685c6b181c8511f2bb5459bb32",
+      "format": "png"
+    },
+    {
+      "id": "galactic:2mass",
+      "path": "workers/miniapp-api/assets/deep-sky/galactic-2mass/2mass-galactic-2048x1024.jpg",
+      "width": 2048,
+      "height": 1024,
+      "bytes": 703555,
+      "sha256": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0",
+      "format": "jpeg"
+    },
+    {
+      "id": "infrared:M:42:MEDIUM",
+      "path": "workers/miniapp-api/assets/deep-sky/M-42/M-42-medium.3c113f59367fb49746c96d08b3218a949d70375a733de8dcfafa36b77659e02d.png",
+      "width": 512,
+      "height": 512,
+      "bytes": 124865,
+      "sha256": "3c113f59367fb49746c96d08b3218a949d70375a733de8dcfafa36b77659e02d",
+      "format": "png"
+    }
+  ],
+  "runs": [
+    {
+      "strategy": "current-before-retention",
+      "points": [
+        {
+          "stage": "baseline",
+          "decodedSourceRgbaBytes": 16515072,
+          "decodedIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:UMi",
+            "galactic:2mass",
+            "landscape:overview"
+          ],
+          "encodedBytes": 1789615,
+          "encodedIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:UMi",
+            "galactic:2mass",
+            "landscape:overview"
+          ],
+          "createImageCalls": 10,
+          "requestStarts": 10
+        },
+        {
+          "stage": "local",
+          "decodedSourceRgbaBytes": 19660800,
+          "decodedIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Eri",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:Tau",
+            "constellation:UMi",
+            "infrared:M:42:MEDIUM",
+            "landscape:detail",
+            "landscape:overview"
+          ],
+          "encodedBytes": 4580054,
+          "encodedIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Eri",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:Tau",
+            "constellation:UMi",
+            "infrared:M:42:MEDIUM",
+            "landscape:detail",
+            "landscape:overview"
+          ],
+          "createImageCalls": 13,
+          "requestStarts": 13
+        },
+        {
+          "stage": "return-model",
+          "decodedSourceRgbaBytes": 27000832,
+          "decodedIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Eri",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:Tau",
+            "constellation:UMi",
+            "galactic:2mass",
+            "landscape:detail",
+            "landscape:overview"
+          ],
+          "encodedBytes": 5158744,
+          "encodedIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Eri",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:Tau",
+            "constellation:UMi",
+            "galactic:2mass",
+            "landscape:detail",
+            "landscape:overview"
+          ],
+          "createImageCalls": 14,
+          "requestStarts": 14
+        }
+      ],
+      "returnRequestIdentities": [
+        "galactic:2mass"
+      ],
+      "returnEncodedRequestBytes": 703555,
+      "encodedFilesAfterDispose": 0
+    },
+    {
+      "strategy": "file-backed-unused-illustrations",
+      "points": [
+        {
+          "stage": "baseline",
+          "decodedSourceRgbaBytes": 16515072,
+          "decodedIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:UMi",
+            "galactic:2mass",
+            "landscape:overview"
+          ],
+          "encodedBytes": 1789615,
+          "encodedIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:UMi",
+            "galactic:2mass",
+            "landscape:overview"
+          ],
+          "createImageCalls": 10,
+          "requestStarts": 10
+        },
+        {
+          "stage": "local",
+          "decodedSourceRgbaBytes": 11534336,
+          "decodedIdentities": [
+            "infrared:M:42:MEDIUM",
+            "landscape:detail",
+            "landscape:overview"
+          ],
+          "encodedBytes": 4580054,
+          "encodedIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Eri",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:Tau",
+            "constellation:UMi",
+            "infrared:M:42:MEDIUM",
+            "landscape:detail",
+            "landscape:overview"
+          ],
+          "createImageCalls": 13,
+          "requestStarts": 13
+        },
+        {
+          "stage": "return-model",
+          "decodedSourceRgbaBytes": 24903680,
+          "decodedIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:UMi",
+            "galactic:2mass",
+            "landscape:detail",
+            "landscape:overview"
+          ],
+          "encodedBytes": 5158744,
+          "encodedIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Eri",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:Tau",
+            "constellation:UMi",
+            "galactic:2mass",
+            "landscape:detail",
+            "landscape:overview"
+          ],
+          "createImageCalls": 22,
+          "requestStarts": 14
+        }
+      ],
+      "returnRequestIdentities": [
+        "galactic:2mass"
+      ],
+      "returnEncodedRequestBytes": 703555,
+      "encodedFilesAfterDispose": 0
+    }
+  ],
+  "improvement": {
+    "localDecodedSourceRgbaReduction": 8126464,
+    "returnDecodedSourceRgbaReduction": 2097152,
+    "extraEncodedReturnRequestBytes": 0
+  },
+  "limits": [
+    "Historical13 source roles are header/size candidates, not retrospective native digest assertions",
+    "Cold files remain within the old source-equivalent retention allowance; no total native/GPU/OS hard budget is established",
+    "The callback/factory model does not measure native decode/GC, latency or physical gesture performance",
+    "Return-model consumer frame remains modeled; the current native baseline followed Map exit/reentry",
+    "Other consumers keep independent coarse fallback images; only illustrations invoke suspension"
+  ]
+}

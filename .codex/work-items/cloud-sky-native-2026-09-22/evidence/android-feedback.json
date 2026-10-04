@@ -1,0 +1,17 @@
+{
+  "cleanup": "owned_run_pending",
+  "sourceProject": "C:/Users/777/AppData/Local/Temp/starward-cloud-sky-source-XsYbU4",
+  "officialInvocation": "qr_ready",
+  "preparedProject": "C:/Users/777/AppData/Local/Temp/starward-device-feedback-KrQYby/generation-000003-Xx8d2j/project",
+  "feedbackRun": "C:/Users/777/AppData/Local/Temp/starward-device-feedback-KrQYby",
+  "observedProductBehavior": "not_observed",
+  "sourceProbeRestored": true,
+  "priorPrivateEvidence": "C:/Users/777/AppData/Local/Temp/starward-device-feedback-KrQYby/phone-evidence-generation2",
+  "deviceSession": null,
+  "lane": "memory_test_fixture_lan_canvas_error_probe",
+  "candidateIdentity": {
+    "fileCount": 256,
+    "localBundleSha256": "bc198b287837b06d6f9ad4e1ebecd6e2f7e7f77b20310f361c7d44f07fe78dd0",
+    "generation": 3
+  }
+}

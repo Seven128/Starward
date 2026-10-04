@@ -1,0 +1,28 @@
+✔ Acrux detail and catalog sources follow the requested report version (124.3828ms)
+✔ stable HR references return attributable ready and basic-only states (0.7697ms)
+✔ large numeric-like and unknown references stay strings and fail closed (1.3139ms)
+✔ planet information distinguishes historical band profiles from current geometry and weather (0.9332ms)
+✔ Messier galaxy and nebula references expose attributable catalog facts (20.4556ms)
+✔ same identity and locale reuse a stable content revision without sharing mutable values (0.3807ms)
+✔ SAO details interpret HD multiplicity codes instead of presenting them as names (831.2007ms)
+✔ Altair common Chinese names resolve its exact HR identity through the current publication (2101.2881ms)
+✔ Acrux is discoverable only through the v3 catalog and keeps revised SAO and Chinese sources (48.1055ms)
+✔ real catalogue names, Chinese aliases and normalized identifiers resolve the same component (125.7559ms)
+✔ fixed CC0 Chinese labels join only exact HR identities and remain attributable in details (114.4839ms)
+✔ seven planet identities search by Chinese and English names and preserve details (181.9344ms)
+✔ shared HD aliases preserve distinct SAO components and details use the same alias owner (101.963ms)
+✔ results are bounded, detached from indexes and never carry invented observing coordinates (88.3585ms)
+✔ missing or incomplete publications cannot masquerade as an empty successful search (0.4924ms)
+✔ one unavailable publication preserves other results and a later query recovers it (0.5566ms)
+✔ public HTTP search and selected detail retain the same real identity; invalid input is rejected (346.2671ms)
+✔ fixed CC0 Chinese aliases are hash-bound to BSC identities (26.1632ms)
+✔ revised CC0 aliases keep every HR label while binding only to BSC v3 (91.061ms)
+✔ common-name enrichment preserves all other HR aliases and binds both source snapshots (30.5861ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6239.6798

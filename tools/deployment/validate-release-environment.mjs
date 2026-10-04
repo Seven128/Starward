@@ -1,7 +1,43 @@
 import path from "node:path";
+import { readFile } from "node:fs/promises";
 import { isIPv4 } from "node:net";
 import { pathToFileURL } from "node:url";
 import { readEnvironmentFile } from "./env-file.mjs";
+import { assertSkyStaticDeliveryIdentity } from "./sky-static-release.mjs";
+
+const REQUIRED_STAGING_STEPS = Object.freeze([
+  "backup-verification", "compose-version", "compose-config", "image-pull",
+  "migration", "converge", "worker-readiness", "public-readiness",
+]);
+
+/** Shared staging qualification for promotion and direct configured releases. */
+export async function validateStagingQualification({ receiptPath, revision, imageDigest, requireSkyStatic = false }) {
+  if (!receiptPath || !path.isAbsolute(receiptPath)) fail("release_promotion_path_not_absolute", "stagingReceiptPath");
+  const selectedPath = path.normalize(receiptPath);
+  const receipt = JSON.parse(await readFile(selectedPath, "utf8"));
+  if (!["starward-release-receipt-v1", "starward-release-receipt-v2"].includes(receipt.schemaVersion) ||
+      receipt.status !== "succeeded" || receipt.environment !== "staging") fail("release_promotion_staging_receipt_invalid");
+  if (receipt.revision !== revision) fail("release_promotion_staging_revision_mismatch");
+  if (receipt.imageDigest !== imageDigest) fail("release_promotion_staging_digest_mismatch");
+  if (!Array.isArray(receipt.steps)) fail("release_promotion_staging_steps_invalid");
+  const steps = new Map(receipt.steps.map(step => [step?.name, step]));
+  for (const name of REQUIRED_STAGING_STEPS) {
+    if (steps.get(name)?.status !== "passed") fail("release_promotion_staging_step_missing", name);
+  }
+  let skyStaticDelivery;
+  if (requireSkyStatic || receipt.schemaVersion === "starward-release-receipt-v2") {
+    if (receipt.schemaVersion !== "starward-release-receipt-v2") fail("sky_static_staging_qualification_required");
+    skyStaticDelivery = assertSkyStaticDeliveryIdentity(receipt.skyStaticDelivery, {revision, imageDigest});
+    for (const name of ["sky-static-preparation", "sky-static-compose-config", "sky-static-verification"])
+      if (steps.get(name)?.status !== "passed") fail("sky_static_staging_step_missing", name);
+    const checked = steps.get("sky-static-verification").result;
+    const checkedIdentity = assertSkyStaticDeliveryIdentity(checked?.identity, {revision, imageDigest});
+    if (checked?.status !== "passed" || checked.checkedFiles !== skyStaticDelivery.files ||
+        checked.checkedBytes !== skyStaticDelivery.bytes ||
+        Object.keys(skyStaticDelivery).some(key => checkedIdentity[key] !== skyStaticDelivery[key])) fail("sky_static_staging_verification_invalid");
+  }
+  return Object.freeze({ receiptPath: selectedPath, revision, imageDigest, ...(skyStaticDelivery ? {skyStaticDelivery} : {}) });
+}
 
 const SHA_PATTERN = /^[0-9a-f]{40}$/u;
 const DIGEST_PATTERN = /^sha256:[0-9a-f]{64}$/u;
@@ -231,6 +267,10 @@ async function validateEnvironment(deployEnvPath, preview) {
   if (!deployEnvPath || !path.isAbsolute(deployEnvPath))
     fail("release_environment_path_not_absolute", "deployEnvPath");
   const deploy = await readEnvironmentFile(deployEnvPath);
+  for (const key of Object.keys(deploy)) {
+    if (key.startsWith("STARWARD_SKY_") && key !== "STARWARD_SKY_STATIC_DIRECTORY")
+      fail("sky_static_manual_identity_forbidden", key);
+  }
   const environment = checkedValue(deploy, "STARWARD_ENVIRONMENT");
   if (environment !== "staging" && environment !== "production")
     fail("release_environment_invalid", "STARWARD_ENVIRONMENT");
@@ -278,6 +318,19 @@ async function validateEnvironment(deployEnvPath, preview) {
   ]);
   if (protectedPaths.has(path.normalize(backupKeyFile)))
     fail("release_environment_file_reused", "STARWARD_BACKUP_ENCRYPTION_KEY_FILE");
+  let skyStaticDirectory;
+  if ("STARWARD_SKY_STATIC_DIRECTORY" in deploy) {
+    const selected = checkedValue(deploy, "STARWARD_SKY_STATIC_DIRECTORY");
+    if (!path.isAbsolute(selected)) fail("release_environment_path_not_absolute", "STARWARD_SKY_STATIC_DIRECTORY");
+    skyStaticDirectory = path.resolve(selected);
+    if (skyStaticDirectory === path.parse(skyStaticDirectory).root || /[\0\r\n]/u.test(selected))
+      fail("sky_static_directory_invalid");
+    const within = (child, parent) => child === parent || child.startsWith(parent + path.sep);
+    for (const selectedPath of [...protectedPaths, path.resolve(backupKeyFile)])
+      if (within(selectedPath, skyStaticDirectory)) fail("sky_static_directory_private_path_overlap");
+    for (const selectedPath of [path.resolve(backupDirectory), path.resolve(receiptDirectory)])
+      if (within(selectedPath, skyStaticDirectory) || within(skyStaticDirectory, selectedPath)) fail("sky_static_directory_private_path_overlap");
+  }
   secret(files.postgres.environment, "POSTGRES_PASSWORD");
   secret(files.redis.environment, "REDIS_PASSWORD");
   const expected = { environment, domain, preview };
@@ -299,6 +352,7 @@ async function validateEnvironment(deployEnvPath, preview) {
       backupKeyFile,
       maxBackupBytes,
       receiptDirectory,
+      ...(skyStaticDirectory ? {skyStaticDirectory} : {}),
     }),
   });
 }

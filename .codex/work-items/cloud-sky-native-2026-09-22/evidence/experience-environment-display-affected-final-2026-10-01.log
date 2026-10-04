@@ -1,0 +1,46 @@
+✔ recreated canvas rejects queued survey and constellation native images until their new owners publish (33.9775ms)
+✔ queued pre-calibration canvas frame cannot jump back after confirm or cancel (62.7517ms)
+✔ real alignment confirms raw input while queued painting retains stabilized geometry (44.2189ms)
+✔ turning both coordinate grids off removes their strokes while retaining the geometric horizon (25.9575ms)
+✔ an unavailable exact observation frame never displays an old equatorial grid (2.139ms)
+✔ equatorial curves cross analytically known directions even between base samples at 0.05° (77.5706ms)
+✔ polar full-dome curves remain in the visible hemisphere and the actual protected viewport (37.0389ms)
+✔ a declination arc grazing the horizon stays visible even when both base samples are below it (22.7913ms)
+✔ adjacent grid segments evaluate each shared endpoint once and release it between traces (1.4152ms)
+✔ scene uses each exact-time equatorial frame in ordinary and red modes without depending on stars (20.7658ms)
+✔ panorama LINEAR alpha wraps the real first/last texels and keeps partial transparency (12.0609ms)
+✔ all opaque corner samples cannot erase an interior sky hole or its image source (0.752ms)
+✔ completed image mask replaces old tree geometry for labels, point picks and off/failure (1.3726ms)
+✔ simulated ground follows the current exact sun and camera in ordinary and red modes (77.4764ms)
+✔ virtual geometry paints after celestial layers and publishes only an actually successful mask (25.9063ms)
+✔ the final virtual mask never opens a fully covered Moon, while an unobstructed repaint restores it (16.0996ms)
+✔ missing exact illumination and GPU failure retain independent scene completion (14.1992ms)
+✔ corners on different trees cannot certify that open sky between them is covered (0.4897ms)
+✔ lobed canopy point hits cannot certify a hull across an open notch (0.2862ms)
+✔ solar light selects only the exact report instant and shares star ENU orientation (2.9792ms)
+✔ scene draws current solar light beneath other content; red and missing data suppress it (31.1168ms)
+✔ optional solar shader failure preserves independent scene completion (2.9473ms)
+✔ catalog-independent star sizes preserve magnitude order without coarse bright discs (3.9632ms)
+✔ zoom progressively reveals faint points and reverses without discrete level jumps (45.8706ms)
+✔ invalid photometry or projection cannot produce non-finite GPU geometry (0.2941ms)
+✔ reference air mass attenuates low stars continuously without changing their catalog magnitude or size (3.1343ms)
+✔ civil, nautical and astronomical twilight reveal faint stars after bright ones (0.6728ms)
+✔ native chrome uses the selected Field Signal palette and adopted day icons (173.8677ms)
+✔ dark sky keeps readable native chrome in every mode without changing day Map (53.4964ms)
+✔ a child route updates its background without unsupported tab item calls (27.7458ms)
+✔ non-tab routes and navigation during theme sync never request tab icons (72.7293ms)
+✔ unexpected tab bar failure is still observable (13.9938ms)
+✔ navigation after icon dispatch tolerates only the native non-tab-page rejection (17.1467ms)
+✔ returning to a page reapplies the current mode, not its mounted mode (7.5943ms)
+✔ navigation clears both native status bar and capsule across device widths (2.3861ms)
+✔ missing or invalid native metrics preserve CSS fallbacks independently (1.5733ms)
+✔ title clearance follows the actual capsule edge and rejects unavailable geometry (0.9506ms)
+✔ map consumers can use safeTop as the conservative search-field inset (0.6035ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2689.5376

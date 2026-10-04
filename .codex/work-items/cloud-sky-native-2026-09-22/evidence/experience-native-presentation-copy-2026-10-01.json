@@ -1,0 +1,21 @@
+{
+  "route": "sky/detail/index",
+  "width": 32,
+  "height": 32,
+  "scope": "Native offscreen WebGL to native offscreen 2D copy capability only; not visible page composition or target performance",
+  "channels": 4096,
+  "firstPixel": [
+    255,
+    0,
+    255,
+    255
+  ],
+  "mismatchedChannels": 0,
+  "glError": 0,
+  "copied": true,
+  "cleanup": {
+    "sourceReset": true,
+    "targetReset": true,
+    "contextLossRequested": true
+  }
+}

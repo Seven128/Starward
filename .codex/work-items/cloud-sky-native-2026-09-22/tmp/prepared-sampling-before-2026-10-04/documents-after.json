@@ -1,0 +1,22 @@
+[
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+    "bytes": 176403,
+    "sha256": "81f5cc254009c72324406d4145f80c52ec9d0179577f94ccd1d7c63ac4c163ae"
+  },
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+    "bytes": 100677,
+    "sha256": "c4925a99c15d26e3cb05cec51e7135001b89aca645d3e1a556d74d19f8a8ef99"
+  },
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+    "bytes": 13147,
+    "sha256": "5b7d2367347781f987a6aa583d2e76738ad8e359d11afc87fe8d4027901c706d"
+  },
+  {
+    "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+    "bytes": 161427,
+    "sha256": "b1d5a8c2de0a21f499acd3569d84f1ef4bb850efd1621de63cce0f5dcf944e2e"
+  }
+]

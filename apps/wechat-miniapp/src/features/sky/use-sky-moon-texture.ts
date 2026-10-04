@@ -2,7 +2,7 @@ import {useMemo} from "react";
 import type {SkyGeometryReport} from "@starward/miniapp-contracts";
 import {useResourceQuery} from "@/hooks/use-resource-query";
 import {getMoonTextureManifest,moonTextureImageUrl} from "@/services/moon-texture-client";
-import {useSkyNativeImages} from "./use-sky-artwork";
+import {useSkyFixedImage} from "./use-sky-fixed-image";
 import {skyMoonDiscAt} from "./sky-moon-disc";
 import {skyFixedImageStatus} from "./sky-fixed-image-status";
 import type {SkyArtworkView} from "./sky-artwork-registration";
@@ -20,10 +20,9 @@ export function useSkyMoonTexture(report:Pick<SkyGeometryReport,"hourly">|undefi
   const manifest=useResourceQuery({queryKey:["moon-texture-manifest","coverage-v2"],queryFn:getMoonTextureManifest,
     enabled:wanted,staleTime:60_000,structuralSharing:false});
   const publication=manifest.data;
-  const assets=useMemo(()=>publication?[{...publication.image,id:"moon:uv750:coverage-v2"}]:[],[publication]);
-  const images=useSkyNativeImages(canvas,canvasRevision,publication?.publicationHash,wanted,assets,
+  const images=useSkyFixedImage(canvas,canvasRevision,publication,active,wanted,"moon:uv750:coverage-v2",
     asset=>({url:moonTextureImageUrl(asset.downloadUrl),format:"png"}));
-  const image=images.images.get("moon:uv750:coverage-v2")??images.retainedImages.get("moon:uv750:coverage-v2")??null;
+  const image=images.image;
   const status=skyFixedImageStatus(wanted,image,manifest.isError,Boolean(manifest.refreshError),images.failed);
   return {image,publication,loading:wanted&&(manifest.isFetching||images.loading),
     ...status,

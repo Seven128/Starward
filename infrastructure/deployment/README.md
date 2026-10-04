@@ -27,7 +27,9 @@ IP 版本仍仅限本人调试，不是公开体验版；正式发布的域名�
   手动路径同样执行产品检查，不绕过 CI。
 - **看结果**：`gh run list --workflow backend-staging.yml`，再用
   `gh run view <run-id> --log-failed` 查看失败节点。不要把 skipped/queued 当作部署成功。
-- **看 Sky 资源出口**：正式与 IP 内测 Caddy 共用 `sky-resource-logging.caddy`，访问日志仅附固定的 `sky_resource_class`；结合状态和 `size` 可按资源类汇总边缘响应体字节。日志继续删除完整 request 与 response headers，不含 URL/查询参数。此值不是微信实际下载量、CDN 命中或账单，不能以本机流量样本估算正式月费。
+- **看 Sky 资源出口**：正式与 IP 内测 Caddy 共用 `sky-resource-logging.caddy`，访问日志仅附固定的 `sky_resource_class`（包含 landscape）及 `sky_delivery`（static/api）；结合状态和 `size` 可按资源类汇总边缘响应体字节。日志继续删除完整 request 与 response headers，不含 URL/查询参数。此值不是微信实际下载量、CDN 命中或账单，不能以本机流量样本估算正式月费。
+
+- **开启 Sky 静态出口**：BASE env可选填 `STARWARD_SKY_STATIC_DIRECTORY` 为独立绝对持久目录。保持空值或未配置则走原API。开启后使用现有 release/operator-preview 管理入口；它们在exact image pull/来源验证后准备完成成品和 readonly overlay，preview overlay 必须先于静态 overlay。所有包含Caddy的手工操作也须带该次生成的最后一个 overlay，不能只用base/preview文件覆盖当前静态配置。prepared-inventory保留获准新旧URL，非成功发布证明；成功v2 receipt须全字节/头及static marker核验，生产还需同image成品的staging资格。无sealed成品或已绑定库存的早期image拒绝准备；这不认证任意旧control/image回滚。不要手工填出版hash、mount任意文件根、改库存或删除历史资源来绕过验证。
 - **当前开关**：GitHub 仓库级变量 `STARWARD_STAGING_CD_ENABLED=true` 才允许部署；
   `STARWARD_STAGING_LANE=operator-preview` 选择 IP 内测，`domain` 选择正式域名
   staging。`STARWARD_REMOTE_BASE_DEPLOY_ENV` 必须指向该模式的服务器私有基础配置。
@@ -729,6 +731,60 @@ revision, digest, matching confirmation and production-host staging receipt
 path. It never builds or pushes an image.
 
 ## Failure and rollback boundary
+
+Sky static storage has a read-only inventory helper,
+`inspectSkyStaticRetention({validation, deploy, references, observeRuntime})`, in the existing
+`tools/deployment/sky-static-release.mjs` owner. It uses the selected private
+`STARWARD_SKY_STATIC_DIRECTORY` and the preparation lease, fully verifies the
+current inventory/source seals and reports logical file lengths. Optional
+references are `{kind, directory}` records for `RUNNING`, `RELEASE`, `ROLLBACK`
+or `BACKUP`, naming an existing source/generation inside that store. They are
+operator observations, not proof of a complete reference inventory. It creates
+no publication and deletes nothing; its own temporary lease is excluded.
+
+With `observeRuntime: true`, this owner reads the validated Compose project's
+running Caddy container ID and its two Sky bind mounts. Both mounts must be
+readonly, point to the same sealed generation inside the selected store, and
+agree on the delivery fragment. It records `OBSERVED_RUNNING_MOUNT` separately
+from declared references and the current prepared generation; an older mounted
+generation stays retained when preparation has advanced. Discovery/mounts and
+publication are rechecked under the lease. Ambiguity, writable/foreign mounts,
+invalid data and changes fail without becoming empty references. An observed
+absence is scoped to that project's live Caddy, not all receipts or backups.
+
+With `observeReceipts: true`, the same owner reads the selected environment’s known release/operator-preview receipt files and current pointer through the plain-file boundary. V2 identities bind actual admitted sealed source/generation bytes; successful static steps and existing current overlay must agree. Filename/byte changes invalidate the observation. Legacy v1 and failed/no-binding records remain explicit. Historical releases retain possible rollback resources; database backup v1 supplies no Sky-publication backup contract. Recorded file claims are separate from live mounts and do not complete the reference set. The CLI below enables both observations. Non-deploy `loadSkyStaticDelivery` selects the current successful preview-deploy receipt and exact existing overlay, validated against the selected revision/digest. `check` requires the same observed running mount. `stop` and backup inspection/maintenance can use the valid current record when no running Caddy is observed, explicitly recording that absence; they do not claim live service or Sky backup. Missing/legacy/failed current, mismatch and changing observations fail without selecting newer prepared state. Unrelated historical receipt corruption belongs to retention review, not this current operation. The selection lease lasts through the existing consumer cleanup, and the `sky-static-load` receipt step records the observation.
+
+On the existing Linux deployment host, use its private validated environment:
+
+```sh
+node tools/deployment/sky-static-retention.mjs --env /absolute/private/deploy.env --lane operator-preview
+```
+
+Use `--lane release` for a formal release descriptor. This command performs
+inspection only; it does not run release/preview operations or write their
+receipts. It expects the Docker daemon and selected store to share the host
+filesystem namespace; foreign/Desktop path mappings are not inferred. A store
+that is unconfigured or an inspection that fails proves no reference inventory
+completeness and gives no cleanup authority. These observations do not certify
+HTTP delivery, image/release/rollback/backup correspondence or host capacity.
+
+Retain the current pointer/generation and all admitted sources and old immutable
+URLs. Also retain actual mounted/release/rollback/backup references. A prepared
+inventory is not a successful receipt or a live mount. Unreferenced generations,
+failed `.building-*` and `.inventory-*.tmp` stages and unknown files remain
+`RETAIN_PENDING_REFERENCE_REVIEW`: neither age nor absence from the current
+pointer authorizes deletion. Before any future retirement, inspect actual Caddy
+mounts, environment-bound receipts, rollback/backup references and client
+compatibility, then verify recovery. Backup expiry metadata belongs to its
+separate owner and is not a Sky-resource expiry policy. No automatic Sky cleanup
+or stage TTL is configured.
+
+Count retained source copies, merged generations, stages and metadata separately
+from one publication's payload. The report does not measure filesystem allocated
+blocks, unique physical copies, OCI storage, database/log/backup bytes or whole
+host headroom. Include those with growth and temporary overlap when qualifying
+the expected 180GB production disk; a local old bundle or a dry-run is not that
+capacity qualification.
 
 A failed receipt identifies the last passed step and a redacted error code. Do
 not overwrite the database, rerun migration with edited files, change to a

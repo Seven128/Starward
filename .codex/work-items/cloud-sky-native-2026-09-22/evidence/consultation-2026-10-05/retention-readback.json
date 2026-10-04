@@ -1,0 +1,726 @@
+{
+  "status": "SAVED_RETENTION_CORRECTION_PIXELS_AND_RESOURCE_READBACK",
+  "sourceScope": {
+    "currentSources": 539,
+    "protected": 6,
+    "frontend": 511,
+    "backend": 168
+  },
+  "captures": [
+    {
+      "name": "software-retention-detail-before",
+      "png": {
+        "path": "output/playwright/cloud-sky-prepared-progressive-retention-1005-r2/software-retention-detail-before.png",
+        "bytes": 526693,
+        "sha256": "280356a25f391e52fbbc639a64820159aa5aab7bf9c331b4c527da34d7622be5"
+      },
+      "rgba": {
+        "path": "output/playwright/cloud-sky-prepared-progressive-retention-1005-r2/software-retention-detail-before.rgba",
+        "bytes": 1316640,
+        "sha256": "b9a050a6a1a1211409658013b1001919652c5f2031cb5475ca02fcf26649a90d"
+      },
+      "fullGlPngGlExact": true
+    },
+    {
+      "name": "software-retention-overview",
+      "png": {
+        "path": "output/playwright/cloud-sky-prepared-progressive-retention-1005-r2/software-retention-overview.png",
+        "bytes": 202184,
+        "sha256": "1fb21eb57aec1d58daa5969c89a40804c81ce3195d0b5eb3273db3857d97178e"
+      },
+      "rgba": {
+        "path": "output/playwright/cloud-sky-prepared-progressive-retention-1005-r2/software-retention-overview.rgba",
+        "bytes": 1316640,
+        "sha256": "21f7faff45d9578a9440c54fbf2814bcb429ed441c6e8cfa368936d4b8e5198c"
+      },
+      "fullGlPngGlExact": true
+    },
+    {
+      "name": "software-retention-detail-after",
+      "png": {
+        "path": "output/playwright/cloud-sky-prepared-progressive-retention-1005-r2/software-retention-detail-after.png",
+        "bytes": 526693,
+        "sha256": "280356a25f391e52fbbc639a64820159aa5aab7bf9c331b4c527da34d7622be5"
+      },
+      "rgba": {
+        "path": "output/playwright/cloud-sky-prepared-progressive-retention-1005-r2/software-retention-detail-after.rgba",
+        "bytes": 1316640,
+        "sha256": "b9a050a6a1a1211409658013b1001919652c5f2031cb5475ca02fcf26649a90d"
+      },
+      "fullGlPngGlExact": true
+    }
+  ],
+  "strictWarmPixelDifference": 0,
+  "sameTimeAndProjection": true,
+  "actualAt": "2026-10-05T13:00:00.000Z",
+  "fovBefore": 0.05000000000000003,
+  "fovAfter": 0.050000000000000024,
+  "preparedActiveRgbaEquivalentBytes": {
+    "activeBefore": 8388608,
+    "activeOverview": 1048576,
+    "activeAfter": 8388608
+  },
+  "retentionTargetBytes": 2097152,
+  "warmHookStates": [
+    {
+      "phase": "retention-warm-overview",
+      "renderedLevel": "MEDIUM",
+      "observations": 1
+    },
+    {
+      "phase": "retention-warm-overview",
+      "renderedLevel": null,
+      "observations": 2
+    },
+    {
+      "phase": "retention-warm-overview",
+      "renderedLevel": "OVERVIEW",
+      "observations": 3
+    },
+    {
+      "phase": "retention-warm-detail",
+      "renderedLevel": "OVERVIEW",
+      "observations": 4
+    },
+    {
+      "phase": "retention-warm-detail",
+      "renderedLevel": "DETAIL",
+      "observations": 2
+    }
+  ],
+  "actualReadyResources": {
+    "gpuTextureUploadModelBytes": 6385816,
+    "gpuBufferUploadModelBytes": 9252,
+    "activeDecodedImageHandles": 3,
+    "sourceRgbaEquivalentBytes": 9437184,
+    "decodedSourceIdentities": [
+      {
+        "objectId": 11,
+        "sha256": "91a9220c505c1521ec5cc14c1312721ef1afdd653297a86ef892452a4172b699",
+        "width": 512,
+        "height": 512,
+        "status": "pending",
+        "retired": false
+      },
+      {
+        "objectId": 13,
+        "sha256": "54f5e457eeca1a9d7c41b9fea0a54ca76a7380ef4ff14421b8af26b57aa38aec",
+        "width": 1024,
+        "height": 1024,
+        "status": "pending",
+        "retired": false
+      },
+      {
+        "objectId": 14,
+        "sha256": "de5ea4aa85849090dbe6cc21c399133789186a26cae8c76296635a3f7580b4b6",
+        "width": 1024,
+        "height": 1024,
+        "status": "pending",
+        "retired": false
+      }
+    ]
+  },
+  "wholeJourneyResourceSummary": {
+    "observations": 1003,
+    "maxima": {
+      "gpuTextureUploadModelBytes": 11800576,
+      "gpuBufferUploadModelBytes": 26184,
+      "activeDecodedImageHandles": 8,
+      "sourceRgbaEquivalentBytes": 13369344,
+      "fsLogicalBytes": 6224209,
+      "pendingNativeRequests": 4,
+      "entries": 55,
+      "leased": 14,
+      "bytes": 6181707,
+      "reserved": 2334559,
+      "running": 2,
+      "pending": 6,
+      "retired": 55,
+      "failures": 0,
+      "epoch": 1
+    },
+    "peakSamples": {
+      "gpuTextureUploadModelBytes": {
+        "phase": "disclosure-1-M-82",
+        "reason": "texture-copy-allocation",
+        "at": 12645.299999952316,
+        "encoded": {
+          "entries": 26,
+          "leased": 8,
+          "bytes": 1053349,
+          "reserved": 0,
+          "running": 0,
+          "pending": 0,
+          "retired": 0,
+          "failures": 0,
+          "epoch": 0
+        },
+        "fsLogicalBytes": 1063402,
+        "fileCount": 27,
+        "pendingNativeRequests": 0,
+        "gpuTextureUploadModelBytes": 11800576,
+        "gpuBufferUploadModelBytes": 26184,
+        "activeDecodedImageHandles": 8,
+        "sourceRgbaEquivalentBytes": 13369344
+      },
+      "gpuBufferUploadModelBytes": {
+        "phase": "original-map-viewport-entry",
+        "reason": "buffer-upload",
+        "at": 2721,
+        "encoded": {
+          "entries": 26,
+          "leased": 8,
+          "bytes": 1053349,
+          "reserved": 0,
+          "running": 0,
+          "pending": 0,
+          "retired": 0,
+          "failures": 0,
+          "epoch": 0
+        },
+        "fsLogicalBytes": 1063402,
+        "fileCount": 27,
+        "pendingNativeRequests": 0,
+        "gpuTextureUploadModelBytes": 3289088,
+        "gpuBufferUploadModelBytes": 26184,
+        "activeDecodedImageHandles": 8,
+        "sourceRgbaEquivalentBytes": 13369344
+      },
+      "activeDecodedImageHandles": {
+        "phase": "original-map-viewport-entry",
+        "reason": "decode-complete",
+        "at": 2553.2999999523163,
+        "encoded": {
+          "entries": 21,
+          "leased": 8,
+          "bytes": 1013127,
+          "reserved": 17297,
+          "running": 2,
+          "pending": 3,
+          "retired": 0,
+          "failures": 0,
+          "epoch": 0
+        },
+        "fsLogicalBytes": 1021274,
+        "fileCount": 22,
+        "pendingNativeRequests": 2,
+        "gpuTextureUploadModelBytes": 3158016,
+        "gpuBufferUploadModelBytes": 23376,
+        "activeDecodedImageHandles": 8,
+        "sourceRgbaEquivalentBytes": 13369344
+      },
+      "sourceRgbaEquivalentBytes": {
+        "phase": "original-map-viewport-entry",
+        "reason": "decode-complete",
+        "at": 2553.2999999523163,
+        "encoded": {
+          "entries": 21,
+          "leased": 8,
+          "bytes": 1013127,
+          "reserved": 17297,
+          "running": 2,
+          "pending": 3,
+          "retired": 0,
+          "failures": 0,
+          "epoch": 0
+        },
+        "fsLogicalBytes": 1021274,
+        "fileCount": 22,
+        "pendingNativeRequests": 2,
+        "gpuTextureUploadModelBytes": 3158016,
+        "gpuBufferUploadModelBytes": 23376,
+        "activeDecodedImageHandles": 8,
+        "sourceRgbaEquivalentBytes": 13369344
+      },
+      "fsLogicalBytes": {
+        "phase": "retention-warm-overview",
+        "reason": "fs-writeFile",
+        "at": 25408,
+        "encoded": {
+          "entries": 55,
+          "leased": 11,
+          "bytes": 6181707,
+          "reserved": 0,
+          "running": 1,
+          "pending": 1,
+          "retired": 0,
+          "failures": 0,
+          "epoch": 0
+        },
+        "fsLogicalBytes": 6224209,
+        "fileCount": 57,
+        "pendingNativeRequests": 0,
+        "gpuTextureUploadModelBytes": 6385816,
+        "gpuBufferUploadModelBytes": 9252,
+        "activeDecodedImageHandles": 1,
+        "sourceRgbaEquivalentBytes": 1048576
+      },
+      "pendingNativeRequests": {
+        "phase": "original-map-viewport-entry",
+        "reason": "buffer-upload",
+        "at": 1401,
+        "encoded": null,
+        "fsLogicalBytes": 0,
+        "fileCount": 0,
+        "pendingNativeRequests": 4,
+        "gpuTextureUploadModelBytes": 0,
+        "gpuBufferUploadModelBytes": 144,
+        "activeDecodedImageHandles": 0,
+        "sourceRgbaEquivalentBytes": 0
+      },
+      "entries": {
+        "phase": "retention-first-detail",
+        "reason": "fs-writeFile",
+        "at": 16659.599999904633,
+        "encoded": {
+          "entries": 55,
+          "leased": 12,
+          "bytes": 6181707,
+          "reserved": 0,
+          "running": 1,
+          "pending": 1,
+          "retired": 0,
+          "failures": 0,
+          "epoch": 0
+        },
+        "fsLogicalBytes": 6223808,
+        "fileCount": 57,
+        "pendingNativeRequests": 0,
+        "gpuTextureUploadModelBytes": 3764376,
+        "gpuBufferUploadModelBytes": 9252,
+        "activeDecodedImageHandles": 2,
+        "sourceRgbaEquivalentBytes": 5242880
+      },
+      "leased": {
+        "phase": "retention-warm-detail",
+        "reason": "decode-start",
+        "at": 34423.299999952316,
+        "encoded": {
+          "entries": 55,
+          "leased": 14,
+          "bytes": 6181707,
+          "reserved": 0,
+          "running": 1,
+          "pending": 0,
+          "retired": 0,
+          "failures": 0,
+          "epoch": 0
+        },
+        "fsLogicalBytes": 6202958,
+        "fileCount": 56,
+        "pendingNativeRequests": 0,
+        "gpuTextureUploadModelBytes": 2060440,
+        "gpuBufferUploadModelBytes": 9252,
+        "activeDecodedImageHandles": 2,
+        "sourceRgbaEquivalentBytes": 2097152
+      },
+      "bytes": {
+        "phase": "retention-first-detail",
+        "reason": "fs-writeFile",
+        "at": 16659.599999904633,
+        "encoded": {
+          "entries": 55,
+          "leased": 12,
+          "bytes": 6181707,
+          "reserved": 0,
+          "running": 1,
+          "pending": 1,
+          "retired": 0,
+          "failures": 0,
+          "epoch": 0
+        },
+        "fsLogicalBytes": 6223808,
+        "fileCount": 57,
+        "pendingNativeRequests": 0,
+        "gpuTextureUploadModelBytes": 3764376,
+        "gpuBufferUploadModelBytes": 9252,
+        "activeDecodedImageHandles": 2,
+        "sourceRgbaEquivalentBytes": 5242880
+      },
+      "reserved": {
+        "phase": "retention-first-detail",
+        "reason": "fs-writeFile",
+        "at": 16303.599999904633,
+        "encoded": {
+          "entries": 54,
+          "leased": 12,
+          "bytes": 3847148,
+          "reserved": 2334559,
+          "running": 1,
+          "pending": 1,
+          "retired": 0,
+          "failures": 0,
+          "epoch": 0
+        },
+        "fsLogicalBytes": 3888848,
+        "fileCount": 56,
+        "pendingNativeRequests": 0,
+        "gpuTextureUploadModelBytes": 4419736,
+        "gpuBufferUploadModelBytes": 9252,
+        "activeDecodedImageHandles": 2,
+        "sourceRgbaEquivalentBytes": 5242880
+      },
+      "running": {
+        "phase": "original-map-viewport-entry",
+        "reason": "fs-writeFile",
+        "at": 1995.5999999046326,
+        "encoded": {
+          "entries": 1,
+          "leased": 1,
+          "bytes": 703555,
+          "reserved": 8194,
+          "running": 2,
+          "pending": 3,
+          "retired": 0,
+          "failures": 0,
+          "epoch": 0
+        },
+        "fsLogicalBytes": 704403,
+        "fileCount": 3,
+        "pendingNativeRequests": 1,
+        "gpuTextureUploadModelBytes": 0,
+        "gpuBufferUploadModelBytes": 144,
+        "activeDecodedImageHandles": 0,
+        "sourceRgbaEquivalentBytes": 0
+      },
+      "pending": {
+        "phase": "original-map-viewport-entry",
+        "reason": "decode-complete",
+        "at": 2168.5999999046326,
+        "encoded": {
+          "entries": 3,
+          "leased": 3,
+          "bytes": 755971,
+          "reserved": 26524,
+          "running": 2,
+          "pending": 6,
+          "retired": 0,
+          "failures": 0,
+          "epoch": 0
+        },
+        "fsLogicalBytes": 757184,
+        "fileCount": 4,
+        "pendingNativeRequests": 2,
+        "gpuTextureUploadModelBytes": 409600,
+        "gpuBufferUploadModelBytes": 19656,
+        "activeDecodedImageHandles": 3,
+        "sourceRgbaEquivalentBytes": 9699328
+      },
+      "retired": {
+        "phase": "retention-warm-detail",
+        "reason": "fs-unlink",
+        "at": 43410.59999990463,
+        "encoded": {
+          "entries": 0,
+          "leased": 0,
+          "bytes": 6181707,
+          "reserved": 0,
+          "running": 0,
+          "pending": 0,
+          "retired": 55,
+          "failures": 0,
+          "epoch": 1
+        },
+        "fsLogicalBytes": 5499403,
+        "fileCount": 55,
+        "pendingNativeRequests": 0,
+        "gpuTextureUploadModelBytes": 0,
+        "gpuBufferUploadModelBytes": 0,
+        "activeDecodedImageHandles": 0,
+        "sourceRgbaEquivalentBytes": 0
+      },
+      "failures": {
+        "phase": "original-map-viewport-entry",
+        "reason": "fs-writeFile",
+        "at": 1783.5,
+        "encoded": {
+          "entries": 0,
+          "leased": 0,
+          "bytes": 0,
+          "reserved": 0,
+          "running": 1,
+          "pending": 1,
+          "retired": 0,
+          "failures": 0,
+          "epoch": 0
+        },
+        "fsLogicalBytes": 26,
+        "fileCount": 1,
+        "pendingNativeRequests": 3,
+        "gpuTextureUploadModelBytes": 0,
+        "gpuBufferUploadModelBytes": 144,
+        "activeDecodedImageHandles": 0,
+        "sourceRgbaEquivalentBytes": 0
+      },
+      "epoch": {
+        "phase": "retention-warm-detail",
+        "reason": "fs-unlink",
+        "at": 43410.59999990463,
+        "encoded": {
+          "entries": 0,
+          "leased": 0,
+          "bytes": 6181707,
+          "reserved": 0,
+          "running": 0,
+          "pending": 0,
+          "retired": 55,
+          "failures": 0,
+          "epoch": 1
+        },
+        "fsLogicalBytes": 5499403,
+        "fileCount": 55,
+        "pendingNativeRequests": 0,
+        "gpuTextureUploadModelBytes": 0,
+        "gpuBufferUploadModelBytes": 0,
+        "activeDecodedImageHandles": 0,
+        "sourceRgbaEquivalentBytes": 0
+      }
+    },
+    "droppedHistory": 0
+  },
+  "requests": 89,
+  "receivedBodyBytes": 8980347,
+  "successfulPreparedPngRequests": [
+    {
+      "id": 82,
+      "route": "/v2/sky/prepared-optical/69e8425904e3288624c9f77a1339574c3868f4a37540c2a5258f1942474e9d5a/M-82-overview.png",
+      "method": "GET",
+      "binary": true,
+      "phase": "retention-first-overview",
+      "status": 200,
+      "receivedBytes": 135683,
+      "sha256": "0163857815aec90781aa1eb7d4e9f9af2ad3db92fbce2a3fcef13dccc4a4ad9c"
+    },
+    {
+      "id": 83,
+      "route": "/v2/sky/prepared-optical/69e8425904e3288624c9f77a1339574c3868f4a37540c2a5258f1942474e9d5a/M-82-medium.png",
+      "method": "GET",
+      "binary": true,
+      "phase": "retention-first-medium",
+      "status": 200,
+      "receivedBytes": 1886809,
+      "sha256": "54f5e457eeca1a9d7c41b9fea0a54ca76a7380ef4ff14421b8af26b57aa38aec"
+    },
+    {
+      "id": 84,
+      "route": "/v2/sky/prepared-optical/69e8425904e3288624c9f77a1339574c3868f4a37540c2a5258f1942474e9d5a/M-82-detail.png",
+      "method": "GET",
+      "binary": true,
+      "phase": "retention-first-detail",
+      "status": 200,
+      "receivedBytes": 2334559,
+      "sha256": "de5ea4aa85849090dbe6cc21c399133789186a26cae8c76296635a3f7580b4b6"
+    }
+  ],
+  "preparedPngBytesOnlyOnce": 4357051,
+  "finalActiveAndRetiredZero": true,
+  "originalTaskFloatFailure": {
+    "path": "output/playwright/cloud-sky-prepared-progressive-retention-1005-r1/failed.json",
+    "bytes": 2021088,
+    "sha256": "e0c9474140332847f5e29298987ec9751da9cc4ac3f1922168bf5dc02416a4b0"
+  },
+  "originalTaskFloatFailureMeaning": "R1 completed three pixel captures, but compared FOV final floating digits exactly. R2 compares the unchanged projection exactly, bounds only FOV rounding by Number.EPSILON and additionally requires complete GL bytes equal. R1 final logical retirement remains missing; no production fix/rebuild for this task assertion.",
+  "oldBoundaryFailurePreserved": {
+    "path": "output/playwright/cloud-sky-prepared-boundary-pairs-1004-r1/failed.json",
+    "bytes": 1729455,
+    "sha256": "65a039503d6b2b6fa5bcabcb94ba811f33931f58f5864859a4d4a77626343f5f"
+  },
+  "limits": "Controlled native ports/software WebGL actual page; not native WEAPP/WXML, physical peak, complete quality/coverage, static network exit, capacity or independent review. Retention pressure is not a current working-set cap.",
+  "warmTransitionFrames": [
+    {
+      "phase": "retention-warm-overview",
+      "fov": 0.19999999999999976,
+      "preparedLevels": [
+        "MEDIUM"
+      ]
+    },
+    {
+      "phase": "retention-warm-overview",
+      "fov": 0.19999999999999976,
+      "preparedLevels": []
+    },
+    {
+      "phase": "retention-warm-overview",
+      "fov": 0.19999999999999976,
+      "preparedLevels": [
+        "OVERVIEW"
+      ]
+    },
+    {
+      "phase": "retention-warm-overview",
+      "fov": 0.19999999999999976,
+      "preparedLevels": [
+        "OVERVIEW"
+      ]
+    },
+    {
+      "phase": "retention-warm-detail",
+      "fov": 0.050000000000000024,
+      "preparedLevels": [
+        "OVERVIEW"
+      ]
+    },
+    {
+      "phase": "retention-warm-detail",
+      "fov": 0.050000000000000024,
+      "preparedLevels": [
+        "OVERVIEW"
+      ]
+    },
+    {
+      "phase": "retention-warm-detail",
+      "fov": 0.050000000000000024,
+      "preparedLevels": [
+        "DETAIL",
+        "MEDIUM"
+      ]
+    }
+  ],
+  "warmCompletedSources": [
+    {
+      "phase": "retention-warm-overview",
+      "optical": null
+    },
+    {
+      "phase": "retention-warm-overview",
+      "optical": null
+    },
+    {
+      "phase": "retention-warm-overview",
+      "optical": {
+        "kind": "prepared",
+        "reference": "M:82",
+        "publicationHash": "69e8425904e3288624c9f77a1339574c3868f4a37540c2a5258f1942474e9d5a",
+        "participatingFields": [
+          {
+            "level": "OVERVIEW",
+            "fieldDegrees": 0.2275555555555556,
+            "sha256": "0163857815aec90781aa1eb7d4e9f9af2ad3db92fbce2a3fcef13dccc4a4ad9c",
+            "image": {
+              "objectId": 15,
+              "sha256": "0163857815aec90781aa1eb7d4e9f9af2ad3db92fbce2a3fcef13dccc4a4ad9c",
+              "width": 512,
+              "height": 512,
+              "status": "decoded"
+            }
+          }
+        ],
+        "field": {
+          "level": "OVERVIEW",
+          "fieldDegrees": 0.2275555555555556,
+          "image": {
+            "objectId": 15,
+            "sha256": "0163857815aec90781aa1eb7d4e9f9af2ad3db92fbce2a3fcef13dccc4a4ad9c",
+            "width": 512,
+            "height": 512,
+            "status": "decoded"
+          }
+        }
+      }
+    },
+    {
+      "phase": "retention-warm-overview",
+      "optical": {
+        "kind": "prepared",
+        "reference": "M:82",
+        "publicationHash": "69e8425904e3288624c9f77a1339574c3868f4a37540c2a5258f1942474e9d5a",
+        "participatingFields": [
+          {
+            "level": "OVERVIEW",
+            "fieldDegrees": 0.2275555555555556,
+            "sha256": "0163857815aec90781aa1eb7d4e9f9af2ad3db92fbce2a3fcef13dccc4a4ad9c",
+            "image": {
+              "objectId": 15,
+              "sha256": "0163857815aec90781aa1eb7d4e9f9af2ad3db92fbce2a3fcef13dccc4a4ad9c",
+              "width": 512,
+              "height": 512,
+              "status": "decoded"
+            }
+          }
+        ],
+        "field": {
+          "level": "OVERVIEW",
+          "fieldDegrees": 0.2275555555555556,
+          "image": {
+            "objectId": 15,
+            "sha256": "0163857815aec90781aa1eb7d4e9f9af2ad3db92fbce2a3fcef13dccc4a4ad9c",
+            "width": 512,
+            "height": 512,
+            "status": "decoded"
+          }
+        }
+      }
+    },
+    {
+      "phase": "retention-warm-detail",
+      "optical": {
+        "kind": "prepared",
+        "reference": "M:82",
+        "publicationHash": "69e8425904e3288624c9f77a1339574c3868f4a37540c2a5258f1942474e9d5a",
+        "participatingFields": [
+          {
+            "level": "OVERVIEW",
+            "fieldDegrees": 0.2275555555555556,
+            "sha256": "0163857815aec90781aa1eb7d4e9f9af2ad3db92fbce2a3fcef13dccc4a4ad9c",
+            "image": {
+              "objectId": 15,
+              "sha256": "0163857815aec90781aa1eb7d4e9f9af2ad3db92fbce2a3fcef13dccc4a4ad9c",
+              "width": 512,
+              "height": 512,
+              "status": "decoded"
+            }
+          }
+        ],
+        "field": {
+          "level": "OVERVIEW",
+          "fieldDegrees": 0.2275555555555556,
+          "image": {
+            "objectId": 15,
+            "sha256": "0163857815aec90781aa1eb7d4e9f9af2ad3db92fbce2a3fcef13dccc4a4ad9c",
+            "width": 512,
+            "height": 512,
+            "status": "decoded"
+          }
+        }
+      }
+    },
+    {
+      "phase": "retention-warm-detail",
+      "optical": null
+    },
+    {
+      "phase": "retention-warm-detail",
+      "optical": {
+        "kind": "prepared",
+        "reference": "M:82",
+        "publicationHash": "69e8425904e3288624c9f77a1339574c3868f4a37540c2a5258f1942474e9d5a",
+        "participatingFields": [
+          {
+            "level": "DETAIL",
+            "fieldDegrees": 0.056888958993683895,
+            "sha256": "de5ea4aa85849090dbe6cc21c399133789186a26cae8c76296635a3f7580b4b6",
+            "image": {
+              "objectId": 16,
+              "sha256": "de5ea4aa85849090dbe6cc21c399133789186a26cae8c76296635a3f7580b4b6",
+              "width": 1024,
+              "height": 1024,
+              "status": "decoded"
+            }
+          }
+        ],
+        "field": {
+          "level": "DETAIL",
+          "fieldDegrees": 0.056888958993683895,
+          "image": {
+            "objectId": 16,
+            "sha256": "de5ea4aa85849090dbe6cc21c399133789186a26cae8c76296635a3f7580b4b6",
+            "width": 1024,
+            "height": 1024,
+            "status": "decoded"
+          }
+        }
+      }
+    }
+  ],
+  "warmContinuity": "OPEN: one warm overview Scene receives no Prepared image, with two overview and one detail completed optical source null. Stable pixel restoration does not establish uninterrupted refinement; duration/full causality unverified."
+}

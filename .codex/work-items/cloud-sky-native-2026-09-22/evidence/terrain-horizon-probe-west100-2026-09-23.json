@@ -1,0 +1,2926 @@
+{
+  "scope": "TASK_LOCAL_NUMERIC_PROBE_ONLY",
+  "observer": {
+    "latitudeWgs84": 22.4826799,
+    "longitudeWgs84": 114.5547414,
+    "heightMFromDsm": 178.55978393554688,
+    "heightIsGroundTruth": false
+  },
+  "sourcePublicationId": "terrain:glo30:greater-bay-area:2021:v2",
+  "sourceDataset": "Copernicus DEM GLO-30 Public AWS COG 2021",
+  "sourceTiles": [
+    {
+      "tileId": "Copernicus_DSM_COG_10_N22_00_E114_00_DEM",
+      "state": "SHA256_MATCH",
+      "sha256": "b950ab75642d6684fe08c82b6aa3bb087c1d35acd229ef0e6e6586e1b0868fa3",
+      "byteSize": 25030462
+    },
+    {
+      "tileId": "Copernicus_DSM_COG_10_N22_00_E115_00_DEM",
+      "state": "SHA256_MATCH",
+      "sha256": "450f8a0131aefaca7612202ff6446fb3b794c9df5b5ec8e166e53ff1be270c80",
+      "byteSize": 11027283
+    }
+  ],
+  "geometricMethod": "source WGS84 COG sample, spherical forward geodesic, DEM relative height and Earth curvature; no refraction",
+  "sample": {
+    "minimumDistanceM": 300,
+    "maximumDistanceKm": 50.0,
+    "stepM": 100,
+    "azimuthStepDeg": 1
+  },
+  "coverage": {
+    "KNOWN_SAMPLED_RANGE": 354,
+    "PARTIAL": 6,
+    "UNAVAILABLE": 0
+  },
+  "directions": [
+    {
+      "azimuthDeg": 0,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.7115,
+      "maximumAtKm": 4.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 1,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.4925,
+      "maximumAtKm": 4.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 2,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.1051,
+      "maximumAtKm": 4.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 3,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 5.678,
+      "maximumAtKm": 4.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 4,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 5.5379,
+      "maximumAtKm": 4.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 5,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.4486,
+      "maximumAtKm": 0.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 6,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.4486,
+      "maximumAtKm": 0.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 7,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.3004,
+      "maximumAtKm": 0.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 8,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.3004,
+      "maximumAtKm": 0.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 9,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.5601,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 10,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.5601,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 11,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.1852,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 12,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.1852,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 13,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.1125,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 14,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.2288,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 15,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.2288,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 16,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.3914,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 17,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.3914,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 18,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.0297,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 19,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.0297,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 20,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.0605,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 21,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.6951,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 22,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.6951,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 23,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.6953,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 24,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.6953,
+      "maximumAtKm": 1.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 25,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.3412,
+      "maximumAtKm": 3.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 26,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.3278,
+      "maximumAtKm": 3.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 27,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.5748,
+      "maximumAtKm": 3.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 28,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.7474,
+      "maximumAtKm": 3.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 29,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.7199,
+      "maximumAtKm": 3.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 30,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.4768,
+      "maximumAtKm": 3.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 31,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.0202,
+      "maximumAtKm": 3.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 32,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 5.8735,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 33,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.203,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 34,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.5873,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 35,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.8495,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 36,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.7209,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 37,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.5751,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 38,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.1785,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 39,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 5.7582,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 40,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 5.4683,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 41,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 5.0112,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 42,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 4.5784,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 43,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 4.6169,
+      "maximumAtKm": 4.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 44,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 4.4041,
+      "maximumAtKm": 4.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 45,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 4.3893,
+      "maximumAtKm": 4.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 46,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 4.5983,
+      "maximumAtKm": 4.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 47,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 4.5755,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 48,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 4.2133,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 49,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 4.0519,
+      "maximumAtKm": 4.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 50,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 4.0586,
+      "maximumAtKm": 4.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 51,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 4.2094,
+      "maximumAtKm": 4.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 52,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 4.1439,
+      "maximumAtKm": 4.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 53,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 3.9359,
+      "maximumAtKm": 4.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 54,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 3.6231,
+      "maximumAtKm": 4.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 55,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 3.1274,
+      "maximumAtKm": 4.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 56,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.8559,
+      "maximumAtKm": 5.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 57,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.5668,
+      "maximumAtKm": 5.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 58,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.1727,
+      "maximumAtKm": 5.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 59,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.1458,
+      "maximumAtKm": 5.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 60,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.8624,
+      "maximumAtKm": 5.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 61,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.6791,
+      "maximumAtKm": 6.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 62,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.3649,
+      "maximumAtKm": 6.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 63,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.0303,
+      "maximumAtKm": 6.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 64,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.8289,
+      "maximumAtKm": 6.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 65,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.6061,
+      "maximumAtKm": 6.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 66,
+      "state": "PARTIAL",
+      "validFraction": 0.998,
+      "maximumKnownAngleDeg": 0.1809,
+      "maximumAtKm": 6.4,
+      "sampleCount": 497
+    },
+    {
+      "azimuthDeg": 67,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.1426,
+      "maximumAtKm": 6.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 68,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.4266,
+      "maximumAtKm": 38.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 69,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.4282,
+      "maximumAtKm": 38.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 70,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.4246,
+      "maximumAtKm": 37.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 71,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 72,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.4177,
+      "maximumAtKm": 38.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 73,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 74,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.3569,
+      "maximumAtKm": 37.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 75,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.1547,
+      "maximumAtKm": 37.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 76,
+      "state": "PARTIAL",
+      "validFraction": 0.998,
+      "maximumKnownAngleDeg": -0.2028,
+      "maximumAtKm": 37.4,
+      "sampleCount": 497
+    },
+    {
+      "azimuthDeg": 77,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.279,
+      "maximumAtKm": 36.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 78,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.3519,
+      "maximumAtKm": 34.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 79,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.422,
+      "maximumAtKm": 30.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 80,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 81,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 82,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 83,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.2177,
+      "maximumAtKm": 29.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 84,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.298,
+      "maximumAtKm": 29.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 85,
+      "state": "PARTIAL",
+      "validFraction": 0.998,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 497
+    },
+    {
+      "azimuthDeg": 86,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 87,
+      "state": "PARTIAL",
+      "validFraction": 0.998,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 497
+    },
+    {
+      "azimuthDeg": 88,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 89,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 90,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 91,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 92,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 93,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 94,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 95,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 96,
+      "state": "PARTIAL",
+      "validFraction": 0.998,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 497
+    },
+    {
+      "azimuthDeg": 97,
+      "state": "PARTIAL",
+      "validFraction": 0.998,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 497
+    },
+    {
+      "azimuthDeg": 98,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 99,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.3919,
+      "maximumAtKm": 9.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 100,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.2176,
+      "maximumAtKm": 7.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 101,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.0645,
+      "maximumAtKm": 9.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 102,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.0084,
+      "maximumAtKm": 9.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 103,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.0701,
+      "maximumAtKm": 7.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 104,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.281,
+      "maximumAtKm": 7.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 105,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.1675,
+      "maximumAtKm": 7.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 106,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.0731,
+      "maximumAtKm": 7.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 107,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.238,
+      "maximumAtKm": 8.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 108,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.1594,
+      "maximumAtKm": 8.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 109,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.4259,
+      "maximumAtKm": 7.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 110,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.5865,
+      "maximumAtKm": 7.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 111,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.5795,
+      "maximumAtKm": 7.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 112,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.7604,
+      "maximumAtKm": 7.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 113,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.1829,
+      "maximumAtKm": 7.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 114,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.3648,
+      "maximumAtKm": 7.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 115,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 116,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 117,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 118,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 119,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 120,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 121,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 122,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 123,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 124,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 125,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 126,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 127,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 128,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 129,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 130,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 131,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 132,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 133,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 134,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 135,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 136,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 137,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 138,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 139,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 140,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 141,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 142,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 143,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 144,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 145,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 146,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 147,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 148,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 149,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 150,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 151,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 152,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 153,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 154,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 155,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 156,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 157,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 158,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 159,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 160,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 161,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 162,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 163,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 164,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 165,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 166,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 167,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 168,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 169,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 170,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 171,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 172,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 173,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 174,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 175,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 176,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 177,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 178,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 179,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 180,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 181,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 182,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 183,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 184,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 185,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 186,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 187,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 188,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 189,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 190,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 191,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 192,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 193,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 194,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 195,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 196,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 197,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 198,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 199,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 200,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 201,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 202,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 203,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 204,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 205,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 206,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 207,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 208,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 209,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 210,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 211,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 212,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 213,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 214,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 215,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 216,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 217,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 218,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.4281,
+      "maximumAtKm": 41.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 219,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.429,
+      "maximumAtKm": 47.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 220,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.2637,
+      "maximumAtKm": 45.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 221,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.1859,
+      "maximumAtKm": 45.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 222,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.4263,
+      "maximumAtKm": 46.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 223,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.2094,
+      "maximumAtKm": 45.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 224,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.2547,
+      "maximumAtKm": 45.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 225,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.3713,
+      "maximumAtKm": 27.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 226,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.0878,
+      "maximumAtKm": 37.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 227,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.0167,
+      "maximumAtKm": 43.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 228,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.262,
+      "maximumAtKm": 46.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 229,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.1224,
+      "maximumAtKm": 42.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 230,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.0975,
+      "maximumAtKm": 42.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 231,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": -0.04,
+      "maximumAtKm": 33.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 232,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.021,
+      "maximumAtKm": 45.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 233,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.0684,
+      "maximumAtKm": 34.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 234,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.3219,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 235,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.3339,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 236,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.5593,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 237,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.8192,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 238,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.8775,
+      "maximumAtKm": 4.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 239,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.0303,
+      "maximumAtKm": 4.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 240,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.407,
+      "maximumAtKm": 4.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 241,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.7002,
+      "maximumAtKm": 4.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 242,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.1448,
+      "maximumAtKm": 4.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 243,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.3156,
+      "maximumAtKm": 4.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 244,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.2904,
+      "maximumAtKm": 4.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 245,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.77,
+      "maximumAtKm": 4.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 246,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.6579,
+      "maximumAtKm": 5.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 247,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.5636,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 248,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.7,
+      "maximumAtKm": 4.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 249,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.0865,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 250,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.256,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 251,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.9704,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 252,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.5256,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 253,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.2635,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 254,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.7806,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 255,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.6437,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 256,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.6385,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 257,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.7568,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 258,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.0429,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 259,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.2989,
+      "maximumAtKm": 5.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 260,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.7153,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 261,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.0481,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 262,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.7777,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 263,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.6284,
+      "maximumAtKm": 5.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 264,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.8559,
+      "maximumAtKm": 5.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 265,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.9637,
+      "maximumAtKm": 5.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 266,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.0384,
+      "maximumAtKm": 5.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 267,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.0541,
+      "maximumAtKm": 5.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 268,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.973,
+      "maximumAtKm": 5.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 269,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.8941,
+      "maximumAtKm": 5.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 270,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.6189,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 271,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.3863,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 272,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.1369,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 273,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.0418,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 274,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.219,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 275,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.031,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 276,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.8993,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 277,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.861,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 278,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.994,
+      "maximumAtKm": 4.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 279,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.2419,
+      "maximumAtKm": 4.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 280,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.3387,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 281,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.6937,
+      "maximumAtKm": 4.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 282,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.7572,
+      "maximumAtKm": 4.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 283,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.8436,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 284,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.2593,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 285,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.4283,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 286,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.5446,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 287,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.4779,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 288,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.401,
+      "maximumAtKm": 5.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 289,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.3436,
+      "maximumAtKm": 5.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 290,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.0162,
+      "maximumAtKm": 5.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 291,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.6657,
+      "maximumAtKm": 5.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 292,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.5079,
+      "maximumAtKm": 5.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 293,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.4321,
+      "maximumAtKm": 3.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 294,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.6439,
+      "maximumAtKm": 3.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 295,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.2281,
+      "maximumAtKm": 3.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 296,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.6568,
+      "maximumAtKm": 3.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 297,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 3.0111,
+      "maximumAtKm": 3.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 298,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 3.0403,
+      "maximumAtKm": 3.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 299,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.9586,
+      "maximumAtKm": 3.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 300,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 3.3215,
+      "maximumAtKm": 3.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 301,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 3.4168,
+      "maximumAtKm": 3.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 302,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.9006,
+      "maximumAtKm": 3.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 303,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.4401,
+      "maximumAtKm": 3.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 304,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.0648,
+      "maximumAtKm": 3.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 305,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.7424,
+      "maximumAtKm": 3.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 306,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.3375,
+      "maximumAtKm": 4.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 307,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.9613,
+      "maximumAtKm": 4.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 308,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.614,
+      "maximumAtKm": 4.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 309,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.329,
+      "maximumAtKm": 30.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 310,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.3452,
+      "maximumAtKm": 4.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 311,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.2094,
+      "maximumAtKm": 24.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 312,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.2042,
+      "maximumAtKm": 24.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 313,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.7196,
+      "maximumAtKm": 3.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 314,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.0365,
+      "maximumAtKm": 3.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 315,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.4877,
+      "maximumAtKm": 4.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 316,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.6905,
+      "maximumAtKm": 3.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 317,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.1112,
+      "maximumAtKm": 4.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 318,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.0913,
+      "maximumAtKm": 4.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 319,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.8554,
+      "maximumAtKm": 4.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 320,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.7675,
+      "maximumAtKm": 4.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 321,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.6395,
+      "maximumAtKm": 4.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 322,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.2235,
+      "maximumAtKm": 4.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 323,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.0296,
+      "maximumAtKm": 18.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 324,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.9644,
+      "maximumAtKm": 17.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 325,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.8757,
+      "maximumAtKm": 17.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 326,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.7061,
+      "maximumAtKm": 17.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 327,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.7018,
+      "maximumAtKm": 25.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 328,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 0.9433,
+      "maximumAtKm": 25.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 329,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.0686,
+      "maximumAtKm": 4.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 330,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.2478,
+      "maximumAtKm": 4.3,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 331,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.2823,
+      "maximumAtKm": 4.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 332,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 1.7613,
+      "maximumAtKm": 4.4,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 333,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.1173,
+      "maximumAtKm": 4.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 334,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 2.4555,
+      "maximumAtKm": 4.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 335,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 3.0808,
+      "maximumAtKm": 4.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 336,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 3.9226,
+      "maximumAtKm": 4.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 337,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 4.6291,
+      "maximumAtKm": 4.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 338,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 5.3692,
+      "maximumAtKm": 4.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 339,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 5.9183,
+      "maximumAtKm": 4.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 340,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.3599,
+      "maximumAtKm": 4.5,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 341,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.8588,
+      "maximumAtKm": 4.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 342,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.3612,
+      "maximumAtKm": 4.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 343,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.8268,
+      "maximumAtKm": 4.6,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 344,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.8478,
+      "maximumAtKm": 4.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 345,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 8.1308,
+      "maximumAtKm": 4.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 346,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 8.0156,
+      "maximumAtKm": 4.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 347,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.96,
+      "maximumAtKm": 4.7,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 348,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.7902,
+      "maximumAtKm": 4.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 349,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.5935,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 350,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.4535,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 351,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.2105,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 352,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.8357,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 353,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.4856,
+      "maximumAtKm": 5.2,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 354,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.1557,
+      "maximumAtKm": 5.1,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 355,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.133,
+      "maximumAtKm": 5.0,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 356,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.5008,
+      "maximumAtKm": 4.9,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 357,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.7976,
+      "maximumAtKm": 4.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 358,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 6.9877,
+      "maximumAtKm": 4.8,
+      "sampleCount": 498
+    },
+    {
+      "azimuthDeg": 359,
+      "state": "KNOWN_SAMPLED_RANGE",
+      "validFraction": 1.0,
+      "maximumKnownAngleDeg": 7.0275,
+      "maximumAtKm": 4.8,
+      "sampleCount": 498
+    }
+  ],
+  "limitations": [
+    "2011-2015 digital surface model; buildings and vegetation may be present, and current near objects are missing.",
+    "Observer height is sampled from the DEM at a fixture coordinate, not a measured device altitude.",
+    "Unknown samples and all terrain beyond the chosen radius cannot be treated as clear sky.",
+    "One-degree azimuth rays and fixed distance steps miss sub-grid peaks; no conservative error bound.",
+    "No atmospheric refraction, validation against surveyed horizon, Android/iOS drawing or production spot coverage."
+  ]
+}

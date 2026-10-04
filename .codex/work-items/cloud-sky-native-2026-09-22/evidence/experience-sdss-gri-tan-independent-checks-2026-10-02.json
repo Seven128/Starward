@@ -1,0 +1,831 @@
+{
+  "scope": "Independent limited cached source, same-master and actual software GPU readback; no publication or native acceptance.",
+  "reviewScript": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-sdss-gri-tan-independent-checks-2026-10-02.py",
+    "bytes": 17187,
+    "sha256": "b2ae601870f1270d88abb72d95eba42c4c522271d32c878237c962e678decace"
+  },
+  "readerBinding": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/sdss-corrected-frame-2026-10-02-r2/binding.json",
+    "bytes": 3532,
+    "sha256": "eba1eee567a5a6ede5462611fdeb7eac7d29cc6631a9839fdfa654d9a52989f6"
+  },
+  "readerBindings": [
+    {
+      "path": "data-pipelines/deep-sky/sdss_corrected_frame.py",
+      "bytes": 18057,
+      "sha256": "66eed21091c6d4c80d35c79d8bbb28467ba65ef90740342c727c13bbd812d17e"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_sdss_corrected_frame.py",
+      "bytes": 8390,
+      "sha256": "9884350350a8cb6882762583af03564ea03fd2f95e47dbf49258c27391242d31"
+    },
+    {
+      "path": "data-pipelines/deep-sky/requirements.txt",
+      "bytes": 43,
+      "sha256": "4d8fe8a0eb72499c6ca80871c8850a8d2ba0b4c9a23f810751c06fd137f15bf7"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-sdss-corrected-frame-2026-10-02.py",
+      "bytes": 3262,
+      "sha256": "58fa246eaf2fae0c2bba0c672008ce88bccb0f0a9db6bda576877b4a4b3cd342"
+    },
+    {
+      "path": "output/sdss-corrected-m51-1002/frame-acquisition.json",
+      "bytes": 2165,
+      "sha256": "379bbf80f6d678b6597da3a0d274044f76200c688d65c44176e8024029a464c3"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/sdss-corrected-frame-2026-10-02-r2/reader-receipts.json",
+      "bytes": 74387,
+      "sha256": "385dcfe139f14a855032ac1cdd8c9bb3dd57e60e313aa9923e47c22b77f9a0d3"
+    }
+  ],
+  "actualSourceFacts": [
+    {
+      "band": "g",
+      "primaryFrame": 108,
+      "asTransField": 100,
+      "BUNIT": "nanomaggy",
+      "NMGY": 0.00364695,
+      "actualArrayKeptWithoutRecalibration": true,
+      "finite": 3049472,
+      "zero": 0,
+      "negative": 725941,
+      "rawSha256": "76ba2a5f25130e1c3586ef09d817fa5b6965a2cccc00a53fbc0a7d22008e56c4",
+      "asTransAll31ActualFieldsEqualReceipt": true
+    },
+    {
+      "band": "r",
+      "primaryFrame": 100,
+      "asTransField": 100,
+      "BUNIT": "nanomaggy",
+      "NMGY": 0.00502803,
+      "actualArrayKeptWithoutRecalibration": true,
+      "finite": 3049472,
+      "zero": 1,
+      "negative": 733494,
+      "rawSha256": "dbbf918c1b87e259499de5714a5caf7fa5e510547cfb78445cc5dc357dd2da77",
+      "asTransAll31ActualFieldsEqualReceipt": true
+    },
+    {
+      "band": "i",
+      "primaryFrame": 102,
+      "asTransField": 100,
+      "BUNIT": "nanomaggy",
+      "NMGY": 0.00628516,
+      "actualArrayKeptWithoutRecalibration": true,
+      "finite": 3049472,
+      "zero": 2,
+      "negative": 764866,
+      "rawSha256": "6c596d4f02a42962b4aa2cfdebb8fd81e6c4f380a9ba137ec66b72f500f18e84",
+      "asTransAll31ActualFieldsEqualReceipt": true
+    }
+  ],
+  "sourceBeforeEvidence": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-sdss-corrected-reader-independent-before-2026-10-02.json",
+    "bytes": 3695,
+    "sha256": "7a9f4e02bd84eafeab81a07be3cb251c766137afe00561e6c4419aec7b7d40b4"
+  },
+  "sourceActualBeforeToAfter": [
+    {
+      "boundary": "celestial_reference_frame",
+      "syntheticInput": true,
+      "change": {
+        "RADECSYS": "FK4",
+        "EQUINOX": 1950.0
+      },
+      "before": {
+        "admission": "STRUCTURE_ACCEPTED_SCIENTIFIC_VALIDITY_UNVERIFIED",
+        "actualWcsFrame": "FK4",
+        "actualWcsEquinox": 1950.0
+      },
+      "afterRejected": "sdss_frame_reference_frame_unsupported"
+    },
+    {
+      "boundary": "celestial_reference_frame",
+      "syntheticInput": true,
+      "change": {
+        "RADESYS": "FK5",
+        "EQUINOX": 2000.0
+      },
+      "before": {
+        "admission": "STRUCTURE_ACCEPTED_SCIENTIFIC_VALIDITY_UNVERIFIED",
+        "actualWcsFrame": "FK5",
+        "actualWcsEquinox": 2000.0
+      },
+      "afterRejected": "sdss_frame_reference_frame_unsupported"
+    },
+    {
+      "boundary": "source_url_identity",
+      "syntheticInput": true,
+      "change": null,
+      "before": {
+        "admission": "STRUCTURE_ACCEPTED_SCIENTIFIC_VALIDITY_UNVERIFIED",
+        "recordedSourceUrl": null,
+        "actualIdentity": {
+          "run": 3699,
+          "rerun": "301",
+          "camcol": 6,
+          "field": 100,
+          "band": "g"
+        }
+      },
+      "afterRejected": "sdss_frame_source_url_identity_mismatch"
+    },
+    {
+      "boundary": "source_url_identity",
+      "syntheticInput": true,
+      "change": "https://example.invalid/frame-g-003699-6-0100.fits.bz2",
+      "before": {
+        "admission": "STRUCTURE_ACCEPTED_SCIENTIFIC_VALIDITY_UNVERIFIED",
+        "recordedSourceUrl": "https://example.invalid/frame-g-003699-6-0100.fits.bz2",
+        "actualIdentity": {
+          "run": 3699,
+          "rerun": "301",
+          "camcol": 6,
+          "field": 100,
+          "band": "g"
+        }
+      },
+      "afterRejected": "sdss_frame_source_url_identity_mismatch"
+    },
+    {
+      "boundary": "source_url_identity",
+      "syntheticInput": true,
+      "change": "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/302/3699/6/frame-g-003699-6-0100.fits.bz2",
+      "before": {
+        "admission": "STRUCTURE_ACCEPTED_SCIENTIFIC_VALIDITY_UNVERIFIED",
+        "recordedSourceUrl": "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/302/3699/6/frame-g-003699-6-0100.fits.bz2",
+        "actualIdentity": {
+          "run": 3699,
+          "rerun": "301",
+          "camcol": 6,
+          "field": 100,
+          "band": "g"
+        }
+      },
+      "afterRejected": "sdss_frame_source_url_identity_mismatch"
+    }
+  ],
+  "candidateBinding": {
+    "path": "output/sdss-gri-tan-candidate-1002/binding.json",
+    "bytes": 88551,
+    "sha256": "344cb3392d104ed65dca2a77e723b249f2eba83fa098d2a798a6aac5286a3c02"
+  },
+  "candidateBindings": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-sdss-gri-tan-2026-10-02.py",
+      "bytes": 7999,
+      "sha256": "1486b517540592d684ed3f77404222b30d07d91521383a69f2b34042e8ec5444"
+    },
+    {
+      "path": "data-pipelines/deep-sky/sdss_gri_tan.py",
+      "bytes": 19344,
+      "sha256": "330fcdea3d61b488f6138038d1f1f576eab212a351379a220411244775b95848"
+    },
+    {
+      "path": "data-pipelines/deep-sky/sdss_corrected_frame.py",
+      "bytes": 18057,
+      "sha256": "66eed21091c6d4c80d35c79d8bbb28467ba65ef90740342c727c13bbd812d17e"
+    },
+    {
+      "path": "data-pipelines/deep-sky/image_quality.py",
+      "bytes": 19984,
+      "sha256": "b69389f2961949ddb96a2248cbb4f7e866e653a78e710efb87fdfde88660fcff"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_sdss_gri_tan.py",
+      "bytes": 8658,
+      "sha256": "8f0f48a6b725e3cf0b5b3530112103fa80d9586b975d9e9e0a6976438009a0d0"
+    },
+    {
+      "path": "data-pipelines/deep-sky/requirements.txt",
+      "bytes": 43,
+      "sha256": "4d8fe8a0eb72499c6ca80871c8850a8d2ba0b4c9a23f810751c06fd137f15bf7"
+    },
+    {
+      "path": "output/sdss-corrected-m51-1002/frame-acquisition.json",
+      "bytes": 2165,
+      "sha256": "379bbf80f6d678b6597da3a0d274044f76200c688d65c44176e8024029a464c3"
+    },
+    {
+      "path": "workers/miniapp-api/assets/deep-sky/sdss-m51/manifest.json",
+      "bytes": 2282,
+      "sha256": "d7632b5244c9b7f93ca0cb58b19b39b9f123cba49181ecdbe84e7c942f6cac92"
+    },
+    {
+      "path": "packages/astronomy-core/data/opengc-messier-deep-sky.v1.json",
+      "bytes": 14047,
+      "sha256": "f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5"
+    },
+    {
+      "path": "output/sdss-corrected-m51-1002/sources/frame-g-003699-6-0100.fits.bz2",
+      "bytes": 2880390,
+      "sha256": "53374522cb666e0c32a57376a3bd4b53c1a9a2140c2c5111a66a77598a54ca64"
+    },
+    {
+      "path": "output/sdss-corrected-m51-1002/sources/frame-r-003699-6-0100.fits.bz2",
+      "bytes": 3056156,
+      "sha256": "80fb916ec554f7e6538690ba19da16249f69d4a5d2b0c79647fa84b8efb1a351"
+    },
+    {
+      "path": "output/sdss-corrected-m51-1002/sources/frame-i-003699-6-0100.fits.bz2",
+      "bytes": 3197532,
+      "sha256": "1d554a9b1753c746efd3632d13bd7f976c12e315b52bd2d4d449645b74b35ade"
+    },
+    {
+      "path": "output/allwise-w3-atlas-0929/python-deps/astropy/visualization/lupton_rgb.py",
+      "bytes": 25887,
+      "sha256": "fb4c48a80d6bb5e89b8f643b6aa2dea673884bae897d15a3209d76dd65abed46"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/candidate-quality.json",
+      "bytes": 161416,
+      "sha256": "d5a6c552848bddec42a8bf1ea54f74d16f6ac81e5797f6de341e8df0ae97508c"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/candidate.json",
+      "bytes": 103611,
+      "sha256": "86596c0d7e4fa0709ec516ae96a37e07b2d41fd981dc46488ca57bdf48d315e4"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/catalog-star-projections.json",
+      "bytes": 32312,
+      "sha256": "6e7c5e31cec97187a94cde31e6bb33ffe625620b8f7724fc048f1c84310aa0e8"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/display-contribution-master.npy",
+      "bytes": 16777344,
+      "sha256": "3d4db75d7ede251647637daa9a70ef717ac203501afbe27e460fed2b39afc474"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/g-finite-neighbors.npy",
+      "bytes": 4194432,
+      "sha256": "2b2c4bbee8608147f25968e407cf2a7f1bfba15007e78e189936f64645f8daa8"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/g-footprint.npy",
+      "bytes": 4194432,
+      "sha256": "2b2c4bbee8608147f25968e407cf2a7f1bfba15007e78e189936f64645f8daa8"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/g-science.npy",
+      "bytes": 16777344,
+      "sha256": "14a3454b30b1c60f65f813b8b842127d9ee1b5ceba902ec97a092a7ef248ddc3"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/i-finite-neighbors.npy",
+      "bytes": 4194432,
+      "sha256": "e686ba7386ea41c2b835598346fb2b2d6a87e5552498ae5de39df8f8c9c79a1d"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/i-footprint.npy",
+      "bytes": 4194432,
+      "sha256": "e686ba7386ea41c2b835598346fb2b2d6a87e5552498ae5de39df8f8c9c79a1d"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/i-science.npy",
+      "bytes": 16777344,
+      "sha256": "22f5aceacbdf8d337aea66337c4d4f25b6ff99eccea3a792d13019b8b875e1ae"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/joint-availability.npy",
+      "bytes": 4194432,
+      "sha256": "0e83410ad9e845a46f2273ec356a6b8e22d5a4c36d3f649b8927adcb60b8346d"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/M-51-detail-display-contribution.png",
+      "bytes": 562298,
+      "sha256": "36c40842ba656f5cf54a270fec2f8621456a85dab2cfd7484fa037359f2bdba6"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/M-51-detail.png",
+      "bytes": 368096,
+      "sha256": "90459c8b4d2ab24cf5863b49c8cf5c0936adfd286ee1baafe2cc3df3aa1a3e1a"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/M-51-medium-display-contribution.png",
+      "bytes": 576353,
+      "sha256": "48199e293bf020655528709976bc0396be688fa3644c3e6233f8e1df2a7f6044"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/M-51-medium.png",
+      "bytes": 292519,
+      "sha256": "dbde0a55d99363161d46fe4d58e8d902cc56fb4698d4a161dc20c5977f8e8632"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/M-51-overview-display-contribution.png",
+      "bytes": 391091,
+      "sha256": "c8114729547b7ce625ce49ffe91e09be2a483e682a4c776380da9493a11f5032"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/M-51-overview.png",
+      "bytes": 141738,
+      "sha256": "a9616d271b8cc9f467e00d7f5a4de0c1bbfff643d0b1051f846cdacdec4bd4cb"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/r-finite-neighbors.npy",
+      "bytes": 4194432,
+      "sha256": "72459f36e010c35d9d6bdf7401fac4d592134a36f88c81983b79e702fd2a906b"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/r-footprint.npy",
+      "bytes": 4194432,
+      "sha256": "72459f36e010c35d9d6bdf7401fac4d592134a36f88c81983b79e702fd2a906b"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/r-science.npy",
+      "bytes": 16777344,
+      "sha256": "53c822f9f3b5c6f91f2157facc57cd680cce13e21afa14e7c618d623b6ce6b77"
+    },
+    {
+      "path": "output/sdss-gri-tan-candidate-1002/rgb-master.npy",
+      "bytes": 12583040,
+      "sha256": "8656ddeecec3e2fb4d067bbafec4e35501e8c007750603f6520dbe1c8d56cd5d"
+    }
+  ],
+  "old201AssetsBeforeAfterAndCurrentHashesMatch": true,
+  "jointAvailablePixels": 2031591,
+  "jointFraction": 0.48436903953552246,
+  "actualBilinearSamples": [
+    {
+      "band": "g",
+      "points": 147,
+      "inFootprint": 67,
+      "maxAbsoluteNanomaggyDifference": 0.0
+    },
+    {
+      "band": "r",
+      "points": 147,
+      "inFootprint": 67,
+      "maxAbsoluteNanomaggyDifference": 0.0
+    },
+    {
+      "band": "i",
+      "points": 147,
+      "inFootprint": 66,
+      "maxAbsoluteNanomaggyDifference": 0.0
+    }
+  ],
+  "pyramidAllPixelsAndWorldReadback": [
+    {
+      "level": "OVERVIEW",
+      "fieldDegrees": 0.2275555555555556,
+      "crop": {
+        "boundsXYExclusive": [
+          0,
+          0,
+          2048,
+          2048
+        ],
+        "boxFactor": 4,
+        "method": "availability-premultiplied integer box mean, round-to-nearest"
+      },
+      "jointAvailability": 0.48436903953552246,
+      "scienceCropFull": false,
+      "allRgbaAndAlternativePixelsMatchIndependentBox": true,
+      "cropWcsMaximumDegreeDifference": 0.0,
+      "bytes": 141738,
+      "alternativeBytes": 391091
+    },
+    {
+      "level": "MEDIUM",
+      "fieldDegrees": 0.11377788994540003,
+      "crop": {
+        "boundsXYExclusive": [
+          512,
+          512,
+          1536,
+          1536
+        ],
+        "boxFactor": 2,
+        "method": "availability-premultiplied integer box mean, round-to-nearest"
+      },
+      "jointAvailability": 0.8336467742919922,
+      "scienceCropFull": false,
+      "allRgbaAndAlternativePixelsMatchIndependentBox": true,
+      "cropWcsMaximumDegreeDifference": 0.0,
+      "bytes": 292519,
+      "alternativeBytes": 576353
+    },
+    {
+      "level": "DETAIL",
+      "fieldDegrees": 0.056888958993683895,
+      "crop": {
+        "boundsXYExclusive": [
+          768,
+          768,
+          1280,
+          1280
+        ],
+        "boxFactor": 1,
+        "method": "availability-premultiplied integer box mean, round-to-nearest"
+      },
+      "jointAvailability": 1.0,
+      "scienceCropFull": true,
+      "allRgbaAndAlternativePixelsMatchIndependentBox": true,
+      "cropWcsMaximumDegreeDifference": 0.0,
+      "bytes": 368096,
+      "alternativeBytes": 562298
+    }
+  ],
+  "alternativeRoundedBlackReconstructionExact": true,
+  "unfittedBrightStar": {
+    "objID": "1237661362908626965",
+    "expectedMaster": [
+      483.99785875479495,
+      1654.2803926107272
+    ],
+    "localChecks": [
+      {
+        "band": "g",
+        "sourceUnfittedLocalCentroid": {
+          "actualSamples": "AVAILABLE",
+          "centroidXY": [
+            1209.4275729226945,
+            1455.9400104251822
+          ],
+          "offsetPixels": [
+            0.0717324426259438,
+            0.06210299014492193
+          ],
+          "background": 0.0633544921875,
+          "annulusStandardDeviation": 0.03481071399427765,
+          "peakMinusBackground": 21.1553955078125,
+          "positiveApertureSum": 318.9580078125
+        },
+        "masterUnfittedLocalCentroid": {
+          "actualSamples": "AVAILABLE",
+          "centroidXY": [
+            483.93303173164355,
+            1654.194647479909
+          ],
+          "offsetPixels": [
+            -0.06482702315139477,
+            -0.08574513081816804
+          ],
+          "background": 0.06036798097193241,
+          "annulusStandardDeviation": 0.03371529385632338,
+          "peakMinusBackground": 20.299403747543693,
+          "positiveApertureSum": 312.99705364368856
+        },
+        "boundedRowFlipOmissionPrediction": [
+          483.99785875479495,
+          392.7196073892728
+        ],
+        "wrongRowActualScience": {
+          "actualSamples": "UNAVAILABLE",
+          "positiveApertureSum": 0.0
+        }
+      },
+      {
+        "band": "r",
+        "sourceUnfittedLocalCentroid": {
+          "actualSamples": "AVAILABLE",
+          "centroidXY": [
+            1207.9438764615584,
+            1443.5411046594068
+          ],
+          "offsetPixels": [
+            -0.1289495724695371,
+            0.029896678961677026
+          ],
+          "background": 0.1104736328125,
+          "annulusStandardDeviation": 0.05543809921775336,
+          "peakMinusBackground": 50.8895263671875,
+          "positiveApertureSum": 653.4134521484375
+        },
+        "masterUnfittedLocalCentroid": {
+          "actualSamples": "AVAILABLE",
+          "centroidXY": [
+            484.00391208463486,
+            1654.3860706188148
+          ],
+          "offsetPixels": [
+            0.006053329839915023,
+            0.10567800808757966
+          ],
+          "background": 0.10975274816155434,
+          "annulusStandardDeviation": 0.05472054220841397,
+          "peakMinusBackground": 44.67541494593024,
+          "positiveApertureSum": 644.4213605187833
+        },
+        "boundedRowFlipOmissionPrediction": [
+          483.99785875479495,
+          392.7196073892728
+        ],
+        "wrongRowActualScience": {
+          "actualSamples": "UNAVAILABLE",
+          "positiveApertureSum": 0.0
+        }
+      },
+      {
+        "band": "i",
+        "sourceUnfittedLocalCentroid": {
+          "actualSamples": "AVAILABLE",
+          "centroidXY": [
+            1210.1360752607602,
+            1446.1365020680973
+          ],
+          "offsetPixels": [
+            -0.138440326764794,
+            -0.0666695689185417
+          ],
+          "background": 0.1785888671875,
+          "annulusStandardDeviation": 0.08561015460142127,
+          "peakMinusBackground": 62.7589111328125,
+          "positiveApertureSum": 814.55078125
+        },
+        "masterUnfittedLocalCentroid": {
+          "actualSamples": "AVAILABLE",
+          "centroidXY": [
+            484.08537274945064,
+            1654.3796741159165
+          ],
+          "offsetPixels": [
+            0.0875139946556942,
+            0.09928150518931034
+          ],
+          "background": 0.17159652709960938,
+          "annulusStandardDeviation": 0.0802126066573934,
+          "peakMinusBackground": 55.085025787353516,
+          "positiveApertureSum": 798.2211072444916
+        },
+        "boundedRowFlipOmissionPrediction": [
+          483.99785875479495,
+          392.7196073892728
+        ],
+        "wrongRowActualScience": {
+          "actualSamples": "UNAVAILABLE",
+          "positiveApertureSum": 0.0
+        }
+      }
+    ],
+    "scope": "Only one bright source star in this field; no offset fit, holdout, absolute, full polynomial or whole-field certification."
+  },
+  "starPredictionCounts": {
+    "sourceBandFourNeighbor": {
+      "g": 6,
+      "r": 5,
+      "i": 5
+    },
+    "jointSourceFourNeighbor": 5,
+    "masterJointAvailable": 5,
+    "levelAvailableDisplayPixels": {
+      "OVERVIEW": 5,
+      "MEDIUM": 0,
+      "DETAIL": 0
+    }
+  },
+  "smallNeighborBoundary": {
+    "geometric": [
+      true,
+      true,
+      true,
+      false
+    ],
+    "finite": [
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "gpuResult": {
+    "path": "output/playwright/cloud-sky-sdss-corrected-candidate-1002-r1/result.json",
+    "bytes": 139922,
+    "sha256": "e784cc33e12dc3f24535565701189d371f70335cb1f5257d87158070c450dba9"
+  },
+  "gpuSourceHashCount": 84,
+  "gpuArtifactHashCount": 92,
+  "gpuRows": 46,
+  "gpuAllGlAndReleaseZero": true,
+  "gpuCounterfactualRecomputed": [
+    {
+      "name": "day-overview-legacy",
+      "changedPixels": 272706,
+      "darkenedPixels": 272706,
+      "maxDelta": 229
+    },
+    {
+      "name": "day-overview-available-over",
+      "changedPixels": 141137,
+      "darkenedPixels": 141137,
+      "maxDelta": 229
+    },
+    {
+      "name": "day-overview-available-add",
+      "changedPixels": 137885,
+      "darkenedPixels": 0,
+      "maxDelta": 111
+    },
+    {
+      "name": "day-overview-signal-over",
+      "changedPixels": 139449,
+      "darkenedPixels": 139448,
+      "maxDelta": 164
+    },
+    {
+      "name": "day-medium-legacy",
+      "changedPixels": 329160,
+      "darkenedPixels": 329143,
+      "maxDelta": 229
+    },
+    {
+      "name": "day-medium-available-over",
+      "changedPixels": 324345,
+      "darkenedPixels": 324345,
+      "maxDelta": 229
+    },
+    {
+      "name": "day-medium-available-add",
+      "changedPixels": 323910,
+      "darkenedPixels": 0,
+      "maxDelta": 111
+    },
+    {
+      "name": "day-medium-signal-over",
+      "changedPixels": 324031,
+      "darkenedPixels": 324009,
+      "maxDelta": 205
+    },
+    {
+      "name": "day-detail-legacy",
+      "changedPixels": 329160,
+      "darkenedPixels": 329076,
+      "maxDelta": 191
+    },
+    {
+      "name": "day-detail-available-over",
+      "changedPixels": 329160,
+      "darkenedPixels": 329160,
+      "maxDelta": 219
+    },
+    {
+      "name": "day-detail-available-add",
+      "changedPixels": 329160,
+      "darkenedPixels": 0,
+      "maxDelta": 111
+    },
+    {
+      "name": "day-detail-signal-over",
+      "changedPixels": 329160,
+      "darkenedPixels": 329157,
+      "maxDelta": 146
+    },
+    {
+      "name": "twilight-overview-legacy",
+      "changedPixels": 250678,
+      "darkenedPixels": 250602,
+      "maxDelta": 158
+    },
+    {
+      "name": "twilight-overview-available-over",
+      "changedPixels": 145829,
+      "darkenedPixels": 145829,
+      "maxDelta": 158
+    },
+    {
+      "name": "twilight-overview-available-add",
+      "changedPixels": 137066,
+      "darkenedPixels": 0,
+      "maxDelta": 125
+    },
+    {
+      "name": "twilight-overview-signal-over",
+      "changedPixels": 129921,
+      "darkenedPixels": 124441,
+      "maxDelta": 119
+    },
+    {
+      "name": "twilight-medium-legacy",
+      "changedPixels": 329160,
+      "darkenedPixels": 328365,
+      "maxDelta": 156
+    },
+    {
+      "name": "twilight-medium-available-over",
+      "changedPixels": 322245,
+      "darkenedPixels": 322245,
+      "maxDelta": 158
+    },
+    {
+      "name": "twilight-medium-available-add",
+      "changedPixels": 321980,
+      "darkenedPixels": 0,
+      "maxDelta": 125
+    },
+    {
+      "name": "twilight-medium-signal-over",
+      "changedPixels": 321653,
+      "darkenedPixels": 310416,
+      "maxDelta": 136
+    },
+    {
+      "name": "twilight-detail-legacy",
+      "changedPixels": 329160,
+      "darkenedPixels": 326437,
+      "maxDelta": 125
+    },
+    {
+      "name": "twilight-detail-available-over",
+      "changedPixels": 329160,
+      "darkenedPixels": 329160,
+      "maxDelta": 148
+    },
+    {
+      "name": "twilight-detail-available-add",
+      "changedPixels": 329160,
+      "darkenedPixels": 0,
+      "maxDelta": 125
+    },
+    {
+      "name": "twilight-detail-signal-over",
+      "changedPixels": 329160,
+      "darkenedPixels": 327048,
+      "maxDelta": 125
+    },
+    {
+      "name": "night-overview-legacy",
+      "changedPixels": 270409,
+      "darkenedPixels": 139689,
+      "maxDelta": 246
+    },
+    {
+      "name": "night-overview-available-over",
+      "changedPixels": 147467,
+      "darkenedPixels": 133028,
+      "maxDelta": 232
+    },
+    {
+      "name": "night-overview-available-add",
+      "changedPixels": 145625,
+      "darkenedPixels": 0,
+      "maxDelta": 241
+    },
+    {
+      "name": "night-overview-signal-over",
+      "changedPixels": 146470,
+      "darkenedPixels": 5,
+      "maxDelta": 233
+    },
+    {
+      "name": "night-medium-legacy",
+      "changedPixels": 329160,
+      "darkenedPixels": 31898,
+      "maxDelta": 246
+    },
+    {
+      "name": "night-medium-available-over",
+      "changedPixels": 305132,
+      "darkenedPixels": 236638,
+      "maxDelta": 246
+    },
+    {
+      "name": "night-medium-available-add",
+      "changedPixels": 304764,
+      "darkenedPixels": 0,
+      "maxDelta": 246
+    },
+    {
+      "name": "night-medium-signal-over",
+      "changedPixels": 304739,
+      "darkenedPixels": 3,
+      "maxDelta": 246
+    },
+    {
+      "name": "night-detail-legacy",
+      "changedPixels": 329160,
+      "darkenedPixels": 0,
+      "maxDelta": 246
+    },
+    {
+      "name": "night-detail-available-over",
+      "changedPixels": 329160,
+      "darkenedPixels": 109790,
+      "maxDelta": 246
+    },
+    {
+      "name": "night-detail-available-add",
+      "changedPixels": 329160,
+      "darkenedPixels": 0,
+      "maxDelta": 246
+    },
+    {
+      "name": "night-detail-signal-over",
+      "changedPixels": 329160,
+      "darkenedPixels": 0,
+      "maxDelta": 246
+    }
+  ],
+  "limitations": [
+    "Single field only, overview48.44%/medium83.36%, missing companion and diagonal source edge.",
+    "Primary linear TAN only; full asTrans polynomial/DCR not applied.",
+    "Default stretch5/Q8 darker/brownish, artifacts/colors/background/source quality not accepted.",
+    "All blend/alpha variants task-only and unadopted; contribution alpha is display encoding, not radiance or a science mask.",
+    "v1 BFF/loader/source UI bypassed, suppressed-pass scene marker does not prove actual optical contribution.",
+    "No native journey, resident/GPU/OS peak, capacity/cost or current phone acceptance."
+  ]
+}

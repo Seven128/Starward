@@ -1,0 +1,66 @@
+{
+  "boundary": "local image, 512MiB cgroup, LOCAL/MEMORY_TEST, 80 simultaneous old/new HTTP searches",
+  "image": "sha256:99e7814bdb3c0bf2b06c070f3fce1220f733fd7e8a574c526506cad1a882eb70",
+  "result": {
+    "requests": 80,
+    "old": 40,
+    "revised": 40,
+    "firstEight": [
+      {
+        "query": "张宿二",
+        "revised": false,
+        "reference": "HR:3994",
+        "durationMs": 47.309499999999844
+      },
+      {
+        "query": "SAO 1",
+        "revised": true,
+        "reference": "SAO:1",
+        "durationMs": 85.47730000000024
+      },
+      {
+        "query": "HD 48915",
+        "revised": false,
+        "reference": "HR:2491",
+        "durationMs": 71.4041000000002
+      },
+      {
+        "query": "SAO 12",
+        "revised": true,
+        "reference": "SAO:12",
+        "durationMs": 78.1599000000001
+      },
+      {
+        "query": "天狼星",
+        "revised": false,
+        "reference": "HR:2491",
+        "durationMs": 118.78050000000007
+      },
+      {
+        "query": "M 31",
+        "revised": true,
+        "reference": "M:31",
+        "durationMs": 123.28379999999993
+      },
+      {
+        "query": "Jupiter",
+        "revised": false,
+        "reference": "PLANET:JUPITER",
+        "durationMs": 143.15110000000004
+      },
+      {
+        "query": "NGC 7000",
+        "revised": true,
+        "reference": null,
+        "durationMs": 145.38520000000017
+      }
+    ],
+    "wallMs": 572.2959999999998,
+    "medianMs": 339.52819999999974,
+    "p95Ms": 539.8620000000001,
+    "maxMs": 562.1147999999998
+  },
+  "memoryPeakBytes": 349794304,
+  "memoryCurrentBytes": 343515136,
+  "state": "false/true"
+}

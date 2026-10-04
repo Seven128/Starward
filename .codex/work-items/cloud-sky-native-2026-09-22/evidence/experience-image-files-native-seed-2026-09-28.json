@@ -1,0 +1,55 @@
+{
+  "scope": "Same-project native generated-file ownership development check; no phone, whole-quality, OS kill, memory/FPS/cloud-cost or independent-review acceptance",
+  "stage": "seed",
+  "port": 9445,
+  "candidateHash": "bf179db231d3a73314ac552b4eb8010babcc3cf6e359e232e447c13b7d7cebea",
+  "fixture": "Copies of actual encoded files with previous-runtime names; never product imagery or observed M110 data",
+  "seeded": {
+    "copiedBytes": [
+      29180,
+      41153
+    ],
+    "guardBytes": 4
+  },
+  "beforeRestart": {
+    "owned": [
+      {
+        "name": "deep-sky-M-31-DETAIL-legacy0928-2.jpg",
+        "bytes": 41153
+      },
+      {
+        "name": "deep-sky-M-31-DETAIL-mulbxc9i_1vbcqu4-7.jpg",
+        "bytes": 41153
+      },
+      {
+        "name": "sky-art-legacy0928-1.png",
+        "bytes": 29180
+      },
+      {
+        "name": "sky-art-mulbxc9i_1vbcqu4-5.png",
+        "bytes": 854784
+      },
+      {
+        "name": "sky-art-mulbxc9i_1vbcqu4-6.png",
+        "bytes": 3316173
+      },
+      {
+        "name": "sky-art-mulbxc9i_1vbcqu4-8.png",
+        "bytes": 29180
+      }
+    ],
+    "encodedCount": 6,
+    "encodedBytes": 4311623,
+    "otherCount": 2,
+    "guardPresent": true
+  },
+  "before": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 1.5 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "M 31定位标记，查看资料",
+    "sources": "NASA/IPAC IRSA · AllWISE W3 12 μm · 处理后红外影像",
+    "filename": "experience-combined-clean-v12-files-before-restart-2026-09-28.png",
+    "sha256": "b006faea6ddecf11afba6a2eadbe6def2d6613cbfbd3018e889be61895075af5",
+    "width": 192,
+    "height": 413
+  }
+}

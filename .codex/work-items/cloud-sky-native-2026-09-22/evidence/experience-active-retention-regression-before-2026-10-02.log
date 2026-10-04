@@ -1,0 +1,77 @@
+✔ retired native sources cannot reuse a resident texture or upload through a queued frame (1.3828ms)
+✖ a stable visible working set stays resident above the allocation pressure target (2.4356ms)
+✔ returning from a full panorama copies its existing texture and a contained crop reuses it (0.8003ms)
+✔ a copy failure retains valid original pixels and latches only the optional copy path (0.2733ms)
+✔ failed decoded identities stay latched and a new identity recovers the cropped path (0.2381ms)
+✔ context loss during copy releases temporary resources and rejects image success (0.4403ms)
+✖ nested paired pins protect not-yet-used samplers and release before the next moving frame (0.8082ms)
+✖ a failed finer upload keeps coarse usable and an exceptional submission releases its pins (0.3411ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 5
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 273.004
+
+✖ failing tests:
+
+test at src\features\sky\sky-gpu-textures.test.ts:1:3185
+✖ a stable visible working set stays resident above the allocation pressure target (2.4356ms)
+  AssertionError [ERR_ASSERTION]: retain every source used by the completed frame
+  
+  3 !== 4
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-gpu-textures.test.ts:66:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 3,
+    expected: 4,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src\features\sky\sky-gpu-textures.test.ts:1:7493
+✖ nested paired pins protect not-yet-used samplers and release before the next moving frame (0.8082ms)
+  AssertionError [ERR_ASSERTION]: inner scope exit must keep the outer coarse pin
+      at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-gpu-textures.test.ts:144:5)
+      at Object.withPinned (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-gpu-textures.ts:142:20)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-gpu-textures.test.ts:142:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at src\features\sky\sky-gpu-textures.test.ts:1:8615
+✖ a failed finer upload keeps coarse usable and an exceptional submission releases its pins (0.3411ms)
+  AssertionError [ERR_ASSERTION]: the coarse source remains owned by this frame after a failed fine upload
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-gpu-textures.test.ts:168:33)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

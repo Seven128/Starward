@@ -1,0 +1,99 @@
+✔ canvas measurement rejects missing geometry and accepts both platform result shapes (3.2112ms)
+✔ failed GPU surface does not reinitialize on every pose and explicit retry consumes the latest frame (1.6471ms)
+✔ every acquired GPU generation is released exactly once across reset, failure and late callbacks (1.2526ms)
+✔ ready, measurement and draw each retain only the latest requested frame (0.3854ms)
+✔ steady sensor frames reuse geometry/context and resizing reacquires both (0.3804ms)
+✔ resize, hide, removed canvas and unmount discard stale callbacks (0.6378ms)
+✔ measurement, context, draw and missing callback failures invalidate size and recover on retry (1.811ms)
+✔ expiry/denial hides the previous projection until the clearing draw completes (0.2809ms)
+✔ continuous poses with a slower native draw cannot starve visibility, while invalidation still fences old frames (5.1389ms)
+✔ motion bursts publish the latest real sample once while null/unmount cancel pending pose (2.1683ms)
+✔ dome never draws a below-horizon target or its label even when its projection fits the canvas (5.3477ms)
+✔ failed GPU submission cannot publish a picking snapshot or successful completion (0.586ms)
+✔ actual page invalidation clears hit testing synchronously before React hides the failed surface (42.9754ms)
+✔ survey imagery uses a celestial plane beyond the camera hemisphere and stays hidden in red mode (18.147ms)
+✔ stereographic anchors may cross the viewport but reject the antipode and invalid geometry (0.3619ms)
+✔ production frame requests preserve exact data/time and clear expired or untrusted input (38.1198ms)
+✖ explicit manual basis draws the same celestial target without fabricating device pose (3.2651ms)
+✖ production sky canvas switches exact target frames and restores committed geometry (1.4795ms)
+✔ production sky canvas never borrows top-level targets for missing or duplicate frames (2.0903ms)
+✖ production sky canvas uses the same instant and projection for catalog stars and targets (3.6544ms)
+✔ expanding catalog depth cannot resize or brighten an unchanged star (8.4077ms)
+✔ the real renderer reveals and fades a star with zoom and cannot pick the hidden star (6.9444ms)
+✔ picking uses only the exact painted catalog frame and deterministic ordering (3.3191ms)
+✔ pinch, drag and cancellation never become catalog taps (0.4252ms)
+✔ actual M31 FITS WCS pixels remain registered after observer and time rotations (11.5151ms)
+✔ all 51 source centers bind to FITS half-pixel origin at each published resolution (11.2036ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 23
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1750.9592
+
+✖ failing tests:
+
+test at src\features\sky\sky-canvas-time.test.ts:2:9168
+✖ explicit manual basis draws the same celestial target without fabricating device pose (3.2651ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-canvas-time.test.ts:190:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src\features\sky\sky-canvas-time.test.ts:2:10273
+✖ production sky canvas switches exact target frames and restores committed geometry (1.4795ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-canvas-time.test.ts:211:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src\features\sky\sky-canvas-time.test.ts:2:12043
+✖ production sky canvas uses the same instant and projection for catalog stars and targets (3.6544ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 2
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-canvas-time.test.ts:243:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

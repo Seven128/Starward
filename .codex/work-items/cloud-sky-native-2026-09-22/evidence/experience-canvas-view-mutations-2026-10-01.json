@@ -1,0 +1,20 @@
+[
+  {
+    "label": "reference",
+    "exitCode": 1,
+    "log": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-canvas-view-mutation-reference-2026-10-01.log",
+    "scope": "Bounded test-only mutation; production files unchanged"
+  },
+  {
+    "label": "stabilized",
+    "exitCode": 1,
+    "log": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-canvas-view-mutation-stabilized-2026-10-01.log",
+    "scope": "Bounded test-only mutation; production files unchanged"
+  },
+  {
+    "label": "native-images",
+    "exitCode": 1,
+    "log": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-canvas-view-mutation-native-images-2026-10-01.log",
+    "scope": "Bounded test-only mutation; production files unchanged"
+  }
+]

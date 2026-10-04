@@ -1,0 +1,33 @@
+{
+  "scope": "Local hash-bound PNG-alpha publication input prototype; no runtime/visual/phone acceptance or service deployment",
+  "results": [
+    {
+      "sourcePngSha256": "1e4222bb02d6b4c95c643047de6916581b5e2a665e00d9cc60edd94c3cb072d3",
+      "width": 1024,
+      "height": 512,
+      "alphaBytes": 524288,
+      "alphaSha256": "2369353b77a364cb53f67f603f7e719eff89b9615f78bf6f6bf7eba5f4fa9567",
+      "maskFile": "panorama-1024.alpha-rle.json",
+      "encodedBytes": 19943,
+      "maskFileSha256": "9ad34fafd073a01462d137ba88f95828fa5953b08f2ba682b4466e2c955d3f5e",
+      "roundtripPixels": 524288,
+      "staleIdentityRejected": true,
+      "partialRowRejected": true,
+      "wrongOpaqueSkyDetected": true
+    },
+    {
+      "sourcePngSha256": "fd6afeebba748eb84a15c0aea2a8ce0e363571685c6b181c8511f2bb5459bb32",
+      "width": 2048,
+      "height": 1024,
+      "alphaBytes": 2097152,
+      "alphaSha256": "55eeae11a014d444a04872d6d207093ac4975149cd2cb6c3ef868e87ab47af70",
+      "maskFile": "panorama-2048.alpha-rle.json",
+      "encodedBytes": 54224,
+      "maskFileSha256": "d9e70cb3795e018b38642737f16f61f3a4a08f25435c7bebcce7c14e9327281c",
+      "roundtripPixels": 2097152,
+      "staleIdentityRejected": true,
+      "partialRowRejected": true,
+      "wrongOpaqueSkyDetected": true
+    }
+  ]
+}

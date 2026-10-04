@@ -22,9 +22,12 @@ test("published image transport is raw bytes and excluded from the JSON requeste
   const image: MiniappApiResponse<"spotContributionImageGet"> = new Uint8Array([0xff, 0xd8]);
   const json: MiniappApiResponse<"spotContributionMediaGet"> extends ApiEnvelope<ContributionMediaData> ? true : false = true;
   const imageIsJson: "spotContributionImageGet" extends MiniappApiJsonOperationId ? true : false = false;
+  const prepared: MiniappApiResponse<"preparedOpticalImageGet"> = new Uint8Array([137, 80, 78, 71]);
+  const preparedIsJson: "preparedOpticalImageGet" extends MiniappApiJsonOperationId ? true : false = false;
   assert.equal(image.byteLength, 2);
   assert.equal(json, true);
   assert.equal(imageIsJson, false);
+  assert.equal(prepared.byteLength, 4); assert.equal(preparedIsJson, false);
 });
 
 test("the current filter schema has the exact ordered 14-option population", () => {

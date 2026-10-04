@@ -1,0 +1,13 @@
+................F.................................
+======================================================================
+FAIL: test_flag_clean_but_unavailable_native_sky_is_not_extrapolated (test_sdss_display_recovery.RecoveryTest.test_flag_clean_but_unavailable_native_sky_is_not_extrapolated)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_display_recovery.py", line 106, in test_flag_clean_but_unavailable_native_sky_is_not_extrapolated
+    self.assertGreater(recovered.report['flagOnlyRejectedByNativeQualification'],0)
+AssertionError: 0 not greater than 0
+
+----------------------------------------------------------------------
+Ran 50 tests in 21.411s
+
+FAILED (failures=1)

@@ -1,0 +1,48 @@
+✔ resolved label replacement is identity- and rendered-size-bound, not brightness or display name (2.4116ms)
+✔ an intentionally suppressed point withdraws only its own label, retaining legacy failure guides (0.7266ms)
+✔ surface orientation maps the centre to zero longitude and screen axes to east/south (2.9894ms)
+✔ same-instant Moon phase points toward the actual Sun and scales with distance/zoom (0.6098ms)
+✔ a partly set lunar disc reaches the renderer with the exact horizon view (15.3221ms)
+✔ scene submits one lunar phase after stars, keeps red mode and does not invent missing geometry (20.2913ms)
+✔ picking uses only the exact painted catalog frame and deterministic ordering (3.7955ms)
+✔ pinch, drag and cancellation never become catalog taps (0.3129ms)
+✔ an above-horizon star covered by the painted virtual foreground cannot be picked (1.1868ms)
+✔ near-edge tap tolerance never revives a hidden point but exposed globe and ring pixels remain selectable (1.3457ms)
+✔ unresolved planets share solar adaptation without returning as fallback target dots (32.2221ms)
+✔ partly risen resolved planets retain their drawn limb identity without selecting hidden or nearby empty rays (49.3202ms)
+✔ ice-giant scene routes each historical profile to its own globe and preserves untextured geometry (10.6641ms)
+✔ a texture hook selects one body's exact painted geometry without accepting a partial ephemeris (13.8737ms)
+✔ one exact planetary frame projects a changing physical phase without stale or malformed rows (0.4638ms)
+✔ Saturn without ring orientation remains a phase disc alongside other valid planets (0.3467ms)
+✔ ice giants use sourced 1-bar axes only with a valid exact body frame (0.7946ms)
+✔ resolved Mars shares the Moon's IAU body-axis projection and passes only its own texture (2.9112ms)
+✔ resolved Mercury uses its own body axis and published image, never Mars' (3.2174ms)
+✔ Saturn's observed pole and main-ring radial widths produce oriented bands only when resolvable (2.1993ms)
+✔ Saturn ring strokes stay below a few logical pixels at the phone's 0.05° limit (5.1792ms)
+✔ Sun geometry shades only the globe-facing ring sector and retains shadowed arcs as Saturn picks (14.4665ms)
+✔ Saturn's outer ring remains when the globe has left the viewport (8.1402ms)
+✔ Saturn's 1-bar equatorial and polar axes project an oriented oblate globe (0.3887ms)
+✔ Jupiter's reported pole projects the 1-bar oblate silhouette and orients a longitude-neutral profile (4.5616ms)
+✔ Saturn's ring pole orients only its latitude profile while preserving globe and ring identity (4.3242ms)
+✔ Saturn ring arcs require a successfully drawn globe and retain scene order (3.5326ms)
+✔ a tap on the rendered Saturn globe rim or main ring selects Saturn (5.5465ms)
+✔ partly set planetary globes and Saturn rings stop at the same true horizon (57.8624ms)
+✔ real planetary phase replaces the old Venus target marker, but missing geometry preserves it (31.9825ms)
+✔ resolved Saturn bands use one continuous surface; unavailable shader retains arcs and picking (30.8445ms)
+✔ the solar disc uses one exact report instant and the same angular camera scale (2.77ms)
+✔ a partly risen solar disc retains visible picks without reviving its hidden centre through empty sky (13.873ms)
+✔ the scene submits the real solar disc before Moon, in both palettes; failure leaves the scene (14.8982ms)
+✔ planet and other target labels only follow the native frame actually presented (4.9957ms)
+✔ same-camera native redraw commits resolved labels and both credits, including failure recovery (10.1105ms)
+✔ loaded W3 bytes alone cannot claim visible credit on a stale, hidden or cleared canvas (4.0693ms)
+✔ a submitted resolved Venus disc replaces only its old label, and failure restores it (1.3294ms)
+✔ target labels use the completed virtual scene mask rather than the current control intent (1.412ms)
+✔ a later native mask cannot hide a label before its corresponding DOM camera commit (0.6347ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1180.0568

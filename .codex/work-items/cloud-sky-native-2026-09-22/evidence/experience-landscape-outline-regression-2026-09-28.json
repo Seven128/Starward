@@ -1,0 +1,23 @@
+{
+  "scope": "bounded consumer mutations; not independent review or target acceptance",
+  "sourceHash": "f743730e7924d4083da13115d61868eabe471be1ccf544e9784d26f7e204564f",
+  "finalHash": "f743730e7924d4083da13115d61868eabe471be1ccf544e9784d26f7e204564f",
+  "results": [
+    {
+      "name": "painted canopy absent from point mask",
+      "exitCode": 1,
+      "detected": true,
+      "restored": true,
+      "output": "✖ an above-horizon star covered by the painted virtual foreground cannot be picked (4.5039ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 238.1224\n\n✖ failing tests:\n\ntest at apps\\wechat-miniapp\\src\\features\\sky\\sky-object-picking.test.ts:1:1655\n✖ an above-horizon star covered by the painted virtual foreground cannot be picked (4.5039ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n  + [\n  +   {\n  +     displayName: 'HR 2',\n  +     kind: 'STAR',\n  +     magnitude: 2,\n  +     reference: 'HR:2',\n  +     x: 195,\n  +     y: 422\n  +   }\n  + ]\n  - []\n  \n      at TestContext.<anonymous> (E:\\dev\\worktrees\\Starward\\remote-main-20260908\\apps\\wechat-miniapp\\src\\features\\sky\\sky-object-picking.test.ts:48:10)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1306:25)\n      at Test.start (node:internal/test_runner/test:1177:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: [ { reference: 'HR:2', displayName: 'HR 2', kind: 'STAR', magnitude: 2, x: 195, y: 422 } ],\n    expected: [],\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }\n"
+    },
+    {
+      "name": "nonconvex outline used as whole-image certificate",
+      "exitCode": 1,
+      "detected": true,
+      "restored": true,
+      "output": "✖ lobed canopy point hits cannot certify a hull across an open notch (3.5756ms)\nℹ tests 1\nℹ suites 0\nℹ pass 0\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 350.3817\n\n✖ failing tests:\n\ntest at apps\\wechat-miniapp\\src\\features\\sky\\sky-landscape.test.ts:1:4941\n✖ lobed canopy point hits cannot certify a hull across an open notch (3.5756ms)\n  AssertionError [ERR_ASSERTION]: point hits must not erase exposed image pixels and their source\n  \n  true !== false\n  \n      at TestContext.<anonymous> (E:\\dev\\worktrees\\Starward\\remote-main-20260908\\apps\\wechat-miniapp\\src\\features\\sky\\sky-landscape.test.ts:110:10)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1306:25)\n      at Test.start (node:internal/test_runner/test:1177:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: true,\n    expected: false,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n"
+    }
+  ],
+  "restoredExitCode": 0,
+  "restoredOutput": "✔ simulated ground follows the current exact sun and camera in ordinary and red modes (22.8464ms)\n✔ virtual geometry paints after celestial layers and publishes only an actually successful mask (11.139ms)\n✔ the final virtual mask never opens a fully covered Moon, while an unobstructed repaint restores it (12.0044ms)\n✔ missing exact illumination and GPU failure retain independent scene completion (5.4643ms)\n✔ corners on different trees cannot certify that open sky between them is covered (0.3328ms)\n✔ lobed canopy point hits cannot certify a hull across an open notch (0.1867ms)\n✔ picking uses only the exact painted catalog frame and deterministic ordering (1.9257ms)\n✔ pinch, drag and cancellation never become catalog taps (0.2189ms)\n✔ an above-horizon star covered by the painted virtual foreground cannot be picked (0.7259ms)\n✔ near-edge tap tolerance never revives a hidden point but exposed globe and ring pixels remain selectable (0.8128ms)\nℹ tests 10\nℹ suites 0\nℹ pass 10\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 340.5324\n"
+}

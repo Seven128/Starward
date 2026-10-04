@@ -1,0 +1,46 @@
+✖ page hide retires the Hook tile graph and aborts requests; late replies cannot resurrect it (67.7657ms)
+✖ publication loss releases ready tiles and publication replacement fences the previous owner (10.0085ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 794.8598
+
+✖ failing tests:
+
+test at apps\wechat-miniapp\src\features\sky\sky-stellar-supplement-owner.test.ts:2:711
+✖ page hide retires the Hook tile graph and aborts requests; late replies cannot resurrect it (67.7657ms)
+  AssertionError [ERR_ASSERTION]: returned EMPTY alone must not leave the retired tile graph in React state
+  
+  false !== true
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-stellar-supplement-owner.test.ts:96:10)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at apps\wechat-miniapp\src\features\sky\sky-stellar-supplement-owner.test.ts:2:1808
+✖ publication loss releases ready tiles and publication replacement fences the previous owner (10.0085ms)
+  AssertionError [ERR_ASSERTION]: an unavailable index must release the retired ready tiles
+  
+  false !== true
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-stellar-supplement-owner.test.ts:111:10)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

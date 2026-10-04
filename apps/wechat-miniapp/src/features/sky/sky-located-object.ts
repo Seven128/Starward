@@ -30,7 +30,6 @@ export function locatedBodyOccludesMarker(reference: string, row: SkyGeometryRow
     typeof row.sunAltitudeDeg !== "number" || !Number.isFinite(row.sunAltitudeDeg) ||
     row.sunAltitudeDeg < -90 || row.sunAltitudeDeg > 90) return false;
   const planet = row.planets[index]!;
-  if (planet.altitudeDeg < 0) return false;
   const disc = projectSkyAngularDisc(planet, basis, width, height, verticalFovDeg, center);
   if (!disc) return false;
   const visibleExtent = planet.body === "SATURN" && planet.ringPoleEnu

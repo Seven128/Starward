@@ -1,0 +1,13 @@
+F
+======================================================================
+FAIL: test_display_validation_cannot_publish_a_measurement_fraction (__main__.PublicationCoverageTest.test_display_validation_cannot_publish_a_measurement_fraction)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_publish_allwise_w3.py", line 24, in test_display_validation_cannot_publish_a_measurement_fraction
+    self.assertIsNone(published["validFraction"], "JPEG extrema do not measure scientific coverage")
+AssertionError: 1 is not None : JPEG extrema do not measure scientific coverage
+
+----------------------------------------------------------------------
+Ran 1 test in 0.036s
+
+FAILED (failures=1)

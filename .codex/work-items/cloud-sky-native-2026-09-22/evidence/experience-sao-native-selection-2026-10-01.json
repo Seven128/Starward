@@ -1,0 +1,85 @@
+{
+  "scope": "Production selector with current owned report and previously saved, validated publication; no new provider download or native state assertion",
+  "inputHashes": {
+    "currentReport": "c5f0dc230a53e6e296978604aa11bc7b3d7d4e38b1bd329e6b5097f3fb829b99",
+    "priorSaoInput": "bac1adfa20d14694b6c34f8e93db8e4f9aa3dedfd49d47b30902c0aec62da24c"
+  },
+  "at": "2026-09-30T13:50:33.000Z",
+  "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+  "width": 390.3999938964844,
+  "height": 844,
+  "fov": 45,
+  "selectedBytes": 126797,
+  "budget": 6291456,
+  "overBudget": false,
+  "selected": [
+    {
+      "id": "00-09-7-0",
+      "bytes": 8734
+    },
+    {
+      "id": "00-10-7-0",
+      "bytes": 6831
+    },
+    {
+      "id": "00-11-7-0",
+      "bytes": 6262
+    },
+    {
+      "id": "01-09-7-0",
+      "bytes": 7993
+    },
+    {
+      "id": "01-10-7-0",
+      "bytes": 6671
+    },
+    {
+      "id": "01-11-7-0",
+      "bytes": 4462
+    },
+    {
+      "id": "02-11-7-0",
+      "bytes": 7023
+    },
+    {
+      "id": "06-10-7-0",
+      "bytes": 5473
+    },
+    {
+      "id": "07-10-7-0",
+      "bytes": 6581
+    },
+    {
+      "id": "08-10-7-0",
+      "bytes": 9163
+    },
+    {
+      "id": "11-09-7-0",
+      "bytes": 4450
+    },
+    {
+      "id": "12-09-7-0",
+      "bytes": 9414
+    },
+    {
+      "id": "13-09-7-0",
+      "bytes": 9737
+    },
+    {
+      "id": "14-09-7-0",
+      "bytes": 7560
+    },
+    {
+      "id": "16-08-7-0",
+      "bytes": 11806
+    },
+    {
+      "id": "17-08-7-0",
+      "bytes": 6657
+    },
+    {
+      "id": "18-08-7-0",
+      "bytes": 7980
+    }
+  ]
+}

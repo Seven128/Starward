@@ -1,0 +1,17 @@
+{
+  "stara_lesna":
+  {
+    "type": "landscape",
+    "title": "Stara Lesna (Slovakia)",
+    "date": "2017.09.12",
+    "description": "A view on the High Tatras from a meadow near the the Astronomical Insitute of Slovak Acadamy of Sciences, Northern Slovakia.",
+    "supported": ["0.16","0.90"],
+    "license": "Creative Commons Attribution 4.0",
+    "license-url": "http://creativecommons.org/licenses/by/4.0/",
+    "authors": [
+    {
+      "name": "Lubomir Hambalek"
+    }
+    ]
+  }
+}

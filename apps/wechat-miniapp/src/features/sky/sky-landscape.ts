@@ -24,7 +24,7 @@ export function skyLandscapePanoramaFragment(skyRay: string): string {
   ${skyRay}
   uniform sampler2D u_image;
   uniform vec2 u_imageSize;
-  uniform float u_seam, u_sunAltitude, u_observationMode;
+  uniform float u_seam, u_sunAltitude, u_observationMode, u_opacity;
   ${landscapeLighting}
   void main() {
     vec3 ray=normalize(skyRay(v_pixel));
@@ -45,7 +45,7 @@ export function skyLandscapePanoramaFragment(skyRay: string): string {
     // shared time-dependent ambient/display exposure without altering alpha.
     vec3 result=material.rgb*(landscapeAmbient(u_sunAltitude)+0.87*daylight);
     if(u_observationMode>0.5) result=vec3(0.005+0.045*dot(material.rgb,vec3(0.2126,0.7152,0.0722)),0.0,0.0);
-    gl_FragColor=vec4(result,material.a);
+    gl_FragColor=vec4(result,material.a*u_opacity);
   }`;
 }
 
@@ -65,7 +65,7 @@ export function skyLandscapeFragment(skyRay: string): string {
   varying vec2 v_pixel;
   ${skyRay}
   uniform vec3 u_sunDirection, u_base;
-  uniform float u_sunAltitude, u_observationMode;
+  uniform float u_sunAltitude, u_observationMode, u_opacity;
   ${landscapeLighting}
   float groundHash(vec2 cell) {
     return fract(sin(dot(cell,vec2(127.1,311.7)))*43758.5453);
@@ -155,6 +155,6 @@ export function skyLandscapeFragment(skyRay: string): string {
       // Red-light rendering has no hidden blue/white transition or day texture.
       result=vec3((0.007+0.010*broad)*(1.0-0.55*hazeAmount),0.0,0.0);
     }
-    gl_FragColor=vec4(result,1.0);
+    gl_FragColor=vec4(result,u_opacity);
   }`;
 }

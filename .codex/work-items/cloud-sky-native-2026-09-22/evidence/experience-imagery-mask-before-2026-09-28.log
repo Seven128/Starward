@@ -1,0 +1,40 @@
+✖ fully covered M51 images lose visible credits only after the foreground actually paints (27.9053ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 592.7451
+
+✖ failing tests:
+
+test at apps\wechat-miniapp\src\features\sky\sky-sdss-optical-scene.test.ts:1:1549
+✖ fully covered M51 images lose visible credits only after the foreground actually paints (27.9053ms)
+  AssertionError [ERR_ASSERTION]: a canvas entirely covered by the model has no visible optical or infrared image
+  + actual - expected
+  
+    {
+  +   deepSkyImage: {
+  +     kind: 'W3'
+  +   },
+  +   sdssOpticalImage: {
+  +     kind: 'SDSS'
+  +   }
+  -   deepSkyImage: null,
+  -   sdssOpticalImage: null
+    }
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-sdss-optical-scene.test.ts:55:35)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: { sdssOpticalImage: { kind: 'SDSS' }, deepSkyImage: { kind: 'W3' } },
+    expected: { sdssOpticalImage: null, deepSkyImage: null },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

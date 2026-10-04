@@ -1,0 +1,34 @@
+
+> starward@1.0.0 check:miniapp:sdk
+> node tools/run-node.cjs tools/miniapp/generate-miniapp-sdk.mjs --check
+
+miniapp_generated_sdk_current
+
+> starward@1.0.0 context:validate
+> node tools/run-node.cjs --bin project-tiny-context-harness ty-context validate-context
+
+Checked manifest paths and explicit ty-context-controlling-source declarations. Ordinary Markdown links, examples, external links and factual correctness are not validated.
+
+> @starward/wechat-miniapp@0.1.0 typecheck
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json
+
+
+> starward@1.0.0 build:miniapp:release
+> npm run build:release --workspace @starward/coordinate-system && npm run build:release --workspace @starward/miniapp-contracts && npm run build:release --workspace @starward/astronomy-core && npm run build:release --workspace @starward/miniapp-api
+
+
+> @starward/coordinate-system@0.1.0 build:release
+> node ../../tools/run-node.cjs --bin typescript tsc -p tsconfig.build.json
+
+
+> @starward/miniapp-contracts@0.1.0 build:release
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json
+
+
+> @starward/astronomy-core@0.1.0 build:release
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json
+
+
+> @starward/miniapp-api@0.1.0 build:release
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json
+

@@ -1,0 +1,34 @@
+{
+  "status": "SPECIFIC_M51_M82_TEXTURE_RIGHTS_UNRESOLVED_NOT_ADOPTED",
+  "checkedDate": "2026-10-04",
+  "scope": "M51/M82 processed texture alternatives only, not a blanket judgment of all Stellarium assets",
+  "observations": [
+    {
+      "url": "https://raw.githubusercontent.com/Stellarium/stellarium/123e9a2c28e8c578a0487eb0bc240542145f6a01/nebulae/default/textures.json",
+      "observed": "M51 m51-vasey.png and M82 m82-vasey.png credit Plover Hill Observatory and point to Peter Vasey's site. The bundle contains heterogeneous origins including DSS; its root description and alphaBlend do not establish per-asset commercial redistribution rights."
+    },
+    {
+      "url": "http://www.madpc.co.uk/~peterv/astroplover/Gallery.htm",
+      "access": "Read in the actual in-app browser. web open auto-HTTPS failed and does not establish absence of terms.",
+      "shortExactNotice": "Note that all photographs are Copyright © Peter Vasey and must not be reproduced without permission"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Stellarium/stellarium/123e9a2c28e8c578a0487eb0bc240542145f6a01/CREDITS.md",
+      "observed": "Graphics chapter contains a general GPLv2-or-later statement except named exceptions; section 4.23 names M51/M82 and Peter Vasey. No additional explicit source-photograph license grant was observed in that section. The observed CREDITS commit pin is not asserted to be the current repository HEAD."
+    }
+  ],
+  "decision": "Do not copy or adopt these two processed texture candidates under the current no-individual-permission commercial route without resolving the specific public rights chain. Do not infer a source photograph grant from the program license. This is insufficient admission evidence, not a claim that no lawful route exists.",
+  "reassessment": "A clear public specific grant covering the actual image, modification, commercial display and redistribution under the existing autonomous-code and attribution conditions.",
+  "imageDownloads": 0,
+  "externalContacts": 0,
+  "newRegistryEntries": 0,
+  "photutilsReuse": {
+    "documentation": "https://photutils.readthedocs.io/en/stable/user_guide/background.html",
+    "observed": "Sources bias background estimates; masks and mesh background estimation must be distinguished from missing coverage. Documentation supports use of the mature estimator, not physical accuracy for this prepared display photo.",
+    "cachedVersion": "3.0.0",
+    "license": "BSD-3-Clause",
+    "localLicense": "output/sdss-psf-tools-1003-r1/python-deps/photutils-3.0.0.dist-info/licenses/LICENSE.rst",
+    "installations": 0
+  },
+  "limits": "Primary live-page observations and pinned official text; no individual permission, legal certification, image-quality adoption, native validation or deployment. The already excluded DSS route remains excluded."
+}

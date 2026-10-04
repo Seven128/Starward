@@ -1,0 +1,12 @@
+✔ pinch doubles projected separation and can reach the full dome without a perspective singularity (1.9899ms)
+✔ a reverse pinch reaches the local boundary despite floating point roundoff (0.4115ms)
+✔ progressive survey levels are deterministic (0.2237ms)
+✔ the selectable local zoom can resolve the published Mars globe without lowering texture quality (0.4829ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 333.1012

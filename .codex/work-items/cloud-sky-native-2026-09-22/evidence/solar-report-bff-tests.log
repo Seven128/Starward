@@ -1,0 +1,20 @@
+✔ rounding either side of the north meridian preserves a valid zero-degree bearing (5.0763ms)
+✔ requested daytime positions remain available when no astronomical dusk exists (36.8854ms)
+✔ continuous phase angles map to all eight semantic lunar states (1.7247ms)
+✔ solar longitude is calculated on the J2000 ecliptic axis (1.4262ms)
+✔ airless topocentric positions stay within the frozen JPL Horizons tolerance (2.5275ms)
+✔ the same observation night spans UTC and local midnight without changing ownership (16.4273ms)
+✔ an exact off-grid or daylight instant is calculated without replacing regular samples (19.663ms)
+✔ observer elevation participates in lunar parallax (0.504ms)
+✔ no-rise/set and extreme-latitude cases fail closed without invented samples (12.2288ms)
+✔ old supplier Context is invalidated and can recover the same point and instant under current source selection (17.1036ms)
+✔ official alerts bind their exact minute interval even inside one forecast hour or without a forecast (1383.6077ms)
+✔ actual forecast holes remain empty through SkyReport and Map while celestial frames retain their exact time (119.0532ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6921.8622

@@ -1,0 +1,22 @@
+{
+  "boundary": "local Docker release image smoke under 512 MiB cgroup, not cloud deployment or concurrent load",
+  "imageTag": "starward-miniapp-api-chinese-local:latest",
+  "build": "docker build -f infrastructure/deployment/miniapp-api.Dockerfile -t starward-miniapp-api-chinese-local .",
+  "buildExit": 0,
+  "runtime": {
+    "memoryMaxBytes": 536870912,
+    "catalogAssetSha256": "612ad315268e736ea58768444091ab9dd3b79bd5703ec86613e0d7c61062f982",
+    "gaiaDr3PackPresent": false,
+    "query": "张宿二",
+    "reference": "HR:3994",
+    "matchedAlias": "张宿二",
+    "detailAliases": ["HR 3994", "HD 88284", "41Lam Hya", "张宿二", "張宿二"],
+    "sourceLicense": "CC0 1.0",
+    "singleProcessGcHeapDeltaBytes": 95710080,
+    "rssBytesAfterSearch": 200511488
+  },
+  "limitations": [
+    "One fresh process and one search/detail pair; concurrent production memory, service overhead and cloud charges are not established.",
+    "Container data/API smoke does not establish Mini Program native visual composition or target-device performance."
+  ]
+}

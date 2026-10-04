@@ -1,0 +1,567 @@
+{
+  "at": "2026-10-01T02:48:28.904Z",
+  "scope": "Source-bound production loader ownership/retention replay; no native memory measurement or pressure policy adoption",
+  "inputs": {
+    "binding": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-resource-source-binding-2026-10-01.json",
+    "m42LocalFov": 4.6,
+    "initialArtIdentities": [
+      "constellation:Dra",
+      "constellation:Cep",
+      "constellation:Peg",
+      "constellation:Cam",
+      "constellation:Cyg",
+      "constellation:UMi",
+      "constellation:Cas",
+      "constellation:Lac"
+    ],
+    "intermediateArtIdentities": [
+      "constellation:Eri",
+      "constellation:Tau"
+    ],
+    "nativeHistoricalNames": "Header/size unique candidates; no retrospective digest assertion"
+  },
+  "sourceHashes": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-loader.ts",
+      "sha256": "4919bb91c7d0b77083802c366346e73d08b287b95a282d4f1b64d597b64ea22c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape-resources.ts",
+      "sha256": "bb23c448633c115937451437d63ed106b448c71c50ae5361427897ab71267239"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-visibility.ts",
+      "sha256": "d9bfb888d080d5b24e4a9d37e97a52b430307acea7213d73337e5242ef5f9608"
+    }
+  ],
+  "runs": [
+    {
+      "strategy": "current-production-retention",
+      "points": [
+        {
+          "stage": "baseline-inventory",
+          "count": 10,
+          "sourceRgbaBytes": 16515072,
+          "encodedBytes": 1789615,
+          "associatedSources": [
+            {
+              "identity": "constellation:Dra",
+              "sha256": "624e24404ad3139806c898f2495638ec0bceedcb15daf4bfc9850e6c34da3367",
+              "encodedBytes": 43164,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Cep",
+              "sha256": "3efd152711397e3424e220f6a2ead2e590ce9782a7de9eac8f009100457198b6",
+              "encodedBytes": 40144,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Peg",
+              "sha256": "ad4a6926b939cd113aa78c06418513bc6b0e2342cca6df9d4fa0c9bd20743148",
+              "encodedBytes": 33947,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Cam",
+              "sha256": "18490202bf130ba4bfbeda97e20c3ab841b153d12e7c59a08cc3131230a273a8",
+              "encodedBytes": 8194,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "constellation:Cyg",
+              "sha256": "d9ad9d2ffea6fb50eedf1ace1353efcca35bedf7fe4c45c6b67b8b01ec5e87a0",
+              "encodedBytes": 29252,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:UMi",
+              "sha256": "e95cd699568b7b8877086d746d86b79f78863634904e8388291983e31265b1b5",
+              "encodedBytes": 9042,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "constellation:Cas",
+              "sha256": "e0cf5e4d328b0105a44aea2001a9fc9a5e6cb99f041a29242d9d4e331410f004",
+              "encodedBytes": 44222,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Lac",
+              "sha256": "90b6b685d82a494fa5b798bbbf2a4742e0466924759af8da32ab5dbd6e256da8",
+              "encodedBytes": 23311,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "galactic:2mass",
+              "sha256": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0",
+              "encodedBytes": 703555,
+              "rgbaBytes": 8388608
+            },
+            {
+              "identity": "landscape:overview",
+              "sha256": "1e4222bb02d6b4c95c643047de6916581b5e2a665e00d9cc60edd94c3cb072d3",
+              "encodedBytes": 854784,
+              "rgbaBytes": 2097152
+            }
+          ],
+          "consumerImageIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:UMi",
+            "galactic:2mass",
+            "landscape:overview"
+          ],
+          "retainedIllustrations": []
+        },
+        {
+          "stage": "local-4p6-retention",
+          "count": 13,
+          "sourceRgbaBytes": 19660800,
+          "encodedBytes": 4580054,
+          "associatedSources": [
+            {
+              "identity": "constellation:Dra",
+              "sha256": "624e24404ad3139806c898f2495638ec0bceedcb15daf4bfc9850e6c34da3367",
+              "encodedBytes": 43164,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Cep",
+              "sha256": "3efd152711397e3424e220f6a2ead2e590ce9782a7de9eac8f009100457198b6",
+              "encodedBytes": 40144,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Peg",
+              "sha256": "ad4a6926b939cd113aa78c06418513bc6b0e2342cca6df9d4fa0c9bd20743148",
+              "encodedBytes": 33947,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Cam",
+              "sha256": "18490202bf130ba4bfbeda97e20c3ab841b153d12e7c59a08cc3131230a273a8",
+              "encodedBytes": 8194,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "constellation:Cyg",
+              "sha256": "d9ad9d2ffea6fb50eedf1ace1353efcca35bedf7fe4c45c6b67b8b01ec5e87a0",
+              "encodedBytes": 29252,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:UMi",
+              "sha256": "e95cd699568b7b8877086d746d86b79f78863634904e8388291983e31265b1b5",
+              "encodedBytes": 9042,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "constellation:Cas",
+              "sha256": "e0cf5e4d328b0105a44aea2001a9fc9a5e6cb99f041a29242d9d4e331410f004",
+              "encodedBytes": 44222,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Lac",
+              "sha256": "90b6b685d82a494fa5b798bbbf2a4742e0466924759af8da32ab5dbd6e256da8",
+              "encodedBytes": 23311,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "landscape:overview",
+              "sha256": "1e4222bb02d6b4c95c643047de6916581b5e2a665e00d9cc60edd94c3cb072d3",
+              "encodedBytes": 854784,
+              "rgbaBytes": 2097152
+            },
+            {
+              "identity": "constellation:Eri",
+              "sha256": "21d5ecce9bd6b998fbf597fb575b849995fb64ac8566146a99b0d5746db63691",
+              "encodedBytes": 22399,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Tau",
+              "sha256": "019f267b9fee7fe3188944c2fe265c58c216119a919fd72475a8cd3c1676162a",
+              "encodedBytes": 30557,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "landscape:detail",
+              "sha256": "fd6afeebba748eb84a15c0aea2a8ce0e363571685c6b181c8511f2bb5459bb32",
+              "encodedBytes": 3316173,
+              "rgbaBytes": 8388608
+            },
+            {
+              "identity": "infrared:M:42:MEDIUM",
+              "sha256": "3c113f59367fb49746c96d08b3218a949d70375a733de8dcfafa36b77659e02d",
+              "encodedBytes": 124865,
+              "rgbaBytes": 1048576
+            }
+          ],
+          "consumerImageIdentities": [
+            "infrared:M:42:MEDIUM",
+            "landscape:detail"
+          ],
+          "retainedIllustrations": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Eri",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:Tau",
+            "constellation:UMi"
+          ]
+        },
+        {
+          "stage": "return-45-retention-model",
+          "count": 13,
+          "sourceRgbaBytes": 27000832,
+          "encodedBytes": 5158744,
+          "associatedSources": [
+            {
+              "identity": "constellation:Dra",
+              "sha256": "624e24404ad3139806c898f2495638ec0bceedcb15daf4bfc9850e6c34da3367",
+              "encodedBytes": 43164,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Cep",
+              "sha256": "3efd152711397e3424e220f6a2ead2e590ce9782a7de9eac8f009100457198b6",
+              "encodedBytes": 40144,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Peg",
+              "sha256": "ad4a6926b939cd113aa78c06418513bc6b0e2342cca6df9d4fa0c9bd20743148",
+              "encodedBytes": 33947,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Cam",
+              "sha256": "18490202bf130ba4bfbeda97e20c3ab841b153d12e7c59a08cc3131230a273a8",
+              "encodedBytes": 8194,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "constellation:Cyg",
+              "sha256": "d9ad9d2ffea6fb50eedf1ace1353efcca35bedf7fe4c45c6b67b8b01ec5e87a0",
+              "encodedBytes": 29252,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:UMi",
+              "sha256": "e95cd699568b7b8877086d746d86b79f78863634904e8388291983e31265b1b5",
+              "encodedBytes": 9042,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "constellation:Cas",
+              "sha256": "e0cf5e4d328b0105a44aea2001a9fc9a5e6cb99f041a29242d9d4e331410f004",
+              "encodedBytes": 44222,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Lac",
+              "sha256": "90b6b685d82a494fa5b798bbbf2a4742e0466924759af8da32ab5dbd6e256da8",
+              "encodedBytes": 23311,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "landscape:overview",
+              "sha256": "1e4222bb02d6b4c95c643047de6916581b5e2a665e00d9cc60edd94c3cb072d3",
+              "encodedBytes": 854784,
+              "rgbaBytes": 2097152
+            },
+            {
+              "identity": "constellation:Eri",
+              "sha256": "21d5ecce9bd6b998fbf597fb575b849995fb64ac8566146a99b0d5746db63691",
+              "encodedBytes": 22399,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Tau",
+              "sha256": "019f267b9fee7fe3188944c2fe265c58c216119a919fd72475a8cd3c1676162a",
+              "encodedBytes": 30557,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "landscape:detail",
+              "sha256": "fd6afeebba748eb84a15c0aea2a8ce0e363571685c6b181c8511f2bb5459bb32",
+              "encodedBytes": 3316173,
+              "rgbaBytes": 8388608
+            },
+            {
+              "identity": "galactic:2mass",
+              "sha256": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0",
+              "encodedBytes": 703555,
+              "rgbaBytes": 8388608
+            }
+          ],
+          "consumerImageIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:UMi",
+            "galactic:2mass",
+            "landscape:overview"
+          ],
+          "retainedIllustrations": [
+            "constellation:Eri",
+            "constellation:Tau"
+          ]
+        }
+      ],
+      "returnRequestStarts": [
+        "galactic:2mass"
+      ],
+      "returnEncodedRequestBytes": 703555,
+      "allReleaseCount": 14,
+      "logicalLiveAfterDispose": 0
+    },
+    {
+      "strategy": "illustration-owner-disposed-when-hidden",
+      "points": [
+        {
+          "stage": "baseline-inventory",
+          "count": 10,
+          "sourceRgbaBytes": 16515072,
+          "encodedBytes": 1789615,
+          "associatedSources": [
+            {
+              "identity": "constellation:Dra",
+              "sha256": "624e24404ad3139806c898f2495638ec0bceedcb15daf4bfc9850e6c34da3367",
+              "encodedBytes": 43164,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Cep",
+              "sha256": "3efd152711397e3424e220f6a2ead2e590ce9782a7de9eac8f009100457198b6",
+              "encodedBytes": 40144,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Peg",
+              "sha256": "ad4a6926b939cd113aa78c06418513bc6b0e2342cca6df9d4fa0c9bd20743148",
+              "encodedBytes": 33947,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Cam",
+              "sha256": "18490202bf130ba4bfbeda97e20c3ab841b153d12e7c59a08cc3131230a273a8",
+              "encodedBytes": 8194,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "constellation:Cyg",
+              "sha256": "d9ad9d2ffea6fb50eedf1ace1353efcca35bedf7fe4c45c6b67b8b01ec5e87a0",
+              "encodedBytes": 29252,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:UMi",
+              "sha256": "e95cd699568b7b8877086d746d86b79f78863634904e8388291983e31265b1b5",
+              "encodedBytes": 9042,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "constellation:Cas",
+              "sha256": "e0cf5e4d328b0105a44aea2001a9fc9a5e6cb99f041a29242d9d4e331410f004",
+              "encodedBytes": 44222,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Lac",
+              "sha256": "90b6b685d82a494fa5b798bbbf2a4742e0466924759af8da32ab5dbd6e256da8",
+              "encodedBytes": 23311,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "galactic:2mass",
+              "sha256": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0",
+              "encodedBytes": 703555,
+              "rgbaBytes": 8388608
+            },
+            {
+              "identity": "landscape:overview",
+              "sha256": "1e4222bb02d6b4c95c643047de6916581b5e2a665e00d9cc60edd94c3cb072d3",
+              "encodedBytes": 854784,
+              "rgbaBytes": 2097152
+            }
+          ],
+          "consumerImageIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:UMi",
+            "galactic:2mass",
+            "landscape:overview"
+          ],
+          "retainedIllustrations": []
+        },
+        {
+          "stage": "local-4p6-retention",
+          "count": 3,
+          "sourceRgbaBytes": 11534336,
+          "encodedBytes": 4295822,
+          "associatedSources": [
+            {
+              "identity": "landscape:overview",
+              "sha256": "1e4222bb02d6b4c95c643047de6916581b5e2a665e00d9cc60edd94c3cb072d3",
+              "encodedBytes": 854784,
+              "rgbaBytes": 2097152
+            },
+            {
+              "identity": "landscape:detail",
+              "sha256": "fd6afeebba748eb84a15c0aea2a8ce0e363571685c6b181c8511f2bb5459bb32",
+              "encodedBytes": 3316173,
+              "rgbaBytes": 8388608
+            },
+            {
+              "identity": "infrared:M:42:MEDIUM",
+              "sha256": "3c113f59367fb49746c96d08b3218a949d70375a733de8dcfafa36b77659e02d",
+              "encodedBytes": 124865,
+              "rgbaBytes": 1048576
+            }
+          ],
+          "consumerImageIdentities": [
+            "infrared:M:42:MEDIUM",
+            "landscape:detail"
+          ],
+          "retainedIllustrations": []
+        },
+        {
+          "stage": "return-45-retention-model",
+          "count": 11,
+          "sourceRgbaBytes": 24903680,
+          "encodedBytes": 5105788,
+          "associatedSources": [
+            {
+              "identity": "landscape:overview",
+              "sha256": "1e4222bb02d6b4c95c643047de6916581b5e2a665e00d9cc60edd94c3cb072d3",
+              "encodedBytes": 854784,
+              "rgbaBytes": 2097152
+            },
+            {
+              "identity": "landscape:detail",
+              "sha256": "fd6afeebba748eb84a15c0aea2a8ce0e363571685c6b181c8511f2bb5459bb32",
+              "encodedBytes": 3316173,
+              "rgbaBytes": 8388608
+            },
+            {
+              "identity": "constellation:Dra",
+              "sha256": "624e24404ad3139806c898f2495638ec0bceedcb15daf4bfc9850e6c34da3367",
+              "encodedBytes": 43164,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Cep",
+              "sha256": "3efd152711397e3424e220f6a2ead2e590ce9782a7de9eac8f009100457198b6",
+              "encodedBytes": 40144,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Peg",
+              "sha256": "ad4a6926b939cd113aa78c06418513bc6b0e2342cca6df9d4fa0c9bd20743148",
+              "encodedBytes": 33947,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Cam",
+              "sha256": "18490202bf130ba4bfbeda97e20c3ab841b153d12e7c59a08cc3131230a273a8",
+              "encodedBytes": 8194,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "constellation:Cyg",
+              "sha256": "d9ad9d2ffea6fb50eedf1ace1353efcca35bedf7fe4c45c6b67b8b01ec5e87a0",
+              "encodedBytes": 29252,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:UMi",
+              "sha256": "e95cd699568b7b8877086d746d86b79f78863634904e8388291983e31265b1b5",
+              "encodedBytes": 9042,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "constellation:Cas",
+              "sha256": "e0cf5e4d328b0105a44aea2001a9fc9a5e6cb99f041a29242d9d4e331410f004",
+              "encodedBytes": 44222,
+              "rgbaBytes": 1048576
+            },
+            {
+              "identity": "constellation:Lac",
+              "sha256": "90b6b685d82a494fa5b798bbbf2a4742e0466924759af8da32ab5dbd6e256da8",
+              "encodedBytes": 23311,
+              "rgbaBytes": 262144
+            },
+            {
+              "identity": "galactic:2mass",
+              "sha256": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0",
+              "encodedBytes": 703555,
+              "rgbaBytes": 8388608
+            }
+          ],
+          "consumerImageIdentities": [
+            "constellation:Cam",
+            "constellation:Cas",
+            "constellation:Cep",
+            "constellation:Cyg",
+            "constellation:Dra",
+            "constellation:Lac",
+            "constellation:Peg",
+            "constellation:UMi",
+            "galactic:2mass",
+            "landscape:overview"
+          ],
+          "retainedIllustrations": []
+        }
+      ],
+      "returnRequestStarts": [
+        "constellation:Dra",
+        "constellation:Cep",
+        "constellation:Peg",
+        "constellation:Cam",
+        "constellation:Cyg",
+        "constellation:UMi",
+        "constellation:Cas",
+        "constellation:Lac",
+        "galactic:2mass"
+      ],
+      "returnEncodedRequestBytes": 934831,
+      "allReleaseCount": 22,
+      "logicalLiveAfterDispose": 0
+    }
+  ],
+  "tradeoff": {
+    "localSourceRgbaReduction": 8126464,
+    "extraReturnRequests": 8,
+    "extraReturnEncodedRequestBytes": 231276,
+    "adopted": false,
+    "reason": "Dispose couples file/decoded lifetime and creates return requests; request replay does not prove when returning artwork becomes visible. Keep current valid source/fallback behavior while evaluating file-backed re-decode."
+  },
+  "limits": [
+    "The baseline inventory matches current native file digests; historical Eri/Tau and 2K inventory are inferred header/size inputs",
+    "Source dimensions times four quantify declared decoded references only, not native/GPU/OS allocation or GC",
+    "Synchronous completed callbacks isolate retention; no request latency/real concurrency or final frame performance claim",
+    "Consumer image identities show availability at the owner, not actual rendered pixels or native composition",
+    "Return45 after local is a resource-owner model; latest native baseline followed Map exit and reentry instead"
+  ]
+}

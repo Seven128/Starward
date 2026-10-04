@@ -1,0 +1,25 @@
+{
+  "at": "2026-09-22T09:07:29.984Z",
+  "restored": [
+    {
+      "name": "quaternion",
+      "version": "2.2.0",
+      "action": "restored from lock-verified npm tarball",
+      "integrity": "sha512-dVX+rdN3RZU/XPPyfayxuyZdWjLlbp2ZRHWAhKFXgfZ91mM/YUTUassEzWJV8VNynq2kCaaHoa4Kkckj2AA4sQ=="
+    },
+    {
+      "name": "@noble/hashes",
+      "version": "2.0.1",
+      "action": "restored from lock-verified npm tarball",
+      "integrity": "sha512-XlOlEbQcE9fmuXxrVTXCTlG2nlRXa9Rj3rr5Ue/+tX+nmkgbX720YHh0VR3hBF9xDvwnb8D2shVGOwNx+ulArw=="
+    },
+    {
+      "name": "twgl.js",
+      "version": "7.0.0",
+      "action": "restored from lock-verified npm tarball",
+      "integrity": "sha512-9HHZ8emdZb2nKPU0FDIGDlkp6AD9rWFv7ThqdbmUqyBhD3WTQpLN+89w4B+YshGwD1fL6PMVpVKZqC0pikgmcA=="
+    }
+  ],
+  "manifestOrLockChanges": false,
+  "note": "Workspace npm install failed at an unrelated optional Vite peer conflict. Existing dependencies restored at locked versions without resolving other workspaces."
+}

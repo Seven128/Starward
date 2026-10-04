@@ -16,6 +16,21 @@ const row=(angularDiameterDeg:number|null,altitudeDeg=45)=>({at,sunAzimuthDeg:90
 const report=(hourly:unknown[]):ResolvedSkyReport =>
   ({hourly,skyScene:{state:"UNAVAILABLE",frames:[]},targetFrames:[]} as unknown as ResolvedSkyReport);
 
+test("full-sphere browsing keeps an exact solar disc below the horizon without moving its coordinates",()=>{
+  const belowBasis=createSkyViewBasis(90,60,0)!;
+  const below=skySunDiscAt([row(.53,-30)] as any,at,belowBasis,390,844,3);
+  assert.ok(below,"an entirely set Sun is still a candidate when the camera looks at its real direction");
+  assert.ok(Math.abs(below.x-195)<1e-9&&Math.abs(below.y-422)<1e-9);
+  const above=skySunDiscAt([row(.53,30)] as any,at,createSkyViewBasis(90,120,0)!,390,844,3)!;
+  assert.ok(Math.abs(below.radiusPx-above.radiusPx)<1e-9,"camera scale does not depend on hemisphere");
+  assert.equal(skySunDiscAt([row(.53,-30)] as any,at,createSkyViewBasis(270,120,0)!,390,844,3),null,
+    "the projection antipode is still excluded");
+  assert.equal(skySunDiscAt([row(.53,-30)] as any,at,centeredBasis,390,844,3),null,
+    "a below-horizon body outside the actual viewport is still excluded");
+  assert.equal(skySunDiscAt([row(.53,-91)] as any,at,belowBasis,390,844,3),null,
+    "full-sphere browsing does not admit invalid ephemeris altitude");
+});
+
 test("the solar disc uses one exact report instant and the same angular camera scale",()=>{
   const normal=skySunDiscAt([row(.53)] as any,at,centeredBasis,390,844,45)!;
   const near=skySunDiscAt([row(.53)] as any,at,centeredBasis,390,844,1.5)!;
@@ -29,11 +44,11 @@ test("the solar disc uses one exact report instant and the same angular camera s
   assert.equal(skySunDiscAt([row(null)] as any,at,centeredBasis,390,844,45),null);
   assert.equal(skySunDiscAt([row(.53,-5)] as any,at,centeredBasis,390,844,45),null);
   assert.ok(skySunDiscAt([row(.53,-.1)] as any,at,createSkyViewBasis(90,90,0)!,390,844,45),
-    "a partly risen photosphere must reach the horizon-clipping shader");
+    "a photosphere spanning the mathematical horizon remains a full-sphere render candidate");
   assert.equal(skySunDiscAt([row(2)] as any,at,centeredBasis,390,844,45),null);
 });
 
-test("a partly risen solar disc retains visible picks without reviving its hidden centre through empty sky",()=>{
+test("a solar disc crossing the mathematical horizon remains selectable without effective landscape occlusion",()=>{
   const basis=createSkyViewBasis(90,90,0)!;
   const data=report([row(.53,-.1)]);
   const disc=skySunDiscAt(data.hourly,at,basis,390,844,3)!;
@@ -46,11 +61,11 @@ test("a partly risen solar disc retains visible picks without reviving its hidde
   const pick=(radius:number)=>pickPaintedSkyObjects(painted,{
     x:disc.x,y:disc.y-disc.radiusPx*radius,frameAt:at,
     catalogVersion:painted.catalogVersion,catalogHash:painted.catalogHash,
-  }).map(object=>object.reference);
+  },0).map(object=>object.reference);
   assert.deepEqual(pick(.8),["SOLAR:SUN"]);
-  assert.deepEqual(pick(0),[]);
+  assert.deepEqual(pick(0),["SOLAR:SUN"],"a negative-altitude centre remains part of the rendered photosphere");
   assert.ok(disc.radiusPx*.15<18);
-  assert.deepEqual(pick(1.15),[],"the shared hidden-centre rule also protects the photosphere");
+  assert.deepEqual(pick(1.15),[],"a shape-only query outside the photosphere does not select empty sky");
 });
 
 test("the scene submits the real solar disc before Moon, in both palettes; failure leaves the scene",()=>{

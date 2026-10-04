@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { SKY_PLANET_ORDER, type HourlySkyRow } from "@starward/miniapp-contracts";
 import { locatedBodyOccludesMarker } from "./sky-located-object";
-import type { SkyViewBasis } from "./sky-view-projection";
+import { createSkyViewBasis, type SkyViewBasis } from "./sky-view-projection";
 
 const diagonal = Math.SQRT1_2;
 const basis: SkyViewBasis = { right: [1, 0, 0], up: [0, -diagonal, diagonal],
@@ -20,6 +20,14 @@ test("a resolved Saturn disc takes over the marker at high zoom while the hit ta
   assert.equal(visible("PLANET:SATURN", .18), true);
   assert.equal(visible("PLANET:SATURN", 20), false);
   assert.equal(visible("HR:4905", .18), false);
+});
+
+test("a resolved below-horizon planet can replace the marker in the same browsing camera",()=>{
+  const data={...row,planets:planets.map(planet=>planet.body==='SATURN'?{...planet,altitudeDeg:-10}:planet)};
+  const current=createSkyViewBasis(0,80,0)!;
+  assert.equal(locatedBodyOccludesMarker('PLANET:SATURN',data,current,400,800,.18,center),true);
+  assert.equal(locatedBodyOccludesMarker('PLANET:SATURN',data,current,400,800,20,center),false,
+    'an unresolved disc must retain its marker');
 });
 
 test("missing, malformed or unpaintable planet data retains the visible location marker", () => {

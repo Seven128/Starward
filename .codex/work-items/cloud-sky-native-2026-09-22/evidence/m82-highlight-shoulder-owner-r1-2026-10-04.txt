@@ -1,0 +1,10 @@
+test_finite_extremes_keep_bounds_without_material_offset_or_white_mix (test_optical_display_highlights.DisplayHighlightTests.test_finite_extremes_keep_bounds_without_material_offset_or_white_mix) ... ok
+test_finite_interval_exact_including_weak_colors_and_no_mutation (test_optical_display_highlights.DisplayHighlightTests.test_finite_interval_exact_including_weak_colors_and_no_mutation) ... ok
+test_invalid_science_shapes_types_and_nonfinite_are_rejected (test_optical_display_highlights.DisplayHighlightTests.test_invalid_science_shapes_types_and_nonfinite_are_rejected) ... ok
+test_old_bright_plateau_is_replaced_with_strict_same_color_order (test_optical_display_highlights.DisplayHighlightTests.test_old_bright_plateau_is_replaced_with_strict_same_color_order) ... ok
+test_original_source_shoulder_equation_and_continuous_unit_derivative (test_optical_display_highlights.DisplayHighlightTests.test_original_source_shoulder_equation_and_continuous_unit_derivative) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.001s
+
+OK

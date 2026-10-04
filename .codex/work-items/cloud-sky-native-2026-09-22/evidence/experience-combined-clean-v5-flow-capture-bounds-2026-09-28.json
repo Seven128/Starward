@@ -1,0 +1,11 @@
+{
+  "scope": "Read-only public wx metrics on the current exact clean-v5/9438 DevTools runtime; no phone metric",
+  "candidateHash": "0787c3e850bbf05f7e36965b0aada21f0f8cf923edbc9aa815b3fb3738116826",
+  "screenWidth": 390,
+  "screenHeight": 844,
+  "windowWidth": 390,
+  "windowHeight": 762,
+  "pixelRatio": 3,
+  "platform": "devtools",
+  "capsule": {"top": 51, "bottom": 83, "left": 296, "right": 383, "width": 87, "height": 32}
+}

@@ -1,0 +1,25 @@
+✔ published AllWISE service reads a verified local W3 asset without a runtime transport (34.8242ms)
+✖ unmeasured JPEG coverage is distinct from full coverage and preserves the previous publication (26.1735ms)
+✔ default publication serves representative galaxy and nebula detail assets (10.5326ms)
+✔ publication rejects missing identities, invalid levels, cross-object paths, traversal, and altered bytes (60.4234ms)
+✔ catalog facts survive a missing image publication and recover its actual provenance without stale caching (45.7631ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2768.0804
+
+✖ failing tests:
+
+test at src\deep-sky-imagery.test.ts:1:2111
+✖ unmeasured JPEG coverage is distinct from full coverage and preserves the previous publication (26.1735ms)
+  Error: deep_sky_image_publication_invalid
+      at validatePublication (E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\deep-sky-imagery.ts:86:11)
+      at DeepSkyImageryService.publication (E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\deep-sky-imagery.ts:171:32)
+      at DeepSkyImageryService.get (E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\deep-sky-imagery.ts:152:30)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\deep-sky-imagery.test.ts:61:35)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

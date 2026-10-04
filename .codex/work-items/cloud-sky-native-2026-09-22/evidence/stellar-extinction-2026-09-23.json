@@ -1,0 +1,35 @@
+{
+  "scope": "C04 bounded reference clear-sky attenuation of BSC/SAO stellar points, local development and DevTools only",
+  "sources": {
+    "relativeAirMass": "https://opg.optica.org/ao/abstract.cfm?uri=ao-28-22-4735",
+    "refractionImplementationReference": "https://github.com/cosinekitty/astronomy/blob/master/source/js/astronomy.js",
+    "visualBandCoefficientReference": "https://eso.org/sci/observing/tools/Extinction.html"
+  },
+  "model": {
+    "input": "Existing BFF airless geometric altitude for the same exact BSC/SAO frame",
+    "apparentAltitude": "Saemundsson/Meeus reference refraction is used for air-mass evaluation only, never to move the projected point",
+    "airMass": "Kasten-Young 1989 apparent-altitude formula; 0.50572, 6.07995 and -1.6364 parameters",
+    "transmission": "10^(-0.4 * 0.11 * (relativeAirmass - 1)), clamped to [0,1]; ESO 0.11 mag/airmass at La Silla 540-560 nm is a fixed illustration, not a Shenzhen or current-site measurement",
+    "scopeBoundary": "Stellar point opacity in ordinary modes only. Catalog magnitudes, positions, solar-system bodies, deep-object marks, red observation chart and terrain remain on their existing owners. Painted and pickable BSC/SAO points use the same final opacity."
+  },
+  "checks": {
+    "focused": "19/19 sky-star-appearance + sky-canvas-time tests pass; 0.1-degree point fades under the 0.1 picking threshold in both BSC/SAO while 80-degree point remains pickable; red chart retains both",
+    "miniapp": "791/791 pass, 0 fail; Mini typecheck passed after final source caption",
+    "build": "Isolated WEAPP build passed after model integration, before final caption; DevTools watch compiled final caption and rendered it. Existing CSS order, sky/detail 244KiB/common 318KiB size, and webpack performance warnings remain.",
+    "context": "npm run context:validate passed after owner update; git diff --check exit 0"
+  },
+  "devtools": {
+    "project": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp",
+    "entry": "Existing Map sample formal spot -> cloud sky -> manual viewing -> two native two-finger inward gestures",
+    "frameAt": "2026-09-22T13:00:00.000Z",
+    "verticalFovDeg": 267.8,
+    "catalogCountInAccessibleDescription": 4069,
+    "screenshot": "artifacts/miniapp/cloud-sky-native/atmosphere-wide-max-21.png",
+    "screenshotWidth": 427,
+    "screenshotHeight": 920,
+    "screenshotSha256": "da6afc955c7f15f4479d1f293cfdd6300de9b7e1374449f9c579c9f1a8e51374",
+    "observation": "Full horizon circle and dense star field remain rendered. The native WXML object-list subtree contains the reference-atmosphere limitation text. Simulator console grep for sky_gpu/WebGL/TypeError/RangeError returned no matches.",
+    "limit": "The screenshot does not isolate individual-star attenuation or prove phone pixel composition, site atmosphere, actual visibility or performance. The ordinary WXML controls remain covered by Canvas in this DevTools simulator."
+  },
+  "remaining": "Full atmospheric scattering/photometry, applicable physical landscape, other-body extinction, Android/iOS visual and performance evidence and independent review remain open. No phone, QR, ADB or deployment action."
+}

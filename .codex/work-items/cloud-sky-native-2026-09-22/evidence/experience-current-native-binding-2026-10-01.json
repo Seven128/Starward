@@ -1,0 +1,301 @@
+{
+  "recordedAtUtc": "2026-09-30T19:42:00.870Z",
+  "goal": "active/unbudgeted/incomplete",
+  "branch": "codex/remote-main-20260908",
+  "head": "72e65cf309d700cb7d40c5b7afd53660fd39fa35",
+  "scope": "Current ordinary WEAPP watch, official DevTools SDK native canvas and public control/route development journey; not clean release or target whole-experience acceptance",
+  "project": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp",
+  "ordinaryWatch": {
+    "path": "apps/wechat-miniapp/dist/weapp",
+    "sha256": "f7b65a6ee6c4112f5f2684385f6704bdf08744feb5bc687a68517890660523b0",
+    "fileCount": 300,
+    "totalBytes": 12143648,
+    "watchLog": {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-watch-log-frozen-2026-10-01.log",
+      "bytes": 61294,
+      "sha256": "ecea31ca7c54eedb39071fb994cdc13db7abe43bb5a1db9d6353fb96db90c771"
+    },
+    "containsPreservedUnrelatedEdits": true
+  },
+  "context": {
+    "record": {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/current-native-context-2026-10-01.json",
+      "bytes": 1543,
+      "sha256": "b4de3fb2657dcc1f9ffce41e2fbedc02635daeee820035a59f65083c59709e20"
+    },
+    "report": {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/current-native-report-2026-10-01.json",
+      "bytes": 837654,
+      "sha256": "c5f0dc230a53e6e296978604aa11bc7b3d7d4e38b1bd329e6b5097f3fb829b99"
+    },
+    "contextIdSha256": "f6fefff774758e3740c2828dc2f4f574936119f828cafad4099b1e6cb8bc2f29",
+    "fingerprintSha256": "aa626a4698dde45f5fbf87af9c0b70cf878b46c4079c1331cfb70df4ba976353",
+    "revision": 1,
+    "localDate": "2026-09-30",
+    "selectedAtUtc": "2026-09-30T13:50:33Z",
+    "timezone": "Asia/Shanghai",
+    "privacyClass": "PUBLIC_REFERENCE",
+    "actualDurableNativeMatches": {
+      "scope": "Actual native durable storage, Context identity/fingerprint/revision and normalized ISO instant match current HTTP readback; earlier guard used culture DateTime conversion",
+      "revision": 1,
+      "selectedAtUtc": "2026-09-30T13:50:33.0000000+00:00",
+      "timezone": "Asia/Shanghai",
+      "matchesCurrentOwnedContext": true,
+      "localDate": "2026-09-30",
+      "parserSelectedAtType": "DateTime"
+    },
+    "afterJourneyReadback": {
+      "revision": 1,
+      "matched": true,
+      "selectedAtUtc": "2026-09-30T13:50:33.000Z"
+    },
+    "networkRouting": {
+      "containsCurrentContext": true,
+      "currentContextSkyRequests": 10,
+      "currentContextReadbacks": 2,
+      "scope": "Official DevTools network buffer routing receipt, no full URLs/IDs/headers/body emitted",
+      "networkLogChars": 4985386
+    }
+  },
+  "simulator": {
+    "SDKVersion": "3.17.3",
+    "platform": "devtools",
+    "virtualWeChatVersion": "8.0.5",
+    "DPR": 3,
+    "screen": "390x844",
+    "scope": "Simulator metadata, not physical iOS or Android device evidence"
+  },
+  "service": {
+    "scope": "task-local MEMORY_TEST weather/spot, real compiled Sky",
+    "publicPort": 60065,
+    "internalPort": 50722,
+    "moduleSha256": "175d2b11a711ab83a3b0def4018de7afec6dfcaed70ab65f208722874057a9f7",
+    "publicationHash": "8380ab78a9f04426008e34c36abd268003906bffa3e3a0bfaab0500552db6cb0",
+    "currentCounts": {
+      "requests": 218,
+      "search": 1,
+      "information": 1,
+      "position": 0,
+      "report": 15,
+      "targets": 1,
+      "contextPuts": 0,
+      "errors": 0
+    },
+    "script": {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-alias-public-resources-2026-09-30.mts",
+      "bytes": 4530,
+      "sha256": "649fefa39a64fdd8ace6c970f01481d3edf098979024a3581e402539d102de69"
+    }
+  },
+  "trace": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-events-frozen-2026-10-01.jsonl",
+    "bytes": 211454,
+    "sha256": "6a120d5d0640ec8c4cca8f8e9ab60eb87d21b291aa9814cc2b11be470a38c10f"
+  },
+  "eventCount": 75,
+  "captures": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-manual-entry-2026-10-01.png",
+      "bytes": 273262,
+      "sha256": "576aba46a53e3ce504b1a20077926b9a7209eac0d0aaa57678826ffde0d4a5ec"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-ready-2026-10-01.png",
+      "bytes": 58760,
+      "sha256": "a65e4e4219f019227e63f832eaf95590930462340de6756beb41d42b9d3dd2f9"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-real-time-playing-2026-10-01.png",
+      "bytes": 264493,
+      "sha256": "dd3c125da56cdaf3f10ccd0c1ab9187e9c515a52d86b83cafa4459db0752d7a1"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-sky-exited-2026-10-01.png",
+      "bytes": 231230,
+      "sha256": "6ad1bccbf0086f3b0175b019c9b8701bbd8fc5aec4468da2f83e50e509fdb486"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-sky-reentered-2026-10-01.png",
+      "bytes": 271202,
+      "sha256": "e89ae0464c328eb3f25b745ca77a0cd1779f9139c473b688cd4f1d68a6ac4ed7"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-time-preview-cancelled-2026-10-01.png",
+      "bytes": 264861,
+      "sha256": "9a9d3076e59db15a343b1276ff445cfd1ac6b19d88cc37d7ec30c6eacb8256ca"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-vega-dome-2026-10-01.png",
+      "bytes": 399908,
+      "sha256": "2a91d651d90ee4fa4e52737771599bb1b580e5f8167b9c82c5eabf63c6732bef"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-vega-full-dome-2026-10-01.png",
+      "bytes": 356994,
+      "sha256": "307d2042ffb62e2ad092d9336c15ad025e39431605fab98419f11f855caae1ee"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-vega-located-2026-10-01.png",
+      "bytes": 264935,
+      "sha256": "b46b99a7a27cca5c077b5f24dc891ae9967bd9ee8fbc1966a39c18456ca2dd79"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-vega-source-returned-2026-10-01.png",
+      "bytes": 264859,
+      "sha256": "7c28f9c89293b22e9c364ed5af2b5b69b5528cfb618aaf7f386b0d195992cf17"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-vega-sources-2026-10-01.png",
+      "bytes": 151072,
+      "sha256": "945b24ab0fc08dbc44e597abfe869ae910f0b78128dc38ba6fbb467543aa6b69"
+    }
+  ],
+  "playbackHttpDelta": {
+    "report": 0,
+    "targets": 1,
+    "contextPuts": 0
+  },
+  "encodedFileLifecycle": {
+    "beforeExit": {
+      "count": 8,
+      "encodedBytes": 1732722,
+      "scope": "Current Sky-owned encoded native files, not decoded/GPU/OS memory"
+    },
+    "afterExit": {
+      "count": 0,
+      "encodedBytes": 0,
+      "scope": "Current Sky-owned encoded native files, not decoded/GPU/OS memory"
+    },
+    "reentry": {
+      "count": 10,
+      "encodedBytes": 1789615,
+      "scope": "Current Sky-owned encoded native files, not decoded/GPU/OS memory"
+    }
+  },
+  "scripts": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-current-native-context-2026-10-01.ps1",
+      "bytes": 2844,
+      "sha256": "872688d58dce9cc93de2dcbaa51c9ab678ff5a19d50611b1d22fc12b880c8917"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-current-native-helpers-2026-10-01.ps1",
+      "bytes": 7205,
+      "sha256": "ccaab6f5e362e389ead367c5221336c60d899e0b06ac23a9cbdbb9513d2105b2"
+    }
+  ],
+  "sourceHashes": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "bytes": 203450,
+      "sha256": "c7e354a4b84ee84c986810c8682e7d51c18bd2608865b0eec110750823d8fea2"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-visibility.ts",
+      "bytes": 9601,
+      "sha256": "7d17df6131c917e05f5bf9f698fb9bd3a38fe0a749495ecccb51ab3e35b7593f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-raster-bounds.ts",
+      "bytes": 2921,
+      "sha256": "374f31d0bfa910a0c100442e5c74339a8711dcabaa46828f63a842e49b4b361e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "bytes": 26326,
+      "sha256": "e30b8591984ad37778b358b9217d6df0954d2fd8e330ab86759f7adf28019139"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "bytes": 51577,
+      "sha256": "af9374b80c7fff45fd42c9690d2a8a1c3e257a6669b0795e58e84fa93d73b2b3"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-textures.ts",
+      "bytes": 4308,
+      "sha256": "bb3507afb8e522a14b4181064bb3572aabc5dcceb171be2c09084f9365deaafe"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-object-tracking.ts",
+      "bytes": 1486,
+      "sha256": "2347e664e745df688917cb8f6b06d406a0c61e88480e6f6794903219451b1a6e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-object-selection.ts",
+      "bytes": 804,
+      "sha256": "8d8a24ccc4f4d92b50947a78fb1e197463b1bfc547a4a62d7977f4131528cbb6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "bytes": 6038,
+      "sha256": "12ef9aab80847f7deec1c517199b1f259aee92f31f99f8dbd2a4ecefd16bed7c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-context-session.ts",
+      "bytes": 2913,
+      "sha256": "274651f0d70dc8911db88b857619042aea44e13737c905c73ecb63412aa6d46f"
+    }
+  ],
+  "limits": [
+    "SDK touch stream does not establish physical touch/hit testing or continuous gesture quality",
+    "Canvas-enabled official screenshots still lack ordinary WXML overlays; composition and breathing remain unverified",
+    "Readonly persistent/network receipts bind current development Context, not whole journey or restart/OS lifecycle acceptance",
+    "Encoded file bytes/count are not decoded/GPU/OS memory",
+    "Phone temporarily unavailable, new Moon has not been delivered to phone; Android/iOS, first frame/timing/total resources/official package/cost and final independent review remain"
+  ],
+  "preservedOtherEdits": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "bytes": 5667,
+      "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "bytes": 2041,
+      "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "bytes": 1770,
+      "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "bytes": 14895,
+      "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "bytes": 64272,
+      "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8"
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "bytes": 42510,
+      "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd"
+    }
+  ],
+  "preservedCandidates": [
+    {
+      "path": "apps/wechat-miniapp/dist/weapp-check-sky-scene-v53-final",
+      "sha256": "80bc564b6d32d47a342ceb06a3c38e384fdbb091056a8ce49fc1f34a412d48d7",
+      "fileCount": 257,
+      "totalBytes": 4527023,
+      "scope": "Preserved frozen historical candidate; not opened or sent to a phone this turn"
+    },
+    {
+      "path": "apps/wechat-miniapp/dist/weapp-check-sky-scene-v52-final",
+      "sha256": "e8773df042c5c4de062e26f53071103103c05a12a50d70c463d8082045f52dba",
+      "fileCount": 257,
+      "totalBytes": 4526413,
+      "scope": "Preserved frozen historical candidate; not opened or sent to a phone this turn"
+    },
+    {
+      "path": "apps/wechat-miniapp/dist/weapp-check-sky-scene-v51-final",
+      "sha256": "8ebb849ed6ca986fe323520d580db798a257558dae73598569f4a91dfa87179e",
+      "fileCount": 257,
+      "totalBytes": 4526342,
+      "scope": "Preserved frozen historical candidate; not opened or sent to a phone this turn"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "capturedUtc": "2026-09-29T11:43:53.371Z",
+  "reference": {
+    "canvas": {
+      "backingHeight": 844,
+      "backingWidth": 390,
+      "css": {
+        "bottom": 844,
+        "height": 844,
+        "left": 0,
+        "right": 390.3999938964844,
+        "top": 0,
+        "width": 390.3999938964844,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "clockText": "21:15:072026-09-29",
+    "locationButton": "Longgang District",
+    "url": "https://stellarium-web.org/skysource/Vega?fov=10.900173185479138&date=2026-09-29T13%3A00%3A00Z&lat=22.4826799&lng=114.5557147&elev=0",
+    "viewport": {
+      "height": 844,
+      "width": 390
+    }
+  },
+  "classification": "unmatched provisional reference only",
+  "limits": [
+    "Reference clock running; native time fixed at 21:00 Asia/Shanghai",
+    "Public clock interactions gave no time panel; exact reference instant not established",
+    "Numeric place requested via public URL, not verified in visible place editor",
+    "Actual Canvas CSS matches native logical dimensions; screenshot is host-scaled JPEG with chrome band",
+    "No exact reference camera/roll/FOV acceptance; source and DSS/deep-star data differences retained"
+  ]
+}

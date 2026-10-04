@@ -1,0 +1,770 @@
+{
+  "recordedAtUtc": "2026-09-30T00:36:00.695Z",
+  "scope": "云观星星座识别视场修复与可比参考／组合开发证据；不是整体或目标设备验收",
+  "build": {
+    "path": "apps/wechat-miniapp/dist/weapp-check-sky-scene-v45",
+    "treeSha256": "97c23c591bf5345700c7376b7f8abfef404eff07d8f903e702ee6d08a4c271c2",
+    "rawBytes": 4521426,
+    "files": 257,
+    "changedFilesFromV44": [
+      "sky/detail/index.js"
+    ],
+    "appIdMatchesSource": true,
+    "intent": "plain isolated check: diagnostics/feedback/fixture/token disabled; task-local API"
+  },
+  "sourceHashes": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "c5e9f38fed669ebb79ebb0a710849488372a8ee563a2c6b741c52b248eab6e24"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "sha256": "12ef9aab80847f7deec1c517199b1f259aee92f31f99f8dbd2a4ecefd16bed7c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-observation-time.ts",
+      "sha256": "2ccada04a93fbe91ca95628c0e22d37e77d2d10c6793fe6d2a8e4145b3f8ec3a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-presentation-position.ts",
+      "sha256": "588da099d87377286b0b65bc3a307dad34fa52637806078e03bc7a38f561eadd"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-presentation-position.ts",
+      "sha256": "d95a18082968f69a5a5b20f443f6c18bf5997a27ccc16268c14348ecfbd5d222"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/api-client.ts",
+      "sha256": "2e0b1c64d040f113ee4fc59b814f5c9167058abbbd85e551a27b0207c3459d51"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-target-instant-response.ts",
+      "sha256": "30bb179d6152e45abd7809c6f6633cc7f52497073740d0c562f9431e4de2b42c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-target-instant-response.test.ts",
+      "sha256": "5626a8d8e2505b4e718e8e3ffa77c4abb30932b86801624ae1e0503fd85cd9e5"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/api-shapes.ts",
+      "sha256": "91a73b238b5c81b6d323d029a9e6ae1db72ff0aa9e99715beb9b3642aefadde9"
+    },
+    {
+      "path": "packages/miniapp-contracts/api/miniapp.operations.json",
+      "sha256": "4f95b178f118f2aabf97e75f83076d7b38c72a8108f6d54d5f355303268ac039"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts",
+      "sha256": "fa39d2679ff989a6cee74d12caa8f34777ea2accda7905a3c41646207af3eff7"
+    },
+    {
+      "path": "workers/miniapp-api/src/astronomy-service.ts",
+      "sha256": "a2c0862dfc48c00a026ea64400eed8333cfbd4353858aa68f90fb617057ac10f"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-service.ts",
+      "sha256": "a8d2ae6c368ec7f6448548091a4b55cebe4e465a6f5df93df667b0b9e120efc9"
+    },
+    {
+      "path": "workers/miniapp-api/src/controller.ts",
+      "sha256": "fc609160eede723addde107651a0f508604a3110e66090c6fc44a1d6b38711e6"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-api.test.ts",
+      "sha256": "3d68c20f13657ea1a7d4f513ebf2ed077de8260bf03ae7f2d68949c8c621266c"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-time-model.test.ts",
+      "sha256": "c2ad1840f659eaf27946d012f9ff4167841033ecdc113b790bbb669ad3d27c62"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-stellar-supplement.ts",
+      "sha256": "3523819dd4b820d50b0743899a35207f6a166cadb45012b0e62ce83aa6335019"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-tile-loader.ts",
+      "sha256": "1ff9b0e2ba533f347dcfce9349f52c34fd83e588b28fecdb851804202d0972e1"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-tile-selection.ts",
+      "sha256": "1e9eb82bcbc3bd39ff9e34abb06dbb9d82943325985cf3d131369e5caec3b48c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+      "sha256": "878553232b938e8d4620721518f0fa617810a9a03186a343a37a960a1366fdc9"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "sha256": "6b3cc15e8ade8a6d257158e41163b98cfda142035c0d68ec7c02e57f5ffcc427"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-object-picking.ts",
+      "sha256": "8c2bb73f998242de517157476ef17bff67881b65a7c17c9840bb664cda755ff6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sao-catalog-client.ts",
+      "sha256": "cf8d4941d348a7d6f2aa6b026543b8fca39feaf3a446ddf274476297a14d3825"
+    },
+    {
+      "path": "workers/miniapp-api/src/chinese-star-alias-publication.ts",
+      "sha256": "ffe4b8487b35bcce42d58dff170cd9fe5a5381d2058fa503294cae6b0732f300"
+    },
+    {
+      "path": "workers/miniapp-api/src/celestial-object-aliases.ts",
+      "sha256": "cd8514f72ce0cd49b921b72b03c06eda99dddb8e1b2422e2a6fae9070000e9fa"
+    },
+    {
+      "path": "workers/miniapp-api/src/celestial-object-search.ts",
+      "sha256": "33ad8cde9faa39f55820d71d1276eafcd7693d986a8b0943665124a1aed77961"
+    },
+    {
+      "path": "workers/miniapp-api/src/celestial-object-information.ts",
+      "sha256": "911897ef17be28be13d8b4f3cc9166ceb403f402ea7442e821df44536085fd3b"
+    },
+    {
+      "path": "data-pipelines/star-catalog/enrich_wikidata_chinese_aliases.mjs",
+      "sha256": "23d9f65f6667d7618d75da828667e947c0bbed7d17d75bfd3e7aa720e964b9df"
+    },
+    {
+      "path": "workers/miniapp-api/assets/celestial-names-v3/chinese-bright-star-aliases.v3.json",
+      "sha256": "8380ab78a9f04426008e34c36abd268003906bffa3e3a0bfaab0500552db6cb0"
+    },
+    {
+      "path": "workers/miniapp-api/assets/celestial-names-v3/publication.json",
+      "sha256": "81a3bda7053077602af2b2ce8bb24540c3550073602bd50c2f100b88a0634f1c"
+    },
+    {
+      "path": "workers/miniapp-api/assets/celestial-names-v3/source-provenance.json",
+      "sha256": "34dc7925057f204bf54a6c9838a97272bf9cc7ef1bbe51eb95ca6878c748fc1e"
+    },
+    {
+      "path": "infrastructure/deployment/miniapp-api.Dockerfile",
+      "sha256": "3dad3abe172ae8c327ed3aa915bafae50686b1abfe286578e84c699c1e8312ae"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-visibility.ts",
+      "sha256": "ecd83bcf8b454798afd737dba5aa8302e5e0fb79ca9669b0fda4884d9ac452cb"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.test.ts",
+      "sha256": "d4797d557364edc8dedaf11621f06a07a6d40983ce090f32f1d10f6f5befe078"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-visibility.test.ts",
+      "sha256": "fde247b7f337522f2d13939eba93309174f71a668b66b4a9c0acfbcae47cce54"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-labels.test.ts",
+      "sha256": "76c6612108a9ffd67a9bd74d6b0eb7753b4d0653c5e0f17b25bee9960dbe271d"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-page-labels.test.ts",
+      "sha256": "80266d39ca9db239da55ef88ae08580f8bce7eb677e3ddd7481e38f7977c93b5"
+    }
+  ],
+  "changedPreviouslyBoundOwners": [
+    "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx"
+  ],
+  "runtime": {
+    "windowId": "s5",
+    "sdk": "3.17.3",
+    "publicPort": 60065,
+    "internalPort": 54455,
+    "pid": 33832,
+    "exec": 69033,
+    "fixture": "same real compiled Sky/publications with MEMORY_TEST formal spot/weather; a newly resolved context, no old-ID migration",
+    "retired": "v44/s4 is closed; earlier evidence retains its original service/candidate epoch"
+  },
+  "context": {
+    "idSha256": "558d3db71b7bb305206c9757ee0e40bdfb085ca11870501266da3a4edd42943f",
+    "revision": 1,
+    "fingerprint": "c602396c97d373a7a63f8a8b765776be23ff9f79df9c159dc2c1186faa613ef7",
+    "selectedAtUtc": "2026-09-30T13:50:33.000Z",
+    "localDate": "2026-09-30",
+    "timezone": "Asia/Shanghai",
+    "resolvedBytesSha256": "2d861c22c96b3a6f71bbccf7862cd2aeb7bc06ad22a4d9cbc9d13804d4dc94be"
+  },
+  "report": {
+    "rawSha256": "52780cd95ed0d0747a28d599359ddbd8efd068f5dae3fa29d8452dcb23a3685f",
+    "dataRevision": "c661bd2fee3b66e24c185d98",
+    "catalogVersion": "bsc5p-bright-stars.v3"
+  },
+  "current": {
+    "project": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp/dist/weapp-check-sky-scene-v45",
+    "nativeCanvas": "示例观星点的方位高度天空图，已呈现垂直视场 84.6 度，4051 颗真实亮星目录对象，场景时刻 2026-09-30T13:50:33.000Z，可见星座 海豚座、小马座，2 个真实目标，手动视角，不代表手机朝向，所选观测时刻 21:50",
+    "shadowUi": {
+      "route": "sky/detail/index",
+      "canvas": "示例观星点的方位高度天空图，已呈现垂直视场 84.6 度，4051 颗真实亮星目录对象，场景时刻 2026-09-30T13:50:33.000Z，可见星座 海豚座、小马座，2 个真实目标，手动视角，不代表手机朝向，所选观测时刻 21:50",
+      "sdk": "3.17.3",
+      "selection": [
+        {
+          "sid": "_VW",
+          "cl": "sky-selected-object sky-selected-object--cross",
+          "label": "Altair已选中，查看资料",
+          "text": "Altair"
+        },
+        {
+          "sid": "_VT",
+          "cl": "sky-selected-object__reticle",
+          "text": ""
+        },
+        {
+          "sid": "_VO",
+          "cl": "sky-selected-object__ring",
+          "text": ""
+        },
+        {
+          "sid": "_VP",
+          "cl": "sky-selected-object__tick sky-selected-object__tick--top",
+          "text": ""
+        },
+        {
+          "sid": "_VQ",
+          "cl": "sky-selected-object__tick sky-selected-object__tick--right",
+          "text": ""
+        },
+        {
+          "sid": "_VR",
+          "cl": "sky-selected-object__tick sky-selected-object__tick--bottom",
+          "text": ""
+        },
+        {
+          "sid": "_VS",
+          "cl": "sky-selected-object__tick sky-selected-object__tick--left",
+          "text": ""
+        },
+        {
+          "sid": "_VV",
+          "cl": "sky-selected-object__name",
+          "text": "Altair"
+        }
+      ],
+      "modal": [],
+      "search": [],
+      "actions": [],
+      "layers": [
+        {
+          "sid": "_VY",
+          "cl": "sky-constellation-label",
+          "text": "海豚座"
+        },
+        {
+          "sid": "_Va",
+          "cl": "sky-constellation-label",
+          "text": "小马座"
+        }
+      ],
+      "context": {
+        "contextId": "ctx:24bad017-e82d-4a27-872d-9c69649db016",
+        "contextFingerprint": "c602396c97d373a7a63f8a8b765776be23ff9f79df9c159dc2c1186faa613ef7",
+        "revision": 1,
+        "selectedAtUtc": "2026-09-30T13:50:33Z",
+        "localDate": "2026-09-30",
+        "timezone": "Asia/Shanghai"
+      }
+    }
+  },
+  "nativeTrace": {
+    "path": "experience-scene-v45-native-events-2026-09-30.jsonl",
+    "sha256": "2d4402fd0eec72dbc05a9e481610dc3a5d67fd8e3dd126e3a3246434da965522",
+    "records": 53
+  },
+  "captures": [
+    {
+      "file": "experience-scene-v45-native-after-wide-off-2026-09-30.png",
+      "bytes": 52253,
+      "sha256": "f2463cbdad3bd53d87e2ec52d9221093f559ae997d2ce9a34ab8c059bd43562b"
+    },
+    {
+      "file": "experience-scene-v45-native-after-wide-on-2026-09-30.png",
+      "bytes": 55388,
+      "sha256": "cd8065888459ea9bd8ebf8ae4a1818072c857d2dd25fb0677bb968af1b289edb"
+    },
+    {
+      "file": "experience-scene-v45-native-after-wide-restored-2026-09-30.png",
+      "bytes": 55376,
+      "sha256": "3b449e61267a6380f63712fbec076fe1509c98f65173f14fd1230a8e9e2ba651"
+    },
+    {
+      "file": "experience-scene-v45-native-before-wide-no-grid-2026-09-30.png",
+      "bytes": 267911,
+      "sha256": "29d63b74b0266c2170d6cf6e74ababcdb6ac5fe1aaa5be28a48ab918c1ff4e9b"
+    },
+    {
+      "file": "experience-scene-v45-native-local-2026-09-30.png",
+      "bytes": 49207,
+      "sha256": "f3215010857ef423e1538a2562428d1ef7bb2a1b0da5f503227b00b55fb1bbf0"
+    },
+    {
+      "file": "experience-scene-v45-native-overview-2026-09-30.png",
+      "bytes": 56653,
+      "sha256": "f605414eeb1dd8b41326f618537082d166e57d4e8c314e73786700cb04349d10"
+    },
+    {
+      "file": "experience-scene-v45-native-overview-restored-2026-09-30.png",
+      "bytes": 55750,
+      "sha256": "7899580ec0b89dd012ebfef16851d20fcb5081ae8b2a4f4401af9db78eb6f560"
+    },
+    {
+      "file": "experience-scene-v45-native-source-back-2026-09-30.png",
+      "bytes": 96476,
+      "sha256": "ef0ed42140649b5bcaa08cfab2163a3196ef533b3cad996ba5f54fa0719275e1"
+    },
+    {
+      "file": "experience-scene-v45-native-sources-2026-09-30.png",
+      "bytes": 178216,
+      "sha256": "e1b9cba25a2816c0a1552f710102b9502cd7b0e6ca65c6d52bb12b2f35b25816"
+    },
+    {
+      "file": "experience-scene-v45-native-stable-current-2026-09-30.png",
+      "bytes": 55567,
+      "sha256": "986d2f44d71006677661e19601808c190a760081473cb5fca87600acfff09ddb"
+    },
+    {
+      "file": "experience-scene-v45-native-wide-2026-09-30.png",
+      "bytes": 288359,
+      "sha256": "399d8c768016cbd95e22d01a4a7d273c9b721f9c776b14d15e145213af458ac7"
+    },
+    {
+      "file": "experience-scene-v45-reference-local-2026-09-30.jpg",
+      "bytes": 55614,
+      "sha256": "e2a224bce5af1656a4a82a8f685e92a28c0a5be9d207e2dbf916f72c4e7a0af0"
+    },
+    {
+      "file": "experience-scene-v45-reference-middle-2026-09-30.jpg",
+      "bytes": 44027,
+      "sha256": "34670a1527f4e97216811bcb734794d35e8c5b92e0858ac2cf993fd78b78fd23"
+    },
+    {
+      "file": "experience-scene-v45-reference-restored-2026-09-30.jpg",
+      "bytes": 37653,
+      "sha256": "19b5f772ce593a03fd050b25511860f3965dc4afd3e50e7a9b66098841c7b762"
+    },
+    {
+      "file": "experience-scene-v45-reference-wide-2026-09-30.jpg",
+      "bytes": 38491,
+      "sha256": "c897e3dd64827cd254cbb4fffd76c5a8f09599ce091cd8069903dc6eac2787b1"
+    }
+  ],
+  "inputBindings": [
+    {
+      "file": "tmp/v45-public-constellations.json",
+      "sha256": "a324991fc5e6e565272e68d9e26a71b797844fab6f86d208ebbf72a51480d0f9"
+    },
+    {
+      "file": "tmp/v45-public-altair-position.json",
+      "sha256": "1f21d7870f800d37d38d5c2ea15a7c1aaac9c4844d6d71762951d3954e94d97f"
+    },
+    {
+      "file": "evidence/experience-scene-v45-reference-conditions-2026-09-30.json",
+      "sha256": "82f23c5f01f8ffb3fe4afd8a11bc4fe4eff98ce5f5401acde07d2b1050b92c7f"
+    },
+    {
+      "file": "evidence/experience-scene-v45-image-demand-2026-09-30.json",
+      "sha256": "170ea2f5902f04bd09833491e1433b1c10ce493a187da0e4d11d9fcb7b57f2dc"
+    },
+    {
+      "file": "tmp/v45-constellation-before.log",
+      "sha256": "8d9a165b922cda208eae93786763f0dd1c4b319aa3cdb6c2242ba1efcbafd8ad"
+    },
+    {
+      "file": "tmp/v45-constellation-after.log",
+      "sha256": "f1ab028a123d5591fc6cb5745af7d7307a5e2383c05a5637366b09c534e29205"
+    },
+    {
+      "file": "tmp/v45-mini-typecheck.log",
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "file": "tmp/weapp-scene-v45-build.log",
+      "sha256": "9cd93c2fbe6bf795d7b86cbec74248a526ffc9b27c4d6f973fb1d5da04ae82a9"
+    },
+    {
+      "file": "tmp/v45-scene-gpu.log",
+      "sha256": "d5f6036a5427b8e97b3aeb59767ac90f86ad63edac93d03f8422d24c3de78f3a"
+    }
+  ],
+  "reference": {
+    "recordedAtUtc": "2026-09-30T00:09:52.353Z",
+    "url": "https://stellarium-web.org/",
+    "chosenPublicFixtureNearbyLocation": {
+      "latitude": 22.48254,
+      "longitude": 114.55496,
+      "label": "龙岗区, 中国",
+      "limitation": "Public map geocoder snapped the requested fixture coordinate, not exact Mini observer"
+    },
+    "fixedLocalTime": "2026-09-30 21:50:33",
+    "observedAltairAzAlt": {
+      "azimuthDeg": 252.54947222222222,
+      "altitudeDeg": 55.15602777777778
+    },
+    "wideMinimumFovDeg": 40.6,
+    "middleMinimumFovDeg": 10.8,
+    "localMinimumFovDeg": 4.1,
+    "zoomInUi": [
+      "FOV 9.57°ObserveMy",
+      "FOV 8.48°ObserveMy",
+      "FOV 7.51°ObserveMy",
+      "FOV 6.65°ObserveMy",
+      "FOV 5.89°ObserveMy",
+      "FOV 5.22°ObserveMy",
+      "FOV 4.62°ObserveMy",
+      "FOV 4.10°ObserveMy"
+    ],
+    "restoreUi": [
+      "FOV 4.62°ObserveMy",
+      "FOV 5.22°ObserveMy",
+      "FOV 5.89°ObserveMy",
+      "FOV 6.65°ObserveMy",
+      "FOV 7.51°ObserveMy",
+      "FOV 8.48°ObserveMy",
+      "FOV 9.57°ObserveMy",
+      "FOV 10.8°ObserveMy",
+      "FOV 12.2°ObserveMy",
+      "FOV 13.8°ObserveMy",
+      "FOV 15.5°ObserveMy",
+      "FOV 17.5°ObserveMy",
+      "FOV 19.8°ObserveMy",
+      "FOV 22.3°ObserveMy",
+      "FOV 25.2°ObserveMy",
+      "FOV 28.5°ObserveMy",
+      "FOV 32.1°ObserveMy",
+      "FOV 36.3°ObserveMy",
+      "FOV 40.9°ObserveMy"
+    ],
+    "finalDom": {
+      "canvas": {
+        "bottom": 844,
+        "height": 844,
+        "left": 0,
+        "right": 390.3999938964844,
+        "top": 0,
+        "width": 390.3999938964844,
+        "x": 0,
+        "y": 0
+      },
+      "fov": "FOV 40.9°ObserveMy",
+      "time": "21:50:332026-09-30",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      }
+    },
+    "referenceProjectionPrimary": "https://github.com/Stellarium/stellarium-web-engine/blob/29870744c470ddc62fa869e153178c82a7824fa4/src/projection.h",
+    "limits": [
+      "UI degrees are rounded; vertical equivalents use stereographic geometry and observed viewport",
+      "Browser timezone was not exposed by the read-only DOM evaluation; compare observed object azimuth/altitude before claiming the same UTC instant",
+      "Reference engine may differ from the current upstream source commit; no hidden engine state was accessed",
+      "Reference uses deeper data and a different Milky Way source, neither was imported",
+      "Canvas point clicks in this browser session did not produce selection; no nearest-picking conclusion"
+    ]
+  },
+  "gpu": {
+    "resultPath": "output/playwright/cloud-sky-scene-v45-0930/result.json",
+    "sha256": "5f0a577bd48108cf64f92bdede326043452c6dd1a7c8e9c1e98c0a745d6056ff",
+    "currentVsOldWindow": "old enabled/off actual RGBA equal; current enabled changes real pixels; unchanged stars/picking; widened same RGBA restored",
+    "workingSets": [
+      {
+        "name": "wide-on",
+        "fov": 84.63316191100171,
+        "enabled": true,
+        "opacity": 1,
+        "wanted": [
+          "Aql",
+          "Aqr",
+          "Cap",
+          "Cyg",
+          "Del",
+          "Equ",
+          "Her",
+          "Lac",
+          "Lyr",
+          "Oph",
+          "Peg",
+          "Psc",
+          "Sco",
+          "Sct",
+          "Sge",
+          "Sgr",
+          "Vul"
+        ],
+        "decodedRgbaBytes": 12320768
+      },
+      {
+        "name": "wide-off",
+        "fov": 84.63316191100171,
+        "enabled": false,
+        "opacity": 0,
+        "wanted": [],
+        "decodedRgbaBytes": 0
+      },
+      {
+        "name": "overview-fading",
+        "fov": 115,
+        "enabled": true,
+        "opacity": 0.5,
+        "wanted": [
+          "And",
+          "Aql",
+          "Aqr",
+          "Cap",
+          "Cep",
+          "CrA",
+          "Cyg",
+          "Del",
+          "Dra",
+          "Equ",
+          "Her",
+          "Lac",
+          "Lyr",
+          "Mic",
+          "Oph",
+          "Peg",
+          "Psc",
+          "Sco",
+          "Sct",
+          "Sge",
+          "Sgr",
+          "Vul"
+        ],
+        "decodedRgbaBytes": 15990784
+      },
+      {
+        "name": "overview-hidden",
+        "fov": 140,
+        "enabled": true,
+        "opacity": 0,
+        "wanted": [],
+        "decodedRgbaBytes": 0
+      },
+      {
+        "name": "local-fading",
+        "fov": 15,
+        "enabled": true,
+        "opacity": 0.25925925925925924,
+        "wanted": [
+          "Aql"
+        ],
+        "decodedRgbaBytes": 1048576
+      },
+      {
+        "name": "local-hidden",
+        "fov": 8.86,
+        "enabled": true,
+        "opacity": 0,
+        "wanted": [],
+        "decodedRgbaBytes": 0
+      },
+      {
+        "name": "wide-restored",
+        "fov": 84.63316191100171,
+        "enabled": true,
+        "opacity": 1,
+        "wanted": [
+          "Aql",
+          "Aqr",
+          "Cap",
+          "Cyg",
+          "Del",
+          "Equ",
+          "Her",
+          "Lac",
+          "Lyr",
+          "Oph",
+          "Peg",
+          "Psc",
+          "Sco",
+          "Sct",
+          "Sge",
+          "Sgr",
+          "Vul"
+        ],
+        "decodedRgbaBytes": 12320768
+      }
+    ],
+    "comparison": {
+      "referenceAltairAzAlt": {
+        "azimuthDeg": 252.54947222222222,
+        "altitudeDeg": 55.15602777777778
+      },
+      "miniAltairAzAlt": {
+        "azimuthDeg": 252.54343616596475,
+        "altitudeDeg": 55.14430820107586,
+        "catalogVersion": "bsc5p-bright-stars.v3",
+        "catalogHash": "ba9bef4144d4cfb4c706a5d1d8a0958d8303854e7bfabe780005b63e0c904c2c"
+      },
+      "angularDifferenceApproxDeg": 0.012216740067900668,
+      "meaning": "Numerically consistent for the qualitative wide composition comparison, not direct proof of browser timezone or identical astrometry/refraction"
+    },
+    "limits": [
+      "No 2MASS/W3/planet texture or ordinary WXML composition claim from this controlled scene",
+      "Decoded working set is a logical RGBA sum, not measured native/GPU/GC peak",
+      "Host gl.finish timings are software samples, not target frame-time acceptance",
+      "10–25 and 90–140 vertical-degree windows remain presentation tuning; local line/label differences and final whole-scene quality remain open"
+    ]
+  },
+  "resourceFinding": {
+    "samples": 1008,
+    "largestSample": {
+      "fov": 139,
+      "azimuth": 60,
+      "altitude": 75,
+      "opacity": 0.001184,
+      "ids": [
+        "And",
+        "Aql",
+        "Aqr",
+        "Ari",
+        "Aur",
+        "Cam",
+        "Cap",
+        "Cas",
+        "Cep",
+        "Cet",
+        "Cyg",
+        "Del",
+        "Dra",
+        "Equ",
+        "Eri",
+        "Her",
+        "Lac",
+        "Lyn",
+        "Lyr",
+        "Mic",
+        "Oph",
+        "Peg",
+        "Per",
+        "PsA",
+        "Psc",
+        "Scl",
+        "Sct",
+        "Sge",
+        "Sgr",
+        "Tau",
+        "Tri",
+        "UMa",
+        "UMi",
+        "Vul"
+      ],
+      "bytes": 24444928
+    },
+    "retentionAllowance": 16777216,
+    "status": "open: still-wanted demand can exceed the retention allowance; no target/global-maximum/coexistence claim"
+  },
+  "backend": {
+    "scope": "task-local MEMORY_TEST weather/spot, real compiled Sky",
+    "publicPort": 60065,
+    "localPort": 54455,
+    "moduleSha256": "175d2b11a711ab83a3b0def4018de7afec6dfcaed70ab65f208722874057a9f7",
+    "catalogVersion": "wikidata-bsc5p-chinese-aliases.v3",
+    "publicationHash": "8380ab78a9f04426008e34c36abd268003906bffa3e3a0bfaab0500552db6cb0",
+    "counts": {
+      "requests": 315,
+      "search": 4,
+      "information": 5,
+      "position": 0,
+      "report": 19,
+      "targets": 0,
+      "contextPuts": 0,
+      "errors": 0
+    },
+    "reads": [
+      {
+        "kind": "search",
+        "query": "牛郎星",
+        "reference": null,
+        "status": 200,
+        "bytes": 7372,
+        "sha256": "c8a71eb451d3e0112c96d252852a1144320beedaa3fb9e1f9067eec59d06f875"
+      },
+      {
+        "kind": "search",
+        "query": "牛郎星",
+        "reference": null,
+        "status": 200,
+        "bytes": 8268,
+        "sha256": "665dc47b1db9549fe67ba0dd0640563c4c500e2103c0d9441514c882ed1851ba"
+      },
+      {
+        "kind": "information",
+        "query": null,
+        "reference": "HR:7557",
+        "status": 200,
+        "bytes": 7611,
+        "sha256": "eb3a131cb9e915aa160d18b29e40bc95d3f0eafd551087b8753e1c5aebc4f7b1"
+      },
+      {
+        "kind": "information",
+        "query": null,
+        "reference": "HR:7557",
+        "status": 200,
+        "bytes": 7611,
+        "sha256": "eb3a131cb9e915aa160d18b29e40bc95d3f0eafd551087b8753e1c5aebc4f7b1"
+      },
+      {
+        "kind": "information",
+        "query": null,
+        "reference": "HR:7557",
+        "status": 200,
+        "bytes": 7611,
+        "sha256": "eb3a131cb9e915aa160d18b29e40bc95d3f0eafd551087b8753e1c5aebc4f7b1"
+      },
+      {
+        "kind": "information",
+        "query": null,
+        "reference": "HR:7557",
+        "status": 304,
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "kind": "search",
+        "query": "Altair",
+        "reference": null,
+        "status": 200,
+        "bytes": 8262,
+        "sha256": "b8fb4e0bac25bccc09283ec78b14ef758a726c89492306481d00e668ebe58ee7"
+      },
+      {
+        "kind": "search",
+        "query": "Altair",
+        "reference": null,
+        "status": 200,
+        "bytes": 8262,
+        "sha256": "3f06de776ec30acac4cde00c213b14974ef5d115205d0327947d971579a22a39"
+      },
+      {
+        "kind": "information",
+        "query": null,
+        "reference": "HR:7557",
+        "status": 200,
+        "bytes": 7611,
+        "sha256": "eb3a131cb9e915aa160d18b29e40bc95d3f0eafd551087b8753e1c5aebc4f7b1"
+      }
+    ]
+  },
+  "checks": {
+    "realFailBefore": "wide figure/line draw-owner regression failed with old source",
+    "after": "related behavior checks 15/15; Mini typecheck and isolated build passed",
+    "existingBuildWarnings": "CSS ordering, asset size, no async chunk",
+    "native": "public SDK pinch/local/overview/restore; source/Back identity/time/view retained",
+    "console": "get_simulator_console grep -n -i error returned empty; buffer only"
+  },
+  "investigationLimits": [
+    "Actual v44 before shot shows Canvas only; v45 shots show WXML controls/marker/modal but Canvas absent. Different capture planes do not establish a native pixel before/after comparison or a platform root cause.",
+    "Native rendered-frame attributes are metadata, not proof of composed Canvas pixels. Software production GPU output does not certify WEAPP composition.",
+    "First new-window reLaunch timed out, later actual route success; not a product-defect conclusion.",
+    "One overview pinch reached 139.4, not a hidden-140 claim; later observed 180 confirms native name gate only.",
+    "One console call used nonexistent get_simulator_console_logs; kept tool failure, then the documented get_simulator_console returned the actual buffer.",
+    "Reference local field retains real lines after illustration disappears; current shared local gate still retires all three. This difference remains open rather than certified as complete.",
+    "15/15 post-fix checks include updating a stale page test harness to the actual current time owner; no production clock change.",
+    "No phone/preview/cloud deployment/commit/push or other-module source edits"
+  ],
+  "remaining": [
+    "shared image demand/coexistence and resources",
+    "local area/line semantics and whole-scene quality",
+    "ordinary Canvas plus WXML composition/breathing and full interaction journey",
+    "official package/cost/final necessary independent review",
+    "new Moon/pose/calibration/OS lifecycle and target devices; phone unavailable, large font paused"
+  ]
+}

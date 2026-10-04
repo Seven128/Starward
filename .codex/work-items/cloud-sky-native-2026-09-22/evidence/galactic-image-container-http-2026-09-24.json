@@ -1,0 +1,21 @@
+{
+  "manifestStatus": 200,
+  "manifestCacheControl": "no-cache",
+  "publicationHash": "f6aeb37d4724ed296ffb4c22f242bbdc83541b54aa1cb67b83e82b9e2d91ac5e",
+  "imageStatus": 200,
+  "imageContentType": "image/jpeg",
+  "imageCacheControl": "public, max-age=31536000, immutable",
+  "imageBytes": 703555,
+  "imageSha256": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0",
+  "declaredSha256": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0",
+  "staleVersionStatus": 404,
+  "wrongFileStatus": 404,
+  "sourceProvider": "IPAC / Cool Cosmos",
+  "projection": {
+    "kind": "equirectangular",
+    "frame": "galactic",
+    "centerLongitudeDeg": 0,
+    "longitudeIncreases": "left",
+    "north": "up"
+  }
+}

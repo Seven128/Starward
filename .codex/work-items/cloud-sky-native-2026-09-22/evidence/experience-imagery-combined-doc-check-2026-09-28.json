@@ -1,0 +1,15 @@
+{
+  "scope": "Task Markdown local destination existence and current dependency/valid obligations only; no remote/anchor, independent-review or product-quality certification.",
+  "files": [
+    "PLAN.md",
+    "STATE.md",
+    "INDEX.md",
+    "PROGRESS.md",
+    "evidence/experience-imagery-combined-2026-09-28.md"
+  ],
+  "localLinks": 290,
+  "missing": [],
+  "staleContextAuditRemoved": true,
+  "currentRevision": 6,
+  "contextChanged": false
+}

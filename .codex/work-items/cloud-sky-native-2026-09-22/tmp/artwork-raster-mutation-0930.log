@@ -1,0 +1,30 @@
+{"name":"common","calls":17,"beforeArea":5595720,"afterArea":5595720,"pixelsEqual":true}
+{"name":"common-dpr3","calls":17,"beforeArea":50361480,"afterArea":50361480,"pixelsEqual":true}
+{"name":"common-rolled-offset","calls":18,"beforeArea":53323920,"afterArea":53323920,"pixelsEqual":true}
+{"name":"wide","calls":32,"beforeArea":94798080,"afterArea":94798080,"pixelsEqual":true}
+{"name":"local","calls":0,"beforeArea":0,"afterArea":0,"pixelsEqual":true}
+{"name":"dome","calls":0,"beforeArea":0,"afterArea":0,"pixelsEqual":true}
+{"name":"west-dusk","calls":9,"beforeArea":2962440,"afterArea":2962440,"pixelsEqual":true}
+{"name":"red","calls":17,"beforeArea":50361480,"afterArea":50361480,"pixelsEqual":true}
+{"name":"m42-overview","calls":1,"beforeArea":2962440,"afterArea":2962440,"pixelsEqual":true}
+{"name":"m42-detail","calls":1,"beforeArea":2962440,"afterArea":2962440,"pixelsEqual":true}
+{"name":"m42-local","calls":0,"beforeArea":0,"afterArea":0,"pixelsEqual":true}
+{"name":"common-return","calls":17,"beforeArea":5595720,"afterArea":5595720,"pixelsEqual":true}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert(common.variants[1].calls.reduce((sum:number,call:any)=>sum+call.area,0)<common.variants[0].calls.reduce((sum:number,call:any)=>sum+call.area,0)/2)
+
+    at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-artwork-raster-gpu-2026-09-30.mts:150:66) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.16.0

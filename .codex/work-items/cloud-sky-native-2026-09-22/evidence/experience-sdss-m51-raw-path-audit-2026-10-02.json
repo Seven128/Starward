@@ -1,0 +1,285 @@
+{
+  "scope": "read-only audit; cached CSV decoding and primary documentation only; no live CAS metadata query or SAS HEAD/GET",
+  "date": "2026-10-02",
+  "target": {
+    "ref": {
+      "catalog": "M",
+      "id": "51"
+    },
+    "raDeg": 202.469625,
+    "decDeg": 47.1951666667,
+    "frame": "ICRS J2000"
+  },
+  "cachedInput": {
+    "path": "artifacts/miniapp/cloud-sky-native/sdss-center-trial/m51-photo-primary.csv",
+    "bytes": 1152,
+    "sha256": "b969c967184c1d41bfd1dce2db88f9254ded939c53daaf8c3828e9e04b5455d0",
+    "rowCount": 18,
+    "radiusArcmin": 6
+  },
+  "encodingSource": "https://www.skyserver.sdss.org/dr7/en/help/docs/algorithm.asp?key=objID",
+  "centerQuery": "SELECT DISTINCT f.fieldID, f.rerun, f.run, f.camcol, f.field FROM dbo.fPolygonsContainingPointEq(202.469625,47.1951666667,0.01) AS p JOIN Region AS r ON r.regionID=p.regionID JOIN sdssPolygons AS s ON r.id=s.sdssPolygonID JOIN Field AS f ON f.fieldID=s.primaryFieldID",
+  "centerQueryUi": "https://skyserver.sdss.org/dr17/en/tools/search/sql.aspx",
+  "centerQueryApi": {
+    "uri": "https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=SELECT%20DISTINCT%20f.fieldID%2C%20f.rerun%2C%20f.run%2C%20f.camcol%2C%20f.field%20FROM%20dbo.fPolygonsContainingPointEq(202.469625%2C47.1951666667%2C0.01)%20AS%20p%20JOIN%20Region%20AS%20r%20ON%20r.regionID%3Dp.regionID%20JOIN%20sdssPolygons%20AS%20s%20ON%20r.id%3Ds.sdssPolygonID%20JOIN%20Field%20AS%20f%20ON%20f.fieldID%3Ds.primaryFieldID&format=csv",
+    "status": "constructed URI; no query issued; current web extraction of unparameterized dynamic entry failed"
+  },
+  "historicalSeeds": [
+    {
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "field": 101,
+      "fieldID": "1237661362908626944",
+      "starCount": 5,
+      "exampleObjID": "1237661362908626965",
+      "proof": "decoded from historically cached CAS object IDs; not a current center best-field or whole footprint result",
+      "sasBandUris": [
+        "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/301/3699/6/frame-g-003699-6-0101.fits.bz2",
+        "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/301/3699/6/frame-r-003699-6-0101.fits.bz2",
+        "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/301/3699/6/frame-i-003699-6-0101.fits.bz2"
+      ],
+      "sasStatus": "constructed official-pattern URI only; content, availability, headers, bytes and footprint unverified"
+    },
+    {
+      "rerun": 301,
+      "run": 3716,
+      "camcol": 6,
+      "field": 118,
+      "fieldID": "1237661435924185088",
+      "starCount": 6,
+      "exampleObjID": "1237661435924185091",
+      "proof": "decoded from historically cached CAS object IDs; not a current center best-field or whole footprint result",
+      "sasBandUris": [
+        "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/301/3716/6/frame-g-003716-6-0118.fits.bz2",
+        "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/301/3716/6/frame-r-003716-6-0118.fits.bz2",
+        "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/301/3716/6/frame-i-003716-6-0118.fits.bz2"
+      ],
+      "sasStatus": "constructed official-pattern URI only; content, availability, headers, bytes and footprint unverified"
+    },
+    {
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "field": 99,
+      "fieldID": "1237661362908495872",
+      "starCount": 7,
+      "exampleObjID": "1237661362908496524",
+      "proof": "decoded from historically cached CAS object IDs; not a current center best-field or whole footprint result",
+      "sasBandUris": [
+        "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/301/3699/6/frame-g-003699-6-0099.fits.bz2",
+        "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/301/3699/6/frame-r-003699-6-0099.fits.bz2",
+        "https://data.sdss.org/sas/dr17/eboss/photoObj/frames/301/3699/6/frame-i-003699-6-0099.fits.bz2"
+      ],
+      "sasStatus": "constructed official-pattern URI only; content, availability, headers, bytes and footprint unverified"
+    }
+  ],
+  "decodedObjIDs": [
+    {
+      "objID": "1237661362908626965",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 101,
+      "object": 21,
+      "fieldID": "1237661362908626944"
+    },
+    {
+      "objID": "1237661362908626985",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 101,
+      "object": 41,
+      "fieldID": "1237661362908626944"
+    },
+    {
+      "objID": "1237661435924185091",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3716,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 118,
+      "object": 3,
+      "fieldID": "1237661435924185088"
+    },
+    {
+      "objID": "1237661362908627083",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 101,
+      "object": 139,
+      "fieldID": "1237661362908626944"
+    },
+    {
+      "objID": "1237661435924185229",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3716,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 118,
+      "object": 141,
+      "fieldID": "1237661435924185088"
+    },
+    {
+      "objID": "1237661435924185236",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3716,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 118,
+      "object": 148,
+      "fieldID": "1237661435924185088"
+    },
+    {
+      "objID": "1237661362908627176",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 101,
+      "object": 232,
+      "fieldID": "1237661362908626944"
+    },
+    {
+      "objID": "1237661362908496524",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 99,
+      "object": 652,
+      "fieldID": "1237661362908495872"
+    },
+    {
+      "objID": "1237661435924185095",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3716,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 118,
+      "object": 7,
+      "fieldID": "1237661435924185088"
+    },
+    {
+      "objID": "1237661362908496553",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 99,
+      "object": 681,
+      "fieldID": "1237661362908495872"
+    },
+    {
+      "objID": "1237661362908496530",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 99,
+      "object": 658,
+      "fieldID": "1237661362908495872"
+    },
+    {
+      "objID": "1237661435924185448",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3716,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 118,
+      "object": 360,
+      "fieldID": "1237661435924185088"
+    },
+    {
+      "objID": "1237661362908496497",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 99,
+      "object": 625,
+      "fieldID": "1237661362908495872"
+    },
+    {
+      "objID": "1237661362908627332",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 101,
+      "object": 388,
+      "fieldID": "1237661362908626944"
+    },
+    {
+      "objID": "1237661362908496540",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 99,
+      "object": 668,
+      "fieldID": "1237661362908495872"
+    },
+    {
+      "objID": "1237661362908496551",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 99,
+      "object": 679,
+      "fieldID": "1237661362908495872"
+    },
+    {
+      "objID": "1237661362908496736",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3699,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 99,
+      "object": 864,
+      "fieldID": "1237661362908495872"
+    },
+    {
+      "objID": "1237661435924185457",
+      "skyVersion": 2,
+      "rerun": 301,
+      "run": 3716,
+      "camcol": 6,
+      "firstField": 0,
+      "field": 118,
+      "object": 369,
+      "fieldID": "1237661435924185088"
+    }
+  ],
+  "unknown": {
+    "centerBestField": null,
+    "sourceCompressedBytes": null,
+    "fullMotherFieldCount": null,
+    "sourceBandCoverage": null,
+    "sourceExactWcs": null,
+    "fieldPsfNoiseQuality": null
+  }
+}

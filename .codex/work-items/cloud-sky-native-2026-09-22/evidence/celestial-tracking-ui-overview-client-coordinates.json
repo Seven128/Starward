@@ -1,0 +1,5 @@
+{
+  "camera": "示例观星点的方位高度天空图，垂直视场 188.2 度，4006 颗真实亮星目录对象，场景时刻 2026-09-22T14:00:00.000Z，4 个真实目标，手动视角，不代表手机朝向，当前观测时刻 22:00",
+  "tracking": "Vega · 全天总览中保留跟踪停止跟踪",
+  "cardinalBefore": "<text id=\"_xb\" class=\"sky-cardinal-label\" style=\"left: 11.520363884622554px; top: 678.6278578751101px;\" aria-expanded=\"\" aria-hidden=\"true\" aria-label=\"\" aria-role=\"\" selectable=\"false\" user-select=\"false\" decode=\"false\" space=\"\" data-sid=\"_xb\">西</text>"
+}

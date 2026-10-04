@@ -1,0 +1,22 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ '7a3290abebd86ca5c4326dd13e3976ed4765e22c427ea07dec05e44a1603d9d1'
+- '63934903b136709bfab0d57617eb674371cb23d2aba891800e1ff50627c83137'
+
+    at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-area-display-support-2026-09-30.mts:31:108)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: '7a3290abebd86ca5c4326dd13e3976ed4765e22c427ea07dec05e44a1603d9d1',
+  expected: '63934903b136709bfab0d57617eb674371cb23d2aba891800e1ff50627c83137',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.16.0
+Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c, line 94

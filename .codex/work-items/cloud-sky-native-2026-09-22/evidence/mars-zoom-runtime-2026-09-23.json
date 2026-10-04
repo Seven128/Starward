@@ -1,0 +1,37 @@
+{
+  "environment": "official WeChat DevTools simulator, source project, local sample spot",
+  "phoneUsed": false,
+  "observation": {
+    "localDate": "2026-10-08",
+    "localTime": "14:00",
+    "frameAt": "2026-10-08T06:00:00.000Z",
+    "marsAzimuthDeg": 289.525503,
+    "marsAltitudeDeg": 4.934501,
+    "marsAngularDiameterDeg": 0.00160789,
+    "canvasLogicalWidth": 390.4,
+    "canvasLogicalHeight": 844,
+    "pinchFovSequenceDeg": [45, 6.1, 0.81, 0.15],
+    "projectedMarsRadiusPxAtFloor": 4.523529887421034,
+    "sourceDisclosurePresent": "火星表面影像来源 · USGS Viking",
+    "nativeTemporaryJpeg": {
+      "bytes": 94411,
+      "sha256": "cd324068ee22f66664d15ff5934ff6cfc195bb0e2ee8becba6092f078442d184",
+      "matchesPublishedManifest": true,
+      "method": "DevTools wx.getFileInfo on the live Canvas image queue temporary file"
+    },
+    "screenshot": "mars-zoom-max-2026-09-23.png"
+  },
+  "checks": {
+    "miniTests": "809 passed, 0 failed",
+    "workerDetailTests": "6 passed, 0 failed",
+    "miniTypecheck": "passed",
+    "workerTypecheck": "passed",
+    "isolatedWeappBuild": "passed"
+  },
+  "subsequentGpuPixelEvidence": "mars-texture-gpu-ab-2026-09-23.json; the earlier no-isolation limit below was closed later in the official simulator, not on a phone",
+  "limits": [
+    "Simulator Canvas covers ordinary WXML controls in screenshots; selector actions and WXML confirm their state, but phone compositing remains unverified.",
+    "The screenshot establishes a resolved Mars disc; the source disclosure and live temporary-file SHA establish that the pinned JPEG reached the native image queue. A controlled pixel comparison has not yet independently isolated its GPU fragment contribution from the plain phase shader.",
+    "Android and iOS pixel quality, interaction, frame time and memory remain unverified."
+  ]
+}

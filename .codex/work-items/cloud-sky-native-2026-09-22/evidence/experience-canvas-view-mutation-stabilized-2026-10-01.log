@@ -1,0 +1,55 @@
+✔ recreated canvas rejects queued survey and constellation native images until their new owners publish (26.0691ms)
+✔ queued pre-calibration canvas frame cannot jump back after confirm or cancel (48.0965ms)
+✖ real alignment confirms raw input while queued painting retains stabilized geometry (23.8274ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1241.4083
+
+✖ failing tests:
+
+test at apps\wechat-miniapp\src\features\sky\sky-alignment-render.test.ts:1:6853
+✖ real alignment confirms raw input while queued painting retains stabilized geometry (23.8274ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      forward: [
+  +     0.507334978429114,
+  +     0.8617489307578695,
+  +     1.972429287870179e-16
+  -     0.3579272035147302,
+  -     0.9337494936995282,
+  -     6.869504964868156e-16
+      ],
+      right: [
+  +     0.8617489307578693,
+  +     -0.5073349784291141,
+  +     -7.179055499796289e-17
+  -     0.9337494936995281,
+  -     -0.3579272035147302,
+  -     -1.3877787807814457e-16
+      ],
+      up: [
+  +     0,
+  +     -2.220446049250313e-16,
+  -     -2.7755575615628914e-17,
+  -     -6.661338147750939e-16,
+        1.0000000000000002
+      ]
+    }
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-alignment-render.test.ts:153:10)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { right: [ 0.8617489307578693, -0.5073349784291141, -7.179055499796289e-17 ], up: [ 0, -2.220446049250313e-16, 1.0000000000000002 ], forward: [ 0.507334978429114, 0.8617489307578695, 1.972429287870179e-16 ] },
+    expected: { right: [ 0.9337494936995281, -0.3579272035147302, -1.3877787807814457e-16 ], up: [ -2.7755575615628914e-17, -6.661338147750939e-16, 1.0000000000000002 ], forward: [ 0.3579272035147302, 0.9337494936995282, 6.869504964868156e-16 ] },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

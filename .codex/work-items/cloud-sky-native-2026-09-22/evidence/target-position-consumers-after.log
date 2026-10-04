@@ -1,0 +1,40 @@
+✔ canvas measurement rejects missing geometry and accepts both platform result shapes (1.8796ms)
+✔ failed GPU surface does not reinitialize on every pose and explicit retry consumes the latest frame (1.1837ms)
+✔ every acquired GPU generation is released exactly once across reset, failure and late callbacks (0.959ms)
+✔ ready, measurement and draw each retain only the latest requested frame (0.3296ms)
+✔ steady sensor frames reuse geometry/context and resizing reacquires both (0.3429ms)
+✔ resize, hide, removed canvas and unmount discard stale callbacks (0.5079ms)
+✔ measurement, context, draw and missing callback failures invalidate size and recover on retry (1.5944ms)
+✔ expiry/denial hides the previous projection until the clearing draw completes (0.1858ms)
+✔ continuous poses with a slower native draw cannot starve visibility, while invalidation still fences old frames (0.4632ms)
+✔ motion bursts publish the latest real sample once while null/unmount cancel pending pose (0.3867ms)
+✔ dome never draws a below-horizon target or its label even when its projection fits the canvas (5.2396ms)
+✔ failed GPU submission cannot publish a picking snapshot or successful completion (0.7133ms)
+✔ actual page invalidation clears hit testing synchronously before React hides the failed surface (46.2807ms)
+✔ survey imagery uses a celestial plane beyond the camera hemisphere and stays hidden in red mode (19.8481ms)
+✔ stereographic anchors may cross the viewport but reject the antipode and invalid geometry (0.3265ms)
+✔ production frame requests preserve exact data/time and clear expired or untrusted input (37.8782ms)
+✔ explicit manual basis draws the same celestial target without fabricating device pose (0.7363ms)
+✔ production sky canvas switches exact target frames and restores committed geometry (3.1583ms)
+✔ production sky canvas never borrows top-level targets for missing or duplicate frames (2.626ms)
+✔ production sky canvas uses the same instant and projection for catalog stars and targets (4.8244ms)
+✔ expanding catalog depth cannot resize or brighten an unchanged star (12.4044ms)
+✔ the real renderer reveals and fades a star with zoom and cannot pick the hidden star (4.8283ms)
+✔ picking uses only the exact painted catalog frame and deterministic ordering (2.376ms)
+✔ pinch, drag and cancellation never become catalog taps (0.4032ms)
+✔ actual M31 FITS WCS pixels remain registered after observer and time rotations (6.4763ms)
+✔ all 51 source centers bind to FITS half-pixel origin at each published resolution (6.976ms)
+✔ upgraded client rejects retired star cache after restart on offline and 304, and rejects a legacy server response (261.9358ms)
+✔ HTTP 503 remains a failure and cannot return the retired catalog (27.584ms)
+✔ network recovery returns selectable HR stars and retains their provenance (23.1498ms)
+✔ retired-identity regression detects omission of the response projection (25.1348ms)
+✔ malformed source rows retire only stars and keep independent content (17.2344ms)
+✔ rounded-only target caches lose geometry independently on offline, 304 and old-server reads, then recover (50.2354ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1620.0307

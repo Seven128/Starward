@@ -1,0 +1,17 @@
+✔ Acrux detail and catalog sources follow the requested report version (90.2444ms)
+✔ stable HR references return attributable ready and basic-only states (0.536ms)
+✔ large numeric-like and unknown references stay strings and fail closed (0.8532ms)
+✔ planet information distinguishes historical band profiles from current geometry and weather (0.7135ms)
+✔ Messier galaxy and nebula references expose attributable catalog facts (9.7219ms)
+✔ same identity and locale reuse a stable content revision without sharing mutable values (0.3607ms)
+✔ SAO details interpret HD multiplicity codes instead of presenting them as names (500.618ms)
+✔ actual M51 optical publication serves three hash-bound JPEGs and scoped provenance (160.9602ms)
+✔ optical target discovery and immutable resources preserve each admitted object's identity (62.1646ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3134.7345

@@ -1,0 +1,1381 @@
+{
+  "recordedAtUtc": "2026-09-30T06:42:49.570Z",
+  "goal": "active/unbudgeted/incomplete",
+  "scope": "Cloud Sky color-empty viewport cue, immutable display metadata and current compiled local epoch; development evidence only",
+  "sourceHashes": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "c7e354a4b84ee84c986810c8682e7d51c18bd2608865b0eec110750823d8fea2"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "sha256": "12ef9aab80847f7deec1c517199b1f259aee92f31f99f8dbd2a4ecefd16bed7c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-observation-time.ts",
+      "sha256": "2ccada04a93fbe91ca95628c0e22d37e77d2d10c6793fe6d2a8e4145b3f8ec3a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-presentation-position.ts",
+      "sha256": "588da099d87377286b0b65bc3a307dad34fa52637806078e03bc7a38f561eadd"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-presentation-position.ts",
+      "sha256": "d95a18082968f69a5a5b20f443f6c18bf5997a27ccc16268c14348ecfbd5d222"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/api-client.ts",
+      "sha256": "2e0b1c64d040f113ee4fc59b814f5c9167058abbbd85e551a27b0207c3459d51"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-target-instant-response.ts",
+      "sha256": "30bb179d6152e45abd7809c6f6633cc7f52497073740d0c562f9431e4de2b42c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-target-instant-response.test.ts",
+      "sha256": "5626a8d8e2505b4e718e8e3ffa77c4abb30932b86801624ae1e0503fd85cd9e5"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/api-shapes.ts",
+      "sha256": "91a73b238b5c81b6d323d029a9e6ae1db72ff0aa9e99715beb9b3642aefadde9"
+    },
+    {
+      "path": "packages/miniapp-contracts/api/miniapp.operations.json",
+      "sha256": "4f95b178f118f2aabf97e75f83076d7b38c72a8108f6d54d5f355303268ac039"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts",
+      "sha256": "fa39d2679ff989a6cee74d12caa8f34777ea2accda7905a3c41646207af3eff7"
+    },
+    {
+      "path": "workers/miniapp-api/src/astronomy-service.ts",
+      "sha256": "a2c0862dfc48c00a026ea64400eed8333cfbd4353858aa68f90fb617057ac10f"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-service.ts",
+      "sha256": "a8d2ae6c368ec7f6448548091a4b55cebe4e465a6f5df93df667b0b9e120efc9"
+    },
+    {
+      "path": "workers/miniapp-api/src/controller.ts",
+      "sha256": "5cb38ae0e156029bb90b07e6c6a9377b33b3d9354e282365fb9a797ee82d570d"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-api.test.ts",
+      "sha256": "3d68c20f13657ea1a7d4f513ebf2ed077de8260bf03ae7f2d68949c8c621266c"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-time-model.test.ts",
+      "sha256": "c2ad1840f659eaf27946d012f9ff4167841033ecdc113b790bbb669ad3d27c62"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-stellar-supplement.ts",
+      "sha256": "3523819dd4b820d50b0743899a35207f6a166cadb45012b0e62ce83aa6335019"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-tile-loader.ts",
+      "sha256": "1ff9b0e2ba533f347dcfce9349f52c34fd83e588b28fecdb851804202d0972e1"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-tile-selection.ts",
+      "sha256": "1e9eb82bcbc3bd39ff9e34abb06dbb9d82943325985cf3d131369e5caec3b48c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+      "sha256": "878553232b938e8d4620721518f0fa617810a9a03186a343a37a960a1366fdc9"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "sha256": "e30b8591984ad37778b358b9217d6df0954d2fd8e330ab86759f7adf28019139"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-object-picking.ts",
+      "sha256": "8c2bb73f998242de517157476ef17bff67881b65a7c17c9840bb664cda755ff6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sao-catalog-client.ts",
+      "sha256": "cf8d4941d348a7d6f2aa6b026543b8fca39feaf3a446ddf274476297a14d3825"
+    },
+    {
+      "path": "workers/miniapp-api/src/chinese-star-alias-publication.ts",
+      "sha256": "ffe4b8487b35bcce42d58dff170cd9fe5a5381d2058fa503294cae6b0732f300"
+    },
+    {
+      "path": "workers/miniapp-api/src/celestial-object-aliases.ts",
+      "sha256": "cd8514f72ce0cd49b921b72b03c06eda99dddb8e1b2422e2a6fae9070000e9fa"
+    },
+    {
+      "path": "workers/miniapp-api/src/celestial-object-search.ts",
+      "sha256": "33ad8cde9faa39f55820d71d1276eafcd7693d986a8b0943665124a1aed77961"
+    },
+    {
+      "path": "workers/miniapp-api/src/celestial-object-information.ts",
+      "sha256": "911897ef17be28be13d8b4f3cc9166ceb403f402ea7442e821df44536085fd3b"
+    },
+    {
+      "path": "data-pipelines/star-catalog/enrich_wikidata_chinese_aliases.mjs",
+      "sha256": "23d9f65f6667d7618d75da828667e947c0bbed7d17d75bfd3e7aa720e964b9df"
+    },
+    {
+      "path": "workers/miniapp-api/assets/celestial-names-v3/chinese-bright-star-aliases.v3.json",
+      "sha256": "8380ab78a9f04426008e34c36abd268003906bffa3e3a0bfaab0500552db6cb0"
+    },
+    {
+      "path": "workers/miniapp-api/assets/celestial-names-v3/publication.json",
+      "sha256": "81a3bda7053077602af2b2ce8bb24540c3550073602bd50c2f100b88a0634f1c"
+    },
+    {
+      "path": "workers/miniapp-api/assets/celestial-names-v3/source-provenance.json",
+      "sha256": "34dc7925057f204bf54a6c9838a97272bf9cc7ef1bbe51eb95ca6878c748fc1e"
+    },
+    {
+      "path": "infrastructure/deployment/miniapp-api.Dockerfile",
+      "sha256": "3dad3abe172ae8c327ed3aa915bafae50686b1abfe286578e84c699c1e8312ae"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-visibility.ts",
+      "sha256": "d9bfb888d080d5b24e4a9d37e97a52b430307acea7213d73337e5242ef5f9608"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.test.ts",
+      "sha256": "00c3c7f383a98964aa3b15b76b48b48cf25ae53d38f3c88cf19b51485a871110"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-visibility.test.ts",
+      "sha256": "4006e6c5485c0ed8a5f1f4f01c6ce39cef002a7a052c4e73139c856e35eeb891"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-labels.test.ts",
+      "sha256": "76c6612108a9ffd67a9bd74d6b0eb7753b4d0653c5e0f17b25bee9960dbe271d"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-page-labels.test.ts",
+      "sha256": "80266d39ca9db239da55ef88ae08580f8bce7eb677e3ddd7481e38f7977c93b5"
+    },
+    {
+      "path": "node_modules/twgl.js/dist/7.x/twgl-full.module.js",
+      "sha256": "f518c84fa9d404b725fff024c91ad04e756e67bbc69e62c1725b08cce0ef6ef3"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+      "sha256": "648d6e3ea1dc4ed5c21e8cc42f31ff30b5eab69488812c3958286dd3f4c5c209"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-registration.ts",
+      "sha256": "85e16452de821088531ee9f19a4bfe6f791f6da26818ead6f3d53fd8e23c2513"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-textures.ts",
+      "sha256": "6ef5bc855adaf6b80ffae541bd07287832ec8fdcd75bca9f4771f52a02692202"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-saturn-rings.ts",
+      "sha256": "487a27a2eac32dfb526b6cb22d1aaf3ba73dce05f7073a1e1f5b571ada5a32ee"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-saturn-ring-fragment.ts",
+      "sha256": "1546479b0af3136a8a2dd1f95a3708281f97b7d70a076d9974fd5426be31682c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape-geometry.ts",
+      "sha256": "f743730e7924d4083da13115d61868eabe471be1ccf544e9784d26f7e204564f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape.ts",
+      "sha256": "b871c37d72b95efe754f0709996044e299103125d75181c9f35ae75f072eaf48"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "sha256": "6bbfc8a768643a096bd248b12ca7d0be85e117d76f0cc63d5a05f80c1e06288c"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/types.ts",
+      "sha256": "258827b84c70b6ee52025329652e70a8d34abe5e8fcfa892b948fab8b9c6ffbe"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/plan.ts",
+      "sha256": "373cf1316693b4b1b11cd954d532e3759086fa3ed301f1c3279d7df0b367fdd3"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/plan-reminders.ts",
+      "sha256": "51fbf4fbaa1902997ffecd6254676c1b190cfc8873d480d6aed54157572fc8bd"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/local-time.ts",
+      "sha256": "56d34e7053c2936e00efa47837793b9b7baf89b373824fa2b7c8635aa510e919"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/contribution-feedback.ts",
+      "sha256": "3ae07770ac9987f2c565f9501907238b085d76f4fe00d8755d119d4267fefbdf"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/filters.ts",
+      "sha256": "280e7b7f38d0a990e55166f931ef2ccbb4f6a1a3e168e0fdcd7afd292bfc3c6d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/feature-flags.ts",
+      "sha256": "440606adabca6f0f0e6785905c3202b09095aefaf58d28918bea0da4b1c66ef7"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/url-policy.ts",
+      "sha256": "7ff57fa707c8e5eb11d33426a72865df5b09493b07fbf03e9f6af16e622515e9"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/viewport.ts",
+      "sha256": "89efea05a6ec1530a4a9698011ab8fd384fc1feab38e7b83673a8088e663102b"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/ranking.ts",
+      "sha256": "6abf16ed0b6e99be580afee8a121d61813d4a548f3b036276c99ccd7972ba5f5"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/preferences.ts",
+      "sha256": "d7f1da44001610fac181cbab03880fbb74fadff2e652445f60ee6f4968da76ca"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-planet-identity.ts",
+      "sha256": "9e947673bb81c4b605361b8bffdc368330bdd5f978a71c83644804c6c77fa97e"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-target-position.ts",
+      "sha256": "d1920242e7b72c179bb2c242a8c08366dbe2771a63f03a449621c52801f93efa"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-luminary-identity.ts",
+      "sha256": "b215f288ff261d67989efa27c34cbf778ebe6c780b785d77815a29ceee1c5275"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/celestial-identity.ts",
+      "sha256": "c7e224fb9a4a918db7c0ce91d1e1733f0030727c2bc64f577f8ea49f53f59547"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-geometry.ts",
+      "sha256": "86576641382bc51ef4e14fd3ac1caebb134fcf0e72a6116b02a20bb1c33d392b"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-catalog-publication.ts",
+      "sha256": "a6024d6ad23765496393534ca67a43a671febc7719ee2a378e667d2fe7adc15d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-scene.ts",
+      "sha256": "a0cbbd7181159e5749038e467842e85314ef652f3ec8a20f5e838d11d51cea87"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-scene.ts",
+      "sha256": "8c87512639a2e2fc7a38cb63084e56513a6f9d3e71af085d2e0c5c2370ba05e7"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/moon-coverage-publication.ts",
+      "sha256": "4d7c8b550131ff0137f14a5ee4de5efd68a98e2685397979ac78238aefb58b50"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/deep-sky-image-publication.ts",
+      "sha256": "75bc21b6dc56338eea16132b243f00675b7b8aac2ae9df27bee6622d5236b113"
+    },
+    {
+      "path": "node_modules/@noble/hashes/utils.js",
+      "sha256": "11319ec0a8132a0c2ced8c98af33ae9274c001d6baf4f4709c4a6115e031a3c5"
+    },
+    {
+      "path": "node_modules/@noble/hashes/_md.js",
+      "sha256": "a112f0fe1b15db00f2638618c436a17be1c5e13baf19d02fcc29016ae1db2233"
+    },
+    {
+      "path": "node_modules/@noble/hashes/_u64.js",
+      "sha256": "e48c0cfc10810439a4807b46db136ce603a3fa09b62584f513ef2f3ca496af54"
+    },
+    {
+      "path": "node_modules/@noble/hashes/sha2.js",
+      "sha256": "3ddc587c588283cbceed4dd9929cefcce06a0c231b54d4c6f0f99c478c686c00"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sdss-optical-publication.ts",
+      "sha256": "0fd5f2c3b7e29cc478ef04dd9b9af7516916b71993a34aba2645852fcd3daa38"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/observation-frame.ts",
+      "sha256": "75be5650a8ee3fb025ed4a43a1ffa12dcf84dd2b946d284e91112401f6a67188"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-time-model.ts",
+      "sha256": "6c1f47586bdec67b5c24fa6dd182c400cd364294986c3c840f54892ba800ff60"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-lunar-phase.ts",
+      "sha256": "21e45cc998d4cebed9625e2067e02ce95dbf7c3cdbb16ce325a7d53718521392"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/catalog-json-integrity.ts",
+      "sha256": "cf5a8278773b78d06a4670dc3cda63d7c0edcbbfbb01b39369ea37011298ff4d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-supplement.ts",
+      "sha256": "4e9a37385e362d9ffd88b3a48229bd1b11e4f60ca7fd7d8ca54eabae580fa973"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/constellation-catalog.ts",
+      "sha256": "8c4fa3961030303ca54c3a1a89253dece291f29cbc72a9f0766bfb960b659a9e"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/account-profile.ts",
+      "sha256": "a51bc104b8984c8339434ee9eb672d339df9ae7c2f3bb9e313eb0f0bdb1913b6"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/recent-weather.ts",
+      "sha256": "49f368afa7e5a3544c8e37745641c2eeacab7d1eef5de6ad76c3564815c87adb"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/air-quality.ts",
+      "sha256": "f4627ed64579f720cfb352a2d71523a9c0711021b4a5fde9faa8e9b52ee32611"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-landscape-publication.ts",
+      "sha256": "053a950b4d620be52034a696bb81fa638d1e6f85569652e5e0f949f91930e40d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/index.ts",
+      "sha256": "79afb6c58aec403ce046144d5299148c5c7b701372bbc192a3d08b3b74da9d4a"
+    },
+    {
+      "path": "packages/astronomy-core/src/stellar-vectors.ts",
+      "sha256": "683c487671550c00b66a5b43c836c33b759e45260b1bae3eed6c5c94122f5f81"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-frame.ts",
+      "sha256": "40df40fd298fdf54585802827a70d6c8328df2f1e169014b7c03852cec972e2f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-observation-frame.ts",
+      "sha256": "fc391352e4d73553d7f8fdc7469481af6a1f5f56219d97fc59425cdc09c6acf6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-solar-light.ts",
+      "sha256": "a9b2a2988846256a92bc48344b840178de91ff80fac26e1ba18d5d81af4dec45"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+      "sha256": "2369acbfde4a992d52fcc616d7f754c7a76e35cdb91f68f53af6e5ccebb6b4ee"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-viewport.ts",
+      "sha256": "54be3d52b945669978e1f8ca39c917ccd3c9451e8406f2a4517e6af6052edfea"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-zoom.ts",
+      "sha256": "b9906780d2dfb4b651565cc13d5995c9632e2f7830fd5cabb35d1d97f67a182e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-projection.ts",
+      "sha256": "f26ca3feb18c07de69c9cc092f0c5f62f45ba1eff499d2ff9b2fb29efea5805c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-visibility.ts",
+      "sha256": "d2288c6e9e533721a50d6e587ec1e48a4b04dc2272d14eab5213f19fb3bc10d8"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-line-clip.ts",
+      "sha256": "e8ba9d114119c2b51e316cf602a58aa8352691f0c5ea174140898ec889e4c88e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.ts",
+      "sha256": "a2dd23662d0559b8fcd9a2ce3f48bdc5c22fae5b8c8f8a3b6c510d37d45d4f79"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-star-appearance.ts",
+      "sha256": "81d6324176760b5ae7f6d08701b843c696601ab5b023fd8e95ce0b82cb08d00a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-survey-registration.ts",
+      "sha256": "6c4af33d77ce8aad30dd101ad389b336267e4b5aa2b3be9dd24ec2ba9b9dcf8f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-deep-auxiliary-visibility.ts",
+      "sha256": "ac0c001e18e0f466c2b67ca78d08ffa723ad0ae2f07fdddfca2ede84422fb568"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape-mask.ts",
+      "sha256": "4156c6ba50752eb04a82e5f80e498ac18325e37a852c0e4f04cb214a484e5e20"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-galactic-band.ts",
+      "sha256": "bc58c7e0a6e372f315e913f12c02ffd4cd88f3d0a18e1735026c940dec97ec39"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-phase-disc.ts",
+      "sha256": "a0f35a0ebb14aa8f8c1ceea7d4fe5d0131e24615d9c680ff5f14f58b866db4e1"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-sun-disc.ts",
+      "sha256": "305ae9d1a1ddd6d22a92026d0853f4290d54f248367e09b5af842780684d5042"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-body-surface-orientation.ts",
+      "sha256": "1215443ea5d813be88ac9d2e18556d0c05146f761252ab7eb7d8c6d395bde7a5"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-moon-disc.ts",
+      "sha256": "7a4347194c9dc887221b4aafe52393d4954ecd4fb79788b91ce4c1e6d45556c4"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-planet-disc.ts",
+      "sha256": "7519277e7a51313de7bf8161f16996d1c68b26dd00b26313bd7b02595452f964"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-grid-projection.ts",
+      "sha256": "90348d8974a8734a5198de8ce27474a8f18ec7657d18ee32719a3c56c1ef0e5b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-horizontal-grid.ts",
+      "sha256": "c5fcbc7fcec067cfd83d9d1e198815c3fe9c45038a6d6a83c7bbe8323ec73b6c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-equatorial-grid.ts",
+      "sha256": "27415bad0e2deda86caa2abc7e38d847c38dc814bd3bae0d06f8a552d3fc86a8"
+    },
+    {
+      "path": "node_modules/healpix-ts/dist/index.mjs",
+      "sha256": "5c4bdc4b48e4ceab04ed7eeb99c52b133759d74bbd9c1bbb0715256f9da58723"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-hips-tile-mesh.ts",
+      "sha256": "3cd27aff81b87fd7d116044839a7a362a8257eebcd0f856018e0f525a9beef21"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-native-image-chain.test.ts",
+      "sha256": "03ff61dbc7389043ca642d6b7ac74a3642bba20a7fd264b573f3c510a6ca3fbe"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape-resources.ts",
+      "sha256": "bb23c448633c115937451437d63ed106b448c71c50ae5361427897ab71267239"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-hips-tile-selection.ts",
+      "sha256": "dc12ca1d1af4e02e560c941f217c6697c31ab02802a5105629ff3d523057322f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-native-image-owner.test.ts",
+      "sha256": "9c465846cc33558186a3318cd98e04a4e9c1a4a079bf9d3b5191bb79da8435e1"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-image-display-support.ts",
+      "sha256": "c90d5b7623d9844f8ca872b514509c19cd908d2d9206575286f26783ee88a26c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-image-file-session.ts",
+      "sha256": "1950f44454703066702bf2d452e41d77d5925449a76391462f9caaa093ecfc7a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/deep-sky-image-request.ts",
+      "sha256": "e64073f411f220a1a852f9f4b24ce6ea86c7ebf1a2b52f42a94d030129f432f8"
+    },
+    {
+      "path": "workers/miniapp-api/src/deep-sky-imagery.ts",
+      "sha256": "55afeed5854242e05b16907f56556bb7f54388ae9845721cef6973e2a71b7909"
+    },
+    {
+      "path": "data-pipelines/deep-sky/allwise_finite_tan.py",
+      "sha256": "00c4bb0b4db2408256e12bf67d6835dc0af5618f13d47d87908fdaa1d30c55b5"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_publish_allwise_w3.py",
+      "sha256": "f8dabef6b53251635bdb919a3e621d53de2d859491cc0c6195c1d5c056329b90"
+    },
+    {
+      "path": "workers/miniapp-api/assets/deep-sky/manifest.json",
+      "sha256": "cacba21af333a11cfa1a36f638fdf057aceb918eba157b3418e580e6386d0f8b"
+    },
+    {
+      "path": "workers/miniapp-api/src/deep-sky-image-http.test.ts",
+      "sha256": "633a6f6aeddfd3537e0ccd12553192ff63192eaab43ddf1d585f727c427887e1"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/deep-sky-image-request.test.ts",
+      "sha256": "616459923b10028abd913ba2ff3424b40f79c5acfdb8e1e9f436a10accc6a28d"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-visibility.test.ts",
+      "sha256": "932f55ae3a691465c8d5b5fe15a85e5c4657bde5d89da1154c11fc9ee243cb9c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-registration.test.ts",
+      "sha256": "d0a443d3cf1892f706c56f0c3830040bb6014de7837865092dfdb220b1ff392d"
+    },
+    {
+      "path": "project_context/architecture/runtime-and-domain.md",
+      "sha256": "cb40f1bb24750a8eaa3edacd7f29038a72056a62083326b96d3d6408fca8e5cf"
+    },
+    {
+      "path": "workers/miniapp-api/dist/controller.js",
+      "sha256": "af32d9ce9906af66e5a7e9d3a76465e76f4fbf8e3bb25fd71f61afba7260b776"
+    },
+    {
+      "path": "workers/miniapp-api/dist/deep-sky-imagery.js",
+      "sha256": "739771824139de6167e6f971fa976cd1b0cb2b722851366667a94557f8191874"
+    },
+    {
+      "path": "packages/miniapp-contracts/dist/sky-image-display-support.js",
+      "sha256": "cd551cde2e1d383d845e07d5810b06e7c50055656608ad1873a2d67de34ecaab"
+    }
+  ],
+  "changedProductionOwners": [
+    "workers/miniapp-api/src/controller.ts",
+    "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+    "packages/miniapp-contracts/src/index.ts",
+    "apps/wechat-miniapp/src/features/sky/sky-artwork-visibility.ts"
+  ],
+  "inputs": [
+    {
+      "path": "tmp/v49-candidate-fingerprint.json",
+      "sha256": "d31fea61b10347ba8b5c167404275f96b8122435eff8c3c833617f3e55d9f390"
+    },
+    {
+      "path": "tmp/v49-context-resolved.json",
+      "sha256": "32310a9807a744bd29107b2460116c22a90a67bff39a0395137fb2e2697a2e81"
+    },
+    {
+      "path": "tmp/v49-context-readback.json",
+      "sha256": "834ae7c3d2dbd0a2c33bb4dd8465b4e6d6d0f3970322abb4252cc5b0ba297d60"
+    },
+    {
+      "path": "tmp/v49-current-public-report.json",
+      "sha256": "197a5819cc175e249faab29208dc5ecb2b8a6ac17f3dd32a861abc6b20e90aa0"
+    },
+    {
+      "path": "tmp/v49-backend-state.json",
+      "sha256": "2ae2860eb487f9a8439aa5f35d0ba7af6f96ae8e74c92b33624dc3d046fdcbaf"
+    },
+    {
+      "path": "tmp/v49-png-readback.json",
+      "sha256": "65dd0a20ab4da18cb1f98e1e27820003ebbee97bc3291aa07316d7d2dc5aaf01"
+    },
+    {
+      "path": "tmp/v49-owned-process.json",
+      "sha256": "9b0d0b70f13959f60da73dcbc3cc8795ec089c1190529ae46fd6813d52b59476"
+    },
+    {
+      "path": "tmp/v49-checked-readback.log",
+      "sha256": "d7310c44e22959597a95020c64ae7b0e59d5c74e8387196949164b134fd8701b"
+    },
+    {
+      "path": "tmp/area-display-support-current-checked-real-gpu.log",
+      "sha256": "2f48b3938447a1b625d06185c61c2b2a1a2b8b8a42d77ad83a720c7de86aa959"
+    },
+    {
+      "path": "tmp/area-display-support-current-checked-mini-typecheck.log",
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "tmp/weapp-scene-v49-settled-build.log",
+      "sha256": "7cf1238c22f7f0f76c5a8aed704e7388606b60d1ddf96ddd6cfdc3f5b19caf97"
+    },
+    {
+      "path": "tmp/area-display-support-settled-owner-tests.log",
+      "sha256": "e0b053267fe2d04dfe1360aa0e6d0b5e273abd4b24dde1c7e143eb57bff2dad5"
+    },
+    {
+      "path": "tmp/area-display-support-bound-view-tests.log",
+      "sha256": "457d24ff2f2bef30fdd41a8f5b65f8eda65063ebfb120cc1bf42dd57bc52c8a7"
+    },
+    {
+      "path": "tmp/area-display-support-settled-http-tests.log",
+      "sha256": "f9b51955ddaf41a3780aeb1e127bd6e0451966a5b94b004e001da439a7a85a69"
+    },
+    {
+      "path": "tmp/area-display-support-settled-publisher-tests.log",
+      "sha256": "49c49669750172c6d22808c1d5314c0a1ed78050eb009faae333a6a5253b8ec2"
+    },
+    {
+      "path": "tmp/area-display-support-contracts-build.log",
+      "sha256": "927cb2949522771d2c04154ceb5538e1437394082bf4ddcc6c35ca6c7c559546"
+    },
+    {
+      "path": "tmp/area-display-support-api-build.log",
+      "sha256": "14cf9b562a4090743a164d2b68fa166e2c7cde38124bd5dc3a4ef1dac9301e6d"
+    },
+    {
+      "path": "tmp/area-display-support-context-validate.log",
+      "sha256": "a8fb6ed9754274fed8ca0f2d0807494e593288d8664f3cbe38db220228a3e288"
+    },
+    {
+      "path": "tmp/area-alpha-sampling-result.json",
+      "sha256": "7bf6343a5bdf4e72cef6d4a0ad6d0bb474f373ad3cfc95cefdbe771c92a03485"
+    },
+    {
+      "path": "tmp/area-display-support-rolled-sampling.json",
+      "sha256": "f010d9fe31ceb6158d74bac8bf90b282afd4afbd427463c72f9227f49ae5ce18"
+    },
+    {
+      "path": "scripts/experience-area-display-support-2026-09-30.mts",
+      "sha256": "bc7a3441335448334b9de157712cf9fc22dd6cd54740cc88912c16fcf946b7a1"
+    },
+    {
+      "path": "scripts/experience-scene-v49-readback-2026-09-30.mjs",
+      "sha256": "699fdd84a01442bcdf50a5015c74f28a8650f7399bebc06e10dde15f10cc7e0b"
+    },
+    {
+      "path": "scripts/experience-area-bundle-scope-2026-09-30.mjs",
+      "sha256": "f921d5f36a7abe18214f5f21cbe6a9dc3a502f77df144872bc2a3d0ac338d933"
+    },
+    {
+      "path": "tmp/v49-generated-bundle-scope.json",
+      "sha256": "d640da10369a7dedee2e6a870a5f16b4d8580c616256d6f02f05ab72a43f1077"
+    },
+    {
+      "path": "evidence/experience-area-display-support-2026-09-30.md",
+      "sha256": "6100a1a3554649d4e9199e1af65fb7be2784809267d86ed51eff95052a447391"
+    }
+  ],
+  "captures": [
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/0-before-0.05-roll0.png",
+      "sha256": "04488653ad621d8e6a7ef3db23d0eaa868a8671bfad058b58fb11407a5411231",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/1-current-0.05-roll0.png",
+      "sha256": "7f3476a4fd66f1f8990da83b625a66ad372a094b08905d0543446f1c607fcc9f",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/2-without-support-0.05-roll0.png",
+      "sha256": "04488653ad621d8e6a7ef3db23d0eaa868a8671bfad058b58fb11407a5411231",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/3-no-image-0.05-roll0.png",
+      "sha256": "7f3476a4fd66f1f8990da83b625a66ad372a094b08905d0543446f1c607fcc9f",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/4-before-0.12-roll0.png",
+      "sha256": "e6502876bfc8bab02d8065dd8a1203b03ee1306444a5d03f7b2a011f38d3ead0",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/5-current-0.12-roll0.png",
+      "sha256": "e6502876bfc8bab02d8065dd8a1203b03ee1306444a5d03f7b2a011f38d3ead0",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/6-without-support-0.12-roll0.png",
+      "sha256": "e6502876bfc8bab02d8065dd8a1203b03ee1306444a5d03f7b2a011f38d3ead0",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/7-no-image-0.12-roll0.png",
+      "sha256": "1dc58975295d9ac952560542e8a6452fb0a85aeafeade505f80b43e35aa3b93c",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/8-before-0.8-roll0.png",
+      "sha256": "21acfa482043ca3a270703cb685291ffe77881078cffd06823d47a9b1fa26970",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/9-current-0.8-roll0.png",
+      "sha256": "21acfa482043ca3a270703cb685291ffe77881078cffd06823d47a9b1fa26970",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/10-without-support-0.8-roll0.png",
+      "sha256": "21acfa482043ca3a270703cb685291ffe77881078cffd06823d47a9b1fa26970",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/11-no-image-0.8-roll0.png",
+      "sha256": "880f6f029a38ed1c99e88795e2a01951a991065573531058c28fe5f638f0aaaa",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/12-current-0.05-roll-67.png",
+      "sha256": "fea5daa63bc51b308b35fbaf0c71ab94772fb622e7cebcdbc80393aa0260df3f",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/13-without-support-0.05-roll-67.png",
+      "sha256": "93e78f0f192040eb11969450ba6c6d781f4c0f941312872e9aa2041da1c90be9",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/14-no-image-0.05-roll-67.png",
+      "sha256": "fea5daa63bc51b308b35fbaf0c71ab94772fb622e7cebcdbc80393aa0260df3f",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/15-current-0.12-roll-67.png",
+      "sha256": "6a856fe81ac13ac4f61613323d1ecb330c04358d9f8da4a441c8482e3d2e36c3",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/16-without-support-0.12-roll-67.png",
+      "sha256": "6a856fe81ac13ac4f61613323d1ecb330c04358d9f8da4a441c8482e3d2e36c3",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/17-no-image-0.12-roll-67.png",
+      "sha256": "599302602259c67416b3904d6af47a1ba09ce03f6af631c8de95a59acff761c6",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/18-current-0.8-roll-67.png",
+      "sha256": "5597df32f54f6c97f7be3696b3f9a6a6f7816616c76c79c8ad651316ea922c4a",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/19-without-support-0.8-roll-67.png",
+      "sha256": "5597df32f54f6c97f7be3696b3f9a6a6f7816616c76c79c8ad651316ea922c4a",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/20-no-image-0.8-roll-67.png",
+      "sha256": "319bfec377c47fbb2f6d75581113ee41e75df7dc50e0abdecb171f5100e850cc",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/21-current-0.05-roll71.png",
+      "sha256": "f6ed6fe112222c5d96816c5d5620f56ff254c42b48ae01aa5f227615dc40bbf1",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/22-without-support-0.05-roll71.png",
+      "sha256": "3afe41762bb35a0242ecdd47b82a183a50e9ebf19cc168e5bb3572fc3c71fa43",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/23-no-image-0.05-roll71.png",
+      "sha256": "f6ed6fe112222c5d96816c5d5620f56ff254c42b48ae01aa5f227615dc40bbf1",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/24-current-0.12-roll71.png",
+      "sha256": "caa916a969e281e3b206095b1887014ab74a22deaf75fcbd3025063530b52967",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/25-without-support-0.12-roll71.png",
+      "sha256": "caa916a969e281e3b206095b1887014ab74a22deaf75fcbd3025063530b52967",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/26-no-image-0.12-roll71.png",
+      "sha256": "038e256e6b43fe47d49c99f6037ea0103826e92f4f9928666456fb97cd614095",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/27-current-0.8-roll71.png",
+      "sha256": "1901c9f011c7d0a4521300bc560d84f6c3de8481a15133016a08823e3eda6466",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/28-without-support-0.8-roll71.png",
+      "sha256": "1901c9f011c7d0a4521300bc560d84f6c3de8481a15133016a08823e3eda6466",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/29-no-image-0.8-roll71.png",
+      "sha256": "f61c6c0a8db7dcb300518051af40fbaedca70be9245d93c3627395410ce2a20e",
+      "kind": "current production software GPU, not native composition"
+    },
+    {
+      "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/30-current-0.05-roll0.png",
+      "sha256": "7f3476a4fd66f1f8990da83b625a66ad372a094b08905d0543446f1c607fcc9f",
+      "kind": "current production software GPU, not native composition"
+    }
+  ],
+  "generatedBundleScope": {
+    "before": {
+      "path": "apps/wechat-miniapp/dist/weapp-check-sky-scene-v48",
+      "sha256": "596ca70a782744e0a4a6e44efd8b85ff707afdb6ea2e3774f2dab55df135b9ab"
+    },
+    "after": {
+      "path": "apps/wechat-miniapp/dist/weapp-check-sky-scene-v49-final",
+      "sha256": "fd45bd4e3ff89df5f141f48ecc1ae08e70dc931d20b9875857284aea53332020",
+      "files": 257,
+      "rawBytes": 4525275
+    },
+    "changedFiles": [
+      "common.js",
+      "content/plan/list/index.js",
+      "content/settings/index.js",
+      "content/spot-feedback/index.js",
+      "content/sub-vendors.js",
+      "pages/map/index.js",
+      "pages/my/index.js",
+      "sky/detail/index.js",
+      "sky/sources/index.js",
+      "sky/sub-vendors.js",
+      "spot/search/index.js"
+    ],
+    "differences": [
+      {
+        "file": "common.js",
+        "modules": [
+          {
+            "id": "7666",
+            "nextId": "7666",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "762c4017959afff4eaae4183f7c494a8077fa5a5f806f9f86980e09631cd828a",
+            "afterSha256": "a929d2521512309027a3dc1d1065b509543df916b52ebb0d2d8b91a5b0c8c198"
+          },
+          {
+            "id": "7538",
+            "nextId": "7538",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "ff1f14e7aa9e6d223e65cc28e0932fdc1fda368b13ad697eb4afb0e45e2e96cf",
+            "afterSha256": "ff1f14e7aa9e6d223e65cc28e0932fdc1fda368b13ad697eb4afb0e45e2e96cf"
+          },
+          {
+            "id": "7345",
+            "nextId": "7345",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "7c7b2b5ecbb87ef43811716c3cf6ba74357b17d23ce8e1215d497fecfe007ff4",
+            "afterSha256": "7c7b2b5ecbb87ef43811716c3cf6ba74357b17d23ce8e1215d497fecfe007ff4"
+          },
+          {
+            "id": "5424",
+            "nextId": "5424",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "bb1845148913e93f7bf1123ac01206482ae576a2703cc6d1739c560cc133535e",
+            "afterSha256": "bb1845148913e93f7bf1123ac01206482ae576a2703cc6d1739c560cc133535e"
+          },
+          {
+            "id": "1540",
+            "nextId": "1540",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "66e1d380200fa11fca7d2d7c8c0de96e049352bf0df2a98937001f0353a623e3",
+            "afterSha256": "66e1d380200fa11fca7d2d7c8c0de96e049352bf0df2a98937001f0353a623e3"
+          },
+          {
+            "id": "7821",
+            "nextId": "7821",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "950df94047c821efbfa44cd609aaab009d558bc2c348a795e5d7b2c240edbfa8",
+            "afterSha256": "950df94047c821efbfa44cd609aaab009d558bc2c348a795e5d7b2c240edbfa8"
+          },
+          {
+            "id": "9556",
+            "nextId": "9556",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "fa9800294c0dffcae83a0d3b93a4de2095de21db97bb5e7ce6410954f99d4de4",
+            "afterSha256": "fa9800294c0dffcae83a0d3b93a4de2095de21db97bb5e7ce6410954f99d4de4"
+          },
+          {
+            "id": "1980",
+            "nextId": "1980",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "736d6e950996f677b407425f210d2389ca4596f7463fb7b1f8ef88cfcaf2e3db",
+            "afterSha256": "736d6e950996f677b407425f210d2389ca4596f7463fb7b1f8ef88cfcaf2e3db"
+          },
+          {
+            "id": "4116",
+            "nextId": "4116",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "3ad7d3a3e211558845cee9e0e5dc32c181f5a3792c8d232d5afbf799f6932438",
+            "afterSha256": "992df3d90c7f43b1ce3feeb8f2637b157ea65c1ae3dccfa5e718870874376338"
+          },
+          {
+            "id": "6738",
+            "nextId": "6738",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "7d19538a88effd0ee6cc5d6eb527028eeeee956d8b9c744820770784e54bd6b9",
+            "afterSha256": "7f85deb8b1166c161b17c117133402f9921432a7060c04b96ca37ff518eb53cd"
+          },
+          {
+            "id": "615",
+            "nextId": "615",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "93cfa5257818775deaf49b59bac12b9848e576c3870b878bdc6d98d6b9dd6441",
+            "afterSha256": "93cfa5257818775deaf49b59bac12b9848e576c3870b878bdc6d98d6b9dd6441"
+          },
+          {
+            "id": "9258",
+            "nextId": "9258",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "61b6c92946309d56f6bb1935598980f0f3dfbd63139841fc08a975cbf881199f",
+            "afterSha256": "61b6c92946309d56f6bb1935598980f0f3dfbd63139841fc08a975cbf881199f"
+          },
+          {
+            "id": "5268",
+            "nextId": "5268",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "6df595e2c13b34da987598a096f04646c843708cf4a50ef76f814b815668dcbc",
+            "afterSha256": "6df595e2c13b34da987598a096f04646c843708cf4a50ef76f814b815668dcbc"
+          },
+          {
+            "id": "7444",
+            "nextId": "7444",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "3730aabeb9d04ff0d038cfb677b52a29ed8e0f4e486b28d8a97517213f96b8df",
+            "afterSha256": "3730aabeb9d04ff0d038cfb677b52a29ed8e0f4e486b28d8a97517213f96b8df"
+          },
+          {
+            "id": "9896",
+            "nextId": "9896",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "f3a843a2769db5c76ab0c5d83068668b1f30fdbf58bdc15a26c79125368a861d",
+            "afterSha256": "f3a843a2769db5c76ab0c5d83068668b1f30fdbf58bdc15a26c79125368a861d"
+          },
+          {
+            "id": "1190",
+            "nextId": "1190",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "b377f96c8acec3e44a17705c174bab99e1241e53fc0dd4605ff7698f18de9bf5",
+            "afterSha256": "b377f96c8acec3e44a17705c174bab99e1241e53fc0dd4605ff7698f18de9bf5"
+          },
+          {
+            "id": "9496",
+            "nextId": "9496",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "b74fe9ad9955037170e65bdc9599581661d862f9d836583c045069f6f0b78db4",
+            "afterSha256": "7d6a5dd244dd4b8a6909411aa81d7aa6fb5bea186e71bff23ab7c2419d75209b"
+          },
+          {
+            "id": "4472",
+            "nextId": "4472",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "a1eb1d4d5aed0c66f82d884d2f0628d37864b176ba6f1e38a059bb8c2fb12cc9",
+            "afterSha256": "a1eb1d4d5aed0c66f82d884d2f0628d37864b176ba6f1e38a059bb8c2fb12cc9"
+          },
+          {
+            "id": "1928",
+            "nextId": "1928",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "ecfc710d7db5d0a44e04dc6fb65eaa54448eb328495a0f099c20a11ecfddf3da",
+            "afterSha256": "ecfc710d7db5d0a44e04dc6fb65eaa54448eb328495a0f099c20a11ecfddf3da"
+          },
+          {
+            "id": "3158",
+            "nextId": "3158",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "926af4176b5cab10f614bcea9b6254f285ad04d95abd37446fd2bb84350c8b69",
+            "afterSha256": "926af4176b5cab10f614bcea9b6254f285ad04d95abd37446fd2bb84350c8b69"
+          },
+          {
+            "id": "7819",
+            "nextId": "7819",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "03b8a7c961bca8b67aa694a6f83e6a7fdc4f49bf27a3f8fd7cca135d64a3b6cb",
+            "afterSha256": "03b8a7c961bca8b67aa694a6f83e6a7fdc4f49bf27a3f8fd7cca135d64a3b6cb"
+          },
+          {
+            "id": "1730",
+            "nextId": "1730",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "8634be1e47d788de6c3b2d8bed93874ff1fe62e05cc970754be68cf9f38ff77d",
+            "afterSha256": "2d9ec159edc013c97899e3078ce04b685dff8bc9052db807431f59ae359ffbd9"
+          },
+          {
+            "id": "1603",
+            "nextId": "1603",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "42f1c02fcba39c54352156fc6098d683095ccb8c41520f431b905ad304b5d9b4",
+            "afterSha256": "42f1c02fcba39c54352156fc6098d683095ccb8c41520f431b905ad304b5d9b4"
+          },
+          {
+            "id": "4870",
+            "nextId": "4870",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "b76571fb3fa47bd06090af29298a01fbb2fd8320f0d51a9510edaea560345abf",
+            "afterSha256": "b76571fb3fa47bd06090af29298a01fbb2fd8320f0d51a9510edaea560345abf"
+          },
+          {
+            "id": "773",
+            "nextId": "773",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "cc0dafae0e49df84210beb65f15ba0668ea2b1d23e9b04b903322dc3c4bbaf2f",
+            "afterSha256": "cc0dafae0e49df84210beb65f15ba0668ea2b1d23e9b04b903322dc3c4bbaf2f"
+          },
+          {
+            "id": "8234",
+            "nextId": "8234",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "b07e4b256058cdd21f31c6cbdd7948146cfbc28ded8c858caa26189aa84f2026",
+            "afterSha256": "b07e4b256058cdd21f31c6cbdd7948146cfbc28ded8c858caa26189aa84f2026"
+          },
+          {
+            "id": "4565",
+            "nextId": "4565",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "8c2099336ba13b11c435b4794ee130374eec9dc2790edfdf346b339ad1cfb4d7",
+            "afterSha256": "8c2099336ba13b11c435b4794ee130374eec9dc2790edfdf346b339ad1cfb4d7"
+          },
+          {
+            "id": "3160",
+            "nextId": "3160",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "200d28c9356a62f9fef05ce0b77368d9462b2d8a0019a39105d7a8530c44c45a",
+            "afterSha256": "200d28c9356a62f9fef05ce0b77368d9462b2d8a0019a39105d7a8530c44c45a"
+          },
+          {
+            "id": "544",
+            "nextId": "544",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "2388c9692a39bdcfae0e88b22aa04809e17faa0ae97970743bfbc759090e35f2",
+            "afterSha256": "2388c9692a39bdcfae0e88b22aa04809e17faa0ae97970743bfbc759090e35f2"
+          },
+          {
+            "id": "952",
+            "nextId": "952",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "40a7f878e558c66f4a1ee6654f3825bab8ccc8e78003d668373282f819179778",
+            "afterSha256": "c65fc5738af296136fb4baf559c41711207ea71c76dae8c1e1b0a6b13b64d08e"
+          },
+          {
+            "id": "760",
+            "nextId": "760",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "fd8dd3d983946514fd44dd1bc7444110f77463b134a02b4ffd0f415193661e6b",
+            "afterSha256": "fd8dd3d983946514fd44dd1bc7444110f77463b134a02b4ffd0f415193661e6b"
+          },
+          {
+            "id": "870",
+            "nextId": "870",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "05f28d9188a6791da079f0a8b8d89c298f80c769eb2579c47732214c231ce334",
+            "afterSha256": "05f28d9188a6791da079f0a8b8d89c298f80c769eb2579c47732214c231ce334"
+          },
+          {
+            "id": "8002",
+            "nextId": "8002",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "9be3e82ac3ebf677806586336ca82c355a3a11ef3d73c2adf6e591abfb7228d1",
+            "afterSha256": "9be3e82ac3ebf677806586336ca82c355a3a11ef3d73c2adf6e591abfb7228d1"
+          },
+          {
+            "id": "2537",
+            "nextId": "2537",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "c82c8e31d3464092d7add6e00ead21bbfd9f9ee94813fbd9c0de90610937304e",
+            "afterSha256": "c82c8e31d3464092d7add6e00ead21bbfd9f9ee94813fbd9c0de90610937304e"
+          },
+          {
+            "id": "9970",
+            "nextId": "9970",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "8e7292d9e5d2cea50c1bbdf5d5e8d6b77bd329e165896c26208a67c73dd0612c",
+            "afterSha256": "a2ef0e0428f4ac234c7a9c6a0846e7dbdf10bf1ee2a4722f524e8bfc6489beec"
+          },
+          {
+            "id": "9419",
+            "nextId": "9419",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "bb2e0f8089277a2537347a8ada21e577c5d27bac0ccf50ad982338302bdd75a6",
+            "afterSha256": "bb2e0f8089277a2537347a8ada21e577c5d27bac0ccf50ad982338302bdd75a6"
+          },
+          {
+            "id": "2596",
+            "nextId": "2596",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "25858aea274210ab3f7f8ed6b20850d02bb46652b321bd3e7bba87386026e6b3",
+            "afterSha256": "25858aea274210ab3f7f8ed6b20850d02bb46652b321bd3e7bba87386026e6b3"
+          },
+          {
+            "id": "6279",
+            "nextId": "6279",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "9655f38bc76f9796a1caba07c7e4ea547f0590f76b6dc81519cb1a23f3fbdc7c",
+            "afterSha256": "9655f38bc76f9796a1caba07c7e4ea547f0590f76b6dc81519cb1a23f3fbdc7c"
+          },
+          {
+            "id": "2620",
+            "nextId": "2620",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "7f405c6091b1c2bc84f0ab25c5522973cbbba81ffa4ba498504de02d439c0ae6",
+            "afterSha256": "8f88ad6a12f33415b55747c5c1fa86e11bfca21f6f88b3cd28522cdce1cd3586"
+          },
+          {
+            "id": "431",
+            "nextId": "431",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "e72ac83de7081e1ebd919c5030ad394bc41182ab1bbd38825d89fbe93c08387a",
+            "afterSha256": "e72ac83de7081e1ebd919c5030ad394bc41182ab1bbd38825d89fbe93c08387a"
+          },
+          {
+            "id": "2597",
+            "nextId": "2597",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "f7559bd110aa09d09fc1449f589dcf474b2c84090ce233158685a07d5cab099f",
+            "afterSha256": "f7559bd110aa09d09fc1449f589dcf474b2c84090ce233158685a07d5cab099f"
+          },
+          {
+            "id": "7597",
+            "nextId": "7597",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "ded384e2d74e434a7678a51d60cfd68653463dd3100b30f005b7754dff4373f5",
+            "afterSha256": "e443b2bf7dcd81990541766eaf498ec5c30d3c2a8379b1a7e972b6cc02d1addc"
+          },
+          {
+            "id": "7712",
+            "nextId": "7712",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "c7cc44bc1c1babdd529b9565520e8724c51ce5133f4ae2f26d78368cf28bf5ad",
+            "afterSha256": "c7cc44bc1c1babdd529b9565520e8724c51ce5133f4ae2f26d78368cf28bf5ad"
+          },
+          {
+            "id": "5420",
+            "nextId": "5420",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "9eab76c5ad456712c36013fee4d2f91ef95ee758f612d2bba9911c376de914cd",
+            "afterSha256": "9eab76c5ad456712c36013fee4d2f91ef95ee758f612d2bba9911c376de914cd"
+          },
+          {
+            "id": "9065",
+            "nextId": "9065",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "3407f803c074a2ec8ac2c7f237558d5aea4d770ae45b58ec29c5193e75355e19",
+            "afterSha256": "12a578c18c23bafc13d27a3d674941004e8450174100cd75b66cb9c8f148e60b"
+          },
+          {
+            "id": "8642",
+            "nextId": "8642",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "39ddd1f9be9a0a85b8b7a6d7c30cf7112b4da6265700605f8355b75321353154",
+            "afterSha256": "39ddd1f9be9a0a85b8b7a6d7c30cf7112b4da6265700605f8355b75321353154"
+          },
+          {
+            "id": "7297",
+            "nextId": "7297",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "cea950f205764c1caa88108beb8be1e1579db3328fe711c10e9f7690dd4da907",
+            "afterSha256": "cea950f205764c1caa88108beb8be1e1579db3328fe711c10e9f7690dd4da907"
+          },
+          {
+            "id": "6773",
+            "nextId": "6773",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "2611d0d19f8449d06ae5f22a2c515bf383f6b21f3dc21ebe8b92f1469cf97838",
+            "afterSha256": "2611d0d19f8449d06ae5f22a2c515bf383f6b21f3dc21ebe8b92f1469cf97838"
+          },
+          {
+            "id": "1110",
+            "nextId": "1110",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "bfc045cfe297a595039add042edb0950ebbb95db0688a1cfbd4c2bdfb9646dd2",
+            "afterSha256": "bfc045cfe297a595039add042edb0950ebbb95db0688a1cfbd4c2bdfb9646dd2"
+          },
+          {
+            "id": "8263",
+            "nextId": "8263",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "aa5c78bf17c599206cd89b082683dba74598104d8f064494b18c0dc3aa8b58b9",
+            "afterSha256": "79e454354a68da8ac3638787f8c7fa8b33a30ae6a0445434cb1f6609035df8bf"
+          },
+          {
+            "id": "6767",
+            "nextId": "6767",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "6123dcb628a191fb89efebbf97464fe00862ed2a08d680c9b2d032089d1b8b25",
+            "afterSha256": "6123dcb628a191fb89efebbf97464fe00862ed2a08d680c9b2d032089d1b8b25"
+          },
+          {
+            "id": "2673",
+            "nextId": "2673",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "584de48bddf6ddcb3219187791db80362780480577eb1250036d49e5ce1d5fd3",
+            "afterSha256": "584de48bddf6ddcb3219187791db80362780480577eb1250036d49e5ce1d5fd3"
+          },
+          {
+            "id": "8090",
+            "nextId": "8090",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "3cb9fee5533b90fbd213a4014fab786280edf59f48452eed81a219caec813b14",
+            "afterSha256": "3cb9fee5533b90fbd213a4014fab786280edf59f48452eed81a219caec813b14"
+          },
+          {
+            "id": "5487",
+            "nextId": "5487",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "593c61fd639dbe3178960f1ee286acd5bfb47af3bc6c3a6a85216fb85ec9196c",
+            "afterSha256": "593c61fd639dbe3178960f1ee286acd5bfb47af3bc6c3a6a85216fb85ec9196c"
+          },
+          {
+            "id": "1800",
+            "nextId": "1800",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "f5a2ab9f171e306cc046c44c701a939858dee1bd4f5edaffd348a9477c3ac1e9",
+            "afterSha256": "f5a2ab9f171e306cc046c44c701a939858dee1bd4f5edaffd348a9477c3ac1e9"
+          },
+          {
+            "id": "7574",
+            "nextId": "7574",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "03cfa78589907c9f0838a05ae1fd6f0d02842acc529d3e2e2d1c282a8b85b7bf",
+            "afterSha256": "03cfa78589907c9f0838a05ae1fd6f0d02842acc529d3e2e2d1c282a8b85b7bf"
+          },
+          {
+            "id": "3729",
+            "nextId": "3729",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "9f7b294ba663f5e2759f3cdd10433c3f67cf889a0951a9a4a504efee6c5a2f3a",
+            "afterSha256": "9f7b294ba663f5e2759f3cdd10433c3f67cf889a0951a9a4a504efee6c5a2f3a"
+          },
+          {
+            "id": "6376",
+            "nextId": "6376",
+            "unchangedAfterLocalNamesAndContractId": true,
+            "beforeSha256": "c7481f78e0b6881734b4f9ebd9bd8612f4b7d0cb5a9aa8cf93914b3f992f807e",
+            "afterSha256": "c7481f78e0b6881734b4f9ebd9bd8612f4b7d0cb5a9aa8cf93914b3f992f807e"
+          },
+          {
+            "id": "9192",
+            "nextId": "8588",
+            "unchangedAfterLocalNamesAndContractId": false,
+            "beforeSha256": "c9b9ef761ecb375040c1db1627f5a12c3604c141d515ec0214c041dc811320f2",
+            "afterSha256": "d934a0ffb1b28ebfac040c4c7b0b03c4708c8800c72da8874dab6b63beafc0eb"
+          }
+        ],
+        "newModules": []
+      },
+      {
+        "file": "content/plan/list/index.js",
+        "effect": "byte-identical after contract module ID 9192 → 8588"
+      },
+      {
+        "file": "content/settings/index.js",
+        "effect": "byte-identical after contract module ID 9192 → 8588"
+      },
+      {
+        "file": "content/spot-feedback/index.js",
+        "effect": "byte-identical after contract module ID 9192 → 8588"
+      },
+      {
+        "file": "content/sub-vendors.js",
+        "effect": "byte-identical after contract module ID 9192 → 8588"
+      },
+      {
+        "file": "pages/map/index.js",
+        "effect": "byte-identical after contract module ID 9192 → 8588"
+      },
+      {
+        "file": "pages/my/index.js",
+        "effect": "byte-identical after contract module ID 9192 → 8588"
+      },
+      {
+        "file": "sky/detail/index.js",
+        "modules": [
+          {
+            "id": "7016",
+            "nextId": "7016",
+            "unchangedAfterLocalNamesAndContractId": false,
+            "beforeSha256": "84016e610ed8de5b4dac59a3f102e7a19ffeca11c18684075162babc86435069",
+            "afterSha256": "a1162b19aa505398125609f3d47d675feccd0861922fed7fa8f80cc82601dd51"
+          }
+        ],
+        "newModules": []
+      },
+      {
+        "file": "sky/sources/index.js",
+        "effect": "byte-identical after contract module ID 9192 → 8588"
+      },
+      {
+        "file": "sky/sub-vendors.js",
+        "effect": "byte-identical after contract module ID 9192 → 8588"
+      },
+      {
+        "file": "spot/search/index.js",
+        "effect": "byte-identical after contract module ID 9192 → 8588"
+      }
+    ],
+    "meaning": "Generated module bodies and references compared; no native execution or product acceptance implied."
+  },
+  "build": {
+    "path": "apps/wechat-miniapp/dist/weapp-check-sky-scene-v49-final",
+    "treeSha256": "fd45bd4e3ff89df5f141f48ecc1ae08e70dc931d20b9875857284aea53332020",
+    "rawBytes": 4525275,
+    "files": 257,
+    "changedFilesFromV48": [
+      "common.js",
+      "content/plan/list/index.js",
+      "content/settings/index.js",
+      "content/spot-feedback/index.js",
+      "content/sub-vendors.js",
+      "pages/map/index.js",
+      "pages/my/index.js",
+      "sky/detail/index.js",
+      "sky/sources/index.js",
+      "sky/sub-vendors.js",
+      "spot/search/index.js"
+    ],
+    "appIdMatchesSource": true,
+    "intent": "ordinary isolated check, diagnostics/fixtures/feedback off",
+    "runtime": "prepared only; not opened or phone previewed"
+  },
+  "context": {
+    "idSha256": "4a2a1a86d5a0c5a9502b41ba28030ca99fa14049f2b7321aa233f3d541be741e",
+    "fingerprint": "c602396c97d373a7a63f8a8b765776be23ff9f79df9c159dc2c1186faa613ef7",
+    "revision": 1,
+    "selectedAtUtc": "2026-09-30T13:50:33.000Z",
+    "localDate": "2026-09-30",
+    "priorContextStatus": 404,
+    "scope": "fresh public test formal spot/preferences; native Context unknown"
+  },
+  "backend": {
+    "publicPort": 60065,
+    "localPort": 55700,
+    "processId": 24728,
+    "execSession": 68590,
+    "modules": [
+      {
+        "path": "workers/miniapp-api/dist/controller.js",
+        "sha256": "af32d9ce9906af66e5a7e9d3a76465e76f4fbf8e3bb25fd71f61afba7260b776"
+      },
+      {
+        "path": "workers/miniapp-api/dist/deep-sky-imagery.js",
+        "sha256": "739771824139de6167e6f971fa976cd1b0cb2b722851366667a94557f8191874"
+      },
+      {
+        "path": "packages/miniapp-contracts/dist/sky-image-display-support.js",
+        "sha256": "cd551cde2e1d383d845e07d5810b06e7c50055656608ad1873a2d67de34ecaab"
+      }
+    ],
+    "publicationHash": "8b970f207d1b99b3b92e74eb68f0aa6a7ca1f7b5ac51ad86e9d0c6e239540054",
+    "scope": "new epoch, real compiled services, MEMORY_TEST formal spot/weather; old owned epoch closed"
+  },
+  "software": {
+    "path": "output/playwright/cloud-sky-area-display-support-current-checked-0930/result.json",
+    "sha256": "f61b330d927b76e68a3c6b7d2453533677c9f801fd7f04944833dda55f1a32b5",
+    "productionBundleSha256": "13b961234511e5b6dce012ff55ea4da58da81b07729999e9a01048b898bab9e1",
+    "sourceSha256": "6976db0ae39a46c2ee8cd165c0a375a55c819d4248c715b064983184020cc0ba",
+    "scenarios": 31,
+    "retired": {
+      "resources": {
+        "created": 10,
+        "deleted": 10
+      },
+      "files": {
+        "writes": 1,
+        "removes": 1,
+        "failures": 0,
+        "remaining": 0
+      }
+    }
+  },
+  "runtime": {
+    "lastObserved": "v47/s8 welcome; no fresh native probe this turn",
+    "sdk": "unverified",
+    "sky": "unverified",
+    "nativeContext": "unverified",
+    "canvasWxml": "unverified",
+    "phone": "unavailable; no preview"
+  },
+  "visualInspection": {
+    "independence": "self review only",
+    "files": [
+      "1-current-0.05-roll0.png",
+      "12-current-0.05-roll-67.png",
+      "21-current-0.05-roll71.png",
+      "9-current-0.8-roll0.png"
+    ],
+    "meaning": "source-empty crop cues and valid wider source inspected; not complete quality acceptance"
+  },
+  "remaining": "All 33 obligations and commercial exclusions; full area/environment composition, ordinary controls/motion and journey, target stability/performance/costs, Android+iOS, necessary final independent review",
+  "actions": {
+    "sourceImagesChanged": false,
+    "sourceDownloaded": false,
+    "nativeOpened": false,
+    "phonePreviewed": false,
+    "commit": false,
+    "push": false,
+    "branchChanged": false,
+    "otherBusinessEdited": false
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "sourceFiles": [
+    {
+      "path": "data-pipelines/deep-sky/sdss_corrected_frame.py",
+      "bytes": 18057,
+      "sha256": "66eed21091c6d4c80d35c79d8bbb28467ba65ef90740342c727c13bbd812d17e"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_sdss_corrected_frame.py",
+      "bytes": 8390,
+      "sha256": "9884350350a8cb6882762583af03564ea03fd2f95e47dbf49258c27391242d31"
+    },
+    {
+      "path": "data-pipelines/deep-sky/requirements.txt",
+      "bytes": 43,
+      "sha256": "4d8fe8a0eb72499c6ca80871c8850a8d2ba0b4c9a23f810751c06fd137f15bf7"
+    }
+  ],
+  "script": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-sdss-corrected-frame-2026-10-02.py",
+    "bytes": 3262,
+    "sha256": "58fa246eaf2fae0c2bba0c672008ce88bccb0f0a9db6bda576877b4a4b3cd342"
+  },
+  "acquisition": {
+    "path": "output/sdss-corrected-m51-1002/frame-acquisition.json",
+    "bytes": 2165,
+    "sha256": "379bbf80f6d678b6597da3a0d274044f76200c688d65c44176e8024029a464c3"
+  },
+  "report": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/sdss-corrected-frame-2026-10-02-r2/reader-receipts.json",
+    "bytes": 74387,
+    "sha256": "385dcfe139f14a855032ac1cdd8c9bb3dd57e60e313aa9923e47c22b77f9a0d3"
+  },
+  "compressedBytes": 9134078,
+  "decompressedBytes": 37342080,
+  "arrays": [
+    {
+      "band": "g",
+      "shapeRowsColumns": [
+        1489,
+        2048
+      ],
+      "bitpix": -32,
+      "unit": "nanomaggies/pixel",
+      "actualBunit": "nanomaggy",
+      "calibrationAlreadyApplied": true,
+      "appliedNmgyPerCount": 0.00364695,
+      "skyAlreadySubtracted": true,
+      "finiteSamples": 3049472,
+      "nonfiniteSamples": 0,
+      "finiteZeroSamples": 0,
+      "finiteNegativeSamples": 725941,
+      "scientificValidity": "UNKNOWN",
+      "artifactMask": "NOT_SUPPLIED",
+      "meaning": "Finite/zero/negative sample values remain measurements; fpM artifacts, exposure/noise and confidence are not measured here."
+    },
+    {
+      "band": "r",
+      "shapeRowsColumns": [
+        1489,
+        2048
+      ],
+      "bitpix": -32,
+      "unit": "nanomaggies/pixel",
+      "actualBunit": "nanomaggy",
+      "calibrationAlreadyApplied": true,
+      "appliedNmgyPerCount": 0.00502803,
+      "skyAlreadySubtracted": true,
+      "finiteSamples": 3049472,
+      "nonfiniteSamples": 0,
+      "finiteZeroSamples": 1,
+      "finiteNegativeSamples": 733494,
+      "scientificValidity": "UNKNOWN",
+      "artifactMask": "NOT_SUPPLIED",
+      "meaning": "Finite/zero/negative sample values remain measurements; fpM artifacts, exposure/noise and confidence are not measured here."
+    },
+    {
+      "band": "i",
+      "shapeRowsColumns": [
+        1489,
+        2048
+      ],
+      "bitpix": -32,
+      "unit": "nanomaggies/pixel",
+      "actualBunit": "nanomaggy",
+      "calibrationAlreadyApplied": true,
+      "appliedNmgyPerCount": 0.00628516,
+      "skyAlreadySubtracted": true,
+      "finiteSamples": 3049472,
+      "nonfiniteSamples": 0,
+      "finiteZeroSamples": 2,
+      "finiteNegativeSamples": 764866,
+      "scientificValidity": "UNKNOWN",
+      "artifactMask": "NOT_SUPPLIED",
+      "meaning": "Finite/zero/negative sample values remain measurements; fpM artifacts, exposure/noise and confidence are not measured here."
+    }
+  ],
+  "scope": "Input, scientific-array completeness and actual identity; neither complete distortion correction, RGB, mosaic nor quality acceptance."
+}

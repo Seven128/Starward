@@ -89,9 +89,9 @@ test("the production App launch actually invokes cleanup and still initializes n
     ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declaration = source.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "App");
   assert(declaration);
-  for (const unavailable of [false, true]) {
+  for (const unavailable of [false, true]) for (const publicFailure of [false, true]) {
     const h = filesystem([...stale, ...keep]), owner = createSkyImageFileSession(current);
-    let launch: (() => void) | undefined, chrome = 0, warnings = 0;
+    let launch: (() => void) | undefined, chrome = 0, warnings = 0, initialized = 0;
     const App = vm.runInNewContext(ts.transpileModule(`${declaration.getText(source).replace(/export default /, "")}\nApp`,
       { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, {
       useLaunch(callback: () => void) { launch = callback; },
@@ -99,12 +99,16 @@ test("the production App launch actually invokes cleanup and still initializes n
         if (unavailable) throw new Error("unavailable"); return h.fs;
       } },
       skyImageFileSession: owner, useAppStore: { getState: () => ({ mode: "DAY" }) },
+      // App wiring only; actual public owner/FS initialization has a separate
+      // full-module integration check with real cached publication bytes.
+      initializeSkyPublicImageCache: async () => { initialized++; if (publicFailure) throw Error("controlled_public_initialization_failure"); },
       syncNativeChrome: async () => { chrome++; }, console: { warn() { warnings++; } },
       React: { createElement: () => null }, QueryClientProvider: {}, miniappQueryClient: {},
     });
     App({ children: null }); assert(launch); launch();
     await new Promise(resolve => setImmediate(resolve));
     assert.deepEqual([...h.files], unavailable ? [...stale, ...keep] : keep, "startup must retire only known old files when storage is available");
-    assert.equal(h.lists, unavailable ? 0 : 1); assert.equal(chrome, 1); assert.equal(warnings, unavailable ? 1 : 0);
+    assert.equal(h.lists, unavailable ? 0 : 1); assert.equal(chrome, 1); assert.equal(initialized, 1);
+    assert.equal(warnings, Number(unavailable) + Number(publicFailure), "independent launch failures remain visible without skipping either owner");
   }
 });

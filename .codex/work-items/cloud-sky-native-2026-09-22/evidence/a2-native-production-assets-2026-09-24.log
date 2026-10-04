@@ -1,0 +1,11 @@
+✔ published W3 bytes survive refinement failure and retry, while late writes and old GPU images release (4.2989ms)
+✔ published Moon, 2MASS and Jupiter files use the shared decode/GPU boundary with their real formats (3.2809ms)
+✔ a publication or Canvas generation switch fences old decoded images before effects and redecodes for the new owner (37.9267ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 793.85

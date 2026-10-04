@@ -1,0 +1,32 @@
+{
+  "sampleOnly": true,
+  "sourceLayer": "ls-dr10",
+  "objectRef": "M:104",
+  "sourceImage": {
+    "url": "https://www.legacysurvey.org/viewer/jpeg-cutout?ra=189.99763&dec=-11.62305&size=256&pixscale=1.4&layer=ls-dr10",
+    "sha256": "7dbe0a901a045ef53f0810571225a564fb0a952f919a1f94a62df02da79b1a5e",
+    "bytes": 11910,
+    "pixels": [256, 256]
+  },
+  "fitsBand": {
+    "url": "https://www.legacysurvey.org/viewer/fits-cutout?ra=189.99763&dec=-11.62305&size=256&pixscale=1.4&layer=ls-dr10&bands=g",
+    "sha256": "e6bf19e2728a119fe4ff994563f826e8f42132074c773db5721d0e960b221293",
+    "bytes": 267840,
+    "projection": ["RA---TAN", "DEC--TAN"],
+    "crvalDeg": [189.99763, -11.62305],
+    "crpixFitsOneBased": [128.5, 128.5],
+    "cdDegPerPixel": [[-0.000388888888888889, 0], [0, 0.000388888888888889]]
+  },
+  "imageOrientationCheck": {
+    "method": "Decode big-endian FITS -32 float g band at padded 2880-byte data offset; compare asinh-stretched 256x256 values to JPEG grayscale after subtracting each image's radius-3 Gaussian blur, masking JPEG grayscale <=10 or >=245. Pearson coefficient for fixed pixel orientation; vertical FITS flip aligns FITS bottom-up with JPEG top-down. No optimization on this sample beyond four orientations and 5x5 integer shifts.",
+    "highPassPearsonByFitsOrientation": {
+      "none": -0.027372,
+      "verticalFlip": 0.431624,
+      "horizontalFlip": -0.012719,
+      "bothFlips": 0.057126
+    },
+    "verticalFlipPeakIntegerShiftPx": [0, 0],
+    "neighborShiftPearsonRange": [0.24829, 0.336387]
+  },
+  "conclusion": "This specific JPEG uses FITS north-up/east-left after row reversal, with no observed whole-pixel offset. FITS CRPIX=(N+1)/2 differs from current CDS W3 registration's N/2. This is not yet native-renderer astrometric or target-device evidence."
+}

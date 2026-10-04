@@ -1,0 +1,172 @@
+{
+  "scope": "Original bytes and full JPEG decode only; not scientific full coverage, rendered registration or native acceptance",
+  "pixelModification": "none",
+  "totalBytes": 271892,
+  "images": [
+    {
+      "file": "M-63-overview.jpg",
+      "bytes": 18813,
+      "sha256": "f0fbefd8ec359e9ed76cc6907be177a374a9f7a58075006e84853735e8ec1d1c",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-63-medium.jpg",
+      "bytes": 20559,
+      "sha256": "d20754606079201609cd04db7d76c53a23a43645192cb3ad7e2f59023fa91b7c",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-63-detail.jpg",
+      "bytes": 18522,
+      "sha256": "5e91258e037d778bfdd571aad42755c94b548a0eb440dbe32afc62c9bf8305f6",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-64-overview.jpg",
+      "bytes": 16609,
+      "sha256": "af1186455b01be1b1fea20045d2683add44859eac4e2b65ae3280c40709519b3",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-64-medium.jpg",
+      "bytes": 18696,
+      "sha256": "cc6cbbc19c652d2ec659965dae76009349d9404187beebf44fb6a1f1c1b3ae4b",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-64-detail.jpg",
+      "bytes": 13809,
+      "sha256": "a47e2a53748e986ada08b8748362c28ef4d9ba387bef3f393bc01afe52e3c27a",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-81-overview.jpg",
+      "bytes": 19785,
+      "sha256": "dff5e95602056aff7de4791725b6a6f7ad8305ea95142058cfdb36bcd01ef461",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-81-medium.jpg",
+      "bytes": 19127,
+      "sha256": "6a3bfd5094135d4a4fb211f02026c3c75324c6e9488dc3e63b2251c37888beeb",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-81-detail.jpg",
+      "bytes": 9699,
+      "sha256": "1cc10a8feb94e8dfce8317673611d24b0a0af3cc8a08a2c6de68c8a192b3b8ba",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-82-overview.jpg",
+      "bytes": 19934,
+      "sha256": "88bee46f84a10404bae49c06e886f6c3f30f3595b27751f47373dccbdd33c044",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-82-medium.jpg",
+      "bytes": 23280,
+      "sha256": "3279b0120a893f7451de0ef5d9cb4e230fae3f9e7a91beac54b48d486a739b34",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-82-detail.jpg",
+      "bytes": 19100,
+      "sha256": "a2126f35bed0c42a6189684a1238172aec0ca2d95e83df5a91e95fcec9730c6a",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-87-overview.jpg",
+      "bytes": 21162,
+      "sha256": "11259b6255815df3d87abbaeecdc499ea56d7fbc0a8ab7f6fcf079ffae1e5ae9",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-87-medium.jpg",
+      "bytes": 19058,
+      "sha256": "bd09eb6a6a41481a46306fe7765be61a4dfc25434e91c986d20562d26bea9879",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    },
+    {
+      "file": "M-87-detail.jpg",
+      "bytes": 13739,
+      "sha256": "0d37d2487c1445deb426e345ec5de543f5824102ebbd8208481c6ddd238b599e",
+      "dimensions": [
+        512,
+        512
+      ],
+      "mode": "RGB",
+      "decoded": true
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "url": "https://stellarium-web.org/skysource/Polaris?fov=21.027648827109495&date=2026-09-29T21%3A00%3A00Z&lat=22.4826799&lng=114.5557147&elev=0",
+  "observedPausedState": "Browser tab: 1, Title: \"Stellarium Web Online Star Map\", URL: \"https://stellarium-web.org/skysource/Polaris?fov=21.027648827109495&date=2026-09-29T21%3A00%3A00Z&lat=22.4826799&lng=114.5557147&elev=0\".\n1 AXWebArea Stellarium Web Online Star Map, URL: stellarium-web.org/skysource/Polaris?fov=21.027648827109495&date=2026-09-29T21%3A00%3A00Z&lat=22.4826799&lng=114.5557147&elev=0\n\t2 container stel-wrapper\n\t\t3 image stel-canvas\n\t\t4 container\n\t\t\t5 container\n\t\t\t\t6 button\n\t\t\t\t7 container\n\t\t\t\t\t8 text Search...\n\t\t\t\t\t9 text field (settable) Search..., ID: input-v-5\n\t\t\t\t10 link Description: OBSERVE, Value: stellarium-web.org/p\n\t\t\t50 button\n\t\t\t51 image\n\t\t\t52 text Polaris\n\t\t\t53 text Classical Cepheid\n\t\t\t54 container\n\t\t\t\t55 text Also known as Alpha Ursae Minoris 1 Ursae Minoris Alrucaba Cinosura Cynosura Tramontana Yilduz\n\t\t\t\t56 button\n\t\t\t57 text Magnitude\n\t\t\t58 text 2.02\n\t\t\t59 text Distance\n\t\t\t60 container\n\t\t\t\t61 text 432.50  light years\n\t\t\t62 text Spectral Type\n\t\t\t63 text F8Ib\n\t\t\t64 text Ra/Dec\n\t\t\t65 container\n\t\t\t\t66 text 03 h 08 m 17.5 s +89 ° 22 ' 23.9 \"\n\t\t\t67 text Az/Alt\n\t\t\t68 container\n\t\t\t\t69 text 359 ° 38 ' 53.0 \" +23 ° 03 ' 27.2 \"\n\t\t\t70 text Visibility\n\t\t\t71 text Always visible tonight\n\t\t\t72 container\n\t\t\t\t73 text Polaris  is a yellow supergiant star in the northern circumpolar constellation of Ursa Minor. It is designated  α Ursae Minoris  (Latinized to  Alpha Ursae Minoris ) and is commonly called the  North Star . With an apparent magnitude that fluctuates...   more on \n\t\t\t\t74 link Description: wikipedia, Value: en.wikipedia.org/wiki/Polaris\n\t\t\t75 container\n\t\t\t\t76 button\n\t\t\t\t77 button\n\t\t\t\t\t78 image\n\t\t\t\t79 button\n\t\t\t\t\t80 image\n\t\t\t17 button\n\t\t\t18 link Constellations Button\n\t\t\t\t19 image Constellations Button\n\t\t\t20 link Constellations Art Button\n\t\t\t\t21 image Constellations Art Button\n\t\t\t22 link Atmosphere Button\n\t\t\t\t23 image Atmosphere Button\n\t\t\t24 link Landscape Button\n\t\t\t\t25 image Landscape Button\n\t\t\t26 link Azimuthal Button\n\t\t\t\t27 image Azimuthal Button\n\t\t\t28 link Equatorial Grid Button\n\t\t\t\t29 image Equatorial Grid Button\n\t\t\t30 link Deep Sky Objects Button\n\t\t\t\t31 image Deep Sky Objects Button\n\t\t\t32 link Night Mode Button\n\t\t\t\t33 image Night Mode Button\n\t\t\t34 pop up button (expanded) 2026-09-30 05:00:01 1020, Secondary Actions: Collapse\n\t\t\t\t41 container\n\t\t\t\t\t42 text 2026-09-30\n\t\t\t\t\t43 button\n\t\t\t\t\t44 button\n\t\t\t\t\t49 text 05:00:01\n\t\t\t\t\t46 image\n\t\t\t\t\t47 slider 1020\n\t\t\t\t\t48 text Moonlight\n\nThe focused UI element is 44 button",
+  "dom": {
+    "canvas": [
+      {
+        "backing": [
+          390,
+          844
+        ],
+        "css": [
+          390.3999938964844,
+          844
+        ],
+        "id": "stel-canvas"
+      }
+    ],
+    "fov": [
+      {
+        "rect": [
+          0,
+          0
+        ],
+        "text": "FOV 21.0°"
+      }
+    ],
+    "layerControls": [
+      {
+        "name": "Constellations Button",
+        "opacity": "1",
+        "parentClass": ""
+      },
+      {
+        "name": "Constellations Art Button",
+        "opacity": "1",
+        "parentClass": ""
+      },
+      {
+        "name": "Atmosphere Button",
+        "opacity": "1",
+        "parentClass": ""
+      },
+      {
+        "name": "Landscape Button",
+        "opacity": "1",
+        "parentClass": ""
+      },
+      {
+        "name": "Azimuthal Button",
+        "opacity": "1",
+        "parentClass": ""
+      },
+      {
+        "name": "Equatorial Grid Button",
+        "opacity": "1",
+        "parentClass": ""
+      },
+      {
+        "name": "Deep Sky Objects Button",
+        "opacity": "1",
+        "parentClass": ""
+      },
+      {
+        "name": "Night Mode Button",
+        "opacity": "1",
+        "parentClass": ""
+      },
+      {
+        "name": "Fullscreen Button",
+        "opacity": "1",
+        "parentClass": ""
+      }
+    ]
+  },
+  "path": "E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v26-polaris-reference-matched45-2026-09-29.jpg",
+  "scope": "Public observer/Polaris; Mini45 vertical and Web21.02765 short-edge. Reference paused05:00:01, Mini05:00:00. Appearance comparison only; no cross-renderer pixel, photometry or phone acceptance."
+}

@@ -1,0 +1,18 @@
+✔ an observation edit recovers a server-lost context once and preserves the requested change (17.3214ms)
+✔ a non-expiry update failure is not replayed (1.7287ms)
+✔ a lost successful edit response confirms the actual time with one fresh read and no replay (1.7294ms)
+✔ a conflict can confirm the requested state but cannot overwrite a different server intent (2.0056ms)
+✔ fresh edit recovery rejects wrong identity, unsolicited night/event changes and stale readback (4.9361ms)
+✔ cancelled and definite rejected edits neither read back nor replay (2.6809ms)
+✔ a lost date reply preserves location/profile and confirms the requested night and event reset (2.2545ms)
+✔ a matching normal edit response completes without an unnecessary readback (3.544ms)
+✔ a mismatched 2xx response cannot publish old time, foreign identity, or contradictory binding (14.6629ms)
+✔ invalid direct and readback replies remain failed without replay or success invalidation (1.9166ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 815.2881

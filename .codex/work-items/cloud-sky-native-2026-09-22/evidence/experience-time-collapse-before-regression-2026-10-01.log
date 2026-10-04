@@ -1,0 +1,114 @@
+✖ time closes a paused cross-midnight playback preview and fences its late timer (32.9673ms)
+✖ time also dismisses active playback and a located preview (7.5303ms)
+✔ time preserves a newly committed Context when the time disclosure closes (4.8441ms)
+✔ time cannot dismiss the frozen calibration through a late dock callback (5.0719ms)
+✖ list closes a paused cross-midnight playback preview and fences its late timer (5.3915ms)
+✖ list also dismisses active playback and a located preview (4.441ms)
+✔ list preserves a newly committed Context when the time disclosure closes (8.2403ms)
+✔ list cannot dismiss the frozen calibration through a late dock callback (3.682ms)
+✔ opening the time disclosure retains its current preview (4.1421ms)
+✔ opening the list without closing time pauses playback at its current reading (4.478ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 6
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 808.4118
+
+✖ failing tests:
+
+test at src\features\sky\sky-time-disclosure.test.ts:1:3087
+✖ time closes a paused cross-midnight playback preview and fences its late timer (32.9673ms)
+  AssertionError [ERR_ASSERTION]: closing time disclosure must restore the committed instant, including previews with no active ruler gesture
+  + actual - expected
+  
+  + '2026-09-30T16:00:01.500Z'
+  - '2026-09-30T15:59:58.000Z'
+                 ^
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-time-disclosure.test.ts:72:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '2026-09-30T16:00:01.500Z',
+    expected: '2026-09-30T15:59:58.000Z',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src\features\sky\sky-time-disclosure.test.ts:1:3868
+✖ time also dismisses active playback and a located preview (7.5303ms)
+  AssertionError [ERR_ASSERTION]: playing
+  + actual - expected
+  
+  + '2026-09-30T16:00:01.500Z'
+  - '2026-09-30T15:59:58.000Z'
+                 ^
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-time-disclosure.test.ts:88:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '2026-09-30T16:00:01.500Z',
+    expected: '2026-09-30T15:59:58.000Z',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src\features\sky\sky-time-disclosure.test.ts:1:3087
+✖ list closes a paused cross-midnight playback preview and fences its late timer (5.3915ms)
+  AssertionError [ERR_ASSERTION]: closing time disclosure must restore the committed instant, including previews with no active ruler gesture
+  + actual - expected
+  
+  + '2026-09-30T16:00:01.500Z'
+  - '2026-09-30T15:59:58.000Z'
+                 ^
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-time-disclosure.test.ts:72:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '2026-09-30T16:00:01.500Z',
+    expected: '2026-09-30T15:59:58.000Z',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src\features\sky\sky-time-disclosure.test.ts:1:3868
+✖ list also dismisses active playback and a located preview (4.441ms)
+  AssertionError [ERR_ASSERTION]: playing
+  + actual - expected
+  
+  + '2026-09-30T16:00:01.500Z'
+  - '2026-09-30T15:59:58.000Z'
+                 ^
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-time-disclosure.test.ts:88:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '2026-09-30T16:00:01.500Z',
+    expected: '2026-09-30T15:59:58.000Z',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

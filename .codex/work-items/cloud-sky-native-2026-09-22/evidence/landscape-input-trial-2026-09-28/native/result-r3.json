@@ -1,0 +1,70 @@
+{
+  "scope": "Same clean-v5 DevTools public Canvas image decode, offscreen alpha and shared-owner WebGL feasibility; not a composed page, phone, adopted asset or published service",
+  "sourceHash": "6591d5da60b77df296b06de930edf3c598868006cca476ff6a122617f0118226",
+  "conversion": "Chromium Canvas2D image downsample; preserves alpha counts of the prior shader trial; no sky or terrain synthesis",
+  "assetFacts": [
+    {
+      "width": 1024,
+      "height": 512,
+      "alphaHash": 3994545038,
+      "transparent": 258650,
+      "opaque": 264420,
+      "partial": 1218,
+      "filename": "panorama-1024.png",
+      "bytes": 854784,
+      "sha256": "1e4222bb02d6b4c95c643047de6916581b5e2a665e00d9cc60edd94c3cb072d3",
+      "rgbaBytes": 2097152
+    },
+    {
+      "width": 2048,
+      "height": 1024,
+      "alphaHash": 1965772886,
+      "transparent": 1034630,
+      "opaque": 1058100,
+      "partial": 4422,
+      "filename": "panorama-2048.png",
+      "bytes": 3316173,
+      "sha256": "fd6afeebba748eb84a15c0aea2a8ce0e363571685c6b181c8511f2bb5459bb32",
+      "rgbaBytes": 8388608
+    }
+  ],
+  "requests": [
+    1024,
+    2048
+  ],
+  "observations": [
+    {
+      "side": 1024,
+      "phase": "current-canvas-node",
+      "status": 200,
+      "error": "canvas_node_deadline",
+      "nativeFileBytes": 854784,
+      "cleanupError": "unlinkSync:fail permission denied, open http://tmp/aoWc55JqYcsI0807ad4c0c1af952c1e2b52d45878f3b.png",
+      "temporaryFileRemoved": false,
+      "alphaMatchesConvertedInput": false
+    },
+    {
+      "side": 2048,
+      "phase": "current-canvas-node",
+      "status": 200,
+      "error": "canvas_node_deadline",
+      "nativeFileBytes": 3316173,
+      "cleanupError": "unlinkSync:fail permission denied, open http://tmp/9KLvUphVLrrC08751b4aa1916bad40f41aedb4185ad2.png",
+      "temporaryFileRemoved": false,
+      "alphaMatchesConvertedInput": false
+    }
+  ],
+  "before": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，可见星座 天琴座，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "Vega定位标记，查看资料",
+    "tracking": null
+  },
+  "after": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，可见星座 天琴座，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "Vega定位标记，查看资料",
+    "tracking": null
+  },
+  "candidateUnchanged": true,
+  "licensedSource": "Lubomir Hambalek; package CC BY 4.0, registry/icon BY-SA label retained; candidate has no external publication",
+  "finished": true
+}

@@ -1,0 +1,43 @@
+✔ sky programmatic scroll cannot preview or commit (240.5709ms)
+✔ sky cancellation and lifecycle transitions ignore late scroll completion (329.1674ms)
+✔ sky saving disables touch-driven previews and commits (47.1361ms)
+✔ calibration locks time interactions without claiming a save (98.2999ms)
+✔ sky released native scroll commits latest momentum offset without scrollend (52.9244ms)
+✔ sky hide cancels the pending release timer (50.6747ms)
+✔ sky short drag commands the original native tick again (43.1164ms)
+✔ dome never draws a below-horizon target or its label even when its projection fits the canvas (13.2362ms)
+✔ failed GPU submission cannot publish a picking snapshot or successful completion (1.1811ms)
+✔ actual page invalidation clears hit testing synchronously before React hides the failed surface (66.1891ms)
+✔ survey imagery uses a celestial plane beyond the camera hemisphere and stays hidden in red mode (36.6509ms)
+✔ stereographic anchors may cross the viewport but reject the antipode and invalid geometry (0.3041ms)
+✔ production frame requests preserve exact data/time and clear expired or untrusted input (48.2163ms)
+✔ explicit manual basis draws the same celestial target without fabricating device pose (2.8357ms)
+✔ production sky canvas switches exact target frames and restores committed geometry (11.2714ms)
+✔ production sky canvas never borrows top-level targets for missing or duplicate frames (7.4199ms)
+✔ published B-V gives a continuous star tint while missing photometry stays neutral (20.9978ms)
+✔ production sky canvas uses the same instant and projection for catalog stars and targets (6.2293ms)
+✔ expanding catalog depth cannot resize or brighten an unchanged star (20.5487ms)
+✔ the exact Sun frame fades catalog stars and their touch targets through twilight (10.3908ms)
+✔ BSC and SAO use the same reference low-altitude attenuation for painting and picking (4.2833ms)
+✔ the real renderer reveals and fades a star with zoom and cannot pick the hidden star (6.1393ms)
+✔ 1x sky time is one bounded intent across play, pause, hide, cancel and a replaced Context (3.1293ms)
+✔ coverage ends without extrapolation and withdrawn fine data returns to the committed time (0.3028ms)
+✔ interactive paint accepts only its own run and never a future or preceding frame (0.3487ms)
+✔ time closes a paused cross-midnight playback preview and fences its late timer (78.4905ms)
+✔ time also dismisses active playback and a located preview (43.9644ms)
+✔ time preserves a newly committed Context when the time disclosure closes (16.1203ms)
+✔ time cannot dismiss the frozen calibration through a late dock callback (19.343ms)
+✔ list closes a paused cross-midnight playback preview and fences its late timer (25.2641ms)
+✔ list also dismisses active playback and a located preview (37.8337ms)
+✔ list preserves a newly committed Context when the time disclosure closes (16.6682ms)
+✔ list cannot dismiss the frozen calibration through a late dock callback (18.236ms)
+✔ opening the time disclosure retains its current preview (19.0358ms)
+✔ opening the list without closing time pauses playback at its current reading (15.9429ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2229.47

@@ -1,0 +1,57 @@
+{
+  "phase": "before",
+  "scope": "Actual ObservationContextService and existing MemoryCache/RedisCache; two concurrent intents with the same revision. Real local Redis 7.4, two independent clients, task-only namespace. Synthetic public trial coordinate; no GUI context, private IDs, keys, headers or credentials retained. Not native/device/GPU acceptance.",
+  "results": [
+    {
+      "kind": "memory",
+      "independentServiceInstances": 2,
+      "independentRedisClients": 0,
+      "initialRevision": 1,
+      "results": [
+        {
+          "status": "fulfilled",
+          "revision": 2,
+          "selectedAtUtc": "2026-09-28T16:30:00.000Z"
+        },
+        {
+          "status": "fulfilled",
+          "revision": 2,
+          "selectedAtUtc": "2026-09-28T17:00:00.000Z"
+        }
+      ],
+      "durableReadback": {
+        "revision": 2,
+        "selectedAtUtc": "2026-09-28T17:00:00.000Z",
+        "sameExpiry": true,
+        "sameFingerprint": true
+      },
+      "ok": false
+    },
+    {
+      "kind": "redis",
+      "independentServiceInstances": 2,
+      "independentRedisClients": 2,
+      "initialRevision": 1,
+      "results": [
+        {
+          "status": "fulfilled",
+          "revision": 2,
+          "selectedAtUtc": "2026-09-28T16:30:00.000Z"
+        },
+        {
+          "status": "fulfilled",
+          "revision": 2,
+          "selectedAtUtc": "2026-09-28T17:00:00.000Z"
+        }
+      ],
+      "durableReadback": {
+        "revision": 2,
+        "selectedAtUtc": "2026-09-28T17:00:00.000Z",
+        "sameExpiry": true,
+        "sameFingerprint": true
+      },
+      "ok": false
+    }
+  ],
+  "ok": false
+}

@@ -1,0 +1,26 @@
+diff --git a/apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx b/apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx
+index 0bb53662..35a6d58c 100644
+--- a/apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx
++++ b/apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx
+@@ -55,7 +55,7 @@ import Taro, {
+   useResize,
+   useRouter,
+ } from "@tarojs/taro";
+-import { Button, Canvas, ScrollView, Text, View } from "@tarojs/components";
++import { Button, Canvas, CoverView, ScrollView, Text, View } from "@tarojs/components";
+ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+ import { createSkyContextSession } from "./sky-context-session";
+ import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
+@@ -2974,7 +2974,11 @@ export function SpotSkyPage() {
+             onError={() => canvasLifecycle.fail(new Error("sky_canvas_native_error"))}
+             style={{ width: "100%", height: "100%", visibility: canvasError || canvasSize.width <= 0 || canvasSize.height <= 0 ? "hidden" : "visible" }}
+             aria-label="方位天空投影；目录星与目标标记只来自当前正式点、真实时刻和服务端天文计算结果"
+-          /> : null}
++          >
++            <CoverView id="sky-task-cover-inside" style={{ position: "absolute", left: "12px", top: "120px", width: "152px", height: "40px", color: "#000000", backgroundColor: "#00ff00", zIndex: 99 }}>内层覆盖试验</CoverView>
++          </Canvas> : null}
++          <CoverView id="sky-task-cover-outside" style={{ position: "absolute", left: "12px", top: "172px", width: "152px", height: "40px", color: "#000000", backgroundColor: "#00ffff", zIndex: 99 }}>外层覆盖试验</CoverView>
++          <View id="sky-task-view-ordinary" style={{ position: "absolute", left: "12px", top: "224px", width: "152px", height: "40px", color: "#000000", backgroundColor: "#ffff00", zIndex: 99 }}>普通视图试验</View>
+           {pageVisible && presentedSceneCurrent && selectionState.object && paintedData && paintedRow &&
+             selectionState.spotId === paintedData.context.spotId && currentViewBasis && !alignmentEditing ?
+             <SkySelectedObject object={selectionState.object} context={paintedData.context} at={paintedRow.at}

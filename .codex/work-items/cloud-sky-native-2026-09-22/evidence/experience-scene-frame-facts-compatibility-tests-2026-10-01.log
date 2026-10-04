@@ -1,0 +1,31 @@
+✔ dome never draws a below-horizon target or its label even when its projection fits the canvas (15.8803ms)
+✔ failed GPU submission cannot publish a picking snapshot or successful completion (0.4773ms)
+✔ actual page invalidation clears hit testing synchronously before React hides the failed surface (66.6006ms)
+✔ survey imagery uses a celestial plane beyond the camera hemisphere and stays hidden in red mode (46.3483ms)
+✔ stereographic anchors may cross the viewport but reject the antipode and invalid geometry (0.3695ms)
+✔ production frame requests preserve exact data/time and clear expired or untrusted input (41.5114ms)
+✔ explicit manual basis draws the same celestial target without fabricating device pose (1.9726ms)
+✔ production sky canvas switches exact target frames and restores committed geometry (9.0227ms)
+✔ production sky canvas never borrows top-level targets for missing or duplicate frames (4.7731ms)
+✔ published B-V gives a continuous star tint while missing photometry stays neutral (18.2815ms)
+✔ production sky canvas uses the same instant and projection for catalog stars and targets (5.6757ms)
+✔ expanding catalog depth cannot resize or brighten an unchanged star (17.7053ms)
+✔ the exact Sun frame fades catalog stars and their touch targets through twilight (9.5595ms)
+✔ BSC and SAO use the same reference low-altitude attenuation for painting and picking (3.3323ms)
+✔ the real renderer reveals and fades a star with zoom and cannot pick the hidden star (6.6524ms)
+✔ a current returned position waits for its matching native sky frame before showing the marker (13.0618ms)
+✔ sky touch cannot pick an old native frame during report replacement (22.6315ms)
+✔ exact frame facts distinguish a usable empty catalog frame from missing geometry (5.7611ms)
+✔ playing scene publication keeps the completed instant, catalog and count while the next native frame is queued (70.8162ms)
+✔ pausing or cancelling to a different instant cannot publish the retained playing frame as current (33.3976ms)
+✔ fixed completed scenes retain independent target meaning and explicit bright-star availability (31.0195ms)
+✔ late sky diagnostics publish and cleanup cannot affect a newer owner (2.9046ms)
+✔ disabled acceptance diagnostics never acquire, publish, or clear state (0.2001ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2186.336

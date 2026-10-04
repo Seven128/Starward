@@ -24,7 +24,7 @@ This on-demand subdomain node normatively continues shared manipulation, accessi
 
 来源披露由共享 `Provenance` 承载出处、许可、精度及限制；当当前许可要求提供机器可读数据时，可额外提供“下载数据”操作，复制当前发布的固定哈希下载链接，复用复制中、成功与失败反馈。当前下载消费者为云观星星座几何来源及天体独立“来源与许可”页的 AllWISE 影像来源；下载必须对应当前发布的成员、许可及版本，普通来源卡无需显示此可选操作。影像来源与 OpenNGC 目录分别声明，不向默认天体事实区铺开完整条款。天体弹窗只保留简短来源署名和入口，完整声明由 `sky/sources/index` 展示；它与弹窗通过 `useCelestialInformation` 共享按天体身份隔离的请求／缓存，不复制一份可漂移的来源记录。来源正文包含连续网址时须完整换行，不能横向裁切。Map 视口地形在图层面板按需展开当前 `terrain.source` 的完整声明，放在可滚动内容区，固定页脚继续承载操作；点位地形保持其自身来源，不能用选点后的来源入口代替独立视口地形的披露。复制链接不表示数据已下载或整页目标运行时已验收。
 
-天体资料/来源复用 `celestial-information-presentation.ts` 解释已知W3/SDSS来源缺失：保留真实目录和已取得的独立来源，明确部分可用并提供既有资料重试；未准入的光学对象没有来源不是异常。断网回退的过期状态不清除已知来源缺失，恢复后有效回复才撤提示，来源/下载不能借其它出版hash。两消费者共享身份/出版查询及条件缓存，没有自动轮询或另建资料缓存；这项开发链不认证目标微信合成或实际Back恢复。
+天体资料/来源复用 `celestial-information-presentation.ts` 解释已知W3/SDSS来源缺失：保留真实目录和已取得的独立来源，明确部分可用并提供既有资料重试；未准入的光学对象没有来源不是异常。断网回退的过期状态不清除已知来源缺失，恢复后有效回复才撤提示，来源/下载不能借其它出版hash。两消费者共享身份/出版查询及条件缓存，没有自动轮询或另建资料缓存；原资料部分来源开发链未执行实际Back。当前原Sky/Sources完整JSX、同Query Provider与各自source consumer已有public来源→Back的受控page-stack开发证据，恢复同Sky instance/selection并移除Source root；它仍不认证目标微信合成、真实系统导航栈/手机或完整组合。见[Sources/Back范围](../../../../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-real-taro-source-back-and-alpha-cache-2026-10-04.md)。
 
 供应商要求与当前数据共同显示的归因由共享 `SourceAttribution` 承载，和可展开的精度／限制说明分开。`SourceSummary.attribution` 保存品牌、官方链接及声明原文；预报、预警、AQ、近期天气的适配器保留来源内容，允许缓存的 BFF 条件响应须随归因变化更新；含 GeoAPI 地区资料的近期天气响应采用 no-store，隐藏或获取失败时释放地区数据，不走离线回退（见架构中的近期天气 owner）。消费者为 Map 云量图层／点位天气、少云搜索结果、计划天气参考、WeatherAlerts、RecentWeather 和 Provenance（含 AQ）：只显示对应数据的必要声明，不把所有供应商字段加进页面；同源完全相同声明可去重，不能删改原文。官方链接当前沿用明确标为“复制”的平台操作，不将复制行为声称为满足供应商要求的可点击超链接；适用条件见[商业化合规速查](../../../../external-capabilities.md#商业化合规速查)。
 

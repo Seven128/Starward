@@ -1,0 +1,24 @@
+✔ HiPS draw failures return to the owning layer even when optical uses order zero (15.6469ms)
+✔ HiPS sample uses exact catalog-independent observation frame and survives image failure (14.2776ms)
+✔ order-0 infrared background uses exact frame, precedes grid and disappears in red or stale time (11.1891ms)
+✔ an order-zero optical image retains optical opacity above the historical infrared layer (2.7171ms)
+✔ JPEG and PNG image pixels follow the CDS NESTED cell packaging on every face (9.7996ms)
+✔ real HiPS tile identities and source-image axes locate Sombrero without TAN assumptions (0.8882ms)
+✔ HEALPix triangles use the shared report rotation and stereographic sky camera (1.7445ms)
+✔ bounded inclusive HiPS selection retains the actual camera center across zoom (5.6222ms)
+✔ too-wide sky and invalid observer rotation never cause an unbounded tile query (1.297ms)
+✔ the real order-8 M31 tile can be requested only at an intersecting, bounded view (2.4912ms)
+✔ a first-source fine shard missing its image discovers the published coarse image (1.1633ms)
+✔ a listed shard with a missing pixel falls through to the next published source (1.7249ms)
+✔ a full image budget favors the coarse tile that closes a real viewport gap (0.4374ms)
+✔ covering one hole preserves available first-source detail (0.3167ms)
+✔ published base faces remain selectable in a full-dome view and missing faces fall through (0.625ms)
+✔ commercial sky does not request or retry an unpublished optical trial (64.0635ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 882.6338

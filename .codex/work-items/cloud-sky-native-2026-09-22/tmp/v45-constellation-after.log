@@ -1,0 +1,23 @@
+✔ a long offscreen image does not enter the texture working set through its loose circular bound (4.2334ms)
+✔ an edge crossing remains visible even when image and viewport corners are outside each other (0.9715ms)
+✔ actual visible rays are never rejected under rolled and offset viewports (7.2306ms)
+✔ same stereographic camera places one real name, while zoom/intent and horizon gate it (4.6982ms)
+✔ interactive object labels keep priority over constellation names (0.6276ms)
+✔ a centred constellation name follows the local fade and returns without changing identity (1.3426ms)
+✔ constellation names wait for the current native scene and figure edition (13.4146ms)
+✔ a constellation name covered by the actual virtual foreground returns after an unobstructed repaint (3.9102ms)
+✔ portrait identification field renders the figure and real lines rather than an empty enabled layer (5.8787ms)
+✔ offscreen constellation arcs avoid fine clipping while a crossing with offscreen endpoints remains (150.4151ms)
+✔ a true curved constellation arc survives offscreen endpoints; clipping uses actual viewport and horizon (3.4443ms)
+✔ zoom and intent gate both artwork and lines, decoded failure is reported once per attempt without throwing (2.4255ms)
+✔ zoom visibility preserves an identification field, fades before the dome and respects off intent (3.211ms)
+✔ constellation context fades out in a close stellar crop and returns on widening (1.6418ms)
+✔ entire image bounds remain eligible with offscreen anchors; opposite sky and below horizon are culled (3.451ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1903.9257

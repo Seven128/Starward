@@ -6,10 +6,14 @@ import { isTemporaryCacheKey, responseCacheKey } from "./cache-policy";
 import { QueryClient } from "@tanstack/react-query";
 import { createResponseCache, isResponseEnvelope, MAX_STALE_AGE_MS } from "./response-cache";
 import { LatestRequestRegistry, MiniappRequestCancelled } from "./request-lifecycle";
+import type { clearSkyPublicImageCache } from "./sky-public-image-runtime";
 // Execute the production transport/cache functions; only native I/O and time
-// delivery are synthetic. No phone, persistent user cache or credentials.
+// delivery are synthetic. Public-image file cleanup is explicitly injected;
+// these API tests do not certify native file-cache persistence or leases.
+// No phone, persistent user cache or credentials.
 export const TEST_API_BASE = "https://synthetic.invalid";
-export function transportHarness(abortThrows = false, onDispatch = () => {}, promiseTask = false, apiBase = TEST_API_BASE) {
+export function transportHarness(abortThrows = false, onDispatch = () => {}, promiseTask = false, apiBase = TEST_API_BASE, now = Date.now,
+  clearPublicImages: typeof clearSkyPublicImageCache = async () => ({ status: "complete", files: 0 })) {
   const source = ts.createSourceFile("api-client.ts",
     readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"),
     ts.ScriptTarget.Latest, true);
@@ -38,12 +42,16 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
   let timerId = 0;
   let aborts = 0;
   let writes = 0;
+  let publicImageClears = 0;
   const storage = new Map<string, unknown>();
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
   const actual = vm.runInNewContext(ts.transpileModule(declarations.join("\n") +
     "\n({request, requests, responseCache, invalidateApiCache, clearTemporaryApiCache, MiniappApiError});", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-    LatestRequestRegistry, MiniappRequestCancelled, responseCacheKey, createResponseCache, isResponseEnvelope, MAX_STALE_AGE_MS, Date, Error,
+    LatestRequestRegistry, MiniappRequestCancelled, responseCacheKey,
+    createResponseCache: (storage: Parameters<typeof createResponseCache>[0]) => createResponseCache(storage, now),
+    isResponseEnvelope, MAX_STALE_AGE_MS, Date: class extends Date { static now() { return now(); } }, Error,
     isTemporaryCacheKey, miniappQueryClient: queryClient,
+    clearSkyPublicImageCache: () => { publicImageClears++; return clearPublicImages(); },
     __MINIAPP_API_BASE__: apiBase, __MINIAPP_OPERATOR_PREVIEW_TOKEN__: "",
     __MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__: false,
     recordAcceptanceDiagnostic: (...parts: string[]) => diagnostics.push(parts),
@@ -95,6 +103,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
   return { ...actual, calls, timers, diagnostics, response, taskRejections, storage, queryClient,
     flush: () => actual.responseCache.flush(),
     counts: () => ({ aborts, writes }),
+    publicImageClearCount: () => publicImageClears,
     timeout: () => { const callback = timers.values().next().value; assert.ok(callback); callback(); },
     seed: async (envelope = response) => {
       const pending = actual.request("scene", "/scene");

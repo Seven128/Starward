@@ -131,7 +131,7 @@ test("fulfilled stale constellation cache exposes the actual page retry without 
 });
 
 test("published native image hooks and every page consumer preserve the shared retry result",()=>{
-  for(const file of ["use-sky-sdss-optical.ts","use-sky-wide-field-w3.ts","use-sky-optical-hips.ts",
+  for(const file of ["use-sky-target-optical.ts","use-sky-wide-field-w3.ts","use-sky-optical-hips.ts",
     "use-sky-galactic-image.ts","use-sky-moon-texture.ts","use-sky-mars-texture.ts","use-sky-mercury-texture.ts","use-sky-opal-bands.ts"]){
     const hookSource=ts.createSourceFile(file,readFileSync(new URL(file,import.meta.url),"utf8"),ts.ScriptTarget.Latest,true);
     let method="";function visit(node:ts.Node){if(ts.isMethodDeclaration(node)&&node.name.getText(hookSource)==="retry")method=node.getText(hookSource);ts.forEachChild(node,visit);}visit(hookSource);assert.ok(method,file);

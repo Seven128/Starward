@@ -1,3 +1,5 @@
 Pillow==12.3.0
 astropy==8.0.1
 numpy==2.5.3
+# Offline prepared-observation AVM geometry only; MIT + included BSD-3 notices.
+PyAVM==0.9.9

@@ -1,0 +1,30 @@
+{
+  "script": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-sdss-m51-mosaic-independent-2026-10-02.py",
+    "bytes": 20320,
+    "sha256": "81bfbf4feb1a9b1c017a74a044bceef023ff130ddcdb23455d212c55b4bfc19e"
+  },
+  "candidate": {
+    "path": "output/sdss-m51-gri-mosaic-candidate-1002-r2/candidate.json",
+    "bytes": 1028289,
+    "sha256": "73e65a693216b40079b512acdf17b32742be5db7091fb9bcf1db9de152650b52"
+  },
+  "sourceReview": {
+    "path": "output/sdss-m51-mosaic-source-independent-1002-r3/review.json",
+    "bytes": 34832,
+    "sha256": "93f5a517f22d32160060cef685f8283ab77ad23ccc0770331214f80f1bb4159f"
+  },
+  "actualWeightFormulaCheck": {
+    "perFieldGridPoints": 16384,
+    "fieldCount": 6,
+    "maximumNormalizedWeightFormulaDifferences": {
+      "301/3699/6/99": 0.0,
+      "301/3699/6/100": 0.0,
+      "301/3699/6/101": 0.0,
+      "301/3716/6/116": 0.0,
+      "301/3716/6/117": 0.0,
+      "301/3716/6/118": 0.0
+    },
+    "meaning": "Actual bound source WCS and independently verified finite memberships determine geometric preference only, not confidence or background matching"
+  }
+}

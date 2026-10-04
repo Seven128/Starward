@@ -927,6 +927,13 @@
 
 .sky-image-status button::after { border: 0; }
 
+.sky-optical-image-credit__attribution,
+.sky-optical-image-credit__meaning {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 /* Light labels keep projected anchors; full windows stay in list/detail. */
 .sky-orientation-target-label {
   position: absolute;

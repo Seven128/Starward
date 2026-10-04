@@ -1,0 +1,84 @@
+{
+  "scope": "Development/contract/behavior/local HTTP/native DevTools checks only. No complete device/quality acceptance, backend concurrency/idempotency certification or independent review.",
+  "realHttpBefore": "experience-context-response-loss-before-2026-09-28.json",
+  "realHttpAfter": "experience-context-response-loss-after-2026-09-28.json",
+  "noticeRegressionBefore": {
+    "exit_code": 1,
+    "passed": 7,
+    "failed": 1,
+    "failedRequirement": "Accepted Context still renders obsolete Map/Sky time/date error beside new state",
+    "scope": "actual whole Zustand store; native storage port only"
+  },
+  "affectedChecksBeforeFingerprintGuard": {
+    "chunk_id": "43afc5",
+    "wall_time_seconds": 3.1458411,
+    "exit_code": 0,
+    "original_token_count": 965,
+    "output": "✔ time: late success cannot replace the newly selected place (4.5853ms)\n✔ time: hidden page cannot publish success or late failure (4.7744ms)\n✔ time: current update can adopt a recovered Context ID (1.9314ms)\n✔ date: late success cannot replace the newly selected place (1.7845ms)\n✔ date: hidden page cannot publish success or late failure (5.8029ms)\n✔ date: current update can adopt a recovered Context ID (2.7209ms)\n✔ time and date share a synchronous lock before React rerenders (1.7981ms)\n✔ the actual lookup effect cannot overwrite a newer place or run while hidden (14.166ms)\n✔ entry lookup is accepted once and cannot downgrade an existing revision (1.6285ms)\n✔ hide cancels old requests but allows a fresh request after return (1.9737ms)\n✔ actual page lifecycle hooks cancel publishing and reset the visible saving state (6.9316ms)\n✔ the actual active Context and weather query follow a successful recovered ID (22.6393ms)\n✔ returning after a different place was selected cannot become a disabled-query loading screen (7.4009ms)\n✔ freeze rejects date and time commits synchronously before React catches up (1.4005ms)\n✔ an expired stored Context recovers the Sky read once and rejects a late old-place result (85.842ms)\n✔ late time success and failure cannot affect a replaced spot, reset, or context revision (656.1535ms)\n✔ the stale-response regression detects removal of the production ownership guard (83.3086ms)\n✔ same-turn duplicate submit is ignored while a current response still commits (31.5869ms)\n✔ current time failure remains actionable (67.0284ms)\n✔ formal-spot context recovery preserves product location, night, time, event and profile (2.9706ms)\n✔ map context recovery preserves the exact map point and route-origin binding (1.3949ms)\n✔ an observation edit recovers a server-lost context once and preserves the requested change (8.5685ms)\n✔ a non-expiry update failure is not replayed (2.8093ms)\n✔ a lost successful edit response confirms the actual time with one fresh read and no replay (52.6759ms)\n✔ a conflict can confirm the requested state but cannot overwrite a different server intent (6.7028ms)\n✔ fresh edit recovery rejects wrong identity, unsolicited night/event changes and stale readback (10.8386ms)\n✔ cancelled and definite rejected edits neither read back nor replay (4.4969ms)\n✔ a lost date reply preserves location/profile and confirms the requested night and event reset (3.7591ms)\n✔ legacy provider selections disappear on restart while the exact location and time remain recoverable (292.2299ms)\n✔ accepted Context resolves prior Map and Sky time/date errors atomically and retains unrelated recovery (132.2848ms)\n✔ temporary cache reset is synchronous but reports durable write success only after native completion (118.0283ms)\n✔ older account readback cannot roll back saved preferences or a newer local edit (38.2787ms)\n✔ default-region reset is atomic, retains user content and cannot be undone by focus restoration (67.2009ms)\n✔ startup recovery rejects a partial observation context and a non-array plan cache (27.9711ms)\n✔ startup recovery preserves a complete unexpired observation context (30.0347ms)\n✔ startup recovery never restores a session-precise observation context (25.4414ms)\n✔ notification arbitration is error before warning before info before success (9.7217ms)\n✔ repeated notifications deduplicate while preserving an occurrence count (1.761ms)\n✔ actual Settings callbacks use control state feedback and preserve unrelated errors (183.083ms)\n✔ dedupe keys are scoped by owner and placement (0.4951ms)\n✔ same-millisecond bursts retain unique dismissible identities at the queue bound (1.5998ms)\nℹ tests 41\nℹ suites 0\nℹ pass 41\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 2512.2335\n"
+  },
+  "fingerprintGuardBefore": {
+    "chunk_id": "29ce28",
+    "wall_time_seconds": 2.0750934,
+    "exit_code": 1,
+    "original_token_count": 598,
+    "output": "✔ an observation edit recovers a server-lost context once and preserves the requested change (5.1307ms)\n✔ a non-expiry update failure is not replayed (1.6366ms)\n✔ a lost successful edit response confirms the actual time with one fresh read and no replay (24.4558ms)\n✔ a conflict can confirm the requested state but cannot overwrite a different server intent (3.8143ms)\n✖ fresh edit recovery rejects wrong identity, unsolicited night/event changes and stale readback (6.0656ms)\n✔ cancelled and definite rejected edits neither read back nor replay (3.0645ms)\n✔ a lost date reply preserves location/profile and confirms the requested night and event reset (3.2647ms)\nℹ tests 7\nℹ suites 0\nℹ pass 6\nℹ fail 1\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1500.6069\n\n✖ failing tests:\n\ntest at apps\\wechat-miniapp\\src\\services\\observation-context-update-recovery.test.ts:1:5992\n✖ fresh edit recovery rejects wrong identity, unsolicited night/event changes and stale readback (6.0656ms)\n  AssertionError [ERR_ASSERTION]: The validation function is expected to return \"true\". Received false\n  \n  Caught error:\n  \n  AssertionError [ERR_ASSERTION]: unconfirmed state cannot invalidate as success\n      at async TestContext.<anonymous> (E:\\dev\\worktrees\\Starward\\remote-main-20260908\\apps\\wechat-miniapp\\src\\services\\observation-context-update-recovery.test.ts:180:5)\n      at async Test.run (node:internal/test_runner/test:1313:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: AssertionError [ERR_ASSERTION]: unconfirmed state cannot invalidate as success\n        at invalidateApiCache (E:\\dev\\worktrees\\Starward\\remote-main-20260908\\apps\\wechat-miniapp\\src\\services\\observation-context-update-recovery.test.ts:173:88)\n        at updateObservationContext (evalmachine.<anonymous>:47:5)\n        at async waitForActual (node:assert:646:5)\n        at async strict.rejects (node:assert:769:25)\n        at async TestContext.<anonymous> (E:\\dev\\worktrees\\Starward\\remote-main-20260908\\apps\\wechat-miniapp\\src\\services\\observation-context-update-recovery.test.ts:180:5)\n        at async Test.run (node:internal/test_runner/test:1313:7)\n        at async Test.processPendingSubtests (node:internal/test_runner/test:897:7),\n    operator: 'rejects',\n    diff: 'simple'\n  }\n"
+  },
+  "fingerprintGuardAfter": {
+    "exit_code": 0,
+    "passed": 7,
+    "failed": 0,
+    "scope": "production Context edit reconciliation, missing/empty fingerprint rejected"
+  },
+  "finalMiniTypecheck": {
+    "chunk_id": "5b25e4",
+    "wall_time_seconds": 0.000008,
+    "exit_code": 0,
+    "original_token_count": 0,
+    "output": ""
+  },
+  "finalBuild": {
+    "chunk_id": "64cf9d",
+    "wall_time_seconds": 0.0000133,
+    "exit_code": 0,
+    "original_token_count": 118,
+    "output": "WARNING in webpack performance recommendations: \r\nYou can limit the size of your bundles by using import() or require.ensure to lazy load some parts of your application.\r\nFor more info visit https://webpack.js.org/guides/code-splitting/\r\n\r\nwebpack 5.91.0 compiled with 3 warnings in 33086 ms\r\n{\"exitCode\":0,\"log\":\"E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-combined-clean-v11-build-2026-09-28.log\"}\r\n"
+  },
+  "contextValidation": {
+    "chunk_id": "da5b06",
+    "wall_time_seconds": 3.0600248,
+    "exit_code": 0,
+    "original_token_count": 75,
+    "output": "\n> starward@1.0.0 context:validate\n> node tools/run-node.cjs --bin project-tiny-context-harness ty-context validate-context\n\nChecked manifest paths and explicit ty-context-controlling-source declarations. Ordinary Markdown links, examples, external links and factual correctness are not validated.\n"
+  },
+  "diffCheck": {
+    "chunk_id": "117436",
+    "wall_time_seconds": 0.8854332,
+    "exit_code": 0,
+    "original_token_count": 11,
+    "output": "{\"exitCode\":0,\"scope\":\"git diff --check\"}\r\n"
+  },
+  "localMarkdownLinks": {
+    "chunk_id": "a107d9",
+    "wall_time_seconds": 0.6395162,
+    "exit_code": 0,
+    "original_token_count": 171,
+    "output": "{\"scope\":\"Ordinary local Markdown destination existence in touched task and Context owners; anchors, remote pages and factual correctness are not certified.\",\"files\":[\".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md\",\".codex/work-items/cloud-sky-native-2026-09-22/STATE.md\",\".codex/work-items/cloud-sky-native-2026-09-22/INDEX.md\",\".codex/work-items/cloud-sky-native-2026-09-22/PROGRESS.md\",\".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-environment-context-recovery-2026-09-28.md\",\"project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md\",\"project_context/architecture/runtime-and-domain.md\"],\"localLinks\":329,\"missing\":[]}\n"
+  },
+  "currentRuntime": {
+    "candidate": "clean-v11",
+    "sdkPort": 9444,
+    "pid": 34128,
+    "retiredTaskPorts": [
+      9441,
+      9442,
+      9443
+    ],
+    "ownedBffPort": 8789,
+    "ownedBffPid": 14388,
+    "ownedTransportPort": 8791,
+    "ownedTransportPid": 12252,
+    "transportMode": "pass",
+    "goalStatus": "active",
+    "budget": null
+  }
+}

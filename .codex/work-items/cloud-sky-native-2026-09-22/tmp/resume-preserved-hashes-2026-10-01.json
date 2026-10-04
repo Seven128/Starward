@@ -1,0 +1,26 @@
+[
+  {
+    "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+    "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80"
+  },
+  {
+    "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+    "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b"
+  },
+  {
+    "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+    "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc"
+  },
+  {
+    "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+    "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e"
+  },
+  {
+    "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+    "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8"
+  },
+  {
+    "path": "workers/miniapp-api/src/outbox-worker.ts",
+    "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd"
+  }
+]

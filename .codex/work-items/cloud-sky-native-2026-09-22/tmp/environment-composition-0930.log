@@ -1,0 +1,21 @@
+{"phase":"current-inputs-ready","constellationHash":"2a53d222e56b513e6b0b9bba753d7864e1535bf98252112ce8e4bebde16dc01e","galacticHash":"f6aeb37d4724ed296ffb4c22f242bbdc83541b54aa1cb67b83e82b9e2d91ac5e","landscapeHash":"e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5"}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: unaffected actual composite: west-noon
++ actual - expected
+
++ '49920024e7ba44a281495375637ea563f1cc6ba29c827408398369eecc9f75c8'
+- 'e67f97c1a00ae8733650a9e497527b919165aa0b7a326a5d27b6a14139dc9a62'
+
+    at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-environment-composition-2026-09-30.mts:208:12) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: '49920024e7ba44a281495375637ea563f1cc6ba29c827408398369eecc9f75c8',
+  expected: 'e67f97c1a00ae8733650a9e497527b919165aa0b7a326a5d27b6a14139dc9a62',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.16.0

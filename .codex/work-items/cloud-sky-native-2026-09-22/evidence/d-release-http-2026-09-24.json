@@ -1,0 +1,105 @@
+{
+  "base": "http://127.0.0.1:18790",
+  "results": [
+    {
+      "name": "moon",
+      "manifestBytes": 1606,
+      "imageBytes": 372399,
+      "imageHash": "e071f796a1ec1f7c9f4d87660aabb1bb40adbfacc0ecb253919bee6c711efefb",
+      "wrongHashStatus": 404,
+      "recoveryStatus": 200,
+      "imageCache": "public, max-age=31536000, immutable"
+    },
+    {
+      "name": "mars",
+      "manifestBytes": 1716,
+      "imageBytes": 94411,
+      "imageHash": "cd324068ee22f66664d15ff5934ff6cfc195bb0e2ee8becba6092f078442d184",
+      "wrongHashStatus": 404,
+      "recoveryStatus": 200,
+      "imageCache": "public, max-age=31536000, immutable"
+    },
+    {
+      "name": "mercury",
+      "manifestBytes": 1731,
+      "imageBytes": 89984,
+      "imageHash": "b782316d7458df90198d8e9664abb3902841c0709085bd20f03e46706a252d81",
+      "wrongHashStatus": 404,
+      "recoveryStatus": 200,
+      "imageCache": "public, max-age=31536000, immutable"
+    },
+    {
+      "name": "jupiter",
+      "manifestBytes": 1883,
+      "imageBytes": 1026,
+      "imageHash": "8c3e6e19f2f620581a859e5496ab0361544c3a20b1c903b0c4236e85d4d75a47",
+      "wrongHashStatus": 404,
+      "recoveryStatus": 200,
+      "imageCache": "public, max-age=31536000, immutable"
+    },
+    {
+      "name": "saturn",
+      "manifestBytes": 1938,
+      "imageBytes": 1003,
+      "imageHash": "68da69457db865d4f0f517ecb034d0a208925b9fe5595ee8ac1e9a54ba43869c",
+      "wrongHashStatus": 404,
+      "recoveryStatus": 200,
+      "imageCache": "public, max-age=31536000, immutable"
+    },
+    {
+      "name": "galactic",
+      "manifestBytes": 1782,
+      "imageBytes": 703555,
+      "imageHash": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0",
+      "wrongHashStatus": 404,
+      "recoveryStatus": 200,
+      "imageCache": "public, max-age=31536000, immutable"
+    },
+    {
+      "name": "wide-field-w3",
+      "manifestBytes": 5951,
+      "propertiesBytes": 512,
+      "tileCount": 12,
+      "allTileBytes": 678144,
+      "wrongHashStatus": 404
+    },
+    {
+      "name": "bsc5p-v2",
+      "bodyBytes": 1280196,
+      "etag": "W/\"0a11ee78f8e09e4bd19276e8a0677d2a1a9259ce36163e7d20917d816bb03b88\"",
+      "conditionalStatus": 304,
+      "conditionalBytes": 0,
+      "wrongHashStatus": 404
+    },
+    {
+      "name": "bsc5p-v3",
+      "bodyBytes": 1280199,
+      "etag": "W/\"ebbd8fb8a338be1ed8f8b2e5ed00c7d867988cbe3e40a8aafb011d4514ae7a93\"",
+      "conditionalStatus": 304,
+      "conditionalBytes": 0,
+      "wrongHashStatus": 404
+    },
+    {
+      "name": "/v2/sky/supplements/sao",
+      "indexBytes": 282405,
+      "tileBytes": 20774,
+      "tileCount": 826,
+      "conditionalIndexStatus": 304,
+      "conditionalTileStatus": 304,
+      "wrongHashStatus": 404
+    },
+    {
+      "name": "/v2/sky/supplements/sao/v2",
+      "indexBytes": 282405,
+      "tileBytes": 20774,
+      "tileCount": 826,
+      "conditionalIndexStatus": 304,
+      "conditionalTileStatus": 304,
+      "wrongHashStatus": 404
+    },
+    {
+      "name": "optical-commercial-gate",
+      "status": 404
+    }
+  ]
+}

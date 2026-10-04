@@ -1,0 +1,38 @@
+{
+  "lastConfirmedOpened": {
+    "project": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp/dist/weapp-check-sky-scene-v47",
+    "winId": "s8",
+    "candidate": "v47"
+  },
+  "retired": {
+    "candidate": "v46",
+    "winId": "s6",
+    "officialCloseAcknowledged": true
+  },
+  "compileTriggerAcknowledged": true,
+  "compileCompletion": null,
+  "sdk": null,
+  "currentPage": null,
+  "nativeContext": null,
+  "nativeSkyPixels": null,
+  "observed": "DevTools welcome before and after one official toolbar-equivalent refresh, actual PNGs viewed",
+  "currentPageRead": "tools/call timeout after 300s",
+  "waitedCapture": "tools/call timeout after 300s; no file/acceptance invented",
+  "latestParentCapture": "evidence/experience-scene-v47-native-after-refresh-2026-09-30.png",
+  "latestParentDimensions": {
+    "width": 518,
+    "height": 1120
+  },
+  "source": "official exact-project tools; no new window after s8 and no additional refresh",
+  "service": {
+    "publicPort": 60065,
+    "pid": 33832,
+    "exec": 69033,
+    "internalPort": 54455,
+    "epoch": "unchanged"
+  },
+  "fixture": "real compiled Sky/current public publications with MEMORY_TEST formal spot/weather",
+  "pendingToolCells": [],
+  "acceptance": "unverified",
+  "limit": "Successful tool triggers, welcome captures and backend readback do not prove native Sky/Canvas/WXML, SDK or Context state; not a product-black-screen diagnosis"
+}

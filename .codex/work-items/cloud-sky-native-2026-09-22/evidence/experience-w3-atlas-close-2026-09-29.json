@@ -1,0 +1,24 @@
+{
+  "scope": "Task-only Atlas inputs; published W3 pixels/unknown coverage and unopened v16 preserved",
+  "linksChecked": 268,
+  "publishedImages": 153,
+  "publicationHash": "46c520ab6160784c766b057cae5aed4bec1bfd0d7c4f65fc136a30716e7a1462",
+  "newSourcePair": [
+    {
+      "product": "int",
+      "sha256": "9d6b40cd400a6a6c6c498334e62d7182f13f9f8a165b160d21b9424596d5003e",
+      "bytes": 1059840
+    },
+    {
+      "product": "cov",
+      "sha256": "e121a8761c6f2d49e125a540fb6700f3316b721433ff30c6b1c8a8ce2afd9df7",
+      "bytes": 1059840
+    }
+  ],
+  "candidateHash": "1123034a5afeee5731523aa95278997e88c81ff1eab70da42c23299b9250d032",
+  "nativeV16Validated": false,
+  "phoneActions": false,
+  "independentReview": false,
+  "currentDependencyCount": 1,
+  "productionSourceChanged": false
+}

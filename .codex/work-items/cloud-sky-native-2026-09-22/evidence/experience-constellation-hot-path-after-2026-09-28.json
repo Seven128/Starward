@@ -1,0 +1,135 @@
+{
+  "scope": "Actual published current-frame constellation arcs through production CPU owner; counted leaf clipping and host timings, not GPU/WeChat/phone frame-time acceptance",
+  "phase": "after",
+  "sourcePath": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.ts",
+  "sourceSha256": "c007ff9b4ac9d9064f324110a547499976aad4477b8fa11acfd424c33e4f110f",
+  "at": "2026-09-28T16:00:00.000Z",
+  "catalogVersion": "stellarium-modern-v24.4.v3",
+  "catalogHash": "2a53d222e56b513e6b0b9bba753d7864e1535bf98252112ce8e4bebde16dc01e",
+  "sourceArcs": 676,
+  "canvasSize": {
+    "width": 390.3999938964844,
+    "height": 844
+  },
+  "results": [
+    {
+      "scenario": {
+        "name": "north-25",
+        "heading": 0,
+        "beta": 120,
+        "fov": 25
+      },
+      "visibleSegments": 15,
+      "clipAttempts": 28,
+      "previousAttempts": 822,
+      "invisibleClipAttempts": 13,
+      "hostCpuMs": [
+        0.5597000000000207,
+        0.45879999999988286,
+        0.4090000000001055,
+        0.37000000000011823,
+        0.4052999999998974,
+        0.3451000000000022,
+        0.3105000000000473
+      ],
+      "medianHostCpuMs": 0.4052999999998974,
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "east-5",
+        "heading": 90,
+        "beta": 135,
+        "fov": 5
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 1804,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [
+        0.35169999999993706,
+        0.36230000000000473,
+        0.3690999999998894,
+        0.27670000000011896,
+        0.2779000000000451,
+        0.2798999999999978,
+        0.2659000000001015
+      ],
+      "medianHostCpuMs": 0.2798999999999978,
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "north-min-zoom",
+        "heading": 0,
+        "beta": 120,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 13517,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [
+        0.23509999999987485,
+        0.22229999999990468,
+        0.19909999999981665,
+        0.20190000000002328,
+        0.20040000000017244,
+        0.20230000000015025,
+        0.19319999999993342
+      ],
+      "medianHostCpuMs": 0.20190000000002328,
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "west-min-zoom",
+        "heading": 270,
+        "beta": 100,
+        "fov": 0.05
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 0,
+      "previousAttempts": 12527,
+      "invisibleClipAttempts": 0,
+      "hostCpuMs": [
+        0.2523000000001048,
+        0.21739999999999782,
+        0.1875,
+        0.1876999999999498,
+        0.19280000000003383,
+        0.19229999999993197,
+        0.19499999999993634
+      ],
+      "medianHostCpuMs": 0.19280000000003383,
+      "visibleSegmentsUnchanged": true
+    },
+    {
+      "scenario": {
+        "name": "offset-min-zoom",
+        "heading": 315,
+        "beta": 170,
+        "fov": 0.05,
+        "center": {
+          "x": 117.1199981689453,
+          "y": 354.47999999999996
+        }
+      },
+      "visibleSegments": 0,
+      "clipAttempts": 1,
+      "previousAttempts": 22603,
+      "invisibleClipAttempts": 1,
+      "hostCpuMs": [
+        0.423200000000179,
+        0.4102999999997792,
+        0.33819999999991524,
+        0.2618999999999687,
+        0.25310000000013133,
+        0.2945999999999458,
+        0.2746999999999389
+      ],
+      "medianHostCpuMs": 0.2945999999999458,
+      "visibleSegmentsUnchanged": true
+    }
+  ]
+}

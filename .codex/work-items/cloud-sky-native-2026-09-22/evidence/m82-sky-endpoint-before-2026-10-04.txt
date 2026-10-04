@@ -1,0 +1,24 @@
+....F.
+======================================================================
+FAIL: test_provider_constant_sky_edge_and_native_outside_have_distinct_meaning (data-pipelines.deep-sky.test_sdss_frame_noise.ActualNativeNoiseTest.test_provider_constant_sky_edge_and_native_outside_have_distinct_meaning)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_frame_noise.py", line 64, in test_provider_constant_sky_edge_and_native_outside_have_distinct_meaning
+    np.testing.assert_array_equal(result.available, [True, True, False, False])
+  File "E:\dev\worktrees\Starward\remote-main-20260908\output\allwise-w3-atlas-0929\python-deps\numpy\testing\_private\utils.py", line 1128, in assert_array_equal
+    assert_array_compare(operator.__eq__, actual, desired, err_msg=err_msg,
+  File "E:\dev\worktrees\Starward\remote-main-20260908\output\allwise-w3-atlas-0929\python-deps\numpy\testing\_private\utils.py", line 988, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Arrays are not equal
+
+Mismatched elements: 1 / 4 (25%)
+Mismatch at index:
+ [0]: False (ACTUAL), True (DESIRED)
+ ACTUAL: array([False,  True, False, False])
+ DESIRED: array([ True,  True, False, False])
+
+----------------------------------------------------------------------
+Ran 6 tests in 2.382s
+
+FAILED (failures=1)

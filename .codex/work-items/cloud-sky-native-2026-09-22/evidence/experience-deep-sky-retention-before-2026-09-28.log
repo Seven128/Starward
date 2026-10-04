@@ -1,0 +1,55 @@
+✔ file owners keep usable coarse recovery data but release replaced and cleared files (40.3632ms)
+✔ hiding cancels an image request and showing restarts only the current level (15.9179ms)
+✖ hide retires the old native bitmap while preserving only its coarse recovery file through the node gap (15.3189ms)
+✔ failed fine decode and retry keep the coarse image until successful replacement (9.1974ms)
+✔ hidden decoding cannot publish late pixels or erase the retained view (6.9765ms)
+✔ a retained coarse level cannot mark a pending fine request ready (10.8962ms)
+✔ show before native canvas reconstruction retains coarse recovery until re-decode (7.6212ms)
+✔ resuming a failed decode starts a new loading transition before success or failure (6.8454ms)
+✔ switching object cannot retain the previous object's pixels (6.1681ms)
+✔ native generation changes reject queued decode before React cleanup (5.5306ms)
+✔ synchronous native decoder failures are retryable and coarse failure cannot prevent fine decode (16.3584ms)
+✔ new native canvas redecodes retained coarse pixels and late coarse cannot replace fine (12.2417ms)
+✔ hidden image errors do not enqueue a notification on another page (5.5412ms)
+✔ a previous image error cannot be relabelled for a new object or hidden image mode (8.3252ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 13
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 929.351
+
+✖ failing tests:
+
+test at src\features\sky\deep-sky-image-lifecycle.test.ts:1:4828
+✖ hide retires the old native bitmap while preserving only its coarse recovery file through the node gap (15.3189ms)
+  AssertionError [ERR_ASSERTION]: hidden native pixels cannot keep the old Canvas image graph
+  + actual - expected
+  
+  + {
+  +   canvasGeneration: 1,
+  +   fieldDegrees: 4,
+  +   image: {},
+  +   level: 'OVERVIEW',
+  +   reference: 'M:31',
+  +   release: [Function: release],
+  +   tempFilePath: '/m31-overview.jpg'
+  + }
+  - null
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\deep-sky-image-lifecycle.test.ts:97:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [Object],
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

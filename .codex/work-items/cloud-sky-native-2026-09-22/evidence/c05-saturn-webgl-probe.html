@@ -1,0 +1,49 @@
+<!doctype html><meta charset="utf-8"><canvas id="canvas" width="128" height="128"></canvas><pre id="result">running</pre>
+<script>
+const vertex = "\n  attribute vec2 a_position;\n  attribute vec2 a_uv;\n  uniform vec2 u_resolution;\n  varying vec2 v_uv, v_pixel;\n  \n  vec4 screenPosition(vec2 p) {\n    return vec4(p.x / u_resolution.x * 2.0 - 1.0, 1.0 - p.y / u_resolution.y * 2.0, 0.0, 1.0);\n  }\n  void main() { gl_Position = screenPosition(a_position); v_uv = a_uv; v_pixel = a_position; }";
+const fragment = "\n  precision highp float;\n  varying vec2 v_uv, v_pixel;\n  \n  uniform vec2 u_center;\n  uniform float u_scale;\n  uniform vec3 u_right, u_up, u_forward;\n  vec3 skyRay(vec2 pixel) {\n    vec2 p = (pixel-u_center)/u_scale;\n    p.y = -p.y;\n    float squared = dot(p,p);\n    vec3 camera = vec3(2.0*p,1.0-squared)/(1.0+squared);\n    return u_right*camera.x+u_up*camera.y+u_forward*camera.z;\n  }\n  uniform vec2 u_sunward;\n  uniform float u_illuminatedFraction;\n  uniform vec2 u_minorDirection;\n  uniform float u_minorRatio;\n  uniform vec3 u_tint;\n  void main() {\n    vec2 p = 2.0*v_uv-1.0;\n    vec2 majorDirection = vec2(-u_minorDirection.y,u_minorDirection.x);\n    vec2 sphereP = majorDirection*dot(p,majorDirection)\n      +u_minorDirection*dot(p,u_minorDirection)/u_minorRatio;\n    float squared = dot(sphereP,sphereP);\n    if (squared > 1.0) discard;\n    if (skyRay(v_pixel).z < 0.0) discard;\n    float facing = sqrt(max(0.0,1.0-squared));\n    float phaseCos = 2.0*u_illuminatedFraction-1.0;\n    float phaseSin = sqrt(max(0.0,1.0-phaseCos*phaseCos));\n    float incidence = dot(vec3(sphereP,facing),vec3(u_sunward*phaseSin,phaseCos));\n    float daylight = smoothstep(-0.012,0.012,incidence);\n    float brightness = 0.045 + daylight*(0.62+0.335*max(incidence,0.0));\n    float edge = 1.0-smoothstep(0.96,1.0,squared);\n    gl_FragColor = vec4(u_tint*brightness,edge);\n  }";
+const canvas = document.getElementById('canvas');
+const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true, antialias: false });
+function compile(type, source) {
+  const shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(shader));
+  return shader;
+}
+try {
+  if (!gl) throw new Error('WebGL1 unavailable');
+  const program = gl.createProgram();
+  gl.attachShader(program, compile(gl.VERTEX_SHADER, vertex));
+  gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragment));
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
+  gl.useProgram(program);
+  const data = new Float32Array([0,0,0,0,128,0,1,0,0,128,0,1,0,128,0,1,128,0,1,0,128,128,1,1]);
+  const buffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+  for (const [name, offset] of [['a_position',0],['a_uv',8]]) {
+    const index = gl.getAttribLocation(program,name);
+    gl.enableVertexAttribArray(index);
+    gl.vertexAttribPointer(index,2,gl.FLOAT,false,16,offset);
+  }
+  function uniform(name, values) {
+    const location = gl.getUniformLocation(program,name);
+    if (values.length===1) gl.uniform1f(location,values[0]);
+    if (values.length===2) gl.uniform2fv(location,values);
+    if (values.length===3) gl.uniform3fv(location,values);
+  }
+  uniform('u_resolution',[128,128]); uniform('u_center',[64,64]); uniform('u_scale',[1000]);
+  uniform('u_right',[1,0,0]); uniform('u_up',[0,1,0]); uniform('u_forward',[0,0,1]);
+  uniform('u_sunward',[1,0]); uniform('u_illuminatedFraction',[1]);
+  uniform('u_minorDirection',[1,0]); uniform('u_minorRatio',[0.9]); uniform('u_tint',[1,1,1]);
+  gl.viewport(0,0,128,128); gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.drawArrays(gl.TRIANGLES,0,6);
+  function pixel(x,y) { const rgba=new Uint8Array(4); gl.readPixels(x,y,1,1,gl.RGBA,gl.UNSIGNED_BYTE,rgba); return [...rgba]; }
+  const minor=pixel(125,64),major=pixel(64,125),center=pixel(64,64);
+  const result={ok:gl.getError()===gl.NO_ERROR && minor[3]===0 && major[3]>0 && center[3]>0,
+    webglVersion:gl.getParameter(gl.VERSION),minor,major,center};
+  document.getElementById('result').textContent=JSON.stringify(result);
+} catch(error) { document.getElementById('result').textContent=JSON.stringify({ok:false,error:String(error)}); }
+</script>

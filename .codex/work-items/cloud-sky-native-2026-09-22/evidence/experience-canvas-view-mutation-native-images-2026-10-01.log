@@ -1,0 +1,37 @@
+✖ recreated canvas rejects queued survey and constellation native images until their new owners publish (33.6993ms)
+✔ queued pre-calibration canvas frame cannot jump back after confirm or cancel (26.9281ms)
+✔ real alignment confirms raw input while queued painting retains stabilized geometry (12.113ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1156.3141
+
+✖ failing tests:
+
+test at apps\wechat-miniapp\src\features\sky\sky-alignment-render.test.ts:1:2530
+✖ recreated canvas rejects queued survey and constellation native images until their new owners publish (33.6993ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + {
+  +   canvasGeneration: 1,
+  +   image: {}
+  + }
+  - null
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-alignment-render.test.ts:62:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { canvasGeneration: 1, image: {} },
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

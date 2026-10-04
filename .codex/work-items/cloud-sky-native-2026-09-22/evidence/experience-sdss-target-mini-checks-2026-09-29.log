@@ -1,0 +1,37 @@
+✔ shared artwork and selected-object requests use one runtime namespace with distinct file identities (75.2079ms)
+✔ a publication or Canvas generation switch fences old decoded images before effects and redecodes for the new owner (17.7559ms)
+✔ hide, Canvas removal and publication loss retire decoded images held by the Hook, not just its returned view (38.9371ms)
+✔ an empty new Canvas generation cannot keep the old decoded-image state until another download finishes (10.3531ms)
+✔ repeated hide/show with a late canceled response releases retired state and preserves each new owner (8.908ms)
+✔ optical registration uses the admitted target, without painting another galaxy's position (45.2478ms)
+✔ M51 optical level follows measured field while wider views keep W3 (0.258ms)
+✔ fully covered M51 images lose visible credits only after the foreground actually paints (31.4714ms)
+✔ leaving the image's whole field clears both credits without reporting a load failure (8.6464ms)
+✔ foreground coverage preserves exposed image edges, including a covered center (5.9349ms)
+✔ a fully covered narrow viewport loses credit even when image edges extend into open sky offscreen (5.6071ms)
+✔ M51 optical draw is above W3, and optical failure preserves W3 and the scene (15.3325ms)
+✔ M51 optical pixels replace underlying infrared light without changing the W3 fallback (4.9732ms)
+✔ partial image edges remain eligible after their center leaves the narrow viewport (4.2381ms)
+✔ SDSS credit follows committed optical pixels across request and focus transitions (14.3865ms)
+✔ planet and other target labels only follow the native frame actually presented (7.9394ms)
+✔ same-camera native redraw commits resolved labels and both credits, including failure recovery (16.3322ms)
+✔ loaded W3 bytes alone cannot claim visible credit on a stale, hidden or cleared canvas (7.2152ms)
+✔ a submitted resolved Venus disc replaces only its old label, and failure restores it (2.5396ms)
+✔ target labels use the completed virtual scene mask rather than the current control intent (2.0957ms)
+✔ a later native mask cannot hide a label before its corresponding DOM camera commit (1.3708ms)
+✔ fine optical failure retains the nearest ready coarse level and an explicit retry (91.5861ms)
+✔ target switches fence prior discovery, cancel its owner and reject late decoded pixels (26.4709ms)
+✔ larger M81 overview selection follows its actual admitted footprint (0.4935ms)
+✔ actual client requests the admitted immutable target through the existing bare resource boundary (89.8251ms)
+✔ source download links exist for each real target and reject forged publication identities (45.7757ms)
+✔ Mini accepts the actual M51 publication identity, geometry and license (4.9313ms)
+✔ Mini validates every real admitted target with its own hash-bound geometry, pixels and provenance (11.4101ms)
+✔ Mini rejects a substituted image, another target and broken download identity (1ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1961.2851

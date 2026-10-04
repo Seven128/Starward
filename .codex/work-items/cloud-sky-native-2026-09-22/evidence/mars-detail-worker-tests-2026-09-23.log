@@ -1,0 +1,14 @@
+✔ stable HR references return attributable ready and basic-only states (110.4057ms)
+✔ large numeric-like and unknown references stay strings and fail closed (3.0002ms)
+✔ planet information describes the published Mars map and computed Saturn rings accurately (1.0168ms)
+✔ Messier galaxy and nebula references expose attributable catalog facts (13.6046ms)
+✔ same identity and locale reuse a stable content revision without sharing mutable values (0.8914ms)
+✔ SAO details interpret HD multiplicity codes instead of presenting them as names (1326.8949ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2999.5518

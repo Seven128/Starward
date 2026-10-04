@@ -1,0 +1,84 @@
+{
+  "status": "AFFECTED_DEVELOPMENT_CHECKS_PASSED",
+  "checks": [
+    {
+      "name": "contracts-regressions",
+      "cwd": ".",
+      "command": [
+        "node",
+        "tools/run-node.cjs",
+        "--import",
+        "tsx",
+        "--test",
+        "packages/miniapp-contracts/src/prepared-optical-publication.test.ts",
+        "packages/miniapp-contracts/src/prepared-display-optical-publication.test.ts",
+        "packages/miniapp-contracts/src/prepared-progressive-optical-publication.test.ts"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "sky-providers-static-regressions",
+      "cwd": ".",
+      "command": [
+        "node",
+        "tools/run-node.cjs",
+        "--import",
+        "tsx",
+        "--test",
+        "workers/miniapp-api/src/prepared-optical-imagery.test.ts",
+        "workers/miniapp-api/src/prepared-optical-static-export.test.ts",
+        "workers/miniapp-api/src/prepared-optical-information.test.ts"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "contracts-types",
+      "cwd": "packages/miniapp-contracts",
+      "command": [
+        "node",
+        "node_modules/typescript/lib/tsc.js",
+        "--noEmit",
+        "-p",
+        "tsconfig.json"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "worker-types",
+      "cwd": "workers/miniapp-api",
+      "command": [
+        "node",
+        "node_modules/typescript/lib/tsc.js",
+        "--noEmit",
+        "-p",
+        "tsconfig.json"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "app-types",
+      "cwd": "apps/wechat-miniapp",
+      "command": [
+        "node",
+        "node_modules/typescript/lib/tsc.js",
+        "--noEmit",
+        "-p",
+        "tsconfig.json"
+      ],
+      "exitCode": 0
+    },
+    {
+      "name": "sdk-current",
+      "cwd": ".",
+      "command": [
+        "node",
+        "tools/miniapp/generate-miniapp-sdk.mjs",
+        "--check"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "initialTypedFailuresPreserved": true,
+  "independentReview": "MISSING",
+  "limits": "Current contract/provider/static-owner/type/SDK development checks only. Actual page/readback are separate evidence; native quality, physical resources, static network exit, whole scope and final Goal remain unverified."
+}

@@ -1,0 +1,23 @@
+✔ page hide retires the Hook tile graph and aborts requests; late replies cannot resurrect it (73.1932ms)
+✔ publication loss releases ready tiles and publication replacement fences the previous owner (10.3991ms)
+✔ cached stale tiles stay visible with recovery state; retry really reloads them and keeps old points while pending (12.4994ms)
+✔ bounded requests keep only current view; late aborted replies and dispose never publish obsolete stars (20.6557ms)
+✔ partial failure preserves loaded tiles, only explicit retry repeats failure, and wrong publication is rejected (2.0607ms)
+✔ oversized requests fail explicitly without silently selecting a subset or issuing network requests (1.5117ms)
+✔ view selects the inverse-transformed EQJ region and zoom hides its faint tier (2.6636ms)
+✔ proper-motion bounds follow the exact selected epoch and wrong frame cannot select stale tiles (0.5868ms)
+✔ twilight does not request a faint tile that the same-frame renderer cannot paint (0.2807ms)
+✔ static cold and refresh failure use floating info, with retry owned by the actual page (44.408ms)
+✔ missing stars do not disable touch entry for independently valid targets (11.6684ms)
+✔ independent solar geometry remains drawable and touchable when both catalogs fail and legacy targets are empty (153.533ms)
+✔ independent observation frames enable the existing view while invalid time or rotation keeps gestures unavailable (75.8135ms)
+✔ fulfilled stale constellation cache exposes the actual page retry without erasing retained art (11.5521ms)
+✔ published native image hooks and every page consumer preserve the shared retry result (184.5444ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2132.6534

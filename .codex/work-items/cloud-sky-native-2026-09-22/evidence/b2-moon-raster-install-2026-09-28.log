@@ -1,0 +1,24 @@
+Collecting rasterio==1.4.4
+  Using cached rasterio-1.4.4-cp310-cp310-win_amd64.whl (25.7 MB)
+Collecting Pillow==12.3.0
+  Downloading pillow-12.3.0-cp310-cp310-win_amd64.whl (7.2 MB)
+     ---------------------------------------- 7.2/7.2 MB 3.1 MB/s eta 0:00:00
+Collecting attrs
+  Using cached attrs-26.1.0-py3-none-any.whl (67 kB)
+Collecting cligj>=0.5
+  Using cached cligj-0.7.2-py3-none-any.whl (7.1 kB)
+Collecting affine
+  Using cached affine-3.0.1-py3-none-any.whl (10 kB)
+Collecting click!=8.2.*,>=4.0
+  Using cached click-8.5.0-py3-none-any.whl (125 kB)
+Collecting certifi
+  Using cached certifi-2026.7.22-py3-none-any.whl (136 kB)
+Collecting click-plugins
+  Using cached click_plugins-1.1.1.2-py2.py3-none-any.whl (11 kB)
+Collecting numpy>=1.24
+  Using cached numpy-2.2.6-cp310-cp310-win_amd64.whl (12.9 MB)
+Collecting pyparsing
+  Downloading pyparsing-3.3.3-py3-none-any.whl (126 kB)
+     -------------------------------------- 126.4/126.4 kB 7.7 MB/s eta 0:00:00
+Installing collected packages: pyparsing, Pillow, numpy, click, certifi, attrs, cligj, click-plugins, affine, rasterio
+Successfully installed Pillow-12.3.0 affine-3.0.1 attrs-26.1.0 certifi-2026.7.22 click-8.5.0 click-plugins-1.1.1.2 cligj-0.7.2 numpy-2.2.6 pyparsing-3.3.3 rasterio-1.4.4

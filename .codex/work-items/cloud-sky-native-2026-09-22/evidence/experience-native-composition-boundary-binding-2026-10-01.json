@@ -1,0 +1,668 @@
+{
+  "at": "2026-10-01T04:09:14.314Z",
+  "scope": "Bounded current official composition diagnosis: real public unmount/map readback and incomplete temporary configuration probe; actual restored native scene. No product-source change or phone acceptance.",
+  "previous": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-cold-image-residency-binding-2026-10-01.json",
+    "bytes": 58359,
+    "sha256": "006b42bb3ed691adc6027f5359eb15c98024834b987a1dca0a4adee07ec03f16"
+  },
+  "trace": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-native-composition-boundary-events-frozen-2026-10-01.jsonl",
+    "bytes": 671391,
+    "sha256": "6da9f3495013be098edc21bbc3ee1d78d5ed3f7f10264e715a206c54128a6d17",
+    "eventCount": 414,
+    "previous380EventPrefixUnchanged": true
+  },
+  "sourceHashes": [
+    {
+      "path": "node_modules/twgl.js/dist/7.x/twgl-full.module.js",
+      "bytes": 397379,
+      "sha256": "f518c84fa9d404b725fff024c91ad04e756e67bbc69e62c1725b08cce0ef6ef3"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+      "bytes": 11062,
+      "sha256": "648d6e3ea1dc4ed5c21e8cc42f31ff30b5eab69488812c3958286dd3f4c5c209"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-registration.ts",
+      "bytes": 4696,
+      "sha256": "85e16452de821088531ee9f19a4bfe6f791f6da26818ead6f3d53fd8e23c2513"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-raster-bounds.ts",
+      "bytes": 2921,
+      "sha256": "374f31d0bfa910a0c100442e5c74339a8711dcabaa46828f63a842e49b4b361e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-textures.ts",
+      "bytes": 7943,
+      "sha256": "a80298117e64ccc4819be8aecca22803b9855a5b1ad955989e69a26e74fc09c8"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/types.ts",
+      "bytes": 38733,
+      "sha256": "3218f6aaa44d9cd8178fdb41445bbd15f05becb14013628432038b49c7ae83eb"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/plan.ts",
+      "bytes": 3076,
+      "sha256": "373cf1316693b4b1b11cd954d532e3759086fa3ed301f1c3279d7df0b367fdd3"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/local-time.ts",
+      "bytes": 4197,
+      "sha256": "35a6b36273df279be7c5b164afeb9d77b17bde9a64e9c9f77efe666e6328193b"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/plan-timing.ts",
+      "bytes": 1183,
+      "sha256": "5f0f9380f2d4a508d949d8eff55d0d7098612d3f7bd777d6b851b398eb83c85a"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/plan-reminders.ts",
+      "bytes": 3908,
+      "sha256": "51fbf4fbaa1902997ffecd6254676c1b190cfc8873d480d6aed54157572fc8bd"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/contribution-feedback.ts",
+      "bytes": 7031,
+      "sha256": "ae442bf856f6147e64d030d05c249c6368346afbcd3c9fbc8b2bf846eeca427d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/filters.ts",
+      "bytes": 8433,
+      "sha256": "280e7b7f38d0a990e55166f931ef2ccbb4f6a1a3e168e0fdcd7afd292bfc3c6d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/feature-flags.ts",
+      "bytes": 2052,
+      "sha256": "440606adabca6f0f0e6785905c3202b09095aefaf58d28918bea0da4b1c66ef7"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/url-policy.ts",
+      "bytes": 1781,
+      "sha256": "7ff57fa707c8e5eb11d33426a72865df5b09493b07fbf03e9f6af16e622515e9"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/viewport.ts",
+      "bytes": 671,
+      "sha256": "89efea05a6ec1530a4a9698011ab8fd384fc1feab38e7b83673a8088e663102b"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/ranking.ts",
+      "bytes": 473,
+      "sha256": "6abf16ed0b6e99be580afee8a121d61813d4a548f3b036276c99ccd7972ba5f5"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/preferences.ts",
+      "bytes": 895,
+      "sha256": "d7f1da44001610fac181cbab03880fbb74fadff2e652445f60ee6f4968da76ca"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-planet-identity.ts",
+      "bytes": 1174,
+      "sha256": "9e947673bb81c4b605361b8bffdc368330bdd5f978a71c83644804c6c77fa97e"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-target-position.ts",
+      "bytes": 775,
+      "sha256": "d1920242e7b72c179bb2c242a8c08366dbe2771a63f03a449621c52801f93efa"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-luminary-identity.ts",
+      "bytes": 1635,
+      "sha256": "b215f288ff261d67989efa27c34cbf778ebe6c780b785d77815a29ceee1c5275"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/celestial-identity.ts",
+      "bytes": 1467,
+      "sha256": "c7e224fb9a4a918db7c0ce91d1e1733f0030727c2bc64f577f8ea49f53f59547"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-geometry.ts",
+      "bytes": 6440,
+      "sha256": "86576641382bc51ef4e14fd3ac1caebb134fcf0e72a6116b02a20bb1c33d392b"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-catalog-publication.ts",
+      "bytes": 4056,
+      "sha256": "a6024d6ad23765496393534ca67a43a671febc7719ee2a378e667d2fe7adc15d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-scene.ts",
+      "bytes": 998,
+      "sha256": "a0cbbd7181159e5749038e467842e85314ef652f3ec8a20f5e838d11d51cea87"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-scene.ts",
+      "bytes": 7839,
+      "sha256": "8c87512639a2e2fc7a38cb63084e56513a6f9d3e71af085d2e0c5c2370ba05e7"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/moon-coverage-publication.ts",
+      "bytes": 2731,
+      "sha256": "4d7c8b550131ff0137f14a5ee4de5efd68a98e2685397979ac78238aefb58b50"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/deep-sky-image-publication.ts",
+      "bytes": 623,
+      "sha256": "75bc21b6dc56338eea16132b243f00675b7b8aac2ae9df27bee6622d5236b113"
+    },
+    {
+      "path": "node_modules/@noble/hashes/utils.js",
+      "bytes": 9356,
+      "sha256": "11319ec0a8132a0c2ced8c98af33ae9274c001d6baf4f4709c4a6115e031a3c5"
+    },
+    {
+      "path": "node_modules/@noble/hashes/_md.js",
+      "bytes": 5615,
+      "sha256": "a112f0fe1b15db00f2638618c436a17be1c5e13baf19d02fcc29016ae1db2233"
+    },
+    {
+      "path": "node_modules/@noble/hashes/_u64.js",
+      "bytes": 3081,
+      "sha256": "e48c0cfc10810439a4807b46db136ce603a3fa09b62584f513ef2f3ca496af54"
+    },
+    {
+      "path": "node_modules/@noble/hashes/sha2.js",
+      "bytes": 16773,
+      "sha256": "3ddc587c588283cbceed4dd9929cefcce06a0c231b54d4c6f0f99c478c686c00"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-image-display-support.ts",
+      "bytes": 3875,
+      "sha256": "c90d5b7623d9844f8ca872b514509c19cd908d2d9206575286f26783ee88a26c"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sdss-optical-publication.ts",
+      "bytes": 5897,
+      "sha256": "0fd5f2c3b7e29cc478ef04dd9b9af7516916b71993a34aba2645852fcd3daa38"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/observation-frame.ts",
+      "bytes": 1765,
+      "sha256": "75be5650a8ee3fb025ed4a43a1ffa12dcf84dd2b946d284e91112401f6a67188"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-time-model.ts",
+      "bytes": 6917,
+      "sha256": "6c1f47586bdec67b5c24fa6dd182c400cd364294986c3c840f54892ba800ff60"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-lunar-phase.ts",
+      "bytes": 552,
+      "sha256": "21e45cc998d4cebed9625e2067e02ce95dbf7c3cdbb16ce325a7d53718521392"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/catalog-json-integrity.ts",
+      "bytes": 808,
+      "sha256": "cf5a8278773b78d06a4670dc3cda63d7c0edcbbfbb01b39369ea37011298ff4d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-supplement.ts",
+      "bytes": 6630,
+      "sha256": "4e9a37385e362d9ffd88b3a48229bd1b11e4f60ca7fd7d8ca54eabae580fa973"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/constellation-catalog.ts",
+      "bytes": 9166,
+      "sha256": "8c4fa3961030303ca54c3a1a89253dece291f29cbc72a9f0766bfb960b659a9e"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/api-shapes.ts",
+      "bytes": 31798,
+      "sha256": "ee35ed2cf9fb30e88d834036fa3b22652c1c401a7154b181a3c8fae17355eaaa"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts",
+      "bytes": 21973,
+      "sha256": "c05553b7b7847d318ea67ba6a2057fec6d5d2761b093cc4615bd490e5e5f4501"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/account-profile.ts",
+      "bytes": 1180,
+      "sha256": "a51bc104b8984c8339434ee9eb672d339df9ae7c2f3bb9e313eb0f0bdb1913b6"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/recent-weather.ts",
+      "bytes": 876,
+      "sha256": "49f368afa7e5a3544c8e37745641c2eeacab7d1eef5de6ad76c3564815c87adb"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/air-quality.ts",
+      "bytes": 3206,
+      "sha256": "f4627ed64579f720cfb352a2d71523a9c0711021b4a5fde9faa8e9b52ee32611"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-landscape-publication.ts",
+      "bytes": 6838,
+      "sha256": "053a950b4d620be52034a696bb81fa638d1e6f85569652e5e0f949f91930e40d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/index.ts",
+      "bytes": 1358,
+      "sha256": "7d810d243e847a4495564a9eb0208fb7663ac1741a01189c6b7375215430cb0b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-visibility.ts",
+      "bytes": 9601,
+      "sha256": "7d17df6131c917e05f5bf9f698fb9bd3a38fe0a749495ecccb51ab3e35b7593f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-frame.ts",
+      "bytes": 456,
+      "sha256": "40df40fd298fdf54585802827a70d6c8328df2f1e169014b7c03852cec972e2f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-observation-frame.ts",
+      "bytes": 1275,
+      "sha256": "fc391352e4d73553d7f8fdc7469481af6a1f5f56219d97fc59425cdc09c6acf6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-solar-light.ts",
+      "bytes": 1019,
+      "sha256": "a9b2a2988846256a92bc48344b840178de91ff80fac26e1ba18d5d81af4dec45"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-galactic-band.ts",
+      "bytes": 2721,
+      "sha256": "bc58c7e0a6e372f315e913f12c02ffd4cd88f3d0a18e1735026c940dec97ec39"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-galactic-image-window.ts",
+      "bytes": 2389,
+      "sha256": "a5b7700cb717888d2ceca8aab79ff23c4e073481381cda983c814b5027e634c4"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-saturn-rings.ts",
+      "bytes": 1267,
+      "sha256": "487a27a2eac32dfb526b6cb22d1aaf3ba73dce05f7073a1e1f5b571ada5a32ee"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-saturn-ring-fragment.ts",
+      "bytes": 2430,
+      "sha256": "1546479b0af3136a8a2dd1f95a3708281f97b7d70a076d9974fd5426be31682c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape-geometry.ts",
+      "bytes": 7261,
+      "sha256": "f743730e7924d4083da13115d61868eabe471be1ccf544e9784d26f7e204564f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape.ts",
+      "bytes": 8009,
+      "sha256": "fb87c22af6bfef2e955d1d54e2643fa205800e06c51cf2a69e912cc9cc1afdd0"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "bytes": 51166,
+      "sha256": "934f64f3110ca9a32c5719e2ccf0b41cdcbbb242456441f8f6e58c93da360504"
+    },
+    {
+      "path": "packages/astronomy-core/src/stellar-vectors.ts",
+      "bytes": 2905,
+      "sha256": "683c487671550c00b66a5b43c836c33b759e45260b1bae3eed6c5c94122f5f81"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+      "bytes": 5260,
+      "sha256": "2369acbfde4a992d52fcc616d7f754c7a76e35cdb91f68f53af6e5ccebb6b4ee"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-viewport.ts",
+      "bytes": 2265,
+      "sha256": "54be3d52b945669978e1f8ca39c917ccd3c9451e8406f2a4517e6af6052edfea"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-zoom.ts",
+      "bytes": 3396,
+      "sha256": "b9906780d2dfb4b651565cc13d5995c9632e2f7830fd5cabb35d1d97f67a182e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-projection.ts",
+      "bytes": 1767,
+      "sha256": "f26ca3feb18c07de69c9cc092f0c5f62f45ba1eff499d2ff9b2fb29efea5805c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-visibility.ts",
+      "bytes": 1127,
+      "sha256": "d9bfb888d080d5b24e4a9d37e97a52b430307acea7213d73337e5242ef5f9608"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-line-clip.ts",
+      "bytes": 775,
+      "sha256": "e8ba9d114119c2b51e316cf602a58aa8352691f0c5ea174140898ec889e4c88e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.ts",
+      "bytes": 4455,
+      "sha256": "a2dd23662d0559b8fcd9a2ce3f48bdc5c22fae5b8c8f8a3b6c510d37d45d4f79"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-star-appearance.ts",
+      "bytes": 3275,
+      "sha256": "81d6324176760b5ae7f6d08701b843c696601ab5b023fd8e95ce0b82cb08d00a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+      "bytes": 3005,
+      "sha256": "878553232b938e8d4620721518f0fa617810a9a03186a343a37a960a1366fdc9"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-survey-registration.ts",
+      "bytes": 2313,
+      "sha256": "6c4af33d77ce8aad30dd101ad389b336267e4b5aa2b3be9dd24ec2ba9b9dcf8f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-deep-auxiliary-visibility.ts",
+      "bytes": 957,
+      "sha256": "ac0c001e18e0f466c2b67ca78d08ffa723ad0ae2f07fdddfca2ede84422fb568"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape-mask.ts",
+      "bytes": 4309,
+      "sha256": "4156c6ba50752eb04a82e5f80e498ac18325e37a852c0e4f04cb214a484e5e20"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-phase-disc.ts",
+      "bytes": 3033,
+      "sha256": "a0f35a0ebb14aa8f8c1ceea7d4fe5d0131e24615d9c680ff5f14f58b866db4e1"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-sun-disc.ts",
+      "bytes": 1341,
+      "sha256": "305ae9d1a1ddd6d22a92026d0853f4290d54f248367e09b5af842780684d5042"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-body-surface-orientation.ts",
+      "bytes": 2979,
+      "sha256": "1215443ea5d813be88ac9d2e18556d0c05146f761252ab7eb7d8c6d395bde7a5"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-moon-disc.ts",
+      "bytes": 2275,
+      "sha256": "7a4347194c9dc887221b4aafe52393d4954ecd4fb79788b91ce4c1e6d45556c4"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-planet-disc.ts",
+      "bytes": 12570,
+      "sha256": "7519277e7a51313de7bf8161f16996d1c68b26dd00b26313bd7b02595452f964"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-grid-projection.ts",
+      "bytes": 5053,
+      "sha256": "90348d8974a8734a5198de8ce27474a8f18ec7657d18ee32719a3c56c1ef0e5b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-horizontal-grid.ts",
+      "bytes": 1314,
+      "sha256": "c5fcbc7fcec067cfd83d9d1e198815c3fe9c45038a6d6a83c7bbe8323ec73b6c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-equatorial-grid.ts",
+      "bytes": 1295,
+      "sha256": "27415bad0e2deda86caa2abc7e38d847c38dc814bd3bae0d06f8a552d3fc86a8"
+    },
+    {
+      "path": "node_modules/healpix-ts/dist/index.mjs",
+      "bytes": 72533,
+      "sha256": "5c4bdc4b48e4ceab04ed7eeb99c52b133759d74bbd9c1bbb0715256f9da58723"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-hips-tile-mesh.ts",
+      "bytes": 4073,
+      "sha256": "3cd27aff81b87fd7d116044839a7a362a8257eebcd0f856018e0f525a9beef21"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "bytes": 26326,
+      "sha256": "e30b8591984ad37778b358b9217d6df0954d2fd8e330ab86759f7adf28019139"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape-resources.ts",
+      "bytes": 3950,
+      "sha256": "bb23c448633c115937451437d63ed106b448c71c50ae5361427897ab71267239"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-image-file-session.ts",
+      "bytes": 3221,
+      "sha256": "1950f44454703066702bf2d452e41d77d5925449a76391462f9caaa093ecfc7a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/deep-sky-image-request.ts",
+      "bytes": 6654,
+      "sha256": "e64073f411f220a1a852f9f4b24ce6ea86c7ebf1a2b52f42a94d030129f432f8"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-loader.ts",
+      "bytes": 5692,
+      "sha256": "ebffe5fed0ff4746a80ecb596d6e41f1db0ca20538664fa85dba8327d200d81d"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-request.ts",
+      "bytes": 5064,
+      "sha256": "9b7672439d080100b1bedeef1f5444a2175ab8a3cb5efc87b34ff77f8112fe14"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-artwork.ts",
+      "bytes": 3990,
+      "sha256": "5f778dabc2a9c83faf1385e0dda0c3faf49328947f974d198998bbdd0b4f74aa"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-landscape.ts",
+      "bytes": 3928,
+      "sha256": "2c1cecc11d195ee400c336560b4ba6d588d75e27aba9e100130a8d5d6bd26e22"
+    }
+  ],
+  "preservedOtherEdits": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8"
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd"
+    }
+  ],
+  "ordinaryWatch": {
+    "path": "apps/wechat-miniapp/dist/weapp",
+    "sha256": "85fc94f00aba853d8ac6e1a5e0a2a1fc379db3f8c69f1f275c137aa3ec77c30c",
+    "fileCount": 300,
+    "totalBytes": 12173224,
+    "unchanged": true
+  },
+  "publicUnmount": {
+    "map": {
+      "route": "pages/map/index",
+      "rootClass": null,
+      "canvasCount": 0,
+      "viewCount": 5,
+      "textCount": 0,
+      "buttonCount": 5,
+      "scope": "Read-only current native render tree; route query, UID and content omitted"
+    },
+    "selector": {
+      "count": 0,
+      "scope": "Official SDK current-page Canvas selector count only"
+    },
+    "files": {
+      "count": 0,
+      "encodedBytes": 0,
+      "scope": "Current Sky-owned encoded native files, not decoded/GPU/OS memory"
+    },
+    "actualCaptureShowsMapAndControls": true,
+    "limits": "This bounded path excludes a persistent Sky surface after public exit; it does not explain missing overlays while Sky Canvas remains"
+  },
+  "configurationProbe": {
+    "field": "setting.coverView",
+    "declared": {
+      "scope": "One temporary declared flag at existing source/build common configs; no default/effective engine behavior asserted",
+      "field": "setting.coverView",
+      "value": true,
+      "configs": [
+        {
+          "trialSha256": "16eea63815c1588e47281dcd3068925a7fa075451013577c24e581b2224b8c24",
+          "beforeSha256": "7ab530fac785c3716dcc6293837492ff2098e7698b382e47fa057800a03f8ad6",
+          "name": "root"
+        },
+        {
+          "trialSha256": "099ce5c696a0106b428b39507b3120a0f6079772403dd86e965155aed7554f48",
+          "beforeSha256": "e1517062ed7e74185d40094b4675c84535ec58a3ec5e8b1ea8a3d5d18c2983c1",
+          "name": "built"
+        }
+      ]
+    },
+    "status": "INCOMPLETE_UNADOPTED",
+    "effectiveEngineValue": "UNVERIFIED",
+    "liveSkyRenderWithTrue": "UNVERIFIED",
+    "startupFailures": [
+      {
+        "stage": "tool-failure",
+        "value": {
+          "tool": "automation_runtime_info",
+          "error": null
+        },
+        "at": "2026-10-01T03:54:36.0647138Z"
+      },
+      {
+        "stage": "tool-failure",
+        "value": {
+          "tool": "automation_runtime_info",
+          "error": null
+        },
+        "at": "2026-10-01T03:54:51.1499936Z"
+      }
+    ],
+    "knownHarnessError": "SDK was queried during incomplete visible compilation, and restoration compile was dispatched before the first compile completion was established",
+    "configs": [
+      {
+        "path": "apps/wechat-miniapp/project.config.json",
+        "bytes": 975,
+        "sha256": "7ab530fac785c3716dcc6293837492ff2098e7698b382e47fa057800a03f8ad6",
+        "name": "root",
+        "byteExactRestored": true,
+        "privateOverrideFileExists": false
+      },
+      {
+        "path": "apps/wechat-miniapp/dist/weapp/project.config.json",
+        "bytes": 965,
+        "sha256": "e1517062ed7e74185d40094b4675c84535ec58a3ec5e8b1ea8a3d5d18c2983c1",
+        "name": "built",
+        "byteExactRestored": true,
+        "privateOverrideFileExists": false
+      }
+    ],
+    "afterVisibleMapSdkRead": {
+      "action": "currentPage",
+      "success": true,
+      "scope": "Read after a new no-wait screenshot showed the actual map; raw query withheld"
+    }
+  },
+  "current": {
+    "route": "sky/detail/index",
+    "canvas": {
+      "sid": "_Ax",
+      "label": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4051 颗真实亮星目录对象，场景时刻 2026-09-30T13:50:33.000Z，可见星座 仙王座，2 个真实目标，手动视角，不代表手机朝向，所选观测时刻 21:50",
+      "scene": "READY",
+      "count": 4051,
+      "frameAt": "2026-09-30T13:50:33.000Z"
+    },
+    "files": {
+      "count": 10,
+      "encodedBytes": 1789615,
+      "scope": "Current Sky-owned encoded native files, not decoded/GPU/OS memory"
+    },
+    "readback": {
+      "revision": 1,
+      "instantUnchanged": true,
+      "revisionUnchanged": true,
+      "moduleSha256": "175d2b11a711ab83a3b0def4018de7afec6dfcaed70ab65f208722874057a9f7",
+      "contextPuts": 0,
+      "fingerprintUnchanged": true
+    },
+    "composition": "FAILED_DEVTOOLS",
+    "phone": "UNVERIFIED"
+  },
+  "captures": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-composition-unmount-map-2026-10-01.png",
+      "bytes": 231430,
+      "sha256": "63d570f9093b6f04a2a0abd9cf6fc03ada91a94b034167d9edd7362904e23ed4"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-composition-unmount-final-restored-2026-10-01.png",
+      "bytes": 273097,
+      "sha256": "2a8abb02f8aa661de4e106bf01fdc97b3bf3819dd752f2f08b6132d5b7e20177"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-composition-cover-setting-trial-dispatched-2026-10-01.png",
+      "bytes": 14206,
+      "sha256": "d9093b5a7e2730aa3326bbc537371080fd251b4b2ccbc585641b7d66513a7a22"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-composition-cover-setting-final-restored-dispatched-2026-10-01.png",
+      "bytes": 14442,
+      "sha256": "3702d3a430d41900255277b30ea0046b398409123bd375c396c0d7b3e6cc64fd"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-composition-cover-setting-current-pending-2026-10-01.png",
+      "bytes": 231447,
+      "sha256": "25befc428803f60c82fc722885c3fb09512c9be5ae459ef54700b0795e43dde6"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-current-native-composition-cover-setting-after-pending-restored-2026-10-01.png",
+      "bytes": 273137,
+      "sha256": "e656aa3bce8c940c6d0648b50742ad80a20d9cbc508d5ed649516e165f76c6a8"
+    }
+  ],
+  "scripts": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-native-composition-unmount-2026-10-01.ps1",
+      "bytes": 2435,
+      "sha256": "128d60283bd5067309c8cef61b6c723345c0632c4dd0c2caa5451ede675bbb78"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-native-composition-setting-2026-10-01.ps1",
+      "bytes": 3442,
+      "sha256": "52989dd505d7d9446981d61384894ccc732eb55606499021bb3eb5d3a57246eb"
+    }
+  ],
+  "references": [
+    {
+      "url": "https://github.com/wechat-miniprogram/miniprogram-demo/blob/master/project.config.json",
+      "claim": "Official example declares coverView:true; does not establish the missing-field default or this project effective engine value"
+    },
+    {
+      "url": "https://github.com/wechat-miniprogram/miniprogram-demo/blob/master/miniprogram/packageComponent/pages/view/cover-view/cover-view.wxml",
+      "claim": "Official sample uses a nested native cover tree; no current WebGL acceptance inferred"
+    },
+    {
+      "url": "https://developers.weixin.qq.com/miniprogram/dev/devtools/projectconfig.html",
+      "readStatus": "NON_RETRYABLE_OPEN_FAILURE; not read as documentation evidence"
+    }
+  ],
+  "limits": [
+    "No full effective-coverView test result, successful adapter or rendering root cause was obtained",
+    "Tool failure records have no detailed error payload; a specific error code is not asserted",
+    "Native source ownership remains as previously bound; no new memory/performance/package/cost evidence",
+    "Complete visible Sky controls, marker/name breathing, scientific source quality/coverage and whole target journey remain required",
+    "Phone unavailable and final independent review gap remain; Goal active/unbudgeted/incomplete"
+  ]
+}

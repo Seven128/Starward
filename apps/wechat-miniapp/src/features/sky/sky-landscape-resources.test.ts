@@ -2,15 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { SkyLandscapeManifestData, SkyLandscapeResource } from "@starward/miniapp-contracts";
 import { createSkyLandscapeMasks, selectSkyLandscapePanorama, selectSkyLandscapeResource,
-  type SkyLandscapeMaskState } from "./sky-landscape-resources.ts";
+  selectSkyLandscapeImageResources, type SkyLandscapeMaskState } from "./sky-landscape-resources.ts";
 import { createSkyPanoramaMask } from "./sky-landscape-mask.ts";
+import { createSkyViewBasis } from "./sky-view-projection.ts";
 
 const overview = { id: "overview", image: { width: 1024, height: 512 } } as SkyLandscapeResource;
 const detail = { id: "detail", image: { width: 2048, height: 1024 } } as SkyLandscapeResource;
 const publication = { resources: [overview, detail] } as SkyLandscapeManifestData;
 const flush = async () => { await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); };
 
-test("foreground detail shares the actual GPU budget without counting a decoded identity twice or guessing unknown inputs", () => {
+test("foreground detail shares the GPU allocation target without counting a decoded identity twice or guessing unknown inputs", () => {
   const galaxy = { width: 2048, height: 1024 }, art = { width: 512, height: 512 };
   assert.equal(selectSkyLandscapeResource(publication, [galaxy, galaxy], false), detail);
   assert.equal(selectSkyLandscapeResource(publication, [galaxy, art], false), overview);
@@ -72,4 +73,21 @@ test("detail image failure still selects valid coarse alpha, without granting a 
   assert.deepEqual(selectSkyLandscapePanorama(detail, masks, new Map(), new Map([["landscape:overview", image]])), { image, mask: coarse });
   assert.equal(selectSkyLandscapePanorama(detail, masks, new Map(), new Map()), null);
   assert.equal(selectSkyLandscapePanorama(detail, new Map(), new Map([["landscape:detail", {}]]), new Map()), null);
+});
+
+test("image demand follows each completed resolution alpha and resumes on a horizon return", () => {
+  const alpha = new Uint8Array(1024 * 512); alpha.fill(255, 1024 * 256);
+  const fineAlpha = new Uint8Array(2048 * 1024); fineAlpha.fill(255, 2048 * 512);
+  const coarse = createSkyPanoramaMask(publication, overview, alpha), fine = createSkyPanoramaMask(publication, detail, fineAlpha);
+  const masks = new Map([["overview", coarse], ["detail", fine]]);
+  const high = { view: { basis: createSkyViewBasis(0, 135, 0)!, verticalFovDeg: 45 }, width: 390, height: 844 };
+  const horizon = { ...high, view: { basis: createSkyViewBasis(0, 95, 0)!, verticalFovDeg: 45 } };
+  assert.deepEqual(selectSkyLandscapeImageResources(publication.resources, masks, high), []);
+  assert.deepEqual(selectSkyLandscapeImageResources(publication.resources, masks, horizon), [overview, detail]);
+  assert.deepEqual(selectSkyLandscapeImageResources(publication.resources, masks, null), [overview, detail], "unknown view stays eligible");
+  assert.deepEqual(selectSkyLandscapeImageResources(publication.resources, new Map(), horizon), [], "missing alpha cannot acquire or certify an image");
+  const visibleFine = createSkyPanoramaMask(publication, detail, new Uint8Array(2048 * 1024).fill(255));
+  assert.deepEqual(selectSkyLandscapeImageResources(publication.resources, new Map([["overview", coarse], ["detail", visibleFine]]), high), [detail],
+    "coarse transparency must not erase independently occupied fine input");
+  assert.deepEqual(selectSkyLandscapeImageResources(publication.resources, masks, high), [], "return suspends bitmap demand without changing source alpha");
 });

@@ -1,0 +1,38 @@
+const navBack=async()=>page.evaluate(()=>{const a=globalThis.actualSkyPage,w=globalThis.__controlled,n=w.logicalNodes().filter(n=>n.nodeName==='button'&&n.props.ariaLabel==='返回');if(n.length!==1)throw Error('original Back not unique');return n[0].dispatchEvent(a.createEvent('tap'));});
+await act('模拟地景：开');await frame('late-ground-off');await search('M82','M:82');
+const optical=async(level:string)=>stablePaint(v=>v.sdssHook?.renderedLevel===level&&v.completedSources?.optical?.kind==='display'&&v.completedSources.optical.participatingFields?.some(f=>f.level===level)&&v.completedSources.optical.publicationHash===displayHash);
+await zoom(.2,'late-overview');const coarse=await optical('OVERVIEW');phase.push({name:'late-overview-actual-painted',...coarse});
+await page.evaluate(sha=>{const w=globalThis.__controlled;w.holdDecodeSha=sha;w.phase='late-medium-pending';},publication.levels.MEDIUM.sha256);
+const start=coarse.scene.fov,distance=20*Math.tan(start*Math.PI/720)/Math.tan(.1*Math.PI/720);
+await touch('touchstart',touches(20));await touch('touchmove',touches(distance));await touch('touchend',[],touches(distance));
+const pending=await wait(v=>v.scene?.fov<.101&&v.nativeCounters.decodedPending===1&&v.sdssHook?.loading&&v.sdssHook?.renderedLevel==='OVERVIEW');
+phase.push({name:'late-medium-decode-held-coarse',...pending});assert.equal(pending.completedSources.optical.participatingFields[0].level,'OVERVIEW');
+const gate=await page.evaluate(()=>{const w=globalThis.__controlled,r=w.heldDecodeStarts[0];if(!r||typeof r.late!=='function')throw Error('original native callback absent');return {id:r.id,sha256:r.sha256,held:w.heldDecodeStarts.length};});assert.equal(gate.sha256,publication.levels.MEDIUM.sha256);await save('held-native-decode.json',gate);
+await page.evaluate(()=>{const w=globalThis.__controlled;w.phase='late-hide-while-decode-pending';w.lifecycle(w.skyPage,'onHide');});
+const hidden=await wait(v=>v.nativeCounters.decodedPending===1&&v.pendingNativeRequests===0&&v.resources.activeDecodedImageHandles===0&&v.resources.gpuTextureUploadModelBytes===0&&v.owners.every(o=>o.leased===0&&o.running===0&&o.pending===0));phase.push({name:'late-hidden-native-decode-not-yet-terminal',...hidden});
+const retired=await page.evaluate(async()=>{const w=globalThis.__controlled,r=w.heldDecodeStarts[0],image=r.image;
+ const before={sceneCalls:globalThis.__pageSceneInputs.length,registrations:w.nativeImageOwners.length,gpu:w.gpuInventory(),hook:w.sdssHook,owners:globalThis.__pageFileOwners.map(o=>o.inspect()),detached:image.onload===null&&image.onerror===null};
+ if(!before.detached)throw Error('pending native callbacks not detached at hide');
+ await new Promise((resolve,reject)=>{image.addEventListener('load',resolve,{once:true});image.addEventListener('error',reject,{once:true});r.start();});
+ // Explicitly deliver the captured old callback even though the live native
+ // callback slots were detached. It must preserve the retired owner epoch.
+ r.late();await new Promise(resolve=>setTimeout(resolve,80));
+ return {before,after:{sceneCalls:globalThis.__pageSceneInputs.length,registrations:w.nativeImageOwners.length,gpu:w.gpuInventory(),hook:w.sdssHook,owners:globalThis.__pageFileOwners.map(o=>o.inspect()),counter:w.counters()},actualDecoded:w.images.find(x=>x.id===r.id)?.status};});
+assert.equal(retired.actualDecoded,'decoded');assert(retired.before.detached);assert.equal(retired.after.counter.decodedPending,0);assert.equal(retired.before.sceneCalls,retired.after.sceneCalls);assert.equal(retired.before.registrations,retired.after.registrations);assert.deepEqual(retired.before.gpu,retired.after.gpu);assert.deepEqual(retired.before.owners,retired.after.owners);assert.equal(retired.after.hook.image,null);await save('late-native-callback-retirement.json',retired);
+const count=()=>requests.filter(r=>r.binary&&r.status===200&&r.route.includes('/sky/sdss-optical/'+displayHash+'/')).length;assert.equal(count(),2);
+await page.evaluate(()=>{const w=globalThis.__controlled;w.phase='late-show-current-generation';w.lifecycle(w.skyPage,'onShow');});
+const shown=await optical('MEDIUM');phase.push({name:'late-show-current-medium-painted',...shown});assert.equal(count(),2);assert(shown.sdssHook.image.objectId!==gate.id);assert(shown.completedSources.optical.participatingFields.some(f=>f.image.objectId===shown.sdssHook.image.objectId));await capturePixels('software-late-show-medium');
+
+// New Canvas via the original resize lifecycle: fail exactly one optional
+// offscreen framebuffer check; ordinary surface work remains the real GL.
+await page.evaluate(()=>{const w=globalThis.__controlled,gl=w.gl,base=gl.checkFramebufferStatus.bind(gl);w.auxiliaryFaults=[];w.failAuxiliaryOnce=true;
+ gl.checkFramebufferStatus=(...args)=>{if(w.failAuxiliaryOnce&&gl.getParameter(gl.FRAMEBUFFER_BINDING)!==null){w.failAuxiliaryOnce=false;w.auxiliaryFaults.push({phase:w.phase,args,returned:gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT});return gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT;}return base(...args);};
+ w.phase='auxiliary-allocation-failure';w.lifecycle(w.skyPage,'onResize',{size:{windowWidth:390,windowHeight:844}});});
+const fault=await stablePaint(v=>v.sdssHook?.renderedLevel==='MEDIUM'&&v.completedSources?.optical===null&&v.frameResources?.sourceImages.some(i=>i.family==='sdss-optical'&&i.sha256===publication.levels.MEDIUM.sha256));phase.push({name:'auxiliary-failed-source-unknown',...fault});await capturePixels('software-auxiliary-unknown-medium');
+const recovery=await page.evaluate(()=>{const w=globalThis.__controlled;return {faults:w.auxiliaryFaults,text:w.logicalNodes().map(n=>n.textContent).join(''),buttons:w.logicalNodes().filter(n=>n.nodeName==='button').map(n=>({text:n.textContent,aria:n.props.ariaLabel})),sceneState:w.nodesFor(w.skyPage).find(n=>n.nodeName==='canvas')?.props['data-sky-scene-state']};});assert.equal(recovery.faults.length,1);assert.equal(recovery.sceneState,'READY');
+const available=recovery.buttons.filter(n=>/重试/.test(n.text));await save('auxiliary-page-recovery-observation.json',{...recovery,availableRetryButtons:available,explicitAuxiliaryRetry:available.length?'NEEDS_ACTION_CLASSIFICATION':'MISSING_CURRENT_PAGE',ordinaryImageStillLoaded:true,ordinaryAdoption:false});
+await page.evaluate(()=>{const w=globalThis.__controlled;w.phase='auxiliary-hide-recovery';w.lifecycle(w.skyPage,'onHide');});await wait(v=>v.resources.activeDecodedImageHandles===0&&v.resources.gpuTextureUploadModelBytes===0&&v.owners.every(o=>o.leased===0));
+await page.evaluate(()=>{const w=globalThis.__controlled;w.phase='auxiliary-show-recovery';w.lifecycle(w.skyPage,'onShow');});const recovered=await optical('MEDIUM');phase.push({name:'auxiliary-show-new-canvas-recovered',...recovered});assert.equal(count(),2);await capturePixels('software-auxiliary-recovered-medium');
+await save('public-canvas-touch-actions.json',gestures);await save('public-search-actions.json',publicSearch);
+await navBack();returned=await wait(v=>v.activeRoute==='pages/map/index'&&v.pendingNativeRequests===0&&v.resources.activeDecodedImageHandles===0&&v.resources.gpuTextureUploadModelBytes===0);phase.push({name:'late-return-original-map',...returned});
+await save('m82-scope-result.json',{hash:displayHash,successfulDisplayBinaryTransfers:count(),pendingNativeDecodeHide:'RETIRED_BEFORE_NATIVE_TERMINAL',capturedLateCallback:'REJECTED',showCurrentGeneration:'ACTUAL_MEDIUM_WARM_NO_NEW_BINARY',auxiliaryAllocationFailure:'ACTUAL_OPTIONAL_FRAMEBUFFER_UNKNOWN',explicitAuxiliaryRetry:available.length?'UNVERIFIED':'MISSING_CURRENT_PAGE',hideShowAuxiliaryRecovery:'ACTUAL_MEDIUM',ordinaryAdoption:false,wholeNativePage:'UNVERIFIED',quality:'UNVERIFIED_NOT_ADOPTED'});

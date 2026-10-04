@@ -1,0 +1,4 @@
+{
+  "status": "TASK_PREFLIGHT_FAILED_BEFORE_BUILD",
+  "reason": "Protected receipts contain path/sha256 only; the task incorrectly compared them to a path/bytes/sha256 record. All six actual SHA256 values remain exact. Subsequent Node calls had no generated script and did not execute a page."
+}

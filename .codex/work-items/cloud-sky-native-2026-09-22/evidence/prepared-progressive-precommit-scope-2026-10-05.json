@@ -1,0 +1,399 @@
+{
+  "status": "PRECOMMIT_PROGRESSIVE_SOURCE_DOCUMENT_PROTECTION_SCOPE",
+  "precommitHead": "72e65cf309d700cb7d40c5b7afd53660fd39fa35",
+  "branch": "codex/remote-main-20260908",
+  "existingSourceChanges": [
+    {
+      "before": {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-sdss-optical-frame.ts",
+        "bytes": 6348,
+        "sha256": "ea93743c394e355a097102dab0a700cc27f1c85aab30060da367b0e06b997e75"
+      },
+      "after": {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-sdss-optical-frame.ts",
+        "bytes": 6401,
+        "sha256": "2574c413f1690d807a76e4ac05945cce5bb34dc587ee22bfa21c987377197d13"
+      }
+    },
+    {
+      "before": {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-target-optical-identity.ts",
+        "bytes": 3636,
+        "sha256": "f4b28a0e91d8407442d2686b6230d0af8fb6f12b14c139239e842104300eab37"
+      },
+      "after": {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-target-optical-identity.ts",
+        "bytes": 3689,
+        "sha256": "264d21c2cc9a7206d97662fa03d4c33c3c8e4b3fbf7a5b063380483c6d6e9d89"
+      }
+    },
+    {
+      "before": {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-target-optical-visibility.ts",
+        "bytes": 1992,
+        "sha256": "eb2923636ae03e53e3ecaf1439545048d80f532d9f9718ca294ae8b8df84ae83"
+      },
+      "after": {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-target-optical-visibility.ts",
+        "bytes": 2045,
+        "sha256": "094f91eefdc7f6b8992bec4c5943fdf73c75df9340743eb0f9dcaf0f722774da"
+      }
+    },
+    {
+      "before": {
+        "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "bytes": 214512,
+        "sha256": "05fb7f878ff417c71da01ab73a90d2a3bb46fd4929d6f7f90ef7b75769cf9a12"
+      },
+      "after": {
+        "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "bytes": 214536,
+        "sha256": "12783998f1741a8904b6cddb933fb5cad64d44e98dbe6a52782adf2d62dc5cc8"
+      }
+    },
+    {
+      "before": {
+        "path": "apps/wechat-miniapp/src/features/sky/use-sky-target-optical.ts",
+        "bytes": 8653,
+        "sha256": "a117a9d2d1eb194d2a2f4b7ad37f8327a02ebebe8352146b3ef5b87051acf06b"
+      },
+      "after": {
+        "path": "apps/wechat-miniapp/src/features/sky/use-sky-target-optical.ts",
+        "bytes": 9090,
+        "sha256": "e7defd1612c9d52a50ae9b81f5de335983983e3e24459131f3932c435cd8bed6"
+      }
+    },
+    {
+      "before": {
+        "path": "packages/miniapp-contracts/src/index-types.ts",
+        "bytes": 998,
+        "sha256": "fd5924842135fd602b7c5ae7c4eae3b4c013a4d2fe5387f3cc647bab80528121"
+      },
+      "after": {
+        "path": "packages/miniapp-contracts/src/index-types.ts",
+        "bytes": 1066,
+        "sha256": "fedb25353e245e397a3a4fd0247698c647388d6d9ec8b6a15210a84204e2f807"
+      }
+    },
+    {
+      "before": {
+        "path": "packages/miniapp-contracts/src/index.ts",
+        "bytes": 1794,
+        "sha256": "e872d396458ac22146afdacd5c4c323fd9359794ab103184c9411e3f3ec1b7ac"
+      },
+      "after": {
+        "path": "packages/miniapp-contracts/src/index.ts",
+        "bytes": 1857,
+        "sha256": "ab812f6d47c9581dec9c14f25c06cf79ca1b1531299e98d5b16b8d705a5db210"
+      }
+    },
+    {
+      "before": {
+        "path": "packages/miniapp-contracts/src/prepared-optical-common.ts",
+        "bytes": 10425,
+        "sha256": "e9ae9900a1a8423274c88e0f0cda1ea35c4e94fcb1cd9e693249cf3b40c3f5e6"
+      },
+      "after": {
+        "path": "packages/miniapp-contracts/src/prepared-optical-common.ts",
+        "bytes": 10532,
+        "sha256": "409847648e08f8b930c6fe8bd759af863e351999f859ad620b0473e9d3bfa09a"
+      }
+    },
+    {
+      "before": {
+        "path": "packages/miniapp-contracts/src/prepared-rendered-optical-publication.ts",
+        "bytes": 1880,
+        "sha256": "dc0ae51eb4c0e2ca1aefd501a4bcb838da70d2ef9952a34f34901ad5b2d2eb01"
+      },
+      "after": {
+        "path": "packages/miniapp-contracts/src/prepared-rendered-optical-publication.ts",
+        "bytes": 2704,
+        "sha256": "691b3bafaed9cf528a2f8ba49733edfe4b8d91fddcfb56f03ab37dd37ba3c9fa"
+      }
+    },
+    {
+      "before": {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-tan-optical-registration.ts",
+        "bytes": 2917,
+        "sha256": "6b8b1e25fdf6819e6af0a08b4d31a137e7e9c4eb15d9afa93278f3ea1198621f"
+      },
+      "after": {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-tan-optical-registration.ts",
+        "bytes": 2978,
+        "sha256": "73f6e2d617bba88b21908a3355bd92237ba62b1fac717f5b8e95cfef4c1c5ea7"
+      }
+    },
+    {
+      "before": {
+        "path": "workers/miniapp-api/src/target-optical-image-file.ts",
+        "bytes": 1634,
+        "sha256": "128447f91f059e71508b133bbed7f98b79dd207141d31293360fcea9b45f218b"
+      },
+      "after": {
+        "path": "workers/miniapp-api/src/target-optical-image-file.ts",
+        "bytes": 1699,
+        "sha256": "1d93cba2c30c30ed541cf3fae6145481f7b56ca789ebeeb3a2e7988851748f16"
+      }
+    }
+  ],
+  "newProductionFiles": [
+    {
+      "path": "packages/miniapp-contracts/src/prepared-progressive-optical-publication.ts",
+      "bytes": 8542,
+      "sha256": "2779998073aeeb884a81716afab09879efcf508bc3ce92dffd470161e702e688"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/prepared-progressive-optical-publication.test.ts",
+      "bytes": 4828,
+      "sha256": "c435189aeb6af8900c84740d6f84bbd68051d14bb62a22c29672c84a7a060b44"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/test-fixtures/prepared-progressive-optical-publication.ts",
+      "bytes": 2711,
+      "sha256": "8a2bb486886b93cba316633c3fd9718cdcda476de1495dc39faed3878c7a27c3"
+    },
+    {
+      "path": "data-pipelines/deep-sky/publish_prepared_progressive.py",
+      "bytes": 15018,
+      "sha256": "c5e25eb47c7d7d597d02049f41f7f77654ab9cc7a4df6f5573611d91b7926a34"
+    }
+  ],
+  "protectedUnchanged": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "bytes": 5667,
+      "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "bytes": 2041,
+      "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "bytes": 1770,
+      "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "bytes": 14895,
+      "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "bytes": 64272,
+      "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8"
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "bytes": 42510,
+      "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd"
+    }
+  ],
+  "currentRuntimeSourcePins": 539,
+  "unchangedOriginalMaterial": {
+    "unchangedSeparateOfflineOwners": [
+      {
+        "path": "data-pipelines/deep-sky/prepared_rgb_observation.py",
+        "bytes": 14967,
+        "sha256": "7762cfe41132595b1d1a3011d06b87cb49f3e8c76f0e5e9914f5414e3ec82f9e"
+      },
+      {
+        "path": "data-pipelines/deep-sky/test_prepared_rgb_observation.py",
+        "bytes": 12115,
+        "sha256": "dfe4bad9348c451977871163d5d30be489adb005da4e3bf193a2248d7b837aa7"
+      }
+    ],
+    "unchangedCachedPhotos": [
+      {
+        "path": "output/noirlab-prepared-wide-source-1004-r1/noao-m81m82.jpg",
+        "bytes": 1163247,
+        "sha256": "85f615d5d56c04e4528716e61320f2c503fdcb2a62af44347e3402aca9a53eda"
+      },
+      {
+        "path": "output/noirlab-prepared-wide-source-1004-r1/noao1309a.jpg",
+        "bytes": 1162674,
+        "sha256": "57111359c5f7eb9e2aa79d794ca8b660686553cb8ca62d9064993077a7b29b97"
+      },
+      {
+        "path": "output/hubble-m82-prepared-source-1004-r1/heic0604a.jpg",
+        "bytes": 9657945,
+        "sha256": "a552168b5cad1f87fb552bed2637cedbd70fcae98bc5f2c7bcf27af95c9a1286"
+      },
+      {
+        "path": "output/hubble-m51-source-quality-trial-1002-r1/heic0506a.jpg",
+        "bytes": 4060187,
+        "sha256": "7b13a932bcf54653c591d369e8d1c4cbdbeb693ecc468242facb239fde52e4c2"
+      }
+    ],
+    "unchangedLargeTrialMaterials": [
+      {
+        "path": "output/noirlab-m82-large-detail-1004-r1/source-admission.json",
+        "bytes": 3533,
+        "sha256": "d5ecaf00a5dd7f55d110381569907b64355cd6e47e76f3b1eab459670d9e15e6"
+      },
+      {
+        "path": "output/noirlab-m82-large-detail-1004-r1/master-rgba.npy",
+        "bytes": 16777344,
+        "sha256": "08fe7968ae69e7db97db7de9605bc897759d92423760334b9579f939ea55d3cc"
+      },
+      {
+        "path": "output/noirlab-m82-large-detail-1004-r1/prototype-display-master.npy",
+        "bytes": 16777344,
+        "sha256": "a8a5cd8b6989620850debcc410f59e16a1141f79d5401b6875d4e3dd41f4bdbb"
+      },
+      {
+        "path": "output/noirlab-m82-large-detail-1004-r1/encoded-display-background.npz",
+        "bytes": 79513803,
+        "sha256": "ee7a709393427858ae7904395700678f0ddb876a9dfaa153985173d0d4cf218f"
+      },
+      {
+        "path": "output/noirlab-m82-large-detail-1004-r1/background-estimation-mask.npy",
+        "bytes": 4194432,
+        "sha256": "e2e441f86264e98b096554a5326a8d1789f94ec7d86a17f316d6f529b2432979"
+      }
+    ],
+    "unchangedOldPublications": [
+      {
+        "path": "output/prepared-optical-publication-1003-r4/publication/manifest.json",
+        "bytes": 7509,
+        "sha256": "23faa1521ae39a6a7d92f36c87ebf691a75b6bd7b91a3654e9b24f63f4d793f1"
+      },
+      {
+        "path": "output/hubble-m82-prepared-publication-1004-r2/manifest.json",
+        "bytes": 7504,
+        "sha256": "3823d73fbc836710141e4052c9950de148a7bebb608b943ffb601111e383a7ca"
+      },
+      {
+        "path": "output/noirlab-prepared-wide-publication-1004-r1/noao-m81m82/manifest.json",
+        "bytes": 7384,
+        "sha256": "1c99fb46449a4721131d7d7e45a4856d7c77499bd504c175b5ac9e3c0ecbc839"
+      },
+      {
+        "path": "output/noirlab-prepared-wide-publication-1004-r1/noao1309a/manifest.json",
+        "bytes": 7348,
+        "sha256": "79221ca85e79d0ae7e28c71b5ef4b281125284b4325e6ad2fc3862890af409c6"
+      }
+    ],
+    "largerSourceImage": [
+      {
+        "path": "output/noirlab-m82-large-source-1004-r1/noao-m81m82-large.jpg",
+        "bytes": 9250383,
+        "sha256": "71a539df75c8af574e98d3da13c1381e525093dd2e8814d9588f35b73b4e3479"
+      }
+    ],
+    "unchangedRightsReceipt": [
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-texture-rights-check-2026-10-04.json",
+        "bytes": 2848,
+        "sha256": "160dc72201cc8bffd95df6fc0f89a3d2a449fcb05ebce1a6881f2e0984129632"
+      }
+    ]
+  },
+  "unchangedPublishedOutputs": [
+    {
+      "manifest": {
+        "path": "output/prepared-large-raw-publication-1004-r1/manifest.json",
+        "bytes": 7330,
+        "sha256": "c0bdf07668a3579a20e096d1d22f114bc6ea9e9018e4bdf3f7830cea548e1cf5"
+      },
+      "hash": "3a33ced542d92bedb2225157d5d21de32d048aa992900a038c0940b8dc2e05af",
+      "binaryPins": [
+        {
+          "path": "output/prepared-large-raw-publication-1004-r1/M-82-overview.png",
+          "bytes": 400779,
+          "sha256": "d1d4cab2b3714a04167321d482b1e3818e9f56c61566b5375639042e3ba22170"
+        },
+        {
+          "path": "output/prepared-large-raw-publication-1004-r1/M-82-medium.png",
+          "bytes": 447408,
+          "sha256": "e11b43c0663cfacc2c3029f6015eb6f36fd649e71665102c38d39ed84c8a826b"
+        },
+        {
+          "path": "output/prepared-large-raw-publication-1004-r1/M-82-detail.png",
+          "bytes": 364843,
+          "sha256": "0438d2e8d596f76a5bb7327b5a755894f91250d51e5e0fd813fcf15d32e02bf1"
+        }
+      ]
+    },
+    {
+      "manifest": {
+        "path": "output/prepared-large-display-publication-1004-r1/manifest.json",
+        "bytes": 18260,
+        "sha256": "239f0f154f0b37bb69cf92628419563db776aec9da07a04e6968291e66567986"
+      },
+      "hash": "97bd0d5b1ebb48e47cb147d273838f79566ea9f72f2bbfa446c2e73fd3736b9c",
+      "binaryPins": [
+        {
+          "path": "output/prepared-large-display-publication-1004-r1/M-82-overview.png",
+          "bytes": 374667,
+          "sha256": "edcf3d5eb6ed6ff4a92145e3907d8202b5e6b1f58065c9b30f2e6550ad7ced8d"
+        },
+        {
+          "path": "output/prepared-large-display-publication-1004-r1/M-82-medium.png",
+          "bytes": 461439,
+          "sha256": "09699f48cd5f7df2729cfddbfdc09d2e1ccd8eae431b6081d44d9f398eb7fed2"
+        },
+        {
+          "path": "output/prepared-large-display-publication-1004-r1/M-82-detail.png",
+          "bytes": 371952,
+          "sha256": "6b30e7d26a991c629f93dbe8cdfe39218f91ccbc4ee5c82e623f5a469c19325f"
+        }
+      ]
+    }
+  ],
+  "updatedDocuments": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+      "bytes": 177389,
+      "sha256": "448d994121ab113208ac2f5fd82db213e24a30cf09ba16bd4e34dd5036a993bf"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+      "bytes": 100895,
+      "sha256": "6b4c6d45ed4a51a905231b5ed5200921c53b18c7e74b39b733b5220944b2155a"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+      "bytes": 15328,
+      "sha256": "bbda55309f8a9ec194cf97a48546d193340065b74fa2a98a97cd4b3f91c61f7d"
+    },
+    {
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+      "bytes": 161062,
+      "sha256": "aa99a84ab9f41e40d67bd196818c28502d4cbcfe9ebedb9160f2e7d857be706c"
+    },
+    {
+      "path": "project_context/architecture/runtime-and-domain.md",
+      "bytes": 314262,
+      "sha256": "e05b33aad6b5beeba41dbce962a151df1973de65413cd4ee8fc26ecb6ff86018"
+    },
+    {
+      "path": "data-pipelines/deep-sky/README.md",
+      "bytes": 67782,
+      "sha256": "187ff1adf8745db0a72083f57e75045a955efcb391b71ff7f2309c3a77b15363"
+    }
+  ],
+  "contextPaths": 47,
+  "processesUnchanged": [
+    {
+      "startUtc": "2026-09-30T18:18:41.4359228Z",
+      "id": 18132
+    },
+    {
+      "startUtc": "2026-09-30T18:03:53.4146084Z",
+      "id": 24040
+    }
+  ],
+  "consultation": {
+    "path": "docs/cloud-sky-data-processing-display-consultation-2026-10-05.md",
+    "bytes": 35231,
+    "sha256": "2d714fda77424a4469cd150cf99b00392534ff45b0d3311cb2f071ad3fb840d0"
+  },
+  "warmTransitionContinuity": "OPEN",
+  "ordinaryRegistryAdopted": false,
+  "independentReview": "MISSING",
+  "goal": "active/unbudgeted/incomplete",
+  "commitAuthorization": "User explicitly requested all changes committed and current worktree branch pushed; protected existing settings/outbox changes are byte-preserved and will be committed separately. No release/deployment authorization.",
+  "limits": "Before Git commits, bounded source/document/input verification, not comprehensive product acceptance or whole-worktree security certification."
+}

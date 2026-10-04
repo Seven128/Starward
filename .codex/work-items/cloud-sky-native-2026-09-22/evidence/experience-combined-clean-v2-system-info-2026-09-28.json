@@ -1,0 +1,14 @@
+{
+  "scope": "Actual exact-project official DevTools runtime readback; simulator, not physical device",
+  "windowWidth": 390,
+  "windowHeight": 762,
+  "pixelRatio": 3,
+  "screenWidth": 390,
+  "screenHeight": 844,
+  "platform": "devtools",
+  "enableDebug": false,
+  "screenshotDimensions": {
+    "width": 197,
+    "height": 423
+  }
+}

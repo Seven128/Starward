@@ -1,0 +1,1464 @@
+{
+  "scope": "Unchanged V30 whole-journey development evidence only; no product source/build/device/cloud/Git changes.",
+  "candidate": {
+    "file": "experience-combined-clean-v30-candidate-2026-09-29.json",
+    "recordSha256": "8384d0aab8daa117b3ae26ec7a866bc640ca9c4cd18b013b497121af8908a454",
+    "bundle": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v30-0929",
+    "sha256": "bbc5f610b9d15d18ba0a3553db25c78da8fe120653de60a91b3f124270d82e42",
+    "sourceInputsVerified": 106
+  },
+  "prior": {
+    "file": "experience-optical-boundary-v30-native-validation-2026-09-29.json",
+    "sha256": "1e7f2e17f945e6b9c896f1281de4c9977b08c01ffaebf5162771d5c0b8388079",
+    "traceVerified": true
+  },
+  "trace": {
+    "file": "experience-v30-combined-native-2026-09-29.jsonl",
+    "sha256": "354e255e3106731013983a094d13310b9c208c603aa73a4d6fbb49d8f9998940",
+    "events": 82,
+    "frozen": true
+  },
+  "captures": [
+    {
+      "stage": "baseline",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-combined-baseline-2026-09-29.png",
+      "sha256": "6c9bd673073f5261e37309a2cd1ac2d7df1c9250c8891e3723ca388111fdbee0",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "time-coordinate-result",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-combined-time-coordinate-result-2026-09-29.png",
+      "sha256": "54a476aa65c3cf78c1151e3db73598d71fffddbb41c83d4c4c59cb89f6e2ec27",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "local-browsing",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-combined-local-browsing-2026-09-29.png",
+      "sha256": "f5f7f41fa774fb2641edd0a0f0272cf11835d73718ddc4b57aa3117168aed22a",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "full-dome",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-combined-full-dome-2026-09-29.png",
+      "sha256": "6a0c75532551bb5f5fa75733b2a2141a64f0bd8a399b7039a1b781688a3c3dbf",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "local-return",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-combined-local-return-2026-09-29.png",
+      "sha256": "ff2c32dedf4d284126395b83d0d9003d820373dadc14bc3b53a09ccf5b092ea4",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "vega-local",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-combined-vega-local-2026-09-29.png",
+      "sha256": "b1b70b3e0c7477b4d4d21478eac0397ec3f86b37fb57be0e09da52656f8490ca",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "vega-tracking-19",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-combined-vega-tracking-19-2026-09-29.png",
+      "sha256": "a9c099428923ec94313b93a3f090378239325cfbd32b34641bec4d21a19e91b4",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "vega-tracking-21",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-combined-vega-tracking-21-2026-09-29.png",
+      "sha256": "031ec3d243615764ad1c281857ff666bc5ac96024957c781bfebd4e1a36ade0b",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "vega-tracking-source",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-combined-vega-tracking-source-2026-09-29.png",
+      "sha256": "f65d70c71098c70cad41c11a043f080e7e17ddd33b98c92bd3edb5ae69714f87",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "vega-tracking-source-back",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-combined-vega-tracking-source-back-2026-09-29.png",
+      "sha256": "75e7be010bfc7c80921b15bd76b0a6c43194e0c056af632bb13c4042b8b6796b",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "map-return",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-combined-map-return-2026-09-29.png",
+      "sha256": "7b8ce0bdd9a125341de1aa811d994314b7f8c96176f423803192757015cbed70",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "reentry-manual",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-combined-reentry-manual-2026-09-29.png",
+      "sha256": "6fa782c56adefef678ecb54e6d3e4b20f6110ddde50fb0dc86898cf4266d6945",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    }
+  ],
+  "baselineContext": {
+    "locationKind": "FORMAL_SPOT",
+    "publicSpotId": "spot:test-published",
+    "localDate": "2026-09-29",
+    "selectedAtUtc": "2026-09-29T11:00:00Z",
+    "timezone": "Asia/Shanghai",
+    "revision": 2,
+    "contextFingerprint": "0bb9648591a78754efb9b0e488c2b4624b723af1041ce379979e5e4a02b5f095",
+    "astronomyVersion": "astronomy-engine-2.1.19",
+    "contextIdSha256": "893b8fd5c919dc7b2f99fa6d9e922d76966fef9b75238ba9dcca663c618d4ad6"
+  },
+  "currentContext": {
+    "locationKind": "FORMAL_SPOT",
+    "publicSpotId": "spot:test-published",
+    "localDate": "2026-09-29",
+    "selectedAtUtc": "2026-09-29T13:00:00Z",
+    "timezone": "Asia/Shanghai",
+    "revision": 3,
+    "contextFingerprint": "0bb9648591a78754efb9b0e488c2b4624b723af1041ce379979e5e4a02b5f095",
+    "astronomyVersion": "astronomy-engine-2.1.19",
+    "contextIdSha256": "893b8fd5c919dc7b2f99fa6d9e922d76966fef9b75238ba9dcca663c618d4ad6"
+  },
+  "native": {
+    "SDKVersion": "3.17.4",
+    "platform": "devtools",
+    "enableDebug": false,
+    "width": 390,
+    "height": 762,
+    "mode": "DAY",
+    "largeText": false,
+    "pagePath": "sky/detail/index",
+    "pageDepth": 2
+  },
+  "zoomJourney": [
+    {
+      "stage": "combined-baseline-frame",
+      "label": "示例观星点的方位高度天空图，已呈现垂直视场 0.15 度，4082 颗真实亮星目录对象，场景时刻 2026-09-29T11:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 19:00",
+      "roundedVerticalFov": 0.15
+    },
+    {
+      "stage": "combined-local-zoomout-1",
+      "label": "示例观星点的方位高度天空图，已呈现垂直视场 0.76 度，4082 颗真实亮星目录对象，场景时刻 2026-09-29T11:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 19:00",
+      "roundedVerticalFov": 0.76
+    },
+    {
+      "stage": "combined-local-zoomout-2",
+      "label": "示例观星点的方位高度天空图，已呈现垂直视场 3.8 度，4082 颗真实亮星目录对象，场景时刻 2026-09-29T11:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 19:00",
+      "roundedVerticalFov": 3.8
+    },
+    {
+      "stage": "combined-local-zoomout-3",
+      "label": "示例观星点的方位高度天空图，已呈现垂直视场 18.9 度，4082 颗真实亮星目录对象，场景时刻 2026-09-29T11:00:00.000Z，可见星座 猎犬座，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 19:00",
+      "roundedVerticalFov": 18.9
+    },
+    {
+      "stage": "combined-wide-zoomout-1",
+      "label": "示例观星点的方位高度天空图，已呈现垂直视场 89.6 度，4082 颗真实亮星目录对象，场景时刻 2026-09-29T11:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 19:00",
+      "roundedVerticalFov": 89.6
+    },
+    {
+      "stage": "combined-wide-zoomout-2",
+      "label": "示例观星点的方位高度天空图，已呈现垂直视场 256.5 度，4082 颗真实亮星目录对象，场景时刻 2026-09-29T11:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 19:00",
+      "roundedVerticalFov": 256.5
+    },
+    {
+      "stage": "combined-full-dome-frame",
+      "label": "示例观星点的方位高度天空图，已呈现垂直视场 274.9 度，4082 颗真实亮星目录对象，场景时刻 2026-09-29T11:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 19:00",
+      "roundedVerticalFov": 274.9
+    },
+    {
+      "stage": "combined-local-return-1",
+      "label": "示例观星点的方位高度天空图，已呈现垂直视场 108.8 度，4082 颗真实亮星目录对象，场景时刻 2026-09-29T11:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 19:00",
+      "roundedVerticalFov": 108.8
+    },
+    {
+      "stage": "combined-local-return-2",
+      "label": "示例观星点的方位高度天空图，已呈现垂直视场 23.5 度，4082 颗真实亮星目录对象，场景时刻 2026-09-29T11:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 19:00",
+      "roundedVerticalFov": 23.5
+    }
+  ],
+  "pixels": {
+    "trackingTimeChange": {
+      "left": "experience-v30-combined-vega-tracking-19-2026-09-29.png",
+      "right": "experience-v30-combined-vega-tracking-21-2026-09-29.png",
+      "changedPixels": 330391,
+      "maxChannelDifference": 223,
+      "changedBounds": {
+        "left": 4,
+        "right": 422,
+        "top": 100,
+        "bottom": 889
+      },
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Original native 427x919 captures, no resizing; exclude host status/capsule/border/home. Canvas scene only; does not certify overlay composition."
+      }
+    },
+    "trackingSourceReturn": {
+      "left": "experience-v30-combined-vega-tracking-21-2026-09-29.png",
+      "right": "experience-v30-combined-vega-tracking-source-back-2026-09-29.png",
+      "changedPixels": 25,
+      "maxChannelDifference": 1,
+      "changedBounds": {
+        "left": 36,
+        "right": 194,
+        "top": 223,
+        "bottom": 807
+      },
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Original native 427x919 captures, no resizing; exclude host status/capsule/border/home. Canvas scene only; does not certify overlay composition."
+      }
+    }
+  },
+  "encodedFiles": {
+    "combined-full-dome-files": {
+      "count": 6,
+      "bytes": 4951097,
+      "files": [
+        {
+          "format": "png",
+          "bytes": 36561,
+          "md5": "9055574961eb92fe9524d3e540d97687"
+        },
+        {
+          "format": "png",
+          "bytes": 11587,
+          "md5": "478dfa64008a820104a300a1d94c7cc0"
+        },
+        {
+          "format": "png",
+          "bytes": 854784,
+          "md5": "0807ad4c0c1af952c1e2b52d45878f3b"
+        },
+        {
+          "format": "png",
+          "bytes": 3316173,
+          "md5": "08751b4aa1916bad40f41aedb4185ad2"
+        },
+        {
+          "format": "png",
+          "bytes": 28437,
+          "md5": "ad96002d11c8012ff31a5aad38defc8d"
+        },
+        {
+          "format": "jpg",
+          "bytes": 703555,
+          "md5": "cb6e0e84630c9cee5c480ec74cc45046"
+        }
+      ]
+    },
+    "combined-pre-exit-files": {
+      "count": 7,
+      "bytes": 1696787,
+      "files": [
+        {
+          "format": "jpg",
+          "bytes": 703555,
+          "md5": "cb6e0e84630c9cee5c480ec74cc45046"
+        },
+        {
+          "format": "png",
+          "bytes": 29252,
+          "md5": "690177774e82aa7b0b9f0e9488bc70ea"
+        },
+        {
+          "format": "png",
+          "bytes": 43164,
+          "md5": "a1674f53b18eb5bb3eab3708ad72bdc3"
+        },
+        {
+          "format": "png",
+          "bytes": 854784,
+          "md5": "0807ad4c0c1af952c1e2b52d45878f3b"
+        },
+        {
+          "format": "png",
+          "bytes": 43187,
+          "md5": "8fd3178cd40e9c9d2eabf46bcb1159bb"
+        },
+        {
+          "format": "png",
+          "bytes": 11604,
+          "md5": "2c63db78f2e153282dfbf9b74692cfb1"
+        },
+        {
+          "format": "png",
+          "bytes": 11241,
+          "md5": "19291dabc4e9dcf790046611a20d281a"
+        }
+      ]
+    },
+    "combined-map-return-files": {
+      "count": 0,
+      "bytes": 0,
+      "files": []
+    },
+    "combined-reentry-manual-files": {
+      "count": 3,
+      "bytes": 4874512,
+      "files": [
+        {
+          "format": "jpg",
+          "bytes": 703555,
+          "md5": "cb6e0e84630c9cee5c480ec74cc45046"
+        },
+        {
+          "format": "png",
+          "bytes": 854784,
+          "md5": "0807ad4c0c1af952c1e2b52d45878f3b"
+        },
+        {
+          "format": "png",
+          "bytes": 3316173,
+          "md5": "08751b4aa1916bad40f41aedb4185ad2"
+        }
+      ]
+    }
+  },
+  "coordinateAction": {
+    "input": {
+      "x": 56,
+      "basis": "Current official size 88x44 and offset 12/766; coordinate action, no selector",
+      "y": 788
+    },
+    "result": {
+      "ariaExpanded": true
+    },
+    "geometry": {
+      ".sky-control-dock": {
+        "offset": {
+          "left": 12,
+          "top": 662
+        },
+        "size": {
+          "success": true,
+          "width": 88,
+          "height": 148
+        }
+      },
+      "opacity": 1,
+      ".sky-orientation-canvas__surface": {
+        "offset": {
+          "left": 0,
+          "top": 0
+        },
+        "size": {
+          "success": true,
+          "width": 390.3999938964844,
+          "height": 844
+        }
+      },
+      "z-index": 12,
+      ".sky-control-dock__button--time": {
+        "offset": {
+          "left": 12,
+          "top": 766
+        },
+        "size": {
+          "success": true,
+          "width": 88,
+          "height": 44
+        }
+      },
+      "display": "flex",
+      "visibility": "visible"
+    }
+  },
+  "runtime": {
+    "totalObserved": 349,
+    "windows": [
+      {
+        "Id": 25916,
+        "MainWindowTitle": "Starward-Sky-Combined-Clean-V30-0929"
+      }
+    ],
+    "contextMode": "pass",
+    "sourceMode": "pass",
+    "forwardedPutStatuses": [
+      200,
+      200,
+      200,
+      200
+    ],
+    "heldResourceCount": 0,
+    "epochStartedAt": "2026-09-29T09:14:20.175Z",
+    "puts": 4,
+    "activeCount": 0,
+    "phase": "settled",
+    "resourceMode": "pass"
+  },
+  "currentRunTraffic": {
+    "records": [
+      {
+        "sequence": 262,
+        "phase": "settled",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 628225,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 263,
+        "phase": "settled",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 628225,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 264,
+        "phase": "settled",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 628225,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 265,
+        "phase": "settled",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 29615,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 266,
+        "phase": "settled",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 1782,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 267,
+        "phase": "settled",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 628225,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 268,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 269,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 3329,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 270,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 271,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 272,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 628225,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 273,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 1471,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 274,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 275,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 276,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 277,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 37521,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 278,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 628226,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 279,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 1782,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 280,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 3330,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 281,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 282,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 3413,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 283,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 284,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 285,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 286,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 287,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 288,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 289,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 290,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 291,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 292,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 293,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 294,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 295,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 296,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 297,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 298,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 1782,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 299,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 300,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 37521,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 301,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 628226,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 302,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 3413,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 303,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 304,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 305,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 306,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 307,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 308,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 309,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 310,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 311,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 312,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 313,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 314,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 315,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 316,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 317,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 628226,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 318,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 628226,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 319,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 1284,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 320,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 3755,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 321,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 1471,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 322,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 323,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 37521,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 324,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 325,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 42223,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 326,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 327,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 328,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 1782,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 329,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 37521,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 330,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 628226,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 331,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 200,
+        "upstreamBodyBytes": 3413,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 332,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 333,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 334,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 335,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 336,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 337,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 338,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 339,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 340,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 341,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 342,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 343,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 344,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 345,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 346,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 347,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 348,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      },
+      {
+        "sequence": 349,
+        "phase": "native-progression",
+        "classification": null,
+        "status": 304,
+        "upstreamBodyBytes": 0,
+        "downstreamBodyBytes": null,
+        "downstreamFinished": true,
+        "upstreamEnded": true,
+        "downstreamClosedEarly": null
+      }
+    ],
+    "afterSequence": 261,
+    "scope": "Native non-probe records after prior V30 optical closure; phases do not establish ownership alone",
+    "epochStartedAt": "2026-09-29T09:14:20.175Z"
+  },
+  "mapSourceSha256": "81283f7b2849cd55eed4a82d322885e1c76d7f8aa81ab26fc2fc584d198c0e82",
+  "reference": {
+    "file": "experience-v30-vega-reference-provisional-2026-09-29.json",
+    "sha256": "80fe7cc4c708d8a170bf3dbd5b4539baff6e5e27f8f1f2d26a8305f829789923",
+    "image": "experience-v30-vega-reference-provisional-2026-09-29.jpg",
+    "imageSha256": "c2abc52cc3c3bbc06afa22df9dd12027d1683bd5580cd257c8e1a950ed62f37f",
+    "viewedBy": "root",
+    "capturedUtc": "2026-09-29T11:43:53.371Z",
+    "reference": {
+      "canvas": {
+        "backingHeight": 844,
+        "backingWidth": 390,
+        "css": {
+          "bottom": 844,
+          "height": 844,
+          "left": 0,
+          "right": 390.3999938964844,
+          "top": 0,
+          "width": 390.3999938964844,
+          "x": 0,
+          "y": 0
+        }
+      },
+      "clockText": "21:15:072026-09-29",
+      "locationButton": "Longgang District",
+      "url": "https://stellarium-web.org/skysource/Vega?fov=10.900173185479138&date=2026-09-29T13%3A00%3A00Z&lat=22.4826799&lng=114.5557147&elev=0",
+      "viewport": {
+        "height": 844,
+        "width": 390
+      }
+    },
+    "classification": "unmatched provisional reference only",
+    "limits": [
+      "Reference clock running; native time fixed at 21:00 Asia/Shanghai",
+      "Public clock interactions gave no time panel; exact reference instant not established",
+      "Numeric place requested via public URL, not verified in visible place editor",
+      "Actual Canvas CSS matches native logical dimensions; screenshot is host-scaled JPEG with chrome band",
+      "No exact reference camera/roll/FOV acceptance; source and DSS/deep-star data differences retained"
+    ]
+  },
+  "toolFailures": [
+    {
+      "observedUtc": "2026-09-29T11:20:46.7640358Z",
+      "tool": "automation_element_action",
+      "reason": "mcp_business_fail",
+      "errorType": "MCP_TOOL_ERROR"
+    },
+    {
+      "observedUtc": "2026-09-29T11:44:43.5746889Z",
+      "errorType": "MCP_TOOL_ERROR",
+      "reason": "mcp_business_fail",
+      "tool": "automation_evaluate"
+    },
+    {
+      "observedUtc": "2026-09-29T11:47:21.7376268Z",
+      "reason": "mcp_business_fail",
+      "tool": "automation_evaluate",
+      "errorType": "MCP_TOOL_ERROR"
+    }
+  ],
+  "limitations": [
+    "Native SDK input and rendered Canvas effects verify this journey, not real phone controls/gestures/pose or complete native overlay composition.",
+    "Time-button measured coordinate changes aria-expanded; Canvas-only screenshot still omits normal labels/dock/modals. No proof of visible or correctly layered controls.",
+    "Full-dome clamp makes local return 23.5 degrees rather than original 18.9; no pixel-equal or exact-camera roundtrip claim.",
+    "Time change is committed 19:00 to 21:00. Opening/closing an untouched time panel does not verify cancellation of an uncommitted preview.",
+    "Tracking source-return crop differs at 25 pixels with maximum channel difference 1; not exact pixel equality. Identity, time, tracking and rounded FOV are read back; the small pixel difference mechanism remains unproven.",
+    "88 HTTP records are bounded by prior closure sequence, not the reused phase label. Normal 200/304 does not repeat V29 faults or establish native decode/GPU recovery.",
+    "Encoded files 7 to 0 to 3 establish owner cleanup/reload, not decoded/native/GPU memory or peak resource measurements.",
+    "Stellarium clock is running and numeric location editor was not verified. Reference remains unmatched; no astronomical registration, roll/FOV or cross-renderer pixel acceptance.",
+    "Official WeChat Canvas documentation navigation was blocked by browser site-safety policy. No alternate route was used to obtain the blocked page; local screenshot behavior remains unresolved.",
+    "Three native tool failures remain recorded: stale selector and two command quoting failures; corrected read-only quoting succeeded. Null SDK/control extraction diagnostics are superseded by final actual reads, not product failures.",
+    "Only task evidence and the existing sole PLAN/state/index/progress are changed. Commercial exclusions/reasons and all 33 valid obligations remain. Phone unavailable, large text paused, final independent review open."
+  ]
+}

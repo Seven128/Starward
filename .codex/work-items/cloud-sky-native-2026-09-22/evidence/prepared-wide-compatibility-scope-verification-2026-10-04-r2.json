@@ -1,0 +1,242 @@
+{
+  "status": "UNCHANGED_BOUNDED_PRODUCTION_AND_PROTECTED_SCOPE",
+  "branch": "codex/remote-main-20260908",
+  "head": "72e65cf309d700cb7d40c5b7afd53660fd39fa35",
+  "stagedFiles": [],
+  "unchangedPreviouslyBoundSourceCount": 491,
+  "unchangedSeparateOfflineOwners": [
+    {
+      "path": "data-pipelines/deep-sky/prepared_rgb_observation.py",
+      "bytes": 14967,
+      "sha256": "7762cfe41132595b1d1a3011d06b87cb49f3e8c76f0e5e9914f5414e3ec82f9e"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_prepared_rgb_observation.py",
+      "bytes": 12115,
+      "sha256": "dfe4bad9348c451977871163d5d30be489adb005da4e3bf193a2248d7b837aa7"
+    }
+  ],
+  "protected": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "bytes": 5667,
+      "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "bytes": 2041,
+      "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "bytes": 1770,
+      "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "bytes": 14895,
+      "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "bytes": 64272,
+      "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8"
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "bytes": 42510,
+      "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd"
+    }
+  ],
+  "newTaskScripts": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/propose-prepared-wide-ties-2026-10-04.py",
+      "bytes": 8636,
+      "sha256": "9c946f8a03cdbf6e7baff87b0f9a0bc647996d8028a8cd054cac6f8fc3250c0d"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/recover-prepared-wide-ties-2026-10-04.py",
+      "bytes": 7790,
+      "sha256": "a3f510400c41ba5da22bccdef65d0430d2d1d249aa198ba90d84c86bd4a226e5"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/measure-prepared-wide-compatibility-2026-10-04.py",
+      "bytes": 8267,
+      "sha256": "f0a7313e52d936244adb72525f8912e81a2391063ae1714e1e7202917f9f1888"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-prepared-wide-display-inputs-2026-10-04.py",
+      "bytes": 5911,
+      "sha256": "95fe09e30fa6e7c56bb6afd6df0e24c091ac5505ba596e528fa0a2c6029d2903"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-prepared-linear-composition-2026-10-04.mts",
+      "bytes": 18457,
+      "sha256": "ee879104da238ee7f3c6d75c08ab193976e5854621089410e2e18831934eab46"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/readback-prepared-wide-compatibility-2026-10-04.py",
+      "bytes": 15113,
+      "sha256": "fcc58dffdf1bb818d5ea50e5186ecef4b34db544458cc11da3d226c047ab408a"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/check-prepared-wide-compatibility-scope-2026-10-04.py",
+      "bytes": 5450,
+      "sha256": "2af157a533e08e512e3991efc0ee239bdd20d7bc727682da442b5558c8b1c96b"
+    }
+  ],
+  "owningDocumentChanges": [
+    {
+      "before": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+        "bytes": 168391,
+        "sha256": "95f606c532d76229f925d6f1ad98a8f541a7d1067e1b1af1744869d44430f560"
+      },
+      "after": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+        "bytes": 169788,
+        "sha256": "5ef3366ea3362cffb657644f0f8f614bc9f2fc4c7bb39ab3c8932afa70f41167"
+      },
+      "archived": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-wide-compatibility-docs-before-2026-10-04/.codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+        "bytes": 168391,
+        "sha256": "95f606c532d76229f925d6f1ad98a8f541a7d1067e1b1af1744869d44430f560"
+      }
+    },
+    {
+      "before": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+        "bytes": 99126,
+        "sha256": "1498e8e86d30c0bd3b10a0b0c3fb60514939c244e26d46aa9e195a5ad957cbd2"
+      },
+      "after": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+        "bytes": 99339,
+        "sha256": "ece03056e7126bcaae3cd74562c592a0cb90524a17d68e4e01ced7d41d6a4f07"
+      },
+      "archived": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-wide-compatibility-docs-before-2026-10-04/.codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+        "bytes": 99126,
+        "sha256": "1498e8e86d30c0bd3b10a0b0c3fb60514939c244e26d46aa9e195a5ad957cbd2"
+      }
+    },
+    {
+      "before": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/OPTICAL-DATA-RESEARCH.md",
+        "bytes": 31623,
+        "sha256": "b6560ae94c8c723ba1783e075e2c7515b8deb37b8ed5c743b3615b36d0a93aa7"
+      },
+      "after": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/OPTICAL-DATA-RESEARCH.md",
+        "bytes": 32425,
+        "sha256": "baae53eb2c2a88a3cb88e0b5ce8f89f0f13291b1c03fab221980c6d6d9c89a4f"
+      },
+      "archived": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-wide-compatibility-docs-before-2026-10-04/.codex/work-items/cloud-sky-native-2026-09-22/OPTICAL-DATA-RESEARCH.md",
+        "bytes": 31623,
+        "sha256": "b6560ae94c8c723ba1783e075e2c7515b8deb37b8ed5c743b3615b36d0a93aa7"
+      }
+    },
+    {
+      "before": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+        "bytes": 6516,
+        "sha256": "9524525958ad88b89bb35d5208711509157c9fcb771991c561b7ba7b12c262ba"
+      },
+      "after": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+        "bytes": 7217,
+        "sha256": "9a131519b909a4aa902868abe0872da3aeb9692136218eb1697141a6772f97b0"
+      },
+      "archived": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-wide-compatibility-docs-before-2026-10-04/.codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+        "bytes": 6516,
+        "sha256": "9524525958ad88b89bb35d5208711509157c9fcb771991c561b7ba7b12c262ba"
+      }
+    },
+    {
+      "before": {
+        "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+        "bytes": 156386,
+        "sha256": "ddd241d287226d0c2a6d47293ff2e90f53315079cd1407ad5c7bd9df7b0d324b"
+      },
+      "after": {
+        "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+        "bytes": 157408,
+        "sha256": "cb7bd72481d9f58d9206eecdb8acc37219604a55adf3c624b4d1bc12debc43fb"
+      },
+      "archived": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-wide-compatibility-docs-before-2026-10-04/project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+        "bytes": 156386,
+        "sha256": "ddd241d287226d0c2a6d47293ff2e90f53315079cd1407ad5c7bd9df7b0d324b"
+      }
+    }
+  ],
+  "newHumanEvidence": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-prepared-wide-compatibility-2026-10-04.md",
+    "bytes": 9387,
+    "sha256": "7cb16a6a4e8672df5dc13a93377932a1240700d6f6f5f8cdf87a1a2a30c213c7"
+  },
+  "processes": [
+    {
+      "Id": 18132,
+      "ProcessName": "node",
+      "StartedUtc": "2026-09-30T18:18:41.4359228Z"
+    },
+    {
+      "Id": 24040,
+      "ProcessName": "node",
+      "StartedUtc": "2026-09-30T18:03:53.4146084Z"
+    }
+  ],
+  "goalCurrentCharacters": 3503,
+  "retainedOutputGroups": [
+    {
+      "directory": "output/prepared-wide-tie-proposals-1004-r1",
+      "files": 17,
+      "logicalBytes": 765601
+    },
+    {
+      "directory": "output/prepared-wide-tie-proposals-1004-r2",
+      "files": 12,
+      "logicalBytes": 630840
+    },
+    {
+      "directory": "output/prepared-wide-tie-proposals-1004-r3",
+      "files": 4,
+      "logicalBytes": 56352
+    },
+    {
+      "directory": "output/prepared-wide-compatibility-1004-r1",
+      "files": 4,
+      "logicalBytes": 57938
+    },
+    {
+      "directory": "output/prepared-wide-display-inputs-1004-r1",
+      "files": 11,
+      "logicalBytes": 117772
+    },
+    {
+      "directory": "output/playwright/cloud-sky-prepared-linear-composition-1004-r1",
+      "files": 14,
+      "logicalBytes": 2258013
+    },
+    {
+      "directory": "output/playwright/cloud-sky-prepared-linear-composition-1004-r2",
+      "files": 33,
+      "logicalBytes": 18848653
+    },
+    {
+      "directory": "output/prepared-wide-compatibility-readback-1004-r1",
+      "files": 3,
+      "logicalBytes": 19682
+    },
+    {
+      "directory": "output/prepared-wide-compatibility-readback-1004-r2",
+      "files": 4,
+      "logicalBytes": 45770
+    }
+  ],
+  "retainedOutputLogicalBytes": 22800621,
+  "limits": "491-source inventory and two separately archived Prepared owners plus six protected files; not an exhaustive inventory of all untracked repository files. Output logical bytes include retained failures/diagnostics, not physical allocation, production stock, endpoint traffic/RSS/GPU total or 200DAU capacity. No code/registry adoption, independent review or native completion."
+}

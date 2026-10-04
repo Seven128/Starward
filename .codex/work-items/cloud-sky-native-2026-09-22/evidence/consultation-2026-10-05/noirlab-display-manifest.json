@@ -1,0 +1,531 @@
+{
+  "objectRef": "M:82",
+  "center": {
+    "frame": "ICRS J2000",
+    "raDeg": 148.96970833333333,
+    "decDeg": 69.6793888888889
+  },
+  "orientation": "north-up/east-left",
+  "source": {
+    "resourceId": "noao-m81m82",
+    "sourceUrl": "https://storage.noirlab.edu/media/archives/images/large/noao-m81m82.jpg",
+    "metadataReferenceUrl": "https://noirlab.edu/public/images/noao-m81m82/",
+    "credit": "T.A. Rector (University of Alaska Anchorage) and NOIRLab/NSF/AURA/",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "policyUrl": "https://noirlab.edu/public/copyright/",
+    "colourMeaning": "KPNO/WIYN 0.9m Mosaic I; published B blue, V cyan, R green, I orange, H-alpha red composite; encoded RGB, not calibrated flux",
+    "encodedJpeg": {
+      "bytes": 9250383,
+      "sha256": "71a539df75c8af574e98d3da13c1381e525093dd2e8814d9588f35b73b4e3479"
+    },
+    "rawXmp": {
+      "bytes": 9650,
+      "sha256": "8f165363cddd79bf0423ef0e6a993db8d26e7910c06b172277714e4d0b2727d4"
+    },
+    "parserXmp": {
+      "bytes": 9432,
+      "sha256": "c08342f724dacf3e1b9c38748393293ec073d7255d8f817bf16df26611696eba"
+    },
+    "decodedRgb": {
+      "bytes": 115794690,
+      "sha256": "375171795ad24d8c27f7529114dee433cefd5586ec84d0ae869502bd8fb570ce",
+      "shape": [
+        4642,
+        8315,
+        3
+      ],
+      "rowOrder": "top-first"
+    },
+    "nominalAvm": {
+      "referenceDimension": [
+        8315,
+        4642
+      ],
+      "referencePixel": [
+        3387.535278,
+        1981.610626
+      ],
+      "referenceValue": [
+        148.7093692,
+        69.22847295
+      ],
+      "scale": [
+        -0.000118,
+        0.000118
+      ],
+      "rotation": -90.18048792,
+      "decodedShapeWidthHeight": [
+        8315,
+        4642
+      ],
+      "resizeCommonXFactor": 1,
+      "resizeYFactor": 1,
+      "crpixFitsOneBased": [
+        3387.535278,
+        1981.610626
+      ],
+      "cdeltDegrees": [
+        -0.000118,
+        0.000118
+      ],
+      "spatialNotes": null,
+      "spatialQuality": "Full",
+      "accuracy": "UNVERIFIED_APPROXIMATE_PUBLISHER_AVM"
+    }
+  },
+  "schemaVersion": "prepared-observation-display-optical-publication-v1",
+  "imageVersion": "prepared-display-optical-v1",
+  "publicationId": "noirlab-noao-m81m82-large-M-82.v20261004-display-candidate",
+  "parent": {
+    "publicationHash": "3a33ced542d92bedb2225157d5d21de32d048aa992900a038c0940b8dc2e05af",
+    "publication": {
+      "schemaVersion": "prepared-observation-optical-publication-v1",
+      "imageVersion": "prepared-optical-v1",
+      "publicationId": "noirlab-noao-m81m82-large-M-82.v20261004-raw-candidate",
+      "objectRef": "M:82",
+      "center": {
+        "frame": "ICRS J2000",
+        "raDeg": 148.96970833333333,
+        "decDeg": 69.6793888888889
+      },
+      "orientation": "north-up/east-left",
+      "source": {
+        "resourceId": "noao-m81m82",
+        "sourceUrl": "https://storage.noirlab.edu/media/archives/images/large/noao-m81m82.jpg",
+        "metadataReferenceUrl": "https://noirlab.edu/public/images/noao-m81m82/",
+        "credit": "T.A. Rector (University of Alaska Anchorage) and NOIRLab/NSF/AURA/",
+        "license": "CC BY 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "policyUrl": "https://noirlab.edu/public/copyright/",
+        "colourMeaning": "KPNO/WIYN 0.9m Mosaic I; published B blue, V cyan, R green, I orange, H-alpha red composite; encoded RGB, not calibrated flux",
+        "encodedJpeg": {
+          "bytes": 9250383,
+          "sha256": "71a539df75c8af574e98d3da13c1381e525093dd2e8814d9588f35b73b4e3479"
+        },
+        "rawXmp": {
+          "bytes": 9650,
+          "sha256": "8f165363cddd79bf0423ef0e6a993db8d26e7910c06b172277714e4d0b2727d4"
+        },
+        "parserXmp": {
+          "bytes": 9432,
+          "sha256": "c08342f724dacf3e1b9c38748393293ec073d7255d8f817bf16df26611696eba"
+        },
+        "decodedRgb": {
+          "bytes": 115794690,
+          "sha256": "375171795ad24d8c27f7529114dee433cefd5586ec84d0ae869502bd8fb570ce",
+          "shape": [
+            4642,
+            8315,
+            3
+          ],
+          "rowOrder": "top-first"
+        },
+        "nominalAvm": {
+          "referenceDimension": [
+            8315,
+            4642
+          ],
+          "referencePixel": [
+            3387.535278,
+            1981.610626
+          ],
+          "referenceValue": [
+            148.7093692,
+            69.22847295
+          ],
+          "scale": [
+            -0.000118,
+            0.000118
+          ],
+          "rotation": -90.18048792,
+          "decodedShapeWidthHeight": [
+            8315,
+            4642
+          ],
+          "resizeCommonXFactor": 1,
+          "resizeYFactor": 1,
+          "crpixFitsOneBased": [
+            3387.535278,
+            1981.610626
+          ],
+          "cdeltDegrees": [
+            -0.000118,
+            0.000118
+          ],
+          "spatialNotes": null,
+          "spatialQuality": "Full",
+          "accuracy": "UNVERIFIED_APPROXIMATE_PUBLISHER_AVM"
+        }
+      },
+      "processing": {
+        "runtimeNetwork": "forbidden",
+        "sourceAdapterVersion": "prepared-rgb-observation-avm-v1",
+        "producerVersion": "prepared-rgb-tan-master-v1",
+        "producerReceipt": {
+          "bytes": 16251,
+          "sha256": "d2eda17b44ab26a931d8ff16566cfb0091f64f5f7a83b3722ddbc07fb87295fb"
+        },
+        "sampleOffsetsDyDx": [
+          [
+            -0.25,
+            -0.25
+          ],
+          [
+            -0.25,
+            0.25
+          ],
+          [
+            0.25,
+            -0.25
+          ],
+          [
+            0.25,
+            0.25
+          ]
+        ],
+        "sampling": "encoded-RGB-bilinear-all-four-neighbours",
+        "levelResampling": "geometry-premultiplied-integer-box-round-to-nearest",
+        "validation": "BOUND_MASTER_AND_LEVELS_CHECKED",
+        "modification": "Starward projects one byte-bound historical prepared RGB observation with its uncorrected publisher AVM into one north-up TAN master using four target-pixel bilinear samples and common complete source stencils. Same-master centered crops use geometric-alpha-premultiplied integer boxes. Encoded colour is retained; no calibrated flux, astrometric fit, sky subtraction, source sharpening, PSF correction or synthetic detail is supplied.",
+        "coverage": "PNG alpha is box-averaged binary master-cell geometric support, not continuous source-footprint area, science/exposure coverage or an artifact mask. Approximate publisher AVM and original colour meaning remain; rectangular edges and full image quality are unadopted. Only these three target crops are provided."
+      },
+      "master": {
+        "pixels": 2048,
+        "fieldDegrees": 0.22755555555555557,
+        "crpixFitsOneBased": 1024.5,
+        "rgba": {
+          "bytes": 16777216,
+          "sha256": "e82ccaf71918c1c076a0c2a08c5dc1bd80e5aa5d02bcc39e7baf3864dd20d4a0"
+        },
+        "rgbaNpy": {
+          "bytes": 16777344,
+          "sha256": "08fe7968ae69e7db97db7de9605bc897759d92423760334b9579f939ea55d3cc",
+          "format": "npy",
+          "shape": [
+            2048,
+            2048,
+            4
+          ],
+          "dtype": "uint8",
+          "rowOrder": "top-first"
+        },
+        "geometricSupportPixels": 4194304,
+        "geometricBlackPixels": 0,
+        "scientificAvailability": "UNKNOWN",
+        "scientificValidity": "UNKNOWN",
+        "unit": "published-encoded-RGB"
+      },
+      "levels": {
+        "OVERVIEW": {
+          "bytes": 400779,
+          "sha256": "d1d4cab2b3714a04167321d482b1e3818e9f56c61566b5375639042e3ba22170",
+          "file": "M-82-overview.png",
+          "format": "png",
+          "pixels": 512,
+          "fieldDegrees": 0.2275555555555556,
+          "crpixFitsOneBased": 256.5,
+          "displayAlpha": "geometric-source-area",
+          "scientificAvailability": "UNKNOWN",
+          "masterRgbaSha256": "e82ccaf71918c1c076a0c2a08c5dc1bd80e5aa5d02bcc39e7baf3864dd20d4a0",
+          "masterCrop": {
+            "boundsXYExclusive": [
+              0,
+              0,
+              2048,
+              2048
+            ],
+            "boxFactor": 4
+          },
+          "geometricMasterSupportPixels": 4194304,
+          "alphaPixels": {
+            "opaque": 262144,
+            "partial": 0,
+            "zero": 0
+          }
+        },
+        "MEDIUM": {
+          "bytes": 447408,
+          "sha256": "e11b43c0663cfacc2c3029f6015eb6f36fd649e71665102c38d39ed84c8a826b",
+          "file": "M-82-medium.png",
+          "format": "png",
+          "pixels": 512,
+          "fieldDegrees": 0.11377788994540003,
+          "crpixFitsOneBased": 256.5,
+          "displayAlpha": "geometric-source-area",
+          "scientificAvailability": "UNKNOWN",
+          "masterRgbaSha256": "e82ccaf71918c1c076a0c2a08c5dc1bd80e5aa5d02bcc39e7baf3864dd20d4a0",
+          "masterCrop": {
+            "boundsXYExclusive": [
+              512,
+              512,
+              1536,
+              1536
+            ],
+            "boxFactor": 2
+          },
+          "geometricMasterSupportPixels": 1048576,
+          "alphaPixels": {
+            "opaque": 262144,
+            "partial": 0,
+            "zero": 0
+          }
+        },
+        "DETAIL": {
+          "bytes": 364843,
+          "sha256": "0438d2e8d596f76a5bb7327b5a755894f91250d51e5e0fd813fcf15d32e02bf1",
+          "file": "M-82-detail.png",
+          "format": "png",
+          "pixels": 512,
+          "fieldDegrees": 0.056888958993683895,
+          "crpixFitsOneBased": 256.5,
+          "displayAlpha": "geometric-source-area",
+          "scientificAvailability": "UNKNOWN",
+          "masterRgbaSha256": "e82ccaf71918c1c076a0c2a08c5dc1bd80e5aa5d02bcc39e7baf3864dd20d4a0",
+          "masterCrop": {
+            "boundsXYExclusive": [
+              768,
+              768,
+              1280,
+              1280
+            ],
+            "boxFactor": 1
+          },
+          "geometricMasterSupportPixels": 262144,
+          "alphaPixels": {
+            "opaque": 262144,
+            "partial": 0,
+            "zero": 0
+          }
+        }
+      }
+    }
+  },
+  "processing": {
+    "runtimeNetwork": "forbidden",
+    "producerVersion": "prepared-source-masked-background-display-v1",
+    "generationReceipt": {
+      "bytes": 23785,
+      "sha256": "d7b2174713c232a6bc7fdcda385f8344de30b79e7fb2ed62ba5de13d00894973"
+    },
+    "generationScript": {
+      "bytes": 13092,
+      "sha256": "f316faabdc6ddba0dab0d07d0fdae5e5ab20f547faf9b8b657f280657cfe2267"
+    },
+    "colourTransferImplementation": {
+      "bytes": 15450,
+      "sha256": "47d7e8fa5ff3192ad141a4610ba8c6cebab5d6507afd6a92a460e80709156473"
+    },
+    "sourceIcc": {
+      "bytes": 3144,
+      "sha256": "2b3aa1645779a9e634744faf9b01e9102b0c9b88fd6deced7934df86b949af7e",
+      "colourSpace": "sRGB"
+    },
+    "background": {
+      "bytes": 79513803,
+      "sha256": "ee7a709393427858ae7904395700678f0ddb876a9dfaa153985173d0d4cf218f",
+      "format": "npz",
+      "member": "background.npy",
+      "shape": [
+        2048,
+        2048,
+        3
+      ],
+      "dtype": "float64",
+      "rowOrder": "top-first",
+      "payload": {
+        "bytes": 100663296,
+        "sha256": "1e9fc0b19b00bcfc57038f3eb3934c80d0c9b610ca68fbe043e66d38cecd9615"
+      }
+    },
+    "estimationMask": {
+      "bytes": 4194432,
+      "sha256": "e2e441f86264e98b096554a5326a8d1789f94ec7d86a17f316d6f529b2432979",
+      "format": "npy",
+      "shape": [
+        2048,
+        2048
+      ],
+      "dtype": "bool",
+      "rowOrder": "top-first",
+      "pixels": 1851643,
+      "detectedOnlyPixels": 755502,
+      "role": "background-estimation-exclusion-not-geometry-or-science"
+    },
+    "geometryExclusion": {
+      "metadata": {
+        "bytes": 6102,
+        "sha256": "9b2fc5e285fd6371b4e499443f3a7ea8421e39cd5d3c3b5849611c91d3108ba0"
+      },
+      "rgbaNpy": {
+        "bytes": 16777344,
+        "sha256": "23f7f3f32059bacb49ac4a6cb221750c035645225be43ce9b1546ad9f0b443d5"
+      },
+      "rgba": {
+        "bytes": 16777216,
+        "sha256": "496337292ee1dfb0a4938a6cd62dd941047621132b312c39765db747c1eb6a0d"
+      },
+      "metadataReferenceUrl": "https://esahubble.org/images/heic0604a/",
+      "credit": "NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: J. Gallagher (University of Wisconsin), M. Mountain (STScI) and P. Puxley (NSF).",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "pixels": 2048,
+      "center": {
+        "frame": "ICRS J2000",
+        "raDeg": 148.96970833333333,
+        "decDeg": 69.6793888888889
+      },
+      "fieldDegrees": 0.22755555555555557,
+      "supportPixels": 1096141,
+      "role": "background-estimation-exclusion-only-no-RGB"
+    },
+    "estimate": {
+      "method": "photutils-background2d-median-source-mask-v1",
+      "photutilsVersion": "3.0.0",
+      "domain": "prepared-encoded-sRGB-byte-values",
+      "boxSize": [
+        256,
+        256
+      ],
+      "meshFilterSize": [
+        3,
+        3
+      ],
+      "sigmaClip": {
+        "sigma": 3,
+        "maxiters": 10
+      },
+      "detectNSigma": 2,
+      "detectNPixels": 10,
+      "dilateRadiusTargetPixels": 10
+    },
+    "subtraction": "sRGB-to-linear-subtract-linearized-estimate-clamp-negative-to-zero-encode-sRGB-round",
+    "negativeChannelPixels": [
+      1673237,
+      1119791,
+      1070642
+    ],
+    "alpha": "unchanged-parent-geometric-support",
+    "levelResampling": "geometry-premultiplied-integer-box-round-to-nearest",
+    "validation": "BOUND_PARENT_FORMULA_ALPHA_AND_LEVELS_CHECKED",
+    "modification": "Starward retains the original historical JPEG, XMP and unmodified encoded-RGB TAN parent. A source-excluded Photutils display background estimate is subtracted after sRGB linearization; negative display estimates are clamped to zero, encoded to sRGB and rounded. The separately credited Hubble footprint only excludes background-estimation cells; none of its RGB is mixed in. Geometric alpha is unchanged, including valid black. No calibrated sky/flux, astrometric correction, PSF correction, sharpening or synthetic detail is supplied.",
+    "coverage": "Original approximate publisher AVM and binary geometric support remain. The estimation exclusion mask is neither science validity nor a complete faint-structure mask. Clamping discards negative display estimates. Only three same-master crops are supplied; complete weak structure, edges/seams, registration and image quality remain unadopted.",
+    "producerReceipt": {
+      "bytes": 20094,
+      "sha256": "0f227c1fb1fa6c82ef062fa26e7a2b7b632885ab5e2079cb180886aff03d136a"
+    }
+  },
+  "master": {
+    "pixels": 2048,
+    "fieldDegrees": 0.22755555555555557,
+    "crpixFitsOneBased": 1024.5,
+    "rgba": {
+      "bytes": 16777216,
+      "sha256": "83ac5396ffaf537aabdb1e2f0bd9cb989658f24de2b0cc978175d3e246fb597f"
+    },
+    "rgbaNpy": {
+      "bytes": 16777344,
+      "sha256": "a8a5cd8b6989620850debcc410f59e16a1141f79d5401b6875d4e3dd41f4bdbb",
+      "format": "npy",
+      "shape": [
+        2048,
+        2048,
+        4
+      ],
+      "dtype": "uint8",
+      "rowOrder": "top-first"
+    },
+    "geometricSupportPixels": 4194304,
+    "geometricBlackPixels": 638433,
+    "scientificAvailability": "UNKNOWN",
+    "scientificValidity": "UNKNOWN",
+    "unit": "background-subtracted-display-sRGB"
+  },
+  "levels": {
+    "OVERVIEW": {
+      "file": "M-82-overview.png",
+      "bytes": 374667,
+      "sha256": "edcf3d5eb6ed6ff4a92145e3907d8202b5e6b1f58065c9b30f2e6550ad7ced8d",
+      "format": "png",
+      "pixels": 512,
+      "fieldDegrees": 0.2275555555555556,
+      "crpixFitsOneBased": 256.5,
+      "displayAlpha": "geometric-source-area",
+      "scientificAvailability": "UNKNOWN",
+      "masterRgbaSha256": "83ac5396ffaf537aabdb1e2f0bd9cb989658f24de2b0cc978175d3e246fb597f",
+      "masterCrop": {
+        "boundsXYExclusive": [
+          0,
+          0,
+          2048,
+          2048
+        ],
+        "boxFactor": 4
+      },
+      "geometricMasterSupportPixels": 4194304,
+      "alphaPixels": {
+        "opaque": 262144,
+        "partial": 0,
+        "zero": 0
+      },
+      "downloadUrl": "/v2/sky/prepared-optical/97bd0d5b1ebb48e47cb147d273838f79566ea9f72f2bbfa446c2e73fd3736b9c/M-82-overview.png"
+    },
+    "MEDIUM": {
+      "file": "M-82-medium.png",
+      "bytes": 461439,
+      "sha256": "09699f48cd5f7df2729cfddbfdc09d2e1ccd8eae431b6081d44d9f398eb7fed2",
+      "format": "png",
+      "pixels": 512,
+      "fieldDegrees": 0.11377788994540003,
+      "crpixFitsOneBased": 256.5,
+      "displayAlpha": "geometric-source-area",
+      "scientificAvailability": "UNKNOWN",
+      "masterRgbaSha256": "83ac5396ffaf537aabdb1e2f0bd9cb989658f24de2b0cc978175d3e246fb597f",
+      "masterCrop": {
+        "boundsXYExclusive": [
+          512,
+          512,
+          1536,
+          1536
+        ],
+        "boxFactor": 2
+      },
+      "geometricMasterSupportPixels": 1048576,
+      "alphaPixels": {
+        "opaque": 262144,
+        "partial": 0,
+        "zero": 0
+      },
+      "downloadUrl": "/v2/sky/prepared-optical/97bd0d5b1ebb48e47cb147d273838f79566ea9f72f2bbfa446c2e73fd3736b9c/M-82-medium.png"
+    },
+    "DETAIL": {
+      "file": "M-82-detail.png",
+      "bytes": 371952,
+      "sha256": "6b30e7d26a991c629f93dbe8cdfe39218f91ccbc4ee5c82e623f5a469c19325f",
+      "format": "png",
+      "pixels": 512,
+      "fieldDegrees": 0.056888958993683895,
+      "crpixFitsOneBased": 256.5,
+      "displayAlpha": "geometric-source-area",
+      "scientificAvailability": "UNKNOWN",
+      "masterRgbaSha256": "83ac5396ffaf537aabdb1e2f0bd9cb989658f24de2b0cc978175d3e246fb597f",
+      "masterCrop": {
+        "boundsXYExclusive": [
+          768,
+          768,
+          1280,
+          1280
+        ],
+        "boxFactor": 1
+      },
+      "geometricMasterSupportPixels": 262144,
+      "alphaPixels": {
+        "opaque": 262144,
+        "partial": 0,
+        "zero": 0
+      },
+      "downloadUrl": "/v2/sky/prepared-optical/97bd0d5b1ebb48e47cb147d273838f79566ea9f72f2bbfa446c2e73fd3736b9c/M-82-detail.png"
+    }
+  },
+  "publicationHash": "97bd0d5b1ebb48e47cb147d273838f79566ea9f72f2bbfa446c2e73fd3736b9c"
+}

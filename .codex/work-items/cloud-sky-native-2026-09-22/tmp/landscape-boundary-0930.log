@@ -1,0 +1,14 @@
+{"name":"overview-west-wide","mutate":false,"maxError":0.5031370382960603,"aboveTwo":0,"robustWrongOpacity":0,"seamSamples":0}
+{"name":"overview-north-wide","mutate":false,"maxError":0.5023650780981939,"aboveTwo":0,"robustWrongOpacity":0,"seamSamples":3058}
+{"name":"overview-north-seam-local","mutate":false,"maxError":0.5021786295163793,"aboveTwo":0,"robustWrongOpacity":0,"seamSamples":27008}
+{"name":"overview-photo-edge-local","mutate":false,"maxError":0.505184213690228,"aboveTwo":0,"robustWrongOpacity":0,"seamSamples":0}
+{"name":"overview-dome","mutate":false,"maxError":0.5017409869256682,"aboveTwo":0,"robustWrongOpacity":0,"seamSamples":518}
+{"name":"overview-north-wide-return","mutate":false,"maxError":0.5023650780981939,"aboveTwo":0,"robustWrongOpacity":0,"seamSamples":3058}
+{"name":"detail-west-wide","mutate":false,"maxError":0.5028938217629104,"aboveTwo":0,"robustWrongOpacity":0,"seamSamples":0}
+{"name":"detail-north-wide","mutate":false,"maxError":0.5010053934600762,"aboveTwo":0,"robustWrongOpacity":0,"seamSamples":1688}
+{"name":"detail-north-seam-local","mutate":false,"maxError":0.5026819234399227,"aboveTwo":0,"robustWrongOpacity":0,"seamSamples":13504}
+{"name":"detail-photo-edge-local","mutate":false,"maxError":0.5098013983423471,"aboveTwo":0,"robustWrongOpacity":0,"seamSamples":0}
+{"name":"detail-dome","mutate":false,"maxError":0.5032468545252016,"aboveTwo":0,"robustWrongOpacity":0,"seamSamples":192}
+{"name":"detail-north-wide-return","mutate":false,"maxError":0.5010053934600762,"aboveTwo":0,"robustWrongOpacity":0,"seamSamples":1688}
+{"name":"detail-west-wide","mutate":true,"maxError":255,"aboveTwo":292749,"robustWrongOpacity":290437,"seamSamples":0}
+{"output":"E:\\dev\\worktrees\\Starward\\remote-main-20260908\\output\\playwright\\cloud-sky-landscape-boundary-0930","registrationRows":12,"coreCompositions":6,"pngRleDifferences":0,"retired":{"resources":{"textures":0,"buffers":0,"programs":0,"shaders":0},"failures":[],"glError":0}}

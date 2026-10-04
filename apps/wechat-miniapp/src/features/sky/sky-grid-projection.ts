@@ -11,7 +11,9 @@ interface GridEndpoint {
 }
 const midpoint = (a: GridSample, b: GridSample): GridSample => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
 
-/** Both coordinate grids share curvature, horizon and viewport clipping. */
+/** Both coordinate grids share full-sphere curvature and viewport clipping.
+ * Terrain occlusion belongs to the composed scene, not this coordinate owner.
+ */
 export function createSkyGridTracer(basis: SkyViewBasis, width: number, height: number,
   verticalFovDeg: number, center: SkyProjectionCenter | undefined,
   direction: (longitude: number, latitude: number) => SkyVector | null) {
@@ -20,12 +22,12 @@ export function createSkyGridTracer(basis: SkyViewBasis, width: number, height: 
   const project = (endpoint: GridEndpoint): GridSample | null => {
     if (endpoint.point !== undefined) return endpoint.point;
     const value = endpoint.ray;
-    if (!value || value[2] < -1e-12) return endpoint.point = null;
+    if (!value) return endpoint.point = null;
     // Never join an arc through the stereographic antipode.
     const forward = value[0] * basis.forward[0] + value[1] * basis.forward[1] + value[2] * basis.forward[2];
     if (forward < -0.98) return endpoint.point = null;
     const azimuth = Math.atan2(value[0], value[1]) * 180 / Math.PI;
-    const altitude = Math.asin(Math.max(0, Math.min(1, value[2]))) * 180 / Math.PI;
+    const altitude = Math.asin(Math.max(-1, Math.min(1, value[2]))) * 180 / Math.PI;
     const point = projector?.unclipped(azimuth, altitude);
     return endpoint.point = point ? [point.x, point.y] : null;
   };
@@ -54,41 +56,8 @@ export function createSkyGridTracer(basis: SkyViewBasis, width: number, height: 
       const current = evaluate(sample(index));
       const start = previous;
       previous = current;
-      const first = start.ray, last = current.ray;
-      if (!first || !last) continue;
-      let pieces: readonly (readonly [GridEndpoint, GridEndpoint])[] = [[start, current]];
-      if (first[2] < 0 && last[2] < 0) {
-        // A coordinate circle may graze above the horizon between two hidden
-        // base samples. Its ENU height is sinusoidal; locate the short arc's
-        // interior peak from three heights and evaluate that actual ray.
-        const middle = evaluate(midpoint(start.sample, current.sample)).ray;
-        if (!middle) continue;
-        const curvature = first[2] - 2 * middle[2] + last[2];
-        if (curvature >= 0) continue;
-        const fraction = 0.5 + (first[2] - last[2]) / (4 * curvature);
-        if (fraction <= 0 || fraction >= 1) continue;
-        const peak = evaluate([start.sample[0] + (current.sample[0] - start.sample[0]) * fraction,
-          start.sample[1] + (current.sample[1] - start.sample[1]) * fraction]);
-        const peakRay = peak.ray;
-        if (!peakRay || peakRay[2] < 0) continue;
-        pieces = [[start, peak], [peak, current]];
-      }
-      for (const [startPiece, endPiece] of pieces) {
-        let a = startPiece, b = endPiece;
-        const ra = a.ray!, rb = b.ray!;
-        if ((ra[2] < 0) !== (rb[2] < 0)) {
-          // Retain the visible partial segment instead of stopping a base step
-          // before the horizon. Keep the chosen endpoint on its visible side.
-          let below = ra[2] < 0 ? a : b, above = ra[2] < 0 ? b : a;
-          for (let iteration = 0; iteration < 24; iteration++) {
-            const middle = evaluate(midpoint(below.sample, above.sample)), value = middle.ray;
-            if (!value || value[2] < 0) below = middle; else above = middle;
-          }
-          if (ra[2] < 0) a = above; else b = above;
-        }
-        const pa = project(a), pb = project(b);
-        if (pa && pb) arc(a, b, pa, pb, 0);
-      }
+      const pa = project(start), pb = project(current);
+      if (pa && pb) arc(start, current, pa, pb, 0);
     }
     return lines;
   };

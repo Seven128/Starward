@@ -1,0 +1,36 @@
+✔ Acrux detail and catalog sources follow the requested report version (247.8712ms)
+✔ stable HR references return attributable ready and basic-only states (1.0169ms)
+✔ large numeric-like and unknown references stay strings and fail closed (2.5677ms)
+✔ planet information distinguishes historical band profiles from current geometry and weather (3.0973ms)
+✔ Messier galaxy and nebula references expose attributable catalog facts (15.7796ms)
+✔ same identity and locale reuse a stable content revision without sharing mutable values (0.5932ms)
+✔ SAO details interpret HD multiplicity codes instead of presenting them as names (1618.4341ms)
+✔ the adopted v3 sky report resolves HR and SAO positions against matching publications (1467.8447ms)
+✔ selected HR stars use the exact rendered geometry and preserve below-horizon positions (21.9341ms)
+✔ new time slices change location and cannot silently reuse the previous position (3.276ms)
+✔ planet position uses the same exact report row and fails closed on retired geometry (34.0437ms)
+✔ deep-sky selection consumes the same registered center independently of the stellar layer (16.9942ms)
+✔ SAO selected positions match the real tile's propagated geometry without loading a visible scene (781.9023ms)
+✔ stale, expired and wrong-catalog frames never become fresh selectable coordinates (14.3017ms)
+✔ authorized HTTP location lookup reaches the existing camera projection; private proposals retain auth (629.8798ms)
+✔ Acrux is discoverable only through the v3 catalog and keeps revised SAO and Chinese sources (4517.4082ms)
+✔ real catalogue names, Chinese aliases and normalized identifiers resolve the same component (272.9895ms)
+✔ fixed CC0 Chinese labels join only exact HR identities and remain attributable in details (190.395ms)
+✔ seven planet identities search by Chinese and English names and preserve details (259.7764ms)
+✔ shared HD aliases preserve distinct SAO components and details use the same alias owner (109.0148ms)
+✔ results are bounded, detached from indexes and never carry invented observing coordinates (128.896ms)
+✔ missing or incomplete publications cannot masquerade as an empty successful search (0.5689ms)
+✔ one unavailable publication preserves other results and a later query recovers it (0.8818ms)
+✔ public HTTP search and selected detail retain the same real identity; invalid input is rejected (446.5332ms)
+✔ real published stars reach drawing and picking with the selected observer/time; zoom hides faint stars without changing BSC (2381.2357ms)
+✔ real search opt-in resolves day/night luminaries; old clients never receive unknown identities (2711.3792ms)
+✔ information shares scientific identity, real publication credit and recoverable lunar-source failure (2.9289ms)
+✔ authorized HTTP discovery, facts and exact report location reach Mini validators with independent failures (1442.1947ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18619.9673

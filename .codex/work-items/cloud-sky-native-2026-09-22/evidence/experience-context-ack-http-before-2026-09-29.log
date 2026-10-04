@@ -1,0 +1,16 @@
+{"phase":"before","rows":[{"mode":"normal","ok":true,"calls":[{"method":"PUT","status":200,"hasIfNoneMatch":false,"mutated":false}],"invalidations":["map-scene","spot-overview","spot-sky"],"result":{"selectedAtUtc":"2026-09-28T16:30:00.000Z","revision":2,"sameLocation":true,"sameNight":true,"matchingEnvelopeBinding":true},"failure":null,"durable":{"selectedAtUtc":"2026-09-28T16:30:00.000Z","revision":2,"sameLocation":true},"oldCacheSeeded":true},{"mode":"old-time","ok":false,"calls":[{"method":"PUT","status":200,"hasIfNoneMatch":false,"mutated":true}],"invalidations":["map-scene","spot-overview","spot-sky"],"result":{"selectedAtUtc":"2026-09-28T16:00:00.000Z","revision":2,"sameLocation":true,"sameNight":true,"matchingEnvelopeBinding":true},"failure":null,"durable":{"selectedAtUtc":"2026-09-28T16:30:00.000Z","revision":2,"sameLocation":true},"oldCacheSeeded":true},{"mode":"foreign-location","ok":false,"calls":[{"method":"PUT","status":200,"hasIfNoneMatch":false,"mutated":true}],"invalidations":["map-scene","spot-overview","spot-sky"],"result":{"selectedAtUtc":"2026-09-28T16:30:00.000Z","revision":2,"sameLocation":false,"sameNight":true,"matchingEnvelopeBinding":true},"failure":null,"durable":{"selectedAtUtc":"2026-09-28T16:30:00.000Z","revision":2,"sameLocation":true},"oldCacheSeeded":true},{"mode":"wrong-night","ok":false,"calls":[{"method":"PUT","status":200,"hasIfNoneMatch":false,"mutated":true}],"invalidations":["map-scene","spot-overview","spot-sky"],"result":{"selectedAtUtc":"2026-09-28T16:30:00.000Z","revision":2,"sameLocation":true,"sameNight":false,"matchingEnvelopeBinding":true},"failure":null,"durable":{"selectedAtUtc":"2026-09-28T16:30:00.000Z","revision":2,"sameLocation":true},"oldCacheSeeded":true},{"mode":"wrong-envelope-binding","ok":false,"calls":[{"method":"PUT","status":200,"hasIfNoneMatch":false,"mutated":true}],"invalidations":["map-scene","spot-overview","spot-sky"],"result":{"selectedAtUtc":"2026-09-28T16:30:00.000Z","revision":2,"sameLocation":true,"sameNight":true,"matchingEnvelopeBinding":false},"failure":null,"durable":{"selectedAtUtc":"2026-09-28T16:30:00.000Z","revision":2,"sameLocation":true},"oldCacheSeeded":true},{"mode":"unchanged-write","ok":false,"calls":[{"method":"PUT","status":200,"hasIfNoneMatch":false,"mutated":false}],"invalidations":["map-scene","spot-overview","spot-sky"],"result":{"selectedAtUtc":"2026-09-28T16:00:00.000Z","revision":1,"sameLocation":true,"sameNight":true,"matchingEnvelopeBinding":true},"failure":null,"durable":{"selectedAtUtc":"2026-09-28T16:00:00.000Z","revision":1,"sameLocation":true},"oldCacheSeeded":true}]}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: a 2xx acknowledgement must establish only the actual requested Context result without replay
+    at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-context-ack-http-2026-09-29.mts:115:1) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.16.0

@@ -76,6 +76,7 @@ import {
 import { CelestialObjectInformationService } from "./celestial-object-information.ts";
 import { DeepSkyImageryService } from "./deep-sky-imagery.ts";
 import { SdssOpticalImageryService } from "./sdss-optical-imagery.ts";
+import { PreparedOpticalImageryService } from "./prepared-optical-imagery.ts";
 import { OpticalHipsPublicationService } from "./optical-hips-publication.ts";
 import { WideFieldW3PublicationService } from "./wide-field-w3-publication.ts";
 import { MoonTexturePublicationService } from "./moon-texture-publication.ts";
@@ -657,6 +658,7 @@ export class MiniappService {
   readonly celestialSearch = new CelestialObjectSearchService();
   readonly deepSkyImages: DeepSkyImageryService;
   readonly sdssOpticalImages: SdssOpticalImageryService;
+  readonly preparedOpticalImages: PreparedOpticalImageryService;
   readonly opticalHips: OpticalHipsPublicationService;
   readonly wideFieldW3: WideFieldW3PublicationService;
   readonly moonTexture: MoonTexturePublicationService;
@@ -697,6 +699,7 @@ export class MiniappService {
     eventCatalog?: AstronomicalEventCatalogOwner;
     deepSkyImages?: DeepSkyImageryService;
     sdssOpticalImages?: SdssOpticalImageryService;
+    preparedOpticalImages?: PreparedOpticalImageryService;
     opticalHips?: OpticalHipsPublicationService;
     wideFieldW3?: WideFieldW3PublicationService;
     moonTexture?: MoonTexturePublicationService;
@@ -727,6 +730,7 @@ export class MiniappService {
       input.airQuality ?? new QWeatherAirQualityAdapter(input.config));
     this.deepSkyImages = input.deepSkyImages ?? new DeepSkyImageryService();
     this.sdssOpticalImages = input.sdssOpticalImages ?? new SdssOpticalImageryService();
+    this.preparedOpticalImages = input.preparedOpticalImages ?? new PreparedOpticalImageryService();
     this.opticalHips = input.opticalHips ?? new OpticalHipsPublicationService();
     this.wideFieldW3 = input.wideFieldW3 ?? new WideFieldW3PublicationService();
     this.moonTexture = input.moonTexture ?? new MoonTexturePublicationService();
@@ -738,7 +742,8 @@ export class MiniappService {
     this.saturnBands = input.saturnBands ?? new SaturnBandsPublicationService();
     this.galacticImage = input.galacticImage ?? new GalacticImagePublicationService();
     this.landscape = input.landscape ?? new SkyLandscapePublicationService();
-    this.celestialObjects = new CelestialObjectInformationService(this.deepSkyImages, this.sdssOpticalImages);
+    this.celestialObjects = new CelestialObjectInformationService(this.deepSkyImages, this.sdssOpticalImages,
+      undefined, this.preparedOpticalImages);
     this.usageStore = input.usageStore;
     this.route = input.route;
     this.placeSearch = input.placeSearch ?? createPlaceSearchPort(input.config);
@@ -1815,8 +1820,8 @@ export class MiniappService {
   }
 
   getCelestialObject(reference: string, locale = "zh-CN", catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2",moonTextureVersion?:"coverage-v2",
-    imageSelection?: DeepSkyImageSelection) {
-    return this.celestialObjects.get(reference, locale, catalogVersion,moonTextureVersion,imageSelection);
+    imageSelection?: DeepSkyImageSelection, opticalPublicationHash?: string) {
+    return this.celestialObjects.get(reference, locale, catalogVersion,moonTextureVersion,imageSelection,opticalPublicationHash);
   }
 
   getDeepSkyImage(reference: string, level = "MEDIUM", publicationHash?: string, imageVersion?: DeepSkyImageSelection["imageVersion"]) {

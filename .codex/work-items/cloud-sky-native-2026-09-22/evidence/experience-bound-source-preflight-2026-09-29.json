@@ -1,0 +1,193 @@
+{
+  "scope": "Task-only staging8792, real compiled information controllers/provider exceptions and real image503/restore. Desktop HTTP checks, not native/phone/whole-scene acceptance. No source assets or existing Context changed.",
+  "original": {
+    "publicationHash": "87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+    "sdssPublications": [
+      {
+        "reference": "M:51",
+        "publicationHash": "5c068fae55a47444724767777532ce6af1b6555c41ca2afdcceed9e9ae762eff"
+      },
+      {
+        "reference": "M:63",
+        "publicationHash": "5199f79b27bd859891e1641e2103f8249956e71b180cd9d93072faafa8eb597a"
+      },
+      {
+        "reference": "M:64",
+        "publicationHash": "bb11a9d3645eb7179dfec84a96591def55b84a4f0c89cf5f442937c4dbf86845"
+      },
+      {
+        "reference": "M:81",
+        "publicationHash": "29e25248ce49a8c5aa0a9c4d591c0024438ac8376bcf777c16de9ae2dbb90c20"
+      },
+      {
+        "reference": "M:82",
+        "publicationHash": "450e5305189e0f31f5716513880ce480994e676379a79f8e571039b4bcde4b43"
+      },
+      {
+        "reference": "M:87",
+        "publicationHash": "333321a17a68e6fbf041aabcc06a34a0ec6e302778d5c2d5259d573518e348c8"
+      }
+    ],
+    "informationModuleSha256": "3ae1fcda98d31ec91469e7c2e92aa1d8d314b8e4203dadb24359c5483ce67cd9",
+    "contextUpstream": 8789,
+    "publicationBackendPort": 54424,
+    "scope": "task-only compiled publication reads; existing Context owner retained"
+  },
+  "staging": {
+    "publicationHash": "87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+    "sdssPublications": [
+      {
+        "reference": "M:51",
+        "publicationHash": "5c068fae55a47444724767777532ce6af1b6555c41ca2afdcceed9e9ae762eff"
+      },
+      {
+        "reference": "M:63",
+        "publicationHash": "5199f79b27bd859891e1641e2103f8249956e71b180cd9d93072faafa8eb597a"
+      },
+      {
+        "reference": "M:64",
+        "publicationHash": "bb11a9d3645eb7179dfec84a96591def55b84a4f0c89cf5f442937c4dbf86845"
+      },
+      {
+        "reference": "M:81",
+        "publicationHash": "29e25248ce49a8c5aa0a9c4d591c0024438ac8376bcf777c16de9ae2dbb90c20"
+      },
+      {
+        "reference": "M:82",
+        "publicationHash": "450e5305189e0f31f5716513880ce480994e676379a79f8e571039b4bcde4b43"
+      },
+      {
+        "reference": "M:87",
+        "publicationHash": "333321a17a68e6fbf041aabcc06a34a0ec6e302778d5c2d5259d573518e348c8"
+      }
+    ],
+    "informationModuleSha256": "3ae1fcda98d31ec91469e7c2e92aa1d8d314b8e4203dadb24359c5483ce67cd9",
+    "contextUpstream": 8789,
+    "publicationBackendPort": 57945,
+    "scope": "task-only compiled publication reads; existing Context owner retained"
+  },
+  "rows": [
+    {
+      "mode": "both-offline",
+      "status": 200,
+      "dataState": "PARTIAL",
+      "warnings": [
+        "deep_sky_image_publication_unavailable",
+        "sdss_optical_publication_unavailable"
+      ],
+      "sourceIds": [
+        "catalog:opengc-messier-deep-sky.v20260501:f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5"
+      ],
+      "factsSha256": "519683e63452833a13536cbf82b8b44c97c92ddb988c2e5ad0e024dcb02f6918"
+    },
+    {
+      "mode": "infrared-offline",
+      "status": 200,
+      "dataState": "PARTIAL",
+      "warnings": [
+        "deep_sky_image_publication_unavailable"
+      ],
+      "sourceIds": [
+        "catalog:opengc-messier-deep-sky.v20260501:f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5",
+        "optical-imagery:sdss-dr17-m82.v20260929:450e5305189e0f31f5716513880ce480994e676379a79f8e571039b4bcde4b43"
+      ],
+      "factsSha256": "519683e63452833a13536cbf82b8b44c97c92ddb988c2e5ad0e024dcb02f6918"
+    },
+    {
+      "mode": "infrared-offline",
+      "status": 304,
+      "scope": "Unchanged PARTIAL revalidated, not recovered"
+    },
+    {
+      "mode": "optical-offline",
+      "status": 200,
+      "dataState": "PARTIAL",
+      "warnings": [
+        "sdss_optical_publication_unavailable"
+      ],
+      "sourceIds": [
+        "catalog:opengc-messier-deep-sky.v20260501:f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5",
+        "imagery:allwise-w3-messier.source-finite.v20260929:87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073"
+      ],
+      "factsSha256": "519683e63452833a13536cbf82b8b44c97c92ddb988c2e5ad0e024dcb02f6918"
+    },
+    {
+      "mode": "pass",
+      "status": 200,
+      "dataState": "FRESH",
+      "warnings": [],
+      "sourceIds": [
+        "catalog:opengc-messier-deep-sky.v20260501:f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5",
+        "imagery:allwise-w3-messier.source-finite.v20260929:87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+        "optical-imagery:sdss-dr17-m82.v20260929:450e5305189e0f31f5716513880ce480994e676379a79f8e571039b4bcde4b43"
+      ],
+      "factsSha256": "519683e63452833a13536cbf82b8b44c97c92ddb988c2e5ad0e024dcb02f6918",
+      "identicalToOriginalPublicData": true
+    }
+  ],
+  "images": [
+    {
+      "level": "OVERVIEW",
+      "bytes": 41082,
+      "sha256": "e8379e54c69e88cf17d80000a2604b241d8d0a6eb82758985aacc35a22c1d13d",
+      "contentType": "image/png"
+    },
+    {
+      "level": "MEDIUM",
+      "bytes": 124865,
+      "sha256": "3c113f59367fb49746c96d08b3218a949d70375a733de8dcfafa36b77659e02d",
+      "contentType": "image/png"
+    },
+    {
+      "level": "DETAIL",
+      "bytes": 145243,
+      "sha256": "6976db0ae39a46c2ee8cd165c0a375a55c819d4248c715b064983184020cc0ba",
+      "contentType": "image/png"
+    }
+  ],
+  "sourceStatus": {
+    "mode": "pass",
+    "target": "M:82",
+    "deadlineUtc": null,
+    "reads": {
+      "infrared": 5,
+      "optical": 5,
+      "infraredFailed": 3,
+      "opticalFailed": 2
+    },
+    "scope": "task-local source-provider exceptions, real compiled information response"
+  },
+  "epochStartedAt": "2026-09-29T06:22:59.329Z",
+  "controlledImageFailure": {
+    "sequence": 6,
+    "phase": "transport-check",
+    "resourceKind": "object_image",
+    "method": "GET",
+    "agentProbe": true,
+    "conditional": false,
+    "upstreamBodyBytes": 0,
+    "upstreamChunks": 0,
+    "upstreamEnded": false,
+    "downstreamFinished": true,
+    "status": 503,
+    "controlledFault": "image-detail-reject-before-upstream",
+    "downstreamFinishedMs": 0.2,
+    "observedDurationMs": 0.21
+  },
+  "harnessSources": [
+    {
+      "name": "experience-w3-proxy-backend-2026-09-29.mts",
+      "sha256": "d46b71e7db1680a7856291ec30ca90353aa5dc2a14502fd56d129f3b67fdc374"
+    },
+    {
+      "name": "experience-context-http-fault-2026-09-28.mjs",
+      "sha256": "b12d1fc0a5d52975d7c36e6bf83b3af2bf762dce6ec49c763779a9c2031edd14"
+    }
+  ],
+  "settled": {
+    "sourceMode": "pass",
+    "resourceMode": "pass",
+    "held": 0,
+    "active": 0
+  }
+}

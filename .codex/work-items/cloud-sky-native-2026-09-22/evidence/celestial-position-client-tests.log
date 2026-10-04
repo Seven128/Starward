@@ -1,0 +1,11 @@
+✔ located marker and camera reject changes of observer, report, time and source publication (1.0667ms)
+✔ exact query/context/catalog binding preserves negative altitude and precision (3.3787ms)
+✔ malformed, expired or other-publication coordinates cannot move the camera (0.6821ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 475.2422

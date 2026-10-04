@@ -74,3 +74,11 @@ test("area consumer uses shared angular size while obscured geometry is honestly
   assert.equal(render({ view: { ...view, verticalFovDeg: 90 } },
     { ...data, position: { ...data.position, altitudeDeg: -1 } }).result, null);
 });
+
+test("a selected lower-sphere object retains its identity and honest altitude label at wide zoom", () => {
+  const below = render({ view: { ...view, basis: createSkyViewBasis(180, 60, 0)!, verticalFovDeg: 85 } },
+    { ...data, position: { ...data.position, altitudeDeg: -30 } });
+  assert.equal(below.result.tag, "Button");
+  assert.equal(below.result.attributes.ariaLabel, "Altair已选中，地平线以下，查看资料");
+  assert.equal((below.queries[0] as unknown[])[0] && (below.queries[0] as any[])[0].reference, object.reference);
+});

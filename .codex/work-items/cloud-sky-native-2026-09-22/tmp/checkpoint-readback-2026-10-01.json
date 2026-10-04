@@ -1,0 +1,55 @@
+{
+  "codeCommit": "8855b02b7b4f7efd5658f8d8225242f307ce3ed2",
+  "unchangedOutside": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "unchanged": true
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "unchanged": true
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "unchanged": true
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "unchanged": true
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "unchanged": true
+    }
+  ],
+  "unexpectedProductionChanges": [],
+  "v53SourceChanges": [],
+  "candidate": {
+    "files": 257,
+    "rawBytes": 4527023,
+    "sha256": "80bc564b6d32d47a342ceb06a3c38e384fdbb091056a8ce49fc1f34a412d48d7",
+    "matches": true
+  },
+  "raw": [
+    {
+      "name": "request-original.txt",
+      "sha256": "2370eb26635352046bc3be983bf6bcb3ec23688b09406fd0d81e61308f91909a",
+      "exact": true
+    },
+    {
+      "name": "GOAL-OBJECTIVE-CORRECTED-2026-09-28.md",
+      "sha256": "c7a4ba8a3222ab9c51e9bd24a2809779703aa2fee8d10741f8c6e82426163088",
+      "exact": true
+    },
+    {
+      "name": "GOAL-OBJECTIVE-HANDOFF-2026-09-28.md",
+      "sha256": "92fc11e1ac1968e75a1970ca5fd3ddd1e6594b7d48c5107b1680bcbd2392bd60",
+      "exact": true
+    }
+  ],
+  "missingHandoffLinks": []
+}

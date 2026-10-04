@@ -1,0 +1,36 @@
+✔ cached stale tiles stay visible with recovery state; retry really reloads them and keeps old points while pending (6.4211ms)
+✔ bounded requests keep only current view; late aborted replies and dispose never publish obsolete stars (23.0733ms)
+✔ partial failure preserves loaded tiles, only explicit retry repeats failure, and wrong publication is rejected (2.9838ms)
+✔ oversized requests fail explicitly without silently selecting a subset or issuing network requests (1.8807ms)
+✔ view selects the inverse-transformed EQJ region and zoom hides its faint tier (5.0377ms)
+✔ proper-motion bounds follow the exact selected epoch and wrong frame cannot select stale tiles (1.0996ms)
+✔ twilight does not request a faint tile that the same-frame renderer cannot paint (0.4604ms)
+✔ upgraded client rejects retired star cache after restart on offline and 304, and rejects a legacy server response (302.4087ms)
+✔ old or malformed solar positions stay missing across offline, 304 and old server, then recover from exact data (113.1785ms)
+✔ missing solar diameter does not invent a disc or discard a still-valid twilight direction (111.9543ms)
+✔ old or malformed lunar disc geometry cannot survive offline, 304 or old server recovery (96.6605ms)
+✔ retired or mixed planetary rows lose their geometry on offline, 304 and server recovery (68.122ms)
+✔ a null planetary record preserves independent sky content on 200 and recovers from fresh data (16.4976ms)
+✔ a null planetary record preserves independent sky content on 304 and recovers from fresh data (16.4396ms)
+✔ a null planetary record preserves independent sky content on offline and recovers from fresh data (16.4223ms)
+✔ a null target frame is isolated across network/cache reads without losing valid frames (63.5714ms)
+✔ HTTP 503 remains a failure and cannot return the retired catalog (23.1068ms)
+✔ network recovery returns selectable HR stars and retains their provenance (18.4306ms)
+✔ retired-identity regression detects omission of the response projection (23.9112ms)
+✔ malformed source rows retire only stars and keep independent content (19.7151ms)
+✔ a mirrored optical frame is removed from network and offline projections without retiring valid stars (41.0456ms)
+✔ rounded-only target caches lose geometry independently on offline, 304 and old-server reads, then recover (67.9031ms)
+✔ catalog survives chunked cache restart and validates both offline and 304 representations (241.1524ms)
+✔ invalid publication cannot survive network or offline validation and cache is evicted (95.4889ms)
+✔ invalid references never request; cancellation cannot turn into stale catalog success (29.2427ms)
+✔ public API facade uses generated version/hash route and evicts its exact cached representation (70.4587ms)
+✔ callers cannot change published star facts or replace a cached envelope before 304 reuse (38.9642ms)
+✔ page query passes its actual AbortSignal to transport and aborts native work on cancellation (77.4536ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2342.1736

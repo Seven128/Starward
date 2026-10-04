@@ -1,0 +1,154 @@
+{
+  "scope": "Clean v33 official DevTools native Canvas and SDK interaction evidence; ordinary UI composition, phone and final acceptance unverified.",
+  "candidateFile": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-combined-clean-v33-candidate-2026-09-29.json",
+  "candidateSha256": "137e66317bc24d2f0c03e6a55ea7e3a0795c57ad770b789457dd41f0b48be930",
+  "bundleSha256": "8d89d70f9c180b4652a095442a751b58d853c6929a9cbae2cd3c76edae8e3ad0",
+  "productionInputs": 110,
+  "trace": {
+    "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-stellar-glare-native-2026-09-29.jsonl",
+    "sha256": "738f799c9f0b36aceda1b07c245a7f4f309104cebd3a9755fa5ff342d668fba4",
+    "events": 60
+  },
+  "context": {
+    "locationKind": "FORMAL_SPOT",
+    "publicSpotId": "spot:test-published",
+    "localDate": "2026-09-29",
+    "selectedAtUtc": "2026-09-29T13:00:00Z",
+    "timezone": "Asia/Shanghai",
+    "revision": 1,
+    "contextFingerprint": "a4cf34cae79403a0887b7ce093a18f22f71b3c5e04e3466b51762082fab6953c",
+    "astronomyVersion": "astronomy-engine-2.1.19",
+    "contextIdSha256": "1746aa900d82214c32e47f82da8ebaaed098805083f5a8db9203634ee5a50965"
+  },
+  "runtime": {
+    "pixelRatio": 3,
+    "model": "iPhone 12/13 (Pro)",
+    "fontSize": 16,
+    "platform": "devtools",
+    "enableDebug": false,
+    "windowHeight": 762,
+    "windowWidth": 390,
+    "SDKVersion": "3.17.3"
+  },
+  "finalUi": {
+    "hasChoices": false,
+    "hasList": false,
+    "status": "",
+    "name": "<text id=\"_gt\" class=\"sky-selected-object__name\" style=\"opacity: 1; top: calc(50% - 36px);\" aria-expanded=\"\" aria-hidden=\"\" aria-label=\"\" aria-role=\"\" selectable=\"false\" user-select=\"false\" decode=\"false\" space=\"\" data-sid=\"_gt\">Altair</text>",
+    "title": "",
+    "hasModal": false,
+    "hasTimePanel": false,
+    "marker": "<button id=\"_gu\" class=\"sky-selected-object sky-selected-object--cross\" style=\"left: 195.1999969482422px; top: 422.000000000003px;\" aria-expanded=\"\" aria-hidden=\"\" aria-label=\"Altair已选中，查看资料\" aria-role=\"\" hover-start-time=\"20\" hover-stay-time=\"70\" hover-class=\"button-hover\" hover-stop-propagation=\"false\" disabled=\"false\" type=\"\" size=\"default\" plain=\"false\" loading=\"false\" form-type=\"\" open-type=\"\" app-parameter=\"\" lang=\"\" session-from=\"\" business-id=\"\" send-message-title=\"\" send-message-path=\"\" send-message-img=\"\" show-message-card=\"false\" data-sid=\"_gu\">",
+    "reticle": "<view id=\"_gr\" class=\"sky-selected-object__reticle\" style=\"width: 24px; height: 24px;\" aria-expanded=\"\" aria-hidden=\"true\" aria-label=\"\" aria-role=\"\" hover-start-time=\"50\" hover-stay-time=\"400\" hover-class=\"none\" hover-stop-propagation=\"false\" data-sid=\"_gr\">"
+  },
+  "canvasInput": {
+    "scope": "Native viewport CSS coordinate SDK events; marker was cleared before this tap.",
+    "y": 422,
+    "canvasOffset": {
+      "left": 0,
+      "top": 0
+    },
+    "canvasSize": {
+      "success": true,
+      "width": 390.3999938964844,
+      "height": 844
+    },
+    "x": 195.1999969482422
+  },
+  "images": [
+    {
+      "stage": "altair-wide",
+      "project": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v33-0929",
+      "height": 413,
+      "width": 192,
+      "sha256": "c6de8aaafdd6e30d1ee84890481f38efbf0d9c01cc52cea3482b413638dd4a7d",
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\cloud-sky-native-2026-09-22\\evidence\\experience-stellar-glare-v33-altair-wide-2026-09-29.png"
+    },
+    {
+      "stage": "altair-fine",
+      "height": 919,
+      "width": 427,
+      "project": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v33-0929",
+      "sha256": "d1efc14f3fb3cf5c96f7befb24d62a849d3c48ea50ad28e075cad0f36fe55750",
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\cloud-sky-native-2026-09-22\\evidence\\experience-stellar-glare-v33-altair-fine-2026-09-29.png"
+    },
+    {
+      "stage": "altair-wide-full",
+      "sha256": "e5c6f72f2d086c42a1e8b5692543f5366ebb36a1c52eec2395f29ccdb2560c30",
+      "height": 919,
+      "width": 427,
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\cloud-sky-native-2026-09-22\\evidence\\experience-stellar-glare-v33-altair-wide-full-2026-09-29.png",
+      "project": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v33-0929"
+    },
+    {
+      "stage": "altair-fine-return",
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\cloud-sky-native-2026-09-22\\evidence\\experience-stellar-glare-v33-altair-fine-return-2026-09-29.png",
+      "sha256": "68dd2206f0252fde5d1896329792d237a111a68609b95fc88ebdb28e2e358e24",
+      "width": 427,
+      "height": 919,
+      "project": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v33-0929"
+    }
+  ],
+  "croppedFineReturn": {
+    "rect": {
+      "x": 2,
+      "y": 112,
+      "width": 423,
+      "height": 769
+    },
+    "changedPixels": 0,
+    "maxDifference": 0,
+    "scope": "Excludes native top/bottom chrome. Same fixed selected time, not continuous motion evidence."
+  },
+  "pointPixels": {
+    "center": {
+      "x": 213.5,
+      "y": 459.49999999999994
+    },
+    "crop": {
+      "x": 193,
+      "y": 439,
+      "width": 40,
+      "height": 40
+    },
+    "radius": 2.6519036415155495,
+    "axes": 16,
+    "diagonals": 8.75,
+    "axisPixels": 16,
+    "diagonalPixels": 12
+  },
+  "services": {
+    "phase": "settled",
+    "contextPuts": 4,
+    "activeCount": 0,
+    "sourceMode": "pass",
+    "resourceMode": "pass",
+    "heldCount": 0,
+    "contextMode": "pass",
+    "totalObserved": 1020,
+    "epoch": "2026-09-29T09:14:20.175Z",
+    "putStatuses": [
+      200,
+      200,
+      200,
+      200
+    ]
+  },
+  "actualDevelopmentResults": [
+    "Formal public entry, manual view, actual Altair list/position, 45→8.9→2.67→45→2.67 bounded SDK pinch, actual blank deselection and marker-free star picking preserve identity.",
+    "Four original captures viewed. Full-window 427×919 native output shows shared bright-star glare; first lite192×413 capture retained only for its own diagnostic scope."
+  ],
+  "diagnostics": [
+    "Initial host cold SDK timeout, raw-tag text matching and wrong task path are tool/fixture diagnostics, not product failures.",
+    "Immediate close/open returned reuse while the runtime was subsequently gone; after close completion, newopen restored public navigation. Same persisted Context was actually re-read.",
+    "Readonly GPU node introspection through SDK failed, including after correct selector/current page. Exact native point-size range remains unverified; successful production rendering exercises its bound range query.",
+    "First pinch calculation assumed25° after locate, but the actual owner retains45° here. Only the later real45→8.9→2.67 sequence is used."
+  ],
+  "limits": [
+    "Ordinary overlay, name/cross/modal/dock and breathing are absent from official captures even when actual nodes are present; cause remains unresolved, no visual-pass claim.",
+    "Point-axis statistics are descriptive of the captured crop, not calibrated PSF/photometry, no native matched before-candidate or comparable Stellarium quality pass.",
+    "Canvas accessible4039 is the report base-frame count, not4039 native-visible stars or a supplemental coverage count.",
+    "SDK touch is not physical finger/device pointing. DevTools simulated iPhone is not iOS-device acceptance.",
+    "No true GPU fault/native total memory/performance/official package bytes/usage fees/phone-newMoon/final review acceptance. All prior scope remains."
+  ]
+}

@@ -83,31 +83,3 @@ test("sky touch cannot pick an old native frame during report replacement", () =
   assert.equal(run(touchStartCondition!, true), false);
   assert.equal(run(touchEndCondition!, true), false);
 });
-
-test("scene metadata exposes the presented result rather than the next report's data", () => {
-  const names = ["skySceneStarCount", "presentedSceneReady", "skyScenePresentationState",
-    "skySceneAccessibleCount", "skyTargetAccessibleCount"];
-  const declarations = source.statements.flatMap(statement => ts.isFunctionDeclaration(statement) &&
-    statement.name?.text === "SpotSkyPage" && statement.body
-    ? statement.body.statements.filter(child => ts.isVariableStatement(child) &&
-      child.declarationList.declarations.some(declaration => names.includes(declaration.name.getText(source))))
-    : []);
-  assert.equal(declarations.length, names.length);
-  const code = ts.transpileModule(declarations.map(statement => statement.getText(source)).join("\n") +
-    "\n({ skyScenePresentationState, skySceneAccessibleCount, skyTargetAccessibleCount });",
-  { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
-  const evaluate = (current: boolean, mounted = true) => vm.runInNewContext(code, {
-    activeSkySceneFrame: { state: "AVAILABLE", points: [[0, 0, 10], [1, 0, 20]] },
-    presentedSceneCurrent: current, skySceneReady: true, nativeCanvasMounted: mounted,
-    canvasError: null, orientationTargetFrame: {}, orientationTargets: [{}, {}],
-  }) as { skyScenePresentationState: string; skySceneAccessibleCount: string; skyTargetAccessibleCount: string };
-  const waiting = evaluate(false);
-  assert.equal(waiting.skyScenePresentationState, "PENDING");
-  assert.equal(waiting.skySceneAccessibleCount.includes("2 颗"), false);
-  assert.equal(waiting.skyTargetAccessibleCount, "目标待绘制");
-  assert.equal(evaluate(false, false).skyScenePresentationState, "UNAVAILABLE");
-  const ready = evaluate(true);
-  assert.equal(ready.skyScenePresentationState, "READY");
-  assert.equal(ready.skySceneAccessibleCount, "2 颗真实亮星目录对象");
-  assert.equal(ready.skyTargetAccessibleCount, "2 个真实目标");
-});

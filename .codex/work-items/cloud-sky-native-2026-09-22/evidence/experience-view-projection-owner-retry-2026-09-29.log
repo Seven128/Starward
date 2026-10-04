@@ -1,0 +1,17 @@
+✔ upright cardinal headings map ENU camera basis correctly (1.0926ms)
+✔ flat, face-down and gamma-tilted poses preserve real 3D direction (0.1988ms)
+✔ compound heading, beta and gamma use the declared rotation order (0.1239ms)
+✔ heading wraps while beta and gamma reject impossible platform ranges (0.1566ms)
+✔ stereographic projection preserves angular scale and canvas handedness (0.5828ms)
+✔ pole, frustum and behind-view directions return null rather than edge-clamped points (0.2474ms)
+✔ aspect ratio changes horizontal field without changing vertical field (0.1266ms)
+✔ invalid projection input is rejected without hidden defaults or clamping (0.1466ms)
+✔ a prepared projection preserves one accepted view and refreshes for the next view (0.8693ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 215.2304

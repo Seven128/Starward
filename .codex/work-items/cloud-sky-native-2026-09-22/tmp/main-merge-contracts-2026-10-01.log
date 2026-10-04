@@ -1,0 +1,83 @@
+
+> @starward/miniapp-contracts@0.1.0 test
+> node ../../tools/run-node.cjs --import tsx --test src/**/*.test.ts
+
+✔ published image transport is raw bytes and excluded from the JSON requester (2.6027ms)
+✔ the current filter schema has the exact ordered 14-option population (1.1715ms)
+✔ filter state accepts only the complete stable enum closure (2.4525ms)
+✔ the explicit test population is stable and cannot claim field truth (0.6591ms)
+✔ viewport radius keeps Web Mercator kilometre units and the 20% buffer (0.3422ms)
+✔ user preference snapshots remain independent (0.3981ms)
+✔ legacy preference payloads receive current reminder intent defaults (0.604ms)
+✔ test fixtures fail closed before scoring (1.1801ms)
+✔ the current feature set is one exact boolean closure (0.3725ms)
+✔ complete fixture parking guidance agrees with its available facility while unknown spots stay unknown (3.9763ms)
+✔ complete formal fixture exercises the adopted multi-image gallery and facility-photo mapping (0.3842ms)
+✔ formal feedback rebases independent user edits onto the latest baseline (3.4834ms)
+✔ formal feedback exposes three values and requires an explicit conflict choice (0.4726ms)
+✔ explicit clears and media replacement use the same immutable baseline rules (0.3192ms)
+✔ a baseline cannot be rebound to another spot or an older canonical revision (1.5584ms)
+✔ modern Shanghai, Hong Kong and Macao conversion survives Intl without formatToParts (5.2138ms)
+✔ reminders enforce five groups, twenty items and independent valid identities (4.1216ms)
+✔ drafts retain unfinished text while saved intent cannot forge delivery state (2.988ms)
+✔ selected origin coordinates survive parsing while corrupt or unidentified metadata is rejected (3.3259ms)
+✔ plan editor limits and travel choices share one contract (0.5092ms)
+✔ plan event associations keep a bounded unique catalog identity list (0.5328ms)
+✔ Sun/Moon keep exact identities and scientific kinds outside the seven planets (3.2519ms)
+✔ one bad luminary preserves the independent report position and negative altitudes (2.5849ms)
+✔ Saturn ring orientation is optional as a pair, never a guessed half-orientation (4.7595ms)
+✔ sky scene contract binds every frame to one hourly slice (5.8959ms)
+✔ unavailable sky scene is explicit and cannot carry fallback points (0.5824ms)
+✔ target frames bind actionable targets to every hourly instant (1.4238ms)
+✔ target frame coordinates are numeric facts, not display text or a half-present position (1.0249ms)
+✔ deep-sky frames bind stable Messier identities and tangent samples to the same axis (7.4316ms)
+✔ geometry contract retains publication identity, canonical time and observer through JSON (4.7493ms)
+✔ matrix validation rejects mirrored, scaled, skewed, malformed and nonfinite transforms (1.5818ms)
+✔ catalog geometry rejects ambiguous identities, nonunit positions and nontangent motion (0.5472ms)
+✔ bounded geometry admits the extended base population and rejects overflow (32.8556ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 47283.9283
+
+> @starward/astronomy-core@0.1.0 test
+> node ../../tools/run-node.cjs --import tsx --test
+
+✔ real BSC5P subset binds bytes, J2000 identity, original photometry and recognizable names (111.8138ms)
+✔ extended default preserves original astrometry and explicit v1 remains readable (233.5251ms)
+✔ Acrux revision has a distinct immutable hash and only names its explicit IAU component (244.9819ms)
+✔ malformed identity, nonstellar rows, epoch, units and duplicate rows are rejected (66.4804ms)
+✔ proper motion and local horizon agree with independent Astropy reference, including Polaris (92.6594ms)
+✔ epoch is invariant, polar motion stays finite, invalid observers fail closed (2.2153ms)
+✔ OpenNGC Messier pack is exact, stable and keeps galaxy and nebula identities (16.4304ms)
+✔ fixed J2000 deep-sky coordinates project for the exact observer instant (23.0805ms)
+✔ loads the checked Gaia asset with manifest-bound hash, schema, order and capacity (28.4348ms)
+✔ fails closed for missing, corrupt, reordered and oversized assets (16.6652ms)
+✔ projection is deterministic and changes with instant and WGS84 observer (5.4285ms)
+✔ horizontal positions include the catalog-to-equator-of-date frame rotation (0.4697ms)
+✔ recognizable Sirius, Vega and Polaris fixtures retain their astrometric golden coordinates (0.722ms)
+✔ horizon obstruction and adapter-shaped projection remain explicit (210.6254ms)
+✔ magnitude filtering never exceeds the manifest brightness boundary (1.8807ms)
+✔ bounded complete V<=5 pack is manifest-bound and contains recognizable named stars (7.8436ms)
+✔ Hipparcos projection is deterministic and preserves stable string identity (183.859ms)
+✔ OMM SGP4 binds UTC epoch, observer and time while accepting six-digit NORAD identity (33.3801ms)
+✔ stale orbit carries identity and epoch but never a fabricated position (0.5861ms)
+✔ rejects altered frame, impossible elements, local-time epoch and invalid observer (8.2333ms)
+✔ optical field of view keeps numeric geometry, portrait axes and incomplete-input fallback (14.588ms)
+✔ horizon interpolation wraps north and preserves measured obstruction provenance (0.9196ms)
+✔ the existing sky-model API reuses the same platform-neutral geometry functions (0.2188ms)
+✔ the catalog adapter preserves every qualified Gaia identity and unknown obstruction (245.6598ms)
+✔ catalog vectors keep arcsecond/year units, epoch direction and row-major ENU axes (5.0663ms)
+✔ all current catalog stars preserve the previous EQD/Horizon path across epoch, hemispheres and poles (687.3917ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 56323.6269

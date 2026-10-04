@@ -1,0 +1,4 @@
+Cannot find module 'tsc/package.json'
+Require stack:
+- E:\dev\worktrees\Starward\remote-main-20260908\package.json
+exitCode=1

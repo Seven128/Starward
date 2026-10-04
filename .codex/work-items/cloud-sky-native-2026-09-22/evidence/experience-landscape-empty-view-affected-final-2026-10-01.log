@@ -1,0 +1,45 @@
+✔ recreated canvas rejects queued survey and constellation native images until their new owners publish (21.3574ms)
+✔ queued pre-calibration canvas frame cannot jump back after confirm or cancel (32.0888ms)
+✔ real alignment confirms raw input while queued painting retains stabilized geometry (15.0372ms)
+✔ unused illustrations keep bounded files and return through a fresh decode without another request (6.1591ms)
+✔ a canceled cached decode cannot publish late or delete the file reused by its replacement (0.7562ms)
+✔ a cached file decode failure is latched and explicit retry replaces its file instead of looping (1.012ms)
+✔ cold files still consume the original source-equivalent retention allowance (0.5651ms)
+✔ cached decodes share the two-load queue and disposing cancels every in-flight decode (0.8805ms)
+✔ a cached decode still checks native dimensions before making the image usable (0.4112ms)
+✔ landscape refinement keeps the correct overview mask while returning to its cached detail file (2.7704ms)
+✔ panorama LINEAR alpha wraps the real first/last texels and keeps partial transparency (3.1232ms)
+✔ all opaque corner samples cannot erase an interior sky hole or its image source (0.8038ms)
+✔ completed image mask replaces old tree geometry for labels, point picks and off/failure (2.3032ms)
+✔ source alpha certifies high-sky zero while retaining tiny alpha and LINEAR boundary neighbours (1.1249ms)
+✔ foreground detail shares the actual GPU budget without counting a decoded identity twice or guessing unknown inputs (1.986ms)
+✔ a failed detail alpha request preserves the same valid coarse image/mask and retries only the failed resource (22.6661ms)
+✔ late canceled detail alpha cannot replace a valid overview or publish into a hidden canvas (3.5747ms)
+✔ detail image failure still selects valid coarse alpha, without granting a missing mask or stale detail image credit (9.7703ms)
+✔ image demand follows each completed resolution alpha and resumes on a horizon return (23.8139ms)
+✔ simulated ground follows the current exact sun and camera in ordinary and red modes (28.4379ms)
+✔ virtual geometry paints after celestial layers and publishes only an actually successful mask (14.7291ms)
+✔ the final virtual mask never opens a fully covered Moon, while an unobstructed repaint restores it (12.9859ms)
+✔ missing exact illumination and GPU failure retain independent scene completion (7.9661ms)
+✔ completed transparent source with no bitmap cannot substitute a procedural tree and hide the Moon (4.5887ms)
+✔ a completed empty detail mask cannot retire a still-painted overview or grant its hidden Moon picking (3.91ms)
+✔ corners on different trees cannot certify that open sky between them is covered (0.4756ms)
+✔ lobed canopy point hits cannot certify a hull across an open notch (0.2522ms)
+✔ a current returned position waits for its matching native sky frame before showing the marker (10.1066ms)
+✔ sky touch cannot pick an old native frame during report replacement (19.7518ms)
+✔ shared artwork and selected-object requests use one runtime namespace with distinct file identities (104.1787ms)
+✔ a publication or Canvas generation switch fences old decoded images before effects and redecodes for the new owner (22.7491ms)
+✔ hide, Canvas removal and publication loss retire decoded images held by the Hook, not just its returned view (64.055ms)
+✔ the page's constellation off intent retires ready files and decoded state, and re-enabling creates a fresh owner (39.9742ms)
+✔ the shared native consumer retains ready fallback bitmaps when its wanted set is temporarily empty (25.8328ms)
+✔ the production illustration wrapper retires unused decoded state and reuses its file on reverse zoom (32.4696ms)
+✔ an empty new Canvas generation cannot keep the old decoded-image state until another download finishes (7.1913ms)
+✔ repeated hide/show with a late canceled response releases retired state and preserves each new owner (8.899ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2095.117

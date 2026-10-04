@@ -118,3 +118,18 @@ test('publication loss releases ready tiles and publication replacement fences t
   assert.equal(h.heldState().publication,next);
   h.render(false);h.commit(false);
 });
+
+test('refreshed same-hash publication capability retires the old loader and accepts only the new observer',async()=>{
+  const h=fixture();h.render();h.commit();await tick();h.requests[0]!.finish();await tick();h.render();
+  const old=h.heldState();assert.equal(old.value.tiles.length,1);
+  // File clear can retire a delivered capability without changing source bytes.
+  const fresh={...publication};h.setPublication(fresh);
+  assert.equal(h.render().frame.tiles.length,0,'new metadata must not expose the old capability before cleanup effects');
+  h.commit();await tick();
+  assert.equal(h.requests.length,6,'same publication bytes cannot keep a loader bound to retired metadata');
+  assert(h.requests.slice(1,3).every(request=>request.signal.aborted));
+  assert.notEqual(h.heldState().owner,old.owner);assert.equal(h.heldState().publication,fresh);
+  for(const request of h.requests.slice(1,3))request.finish();await tick();assert.equal(h.render().frame.tiles.length,0);
+  h.requests[3]!.finish();await tick();assert.equal(h.render().frame.tiles.length,1);
+  h.render(false);h.commit(false);
+});

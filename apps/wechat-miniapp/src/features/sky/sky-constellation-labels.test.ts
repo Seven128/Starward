@@ -11,11 +11,11 @@ const frame:ConstellationFrame={at:'2026-09-23T21:00:00.000Z',lines:[],images:[]
   {iau:'Cru',nameEn:'Crux',nameZh:'南十字座',direction:skyHorizontalDirection(180,-20)!},
 ]};
 
-test('same stereographic camera places one real name, while zoom/intent and horizon gate it',()=>{
+test('same stereographic camera places one real name, while zoom/intent and viewport gate it',()=>{
   const view={basis,verticalFovDeg:25};
   const expected=projectSkyDirection(0,5,basis,360,640,25)!;
   const shown=projectConstellationLabels(frame,view,360,640,true);
-  assert.equal(shown.length,1,'nearby name collides and below-horizon name is excluded');
+  assert.equal(shown.length,1,'nearby name collides and the opposite name is outside the viewport');
   assert.equal(shown[0]!.iau,'Ori');
   assert.ok(Math.abs(shown[0]!.x-expected.x)<1e-9);
   assert.ok(Math.abs(shown[0]!.y-expected.y)<1e-9);
@@ -27,6 +27,16 @@ test('same stereographic camera places one real name, while zoom/intent and hori
   assert.deepEqual(projectConstellationLabels(frame,view,360,640,false),[]);
   assert.deepEqual(projectConstellationLabels(null,view,360,640,true),[]);
   assert.deepEqual(projectConstellationLabels(frame,view,0,640,true),[]);
+});
+
+test('a below-horizon constellation retains its identity at the actual camera position',()=>{
+  const current={basis:createSkyViewBasis(180,70,0)!,verticalFovDeg:25};
+  const expected=projectSkyDirection(180,-20,current.basis,360,640,25)!;
+  const labels=projectConstellationLabels(frame,current,360,640,true);
+  assert.equal(labels.length,1);
+  assert.equal(labels[0]!.iau,'Cru');
+  assert.ok(Math.abs(labels[0]!.x-expected.x)<1e-9);
+  assert.ok(Math.abs(labels[0]!.y-expected.y)<1e-9);
 });
 
 test('interactive object labels keep priority over constellation names',()=>{

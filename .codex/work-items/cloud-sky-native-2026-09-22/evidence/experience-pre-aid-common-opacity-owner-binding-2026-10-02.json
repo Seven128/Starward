@@ -1,0 +1,259 @@
+{
+  "createdUtc": "2026-10-02T14:57:49.5126553Z",
+  "scope": "Read-only owner and reference review; body scopes recorded below; hashes bind current full files, not claims of full-body read for large owning documents",
+  "sourceFiles": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 13870,
+      "sha256": "cfe3713d54a870e3475a331d1fbb1c5ab91fa0cddfcd7b2cacb65125d96b9d8c"
+    },
+    {
+      "path": "project_context/global.md",
+      "bytes": 5380,
+      "sha256": "7db650245fc4dad523637260dba01196098757ccbc4c94d1719a94d3711f21e6"
+    },
+    {
+      "path": "project_context/context.toml",
+      "bytes": 12167,
+      "sha256": "eff23ba66a908d989271e6a80e80ecf3e53772c5d8259facaf30b87c13664d08"
+    },
+    {
+      "path": ".codex/skills/uiux_design/SKILL.md",
+      "bytes": 19009,
+      "sha256": "ccb906a424a8fda131be3fd84fd320df46fd1942981f54deddd36c391fb243e0"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/request-original.txt",
+      "bytes": 16018,
+      "sha256": "2370eb26635352046bc3be983bf6bcb3ec23688b09406fd0d81e61308f91909a"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/USER-UPDATES.md",
+      "bytes": 45972,
+      "sha256": "fbd92c74c8008159f9bb7a6e49550857cb368517b6591c748f07b4c80bb53d16"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/REQUIREMENTS.md",
+      "bytes": 37599,
+      "sha256": "ac2a3d22e3f10035d7cd61d041b7e929322d1ad0725cf34ca96ce1e8552dce92"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/DISCUSSION-DECISIONS-2026-10-02.md",
+      "bytes": 6127,
+      "sha256": "1492381b53875293b671eda20e2f15623360ebb75ba4dd030707c56d23e8d8eb"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-pre-aid-readability-design-independent-2026-10-02.md",
+      "bytes": 5593,
+      "sha256": "4682915962d853d44038326c972f644c46477a2b9df5e8d1f248a2e54671c3d8"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-sdss-science-consumer-design-2026-10-02.md",
+      "bytes": 13653,
+      "sha256": "9dfcabfbb0599248bd0f402e2d4d0f383a07eca608c8ecc387bc7a92c7d8e27c"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-time-deep-aids-native-v38-2026-09-30.md",
+      "bytes": 6350,
+      "sha256": "b354ea94a93e1667471ac038579515c62641ad32f58c904100c9ee6831e826f4"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v42-fine-recovery-and-reference-2026-09-30.md",
+      "bytes": 4969,
+      "sha256": "e4025f4fe4fc732370d4a650a5a49e2d792da22907805cb10a9cc5bece88b4f5"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-user-stellarium-2026-09-29/README.md",
+      "bytes": 2913,
+      "sha256": "076f5e491b15bd6b5c3a7097fbd104c8a96bf3d323854d99942d251445d61c16"
+    },
+    {
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+      "bytes": 106022,
+      "sha256": "9780f137ff21062206974fa4d916930b82ea0867d595554c769c9fc63d358c99"
+    },
+    {
+      "path": "project_context/architecture/runtime-and-domain.md",
+      "bytes": 254521,
+      "sha256": "f88a7c0f963751be252bce20a2e7c19814d32ffeca8ef738c4589e6b7e2b6df8"
+    },
+    {
+      "path": "project_context/architecture.md",
+      "bytes": 11455,
+      "sha256": "bc497d5b8a6a09c3e22d82310b263dcf6567846fee60f5733e2e893c97089aed"
+    },
+    {
+      "path": "project_context/architecture/maintenance-boundaries.md",
+      "bytes": 19484,
+      "sha256": "acac2c860ac5126c968a4f6ab432f8ac62681f00fa84c38ac105b4f3e09a6976"
+    },
+    {
+      "path": "DESIGN.md",
+      "bytes": 139669,
+      "sha256": "e2628c53c1b89a5e2ebfd03c7b790f9f2be982c6c3665eed5967f2e0f49b9237"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/HANDOFF-2026-10-01.md",
+      "bytes": 53818,
+      "sha256": "7cc3d48b682b7ebb72baabd372af0d29c41dba659e6f3781d1009a4674f9aedb"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+      "bytes": 75412,
+      "sha256": "e761215be55f93b14cf96284446140c8928359f116d602d2aae516cf7dcedab9"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-deep-auxiliary-visibility.ts",
+      "bytes": 957,
+      "sha256": "ac0c001e18e0f466c2b67ca78d08ffa723ad0ae2f07fdddfca2ede84422fb568"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-deep-auxiliary-visibility.test.ts",
+      "bytes": 1131,
+      "sha256": "d0222489b76833ea98327c32cd0c3f604c68d906b8a5b113bcd514d7aa2ce223"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "bytes": 28968,
+      "sha256": "2d9ca9e04c62291a7224b3c78e02d6c8aec4a0ad5cace98ac79e33c37bcacf57"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-sdss-science-scene.ts",
+      "bytes": 5271,
+      "sha256": "c38c7b06f87689595a2ecee9097e83bf1948dd5aaa0b0e730963974c60fecb7d"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "bytes": 208102,
+      "sha256": "d8234b9d160513f0754bc7d37e5e49a18c97fcbad8c69381fe5353143ad2831d"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.ts",
+      "bytes": 6622,
+      "sha256": "cef71b3d63e387a1b218c102fa4000fce6790ac1007d724caf6c5a873e0fac8c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-sdss-optical-completion.ts",
+      "bytes": 8068,
+      "sha256": "bf989376b0907cd472d51320a0953a060fa4e432318bdd74f802034ba0b818a4"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-level-composition.ts",
+      "bytes": 6699,
+      "sha256": "a9b3bbe88d1aaef9c6faf6a5065ee14868b376e0ca8765d5726f9af760e31b7c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.ts",
+      "bytes": 22480,
+      "sha256": "87467f231b709599befc57113e30d4c69c3d34d8782a95c1ecdeb2505b61c4dc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "bytes": 60937,
+      "sha256": "45421d09a212aac3d4704afa266250221a6e4b954407c9e8994097d96762d7ff"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-object-picking.ts",
+      "bytes": 5321,
+      "sha256": "73b5f0d52358e2fe9c50d28d403f90a2fa110822a6b1f40b749fac9283f5ee6e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-selection-marker.ts",
+      "bytes": 1413,
+      "sha256": "115edcbeca29a0d224df26943b3c49827bca43a868da7c5cadd4a0e41df8ff99"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/types.ts",
+      "bytes": 38733,
+      "sha256": "3218f6aaa44d9cd8178fdb41445bbd15f05becb14013628432038b49c7ae83eb"
+    }
+  ],
+  "viewedImages": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-stellarium-m31-5_83-2026-09-30.jpg",
+      "bytes": 122204,
+      "sha256": "70b8d2435c144ab346941c66786c6c7fff18bc800080fa37faeb11ba41308adb"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-stellarium-m31-0_828-2026-09-30.jpg",
+      "bytes": 138120,
+      "sha256": "fbac8430be1331f383af95d0b61c8c0bdb26a93eea6839b99b382ced2743ed9a"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-stellarium-m42-5_83-2026-09-30.jpg",
+      "bytes": 125686,
+      "sha256": "762d6836e274c966d08e40837214997399e605c279ee1250e125c08c31c01ee7"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-stellarium-m42-0_828-2026-09-30.jpg",
+      "bytes": 129129,
+      "sha256": "010016f93be123bfe4068a06bc0d18703a1e9d5adc70bc5452efc2e25a927275"
+    },
+    {
+      "path": "output/playwright/cloud-sky-science-scene-1002-r3/actual-pair.png",
+      "bytes": 381035,
+      "sha256": "8d0c5e3484d71be0247054f0dc5c175baa57c90facc5555859985f7397cf5c14"
+    },
+    {
+      "path": "output/playwright/cloud-sky-science-scene-1002-r3/valid-black-fine.png",
+      "bytes": 10025,
+      "sha256": "d808849b974a09abe8e61842d162b9207f203218fd7b206d106e65097a0c7ede"
+    },
+    {
+      "path": "output/playwright/cloud-sky-science-scene-1002-r3/partial-fine-coarse.png",
+      "bytes": 11727,
+      "sha256": "724278fcbf4599ab7ed2ff6715e02aca2a0c5f98e8725cab46894bbb27435344"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-user-stellarium-2026-09-29/codex-clipboard-54d03ef8-5436-4d14-bd9a-5e4e86d815b8.png",
+      "bytes": 666997,
+      "sha256": "03a154a97baf44f743e39b107a1aae4d2fda80db67dc7418bfaa3901281d8e67"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-user-stellarium-2026-09-29/codex-clipboard-7ecdc94a-0371-4cf8-ae96-499d80391cd8.png",
+      "bytes": 3116048,
+      "sha256": "6bf1e3a7205e3440c00110ca0d4a5b08e136887452ca18e55bfdff70589c3986"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-user-stellarium-2026-09-29/codex-clipboard-8bef852c-ffce-4f5d-81e0-2a02792143de.png",
+      "bytes": 716432,
+      "sha256": "7bba44fefa461bdbf53937beec2907f442bb51bbbe5350dbd3257fa780996021"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-user-stellarium-2026-09-29/codex-clipboard-aaa54e32-7309-4685-99b9-fcd40852ea4f.png",
+      "bytes": 130178,
+      "sha256": "bec8774eb0851fa79393bacd92c732a670f2fd452d86d1c6331c45e6139b2583"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-user-stellarium-2026-09-29/codex-clipboard-e38ea8a7-c5a7-4378-8310-cf5a294f5037.png",
+      "bytes": 1392876,
+      "sha256": "925f19b78b63b1b5c7d5fbe3d8188be2b9af67ecc7642e1e825ca53659e9bc83"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-user-stellarium-2026-09-29/codex-clipboard-e443e3e0-86ea-4c37-98cf-856bdc7a1305.png",
+      "bytes": 919274,
+      "sha256": "e50e1146d3eb41e35ada871a8761f6d77d743f97dd90552a9112634a2cf255bf"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-user-stellarium-2026-09-29/codex-clipboard-e84200ee-00c5-40f1-a9fc-3054b83b639b.png",
+      "bytes": 1404350,
+      "sha256": "e56e3c1b1465addab2390a0f716450956eb5ef9d726c7b089c192316c511118d"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/reference-user-stellarium-2026-09-29/codex-clipboard-e8b5e8ef-2b0b-4830-bf2d-3fa3d8c32539.png",
+      "bytes": 2225680,
+      "sha256": "a2a40a49b0bcf7f8cd350f5906db464dd62e188d8c3fb6a743ee28beb4e1c6e0"
+    }
+  ],
+  "scopedReads": {
+    "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.ts": "Actual capture/update/finish/getter/lifecycle, lines 267-402 and bounded searches",
+    ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md": "Current dependency section, lines 11-22",
+    "project_context/architecture/runtime-and-domain.md": "Cloud-sky visibility/publication/completion/receipt/pre-aid boundaries, lines 234-243 and relevant bounded searches",
+    "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx": "Native accepted completion, presented state and DOM catalog labels, lines 1261-1557, 2601-2767 and relevant bounded searches",
+    "DESIGN.md": "Mini Program profile scope and Sky 6.12",
+    "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts": "Actual buffered submission/flush and current group/finish getters, lines 549-590 and bounded searches",
+    "packages/miniapp-contracts/src/types.ts": "DeepSky catalog axis/angle and frame fields, lines 773-793",
+    "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md": "Sky/product/full-sphere/selection/scales/recovery sections, lines 1-115 and 196-211",
+    ".codex/work-items/cloud-sky-native-2026-09-22/HANDOFF-2026-10-01.md": "Governing source/scope/interaction sections, lines 17-65"
+  }
+}

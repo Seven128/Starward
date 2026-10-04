@@ -58,7 +58,7 @@ export function useSkyOpticalHips(report:Pick<SkyGeometryReport,"hourly"|"observ
       ?resolvePublishedOpticalTiles(candidates,indexes.data?.data??[],reference):[];
   },[shardKey,referenceKey,candidates,indexes.data]);
   const images=useSkyNativeImages(canvas,canvasRevision,publication?.publicationHash,
-    trialActive&&candidates.length>0,assets,asset=>({url:opticalHipsTileUrl(asset.downloadUrl),format:asset.format}));
+    trialActive&&candidates.length>0,assets,asset=>({url:opticalHipsTileUrl(asset.downloadUrl),format:asset.format,storage:"session"}));
   const tiles=useMemo(()=>{
     if(!trialActive||!candidates.length)return [] as SkyHipsCanvasTile[];
     const ready=new Map([...images.retainedImages,...images.images]);

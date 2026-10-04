@@ -1,0 +1,11 @@
+# M82 W3 source-quality interpretation, 2026-10-02
+
+This is bounded source documentation research for the current admitted AllWISE W3 route, not a new source choice, target-specific artifact diagnosis or permission to change a mask. The independent full-DETAIL sample/coordinate review owns the measured M82 result. Existing image products and public routes are unchanged.
+
+The official [AllWISE Atlas cautionary notes](https://irsa.ipac.caltech.edu/data/WISE/docs/release/AllWISE/expsup/sec4_4.html), read on 2026-10-02, distinguish saturation-masked NaNs/zero coverage from unmasked saturation with anomalously low core values. They also describe W3/W4 banding and Atlas smoothing. These are possible mechanisms, not a diagnosis of M82. Finite samples do not certify artifact-free science; no inferred flag or repaired flux is adopted.
+
+The documentation gives typical Atlas W3 FWHM of about 9.5 arcsec. Our 512-pixel 0.25° field samples about 1.76 arcsec/pixel near its center: approximately 5.4 pixels across that characteristic width. This inference explains why complete source acquisition or enlargement alone cannot restore sharp detail. It is neither a measured local PSF nor a deconvolution justification or exact post-HiPS resolution.
+
+Local HiPS properties identify a historical 12 µm Atlas-derived product; cached primary arrays have no BUNIT/calibration header. The documentation calls original Atlas samples DN, which does not establish a derived HiPS photometric conversion. Fresh outputs retain unknown intensity units and infrared meaning.
+
+[Independent complete-source coordinates/scalars](experience-m82-fresh-sampler-independent-review-2026-10-02.md) now agree with the shared output. The [actual common-display trial](experience-m82-detail-display-trial-2026-10-02.md) was generated and viewed: the finite core dark feature and softness remain, so this diagnostic is not adopted as a repaired product. The old nuclear black region must not be equated with nonfinite samples or filled from JPEG brightness. Source coverage/uncertainty/quality information would be needed for a stronger artifact classification. Whole-image repair, overview/medium completeness, publication compatibility, actual painted source, native quality and complete-experience acceptance remain open in the unique PLAN.

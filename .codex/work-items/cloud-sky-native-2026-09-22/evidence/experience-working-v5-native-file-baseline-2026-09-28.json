@@ -1,0 +1,661 @@
+{
+  "scope": "Native owner-file baseline before clean-v5 enters Sky; includes other candidates/historical caches, not attributable to v5",
+  "files": [
+    {
+      "name": "deep-sky-M-31-DETAIL-mu8qtj6b-4.jpg",
+      "bytes": 24
+    },
+    {
+      "name": "deep-sky-M-31-DETAIL-mudid6sn-2.jpg",
+      "bytes": 41153
+    },
+    {
+      "name": "deep-sky-M-31-DETAIL.jpg",
+      "bytes": 41153
+    },
+    {
+      "name": "deep-sky-M-31-MEDIUM-mukrkj2b-2.jpg",
+      "bytes": 43918
+    },
+    {
+      "name": "deep-sky-M-31-MEDIUM.jpg",
+      "bytes": 43918
+    },
+    {
+      "name": "deep-sky-M-31-OVERVIEW.jpg",
+      "bytes": 14454
+    },
+    {
+      "name": "deep-sky-M-33-MEDIUM.jpg",
+      "bytes": 40549
+    },
+    {
+      "name": "deep-sky-M-33-OVERVIEW.jpg",
+      "bytes": 15447
+    },
+    {
+      "name": "deep-sky-M-51-DETAIL-mukjt4ez-2.jpg",
+      "bytes": 13161
+    },
+    {
+      "name": "sky-art-mu8ioyxx-1.png",
+      "bytes": 57787
+    },
+    {
+      "name": "sky-art-mu8ioyxx-2.png",
+      "bytes": 8194
+    },
+    {
+      "name": "sky-art-mu8ioyxx-3.png",
+      "bytes": 44222
+    },
+    {
+      "name": "sky-art-mu8ioyxx-4.png",
+      "bytes": 40144
+    },
+    {
+      "name": "sky-art-mu8ioyxx-5.png",
+      "bytes": 43164
+    },
+    {
+      "name": "sky-art-mu8ioyxx-6.png",
+      "bytes": 25636
+    },
+    {
+      "name": "sky-art-mu8ioyxx-7.png",
+      "bytes": 51300
+    },
+    {
+      "name": "sky-art-mu8ioyxx-8.png",
+      "bytes": 28437
+    },
+    {
+      "name": "sky-art-mu8ioyxx-9.png",
+      "bytes": 29180
+    },
+    {
+      "name": "sky-art-mu8mgw6g-6.png",
+      "bytes": 40144
+    },
+    {
+      "name": "sky-art-mu8mgw6g-7.png",
+      "bytes": 43164
+    },
+    {
+      "name": "sky-art-mu8ovx14-1.png",
+      "bytes": 8194
+    },
+    {
+      "name": "sky-art-mu8ovx14-2.png",
+      "bytes": 44222
+    },
+    {
+      "name": "sky-art-mu8ovx14-3.png",
+      "bytes": 40144
+    },
+    {
+      "name": "sky-art-mu8ovx14-4.png",
+      "bytes": 29252
+    },
+    {
+      "name": "sky-art-mu8ovx14-5.png",
+      "bytes": 43164
+    },
+    {
+      "name": "sky-art-mu8pha58-21.png",
+      "bytes": 29180
+    },
+    {
+      "name": "sky-art-mu8pha58-22.png",
+      "bytes": 33947
+    },
+    {
+      "name": "sky-art-mu8qtj6b-10.png",
+      "bytes": 33947
+    },
+    {
+      "name": "sky-art-mu8qtj6b-9.png",
+      "bytes": 29180
+    },
+    {
+      "name": "sky-art-mudbm3e9-1.png",
+      "bytes": 43176
+    },
+    {
+      "name": "sky-art-mudbm3e9-2.png",
+      "bytes": 41969
+    },
+    {
+      "name": "sky-art-mudbm3e9-3.png",
+      "bytes": 22241
+    },
+    {
+      "name": "sky-art-mudbm3e9-4.png",
+      "bytes": 33662
+    },
+    {
+      "name": "sky-art-mudfpee4-1.png",
+      "bytes": 41780
+    },
+    {
+      "name": "sky-art-mudfpee4-2.png",
+      "bytes": 33947
+    },
+    {
+      "name": "sky-art-mudfpee4-3.png",
+      "bytes": 52817
+    },
+    {
+      "name": "sky-art-mudfur03-1.png",
+      "bytes": 41780
+    },
+    {
+      "name": "sky-art-mudfur03-2.png",
+      "bytes": 33947
+    },
+    {
+      "name": "sky-art-mudfur03-3.png",
+      "bytes": 52817
+    },
+    {
+      "name": "sky-art-mudgebko-1.png",
+      "bytes": 41780
+    },
+    {
+      "name": "sky-art-mudgebko-2.png",
+      "bytes": 33947
+    },
+    {
+      "name": "sky-art-mudgebko-3.png",
+      "bytes": 52817
+    },
+    {
+      "name": "sky-art-mudgoggd-1.png",
+      "bytes": 41780
+    },
+    {
+      "name": "sky-art-mudgoggd-2.png",
+      "bytes": 33947
+    },
+    {
+      "name": "sky-art-mudgoggd-3.png",
+      "bytes": 52817
+    },
+    {
+      "name": "sky-art-mudgrouh-1.png",
+      "bytes": 41780
+    },
+    {
+      "name": "sky-art-mudgrouh-2.png",
+      "bytes": 33947
+    },
+    {
+      "name": "sky-art-mudgrouh-3.png",
+      "bytes": 52817
+    },
+    {
+      "name": "sky-art-mudid6sm-1.png",
+      "bytes": 29180
+    },
+    {
+      "name": "sky-art-mudid6sm-2.png",
+      "bytes": 33947
+    },
+    {
+      "name": "sky-art-mudid6sm-3.png",
+      "bytes": 52817
+    },
+    {
+      "name": "sky-art-mudmgyhb-1.jpg",
+      "bytes": 68725
+    },
+    {
+      "name": "sky-art-mudmgyhb-2.jpg",
+      "bytes": 42902
+    },
+    {
+      "name": "sky-art-mudmgyhb-3.jpg",
+      "bytes": 24663
+    },
+    {
+      "name": "sky-art-mudmgyhb-4.jpg",
+      "bytes": 73313
+    },
+    {
+      "name": "sky-art-mudmgyhb-5.jpg",
+      "bytes": 51958
+    },
+    {
+      "name": "sky-art-mudmgyhb-6.jpg",
+      "bytes": 66710
+    },
+    {
+      "name": "sky-art-mudmgyhb-7.jpg",
+      "bytes": 51221
+    },
+    {
+      "name": "sky-art-mudmgyhb-8.jpg",
+      "bytes": 79285
+    },
+    {
+      "name": "sky-art-mudmgyhb-9.jpg",
+      "bytes": 45171
+    },
+    {
+      "name": "sky-art-mudmogpy-51.jpg",
+      "bytes": 68725
+    },
+    {
+      "name": "sky-art-mudmogpy-52.jpg",
+      "bytes": 42902
+    },
+    {
+      "name": "sky-art-mudmogpy-53.jpg",
+      "bytes": 24663
+    },
+    {
+      "name": "sky-art-mudmogpy-54.jpg",
+      "bytes": 73313
+    },
+    {
+      "name": "sky-art-mudmogpy-55.jpg",
+      "bytes": 51958
+    },
+    {
+      "name": "sky-art-mudmogpy-56.jpg",
+      "bytes": 66710
+    },
+    {
+      "name": "sky-art-mudmogpy-57.jpg",
+      "bytes": 51221
+    },
+    {
+      "name": "sky-art-mudmogpy-58.jpg",
+      "bytes": 79285
+    },
+    {
+      "name": "sky-art-mudmogpy-59.jpg",
+      "bytes": 24827
+    },
+    {
+      "name": "sky-art-mudmogpy-60.jpg",
+      "bytes": 66700
+    },
+    {
+      "name": "sky-art-mudmogpy-61.jpg",
+      "bytes": 82669
+    },
+    {
+      "name": "sky-art-mudmogpy-62.jpg",
+      "bytes": 45171
+    },
+    {
+      "name": "sky-art-mudnl97z-1.png",
+      "bytes": 8194
+    },
+    {
+      "name": "sky-art-mudnl97z-2.png",
+      "bytes": 44222
+    },
+    {
+      "name": "sky-art-mudnl97z-3.png",
+      "bytes": 40144
+    },
+    {
+      "name": "sky-art-mudnl97z-4.png",
+      "bytes": 29252
+    },
+    {
+      "name": "sky-art-mudnl97z-5.png",
+      "bytes": 43164
+    },
+    {
+      "name": "sky-art-mudnl97z-6.png",
+      "bytes": 23311
+    },
+    {
+      "name": "sky-art-mudnl97z-7.png",
+      "bytes": 28437
+    },
+    {
+      "name": "sky-art-mudnl97z-8.png",
+      "bytes": 9042
+    },
+    {
+      "name": "sky-art-mudqbyxh-1.jpg",
+      "bytes": 372399
+    },
+    {
+      "name": "sky-art-mudqbyxh-2.png",
+      "bytes": 43176
+    },
+    {
+      "name": "sky-art-mudqbyxh-3.png",
+      "bytes": 41969
+    },
+    {
+      "name": "sky-art-mudqbyxh-4.png",
+      "bytes": 22241
+    },
+    {
+      "name": "sky-art-mue2nf6f-1.png",
+      "bytes": 12396
+    },
+    {
+      "name": "sky-art-mue2nf6f-2.png",
+      "bytes": 35348
+    },
+    {
+      "name": "sky-art-mue2nf6f-3.png",
+      "bytes": 25636
+    },
+    {
+      "name": "sky-art-mue2nf6f-4.jpg",
+      "bytes": 94411
+    },
+    {
+      "name": "sky-art-mue3m0my-1.png",
+      "bytes": 12396
+    },
+    {
+      "name": "sky-art-mue3m0my-2.png",
+      "bytes": 35348
+    },
+    {
+      "name": "sky-art-mue3m0my-3.png",
+      "bytes": 25636
+    },
+    {
+      "name": "sky-art-mue3m0my-4.jpg",
+      "bytes": 94411
+    },
+    {
+      "name": "sky-art-mue484l3-1.png",
+      "bytes": 12396
+    },
+    {
+      "name": "sky-art-mue484l3-2.png",
+      "bytes": 35348
+    },
+    {
+      "name": "sky-art-mue484l3-3.png",
+      "bytes": 25636
+    },
+    {
+      "name": "sky-art-mue484l3-4.jpg",
+      "bytes": 94411
+    },
+    {
+      "name": "sky-art-mue4qlms-1.png",
+      "bytes": 12396
+    },
+    {
+      "name": "sky-art-mue4qlms-2.png",
+      "bytes": 35348
+    },
+    {
+      "name": "sky-art-mue4qlms-3.png",
+      "bytes": 25636
+    },
+    {
+      "name": "sky-art-mue4qlms-4.jpg",
+      "bytes": 94411
+    },
+    {
+      "name": "sky-art-mueafo7v-1.png",
+      "bytes": 41780
+    },
+    {
+      "name": "sky-art-mueafo7v-2.png",
+      "bytes": 33947
+    },
+    {
+      "name": "sky-art-mueafo7v-3.png",
+      "bytes": 52817
+    },
+    {
+      "name": "sky-art-mueappv5-1.png",
+      "bytes": 41780
+    },
+    {
+      "name": "sky-art-mueappv5-2.png",
+      "bytes": 33947
+    },
+    {
+      "name": "sky-art-mueappv5-3.png",
+      "bytes": 52817
+    },
+    {
+      "name": "sky-art-mueau3w2-1.png",
+      "bytes": 41780
+    },
+    {
+      "name": "sky-art-mueau3w2-2.png",
+      "bytes": 33947
+    },
+    {
+      "name": "sky-art-mueau3w2-3.png",
+      "bytes": 52817
+    },
+    {
+      "name": "sky-art-muebe4r9-1.png",
+      "bytes": 41780
+    },
+    {
+      "name": "sky-art-muebe4r9-2.png",
+      "bytes": 33947
+    },
+    {
+      "name": "sky-art-muebe4r9-3.png",
+      "bytes": 52817
+    },
+    {
+      "name": "sky-art-mukb8cxi-10.png",
+      "bytes": 11241
+    },
+    {
+      "name": "sky-art-mukb8cxi-3.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukb8cxi-4.png",
+      "bytes": 35935
+    },
+    {
+      "name": "sky-art-mukb8cxi-5.png",
+      "bytes": 29252
+    },
+    {
+      "name": "sky-art-mukb8cxi-6.png",
+      "bytes": 43164
+    },
+    {
+      "name": "sky-art-mukb8cxi-7.png",
+      "bytes": 43187
+    },
+    {
+      "name": "sky-art-mukb8cxi-8.png",
+      "bytes": 11604
+    },
+    {
+      "name": "sky-art-mukb8cxi-9.png",
+      "bytes": 35799
+    },
+    {
+      "name": "sky-art-mukca2i0-29.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukca2i0-30.png",
+      "bytes": 35935
+    },
+    {
+      "name": "sky-art-mukca2i0-31.png",
+      "bytes": 29252
+    },
+    {
+      "name": "sky-art-mukca2i0-32.png",
+      "bytes": 43164
+    },
+    {
+      "name": "sky-art-mukca2i0-33.png",
+      "bytes": 43187
+    },
+    {
+      "name": "sky-art-mukca2i0-34.png",
+      "bytes": 11604
+    },
+    {
+      "name": "sky-art-mukca2i0-35.png",
+      "bytes": 35799
+    },
+    {
+      "name": "sky-art-mukca2i0-36.png",
+      "bytes": 11241
+    },
+    {
+      "name": "sky-art-mukdihj1-7.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukf3e1z-1.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukfde7d-1.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukfrsze-2.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukg32bs-6.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukgie8l-2.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukh9dds-4.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukiygo7-5.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukjt4ey-3.png",
+      "bytes": 36561
+    },
+    {
+      "name": "sky-art-mukjt4ey-4.png",
+      "bytes": 11587
+    },
+    {
+      "name": "sky-art-mukjt4ey-5.png",
+      "bytes": 43164
+    },
+    {
+      "name": "sky-art-mukjt4ey-6.png",
+      "bytes": 28437
+    },
+    {
+      "name": "sky-art-mukjt4ey-7.jpg",
+      "bytes": 24076
+    },
+    {
+      "name": "sky-art-mukjt4ey-8.jpg",
+      "bytes": 19784
+    },
+    {
+      "name": "sky-art-mukl14hv-48.png",
+      "bytes": 22399
+    },
+    {
+      "name": "sky-art-mukl14hv-49.png",
+      "bytes": 41095
+    },
+    {
+      "name": "sky-art-mukod89l-2.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukod89l-3.png",
+      "bytes": 35935
+    },
+    {
+      "name": "sky-art-mukod89l-4.png",
+      "bytes": 29252
+    },
+    {
+      "name": "sky-art-mukod89l-5.png",
+      "bytes": 43164
+    },
+    {
+      "name": "sky-art-mukod89l-6.png",
+      "bytes": 43187
+    },
+    {
+      "name": "sky-art-mukod89l-7.png",
+      "bytes": 11604
+    },
+    {
+      "name": "sky-art-mukod89l-8.png",
+      "bytes": 35799
+    },
+    {
+      "name": "sky-art-mukod89l-9.png",
+      "bytes": 11241
+    },
+    {
+      "name": "sky-art-mukou7b2-1.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukou7b2-2.png",
+      "bytes": 35935
+    },
+    {
+      "name": "sky-art-mukou7b2-3.png",
+      "bytes": 29252
+    },
+    {
+      "name": "sky-art-mukou7b2-4.png",
+      "bytes": 43164
+    },
+    {
+      "name": "sky-art-mukou7b2-5.png",
+      "bytes": 43187
+    },
+    {
+      "name": "sky-art-mukou7b2-6.png",
+      "bytes": 11604
+    },
+    {
+      "name": "sky-art-mukou7b2-7.png",
+      "bytes": 35799
+    },
+    {
+      "name": "sky-art-mukou7b2-8.png",
+      "bytes": 11241
+    },
+    {
+      "name": "sky-art-mukpbvhg-36.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukqfjzq-5.jpg",
+      "bytes": 703555
+    },
+    {
+      "name": "sky-art-mukrkj2b-27.png",
+      "bytes": 29180
+    },
+    {
+      "name": "sky-art-mukrkj2b-28.png",
+      "bytes": 33947
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+✔ pending proposal sky is owner-scoped and bound to the submitted coordinate (202.2584ms)
+✔ detail and sky reject context drift and share one selected time (116.4801ms)
+✔ sky report preserves exact selected time and binds targets and stars to every frame (91.5977ms)
+✔ daylight and cross-midnight selected instants stay exact instead of nearest-sampled (157.8041ms)
+✔ actual forecast holes remain empty through SkyReport and Map while celestial frames retain their exact time (196.8515ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2026.7147

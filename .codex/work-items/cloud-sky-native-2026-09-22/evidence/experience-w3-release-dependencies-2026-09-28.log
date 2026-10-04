@@ -1,0 +1,20 @@
+
+> starward@1.0.0 build:miniapp:release
+> npm run build:release --workspace @starward/coordinate-system && npm run build:release --workspace @starward/miniapp-contracts && npm run build:release --workspace @starward/astronomy-core && npm run build:release --workspace @starward/miniapp-api
+
+
+> @starward/coordinate-system@0.1.0 build:release
+> node ../../tools/run-node.cjs --bin typescript tsc -p tsconfig.build.json
+
+
+> @starward/miniapp-contracts@0.1.0 build:release
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json
+
+
+> @starward/astronomy-core@0.1.0 build:release
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json
+
+
+> @starward/miniapp-api@0.1.0 build:release
+> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json
+

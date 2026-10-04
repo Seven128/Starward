@@ -1,0 +1,31 @@
+{
+  "observedUtc": "2026-09-29T04:23:21.3611764Z",
+  "scope": "Read-only current DevTools/project/context and selected local service status; no phone or full composition acceptance.",
+  "windows": [
+    {
+      "Id": 25916,
+      "MainWindowTitle": "Starward-Sky-Combined-Clean-V25-0929"
+    }
+  ],
+  "presentedCanvasLabel": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，3998 颗真实亮星目录对象，场景时刻 2026-09-29T13:30:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 21:30",
+  "acceptedContext": {
+    "locationKind": "FORMAL_SPOT",
+    "publicSpotId": "spot:test-published",
+    "localDate": "2026-09-29",
+    "selectedAtUtc": "2026-09-29T13:30:00Z",
+    "timezone": "Asia/Shanghai",
+    "revision": 2,
+    "contextFingerprint": "9065b817f6d2611cee5c80ab32531354e78d7b7f2bb18abadc610fdee25e2bd6",
+    "astronomyVersion": "astronomy-engine-2.1.19",
+    "contextIdSha256": "d80f00b39338d14118e91fba8fd4ee7825aa82229c895fcd636bc3dc4338e649"
+  },
+  "localServices": {
+    "contextMode": "pass",
+    "publicationBackendPort": 54424,
+    "activeCount": 0,
+    "heldResourceCount": 0,
+    "informationModuleSha256": "3ae1fcda98d31ec91469e7c2e92aa1d8d314b8e4203dadb24359c5483ce67cd9",
+    "resourceMode": "pass",
+    "puts": 1
+  }
+}

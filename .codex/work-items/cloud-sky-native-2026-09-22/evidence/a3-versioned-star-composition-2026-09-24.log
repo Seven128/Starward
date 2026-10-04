@@ -1,0 +1,32 @@
+✔ selected HR stars use the exact rendered geometry and preserve below-horizon positions (21.1614ms)
+✔ new time slices change location and cannot silently reuse the previous position (1.6769ms)
+✔ planet position uses the same exact report row and fails closed on retired geometry (18.5891ms)
+✔ deep-sky selection consumes the same registered center independently of the stellar layer (8.3797ms)
+✔ SAO selected positions match the real tile's propagated geometry without loading a visible scene (763.7415ms)
+✔ stale, expired and wrong-catalog frames never become fresh selectable coordinates (9.6885ms)
+✔ authorized HTTP location lookup reaches the existing camera projection; private proposals retain auth (448.3715ms)
+✔ published faint stars resolve to the same scientific identity and magnitude in details, without fabricated measurements (741.0545ms)
+✔ portable canonical integrity matches Node for Unicode, surrogate escapes, small motions and negative zero (0.7145ms)
+✔ all actual published tiles preserve source identity, geometry and independent canonical integrity (1943.981ms)
+✔ legacy and Acrux-bound SAO publications coexist at distinct HTTP routes (239.7519ms)
+✔ revised SAO details pack matches its complete spatial publication and rejects the old base (623.8494ms)
+✔ actual HTTP index/tile reach the client; 304 works, wrong publication is rejected, corruption evicts and retry recovers (137.1653ms)
+✔ full-day real report sends one exact transform per time without repeated star rows (92.9966ms)
+✔ unavailable or invalid star geometry retains independent deep sky without fallback stars (80.8249ms)
+✔ report cache identity includes wire format, source publication and projection algorithm (0.935ms)
+✔ SkyReport cache invalidates v1/v2 publication changes and their geometry (321.8919ms)
+✔ one Observation Context can serve isolated BSC v2 and Acrux v3 reports without cache cross-talk (331.3689ms)
+✔ v3 report, published BSC and SAO tile compose in the Mini scene while old SAO is rejected (308.0205ms)
+✔ report observation frames survive a failed bright-star catalog and match the real star transform (239.8823ms)
+{"publication":"bsc5p-bright-stars.v2","rows":8404,"envelopeBytes":1280196,"http304":true}
+✔ real static catalog HTTP delivers all 8404 stars to client validation, with conditional reuse and exact publication binding (664.3253ms)
+✔ catalog publication is immutable and stable across service instances (116.8008ms)
+✔ publication validation rejects changed photometry, geometry, identity and provenance (266.5455ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5506.7014

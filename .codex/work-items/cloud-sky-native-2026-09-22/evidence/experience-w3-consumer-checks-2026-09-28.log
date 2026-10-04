@@ -1,0 +1,16 @@
+✔ Acrux detail and catalog sources follow the requested report version (114.9976ms)
+✔ stable HR references return attributable ready and basic-only states (1.0406ms)
+✔ large numeric-like and unknown references stay strings and fail closed (1.9466ms)
+✔ planet information distinguishes historical band profiles from current geometry and weather (1.1978ms)
+✔ Messier galaxy and nebula references expose attributable catalog facts (8.795ms)
+✔ same identity and locale reuse a stable content revision without sharing mutable values (0.9354ms)
+✔ SAO details interpret HD multiplicity codes instead of presenting them as names (475.4355ms)
+✔ real published stars reach drawing and picking with the selected observer/time; zoom hides faint stars without changing BSC (596.2943ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2358.7663

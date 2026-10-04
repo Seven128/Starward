@@ -40,10 +40,12 @@ export function useSkyStellarSupplement(scene:ResolvedStellarScene|undefined,at:
       live=false;owner.dispose();if(loader.current===owner)loader.current=null;
       setState(previous=>previous?.owner===owner?null:previous);
     };
-  },[publication?.publicationHash,active]);
+  // Same source bytes may arrive with a new file-generation capability after
+  // clear/refetch. Retire the loader bound to the previous delivered index.
+  },[publication,active]);
   const key=selection.ids.join(':');
   useEffect(()=>{loader.current?.update(wantedRef.current);},[key]);
-  const loaded=active&&state?.publication.publicationHash===publication?.publicationHash&&state?.owner===loader.current?state.value:EMPTY;
+  const loaded=active&&state?.publication===publication&&state?.owner===loader.current?state.value:EMPTY;
   const resolved=useMemo(()=>{
     if(!active||!publication||selection.failed)return {frame:null,failed:false};
     try{return {frame:resolveSkyStellarSupplement(publication,loaded.tiles,scene,at),failed:false};}

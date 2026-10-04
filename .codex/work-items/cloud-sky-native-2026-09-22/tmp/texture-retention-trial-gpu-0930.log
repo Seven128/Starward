@@ -1,0 +1,30 @@
+{"name":"common","beforeWarmBytes":8388608,"afterWarmBytes":8388608,"beforeWarmCalls":1,"afterWarmCalls":1,"pixelsEqual":true}
+{"name":"common-dpr3","beforeWarmBytes":8388608,"afterWarmBytes":8388608,"beforeWarmCalls":1,"afterWarmCalls":1,"pixelsEqual":true}
+{"name":"common-rolled-offset","beforeWarmBytes":8388608,"afterWarmBytes":8388608,"beforeWarmCalls":1,"afterWarmCalls":1,"pixelsEqual":true}
+{"name":"wide","beforeWarmBytes":14942208,"afterWarmBytes":14942208,"beforeWarmCalls":8,"afterWarmCalls":8,"pixelsEqual":true}
+{"name":"local","beforeWarmBytes":0,"afterWarmBytes":0,"beforeWarmCalls":0,"afterWarmCalls":0,"pixelsEqual":true}
+{"name":"dome","beforeWarmBytes":0,"afterWarmBytes":0,"beforeWarmCalls":0,"afterWarmCalls":0,"pixelsEqual":true}
+{"name":"west-dusk","beforeWarmBytes":0,"afterWarmBytes":0,"beforeWarmCalls":0,"afterWarmCalls":0,"pixelsEqual":true}
+{"name":"red","beforeWarmBytes":0,"afterWarmBytes":0,"beforeWarmCalls":0,"afterWarmCalls":0,"pixelsEqual":true}
+{"name":"m42-overview","beforeWarmBytes":0,"afterWarmBytes":0,"beforeWarmCalls":0,"afterWarmCalls":0,"pixelsEqual":true}
+{"name":"m42-detail","beforeWarmBytes":0,"afterWarmBytes":0,"beforeWarmCalls":0,"afterWarmCalls":0,"pixelsEqual":true}
+{"name":"m42-local","beforeWarmBytes":0,"afterWarmBytes":0,"beforeWarmCalls":0,"afterWarmCalls":0,"pixelsEqual":true}
+{"name":"common-return","beforeWarmBytes":8388608,"afterWarmBytes":8388608,"beforeWarmCalls":1,"afterWarmCalls":1,"pixelsEqual":true}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert(warmBytes(common.variants[1])<warmBytes(common.variants[0]))
+
+    at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-texture-retention-trial-gpu-2026-09-30.mts:149:181) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.16.0

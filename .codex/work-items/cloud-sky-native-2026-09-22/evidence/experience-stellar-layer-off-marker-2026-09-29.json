@@ -1,0 +1,2953 @@
+{
+  "scope": "Production resolver/painter/picker with actual current-Context self-service inputs in Node; stub surface is not GPU/native output.",
+  "contextIdSha256": "893b8fd5c919dc7b2f99fa6d9e922d76966fef9b75238ba9dcca663c618d4ad6",
+  "revision": 3,
+  "at": "2026-09-29T13:00:00.000Z",
+  "observer": {
+    "latitude": 22.4826799,
+    "longitude": 114.5557147,
+    "elevationM": 0
+  },
+  "anchor": {
+    "reference": "HR:7001",
+    "position": {
+      "azimuthDeg": 305.5223248427062,
+      "altitudeDeg": 53.506986278184705,
+      "catalogVersion": "bsc5p-bright-stars.v3",
+      "catalogHash": "ba9bef4144d4cfb4c706a5d1d8a0958d8303854e7bfabe780005b63e0c904c2c"
+    }
+  },
+  "width": 390.3999938964844,
+  "height": 844,
+  "nativeRoundedFov": 4.6,
+  "fovInterval": [
+    4.55,
+    4.65
+  ],
+  "geometryAt": "2026-09-29T13:00:00.000Z",
+  "sunAltitudeDeg": -39.378,
+  "targetReference": "SAO:67132",
+  "results": [
+    {
+      "fov": 4.55,
+      "wanted": [
+        {
+          "id": "14-08-10-0",
+          "bytes": 55437
+        },
+        {
+          "id": "14-08-7-0",
+          "bytes": 8570
+        },
+        {
+          "id": "14-08-8-0",
+          "bytes": 38085
+        },
+        {
+          "id": "14-08-9-0",
+          "bytes": 109590
+        },
+        {
+          "id": "14-08-9-1",
+          "bytes": 59960
+        },
+        {
+          "id": "15-08-10-0",
+          "bytes": 76490
+        },
+        {
+          "id": "15-08-7-0",
+          "bytes": 13718
+        },
+        {
+          "id": "15-08-8-0",
+          "bytes": 49897
+        },
+        {
+          "id": "15-08-9-0",
+          "bytes": 108774
+        },
+        {
+          "id": "15-08-9-1",
+          "bytes": 108347
+        },
+        {
+          "id": "15-08-9-2",
+          "bytes": 24170
+        }
+      ],
+      "loadedPoints": 4598,
+      "target": [
+        "SAO:67132",
+        9.1,
+        304.4834942603537,
+        53.27740202834479
+      ],
+      "appearance": {
+        "radiusPx": 0.85,
+        "opacity": 0.6050038261831572
+      },
+      "painted": {
+        "reference": "SAO:67132",
+        "displayName": "SAO 67132",
+        "kind": "STAR",
+        "magnitude": 9.1,
+        "magnitudeBand": "VISUAL",
+        "x": 79.99589971908318,
+        "y": 463.7426894249301
+      },
+      "picks": [
+        "SAO:67132"
+      ],
+      "paintedObjects": [
+        {
+          "reference": "HR:7001",
+          "displayName": "Vega",
+          "kind": "STAR",
+          "magnitude": 0.03,
+          "x": 195.1999969482422,
+          "y": 422.00000000000176
+        },
+        {
+          "reference": "HR:7056",
+          "displayName": "Kautoki",
+          "kind": "STAR",
+          "magnitude": 4.36,
+          "x": 63.27669291000336,
+          "y": 87.44690955540506
+        },
+        {
+          "reference": "HR:7057",
+          "displayName": "Urquchillay",
+          "kind": "STAR",
+          "magnitude": 5.73,
+          "x": 61.697858190324524,
+          "y": 85.83480139584003
+        },
+        {
+          "reference": "HR:7009",
+          "displayName": "HR 7009",
+          "kind": "STAR",
+          "magnitude": 6.04,
+          "x": 364.0740966791268,
+          "y": 425.41449085972704
+        },
+        {
+          "reference": "HR:7019",
+          "displayName": "HR 7019",
+          "kind": "STAR",
+          "magnitude": 6.45,
+          "x": 152.2765220193838,
+          "y": 287.3473491889813
+        },
+        {
+          "reference": "HR:7041",
+          "displayName": "HR 7041",
+          "kind": "STAR",
+          "magnitude": 6.45,
+          "x": 349.39022825399036,
+          "y": 228.7398033344312
+        },
+        {
+          "reference": "SAO:66956",
+          "displayName": "SAO 66956",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 142.25602426157215,
+          "y": 837.8995895273155
+        },
+        {
+          "reference": "SAO:67002",
+          "displayName": "SAO 67002",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 225.09411218311618,
+          "y": 757.0847699416531
+        },
+        {
+          "reference": "SAO:67073",
+          "displayName": "SAO 67073",
+          "kind": "STAR",
+          "magnitude": 9.2,
+          "magnitudeBand": "VISUAL",
+          "x": 362.77770342026986,
+          "y": 671.6754461189537
+        },
+        {
+          "reference": "SAO:67077",
+          "displayName": "SAO 67077",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 142.2086203836512,
+          "y": 608.4818394232378
+        },
+        {
+          "reference": "SAO:67083",
+          "displayName": "SAO 67083",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 137.78593880794483,
+          "y": 587.0881758779221
+        },
+        {
+          "reference": "SAO:67104",
+          "displayName": "SAO 67104",
+          "kind": "STAR",
+          "magnitude": 9.3,
+          "magnitudeBand": "VISUAL",
+          "x": 265.4209111576434,
+          "y": 575.9047962319328
+        },
+        {
+          "reference": "SAO:67132",
+          "displayName": "SAO 67132",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 79.99589971908318,
+          "y": 463.7426894249301
+        },
+        {
+          "reference": "SAO:67159",
+          "displayName": "SAO 67159",
+          "kind": "STAR",
+          "magnitude": 9.3,
+          "magnitudeBand": "VISUAL",
+          "x": 367.12714611461695,
+          "y": 497.20949019338246
+        },
+        {
+          "reference": "SAO:67161",
+          "displayName": "SAO 67161",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 387.9401877463566,
+          "y": 501.55976297043617
+        },
+        {
+          "reference": "SAO:67211",
+          "displayName": "SAO 67211",
+          "kind": "STAR",
+          "magnitude": 9.3,
+          "magnitudeBand": "VISUAL",
+          "x": 257.6583660490719,
+          "y": 362.82365667061805
+        },
+        {
+          "reference": "SAO:67223",
+          "displayName": "SAO 67223",
+          "kind": "STAR",
+          "magnitude": 9.2,
+          "magnitudeBand": "VISUAL",
+          "x": 293.0706739198778,
+          "y": 344.8565166032609
+        },
+        {
+          "reference": "SAO:67255",
+          "displayName": "SAO 67255",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 337.41445756882223,
+          "y": 296.9595287857807
+        },
+        {
+          "reference": "SAO:67294",
+          "displayName": "SAO 67294",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 304.70176101467587,
+          "y": 197.64037312112598
+        },
+        {
+          "reference": "SAO:67312",
+          "displayName": "SAO 67312",
+          "kind": "STAR",
+          "magnitude": 9.2,
+          "magnitudeBand": "VISUAL",
+          "x": 8.748594923757082,
+          "y": 84.95396152568276
+        },
+        {
+          "reference": "SAO:67342",
+          "displayName": "SAO 67342",
+          "kind": "STAR",
+          "magnitude": 9.2,
+          "magnitudeBand": "VISUAL",
+          "x": 67.51075980909718,
+          "y": 61.15561475280026
+        },
+        {
+          "reference": "SAO:67345",
+          "displayName": "SAO 67345",
+          "kind": "STAR",
+          "magnitude": 9.3,
+          "magnitudeBand": "VISUAL",
+          "x": 269.2697628691517,
+          "y": 118.23626407377913
+        },
+        {
+          "reference": "SAO:67356",
+          "displayName": "SAO 67356",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 372.09104815205114,
+          "y": 139.57900221670616
+        },
+        {
+          "reference": "SAO:67395",
+          "displayName": "SAO 67395",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 355.84125344920926,
+          "y": 63.03969069393702
+        },
+        {
+          "reference": "SAO:67097",
+          "displayName": "SAO 67097",
+          "kind": "STAR",
+          "magnitude": 6.9,
+          "magnitudeBand": "VISUAL",
+          "x": 165.23001349229753,
+          "y": 566.8586325438707
+        },
+        {
+          "reference": "SAO:67143",
+          "displayName": "SAO 67143",
+          "kind": "STAR",
+          "magnitude": 6.9,
+          "magnitudeBand": "VISUAL",
+          "x": 199.6315818429744,
+          "y": 482.62184836042013
+        },
+        {
+          "reference": "SAO:67302",
+          "displayName": "SAO 67302",
+          "kind": "STAR",
+          "magnitude": 6.8,
+          "magnitudeBand": "VISUAL",
+          "x": 221.11344015332577,
+          "y": 160.62080975172904
+        },
+        {
+          "reference": "SAO:67119",
+          "displayName": "SAO 67119",
+          "kind": "STAR",
+          "magnitude": 7.2,
+          "magnitudeBand": "VISUAL",
+          "x": 106.34455615720293,
+          "y": 502.9185284357017
+        },
+        {
+          "reference": "SAO:67133",
+          "displayName": "SAO 67133",
+          "kind": "STAR",
+          "magnitude": 7.3,
+          "magnitudeBand": "VISUAL",
+          "x": 310.53397104478074,
+          "y": 523.9962748908023
+        },
+        {
+          "reference": "SAO:67156",
+          "displayName": "SAO 67156",
+          "kind": "STAR",
+          "magnitude": 7.3,
+          "magnitudeBand": "VISUAL",
+          "x": 53.80719989938649,
+          "y": 410.56871325818645
+        },
+        {
+          "reference": "SAO:67171",
+          "displayName": "SAO 67171",
+          "kind": "STAR",
+          "magnitude": 7.7,
+          "magnitudeBand": "VISUAL",
+          "x": 146.55814276605662,
+          "y": 413.58964796550634
+        },
+        {
+          "reference": "SAO:67180",
+          "displayName": "SAO 67180",
+          "kind": "STAR",
+          "magnitude": 7.2,
+          "magnitudeBand": "VISUAL",
+          "x": 21.084837037918305,
+          "y": 352.1376082812478
+        },
+        {
+          "reference": "SAO:67221",
+          "displayName": "SAO 67221",
+          "kind": "STAR",
+          "magnitude": 7.7,
+          "magnitudeBand": "VISUAL",
+          "x": 80.54865736042919,
+          "y": 285.9997933337581
+        },
+        {
+          "reference": "SAO:67330",
+          "displayName": "SAO 67330",
+          "kind": "STAR",
+          "magnitude": 7.6,
+          "magnitudeBand": "VISUAL",
+          "x": 193.52964332500008,
+          "y": 110.86847385617659
+        },
+        {
+          "reference": "SAO:67373",
+          "displayName": "SAO 67373",
+          "kind": "STAR",
+          "magnitude": 7.9,
+          "magnitudeBand": "VISUAL",
+          "x": 214.5506469916353,
+          "y": 64.0415154220135
+        },
+        {
+          "reference": "SAO:47511",
+          "displayName": "SAO 47511",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 370.82474849221944,
+          "y": 803.5951036400904
+        },
+        {
+          "reference": "SAO:47523",
+          "displayName": "SAO 47523",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 377.19806537169086,
+          "y": 776.4658878667665
+        },
+        {
+          "reference": "SAO:47552",
+          "displayName": "SAO 47552",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 390.18890016586147,
+          "y": 700.5098631534545
+        },
+        {
+          "reference": "SAO:47559",
+          "displayName": "SAO 47559",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 387.7539405186151,
+          "y": 686.2874129615757
+        },
+        {
+          "reference": "SAO:66955",
+          "displayName": "SAO 66955",
+          "kind": "STAR",
+          "magnitude": 8.1,
+          "magnitudeBand": "VISUAL",
+          "x": 28.571576170875403,
+          "y": 811.5112021332706
+        },
+        {
+          "reference": "SAO:66961",
+          "displayName": "SAO 66961",
+          "kind": "STAR",
+          "magnitude": 8.1,
+          "magnitudeBand": "VISUAL",
+          "x": 153.6494748420973,
+          "y": 831.9561849468214
+        },
+        {
+          "reference": "SAO:66974",
+          "displayName": "SAO 66974",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 105.17685841868013,
+          "y": 800.5576682441254
+        },
+        {
+          "reference": "SAO:66982",
+          "displayName": "SAO 66982",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 15.697117324580205,
+          "y": 760.7497366158194
+        },
+        {
+          "reference": "SAO:66983",
+          "displayName": "SAO 66983",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 168.84253374260703,
+          "y": 796.4641971417707
+        },
+        {
+          "reference": "SAO:66995",
+          "displayName": "SAO 66995",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 206.6432512661283,
+          "y": 785.4328204099994
+        },
+        {
+          "reference": "SAO:67008",
+          "displayName": "SAO 67008",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 333.9392185864484,
+          "y": 778.3390448577885
+        },
+        {
+          "reference": "SAO:67009",
+          "displayName": "SAO 67009",
+          "kind": "STAR",
+          "magnitude": 8.7,
+          "magnitudeBand": "VISUAL",
+          "x": 150.3193405104645,
+          "y": 723.2751908254293
+        },
+        {
+          "reference": "SAO:67010",
+          "displayName": "SAO 67010",
+          "kind": "STAR",
+          "magnitude": 8.1,
+          "magnitudeBand": "VISUAL",
+          "x": 115.16241230897083,
+          "y": 713.489476927012
+        },
+        {
+          "reference": "SAO:67012",
+          "displayName": "SAO 67012",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 170.09009940837166,
+          "y": 724.2200135743392
+        },
+        {
+          "reference": "SAO:67018",
+          "displayName": "SAO 67018",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 301.1551737675403,
+          "y": 740.202937987757
+        },
+        {
+          "reference": "SAO:67024",
+          "displayName": "SAO 67024",
+          "kind": "STAR",
+          "magnitude": 8.7,
+          "magnitudeBand": "VISUAL",
+          "x": 50.736753644084786,
+          "y": 660.8065512843352
+        },
+        {
+          "reference": "SAO:67027",
+          "displayName": "SAO 67027",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 332.22918300360027,
+          "y": 732.0241779054284
+        },
+        {
+          "reference": "SAO:67032",
+          "displayName": "SAO 67032",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 321.1627566255762,
+          "y": 716.0147616235172
+        },
+        {
+          "reference": "SAO:67047",
+          "displayName": "SAO 67047",
+          "kind": "STAR",
+          "magnitude": 8.4,
+          "magnitudeBand": "VISUAL",
+          "x": 265.0931990061131,
+          "y": 678.2661186646418
+        },
+        {
+          "reference": "SAO:67048",
+          "displayName": "SAO 67048",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 41.463555119689005,
+          "y": 613.8324800845618
+        },
+        {
+          "reference": "SAO:67056",
+          "displayName": "SAO 67056",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 112.43418283766005,
+          "y": 627.6002846803194
+        },
+        {
+          "reference": "SAO:67062",
+          "displayName": "SAO 67062",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 18.601973388593905,
+          "y": 598.7315857910482
+        },
+        {
+          "reference": "SAO:67070",
+          "displayName": "SAO 67070",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 315.2618234561709,
+          "y": 667.4613832673704
+        },
+        {
+          "reference": "SAO:67072",
+          "displayName": "SAO 67072",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 70.94107185870438,
+          "y": 594.5102582552415
+        },
+        {
+          "reference": "SAO:67074",
+          "displayName": "SAO 67074",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 228.48999646132603,
+          "y": 635.9463456825998
+        },
+        {
+          "reference": "SAO:67076",
+          "displayName": "SAO 67076",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 342.6730139331105,
+          "y": 664.4258106026145
+        },
+        {
+          "reference": "SAO:67084",
+          "displayName": "SAO 67084",
+          "kind": "STAR",
+          "magnitude": 8.7,
+          "magnitudeBand": "VISUAL",
+          "x": 243.6709384213513,
+          "y": 612.2670525579258
+        },
+        {
+          "reference": "SAO:67093",
+          "displayName": "SAO 67093",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 170.60026515372232,
+          "y": 572.544221386614
+        },
+        {
+          "reference": "SAO:67108",
+          "displayName": "SAO 67108",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 303.34334664354805,
+          "y": 579.9784859460112
+        },
+        {
+          "reference": "SAO:67118",
+          "displayName": "SAO 67118",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 122.56489749749304,
+          "y": 511.18322264806403
+        },
+        {
+          "reference": "SAO:67130",
+          "displayName": "SAO 67130",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 57.65449583086871,
+          "y": 468.6967870053293
+        },
+        {
+          "reference": "SAO:67131",
+          "displayName": "SAO 67131",
+          "kind": "STAR",
+          "magnitude": 8.4,
+          "magnitudeBand": "VISUAL",
+          "x": 333.70752999032754,
+          "y": 539.7608628187493
+        },
+        {
+          "reference": "SAO:67140",
+          "displayName": "SAO 67140",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 59.10114797938718,
+          "y": 448.21272144631604
+        },
+        {
+          "reference": "SAO:67141",
+          "displayName": "SAO 67141",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 227.5131840222268,
+          "y": 492.6640625797629
+        },
+        {
+          "reference": "SAO:67142",
+          "displayName": "SAO 67142",
+          "kind": "STAR",
+          "magnitude": 8.7,
+          "magnitudeBand": "VISUAL",
+          "x": 271.56854962423427,
+          "y": 502.66573658154596
+        },
+        {
+          "reference": "SAO:67149",
+          "displayName": "SAO 67149",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 232.2553681307664,
+          "y": 481.6887138971332
+        },
+        {
+          "reference": "SAO:67165",
+          "displayName": "SAO 67165",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 140.80272380648776,
+          "y": 422.6890849918431
+        },
+        {
+          "reference": "SAO:67182",
+          "displayName": "SAO 67182",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 81.41535126662315,
+          "y": 362.8991601898996
+        },
+        {
+          "reference": "SAO:67192",
+          "displayName": "SAO 67192",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 349.30899200427666,
+          "y": 421.5411640517472
+        },
+        {
+          "reference": "SAO:67206",
+          "displayName": "SAO 67206",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 325.69741062626383,
+          "y": 399.4629515442722
+        },
+        {
+          "reference": "SAO:67220",
+          "displayName": "SAO 67220",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 48.80798792690976,
+          "y": 281.9500440429909
+        },
+        {
+          "reference": "SAO:67222",
+          "displayName": "SAO 67222",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 338.21852834166464,
+          "y": 358.3679989094767
+        },
+        {
+          "reference": "SAO:67224",
+          "displayName": "SAO 67224",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 31.641356248604666,
+          "y": 268.5728229472577
+        },
+        {
+          "reference": "SAO:67225",
+          "displayName": "SAO 67225",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 264.3295557995323,
+          "y": 335.71500581930013
+        },
+        {
+          "reference": "SAO:67227",
+          "displayName": "SAO 67227",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 46.631032201580865,
+          "y": 270.7901083790632
+        },
+        {
+          "reference": "SAO:67229",
+          "displayName": "SAO 67229",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 302.7181304287335,
+          "y": 342.4755948369714
+        },
+        {
+          "reference": "SAO:67235",
+          "displayName": "SAO 67235",
+          "kind": "STAR",
+          "magnitude": 8.4,
+          "magnitudeBand": "VISUAL",
+          "x": 34.62168088748288,
+          "y": 252.46178018415642
+        },
+        {
+          "reference": "SAO:67260",
+          "displayName": "SAO 67260",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 123.78217619681239,
+          "y": 215.97456906583977
+        },
+        {
+          "reference": "SAO:67278",
+          "displayName": "SAO 67278",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 13.650273712078956,
+          "y": 147.73618710669552
+        },
+        {
+          "reference": "SAO:67283",
+          "displayName": "SAO 67283",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 64.7097093325977,
+          "y": 152.76394373896187
+        },
+        {
+          "reference": "SAO:67285",
+          "displayName": "SAO 67285",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 183.0749363405122,
+          "y": 182.10810952334697
+        },
+        {
+          "reference": "SAO:67288",
+          "displayName": "SAO 67288",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 150.61667928995976,
+          "y": 164.9303887217772
+        },
+        {
+          "reference": "SAO:67305",
+          "displayName": "SAO 67305",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 233.76970664522938,
+          "y": 157.78796808570206
+        },
+        {
+          "reference": "SAO:67307",
+          "displayName": "SAO 67307",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 136.69216696029162,
+          "y": 126.78410960197965
+        },
+        {
+          "reference": "SAO:67317",
+          "displayName": "SAO 67317",
+          "kind": "STAR",
+          "magnitude": 8.4,
+          "magnitudeBand": "VISUAL",
+          "x": 321.98058658849317,
+          "y": 171.60614809638705
+        },
+        {
+          "reference": "SAO:67331",
+          "displayName": "SAO 67331",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 355.25189491241633,
+          "y": 159.6564438097712
+        },
+        {
+          "reference": "SAO:67340",
+          "displayName": "SAO 67340",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 5.883749624824844,
+          "y": 44.44527778602463
+        },
+        {
+          "reference": "SAO:67344",
+          "displayName": "SAO 67344",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 211.31865882786775,
+          "y": 103.21941797890435
+        },
+        {
+          "reference": "SAO:67347",
+          "displayName": "SAO 67347",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 189.7304648323212,
+          "y": 93.13505324754158
+        },
+        {
+          "reference": "SAO:67355",
+          "displayName": "SAO 67355",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 175.04825049190885,
+          "y": 79.94262025535852
+        },
+        {
+          "reference": "SAO:67364",
+          "displayName": "SAO 67364",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 371.96051127470423,
+          "y": 126.23897661877447
+        },
+        {
+          "reference": "SAO:67368",
+          "displayName": "SAO 67368",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 207.74472986056782,
+          "y": 68.60610244431729
+        },
+        {
+          "reference": "SAO:67385",
+          "displayName": "SAO 67385",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 223.78720142687766,
+          "y": 40.72046183471883
+        },
+        {
+          "reference": "SAO:67393",
+          "displayName": "SAO 67393",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 341.13451118598556,
+          "y": 60.621219599555104
+        }
+      ],
+      "counts": {
+        "HR": 6,
+        "SAO": 93
+      }
+    },
+    {
+      "fov": 4.6,
+      "wanted": [
+        {
+          "id": "14-08-10-0",
+          "bytes": 55437
+        },
+        {
+          "id": "14-08-7-0",
+          "bytes": 8570
+        },
+        {
+          "id": "14-08-8-0",
+          "bytes": 38085
+        },
+        {
+          "id": "14-08-9-0",
+          "bytes": 109590
+        },
+        {
+          "id": "14-08-9-1",
+          "bytes": 59960
+        },
+        {
+          "id": "15-08-10-0",
+          "bytes": 76490
+        },
+        {
+          "id": "15-08-7-0",
+          "bytes": 13718
+        },
+        {
+          "id": "15-08-8-0",
+          "bytes": 49897
+        },
+        {
+          "id": "15-08-9-0",
+          "bytes": 108774
+        },
+        {
+          "id": "15-08-9-1",
+          "bytes": 108347
+        },
+        {
+          "id": "15-08-9-2",
+          "bytes": 24170
+        }
+      ],
+      "loadedPoints": 4598,
+      "target": [
+        "SAO:67132",
+        9.1,
+        304.4834942603537,
+        53.27740202834479
+      ],
+      "appearance": {
+        "radiusPx": 0.85,
+        "opacity": 0.5816017214994513
+      },
+      "painted": {
+        "reference": "SAO:67132",
+        "displayName": "SAO 67132",
+        "kind": "STAR",
+        "magnitude": 9.1,
+        "magnitudeBand": "VISUAL",
+        "x": 81.24844907443345,
+        "y": 463.2888446400022
+      },
+      "picks": [
+        "SAO:67132"
+      ],
+      "paintedObjects": [
+        {
+          "reference": "HR:7001",
+          "displayName": "Vega",
+          "kind": "STAR",
+          "magnitude": 0.03,
+          "x": 195.1999969482422,
+          "y": 422.00000000000176
+        },
+        {
+          "reference": "HR:7056",
+          "displayName": "Kautoki",
+          "kind": "STAR",
+          "magnitude": 4.36,
+          "x": 64.71102079766595,
+          "y": 91.08431714632843
+        },
+        {
+          "reference": "HR:7057",
+          "displayName": "Urquchillay",
+          "kind": "STAR",
+          "magnitude": 5.73,
+          "x": 63.149351859915896,
+          "y": 89.4897365320902
+        },
+        {
+          "reference": "HR:7009",
+          "displayName": "HR 7009",
+          "kind": "STAR",
+          "magnitude": 6.04,
+          "x": 362.238023572,
+          "y": 425.3773670210089
+        },
+        {
+          "reference": "HR:7019",
+          "displayName": "HR 7019",
+          "kind": "STAR",
+          "magnitude": 6.45,
+          "x": 152.74320482099102,
+          "y": 288.8113517290477
+        },
+        {
+          "reference": "HR:7041",
+          "displayName": "HR 7041",
+          "kind": "STAR",
+          "magnitude": 6.45,
+          "x": 347.71380458965524,
+          "y": 230.84101275814479
+        },
+        {
+          "reference": "SAO:66956",
+          "displayName": "SAO 66956",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 142.83165429950787,
+          "y": 833.377747203282
+        },
+        {
+          "reference": "SAO:67002",
+          "displayName": "SAO 67002",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 224.76909028140616,
+          "y": 753.4415816985887
+        },
+        {
+          "reference": "SAO:67073",
+          "displayName": "SAO 67073",
+          "kind": "STAR",
+          "magnitude": 9.2,
+          "magnitudeBand": "VISUAL",
+          "x": 360.9557252679209,
+          "y": 668.9608654173575
+        },
+        {
+          "reference": "SAO:67077",
+          "displayName": "SAO 67077",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 142.78476581729038,
+          "y": 606.4543272654932
+        },
+        {
+          "reference": "SAO:67083",
+          "displayName": "SAO 67083",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 138.4101695709239,
+          "y": 585.2932649915452
+        },
+        {
+          "reference": "SAO:67104",
+          "displayName": "SAO 67104",
+          "kind": "STAR",
+          "magnitude": 9.3,
+          "magnitudeBand": "VISUAL",
+          "x": 264.65743865153854,
+          "y": 574.2314759426191
+        },
+        {
+          "reference": "SAO:67132",
+          "displayName": "SAO 67132",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 81.24844907443345,
+          "y": 463.2888446400022
+        },
+        {
+          "reference": "SAO:67159",
+          "displayName": "SAO 67159",
+          "kind": "STAR",
+          "magnitude": 9.3,
+          "magnitudeBand": "VISUAL",
+          "x": 365.25787891809364,
+          "y": 496.3917797063105
+        },
+        {
+          "reference": "SAO:67161",
+          "displayName": "SAO 67161",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 385.8446320539748,
+          "y": 500.6947544141674
+        },
+        {
+          "reference": "SAO:67211",
+          "displayName": "SAO 67211",
+          "kind": "STAR",
+          "magnitude": 9.3,
+          "magnitudeBand": "VISUAL",
+          "x": 256.9792913300725,
+          "y": 363.4670477693024
+        },
+        {
+          "reference": "SAO:67223",
+          "displayName": "SAO 67223",
+          "kind": "STAR",
+          "magnitude": 9.2,
+          "magnitudeBand": "VISUAL",
+          "x": 292.0065810942149,
+          "y": 345.69525431070423
+        },
+        {
+          "reference": "SAO:67255",
+          "displayName": "SAO 67255",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 335.86823972365767,
+          "y": 298.3190235032344
+        },
+        {
+          "reference": "SAO:67294",
+          "displayName": "SAO 67294",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 303.5112099206614,
+          "y": 200.07970915840912
+        },
+        {
+          "reference": "SAO:67312",
+          "displayName": "SAO 67312",
+          "kind": "STAR",
+          "magnitude": 9.2,
+          "magnitudeBand": "VISUAL",
+          "x": 10.775776152783834,
+          "y": 88.61847353843359
+        },
+        {
+          "reference": "SAO:67342",
+          "displayName": "SAO 67342",
+          "kind": "STAR",
+          "magnitude": 9.2,
+          "magnitudeBand": "VISUAL",
+          "x": 68.8990530687168,
+          "y": 65.07887280519486
+        },
+        {
+          "reference": "SAO:67345",
+          "displayName": "SAO 67345",
+          "kind": "STAR",
+          "magnitude": 9.3,
+          "magnitudeBand": "VISUAL",
+          "x": 268.4644439630833,
+          "y": 121.53891632976917
+        },
+        {
+          "reference": "SAO:67356",
+          "displayName": "SAO 67356",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 370.1678112405042,
+          "y": 142.64960688458694
+        },
+        {
+          "reference": "SAO:67395",
+          "displayName": "SAO 67395",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 354.0946914161533,
+          "y": 66.94246424827759
+        },
+        {
+          "reference": "SAO:67097",
+          "displayName": "SAO 67097",
+          "kind": "STAR",
+          "magnitude": 6.9,
+          "magnitudeBand": "VISUAL",
+          "x": 165.55586026650496,
+          "y": 565.2836661045363
+        },
+        {
+          "reference": "SAO:67143",
+          "displayName": "SAO 67143",
+          "kind": "STAR",
+          "magnitude": 6.9,
+          "magnitudeBand": "VISUAL",
+          "x": 199.5833997128542,
+          "y": 481.9627410985235
+        },
+        {
+          "reference": "SAO:67302",
+          "displayName": "SAO 67302",
+          "kind": "STAR",
+          "magnitude": 6.8,
+          "magnitudeBand": "VISUAL",
+          "x": 220.83169785976074,
+          "y": 163.46263868074897
+        },
+        {
+          "reference": "SAO:67119",
+          "displayName": "SAO 67119",
+          "kind": "STAR",
+          "magnitude": 7.2,
+          "magnitudeBand": "VISUAL",
+          "x": 107.31063139028076,
+          "y": 502.03874678673463
+        },
+        {
+          "reference": "SAO:67133",
+          "displayName": "SAO 67133",
+          "kind": "STAR",
+          "magnitude": 7.3,
+          "magnitudeBand": "VISUAL",
+          "x": 309.2800096112976,
+          "y": 522.8873267593094
+        },
+        {
+          "reference": "SAO:67156",
+          "displayName": "SAO 67156",
+          "kind": "STAR",
+          "magnitude": 7.3,
+          "magnitudeBand": "VISUAL",
+          "x": 55.34448425866094,
+          "y": 410.6929992096731
+        },
+        {
+          "reference": "SAO:67171",
+          "displayName": "SAO 67171",
+          "kind": "STAR",
+          "magnitude": 7.7,
+          "magnitudeBand": "VISUAL",
+          "x": 147.086998289118,
+          "y": 413.6810889929736
+        },
+        {
+          "reference": "SAO:67180",
+          "displayName": "SAO 67180",
+          "kind": "STAR",
+          "magnitude": 7.2,
+          "magnitudeBand": "VISUAL",
+          "x": 22.977893244665637,
+          "y": 352.89718277395434
+        },
+        {
+          "reference": "SAO:67221",
+          "displayName": "SAO 67221",
+          "kind": "STAR",
+          "magnitude": 7.7,
+          "magnitudeBand": "VISUAL",
+          "x": 81.79519689283057,
+          "y": 287.4784470907374
+        },
+        {
+          "reference": "SAO:67330",
+          "displayName": "SAO 67330",
+          "kind": "STAR",
+          "magnitude": 7.6,
+          "magnitudeBand": "VISUAL",
+          "x": 193.54780414049466,
+          "y": 114.25123195136314
+        },
+        {
+          "reference": "SAO:67373",
+          "displayName": "SAO 67373",
+          "kind": "STAR",
+          "magnitude": 7.9,
+          "magnitudeBand": "VISUAL",
+          "x": 214.34025825702935,
+          "y": 67.93339669953838
+        },
+        {
+          "reference": "SAO:47511",
+          "displayName": "SAO 47511",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 368.91527934467354,
+          "y": 799.4462346973612
+        },
+        {
+          "reference": "SAO:47523",
+          "displayName": "SAO 47523",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 375.21930273423595,
+          "y": 772.6119796289541
+        },
+        {
+          "reference": "SAO:47552",
+          "displayName": "SAO 47552",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 388.06889548807754,
+          "y": 697.4817820526787
+        },
+        {
+          "reference": "SAO:47559",
+          "displayName": "SAO 47559",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 385.6604097875902,
+          "y": 683.4139645626552
+        },
+        {
+          "reference": "SAO:66955",
+          "displayName": "SAO 66955",
+          "kind": "STAR",
+          "magnitude": 8.1,
+          "magnitudeBand": "VISUAL",
+          "x": 30.383233273769633,
+          "y": 807.2762659038476
+        },
+        {
+          "reference": "SAO:66961",
+          "displayName": "SAO 66961",
+          "kind": "STAR",
+          "magnitude": 8.1,
+          "magnitudeBand": "VISUAL",
+          "x": 154.10123029984803,
+          "y": 827.4989619180642
+        },
+        {
+          "reference": "SAO:66974",
+          "displayName": "SAO 66974",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 106.15562937252491,
+          "y": 796.4418236281227
+        },
+        {
+          "reference": "SAO:66982",
+          "displayName": "SAO 66982",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 17.648751177575008,
+          "y": 757.0667012513809
+        },
+        {
+          "reference": "SAO:66983",
+          "displayName": "SAO 66983",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 169.12910361590951,
+          "y": 792.3928585347878
+        },
+        {
+          "reference": "SAO:66995",
+          "displayName": "SAO 66995",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 206.51883519791792,
+          "y": 781.4814197578839
+        },
+        {
+          "reference": "SAO:67008",
+          "displayName": "SAO 67008",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 332.4307850601732,
+          "y": 774.4647708375257
+        },
+        {
+          "reference": "SAO:67009",
+          "displayName": "SAO 67009",
+          "kind": "STAR",
+          "magnitude": 8.7,
+          "magnitudeBand": "VISUAL",
+          "x": 150.8073026458477,
+          "y": 719.9995951206968
+        },
+        {
+          "reference": "SAO:67010",
+          "displayName": "SAO 67010",
+          "kind": "STAR",
+          "magnitude": 8.1,
+          "magnitudeBand": "VISUAL",
+          "x": 116.03261595150533,
+          "y": 710.3202757857534
+        },
+        {
+          "reference": "SAO:67012",
+          "displayName": "SAO 67012",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 170.3631052018541,
+          "y": 720.934145343251
+        },
+        {
+          "reference": "SAO:67018",
+          "displayName": "SAO 67018",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 300.0031827219697,
+          "y": 736.7432964087399
+        },
+        {
+          "reference": "SAO:67024",
+          "displayName": "SAO 67024",
+          "kind": "STAR",
+          "magnitude": 8.7,
+          "magnitudeBand": "VISUAL",
+          "x": 52.30742123859318,
+          "y": 658.2101419633227
+        },
+        {
+          "reference": "SAO:67027",
+          "displayName": "SAO 67027",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 330.73934173244834,
+          "y": 728.653459384836
+        },
+        {
+          "reference": "SAO:67032",
+          "displayName": "SAO 67032",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 319.7932343843824,
+          "y": 712.8181044820402
+        },
+        {
+          "reference": "SAO:67047",
+          "displayName": "SAO 67047",
+          "kind": "STAR",
+          "magnitude": 8.4,
+          "magnitudeBand": "VISUAL",
+          "x": 264.3332895299179,
+          "y": 675.4798812872243
+        },
+        {
+          "reference": "SAO:67048",
+          "displayName": "SAO 67048",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 43.13504498626173,
+          "y": 611.7467934202481
+        },
+        {
+          "reference": "SAO:67056",
+          "displayName": "SAO 67056",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 113.33404898480791,
+          "y": 625.3649084200124
+        },
+        {
+          "reference": "SAO:67062",
+          "displayName": "SAO 67062",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 20.522024375372382,
+          "y": 596.8100826572468
+        },
+        {
+          "reference": "SAO:67070",
+          "displayName": "SAO 67070",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 313.9564587424876,
+          "y": 664.7926197010594
+        },
+        {
+          "reference": "SAO:67072",
+          "displayName": "SAO 67072",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 72.29206926470657,
+          "y": 592.634651241551
+        },
+        {
+          "reference": "SAO:67074",
+          "displayName": "SAO 67074",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 228.1280530197939,
+          "y": 633.6202273950598
+        },
+        {
+          "reference": "SAO:67076",
+          "displayName": "SAO 67076",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 341.06962276214784,
+          "y": 661.7900511106013
+        },
+        {
+          "reference": "SAO:67084",
+          "displayName": "SAO 67084",
+          "kind": "STAR",
+          "magnitude": 8.7,
+          "magnitudeBand": "VISUAL",
+          "x": 243.14394113604993,
+          "y": 610.1983859066715
+        },
+        {
+          "reference": "SAO:67093",
+          "displayName": "SAO 67093",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 170.86772420198625,
+          "y": 570.9074387375175
+        },
+        {
+          "reference": "SAO:67108",
+          "displayName": "SAO 67108",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 302.1675648249828,
+          "y": 578.2608747195868
+        },
+        {
+          "reference": "SAO:67118",
+          "displayName": "SAO 67118",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 123.35461808192562,
+          "y": 510.2135836272079
+        },
+        {
+          "reference": "SAO:67130",
+          "displayName": "SAO 67130",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 59.149950705300796,
+          "y": 468.18907910372485
+        },
+        {
+          "reference": "SAO:67131",
+          "displayName": "SAO 67131",
+          "kind": "STAR",
+          "magnitude": 8.4,
+          "magnitudeBand": "VISUAL",
+          "x": 332.2016154838502,
+          "y": 538.4805151891358
+        },
+        {
+          "reference": "SAO:67140",
+          "displayName": "SAO 67140",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 60.58087421864374,
+          "y": 447.92772526875603
+        },
+        {
+          "reference": "SAO:67141",
+          "displayName": "SAO 67141",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 227.16186091295992,
+          "y": 491.89577197066546
+        },
+        {
+          "reference": "SAO:67142",
+          "displayName": "SAO 67142",
+          "kind": "STAR",
+          "magnitude": 8.7,
+          "magnitudeBand": "VISUAL",
+          "x": 270.7382373026761,
+          "y": 501.78870339623234
+        },
+        {
+          "reference": "SAO:67149",
+          "displayName": "SAO 67149",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 231.85248592081678,
+          "y": 481.03975208143646
+        },
+        {
+          "reference": "SAO:67165",
+          "displayName": "SAO 67165",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 141.39415476289713,
+          "y": 422.6815929582864
+        },
+        {
+          "reference": "SAO:67182",
+          "displayName": "SAO 67182",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 82.65246772363399,
+          "y": 363.5417303812839
+        },
+        {
+          "reference": "SAO:67192",
+          "displayName": "SAO 67192",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 347.6334515759953,
+          "y": 421.5461527169511
+        },
+        {
+          "reference": "SAO:67206",
+          "displayName": "SAO 67206",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 324.2785856425295,
+          "y": 399.707984196701
+        },
+        {
+          "reference": "SAO:67207",
+          "displayName": "SAO 67207",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 390.19279501985056,
+          "y": 411.4502868555936
+        },
+        {
+          "reference": "SAO:67220",
+          "displayName": "SAO 67220",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 50.39962590627229,
+          "y": 283.47272844632295
+        },
+        {
+          "reference": "SAO:67222",
+          "displayName": "SAO 67222",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 336.6635682872177,
+          "y": 359.05983386901846
+        },
+        {
+          "reference": "SAO:67224",
+          "displayName": "SAO 67224",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 33.41963735923903,
+          "y": 270.24095035186167
+        },
+        {
+          "reference": "SAO:67225",
+          "displayName": "SAO 67225",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 263.57794898642913,
+          "y": 336.65313403207074
+        },
+        {
+          "reference": "SAO:67227",
+          "displayName": "SAO 67227",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 48.246338996167566,
+          "y": 272.434128486227
+        },
+        {
+          "reference": "SAO:67229",
+          "displayName": "SAO 67229",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 301.5491462344338,
+          "y": 343.3402189676864
+        },
+        {
+          "reference": "SAO:67235",
+          "displayName": "SAO 67235",
+          "kind": "STAR",
+          "magnitude": 8.4,
+          "magnitudeBand": "VISUAL",
+          "x": 36.367558604531894,
+          "y": 254.30507389544832
+        },
+        {
+          "reference": "SAO:67260",
+          "displayName": "SAO 67260",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 124.55866199457691,
+          "y": 218.21456770225137
+        },
+        {
+          "reference": "SAO:67278",
+          "displayName": "SAO 67278",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 15.624161744473696,
+          "y": 150.71810329108337
+        },
+        {
+          "reference": "SAO:67283",
+          "displayName": "SAO 67283",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 66.12845683866365,
+          "y": 155.69119595322996
+        },
+        {
+          "reference": "SAO:67285",
+          "displayName": "SAO 67285",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 183.20676530504622,
+          "y": 184.71631912697413
+        },
+        {
+          "reference": "SAO:67288",
+          "displayName": "SAO 67288",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 151.10140862802467,
+          "y": 167.72536202247665
+        },
+        {
+          "reference": "SAO:67305",
+          "displayName": "SAO 67305",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 233.3503598843159,
+          "y": 160.66059690889182
+        },
+        {
+          "reference": "SAO:67307",
+          "displayName": "SAO 67307",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 137.32828968940407,
+          "y": 129.99382594107522
+        },
+        {
+          "reference": "SAO:67317",
+          "displayName": "SAO 67317",
+          "kind": "STAR",
+          "magnitude": 8.4,
+          "magnitudeBand": "VISUAL",
+          "x": 320.6021725420817,
+          "y": 174.3285396200295
+        },
+        {
+          "reference": "SAO:67331",
+          "displayName": "SAO 67331",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 353.51174064326005,
+          "y": 162.50875774729315
+        },
+        {
+          "reference": "SAO:67340",
+          "displayName": "SAO 67340",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 7.942078705522306,
+          "y": 48.55021793392473
+        },
+        {
+          "reference": "SAO:67344",
+          "displayName": "SAO 67344",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 211.1434096828111,
+          "y": 106.68533995661375
+        },
+        {
+          "reference": "SAO:67347",
+          "displayName": "SAO 67347",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 189.7899319788085,
+          "y": 96.71061685126239
+        },
+        {
+          "reference": "SAO:67355",
+          "displayName": "SAO 67355",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 175.26734909725494,
+          "y": 83.66161776323116
+        },
+        {
+          "reference": "SAO:67364",
+          "displayName": "SAO 67364",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 370.03869361720734,
+          "y": 129.45461988219938
+        },
+        {
+          "reference": "SAO:67368",
+          "displayName": "SAO 67368",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 207.6083380351007,
+          "y": 72.44835553439276
+        },
+        {
+          "reference": "SAO:67385",
+          "displayName": "SAO 67385",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 223.47638883077914,
+          "y": 44.86589981152281
+        },
+        {
+          "reference": "SAO:67393",
+          "displayName": "SAO 67393",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 339.5478472900979,
+          "y": 64.55028782989302
+        }
+      ],
+      "counts": {
+        "HR": 6,
+        "SAO": 94
+      }
+    },
+    {
+      "fov": 4.65,
+      "wanted": [
+        {
+          "id": "14-08-10-0",
+          "bytes": 55437
+        },
+        {
+          "id": "14-08-7-0",
+          "bytes": 8570
+        },
+        {
+          "id": "14-08-8-0",
+          "bytes": 38085
+        },
+        {
+          "id": "14-08-9-0",
+          "bytes": 109590
+        },
+        {
+          "id": "14-08-9-1",
+          "bytes": 59960
+        },
+        {
+          "id": "15-08-10-0",
+          "bytes": 76490
+        },
+        {
+          "id": "15-08-7-0",
+          "bytes": 13718
+        },
+        {
+          "id": "15-08-8-0",
+          "bytes": 49897
+        },
+        {
+          "id": "15-08-9-0",
+          "bytes": 108774
+        },
+        {
+          "id": "15-08-9-1",
+          "bytes": 108347
+        },
+        {
+          "id": "15-08-9-2",
+          "bytes": 24170
+        }
+      ],
+      "loadedPoints": 4598,
+      "target": [
+        "SAO:67132",
+        9.1,
+        304.4834942603537,
+        53.27740202834479
+      ],
+      "appearance": {
+        "radiusPx": 0.85,
+        "opacity": 0.5580986217099021
+      },
+      "painted": {
+        "reference": "SAO:67132",
+        "displayName": "SAO 67132",
+        "kind": "STAR",
+        "magnitude": 9.1,
+        "magnitudeBand": "VISUAL",
+        "x": 82.47406546247923,
+        "y": 462.8447586615449
+      },
+      "picks": [
+        "SAO:67132"
+      ],
+      "paintedObjects": [
+        {
+          "reference": "HR:7001",
+          "displayName": "Vega",
+          "kind": "STAR",
+          "magnitude": 0.03,
+          "x": 195.1999969482422,
+          "y": 422.0000000000017
+        },
+        {
+          "reference": "HR:7056",
+          "displayName": "Kautoki",
+          "kind": "STAR",
+          "magnitude": 4.36,
+          "x": 66.11450702153513,
+          "y": 94.64351130853458
+        },
+        {
+          "reference": "HR:7057",
+          "displayName": "Urquchillay",
+          "kind": "STAR",
+          "magnitude": 5.73,
+          "x": 64.5696347581482,
+          "y": 93.0660813532329
+        },
+        {
+          "reference": "HR:7009",
+          "displayName": "HR 7009",
+          "kind": "STAR",
+          "magnitude": 6.04,
+          "x": 360.44143066319964,
+          "y": 425.34104143836765
+        },
+        {
+          "reference": "HR:7019",
+          "displayName": "HR 7019",
+          "kind": "STAR",
+          "magnitude": 6.45,
+          "x": 153.1998527664199,
+          "y": 290.24387452552014
+        },
+        {
+          "reference": "HR:7041",
+          "displayName": "HR 7041",
+          "kind": "STAR",
+          "magnitude": 6.45,
+          "x": 346.07342825834314,
+          "y": 232.89704088463677
+        },
+        {
+          "reference": "SAO:66956",
+          "displayName": "SAO 66956",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 143.3949068411597,
+          "y": 828.9531358833196
+        },
+        {
+          "reference": "SAO:67002",
+          "displayName": "SAO 67002",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 224.45105716957065,
+          "y": 749.8767311828286
+        },
+        {
+          "reference": "SAO:67073",
+          "displayName": "SAO 67073",
+          "kind": "STAR",
+          "magnitude": 9.2,
+          "magnitudeBand": "VISUAL",
+          "x": 359.17292423685427,
+          "y": 666.3046550410256
+        },
+        {
+          "reference": "SAO:67077",
+          "displayName": "SAO 67077",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 143.34852267233936,
+          "y": 604.4704117280501
+        },
+        {
+          "reference": "SAO:67083",
+          "displayName": "SAO 67083",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 139.02097779956694,
+          "y": 583.5369492120284
+        },
+        {
+          "reference": "SAO:67104",
+          "displayName": "SAO 67104",
+          "kind": "STAR",
+          "magnitude": 9.3,
+          "magnitudeBand": "VISUAL",
+          "x": 263.91038272810727,
+          "y": 572.5941362559456
+        },
+        {
+          "reference": "SAO:67132",
+          "displayName": "SAO 67132",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 82.47406546247923,
+          "y": 462.8447586615449
+        },
+        {
+          "reference": "SAO:67159",
+          "displayName": "SAO 67159",
+          "kind": "STAR",
+          "magnitude": 9.3,
+          "magnitudeBand": "VISUAL",
+          "x": 363.42880567646097,
+          "y": 495.59165205517127
+        },
+        {
+          "reference": "SAO:67161",
+          "displayName": "SAO 67161",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 383.79413608934476,
+          "y": 499.8483457215005
+        },
+        {
+          "reference": "SAO:67211",
+          "displayName": "SAO 67211",
+          "kind": "STAR",
+          "magnitude": 9.3,
+          "magnitudeBand": "VISUAL",
+          "x": 256.3148184286589,
+          "y": 364.09660433815293
+        },
+        {
+          "reference": "SAO:67223",
+          "displayName": "SAO 67223",
+          "kind": "STAR",
+          "magnitude": 9.2,
+          "magnitudeBand": "VISUAL",
+          "x": 290.9653689455969,
+          "y": 346.5159570439925
+        },
+        {
+          "reference": "SAO:67255",
+          "displayName": "SAO 67255",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 334.35526945831236,
+          "y": 299.6492856586183
+        },
+        {
+          "reference": "SAO:67294",
+          "displayName": "SAO 67294",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 302.3462586751099,
+          "y": 202.4665933242701
+        },
+        {
+          "reference": "SAO:67312",
+          "displayName": "SAO 67312",
+          "kind": "STAR",
+          "magnitude": 9.2,
+          "magnitudeBand": "VISUAL",
+          "x": 12.759367877310467,
+          "y": 92.20418930910046
+        },
+        {
+          "reference": "SAO:67342",
+          "displayName": "SAO 67342",
+          "kind": "STAR",
+          "magnitude": 9.2,
+          "magnitudeBand": "VISUAL",
+          "x": 70.25749452504365,
+          "y": 68.91777092366675
+        },
+        {
+          "reference": "SAO:67345",
+          "displayName": "SAO 67345",
+          "kind": "STAR",
+          "magnitude": 9.3,
+          "magnitudeBand": "VISUAL",
+          "x": 267.6764414427319,
+          "y": 124.77055324025707
+        },
+        {
+          "reference": "SAO:67356",
+          "displayName": "SAO 67356",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 368.28592876871335,
+          "y": 145.6541858148217
+        },
+        {
+          "reference": "SAO:67395",
+          "displayName": "SAO 67395",
+          "kind": "STAR",
+          "magnitude": 9.1,
+          "magnitudeBand": "VISUAL",
+          "x": 352.38568486778183,
+          "y": 70.76131833702038
+        },
+        {
+          "reference": "SAO:67097",
+          "displayName": "SAO 67097",
+          "kind": "STAR",
+          "magnitude": 6.9,
+          "magnitudeBand": "VISUAL",
+          "x": 165.8747005140007,
+          "y": 563.7425654122362
+        },
+        {
+          "reference": "SAO:67143",
+          "displayName": "SAO 67143",
+          "kind": "STAR",
+          "magnitude": 6.9,
+          "magnitudeBand": "VISUAL",
+          "x": 199.53625361994054,
+          "y": 481.31780630357116
+        },
+        {
+          "reference": "SAO:67302",
+          "displayName": "SAO 67302",
+          "kind": "STAR",
+          "magnitude": 6.8,
+          "magnitudeBand": "VISUAL",
+          "x": 220.55601373543945,
+          "y": 166.24336112697577
+        },
+        {
+          "reference": "SAO:67119",
+          "displayName": "SAO 67119",
+          "kind": "STAR",
+          "magnitude": 7.2,
+          "magnitudeBand": "VISUAL",
+          "x": 108.25593357153829,
+          "y": 501.17788266008756
+        },
+        {
+          "reference": "SAO:67133",
+          "displayName": "SAO 67133",
+          "kind": "STAR",
+          "magnitude": 7.3,
+          "magnitudeBand": "VISUAL",
+          "x": 308.053011508357,
+          "y": 521.8022238069627
+        },
+        {
+          "reference": "SAO:67156",
+          "displayName": "SAO 67156",
+          "kind": "STAR",
+          "magnitude": 7.3,
+          "magnitudeBand": "VISUAL",
+          "x": 56.84871313057337,
+          "y": 410.81461270002796
+        },
+        {
+          "reference": "SAO:67171",
+          "displayName": "SAO 67171",
+          "kind": "STAR",
+          "magnitude": 7.7,
+          "magnitudeBand": "VISUAL",
+          "x": 147.60448208582733,
+          "y": 413.77056380793795
+        },
+        {
+          "reference": "SAO:67180",
+          "displayName": "SAO 67180",
+          "kind": "STAR",
+          "magnitude": 7.2,
+          "magnitudeBand": "VISUAL",
+          "x": 24.83024397285911,
+          "y": 353.6404245010976
+        },
+        {
+          "reference": "SAO:67221",
+          "displayName": "SAO 67221",
+          "kind": "STAR",
+          "magnitude": 7.7,
+          "magnitudeBand": "VISUAL",
+          "x": 83.01493268426438,
+          "y": 288.925306066041
+        },
+        {
+          "reference": "SAO:67330",
+          "displayName": "SAO 67330",
+          "kind": "STAR",
+          "magnitude": 7.6,
+          "magnitudeBand": "VISUAL",
+          "x": 193.56557445269462,
+          "y": 117.56125222365466
+        },
+        {
+          "reference": "SAO:67373",
+          "displayName": "SAO 67373",
+          "kind": "STAR",
+          "magnitude": 7.9,
+          "magnitudeBand": "VISUAL",
+          "x": 214.13439341035343,
+          "y": 71.74159272286323
+        },
+        {
+          "reference": "SAO:47511",
+          "displayName": "SAO 47511",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 367.0468685952658,
+          "y": 795.3865768911894
+        },
+        {
+          "reference": "SAO:47523",
+          "displayName": "SAO 47523",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 373.28308847955753,
+          "y": 768.8409401293038
+        },
+        {
+          "reference": "SAO:47552",
+          "displayName": "SAO 47552",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 385.9944762528379,
+          "y": 694.5188123257055
+        },
+        {
+          "reference": "SAO:47559",
+          "displayName": "SAO 47559",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 383.61189524254536,
+          "y": 680.6023025448052
+        },
+        {
+          "reference": "SAO:66955",
+          "displayName": "SAO 66955",
+          "kind": "STAR",
+          "magnitude": 8.1,
+          "magnitudeBand": "VISUAL",
+          "x": 32.15593518395167,
+          "y": 803.1323914745176
+        },
+        {
+          "reference": "SAO:66961",
+          "displayName": "SAO 66961",
+          "kind": "STAR",
+          "magnitude": 8.1,
+          "magnitudeBand": "VISUAL",
+          "x": 154.54327187692712,
+          "y": 823.1375804157024
+        },
+        {
+          "reference": "SAO:66974",
+          "displayName": "SAO 66974",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 107.11335428456232,
+          "y": 792.4144800424385
+        },
+        {
+          "reference": "SAO:66982",
+          "displayName": "SAO 66982",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 19.558419985018134,
+          "y": 753.4628604277625
+        },
+        {
+          "reference": "SAO:66983",
+          "displayName": "SAO 66983",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 169.40951151483938,
+          "y": 788.4090639667836
+        },
+        {
+          "reference": "SAO:66995",
+          "displayName": "SAO 66995",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 206.39709438867675,
+          "y": 777.6149841764986
+        },
+        {
+          "reference": "SAO:67008",
+          "displayName": "SAO 67008",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 330.9547866556524,
+          "y": 770.6738034710652
+        },
+        {
+          "reference": "SAO:67009",
+          "displayName": "SAO 67009",
+          "kind": "STAR",
+          "magnitude": 8.7,
+          "magnitudeBand": "VISUAL",
+          "x": 151.28477236575685,
+          "y": 716.7944329774373
+        },
+        {
+          "reference": "SAO:67010",
+          "displayName": "SAO 67010",
+          "kind": "STAR",
+          "magnitude": 8.1,
+          "magnitudeBand": "VISUAL",
+          "x": 116.88410802299272,
+          "y": 707.2192204547611
+        },
+        {
+          "reference": "SAO:67012",
+          "displayName": "SAO 67012",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 170.63024068285876,
+          "y": 717.7189315588373
+        },
+        {
+          "reference": "SAO:67018",
+          "displayName": "SAO 67018",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 298.8759623866573,
+          "y": 733.3580458412505
+        },
+        {
+          "reference": "SAO:67024",
+          "displayName": "SAO 67024",
+          "kind": "STAR",
+          "magnitude": 8.7,
+          "magnitudeBand": "VISUAL",
+          "x": 53.8443155220632,
+          "y": 655.6695619851247
+        },
+        {
+          "reference": "SAO:67027",
+          "displayName": "SAO 67027",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 329.2815358027169,
+          "y": 725.3552198059476
+        },
+        {
+          "reference": "SAO:67029",
+          "displayName": "SAO 67029",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 1.5401497142359801,
+          "y": 632.8555825936742
+        },
+        {
+          "reference": "SAO:67032",
+          "displayName": "SAO 67032",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 318.4531603222862,
+          "y": 709.6901835240176
+        },
+        {
+          "reference": "SAO:67047",
+          "displayName": "SAO 67047",
+          "kind": "STAR",
+          "magnitude": 8.4,
+          "magnitudeBand": "VISUAL",
+          "x": 263.58972002227506,
+          "y": 672.7535550341614
+        },
+        {
+          "reference": "SAO:67048",
+          "displayName": "SAO 67048",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 44.77059360889555,
+          "y": 609.7059542747147
+        },
+        {
+          "reference": "SAO:67056",
+          "displayName": "SAO 67056",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 114.21456574231611,
+          "y": 623.1775983819863
+        },
+        {
+          "reference": "SAO:67062",
+          "displayName": "SAO 67062",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 22.400789427805023,
+          "y": 594.9298966826111
+        },
+        {
+          "reference": "SAO:67070",
+          "displayName": "SAO 67070",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 312.6791626593967,
+          "y": 662.1812412761544
+        },
+        {
+          "reference": "SAO:67072",
+          "displayName": "SAO 67072",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 73.6140168222466,
+          "y": 590.7993745047951
+        },
+        {
+          "reference": "SAO:67074",
+          "displayName": "SAO 67074",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 227.77389227427707,
+          "y": 631.3441265120373
+        },
+        {
+          "reference": "SAO:67076",
+          "displayName": "SAO 67076",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 339.5007085415739,
+          "y": 659.2109670892333
+        },
+        {
+          "reference": "SAO:67084",
+          "displayName": "SAO 67084",
+          "kind": "STAR",
+          "magnitude": 8.7,
+          "magnitudeBand": "VISUAL",
+          "x": 242.62827562030634,
+          "y": 608.1742008010298
+        },
+        {
+          "reference": "SAO:67093",
+          "displayName": "SAO 67093",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 171.12943220677118,
+          "y": 569.3058510397292
+        },
+        {
+          "reference": "SAO:67108",
+          "displayName": "SAO 67108",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 301.01706527824285,
+          "y": 576.5801964625545
+        },
+        {
+          "reference": "SAO:67118",
+          "displayName": "SAO 67118",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 124.1273576838609,
+          "y": 509.2647942885893
+        },
+        {
+          "reference": "SAO:67130",
+          "displayName": "SAO 67130",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 60.61324953169665,
+          "y": 467.69228820132344
+        },
+        {
+          "reference": "SAO:67131",
+          "displayName": "SAO 67131",
+          "kind": "STAR",
+          "magnitude": 8.4,
+          "magnitudeBand": "VISUAL",
+          "x": 330.7280819338541,
+          "y": 537.2276982597693
+        },
+        {
+          "reference": "SAO:67140",
+          "displayName": "SAO 67140",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 62.02878261515326,
+          "y": 447.64885722714484
+        },
+        {
+          "reference": "SAO:67141",
+          "displayName": "SAO 67141",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 226.8180921358036,
+          "y": 491.1440015455965
+        },
+        {
+          "reference": "SAO:67142",
+          "displayName": "SAO 67142",
+          "kind": "STAR",
+          "magnitude": 8.7,
+          "magnitudeBand": "VISUAL",
+          "x": 269.9257787882463,
+          "y": 500.93052863434457
+        },
+        {
+          "reference": "SAO:67149",
+          "displayName": "SAO 67149",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 231.45826669356063,
+          "y": 480.4047445800263
+        },
+        {
+          "reference": "SAO:67165",
+          "displayName": "SAO 67165",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 141.97286846346037,
+          "y": 422.6742620223295
+        },
+        {
+          "reference": "SAO:67182",
+          "displayName": "SAO 67182",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 83.86298305954234,
+          "y": 364.17048369441
+        },
+        {
+          "reference": "SAO:67192",
+          "displayName": "SAO 67192",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 345.9939394889361,
+          "y": 421.55103411328275
+        },
+        {
+          "reference": "SAO:67206",
+          "displayName": "SAO 67206",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 322.89026897109005,
+          "y": 399.94774802967106
+        },
+        {
+          "reference": "SAO:67207",
+          "displayName": "SAO 67207",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 388.0955319872139,
+          "y": 411.56375526879395
+        },
+        {
+          "reference": "SAO:67220",
+          "displayName": "SAO 67220",
+          "kind": "STAR",
+          "magnitude": 8.9,
+          "magnitudeBand": "VISUAL",
+          "x": 51.95703965848105,
+          "y": 284.9626712981346
+        },
+        {
+          "reference": "SAO:67222",
+          "displayName": "SAO 67222",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 335.1420437921179,
+          "y": 359.73679263364954
+        },
+        {
+          "reference": "SAO:67224",
+          "displayName": "SAO 67224",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 35.159680945095374,
+          "y": 271.8732088139318
+        },
+        {
+          "reference": "SAO:67225",
+          "displayName": "SAO 67225",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 262.84250361370096,
+          "y": 337.5710901243783
+        },
+        {
+          "reference": "SAO:67227",
+          "displayName": "SAO 67227",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 49.82691262443274,
+          "y": 274.04279801849725
+        },
+        {
+          "reference": "SAO:67229",
+          "displayName": "SAO 67229",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 300.4052981459091,
+          "y": 344.1862515009176
+        },
+        {
+          "reference": "SAO:67235",
+          "displayName": "SAO 67235",
+          "kind": "STAR",
+          "magnitude": 8.4,
+          "magnitudeBand": "VISUAL",
+          "x": 38.07589555141479,
+          "y": 256.1087321472297
+        },
+        {
+          "reference": "SAO:67260",
+          "displayName": "SAO 67260",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 125.31845139110641,
+          "y": 220.40640072364837
+        },
+        {
+          "reference": "SAO:67278",
+          "displayName": "SAO 67278",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 17.5556062103837,
+          "y": 153.63590076369678
+        },
+        {
+          "reference": "SAO:67283",
+          "displayName": "SAO 67283",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 67.51669769839984,
+          "y": 158.55550486882316
+        },
+        {
+          "reference": "SAO:67285",
+          "displayName": "SAO 67285",
+          "kind": "STAR",
+          "magnitude": 8.2,
+          "magnitudeBand": "VISUAL",
+          "x": 183.3357596146611,
+          "y": 187.26844565197632
+        },
+        {
+          "reference": "SAO:67288",
+          "displayName": "SAO 67288",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 151.57571506390389,
+          "y": 170.46023635445835
+        },
+        {
+          "reference": "SAO:67305",
+          "displayName": "SAO 67305",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 232.9400301354289,
+          "y": 163.4714569739545
+        },
+        {
+          "reference": "SAO:67307",
+          "displayName": "SAO 67307",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 137.95073417694334,
+          "y": 133.13452529106127
+        },
+        {
+          "reference": "SAO:67317",
+          "displayName": "SAO 67317",
+          "kind": "STAR",
+          "magnitude": 8.4,
+          "magnitudeBand": "VISUAL",
+          "x": 319.25339787098545,
+          "y": 176.9923928660519
+        },
+        {
+          "reference": "SAO:67331",
+          "displayName": "SAO 67331",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 351.80900407571835,
+          "y": 165.29973974791915
+        },
+        {
+          "reference": "SAO:67340",
+          "displayName": "SAO 67340",
+          "kind": "STAR",
+          "magnitude": 8.6,
+          "magnitudeBand": "VISUAL",
+          "x": 9.956148524422616,
+          "y": 52.56689152504765
+        },
+        {
+          "reference": "SAO:67344",
+          "displayName": "SAO 67344",
+          "kind": "STAR",
+          "magnitude": 8.5,
+          "magnitudeBand": "VISUAL",
+          "x": 210.97192883596463,
+          "y": 110.07673587839815
+        },
+        {
+          "reference": "SAO:67347",
+          "displayName": "SAO 67347",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 189.84812043180148,
+          "y": 100.2092968278248
+        },
+        {
+          "reference": "SAO:67355",
+          "displayName": "SAO 67355",
+          "kind": "STAR",
+          "magnitude": 9,
+          "magnitudeBand": "VISUAL",
+          "x": 175.48173653050304,
+          "y": 87.30064745358249
+        },
+        {
+          "reference": "SAO:67364",
+          "displayName": "SAO 67364",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 368.1581998819282,
+          "y": 132.60111871270686
+        },
+        {
+          "reference": "SAO:67368",
+          "displayName": "SAO 67368",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 207.47487897756025,
+          "y": 76.2079905013511
+        },
+        {
+          "reference": "SAO:67385",
+          "displayName": "SAO 67385",
+          "kind": "STAR",
+          "magnitude": 8.3,
+          "magnitudeBand": "VISUAL",
+          "x": 223.17225948868,
+          "y": 48.92220042618192
+        },
+        {
+          "reference": "SAO:67393",
+          "displayName": "SAO 67393",
+          "kind": "STAR",
+          "magnitude": 8.8,
+          "magnitudeBand": "VISUAL",
+          "x": 337.9953006660355,
+          "y": 68.39487119284195
+        }
+      ],
+      "counts": {
+        "HR": 6,
+        "SAO": 95
+      }
+    }
+  ],
+  "limits": [
+    "Public Vega Locate supplies the camera anchor; native exact FOV is not exposed, so its rounding interval is retained.",
+    "Off-marker input and native star pixels require separate actual evidence; this calculation alone does not certify either.",
+    "No injected state, mock APIs, source changes, phone input or new scientific data."
+  ]
+}

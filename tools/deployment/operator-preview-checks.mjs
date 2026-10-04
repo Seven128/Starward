@@ -1,4 +1,5 @@
 import https from "node:https";
+import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { operatorPreviewProviderSimulationProgram } from "./operator-preview-provider-simulation.mjs";
 import { publicIpTlsOptions, certificateLifetime } from "./operator-preview-tls.mjs";
@@ -7,7 +8,7 @@ function requireCondition(condition, code) {
   if (!condition) throw new Error(`operator_preview_${code}`);
 }
 
-export function checkPreviewCompose(config, validation, deploy) {
+export function checkPreviewCompose(config, validation, deploy, delivery = null) {
   requireCondition(config.name === "starward-staging", "project_mismatch");
   const services = config.services ?? {};
   requireCondition(Object.keys(services).sort().join() === "api,caddy,migrate,postgres,redis,worker", "services_mismatch");
@@ -27,6 +28,16 @@ export function checkPreviewCompose(config, validation, deploy) {
   requireCondition(services.caddy.environment?.STARWARD_OPERATOR_PREVIEW_TOKEN === deploy.STARWARD_OPERATOR_PREVIEW_TOKEN, "rendered_token_mismatch");
   requireCondition(services.caddy.environment?.STARWARD_API_DOMAIN === validation.domain, "rendered_ip_mismatch");
   requireCondition(services.caddy.volumes?.some((volume) => volume.target === "/etc/caddy/Caddyfile" && volume.read_only && /[/\\]Caddyfile\.operator-preview$/u.test(volume.source)), "overlay_missing");
+  const fragment = (services.caddy.volumes ?? []).filter(volume => volume.target === "/etc/caddy/sky-static-delivery.caddy");
+  const published = (services.caddy.volumes ?? []).filter(volume => volume.target === "/srv/sky-public");
+  requireCondition(fragment.length === 1 && fragment[0].read_only && fragment[0].type === "bind", "sky_static_fragment_mount_invalid");
+  if (delivery) {
+    requireCondition(path.resolve(fragment[0].source) === path.resolve(delivery.directory, "delivery.caddy"), "sky_static_fragment_mismatch");
+    requireCondition(published.length === 1 && published[0].read_only && published[0].type === "bind" &&
+      path.resolve(published[0].source) === path.resolve(delivery.directory), "sky_static_publication_mount_invalid");
+  } else {
+    requireCondition(/[/\\]sky-static-empty\.caddy$/u.test(fragment[0].source) && published.length === 0, "sky_static_empty_lane_invalid");
+  }
   for (const [name, target, volumeName] of [["postgres", "/var/lib/postgresql/data", "postgres-data"], ["redis", "/data", "redis-data"]]) {
     requireCondition(services[name].volumes?.some((volume) => volume.type === "volume" && volume.target === target && volume.source === volumeName), "data_volume_mismatch");
     requireCondition(config.volumes?.[volumeName]?.name === `starward-staging_${volumeName}`, "data_volume_mismatch");

@@ -1,0 +1,15 @@
+✔ upgraded client rejects retired star cache after restart on offline and 304, and rejects a legacy server response (613.337ms)
+✔ old or malformed solar positions stay missing across offline, 304 and old server, then recover from exact data (140.9362ms)
+✔ HTTP 503 remains a failure and cannot return the retired catalog (38.7428ms)
+✔ network recovery returns selectable HR stars and retains their provenance (39.6585ms)
+✔ retired-identity regression detects omission of the response projection (48.4265ms)
+✔ malformed source rows retire only stars and keep independent content (30.9395ms)
+✔ rounded-only target caches lose geometry independently on offline, 304 and old-server reads, then recover (121.6577ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3296.9481

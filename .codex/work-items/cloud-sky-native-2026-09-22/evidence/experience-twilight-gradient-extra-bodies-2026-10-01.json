@@ -1,0 +1,19 @@
+{
+  "scope": "Two additional preview bodies match existing owned constellation publication PNGs; no source or scientific mask inference",
+  "matches": [
+    {
+      "sha1": "d3f6017581c284e9f4aed5a4a60c551ed83aa754",
+      "encodedBytes": 43187,
+      "requestSequence": 10,
+      "path": "workers/miniapp-api/assets/constellations/hercules.png",
+      "sha256": "b67337cc651db0bcfe1a332d2f735b81e468c2fd6db0df6b0a835323d225ba29"
+    },
+    {
+      "sha1": "6334c3d666540a2f0e45d7b8b394d22bed584262",
+      "encodedBytes": 28437,
+      "requestSequence": 11,
+      "path": "workers/miniapp-api/assets/constellations/ursa-major.png",
+      "sha256": "da2a2a5c5024bd850ccd97924d18aab8b9ac45f32d168a8ee32c31dd2679ec4c"
+    }
+  ]
+}

@@ -1,0 +1,342 @@
+{
+  "scope": "Independent Astropy TAN geometry of admitted prepared product; no physical source alignment/coverage/quality certification",
+  "astropyVersion": "8.0.1",
+  "manifestSha256": "23faa1521ae39a6a7d92f36c87ebf691a75b6bd7b91a3654e9b24f63f4d793f1",
+  "publicationHash": "8eb8336aa5a75d104807327acab5990f38e0e22000713ab639a4c95cd443a802",
+  "center": {
+    "frame": "ICRS J2000",
+    "raDeg": 202.469625,
+    "decDeg": 47.1951666667
+  },
+  "levels": {
+    "OVERVIEW": {
+      "bytes": 181742,
+      "sha256": "2462f47f20e444a2bf1a580a8891a57cd8ac4ea69a30288ed1413a60bcc413a4",
+      "file": "M-51-overview.png",
+      "format": "png",
+      "pixels": 512,
+      "fieldDegrees": 0.2275555555555556,
+      "crpixFitsOneBased": 256.5,
+      "displayAlpha": "geometric-source-area",
+      "scientificAvailability": "UNKNOWN",
+      "masterRgbaSha256": "2c9790bb218556a3e2474a4101e0dad4a389c7d45c1ff441210df0678a3694a9",
+      "masterCrop": {
+        "boundsXYExclusive": [
+          0,
+          0,
+          2048,
+          2048
+        ],
+        "boxFactor": 4
+      },
+      "geometricMasterSupportPixels": 1425463,
+      "alphaPixels": {
+        "opaque": 88625,
+        "partial": 934,
+        "zero": 172585
+      },
+      "downloadUrl": "/v2/sky/prepared-optical/8eb8336aa5a75d104807327acab5990f38e0e22000713ab639a4c95cd443a802/M-51-overview.png"
+    },
+    "MEDIUM": {
+      "bytes": 529695,
+      "sha256": "e523412f935e3b85e778c89ee60c33a05db616abe126d4d0efb8456c5c7bc4b5",
+      "file": "M-51-medium.png",
+      "format": "png",
+      "pixels": 512,
+      "fieldDegrees": 0.11377788994540003,
+      "crpixFitsOneBased": 256.5,
+      "displayAlpha": "geometric-source-area",
+      "scientificAvailability": "UNKNOWN",
+      "masterRgbaSha256": "2c9790bb218556a3e2474a4101e0dad4a389c7d45c1ff441210df0678a3694a9",
+      "masterCrop": {
+        "boundsXYExclusive": [
+          512,
+          512,
+          1536,
+          1536
+        ],
+        "boxFactor": 2
+      },
+      "geometricMasterSupportPixels": 1014375,
+      "alphaPixels": {
+        "opaque": 253400,
+        "partial": 387,
+        "zero": 8357
+      },
+      "downloadUrl": "/v2/sky/prepared-optical/8eb8336aa5a75d104807327acab5990f38e0e22000713ab639a4c95cd443a802/M-51-medium.png"
+    },
+    "DETAIL": {
+      "bytes": 603802,
+      "sha256": "14d606b399481ea518ad5c22a0173c1d931e75c86892eac105dc0a9bada80a19",
+      "file": "M-51-detail.png",
+      "format": "png",
+      "pixels": 512,
+      "fieldDegrees": 0.056888958993683895,
+      "crpixFitsOneBased": 256.5,
+      "displayAlpha": "geometric-source-area",
+      "scientificAvailability": "UNKNOWN",
+      "masterRgbaSha256": "2c9790bb218556a3e2474a4101e0dad4a389c7d45c1ff441210df0678a3694a9",
+      "masterCrop": {
+        "boundsXYExclusive": [
+          768,
+          768,
+          1280,
+          1280
+        ],
+        "boxFactor": 1
+      },
+      "geometricMasterSupportPixels": 262144,
+      "alphaPixels": {
+        "opaque": 262144,
+        "partial": 0,
+        "zero": 0
+      },
+      "downloadUrl": "/v2/sky/prepared-optical/8eb8336aa5a75d104807327acab5990f38e0e22000713ab639a4c95cd443a802/M-51-detail.png"
+    }
+  },
+  "rows": [
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0,
+        0
+      ],
+      "raDeg": 202.63742712044797,
+      "decDeg": 47.30882198261623
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        1,
+        0
+      ],
+      "raDeg": 202.30182287955205,
+      "decDeg": 47.30882198261623
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0,
+        1
+      ],
+      "raDeg": 202.6367090931669,
+      "decDeg": 47.08126739878547
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        1,
+        1
+      ],
+      "raDeg": 202.30254090683312,
+      "decDeg": 47.08126739878547
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0.5,
+        0.5
+      ],
+      "raDeg": 202.469625,
+      "decDeg": 47.1951666667
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0.03,
+        0.07
+      ],
+      "raDeg": 202.62731161070624,
+      "decDeg": 47.29290744196074
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0.83,
+        0.88
+      ],
+      "raDeg": 202.35929266829473,
+      "decDeg": 47.10864253566057
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0.25,
+        0.75
+      ],
+      "raDeg": 202.5532566898267,
+      "decDeg": 47.13824728847179
+    },
+    {
+      "level": "OVERVIEW",
+      "uv": [
+        0.61,
+        0.38
+      ],
+      "raDeg": 202.43276862030743,
+      "decDeg": 47.22246745791318
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0,
+        0
+      ],
+      "raDeg": 202.55343619717786,
+      "decDeg": 47.25202505695107
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        1,
+        0
+      ],
+      "raDeg": 202.38581380282216,
+      "decDeg": 47.25202505695107
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0,
+        1
+      ],
+      "raDeg": 202.5532566898267,
+      "decDeg": 47.13824728847179
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        1,
+        1
+      ],
+      "raDeg": 202.38599331017332,
+      "decDeg": 47.13824728847179
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0.5,
+        0.5
+      ],
+      "raDeg": 202.469625,
+      "decDeg": 47.1951666667
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0.03,
+        0.07
+      ],
+      "raDeg": 202.54839569672697,
+      "decDeg": 47.24406417292878
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0.83,
+        0.88
+      ],
+      "raDeg": 202.4144138723933,
+      "decDeg": 47.1519177994427
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0.25,
+        0.75
+      ],
+      "raDeg": 202.51146326957766,
+      "decDeg": 47.16671457129836
+    },
+    {
+      "level": "MEDIUM",
+      "uv": [
+        0.61,
+        0.38
+      ],
+      "raDeg": 202.45120155090575,
+      "decDeg": 47.20881854110737
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0,
+        0
+      ],
+      "raDeg": 202.51150814644865,
+      "decDeg": 47.22360351510876
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        1,
+        0
+      ],
+      "raDeg": 202.42774185355137,
+      "decDeg": 47.22360351510876
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0,
+        1
+      ],
+      "raDeg": 202.51146326957766,
+      "decDeg": 47.16671457129836
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        1,
+        1
+      ],
+      "raDeg": 202.42778673042235,
+      "decDeg": 47.16671457129836
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0.5,
+        0.5
+      ],
+      "raDeg": 202.469625,
+      "decDeg": 47.1951666667
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0.03,
+        0.07
+      ],
+      "raDeg": 202.50899220263426,
+      "decDeg": 47.21962217770059
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0.83,
+        0.88
+      ],
+      "raDeg": 202.44200818841122,
+      "decDeg": 47.17354554325036
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0.25,
+        0.75
+      ],
+      "raDeg": 202.4905497426794,
+      "decDeg": 47.18094252115016
+    },
+    {
+      "level": "DETAIL",
+      "uv": [
+        0.61,
+        0.38
+      ],
+      "raDeg": 202.4604144604218,
+      "decDeg": 47.20199297324238
+    }
+  ]
+}

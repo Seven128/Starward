@@ -1,0 +1,103 @@
+{
+  "scope": "Frozen v29 native development baseline before any progressive optical composition source change. Native original captures actually viewed; no phone, final quality or target performance acceptance.",
+  "candidate": {
+    "bundle": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v29-0929",
+    "sha256": "e5e2baaf4feab03c82ad8dc8bd8faa657e995207fe38a338d744630b6bea75b5",
+    "sourceInputsVerified": 106
+  },
+  "sourceCopies": [
+    {
+      "original": "apps/wechat-miniapp/src/features/sky/use-sky-sdss-optical.ts",
+      "copy": "experience-optical-boundary-baseline-source/use-sky-sdss-optical.ts",
+      "sha256": "f5ad08fcd943fb4a1f459701cbf232418c313006f53477674e6b58ef262739f2"
+    },
+    {
+      "original": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "copy": "experience-optical-boundary-baseline-source/sky-scene-render.ts",
+      "sha256": "e194e24453e36c845b49042fccc8b4ca21746fb76bb49ad7e38e88435c91d7c1"
+    },
+    {
+      "original": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "copy": "experience-optical-boundary-baseline-source/spot-sky-page.tsx",
+      "sha256": "292a033d1f878fc61b2d5577e2888f9ea3af657d6f94beb7eabcc26e8dd88133"
+    }
+  ],
+  "trace": {
+    "file": "experience-optical-boundary-native-2026-09-29.jsonl",
+    "sha256": "aa9c5a0287e80fcafdc7f7c6241d3205fb664e5ef63b1a6bb5e3a7f8fa9812fe",
+    "events": 11,
+    "frozen": true
+  },
+  "captures": [
+    {
+      "stage": "optical-boundary-m63-medium-before",
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\cloud-sky-native-2026-09-22\\evidence\\experience-v29-native-optical-boundary-m63-medium-before-2026-09-29.png",
+      "sha256": "1364bac17413d24aa7d5a95a7b186c1bf01304f52e6569c66b811a3abdf58aaa",
+      "height": 919,
+      "project": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v29-0929",
+      "width": 427
+    },
+    {
+      "stage": "optical-boundary-m63-overview-before",
+      "path": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\.codex\\work-items\\cloud-sky-native-2026-09-22\\evidence\\experience-v29-native-optical-boundary-m63-overview-before-2026-09-29.png",
+      "sha256": "75e2e2406a7192699b245cb76642e8ed9932a7f591ba3403a32743eede586fd8",
+      "height": 919,
+      "project": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v29-0929",
+      "width": 427
+    }
+  ],
+  "native": {
+    "objectRef": "M:63",
+    "spot": "spot:test-published",
+    "latitude": 22.4826799,
+    "longitude": 114.5557147,
+    "timezone": "Asia/Shanghai",
+    "at": "2026-09-29T11:00:00.000Z",
+    "civil": "2026-09-29 19:00",
+    "observationNight": "2026-09-29",
+    "revision": 3,
+    "contextIdSha256": "c5c224f706fa553f9a3ea0be061a4fd00fc3d77fabc841d78db1b0ac8c35eb4d",
+    "contextFingerprint": "c197391ccb77d36ef51b359dc8a4908db8b51a703626d8cc1070cbf1b87fad12",
+    "mode": "DAY",
+    "largeText": false,
+    "logicalViewport": {
+      "width": 390.3999938964844,
+      "height": 844
+    },
+    "captureViewport": {
+      "width": 427,
+      "height": 919
+    },
+    "SDKVersion": "3.17.4",
+    "fields": "Native aria labels round vertical FOV to 0.15 and 0.28 degrees. Exact unrounded pose/FOV is not asserted.",
+    "currentRoundedVerticalFovDeg": 0.28
+  },
+  "runtime": {
+    "epochStartedAt": "2026-09-29T09:14:20.175Z",
+    "phase": "native-progression",
+    "totalObserved": 187,
+    "heldResourceCount": 0,
+    "activeCount": 0,
+    "resourceMode": "pass"
+  },
+  "reference": {
+    "file": "experience-optical-boundary-reference-m63-settled-2026-09-29.png",
+    "sha256": "71b0b8fbeef5ecbb48c12144123682292cfdbdf9f8ae80577fc6631acdcb6626",
+    "browser": "IAB",
+    "URL": "https://stellarium-web.org/skysource/M63?fov=0.06931280399240136&date=2026-09-29T11%3A00%3A00Z&lat=22.4826799&lng=114.5557147&elev=0",
+    "civil": "2026-09-29 19:00:08",
+    "paused": true,
+    "displayedFovDeg": 0.0693,
+    "cssViewport": {
+      "width": 390.3999938964844,
+      "height": 844
+    },
+    "backingViewport": {
+      "width": 390,
+      "height": 844
+    },
+    "intendedVerticalFovDeg": 0.15,
+    "limitations": "Public URL and prior public information panel denote M63; final raster has another RX J1518.5+4201 label. Camera/registration equivalence is NOT certified. Different historical optical dataset and display response, plus 8 seconds and native rounded FOV; no pixel comparison or source adoption. Earlier live-clock/arrow/setValue trials and provisional raster are not matched evidence. Viewport reset after capture."
+  },
+  "finding": "The real M63 MEDIUM source contains structure through its finite edges; OVERVIEW includes a larger outer field. The single selected field currently removes that independently valid outer structure. A display taper is not missing-data coverage. Planned coarse/fine composition uses the same publication, exact registration and existing bounded native owner; no cross-spectrum W3 composition."
+}

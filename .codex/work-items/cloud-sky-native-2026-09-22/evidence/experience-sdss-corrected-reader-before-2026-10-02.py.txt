@@ -1,0 +1,284 @@
+"""Read only byte-bound cached SDSS corrected frames; no RGB or publication.
+
+HDU0 is already sky-subtracted and calibrated in nanomaggies/pixel. Its TAN
+header omits the full asTrans polynomial solution. Finite samples are not an
+artifact/coverage/quality certificate; complete asTrans metadata is retained.
+"""
+from __future__ import annotations
+
+import argparse
+import bz2
+from dataclasses import dataclass
+import io
+import json
+import math
+from pathlib import Path
+import re
+import warnings
+
+import numpy as np
+from astropy.io import fits
+from astropy.wcs import WCS
+
+from image_quality import digest, number, write_report
+
+MODEL_URL = "https://data.sdss.org/datamodel/files/BOSS_PHOTOOBJ/frames/RERUN/RUN/CAMCOL/frame.html"
+IMAGES_URL = "https://www.sdss4.org/dr17/imaging/images/"
+FRAME_SHAPE = (1489, 2048)
+IDENTITY_KEYS = ("run", "rerun", "camcol", "field", "band")
+ASTRANS_COLUMNS = ("RUN", "RERUN", "CAMCOL", "FILTER", "NODE", "INCL", "NAXIS", "FIELD",
+    "A", "B", "C", "D", "E", "F", "DROW0", "DROW1", "DROW2", "DROW3", "DCOL0", "DCOL1",
+    "DCOL2", "DCOL3", "CSROW", "CSCOL", "CCROW", "CCCOL", "RICUT", "MJD", "AIRMASS", "MUERR", "NUERR")
+
+
+@dataclass
+class CorrectedFrame:
+    data: np.ndarray
+    wcs: WCS
+    receipt: dict
+    header: fits.Header
+
+
+def _identity(value: dict) -> dict:
+    if not isinstance(value, dict) or not set(IDENTITY_KEYS).issubset(value):
+        raise RuntimeError("sdss_frame_identity_missing")
+    result = {key: value[key] for key in IDENTITY_KEYS}
+    for key, maximum in (("run", 999999), ("camcol", 6), ("field", 9999)):
+        item = result[key]
+        if not isinstance(item, int) or isinstance(item, bool) or not 0 <= item <= maximum:
+            raise RuntimeError("sdss_frame_identity_invalid")
+    result["rerun"] = str(result["rerun"]).strip()
+    if (result["camcol"] < 1 or not re.fullmatch(r"[0-9]{1,3}", result["rerun"]) or
+            result["band"] not in tuple("ugriz")):
+        raise RuntimeError("sdss_frame_identity_invalid")
+    return result
+
+
+def decompress_frame(raw: bytes, max_uncompressed_bytes: int) -> bytes:
+    """A single complete bzip2 stream, with bounded output including leftovers."""
+    if (not isinstance(max_uncompressed_bytes, int) or isinstance(max_uncompressed_bytes, bool) or
+            max_uncompressed_bytes <= 0):
+        raise RuntimeError("sdss_frame_decompression_limit_invalid")
+    if raw[:3] != b"BZh" or raw[3:4] not in tuple(bytes([value]) for value in range(49, 58)):
+        raise RuntimeError("sdss_frame_bzip2_invalid")
+    decoder = bz2.BZ2Decompressor()
+    output = bytearray()
+    pending = raw
+    try:
+        while True:
+            output.extend(decoder.decompress(pending, max_length=max_uncompressed_bytes - len(output) + 1))
+            if len(output) > max_uncompressed_bytes:
+                raise RuntimeError("sdss_frame_decompression_limit_exceeded")
+            if decoder.eof:
+                if decoder.unused_data:
+                    raise RuntimeError("sdss_frame_bzip2_trailing_data")
+                return bytes(output)
+            if decoder.needs_input:
+                raise RuntimeError("sdss_frame_bzip2_incomplete")
+            pending = b""
+    except OSError as error:
+        raise RuntimeError("sdss_frame_bzip2_invalid") from error
+
+
+def _json_value(value):
+    """Preserve nonfinite metadata explicitly instead of non-standard JSON NaN."""
+    if isinstance(value, np.ndarray):
+        return [_json_value(item) for item in value]
+    if isinstance(value, np.generic):
+        return _json_value(value.item())
+    if isinstance(value, bytes):
+        return value.decode("ascii").strip()
+    if isinstance(value, float) and not math.isfinite(value):
+        return {"nonfinite": "NaN" if math.isnan(value) else "Infinity" if value > 0 else "-Infinity"}
+    return value
+
+
+def _actual_identity(table, columns) -> dict:
+    names = set(table.dtype.names or ())
+    if not set(ASTRANS_COLUMNS).issubset(names) or len(table) != 1:
+        raise RuntimeError("sdss_frame_astrans_identity_missing")
+    formats = {column.name: str(column.format).lstrip("1") for column in columns}
+    if (any(formats[key] != "J" for key in ("RUN", "CAMCOL", "FIELD")) or
+            formats["RERUN"] != "3A" or formats["FILTER"] != "A" or formats["NAXIS"] != "2J" or
+            any(formats[key] != ("E" if key in ("MUERR", "NUERR") else "D")
+                for key in ASTRANS_COLUMNS if key not in ("RUN", "CAMCOL", "FIELD", "RERUN", "FILTER", "NAXIS"))):
+        raise RuntimeError("sdss_frame_astrans_schema_invalid")
+    row = table[0]
+    return _identity({"run": int(row["RUN"]), "rerun": str(_json_value(row["RERUN"])).strip(),
+                      "camcol": int(row["CAMCOL"]), "field": int(row["FIELD"]),
+                      "band": str(_json_value(row["FILTER"])).strip()})
+
+
+def read_cached_frame(path: Path, expected: dict, *, max_uncompressed_bytes: int) -> CorrectedFrame:
+    """Expected identity/hash/bytes come from an independently acquired receipt."""
+    identity = _identity(expected)
+    byte_count, source_hash = expected.get("bytes"), expected.get("sha256")
+    if (not isinstance(byte_count, int) or isinstance(byte_count, bool) or byte_count <= 0 or
+            not isinstance(source_hash, str) or not re.fullmatch(r"[a-f0-9]{64}", source_hash)):
+        raise RuntimeError("sdss_frame_source_binding_invalid")
+    if (not isinstance(max_uncompressed_bytes, int) or isinstance(max_uncompressed_bytes, bool) or
+            max_uncompressed_bytes <= 0):
+        raise RuntimeError("sdss_frame_decompression_limit_invalid")
+    if byte_count > max_uncompressed_bytes:
+        raise RuntimeError("sdss_frame_compressed_limit_exceeded")
+    match = re.fullmatch(r"frame-([ugriz])-([0-9]{6})-([1-6])-([0-9]{4})\.fits\.bz2", path.name)
+    if not match or {"band": match[1], "run": int(match[2]), "camcol": int(match[3]),
+                     "field": int(match[4])} != {key: identity[key] for key in ("band", "run", "camcol", "field")}:
+        raise RuntimeError("sdss_frame_filename_identity_mismatch")
+    if path.stat().st_size != byte_count:
+        raise RuntimeError("sdss_frame_compressed_bytes_changed")
+    compressed = path.read_bytes()
+    if len(compressed) != byte_count or digest(compressed) != source_hash:
+        raise RuntimeError("sdss_frame_compressed_bytes_changed")
+    raw = decompress_frame(compressed, max_uncompressed_bytes)
+    try:
+        with warnings.catch_warnings(record=True) as notices:
+            warnings.simplefilter("always")
+            with fits.open(io.BytesIO(raw), memmap=False, lazy_load_hdus=False) as hdus:
+                hdus.verify("exception")
+                if len(hdus) != 4:
+                    raise RuntimeError("sdss_frame_required_hdus_missing")
+                primary, calibration, sky, astrans = hdus
+                header = primary.header
+                if (header.get("SIMPLE") is not True or header.get("BITPIX") != -32 or
+                        header.get("NAXIS") != 2 or
+                        (header.get("NAXIS2"), header.get("NAXIS1")) != FRAME_SHAPE or
+                        header.get("BSCALE", 1) != 1 or header.get("BZERO", 0) != 0):
+                    raise RuntimeError("sdss_frame_scientific_array_invalid")
+                for hdu in hdus:
+                    offset = hdu.fileinfo()["datLoc"]
+                    if len(raw) < offset + hdu.size:
+                        raise RuntimeError("sdss_frame_scientific_array_incomplete")
+                    # Load actual payloads; headers alone cannot prove scientific
+                    # samples or preserve complete astrometric metadata.
+                    _ = hdu.data
+                    if "CHECKSUM" in hdu.header and hdu.verify_checksum() != 1:
+                        raise RuntimeError("sdss_frame_fits_checksum_invalid")
+                    if "DATASUM" in hdu.header and hdu.verify_datasum() != 1:
+                        raise RuntimeError("sdss_frame_fits_checksum_invalid")
+                data = np.array(primary.data, copy=True)
+                if data.shape != FRAME_SHAPE or data.dtype.kind != "f" or data.dtype.itemsize != 4:
+                    raise RuntimeError("sdss_frame_scientific_array_invalid")
+                if (not isinstance(calibration, fits.ImageHDU) or calibration.data.shape != (FRAME_SHAPE[1],) or
+                        calibration.header.get("BITPIX") != -32 or not isinstance(sky, fits.BinTableHDU) or
+                        not {"ALLSKY", "XINTERP", "YINTERP"}.issubset(sky.columns.names) or
+                        not isinstance(astrans, fits.BinTableHDU)):
+                    raise RuntimeError("sdss_frame_metadata_hdus_invalid")
+                if (len(sky.data) != 1 or sky.data["ALLSKY"][0].ndim != 2 or
+                        sky.data["ALLSKY"][0].shape[1] != 256 or sky.data["ALLSKY"][0].shape[0] < 1 or
+                        sky.data["XINTERP"][0].shape != (2048,) or sky.data["YINTERP"][0].shape != (1489,) or
+                        any(sky.data[name][0].dtype.kind != "f" or sky.data[name][0].dtype.itemsize != 4
+                            for name in ("ALLSKY", "XINTERP", "YINTERP"))):
+                    raise RuntimeError("sdss_frame_sky_metadata_shape_invalid")
+                actual = _actual_identity(astrans.data, astrans.columns)
+                if tuple(astrans.data["NAXIS"][0]) != (FRAME_SHAPE[1], FRAME_SHAPE[0]):
+                    raise RuntimeError("sdss_frame_astrans_dimensions_mismatch")
+                if actual != identity or str(header.get("RERUN", "")).strip() != identity["rerun"]:
+                    raise RuntimeError("sdss_frame_actual_identity_mismatch")
+                for key, expected_key in (("RUN", "run"), ("CAMCOL", "camcol"), ("FIELD", "field"), ("FILTER", "band")):
+                    if key in header and header[key] != identity[expected_key]:
+                        raise RuntimeError("sdss_frame_actual_identity_mismatch")
+                unit = header.get("BUNIT")
+                if unit is not None and str(unit).strip().lower().replace(" ", "") not in (
+                        "nanomaggy", "nanomaggies", "nmgy", "nanomaggy/pixel", "nanomaggies/pixel"):
+                    raise RuntimeError("sdss_frame_unit_invalid")
+                if not number(header.get("NMGY")) or header["NMGY"] <= 0:
+                    raise RuntimeError("sdss_frame_applied_calibration_missing")
+                if (header.get("CTYPE1") != "RA---TAN" or header.get("CTYPE2") != "DEC--TAN" or
+                        any(header.get(key) != "deg" for key in ("CUNIT1", "CUNIT2")) or
+                        any(not number(header.get(key)) for key in ("CRPIX1", "CRPIX2", "CRVAL1", "CRVAL2",
+                                                                   "CD1_1", "CD1_2", "CD2_1", "CD2_2"))):
+                    raise RuntimeError("sdss_frame_celestial_wcs_invalid")
+                wcs = WCS(header, naxis=2)
+                matrix = wcs.pixel_scale_matrix
+                if (not wcs.has_celestial or wcs.pixel_n_dim != 2 or wcs.world_n_dim != 2 or
+                        not np.isfinite(matrix).all() or np.linalg.det(matrix) == 0):
+                    raise RuntimeError("sdss_frame_celestial_wcs_invalid")
+                points = np.array([[0, 0], [2047, 0], [0, 1488], [2047, 1488], [1023.5, 744]])
+                world = wcs.all_pix2world(points, 0)
+                roundtrip = wcs.all_world2pix(world, 0)
+                if not np.isfinite(world).all() or not np.isfinite(roundtrip).all():
+                    raise RuntimeError("sdss_frame_celestial_wcs_invalid")
+                primary_cards = header.tostring(sep="\n", endcard=True, padding=False)
+                source_header = header.copy()
+                astrans_cards = astrans.header.tostring(sep="\n", endcard=True, padding=False)
+                astrans_row = {name: _json_value(astrans.data[0][name]) for name in astrans.columns.names}
+                astrans_columns = [{"name": col.name, "format": col.format, "dim": col.dim, "unit": col.unit}
+                                   for col in astrans.columns]
+                final_hdu = hdus[-1]
+                final_end = final_hdu.fileinfo()["datLoc"] + final_hdu.size
+                missing_padding = max(0, (final_end + 2879) // 2880 * 2880 - len(raw))
+    except (OSError, ValueError, TypeError, fits.verify.VerifyError) as error:
+        raise RuntimeError("sdss_frame_fits_invalid") from error
+    finite = np.isfinite(data)
+    receipt = {"version": "sdss-corrected-frame-cached-admission-v1",
+        "admission": "STRUCTURE_ACCEPTED_SCIENTIFIC_VALIDITY_UNVERIFIED",
+        "source": {"path": str(path), "sourceUrl": expected.get("sourceUrl"), "sha256": digest(compressed),
+                   "bytes": len(compressed), "compressedFormat": "bzip2", "dataModelUrl": MODEL_URL, "imagesUrl": IMAGES_URL},
+        "decompressed": {"sha256": digest(raw), "bytes": len(raw), "maximumBytes": max_uncompressed_bytes,
+                         "singleCompleteBzip2Stream": True, "completeScientificArrays": True,
+                         "missingEndPaddingBytes": missing_padding,
+                         "readerWarnings": sorted(set(str(notice.message) for notice in notices))},
+        "identity": actual,
+        "scientificSamples": {"shapeRowsColumns": list(data.shape), "bitpix": -32,
+            "unit": "nanomaggies/pixel", "actualBunit": unit, "calibrationAlreadyApplied": True,
+            "appliedNmgyPerCount": header["NMGY"],
+            "skyAlreadySubtracted": True, "finiteSamples": int(finite.sum()), "nonfiniteSamples": int((~finite).sum()),
+            "finiteZeroSamples": int((finite & (data == 0)).sum()), "finiteNegativeSamples": int((finite & (data < 0)).sum()),
+            "scientificValidity": "UNKNOWN", "artifactMask": "NOT_SUPPLIED",
+            "meaning": "Finite/zero/negative sample values remain measurements; fpM artifacts, exposure/noise and confidence are not measured here."},
+        "wcs": {"primaryHeaderFitsCards": primary_cards, "primaryHeaderSha256": digest(primary_cards.encode("ascii")),
+                "celestialHeader": dict(wcs.to_header(relax=True)), "pixelToWorldSamples": world.tolist(),
+                "roundtripMaximumPixelError": float(np.max(np.abs(roundtrip - points))),
+                "meaning": "Corrected-frame linear TAN approximation; complete asTrans polynomial/DCR astrometry is retained but not applied or certified."},
+        "asTrans": {"headerFitsCards": astrans_cards, "headerSha256": digest(astrans_cards.encode("ascii")),
+                    "columns": astrans_columns, "row": astrans_row},
+        "limitations": ["Structure admission is not scientific validity, completeness across bands or image quality.",
+                        "No RGB, reprojection, mosaic, stretch, mask, asset publication or runtime integration was performed."]}
+    return CorrectedFrame(data, wcs, receipt, source_header)
+
+
+def read_cached_band_set(directory: Path, records: list[dict], required_bands: tuple[str, ...], *,
+                         max_uncompressed_bytes: int) -> list[CorrectedFrame]:
+    """One field's expected band set; absent bands cannot become black channels."""
+    directory = directory.resolve()
+    identities = [_identity(record) for record in records]
+    if (not required_bands or len(set(required_bands)) != len(required_bands) or
+            any(band not in tuple("ugriz") for band in required_bands) or
+            len(records) != len(required_bands) or {value["band"] for value in identities} != set(required_bands)):
+        raise RuntimeError("sdss_frame_band_set_incomplete")
+    if len({tuple(value[key] for key in IDENTITY_KEYS[:-1]) for value in identities}) != 1:
+        raise RuntimeError("sdss_frame_band_set_identity_mismatch")
+    frames = []
+    for record in records:
+        path = (directory / record["path"]).resolve()
+        if not path.is_relative_to(directory):
+            raise RuntimeError("sdss_frame_cached_path_invalid")
+        frames.append(read_cached_frame(path, record, max_uncompressed_bytes=max_uncompressed_bytes))
+    return frames
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("path", type=Path)
+    parser.add_argument("--run", type=int, required=True)
+    parser.add_argument("--rerun", required=True)
+    parser.add_argument("--camcol", type=int, required=True)
+    parser.add_argument("--field", type=int, required=True)
+    parser.add_argument("--band", choices=tuple("ugriz"), required=True)
+    parser.add_argument("--sha256", required=True)
+    parser.add_argument("--bytes", type=int, required=True)
+    parser.add_argument("--source-url")
+    parser.add_argument("--max-uncompressed-bytes", type=int, required=True)
+    parser.add_argument("--report", type=Path, required=True)
+    args = parser.parse_args()
+    expected = {key: getattr(args, key) for key in IDENTITY_KEYS}
+    expected.update({"sha256": args.sha256, "bytes": args.bytes, "sourceUrl": args.source_url})
+    frame = read_cached_frame(args.path, expected, max_uncompressed_bytes=args.max_uncompressed_bytes)
+    write_report(args.report, frame.receipt)
+    print(json.dumps({"report": str(args.report), "identity": frame.receipt["identity"],
+                      "admission": frame.receipt["admission"]}))
+
+
+if __name__ == "__main__":
+    main()

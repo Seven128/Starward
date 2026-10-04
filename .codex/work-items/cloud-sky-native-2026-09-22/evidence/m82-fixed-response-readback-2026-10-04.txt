@@ -1,0 +1,33 @@
+WARNING: FITSFixedWarning: RADECSYS= 'ICRS ' / International Celestial Ref. System 
+the RADECSYS keyword is deprecated, use RADESYSa. [astropy.wcs.wcs]
+WARNING: FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 52963.000000 from DATE-OBS'. [astropy.wcs.wcs]
+WARNING: FITSFixedWarning: 'datfix' made the change 'Set MJD-OBS to 52973.000000 from DATE-OBS'. [astropy.wcs.wcs]
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\readback-m82-fixed-display-response-2026-10-04.py", line 205, in <module>
+    try:main()
+        ^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\readback-m82-fixed-display-response-2026-10-04.py", line 119, in main
+    np.testing.assert_array_equal(supply,a['alternative_supply']);np.testing.assert_array_equal(raw,a['actual_raw_sampling'])
+                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\dev\worktrees\Starward\remote-main-20260908\output\allwise-w3-atlas-0929\python-deps\numpy\testing\_private\utils.py", line 1128, in assert_array_equal
+    assert_array_compare(operator.__eq__, actual, desired, err_msg=err_msg,
+  File "E:\dev\worktrees\Starward\remote-main-20260908\output\allwise-w3-atlas-0929\python-deps\numpy\testing\_private\utils.py", line 988, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Arrays are not equal
+
+Mismatched elements: 119 / 5043 (2.36%)
+First 5 mismatches are at indices:
+ [0, 0, 22]: 0.009856144897639751 (ACTUAL), 0.009856145828962326 (DESIRED)
+ [0, 0, 24]: 0.00877438485622406 (ACTUAL), 0.008774385787546635 (DESIRED)
+ [0, 0, 27]: 0.012354821898043156 (ACTUAL), 0.012354820966720581 (DESIRED)
+ [0, 0, 29]: 0.0006751185865141451 (ACTUAL), 0.0006751185283064842 (DESIRED)
+ [0, 0, 31]: 0.004406181164085865 (ACTUAL), 0.004406180698424578 (DESIRED)
+Max absolute difference among violations: 1.4901161e-08
+Max relative difference among violations: 2.1473171e-07
+ ACTUAL: array([[[-1.705442e-02,  1.652599e-03,  1.279052e-02, ...,
+          1.568755e-02, -8.546663e-03,  1.103858e-02],
+        [ 7.154949e-03,  5.898309e-03,  5.707352e-03, ...,...
+ DESIRED: array([[[-1.705442e-02,  1.652599e-03,  1.279052e-02, ...,
+          1.568755e-02, -8.546663e-03,  1.103858e-02],
+        [ 7.154949e-03,  5.898309e-03,  5.707352e-03, ...,...

@@ -1,0 +1,74 @@
+✔ time: late success cannot replace the newly selected place (14.0094ms)
+✔ time: hidden page cannot publish success or late failure (27.5156ms)
+✔ time: current update can adopt a recovered Context ID (3.025ms)
+✔ date: late success cannot replace the newly selected place (2.898ms)
+✔ date: hidden page cannot publish success or late failure (2.5148ms)
+✔ date: current update can adopt a recovered Context ID (9.6138ms)
+✔ time and date share a synchronous lock before React rerenders (9.4546ms)
+✔ the actual lookup effect cannot overwrite a newer place or run while hidden (11.6839ms)
+✔ entry lookup is accepted once and cannot downgrade an existing revision (1.2638ms)
+✔ hide cancels old requests but allows a fresh request after return (1.3678ms)
+✔ actual page lifecycle hooks cancel publishing and reset the visible saving state (5.3899ms)
+✔ the actual active Context and weather query follow a successful recovered ID (7.2875ms)
+✔ returning after a different place was selected cannot become a disabled-query loading screen (2.2828ms)
+✔ freeze rejects date and time commits synchronously before React catches up (2.1603ms)
+✔ an expired stored Context recovers the Sky read once and rejects a late old-place result (30.4991ms)
+✔ switching accounts isolates and restores local preferences and private projections (111.8608ms)
+✔ several account switches before queued writes preserve each fresh snapshot (91.6479ms)
+✔ cold start under a different account never hydrates another account's private state (38.0275ms)
+✔ cold start with an expired session does not expose its saved private projection (27.6225ms)
+✔ first authentication retains a fresh anonymous map selection while binding private data (29.0458ms)
+✔ ownerless legacy snapshot is quarantined instead of assigned to the active account (24.6443ms)
+✔ synchronous observation context persistence respects the account boundary (25.8832ms)
+✔ account deletion removes only the deleted account's saved projection (30.6278ms)
+✔ expired identity hides private state while preserving the same account's unsynced edit (31.0638ms)
+✔ cache reset completion cannot write a newly bound account (23.9918ms)
+✔ legacy provider selections disappear on restart while the exact location and time remain recoverable (22.4339ms)
+✔ accepted Context resolves prior Map and Sky time/date errors atomically and retains unrelated recovery (38.8276ms)
+✔ temporary cache reset is synchronous but reports durable write success only after native completion (39.2884ms)
+✔ older account readback cannot roll back saved preferences or a newer local edit (16.3517ms)
+✔ fresh conflict readback rebases a dirty edit even when the server revision is lower (16.1666ms)
+✔ default-region reset is atomic, retains user content and cannot be undone by focus restoration (31.174ms)
+✔ startup recovery rejects a partial observation context and a non-array plan cache (19.1108ms)
+✔ startup recovery preserves a complete unexpired observation context (18.0151ms)
+✔ startup recovery never restores a session-precise observation context (15.8979ms)
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+Error: Transform failed with 252 errors:
+E:\dev\Starward\workers\miniapp-api\src\controller.ts:181:4: ERROR: Parameter decorators only work when experimental decorators are enabled
+E:\dev\Starward\workers\miniapp-api\src\controller.ts:190:8: ERROR: Parameter decorators only work when experimental decorators are enabled
+E:\dev\Starward\workers\miniapp-api\src\controller.ts:195:17: ERROR: Parameter decorators only work when experimental decorators are enabled
+E:\dev\Starward\workers\miniapp-api\src\controller.ts:200:13: ERROR: Parameter decorators only work when experimental decorators are enabled
+E:\dev\Starward\workers\miniapp-api\src\controller.ts:206:4: ERROR: Parameter decorators only work when experimental decorators are enabled
+...
+    at failureErrorWithLog (E:\dev\Starward\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\dev\Starward\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\dev\Starward\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\dev\Starward\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\dev\Starward\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:509:28)
+    at addChunk (node:internal/streams/readable:563:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:514:3)
+    at Readable.push (node:internal/streams/readable:394:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v24.16.0
+✖ workers\miniapp-api\src\api-contract-route.test.ts (258.8074ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 34
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1546.3986
+
+✖ failing tests:
+
+test at workers\miniapp-api\src\api-contract-route.test.ts:1:1
+✖ workers\miniapp-api\src\api-contract-route.test.ts (258.8074ms)
+  'test failed'

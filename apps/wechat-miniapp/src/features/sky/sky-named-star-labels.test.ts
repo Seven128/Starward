@@ -1,4 +1,4 @@
-import { PROCEDURAL_SKY_LANDSCAPE } from "./sky-landscape-mask";
+import { PROCEDURAL_SKY_LANDSCAPE, type SkyLandscapeMask } from "./sky-landscape-mask";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -10,7 +10,7 @@ import { createSkyViewBasis } from "./sky-view-projection";
 import { resolveSkyDeepSkyScene } from "./sky-stellar-scene";
 import { skyPresentedTimeCurrent } from "./sky-observation-time";
 import { skySolarLightAt } from "./sky-solar-light";
-import { deepSkyAuxiliaryOpacity } from "./sky-deep-auxiliary-visibility";
+import { skyDeepAuxiliaryDecisionOpacity } from "./sky-deep-auxiliary-visibility";
 
 // Exercise the page's rendered-label eligibility, including the shared selection owner.
 const source = ts.createSourceFile("spot-sky-page.tsx",
@@ -61,11 +61,12 @@ function labels(sunAltitudeDeg: number, mode: "NIGHT" | "OBSERVATION",
     frameAt: presentation === "old-time" ? "2026-10-08T13:00:00.000Z" : at,
     mode: presentation === "old-mode" ? (mode === "NIGHT" ? "OBSERVATION" : "NIGHT") : mode,
     landscape: paintedView?.landscape ?? null,
+    deepSkyAuxiliaryDecisions: [{ reference: "M:31", opacity: 1 }],
   };
   return vm.runInNewContext(selection, {
     reportData, rawReportData: reportData, orientationData: reportData, presentedSkyFrame,
     skyPresentedTimeCurrent, timePlaying: false, timeIntent: { runStartAt: null },
-    skySolarLightAt, deepSkyAuxiliaryOpacity,
+    skySolarLightAt, skyDeepAuxiliaryDecisionOpacity,
     row: { at }, currentViewBasis: basis, canvasSize: { width: 390, height: 844 },
     presentedFov: 45, presentedCenter: { x: 195, y: 422 },
     sensorHeadingForScene: null, devicePose: null, mode, skySceneReady, canvasError,
@@ -110,9 +111,15 @@ test("a new report, time or mode waits for its own painted frame before showing 
   assert.deepEqual(Array.from(labels(-18, "NIGHT"), object => object.reference), [entry.objectRef]);
 });
 
-test("horizon-edge star and deep-sky labels follow the painter's strictly above-horizon rule", () => {
-  assert.deepEqual(Array.from(labels(-18, "OBSERVATION", true, null, "current", 0), object => object.reference), []);
-  assert.deepEqual(Array.from(labels(0, "NIGHT", true, null, "current", 40, 0), object => object.reference), []);
+test("horizon and lower-sphere labels follow actual displayed points and effective foreground", () => {
+  assert.deepEqual(Array.from(labels(-18, "OBSERVATION", true, null, "current", 0), object => object.reference), [entry.objectRef]);
+  assert.deepEqual(Array.from(labels(0, "NIGHT", true, null, "current", 40, 0), object => object.reference), ["M:31"]);
+  const basis = createSkyViewBasis(180, 45, 0)!;
+  const references = (landscape: SkyLandscapeMask | null) => Array.from(
+    labels(-24, "NIGHT", true, null, "current", -45, null,
+      { basis, verticalFovDeg: 45, landscape }), object => object.reference);
+  assert.deepEqual(references({ kind: "procedural", opacity: 0 }), [entry.objectRef]);
+  assert.deepEqual(references(PROCEDURAL_SKY_LANDSCAPE), []);
 });
 
 test("independent deep-sky names survive a missing bright catalog or unavailable bright frame", () => {

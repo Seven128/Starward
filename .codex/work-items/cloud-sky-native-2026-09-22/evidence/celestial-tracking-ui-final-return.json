@@ -1,0 +1,12 @@
+{
+  "search": "Vega恒星 · HR 7001 · 匹配 织女星",
+  "initialPosition": "方位 302.5° · 高度 35.6° · 几何位置不保证可见定位到星空跟踪天体",
+  "started": "Vega · 跟踪中停止跟踪",
+  "overview": "Vega · 全天总览中保留跟踪停止跟踪",
+  "cardinalBefore": "<text id=\"_uo\" class=\"sky-cardinal-label\" style=\"left: 11.520363884622554px; top: 678.6278578751101px;\" aria-expanded=\"\" aria-hidden=\"true\" aria-label=\"\" aria-role=\"\" selectable=\"false\" user-select=\"false\" decode=\"false\" space=\"\" data-sid=\"_uo\">西</text>",
+  "cardinalAfter": "<text id=\"_yW\" class=\"sky-cardinal-label\" style=\"left: 11.520363884622554px; top: 678.6278578751101px;\" aria-expanded=\"\" aria-hidden=\"true\" aria-label=\"\" aria-role=\"\" selectable=\"false\" user-select=\"false\" decode=\"false\" space=\"\" data-sid=\"_yW\">西</text>",
+  "returnStatus": "Vega · 跟踪中停止跟踪",
+  "returnCamera": "示例观星点的方位高度天空图，垂直视场 45.0 度，4062 颗真实亮星目录对象，场景时刻 2026-09-22T15:00:00.000Z，4 个真实目标，已选择跟踪Vega，当前观测时刻 23:00",
+  "returnMarker": "<button id=\"_ACQ\" class=\"sky-located-object\" style=\"left: 195.1999969482422px; top: 421.9999999999998px;\" aria-expanded=\"\" aria-hidden=\"\" aria-label=\"Vega定位标记，查看资料\" aria-role=\"\" hover-start-time=\"20\" hover-stay-time=\"70\" hover-class=\"button-hover\" hover-stop-propagation=\"false\" disabled=\"false\" type=\"\" size=\"default\" plain=\"false\" loading=\"false\" form-type=\"\" open-type=\"\" app-parameter=\"\" lang=\"\" session-from=\"\" business-id=\"\" send-message-title=\"\" send-message-path=\"\" send-message-img=\"\" show-message-card=\"false\" data-sid=\"_ACQ\"><view id=\"_ACL\" class=\"sky-located-object__ring\" aria-expanded=\"\" aria-hidden=\"true\" aria-label=\"\" aria-role=\"\" hover-start-time=\"50\" hover-stay-time=\"400\" hover-class=\"none\" hover-stop-propagation=\"false\" data-sid=\"_ACL\"></view><text id=\"_ACP\" aria-expanded=\"\" aria-hidden=\"\" aria-label=\"\" aria-role=\"\" selectable=\"false\" user-select=\"false\" decode=\"false\" space=\"\" data-sid=\"_ACP\">Vega · 定位</text></button>",
+  "latestPosition": "方位 302.5° · 高度 35.6° · 几何位置不保证可见定位到星空跟踪天体"
+}

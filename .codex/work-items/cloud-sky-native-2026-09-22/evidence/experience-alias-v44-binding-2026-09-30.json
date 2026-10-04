@@ -1,0 +1,403 @@
+{
+  "recordedAtUtc": "2026-09-29T23:37:13.950Z",
+  "scope": "云观星中文查找与既有身份链的 DevTools 开发证据，非目标设备／整体交付",
+  "build": {
+    "path": "apps/wechat-miniapp/dist/weapp-check-sky-alias-v44",
+    "files": 257,
+    "rawBytes": 4521419,
+    "treeSha256": "45e3f8b2c577de154bf46873f6601e0f2adc17017831eea63c3cebfe8bdb17f5",
+    "skyPageSha256": "1b2efe25a27843b0414e467a5d0274e91c358b5c582d896b4ec3b4ed14a125fc"
+  },
+  "sourceHashes": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "sha256": "457c009c89cb54f9bca323874f20bd3fe5145e8f37a8edb669a26852965f8889"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-presentation.ts",
+      "sha256": "12ef9aab80847f7deec1c517199b1f259aee92f31f99f8dbd2a4ecefd16bed7c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-observation-time.ts",
+      "sha256": "2ccada04a93fbe91ca95628c0e22d37e77d2d10c6793fe6d2a8e4145b3f8ec3a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-presentation-position.ts",
+      "sha256": "588da099d87377286b0b65bc3a307dad34fa52637806078e03bc7a38f561eadd"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-presentation-position.ts",
+      "sha256": "d95a18082968f69a5a5b20f443f6c18bf5997a27ccc16268c14348ecfbd5d222"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/api-client.ts",
+      "sha256": "2e0b1c64d040f113ee4fc59b814f5c9167058abbbd85e551a27b0207c3459d51"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-target-instant-response.ts",
+      "sha256": "30bb179d6152e45abd7809c6f6633cc7f52497073740d0c562f9431e4de2b42c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-target-instant-response.test.ts",
+      "sha256": "5626a8d8e2505b4e718e8e3ffa77c4abb30932b86801624ae1e0503fd85cd9e5"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/api-shapes.ts",
+      "sha256": "91a73b238b5c81b6d323d029a9e6ae1db72ff0aa9e99715beb9b3642aefadde9"
+    },
+    {
+      "path": "packages/miniapp-contracts/api/miniapp.operations.json",
+      "sha256": "4f95b178f118f2aabf97e75f83076d7b38c72a8108f6d54d5f355303268ac039"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts",
+      "sha256": "fa39d2679ff989a6cee74d12caa8f34777ea2accda7905a3c41646207af3eff7"
+    },
+    {
+      "path": "workers/miniapp-api/src/astronomy-service.ts",
+      "sha256": "a2c0862dfc48c00a026ea64400eed8333cfbd4353858aa68f90fb617057ac10f"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-service.ts",
+      "sha256": "a8d2ae6c368ec7f6448548091a4b55cebe4e465a6f5df93df667b0b9e120efc9"
+    },
+    {
+      "path": "workers/miniapp-api/src/controller.ts",
+      "sha256": "fc609160eede723addde107651a0f508604a3110e66090c6fc44a1d6b38711e6"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-api.test.ts",
+      "sha256": "3d68c20f13657ea1a7d4f513ebf2ed077de8260bf03ae7f2d68949c8c621266c"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-time-model.test.ts",
+      "sha256": "c2ad1840f659eaf27946d012f9ff4167841033ecdc113b790bbb669ad3d27c62"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-stellar-supplement.ts",
+      "sha256": "3523819dd4b820d50b0743899a35207f6a166cadb45012b0e62ce83aa6335019"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-tile-loader.ts",
+      "sha256": "1ff9b0e2ba533f347dcfce9349f52c34fd83e588b28fecdb851804202d0972e1"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-tile-selection.ts",
+      "sha256": "1e9eb82bcbc3bd39ff9e34abb06dbb9d82943325985cf3d131369e5caec3b48c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+      "sha256": "878553232b938e8d4620721518f0fa617810a9a03186a343a37a960a1366fdc9"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "sha256": "6b3cc15e8ade8a6d257158e41163b98cfda142035c0d68ec7c02e57f5ffcc427"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-object-picking.ts",
+      "sha256": "8c2bb73f998242de517157476ef17bff67881b65a7c17c9840bb664cda755ff6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sao-catalog-client.ts",
+      "sha256": "cf8d4941d348a7d6f2aa6b026543b8fca39feaf3a446ddf274476297a14d3825"
+    },
+    {
+      "path": "workers/miniapp-api/src/chinese-star-alias-publication.ts",
+      "sha256": "ffe4b8487b35bcce42d58dff170cd9fe5a5381d2058fa503294cae6b0732f300"
+    },
+    {
+      "path": "workers/miniapp-api/src/celestial-object-aliases.ts",
+      "sha256": "cd8514f72ce0cd49b921b72b03c06eda99dddb8e1b2422e2a6fae9070000e9fa"
+    },
+    {
+      "path": "workers/miniapp-api/src/celestial-object-search.ts",
+      "sha256": "33ad8cde9faa39f55820d71d1276eafcd7693d986a8b0943665124a1aed77961"
+    },
+    {
+      "path": "workers/miniapp-api/src/celestial-object-information.ts",
+      "sha256": "911897ef17be28be13d8b4f3cc9166ceb403f402ea7442e821df44536085fd3b"
+    },
+    {
+      "path": "data-pipelines/star-catalog/enrich_wikidata_chinese_aliases.mjs",
+      "sha256": "23d9f65f6667d7618d75da828667e947c0bbed7d17d75bfd3e7aa720e964b9df"
+    },
+    {
+      "path": "workers/miniapp-api/assets/celestial-names-v3/chinese-bright-star-aliases.v3.json",
+      "sha256": "8380ab78a9f04426008e34c36abd268003906bffa3e3a0bfaab0500552db6cb0"
+    },
+    {
+      "path": "workers/miniapp-api/assets/celestial-names-v3/publication.json",
+      "sha256": "81a3bda7053077602af2b2ce8bb24540c3550073602bd50c2f100b88a0634f1c"
+    },
+    {
+      "path": "workers/miniapp-api/assets/celestial-names-v3/source-provenance.json",
+      "sha256": "34dc7925057f204bf54a6c9838a97272bf9cc7ef1bbe51eb95ca6878c748fc1e"
+    },
+    {
+      "path": "infrastructure/deployment/miniapp-api.Dockerfile",
+      "sha256": "3dad3abe172ae8c327ed3aa915bafae50686b1abfe286578e84c699c1e8312ae"
+    }
+  ],
+  "previousRendererInputsUnchanged": 23,
+  "runtime": {
+    "windowId": "s4",
+    "sdk": "3.17.3",
+    "publicPort": 60065,
+    "internalPort": 54455,
+    "pid": 33832,
+    "exec": 69033,
+    "loadedAliasModuleSha256": "175d2b11a711ab83a3b0def4018de7afec6dfcaed70ab65f208722874057a9f7",
+    "fixture": "MEMORY_TEST 正式点／天气，真实已编译 Sky 控制器与实际出版数据；未迁移旧 Context",
+    "retired": "v43/s3 已关闭；旧 owned 60063/PID30852 和 60061/PID16572 已停，旧证据保持历史条件"
+  },
+  "context": {
+    "idSha256": "f4970cfd4bf2e6c422f38179e4943dc8fb723a734087deab43f4b6ec4ca5a154",
+    "revision": 1,
+    "fingerprint": "d1efdde87fea86158e9e7b97de77233a2805db2d8c54d10d6094353e45ce8337",
+    "selectedAtUtc": "2026-09-29T16:00:05.153Z",
+    "localDate": "2026-09-29",
+    "timezone": "Asia/Shanghai",
+    "resolvedBytesSha256": "fa0386c5095da197485ad72a4d8b6d0176e6345ce4743980496a2f2ac66203f2"
+  },
+  "report": {
+    "rawSha256": "255caff872d9660ff525e47f7d2f72e27b033097f3a96ab2439f9fb24570bee8",
+    "at": "2026-09-29T16:00:05.153Z",
+    "dataRevision": "57f807b67cd6b4a2b5347557",
+    "catalogVersion": "bsc5p-bright-stars.v3"
+  },
+  "publication": {
+    "version": "wikidata-bsc5p-chinese-aliases.v3",
+    "sha256": "8380ab78a9f04426008e34c36abd268003906bffa3e3a0bfaab0500552db6cb0",
+    "sourceProvenanceSha256": "34dc7925057f204bf54a6c9838a97272bf9cc7ef1bbe51eb95ca6878c748fc1e",
+    "rowCount": 3149,
+    "singleChangedIdentity": "HR:7557",
+    "aliases": [
+      "河鼓二",
+      "牛郎星",
+      "天鹰座α"
+    ]
+  },
+  "nativeTrace": {
+    "path": "experience-alias-v44-native-events-2026-09-30.jsonl",
+    "sha256": "ed670f0a0f6b5411649326350bb6df5961f33f5052ef25a34bd3122dd82fb8df",
+    "records": 36
+  },
+  "captures": [
+    {
+      "file": "experience-alias-v44-chinese-located-2026-09-30.png",
+      "sha256": "12f6b00ab25d04b0c142935b0c64aada8e13e9728919196cb6f5f8e98457e619",
+      "bytes": 222671,
+      "width": 427,
+      "height": 919
+    },
+    {
+      "file": "experience-alias-v44-chinese-sources-2026-09-30.png",
+      "sha256": "9ccb56048c0c7f8b34795af508ac19a80f1eb3808861f29ce35895660f38d15d",
+      "bytes": 178457,
+      "width": 427,
+      "height": 919
+    },
+    {
+      "file": "experience-alias-v44-source-back-2026-09-30.png",
+      "sha256": "275f64de3414bef9792f2ef9a3a80a6acf9a22c29b418fb881d60bb2cf0a07ee",
+      "bytes": 222827,
+      "width": 427,
+      "height": 919
+    },
+    {
+      "file": "experience-alias-v44-stable-selected-sky-2026-09-30.png",
+      "sha256": "bfd68d5e42aa99479703d351d230c0071d537cd0d15553b70477dc786517d49d",
+      "bytes": 222698,
+      "width": 427,
+      "height": 919
+    }
+  ],
+  "canvasSourceReturn": {
+    "region": {
+      "x": [
+        2,
+        425
+      ],
+      "y": [
+        100,
+        850
+      ]
+    },
+    "changed": 0,
+    "maximumChannelDelta": 0,
+    "scope": "同候选 Canvas 场景裁去系统区后的读数；不能认证普通 Sky WXML 层"
+  },
+  "current": {
+    "shadowUi": {
+      "route": "sky/detail/index",
+      "canvas": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4120 颗真实亮星目录对象，场景时刻 2026-09-29T16:00:05.153Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "sdk": "3.17.3",
+      "selection": [
+        {
+          "sid": "_ST",
+          "cl": "sky-selected-object sky-selected-object--cross",
+          "label": "Altair已选中，查看资料",
+          "text": "Altair"
+        },
+        {
+          "sid": "_SQ",
+          "cl": "sky-selected-object__reticle",
+          "text": ""
+        },
+        {
+          "sid": "_SL",
+          "cl": "sky-selected-object__ring",
+          "text": ""
+        },
+        {
+          "sid": "_SM",
+          "cl": "sky-selected-object__tick sky-selected-object__tick--top",
+          "text": ""
+        },
+        {
+          "sid": "_SN",
+          "cl": "sky-selected-object__tick sky-selected-object__tick--right",
+          "text": ""
+        },
+        {
+          "sid": "_SO",
+          "cl": "sky-selected-object__tick sky-selected-object__tick--bottom",
+          "text": ""
+        },
+        {
+          "sid": "_SP",
+          "cl": "sky-selected-object__tick sky-selected-object__tick--left",
+          "text": ""
+        },
+        {
+          "sid": "_SS",
+          "cl": "sky-selected-object__name",
+          "text": "Altair"
+        }
+      ],
+      "modal": [],
+      "search": [],
+      "actions": []
+    },
+    "nativeCanvas": "示例观星点的方位高度天空图，已呈现垂直视场 45.0 度，4120 颗真实亮星目录对象，场景时刻 2026-09-29T16:00:05.153Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00"
+  },
+  "backend": {
+    "scope": "task-local MEMORY_TEST weather/spot, real compiled Sky",
+    "publicPort": 60065,
+    "localPort": 54455,
+    "moduleSha256": "175d2b11a711ab83a3b0def4018de7afec6dfcaed70ab65f208722874057a9f7",
+    "catalogVersion": "wikidata-bsc5p-chinese-aliases.v3",
+    "publicationHash": "8380ab78a9f04426008e34c36abd268003906bffa3e3a0bfaab0500552db6cb0",
+    "counts": {
+      "requests": 86,
+      "search": 2,
+      "information": 4,
+      "position": 0,
+      "report": 6,
+      "targets": 0,
+      "contextPuts": 0,
+      "errors": 0
+    },
+    "reads": [
+      {
+        "kind": "search",
+        "query": "牛郎星",
+        "reference": null,
+        "status": 200,
+        "bytes": 7372,
+        "sha256": "c8a71eb451d3e0112c96d252852a1144320beedaa3fb9e1f9067eec59d06f875"
+      },
+      {
+        "kind": "search",
+        "query": "牛郎星",
+        "reference": null,
+        "status": 200,
+        "bytes": 8268,
+        "sha256": "665dc47b1db9549fe67ba0dd0640563c4c500e2103c0d9441514c882ed1851ba"
+      },
+      {
+        "kind": "information",
+        "query": null,
+        "reference": "HR:7557",
+        "status": 200,
+        "bytes": 7611,
+        "sha256": "eb3a131cb9e915aa160d18b29e40bc95d3f0eafd551087b8753e1c5aebc4f7b1"
+      },
+      {
+        "kind": "information",
+        "query": null,
+        "reference": "HR:7557",
+        "status": 200,
+        "bytes": 7611,
+        "sha256": "eb3a131cb9e915aa160d18b29e40bc95d3f0eafd551087b8753e1c5aebc4f7b1"
+      },
+      {
+        "kind": "information",
+        "query": null,
+        "reference": "HR:7557",
+        "status": 200,
+        "bytes": 7611,
+        "sha256": "eb3a131cb9e915aa160d18b29e40bc95d3f0eafd551087b8753e1c5aebc4f7b1"
+      },
+      {
+        "kind": "information",
+        "query": null,
+        "reference": "HR:7557",
+        "status": 304,
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  },
+  "checks": {
+    "regressionBefore": "实际 牛郎星 结果 undefined 而要求 HR:7557，失败记录保留",
+    "ownersAfter": "publication/search/information 相关行为检查通过",
+    "typecheck": "miniapp-api passed",
+    "workerBuild": "passed",
+    "miniappBuild": "passed with existing CSS ordering / resource size / no async chunk warnings",
+    "publicationReproduction": {
+      "result": "pass",
+      "beforeSha256": "7607c378c79c438e1b5f56c15fc4e7153471e68360848c9cff8b214fc84c4fce",
+      "afterSha256": "8380ab78a9f04426008e34c36abd268003906bffa3e3a0bfaab0500552db6cb0",
+      "primarySha256": "2fc6aba4cbbd7b9b7aabfcac59a330477967a156962d4ae0df71cba146e670df",
+      "sourceProvenanceSha256": "34dc7925057f204bf54a6c9838a97272bf9cc7ef1bbe51eb95ca6878c748fc1e",
+      "rowCount": 3149,
+      "changed": [
+        {
+          "reference": "HR:7557",
+          "wikidataItem": "Q12975",
+          "aliases": [
+            "河鼓二",
+            "牛郎星",
+            "天鹰座α"
+          ]
+        }
+      ],
+      "reproduction": "exact raw bytes",
+      "wrongHrRejected": true,
+      "previousBytesTamperRejected": true,
+      "limits": "Publication/source identity checks, not native or device acceptance"
+    },
+    "detailConditional": {
+      "previousRevision": "f4f7319af215f1464bf13933",
+      "currentRevision": "e70fedb5c357017e9098714d",
+      "oldEtagReturns": 200,
+      "currentEtagReturns": 304
+    },
+    "finalConsoleFilter": "clone|recursive|Error returned empty"
+  },
+  "investigationLimits": [
+    "首轮测试在仓库根未读取 worker decorator tsconfig，后在正确 workspace 得到真实修前失败；不是产品回归结果",
+    "第一次所选点坐标落在既有选择标记，不能当作 fresh Canvas picking",
+    "x385 落在16px边缘手势保护区，未清选择不当作失焦失败；只计后续 x360/y820 的真实空白结果",
+    "单点 touch-only 输入没有证实点击，不计通过；后续真实坐标 tap 得到合法三个候选，再公开选择 Altair",
+    "两个 Sources 选择器／scrollTo 调用失败；实际来源文字和 Back 已取，未取得滚到 Wikidata 卡的截图",
+    "Sky 普通控件 bounds/z-index 可读且在视口，但 Canvas-only 截图不证明控件合成；没有 SDK 或平台根因结论"
+  ],
+  "remaining": [
+    "整体图层／面状渐隐、构图与质量",
+    "普通覆盖层／呼吸和完整组合",
+    "真实资源、官方包体／成本、最终审查",
+    "新版月面／姿态／OS 生命周期和目标设备；手机暂不可用，大字号继续暂停"
+  ]
+}

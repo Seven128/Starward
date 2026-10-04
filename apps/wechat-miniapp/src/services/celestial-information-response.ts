@@ -4,6 +4,7 @@ import { isCelestialObjectReference, celestialReferenceKindMatches, type ApiEnve
  * object modal or its source route can display it. */
 export function matchingCelestialInformationResponse(
   response: ApiEnvelope<CelestialObjectInformationData>, reference: string, imagePublicationHash?: string,
+  opticalPublicationHash?: string,
 ) {
   const data = response?.data;
   const kindMatches = celestialReferenceKindMatches(reference, data?.kind);
@@ -27,10 +28,29 @@ export function matchingCelestialInformationResponse(
     throw new Error("celestial_information_response_invalid");
   if (imagePublicationHash) {
     const imageSources = data.sources.filter(source => source.id.startsWith("imagery:"));
+    const missingImageDisclosed = response.dataState === "PARTIAL" || response.dataState === "STALE_USABLE" &&
+      Array.isArray(response.warnings) && response.warnings.includes("deep_sky_image_publication_unavailable");
     if (!/^[a-f0-9]{64}$/u.test(imagePublicationHash) ||
       imageSources.some(source => !/^imagery:[^:]+:[a-f0-9]{64}$/u.test(source.id) || !source.id.endsWith(`:${imagePublicationHash}`)) ||
-      (!imageSources.length && response.dataState !== "PARTIAL"))
+      (!imageSources.length && !missingImageDisclosed))
       throw new Error("celestial_information_image_source_invalid");
+  }
+  if (opticalPublicationHash !== undefined) {
+    const opticalPrefix = /^(?:prepared-)?optical-imagery:/u;
+    const opticalSources = data.sources.filter(source => opticalPrefix.test(source.id));
+    const envelopeOpticalSources = Array.isArray(response.sources)
+      ? response.sources.filter(source => typeof source?.id === "string" && opticalPrefix.test(source.id)) : null;
+    const missingOpticalDisclosed = response.dataState === "PARTIAL" || response.dataState === "STALE_USABLE" &&
+      Array.isArray(response.warnings) && (response.warnings.includes("sdss_optical_publication_unavailable") ||
+        response.warnings.includes("prepared_optical_publication_unavailable"));
+    if (!reference.startsWith("M:") || !/^[a-f0-9]{64}$/u.test(opticalPublicationHash) ||
+      opticalSources.length > 1 ||
+      opticalSources.some(source => !/^(?:prepared-)?optical-imagery:[^:/\\]+:[a-f0-9]{64}$/u.test(source.id) ||
+        !source.id.endsWith(`:${opticalPublicationHash}`)) ||
+      (!opticalSources.length && !missingOpticalDisclosed) ||
+      !envelopeOpticalSources || envelopeOpticalSources.length !== opticalSources.length ||
+      envelopeOpticalSources.some(source => !opticalSources.some(candidate => candidate.id === source.id)))
+      throw new Error("celestial_information_optical_source_invalid");
   }
   return response;
 }

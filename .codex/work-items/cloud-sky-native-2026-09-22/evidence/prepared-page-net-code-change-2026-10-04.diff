@@ -1,0 +1,270 @@
+--- .codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-page-before-2026-10-04/spot-sky-page.tsx
++++ apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx
+@@ -10,7 +10,7 @@
+ import { skyObjectPositionIsCurrent } from "./sky-object-location";
+ import { locatedBodyOccludesMarker } from "./sky-located-object";
+ import type { SkyObjectIdentity } from "./sky-object-picking";
+-import { dispatchSkyHipsImageFailure, drawSkyScene, skyPickIdentity, type SkyHipsCanvasTile, type SkyCoordinateGrids, type SkySdssOpticalImage } from "./sky-scene-render";
++import { dispatchSkyHipsImageFailure, drawSkyScene, skyPickIdentity, type SkyHipsCanvasTile, type SkyCoordinateGrids } from "./sky-scene-render";
+ import { exactSkyObservationFrame } from "./sky-observation-frame";
+ import { projectHorizontalPoint, projectSkyTarget, type SkyTargetProjection } from "./sky-scene-projection";
+ import { createSkyGpuRenderer, type SkyGpuRenderer } from "./sky-gpu-renderer";
+@@ -27,7 +27,7 @@
+ import { resolvedSkyBodyReferences, skyTargetLabelSuppressed } from "./sky-body-label-presentation";
+ import { useSkyArtwork } from "./use-sky-artwork";
+ import { useSkyOpticalHips } from "./use-sky-optical-hips";
+-import { useSkySdssOptical } from "./use-sky-sdss-optical";
++import { useSkyTargetOptical } from "./use-sky-target-optical";
+ import { useSkyWideFieldW3 } from "./use-sky-wide-field-w3";
+ import { useSkyMoonTexture } from "./use-sky-moon-texture";
+ import { useSkyMarsTexture } from "./use-sky-mars-texture";
+@@ -137,7 +137,7 @@
+ import type { SkyPositionPresentation } from "./sky-presentation-position";
+ import { createSkyCanvasLifecycle } from "./sky-canvas-lifecycle";
+ import { sdssOpticalPresentation } from "./sky-sdss-optical-selection";
+-import { skySdssOpticalFrame } from "./sky-sdss-optical-frame";
++import { skyTargetOpticalFrame, type SkyTargetOpticalImage } from "./sky-sdss-optical-frame";
+ import {
+   isUnambiguousTapGesture,
+   pickPaintedSkyObjects,
+@@ -177,7 +177,7 @@
+   mode: DisplayMode;
+   verticalFovDeg: number;
+   deepSkyImage: SkyCanvasImageAsset | null;
+-  sdssOpticalImage: SkySdssOpticalImage | null;
++  sdssOpticalImage: SkyTargetOpticalImage | null;
+   constellations: ConstellationFrame | null;
+   constellationImages: ReadonlyMap<string, object>;
+   hipsTiles: readonly SkyHipsCanvasTile[];
+@@ -1038,15 +1038,16 @@
+ /** Explicit caller-owned publication selection; ordinary routes omit it.
+  * The transport still admits the pinned publication and owns its availability. */
+ export interface SpotSkyPageProps {
+-  readonly sdssOpticalPublication?: Readonly<{ reference: string; publicationHash: string;
++  readonly targetOpticalPublication?: Readonly<{ kind: "sdss-calibrated" | "prepared-optical-v1";
++    reference: string; publicationHash: string;
+     artworkContributions: { readonly auxiliaryBytesLimit: number; readonly maxGroups: number } }>;
+ }
+-export function SpotSkyPage({ sdssOpticalPublication }: SpotSkyPageProps = {}) {
++export function SpotSkyPage({ targetOpticalPublication }: SpotSkyPageProps = {}) {
+   // A caller chooses a separate auxiliary allowance once for this page instance.
+   // Resize or a new publication must not silently enlarge it to fit the buffer.
+-  const opticalContributionPolicy = useRef(sdssOpticalPublication?.artworkContributions ? Object.freeze({
+-    auxiliaryBytesLimit: sdssOpticalPublication.artworkContributions.auxiliaryBytesLimit,
+-    maxGroups: sdssOpticalPublication.artworkContributions.maxGroups,
++  const opticalContributionPolicy = useRef(targetOpticalPublication?.artworkContributions ? Object.freeze({
++    auxiliaryBytesLimit: targetOpticalPublication.artworkContributions.auxiliaryBytesLimit,
++    maxGroups: targetOpticalPublication.artworkContributions.maxGroups,
+   }) : undefined);
+   const router = useRouter();
+   const routeContext = useMemo<SpotNightRouteContext>(
+@@ -1520,7 +1521,11 @@
+           readiness: frame.landscapeOpacity, pending: frame.landscapePending, failed: frame.landscapeFailed,
+           previous: paintedSkyObjectsRef.current?.view?.landscape ?? null,
+           availability: available => setLandscapeUnavailable(available === false) }, frame.coordinateGrids,
+-        undefined, undefined,
++        undefined,
++        frame.nativeImageGeneration === canvasGenerationRef.current && frame.sdssOpticalImage &&
++          "preparedPublication" in frame.sdssOpticalImage
++          ? { surface: context, reference: frame.sdssOpticalImage.reference,
++            publicationHash: frame.sdssOpticalImage.publicationHash } : undefined,
+         frame.nativeImageGeneration === canvasGenerationRef.current && frame.sdssOpticalImage &&
+           ("sciencePublication" in frame.sdssOpticalImage || "displayPublication" in frame.sdssOpticalImage)
+           ? { surface: context, reference: frame.sdssOpticalImage.reference,
+@@ -1978,12 +1983,14 @@
+     pageVisible&&Boolean(rawReportData)&&mode!=="OBSERVATION"&&
+       report.data?.dataState!=="EXPIRED"&&report.data?.dataState!=="UNAVAILABLE"&&!report.isError);
+   opticalFailureRef.current=optical.failedImage;
+-  const sdssOptical = useSkySdssOptical(selectedDeepSkyEntry?.objectRef ?? null, verticalFovDeg,
++  const selectedOpticalPublication = targetOpticalPublication?.reference === selectedDeepSkyEntry?.objectRef
++    ? targetOpticalPublication : undefined;
++  const sdssOptical = useSkyTargetOptical(selectedOpticalPublication?.kind ?? "sdss-legacy",
++    selectedDeepSkyEntry?.objectRef ?? null, verticalFovDeg,
+     canvasNodeRef.current, canvasNodeRevision,
+     pageVisible && deepSkyRegistrationReady && Boolean(rawReportData) && mode !== "OBSERVATION" &&
+       report.data?.dataState !== "EXPIRED" && report.data?.dataState !== "UNAVAILABLE" && !report.isError,
+-    sdssOpticalPublication && sdssOpticalPublication.reference === selectedDeepSkyEntry?.objectRef
+-      ? sdssOpticalPublication.publicationHash : undefined, targetOpticalView);
++    selectedOpticalPublication?.publicationHash, targetOpticalView);
+   sdssOpticalFailureRef.current = sdssOptical.failedImage;
+   const wideField=useSkyWideFieldW3(geometryReport,row?.at,currentViewBasis?{
+     basis:currentViewBasis,verticalFovDeg:presentedFov,center:presentedCenter}:null,
+@@ -2174,7 +2181,7 @@
+     canvasLifecycle.request({ nativeImageGeneration: canvasNodeRevision, orientationRevision: orientation.snapshot.presentationRevision,
+       data: canvasData, frameAt: row?.at, heading, pose, manualBasis: selectedManualBasis, mode,
+       verticalFovDeg, deepSkyImage: mode === "OBSERVATION" || !desiredDeepSkyImageLevel ? null : canvasDeepSkyImage,
+-      sdssOpticalImage: canvasData && mode !== "OBSERVATION" ? skySdssOpticalFrame(sdssOptical) : null,
++      sdssOpticalImage: canvasData && mode !== "OBSERVATION" ? skyTargetOpticalFrame(sdssOptical) : null,
+       constellations: canvasData ? constellationFrame : null, constellationImages: artwork.images, constellationsEnabled, landscapeEnabled, coordinateGrids,
+       hipsTiles:canvasData?hipsTiles:[],moonTexture:canvasData?moonTexture.image:null,
+       marsTexture:canvasData?marsTexture.image:null,mercuryTexture:canvasData?mercuryTexture.image:null,
+--- .codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-page-before-2026-10-04/sky-sdss-optical-frame.test.ts
++++ apps/wechat-miniapp/src/features/sky/sky-sdss-optical-frame.test.ts
+@@ -84,7 +84,7 @@
+     coarser: { image: parent, level: "MEDIUM", fieldDegrees: legacy.levels.MEDIUM.fieldDegrees } });
+ });
+ 
+-test("actual normal page hands the whole science envelope to its queued frame, respecting page mode", () => {
++test("actual page hands science and Prepared envelopes to its queued frame, respecting page mode", () => {
+   const source = ts.createSourceFile("spot-sky-page.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
+     ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+   let expression: ts.Expression | undefined;
+@@ -99,13 +99,46 @@
+     ts.forEachChild(node, visit);
+   };
+   visit(source); assert(expression);
+-  const read = (mode: string, canvasData: object | undefined) => vm.runInNewContext(ts.transpileModule(
+-    `(${expression!.getText(source)})`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText,
+-    { skySdssOpticalFrame, sdssOptical: loaded, mode, canvasData });
++  const read = (mode: string, canvasData: object | undefined, sdssOptical = loaded) => vm.runInNewContext(ts.transpileModule(
++    `(${expression!.getText(source)})`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText,
++    { skySdssOpticalFrame, skyTargetOpticalFrame, sdssOptical, mode, canvasData });
+   const frame = read("NIGHT", {}); assert.strictEqual(frame.sciencePublication, publication);
+   assert.strictEqual(frame.asset, publication.levels.DETAIL); assert.strictEqual(frame.coarser.asset, publication.levels.MEDIUM);
+-  assert.equal(read("OBSERVATION", {}), null); assert.equal(read("NIGHT", undefined), null);
+-});
++  assert.equal(read("OBSERVATION", {}), null); assert.equal(read("NIGHT", undefined), null);
++  const preparedLoaded = { ...loaded, publication: prepared, renderedAsset: prepared.levels.DETAIL,
++    coarser: { image: parent, level: "MEDIUM" as const, asset: prepared.levels.MEDIUM } };
++  const preparedFrame = read("NIGHT", {}, preparedLoaded as any);
++  assert(preparedFrame, "the actual page must retain a ready Prepared image instead of rejecting it as foreign SDSS");
++  assert.strictEqual(preparedFrame.preparedPublication, prepared);
++  assert.strictEqual(preparedFrame.asset, prepared.levels.DETAIL);
++  assert.strictEqual(preparedFrame.coarser.asset, prepared.levels.MEDIUM);
++  assert.equal(read("OBSERVATION", {}, preparedLoaded as any), null);
++  assert.equal(read("NIGHT", undefined, preparedLoaded as any), null);
++});
++
++test("actual page grants Prepared Scene only its current frame and Canvas generation", () => {
++  const source = ts.createSourceFile("spot-sky-page.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
++    ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
++  let expression: ts.Expression | undefined;
++  const visit = (node: ts.Node) => {
++    if (ts.isCallExpression(node) && node.expression.getText(source) === "drawSkyScene") expression = node.arguments[37];
++    ts.forEachChild(node, visit);
++  };
++  visit(source); assert(expression);
++  const image = skyPreparedOpticalFrame({ ...loaded, publication: prepared, renderedAsset: prepared.levels.DETAIL,
++    coarser: { image: parent, level: "MEDIUM", asset: prepared.levels.MEDIUM } });
++  assert(image);
++  const surface = {};
++  const read = (sdssOpticalImage: unknown, generation = 1) => vm.runInNewContext(ts.transpileModule(
++    `(${expression!.getText(source)})`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText,
++    { context: surface, frame: { sdssOpticalImage, nativeImageGeneration: generation }, canvasGenerationRef: { current: 1 } });
++  const port = read(image);
++  assert(port, "a ready Prepared queued frame requires the Prepared Scene port");
++  assert.strictEqual(port.surface, surface); assert.equal(port.reference, image.reference);
++  assert.equal(port.publicationHash, image.publicationHash);
++  assert.equal(read(image, 2), undefined); assert.equal(read(null), undefined);
++  assert.equal(read(skySdssOpticalFrame(loaded)), undefined, "calibrated images cannot borrow the Prepared Scene port");
++});
+ 
+ test.after(() => {
+   for (const directory of [generated, preparedGenerated]) {
+--- .codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-page-before-2026-10-04/sky-deep-auxiliary-page.test.ts
++++ apps/wechat-miniapp/src/features/sky/sky-deep-auxiliary-page.test.ts
+@@ -10,7 +10,8 @@
+ import { copySkyDeepAuxiliaryDecisions, deepSkyAuxiliaryOpacity, sameSkyDeepAuxiliaryDecisions,
+   skyDeepAuxiliaryDecisionOpacity } from "./sky-deep-auxiliary-visibility";
+ import { liveSkyOpticalCompletion, sameSkyOpticalCompletion, sameSkyOpticalInput } from "./sky-sdss-optical-completion";
+-import { skySdssOpticalFrame } from "./sky-sdss-optical-frame";
++import { skyTargetOpticalFrame } from "./sky-sdss-optical-frame";
++import { skyTargetOpticalIntersectsView } from "./sky-target-optical-visibility";
+ import { sdssOpticalLevelForFov, sdssScienceOpticalLevelForFov, skyTargetOpticalLevelForFov } from "./sky-sdss-optical-selection";
+ import { skyFixedImageStatus } from "./sky-fixed-image-status";
+ import { createSkyViewBasis } from "./sky-view-projection";
+@@ -68,7 +69,7 @@
+     setPresentedCamera: (update: any) => { state.camera = typeof update === "function" ? update(state.camera) : update; },
+     setCanvasSize() {}, setCanvasError() {}, canvasDrawRevisionRef: { current: 0 }, publishAcceptanceSkySceneInspection() {},
+     EMPTY_SKY_IMAGES: new Map(), setSolarLightUnavailable() {}, setMoonDiscUnavailable() {}, setPlanetDiscUnavailable() {},
+-    setSunDiscUnavailable() {}, setGalacticBandUnavailable() {}, setLandscapeUnavailable() {},
++    setSunDiscUnavailable() {}, setGalacticBandUnavailable() {}, setLandscapeUnavailable() {}, setArtworkContributionUnavailable() {},
+     drawSkyScene: (...args: any[]) => {
+       const discs: number[] = []; let snapshot: any = null, sources: any = null;
+       const stage = args[8], complete = args[9];
+@@ -200,14 +201,15 @@
+     "@/hooks/use-resource-query": { useResourceQuery: () => ({ data: publication, isError: false, isFetching: false }) },
+     "@/services/sdss-optical-client": { sdssOpticalImageUrl: (url: string) => url }, "@/services/sdss-science-optical-resource": {},
+     "@/services/prepared-optical-client": {}, "@/services/prepared-optical-resource": {},
+-    "./sky-sdss-optical-selection": { sdssOpticalLevelForFov, skyTargetOpticalLevelForFov }, "./sky-fixed-image-status": { skyFixedImageStatus } });
++    "./sky-sdss-optical-selection": { sdssOpticalLevelForFov, skyTargetOpticalLevelForFov }, "./sky-fixed-image-status": { skyFixedImageStatus },
++    "./sky-target-optical-visibility": { skyTargetOpticalIntersectsView } });
+   const opticalHook = compile("./use-sky-sdss-optical.ts", { "./use-sky-target-optical": sharedOpticalHook });
+   const canvas = { createImage() { const image: SkyArtworkImage = { src: "", onload: null, onerror: null, width: 512, height: 512 }; decoded.push(image); return image; } };
+-  Object.assign(h.context, { useCallback: react.useCallback, useEffect: react.useEffect, skySdssOpticalFrame,
++  Object.assign(h.context, { useCallback: react.useCallback, useEffect: react.useEffect, skyTargetOpticalFrame,
+     skySceneInspectionOwnerRef: { current: "controlled" }, report: { data: { dataState: "FRESH" }, isError: false }, reportData: data,
+     devicePose: null, manualBasis: basis, row: { at }, sensorHeadingForScene: null, sensorBasis: null,
+     skySceneHasContent: () => true, canvasFrameInfo: { inspection: {} }, canvasLifecycle: h.lifecycle, canvasNodeRevision: 1,
+-    verticalFovDeg: .05, canvasDeepSkyImage: null, orientation: { snapshot: { presentationRevision: 0 }, latestPresentation: { current: null }, presented: { current: null } },
++    verticalFovDeg: .05, desiredDeepSkyImageLevel: "DETAIL", canvasDeepSkyImage: null, orientation: { snapshot: { presentationRevision: 0 }, latestPresentation: { current: null }, presented: { current: null } },
+     mode: "NIGHT", constellationFrame: null, artwork: { images: new Map() }, constellationsEnabled: false, landscapeEnabled: false,
+     coordinateGrids: { horizontal: false, equatorial: false }, hipsTiles: [], stellarSupplement: { frame: null },
+     moonTexture: {}, marsTexture: {}, mercuryTexture: {}, jupiterBands: {}, saturnBands: {}, uranusBands: {}, neptuneBands: {}, galacticImage: {},
+--- .codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-page-before-2026-10-04/sky-canvas-time.test.ts
++++ apps/wechat-miniapp/src/features/sky/sky-canvas-time.test.ts
+@@ -13,7 +13,7 @@
+ import { presentSkyTime } from "./sky-time-presentation";
+ import { exactSkyObservationFrame, skyEquatorialDirectionToEnu } from "./sky-observation-frame";
+ import { registerSkyDeepSkyRegion, skyDeepSkyRegionCoordinates } from "./sky-deep-sky-region";
+-import { skySdssOpticalFrame } from "./sky-sdss-optical-frame";
++import { skyTargetOpticalFrame } from "./sky-sdss-optical-frame";
+ 
+ // Execute the production drawing function with a recorded native-canvas boundary.
+ // This establishes call/data selection, not WEAPP rendering or physical pointing.
+@@ -167,13 +167,13 @@
+     orientation: { snapshot: { presentationRevision: 0 } },
+     useCallback: (fn: unknown) => fn,
+     skySceneHasContent: stellarScene.skySceneHasContent,
+-    skySdssOpticalFrame,
++    skyTargetOpticalFrame,
+     canvasLifecycle: { request: (frame: unknown, hidden: boolean) => requests.push({ frame, hidden }) },
+     canvasDrawRevisionRef: { current: 0 }, skySceneInspectionOwnerRef: { current: "test" },
+     previousCanvasModeRef: { current: "NIGHT" }, devicePoseRef: { current: pose },
+     reportData: data, report: { data: { dataState: "FRESH" }, isError: false },
+     row: { at: committed }, sensorHeadingForScene: 0 as number | null, sensorBasis: pose.basis as projection.SkyViewBasis | null, devicePose: pose as typeof pose | null, mode: "NIGHT",
+-    verticalFovDeg: 45, canvasDeepSkyImage: null, sdssOptical: { image: null, fieldDegrees: null, renderedLevel: null, publication: null }, canvasNodeRevision: 1, viewportInsets: { top:0, bottom:0 },
++    verticalFovDeg: 45, desiredDeepSkyImageLevel: null, canvasDeepSkyImage: null, sdssOptical: { image: null, fieldDegrees: null, renderedLevel: null, publication: null }, canvasNodeRevision: 1, viewportInsets: { top:0, bottom:0 },
+     constellationFrame, artwork, constellationsEnabled: true,landscapeEnabled:true,stellarSupplement:{frame:null},hipsTiles:[],moonTexture:{image:{id:"moon"}},marsTexture:{image:{id:"mars"}},mercuryTexture:{image:{id:"mercury"}},jupiterBands:{image:{id:"jupiter"}},saturnBands:{image:{id:"saturn"}},uranusBands:{image:{id:"uranus"}},neptuneBands:{image:{id:"neptune"}},galacticImage:{image:{id:"galactic"}},
+     coordinateGrids: { horizontal: true, equatorial: false }, landscapeImage: { panorama: null },
+     manualBasis: null, manualBasisRef: { current: null },
+--- .codex/work-items/cloud-sky-native-2026-09-22/tmp/prepared-page-before-2026-10-04/use-sky-sdss-optical.test.ts
++++ apps/wechat-miniapp/src/features/sky/use-sky-sdss-optical.test.ts
+@@ -73,23 +73,30 @@
+   const declarations = new Map<string, ts.VariableStatement>();
+   const visit = (node: ts.Node) => {
+     if (ts.isVariableStatement(node)) for (const variable of node.declarationList.declarations)
+-      if (["targetOpticalView", "sdssOptical"].includes(variable.name.getText(page))) declarations.set(variable.name.getText(page), node);
++      if (["targetOpticalView", "selectedOpticalPublication", "sdssOptical"].includes(variable.name.getText(page))) declarations.set(variable.name.getText(page), node);
+     ts.forEachChild(node, visit);
+-  }; visit(page); assert.equal(declarations.size, 2);
++  }; visit(page); assert.equal(declarations.size, 3);
+   const code = ts.transpileModule([...declarations.values()].map(node => node.getText(page)).join("\n"),
+     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+   const geometryReport = {}, currentViewBasis = createSkyViewBasis(0, 80, 0), presentedCenter = { x: 183, y: 419 };
+   let captured: unknown[] = [];
+-  vm.runInNewContext(code, { geometryReport, currentViewBasis, presentedFov: .05, presentedCenter,
++  const read = (targetOpticalPublication: unknown = undefined) => vm.runInNewContext(code, { geometryReport, currentViewBasis, presentedFov: .05, presentedCenter,
+     row: { at: "2026-10-03T13:00:00.000Z" }, canvasSize: { width: 390, height: 844 }, verticalFovDeg: .2,
+     selectedDeepSkyEntry: { objectRef: "M:51" }, deepSkyRegistrationReady: true, canvasNodeRef: { current: {} }, canvasNodeRevision: 1,
+     pageVisible: true, rawReportData: {}, mode: "DAY", report: { data: { dataState: "FRESH" }, isError: false },
+-    useSkySdssOptical: (...args: unknown[]) => { captured = args; return {}; } });
+-  assert.equal(captured[0], "M:51"); assert.equal(captured[1], .2, "existing refinement intent is preserved");
+-  const view = captured[6] as import("./sky-target-optical-visibility").SkyTargetOpticalView;
++    targetOpticalPublication, useSkyTargetOptical: (...args: unknown[]) => { captured = args; return {}; } });
++  read();
++  assert.equal(captured[0], "sdss-legacy"); assert.equal(captured[1], "M:51");
++  assert.equal(captured[2], .2, "existing refinement intent is preserved");
++  const view = captured[7] as import("./sky-target-optical-visibility").SkyTargetOpticalView;
+   assert.equal(view.report, geometryReport); assert.equal(view.view.basis, currentViewBasis); assert.equal(view.view.center, presentedCenter);
+   assert.equal(view.view.verticalFovDeg, .05); assert.equal(view.at, "2026-10-03T13:00:00.000Z");
+-  assert.equal(view.width, 390); assert.equal(view.height, 844);
++  assert.equal(view.width, 390); assert.equal(view.height, 844);
++  const pin = { kind: "prepared-optical-v1", reference: "M:51", publicationHash: "a".repeat(64) };
++  read(pin); assert.equal(captured[0], pin.kind); assert.equal(captured[6], pin.publicationHash);
++  read({ ...pin, kind: "sdss-calibrated" }); assert.equal(captured[0], "sdss-calibrated");
++  read({ ...pin, reference: "M:82" }); assert.equal(captured[0], "sdss-legacy");
++  assert.equal(captured[6], undefined, "an unrelated selected object cannot borrow the pinned photograph");
+ });
+ 
+ test("fine optical failure retains the nearest ready coarse level and an explicit retry",()=>{

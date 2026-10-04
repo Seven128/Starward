@@ -1,0 +1,46 @@
+✔ file owners keep usable coarse recovery data but release replaced and cleared files (77.1643ms)
+✔ hiding cancels an image request and showing restarts only the current level (24.7348ms)
+✔ failed fine decode and retry keep the coarse image until successful replacement (28.7836ms)
+✔ hidden decoding cannot publish late pixels or erase the retained view (21.9983ms)
+✔ a retained coarse level cannot mark a pending fine request ready (14.6712ms)
+✔ show before native canvas reconstruction retains coarse recovery until re-decode (20.8192ms)
+✔ resuming a failed decode starts a new loading transition before success or failure (18.2209ms)
+✔ switching object cannot retain the previous object's pixels (15.6503ms)
+✔ native generation changes reject queued decode before React cleanup (17.2176ms)
+✔ synchronous native decoder failures are retryable and coarse failure cannot prevent fine decode (46.1615ms)
+✔ new native canvas redecodes retained coarse pixels and late coarse cannot replace fine (24.597ms)
+✔ hidden image errors do not enqueue a notification on another page (6.3061ms)
+✔ a previous image error cannot be relabelled for a new object or hidden image mode (15.0429ms)
+✔ decode retry invalidates the failed file while preserving a usable painted image (210.5747ms)
+✔ only two image loads start together and ready figures survive repeated camera updates (5.998ms)
+✔ a ready coarse image remains canvas-owned while a finer replacement loads (1.0844ms)
+✔ identical published bytes can belong to different tile identities without stale geometry (2.3431ms)
+✔ hidden/superseded late responses cannot restore unwanted figures (0.3889ms)
+✔ failure is latched through pose updates until explicit retry; GPU failures share recovery (0.5766ms)
+✔ art preserves all three source anchors under roll, offset center and different FOVs (4.4142ms)
+✔ plane interior, extrapolated corners and reversed rays do not become screen billboards (0.6604ms)
+✔ invalid or degenerate anchors are unavailable without invented registration (0.4511ms)
+✔ art camera uses actual logical size and offset, not research constants (7.0471ms)
+✔ view ray hull includes curved viewport edges under roll and offset centers (50.5301ms)
+✔ a true curved constellation arc survives offscreen endpoints; clipping uses actual viewport and horizon (14.6898ms)
+✔ zoom and intent gate both artwork and lines, decoded failure is reported once per attempt without throwing (4.8734ms)
+✔ published W3 bytes survive refinement failure and retry, while late writes and old GPU images release (9.1727ms)
+✔ published fixed-body and 2MASS files use the shared decode/GPU boundary with their real formats (10.0734ms)
+✔ M51 optical level follows measured field while wider views keep W3 (1.5446ms)
+✔ fully covered M51 images lose visible credits only after the foreground actually paints (48.0334ms)
+✔ leaving the image's whole field clears both credits without reporting a load failure (8.1891ms)
+✔ foreground coverage preserves exposed image edges, including a covered center (3.2897ms)
+✔ a fully covered narrow viewport loses credit even when image edges extend into open sky offscreen (4.5179ms)
+✔ M51 optical draw is above W3, and optical failure preserves W3 and the scene (16.7296ms)
+✔ M51 optical pixels replace underlying infrared light without changing the W3 fallback (3.8289ms)
+✔ partial image edges remain eligible after their center leaves the narrow viewport (4.9235ms)
+✔ SDSS credit follows committed optical pixels across request and focus transitions (15.183ms)
+✔ hidden Sky releases native Back even while a selected object is retained (7.0015ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1797.0316

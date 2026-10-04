@@ -1,8 +1,9 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils.js";
+import { OPTICAL_IMAGE_LEVELS, type OpticalImageLevel } from "./optical-publication-content.ts";
 
-export const SDSS_OPTICAL_LEVELS = ["OVERVIEW", "MEDIUM", "DETAIL"] as const;
-export type SdssOpticalLevel = typeof SDSS_OPTICAL_LEVELS[number];
+export const SDSS_OPTICAL_LEVELS = OPTICAL_IMAGE_LEVELS;
+export type SdssOpticalLevel = OpticalImageLevel;
 const standardScales = { OVERVIEW: 1.6, MEDIUM: .8, DETAIL: .4 } as const;
 
 /** Admitted immutable publications, shared by transport and native consumers.

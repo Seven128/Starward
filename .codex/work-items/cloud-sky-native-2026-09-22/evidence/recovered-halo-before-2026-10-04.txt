@@ -1,0 +1,50 @@
+EEEEE
+======================================================================
+ERROR: test_cancel_and_unbounded_or_nonoverlapping_windows_reject (test_sdss_recovered_halo.RecoveredHaloTest.test_cancel_and_unbounded_or_nonoverlapping_windows_reject)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_halo.py", line 74, in test_cancel_and_unbounded_or_nonoverlapping_windows_reject
+    owner.project_current_recovery_halo_region(master,parent,recovery,sources,(slice(-8,16),slice(-8,48)),cancelled=lambda:True)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'sdss_display_recovery' has no attribute 'project_current_recovery_halo_region'. Did you mean: 'project_current_recovery_region'?
+
+======================================================================
+ERROR: test_existing_halo_tuple_uses_same_owned_real_window (test_sdss_recovered_halo.RecoveredHaloTest.test_existing_halo_tuple_uses_same_owned_real_window)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_halo.py", line 46, in test_existing_halo_tuple_uses_same_owned_real_window
+    view = noise._project_real_source_window(master,sources,fields,weights,region,lambda:None)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'sdss_noise_display' has no attribute '_project_real_source_window'. Did you mean: '_project_real_halo_window'?
+
+======================================================================
+ERROR: test_real_external_cohort_keeps_cached_supply_and_actual_coefficients (test_sdss_recovered_halo.RecoveredHaloTest.test_real_external_cohort_keeps_cached_supply_and_actual_coefficients)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_halo.py", line 23, in test_real_external_cohort_keeps_cached_supply_and_actual_coefficients
+    samples = owner.project_current_recovery_halo_region(master,parent,recovery,sources,region)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'sdss_display_recovery' has no attribute 'project_current_recovery_halo_region'. Did you mean: 'project_current_recovery_region'?
+
+======================================================================
+ERROR: test_same_run_unknown_epoch_and_native_model_do_not_supply_exterior (test_sdss_recovered_halo.RecoveredHaloTest.test_same_run_unknown_epoch_and_native_model_do_not_supply_exterior)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_halo.py", line 57, in test_same_run_unknown_epoch_and_native_model_do_not_supply_exterior
+    samples = owner.project_current_recovery_halo_region(master,parent,recovery,sources,(slice(24,48),slice(-8,48)))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'sdss_display_recovery' has no attribute 'project_current_recovery_halo_region'. Did you mean: 'project_current_recovery_region'?
+
+======================================================================
+ERROR: test_saved_overlap_science_and_weights_guard_actual_source_views (test_sdss_recovered_halo.RecoveredHaloTest.test_saved_overlap_science_and_weights_guard_actual_source_views)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_halo.py", line 69, in test_saved_overlap_science_and_weights_guard_actual_source_views
+    noise._project_real_source_window(forged,sources,fields,weights,(slice(-8,16),slice(-8,48)),lambda:None)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'sdss_noise_display' has no attribute '_project_real_source_window'. Did you mean: '_project_real_halo_window'?
+
+----------------------------------------------------------------------
+Ran 5 tests in 2.588s
+
+FAILED (errors=5)

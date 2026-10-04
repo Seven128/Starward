@@ -1,0 +1,841 @@
+{
+  "scope": "Production CPU coordinate-grid geometry only in a causal desktop Chromium comparison; no build co-run, native/phone frame time, complete-scene performance, GPU/native memory, cost or final quality acceptance.",
+  "at": "2026-09-28T16:20:35.370Z",
+  "beforeSources": {
+    "sourceHashes": [
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+        "sha256": "4744bbbfdde9cb010c6b39379d01796691ff466f2f6fa1537cf035006af73ccd"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-line-clip.ts",
+        "sha256": "e8ba9d114119c2b51e316cf602a58aa8352691f0c5ea174140898ec889e4c88e"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-grid-projection.ts",
+        "sha256": "b0e42a710e59e3be90b1bb620b31a7c40cb5c13ade34ea789e38e23c0b910271"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-horizontal-grid.ts",
+        "sha256": "c5fcbc7fcec067cfd83d9d1e198815c3fe9c45038a6d6a83c7bbe8323ec73b6c"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/types.ts",
+        "sha256": "44391cef5f426493d272be3edb4ea30c58377703e9ed71f882701ecd676219e7"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/plan.ts",
+        "sha256": "373cf1316693b4b1b11cd954d532e3759086fa3ed301f1c3279d7df0b367fdd3"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/plan-reminders.ts",
+        "sha256": "51fbf4fbaa1902997ffecd6254676c1b190cfc8873d480d6aed54157572fc8bd"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/local-time.ts",
+        "sha256": "56d34e7053c2936e00efa47837793b9b7baf89b373824fa2b7c8635aa510e919"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/contribution-feedback.ts",
+        "sha256": "3ae07770ac9987f2c565f9501907238b085d76f4fe00d8755d119d4267fefbdf"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/filters.ts",
+        "sha256": "280e7b7f38d0a990e55166f931ef2ccbb4f6a1a3e168e0fdcd7afd292bfc3c6d"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/feature-flags.ts",
+        "sha256": "440606adabca6f0f0e6785905c3202b09095aefaf58d28918bea0da4b1c66ef7"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/url-policy.ts",
+        "sha256": "7ff57fa707c8e5eb11d33426a72865df5b09493b07fbf03e9f6af16e622515e9"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/viewport.ts",
+        "sha256": "89efea05a6ec1530a4a9698011ab8fd384fc1feab38e7b83673a8088e663102b"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/ranking.ts",
+        "sha256": "6abf16ed0b6e99be580afee8a121d61813d4a548f3b036276c99ccd7972ba5f5"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/preferences.ts",
+        "sha256": "d7f1da44001610fac181cbab03880fbb74fadff2e652445f60ee6f4968da76ca"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/sky-planet-identity.ts",
+        "sha256": "9e947673bb81c4b605361b8bffdc368330bdd5f978a71c83644804c6c77fa97e"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/sky-target-position.ts",
+        "sha256": "d1920242e7b72c179bb2c242a8c08366dbe2771a63f03a449621c52801f93efa"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/sky-luminary-identity.ts",
+        "sha256": "b215f288ff261d67989efa27c34cbf778ebe6c780b785d77815a29ceee1c5275"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/celestial-identity.ts",
+        "sha256": "c7e224fb9a4a918db7c0ce91d1e1733f0030727c2bc64f577f8ea49f53f59547"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/stellar-geometry.ts",
+        "sha256": "3e74b0036f23e6595365cd8d50cf2e985a876ec3a6ded195ea01e6f8123f2dfb"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/stellar-catalog-publication.ts",
+        "sha256": "a6024d6ad23765496393534ca67a43a671febc7719ee2a378e667d2fe7adc15d"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/stellar-scene.ts",
+        "sha256": "a0cbbd7181159e5749038e467842e85314ef652f3ec8a20f5e838d11d51cea87"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/sky-scene.ts",
+        "sha256": "8c87512639a2e2fc7a38cb63084e56513a6f9d3e71af085d2e0c5c2370ba05e7"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/moon-coverage-publication.ts",
+        "sha256": "4d7c8b550131ff0137f14a5ee4de5efd68a98e2685397979ac78238aefb58b50"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/observation-frame.ts",
+        "sha256": "75be5650a8ee3fb025ed4a43a1ffa12dcf84dd2b946d284e91112401f6a67188"
+      },
+      {
+        "file": "node_modules/@noble/hashes/utils.js",
+        "sha256": "11319ec0a8132a0c2ced8c98af33ae9274c001d6baf4f4709c4a6115e031a3c5"
+      },
+      {
+        "file": "node_modules/@noble/hashes/_md.js",
+        "sha256": "a112f0fe1b15db00f2638618c436a17be1c5e13baf19d02fcc29016ae1db2233"
+      },
+      {
+        "file": "node_modules/@noble/hashes/_u64.js",
+        "sha256": "e48c0cfc10810439a4807b46db136ce603a3fa09b62584f513ef2f3ca496af54"
+      },
+      {
+        "file": "node_modules/@noble/hashes/sha2.js",
+        "sha256": "3ddc587c588283cbceed4dd9929cefcce06a0c231b54d4c6f0f99c478c686c00"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/catalog-json-integrity.ts",
+        "sha256": "cf5a8278773b78d06a4670dc3cda63d7c0edcbbfbb01b39369ea37011298ff4d"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/stellar-supplement.ts",
+        "sha256": "4e9a37385e362d9ffd88b3a48229bd1b11e4f60ca7fd7d8ca54eabae580fa973"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/constellation-catalog.ts",
+        "sha256": "8c4fa3961030303ca54c3a1a89253dece291f29cbc72a9f0766bfb960b659a9e"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/api-shapes.ts",
+        "sha256": "330e32b88c198082072bdbd34acbc6c7ea5d2c8e86aea27859c1de6b8cec1d1d"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts",
+        "sha256": "ad4d2ce4f7c6adfe07f0eee6f91b3e73ab391087f24f3227856d09467866e655"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/account-profile.ts",
+        "sha256": "a51bc104b8984c8339434ee9eb672d339df9ae7c2f3bb9e313eb0f0bdb1913b6"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/recent-weather.ts",
+        "sha256": "49f368afa7e5a3544c8e37745641c2eeacab7d1eef5de6ad76c3564815c87adb"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/air-quality.ts",
+        "sha256": "f4627ed64579f720cfb352a2d71523a9c0711021b4a5fde9faa8e9b52ee32611"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/sky-landscape-publication.ts",
+        "sha256": "053a950b4d620be52034a696bb81fa638d1e6f85569652e5e0f949f91930e40d"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/index.ts",
+        "sha256": "2b347f6c383c2e6bdc3d1128c7b1b4fece54e9b1e2fe35ee9b99577a73db93b3"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-time-frame.ts",
+        "sha256": "40df40fd298fdf54585802827a70d6c8328df2f1e169014b7c03852cec972e2f"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-observation-frame.ts",
+        "sha256": "38560801c796201742e4befad3eb805970c863cf997a144be68d4aabb7a271c9"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-equatorial-grid.ts",
+        "sha256": "27415bad0e2deda86caa2abc7e38d847c38dc814bd3bae0d06f8a552d3fc86a8"
+      }
+    ],
+    "bundleSha256": "fd5ed3d1e326a4c18c4e44295f20e3abebc3fa0665d3495fa9646a4db08e5390"
+  },
+  "afterSources": {
+    "sourceHashes": [
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+        "sha256": "4744bbbfdde9cb010c6b39379d01796691ff466f2f6fa1537cf035006af73ccd"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-line-clip.ts",
+        "sha256": "e8ba9d114119c2b51e316cf602a58aa8352691f0c5ea174140898ec889e4c88e"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-grid-projection.ts",
+        "sha256": "3d14158b6248376a83a3d16b401d3088d85ef8be2451a7e6bf194933bd39d9fe"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-horizontal-grid.ts",
+        "sha256": "c5fcbc7fcec067cfd83d9d1e198815c3fe9c45038a6d6a83c7bbe8323ec73b6c"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/types.ts",
+        "sha256": "44391cef5f426493d272be3edb4ea30c58377703e9ed71f882701ecd676219e7"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/plan.ts",
+        "sha256": "373cf1316693b4b1b11cd954d532e3759086fa3ed301f1c3279d7df0b367fdd3"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/plan-reminders.ts",
+        "sha256": "51fbf4fbaa1902997ffecd6254676c1b190cfc8873d480d6aed54157572fc8bd"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/local-time.ts",
+        "sha256": "56d34e7053c2936e00efa47837793b9b7baf89b373824fa2b7c8635aa510e919"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/contribution-feedback.ts",
+        "sha256": "3ae07770ac9987f2c565f9501907238b085d76f4fe00d8755d119d4267fefbdf"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/filters.ts",
+        "sha256": "280e7b7f38d0a990e55166f931ef2ccbb4f6a1a3e168e0fdcd7afd292bfc3c6d"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/feature-flags.ts",
+        "sha256": "440606adabca6f0f0e6785905c3202b09095aefaf58d28918bea0da4b1c66ef7"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/url-policy.ts",
+        "sha256": "7ff57fa707c8e5eb11d33426a72865df5b09493b07fbf03e9f6af16e622515e9"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/viewport.ts",
+        "sha256": "89efea05a6ec1530a4a9698011ab8fd384fc1feab38e7b83673a8088e663102b"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/ranking.ts",
+        "sha256": "6abf16ed0b6e99be580afee8a121d61813d4a548f3b036276c99ccd7972ba5f5"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/preferences.ts",
+        "sha256": "d7f1da44001610fac181cbab03880fbb74fadff2e652445f60ee6f4968da76ca"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/sky-planet-identity.ts",
+        "sha256": "9e947673bb81c4b605361b8bffdc368330bdd5f978a71c83644804c6c77fa97e"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/sky-target-position.ts",
+        "sha256": "d1920242e7b72c179bb2c242a8c08366dbe2771a63f03a449621c52801f93efa"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/sky-luminary-identity.ts",
+        "sha256": "b215f288ff261d67989efa27c34cbf778ebe6c780b785d77815a29ceee1c5275"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/celestial-identity.ts",
+        "sha256": "c7e224fb9a4a918db7c0ce91d1e1733f0030727c2bc64f577f8ea49f53f59547"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/stellar-geometry.ts",
+        "sha256": "3e74b0036f23e6595365cd8d50cf2e985a876ec3a6ded195ea01e6f8123f2dfb"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/stellar-catalog-publication.ts",
+        "sha256": "a6024d6ad23765496393534ca67a43a671febc7719ee2a378e667d2fe7adc15d"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/stellar-scene.ts",
+        "sha256": "a0cbbd7181159e5749038e467842e85314ef652f3ec8a20f5e838d11d51cea87"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/sky-scene.ts",
+        "sha256": "8c87512639a2e2fc7a38cb63084e56513a6f9d3e71af085d2e0c5c2370ba05e7"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/moon-coverage-publication.ts",
+        "sha256": "4d7c8b550131ff0137f14a5ee4de5efd68a98e2685397979ac78238aefb58b50"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/observation-frame.ts",
+        "sha256": "75be5650a8ee3fb025ed4a43a1ffa12dcf84dd2b946d284e91112401f6a67188"
+      },
+      {
+        "file": "node_modules/@noble/hashes/utils.js",
+        "sha256": "11319ec0a8132a0c2ced8c98af33ae9274c001d6baf4f4709c4a6115e031a3c5"
+      },
+      {
+        "file": "node_modules/@noble/hashes/_md.js",
+        "sha256": "a112f0fe1b15db00f2638618c436a17be1c5e13baf19d02fcc29016ae1db2233"
+      },
+      {
+        "file": "node_modules/@noble/hashes/_u64.js",
+        "sha256": "e48c0cfc10810439a4807b46db136ce603a3fa09b62584f513ef2f3ca496af54"
+      },
+      {
+        "file": "node_modules/@noble/hashes/sha2.js",
+        "sha256": "3ddc587c588283cbceed4dd9929cefcce06a0c231b54d4c6f0f99c478c686c00"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/catalog-json-integrity.ts",
+        "sha256": "cf5a8278773b78d06a4670dc3cda63d7c0edcbbfbb01b39369ea37011298ff4d"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/stellar-supplement.ts",
+        "sha256": "4e9a37385e362d9ffd88b3a48229bd1b11e4f60ca7fd7d8ca54eabae580fa973"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/constellation-catalog.ts",
+        "sha256": "8c4fa3961030303ca54c3a1a89253dece291f29cbc72a9f0766bfb960b659a9e"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/api-shapes.ts",
+        "sha256": "330e32b88c198082072bdbd34acbc6c7ea5d2c8e86aea27859c1de6b8cec1d1d"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts",
+        "sha256": "ad4d2ce4f7c6adfe07f0eee6f91b3e73ab391087f24f3227856d09467866e655"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/account-profile.ts",
+        "sha256": "a51bc104b8984c8339434ee9eb672d339df9ae7c2f3bb9e313eb0f0bdb1913b6"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/recent-weather.ts",
+        "sha256": "49f368afa7e5a3544c8e37745641c2eeacab7d1eef5de6ad76c3564815c87adb"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/air-quality.ts",
+        "sha256": "f4627ed64579f720cfb352a2d71523a9c0711021b4a5fde9faa8e9b52ee32611"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/sky-landscape-publication.ts",
+        "sha256": "053a950b4d620be52034a696bb81fa638d1e6f85569652e5e0f949f91930e40d"
+      },
+      {
+        "file": "packages/miniapp-contracts/src/index.ts",
+        "sha256": "2b347f6c383c2e6bdc3d1128c7b1b4fece54e9b1e2fe35ee9b99577a73db93b3"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-time-frame.ts",
+        "sha256": "40df40fd298fdf54585802827a70d6c8328df2f1e169014b7c03852cec972e2f"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-observation-frame.ts",
+        "sha256": "38560801c796201742e4befad3eb805970c863cf997a144be68d4aabb7a271c9"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-equatorial-grid.ts",
+        "sha256": "27415bad0e2deda86caa2abc7e38d847c38dc814bd3bae0d06f8a552d3fc86a8"
+      }
+    ],
+    "bundleSha256": "c30a5a1c1da5a4ed567408ff32e3c31615b974a5266e4ba01f8a7ed4da482d67"
+  },
+  "inputsSha256": "e889dac5621bca967a76435c020a06d171782955f097c72e9058b97087a2ce48",
+  "rows": [
+    {
+      "name": "actual-local",
+      "layer": "horizontal",
+      "fov": 85,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 229,
+      "before": {
+        "medianMs": 4.949999988079071,
+        "p95Ms": 5.600000023841858,
+        "samples": 60,
+        "directionCalls": 15120
+      },
+      "after": {
+        "medianMs": 2.600000023841858,
+        "p95Ms": 3,
+        "samples": 60,
+        "directionCalls": 4335
+      },
+      "geometrySha256": "f152cace0c203ac6e89b435e345c5c18ad476e04f43e000ed752c6e78d0428e0"
+    },
+    {
+      "name": "actual-local",
+      "layer": "equatorial",
+      "fov": 85,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 220,
+      "before": {
+        "medianMs": 5.299999952316284,
+        "p95Ms": 6.300000071525574,
+        "samples": 60,
+        "directionCalls": 20372
+      },
+      "after": {
+        "medianMs": 3.049999952316284,
+        "p95Ms": 3.399999976158142,
+        "samples": 60,
+        "directionCalls": 8465
+      },
+      "geometrySha256": "aab845471d9c260faa89374136f6faaa8a788e3d6bf9046d2b7d97d052aa60b9"
+    },
+    {
+      "name": "actual-local-protected",
+      "layer": "horizontal",
+      "fov": 85,
+      "center": {
+        "x": 195.2,
+        "y": 478
+      },
+      "exactOrderedGeometryEqual": true,
+      "segments": 266,
+      "before": {
+        "medianMs": 4.899999976158142,
+        "p95Ms": 5.600000023841858,
+        "samples": 60,
+        "directionCalls": 15120
+      },
+      "after": {
+        "medianMs": 2.600000023841858,
+        "p95Ms": 3.399999976158142,
+        "samples": 60,
+        "directionCalls": 4335
+      },
+      "geometrySha256": "1bba3d62c9bd9483b5794952e1499f0338504fa305fce5badb5ba71f52798f92"
+    },
+    {
+      "name": "actual-local-protected",
+      "layer": "equatorial",
+      "fov": 85,
+      "center": {
+        "x": 195.2,
+        "y": 478
+      },
+      "exactOrderedGeometryEqual": true,
+      "segments": 236,
+      "before": {
+        "medianMs": 5,
+        "p95Ms": 5.299999952316284,
+        "samples": 60,
+        "directionCalls": 20372
+      },
+      "after": {
+        "medianMs": 2.900000035762787,
+        "p95Ms": 3.100000023841858,
+        "samples": 60,
+        "directionCalls": 8465
+      },
+      "geometrySha256": "673f3396b8e69d5d898f33998b2cdef5368881dc603e80ad53a6273c754fde94"
+    },
+    {
+      "name": "actual-identification",
+      "layer": "horizontal",
+      "fov": 25,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 40,
+      "before": {
+        "medianMs": 4.799999952316284,
+        "p95Ms": 5.100000023841858,
+        "samples": 60,
+        "directionCalls": 15120
+      },
+      "after": {
+        "medianMs": 2.5,
+        "p95Ms": 2.700000047683716,
+        "samples": 60,
+        "directionCalls": 4335
+      },
+      "geometrySha256": "1bf40b28f4f138360d0ccd28bae974148a612a5e48d89e36d7cb73acd8943bfc"
+    },
+    {
+      "name": "actual-identification",
+      "layer": "equatorial",
+      "fov": 25,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 16,
+      "before": {
+        "medianMs": 5.299999952316284,
+        "p95Ms": 6,
+        "samples": 60,
+        "directionCalls": 20372
+      },
+      "after": {
+        "medianMs": 3,
+        "p95Ms": 3.700000047683716,
+        "samples": 60,
+        "directionCalls": 8465
+      },
+      "geometrySha256": "0aa8e8436f154d437ac9f23ee393752b7964fc93ce20fabc44dfed9feea8aca6"
+    },
+    {
+      "name": "actual-dome-protected",
+      "layer": "horizontal",
+      "fov": 267.8,
+      "center": {
+        "x": 195.2,
+        "y": 450
+      },
+      "exactOrderedGeometryEqual": true,
+      "segments": 1080,
+      "before": {
+        "medianMs": 2.600000023841858,
+        "p95Ms": 4.399999976158142,
+        "samples": 60,
+        "directionCalls": 7560
+      },
+      "after": {
+        "medianMs": 1.5,
+        "p95Ms": 2.399999976158142,
+        "samples": 60,
+        "directionCalls": 2175
+      },
+      "geometrySha256": "b4656cd79891afd179a531ee9db3d3047660959f9195f0c443b8c1b863f9b340"
+    },
+    {
+      "name": "actual-dome-protected",
+      "layer": "equatorial",
+      "fov": 267.8,
+      "center": {
+        "x": 195.2,
+        "y": 450
+      },
+      "exactOrderedGeometryEqual": true,
+      "segments": 1001,
+      "before": {
+        "medianMs": 2.700000047683716,
+        "p95Ms": 3.100000023841858,
+        "samples": 60,
+        "directionCalls": 10472
+      },
+      "after": {
+        "medianMs": 1.6999999284744263,
+        "p95Ms": 2,
+        "samples": 60,
+        "directionCalls": 4505
+      },
+      "geometrySha256": "7438b64e824b3e5f06c5b0b6f1ad4868ea75d552bba227dbffc0dc198f750ace"
+    },
+    {
+      "name": "actual-celestial-pole",
+      "layer": "horizontal",
+      "fov": 0.05,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 1,
+      "before": {
+        "medianMs": 4.899999976158142,
+        "p95Ms": 5.299999952316284,
+        "samples": 60,
+        "directionCalls": 15120
+      },
+      "after": {
+        "medianMs": 2.5,
+        "p95Ms": 2.799999952316284,
+        "samples": 60,
+        "directionCalls": 4335
+      },
+      "geometrySha256": "84e954cdf93e78f31f4256349d0c74d1784b3dec30c1a68cd6293d08451adb19"
+    },
+    {
+      "name": "actual-celestial-pole",
+      "layer": "equatorial",
+      "fov": 0.05,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 12,
+      "before": {
+        "medianMs": 5.200000047683716,
+        "p95Ms": 5.699999928474426,
+        "samples": 60,
+        "directionCalls": 20372
+      },
+      "after": {
+        "medianMs": 3,
+        "p95Ms": 3.6999999284744263,
+        "samples": 60,
+        "directionCalls": 8465
+      },
+      "geometrySha256": "c70b2562f243e8e0b0abe7b4e62c7cd3a55e597e283fe2bda69173fd34539cd7"
+    },
+    {
+      "name": "grazing-0.2",
+      "layer": "horizontal",
+      "fov": 0.05,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 3,
+      "before": {
+        "medianMs": 5.700000047683716,
+        "p95Ms": 8.799999952316284,
+        "samples": 60,
+        "directionCalls": 15084
+      },
+      "after": {
+        "medianMs": 2.899999976158142,
+        "p95Ms": 4.800000071525574,
+        "samples": 60,
+        "directionCalls": 4299
+      },
+      "geometrySha256": "5565b5418aa29784a9bc1caba29e1d5302a770c4bec2c27e6b8c4e0db7d778b9"
+    },
+    {
+      "name": "grazing-0.2",
+      "layer": "equatorial",
+      "fov": 0.05,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 2,
+      "before": {
+        "medianMs": 6.199999988079071,
+        "p95Ms": 9.699999928474426,
+        "samples": 60,
+        "directionCalls": 20271
+      },
+      "after": {
+        "medianMs": 3.5,
+        "p95Ms": 5.899999976158142,
+        "samples": 60,
+        "directionCalls": 8364
+      },
+      "geometrySha256": "da8b0ea111f5cc4f2a6bb39fc63e38d21cf685720a0acc6e81ef02080c46d446"
+    },
+    {
+      "name": "grazing-0.5",
+      "layer": "horizontal",
+      "fov": 0.05,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 3,
+      "before": {
+        "medianMs": 5.699999928474426,
+        "p95Ms": 7,
+        "samples": 60,
+        "directionCalls": 15084
+      },
+      "after": {
+        "medianMs": 2.700000047683716,
+        "p95Ms": 3.5,
+        "samples": 60,
+        "directionCalls": 4299
+      },
+      "geometrySha256": "5565b5418aa29784a9bc1caba29e1d5302a770c4bec2c27e6b8c4e0db7d778b9"
+    },
+    {
+      "name": "grazing-0.5",
+      "layer": "equatorial",
+      "fov": 0.05,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 2,
+      "before": {
+        "medianMs": 6.050000011920929,
+        "p95Ms": 9.399999976158142,
+        "samples": 60,
+        "directionCalls": 20271
+      },
+      "after": {
+        "medianMs": 3.100000023841858,
+        "p95Ms": 4.300000071525574,
+        "samples": 60,
+        "directionCalls": 8364
+      },
+      "geometrySha256": "3c4a7b3b35bfb660b0232fc05bf14166a0a56401102ad131035f0fe68d3e7e24"
+    },
+    {
+      "name": "grazing-0.8",
+      "layer": "horizontal",
+      "fov": 0.05,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 3,
+      "before": {
+        "medianMs": 5.599999904632568,
+        "p95Ms": 8.399999976158142,
+        "samples": 60,
+        "directionCalls": 15084
+      },
+      "after": {
+        "medianMs": 2.600000023841858,
+        "p95Ms": 3.5,
+        "samples": 60,
+        "directionCalls": 4299
+      },
+      "geometrySha256": "5565b5418aa29784a9bc1caba29e1d5302a770c4bec2c27e6b8c4e0db7d778b9"
+    },
+    {
+      "name": "grazing-0.8",
+      "layer": "equatorial",
+      "fov": 0.05,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 2,
+      "before": {
+        "medianMs": 5.899999976158142,
+        "p95Ms": 7.600000023841858,
+        "samples": 60,
+        "directionCalls": 20271
+      },
+      "after": {
+        "medianMs": 3.049999952316284,
+        "p95Ms": 4.200000047683716,
+        "samples": 60,
+        "directionCalls": 8364
+      },
+      "geometrySha256": "7eaa1bcfd500e862d0ad623e14a3982ec27014a6f6d1dd1c248eddfe29be687e"
+    },
+    {
+      "name": "observer-pole-90",
+      "layer": "horizontal",
+      "fov": 267.8,
+      "center": {
+        "x": 194,
+        "y": 450
+      },
+      "exactOrderedGeometryEqual": true,
+      "segments": 1080,
+      "before": {
+        "medianMs": 3,
+        "p95Ms": 3.3000000715255737,
+        "samples": 60,
+        "directionCalls": 7560
+      },
+      "after": {
+        "medianMs": 1.4500000476837158,
+        "p95Ms": 1.6999999284744263,
+        "samples": 60,
+        "directionCalls": 2175
+      },
+      "geometrySha256": "123f3e0517cd897ef2ea775fe5910e04481f678e5ec60f725092ab0025aa07b8"
+    },
+    {
+      "name": "observer-pole-90",
+      "layer": "equatorial",
+      "fov": 267.8,
+      "center": {
+        "x": 194,
+        "y": 450
+      },
+      "exactOrderedGeometryEqual": true,
+      "segments": 997,
+      "before": {
+        "medianMs": 3.1999999284744263,
+        "p95Ms": 3.5,
+        "samples": 60,
+        "directionCalls": 10266
+      },
+      "after": {
+        "medianMs": 1.600000023841858,
+        "p95Ms": 2.0999999046325684,
+        "samples": 60,
+        "directionCalls": 4315
+      },
+      "geometrySha256": "3b6f81c4e2a0715ca60bfc589ad2fbec9cb2c1f9f5be933cf45fc8b7afd023a2"
+    },
+    {
+      "name": "observer-pole--90",
+      "layer": "horizontal",
+      "fov": 267.8,
+      "center": {
+        "x": 194,
+        "y": 450
+      },
+      "exactOrderedGeometryEqual": true,
+      "segments": 1080,
+      "before": {
+        "medianMs": 3.2500000596046448,
+        "p95Ms": 4.800000071525574,
+        "samples": 60,
+        "directionCalls": 7560
+      },
+      "after": {
+        "medianMs": 1.600000023841858,
+        "p95Ms": 2.5,
+        "samples": 60,
+        "directionCalls": 2175
+      },
+      "geometrySha256": "123f3e0517cd897ef2ea775fe5910e04481f678e5ec60f725092ab0025aa07b8"
+    },
+    {
+      "name": "observer-pole--90",
+      "layer": "equatorial",
+      "fov": 267.8,
+      "center": {
+        "x": 194,
+        "y": 450
+      },
+      "exactOrderedGeometryEqual": true,
+      "segments": 997,
+      "before": {
+        "medianMs": 3.4000000953674316,
+        "p95Ms": 5.600000023841858,
+        "samples": 60,
+        "directionCalls": 10266
+      },
+      "after": {
+        "medianMs": 2,
+        "p95Ms": 3.299999952316284,
+        "samples": 60,
+        "directionCalls": 4315
+      },
+      "geometrySha256": "4036f362cbf2582b13dd631132ab0727d746d8c7aa208c85d9c39441bb60e10f"
+    },
+    {
+      "name": "rolled-view",
+      "layer": "horizontal",
+      "fov": 85,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 277,
+      "before": {
+        "medianMs": 5.800000011920929,
+        "p95Ms": 10.700000047683716,
+        "samples": 60,
+        "directionCalls": 15120
+      },
+      "after": {
+        "medianMs": 2.799999952316284,
+        "p95Ms": 5.799999952316284,
+        "samples": 60,
+        "directionCalls": 4335
+      },
+      "geometrySha256": "94bd9ba07bbbff1e7c6e4b869e01e1150af8664cc855233191c0768a10cdeae5"
+    },
+    {
+      "name": "rolled-view",
+      "layer": "equatorial",
+      "fov": 85,
+      "center": null,
+      "exactOrderedGeometryEqual": true,
+      "segments": 209,
+      "before": {
+        "medianMs": 5.850000023841858,
+        "p95Ms": 6.799999952316284,
+        "samples": 60,
+        "directionCalls": 20372
+      },
+      "after": {
+        "medianMs": 2.8000000715255737,
+        "p95Ms": 3.299999952316284,
+        "samples": 60,
+        "directionCalls": 8465
+      },
+      "geometrySha256": "5f9ea098a670f82f12c4c5a7fc6e014df33c63b630da1f0cccc226d903f8a875"
+    }
+  ],
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+  "execution": "one Chromium page, alternating before/after order, 12 warmups each + 60 single-call samples each per case"
+}

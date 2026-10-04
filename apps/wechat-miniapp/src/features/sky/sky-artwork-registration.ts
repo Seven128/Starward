@@ -7,6 +7,12 @@ export interface SkyArtworkAnchor {
   /** Actual selected instant/location direction, in the same ENU frame as stars. */
   readonly direction: SkyVector;
 }
+export interface SkyArtworkPlaneAnchor {
+  readonly uv: readonly [number, number];
+  /** Raw points in one affine image plane. Their lengths are homogeneous
+   * weights, not independently normalized ray directions. */
+  readonly point: SkyVector;
+}
 export interface SkyArtworkRegistration {
   readonly rows: readonly [SkyVector, SkyVector, SkyVector];
   readonly determinant: number;
@@ -34,17 +40,30 @@ const cross = (a: SkyVector, b: SkyVector): SkyVector =>
 export function registerSkyArtwork(anchors: readonly SkyArtworkAnchor[]): SkyArtworkRegistration | null {
   if (anchors.length !== 3 || anchors.some(a => a.uv.length !== 2 || a.direction.length !== 3 ||
     ![...a.uv, ...a.direction].every(Number.isFinite) || Math.abs(Math.hypot(...a.direction)-1) > 1e-6)) return null;
-  const [a,b,c] = anchors as readonly [SkyArtworkAnchor, SkyArtworkAnchor, SkyArtworkAnchor];
+  return registerSkyArtworkPlane(anchors.map(a => ({ uv: a.uv, point: a.direction })));
+}
+
+/** The inverse/UV/bounds owner also accepts a known raw image plane. This
+ * preserves unequal homogeneous lengths after a finite report transform;
+ * normalizing each point first would alter off-anchor pixel coordinates.
+ * The existing unit-ray entry keeps its original validation and meaning.
+ */
+export function registerSkyArtworkPlane(anchors: readonly SkyArtworkPlaneAnchor[]): SkyArtworkRegistration | null {
+  if (anchors.length !== 3 || anchors.some(a => a.uv.length !== 2 || a.point.length !== 3 ||
+    ![...a.uv, ...a.point].every(Number.isFinite) || !Number.isFinite(Math.hypot(...a.point)) ||
+    Math.hypot(...a.point) <= 1e-10)) return null;
+  const [a,b,c] = anchors as readonly [SkyArtworkPlaneAnchor, SkyArtworkPlaneAnchor, SkyArtworkPlaneAnchor];
   const uvArea = (b.uv[0]-a.uv[0])*(c.uv[1]-a.uv[1])-(c.uv[0]-a.uv[0])*(b.uv[1]-a.uv[1]);
-  const rows = [cross(b.direction,c.direction), cross(c.direction,a.direction), cross(a.direction,b.direction)] as const;
-  const determinant = dot(a.direction,rows[0]);
-  if (Math.abs(uvArea) < 1e-10 || Math.abs(determinant) < 1e-10) return null;
+  const rows = [cross(b.point,c.point), cross(c.point,a.point), cross(a.point,b.point)] as const;
+  const determinant = dot(a.point,rows[0]);
+  if (!Number.isFinite(uvArea) || !Number.isFinite(determinant) ||
+    rows.some(row => !row.every(Number.isFinite)) || Math.abs(uvArea) < 1e-10 || Math.abs(determinant) < 1e-10) return null;
   const directionAt = (u: number,v: number): SkyVector | null => {
     const wb=((u-a.uv[0])*(c.uv[1]-a.uv[1])-(v-a.uv[1])*(c.uv[0]-a.uv[0]))/uvArea;
     const wc=((b.uv[0]-a.uv[0])*(v-a.uv[1])-(b.uv[1]-a.uv[1])*(u-a.uv[0]))/uvArea;
-    const vector=a.direction.map((n,i)=>(1-wb-wc)*n+wb*b.direction[i]!+wc*c.direction[i]!) as unknown as SkyVector;
+    const vector=a.point.map((n,i)=>(1-wb-wc)*n+wb*b.point[i]!+wc*c.point[i]!) as unknown as SkyVector;
     const length=Math.hypot(...vector);
-    return length > 1e-10 ? vector.map(n=>n/length) as unknown as SkyVector : null;
+    return Number.isFinite(length) && length > 1e-10 ? vector.map(n=>n/length) as unknown as SkyVector : null;
   };
   const center=directionAt(.5,.5),corners=[[0,0],[1,0],[1,1],[0,1]].map(([u,v])=>directionAt(u!,v!));
   if (!center || corners.some(c=>!c)) return null;

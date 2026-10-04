@@ -1,0 +1,20 @@
+{
+  "url": "https://stellarium-web.org/skysource/Vega?fov=40.78913364849271&date=2026-09-28T16%3A00%3A00Z&lat=22.4826799&lng=114.5557147&elev=0",
+  "canvas": [
+    {
+      "height": 844,
+      "left": 0,
+      "top": 0,
+      "width": 390.3999938964844
+    }
+  ],
+  "clock": "00:00:142026-09-29",
+  "screenshotBytes": 26219,
+  "screenshotSha256": "15d238a8028e8bc8c2f34480bba5f7543fc6ab8f058d5473608cfee2117d7f6a",
+  "scope": "Current Browser reference capture, actual Canvas CSS 390.4x844 and observed clock; 14-second offset from planned report, no pixel/registration/native acceptance; engine revision unknown",
+  "interaction": "Time popup actions produced no observed expansion; no hidden engine writes",
+  "temporaryViewport": {
+    "requestedWidth": 390,
+    "requestedHeight": 892
+  }
+}

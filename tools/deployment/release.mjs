@@ -5,7 +5,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { composeExecutor } from "./compose-runtime.mjs";
 import { readEnvironmentFile } from "./env-file.mjs";
 import { publicReadiness } from "./public-readiness.mjs";
-import { validateReleaseEnvironment } from "./validate-release-environment.mjs";
+import { validateReleaseEnvironment, validateStagingQualification } from "./validate-release-environment.mjs";
+import { prepareSkyStaticDelivery, verifySkyStaticDelivery, assertSkyStaticDeliveryIdentity } from "./sky-static-release.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const composePath = path.join(root, "infrastructure", "deployment", "compose.yml");
@@ -66,7 +67,7 @@ async function validateBackupManifest({ manifestPath, validation, deploy, now })
   });
 }
 
-async function writeReceipt({ validation, operator, startedAt, finishedAt, status, steps, backup, errorCode }) {
+async function writeReceipt({ validation, operator, startedAt, finishedAt, status, steps, backup, errorCode, skyStaticDelivery }) {
   await mkdir(validation.operations.receiptDirectory, { recursive: true, mode: 0o700 });
   const stamp = startedAt.replace(/[:.]/gu, "-");
   const receiptPath = path.join(
@@ -74,7 +75,7 @@ async function writeReceipt({ validation, operator, startedAt, finishedAt, statu
     `${validation.environment}-${stamp}-${validation.revision.slice(0, 12)}.release.json`,
   );
   const receipt = Object.freeze({
-    schemaVersion: "starward-release-receipt-v1",
+    schemaVersion: validation.operations.skyStaticDirectory ? "starward-release-receipt-v2" : "starward-release-receipt-v1",
     status,
     environment: validation.environment,
     domain: validation.domain,
@@ -86,6 +87,7 @@ async function writeReceipt({ validation, operator, startedAt, finishedAt, statu
     backup,
     steps,
     errorCode,
+    ...(validation.operations.skyStaticDirectory ? {skyStaticDelivery: skyStaticDelivery ?? null} : {}),
   });
   await writeFile(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, { mode: 0o600, flag: "wx" });
   return Object.freeze({ receiptPath, receipt });
@@ -96,11 +98,14 @@ export async function executeRelease({
   backupManifestPath,
   operator,
   confirmProductionDigest,
+  stagingReceiptPath,
   execute,
   fetchImpl,
   inspectTls,
   delay,
   now = () => new Date(),
+  prepareStatic = prepareSkyStaticDelivery,
+  verifyStatic = verifySkyStaticDelivery,
 }) {
   const validation = await validateReleaseEnvironment({ deployEnvPath });
   const deploy = await readEnvironmentFile(deployEnvPath);
@@ -108,14 +113,19 @@ export async function executeRelease({
   if (validation.environment === "production" && confirmProductionDigest !== validation.imageDigest)
     throw new Error("release_production_digest_confirmation_required");
   const startedAt = now().toISOString();
-  const run = composeExecutor({ composePath, deployEnvPath, cwd: root, execute });
+  let run = composeExecutor({ composePath, deployEnvPath, cwd: root, execute });
   const steps = [];
   let backup = null;
+  let delivery = null;
+  let skyStaticDelivery = null;
   const perform = (name, action) => {
     action();
     steps.push(Object.freeze({ name, status: "passed" }));
   };
   try {
+    const stagingQualification = validation.environment === "production" && validation.operations.skyStaticDirectory
+      ? await validateStagingQualification({receiptPath: stagingReceiptPath, revision: validation.revision,
+        imageDigest: validation.imageDigest, requireSkyStatic: true}) : null;
     backup = await validateBackupManifest({
       manifestPath: backupManifestPath,
       validation,
@@ -126,6 +136,16 @@ export async function executeRelease({
     perform("compose-version", () => run({ args: ["version"], step: "release-compose-version" }));
     perform("compose-config", () => run({ args: ["config", "--quiet"], step: "release-compose-config" }));
     perform("image-pull", () => run({ args: ["pull"], step: "release-image-pull" }));
+    if (validation.operations.skyStaticDirectory) {
+      delivery = await prepareStatic({validation, deploy, execute});
+      if (!delivery) throw new Error("sky_static_configured_delivery_missing");
+      skyStaticDelivery = assertSkyStaticDeliveryIdentity(delivery.identity, {revision: validation.revision, imageDigest: validation.imageDigest});
+      if (stagingQualification && skyStaticDelivery.imagePublicationHash !== stagingQualification.skyStaticDelivery.imagePublicationHash)
+        throw new Error("sky_static_staging_image_publication_mismatch");
+      steps.push(Object.freeze({name: "sky-static-preparation", status: "passed"}));
+      run = composeExecutor({composePath, overlayPaths: delivery.overlayPaths, deployEnvPath, cwd: root, execute});
+      perform("sky-static-compose-config", () => run({args: ["config", "--quiet"], step: "release-static-compose-config"}));
+    }
     perform("migration", () => run({ args: ["--profile", "operations", "run", "--rm", "migrate"], step: "release-migration" }));
     perform("converge", () => run({ args: ["up", "-d", "--wait", "--remove-orphans"], step: "release-converge" }));
     perform("worker-readiness", () => run({
@@ -140,7 +160,14 @@ export async function executeRelease({
       http: health.http,
       tls: health.tls,
     }));
-    return writeReceipt({
+    if (delivery) {
+      const result = await verifyStatic({delivery, validation, deploy, fetchImpl});
+      const checked = assertSkyStaticDeliveryIdentity(result?.identity, {revision: validation.revision, imageDigest: validation.imageDigest});
+      if (result.status !== "passed" || result.checkedFiles !== skyStaticDelivery.files || result.checkedBytes !== skyStaticDelivery.bytes ||
+          Object.keys(skyStaticDelivery).some(key => checked[key] !== skyStaticDelivery[key])) throw new Error("sky_static_verification_invalid");
+      steps.push(Object.freeze({name: "sky-static-verification", status: "passed", result}));
+    }
+    return await writeReceipt({
       validation,
       operator: selectedOperator,
       startedAt,
@@ -149,6 +176,7 @@ export async function executeRelease({
       steps,
       backup,
       errorCode: null,
+      skyStaticDelivery,
     });
   } catch (error) {
     const errorCode = failureCode(error);
@@ -162,8 +190,11 @@ export async function executeRelease({
       steps,
       backup,
       errorCode,
+      skyStaticDelivery,
     });
     throw new Error(`release_failed:${failed.receiptPath}:${errorCode}`);
+  } finally {
+    await delivery?.dispose();
   }
 }
 
@@ -179,6 +210,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
       backupManifestPath: option("--backup-manifest"),
       operator: option("--operator") ?? process.env.GITHUB_ACTOR,
       confirmProductionDigest: option("--confirm-production-digest"),
+      stagingReceiptPath: option("--staging-receipt"),
     });
     process.stdout.write(`${JSON.stringify({
       status: result.receipt.status,

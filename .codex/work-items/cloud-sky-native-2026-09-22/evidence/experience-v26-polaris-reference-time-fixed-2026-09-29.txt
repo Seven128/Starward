@@ -1,0 +1,3 @@
+Browser tab: 1, Title: "Stellarium Web Online Star Map", URL: "https://stellarium-web.org/skysource/Polaris?fov=40.78913364849271&date=2026-09-29T21%3A00%3A00Z&lat=22.4826799&lng=114.5557147&elev=0".
+There has been no change in the accessibility tree.
+The focused UI element is 1 AXWebArea Stellarium Web Online Star Map, URL: stellarium-web.org/skysource/Polaris?fov=40.78913364849271&date=2026-09-29T21%3A00%3A00Z&lat=22.4826799&lng=114.5557147&elev=0

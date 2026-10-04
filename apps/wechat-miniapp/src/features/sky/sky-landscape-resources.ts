@@ -1,9 +1,25 @@
 import type { SkyLandscapeManifestData, SkyLandscapeResource } from "@starward/miniapp-contracts";
-import { SKY_GPU_TEXTURE_BYTE_BUDGET, skyImageRgbaBytes } from "./sky-gpu-textures";
-import { createSkyPanoramaMask, type SkyPanoramaMask, type SkyLandscapePanorama } from "./sky-landscape-mask";
+import { SKY_GPU_TEXTURE_PRESSURE_BYTES, skyImageRgbaBytes } from "./sky-gpu-textures";
+import { createSkyPanoramaMask, skyPanoramaMaskIntersectsView, type SkyPanoramaMask, type SkyLandscapePanorama } from "./sky-landscape-mask";
+import type { SkyArtworkView } from "./sky-artwork-registration";
+import { skyLandscapeViewOpacity } from "./sky-landscape-visibility";
+
+export interface SkyLandscapeFootprint { view: SkyArtworkView; width: number; height: number }
+
+/** Keep each image's own alpha identity. An unknown footprint is not empty;
+ * valid alpha remains available without acquiring an invisible bitmap. */
+export function selectSkyLandscapeImageResources(resources: readonly SkyLandscapeResource[],
+  masks: ReadonlyMap<string, SkyPanoramaMask>, footprint: SkyLandscapeFootprint | null): SkyLandscapeResource[] {
+  if (footprint && skyLandscapeViewOpacity(footprint.view, footprint.width, footprint.height) === 0) return [];
+  return resources.filter(resource => {
+    const mask = masks.get(resource.id);
+    return mask && (!footprint || skyPanoramaMaskIntersectsView(mask, footprint.view, footprint.width, footprint.height));
+  });
+}
 
 /** Keep independently wanted celestial layers; refine the foreground only in
- * their remaining shared texture budget. Pending/unknown inputs keep overview.
+ * the remaining shared allocation target. Pending/unknown inputs keep overview;
+ * the required overview and active celestial textures can exceed that target.
  * Native decoded memory and target performance are separate measurements. */
 export function selectSkyLandscapeResource(publication: SkyLandscapeManifestData,
   otherImages: readonly object[], pending: boolean): SkyLandscapeResource {
@@ -16,7 +32,7 @@ export function selectSkyLandscapeResource(publication: SkyLandscapeManifestData
     reserved += bytes;
   }
   return [...publication.resources].reverse().find(resource =>
-    reserved + resource.image.width * resource.image.height * 4 <= SKY_GPU_TEXTURE_BYTE_BUDGET) ?? overview;
+    reserved + resource.image.width * resource.image.height * 4 <= SKY_GPU_TEXTURE_PRESSURE_BYTES) ?? overview;
 }
 
 /** Match the selected image to its own decoded alpha. A valid overview stays

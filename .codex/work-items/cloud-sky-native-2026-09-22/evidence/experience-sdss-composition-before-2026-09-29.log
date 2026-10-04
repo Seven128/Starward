@@ -1,0 +1,54 @@
+✔ optical registration uses the admitted target, without painting another galaxy's position (15.3515ms)
+✔ M51 optical level follows measured field while wider views keep W3 (0.1498ms)
+✔ fully covered M51 images lose visible credits only after the foreground actually paints (14.0749ms)
+✔ leaving the image's whole field clears both credits without reporting a load failure (4.7295ms)
+✔ foreground coverage preserves exposed image edges, including a covered center (2.0974ms)
+✔ a fully covered narrow viewport loses credit even when image edges extend into open sky offscreen (1.7742ms)
+✔ M51 optical draw is above W3, and optical failure preserves W3 and the scene (7.3588ms)
+✖ one object's painted optical pixels do not combine with its independent infrared spectrum (4.7063ms)
+✔ partial image edges remain eligible after their center leaves the narrow viewport (2.418ms)
+✔ SDSS credit follows committed optical pixels across request and focus transitions (8.2589ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 9
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 460.9684
+
+✖ failing tests:
+
+test at src\features\sky\sky-sdss-optical-scene.test.ts:1:8455
+✖ one object's painted optical pixels do not combine with its independent infrared spectrum (4.7063ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      [
+  +     'W3',
+  +     0.58,
+  +     'infrared-cutout'
+  +   ],
+  +   [
+        'SDSS',
+        1,
+  +     'source-over'
+  -     'optical-cutout'
+      ]
+    ]
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-sdss-optical-scene.test.ts:162:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ [ 'W3', 0.58, 'infrared-cutout' ], [ 'SDSS', 1, 'source-over' ] ],
+    expected: [ [ 'SDSS', 1, 'optical-cutout' ] ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

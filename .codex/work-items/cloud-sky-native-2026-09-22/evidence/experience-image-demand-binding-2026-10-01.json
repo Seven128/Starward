@@ -1,0 +1,1068 @@
+{
+  "recordedAtUtc": "2026-09-30T19:42:00.754Z",
+  "scope": "Current production shared image-demand repair versus frozen pre-edit HEAD72e65cf3: original HTTP publication assets, saved v53 report replay, actual logical uploads/retention/peak and whole-canvas pixels at common/wide/local/dome/rolled/offset/red/dusk/cutout views, one upload-failure latch and new decoded identity recovery. Software development evidence; not native timing, physical GPU memory, current Context or device acceptance.",
+  "branch": "codex/remote-main-20260908",
+  "head": "72e65cf309d700cb7d40c5b7afd53660fd39fa35",
+  "inherited": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-environment-composition-binding-2026-09-30.json",
+    "bytes": 225872,
+    "sha256": "5fc6e75632025594a2496f12fb74ff224b2f85fd78b5518e379a4f7bda97d70c"
+  },
+  "baseline": {
+    "path": "output/playwright/cloud-sky-image-demand-1001/baseline.json",
+    "bytes": 14028,
+    "sha256": "07c651a14cef50b299a3e2acef25e3fe38b4bc0e972ec056d991078de6419f58"
+  },
+  "baselineBundle": {
+    "path": "output/playwright/cloud-sky-image-demand-1001/baseline.js",
+    "bytes": 274693,
+    "sha256": "05f923b5597fa6fac0dd22bab6512b4c43ec0109ffb2ff2a848d86e816cb2582"
+  },
+  "productionBundle": {
+    "path": "output/playwright/cloud-sky-image-demand-1001/production.js",
+    "bytes": 274885,
+    "sha256": "cb2cfb23219f99af96f9b07bc17e6362f5a5c98e107e502b2e38604417440b36"
+  },
+  "result": {
+    "path": "output/playwright/cloud-sky-image-demand-1001/result.json",
+    "bytes": 1043198,
+    "sha256": "d7ee2f1ea026af04a4300aa000aaedba8e1c078affa8ca095b47a0140e497610"
+  },
+  "failingBeforeRegression": {
+    "path": "output/playwright/cloud-sky-image-demand-1001/regression.json",
+    "bytes": 325,
+    "sha256": "c53cd88bee8efa61701c04c15fc7d4689ea2a4cde59506fa3b9e3727bd9e48ce"
+  },
+  "sourceHashes": [
+    {
+      "path": "node_modules/twgl.js/dist/7.x/twgl-full.module.js",
+      "sha256": "f518c84fa9d404b725fff024c91ad04e756e67bbc69e62c1725b08cce0ef6ef3"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-view-projection.ts",
+      "sha256": "648d6e3ea1dc4ed5c21e8cc42f31ff30b5eab69488812c3958286dd3f4c5c209"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-registration.ts",
+      "sha256": "85e16452de821088531ee9f19a4bfe6f791f6da26818ead6f3d53fd8e23c2513"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-raster-bounds.ts",
+      "sha256": "374f31d0bfa910a0c100442e5c74339a8711dcabaa46828f63a842e49b4b361e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-textures.ts",
+      "sha256": "bb3507afb8e522a14b4181064bb3572aabc5dcceb171be2c09084f9365deaafe"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-saturn-rings.ts",
+      "sha256": "487a27a2eac32dfb526b6cb22d1aaf3ba73dce05f7073a1e1f5b571ada5a32ee"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-saturn-ring-fragment.ts",
+      "sha256": "1546479b0af3136a8a2dd1f95a3708281f97b7d70a076d9974fd5426be31682c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape-geometry.ts",
+      "sha256": "f743730e7924d4083da13115d61868eabe471be1ccf544e9784d26f7e204564f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape.ts",
+      "sha256": "fb87c22af6bfef2e955d1d54e2643fa205800e06c51cf2a69e912cc9cc1afdd0"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "sha256": "af9374b80c7fff45fd42c9690d2a8a1c3e257a6669b0795e58e84fa93d73b2b3"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/types.ts",
+      "sha256": "3218f6aaa44d9cd8178fdb41445bbd15f05becb14013628432038b49c7ae83eb"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/plan.ts",
+      "sha256": "373cf1316693b4b1b11cd954d532e3759086fa3ed301f1c3279d7df0b367fdd3"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/local-time.ts",
+      "sha256": "35a6b36273df279be7c5b164afeb9d77b17bde9a64e9c9f77efe666e6328193b"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/plan-timing.ts",
+      "sha256": "5f0f9380f2d4a508d949d8eff55d0d7098612d3f7bd777d6b851b398eb83c85a"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/plan-reminders.ts",
+      "sha256": "51fbf4fbaa1902997ffecd6254676c1b190cfc8873d480d6aed54157572fc8bd"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/contribution-feedback.ts",
+      "sha256": "ae442bf856f6147e64d030d05c249c6368346afbcd3c9fbc8b2bf846eeca427d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/filters.ts",
+      "sha256": "280e7b7f38d0a990e55166f931ef2ccbb4f6a1a3e168e0fdcd7afd292bfc3c6d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/feature-flags.ts",
+      "sha256": "440606adabca6f0f0e6785905c3202b09095aefaf58d28918bea0da4b1c66ef7"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/url-policy.ts",
+      "sha256": "7ff57fa707c8e5eb11d33426a72865df5b09493b07fbf03e9f6af16e622515e9"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/viewport.ts",
+      "sha256": "89efea05a6ec1530a4a9698011ab8fd384fc1feab38e7b83673a8088e663102b"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/ranking.ts",
+      "sha256": "6abf16ed0b6e99be580afee8a121d61813d4a548f3b036276c99ccd7972ba5f5"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/preferences.ts",
+      "sha256": "d7f1da44001610fac181cbab03880fbb74fadff2e652445f60ee6f4968da76ca"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-planet-identity.ts",
+      "sha256": "9e947673bb81c4b605361b8bffdc368330bdd5f978a71c83644804c6c77fa97e"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-target-position.ts",
+      "sha256": "d1920242e7b72c179bb2c242a8c08366dbe2771a63f03a449621c52801f93efa"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-luminary-identity.ts",
+      "sha256": "b215f288ff261d67989efa27c34cbf778ebe6c780b785d77815a29ceee1c5275"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/celestial-identity.ts",
+      "sha256": "c7e224fb9a4a918db7c0ce91d1e1733f0030727c2bc64f577f8ea49f53f59547"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-geometry.ts",
+      "sha256": "86576641382bc51ef4e14fd3ac1caebb134fcf0e72a6116b02a20bb1c33d392b"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-catalog-publication.ts",
+      "sha256": "a6024d6ad23765496393534ca67a43a671febc7719ee2a378e667d2fe7adc15d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-scene.ts",
+      "sha256": "a0cbbd7181159e5749038e467842e85314ef652f3ec8a20f5e838d11d51cea87"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-scene.ts",
+      "sha256": "8c87512639a2e2fc7a38cb63084e56513a6f9d3e71af085d2e0c5c2370ba05e7"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/moon-coverage-publication.ts",
+      "sha256": "4d7c8b550131ff0137f14a5ee4de5efd68a98e2685397979ac78238aefb58b50"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/deep-sky-image-publication.ts",
+      "sha256": "75bc21b6dc56338eea16132b243f00675b7b8aac2ae9df27bee6622d5236b113"
+    },
+    {
+      "path": "node_modules/@noble/hashes/utils.js",
+      "sha256": "11319ec0a8132a0c2ced8c98af33ae9274c001d6baf4f4709c4a6115e031a3c5"
+    },
+    {
+      "path": "node_modules/@noble/hashes/_md.js",
+      "sha256": "a112f0fe1b15db00f2638618c436a17be1c5e13baf19d02fcc29016ae1db2233"
+    },
+    {
+      "path": "node_modules/@noble/hashes/_u64.js",
+      "sha256": "e48c0cfc10810439a4807b46db136ce603a3fa09b62584f513ef2f3ca496af54"
+    },
+    {
+      "path": "node_modules/@noble/hashes/sha2.js",
+      "sha256": "3ddc587c588283cbceed4dd9929cefcce06a0c231b54d4c6f0f99c478c686c00"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-image-display-support.ts",
+      "sha256": "c90d5b7623d9844f8ca872b514509c19cd908d2d9206575286f26783ee88a26c"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sdss-optical-publication.ts",
+      "sha256": "0fd5f2c3b7e29cc478ef04dd9b9af7516916b71993a34aba2645852fcd3daa38"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/observation-frame.ts",
+      "sha256": "75be5650a8ee3fb025ed4a43a1ffa12dcf84dd2b946d284e91112401f6a67188"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-time-model.ts",
+      "sha256": "6c1f47586bdec67b5c24fa6dd182c400cd364294986c3c840f54892ba800ff60"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-lunar-phase.ts",
+      "sha256": "21e45cc998d4cebed9625e2067e02ce95dbf7c3cdbb16ce325a7d53718521392"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/catalog-json-integrity.ts",
+      "sha256": "cf5a8278773b78d06a4670dc3cda63d7c0edcbbfbb01b39369ea37011298ff4d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/stellar-supplement.ts",
+      "sha256": "4e9a37385e362d9ffd88b3a48229bd1b11e4f60ca7fd7d8ca54eabae580fa973"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/constellation-catalog.ts",
+      "sha256": "8c4fa3961030303ca54c3a1a89253dece291f29cbc72a9f0766bfb960b659a9e"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/api-shapes.ts",
+      "sha256": "ee35ed2cf9fb30e88d834036fa3b22652c1c401a7154b181a3c8fae17355eaaa"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/generated/miniapp-api.generated.ts",
+      "sha256": "c05553b7b7847d318ea67ba6a2057fec6d5d2761b093cc4615bd490e5e5f4501"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/account-profile.ts",
+      "sha256": "a51bc104b8984c8339434ee9eb672d339df9ae7c2f3bb9e313eb0f0bdb1913b6"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/recent-weather.ts",
+      "sha256": "49f368afa7e5a3544c8e37745641c2eeacab7d1eef5de6ad76c3564815c87adb"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/air-quality.ts",
+      "sha256": "f4627ed64579f720cfb352a2d71523a9c0711021b4a5fde9faa8e9b52ee32611"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/sky-landscape-publication.ts",
+      "sha256": "053a950b4d620be52034a696bb81fa638d1e6f85569652e5e0f949f91930e40d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/index.ts",
+      "sha256": "7d810d243e847a4495564a9eb0208fb7663ac1741a01189c6b7375215430cb0b"
+    },
+    {
+      "path": "packages/astronomy-core/src/stellar-vectors.ts",
+      "sha256": "683c487671550c00b66a5b43c836c33b759e45260b1bae3eed6c5c94122f5f81"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-time-frame.ts",
+      "sha256": "40df40fd298fdf54585802827a70d6c8328df2f1e169014b7c03852cec972e2f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-observation-frame.ts",
+      "sha256": "fc391352e4d73553d7f8fdc7469481af6a1f5f56219d97fc59425cdc09c6acf6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-solar-light.ts",
+      "sha256": "a9b2a2988846256a92bc48344b840178de91ff80fac26e1ba18d5d81af4dec45"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+      "sha256": "2369acbfde4a992d52fcc616d7f754c7a76e35cdb91f68f53af6e5ccebb6b4ee"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-viewport.ts",
+      "sha256": "54be3d52b945669978e1f8ca39c917ccd3c9451e8406f2a4517e6af6052edfea"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-zoom.ts",
+      "sha256": "b9906780d2dfb4b651565cc13d5995c9632e2f7830fd5cabb35d1d97f67a182e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-projection.ts",
+      "sha256": "f26ca3feb18c07de69c9cc092f0c5f62f45ba1eff499d2ff9b2fb29efea5805c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-visibility.ts",
+      "sha256": "d9bfb888d080d5b24e4a9d37e97a52b430307acea7213d73337e5242ef5f9608"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-visibility.ts",
+      "sha256": "7d17df6131c917e05f5bf9f698fb9bd3a38fe0a749495ecccb51ab3e35b7593f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-line-clip.ts",
+      "sha256": "e8ba9d114119c2b51e316cf602a58aa8352691f0c5ea174140898ec889e4c88e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.ts",
+      "sha256": "a2dd23662d0559b8fcd9a2ce3f48bdc5c22fae5b8c8f8a3b6c510d37d45d4f79"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-star-appearance.ts",
+      "sha256": "81d6324176760b5ae7f6d08701b843c696601ab5b023fd8e95ce0b82cb08d00a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-stellar-supplement-scene.ts",
+      "sha256": "878553232b938e8d4620721518f0fa617810a9a03186a343a37a960a1366fdc9"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-survey-registration.ts",
+      "sha256": "6c4af33d77ce8aad30dd101ad389b336267e4b5aa2b3be9dd24ec2ba9b9dcf8f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-deep-auxiliary-visibility.ts",
+      "sha256": "ac0c001e18e0f466c2b67ca78d08ffa723ad0ae2f07fdddfca2ede84422fb568"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape-mask.ts",
+      "sha256": "4156c6ba50752eb04a82e5f80e498ac18325e37a852c0e4f04cb214a484e5e20"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-galactic-band.ts",
+      "sha256": "bc58c7e0a6e372f315e913f12c02ffd4cd88f3d0a18e1735026c940dec97ec39"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-phase-disc.ts",
+      "sha256": "a0f35a0ebb14aa8f8c1ceea7d4fe5d0131e24615d9c680ff5f14f58b866db4e1"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-sun-disc.ts",
+      "sha256": "305ae9d1a1ddd6d22a92026d0853f4290d54f248367e09b5af842780684d5042"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-body-surface-orientation.ts",
+      "sha256": "1215443ea5d813be88ac9d2e18556d0c05146f761252ab7eb7d8c6d395bde7a5"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-moon-disc.ts",
+      "sha256": "7a4347194c9dc887221b4aafe52393d4954ecd4fb79788b91ce4c1e6d45556c4"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-planet-disc.ts",
+      "sha256": "7519277e7a51313de7bf8161f16996d1c68b26dd00b26313bd7b02595452f964"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-grid-projection.ts",
+      "sha256": "90348d8974a8734a5198de8ce27474a8f18ec7657d18ee32719a3c56c1ef0e5b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-horizontal-grid.ts",
+      "sha256": "c5fcbc7fcec067cfd83d9d1e198815c3fe9c45038a6d6a83c7bbe8323ec73b6c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-equatorial-grid.ts",
+      "sha256": "27415bad0e2deda86caa2abc7e38d847c38dc814bd3bae0d06f8a552d3fc86a8"
+    },
+    {
+      "path": "node_modules/healpix-ts/dist/index.mjs",
+      "sha256": "5c4bdc4b48e4ceab04ed7eeb99c52b133759d74bbd9c1bbb0715256f9da58723"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-hips-tile-mesh.ts",
+      "sha256": "3cd27aff81b87fd7d116044839a7a362a8257eebcd0f856018e0f525a9beef21"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "sha256": "e30b8591984ad37778b358b9217d6df0954d2fd8e330ab86759f7adf28019139"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-landscape-resources.ts",
+      "sha256": "bb23c448633c115937451437d63ed106b448c71c50ae5361427897ab71267239"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-image-file-session.ts",
+      "sha256": "1950f44454703066702bf2d452e41d77d5925449a76391462f9caaa093ecfc7a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/deep-sky-image-request.ts",
+      "sha256": "e64073f411f220a1a852f9f4b24ce6ea86c7ebf1a2b52f42a94d030129f432f8"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "common-dpr3",
+      "beforeWanted": 17,
+      "afterWanted": 16,
+      "excluded": [
+        "Lyr"
+      ],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 1,
+          "warmBytes": 8388608,
+          "warmImages": [
+            "galactic"
+          ],
+          "peakBytes": 22806528,
+          "retainedBytes": 14417920,
+          "rgbaSha256": "735b37d0d4fc51ad54a7432bbbff54646d34652195dac4605421c3c5db795b63",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 1,
+          "warmBytes": 8388608,
+          "warmImages": [
+            "galactic"
+          ],
+          "peakBytes": 22544384,
+          "retainedBytes": 14155776,
+          "rgbaSha256": "735b37d0d4fc51ad54a7432bbbff54646d34652195dac4605421c3c5db795b63",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        }
+      ]
+    },
+    {
+      "name": "wide",
+      "beforeWanted": 32,
+      "afterWanted": 25,
+      "excluded": [
+        "Ara",
+        "CrB",
+        "Gru",
+        "Ind",
+        "Pav",
+        "PsA",
+        "Tel"
+      ],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 8,
+          "warmBytes": 14942208,
+          "warmImages": [
+            "galactic",
+            "And",
+            "Aql",
+            "Aqr",
+            "Ara",
+            "Boo",
+            "Cap",
+            "Cas"
+          ],
+          "peakBytes": 31260672,
+          "retainedBytes": 16318464,
+          "rgbaSha256": "b78354fb7a4964b56488ce402398bf55713674a1fa55afe75f8755f8a2aac470",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 6,
+          "warmBytes": 13631488,
+          "warmImages": [
+            "galactic",
+            "And",
+            "Aql",
+            "Aqr",
+            "Boo",
+            "Cap"
+          ],
+          "peakBytes": 29622272,
+          "retainedBytes": 15990784,
+          "rgbaSha256": "b78354fb7a4964b56488ce402398bf55713674a1fa55afe75f8755f8a2aac470",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        }
+      ]
+    },
+    {
+      "name": "wide-failure",
+      "beforeWanted": 32,
+      "afterWanted": 25,
+      "excluded": [
+        "Ara",
+        "CrB",
+        "Gru",
+        "Ind",
+        "Pav",
+        "PsA",
+        "Tel"
+      ],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 7,
+          "warmBytes": 6553600,
+          "warmImages": [
+            "And",
+            "Aql",
+            "Aqr",
+            "Ara",
+            "Boo",
+            "Cap",
+            "Cas"
+          ],
+          "peakBytes": 22872064,
+          "retainedBytes": 16318464,
+          "rgbaSha256": "8e0184d52ebc27c9ded3b1c2a13b48021c339f16c5a9e1213184259add5850d4",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 1,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 5,
+          "warmBytes": 5242880,
+          "warmImages": [
+            "And",
+            "Aql",
+            "Aqr",
+            "Boo",
+            "Cap"
+          ],
+          "peakBytes": 21233664,
+          "retainedBytes": 15990784,
+          "rgbaSha256": "8e0184d52ebc27c9ded3b1c2a13b48021c339f16c5a9e1213184259add5850d4",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 1,
+          "glError": 0
+        }
+      ]
+    },
+    {
+      "name": "common",
+      "beforeWanted": 17,
+      "afterWanted": 16,
+      "excluded": [
+        "Lyr"
+      ],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 1,
+          "warmBytes": 8388608,
+          "warmImages": [
+            "galactic"
+          ],
+          "peakBytes": 22806528,
+          "retainedBytes": 14417920,
+          "rgbaSha256": "076322eb85f1d6869c0a745bfba716d67aa096bce2d56117ff2de6f1d4471962",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 1,
+          "warmBytes": 8388608,
+          "warmImages": [
+            "galactic"
+          ],
+          "peakBytes": 22544384,
+          "retainedBytes": 14155776,
+          "rgbaSha256": "076322eb85f1d6869c0a745bfba716d67aa096bce2d56117ff2de6f1d4471962",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        }
+      ]
+    },
+    {
+      "name": "common-rolled-offset",
+      "beforeWanted": 18,
+      "afterWanted": 18,
+      "excluded": [],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 1,
+          "warmBytes": 8388608,
+          "warmImages": [
+            "galactic"
+          ],
+          "peakBytes": 20512768,
+          "retainedBytes": 12124160,
+          "rgbaSha256": "7a47142d8c5b64480f9722016cef4500d5efdf87247c17b15a7e58ed6157db3a",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 1,
+          "warmBytes": 8388608,
+          "warmImages": [
+            "galactic"
+          ],
+          "peakBytes": 20512768,
+          "retainedBytes": 12124160,
+          "rgbaSha256": "7a47142d8c5b64480f9722016cef4500d5efdf87247c17b15a7e58ed6157db3a",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        }
+      ]
+    },
+    {
+      "name": "local",
+      "beforeWanted": 0,
+      "afterWanted": 0,
+      "excluded": [],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 8388608,
+          "retainedBytes": 8388608,
+          "rgbaSha256": "dbced4a9f1e50559945ef6fee383e874999cfb155d575fc452fde1f2d598d6c6",
+          "paintedDeepSky": false,
+          "landscape": "detail",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 8388608,
+          "retainedBytes": 8388608,
+          "rgbaSha256": "dbced4a9f1e50559945ef6fee383e874999cfb155d575fc452fde1f2d598d6c6",
+          "paintedDeepSky": false,
+          "landscape": "detail",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        }
+      ]
+    },
+    {
+      "name": "dome",
+      "beforeWanted": 0,
+      "afterWanted": 0,
+      "excluded": [],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 16777216,
+          "retainedBytes": 16777216,
+          "rgbaSha256": "c421a40e51bff118a6154b1230ff9489443fa059f8bcce77572428c935cc5d9a",
+          "paintedDeepSky": false,
+          "landscape": "detail",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 16777216,
+          "retainedBytes": 16777216,
+          "rgbaSha256": "c421a40e51bff118a6154b1230ff9489443fa059f8bcce77572428c935cc5d9a",
+          "paintedDeepSky": false,
+          "landscape": "detail",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        }
+      ]
+    },
+    {
+      "name": "west-dusk",
+      "beforeWanted": 9,
+      "afterWanted": 9,
+      "excluded": [],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 14680064,
+          "retainedBytes": 14680064,
+          "rgbaSha256": "be5ae411b85fd23a4e5ad56a79ee016a700dca04a2a3adcbb0130df3a0b64ea1",
+          "paintedDeepSky": false,
+          "landscape": "detail",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 14680064,
+          "retainedBytes": 14680064,
+          "rgbaSha256": "be5ae411b85fd23a4e5ad56a79ee016a700dca04a2a3adcbb0130df3a0b64ea1",
+          "paintedDeepSky": false,
+          "landscape": "detail",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        }
+      ]
+    },
+    {
+      "name": "red",
+      "beforeWanted": 17,
+      "afterWanted": 16,
+      "excluded": [
+        "Lyr"
+      ],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 14417920,
+          "retainedBytes": 14417920,
+          "rgbaSha256": "608921f6102b0846afaf39d1373c1a9f084033ff0e9474840196889cde11c3d7",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 14155776,
+          "retainedBytes": 14155776,
+          "rgbaSha256": "608921f6102b0846afaf39d1373c1a9f084033ff0e9474840196889cde11c3d7",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        }
+      ]
+    },
+    {
+      "name": "m42-overview",
+      "beforeWanted": 0,
+      "afterWanted": 0,
+      "excluded": [],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 8650752,
+          "retainedBytes": 8650752,
+          "rgbaSha256": "a780c1674f1b1df9a775db62f66783bc37529704c49c6cab4a6c3079cee17da2",
+          "paintedDeepSky": true,
+          "landscape": "detail",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 8650752,
+          "retainedBytes": 8650752,
+          "rgbaSha256": "a780c1674f1b1df9a775db62f66783bc37529704c49c6cab4a6c3079cee17da2",
+          "paintedDeepSky": true,
+          "landscape": "detail",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        }
+      ]
+    },
+    {
+      "name": "m42-detail",
+      "beforeWanted": 0,
+      "afterWanted": 0,
+      "excluded": [],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 9437184,
+          "retainedBytes": 9437184,
+          "rgbaSha256": "20f238c899b0c5e4fba6cc8dd893be430605da900238635f29fc46ee4146568e",
+          "paintedDeepSky": true,
+          "landscape": "detail",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 9437184,
+          "retainedBytes": 9437184,
+          "rgbaSha256": "20f238c899b0c5e4fba6cc8dd893be430605da900238635f29fc46ee4146568e",
+          "paintedDeepSky": true,
+          "landscape": "detail",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        }
+      ]
+    },
+    {
+      "name": "m42-local",
+      "beforeWanted": 0,
+      "afterWanted": 0,
+      "excluded": [],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 8388608,
+          "retainedBytes": 8388608,
+          "rgbaSha256": "b261e6db00b66051e149f9f13673d7bb2cdca9b0e528c29111074280fdced149",
+          "paintedDeepSky": false,
+          "landscape": "detail",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 0,
+          "warmBytes": 0,
+          "warmImages": [],
+          "peakBytes": 8388608,
+          "retainedBytes": 8388608,
+          "rgbaSha256": "b261e6db00b66051e149f9f13673d7bb2cdca9b0e528c29111074280fdced149",
+          "paintedDeepSky": false,
+          "landscape": "detail",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        }
+      ]
+    },
+    {
+      "name": "common-return",
+      "beforeWanted": 17,
+      "afterWanted": 16,
+      "excluded": [
+        "Lyr"
+      ],
+      "variants": [
+        {
+          "variant": "before",
+          "warmUploads": 1,
+          "warmBytes": 8388608,
+          "warmImages": [
+            "galactic"
+          ],
+          "peakBytes": 22806528,
+          "retainedBytes": 14417920,
+          "rgbaSha256": "735b37d0d4fc51ad54a7432bbbff54646d34652195dac4605421c3c5db795b63",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        },
+        {
+          "variant": "after",
+          "warmUploads": 1,
+          "warmBytes": 8388608,
+          "warmImages": [
+            "galactic"
+          ],
+          "peakBytes": 22544384,
+          "retainedBytes": 14155776,
+          "rgbaSha256": "735b37d0d4fc51ad54a7432bbbff54646d34652195dac4605421c3c5db795b63",
+          "paintedDeepSky": false,
+          "landscape": "overview",
+          "liveTextures": 0,
+          "retiredLogicalBytes": 0,
+          "retiredAllocations": 0,
+          "failedAttempts": 0,
+          "glError": 0
+        }
+      ]
+    }
+  ],
+  "encodedFileLifecycle": {
+    "writes": 2,
+    "removes": 2,
+    "failed": 0
+  },
+  "errors": [],
+  "scripts": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-image-demand-gpu-2026-10-01.mts",
+      "bytes": 21439,
+      "sha256": "50c16aad2eb8562feb62d665ea2fdddddb05e256f42c2089f0cecc176908c6b6"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-image-demand-regression-2026-10-01.mts",
+      "bytes": 1845,
+      "sha256": "2c293d95a6a025a2e5d1acac080769e5093e2ba59613f9d51f8827ea94924890"
+    }
+  ],
+  "inspectedImages": [
+    {
+      "path": "output/playwright/cloud-sky-image-demand-1001/common-dpr3.png",
+      "bytes": 305941,
+      "sha256": "817b123c28e5079953276b88f2af7c60451413e10cf71ee644f675f3ff167aed"
+    },
+    {
+      "path": "output/playwright/cloud-sky-image-demand-1001/wide.png",
+      "bytes": 278409,
+      "sha256": "408e07331719460331af4bea2c37ac1346acf2c56f2539db33eed2d4b7e2af91"
+    },
+    {
+      "path": "output/playwright/cloud-sky-image-demand-1001/dome.png",
+      "bytes": 309417,
+      "sha256": "836411d36a259c694080e0dae53eadb145918bb4e7facb3fe6ae723bf68bd5b8"
+    },
+    {
+      "path": "output/playwright/cloud-sky-image-demand-1001/m42-detail.png",
+      "bytes": 103520,
+      "sha256": "37c85d53358dce4162db1378eab581515e8b5141a7f90023f16978e4b6343e6b"
+    }
+  ],
+  "checks": {
+    "affectedDemandAndLoader": "20/20 pass",
+    "constellationAndCanvasAlignment": "10/10 pass",
+    "miniappTypes": "exit 0",
+    "contextValidation": "exit 0"
+  },
+  "limits": [
+    "SwiftShader development pixels and logical allocation, not native/physical GPU/total memory/timing acceptance",
+    "Common warm galaxy upload remains 8,388,608 B; retained 16 MiB is not a peak cap",
+    "Source coverage and quality gaps remain; no arbitrary downsampling, source change or budget increase"
+  ],
+  "preservedOtherEdits": [
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-control.tsx",
+      "bytes": 5667,
+      "sha256": "5d0a9b24568a8ac67569a47b266325e6c03887abcbf135d0677e8d1511101a80"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.test.ts",
+      "bytes": 2041,
+      "sha256": "dd26ea1583939b408b8b75ba51490a96732026f9801b7a359f9ce73ac0aafd7b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/display-mode-gesture.ts",
+      "bytes": 1770,
+      "sha256": "f7b142d7918ce02804c63ac3a123f885eea24ff8e69c0008aaad9dad96570bfc"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/content/settings/index.tsx",
+      "bytes": 14895,
+      "sha256": "abd0222c218714598353575fa600c9057beac50fec647fc70c84dc6cc7dac16e"
+    },
+    {
+      "path": "workers/miniapp-api/src/miniapp-infrastructure.test.ts",
+      "bytes": 64272,
+      "sha256": "a67e85b8579c486075426ce11cc54a829d2a2f94c104f0b84c863940b3c72da8"
+    },
+    {
+      "path": "workers/miniapp-api/src/outbox-worker.ts",
+      "bytes": 42510,
+      "sha256": "39d68a4e26297c3c2fda92467854054812590083bd2f7e23522464496b4076cd"
+    }
+  ],
+  "preservedCandidates": [
+    {
+      "path": "apps/wechat-miniapp/dist/weapp-check-sky-scene-v53-final",
+      "sha256": "80bc564b6d32d47a342ceb06a3c38e384fdbb091056a8ce49fc1f34a412d48d7",
+      "fileCount": 257,
+      "totalBytes": 4527023,
+      "scope": "Preserved frozen historical candidate; not opened or sent to a phone this turn"
+    },
+    {
+      "path": "apps/wechat-miniapp/dist/weapp-check-sky-scene-v52-final",
+      "sha256": "e8773df042c5c4de062e26f53071103103c05a12a50d70c463d8082045f52dba",
+      "fileCount": 257,
+      "totalBytes": 4526413,
+      "scope": "Preserved frozen historical candidate; not opened or sent to a phone this turn"
+    },
+    {
+      "path": "apps/wechat-miniapp/dist/weapp-check-sky-scene-v51-final",
+      "sha256": "8ebb849ed6ca986fe323520d580db798a257558dae73598569f4a91dfa87179e",
+      "fileCount": 257,
+      "totalBytes": 4526342,
+      "scope": "Preserved frozen historical candidate; not opened or sent to a phone this turn"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+✔ real BSC5P catalog flows through a formal spot sky HTTP frame into the matching object details (937.9046ms)
+✔ Mini Program production catalog/detail imports operate while retired Gaia and Hipparcos modules are unavailable (1299.0787ms)
+✔ real published stars reach drawing and picking with the selected observer/time; zoom hides faint stars without changing BSC (661.3809ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6048.4813

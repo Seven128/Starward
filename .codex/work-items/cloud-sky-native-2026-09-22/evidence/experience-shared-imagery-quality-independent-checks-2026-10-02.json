@@ -1,0 +1,383 @@
+{
+  "scope": "Independent code and real existing-input bounded review. Mutations remove only newly added gate(s) in memory; production files/assets are untouched. Historical pre-fix observations were live tool output without a preserved old source snapshot and are not claimed source-bound.",
+  "binding": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/shared-imagery-quality-2026-10-02-r2/binding.json",
+    "bytes": 5533,
+    "sha256": "e3ce2b96acb056f8a3beca40686c2201feb11f7702252e309904acb40c2c3db5"
+  },
+  "currentSourceAndReportBindingsVerified": [
+    {
+      "path": "data-pipelines/deep-sky/image_quality.py",
+      "bytes": 19984,
+      "sha256": "b69389f2961949ddb96a2248cbb4f7e866e653a78e710efb87fdfde88660fcff"
+    },
+    {
+      "path": "data-pipelines/deep-sky/publish_allwise_w3.py",
+      "bytes": 13765,
+      "sha256": "be12b0806b3ecdacbd39085824cb0255ff17971a04f4076ffd6741383a57d2ee"
+    },
+    {
+      "path": "data-pipelines/deep-sky/allwise_finite_tan.py",
+      "bytes": 19076,
+      "sha256": "6ce051e687cb2a66da3de0390c6b16015b5f44eb0f34457ff874142dd5edc354"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_image_quality.py",
+      "bytes": 11495,
+      "sha256": "46fecd53fe7886b43c680a9af4ba5f9758a4b98406dd21935a0fea0f006f9668"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_publish_allwise_w3.py",
+      "bytes": 8412,
+      "sha256": "4d69205e2da35f89171849ad867393d9c455c5cb10e1ee753e488e1fab5c3ff0"
+    },
+    {
+      "path": "data-pipelines/deep-sky/README.md",
+      "bytes": 17972,
+      "sha256": "94b654b5bb5f76f51085dc3bcd3f2b8eb75cb959d8e1ea8a884d9514614a5cfc"
+    },
+    {
+      "path": "data-pipelines/deep-sky/requirements.txt",
+      "bytes": 43,
+      "sha256": "4d8fe8a0eb72499c6ca80871c8850a8d2ba0b4c9a23f810751c06fd137f15bf7"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-shared-imagery-quality-2026-10-02.py",
+      "bytes": 7724,
+      "sha256": "7b2e194649808951d1d0aa3e3c1f244b991f64ad164792b0dc6cc6e329dd5b8c"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/shared-imagery-quality-2026-10-02-r2/assets-after.json",
+      "bytes": 40554,
+      "sha256": "b3114ce9daed3f28e84aa51dbf4776dfccfe099d819da09264fe6d5ac9dda700"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/shared-imagery-quality-2026-10-02-r2/assets-before.json",
+      "bytes": 40607,
+      "sha256": "0a1845a8ceba30ae2a4c90c3e7535dd43070f6efdbb1ef3afa83d02c91c59edf"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/shared-imagery-quality-2026-10-02-r2/current-publication-batch.json",
+      "bytes": 5506353,
+      "sha256": "44ff7130cd88feb17c0e672c374321db97ae4e37d5cf3326c76b0b92ae6a03d0"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/shared-imagery-quality-2026-10-02-r2/m42-complete-source-reconstruction.json",
+      "bytes": 102614,
+      "sha256": "e354812227936b55f15fd23f141b61874aedf45220497f6dce29fa038db03156"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/shared-imagery-quality-2026-10-02-r2/m82-incomplete-source-rejection.json",
+      "bytes": 1196,
+      "sha256": "8bf64441665fed00a5ee6e27f1b0e65f5d8adc857b7b8bfede8e2e5bf23351a1"
+    }
+  ],
+  "catalog": {
+    "path": "packages/astronomy-core/data/opengc-messier-deep-sky.v1.json",
+    "bytes": 14047,
+    "sha256": "f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5"
+  },
+  "immutableAssets": {
+    "all201BeforeAfterAndCurrentHashesVerified": true,
+    "bytes": 7182848,
+    "firstFailedAttemptSameAssets": true
+  },
+  "batch": {
+    "images": 171,
+    "admission": {
+      "STRUCTURE_ACCEPTED_QUALITY_UNVERIFIED": 171
+    },
+    "availability": {
+      "UNKNOWN": 168,
+      "DECLARED_NONFINITE_SAMPLES_ONLY": 3
+    },
+    "scientificValidity": {
+      "UNKNOWN": 171
+    }
+  },
+  "m42SourceBindingsVerified": [
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder3/Dir0/Npix334.fits",
+      "bytes": 1051456,
+      "sha256": "049837aef8114492a0e6d31583934ee2f743b9aeb9d38f0889366bcb73541cc4"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder3/Dir0/Npix335.fits",
+      "bytes": 1051456,
+      "sha256": "188c22a0e6f9f8eb2fe8e5d491b348b4e2718238f161c6188eab28beebaec54b"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder3/Dir0/Npix356.fits",
+      "bytes": 1051456,
+      "sha256": "12b7b8d562c04811e4d347d59f9e2775c926ffc592cab551cec706c593a52c94"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder3/Dir0/Npix357.fits",
+      "bytes": 1051456,
+      "sha256": "26cc778aab707c4f2f5bab943ad9a17c79c791e9d8f53fa67fbe2bcb5d5d401f"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder5/Dir0/Npix5358.fits",
+      "bytes": 1051456,
+      "sha256": "4a6d379d8ad68cf8c6985a4dff4eb7756882f26f16f32f168c34667e207d92ee"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder5/Dir0/Npix5359.fits",
+      "bytes": 1051456,
+      "sha256": "a04e08b2906b472564859c9b7e6fd718bf2dde0c4c6083912f09284d3ad9f108"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder5/Dir0/Npix5370.fits",
+      "bytes": 1051456,
+      "sha256": "a4a37ec2bc5835c5e4e3bdf47d73cc3e4b46bae3870e9061a59bac59e782bde5"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder5/Dir0/Npix5700.fits",
+      "bytes": 1051456,
+      "sha256": "e88950b52b9bacb33cb78f58686961d25a4801472c01280dbcc9321f2dab33f6"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder5/Dir0/Npix5701.fits",
+      "bytes": 1051456,
+      "sha256": "04a3f277de83107c98cb081d65202859cc7d93d6b7b21f8e88f01059d454b5ea"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder5/Dir0/Npix5712.fits",
+      "bytes": 1051456,
+      "sha256": "13aace679595f2e5410cbe97b211a269048b4c7982289bbf4f7048dbe808aec9"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder7/Dir80000/Npix85753.fits",
+      "bytes": 1051456,
+      "sha256": "e466dafeac56ef65606a802619ace6b82d8e57218742562d17e36a678942ee20"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder7/Dir80000/Npix85754.fits",
+      "bytes": 1051456,
+      "sha256": "28db3c7974ce6bc9b40e66fcd64889419ebda3d154d3468fcf984a23ba822253"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder7/Dir80000/Npix85755.fits",
+      "bytes": 1051456,
+      "sha256": "b1b4e7027a62d059c441ed693548732aa9e8581be203049a05464a5403ba43fe"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder7/Dir80000/Npix85756.fits",
+      "bytes": 1051456,
+      "sha256": "2e55897581b3e6a533d34a2ae4a30fac3412ff424485ac42e73fb62d4f71541d"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder7/Dir80000/Npix85758.fits",
+      "bytes": 1051456,
+      "sha256": "37144d950292f0ca5c27205afada30ff304d82f486f82697ef463224edc12ad2"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder7/Dir80000/Npix85759.fits",
+      "bytes": 1051456,
+      "sha256": "ea1c91a08d60967b52309deffb78fa34c71e27d621872f4b262a90ed40abfbbc"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder7/Dir90000/Npix91217.fits",
+      "bytes": 1051456,
+      "sha256": "ee54a32eeaafa64899cfab6be0af19d77bb2765d97b5f6479864d5db0f1f964a"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder7/Dir90000/Npix91220.fits",
+      "bytes": 1051456,
+      "sha256": "cdca346aeafa84429f9d546f793d9b01a57cb3b261bb8e05c733567d718e6d3c"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder7/Dir90000/Npix91221.fits",
+      "bytes": 1051456,
+      "sha256": "533ec82356462a72521e031304bb5c2ea49929b97178b4e68df95fc16b98e124"
+    },
+    {
+      "path": "output/allwise-w3-hips-0929/candidate-axes-corrected/sources/Norder7/Dir90000/Npix91222.fits",
+      "bytes": 1051456,
+      "sha256": "5dceee303a06bc44671082d7fb9a6c6be4032484a8657fbb7ba6357a53b168ce"
+    }
+  ],
+  "m42PublishedPixelCounts": [
+    {
+      "level": "OVERVIEW",
+      "alphaZero": 22,
+      "alpha255": 65514,
+      "opaqueRgbZero": 1095,
+      "otherAlpha": 0
+    },
+    {
+      "level": "MEDIUM",
+      "alphaZero": 648,
+      "alpha255": 261496,
+      "opaqueRgbZero": 4016,
+      "otherAlpha": 0
+    },
+    {
+      "level": "DETAIL",
+      "alphaZero": 5095,
+      "alpha255": 257049,
+      "opaqueRgbZero": 4206,
+      "otherAlpha": 0
+    }
+  ],
+  "completeFitsMissingEndPadding": {
+    "completeArrayReceived": true,
+    "missingEndPaddingBytes": 2624,
+    "readerWarnings": [
+      "File may have been truncated: actual file length (1051456) is smaller than the expected size (1054080)"
+    ]
+  },
+  "truncatedScientificArray": {
+    "rejected": "TypeError",
+    "reason": "buffer is too small for requested array"
+  },
+  "m82ActualRejection": {
+    "scope": "No new science mask; unknown input differs from nonfinite measurements and image dark regions.",
+    "inputs": [
+      {
+        "path": "output/allwise-w3-m82-source-0930/candidate-detail/candidate-plan.json",
+        "bytes": 1426,
+        "sha256": "78542d5c2b46517a893113e2ebbe3ee72419511e60ddc8baf733c17432a4332e"
+      },
+      {
+        "path": "output/allwise-w3-m82-source-0930/candidate-detail/candidate-result.json",
+        "bytes": 2439,
+        "sha256": "1c7ead8c0e42e0dca43ffd27b4365fd19930323863ed47c04225fa75298b7781"
+      },
+      {
+        "path": "output/allwise-w3-m82-source-0930/source-overlap.json",
+        "bytes": 1926,
+        "sha256": "70bc92de309477c1c36eaf706282142826ac13c812b10a689fc6320d8f141c80"
+      }
+    ],
+    "plannedSourceTiles": 6,
+    "checkedSourceTiles": 3,
+    "renderedLevels": 0,
+    "outcomes": [
+      {
+        "owner": "shared-source-set-admission",
+        "outcome": "REJECTED_INCOMPLETE_SOURCE_SET",
+        "reason": "image_quality_source_set_incomplete"
+      },
+      {
+        "owner": "actual-production-finite-renderer",
+        "outcome": "REJECTED_INCOMPLETE_SOURCE_SET",
+        "reason": "allwise_candidate_input_set_invalid"
+      }
+    ]
+  },
+  "m63IndependentOriginalCellMeans": {
+    "stripe": 25.4754638671875,
+    "adjacent": 8.028564453125
+  },
+  "boundedMutations": [
+    {
+      "boundary": "wcs_transform",
+      "override": {
+        "PC1_1": -1
+      },
+      "input": {
+        "assetSha256": "6976db0ae39a46c2ee8cd165c0a375a55c819d4248c715b064983184020cc0ba"
+      },
+      "mutationSourceSha256": "686223057a1fc732da93252bf59b1aa2190ef9ef3f137d7258153090196066d6",
+      "mutationBefore": {
+        "admission": "STRUCTURE_ACCEPTED_QUALITY_UNVERIFIED",
+        "registrationEvidence": "PUBLISHED_HEADER_GEOMETRY_CHECKED_ABSOLUTE_ASTROMETRY_UNVERIFIED"
+      },
+      "currentAfter": {
+        "rejected": "image_quality_wcs_transform_unsupported"
+      }
+    },
+    {
+      "boundary": "wcs_transform",
+      "override": {
+        "CUNIT1": "rad"
+      },
+      "input": {
+        "assetSha256": "6976db0ae39a46c2ee8cd165c0a375a55c819d4248c715b064983184020cc0ba"
+      },
+      "mutationSourceSha256": "686223057a1fc732da93252bf59b1aa2190ef9ef3f137d7258153090196066d6",
+      "mutationBefore": {
+        "admission": "STRUCTURE_ACCEPTED_QUALITY_UNVERIFIED",
+        "registrationEvidence": "PUBLISHED_HEADER_GEOMETRY_CHECKED_ABSOLUTE_ASTROMETRY_UNVERIFIED"
+      },
+      "currentAfter": {
+        "rejected": "image_quality_wcs_transform_unsupported"
+      }
+    },
+    {
+      "boundary": "wcs_transform",
+      "override": {
+        "CD1_1": 0.0017578486444626,
+        "CD2_2": 0.0017578486444626
+      },
+      "input": {
+        "assetSha256": "6976db0ae39a46c2ee8cd165c0a375a55c819d4248c715b064983184020cc0ba"
+      },
+      "mutationSourceSha256": "686223057a1fc732da93252bf59b1aa2190ef9ef3f137d7258153090196066d6",
+      "mutationBefore": {
+        "admission": "STRUCTURE_ACCEPTED_QUALITY_UNVERIFIED",
+        "registrationEvidence": "PUBLISHED_HEADER_GEOMETRY_CHECKED_ABSOLUTE_ASTROMETRY_UNVERIFIED"
+      },
+      "currentAfter": {
+        "rejected": "image_quality_wcs_transform_unsupported"
+      }
+    },
+    {
+      "boundary": "direct_response_receipt",
+      "override": {
+        "responseSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "input": {
+        "assetSha256": "91a9220c505c1521ec5cc14c1312721ef1afdd653297a86ef892452a4172b699"
+      },
+      "mutationSourceSha256": "d4022087800ffe9444fd7a83e378868c9d1330b12da0a0b65c6ef6723e11bf6a",
+      "mutationBefore": {
+        "admission": "STRUCTURE_ACCEPTED_QUALITY_UNVERIFIED",
+        "registrationEvidence": "PUBLISHED_CENTER_FIELD_ONLY_PRECISE_WCS_UNVERIFIED"
+      },
+      "currentAfter": {
+        "rejected": "image_quality_response_receipt_mismatch"
+      }
+    },
+    {
+      "boundary": "direct_response_receipt",
+      "override": {
+        "responseBytes": 9570
+      },
+      "input": {
+        "assetSha256": "91a9220c505c1521ec5cc14c1312721ef1afdd653297a86ef892452a4172b699"
+      },
+      "mutationSourceSha256": "d4022087800ffe9444fd7a83e378868c9d1330b12da0a0b65c6ef6723e11bf6a",
+      "mutationBefore": {
+        "admission": "STRUCTURE_ACCEPTED_QUALITY_UNVERIFIED",
+        "registrationEvidence": "PUBLISHED_CENTER_FIELD_ONLY_PRECISE_WCS_UNVERIFIED"
+      },
+      "currentAfter": {
+        "rejected": "image_quality_response_receipt_mismatch"
+      }
+    },
+    {
+      "boundary": "png_iend",
+      "change": "remove last 12-byte IEND; update own payload metadata",
+      "input": {
+        "originalSha256": "e8379e54c69e88cf17d80000a2604b241d8d0a6eb82758985aacc35a22c1d13d",
+        "mutatedPayloadSha256": "e1a981c1b7b3e123053b11163390aa21f4e12d3ccad2c65450745270c6c61b84"
+      },
+      "mutationSourceSha256": "70a3c17dfaa98f89a2d2b3d50f0cb04ad79debf6e5a871c0dc5f577cecb7c057",
+      "mutationBefore": {
+        "admission": "STRUCTURE_ACCEPTED_QUALITY_UNVERIFIED",
+        "registrationEvidence": "PUBLISHED_HEADER_GEOMETRY_CHECKED_ABSOLUTE_ASTROMETRY_UNVERIFIED"
+      },
+      "currentAfter": {
+        "rejected": "image_quality_encoded_container_invalid"
+      }
+    }
+  ],
+  "limitations": [
+    "No independent full 20-source renderer rerun: production source, actual reconstruction report, all 20 raw source hashes and exact published PNG pixel counts checked.",
+    "No new quality acceptance: M51 rectangle and precise WCS, M82 missing inputs/cause, source artifacts, band seams and true resolution unresolved.",
+    "171 TAN images only; NESTED wide survey not included.",
+    "No client native resident memory, frame performance, full journey, current phone or 240 ms native timing acceptance."
+  ]
+}

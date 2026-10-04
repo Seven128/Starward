@@ -1,0 +1,32 @@
+✖ a stable field above texture retention reuses its retained images instead of uploading the full cycle (4.5887ms)
+✔ published W3 bytes survive refinement failure and retry, while late writes and old GPU images release (19.0977ms)
+✔ published fixed-body and 2MASS files use the shared decode/GPU boundary with their real formats (25.9675ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 389.4621
+
+✖ failing tests:
+
+test at apps\wechat-miniapp\src\features\sky\sky-native-image-chain.test.ts:1:2880
+✖ a stable field above texture retention reuses its retained images instead of uploading the full cycle (4.5887ms)
+  AssertionError [ERR_ASSERTION]: only the image outside retention needs another upload
+  
+  3 !== 1
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-native-image-chain.test.ts:95:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 3,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

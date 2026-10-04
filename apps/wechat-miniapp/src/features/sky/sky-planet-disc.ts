@@ -182,10 +182,8 @@ export function skyPlanetDiscsAt(rows: readonly SkyGeometryRow[] | undefined, at
     // Texture eligibility needs one body, while the scene painter needs all seven.
     // Validate the complete ephemeris first, then avoid unrelated ring geometry.
     if (onlyBody && p.body !== onlyBody) return [];
-    // The outer A ring can remain above the horizon after Saturn's globe sets.
     const axes=OBLATE_RADII[p.body as SkyPlanetBody];
     const extent=axes&&(p.body==="SATURN"||p.bodyFrame)?axes[1]/axes[0]:1;
-    if (p.altitudeDeg < -(p.body==="SATURN"?1.2:extent/2)*p.angularDiameterDeg) return [];
     // A Saturn ring arc may enter the viewport after the globe has left it.
     // Use the outer A ring for culling, then restore the actual globe radius.
     const projectionExtent=p.body==="SATURN"?SATURN_BANDS[2].outerKm/SATURN_REFERENCE_RADIUS_KM:extent;
@@ -196,7 +194,6 @@ export function skyPlanetDiscsAt(rows: readonly SkyGeometryRow[] | undefined, at
     const oblate=oblatePlanetDisc(p,disc,basis,height,verticalFovDeg);
     const ringProjection=saturnRingProjection(p,disc,basis,height,verticalFovDeg);
     const rings=saturnRingSegments(disc,oblate,ringProjection);
-    if(p.altitudeDeg < -p.angularDiameterDeg*extent/2&&rings.length===0)return [];
     const saturnFrame=p.body==="SATURN"?skyAxisymmetricBodyFrame(p.ringPoleEnu,
       p.azimuthDeg,p.altitudeDeg):null;
     const surfaceOrientation=saturnFrame?skyBodySurfaceOrientation(saturnFrame,

@@ -1,0 +1,269 @@
+{
+  "scope": "B1/C/D independent-layer recognition/recovery, local development boundary. Controlled contract-layer failures with actual public inputs; not an observed BFF outage or native UI/phone/full-journey acceptance.",
+  "candidate": {
+    "bundle": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v23-0929",
+    "sha256": "61f15816efa950b24c415a532c1c45fd47b6ed7e132bbe9cda955ad7cdab5515",
+    "files": 257,
+    "rawBytes": 4484207,
+    "rawPackageBytes": {
+      "main": 2089538,
+      "content": 1012055,
+      "sky": 958997,
+      "spot": 423617
+    },
+    "preparedUnopened": true
+  },
+  "previousCandidateUnchanged": "59c95f31e674bfda4b6e69d7cc8791f18a444fa0515f14c0e284fd36e453ab7f",
+  "evidence": {
+    "before": "output/playwright/cloud-sky-independent-labels-0929-before-verified/result.json",
+    "after": "output/playwright/cloud-sky-independent-labels-0929-after/result.json",
+    "objectList": "output/playwright/cloud-sky-independent-labels-0929-list-consumers/result.json"
+  },
+  "inputs": {
+    "observer": {
+      "name": "示例观星点",
+      "wgs84": {
+        "system": "WGS84",
+        "latitude": 22.4826799,
+        "longitude": 114.5557147
+      },
+      "timezone": "Asia/Shanghai"
+    },
+    "at": "2026-09-28T20:00:00.000Z",
+    "fov": 25,
+    "basis": {
+      "right": [
+        -0.7627069457608777,
+        -0.6467442422535461,
+        0
+      ],
+      "up": [
+        -0.528548307695004,
+        0.6233182131540295,
+        0.5762908047012508
+      ],
+      "forward": [
+        0.37271275980419677,
+        -0.43954099952376946,
+        0.8172447053464371
+      ]
+    },
+    "logicalCanvas": {
+      "width": 390.4,
+      "height": 844
+    },
+    "backing": {
+      "width": 390,
+      "height": 844
+    },
+    "catalogHash": "ba9bef4144d4cfb4c706a5d1d8a0958d8303854e7bfabe780005b63e0c904c2c",
+    "deepCatalogHash": "f54b6225799d57a7fb73571cde2d38bbcb34651983ac71f3a176c2399aa8d8c5",
+    "sourceHashes": [
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-stellar-scene.ts",
+        "sha256": "5d68f48e38e0725150d93eb37c0fa66c0c8200d44a584c8c922acb83cca81bbc"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+        "sha256": "ad8a0e13d65c3606605669ea94d9319ba5ec7bfb0862437775ccad0870a7f334"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "sha256": "be4534b77d7bae29bb9de20c25d745f583c90da15bfedde2cca564748cfa4505"
+      }
+    ],
+    "sourceBundleSha256": "b2e72ee3a44e0e5669d3e2aef8bb1aba9fbfd1ccaa320330d7ad468500ea68aa",
+    "componentFunctionSha256": "dba417efd4a4951b0aec03493de860c3c55f1ff9cb08873722b2ed4dfeeab16c",
+    "selectionFunctionSha256": "b3641a50d37e14f0dd978cb2d1957237831c9d563ea8c39a95aabfdfed2e94a9",
+    "commitSha256": "38b8618373c7eecfab7a015f1430fc4b76f9cf1403954c06ba8ab526747f8ff1"
+  },
+  "rows": [
+    {
+      "name": "complete",
+      "paintedObjects": 122,
+      "pixelsAndPicksUnchanged": true,
+      "beforeNames": [
+        "HR:1790",
+        "HR:1903",
+        "HR:2004",
+        "HR:1852",
+        "M:42",
+        "M:78"
+      ],
+      "afterNames": [
+        "HR:1790",
+        "HR:1903",
+        "HR:2004",
+        "HR:1852",
+        "M:42",
+        "M:78"
+      ],
+      "selectedIdentitiesMatch": true,
+      "lateFrameSuppressed": true,
+      "oldModeSuppressed": true,
+      "failedCanvasSuppressed": true,
+      "objectList": {
+        "total": 4251,
+        "counts": {
+          "HR:": 4229,
+          "M:": 16,
+          "PLANET:": 5,
+          "SOLAR:": 1
+        },
+        "identicalToBefore": true,
+        "m42Retained": true
+      },
+      "error": 0
+    },
+    {
+      "name": "bright-catalog-missing",
+      "paintedObjects": 3,
+      "pixelsAndPicksUnchanged": true,
+      "beforeNames": [],
+      "afterNames": [
+        "M:42",
+        "M:78"
+      ],
+      "selectedIdentitiesMatch": true,
+      "lateFrameSuppressed": true,
+      "oldModeSuppressed": true,
+      "failedCanvasSuppressed": true,
+      "objectList": {
+        "total": 22,
+        "counts": {
+          "HR:": 0,
+          "M:": 16,
+          "PLANET:": 5,
+          "SOLAR:": 1
+        },
+        "identicalToBefore": true,
+        "m42Retained": true
+      },
+      "error": 0
+    },
+    {
+      "name": "bright-frame-unavailable",
+      "paintedObjects": 3,
+      "pixelsAndPicksUnchanged": true,
+      "beforeNames": [],
+      "afterNames": [
+        "M:42",
+        "M:78"
+      ],
+      "selectedIdentitiesMatch": true,
+      "lateFrameSuppressed": true,
+      "oldModeSuppressed": true,
+      "failedCanvasSuppressed": true,
+      "objectList": {
+        "total": 22,
+        "counts": {
+          "HR:": 0,
+          "M:": 16,
+          "PLANET:": 5,
+          "SOLAR:": 1
+        },
+        "identicalToBefore": true,
+        "m42Retained": true
+      },
+      "error": 0
+    },
+    {
+      "name": "deep-layer-unavailable",
+      "paintedObjects": 119,
+      "pixelsAndPicksUnchanged": true,
+      "beforeNames": [
+        "HR:1790",
+        "HR:1903",
+        "HR:2004",
+        "HR:1852"
+      ],
+      "afterNames": [
+        "HR:1790",
+        "HR:1903",
+        "HR:2004",
+        "HR:1852"
+      ],
+      "selectedIdentitiesMatch": true,
+      "lateFrameSuppressed": true,
+      "oldModeSuppressed": true,
+      "failedCanvasSuppressed": true,
+      "objectList": {
+        "total": 4235,
+        "counts": {
+          "HR:": 4229,
+          "M:": 0,
+          "PLANET:": 5,
+          "SOLAR:": 1
+        },
+        "identicalToBefore": true,
+        "m42Retained": false
+      },
+      "error": 0
+    },
+    {
+      "name": "restored",
+      "paintedObjects": 122,
+      "pixelsAndPicksUnchanged": true,
+      "beforeNames": [
+        "HR:1790",
+        "HR:1903",
+        "HR:2004",
+        "HR:1852",
+        "M:42",
+        "M:78"
+      ],
+      "afterNames": [
+        "HR:1790",
+        "HR:1903",
+        "HR:2004",
+        "HR:1852",
+        "M:42",
+        "M:78"
+      ],
+      "selectedIdentitiesMatch": true,
+      "lateFrameSuppressed": true,
+      "oldModeSuppressed": true,
+      "failedCanvasSuppressed": true,
+      "objectList": {
+        "total": 4251,
+        "counts": {
+          "HR:": 4229,
+          "M:": 16,
+          "PLANET:": 5,
+          "SOLAR:": 1
+        },
+        "identicalToBefore": true,
+        "m42Retained": true
+      },
+      "error": 0
+    }
+  ],
+  "staticCatalogRetainedWithoutBorrowedFrame": true,
+  "checks": {
+    "relevantBehaviorExit": 0,
+    "relevantBehaviorTests": 24,
+    "miniTypeExit": 0,
+    "buildExit": 0,
+    "buildWarnings": 3,
+    "contextValidationExit": 0,
+    "beforeRegressionFailed": true,
+    "afterRegressionPassed": true
+  },
+  "evidenceLimits": {
+    "drawing": "Actual production WebGL in headless Chromium SwiftShader; same images, points and picks in five controlled conditions.",
+    "controls": "Actual page commit/selector/component and selection function in Node adapters; attributes/coordinates/identity checked, no native composition/tap/modal/Back.",
+    "list": "Actual before/current catalogFrameObjects with real public inputs; no supplemental SAO frame in this consumer check. Above-horizon list counts are not viewport rendered counts or coverage limits.",
+    "initialAdapterFailure": "The initial before directory has no result.json after a cross-VM equality failure. The before-verified directory is the useful failing-before product evidence; earlier artifacts remain unchanged.",
+    "costs": "No new renderer/cache/publication/request owner. Raw build size is not official package size; no new performance/phone resource claim."
+  },
+  "service": {
+    "informationModuleSha256": "3ae1fcda98d31ec91469e7c2e92aa1d8d314b8e4203dadb24359c5483ce67cd9",
+    "contextUpstream": 8789,
+    "contextMode": "pass",
+    "resourceMode": "pass",
+    "held": 0,
+    "active": 0,
+    "contextPuts": 0
+  },
+  "remaining": "Native combined journey/composition, real pose/full calibration/background, Android/iOS, current Moon on phone, scene/source quality and broader lawful coverage/alignment, target resources/performance/official package/costs and independent review remain open. No native RPC/new window/canceled elevation retry/phone/service replacement/deploy/Git write in this module."
+}

@@ -1,0 +1,46 @@
+{
+  "scope": "Agent read of the existing public publication and already acquired local image, not a native image-load or rendered-causality certificate. No download or source change.",
+  "observedUtc": "2026-09-29T08:15:36.412Z",
+  "publication": {
+    "schemaVersion": "starward-2mass-galactic-v1",
+    "publicationId": "2mass-coolcosmos-galactic-2048x1024-20260924",
+    "source": {
+      "title": "The Infrared Milky Way / 2MASS All-Sky",
+      "provider": "IPAC / Cool Cosmos",
+      "recordUrl": "https://coolcosmos.ipac.caltech.edu/images/142",
+      "rightsUrl": "https://coolcosmos.ipac.caltech.edu/page/image_use_policy",
+      "galleryRightsUrl": "https://www.ipac.caltech.edu/2mass/gallery/showcase/copyright.html",
+      "credit": "2MASS/J. Carpenter, T. H. Jarrett, & R. Hurt; UMass/IPAC-Caltech/NASA/NSF",
+      "sourceUrl": "https://coolcosmos.ipac.caltech.edu/system/avm_image_sqls/binaries/142/original/allsky-2mass.jpg?1373926530=",
+      "sourceSha256": "c3a2ea0bebfe79eab5213480e3766c5437369a6da3d6f5ddec46860dfbf6a26c"
+    },
+    "projection": {
+      "kind": "equirectangular",
+      "frame": "galactic",
+      "centerLongitudeDeg": 0,
+      "longitudeIncreases": "left",
+      "north": "up"
+    },
+    "image": {
+      "file": "2mass-galactic-2048x1024.jpg",
+      "sha256": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0",
+      "bytes": 703555,
+      "width": 2048,
+      "height": 1024,
+      "downloadUrl": "/v2/sky/galactic/f6aeb37d4724ed296ffb4c22f242bbdc83541b54aa1cb67b83e82b9e2d91ac5e/2mass-galactic-2048x1024.jpg"
+    },
+    "processing": "Specific IPAC 9600x4800 gallery JPEG downsampled to 2048x1024 with Pillow 12.3.0 LANCZOS and JPEG quality 88, 4:4:4; no recoloring.",
+    "limitations": [
+      "Historical 2MASS J/H/K near-infrared false color (1.2/1.6/2.2 micrometers), not visible-light sky or current observing conditions.",
+      "Gallery visualization is not calibrated surface brightness or a high-resolution optical survey; 2048x1024 limits zoom detail.",
+      "Image longitude registration follows the published Galactic-center-centered equirectangular view; physical-device rendering remains to verify."
+    ],
+    "publicationHash": "f6aeb37d4724ed296ffb4c22f242bbdc83541b54aa1cb67b83e82b9e2d91ac5e"
+  },
+  "localAsset": {
+    "file": "E:\\dev\\worktrees\\Starward\\remote-main-20260908\\workers\\miniapp-api\\assets\\deep-sky\\galactic-2mass\\2mass-galactic-2048x1024.jpg",
+    "bytes": 703555,
+    "sha256": "e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0"
+  },
+  "nativeManifestRecordLimit": "Some direct Agent GETs in this turn did not set the harness probe marker; agentProbe=false by itself does not prove a record originated from the Mini Program."
+}

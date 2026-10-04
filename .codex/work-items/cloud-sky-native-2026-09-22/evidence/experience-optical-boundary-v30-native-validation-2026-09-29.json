@@ -1,0 +1,497 @@
+{
+  "scope": "Sky-only v30 finite optical-field progression through existing two-image native loading and shared registered drawing; public entry/time/search/zoom/natural picking/source return development evidence. Not overall reference/device/performance/final-review acceptance.",
+  "candidate": {
+    "file": "experience-combined-clean-v30-candidate-2026-09-29.json",
+    "recordSha256": "8384d0aab8daa117b3ae26ec7a866bc640ca9c4cd18b013b497121af8908a454",
+    "bundle": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v30-0929",
+    "sha256": "bbc5f610b9d15d18ba0a3553db25c78da8fe120653de60a91b3f124270d82e42",
+    "sourceInputsVerified": 106,
+    "changedSkyOwners": [
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+        "beforeSha256": "e194e24453e36c845b49042fccc8b4ca21746fb76bb49ad7e38e88435c91d7c1",
+        "sha256": "36b6e9daf7d0ad57c45b6f735c45e3767eaa4b48b810e6b01503325a98bd0bd1"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "beforeSha256": "292a033d1f878fc61b2d5577e2888f9ea3af657d6f94beb7eabcc26e8dd88133",
+        "sha256": "e303aa9e33ea600193ab1f9e58e3f4edd26e2e687bcdf25d36899b35e891f787"
+      },
+      {
+        "file": "apps/wechat-miniapp/src/features/sky/use-sky-sdss-optical.ts",
+        "beforeSha256": "f5ad08fcd943fb4a1f459701cbf232418c313006f53477674e6b58ef262739f2",
+        "sha256": "a86b7b4097df28bcc892c2fee52d2b48be52368a344b31619fd4a8d77736a03e"
+      }
+    ],
+    "checks": {
+      "failingBefore": {
+        "cases": 6,
+        "failed": 6,
+        "exitCodes": [
+          1,
+          1
+        ],
+        "execs": [
+          "5e92bc",
+          "315ffe"
+        ]
+      },
+      "affectedBehaviours": {
+        "cases": 42,
+        "passed": 42,
+        "exitCode": 0,
+        "exec": "852fe4"
+      },
+      "testTypingRepair": {
+        "scope": "two new-test typing errors only",
+        "typecheckExitCode": 0,
+        "affectedCases": 15,
+        "passed": 15,
+        "exitCode": 0,
+        "exec": "58991"
+      },
+      "softwareGpu": {
+        "before": "output/playwright/cloud-sky-optical-boundary-0929/before/result.json",
+        "after": "output/playwright/cloud-sky-optical-boundary-0929/after-r2/result.json",
+        "casesEach": 10,
+        "partialFirstAfter": "output/playwright/cloud-sky-optical-boundary-0929/after/failed-trial.json",
+        "scope": "the first after diagnostic had a wrong exterior-region assumption at centered minimum FOV; preserved, fixed in separate r2 without production changes"
+      },
+      "buildLog": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-optical-boundary-v30-build-2026-09-29.txt",
+      "buildExitCode": 0,
+      "buildWarnings": 3
+    }
+  },
+  "baseline": {
+    "file": "experience-optical-boundary-baseline-2026-09-29.json",
+    "sha256": "c5fb41e1b9f982cb3de16806a3e0695f043f7d1e24944ebe451f908355b9101e",
+    "candidate": {
+      "bundle": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v29-0929",
+      "sha256": "e5e2baaf4feab03c82ad8dc8bd8faa657e995207fe38a338d744630b6bea75b5",
+      "sourceInputsVerified": 106
+    },
+    "native": {
+      "objectRef": "M:63",
+      "spot": "spot:test-published",
+      "latitude": 22.4826799,
+      "longitude": 114.5557147,
+      "timezone": "Asia/Shanghai",
+      "at": "2026-09-29T11:00:00.000Z",
+      "civil": "2026-09-29 19:00",
+      "observationNight": "2026-09-29",
+      "revision": 3,
+      "contextIdSha256": "c5c224f706fa553f9a3ea0be061a4fd00fc3d77fabc841d78db1b0ac8c35eb4d",
+      "contextFingerprint": "c197391ccb77d36ef51b359dc8a4908db8b51a703626d8cc1070cbf1b87fad12",
+      "mode": "DAY",
+      "largeText": false,
+      "logicalViewport": {
+        "width": 390.3999938964844,
+        "height": 844
+      },
+      "captureViewport": {
+        "width": 427,
+        "height": 919
+      },
+      "SDKVersion": "3.17.4",
+      "fields": "Native aria labels round vertical FOV to 0.15 and 0.28 degrees. Exact unrounded pose/FOV is not asserted.",
+      "currentRoundedVerticalFovDeg": 0.28
+    }
+  },
+  "trace": {
+    "file": "experience-optical-boundary-v30-native-2026-09-29.jsonl",
+    "sha256": "2b1e016acc4c0bab45969951165335de06006ac1e4943453b042766e6458d4cb",
+    "events": 60,
+    "frozen": true
+  },
+  "captures": [
+    {
+      "stage": "optical-boundary-m63-detail-after",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-native-optical-boundary-m63-detail-after-2026-09-29.png",
+      "sha256": "9af865cb7ae56eb98f4b9d0c2d3f16b48249e699d2eb8779db2e737dc5d40d33",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "optical-boundary-m63-medium-after",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-native-optical-boundary-m63-medium-after-2026-09-29.png",
+      "sha256": "d014b0cf77063bc9a202abcd4b2559a5ec2892412d2a1f50943d5480f2597e20",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "optical-boundary-m63-overview-after",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-native-optical-boundary-m63-overview-after-2026-09-29.png",
+      "sha256": "af6a6a9221f208dfaa4a52a4269bbecec970369eaad19d54adda9fe6f304a26d",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "optical-boundary-m63-medium-before-source",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-native-optical-boundary-m63-medium-before-source-2026-09-29.png",
+      "sha256": "333afdeadee826279e0532481517113cb7a734f57b18e171436b0da61de52004",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "optical-boundary-m63-source",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-native-optical-boundary-m63-source-2026-09-29.png",
+      "sha256": "b7ac852750f9c463599ffdea9645ca221dcd6e50eacdd154e32a1efb4cc7b929",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    },
+    {
+      "stage": "optical-boundary-m63-source-back",
+      "file": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-v30-native-optical-boundary-m63-source-back-2026-09-29.png",
+      "sha256": "bbe9eab22a205d35d99bec97e48b7cfbb42cb6e1f6e47ebc815b1d1b1713133a",
+      "width": 427,
+      "height": 919,
+      "viewedBy": "root"
+    }
+  ],
+  "published": {
+    "objectRef": "M:63",
+    "publicationId": "sdss-dr17-m63.v20260929",
+    "center": {
+      "raDeg": 198.95554166666668,
+      "decDeg": 42.02927777777778,
+      "frame": "ICRS J2000"
+    },
+    "orientation": "north-up/east-left",
+    "levels": {
+      "OVERVIEW": {
+        "bytes": 18813,
+        "sha256": "f0fbefd8ec359e9ed76cc6907be177a374a9f7a58075006e84853735e8ec1d1c",
+        "md5": "013ecc20ba1afa338bb7b3a1b572e762",
+        "fieldDegrees": 0.22755555555555557,
+        "scaleArcsecPerPixel": 1.6
+      },
+      "MEDIUM": {
+        "bytes": 20559,
+        "sha256": "d20754606079201609cd04db7d76c53a23a43645192cb3ad7e2f59023fa91b7c",
+        "md5": "8061198722286b86d7bb84a05395e33b",
+        "fieldDegrees": 0.11377777777777778,
+        "scaleArcsecPerPixel": 0.8
+      },
+      "DETAIL": {
+        "bytes": 18522,
+        "sha256": "5e91258e037d778bfdd571aad42755c94b548a0eb440dbe32afc62c9bf8305f6",
+        "md5": "dbc83e86ba972b23c4069223ac1f16b4",
+        "fieldDegrees": 0.05688888888888889,
+        "scaleArcsecPerPixel": 0.4
+      }
+    }
+  },
+  "context": {
+    "locationKind": "FORMAL_SPOT",
+    "publicSpotId": "spot:test-published",
+    "localDate": "2026-09-29",
+    "selectedAtUtc": "2026-09-29T11:00:00Z",
+    "timezone": "Asia/Shanghai",
+    "revision": 2,
+    "contextFingerprint": "0bb9648591a78754efb9b0e488c2b4624b723af1041ce379979e5e4a02b5f095",
+    "astronomyVersion": "astronomy-engine-2.1.19",
+    "contextIdSha256": "893b8fd5c919dc7b2f99fa6d9e922d76966fef9b75238ba9dcca663c618d4ad6"
+  },
+  "display": {
+    "mode": "DAY",
+    "largeText": false,
+    "pagePath": "sky/detail/index",
+    "pageDepth": 2
+  },
+  "sdk": {
+    "brand": "devtools",
+    "model": "iPhone 12/13 (Pro)",
+    "platform": "devtools",
+    "SDKVersion": "3.17.4",
+    "pixelRatio": 3,
+    "screenWidth": 390,
+    "screenHeight": 844,
+    "windowWidth": 390,
+    "windowHeight": 762,
+    "enableDebug": false
+  },
+  "runtime": {
+    "windows": [
+      {
+        "Id": 25916,
+        "ProcessName": "微信开发者工具",
+        "MainWindowTitle": "Starward-Sky-Combined-Clean-V30-0929"
+      }
+    ],
+    "informationModuleSha256": "3ae1fcda98d31ec91469e7c2e92aa1d8d314b8e4203dadb24359c5483ce67cd9",
+    "resourceMode": "pass",
+    "publicationBackendPort": 64485,
+    "heldResourceCount": 0,
+    "sourceMode": "pass",
+    "contextUpstream": 8789,
+    "puts": 3,
+    "totalObserved": 261,
+    "publicationHash": "87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+    "contextMode": "pass",
+    "phase": "settled",
+    "epochStartedAt": "2026-09-29T09:14:20.175Z",
+    "forwardedPutStatuses": [
+      200,
+      200,
+      200
+    ],
+    "activeCount": 0
+  },
+  "nativeEncodedFiles": [
+    {
+      "format": "jpg",
+      "bytes": 20559,
+      "md5": "8061198722286b86d7bb84a05395e33b"
+    },
+    {
+      "format": "jpg",
+      "bytes": 18813,
+      "md5": "013ecc20ba1afa338bb7b3a1b572e762"
+    },
+    {
+      "format": "png",
+      "bytes": 36561,
+      "md5": "9055574961eb92fe9524d3e540d97687"
+    },
+    {
+      "format": "png",
+      "bytes": 11587,
+      "md5": "478dfa64008a820104a300a1d94c7cc0"
+    },
+    {
+      "format": "png",
+      "bytes": 854784,
+      "md5": "0807ad4c0c1af952c1e2b52d45878f3b"
+    },
+    {
+      "format": "png",
+      "bytes": 3316173,
+      "md5": "08751b4aa1916bad40f41aedb4185ad2"
+    }
+  ],
+  "nativeSdssImageRecords": [
+    {
+      "sequence": 253,
+      "phase": "native-progression",
+      "resourceKind": "sdss-optical_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 20559,
+      "upstreamChunks": 1,
+      "upstreamEnded": true,
+      "downstreamFinished": true,
+      "status": 200,
+      "upstreamHeadersMs": 1.8,
+      "declaredContentLength": 20559,
+      "contentEncoding": "identity_or_other",
+      "immutable": true,
+      "maxAgeSeconds": 31536000,
+      "imageFieldDegrees": 0.11377777777777778,
+      "upstreamEndedMs": 1.92,
+      "downstreamFinishedMs": 2.02,
+      "observedDurationMs": 2.02
+    },
+    {
+      "sequence": 254,
+      "phase": "native-progression",
+      "resourceKind": "sdss-optical_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 18813,
+      "upstreamChunks": 1,
+      "upstreamEnded": true,
+      "downstreamFinished": true,
+      "status": 200,
+      "upstreamHeadersMs": 1.21,
+      "declaredContentLength": 18813,
+      "contentEncoding": "identity_or_other",
+      "immutable": true,
+      "maxAgeSeconds": 31536000,
+      "imageFieldDegrees": 0.22755555555555557,
+      "upstreamEndedMs": 1.33,
+      "downstreamFinishedMs": 1.43,
+      "observedDurationMs": 1.43
+    },
+    {
+      "sequence": 255,
+      "phase": "native-progression",
+      "resourceKind": "sdss-optical_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 18522,
+      "upstreamChunks": 1,
+      "upstreamEnded": true,
+      "downstreamFinished": true,
+      "status": 200,
+      "upstreamHeadersMs": 4.47,
+      "declaredContentLength": 18522,
+      "contentEncoding": "identity_or_other",
+      "immutable": true,
+      "maxAgeSeconds": 31536000,
+      "imageFieldDegrees": 0.05688888888888889,
+      "upstreamEndedMs": 4.66,
+      "downstreamFinishedMs": 4.8,
+      "observedDurationMs": 4.8
+    }
+  ],
+  "pixels": {
+    "mediumBeforeAfter": {
+      "left": "experience-v29-native-optical-boundary-m63-medium-before-2026-09-29.png",
+      "right": "experience-v30-native-optical-boundary-m63-medium-after-2026-09-29.png",
+      "changedPixels": 75298,
+      "maxChannelDifference": 119,
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Original 427x919 captures, no resizing; exclude host status bar/capsule/rounded border/home. Cross-version comparisons use separately bound Contexts and public place/time/SDK/rounded FOV, not certified identical exact camera."
+      }
+    },
+    "overviewBeforeAfter": {
+      "left": "experience-v29-native-optical-boundary-m63-overview-before-2026-09-29.png",
+      "right": "experience-v30-native-optical-boundary-m63-overview-after-2026-09-29.png",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Original 427x919 captures, no resizing; exclude host status bar/capsule/rounded border/home. Cross-version comparisons use separately bound Contexts and public place/time/SDK/rounded FOV, not certified identical exact camera."
+      }
+    },
+    "widerFieldReturn": {
+      "left": "experience-v30-native-optical-boundary-m63-medium-after-2026-09-29.png",
+      "right": "experience-v30-native-optical-boundary-m63-medium-before-source-2026-09-29.png",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Original 427x919 captures, no resizing; exclude host status bar/capsule/rounded border/home. Cross-version comparisons use separately bound Contexts and public place/time/SDK/rounded FOV, not certified identical exact camera."
+      }
+    },
+    "sourceReturn": {
+      "left": "experience-v30-native-optical-boundary-m63-medium-before-source-2026-09-29.png",
+      "right": "experience-v30-native-optical-boundary-m63-source-back-2026-09-29.png",
+      "changedPixels": 0,
+      "maxChannelDifference": 0,
+      "crop": {
+        "left": 4,
+        "right": 423,
+        "top": 100,
+        "bottom": 890,
+        "scope": "Original 427x919 captures, no resizing; exclude host status bar/capsule/rounded border/home. Cross-version comparisons use separately bound Contexts and public place/time/SDK/rounded FOV, not certified identical exact camera."
+      }
+    }
+  },
+  "softwareGpu": {
+    "before": {
+      "file": "output/playwright/cloud-sky-optical-boundary-0929/before/result.json",
+      "sha256": "be4c53ab24dbda9415d7cc6a03b35055ec80203d368a394b25a625b948bda56a",
+      "cases": 10,
+      "resources": {
+        "created": 7,
+        "deleted": 7
+      }
+    },
+    "after": {
+      "file": "output/playwright/cloud-sky-optical-boundary-0929/after-r2/result.json",
+      "sha256": "7d55c1c654bc6c0cb4222e87092a93d08f9972b3e9136a4aa183ea4c5092e132",
+      "cases": 10,
+      "resources": {
+        "created": 6,
+        "deleted": 6
+      },
+      "comparisons": [
+        {
+          "fine": "medium",
+          "corePixels": 206384,
+          "changedCore": 0,
+          "outerPixels": 69214,
+          "changedOuter": 69214,
+          "outerVsCoarse": 0,
+          "transitionPixels": 42106,
+          "changedTransition": 39885,
+          "changedFromBefore": 109099,
+          "maxDeltaFromBefore": 180
+        },
+        {
+          "fine": "detail",
+          "corePixels": 307836,
+          "changedCore": 0,
+          "outerPixels": 0,
+          "changedOuter": 0,
+          "outerVsCoarse": 0,
+          "transitionPixels": 11860,
+          "changedTransition": 10960,
+          "changedFromBefore": 10960,
+          "maxDeltaFromBefore": 108
+        }
+      ]
+    },
+    "scope": "Real production full-scene/GPU with exact public astronomy and hash-bound HTTP originals. Software Chromium/SwiftShader; forced per-image scene rejection verifies consumer recovery, not a native GPU fault. No viewport/native controls/phone/final quality/performance acceptance."
+  },
+  "mapSourceSha256": "81283f7b2849cd55eed4a82d322885e1c76d7f8aa81ab26fc2fc584d198c0e82",
+  "reference": {
+    "file": "experience-optical-boundary-reference-m63-settled-2026-09-29.png",
+    "sha256": "71b0b8fbeef5ecbb48c12144123682292cfdbdf9f8ae80577fc6631acdcb6626",
+    "browser": "IAB",
+    "URL": "https://stellarium-web.org/skysource/M63?fov=0.06931280399240136&date=2026-09-29T11%3A00%3A00Z&lat=22.4826799&lng=114.5557147&elev=0",
+    "civil": "2026-09-29 19:00:08",
+    "paused": true,
+    "displayedFovDeg": 0.0693,
+    "cssViewport": {
+      "width": 390.3999938964844,
+      "height": 844
+    },
+    "backingViewport": {
+      "width": 390,
+      "height": 844
+    },
+    "intendedVerticalFovDeg": 0.15,
+    "limitations": "Public URL and prior public information panel denote M63; final raster has another RX J1518.5+4201 label. Camera/registration equivalence is NOT certified. Different historical optical dataset and display response, plus 8 seconds and native rounded FOV; no pixel comparison or source adoption. Earlier live-clock/arrow/setValue trials and provisional raster are not matched evidence. Viewport reset after capture."
+  },
+  "toolFailures": [
+    {
+      "tool": "automation_runtime_info",
+      "reason": "missing_required",
+      "errorType": "INPUT_ERROR"
+    },
+    {
+      "tool": "automation_runtime_info",
+      "errorType": "MCP_TOOL_ERROR",
+      "reason": "mcp_business_fail"
+    },
+    {
+      "tool": "automation_element_action",
+      "reason": "mcp_business_fail",
+      "errorType": "MCP_TOOL_ERROR"
+    },
+    {
+      "errorType": "MCP_TOOL_ERROR",
+      "reason": "mcp_business_fail",
+      "tool": "automation_element_action"
+    }
+  ],
+  "limitations": [
+    "All six v30 original captures were viewed by the root agent. Sources-page screenshot shows its initial standard-font content; full SDSS terms are bound by the actual public source-page text readback, not claimed visible in that initial raster.",
+    "V30 uses a newly created formal-spot Context, revision 2; it is not V29 revision 3. Public place/time/SDK and rounded FOV agree. Exact native pose/unrounded FOV registration equivalence is not asserted. Source/zoom return comparisons remain within V30 and its identical Context.",
+    "Native files prove encoded original asset bytes. Four additional PNG files belong to independent Sky image owners. No decoded/native/GPU memory peak is inferred from these encoded sizes.",
+    "Normal real HTTP 200 and parent composition do not repeat or upgrade V29 HTTP failure/cancellation cases, or establish injected native decode/GPU recovery. The scene rejection cases use real software GPU output but are explicitly not native GPU faults.",
+    "Native Sky captures remain Canvas-only; public WXML/actions do not establish normal controls/modal overlay composition. Whole-scene quality, source registration/coverage/stripe limits, reference alignment, real orientation/calibration/OS background, Android/iOS/new Moon, official package/cost and final necessary independent review remain open.",
+    "Different reference dataset/display and 8-second clock difference, plus an unexpected label, prevent treating the saved reference raster as exactly registered comparison. No DSS adoption, new imagery, pixel editing, inferred missing-data mask or source validity claim.",
+    "Software timings are single-trial SwiftShader development observations, not target performance or an improvement claim. Original native/phone and historical evidence retain their original version and conditions."
+  ]
+}

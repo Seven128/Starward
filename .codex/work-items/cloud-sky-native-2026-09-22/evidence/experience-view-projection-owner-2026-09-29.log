@@ -1,0 +1,20 @@
+✔ JPEG and PNG image pixels follow the CDS NESTED cell packaging on every face (9.6384ms)
+✔ real HiPS tile identities and source-image axes locate Sombrero without TAN assumptions (0.8499ms)
+✔ HEALPix triangles use the shared report rotation and stereographic sky camera (1.2701ms)
+✔ one HiPS mesh reuses its fixed camera regardless of source tessellation (1.3832ms)
+✔ upright cardinal headings map ENU camera basis correctly (1.2085ms)
+✔ flat, face-down and gamma-tilted poses preserve real 3D direction (0.2642ms)
+✔ compound heading, beta and gamma use the declared rotation order (0.2055ms)
+✔ heading wraps while beta and gamma reject impossible platform ranges (0.1957ms)
+✔ stereographic projection preserves angular scale and canvas handedness (0.4989ms)
+✔ pole, frustum and behind-view directions return null rather than edge-clamped points (0.1891ms)
+✔ aspect ratio changes horizontal field without changing vertical field (0.1186ms)
+✔ invalid projection input is rejected without hidden defaults or clamping (0.1297ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 308.6524

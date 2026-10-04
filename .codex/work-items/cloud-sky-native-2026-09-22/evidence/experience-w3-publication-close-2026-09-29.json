@@ -1,0 +1,16 @@
+{
+  "scope": "Local module checkpoint and immutable input/offer/candidate verification; no native/phone/whole-quality/review acceptance",
+  "currentHash": "87ab6341b43d660e3c93a2430994c0f38b409dafa86216e7e3313e98cdbbc073",
+  "legacyHash": "46c520ab6160784c766b057cae5aed4bec1bfd0d7c4f65fc136a30716e7a1462",
+  "v1Hash": "2076958a52af3eca6d194b0bd79686ec34c67c6829469d0b26b26b2bc0db3bce",
+  "originalJpegsUnchanged": 153,
+  "wideJpegsUnchanged": 12,
+  "sourceFitsUnchanged": 20,
+  "candidate": "db4c51efa1e2a44e518c4c69eb9c936a2e25a35cd0a21b127e9180d039e0dd7c",
+  "actualSceneChain": true,
+  "releaseHttp": true,
+  "nativeCandidateOpened": false,
+  "existingTaskServicesVerified": false,
+  "newMoonPhoneAccepted": false,
+  "independentReview": false
+}

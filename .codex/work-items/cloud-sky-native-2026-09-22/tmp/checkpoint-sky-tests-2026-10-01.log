@@ -1,0 +1,831 @@
+✔ a replacement page shares native serialization and ignores the old page's late cleanup (2.7919ms)
+✔ required orientation lifecycle owns compass and device-motion streams together (0.9719ms)
+✔ hide while device motion starts never begins a background compass session (0.4909ms)
+✔ required orientation lifecycle fails closed when device motion is unavailable (0.294ms)
+✔ required orientation lifecycle identifies the native start stage without exposing it to product state (1.4949ms)
+✔ orientation startup diagnostics retain only bounded stage, reason and numeric code (0.5704ms)
+✔ explicit compass startup precedes listener registration to avoid WeChat auto-start races (1.256ms)
+✔ an implicit compass start from listener registration accepts the native already-active result (0.3925ms)
+✔ native stop settles before removing the last listener, without publishing during release (2.0012ms)
+✔ failed native stop retains its listener until retry confirms release (0.6022ms)
+✔ WeChat listener registration starts the compass initially and after lifecycle stop (0.4409ms)
+✔ file owners keep usable coarse recovery data but release replaced and cleared files (155.5106ms)
+✔ native retirement keeps only recovery metadata and later replacement releases the coarse file (69.6944ms)
+✔ the production Canvas release port retires deep-sky pixels on reset or GPU failure (31.3438ms)
+✔ hiding cancels an image request and showing restarts only the current level (52.8998ms)
+✔ hide retires the old native bitmap while preserving only its coarse recovery file through the node gap (53.8035ms)
+✔ failed fine decode and retry keep the coarse image until successful replacement (62.8778ms)
+✔ hidden decoding cannot publish late pixels or erase the retained recovery file (25.1425ms)
+✔ a retained coarse level cannot mark a pending fine request ready (55.8886ms)
+✔ show before native canvas reconstruction retains coarse recovery until re-decode (45.1895ms)
+✔ resuming a failed decode starts a new loading transition before success or failure (19.9404ms)
+✔ switching object cannot retain the previous object's pixels (29.4996ms)
+✔ native generation changes reject queued decode before React cleanup (28.5547ms)
+✔ synchronous native decoder failures are retryable and coarse failure cannot prevent fine decode (85.1907ms)
+✔ new native canvas redecodes retained coarse pixels and late coarse cannot replace fine (53.8586ms)
+✔ hidden image errors do not enqueue a notification on another page (13.5019ms)
+✔ a previous image error cannot be relabelled for a new object or hidden image mode (29.9584ms)
+✔ selection or level changes abort and ignore every late request callback (4.1107ms)
+✔ a canceled late write cannot overwrite the retry's published bytes (2.0598ms)
+✔ leaving during file persistence prevents the old asset becoming ready (0.4614ms)
+✔ only active binary success publishes while active failures remain retryable (0.8219ms)
+✔ missing or invalid angular metadata cannot publish a misregistered image (0.478ms)
+✔ an unbound successful reply cannot paint old bytes under the current publication's credit (0.2168ms)
+✔ synchronous native request and filesystem failures stay in the retryable error channel (1.657ms)
+✔ real published PNG bytes retain source binding and use their own cancellable file format (34.7455ms)
+✔ decode retry invalidates the failed file while preserving a usable painted image (427.0371ms)
+✔ observed Android upright roll is a valid angle, not a lost pose (1.684ms)
+✔ Android upright attitude works immediately without an independent compass anchor (2.4734ms)
+✔ Android preserves near-zero degrees and crosses north continuously (0.3163ms)
+✔ Android supports the poles and rejects invalid or reordered frames (0.3632ms)
+✔ radian platform retains its separate compass-referenced boundary (0.2599ms)
+✔ sky programmatic scroll cannot preview or commit (580.1811ms)
+✔ sky cancellation and lifecycle transitions ignore late scroll completion (649.7192ms)
+✔ sky saving disables touch-driven previews and commits (116.3845ms)
+✔ calibration locks time interactions without claiming a save (200.5554ms)
+✔ sky released native scroll commits latest momentum offset without scrollend (93.8131ms)
+✔ sky hide cancels the pending release timer (204.8354ms)
+✔ sky short drag commands the original native tick again (93.6466ms)
+✔ recreated canvas rejects queued survey and constellation native images until their new owners publish (59.9604ms)
+✔ queued pre-calibration canvas frame cannot jump back after confirm or cancel (110.8882ms)
+✔ real alignment confirms raw input while queued painting retains stabilized geometry (36.179ms)
+✔ only two image loads start together and ready figures survive repeated camera updates (2.5301ms)
+✔ a ready coarse image remains canvas-owned while a finer replacement loads (0.309ms)
+✔ identical published bytes can belong to different tile identities without stale geometry (1.1136ms)
+✔ hidden/superseded late responses cannot restore unwanted figures (0.2597ms)
+✔ failure is latched through pose updates until explicit retry; GPU failures share recovery (0.3822ms)
+✔ retry distinguishes download failure from GPU failure while keeping an independent coarse image (1.3698ms)
+✔ raster bound contains source interiors and curved edges under roll, offset and rounded DPR (73.3225ms)
+✔ antipode, wide and ill-conditioned uncertainty retain full raster; invalid sizes opt out (0.567ms)
+✔ actual framebuffer dimensions bound the box and a useful source does not default to fullscreen (0.2507ms)
+✔ art preserves all three source anchors under roll, offset center and different FOVs (7.3885ms)
+✔ plane interior, extrapolated corners and reversed rays do not become screen billboards (0.5807ms)
+✔ invalid or degenerate anchors are unavailable without invented registration (0.5339ms)
+✔ art camera uses actual logical size and offset, not research constants (1.0653ms)
+✔ view ray hull includes curved viewport edges under roll and offset centers (20.4361ms)
+✔ request and file success alone cannot claim decoded art; release clears file once (3.0298ms)
+✔ cancellation during write removes the late file and cannot start decoding (0.4463ms)
+✔ wrong PNG identity/dimensions or native decode fail leave no usable image (0.3569ms)
+✔ published 512-pixel JPEG tile uses the same owned native decode and rejects wrong geometry (2.8423ms)
+✔ synchronous native failures enter the retry path and release a possibly partial owned file (0.6184ms)
+✔ a long offscreen image does not enter the texture working set through its loose circular bound (4.183ms)
+✔ an edge crossing remains visible even when image and viewport corners are outside each other (1.5001ms)
+✔ actual visible rays are never rejected under rolled and offset viewports (8.7742ms)
+✔ actual M42 color-empty local viewport retains its cue while source-bearing wider views remain eligible (19.2499ms)
+✔ isolated color and filter neighbors remain eligible in rolled and offset local views (11.4319ms)
+✔ resolved label replacement is identity- and rendered-size-bound, not brightness or display name (3.953ms)
+✔ an intentionally suppressed point withdraws only its own label, retaining legacy failure guides (0.2823ms)
+✔ captures entry orientation once, retains zenith and ignores subsequent phone rotation across separate pinches (5.2869ms)
+✔ object tracking holds overview entry heading and returns to the newest time-dependent target (1.3294ms)
+✔ independent review near-nadir counterexample no longer produces a 180-degree flip (1.5411ms)
+✔ each fixed interpolation path is continuous through near-nadir and rolled entry orientations (68.5897ms)
+✔ returning from overview starts at the displayed view and ends at the latest aligned pose, not entry pose (0.7254ms)
+✔ return reversal captures the actual intermediate view and cancels the old return (0.3189ms)
+✔ manual zoom round trip remains manual and does not adopt incoming phone directions (1.8462ms)
+✔ explicit drag cancels recovery, full-dome dragging still keeps zenith, and cancellation restores captured state (0.6633ms)
+✔ missing pose and background gaps cannot finish recovery; calibration cancels the browsing transition (0.5501ms)
+✔ camera inputs do not mutate the sensor pose and invalid inputs do not fabricate a direction (0.8394ms)
+✔ canvas measurement rejects missing geometry and accepts both platform result shapes (4.804ms)
+✔ failed GPU surface does not reinitialize on every pose and explicit retry consumes the latest frame (1.5119ms)
+✔ every acquired GPU generation is released exactly once across reset, failure and late callbacks (2.0642ms)
+✔ ready, measurement and draw each retain only the latest requested frame (0.4426ms)
+✔ steady sensor frames reuse geometry/context and resizing reacquires both (0.4476ms)
+✔ resize, hide, removed canvas and unmount discard stale callbacks (0.66ms)
+✔ page hide and native-node removal release the old context before a fresh foreground draw (0.3441ms)
+✔ measurement, context, draw and missing callback failures invalidate size and recover on retry (2.2732ms)
+✔ expiry/denial hides the previous projection until the clearing draw completes (0.415ms)
+✔ continuous poses with a slower native draw cannot starve visibility, while invalidation still fences old frames (0.8626ms)
+✔ motion bursts publish the latest real sample once while null/unmount cancel pending pose (1.0193ms)
+✔ dome never draws a below-horizon target or its label even when its projection fits the canvas (38.8468ms)
+✔ failed GPU submission cannot publish a picking snapshot or successful completion (2.6529ms)
+✔ actual page invalidation clears hit testing synchronously before React hides the failed surface (231.1531ms)
+✔ survey imagery uses a celestial plane beyond the camera hemisphere and stays hidden in red mode (77.7889ms)
+✔ stereographic anchors may cross the viewport but reject the antipode and invalid geometry (0.4835ms)
+✔ production frame requests preserve exact data/time and clear expired or untrusted input (135.4228ms)
+✔ explicit manual basis draws the same celestial target without fabricating device pose (18.6567ms)
+✔ production sky canvas switches exact target frames and restores committed geometry (33.0664ms)
+✔ production sky canvas never borrows top-level targets for missing or duplicate frames (15.9756ms)
+✔ published B-V gives a continuous star tint while missing photometry stays neutral (76.3568ms)
+✔ production sky canvas uses the same instant and projection for catalog stars and targets (16.5089ms)
+✔ expanding catalog depth cannot resize or brighten an unchanged star (61.0405ms)
+✔ the exact Sun frame fades catalog stars and their touch targets through twilight (26.7404ms)
+✔ BSC and SAO use the same reference low-altitude attenuation for painting and picking (21.8424ms)
+✔ the real renderer reveals and fades a star with zoom and cannot pick the hidden star (25.0134ms)
+✔ a retained stale object description offers an inline retry without losing its facts (10.4985ms)
+✔ the actual object modal sends its painted publication to both details and the source route (16.7776ms)
+✔ same stereographic camera places one real name, while zoom/intent and horizon gate it (4.8794ms)
+✔ interactive object labels keep priority over constellation names (0.6511ms)
+✔ a centred constellation name follows the local fade and returns without changing identity (0.8356ms)
+✔ constellation names wait for the current native scene and figure edition (14.4999ms)
+✔ a constellation name covered by the actual virtual foreground returns after an unobstructed repaint (3.8321ms)
+✔ portrait identification field renders the figure and real lines rather than an empty enabled layer (17.6183ms)
+✔ offscreen constellation arcs avoid fine clipping while a crossing with offscreen endpoints remains (310.9435ms)
+✔ a true curved constellation arc survives offscreen endpoints; clipping uses actual viewport and horizon (1.4062ms)
+✔ overview and intent gate the constellation; local artwork fades while real lines remain and image failure stays independent (2.4371ms)
+✔ constellation geometry uses the replacement J2000 epoch, preserves shared artwork and excludes no below-horizon anchors (87.233ms)
+✔ missing or mismatched observer/time never draws an old constellation frame (5.4364ms)
+✔ name anchors rotate with the exact observation frame rather than retaining the previous hour (38.9227ms)
+✔ zoom visibility preserves an identification field, fades before the dome and respects off intent (2.8146ms)
+✔ constellation context fades out in a close stellar crop and returns on widening (1.1434ms)
+✔ local line visibility shares overview and intent while artwork and names retire (0.3256ms)
+✔ entire image bounds remain eligible with offscreen anchors; opposite sky and below horizon are culled (3.7403ms)
+✖ time: late success cannot replace the newly selected place (4.9997ms)
+✖ time: hidden page cannot publish success or late failure (1.3074ms)
+✖ time: current update can adopt a recovered Context ID (2.2653ms)
+✔ date: late success cannot replace the newly selected place (3.6859ms)
+✔ date: hidden page cannot publish success or late failure (5.261ms)
+✔ date: current update can adopt a recovered Context ID (5.6495ms)
+✖ time and date share a synchronous lock before React rerenders (5.2473ms)
+✔ the actual lookup effect cannot overwrite a newer place or run while hidden (26.1081ms)
+✔ entry lookup is accepted once and cannot downgrade an existing revision (4.0969ms)
+✔ hide cancels old requests but allows a fresh request after return (1.9183ms)
+✖ actual page lifecycle hooks cancel publishing and reset the visible saving state (36.4733ms)
+✔ the actual active Context and weather query follow a successful recovered ID (19.0615ms)
+✔ returning after a different place was selected cannot become a disabled-query loading screen (5.0446ms)
+✖ freeze rejects date and time commits synchronously before React catches up (2.4269ms)
+✔ an expired stored Context recovers the Sky read once and rejects a late old-place result (121.4365ms)
+✔ independent page controls change the actual queued and painted grid state without superseding each other (175.4552ms)
+✔ calibration locks both controls and a missing exact frame prevents new equatorial selection without trapping an existing choice (31.9579ms)
+✔ turning both coordinate grids off removes their strokes while retaining the geometric horizon (43.6749ms)
+✔ an unavailable exact observation frame never displays an old equatorial grid (2.1439ms)
+✔ equatorial curves cross analytically known directions even between base samples at 0.05° (37.6998ms)
+✔ polar full-dome curves remain in the visible hemisphere and the actual protected viewport (11.6116ms)
+✔ a declination arc grazing the horizon stays visible even when both base samples are below it (43.7015ms)
+✔ adjacent grid segments evaluate each shared endpoint once and release it between traces (0.5131ms)
+✔ scene uses each exact-time equatorial frame in ordinary and red modes without depending on stars (55.1828ms)
+✔ a painted deep-sky image replaces its catalog aid gradually as its real angular footprint grows (3.4954ms)
+✔ missing or failed imagery and unknown angular size retain a visible catalog identity (0.2477ms)
+✔ actual page paint uses dome basis for drawing and last-painted calibration reference; locked stale frame uses observing scale (249.8624ms)
+✔ actual canvas writer gives the renderer a full horizon inside measured controls, including a shifted center (34.7479ms)
+✔ actual native measurement includes quick settings, back, native capsule, notifications and bottom controls, and rejects superseded results (16.9135ms)
+✔ actual viewport remap preserves the visible local zoom while ending an interrupted gesture (34.332ms)
+✔ actual Sky subscriptions remeasure when its inline notice grows or disappears, without following unrelated notices (19.3052ms)
+✔ actual calibration action changes camera intent only after a current painted frame can freeze (17.8436ms)
+✔ full dome faces zenith and every horizon azimuth fits an inset circle on portrait, square and landscape (19.4729ms)
+✔ widening is continuous and monotonically approaches zenith without changing handedness (107.9895ms)
+✔ inverse camera covers the rear hemisphere of a wide window, retaining actual directions (0.3852ms)
+✔ a failed source refresh retains a decoded Moon, Mars or Galactic image instead of claiming fallback (2.2242ms)
+✔ Galactic schematic rotates with the exact observer frame and fades outside night/wide view (4.5915ms)
+✔ schematic sits behind independent stars and fails without clearing the scene (38.2095ms)
+✔ 2MASS Galactic center, longitude and north map to the published panorama axes (0.7257ms)
+✔ historical image is submitted only for exact dark wide frame, with schematic fallback (27.7443ms)
+✔ optional W3 fades through the same exact-time twilight interval as the Galactic background (20.3354ms)
+✔ HiPS draw failures return to the owning layer even when optical uses order zero (76.3266ms)
+✔ HiPS sample uses exact catalog-independent observation frame and survives image failure (39.7054ms)
+✔ order-0 infrared background uses exact frame, precedes grid and disappears in red or stale time (24.837ms)
+✔ an order-zero optical image retains optical opacity above the historical infrared layer (5.8181ms)
+✔ JPEG and PNG image pixels follow the CDS NESTED cell packaging on every face (30.1683ms)
+✔ real HiPS tile identities and source-image axes locate Sombrero without TAN assumptions (1.6392ms)
+✔ HEALPix triangles use the shared report rotation and stereographic sky camera (4.1818ms)
+✔ one HiPS mesh reuses its fixed camera regardless of source tessellation (3.4139ms)
+✔ bounded inclusive HiPS selection retains the actual camera center across zoom (7.0974ms)
+✔ too-wide sky and invalid observer rotation never cause an unbounded tile query (2.0104ms)
+✔ alt-az grid joins each real horizon bearing to zenith in the full dome (17.9751ms)
+✔ offscreen one-degree samples still render the correct grid crossing at minimum zoom (27.8588ms)
+✔ scene sends the same geographic grid through ordinary and warm-red palettes (25.0243ms)
+✔ panorama LINEAR alpha wraps the real first/last texels and keeps partial transparency (2.7341ms)
+✔ all opaque corner samples cannot erase an interior sky hole or its image source (0.7577ms)
+✔ completed image mask replaces old tree geometry for labels, point picks and off/failure (1.9618ms)
+✔ foreground detail shares the actual GPU budget without counting a decoded identity twice or guessing unknown inputs (1.3788ms)
+✔ a failed detail alpha request preserves the same valid coarse image/mask and retries only the failed resource (13.1484ms)
+✔ late canceled detail alpha cannot replace a valid overview or publish into a hidden canvas (18.849ms)
+✔ detail image failure still selects valid coarse alpha, without granting a missing mask or stale detail image credit (13.0254ms)
+✔ simulated ground follows the current exact sun and camera in ordinary and red modes (39.9186ms)
+✔ virtual geometry paints after celestial layers and publishes only an actually successful mask (21.8563ms)
+✔ the final virtual mask never opens a fully covered Moon, while an unobstructed repaint restores it (20.2486ms)
+✔ missing exact illumination and GPU failure retain independent scene completion (13.3831ms)
+✔ corners on different trees cannot certify that open sky between them is covered (0.4674ms)
+✔ lobed canopy point hits cannot certify a hull across an open notch (1.0835ms)
+✔ a resolved Saturn disc takes over the marker at high zoom while the hit target remains (2.2173ms)
+✔ missing, malformed or unpaintable planet data retains the visible location marker (0.439ms)
+✖ a current returned position waits for its matching native sky frame before showing the marker (7.8004ms)
+✖ sky touch cannot pick an old native frame during report replacement (66.5264ms)
+✔ scene metadata exposes the presented result rather than the next report's data (30.3167ms)
+✔ locating and tracking a preview-time object keep the shared time ruler available to commit or cancel (5.8523ms)
+✖ cross-midnight preview and cancel use the same report frame and local calendar date (24.6689ms)
+✖ actual page binds and lists Sun/Moon independently of unavailable star/planet publications (8.6581ms)
+✔ actual Mini request opts into luminaries and never reuses the old discovery cache namespace (73.8243ms)
+✔ rendered Sun/Moon discs share accurate identity, large-area picking and location-marker replacement (55.2673ms)
+✔ failed or ambiguous discs cannot be picked; the independent successful body survives (43.1366ms)
+✔ partial sunrise keeps its visible limb selectable but rejects the below-horizon area (28.017ms)
+✔ follow drag cancellation restores its view and reacquires fresh follow instead of silently staying manual (19.752ms)
+✖ a stale SAO publication cannot change the pick identity of a painted planet (3.0008ms)
+✔ adding a second finger preserves the whole original transaction for cancellation (1.7208ms)
+✔ cancelling a manual gesture before permission never starts a sensor (2.4664ms)
+✔ cancelling a drag while an authorized follow request is still calibrating resumes that request (1.7139ms)
+✖ edge gestures and drag/pinch endings never trigger celestial selection; a plain tap does (2.5321ms)
+✖ natural selection survives disclosure Back and zoom; verified blank clears it and stale blank does not (2.4814ms)
+✔ locked calibration synchronously rejects drag, pinch and selection before React presentation catches up (1.4091ms)
+✔ a manual pinch reaches zenith, and cancellation restores its original scale and direction (3.2224ms)
+✖ a viewport change ends an active pinch without rolling back its visible scale or selecting an object (12.4631ms)
+✖ phone-following pinch widens the browsing camera without replacing or stopping the sensor (9.1931ms)
+✔ cancelling a second manual pinch retains the local input, not the already widened displayed view (5.9837ms)
+✔ grabbed celestial point follows the finger at 240 degrees including rolled camera (5.6353ms)
+✔ grabbed celestial point follows the finger at 180 degrees including rolled camera (0.749ms)
+✔ grabbed celestial point follows the finger at 120 degrees including rolled camera (0.6249ms)
+✔ grabbed celestial point follows the finger at 45 degrees including rolled camera (1.0602ms)
+✔ grabbed celestial point follows the finger at 6 degrees including rolled camera (0.5666ms)
+✔ grabbed celestial point follows the finger at 1.5 degrees including rolled camera (0.5824ms)
+✔ manual initialization is explicit north/up and invalid geometry cannot corrupt it (0.4423ms)
+✔ repeated horizontal browsing keeps the horizon level while a grabbed off-center ray follows the finger (0.922ms)
+✔ a wide or rolled drag moves continuously and reversing returns to the gesture-start view (108.5685ms)
+✔ a zenith overview keeps its existing free-rotation path without a pole singularity (0.8575ms)
+✔ surface orientation maps the centre to zero longitude and screen axes to east/south (4.7117ms)
+✔ same-instant Moon phase points toward the actual Sun and scales with distance/zoom (0.6106ms)
+✔ a partly set lunar disc reaches the renderer with the exact horizon view (25.7922ms)
+✔ scene submits one lunar phase after stars, keeps red mode and does not invent missing geometry (22.5747ms)
+✖ a bright star label follows the same twilight and red-light visibility as the painted star (8.1311ms)
+✖ a bright name cannot float over the painted virtual scene, including same-frame off recovery (2.9548ms)
+✖ a label withdraws when the scene has no content or Canvas has failed (1.3406ms)
+✖ a new report, time or mode waits for its own painted frame before showing labels (2.6486ms)
+✖ horizon-edge star and deep-sky labels follow the painter's strictly above-horizon rule (1.6381ms)
+✖ independent deep-sky names survive a missing bright catalog or unavailable bright frame (5.5944ms)
+✖ only the selected object's automatic name withdraws, and clearing selection restores it (9.3793ms)
+✔ retention pressure does not retry a failed current image, and valid independent images still draw (3.509ms)
+✔ a stable field above texture retention reuses its retained images instead of uploading the full cycle (0.5347ms)
+✔ published W3 bytes survive refinement failure and retry, while late writes and old GPU images release (7.7528ms)
+✔ published fixed-body and 2MASS files use the shared decode/GPU boundary with their real formats (20.3005ms)
+✔ shared artwork and selected-object requests use one runtime namespace with distinct file identities (199.766ms)
+✔ a publication or Canvas generation switch fences old decoded images before effects and redecodes for the new owner (42.9437ms)
+✔ hide, Canvas removal and publication loss retire decoded images held by the Hook, not just its returned view (54.4159ms)
+✔ the page's constellation off intent retires ready files and decoded state, and re-enabling creates a fresh owner (64.5606ms)
+✔ an enabled layer with no currently wanted figures keeps its bounded bitmap cache for a reverse zoom (53.3473ms)
+✔ an empty new Canvas generation cannot keep the old decoded-image state until another download finishes (24.5107ms)
+✔ repeated hide/show with a late canceled response releases retired state and preserves each new owner (13.3706ms)
+✔ located marker and camera reject changes of observer, report, time and source publication (1.2154ms)
+✔ picking uses only the exact painted catalog frame and deterministic ordering (4.8818ms)
+✔ pinch, drag and cancellation never become catalog taps (0.3359ms)
+✔ an above-horizon star covered by the painted virtual foreground cannot be picked (2.4675ms)
+✔ near-edge tap tolerance never revives a hidden point but exposed globe and ring pixels remain selectable (1.141ms)
+✔ a pending shared time commit suspends position requests and camera actions (10.3734ms)
+✔ keyboard search commits the native final text before React input state catches up (7.6486ms)
+✔ confirming an empty native field cancels an older pending search (1.6611ms)
+✔ ordinary edits debounce only the latest query and closing cancels its timer (2.1854ms)
+✔ a result from the previous query cannot select after native input advances before React rerenders (3.1948ms)
+✔ selection retains only immutable identity and place, never an old painted coordinate (3.7447ms)
+✔ point selection survives name fade and returns to the same view without changing intent (1.9734ms)
+✔ extended selection uses the catalogue angular diameter through the shared projection (0.6897ms)
+✔ unprojectable data cannot manufacture an on-screen selection (0.2733ms)
+✔ verified blank and stale no-result remain distinct for deselection (0.6026ms)
+✔ tracking retries the missing sky catalog before attempting an identity-bound position query (7.1009ms)
+✔ tracking follows the selected report time, rejects late or foreign data and retains the last usable position on failure (1.363ms)
+✔ explicit stop rejects delayed replies; canceled drag restores intent without accepting an old frame (2.252ms)
+✔ catalog outage preserves exact independent image frame while stale or mirrored frames are rejected (3.7238ms)
+✔ 1x sky time is one bounded intent across play, pause, hide, cancel and a replaced Context (4.6309ms)
+✔ coverage ends without extrapolation and withdrawn fine data returns to the committed time (0.3824ms)
+✔ interactive paint accepts only its own run and never a future or preceding frame (0.2698ms)
+✔ the real order-8 M31 tile can be requested only at an intersecting, bounded view (10.1809ms)
+✔ a first-source fine shard missing its image discovers the published coarse image (2.2885ms)
+✔ a listed shard with a missing pixel falls through to the next published source (2.8157ms)
+✔ a full image budget favors the coarse tile that closes a real viewport gap (1.7802ms)
+✔ covering one hole preserves available first-source detail (0.5057ms)
+✔ published base faces remain selectable in a full-dome view and missing faces fall through (0.8653ms)
+✔ Android full attitude follows without compass availability or quality gating (16.5573ms)
+✔ freeze uses actual presentation and confirm uses the newest unrendered callback (2.3432ms)
+✔ cancel resumes previous correction at the current pose and recalibration replaces it (1.6315ms)
+✔ background preserves presented calibration, rejects old callbacks and requires a fresh reference (1.6493ms)
+✔ repeated hide/show retains following intent without duplicating native streams (2.7772ms)
+✔ a late follow retry cannot acquire sensors while hidden, and explicit manual intent cancels it (2.6992ms)
+✔ expiry cannot confirm an old pose; reconnect keeps held view until recalibration (1.8023ms)
+✔ quality warning is sustained metadata, never another heading or pose owner (2.0484ms)
+✔ empty/unknown/numeric compass quality keeps its declared meaning (0.4923ms)
+✔ permission failure preserves manual fallback and can be retried (1.9051ms)
+✔ new page has no correction; explicit manual mode does not resume sensors on show (0.8104ms)
+✔ all displayed axes, including zenith, can serve as a full alignment reference (6.3333ms)
+✔ retained radian adapter explains a live but undefined initial phone-top direction (2.1006ms)
+✔ unresolved planets share solar adaptation without returning as fallback target dots (51.309ms)
+✔ partly risen resolved planets retain their drawn limb identity without selecting hidden or nearby empty rays (84.614ms)
+✔ ice-giant scene routes each historical profile to its own globe and preserves untextured geometry (33.3309ms)
+✔ a texture hook selects one body's exact painted geometry without accepting a partial ephemeris (64.9788ms)
+✔ one exact planetary frame projects a changing physical phase without stale or malformed rows (0.4992ms)
+✔ Saturn without ring orientation remains a phase disc alongside other valid planets (1.7402ms)
+✔ ice giants use sourced 1-bar axes only with a valid exact body frame (0.7635ms)
+✔ resolved Mars shares the Moon's IAU body-axis projection and passes only its own texture (6.3703ms)
+✔ resolved Mercury uses its own body axis and published image, never Mars' (5.0631ms)
+✔ Saturn's observed pole and main-ring radial widths produce oriented bands only when resolvable (3.5796ms)
+✔ Saturn ring strokes stay below a few logical pixels at the phone's 0.05° limit (12.2091ms)
+✔ Sun geometry shades only the globe-facing ring sector and retains shadowed arcs as Saturn picks (100.7611ms)
+✔ Saturn's outer ring remains when the globe has left the viewport (22.4929ms)
+✔ Saturn's 1-bar equatorial and polar axes project an oriented oblate globe (0.7756ms)
+✔ Jupiter's reported pole projects the 1-bar oblate silhouette and orients a longitude-neutral profile (9.3567ms)
+✔ Saturn's ring pole orients only its latitude profile while preserving globe and ring identity (11.2925ms)
+✔ Saturn ring arcs require a successfully drawn globe and retain scene order (23.1723ms)
+✔ a tap on the rendered Saturn globe rim or main ring selects Saturn (16.1045ms)
+✔ partly set planetary globes and Saturn rings stop at the same true horizon (269.6054ms)
+✔ real planetary phase replaces the old Venus target marker, but missing geometry preserves it (54.7938ms)
+✔ resolved Saturn bands use one continuous surface; unavailable shader retains arcs and picking (40.2562ms)
+✔ small stationary tremor is attenuated without suppressing a deliberate turn (12.2576ms)
+✔ north seam, tilt and poles preserve a rigid shortest-arc view (17.3749ms)
+✔ control transitions reset history and duplicate telemetry cannot advance it (2.5239ms)
+✔ sampling frequency does not materially change tracking lag (2.6023ms)
+✔ context recovery returns to the actual entry before falling back to Map (158.8839ms)
+✔ incomplete or invalid route time cannot throw before the existing Context recovery view (9.1806ms)
+✔ Context lookup completion refreshes memoized date choices without a timezone change (76.2644ms)
+✔ resolved Context still uses the shared civil-date owner across midnight and timezone changes (6.1688ms)
+✔ coarser optical arrival, replacement and removal schedule an actual same-camera scene update (87.4614ms)
+✔ the public page commits the actual coarse-only source after fine rejection or occlusion (25.6178ms)
+✔ public partial-failure recovery follows either visible field of the current publication (71.7853ms)
+✔ optical registration uses the admitted target, without painting another galaxy's position (101.2005ms)
+✔ M51 optical level follows measured field while wider views keep W3 (0.4169ms)
+✔ fully covered M51 images lose visible credits only after the foreground actually paints (62.0352ms)
+✔ leaving the image's whole field clears both credits without reporting a load failure (16.4128ms)
+✔ foreground coverage preserves exposed image edges, including a covered center (5.2143ms)
+✔ a fully covered narrow viewport loses credit even when image edges extend into open sky offscreen (4.4955ms)
+✔ rejected optical falls back to independent W3 while preserving the scene (28.2137ms)
+✔ one object's painted optical pixels do not combine with its independent infrared spectrum (4.1346ms)
+✔ refinement draws its registered wider optical field first and keeps independent recovery and credits (17.581ms)
+✔ foreground covering the fine field still credits the exposed wider optical field (10.4465ms)
+✔ partial image edges remain eligible after their center leaves the narrow viewport (4.629ms)
+✔ SDSS credit follows committed optical pixels across request and focus transitions (27.0465ms)
+✔ selected-object consumer uses one bound query and keeps the accessible marker when its name fades (13.0692ms)
+✔ a late, foreign or missing position cannot draw a selected reticle (13.1536ms)
+✔ area consumer uses shared angular size while obscured geometry is honestly labelled (5.7501ms)
+✔ solar light selects only the exact report instant and shares star ENU orientation (3.5103ms)
+✔ scene draws current solar light beneath other content; red and missing data suppress it (39.564ms)
+✔ optional solar shader failure preserves independent scene completion (5.0313ms)
+✔ hidden Sky releases native Back even while a selected object is retained (9.9896ms)
+✔ catalog-independent star sizes preserve magnitude order without coarse bright discs (3.9408ms)
+✔ zoom progressively reveals faint points and reverses without discrete level jumps (31.0582ms)
+✔ invalid photometry or projection cannot produce non-finite GPU geometry (0.2697ms)
+✔ reference air mass attenuates low stars continuously without changing their catalog magnitude or size (3.1542ms)
+✔ civil, nautical and astronomical twilight reveal faint stars after bright ones (0.6352ms)
+✔ actual sky hook forwards immutable query policy; a changed publication remains client-valid after Query observer storage (469.3111ms)
+✔ page hide retires the Hook tile graph and aborts requests; late replies cannot resurrect it (252.4863ms)
+✔ publication loss releases ready tiles and publication replacement fences the previous owner (31.4784ms)
+✔ cached stale tiles stay visible with recovery state; retry really reloads them and keeps old points while pending (16.8243ms)
+✔ bounded requests keep only current view; late aborted replies and dispose never publish obsolete stars (107.8829ms)
+✔ partial failure preserves loaded tiles, only explicit retry repeats failure, and wrong publication is rejected (6.2399ms)
+✔ oversized requests fail explicitly without silently selecting a subset or issuing network requests (15.0925ms)
+✔ view selects the inverse-transformed EQJ region and zoom hides its faint tier (5.4732ms)
+✔ proper-motion bounds follow the exact selected epoch and wrong frame cannot select stale tiles (1.0367ms)
+✔ twilight does not request a faint tile that the same-frame renderer cannot paint (0.4566ms)
+✔ the solar disc uses one exact report instant and the same angular camera scale (4.8786ms)
+✔ a partly risen solar disc retains visible picks without reviving its hidden centre through empty sky (25.6399ms)
+✔ the scene submits the real solar disc before Moon, in both palettes; failure leaves the scene (28.2516ms)
+✔ actual M31 FITS WCS pixels remain registered after observer and time rotations (17.2323ms)
+✔ all 51 source centers bind to FITS half-pixel origin at each published resolution (35.9162ms)
+✔ actual Legacy Surveys M104 TAN pixel origin preserves its centered JPEG registration (1.8597ms)
+✖ planet and other target labels only follow the native frame actually presented (15.0634ms)
+✔ same-camera native redraw commits resolved labels and both credits, including failure recovery (35.8187ms)
+✔ loaded W3 bytes alone cannot claim visible credit on a stale, hidden or cleared canvas (17.0986ms)
+✖ a submitted resolved Venus disc replaces only its old label, and failure restores it (3.1222ms)
+✖ target labels use the completed virtual scene mask rather than the current control intent (1.9205ms)
+✖ a later native mask cannot hide a label before its corresponding DOM camera commit (1.7624ms)
+✔ high-magnification target geometry uses numeric coordinates, independently of display text (3.1927ms)
+✔ missing, malformed, out-of-range and below-horizon geometry never borrows display-text coordinates (0.3802ms)
+✔ sky frame selection never substitutes the nearest available instant (1.2351ms)
+✔ preview and cancellation select matching target and star identities without state (1.5993ms)
+✔ missing legacy target frames, duplicate identities and invalid times fail closed (0.2416ms)
+✔ upright cardinal headings map ENU camera basis correctly (1.8634ms)
+✔ flat, face-down and gamma-tilted poses preserve real 3D direction (0.8721ms)
+✔ compound heading, beta and gamma use the declared rotation order (0.612ms)
+✔ heading wraps while beta and gamma reject impossible platform ranges (0.2859ms)
+✔ stereographic projection preserves angular scale and canvas handedness (0.8845ms)
+✔ pole, frustum and behind-view directions return null rather than edge-clamped points (0.3462ms)
+✔ aspect ratio changes horizontal field without changing vertical field (0.2268ms)
+✔ invalid projection input is rejected without hidden defaults or clamping (0.2365ms)
+✔ a prepared projection preserves one accepted view and refreshes for the next view (1.7748ms)
+✔ horizon fits the actual unobscured region on tall, square, landscape and large-text layouts (19.4059ms)
+✔ normal view retains full-screen center and wider view shifts continuously (38.5494ms)
+✔ native screen rectangles are converted to canvas-local insets without DPR multiplication (0.7336ms)
+✔ resizing or expanding controls preserves dome progress and does not reset local magnification (0.5548ms)
+✔ dragging uses the same shifted projection center as the painted ray (2.2774ms)
+✔ pinch doubles projected separation and can reach the full dome without a perspective singularity (3.7032ms)
+✔ a reverse pinch reaches the local boundary despite floating point roundoff (0.4096ms)
+✔ progressive survey levels are deterministic (0.4013ms)
+✔ the selectable local zoom can resolve the published Mars globe without lowering texture quality (2.1043ms)
+✔ a visible Mercury in the selectable twilight window reaches the fixed-map threshold (0.3856ms)
+✔ maximum local zoom makes the observed Saturn globe large enough to inspect (0.3438ms)
+✔ static cold and refresh failure use floating info, with retry owned by the actual page (95.8723ms)
+✔ missing stars do not disable touch entry for independently valid targets (31.952ms)
+✔ independent solar geometry remains drawable and touchable when both catalogs fail and legacy targets are empty (280.3554ms)
+✔ independent observation frames enable the existing view while invalid time or rotation keeps gestures unavailable (152.32ms)
+✔ fulfilled stale constellation cache exposes the actual page retry without erasing retained art (18.6244ms)
+✔ published native image hooks and every page consumer preserve the shared retry result (311.2161ms)
+✔ Moon coverage uses exact geometry and PNG identity; retained pixels recover without accepting legacy images (149.6102ms)
+✔ OPAL requests require the correct resolved body, exact time and valid axes; restored input recovers (148.842ms)
+✔ commercial sky does not request or retry an unpublished optical trial (158.6306ms)
+✔ fine optical failure retains the nearest ready coarse level and an explicit retry (149.501ms)
+✔ target switches fence prior discovery, cancel its owner and reject late decoded pixels (28.2081ms)
+✔ larger M81 overview selection follows its actual admitted footprint (0.3916ms)
+✔ the public page retry preserves coarse optical pixels through repeated HTTP failure and resets only a failed GPU owner (161.7953ms)
+ℹ tests 411
+ℹ suites 0
+ℹ pass 385
+ℹ fail 26
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19475.5737
+
+✖ failing tests:
+
+test at src\features\sky\sky-context-session.test.ts:1:3251
+✖ time: late success cannot replace the newly selected place (4.9997ms)
+  ReferenceError: rawReportData is not defined
+      at Object.commitIndex (evalmachine.<anonymous>:2:5)
+      at start (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-context-session.test.ts:43:83)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-context-session.test.ts:45:42)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+
+test at src\features\sky\sky-context-session.test.ts:1:3545
+✖ time: hidden page cannot publish success or late failure (1.3074ms)
+  ReferenceError: rawReportData is not defined
+      at Object.commitIndex (evalmachine.<anonymous>:2:5)
+      at start (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-context-session.test.ts:43:83)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-context-session.test.ts:52:44)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+
+test at src\features\sky\sky-context-session.test.ts:1:3992
+✖ time: current update can adopt a recovered Context ID (2.2653ms)
+  ReferenceError: rawReportData is not defined
+      at Object.commitIndex (evalmachine.<anonymous>:2:5)
+      at start (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-context-session.test.ts:43:83)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-context-session.test.ts:59:42)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at src\features\sky\sky-context-session.test.ts:1:4424
+✖ time and date share a synchronous lock before React rerenders (5.2473ms)
+  ReferenceError: rawReportData is not defined
+      at Object.commitIndex (evalmachine.<anonymous>:2:5)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-context-session.test.ts:69:48)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at src\features\sky\sky-context-session.test.ts:1:6462
+✖ actual page lifecycle hooks cancel publishing and reset the visible saving state (36.4733ms)
+  evalmachine.<anonymous>:27
+  }, [observationTime, timePlaying, pageVisible, contextSession.busy, timeSaving, alignmentEditing,
+      ^
+  
+  ReferenceError: observationTime is not defined
+      at evalmachine.<anonymous>:27:5
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-context-session.test.ts:116:6)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+
+test at src\features\sky\sky-context-session.test.ts:1:9922
+✖ freeze rejects date and time commits synchronously before React catches up (2.4269ms)
+  ReferenceError: rawReportData is not defined
+      at Object.commitIndex (evalmachine.<anonymous>:2:5)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-context-session.test.ts:158:19)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at src\features\sky\sky-located-page-marker.test.ts:2:103
+✖ a current returned position waits for its matching native sky frame before showing the marker (7.8004ms)
+  evalmachine.<anonymous>:3
+      presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
+                                          ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:3:41
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at visible (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-located-page-marker.test.ts:52:16)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-located-page-marker.test.ts:55:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+
+test at src\features\sky\sky-located-page-marker.test.ts:2:1398
+✖ sky touch cannot pick an old native frame during report replacement (66.5264ms)
+  evalmachine.<anonymous>:1
+  (!presentedSceneCurrent || !gesture || gesture.dragged || gesture.edge || !point || !paintedRow || !identity.catalogVersion || !isUnambiguousTapGesture(gesture));
+                                                                                       ^
+  
+  ReferenceError: paintedRow is not defined
+      at evalmachine.<anonymous>:1:86
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at run (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-located-page-marker.test.ts:67:74)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-located-page-marker.test.ts:78:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+
+test at src\features\sky\sky-location-preview.test.ts:1:3672
+✖ cross-midnight preview and cancel use the same report frame and local calendar date (24.6689ms)
+  evalmachine.<anonymous>:2
+  const committedRow = exactSkyTimeFrame(rawReportData?.hourly, committedAt);
+                                         ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:2:40
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at selected (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-location-preview.test.ts:79:56)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-location-preview.test.ts:85:25)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+
+test at src\features\sky\sky-luminary-page.test.ts:1:1526
+✖ actual page binds and lists Sun/Moon independently of unavailable star/planet publications (8.6581ms)
+  evalmachine.<anonymous>:23
+      const deepScene = resolveSkyDeepSkyScene(reportData?.skyScene, row?.at);
+                        ^
+  
+  ReferenceError: resolveSkyDeepSkyScene is not defined
+      at evalmachine.<anonymous>:23:23
+      at evalmachine.<anonymous>:48:3
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-luminary-page.test.ts:30:19)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+
+test at src\features\sky\sky-manual-gesture.test.ts:1:6749
+✖ a stale SAO publication cannot change the pick identity of a painted planet (3.0008ms)
+  ReferenceError: paintedData is not defined
+      at Object.onSkyTouchEnd (evalmachine.<anonymous>:197:38)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-manual-gesture.test.ts:103:5)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+
+test at src\features\sky\sky-manual-gesture.test.ts:1:9024
+✖ edge gestures and drag/pinch endings never trigger celestial selection; a plain tap does (2.5321ms)
+  ReferenceError: paintedData is not defined
+      at Object.onSkyTouchEnd (evalmachine.<anonymous>:197:38)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-manual-gesture.test.ts:126:73)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at src\features\sky\sky-manual-gesture.test.ts:1:9634
+✖ natural selection survives disclosure Back and zoom; verified blank clears it and stale blank does not (2.4814ms)
+  ReferenceError: paintedData is not defined
+      at Object.onSkyTouchEnd (evalmachine.<anonymous>:197:38)
+      at tap (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-manual-gesture.test.ts:138:56)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-manual-gesture.test.ts:139:3)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at src\features\sky\sky-manual-gesture.test.ts:1:12005
+✖ a viewport change ends an active pinch without rolling back its visible scale or selecting an object (12.4631ms)
+  ReferenceError: paintedData is not defined
+      at Object.onSkyTouchEnd (evalmachine.<anonymous>:197:38)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-manual-gesture.test.ts:187:5)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at src\features\sky\sky-manual-gesture.test.ts:1:12923
+✖ phone-following pinch widens the browsing camera without replacing or stopping the sensor (9.1931ms)
+  ReferenceError: paintedData is not defined
+      at Object.onSkyTouchEnd (evalmachine.<anonymous>:197:38)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-manual-gesture.test.ts:200:5)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at src\features\sky\sky-named-star-labels.test.ts:3:2151
+✖ a bright star label follows the same twilight and red-light visibility as the painted star (8.1311ms)
+  evalmachine.<anonymous>:3
+      presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
+                                          ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:3:41
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at labels (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:60:13)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:80:31)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+
+test at src\features\sky\sky-named-star-labels.test.ts:3:2719
+✖ a bright name cannot float over the painted virtual scene, including same-frame off recovery (2.9548ms)
+  evalmachine.<anonymous>:3
+      presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
+                                          ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:3:41
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at labels (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:60:13)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:89:31)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+
+test at src\features\sky\sky-named-star-labels.test.ts:3:3197
+✖ a label withdraws when the scene has no content or Canvas has failed (1.3406ms)
+  evalmachine.<anonymous>:3
+      presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
+                                          ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:3:41
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at labels (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:60:13)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:94:31)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+
+test at src\features\sky\sky-named-star-labels.test.ts:3:3560
+✖ a new report, time or mode waits for its own painted frame before showing labels (2.6486ms)
+  evalmachine.<anonymous>:3
+      presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
+                                          ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:3:41
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at labels (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:60:13)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:101:33)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+
+test at src\features\sky\sky-named-star-labels.test.ts:3:3981
+✖ horizon-edge star and deep-sky labels follow the painter's strictly above-horizon rule (1.6381ms)
+  evalmachine.<anonymous>:3
+      presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
+                                          ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:3:41
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at labels (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:60:13)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:107:31)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+
+test at src\features\sky\sky-named-star-labels.test.ts:3:4289
+✖ independent deep-sky names survive a missing bright catalog or unavailable bright frame (5.5944ms)
+  evalmachine.<anonymous>:3
+      presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
+                                          ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:3:41
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at labels (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:60:13)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:113:33)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+
+test at src\features\sky\sky-named-star-labels.test.ts:3:4995
+✖ only the selected object's automatic name withdraws, and clearing selection restores it (9.3793ms)
+  evalmachine.<anonymous>:3
+      presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
+                                          ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:3:41
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at labels (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:60:13)
+      at names (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:124:5)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-named-star-labels.test.ts:126:20)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+
+test at src\features\sky\sky-target-page-labels.test.ts:3:225
+✖ planet and other target labels only follow the native frame actually presented (15.0634ms)
+  evalmachine.<anonymous>:3
+      presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
+                                          ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:3:41
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at labels (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-target-page-labels.test.ts:55:46)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-target-page-labels.test.ts:59:31)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+
+test at src\features\sky\sky-target-page-labels.test.ts:3:5721
+✖ a submitted resolved Venus disc replaces only its old label, and failure restores it (3.1222ms)
+  evalmachine.<anonymous>:3
+      presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
+                                          ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:3:41
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at labels (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-target-page-labels.test.ts:139:79)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-target-page-labels.test.ts:147:20)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+
+test at src\features\sky\sky-target-page-labels.test.ts:3:6798
+✖ target labels use the completed virtual scene mask rather than the current control intent (1.9205ms)
+  evalmachine.<anonymous>:3
+      presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
+                                          ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:3:41
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at labels (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-target-page-labels.test.ts:155:141)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-target-page-labels.test.ts:164:20)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+
+test at src\features\sky\sky-target-page-labels.test.ts:3:7951
+✖ a later native mask cannot hide a label before its corresponding DOM camera commit (1.7624ms)
+  evalmachine.<anonymous>:3
+      presentedSkyFrame.data?.context === rawReportData?.context && row?.at &&
+                                          ^
+  
+  ReferenceError: rawReportData is not defined
+      at evalmachine.<anonymous>:3:41
+      at Script.runInContext (node:vm:149:12)
+      at Script.runInNewContext (node:vm:154:17)
+      at Object.runInNewContext (node:vm:310:38)
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-target-page-labels.test.ts:171:21)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)

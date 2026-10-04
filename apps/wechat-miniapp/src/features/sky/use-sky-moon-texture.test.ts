@@ -6,7 +6,7 @@ import ts from "typescript";
 import * as discs from "./sky-moon-disc";
 import * as status from "./sky-fixed-image-status";
 
-test("Moon coverage uses exact geometry and PNG identity; retained pixels recover without accepting legacy images",()=>{
+test("Moon coverage uses exact geometry and PNG identity; current pixels recover without accepting legacy images",()=>{
   const source=readFileSync(new URL("./use-sky-moon-texture.ts",import.meta.url),"utf8");
   const publication=JSON.parse(readFileSync(new URL("../../../../../workers/miniapp-api/assets/moon/coverage-manifest.json",import.meta.url),"utf8"));
   publication.publicationHash="checked-publication";
@@ -19,9 +19,9 @@ test("Moon coverage uses exact geometry and PNG identity; retained pixels recove
       if(name==="@/hooks/use-resource-query")return {useResourceQuery(options:any){queryCalls.push(options);
         return {data:publication,isFetching:false,isError:failed,refreshError:stale?Error("offline"):null,refetch(){refetches++;}};}};
       if(name==="@/services/moon-texture-client")return {getMoonTextureManifest(){},moonTextureImageUrl:(url:string)=>url};
-      if(name==="./use-sky-artwork")return {useSkyNativeImages(...args:any[]){imageCalls.push(args);
-        return {images:new Map(failed||retained?[]:[[legacy?"moon:uv750":id,image]]),
-          retainedImages:new Map(retained?[[id,image]]:[]),loading:false,failed,retryImages(){retries++;},failedImage(){}};}};
+      if(name==="./use-sky-fixed-image")return {useSkyFixedImage(...args:any[]){imageCalls.push(args);
+        return {image:args[3]&&args[4]&&args[5]===id&&!legacy&&(!failed||retained)?image:null,
+          loading:false,failed,retryImages(){retries++;},failedImage(){}};}};
       if(name==="./sky-moon-disc")return discs;
       if(name==="./sky-fixed-image-status")return status;
       throw Error(name);
@@ -34,11 +34,11 @@ test("Moon coverage uses exact geometry and PNG identity; retained pixels recove
     {basis,verticalFovDeg:fov},400,800,{},1,active);
   assert.equal(run().image,image);
   assert.equal(queryCalls.at(-1).queryKey[1],"coverage-v2");
-  assert.equal(imageCalls.at(-1)[4][0].id,id);
-  assert.equal(imageCalls.at(-1)[5](imageCalls.at(-1)[4][0]).format,"png");
+  assert.equal(imageCalls.at(-1)[5],id);
+  assert.equal(imageCalls.at(-1)[6](imageCalls.at(-1)[2].image).format,"png");
   for(const invoke of [()=>run(row,"2026-09-23T13:00:00Z"),()=>run({...row,moonBodyFrame:null}),
     ()=>run(row,at,false),()=>run(row,at,true,180)]){
-    invoke();assert.equal(queryCalls.at(-1).enabled,false);assert.equal(imageCalls.at(-1)[3],false);
+    assert.equal(invoke().image,null);assert.equal(queryCalls.at(-1).enabled,false);assert.equal(imageCalls.at(-1)[4],false);
   }
   retained=true;stale=true;failed=true;
   const usable=run();assert.equal(usable.image,image);assert.equal(usable.failed,false);assert.equal(usable.refreshFailed,true);

@@ -1,0 +1,6 @@
+{
+  "status": "TASK_DOC_MARKER_FAILED_BEFORE_ANY_WRITE",
+  "error": "ValueError substring not found",
+  "cause": "Old PLAN contains mixed newline styles; R1 assumed CRLF paragraph separator before the current evidence marker. No document or production write occurred. R2 uses exact semantic paragraph markers with existing surrounding bytes preserved.",
+  "fourArchivedDocumentsUnchanged": true
+}

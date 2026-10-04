@@ -1,0 +1,2 @@
+src/features/sky/sky-sdss-display-optical.test.ts(53,86): error TS2532: Object is possibly 'undefined'.
+src/features/sky/sky-sdss-display-optical.test.ts(64,78): error TS2532: Object is possibly 'undefined'.

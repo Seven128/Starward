@@ -1,0 +1,202 @@
+<?xml version='1.0' encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE WMT_MS_Capabilities SYSTEM "http://schemas.opengis.net/wms/1.1.1/WMS_MS_Capabilities.dtd"
+ [
+ <!ELEMENT VendorSpecificCapabilities EMPTY>
+ ]>  <!-- end of DOCTYPE declaration -->
+
+<WMT_MS_Capabilities version="1.1.1">
+<Service>
+  <Name>OGC:WMS</Name>
+  <Title>WMS Mercury Server</Title>
+  <Abstract>Planetary WMS service hosted by Astrogeology, USGS</Abstract>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/>
+  <ContactInformation>
+  </ContactInformation>
+</Service>
+
+<Capability>
+  <Request>
+    <GetCapabilities>
+      <Format>application/vnd.ogc.wms_xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetCapabilities>
+    <GetMap>
+      <Format>image/png</Format>
+      <Format>image/jpeg</Format>
+      <Format>image/png; mode=8bit</Format>
+      <Format>image/vnd.jpeg-png</Format>
+      <Format>image/vnd.jpeg-png8</Format>
+      <Format>application/x-pdf</Format>
+      <Format>image/svg+xml</Format>
+      <Format>image/tiff</Format>
+      <Format>application/json</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetMap>
+    <GetFeatureInfo>
+      <Format>text/plain</Format>
+      <Format>application/vnd.ogc.gml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetFeatureInfo>
+    <DescribeLayer>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </DescribeLayer>
+    <GetLegendGraphic>
+      <Format>image/png</Format>
+      <Format>image/jpeg</Format>
+      <Format>image/png; mode=8bit</Format>
+      <Format>image/vnd.jpeg-png</Format>
+      <Format>image/vnd.jpeg-png8</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetLegendGraphic>
+    <GetStyles>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetStyles>
+  </Request>
+  <Exception>
+    <Format>application/vnd.ogc.se_xml</Format>
+    <Format>application/vnd.ogc.se_inimage</Format>
+    <Format>application/vnd.ogc.se_blank</Format>
+  </Exception>
+  <VendorSpecificCapabilities />
+  <UserDefinedSymbolization SupportSLD="1" UserLayer="0" UserStyle="1" RemoteWFS="0"/>
+  <Layer>
+    <Name>Mercury_Simple_Cylindrical_Rasters</Name>
+    <Title>WMS Mercury Server</Title>
+    <Abstract>Planetary WMS service hosted by Astrogeology, USGS</Abstract>
+    <SRS>EPSG:4326</SRS>
+    <SRS>IAU_2015:19900</SRS>
+    <LatLonBoundingBox minx="-180.000000" miny="-90.000000" maxx="360.000000" maxy="90.000000" />
+    <BoundingBox SRS="EPSG:4326"
+                minx="-180.000000" miny="-90.000000" maxx="360.000000" maxy="90.000000" />
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>MESSENGER</Name>
+        <Title>Messenger Global Mosaic May2016</Title>
+        <Abstract>This mosaic is the PDS-released Map Projected Basemap RDR (BDR) data set consisting of stretch grayscale reflectance at a resolution of 256 pixels per degree (~166 m/p). This edition, version 1, was released at end of mission and it is compiled using NAC or WAC 750-nm images from any campaign that best fit the intended illumination geometry, i.e., low emission angle and incidence angle near 74 degrees. It is controlled and projected onto a global digital elevation model. It uses a Kasseleinin-Shkuratov photometric model, whose parameters are the same for any given wavelength band across all MESSENGER end-of-mission map data products. A linear stretch was applied to the original reflectance values using a min=0.0005, max=0.25  to an 8 bit range of 0-255. Ref: Denevi, B.W. et al., Final calibration and multispectral map products from the Mercury Dual Imaging System Wide-Angle Camera on MESSENGER, Lunar Planet. Sci 47, abstract #1264.</Abstract>
+        <LatLonBoundingBox minx="-180.000000" miny="-90.000000" maxx="360.000000" maxy="90.000000" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-180.000000" miny="-90.000000" maxx="360.000000" maxy="90.000000" />
+        <MetadataURL type="TC211">
+          <Format>text/xml</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;request=GetMetadata&amp;layer=MESSENGER"/>
+        </MetadataURL>
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>MESSENGER_Mariner</Name>
+        <Title>Messenger and Mariner Global Mosaic</Title>
+        <Abstract>The mosaic is comprised of Messenger and Mariner 10 flyby data by USGS/ASU/NASA. The images were collected with large variations in resolution and with varying lighting conditions. It has been photometrically corrected using a Hapke-Henyey-Greenstein photometric model. Pixel density values are in I/F reflectance units. The darker vertical regions to left and right of center are coverage provided by images near or at the terminator (low Sun). These areas required special processing to retain illuminated features that are otherwise eliminated at incidence angles greater than 90 degrees when the photometric model is applied.</Abstract>
+        <LatLonBoundingBox minx="-180.000000" miny="-90.000000" maxx="360.000000" maxy="90.000000" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-180.000000" miny="-90.000000" maxx="360.000000" maxy="90.000000" />
+        <MetadataURL type="TC211">
+          <Format>text/xml</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;request=GetMetadata&amp;layer=MESSENGER_Mariner"/>
+        </MetadataURL>
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>MESSENGER_v8</Name>
+        <Title>Messenger Global Mosaic v8</Title>
+        <Abstract>This mosaic was created using MESSENGER orbital images that were released by NASA&#39;s Planetary Data System (PDS) on September 7, 2012. The images cover the first year of MESSENGER orbital operations. The mosaic is composed of MDIS Narrow Angle Camera (NAC) images and Wide Angle Camera (WAC) images acquired in the filter centered at 750 nm. Images in the mosaic are selected and prioritized by resolution, mid to high solar incidence angles, and low emission angles. The higher priority images end up on the &#39;top.&#39; The global mosaic that covers the entire planet is in a simple cylindrical projection. NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington.</Abstract>
+        <LatLonBoundingBox minx="-180.000000" miny="-90.000000" maxx="360.000000" maxy="90.000000" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-180.000000" miny="-90.000000" maxx="360.000000" maxy="90.000000" />
+        <MetadataURL type="TC211">
+          <Format>text/xml</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;request=GetMetadata&amp;layer=MESSENGER_v8"/>
+        </MetadataURL>
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>MESSENGER_May2013</Name>
+        <Title>Messenger Global Mosaic May2013</Title>
+        <Abstract>This mosaic was created using MESSENGER orbital images that were released by the Messenger Team in May 2013. The combined basemap is a combination of the following mosaics (1) The 2013-05-10 version of the monochrome global mosaic, made from ACT tiles.
+(2) An average north polar mosaic from 90N to 82.5N, composed of images from many campaigns, made by C. Ernst.
+(3) An average south polar mosaic from 90S to 85S, composed of images from the south polar monitoring campaign from the primary mission, made by N. Chabot.
+To fill in minor nulls, the 2013-05-10 version of the highi global mosaic was underlain.
+The equiorial view is in equirectangular projection and shows the entire globe. The polar views show the pole down to +/-65 in polar stereographic projection.
+</Abstract>
+        <LatLonBoundingBox minx="-180.000000" miny="-89.999999" maxx="359.999996" maxy="90.000000" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-180.000000" miny="-89.999999" maxx="359.999996" maxy="90.000000" />
+        <MetadataURL type="TC211">
+          <Format>text/xml</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;request=GetMetadata&amp;layer=MESSENGER_May2013"/>
+        </MetadataURL>
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>MESSENGER_Color</Name>
+        <Title>Messenger MDIS Color Mosaic v3</Title>
+        <Abstract>This color mosaic is comprised of photometrically corrected I/F (radiance factor) for 3 narrow-band color filters of the Mercury Dual Imaging System (MDIS) Wide Angle Camera (WAC), placing the 1000-nm, 750-nm, and 430-nm filters in the red, green, and blue channels, respectively. The individual MDIS Wide Angle Camera (WAC) images were pointed to low emission angles on the surface, at times when the solar incidence angle was close to the lowest values possible at that latitude. The common areas of each set of 8 images (1 per filter) are mosaicked into 54 non-overlapping, 64 pixel/degree 8 band tiles or multispectral data records (MDRs).</Abstract>
+        <LatLonBoundingBox minx="-180.000000" miny="-89.999868" maxx="359.999605" maxy="90.000000" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-180.000000" miny="-89.999868" maxx="359.999605" maxy="90.000000" />
+        <MetadataURL type="TC211">
+          <Format>text/xml</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;request=GetMetadata&amp;layer=MESSENGER_Color"/>
+        </MetadataURL>
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>MARINER</Name>
+        <Title>Mariner Global Mosaic</Title>
+        <Abstract>The mosaic is comprised entirely of Mariner 10 flyby data by USGS/NASA. The three flyby encounters with Mercury were in 1974 and 1975.</Abstract>
+        <LatLonBoundingBox minx="-180.000000" miny="-90.000000" maxx="360.000000" maxy="90.000000" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-180.000000" miny="-90.000000" maxx="360.000000" maxy="90.000000" />
+        <MetadataURL type="TC211">
+          <Format>text/xml</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;request=GetMetadata&amp;layer=MARINER"/>
+        </MetadataURL>
+    </Layer>
+    <Layer queryable="0" opaque="0" cascaded="0">
+        <Name>Mercury5M_Quads</Name>
+        <Title>Mercury 5M Quad Charts</Title>
+        <Abstract>Outlines and labels for the Mercury 5M quad charts</Abstract>
+        <LatLonBoundingBox minx="-180.000000" miny="-90.000000" maxx="360.000000" maxy="90.000000" />
+        <BoundingBox SRS="EPSG:4326"
+                    minx="-180.000000" miny="-90.000000" maxx="360.000000" maxy="90.000000" />
+        <MetadataURL type="TC211">
+          <Format>text/xml</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;request=GetMetadata&amp;layer=Mercury5M_Quads"/>
+        </MetadataURL>
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="110" height="23">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/mercury/mercury_simp_cyl.map&amp;version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=Mercury5M_Quads&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+    </Layer>
+  </Layer>
+</Capability>
+</WMT_MS_Capabilities>

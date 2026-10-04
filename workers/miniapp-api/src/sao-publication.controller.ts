@@ -1,5 +1,7 @@
-import { Controller,Get,Inject,Param } from '@nestjs/common';
+import { Controller,Get,Headers,Inject,Param,Res } from '@nestjs/common';
+import type { FastifyReply } from 'fastify';
 import { SaoPublicationService } from './sao-publication.ts';
+import { skyPublicAssetHeaders } from './sky-public-asset-headers.ts';
 
 @Controller('v2/sky/supplements/sao')
 export class SaoPublicationController {
@@ -12,5 +14,12 @@ export class SaoPublicationController {
   }
   @Get('v2/:publicationHash/tiles/:tileId')revisedTile(@Param('publicationHash')publicationHash:string,@Param('tileId')tileId:string){
     return this.revised.tile(publicationHash,tileId);
+  }
+  @Get('v2/:publicationHash/assets/:tileId')
+  async revisedAsset(@Param('publicationHash')publicationHash:string,@Param('tileId')tileId:string,
+    @Headers('if-none-match')candidate:string|undefined,@Res()reply:FastifyReply){
+    const asset=await this.revised.asset(publicationHash,tileId),etag=`W/"${asset.sha256}"`;
+    reply.headers({...skyPublicAssetHeaders('sao',asset.contentType),etag});
+    return candidate===etag?reply.status(304).send():reply.send(asset.bytes);
   }
 }

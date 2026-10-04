@@ -1,0 +1,32 @@
+[
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+    "bytes": 177389,
+    "sha256": "448d994121ab113208ac2f5fd82db213e24a30cf09ba16bd4e34dd5036a993bf"
+  },
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+    "bytes": 100895,
+    "sha256": "6b4c6d45ed4a51a905231b5ed5200921c53b18c7e74b39b733b5220944b2155a"
+  },
+  {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/prepared-imagery-source-coverage-cost-2026-10-04.md",
+    "bytes": 15328,
+    "sha256": "bbda55309f8a9ec194cf97a48546d193340065b74fa2a98a97cd4b3f91c61f7d"
+  },
+  {
+    "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+    "bytes": 161062,
+    "sha256": "aa99a84ab9f41e40d67bd196818c28502d4cbcfe9ebedb9160f2e7d857be706c"
+  },
+  {
+    "path": "project_context/architecture/runtime-and-domain.md",
+    "bytes": 314262,
+    "sha256": "e05b33aad6b5beeba41dbce962a151df1973de65413cd4ee8fc26ecb6ff86018"
+  },
+  {
+    "path": "data-pipelines/deep-sky/README.md",
+    "bytes": 67782,
+    "sha256": "187ff1adf8745db0a72083f57e75045a955efcb391b71ff7f2309c3a77b15363"
+  }
+]

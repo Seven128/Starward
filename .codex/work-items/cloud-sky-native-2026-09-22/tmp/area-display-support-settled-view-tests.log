@@ -1,0 +1,47 @@
+✔ art preserves all three source anchors under roll, offset center and different FOVs (3.9135ms)
+✔ plane interior, extrapolated corners and reversed rays do not become screen billboards (0.6234ms)
+✔ invalid or degenerate anchors are unavailable without invented registration (0.4568ms)
+✔ art camera uses actual logical size and offset, not research constants (0.4162ms)
+✖ view ray hull includes curved viewport edges under roll and offset centers (7.4976ms)
+✔ request and file success alone cannot claim decoded art; release clears file once (1.3422ms)
+✔ cancellation during write removes the late file and cannot start decoding (0.3186ms)
+✔ wrong PNG identity/dimensions or native decode fail leave no usable image (0.217ms)
+✔ published 512-pixel JPEG tile uses the same owned native decode and rejects wrong geometry (1.1116ms)
+✔ synchronous native failures enter the retry path and release a possibly partial owned file (0.6269ms)
+✔ a long offscreen image does not enter the texture working set through its loose circular bound (2.6528ms)
+✔ an edge crossing remains visible even when image and viewport corners are outside each other (0.9846ms)
+✔ actual visible rays are never rejected under rolled and offset viewports (3.8178ms)
+✔ actual M42 color-empty local viewport retains its cue while source-bearing wider views remain eligible (4.3138ms)
+✔ isolated color and filter neighbors remain eligible in rolled and offset local views (7.4355ms)
+✔ portrait identification field renders the figure and real lines rather than an empty enabled layer (2.5675ms)
+✔ offscreen constellation arcs avoid fine clipping while a crossing with offscreen endpoints remains (85.9429ms)
+✔ a true curved constellation arc survives offscreen endpoints; clipping uses actual viewport and horizon (0.9782ms)
+✔ overview and intent gate the constellation; local artwork fades while real lines remain and image failure stays independent (1.2662ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 18
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 992.8291
+
+✖ failing tests:
+
+test at apps\wechat-miniapp\src\features\sky\sky-artwork-registration.test.ts:1:2764
+✖ view ray hull includes curved viewport edges under roll and offset centers (7.4976ms)
+  AssertionError [ERR_ASSERTION]: outside hull 45,-65,0,0: -0.0360855452388881,1.0019106210678899
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-artwork-registration.test.ts:66:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

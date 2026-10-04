@@ -10,6 +10,7 @@ import * as timeFrame from "./sky-time-frame";
 import * as skyZoom from "./sky-zoom";
 import * as sceneRender from "./sky-scene-render";
 import { createSkyBrowsingCamera } from "./sky-browsing-camera";
+import { resolveSkyCanvasView } from "./sky-canvas-view";
 import { skyViewportCenter, NO_SKY_INSETS } from "./sky-viewport";
 import { createDirectionAlignment } from "./direction-alignment";
 import { createSkyPresentationFilter } from "./sky-presentation-filter";
@@ -17,7 +18,11 @@ import { createSkyOrientationController, type SkyOrientationSnapshot } from "./s
 import type { DeviceMotionEvent } from "./compass-lifecycle";
 
 let sourceText = readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8");
-if (process.env.MUTATE_SKY_REFERENCE_FRAME === "1") sourceText = sourceText.replace("frame.orientationRevision !== live.presentationRevision ||", "false ||");
+// The escaped-defect mutation now targets the responsible view coordinator.
+// Its actual renderer assertion still fails if old reference frames are admitted.
+const resolveCanvasView = (input: Parameters<typeof resolveSkyCanvasView>[0]) =>
+  resolveSkyCanvasView(process.env.MUTATE_SKY_REFERENCE_FRAME === "1"
+    ? { ...input, queuedOrientationRevision: input.live.presentationRevision } : input);
 if (process.env.MUTATE_SKY_FILTER_FENCE === "1") sourceText = sourceText.replace("orientation.latestPresentation.current ?? orientationController.snapshot()", "orientationController.snapshot()");
 if (process.env.MUTATE_SKY_NATIVE_IMAGE_FENCE === "1") sourceText = sourceText
   .replace("frame.deepSkyImage?.canvasGeneration === canvasGenerationRef.current ? frame.deepSkyImage : null", "frame.deepSkyImage")
@@ -36,27 +41,30 @@ vm.runInNewContext(ts.transpileModule(sourceText + "\nexport { drawSkyScene };",
 
 test("recreated canvas rejects queued survey and constellation native images until their new owners publish", () => {
   const basis = projection.createSkyViewBasis(0, 45, 0)!;
-  const submitted: { survey: unknown; artwork: ReadonlyMap<string, object>; uranus:unknown; neptune:unknown }[] = [];
+  const submitted: { survey: unknown; artwork: ReadonlyMap<string, object>; uranus:unknown; neptune:unknown; landscapeMask:unknown }[] = [];
   const paintFrame = vm.runInNewContext(ts.transpileModule(`(${paint});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-    orientationController: { snapshot: () => ({ presentationRevision: 1, alignment: { mode: "following", view: basis } }) },
+    orientationController: { snapshot: () => ({ presentationRevision: 1, alignment: { mode: "auto", view: basis } }) },
+    resolveSkyCanvasView: resolveCanvasView,
     orientation: { latestPresentation: { current: null } }, manualBasisRef: { current: basis },
     ...skyZoom, SKY_VERTICAL_FOV_DEG: 45, browsingCamera: createSkyBrowsingCamera(), zoomRef: { current: 45 },
     reducedMotionRef: { current: true }, viewportInsetsRef: { current: NO_SKY_INSETS }, skyViewportCenter,
     objectTracking:{snapshot:()=>({target:null})},
     canvasGenerationRef: { current: 2 }, EMPTY_SKY_IMAGES: new Map(),
-    drawSkyScene(...args: any[]) { submitted.push({ survey: args[11], artwork: args[15].images, uranus:args[32],neptune:args[33] }); },
+    drawSkyScene(...args: any[]) { submitted.push({ survey: args[11], artwork: args[15].images, uranus:args[32],neptune:args[33],landscapeMask:args[34].mask }); },
   });
   const old = { canvasGeneration: 1, image: {} }, replacement = { canvasGeneration: 2, image: {} };
   const artwork = new Map([["current", {}]]);
-  const uranus={},neptune={};
-  const frame = { orientationRevision: 1, nativeImageGeneration: 1, deepSkyImage: old, constellationImages: artwork,uranusBands:uranus,neptuneBands:neptune };
+  const uranus={},neptune={},landscapeMask={};
+  const frame = { orientationRevision: 1, nativeImageGeneration: 1, deepSkyImage: old, constellationImages: artwork,uranusBands:uranus,neptuneBands:neptune,landscapeMask };
   const size = { width: 400, height: 800 };
   paintFrame({}, frame, size, () => {});
   assert.equal(submitted[0]!.uranus,null);assert.equal(submitted[0]!.neptune,null);
   assert.equal(submitted[0]!.survey, null); assert.equal(submitted[0]!.artwork.size, 0);
+  assert.equal(submitted[0]!.landscapeMask,null,"retired source alpha cannot certify a recreated Canvas");
   paintFrame({}, { ...frame, nativeImageGeneration: 2 }, size, () => {});
   assert.equal(submitted[1]!.uranus,uranus);assert.equal(submitted[1]!.neptune,neptune);
   assert.equal(submitted[1]!.survey, null); assert.equal(submitted[1]!.artwork, artwork);
+  assert.equal(submitted[1]!.landscapeMask,landscapeMask,"current source alpha reaches the actual submitted scene");
   paintFrame({}, { ...frame, nativeImageGeneration: 2, deepSkyImage: replacement }, size, () => {});
   assert.equal(submitted[2]!.survey, replacement); assert.equal(submitted[2]!.artwork, artwork);
 });
@@ -77,6 +85,7 @@ test("queued pre-calibration canvas frame cannot jump back after confirm or canc
     const presented = { current: null as projection.SkyViewBasis | null };
     const paintFrame = vm.runInNewContext(ts.transpileModule(`(${paint});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
       orientationController: { snapshot: () => ({ presentationRevision: 3, alignment: alignment.snapshot() }) },
+      resolveSkyCanvasView: resolveCanvasView,
       manualBasisRef: { current: null }, orientation: { presented, latestPresentation: { current: null } },
       paintedSkyObjectsRef: { current: null }, drawSkyScene: exports_.drawSkyScene,
       resolvedSkyBodyReferences, setPresentedSkyFrame: (change: (previous: unknown) => unknown) => change(null),
@@ -128,6 +137,7 @@ test("real alignment confirms raw input while queued painting retains stabilized
   const context = new Proxy({}, { get: (_o, key) => key === "disc" ? (...args: number[]) => arcs.push(args) : () => undefined });
   const paintFrame = vm.runInNewContext(ts.transpileModule(`(${paint});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     orientationController: controller, manualBasisRef: { current: null },
+    resolveSkyCanvasView: resolveCanvasView,
     orientation: { presented, latestPresentation }, paintedSkyObjectsRef: { current: null }, drawSkyScene: exports_.drawSkyScene,
     resolvedSkyBodyReferences, setPresentedSkyFrame: (change: (previous: unknown) => unknown) => change(null),
     ...skyZoom, SKY_VERTICAL_FOV_DEG: 45,

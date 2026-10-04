@@ -3,7 +3,8 @@ import { skyArtworkViewParameters, type SkyArtworkRegistration, type SkyArtworkV
 /** Framebuffer-pixel scissor of the existing image's whole spherical cap.
  * Curved stereographic edges stay inside it; source pixels/UVs are unchanged.
  * A cap containing the projection antipode is unbounded and keeps the full
- * viewport. This is a raster bound, never coverage, visibility or picking. */
+ * viewport. A certified empty box also excludes whole-image demand; a nonempty
+ * box does not prove visible source content, coverage or picking. */
 export function skyArtworkRasterBounds(registration: SkyArtworkRegistration, view: SkyArtworkView,
   width: number, height: number, bufferWidth: number, bufferHeight: number) {
   const parameters = skyArtworkViewParameters(view, width, height);

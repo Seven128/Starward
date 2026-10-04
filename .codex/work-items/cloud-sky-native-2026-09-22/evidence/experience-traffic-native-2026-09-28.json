@@ -1,0 +1,988 @@
+{
+  "scope": "Current clean-v11 public native operations, immutable captures and sanitized proxy epochs. No phone acceptance, memory/FPS/cloud cost or overall visual-quality certification.",
+  "candidateSha256": "99c50222cb3d64fc2201470c754d6e135c60b51b9711f8918b52f93469cc47db",
+  "project": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v11-0928",
+  "sdkPort": 9444,
+  "transport": {
+    "upstreamPort": 8789,
+    "proxyPort": 8791,
+    "contextMode": "pass",
+    "resourceMode": "pass",
+    "epoch1": "experience-traffic-native-epoch1-2026-09-28.json",
+    "epoch2": "experience-traffic-native-epoch2-2026-09-28.json",
+    "agentChecks": "scripts/experience-traffic-proxy-check-2026-09-28.mjs",
+    "previousClosedContextCounters": {
+      "mode": "pass",
+      "puts": 17,
+      "gets": 25,
+      "rejectedBeforeUpstream": 2,
+      "lostSuccessfulResponses": 3,
+      "forwardedPutStatuses": [
+        200,
+        200,
+        409,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        404,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "conditionalContextGets": 11
+    }
+  },
+  "captures": [
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 1.5 度，4235 颗真实亮星目录对象，场景时刻 2026-09-29T00:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 08:00",
+      "located": "月球定位标记，查看资料",
+      "sources": "",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v11-traffic-moon-above-loaded-2026-09-28.png",
+      "width": 488,
+      "height": 1057
+    },
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 1.5 度，4235 颗真实亮星目录对象，场景时刻 2026-09-29T00:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 08:00",
+      "located": "月球定位标记，查看资料",
+      "sources": "",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v11-traffic-source-back-2026-09-28.png",
+      "width": 488,
+      "height": 1057
+    },
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 9.7 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "M 31定位标记，查看资料",
+      "sources": "NASA/IPAC IRSA · AllWISE W3 12 μm · 处理后红外影像",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v11-traffic-m31-midfield-2026-09-28.png",
+      "width": 488,
+      "height": 1057
+    },
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 1.5 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "M 31定位标记，查看资料",
+      "sources": "NASA/IPAC IRSA · AllWISE W3 12 μm · 处理后红外影像",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v11-traffic-m31-fine-2026-09-28.png",
+      "width": 488,
+      "height": 1057
+    },
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 9.7 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "M 42定位标记，查看资料",
+      "sources": "NASA/IPAC IRSA · AllWISE W3 12 μm · 处理后红外影像",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v11-traffic-m42-coarse-2026-09-28.png",
+      "width": 488,
+      "height": 1057
+    },
+    {
+      "filename": "experience-combined-clean-v11-traffic-m42-loading-2026-09-28.png",
+      "width": 488,
+      "height": 1057,
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 1.5 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "M 42定位标记，查看资料",
+      "sources": "NASA/IPAC IRSA · AllWISE W3 12 μm · 处理后红外影像",
+      "landscape": "关闭通用模拟地景，不影响几何地平线"
+    },
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 1.5 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "M 42定位标记，查看资料",
+      "sources": "NASA/IPAC IRSA · AllWISE W3 12 μm · 处理后红外影像",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v11-traffic-m42-cancel-retry-2026-09-28.png",
+      "width": 488,
+      "height": 1057
+    },
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 85.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "Vega定位标记，查看资料",
+      "sources": "",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v11-traffic-final-2026-09-28.png",
+      "width": 488,
+      "height": 1057
+    }
+  ],
+  "moon": {
+    "midnightPublicInformation": "月球月球 · SOLAR MOON方位 100.9° · 高度 65.1° · 几何位置不保证可见定位到星空跟踪天体当前仅收录可核验的目录基本资料月球 · 月亮 · Moon · SOLAR:MOON类别地球的天然卫星当前位置、相位与视直径使用所选地点和时刻的观测报告；静态身份不代表现场可见。高倍率月面采用Clementine历史750nm灰阶图，配合同刻本体方向与月相；不是实时或自然彩色月面。中低纬和极区缺测处使用统一灰色盘面示意，不补出地貌；部分覆盖按有效面积混合。来源 · NASA Goddard Space Flight Center / NSSDCA · USGS Astrogeology Science Center来源与许可",
+    "observedVisibleAt08Capture": "experience-combined-clean-v11-traffic-moon-above-loaded-2026-09-28.png",
+    "sourcePageText": "来源与许可月球NASA Goddard Space Flight Center / NSSDCA当前数据Moon Fact Sheet时间 · 北京时间发布来源未提供获取时间未知适用来源未提供许可：NASA published reference; see NASA media and data usage guidance精度：Static identity/reference facts; observing geometry belongs to the current authorized report· 静态资料不提供当前时刻位置、天气或现场可见性。原始出处许可说明USGS Astrogeology Science Center当前数据Clementine UVVIS 750 nm v2.1 global mosaic with measured-area coverageUSGS Astrogeology Science Center / Clementine UVVIS · https://astrogeology.usgs.gov/search/map/moon_clementine_uvvis_global_mosaic_118mExact 45x45 area mean of nonzero source samples; RGBA alpha is measured area fraction. Native 8-bit grayscale retained without contrast stretch; no synthetic infill.时间 · 北京时间发布来源未提供获取时间未知适用来源未提供许可：USGS public-domain data; retain source credit精度：Historical Clementine 750 nm grayscale map; observer orientation comes from the report· Historical 1994 single-band 750 nm grayscale, not natural color, current lunar imagery or calibrated visual photometry.· Original missing data occur at middle/low latitudes and the poles. Missing areas use a uniform neutral display globe; partial coverage blends by measured area fraction. No local terrain or albedo is inferred in gaps.· 2048x1024 reduction limits surface detail. Illumination and body orientation are computed for the selected observer/time; surface texture is historical.原始出处许可说明",
+    "sourceBackCapture": "experience-combined-clean-v11-traffic-source-back-2026-09-28.png",
+    "warmTransfer": {
+      "statement": "The current Moon image is visible and files were created, but neither measured epoch1 Moon operation nor source Back caused a moon_image or landscape_image proxy body transfer. The official buffer can still show 200 cached responses; cache owner is not identified solely by those records.",
+      "proxyMoonImageRows": 0,
+      "proxyLandscapeImageRows": 0
+    }
+  },
+  "progression": {
+    "m31Images": [
+      {
+        "sequence": 44,
+        "phase": "native-progression",
+        "resourceKind": "object_image",
+        "method": "GET",
+        "agentProbe": false,
+        "conditional": false,
+        "upstreamBodyBytes": 41153,
+        "upstreamChunks": 1,
+        "upstreamEnded": true,
+        "downstreamFinished": true,
+        "status": 200,
+        "upstreamHeadersMs": 22.96,
+        "declaredContentLength": 41153,
+        "contentEncoding": "identity_or_other",
+        "immutable": false,
+        "maxAgeSeconds": 86400,
+        "imageFieldDegrees": 1.778,
+        "upstreamEndedMs": 23.13,
+        "downstreamFinishedMs": 23.25,
+        "observedDurationMs": 23.25
+      },
+      {
+        "sequence": 46,
+        "phase": "native-progression",
+        "resourceKind": "object_image",
+        "method": "GET",
+        "agentProbe": false,
+        "conditional": false,
+        "upstreamBodyBytes": 14454,
+        "upstreamChunks": 1,
+        "upstreamEnded": true,
+        "downstreamFinished": true,
+        "status": 200,
+        "upstreamHeadersMs": 2.37,
+        "declaredContentLength": 14454,
+        "contentEncoding": "identity_or_other",
+        "immutable": false,
+        "maxAgeSeconds": 86400,
+        "imageFieldDegrees": 4,
+        "upstreamEndedMs": 2.59,
+        "downstreamFinishedMs": 2.75,
+        "observedDurationMs": 2.75
+      }
+    ],
+    "publicVisibleCondition": "2026-09-28T16:00:00.000Z; M 31 altitude 69.6 degrees, azimuth 19.8 degrees; vertical FOV 9.7 then 1.5, DAY, manual, ground/constellations ON, wide-field W3 OFF",
+    "initialRequestCondition": "First M 31 requests occurred at 08:00 while the public marker reported ground occlusion; those byte samples are not accepted as visible composition. Visible captures were collected after 00:00 and re-location.",
+    "totalM31ImageBodyBytes": 55607,
+    "m42PublicInformation": "M 42星云 · M 42方位 98.0° · 高度 5.2° · 几何位置不保证可见定位到星空跟踪天体已收录可核验的中文介绍与目录资料猎户座大星云位于猎户座剑柄区域，是一处明亮的恒星形成区。肉眼可见的朦胧亮斑只是其发光气体结构的一部分。M 42 · NGC 1976 · Great Orion Nebula · Orion Nebula · 猎户座大星云类型星云V 波段视星等4.00 mag目录长轴90.0 角分目录短轴60.0 角分目录资料使用ICRS J2000静态坐标与角尺寸；当前地点和时刻的方位需使用对应天空帧。目录星等和角尺寸不代表肉眼、望远镜或相机在当前天气与光污染下必然可见。来源 · OpenNGC — Mattia Verga and contributors · NASA/IPAC Infrared Science Archive (IRSA)来源与许可"
+  },
+  "cancel": {
+    "activeBeforeCapture": [
+      {
+        "sequence": 28,
+        "phase": "native-cancel",
+        "resourceKind": "object_image",
+        "method": "GET",
+        "agentProbe": false,
+        "conditional": false,
+        "upstreamBodyBytes": 0,
+        "upstreamChunks": 0,
+        "upstreamEnded": false,
+        "downstreamFinished": false,
+        "status": 200,
+        "upstreamHeadersMs": 2.14,
+        "declaredContentLength": 23697,
+        "contentEncoding": "identity_or_other",
+        "immutable": false,
+        "maxAgeSeconds": 86400,
+        "imageFieldDegrees": 0.9,
+        "controlledResourceDelayMs": 30000
+      }
+    ],
+    "activeAfterCapture": [
+      {
+        "sequence": 28,
+        "phase": "native-cancel",
+        "resourceKind": "object_image",
+        "method": "GET",
+        "agentProbe": false,
+        "conditional": false,
+        "upstreamBodyBytes": 0,
+        "upstreamChunks": 0,
+        "upstreamEnded": false,
+        "downstreamFinished": false,
+        "status": 200,
+        "upstreamHeadersMs": 2.14,
+        "declaredContentLength": 23697,
+        "contentEncoding": "identity_or_other",
+        "immutable": false,
+        "maxAgeSeconds": 86400,
+        "imageFieldDegrees": 0.9,
+        "controlledResourceDelayMs": 30000
+      }
+    ],
+    "canceledImage": {
+      "sequence": 28,
+      "phase": "native-cancel",
+      "resourceKind": "object_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 0,
+      "upstreamChunks": 0,
+      "upstreamEnded": false,
+      "downstreamFinished": false,
+      "status": 200,
+      "upstreamHeadersMs": 2.14,
+      "declaredContentLength": 23697,
+      "contentEncoding": "identity_or_other",
+      "immutable": false,
+      "maxAgeSeconds": 86400,
+      "imageFieldDegrees": 0.9,
+      "controlledResourceDelayMs": 30000,
+      "downstreamClosedBeforeFinish": true,
+      "observedDurationMs": 14195.25,
+      "controlledResourceOutcome": "downstream-cancel"
+    },
+    "filesAfterCancel": [
+      {
+        "object": "M 42",
+        "level": "OVERVIEW",
+        "bytes": 8226
+      }
+    ],
+    "retryImage": {
+      "sequence": 38,
+      "phase": "native-cancel-retry",
+      "resourceKind": "object_image",
+      "method": "GET",
+      "agentProbe": false,
+      "conditional": false,
+      "upstreamBodyBytes": 23697,
+      "upstreamChunks": 1,
+      "upstreamEnded": true,
+      "downstreamFinished": true,
+      "status": 200,
+      "upstreamHeadersMs": 2.26,
+      "declaredContentLength": 23697,
+      "contentEncoding": "identity_or_other",
+      "immutable": false,
+      "maxAgeSeconds": 86400,
+      "imageFieldDegrees": 0.9,
+      "upstreamEndedMs": 2.49,
+      "downstreamFinishedMs": 2.7,
+      "observedDurationMs": 2.71
+    },
+    "filesAfterRetry": [
+      {
+        "object": "M 42",
+        "level": "DETAIL",
+        "bytes": 23697
+      }
+    ],
+    "heldResourceCountAfter": 0,
+    "meaning": "Actual native detail request was delayed by the task proxy; coarse imagery remained visible during the hold. A public zoom to coarse canceled that HTTP response before the 30-second release; no DETAIL file remained. A later ordinary zoom issued a new successful DETAIL request and replaced/released the coarse file. Controlled pause durations and unread body bytes are not ordinary latency or wire-cost measurements."
+  },
+  "encodedFiles": {
+    "owner": "Current sky-art session only, separate from deep-sky and historical session files",
+    "beforeSource": {
+      "count": 7,
+      "encodedBytes": 5923825
+    },
+    "onSource": {
+      "count": 0,
+      "encodedBytes": 0
+    },
+    "afterSource": {
+      "count": 5,
+      "encodedBytes": 2574750
+    },
+    "finalSkyImages": {
+      "count": 9,
+      "encodedBytes": 5095559
+    },
+    "finalDeepSky": 0,
+    "historical": {
+      "count": 25,
+      "encodedBytes": 35766274
+    },
+    "historicalPreservedOnSource": true,
+    "historicalPreservedOnFinal": true,
+    "previousV11SessionRemains": {
+      "count": 3,
+      "encodedBytes": 4874512
+    },
+    "limitation": "File bytes are durable encoded storage, not native bitmap/GPU memory. Historical sessions include closed development candidates; no unrelated or historical files were deleted. Cross-runtime cleanup needs its shared-owner audit."
+  },
+  "proxyEpochSummaries": [
+    {
+      "epochStartedAt": "2026-09-28T13:13:17.464Z",
+      "totalObserved": 79,
+      "retained": 79,
+      "active": 0,
+      "groups": {
+        "transport-check|unmarked-client|sky_report": {
+          "requests": 1,
+          "bodyBytes": 621612,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "transport-check|agent-probe|galactic_manifest": {
+          "requests": 1,
+          "bodyBytes": 1782,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "transport-check|agent-probe|galactic_image": {
+          "requests": 1,
+          "bodyBytes": 703555,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "native-moon|unmarked-client|object_information": {
+          "requests": 3,
+          "bodyBytes": 0,
+          "finished": 3,
+          "statuses": {
+            "304": 3
+          },
+          "canceled": 0
+        },
+        "native-moon|unmarked-client|other": {
+          "requests": 4,
+          "bodyBytes": 50128,
+          "finished": 4,
+          "statuses": {
+            "200": 3,
+            "304": 1
+          },
+          "canceled": 0
+        },
+        "native-moon|unmarked-client|moon_manifest": {
+          "requests": 2,
+          "bodyBytes": 4226,
+          "finished": 2,
+          "statuses": {
+            "200": 2
+          },
+          "canceled": 0
+        },
+        "native-moon|unmarked-client|sao_tile": {
+          "requests": 19,
+          "bodyBytes": 0,
+          "finished": 19,
+          "statuses": {
+            "304": 19
+          },
+          "canceled": 0
+        },
+        "native-moon|unmarked-client|observation_context": {
+          "requests": 1,
+          "bodyBytes": 1471,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "native-moon|unmarked-client|sky_report": {
+          "requests": 2,
+          "bodyBytes": 621609,
+          "finished": 2,
+          "statuses": {
+            "200": 1,
+            "304": 1
+          },
+          "canceled": 0
+        },
+        "native-moon|unmarked-client|landscape_manifest": {
+          "requests": 1,
+          "bodyBytes": 3413,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "native-source-back|unmarked-client|other": {
+          "requests": 2,
+          "bodyBytes": 31324,
+          "finished": 2,
+          "statuses": {
+            "200": 1,
+            "304": 1
+          },
+          "canceled": 0
+        },
+        "native-source-back|unmarked-client|sky_report": {
+          "requests": 1,
+          "bodyBytes": 621609,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "native-source-back|unmarked-client|moon_manifest": {
+          "requests": 1,
+          "bodyBytes": 2113,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "native-source-back|unmarked-client|landscape_manifest": {
+          "requests": 1,
+          "bodyBytes": 3413,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "native-progression|unmarked-client|object_information": {
+          "requests": 2,
+          "bodyBytes": 16722,
+          "finished": 2,
+          "statuses": {
+            "200": 2
+          },
+          "canceled": 0
+        },
+        "native-progression|unmarked-client|other": {
+          "requests": 3,
+          "bodyBytes": 35332,
+          "finished": 3,
+          "statuses": {
+            "200": 3
+          },
+          "canceled": 0
+        },
+        "native-progression|unmarked-client|object_image": {
+          "requests": 2,
+          "bodyBytes": 55607,
+          "finished": 2,
+          "statuses": {
+            "200": 2
+          },
+          "canceled": 0
+        },
+        "native-progression|unmarked-client|constellation_image": {
+          "requests": 3,
+          "bodyBytes": 115531,
+          "finished": 3,
+          "statuses": {
+            "200": 3
+          },
+          "canceled": 0
+        },
+        "native-progression|unmarked-client|observation_context": {
+          "requests": 1,
+          "bodyBytes": 1471,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "native-progression|unmarked-client|sao_tile": {
+          "requests": 25,
+          "bodyBytes": 982585,
+          "finished": 25,
+          "statuses": {
+            "200": 16,
+            "304": 9
+          },
+          "canceled": 0
+        },
+        "native-progression|unmarked-client|sky_report": {
+          "requests": 2,
+          "bodyBytes": 621612,
+          "finished": 2,
+          "statuses": {
+            "200": 1,
+            "304": 1
+          },
+          "canceled": 0
+        },
+        "native-progression|unmarked-client|landscape_manifest": {
+          "requests": 1,
+          "bodyBytes": 3413,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        }
+      }
+    },
+    {
+      "epochStartedAt": "2026-09-28T13:27:20.982Z",
+      "totalObserved": 63,
+      "retained": 63,
+      "active": 0,
+      "groups": {
+        "transport-check|agent-probe|galactic_manifest": {
+          "requests": 1,
+          "bodyBytes": 1782,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "transport-check|agent-probe|galactic_image": {
+          "requests": 1,
+          "bodyBytes": 703555,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "transport-check|unmarked-client|sao_tile": {
+          "requests": 20,
+          "bodyBytes": 601452,
+          "finished": 20,
+          "statuses": {
+            "200": 12,
+            "304": 8
+          },
+          "canceled": 0
+        },
+        "transport-check|unmarked-client|object_information": {
+          "requests": 2,
+          "bodyBytes": 16675,
+          "finished": 2,
+          "statuses": {
+            "200": 2
+          },
+          "canceled": 0
+        },
+        "transport-check|unmarked-client|other": {
+          "requests": 1,
+          "bodyBytes": 2004,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "transport-check|unmarked-client|object_image": {
+          "requests": 1,
+          "bodyBytes": 8226,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "transport-check|unmarked-client|constellation_image": {
+          "requests": 1,
+          "bodyBytes": 41095,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "native-cancel|unmarked-client|sao_tile": {
+          "requests": 9,
+          "bodyBytes": 32811,
+          "finished": 9,
+          "statuses": {
+            "200": 1,
+            "304": 8
+          },
+          "canceled": 0
+        },
+        "native-cancel|unmarked-client|object_image": {
+          "requests": 1,
+          "bodyBytes": 0,
+          "finished": 0,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 1
+        },
+        "native-cancel-retry|unmarked-client|object_image": {
+          "requests": 1,
+          "bodyBytes": 23697,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "native-cancel-retry|unmarked-client|sao_tile": {
+          "requests": 1,
+          "bodyBytes": 0,
+          "finished": 1,
+          "statuses": {
+            "304": 1
+          },
+          "canceled": 0
+        },
+        "native-cancel-retry|unmarked-client|sky_report": {
+          "requests": 1,
+          "bodyBytes": 621612,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "settled|unmarked-client|object_information": {
+          "requests": 2,
+          "bodyBytes": 0,
+          "finished": 2,
+          "statuses": {
+            "304": 2
+          },
+          "canceled": 0
+        },
+        "settled|unmarked-client|other": {
+          "requests": 1,
+          "bodyBytes": 3330,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "settled|unmarked-client|constellation_image": {
+          "requests": 1,
+          "bodyBytes": 11604,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        },
+        "settled|unmarked-client|sao_tile": {
+          "requests": 18,
+          "bodyBytes": 591581,
+          "finished": 18,
+          "statuses": {
+            "200": 8,
+            "304": 10
+          },
+          "canceled": 0
+        },
+        "settled|unmarked-client|galactic_manifest": {
+          "requests": 1,
+          "bodyBytes": 1782,
+          "finished": 1,
+          "statuses": {
+            "200": 1
+          },
+          "canceled": 0
+        }
+      }
+    }
+  ],
+  "final": {
+    "state": {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 85.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "Vega定位标记，查看资料",
+      "sources": "",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v11-traffic-final-2026-09-28.png",
+      "width": 488,
+      "height": 1057
+    },
+    "paintedLandscapeSource": "模拟地景图片来源 · Lubomir HambalekStara Lesna Meadows — Lubomir Hambalek; resized and alpha encoded by Starward历史斯洛伐克草地全景经缩小、透明度编码及显示曝光处理；原包标注 CC BY 4.0，来源目录标注 CC BY-SA 4.0，图片派生物按 CC BY-SA 4.0 提供。它不是所选观星点的现场照片或遮挡测量。图片条款：https://creativecommons.org/licenses/by-sa/4.0/ · 原始来源：https://github.com/Stellarium/stellarium-data/releases/download/landscapes/stara_lesna.zip当前图片：http://127.0.0.1:8791/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/panorama-2048.png原包：http://127.0.0.1:8791/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/stara-lesna-original.zip"
+  },
+  "purposeBuffer": {
+    "scope": "Official DevTools buffered HTTP metadata only. No request/response bodies, private routes/IDs, credentials or full headers retained. Captured response text is a debugger representation, not proof of wire byte count; duration keeps the reported unit.",
+    "capturedAtMs": 1790602649589,
+    "records": [
+      {
+        "routeKeyOrdinal": 1,
+        "bufferIndex": 65,
+        "kind": "request",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "conditional": false,
+        "requestBodyCharacters": 0,
+        "conditionalTagMatchesPreviousResponse": null
+      },
+      {
+        "routeKeyOrdinal": 1,
+        "bufferIndex": 66,
+        "kind": "response",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "status": 200,
+        "reportedDuration": {
+          "value": 38,
+          "unit": "ms"
+        },
+        "responseTagMatchesPreviousResponse": null,
+        "responseTagMatchesLatestRequest": null,
+        "declaredContentLength": 41153,
+        "contentEncoding": null,
+        "immutable": false,
+        "maxAgeSeconds": 86400,
+        "capturedResponseTextUtf8Bytes": null
+      },
+      {
+        "routeKeyOrdinal": 2,
+        "bufferIndex": 71,
+        "kind": "request",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "conditional": false,
+        "requestBodyCharacters": 0,
+        "conditionalTagMatchesPreviousResponse": null
+      },
+      {
+        "routeKeyOrdinal": 2,
+        "bufferIndex": 75,
+        "kind": "response",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "status": 200,
+        "reportedDuration": {
+          "value": 28,
+          "unit": "ms"
+        },
+        "responseTagMatchesPreviousResponse": null,
+        "responseTagMatchesLatestRequest": null,
+        "declaredContentLength": 14454,
+        "contentEncoding": null,
+        "immutable": false,
+        "maxAgeSeconds": 86400,
+        "capturedResponseTextUtf8Bytes": null
+      },
+      {
+        "routeKeyOrdinal": 3,
+        "bufferIndex": 90,
+        "kind": "response",
+        "origin": "owned_proxy",
+        "route": "other_api",
+        "method": "GET",
+        "status": 200,
+        "reportedDuration": {
+          "value": 18,
+          "unit": "ms"
+        },
+        "responseTagMatchesPreviousResponse": null,
+        "responseTagMatchesLatestRequest": null,
+        "declaredContentLength": 8102,
+        "contentEncoding": null,
+        "immutable": false,
+        "maxAgeSeconds": null,
+        "capturedResponseTextUtf8Bytes": 8102,
+        "dataEqualsPreviousResponse": null,
+        "changedTopLevelKeys": null,
+        "payloadShape": {
+          "envelope": true,
+          "schemaVersion": null,
+          "items": null
+        }
+      },
+      {
+        "routeKeyOrdinal": 4,
+        "bufferIndex": 93,
+        "kind": "request",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "conditional": false,
+        "requestBodyCharacters": 0,
+        "conditionalTagMatchesPreviousResponse": null
+      },
+      {
+        "routeKeyOrdinal": 5,
+        "bufferIndex": 95,
+        "kind": "response",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "status": 200,
+        "reportedDuration": {
+          "value": 34,
+          "unit": "ms"
+        },
+        "responseTagMatchesPreviousResponse": null,
+        "responseTagMatchesLatestRequest": null,
+        "declaredContentLength": 8573,
+        "contentEncoding": null,
+        "immutable": false,
+        "maxAgeSeconds": null,
+        "capturedResponseTextUtf8Bytes": 8573,
+        "dataEqualsPreviousResponse": null,
+        "changedTopLevelKeys": null,
+        "payloadShape": {
+          "envelope": true,
+          "schemaVersion": null,
+          "items": null
+        }
+      },
+      {
+        "routeKeyOrdinal": 4,
+        "bufferIndex": 96,
+        "kind": "response",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "status": 200,
+        "reportedDuration": {
+          "value": 13,
+          "unit": "ms"
+        },
+        "responseTagMatchesPreviousResponse": null,
+        "responseTagMatchesLatestRequest": null,
+        "declaredContentLength": 8226,
+        "contentEncoding": null,
+        "immutable": false,
+        "maxAgeSeconds": 86400,
+        "capturedResponseTextUtf8Bytes": null
+      },
+      {
+        "routeKeyOrdinal": 4,
+        "bufferIndex": 97,
+        "kind": "request",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "conditional": false,
+        "requestBodyCharacters": 0,
+        "conditionalTagMatchesPreviousResponse": null
+      },
+      {
+        "routeKeyOrdinal": 4,
+        "bufferIndex": 98,
+        "kind": "response",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "status": 200,
+        "reportedDuration": {
+          "value": 27,
+          "unit": "ms"
+        },
+        "responseTagMatchesPreviousResponse": null,
+        "responseTagMatchesLatestRequest": null,
+        "declaredContentLength": 8226,
+        "contentEncoding": null,
+        "immutable": false,
+        "maxAgeSeconds": 86400,
+        "capturedResponseTextUtf8Bytes": null
+      },
+      {
+        "routeKeyOrdinal": 6,
+        "bufferIndex": 125,
+        "kind": "request",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "conditional": false,
+        "requestBodyCharacters": 0,
+        "conditionalTagMatchesPreviousResponse": null
+      },
+      {
+        "routeKeyOrdinal": 6,
+        "bufferIndex": 128,
+        "kind": "response",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "status": 0,
+        "reportedDuration": {
+          "value": 14190,
+          "unit": "ms"
+        },
+        "responseTagMatchesPreviousResponse": null,
+        "responseTagMatchesLatestRequest": null,
+        "declaredContentLength": null,
+        "contentEncoding": null,
+        "immutable": false,
+        "maxAgeSeconds": null,
+        "capturedResponseTextUtf8Bytes": null
+      },
+      {
+        "routeKeyOrdinal": 6,
+        "bufferIndex": 145,
+        "kind": "request",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "conditional": false,
+        "requestBodyCharacters": 0,
+        "conditionalTagMatchesPreviousResponse": null
+      },
+      {
+        "routeKeyOrdinal": 6,
+        "bufferIndex": 146,
+        "kind": "response",
+        "origin": "owned_proxy",
+        "route": "celestial_object",
+        "method": "GET",
+        "status": 200,
+        "reportedDuration": {
+          "value": 42,
+          "unit": "ms"
+        },
+        "responseTagMatchesPreviousResponse": null,
+        "responseTagMatchesLatestRequest": null,
+        "declaredContentLength": 23697,
+        "contentEncoding": null,
+        "immutable": false,
+        "maxAgeSeconds": 86400,
+        "capturedResponseTextUtf8Bytes": null
+      },
+      {
+        "routeKeyOrdinal": 7,
+        "bufferIndex": 152,
+        "kind": "response",
+        "origin": "owned_proxy",
+        "route": "other_api",
+        "method": "GET",
+        "status": 200,
+        "reportedDuration": {
+          "value": 25,
+          "unit": "ms"
+        },
+        "responseTagMatchesPreviousResponse": null,
+        "responseTagMatchesLatestRequest": null,
+        "declaredContentLength": 8104,
+        "contentEncoding": null,
+        "immutable": false,
+        "maxAgeSeconds": null,
+        "capturedResponseTextUtf8Bytes": 8104,
+        "dataEqualsPreviousResponse": null,
+        "changedTopLevelKeys": null,
+        "payloadShape": {
+          "envelope": true,
+          "schemaVersion": null,
+          "items": null
+        }
+      }
+    ],
+    "limitation": "Buffered, partial tool output, separate from complete proxy body records and not an unambiguous epoch timeline."
+  },
+  "collectorCorrections": [
+    "Initial functions sandbox lacks URL; the first route parser result was rejected and repaired.",
+    "A collector incorrectly required the deep-sky credit group to contain Moon text. Moon credits are in its independent source route; the actual image was viewed and no product failure was inferred.",
+    "A collapsed landscape disclosure returned only its title. It was expanded again and the actual panorama-2048.png source verified.",
+    "Quoted node.exe prevented the first strict process guard from matching; stopping was refused and a premature start returned EADDRINUSE. The verified quoted command was then matched and only the owned proxy was replaced."
+  ],
+  "unchanged": "No production source, publication asset, client rebuild, additional window, shared BFF, phone interaction, deployment, commit or push.",
+  "independentReview": "unavailable",
+  "phoneAcceptance": "unverified",
+  "goal": "active, unbudgeted, incomplete"
+}

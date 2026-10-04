@@ -1,0 +1,19 @@
+Starward common display highlight shoulder adaptation
+
+Copyright 2024 The Khronos Group, Inc.
+SPDX-License-Identifier: Apache-2.0
+Original source:
+https://github.com/KhronosGroup/ToneMapping/blob/b5a2eed5ddf6c2227090449399de9c7affb9e4c9/PBR_Neutral/pbrNeutral.glsl
+Source license declaration:
+https://github.com/KhronosGroup/ToneMapping/blob/b5a2eed5ddf6c2227090449399de9c7affb9e4c9/.reuse/dep5
+
+Modified for Starward on 2026-10-04. Translate only the fixed rational highlight
+shoulder and common-channel scaling to Python/NumPy. Omit the original PBR
+material offset and desaturation. Preserve input values below the original
+shoulder knee. No assumption of physical linear Rec.709, astronomy calibration,
+scientific background removal or implementation of the complete PBR Neutral
+tone mapper. Explicit display adaptation only, no ordinary adoption implied.
+
+The accompanying Apache-2.0.txt preserves the source license text. No trademark
+endorsement is implied. The upstream Markdown specification is CC-BY-4.0;
+no full specification text is redistributed by this adaptation.

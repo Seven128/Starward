@@ -1,4 +1,5 @@
 import { SKY_OBSERVING_VERTICAL_FOV_DEG } from "./sky-zoom";
+import { SKY_FULL_SPHERE_DISPLAY_FADE_DEG } from "./sky-landscape-visibility";
 
 /** Display adaptation, not a measurement of visibility, flux or angular diameter.
  * Sun altitude uses standard civil/nautical/astronomical twilight boundaries to
@@ -10,7 +11,7 @@ export function skyStarAppearance(magnitude: number, verticalFovDeg: number, sun
     verticalFovDeg <= 0 || verticalFovDeg >= 360 ||
     (sunAltitudeDeg !== undefined && (!Number.isFinite(sunAltitudeDeg) || sunAltitudeDeg < -90 || sunAltitudeDeg > 90)) ||
     (geometricAltitudeDeg !== undefined && (!Number.isFinite(geometricAltitudeDeg) ||
-      geometricAltitudeDeg <= 0 || geometricAltitudeDeg > 90))) return null;
+      geometricAltitudeDeg < -90 || geometricAltitudeDeg > 90))) return null;
   // Use the actual stereographic magnification. Catalog coverage and asynchronous
   // arrivals must never change the appearance of a star already on screen.
   const magnification = Math.tan(SKY_OBSERVING_VERTICAL_FOV_DEG * Math.PI / 720) /
@@ -25,11 +26,21 @@ export function skyStarAppearance(magnitude: number, verticalFovDeg: number, sun
   const fade = Math.max(0, Math.min(1, (limit - magnitude) / 0.65));
   if (fade === 0) return null;
   const opacity = 0.92 * fade * fade * (3 - 2 * fade) *
-    (geometricAltitudeDeg === undefined ? 1 : referenceAtmosphericTransmission(geometricAltitudeDeg));
+    (geometricAltitudeDeg === undefined ? 1 : skyStarDisplayTransmission(geometricAltitudeDeg));
   const contrast = Math.max(0, limit - 0.65 - magnitude);
   // CSS-pixel radii: a modest bounded increase preserves fine faint points.
   const radiusPx = 0.85 + 1.85 * (1 - Math.exp(-contrast / 4.5));
   return { radiusPx, opacity };
+}
+
+/** Below the horizon this is a chart display, never a physical air-mass model.
+ * Join the existing horizon limit continuously, returning to airless catalogue
+ * contrast across the first 15 degrees below it. */
+function skyStarDisplayTransmission(altitude: number): number {
+  if (altitude > 0) return referenceAtmosphericTransmission(altitude);
+  const horizon = referenceAtmosphericTransmission(Number.EPSILON);
+  const reveal = Math.min(1, -altitude / SKY_FULL_SPHERE_DISPLAY_FADE_DEG);
+  return horizon + (1 - horizon) * reveal * reveal * (3 - 2 * reveal);
 }
 
 /** Clear-sky, visual-band reference only: geometry and catalog magnitudes stay airless.

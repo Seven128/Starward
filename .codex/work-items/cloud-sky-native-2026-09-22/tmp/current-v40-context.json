@@ -1,0 +1,46 @@
+{
+  "apiVersion": "v2",
+  "data": {
+    "schemaVersion": "observation-context-v2",
+    "contextId": "ctx:7c1d6ce0-5c47-461a-b172-e2841ebaa07f",
+    "contextFingerprint": "d1efdde87fea86158e9e7b97de77233a2805db2d8c54d10d6094353e45ce8337",
+    "revision": 1,
+    "location": {
+      "kind": "FORMAL_SPOT",
+      "spotId": "spot:test-published",
+      "locationVersion": 1
+    },
+    "routeOrigin": null,
+    "timezone": "Asia/Shanghai",
+    "localDate": "2026-09-29",
+    "eventInstanceId": null,
+    "targetProfile": "DAILY",
+    "weatherView": {
+      "primaryPolicy": "QWEATHER",
+      "comparisonModels": [],
+      "selectedModel": null,
+      "cloudLayer": "TOTAL"
+    },
+    "algorithmVersions": {
+      "astronomy": "test-astronomy",
+      "opportunity": "test-opportunity",
+      "tripDecision": "test-trip-decision",
+      "darkSky": "test-dark-sky",
+      "eventCatalog": "gmn-annual-2022-2023.20260914.1+astronomy-engine-2.1.19-eclipses-2026.1"
+    },
+    "nightStartUtc": "2026-09-29T04:00:00Z",
+    "nightEndUtc": "2026-09-30T04:00:00Z",
+    "selectedAtUtc": "2026-09-29T13:00:00Z",
+    "privacyClass": "PUBLIC_REFERENCE",
+    "createdAt": "2026-09-29T20:12:10.288Z",
+    "expiresAt": "2026-10-01T20:12:10.288Z"
+  },
+  "dataState": "FRESH",
+  "generatedAt": "2026-09-29T20:12:10.288Z",
+  "validAt": "2026-09-29T13:00:00Z",
+  "etag": "W/\"9ed70e4de90b9cbef214ae7b\"",
+  "sources": [],
+  "warnings": [],
+  "requestId": "request:05f8fccb-7900-4261-bad3-2f1a1e3926e7",
+  "contextRevision": 1
+}

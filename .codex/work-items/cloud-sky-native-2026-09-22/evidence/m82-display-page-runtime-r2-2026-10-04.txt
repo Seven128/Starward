@@ -1,0 +1,6 @@
+{"phase":"m82-ground-off","fov":45,"images":["galactic","constellation-artwork","constellation-artwork","constellation-artwork","constellation-artwork","constellation-artwork","constellation-artwork","constellation-artwork"]}
+{"phase":"disclosure-1-M-82","fov":45,"images":["galactic","constellation-artwork","constellation-artwork","constellation-artwork","constellation-artwork","constellation-artwork","constellation-artwork","constellation-artwork"]}
+{"phase":"located-M-82","fov":45,"images":["galactic","constellation-artwork","constellation-artwork","constellation-artwork","constellation-artwork","constellation-artwork"]}
+{"phase":"m82-source-before","fov":0.05000000000000003,"images":["deep-sky-image","sdss-optical","sdss-optical"]}
+{"phase":"m82-leave-field-current","fov":45,"images":["galactic","constellation-artwork","constellation-artwork","constellation-artwork","constellation-artwork","constellation-artwork"]}
+{"status":"ACTUAL_TARO_M82_DISPLAY_PAGE_DEVELOPMENT","inputs":508,"requests":104,"sceneCalls":75}

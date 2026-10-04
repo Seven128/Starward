@@ -1,0 +1,2 @@
+{"phase":"actual-http-and-response-owner-ready","publicationHash":"6ed9e5b799b21fdd25b7b1a8959785d06702f067c7b65d3d3efb42eb5da1308c"}
+{"output":"E:\\dev\\worktrees\\Starward\\remote-main-20260908\\output\\playwright\\cloud-sky-area-display-support-final-0930","publicationHash":"6ed9e5b799b21fdd25b7b1a8959785d06702f067c7b65d3d3efb42eb5da1308c","supportBytes":1185,"scenarios":19,"narrowFixed":true,"wideUnchanged":true,"retired":{"resources":{"created":5,"deleted":5},"files":{"writes":1,"removes":1,"failures":0,"remaining":0}}}

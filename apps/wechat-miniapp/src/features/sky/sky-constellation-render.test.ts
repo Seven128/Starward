@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import { constellationLineSegments, drawSkyConstellations } from "./sky-constellation-render.ts";
-import { createSkyViewBasis, unprojectSkyPoint, type SkyVector } from "./sky-view-projection.ts";
+import { createSkyViewBasis, projectSkyDirection, unprojectSkyPoint, type SkyVector } from "./sky-view-projection.ts";
 import { registerSkyArtwork, skyArtworkViewParameters } from "./sky-artwork-registration.ts";
 import { skyArtworkViewBounds } from "./sky-artwork-visibility.ts";
 import { clipSkyLineToViewport } from "./sky-line-clip.ts";
@@ -53,7 +53,7 @@ test("offscreen constellation arcs avoid fine clipping while a crossing with off
   assert.ok(visible.length>0&&clips>0,"culling cannot erase a real crossing");
   assert.equal(JSON.stringify(visible),JSON.stringify(constellationLineSegments([[a,b]],view,360,640)));
 });
-test("a true curved constellation arc survives offscreen endpoints; clipping uses actual viewport and horizon",()=>{
+test("a true curved constellation arc survives offscreen endpoints and crosses the geometric horizon continuously",()=>{
   const view={basis:createSkyViewBasis(0,110,0)!,verticalFovDeg:25,center:{x:170,y:240}};
   const segments=constellationLineSegments([[ray(-20,20),ray(20,20)]],view,360,640);
   assert.ok(segments.length>2);
@@ -64,11 +64,17 @@ test("a true curved constellation arc survives offscreen endpoints; clipping use
   }
   const north={basis:createSkyViewBasis(0,90,0)!,verticalFovDeg:25,center:{x:180,y:280}};
   const crossing=constellationLineSegments([[ray(0,-10),ray(0,10)]],north,360,640);
-  assert.ok(crossing.length>0);assert.ok(Math.abs(crossing[0]![1]-280)<1e-8,'starts exactly at world horizon');
+  const start=projectSkyDirection(0,-10,north.basis,360,640,25,north.center)!;
+  assert.ok(crossing.length>0);assert.ok(Math.abs(crossing[0]![1]-start.y)<1e-8,
+    'the real below-horizon endpoint remains in the browsing view');
+  let below=false,above=false;
   for(const s of crossing)for(const [x,y] of [[s[0],s[1]],[s[2],s[3]]]){
-    assert.ok(unprojectSkyPoint(x!,y!,north.basis,360,640,25,north.center)![2]>=-1e-9);
+    const up=unprojectSkyPoint(x!,y!,north.basis,360,640,25,north.center)![2];
+    below ||= up < -1e-9;above ||= up > 1e-9;
   }
-  assert.deepEqual(constellationLineSegments([[ray(-5,-10),ray(5,-10)],[ray(170,10),ray(190,10)]],north,360,640),[]);
+  assert.ok(below&&above,'one real arc includes both sides without replacing its identity/geometry');
+  assert.ok(constellationLineSegments([[ray(-5,-10),ray(5,-10)]],north,360,640).length>0);
+  assert.deepEqual(constellationLineSegments([[ray(170,10),ray(190,10)]],north,360,640),[]);
 });
 
 test("overview and intent gate the constellation; local artwork fades while real lines remain and image failure stays independent",()=>{

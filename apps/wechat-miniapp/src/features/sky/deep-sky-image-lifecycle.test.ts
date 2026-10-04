@@ -3,6 +3,11 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { skyDeepSkyImageIntersectsView, type SkyTargetImageView } from "./sky-target-image-visibility";
+import { createSkyViewBasis } from "./sky-view-projection";
+import { deepSkyImageLevelForFov } from "./sky-zoom";
+import { publishedDeepSkyDiscovery } from "./deep-sky-image-test-support";
+import { registerSkyNativeImageLifetime, skyNativeImageIsCurrent } from "./sky-artwork-loader";
 
 // Exercise the page's actual effects, including their dependency cleanup.
 const source = ts.createSourceFile("sky.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -50,6 +55,39 @@ test("file owners keep usable coarse recovery data but release replaced and clea
   decoded(c); assert.deepEqual(removed, ["failed-fine", "coarse"]);
   requested(null); assert.deepEqual(removed, ["failed-fine", "coarse"], "decoded file remains owned for canvas recovery");
   decoded(null); assert.deepEqual(removed, ["failed-fine", "coarse", "retry-fine"]);
+});
+
+test("same public filename never merges ownership of distinct publication leases", () => {
+  const removed: string[] = [];
+  const a = { tempFilePath: "/same-public.png", release() { removed.push("a"); } };
+  const b = { tempFilePath: "/same-public.png", release() { removed.push("b"); } };
+  const bindings = { deepSkyImageFileRef: { current: null }, canvasDeepSkyImageRef: { current: null },
+    deepSkyRecoveryFileRef: { current: null }, storeDeepSkyImageAsset() {}, storeCanvasDeepSkyImage() {} };
+  const requested = callbackWith("setDeepSkyImageAsset", bindings), decoded = callbackWith("setCanvasDeepSkyImage", bindings);
+  requested(a); decoded(a); requested(b); assert.deepEqual(removed, []);
+  decoded(b); assert.deepEqual(removed, ["a"]);
+  requested(null); decoded(null); assert.deepEqual(removed, ["a", "b"]);
+});
+
+test("replacing or retiring a selected bitmap fences its native lifetime while a pending fine file preserves coarse", () => {
+  const bindings = { deepSkyImageFileRef: { current: null }, canvasDeepSkyImageRef: { current: null as any },
+    deepSkyRecoveryFileRef: { current: null as any }, storeDeepSkyImageAsset() {}, storeCanvasDeepSkyImage() {} };
+  const requested = callbackWith("setDeepSkyImageAsset", bindings), decoded = callbackWith("setCanvasDeepSkyImage", bindings);
+  const retire = callbackWith("retireDeepSkyDecode", bindings) as () => void;
+  // A compatible file provider need not implement isCurrent; native ownership
+  // must still end when pixels are replaced, independently of retained bytes.
+  const image = () => ({ onload: null, onerror: null });
+  const first = image(), next = image();
+  const a = { reference: "M:51", level: "MEDIUM", tempFilePath: "/medium.jpg", release() {} };
+  const b = { ...a, level: "DETAIL", tempFilePath: "/detail.jpg" };
+  requested(a); decoded({ ...a, image: first, canvasGeneration: 1, retireNative: registerSkyNativeImageLifetime(first, () => true) });
+  requested(b); assert.equal(skyNativeImageIsCurrent(first), true, "fine-file demand keeps the actually presented coarse bitmap");
+  decoded({ ...b, image: next, canvasGeneration: 1, retireNative: registerSkyNativeImageLifetime(next, () => true) });
+  assert.equal(skyNativeImageIsCurrent(first), false, "replaced queued coarse bitmap is retired even when file bytes remain valid");
+  assert.equal(skyNativeImageIsCurrent(next), true);
+  assert.equal("retireNative" in bindings.deepSkyRecoveryFileRef.current, false, "recovery metadata does not retain native lifetime ownership");
+  retire(); retire(); assert.equal(skyNativeImageIsCurrent(next), false);
+  assert.equal(bindings.canvasDeepSkyImageRef.current, null);
 });
 
 test("native retirement keeps only recovery metadata and later replacement releases the coarse file", () => {
@@ -105,7 +143,7 @@ test("hiding cancels an image request and showing restarts only the current leve
   const bindings = {
     pageVisible: true, selectedDeepSkyEntry: entry, desiredDeepSkyImageLevel: "DETAIL", deepSkyImageAsset: coarse, deepSkyImageRetry: 0,
     deepSkyImageFailureRef: { current: null }, setDeepSkyImageAsset() {}, setDeepSkyImageState() {}, recordAcceptanceDiagnostic() {},
-    Taro: { env: { USER_DATA_PATH: "/data" } }, deepSkyImageUrl: () => "/image",
+    acquireDeepSkyImage() {}, beginDeepSkyImageDemand() {},
     startDeepSkyImageRequest: () => { requests++; return () => { cancels++; }; },
   };
   render(bindings); assert.equal(requests, 1);
@@ -120,9 +158,12 @@ function decoder() {
   let state = "LOADING";
   const bindings = {
     pageVisible: true, selectedDeepSkyEntry: entry, desiredDeepSkyImageLevel: "DETAIL", deepSkyImageAsset: fine,
+    deepSkyImageIntentRef: { current: { reference: entry.objectRef, level: "DETAIL" } as { reference: string; level: string } | null },
     deepSkyImageFailureRef: { current: null }, canvasNodeRevision: 1, canvasNodeRef: { current: { createImage() { const image = {}; images.push(image); return image; } } },
     canvasGenerationRef: { current: 1 }, canvasDeepSkyImageRef: { current: coarse as unknown },
     deepSkyRecoveryFileRef: { current: coarseFile as unknown },
+    registerSkyNativeImageLifetime() {},
+    setDeepSkyImageAsset() {},
     setCanvasDeepSkyImage(value: unknown) {
       painted = typeof value === "function" ? value(painted) : value;
       bindings.canvasDeepSkyImageRef.current = painted;
@@ -137,26 +178,150 @@ function decoder() {
   return { render, bindings, images, painted() { return painted; }, get state() { return state; } };
 }
 
-test("hide retires the old native bitmap while preserving only its coarse recovery file through the node gap", () => {
+test("selected W3 uses the accepted footprint while preserving independent refinement intent", () => {
+  const names = ["targetOpticalView", "currentDeepSkyDiscovery", "deepSkyImageInView", "desiredDeepSkyImageLevel"];
+  const declarations = new Map<string, string>(); let paintedInput: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && names.includes(node.name.getText(source))) declarations.set(node.name.getText(source), node.getText(source));
+    if (ts.isPropertyAssignment(node) && node.name.getText(source) === "deepSkyImage" && node.initializer.getText(source).includes("canvasDeepSkyImage")) paintedInput = node.initializer;
+    ts.forEachChild(node, visit);
+  }; visit(source); assert.equal(declarations.size, names.length); assert(paintedInput);
+  const publication = publishedDeepSkyDiscovery("M:42"), at = "2026-10-03T13:00:00.000Z";
+  const report = { hourly: [{ at }], skyScene: { deepSky: { state: "AVAILABLE", catalog: {
+    frame: "ICRS J2000", imageRegistration: "ICRS_TAN_NORTH_0_1_V1", entries: [{ objectRef: publication.objectRef }] },
+    frames: [{ at, state: "AVAILABLE", points: [[0, 0, -10, 0, -9.9, 359.9, -10]] }] } } };
+  const code = ts.transpileModule(names.map(name => `const ${declarations.get(name)};`).join("\n") +
+    `\n({footprint: targetOpticalView, level: desiredDeepSkyImageLevel, painted: ${paintedInput.getText(source)}})`,
+    { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  const acceptedCenter = { x: 190, y: 414 }, image = {};
+  const input = { geometryReport: report, row: { at }, canvasSize: { width: 390, height: 844 },
+    currentViewBasis: createSkyViewBasis(0, 80, 0), presentedFov: .05, presentedCenter: acceptedCenter, verticalFovDeg: .2,
+    selectedDeepSkyEntry: { objectRef: publication.objectRef }, deepSkyRegistrationReady: true, deepSkyImageDiscovery: publication,
+    canvasDeepSkyImage: image, mode: "NIGHT", useMemo: (read: () => unknown) => read(), skyDeepSkyImageIntersectsView, deepSkyImageLevelForFov };
+  const near = vm.runInNewContext(code, input);
+  assert.equal(near.footprint.report, report); assert.equal(near.footprint.view.basis, input.currentViewBasis);
+  assert.equal(near.footprint.view.center, acceptedCenter); assert.equal(near.footprint.view.verticalFovDeg, .05);
+  assert.equal(near.level, "DETAIL"); assert.equal(near.painted, image);
+  const far = vm.runInNewContext(code, { ...input, currentViewBasis: createSkyViewBasis(90, 80, 0) });
+  assert.equal(far.level, null); assert.equal(far.painted, null);
+  const unknown = vm.runInNewContext(code, { ...input, currentViewBasis: createSkyViewBasis(90, 80, 0), geometryReport: undefined });
+  assert.equal(unknown.level, "DETAIL"); assert.equal(unknown.painted, image);
+  assert.equal(vm.runInNewContext(code, { ...input, verticalFovDeg: 16 }).level, null);
+});
+
+test("discovery checks the latest view and cannot relabel stale selection metadata", () => {
+  let predicate: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isPropertyAssignment(node) && node.name.getText(source) === "onDiscovered") predicate = node.initializer;
+    ts.forEachChild(node, visit);
+  }; visit(source); assert(predicate);
+  const at = "2026-10-03T13:00:00.000Z", publication = publishedDeepSkyDiscovery("M:42");
+  const footprint: SkyTargetImageView = { report: { hourly: [{ at }], skyScene: { deepSky: { state: "AVAILABLE", catalog: {
+    frame: "ICRS J2000", imageRegistration: "ICRS_TAN_NORTH_0_1_V1", entries: [{ objectRef: publication.objectRef }] },
+    frames: [{ at, state: "AVAILABLE", points: [[0, 0, -10, 0, -9.9, 359.9, -10]] }] } } } as any,
+    at, width: 390, height: 844, view: { basis: createSkyViewBasis(90, 80, 0)!, verticalFovDeg: .05 } };
+  const states: string[] = [], metadata: unknown[] = [];
+  const context = { deepSkyImageIntentRef: { current: { reference: publication.objectRef, level: "DETAIL" } as { reference: string; level: string } | null },
+    deepSkyImageViewRef: { current: footprint }, desiredDeepSkyImageLevel: "DETAIL", skyDeepSkyImageIntersectsView,
+    setDeepSkyImageDiscovery(value: unknown) { metadata.push(value); }, setDeepSkyImageState(value: string) { states.push(value); } };
+  const read = vm.runInNewContext(ts.transpileModule(`(${predicate.getText(source)})`,
+    { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context) as (value: unknown) => boolean;
+  assert.equal(read(publication), false); assert.equal(metadata[0], publication); assert.deepEqual(states, ["IDLE"]);
+  context.deepSkyImageIntentRef.current = { reference: "M:31", level: "DETAIL" };
+  assert.equal(read(publication), false); assert.equal(metadata.length, 1); assert.equal(states.length, 1);
+  context.deepSkyImageIntentRef.current = { reference: publication.objectRef, level: "OVERVIEW" };
+  assert.equal(read(publication), false); assert.equal(metadata.length, 1);
+  context.deepSkyImageIntentRef.current = { reference: publication.objectRef, level: "DETAIL" };
+  context.deepSkyImageViewRef.current = { ...footprint, report: undefined };
+  assert.equal(read(publication), true); assert.equal(metadata.length, 2); assert.equal(states.length, 1);
+});
+
+test("a newly excluded family rejects queued decode before effect cleanup and releases both file slots", () => {
+  const h = decoder(); h.render(h.bindings); const queued = h.images[0]!.onload;
+  h.bindings.deepSkyImageIntentRef.current = null; queued?.();
+  assert.equal(h.painted(), coarse); assert.equal(h.state, "LOADING", "queued fine decode must not become ready in the render/effect gap");
+  h.render({ ...h.bindings, desiredDeepSkyImageLevel: null }); assert.equal(h.painted(), null);
+  const request = effectWith("return startDeepSkyImageRequest"), released: string[] = [], states: string[] = [];
+  const owners = { deepSkyImageFileRef: { current: null }, canvasDeepSkyImageRef: { current: null },
+    deepSkyRecoveryFileRef: { current: null }, storeDeepSkyImageAsset() {}, storeCanvasDeepSkyImage() {} };
+  const requested = callbackWith("setDeepSkyImageAsset", owners), decoded = callbackWith("setCanvasDeepSkyImage", owners);
+  requested({ ...fine, release() { released.push("fine"); } });
+  decoded({ ...coarse, release() { released.push("coarse"); } });
+  request({ pageVisible: true, selectedDeepSkyEntry: entry, desiredDeepSkyImageLevel: null, deepSkyImageAsset: fine, deepSkyImageRetry: 0,
+    deepSkyImageFailureRef: { current: null }, setDeepSkyImageAsset: requested, setDeepSkyImageState(value: string) { states.push(value); } });
+  effectWith("const image = node.createImage()")({ ...h.bindings, desiredDeepSkyImageLevel: null, setCanvasDeepSkyImage: decoded });
+  assert.deepEqual(released, ["fine", "coarse"]); assert.deepEqual(states, ["IDLE"]);
+  assert.equal(owners.deepSkyImageFileRef.current, null); assert.equal(owners.deepSkyRecoveryFileRef.current, null);
+});
+
+test("report entry replacement keeps the same pending selected image demand", () => {
+  const render = effectWith("return startDeepSkyImageRequest");
+  let requests = 0, cancels = 0;
+  const bindings = {
+    pageVisible: true, selectedDeepSkyEntry: entry, desiredDeepSkyImageLevel: "DETAIL", deepSkyImageAsset: null, deepSkyImageRetry: 0,
+    deepSkyImageFailureRef: { current: null }, setDeepSkyImageAsset() {}, setDeepSkyImageState() {}, recordAcceptanceDiagnostic() {},
+    acquireDeepSkyImage() {}, beginDeepSkyImageDemand() {},
+    startDeepSkyImageRequest: () => { requests++; return () => { cancels++; }; },
+  };
+  render(bindings);
+  render({ ...bindings, selectedDeepSkyEntry: { ...entry, displayName: "仙女座星系" } });
+  assert.equal(requests, 1, "the same reference and level keep their in-flight acquisition");
+  assert.equal(cancels, 0);
+  render({ ...bindings, selectedDeepSkyEntry: { objectRef: "M:42", displayName: "M42" } });
+  assert.equal(requests, 2); assert.equal(cancels, 1, "a different object replaces the old demand");
+  render({ ...bindings, selectedDeepSkyEntry: { objectRef: "M:42", displayName: "M42" }, deepSkyImageRetry: 1 });
+  assert.equal(requests, 3); assert.equal(cancels, 2, "an explicit retry remains a new demand");
+});
+
+test("report entry replacement preserves pending and ready pixels but a new metadata lease still decodes", () => {
+  const h = decoder(); h.render(h.bindings);
+  const pending = h.images[0]!.onload;
+  h.render({ ...h.bindings, selectedDeepSkyEntry: { ...entry } });
+  assert.equal(h.images.length, 1, "entry object identity is not an image decode input");
+  assert.equal(h.images[0]!.onload, pending, "report refresh cannot cancel the current decode");
+  pending?.();
+  const ready = h.painted(); assert.equal(h.state, "READY");
+  h.render({ ...h.bindings, selectedDeepSkyEntry: { ...entry, displayName: "仙女座星系" } });
+  assert.equal(h.images.length, 1); assert.equal(h.painted(), ready); assert.equal(h.state, "READY");
+  const nextLease = { ...fine, publicationHash: "new-publication", fieldDegrees: 5, release() {} };
+  h.render({ ...h.bindings, selectedDeepSkyEntry: { ...entry }, deepSkyImageAsset: nextLease });
+  assert.equal(h.images.length, 2, "the same filename must not merge publication metadata owners");
+  assert.equal(h.painted(), ready, "old valid pixels remain until the new lease decodes");
+  h.images[1]!.onload?.();
+  assert.notEqual(h.painted(), ready);
+  assert.equal((h.painted() as typeof nextLease).publicationHash, "new-publication");
+  assert.equal((h.painted() as typeof nextLease).fieldDegrees, 5);
+});
+
+test("report entry replacement cannot implicitly retry a failed fine decode", () => {
+  const h = decoder(); h.render(h.bindings); h.images[0]!.onerror?.();
+  h.render({ ...h.bindings, selectedDeepSkyEntry: { ...entry } });
+  assert.equal(h.images.length, 1); assert.equal(h.state, "ERROR"); assert.equal(h.painted(), coarse);
+  assert.equal(h.bindings.deepSkyImageFailureRef.current, "deep-sky-image:M:31:DETAIL");
+  h.render({ ...h.bindings, deepSkyImageAsset: { ...fine, release() {} } });
+  assert.equal(h.images.length, 2); assert.equal(h.state, "LOADING");
+  h.images[1]!.onload?.(); assert.equal(h.state, "READY");
+});
+
+test("hide retires pixels and active recovery demand; show decodes the newly supplied file after the node gap", () => {
   const h = decoder(); h.render(h.bindings);
   const pending = h.images[0]!.onload;
   h.render({ ...h.bindings, pageVisible: false });
   assert.equal(h.painted(), null, "hidden native pixels cannot keep the old Canvas image graph");
   assert.equal(h.bindings.canvasDeepSkyImageRef.current, null);
-  assert.equal(h.bindings.deepSkyRecoveryFileRef.current, coarseFile);
-  assert.equal("image" in (h.bindings.deepSkyRecoveryFileRef.current as object), false);
+  assert.equal(h.bindings.deepSkyRecoveryFileRef.current, null);
   pending?.(); assert.equal(h.painted(), null);
   h.bindings.canvasGenerationRef.current = 2;
   h.render({ ...h.bindings, canvasNodeRef: { current: null } });
   assert.equal(h.painted(), null); assert.equal(h.images.length, 1);
-  assert.equal(h.bindings.deepSkyRecoveryFileRef.current, coarseFile, "a not-yet-rebuilt node cannot discard the recovery file");
+  assert.equal(h.bindings.deepSkyRecoveryFileRef.current, null, "show does not recreate an active recovery lease through the node gap");
   h.render({ ...h.bindings, canvasNodeRevision: 2 });
-  assert.equal(h.images.length, 3, "coarse and fine re-decode into the new generation");
-  h.images[1]!.onload?.(); h.images[2]!.onerror?.();
-  assert.equal((h.painted() as typeof coarse).canvasGeneration, 2);
-  assert.equal((h.painted() as typeof coarse).tempFilePath, coarse.tempFilePath);
-  assert.notEqual((h.painted() as typeof coarse).image, coarse.image);
-  assert.equal(h.state, "ERROR", "fine failure preserves successfully re-decoded coarse pixels");
+  assert.equal(h.images.length, 2, "only the newly supplied requested file decodes");
+  h.images[1]!.onload?.();
+  assert.equal((h.painted() as typeof fine).canvasGeneration, 2);
+  assert.equal((h.painted() as typeof fine).tempFilePath, fine.tempFilePath);
+  assert.notEqual((h.painted() as typeof fine).image, coarse.image);
+  assert.equal(h.state, "READY");
 });
 
 test("failed fine decode and retry keep the coarse image until successful replacement", () => {
@@ -168,13 +333,23 @@ test("failed fine decode and retry keep the coarse image until successful replac
   assert.equal((h.painted() as typeof fine).tempFilePath, fine.tempFilePath); assert.equal(h.state, "READY");
 });
 
-test("hidden decoding cannot publish late pixels or erase the retained recovery file", () => {
+test("lease retirement rejects a queued onload and cannot revive pixels in the same Canvas generation", () => {
+  const h = decoder(); let live = true;
+  const asset = { ...fine, isCurrent: () => live };
+  h.render({ ...h.bindings, deepSkyImageAsset: asset });
+  const onload = h.images[0]!.onload!; live = false; onload();
+  assert.equal(h.painted(), coarse, "the retired fine file cannot replace independent valid coarse pixels");
+  h.render({ ...h.bindings, canvasNodeRevision: 2, deepSkyImageAsset: asset });
+  assert.equal(h.images.length, 2, "only the independent coarse recovery is decoded");
+});
+
+test("hidden decoding cannot publish late pixels or recreate active recovery demand", () => {
   const h = decoder(); h.render(h.bindings); const late = h.images[0]!.onload!;
   h.render({ ...h.bindings, pageVisible: false }); late();
   assert.equal(h.painted(), null);
-  assert.equal((h.bindings.deepSkyRecoveryFileRef.current as typeof coarseFile).tempFilePath, coarse.tempFilePath);
-  h.render(h.bindings); assert.equal(h.images.length, 3);
-  h.images[2]!.onload?.(); h.images[1]!.onload?.();
+  assert.equal(h.bindings.deepSkyRecoveryFileRef.current, null);
+  h.render(h.bindings); assert.equal(h.images.length, 2);
+  h.images[1]!.onload?.();
   assert.equal((h.painted() as typeof fine).tempFilePath, fine.tempFilePath);
 });
 
@@ -183,20 +358,19 @@ test("a retained coarse level cannot mark a pending fine request ready", () => {
   assert.equal(h.painted(), coarse); assert.equal(h.images.length, 0); assert.equal(h.state, "LOADING");
 });
 
-test("show before native canvas reconstruction retains coarse recovery until re-decode", () => {
+test("show before native canvas reconstruction cannot restore retired recovery pixels", () => {
   const h = decoder(); h.render(h.bindings); h.images[0]!.onerror?.();
   h.render({ ...h.bindings, pageVisible: false, canvasNodeRef: { current: null } });
   h.render({ ...h.bindings, canvasNodeRef: { current: null } });
   assert.equal(h.painted(), null, "the node gap cannot retain the retired native bitmap");
-  assert.equal((h.bindings.deepSkyRecoveryFileRef.current as typeof coarseFile).tempFilePath, coarse.tempFilePath,
-    "show must not release the last usable file while the node is absent");
+  assert.equal(h.bindings.deepSkyRecoveryFileRef.current, null, "encoded cache reuse does not mean an active coarse lease");
   h.bindings.canvasGenerationRef.current = 2;
   h.render({ ...h.bindings, canvasNodeRevision: 2 });
-  assert.equal(h.images[1]!.src, coarse.tempFilePath);
-  h.images[1]!.onload?.(); h.images[2]!.onerror?.();
-  assert.equal((h.painted() as typeof coarse).tempFilePath, coarse.tempFilePath);
-  assert.equal((h.painted() as typeof coarse).canvasGeneration, 2);
-  assert.equal(h.state, "ERROR");
+  assert.equal(h.images[1]!.src, fine.tempFilePath);
+  h.images[1]!.onload?.();
+  assert.equal((h.painted() as typeof fine).tempFilePath, fine.tempFilePath);
+  assert.equal((h.painted() as typeof fine).canvasGeneration, 2);
+  assert.equal(h.state, "READY");
 });
 
 test("resuming a failed decode starts a new loading transition before success or failure", () => {
@@ -205,8 +379,8 @@ test("resuming a failed decode starts a new loading transition before success or
   h.render({ ...h.bindings, pageVisible: false });
   h.render(h.bindings); assert.equal(h.state, "LOADING");
   assert.equal(h.bindings.deepSkyImageFailureRef.current, null);
-  h.images[1]!.onload?.(); h.images[2]!.onerror?.(); assert.equal(h.state, "ERROR");
-  assert.equal((h.painted() as typeof coarse).tempFilePath, coarse.tempFilePath);
+  h.images[1]!.onerror?.(); assert.equal(h.state, "ERROR");
+  assert.equal(h.painted(), null, "hide retired the old coarse bitmap; failure cannot revive it");
 });
 
 test("switching object cannot retain the previous object's pixels", () => {
@@ -280,7 +454,7 @@ test("a previous image error cannot be relabelled for a new object or hidden ima
   const failure = { current: "deep-sky-image:M:31:DETAIL" as string | null };
   const bindings = { pageVisible: true, selectedDeepSkyEntry: { objectRef: "M:42", displayName: "M42" }, desiredDeepSkyImageLevel: "DETAIL", deepSkyImageAsset: null, deepSkyImageRetry: 0,
     deepSkyImageFailureRef: failure, deepSkyImageState: "ERROR", setDeepSkyImageAsset() {}, setDeepSkyImageState() {}, recordAcceptanceDiagnostic() {},
-    Taro: { env: { USER_DATA_PATH: "/data" } }, deepSkyImageUrl: () => "/image", startDeepSkyImageRequest: () => () => {}, notify: (value: unknown) => notices.push(value) };
+    acquireDeepSkyImage() {}, beginDeepSkyImageDemand() {}, startDeepSkyImageRequest: () => () => {}, notify: (value: unknown) => notices.push(value) };
   // Both effects receive the same commit's ERROR closure despite the queued LOADING update.
   renderRequest(bindings); renderNotice(bindings); assert.equal(notices.length, 0);
   failure.current = "deep-sky-image:M:42:DETAIL";

@@ -1,0 +1,1 @@
+{"status": "SAVED_ACTUAL_PENDING_NATIVE_RETIREMENT_AND_AUXILIARY_PUBLIC_RETRY_DEVELOPMENT", "captures": 11, "finalAuxiliaryActivity": "all zero", "actualPublicRetry": "same current images and source, no new binary", "priorMissingRetry": "saved before fix", "productScope": "Sky only"}

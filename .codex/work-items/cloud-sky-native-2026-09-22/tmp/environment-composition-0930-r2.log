@@ -1,0 +1,9 @@
+{"phase":"current-inputs-ready","constellationHash":"2a53d222e56b513e6b0b9bba753d7864e1535bf98252112ce8e4bebde16dc01e","galacticHash":"f6aeb37d4724ed296ffb4c22f242bbdc83541b54aa1cb67b83e82b9e2d91ac5e","landscapeHash":"e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5"}
+E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-environment-composition-2026-09-30.mts:220
+  assert(sample(current,'twilight-local-rolled','solar-ten')[0]>=sample(current,'twilight-local-rolled','solar-ten')[2],'same warm world ray at narrow/rolled view');
+                                                           ^
+
+TypeError: Cannot read properties of undefined (reading '0')
+    at <anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-environment-composition-2026-09-30.mts:220:60)
+
+Node.js v24.16.0

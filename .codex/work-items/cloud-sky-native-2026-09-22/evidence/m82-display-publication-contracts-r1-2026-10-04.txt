@@ -1,0 +1,19 @@
+✔ prepared source colour and geometry remain independent of science even for valid black (8.9158ms)
+✔ prepared immutable pin binds full credit source bytes uncertainty and every level without wire URLs (5.0109ms)
+✔ fresh hashes cannot admit incompatible AVM resize coordinate colour and box-area declarations (4.8654ms)
+✔ display estimates retain original science identity and a distinct bound output/receipt policy (36.1113ms)
+✔ fresh hashes cannot disguise science means, dropped covariance/source, fitting, coverage or adoption (29.6345ms)
+✔ signed v3 binds science parents, source means and no crop fit while v2 remains encoded (33.5192ms)
+✔ optical hash binds source, science, receipt, transfer and crop independently of wire envelopes (9.5757ms)
+✔ fresh hashes cannot admit invalid shared recipes or mixed availability/geometry/source contracts (9.0177ms)
+✔ whole-master fit requires coherent counts, actual deterministic samples and one library fit (1.992ms)
+✔ the shared wire validator does not require a browser URL global (0.599ms)
+✔ existing six immutable JPEG offers retain actual old publication and asset bytes; v1/v2 stay distinct (16.8621ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 867.9924

@@ -1,6 +1,7 @@
 import { unprojectSkyPoint, type SkyViewBasis } from "./sky-view-projection";
 import type { SkyProjectionCenter } from "./sky-viewport";
 import { skyLandscapeMaskOccludes, type SkyLandscapeMask } from "./sky-landscape-mask";
+import type { SkyDeepAuxiliaryDecision } from "./sky-deep-auxiliary-visibility";
 
 export interface SkyObjectIdentity {
   reference: string;
@@ -40,6 +41,8 @@ export interface SkyPickSnapshot {
   /** Valid bodies whose unresolved point is below the same display/pick threshold
    * as stars, bound to this completed frame. Not missing geometry or GPU failure. */
   suppressedBodyReferences?: readonly string[];
+  /** Actual pre-aid scalars, not recomputed from the final source receipt. */
+  deepSkyAuxiliaryDecisions?: readonly SkyDeepAuxiliaryDecision[];
 }
 
 function pointToSegmentDistance(x:number,y:number,[x0,y0,x1,y1]:readonly [number,number,number,number]):number{
@@ -73,7 +76,7 @@ export function paintedSkyPointVisible(snapshot: Pick<SkyPickSnapshot,"view"|"wi
   if (!snapshot.view) return true;
   const ray = unprojectSkyPoint(x, y, snapshot.view.basis, snapshot.width, snapshot.height,
     snapshot.view.verticalFovDeg, snapshot.view.center);
-  return Boolean(ray && ray[2] >= 0 && (!snapshot.view.landscape || !skyLandscapeMaskOccludes(snapshot.view.landscape, ray)));
+  return Boolean(ray && (!snapshot.view.landscape || !skyLandscapeMaskOccludes(snapshot.view.landscape, ray)));
 }
 
 export function skyPickSnapshotIsCurrent(

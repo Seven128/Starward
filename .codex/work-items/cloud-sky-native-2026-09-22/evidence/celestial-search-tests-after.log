@@ -1,0 +1,18 @@
+✔ generated client operation manifest exactly matches the public Nest controller (2.4228ms)
+✔ stable HR references return attributable ready and basic-only states (48.2799ms)
+✔ large numeric-like and unknown references stay strings and fail closed (1.7005ms)
+✔ Messier galaxy and nebula references expose attributable catalog facts (10.5322ms)
+✔ same identity and locale reuse a stable content revision without sharing mutable values (0.3997ms)
+✔ SAO details interpret HD multiplicity codes instead of presenting them as names (652.26ms)
+✔ real catalogue names, Chinese aliases and normalized identifiers resolve the same component (1951.5151ms)
+✔ shared HD aliases preserve distinct SAO components and details use the same alias owner (55.5564ms)
+✔ results are bounded, detached from indexes and never carry invented observing coordinates (181.8752ms)
+✔ one unavailable publication preserves other results and a later query recovers it (0.7063ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3428.6555

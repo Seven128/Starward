@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-23",
+  "scope": "Non-phone native WEAPP twilight star-point display adaptation",
+  "source": {
+    "twilightDefinitions": "https://aa.usno.navy.mil/faq/RST_defs",
+    "interpretation": "USNO defines the solar-altitude boundaries; this implementation's magnitude cutoffs are a bounded display heuristic and do not predict local naked-eye visibility."
+  },
+  "implementation": {
+    "sunFrame": "skySolarLightAt selects only a valid exact report instant and rejects altitude outside [-90,90].",
+    "catalogs": "BSC and SAO points share skyStarAppearance at the exact Sun altitude. Drawing and painted-object picking use the same result.",
+    "modes": "Ordinary modes fade fainter stars first over 0, -6, -12 and -18 degree boundaries; warm-red Observation mode remains a lookup chart. Missing Sun data does not invent a twilight phase.",
+    "notCovered": "Physical atmosphere, extinction, clouds, light pollution, horizon obstruction, deep-object overlays, planet point markers, measured visibility and target-device Canvas behavior."
+  },
+  "desktopSimulator": {
+    "project": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp",
+    "fixture": "MEMORY_TEST Map example spot, 2026-09-22 18:00 and 21:00 Asia/Shanghai, manual camera, 267.8 degree maximal vertical FOV",
+    "beforeSunset18": "artifacts/miniapp/cloud-sky-native/w3-sunset-18-hidden-267.png",
+    "afterSunset18": "artifacts/miniapp/cloud-sky-native/twilight-stars-sunset-18-267.png",
+    "afterNight21": "artifacts/miniapp/cloud-sky-native/twilight-stars-night-21-267.png",
+    "observation": "The same wide-dome sunset setup formerly showed hundreds of bright stellar points. After the change, the small catalog points are absent while outlined deep-sky/chart markers, Sun and grid remain. At 21:00 the dense stellar field returns. Images were inspected visually; the old and new screenshots come from separate watch generations, so this is not a pixel-perfect controlled count.",
+    "boundary": "DevTools Canvas can cover ordinary WXML controls; this observation cannot certify Android or iOS composition, touch or frame performance. No phone was used."
+  },
+  "checks": {
+    "focused": "20/20 passed: sky-canvas-time, sky-star-appearance, sky-solar-light; includes exact report frame drawing and hit-target suppression/restoration.",
+    "miniTypecheck": "passed",
+    "miniFullTests": "784/784 passed; artifacts/miniapp/cloud-sky-native/twilight-mini-tests.log",
+    "isolatedWeappBuild": "passed with three existing CSS order/common.js 317 KiB/general webpack performance warnings; artifacts/miniapp/cloud-sky-native/twilight-isolated-build.log",
+    "contextValidate": "passed; artifacts/miniapp/cloud-sky-native/twilight-context-validate.log",
+    "gitDiffCheck": "passed; only Git line-ending conversion warnings"
+  },
+  "remaining": "C04 full atmosphere and landscape remain open, as do Android/iOS visual/interaction/performance observations and independent review."
+}

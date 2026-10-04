@@ -6,6 +6,98 @@ import ts from "typescript";
 import { createSkyArtworkLoader, type SkyArtworkLoadState, type SkyNativeImageAsset } from "./sky-artwork-loader";
 import { skyFixedImageStatus } from "./sky-fixed-image-status";
 import { sdssOpticalLevelForFov } from "./sky-sdss-optical-selection";
+import { skyTargetOpticalIntersectsView } from "./sky-target-optical-visibility";
+import { createSkyViewBasis } from "./sky-view-projection";
+import { registerSkySurvey } from "./sky-survey-registration";
+
+function opticalTestSource(name: string): string {
+  // Optional frozen pre-fix owner for the bounded escaped-defect experiment.
+  // Normal portable checks always execute the current production source.
+  const baseline = process.env.CLOUD_SKY_TARGET_OPTICAL_BASELINE_DIR;
+  return readFileSync(baseline ? `${baseline}/${name}.txt` : new URL(`./${name}`, import.meta.url), "utf8");
+}
+
+function progressiveDeclaration(): string {
+  const source = ts.createSourceFile("use-sky-target-optical.ts",
+    opticalTestSource("use-sky-target-optical.ts"), ts.ScriptTarget.Latest, true);
+  const declaration = source.statements.find((node): node is ts.FunctionDeclaration =>
+    ts.isFunctionDeclaration(node) && node.name?.text === "useSkyTargetOptical");
+  assert(declaration);
+  return declaration.getText(source).replace(/^export\s+/u, "") + "\n";
+}
+
+test("a selected optical family outside the actual view starts no image jobs and retires ready images", () => {
+  const wrapperSource = ts.createSourceFile("wrapper.ts", opticalTestSource("use-sky-sdss-optical.ts"), ts.ScriptTarget.Latest, true);
+  const wrapper = wrapperSource.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "useSkySdssOptical")!;
+  const publication = { objectRef: "M:51", publicationHash: "publication", levels: Object.fromEntries(
+    ["OVERVIEW", "MEDIUM", "DETAIL"].map((level, index) => [level, { sha256: level, bytes: 100,
+      pixels: 512, fieldDegrees: .2275555556 / 2 ** index, downloadUrl: "/" + level + ".jpg" }])) };
+  // Structural admitted-caller geometry. North sample is exactly 0.1 degree;
+  // lower-hemisphere browsing remains eligible and uses no horizon cutoff.
+  const at = "2026-10-03T13:00:00.000Z";
+  const report = { hourly: [{ at }], skyScene: { deepSky: { state: "AVAILABLE",
+    catalog: { frame: "ICRS J2000", imageRegistration: "ICRS_TAN_NORTH_0_1_V1", entries: [{ objectRef: "M:51" }] },
+    frames: [{ at, state: "AVAILABLE", points: [[0, 0, -10, 0, -9.9, 359.9, -10]] }] } } };
+  assert(registerSkySurvey(report.skyScene.deepSky.frames[0]!.points[0] as any, publication.levels.OVERVIEW!.fieldDegrees, 512, 256.5),
+    "the structural north/east sample must be usable before asserting an empty viewport");
+  let owner: ReturnType<typeof createSkyArtworkLoader> | undefined;
+  let state: SkyArtworkLoadState = { images: new Map(), retainedImages: new Map(), loading: false, failed: false };
+  let starts = 0, releases = 0;
+  const hook = vm.runInNewContext(ts.transpileModule(progressiveDeclaration() + wrapper.getText(wrapperSource).replace(/^export\s+/u, "") + "\nuseSkySdssOptical;",
+    { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
+    useMemo: (read: () => unknown) => read(), sdssOpticalLevelForFov, skyFixedImageStatus, skyTargetOpticalIntersectsView,
+    getSdssOpticalManifest: async () => publication, sdssOpticalImageUrl: (url: string) => url,
+    useResourceQuery: () => ({ data: publication, isError: false, isFetching: false, refetch: async () => publication }),
+    useSkyNativeImages: (_canvas: unknown, _revision: number, _hash: string, active: boolean, wanted: SkyNativeImageAsset[]) => {
+      if (!active) { owner?.dispose(); owner = undefined; state = { images: new Map(), retainedImages: new Map(), loading: false, failed: false }; }
+      if (active && !owner) owner = createSkyArtworkLoader({ byteBudget: 2 * 512 * 512 * 4, changed(value) { state = value; },
+        start(asset, ready) { starts++; ready({ image: { id: asset.id }, release() { releases++; } }); return () => {}; } });
+      owner?.update(wanted);
+      return { ...state, failedImage: (image: object) => owner?.failed(image), retryImages: () => owner?.retry() ?? false };
+    },
+  }) as (...args: unknown[]) => { image: object | null; requested: boolean; renderedLevel: string | null };
+  const canvas = { createImage() { throw Error("controlled callback at the real loader boundary"); } };
+  const read = (az: number, suppliedReport: unknown = report) => hook("M:51", .05, canvas, 1, true, undefined,
+    { report: suppliedReport, at, width: 390, height: 844, view: { basis: createSkyViewBasis(az, 80, 0), verticalFovDeg: .05 } });
+  assert.equal(read(90).image, null, "cold fully-offscreen family must not acquire or decode pixels");
+  assert.equal(starts, 0);
+  assert.equal(read(0).renderedLevel, "DETAIL"); assert.equal(starts, 2);
+  assert.equal(read(90).requested, false); assert.equal(releases, 2, "both ready levels retire with their native owner");
+  assert.equal(read(0).renderedLevel, "DETAIL"); assert.equal(starts, 4, "return reopens the existing cache/decode boundary");
+  assert.equal(read(90, { hourly: [] }).requested, true, "unknown geometry cannot cancel an otherwise valid source");
+  owner?.dispose();
+});
+
+test("normal page supplies the accepted camera and exact report to the optical demand owner", () => {
+  const page = ts.createSourceFile("page.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const declarations = new Map<string, ts.VariableStatement>();
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableStatement(node)) for (const variable of node.declarationList.declarations)
+      if (["targetOpticalView", "selectedOpticalPublication", "sdssOptical"].includes(variable.name.getText(page))) declarations.set(variable.name.getText(page), node);
+    ts.forEachChild(node, visit);
+  }; visit(page); assert.equal(declarations.size, 3);
+  const code = ts.transpileModule([...declarations.values()].map(node => node.getText(page)).join("\n"),
+    { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  const geometryReport = {}, currentViewBasis = createSkyViewBasis(0, 80, 0), presentedCenter = { x: 183, y: 419 };
+  let captured: unknown[] = [];
+  const read = (targetOpticalPublication: unknown = undefined) => vm.runInNewContext(code, { geometryReport, currentViewBasis, presentedFov: .05, presentedCenter,
+    row: { at: "2026-10-03T13:00:00.000Z" }, canvasSize: { width: 390, height: 844 }, verticalFovDeg: .2,
+    selectedDeepSkyEntry: { objectRef: "M:51" }, deepSkyRegistrationReady: true, canvasNodeRef: { current: {} }, canvasNodeRevision: 1,
+    pageVisible: true, rawReportData: {}, mode: "DAY", report: { data: { dataState: "FRESH" }, isError: false },
+    targetOpticalPublication, useSkyTargetOptical: (...args: unknown[]) => { captured = args; return {}; } });
+  read();
+  assert.equal(captured[0], "sdss-legacy"); assert.equal(captured[1], "M:51");
+  assert.equal(captured[2], .2, "existing refinement intent is preserved");
+  const view = captured[7] as import("./sky-target-optical-visibility").SkyTargetOpticalView;
+  assert.equal(view.report, geometryReport); assert.equal(view.view.basis, currentViewBasis); assert.equal(view.view.center, presentedCenter);
+  assert.equal(view.view.verticalFovDeg, .05); assert.equal(view.at, "2026-10-03T13:00:00.000Z");
+  assert.equal(view.width, 390); assert.equal(view.height, 844);
+  const pin = { kind: "prepared-optical-v1", reference: "M:51", publicationHash: "a".repeat(64) };
+  read(pin); assert.equal(captured[0], pin.kind); assert.equal(captured[6], pin.publicationHash);
+  read({ ...pin, kind: "sdss-calibrated" }); assert.equal(captured[0], "sdss-calibrated");
+  read({ ...pin, reference: "M:82" }); assert.equal(captured[0], "sdss-legacy");
+  assert.equal(captured[6], undefined, "an unrelated selected object cannot borrow the pinned photograph");
+});
 
 test("fine optical failure retains the nearest ready coarse level and an explicit retry",()=>{
   const source=ts.createSourceFile("use-sky-sdss-optical.ts",
@@ -21,7 +113,7 @@ test("fine optical failure retains the nearest ready coarse level and an explici
   let retries=0,refetches=0,released=0;
   const owner=createSkyArtworkLoader({byteBudget:2*512*512*4,changed(value){state=value;},
     start(asset,ready,fail){starts.push({asset,ready,fail});return()=>{};}});
-  const hook=vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export\s+/,"")+
+  const hook=vm.runInNewContext(ts.transpileModule(progressiveDeclaration() + declaration.getText(source).replace(/^export\s+/,"")+
     "\nuseSkySdssOptical;",{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText,{
     useMemo:(evaluate:()=>unknown)=>evaluate(),sdssOpticalLevelForFov,skyFixedImageStatus,
     getSdssOpticalManifest:()=>Promise.resolve(publication),sdssOpticalImageUrl:(path:string)=>path,
@@ -74,7 +166,7 @@ test("target switches fence prior discovery, cancel its owner and reject late de
   const queries: Array<{queryKey:readonly unknown[];queryFn:(signal?:AbortSignal)=>Promise<unknown>;enabled:boolean}> = [];
   const requested: string[] = [];
   let canceled = 0, released = 0, retries = 0;
-  const hook = vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export\s+/u, "") + "\nuseSkySdssOptical;",
+  const hook = vm.runInNewContext(ts.transpileModule(progressiveDeclaration() + declaration.getText(source).replace(/^export\s+/u, "") + "\nuseSkySdssOptical;",
     {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText, {
     useMemo:(evaluate:()=>unknown)=>evaluate(),sdssOpticalLevelForFov,skyFixedImageStatus,
     sdssOpticalImageUrl:(path:string)=>path,
@@ -138,7 +230,7 @@ test("the public page retry preserves coarse optical pixels through repeated HTT
   let released=0,resets=0,refetches=0;
   const starts:Array<{asset:SkyNativeImageAsset;ready:(loaded:{image:object;release():void})=>void;fail():void}>=[];
   const owner=createSkyArtworkLoader({byteBudget:2*512*512*4,changed(value){state=value;},start(asset,ready,fail){starts.push({asset,ready,fail});return()=>{};}});
-  const hook=vm.runInNewContext(ts.transpileModule(hookDeclaration.getText(hookSource).replace(/^export\s+/,'')+'\nuseSkySdssOptical;',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{
+  const hook=vm.runInNewContext(ts.transpileModule(progressiveDeclaration() + hookDeclaration.getText(hookSource).replace(/^export\s+/,'')+'\nuseSkySdssOptical;',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{
     useMemo:(read:()=>unknown)=>read(),sdssOpticalLevelForFov,skyFixedImageStatus,sdssOpticalImageUrl:(url:string)=>url,
     getSdssOpticalManifest:async()=>publication,useResourceQuery:()=>({data:publication,isError:false,isFetching:false,refetch(){refetches++;}}),
     useSkyNativeImages:(_canvas:unknown,_revision:number,_hash:string,_active:boolean,wanted:SkyNativeImageAsset[])=>{owner.update(wanted);return {...state,failedImage:owner.failed,retryImages:owner.retry};},

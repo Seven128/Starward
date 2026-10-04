@@ -1,0 +1,41 @@
+
+> @starward/miniapp-api@0.1.0 test:integration
+> node ../../tools/run-node.cjs --import tsx --test src/miniapp-infrastructure.test.ts
+
+✖ PostgreSQL/PostGIS, Redis, identity isolation and Outbox survive restart (5129.173ms)
+✔ provider attempts commit before HTTP, survive caller rollback and use the Shanghai calendar month (1110.7888ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7717.9191
+
+✖ failing tests:
+
+test at src\miniapp-infrastructure.test.ts:1:1345
+✖ PostgreSQL/PostGIS, Redis, identity isolation and Outbox survive restart (5129.173ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(Number(effects.rows[0]!.opportunities) >= 1)
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\miniapp-infrastructure.test.ts:950:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+npm error Lifecycle script `test:integration` failed with error:
+npm error code 1
+npm error path E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api
+npm error workspace @starward/miniapp-api@0.1.0
+npm error location E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c node ../../tools/run-node.cjs --import tsx --test src/miniapp-infrastructure.test.ts

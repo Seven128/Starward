@@ -1,0 +1,7 @@
+{
+  "url": "https://planetarymaps.usgs.gov/cgi-bin/mapserv?map=/maps/earth/moon_simp_cyl.map&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=uv_v2&STYLES=&SRS=EPSG:4326&BBOX=-180,-90,180,90&WIDTH=2048&HEIGHT=1024&FORMAT=image/png&TRANSPARENT=TRUE",
+  "bytes": 2083099,
+  "sha256": "18ad9a0fceed3299958f02e2631c7ff35ec950901cc0bad9dbd791b7151b11b1",
+  "contentType": "image/png",
+  "candidateOnly": true
+}

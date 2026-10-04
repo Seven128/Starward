@@ -1,0 +1,40 @@
+✔ completed view facts preserve full precision and expose only the submitted camera (1.5583ms)
+✔ missing, stale or invalid completed cameras remain unavailable (0.2211ms)
+✔ exact frame facts distinguish a usable empty catalog frame from missing geometry (1.4045ms)
+✔ playing scene publication keeps the completed instant, catalog and count while the next native frame is queued (30.858ms)
+✖ the actual public view attribute uses the completed snapshot and clears invalidated frames (20.6246ms)
+✔ pausing or cancelling to a different instant cannot publish the retained playing frame as current (10.3663ms)
+✔ fixed completed scenes retain independent target meaning and explicit bright-star availability (16.2026ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 999.7671
+
+✖ failing tests:
+
+test at src\features\sky\sky-scene-frame-facts.test.ts:2:1432
+✖ the actual public view attribute uses the completed snapshot and clears invalidated frames (20.6246ms)
+  AssertionError [ERR_ASSERTION]: an unmounted Canvas must not expose a retained completed camera as live
+  + actual - expected
+  
+  + '{"frameAt":"2026-10-01T00:00:00.000Z","width":390.3999938964844,"height":844,"basis":{"right":[1,0,0],"up":[0,-0.7071067811865476,0.7071067811865476],"forward":[0,0.7071067811865476,0.7071067811865476]},"verticalFovDeg":45.000007123456,"center":{"x":195.1999969482422,"y":422},"scale":2121.536921050302}'
+  - ''
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\apps\wechat-miniapp\src\features\sky\sky-scene-frame-facts.test.ts:140:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '{"frameAt":"2026-10-01T00:00:00.000Z","width":390.3999938964844,"height":844,"basis":{"right":[1,0,0],"up":[0,-0.7071067811865476,0.7071067811865476],"forward":[0,0.7071067811865476,0.7071067811865476]},"verticalFovDeg":45.000007123456,"center":{"x":195.1999969482422,"y":422},"scale":2121.536921050302}',
+    expected: '',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

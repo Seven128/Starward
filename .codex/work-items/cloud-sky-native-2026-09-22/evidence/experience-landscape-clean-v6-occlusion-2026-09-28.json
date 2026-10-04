@@ -1,0 +1,29 @@
+{
+  "scope": "Official SDK Canvas touch handlers and actual UI; CLI-bound clean-v6/9439; no phone or physical touch/composition claim",
+  "candidate": "apps/wechat-miniapp/dist/weapp-check-sky-combined-clean-v6-0928",
+  "candidateHash": "6a24860eb13bb7a878e9fe1c17b8790a764fa552fd18625ae2d60bfe5321b900",
+  "filesChecked": 257,
+  "before": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 5.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "Nüchuang定位标记，模拟地景遮挡，查看资料",
+    "modal": false,
+    "choices": false
+  },
+  "blocked": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 5.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "Nüchuang定位标记，模拟地景遮挡，查看资料",
+    "modal": false,
+    "choices": false
+  },
+  "openSelection": {
+    "overlap": null,
+    "title": "Nüchuang",
+    "reference": "HR:6418"
+  },
+  "restored": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 5.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "Nüchuang定位标记，模拟地景遮挡，查看资料",
+    "modal": false,
+    "choices": false
+  }
+}

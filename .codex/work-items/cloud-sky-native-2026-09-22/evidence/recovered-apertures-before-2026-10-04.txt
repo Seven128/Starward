@@ -1,0 +1,59 @@
+EEEEEE
+======================================================================
+ERROR: test_actual_common_cohorts_coefficients_and_native_covariance (test_sdss_recovered_apertures.RecoveredApertureTest.test_actual_common_cohorts_coefficients_and_native_covariance)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_apertures.py", line 57, in test_actual_common_cohorts_coefficients_and_native_covariance
+    samples = owner.project_current_recovery_region(master, parent, recovery, sources, region)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'sdss_display_recovery' has no attribute 'project_current_recovery_region'
+
+======================================================================
+ERROR: test_increment_uses_raw_samples_and_keeps_actual_unaffected_parent (test_sdss_recovered_apertures.RecoveredApertureTest.test_increment_uses_raw_samples_and_keeps_actual_unaffected_parent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_apertures.py", line 90, in test_increment_uses_raw_samples_and_keeps_actual_unaffected_parent
+    result = owner.refine_current_recovery_display_region(master, parent, recovery, sources, target, batch_size=7)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'sdss_display_recovery' has no attribute 'refine_current_recovery_display_region'
+
+======================================================================
+ERROR: test_no_synthetic_crop_halo_and_cancelled_increment_has_no_partial (test_sdss_recovered_apertures.RecoveredApertureTest.test_no_synthetic_crop_halo_and_cancelled_increment_has_no_partial)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_apertures.py", line 134, in test_no_synthetic_crop_halo_and_cancelled_increment_has_no_partial
+    owner.refine_current_recovery_display_region(master, parent, recovery, sources, target)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'sdss_display_recovery' has no attribute 'refine_current_recovery_display_region'
+
+======================================================================
+ERROR: test_same_run_unknown_epoch_or_unavailable_model_has_no_increment (test_sdss_recovered_apertures.RecoveredApertureTest.test_same_run_unknown_epoch_or_unavailable_model_has_no_increment)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_apertures.py", line 109, in test_same_run_unknown_epoch_or_unavailable_model_has_no_increment
+    result = owner.refine_current_recovery_display_region(master, parent, recovery, sources, (slice(8,32),slice(8,32)))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'sdss_display_recovery' has no attribute 'refine_current_recovery_display_region'
+
+======================================================================
+ERROR: test_saved_supply_or_values_cannot_replace_actual_native_admission (test_sdss_recovered_apertures.RecoveredApertureTest.test_saved_supply_or_values_cannot_replace_actual_native_admission)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_apertures.py", line 127, in test_saved_supply_or_values_cannot_replace_actual_native_admission
+    owner.refine_current_recovery_display_region(master, parent, forged, sources, (slice(8,32),slice(8,32)))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'sdss_display_recovery' has no attribute 'refine_current_recovery_display_region'
+
+======================================================================
+ERROR: test_targeted_kernel_matches_full_policy_only_at_requested_centres (test_sdss_recovered_apertures.RecoveredApertureTest.test_targeted_kernel_matches_full_policy_only_at_requested_centres)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "E:\dev\worktrees\Starward\remote-main-20260908\data-pipelines\deep-sky\test_sdss_recovered_apertures.py", line 45, in test_targeted_kernel_matches_full_policy_only_at_requested_centres
+    targeted = adaptive.adaptive_common_display_batched(values, eligible, [stencil], targets=targets)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: adaptive_common_display_batched() got an unexpected keyword argument 'targets'
+
+----------------------------------------------------------------------
+Ran 6 tests in 2.561s
+
+FAILED (errors=6)

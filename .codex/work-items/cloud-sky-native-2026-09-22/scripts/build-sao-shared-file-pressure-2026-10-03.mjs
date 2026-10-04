@@ -1,0 +1,72 @@
+/** Reuse only native-port scaffold; rebuild full API/current file owners. No Scene replay. */
+import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';import {fileURLToPath} from 'node:url';import {build} from 'esbuild';
+const root=fileURLToPath(new URL('../../../../',import.meta.url)),dir=path.dirname(fileURLToPath(import.meta.url));
+const prior=path.join(root,'output/playwright/cloud-sky-live-mixed-1003-r7'),out=path.join(root,'output/playwright/cloud-sky-live-mixed-1003-r10');assert(!fs.existsSync(out));fs.mkdirSync(out);
+const sha=b=>createHash('sha256').update(b).digest('hex'),save=(name,v)=>fs.writeFileSync(path.join(out,name),JSON.stringify(v,null,2)+'\n',{flag:'wx'});
+const observation=JSON.parse(fs.readFileSync(path.join(prior,'cache-observation-patches.json'),'utf8'));
+const original=fs.readFileSync(path.join(root,observation.owner));assert.equal(sha(original),observation.originalSha256);
+const observed=fs.readFileSync(path.join(prior,'response-cache.observed.ts'),'utf8');assert.equal(sha(observed),observation.observedSha256);
+for(const name of ['cache-observation-patches.json','response-cache.original.ts','response-cache.observed.ts'])fs.copyFileSync(path.join(prior,name),path.join(out,name),fs.constants.COPYFILE_EXCL);
+let scaffold=fs.readFileSync(path.join(prior,'runtime-executor.js.txt'),'utf8');const scaffoldBefore=scaffold;
+const old='o.success({ data: files.get(o.filePath).slice(o.position ?? 0, (o.position ?? 0) + o.length) })';assert.equal(scaffold.split(old).length,2);
+scaffold=scaffold.replace(old,"o.success({ data: o.encoding === 'utf8' ? new TextDecoder('utf-8',{fatal:true}).decode(files.get(o.filePath)) : files.get(o.filePath).slice(o.position ?? 0, o.length === undefined ? undefined : (o.position ?? 0) + o.length) })");
+fs.writeFileSync(path.join(out,'runtime-executor.original.js.txt'),scaffoldBefore,{flag:'wx'});fs.writeFileSync(path.join(out,'runtime-executor.js.txt'),scaffold,{flag:'wx'});
+save('native-port-patch.json',{source:'output/playwright/cloud-sky-live-mixed-1003-r7/runtime-executor.js.txt',originalSha256:sha(scaffoldBefore),observedSha256:sha(scaffold),before:old,after:scaffold.slice(scaffold.indexOf('o.success({ data: o.encoding'),scaffold.indexOf(" : o.fail({ errMsg: 'no such file or directory' })",scaffold.indexOf('o.success({ data: o.encoding'))),scope:'Controlled Taro native UTF8/full read delivery only. Task TextDecoder models native decoding; production uses native FS UTF8, not browser TextDecoder. No page/Scene bundle is executed.'});
+const cachePath='apps/wechat-miniapp/src/services/sky-public-image-cache.ts',cacheOriginal=fs.readFileSync(path.join(root,cachePath),'utf8');
+assert.equal(cacheOriginal.split('export function createSkyPublicImageCache(').length,2);
+const cacheObserved=cacheOriginal.replace('export function createSkyPublicImageCache(','function createActualSkyPublicImageCache(')+`\nexport function createSkyPublicImageCache(deps:any){const owner=createActualSkyPublicImageCache(deps);((globalThis as any).__controlled.publicFileOwners??=[]).push(owner);return owner;}\n`;
+fs.writeFileSync(path.join(out,'file-cache.original.ts'),cacheOriginal,{flag:'wx'});fs.writeFileSync(path.join(out,'file-cache.observed.ts'),cacheObserved,{flag:'wx'});
+const entry=JSON.parse(fs.readFileSync(path.join(prior,'api-inputs.json'),'utf8')).entry+"\nexport {clearSkyPublicImageCache,initializeSkyPublicImageCache} from './apps/wechat-miniapp/src/services/sky-public-image-runtime';\n";
+const result=await build({absWorkingDir:root,stdin:{contents:entry,resolveDir:root,sourcefile:'task-live-api.ts',loader:'ts'},bundle:true,write:false,metafile:true,
+ platform:'browser',format:'iife',globalName:'liveApi',target:'es2022',tsconfig:path.join(root,'apps/wechat-miniapp/tsconfig.json'),
+ define:{__MINIAPP_API_BASE__:'"https://approved.fixture.invalid"',__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:'false',__MINIAPP_OPERATOR_PREVIEW_TOKEN__:'""',__MINIAPP_ACCEPTANCE_DIAGNOSTICS__:'false',__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__:'false'},
+ plugins:[{name:'actual-native-ports-and-owner-observation',setup(b){b.onResolve({filter:/^@tarojs\/taro$/},()=>({path:'taro',namespace:'native'}));b.onLoad({filter:/.*/,namespace:'native'},()=>({contents:'export default globalThis.__controlled.Taro;',loader:'ts'}));
+  b.onLoad({filter:/[\\/]response-cache\.ts$/},()=>({contents:observed,loader:'ts'}));b.onLoad({filter:/[\\/]sky-public-image-cache\.ts$/},()=>({contents:cacheObserved,loader:'ts'}));}}]});
+fs.writeFileSync(path.join(out,'api-bundle.js'),result.outputFiles[0].text,{flag:'wx'});save('api-metafile.json',result.metafile);
+const sourceBindings=Object.keys(result.metafile.inputs).filter(k=>!['task-live-api.ts','native:taro'].includes(k)).map(k=>{const relative=path.relative(root,path.resolve(root,k)).replaceAll('\\','/');assert(!relative.startsWith('../'));const b=fs.readFileSync(path.join(root,relative));return {path:relative,bytes:b.length,sha256:sha(b)};});
+save('api-inputs.json',{entry,sourceBindings,virtual:['task-live-api.ts','native:taro'],observedOwners:[observation.owner,cachePath],scope:'Full current API, one actual shared encoded owner. Read-only cache diagnostics and controlled native ports; no page/Scene rendering claims.'});
+let runner=fs.readFileSync(path.join(dir,'experience-live-cache-pressure-2026-10-03.mts'),'utf8');
+const once=(before,after)=>{assert.equal(runner.split(before).length,2,before.slice(0,90));runner=runner.replace(before,after);};
+once("assert(fs.existsSync(path.join(out,'bundle.js')));","assert(fs.existsSync(path.join(out,'api-bundle.js')));");once('current-execution-state-2026-10-03-r44.json','current-execution-state-2026-10-03-r45.json');
+once('for(const row of [...checkpoint.protected,...checkpoint.currentSources])assert.deepEqual(bind(row.path),row);',`const authorisedChanged=new Set(${JSON.stringify(['workers/miniapp-api/src/sao-publication.ts','workers/miniapp-api/src/sky-public-asset-export.ts','tools/deployment/sky-static-bundle.mjs','apps/wechat-miniapp/src/services/api-client.ts','apps/wechat-miniapp/src/services/sky-public-image-runtime.ts','apps/wechat-miniapp/src/services/sky-public-image-cache.ts'])});
+for(const row of [...checkpoint.protected,...checkpoint.currentSources])if(!authorisedChanged.has(row.path))assert.deepEqual(bind(row.path),row);`);
+once("const before=sources.map(bind);save('inputs-before.json',before);","sources.push('apps/wechat-miniapp/src/services/sky-public-file-bytes.ts','apps/wechat-miniapp/src/services/sky-public-image-cache.ts','apps/wechat-miniapp/src/services/sao-catalog-client.ts','tools/deployment/sky-static-bundle.mjs');\nconst before=sources.map(bind);save('inputs-before.json',before);");
+once("source=${path.join(root,'infrastructure/deployment/sky-static-empty.caddy')}","source=${path.join(root,'output/sky-sao-public-files-1003-r1/standard-export/publication/delivery.caddy')}");
+once("'--mount',`type=bind,source=${path.join(root,'infrastructure/deployment/sky-resource-logging.caddy')},target=/etc/caddy/sky-resource-logging.caddy,readonly`];","'--mount',`type=bind,source=${path.join(root,'infrastructure/deployment/sky-resource-logging.caddy')},target=/etc/caddy/sky-resource-logging.caddy,readonly`,\n    '--mount',`type=bind,source=${path.join(root,'output/sky-sao-public-files-1003-r1/standard-export/publication/files')},target=/srv/sky-public/files,readonly`];");
+once("r.contentEncoding=encoding;", "r.contentEncoding=encoding;r.skyDelivery=response.headers['x-starward-sky-delivery']??null;r.publicDataSource=response.headers['x-starward-data-source']??null;");
+once("type:o.responseType==='arraybuffer'?'image':'metadata'","type:route.includes('/supplements/sao/v2/')&&route.includes('/assets/')?'json-file':o.responseType==='arraybuffer'?'image':'metadata'");
+once('if(consumed>=32)break;','if(consumed>=22)break;');
+once('const beforeWarm=observer.snapshot(),afterPressure=await readBase(\'cache-after-pressure-warm\'),afterWarm=observer.snapshot();',`const beforeWarm=observer.snapshot(),afterPressure=await readBase('cache-after-pressure-warm'),afterWarm=observer.snapshot();
+  if(w.publicFileOwners.length!==1)throw Error('duplicate public encoded owners');const fileOwner=w.publicFileOwners[0];
+  const waitFor=async(predicate:()=>boolean)=>{for(let i=0;i<500;i++){if(predicate())return;await new Promise(r=>setTimeout(r,2));}throw Error('bounded JSON reader callback not reached');};
+  await waitFor(()=>fileOwner.inspect().running===0&&fileOwner.inspect().leased===0);
+  const afterColdFiles=fileOwner.inspect(),first=index.data.index.tiles.find(t=>t.id===tileIds[0]);
+  w.phase='cache-sao-file-warm';const warmStart=w.requests.length;const warmTile=await api.saoCatalogClient.getTile(index.data,first.id);
+  if(warmTile.data.tile.rows.length!==first.rowCount||w.requests.length!==warmStart)throw Error('warm file body/request mismatch');
+  await waitFor(()=>fileOwner.inspect().running===0&&fileOwner.inspect().leased===0);
+  const afterWarmFiles=fileOwner.inspect();
+  const originalFS=w.Taro.getFileSystemManager();let heldRead:(()=>void)|undefined,hold=false;
+  w.Taro.getFileSystemManager=()=>({...originalFS,readFile(o:any){if(hold&&o.encoding==='utf8'){hold=false;heldRead=()=>originalFS.readFile(o);}else originalFS.readFile(o);}});
+  hold=true;w.phase='cache-sao-aborted-file-read';const abort=new AbortController();
+  const cancelled=api.saoCatalogClient.getTile(index.data,first.id,abort.signal).then(()=>({accepted:true}),error=>({accepted:false,message:String(error.message)}));
+  await waitFor(()=>!!heldRead);abort.abort();const abortResult=await cancelled,abortHeld=fileOwner.inspect();
+  if(abortResult.accepted||abortHeld.leased!==1)throw Error('aborted native reader did not retain its lease');heldRead!();heldRead=undefined;
+  await waitFor(()=>fileOwner.inspect().leased===0);const afterAbort=fileOwner.inspect();
+  hold=true;w.phase='cache-sao-clear-late-read';const cleared=api.saoCatalogClient.getTile(index.data,first.id).then(()=>({accepted:true}),error=>({accepted:false,message:String(error.message)}));
+  await waitFor(()=>!!heldRead&&fileOwner.inspect().running===0);const clearResult=await api.clearSkyPublicImageCache(),clearRejected=await cleared,clearHeld=fileOwner.inspect();
+  if(clearRejected.accepted||clearHeld.leased!==1||clearHeld.retired!==1)throw Error('clear fabricated native read completion');heldRead!();heldRead=undefined;
+  await waitFor(()=>fileOwner.inspect().leased===0&&fileOwner.inspect().retired===0);const afterClearFiles=fileOwner.inspect();
+  const stale=await api.saoCatalogClient.getTile(index.data,first.id).then(()=>false,error=>String(error.message).includes('retired_index'));if(!stale)throw Error('retired metadata escaped generation fence');
+  w.phase='cache-sao-after-clear-recovery';const freshIndex=await api.saoCatalogClient.getIndex();const fresh=await api.saoCatalogClient.getTile(freshIndex.data,first.id);
+  if(fresh.data.tile.rows.length!==first.rowCount)throw Error('clear recovery source mismatch');await waitFor(()=>fileOwner.inspect().leased===0&&fileOwner.inspect().running===0);
+  const recoveredFiles=fileOwner.inspect();
+  const files={afterColdFiles,afterWarmFiles,warmHttpRequests:w.requests.length-warmStart-2,abortResult,abortHeld,afterAbort,
+   clearResult,clearRejected,clearHeld,afterClearFiles,retiredIndexRejected:stale,recoveredFiles,
+   scope:'Actual shared core with controlled MapFS/native UTF8. Abort/clear hold the native read callback, not HTTP. File lease remains until actual callback; late value is rejected. No physical memory/native device or complete page claim.'};`);
+once('return {initial,beforePressure,snapshots,consumed,beforeWarm,afterPressure,afterWarm,events:w.cacheEvidence,','return {initial,beforePressure,snapshots,consumed,beforeWarm,afterPressure,afterWarm,files,events:w.cacheEvidence,');
+once("['source-binding-before.json','api-inputs.json']","['api-inputs.json']");
+once("status:'LIVE_RESPONSE_CACHE_PRESSURE_OWNER_DEVELOPMENT'","status:'LIVE_SAO_SHARED_FILE_PRESSURE_AND_LATE_READ_DEVELOPMENT'");
+once("scope:'Current full API and real source owners, controlled native transport/storage, explicit fixture report/weather/business. Read-only cache instrumentation, bounded serial SAO pressure, no page/Scene/firstusable/9conditions/native orcapacity claim. No otherbusinesslogic/production policy change.'","scope:'Current full API/new raw SAO/static export and one shared file owner, controlled native transport/storage/UTF8 with real HTTP+cached local Caddy. Fixture report/weather/business remain. Same22 source tile pressure; warm and cancelled/clear native read outcomes. No page/Scene/firstusable/native/physical/capacity or otherbusinesslogic claim; generic response-cache policy unchanged.'");
+fs.writeFileSync(path.join(dir,'experience-sao-shared-file-pressure-2026-10-03.mts'),runner,{flag:'wx'});
+save('build-origin.json',{nativeScaffoldCopiedFrom:'output/playwright/cloud-sky-live-mixed-1003-r7',fullApiRebuilt:true,apiSourceBindings:sourceBindings.length,noPageBundleExecuted:true,encodedOwnerOriginalSha256:sha(cacheOriginal),encodedOwnerObservedSha256:sha(cacheObserved)});
+console.log(JSON.stringify({output:path.relative(root,out),apiSources:sourceBindings.length,task:'experience-sao-shared-file-pressure-2026-10-03.mts'}));

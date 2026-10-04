@@ -1,0 +1,213 @@
+{
+  "scope": "Exact clean-v7/9440 normal DevTools input, committed landscape source, coarse/detail selection, real fresh-publication detail HTTP failure and public retry, current-owner hide/show files. No physical device, native bitmap/GPU peak, final whole-scene quality or independent review acceptance.",
+  "candidateSha256": "08c48578dc0cd383de500963752df1b3db95982921860ff7d8b4bc53a68f302f",
+  "originalPublicationHash": "e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5",
+  "fixturePublicationHash": "d0183cd3a9a0c1bf324ba019f8bca89401aa37a34a35fca4868240e03d3ede38",
+  "paintedLevelObservations": [
+    {
+      "logicalVerticalFovDeg": 85,
+      "imageFile": "panorama-2048.png",
+      "sameInstant": "2026-09-28T16:00:00.000Z",
+      "selection": "Rastaban",
+      "capture": "experience-combined-clean-v7-landscape-detail-night85-2026-09-28.png"
+    },
+    {
+      "logicalVerticalFovDeg": 25,
+      "imageFile": "panorama-1024.png",
+      "sameInstant": "2026-09-28T16:00:00.000Z",
+      "selection": "Rastaban",
+      "capture": "experience-combined-clean-v7-landscape-overview-local25-2026-09-28.png"
+    }
+  ],
+  "failure": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 85.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "Rastaban定位标记，查看资料",
+    "sources": "",
+    "landscape": "关闭通用模拟地景，不影响几何地平线",
+    "photo": true,
+    "model": false,
+    "retry": true,
+    "currentImage": "http://127.0.0.1:8789/v2/sky/landscape/d0183cd3a9a0c1bf324ba019f8bca89401aa37a34a35fca4868240e03d3ede38/panorama-1024.png"
+  },
+  "retry": {
+    "description": "示例观星点的方位高度天空图，已呈现垂直视场 85.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+    "located": "Rastaban定位标记，查看资料",
+    "sources": "",
+    "landscape": "关闭通用模拟地景，不影响几何地平线",
+    "currentImage": "http://127.0.0.1:8789/v2/sky/landscape/d0183cd3a9a0c1bf324ba019f8bca89401aa37a34a35fca4868240e03d3ede38/panorama-2048.png",
+    "retry": false
+  },
+  "actualNetwork": [
+    {
+      "type": "HTTP_REQUEST",
+      "path": "/v2/sky/landscape/manifest"
+    },
+    {
+      "type": "HTTP_RESPONSE",
+      "path": "/v2/sky/landscape/manifest",
+      "status": 200
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "path": "/v2/sky/landscape/d0183cd3a9a0c1bf324ba019f8bca89401aa37a34a35fca4868240e03d3ede38/panorama-1024.alpha-rle.json"
+    },
+    {
+      "type": "HTTP_RESPONSE",
+      "path": "/v2/sky/landscape/d0183cd3a9a0c1bf324ba019f8bca89401aa37a34a35fca4868240e03d3ede38/panorama-1024.alpha-rle.json",
+      "status": 200
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "path": "/v2/sky/landscape/d0183cd3a9a0c1bf324ba019f8bca89401aa37a34a35fca4868240e03d3ede38/panorama-2048.alpha-rle.json"
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "path": "/v2/sky/landscape/d0183cd3a9a0c1bf324ba019f8bca89401aa37a34a35fca4868240e03d3ede38/panorama-1024.png"
+    },
+    {
+      "type": "HTTP_RESPONSE",
+      "path": "/v2/sky/landscape/d0183cd3a9a0c1bf324ba019f8bca89401aa37a34a35fca4868240e03d3ede38/panorama-2048.alpha-rle.json",
+      "status": 200
+    },
+    {
+      "type": "HTTP_RESPONSE",
+      "path": "/v2/sky/landscape/d0183cd3a9a0c1bf324ba019f8bca89401aa37a34a35fca4868240e03d3ede38/panorama-1024.png",
+      "status": 200
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "path": "/v2/sky/landscape/d0183cd3a9a0c1bf324ba019f8bca89401aa37a34a35fca4868240e03d3ede38/panorama-2048.png"
+    },
+    {
+      "type": "HTTP_RESPONSE",
+      "path": "/v2/sky/landscape/d0183cd3a9a0c1bf324ba019f8bca89401aa37a34a35fca4868240e03d3ede38/panorama-2048.png",
+      "status": 500
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "path": "/v2/sky/landscape/manifest"
+    },
+    {
+      "type": "HTTP_RESPONSE",
+      "path": "/v2/sky/landscape/manifest",
+      "status": 200
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "path": "/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/panorama-1024.alpha-rle.json"
+    },
+    {
+      "type": "HTTP_RESPONSE",
+      "path": "/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/panorama-1024.alpha-rle.json",
+      "status": 200
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "path": "/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/panorama-2048.alpha-rle.json"
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "path": "/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/panorama-1024.png"
+    },
+    {
+      "type": "HTTP_RESPONSE",
+      "path": "/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/panorama-2048.alpha-rle.json",
+      "status": 200
+    },
+    {
+      "type": "HTTP_RESPONSE",
+      "path": "/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/panorama-1024.png",
+      "status": 200
+    },
+    {
+      "type": "HTTP_REQUEST",
+      "path": "/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/panorama-2048.png"
+    },
+    {
+      "type": "HTTP_RESPONSE",
+      "path": "/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/panorama-2048.png",
+      "status": 200
+    }
+  ],
+  "freshRetry200NetworkRowCaptured": false,
+  "networkLimit": "The fresh detail 500 is in the native network log. The post-retry 200 row was not collected before compiling the restored-publication page; successful same-page detail is evidenced by its committed 2K photo source and capture, not an invented network row. Restored original publication has actual native 200 rows for both PNGs.",
+  "currentPublicationPaintedSource": "http://127.0.0.1:8789/v2/sky/landscape/e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5/panorama-2048.png",
+  "fileLifecycle": {
+    "before": [
+      {
+        "bytes": 854784,
+        "width": 1024,
+        "height": 512
+      },
+      {
+        "bytes": 3316173,
+        "width": 2048,
+        "height": 1024
+      }
+    ],
+    "hidden": 0,
+    "returned": [
+      {
+        "bytes": 854784,
+        "width": 1024,
+        "height": 512
+      },
+      {
+        "bytes": 3316173,
+        "width": 2048,
+        "height": 1024
+      }
+    ],
+    "historicalMatchingFiles": 5,
+    "historicalFilesUntouched": true,
+    "limit": "Current owner only; existing matching files remain separate. Files and PNG-header RGBA cost do not establish decoded heap, GPU/native peak or OS background release."
+  },
+  "captures": [
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 85.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "Rastaban定位标记，查看资料",
+      "sources": "",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v7-landscape-detail-night85-2026-09-28.png",
+      "width": 192,
+      "height": 413
+    },
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 25.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "Rastaban定位标记，查看资料",
+      "sources": "",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v7-landscape-overview-local25-2026-09-28.png",
+      "width": 192,
+      "height": 413
+    },
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 85.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "Rastaban定位标记，查看资料",
+      "sources": "",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v7-landscape-fine-failure-kept-coarse-2026-09-28.png",
+      "width": 192,
+      "height": 413
+    },
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 85.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "Rastaban定位标记，查看资料",
+      "sources": "",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v7-landscape-fine-retry-restored-detail-2026-09-28.png",
+      "width": 192,
+      "height": 413
+    },
+    {
+      "description": "示例观星点的方位高度天空图，已呈现垂直视场 85.0 度，4121 颗真实亮星目录对象，场景时刻 2026-09-28T16:00:00.000Z，3 个真实目标，手动视角，不代表手机朝向，所选观测时刻 00:00",
+      "located": "Rastaban定位标记，查看资料",
+      "sources": "",
+      "landscape": "关闭通用模拟地景，不影响几何地平线",
+      "filename": "experience-combined-clean-v7-landscape-normal-detail-returned-2026-09-28.png",
+      "width": 192,
+      "height": 413
+    }
+  ],
+  "captureLimit": "Raw simulator screenshots are 192x413 while the logical Canvas is 390.4x844; these scaled native captures are not a pixel-faithful comparison with the older 479x1035 captures. Full logical-size production WebGL composites remain component evidence."
+}

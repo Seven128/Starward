@@ -1,0 +1,49 @@
+✖ each missing publication retains independent facts and credit and recovers without caching the partial result (10.8592ms)
+✖ actual HTTP retry replaces partial credit and its conditional response with the object's recovered publication (144.4804ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1760.2555
+
+✖ failing tests:
+
+test at src\celestial-source-recovery.test.ts:1:1420
+✖ each missing publication retains independent facts and credit and recovers without caching the partial result (10.8592ms)
+  AssertionError [ERR_ASSERTION]: a missing optical source must not pose as a complete success
+  
+  'FRESH' !== 'PARTIAL'
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\celestial-source-recovery.test.ts:42:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'FRESH',
+    expected: 'PARTIAL',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at src\celestial-source-recovery.test.ts:1:3733
+✖ actual HTTP retry replaces partial credit and its conditional response with the object's recovered publication (144.4804ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'FRESH' !== 'PARTIAL'
+  
+      at TestContext.<anonymous> (E:\dev\worktrees\Starward\remote-main-20260908\workers\miniapp-api\src\celestial-source-recovery.test.ts:81:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'FRESH',
+    expected: 'PARTIAL',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

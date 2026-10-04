@@ -14,7 +14,8 @@ export function skySunDiscAt(rows:readonly SkyGeometryRow[]|undefined,at:string|
     !Number.isFinite(row.sunAltitudeDeg)||row.sunAltitudeDeg< -90||row.sunAltitudeDeg>90||
     typeof row.sunAngularDiameterDeg!=="number"||!Number.isFinite(row.sunAngularDiameterDeg)||
     row.sunAngularDiameterDeg<=.45||row.sunAngularDiameterDeg>=.6)return null;
-  if(row.sunAltitudeDeg < -row.sunAngularDiameterDeg/2)return null;
+  // Browsing covers the full celestial sphere; the completed landscape pass
+  // owns display occlusion without changing this report's real altitude.
   return projectSkyAngularDisc({azimuthDeg:row.sunAzimuthDeg,altitudeDeg:row.sunAltitudeDeg,
     angularDiameterDeg:row.sunAngularDiameterDeg},basis,width,height,verticalFovDeg,center);
 }

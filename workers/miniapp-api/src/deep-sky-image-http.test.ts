@@ -12,6 +12,8 @@ import { MiniappController } from "./controller.ts";
 import { MiniappService } from "./miniapp-service.ts";
 import { DeepSkyImageryService } from "./deep-sky-imagery.ts";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
+import { assertDeepSkyImageDiscovery } from "@starward/miniapp-contracts";
+import { skyPublicAssetHeaders } from "./sky-public-asset-headers.ts";
 
 test("deep-sky image HTTP route preserves JPEG bytes and cache-safe ASCII headers", async () => {
   const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
@@ -188,5 +190,50 @@ test("source-finite opt-in serves all M42 PNG levels and discloses the publicati
     const unchanged = await http.inject({ method: "GET", url: "/v2/celestial-objects/M%3A31/image?level=DETAIL&imageVersion=source-finite-v3" });
     assert.equal(unchanged.headers["content-type"], "image/jpeg");
     assert.equal(unchanged.headers["x-starward-image-missing-pixels"], undefined);
+  } finally { await app.close(); }
+});
+
+test("small bare selected discovery and immutable W3 HTTP share their own publication metadata and preserve archives", async () => {
+  const service = createTestMiniappService();
+  class TestModule {}
+  Module({ controllers: [MiniappController], providers: [{ provide: MiniappService, useValue: service }] })(TestModule);
+  const app = await NestFactory.create<NestFastifyApplication>(TestModule, new FastifyAdapter(), { logger: false });
+  try {
+    await app.init(); const http = app.getHttpAdapter().getInstance();
+    for (const reference of ["M:31", "M:42"]) {
+      const response = await http.inject({method: "GET", url: `/v2/sky/deep-sky/selected/${encodeURIComponent(reference)}?imageVersion=source-finite-v3`});
+      assert.equal(response.statusCode, 200);
+      assert.equal(response.headers["cache-control"], "no-cache");
+      const selected = response.json(); assertDeepSkyImageDiscovery(selected, reference);
+      assert.equal("data" in selected, false, "the actual transport is bare, matching the new SDK contract");
+      assert.equal("entryCount" in selected, false, "one selection does not claim a complete image catalog");
+      for (const asset of Object.values(selected.levels)) {
+        const expected = await service.deepSkyImages.getByFile(selected.publicationHash, asset.file);
+        const image = await http.inject({method:"GET",url:asset.downloadUrl});
+        assert.equal(image.statusCode, 200);
+        assert.equal(createHash("sha256").update(image.rawPayload).digest("hex"), asset.sha256);
+        assert.deepEqual(image.rawPayload, expected.bytes);
+        for (const [name, value] of Object.entries(skyPublicAssetHeaders("deep-sky", expected.contentType, expected.fieldDegrees, expected)))
+          assert.equal(image.headers[name], value, name);
+        assert.equal(image.headers["x-starward-image-publication-hash"], selected.publicationHash);
+        assert.equal(image.headers["x-starward-image-source-id"], selected.sourceId);
+        assert.equal(image.headers["x-starward-image-missing-pixels"], asset.sourceFiniteMask ? String(asset.sourceFiniteMask.missingPixels) : undefined);
+      }
+    }
+    const current = service.deepSkyImages.discovery("M:42");
+    const full = service.deepSkyImages.manifest(current.publicationHash);
+    for (const previousHash of full.previousPublicationHashes!) {
+      const previous = service.deepSkyImages.manifest(previousHash), entry = previous.entries.find(entry=>entry.objectRef==="M:42")!;
+      const image = await http.inject({method:"GET",url:`/v2/sky/deep-sky/${previousHash}/${entry.levels.DETAIL.file}`});
+      const legacy = await http.inject({method:"GET",url:entry.levels.DETAIL.downloadUrl});
+      assert.equal(image.statusCode, 200); assert.equal(legacy.statusCode, 200);
+      assert.deepEqual(image.rawPayload, legacy.rawPayload);
+      assert.equal(image.headers["x-starward-image-publication-hash"], previousHash);
+      assert.equal(image.headers["x-starward-image-display-support"], entry.levels.DETAIL.displaySupport ? JSON.stringify(entry.levels.DETAIL.displaySupport) : undefined);
+    }
+    for (const url of ["/v2/sky/deep-sky/selected/M%3A45", `/v2/sky/deep-sky/${"0".repeat(64)}/M-31/M-31-detail.jpg`,
+      `/v2/sky/deep-sky/${current.publicationHash}/M-42/M-31-detail.jpg`, `/v2/sky/deep-sky/${current.publicationHash}/M-42/raw.fits`])
+      assert.equal((await http.inject({method:"GET",url})).statusCode, 404, url);
+    assert.equal((await http.inject({method:"GET",url:"/v2/sky/deep-sky/selected/M%3A42?imageVersion=unknown"})).statusCode,400);
   } finally { await app.close(); }
 });

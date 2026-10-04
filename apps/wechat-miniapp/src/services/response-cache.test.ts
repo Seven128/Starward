@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ApiEnvelope } from "@starward/miniapp-contracts";
-import { createResponseCache, MAX_STALE_AGE_MS, RESPONSE_CACHE_LIMITS, RESPONSE_CACHE_STORAGE_KEY, utf8Bytes } from "./response-cache";
+import { createResponseCache, isResponseEnvelope, MAX_STALE_AGE_MS, RESPONSE_CACHE_LIMITS, RESPONSE_CACHE_STORAGE_KEY, utf8Bytes } from "./response-cache";
 import { TEST_API_BASE, transportHarness } from "./api-request-test-support";
 import { responseCacheKey } from "./cache-policy";
 
@@ -387,6 +387,91 @@ test("a memory eviction does not revoke an identical still-valid disk representa
   h.queryClient.clear();
 });
 
+test("capacity reclamation during a conditional request preserves its valid response and bounded retention", async () => {
+  for (const outcome of ["304", "offline"] as const) {
+    let instant = Date.now();
+    const h = transportHarness(false, () => {}, false, TEST_API_BASE, () => instant);
+    await h.seed();
+    const key = transportKey("scene", "/scene");
+    const pending = h.request("scene", "/scene");
+    const result = pending.catch((error: unknown) => error);
+    assert.equal(h.calls.at(-1)!.header["If-None-Match"], h.response.etag);
+    for (let i = 0; i < RESPONSE_CACHE_LIMITS.entries; i++) {
+      instant++;
+      h.responseCache.set("newer:" + i, envelope({ value: i }));
+    }
+    await h.flush();
+    assert.equal(h.responseCache.get(key), undefined, "both bounded cache tiers really reclaimed the body");
+    const manifest = h.storage.get(RESPONSE_CACHE_STORAGE_KEY) as { entries: unknown[] };
+    assert.equal(manifest.entries.length, RESPONSE_CACHE_LIMITS.entries);
+    if (outcome === "304") h.calls.at(-1)!.success({ statusCode: 304, data: undefined });
+    else h.calls.at(-1)!.fail({ errMsg: "request:fail offline" });
+    const received = await result;
+    assert.ok(isResponseEnvelope(received), "retention pressure does not revoke this live request");
+    assert.deepEqual(received.data, h.response.data);
+    assert.equal(received.dataState, outcome === "304" ? "FRESH" : "STALE_USABLE");
+    assert.equal(h.timers.size, 0);
+    assert.equal(h.responseCache.get(key), undefined, "the request must not expand cache retention");
+    h.queryClient.clear();
+  }
+});
+
+test("reclaimed conditional bodies still respect exact-key invalidation, newer replies and stale age", async () => {
+  for (const scenario of ["invalidate", "newer", "expired-offline", "expired-304"] as const) {
+    let instant = Date.now();
+    const h = transportHarness(false, () => {}, false, TEST_API_BASE, () => instant);
+    await h.seed();
+    const key = transportKey("scene", "/scene");
+    const pending = h.request("scene", "/scene").catch((error: unknown) => error);
+    if (scenario === "newer") h.responseCache.set(key, envelope({ value: "newer" }, "newer-etag"));
+    if (scenario === "invalidate") h.invalidateApiCache("scene");
+    for (let i = 0; i < RESPONSE_CACHE_LIMITS.entries; i++) {
+      instant++;
+      h.responseCache.set("newer:" + i, envelope({ value: i }));
+    }
+    await h.flush();
+    assert.equal(h.responseCache.get(key), undefined);
+    if (scenario.startsWith("expired")) instant += MAX_STALE_AGE_MS + 1;
+    if (scenario === "expired-offline") h.calls.at(-1)!.fail({ errMsg: "request:fail offline" });
+    else h.calls.at(-1)!.success({ statusCode: 304, data: undefined });
+    const received = await pending;
+    if (scenario === "expired-304") assert.equal(received, h.response, "upstream confirms this captured conditional body");
+    else assert.match(String(received), scenario === "expired-offline" ? /request:fail offline/u : /bff_http_304/u);
+    assert.equal(h.timers.size, 0);
+    assert.equal(h.responseCache.get(key), undefined);
+    h.queryClient.clear();
+  }
+});
+
+test("request snapshots release body references and cache-disabled reads never borrow a retained body", () => {
+  const cache = createResponseCache(storageFixture(), () => clock);
+  cache.set("a", envelope());
+  const first = cache.beginRequest("a");
+  assert.ok(first.cached);
+  assert.equal(cache.isCurrent("b", first.cached, first), false);
+  cache.invalidate(key => key === "a");
+  assert.equal(first.cached, undefined, "invalidation immediately releases the cache owner's captured references");
+  assert.equal(first.latest, undefined);
+  first.release();
+  assert.equal(first.cached, undefined);
+  assert.equal(first.latest, undefined);
+  assert.equal(first.valid, false);
+  const uncached = cache.beginRequest("a", false);
+  assert.equal(uncached.cached, undefined);
+  uncached.release();
+});
+
+test("an uncached oversized replacement cannot authorize a retained older conditional body", () => {
+  const cache = createResponseCache(storageFixture(), () => clock);
+  cache.set("a", envelope());
+  const reader = cache.beginRequest("a");
+  const original = reader.cached!;
+  cache.set("a", envelope({ value: "x".repeat(RESPONSE_CACHE_LIMITS.memoryBytes) }, "larger-newer"));
+  assert.equal(cache.get("a"), original, "oversized reply was not admitted to the retained tiers");
+  assert.equal(cache.isCurrent("a", original, reader, true), false);
+  reader.release();
+});
+
 test("scope removal reports failed native cleanup, including a late orphan chunk, and full retry recovers", async () => {
   for (const pendingWrite of [false, true]) {
     const storage = storageFixture(), cache = createResponseCache(storage, () => clock);
@@ -436,8 +521,8 @@ test("every terminal transport path releases its per-request cache fence", async
     const h = transportHarness();
     let active = 0;
     const begin = h.responseCache.beginRequest.bind(h.responseCache);
-    h.responseCache.beginRequest = (key: string) => {
-      const fence = begin(key), release = fence.release;
+    h.responseCache.beginRequest = (key: string, readCached = true) => {
+      const fence = begin(key, readCached), release = fence.release;
       active++;
       fence.release = () => { active--; release(); };
       return fence;
