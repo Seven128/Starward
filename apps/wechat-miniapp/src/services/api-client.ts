@@ -102,6 +102,9 @@ let sessionPromise: Promise<AuthSessionData> | null = null;
 // A server-confirmed erasure must stay revoked in this runtime even when the
 // native store cannot remove its old session. This is not a disk-erasure claim.
 let erasedStoredAccountId: string | null = null;
+// A rejected native record stays untrusted if deletion fails. A null token
+// means it could not be read; only a confirmed new login can lift that fence.
+let invalidatedStoredSession: { accessToken: string | null } | null = null;
 
 export class MiniappApiError extends Error {
   readonly code: ApiError["code"];
@@ -213,30 +216,42 @@ function staleCandidate<T>(
 }
 
 function readStoredSession(): AuthSessionData | null {
+  let session: AuthSessionData | null = null;
   try {
     const value = Taro.getStorageSync(SESSION_STORAGE_KEY) as unknown;
     if (
       typeof value !== "object" ||
       value === null ||
       typeof (value as { userId?: unknown }).userId !== "string" ||
+      !(value as { userId: string }).userId.trim() ||
       typeof (value as { accessToken?: unknown }).accessToken !== "string" ||
+      !(value as { accessToken: string }).accessToken.trim() ||
       typeof (value as { expiresAt?: unknown }).expiresAt !== "string"
-    )
-      return null;
-    const session = value as AuthSessionData;
-    if (session.userId === erasedStoredAccountId) return null;
-    if (
-      !Number.isFinite(Date.parse(session.expiresAt)) ||
-      Date.parse(session.expiresAt) <= Date.now() + SESSION_EXPIRY_SKEW_MS
     ) {
-      try { Taro.removeStorageSync(SESSION_STORAGE_KEY); } catch { /* No stale identity may remain active in memory. */ }
-      useAppStore.getState().bindAccount(null);
-      return null;
+      session = null;
+    } else {
+      session = value as AuthSessionData;
+      if (session.userId === erasedStoredAccountId) return null;
+      if (invalidatedStoredSession && (
+        invalidatedStoredSession.accessToken === null ||
+        invalidatedStoredSession.accessToken === session.accessToken
+      )) {
+        session = null;
+      } else if (
+        !Number.isFinite(Date.parse(session.expiresAt)) ||
+        Date.parse(session.expiresAt) <= Date.now() + SESSION_EXPIRY_SKEW_MS
+      ) {
+        try { Taro.removeStorageSync(SESSION_STORAGE_KEY); } catch { /* No stale identity may remain active in memory. */ }
+        session = null;
+      }
     }
-    return session;
   } catch {
-    return null;
+    session = null;
   }
+  // Hide unverifiable private projections; bindAccount preserves their scoped
+  // recovery snapshot. A network failure with a valid native session stays bound.
+  if (!session) useAppStore.getState().bindAccount(null);
+  return session;
 }
 
 /** Local drafts may be scoped by identity, never by an access token. */
@@ -244,7 +259,13 @@ export function currentDraftUserId(): string | null {
   return readStoredSession()?.userId ?? null;
 }
 
-function clearStoredSession() {
+function clearStoredSession(rejected?: AuthSessionData) {
+  const current = readStoredSession();
+  if (rejected && (
+    (current && (current.userId !== rejected.userId || current.accessToken !== rejected.accessToken)) ||
+    (!current && sessionPromise)
+  )) return false;
+  invalidatedStoredSession = { accessToken: current?.accessToken ?? null };
   sessionPromise = null;
   if (useAppStore.getState().accountOwnerId !== erasedStoredAccountId)
     useAppStore.getState().bindAccount(null);
@@ -543,6 +564,8 @@ async function ensureSession(force = false): Promise<AuthSessionData> {
   if (!force) {
     const stored = readStoredSession();
     if (stored) {
+      // Native current identity takes precedence over an older pending login.
+      sessionPromise = null;
       useAppStore.getState().bindAccount(stored.userId);
       return stored;
     }
@@ -550,31 +573,38 @@ async function ensureSession(force = false): Promise<AuthSessionData> {
   } else {
     clearStoredSession();
   }
-  sessionPromise = (async () => {
+  function assertCurrentLogin() {
+    if (sessionPromise !== pending) throw new MiniappRequestCancelled("superseded");
+  }
+  const pending: Promise<AuthSessionData> = (async () => {
     const capabilities = await requestOperation(
       "capabilities:auth",
       "capabilitiesGet",
       { auth: "NONE" },
     );
+    assertCurrentLogin();
     const code = capabilities.data.flags.WECHAT_AUTH_ENABLED
       ? (await Taro.login()).code
       : installationIdentity();
     if (!code) throw new Error("wechat_login_code_missing");
+    assertCurrentLogin();
     const result = await requestOperation("auth:login", "wechatLoginPost", {
       auth: "NONE",
       body: { code },
     });
     if (result.data.userId === erasedStoredAccountId)
       throw new Error("account_identity_revoked");
+    assertCurrentLogin();
     Taro.setStorageSync(SESSION_STORAGE_KEY, result.data);
+    invalidatedStoredSession = null;
     useAppStore.getState().bindAccount(result.data.userId);
     return result.data;
   })();
+  sessionPromise = pending;
   try {
-    return await sessionPromise;
-  } catch (error) {
-    sessionPromise = null;
-    throw error;
+    return await pending;
+  } finally {
+    if (sessionPromise === pending) sessionPromise = null;
   }
 }
 

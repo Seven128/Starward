@@ -3,7 +3,7 @@ export type AuthPolicy = "NONE" | "OPTIONAL" | "REQUIRED";
 interface OperationDependencies {
   resolveSession(policy: AuthPolicy): Promise<AuthSessionData | null>;
   readStoredSession(): AuthSessionData | null;
-  clearStoredSession(): void;
+  clearStoredSession(rejected?: AuthSessionData): void;
   isPermissionDenied(error: unknown): boolean;
   request<T>(key: string, path: string, options: { method?: "GET" | "POST" | "PUT" | "DELETE"; body?: unknown; idempotencyKey?: string; signal?: AbortSignal; session?: AuthSessionData | null; reauthenticationCode?: string; cache?: boolean; independent?: boolean }): Promise<ApiEnvelope<T>>;
 }
@@ -80,7 +80,8 @@ async function requestOperation<K extends MiniappApiJsonOperationId>(
     ) {
       const currentSession = readStoredSession();
       if (currentSession && currentSession.userId !== session?.userId) throw error;
-      clearStoredSession();
+      if (session && (!currentSession || currentSession.accessToken === session.accessToken))
+        clearStoredSession(session);
       return requestOperation(key, operationId, options, true, session?.userId);
     }
     throw error;

@@ -109,6 +109,49 @@ test("switching accounts isolates and restores local preferences and private pro
   assert.equal(store.getState().plans[0]?.planId, "plan:a");
 });
 
+test("missing or unreadable auth hides mounted private state and same-account restoration retains it", async () => {
+  for (const invalid of [undefined, { userId: "user:a" }, "read-failed"]) {
+    const session = { userId: "user:a", accessToken: "synthetic", expiresAt: "2999-01-01" };
+    const storage: { value: unknown; session: unknown } = { value: {}, session };
+    const { store, flush } = loadStore(storage);
+    store.getState().bindAccount("user:a");
+    store.getState().setPreference("equipment", "A 的未同步配置");
+    store.getState().replaceFavoriteIds(["spot:a"] as never);
+    store.getState().replacePlans([{ planId: "plan:a" }] as never);
+    store.getState().setObservationContext(validObservationContext as never);
+    const api = ts.createSourceFile("api-client.ts", readFileSync(new URL("../services/api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+    const names = ["readStoredSession", "ensureSession", "ensureFavoriteOwner"];
+    const code = names.map(name => {
+      const declaration = api.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === name);
+      assert.ok(declaration);
+      return declaration.getText(api).replace(/^export /u, "");
+    }).join("\n");
+    let unreadable = false;
+    const run = vm.runInNewContext(ts.transpileModule(code + "\nensureFavoriteOwner;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+      SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, erasedStoredAccountId: null, invalidatedStoredSession: null, sessionPromise: null,
+      useAppStore: store, requestOperation: async () => { throw Error("synthetic offline"); },
+      Taro: { getStorageSync: () => { if (unreadable) throw Error("synthetic read failed"); return storage.session; } },
+    }) as () => Promise<string>;
+    storage.session = invalid;
+    unreadable = invalid === "read-failed";
+    await assert.rejects(run(), /synthetic offline/);
+    flush();
+    assert.equal(store.getState().accountOwnerId, null);
+    assert.deepEqual([...store.getState().favoriteIds], []);
+    assert.deepEqual([...store.getState().plans], []);
+    assert.equal(store.getState().observationContext, null);
+    assert.equal(store.getState().preferences.equipment, DEFAULT_USER_PREFERENCES.equipment);
+    storage.session = session;
+    unreadable = false;
+    assert.equal(await run(), "user:a");
+    assert.deepEqual([...store.getState().favoriteIds], ["spot:a"]);
+    assert.equal(store.getState().plans[0]?.planId, "plan:a");
+    assert.equal(store.getState().observationContext?.contextId, validObservationContext.contextId);
+    assert.equal(store.getState().preferences.equipment, "A 的未同步配置");
+    assert.equal(store.getState().preferencesDirty, true);
+  }
+});
+
 test("several account switches before queued writes preserve each fresh snapshot", () => {
   const storage = { value: {}, accounts: {} as Record<string, unknown>, session: {
     userId: "user:a", accessToken: "test-token", expiresAt: "2999-01-01T00:00:00.000Z",

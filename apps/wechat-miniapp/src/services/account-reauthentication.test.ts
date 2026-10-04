@@ -1,4 +1,4 @@
-import type { UserId } from "@starward/miniapp-contracts";
+import type { AuthSessionData, UserId } from "@starward/miniapp-contracts";
 import { createAuthenticatedOperationRequester } from "./authenticated-operation";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -6,6 +6,8 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { createResponseCache } from "./response-cache";
+import { MiniappRequestCancelled } from "./request-lifecycle";
+import { transportHarness } from "./api-request-test-support";
 
 const source = ts.createSourceFile("api.ts", readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
 function codeFor(names: string[], expression: string) {
@@ -16,6 +18,243 @@ function codeFor(names: string[], expression: string) {
   });
   return ts.transpileModule(declarations.join("\n") + "\n" + expression, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
 }
+
+function loadSessionRuntime(login: (attempt: number) => Promise<AuthSessionData> = async attempt => ({
+  userId: "user:a" as UserId, accessToken: "synthetic:" + attempt, expiresAt: "2999-01-01T00:00:00.000Z",
+})) {
+  const storage = new Map<string, unknown>();
+  const state = { owner: null as string | null, readFails: false, removeFails: false, writeFails: false, logins: 0, capabilities: 0 };
+  const run = vm.runInNewContext(codeFor(["readStoredSession", "clearStoredSession", "ensureSession", "currentDraftUserId"],
+    "({ensureSession, clearStoredSession, readStoredSession, currentDraftUserId});"), {
+    SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, erasedStoredAccountId: null, sessionPromise: null, invalidatedStoredSession: null,
+    installationIdentity: () => "local:synthetic", MiniappRequestCancelled,
+    useAppStore: { getState: () => ({ accountOwnerId: state.owner, bindAccount: (owner: string | null) => { state.owner = owner; } }) },
+    Taro: {
+      getStorageSync: (key: string) => { if (state.readFails) throw Error("synthetic native read failed"); return storage.get(key); },
+      setStorageSync: (key: string, value: unknown) => { if (state.writeFails) throw Error("synthetic native write failed"); storage.set(key, value); },
+      removeStorageSync: (key: string) => { if (state.removeFails) throw Error("synthetic native remove failed"); storage.delete(key); },
+    },
+    requestOperation: async (_key: string, operation: string) => {
+      if (operation === "capabilitiesGet") { state.capabilities++; return { data: { flags: { WECHAT_AUTH_ENABLED: false } } }; }
+      return { data: await login(++state.logins) };
+    },
+  }) as { ensureSession(force?: boolean): Promise<AuthSessionData>; clearStoredSession(rejected?: AuthSessionData): void; readStoredSession(): AuthSessionData | null; currentDraftUserId(): string | null };
+  return { ...run, state, storage };
+}
+
+test("a settled login is never reused after native session expiry or removal", async () => {
+  for (const invalid of ["expired", "missing"]) {
+    const run = loadSessionRuntime();
+    const first = await run.ensureSession();
+    if (invalid === "expired") run.storage.set("auth", { ...first, expiresAt: "2020-01-01T00:00:00Z" });
+    else run.storage.delete("auth");
+    const renewed = await run.ensureSession();
+    assert.equal(run.state.logins, 2, invalid + " must establish a fresh session");
+    assert.notEqual(renewed.accessToken, first.accessToken);
+    assert.equal(run.state.owner, "user:a");
+  }
+});
+
+test("loss of native identity hides the mounted account even when reauthentication is offline", async () => {
+  const cases = [undefined, null, [], {}, { userId: "user:a", accessToken: "", expiresAt: "2999-01-01" }, "read-failed"];
+  for (const invalid of cases) {
+    const run = loadSessionRuntime(async attempt => {
+      if (attempt > 1) throw Error("synthetic offline");
+      return { userId: "user:a" as UserId, accessToken: "synthetic", expiresAt: "2999-01-01" };
+    });
+    await run.ensureSession();
+    if (invalid === "read-failed") run.state.readFails = true;
+    else run.storage.set("auth", invalid);
+    assert.equal(run.currentDraftUserId(), null);
+    assert.equal(run.state.owner, null, "unverified identity must not remain active");
+    await assert.rejects(run.ensureSession(), /synthetic offline/);
+    assert.equal(run.state.owner, null);
+  }
+});
+
+test("concurrent login callers share only the pending attempt and a failure permits recovery", async () => {
+  let finish!: (session: AuthSessionData) => void;
+  let fail!: (error: Error) => void;
+  const run = loadSessionRuntime(() => new Promise((resolve, reject) => { finish = resolve; fail = reject; }));
+  const first = run.ensureSession(), second = run.ensureSession();
+  const rejected = Promise.all([assert.rejects(first, /synthetic offline/), assert.rejects(second, /synthetic offline/)]);
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(run.state.logins, 1);
+  fail(Error("synthetic offline"));
+  await rejected;
+  const next = run.ensureSession(), concurrent = run.ensureSession();
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(run.state.logins, 2);
+  finish({ userId: "user:a" as UserId, accessToken: "synthetic:new", expiresAt: "2999-01-01" });
+  assert.equal(await next, await concurrent);
+  assert.equal(run.state.owner, "user:a");
+});
+
+test("an older login failure cannot release a newer in-flight login", async () => {
+  const attempts: { resolve(session: AuthSessionData): void; reject(error: Error): void }[] = [];
+  const run = loadSessionRuntime(() => new Promise((resolve, reject) => attempts.push({ resolve, reject })));
+  const old = run.ensureSession();
+  const rejected = assert.rejects(old, /synthetic old failure/);
+  await new Promise<void>(resolve => setImmediate(resolve));
+  run.clearStoredSession();
+  const next = run.ensureSession();
+  await new Promise<void>(resolve => setImmediate(resolve));
+  attempts[0]!.reject(Error("synthetic old failure"));
+  await rejected;
+  const joined = run.ensureSession();
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(run.state.logins, 2, "old cleanup must preserve the newer flight");
+  attempts[1]!.resolve({ userId: "user:b" as UserId, accessToken: "synthetic:b", expiresAt: "2999-01-01" });
+  assert.equal(await next, await joined);
+});
+
+test("an older successful login cannot overwrite a newer account after invalidation", async () => {
+  const attempts: ((session: AuthSessionData) => void)[] = [];
+  const run = loadSessionRuntime(() => new Promise(resolve => attempts.push(resolve)));
+  const old = run.ensureSession();
+  const cancelled = assert.rejects(old, error => error instanceof MiniappRequestCancelled && error.reason === "superseded");
+  await new Promise<void>(resolve => setImmediate(resolve));
+  run.clearStoredSession();
+  const next = run.ensureSession();
+  await new Promise<void>(resolve => setImmediate(resolve));
+  attempts[1]!({ userId: "user:b" as UserId, accessToken: "synthetic:b", expiresAt: "2999-01-01" });
+  await next;
+  attempts[0]!({ userId: "user:a" as UserId, accessToken: "synthetic:a", expiresAt: "2999-01-01" });
+  await cancelled;
+  assert.equal(run.currentDraftUserId(), "user:b");
+  assert.equal(run.state.owner, "user:b");
+});
+
+test("a transport failure preserves an independently valid session and its active owner", async () => {
+  const run = loadSessionRuntime();
+  const session = await run.ensureSession();
+  const transport = transportHarness();
+  const request = createAuthenticatedOperationRequester({
+    resolveSession: () => run.ensureSession(),
+    readStoredSession: () => run.storage.get("auth") as AuthSessionData,
+    clearStoredSession: () => run.clearStoredSession(),
+    request: transport.request,
+    isPermissionDenied: () => false,
+  } as any);
+  const pending = request("plans", "plansGet", { auth: "REQUIRED" });
+  const rejected = assert.rejects(pending, /synthetic network failure/);
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(transport.calls.length, 1);
+  transport.calls[0]!.fail({ errMsg: "synthetic network failure" });
+  await rejected;
+  assert.equal(run.storage.get("auth"), session);
+  assert.equal(run.state.owner, "user:a");
+  assert.equal(run.state.logins, 1);
+});
+
+test("permission retry obtains a new session when native removal of the rejected token fails", async () => {
+  const run = loadSessionRuntime();
+  const old = await run.ensureSession();
+  run.state.removeFails = true;
+  const transport = transportHarness();
+  const request = createAuthenticatedOperationRequester({
+    resolveSession: () => run.ensureSession(), readStoredSession: () => run.readStoredSession(),
+    clearStoredSession: () => run.clearStoredSession(), request: transport.request,
+    isPermissionDenied: (error: unknown) => error instanceof transport.MiniappApiError && error.code === "PERMISSION_DENIED",
+  } as any);
+  const pending = request("plans", "plansGet", { auth: "REQUIRED" });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  transport.calls[0]!.success({ statusCode: 401, data: {
+    code: "PERMISSION_DENIED", message: "synthetic rejected session", requestId: "synthetic", retryable: false, recovery: [],
+  } });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(transport.calls.length, 2);
+  assert.notEqual(transport.calls[1]!.header.Authorization, "Bearer " + old.accessToken);
+  assert.equal(run.state.logins, 2);
+  transport.calls[1]!.success({ statusCode: 200, data: transport.response });
+  await pending;
+  assert.equal(run.state.owner, "user:a");
+});
+
+test("failed native erasure and renewal cannot revive the rejected session; a later new token can recover", async () => {
+  for (const unreadable of [false, true]) {
+    const run = loadSessionRuntime();
+    const old = await run.ensureSession();
+    run.state.removeFails = true;
+    run.state.readFails = unreadable;
+    run.clearStoredSession();
+    run.state.readFails = false;
+    assert.equal(run.currentDraftUserId(), null);
+    assert.equal(run.state.owner, null);
+    run.state.writeFails = true;
+    await assert.rejects(run.ensureSession(), /synthetic native write failed/);
+    assert.equal(run.storage.get("auth"), old);
+    assert.equal(run.currentDraftUserId(), null);
+    run.state.writeFails = false;
+    const renewed = await run.ensureSession();
+    assert.notEqual(renewed.accessToken, old.accessToken);
+    assert.equal(run.state.owner, "user:a");
+  }
+});
+
+test("a residual token cannot cancel forced renewal and concurrent callers join the new login", async () => {
+  let finish!: (session: AuthSessionData) => void;
+  const run = loadSessionRuntime(async attempt => attempt === 1
+    ? { userId: "user:a" as UserId, accessToken: "synthetic:old", expiresAt: "2999-01-01" }
+    : new Promise(resolve => { finish = resolve; }));
+  await run.ensureSession();
+  run.state.removeFails = true;
+  const forced = run.ensureSession(true);
+  await new Promise<void>(resolve => setImmediate(resolve));
+  const joined = run.ensureSession();
+  assert.equal(run.state.owner, null);
+  finish({ userId: "user:a" as UserId, accessToken: "synthetic:new", expiresAt: "2999-01-01" });
+  assert.equal(await forced, await joined);
+  assert.equal(run.state.logins, 2);
+  assert.equal(run.state.owner, "user:a");
+});
+
+test("a valid native current account supersedes an older pending login", async () => {
+  let finish!: (session: AuthSessionData) => void;
+  const run = loadSessionRuntime(() => new Promise(resolve => { finish = resolve; }));
+  const old = run.ensureSession();
+  const cancelled = assert.rejects(old, error => error instanceof MiniappRequestCancelled && error.reason === "superseded");
+  await new Promise<void>(resolve => setImmediate(resolve));
+  const current = { userId: "user:b" as UserId, accessToken: "synthetic:b", expiresAt: "2999-01-01" };
+  run.storage.set("auth", current);
+  assert.equal(await run.ensureSession(), current);
+  finish({ userId: "user:a" as UserId, accessToken: "synthetic:a", expiresAt: "2999-01-01" });
+  await cancelled;
+  assert.equal(run.state.owner, "user:b");
+  assert.equal(run.storage.get("auth"), current);
+});
+
+test("parallel old permission rejections join the successor login instead of retiring it", async () => {
+  let finish!: (session: AuthSessionData) => void;
+  const run = loadSessionRuntime(async attempt => attempt === 1
+    ? { userId: "user:a" as UserId, accessToken: "synthetic:old", expiresAt: "2999-01-01" }
+    : new Promise(resolve => { finish = resolve; }));
+  await run.ensureSession();
+  const transport = transportHarness();
+  const request = createAuthenticatedOperationRequester({
+    resolveSession: () => run.ensureSession(), readStoredSession: () => run.readStoredSession(),
+    clearStoredSession: (rejected?: AuthSessionData) => run.clearStoredSession(rejected), request: transport.request,
+    isPermissionDenied: (error: unknown) => error instanceof transport.MiniappApiError && error.code === "PERMISSION_DENIED",
+  } as any);
+  const plans = request("plans", "plansGet", { auth: "REQUIRED" });
+  const favorites = request("favorites", "favoritesGet", { auth: "REQUIRED" });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  const failure = { statusCode: 401, data: { code: "PERMISSION_DENIED", message: "synthetic", requestId: "synthetic", retryable: false, recovery: [] } };
+  transport.calls[0]!.success(failure);
+  await new Promise<void>(resolve => setImmediate(resolve));
+  transport.calls[1]!.success(failure);
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(run.state.logins, 2, "both rejected requests must share the successor login");
+  finish({ userId: "user:a" as UserId, accessToken: "synthetic:new", expiresAt: "2999-01-01" });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(transport.calls.length, 4);
+  for (const call of transport.calls.slice(2)) {
+    assert.equal(call.header.Authorization, "Bearer synthetic:new");
+    call.success({ statusCode: 200, data: transport.response });
+  }
+  await Promise.all([plans, favorites]);
+  assert.equal(run.state.owner, "user:a");
+});
 
 test("session restoration and fresh login bind the matching private store before returning", async () => {
   for (const stored of [true, false]) {
@@ -30,6 +269,7 @@ test("session restoration and fresh login bind the matching private store before
         ? { data: { flags: { WECHAT_AUTH_ENABLED: false } } }
         : { data: { userId: "user:b", accessToken: "token", expiresAt: "2999-01-01T00:00:00.000Z" } },
       installationIdentity: () => "local:synthetic", erasedStoredAccountId: null,
+      invalidatedStoredSession: null,
       Taro: { setStorageSync: (_key: string, value: unknown) => saved.push(value) },
       SESSION_STORAGE_KEY: "auth",
       clearStoredSession: () => assert.fail("no forced login expected"),
@@ -46,6 +286,7 @@ test("an expired native session hides its private store before reauthentication"
   const read = vm.runInNewContext(codeFor(["readStoredSession"], "readStoredSession;"), {
     SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000,
     erasedStoredAccountId: null,
+    invalidatedStoredSession: null,
     Taro: {
       getStorageSync: () => ({ userId: "user:a", accessToken: "old", expiresAt: "2020-01-01T00:00:00.000Z" }),
       removeStorageSync: () => { removed = true; },
@@ -174,7 +415,7 @@ test("confirmed remote deletion reports failed native erasure and cannot restore
     const belongs = (key: string, owner: string) => key === "draft:" + owner;
     const run = vm.runInNewContext(codeFor(["readStoredSession", "clearStoredSession", "markAccountErased", "currentDraftUserId", "deleteAccount"], "({deleteAccount, currentDraftUserId});"), {
       SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, INSTALLATION_STORAGE_KEY: "installation",
-      erasedStoredAccountId: null, sessionPromise: null, responseCache, Taro: taro,
+      erasedStoredAccountId: null, invalidatedStoredSession: null, sessionPromise: null, responseCache, Taro: taro,
       useAppStore: { getState: () => ({ accountOwnerId: switched ? "b" : "a", bindAccount: () => undefined }) },
       accountReauthentication: async () => ({ userId: "a", code: "synthetic" }), idempotencyKey: () => "synthetic",
       requestOperation: async () => {
@@ -205,7 +446,7 @@ test("an old login response completing after erasure cannot rewrite the revoked 
   let finishLogin!: (value: unknown) => void;
   const writes: unknown[] = [];
   const run = vm.runInNewContext(codeFor(["ensureSession", "markAccountErased"], "({ensureSession, markAccountErased});"), {
-    erasedStoredAccountId: null, sessionPromise: null, SESSION_STORAGE_KEY: "auth",
+    erasedStoredAccountId: null, invalidatedStoredSession: null, sessionPromise: null, SESSION_STORAGE_KEY: "auth",
     readStoredSession: () => null, installationIdentity: () => "synthetic-installation",
     requestOperation: async (_key: string, operation: string) => operation === "capabilitiesGet"
       ? { data: { flags: { WECHAT_AUTH_ENABLED: false } } }
