@@ -45,7 +45,8 @@ import { clearPlanDraft, clearUnchangedPlanDraft, createDraftOwner, parsePlanDra
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
 import { PlanDepartureTimeFields, PlanObservationEndField, emptyPlanTiming } from "./plan-timing-fields";
 import { PlanTravelFields, emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel, planTravelNeedsExplicitOrigin } from "./plan-travel-fields";
-import { planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
+import { canAuthorizePlanReminder, planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
+import { PlanReminderSubscription } from "./plan-reminder-subscription";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 import { acknowledgePlanSave, planContextIdentity, PlanSaveRecoveryError, PlanSaveReviewRequired, resolvePlanCreationId, selectPlanSaveRecovery, type PlanSaveReceipt } from "@/services/plan-save-retry";
@@ -1488,6 +1489,13 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             onClick={event => event.stopPropagation()}>
             <Text className="plan-reminder-status-dialog__title">{planReminderStatusLabel(selectedReminderNotification)}</Text>
             <Text className="plan-reminder-status-dialog__detail">{planReminderStatusDetail(selectedReminderNotification, activePlan?.contextSnapshot.timezone)}</Text>
+            {pageVisible && planOwner && activePlan &&
+              !planQuery.isPending && !planQuery.isError && !planQuery.refreshError && planQuery.data?.dataState === "FRESH" &&
+              canAuthorizePlanReminder(selectedReminderNotification, activePlan.revision, statusReminder.notifyOnWechat) && selectedReminderNotification ?
+              <PlanReminderSubscription key={`${planOwner}:${activePlan.planId}:${activePlan.revision}:${statusReminder.reminderId}:${selectedReminderNotification.scheduleVersion}`}
+                owner={planOwner} planId={activePlan.planId} reminderId={statusReminder.reminderId}
+                redLight={useAppStore.getState().mode === "OBSERVATION"}
+                scheduleVersion={selectedReminderNotification.scheduleVersion} /> : null}
             <Button className="plan-reminder-status-dialog__close" onClick={() => setStatusReminderId(null)}>知道了</Button>
           </View>
         </View>

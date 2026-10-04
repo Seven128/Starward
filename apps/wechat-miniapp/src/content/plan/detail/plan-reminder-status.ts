@@ -1,6 +1,10 @@
 import type { PlanReminderNotificationStatus } from "@starward/miniapp-contracts";
 import { calendarDateInTimezone, clockTimeInTimezone } from "../../../utils/zoned-date";
 
+export function canAuthorizePlanReminder(status: PlanReminderNotificationStatus | undefined, planRevision: number, requested: boolean) {
+  return requested && status?.state === "AUTHORIZATION_REQUIRED" && status.planRevision === planRevision && Boolean(status.scheduleVersion);
+}
+
 export function planReminderStatusLabel(status?: PlanReminderNotificationStatus) {
   if (!status) return "通知状态读取中";
   switch (status.state) {

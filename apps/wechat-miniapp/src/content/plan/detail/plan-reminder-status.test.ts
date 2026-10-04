@@ -1,11 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
+import { canAuthorizePlanReminder, planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
 import type { PlanReminderNotificationStatus } from "@starward/miniapp-contracts";
 
 const status = (state: PlanReminderNotificationStatus["state"], reason: PlanReminderNotificationStatus["reason"]): PlanReminderNotificationStatus => ({
   planId: "p", reminderId: "r", planRevision: 1, scheduleVersion: "v", triggerAtUtc: null,
   departureAtUtc: null, updatedAt: "2026-09-10T00:00:00Z", state, reason,
+});
+
+test("native authorization requires a matching saved revision and server capability, not intent alone", () => {
+  const required = status("AUTHORIZATION_REQUIRED", "AUTHORIZATION_NOT_GRANTED");
+  assert.equal(canAuthorizePlanReminder(required, 1, true), true);
+  assert.equal(canAuthorizePlanReminder(required, 2, true), false);
+  assert.equal(canAuthorizePlanReminder(required, 1, false), false);
+  assert.equal(canAuthorizePlanReminder(undefined, 1, true), false);
+  for (const state of ["NOT_REQUESTED", "CAPABILITY_UNAVAILABLE", "SCHEDULED", "SENT", "SKIPPED", "FAILED", "RESULT_UNKNOWN"] as const)
+    assert.equal(canAuthorizePlanReminder({ ...required, state }, 1, true), false, state);
 });
 
 test("missing departure is not a missed trigger and completed outcomes have actionable meaning", () => {
