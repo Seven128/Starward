@@ -1327,17 +1327,22 @@ export const planReminderSubscription = createPlanSubscriptionClient({
 export const setPlanChecklistCompletion = createPlanChecklistClient({
   request: requestOperation, currentUser: currentDraftUserId,
   makeKey: () => idempotencyKey("plan-checklist"),
-  confirmed: async (owner, plan) => {
+  confirmed: async (owner, plan, scope) => {
+    scope?.assertCurrent();
     miniappQueryClient.setQueryData<MiniappApiResponse<"plansGet">>(["plans", owner], previous => previous ? {
       ...previous, data: { ...previous.data, plans: previous.data.plans.map(item => item.planId === plan.planId && item.revision <= plan.revision ? plan : item) },
     } : previous);
+    scope?.assertCurrent();
     await invalidateAfter("PLAN");
+    scope?.assertCurrent();
   },
 });
 
 /** Single authenticated HTTP attempt; the plan editor owns durable recovery. */
-export async function sendObservationPlanSave(original: PlanSaveInput, retryKey: string, owner: string) {
+export async function sendObservationPlanSave(original: PlanSaveInput, retryKey: string, owner: string, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (session.userId !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
   const result = await requestOperation("plan-mutation:" + original.planId, "planPut", {
     auth: "REQUIRED", pathParams: { planId: original.planId },
@@ -1350,25 +1355,32 @@ export async function sendObservationPlanSave(original: PlanSaveInput, retryKey:
       ...(original.reminders === undefined ? {} : { reminders: original.reminders }),
       ...(original.eventOccurrenceIds === undefined ? {} : { eventOccurrenceIds: original.eventOccurrenceIds }),
       notes: original.notes, expectedRevision: original.expectedRevision,
-    }, idempotencyKey: retryKey,
+    }, idempotencyKey: retryKey, scope,
   }, false, owner);
+  scope?.assertCurrent();
   if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
   return result;
 }
 
 /** A historical receipt must never be installed as the current plan list. */
-export async function getCurrentPlansAfterSave(owner: string) {
-  const current = await requestOperation("plans", "plansGet", { auth: "REQUIRED", cache: false }, false, owner);
+export async function getCurrentPlansAfterSave(owner: string, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
+  const current = await requestOperation("plans", "plansGet", { auth: "REQUIRED", cache: false, scope }, false, owner);
+  scope?.assertCurrent();
   if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
   if (current.dataState !== "FRESH") throw new Error("暂时无法确认当前计划，上次保存请求仍保留。");
   miniappQueryClient.setQueryData(["plans", owner], current);
+  scope?.assertCurrent();
   await invalidateAfter("PLAN");
+  scope?.assertCurrent();
   if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
   return current;
 }
 
-export async function deleteObservationPlan(planId: string, expectedUserId?: string) {
+export async function deleteObservationPlan(planId: string, expectedUserId?: string, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (expectedUserId && session.userId !== expectedUserId) throw new Error("账号已变化，请回到原账号核对计划删除结果。");
   const result = await requestOperation(
     "plan-delete:" + planId,
@@ -1377,13 +1389,17 @@ export async function deleteObservationPlan(planId: string, expectedUserId?: str
       auth: "REQUIRED",
       pathParams: { planId },
       idempotencyKey: idempotencyKey("plan-delete"),
+      scope,
     },
     false,
     session.userId,
   );
+  scope?.assertCurrent();
   if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对计划删除结果。");
   miniappQueryClient.setQueryData(["plans", session.userId], result);
+  scope?.assertCurrent();
   await invalidateAfter("PLAN");
+  scope?.assertCurrent();
   return result;
 }
 

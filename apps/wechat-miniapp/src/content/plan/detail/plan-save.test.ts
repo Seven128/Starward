@@ -7,6 +7,7 @@ import { acknowledgePlanSave, createPlanSaveRetry, planContextIdentity, PlanSave
 import { clearPlanDraft, clearUnchangedPlanDraft, parsePlanDraft, planDraftMatchesInput } from "./plan-draft";
 import { parsePlanReminders, resolvePlanTiming, type PlanTravel } from "@starward/miniapp-contracts";
 import { planTravelNeedsExplicitOrigin } from "./plan-travel";
+import { createPlanTestOperations } from "./plan-operation-test-support";
 
 function runtime(changeAccount = false) {
   const source = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -55,6 +56,7 @@ function runtime(changeAccount = false) {
     announce: () => calls.push("notice"), errorMessage: () => "error",
     showFieldError: (field: string) => calls.push(`field:${field}`),
   };
+  context.operations = createPlanTestOperations(() => context.scopedDraftUserId(), context.mutationBusy);
   const actions = vm.runInNewContext(ts.transpileModule(declarations.join("\n") + "\n({save, retainDraft, confirmPlanConflict});", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, context);

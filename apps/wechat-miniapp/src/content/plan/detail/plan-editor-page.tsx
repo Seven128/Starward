@@ -52,6 +52,7 @@ import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 import { acknowledgePlanSave, planContextIdentity, PlanSaveRecoveryError, PlanSaveReviewRequired, resolvePlanCreationId, selectPlanSaveRecovery, type PlanSaveReceipt } from "@/services/plan-save-retry";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
+import { useAccountOperation } from "@/hooks/use-account-operation";
 import { AstronomicalEventModal } from "@/components/astronomical-event-modal";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { eventDatePresentation } from "@/content/event/event-model";
@@ -78,11 +79,16 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const mountId = useId();
   const [, refreshIdentity] = useState(0);
   const [pageVisible, setPageVisible] = useState(true);
+  const notificationVisibility = useRef({ mounted: true, visible: true });
+  useEffect(() => {
+    notificationVisibility.current.mounted = true;
+    return () => { notificationVisibility.current.mounted = false; };
+  }, []);
   const [statusReminderId, setStatusReminderId] = useState<string | null>(null);
   // Preserve the native document offset across overlay/state updates without rendering on every scroll frame.
   const documentScrollTop = useRef(0);
-  useDidShow(() => { setPageVisible(true); refreshIdentity((value) => value + 1); });
-  useDidHide(() => { setPageVisible(false); setStatusReminderId(null); useAppStore.getState().clearNotifications("plan"); });
+  useDidShow(() => { notificationVisibility.current.visible = true; setPageVisible(true); refreshIdentity((value) => value + 1); });
+  useDidHide(() => { notificationVisibility.current.visible = false; setPageVisible(false); setStatusReminderId(null); useAppStore.getState().clearNotifications("plan"); });
   const planOwner = currentDraftUserId();
   const formOwner = useRef(planOwner);
   formOwner.current ??= planOwner;
@@ -303,6 +309,11 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const [saveRecoveryReviewed, setSaveRecoveryReviewed] = useState(false);
   const [pendingSaveChoices, setPendingSaveChoices] = useState<PlanSaveRecoveryError["pending"]>([]);
   const mutationBusy = useRef(false);
+  // Route identity stays stable when this command confirms a new plan ID.
+  const operations = useAccountOperation(`plan-editor:${JSON.stringify([dedicatedEditor, requestedPlanId, requestedSpotId, explicitNew])}`, busy => {
+    mutationBusy.current = busy;
+    if (!busy) { setSaving(false); setDeleting(false); setChecklistSaving(false); }
+  });
   const planRouteOrigin = activePlan?.contextSnapshot.schemaVersion === "observation-context-snapshot-v2"
     ? activePlan.contextSnapshot.routeOrigin?.displayName ?? null : null;
   const distanceOriginMatches = planTravelMatchesRouteOrigin(activePlan?.travel, planRouteOrigin);
@@ -545,24 +556,24 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const toggleReminderItem = async (reminderId: string, itemId: string, completed: boolean) => {
     const owner = scopedDraftUserId();
     if (!owner || !activePlan || mutationBusy.current) return;
+    const operation = operations.begin();
+    if (!operation) return;
     const noticeKey = `plan-checklist:${JSON.stringify([owner, activePlan.planId, reminderId, itemId])}`;
-    mutationBusy.current = true;
     setChecklistSaving(true);
     try {
-      await setPlanChecklistCompletion(owner, activePlan.planId, { reminderId, itemId, completed, expectedRevision: activePlan.revision });
-      if (scopedDraftUserId() !== owner) return;
+      await setPlanChecklistCompletion(owner, activePlan.planId, { reminderId, itemId, completed, expectedRevision: activePlan.revision }, operation);
+      if (!operation.isCurrent() || scopedDraftUserId() !== owner) return;
       const state = useAppStore.getState();
       const prior = state.notifications.find(item => item.owner === "plan" && item.dedupeKey === noticeKey);
       if (prior) state.dismissNotification(prior.id);
-      await planQuery.refetch();
+      if (operation.isCurrent()) await planQuery.refetch();
     } catch (error) {
-      if (scopedDraftUserId() !== owner) return;
+      if (!operation.isCurrent() || scopedDraftUserId() !== owner) return;
       notify({ owner: "plan", placement: "floating", tone: "error", title: "清单状态未确认",
         body: `${errorMessage(error)}；当前勾选保持已确认状态，可重试。`, dismissible: true, dedupeKey: noticeKey });
-      if (error instanceof MiniappApiError && error.statusCode === 409) await planQuery.refetch().catch(() => undefined);
+      if (operation.isCurrent() && error instanceof MiniappApiError && error.statusCode === 409) await planQuery.refetch().catch(() => undefined);
     } finally {
-      mutationBusy.current = false;
-      setChecklistSaving(false);
+      operation.release();
     }
   };
   const beforeLeavingEditor = () => confirmPlanEditorLeave({
@@ -593,6 +604,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     title: string,
     body: string,
   ) => {
+    if (!notificationVisibility.current.mounted || !notificationVisibility.current.visible) return;
     notify({
       owner: "plan",
       placement: tone === "info" ? "inline" : "floating",
@@ -744,7 +756,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       eventOccurrenceIds,
       reminders: validatedReminders,
     };
-    mutationBusy.current = true;
+    const operation = operations.begin();
+    if (!operation) return;
     setSaving(true);
     const savedDraftKey = planDraftKey(scopedDraftUserId(), draftScopePlanId.current);
     try {
@@ -757,7 +770,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         if (!retainDraft({ creationPlanId: plan.planId })) return;
         if (creationConfirmed.current) {
           const current = await planQuery.refetch();
-          if (scopedDraftUserId() !== savingOwner) return;
+          if (!operation.isCurrent() || scopedDraftUserId() !== savingOwner) return;
           if (current?.dataState !== "FRESH") throw new Error("暂时无法核对上次保存的计划。");
           hydratedPlanId.current = plan.planId;
           setActivePlanId(plan.planId);
@@ -778,12 +791,11 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         draftBaseRevision.current,
         savingOwner,
         planContextIdentity(activeContext, travel),
+        operation,
       );
-      if (scopedDraftUserId() !== savingOwner) {
-        announce("warning", "账户已变化", "保存请求已返回，请回到原账户核对计划；本页不会更新当前账户的数据。");
-        return;
-      }
+      if (!operation.isCurrent() || scopedDraftUserId() !== savingOwner) return;
       savePlan(response.data);
+      if (!operation.isCurrent()) return;
       draftBaseRevision.current = response.data.revision;
       const draftCleared = ownsDraft && clearUnchangedPlanDraft(Taro, savedDraftKey, savedDraftVersion);
       if (draftCleared) { try { acknowledgePlanSave(Taro, response.saveReceipt); } catch { /* The original receipt stays recoverable. */ } }
@@ -799,21 +811,26 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           ? "计划已安全保存；天气与夜空条件仍以打开页面时的最新数据为准。"
           : "计划已安全保存；本机仍有另一版本的草稿或暂时无法清理，已保留供下次核对。",
       );
-      if (dedicatedEditor) {
+      if (dedicatedEditor && operation.isCurrent()) {
         nativeLeaveGuard.suspendForProgrammaticLeave();
-        const openSavedPlan = () => Taro.redirectTo({ url: `/content/plan/detail/index?planId=${encodeURIComponent(response.data.planId)}` });
+        const openSavedPlan = () => {
+          operation.assertCurrent();
+          return Taro.redirectTo({ url: `/content/plan/detail/index?planId=${encodeURIComponent(response.data.planId)}` });
+        };
         let hasPriorPage = false;
         try { hasPriorPage = Taro.getCurrentPages().length > 1; } catch { /* No reliable back target. */ }
         try {
+          operation.assertCurrent();
           if (hasPriorPage) await Taro.navigateBack().catch(openSavedPlan);
           else await openSavedPlan();
         } catch {
+          if (!operation.isCurrent()) return;
           nativeLeaveGuard.restoreAfterFailedProgrammaticLeave();
           announce("warning", "计划已保存，暂时无法打开详情", "无需重复保存，可从观星计划列表查看。");
         }
       }
     } catch (error) {
-      if (scopedDraftUserId() !== savingOwner) return;
+      if (!operation.isCurrent() || scopedDraftUserId() !== savingOwner) return;
       if (error instanceof PlanSaveRecoveryError) { setSaveRecoveryError(true); setSaveRecoveryReviewed(false); setPendingSaveChoices(error.pending); }
       if (error instanceof PlanSaveReviewRequired) {
         recoveredSaveReceipt.current = error.receipt;
@@ -826,8 +843,9 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         announce("warning", error.current ? "请核对已保存计划" : "未找到原计划", error.message);
       } else if (error instanceof MiniappApiError && error.code === "CONFLICT") {
         const current = await planQuery.refetch().catch(() => undefined);
-        if (scopedDraftUserId() !== savingOwner) return;
+        if (!operation.isCurrent() || scopedDraftUserId() !== savingOwner) return;
         if (current) replacePlans(current.data.plans);
+        if (!operation.isCurrent()) return;
         const latestPlan = current?.dataState === "FRESH" ? current.data.plans.find((item) => item.planId === plan.planId) : null;
         if (latestPlan) {
           creationPlanId.current ??= latestPlan.planId;
@@ -850,8 +868,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         );
       }
     } finally {
-      mutationBusy.current = false;
-      setSaving(false);
+      operation.release();
     }
   };
   const confirmPlanConflict = () => {
@@ -872,24 +889,26 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const clearSaveRecovery = async () => {
     const owner = scopedDraftUserId();
     if (!owner || mutationBusy.current) return;
-    mutationBusy.current = true; setSaving(true);
+    const operation = operations.begin();
+    if (!operation) return;
+    setSaving(true);
     try {
       const current = await planQuery.refetch();
-      if (scopedDraftUserId() !== owner) return;
+      if (!operation.isCurrent() || scopedDraftUserId() !== owner) return;
       if (current?.dataState !== "FRESH") throw new Error("当前计划尚未确认最新状态，请恢复网络后重试。");
       if (!saveRecoveryReviewed) {
         setSaveRecoveryReviewed(true);
         announce("warning", "请核对已保存计划", "列表已刷新。上次请求可能已经保存，请先查看计划列表；继续将另建一份计划。");
         return;
       }
-      const confirmation = await Taro.showModal({ title: "另建一份计划？", content: "将清理当前账号全部本机计划恢复信息。原请求可能已成功，无法撤销；继续可能保留两份计划，已保存计划不会删除。", confirmText: "另建一份", cancelText: "返回核对" });
-      if (!confirmation.confirm || scopedDraftUserId() !== owner) return;
+      const confirmation = await operation.native(() => Taro.showModal({ title: "另建一份计划？", content: "将清理当前账号全部本机计划恢复信息。原请求可能已成功，无法撤销；继续可能保留两份计划，已保存计划不会删除。", confirmText: "另建一份", cancelText: "返回核对" }));
+      if (!operation.isCurrent() || !confirmation.confirm || scopedDraftUserId() !== owner) return;
       const draftKey = planDraftKey(owner, draftScopePlanId.current);
       const newDraftKey = planDraftKey(owner, null);
       if (newDraftKey !== draftKey && newDraftKey && Taro.getStorageSync(newDraftKey))
         throw new Error("本机已有另一份新建草稿，请先处理该草稿；当前输入和恢复记录均保留。");
       if (!clearPlanDraft(Taro, draftKey)) throw new Error("原草稿无法清理，尚未开始另一份计划。");
-      clearObservationPlanSaveRecovery(owner);
+      clearObservationPlanSaveRecovery(owner, operation);
       creationPlanId.current = null;
       creationConfirmed.current = false;
       draftBaseRevision.current = null;
@@ -903,36 +922,31 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       setSaveRecoveryError(false); setSaveRecoveryReviewed(false);
       announce("info", "已开始另一份计划", "当前输入和已保存计划保留。确认内容后再保存，不会自动提交。");
     } catch (error) {
-      if (scopedDraftUserId() === owner) {
+      if (operation.isCurrent() && scopedDraftUserId() === owner) {
         setSaveRecoveryReviewed(false);
         announce("warning", "恢复信息未清理", errorMessage(error));
       }
-    } finally { mutationBusy.current = false; setSaving(false); }
+    } finally { operation.release(); }
   };
   const remove = async () => {
     if (!activePlan || mutationBusy.current) return;
     const deletionOwner = scopedDraftUserId();
     if (!deletionOwner) return;
-    mutationBusy.current = true;
+    const operation = operations.begin();
+    if (!operation) return;
     setDeleting(true);
     try {
-      const confirmation = await Taro.showModal({
+      const confirmation = await operation.native(() => Taro.showModal({
       title: "删除观测计划？",
       content: `删除后本计划将从服务端移除${isDirty ? "，本页未保存修改也会丢弃" : ""}；取消或失败时本页内容保持不变。`,
       confirmText: "删除",
       confirmColor: "#B53A3A",
-    });
-    if (!confirmation.confirm) return;
-      if (scopedDraftUserId() !== deletionOwner) {
-        announce("warning", "计划未删除", "账户已变化，请重新打开对应计划。");
-        return;
-      }
-      const response = await deleteObservationPlan(activePlan.planId, deletionOwner);
-      if (scopedDraftUserId() !== deletionOwner) {
-        announce("warning", "账户已变化", "删除请求已返回，请回到原账户核对计划；本页不会更新当前账户的数据。");
-        return;
-      }
+    }));
+      if (!operation.isCurrent() || !confirmation.confirm || scopedDraftUserId() !== deletionOwner) return;
+      const response = await deleteObservationPlan(activePlan.planId, deletionOwner, operation);
+      if (!operation.isCurrent() || scopedDraftUserId() !== deletionOwner) return;
       replacePlans(response.data.plans);
+      if (!operation.isCurrent()) return;
       const draftKey = planDraftKey(deletionOwner, activePlan.planId);
       clearPlanDraft(Taro, draftKey);
       try {
@@ -945,21 +959,23 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         "计划已删除",
         "计划已删除，即将返回我的。",
       );
-      await Taro.navigateBack().catch(() =>
-        Taro.switchTab({ url: "/pages/my/index" }),
-      ).catch(() => {
+      if (!operation.isCurrent()) return;
+      await Taro.navigateBack().catch(() => {
+        operation.assertCurrent();
+        return Taro.switchTab({ url: "/pages/my/index" });
+      }).catch(() => {
+        if (!operation.isCurrent()) return;
         announce("warning", "计划已删除", "自动返回暂不可用，可通过顶部返回或“我的”继续浏览。");
       });
     } catch (error) {
-      if (scopedDraftUserId() !== deletionOwner) return;
+      if (!operation.isCurrent() || scopedDraftUserId() !== deletionOwner) return;
       announce(
         "error",
-        "计划删除失败",
-        `${errorMessage(error)}；计划与本页草稿保持不变，可重试。`,
+        "暂未确认计划删除结果",
+        `${errorMessage(error)}；本页草稿仍保留，请刷新计划后核对，再决定是否重试。`,
       );
     } finally {
-      mutationBusy.current = false;
-      setDeleting(false);
+      operation.release();
     }
   };
   const showMissingRequestedPlan = Boolean(
@@ -1036,7 +1052,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             <Text className="type-body">{entry.input.notes || "没有备注"}</Text>
             <SoftButton disabled={saving || deleting} label="核对这次保存" onClick={() => {
               const owner = scopedDraftUserId();
-              if (!owner) return;
+              if (!owner || mutationBusy.current) return;
               try {
                 selectPlanSaveRecovery(Taro, { owner, key: entry.key, planId: entry.input.planId });
                 if (!retainDraft({ creationPlanId: entry.input.planId })) return;

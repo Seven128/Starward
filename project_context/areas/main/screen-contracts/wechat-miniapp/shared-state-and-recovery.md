@@ -175,6 +175,8 @@ My头像/昵称的编辑草稿随账户及重置代隔离，正常失败保留�
 
 同票以 service-owned `RequestOperationScope` 接到实际会话等待、请求派发和一次权限重试。该请求自己的 token 清除与同账号恢复可通过受限再认证握手，其它账户或额外重置仍使旧操作失效；未完成首次身份投影不能借此登录任意账号。已经派发的请求不被声称撤回，草稿、上传会话和未知提交仍沿既有恢复标识核对。这里记录实现责任，不认证真实微信账户、原生照片过程、在线持久化或整族验收，不改变视觉采用范围。
 
+计划编辑的保存、删除、清单勾选与明确确认的恢复记录清理共用同一单次操作owner；换号/重置、普通HTTP等待中隐藏、真实离页或卸载退休旧请求后续、提示、编辑状态、草稿确认和导航回退，返回原A仍允许新动作。删除与另建确认只在已知原生Modal期间保留合法callback/show两序，不豁免账户或页面变化。合法管线可继续时，`announce`仍按同步的页面显示与mount状态抑制隐藏/卸载通知，不等待React状态更新。稳定目标不随本次成功安装新planId而自我退休，原生导航失败只能由仍当前的票派发回退。实际plan client/API/checklist以同一service scope检查会话等待、派发、权限重试及后续读取/失效；本账户已完成的合法cache更新不声称可撤回，也不授权退休页面继续动作。保存保留原durable body/key/planId/revision、事件与完整字段、FRESH核对及精确receipt ack，另一编辑版本的草稿不能被旧成功清掉；未知/退休结果保留恢复记录。明确“另建一份”仍按既有警告清理本账户全量恢复信息，取消/退休不清理。删除未知回执只说明需刷新核对，不承诺服务端计划未变。此处是生产责任状态，源码/RAM检查不认证真实微信Modal、身份、持久服务或整族验收。
+
 ## Shared Image Viewer And Disclosure
 
 - Site and facility albums reuse one image-viewer component family with an ordered authorized media list, initial index, source geometry/identity, caption, provenance and return context. Single media has no false next control; multiple media support horizontal paging, a truthful current/total count and named non-gesture previous/next controls. Facility albums retain their own subject association; site thumbnails do not silently reassign facility evidence.
