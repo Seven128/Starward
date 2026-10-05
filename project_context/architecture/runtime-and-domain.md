@@ -149,7 +149,7 @@ Rollback creates a bounded unique catalog version; HTTP routing must accept the 
 2026-09-13图标是本轮完整需求的第二部分，采用范围及语义责任见[共享图标owner](../areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md#shared-icon-resource)。生产`semantic-asset.tsx`保持唯一语义入口并已把DAY消费者和地图状态迁移到B批资源；NIGHT/OBSERVATION继续使用原合法主题资产。
 
 - 沿用该SemanticIcon/Asset入口及当前marker资源责任，按71份采用manifest建立语义/状态映射并迁移真实消费者；新增meteor/terrain等语义在唯一入口扩展，页面不能自行引入第二套素材目录。PNG由本地构建打包，交付前核对主包/分包实际归属与重复拷贝，不能把整套高清母版或图集放进小程序。
-- 256×256透明PNG是唯一采用母版并留在设计资源来源位置。微信构建按真实包消费者复制224×224页面运行时派生，原生Tab复制192×192派生；两者均由母版Lanczos缩小、保留完整画布和RGBA，不量化、抠图或逐枚裁边。Map原生Tab仅消费`weapp-tabbar`派生；语义图标入口没有map语义，不再额外把同名页面运行时派生复制进主包。图片源分辨率不是控件布局尺寸；沿用原可见尺寸、内边距、至少44px命中区域与程序化标签。
+- 256×256透明PNG是唯一采用母版并留在设计资源来源位置。微信构建按真实包消费者复制页面运行时派生：普通图标192×192、较大用途224×224，具体逐文件选择由已采用`weapp-runtime`生成器与manifest拥有；原生Tab复制专用192×192派生。各派生均由母版Lanczos缩小、保留完整画布和RGBA，不量化、抠图或逐枚裁边。Map原生Tab仅消费`weapp-tabbar`派生；语义图标入口没有map语义，不再额外把同名页面运行时派生复制进主包。Search的DAY筛选图标只由`spot/search`消费并复制到spot分包；NIGHT/OBSERVATION筛选仍经共享入口读取主包原主题SVG。图片源分辨率不是控件布局尺寸；沿用原可见尺寸、内边距、至少44px命中区域与程序化标签。
 - 地图四态统一画布、主体位置及原marker锚点；default/selected切换不以整体包围盒重新居中。draft/pending身份语义独立于正式点选中。想去保留既有一圈旋转/进入退出/可中断与减少动态效果，星头、尾迹、卫星分件由原动画owner分别驱动；PNG支持透明度、平移、缩放、旋转/交叉渐隐，不声称单张图可任意路径变形。
 - day资源采用不扩展到night/observation。严格暖红主题继续使用原合法资产/呈现直到有合规变体，不能直接套彩色PNG或整屏滤镜；真实月相、数据图形及地图供应商标识也不由装饰性图标替换。
 - 代表性验证覆盖小尺寸清晰度、透明边缘、导航非颜色状态、四态锚点、想去反复中断、不同消费者/主题以及实际打包体积。静态71份约2.11MiB的清单不等于最终主包大小；Web替换和素材像素检查不证明WEAPP渲染、动效或真机质量。
