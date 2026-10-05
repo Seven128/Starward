@@ -8,6 +8,7 @@ These project rules apply throughout authorized research, design and development
 - **Stabilize boundaries, then deliver modules.** Validate uncertain architecture with a small real path through the intended data, state and runtime owners. Develop modules in dependency order, including their normal result, failure/recovery and affected consumers. Adjust architecture when evidence invalidates it; do not design every implementation detail upfront or postpone all integration until the end.
 - **Control changes of direction.** Put new findings under the responsible module. Interrupt only when a finding invalidates current/dependent work, creates material data/security risk, or requires replanning; otherwise queue it, including unrelated defects. When blocked, choose an independent item from the plan and state the dependency. Report progress against module outcomes and remaining obligations, not a count of patches or tests.
 - **Separate development checks from final acceptance.** Run relevant type, contract, behavior and integration checks as modules change. Batch broad visual, interaction, device and performance acceptance at useful milestones. Test platform assumptions that could invalidate the architecture before expanding dependent work. If a required device/service is unavailable, continue independent work and keep that dependency unverified; a local pass does not complete target acceptance.
+- Close subagents when their tasks finish; create new ones when needed again.
 
 ## Project-local Implementation Decisions
 
