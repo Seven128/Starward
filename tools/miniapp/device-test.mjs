@@ -12,6 +12,7 @@ const help = `Mini Program owner-assisted physical-device diagnostics (not accep
   capture --session <directory> [--transport usb|wireless]
   capture-permissions --session <directory> [--transport usb|wireless] (target Mini Program's WeChat permission page only)
   capture-location --session <directory> [--transport usb|wireless] (known Android location prompt requested by WeChat only)
+  capture-location-picker --session <directory> [--transport usb|wireless] (owned observed WeChat location picker; only Back return allowed)
   tap --session <directory> --x <0..1> --y <0..1> [--transport usb|wireless]
   swipe --session <directory> --x <0..1> --y <0..1> --to-x <0..1> --to-y <0..1> --ms <100..2000> [--transport usb|wireless]
   back --session <directory> [--transport usb|wireless]
@@ -31,7 +32,8 @@ export function parseArguments(argv) {
   const options = {};
   const required = { help: [], doctor: [], start: ["project"], capture: ["session"], "capture-permissions": ["session"], "capture-location": ["session"], tap: ["session", "x", "y"], swipe: ["session", "x", "y", "to-x", "to-y", "ms"], back: ["session"], remote: ["session", "endpoint"], inspect: ["session", "endpoint"], stop: ["session"] };
   required.text = ["session", "value"];
-  const transportActions = new Set(["doctor", "capture", "capture-permissions", "capture-location", "tap", "swipe", "back", "text"]);
+  required["capture-location-picker"] = ["session"];
+  const transportActions = new Set(["doctor", "capture", "capture-permissions", "capture-location", "capture-location-picker", "tap", "swipe", "back", "text"]);
   const allowed = Object.fromEntries(Object.entries(required).map(([key, values]) => [key, transportActions.has(key) ? [...values, "transport"] : values]));
   if (!allowed[action]) fail("action_invalid");
   for (let i = 0; i < rest.length; i += 2) {
@@ -75,10 +77,10 @@ export async function main(argv, { adb, emit = (value) => console.log(JSON.strin
     }
     const device = adb ?? new AdbDevice(await findAdb());
     const serial = await device.select({ transport: options.transport });
-    if (["capture", "capture-permissions", "capture-location"].includes(action)) {
+    if (["capture", "capture-permissions", "capture-location", "capture-location-picker"].includes(action)) {
       state.capture = null;
       await saveSession(state);
-      const permissionScope = action === "capture-permissions" ? "settings" : action === "capture-location" ? "location-prompt" : "none";
+      const permissionScope = action === "capture-permissions" ? "settings" : action === "capture-location" ? "location-prompt" : action === "capture-location-picker" ? "location-picker" : "none";
       const screenshot = await device.screenshot({ permissionScope });
       const screenshotPath = path.join(state.directory, "screen.png");
       await writeFile(screenshotPath, screenshot.bytes, { mode: 0o600 });

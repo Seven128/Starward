@@ -14,6 +14,7 @@ import { terminalQrPng, remoteProgressConsumer, remoteDeadline } from "./device-
 import { activity, permissionsActivity, systemLocationActivity, permissionHistory, png } from "./device-test-fixtures.mjs";
 
 const testAppId = ["wx", "1234567890abcdef"].join("");
+const locationPickerActivity = "com.tencent.mm/com.tencent.mm.plugin.location_soso.SoSoProxyUI";
 
 async function project(t) {
   const directory = await mkdtemp(path.join(os.tmpdir(), "starward-device-fixture-"));
@@ -28,7 +29,7 @@ async function session(t) {
   t.after(() => rm(state.directory, { recursive: true, force: true }));
   return state;
 }
-function adbDriver({ changed = false, permissions = false, osLocation = false, systemPackage = true } = {}) {
+function adbDriver({ changed = false, permissions = false, osLocation = false, locationPicker = false, systemPackage = true } = {}) {
   const calls = [];
   const driver = new AdbDevice("fixture-adb", async (_file, args) => {
     calls.push(args);
@@ -37,8 +38,8 @@ function adbDriver({ changed = false, permissions = false, osLocation = false, s
     if (args.join(" ") === "-d get-state") return Buffer.from("device\n");
     if (args.join(" ") === "-d get-serialno") return Buffer.from("private-serial\n");
     const command = args.slice(2).join(" ");
-    if (command === "shell dumpsys activity activities") return Buffer.from(osLocation ? permissionHistory().replaceAll(permissionsActivity, systemLocationActivity) : permissions ? permissionHistory() : `mResumedActivity: ActivityRecord{abc u0 ${activity} t1}`);
-    if (command === "shell dumpsys window windows") return Buffer.from(`mCurrentFocus=Window{abc u0 ${osLocation ? systemLocationActivity : permissions ? permissionsActivity : activity}}`);
+    if (command === "shell dumpsys activity activities") return Buffer.from(locationPicker ? permissionHistory().replaceAll(permissionsActivity, locationPickerActivity) : osLocation ? permissionHistory().replaceAll(permissionsActivity, systemLocationActivity) : permissions ? permissionHistory() : `mResumedActivity: ActivityRecord{abc u0 ${activity} t1}`);
+    if (command === "shell dumpsys window windows") return Buffer.from(`mCurrentFocus=Window{abc u0 ${locationPicker ? locationPickerActivity : osLocation ? systemLocationActivity : permissions ? permissionsActivity : activity}}`);
     if (command === "shell dumpsys package com.android.permissioncontroller") return Buffer.from(systemPackage ? "pkgFlags=[ SYSTEM HAS_CODE ]\n codePath=/system_ext/priv-app/PermissionController" : "pkgFlags=[ HAS_CODE ]\n codePath=/data/app/unknown");
     if (command === "exec-out screencap -p") return png(changed ? 2400 : 1080, changed ? 1080 : 2400);
     if (command.startsWith("shell input")) return Buffer.alloc(0);
@@ -224,6 +225,47 @@ test("Android location prompt is separately scoped, attributable to WeChat and s
   await main(["tap", "--session", state.directory, "--x", "0.5", "--y", "0.5"], context);
   assert.equal(output.at(-1).actionSent, "tap");
   assert.equal((await loadSession(state.directory)).capture, null);
+});
+
+test("observed native location picker requires explicit scope and its AppBrand return owner", () => {
+  const history = (options) => permissionHistory(options).replaceAll(permissionsActivity, locationPickerActivity);
+  assert.equal(foregroundActivity(history(), { permissionScope: "location-picker" }), locationPickerActivity);
+  for (const permissionScope of ["none", "settings", "location-prompt"]) {
+    assert.throws(() => foregroundActivity(history(), { permissionScope }), /foreground_required/u);
+  }
+  for (const options of [{ from: "com.other" }, { underlyingTask: 42 }, { underlyingUser: 10 }]) {
+    assert.throws(() => foregroundActivity(history(options), { permissionScope: "location-picker" }), /owner_unproven/u);
+  }
+  assert.throws(() => foregroundActivity(history().replaceAll(activity, "com.tencent.mm/.ui.LauncherUI"), { permissionScope: "location-picker" }), /owner_unproven/u);
+  assert.throws(() => foregroundActivity(history().replaceAll(locationPickerActivity, "com.tencent.mm/.plugin.location.ui.RedirectUI"), { permissionScope: "location-picker" }), /location_picker_foreground_required/u);
+  assert.throws(() => verifyFocusedWindow(`mCurrentFocus=Window{abc u0 ${activity}}`, locationPickerActivity), /focus_required/u);
+});
+
+test("native location picker fresh capture permits only one Back, never selection or text", async (t) => {
+  const state = await session(t);
+  const { driver, calls } = adbDriver({ locationPicker: true });
+  const output = [];
+  const context = { adb: driver, emit: value => output.push(value) };
+  await assert.rejects(main(["capture", "--session", state.directory], context), /foreground_required/u);
+  for (const args of [
+    ["tap", "--x", "0.5", "--y", "0.5"],
+    ["text", "--value", "A"],
+    ["swipe", "--x", "0.5", "--y", "0.5", "--to-x", "0.5", "--to-y", "0.8", "--ms", "500"],
+  ]) {
+    await main(["capture-location-picker", "--session", state.directory], context);
+    assert.equal(output.at(-1).screenScope, "location-picker");
+    await assert.rejects(main([...args, "--session", state.directory], context), /location_picker_return_only/u);
+    assert.equal((await loadSession(state.directory)).capture, null);
+  }
+  assert.ok(!calls.some(args => args.includes("input")));
+  await main(["capture-location-picker", "--session", state.directory], context);
+  await main(["back", "--session", state.directory], context);
+  assert.equal(output.at(-1).actionSent, "back");
+  assert.equal((await loadSession(state.directory)).capture, null);
+  assert.equal(calls.filter(args => args.includes("input")).length, 1);
+  assert.ok(calls.some(args => args.join(" ").endsWith("input keyevent KEYCODE_BACK")));
+  await assert.rejects(main(["back", "--session", state.directory], context), /capture_required/u);
+  assert.ok(!JSON.stringify(output).includes("private-serial"));
 });
 
 test("pixel coordinates, PNG header and swipe duration have explicit bounds", async () => {

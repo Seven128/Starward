@@ -81,6 +81,7 @@ function canonicalActivity(value) {
 const appBrandActivity = /^com\.tencent\.mm\/com\.tencent\.mm\.plugin\.appbrand\.ui\.AppBrandUI\d*$/u;
 const permissionActivity = "com.tencent.mm/com.tencent.mm.plugin.appbrand.ui.AppBrandAuthorizeUI";
 const permissionDetailActivity = "com.tencent.mm/com.tencent.mm.plugin.appbrand.ui.AppBrandAuthorizeDetailUI";
+const locationPickerActivity = "com.tencent.mm/com.tencent.mm.plugin.location_soso.SoSoProxyUI";
 // Extend only after observing and testing a system-owned OEM permission component.
 const systemLocationActivity = "com.android.permissioncontroller/com.skyui.permissioncontroller.request.ui.SkyGrantPermissionsActivity";
 const SCREENSHOT_FOREGROUND_RECHECK_RETRY_LIMIT = 1;
@@ -111,6 +112,9 @@ export function foregroundActivity(output, { permissionScope = "none" } = {}) {
     verifyPermissionOwner(output, unique[0]);
   } else if (permissionScope === "location-prompt") {
     if (unique[0] !== systemLocationActivity) fail("location_prompt_foreground_required");
+    verifyPermissionOwner(output, unique[0]);
+  } else if (permissionScope === "location-picker") {
+    if (unique[0] !== locationPickerActivity) fail("location_picker_foreground_required");
     verifyPermissionOwner(output, unique[0]);
   } else if (permissionScope !== "none") fail("permission_scope_invalid");
   else if (!appBrandActivity.test(unique[0])) fail("wechat_miniapp_foreground_required");
@@ -255,6 +259,9 @@ export class AdbDevice {
   }
   async input(action, values, capture) {
     const permissionScope = capture.permissionScope ?? "none";
+    // This scope only returns from the observed native picker, never selects
+    // or inspects another place through an unverified native input boundary.
+    if (permissionScope === "location-picker" && action !== "back") fail("location_picker_return_only");
     if (permissionScope !== "none" && !["tap", "back"].includes(action)) fail("permission_input_invalid");
     const activity = await this.foreground({ permissionScope });
     if (activity !== capture.activity) fail("foreground_changed");
