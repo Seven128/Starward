@@ -10,6 +10,13 @@
   background: var(--canvas);
   color: var(--text-primary);
 }
+// The focused native Input must stay outside the floating notice layer.
+// Use the field's live safe-area anchor for both placement and scroll budget.
+.spot-search-page .notification-host {
+  --search-notice-top: calc(var(--search-safe-top) + var(--search-control-height) + 8Px);
+  top: var(--search-notice-top);
+  --notification-available-height: max(0Px, calc(100vh - var(--search-notice-top) - var(--notification-bottom-reserve)));
+}
 .spot-search-shell {
   position: relative;
   height: 100%;
