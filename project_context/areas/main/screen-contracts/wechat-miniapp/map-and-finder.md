@@ -8,6 +8,8 @@ The adopted daytime layer composition is reached through the sole [Map resource 
 
 ## Cross-Control And State Invariants
 
+FilterSheet的分类、选项与底部动作在各自原命中盒内显式垂直居中；分类保留左对齐，选项与“确定＋计数”组合保持水平居中。几何由`components/filter-sheet.scss`承担，不依赖原生Button的默认行高，也不改全局Button reset。保留现行14项、48/44px高度、换行、选中星标、禁用、草稿取消及清空/应用责任；修复源码接线不等于整个筛选面板、其它宽度/主题或连续过程验收。
+
 Search 的浮动 Info 在固定原生输入框下方留8px避让，位置与可滚高度共用当前 `--search-safe-top`、`--search-control-height` 推导的同一边界；不移动输入框、丢查询、偷焦点或移除失败通知/行内重试。几何投射归Search页面，通知可见计时与去重仍归共享宿主。Map已有搜索框/右侧工具与large档避让保持各自责任。原生输入与消息不相交须用真实目标输出核验，CSS接线本身不证明通过。
 
 Map/Search 的固定搜索锚点由同一占位文案与文本色责任维护：`pages/map/finder-field.ts` 供 Map trigger 与 Search 原生 Input 使用；`pages/map/_finder-field.scss` 将两端 query/placeholder 映射到既有 `text-secondary`，遵循 DESIGN 普通文本对比度要求，不复制旧浅灰低对比。Search 通过 WEAPP `placeholderClass` 显式控制原生占位样式。建议层仍由现有 ScrollView 承担滚动，并显式限定为父层宽度减去两侧各16Px，与搜索框同边界；保留键盘、外点收起、原生选点、筛选与返回责任。源码与尺寸公式不认证实际连续过渡、窄屏或全部主题输出。
