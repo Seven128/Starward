@@ -2,15 +2,31 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { panelDragHeight, panelSpringFrames } from "./panel-spring";
 
-test("dragging beyond either terminal snap holds its boundary before release", () => {
+test("small resists a downward pull without closing while large holds its upper boundary", () => {
   assert.equal(panelDragHeight(608, 156, 661), 608);
   assert.equal(panelDragHeight(748, 156, 661), 661);
-  assert.equal(panelDragHeight(120, 156, 661), 156, "small cannot move down and clip its address");
+  const pulled = panelDragHeight(120, 156, 661);
+  assert.ok(pulled < 156 && pulled > 120, "small must move with resistance rather than stay fixed");
+  assert.ok(panelDragHeight(-100000, 156, 661) > 84, "the pull remains bounded and cannot hide the panel");
+  const frames = panelSpringFrames({ from: pulled, to: 156, velocity: 0, min: 156, max: 661 });
+  assert.equal(frames[0]?.height, pulled, "release begins at the drawn compressed height");
+  assert.equal(frames.at(-1)?.height, 156, "release restores the complete small document");
 });
 
 test("release already at a snap does not install a no-op CSS animation", () => {
   assert.deepEqual(panelSpringFrames({ from: 661, to: 661, velocity: 0, min: 156, max: 661 }),
     [{ height: 661, duration: 0 }]);
+});
+
+test("a compressed release can approach another anchor without jumping to small", () => {
+  for (const [from, target, velocity] of [[184, 350, 0.2], [156, 700, 0.04]]) {
+    const frames = panelSpringFrames({ from: from!, to: target!, velocity: velocity!, min: 220, max: 700 });
+    assert.equal(frames[0]!.height, from);
+    assert.ok(frames[1]!.height > from! && frames[1]!.height < 220,
+      "the first moving sample must retain the below-small approach rather than hard-clamp it");
+    assert.equal(frames.at(-1)!.height, target);
+    assert.ok(frames.every(frame => frame.height >= from! && frame.height <= 700));
+  }
 });
 
 test("spring preserves initial height, follows release direction and settles exactly within bounds", () => {

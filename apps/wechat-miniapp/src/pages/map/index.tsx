@@ -8,7 +8,7 @@ import { createSpotEditorPresentation, SPOT_EDITOR_ENTER_MS, SPOT_EDITOR_EXIT_MS
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { panelSpringStyle, type PanelCssMotion } from "./panel-spring-style";
 import { createPanelAnimation, type PanelAnimationHost } from "./panel-animation";
-import { panelDragHeight, panelSpringFrames } from "./panel-spring";
+import { panelDragHeight, panelDragOriginHeight, panelSpringFrames } from "./panel-spring";
 import { elasticVelocityFactor } from "@/components/elastic-motion";
 import { markerGroups, markerItems } from "./map-markers";
 import { privateContributionMarkerItems, privateContributionMarkers } from "./private-contribution-markers";
@@ -360,6 +360,7 @@ export default function MapPage() {
     moved: boolean;
     offset: number;
     pointerOffset: number;
+    rawStartHeight: number;
     geometry: PanelSnapGeometry | null;
     released: boolean;
   } | null>(null);
@@ -1230,12 +1231,13 @@ export default function MapPage() {
     if (typeof startY !== "number" || !Number.isFinite(startY)) return;
     springRequest.current += 1;
     const startX = touch?.clientX ?? touch?.pageX;
-    const drag = { startY, startX: typeof startX === "number" && Number.isFinite(startX) ? startX : undefined, identifier: touch?.identifier, extent: panelExtent, samples: [{ y: startY, at: Date.now() }], releasedAt: 0, moved: false, offset: 0, pointerOffset: 0, geometry: null as PanelSnapGeometry | null, released: false };
+    const drag = { startY, startX: typeof startX === "number" && Number.isFinite(startX) ? startX : undefined, identifier: touch?.identifier, extent: panelExtent, samples: [{ y: startY, at: Date.now() }], releasedAt: 0, moved: false, offset: 0, pointerOffset: 0, rawStartHeight: 0, geometry: null as PanelSnapGeometry | null, released: false };
     panelDrag.current = drag;
     const viewport = panelViewportSize();
     const cached = panelSnapCache.current;
     if (cached && viewport && cached.identity === panelGeometryIdentity && cached.width === viewport.width && cached.height === viewport.height && !panelSettling && !springTarget.current) {
       drag.geometry = { ...cached.geometry, startHeight: cached.geometry[panelExtent] };
+      drag.rawStartHeight = drag.geometry.startHeight;
       stopPanelSpring();
       setPanelDragging(true);
       return;
@@ -1249,11 +1251,19 @@ export default function MapPage() {
       drag.geometry = readPanelSnapGeometry(rows);
       stopPanelSpring();
       if (!drag.geometry) { onHandleTouchCancel(); return; }
+      drag.rawStartHeight = panelDragOriginHeight(drag.geometry.startHeight, drag.geometry.small, drag.geometry.large);
       const measuredViewport = panelViewportSize();
       if (measuredViewport) panelSnapCache.current = { identity: panelGeometryIdentity, ...measuredViewport, geometry: drag.geometry };
-      if (drag.released) { onHandleTouchEnd(); return; }
+      if (drag.released) {
+        // Pointer moves while measurement was pending were never drawn.
+        // Preserve the measured live frame for the release, including a
+        // below-small spring interrupted before its geometry arrived.
+        drag.offset = drag.geometry[drag.extent] - Math.min(drag.geometry.large, drag.geometry.startHeight);
+        onHandleTouchEnd();
+        return;
+      }
       const visualHeight = panelDragHeight(
-        drag.geometry.startHeight - drag.pointerOffset,
+        drag.rawStartHeight - drag.pointerOffset,
         drag.geometry.small,
         drag.geometry.large,
       );
@@ -1287,7 +1297,7 @@ export default function MapPage() {
     if (!drag.moved) { drag.moved = true; setPanelDragging(true); }
     drag.pointerOffset = offset;
     if (drag.geometry) {
-      const rawHeight = drag.geometry.startHeight - offset;
+      const rawHeight = drag.rawStartHeight - offset;
       const visualHeight = panelDragHeight(rawHeight, drag.geometry.small, drag.geometry.large);
       drag.offset = drag.geometry[drag.extent] - visualHeight;
       setPanelDragOffset(drag.offset);
@@ -1328,6 +1338,9 @@ export default function MapPage() {
       panelDrag.current = null;
       setPanelDragOffset(0);
       setPanelDragging(false);
+      const from = drag.geometry[drag.extent] - drag.offset;
+      if (Math.abs(from - drag.geometry[drag.extent]) >= 0.5)
+        animatePanelExtent(drag.extent, drag.geometry, from);
       return;
     }
     const geometry = drag.geometry;
@@ -1344,7 +1357,7 @@ export default function MapPage() {
       setPanelDragOffset(0);
       setPanelDragging(false);
       animatePanelExtent(target, geometry, from,
-        -velocity * elasticVelocityFactor(from, geometry.small, geometry.large));
+        -velocity * elasticVelocityFactor(panelDragOriginHeight(from, geometry.small, geometry.large), geometry.small, geometry.large));
     });
   };
 

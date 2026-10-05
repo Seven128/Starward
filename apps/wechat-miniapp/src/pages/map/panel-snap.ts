@@ -1,3 +1,5 @@
+import { ELASTIC_LIMIT } from "@/components/elastic-motion";
+
 export type PanelExtent = "small" | "medium" | "large";
 export type PanelSnapGeometry = Record<PanelExtent, number> & { startHeight: number };
 
@@ -13,7 +15,7 @@ export function readPanelSnapGeometry(rows: unknown): PanelSnapGeometry | null {
   if (!heights.every(height => typeof height === "number" && Number.isFinite(height) && height > 0)) return null;
   const [startHeight, small, medium, large] = heights as [number, number, number, number];
   if (!(small < medium && medium < large)) return null;
-  return { small, medium, large, startHeight: Math.max(small - 72, Math.min(large + 72, startHeight)) };
+  return { small, medium, large, startHeight: Math.max(small - ELASTIC_LIMIT, Math.min(large + ELASTIC_LIMIT, startHeight)) };
 }
 
 export function nearestPanelExtent(geometry: PanelSnapGeometry, height: number, current: PanelExtent): PanelExtent {
@@ -33,10 +35,11 @@ export function panelHeightProgress(geometry: PanelSnapGeometry, height: number)
 
 /** Native geometry can lag the final move; never restart a release from a stale frame. */
 export function panelReleaseStartHeight(geometry: PanelSnapGeometry, visualHeight: number, measuredHeight: unknown): number {
-  const current = Math.max(geometry.small, Math.min(geometry.large, visualHeight));
+  const lower = geometry.small - ELASTIC_LIMIT;
+  const current = Math.max(lower, Math.min(geometry.large, visualHeight));
   return typeof measuredHeight === "number" && Number.isFinite(measuredHeight) &&
     Math.abs(measuredHeight - current) <= 2
-    ? Math.max(geometry.small, Math.min(geometry.large, measuredHeight)) : current;
+    ? Math.max(lower, Math.min(geometry.large, measuredHeight)) : current;
 }
 
 

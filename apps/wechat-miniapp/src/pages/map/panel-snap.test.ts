@@ -8,6 +8,9 @@ test("release starts at the last bounded drag frame when native measurement is s
   assert.equal(panelReleaseStartHeight(geometry, 608, 368), 608);
   assert.equal(panelReleaseStartHeight(geometry, 608, 609), 609);
   assert.equal(panelReleaseStartHeight(geometry, 661, undefined), 661);
+  assert.equal(panelReleaseStartHeight(geometry, 132, 156), 132,
+    "a stale small anchor cannot erase the currently drawn lower pull");
+  assert.equal(panelReleaseStartHeight(geometry, 132, 132), 132);
 });
 
 test("system Back steps through panel extents before closing the small panel", () => {

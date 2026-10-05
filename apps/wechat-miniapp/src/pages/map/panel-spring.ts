@@ -1,9 +1,13 @@
-import { elasticSpringFrames, type ElasticFrame } from "@/components/elastic-motion";
+import { elasticPosition, elasticRawPosition, elasticSpringFrames, type ElasticFrame } from "@/components/elastic-motion";
 
 export type PanelSpringFrame = ElasticFrame;
-/** Both terminal snaps hold during a drag; small must not hide its content. */
+/** Small permits a bounded resisted pull; large never crosses the navigation stop. */
 export function panelDragHeight(raw: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, raw));
+  return elasticPosition(Math.min(max, raw), min, max);
+}
+
+export function panelDragOriginHeight(visual: number, min: number, max: number): number {
+  return elasticRawPosition(Math.min(max, visual), min, max);
 }
 
 export function panelSpringFrames(input: {
@@ -20,7 +24,9 @@ export function panelSpringFrames(input: {
   // subsequent sample to the approach side of that boundary.
   return frames.map((frame, index) => {
     if (index === 0) return frame;
-    const bounded = Math.max(min, Math.min(max, frame.height));
+    // An elastic starting frame must approach any chosen anchor continuously,
+    // even when release velocity projects past the nearest boundary anchor.
+    const bounded = Math.max(Math.min(min, from), Math.min(Math.max(max, from), frame.height));
     return { ...frame, height: target === max && from > max ? Math.min(from, Math.max(target, frame.height))
       : target === min && from < min ? Math.max(from, Math.min(target, frame.height)) : bounded };
   });

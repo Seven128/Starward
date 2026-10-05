@@ -7,6 +7,16 @@ export function elasticPosition(raw: number, min: number, max: number): number {
   return raw;
 }
 
+/** Recover the physical origin when a resisted presentation is grabbed again. */
+export function elasticRawPosition(visual: number, min: number, max: number): number {
+  const boundary = visual < min ? min : visual > max ? max : null;
+  if (boundary === null) return visual;
+  // Native geometry may round to the asymptote; keep the inverse finite.
+  const distance = Math.min(Math.abs(visual - boundary), ELASTIC_LIMIT * (1 - Number.EPSILON));
+  const rawDistance = ELASTIC_LIMIT * distance / (ELASTIC_LIMIT - distance);
+  return boundary + (visual < min ? -rawDistance : rawDistance);
+}
+
 export function elasticVelocityFactor(raw: number, min: number, max: number): number {
   const distance = raw < min ? min - raw : raw > max ? raw - max : 0;
   return (ELASTIC_LIMIT / (ELASTIC_LIMIT + distance)) ** 2;

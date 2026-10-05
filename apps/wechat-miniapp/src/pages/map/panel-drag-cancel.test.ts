@@ -1,4 +1,4 @@
-import { panelDragHeight, panelSpringFrames } from "./panel-spring";
+import { panelDragHeight, panelDragOriginHeight, panelSpringFrames, type PanelSpringFrame } from "./panel-spring";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -18,6 +18,7 @@ test("panel cancellation and multi-touch never commit a pending drag", async t =
   visit(source);
   assert.equal(declarations.length, names.length);
   const commits: string[] = [], offsets: number[] = [];
+  const springs: PanelSpringFrame[][] = [];
   let dragging = false;
   let now = 0;
   let delayed = false;
@@ -37,13 +38,13 @@ test("panel cancellation and multi-touch never commit a pending drag", async t =
     Date: { now: () => now },
     stopPanelSpring: () => {}, panelSpringFrames,
     springTarget: { current: null }, springRequest: { current: 0 }, setPanelSettling: () => {},
-    panelSpring: { current: { start: (_host: unknown, _frames: unknown, complete: () => void) => complete() } },
+    panelSpring: { current: { start: (_host: unknown, frames: PanelSpringFrame[], complete: () => void) => { springs.push(frames); complete(); } } },
     panelSpringStyle: () => ({}), panelCssSequence: { current: 0 }, setPanelCssMotion: () => {},
     getReducedMotion: () => false,
     panelDrag: { current: null }, panelSnapCache, panelGeometryIdentity: "formal:spot:a", panelViewportSize: () => ({ width: 390, height: 844 }), bottomPresentation: "spot-panel", panelExtent: "medium", panelSettling: false,
     setPanelExtent: (value: string) => commits.push(value), setPanelDragOffset: (value: number) => offsets.push(value),
     setPanelDragging: (value: boolean) => { dragging = value; },
-    Taro: { createSelectorQuery: () => query, nextTick: () => {}, getWindowInfo: () => ({ windowWidth: 390, windowHeight: 844 }) }, panelDragHeight, panelReleaseStartHeight, panelReleaseVelocity, releasePanelExtent, readPanelSnapGeometry, elasticVelocityFactor,
+    Taro: { createSelectorQuery: () => query, nextTick: () => {}, getWindowInfo: () => ({ windowWidth: 390, windowHeight: 844 }) }, panelDragHeight, panelDragOriginHeight, panelReleaseStartHeight, panelReleaseVelocity, releasePanelExtent, readPanelSnapGeometry, elasticVelocityFactor,
   };
   const handlers = vm.runInNewContext(ts.transpileModule(`(() => { ${declarations.join("\n")} return { ${names.join(",")} }; })()`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, environment) as Record<string, (event?: unknown) => void>;
   const touch = (y: number, count = 1) => ({ touches: Array.from({ length: count }, () => ({ clientY: y })) });
@@ -179,7 +180,7 @@ test("panel cancellation and multi-touch never commit a pending drag", async t =
   assert.match(panel, /onTouchCancel=\{onHandleTouchCancel\}/u);
 
   for (const geometrySource of ["cached", "immediate", "delayed"] as const) {
-    await t.test(`small downward drag stays fixed with ${geometrySource} geometry and allows reversal`, () => {
+    await t.test(`small downward drag resists with ${geometrySource} geometry and releases continuously`, () => {
       environment.panelExtent = "small";
       geometryRows[0]!.height = 220;
       delayed = geometrySource === "delayed";
@@ -188,28 +189,38 @@ test("panel cancellation and multi-touch never commit a pending drag", async t =
         ? { identity: "formal:spot:a", width: 390, height: 844, geometry: { small: 220, medium: 350, large: 700, startHeight: 220 } }
         : null;
       const commitCount = commits.length;
-      const offsetCount = offsets.length;
+      now += 1000;
       handlers.onHandleTouchStart!(touch(100));
+      now += 40;
       handlers.onHandleTouchMove!(touch(260));
       if (delayed) pending.shift()!(geometryRows);
-      assert.equal(offsets.at(-1), 0, "the visible sheet must not move below its small stop during the drag");
+      const firstPull = offsets.at(-1)!;
+      assert.ok(firstPull > 0 && firstPull < 72 && firstPull < 160, "small follows a downward pull with bounded resistance");
+      now += 40;
       handlers.onHandleTouchMove!(touch(500));
-      assert.ok(offsets.slice(offsetCount).every(offset => offset === 0), "every downward sample stays fixed, not just the release frame");
+      assert.ok(offsets.at(-1)! > firstPull && offsets.at(-1)! < 72, "further pulling approaches the bound without crossing it");
+      now += 40;
       handlers.onHandleTouchMove!(touch(80));
       assert.equal(offsets.at(-1), -20, "reversing upward follows the pointer without a dead zone");
+      now += 40;
       handlers.onHandleTouchMove!(touch(130));
-      assert.equal(offsets.at(-1), 0, "reversing back down stops at small again");
-      if (delayed) {
-        handlers.onHandleTouchCancel!();
-        assert.equal(commits.length, commitCount, "cancellation cannot dismiss the panel");
-      } else {
-        handlers.onHandleTouchEnd!();
-        assert.equal(commits.at(-1), "small", "release at the stop retains small");
-      }
+      assert.ok(offsets.at(-1)! > 0 && offsets.at(-1)! < 30, "reversing down resumes resistance without hiding the panel");
+      const releaseHeight = 220 - offsets.at(-1)!;
+      const springCount = springs.length;
+      now += 150;
+      handlers.onHandleTouchEnd!();
+      if (delayed) pending.shift()!(geometryRows);
+      assert.equal(commits.length, commitCount + 1);
+      assert.equal(commits.at(-1), "small", "release below small returns to small and never closes");
+      assert.equal(springs.length, springCount + 1);
+      const frames = springs.at(-1)!;
+      assert.equal(frames[0]!.height, releaseHeight, "the first spring frame equals the last drawn compressed height");
+      assert.equal(frames.at(-1)!.height, 220);
+      assert.ok(frames.every(frame => frame.height >= releaseHeight && frame.height <= 220));
       assert.equal(offsets.at(-1), 0);
     });
   }
-  await t.test("an interrupted collapse can be re-grabbed above small and cannot be dragged below it", () => {
+  await t.test("an interrupted collapse can be re-grabbed above small and continues into lower resistance", () => {
     environment.panelExtent = "small";
     environment.panelSettling = true;
     delayed = false;
@@ -220,7 +231,58 @@ test("panel cancellation and multi-touch never commit a pending drag", async t =
     handlers.onHandleTouchMove!(touch(120));
     assert.equal(offsets.at(-1), -60, "downward movement above small remains available");
     handlers.onHandleTouchMove!(touch(260));
-    assert.equal(offsets.at(-1), 0, "the same gesture clamps when it reaches small");
+    assert.ok(offsets.at(-1)! > 0 && offsets.at(-1)! < 72, "the same gesture crosses small with bounded resistance");
     handlers.onHandleTouchCancel!();
+  });
+  await t.test("re-grabbing below small preserves the live frame and permits reversal", () => {
+    environment.panelExtent = "small";
+    environment.panelSettling = true;
+    delayed = false;
+    geometryRows[0]!.height = 184;
+    panelSnapCache.current = null;
+    handlers.onHandleTouchStart!(touch(100));
+    assert.equal(offsets.at(-1), 36, "the compressed frame is not resisted a second time at touch-down");
+    handlers.onHandleTouchMove!(touch(110));
+    assert.ok(offsets.at(-1)! > 36 && offsets.at(-1)! < 46, "continued downward movement starts at the recovered physical origin");
+    handlers.onHandleTouchMove!(touch(10));
+    assert.equal(offsets.at(-1), -18, "upward reversal crosses small without a new origin or dead zone");
+    const countBeforeCancel = commits.length;
+    handlers.onHandleTouchCancel!();
+    assert.equal(offsets.at(-1), 0);
+    assert.equal(commits.length, countBeforeCancel);
+  });
+  await t.test("re-grabbing below small without moving resumes the original anchor continuously", () => {
+    environment.panelExtent = "small";
+    environment.panelSettling = true;
+    delayed = false;
+    geometryRows[0]!.height = 184;
+    panelSnapCache.current = null;
+    handlers.onHandleTouchStart!(touch(100));
+    assert.equal(offsets.at(-1), 36);
+    const springCount = springs.length;
+    handlers.onHandleTouchEnd!();
+    assert.equal(springs.length, springCount + 1, "touch-down interrupts the return but cannot erase its remaining distance");
+    assert.equal(springs.at(-1)![0]!.height, 184);
+    assert.equal(springs.at(-1)!.at(-1)!.height, 220);
+  });
+  await t.test("a release preceding re-grab geometry starts from the native frame that was drawn", () => {
+    environment.panelExtent = "small";
+    environment.panelSettling = true;
+    delayed = true;
+    pending.length = 0;
+    geometryRows[0]!.height = 184;
+    panelSnapCache.current = null;
+    const springCount = springs.length;
+    now += 1000;
+    handlers.onHandleTouchStart!(touch(100));
+    now += 100;
+    handlers.onHandleTouchMove!(touch(110));
+    handlers.onHandleTouchEnd!();
+    pending.shift()!(geometryRows);
+    pending.shift()!(geometryRows);
+    assert.equal(springs.length, springCount + 1);
+    assert.equal(springs.at(-1)![0]!.height, 184, "an undrawn pointer sample cannot replace the live compressed height");
+    assert.equal(springs.at(-1)!.at(-1)!.height, 220);
+    delayed = false;
   });
 });
