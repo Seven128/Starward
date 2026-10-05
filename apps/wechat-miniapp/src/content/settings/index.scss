@@ -8,6 +8,11 @@
   background: var(--canvas);
 }
 
+.settings-page .custom-nav__title {
+  align-items: flex-start;
+  text-align: left;
+}
+
 .settings-page__scroll {
   position: relative;
   z-index: 0;
