@@ -1,6 +1,6 @@
 import Taro from "@tarojs/taro";
 import { View, Text } from "@tarojs/components";
-import { useRef, useState } from "react";
+import { usePageNavigation } from "@/hooks/use-page-navigation";
 import { nativeStatusBarHeightPx, nativeMenuClearancePx, nativeNavigationInsets } from "@/theme/native-metrics";
 import { SemanticIcon } from "./semantic-asset";
 import { SoftButton } from "./soft-button";
@@ -31,39 +31,33 @@ export function CustomNav({
   const statusBarHeight = nativeStatusBarHeightPx();
   const menuClearance = nativeMenuClearancePx();
   const actionSafeTop = right ? nativeNavigationInsets().safeTop : undefined;
-  const navigationBusy = useRef(false);
-  const [backError, setBackError] = useState(false);
+  const navigation = usePageNavigation();
+  const backError = navigation.navigationError;
   const goBack = async () => {
-    if (navigationBusy.current) return;
-    navigationBusy.current = true;
-    setBackError(false);
+    const attempt = navigation.begin({ allowUnknownStack: true });
+    if (!attempt) return;
     const fallback = () => Taro.switchTab({ url: backFallbackTab });
-    let hasPriorPage = false;
-    try {
-      hasPriorPage = Taro.getCurrentPages().length > 1;
-    } catch {
-      // An unavailable page stack is equivalent to an unprovable back target.
-    }
     try {
       if (beforeBack && !(await beforeBack())) return;
+      if (!attempt.active()) return;
       await onBackAuthorized?.();
-      if (hasPriorPage) {
+      if (!attempt.active()) return;
+      if (attempt.stack.length > 1) {
         try {
           await Taro.navigateBack();
         } catch {
-          await fallback();
+          if (attempt.active()) await fallback();
         }
       } else {
         await fallback();
       }
     } catch {
-      try {
-        await onBackFailure?.();
-      } finally {
-        setBackError(true);
+      if (attempt.active()) {
+        try { await onBackFailure?.(); } catch { /* Still report the failed return. */ }
+        attempt.fail();
       }
     } finally {
-      navigationBusy.current = false;
+      attempt.release();
     }
   };
   return (

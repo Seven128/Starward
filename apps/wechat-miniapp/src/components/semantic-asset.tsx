@@ -52,17 +52,9 @@ export type SemanticIconName =
 
 export type SemanticIconState = "default" | "selected" | "draft" | "pending";
 
-const B_ICON_ID: Record<SemanticIconName, string> = {
-  settings: "settings", pencil: "pencil", "account-user": "account-user",
-  "arrow-left": "arrow-left", search: "search", filter: "filter",
-  "chevron-right": "chevron-right", "chevron-down": "chevron-down",
-  "chevron-up": "chevron-up", close: "close", location: "location",
-  layers: "layers", refresh: "refresh", conditions: "low-cloud", info: "info",
-  compass: "compass", horizon: "horizon", undo: "undo", check: "check",
-  download: "download", share: "share", eye: "eye", bulb: "bulb",
-  cloud: "cloud", wind: "wind", telescope: "telescope", trash: "trash", "wifi-off": "wifi-off", images: "images",
-  sun: "sun", clock: "clock", moon: "moon", meteor: "meteor",
-  terrain: "terrain", star: "four-point-star",
+// Most adopted icon IDs are the semantic name; record only actual aliases.
+const B_ICON_ID: Partial<Record<SemanticIconName, string>> = {
+  conditions: "low-cloud", star: "four-point-star",
 };
 
 function packageAssetPrefix() {
@@ -74,7 +66,7 @@ function packageAssetPrefix() {
 }
 
 export function adoptedBIconPath(name: SemanticIconName, state: SemanticIconState = "default") {
-  return `${packageAssetPrefix()}/assets/b-icons/${B_ICON_ID[name]}--day--${state}.png`;
+  return `${packageAssetPrefix()}/assets/b-icons/${B_ICON_ID[name] ?? name}--day--${state}.png`;
 }
 
 const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
@@ -89,7 +81,7 @@ const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
   bulb: "/assets/icons/bulb.svg",
   cloud: "/assets/icons/cloud.svg",
   wind: "/content/assets/icons/wind.svg",
-  telescope: "/assets/icons/telescope.svg",
+  telescope: "/content/assets/icons/telescope.svg",
   sun: "/assets/icons/sun.svg",
   moon: "/assets/icons/moon.svg",
   trash: "/content/assets/icons/trash-2.svg",

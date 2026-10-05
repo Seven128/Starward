@@ -20,15 +20,29 @@ function navigation(
   };
   visit(source);
   assert.ok(declaration);
-  const busy = { current: false }, errors: boolean[] = [];
+  const errors: boolean[] = [];
+  let reference: { current: { pending: number } } | undefined, hide!: () => void, show!: () => void, cleanup!: () => void;
+  let unreadable = false, stableStack: unknown[];
+  try { stableStack = stack(); } catch { unreadable = true; stableStack = []; }
+  let currentStack = stableStack;
+  const Taro = { getCurrentPages: () => { if (unreadable) throw Error("unavailable"); return currentStack; }, navigateBack: back, switchTab: tab };
+  const owner = { exports: {} as { usePageNavigation: () => unknown } };
+  vm.runInNewContext(ts.transpileModule(readFileSync(new URL("../hooks/use-page-navigation.ts", import.meta.url), "utf8"), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
+  }).outputText, { module: owner, exports: owner.exports, require: (name: string) => name === "react" ? {
+    useRef: (initial: { pending: number }) => reference ??= { current: initial },
+    useState: () => [false, (value: boolean) => errors.push(value)], useEffect: (setup: () => () => void) => { cleanup = setup(); },
+  } : { __esModule: true, default: Taro, useDidHide: (fn: () => void) => { hide = fn; }, useDidShow: (fn: () => void) => { show = fn; } } });
+  const navigation = owner.exports.usePageNavigation();
   const goBack = vm.runInNewContext(ts.transpileModule(declaration + "\ngoBack;", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
-    navigationBusy: busy, setBackError: (value: boolean) => errors.push(value),
+    navigation,
     backFallbackTab: "/pages/my/index",
-    Taro: { getCurrentPages: stack, navigateBack: back, switchTab: tab }, beforeBack, onBackAuthorized, onBackFailure,
+    Taro, beforeBack, onBackAuthorized, onBackFailure,
   }) as () => Promise<void>;
-  return { goBack, busy, errors };
+  return { goBack, busy: { get current() { return !!reference!.current.pending; } }, errors,
+    hide, show, unmount: cleanup, leavePage: () => { currentStack = [{}]; } };
 }
 
 test("back success preserves the actual previous page rather than switching tabs", async () => {
@@ -92,4 +106,49 @@ test("rapid repeated activation does not pop a second page", async () => {
   resolve();
   await first;
   assert.equal(nav.busy.current, false);
+});
+
+test("retired Back cannot dispatch a fallback from a hidden, unmounted or replacement page", async () => {
+  for (const retire of ["hide", "unmount", "leavePage"] as const) {
+    let reject!: () => void, tabs = 0, failures = 0;
+    const nav = navigation(() => [{}, {}], () => new Promise<void>((_, fail) => { reject = () => fail(Error("old back rejected")); }),
+      async () => { tabs++; }, undefined, undefined, () => { failures++; });
+    const pending = nav.goBack(); await Promise.resolve(); nav[retire](); reject(); await pending;
+    assert.equal(tabs, 0, retire); assert.equal(failures, 0, retire); assert.equal(nav.errors.filter(Boolean).length, 0);
+  }
+});
+
+test("hide/show releases the old lock, while its finalizer cannot release a successor", async () => {
+  const calls: Array<() => void> = [];
+  const nav = navigation(() => [{}], async () => assert.fail("no back target"),
+    () => new Promise<void>((_, reject) => calls.push(() => reject(Error("native tab rejected")))));
+  const old = nav.goBack(); await Promise.resolve(); nav.hide(); nav.show();
+  const current = nav.goBack(); await Promise.resolve(); assert.equal(calls.length, 2);
+  calls[0]!(); await old; assert.equal(nav.busy.current, true); assert.equal(nav.errors.filter(Boolean).length, 0);
+  await nav.goBack(); assert.equal(calls.length, 2); calls[1]!(); await current;
+  assert.equal(nav.errors.filter(Boolean).length, 1); assert.equal(nav.busy.current, false);
+});
+
+test("retirement while awaiting a leave decision or authorization prevents subsequent work", async () => {
+  for (const stage of ["decision", "authorization"] as const) {
+    let resolve!: () => void, authorized = 0, dispatched = 0;
+    const wait = new Promise<void>(done => { resolve = done; });
+    const nav = navigation(() => [{}], async () => { dispatched++; }, async () => { dispatched++; },
+      () => stage === "decision" ? wait.then(() => true) : true,
+      () => { authorized++; return stage === "authorization" ? wait : undefined; });
+    const pending = nav.goBack(); await Promise.resolve(); await Promise.resolve(); nav.hide(); nav.show();
+    resolve(); await pending; assert.equal(dispatched, 0); assert.equal(authorized, stage === "decision" ? 0 : 1);
+  }
+});
+
+test("a failed recovery callback remains visible and handled; a late callback cannot write old UI", async () => {
+  const failed = navigation(() => [{}], async () => {}, async () => { throw Error("tab failed"); }, undefined,
+    undefined, async () => { throw Error("restoration failed"); });
+  await failed.goBack(); assert.deepEqual(failed.errors, [false, true]); assert.equal(failed.busy.current, false);
+  let resolve!: () => void, entered!: () => void;
+  const enteredRecovery = new Promise<void>(done => { entered = done; });
+  const nav = navigation(() => [{}], async () => {}, async () => { throw Error("tab failed"); }, undefined,
+    undefined, () => { entered(); return new Promise<void>(done => { resolve = done; }); });
+  const pending = nav.goBack(); await enteredRecovery;
+  nav.hide(); nav.show(); resolve(); await pending; assert.equal(nav.errors.filter(Boolean).length, 0);
 });

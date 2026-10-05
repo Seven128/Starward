@@ -1,4 +1,4 @@
-import Taro from "@tarojs/taro";
+import Taro, { useDidShow } from "@tarojs/taro";
 import { useEffect, useRef } from "react";
 import { createNativeEditorLeaveGuardController } from "./editor-leave-guard-controller";
 
@@ -6,6 +6,7 @@ import { createNativeEditorLeaveGuardController } from "./editor-leave-guard-con
 export function useNativeEditorLeaveGuard(enabled: boolean, message: string) {
   const controllerRef = useRef<ReturnType<typeof createNativeEditorLeaveGuardController> | null>(null);
   controllerRef.current ??= createNativeEditorLeaveGuardController(Taro);
+  useDidShow(() => controllerRef.current!.configure(enabled, message));
   useEffect(() => {
     const controller = controllerRef.current!;
     controller.configure(enabled, message);

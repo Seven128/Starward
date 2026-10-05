@@ -21,9 +21,10 @@ test("My serializes competing entries and permits retry after native navigation 
     dismissNotification: (id: string) => { dismissed.push(id); state.notifications = state.notifications.filter(item => item.id !== id); },
   };
   const store = { getState: () => state, subscribe: () => () => {} };
-  const module = { exports: {} as { useAccountNavigation: (owner: string) => unknown } };
   const page = {};
-  vm.runInNewContext(ts.transpileModule(readFileSync(new URL("../../hooks/use-account-navigation.ts", import.meta.url), "utf8"), {
+  const load = (file: string): any => {
+    const module = { exports: {} };
+    vm.runInNewContext(ts.transpileModule(readFileSync(new URL(file, import.meta.url), "utf8"), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, esModuleInterop: true },
   }).outputText, {
     module, exports: module.exports,
@@ -34,10 +35,13 @@ test("My serializes competing entries and permits retry after native navigation 
       default: { getCurrentPages: () => [page], navigateTo: ({ url }: { url: string }) => {
         urls.push(url); return new Promise<void>((resolve, reject) => calls.push({ resolve, reject }));
       } },
-    } : name.includes("api-client") ? { currentDraftUserId: () => "a" } : { useAppStore: store },
+    } : name.endsWith("use-page-navigation") ? load("../../hooks/use-page-navigation.ts") : name.includes("api-client") ? { currentDraftUserId: () => "a" } : { useAppStore: store },
   });
+    return module.exports;
+  };
+  const module = load("../../hooks/use-account-navigation.ts") as { useAccountNavigation: (owner: string) => unknown };
   const run = vm.runInNewContext(ts.transpileModule(`${declaration}\nopenPage;`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-    navigation: module.exports.useAccountNavigation("a"), recordAcceptanceDiagnostic: () => {},
+    navigation: module.useAccountNavigation("a"), recordAcceptanceDiagnostic: () => {},
     notify: (notice: unknown) => notices.push(notice),
     useAppStore: store,
   });

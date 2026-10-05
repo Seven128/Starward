@@ -9,6 +9,7 @@ import { Provenance } from "@/components/provenance";
 import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { SharePoster } from "@/components/share-poster";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
+import { usePageNavigation } from "@/hooks/use-page-navigation";
 import { createPlanShare, getSharedPlan, getSharedSpot, MiniappApiError } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
@@ -43,18 +44,7 @@ export default function SharedJourneyPage() {
   const requestEpoch = useRef(0);
   const pageVisible = useRef(true);
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const navigation = useRef({ mounted: true, epoch: 0, pending: null as number | null }).current;
-  const [navigationError, setNavigationError] = useState(false);
-  const retireNavigation = () => {
-    navigation.epoch++;
-    navigation.pending = null;
-    setNavigationError(false);
-  };
-
-  useEffect(() => {
-    navigation.mounted = true;
-    return () => { navigation.mounted = false; navigation.epoch++; navigation.pending = null; };
-  }, []);
+  const navigation = usePageNavigation();
 
   useDidShow(() => {
     pageVisible.current = true;
@@ -68,7 +58,6 @@ export default function SharedJourneyPage() {
   });
   useDidHide(() => {
     pageVisible.current = false;
-    retireNavigation();
     if (expiryTimer.current) clearTimeout(expiryTimer.current);
     expiryTimer.current = null;
   });
@@ -79,7 +68,7 @@ export default function SharedJourneyPage() {
     const timer = setTimeout(() => {
       if (!pageVisible.current || requestEpoch.current !== epoch) return;
       requestEpoch.current += 1;
-      retireNavigation();
+      navigation.retire();
       setState({ kind: "missing" });
     }, state.expiresInMs);
     expiryTimer.current = timer;
@@ -92,7 +81,7 @@ export default function SharedJourneyPage() {
   useEffect(() => {
     let cancelled = false;
     const epoch = ++requestEpoch.current;
-    retireNavigation();
+    navigation.retire();
     const stillCurrent = () => !cancelled && requestEpoch.current === epoch;
     const showPlan = (response: Awaited<ReturnType<typeof getSharedPlan>>, publicToken: string, requestStartedAtMs: number) => {
       if (!stillCurrent()) return;
@@ -141,34 +130,24 @@ export default function SharedJourneyPage() {
   const shareTitle = shareKind === "PLAN" ? "行程分享" : shareKind === "SPOT" ? "观星点分享" : "公开分享";
   const planSpotRisk = data?.kind === "PLAN" ? planSpotRiskMessage(data.spotStatus) : null;
   const openMap = () => {
-    if (!navigation.mounted || !pageVisible.current || navigation.pending !== null) return;
-    const currentPage = () => { try { return Taro.getCurrentPages().at(-1) ?? null; } catch { return null; } };
-    const page = currentPage();
-    if (!page) { setNavigationError(true); return; }
-    const ticket = ++navigation.epoch;
     const contentEpoch = requestEpoch.current;
-    navigation.pending = ticket;
-    setNavigationError(false);
-    const failed = () => {
-      if (navigation.mounted && pageVisible.current && navigation.epoch === ticket &&
-          requestEpoch.current === contentEpoch && currentPage() === page) setNavigationError(true);
-    };
-    const release = () => { if (navigation.pending === ticket) navigation.pending = null; };
+    const attempt = navigation.begin({ valid: () => requestEpoch.current === contentEpoch });
+    if (!attempt) return;
     try {
       if (data) {
         setViewport({ center: { latitude: data.spotGcj02.latitude, longitude: data.spotGcj02.longitude }, zoom: 11 });
         requestSpotOpen(data.spotId);
       }
-      void Taro.switchTab({ url: "/pages/map/index" }).then(undefined, failed).finally(release);
+      void Taro.switchTab({ url: "/pages/map/index" }).then(undefined, attempt.fail).finally(attempt.release);
     }
-    catch { failed(); release(); }
+    catch { attempt.fail(); attempt.release(); }
   };
   return <><SystemMotionProbe /><View className={`${themeClass} shared-journey`}>
     <FloatingNotificationHost />
     <CustomNav title={shareTitle} back backFallbackTab="/pages/map/index" />
     <ScrollView scrollY enhanced showScrollbar={false} className="shared-journey__scroll">
       <View className="shared-journey__content page-inset safe-bottom">
-        {navigationError ? <StatusPanel state="ERROR" title="地图暂未打开" detail="请重试返回地图。" recoveryLabel="重试" onRecover={openMap} /> : null}
+        {navigation.navigationError ? <StatusPanel state="ERROR" title="地图暂未打开" detail="请重试返回地图。" recoveryLabel="重试" onRecover={openMap} /> : null}
         {state.kind === "loading" ? <StatusPanel state="LOADING" detail="正在读取公开分享内容。" /> : null}
         {state.kind === "missing" ? <StatusPanel state="ERROR" title="分享不可用" detail="这份分享已失效、被删除或暂不公开。" recoveryLabel="返回地图" onRecover={openMap} /> : null}
         {state.kind === "error" ? <StatusPanel state="ERROR" detail="分享内容暂时无法获取，请检查网络后重试。" recoveryLabel="重试" onRecover={() => setAttempt(value => value + 1)} /> : null}

@@ -8,7 +8,8 @@ type Element = { type: string; props: Record<string, any> };
 type Effect = { deps?: unknown[]; clean?: () => void };
 function mount(kind: "SPOT" | "PLAN" | "MISSING") {
   const slots: any[] = [], effects: Array<() => void> = [], timers = new Map<number, () => void>();
-  let cursor = 0, timerId = 0, show!: () => void, hide!: () => void;
+  let cursor = 0, timerId = 0;
+  const show: Array<() => void> = [], hide: Array<() => void> = [];
   let page: object | null = {}, getterThrows = false, dispatchThrows = false;
   let params: Record<string, string> = kind === "SPOT" ? { spotId: "public-spot" } : kind === "PLAN" ? { token: "public-token" } : {};
   let tree: Element;
@@ -36,7 +37,7 @@ function mount(kind: "SPOT" | "PLAN" | "MISSING") {
     } };
   const module = { exports: {} as { default: () => Element } };
   const source = readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
-  vm.runInNewContext(ts.transpileModule(source, { compilerOptions: {
+  const load = (source: string, module: { exports: any }) => vm.runInNewContext(ts.transpileModule(source, { compilerOptions: {
     module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true,
   } }).outputText, {
     module, exports: module.exports, Date, encodeURIComponent, decodeURIComponent,
@@ -45,7 +46,10 @@ function mount(kind: "SPOT" | "PLAN" | "MISSING") {
       if (name === "react") return react;
       if (name === "react/jsx-runtime") return { Fragment: "Fragment", jsx: (type: string, props: any) => ({ type, props }), jsxs: (type: string, props: any) => ({ type, props }) };
       if (name === "@tarojs/taro") return { __esModule: true, default: taro, useRouter: () => ({ params }),
-        useDidShow: (fn: () => void) => { show = fn; }, useDidHide: (fn: () => void) => { hide = fn; }, useShareAppMessage: () => {} };
+        useDidShow: (fn: () => void) => { show.push(fn); }, useDidHide: (fn: () => void) => { hide.push(fn); }, useShareAppMessage: () => {} };
+      if (name.endsWith("use-page-navigation")) {
+        const owner = { exports: {} }; load(readFileSync(new URL("../../hooks/use-page-navigation.ts", import.meta.url), "utf8"), owner); return owner.exports;
+      }
       if (name === "@tarojs/components") return { View: "View", Text: "Text", Button: "Button", ScrollView: "ScrollView" };
       if (name.endsWith("use-theme")) return { useMotionThemeClass: () => "theme-day" };
       if (name.endsWith("app-store")) return { useAppStore: (select: (s: typeof actions) => unknown) => select(actions) };
@@ -57,7 +61,8 @@ function mount(kind: "SPOT" | "PLAN" | "MISSING") {
       return Object.fromEntries(["SystemMotionProbe", "CustomNav", "FloatingNotificationHost", "Provenance", "StatusPanel", "SharePoster"].map(n => [n, n]));
     },
   });
-  const render = () => { cursor = 0; tree = module.exports.default(); effects.splice(0).forEach(fn => fn()); };
+  load(source, module);
+  const render = () => { cursor = 0; show.length = hide.length = 0; tree = module.exports.default(); effects.splice(0).forEach(fn => fn()); };
   const settle = async () => { await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); render(); };
   const nodes = (node: any): Element[] => !node || typeof node !== "object" ? [] : Array.isArray(node) ? node.flatMap(nodes) : [node, ...nodes(node.props?.children)];
   const failure = () => nodes(tree).find(e => e.type === "StatusPanel" && e.props.title === "地图暂未打开");
@@ -66,8 +71,8 @@ function mount(kind: "SPOT" | "PLAN" | "MISSING") {
     const missing = nodes(tree).find(e => e.type === "StatusPanel" && e.props.title === "分享不可用");
     assert.ok(button || missing); (button?.props.onClick ?? missing!.props.onRecover)(); render();
   };
-  render(); show(); render();
-  return { calls, map, point, settle, open, failure, hide: () => { hide(); render(); }, show: () => { show(); render(); },
+  render(); show.forEach(fn => fn()); render();
+  return { calls, map, point, settle, open, failure, hide: () => { hide.forEach(fn => fn()); render(); }, show: () => { show.forEach(fn => fn()); render(); },
     unmount: () => { slots.forEach(s => s?.clean?.()); }, empty: () => { page = null; }, restore: () => { page = {}; getterThrows = false; dispatchThrows = false; },
     leave: () => { page = {}; }, throwGetter: () => { getterThrows = true; }, throwDispatch: () => { dispatchThrows = true; },
     change: () => { params = {}; render(); }, expire: () => { [...timers.values()].forEach(fn => fn()); render(); } };

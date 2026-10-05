@@ -43,7 +43,6 @@ const retainedLegacyIconFiles = [
   "tab-my-selected-night.png", "tab-my-selected-observation.png",
   "wifi-off-night.svg",
   "wifi-off-observation.svg",
-  "telescope-night.svg", "telescope-observation.svg",
   "sun-night.svg", "sun-observation.svg", "moon-night.svg", "moon-observation.svg",
 ] as const;
 // These legacy night/observation icons are used only by content pages.
@@ -51,6 +50,7 @@ const contentLegacyIconFiles = [
   "download-night.svg", "download-observation.svg",
   "trash-2-night.svg", "trash-2-observation.svg",
   "wind-night.svg", "wind-observation.svg",
+  "telescope-night.svg", "telescope-observation.svg",
 ] as const;
 const bIconFiles = {
   main: [

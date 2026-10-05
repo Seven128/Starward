@@ -7,23 +7,24 @@ import ts from "typescript";
 function mount() {
   let identity: string | null = "a", owner: string | null = "a";
   let state = { accountOwnerId: "a" as string | null, mapResetVersion: 0 };
-  let error = false, cleanup: (() => void) | undefined, reference: unknown;
+  let error = false, effectIndex = 0, reference: unknown;
+  const cleanups: Array<() => void> = [];
   let hide!: () => void, show!: () => void;
   let page: object | null = {};
   let dispatchThrows = false;
   const listeners = new Set<(next: typeof state, previous: typeof state) => void>();
   const calls: Array<{ url: string; succeed: () => void; fail: () => void }> = [];
-  const source = readFileSync(new URL("./use-account-navigation.ts", import.meta.url), "utf8");
   type Feedback = (phase: "start" | "success" | "failure") => void;
-  const module = { exports: {} as { useAccountNavigation: (o: string | null) => { open: (url: string, feedback?: Feedback) => Promise<void>; navigationError: boolean } } };
-  vm.runInNewContext(ts.transpileModule(source, { compilerOptions: {
+  const load = (file: string): any => {
+    const module = { exports: {} };
+    vm.runInNewContext(ts.transpileModule(readFileSync(new URL(file, import.meta.url), "utf8"), { compilerOptions: {
     module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true,
   } }).outputText, {
     module, exports: module.exports, Symbol,
     require: (name: string) => name === "react" ? {
       useState: () => [error, (value: boolean) => { error = value; }],
       useRef: (initial: unknown) => reference ??= { current: initial },
-      useEffect: (setup: () => () => void) => { if (!cleanup) cleanup = setup(); },
+      useEffect: (setup: () => () => void) => { const i = effectIndex++; cleanups[i] ??= setup(); },
     } : name === "@tarojs/taro" ? {
       __esModule: true,
       useDidHide: (callback: () => void) => { hide = callback; },
@@ -34,13 +35,18 @@ function mount() {
           calls.push({ url, succeed: resolve, fail: () => reject(new Error("native navigation rejected")) });
         });
       } },
-    } : name.includes("api-client") ? { currentDraftUserId: () => identity } : {
+    } : name.endsWith("use-page-navigation") ? load("./use-page-navigation.ts") : name.includes("api-client") ? { currentDraftUserId: () => identity } : {
       useAppStore: { getState: () => state, subscribe: (callback: (next: typeof state, previous: typeof state) => void) => {
         listeners.add(callback); return () => listeners.delete(callback);
       } },
     },
   });
-  const render = () => module.exports.useAccountNavigation(owner);
+    return module.exports;
+  };
+  const module = load("./use-account-navigation.ts") as { useAccountNavigation: (o: string | null) => {
+    open: (url: string, feedback?: Feedback) => Promise<void>; navigationError: boolean;
+  } };
+  const render = () => { effectIndex = 0; return module.useAccountNavigation(owner); };
   const switchOwner = (next: string | null) => {
     identity = owner = next;
     const previous = state;
@@ -50,7 +56,7 @@ function mount() {
   render();
   return { calls, listeners, open: (url = "/content/plan/detail/index?planId=a", feedback?: Feedback) => render().open(url, feedback),
     failed: () => render().navigationError, switchOwner,
-    hide: () => hide(), show: () => show(), unmount: () => cleanup!(),
+    hide: () => hide(), show: () => show(), unmount: () => cleanups.forEach(cleanup => cleanup()),
     mismatch: () => { identity = "b"; }, leavePage: () => { page = {}; }, emptyStack: () => { page = null; },
     throwDispatch: (value: boolean) => { dispatchThrows = value; },
   };
