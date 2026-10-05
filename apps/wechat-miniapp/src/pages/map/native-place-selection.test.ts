@@ -5,6 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import { normalizePlatformLocation } from "../../services/platform-location-result";
 import { sameContextVersion } from "../../services/observation-context-version";
+import { localFailureMessage } from "../../utils/presentation";
 
 function selection(mode = "DAY", confirm = true, moveWait?: Promise<unknown>) {
   const ast = ts.createSourceFile("search.tsx", readFileSync(new URL("./search-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -45,7 +46,7 @@ function selection(mode = "DAY", confirm = true, moveWait?: Promise<unknown>) {
     setFinderQuery: (value: unknown) => calls.push({ action: "query", value }),
     moveMapReference: async (value: unknown) => { calls.push({ action: "move", value }); await moveWait; },
     notify: () => calls.push({ action: "notice" }),
-    errorMessage: (error: any) => error?.errMsg ?? error?.message ?? String(error),
+    errorMessage: (error: any) => localFailureMessage(error?.errMsg ?? error?.message ?? String(error)),
   }) as () => Promise<void>;
   return { run, resolve, reject, calls, nativePending, choosePlatformLocation,
     resolveAt: (index: number, value: unknown) => pickers[index]!.resolve(value),

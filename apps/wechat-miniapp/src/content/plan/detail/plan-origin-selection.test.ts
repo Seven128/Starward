@@ -4,6 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { normalizePlatformLocation } from "../../../services/platform-location-result";
+import { localFailureMessage } from "../../../utils/presentation";
 
 const ast = ts.createSourceFile("fields.tsx", readFileSync(new URL("./plan-travel-fields.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 let declaration = "", inputCallback = "";
@@ -20,12 +21,18 @@ function fixture() {
   const values: any[] = [], busy: boolean[] = [];
   const live = { current: { value: { origin: "原出发地", mode: "TRANSIT" }, disabled: false, ownerKey: "first:plan-1" } };
   const mounted = { current: true }, pending = { current: false };
+  const Taro = { getCurrentPages: () => [page], chooseLocation: () => { calls++; return wait; } };
+  const useAppStore = { getState: () => ({ mode: "DAY", notify: () => notices++ }) };
+  const platformAst = ts.createSourceFile("location.ts", readFileSync(new URL("../../../services/platform-location.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const platform = platformAst.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "choosePlatformLocation")!;
+  const choosePlatformLocation = vm.runInNewContext(ts.transpileModule(platform.getText(platformAst).replace(/^export /u, "") + "; choosePlatformLocation;",
+    { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, { Error, Taro, useAppStore, normalizePlatformLocation });
   const run = vm.runInNewContext(ts.transpileModule(`const ${declaration}; chooseOrigin;`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
     live, mounted, pending, disabled: false, setChoosing: (v: boolean) => busy.push(v), currentDraftUserId: () => account,
-    Taro: { getCurrentPages: () => [page] }, choosePlatformLocation: () => { calls++; return wait; },
+    Taro, choosePlatformLocation,
     handoff: { confirm: async () => true },
     onChange: (value: unknown) => values.push(value), PLAN_TRAVEL_ORIGIN_MAX_LENGTH: 120,
-    errorMessage: (error: any) => error.errMsg ?? error.message, useAppStore: { getState: () => ({ notify: () => notices++ }) },
+    errorMessage: (error: any) => localFailureMessage(error.errMsg ?? error.message), useAppStore,
   });
   return { run, resolve, reject, values, busy, live, mounted, calls: () => calls, notices: () => notices,
     changeAccount: () => { account = "second"; }, leave: () => { page = {}; } };
@@ -33,9 +40,10 @@ function fixture() {
 
 test("plan chooses once, preserves travel mode and stores normalized coordinates without formal identity", async () => {
   const f = fixture(), running = f.run(); await f.run();
-  const selected = normalizePlatformLocation({ latitude: 22.5, longitude: 113.5, name: "新出发地", address: "所选地址" });
+  const raw = { latitude: 22.5, longitude: 113.5, name: "新出发地", address: "所选地址" };
+  const selected = normalizePlatformLocation(raw);
   assert.notEqual(selected.wgs84.longitude, selected.location.longitude);
-  f.resolve(selected); await running;
+  f.resolve(raw); await running;
   assert.equal(f.calls(), 1); assert.equal(f.values.length, 1);
   assert.deepEqual(JSON.parse(JSON.stringify(f.values[0])), { origin: "新出发地", mode: "TRANSIT",
     originLocation: { source: "WECHAT_CHOOSE_LOCATION", address: "所选地址", wgs84: selected.wgs84 } });
@@ -53,7 +61,7 @@ test("cancel, page/account/plan changes, manual edits and unmount cannot replace
     if (scenario === "unmount") f.mounted.current = false;
     if (scenario === "busy") f.live.current.disabled = true;
     if (["cancel", "error"].includes(scenario)) f.reject({ errMsg: scenario === "cancel" ? "chooseLocation:fail cancel" : "unavailable" });
-    else f.resolve(normalizePlatformLocation({ latitude: 0, longitude: 0 }));
+    else f.resolve({ latitude: 0, longitude: 0 });
     await running;
     assert.deepEqual(f.values, [], scenario);
     assert.equal(f.notices(), scenario === "error" ? 1 : 0, scenario);
