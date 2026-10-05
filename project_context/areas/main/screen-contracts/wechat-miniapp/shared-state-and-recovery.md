@@ -177,6 +177,8 @@ My头像/昵称的编辑草稿随账户及重置代隔离，正常失败保留�
 
 计划编辑的保存、删除、清单勾选与明确确认的恢复记录清理共用同一单次操作owner；换号/重置、普通HTTP等待中隐藏、真实离页或卸载退休旧请求后续、提示、编辑状态、草稿确认和导航回退，返回原A仍允许新动作。删除与另建确认只在已知原生Modal期间保留合法callback/show两序，不豁免账户或页面变化。合法管线可继续时，`announce`仍按同步的页面显示与mount状态抑制隐藏/卸载通知，不等待React状态更新。稳定目标不随本次成功安装新planId而自我退休，原生导航失败只能由仍当前的票派发回退。实际plan client/API/checklist以同一service scope检查会话等待、派发、权限重试及后续读取/失效；本账户已完成的合法cache更新不声称可撤回，也不授权退休页面继续动作。保存保留原durable body/key/planId/revision、事件与完整字段、FRESH核对及精确receipt ack，另一编辑版本的草稿不能被旧成功清掉；未知/退休结果保留恢复记录。明确“另建一份”仍按既有警告清理本账户全量恢复信息，取消/退休不清理。删除未知回执只说明需刷新核对，不承诺服务端计划未变。此处是生产责任状态，源码/RAM检查不认证真实微信Modal、身份、持久服务或整族验收。
 
+公开分享页只在私有`planId`创建入口复用中立AccountOperation；首次合法身份初始化与本操作同A再认证保持，实际createPlanShare以同service scope核会话等待/派发/权限恢复/回执。旧换号/重置、普通隐藏/离页/卸载不再签发或继续旧公开读取/ready海报；已派发能力不能声称撤回。页content epoch/独有AbortController负责公共读取，TOKEN/SPOT接收仍匿名，不增加私人账户门禁。当前可见页的私有创建退休进入原错误/显式重试，旧finally/cleanup不能取消后继frame；返回前台沿原重新校验，既有转发路径、失效/有效期/公共字段与海报责任保持。此为实现责任，真实微信接收/当前WEAPP、原生权限与部署仍须各自验证，票面/海报候选采用状态未改。
+
 ## Shared Image Viewer And Disclosure
 
 - Site and facility albums reuse one image-viewer component family with an ordered authorized media list, initial index, source geometry/identity, caption, provenance and return context. Single media has no false next control; multiple media support horizontal paging, a truthful current/total count and named non-gesture previous/next controls. Facility albums retain their own subject association; site thumbnails do not silently reassign facility evidence.

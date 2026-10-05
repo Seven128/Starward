@@ -1286,13 +1286,16 @@ export async function getPlans(signal?: AbortSignal, expectedUserId?: string) {
   return result;
 }
 
-export async function createPlanShare(planId: string, expectedUserId?: string) {
+export async function createPlanShare(planId: string, expectedUserId?: string, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
   const session = await ensureSession();
+  scope?.assertCurrent();
   const owner = expectedUserId ?? session.userId;
   if (session.userId !== owner) throw new Error("账号已变化，请重新打开计划。");
   const result = await requestOperation("plan-share:" + planId, "planSharePost", {
-    auth: "REQUIRED", pathParams: { planId },
+    auth: "REQUIRED", pathParams: { planId }, scope,
   }, false, owner);
+  scope?.assertCurrent();
   if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开计划。");
   return result;
 }

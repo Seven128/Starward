@@ -10,6 +10,7 @@ import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { SharePoster } from "@/components/share-poster";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { usePageNavigation } from "@/hooks/use-page-navigation";
+import { useAccountOperation } from "@/hooks/use-account-operation";
 import { createPlanShare, getSharedPlan, getSharedSpot, MiniappApiError } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
@@ -23,6 +24,10 @@ type ShareState = { kind: "loading" } | { kind: "missing" } | { kind: "error" } 
 
 function decode(value: string | undefined): string {
   try { return decodeURIComponent(value ?? ""); } catch { return ""; }
+}
+
+function currentSharePage(): unknown {
+  try { return Taro.getCurrentPages().at(-1); } catch { return undefined; }
 }
 
 function PublicSpotFact({ label, value }: { label: string; value: string | null }) {
@@ -43,14 +48,17 @@ export default function SharedJourneyPage() {
   const hasShown = useRef(false);
   const requestEpoch = useRef(0);
   const pageVisible = useRef(true);
+  const requestAbort = useRef<AbortController | null>(null);
+  const creationRequest = useRef<{ current(): boolean; cancel(): void } | null>(null);
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigation = usePageNavigation();
 
   useDidShow(() => {
+    const wasVisible = pageVisible.current;
     pageVisible.current = true;
     if (!hasShown.current) {
       hasShown.current = true;
-      return;
+      if (wasVisible) return;
     }
     requestEpoch.current += 1;
     setState({ kind: "loading" });
@@ -58,8 +66,20 @@ export default function SharedJourneyPage() {
   });
   useDidHide(() => {
     pageVisible.current = false;
+    requestEpoch.current += 1;
+    requestAbort.current?.abort();
     if (expiryTimer.current) clearTimeout(expiryTimer.current);
     expiryTimer.current = null;
+  });
+
+  // Private capability creation has account intent; public receivers do not.
+  const creationOperations = useAccountOperation(`share-create:${JSON.stringify([planId, token, spotId])}`, busy => {
+    if (busy || !creationRequest.current) return;
+    const retired = creationRequest.current;
+    creationRequest.current = null;
+    const canRecover = retired.current();
+    retired.cancel();
+    if (canRecover) setState({ kind: "error" });
   });
 
   useEffect(() => {
@@ -82,9 +102,25 @@ export default function SharedJourneyPage() {
     let cancelled = false;
     const epoch = ++requestEpoch.current;
     navigation.retire();
-    const stillCurrent = () => !cancelled && requestEpoch.current === epoch;
+    const page = currentSharePage();
+    const controller = new AbortController();
+    requestAbort.current = controller;
+    const stillCurrent = () => !cancelled && pageVisible.current && requestEpoch.current === epoch && Boolean(page) && currentSharePage() === page;
+    const request = { current: stillCurrent, cancel: () => { cancelled = true; controller.abort(); } };
+    if (!page) {
+      // Unknown native stack cannot authorize requests, but this mounted
+      // initial frame can still expose the existing explicit retry.
+      if (pageVisible.current) setState({ kind: "error" });
+      return () => {
+        request.cancel();
+        if (requestAbort.current === controller) requestAbort.current = null;
+      };
+    }
+    const privateCreation = Boolean(planId && !token && !spotId);
+    const creation = privateCreation ? creationOperations.begin({ allowAuthentication: true }) : undefined;
+    if (creation) creationRequest.current = request;
     const showPlan = (response: Awaited<ReturnType<typeof getSharedPlan>>, publicToken: string, requestStartedAtMs: number) => {
-      if (!stillCurrent()) return;
+      if (!stillCurrent() || (creation && !creation.isCurrent())) return;
       const expiresInMs = remainingPublicPlanLifetimeMs(response.generatedAt, response.data.expiresAt, requestStartedAtMs, Date.now());
       if (expiresInMs <= 0) {
         setState({ kind: "missing" });
@@ -96,26 +132,38 @@ export default function SharedJourneyPage() {
     setState({ kind: "loading" });
     void (async () => {
       try {
-        if (planId && !token && !spotId) {
-          const link = await createPlanShare(planId);
+        if (!stillCurrent()) return;
+        if (privateCreation) {
+          if (!creation) { setState({ kind: "error" }); return; }
+          const link = await createPlanShare(planId, undefined, creation);
+          if (!stillCurrent() || !creation.isCurrent()) return;
           const requestStartedAtMs = Date.now();
-          const publicPlan = await getSharedPlan(link.data.token);
+          const publicPlan = await getSharedPlan(link.data.token, controller.signal);
           showPlan(publicPlan, link.data.token, requestStartedAtMs);
         } else if (token && !planId && !spotId) {
           const requestStartedAtMs = Date.now();
-          const publicPlan = await getSharedPlan(token);
+          const publicPlan = await getSharedPlan(token, controller.signal);
           showPlan(publicPlan, token, requestStartedAtMs);
         } else if (spotId && !planId && !token) {
-          const publicSpot = await getSharedSpot(spotId);
+          const publicSpot = await getSharedSpot(spotId, controller.signal);
           if (stillCurrent()) setState({ kind: "ready", data: publicSpot.data,
             path: `/content/share/index?spotId=${encodeURIComponent(publicSpot.data.spotId)}` });
         } else if (stillCurrent()) setState({ kind: "missing" });
       } catch (error) {
-        if (stillCurrent()) setState({ kind: error instanceof MiniappApiError &&
+        if (stillCurrent() && (!creation || creation.isCurrent())) setState({ kind: error instanceof MiniappApiError &&
           (error.code === "NOT_FOUND" || error.code === "STALE_REJECTED") ? "missing" : "error" });
+      } finally {
+        if (creationRequest.current === request) creationRequest.current = null;
+        creation?.release();
+        if (requestAbort.current === controller) requestAbort.current = null;
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      request.cancel();
+      if (creationRequest.current === request) creationRequest.current = null;
+      creation?.release();
+      if (requestAbort.current === controller) requestAbort.current = null;
+    };
   }, [planId, token, spotId, attempt]);
 
   useShareAppMessage(() => state.kind === "ready" ? {
