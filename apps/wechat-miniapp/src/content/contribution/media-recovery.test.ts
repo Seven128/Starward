@@ -4,22 +4,6 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
-test("native picker cancellation is quiet while genuine picker failures remain errors", async () => {
-  const source = ts.createSourceFile("commands.ts", readFileSync(new URL("./use-contribution-commands.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
-  const declaration = source.statements.find((node) => ts.isFunctionDeclaration(node) && node.name?.text === "chooseImage");
-  assert.ok(declaration);
-  let failure: unknown = { errMsg: "chooseImage:fail cancel" };
-  const choose = vm.runInNewContext(ts.transpileModule(declaration.getText(source) + "\nchooseImage;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-    Error,
-    Taro: { chooseImage: async () => { throw failure; } },
-  });
-  assert.equal(await choose(1), null);
-  failure = new Error("chooseImage:fail cancel");
-  assert.equal(await choose(1), null);
-  failure = { errMsg: "chooseImage:fail permission denied" };
-  await assert.rejects(choose(1), (error) => error === failure);
-});
-
 test("media recovery validates pending selection and replaces only the requested expired upload", async () => {
   const source = ts.createSourceFile("commands.ts", readFileSync(new URL("./use-contribution-commands.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const declaration = source.statements.find((node) => ts.isFunctionDeclaration(node) && node.name?.text === "uploadSelectedFile");

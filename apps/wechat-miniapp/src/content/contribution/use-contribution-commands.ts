@@ -3,6 +3,7 @@ import { candidateIntakeIssues } from "@starward/miniapp-contracts";
 import { CANDIDATE_INTAKE_ERRORS } from "./candidate-document";
 import { parseCoordinateInput } from "./coordinate-input";
 import { choosePlatformLocation } from "@/services/platform-location";
+import { choosePlatformImages as chooseImage } from "@/services/platform-image";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { ContributionSubmitStorageError } from "@/services/contribution-submit-retry";
 import { useRef } from "react";
@@ -106,25 +107,6 @@ function createSaveDraft(form: ContributionForm, assertAccount: () => void) {
       form.setSaving(false);
     }
   };
-}
-
-async function chooseImage(count: number) {
-  try {
-    return await Taro.chooseImage({
-      count,
-      sizeType: ["compressed"],
-      sourceType: ["album", "camera"],
-    });
-  } catch (error) {
-    const message = error instanceof Error
-      ? error.message
-      : error && typeof error === "object" && "errMsg" in error
-        ? String(error.errMsg)
-        : String(error);
-    if (/cancel/iu.test(message))
-      return null;
-    throw error;
-  }
 }
 
 function validateMediaFile(file: { path: string; size?: number }) {

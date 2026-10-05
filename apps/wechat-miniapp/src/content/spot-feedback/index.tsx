@@ -27,6 +27,7 @@ import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { currentDraftUserId, errorMessage, getContributionFormalBaseline, getContributionMedia, getContributions, getSpotContributionMedia, getSpotSite, MiniappApiError } from "@/services/api-client";
 import { completeFormalContributionUpload, createFormalContributionUpload, createFormalUploadIntent, removeFormalContributionUpload, submitFormalContribution } from "./formal-feedback-mutations";
 import { useAppStore } from "@/state/app-store";
+import { choosePlatformImages } from "@/services/platform-image";
 import { ToggleField } from "@/components/toggle-field";
 import { mediaFileName, mediaMimeType, readBase64 } from "../contribution/contribution-model";
 import { appendFormalMedia, createFormalMediaSelection, formalMediaProposal, removeFormalMedia, type FormalMediaSelection } from "./formal-media-selection";
@@ -275,8 +276,8 @@ export default function FormalFeedbackEditor() {
         assertEditorOwner();
         setRightsConfirmed(true);
       }
-      const choice = await Taro.chooseImage({ count: 1, sizeType: ["compressed"], sourceType: ["album", "camera"] });
-      const file = choice.tempFiles[0]; if (!file) return;
+      const choice = await choosePlatformImages(1);
+      const file = choice?.tempFiles[0]; if (!file) return;
       assertEditorOwner();
       if (typeof file.size !== "number" || file.size <= 0 || file.size > 1_200_000) throw new Error("单张图片必须小于 1.2 MB");
       if (!intent) {
@@ -317,7 +318,7 @@ export default function FormalFeedbackEditor() {
       setPreviewPaths(current => ({ ...current, [upload.uploadId]: preview })); setMediaSelection(current => current ? appendFormalMedia(current, kind, upload.uploadId) : current); syncMediaProposal(completed);
     } catch (error) {
       if (sessionAttempt.current) setSessionUnconfirmed(true);
-      const message = errorMessage(error); if (!/cancel/iu.test(message)) notify({ owner: "contribution", placement: "floating", tone: "error", title: "图片尚未完成上传", body: `${message}；文字修改仍保留。`, dismissible: true });
+      const message = errorMessage(error); notify({ owner: "contribution", placement: "floating", tone: "error", title: "图片尚未完成上传", body: `${message}；文字修改仍保留。`, dismissible: true });
     } finally { mediaBusy.current = false; setUploading(false); }
   };
   const removePhoto = async (uploadId: string) => {

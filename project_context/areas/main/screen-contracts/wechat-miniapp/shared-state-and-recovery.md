@@ -167,6 +167,8 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
 
 新增点位添加/重试照片、正式点反馈照片和“我的”头像相册/拍照使用同一红光交接提示，置于原生相册、相机及图片授权界面之前；照片权利、上传和账号规则仍由各自业务owner控制。头像沿用已有原生返回层。新增点位“说明”章节取消提示后恢复章节滚动位置，不能只保留高亮Tab而跳回地点字段。官方WEAPP模拟器已核对头像与新增点位提示及取消；正式反馈在隔离 MEMORY_TEST 服务上完成照片上传/恢复、照片连同文字提交及冻结回读，并通过桌面系统文件选择器实选图片；新增点位桌面文件选择器取消后保留了当前空表单和原草稿入口。手机相册/相机权限、真机红光界面及正式持久化仍未获证据；详见任务 A10/A11 台账。
 
+新增点位添加/续传与正式反馈选图共用 `services/platform-image.ts`：仅在微信 `chooseImage` 的 native await 边界把规范 `chooseImage:fail cancel` 归一为 `null`，消费者保留输入并释放原操作锁；不以翻译后的中文文案判断取消。权限、未知及其它阶段失败继续进入原可见失败恢复，成功结果、选图数量、压缩及相册/相机来源保持。红光交接、照片权利、账户/页面归属、草稿与上传会话仍由各消费者负责，不能把下游上传失败静默当作取消。此处只记录共享结果责任，不认证手机权限/取消回调、账户切换或完整上传验收，也不改变原视觉采用。
+
 ## Shared Image Viewer And Disclosure
 
 - Site and facility albums reuse one image-viewer component family with an ordered authorized media list, initial index, source geometry/identity, caption, provenance and return context. Single media has no false next control; multiple media support horizontal paging, a truthful current/total count and named non-gesture previous/next controls. Facility albums retain their own subject association; site thumbnails do not silently reassign facility evidence.
