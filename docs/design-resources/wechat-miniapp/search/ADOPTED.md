@@ -4,6 +4,8 @@
 
 本文件是搜索页唯一有效的资源采用入口。
 
+2026-10-05 固定搜索锚点的生产修正：Map 与 Search 共用 `pages/map/finder-field.ts` 占位文案及 `_finder-field.scss` 的现有 `text-secondary` 色角色，避免跳页换词与原生默认占位色；旧浅灰不复制到已输入的普通文本，遵循 DESIGN 的4.5:1要求。原生建议层显式限定到搜索框两侧边界，保留原滚动、键盘与返回。此次是已采用交互及可读性要求的实现修复，不新增视觉候选、不扩大采用范围；历史参考像素及旧筛选样本仍按其声明范围解释，实际目标输出以当前验证证据为准，源码实现不代表完整真机验收。
+
 2026-09-08 用户确认搜索页完成，采用[日间搜索页资源](adopted/search-page/README.md)：最终单行筛选、二级分类弹层、分组开合、同框拉出和地址对齐修正版。
 
 现行筛选语义以 [Map/Search Screen Contract](../../../../project_context/areas/main/screen-contracts/wechat-miniapp/map-and-finder.md) 的14项终端值为准；采用包内18项是当时的构图样本，不恢复已退役选项。

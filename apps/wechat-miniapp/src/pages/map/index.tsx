@@ -1,5 +1,6 @@
 import { getReducedMotion, useReducedMotion } from "@/hooks/use-reduced-motion";
 import { SystemMotionProbe } from "@/components/system-motion-probe";
+import { FINDER_FIELD_PLACEHOLDER } from "./finder-field";
 import { useMapForecastQuery, useSkyForecastQuery } from "@/hooks/use-forecast-query";
 import { WEATHER_ALERT_REFRESH_MS } from "@/components/weather-alert-state";
 import { MapLayerSheet } from "./map-layer-sheet";
@@ -2104,7 +2105,7 @@ export default function MapPage() {
               }}
             >
               <SemanticIcon name="search" />
-              <Text>{finderQuery || "搜地点 / 区域 / 观星点"}</Text>
+              <Text>{finderQuery || FINDER_FIELD_PLACEHOLDER}</Text>
             </Button>
           </View>
 

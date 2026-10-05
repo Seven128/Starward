@@ -1,4 +1,5 @@
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
+import { FINDER_FIELD_PLACEHOLDER } from "./finder-field";
 import { mediaSource } from "@/utils/media-source";
 import { FloatingNotificationHost } from "@/components/notification";
 import { choosePlatformLocation } from "@/services/platform-location";
@@ -540,7 +541,8 @@ export function MapSearchSurface() {
             className="spot-search-field__input"
             value={finderQuery}
             focus={focused}
-            placeholder="搜观星点 / 所在区域"
+            placeholder={FINDER_FIELD_PLACEHOLDER}
+            placeholderClass="spot-search-field__placeholder"
             confirmType="search"
             aria-label="搜索自有观星点或所在区域"
             onInput={(event) => {

@@ -1,3 +1,5 @@
+@use "./finder-field" as finder-field;
+
 .map-page {
   --map-search-top: calc(env(safe-area-inset-top) + 56Px);
   --map-search-height: max(var(--target-min), calc(var(--type-search-line) + 16Px));
@@ -2631,7 +2633,7 @@
   background: rgba(255, 255, 255, .94);
 }
 .map-search-entry > text {
-  color: #94a3b8;
+  @include finder-field.text-tone;
   font-size: 15Px;
   font-weight: 400;
 }

@@ -8,6 +8,8 @@ The adopted daytime layer composition is reached through the sole [Map resource 
 
 ## Cross-Control And State Invariants
 
+Map/Search 的固定搜索锚点由同一占位文案与文本色责任维护：`pages/map/finder-field.ts` 供 Map trigger 与 Search 原生 Input 使用；`pages/map/_finder-field.scss` 将两端 query/placeholder 映射到既有 `text-secondary`，遵循 DESIGN 普通文本对比度要求，不复制旧浅灰低对比。Search 通过 WEAPP `placeholderClass` 显式控制原生占位样式。建议层仍由现有 ScrollView 承担滚动，并显式限定为父层宽度减去两侧各16Px，与搜索框同边界；保留键盘、外点收起、原生选点、筛选与返回责任。源码与尺寸公式不认证实际连续过渡、窄屏或全部主题输出。
+
 正式点面板底部动作的装饰呈现由 `pages/map/spot-panel-actions` 负责：想去/云观星/分享顺序、32px可见面与44px命中保留；想去背景沿独立360ms实时进度原位淡化，不延迟共享820ms星体。DAY为修复正常取消文字近消失，含装饰的日/夜层在前/后半段分别淡出/淡入，中点为整面#757575；前半黑字、后半白字即时切换，不增加文字贴片或进度owner。普通字号DAY夜星的右侧点移至上下边缘，既有largeText使用左侧点集，真实避字矩形与窄屏仍须目标验证；当前设置无大字入口，不展开暂停的大字整组设计。日云与两套稀疏夜星为装饰，不代表天气；NIGHT/OBSERVATION原层轨迹与点集保持。仅在可见前台播放星点呼吸，隐藏、照片查看器、退出及减弱动效结束呈现工作；Map将同一可见性传给共享`FavoriteStar`，换点重建局部呈现身份。私有草稿/审核中面板保留静态动作背景与原业务。此前74058f6a/d056背景批已取得三主题未选中静态及账户偏好减弱的DAY添加/取消与样式/关系读回，本次整面修订未重验这些组合；2026-09-29本机normal DAY的新包添加识别序列及可见代绑定后的正常取消原生序列经独立实看，旧文字近消失缺陷在已观测范围复测通过。普通开发反馈不证明手机包字节/AppID、逐帧4.5、精确820ms/360ms/.94/360°、途中反向、largeText/≤340px、其它主题连续、隐藏返回及私有消费者，代码/静态样本不替代验收。最新实现与证据边界同见[采用资源记录](../../../../../docs/design-resources/wechat-miniapp/map/adopted/spot-information/README.md)。系统级减弱输入缺口由[共享状态与恢复](shared-state-and-recovery.md)记录，不以账户样本替代。
 
 - Map 的位置解析按当前选择意图、账号、默认区域重置及原生实例判断结果是否仍有效；新正式点、私人点、定位或编辑选择须撤销旧拖图队列及迟到响应。取消正式点解析时结束加载并提供重试，不留下永久 pending。拖图解析失败保留未确认的目标中心，通过行内“重试此位置”重新解析；单纯隐藏返回不丢失该恢复目标，换号或重置不能重试旧范围。成功仅清除对应位置失败提示，保留无关消息。持续恢复卡须避开地图工具的完整命中区域。

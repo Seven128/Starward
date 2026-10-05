@@ -1,3 +1,5 @@
+@use "./finder-field" as finder-field;
+
 .spot-search-page {
   --search-safe-top: calc(env(safe-area-inset-top) + 56Px);
   --search-title-top: calc(env(safe-area-inset-top) + 4Px);
@@ -378,11 +380,17 @@
   padding-right: 16rpx;
   font-size: 15Px;
   line-height: var(--type-search-line);
+  @include finder-field.text-tone;
+}
+.spot-search-field__placeholder {
+  @include finder-field.text-tone;
 }
 .spot-search-query-overlay {
   top: calc(var(--search-safe-top) + var(--search-control-height) + 2Px);
   right: 16Px;
   left: 16Px;
+  // Explicitly bound the native scroll-view to the field's horizontal inset.
+  width: calc(100% - 32Px);
   max-height: 46vh;
   padding: 0;
   border-radius: var(--search-field-radius);
