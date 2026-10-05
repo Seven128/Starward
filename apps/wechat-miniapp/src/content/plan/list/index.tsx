@@ -12,7 +12,7 @@ import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { useAppStore } from "@/state/app-store";
 import { nextPlanListBoundary, planEndLabel, planListEmptyState, planListEntries, type PlanPartition } from "./plan-list-model";
 import { planTravelModeLabel } from "../detail/plan-travel-fields";
-import { usePlanNavigation } from "@/features/plan/use-plan-navigation";
+import { useAccountNavigation } from "@/hooks/use-account-navigation";
 import "./index.scss";
 
 export default function PlanListPage() {
@@ -25,7 +25,7 @@ export default function PlanListPage() {
   const scrollPositions = useRef({ upcoming: 0, past: 0 });
   const notify = useAppStore((state) => state.notify);
   const { owner, query } = useAccountPlans({ enabled: pageVisible, staleTime: 15_000 });
-  const { open, navigationError } = usePlanNavigation(owner);
+  const { open, navigationError } = useAccountNavigation(owner);
   useDidShow(() => {
     setPageVisible(true); setNow(new Date());
     void query.refetch();

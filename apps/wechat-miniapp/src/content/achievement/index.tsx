@@ -9,7 +9,7 @@ import { SemanticIcon } from "@/components/semantic-asset";
 import { useAccountPlans } from "@/hooks/use-account-plans";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { achievementSummary, endedPlanRecords, nextPlanEndAt } from "@/features/my/plan-achievements";
-import { usePlanNavigation } from "@/features/plan/use-plan-navigation";
+import { useAccountNavigation } from "@/hooks/use-account-navigation";
 import "./index.scss";
 
 export default function AchievementPage() {
@@ -18,7 +18,7 @@ export default function AchievementPage() {
   const [visible, setVisible] = useState(true);
   const [year, setYear] = useState<number | null>(null);
   const { owner, query: plans } = useAccountPlans({ enabled: visible, staleTime: 30_000 });
-  const { open, navigationError } = usePlanNavigation(owner);
+  const { open, navigationError } = useAccountNavigation(owner);
   useDidShow(() => { setVisible(true); setNow(new Date()); void plans.refetch(); });
   useDidHide(() => setVisible(false));
   useEffect(() => {

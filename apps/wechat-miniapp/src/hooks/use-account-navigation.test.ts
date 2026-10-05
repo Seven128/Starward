@@ -10,10 +10,12 @@ function mount() {
   let error = false, cleanup: (() => void) | undefined, reference: unknown;
   let hide!: () => void, show!: () => void;
   let page: object | null = {};
-  const listeners = new Set<(next: typeof state) => void>();
+  let dispatchThrows = false;
+  const listeners = new Set<(next: typeof state, previous: typeof state) => void>();
   const calls: Array<{ url: string; succeed: () => void; fail: () => void }> = [];
-  const source = readFileSync(new URL("./use-plan-navigation.ts", import.meta.url), "utf8");
-  const module = { exports: {} as { usePlanNavigation: (o: string | null) => { open: (url: string) => Promise<void>; navigationError: boolean } } };
+  const source = readFileSync(new URL("./use-account-navigation.ts", import.meta.url), "utf8");
+  type Feedback = (phase: "start" | "success" | "failure") => void;
+  const module = { exports: {} as { useAccountNavigation: (o: string | null) => { open: (url: string, feedback?: Feedback) => Promise<void>; navigationError: boolean } } };
   vm.runInNewContext(ts.transpileModule(source, { compilerOptions: {
     module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true,
   } }).outputText, {
@@ -26,26 +28,31 @@ function mount() {
       __esModule: true,
       useDidHide: (callback: () => void) => { hide = callback; },
       useDidShow: (callback: () => void) => { show = callback; },
-      default: { getCurrentPages: () => page ? [page] : [], navigateTo: ({ url }: { url: string }) => new Promise<void>((resolve, reject) => {
-        calls.push({ url, succeed: resolve, fail: () => reject(new Error("native navigation rejected")) });
-      }) },
+      default: { getCurrentPages: () => page ? [page] : [], navigateTo: ({ url }: { url: string }) => {
+        if (dispatchThrows) throw new Error("native dispatch unavailable");
+        return new Promise<void>((resolve, reject) => {
+          calls.push({ url, succeed: resolve, fail: () => reject(new Error("native navigation rejected")) });
+        });
+      } },
     } : name.includes("api-client") ? { currentDraftUserId: () => identity } : {
-      useAppStore: { getState: () => state, subscribe: (callback: (next: typeof state) => void) => {
+      useAppStore: { getState: () => state, subscribe: (callback: (next: typeof state, previous: typeof state) => void) => {
         listeners.add(callback); return () => listeners.delete(callback);
       } },
     },
   });
-  const render = () => module.exports.usePlanNavigation(owner);
+  const render = () => module.exports.useAccountNavigation(owner);
   const switchOwner = (next: string | null) => {
     identity = owner = next;
+    const previous = state;
     state = { accountOwnerId: next, mapResetVersion: state.mapResetVersion + 1 };
-    listeners.forEach(callback => callback(state)); render();
+    listeners.forEach(callback => callback(state, previous)); render();
   };
   render();
-  return { calls, listeners, open: (url = "/content/plan/detail/index?planId=a") => render().open(url),
+  return { calls, listeners, open: (url = "/content/plan/detail/index?planId=a", feedback?: Feedback) => render().open(url, feedback),
     failed: () => render().navigationError, switchOwner,
     hide: () => hide(), show: () => show(), unmount: () => cleanup!(),
     mismatch: () => { identity = "b"; }, leavePage: () => { page = {}; }, emptyStack: () => { page = null; },
+    throwDispatch: (value: boolean) => { dispatchThrows = value; },
   };
 }
 
@@ -111,4 +118,39 @@ test("an unavailable current page reports recovery without dispatching navigatio
   await page.open();
   assert.equal(page.calls.length, 0);
   assert.equal(page.failed(), true);
+});
+
+test("accepted handoff cleanup can cross its normal page hide while failed UI cannot", async () => {
+  const page = mount(); let successes = 0, failures = 0;
+  const old = page.open("/content/settings/index", phase => { if (phase === "success") successes++; if (phase === "failure") failures++; });
+  page.hide(); page.leavePage(); page.calls[0]!.succeed(); await old;
+  assert.equal(successes, 1); assert.equal(failures, 0);
+  page.show(); const rejected = page.open("/content/settings/index", phase => { if (phase === "failure") failures++; });
+  page.hide(); page.calls[1]!.fail(); await rejected;
+  assert.equal(failures, 0);
+});
+
+test("account ABA, unmount and successor attempts permanently retire old success effects", async () => {
+  for (const retire of ["aba", "unmount", "successor"] as const) {
+    const page = mount(); let successes = 0;
+    const old = page.open("/content/settings/index", phase => { if (phase === "success") successes++; });
+    let successor: Promise<void> | undefined;
+    if (retire === "aba") { page.switchOwner("b"); page.switchOwner("a"); }
+    if (retire === "unmount") page.unmount();
+    if (retire === "successor") { page.hide(); page.show(); successor = page.open(); }
+    page.calls[0]!.succeed(); await old;
+    assert.equal(successes, 0, retire);
+    if (successor) { page.calls[1]!.succeed(); await successor; }
+  }
+});
+
+test("synchronous native dispatch rejection releases its lock and preserves feedback variants", async () => {
+  const page = mount(); let failures = 0;
+  page.throwDispatch(true); await page.open();
+  assert.equal(page.failed(), true);
+  await page.open("/content/settings/index", phase => { if (phase === "failure") failures++; });
+  assert.equal(failures, 1); assert.equal(page.failed(), false);
+  page.throwDispatch(false);
+  const retry = page.open(); assert.equal(page.calls.length, 1);
+  page.calls[0]!.succeed(); await retry;
 });
