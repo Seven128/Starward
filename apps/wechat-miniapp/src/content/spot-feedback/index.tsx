@@ -50,7 +50,7 @@ import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { ContributionPhotoGallery } from "../contribution/photo-gallery";
 import { formalPhotoGroups } from "../contribution/photo-groups";
 import { useSpotDocumentNavigation } from "../use-spot-document-navigation";
-import { useContributionOperation } from "../contribution/use-contribution-operation";
+import { useAccountOperation } from "@/hooks/use-account-operation";
 
 function valuesFrom(baseline: ContributionFormalBaseline) {
   const values = emptySpotDocumentValues();
@@ -113,7 +113,7 @@ export default function FormalFeedbackEditor() {
   const [busy, setBusy] = useState(false);
   const submitBusy = useRef(false);
   const mediaBusy = useRef(false);
-  const operations = useContributionOperation(JSON.stringify([spotId, submissionId]), pending => {
+  const operations = useAccountOperation(JSON.stringify([spotId, submissionId]), pending => {
     if (!pending) {
       mediaBusy.current = false; submitBusy.current = false;
       setUploading(false); setBusy(false);

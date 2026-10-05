@@ -43,7 +43,6 @@ export function MyLibraryPage() {
   useEffect(() => stopClock, []);
   const { notify, replacePlans, applyServerPreferences } = useAppStore.getState();
   const { owner: libraryOwner, query: library } = useAccountResourceQuery("user-library", getUserLibrary);
-  const profileKey = libraryOwner ?? "unresolved";
   const navigation = useAccountNavigation(libraryOwner);
   useDidShow(() => {
     const owner = currentDraftUserId();
@@ -129,8 +128,8 @@ export function MyLibraryPage() {
             aria-label="个人资料摘要"
           >
             <View className="profile-summary__header">
-              <MyAvatar key={"avatar:" + profileKey} owner={libraryOwner} />
-              <MyNickname key={profileKey} owner={libraryOwner} />
+              <MyAvatar owner={libraryOwner} />
+              <MyNickname owner={libraryOwner} />
               <Button className="my-settings-gear focus-ring" data-od-id="my-settings-action" data-control="my-settings-action" aria-label="打开设置" onClick={openSettings}><SemanticIcon name="settings" /></Button>
             </View>
             <View className="my-focus-actions" data-od-id="my-focus-actions">

@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createContributionOperationOwner, type ContributionOperationState } from "./command-lock";
+import { createAccountOperationOwner, type AccountOperationState } from "./account-operation";
 
-function fixture(state: Partial<ContributionOperationState> = {}) {
-  let current: ContributionOperationState = { userId: "a", ownerId: "a", reset: 0, page: {}, target: "editor", ...state };
+function fixture(state: Partial<AccountOperationState> = {}) {
+  let current: AccountOperationState = { userId: "a", ownerId: "a", reset: 0, page: {}, target: "editor", ...state };
   const busy: boolean[] = [];
-  const owner = createContributionOperationOwner(() => current, value => busy.push(value));
-  return { owner, busy, set: (patch: Partial<ContributionOperationState>) => { current = { ...current, ...patch }; owner.observe(); } };
+  const owner = createAccountOperationOwner(() => current, value => busy.push(value));
+  return { owner, busy, set: (patch: Partial<AccountOperationState>) => { current = { ...current, ...patch }; owner.observe(); } };
 }
 
 test("pending native picker excludes saving and submitting, then releases on cancellation", async () => {
@@ -85,9 +85,9 @@ test("anonymous initialization permits exactly one known null-to-A bind, includi
 });
 
 test("identity reads that hide an invalid native session cannot recursively resurrect a pending intent", () => {
-  let state: ContributionOperationState = { userId: "a", ownerId: "a", reset: 0, page: {}, target: "editor" };
+  let state: AccountOperationState = { userId: "a", ownerId: "a", reset: 0, page: {}, target: "editor" };
   let invalid = false;
-  const owner = createContributionOperationOwner(() => {
+  const owner = createAccountOperationOwner(() => {
     if (invalid && state.ownerId) { state = { ...state, userId: null, ownerId: null, reset: 1 }; owner.observe(); }
     return state;
   }, () => {});

@@ -7,8 +7,8 @@ import { choosePlatformImages as chooseImage } from "@/services/platform-image";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { ContributionSubmitStorageError } from "@/services/contribution-submit-retry";
 import { useRef } from "react";
-import type { ContributionOperation } from "./command-lock";
-import { useContributionOperation } from "./use-contribution-operation";
+import type { AccountOperation } from "@/hooks/account-operation";
+import { useAccountOperation } from "@/hooks/use-account-operation";
 import { useAppStore } from "@/state/app-store";
 import { createContributionAccountGuard } from "./account-guard";
 import type {
@@ -47,7 +47,7 @@ function activeDraft(form: ContributionForm) {
   return form.matchingDraft;
 }
 
-function createSaveDraft(form: ContributionForm, operation: ContributionOperation) {
+function createSaveDraft(form: ContributionForm, operation: AccountOperation) {
   const { assertCurrent: assertAccount } = operation;
   return async (quiet = false, inputPatch: Partial<ContributionDraftRequest> = {}) => {
     assertAccount();
@@ -129,7 +129,7 @@ async function uploadSelectedFile(
   working: ContributionSubmission,
   file: { path: string; size?: number },
   existingUpload: ContributionMediaUpload | undefined,
-  operation: ContributionOperation,
+  operation: AccountOperation,
   kind?: ContributionMediaKind,
 ) {
   const { assertCurrent: assertAccount } = operation;
@@ -168,7 +168,7 @@ async function uploadSelectedFile(
   return completed.data;
 }
 
-function createUseCurrentLocation(form: ContributionForm, operation: ContributionOperation) {
+function createUseCurrentLocation(form: ContributionForm, operation: AccountOperation) {
   const { assertCurrent: assertAccount } = operation;
   return async () => {
     const confirmation = await operation.native(() => Taro.showModal({
@@ -207,7 +207,7 @@ function createUseCurrentLocation(form: ContributionForm, operation: Contributio
 function createAddMedia(
   form: ContributionForm,
   saveDraft: ReturnType<typeof createSaveDraft>,
-  operation: ContributionOperation,
+  operation: AccountOperation,
   confirmHandoff: (message: string) => Promise<boolean>,
 ) {
   const { assertCurrent: assertAccount } = operation;
@@ -282,7 +282,7 @@ function createAddMedia(
 
 function createRetryMedia(
   form: ContributionForm,
-  operation: ContributionOperation,
+  operation: AccountOperation,
   confirmHandoff: (message: string) => Promise<boolean>,
 ) {
   const { assertCurrent: assertAccount } = operation;
@@ -363,7 +363,7 @@ function createRetryMedia(
 function createSubmit(
   form: ContributionForm,
   saveDraft: ReturnType<typeof createSaveDraft>,
-  operation: ContributionOperation,
+  operation: AccountOperation,
 ) {
   const { assertCurrent: assertAccount } = operation;
   return async () => {
@@ -466,7 +466,7 @@ function createSubmit(
   };
 }
 
-function createRemoveMedia(form: ContributionForm, operation: ContributionOperation) {
+function createRemoveMedia(form: ContributionForm, operation: AccountOperation) {
   const { assertCurrent: assertAccount } = operation;
   return async (uploadId: ContributionUploadId) => {
     const draft = activeDraft(form);
@@ -489,7 +489,7 @@ function createRemoveMedia(form: ContributionForm, operation: ContributionOperat
   };
 }
 
-function createWithdrawDraft(form: ContributionForm, operation: ContributionOperation) {
+function createWithdrawDraft(form: ContributionForm, operation: AccountOperation) {
   const { assertCurrent: assertAccount } = operation;
   return async () => {
     const draft = form.draft;
@@ -514,7 +514,7 @@ function createWithdrawDraft(form: ContributionForm, operation: ContributionOper
   };
 }
 
-function createChooseCandidateLocation(form: ContributionForm, operation: ContributionOperation, confirmHandoff: (message: string) => Promise<boolean>) {
+function createChooseCandidateLocation(form: ContributionForm, operation: AccountOperation, confirmHandoff: (message: string) => Promise<boolean>) {
   const { assertCurrent: assertAccount } = operation;
   return async () => {
     try {
@@ -546,11 +546,11 @@ function createChooseCandidateLocation(form: ContributionForm, operation: Contri
 export function useContributionCommands(form: ContributionForm, {nativeBackBoundary = true}: {nativeBackBoundary?: boolean} = {}) {
   const handoff = useRedLightHandoff({nativeBackBoundary});
   const editorAccount = useRef(createContributionAccountGuard(currentDraftUserId)).current;
-  const operations = useContributionOperation(JSON.stringify([form.routeSpotId, form.requestedSubmissionId, form.kind]), busy => {
+  const operations = useAccountOperation(JSON.stringify([form.routeSpotId, form.requestedSubmissionId, form.kind]), busy => {
     form.setCommandBusy(busy);
     if (!busy) { form.setSaving(false); form.setUploading(false); form.setSubmitting(false); }
   });
-  const guard = <A extends unknown[], R,>(create: (operation: ContributionOperation) => (...args: A) => Promise<R>, allowPending = false) =>
+  const guard = <A extends unknown[], R,>(create: (operation: AccountOperation) => (...args: A) => Promise<R>, allowPending = false) =>
     async (...args: A) => {
       const operation = operations.begin({ allowAuthentication: true });
       if (!operation) return;
@@ -571,7 +571,7 @@ export function useContributionCommands(form: ContributionForm, {nativeBackBound
         return undefined;
       } finally { operation.release(); }
     };
-  const saveDraft = (operation: ContributionOperation) => createSaveDraft(form, operation);
+  const saveDraft = (operation: AccountOperation) => createSaveDraft(form, operation);
   return {
     saveDraft: guard(saveDraft),
     restoreLocalDraft: guard(operation => () => form.restoreLocalDraft(operation)),

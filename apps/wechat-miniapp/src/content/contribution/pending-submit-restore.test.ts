@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-import { createContributionOperationOwner } from "./command-lock";
+import { createAccountOperationOwner } from "../../hooks/account-operation";
 
 test("pending submission recovery reads current owner, keeps the original revision and never submits", async () => {
   const source = ts.createSourceFile("form.ts", readFileSync(new URL("./use-contribution-form.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -16,7 +16,7 @@ test("pending submission recovery reads current owner, keeps the original revisi
     let reset = 0;
     const page = {};
     let busy = false;
-    const operations = createContributionOperationOwner(() => ({ userId: owner, ownerId: owner, reset, page, target: "recovery" }), value => { busy = value; });
+    const operations = createAccountOperationOwner(() => ({ userId: owner, ownerId: owner, reset, page, target: "recovery" }), value => { busy = value; });
     const adopted: unknown[] = [];
     const pending: unknown[] = [];
     let clears = 0;

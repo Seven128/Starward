@@ -1,4 +1,4 @@
-import { createContributionOperationOwner } from "../content/contribution/command-lock";
+import { createAccountOperationOwner } from "../hooks/account-operation";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -84,7 +84,7 @@ test("formal submission transport applies the receipt only to its initiating acc
 function feedbackContext(values: Record<string, unknown>) {
   const page = {};
   const guard = values.assertEditorOwner as () => void;
-  const operations = createContributionOperationOwner(() => {
+  const operations = createAccountOperationOwner(() => {
     let owner = "account:a";
     try { guard(); } catch { owner = "account:b"; }
     return { userId: owner, ownerId: owner, reset: owner === "account:a" ? 0 : 1, page, target: "formal" };

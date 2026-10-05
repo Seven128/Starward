@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-import { createContributionOperationOwner } from "../contribution/command-lock";
+import { createAccountOperationOwner } from "../../hooks/account-operation";
 
 function declaration(file: string, name: string, kind = ts.ScriptKind.TS) {
   const source = ts.createSourceFile(file, readFileSync(new URL(file, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, kind);
@@ -40,7 +40,7 @@ function fixture() {
     notificationVisible, useCallback: (action: unknown) => action, publish: (notice: { title: string }) => notices.push(notice),
   });
   let account = "owner:a", reset = 0;
-  const operations = createContributionOperationOwner(() => ({ userId: account, ownerId: account, reset, page: "page", target: "formal" }), value => {
+  const operations = createAccountOperationOwner(() => ({ userId: account, ownerId: account, reset, page: "page", target: "formal" }), value => {
     if (!value) { mediaBusy.current = false; busy.push(false); }
   });
   const input = { detail: "保留尚未提交的文字", site: [] };

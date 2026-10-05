@@ -1,6 +1,6 @@
 import type { RequestOperationScope } from "@/services/authenticated-operation";
 
-export interface ContributionOperationState {
+export interface AccountOperationState {
   userId: string | null;
   ownerId: string | null;
   reset: number;
@@ -8,7 +8,7 @@ export interface ContributionOperationState {
   target: string;
 }
 
-export interface ContributionOperation extends RequestOperationScope {
+export interface AccountOperation extends RequestOperationScope {
   isCurrent(): boolean;
   authenticate(): void;
   native<T>(action: () => Promise<T>): Promise<T>;
@@ -16,15 +16,15 @@ export interface ContributionOperation extends RequestOperationScope {
 }
 
 /** One editor owns one intent. Returning to A can start a new intent, never revive an old one. */
-export function createContributionOperationOwner(read: () => ContributionOperationState, onBusy: (busy: boolean) => void) {
+export function createAccountOperationOwner(read: () => AccountOperationState, onBusy: (busy: boolean) => void) {
   let mounted = true, visible = true;
-  let pending: { state: ContributionOperationState; bootstrap: boolean; initialized: boolean; nativeDepth: number; returning: boolean; renewal: { owner: string; cleared: boolean } | null } | undefined;
+  let pending: { state: AccountOperationState; bootstrap: boolean; initialized: boolean; nativeDepth: number; returning: boolean; renewal: { owner: string; cleared: boolean } | null } | undefined;
   const retire = () => {
     if (!pending) return;
     pending = undefined;
     if (mounted) onBusy(false);
   };
-  const same = (a: ContributionOperationState, b: ContributionOperationState) =>
+  const same = (a: AccountOperationState, b: AccountOperationState) =>
     a.userId === b.userId && a.ownerId === b.ownerId && a.reset === b.reset && a.page === b.page && a.target === b.target;
   const observe = () => {
     if (!pending) return;
@@ -52,7 +52,7 @@ export function createContributionOperationOwner(read: () => ContributionOperati
     }
     retire();
   };
-  const begin = ({ allowAuthentication = false }: { allowAuthentication?: boolean } = {}): ContributionOperation | undefined => {
+  const begin = ({ allowAuthentication = false }: { allowAuthentication?: boolean } = {}): AccountOperation | undefined => {
     observe();
     if (!mounted || !visible || pending) return;
     const state = read();
@@ -64,19 +64,19 @@ export function createContributionOperationOwner(read: () => ContributionOperati
       observe();
       return mounted && pending === attempt && (visible || attempt.nativeDepth > 0 || attempt.returning);
     };
-    const assertCurrent = () => { if (!isCurrent()) throw new Error("contribution_operation_retired"); };
+    const assertCurrent = () => { if (!isCurrent()) throw new Error("account_operation_retired"); };
     onBusy(true);
     return {
       isCurrent, assertCurrent,
       authenticate() {
         assertCurrent();
-        if (!attempt.state.userId || attempt.state.userId !== attempt.state.ownerId) throw new Error("contribution_account_unresolved");
+        if (!attempt.state.userId || attempt.state.userId !== attempt.state.ownerId) throw new Error("account_operation_unresolved");
         attempt.bootstrap = false;
       },
       async renewSession(action) {
         assertCurrent();
         if ((attempt.bootstrap && !attempt.initialized) || attempt.renewal || !attempt.state.userId || attempt.state.userId !== attempt.state.ownerId)
-          throw new Error("contribution_account_unresolved");
+          throw new Error("account_operation_unresolved");
         // The first authenticated history read may reject the just-projected stored token
         // before its caller reaches authenticate(). Its completed bootstrap is not a new account allowance.
         attempt.bootstrap = false;

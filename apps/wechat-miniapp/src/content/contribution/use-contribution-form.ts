@@ -12,7 +12,7 @@ import type {
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { currentDraftUserId, getCapabilities, getContributions, MiniappApiError } from "@/services/api-client";
 import { useLocalContributionDraft } from "./use-local-draft";
-import type { ContributionOperation } from "./command-lock";
+import type { AccountOperation } from "@/hooks/account-operation";
 import { useContributionHistory } from "@/hooks/use-contribution-history";
 import { useAppStore } from "@/state/app-store";
 import {
@@ -269,7 +269,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     applyDraft(matchingDraft);
   }, [draft, localDraft.recovery, matchingDraft, requestedSubmissionId]);
 
-  const restoreLocalDraft = async (operation: ContributionOperation) => {
+  const restoreLocalDraft = async (operation: AccountOperation) => {
     operation.assertCurrent();
     const local = localDraft.recovery;
     const owner = localDraft.owner;
@@ -313,7 +313,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     setKind(nextKind);
     setDraft(null);
   };
-  const restorePendingSubmission = async (operation: ContributionOperation, submissionId: string, expectedRevision: number) => {
+  const restorePendingSubmission = async (operation: AccountOperation, submissionId: string, expectedRevision: number) => {
     operation.assertCurrent();
     const owner = submissionRecovery.owner;
     if (!owner || currentDraftUserId() !== owner || localDraft.recovery) return;

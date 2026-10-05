@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createAuthenticatedOperationRequester } from "./authenticated-operation";
-import { createContributionOperationOwner } from "../content/contribution/command-lock";
+import { createAccountOperationOwner } from "../hooks/account-operation";
 import type { AuthSessionData } from "@starward/miniapp-contracts";
 
 function fixture() {
   let state = { userId: "a" as string | null, ownerId: "a" as string | null, reset: 0, page: {}, target: "contribution" };
   let token: AuthSessionData | null = { userId: "a", accessToken: "RAM-a", expiresAt: "2999-01-01" } as AuthSessionData;
-  const owner = createContributionOperationOwner(() => state, () => {});
+  const owner = createAccountOperationOwner(() => state, () => {});
   const set = (account: string | null) => { state = { ...state, userId: account, ownerId: account, reset: state.reset + 1 }; owner.observe(); };
   const sent: unknown[] = []; let denied = false;
   const request = createAuthenticatedOperationRequester({
