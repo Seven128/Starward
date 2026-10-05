@@ -11,7 +11,7 @@ import { matchingSkyTargetInstantResponse, type SkyTargetInstantBinding } from "
 import { createPlanChecklistClient } from "./plan-checklist-client";
 import { createPlanSubscriptionClient } from "./plan-subscription-client";
 import { createPlanDestinationClient } from "./plan-destination-client";
-import { createAuthenticatedOperationRequester } from "./authenticated-operation";
+import { createAuthenticatedOperationRequester, type RequestOperationScope } from "./authenticated-operation";
 import Taro from "@tarojs/taro";
 import { planSaveBelongsTo } from "./local-draft-keys";
 import type { PlanSaveInput } from "./plan-save-retry";
@@ -1550,11 +1550,14 @@ export async function updatePostImport(
   return result;
 }
 
-export async function getContributions(signal?: AbortSignal, expectedUserId?: string) {
+export async function getContributions(signal?: AbortSignal, expectedUserId?: string, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
   const session = await ensureSession();
+  scope?.assertCurrent();
   const owner = expectedUserId ?? session.userId;
   const result = await requestOperation("contributions", "contributionsGet", {
     auth: "REQUIRED",
+    scope,
     ...(signal ? { signal } : {}),
   }, false, owner);
   if (currentDraftUserId() !== owner) {
@@ -1567,9 +1570,12 @@ const retryContributionCreate = createMutationRetry(() => idempotencyKey("contri
 
 export async function createContributionDraft(
   input: ContributionDraftRequest,
+  scope?: RequestOperationScope,
 ) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
   return retryContributionCreate(session.userId, input, async (retryKey) => {
   const result = await requestOperation(
@@ -1578,6 +1584,7 @@ export async function createContributionDraft(
     {
       auth: "REQUIRED",
       body: input,
+      scope,
       idempotencyKey: retryKey,
     },
     false,
@@ -1597,9 +1604,9 @@ export async function ensureContributionOwner() {
   return session.userId;
 }
 
-export async function submitFormalContribution(input: ContributionFormalSubmitRequest, retryKey: string, owner: string) {
+export async function submitFormalContribution(input: ContributionFormalSubmitRequest, retryKey: string, owner: string, scope?: RequestOperationScope) {
   const response = await requestOperation("formal-contribution-submit", "formalContributionSubmitPost", {
-    body: input, auth: "REQUIRED", idempotencyKey: retryKey,
+    body: input, auth: "REQUIRED", idempotencyKey: retryKey, scope,
   }, false, owner);
   if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对反馈结果。");
   invalidateApiCache("contributions");
@@ -1626,17 +1633,17 @@ export async function getContributionMedia(
   return result;
 }
 
-export function createFormalUploadIntent(input: ContributionFormalUploadIntentRequest, retryKey: string, owner: string) {
-  return requestOperation("formal-upload-intent", "formalContributionUploadIntentPost", { body: input, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
+export function createFormalUploadIntent(input: ContributionFormalUploadIntentRequest, retryKey: string, owner: string, scope?: RequestOperationScope) {
+  return requestOperation("formal-upload-intent", "formalContributionUploadIntentPost", { body: input, auth: "REQUIRED", idempotencyKey: retryKey, scope }, false, owner);
 }
-export function createFormalContributionUpload(intentId: string, input: ContributionFormalUploadSessionRequest, retryKey: string, owner: string) {
-  return requestOperation(`formal-upload:${intentId}`, "formalContributionUploadPost", { pathParams: { intentId }, body: input, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
+export function createFormalContributionUpload(intentId: string, input: ContributionFormalUploadSessionRequest, retryKey: string, owner: string, scope?: RequestOperationScope) {
+  return requestOperation(`formal-upload:${intentId}`, "formalContributionUploadPost", { pathParams: { intentId }, body: input, auth: "REQUIRED", idempotencyKey: retryKey, scope }, false, owner);
 }
-export function completeFormalContributionUpload(intentId: string, uploadId: string, input: ContributionFormalUploadCompleteRequest, retryKey: string, owner: string) {
-  return requestOperation(`formal-upload-complete:${uploadId}`, "formalContributionUploadPut", { pathParams: { intentId, uploadId }, body: input, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
+export function completeFormalContributionUpload(intentId: string, uploadId: string, input: ContributionFormalUploadCompleteRequest, retryKey: string, owner: string, scope?: RequestOperationScope) {
+  return requestOperation(`formal-upload-complete:${uploadId}`, "formalContributionUploadPut", { pathParams: { intentId, uploadId }, body: input, auth: "REQUIRED", idempotencyKey: retryKey, scope }, false, owner);
 }
-export function removeFormalContributionUpload(intentId: string, uploadId: string, expectedRevision: number, retryKey: string, owner: string) {
-  return requestOperation(`formal-upload-remove:${uploadId}`, "formalContributionUploadDelete", { pathParams: { intentId, uploadId }, body: { expectedRevision }, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
+export function removeFormalContributionUpload(intentId: string, uploadId: string, expectedRevision: number, retryKey: string, owner: string, scope?: RequestOperationScope) {
+  return requestOperation(`formal-upload-remove:${uploadId}`, "formalContributionUploadDelete", { pathParams: { intentId, uploadId }, body: { expectedRevision }, auth: "REQUIRED", idempotencyKey: retryKey, scope }, false, owner);
 }
 
 const retryContributionUpdate = createMutationRetry(() => idempotencyKey("contribution-update"));
@@ -1644,9 +1651,12 @@ const retryContributionUpdate = createMutationRetry(() => idempotencyKey("contri
 export async function updateContributionDraft(
   submissionId: ContributionId,
   input: ContributionUpdateRequest,
+  scope?: RequestOperationScope,
 ) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
   return retryContributionUpdate(session.userId, { submissionId, input }, async (retryKey) => {
   const result = await requestOperation(
@@ -1656,6 +1666,7 @@ export async function updateContributionDraft(
       auth: "REQUIRED",
       pathParams: { submissionId },
       body: input,
+      scope,
       idempotencyKey: retryKey,
     },
     false,
@@ -1672,9 +1683,12 @@ const retryContributionWithdraw = createMutationRetry(() => idempotencyKey("cont
 export async function withdrawContributionDraft(
   submissionId: ContributionId,
   expectedRevision: number,
+  scope?: RequestOperationScope,
 ) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner)
     throw new Error("账号已变化，请回到原账号核对反馈。");
   return retryContributionWithdraw(session.userId, { submissionId, expectedRevision }, async (retryKey) => {
@@ -1685,6 +1699,7 @@ export async function withdrawContributionDraft(
         auth: "REQUIRED",
         pathParams: { submissionId },
         body: { expectedRevision },
+        scope,
         idempotencyKey: retryKey,
       },
       false,
@@ -1703,9 +1718,12 @@ const retryContributionUpload = createMutationRetry(() => idempotencyKey("contri
 export async function createContributionUpload(
   submissionId: ContributionId,
   input: ContributionUploadSessionRequest,
+  scope?: RequestOperationScope,
 ) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
   return retryContributionUpload(session.userId, { submissionId, input }, async (retryKey) => {
   const result = await requestOperation(
@@ -1715,6 +1733,7 @@ export async function createContributionUpload(
       auth: "REQUIRED",
       pathParams: { submissionId },
       body: input,
+      scope,
       idempotencyKey: retryKey,
     },
     false,
@@ -1730,9 +1749,12 @@ export async function completeContributionUpload(
   submissionId: ContributionId,
   uploadId: ContributionUploadId,
   input: ContributionUploadCompleteRequest,
+  scope?: RequestOperationScope,
 ) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
   const result = await requestOperation(
     "contribution-upload-complete:" + uploadId,
@@ -1741,6 +1763,7 @@ export async function completeContributionUpload(
       auth: "REQUIRED",
       pathParams: { submissionId, uploadId },
       body: input,
+      scope,
       idempotencyKey: idempotencyKey("contribution-upload-complete"),
     },
     false,
@@ -1753,13 +1776,15 @@ export async function completeContributionUpload(
 
 const retryContributionRemoval = createMutationRetry(() => idempotencyKey("contribution-upload-remove"));
 
-export async function removeContributionUpload(submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number) {
+export async function removeContributionUpload(submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
   return retryContributionRemoval(session.userId, { submissionId, uploadId, expectedRevision }, async (retryKey) => {
     const result = await requestOperation("contribution-upload-remove:" + uploadId, "contributionUploadDelete", {
-      auth: "REQUIRED", pathParams: { submissionId, uploadId }, body: { expectedRevision }, idempotencyKey: retryKey,
+      auth: "REQUIRED", pathParams: { submissionId, uploadId }, body: { expectedRevision }, idempotencyKey: retryKey, scope,
     }, false, session.userId);
     if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈结果。");
     invalidateApiCache("contributions");
@@ -1773,9 +1798,12 @@ const retryContributionSubmit = createContributionSubmitRetry(Taro, () => idempo
 export async function submitContribution(
   submissionId: ContributionId,
   expectedRevision: number,
+  scope?: RequestOperationScope,
 ) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
   return retryContributionSubmit(session.userId, { submissionId, expectedRevision }, async (retryKey) => {
   const result = await requestOperation(
@@ -1785,6 +1813,7 @@ export async function submitContribution(
       auth: "REQUIRED",
       pathParams: { submissionId },
       body: { expectedRevision },
+      scope,
       idempotencyKey: retryKey,
     },
     false,

@@ -12,6 +12,7 @@ import type {
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { currentDraftUserId, getCapabilities, getContributions, MiniappApiError } from "@/services/api-client";
 import { useLocalContributionDraft } from "./use-local-draft";
+import type { ContributionOperation } from "./command-lock";
 import { useContributionHistory } from "@/hooks/use-contribution-history";
 import { useAppStore } from "@/state/app-store";
 import {
@@ -268,21 +269,23 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     applyDraft(matchingDraft);
   }, [draft, localDraft.recovery, matchingDraft, requestedSubmissionId]);
 
-  const restoreLocalDraft = async () => {
+  const restoreLocalDraft = async (operation: ContributionOperation) => {
+    operation.assertCurrent();
     const local = localDraft.recovery;
     const owner = localDraft.owner;
-    if (!local || !owner || commandBusy || currentDraftUserId() !== owner) return;
-    setCommandBusy(true);
+    if (!local || !owner || currentDraftUserId() !== owner) return;
     try {
       let server: ContributionSubmission | null = null;
       if (local.baseSubmissionId) {
-        const response = await getContributions(undefined, owner);
+        const response = await getContributions(undefined, owner, operation);
+        operation.assertCurrent();
         server = response.data.submissions.find((item) => item.submissionId === local.baseSubmissionId) ?? null;
         if (!server || !["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(server))) {
           announce("warning", "请先核对投稿状态", "对应草稿已提交或不再可编辑。本机输入仍保留，请先查看近期反馈。");
           return;
         }
       }
+      operation.assertCurrent();
       if (currentDraftUserId() !== owner) return;
       setDraft(server ? { ...server, revision: local.baseRevision! } : null);
       setConflictDraft(server && server.revision !== local.baseRevision ? server : null);
@@ -301,20 +304,22 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       setPhase("FORM"); localDraft.accept();
       announce("info", "已恢复本机输入", "尚未自动保存到服务端或提交审核，请核对后继续。");
     } catch {
+      if (!operation.isCurrent()) return;
       announce("warning", "暂时无法恢复草稿", "无法核对服务端记录，本机输入仍保留，恢复网络后可重试。");
-    } finally { setCommandBusy(false); }
+    }
   };
 
   const selectKind = (nextKind: ContributionKind) => {
     setKind(nextKind);
     setDraft(null);
   };
-  const restorePendingSubmission = async (submissionId: string, expectedRevision: number) => {
+  const restorePendingSubmission = async (operation: ContributionOperation, submissionId: string, expectedRevision: number) => {
+    operation.assertCurrent();
     const owner = submissionRecovery.owner;
-    if (!owner || currentDraftUserId() !== owner || commandBusy || localDraft.recovery) return;
-    setCommandBusy(true);
+    if (!owner || currentDraftUserId() !== owner || localDraft.recovery) return;
     try {
-      const response = await getContributions(undefined, owner);
+      const response = await getContributions(undefined, owner, operation);
+      operation.assertCurrent();
       if (currentDraftUserId() !== owner) return;
       const current = response.data.submissions.find((item) => item.submissionId === submissionId);
       if (!current) throw new Error("Missing submission");
@@ -325,11 +330,13 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       } else {
         try { clearContributionSubmitIntent(Taro, owner, submissionId, expectedRevision); } catch { /* Keep the server receipt authoritative. */ }
         await history.refetch().catch(() => undefined);
+        operation.assertCurrent();
         announce("info", "已回读提交状态", "服务端已有审核状态，未重新提交。请查看近期反馈。");
       }
     } catch {
+      if (!operation.isCurrent()) return;
       announce("warning", "暂时无法确认提交", "无法核对服务端记录，恢复标识仍保留。请稍后重试。");
-    } finally { setCommandBusy(false); }
+    }
   };
   const toggleTopic = (topic: ContributionTopic) =>
     setTopics((current) =>

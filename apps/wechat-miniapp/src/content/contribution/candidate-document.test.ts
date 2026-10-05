@@ -1,3 +1,4 @@
+import { testOperation } from "./operation-test-support";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -92,7 +93,7 @@ test("the real submit owner focuses incomplete intake, submits explicit unknown 
     setSubmitting(value: boolean) { this.submitting = value; }, setPendingSubmission(value: typeof this.pendingSubmission) { this.pendingSubmission = value; },
     applyDraft() { this.pendingSubmission = null; }, history: { refetch: async () => {} }, announce() {},
   };
-  const submit = () => create(form, async () => { saves++; return { submissionId: "contribution:original", revision: 7 }; }, () => {})();
+  const submit = () => create(form, async () => { saves++; return { submissionId: "contribution:original", revision: 7 }; }, testOperation())();
   await submit(); assert.equal(form.validationField, "contribution-intake-openness"); assert.equal(saves, 0);
   form.candidateProfile = candidateDocumentProposal(fields, {}, explicitUnknown()); await submit(); assert.equal(saves, 1);
   form.candidateProfile = candidateDocumentProposal(fields, {}, emptyCandidateIntake()); fail = false; await submit();

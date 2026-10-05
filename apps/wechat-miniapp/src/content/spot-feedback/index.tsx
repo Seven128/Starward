@@ -50,6 +50,7 @@ import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { ContributionPhotoGallery } from "../contribution/photo-gallery";
 import { formalPhotoGroups } from "../contribution/photo-groups";
 import { useSpotDocumentNavigation } from "../use-spot-document-navigation";
+import { useContributionOperation } from "../contribution/use-contribution-operation";
 
 function valuesFrom(baseline: ContributionFormalBaseline) {
   const values = emptySpotDocumentValues();
@@ -80,13 +81,18 @@ export default function FormalFeedbackEditor() {
   const submissionId = decodeURIComponent(router.params.submissionId ?? "");
   const themeClass = useThemeClass();
   const mediaHandoff = useRedLightHandoff();
-  const notify = useAppStore(state => state.notify);
+  const publish = useAppStore(state => state.notify);
+  const notificationVisible = useRef(true);
+  const notify = useCallback((notice: Parameters<typeof publish>[0]) => {
+    if (notificationVisible.current) publish(notice);
+  }, [publish]);
   const accountOwnerId = useAppStore(state => state.accountOwnerId);
   const mountId = useId();
   const historyUserId = currentDraftUserId();
   const [pageVisible, setPageVisible] = useState(true);
-  useDidShow(() => setPageVisible(true));
-  useDidHide(() => setPageVisible(false));
+  useDidShow(() => { notificationVisible.current = true; setPageVisible(true); });
+  useDidHide(() => { notificationVisible.current = false; setPageVisible(false); useAppStore.getState().clearNotifications("contribution"); });
+  useEffect(() => { notificationVisible.current = true; return () => { notificationVisible.current = false; }; }, []);
   const query = useResourceQuery({ queryKey: ["contribution-formal-baseline", spotId], queryFn: signal => getContributionFormalBaseline(spotId, signal), enabled: pageVisible && Boolean(spotId), staleTime: 0 });
   const history = useResourceQuery({ queryKey: ["contributions", "formal-feedback", spotId, historyUserId ?? `unresolved:${mountId}`], queryFn: signal => getContributions(signal, historyUserId ?? undefined), enabled: pageVisible && Boolean(spotId), staleTime: 0 });
   const site = useResourceQuery({ queryKey: ["spot-site", "formal-feedback", spotId], queryFn: signal => getSpotSite(spotId, signal), enabled: pageVisible && Boolean(spotId), staleTime: 0 });
@@ -107,6 +113,12 @@ export default function FormalFeedbackEditor() {
   const [busy, setBusy] = useState(false);
   const submitBusy = useRef(false);
   const mediaBusy = useRef(false);
+  const operations = useContributionOperation(JSON.stringify([spotId, submissionId]), pending => {
+    if (!pending) {
+      mediaBusy.current = false; submitBusy.current = false;
+      setUploading(false); setBusy(false);
+    }
+  });
   const [submitted, setSubmitted] = useState(false);
   const [conflicts, setConflicts] = useState<readonly ContributionFormalConflict[]>([]);
   const [currentBaseline, setCurrentBaseline] = useState<ContributionFormalBaseline | null>(null);
@@ -262,31 +274,34 @@ export default function FormalFeedbackEditor() {
   };
   const addPhoto = async (kind: ContributionMediaKind) => {
     if (!baseline || busy || submitBusy.current || uploading || mediaBusy.current || submitted) return;
+    const operation = operations.begin();
+    if (!operation) return;
+    const assertCurrent = () => { operation.assertCurrent(); assertEditorOwner(); };
     mediaBusy.current = true;
     setUploading(true);
     let intent = uploadIntent;
     try {
-      assertEditorOwner();
+      assertCurrent();
       const allowed = await mediaHandoff.confirm("微信相册、相机及图片授权界面可能较亮，无法跟随红光模式。");
       if (!allowed) return;
-      assertEditorOwner();
+      assertCurrent();
       if (!rightsConfirmed) {
-        const consent = await Taro.showModal(MEDIA_RIGHTS_MODAL);
+        const consent = await operation.native(() => Taro.showModal(MEDIA_RIGHTS_MODAL));
         if (!consent.confirm) return;
-        assertEditorOwner();
+        assertCurrent();
         setRightsConfirmed(true);
       }
-      const choice = await choosePlatformImages(1);
+      const choice = await operation.native(() => choosePlatformImages(1));
       const file = choice?.tempFiles[0]; if (!file) return;
-      assertEditorOwner();
+      assertCurrent();
       if (typeof file.size !== "number" || file.size <= 0 || file.size > 1_200_000) throw new Error("单张图片必须小于 1.2 MB");
       if (!intent) {
-        intent = (await createFormalUploadIntent({ spotId: baseline.spotId, baselineRevision: baseline.revision })).data;
-        assertEditorOwner();
+        intent = (await createFormalUploadIntent({ spotId: baseline.spotId, baselineRevision: baseline.revision }, operation)).data;
+        assertCurrent();
         setUploadIntent(intent);
       }
       const dataBase64 = await readBase64(file.path);
-      assertEditorOwner();
+      assertCurrent();
       const mimeType = mediaMimeType(file.path);
       let upload = intent.uploads.find(value => value.state === "PENDING");
       if (upload) {
@@ -300,8 +315,9 @@ export default function FormalFeedbackEditor() {
           throw new Error("请重新选择原图片，确认上次照片会话结果后再添加其他照片。");
         const input = previous?.input ?? { kind, originalName: mediaFileName(file.path), mimeType, byteSize: file.size, expectedRevision: intent.revision };
         sessionAttempt.current = { intentId: intent.intentId, input, dataBase64 };
-        const created = (await createFormalContributionUpload(intent.intentId, input)).data;
-        assertEditorOwner();
+        setSessionUnconfirmed(true);
+        const created = (await createFormalContributionUpload(intent.intentId, input, operation)).data;
+        assertCurrent();
         const known = new Set(intent.uploads.map(value => value.uploadId));
         upload = created.uploads.find(value => !known.has(value.uploadId)); if (!upload) throw new Error("上传会话未建立");
         sessionAttempt.current = null;
@@ -310,23 +326,27 @@ export default function FormalFeedbackEditor() {
         setUploadIntent(created);
       }
       completionSource.current = { uploadId: upload.uploadId, dataBase64 };
-      const completed = (await completeFormalContributionUpload(intent.intentId, upload.uploadId, { dataBase64 })).data;
-      assertEditorOwner();
+      const completed = (await completeFormalContributionUpload(intent.intentId, upload.uploadId, { dataBase64 }, operation)).data;
+      assertCurrent();
       completionSource.current = null;
       const preview = `data:${mimeType};base64,${dataBase64}`;
       completedPreviewSources.current[upload.uploadId] = preview;
       setPreviewPaths(current => ({ ...current, [upload.uploadId]: preview })); setMediaSelection(current => current ? appendFormalMedia(current, kind, upload.uploadId) : current); syncMediaProposal(completed);
     } catch (error) {
+      if (!operation.isCurrent()) return;
       if (sessionAttempt.current) setSessionUnconfirmed(true);
       const message = errorMessage(error); notify({ owner: "contribution", placement: "floating", tone: "error", title: "图片尚未完成上传", body: `${message}；文字修改仍保留。`, dismissible: true });
-    } finally { mediaBusy.current = false; setUploading(false); }
+    } finally { operation.release(); }
   };
   const removePhoto = async (uploadId: string) => {
     if (busy || submitBusy.current || uploading || mediaBusy.current || submitted) return;
+    const operation = operations.begin();
+    if (!operation) return;
+    const assertCurrent = () => { operation.assertCurrent(); assertEditorOwner(); };
     mediaBusy.current = true;
     setUploading(true);
     try {
-      assertEditorOwner();
+      assertCurrent();
       const earlier = priorMedia.find(media => media.uploadId === uploadId);
       if (earlier) {
         setPriorMedia(current => current.filter(media => media.uploadId !== uploadId));
@@ -340,37 +360,41 @@ export default function FormalFeedbackEditor() {
         if (kind) setMediaSelection(current => current ? removeFormalMedia(current, kind, uploadId) : current);
         return;
       }
-      const next = (await removeFormalContributionUpload(uploadIntent.intentId, uploadId, uploadIntent.revision)).data;
-      assertEditorOwner();
+      const next = (await removeFormalContributionUpload(uploadIntent.intentId, uploadId, uploadIntent.revision, operation)).data;
+      assertCurrent();
       delete completedPreviewSources.current[uploadId];
       if (completionSource.current?.uploadId === uploadId) completionSource.current = null;
       setMediaSelection(current => current ? removeFormalMedia(current, currentUpload.kind, uploadId) : current);
       setPreviewPaths(current => { const copy = { ...current }; delete copy[uploadId]; return copy; });
       syncMediaProposal(next);
     } catch (error) {
+      if (!operation.isCurrent()) return;
       notify({ owner: "contribution", placement: "floating", tone: "error", title: "暂时无法移除图片", body: errorMessage(error), dismissible: true });
     } finally {
-      mediaBusy.current = false;
-      setUploading(false);
+      operation.release();
     }
   };
   const submit = async () => {
     if (!baseline || !proposal || !hasChanges || noRemainingChanges || busy || submitBusy.current || uploading || mediaBusy.current || sessionUnconfirmed || uploadIntent?.uploads.some(value => value.state === "PENDING") || submitted) return;
+    const operation = operations.begin();
+    if (!operation) return;
+    const assertCurrent = () => { operation.assertCurrent(); assertEditorOwner(); };
     if (activeConflicts.length && activeConflicts.some(conflict => !resolutions[`${conflict.kind}:${conflict.key}`])) {
       notify({ owner: "contribution", placement: "floating", tone: "warning", title: "请先处理资料冲突", body: "每一项冲突都要选择使用当前资料或我的修改。", dismissible: true });
+      operation.release();
       return;
     }
     submitBusy.current = true;
     setBusy(true);
     try {
-      assertEditorOwner();
+      assertCurrent();
       const response = await submitFormalContribution({
         kind: "CORRECTION", baseline, proposal: { ...proposal, media: mediaProposal }, observedAt: null, rightsConfirmed,
         ...(uploadIntent ? { uploadIntentId: uploadIntent.intentId, expectedUploadIntentRevision: uploadIntent.revision } : {}),
         ...(activeSubmissionId && resubmissionRevision ? { submissionId: activeSubmissionId as never, expectedSubmissionRevision: resubmissionRevision } : {}),
         ...(conflictOutcome ? { resolutions: conflictOutcome.resolutions } : {}),
-      });
-      assertEditorOwner();
+      }, operation);
+      assertCurrent();
       if (response.data.state === "CONFLICT") {
         setConflicts(response.data.conflicts); setCurrentBaseline(response.data.currentBaseline); setResolutions({});
         notify({ owner: "contribution", placement: "floating", tone: "warning", title: "正式资料已有更新", body: "请在下方逐项核对原值、当前值和你的修改。", dismissible: true });
@@ -390,10 +414,11 @@ export default function FormalFeedbackEditor() {
         notify({ owner: "contribution", placement: "inline", tone: "success", title: "已提交反馈", body: "反馈已进入审核，正式地点资料暂不改变。", dismissible: true });
       }
     } catch (error) {
+      if (!operation.isCurrent()) return;
       const rejected = error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408 && !error.retryable;
       const obsolete = error instanceof MiniappApiError && error.message === "CONTRIBUTION_NO_REMAINING_CHANGES";
       notify({ owner: "contribution", placement: "floating", tone: rejected ? "error" : "warning", title: obsolete ? "本次无需提交" : rejected ? "提交失败" : "提交结果未确认", body: obsolete ? "当前正式资料中已没有需要提交的差异；请核对资料后继续修改或返回地图。" : rejected ? `${errorMessage(error)}；本页输入仍保留。` : `${errorMessage(error)}；本页输入仍保留，请原样重试或到“我的”核对待审记录。`, dismissible: true });
-    } finally { submitBusy.current = false; setBusy(false); }
+    } finally { operation.release(); }
   };
 
   const showSubmit = !ownerChanged && hasEditorContent && !submitted && !noRemainingChanges;

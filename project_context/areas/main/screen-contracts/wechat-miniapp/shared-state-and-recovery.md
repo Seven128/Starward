@@ -169,6 +169,10 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
 
 新增点位添加/续传与正式反馈选图共用 `services/platform-image.ts`：仅在微信 `chooseImage` 的 native await 边界把规范 `chooseImage:fail cancel` 归一为 `null`，消费者保留输入并释放原操作锁；不以翻译后的中文文案判断取消。权限、未知及其它阶段失败继续进入原可见失败恢复，成功结果、选图数量、压缩及相册/相机来源保持。红光交接、照片权利、账户/页面归属、草稿与上传会话仍由各消费者负责，不能把下游上传失败静默当作取消。此处只记录共享结果责任，不认证手机权限/取消回调、账户切换或完整上传验收，也不改变原视觉采用。
 
+贡献编辑器的单次异步操作由 `content/contribution/command-lock.ts` 持有，`use-contribution-operation.ts` 投射页面、编辑目标、账户重置代与原生交接生命周期；新增点位和正式反馈沿同一操作票检查后续效果。换号再返回原账号不会复活旧操作，也不会让旧 finally 解锁后继操作；原账号的编辑草稿和新的原账号操作仍可继续。已知原生交接兼容回调先于页面 show 的顺序，但不豁免换号、额外重置或卸载；可继续管线不等于可在隐藏页面发布提示。首次身份投影只允许一次明确的 null→当前账号绑定，完成投影后的首次历史查询仍可走正常同账号再认证。
+
+同票以 service-owned `RequestOperationScope` 接到实际会话等待、请求派发和一次权限重试。该请求自己的 token 清除与同账号恢复可通过受限再认证握手，其它账户或额外重置仍使旧操作失效；未完成首次身份投影不能借此登录任意账号。已经派发的请求不被声称撤回，草稿、上传会话和未知提交仍沿既有恢复标识核对。这里记录实现责任，不认证真实微信账户、原生照片过程、在线持久化或整族验收，不改变视觉采用范围。
+
 ## Shared Image Viewer And Disclosure
 
 - Site and facility albums reuse one image-viewer component family with an ordered authorized media list, initial index, source geometry/identity, caption, provenance and return context. Single media has no false next control; multiple media support horizontal paging, a truthful current/total count and named non-gesture previous/next controls. Facility albums retain their own subject association; site thumbnails do not silently reassign facility evidence.

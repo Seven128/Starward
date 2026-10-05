@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { createContributionOperationOwner } from "../contribution/command-lock";
 
 function declaration(file: string, name: string, kind = ts.ScriptKind.TS) {
   const source = ts.createSourceFile(file, readFileSync(new URL(file, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, kind);
@@ -34,6 +35,14 @@ function fixture() {
   const effects: string[] = [];
   const busy: boolean[] = [];
   const mediaBusy = { current: false };
+  const notificationVisible = { current: true };
+  const notify = evaluate("const " + declaration("./index.tsx", "notify", ts.ScriptKind.TSX) + ";\nnotify;", {
+    notificationVisible, useCallback: (action: unknown) => action, publish: (notice: { title: string }) => notices.push(notice),
+  });
+  let account = "owner:a", reset = 0;
+  const operations = createContributionOperationOwner(() => ({ userId: account, ownerId: account, reset, page: "page", target: "formal" }), value => {
+    if (!value) { mediaBusy.current = false; busy.push(false); }
+  });
   const input = { detail: "保留尚未提交的文字", site: [] };
   const intent = { intentId: "intent:a", revision: 1, uploads: [{ uploadId: "upload:a", state: "PENDING", kind: "site", mimeType: "image/png", declaredByteSize: 30 }] };
   const Taro = { chooseImage: async (options: unknown) => {
@@ -45,8 +54,8 @@ function fixture() {
   let uploadFails = false;
   const run = evaluate(addPhotoSource, {
     baseline: { spotId: "spot:a", revision: 1 }, busy: false, uploading: false, submitted: false,
-    submitBusy: { current: false }, mediaBusy, editorOwner: { current: "owner:a" },
-    currentDraftUserId: () => "owner:a", useAppStore: { getState: () => ({ accountOwnerId: "owner:a" }) },
+    submitBusy: { current: false }, mediaBusy, operations, editorOwner: { current: "owner:a" },
+    currentDraftUserId: () => account, useAppStore: { getState: () => ({ accountOwnerId: account }) },
     mediaHandoff: { confirm: async () => true }, rightsConfirmed: true, MEDIA_RIGHTS_MODAL: {},
     Taro, choosePlatformImages, uploadIntent: intent, sessionAttempt: { current: null },
     completionSource: { current: null }, completedPreviewSources: { current: {} },
@@ -59,9 +68,12 @@ function fixture() {
     setPreviewPaths: () => effects.push("preview"),
     setMediaSelection: (update: (value: typeof input) => unknown) => { update(input); effects.push("selection"); },
     appendFormalMedia, syncMediaProposal: () => effects.push("proposal"),
-    notify: (notice: { title: string }) => notices.push(notice), errorMessage,
+    notify, errorMessage,
   });
   return { run, notices, effects, busy, mediaBusy, input,
+    operations, hide: () => { notificationVisible.current = false; operations.hide(); }, show: () => { notificationVisible.current = true; operations.show(); },
+    switchAccount: (value: string) => { account = value; reset++; operations.observe(); },
+    captureSettler: () => settle,
     get nativeCalls() { return nativeCalls; }, failUpload() { uploadFails = true; },
     settle: (result: unknown, failed = false) => settle(result, failed),
     async entered(count = 1) {
@@ -116,4 +128,42 @@ test("a downstream upload failure is visible and does not replace retained input
   assert.deepEqual(f.notices.map(value => value.title), ["图片尚未完成上传"]);
   assert.equal(f.mediaBusy.current, false);
   assert.equal(f.input.detail, "保留尚未提交的文字");
+});
+
+test("old formal picker across A-B-A cannot upload or release a fresh A picker", async () => {
+  const f = fixture(), old = f.run("site");
+  await f.entered(); const settleOld = f.captureSettler();
+  f.switchAccount("owner:b"); f.switchAccount("owner:a");
+  const next = f.run("site"); await f.entered(2);
+  settleOld({ tempFiles: [{ path: "old.png", size: 30 }] }); await old;
+  assert.deepEqual(f.effects, []); assert.deepEqual(f.notices, []);
+  assert.equal(f.mediaBusy.current, true, "old finally cannot unlock the successor");
+  f.settle({ tempFiles: [{ path: "new.png", size: 30 }] }); await next;
+  assert.deepEqual(f.effects, ["read", "complete", "preview", "selection", "proposal"]);
+  assert.equal(f.mediaBusy.current, false); assert.equal(f.input.detail, "保留尚未提交的文字");
+});
+
+test("both known native hide/show orders keep current photo selection; unmount suppresses late failure", async () => {
+  for (const showFirst of [false, true]) {
+    const f = fixture(), pending = f.run("site"); await f.entered();
+    f.hide(); if (showFirst) f.show();
+    f.settle({ tempFiles: [{ path: "photo.png", size: 30 }] }); await pending;
+    if (!showFirst) f.show();
+    assert.deepEqual(f.effects, ["read", "complete", "preview", "selection", "proposal"]);
+  }
+  const f = fixture(), pending = f.run("site"); await f.entered(); f.operations.dispose();
+  f.settle({ errMsg: "chooseImage:fail permission denied" }, true); await pending;
+  assert.deepEqual(f.notices, []); assert.deepEqual(f.effects, []);
+  assert.deepEqual(f.busy, [true], "unmounted editor receives no late state release");
+});
+
+test("native error callback before show cannot enqueue hidden feedback; after show remains actionable", async () => {
+  for (const showFirst of [false, true]) {
+    const f = fixture(), pending = f.run("site"); await f.entered(); f.hide();
+    if (showFirst) f.show();
+    f.settle({ errMsg: "chooseImage:fail permission denied" }, true); await pending;
+    assert.deepEqual(f.notices.map(value => value.title), showFirst ? ["图片尚未完成上传"] : []);
+    if (!showFirst) f.show();
+    assert.equal(f.mediaBusy.current, false); assert.equal(f.input.detail, "保留尚未提交的文字");
+  }
 });

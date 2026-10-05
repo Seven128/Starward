@@ -1,3 +1,4 @@
+import { testOperation } from "./operation-test-support";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -33,7 +34,7 @@ test("feedback conflict accepts only a fresh matching record and preserves input
         return { data: { submissions: mode === "fresh" ? [latest] : [] } };
       } },
     };
-    assert.equal(await createSave(form, () => {})(), null);
+    assert.equal(await createSave(form, testOperation())(), null);
     assert.deepEqual(busy, [true, false]);
     assert.deepEqual(adopted, mode === "fresh" ? [latest] : []);
     assert.equal(notices.at(-1), mode === "fresh" ? "草稿保存失败" : "暂时无法核对草稿");
@@ -51,5 +52,5 @@ test("feedback conflict accepts only a fresh matching record and preserves input
     history: { refetch: () => assert.fail("late success must not query another account") },
     announce: (kind: string) => assert.notEqual(kind, "success"),
   };
-  assert.equal(await createSave(form, () => { if (!sameAccount) throw new Error("account changed"); })(), null);
+  assert.equal(await createSave(form, testOperation(() => { if (!sameAccount) throw new Error("account changed"); }))(), null);
 });

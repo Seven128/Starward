@@ -279,7 +279,7 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
           </>}
         </> : managesRecords ? renderRecords(form, { onDetailOpen: openRecordDetail, onDetailClose: closeRecordDetail,
           onGroupChange: changeRecordsGroup, onFilterChange: changeRecordsFilter }) : <>
-          {form.localRecovery ? <View className="contribution-card contribution-local-recovery card"><Text className="type-section">本机有未完成的输入</Text><Text className="type-body">可先恢复并核对，恢复不会自动提交审核。</Text><SoftButton label="恢复本机输入" disabled={form.submissionCommandBusy} onClick={() => void form.restoreLocalDraft()}>恢复输入</SoftButton><SoftButton label="放弃本机副本" disabled={form.submissionCommandBusy} onClick={() => form.discardLocalDraft()}>放弃本机副本</SoftButton></View> : null}
+          {form.localRecovery ? <View className="contribution-card contribution-local-recovery card"><Text className="type-section">本机有未完成的输入</Text><Text className="type-body">可先恢复并核对，恢复不会自动提交审核。</Text><SoftButton label="恢复本机输入" disabled={form.submissionCommandBusy} onClick={() => void commands.restoreLocalDraft()}>恢复输入</SoftButton><SoftButton label="放弃本机副本" disabled={form.submissionCommandBusy} onClick={() => form.discardLocalDraft()}>放弃本机副本</SoftButton></View> : null}
           {form.localStorageError ? <StatusPanel state="ERROR" detail="本机输入暂时无法保存，请先保留本页。" /> : null}
           {!embedded && !isNewSpotDocument ? <View id="feedback-context"><ContributionContextSection form={form} /></View> : null}
           {!isNewSpotDocument && recordAction === "REVIEW_AND_EDIT" && editorRecord?.state === "CURRENT" && editorRecord.item.review?.reason ?

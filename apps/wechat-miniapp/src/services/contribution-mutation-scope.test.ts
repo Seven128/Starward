@@ -23,7 +23,11 @@ test("all feedback mutations keep the initiating owner across session and receip
         },
         invalidateApiCache: () => invalidations++, miniappQueryClient: { invalidateQueries: async () => {} },
       });
-      const invoke = () => operation("contribution:test", "upload:test", { expectedRevision: 1 });
+      const args = name === "createContributionDraft" ? [{ kind: "CORRECTION" }]
+        : name === "completeContributionUpload" ? ["contribution:test", "upload:test", { dataBase64: "image" }]
+        : name === "removeContributionUpload" ? ["contribution:test", "upload:test", 1]
+        : ["contribution:test", { expectedRevision: 1 }];
+      const invoke = () => operation(...args);
       if (phase === "same") { assert.equal(await invoke(), receipt); assert.equal(invalidations, 1); }
       else { await assert.rejects(invoke(), /账号已变化/); assert.equal(invalidations, 0); }
       assert.equal(requests, phase === "session" ? 0 : 1);

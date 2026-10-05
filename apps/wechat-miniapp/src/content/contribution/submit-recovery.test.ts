@@ -1,3 +1,4 @@
+import { testOperation } from "./operation-test-support";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -35,7 +36,7 @@ test("lost submission receipt retries the saved revision without saving again", 
     history: { refetch: async () => {} },
     announce: (_kind: string, title: string) => notices.push(title),
   };
-  const submit = () => createSubmit(form, async () => { saves++; return saved; }, () => { if (!accountValid) throw new Error("account changed"); })();
+  const submit = () => createSubmit(form, async () => { saves++; return saved; }, testOperation(() => { if (!accountValid) throw new Error("account changed"); }))();
   await submit();
   assert.equal(form.pendingSubmission, saved);
   assert.equal(notices.at(-1), "提交结果待确认");
@@ -59,7 +60,7 @@ test("lost submission receipt retries the saved revision without saving again", 
   assert.equal(notices.at(-1), "提交失败");
   accountValid = false;
   const count = requests.length;
-  await submit();
+  await assert.rejects(submit(), /account changed/);
   assert.equal(requests.length, count);
   assert.equal(form.pendingSubmission, null);
   assert.equal(form.submitting, false);

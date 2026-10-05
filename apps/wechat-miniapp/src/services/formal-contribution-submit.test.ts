@@ -1,3 +1,4 @@
+import { createContributionOperationOwner } from "../content/contribution/command-lock";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -79,6 +80,28 @@ test("formal submission transport applies the receipt only to its initiating acc
   assert.equal(invalidations, 0);
 });
 
+
+function feedbackContext(values: Record<string, unknown>) {
+  const page = {};
+  const guard = values.assertEditorOwner as () => void;
+  const operations = createContributionOperationOwner(() => {
+    let owner = "account:a";
+    try { guard(); } catch { owner = "account:b"; }
+    return { userId: owner, ownerId: owner, reset: owner === "account:a" ? 0 : 1, page, target: "formal" };
+  }, pending => {
+    if (pending) return;
+    for (const key of ["mediaBusy", "submitBusy"]) { const ref = values[key] as { current: boolean } | undefined; if (ref) ref.current = false; }
+    for (const key of ["setBusy", "setUploading"]) { const setter = values[key] as ((value: boolean) => void) | undefined; setter?.(false); }
+  });
+  const taro = values.Taro;
+  if (taro) {
+    const source = ts.createSourceFile("platform-image.ts", readFileSync(new URL("./platform-image.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+    const node = source.statements.find(value => ts.isFunctionDeclaration(value) && value.name?.text === "choosePlatformImages");
+    assert.ok(node);
+    values.choosePlatformImages = vm.runInNewContext(ts.transpileModule(node.getText(source).replace(/^export /u, "") + "\nchoosePlatformImages;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, { Taro: taro, Error });
+  }
+  return { ...values, operations };
+}
 test("feedback submit takes a synchronous busy lock until the first request settles", async () => {
   const source = ts.createSourceFile("feedback.tsx", readFileSync(new URL("../content/spot-feedback/index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let declaration: ts.VariableDeclaration | undefined;
@@ -93,7 +116,7 @@ test("feedback submit takes a synchronous busy lock until the first request sett
   let calls = 0;
   let submitted = false;
   const notices: { title: string; tone: string }[] = [];
-  const submit = vm.runInNewContext(code, {
+  const submit = vm.runInNewContext(code, feedbackContext({
     baseline: { revision: 1 }, proposal: { fields: { name: "新地点" } }, hasChanges: true, noRemainingChanges: false, conflictOutcome: null, busy: false, uploading: false, sessionUnconfirmed: false,
     submitted: false, activeConflicts: [], resolutions: {}, mediaProposal: {}, rightsConfirmed: true,
     uploadIntent: null, activeSubmissionId: "", resubmissionRevision: null,
@@ -107,7 +130,7 @@ test("feedback submit takes a synchronous busy lock until the first request sett
       if (calls === 1) return new Promise((_resolve, reject) => { rejectFirst = reject; });
       return { data: { state: "SUBMITTED", submission: { submissionId: "contribution:one", formalFeedback: null } } };
     },
-  }) as () => Promise<void>;
+  })) as () => Promise<void>;
   const first = submit();
   await submit();
   assert.equal(calls, 1, "a second tap before rerender must not dispatch another write");
@@ -134,7 +157,7 @@ test("formal photo handoff locks other photos and submit before native selection
   const handoff = new Promise<boolean>(resolve => { resolveHandoff = resolve; });
   let handoffs = 0;
   let submissions = 0;
-  const api = vm.runInNewContext(code, {
+  const api = vm.runInNewContext(code, feedbackContext({
     baseline: { revision: 1, spotId: "spot:test" }, proposal: { fields: { name: "新地点" } }, hasChanges: true, noRemainingChanges: false, conflictOutcome: null,
     busy: false, uploading: false, sessionUnconfirmed: false, submitted: false, rightsConfirmed: true, uploadIntent: null,
     mediaBusy: { current: false }, submitBusy: { current: false },
@@ -144,7 +167,7 @@ test("formal photo handoff locks other photos and submit before native selection
     activeConflicts: [], resolutions: {}, mediaProposal: {}, activeSubmissionId: "", resubmissionRevision: null,
     submitFormalContribution: async () => { submissions++; return { data: { state: "PENDING_REVIEW" } }; },
     notify: () => undefined, MiniappApiError: class extends Error {}, errorMessage: (error: Error) => error.message,
-  }) as { addPhoto: (kind: string) => Promise<void>; submit: () => Promise<void> };
+  })) as { addPhoto: (kind: string) => Promise<void>; submit: () => Promise<void> };
   const first = api.addPhoto("site");
   const second = api.addPhoto("site");
   assert.equal(handoffs, 1, "the second tap must not open another media handoff");
@@ -188,25 +211,25 @@ test("formal photo completion failure keeps the created session and retries its 
     setPreviewPaths: (update: (current: Record<string, string>) => Record<string, string>) => { previewPaths = update(previewPaths); }, setMediaSelection: () => undefined, appendFormalMedia: (current: unknown) => current,
     notify: (notice: { title: string }) => { notices.push(notice.title); }, errorMessage: (error: Error) => error.message,
   };
-  const first = vm.runInNewContext(code, {
+  const first = vm.runInNewContext(code, feedbackContext({
     ...base, uploadIntent: null, mediaBusy: { current: false }, submitBusy: { current: false },
     createFormalUploadIntent: async () => ({ data: intent }),
     createFormalContributionUpload: async () => ({ data: created }),
     completeFormalContributionUpload: async () => { throw new Error("receipt unknown"); },
-  }) as (kind: string) => Promise<void>;
+  })) as (kind: string) => Promise<void>;
   await first("site");
   assert.deepEqual(retained, [intent, created], "both confirmed stages must remain available for recovery");
   assert.deepEqual(notices, ["图片尚未完成上传"]);
   let newSessions = 0;
   let completedId = "";
   let synced: unknown;
-  const retry = vm.runInNewContext(code, {
+  const retry = vm.runInNewContext(code, feedbackContext({
     ...base, uploadIntent: created, mediaBusy: { current: false }, submitBusy: { current: false },
     createFormalUploadIntent: async () => { newSessions++; throw new Error("unexpected intent"); },
     createFormalContributionUpload: async () => { newSessions++; throw new Error("unexpected session"); },
     completeFormalContributionUpload: async (_intentId: string, uploadId: string) => { completedId = uploadId; return { data: completed }; },
     syncMediaProposal: (value: unknown) => { synced = value; },
-  }) as (kind: string) => Promise<void>;
+  })) as (kind: string) => Promise<void>;
   dataBase64 = "different-image";
   await retry("site");
   assert.equal(completedId, "", "same-size replacement cannot complete an uncertain upload");
@@ -252,19 +275,19 @@ test("lost photo-session receipt reuses the first request despite a new WeChat t
     notify: () => undefined, errorMessage: (error: Error) => error.message,
     createFormalUploadIntent: async () => ({ data: intent }),
   };
-  const first = vm.runInNewContext(code, {
+  const first = vm.runInNewContext(code, feedbackContext({
     ...base, uploadIntent: null,
     createFormalContributionUpload: async (_id: string, input: unknown) => { requests.push(input); throw new Error("receipt unknown"); },
-  }) as (kind: string) => Promise<void>;
+  })) as (kind: string) => Promise<void>;
   await first("site");
   assert.equal(uncertain.at(-1), true);
   assert.ok(sessionAttempt.current);
 
-  const retry = vm.runInNewContext(code, {
+  const retry = vm.runInNewContext(code, feedbackContext({
     ...base, uploadIntent: intent,
     createFormalContributionUpload: async (_id: string, input: unknown) => { requests.push(input); return { data: created }; },
     completeFormalContributionUpload: async () => ({ data: completed }),
-  }) as (kind: string) => Promise<void>;
+  })) as (kind: string) => Promise<void>;
   filePath = "different.png";
   await retry("site");
   assert.equal(requests.length, 1, "a different picture cannot replace an uncertain session");
@@ -292,7 +315,7 @@ test("account switch during native photo handoff cannot upload the old editor's 
   let choices = 0;
   let writes = 0;
   const notices: string[] = [];
-  const addPhoto = vm.runInNewContext(code, {
+  const addPhoto = vm.runInNewContext(code, feedbackContext({
     baseline: { revision: 1, spotId: "spot:test" }, busy: false, uploading: false, submitted: false,
     mediaBusy: { current: false }, submitBusy: { current: false }, uploadIntent: null,
     sessionAttempt: { current: null }, setSessionUnconfirmed: () => undefined,
@@ -302,12 +325,12 @@ test("account switch during native photo handoff cannot upload the old editor's 
     Taro: { chooseImage: async () => { choices++; return { tempFiles: [] }; } },
     createFormalUploadIntent: async () => { writes++; return { data: {} }; },
     notify: (notice: { title: string }) => { notices.push(notice.title); }, errorMessage: (error: Error) => error.message,
-  }) as (kind: string) => Promise<void>;
+  })) as (kind: string) => Promise<void>;
   const pending = addPhoto("site");
   owner = "account:b";
   resolveHandoff(true);
   await pending;
   assert.equal(choices, 0);
   assert.equal(writes, 0);
-  assert.deepEqual(notices, ["图片尚未完成上传"]);
+  assert.deepEqual(notices, [], "retired handoff must not notify the successor");
 });

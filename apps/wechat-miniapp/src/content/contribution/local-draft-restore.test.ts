@@ -4,6 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { candidateIntakeFromProfile } from "./candidate-document";
+import { createContributionOperationOwner } from "./command-lock";
 
 test("local recovery preserves editable draft revisions and refuses submitted or switched-account records", async () => {
   const source = ts.createSourceFile("form.ts", readFileSync(new URL("./use-contribution-form.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -17,18 +18,24 @@ test("local recovery preserves editable draft revisions and refuses submitted or
     candidateName: "", candidateRegion: "", latitude: "", longitude: "", rightsConfirmed: false, preciseLocationConsent: false,
     candidateProfile: { fields: { detail: "候选地点结构化说明" }, media: {} },
   };
-  const run = async (state: string, revision: number, switchAccount = false, offline = false) => {
+  const run = async (state: string, revision: number, interruption: false | "switch" | "aba" | "hide" | "unmount" = false, offline = false) => {
     let owner = "a";
+    let reset = 0;
+    const page = {};
     let accepted = 0;
     const fields: Record<string, unknown> = {};
     const notices: string[] = [];
+    const operations = createContributionOperationOwner(() => ({ userId: owner, ownerId: owner, reset, page, target: "recovery" }), value => { fields.CommandBusy = value; });
     const sandbox: Record<string, unknown> = {
       localDraft: { recovery: local, owner: "a", accept: () => accepted++ }, commandBusy: false,
       currentDraftUserId: () => owner,
       getContributions: async (_signal: unknown, expectedOwner: unknown) => {
         assert.equal(expectedOwner, "a");
         if (offline) throw new Error("offline");
-        if (switchAccount) owner = "b";
+        if (interruption === "switch" || interruption === "aba") { owner = "b"; reset++; operations.observe(); }
+        if (interruption === "aba") { owner = "a"; reset++; operations.observe(); }
+        if (interruption === "hide") operations.hide();
+        if (interruption === "unmount") operations.dispose();
         return { data: { submissions: [{ submissionId: "contribution:a", revision, state }] } };
       },
       contributionSubmissionState: (item: { state: string }) => item.state,
@@ -39,7 +46,9 @@ test("local recovery preserves editable draft revisions and refuses submitted or
     for (const field of ["CommandBusy", "Draft", "ConflictDraft", "BoundSpotId", "BoundSpotName", "Kind", "Topics", "Date", "Time", "Detail", "CandidateName", "CandidateRegion", "CandidatePlaceLabel", "CandidateFields", "CandidateMedia", "CandidateIntake", "Latitude", "Longitude", "RightsConfirmed", "PreciseLocationConsent", "Phase"]) {
       sandbox[`set${field}`] = (value: unknown) => { fields[field] = value; };
     }
-    await vm.runInNewContext(code, sandbox)();
+    const operation = operations.begin()!;
+    try { await vm.runInNewContext(code, sandbox)(operation); }
+    finally { operation.release(); }
     return { accepted, fields, notices };
   };
   const same = await run("DRAFT", 3);
@@ -55,10 +64,14 @@ test("local recovery preserves editable draft revisions and refuses submitted or
   assert.equal(rejected.accepted, 1);
   assert.equal((rejected.fields.Draft as { revision: number }).revision, 3);
   assert.equal((rejected.fields.ConflictDraft as { revision: number }).revision, 6);
-  for (const result of [await run("PENDING_REVIEW", 4), await run("DRAFT", 3, true), await run("DRAFT", 3, false, true)]) {
+  for (const result of [await run("PENDING_REVIEW", 4), await run("DRAFT", 3, "switch"), await run("DRAFT", 3, "aba"), await run("DRAFT", 3, "hide"), await run("DRAFT", 3, false, true)]) {
     assert.equal(result.accepted, 0);
     assert.equal(result.fields.Detail, undefined);
     assert.equal(result.fields.Draft, undefined);
     assert.equal(result.fields.CommandBusy, false);
   }
+  const unmounted = await run("DRAFT", 3, "unmount");
+  assert.equal(unmounted.accepted, 0); assert.equal(unmounted.fields.Detail, undefined);
+  assert.equal(unmounted.fields.CommandBusy, true, "disposal cannot call a late mounted setter");
+  assert.deepEqual(unmounted.notices, []);
 });
