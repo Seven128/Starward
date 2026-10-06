@@ -83,6 +83,7 @@ import {
   civilDateForInstant,
   instantForCivilDate,
   observationDateOptions,
+  observationNightLabel,
 } from "@/components/observation-date";
 import {
   SpotInformationPanel,
@@ -882,6 +883,9 @@ export default function MapPage() {
     ? civilDateForInstant(activeContext.selectedAtUtc, activeContext.timezone)
     : localDateForNow();
   const mapTodayCivilDate = mapDateOptions[7] ?? selectedMapCivilDate;
+  const presentedMapCivilDate = activeContext
+    ? civilDateForInstant(projectedAt, activeContext.timezone)
+    : selectedMapCivilDate;
   const visibleTemporalFailure = temporalFailure && activeContext &&
     temporalFailure.contextId === activeContext.contextId &&
     temporalFailure.revision === activeContext.revision &&
@@ -2333,7 +2337,7 @@ export default function MapPage() {
                 temporalFailure={visibleTemporalFailure}
                 onTemporalRetry={retryTemporalFailure}
                 dateOptions={mapDateOptions}
-                selectedDate={selectedMapCivilDate}
+                selectedDate={presentedMapCivilDate}
                 todayDate={mapTodayCivilDate}
                 onDateCommit={(date) => void commitMapDate(date)}
                 onTimePreview={(index) => {
@@ -2440,7 +2444,7 @@ export default function MapPage() {
                     /> : null}
                     <ObservationDateControl
                       dates={mapDateOptions}
-                      selectedDate={selectedMapCivilDate}
+                      selectedDate={presentedMapCivilDate}
                       today={mapTodayCivilDate}
                       open={layerDatePickerOpen}
                       busy={!activeContext || timeSaving}
@@ -2455,6 +2459,7 @@ export default function MapPage() {
                       }}
                     />
                     <MapTimeRuler
+                      nightLabel={activeContext ? observationNightLabel(activeContext.localDate, projectedAt, activeContext.timezone, mapTodayCivilDate) : undefined}
                       frames={cloudTimeChoices.map(choice => choice.frame)}
                       selectedAt={activeContext?.selectedAtUtc ?? ""}
                       timezone={activeContext?.timezone ?? "Asia/Shanghai"}

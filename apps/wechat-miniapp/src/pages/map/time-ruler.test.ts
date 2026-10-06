@@ -26,34 +26,48 @@ test("map and panel clocks keep midnight in 00–23 hours on the correct date", 
 function render(disabled = false, selectedAt = "2026-09-06T12:00:00Z", frames: { atUtc: string }[] = [{ atUtc: "2026-09-06T12:00:00Z" }, { atUtc: "2026-09-06T13:00:00Z" }], emptyMessage = "当前日期没有可用的时间切片。") {
   const positions:number[]=[];
   const effects: (() => void | (() => void))[] = [];
+  const hooks: any[] = [], dependencies: unknown[][] = [];
+  let cursor = 0, effectCursor = 0;
+  let pendingEffects: number[] = [];
   let hide = () => {};
   const text = readFileSync(new URL("./time-ruler.tsx", import.meta.url), "utf8")
     .replace(/^import .*;\r?\n/gm, "").replace("export function", "function");
   const component = vm.runInNewContext(ts.transpileModule(text + "\nMapTimeRuler;", {
     compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
   }).outputText, {
-    useDidShow:()=>{},createRulerScrollPosition:()=>({move:(value:number)=>positions.push(value),cancel:()=>{}}),createScrollSettlement, Button: "button", ScrollView: "scroll", Text: "text", View: "view",
+    useReducedMotion:()=>false,useDidShow:()=>{},createRulerScrollPosition:()=>({move:(value:number)=>positions.push(value),settle:(_from:number,value:number,_reduced:boolean,present:(left:number)=>void)=>{positions.push(value);present(value);},cancel:()=>{}}),createScrollSettlement, Button: "button", ScrollView: "scroll", Text: "text", View: "view",
     React: { createElement: (type: string, props: object, ...children: Element[]) => ({ type, props, children: children.flat() }) },
-    useEffect: (effect: () => void | (() => void)) => effects.push(effect),
+    useEffect: (effect: () => void | (() => void), deps: unknown[]) => {
+      const slot = effectCursor++;
+      if (!dependencies[slot] || deps.some((value, i) => value !== dependencies[slot]![i])) pendingEffects.push(slot);
+      effects[slot] = effect; dependencies[slot] = deps;
+    },
     useDidHide: (callback: () => void) => { hide = callback; },
-    useState: (value: unknown) => [value, () => {}],
-    useRef: (value: unknown) => ({ current: value }), nearestMapTimeFrameIndex: () => 0,
+    useState: (value: unknown) => { const slot = cursor++; if (!(slot in hooks)) hooks[slot] = value; return [hooks[slot], (next: unknown) => { hooks[slot] = next; }]; },
+    useRef: (value: unknown) => { const slot = cursor++; if (!(slot in hooks)) hooks[slot] = {current:value}; return hooks[slot]; },
+    nearestMapTimeFrameIndex: (rows: {atUtc:string}[], at:string) => Math.max(0,rows.findIndex(row=>row.atUtc===at)),
     calendarDateInTimezone, clockTimeInTimezone,
   });
   const previews: number[] = [], commits: number[] = [];
   let cancelled = 0;
-  const root: Element = component({
+  const props = {
     frames,
     selectedAt, timezone: "UTC", disabled,
     emptyMessage,
     onPreview: (index: number) => previews.push(index), onCommit: (index: number) => commits.push(index),
     onCancel: () => { cancelled++; },
-  });
-  const scroll = root.children.find((child) => child?.type === "scroll");
-  const cleanups = effects.map((effect) => effect());
-  return { positions, root, scroll: scroll?.props ?? {}, previews, commits, hide: () => hide(),
+  };
+  let root: Element;
+  const cleanups: (() => void)[] = [];
+  const rerender = (changes: Partial<typeof props> = {}) => {
+    Object.assign(props,changes); cursor = 0; effectCursor = 0; pendingEffects = [];
+    root = component(props);
+    for (const slot of pendingEffects) { const cleanup = effects[slot]!(); if (cleanup) cleanups.push(cleanup); }
+  };
+  rerender();
+  return { positions, get root() { return root; }, get scroll() { return root.children.find(child=>child?.type==="scroll")?.props ?? {}; }, previews, commits, hide: () => hide(), rerender,
     unmount: () => cleanups.forEach((cleanup) => cleanup?.()),
-    changeInputs: () => effects.at(-1)!(),
+    changeInputs: () => effects[1]!(),
     get cancelled() { return cancelled; } };
 }
 test("an empty ruler shows its consumer's actual loading, failure or zero-result meaning", () => {
@@ -66,9 +80,51 @@ test("an empty ruler shows its consumer's actual loading, failure or zero-result
   const pending = JSON.stringify(render(true, "", [], "正在读取云量时间切片。").root);
   assert.doesNotMatch(pending, /暂无数据/);
 });
+
+test("fractional native progress changes the arc without committing, and own confirmation does not reset settling", () => {
+  const ruler = render();
+  ruler.scroll.onTouchStart(singleTouch);
+  ruler.scroll.onScroll({detail:{scrollLeft:33}}); ruler.rerender();
+  const scroll = ruler.root.children.find(child=>child?.type==="scroll")!;
+  const first = scroll.children[0]!.children[0]!;
+  assert.equal(first.props.style["--ruler-offset"],"0.75px");
+  assert.equal(first.props.style["--ruler-opacity"],"0.89");
+  assert.deepEqual(ruler.commits,[]);
+  scroll.children[0]!.children[1]!.props.onClick();
+  const count = ruler.positions.length;
+  ruler.rerender({disabled:true});
+  ruler.rerender({disabled:false,selectedAt:"2026-09-06T13:00:00Z"});
+  assert.equal(ruler.positions.length,count);
+  ruler.rerender({selectedAt:"2026-09-06T12:00:00Z"});
+  assert.equal(ruler.positions.at(-1),0);
+  assert.equal(ruler.positions.length,count+1);
+});
+
+test("failed time confirmation restores the committed native position", () => {
+  const ruler=render();
+  ruler.root.children.find(child=>child?.type==="scroll")!.children[0]!.children[1]!.props.onClick();
+  ruler.rerender({disabled:true}); const count=ruler.positions.length;
+  ruler.rerender({disabled:false});
+  assert.equal(ruler.positions.at(-1),0); assert.equal(ruler.positions.length,count+1);
+});
 const event = { detail: { scrollLeft: 44 } };
 const singleTouch = { touches: [{ identifier: 1 }] };
 const twoTouches = { touches: [{ identifier: 1 }, { identifier: 2 }] };
+
+test("adopted shallow arc uses logical pixels and a fixed axis outside the moving track", () => {
+  const source = readFileSync(new URL("./time-ruler.tsx", import.meta.url), "utf8");
+  const parsed = ts.createSourceFile("ruler.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const declaration = parsed.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "rulerPosition")!;
+  const project = vm.runInNewContext(ts.transpileModule(declaration.getText(parsed) + "\nrulerPosition;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText);
+  for (const distance of [0, .5, 1, 2, 4, -1]) {
+    const actual = project(distance);
+    assert.equal(actual.offset, Math.min(12, distance * distance * 3));
+    assert.equal(actual.opacity, Math.max(.25, 1 - Math.abs(distance) * .22));
+  }
+  const ruler = render();
+  assert.ok(ruler.root.children.some(child => child?.props?.className === "map-time-ruler__center"));
+  assert.match(source, /position\.offset\}px/);
+});
 
 test("a second finger cancels preview and cannot submit through scroll completion", t => {
   t.mock.timers.enable({apis:["setTimeout"]});
@@ -108,6 +164,17 @@ test("programmatic scroll and disabled rulers cannot preview or submit", () => {
     assert.deepEqual(ruler.previews, []);
     assert.deepEqual(ruler.commits, []);
   }
+});
+
+test("touching blank ruler space or moving vertically without a scroll cannot submit", t => {
+  t.mock.timers.enable({apis:["setTimeout"]});
+  const ruler = render();
+  ruler.scroll.onTouchStart(singleTouch);
+  ruler.scroll.onTouchMove(singleTouch);
+  ruler.scroll.onTouchEnd(); ruler.scroll.onDragEnd();
+  t.mock.timers.tick(500);
+  assert.deepEqual(ruler.previews, []);
+  assert.deepEqual(ruler.commits, []);
 });
 
 test("touch cancellation rolls back and ignores subsequent momentum completion", () => {

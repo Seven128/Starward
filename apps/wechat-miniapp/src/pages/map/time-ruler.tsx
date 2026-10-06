@@ -1,7 +1,6 @@
 import { createRulerScrollPosition } from "@/components/ruler-scroll-position";
 import { createScrollSettlement } from "@/components/scroll-settlement";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
-import type { BaseEventOrig, ScrollViewProps } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { MapSceneTimeFrame } from "@starward/miniapp-contracts";
@@ -10,6 +9,7 @@ import { useDidHide, useDidShow } from "@tarojs/taro";
 import type { MoonPhaseKey } from "@starward/miniapp-contracts";
 import { MoonPhaseImage, moonPhaseLabel } from "@/components/moon-phase";
 import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 function formatTime(value: string, timezone: string, compact = false) {
   try {
@@ -28,14 +28,10 @@ function formatTime(value: string, timezone: string, compact = false) {
 const RULER_STEP = 66;
 
 function rulerPosition(distance: number) {
-  // Keep the projection deterministic while the native ScrollView supplies
-  // the horizontal physics.  The centre slice remains full-size; distant
-  // real slices form the shallow raised arc from the selected design.
-  const u = Math.min(1, Math.abs(distance) / 10);
+  const d = Math.abs(distance);
   return {
-    scale: 1 - 0.56 * Math.pow(u, 1.2),
-    opacity: 1 - 0.84 * Math.pow(u, 1.15),
-    offset: 22 * Math.pow(u, 1.55),
+    opacity: Math.max(.25, 1 - d * .22),
+    offset: Math.min(12, d * d * 3),
   };
 }
 
@@ -55,6 +51,7 @@ export function MapTimeRuler({
   onCommit,
   onCancel,
   moonPhases,
+  nightLabel,
   control = "map-time-control",
 }: {
   frames: readonly MapSceneTimeFrame[];
@@ -66,13 +63,19 @@ export function MapTimeRuler({
   onCommit: (index: number) => void;
   onCancel: () => void;
   moonPhases?: readonly (MoonPhaseKey | null)[];
+  nightLabel?: string | undefined;
   control?: "map-time-control" | "sky-time-scrubber";
 }) {
   const initialIndex = frames.length
     ? nearestMapTimeFrameIndex(frames, selectedAt)
     : 0;
   const [index, setIndex] = useState(initialIndex);
+  const [presented, setPresented] = useState(initialIndex);
   const [scrollLeft, setScrollLeft] = useState(initialIndex * RULER_STEP);
+  const liveLeft = useRef(initialIndex * RULER_STEP);
+  const userScrolled = useRef(false);
+  const target = useRef<{ at: string; from: string; frames: string } | null>(null);
+  const reducedMotion = useReducedMotion();
   const settleCallback = useRef<(offset: number) => void>(() => {});
   const settlementRef = useRef<ReturnType<typeof createScrollSettlement> | null>(null);
   if (!settlementRef.current) settlementRef.current = createScrollSettlement(offset => settleCallback.current(offset));
@@ -85,7 +88,10 @@ export function MapTimeRuler({
   const cancelInteraction = () => {
     const pending = settlement.active;
     settlement.cancel();
+    target.current = null;
     setIndex(initialIndex);
+    setPresented(initialIndex);
+    liveLeft.current = initialIndex * RULER_STEP;
     setScrollLeft(initialIndex * RULER_STEP);
     nativePosition.move(initialIndex * RULER_STEP);
     if (pending) cancelCallback.current();
@@ -101,8 +107,23 @@ export function MapTimeRuler({
   }, []);
 
   useEffect(() => {
+    const own = target.current;
+    // The owner's busy state and confirmation of this exact command are not
+    // external selections. Keep their visual settling independent of HTTP.
+    if (own && own.frames === frameIdentity &&
+        (selectedAt === own.at || (disabled && selectedAt === own.from))) return;
     cancelInteraction();
   }, [initialIndex, selectedAt, frameIdentity, disabled]);
+  useEffect(() => {
+    if (reducedMotion) {
+      const next = target.current ? frames.findIndex(frame => frame.atUtc === target.current!.at) : initialIndex;
+      if (next >= 0) {
+        nativePosition.move(next * RULER_STEP);
+        liveLeft.current = next * RULER_STEP;
+        setPresented(next);
+      }
+    }
+  }, [reducedMotion]);
 
   const clamp = (value: number) =>
     Math.min(Math.max(0, value), Math.max(0, frames.length - 1));
@@ -112,24 +133,30 @@ export function MapTimeRuler({
     setIndex(next);
     onPreview(next);
   };
-  const readIndex = (
-    event: BaseEventOrig<ScrollViewProps.onScrollDetail>,
-  ) => {
-    // WeChat exposes scrollLeft on the native detail even though the Taro
-    // declaration only lists the vertical fields for onScroll.
-    const left = Number(
-      (event.detail as unknown as { scrollLeft?: number }).scrollLeft ?? 0,
-    );
-    return clamp(Math.round(left / RULER_STEP));
+  const commit = (next: number, from: number) => {
+    target.current = { at: frames[next]!.atUtc, from: selectedAt, frames: frameIdentity };
+    updatePreview(next);
+    nativePosition.settle(from, next * RULER_STEP, reducedMotion, left => {
+      liveLeft.current = left;
+      setPresented(clamp(left / RULER_STEP));
+    });
+    onCommit(next);
+  };
+  const release = () => {
+    if (!userScrolled.current && target.current) {
+      const next = frames.findIndex(frame => frame.atUtc === target.current!.at);
+      if (next >= 0) nativePosition.settle(liveLeft.current, next * RULER_STEP, reducedMotion, left => {
+        liveLeft.current = left;
+        setPresented(clamp(left / RULER_STEP));
+      });
+    }
+    settlement.release();
   };
 
   settleCallback.current = offset => {
     if (disabled) return;
     const next = clamp(Math.round(offset / RULER_STEP));
-    setScrollLeft(next * RULER_STEP);
-    nativePosition.move(next * RULER_STEP);
-    updatePreview(next);
-    onCommit(next);
+    commit(next, offset);
   };
 
   if (!frames.length) {
@@ -170,18 +197,25 @@ export function MapTimeRuler({
             return;
           }
           nativePosition.cancel();
+          userScrolled.current = false;
           settlement.begin();
         }}
         onTouchMove={(event) => {
           if ((event as unknown as { touches?: readonly unknown[] }).touches?.length !== 1) cancelInteraction();
         }}
-        onTouchEnd={() => settlement.release()}
-        onDragEnd={() => settlement.release()}
+        onTouchEnd={release}
+        onDragEnd={release}
         onTouchCancel={cancelInteraction}
         onScroll={(event) => {
+          const left = Number(event.detail.scrollLeft);
+          if (!Number.isFinite(left)) return;
+          liveLeft.current = left;
+          setPresented(clamp(left / RULER_STEP));
           if (disabled || !settlement.active) return;
-          settlement.update(Number(event.detail.scrollLeft));
-          updatePreview(readIndex(event));
+          userScrolled.current = true;
+          target.current = null;
+          settlement.update(left);
+          updatePreview(clamp(Math.round(left / RULER_STEP)));
         }}
         onScrollEnd={() => {
           if (disabled || !settlement.active) return;
@@ -190,13 +224,12 @@ export function MapTimeRuler({
       >
         <View className="map-time-ruler__track">
           {frames.map((frame, frameIndex) => {
-            const selected = settlement.active ? frameIndex === index : Date.parse(frame.atUtc) === Date.parse(selectedAt);
-            const position = rulerPosition(frameIndex - index);
+            const selected = settlement.active || target.current ? frameIndex === index : Date.parse(frame.atUtc) === Date.parse(selectedAt);
+            const position = rulerPosition(frameIndex - presented);
             const phase = moonPhases?.[frameIndex] ?? null;
             const style = {
-              "--ruler-scale": String(position.scale),
               "--ruler-opacity": String(position.opacity),
-              "--ruler-offset": `${position.offset}rpx`,
+              "--ruler-offset": `${position.offset}px`,
             } as CSSProperties;
             return (
               <Button
@@ -209,10 +242,7 @@ export function MapTimeRuler({
                 onClick={() => {
                   if (disabled) return;
                   settlement.cancel();
-                  setScrollLeft(frameIndex * RULER_STEP);
-                  nativePosition.move(frameIndex * RULER_STEP);
-                  updatePreview(frameIndex);
-                  onCommit(frameIndex);
+                  commit(frameIndex, liveLeft.current);
                 }}
               >
                 <View className="map-time-ruler__tick" aria-hidden="true" />
@@ -225,6 +255,8 @@ export function MapTimeRuler({
           })}
         </View>
       </ScrollView>
+      <View className="map-time-ruler__center" aria-hidden="true" />
+      {nightLabel ? <Text className="map-time-ruler__night" aria-live="polite">{nightLabel}</Text> : null}
     </View>
   );
 }

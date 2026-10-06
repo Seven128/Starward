@@ -26,6 +26,7 @@ import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { MapTimeRuler } from "./time-ruler";
 import { MapTemporalFeedback, type MapTemporalFailure } from "./map-temporal-feedback";
 import { ObservationDateControl } from "@/components/observation-date-control";
+import { observationNightLabel } from "@/components/observation-date";
 import { MoonPhaseImage, moonPhaseLabel } from "@/components/moon-phase";
 import {
   darknessLabel,
@@ -635,6 +636,7 @@ export function SpotInformationPanel({
                 }}
               />
               <MapTimeRuler
+                nightLabel={context ? observationNightLabel(context.localDate, astronomyAt, context.timezone, todayDate) : undefined}
                 frames={timeFrames}
                 moonPhases={timeFrames.map((frame) => frame.moonPhase)}
                 selectedAt={context?.selectedAtUtc ?? ""}

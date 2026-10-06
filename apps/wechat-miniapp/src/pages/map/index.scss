@@ -1451,6 +1451,7 @@
   border-radius: 3rpx;
 }
 .map-time-ruler {
+  position: relative;
   min-width: 0;
   padding-top: 18rpx;
 }
@@ -2398,7 +2399,7 @@
   align-items: center;
   gap: 5Px;
   opacity: var(--ruler-opacity, 1);
-  transform: translateY(var(--ruler-offset, 0rpx));
+  transform: translateY(var(--ruler-offset, 0px));
   color: var(--text-tertiary);
   font-size: var(--type-metadata-size);
   line-height: var(--type-metadata-line);
@@ -2414,17 +2415,40 @@
 .map-time-ruler__tick {
   width: 2Px;
   height: 9Px;
-  transform: scaleY(var(--ruler-scale, 1));
-  transform-origin: center bottom;
   background: currentColor;
+  border-radius: 2Px;
 }
-.map-time-ruler__slice:nth-child(4n + 1) .map-time-ruler__tick {
-  height: 10Px;
-}
-.map-time-ruler__slice--active .map-time-ruler__tick {
+.map-time-ruler__center {
+  position: absolute;
+  left: 50%;
+  top: 8Px;
   width: 3Px;
   height: 12Px;
-  transform: none;
+  border-radius: 2Px;
+  transform: translateX(-50%);
+  background: var(--choice-selected-label);
+  pointer-events: none;
+}
+.map-time-ruler__night {
+  display: block;
+  font-size: 10Px;
+  line-height: 15Px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  text-align: center;
+}
+.theme-day .map-time-ruler__slice {
+  font-size: 11Px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.theme-day .map-time-ruler__slice--active {
+  font-size: 12Px;
+  font-weight: 400;
+  color: #41434e;
+}
+.theme-day .map-time-ruler__center {
+  background: #d5a126;
 }
 .map-time-ruler__slice[disabled] {
   opacity: .58;

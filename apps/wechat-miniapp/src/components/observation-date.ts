@@ -26,6 +26,12 @@ export function civilDateForInstant(at: string, timezone: string) {
   return calendarDateInTimezone(new Date(at), timezone);
 }
 
+export function observationNightLabel(nightDate: string, at: string, timezone: string, today: string) {
+  if (civilDateForInstant(at, timezone) !== nightDate)
+    return `${nightDate.slice(5, 7)}月${nightDate.slice(8, 10)}日观测夜`;
+  return nightDate < today ? "历史时段" : nightDate === today ? "今晚" : "观测夜";
+}
+
 export function observationNightForCivilDate(localDate: string, localTime: string) {
   const hour = Number(localTime.slice(0, 2));
   if (!Number.isInteger(hour) || hour < 0 || hour > 23)
