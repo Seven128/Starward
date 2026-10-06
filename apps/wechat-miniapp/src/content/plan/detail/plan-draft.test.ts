@@ -1,6 +1,22 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { clearPlanDraft, clearUnchangedPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey } from "./plan-draft";
+import { clearPlanDraft, clearUnchangedPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey, planDraftMatchesInput, type PlanDraft } from "./plan-draft";
+
+test("a saved service plan owns its equivalent parsed draft regardless of nested field order", () => {
+  const submitted: PlanDraft = { selectedSpotId: "spot:journey" as PlanDraft["selectedSpotId"],
+    localDate: "2026-10-06", localTime: "22:00", notes: "原文保留", baseRevision: 2,
+    timing: { departureLocalTime: "21:00", endLocalTime: "01:00", endLocalDate: "2026-10-07", departureLocalDate: "2026-10-06" },
+    travel: { mode: "DRIVING", origin: "隔离测试出发地", originLocation: null },
+    reminders: [{ items: [{ completed: true, text: "检查手电", itemId: "item:1" }], title: "器材",
+      reminderId: "reminder:1", notifyOnWechat: false, hoursBeforeDeparture: 1 }], eventOccurrenceIds: [] };
+  const restored = parsePlanDraft(JSON.parse(JSON.stringify(submitted)))!;
+  assert.deepEqual(restored, submitted);
+  assert.equal(planDraftMatchesInput(restored, submitted), true);
+  assert.equal(planDraftMatchesInput(restored, { ...submitted, notes: "后来修改" }), false);
+  assert.equal(planDraftMatchesInput(restored, { ...submitted, baseRevision: 3 }), false);
+  assert.equal(planDraftMatchesInput(restored, { ...submitted, reminders: [{ ...submitted.reminders![0]!,
+    items: [{ ...submitted.reminders![0]!.items[0]!, completed: false }] }] }), false);
+});
 
 test("late save completion cannot delete another editor's newer draft or new plan", () => {
   const original = { creationPlanId: "plan:a", notes: "old" };
