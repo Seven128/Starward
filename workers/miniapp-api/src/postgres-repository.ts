@@ -358,12 +358,20 @@ function toModerationCaseView(
     payload: Record<string, unknown>;
     created_at: string | Date;
     resolved_at: string | Date | null;
+    current_submission?: ContributionSubmission | null;
   },
   events: readonly ContributionStatusHistoryEntry[],
 ): ModerationCaseView {
   const rawSubmission = row.payload.submission as ContributionSubmission | undefined;
+  // A case keeps the last submitted evidence while later media reviews or
+  // editable working copies advance the aggregate's operation revision.
   const submission = rawSubmission
-    ? normalizeContributionSubmission(rawSubmission)
+    ? {
+        ...normalizeContributionSubmission(rawSubmission),
+        revision: row.current_submission?.revision ?? rawSubmission.revision,
+        updatedAt: row.current_submission?.updatedAt ?? rawSubmission.updatedAt,
+        statusHistory: row.current_submission?.statusHistory ?? rawSubmission.statusHistory ?? [],
+      }
     : null;
   return {
     caseId: row.case_id as ModerationCaseView["caseId"],
@@ -5020,7 +5028,16 @@ export class PostgresMiniappRepository
       payload: Record<string, unknown>;
       created_at: string | Date;
       resolved_at: string | Date | null;
-    }>("SELECT * FROM moderation_cases WHERE case_id = $1", [caseId]);
+      current_submission: ContributionSubmission | null;
+    }>(
+      `SELECT c.case_id, c.subject_type, c.subject_id, c.state, c.payload,
+              s.payload AS current_submission, c.created_at, c.resolved_at
+         FROM moderation_cases c
+         LEFT JOIN user_submissions s
+           ON c.subject_type = 'USER_CONTRIBUTION' AND s.submission_id = c.subject_id
+        WHERE c.case_id = $1`,
+      [caseId],
+    );
     const row = caseResult.rows[0];
     if (!row) return null;
     const events = await client.query<{
