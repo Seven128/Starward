@@ -127,6 +127,41 @@
 .event-modal-detail__article { overflow-wrap: anywhere; }
 .event-modal-detail__article > .type-article { white-space: pre-wrap; }
 
+// The adopted DAY composition keeps its colors; other modes use theme roles.
+.event-modal.theme-night,
+.event-modal.theme-observation {
+  .event-modal__backdrop { background: rgba(0, 0, 0, .31); }
+  .event-modal__shell { border-color: var(--border); box-shadow: var(--elevation-floating); }
+  .event-modal__header,
+  .event-modal__footer { border-color: var(--border); }
+  .event-modal__row,
+  .event-modal-detail__facts,
+  .event-modal-detail__section { background: var(--surface-subtle); }
+  .event-modal__row.is-selected,
+  .event-modal-detail__day-strip button.is-selected {
+    border-color: var(--choice-selected-border);
+    background: var(--choice-selected-surface);
+  }
+  .event-modal__date { border-color: var(--border); color: var(--accent-warm); }
+  .event-modal__radio view { border-color: var(--text-tertiary); }
+  .event-modal__radio.is-selected view { border-color: var(--choice-selected-border); }
+  .event-modal__catalogue,
+  .event-modal__month-label text:last-child,
+  .event-modal__row-copy > text,
+  .event-modal__source,
+  .event-modal-detail__hero > view text:first-child,
+  .event-modal-detail__facts text:first-child,
+  .event-modal-detail__precision,
+  .event-modal-detail__axis,
+  .event-modal-detail__day-strip button text:first-child { color: var(--text-secondary); }
+  .event-modal__row-copy .event-modal__row-title { color: var(--text-primary); }
+  .event-modal-detail__axis { border-color: var(--border); }
+  .event-modal-detail__axis text:nth-child(2) { color: var(--accent-warm); }
+  .event-modal__footer .event-modal__confirm,
+  .event-modal-detail__select { background: var(--primary); color: var(--on-primary); }
+  .event-modal-detail__catalogue { background: transparent; }
+}
+
 @media (max-width: 350Px) {
   .event-modal { padding-left: 8Px; padding-right: 8Px; }
   .event-modal__content { padding-left: 12Px; padding-right: 12Px; }

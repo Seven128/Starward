@@ -275,6 +275,29 @@
   border-left: 1.5Px solid currentColor;
 }
 
+// NIGHT/OBSERVATION retain the monochrome fallback; DAY owns its B bitmap.
+.semantic-icon--meteor.semantic-icon--night::before,
+.semantic-icon--meteor.semantic-icon--observation::before {
+  left: 10%;
+  top: 52%;
+  width: 38%;
+  height: 38%;
+  border: 1.5Px solid currentColor;
+  border-radius: 50%;
+}
+.semantic-icon--meteor.semantic-icon--night::after,
+.semantic-icon--meteor.semantic-icon--observation::after {
+  left: 33%;
+  top: 8%;
+  width: 18%;
+  height: 55%;
+  border-left: 1.5Px solid currentColor;
+  border-right: 1.5Px solid currentColor;
+  border-radius: 1.5Px;
+  transform: rotate(45deg);
+  transform-origin: center bottom;
+}
+
 .semantic-icon--moon::before {
   top: 5rpx;
   left: 8rpx;
