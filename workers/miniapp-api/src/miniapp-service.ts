@@ -11,6 +11,7 @@ import {
 } from "@starward/miniapp-contracts";
 import { createHash, randomUUID } from "node:crypto";
 import { openPlanShare, sealPlanShare } from "./plan-share-token.ts";
+import { formalSpotFacts } from "./formal-spot-facts.ts";
 import { observationFrameTimes } from "./observation-time-axis.ts";
 import {
   type AccountDataExportData,
@@ -2193,13 +2194,14 @@ export class MiniappService {
 
   async getSharedSpot(spotId: SpotId): Promise<ApiEnvelope<SpotPublicShareData>> {
     const detail = await this.publicShareSpot(spotId);
-    const facts = detail.formalFacts;
+    const facts = formalSpotFacts(detail);
+    const summary = (...values: (string | null)[]) => [...new Set(values.filter(Boolean))].join("；") || null;
     return envelope({ kind: "SPOT", spotId: detail.spot.spotId, spotGcj02: detail.spot.gcj02, name: detail.spot.name,
       region: detail.spot.region, address: detail.spot.address,
       status: detail.spot.status as SpotPublicShareData["status"],
-      opening: facts?.hours ?? null, access: facts?.accessNote ?? facts?.access ?? null,
-      safety: facts?.safety ?? null, parking: facts?.parkingNote ?? facts?.parking ?? null,
-      horizon: facts?.horizon ?? null, source: detail.spot.source }, "FRESH", []);
+      opening: summary(facts.openness, facts.hours), access: summary(facts.access, facts.accessNote),
+      safety: facts.safety, parking: summary(facts.parking, facts.parkingNote),
+      horizon: facts.horizon, source: detail.spot.source }, "FRESH", []);
   }
 
   async savePlan(
