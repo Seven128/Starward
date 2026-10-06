@@ -4,6 +4,7 @@ import type { ContributionSubmission } from "@starward/miniapp-contracts";
 import { pendingProposalPanelValues } from "./pending-proposal-model.ts";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
+import { emptyCandidateIntake } from "@starward/miniapp-contracts";
 
 test("formal and private panel handles remain in the same scroll document as their identity", () => {
   for (const file of ["spot-panel.tsx", "pending-proposal-panel.tsx"]) {
@@ -53,6 +54,29 @@ test("pending proposal media keeps the submitted category order and identity", (
     { uploadId: "upload:toilet", label: "洗手间照片" },
     { uploadId: "upload:site", label: "现场照片" },
   ]);
+});
+
+test("private candidate panels preserve explicit intake answers instead of reporting missing facts", () => {
+  const intake = emptyCandidateIntake();
+  intake.openness = "UNKNOWN"; intake.legalEntry = "UNKNOWN"; intake.nightSafety = "UNKNOWN";
+  const fields: { safety?: string; contact?: string } = {};
+  const submission = { candidateProfile: { fields, media: {}, intake } } as unknown as ContributionSubmission;
+  const unknown = pendingProposalPanelValues(submission);
+  assert.equal(unknown.opening[0], "不清楚");
+  assert.equal(unknown.access[0], "不清楚");
+  assert.equal(unknown.safety, "不清楚");
+  assert.equal(unknown.site[3][1], "未回答");
+  for (const [kind, expected] of [["NOT_APPLICABLE", "无门禁或管理方"], ["NO_PUBLIC_NUMBER", "无公开号码"], ["UNKNOWN", "不清楚"]] as const) {
+    intake.contact.kind = kind;
+    assert.equal(pendingProposalPanelValues(submission).site[3][1], expected);
+  }
+  intake.nightSafety = "NO_KNOWN_HAZARD";
+  assert.equal(pendingProposalPanelValues(submission).safety, "未发现已知风险");
+  fields.safety = "现场需要注意的原文";
+  assert.equal(pendingProposalPanelValues(submission).safety, "现场需要注意的原文");
+  intake.contact.kind = "PUBLIC_NUMBER";
+  fields.contact = "0755-12345678（测试预约）";
+  assert.equal(pendingProposalPanelValues(submission).site[3][1], "0755-12345678（测试预约）");
 });
 
 test("a submitted literal placeholder word remains candidate data, while missing identity falls back", () => {
