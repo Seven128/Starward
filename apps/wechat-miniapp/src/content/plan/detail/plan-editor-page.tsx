@@ -538,20 +538,18 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     );
     setLocalDate(activeContext.localDate);
   }, [activeContext, activePlan, requestedPlanId, requestedSpotId]);
-  const remindersDirty = JSON.stringify(reminders) !== JSON.stringify(activePlan?.reminders ?? []);
-  const eventsDirty = JSON.stringify(eventOccurrenceIds) !== JSON.stringify(activePlan?.eventOccurrenceIds ?? []);
-  const isDirty = remindersDirty || eventsDirty || (activePlan
-    ? activePlan.spotId !== selectedSpotId ||
-      activePlan.localDate !== localDate ||
-      activePlan.localTime !== localTime ||
-      activePlan.notes !== notes || JSON.stringify(activePlan.timing ?? emptyPlanTiming()) !== JSON.stringify(timing) ||
-      JSON.stringify(activePlan.travel ?? initialDraft.current.travel) !== JSON.stringify(travel)
-    : recoveredLocalDraft || selectedSpotId !== initialDraft.current.selectedSpotId ||
-      localDate !== initialDraft.current.localDate ||
-      localTime !== initialDraft.current.localTime ||
-      notes !== initialDraft.current.notes || JSON.stringify(timing) !== JSON.stringify(initialDraft.current.timing) ||
-      JSON.stringify(travel) !== JSON.stringify(initialDraft.current.travel) ||
-      JSON.stringify(eventOccurrenceIds) !== JSON.stringify(initialDraft.current.eventOccurrenceIds));
+  // Parsed local drafts and PG JSON can order equal nested properties differently.
+  // Compare authored fields through the same contract used by save ownership;
+  // revision conflicts remain with the separate draft/save concurrency owner.
+  const isDirty = (!activePlan && recoveredLocalDraft) || !planDraftMatchesInput(
+    { selectedSpotId, localDate, localTime, notes, timing, travel, reminders, eventOccurrenceIds },
+    activePlan ? {
+      selectedSpotId: activePlan.spotId, localDate: activePlan.localDate, localTime: activePlan.localTime,
+      notes: activePlan.notes, timing: activePlan.timing ?? emptyPlanTiming(),
+      travel: activePlan.travel ?? initialDraft.current.travel,
+      reminders: activePlan.reminders ?? [], eventOccurrenceIds: activePlan.eventOccurrenceIds ?? [],
+    } : { ...initialDraft.current, reminders: [] },
+  );
   const nativeLeaveGuard = useNativeEditorLeaveGuard(editing && isDirty, "当前计划尚未保存，确定离开吗？");
   const toggleReminderItem = async (reminderId: string, itemId: string, completed: boolean) => {
     const owner = scopedDraftUserId();
