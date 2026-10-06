@@ -6,13 +6,17 @@ import { redactDevelopmentValue } from './development-redaction.mjs';
 
 const exec = promisify(execFile);
 const fail = code => { throw new Error(`development_observer_official_${code}`); };
+const publicErrorCodes = new Set(['MCP_TOOL_ERROR', 'MCP_INIT_ERROR', 'PROJECT_PATH_NOT_FOUND',
+  'PROJECT_CONFIG_JSON_ERROR', 'APPID_ERROR', 'cli_token_required', 'mcp_token_required']);
 
 export function decodeOfficial(stdout) {
   let envelope;
   try { envelope = JSON.parse(stdout); } catch { fail('invalid_response'); }
   const wrapped = envelope?.result ?? envelope?.data;
   const value = wrapped?.structuredContent ?? wrapped;
-  if (envelope?.ok !== true || value?.success === false || value === undefined) fail('tool_failed');
+  if (envelope?.ok !== true || wrapped?.isError === true || value?.success === false || value === undefined) {
+    fail(publicErrorCodes.has(envelope?.errorType) ? envelope.errorType : 'tool_failed');
+  }
   return value;
 }
 
@@ -58,19 +62,25 @@ export async function officialObserverCli(argv, dependencies = {}) {
   const run = dependencies.run ?? (async args => {
     const bootstrap = "const e=process.argv[1],a=process.argv.slice(2);process.argv=[process.execPath,e,'--electron'].concat(a);require(e)";
     try {
-      const result = await exec(executable, ['-e', bootstrap, entry, '-c', 'Codex', ...args], {
+      const result = await (dependencies.exec ?? exec)(executable, ['-e', bootstrap, entry, '-c', 'Codex', ...args], {
         cwd: root, windowsHide: true, timeout: 40000, maxBuffer: 1024 * 1024,
         env: { ...process.env, cwd: process.cwd(), ELECTRON: executable, ELECTRON_RUN_AS_NODE: '1' },
       });
       return decodeOfficial(result.stdout);
     } catch (error) {
       if (/^development_observer_official_/u.test(error?.message ?? '')) throw error;
-      // exec errors contain raw stdout/stderr; do not forward them or replay actions.
+      // Nonzero exits can still carry a structured tool failure. Preserve only
+      // its public classification, never raw stdout/stderr, messages or secrets.
+      if (!error?.killed && error?.stdout) {
+        let envelope;
+        try { envelope = JSON.parse(error.stdout); } catch { /* no structured failure */ }
+        if (envelope?.ok === false) fail(publicErrorCodes.has(envelope.errorType) ? envelope.errorType : 'tool_failed');
+      }
       fail(error?.killed ? 'timeout_no_replay' : 'command_failed_no_replay');
     }
   });
   const readiness = await run(['check_wechatide_status', '--skill-version', version]);
-  if (readiness.loginExpired !== false || readiness.tokenRequired !== false
+  if (readiness.loginExpired !== false || readiness.cliTokenRequired === true || readiness.tokenRequired === true
     || !['equal', 'agent_ahead'].includes(readiness.versionRelation)) fail('readiness_required');
   if (command === 'status') return { scope: 'development_observation', ready: true, skillVersion: version };
   const args = ['--project', projectPath];
@@ -94,16 +104,22 @@ export async function officialObserverCli(argv, dependencies = {}) {
   await assertPage();
   if (command === 'screenshot') {
     const output = values.get('--output');
-    if (!path.isAbsolute(output ?? '') || !/\.jpg$/iu.test(output)) fail('absolute_jpg_required');
+    if (!path.isAbsolute(output ?? '') || !/\.(png|jpg)$/iu.test(output)) fail('absolute_image_required');
+    const originalPixels = /\.png$/iu.test(output);
     try { await access(output); fail('output_exists'); } catch (error) { if (error.code !== 'ENOENT') throw error; }
     // Let the official tool own its temporary file; publish exclusively after verification.
-    const result = await run(['simulator_screenshot', ...args]);
+    const result = await run(['simulator_screenshot', ...args, '--optimize', String(!originalPixels)]);
     if (!path.isAbsolute(result.path ?? '') || !Number.isInteger(result.imageWidth) || result.imageWidth < 1
       || !Number.isInteger(result.imageHeight) || result.imageHeight < 1) fail('invalid_screenshot');
     const metadata = await stat(result.path);
     if (!metadata.isFile() || metadata.size > 16 * 1024 * 1024) fail('invalid_screenshot');
     const bytes = await readFile(result.path);
-    if (!bytes.subarray(0, 3).equals(Buffer.from([255, 216, 255]))
+    if (originalPixels) {
+      if (bytes.length < 45 || !bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+        || bytes.toString('ascii', 12, 16) !== 'IHDR'
+        || bytes.readUInt32BE(16) !== result.imageWidth || bytes.readUInt32BE(20) !== result.imageHeight
+        || !bytes.subarray(-12).equals(Buffer.from([0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]))) fail('invalid_screenshot');
+    } else if (!bytes.subarray(0, 3).equals(Buffer.from([255, 216, 255]))
       || !bytes.subarray(-2).equals(Buffer.from([255, 217]))) fail('invalid_screenshot');
     await assertPage();
     await writeFile(output, bytes, { flag: 'wx', mode: 0o600 });

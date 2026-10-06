@@ -10,6 +10,7 @@ These project rules apply throughout authorized research, design and development
 - **Separate development checks from final acceptance.** Run relevant type, contract, behavior and integration checks as modules change. Batch broad visual, interaction, device and performance acceptance at useful milestones. Test platform assumptions that could invalidate the architecture before expanding dependent work. If a required device/service is unavailable, continue independent work and keep that dependency unverified; a local pass does not complete target acceptance.
 - **Verify user outcomes efficiently.** Prioritize critical journeys and representative risks, prepare authorized isolated test conditions, and verify actual effects through product entrypoints. Use the cheapest faithful checks and reuse valid evidence. Missing test data or recoverable local services remain work to do; scope external blockers to affected checks. Follow [user-journey verification](project_context/areas/main/verification.md#user-journey-verification).
 - Close subagents when their tasks finish; create new ones when needed again.
+- **Keep tool work bounded.** Reuse a verified tool/session for its supported operation; diagnose the first failed boundary before changing unrelated layers. Read targeted ranges or cursor pages and summarize structured results before printing; truncation is not a complete read. Batch independent reads, serialize stateful operations, and check the prior result before retrying a possible side effect.
 
 ## Project-local Implementation Decisions
 
