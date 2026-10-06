@@ -709,8 +709,9 @@ export default function MapPage() {
     ],
     queryFn: (signal) =>
       getSpotOverview(selected!.spotId, activeContext!.contextId, signal),
-    enabled: bottomPresentation === "spot-panel" && detailContextReady,
-    staleTime: 60_000,
+    enabled: pageVisible && bottomPresentation === "spot-panel" && detailContextReady,
+    // Canonical facts may be published while the retained map is hidden.
+    staleTime: 0,
   });
   const mapTerrainRadiusKm = Math.min(50, Math.max(2, viewportRadiusKm(viewport.zoom)));
   const terrain = useTerrainOverlay({

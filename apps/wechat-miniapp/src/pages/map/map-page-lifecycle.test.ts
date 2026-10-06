@@ -3,6 +3,39 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import test from "node:test";
 import ts from "typescript";
+import { QueryClient, QueryObserver } from "@tanstack/react-query";
+
+test("returning to a formal spot refreshes its published facts without querying the hidden map", async () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let optionsText = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(source) === "spotOverview" && node.initializer && ts.isCallExpression(node.initializer))
+      optionsText = node.initializer.arguments[0]!.getText(source);
+    ts.forEachChild(node, visit);
+  };
+  visit(source);assert.ok(optionsText);
+  const scope = { pageVisible: false, bottomPresentation: "spot-panel", detailContextReady: true,
+    selected: {spotId: "spot:published"}, activeContext: {contextId: "context:same", contextFingerprint: "same", revision: 1},
+    parking: "original published parking", calls: 0,
+    getSpotOverview: async () => {scope.calls++;return {parking: scope.parking};},
+  };
+  const readOptions = () => vm.runInNewContext(ts.transpileModule(`(${optionsText})`, {compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText, scope);
+  const queryOptions = () => {const o=readOptions();return {...o,queryFn:({signal}:{signal:AbortSignal})=>o.queryFn(signal)};};
+  const client = new QueryClient({defaultOptions:{queries:{retry:false,gcTime:0}}});
+  const observer = new QueryObserver<{parking:string}>(client,queryOptions());
+  const stop = observer.subscribe(() => {});
+  const settle = () => new Promise(resolve => setTimeout(resolve,20));
+  try {
+    await settle();assert.equal(scope.calls,0,"a hidden retained panel must not fetch");
+    scope.pageVisible=true;observer.setOptions(queryOptions());await settle();
+    assert.equal(observer.getCurrentResult().data?.parking,"original published parking");
+    scope.pageVisible=false;observer.setOptions(queryOptions());scope.parking="new reviewed published parking";
+    await settle();assert.equal(scope.calls,1);
+    scope.pageVisible=true;observer.setOptions(queryOptions());await settle();
+    assert.equal(observer.getCurrentResult().data?.parking,"new reviewed published parking","returning within the old freshness window must show current facts");
+    assert.equal(scope.calls,2);
+  } finally {stop();client.clear();}
+});
 
 test("map foreground/hide callbacks stop pending interaction and invalidate late navigation", () => {
   const text = readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
