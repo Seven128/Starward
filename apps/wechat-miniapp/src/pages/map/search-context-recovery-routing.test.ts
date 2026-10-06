@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { retryObservationScene } from "./context-restore";
 
 function recovery(privateContext: boolean, status: number, code: string, retained = false, sceneDenied = false) {
   const source = ts.createSourceFile("search.tsx", readFileSync(new URL("./search-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -58,4 +59,37 @@ for (const status of [408, 503]) test(`retained data with ${status} transport/pr
 test("scene-only permission failure cannot invalidate a successfully retained private Context", () => {
   const { result, calls, contextQuery, previous } = recovery(true, 403, "PERMISSION_DENIED", true, true);
   assert.equal(result.searchState, "PERMISSION_DENIED"); assert.deepEqual(calls, ["login"]); assert.equal(contextQuery.data, previous);
+});
+
+test("native recovery tap retries failed places without forcing a healthy scene", async () => {
+  const source = ts.createSourceFile("search.tsx", readFileSync(new URL("./search-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const component = source.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "MapSearchSurface")!;
+  const retry = component.body!.statements.find(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(d => d.name.getText(source) === "retrySearchResources"))!;
+  let onRecover: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(source) === "StatusPanel") {
+      const attr = node.attributes.properties.find((p): p is ts.JsxAttribute => ts.isJsxAttribute(p) && p.name.getText(source) === "onRecover");
+      if (attr) onRecover = (attr.initializer as ts.JsxExpression).expression;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(component); assert.ok(onRecover);
+  const calls: string[] = [], page = {}, context = { contextId: "healthy", revision: 1, contextFingerprint: "same" };
+  const state = { accountOwnerId: "isolated", mapResetVersion: 1, observationContext: context };
+  const handlers = vm.runInNewContext(ts.transpileModule(retry.getText(source) + `\n({ recover: (${onRecover.getText(source)}), force: () => retrySearchResources(true) });`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
+    Taro: { getCurrentPages: () => [page] }, selectionVersion: { current: 1 }, useAppStore: { getState: () => state },
+    sameContextVersion: (a: unknown, b: unknown) => a === b, retryObservationScene, activeContext: context,
+    contextQuery: { refetch: async () => { calls.push("context"); } },
+    scene: { refetch: async () => { calls.push("scene"); } },
+    placeSearch: { isError: true, refetch: async () => { calls.push("places"); } }, debouncedQuery: "隔离测试",
+    privateContextUnavailable: false, searchState: "ERROR",
+  });
+  // StatusPanel forwards the native Button click event to onRecover.
+  handlers.recover({ type: "tap", currentTarget: { id: "recovery" } });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.deepEqual(calls, ["places"]);
+  calls.length = 0;
+  handlers.force();
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.deepEqual(calls.sort(), ["places", "scene"]);
 });

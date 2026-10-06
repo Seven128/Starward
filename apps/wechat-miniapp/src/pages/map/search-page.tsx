@@ -51,6 +51,7 @@ import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 import { canApplyContextRestore, sameContextVersion } from "@/services/observation-context-version";
 import { SearchResultPartition } from "./search-result-partition";
+import { retryObservationScene } from "./context-restore";
 import "./search-page.scss";
 
 function localDateForNow(timezone = "Asia/Shanghai") {
@@ -346,12 +347,21 @@ export function MapSearchSurface() {
   }, [contextQuery.data?.dataState, contextQuery.error, contextQuery.refreshError, notify, pageVisible, queryUnconfirmed,
     placeSearch.data?.dataState, placeSearch.error, placeSearch.refreshError, scene.data?.dataState,
     scene.error, scene.refreshError]);
-  const retrySearchResources = () => {
-    const requests: Promise<unknown>[] = [];
-    if (contextQuery.isError || contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE")
-      requests.push(contextQuery.refetch());
-    if (activeContext && (scene.isError || scene.refreshError || scene.data?.dataState === "STALE_USABLE"))
-      requests.push(scene.refetch());
+  const retrySearchResources = (forceScene = false) => {
+    const retryPage = Taro.getCurrentPages().at(-1), retryVersion = selectionVersion.current;
+    const retryState = useAppStore.getState();
+    const current = () => Taro.getCurrentPages().at(-1) === retryPage && selectionVersion.current === retryVersion &&
+      useAppStore.getState().accountOwnerId === retryState.accountOwnerId &&
+      useAppStore.getState().mapResetVersion === retryState.mapResetVersion &&
+      sameContextVersion(retryState.observationContext, useAppStore.getState().observationContext);
+    const requests: Promise<unknown>[] = [retryObservationScene({
+      context: activeContext,
+      retryContext: Boolean(contextQuery.isError || contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE"),
+      retryScene: Boolean(forceScene === true || scene.isError || scene.refreshError || scene.data?.dataState === "STALE_USABLE"),
+      sceneFailure: scene.error ?? scene.refreshError,
+      current,
+      refreshContext: contextQuery.refetch, refreshScene: scene.refetch,
+    })];
     if (debouncedQuery && (placeSearch.isError || placeSearch.refreshError || placeSearch.data?.dataState === "STALE_USABLE"))
       requests.push(placeSearch.refetch());
     void Promise.all(requests).catch(() => {});
@@ -690,7 +700,7 @@ export function MapSearchSurface() {
               </Text>
               <View className="spot-search-filter-evidence__actions">
                 <Button onClick={() => { setFilterCategory("OBSERVATION"); openFilters(); }}>调整筛选</Button>
-                <Button onClick={() => void scene.refetch()}>重试资料</Button>
+                <Button onClick={() => retrySearchResources(true)}>重试资料</Button>
               </View>
             </View>
           ) : null}

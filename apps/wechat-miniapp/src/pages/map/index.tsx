@@ -15,7 +15,7 @@ import { privateContributionMarkerItems, privateContributionMarkers } from "./pr
 import { ContributionEditor, type ContributionCandidatePreview, type ContributionLeaveGuard } from "@/content/contribution/contribution-editor";
 import { panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
-import { restoreMapBootstrapContext } from "./context-restore";
+import { restoreMapBootstrapContext, retryObservationScene } from "./context-restore";
 import { canApplyContextRestore } from "@/services/observation-context-version";
 import { FloatingNotificationHost } from "@/components/notification";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
@@ -1533,12 +1533,22 @@ export default function MapPage() {
       }
       // Retry each failed owner; a cached context must not hide its own failure.
       // A restored context triggers the scene query with its current identity.
-      const refreshed = await Promise.all([
-        ...(!activeContext || mapContextFailed ? [bootstrapContext.refetch()] : []),
-        ...(activeContext ? [scene.refetch()] : []),
-      ]);
-      if (refreshed.some((result) => !result)) throw new Error("map_refresh_unavailable");
-      setAnnouncement(refreshed.some((result) => result?.dataState === "STALE_USABLE")
+      const retryEpoch = navigationEpoch.current;
+      const retryOwner = useAppStore.getState().accountOwnerId;
+      const retryReset = useAppStore.getState().mapResetVersion;
+      const current = () => navigationEpoch.current === retryEpoch &&
+        useAppStore.getState().accountOwnerId === retryOwner && useAppStore.getState().mapResetVersion === retryReset;
+      const refreshed = await retryObservationScene({
+        context: activeContext, retryContext: mapContextFailed, retryScene: true,
+        sceneFailure: scene.error ?? scene.refreshError,
+        current,
+        refreshContext: bootstrapContext.refetch, refreshScene: scene.refetch,
+      });
+      if (!current()) return;
+      if (!refreshed.result) throw new Error("map_refresh_unavailable");
+      setAnnouncement(refreshed.contextChanged
+        ? "观测上下文已恢复，正在更新当前区域。"
+        : refreshed.result.dataState === "STALE_USABLE"
         ? "当前仍显示上次结果，尚未获取到更新。"
         : "当前区域已刷新");
     } catch {

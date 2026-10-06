@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { restoreMapBootstrapContext } from "./context-restore.ts";
+import { restoreMapBootstrapContext, retryObservationScene, observationSceneNeedsContextRestore } from "./context-restore.ts";
 import { canApplyContextRestore } from "../../services/observation-context-version.ts";
-import type { ObservationContext } from "@starward/miniapp-contracts";
+import type { ApiEnvelope, MapSceneData, ObservationContext } from "@starward/miniapp-contracts";
 
 const id = (value: string) => value as ObservationContext["contextId"];
 const initial = { contextId: id("a"), revision: 1, contextFingerprint: "one" };
@@ -47,4 +47,72 @@ test("bootstrap does not replace a formal spot on transport or permission failur
     }), new RegExp(code));
     assert.equal(fallbackCalls, 0);
   }
+});
+
+const envelope = <Data>(data: Data, dataState = "FRESH") => ({ data, dataState } as ApiEnvelope<Data>);
+const sceneResult = envelope({ spots: [{ spotId: "spot:kept" }] } as unknown as MapSceneData);
+
+test("a map or search retry restores an expired cached Context before loading its scene", async () => {
+  for (const sceneFailure of [{ statusCode: 404, code: "NOT_FOUND" }, { statusCode: 410, code: "STALE_REJECTED" }]) {
+    const calls: string[] = [];
+    const original = { ...initial, location: { kind: "FORMAL_SPOT", spotId: "spot:kept" }, selectedAtUtc: "2026-10-07T13:00:00Z" } as ObservationContext;
+    const recovered = { ...original, contextId: id("recovered") };
+    const result = await retryObservationScene({ context: original, retryContext: false, retryScene: true,
+      sceneFailure, current: () => true,
+      refreshContext: async () => { calls.push("restore"); return envelope(recovered); },
+      refreshScene: async () => { calls.push("expired-scene"); throw Error("old Context still missing"); },
+    });
+    assert.deepEqual(calls, ["restore"]);
+    assert.equal(result.contextChanged, true);
+    assert.equal(result.result?.data, recovered);
+    assert.equal(recovered.location, original.location);
+    assert.equal(recovered.selectedAtUtc, original.selectedAtUtc);
+  }
+});
+
+test("ordinary scene failures and permissions do not recreate the upstream Context", async () => {
+  for (const sceneFailure of [{ statusCode: 503, code: "PROVIDER_UNAVAILABLE" }, { statusCode: 403, code: "PERMISSION_DENIED" }, { statusCode: 401, code: "LOGIN_REQUIRED" }, { statusCode: 404, code: "PROVIDER_UNAVAILABLE" }]) {
+    assert.equal(observationSceneNeedsContextRestore(sceneFailure), false);
+    const result = await retryObservationScene({ context: initial as ObservationContext, retryContext: false, retryScene: true,
+      sceneFailure, current: () => true,
+      refreshContext: async () => { throw Error("must preserve current identity"); },
+      refreshScene: async () => sceneResult,
+    });
+    assert.equal(result.result, sceneResult);
+  }
+});
+
+test("failed or stale Context restoration never retries an expired scene", async () => {
+  for (const restored of [undefined, envelope(initial as ObservationContext, "STALE_USABLE")]) {
+    const result = await retryObservationScene({ context: initial as ObservationContext, retryContext: true, retryScene: true,
+      sceneFailure: null, current: () => true, refreshContext: async () => restored,
+      refreshScene: async () => { throw Error("expired scene must not be requested"); },
+    });
+    assert.equal(result.result, null);
+  }
+});
+
+test("unchanged revalidated Context can refresh its scene, changed revision cannot refresh the old render", async () => {
+  for (const context of [initial, updated]) {
+    let sceneCalls = 0;
+    const result = await retryObservationScene({ context: initial as ObservationContext, retryContext: true, retryScene: true,
+      sceneFailure: null, current: () => true, refreshContext: async () => envelope(context as ObservationContext),
+      refreshScene: async () => { sceneCalls++; return sceneResult; },
+    });
+    assert.equal(sceneCalls, context === initial ? 1 : 0);
+    assert.equal(result.contextChanged, context !== initial);
+  }
+});
+
+test("leaving or replacing the retry scope while restoration waits cannot request the old scene", async () => {
+  let current = true;
+  let settle!: (value: ApiEnvelope<ObservationContext>) => void;
+  const pending = retryObservationScene({ context: initial as ObservationContext, retryContext: true, retryScene: true,
+    sceneFailure: null, current: () => current,
+    refreshContext: () => new Promise(resolve => { settle = resolve; }),
+    refreshScene: async () => { throw Error("retired request must not launch"); },
+  });
+  current = false;
+  settle(envelope(initial as ObservationContext));
+  assert.equal((await pending).result, null);
 });
