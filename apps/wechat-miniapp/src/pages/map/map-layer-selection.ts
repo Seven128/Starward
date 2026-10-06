@@ -23,3 +23,20 @@ export function lightLayerContentState(input: {
   if (input.pending || !input.hasData) return "LOADING";
   return input.unavailable ? "EMPTY" : "READY";
 }
+
+/** A visible local recovery takes the scene's feedback, but cannot recover a
+ * failed Context or native Map. Cloud slices with retained data lack a local
+ * retry, so their scene recovery remains on the map. */
+export function layerSheetOwnsSceneRecovery(input: {
+  open: boolean;
+  overlay: LayerSheetOverlay;
+  contextFailed: boolean;
+  sceneFailed: boolean;
+  lightState: ReturnType<typeof lightLayerContentState>;
+  cloudTimeChoiceCount: number;
+}): boolean {
+  if (!input.open || input.contextFailed || !input.sceneFailed) return false;
+  return input.overlay === "LIGHT"
+    ? input.lightState === "ERROR" || input.lightState === "STALE"
+    : input.cloudTimeChoiceCount === 0;
+}

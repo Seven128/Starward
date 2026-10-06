@@ -96,6 +96,7 @@ import { PendingProposalPanel } from "./pending-proposal-panel";
 import { privateContributionSelectionTransition, pendingProposalContextLocation, samePendingProposalIntent } from "./private-contribution-transition";
 import {
   layerSheetOverlay,
+  layerSheetOwnsSceneRecovery,
   lightLayerContentState,
   mapLayerKindForOverlay,
 } from "./map-layer-selection";
@@ -859,8 +860,30 @@ export default function MapPage() {
   const mapDataStale = Boolean(
     (mapContextFailed && bootstrapContext.data) || (mapSceneFailed && scene.data),
   );
+  const visibleLayer = layerSheetOverlay(analysisOverlay);
+  const visibleLayerUnavailable = Boolean(
+    scene.data?.data.layer.kind === mapLayerKindForOverlay(analysisOverlay) &&
+      scene.data.data.layer.state === "UNAVAILABLE",
+  );
+  const lightLayerState = lightLayerContentState({
+    pending: scene.isPending,
+    failed: Boolean(scene.isError || scene.refreshError || scene.data?.dataState === "STALE_USABLE"),
+    hasData: Boolean(scene.data),
+    unavailable: visibleLayerUnavailable,
+  });
+  const layerSheetOwnsSceneFailure = layerSheetOwnsSceneRecovery({
+    open: bottomPresentation === "layer-sheet", overlay: visibleLayer,
+    contextFailed: mapContextFailed, sceneFailed: mapSceneFailed,
+    lightState: lightLayerState, cloudTimeChoiceCount: cloudTimeChoices.length,
+  });
   useEffect(() => {
-    if (!pageVisible || pageState === "PERMISSION_DENIED" || (!mapContextFailed && !mapSceneFailed)) return;
+    if (pageVisible && layerSheetOwnsSceneFailure) {
+      const state = useAppStore.getState();
+      for (const item of state.notifications) {
+        if (item.owner === "map" && item.dedupeKey === "map-scene-failed") state.dismissNotification(item.id);
+      }
+    }
+    if (!pageVisible || pageState === "PERMISSION_DENIED" || (!mapContextFailed && (!mapSceneFailed || layerSheetOwnsSceneFailure))) return;
     notify({
       owner: "map",
       placement: "floating",
@@ -871,7 +894,7 @@ export default function MapPage() {
         : "观星点数据暂时无法更新，可在页面中重试。",
       dedupeKey: mapContextFailed ? "map-context-failed" : "map-scene-failed",
     });
-  }, [mapContextFailed, mapSceneFailed, notify, pageState, pageVisible]);
+  }, [mapContextFailed, mapSceneFailed, layerSheetOwnsSceneFailure, notify, pageState, pageVisible]);
   useEffect(() => {
     if (!pageVisible || !mapRuntimeError) return;
     notify({ owner: "map", placement: "floating", tone: "info", title: "地图显示异常",
@@ -902,19 +925,7 @@ export default function MapPage() {
       ? mapDateOptions.includes(temporalFailure.target)
       : timeFrames.some(frame => frame.atUtc === temporalFailure.target))
     ? temporalFailure : null;
-  const visibleLayer = layerSheetOverlay(analysisOverlay);
-  const cloudLayerOwnsSceneError = bottomPresentation === "layer-sheet" &&
-    visibleLayer === "TOTAL_CLOUD" && mapSceneFailed && !mapContextFailed && !cloudTimeChoices.length;
-  const visibleLayerUnavailable = Boolean(
-    scene.data?.data.layer.kind === mapLayerKindForOverlay(analysisOverlay) &&
-      scene.data.data.layer.state === "UNAVAILABLE",
-  );
-  const lightLayerState = lightLayerContentState({
-    pending: scene.isPending,
-    failed: Boolean(scene.isError || scene.refreshError || scene.data?.dataState === "STALE_USABLE"),
-    hasData: Boolean(scene.data),
-    unavailable: visibleLayerUnavailable,
-  });
+
 
   const leaveSelectedLocationForMapPoint = () => {
     extentBeforeLayer.current = null;
@@ -2220,7 +2231,7 @@ export default function MapPage() {
                 onRecover={nativeMap.retry}
               />
             ) : null}
-            {mapDataStale && !cloudLayerOwnsSceneError && !(bottomPresentation === "layer-sheet" && visibleLayer === "LIGHT" && !mapContextFailed && lightLayerState === "STALE") ? <StatusPanel
+            {mapDataStale && !layerSheetOwnsSceneFailure ? <StatusPanel
               state="STALE"
               detail={spots.length > 0 ? "更新失败，暂时显示上次结果。" : "上次结果没有观星点；当前资料暂时无法更新。"}
               recoveryLabel="重试"
@@ -2230,7 +2241,7 @@ export default function MapPage() {
             !(pageState === "EMPTY" && mapDataStale) &&
             pageState !== "READY" &&
             pageState !== "PARTIAL" &&
-            pageState !== "STALE" && !(cloudLayerOwnsSceneError && pageState === "ERROR") ? (
+            pageState !== "STALE" && !(layerSheetOwnsSceneFailure && pageState === "ERROR") ? (
               <StatusPanel
                 state={pageState}
                 detail={
