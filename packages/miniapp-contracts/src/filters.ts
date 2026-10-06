@@ -112,7 +112,7 @@ export const FILTER_OPTIONS: readonly FilterOption[] = Object.freeze([
   },
   {
     id: "photoForeground",
-    label: "摄影前景",
+    label: "有实拍照片",
     group: "PHOTO_FOREGROUND",
     category: "PLACE",
     mode: "CANCELABLE_SINGLE",

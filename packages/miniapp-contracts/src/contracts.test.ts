@@ -38,7 +38,7 @@ test("the current filter schema has the exact ordered 14-option population", () 
       "停车",
       "厕所",
       "可驾车直达",
-      "摄影前景",
+      "有实拍照片",
       "可露营/驻车",
       "特定天象",
       "月亮影响",
