@@ -2715,7 +2715,7 @@
   // resized viewports. Otherwise height:clamp can disagree with the gesture
   // measurements and readPanelSnapGeometry must reject every drag.
   --panel-snap-gap: min(44Px, calc(var(--panel-available-height) / 4));
-  --panel-small-height: min(clamp(156Px, 19vh, 196Px), calc(var(--panel-available-height) - 2 * var(--panel-snap-gap)));
+  --panel-small-height: min(max(clamp(156Px, 19vh, 196Px), var(--panel-small-content-height, 0px)), calc(var(--panel-available-height) - 2 * var(--panel-snap-gap)));
   --panel-preferred-medium-height: min(calc(100vh - 132Px), clamp(368Px, 44vh, 480Px));
   --panel-medium-height: clamp(calc(var(--panel-small-height) + var(--panel-snap-gap)), var(--panel-preferred-medium-height), calc(var(--panel-available-height) - var(--panel-snap-gap)));
   --panel-action-height: 46Px;

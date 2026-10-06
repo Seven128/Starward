@@ -9,7 +9,7 @@ import { elasticVelocityFactor } from "@/components/elastic-motion";
 
 test("panel cancellation and multi-touch never commit a pending drag", async t => {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const names = ["onHandleTouchStart", "onHandleTouchMove", "onHandleTouchEnd", "onHandleTouchCancel", "animatePanelExtent", "onPanelExtent"];
+  const names = ["onHandleTouchStart", "onHandleTouchMove", "onHandleTouchEnd", "onHandleTouchCancel", "invalidatePanelGeometry", "animatePanelExtent", "onPanelExtent"];
   const declarations: string[] = [];
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && names.includes(node.name.getText(source))) declarations.push(`const ${node.getText(source)};`);
@@ -48,6 +48,19 @@ test("panel cancellation and multi-touch never commit a pending drag", async t =
   };
   const handlers = vm.runInNewContext(ts.transpileModule(`(() => { ${declarations.join("\n")} return { ${names.join(",")} }; })()`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, environment) as Record<string, (event?: unknown) => void>;
   const touch = (y: number, count = 1) => ({ touches: Array.from({ length: count }, () => ({ clientY: y })) });
+  await t.test("identity layout or resize retires an in-flight drag before new anchors", () => {
+    delayed = true;
+    handlers.onHandleTouchStart!(touch(100));
+    handlers.onHandleTouchMove!(touch(60));
+    handlers.invalidatePanelGeometry!();
+    pending.shift()!(geometryRows);
+    handlers.onHandleTouchEnd!();
+    assert.equal(dragging, false);
+    assert.equal(offsets.at(-1), 0);
+    assert.equal(panelSnapCache.current, null);
+    assert.deepEqual(commits, [], "late geometry and release must not commit against the retired layout");
+    delayed = false;
+  });
   for (const cancellation of ["cancel", "second-finger", "multi-start"]) {
     handlers.onHandleTouchStart!(touch(100, cancellation === "multi-start" ? 2 : 1));
     handlers.onHandleTouchMove!(touch(60));

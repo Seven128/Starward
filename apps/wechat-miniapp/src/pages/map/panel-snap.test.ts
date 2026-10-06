@@ -1,6 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { nearestPanelExtent, panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry } from "./panel-snap";
+import { nearestPanelExtent, panelIdentityMinimumHeight, panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry } from "./panel-snap";
+
+test("small anchor reserves complete native identity above fixed actions", () => {
+  // The escaped WEAPP case: 156px obscured the address under the 50px action lane.
+  assert.equal(panelIdentityMinimumHeight([{ height: 20 }, { height: 102.1 }, { height: 50 }]), 181);
+  // A wrapped title or extra status must extend the content floor, not truncate it.
+  assert.equal(panelIdentityMinimumHeight([{ height: 20 }, { height: 162.1 }, { height: 50 }]), 241);
+  assert.equal(panelIdentityMinimumHeight([{ height: 20 }, { height: 64 }, { height: 50 }]), 142);
+  for (const rows of [[], [null, {}, {}], [20, 0, 50], [20, NaN, 50], [20, -1, 50]]) {
+    assert.equal(panelIdentityMinimumHeight(Array.isArray(rows) && typeof rows[0] === "number" ? rows.map(height => ({ height })) : rows), null);
+  }
+});
 
 test("release starts at the last bounded drag frame when native measurement is stale", () => {
   const geometry = { small: 156, medium: 368, large: 661, startHeight: 368 };

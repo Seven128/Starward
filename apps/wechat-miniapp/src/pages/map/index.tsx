@@ -13,13 +13,13 @@ import { elasticVelocityFactor } from "@/components/elastic-motion";
 import { markerGroups, markerItems } from "./map-markers";
 import { privateContributionMarkerItems, privateContributionMarkers } from "./private-contribution-markers";
 import { ContributionEditor, type ContributionCandidatePreview, type ContributionLeaveGuard } from "@/content/contribution/contribution-editor";
-import { panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
+import { panelIdentityMinimumHeight, panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import { restoreMapBootstrapContext, retryObservationScene } from "./context-restore";
 import { canApplyContextRestore } from "@/services/observation-context-version";
 import { FloatingNotificationHost } from "@/components/notification";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
-import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow, useResize } from "@tarojs/taro";
 import {
   Button,
   Map,
@@ -334,6 +334,10 @@ export default function MapPage() {
   const panelGeometryIdentity = selectedProposal
     ? `proposal:${currentContributionOwner}:${selectedProposal.submissionId}`
     : `formal:${selectedSpotId ?? ""}`;
+  const [panelIdentityLayout, setPanelIdentityLayout] = useState<{ identity: string; height: number } | null>(null);
+  const panelIdentityHeight = panelIdentityLayout?.identity === panelGeometryIdentity ? panelIdentityLayout.height : 0;
+  const [panelLayoutVersion, setPanelLayoutVersion] = useState(0);
+  useResize(() => { invalidatePanelGeometry(); setPanelLayoutVersion(value => value + 1); });
   const setSelectedProposal = useCallback((submission: ContributionSubmission | null) => {
     const owner = currentDraftUserId();
     setSelectedProposalState(submission && owner ? { owner, submission } : null);
@@ -1190,15 +1194,24 @@ export default function MapPage() {
       if (cancelled) return;
       const query = Taro.createSelectorQuery();
       for (const selector of [".spot-panel", ".spot-panel__snap-small", ".spot-panel__snap-medium", ".spot-panel__snap-large"]) query.select(selector).boundingClientRect();
+      for (const selector of [".spot-panel__handle-band--document", ".spot-panel__identity", ".spot-panel__action-lane"]) query.select(selector).boundingClientRect();
       query.exec(rows => {
         if (cancelled) return;
-        const geometry = readPanelSnapGeometry(rows);
+        const minimumHeight = panelIdentityMinimumHeight(rows.slice(4));
+        if (minimumHeight !== null && minimumHeight !== panelIdentityHeight) {
+          // Re-read rulers after the shared CSS floor has rendered. Never cache
+          // anchors from the previous identity layout, including async detail.
+          invalidatePanelGeometry();
+          setPanelIdentityLayout({ identity: panelGeometryIdentity, height: minimumHeight });
+          return;
+        }
+        const geometry = readPanelSnapGeometry(rows.slice(0, 4));
         const viewport = panelViewportSize();
         if (geometry && viewport) panelSnapCache.current = { identity: panelGeometryIdentity, ...viewport, geometry };
       });
     });
     return () => { cancelled = true; panelSnapCache.current = null; };
-  }, [bottomPresentation, panelGeometryIdentity, pageVisible, panelPhase, mode, preferences.largeText]);
+  }, [bottomPresentation, panelGeometryIdentity, panelIdentityHeight, panelLayoutVersion, spotDetail, selectedProposal, pageVisible, panelPhase, mode, preferences.largeText]);
 
   const onHandleTouchCancel = () => {
     stopPanelSpring();
@@ -1206,16 +1219,20 @@ export default function MapPage() {
     setPanelDragOffset(0);
     setPanelDragging(false);
   };
+  const invalidatePanelGeometry = () => {
+    onHandleTouchCancel();
+    panelSnapCache.current = null;
+  };
 
   useEffect(() => {
     panelDrag.current = null;
     setPanelDragOffset(0);
     setPanelDragging(false);
-  }, [bottomPresentation, selectedSpotId, panelExtent]);
+  }, [bottomPresentation, panelGeometryIdentity, panelExtent]);
 
   useEffect(() => {
     stopPanelSpring();
-  }, [bottomPresentation, selectedSpotId]);
+  }, [bottomPresentation, panelGeometryIdentity]);
   useEffect(() => {
     if (springTarget.current && springTarget.current !== panelExtent) stopPanelSpring();
   }, [panelExtent]);
@@ -2287,6 +2304,7 @@ export default function MapPage() {
               style={
                 {
                   "--panel-drag-offset": `${panelDragOffset}px`,
+                  "--panel-small-content-height": `${panelIdentityHeight}px`,
                   ...panelCssMotion?.style,
                 } as unknown as Record<string, string>
               }

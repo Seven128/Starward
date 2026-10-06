@@ -3,6 +3,14 @@ import { ELASTIC_LIMIT } from "@/components/elastic-motion";
 export type PanelExtent = "small" | "medium" | "large";
 export type PanelSnapGeometry = Record<PanelExtent, number> & { startHeight: number };
 
+/** Flowing handle + complete identity + fixed actions, with the existing 8px content gap. */
+export function panelIdentityMinimumHeight(rows: unknown): number | null {
+  if (!Array.isArray(rows) || rows.length !== 3) return null;
+  const heights = rows.map(row => row && typeof row === "object" ? (row as { height?: unknown }).height : undefined);
+  if (!heights.every(height => typeof height === "number" && Number.isFinite(height) && height > 0)) return null;
+  return Math.ceil((heights as number[]).reduce((sum, height) => sum + height, 8));
+}
+
 export function previousPanelExtent(extent: PanelExtent): PanelExtent | null {
   if (extent === "large") return "medium";
   if (extent === "medium") return "small";
