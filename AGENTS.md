@@ -38,7 +38,7 @@ Identify shared product/interaction responsibilities during design as well as co
 
 - For design-resource creation, revision or adoption, use `.agents/skills/starward-design-resource/SKILL.md`. Ordinary implementation of adopted resources does not restart resource generation.
 - For mobile UI, gesture, animation, accessibility or shared interaction work, use `.codex/skills/uiux_design/SKILL.md`. Read `DESIGN.md` and the affected Source Plan/Context first; those owners outrank the implementation Skill.
-- For Mini Program UI, follow `project_context/context-maintenance.md#mini-program-page-design-resources`: inspect the adopted reference and actual target output under comparable conditions. Historical candidates are not adopted requirements; source markers, screenshots of another renderer and tool success do not prove native interaction or composition.
+- For UI implementation and testing, strictly follow the current adopted design resources within their declared scope. Compare actual target-runtime appearance and behavior with those resources under matching conditions, repair discrepancies and rerun affected comparisons before passing. Do not silently approximate or substitute the design. For Mini Program UI, follow `project_context/context-maintenance.md#mini-program-page-design-resources`; historical candidates, source markers, another renderer's screenshots and tool success do not establish conformance.
 
 <!-- ty-context:managed:begin -->
 # Tiny Context development contract
