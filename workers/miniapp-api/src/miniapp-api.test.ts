@@ -274,7 +274,8 @@ test("map light pollution draws only published grid geometry with a translucent 
       north: origin.wgs84.latitude + 0.005,
     },
     state: "ESTIMATED",
-    source: { ...origin.source, id: "test-published-light-source", title: "测试年度夜光" },
+    source: { ...origin.source, id: "test-published-light-source", title: "测试年度夜光",
+      precision: "自有隔离合成夜光网格，非EOG供应商输入" },
   };
   Object.defineProperty(repository, "listDarkSkyGridCells", { value: async () => [grid] });
   const service = createTestMiniappService({ repository });
@@ -287,6 +288,10 @@ test("map light pollution draws only published grid geometry with a translucent 
     });
     assert.equal(light.data.layer.state, "PARTIAL");
     assert.equal(light.data.layer.polygons.length, 1);
+    assert.ok(light.data.layer.precision.startsWith(grid.source.precision),
+      "layer precision must preserve the actual publication source rather than assume EOG");
+    assert.match(light.data.layer.precision, /不是 Bortle、SQM 或现场实测/u);
+    assert.deepEqual(light.data.layer.source, grid.source);
     assert.equal(light.data.layer.polygons[0]?.id, `light:${grid.cellId}`);
     assert.match(light.data.layer.polygons[0]?.fillColor ?? "", /66$/u);
     const expectedPoints = [
@@ -806,7 +811,10 @@ test("pending proposal sky is owner-scoped and bound to the submitted coordinate
       kind: "NEW_SPOT_PROPOSAL", spotId: null, candidateLocation: location,
       observedAt: null, topics: [], detail: "", rightsConfirmed: false,
       preciseLocationConsent: true,
-      candidateProfile: { fields: { name: "海风观星台", address: "深圳市大鹏新区" }, media: {} },
+      candidateProfile: { fields: { name: "海风观星台", address: "深圳市大鹏新区" }, media: {}, intake: {
+        version: 1, openness: "UNKNOWN", legalEntry: "UNKNOWN", nightSafety: "UNKNOWN",
+        contact: { kind: "UNKNOWN", number: "", purpose: "", source: "", publicPermissionConfirmed: false },
+      } },
     }, "proposal-sky-create:0001")).data;
     const pending = (await service.submitContribution(owner.userId, draft.submissionId, draft.revision, "proposal-sky-submit:0001")).data;
     const context = (await service.resolveObservationContext({

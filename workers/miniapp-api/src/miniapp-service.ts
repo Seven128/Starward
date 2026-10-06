@@ -505,7 +505,7 @@ function layerFor(input: {
         validAt: source.validFrom,
         datasetVersion: input.darkSkyCells[0]!.datasetVersion,
         precision:
-          "已发布 EOG 年度夜光粗网格；等级只在同一试点区和同一数据集内相对比较，不是 Bortle、SQM 或现场实测",
+          `${source.precision.trim() || "已发布年度夜光粗网格"}；等级只在同一试点区和同一数据集内相对比较，不是 Bortle、SQM 或现场实测`,
         state: "PARTIAL",
         source,
       };
