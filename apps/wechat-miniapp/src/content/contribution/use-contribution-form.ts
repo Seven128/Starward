@@ -227,8 +227,8 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       date: submission.observedAt ? calendarDateInTimezone(new Date(submission.observedAt), "Asia/Shanghai") : date,
       time: submission.observedAt ? clockTimeInTimezone(new Date(submission.observedAt), "Asia/Shanghai") : time,
       detail: submission.detail,
-      candidateName: submission.candidateLocation?.displayName ?? candidateName,
-      candidateRegion: submission.candidateLocation?.region ?? candidateRegion,
+      candidateName: nextCandidateFields.name,
+      candidateRegion: nextCandidateFields.address,
       latitude: submission.candidateLocation ? String(submission.candidateLocation.wgs84.latitude) : latitude,
       longitude: submission.candidateLocation ? String(submission.candidateLocation.wgs84.longitude) : longitude,
       rightsConfirmed: submission.rightsConfirmed, preciseLocationConsent: submission.preciseLocationConsent,
@@ -245,6 +245,8 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     setRightsConfirmed(submission.rightsConfirmed);
     setPreciseLocationConsent(submission.preciseLocationConsent);
     setCandidateFields(nextCandidateFields);
+    setCandidateName(nextCandidateFields.name);
+    setCandidateRegion(nextCandidateFields.address);
     setCandidateIntake(nextCandidateIntake);
     setCandidateMedia(nextCandidateMedia);
     setCandidateMediaPreviews({});
@@ -254,8 +256,6 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       setTime(clockTimeInTimezone(observed, "Asia/Shanghai"));
     }
     if (submission.candidateLocation) {
-      setCandidateName(submission.candidateLocation.displayName);
-      setCandidateRegion(submission.candidateLocation.region);
       setCandidatePlaceLabel(submission.candidateLocation.displayName);
       setLatitude(String(submission.candidateLocation.wgs84.latitude));
       setLongitude(String(submission.candidateLocation.wgs84.longitude));

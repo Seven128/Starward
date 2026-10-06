@@ -109,6 +109,7 @@ test("partial field edits survive hiding and reverting an empty form removes the
 for (const [name, candidateProfile, datedLocation] of [
   ["PostgreSQL jsonb profile key order", JSON.parse('{"media":{},"fields":{"name":"未选址的草稿"},"intake":{"contact":{"kind":null,"number":"","source":"","purpose":"","publicPermissionConfirmed":false},"version":1,"openness":null,"legalEntry":null,"nightSafety":null}}'), false],
   ["legacy profile without structured intake", { fields: { name: "未选址的草稿", openness: "开放" }, media: {} }, false],
+  ["profile name and address before selecting coordinates", { fields: { name: "未选址的草稿", address: "自测区域说明" }, media: {} }, false],
   ["legacy draft without profile", undefined, false],
   ["dated legacy draft with coordinates", undefined, true],
 ] as const) {
@@ -148,6 +149,8 @@ for (const [name, candidateProfile, datedLocation] of [
       candidateLocation: datedLocation ? { displayName: "坐标草稿", region: "深圳", wgs84: { system: "WGS84", latitude: 22.55, longitude: 114.06 } } : null, candidateProfile });
     assert.equal(render().hasUnsavedChanges, false, "a saved remote draft must leave without a discard confirmation");
     assert.equal(stored, undefined, "opening unchanged remote content must not create a false recovery copy");
+    assert.equal(form.current().candidateName, context.candidateFields.name, "the restored visible name must also reach coordinate draft saving");
+    assert.equal(form.current().candidateRegion, context.candidateFields.address, "the restored visible address must reach the same draft input");
     if (datedLocation) {
       assert.equal(form.current().date, "2026-06-02");
       assert.equal(form.current().time, "03:04");
