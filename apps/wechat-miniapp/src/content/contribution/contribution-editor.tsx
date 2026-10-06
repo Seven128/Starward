@@ -60,7 +60,7 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
   const form = useContributionForm({
     ...(forceNew === undefined ? {} : { forceNew }),
     ...(submissionId ? { requestedSubmissionId: submissionId } : {}),
-    ...(embedded ? { disableLocalPersistence: true } : {}),
+    ...(embedded || managesRecords ? { disableLocalPersistence: true } : {}),
   });
   const commands = useContributionCommands(form, {nativeBackBoundary: !embedded});
   useEffect(() => {

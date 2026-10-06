@@ -213,6 +213,13 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     submission: ContributionSubmission,
     nextPhase: ContributionPhase = "FORM",
   ) => {
+    const nextCandidateFields = spotDocumentValuesFromProposal(submission.candidateProfile);
+    if (!nextCandidateFields.name && submission.candidateLocation?.displayName)
+      nextCandidateFields.name = submission.candidateLocation.displayName;
+    if (!nextCandidateFields.address && submission.candidateLocation?.region)
+      nextCandidateFields.address = submission.candidateLocation.region;
+    const nextCandidateIntake = candidateIntakeFromProfile(submission.candidateProfile);
+    const nextCandidateMedia = submission.candidateProfile?.media ?? {};
     localDraft.markSaved({
       schema: 1, baseSubmissionId: submission.submissionId, baseRevision: submission.revision,
       spotId: submission.spotId ?? "", spotName: submission.spotNameSnapshot ?? "",
@@ -225,7 +232,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       latitude: submission.candidateLocation ? String(submission.candidateLocation.wgs84.latitude) : latitude,
       longitude: submission.candidateLocation ? String(submission.candidateLocation.wgs84.longitude) : longitude,
       rightsConfirmed: submission.rightsConfirmed, preciseLocationConsent: submission.preciseLocationConsent,
-      ...(submission.candidateProfile ? { candidateProfile: submission.candidateProfile } : {}),
+      candidateProfile: candidateDocumentProposal(nextCandidateFields, nextCandidateMedia, nextCandidateIntake),
     });
     setDraft(submission);
     setPendingSubmission(null);
@@ -237,14 +244,9 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     setDetail(submission.detail);
     setRightsConfirmed(submission.rightsConfirmed);
     setPreciseLocationConsent(submission.preciseLocationConsent);
-    const nextCandidateFields = spotDocumentValuesFromProposal(submission.candidateProfile);
-    if (!nextCandidateFields.name && submission.candidateLocation?.displayName)
-      nextCandidateFields.name = submission.candidateLocation.displayName;
-    if (!nextCandidateFields.address && submission.candidateLocation?.region)
-      nextCandidateFields.address = submission.candidateLocation.region;
     setCandidateFields(nextCandidateFields);
-    setCandidateIntake(candidateIntakeFromProfile(submission.candidateProfile));
-    setCandidateMedia(submission.candidateProfile?.media ?? {});
+    setCandidateIntake(nextCandidateIntake);
+    setCandidateMedia(nextCandidateMedia);
     setCandidateMediaPreviews({});
     if (submission.observedAt) {
       const observed = new Date(submission.observedAt);
