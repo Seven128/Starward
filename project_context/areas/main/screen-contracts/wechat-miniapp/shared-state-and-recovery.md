@@ -180,6 +180,8 @@ My头像/昵称的编辑草稿随账户及重置代隔离，正常失败保留�
 
 公开分享页只在私有`planId`创建入口复用中立AccountOperation；首次合法身份初始化与本操作同A再认证保持，实际createPlanShare以同service scope核会话等待/派发/权限恢复/回执。旧换号/重置、普通隐藏/离页/卸载不再签发或继续旧公开读取/ready海报；已派发能力不能声称撤回。页content epoch/独有AbortController负责公共读取，TOKEN/SPOT接收仍匿名，不增加私人账户门禁。当前可见页的私有创建退休进入原错误/显式重试，旧finally/cleanup不能取消后继frame；返回前台沿原重新校验，既有转发路径、失效/有效期/公共字段与海报责任保持。此为实现责任，真实微信接收/当前WEAPP、原生权限与部署仍须各自验证，票面/海报候选采用状态未改。
 
+分享海报由 `components/share-poster-owner` 串行管理当前公开快照的绘制、PNG预览、导出与原生相册交接；票面布局/颜色仍沿现有绘制owner，并未采用待审整组候选。当前预览通过同一2倍PNG与Image呈现，避免首次Canvas画面空白；保存即使先于首次预览也发布有效位图，原生相册拒绝不清掉已生成预览。`share-poster-files` 独占这次海报的PNG路径：SDK临时图经原生saveFile移动到本次独有的USER_DATA_PATH文件，预览与已发相册动作各持引用，导出/移动与删除等待真实原生终态、同路径复用不被旧删除清掉。隐藏/换内容/卸载退休旧预览，迟到导出不安装旧图，排队导出发起前复核当前代；已发文件获取仍完成必要转移/清理，图片解码回执还核本次预览身份。清理失败与真实微信相册能力仍按实际运行证据限定，不能由源码或模拟器初次显示推出真机保存通过。
+
 ## Shared Image Viewer And Disclosure
 
 - Site and facility albums reuse one image-viewer component family with an ordered authorized media list, initial index, source geometry/identity, caption, provenance and return context. Single media has no false next control; multiple media support horizontal paging, a truthful current/total count and named non-gesture previous/next controls. Facility albums retain their own subject association; site thumbnails do not silently reassign facility evidence.

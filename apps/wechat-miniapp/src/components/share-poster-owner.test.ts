@@ -12,14 +12,20 @@ function fixture() {
   const ticks: (() => void)[] = [], deadlines = new Map<number, () => void>();
   let timer = 0;
   const draws: { frame: string; done: () => void; fail: (cause: unknown) => void; current: () => boolean }[] = [];
-  const exported: string[] = [], written: string[] = [], errors: string[] = [], busy: boolean[] = [], retired: string[] = [];
+  const exported: string[] = [], written: string[] = [], errors: string[] = [], busy: boolean[] = [], retired: string[] = [], releasedImages: string[] = [], releasedPreviews: string[] = [], readyPreviews: string[] = [], presentedImages: { frame: string; image: string }[] = [];
   let saved = 0, settingsRead = 0;
   let automaticRemount = false, drawFailure = false;
+  let holdPreview = false;
+  const previewResult = deferred<void>(), previews: { frame: string; current: () => boolean }[] = [];
   const exportResult = deferred<string>(), albumResult = deferred<void>(), settingsResult = deferred<"permission" | "export">();
   const owner = createSharePosterOwner<string>({
     nextTick: callback => ticks.push(callback),
     draw: (frame, done, fail, current) => { draws.push({ frame, done, fail, current }); if (drawFailure) throw new Error("native unavailable"); },
+    preview: async (frame, current) => { previews.push({ frame, current }); if (holdPreview) await previewResult.promise; if (current()) readyPreviews.push(frame); },
+    presentImage: (frame, image) => presentedImages.push({ frame, image }),
+    releasePreview: frame => releasedPreviews.push(frame),
     export: frame => { exported.push(frame); return exportResult.promise; },
+    releaseImage: image => releasedImages.push(image),
     save: image => { written.push(image); return albumResult.promise; },
     albumFailure: () => { settingsRead++; return settingsResult.promise; },
     retire: frame => {
@@ -28,7 +34,8 @@ function fixture() {
     },
     busy: value => busy.push(value), error: value => errors.push(value), saved: () => saved++,
   }, { set: callback => { deadlines.set(++timer, callback); return timer; }, clear: handle => { deadlines.delete(handle as number); } });
-  return { owner, ticks, deadlines, draws, exported, written, errors, busy, retired, exportResult, albumResult, settingsResult,
+  return { owner, ticks, deadlines, draws, exported, written, errors, busy, retired, releasedImages, releasedPreviews, readyPreviews, presentedImages, previews, previewResult, exportResult, albumResult, settingsResult,
+    holdPreview: () => { holdPreview = true; },
     finish: (index: number) => { const draw = draws[index]; assert.ok(draw, "expected native draw was not submitted"); draw.done(); },
     remount: () => { const old = retired.at(-1); assert.ok(old); owner.update(`${old}/newCanvas`, false); },
     automaticNativeFailure: () => { automaticRemount = true; drawFailure = true; },
@@ -65,6 +72,7 @@ test("save cancels a not-yet-run preview tick even when the handoff finishes bef
   const save = f.owner.save(); await flush(); f.finish(0); await flush();
   f.exportResult.resolve("poster.png"); await flush(); f.albumResult.resolve(); await save;
   await f.tick();
+  assert.deepEqual(f.presentedImages, [{ frame: "spot-day", image: "poster.png" }], "save before first preview must still present its exported bitmap");
   assert.equal(f.draws.length, 1, "late preview tick must not resize or paint the completed Canvas");
   assert.deepEqual(f.retired, []); assert.equal(f.saved, 1); assert.equal(f.deadlines.size, 0);
 });
@@ -74,6 +82,23 @@ test("data/theme replacement coalesces pending ticks and cannot paint the expire
   f.owner.update("old-spot-day"); f.owner.update("new-plan-night"); await f.tick();
   assert.deepEqual(f.draws.map(draw => draw.frame), ["new-plan-night"]);
   f.finish(0); await flush(); assert.equal(f.deadlines.size, 0);
+});
+
+test("late preview export cannot install an old image after timeout or lifecycle retirement", async () => {
+  for (const boundary of ["timeout", "hide", "replacement", "dispose"] as const) {
+    const f = fixture(); f.holdPreview(); f.owner.update("old-plan"); await f.tick();
+    f.finish(0); await flush(); assert.equal(f.previews[0]!.current(), true);
+    if (boundary === "timeout") await f.timeout();
+    else if (boundary === "hide") f.owner.hide();
+    else if (boundary === "replacement") f.owner.update("new-spot");
+    else f.owner.dispose();
+    await flush();
+    assert.equal(f.previews[0]!.current(), false, `${boundary} must fence the late exported image`);
+    f.previewResult.resolve(); await flush();
+    assert.deepEqual(f.readyPreviews, []); assert.deepEqual(f.releasedPreviews, ["old-plan"]);
+    f.owner.dispose();
+    assert.deepEqual(f.exported, []); assert.deepEqual(f.written, []);
+  }
 });
 
 test("draw timeout releases save; a late native draw cannot start export or album write", async () => {
@@ -100,9 +125,12 @@ test("already-issued album write stays locked through replacement, then redraws 
   const f = fixture(); f.owner.update("old-plan"); const save = f.owner.save(); await flush();
   f.finish(0); await flush(); f.exportResult.resolve("old-public.png"); await flush();
   assert.deepEqual(f.written, ["old-public.png"]);
+  assert.deepEqual(f.releasedImages, [], "an issued album handoff retains its file until settlement");
   f.owner.update("new-spot"); await f.tick(); await f.owner.save();
   assert.deepEqual(f.busy, [true]); assert.equal(f.draws.length, 1);
   f.albumResult.resolve(); await save; assert.equal(f.saved, 0); assert.deepEqual(f.errors, []);
+  assert.deepEqual(f.releasedImages, ["old-public.png"]);
+  assert.deepEqual(f.releasedPreviews, ["old-plan"]);
   await f.tick(); assert.equal(f.draws.at(-1)?.frame, "new-spot");
   f.draws.at(-1)!.done(); await flush();
 });
@@ -116,6 +144,7 @@ test("album denial keeps permission meaning and valid bitmap; late settings afte
     f.settingsResult.resolve("permission"); await save;
     await f.tick();
     assert.deepEqual(f.errors, dispose ? [] : ["permission"]);
+    assert.deepEqual(f.presentedImages, [{ frame: "spot", image: "poster.png" }], "album denial retains the completed public preview");
     assert.equal(f.saved, 0); assert.equal(f.draws.length, 1); assert.deepEqual(f.retired, []);
     assert.equal(f.deadlines.size, 0);
   }
@@ -155,6 +184,19 @@ test("late native node lookup is fenced by timeout, hiding, replacement and disp
     lookup.done(); await save;
     assert.deepEqual(f.exported, []); assert.deepEqual(f.written, []);
     f.owner.dispose(); assert.equal(f.deadlines.size, 0);
+  }
+});
+
+test("late export file is released after timeout or retirement without an album handoff", async () => {
+  for (const boundary of ["timeout", "dispose"] as const) {
+    const f = fixture(); f.owner.update("plan"); const save = f.owner.save(); await flush();
+    f.finish(0); await flush(); assert.deepEqual(f.exported, ["plan"]);
+    if (boundary === "timeout") await f.timeout(); else f.owner.dispose();
+    await save;
+    f.exportResult.resolve("late-public.png"); await flush();
+    assert.deepEqual(f.releasedImages, ["late-public.png"]);
+    assert.deepEqual(f.written, []); assert.equal(f.saved, 0);
+    f.owner.dispose();
   }
 });
 

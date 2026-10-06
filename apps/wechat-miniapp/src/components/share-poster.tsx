@@ -1,5 +1,5 @@
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
-import { Button, Canvas, Text, View } from "@tarojs/components";
+import { Button, Canvas, Image, Text, View } from "@tarojs/components";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { DisplayMode, PlanPublicShareData, SourceSummary, SpotPublicShareData } from "@starward/miniapp-contracts";
 import { EMPTY_FIELD_VALUE, StatusPanel } from "./status-panel";
@@ -7,11 +7,14 @@ import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
 import { planSpotRiskMessage } from "@/utils/public-share-copy";
 import { createSharePosterOwner } from "./share-poster-owner";
+import { createSharePosterFiles } from "./share-poster-files";
 import { drawSharePoster, POSTER_WIDTH, POSTER_EXPORT_SCALE, type PosterPalette } from "./share-poster-drawing";
 import "./share-poster.scss";
 
 type PublicShare = PlanPublicShareData | SpotPublicShareData;
+type PreviewImage = { canvasId: string; path: string; revision: number };
 let canvasSequence = 0;
+let posterFileSequence = 0;
 const WIDTH = POSTER_WIDTH;
 
 function posterLines(data: PublicShare): { heading: string; lines: string[]; sources: SourceSummary[] } {
@@ -113,13 +116,51 @@ export function SharePoster({ data }: { data: PublicShare }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<"red-light-warning" | "permission" | "export" | null>(null);
   const [canvasRevision, setCanvasRevision] = useState(0);
+  const [preview, setPreview] = useState<PreviewImage | null>(null);
+  const currentPreview = useRef<PreviewImage | null>(null);
+  const previewRevision = useRef(0);
   const content = useMemo(() => ({ data, mode }), [data, mode]);
   const committedContent = useRef<typeof content | null>(null);
   // Each snapshot has its own native node: a late command from an expired
   // instance/theme cannot target the fixed ID of a newly mounted poster.
   const frame = useMemo(() => ({ ...content, canvasId: `public-share-poster-2d-live-${++canvasSequence}`,
-    canvas: null as Taro.Canvas | null }), [content, canvasRevision]);
-  const owner = useMemo(() => createSharePosterOwner<typeof frame>({
+    canvas: null as Taro.Canvas | null, previewImage: null as string | null }), [content, canvasRevision]);
+  const currentCanvasId = useRef(frame.canvasId);
+  useLayoutEffect(() => { currentCanvasId.current = frame.canvasId; }, [frame.canvasId]);
+  const owner = useMemo(() => {
+    const files = createSharePosterFiles<typeof frame>({ export: async value => {
+      if (!value.canvas) throw new Error("poster_canvas_unavailable");
+      const width = WIDTH * POSTER_EXPORT_SCALE, height = posterLayout(value.data).height * POSTER_EXPORT_SCALE;
+      const temporary = (await Taro.canvasToTempFilePath({ canvas: value.canvas, fileType: "png",
+        x: 0, y: 0, width, height, destWidth: width, destHeight: height })).tempFilePath;
+      // SDK temporary files cannot be unlinked. Transfer this acquisition to
+      // its own writable path, including late results that must be retired.
+      const filePath = `${Taro.env.USER_DATA_PATH}/starward-share-poster-${Date.now()}-${++posterFileSequence}.png`;
+      return new Promise<string>((resolve, reject) => {
+        const manager = Taro.getFileSystemManager();
+        manager.saveFile({ tempFilePath: temporary, filePath,
+          success: result => resolve(result.savedFilePath),
+          fail: cause => {
+            // Only this newly allocated destination can contain a partial
+            // transfer. Wait for its cleanup before releasing the file queue.
+            try { manager.unlink({ filePath, complete: () => reject(cause) }); }
+            catch { reject(cause); }
+          } });
+      });
+    }, remove: image => new Promise<void>((resolve, reject) => {
+      try { Taro.getFileSystemManager().unlink({ filePath: image, success: () => resolve(), fail: reject }); }
+      catch (cause) { reject(cause); }
+    }) });
+    const presentImage = (value: typeof frame, image: string) => {
+      files.retain(image);
+      const previous = value.previewImage;
+      value.previewImage = image;
+      const next = { canvasId: value.canvasId, path: image, revision: ++previewRevision.current };
+      currentPreview.current = next;
+      setPreview(next);
+      if (previous) files.release(previous);
+    };
+    return createSharePosterOwner<typeof frame>({
     nextTick: callback => Taro.nextTick(callback),
     draw: (value, done, fail, current) => {
       const paint = (canvas: Taro.Canvas) => {
@@ -141,12 +182,18 @@ export function SharePoster({ data }: { data: PublicShare }) {
         paint(result.node as Taro.Canvas);
       }).exec();
     },
-    export: async value => {
-      if (!value.canvas) throw new Error("poster_canvas_unavailable");
-      const width = WIDTH * POSTER_EXPORT_SCALE, height = posterLayout(value.data).height * POSTER_EXPORT_SCALE;
-      return (await Taro.canvasToTempFilePath({ canvas: value.canvas, fileType: "png",
-        x: 0, y: 0, width, height, destWidth: width, destHeight: height })).tempFilePath;
+    preview: async (value, current) => {
+      const image = await files.export(value, current);
+      try { if (current()) presentImage(value, image); }
+      finally { files.release(image); }
     },
+    presentImage,
+    releasePreview: value => {
+      if (currentPreview.current?.canvasId === value.canvasId) currentPreview.current = null;
+      if (value.previewImage) { files.release(value.previewImage); value.previewImage = null; }
+    },
+    export: (value, current) => files.export(value, current),
+    releaseImage: image => files.release(image),
     save: image => Taro.saveImageToPhotosAlbum({ filePath: image }),
     albumFailure: async () => {
       const settings = await Taro.getSetting().catch(() => null);
@@ -157,7 +204,8 @@ export function SharePoster({ data }: { data: PublicShare }) {
     error: setError,
     saved: () => useAppStore.getState().notify({ owner: "share-poster", placement: "floating", tone: "success",
       title: "海报已保存", body: "可在相册查看公开分享海报。", dedupeKey: "share-poster-saved" }),
-  }), []);
+    });
+  }, []);
   useLayoutEffect(() => { setError(null); }, [data, mode]);
   useLayoutEffect(() => {
     const contentChanged = committedContent.current !== content;
@@ -180,9 +228,15 @@ export function SharePoster({ data }: { data: PublicShare }) {
 
   return <View className="share-poster">
     <Text className="type-section">分享海报</Text>
-    <View id="public-share-poster-2d-live-slot" className="share-poster__canvas-slot"
+    <View id={`${frame.canvasId}-slot`} className="share-poster__canvas-slot"
       style={{ height: `${posterLayout(data).height}px` }}>
       <Canvas key={frame.canvasId} id={frame.canvasId} type="2d" className="share-poster__canvas" />
+      {preview?.canvasId === frame.canvasId ? <Image key={`${frame.canvasId}:${preview.revision}`} src={preview.path} mode="aspectFit"
+        className="share-poster__preview" aria-label="公开分享海报预览" onError={() => {
+          if (currentCanvasId.current === frame.canvasId && currentPreview.current === preview) {
+            currentPreview.current = null; setPreview(null); setError("export");
+          }
+        }} /> : null}
     </View>
     <Button className="soft-button focus-ring share-poster__save" disabled={busy} onClick={() => void save()}>{busy ? "正在保存…" : "保存海报到相册"}</Button>
     {error === "red-light-warning" ? <View className="share-poster__handoff">

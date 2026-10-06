@@ -1,7 +1,9 @@
 .share-poster { display: flex; flex-direction: column; gap: 12Px; align-items: center; }
 .share-poster > .type-section { align-self: stretch; }
-.share-poster__canvas-slot { position: relative; flex-shrink: 0; width: 320Px; max-width: 100%; border: 1Px solid var(--border); border-radius: 16Px; overflow: hidden; background: var(--surface-elevated); }
-.share-poster__canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.share-poster__canvas-slot { position: relative; flex-shrink: 0; width: 320Px; max-width: 100%; border: 1Px solid var(--border); overflow: hidden; background: var(--surface-elevated); }
+.share-poster__canvas-slot, .share-poster__preview { border-radius: 16Px; }
+.share-poster__canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; }
+.share-poster__preview { display: block; width: 100%; height: 100%; }
 .share-poster__save { width: 100%; min-height: 44Px; margin: 0; border: 1Px solid var(--border); border-radius: 22Px; background: var(--surface-elevated); color: var(--text-primary); }
 .share-poster__save::after { border: 0; }
 button.share-poster__save[disabled] { opacity: 1; color: var(--text-primary); background: var(--surface-elevated); border-color: var(--border); }
