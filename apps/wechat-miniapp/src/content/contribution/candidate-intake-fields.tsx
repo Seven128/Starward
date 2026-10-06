@@ -14,7 +14,7 @@ export function CandidateIntakeField({ fieldKey, form }: { fieldKey: Contributio
     required onChange={form.setCandidateField} focus={form.validationField === "contribution-candidate-name"}
     error={form.validationField === "contribution-candidate-name" ? "请填写地点名称。" : undefined} />;
   const choices = <T extends string,>(field: string, label: string, options: readonly (readonly [T, string])[], value: T | null, onSelect: (next: T) => void) =>
-    <View className="candidate-intake-group" data-field={field} key={field}>
+    <View id={`contribution-intake-${field}`} className="candidate-intake-group" data-field={field} key={field}>
       <Text className="formal-feedback-field__label">{label}<Text className="formal-feedback-required"> *</Text></Text>
       <View className="formal-feedback-choices candidate-intake-choices" role="radiogroup" ariaLabel={label}>
         {options.map(([key, title]) => <Button key={key} disabled={form.commandBusy} className={value === key ? "is-selected" : ""}
@@ -29,8 +29,8 @@ export function CandidateIntakeField({ fieldKey, form }: { fieldKey: Contributio
   if (fieldKey === "safety") return <View key="safety">
     {choices("nightSafety", "夜间安全情况", CANDIDATE_INTAKE_OPTIONS.nightSafety, intake.nightSafety,
       next => form.setCandidateIntake(current => ({ ...current, nightSafety: next })))}
-    <SpotDocumentField fieldKey="safety" label="风险与安全说明" value={form.candidateFields.safety} baseline={undefined} disabled={form.commandBusy}
-      onChange={form.setCandidateField} focus={Boolean(error("safety"))} error={error("safety")} />
+    <View id="contribution-intake-safety"><SpotDocumentField fieldKey="safety" label="风险与安全说明" value={form.candidateFields.safety} baseline={undefined} disabled={form.commandBusy}
+      onChange={form.setCandidateField} focus={Boolean(error("safety"))} error={error("safety")} /></View>
   </View>;
   if (fieldKey === "contact") {
     const update = (key: "number" | "purpose" | "source", value: string) => {
@@ -42,21 +42,22 @@ export function CandidateIntakeField({ fieldKey, form }: { fieldKey: Contributio
           ...(current.contact.legacyNote ? { legacyNote: current.contact.legacyNote } : {}) } })))}
       {intake.contact.kind === "PUBLIC_NUMBER" ? <>
         {([["number", "公开号码", 80], ["purpose", "联系用途", 200], ["source", "号码出处", 300]] as const).map(([key, title, maximum]) =>
-          <View className="formal-feedback-field candidate-intake-input" key={key}>
+          <View id={`contribution-intake-contact-${key}`} className="formal-feedback-field candidate-intake-input" key={key}>
             <Text className="formal-feedback-field__label">{title}<Text className="formal-feedback-required"> *</Text></Text>
             <Input disabled={form.commandBusy} value={intake.contact[key]} maxlength={maximum} ariaLabel={title} focus={Boolean(error(`contact-${key}`))}
               placeholder={key === "number" ? "管理方可公开的电话号码" : key === "purpose" ? "如预约、入场或安全咨询" : "如管理方公开告示或官方网站"}
               placeholderClass="formal-feedback-placeholder" onInput={event => update(key, event.detail.value)} />
             {error(`contact-${key}`) ? <View className="candidate-intake-error" role="alert"><Text>{error(`contact-${key}`)}</Text></View> : null}
           </View>)}
-        <ToggleField disabled={form.commandBusy} id="contribution-contact-permission" label="管理方允许公开此号码" checked={intake.contact.publicPermissionConfirmed}
+        <View id="contribution-intake-contact-permission"><ToggleField disabled={form.commandBusy} id="contribution-contact-permission" label="管理方允许公开此号码" checked={intake.contact.publicPermissionConfirmed}
           description="仅提交管理方的公开号码，不填写个人账号或私人电话。" onChange={value => { form.setCandidateIntake(current => ({ ...current, contact: { ...current.contact, publicPermissionConfirmed: value } })); form.setValidationField(null); }}
           stateLabels={{ checked: "已确认", unchecked: "未确认" }} />
-        {error("contact-permission") ? <View className="candidate-intake-error" role="alert"><Text>{error("contact-permission")}</Text></View> : null}
+        {error("contact-permission") ? <View className="candidate-intake-error" role="alert"><Text>{error("contact-permission")}</Text></View> : null}</View>
       </> : null}
       {intake.contact.legacyNote ? <View className="candidate-intake-legacy"><Text className="type-caption">原联系说明（未作公开许可）</Text><Text className="type-body">{intake.contact.legacyNote}</Text></View> : null}
     </View>;
   }
-  return <SpotDocumentField fieldKey={fieldKey} value={form.candidateFields[fieldKey]} baseline={undefined} disabled={form.commandBusy}
+  const field = <SpotDocumentField fieldKey={fieldKey} value={form.candidateFields[fieldKey]} baseline={undefined} disabled={form.commandBusy}
     onChange={form.setCandidateField} focus={Boolean(error(fieldKey))} error={error(fieldKey)} />;
+  return fieldKey === "accessNote" ? <View id="contribution-intake-accessNote">{field}</View> : field;
 }

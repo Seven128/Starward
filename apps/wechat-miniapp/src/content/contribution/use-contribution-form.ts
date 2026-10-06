@@ -265,7 +265,8 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
 
   const appliedRequestedDraft = useRef("");
   useEffect(() => {
-    if (!requestedSubmissionId || !matchingDraft || draft || localDraft.recovery) return;
+    // Local hydration runs earlier in this commit, before its recovery state rerenders.
+    if (!requestedSubmissionId || !matchingDraft || draft || localDraft.isRecoveryPending()) return;
     if (appliedRequestedDraft.current === matchingDraft.submissionId) return;
     appliedRequestedDraft.current = matchingDraft.submissionId;
     applyDraft(matchingDraft);

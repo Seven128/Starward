@@ -10,6 +10,8 @@ import { candidateDocumentProposal, candidateIntakeFromProfile, candidateIntakeF
 import { parseLocalContributionDraft } from "./local-draft";
 import { contributionSubmittedPlaceFacts } from "./contribution-record-model";
 import { parseCoordinateInput } from "./coordinate-input";
+import { contributionValidationAnchor } from "./validation-anchor";
+import { CANDIDATE_INTAKE_OPTIONS } from "./candidate-document";
 
 function explicitUnknown(): ContributionCandidateIntake {
   return { ...emptyCandidateIntake(), openness: "UNKNOWN", legalEntry: "UNKNOWN", nightSafety: "UNKNOWN", contact: { ...emptyCandidateIntake().contact, kind: "UNKNOWN" } };
@@ -71,6 +73,29 @@ function productionFunction(file: string, name: string, scope: Record<string, un
   assert.ok(declaration);
   return vm.runInNewContext(ts.transpileModule(`${declaration.getText(source).replace(/^export\s/u, "")}\n${name};`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, scope);
 }
+test("every invalid intake answer targets its own rendered control and inline error", () => {
+  type Node = { type: string; props: Record<string, unknown>; children: unknown[] };
+  const flatten = (value: unknown): Node[] => Array.isArray(value) ? value.flatMap(flatten)
+    : value && typeof value === "object" && "children" in value ? [value as Node, ...(value as Node).children.flatMap(flatten)] : [];
+  const source = ts.createSourceFile("intake.tsx", readFileSync(new URL("./candidate-intake-fields.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const component = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "CandidateIntakeField");
+  assert.ok(component);
+  const render = vm.runInNewContext(ts.transpileModule(component.getText(source).replace(/^export /, "") + "\nCandidateIntakeField;", {
+    compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React, jsxFactory: "h", jsxFragmentFactory: "Fragment" },
+  }).outputText, { View: "View", Text: "Text", Button: "Button", Input: "Input", ToggleField: "ToggleField", SpotDocumentField: "SpotDocumentField", Fragment: "Fragment",
+    CANDIDATE_INTAKE_ERRORS, CANDIDATE_INTAKE_OPTIONS,
+    h: (type: string, props: Record<string, unknown> | null, ...children: unknown[]) => ({ type, props: props ?? {}, children }),
+  });
+  for (const { field, message } of Object.values(CANDIDATE_INTAKE_ERRORS)) {
+    const fieldKey = field.startsWith("contact") ? "contact" : field === "nightSafety" ? "safety" : field;
+    const intake = explicitUnknown(); intake.contact.kind = "PUBLIC_NUMBER";
+    const form = { candidateIntake: intake, candidateFields: emptySpotDocumentValues(), commandBusy: false, validationField: `contribution-intake-${field}` };
+    const output = flatten(render({ fieldKey, form }));
+    const targets = output.filter(node => node.props.id === contributionValidationAnchor(form.validationField));
+    assert.equal(targets.length, 1, `${field} needs one concrete control target rather than a distant chapter`);
+    assert.ok(flatten(targets[0]).some(node => node.props.error === message || node.children.includes(message)), `${field} target must include its own error`);
+  }
+});
 test("the real draft projection keeps valid coordinates without region/address and accepts incomplete intake for save", () => {
   const build = productionFunction("./contribution-model.ts", "buildDraftInput", { parseCoordinateInput, parseObservationInput: () => null });
   const values = { ...local, routeSpotId: "", hasFormalSpot: false, candidateProfile: candidateDocumentProposal(emptySpotDocumentValues(), {}, emptyCandidateIntake()) };

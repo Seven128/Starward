@@ -11,6 +11,44 @@ import { emptyCandidateIntake } from "@starward/miniapp-contracts";
 import { calendarDateInTimezone, clockTimeInTimezone } from "../../utils/zoned-date";
 import { confirmEditorLeave } from "../../hooks/editor-leave";
 
+test("cached requested draft cannot erase recovery loaded earlier in the same effect commit", () => {
+  const localSource = ts.createSourceFile("local.ts", readFileSync(new URL("./use-local-draft.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const declaration = localSource.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useLocalContributionDraft");
+  const source = ts.createSourceFile("form.ts", readFileSync(new URL("./use-contribution-form.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  let requestedEffect = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" && node.arguments[0]?.getText(source).includes("appliedRequestedDraft.current =")) requestedEffect = node.arguments[0].getText(source);
+    ts.forEachChild(node, visit);
+  };
+  visit(source); assert.ok(declaration && requestedEffect);
+  const empty = { schema: 1, baseSubmissionId: null, baseRevision: null, spotId: "", spotName: "", kind: "NEW_SPOT_PROPOSAL", topics: ["OTHER"], date: "2026-10-06", time: "11:00", detail: "", candidateName: "", candidateRegion: "", latitude: "", longitude: "", rightsConfirmed: false, preciseLocationConsent: false };
+  const pending = { ...empty, baseSubmissionId: "contribution:saved", baseRevision: 10, candidateName: "本机未保存名称", latitude: "22.5", longitude: "114.5", preciseLocationConsent: true,
+    candidateProfile: candidateDocumentProposal(emptySpotDocumentValues(), {}, { ...emptyCandidateIntake(), openness: "UNKNOWN", legalEntry: "UNKNOWN", nightSafety: "UNKNOWN", contact: { ...emptyCandidateIntake().contact, kind: "UNKNOWN" } }) };
+  for (const recoveryExists of [true, false]) {
+    let stored: unknown = recoveryExists ? pending : undefined, applied = 0, cursor = 0, stateCursor = 0, effects: Array<() => unknown> = [];
+    const refs: Array<{ current: unknown }> = [], states: unknown[] = [];
+    const hook = vm.runInNewContext(ts.transpileModule(declaration.getText(localSource).replace(/^export /, "") + "\nuseLocalContributionDraft;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+      Taro: { getStorageSync: () => stored, setStorageSync: (_key: string, item: unknown) => { stored = item; }, removeStorageSync: () => { stored = undefined; } },
+      currentDraftUserId: () => "a", contributionDraftKey, parseLocalContributionDraft,
+      useRef: (current: unknown) => refs[cursor++] ?? (refs[cursor - 1] = { current }),
+      useState: (initial: unknown) => { const index = stateCursor++; if (!(index in states)) states[index] = initial; return [states[index], (next: unknown) => { states[index] = next; }]; },
+      useEffect: (effect: () => unknown) => effects.push(effect), useDidHide() {}, setTimeout: () => 1, clearTimeout() {},
+    });
+    const context = vm.createContext({ requestedSubmissionId: "contribution:saved", matchingDraft: { submissionId: "contribution:saved" }, draft: null, appliedRequestedDraft: { current: "" }, localDraft: null as ReturnType<typeof import("./use-local-draft").useLocalContributionDraft> | null,
+      applyDraft: () => { applied++; context.localDraft!.markSaved({ ...empty, baseSubmissionId: "contribution:saved", baseRevision: 10 } as never); },
+    });
+    const autoApply = vm.runInContext(ts.transpileModule(`(${requestedEffect});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, context);
+    const render = () => { cursor = 0; stateCursor = 0; effects = []; context.localDraft = hook(empty, "", false); effects.forEach(effect => effect()); autoApply(); return context.localDraft!; };
+    render();
+    assert.equal(applied, recoveryExists ? 0 : 1, "a captured null recovery state must not authorize clearing a loaded copy");
+    assert.equal(stored, recoveryExists ? pending : undefined, "all unsaved fields must survive automatic remote loading");
+    const settled = render();
+    assert.equal(Boolean(settled.recovery), recoveryExists, "the next render must offer the preserved recovery copy");
+    if (recoveryExists) { settled.clear(); render(); assert.equal(applied, 1, "explicit discard permits normal remote loading"); assert.equal(stored, undefined); }
+    render(); assert.equal(applied, 1, "the requested remote draft is applied only once");
+  }
+});
+
 test("hiding a feedback page flushes its own input and never overwrites an unrestored copy", () => {
   const source = ts.createSourceFile("local.ts", readFileSync(new URL("./use-local-draft.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const declaration = source.statements.find((node) => ts.isFunctionDeclaration(node) && node.name?.text === "useLocalContributionDraft");

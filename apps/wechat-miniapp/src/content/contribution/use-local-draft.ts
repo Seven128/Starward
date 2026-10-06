@@ -65,7 +65,7 @@ export function useLocalContributionDraft(value: LocalContributionDraft, routeSp
     if (baseline.baseSubmissionId !== submissionId || revision < (baseline.baseRevision ?? 0)) return;
     saved.current = JSON.stringify({ ...baseline, baseRevision: revision });
   };
-  return { recovery, storageError, clear, markSaved, advanceSavedRevision,
+  return { recovery, isRecoveryPending: () => Boolean(recoveryRef.current), storageError, clear, markSaved, advanceSavedRevision,
     hasUnsavedChanges: serialized !== (saved.current ?? initial.current),
     owner: owner.current, accept: () => { recoveryRef.current = null; setRecovery(null); } };
 }
