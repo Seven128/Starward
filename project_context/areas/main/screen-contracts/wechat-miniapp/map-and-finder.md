@@ -2,6 +2,8 @@
 
 This on-demand subdomain node normatively continues `Cross-Control And State Invariants` for Map, dedicated Search, the spot information panel and shared Observation Context behavior.
 
+小档静止高度必须容纳完整身份信息与固定动作，不能把采用资源的样例高度当内容上限。Map 现有原生几何 owner 测量文档手柄、身份区和动作栏，由 `panel-snap.panelIdentityMinimumHeight` 保留既有内容间距；同一 CSS 内容下限同时用于面板与吸附标尺，仍受三档有序视口边界约束。正式点与私人草稿/待审提案共用该责任，保留当前已采用字号、状态和原动作。异步详情改变高度、真实 resize 或完整点位/账号/提案身份切换时，退休旧拖动、回弹与缓存，再读取当前标尺，迟到测量不得提交旧档位。当前 DAY/390×762 的正式和私人长名称样本已有有限 WEAPP 可见性、档位往返与取消输出；这不认证连续释放、窄屏、真机或完整设计一致性。
+
 The adopted daytime layer composition is reached through the sole [Map resource entry](../../../../../docs/design-resources/wechat-miniapp/map/ADOPTED.md). Read its layer-selector package together with the [shared observation-time owner](shared-state-and-recovery.md#shared-observation-time-resource) and its resource before implementing this control.
 
 小档下拖的生产边界由 `pages/map/panel-spring.panelDragHeight` 负责：遵循[2026-09-22下沿修订](shared-state-and-recovery.md#公共弹性抽屉2026-09-22-用户修订)，小档以下允许有界阻尼位移且不关闭；后续大档上沿防回落修复仍使用硬上限。缓存/延迟几何路径共用该规则，释放从最后可见的压缩高度起，不被迟到测量夹回小档；重抓由共享 `elastic-motion.elasticRawPosition` 还原物理起点，首帧不重复施加阻力，释放速度使用同一阻力导数。三档、单内容树、固定动作和导航保持。2026-10-05定点恢复下沿行为，不采用整组候选视觉；同一当前构建的原生连续拖动、释放、途中重抓反向及身份/地址恢复仍需核验。
