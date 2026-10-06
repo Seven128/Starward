@@ -10,6 +10,12 @@ export function CandidateIntakeField({ fieldKey, form }: { fieldKey: Contributio
   const intake = form.candidateIntake;
   const error = (field: string) => form.validationField === `contribution-intake-${field}`
     ? Object.values(CANDIDATE_INTAKE_ERRORS).find(item => item.field === field)?.message : undefined;
+  const updateField = (key: ContributionFormalFieldKey, value: string) => {
+    form.setCandidateField(key, value);
+    if ((key === "accessNote" || key === "safety") && value.trim() && form.validationField === `contribution-intake-${key}`) {
+      form.setValidationField(null);
+    }
+  };
   if (fieldKey === "name") return <SpotDocumentField fieldKey="name" value={form.candidateFields.name} baseline={undefined} disabled={form.commandBusy}
     required onChange={form.setCandidateField} focus={form.validationField === "contribution-candidate-name"}
     error={form.validationField === "contribution-candidate-name" ? "请填写地点名称。" : undefined} />;
@@ -30,7 +36,7 @@ export function CandidateIntakeField({ fieldKey, form }: { fieldKey: Contributio
     {choices("nightSafety", "夜间安全情况", CANDIDATE_INTAKE_OPTIONS.nightSafety, intake.nightSafety,
       next => form.setCandidateIntake(current => ({ ...current, nightSafety: next })))}
     <View id="contribution-intake-safety"><SpotDocumentField fieldKey="safety" label="风险与安全说明" value={form.candidateFields.safety} baseline={undefined} disabled={form.commandBusy}
-      onChange={form.setCandidateField} focus={Boolean(error("safety"))} error={error("safety")} /></View>
+      onChange={updateField} focus={Boolean(error("safety"))} error={error("safety")} /></View>
   </View>;
   if (fieldKey === "contact") {
     const update = (key: "number" | "purpose" | "source", value: string) => {
@@ -58,6 +64,6 @@ export function CandidateIntakeField({ fieldKey, form }: { fieldKey: Contributio
     </View>;
   }
   const field = <SpotDocumentField fieldKey={fieldKey} value={form.candidateFields[fieldKey]} baseline={undefined} disabled={form.commandBusy}
-    onChange={form.setCandidateField} focus={Boolean(error(fieldKey))} error={error(fieldKey)} />;
+    onChange={updateField} focus={Boolean(error(fieldKey))} error={error(fieldKey)} />;
   return fieldKey === "accessNote" ? <View id="contribution-intake-accessNote">{field}</View> : field;
 }

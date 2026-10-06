@@ -73,7 +73,7 @@ function productionFunction(file: string, name: string, scope: Record<string, un
   assert.ok(declaration);
   return vm.runInNewContext(ts.transpileModule(`${declaration.getText(source).replace(/^export\s/u, "")}\n${name};`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, scope);
 }
-test("every invalid intake answer targets its own rendered control and inline error", () => {
+test("intake controls own their errors and valid notes resolve only their obsolete error", () => {
   type Node = { type: string; props: Record<string, unknown>; children: unknown[] };
   const flatten = (value: unknown): Node[] => Array.isArray(value) ? value.flatMap(flatten)
     : value && typeof value === "object" && "children" in value ? [value as Node, ...(value as Node).children.flatMap(flatten)] : [];
@@ -94,6 +94,27 @@ test("every invalid intake answer targets its own rendered control and inline er
     const targets = output.filter(node => node.props.id === contributionValidationAnchor(form.validationField));
     assert.equal(targets.length, 1, `${field} needs one concrete control target rather than a distant chapter`);
     assert.ok(flatten(targets[0]).some(node => node.props.error === message || node.children.includes(message)), `${field} target must include its own error`);
+  }
+  for (const fieldKey of ["accessNote", "safety"] as const) {
+    const fields = emptySpotDocumentValues();
+    let validation: string | null = `contribution-intake-${fieldKey}`;
+    const form = { candidateIntake: explicitUnknown(), candidateFields: fields, commandBusy: false,
+      get validationField() { return validation; },
+      setCandidateField: (key: typeof fieldKey, value: string) => { fields[key] = value; },
+      setValidationField: (value: string | null) => { validation = value; },
+    };
+    const control = flatten(render({ fieldKey, form })).find(node => node.type === "SpotDocumentField")!;
+    const change = control.props.onChange as (key: typeof fieldKey, value: string) => void;
+    change(fieldKey, "   ");
+    assert.equal(form.validationField, `contribution-intake-${fieldKey}`, "whitespace does not resolve a required note");
+    change(fieldKey, "");
+    assert.equal(form.validationField, `contribution-intake-${fieldKey}`, "empty input does not resolve a required note");
+    change(fieldKey, "开发自测的临时条件或风险说明");
+    assert.equal(form.candidateFields[fieldKey], "开发自测的临时条件或风险说明", "the existing form owner still receives input");
+    assert.equal(form.validationField, null, `${fieldKey} must stop requesting content already present`);
+    validation = "contribution-intake-contact";
+    change(fieldKey, "再次修改本机说明");
+    assert.equal(form.validationField, "contribution-intake-contact", "editing a note must not dismiss another invalid field");
   }
 });
 test("the real draft projection keeps valid coordinates without region/address and accepts incomplete intake for save", () => {
