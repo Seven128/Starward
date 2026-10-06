@@ -16,11 +16,15 @@ page {
   min-height: 100%;
   background: var(--canvas);
   color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+page,
+.theme-token-scope {
   font-family: tokens.$font-native, system-ui, sans-serif;
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
   font-weight: var(--type-body-weight);
-  overflow-x: hidden;
 }
 
 /* Keep every owner scrollable while removing native scrollbar chrome. */

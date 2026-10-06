@@ -53,6 +53,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
 }, ref) {
   const reducedMotion = useReducedMotion();
   const themeClass = useAppStore((state) => `theme-${state.mode.toLowerCase()}`);
+  const largeText = useAppStore((state) => state.preferences.largeText);
   const [pageVisible, setPageVisible] = useState(true);
   useDidHide(() => {
     setPageVisible(false);
@@ -183,7 +184,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
 
   if (!mounted) return null;
 
-  const surface = <View className={`event-modal ${themeClass} event-modal--${phase}${reducedMotion ? " event-modal--reduced" : ""}`}
+  const surface = <View className={`theme-token-scope event-modal ${themeClass}${largeText ? " large-text" : ""} event-modal--${phase}${reducedMotion ? " event-modal--reduced" : ""}`}
       role="dialog" aria-modal="true" ariaLabel={mode === "browse" ? "浏览天文事件" : "选择一个天文事件"}
       catchMove data-control="astronomical-event-modal">
       <FloatingNotificationHost />

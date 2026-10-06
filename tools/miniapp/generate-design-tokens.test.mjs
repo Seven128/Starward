@@ -25,7 +25,7 @@ test("the pinned Taro transform preserves logical typography, icons and touch ta
     rule.walkDecls((decl) => values.set(decl.prop, decl.value.toLowerCase()));
     declarations.set(rule.selector, values);
   });
-  const base = declarations.get("page,\n.theme-page");
+  const base = [...declarations].find(([selector, values]) => selector.split(/,\s*/u).includes("page") && values.has("--type-body-size"))[1];
   assert.equal(base.get("--type-body-size"), "15px");
   assert.equal(base.get("--icon-medium"), "20px");
   assert.equal(base.get("--target-min"), "44px");
@@ -35,6 +35,27 @@ test("the pinned Taro transform preserves logical typography, icons and touch ta
     assert.equal(large.get(`--type-${name}-size`), `${role.size * 2}px`);
     assert.equal(large.get(`--type-${name}-line`), `${role.line * 2}px`);
   }
+});
+
+test("detached modal roots own the current type and geometry variables without painting a page", () => {
+  const scss = renderDesignTokens(tokens).get("apps/wechat-miniapp/src/styles/tokens.scss");
+  const stylesheet = postcss.parse(sass.compileString(scss).css);
+  let scope;
+  let large;
+  stylesheet.walkRules(rule => {
+    if (rule.selector.split(/,\s*/u).includes(".theme-token-scope")) scope = rule;
+    if (rule.selector === ".large-text") large = rule;
+  });
+  assert(scope, "a detached modal surface needs its own current token scope");
+  const values = new Map(scope.nodes.map(decl => [decl.prop, decl.value.toLowerCase()]));
+  for (const [name, role] of Object.entries(tokens.type)) {
+    assert.equal(values.get(`--type-${name}-size`), `${role.size}px`);
+    assert.equal(values.get(`--type-${name}-line`), `${role.line}px`);
+    assert.equal(values.get(`--type-${name}-weight`), String(role.weight));
+  }
+  for (const [name, value] of Object.entries(tokens.geometry)) assert.equal(values.get(`--${name}`), `${value}px`);
+  assert(scope.nodes.every(decl => decl.prop.startsWith("--")), "token scope must not add a page's background, size or overflow");
+  assert(scope.source.start.line < large.source.start.line, "the same root's large-text preference must override its defaults");
 });
 
 test("supporting text stays readable in all three modes, including red-light mode", () => {
