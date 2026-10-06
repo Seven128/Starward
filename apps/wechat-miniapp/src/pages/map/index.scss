@@ -2623,6 +2623,15 @@
 .theme-observation.map-page .map-app-title {
   color: var(--text-primary);
 }
+// Give the night title an opaque surface over the native map tiles.
+.theme-night.map-page .map-app-title::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 calc(-1 * var(--space-inline));
+  border-radius: var(--radius-control);
+  background: var(--surface);
+}
 .map-search-anchor {
   left: 16Px;
   right: 16Px;
