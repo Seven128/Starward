@@ -41,8 +41,7 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   useHiddenNativeScrollbar("spot-proposal-scroll", extent !== "small", `${mediaScope}:${extent}`);
   useHiddenNativeScrollbar("spot-proposal-media-strip", extent === "large" && model.media.length > 1, mediaScope);
   const leadMedia = model.media[0];
-  const handleInDocument = extent === "large" && Boolean(leadMedia);
-  const panelHandle = <View className={`spot-panel__handle-band${handleInDocument ? " spot-panel__handle-band--document" : ""}`}>
+  const panelHandle = <View className="spot-panel__handle-band spot-panel__handle-band--document">
     <Button className="spot-panel__handle focus-ring" data-control="map-spot-panel-handle"
       ariaLabel={`拖动调整${draft ? "草稿" : "审核中"}观星点信息面板大小`}
       onTouchStart={onHandleTouchStart} onTouchMove={onHandleTouchMove}
@@ -118,7 +117,6 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
       <View className="spot-panel__snap-medium" />
       <View className="spot-panel__snap-large" />
     </View>
-    {!handleInDocument ? panelHandle : null}
     <View className="spot-panel__scroll-frame">
       <ScrollView id="spot-proposal-scroll" className="spot-panel__scroll" scrollY={extent !== "small"} type="custom" enhanced showScrollbar={false}
         ariaLabel={`${draft ? "草稿" : "审核中"}观星点资料`}>
@@ -146,7 +144,7 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
             </View>
           </ScrollView>
         </View> : null}
-        {handleInDocument ? panelHandle : null}
+        {panelHandle}
         <View className="spot-panel__identity">
           <View className="spot-panel__proposal-title-row">
             <Text className="spot-panel__title">{model.name}</Text>

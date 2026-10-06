@@ -2777,7 +2777,9 @@
   // Keep the title below the compact handle hint in no-media and cropped states.
   padding: 30Px 0 4Px;
 }
-.spot-panel.spot-panel--large.spot-panel--with-media .spot-panel__handle-band--document {
+.spot-panel.spot-panel--small .spot-panel__handle-band--document,
+.spot-panel.spot-panel--medium .spot-panel__handle-band--document,
+.spot-panel.spot-panel--large .spot-panel__handle-band--document {
   position: relative;
   top: auto;
   left: auto;
@@ -2790,11 +2792,14 @@
 }
 .spot-panel__handle-band--document .spot-panel__handle {
   position: absolute;
-  top: -12Px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-width: 100%;
+  align-items: flex-start;
+  transform: none;
 }
-.spot-panel--large.spot-panel--with-media .spot-panel__identity {
+.spot-panel .spot-panel__identity {
   padding-top: 10.5Px;
 }
 .spot-panel__identity-heading {
@@ -3096,7 +3101,7 @@
   margin-right: 0 !important;
   margin-left: 0 !important;
 }
-.spot-panel.spot-panel--large.spot-panel--with-media .spot-panel__scroll--full-bleed-plan .spot-panel__handle-band--document {
+.spot-panel .spot-panel__scroll.spot-panel__scroll--full-bleed-plan .spot-panel__handle-band--document {
   width: 100%;
   margin-right: 0;
   margin-left: 0;

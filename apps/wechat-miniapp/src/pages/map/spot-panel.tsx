@@ -374,9 +374,8 @@ export function SpotInformationPanel({
   const detailPageState: PageState = isPermissionError(detailError)
     ? "PERMISSION_DENIED"
     : "ERROR";
-  const handleInDocument = extent === "large" && media.length > 0;
   const panelHandle = (
-    <View className={`spot-panel__handle-band${handleInDocument ? " spot-panel__handle-band--document" : ""}`}>
+    <View className="spot-panel__handle-band spot-panel__handle-band--document">
       <Button
         className="spot-panel__handle focus-ring"
         data-control="map-spot-panel-handle"
@@ -431,7 +430,6 @@ export function SpotInformationPanel({
         <View className="spot-panel__snap-medium" />
         <View className="spot-panel__snap-large" />
       </View>
-      {!handleInDocument ? panelHandle : null}
 
       <View className="spot-panel__scroll-frame">
         <ScrollView
@@ -484,7 +482,7 @@ export function SpotInformationPanel({
               </ScrollView>
             </View>
           ) : null}
-          {handleInDocument ? panelHandle : null}
+          {panelHandle}
 
           <View id="spot-panel-overview" className="spot-panel__identity" ariaLabel="地点概览">
             <View className="spot-panel__identity-heading">
