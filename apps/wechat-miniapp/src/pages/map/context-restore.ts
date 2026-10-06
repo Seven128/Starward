@@ -3,7 +3,17 @@ import type {
   ObservationContext,
   ObservationContextResolveRequest,
   MapSceneData,
+  SpotId,
 } from "@starward/miniapp-contracts";
+
+/** A selected place may still be resolving; keep its already confirmed time reference. */
+export function spotSelectionAllowsContextRestore(
+  expected: Pick<ObservationContext, "location"> | null,
+  selectedSpotId: SpotId | null,
+) {
+  return !expected || !selectedSpotId ||
+    (expected.location.kind === "FORMAL_SPOT" && expected.location.spotId === selectedSpotId);
+}
 
 export async function restoreMapBootstrapContext(input: {
   storedContext: ObservationContext | null;

@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+import ts from "typescript";
+import * as contextRestore from "./context-restore.ts";
 import { restoreMapBootstrapContext, retryObservationScene, observationSceneNeedsContextRestore } from "./context-restore.ts";
 import { canApplyContextRestore } from "../../services/observation-context-version.ts";
 import type { ApiEnvelope, MapSceneData, ObservationContext } from "@starward/miniapp-contracts";
@@ -115,4 +119,55 @@ test("leaving or replacing the retry scope while restoration waits cannot reques
   current = false;
   settle(envelope(initial as ObservationContext));
   assert.equal((await pending).result, null);
+});
+
+
+test("a pending formal selection keeps its confirmed time through bootstrap and spot resolution", async () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let restoration = "", resolution = "", active = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" && node.arguments[0]?.getText(source).includes("canApplyContextRestore") && node.arguments[0].getText(source).includes("bootstrapContext.data")) restoration = node.arguments[0].getText(source);
+    if (ts.isVariableStatement(node)) {
+      for (const item of node.declarationList.declarations) {
+        if (item.name.getText(source) === "resolveSpotContext") resolution = node.getText(source);
+        if (item.name.getText(source) === "activeContext") active = node.getText(source);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);assert.ok(restoration && resolution && active);
+  const confirmed = { ...initial, location: { kind: "FORMAL_SPOT", spotId: "spot:a" }, localDate: "2026-10-07", selectedAtUtc: "2026-10-07T16:00:00Z", eventInstanceId: null, targetProfile: "DAILY", routeOrigin: null };
+  const late = { ...confirmed, revision: 2, localDate: "2026-10-08", selectedAtUtc: "2026-10-08T16:00:00Z" };
+  const state = { selectedSpotId: "spot:b", observationContext: confirmed, mapResetVersion: 1 };
+  const installed: unknown[] = [], requests: any[] = [], mapPointIntent = { current: 0 };
+  const scope = {
+    bootstrapContext: { data: { data: late } }, observationContext: confirmed, selectedSpotId: "spot:b", pageVisible: true, mapResetVersion: 1,
+    useAppStore: { getState: () => state }, canApplyContextRestore, spotSelectionAllowsContextRestore: contextRestore.spotSelectionAllowsContextRestore,
+    setObservationContext(value: any) { state.observationContext = value; installed.push(value); }, selectSpot() {}, setSelectedFallback() {}, setSelectedProposal() {}, setBottomPresentation() {}, notify() {},
+    mapPointIntent, invalidateMapPointIntent: () => ++mapPointIntent.current, detailRequestGeneration: { current: 0 },
+    setSpotContextAttempt() {}, dismissMapRegionFailure() {}, setAnnouncement() {}, localDateForNow: () => "unexpected", isMiniappRequestCancelled: () => false,
+    resolveObservationContext: async (input: any) => { requests.push(input); return { data: { ...confirmed, contextId: "ctx:b", location: { kind: "FORMAL_SPOT", spotId: "spot:b" } } }; },
+  };
+  const compile = (text: string) => ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
+  const presented = vm.runInNewContext(compile(active + "\nactiveContext;"), scope);
+  assert.equal(presented.selectedAtUtc, confirmed.selectedAtUtc, "a rejected old Context cannot drive the active scene/time");
+  vm.runInNewContext(compile(`(${restoration})();`), scope);assert.equal(installed.length, 0, "bootstrap must not install the old place's later edit");
+  const resolve = vm.runInNewContext(compile(resolution + "\nresolveSpotContext;"), scope);
+  await resolve({ spotId: "spot:b", name: "新地点", timezone: "Asia/Shanghai" });
+  assert.equal(requests.length, 1);assert.equal(requests[0].localDate, confirmed.localDate);assert.equal(requests[0].selectedAt, confirmed.selectedAtUtc);assert.equal(state.observationContext.location.spotId, "spot:b");
+});
+
+
+test("spot selection permits initial, unselected and same-place recovery including publication and removal", () => {
+  const allows = contextRestore.spotSelectionAllowsContextRestore;
+  const selected = "spot:a" as import("@starward/miniapp-contracts").SpotId;
+  const formal = { location: { kind: "FORMAL_SPOT", spotId: selected } } as ObservationContext;
+  const mapPoint = { location: { kind: "MAP_POINT" } } as ObservationContext;
+  const pending = { location: { kind: "PENDING_PROPOSAL" } } as ObservationContext;
+  assert.equal(allows(null, selected), true);
+  for (const expected of [formal, mapPoint, pending]) assert.equal(allows(expected, null), true);
+  assert.equal(allows(formal, selected), true); // Restore may yield a renewed ID or a removed-point MAP_POINT.
+  assert.equal(allows(formal, "spot:b" as typeof selected), false);
+  assert.equal(allows(mapPoint, selected), false);
+  assert.equal(allows(pending, selected), false);
 });

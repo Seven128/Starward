@@ -15,7 +15,7 @@ import { privateContributionMarkerItems, privateContributionMarkers } from "./pr
 import { ContributionEditor, type ContributionCandidatePreview, type ContributionLeaveGuard } from "@/content/contribution/contribution-editor";
 import { panelIdentityMinimumHeight, panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
-import { restoreMapBootstrapContext, retryObservationScene } from "./context-restore";
+import { restoreMapBootstrapContext, retryObservationScene, spotSelectionAllowsContextRestore } from "./context-restore";
 import { canApplyContextRestore } from "@/services/observation-context-version";
 import { FloatingNotificationHost } from "@/components/notification";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
@@ -450,7 +450,9 @@ export default function MapPage() {
     enabled: pageVisible,
     staleTime: 60_000,
   });
-  const activeContext = bootstrapContext.data?.data ?? null;
+  const activeContext = spotSelectionAllowsContextRestore(observationContext, selectedSpotId)
+    ? bootstrapContext.data?.data ?? null
+    : observationContext;
   useEffect(() => {
     navigationEpoch.current += 1;
     return () => { navigationEpoch.current += 1; };
@@ -464,6 +466,7 @@ export default function MapPage() {
       bootstrapContext.data?.data &&
       currentState.mapResetVersion === mapResetVersion &&
       currentState.selectedSpotId === selectedSpotId &&
+      spotSelectionAllowsContextRestore(observationContext, currentState.selectedSpotId) &&
       canApplyContextRestore(observationContext, currentContext, bootstrapContext.data.data) &&
       (currentContext?.contextId !== bootstrapContext.data.data.contextId ||
         currentContext.revision !== bootstrapContext.data.data.revision ||

@@ -16,6 +16,8 @@ The adopted daytime layer composition is reached through the sole [Map resource 
 
 Map与Search的场景重试由`pages/map/context-restore.retryObservationScene`复用同一依赖规则：场景明确返回Context的404 NOT_FOUND/410 STALE_REJECTED时，先由现有Context恢复owner重验同一地点与观测时刻。恢复出的新ID、revision或fingerprint由当前Context owner安装并驱动对应场景，不再请求旧render的失效ID；恢复失败/陈旧或操作作用域退休不继续旧场景。普通数据/服务失败、401及403不据此重建Context，保留既有权限、网络及私有点恢复责任。源码检查与有界回归不认证目标WEAPP或真机恢复。
 
+Map与Search的Context恢复安装及活动场景引用共用 `pages/map/context-restore.spotSelectionAllowsContextRestore`：显式选中新的正式点但其Context仍在解析时，旧地点的恢复结果不能推进共享日期/时间或活动场景，继续使用已确认的参照Context供现有新点解析。不能只比Context版本，或把当前render选点相同当作旧地点恢复仍有效；旧PUT即使在服务端已提交，迟到成功也不能经回读把原已确认时刻变为新点的选择。初始无Context、无选点、同点更新/过期ID、正式点删除与私人发布/移除恢复保持原owner；该边界不撤销已提交的旧Context业务，也不直写新点最终结果。
+
 Map的场景失败反馈由 `pages/map/map-layer-selection.layerSheetOwnsSceneRecovery` 决定当前可见恢复归属：LIGHT的ERROR/STALE，或CLOUD失败且没有可用时间切片时，图层内既有恢复卡承接同一Scene失败，地图背景不再叠加同故障的通用卡或悬浮消息。关闭图层后回归地图恢复；CLOUD保留切片但没有就地重试时仍由地图承接。Context失败、原生Map故障及权限入口保持各自责任，不按打开图层一概隐藏。该规则复用当前数据状态与重试owner，不重建Context、补数据或改变采用设计。
 
 FilterSheet的分类、选项与底部动作在各自原命中盒内显式垂直居中；分类保留左对齐，选项与“确定＋计数”组合保持水平居中。几何由`components/filter-sheet.scss`承担，不依赖原生Button的默认行高，也不改全局Button reset。保留现行14项、48/44px高度、换行、选中星标、禁用、草稿取消及清空/应用责任；修复源码接线不等于整个筛选面板、其它宽度/主题或连续过程验收。

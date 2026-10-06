@@ -51,7 +51,7 @@ import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 import { canApplyContextRestore, sameContextVersion } from "@/services/observation-context-version";
 import { SearchResultPartition } from "./search-result-partition";
-import { retryObservationScene } from "./context-restore";
+import { retryObservationScene, spotSelectionAllowsContextRestore } from "./context-restore";
 import "./search-page.scss";
 
 function localDateForNow(timezone = "Asia/Shanghai") {
@@ -134,6 +134,7 @@ export function MapSearchSurface() {
   const committedFilters = useAppStore((state) => state.committedFilters);
   const filterSheetOpen = useAppStore((state) => state.filterSheetOpen);
   const observationContext = useAppStore((state) => state.observationContext);
+  const selectedSpotId = useAppStore((state) => state.selectedSpotId);
   const analysisOverlay = useAppStore((state) => state.analysisOverlay);
   const preferences = useAppStore((state) => state.preferences);
   const viewport = useAppStore((state) => state.viewport);
@@ -210,15 +211,19 @@ export function MapSearchSurface() {
     enabled: pageVisible,
     staleTime: 60_000,
   });
-  const activeContext = contextQuery.data?.data ?? null;
+  const activeContext = spotSelectionAllowsContextRestore(observationContext, selectedSpotId)
+    ? contextQuery.data?.data ?? null
+    : observationContext;
 
   useEffect(() => {
     const incoming = contextQuery.data?.data;
-    const current = useAppStore.getState().observationContext;
+    const currentState = useAppStore.getState();
+    const current = currentState.observationContext;
     if (
       pageVisible &&
       incoming &&
-      useAppStore.getState().mapResetVersion === mapResetVersion &&
+      currentState.mapResetVersion === mapResetVersion &&
+      spotSelectionAllowsContextRestore(observationContext, currentState.selectedSpotId) &&
       canApplyContextRestore(observationContext, current, incoming) &&
       (current?.contextId !== incoming.contextId ||
         current.revision !== incoming.revision ||
@@ -226,7 +231,7 @@ export function MapSearchSurface() {
     ) {
       setObservationContext(incoming);
     }
-  }, [contextQuery.data?.data, pageVisible, observationContext, mapResetVersion, setObservationContext]);
+  }, [contextQuery.data?.data, pageVisible, observationContext, selectedSpotId, mapResetVersion, setObservationContext]);
 
   const scene = useMapForecastQuery({
     queryKey: [
