@@ -24,6 +24,14 @@ This on-demand Context is the entry point for Starward verification. It records 
 
 - Use Node.js 24+ and the installed pinned CLI. Install dependencies only when missing or changed; reading Context needs no installation.
 
+## User-Journey Verification
+
+- Apply this approach throughout the requested product scope. Derive checks from what users need to accomplish and the governing Screen Contracts; prioritize complete supported success paths, then relevant failure, cancellation and recovery behavior. Unexercised required journeys remain work even when current unit tests pass or no new code defect has been found.
+- Own the test prerequisites within authorization: recover task-owned services and prepare isolated data, account roles, content and usable media. Reuse existing setup tools, APIs and domain owners. An empty test database or stopped local service is a setup task, not an external blocker. Protect user data and unrelated environments; test records may satisfy publication rules inside the isolated environment without claiming real-world verification or permission.
+- Enter the actual product flow and observe its visible result, requests and applicable durable writes/readback. Administrative setup or seed data establishes preconditions; it cannot stand in for the user action being tested or prewrite its expected result. Use real media bytes when testing loading/export, and follow the owning runtime's isolation and evidence requirements.
+- Separate controlled functional evidence from actual platform, device, supplier and deployment evidence. Fixtures use the existing adapter boundaries. If a real prerequisite cannot be supplied, identify the exact affected checks and continue independent journeys or supported layers; do not generalize that gap into a whole-module or whole-goal blocker. Controlled success does not close the external evidence gap.
+- Fix observed discrepancies and rerun affected checks; reuse unchanged valid evidence and batch broader acceptance at useful milestones. Keep coverage and remaining obligations in the task's existing plan or ledger. This approach requires no new generic framework, mandatory report or per-action approval process.
+
 ## Universal Evidence Boundary
 
 - Cross-product check selection and completion decisions follow [Project-local Implementation Decisions](../../../AGENTS.md#project-local-implementation-decisions): trace changed responsibilities, sample meaningful implementation differences, and expand on findings. Reuse existing evidence and targeted checks; no per-page scenario catalogue, additional report or quality score is required. UI output, business outcomes and architecture effects need observations at their respective owners, not a common source-marker proxy.
