@@ -292,7 +292,7 @@ export default function SettingsPage() {
       if (responseCleared && stateSaved) {
         notify({ owner: "settings", placement: "floating", tone: "success",
           title: "临时缓存已清除",
-          body: "本地地图、筛选、搜索与夜空临时缓存已清除；远端数据和草稿保持不变。",
+          body: "远端数据和草稿保持不变。",
           dismissible: true, dedupeKey: "settings-cache-cleared" });
       } else {
         notify({ owner: "settings", placement: "inline", tone: "warning",
