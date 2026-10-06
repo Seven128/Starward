@@ -10,6 +10,8 @@ The adopted daytime layer composition is reached through the sole [Map resource 
 
 ## Cross-Control And State Invariants
 
+正式点详情查询由 Map 的可见页面与面板共同启用；隐藏地图不启动新的详情查询。返回同一地点时重新核对当前正式资料，不能以旧详情的短期新鲜窗口跳过读取，因为反馈审核和发布可能发生在离页期间。沿用现有查询缓存保留与刷新失败提示；该启用门控本身不承诺取消已经在途的请求。
+
 Map与Search的场景重试由`pages/map/context-restore.retryObservationScene`复用同一依赖规则：场景明确返回Context的404 NOT_FOUND/410 STALE_REJECTED时，先由现有Context恢复owner重验同一地点与观测时刻。恢复出的新ID、revision或fingerprint由当前Context owner安装并驱动对应场景，不再请求旧render的失效ID；恢复失败/陈旧或操作作用域退休不继续旧场景。普通数据/服务失败、401及403不据此重建Context，保留既有权限、网络及私有点恢复责任。源码检查与有界回归不认证目标WEAPP或真机恢复。
 
 FilterSheet的分类、选项与底部动作在各自原命中盒内显式垂直居中；分类保留左对齐，选项与“确定＋计数”组合保持水平居中。几何由`components/filter-sheet.scss`承担，不依赖原生Button的默认行高，也不改全局Button reset。保留现行14项、48/44px高度、换行、选中星标、禁用、草稿取消及清空/应用责任；修复源码接线不等于整个筛选面板、其它宽度/主题或连续过程验收。
