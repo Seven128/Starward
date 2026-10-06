@@ -50,7 +50,7 @@
 .event-modal__month { margin-top: 24Px; }
 .event-modal__month-label { margin-bottom: 12Px; display: flex; align-items: center; gap: 8Px; color: var(--text-primary); }
 .event-modal__month-label text:first-child { font-size: 18Px; font-weight: 600; }
-.event-modal__month-label text:last-child { color: var(--text-secondary); font-size: 12Px; letter-spacing: .6Px; }
+.event-modal__month-label text:last-child { color: var(--text-secondary); letter-spacing: .6Px; }
 .event-modal__row {
   box-sizing: border-box; min-height: 94Px; margin-bottom: 12Px;
   display: flex; align-items: stretch; overflow: hidden;
@@ -70,7 +70,6 @@
 .event-modal__date text:nth-child(2) { font-family: Georgia, serif; font-size: 28Px; font-weight: 400; line-height: 1.15; }
 .event-modal__row-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 5Px; }
 .event-modal__row-copy > text { overflow: hidden; color: var(--text-secondary); font-size: 13Px; text-overflow: ellipsis; white-space: nowrap; }
-.event-modal__row-copy > text:nth-child(2) { font-size: 12Px; }
 .event-modal__row-copy .event-modal__row-title { color: var(--text-primary); font-size: 16Px; font-weight: 600; line-height: 1.45; }
 .event-modal__row-main > .semantic-icon { width: 13Px; height: 13Px; flex-basis: 13Px; opacity: .62; }
 .event-modal__radio { width: 44Px; min-height: 92Px; flex: none; margin: 0; padding: 0; display: grid; place-items: center; background: transparent; }
@@ -101,6 +100,13 @@
 .event-modal-detail__axis text:first-child { left: 0; }
 .event-modal-detail__axis text:nth-child(2) { top: -20Px; left: 50%; transform: translateX(-50%); color: #806838; white-space: nowrap; }
 .event-modal-detail__axis text:last-child { right: 0; }
+.event-modal__month-label text:last-child,
+.event-modal__row-copy > text:nth-child(2),
+.event-modal-detail__axis text {
+  font-size: var(--type-metadata-size);
+  font-weight: var(--type-metadata-weight);
+  line-height: var(--type-metadata-line);
+}
 .event-modal-detail__section { margin-bottom: 18Px; padding: 16Px; display: flex; flex-direction: column; gap: 8Px; border: 0; border-radius: 13Px; background: #f5f6f8; }
 .event-modal-detail__section > .type-section { margin-bottom: 4Px; font-size: 16Px; font-weight: 600; }
 .event-modal-detail__context-row { min-height: 44Px; display: flex; align-items: center; justify-content: space-between; gap: 12Px; font-size: 14Px; }
