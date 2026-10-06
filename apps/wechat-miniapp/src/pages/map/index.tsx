@@ -2390,34 +2390,6 @@ export default function MapPage() {
               onClick={(event) => event.stopPropagation()}
             >
               <MapLayerSheet cloud={visibleLayer === "TOTAL_CLOUD"} revision={String(coverageExpanded)} footer={<>
-                <View className="map-layer-sheet__terrain-choice" aria-label="地形叠加选择">
-                  <Button
-                    className={`map-layer-sheet__choice map-layer-sheet__choice--terrain${terrainEnabled && !mapTerrainMissing ? " map-layer-sheet__choice--active" : ""}`}
-                    disabled={mapTerrainMissing}
-                    aria-checked={terrainEnabled && !mapTerrainMissing}
-                    aria-label={`地形${mapTerrainMissing ? "，当前地区暂无数据" : terrainEnabled ? "，已开启" : "，已关闭"}`}
-                    onClick={() => {
-                      const next = !terrainEnabled;
-                      setTerrainEnabled(next);
-                      setAnnouncement(next ? "正在加载有来源的地形叠加。" : "已关闭地形叠加。");
-                    }}
-                  >
-                    <SemanticIcon name="terrain" />
-                    <View className="map-layer-sheet__choice-copy">
-                      <Text className="map-layer-sheet__choice-title">地形</Text>
-                      <Text className="type-caption">高程派生阴影 · 可与下方图层组合</Text>
-                    </View>
-
-                    {terrainEnabled && !mapTerrainMissing ? <SemanticIcon name="check" className="map-layer-sheet__choice-check" /> : null}
-                  </Button>
-                  {terrainEnabled || mapTerrainMissing ? <Text className="map-layer-sheet__terrain-state">
-                    {terrain.isPending || terrain.imagePending ? "正在读取地形覆盖…" : mapTerrainFailed ? "地形暂时无法显示。" : mapTerrainMissing ? "当前地区暂无地形数据。" : terrain.data ? `${terrain.data.data.datasetVersion} · ${terrain.data.data.coverageLabel}` : ""}
-                  </Text> : null}
-                  {mapTerrainFailed ? <SoftButton label="重新读取地形" onClick={() => {
-                    setTerrainNativeRetry(value => value + 1);
-                    if (terrain.isError || terrain.refreshError || terrain.imageError || terrain.data?.data.failureCode) void terrain.refetch();
-                  }}>重试</SoftButton> : null}
-                </View>
                 <View className="map-layer-sheet__choices" role="radiogroup" aria-label="观测叠加选择">
                   {(["LIGHT", "TOTAL_CLOUD"] as const).map((overlay) => {
                     const selectedLayer = visibleLayer === overlay;
@@ -2440,12 +2412,40 @@ export default function MapPage() {
                             {overlay === "LIGHT" ? "夜光年度估算" : "选定时刻气象"}
                           </Text>
                         </View>
-                        {selectedLayer ? <SemanticIcon name="check" className="map-layer-sheet__choice-check" /> : null}
+                        {selectedLayer ? <SemanticIcon name="check" className="map-layer-sheet__choice-check" /> : <View className="map-layer-sheet__choice-unchecked" aria-hidden />}
                       </Button>
                     );
                   })}
                 </View>
               </>}>
+                <View className="map-layer-sheet__terrain-choice" aria-label="地形叠加选择">
+                  <Button
+                    className={`map-layer-sheet__terrain-row${terrainEnabled && !mapTerrainMissing ? " map-layer-sheet__terrain-row--active" : ""}`}
+                    disabled={mapTerrainMissing}
+                    aria-checked={terrainEnabled && !mapTerrainMissing}
+                    aria-label={`地形${mapTerrainMissing ? "，当前地区暂无数据" : terrainEnabled ? "，已开启" : "，已关闭"}`}
+                    onClick={() => {
+                      const next = !terrainEnabled;
+                      setTerrainEnabled(next);
+                      setAnnouncement(next ? "正在加载有来源的地形叠加。" : "已关闭地形叠加。");
+                    }}
+                  >
+                    <SemanticIcon name="terrain" />
+                    <View className="map-layer-sheet__choice-copy">
+                      <Text className="map-layer-sheet__choice-title">地形</Text>
+                      <Text className="type-caption">高程派生阴影 · 可与下方图层组合</Text>
+                    </View>
+
+                    <View className="map-layer-sheet__terrain-check" aria-hidden>{terrainEnabled && !mapTerrainMissing ? <SemanticIcon name="check" /> : null}</View>
+                  </Button>
+                  {terrainEnabled || mapTerrainMissing ? <Text className="map-layer-sheet__terrain-state">
+                    {terrain.isPending || terrain.imagePending ? "正在读取地形覆盖…" : mapTerrainFailed ? "地形暂时无法显示。" : mapTerrainMissing ? "当前地区暂无地形数据。" : terrain.data ? `${terrain.data.data.datasetVersion} · ${terrain.data.data.coverageLabel}` : ""}
+                  </Text> : null}
+                  {mapTerrainFailed ? <SoftButton label="重新读取地形" onClick={() => {
+                    setTerrainNativeRetry(value => value + 1);
+                    if (terrain.isError || terrain.refreshError || terrain.imageError || terrain.data?.data.failureCode) void terrain.refetch();
+                  }}>重试</SoftButton> : null}
+                </View>
                 {!mapTerrainMissing && terrain.data?.data.source ? <View data-control="map-terrain-source">
                   <SoftButton label="展开或收起地形来源与许可"
                     onClick={() => setTerrainSourceId(value => value === terrain.data!.data.source!.id ? null : terrain.data!.data.source!.id)}>
