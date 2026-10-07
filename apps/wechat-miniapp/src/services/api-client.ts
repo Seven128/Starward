@@ -695,6 +695,19 @@ export async function restoreObservationContext(
       throw error;
     if (context.privateProposal && (currentDraftUserId() !== context.privateProposal.ownerId || useAppStore.getState().mapResetVersion !== privateReset))
       throw new Error("账户已变化，请回到原账号核对待审点。");
+    return rebuildObservationContext(context, signal, privateReset);
+  }
+}
+
+/** Retired writes can still change their ID; resolve the confirmed snapshot under a new identity. */
+export function replaceRetiredObservationContext(context: ObservationContext, signal?: AbortSignal) {
+  return rebuildObservationContext(context, signal, context.privateProposal ? useAppStore.getState().mapResetVersion : null);
+}
+
+async function rebuildObservationContext(context: ObservationContext, signal: AbortSignal | undefined, privateReset: number | null) {
+    if (context.privateProposal && (currentDraftUserId() !== context.privateProposal.ownerId || useAppStore.getState().mapResetVersion !== privateReset))
+      throw new Error("账户已变化，请回到原账号核对待审点。");
+    if (context.privateProposal && context.routeOrigin !== null) throw new Error("observation_proposal_identity_invalid");
     let routeOriginContextId: string | null = null;
     let recoveredRouteOrigin: Awaited<ReturnType<typeof resolveObservationContext>> | null = null;
     if (context.routeOrigin) {
@@ -732,7 +745,6 @@ export async function restoreObservationContext(
         return recoveredRouteOrigin;
       throw recoveryError;
     }
-  }
 }
 
 export { observationContextRecoveryInput };

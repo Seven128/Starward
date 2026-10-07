@@ -266,6 +266,9 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
       options: {},
     },
     mini: {
+      // Keep Taro's conservative compression defaults. UTF-8 literals avoid
+      // expanding Chinese copy into six-byte ASCII escapes in the main bundle.
+      terser: { config: { output: { ascii_only: false } } },
       compile: { include: sharedSourceInclude },
       postcss: {
         pxtransform: { enable: true, config: {} },

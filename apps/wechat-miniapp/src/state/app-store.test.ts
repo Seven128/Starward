@@ -82,6 +82,89 @@ function loadStore(storage: { value: unknown; failWrites?: boolean; session?: un
   return { store: exports.useAppStore as typeof useAppStore, flush: () => { while (scheduled.length) scheduled.shift()!(); }, storage };
 }
 
+test("a departed edit retires its writable identity synchronously and a late completion cannot revive it", () => {
+  const { store, storage } = loadStore({ value: { accountOwnerId: "user:test", observationContext: validObservationContext } });
+  store.getState().selectSpot("spot:a" as never);
+  const edit = store.getState().beginObservationContextEdit(validObservationContext as never);
+  assert.ok(edit);
+  store.getState().selectSpot("spot:b" as never);
+  assert.equal(store.getState().retiredObservationContextId, validObservationContext.contextId);
+  assert.equal((storage.value as any).retiredObservationContextId, validObservationContext.contextId);
+  assert.equal((storage.value as any).pendingObservationContextEdit, undefined);
+  store.getState().selectSpot("spot:a" as never);
+  store.getState().finishObservationContextEdit(edit);
+  store.getState().setObservationContext({ ...validObservationContext, revision: 2, selectedAtUtc: "2026-08-30T14:00:00.000Z" } as never);
+  assert.equal(store.getState().observationContext?.revision, 1);
+  assert.equal(store.getState().beginObservationContextEdit(validObservationContext as never), null);
+  const fresh = { ...validObservationContext, contextId: "fresh-context" };
+  store.getState().setObservationContext(fresh as never);
+  assert.equal(store.getState().retiredObservationContextId, null);
+  assert.ok(store.getState().beginObservationContextEdit(fresh as never));
+});
+
+test("same-place cancellation keeps its edit; explicit request retirement and completed close retain a recovery hint", () => {
+  for (const close of [false, true]) {
+    const { store } = loadStore({ value: { accountOwnerId: "user:test", observationContext: validObservationContext } });
+    store.getState().selectSpot("spot:a" as never);
+    const edit = store.getState().beginObservationContextEdit(validObservationContext as never);
+    assert.ok(edit);
+    store.getState().openSourceLift("CONDITIONS");
+    store.getState().finishSourceLift("CONDITIONS", { restoreMap: true });
+    store.getState().selectSpot("spot:a" as never);
+    assert.equal(store.getState().pendingObservationContextEdit, edit);
+    if (close) store.getState().selectSpot(null);
+    else store.getState().retireObservationContextEdit();
+    assert.equal(store.getState().pendingObservationContextEdit, null);
+    assert.equal(store.getState().retiredObservationContextId, validObservationContext.contextId);
+  }
+});
+
+test("cold recovery honors only the hint matching its usable saved Context", () => {
+  for (const hint of [validObservationContext.contextId, "unrelated-context", null]) {
+    const { store } = loadStore({ value: { accountOwnerId: "user:test", observationContext: validObservationContext, retiredObservationContextId: hint } });
+    store.getState().hydrate();
+    assert.equal(store.getState().retiredObservationContextId, hint === validObservationContext.contextId ? hint : null);
+    assert.equal(store.getState().pendingObservationContextEdit, null);
+  }
+  const { store } = loadStore({ value: { accountOwnerId: "user:test", observationContext: { ...validObservationContext, privacyClass: "SESSION_PRECISE" }, retiredObservationContextId: validObservationContext.contextId } });
+  assert.equal(store.getState().observationContext, null);
+  assert.equal(store.getState().retiredObservationContextId, null);
+});
+
+test("account departure stashes the retired snapshot and old finish cannot clear a new account edit", () => {
+  const { store } = loadStore({ value: { accountOwnerId: "user:test", observationContext: validObservationContext }, accounts: {} });
+  const first = store.getState().beginObservationContextEdit(validObservationContext as never);
+  assert.ok(first);
+  store.getState().bindAccount("user:b");
+  const next = { ...validObservationContext, contextId: "b-context" };
+  store.getState().setObservationContext(next as never);
+  const second = store.getState().beginObservationContextEdit(next as never);
+  assert.ok(second);
+  store.getState().finishObservationContextEdit(first);
+  assert.equal(store.getState().pendingObservationContextEdit, second);
+  store.getState().bindAccount("user:test");
+  assert.equal(store.getState().retiredObservationContextId, validObservationContext.contextId);
+  assert.equal(store.getState().observationContext?.selectedAtUtc, validObservationContext.selectedAtUtc);
+  store.getState().resetMapToDefaultRegion();
+  assert.equal(store.getState().retiredObservationContextId, null);
+  assert.equal(store.getState().pendingObservationContextEdit, null);
+});
+
+test("source-lift restoration retains the retirement of its original snapshot", () => {
+  const { store } = loadStore({ value: { accountOwnerId: "user:test", observationContext: validObservationContext } });
+  store.getState().selectSpot("spot:a" as never);
+  store.getState().openSourceLift("FINDER");
+  const edit = store.getState().beginObservationContextEdit(validObservationContext as never);
+  assert.ok(edit);
+  store.getState().requestSpotOpen("spot:b" as never);
+  store.getState().setObservationContext({ ...validObservationContext, contextId: "b-context" } as never);
+  store.getState().finishSourceLift("FINDER", { restoreMap: true });
+  assert.equal(store.getState().observationContext?.contextId, validObservationContext.contextId);
+  assert.equal(store.getState().retiredObservationContextId, validObservationContext.contextId);
+  store.getState().setObservationContext({ ...validObservationContext, revision: 2 } as never);
+  assert.equal(store.getState().observationContext?.revision, 1);
+});
+
 test("same-account expired private Context survives actual hydrate and is hidden across accounts", () => {
   const context = { ...validObservationContext, schemaVersion: "observation-context-v3", privacyClass: "ACCOUNT_PRIVATE", routeOrigin: null,
     location: { kind: "PENDING_PROPOSAL", displayName: "冻结位置", wgs84: { system: "WGS84", latitude: 22.6, longitude: 114.2 } },

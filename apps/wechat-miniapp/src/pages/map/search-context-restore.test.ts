@@ -21,3 +21,22 @@ test('search recovery respects current context version, reset and page visibilit
   assert.equal(updates.length,scenario==='current'||scenario==='expired-id'?1:0,scenario);
  }
 });
+
+test('search replaces a retired writable identity from its confirmed snapshot and cannot present the old ID',async()=>{
+ const source=ts.createSourceFile('search.tsx',readFileSync(new URL('./search-page.tsx',import.meta.url),'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
+ const names=new Set(['contextQuery','restoredContext','activeContext','timeReference']);const statements:string[]=[];
+ const visit=(n:ts.Node)=>{if(ts.isVariableStatement(n)&&n.declarationList.declarations.some(d=>names.has(d.name.getText(source))))statements.push(n.getText(source));ts.forEachChild(n,visit);};visit(source);assert.equal(statements.length,names.size);
+ const confirmed={contextId:'a',revision:1,contextFingerprint:'first',location:{kind:'FORMAL_SPOT',spotId:'spot:a'},selectedAtUtc:'2026-10-07T16:00:00Z'};
+ for(const marked of [false,true]){
+  let options:any;const calls:string[]=[];
+  const result=vm.runInNewContext(ts.transpileModule(statements.join('\n')+'\n({activeContext,timeReference});',{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText,{
+   observationContext:confirmed,retiredObservationContextId:marked?'a':null,selectedSpotId:'spot:a',mapResetVersion:1,viewport:{center:{latitude:22,longitude:114}},pageVisible:true,
+   spotSelectionAllowsContextRestore:contextRestore.spotSelectionAllowsContextRestore,
+   useResourceQuery:(value:any)=>{options=value;return {data:{data:confirmed}};},
+   restoreObservationContext:async()=>{calls.push('read');return {data:confirmed};},
+   replaceRetiredObservationContext:async(value:any)=>{calls.push('replace');assert.equal(value.selectedAtUtc,confirmed.selectedAtUtc);return {data:{...confirmed,contextId:'fresh'}};},
+  });
+  assert.equal((await options.queryFn()).data.contextId,marked?'fresh':'a');
+  assert.deepEqual(calls,[marked?'replace':'read']);assert.equal(result.activeContext,marked?null:confirmed);assert.equal(result.timeReference,confirmed);
+ }
+});

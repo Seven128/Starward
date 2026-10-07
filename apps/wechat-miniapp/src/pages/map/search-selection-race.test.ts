@@ -25,7 +25,7 @@ for (const hasContext of [true, false]) test(`only the latest visible search sel
   const move = vm.runInNewContext(ts.transpileModule(ownerDeclaration.getText(source) + "\n" + declaration.getText(source) + "\nmoveMapReference;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     useAppStore: { getState: () => state }, Taro: { getCurrentPages: () => [ownerPage] }, sameContextVersion,
     selectionVersion, viewport: { zoom: 12 }, finderQuery: "测试",
-    activeContext: hasContext ? { localDate: "2026-09-06", selectedAtUtc: "2026-09-06T12:00:00Z", eventInstanceId: null, targetProfile: "DAILY" } : null,
+    timeReference: hasContext ? { localDate: "2026-09-06", selectedAtUtc: "2026-09-06T12:00:00Z", eventInstanceId: null, targetProfile: "DAILY" } : null,
     localDateForNow: () => "2026-09-15",
     setSuggestionsOpen() {}, selectSpot() { selections++; }, setViewport(value: unknown) { centers.push(value); }, addSearchHistory() {}, setFinderQuery() {},
     gcj02ToWgs84: (point: unknown) => point, currentTimezoneHint: () => "Asia/Shanghai",

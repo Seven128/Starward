@@ -30,7 +30,7 @@ function fixture(owner: string | null = "A") {
     Taro: { getCurrentPages: () => [pages.current], navigateBack: async () => { calls.push("back"); if (holdNavigation) await navigation.promise; else pages.current = {}; }, switchTab: async () => { calls.push("map"); pages.current = {}; } },
     handoff: { confirm: async () => true },
     choosePlatformLocation: async (options: { isCurrent(): boolean }) => { if (!options.isCurrent()) return null; calls.push("picker"); const selected = await native.promise; return options.isCurrent() ? selected : null; },
-    viewport: { center: { latitude: 22, longitude: 113 }, zoom: 12 }, activeContext: context, finderQuery: "原搜索",
+    viewport: { center: { latitude: 22, longitude: 113 }, zoom: 12 }, timeReference: context, finderQuery: "原搜索",
     gcj02ToWgs84: (p: unknown) => p, currentTimezoneHint: () => "Asia/Shanghai", localDateForNow: () => "2026-10-05",
     resolveObservationContext: (input: any) => { calls.push("resolve"); assert.equal(input.selectedAt, context.selectedAtUtc); return response.promise; },
     setObservationContext: (value: any) => { calls.push("context"); state.observationContext = value; },

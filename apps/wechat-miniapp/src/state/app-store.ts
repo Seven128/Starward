@@ -55,6 +55,12 @@ export type SourceLiftOwner = "FINDER" | "CONDITIONS";
 export type SourceLiftPhase =
   "IDLE" | "LIFTING" | "FOCUSED" | "RESTORING" | "CANCELLED";
 
+export interface ObservationContextEdit {
+  contextId: ObservationContext["contextId"];
+  ownerId: string | null;
+  mapResetVersion: number;
+}
+
 export interface SourceLiftRuntimeState {
   owner: SourceLiftOwner | null;
   phase: SourceLiftPhase;
@@ -64,6 +70,7 @@ export interface SourceLiftRuntimeState {
     selectedSpotId: SpotId | null;
     finderQuery: string;
     observationContext: ObservationContext | null;
+    retiredObservationContextId?: ObservationContext["contextId"] | null;
     analysisOverlay: AnalysisOverlay;
   } | null;
   finishOptions: {
@@ -83,6 +90,7 @@ export interface PersistedState {
   viewport: MapViewportState;
   finderQuery: string;
   observationContext: ObservationContext | null;
+  retiredObservationContextId?: ObservationContext["contextId"] | null;
   analysisOverlay: AnalysisOverlay;
   terrainEnabled: boolean;
   committedFilters: FilterState;
@@ -96,6 +104,8 @@ export type LocationState =
   "DEFAULT_REGION" | "AUTHORIZED" | "REQUESTING" | "GRANTED" | "DENIED" | "UNAVAILABLE";
 
 interface AppState extends PersistedState {
+  pendingObservationContextEdit: ObservationContextEdit | null;
+  retiredObservationContextId: ObservationContext["contextId"] | null;
   accountOwnerId: string | null;
   priorMode: Exclude<DisplayMode, "OBSERVATION">;
   draftFilters: FilterState;
@@ -125,6 +135,9 @@ interface AppState extends PersistedState {
   resetMapToDefaultRegion(): void;
   setFinderQuery(query: string): void;
   setObservationContext(context: ObservationContext | null): void;
+  beginObservationContextEdit(context: ObservationContext): ObservationContextEdit | null;
+  retireObservationContextEdit(): void;
+  finishObservationContextEdit(edit: ObservationContextEdit): void;
   setAnalysisOverlay(overlay: AnalysisOverlay): void;
   setTerrainEnabled(enabled: boolean): void;
   openSourceLift(owner: SourceLiftOwner): void;
@@ -234,6 +247,8 @@ function persisted(state: AppState): PersistedState {
     viewport: state.viewport,
     finderQuery: state.finderQuery,
     observationContext: durableContext,
+    retiredObservationContextId: durableContext?.contextId === state.retiredObservationContextId
+      ? state.retiredObservationContextId : null,
     analysisOverlay: state.analysisOverlay,
     terrainEnabled: state.terrainEnabled,
     committedFilters: state.committedFilters,
@@ -369,6 +384,24 @@ const BOOTSTRAP_FILTERS = cloneFilterState(
 );
 let runtimeHydrated = false;
 
+function usableRetiredContextId(saved: Partial<PersistedState>, ownerId: string | null) {
+  const context = usableObservationContext(saved.observationContext, ownerId);
+  return context && saved.retiredObservationContextId === context.contextId ? context.contextId : null;
+}
+
+/** A retired edit may still write its server ID; retain only the confirmed snapshot. */
+function retireContextEdit(state: AppState): Partial<AppState> {
+  const edit = state.pendingObservationContextEdit;
+  if (!edit) return {};
+  if (edit.ownerId !== state.accountOwnerId || edit.mapResetVersion !== state.mapResetVersion ||
+      edit.contextId !== state.observationContext?.contextId) return { pendingObservationContextEdit: null };
+  const origin = state.sourceLift.origin;
+  return { pendingObservationContextEdit: null, retiredObservationContextId: edit.contextId,
+    ...(origin?.observationContext?.contextId === edit.contextId
+      ? { sourceLift: { ...state.sourceLift, origin: { ...origin, retiredObservationContextId: edit.contextId } } } : {}),
+  };
+}
+
 export const useAppStore = create<AppState>((set, get) => {
   const commit = (
     patch: Partial<AppState> | ((state: AppState) => Partial<AppState>),
@@ -403,6 +436,8 @@ export const useAppStore = create<AppState>((set, get) => {
       BOOTSTRAP_STATE.observationContext,
       BOOTSTRAP_STATE.accountOwnerId ?? null,
     ),
+    retiredObservationContextId: usableRetiredContextId(BOOTSTRAP_STATE, BOOTSTRAP_STATE.accountOwnerId ?? null),
+    pendingObservationContextEdit: null,
     analysisOverlay: BOOTSTRAP_STATE.analysisOverlay ?? "NONE",
     terrainEnabled: BOOTSTRAP_STATE.terrainEnabled ?? false,
     committedFilters: BOOTSTRAP_FILTERS,
@@ -448,6 +483,8 @@ export const useAppStore = create<AppState>((set, get) => {
           saved.observationContext,
           saved.accountOwnerId ?? null,
         ),
+        retiredObservationContextId: usableRetiredContextId(saved, saved.accountOwnerId ?? null),
+        pendingObservationContextEdit: null,
         analysisOverlay: saved.analysisOverlay ?? "NONE",
         terrainEnabled: saved.terrainEnabled ?? false,
         committedFilters: cloneFilterState(
@@ -548,6 +585,8 @@ export const useAppStore = create<AppState>((set, get) => {
         viewport: { ...DEFAULT_VIEWPORT, center: { ...DEFAULT_VIEWPORT.center } },
         finderQuery: "",
         observationContext: null,
+        retiredObservationContextId: null,
+        pendingObservationContextEdit: null,
         analysisOverlay: "NONE",
         terrainEnabled: false,
         selectedSpotId: null,
@@ -567,12 +606,15 @@ export const useAppStore = create<AppState>((set, get) => {
       commit({ finderQuery });
     },
     setObservationContext(observationContext) {
+      if (observationContext && observationContext.contextId === get().retiredObservationContextId) return;
       if (observationContext?.schemaVersion === "observation-context-v3" && (!observationContext.privateProposal ||
           observationContext.privacyClass !== "ACCOUNT_PRIVATE" || observationContext.routeOrigin !== null || observationContext.location.kind === "MAP_POINT")) return;
       if (observationContext?.schemaVersion === "observation-context-v2" && (observationContext.privateProposal || observationContext.location.kind === "PENDING_PROPOSAL")) return;
       if (observationContext?.privateProposal && observationContext.privateProposal.ownerId !== get().accountOwnerId) return;
       set(state => ({
         observationContext,
+        ...(observationContext?.contextId !== state.observationContext?.contextId || !observationContext
+          ? { retiredObservationContextId: null, pendingObservationContextEdit: null } : {}),
         notifications: observationContext
           ? resolveObservationContextNotifications(state.notifications)
           : state.notifications,
@@ -587,6 +629,23 @@ export const useAppStore = create<AppState>((set, get) => {
         // The active session still remains correct in memory. Restart recovery
         // fails closed when storage is unavailable.
       }
+    },
+    beginObservationContextEdit(context) {
+      const state = get(), current = state.observationContext;
+      if (!current || state.pendingObservationContextEdit || current.contextId === state.retiredObservationContextId ||
+          current.contextId !== context.contextId || current.revision !== context.revision ||
+          current.contextFingerprint !== context.contextFingerprint) return null;
+      const edit = { contextId: context.contextId, ownerId: state.accountOwnerId, mapResetVersion: state.mapResetVersion };
+      set({ pendingObservationContextEdit: edit });return edit;
+    },
+    retireObservationContextEdit() {
+      const patch = retireContextEdit(get());set(patch);
+      if (patch.retiredObservationContextId) {
+        try { saveOwnedCurrent(get()); } catch { /* Keep the confirmed runtime reference when storage is unavailable. */ }
+      }
+    },
+    finishObservationContextEdit(edit) {
+      if (get().pendingObservationContextEdit === edit) set({ pendingObservationContextEdit: null });
     },
     setAnalysisOverlay(analysisOverlay) {
       commit({ analysisOverlay });
@@ -608,6 +667,7 @@ export const useAppStore = create<AppState>((set, get) => {
             selectedSpotId: state.selectedSpotId,
             finderQuery: state.finderQuery,
             observationContext: state.observationContext,
+            retiredObservationContextId: state.retiredObservationContextId,
             analysisOverlay: state.analysisOverlay,
           },
           finishOptions: { restoreMap: true, discardFilterDraft: true },
@@ -640,14 +700,23 @@ export const useAppStore = create<AppState>((set, get) => {
     finishSourceLift(owner, options) {
       set((state) => {
         if (state.sourceLift.owner !== owner) return {};
-        const origin = state.sourceLift.origin;
         const finishOptions = options ?? state.sourceLift.finishOptions;
+        const previousOrigin = state.sourceLift.origin;
+        const retire = finishOptions.restoreMap !== false && previousOrigin &&
+          (previousOrigin.selectedSpotId !== state.selectedSpotId || previousOrigin.observationContext?.contextId !== state.observationContext?.contextId)
+          ? retireContextEdit(state) : {};
+        const origin = retire.sourceLift?.origin ?? previousOrigin;
         return {
+          ...retire,
           ...(finishOptions.restoreMap !== false && origin
             ? {
                 viewport: origin.viewport,
                 selectedSpotId: origin.selectedSpotId,
                 observationContext: origin.observationContext,
+                retiredObservationContextId: origin.observationContext?.contextId === origin.retiredObservationContextId
+                  ? origin.retiredObservationContextId : null,
+                ...(origin.observationContext?.contextId !== state.observationContext?.contextId
+                  ? { pendingObservationContextEdit: null } : {}),
                 analysisOverlay: origin.analysisOverlay,
               }
             : {}),
@@ -665,13 +734,22 @@ export const useAppStore = create<AppState>((set, get) => {
       });
     },
     selectSpot(spotId) {
-      commit({ selectedSpotId: spotId });
+      const patch = get().selectedSpotId !== spotId ? retireContextEdit(get()) : {};
+      commit({ ...patch, selectedSpotId: spotId });
+      if (patch.retiredObservationContextId) {
+        try { saveOwnedCurrent(get()); } catch { /* Active retirement remains in memory. */ }
+      }
     },
     requestSpotOpen(spotId) {
+      const patch = get().selectedSpotId !== spotId ? retireContextEdit(get()) : {};
       commit((state) => ({
+        ...patch,
         selectedSpotId: spotId,
         spotOpenRequestVersion: state.spotOpenRequestVersion + 1,
       }));
+      if (patch.retiredObservationContextId) {
+        try { saveOwnedCurrent(get()); } catch { /* Active retirement remains in memory. */ }
+      }
     },
     openFilters() {
       set((state) => beginFilterDraft(state.committedFilters));
@@ -739,6 +817,8 @@ export const useAppStore = create<AppState>((set, get) => {
         viewport: DEFAULT_VIEWPORT,
         finderQuery: "",
         observationContext: null,
+        retiredObservationContextId: null,
+        pendingObservationContextEdit: null,
         analysisOverlay: "NONE",
         terrainEnabled: false,
         committedFilters: EMPTY_FILTER_STATE,
@@ -758,6 +838,7 @@ export const useAppStore = create<AppState>((set, get) => {
     },
     bindAccount(ownerId) {
       if (get().accountOwnerId === ownerId) return;
+      get().retireObservationContextEdit();
       const previous = get();
       if (previous.accountOwnerId) {
         try {
@@ -787,6 +868,8 @@ export const useAppStore = create<AppState>((set, get) => {
         viewport: retainAnonymousMap ? previous.viewport : { ...DEFAULT_VIEWPORT, ...saved.viewport },
         finderQuery: retainAnonymousMap ? previous.finderQuery : saved.finderQuery ?? "",
         observationContext: retainAnonymousMap ? previous.observationContext : usableObservationContext(saved.observationContext, ownerId),
+        retiredObservationContextId: retainAnonymousMap ? previous.retiredObservationContextId ?? null : usableRetiredContextId(saved, ownerId),
+        pendingObservationContextEdit: null,
         analysisOverlay: retainAnonymousMap ? previous.analysisOverlay : saved.analysisOverlay ?? "NONE",
         terrainEnabled: retainAnonymousMap ? previous.terrainEnabled : saved.terrainEnabled ?? false,
         committedFilters: filters,
@@ -840,6 +923,8 @@ export const useAppStore = create<AppState>((set, get) => {
         viewport: { ...DEFAULT_VIEWPORT },
         finderQuery: "",
         observationContext: null,
+        retiredObservationContextId: null,
+        pendingObservationContextEdit: null,
         analysisOverlay: "NONE",
         terrainEnabled: false,
         committedFilters: cloneFilterState(EMPTY_FILTER_STATE),
@@ -874,6 +959,8 @@ export function resetAppStoreForAcceptance(): PersistedState {
   ) as PersistedState;
   useAppStore.setState({
     ...next,
+    retiredObservationContextId: usableRetiredContextId(next, next.accountOwnerId ?? null),
+    pendingObservationContextEdit: null,
     draftFilters: cloneFilterState(next.committedFilters),
     filterSnapshot: cloneFilterState(next.committedFilters),
     filterSheetOpen: false,

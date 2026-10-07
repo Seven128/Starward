@@ -4,6 +4,8 @@ import test from 'node:test';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { userMapRegionEnd } from './map-region-event';
+import { sameContextVersion } from '../../services/observation-context-version';
+import { retryObservationScene } from './context-restore';
 function runtime() {
     const source = ts.createSourceFile('map.tsx', readFileSync(new URL('./index.tsx', import.meta.url), 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     const names = new Set(['invalidateMapPointIntent', 'dismissMapRegionFailure', 'resolveMapPoint', 'onRegionChange', 'resolveSpotContext', 'openDetail', 'refreshMap']);
@@ -24,11 +26,14 @@ function runtime() {
         resolve(v: any): void;
         reject(e: Error): void;
     }[] = [];
-    const state = () => ({ selectedSpotId: selected, mapResetVersion: resetVersion, observationContext: context, notifications: [...notices.values()], dismissNotification: (id: string) => notices.delete(id) });
+    const state = () => ({ selectedSpotId: selected, mapResetVersion: resetVersion, spotOpenRequestVersion: 0, observationContext: context, retiredObservationContextId: null,
+        retireObservationContextEdit() {}, notifications: [...notices.values()], dismissNotification: (id: string) => notices.delete(id) });
     const no = () => { };
     const scope: any = { useAppStore: { getState: state }, mapResetVersion: 0, nativeMap: { isCurrent: () => true }, currentDraftUserId: () => owner,
-        mapPointIntent: { current: 0 }, failedMapRegion: { current: null }, detailRequestGeneration: { current: 0 }, privateTransitionGeneration: { current: 0 }, lastHandledSelectedId: { current: null }, regionTimer: { current: null }, candidateCameraGuard: { current: null }, panelCloseTimer: { current: null }, extentBeforeLayer: { current: null }, markerTapAt: { current: 0 },
-        gcj02ToWgs84: ({ lat, lon }: any) => ({ lat, lon }), currentTimezoneHint: () => 'UTC', localDateForNow: () => '2026-09-26', activeContext: null, userMapRegionEnd, isMiniappRequestCancelled: () => false, errorMessage: (e: Error) => e.message,
+        mapPointIntent: { current: 0 }, failedMapRegion: { current: null }, detailRequestGeneration: { current: 0 }, privateTransitionGeneration: { current: 0 }, lastHandledSelectedId: { current: null }, lastHandledSpotOpenVersion: { current: 0 }, navigationEpoch: { current: 0 }, regionTimer: { current: null }, candidateCameraGuard: { current: null }, panelCloseTimer: { current: null }, extentBeforeLayer: { current: null }, markerTapAt: { current: 0 },
+        gcj02ToWgs84: ({ lat, lon }: any) => ({ lat, lon }), currentTimezoneHint: () => 'UTC', localDateForNow: () => '2026-09-26', activeContext: null, timeReference: null,
+        bootstrapReplacementBlocked: false, selected: null, bootstrapContext: { refetch: async () => undefined }, retryObservationScene, sameContextVersion,
+        userMapRegionEnd, isMiniappRequestCancelled: () => false, errorMessage: (e: Error) => e.message,
         selectSpot: (id: string) => selected = id, setObservationContext: (v: any) => context = v, leaveSelectedLocationForMapPoint: () => { left++; selected = null; }, setViewport: () => viewportWrites++,
         resolveObservationContext: (input: any) => new Promise((resolve, reject) => requests.push({ input, resolve, reject })),
         notify: (v: any) => notices.set(v.dedupeKey, { ...v, id: v.dedupeKey }), setPanelPhase: no, setPanelExtent: no, setPanelDragOffset: no, setSelectedFallback: no, setSelectedProposal: no, setBottomPresentation: no, setAnnouncement: no, setSpotContextAttempt: (v: any) => { attempt = typeof v === "function" ? v(attempt) : v; }, scene: { refetch: () => assert.fail("must not refresh old scene") },

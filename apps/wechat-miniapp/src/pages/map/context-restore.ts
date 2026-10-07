@@ -21,10 +21,16 @@ export async function restoreMapBootstrapContext(input: {
   restore: (context: ObservationContext, signal?: AbortSignal) => Promise<ApiEnvelope<ObservationContext>>;
   resolve: (request: ObservationContextResolveRequest, signal?: AbortSignal) => Promise<ApiEnvelope<ObservationContext>>;
   shouldFallback: (error: unknown) => boolean;
+  retiredContextId?: string | null;
+  replaceRetired?: (context: ObservationContext, signal?: AbortSignal) => Promise<ApiEnvelope<ObservationContext>>;
   signal?: AbortSignal;
 }) {
   if (!input.storedContext) return input.resolve(input.fallback, input.signal);
   try {
+    if (input.retiredContextId && input.storedContext.contextId === input.retiredContextId) {
+      if (!input.replaceRetired) throw new Error("retired_context_replacement_unavailable");
+      return await input.replaceRetired(input.storedContext, input.signal);
+    }
     return await input.restore(input.storedContext, input.signal);
   } catch (error) {
     if ((!input.storedContext.privateProposal && input.storedContext.location.kind !== "FORMAL_SPOT") || !input.shouldFallback(error))

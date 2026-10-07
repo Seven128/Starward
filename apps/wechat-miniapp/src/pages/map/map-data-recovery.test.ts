@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import test from "node:test";
 import ts from "typescript";
+import { layerSheetOwnsSceneRecovery } from "./map-layer-selection";
+import { retryObservationScene } from "./context-restore";
 
 // Exercise the actual page's projection, notification effect and recovery JSX.
 function renderFailure(owner: "scene" | "context", cached: boolean, visible = true,
@@ -11,7 +13,7 @@ function renderFailure(owner: "scene" | "context", cached: boolean, visible = tr
   const declarations: string[] = [];
   let effect = "", recovery = "";
   const visit = (node: ts.Node) => {
-    if (ts.isVariableDeclaration(node) && ["pageState", "mapContextFailed", "mapSceneFailed", "mapDataStale", "cloudLayerOwnsSceneError"].includes(node.name.getText(source)))
+    if (ts.isVariableDeclaration(node) && ["pageState", "mapContextFailed", "mapSceneFailed", "mapDataStale", "layerSheetOwnsSceneFailure"].includes(node.name.getText(source)))
       declarations.push(`const ${node.getText(source)};`);
     if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" && node.arguments[0]?.getText(source).includes('title: "地图数据异常"'))
       effect = node.arguments[0]!.getText(source);
@@ -32,6 +34,7 @@ function renderFailure(owner: "scene" | "context", cached: boolean, visible = tr
   const result = vm.runInNewContext(ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     scene, bootstrapContext, pageVisible: visible, activeContext: {}, spots: [{}],
     bottomPresentation: presentation, visibleLayer: layer, lightLayerState: "STALE", cloudTimeChoices: [],
+    layerSheetOwnsSceneRecovery, useAppStore: { getState: () => ({ notifications: [], dismissNotification() {} }) },
     isPermissionError: () => false, notify: (notice: { placement: string; tone: string }) => notices.push(notice),
   });
   return { ...result, notices };
@@ -68,15 +71,18 @@ async function retryMap(activeContext: object | null, mapContextFailed: boolean,
   visit(source);
   assert.ok(declaration);
   const calls: string[] = [], announcements: string[] = [], notices: unknown[] = [];
+  const confirmed = { contextId: "ctx:confirmed", revision: 1, contextFingerprint: "same" };
   const refetch = (owner: string) => async () => {
     calls.push(owner);
     const outcome = outcomes.shift();
-    return outcome === "error" ? undefined : { dataState: outcome === "stale" ? "STALE_USABLE" : "FRESH" };
+    return outcome === "error" ? undefined : { data: owner === "context" ? confirmed : {}, dataState: outcome === "stale" ? "STALE_USABLE" : "FRESH" };
   };
   const run = vm.runInNewContext(ts.transpileModule(`const ${declaration}; refreshMap;`, {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
-    activeContext, mapContextFailed,
+    activeContext: activeContext ? confirmed : null, mapContextFailed, bootstrapReplacementBlocked: false, selected: null,
+    navigationEpoch: { current: 0 }, retryObservationScene,
+    useAppStore: { getState: () => ({ accountOwnerId: "owner", mapResetVersion: 0 }) },
     failedMapRegion: { current: null }, mapPointIntent: { current: 0 },
     bootstrapContext: { refetch: refetch("context") }, scene: { refetch: refetch("scene") },
     setAnnouncement: (text: string) => announcements.push(text), notify: (notice: unknown) => notices.push(notice),

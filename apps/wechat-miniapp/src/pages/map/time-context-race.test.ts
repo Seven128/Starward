@@ -23,7 +23,9 @@ function runtime(bypassOwnershipGuard = false) {
     declaration = mutated;
   }
   const activeContext = { contextId: "a", revision: 1, contextFingerprint: "first", selectedAtUtc: "2026-09-06T12:00:00Z" };
-  const state = { mapResetVersion: 0, selectedSpotId: "a", observationContext: { ...activeContext } };
+  const state = { mapResetVersion: 0, selectedSpotId: "a", observationContext: { ...activeContext },
+    retiredObservationContextId: null as string | null,
+    beginObservationContextEdit: () => ({}), finishObservationContextEdit() {} };
   const generation = { current: 0 }, busy = { current: false };
   const contexts: unknown[] = [], failures: unknown[] = [], saving: boolean[] = [];
   const requests: { resolve(value: unknown): void; reject(error: Error): void }[] = [];
@@ -51,7 +53,7 @@ function assertNoStaleEffects(map: ReturnType<typeof runtime>) {
 }
 
 test("late time success and failure cannot affect a replaced spot, reset, or context revision", async () => {
-  for (const change of ["spot", "reset", "revision", "selection-generation"] as const) {
+  for (const change of ["spot", "reset", "revision", "selection-generation", "retired-aba"] as const) {
     for (const failure of [false, true]) {
       const map = runtime();
       const pending = map.commit(0);
@@ -59,6 +61,7 @@ test("late time success and failure cannot affect a replaced spot, reset, or con
       if (change === "reset") map.state.mapResetVersion++;
       if (change === "revision") map.state.observationContext.revision++;
       if (change === "selection-generation") map.generation.current++;
+      if (change === "retired-aba") map.state.retiredObservationContextId = map.state.observationContext.contextId;
       if (failure) map.requests[0]!.reject(new Error("late"));
       else map.requests[0]!.resolve({ data: { selectedAtUtc: "late" } });
       await pending;

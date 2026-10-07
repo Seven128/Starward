@@ -7,9 +7,9 @@ import * as recovery from "./observation-context-recovery";
 import type { ObservationContext } from "@starward/miniapp-contracts";
 
 const ast = ts.createSourceFile("api-client.ts", readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
-const names = ["resolveObservationContext", "getObservationContext", "restoreObservationContext", "updateObservationContext"];
+const names = ["resolveObservationContext", "getObservationContext", "restoreObservationContext", "updateObservationContext", "rebuildObservationContext", "replaceRetiredObservationContext"];
 const functions = ast.statements.filter(node => ts.isFunctionDeclaration(node) && names.includes(node.name?.text ?? ""));
-assert.equal(functions.length, 4);
+assert.equal(functions.length, names.length);
 const code = ts.transpileModule(functions.map(node => node.getText(ast).replace(/^export /u, "")).join("\n") + `\n({${names.join(",")}});`,
   { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
 class ApiError extends Error { constructor(readonly code: string, readonly statusCode = 409) { super(code); } }

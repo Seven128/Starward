@@ -43,6 +43,7 @@ import {
   MiniappApiError,
   resolveObservationContext,
   restoreObservationContext,
+  replaceRetiredObservationContext,
   searchPlaces,
 } from "@/services/api-client";
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
@@ -134,6 +135,7 @@ export function MapSearchSurface() {
   const committedFilters = useAppStore((state) => state.committedFilters);
   const filterSheetOpen = useAppStore((state) => state.filterSheetOpen);
   const observationContext = useAppStore((state) => state.observationContext);
+  const retiredObservationContextId = useAppStore((state) => state.retiredObservationContextId);
   const selectedSpotId = useAppStore((state) => state.selectedSpotId);
   const analysisOverlay = useAppStore((state) => state.analysisOverlay);
   const preferences = useAppStore((state) => state.preferences);
@@ -179,11 +181,14 @@ export function MapSearchSurface() {
       observationContext?.contextId,
       observationContext?.contextFingerprint,
       observationContext?.revision,
+      retiredObservationContextId,
       Number(viewport.center.latitude.toFixed(5)),
       Number(viewport.center.longitude.toFixed(5)),
     ],
     queryFn: (signal) => {
-      if (observationContext) return restoreObservationContext(observationContext, signal);
+      if (observationContext) return observationContext.contextId === retiredObservationContextId
+        ? replaceRetiredObservationContext(observationContext, signal)
+        : restoreObservationContext(observationContext, signal);
       const point = gcj02ToWgs84({
         lat: viewport.center.latitude,
         lon: viewport.center.longitude,
@@ -211,9 +216,11 @@ export function MapSearchSurface() {
     enabled: pageVisible,
     staleTime: 60_000,
   });
-  const activeContext = spotSelectionAllowsContextRestore(observationContext, selectedSpotId)
+  const restoredContext = spotSelectionAllowsContextRestore(observationContext, selectedSpotId)
     ? contextQuery.data?.data ?? null
     : observationContext;
+  const activeContext = retiredObservationContextId && restoredContext?.contextId === retiredObservationContextId ? null : restoredContext;
+  const timeReference = activeContext ?? observationContext;
 
   useEffect(() => {
     const incoming = contextQuery.data?.data;
@@ -222,6 +229,7 @@ export function MapSearchSurface() {
     if (
       pageVisible &&
       incoming &&
+      incoming.contextId !== currentState.retiredObservationContextId &&
       currentState.mapResetVersion === mapResetVersion &&
       spotSelectionAllowsContextRestore(observationContext, currentState.selectedSpotId) &&
       canApplyContextRestore(observationContext, current, incoming) &&
@@ -450,11 +458,11 @@ export function MapSearchSurface() {
             source: "MAP_VIEWPORT",
             timezoneHint: currentTimezoneHint(),
           },
-          localDate: activeContext?.localDate ?? localDateForNow(currentTimezoneHint()),
-          ...(activeContext ? {
-            selectedAt: activeContext.selectedAtUtc,
-            eventInstanceId: activeContext.eventInstanceId,
-            targetProfile: activeContext.targetProfile,
+          localDate: timeReference?.localDate ?? localDateForNow(currentTimezoneHint()),
+          ...(timeReference ? {
+            selectedAt: timeReference.selectedAtUtc,
+            eventInstanceId: timeReference.eventInstanceId,
+            targetProfile: timeReference.targetProfile,
           } : {}),
         });
         if (!intent.current()) return;

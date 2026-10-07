@@ -16,7 +16,7 @@ import { ContributionEditor, type ContributionCandidatePreview, type Contributio
 import { panelIdentityMinimumHeight, panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import { restoreMapBootstrapContext, retryObservationScene, spotSelectionAllowsContextRestore } from "./context-restore";
-import { canApplyContextRestore } from "@/services/observation-context-version";
+import { canApplyContextRestore, sameContextVersion } from "@/services/observation-context-version";
 import { FloatingNotificationHost } from "@/components/notification";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import Taro, { useDidHide, useDidShow, useResize } from "@tarojs/taro";
@@ -57,6 +57,7 @@ import {
   getSpotOverview,
   resolveObservationContext,
   restoreObservationContext,
+  replaceRetiredObservationContext,
   updateObservationContext,
 } from "@/services/api-client";
 import { useAppStore, type AnalysisOverlay } from "@/state/app-store";
@@ -197,6 +198,7 @@ export default function MapPage() {
   const observationContext = useAppStore(
     (state) => state.observationContext,
   );
+  const retiredObservationContextId = useAppStore((state) => state.retiredObservationContextId);
   const analysisOverlay = useAppStore((state) => state.analysisOverlay);
   const terrainEnabled = useAppStore((state) => state.terrainEnabled);
   const preferences = useAppStore((state) => state.preferences);
@@ -380,7 +382,10 @@ export default function MapPage() {
   const lastHandledSpotOpenVersion = useRef(0);
   const detailRequestGeneration = useRef(0);
   const privateTransitionGeneration = useRef(0);
-  useEffect(() => () => { detailRequestGeneration.current += 1; }, []);
+  useEffect(() => () => {
+    useAppStore.getState().retireObservationContextEdit();
+    detailRequestGeneration.current += 1;
+  }, []);
   const extentBeforeLayer = useRef<{
     extent: SpotPanelExtent;
     selectedSpotId: string | null;
@@ -403,6 +408,15 @@ export default function MapPage() {
     return () => clearTimeout(timer);
   }, [finderQuery]);
 
+  // A retained spot attempt owns its POST (including retry); bootstrap must not
+  // cancel it through the shared resolve request key. Cold restoration has no
+  // attempt/summary yet, so it remains owned by bootstrap.
+  const bootstrapReplacementBlocked = Boolean(retiredObservationContextId && selectedSpotId &&
+    lastHandledSpotOpenVersion.current === spotOpenRequestVersion &&
+    (spotContextAttempt?.spotId === selectedSpotId || lastHandledSelectedId.current === selectedSpotId));
+  // Store selection may render before the local attempt. Invalidate that
+  // render's fetch as soon as explicit point resolution takes ownership.
+  const bootstrapPointIntent = mapPointIntent.current;
   const bootstrapContext = useResourceQuery({
     queryKey: [
       "map-observation-context",
@@ -411,10 +425,18 @@ export default function MapPage() {
       observationContext?.contextId,
       observationContext?.contextFingerprint,
       observationContext?.revision,
+      retiredObservationContextId,
       Number(viewport.center.latitude.toFixed(5)),
       Number(viewport.center.longitude.toFixed(5)),
     ],
     queryFn: (signal) => {
+      const current = useAppStore.getState();
+      const explicitReplacementOwned = current.retiredObservationContextId && current.selectedSpotId &&
+        lastHandledSpotOpenVersion.current === current.spotOpenRequestVersion &&
+        lastHandledSelectedId.current === current.selectedSpotId;
+      if (bootstrapReplacementBlocked || explicitReplacementOwned || bootstrapPointIntent !== mapPointIntent.current || current.selectedSpotId !== selectedSpotId ||
+          current.mapResetVersion !== mapResetVersion || !sameContextVersion(observationContext, current.observationContext))
+        throw new Error("context_selection_resolution_pending");
       const point = gcj02ToWgs84({
         lat: viewport.center.latitude,
         lon: viewport.center.longitude,
@@ -439,6 +461,8 @@ export default function MapPage() {
         } as const;
       return restoreMapBootstrapContext({
         storedContext: observationContext,
+        retiredContextId: retiredObservationContextId,
+        replaceRetired: replaceRetiredObservationContext,
         fallback,
         restore: restoreObservationContext,
         resolve: resolveObservationContext,
@@ -447,12 +471,15 @@ export default function MapPage() {
         ...(signal ? { signal } : {}),
       });
     },
-    enabled: pageVisible,
+    enabled: pageVisible && !bootstrapReplacementBlocked,
     staleTime: 60_000,
   });
-  const activeContext = spotSelectionAllowsContextRestore(observationContext, selectedSpotId)
+  const restoredContext = (spotSelectionAllowsContextRestore(observationContext, selectedSpotId) ||
+    Boolean(retiredObservationContextId && !bootstrapReplacementBlocked))
     ? bootstrapContext.data?.data ?? null
     : observationContext;
+  const activeContext = retiredObservationContextId && restoredContext?.contextId === retiredObservationContextId ? null : restoredContext;
+  const timeReference = activeContext ?? observationContext;
   useEffect(() => {
     navigationEpoch.current += 1;
     return () => { navigationEpoch.current += 1; };
@@ -464,6 +491,7 @@ export default function MapPage() {
     if (
       pageVisible &&
       bootstrapContext.data?.data &&
+      bootstrapContext.data.data.contextId !== currentState.retiredObservationContextId &&
       currentState.mapResetVersion === mapResetVersion &&
       currentState.selectedSpotId === selectedSpotId &&
       spotSelectionAllowsContextRestore(observationContext, currentState.selectedSpotId) &&
@@ -502,9 +530,9 @@ export default function MapPage() {
     queryKey: [
       "map-scene",
       accountOwnerId,
-      activeContext?.contextId,
-      activeContext?.contextFingerprint,
-      activeContext?.revision,
+      (activeContext ?? observationContext)?.contextId,
+      (activeContext ?? observationContext)?.contextFingerprint,
+      (activeContext ?? observationContext)?.revision,
       committedFilters,
       debouncedFinderQuery,
       Number(viewport.center.latitude.toFixed(4)),
@@ -518,8 +546,11 @@ export default function MapPage() {
       preferences.capturePreference,
       analysisOverlay,
     ],
-    queryFn: (signal) =>
-      getMapScene(
+    queryFn: (signal) => {
+      // Retain the confirmed cached markers while selection resolves, without
+      // making requests against the retired server identity (even on refetch).
+      if (!activeContext) throw new Error("context_selection_resolution_pending");
+      return getMapScene(
         activeContext!.contextId,
         committedFilters,
         debouncedFinderQuery,
@@ -535,7 +566,8 @@ export default function MapPage() {
         mapLayerKindForOverlay(analysisOverlay),
         activeContext!.weatherView.cloudLayer,
         signal,
-      ),
+      );
+    },
     enabled: pageVisible && Boolean(activeContext),
     staleTime: 60_000,
   });
@@ -646,8 +678,8 @@ export default function MapPage() {
   const timeFrames = scene.data?.data.timeFrames ?? [];
   const cloudTimeChoices = cloudTimeFrameChoices(timeFrames);
   const projectedAt = timePreviewing
-    ? timeFrames[panelPreviewFrameIndex]?.atUtc ?? activeContext?.selectedAtUtc ?? ""
-    : activeContext?.selectedAtUtc ?? "";
+    ? timeFrames[panelPreviewFrameIndex]?.atUtc ?? timeReference?.selectedAtUtc ?? ""
+    : timeReference?.selectedAtUtc ?? "";
   const projectedFrame = useMemo(
     () => mapTimeFrameAt(scene.data?.data.timeFrames ?? [], projectedAt),
     [scene.data?.data.timeFrames, projectedAt],
@@ -903,19 +935,19 @@ export default function MapPage() {
     notify({ owner: "map", placement: "floating", tone: "info", title: "地图显示异常",
       body: "地图暂时无法显示，可继续搜索观星点或重试。", dedupeKey: "map-runtime-failed" });
   }, [mapRuntimeError, notify, pageVisible]);
-  const contextTimeLabel = activeContext
-    ? formatContextTime(activeContext.selectedAtUtc, activeContext.timezone)
+  const contextTimeLabel = timeReference
+    ? formatContextTime(timeReference.selectedAtUtc, timeReference.timezone)
     : bootstrapContext.isError ? "解析失败" : "正在解析";
   const mapDateOptions = useMemo(
-    () => observationDateOptions(new Date(), activeContext?.timezone ?? currentTimezoneHint()),
-    [activeContext?.timezone],
+    () => observationDateOptions(new Date(), timeReference?.timezone ?? currentTimezoneHint()),
+    [timeReference?.timezone],
   );
-  const selectedMapCivilDate = activeContext
-    ? civilDateForInstant(activeContext.selectedAtUtc, activeContext.timezone)
+  const selectedMapCivilDate = timeReference
+    ? civilDateForInstant(timeReference.selectedAtUtc, timeReference.timezone)
     : localDateForNow();
   const mapTodayCivilDate = mapDateOptions[7] ?? selectedMapCivilDate;
-  const presentedMapCivilDate = activeContext
-    ? civilDateForInstant(projectedAt, activeContext.timezone)
+  const presentedMapCivilDate = timeReference
+    ? civilDateForInstant(projectedAt, timeReference.timezone)
     : selectedMapCivilDate;
   const visibleTemporalFailure = temporalFailure && activeContext &&
     temporalFailure.contextId === activeContext.contextId &&
@@ -975,10 +1007,10 @@ export default function MapPage() {
         source,
         timezoneHint: currentTimezoneHint(),
       },
-      localDate: activeContext?.localDate ?? localDateForNow(),
-      selectedAt: activeContext?.selectedAtUtc ?? null,
-      eventInstanceId: activeContext?.eventInstanceId ?? null,
-      targetProfile: activeContext?.targetProfile ?? "DAILY",
+      localDate: timeReference?.localDate ?? localDateForNow(),
+      selectedAt: timeReference?.selectedAtUtc ?? null,
+      eventInstanceId: timeReference?.eventInstanceId ?? null,
+      targetProfile: timeReference?.targetProfile ?? "DAILY",
     }).catch((error: unknown) => {
       if (!isCurrent() || isMiniappRequestCancelled(error)) return null;
       throw error;
@@ -1025,15 +1057,18 @@ export default function MapPage() {
 
   const resolveSpotContext = async (spot: SpotSummary) => {
     const intent = invalidateMapPointIntent();
+    useAppStore.getState().retireObservationContextEdit();
     const requestGeneration = ++detailRequestGeneration.current;
+    const current = useAppStore.getState().observationContext;
     const isCurrentRequest = () =>
       intent === mapPointIntent.current &&
       requestGeneration === detailRequestGeneration.current &&
       useAppStore.getState().selectedSpotId === spot.spotId &&
-      useAppStore.getState().mapResetVersion === mapResetVersion;
-    const current = useAppStore.getState().observationContext;
+      useAppStore.getState().mapResetVersion === mapResetVersion &&
+      sameContextVersion(current, useAppStore.getState().observationContext);
     if (
       current?.location.kind === "FORMAL_SPOT" &&
+      current.contextId !== useAppStore.getState().retiredObservationContextId &&
       current.location.spotId === spot.spotId
     ) {
       setSpotContextAttempt(null);
@@ -1043,12 +1078,18 @@ export default function MapPage() {
     }
     setSpotContextAttempt({ spotId: spot.spotId, pending: true, error: null });
     try {
-      const response = await resolveObservationContext({
+      const replacement = current && current.contextId === useAppStore.getState().retiredObservationContextId
+        ? await replaceRetiredObservationContext(current) : null;
+      if (!isCurrentRequest()) return;
+      const reference = replacement?.data ?? current;
+      const sameOriginalSpot = current?.location.kind === "FORMAL_SPOT" && current.location.spotId === spot.spotId;
+      const response = replacement && ((reference?.location.kind === "FORMAL_SPOT" && reference.location.spotId === spot.spotId) ||
+        (sameOriginalSpot && reference?.location.kind === "MAP_POINT")) ? replacement : await resolveObservationContext({
         location: { kind: "FORMAL_SPOT", spotId: spot.spotId },
         routeOriginContextId:
-          current?.location.kind === "MAP_POINT"
-            ? current.contextId
-            : current?.routeOrigin?.contextId ?? null,
+          reference?.location.kind === "MAP_POINT"
+            ? reference.contextId
+            : reference?.routeOrigin?.contextId ?? null,
         localDate: current?.localDate ?? localDateForNow(spot.timezone),
         selectedAt: current?.selectedAtUtc ?? null,
         eventInstanceId: current?.eventInstanceId ?? null,
@@ -1056,17 +1097,25 @@ export default function MapPage() {
       });
       if (!isCurrentRequest()) return;
       setObservationContext(response.data);
+      if (sameOriginalSpot && response.data.location.kind === "MAP_POINT") {
+        selectSpot(null);setSelectedFallback(null);setBottomPresentation("none");
+        notify({ owner: "map", placement: "floating", tone: "warning", title: "原观星点已失效",
+          body: "已回到原地图位置。", dismissible: true, dedupeKey: `map-removed-location:${current!.contextId}` });
+        return;
+      }
       dismissMapRegionFailure();
       setAnnouncement(`已选择${spot.name}；正在加载同一观测时刻的点位信息。`);
     } catch (error) {
-      if (!isCurrentRequest() || isMiniappRequestCancelled(error)) return;
-      setSpotContextAttempt({ spotId: spot.spotId, pending: false, error });
+      if (!isCurrentRequest()) return;
+      setSpotContextAttempt({ spotId: spot.spotId, pending: false,
+        error: isMiniappRequestCancelled(error) ? new Error("观测条件更新已中断，请重试。") : error });
     }
   };
 
   const openDetail = async (spot: SpotSummary) => {
     privateTransitionGeneration.current += 1;
     lastHandledSelectedId.current = spot.spotId;
+    lastHandledSpotOpenVersion.current = useAppStore.getState().spotOpenRequestVersion;
     if (panelCloseTimer.current) clearTimeout(panelCloseTimer.current);
     extentBeforeLayer.current = null;
     setPanelPhase("idle");
@@ -1546,6 +1595,10 @@ export default function MapPage() {
   const refreshMap = async () => {
     setAnnouncement("正在刷新当前区域");
     try {
+      if (bootstrapReplacementBlocked && selected) {
+        await resolveSpotContext(selected);
+        return;
+      }
       let failedRegion = failedMapRegion.current;
       if (failedRegion && (failedRegion.owner !== currentDraftUserId() ||
         failedRegion.resetVersion !== useAppStore.getState().mapResetVersion)) {
@@ -1604,6 +1657,7 @@ export default function MapPage() {
         current.selectedSpotId === requestSelection &&
         detailRequestGeneration.current === requestGeneration &&
         current.observationContext?.contextId === activeContext.contextId &&
+        current.observationContext.contextId !== current.retiredObservationContextId &&
         current.observationContext.revision === activeContext.revision &&
         current.observationContext.contextFingerprint === activeContext.contextFingerprint;
     };
@@ -1612,6 +1666,8 @@ export default function MapPage() {
     setPanelPreviewFrameIndex(frameIndex);
     setTimePreviewing(false);
     if (Date.parse(nextTime) === Date.parse(activeContext.selectedAtUtc)) return;
+    const edit = useAppStore.getState().beginObservationContextEdit(activeContext);
+    if (!edit) return;
     timeRequestBusy.current = true;
     setTimeSaving(true);
     try {
@@ -1646,6 +1702,7 @@ export default function MapPage() {
         mapResetVersion,
       });
     } finally {
+      useAppStore.getState().finishObservationContextEdit(edit);
       timeRequestBusy.current = false;
       setTimeSaving(false);
     }
@@ -1731,10 +1788,13 @@ export default function MapPage() {
         current.selectedSpotId === requestSelection &&
         detailRequestGeneration.current === requestGeneration &&
         current.observationContext?.contextId === activeContext.contextId &&
+        current.observationContext.contextId !== current.retiredObservationContextId &&
         current.observationContext.revision === activeContext.revision &&
         current.observationContext.contextFingerprint === activeContext.contextFingerprint;
     };
     if (!isCurrentDateRequest()) return;
+    const edit = useAppStore.getState().beginObservationContextEdit(activeContext);
+    if (!edit) return;
     setTemporalFailure(null);
     setTimePreviewing(false);
     timeRequestBusy.current = true;
@@ -1764,6 +1824,7 @@ export default function MapPage() {
         mapResetVersion,
       });
     } finally {
+      useAppStore.getState().finishObservationContextEdit(edit);
       timeRequestBusy.current = false;
       setTimeSaving(false);
     }
@@ -2492,10 +2553,10 @@ export default function MapPage() {
                       }}
                     />
                     <MapTimeRuler
-                      nightLabel={activeContext ? observationNightLabel(activeContext.localDate, projectedAt, activeContext.timezone, mapTodayCivilDate) : undefined}
+                      nightLabel={timeReference ? observationNightLabel(timeReference.localDate, projectedAt, timeReference.timezone, mapTodayCivilDate) : undefined}
                       frames={cloudTimeChoices.map(choice => choice.frame)}
-                      selectedAt={activeContext?.selectedAtUtc ?? ""}
-                      timezone={activeContext?.timezone ?? "Asia/Shanghai"}
+                      selectedAt={timeReference?.selectedAtUtc ?? ""}
+                      timezone={timeReference?.timezone ?? "Asia/Shanghai"}
                       disabled={!activeContext || !cloudTimeChoices.length || timeSaving}
                       emptyMessage={scene.isPending && !scene.data ? "正在读取云量时间切片。" : mapSceneFailed ? "云量时间切片暂不可用，请重试地图数据。" : "当前日期没有可用的云量时间切片。"}
                       onPreview={(index) => {

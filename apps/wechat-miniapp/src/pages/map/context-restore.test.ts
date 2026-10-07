@@ -5,7 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import * as contextRestore from "./context-restore.ts";
 import { restoreMapBootstrapContext, retryObservationScene, observationSceneNeedsContextRestore } from "./context-restore.ts";
-import { canApplyContextRestore } from "../../services/observation-context-version.ts";
+import { canApplyContextRestore, sameContextVersion } from "../../services/observation-context-version.ts";
 import type { ApiEnvelope, MapSceneData, ObservationContext } from "@starward/miniapp-contracts";
 
 const id = (value: string) => value as ObservationContext["contextId"];
@@ -55,6 +55,24 @@ test("bootstrap does not replace a formal spot on transport or permission failur
 
 const envelope = <Data>(data: Data, dataState = "FRESH") => ({ data, dataState } as ApiEnvelope<Data>);
 const sceneResult = envelope({ spots: [{ spotId: "spot:kept" }] } as unknown as MapSceneData);
+
+test("a retired writable Context is rebuilt from its confirmed snapshot instead of reading its late server time", async () => {
+  const confirmed = { ...initial, location: { kind: "FORMAL_SPOT", spotId: "spot:a" }, localDate: "2026-10-07",
+    selectedAtUtc: "2026-10-07T16:00:00Z" } as ObservationContext;
+  const late = { ...confirmed, revision: confirmed.revision + 1, localDate: "2026-10-08", selectedAtUtc: "2026-10-08T16:00:00Z" };
+  const fresh = { ...confirmed, contextId: id("fresh-a") };
+  const calls: string[] = [];
+  const input = { storedContext: confirmed, retiredContextId: confirmed.contextId, fallback: {} as never,
+    restore: async () => { calls.push("old-id-read");return envelope(late); },
+    replaceRetired: async (snapshot: ObservationContext) => { calls.push("fresh-id-resolve");assert.equal(snapshot, confirmed);return envelope(fresh); },
+    resolve: async () => { throw Error("must retain the formal snapshot rather than defaulting to the viewport"); },
+    shouldFallback: () => false,
+  };
+  const result = await restoreMapBootstrapContext(input);
+  assert.equal(result.data.contextId, fresh.contextId);
+  assert.equal(result.data.selectedAtUtc, confirmed.selectedAtUtc);
+  assert.deepEqual(calls, ["fresh-id-resolve"]);
+});
 
 test("a map or search retry restores an expired cached Context before loading its scene", async () => {
   for (const sceneFailure of [{ statusCode: 404, code: "NOT_FOUND" }, { statusCode: 410, code: "STALE_REJECTED" }]) {
@@ -130,7 +148,7 @@ test("a pending formal selection keeps its confirmed time through bootstrap and 
     if (ts.isVariableStatement(node)) {
       for (const item of node.declarationList.declarations) {
         if (item.name.getText(source) === "resolveSpotContext") resolution = node.getText(source);
-        if (item.name.getText(source) === "activeContext") active = node.getText(source);
+        if (["restoredContext", "activeContext"].includes(item.name.getText(source))) active += node.getText(source) + "\n";
       }
     }
     ts.forEachChild(node, visit);
@@ -138,11 +156,12 @@ test("a pending formal selection keeps its confirmed time through bootstrap and 
   visit(source);assert.ok(restoration && resolution && active);
   const confirmed = { ...initial, location: { kind: "FORMAL_SPOT", spotId: "spot:a" }, localDate: "2026-10-07", selectedAtUtc: "2026-10-07T16:00:00Z", eventInstanceId: null, targetProfile: "DAILY", routeOrigin: null };
   const late = { ...confirmed, revision: 2, localDate: "2026-10-08", selectedAtUtc: "2026-10-08T16:00:00Z" };
-  const state = { selectedSpotId: "spot:b", observationContext: confirmed, mapResetVersion: 1 };
+  const state = { selectedSpotId: "spot:b", observationContext: confirmed, mapResetVersion: 1, retireObservationContextEdit() {} };
   const installed: unknown[] = [], requests: any[] = [], mapPointIntent = { current: 0 };
   const scope = {
     bootstrapContext: { data: { data: late } }, observationContext: confirmed, selectedSpotId: "spot:b", pageVisible: true, mapResetVersion: 1,
-    useAppStore: { getState: () => state }, canApplyContextRestore, spotSelectionAllowsContextRestore: contextRestore.spotSelectionAllowsContextRestore,
+    retiredObservationContextId: null, bootstrapReplacementBlocked: false,
+    useAppStore: { getState: () => state }, canApplyContextRestore, sameContextVersion, spotSelectionAllowsContextRestore: contextRestore.spotSelectionAllowsContextRestore,
     setObservationContext(value: any) { state.observationContext = value; installed.push(value); }, selectSpot() {}, setSelectedFallback() {}, setSelectedProposal() {}, setBottomPresentation() {}, notify() {},
     mapPointIntent, invalidateMapPointIntent: () => ++mapPointIntent.current, detailRequestGeneration: { current: 0 },
     setSpotContextAttempt() {}, dismissMapRegionFailure() {}, setAnnouncement() {}, localDateForNow: () => "unexpected", isMiniappRequestCancelled: () => false,
@@ -170,4 +189,105 @@ test("spot selection permits initial, unselected and same-place recovery includi
   assert.equal(allows(formal, "spot:b" as typeof selected), false);
   assert.equal(allows(mapPoint, selected), false);
   assert.equal(allows(pending, selected), false);
+});
+
+test("explicit spot resolution owns the shared POST while cold recovery can supply a safe scene reference", () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const names = new Set(["bootstrapReplacementBlocked", "bootstrapPointIntent", "bootstrapContext", "restoredContext", "activeContext"]);
+  const statements: string[] = [];
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableStatement(node) && node.declarationList.declarations.some(item => names.has(item.name.getText(source)))) statements.push(node.getText(source));
+    ts.forEachChild(node, visit);
+  };visit(source);assert.equal(statements.length, names.size);
+  const confirmed = { ...initial, location: { kind: "FORMAL_SPOT", spotId: "spot:a" }, selectedAtUtc: "2026-10-07T16:00:00Z" };
+  const fresh = { ...confirmed, contextId: "fresh-a" };
+  for (const scenario of ["pending-b", "failed-a", "cold-a", "cold-b", "return-a", "closed", "rebound-a"]) {
+    const attempt = scenario === "rebound-a" ? { spotId: "spot:a", pending: true } : scenario.startsWith("pending") ? { spotId: "spot:b", pending: true } : scenario.startsWith("failed") ? { spotId: "spot:a", pending: false, error: Error("failed") }
+      : scenario === "return-a" ? { spotId: "spot:b", pending: false, error: Error("old failure") } : null;
+    let options: any;
+    const result = vm.runInNewContext(ts.transpileModule(statements.join("\n") + "\n({bootstrapReplacementBlocked, activeContext});",
+      { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+      mapPointIntent: { current: 0 }, lastHandledSelectedId: { current: scenario === "rebound-a" ? "spot:a" : null },
+      lastHandledSpotOpenVersion: { current: 1 }, spotOpenRequestVersion: scenario === "rebound-a" ? 2 : 1,
+      observationContext: confirmed, retiredObservationContextId: confirmed.contextId,
+      selectedSpotId: scenario === "closed" ? null : scenario.endsWith("b") ? "spot:b" : "spot:a", spotContextAttempt: attempt,
+      accountOwnerId: "user:test", mapResetVersion: 1, viewport: { center: { latitude: 22, longitude: 114 } }, pageVisible: true,
+      spotSelectionAllowsContextRestore: contextRestore.spotSelectionAllowsContextRestore,
+      sameContextVersion, useAppStore: { getState: () => ({ selectedSpotId: scenario === "closed" ? null : scenario.endsWith("b") ? "spot:b" : "spot:a", mapResetVersion: 1, spotOpenRequestVersion: scenario === "rebound-a" ? 2 : 1, observationContext: confirmed }) },
+      useResourceQuery: (value: any) => { options = value;return { data: { data: fresh } }; },
+    });
+    const blocked = Boolean(attempt && scenario !== "return-a" && scenario !== "rebound-a");
+    assert.equal(result.bootstrapReplacementBlocked, blocked, scenario);
+    assert.equal(options.enabled, !blocked, scenario);
+    if (blocked) assert.throws(() => options.queryFn(), /context_selection_resolution_pending/u, "manual refetch cannot cancel the selected POST");
+    else assert.equal(result.activeContext.contextId, fresh.contextId, "cold mismatched selection can load its summary using a safe confirmed-time reference");
+  }
+});
+
+test("an intermediate bootstrap render cannot dispatch after explicit selection takes ownership", () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const names = new Set(["bootstrapReplacementBlocked", "bootstrapPointIntent", "bootstrapContext"]), statements: string[] = [];
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableStatement(node) && node.declarationList.declarations.some(item => names.has(item.name.getText(source)))) statements.push(node.getText(source));
+    ts.forEachChild(node, visit);
+  };visit(source);
+  const pointIntent = { current: 0 }, confirmed = { ...initial, location: { kind: "FORMAL_SPOT", spotId: "spot:a" } };
+  let options: any, replacements = 0;
+  vm.runInNewContext(ts.transpileModule(statements.join("\n"), { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    mapPointIntent: pointIntent, lastHandledSelectedId: { current: null }, lastHandledSpotOpenVersion: { current: 0 }, spotOpenRequestVersion: 0,
+    observationContext: confirmed, retiredObservationContextId: confirmed.contextId,
+    selectedSpotId: "spot:b", spotContextAttempt: null, accountOwnerId: "user:test", mapResetVersion: 1,
+    viewport: { center: { latitude: 22, longitude: 114 } }, pageVisible: true, sameContextVersion,
+    useAppStore: { getState: () => ({ selectedSpotId: "spot:b", mapResetVersion: 1, observationContext: confirmed }) },
+    useResourceQuery: (value: any) => { options = value;return {}; },
+    gcj02ToWgs84: (value: any) => value, currentTimezoneHint: () => "Asia/Shanghai", localDateForNow: () => "2026-10-07",
+    restoreMapBootstrapContext: () => { replacements++;return {}; }, replaceRetiredObservationContext() {},
+    restoreObservationContext() {}, resolveObservationContext() {},
+  });
+  assert.equal(options.enabled, true, "selection has committed before local attempt state is rendered");
+  pointIntent.current++;
+  assert.throws(() => options.queryFn(), /context_selection_resolution_pending/u);
+  assert.equal(replacements, 0, "bootstrap must not cancel the explicit replacement POST");
+});
+
+test("a new intermediate render reads the synchronous explicit owner before local attempt arrives", () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const names = new Set(["bootstrapReplacementBlocked", "bootstrapPointIntent", "bootstrapContext"]), statements: string[] = [];
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableStatement(node) && node.declarationList.declarations.some(item => names.has(item.name.getText(source)))) statements.push(node.getText(source));
+    ts.forEachChild(node, visit);
+  };visit(source);
+  const confirmed = { ...initial, location: { kind: "FORMAL_SPOT", spotId: "spot:a" } };
+  let options: any, replacements = 0;
+  vm.runInNewContext(ts.transpileModule(statements.join("\n"), { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    mapPointIntent: { current: 1 }, lastHandledSelectedId: { current: "spot:b" }, lastHandledSpotOpenVersion: { current: 0 }, spotOpenRequestVersion: 0,
+    observationContext: confirmed, retiredObservationContextId: confirmed.contextId,
+    selectedSpotId: "spot:b", spotContextAttempt: null, accountOwnerId: "user:test", mapResetVersion: 1,
+    viewport: { center: { latitude: 22, longitude: 114 } }, pageVisible: true, sameContextVersion,
+    useAppStore: { getState: () => ({ selectedSpotId: "spot:b", retiredObservationContextId: confirmed.contextId, spotOpenRequestVersion: 0, mapResetVersion: 1, observationContext: confirmed }) },
+    useResourceQuery: (value: any) => { options = value;return {}; },
+    gcj02ToWgs84: (value: any) => value, currentTimezoneHint: () => "Asia/Shanghai", localDateForNow: () => "2026-10-07",
+    restoreMapBootstrapContext: () => { replacements++;return {}; }, replaceRetiredObservationContext() {},
+    restoreObservationContext() {}, resolveObservationContext() {},
+  });
+  assert.equal(options.enabled, false, "a claimed selection must not create an artificial bootstrap error");
+  assert.throws(() => options.queryFn(), /context_selection_resolution_pending/u);
+  assert.equal(replacements, 0);
+});
+
+test("retired selection retains cached formal markers without requesting its unsafe Context", () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const names = new Set(["scene", "spots"]), statements: string[] = [];
+  const visit = (node: ts.Node) => { if (ts.isVariableStatement(node) && node.declarationList.declarations.some(d => names.has(d.name.getText(source)))) statements.push(node.getText(source));ts.forEachChild(node, visit); };
+  visit(source);assert.equal(statements.length, names.size);
+  const confirmed = { ...initial, location: { kind: "FORMAL_SPOT", spotId: "spot:a" } };
+  const cached = { data: { spots: [{ spotId: "spot:a" }, { spotId: "spot:b" }] } };let options: any, requests = 0;
+  const result = vm.runInNewContext(ts.transpileModule(statements.join("\n") + "\nspots;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    activeContext: null, observationContext: confirmed, accountOwnerId: "user:test", committedFilters: {}, debouncedFinderQuery: "隔离测试",
+    viewport: { center: { latitude: 22, longitude: 114 }, zoom: 12 }, preferences: {}, analysisOverlay: "TOTAL_CLOUD", pageVisible: true,
+    useMapForecastQuery: (value: any) => { options = value;assert.equal(value.queryKey[2], confirmed.contextId);return { data: cached }; },
+    getMapScene: () => { requests++;throw Error("unsafe old request"); },
+  });
+  assert.equal(result.length, 2);assert.equal(result[0].spotId, "spot:a");assert.equal(result[1].spotId, "spot:b");
+  assert.equal(options.enabled, false);assert.throws(() => options.queryFn(), /context_selection_resolution_pending/u);assert.equal(requests, 0);
 });
