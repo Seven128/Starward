@@ -129,3 +129,30 @@ test("Map empty/error panel keeps concise recovery instead of rendering provider
     assert.ok(text.includes(pageState === "EMPTY" ? "搜索" : "重试"));
   }
 });
+
+test("a retained point resolution owns its pending and cancelled feedback without a phantom map loader", () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let condition = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isConditionalExpression(node)) {
+      let body = node.whenTrue;
+      while (ts.isParenthesizedExpression(body)) body = body.expression;
+      if (ts.isJsxSelfClosingElement(body) && body.tagName.getText(source) === "StatusPanel" && body.getText(source).includes("state={pageState}"))
+        condition = node.condition.getText(source);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  assert.ok(condition);
+  const shown = (pageState: string, blocked: boolean, attempt: { pending: boolean } | null, presentation = "spot-panel") => vm.runInNewContext(condition, {
+    pageState, bootstrapReplacementBlocked: blocked, visibleSpotContextAttempt: attempt,
+    bottomPresentation: presentation, mapDataStale: false, layerSheetOwnsSceneFailure: false,
+  });
+  assert.equal(shown("LOADING", true, { pending: false }), false, "cancelled selection has an owned retry, no running map request");
+  assert.equal(shown("LOADING", true, { pending: true }), false, "pending selection already explains its own loading");
+  assert.equal(shown("LOADING", false, null), true, "normal cold map loading remains visible");
+  assert.equal(shown("LOADING", true, null), true, "an unclaimed recovery cannot silently disappear");
+  assert.equal(shown("ERROR", true, { pending: false }), true, "a separate scene failure retains recovery");
+  assert.equal(shown("LOADING", true, { pending: false }, "layer-sheet"), true, "the hidden spot panel cannot own visible layer feedback");
+  assert.equal(shown("LOADING", true, { pending: false }, "none"), true, "closing the spot panel keeps map feedback");
+});

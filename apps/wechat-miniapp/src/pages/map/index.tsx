@@ -2303,6 +2303,7 @@ export default function MapPage() {
             /> : null}
             {!(pageState === "EMPTY" && bottomPresentation === "spot-panel") &&
             !(pageState === "EMPTY" && mapDataStale) &&
+            !(pageState === "LOADING" && bottomPresentation === "spot-panel" && bootstrapReplacementBlocked && visibleSpotContextAttempt) &&
             pageState !== "READY" &&
             pageState !== "PARTIAL" &&
             pageState !== "STALE" && !(layerSheetOwnsSceneFailure && pageState === "ERROR") ? (
