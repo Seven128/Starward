@@ -515,6 +515,7 @@ export function MapSearchSurface() {
   const commitFilter = (optionId: FilterOptionId) => {
     const option = FILTER_OPTIONS.find((item) => item.id === optionId);
     if (!option) return;
+    blurSearch();
     cancelFilters();
     toggleDraftFilter(option.id);
     applyFilters();
