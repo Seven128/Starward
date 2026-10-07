@@ -720,7 +720,7 @@ export function MapSearchSurface() {
           ) : null}
         </View>
 
-          {formalSpots.length > 0 || searchState === "READY" || searchState === "PARTIAL" ? <>
+          <View className="spot-search-results" style={{ display: formalSpots.length > 0 || searchState === "READY" || searchState === "PARTIAL" ? "block" : "none" }}>
           <View className="spot-search-result-summary">
             <Text className="type-caption">{queryUnconfirmed ? "搜索结果更新中"
               : expiredEmptyFilter ? "筛选结果待核验"
@@ -736,7 +736,7 @@ export function MapSearchSurface() {
             {other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
               : showPartitionEmpty ? <Text className="type-caption spot-search-empty">{expiredEmptyFilter ? "刷新资料后重新核验候选点。" : "没有其他符合或待核验的观星点。"}</Text> : null}
           </SearchResultPartition>
-          </> : null}
+          </View>
           {activeFilterGroups.includes("LESS_CLOUD") ? <SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
         </ScrollView>
       </View>
