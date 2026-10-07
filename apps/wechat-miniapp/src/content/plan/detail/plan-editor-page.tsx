@@ -31,6 +31,7 @@ import {
   getPlans,
   getSkyReport,
   MiniappApiError,
+  replaceRetiredObservationContext,
   resolveObservationContext,
   restoreObservationContext,
   setPlanChecklistCompletion,
@@ -107,6 +108,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const observationContext = useAppStore(
     (state) => state.observationContext,
   );
+  const retiredObservationContextId = useAppStore(state => state.retiredObservationContextId);
   const viewport = useAppStore((state) => state.viewport);
   const explicitNew = router.params.new === "1";
   const initialSelection = initialPlanSelection(requestedPlanId, plans, explicitNew);
@@ -157,6 +159,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           observationContext?.contextId,
           observationContext?.contextFingerprint,
           observationContext?.revision,
+          retiredObservationContextId,
           Number(viewport.center.latitude.toFixed(5)),
           Number(viewport.center.longitude.toFixed(5)),
         ],
@@ -207,13 +210,17 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         };
         return restoreSnapshot();
       }
+      const replacement = observationContext && useAppStore.getState().retiredObservationContextId === observationContext.contextId
+        ? await replaceRetiredObservationContext(observationContext, signal) : null;
+      const browsingReference = replacement?.data ?? observationContext;
       if (requestedSpotId) return resolveObservationContext({
         location: { kind: "FORMAL_SPOT", spotId: requestedSpotId },
         localDate: observationContext?.localDate ?? today(),
-        ...(observationContext?.location.kind === "MAP_POINT" ? { routeOriginContextId: observationContext.contextId }
-          : observationContext?.routeOrigin ? { routeOriginContextId: observationContext.routeOrigin.contextId } : {}),
+        ...(browsingReference?.location.kind === "MAP_POINT" ? { routeOriginContextId: browsingReference.contextId }
+          : browsingReference?.routeOrigin ? { routeOriginContextId: browsingReference.routeOrigin.contextId } : {}),
         targetProfile: "DAILY",
       }, signal);
+      if (replacement) return replacement;
       if (observationContext)
         return restoreObservationContext(observationContext, signal);
       const point = gcj02ToWgs84({

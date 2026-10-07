@@ -212,6 +212,7 @@ The fourteen current conditions share one committed filter state and a sheet-loc
 ## Plan editing, dates and resource revision
 
 The plan’s draft owns its explicit destination, observing start/end, departure arrangement, event links and checklist changes. Browser Observation Context can initialize a new plan but is not the save authority; keep the existing server re-resolution from submitted plan location/time and versioned snapshot, including recoverable origin. Returning from an event or another place must not overwrite the draft. Saving a valid plan does not require weather success; valid plan dates are independent from the -7/+15 weather/sky browsing target and from published event coverage. Date input validity and end-after-start/departure-before-start still apply. Lack of event/weather coverage is unavailable evidence, not a reason to delete or retime a saved plan.
+ 新建计划从My或点位入口消费浏览Context时，已退休身份必须通过现有重建接口恢复原确认位置、日期、时刻及路线起点；不能GET复活旧可写ID的迟到修改。计划只使用该本地参照，显式点位入口在新起点上解析目标点，不安装到Map、不覆盖草稿；已保存计划仍从版本化快照独立恢复，浏览退休提示不改变其快照。
 
 The 2026-09-09 rules for Search, My ongoing plans, arrival/reminder states, sky context and contribution transitions are confirmed product requirements. Their scoped revisions are now consolidated through each page’s ADOPTED.md / CURRENT.md entry under the user’s instruction; unchanged regions retain their previous authority. Production implementation and WEAPP validation remain outstanding.
 
