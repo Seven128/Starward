@@ -80,7 +80,7 @@ export function SettingsControls({
       <Text className="settings-section-title">提醒</Text>
       <View className="settings-card settings-card--group">
         <ToggleField id="departure-condition-reminder" label="观星计划提醒"
-          description="清单与时间在计划中设置" icon="conditions" iconTone="gold"
+          description="清单与时间在计划中设置" icon="bell" iconTone="gold"
           checked={preferences.departureConditionReminder}
           onChange={(checked) => updatePreference("departureConditionReminder", checked)} />
         <ToggleField id="contribution-status-reminder" label="审核结果提醒"

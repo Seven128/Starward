@@ -47,6 +47,7 @@ const retainedLegacyIconFiles = [
 ] as const;
 // These legacy night/observation icons are used only by content pages.
 const contentLegacyIconFiles = [
+  "bell-night.svg", "bell-observation.svg",
   "download-night.svg", "download-observation.svg",
   "trash-2-night.svg", "trash-2-observation.svg",
   "wind-night.svg", "wind-observation.svg",
