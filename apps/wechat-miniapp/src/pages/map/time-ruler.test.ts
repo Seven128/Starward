@@ -198,6 +198,75 @@ test("the astronomy presentation cannot borrow another spot or a retired Context
   }
 });
 
+test("a published spot keeps its guide entry while Context-dependent actions are unavailable", () => {
+  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.BinaryExpression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken && node.right.getText(source).includes('className="spot-panel__guide-row"')) expression = node;
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  // Both && and ?: are supported here because the current host uses a nullable branch.
+  let conditional: ts.ConditionalExpression | undefined;
+  const findConditional = (node: ts.Node) => {
+    if (ts.isConditionalExpression(node) && node.whenTrue.getText(source).includes('className="spot-panel__guide-row"')) conditional = node;
+    ts.forEachChild(node, findConditional);
+  };
+  findConditional(source);
+  const selected = conditional ?? expression;
+  assert.ok(selected);
+  const renderRow = (cloudReady: boolean, status: string) => vm.runInNewContext(ts.transpileModule(`(${selected.getText(source)});`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
+  }).outputText, {
+    cloudReady, effectiveSpot: { status }, onEvidence() {}, Button: "button", View: "view", Text: "text",
+    React: { createElement: (type: string, props: object, ...children: Element[]) => ({ type, props, children: children.flat() }) },
+  });
+  const waiting = renderRow(false, "PUBLISHED");
+  assert.ok(waiting, "pending Context cannot remove a published spot's existing document row");
+  assert.equal(waiting.children.find((child: Element) => child.type === "button").props.disabled, true);
+  assert.equal(renderRow(true, "PUBLISHED").children.find((child: Element) => child.type === "button").props.disabled, false);
+  assert.equal(renderRow(false, "TEMPORARILY_CLOSED").children.find((child: Element) => child.type === "button").props.disabled, true);
+  assert.equal(renderRow(true, "TEMPORARILY_CLOSED").children.find((child: Element) => child.type === "button").props.disabled, false);
+  for (const status of ["DATA_INSUFFICIENT", "UNPUBLISHED", "RETIRED"]) assert.equal(renderRow(false, status), null);
+});
+
+test("waiting warning geometry never becomes old evidence or crosses the observation identity", () => {
+  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.Expression | undefined, setup: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(source) === "retainWarningSpace") expression = node.initializer;
+    if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" && node.arguments[0]?.getText(source).includes("setWarningPresentation")) setup = node.arguments[0];
+    ts.forEachChild(node, visit);
+  };
+  visit(source);assert.ok(expression && setup);
+  const settledReport = {};
+  const waiting = { timeContext: {}, context: {}, skyReport: null, skyPending: true, skyRefreshing: false, timeContextPending: false, contextError: null, skyError: null, timeRulerIdentity: "a", warningPresentation: { identity: "a", height: 120, report: settledReport } };
+  assert.equal(vm.runInNewContext(expression.getText(source), waiting), true);
+  for (const changes of [{timeRulerIdentity:"b"}, {timeContext:null}, {skyPending:false}, {contextError:{}}, {skyError:{}}, {warningPresentation:{identity:"a",height:0}}]) {
+    assert.equal(vm.runInNewContext(expression.getText(source), {...waiting,...changes}), false);
+  }
+  assert.equal(vm.runInNewContext(expression.getText(source), {...waiting,skyPending:false,context:null}), false);
+  assert.equal(vm.runInNewContext(expression.getText(source), {...waiting,skyPending:false,context:null,timeContextPending:true}), true);
+  assert.equal(vm.runInNewContext(expression.getText(source), {...waiting,skyPending:false,skyReport:settledReport}), false);
+  assert.equal(vm.runInNewContext(expression.getText(source), {...waiting,skyPending:false,skyReport:settledReport,skyRefreshing:true}), true);
+  assert.equal(vm.runInNewContext(expression.getText(source), {...waiting,skyPending:false,skyReport:{}}), true,
+    "a new report retains the space only until its actual inner warning content is measured");
+  const timers = new Map<number, () => void>(), callbacks: ((rows: unknown[]) => void)[] = [], measurements: unknown[] = [];
+  let serial=0;
+  const query = {select:()=>query,boundingClientRect:()=>query,exec:(callback:(rows:unknown[])=>void)=>callbacks.push(callback)};
+  const effect = vm.runInNewContext(ts.transpileModule(`(${setup.getText(source)});`, {compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText, {
+    visible:true,skyReport:{},skyRefreshing:false,settling:false,extent:"large",timeRulerIdentity:"a",
+    setTimeout:(callback:()=>void)=>{timers.set(++serial,callback);return serial;},clearTimeout:(id:number)=>timers.delete(id),
+    Taro:{createSelectorQuery:()=>query},setWarningPresentation:(update:(previous:null)=>unknown)=>measurements.push(update(null)),
+  }) as () => (() => void);
+  const cancelled = effect();for(const callback of timers.values())callback();timers.clear();cancelled();
+  callbacks.shift()!([{height:120}]);assert.deepEqual(measurements,[],"late geometry cannot revive a departed owner");
+  effect();for(const callback of timers.values())callback();timers.clear();
+  callbacks.shift()!([{height:120}]);assert.deepEqual(JSON.parse(JSON.stringify(measurements)),[{identity:"a",height:120,report:{}}]);
+  effect();for(const callback of timers.values())callback();timers.clear();
+  callbacks.shift()!([null]);assert.deepEqual(JSON.parse(JSON.stringify(measurements.at(-1))),{identity:"a",height:0,report:{}},"a confirmed warning-free result clears the previous geometry");
+});
+
 test("a new observation or a confirmed empty response cannot reuse the previous axis", () => {
   for (const changes of [{ identity: "account-a:context-b:night-08", pending: true }, { pending: false }]) {
     const ruler = render();

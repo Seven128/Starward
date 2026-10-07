@@ -2427,6 +2427,8 @@ export default function MapPage() {
                 favoritePending={favoritePending}
                 context={detailContextReady ? activeContext : null}
                 timeContext={spotTimeContext}
+                timeContextPending={!detailContextReady && !mapContextFailed &&
+                  Boolean(visibleSpotContextAttempt?.pending || bootstrapContext.isFetching)}
                 astronomyAt={projectedAt}
                 skyReport={spotSkyReport}
                 skyPending={spotSkyProjection.pending}

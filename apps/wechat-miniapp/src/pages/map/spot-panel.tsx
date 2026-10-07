@@ -10,7 +10,7 @@ import type {
   SpotDetail,
   SpotSummary,
 } from "@starward/miniapp-contracts";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Taro, { useResize } from "@tarojs/taro";
 import { useAppStore } from "@/state/app-store";
 import { WeatherAlerts } from "@/components/weather-alerts";
@@ -165,6 +165,7 @@ export function SpotInformationPanel({
   favoritePending,
   context,
   timeContext,
+  timeContextPending,
   astronomyAt,
   skyReport,
   skyPending,
@@ -219,6 +220,7 @@ export function SpotInformationPanel({
   favoritePending: boolean;
   context: ObservationContext | null;
   timeContext: ObservationContext | null;
+  timeContextPending: boolean;
   astronomyAt: string;
   skyReport: SkyReport | null;
   skyPending: boolean;
@@ -288,12 +290,29 @@ export function SpotInformationPanel({
     setViewerIndex(null);
   }, [visible]);
   const [layoutVersion, setLayoutVersion] = useState(0);
+  const largeText = useAppStore(state => state.preferences.largeText);
+  // The report reference only invalidates geometry; no previous evidence is rendered.
+  const [warningPresentation, setWarningPresentation] = useState<{ identity: string; height: number; report: SkyReport } | null>(null);
+  const onWarningLayoutChange = useCallback(() => setLayoutVersion(value => value + 1), []);
+  useEffect(() => {
+    if (!visible || !skyReport || skyRefreshing || settling || extent === "small") return;
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      Taro.createSelectorQuery().select("#spot-panel-astronomy .weather-alerts").boundingClientRect().exec(results => {
+        if (cancelled) return;
+        const height = (results[0] as { height?: number } | null)?.height ?? 0;
+        if (Number.isFinite(height) && height >= 0) setWarningPresentation(previous =>
+          previous?.identity === timeRulerIdentity && previous.height === height && previous.report === skyReport
+            ? previous : { identity: timeRulerIdentity, height, report: skyReport });
+      });
+    }, 80);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [visible, spot.spotId, timeRulerIdentity, skyReport, skyRefreshing, settling, extent, largeText, layoutVersion]);
   const scrollMeasureTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => {
     if (scrollMeasureTimer.current !== null) clearTimeout(scrollMeasureTimer.current);
     scrollMeasureTimer.current = null;
   }, [visible, spot.spotId, extent]);
-  const largeText = useAppStore(state => state.preferences.largeText);
   useResize(() => setLayoutVersion(value => value + 1));
   useEffect(() => {
     lastScroll.current = { spotId: spot.spotId, top: 0 };
@@ -382,6 +401,9 @@ export function SpotInformationPanel({
       context?.location.kind === "FORMAL_SPOT" &&
       context.location.spotId === effectiveSpot.spotId,
   );
+  const retainWarningSpace = Boolean(timeContext && !contextError && !skyError &&
+    (skyPending || timeContextPending || skyRefreshing || (skyReport && warningPresentation?.report !== skyReport)) &&
+    warningPresentation?.identity === timeRulerIdentity && warningPresentation.height > 0);
   const detailPageState: PageState = isPermissionError(detailError)
     ? "PERMISSION_DENIED"
     : "ERROR";
@@ -447,14 +469,15 @@ export function SpotInformationPanel({
           className="spot-panel__scroll spot-panel__scroll--full-bleed-plan"
           id="spot-panel-scroll"
           scrollY={extent !== "small"}
-          scrollTop={restoredScrollTop ?? lastScroll.current.top}
+          {...(restoredScrollTop === undefined ? {} : { scrollTop: restoredScrollTop })}
           scrollIntoView={scrollAnchor}
           scrollWithAnimation={false}
           onScroll={event => {
             const top = event.detail.scrollTop;
             if (!visible || !Number.isFinite(top)) return;
             lastScroll.current = { spotId: spot.spotId, top };
-            if (restoredScrollTop !== undefined) setRestoredScrollTop(undefined);
+            // Keep an explicit return command stable. Withdrawing this native
+            // optional prop resets to zero; unrelated renders must not replay events.
             // Native anchor scrolling can finish after the extent layout measurement.
             // Reconcile once after scrolling rests, never query geometry per frame.
             if (extent !== "small") {
@@ -602,9 +625,9 @@ export function SpotInformationPanel({
                   <Text>我要反馈 ↗</Text>
                 </Button>
               </View>
-              {cloudReady ? <View className="spot-panel__guide-row">
+              {effectiveSpot.status === "PUBLISHED" || effectiveSpot.status === "TEMPORARILY_CLOSED" ? <View className="spot-panel__guide-row">
                 <Text>观星攻略</Text>
-                <Button className="spot-panel__text-action" data-control="spot-guide-entry" onClick={() => onEvidence("guides")}>查看攻略 ↗</Button>
+                <Button className="spot-panel__text-action" data-control="spot-guide-entry" disabled={!cloudReady} onClick={() => onEvidence("guides")}>查看攻略 ↗</Button>
               </View> : null}
               <SpotAdditionalInformation spotId={effectiveSpot.spotId} detail={detail} facilities={facilities}
                 facilityLabel={facilityLabel} onLayoutChange={() => setLayoutVersion(value => value + 1)} />
@@ -620,7 +643,6 @@ export function SpotInformationPanel({
             <View className="spot-panel__astronomy-heading">
               <Text className="type-section">天文</Text>
             </View>
-            {skyPending ? <StatusPanel state="LOADING" detail="正在加载所选观测夜的天文与天气资料" /> : null}
             {skyError || skyStale ? (
               <StatusPanel
                 state={skyError ? "ERROR" : "STALE"}
@@ -629,8 +651,12 @@ export function SpotInformationPanel({
                 onRecover={onSkyRecover}
               />
             ) : null}
-            <WeatherAlerts evidence={skyReport?.weatherEvidence} timezone={context?.timezone ?? effectiveSpot.timezone}
-              active={visible} refreshing={skyRefreshing} scopeKey={effectiveSpot.spotId} refreshFailed={Boolean(skyError || skyStale)} onRecover={onSkyRecover} />
+            <View {...(retainWarningSpace && !skyReport ? { role: "status", ariaLabel: "正在更新官方预警" } : {})}
+              {...(retainWarningSpace ? { style: { minHeight: `${warningPresentation!.height}px`, flexShrink: 0 } } : {})}>
+              <WeatherAlerts evidence={skyReport?.weatherEvidence} timezone={context?.timezone ?? effectiveSpot.timezone}
+                active={visible} refreshing={skyRefreshing} scopeKey={effectiveSpot.spotId} refreshFailed={Boolean(skyError || skyStale)}
+                onRecover={onSkyRecover} onContentChange={onWarningLayoutChange} />
+            </View>
             <View className="spot-panel__block spot-panel__block--astronomy-card">
               {timeContext ? <><ObservationDateControl
                 dates={dateOptions}
@@ -668,6 +694,7 @@ export function SpotInformationPanel({
               /></> : <Text className="type-caption">观测条件尚未确认；请回基本信息重试后选择日期与时间。</Text>}
               <MapTemporalFeedback failure={temporalFailure} onRetry={onTemporalRetry} />
             </View>
+            {skyPending ? <StatusPanel state="LOADING" detail="正在加载所选观测夜的天文与天气资料" /> : null}
             {skyReport ? (
             <View className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--moon" data-control="sky-lunar-facts">
               <Text className="type-label">月相</Text>

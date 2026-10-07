@@ -87,6 +87,8 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
 
 Map的云量尺与正式点天文尺在同一观测身份等待新Scene时，只保留禁用的时间刻度/月相呈现，不回填旧天气事实或调用旧数据命令。身份包含账户、Context、观测夜、时区、天气策略与算法；新Scene查询无数据的失败、真实空响应及身份变化撤下旧轴；仍有有效缓存的刷新失败沿用原陈旧可用语义。正式点时间呈现可使用同点且未退休的已确认参照，避免请求Context短暂恢复使控件卸载；日期和时刻操作仍由实际活动Context控制。两尺的可用切片、等待/失败/真空含义与重试属于Scene，天文资料成功不代表Scene成功。有限WEAPP轴保留与失败恢复观察不认证正文位置、完整动效或真机连续验收。
 
+正式点同一文档的攻略行覆盖公开与临时关闭两态；请求条件未确认时保留位置并禁用依赖动作。天文预警使用常驻宿主，仅在同观测身份的真实Context/Sky等待、刷新或新报告内层尚未量测时保留实测最小高度；只显示当前报告，不回填旧证据，量测内层而非占位外壳，真实无预警结果清高度，失败不冒充更新。等待提示位于时间控件之后。正文滚动事件只记忆位置，普通数据渲染不重放为新的原生命令；返回恢复的显式命令保持到其hide/换点/章节owner撤下，不能在恢复scroll事件立即撤下而触发原生零重置。有限同视口WEAPP阅读区域与攻略返回证据不认证全正文几何恒定、待恢复中的resize/文字尺度、完整动效或物理设备。
+
 ## Settings adopted design
 
 <!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/settings/ADOPTED.md" -->

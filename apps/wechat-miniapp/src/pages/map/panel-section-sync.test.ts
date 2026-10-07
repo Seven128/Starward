@@ -4,6 +4,39 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
+test("ordinary document renders do not replay the last native scroll event as a new command", () => {
+  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxSpreadAttribute(node) && node.parent.getText(source).includes('id="spot-panel-scroll"') && node.expression.getText(source).includes("scrollTop:")) expression = node.expression;
+    ts.forEachChild(node, visit);
+  };
+  visit(source); assert.ok(expression);
+  const context = { restoredScrollTop: undefined as number | undefined, lastScroll: { current: { top: 2496 } } };
+  assert.equal(vm.runInNewContext(expression.getText(source), context).scrollTop, undefined,
+    "an unrelated report render must not round/replay the native document's 2490.4px reading position");
+  context.restoredScrollTop = 620;
+  assert.equal(vm.runInNewContext(expression.getText(source), context).scrollTop, 620, "explicit return restoration is still a scroll command");
+});
+
+test("the native restoration event does not withdraw its command and reset the document", () => {
+  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxAttribute(node) && node.name.getText(source) === "onScroll" && node.parent.getText(source).includes('id="spot-panel-scroll"') && node.initializer && ts.isJsxExpression(node.initializer)) expression = node.initializer.expression;
+    ts.forEachChild(node, visit);
+  };
+  visit(source); assert.ok(expression);
+  const commands: (number | undefined)[] = [], lastScroll = { current: { spotId: "spot:a", top: 0 } };
+  const onScroll = vm.runInNewContext(ts.transpileModule(`(${expression.getText(source)});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    visible: true, spot: { spotId: "spot:a" }, extent: "small", lastScroll,
+    restoredScrollTop: 500, setRestoredScrollTop: (top: number | undefined) => commands.push(top),
+  });
+  onScroll({ detail: { scrollTop: 500 } });
+  assert.deepEqual(commands, [], "removing the optional native prop resets it to zero after return");
+  assert.equal(lastScroll.current.top, 500, "remembering user scroll is independent of issuing a command");
+});
+
 test("section requests are consumed once and never replay for another spot", () => {
   const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let setup = "";
