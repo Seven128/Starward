@@ -48,7 +48,11 @@ export function StatusPanel({
       role={state === "ERROR" ? "alert" : "status"}
       aria-live={live ? "polite" : undefined}
     >
-      {state === "EMPTY" && emptyLevel !== "field" ? <SemanticIcon name={emptyIcon ?? (emptyLevel === "page" ? "star" : "info")} className="status-panel__empty-icon" /> : null}
+      {state === "EMPTY" && emptyLevel !== "field" ? (
+        <View className="status-panel__empty-illustration" aria-hidden>
+          <SemanticIcon name={emptyIcon ?? (emptyLevel === "page" ? "star" : "info")} className="status-panel__empty-icon" />
+        </View>
+      ) : null}
       {state === "EMPTY" && emptyLevel === "field" ? <Text className="status-panel__field-value">{EMPTY_FIELD_VALUE}</Text> : null}
       {TITLED_STATES.has(state) && !(state === "EMPTY" && emptyLevel === "field") ? (
         <Text className="type-label">{title ?? TITLES[state]}</Text>
