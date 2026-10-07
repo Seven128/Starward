@@ -480,6 +480,7 @@ export default function MapPage() {
     : observationContext;
   const activeContext = retiredObservationContextId && restoredContext?.contextId === retiredObservationContextId ? null : restoredContext;
   const timeReference = activeContext ?? observationContext;
+  const timeRulerIdentity = JSON.stringify([accountOwnerId, timeReference?.contextId, timeReference?.localDate, timeReference?.timezone, timeReference?.weatherView, timeReference?.algorithmVersions]);
   useEffect(() => {
     navigationEpoch.current += 1;
     return () => { navigationEpoch.current += 1; };
@@ -734,6 +735,10 @@ export default function MapPage() {
       activeContext?.location.kind === "FORMAL_SPOT" &&
       activeContext.location.spotId === selected.spotId,
   );
+  // The last confirmed clock is presentation only while its request Context restores.
+  const spotTimeContext = selected && timeReference?.location.kind === "FORMAL_SPOT" &&
+    timeReference.location.spotId === selected.spotId && timeReference.contextId !== retiredObservationContextId
+    ? timeReference : null;
   const visibleSpotContextAttempt = !detailContextReady && selected &&
     spotContextAttempt?.spotId === selected.spotId ? spotContextAttempt : null;
   useEffect(() => {
@@ -2421,6 +2426,7 @@ export default function MapPage() {
                 favorite={favoriteIds.includes(selected.spotId)}
                 favoritePending={favoritePending}
                 context={detailContextReady ? activeContext : null}
+                timeContext={spotTimeContext}
                 astronomyAt={projectedAt}
                 skyReport={spotSkyReport}
                 skyPending={spotSkyProjection.pending}
@@ -2428,6 +2434,10 @@ export default function MapPage() {
                 skyError={spotSkyProjection.error}
                 skyStale={spotSkyProjection.stale}
                 timeFrames={timeFrames}
+                timeFramesPending={scene.isPending}
+                timeFramesFailed={mapSceneFailed}
+                onTimeFramesRecover={() => void refreshMap()}
+                timeRulerIdentity={timeRulerIdentity}
                 timeSaving={timeSaving}
                 temporalFailure={visibleTemporalFailure}
                 onTemporalRetry={retryTemporalFailure}
@@ -2556,6 +2566,8 @@ export default function MapPage() {
                     <MapTimeRuler
                       nightLabel={timeReference ? observationNightLabel(timeReference.localDate, projectedAt, timeReference.timezone, mapTodayCivilDate) : undefined}
                       frames={cloudTimeChoices.map(choice => choice.frame)}
+                      pending={scene.isPending}
+                      identity={timeRulerIdentity}
                       selectedAt={timeReference?.selectedAtUtc ?? ""}
                       timezone={timeReference?.timezone ?? "Asia/Shanghai"}
                       disabled={!activeContext || !cloudTimeChoices.length || timeSaving}

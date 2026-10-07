@@ -42,22 +42,26 @@ function rulerPosition(distance: number) {
  * of the gesture.
  */
 export function MapTimeRuler({
-  frames,
+  frames: incomingFrames,
   selectedAt,
   timezone,
-  disabled,
+  disabled: externallyDisabled,
+  pending = false,
+  identity,
   emptyMessage,
   onPreview,
   onCommit,
   onCancel,
-  moonPhases,
+  moonPhases: incomingMoonPhases,
   nightLabel,
   control = "map-time-control",
 }: {
-  frames: readonly MapSceneTimeFrame[];
+  frames: readonly Pick<MapSceneTimeFrame, "atUtc">[];
   selectedAt: string;
   timezone: string;
   disabled: boolean;
+  pending?: boolean;
+  identity?: string;
   emptyMessage: string;
   onPreview: (index: number) => void;
   onCommit: (index: number) => void;
@@ -66,6 +70,16 @@ export function MapTimeRuler({
   nightLabel?: string | undefined;
   control?: "map-time-control" | "sky-time-scrubber";
 }) {
+  // Retain only cadence/phase presentation during a same-observation fetch.
+  // Current scene facts and commands remain caller-owned; these ticks are disabled.
+  const confirmedAxis = useRef({ identity, frames: incomingFrames.map(({ atUtc }) => ({ atUtc })), moonPhases: incomingMoonPhases });
+  if (incomingFrames.length || !pending || !identity || confirmedAxis.current.identity !== identity) {
+    confirmedAxis.current = { identity, frames: incomingFrames.map(({ atUtc }) => ({ atUtc })), moonPhases: incomingMoonPhases };
+  }
+  const retaining = !incomingFrames.length && pending && Boolean(identity) && confirmedAxis.current.identity === identity;
+  const frames = retaining ? confirmedAxis.current.frames : incomingFrames;
+  const moonPhases = retaining ? confirmedAxis.current.moonPhases : incomingMoonPhases;
+  const disabled = externallyDisabled || pending;
   const initialIndex = frames.length
     ? nearestMapTimeFrameIndex(frames, selectedAt)
     : 0;
@@ -74,7 +88,7 @@ export function MapTimeRuler({
   const [scrollLeft, setScrollLeft] = useState(initialIndex * RULER_STEP);
   const liveLeft = useRef(initialIndex * RULER_STEP);
   const userScrolled = useRef(false);
-  const target = useRef<{ at: string; from: string; frames: string } | null>(null);
+  const target = useRef<{ at: string; from: string; frames: string; identity: string | undefined } | null>(null);
   const reducedMotion = useReducedMotion();
   const settleCallback = useRef<(offset: number) => void>(() => {});
   const settlementRef = useRef<ReturnType<typeof createScrollSettlement> | null>(null);
@@ -110,10 +124,10 @@ export function MapTimeRuler({
     const own = target.current;
     // The owner's busy state and confirmation of this exact command are not
     // external selections. Keep their visual settling independent of HTTP.
-    if (own && own.frames === frameIdentity &&
+    if (own && own.identity === identity && own.frames === frameIdentity &&
         (selectedAt === own.at || (disabled && selectedAt === own.from))) return;
     cancelInteraction();
-  }, [initialIndex, selectedAt, frameIdentity, disabled]);
+  }, [initialIndex, selectedAt, frameIdentity, disabled, identity]);
   useEffect(() => {
     if (reducedMotion) {
       const next = target.current ? frames.findIndex(frame => frame.atUtc === target.current!.at) : initialIndex;
@@ -134,7 +148,7 @@ export function MapTimeRuler({
     onPreview(next);
   };
   const commit = (next: number, from: number) => {
-    target.current = { at: frames[next]!.atUtc, from: selectedAt, frames: frameIdentity };
+    target.current = { at: frames[next]!.atUtc, from: selectedAt, frames: frameIdentity, identity };
     updatePreview(next);
     nativePosition.settle(from, next * RULER_STEP, reducedMotion, left => {
       liveLeft.current = left;

@@ -53,6 +53,7 @@ function render(disabled = false, selectedAt = "2026-09-06T12:00:00Z", frames: {
   const props = {
     frames,
     selectedAt, timezone: "UTC", disabled,
+    pending: false, identity: "",
     emptyMessage,
     onPreview: (index: number) => previews.push(index), onCommit: (index: number) => commits.push(index),
     onCancel: () => { cancelled++; },
@@ -106,6 +107,118 @@ test("failed time confirmation restores the committed native position", () => {
   ruler.rerender({disabled:true}); const count=ruler.positions.length;
   ruler.rerender({disabled:false});
   assert.equal(ruler.positions.at(-1),0); assert.equal(ruler.positions.length,count+1);
+});
+
+test("confirmed time keeps its native axis while the same observation is fetching its new scene", () => {
+  const ruler = render();
+  ruler.rerender({ identity: "account-a:context-a:night-07" });
+  ruler.root.children.find(child => child?.type === "scroll")!.children[0]!.children[1]!.props.onClick();
+  const positions = ruler.positions.length;
+  ruler.rerender({ frames: [], pending: true, disabled: false, selectedAt: "2026-09-06T13:00:00Z" });
+  const scroll = ruler.root.children.find(child => child?.type === "scroll");
+  assert.ok(scroll, "the visible native axis must not unmount after confirming the time");
+  assert.equal(scroll.props.scrollX, false, "old availability is presentation only during the fetch");
+  assert.ok(scroll.children[0]!.children.every(child => child.props.disabled));
+  assert.equal(ruler.positions.length, positions, "pending data must not reset the axis to its first tick");
+  ruler.rerender({ frames: [{ atUtc: "2026-09-06T12:00:00Z" }, { atUtc: "2026-09-06T13:00:00Z" }], pending: false });
+  assert.equal(ruler.positions.length, positions);
+  assert.deepEqual(ruler.commits, [1]);
+});
+
+test("the astronomy host keeps confirmed time presentation while its request context is restoring", () => {
+  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.ConditionalExpression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isConditionalExpression(node) && node.whenTrue.getText(source).includes("<MapTimeRuler")) expression = node;
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  assert.ok(expression);
+  const confirmed = { selectedAtUtc: "2026-10-07T16:00:00Z", timezone: "Asia/Shanghai", localDate: "2026-10-07" };
+  for (const context of [null, confirmed]) {
+    const tree = vm.runInNewContext(ts.transpileModule(`(${expression.getText(source)});`, {
+      compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
+    }).outputText, {
+      context, timeContext: confirmed, astronomyAt: confirmed.selectedAtUtc, todayDate: confirmed.localDate,
+      dateOptions: [confirmed.localDate], selectedDate: confirmed.localDate, datePickerOpen: false, timeSaving: false,
+      timeFrames: [], timeFramesPending: true, timeFramesFailed: false, timeRulerIdentity: "same-observation",
+      skyPending: false, skyReport: {}, skyError: null, skyStale: false, temporalFailure: null,
+      setDatePickerOpen() {}, onTimeCancel() {}, onDateCommit() {}, onTimePreview() {}, onTimeCommit() {},
+      onTimeFramesRecover() {}, observationNightLabel: () => "观测夜",
+      ObservationDateControl: "date", MapTimeRuler: "ruler", Text: "text", StatusPanel: "status",
+      React: { Fragment: "fragment", createElement: (type: string, props: object, ...children: Element[]) => ({ type, props, children: children.flat() }) },
+    });
+    const ruler = tree.children.find((child: Element) => child?.type === "ruler");
+    assert.ok(ruler, "a confirmed time must not lose its ruler when the request Context is temporarily null");
+    assert.equal(ruler.props.selectedAt, confirmed.selectedAtUtc);
+    assert.equal(ruler.props.disabled, true);
+    assert.equal(tree.children.find((child: Element) => child?.type === "date").props.busy, !context);
+  }
+});
+
+test("astronomy time availability follows its Scene owner rather than a successful sky report", () => {
+  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) && node.tagName.getText(source) === "MapTimeRuler") {
+      const attr = node.attributes.properties.find(value => ts.isJsxAttribute(value) && value.name.getText(source) === "emptyMessage") as ts.JsxAttribute;
+      expression = (attr.initializer as ts.JsxExpression).expression;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  assert.ok(expression);
+  for (const [timeFramesPending, timeFramesFailed, expected] of [[true, false, "正在读取"], [false, true, "暂不可用"], [false, false, "本观测夜没有可用"]] as const) {
+    const message = vm.runInNewContext(expression.getText(source), {
+      timeFramesPending, timeFramesFailed, timeFrames: [], skyPending: false, skyReport: {}, skyError: null, skyStale: false,
+    });
+    assert.ok(message.includes(expected), "Scene failure and waiting must not become a genuine empty night");
+  }
+});
+
+test("the astronomy presentation cannot borrow another spot or a retired Context", () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(source) === "spotTimeContext") expression = node.initializer;
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  assert.ok(expression);
+  const reference = { contextId: "ctx:confirmed-a", location: { kind: "FORMAL_SPOT", spotId: "a" } };
+  for (const [selected, timeReference, retiredObservationContextId, expected] of [
+    [{ spotId: "a" }, reference, null, reference],
+    [{ spotId: "b" }, reference, null, null],
+    [{ spotId: "a" }, reference, reference.contextId, null],
+    [{ spotId: "a" }, { ...reference, location: { kind: "MAP_CENTER" } }, null, null],
+    [null, reference, null, null],
+    [{ spotId: "a" }, null, null, null],
+  ]) {
+    assert.equal(vm.runInNewContext(expression.getText(source), { selected, timeReference, retiredObservationContextId }), expected);
+  }
+});
+
+test("a new observation or a confirmed empty response cannot reuse the previous axis", () => {
+  for (const changes of [{ identity: "account-a:context-b:night-08", pending: true }, { pending: false }]) {
+    const ruler = render();
+    ruler.rerender({ identity: "account-a:context-a:night-07" });
+    ruler.rerender({ frames: [], ...changes });
+    assert.equal(ruler.root.children.some(child => child?.type === "scroll"), false);
+    assert.ok(JSON.stringify(ruler.root).includes("当前日期没有可用的时间切片。"));
+    assert.deepEqual(ruler.commits, []);
+  }
+});
+
+test("a different observation retires an own time target even when its cadence is identical", () => {
+  const ruler = render();
+  ruler.rerender({ identity: "context-a:night-07" });
+  ruler.root.children.find(child => child?.type === "scroll")!.children[0]!.children[1]!.props.onClick();
+  ruler.rerender({ selectedAt: "2026-09-06T13:00:00Z" });
+  const positions = ruler.positions.length;
+  ruler.rerender({ identity: "context-b:night-07" });
+  assert.equal(ruler.positions.length, positions + 1);
+  assert.equal(ruler.positions.at(-1), 66);
+  assert.deepEqual(ruler.commits, [1]);
 });
 const event = { detail: { scrollLeft: 44 } };
 const singleTouch = { touches: [{ identifier: 1 }] };

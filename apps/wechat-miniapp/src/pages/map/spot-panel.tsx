@@ -164,6 +164,7 @@ export function SpotInformationPanel({
   favorite,
   favoritePending,
   context,
+  timeContext,
   astronomyAt,
   skyReport,
   skyPending,
@@ -171,6 +172,10 @@ export function SpotInformationPanel({
   skyError,
   skyStale = false,
   timeFrames,
+  timeFramesPending,
+  timeFramesFailed,
+  onTimeFramesRecover,
+  timeRulerIdentity,
   timeSaving,
   temporalFailure,
   onTemporalRetry,
@@ -213,6 +218,7 @@ export function SpotInformationPanel({
   favorite: boolean;
   favoritePending: boolean;
   context: ObservationContext | null;
+  timeContext: ObservationContext | null;
   astronomyAt: string;
   skyReport: SkyReport | null;
   skyPending: boolean;
@@ -220,6 +226,10 @@ export function SpotInformationPanel({
   skyError: unknown;
   skyStale?: boolean;
   timeFrames: readonly MapSceneTimeFrame[];
+  timeFramesPending: boolean;
+  timeFramesFailed: boolean;
+  onTimeFramesRecover: () => void;
+  timeRulerIdentity: string;
   timeSaving: boolean;
   temporalFailure: MapTemporalFailure | null;
   onTemporalRetry: () => void;
@@ -622,7 +632,7 @@ export function SpotInformationPanel({
             <WeatherAlerts evidence={skyReport?.weatherEvidence} timezone={context?.timezone ?? effectiveSpot.timezone}
               active={visible} refreshing={skyRefreshing} scopeKey={effectiveSpot.spotId} refreshFailed={Boolean(skyError || skyStale)} onRecover={onSkyRecover} />
             <View className="spot-panel__block spot-panel__block--astronomy-card">
-              {context ? <><ObservationDateControl
+              {timeContext ? <><ObservationDateControl
                 dates={dateOptions}
                 selectedDate={selectedDate}
                 today={todayDate}
@@ -635,14 +645,22 @@ export function SpotInformationPanel({
                   onDateCommit(date);
                 }}
               />
+              {timeFramesFailed && !timeFrames.length ? <StatusPanel
+                state="ERROR"
+                detail="时间切片暂不可用，当前不能选择预报时刻。"
+                recoveryLabel="重试时间切片"
+                onRecover={onTimeFramesRecover}
+              /> : null}
               <MapTimeRuler
-                nightLabel={context ? observationNightLabel(context.localDate, astronomyAt, context.timezone, todayDate) : undefined}
+                nightLabel={observationNightLabel(timeContext.localDate, astronomyAt, timeContext.timezone, todayDate)}
                 frames={timeFrames}
+                pending={timeFramesPending}
+                identity={timeRulerIdentity}
                 moonPhases={timeFrames.map((frame) => frame.moonPhase)}
-                selectedAt={context?.selectedAtUtc ?? ""}
-                timezone={context?.timezone ?? "Asia/Shanghai"}
+                selectedAt={timeContext.selectedAtUtc}
+                timezone={timeContext.timezone}
                 disabled={!context || !timeFrames.length || timeSaving}
-                emptyMessage={skyPending && !skyReport ? "正在读取天文时间切片。" : skyError || skyStale ? "天文时间切片暂不可用，请重试天文资料。" : "本观测夜没有可用的时间切片。"}
+                emptyMessage={timeFramesPending ? "正在读取天文时间切片。" : timeFramesFailed ? "天文时间切片暂不可用，请重试时间切片。" : "本观测夜没有可用的时间切片。"}
                 onPreview={onTimePreview}
                 onCommit={onTimeCommit}
                 onCancel={onTimeCancel}

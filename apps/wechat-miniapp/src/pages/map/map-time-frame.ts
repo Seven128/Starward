@@ -12,7 +12,7 @@ export function cloudTimeFrameChoices(frames: readonly MapSceneTimeFrame[]) {
 }
 
 export function nearestMapTimeFrameIndex(
-  frames: readonly MapSceneTimeFrame[],
+  frames: readonly Pick<MapSceneTimeFrame, "atUtc">[],
   selectedAtUtc: string,
 ) {
   if (!frames.length) return 0;

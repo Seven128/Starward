@@ -85,6 +85,8 @@ The [shared date/calendar/ruler resource](../../../../../docs/design-resources/w
 
 Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-settlement.ts` for user-scroll completion. Only a user-started, actually scrolled sequence can submit; after release, native momentum must settle before one commit. A missing native scrollend cannot leave an indefinite preview, and a late end signal cannot replace the newest scroll position. Multi-touch, cancel, hidden/unmounted pages, disabled state and changed input identity discard pending work. `components/ruler-scroll-position.ts` owns explicit enhanced ScrollViewContext positioning for snap/cancel, including return to an unchanged committed tick; regrabbing or leaving invalidates pending native queries. Continuous scroll events update preview without driving native scrollLeft back on every frame. Date/time identity, persistence and failure recovery remain with each existing observation-context owner; this shared mechanism does not merge their data axes.
 
+Map的云量尺与正式点天文尺在同一观测身份等待新Scene时，只保留禁用的时间刻度/月相呈现，不回填旧天气事实或调用旧数据命令。身份包含账户、Context、观测夜、时区、天气策略与算法；新Scene查询无数据的失败、真实空响应及身份变化撤下旧轴；仍有有效缓存的刷新失败沿用原陈旧可用语义。正式点时间呈现可使用同点且未退休的已确认参照，避免请求Context短暂恢复使控件卸载；日期和时刻操作仍由实际活动Context控制。两尺的可用切片、等待/失败/真空含义与重试属于Scene，天文资料成功不代表Scene成功。有限WEAPP轴保留与失败恢复观察不认证正文位置、完整动效或真机连续验收。
+
 ## Settings adopted design
 
 <!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/settings/ADOPTED.md" -->
