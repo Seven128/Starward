@@ -5,6 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import * as geometry from "./terrain-geometry";
 import { terrainLayerAvailability } from "./terrain-layer-availability";
+import { formalSpotMarkerIconPath } from "./map-markers";
 
 function harness() {
   const ast = ts.createSourceFile("terrain.tsx", readFileSync(new URL("./spot-terrain-overview.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -12,8 +13,9 @@ function harness() {
   const states: any[] = [], deps: any[][] = [], notices: any[] = [];
   let si = 0, ei = 0, pending: (() => void)[] = [], query: any, retries = 0, imageFailures = 0;
   const notify = (value: any) => notices.push(value);
+  let mode = "DAY";
   const component = vm.runInNewContext(ts.transpileModule(declaration.getText(ast).replace(/^export /, "") + ";SpotTerrainOverview;", { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, {
-    ...geometry, terrainLayerAvailability, useMemo: (fn: () => unknown) => fn(), useAppStore: () => notify,
+    ...geometry, terrainLayerAvailability, formalSpotMarkerIconPath, useMemo: (fn: () => unknown) => fn(), useAppStore: (selector: (state: any) => unknown) => selector({ mode, notify }),
     useState(initial: any) { const i = si++; if (!(i in states)) states[i] = initial; return [states[i], (next: any) => states[i] = typeof next === "function" ? next(states[i]) : next]; },
     useEffect(fn: () => void, values: any[]) { const i = ei++; if (!deps[i] || values.some((value, n) => value !== deps[i]![n])) pending.push(fn); deps[i] = values; },
     useTerrainOverlay: () => query,
@@ -21,6 +23,7 @@ function harness() {
     React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
   });
   return { notices, get retries() { return retries; }, get imageFailures() { return imageFailures; },
+    setMode(value: string) { mode = value; },
     set(value: any) { query = { isPending: false, isError: false, imagePending: false, imagePath: null, ...value,
       reportImageFailure: () => { imageFailures++; }, refetch: async () => { retries++; } }; },
     render(visible = true) { si = ei = 0; const result = component({ spot: { spotId: "spot:terrain-test", name: "测试点", gcj02: { latitude: 22.55, longitude: 114.25 } }, visible }); pending.splice(0).forEach(fn => fn()); return result; },
@@ -31,6 +34,24 @@ const text = (value: any): string => value == null || typeof value === "boolean"
 const base = { state: "AVAILABLE", datasetVersion: "测试高程", imageBoundsGcj02: { west: 113, south: 21, east: 115, north: 24 }, sourceResolution: "30 m", derivedResolutionM: 100, coverageLabel: "已发布范围",
   source: { id: "terrain-source", provider: "Copernicus", limitations: ["produced using Copernicus WorldDEM-30"], licenseUrl: "https://example.org/license" },
   lightPollution: { state: "PARTIAL", cells: [{ id: "test-light", radiance: 0, unit: "nW/cm²/sr", label: "测试夜光", color: "#888", boundsGcj02: { west: 114.24, south: 22.54, east: 114.26, north: 22.56 } }], legend: [] } };
+
+test("terrain center follows display mode and preserves independent layer data on return", () => {
+  const h = harness(); h.set({ data: { data: base }, imagePath: "/local/terrain.png" });
+  for (const [mode, asset] of [
+    ["DAY", "/assets/b-icons/spot-marker--day--selected.png"],
+    ["OBSERVATION", "/assets/icons/formal-spot-marker-selected-observation.png"],
+    ["NIGHT", "/assets/icons/formal-spot-marker-selected-night.png"],
+    ["DAY", "/assets/b-icons/spot-marker--day--selected.png"],
+  ]) {
+    h.setMode(mode!);
+    const all = nodes(h.render());
+    assert.equal(all.find(node => node.props?.className === "spot-terrain__center").props.src, asset);
+    assert.equal(all.find(node => node.props?.className === "spot-terrain__image").props.src, "/local/terrain.png");
+    assert.equal(all.find(node => node.props?.className === "spot-terrain__light-cell").props.ariaLabel, "测试夜光，0 nW/cm²/sr");
+    assert.deepEqual(Array.from(all.filter(node => node.props?.className?.startsWith("spot-terrain__direction ")), node => text(node)), ["北", "东", "南", "西"]);
+  }
+  assert.equal(h.retries, 0); assert.equal(h.notices.length, 0);
+});
 
 test("uncovered terrain disables only terrain and cannot obscure valid light", () => {
   const h = harness(); h.set({ data: { data: { ...base, state: "UNAVAILABLE", datasetVersion: null, sourceResolution: null, derivedResolutionM: null } } });

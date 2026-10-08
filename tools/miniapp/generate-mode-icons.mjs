@@ -25,7 +25,7 @@ const TAB_MODES = {
 const MARKER_MODES = {
   day: { primary: "#111827", surface: "#FFFFFF", accent: "#F2C94C" },
   night: { primary: "#181A17", surface: "#A9B6FF", accent: "#F2C94C" },
-  observation: { primary: "#110000", surface: "#D84A3C", accent: "#FFB34D" },
+  observation: { primary: "#110000", surface: "#D84A3C", accent: "#FF6B58" },
 };
 const DAY_PRIMARY = [17, 24, 39];
 const DAY_SURFACE = [255, 255, 255];

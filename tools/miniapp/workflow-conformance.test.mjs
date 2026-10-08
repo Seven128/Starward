@@ -14,6 +14,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import pngjs from "pngjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import {
@@ -444,7 +445,7 @@ test("generated mode icons exactly match their checked manifest", async () => {
     manifest.authorityTarget,
     "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
   );
-  assert.equal(manifest.assets.length, 66);
+  assert.equal(manifest.assets.length, 69);
   const modeColors = { day: "#282b29", night: "#f5f3ec", observation: "#ff6b58" };
   for (const name of [
     "chevron-right",
@@ -475,6 +476,21 @@ test("generated mode icons exactly match their checked manifest", async () => {
   for (const asset of manifest.assets) {
     const bytes = await readFile(path.join(iconRoot, asset.path));
     assert.equal(sha256(bytes), asset.sha256, asset.path);
+  }
+});
+
+test("observation formal markers preserve star contrast using only adopted warm red roles", async () => {
+  const allowed = new Set(["110000", "d84a3c", "ff6b58"]);
+  for (const name of ["formal-spot-marker-observation.png", "formal-spot-marker-selected-observation.png"]) {
+    const image = pngjs.PNG.sync.read(await readFile(at("apps", "wechat-miniapp", "src", "assets", "icons", name)));
+    const used = new Set();
+    for (let i = 0; i < image.data.length; i += 4) {
+      if (!image.data[i + 3]) continue;
+      const color = image.data.subarray(i, i + 3).toString("hex");
+      assert.ok(allowed.has(color), `${name}: unexpected visible color ${color}`);
+      used.add(color);
+    }
+    assert.deepEqual(used, allowed, `${name}: outline, surface and bright star all remain visible`);
   }
 });
 

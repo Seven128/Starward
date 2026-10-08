@@ -1,23 +1,11 @@
 import { MINIAPP_DESIGN } from "../../theme/design-tokens";
 import type { DisplayMode, SpotSummary } from "@starward/miniapp-contracts";
 
-const MAP_MARKER_ICONS: Record<
-  DisplayMode,
-  { regular: string; selected: string }
-> = {
-  DAY: {
-    regular: "/assets/b-icons/spot-marker--day--default.png",
-    selected: "/assets/b-icons/spot-marker--day--selected.png",
-  },
-  NIGHT: {
-    regular: "/assets/icons/formal-spot-marker-night.png",
-    selected: "/assets/icons/formal-spot-marker-selected-night.png",
-  },
-  OBSERVATION: {
-    regular: "/assets/icons/formal-spot-marker-observation.png",
-    selected: "/assets/icons/formal-spot-marker-selected-observation.png",
-  },
-};
+export function formalSpotMarkerIconPath(mode: DisplayMode, selected: boolean) {
+  return mode === "DAY"
+    ? `/assets/b-icons/spot-marker--day--${selected ? "selected" : "default"}.png`
+    : `/assets/icons/formal-spot-marker${selected ? "-selected" : ""}-${mode.toLowerCase()}.png`;
+}
 
 interface MarkerGroup {
   id: number;
@@ -75,7 +63,6 @@ export function markerItems(
     border: theme["border-strong"],
   };
   const textScale = largeText ? 2 : 1;
-  const icons = MAP_MARKER_ICONS[mode];
   return groups.map((group) => {
     const spot = group.spots[0]!;
     const clustered = group.spots.length > 1;
@@ -84,7 +71,7 @@ export function markerItems(
       id: group.id,
       latitude: group.latitude,
       longitude: group.longitude,
-      iconPath: selected ? icons.selected : icons.regular,
+      iconPath: formalSpotMarkerIconPath(mode, selected),
       // Native Map marker dimensions are device pixels (not WXSS rpx).
       // Keep the regular/selected assets at the 32/40 visual-role steps;
       // clustered groups retain their slightly larger count treatment.
