@@ -230,6 +230,10 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
           from: path.resolve(here, "../src/assets", directory),
           to: path.resolve(here, "..", outputRoot, "assets", directory),
         })),
+        {
+          from: path.resolve(here, "../src/assets/moon-observation"),
+          to: path.resolve(here, "..", outputRoot, "content/assets/moon"),
+        },
         ...retainedLegacyIconFiles.map((file) => ({
           from: path.resolve(here, "../src/assets/icons", file),
           to: path.resolve(here, "..", outputRoot, "assets/icons", file),

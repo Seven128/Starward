@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import pngjs from "pngjs";
@@ -42,6 +42,19 @@ function distance(left, right) {
 
 const generatedAssets = new Map();
 const tokens = readDesignTokens(await readFile(path.join(root, "DESIGN.md"), "utf8"));
+const moonRoot = path.resolve(iconRoot, "../moon");
+const moonObservationRoot = path.resolve(iconRoot, "../moon-observation");
+const generatedMoonAssets = new Map();
+// Keep every original phase contour. Only its three color roles change.
+for (let phase = 0; phase < 8; phase++) {
+  const file = `phase-${phase}.svg`;
+  let source = (await readFile(path.join(moonRoot, file), "utf8")).replace(/\r\n?/gu, "\n");
+  for (const [color, role] of [["#727680", "surface-subtle"], ["#FFD04B", "text-primary"], ["#8D9098", "text-secondary"]]) {
+    if (!source.includes(color)) throw new Error(`source_moon_color_missing:${file}:${color}`);
+    source = source.replaceAll(color, tokens.themes.observation[role]);
+  }
+  generatedMoonAssets.set(file, Buffer.from(source));
+}
 const themedSvgNames = [];
 for (const name of ["chevron-right", "download", "trash-2", "wifi-off", "images", "account-user", "pencil", "settings", "share", "eye", "bulb", "cloud", "wind", "telescope", "sun", "moon", "bell"]) {
   const source = (await readFile(path.join(iconRoot, `${name}.svg`), "utf8")).replace(/\r\n?/gu, "\n");
@@ -148,6 +161,10 @@ if (checkOnly) {
     const actual = await readFile(path.join(iconRoot, assetPath)).catch(() => null);
     if (!actual?.equals(expected)) mismatches.push(assetPath);
   }
+  for (const [assetPath, expected] of generatedMoonAssets) {
+    const actual = await readFile(path.join(moonObservationRoot, assetPath)).catch(() => null);
+    if (!actual?.equals(expected)) mismatches.push(`moon-observation/${assetPath}`);
+  }
   const actualManifest = await readFile(
     path.join(iconRoot, "marker-manifest.json"),
   ).catch(() => null);
@@ -155,13 +172,16 @@ if (checkOnly) {
   if (mismatches.length > 0)
     throw new Error(`mode_icon_drift:${mismatches.join(",")}`);
   process.stdout.write(
-    `${JSON.stringify({ status: "passed", checked_assets: assetNames.length })}\n`,
+    `${JSON.stringify({ status: "passed", checked_assets: assetNames.length, checked_moon_assets: generatedMoonAssets.size })}\n`,
   );
 } else {
   for (const [assetPath, bytes] of generatedAssets)
     await writeFile(path.join(iconRoot, assetPath), bytes);
+  await mkdir(moonObservationRoot, { recursive: true });
+  for (const [assetPath, bytes] of generatedMoonAssets)
+    await writeFile(path.join(moonObservationRoot, assetPath), bytes);
   await writeFile(path.join(iconRoot, "marker-manifest.json"), manifestBytes);
   process.stdout.write(
-    `${JSON.stringify({ status: "generated", generated_assets: generatedAssets.size })}\n`,
+    `${JSON.stringify({ status: "generated", generated_assets: generatedAssets.size, generated_moon_assets: generatedMoonAssets.size })}\n`,
   );
 }

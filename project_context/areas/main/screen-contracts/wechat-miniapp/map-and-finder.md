@@ -14,6 +14,8 @@ The adopted daytime layer composition is reached through the sole [Map resource 
 
 2026-10-04历史限定观察保留：Android普通预览发现下拖时地址被裁及释放回跳；当时局部修复将小/大档均硬停，修后本次 Android、DAY、正式点 fixture 的四段真实手机录像，经约20Hz有序采样实看及独立审阅，下拖/释放无旧裁切或回跳，同手柄上拖经中档展开至大档，大档 Back 回中且三动作/Tab 保持。该批对“小档必须完全不动”的判断引用了已被9月22日修订替代的旧条款，不能取消当前下沿阻尼要求；实际录像和防回跳成果不撤销。普通生产客户端和本地测试服务的限定观察不认证手机包字节、runtime AppID 或完整验收；Back 平滑插值、运动中重抓反向、多指及其他主题/设备/宽度仍未验，被浮动调试按钮遮挡的大档正文不据此认证完整可读性。旧录像不倒绑10月5日修复。
 
+月相主图与天文时间尺的小月复用 `components/moon-phase.MoonPhaseImage` 的八类相位、标签及缺失语义。DAY/NIGHT 保留主包原 SVG；OBS 由现有 `generate-mode-icons` 从同一轮廓与 DESIGN 的暖红角色派生，在 `content/assets/moon` 选择本地资产，并以源身份退休旧 Image。当前红光仅从 Settings 进入，因此 content 已加载；持久化、启动与换号还原 DAY/NIGHT。新增其他红光入口时须重新核实该包依赖，不能让未载入资产退回黄灰图。有限 WEAPP 已实际观察离开 Settings 后主图与尺小月的暖红像素、43px/16px尺寸、原标签及正常恢复；源身份和静态原图不证明连续切换无闪、真机解码或整页主题采用。
+
 ## Cross-Control And State Invariants
 
 正式点详情查询由 Map 的可见页面与面板共同启用；隐藏地图不启动新的详情查询。返回同一地点时重新核对当前正式资料，不能以旧详情的短期新鲜窗口跳过读取，因为反馈审核和发布可能发生在离页期间。沿用现有查询缓存保留与刷新失败提示；该启用门控本身不承诺取消已经在途的请求。
