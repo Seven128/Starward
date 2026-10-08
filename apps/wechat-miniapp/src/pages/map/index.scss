@@ -2173,7 +2173,7 @@
 .theme-day .spot-panel__scroll--full-bleed-plan #spot-panel-astronomy {
   margin-right: 0;
   margin-left: 0;
-  padding: 0 0 12Px;
+  padding: 0;
 }
 .theme-day .spot-panel__astronomy-heading {
   padding: 14Px var(--spot-panel-inline-padding) 9Px;
@@ -2204,8 +2204,48 @@
   margin-bottom: 7Px;
 }
 .theme-day .spot-panel__astronomy-source {
+  padding-top: 14Px;
   padding-right: var(--spot-panel-inline-padding);
+  padding-bottom: 0;
   padding-left: var(--spot-panel-inline-padding);
+  border-radius: 14Px 14Px 0 0;
+  background: var(--surface);
+}
+.spot-panel__source-action-hint {
+  display: none;
+}
+.theme-day .spot-panel__scroll--full-bleed-plan .spot-panel__disclosure {
+  margin: 0 0 9Px;
+  padding: 8Px var(--spot-panel-inline-padding) 14Px;
+  border-radius: 14Px;
+  background: var(--surface);
+}
+.theme-day .spot-panel__scroll--full-bleed-plan .spot-panel__disclosure--with-astronomy-source {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.theme-day .spot-panel__disclosure > .spot-panel__text-action {
+  display: flex;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  justify-content: space-between;
+  color: #61636e;
+  text-align: left;
+}
+.theme-day .spot-panel__disclosure--with-astronomy-source > .spot-panel__text-action {
+  border-top: 1Px solid #f1f3f4;
+}
+.theme-day .spot-panel__source-action-hint {
+  display: flex;
+  align-items: center;
+  gap: 6Px;
+  flex: 0 0 auto;
+}
+.theme-day .spot-panel__source-action-hint .semantic-icon {
+  width: 14Px;
+  height: 14Px;
+  flex: 0 0 14Px;
 }
 
 .spot-panel__facility-summary {

@@ -799,8 +799,13 @@ export function SpotInformationPanel({
             </> : null}
           </View>
 
-          <View className="spot-panel__disclosure" data-control="data-source-disclosure">
-            <Button className="spot-panel__text-action" ariaLabel="查看完整来源与更新时间" onClick={() => onEvidence("sources")}>来源与更新时间</Button>
+          <View className={`spot-panel__disclosure${skyReport ? " spot-panel__disclosure--with-astronomy-source" : ""}`} data-control="data-source-disclosure">
+            <Button className="spot-panel__text-action" ariaLabel="查看完整来源与更新时间" onClick={() => onEvidence("sources")}>
+              <Text>来源与更新时间</Text>
+              <View className="spot-panel__source-action-hint" aria-hidden="true">
+                <Text>查看详情</Text><SemanticIcon name="chevron-right" />
+              </View>
+            </Button>
           </View>
           </Block>
         </ScrollView>
