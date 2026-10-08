@@ -50,7 +50,10 @@ const PANEL_SECTIONS = [
   { id: "spot-panel-terrain", label: "地形" },
   { id: "spot-panel-astronomy", label: "天文" },
 ] as const;
-const SECTION_NAV_REVEAL_PX = 44;
+const SECTION_NAV_REVEAL_PX = 48;
+// Native anchor alignment rounds subpixel scroll positions. Keep its reached
+// chapter within one logical pixel, while real reverse scrolling still wins.
+const SECTION_NAV_ALIGNMENT_EPSILON_PX = 1;
 
 function isPermissionError(error: unknown) {
   return (
@@ -340,7 +343,7 @@ export function SpotInformationPanel({
         if (!Number.isFinite(viewport?.top) || !Number.isFinite(terrain?.top) || !Number.isFinite(astronomy?.top) || !Number.isFinite(scroll?.scrollTop)) return;
         terrainOffset.current = terrain!.top! - viewport!.top! + scroll!.scrollTop!;
         astronomyOffset.current = astronomy!.top! - viewport!.top! + scroll!.scrollTop!;
-        setSection(scroll!.scrollTop! >= astronomyOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-astronomy" : scroll!.scrollTop! >= terrainOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-terrain" : "spot-panel-overview");
+        setSection(scroll!.scrollTop! + SECTION_NAV_ALIGNMENT_EPSILON_PX >= astronomyOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-astronomy" : scroll!.scrollTop! + SECTION_NAV_ALIGNMENT_EPSILON_PX >= terrainOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-terrain" : "spot-panel-overview");
       });
     }, 200);
     return () => { clearTimeout(measurementTimer); cancelled = true; terrainOffset.current = null; astronomyOffset.current = null; };
@@ -496,7 +499,7 @@ export function SpotInformationPanel({
               }, 80);
             }
             if (extent === "small" || terrainOffset.current === null || astronomyOffset.current === null) return;
-            setSection(top >= astronomyOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-astronomy" : top >= terrainOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-terrain" : "spot-panel-overview");
+            setSection(top + SECTION_NAV_ALIGNMENT_EPSILON_PX >= astronomyOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-astronomy" : top + SECTION_NAV_ALIGNMENT_EPSILON_PX >= terrainOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-terrain" : "spot-panel-overview");
           }}
           type="custom"
           enhanced
@@ -643,11 +646,12 @@ export function SpotInformationPanel({
             </View>
             <RecentWeather spotId={effectiveSpot.spotId} timezone={effectiveSpot.timezone} visible={visible} />
           </View>
+          <View id="spot-panel-terrain-anchor" className="spot-panel__chapter-anchor" aria-hidden="true" />
           <View id="spot-panel-terrain" className="spot-panel__section spot-panel__section--terrain" ariaLabel="地形">
             <Text className="type-section">地形</Text>
             <SpotTerrainOverview spot={effectiveSpot} visible={visible} />
           </View>
-          <View id="spot-panel-astronomy-anchor" className="spot-panel__astronomy-anchor" aria-hidden="true" />
+          <View id="spot-panel-astronomy-anchor" className="spot-panel__chapter-anchor" aria-hidden="true" />
           <View id="spot-panel-astronomy" className="spot-panel__section" ariaLabel="天文">
             <View className="spot-panel__astronomy-heading">
               <Text className="type-section">天文</Text>
@@ -817,7 +821,7 @@ export function SpotInformationPanel({
           onSelect={(id) => {
             setSection(id);
             setSectionRequest({
-              id: id === "spot-panel-astronomy" ? "spot-panel-astronomy-anchor" : id,
+              id: id === "spot-panel-overview" ? id : `${id}-anchor`,
               spotId: spot.spotId,
             });
             onExtent("large");

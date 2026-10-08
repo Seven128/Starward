@@ -1931,8 +1931,6 @@
   justify-content: center;
   gap: 12rpx;
 }
-.spot-panel__action-bar--proposal { grid-template-columns: minmax(0, 1fr); }
-.spot-panel__action-bar--proposal .spot-panel__action { width: 100%; }
 .spot-panel__identity-meta {
   display: flex;
   flex-wrap: wrap;
@@ -2053,9 +2051,9 @@
   font-weight: 700;
   line-height: 28Px;
 }
-.spot-panel__astronomy-anchor {
-  height: 44Px;
-  margin-top: -44Px;
+.spot-panel__chapter-anchor {
+  height: 48Px;
+  margin-top: -48Px;
   pointer-events: none;
 }
 #spot-panel-astronomy {
@@ -3377,12 +3375,14 @@
   position: absolute;
   z-index: 6;
   top: 0;
-  right: var(--spot-panel-inline-padding);
-  left: var(--spot-panel-inline-padding);
+  right: 0;
+  left: 0;
+  width: auto;
   justify-content: flex-start;
   min-height: 48Px;
+  height: 48Px;
   margin: 0;
-  padding: 0;
+  padding: 0 var(--spot-panel-inline-padding);
   border-bottom: 1rpx solid #f1f5f9;
   background: #fff;
   opacity: 0;
@@ -3430,6 +3430,8 @@
   background: transparent;
   box-shadow: none;
 }
+.spot-panel__action-bar--proposal { grid-template-columns: minmax(0, 1fr); }
+.spot-panel__action-bar--proposal .spot-panel__action { width: 100%; }
 .spot-panel__action {
   position: relative;
   min-width: 0;

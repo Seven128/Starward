@@ -65,7 +65,7 @@ test("section requests are consumed once and never replay for another spot", () 
   assert.equal(context.handledSectionRequest.current, null, "retain the request until settling completes");
   context.settling = false;
   effect(); flush();
-  assert.equal(anchors.at(-1), "spot-panel-astronomy-anchor", "chapter jump reserves the visible 44px navigation rail above its heading");
+  assert.equal(anchors.at(-1), "spot-panel-astronomy-anchor", "chapter jump reserves the visible navigation rail above its heading");
   assert.equal(positions.at(-1), undefined, "a chapter jump clears any restored numeric offset");
   context.extent = "medium"; effect();
   context.extent = "large"; effect();
@@ -79,6 +79,27 @@ test("section requests are consumed once and never replay for another spot", () 
   context.extent = "large";
   const cleanup = effect(); cleanup?.();
   assert.equal(timers.size, 0);
+});
+
+test("all chapter activations reserve the visible navigation rail in the same document", () => {
+  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let select = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxAttribute(node) && node.name.getText(source) === "onSelect" && node.initializer && ts.isJsxExpression(node.initializer)
+      && node.initializer.expression?.getText(source).includes("setSectionRequest")) select = node.initializer.expression.getText(source);
+    ts.forEachChild(node, visit);
+  };
+  visit(source); assert.ok(select);
+  const requests: { id: string; spotId: string }[] = [];
+  const activate = vm.runInNewContext(ts.transpileModule(`(${select});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    spot: { spotId: "spot:a" }, setSection() {}, onExtent() {},
+    setSectionRequest: (value: { id: string; spotId: string }) => requests.push(value),
+  }) as (id: string) => void;
+  activate("spot-panel-terrain");
+  assert.equal(requests.at(-1)?.id, "spot-panel-terrain-anchor", "terrain heading must align below the rail, just like astronomy");
+  activate("spot-panel-astronomy");
+  assert.equal(requests.at(-1)?.id, "spot-panel-astronomy-anchor");
+  assert.ok(requests.every(request => request.spotId === "spot:a"));
 });
 
 test("panel sections follow cached document geometry and ignore cancelled measurements", () => {
@@ -103,7 +124,7 @@ test("panel sections follow cached document geometry and ignore cancelled measur
     visible: true, spot: { spotId: "spot:a" }, lastScroll: { current: { identity: "spot:a", top: 0 } },
     documentPosition: { record() {} }, restoredScrollTop: undefined, setRestoredScrollTop: () => {},
     scrollMeasureTimer: { current: null }, setLayoutVersion: () => { layoutRefreshes++; },
-    settling: false, extent: "large", terrainOffset: terrain, astronomyOffset: offset, SECTION_NAV_REVEAL_PX: 44, setSection: (value: string) => sections.push(value),
+    settling: false, extent: "large", terrainOffset: terrain, astronomyOffset: offset, SECTION_NAV_REVEAL_PX: 48, SECTION_NAV_ALIGNMENT_EPSILON_PX: 1, setSection: (value: string) => sections.push(value),
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; },
     clearTimeout: (id: number) => timers.delete(id),
     Taro: { nextTick: (callback: () => void) => callback(), createSelectorQuery: () => { queries++; return query; } },
@@ -131,12 +152,35 @@ test("panel sections follow cached document geometry and ignore cancelled measur
   measure();
   flushTimers();
   callbacks.shift()!([{ top: 100, height: 600 }, { top: 400 }, { top: 700 }, { scrollTop: 50 }]);
-  assert.equal(offset.current, 650, "chapter navigation appears when the next chapter reaches the reading boundary below its 44px rail");
-  onScroll({ detail: { scrollTop: 605 } });
+  assert.equal(offset.current, 650, "chapter navigation appears when the next chapter reaches the reading boundary below its rail");
+  onScroll({ detail: { scrollTop: 600 } });
   assert.equal(sections.at(-1), "spot-panel-terrain");
-  onScroll({ detail: { scrollTop: 606 } });
+  onScroll({ detail: { scrollTop: 602 } });
   assert.equal(sections.at(-1), "spot-panel-astronomy");
   onScroll({ detail: { scrollTop: 200 } });
+  assert.equal(sections.at(-1), "spot-panel-overview");
+  // Replay the observed 0.1 logical px native rounding residual below the
+  // current 48px rail; it must not reclassify an aligned chapter as its predecessor.
+  const alignedTop = 2738.39990234375;
+  measure(); flushTimers();
+  callbacks.shift()!([
+    { top: 100.92500305175781 }, { top: -1448.175048828125 },
+    { top: 149.02500915527344 }, { scrollTop: alignedTop },
+  ]);
+  assert.equal(sections.at(-1), "spot-panel-astronomy", "native subpixel alignment must retain the reached chapter after measurement");
+  onScroll({ detail: { scrollTop: alignedTop } });
+  assert.equal(sections.at(-1), "spot-panel-astronomy", "the native scroll event must use the same alignment rule");
+  onScroll({ detail: { scrollTop: alignedTop - 2 } });
+  assert.equal(sections.at(-1), "spot-panel-terrain", "a genuine reverse scroll beyond rounding must select the prior chapter");
+  measure(); flushTimers();
+  callbacks.shift()!([
+    { top: 100.92500305175781 }, { top: 149.02500915527344 },
+    { top: 1500 }, { scrollTop: alignedTop },
+  ]);
+  assert.equal(sections.at(-1), "spot-panel-terrain", "terrain uses the same native rounding boundary");
+  onScroll({ detail: { scrollTop: alignedTop } });
+  assert.equal(sections.at(-1), "spot-panel-terrain");
+  onScroll({ detail: { scrollTop: alignedTop - 2 } });
   assert.equal(sections.at(-1), "spot-panel-overview");
   const beforeCancel = queries;
   const cancelBeforeLayout = measure();
