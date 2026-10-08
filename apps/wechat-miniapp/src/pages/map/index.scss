@@ -2048,7 +2048,7 @@
   padding: 2Px 0 4Px;
 }
 .spot-panel__astronomy-heading .type-section {
-  color: #252731;
+  color: var(--text-primary);
   font-size: 20Px;
   font-weight: 700;
   line-height: 28Px;
@@ -2062,7 +2062,7 @@
   margin-right: calc(-1 * var(--spot-panel-inline-padding));
   margin-left: calc(-1 * var(--spot-panel-inline-padding));
   padding: 14Px var(--spot-panel-inline-padding) 12Px;
-  background: #f5f5f7;
+  background: var(--surface-subtle);
 }
 .spot-panel__block--astronomy-card {
   gap: 8Px;
@@ -2075,14 +2075,14 @@
 .spot-panel__weather-heading {
   display: block;
   padding: 0 1Px 2Px;
-  color: #252731;
+  color: var(--text-primary);
 }
 .spot-panel__evidence-group {
   min-width: 0;
   padding: 10Px 11Px;
   border: 0;
   border-radius: 10Px;
-  background: #fafafb;
+  background: var(--surface-subtle);
 }
 .air-quality__segment-heading {
   margin-top: 8Px;
@@ -2094,7 +2094,7 @@
   display: flex;
   align-items: center;
   gap: 6Px;
-  color: #555866;
+  color: var(--text-secondary);
 }
 .spot-panel__evidence-title .semantic-icon {
   width: 14Px;
@@ -2115,7 +2115,7 @@
 }
 .spot-panel__metric-grid > .spot-panel__metric + .spot-panel__metric {
   padding-left: 9Px;
-  border-left: 1rpx solid #e6e6ec;
+  border-left: 1rpx solid var(--border);
 }
 .spot-panel__measurement-note {
   padding: 0 2Px;
@@ -2174,6 +2174,7 @@
   margin-right: 0;
   margin-left: 0;
   padding: 0;
+  background: #f5f5f7;
 }
 .theme-day .spot-panel__astronomy-heading {
   padding: 14Px var(--spot-panel-inline-padding) 9Px;
@@ -2184,6 +2185,10 @@
   font-weight: var(--type-section-weight);
   line-height: var(--type-section-line);
 }
+.theme-day .spot-panel__weather-heading { color: #252731; }
+.theme-day .spot-panel__evidence-title { color: #555866; }
+.theme-day .spot-panel__metric-grid > .spot-panel__metric + .spot-panel__metric { border-left-color: #e6e6ec; }
+.theme-day .spot-panel__moon-events { border-color: #e8e8ed; }
 .theme-day .spot-panel__block--astronomy-card,
 .theme-day .spot-panel__night-light {
   box-sizing: border-box;
@@ -2603,7 +2608,7 @@
   padding: 24rpx;
   border: 0;
   border-radius: 20rpx;
-  background: #fafafb;
+  background: var(--surface-subtle);
 }
 .spot-panel__moon-summary {
   display: flex;
@@ -2633,8 +2638,8 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 20rpx;
   padding: 18rpx 0;
-  border-top: 2rpx solid #e8e8ed;
-  border-bottom: 2rpx solid #e8e8ed;
+  border-top: 2rpx solid var(--border);
+  border-bottom: 2rpx solid var(--border);
 }
 .spot-panel__moon-events > view {
   min-width: 0;
