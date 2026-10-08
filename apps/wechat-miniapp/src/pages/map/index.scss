@@ -2168,6 +2168,46 @@
   padding: 8Px 0;
 }
 
+// The adopted DAY document has full-width cards with inset contents. Keep
+// these rules above the later basic-information block styles in specificity.
+.theme-day .spot-panel__scroll--full-bleed-plan #spot-panel-astronomy {
+  margin-right: 0;
+  margin-left: 0;
+  padding: 0 0 12Px;
+}
+.theme-day .spot-panel__astronomy-heading {
+  padding: 14Px var(--spot-panel-inline-padding) 9Px;
+}
+.theme-day .spot-panel__astronomy-heading .type-section {
+  color: #30313a;
+  font-size: var(--type-section-size);
+  font-weight: var(--type-section-weight);
+  line-height: var(--type-section-line);
+}
+.theme-day .spot-panel__block--astronomy-card,
+.theme-day .spot-panel__night-light {
+  box-sizing: border-box;
+  margin: 0 0 9Px;
+  padding: 14Px var(--spot-panel-inline-padding);
+  border: 0;
+  border-radius: 14Px;
+  background: var(--surface);
+}
+.theme-day .spot-panel__moon-inset,
+.theme-day .spot-panel__evidence-group {
+  background: #fbfbfc;
+}
+.theme-day .spot-panel__block--target-list {
+  gap: 0;
+}
+.theme-day .spot-panel__block--target-list > .spot-panel__evidence-title {
+  margin-bottom: 7Px;
+}
+.theme-day .spot-panel__astronomy-source {
+  padding-right: var(--spot-panel-inline-padding);
+  padding-left: var(--spot-panel-inline-padding);
+}
+
 .spot-panel__facility-summary {
   flex-basis: 100%;
 }
