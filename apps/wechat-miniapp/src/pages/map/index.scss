@@ -1536,7 +1536,7 @@
 .map-page .map-top-tools,
 .map-page .map-analysis-trigger {
   opacity: var(--map-chrome-opacity);
-  transform: none;
+  transform: translateY(var(--map-chrome-offset));
   pointer-events: auto;
   transition: opacity 180ms ease, transform 180ms ease;
 }
@@ -1544,7 +1544,7 @@
 .map-page.map-page--panel-chrome-hidden .map-top-tools,
 .map-page.map-page--panel-chrome-hidden .map-analysis-trigger {
   pointer-events: none;
-  transform: translateY(-10rpx);
+  visibility: hidden;
 }
 .map-search-entry {
   position: relative;
@@ -1839,8 +1839,8 @@
   padding-top: 8Px;
 }
 .spot-panel .spot-panel__media {
-  height: var(--panel-media-height) !important;
-  margin-top: var(--panel-media-margin-top) !important;
+  height: var(--panel-media-height);
+  margin-top: var(--panel-media-margin-top);
   margin-right: -24rpx !important;
   margin-bottom: 16rpx !important;
   margin-left: -24rpx !important;
@@ -1848,7 +1848,7 @@
   transition: height 180ms ease-out, margin 180ms ease-out, opacity 180ms ease-out;
 }
 .spot-panel.spot-panel--large .spot-panel__media {
-  height: var(--panel-media-height) !important;
+  height: var(--panel-media-height);
 }
 .spot-panel__media-image {
   width: 100%;
@@ -2718,6 +2718,8 @@
   .map-panel-layer,
   .spot-panel,
   .spot-panel__media,
+  .spot-panel__proposal-media,
+  .spot-panel__media-image,
   .spot-panel__handle-band {
     transition: none;
   }
@@ -2727,12 +2729,52 @@
 @for $variant from 0 through 1 {
   @keyframes panel-spring-#{$variant} {
     @for $frame from 0 through 40 {
-      #{($frame * 2.5)}% { height: var(--panel-spring-#{$frame}); }
+      #{($frame * 2.5)}% { height: var(--ph#{$frame}); }
+    }
+  }
+  @keyframes panel-media-spring-#{$variant} {
+    @for $frame from 0 through 40 {
+      #{($frame * 2.5)}% {
+        height: var(--pmh#{$frame});
+        opacity: var(--pmr#{$frame});
+        // The formal full-bleed owner keeps vertical margins at zero. Only
+        // private media consumes the live top offset and bottom gap.
+        margin-top: var(--pmt#{$frame});
+        margin-bottom: var(--pmg#{$frame});
+      }
+    }
+  }
+  @keyframes panel-image-spring-#{$variant} {
+    @for $frame from 0 through 40 {
+      #{($frame * 2.5)}% { transform: translateY(var(--pio#{$frame})) scale(var(--pis#{$frame})); }
+    }
+  }
+  @keyframes panel-chrome-spring-#{$variant} {
+    @for $frame from 0 through 40 {
+      #{($frame * 2.5)}% {
+        opacity: var(--pc#{$frame});
+        transform: translateY(calc(-10rpx * (1 - var(--pc#{$frame}))));
+      }
     }
   }
 }
 .map-panel-layer--settling .spot-panel {
-  animation: var(--panel-spring-name) var(--panel-spring-duration) linear both;
+  animation: var(--phn) var(--psd) linear both;
+}
+.map-page.map-page--panel-settling .spot-panel__media,
+.map-page.map-page--panel-settling .spot-panel__proposal-media {
+  animation: var(--pmn) var(--psd) linear both;
+  transition: none;
+}
+.map-page.map-page--panel-settling .spot-panel__media-image {
+  animation: var(--pin) var(--psd) linear both;
+  transition: none;
+}
+.map-page.map-page--panel-settling .map-search-anchor,
+.map-page.map-page--panel-settling .map-top-tools,
+.map-page.map-page--panel-settling .map-analysis-trigger {
+  animation: var(--pcn) var(--psd) linear both;
+  transition: none;
 }
 
 // These values follow the same live height as the handle. A second CSS
@@ -2749,12 +2791,29 @@
 
 .reduced-motion .spot-panel,
 .reduced-motion .spot-panel__media,
+.reduced-motion .spot-panel__proposal-media,
+.reduced-motion .spot-panel__media-image,
+.reduced-motion .map-search-anchor,
+.reduced-motion .map-top-tools,
+.reduced-motion .map-analysis-trigger,
 .reduced-motion .spot-panel__handle-band {
   animation: none;
   transition: none;
 }
+.reduced-motion.map-page.map-page--panel-settling .spot-panel__media,
+.reduced-motion.map-page.map-page--panel-settling .spot-panel__proposal-media,
+.reduced-motion.map-page.map-page--panel-settling .spot-panel__media-image,
+.reduced-motion.map-page.map-page--panel-settling .map-search-anchor,
+.reduced-motion.map-page.map-page--panel-settling .map-top-tools,
+.reduced-motion.map-page.map-page--panel-settling .map-analysis-trigger { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .map-panel-layer--settling .spot-panel { animation: none; }
+  .map-page.map-page--panel-settling .spot-panel__media,
+  .map-page.map-page--panel-settling .spot-panel__proposal-media,
+  .map-page.map-page--panel-settling .spot-panel__media-image,
+  .map-page.map-page--panel-settling .map-search-anchor,
+  .map-page.map-page--panel-settling .map-top-tools,
+  .map-page.map-page--panel-settling .map-analysis-trigger { animation: none; }
 }
 
 /* Map geometry with the confirmed comfortable reading scale at 390 × 844. */
@@ -2826,12 +2885,6 @@
 .map-tool--layer-active::before {
   border-color: #c8d5ef;
   background: #eef4ff;
-}
-.map-page.map-page--panel-large .map-search-anchor,
-.map-page.map-page--panel-large .map-top-tools,
-.map-page.map-page--panel-large .map-analysis-trigger {
-  opacity: 0;
-  pointer-events: none;
 }
 .map-page--panel-large .map-stage::after {
   position: absolute;

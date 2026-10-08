@@ -6,8 +6,8 @@ import { WEATHER_ALERT_REFRESH_MS } from "@/components/weather-alert-state";
 import { MapLayerSheet } from "./map-layer-sheet";
 import { createSpotEditorPresentation, SPOT_EDITOR_ENTER_MS, SPOT_EDITOR_EXIT_MS, type SpotEditorPhase } from "./spot-editor-presentation";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
-import { panelSpringStyle, type PanelCssMotion } from "./panel-spring-style";
-import { MapPanelPresentation, type MapPanelPresentationHandle } from "./panel-presentation";
+import { panelSpringStyle, panelChromeTimeline, type PanelCssMotion } from "./panel-spring-style";
+import { MapPanelPresentation, MapPanelChrome, type MapPanelPresentationHandle } from "./panel-presentation";
 import { createPanelAnimation, type PanelAnimationHost } from "./panel-animation";
 import { panelDragHeight, panelDragOriginHeight, panelSpringFrames } from "./panel-spring";
 import { elasticVelocityFactor } from "@/components/elastic-motion";
@@ -1472,9 +1472,11 @@ export default function MapPage() {
       min: geometry.small, max: geometry.large,
       reducedMotion: getReducedMotion() });
     const host: PanelAnimationHost = {
-      animate: (_selector, keyframes, duration) => {
-        const style = panelSpringStyle(keyframes, duration, ++panelCssSequence.current);
-        setPanelCssMotion({ style });
+      reportsStart: true,
+      animate: (_selector, keyframes, duration, _done, started) => {
+        const sequence = ++panelCssSequence.current;
+        const style = panelSpringStyle(keyframes, duration, sequence, { geometry, hasMedia: panelHasMedia });
+        setPanelCssMotion({ style, duration, sequence, started, chrome: panelChromeTimeline(style, duration) });
       },
       clearAnimation: (_selector, complete) => { setPanelCssMotion(null); complete(); },
     };
@@ -2140,6 +2142,7 @@ export default function MapPage() {
       "--map-search-top": `${mapSafeTop ?? mapCapsuleBottom! + 4}px`,
     }),
     "--spot-editor-motion-duration": `${spotEditorPhase === "closing" ? SPOT_EDITOR_EXIT_MS : SPOT_EDITOR_ENTER_MS}ms`,
+    ...panelCssMotion?.style,
   } as CSSProperties;
 
   return (
@@ -2148,6 +2151,7 @@ export default function MapPage() {
       active={bottomPresentation === "spot-panel"}
       extent={panelExtent}
       hasMedia={panelHasMedia}
+      motion={panelCssMotion}
       deliveryTarget={__DELIVERY_TARGET__}
       className={
         themeClass +
@@ -2157,6 +2161,7 @@ export default function MapPage() {
           ? ` map-page--panel-${panelExtent}`
           : "") +
         (panelDragging ? " map-page--panel-dragging" : "") +
+        (panelSettling ? " map-page--panel-settling" : "") +
         (bottomPresentation === "spot-editor" ? " map-page--spot-editor" : "")
       }
       style={mapPresentationStyle}
@@ -2207,7 +2212,7 @@ export default function MapPage() {
             <Text>今晚去观星</Text>
           </View>
 
-          <View className="map-search-anchor">
+          <MapPanelChrome className="map-search-anchor" motionId={panelCssMotion?.sequence ?? 0} onAnimationStart={name => panelPresentation.current?.startReleaseClock(name)}>
             <Button
               className="map-search-entry focus-ring"
               data-control="map-search-entry"
@@ -2224,9 +2229,9 @@ export default function MapPage() {
               <SemanticIcon name="search" />
               <Text>{finderQuery || FINDER_FIELD_PLACEHOLDER}</Text>
             </Button>
-          </View>
+          </MapPanelChrome>
 
-          <View className="map-top-tools" aria-label="地图工具">
+          <MapPanelChrome className="map-top-tools" label="地图工具">
             <Button
               className="map-tool map-tool--location focus-ring"
               data-control="map-location-control"
@@ -2274,7 +2279,7 @@ export default function MapPage() {
                 setEventModalOpen(true);
               }}
             ><SemanticIcon name="meteor" /></Button> : null}
-          </View>
+          </MapPanelChrome>
 
           <View className="map-feedback-column">
             {activeContext?.timezoneSource && bottomPresentation === "none" ?
@@ -2377,7 +2382,6 @@ export default function MapPage() {
               style={
                 {
                   "--panel-small-content-height": `${panelIdentityHeight}px`,
-                  ...panelCssMotion?.style,
                 } as unknown as Record<string, string>
               }
               onClick={(event) => event.stopPropagation()}

@@ -40,7 +40,7 @@ test("panel cancellation and multi-touch never commit a pending drag", async t =
     springTarget: { current: null }, springRequest: { current: 0 }, setPanelSettling: () => {},
     panelSpring: { current: { start: (_host: unknown, frames: PanelSpringFrame[], complete: () => void) => { springs.push(frames); complete(); } } },
     panelSpringStyle: () => ({}), panelCssSequence: { current: 0 }, setPanelCssMotion: () => {},
-    getReducedMotion: () => false,
+    getReducedMotion: () => false, panelHasMedia: true,
     panelDrag: { current: null }, panelSnapCache, panelGeometryIdentity: "formal:spot:a", panelViewportSize: () => ({ width: 390, height: 844 }), bottomPresentation: "spot-panel", panelExtent: "medium", panelSettling: false,
     setPanelExtent: (value: string) => commits.push(value), setPanelDragOffset: (value: number) => offsets.push(value),
     setPanelDragging: (value: boolean) => { dragging = value; },

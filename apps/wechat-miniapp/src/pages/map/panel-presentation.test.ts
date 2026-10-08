@@ -6,6 +6,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { panelHeightProgress } from "./panel-snap";
+import { panelPresentationAtProgress } from "./panel-spring-style";
 
 const geometry = { small: 181, medium: 368, large: 661, startHeight: 368 };
 
@@ -43,6 +44,24 @@ test("handle movement updates only its presentation owner and cancellation retir
   assert.equal(result.frames.at(-1), null, "cancel/owner retirement removes the live draw frame");
 });
 
+test("late native A→B→A names cannot start a different motion's unchanged chrome node", () => {
+  const source = ts.createSourceFile("presentation.tsx", readFileSync(new URL("./panel-presentation.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxAttribute(node) && node.name.getText(source) === "onAnimationStart" && node.initializer && ts.isJsxExpression(node.initializer)) expression = node.initializer.expression;
+    ts.forEachChild(node, visit);
+  };
+  visit(source); assert.ok(expression);
+  let starts = 0;
+  const handler = vm.runInNewContext(ts.transpileModule(`(${expression.getText(source)});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText,
+    { id: "map-search-anchor-3", onAnimationStart: () => starts++ });
+  handler({target:{id:"map-search-anchor-1"},currentTarget:{id:"map-search-anchor-1"},detail:{animationName:"same-name"}});
+  handler({target:{id:"map-search-anchor-1"},currentTarget:{id:"map-search-anchor-3"},detail:{animationName:"same-name"}});
+  assert.equal(starts, 0, "both original native IDs and Taro-updated currentTarget reject the retired release");
+  handler({target:{id:"map-search-anchor-3"},currentTarget:{id:"map-search-anchor-3"},detail:{animationName:"same-name"}});
+  assert.equal(starts, 1);
+});
+
 test("Taro reconciliation retains content during drag while business changes remain live", async () => {
   // These are Taro's build-time optional DOM flags in this Node-only check.
   for (const name of ["ENABLE_INNER_HTML", "ENABLE_ADJACENT_HTML", "ENABLE_CLONE_NODE", "ENABLE_CONTAINS", "ENABLE_SIZE_APIS", "ENABLE_TEMPLATE_CONTENT", "ENABLE_MUTATION_OBSERVER"]) (globalThis as any)[name] = false;
@@ -52,22 +71,37 @@ test("Taro reconciliation retains content during drag while business changes rem
   const React = createRequire(import.meta.url)(fileURLToPath(new URL("../../../node_modules/react/index.js", import.meta.url)));
   const source = readFileSync(new URL("./panel-presentation.tsx", import.meta.url), "utf8")
     .replace(/^import .*;\r?\n/gm, "").replace(/^export /gm, "");
-  const Presentation = vm.runInNewContext(ts.transpileModule(source + "\nMapPanelPresentation;", {
+  const timers = new Map<number, { at: number; run: () => void }>();
+  let now = 0, timerId = 0;
+  const { Presentation, Chrome } = vm.runInNewContext(ts.transpileModule(source + "\n({Presentation:MapPanelPresentation,Chrome:MapPanelChrome});", {
     compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
   }).outputText, { React, forwardRef: React.forwardRef, useState: React.useState,
-    useImperativeHandle: React.useImperativeHandle, View: "view", panelHeightProgress });
+    createContext: React.createContext, useContext: React.useContext, useLayoutEffect: React.useLayoutEffect, useRef: React.useRef,
+    useImperativeHandle: React.useImperativeHandle, View: "view", panelHeightProgress, panelPresentationAtProgress,
+    setTimeout: (run: () => void, delay: number) => { const id = ++timerId; timers.set(id, { at: now + delay, run }); return id; },
+    clearTimeout: (id: number) => timers.delete(id),
+  });
+  const advance = (time: number) => {
+    now += time;
+    renderer.flushSync(() => { for (const [id, timer] of timers) if (timer.at <= now) { timers.delete(id); timer.run(); } });
+  };
   const ref = React.createRef();
   let ownerRenders = 0, contentRenders = 0;
   let change: (value: string) => void = () => {};
   let deactivate: () => void = () => {};
+  let release: (value: any, extent: string) => void = () => {};
   function Content({ value }: { value: string }) { contentRenders++; return React.createElement("text", {}, value); }
   function Owner() {
     ownerRenders++;
     const [value, setValue] = React.useState("A");
     const [active, setActive] = React.useState(true);
+    const [motion, setMotion] = React.useState(null);
+    const [extent, setExtent] = React.useState("medium");
     change = setValue; deactivate = () => setActive(false);
+    release = (value, next) => { ref.current?.setDragFrame(null); setMotion(value); setExtent(next); };
     return React.createElement(Presentation, { ref, className: "map-page", style: {}, active,
-      extent: "medium", hasMedia: true, deliveryTarget: "WEAPP" }, React.createElement(Content, { value }));
+      extent, motion, hasMedia: true, deliveryTarget: "WEAPP" },
+      React.createElement(Content, { value }), React.createElement(Chrome, { className: "map-top-tools" }, "tools"));
   }
   const container = document.createElement("view");
   try {
@@ -82,10 +116,44 @@ test("Taro reconciliation retains content during drag while business changes rem
     assert.equal(contentRenders, 1, "actual Taro React reconciliation skips the unchanged content subtree");
     renderer.flushSync(() => change("B"));
     assert.equal(contentRenders, 2, "a real content update must still reach the consumer");
-    assert.equal((container.childNodes[0] as any).textContent, "B");
+    assert.equal((container.childNodes[0] as any).textContent, "Btools");
+    const chrome = () => (container.childNodes[0] as any).childNodes[1];
+    const effects = () => new Promise(resolve => setImmediate(resolve));
+    renderer.flushSync(() => release({ style: { "--pcn": "current" }, duration: 100, chrome: [{ at: 0, hidden: false }, { at: 70, hidden: true }] }, "large"));
+    ref.current.startReleaseClock("retired");
+    assert.equal(timers.size, 0, "retired native animationstart cannot start this release");
+    assert.equal(timers.size, 0, "commit must not start the semantic clock before the native CSS animation begins");
+    ref.current.startReleaseClock("current");
+    ref.current.startReleaseClock("current");
+    assert.equal(timers.size, 1, "duplicate native animationstart cannot schedule duplicate clocks");
+    assert.doesNotMatch((container.childNodes[0] as any).className, /panel-chrome-hidden/, "target large must not retire still-visible chrome");
+    assert.equal(chrome().props.ariaHidden, false);
+    const contentBeforeThreshold = contentRenders;
+    advance(69); assert.equal(chrome().props.ariaHidden, false);
+    advance(1); assert.equal(chrome().props.ariaHidden, true);
+    assert.equal(contentRenders, contentBeforeThreshold, "chrome threshold must not rerender the document");
+    renderer.flushSync(() => release({ style: { "--pcn": "current" }, duration: 100, chrome: [{ at: 0, hidden: true }, { at: 30, hidden: false }] }, "medium"));
+    await effects();
+    assert.equal(chrome().props.ariaHidden, true, "reverse release starts with the live hidden phase");
+    ref.current.startReleaseClock("current");
+    advance(30); assert.equal(chrome().props.ariaHidden, false);
+    renderer.flushSync(() => release({ style: { "--pcn": "current" }, duration: 100, chrome: [{ at: 0, hidden: false }, { at: 90, hidden: true }] }, "large"));
+    await effects();
+    ref.current.startReleaseClock("current");
+    renderer.flushSync(() => release(null, "medium"));
+    await effects();
+    assert.equal(timers.size, 0, "cancel retires the old release threshold callback");
+    advance(100); assert.equal(chrome().props.ariaHidden, false);
+    renderer.flushSync(() => release({ style: { "--pcn": "current" }, duration: 100, chrome: [{ at: 0, hidden: false }, { at: 90, hidden: true }] }, "large"));
+    await effects();
+    ref.current.startReleaseClock("current");
+    renderer.flushSync(() => ref.current.setDragFrame({ extent: "medium", geometry, offset: -40 }));
+    await effects();
+    assert.equal(timers.size, 0, "a new direct manipulation retires the prior release clock");
     renderer.flushSync(() => ref.current.setDragFrame({ extent: "medium", geometry, offset: -280 }));
     assert.match((container.childNodes[0] as any).className, /panel-chrome-hidden/);
     renderer.flushSync(deactivate);
+    await effects();
     const hidden = container.childNodes[0] as any;
     assert.doesNotMatch(hidden.className, /panel-media-visible|panel-chrome-hidden/);
     assert.match(hidden.style.cssText, /--panel-drag-offset: ?0px/);

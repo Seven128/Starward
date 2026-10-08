@@ -39,13 +39,29 @@ test("spring preserves initial height, follows release direction and settles exa
   for (const frames of [forward, reversed, panelSpringFrames({ ...base, from: 690, to: 700, velocity: 3 }), panelSpringFrames({ ...base, from: 225, to: 220, velocity: -3 })]) {
     assert.ok(frames.every(frame => Number.isFinite(frame.height)));
     assert.ok(frames.slice(1).every(frame => frame.height >= base.min && frame.height <= base.max));
-    assert.ok(frames.reduce((sum, frame) => sum + frame.duration, 0) <= 650);
+    assert.ok(frames.reduce((sum, frame) => sum + frame.duration, 0) <= 280);
   }
   assert.equal(forward.at(-1)!.height, 600);
   assert.equal(reversed.at(-1)!.height, 600);
   const regrab = panelSpringFrames({ ...base, from: forward[4]!.height, to: 350, velocity: -0.5 });
   assert.equal(regrab[0]!.height, forward[4]!.height);
   assert.equal(regrab.at(-1)!.height, 350);
+});
+
+test("all panel releases retire by 280ms while keeping the release velocity across an accelerated solver clock", () => {
+  for (const from of [136, 181, 368, 480, 650, 661.475]) for (const to of [181, 368, 661.475]) for (const velocity of [-3, 0, 3]) {
+    const frames = panelSpringFrames({ from, to, velocity, min: 181, max: 661.475 });
+    assert.ok(frames.reduce((sum, frame) => sum + frame.duration, 0) <= 280);
+    assert.equal(frames[0]!.height, from === to ? to : from);
+    assert.equal(frames.at(-1)!.height, to);
+    if (frames.length < 2 || from < 181 || from === to) continue;
+    const rate = 16 / frames[1]!.duration;
+    // Independently reproduce the existing solver's first 4 integration steps.
+    let height = from, speed = velocity / rate * 1000;
+    for (let step = 0; step < 4; step++) { speed += (-420 * (height - to) - 34 * speed) * .004; height += speed * .004; }
+    assert.ok(Math.abs(frames[1]!.height - Math.max(181, Math.min(661.475, height))) < 1e-8,
+      "accelerating time must scale the initial solver velocity inversely, rather than amplify the finger velocity");
+  }
 });
 
 test("boundary snaps never overshoot and recoil after a fast release or an elastic pull", () => {

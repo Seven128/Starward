@@ -6,7 +6,7 @@ This on-demand subdomain node normatively continues `Cross-Control And State Inv
 
 手柄与正文纵滚的竞争由 Map 现有 `panelDragging` owner 处理：有效单指按下即占有手柄操作，不等待异步几何；正式点和私人草稿/待审面板的主 ScrollView 共用 `panelDocumentScrollEnabled`，小档或手柄操作中关闭纵滚。正常结束、取消及既有页面/身份/布局失效路径释放该 owner，保留文档阅读位置并恢复可滚动档位的正文操作；横向照片相册仍由其自身 ScrollView 负责。手柄继续在原文档中随内容离开视口，三档、内容与固定动作不变。当前 WEAPP 实测原生 `catchMove` 不能单独阻止 ScrollView 的正文位移，不能把事件拦截成功当作手柄竞争已解决；自然平台取消、运动中重抓和真机连续表现仍需分别核验。
 
-逐次手柄移动的高度与媒体/地图工具显隐由 Map 局部 `panel-presentation.MapPanelPresentation` 绘制：根节点持有实时偏移，正式与私人面板继承同一呈现值；保留调用者传入的内容元素，避免逐次移动重新执行 Map 及正文的 React 渲染。手势、几何、吸附档位、滚动占有和业务数据仍由原 Map owner 管理；其取消、隐藏、身份及布局失效路径退休呈现帧，真实业务更新继续更新正文。该拆分不改变采用构图或运动参数，开发层的渲染次数不认证原生重排成本或手机流畅度；释放轨迹、途中重抓及真机连续过程继续按实际输出验收。
+逐次手柄移动的高度与媒体/地图工具显隐由 Map 局部 `panel-presentation.MapPanelPresentation` 绘制：根节点持有实时偏移，正式与私人面板继承同一呈现值；保留调用者传入的内容元素，避免逐次移动重新执行 Map 及正文的 React 渲染。手势、几何、吸附档位、滚动占有和业务数据仍由原 Map owner 管理；其取消、隐藏、身份及布局失效路径退休呈现帧，真实业务更新继续更新正文。直接拖动与释放共用 `panel-spring-style` 的高度投影；释放时根节点一次提供有界 CSS 轨迹，媒体、私人媒体间距、图像及地图工具从同一时序继承。正式媒体保留采用资源的零纵边距，私人媒体的负边距连续跟随 reveal，不能在首次露出时跳变。Map 局部弹簧遵守 DESIGN 的 ≤280ms 释放上限；原生播放开始 ack 后才计算清理和工具透明度≤.08的命中/语义退场，变化的 native View ID 拒绝迟到代次而不重挂正文，缺开始事件由有界 watchdog 退休。有限 WEAPP 已观察两消费者开始/结束及样式晚于结束清理、静态终态与浏览状态恢复；开发渲染次数、原生事件和数据采样均不认证连续像素、途中重抓、原生重排成本或手机流畅度，仍须按实际输出验收。
 
 The adopted daytime layer composition is reached through the sole [Map resource entry](../../../../../docs/design-resources/wechat-miniapp/map/ADOPTED.md). Read its layer-selector package together with the [shared observation-time owner](shared-state-and-recovery.md#shared-observation-time-resource) and its resource before implementing this control.
 
