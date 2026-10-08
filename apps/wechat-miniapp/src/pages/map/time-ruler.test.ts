@@ -24,6 +24,7 @@ test("map and panel clocks keep midnight in 00–23 hours on the correct date", 
 });
 
 function render(disabled = false, selectedAt = "2026-09-06T12:00:00Z", frames: { atUtc: string }[] = [{ atUtc: "2026-09-06T12:00:00Z" }, { atUtc: "2026-09-06T13:00:00Z" }], emptyMessage = "当前日期没有可用的时间切片。") {
+  let dateFormats = 0, clockFormats = 0;
   const positions:number[]=[];
   const effects: (() => void | (() => void))[] = [];
   const hooks: any[] = [], dependencies: unknown[][] = [];
@@ -45,8 +46,14 @@ function render(disabled = false, selectedAt = "2026-09-06T12:00:00Z", frames: {
     useDidHide: (callback: () => void) => { hide = callback; },
     useState: (value: unknown) => { const slot = cursor++; if (!(slot in hooks)) hooks[slot] = value; return [hooks[slot], (next: unknown) => { hooks[slot] = next; }]; },
     useRef: (value: unknown) => { const slot = cursor++; if (!(slot in hooks)) hooks[slot] = {current:value}; return hooks[slot]; },
+    useMemo: (create: () => unknown, deps: unknown[]) => {
+      const slot = cursor++;
+      if (!(slot in hooks) || deps.some((value, index) => value !== hooks[slot].deps[index])) hooks[slot] = { value: create(), deps };
+      return hooks[slot].value;
+    },
     nearestMapTimeFrameIndex: (rows: {atUtc:string}[], at:string) => Math.max(0,rows.findIndex(row=>row.atUtc===at)),
-    calendarDateInTimezone, clockTimeInTimezone,
+    calendarDateInTimezone: (date: Date, timezone: string) => { dateFormats++; return calendarDateInTimezone(date, timezone); },
+    clockTimeInTimezone: (date: Date, timezone: string) => { clockFormats++; return clockTimeInTimezone(date, timezone); },
   });
   const previews: number[] = [], commits: number[] = [];
   let cancelled = 0;
@@ -66,11 +73,38 @@ function render(disabled = false, selectedAt = "2026-09-06T12:00:00Z", frames: {
     for (const slot of pendingEffects) { const cleanup = effects[slot]!(); if (cleanup) cleanups.push(cleanup); }
   };
   rerender();
-  return { positions, get root() { return root; }, get scroll() { return root.children.find(child=>child?.type==="scroll")?.props ?? {}; }, previews, commits, hide: () => hide(), rerender,
+  return { positions, get root() { return root; }, get formats() { return { date: dateFormats, clock: clockFormats }; }, get scroll() { return root.children.find(child=>child?.type==="scroll")?.props ?? {}; }, previews, commits, hide: () => hide(), rerender,
     unmount: () => cleanups.forEach((cleanup) => cleanup?.()),
     changeInputs: () => effects[1]!(),
     get cancelled() { return cancelled; } };
 }
+
+test("panel drag and fractional ruler movement reuse time labels while data changes refresh them", () => {
+  const frames = Array.from({ length: 24 }, (_, index) => ({ atUtc: new Date(Date.UTC(2026, 8, 6, index)).toISOString() }));
+  const ruler = render(false, frames[12]!.atUtc, frames);
+  const original = JSON.stringify(ruler.root);
+  const firstFormats = ruler.formats;
+  assert.ok(firstFormats.clock > 0 && firstFormats.date > 0, "labels must use the real zoned-time owner initially");
+  ruler.rerender({ frames: frames.map(frame => ({ ...frame })) });
+  assert.deepEqual(ruler.formats, firstFormats, "an equivalent scene during panel dragging cannot rebuild all Intl labels");
+  assert.equal(JSON.stringify(ruler.root), original);
+  ruler.scroll.onTouchStart(singleTouch);
+  ruler.scroll.onScroll({ detail: { scrollLeft: 12.5 * 66 } });
+  ruler.rerender();
+  assert.deepEqual(ruler.formats, firstFormats, "native fractional progress changes the arc without formatting unchanged times");
+  const beforeTimeChange = JSON.stringify(ruler.root);
+  ruler.rerender({ selectedAt: frames[13]!.atUtc });
+  assert.notEqual(JSON.stringify(ruler.root), beforeTimeChange);
+  assert.ok(ruler.formats.clock > firstFormats.clock, "the current time's accessible label follows the changed selection");
+  const beforeFrameChange = ruler.formats;
+  ruler.rerender({ frames: [{ atUtc: "2026-09-07T00:00:00Z" }] });
+  assert.ok(ruler.formats.date > beforeFrameChange.date, "a different scene must refresh its labels");
+  assert.match(JSON.stringify(ruler.root), /09\/07 00:00/);
+  const beforeZoneChange = ruler.formats;
+  ruler.rerender({ timezone: "Asia/Shanghai" });
+  assert.ok(ruler.formats.date > beforeZoneChange.date);
+  assert.match(JSON.stringify(ruler.root), /09\/07 08:00/, "both visible and accessible times follow the actual zone");
+});
 test("an empty ruler shows its consumer's actual loading, failure or zero-result meaning", () => {
   for (const message of ["正在读取云量时间切片。", "云量时间切片暂不可用，请重试地图数据。", "当前日期没有可用的云量时间切片。"] ) {
     const ruler = render(true, "2026-09-06T12:00:00Z", [], message);

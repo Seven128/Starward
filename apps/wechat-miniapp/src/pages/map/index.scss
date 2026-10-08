@@ -2731,8 +2731,20 @@
     }
   }
 }
-.spot-panel--spring {
+.map-panel-layer--settling .spot-panel {
   animation: var(--panel-spring-name) var(--panel-spring-duration) linear both;
+}
+
+// These values follow the same live height as the handle. A second CSS
+// transition would keep the gallery and map controls behind the finger.
+.map-page.map-page--panel-dragging .map-search-anchor,
+.map-page.map-page--panel-dragging .map-top-tools,
+.map-page.map-page--panel-dragging .map-analysis-trigger,
+.map-page.map-page--panel-dragging .spot-panel__media,
+.map-page.map-page--panel-dragging .spot-panel__proposal-media,
+.map-page.map-page--panel-dragging .spot-panel__media-image,
+.map-page.map-page--panel-dragging .spot-panel__handle-band {
+  transition: none;
 }
 
 .reduced-motion .spot-panel,
@@ -2742,7 +2754,7 @@
   transition: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .spot-panel--spring { animation: none; }
+  .map-panel-layer--settling .spot-panel { animation: none; }
 }
 
 /* Map geometry with the confirmed comfortable reading scale at 390 × 844. */

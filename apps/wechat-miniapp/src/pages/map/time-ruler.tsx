@@ -1,7 +1,7 @@
 import { createRulerScrollPosition } from "@/components/ruler-scroll-position";
 import { createScrollSettlement } from "@/components/scroll-settlement";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { MapSceneTimeFrame } from "@starward/miniapp-contracts";
 import { nearestMapTimeFrameIndex } from "./map-time-frame";
@@ -98,6 +98,13 @@ export function MapTimeRuler({
   const cancelCallback = useRef(onCancel);
   cancelCallback.current = onCancel;
   const frameIdentity = frames.map((frame) => frame.atUtc).join("|");
+  // The axis moves on every native scroll and while the enclosing spot panel
+  // is dragged. Its zoned labels change only with the actual times or zone.
+  const timeLabels = useMemo(() => frames.map(frame => ({
+    full: formatTime(frame.atUtc, timezone),
+    compact: formatTime(frame.atUtc, timezone, true),
+  })), [frameIdentity, timezone]);
+  const selectedTimeLabel = useMemo(() => formatTime(selectedAt, timezone), [selectedAt, timezone]);
 
   const cancelInteraction = () => {
     const pending = settlement.active;
@@ -183,7 +190,7 @@ export function MapTimeRuler({
         <View className="map-time-ruler__heading">
           <Text className="type-label">观测时间</Text>
           <Text className="type-caption">
-            {selectedAt ? formatTime(selectedAt, timezone) : "尚未确定观测时间"}
+            {selectedAt ? selectedTimeLabel : "尚未确定观测时间"}
           </Text>
         </View>
         <Text className="type-caption">{emptyMessage}</Text>
@@ -204,7 +211,7 @@ export function MapTimeRuler({
         showScrollbar={false}
         scrollLeft={scrollLeft}
         scrollWithAnimation
-        ariaLabel={`观测时间切片；当前${formatTime(selectedAt, timezone)}；点击切片可直接选择时间`}
+        ariaLabel={`观测时间切片；当前${selectedTimeLabel}；点击切片可直接选择时间`}
         onTouchStart={(event) => {
           if (disabled || (event as unknown as { touches?: readonly unknown[] }).touches?.length !== 1) {
             cancelInteraction();
@@ -252,7 +259,7 @@ export function MapTimeRuler({
                 style={style}
                 data-time-index={frameIndex}
                 disabled={disabled}
-                ariaLabel={`${formatTime(frame.atUtc, timezone)}${moonPhases !== undefined ? `，${moonPhaseLabel(phase)}` : ""}${selected ? "，已选择" : ""}`}
+                ariaLabel={`${timeLabels[frameIndex]!.full}${moonPhases !== undefined ? `，${moonPhaseLabel(phase)}` : ""}${selected ? "，已选择" : ""}`}
                 onClick={() => {
                   if (disabled) return;
                   settlement.cancel();
@@ -260,7 +267,7 @@ export function MapTimeRuler({
                 }}
               >
                 <View className="map-time-ruler__tick" aria-hidden="true" />
-                <Text>{formatTime(frame.atUtc, timezone, true)}</Text>
+                <Text>{timeLabels[frameIndex]!.compact}</Text>
                 {moonPhases !== undefined ? (
                   <MoonPhaseImage phase={phase} className="map-time-ruler__moon" decorative />
                 ) : null}

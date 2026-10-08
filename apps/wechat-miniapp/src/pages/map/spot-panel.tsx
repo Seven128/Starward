@@ -1,6 +1,5 @@
 import { mediaSource } from "@/utils/media-source";
 import { isProductSource, productSourceNames } from "@/utils/source-presentation";
-import type { PanelCssMotion } from "./panel-spring-style";
 import { Block, Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import type {
   MapSceneTimeFrame,
@@ -151,7 +150,6 @@ export function SpotInformationPanel({
   spot,
   visible = true,
   settling = false,
-  springMotion,
   detail,
   detailPending,
   detailError,
@@ -208,7 +206,6 @@ export function SpotInformationPanel({
   spot: SpotSummary;
   visible?: boolean;
   settling?: boolean;
-  springMotion?: PanelCssMotion | null;
   detail: SpotDetail | null;
   detailPending: boolean;
   detailError: unknown;
@@ -462,7 +459,7 @@ export function SpotInformationPanel({
   return (
     <View
       id="spot-information-panel"
-      className={`spot-panel${springMotion ? " spot-panel--spring" : ""} spot-panel--${extent}${phase === "closing" ? " spot-panel--closing" : ""}${media.length ? " spot-panel--with-media" : ""}`}
+      className={`spot-panel spot-panel--${extent}${phase === "closing" ? " spot-panel--closing" : ""}${media.length ? " spot-panel--with-media" : ""}`}
       data-control="map-spot-information-panel"
       data-extent={extent}
       data-phase={phase}

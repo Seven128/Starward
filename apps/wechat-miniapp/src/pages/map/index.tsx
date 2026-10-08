@@ -2186,6 +2186,7 @@ export default function MapPage() {
           ? ` map-page--panel-${panelExtent}`
           : "") +
         (panelMediaReveal > 0 ? " map-page--panel-media-visible" : "") +
+        (panelDragging ? " map-page--panel-dragging" : "") +
         (panelChromeHidden ? " map-page--panel-chrome-hidden" : "") +
         (bottomPresentation === "spot-editor" ? " map-page--spot-editor" : "")
       }
@@ -2438,7 +2439,6 @@ export default function MapPage() {
                 onViewerBackHandlerChange={registerImageViewerBack}
               /> : selected ? <SpotInformationPanel
                 settling={panelSettling}
-                springMotion={panelCssMotion}
                 visible={pageVisible && bottomPresentation === "spot-panel"}
                 spot={selected}
                 detail={spotDetail}
