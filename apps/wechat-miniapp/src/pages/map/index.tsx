@@ -316,6 +316,7 @@ export default function MapPage() {
   const [panelPhase, setPanelPhase] = useState<"idle" | "closing">("idle");
   const [panelDragOffset, setPanelDragOffset] = useState(0);
   const [panelDragging, setPanelDragging] = useState(false);
+  const panelDocumentScrollEnabled = panelExtent !== "small" && !panelDragging;
   const [panelSettling, setPanelSettling] = useState(false);
   const [panelCssMotion, setPanelCssMotion] = useState<PanelCssMotion | null>(null);
   const panelCssSequence = useRef(0);
@@ -1323,6 +1324,9 @@ export default function MapPage() {
     const startX = touch?.clientX ?? touch?.pageX;
     const drag = { startY, startX: typeof startX === "number" && Number.isFinite(startX) ? startX : undefined, identifier: touch?.identifier, extent: panelExtent, samples: [{ y: startY, at: Date.now() }], releasedAt: 0, moved: false, offset: 0, pointerOffset: 0, rawStartHeight: 0, geometry: null as PanelSnapGeometry | null, released: false };
     panelDrag.current = drag;
+    // Reserve the native document for this handle gesture before geometry
+    // arrives; its existing release/cancel owner restores body scrolling.
+    setPanelDragging(true);
     const viewport = panelViewportSize();
     const cached = panelSnapCache.current;
     if (cached && viewport && cached.identity === panelGeometryIdentity && cached.width === viewport.width && cached.height === viewport.height && !panelSettling && !springTarget.current) {
@@ -2395,6 +2399,7 @@ export default function MapPage() {
                 submission={selectedProposal}
                 variant={selectedProposal.submissionState === "PENDING_REVIEW" || selectedProposal.submissionState === "ACCEPTED" ? "PENDING" : "DRAFT"}
                 extent={panelExtent}
+                documentScrollEnabled={panelDocumentScrollEnabled}
                 phase={panelPhase}
                 onExtent={onPanelExtent}
                 onClose={closeSpotPanel}
@@ -2422,6 +2427,7 @@ export default function MapPage() {
                 contextError={visibleSpotContextAttempt?.error ?? null}
                 onContextRecover={() => { if (selected) void resolveSpotContext(selected); }}
                 extent={panelExtent}
+                documentScrollEnabled={panelDocumentScrollEnabled}
                 phase={panelPhase}
                 favorite={favoriteIds.includes(selected.spotId)}
                 favoritePending={favoritePending}

@@ -160,6 +160,7 @@ export function SpotInformationPanel({
   contextError,
   onContextRecover,
   extent,
+  documentScrollEnabled,
   phase,
   favorite,
   favoritePending,
@@ -215,6 +216,7 @@ export function SpotInformationPanel({
   contextError: unknown;
   onContextRecover: () => void;
   extent: SpotPanelExtent;
+  documentScrollEnabled: boolean;
   phase: SpotPanelPhase;
   favorite: boolean;
   favoritePending: boolean;
@@ -468,7 +470,7 @@ export function SpotInformationPanel({
         <ScrollView
           className="spot-panel__scroll spot-panel__scroll--full-bleed-plan"
           id="spot-panel-scroll"
-          scrollY={extent !== "small"}
+          scrollY={documentScrollEnabled}
           {...(restoredScrollTop === undefined ? {} : { scrollTop: restoredScrollTop })}
           scrollIntoView={scrollAnchor}
           scrollWithAnimation={false}

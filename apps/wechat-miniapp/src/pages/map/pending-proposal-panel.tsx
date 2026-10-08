@@ -10,11 +10,12 @@ import { currentDraftUserId, getContributionMedia } from "@/services/api-client"
 import type { SpotPanelExtent, SpotPanelPhase } from "./spot-panel";
 import { pendingProposalPanelValues } from "./pending-proposal-model";
 
-export function PendingProposalPanel({ submission, variant = "PENDING", extent, phase, onExtent, onClose, onCloud, onEdit,
+export function PendingProposalPanel({ submission, variant = "PENDING", extent, documentScrollEnabled, phase, onExtent, onClose, onCloud, onEdit,
   onHandleTouchStart, onHandleTouchMove, onHandleTouchEnd, onHandleTouchCancel, onViewerBackHandlerChange }: {
   submission: ContributionSubmission;
   variant?: "DRAFT" | "PENDING";
   extent: SpotPanelExtent;
+  documentScrollEnabled: boolean;
   phase: SpotPanelPhase;
   onExtent: (extent: SpotPanelExtent) => void;
   onClose: () => void;
@@ -118,7 +119,7 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
       <View className="spot-panel__snap-large" />
     </View>
     <View className="spot-panel__scroll-frame">
-      <ScrollView id="spot-proposal-scroll" className="spot-panel__scroll" scrollY={extent !== "small"} type="custom" enhanced showScrollbar={false}
+      <ScrollView id="spot-proposal-scroll" className="spot-panel__scroll" scrollY={documentScrollEnabled} type="custom" enhanced showScrollbar={false}
         ariaLabel={`${draft ? "草稿" : "审核中"}观星点资料`}>
         {leadMedia ? <View className="spot-panel__proposal-media" data-control="spot-media-gallery" ariaLabel={`${model.name}提交照片，共${model.media.length}张`}>
           <ScrollView id="spot-proposal-media-strip" className="spot-panel__media-strip" scrollX={model.media.length > 1} scrollLeft={galleryPosition.returnLeft} enhanced showScrollbar={false}

@@ -48,6 +48,18 @@ test("panel cancellation and multi-touch never commit a pending drag", async t =
   };
   const handlers = vm.runInNewContext(ts.transpileModule(`(() => { ${declarations.join("\n")} return { ${names.join(",")} }; })()`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, environment) as Record<string, (event?: unknown) => void>;
   const touch = (y: number, count = 1) => ({ touches: Array.from({ length: count }, () => ({ clientY: y })) });
+  await t.test("handle owns document scrolling while initial geometry is still pending", () => {
+    delayed = true;
+    handlers.onHandleTouchStart!(touch(100));
+    try {
+      assert.equal(dragging, true, "the native document must stop scrolling from the accepted handle start");
+    } finally {
+      handlers.onHandleTouchCancel!();
+      pending.shift()!(geometryRows);
+      delayed = false;
+    }
+    assert.equal(dragging, false, "cancellation releases scrolling and late geometry cannot reacquire it");
+  });
   await t.test("identity layout or resize retires an in-flight drag before new anchors", () => {
     delayed = true;
     handlers.onHandleTouchStart!(touch(100));
