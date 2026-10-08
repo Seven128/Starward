@@ -7,13 +7,14 @@ import { MapLayerSheet } from "./map-layer-sheet";
 import { createSpotEditorPresentation, SPOT_EDITOR_ENTER_MS, SPOT_EDITOR_EXIT_MS, type SpotEditorPhase } from "./spot-editor-presentation";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { panelSpringStyle, type PanelCssMotion } from "./panel-spring-style";
+import { MapPanelPresentation, type MapPanelPresentationHandle } from "./panel-presentation";
 import { createPanelAnimation, type PanelAnimationHost } from "./panel-animation";
 import { panelDragHeight, panelDragOriginHeight, panelSpringFrames } from "./panel-spring";
 import { elasticVelocityFactor } from "@/components/elastic-motion";
 import { markerGroups, markerItems } from "./map-markers";
 import { privateContributionMarkerItems, privateContributionMarkers } from "./private-contribution-markers";
 import { ContributionEditor, type ContributionCandidatePreview, type ContributionLeaveGuard } from "@/content/contribution/contribution-editor";
-import { panelIdentityMinimumHeight, panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, panelHeightProgress, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
+import { panelIdentityMinimumHeight, panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import { restoreMapBootstrapContext, retryObservationScene, spotSelectionAllowsContextRestore } from "./context-restore";
 import { canApplyContextRestore, sameContextVersion } from "@/services/observation-context-version";
@@ -153,16 +154,6 @@ interface NativeLayerPolygon {
 
 type BottomPresentation = "none" | "spot-panel" | "layer-sheet" | "spot-editor";
 const SPOT_EDITOR_TOP_PX = 230;
-
-const PANEL_POSITION: Record<SpotPanelExtent, number> = {
-  small: 0,
-  medium: 0.5,
-  large: 1,
-};
-
-function clampUnit(value: number) {
-  return Math.min(1, Math.max(0, value));
-}
 
 function layerProjectionFingerprint(polygons: readonly NativeLayerPolygon[]) {
   let fingerprint = 2_166_136_261;
@@ -315,7 +306,12 @@ export default function MapPage() {
   const panelExtentRef = useRef<SpotPanelExtent>("medium");
   panelExtentRef.current = panelExtent;
   const [panelPhase, setPanelPhase] = useState<"idle" | "closing">("idle");
-  const [panelDragOffset, setPanelDragOffset] = useState(0);
+  const panelPresentation = useRef<MapPanelPresentationHandle>(null);
+  const setPanelDragOffset = (offset: number) => {
+    const drag = panelDrag.current;
+    panelPresentation.current?.setDragFrame(drag?.geometry
+      ? { extent: drag.extent, geometry: drag.geometry, offset } : null);
+  };
   const [panelDragging, setPanelDragging] = useState(false);
   const panelDocumentScrollEnabled = panelExtent !== "small" && !panelDragging;
   const [panelSettling, setPanelSettling] = useState(false);
@@ -2111,30 +2107,11 @@ export default function MapPage() {
         : selected?.media.some((media) =>
             mediaIsRenderable(media, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__))),
   );
-  const panelPosition =
-    bottomPresentation === "spot-panel"
-      ? panelDrag.current?.geometry
-        ? panelHeightProgress(panelDrag.current.geometry, panelDrag.current.geometry[panelExtent] - panelDragOffset)
-        : PANEL_POSITION[panelExtent]
-      : 0;
-  const panelMediaReveal = panelHasMedia
-    ? clampUnit((panelPosition - 0.5) / 0.28)
-    : 0;
-  const panelChromeOpacity =
-    bottomPresentation === "spot-panel"
-      ? clampUnit(1 - clampUnit((panelPosition - 0.82) / 0.12))
-      : 1;
-  const panelChromeHidden =
-    bottomPresentation === "spot-panel" && panelChromeOpacity <= 0.08;
   const {
     statusBarHeight: mapStatusBarHeight,
     capsuleBottom: mapCapsuleBottom,
     safeTop: mapSafeTop,
   } = nativeNavigationInsets();
-  // The adopted 390 px composition keeps the large-extent gallery at about
-  // 156 px.  Do not let tall simulator/device viewports turn it into a hero
-  // image and push the spot identity below the first screen.
-  const panelMediaMaxHeightRpx = 300;
   let embeddedEditorHeightPx: number | undefined;
   try {
     const windowInfo = Taro.getWindowInfo();
@@ -2152,10 +2129,6 @@ export default function MapPage() {
   } catch {
     // The CSS fallback remains bounded when native window metrics are absent.
   }
-  const panelMediaHeightRpx = Math.round(
-    panelMediaMaxHeightRpx * panelMediaReveal,
-  );
-  const panelHandleBandHeightRpx = Math.round(40 * (1 - panelMediaReveal));
   const mapPresentationStyle = {
     ...(mapStatusBarHeight === undefined ? {} : {
       "--map-title-top": `${mapStatusBarHeight + 4}px`,
@@ -2166,18 +2139,16 @@ export default function MapPage() {
       // simulator metrics place the search field inside the native capsule.
       "--map-search-top": `${mapSafeTop ?? mapCapsuleBottom! + 4}px`,
     }),
-    "--map-chrome-opacity": String(panelChromeOpacity),
     "--spot-editor-motion-duration": `${spotEditorPhase === "closing" ? SPOT_EDITOR_EXIT_MS : SPOT_EDITOR_ENTER_MS}ms`,
-    "--panel-media-reveal": String(panelMediaReveal),
-    "--panel-media-height": `${panelMediaHeightRpx}rpx`,
-    "--panel-media-margin-top": panelMediaReveal ? "-40rpx" : "0rpx",
-    "--panel-handle-band-height": `${panelHandleBandHeightRpx}rpx`,
-    "--panel-media-image-offset": `${Math.round(-18 * (1 - panelMediaReveal))}rpx`,
-    "--panel-media-image-scale": String(1.02 - 0.02 * panelMediaReveal),
   } as CSSProperties;
 
   return (
-    <><SystemMotionProbe /><View
+    <><SystemMotionProbe /><MapPanelPresentation
+      ref={panelPresentation}
+      active={bottomPresentation === "spot-panel"}
+      extent={panelExtent}
+      hasMedia={panelHasMedia}
+      deliveryTarget={__DELIVERY_TARGET__}
       className={
         themeClass +
         " map-page location-" +
@@ -2185,15 +2156,10 @@ export default function MapPage() {
         (bottomPresentation === "spot-panel"
           ? ` map-page--panel-${panelExtent}`
           : "") +
-        (panelMediaReveal > 0 ? " map-page--panel-media-visible" : "") +
         (panelDragging ? " map-page--panel-dragging" : "") +
-        (panelChromeHidden ? " map-page--panel-chrome-hidden" : "") +
         (bottomPresentation === "spot-editor" ? " map-page--spot-editor" : "")
       }
       style={mapPresentationStyle}
-      data-miniapp-production-root
-      data-route="map"
-      data-delivery-target={__DELIVERY_TARGET__}
     >
       {!eventModalPresent ? <FloatingNotificationHost /> : null}
       {navigationHandoff.warning}
@@ -2410,7 +2376,6 @@ export default function MapPage() {
               className={`map-panel-layer${panelSettling ? " map-panel-layer--settling" : ""}${panelDragging ? " map-panel-layer--dragging" : ""}`}
               style={
                 {
-                  "--panel-drag-offset": `${panelDragOffset}px`,
                   "--panel-small-content-height": `${panelIdentityHeight}px`,
                   ...panelCssMotion?.style,
                 } as unknown as Record<string, string>
@@ -2686,6 +2651,6 @@ export default function MapPage() {
       >
         <Text>{contextTimeLabel}</Text>
       </View>
-    </View></>
+    </MapPanelPresentation></>
   );
 }

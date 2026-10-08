@@ -6,6 +6,8 @@ This on-demand subdomain node normatively continues `Cross-Control And State Inv
 
 手柄与正文纵滚的竞争由 Map 现有 `panelDragging` owner 处理：有效单指按下即占有手柄操作，不等待异步几何；正式点和私人草稿/待审面板的主 ScrollView 共用 `panelDocumentScrollEnabled`，小档或手柄操作中关闭纵滚。正常结束、取消及既有页面/身份/布局失效路径释放该 owner，保留文档阅读位置并恢复可滚动档位的正文操作；横向照片相册仍由其自身 ScrollView 负责。手柄继续在原文档中随内容离开视口，三档、内容与固定动作不变。当前 WEAPP 实测原生 `catchMove` 不能单独阻止 ScrollView 的正文位移，不能把事件拦截成功当作手柄竞争已解决；自然平台取消、运动中重抓和真机连续表现仍需分别核验。
 
+逐次手柄移动的高度与媒体/地图工具显隐由 Map 局部 `panel-presentation.MapPanelPresentation` 绘制：根节点持有实时偏移，正式与私人面板继承同一呈现值；保留调用者传入的内容元素，避免逐次移动重新执行 Map 及正文的 React 渲染。手势、几何、吸附档位、滚动占有和业务数据仍由原 Map owner 管理；其取消、隐藏、身份及布局失效路径退休呈现帧，真实业务更新继续更新正文。该拆分不改变采用构图或运动参数，开发层的渲染次数不认证原生重排成本或手机流畅度；释放轨迹、途中重抓及真机连续过程继续按实际输出验收。
+
 The adopted daytime layer composition is reached through the sole [Map resource entry](../../../../../docs/design-resources/wechat-miniapp/map/ADOPTED.md). Read its layer-selector package together with the [shared observation-time owner](shared-state-and-recovery.md#shared-observation-time-resource) and its resource before implementing this control.
 
 小档下拖的生产边界由 `pages/map/panel-spring.panelDragHeight` 负责：遵循[2026-09-22下沿修订](shared-state-and-recovery.md#公共弹性抽屉2026-09-22-用户修订)，小档以下允许有界阻尼位移且不关闭；后续大档上沿防回落修复仍使用硬上限。缓存/延迟几何路径共用该规则，释放从最后可见的压缩高度起，不被迟到测量夹回小档；重抓由共享 `elastic-motion.elasticRawPosition` 还原物理起点，首帧不重复施加阻力，释放速度使用同一阻力导数。三档、单内容树、固定动作和导航保持。2026-10-05定点恢复下沿行为，不采用整组候选视觉；同一当前构建的原生连续拖动、释放、途中重抓反向及身份/地址恢复仍需核验。
