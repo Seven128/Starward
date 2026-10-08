@@ -11,10 +11,29 @@ type ChromeRequest = {
 let generation = 0;
 let active = false;
 let pending: ChromeRequest | undefined;
+let latestMode: DisplayMode = "DAY";
+const photoViewerOwners = new Set<symbol>();
+
+/** Photos always use a dark surface; release restores the latest page theme. */
+export function retainPhotoViewerNativeChrome() {
+  const owner = Symbol("photo-viewer");
+  photoViewerOwners.add(owner);
+  let released = false;
+  return {
+    ready: syncNativeChrome(latestMode),
+    release() {
+      if (released) return Promise.resolve();
+      released = true;
+      photoViewerOwners.delete(owner);
+      return syncNativeChrome(latestMode);
+    },
+  };
+}
 
 // Native writes cannot be cancelled. Finish every dispatched write before the
 // next batch, and retain only the latest pending mode across page consumers.
 export function syncNativeChrome(mode: DisplayMode): Promise<void> {
+  latestMode = mode;
   return new Promise((resolve, reject) => {
     const nextGeneration = ++generation;
     if (pending) {
@@ -61,7 +80,8 @@ async function applyNativeChrome(mode: DisplayMode, isCurrent: () => boolean) {
   const theme = NATIVE_CHROME_THEME[mode];
   // Sky remains dark in day mode; native status text must follow the surface.
   const isSky = Taro.getCurrentPages().at(-1)?.route === "sky/detail/index";
-  const canvas = isSky && mode !== "OBSERVATION" ? "#080D17" : theme.canvas;
+  const isPhotoViewer = photoViewerOwners.size > 0;
+  const canvas = isPhotoViewer && mode !== "OBSERVATION" ? "#131419" : isSky && mode !== "OBSERVATION" ? "#080D17" : theme.canvas;
   const hasTabBar = () => {
     const route = Taro.getCurrentPages().at(-1)?.route;
     return route === "pages/map/index" || route === "pages/my/index";
@@ -111,7 +131,7 @@ async function applyNativeChrome(mode: DisplayMode, isCurrent: () => boolean) {
   };
   await settleWrites([
     () => Taro.setNavigationBarColor({
-      frontColor: mode === "DAY" && !isSky ? "#000000" : "#ffffff",
+      frontColor: mode === "DAY" && !isSky && !isPhotoViewer ? "#000000" : "#ffffff",
       backgroundColor: canvas,
     }),
     () => Taro.setBackgroundColor({

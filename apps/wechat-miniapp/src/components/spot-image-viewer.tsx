@@ -3,6 +3,7 @@ import Taro from "@tarojs/taro";
 import { Button, Image, RootPortal, Text, View } from "@tarojs/components";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
+import { retainPhotoViewerNativeChrome } from "@/theme/native-chrome";
 import { SemanticIcon } from "./semantic-asset";
 import { REST_FRAME, viewerDragFrame, viewerEndPoint, viewerImageRect, viewerRelease, viewerSourceRect, viewerStageRect, type ViewerDragFrame, type ViewerGestureAxis, type ViewerRect, type ViewerTouchPoint } from "./spot-image-viewer-gesture";
 import "./spot-image-viewer.scss";
@@ -99,8 +100,13 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
   const unavailable = Boolean(current && (current.state === "error" || (current.state === "ready" && !current.src) || decodeFailedId === current.id));
 
   useEffect(() => {
+    const nativeChrome = retainPhotoViewerNativeChrome();
+    void nativeChrome.ready.catch(error => console.warn("photo_viewer_native_chrome_failed", error));
     void Taro.hideTabBar({ animation: false }).catch(() => undefined);
-    return () => { void Taro.showTabBar({ animation: false }).catch(() => undefined); };
+    return () => {
+      void nativeChrome.release().catch(error => console.warn("photo_viewer_native_chrome_restore_failed", error));
+      void Taro.showTabBar({ animation: false }).catch(() => undefined);
+    };
   }, []);
   const clearFlightTimers = () => {
     openingRead.current?.(); openingRead.current = null;

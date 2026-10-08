@@ -15,6 +15,7 @@ function harness() {
   const pending = new Map<number, () => void>(), timers = new Map<number, { at: number; run: () => void }>();
   const queries: Array<{ selectors: string[]; callback: (rows: unknown[]) => void }> = [];
   const resizeListeners = new Set<() => void>();
+  let chromeOwners = 0;
   let s = 0, r = 0, e = 0, reduced = false, now = 0, id = 0, closed = 0;
   const exports: any = {}, jsx = (type: unknown, props: any) => ({ type, props });
   const taro = { getWindowInfo: () => ({ windowWidth: 390, windowHeight: 762, statusBarHeight: 47 }),
@@ -41,6 +42,10 @@ function harness() {
       : name === "@tarojs/components" ? { Button: "Button", Image: "Image", View: "View", Text: "Text", RootPortal: "RootPortal" }
       : name.includes("use-reduced-motion") ? { useReducedMotion: () => reduced }
       : name.includes("spot-image-viewer-gesture") ? gesture
+      : name.includes("native-chrome") ? { retainPhotoViewerNativeChrome: () => {
+        chromeOwners++;
+        return { ready: Promise.resolve(), release: async () => { chromeOwners--; } };
+      } }
       : name.includes("native-metrics") ? nativeMetrics : {},
   });
   function effect(run: () => (() => void) | void, deps: unknown[]) {
@@ -67,7 +72,7 @@ function harness() {
     flight: () => find(render(), node => String(node.props?.className).split(" ").includes("spot-media-viewer__flight")).length,
     advance(ms: number) { const end = now + ms; for (;;) { const next = [...timers].sort((a, b) => a[1].at - b[1].at)[0];
       if (!next || next[1].at > end) break; now = next[1].at; timers.delete(next[0]); next[1].run(); } now = end; },
-    unmount() { for (const item of effects) item?.cleanup?.(); }, closed: () => closed, pending: () => timers.size,
+    unmount() { for (const item of effects) item?.cleanup?.(); }, closed: () => closed, pending: () => timers.size, chromeOwners: () => chromeOwners,
   };
 }
 
@@ -81,6 +86,7 @@ test("a late opening source query cannot restart flight after system reduction",
 
 test("caption and flight use the measured fullscreen viewport independently of the shorter page and caption length", () => {
   const h = harness(); h.render(); h.flush(); h.deliver(); h.render(); h.flush(); h.load(640, 360); h.render(); h.flush();
+  assert.equal(h.chromeOwners(), 1);
   assert.equal(h.captionHalfHeight(), "109.8px");
   h.setCaption("A long provenance description ".repeat(100));
   assert.equal(h.captionHalfHeight(), "109.8px");
@@ -90,7 +96,7 @@ test("caption and flight use the measured fullscreen viewport independently of t
   assert.equal(flight.props.style.height, "219.6px");
   h.advance(400); h.resize(); h.deliver({ left: 0, top: 0, width: 320, height: 700 });
   assert.equal(h.captionHalfHeight(), "90px");
-  h.unmount(); assert.equal(h.pending(), 0);
+  h.unmount(); assert.equal(h.pending(), 0); assert.equal(h.chromeOwners(), 0);
 });
 
 test("reduced-motion and portrait photographs still position the caption under the fitted image", () => {

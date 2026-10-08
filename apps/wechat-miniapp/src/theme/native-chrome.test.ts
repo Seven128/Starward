@@ -22,7 +22,7 @@ function chromeHarness(failure?: { errMsg: string }, initialRoute = "pages/map/i
       if (method === "style" && navigateDuringStyle) route = "spot/search/index";
     })();
   };
-  const sync = vm.runInNewContext(ts.transpileModule(source + "\nsyncNativeChrome;", {
+  const api = vm.runInNewContext(ts.transpileModule(source + "\n({sync: syncNativeChrome, retain: retainPhotoViewerNativeChrome});", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, { NATIVE_CHROME_THEME, Taro: {
     getCurrentPages: () => route ? [{ route }] : [],
@@ -30,8 +30,8 @@ function chromeHarness(failure?: { errMsg: string }, initialRoute = "pages/map/i
     setNavigationBarColor: native("navigation"),
     setTabBarStyle: native("style"),
     setTabBarItem: native("item"),
-  } }) as (mode: DisplayMode) => Promise<void>;
-  return { sync, calls, applied, setRoute(value: string) { route = value; } };
+  } }) as { sync(mode: DisplayMode): Promise<void>; retain(): { ready: Promise<void>; release(): Promise<void> } };
+  return { ...api, calls, applied, setRoute(value: string) { route = value; } };
 }
 
 function deferred() {
@@ -39,6 +39,58 @@ function deferred() {
   const promise = new Promise<void>(done => { resolve = done; });
   return { promise, resolve };
 }
+
+test("photo viewers use readable dark native chrome and restore each current page palette", async () => {
+  for (const mode of ["DAY", "NIGHT", "OBSERVATION"] as const) {
+    const h = chromeHarness(); await h.sync(mode);
+    const viewer = h.retain(); await viewer.ready;
+    const last = () => h.applied.filter(call => call.method === "navigation").at(-1)!.values;
+    assert.equal(last().frontColor, "#ffffff"); assert.equal(last().backgroundColor, mode === "OBSERVATION" ? "#000000" : "#131419");
+    assert.equal(h.applied.filter(call => call.method === "style").at(-1)!.values.backgroundColor, NATIVE_CHROME_THEME[mode].backgroundColor);
+    await viewer.release();
+    assert.equal(last().frontColor, mode === "DAY" ? "#000000" : "#ffffff");
+    assert.equal(last().backgroundColor, NATIVE_CHROME_THEME[mode].canvas);
+  }
+});
+
+test("theme changes beneath a viewer retain readable chrome then restore the latest mode", async () => {
+  const h = chromeHarness(undefined, "contribution/record/index"); await h.sync("DAY");
+  const viewer = h.retain(); await viewer.ready;
+  await h.sync("NIGHT"); await h.sync("OBSERVATION");
+  assert.equal(h.applied.filter(call => call.method === "navigation").at(-1)!.values.backgroundColor, "#000000");
+  await viewer.release();
+  assert.equal(h.applied.filter(call => call.method === "navigation").at(-1)!.values.backgroundColor, "#000000");
+  assert.equal(h.calls.some(call => call.method === "style"), false);
+});
+
+test("a viewer retired while native writes are pending cannot leave dark chrome on day Map", async () => {
+  const oldNavigation = deferred();
+  const h = chromeHarness(undefined, "pages/map/index", false, "style", async (method, values) => {
+    if (method === "navigation" && values.frontColor === "#000000") await oldNavigation.promise;
+  });
+  const day = h.sync("DAY"), viewer = h.retain(), released = viewer.release();
+  oldNavigation.resolve(); await Promise.all([day, viewer.ready, released]);
+  const last = h.applied.filter(call => call.method === "navigation").at(-1)!.values;
+  assert.equal(last.frontColor, "#000000"); assert.equal(last.backgroundColor, "#FFFFFF");
+});
+
+test("old or repeated viewer cleanup cannot clear a newer photo surface", async () => {
+  const h = chromeHarness(); await h.sync("DAY");
+  const first = h.retain(); await first.ready; const second = h.retain(); await second.ready;
+  await first.release(); const count = h.calls.length; await first.release(); assert.equal(h.calls.length, count);
+  assert.equal(h.applied.filter(call => call.method === "navigation").at(-1)!.values.frontColor, "#ffffff");
+  await second.release(); assert.equal(h.applied.filter(call => call.method === "navigation").at(-1)!.values.frontColor, "#000000");
+});
+
+test("a failed viewer native write remains visible to its caller and its cleanup restores day", async () => {
+  const failure = { errMsg: "setNavigationBarColor:fail unavailable" }; let fail = true;
+  const h = chromeHarness(undefined, "pages/map/index", false, "style", async (method, values) => {
+    if (fail && method === "navigation" && values.frontColor === "#ffffff") { fail = false; throw failure; }
+  });
+  await h.sync("DAY"); const viewer = h.retain(); await assert.rejects(viewer.ready, error => error === failure);
+  await viewer.release(); assert.equal(h.applied.filter(call => call.method === "navigation").at(-1)!.values.frontColor, "#000000");
+  const next = h.retain(); await next.ready; assert.equal(h.applied.filter(call => call.method === "navigation").at(-1)!.values.frontColor, "#ffffff"); await next.release();
+});
 
 test("a late day native completion cannot leave day chrome after observation was requested", async () => {
   const oldStyle = deferred();
