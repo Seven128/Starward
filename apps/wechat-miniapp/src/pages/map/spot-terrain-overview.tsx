@@ -13,6 +13,8 @@ import { TERRAIN_RADIUS_TICKS, terrainCropPercent, terrainRadiusForSlider, terra
 import { terrainLayerAvailability } from "./terrain-layer-availability";
 
 export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visible: boolean }) {
+  const observation = useAppStore(state => state.mode === "OBSERVATION");
+  const sliderColor = observation ? "#ff6b58" : "#8ca89a";
   const [radiusKm, setRadiusKm] = useState(5);
   const [terrainVisible, setTerrainVisible] = useState(true);
   const [lightVisible, setLightVisible] = useState(true);
@@ -53,7 +55,7 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
       <View><Text className="type-label">地形与光污染</Text><Text className="type-caption">北向上</Text></View>
     </View>
     <View className="spot-terrain__radius-row"><Text className="type-secondary">查看半径</Text><Text className="spot-terrain__radius-value">{radiusKm.toFixed(1)} <Text className="type-caption">km</Text></Text></View>
-    <Slider className="spot-terrain__slider" min={0} max={100} step={1} value={terrainSliderForRadius(radiusKm)} activeColor="#8ca89a" backgroundColor="#dde4df" blockColor="#8ca89a" blockSize={18}
+    <Slider className="spot-terrain__slider" min={0} max={100} step={1} value={terrainSliderForRadius(radiusKm)} activeColor={sliderColor} backgroundColor={observation ? "#7a1e18" : "#dde4df"} blockColor={sliderColor} blockSize={18}
       ariaLabel={`查看半径 ${radiusKm.toFixed(1)} 公里`} onChanging={(event) => setRadiusKm(terrainRadiusForSlider(event.detail.value))} onChange={(event) => setRadiusKm(terrainRadiusForSlider(event.detail.value))} />
     <View className="spot-terrain__ticks" aria-hidden="true">{TERRAIN_RADIUS_TICKS.map(value => <Text key={value} style={{ left: `${terrainSliderForRadius(value)}%` }}>{value}</Text>)}</View>
     <View className="spot-terrain__map" ariaLabel={`${spot.name}周边 ${radiusKm.toFixed(1)} 公里地形概览，真北向上`}>

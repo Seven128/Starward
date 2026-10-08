@@ -2,7 +2,7 @@
 .spot-terrain__heading > view,.spot-terrain__radius-row,.spot-terrain__coverage { display:flex; align-items:center; justify-content:space-between; gap:16rpx; }
 .spot-terrain__heading text { display:block; }
 .spot-terrain__radius-value { color:var(--text-primary); font-size:42rpx; line-height:1; font-variant-numeric:tabular-nums; }
-.spot-terrain__slider { margin:0; }
+.spot-terrain__slider { height:44Px; margin:0; }
 .spot-terrain__ticks { position:relative; height:28rpx; margin: -12rpx 17rpx 0; color:var(--text-tertiary); font-size:18rpx; }
 .spot-terrain__ticks > text { position:absolute; top:0; transform:translateX(-50%); }
 .spot-terrain__map { position:relative; width:100%; aspect-ratio:1; overflow:hidden; border-radius:24rpx; background:#e8ede5; isolation:isolate; }
