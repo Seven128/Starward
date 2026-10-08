@@ -2,8 +2,9 @@ import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import Taro from "@tarojs/taro";
 import { Button, Image, RootPortal, Text, View } from "@tarojs/components";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { nativeNavigationInsets } from "@/theme/native-metrics";
 import { SemanticIcon } from "./semantic-asset";
-import { REST_FRAME, viewerDragFrame, viewerEndPoint, viewerImageRect, viewerRelease, viewerSourceRect, type ViewerDragFrame, type ViewerGestureAxis, type ViewerRect, type ViewerTouchPoint } from "./spot-image-viewer-gesture";
+import { REST_FRAME, viewerDragFrame, viewerEndPoint, viewerImageRect, viewerRelease, viewerSourceRect, viewerStageRect, type ViewerDragFrame, type ViewerGestureAxis, type ViewerRect, type ViewerTouchPoint } from "./spot-image-viewer-gesture";
 import "./spot-image-viewer.scss";
 
 export type SpotViewerMedia = {
@@ -27,19 +28,28 @@ function activeTouchCount(event: unknown): number {
   return (event as { touches?: ArrayLike<unknown> }).touches?.length ?? 0;
 }
 
-function readPhotoSource(selector: string, callback: (rect: ViewerRect | null) => void) {
-  const { windowWidth, windowHeight } = Taro.getWindowInfo();
+type PhotoGeometry = { viewport: ViewerRect; source: ViewerRect | null };
+
+function readPhotoGeometry(selector: string | undefined, callback: (geometry: PhotoGeometry | null) => void) {
   let finished = false;
-  const finish = (rect: ViewerRect | null) => {
+  const finish = (geometry: PhotoGeometry | null) => {
     if (finished) return;
     finished = true;
     clearTimeout(deadline);
-    callback(rect);
+    callback(geometry);
   };
   const deadline = setTimeout(() => finish(null), 300);
   try {
-    Taro.createSelectorQuery().select(selector).boundingClientRect().exec(rows => {
-      finish(viewerSourceRect(rows?.[0], windowWidth, windowHeight));
+    const query = Taro.createSelectorQuery().select(".spot-media-viewer").boundingClientRect();
+    if (selector) query.select(selector).boundingClientRect();
+    query.exec(rows => {
+      const viewport = rows?.[0] as ViewerRect | undefined;
+      if (!viewport || ![viewport.left, viewport.top, viewport.width, viewport.height].every(Number.isFinite)
+        || viewport.width <= 0 || viewport.height <= 0) { finish(null); return; }
+      const source = rows?.[1] as ViewerRect | undefined;
+      finish({ viewport, source: viewerSourceRect(source && {
+        ...source, left: source.left - viewport.left, top: source.top - viewport.top,
+      }, viewport.width, viewport.height) });
     });
   } catch { finish(null); }
   return () => { finished = true; clearTimeout(deadline); };
@@ -67,6 +77,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
   const [exiting, setExiting] = useState(false);
   const [sourceRect, setSourceRect] = useState<ViewerRect | null | undefined>(undefined);
   const [imageRatio, setImageRatio] = useState<{ id: string; value: number } | null>(null);
+  const [viewport, setViewport] = useState<ViewerRect | null>(null);
   const reducedMotion = useReducedMotion();
   const start = useRef<ViewerTouchPoint | null>(null);
   const last = useRef<ViewerTouchPoint | null>(null);
@@ -126,8 +137,9 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     last.current = null;
     axis.current = null;
     if (reducedMotion) { completeClose(); return; }
-    closingRead.current = readPhotoSource(sourceSelector ?? `#spot-media-source-${index}`, source => {
+    closingRead.current = readPhotoGeometry(sourceSelector ?? `#spot-media-source-${index}`, geometry => {
       if (!alive.current || closeNotified.current) return;
+      const source = geometry?.source;
       const ratio = imageRatio?.id === current?.id ? imageRatio?.value : null;
       if (!source || !current?.src || unavailable || !ratio) {
         setFlight(null);
@@ -135,8 +147,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
         flightFinishTimer.current = setTimeout(completeClose, 170);
         return;
       }
-      const { windowWidth, windowHeight } = Taro.getWindowInfo();
-      const from = flight?.rect ?? viewerImageRect(windowWidth, windowHeight, ratio, frame);
+      const from = flight?.rect ?? viewerImageRect(geometry.viewport.width, geometry.viewport.height, ratio, frame);
       setEntered(false);
       setExiting(true);
       if (!flight) setFlight({ rect: from, src: current.src, moving: false, closing: true });
@@ -192,9 +203,10 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     let active = true;
     Taro.nextTick(() => {
       if (!active || !alive.current || openingStarted.current || closing.current) return;
-      openingRead.current = readPhotoSource(sourceSelector ?? `#spot-media-source-${index}`, source => {
+      openingRead.current = readPhotoGeometry(sourceSelector ?? `#spot-media-source-${index}`, geometry => {
         if (!active || !alive.current || openingStarted.current || closing.current) return;
-        setSourceRect(source);
+        setViewport(geometry?.viewport ?? null);
+        setSourceRect(geometry?.source ?? null);
       });
     });
     flightFallbackTimer.current = setTimeout(() => {
@@ -209,6 +221,32 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
     };
   }, []);
   useEffect(() => {
+    let active = true;
+    let cancelRead: (() => void) | undefined;
+    let readVersion = 0;
+    const readViewport = () => {
+      if (!active || !alive.current || closing.current) return;
+      const version = ++readVersion;
+      cancelRead?.();
+      openingStarted.current = true;
+      clearFlightTimers();
+      setFlight(null);
+      setEntered(true);
+      cancelTouchGesture();
+      Taro.nextTick(() => {
+        if (!active || !alive.current || closing.current || version !== readVersion) return;
+        cancelRead = readPhotoGeometry(undefined, geometry => {
+          if (active && alive.current && !closing.current && version === readVersion && geometry) setViewport(geometry.viewport);
+        });
+      });
+    };
+    // Reduced-motion opening skips the source flight, but still needs the
+    // RootPortal's actual viewport for the caption and contained image.
+    if (reducedMotion) readViewport();
+    Taro.onWindowResize(readViewport);
+    return () => { active = false; cancelRead?.(); Taro.offWindowResize(readViewport); };
+  }, [reducedMotion]);
+  useEffect(() => {
     if (reducedMotion || sourceRect === undefined || openingStarted.current || closing.current) return;
     const opening = media[index];
     const ratio = imageRatio?.id === opening?.id ? imageRatio?.value : null;
@@ -217,39 +255,54 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
       setEntered(true);
       return;
     }
-    if (!ratio) return;
+    if (!ratio || !viewport) return;
     openingStarted.current = true;
     if (flightFallbackTimer.current !== null) clearTimeout(flightFallbackTimer.current);
-    const { windowWidth, windowHeight } = Taro.getWindowInfo();
     setFlight({ rect: sourceRect, src: opening.src, moving: false, closing: false });
     flightStartTimer.current = setTimeout(() => {
       if (!alive.current || closing.current) return;
-      setFlight({ rect: viewerImageRect(windowWidth, windowHeight, ratio), src: opening.src!, moving: true, closing: false });
+      setFlight({ rect: viewerImageRect(viewport.width, viewport.height, ratio), src: opening.src!, moving: true, closing: false });
     }, 24);
     flightFinishTimer.current = setTimeout(() => {
       if (!alive.current || closing.current) return;
       setFlight(null);
       setEntered(true);
     }, 340);
-  }, [sourceRect, imageRatio, index, reducedMotion]);
+  }, [sourceRect, imageRatio, viewport, index, reducedMotion]);
 
   const rebound = () => {
     setGestureActive(false);
     setFrame(REST_FRAME);
     if (reboundTimer.current !== null) clearTimeout(reboundTimer.current);
+    if (reducedMotion) {
+      reboundTimer.current = null;
+      setChromeHidden(false);
+      return;
+    }
     reboundTimer.current = setTimeout(() => {
       reboundTimer.current = null;
       setChromeHidden(false);
-    }, 170);
+    }, 220);
   };
 
   if (!current) return null;
+  const ratio = imageRatio?.id === current.id ? imageRatio.value : null;
+  const imageHalfHeight = viewport
+    ? (ratio ? viewerImageRect(viewport.width, viewport.height, ratio).height : viewerStageRect(viewport.width, viewport.height).height) / 2
+    : null;
+  const { statusBarHeight, safeTop } = nativeNavigationInsets();
 
   return <RootPortal><View className={`spot-media-viewer${chromeHidden ? " spot-media-viewer--chrome-hidden" : ""}${gestureActive ? " spot-media-viewer--gesture-active" : ""}${entered ? " spot-media-viewer--entered" : ""}${reducedMotion ? " spot-media-viewer--reduced" : ""}`}
-    style={{ "--viewer-backdrop-opacity": String(exiting ? 0 : entered || flight?.moving ? frame.backdrop : 0) } as CSSProperties}
+    style={{ "--viewer-backdrop-opacity": String(exiting ? 0 : entered || flight?.moving ? frame.backdrop : 0),
+      ...(statusBarHeight === undefined ? {} : { "--viewer-status-bar-height": `${statusBarHeight}px` }),
+      ...(safeTop === undefined ? {} : { "--viewer-safe-top": `${safeTop}px` }),
+    } as CSSProperties}
     role="dialog" ariaLabel={`${name}照片查看器，第 ${index + 1} 张，共 ${media.length} 张`} catchMove>
     <Button className="spot-media-viewer__close" ariaLabel="关闭照片查看器" onClick={requestClose}><SemanticIcon name="close" /></Button>
-    <View className="spot-media-viewer__content" style={{ "--viewer-drag-x": `${frame.x}px`, "--viewer-drag-y": `${frame.y}px`, "--viewer-scale": String(frame.scale) } as CSSProperties}>
+    <View className="spot-media-viewer__counter" ariaLabel={`第 ${index + 1} 张，共 ${media.length} 张`}><Text>{index + 1} / {media.length}</Text></View>
+    <View className="spot-media-viewer__content" style={{ "--viewer-drag-x": `${frame.x}px`, "--viewer-drag-y": `${frame.y}px`, "--viewer-scale": String(frame.scale),
+      ...(imageHalfHeight === null ? {} : { "--viewer-image-half-height": `${imageHalfHeight}px` }),
+    } as CSSProperties}>
       <View className="spot-media-viewer__stage"
         onTouchStart={(event) => {
           if (closing.current || !entered || !current.src || unavailable) return;
@@ -332,7 +385,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
           ? <Button className="spot-media-viewer__arrow spot-media-viewer__arrow--next" ariaLabel="下一张照片" onClick={() => changeIndex(index + 1)}>›</Button>
           : null}
       </View>
-      <View className="spot-media-viewer__caption"><Text>{current.caption}</Text><Text>{index + 1} / {media.length}{current.attribution ? ` · ${current.attribution}` : ""}</Text></View>
+      <View className="spot-media-viewer__caption"><Text>{current.caption}</Text>{current.attribution ? <Text>{current.attribution}</Text> : null}</View>
     </View>
     {flight ? <View className={`spot-media-viewer__flight${flight.moving ? " spot-media-viewer__flight--moving" : ""}${flight.closing ? " spot-media-viewer__flight--closing" : ""}`}
       style={{ left: `${flight.rect.left}px`, top: `${flight.rect.top}px`, width: `${flight.rect.width}px`, height: `${flight.rect.height}px` }}>

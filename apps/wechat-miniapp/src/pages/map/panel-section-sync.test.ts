@@ -27,9 +27,9 @@ test("the native restoration event does not withdraw its command and reset the d
     ts.forEachChild(node, visit);
   };
   visit(source); assert.ok(expression);
-  const commands: (number | undefined)[] = [], lastScroll = { current: { spotId: "spot:a", top: 0 } };
+  const commands: (number | undefined)[] = [], lastScroll = { current: { identity: "spot:a", top: 0 } };
   const onScroll = vm.runInNewContext(ts.transpileModule(`(${expression.getText(source)});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-    visible: true, spot: { spotId: "spot:a" }, extent: "small", lastScroll,
+    visible: true, spot: { spotId: "spot:a" }, extent: "small", lastScroll, documentPosition: { record: (top: number) => { lastScroll.current.top = top; } },
     restoredScrollTop: 500, setRestoredScrollTop: (top: number | undefined) => commands.push(top),
   });
   onScroll({ detail: { scrollTop: 500 } });
@@ -100,8 +100,8 @@ test("panel sections follow cached document geometry and ignore cancelled measur
   let queries = 0, layoutRefreshes = 0;
   const query = { select: () => query, boundingClientRect: () => query, scrollOffset: () => query, exec: (callback: (results: unknown[]) => void) => callbacks.push(callback) };
   const { measure, onScroll } = vm.runInNewContext(ts.transpileModule(`({ measure: ${setup}, onScroll: ${scroll} });`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-    visible: true, spot: { spotId: "spot:a" }, lastScroll: { current: { spotId: "spot:a", top: 0 } },
-    restoredScrollTop: undefined, setRestoredScrollTop: () => {},
+    visible: true, spot: { spotId: "spot:a" }, lastScroll: { current: { identity: "spot:a", top: 0 } },
+    documentPosition: { record() {} }, restoredScrollTop: undefined, setRestoredScrollTop: () => {},
     scrollMeasureTimer: { current: null }, setLayoutVersion: () => { layoutRefreshes++; },
     settling: false, extent: "large", terrainOffset: terrain, astronomyOffset: offset, SECTION_NAV_REVEAL_PX: 44, setSection: (value: string) => sections.push(value),
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; },
@@ -159,7 +159,7 @@ test("return restores the captured scroll position and cannot replay across spot
   let serial = 0;
   const context = {
     visible: false, wasVisible: { current: true }, spot: { spotId: "spot:a" },
-    lastScroll: { current: { spotId: "spot:a", top: 620 } },
+    lastScroll: { current: { identity: "spot:a", top: 620 } },
     setScrollAnchor: () => {}, setRestoredScrollTop: (top: number | undefined) => restored.push(top),
     setTimeout: (callback: () => void) => { timers.set(++serial, callback); return serial; },
     clearTimeout: (id: number) => timers.delete(id),

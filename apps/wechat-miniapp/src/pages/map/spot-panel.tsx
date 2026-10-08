@@ -40,7 +40,7 @@ import { SpotTerrainOverview } from "./spot-terrain-overview";
 import { ForecastCoverageNote } from "@/components/forecast-coverage-note";
 import { SpotPlanEntry } from "@/features/spot/spot-plan-entry";
 import { SpotImageViewer } from "@/components/spot-image-viewer";
-import { useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
+import { useSpotMediaDocumentPosition, useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
 import { useHiddenNativeScrollbar } from "@/components/use-hidden-native-scrollbar";
 
 export type SpotPanelExtent = "small" | "medium" | "large";
@@ -271,9 +271,9 @@ export function SpotInformationPanel({
   const [scrollAnchor, setScrollAnchor] = useState("");
   const terrainOffset = useRef<number | null>(null);
   const astronomyOffset = useRef<number | null>(null);
-  const lastScroll = useRef({ spotId: spot.spotId, top: 0 });
+  const documentPosition = useSpotMediaDocumentPosition(spot.spotId);
+  const { position: lastScroll, returnTop: restoredScrollTop, setReturnTop: setRestoredScrollTop } = documentPosition;
   const wasVisible = useRef(visible);
-  const [restoredScrollTop, setRestoredScrollTop] = useState<number | undefined>(undefined);
   useEffect(() => {
     const returning = visible && !wasVisible.current;
     wasVisible.current = visible;
@@ -282,7 +282,7 @@ export function SpotInformationPanel({
       setRestoredScrollTop(undefined);
       return;
     }
-    if (!returning || lastScroll.current.spotId !== spot.spotId) return;
+    if (!returning || lastScroll.current.identity !== spot.spotId) return;
     const top = lastScroll.current.top;
     const timer = setTimeout(() => setRestoredScrollTop(top), 200);
     return () => clearTimeout(timer);
@@ -317,7 +317,6 @@ export function SpotInformationPanel({
   }, [visible, spot.spotId, extent]);
   useResize(() => setLayoutVersion(value => value + 1));
   useEffect(() => {
-    lastScroll.current = { spotId: spot.spotId, top: 0 };
     setViewerIndex(null);
     setRestoredScrollTop(undefined);
     setSection("spot-panel-overview");
@@ -366,6 +365,7 @@ export function SpotInformationPanel({
   const openPhoto = (kind: typeof viewerKind, index: number) => {
     setSectionRequest(null);
     setScrollAnchor("");
+    documentPosition.remember();
     if (!kind) galleryPosition.remember();
     setViewerKind(kind);
     setViewerIndex(index);
@@ -477,7 +477,7 @@ export function SpotInformationPanel({
           onScroll={event => {
             const top = event.detail.scrollTop;
             if (!visible || !Number.isFinite(top)) return;
-            lastScroll.current = { spotId: spot.spotId, top };
+            documentPosition.record(top);
             // Keep an explicit return command stable. Withdrawing this native
             // optional prop resets to zero; unrelated renders must not replay events.
             // Native anchor scrolling can finish after the extent layout measurement.

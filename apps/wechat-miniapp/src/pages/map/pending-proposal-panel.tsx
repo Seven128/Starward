@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SpotImageViewer, type SpotViewerMedia } from "@/components/spot-image-viewer";
-import { useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
+import { useSpotMediaDocumentPosition, useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
 import { useHiddenNativeScrollbar } from "@/components/use-hidden-native-scrollbar";
 import { currentDraftUserId, getContributionMedia } from "@/services/api-client";
 import type { SpotPanelExtent, SpotPanelPhase } from "./spot-panel";
@@ -39,6 +39,7 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   const mediaKey = model.media.map(item => item.uploadId).join("|");
   const mediaScope = `${owner ?? "none"}:${submission.submissionId}:${mediaKey}`;
   const galleryPosition = useSpotMediaGalleryPosition(mediaScope);
+  const documentPosition = useSpotMediaDocumentPosition(`${owner ?? "none"}:${submission.submissionId}`);
   useHiddenNativeScrollbar("spot-proposal-scroll", extent !== "small", `${mediaScope}:${extent}`);
   useHiddenNativeScrollbar("spot-proposal-media-strip", extent === "large" && model.media.length > 1, mediaScope);
   const leadMedia = model.media[0];
@@ -120,6 +121,8 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
     </View>
     <View className="spot-panel__scroll-frame">
       <ScrollView id="spot-proposal-scroll" className="spot-panel__scroll" scrollY={documentScrollEnabled} type="custom" enhanced showScrollbar={false}
+        {...(documentPosition.returnTop === undefined ? {} : { scrollTop: documentPosition.returnTop })}
+        onScroll={event => documentPosition.record(event.detail.scrollTop)}
         ariaLabel={`${draft ? "草稿" : "审核中"}观星点资料`}>
         {leadMedia ? <View className="spot-panel__proposal-media" data-control="spot-media-gallery" ariaLabel={`${model.name}提交照片，共${model.media.length}张`}>
           <ScrollView id="spot-proposal-media-strip" className="spot-panel__media-strip" scrollX={model.media.length > 1} scrollLeft={galleryPosition.returnLeft} enhanced showScrollbar={false}
@@ -135,7 +138,7 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
                 const photo = mediaState[item.uploadId];
                 return <Button id={`spot-media-source-${index}`} className="spot-panel__media-slide" key={item.uploadId}
                   ariaLabel={`查看${item.label} ${index + 1}，共 ${model.media.length} 张`}
-                  onClick={() => { galleryPosition.remember(); setViewerIndex(index); loadMedia(index, photo?.state === "error"); }}>
+                  onClick={() => { documentPosition.remember(); galleryPosition.remember(); setViewerIndex(index); loadMedia(index, photo?.state === "error"); }}>
                   {photo?.state === "ready" && photo.src
                     ? <Image className="spot-panel__media-image" src={photo.src} mode="aspectFill" lazyLoad ariaLabel={item.label} />
                     : <View className="spot-panel__proposal-media-placeholder"><Text>{item.label}</Text><Text>{photo?.state === "error" ? "照片暂时无法读取" : "正在读取照片…"}</Text></View>}

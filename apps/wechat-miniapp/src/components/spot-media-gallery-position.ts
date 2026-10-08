@@ -1,6 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { photoRevealLeft } from "./spot-media-gallery-geometry";
 
+/** An explicit viewer/route return command must not replay every native scroll event. */
+export function useSpotMediaDocumentPosition(identity: string) {
+  const position = useRef({ identity, top: 0 });
+  const [returnTop, setReturnTop] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    position.current = { identity, top: 0 };
+    setReturnTop(undefined);
+  }, [identity]);
+  const record = useCallback((top: number) => {
+    if (position.current.identity === identity && Number.isFinite(top) && top >= 0) position.current = { identity, top };
+  }, [identity]);
+  const remember = useCallback(() => {
+    if (position.current.identity === identity) setReturnTop(position.current.top);
+  }, [identity]);
+  return { position, returnTop, setReturnTop, record, remember };
+}
+
 /** Keep the native horizontal ScrollView at its source crop while a photo viewer is open. */
 export function useSpotMediaGalleryPosition(identity: string) {
   const [returnLeft, setReturnLeft] = useState(0);
