@@ -2057,18 +2057,12 @@
   pointer-events: none;
 }
 #spot-panel-astronomy {
-  margin-right: calc(-1 * var(--spot-panel-inline-padding));
-  margin-left: calc(-1 * var(--spot-panel-inline-padding));
+  margin: 0;
   padding: 14Px var(--spot-panel-inline-padding) 12Px;
   background: var(--surface-subtle);
 }
 .spot-panel__block--astronomy-card {
   gap: 8Px;
-  margin: 0;
-  padding: 10Px;
-  border: 0;
-  border-radius: 10Px;
-  background: var(--surface);
 }
 .spot-panel__weather-heading {
   display: block;
@@ -2169,8 +2163,6 @@
 // The adopted DAY document has full-width cards with inset contents. Keep
 // these rules above the later basic-information block styles in specificity.
 .theme-day .spot-panel__scroll--full-bleed-plan #spot-panel-astronomy {
-  margin-right: 0;
-  margin-left: 0;
   padding: 0;
   background: #f5f5f7;
 }
@@ -3078,6 +3070,14 @@
   border: 0;
   border-bottom: 1rpx solid #f1f5f9;
   background: transparent;
+}
+// Keep card appearance after basic blocks while retaining each card's gap above.
+.spot-panel__block--astronomy-card {
+  margin: 0;
+  padding: 10Px;
+  border: 0;
+  border-radius: 10Px;
+  background: var(--surface);
 }
 .spot-panel__block-heading {
   align-items: center;
