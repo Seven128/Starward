@@ -779,7 +779,7 @@ export function SpotInformationPanel({
               <Text className="type-caption">{effectiveSpot.lightPollution.radiance ? `${effectiveSpot.lightPollution.radiance.median} ${effectiveSpot.lightPollution.radiance.unit}` : "辐亮度暂无数据"}</Text>
             </View>
             {skyReport ? <>
-            <View className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--target-list" data-control="sky-target-list">
+            <View className={`spot-panel__block spot-panel__block--astronomy-card spot-panel__block--target-list${targetFrame?.targets.some((target) => target.altitudeDeg === null) ? " spot-panel__block--target-list--missing-altitude" : ""}`} data-control="sky-target-list">
               <View className="spot-panel__evidence-title"><SemanticIcon name="star" /><Text className="type-label">当前目标</Text></View>
               {targetFrame ? targetFrame.targets.length ? targetFrame.targets.map((target) => (
                 <View className="spot-panel__target-row" key={target.targetId} ariaLabel={`${target.displayName}，${target.direction}，${target.altitudeDeg === null ? "高度暂无数据" : `高度 ${Math.round(target.altitudeDeg)} 度`}`}>
