@@ -25,21 +25,28 @@ export class ConstellationPublicationService {
     const sources: SourceSummary[] = [
       { ...common,id:`constellation:${data.catalogVersion}`,kind:"OPEN_DATA",provider:source.definitions.provider,
         title:"Stellarium Modern constellation lines, English names and anchors",sourceUrl:source.definitions.url,
-        license:source.definitions.license,licenseUrl:source.definitions.licenseUrl,precision:"Fixed v24.4 definitions and names; exact HIP anchors" },
+        license:source.definitions.license,licenseUrl:source.definitions.licenseUrl,precision:"Fixed v24.4 definitions and names; exact HIP anchors",
+        attribution:{name:source.definitions.provider,url:source.definitions.url,statements:[source.definitions.modifications]} },
       { ...common,retrievedAt:source.names.retrievedAt,id:`constellation-names:${data.catalogVersion}`,kind:"OPEN_DATA",provider:source.names.provider,
         title:"Simplified Chinese constellation names",sourceUrl:source.names.url,
         license:source.names.license,licenseUrl:source.names.licenseUrl,
-        precision:"88 established names matched by IAU identifier; adapted from the credited article revision" },
+        precision:"88 established names matched by IAU identifier; adapted from the credited article revision",
+        attribution:{name:source.names.provider,url:source.names.url,statements:[source.names.modifications]} },
       { ...common,id:`constellation-art:${data.catalogVersion}`,kind:"OPEN_DATA",provider:source.art.author,
         title:"Stellarium constellation illustrations",sourceUrl:source.art.url,
-        license:source.art.license,licenseUrl:source.art.licenseUrl,precision:"Original PNGs, three published anchors per illustration" },
+        license:source.art.license,licenseUrl:source.art.licenseUrl,precision:"Original PNGs, three published anchors per illustration",
+        attribution:{name:source.art.author,url:source.art.url,statements:[source.art.modifications]} },
       { ...common,id:`constellation-geometry:${data.geometryAsset.sha256}`,kind:"OPEN_DATA",provider:source.astrometry.provider,
         title:"BSC5P / SAO geometry with CDS/SIMBAD identities",sourceUrl:source.astrometry.url,
         license:source.astrometry.license,licenseUrl:source.astrometry.licenseUrl,
-        precision:"FK5 J2000; tangent mas/year; explicit system members use decorative geometric centers. Machine-readable ODbL geometry is available separately." },
+        precision:"FK5 J2000; tangent mas/year; explicit system members use decorative geometric centers. Machine-readable ODbL geometry is available separately.",
+        attribution:{name:source.astrometry.provider,url:source.astrometry.url,statements:[source.astrometry.modifications]} },
     ];
+    // The envelope's credits can change without replacing immutable geometry
+    // or PNGs. Revalidate those notices independently of the asset identity.
+    const representationHash=createHash("sha256").update(JSON.stringify({catalogHash:data.catalogHash,sources})).digest("hex");
     this.current = freeze({apiVersion:"v2",data,dataState:"FRESH",generatedAt:new Date().toISOString(),validAt:null,
-      sources,warnings:[],etag:`W/"${data.catalogHash}"`,requestId:`constellations:${data.catalogHash}`});
+      sources,warnings:[],etag:`W/"${representationHash}"`,requestId:`constellations:${data.catalogHash}`});
     return this.current;
   }
 

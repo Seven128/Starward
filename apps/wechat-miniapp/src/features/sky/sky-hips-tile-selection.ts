@@ -2,6 +2,7 @@ import { queryDiscInclusiveNest, vec2PixNest } from "healpix-ts";
 import { assertStellarRotation, type SkyObservationFrame } from "@starward/miniapp-contracts";
 import { skyArtworkViewParameters, type SkyArtworkView } from "./sky-artwork-registration";
 import type { SkyVector } from "./sky-view-projection";
+import { skyHipsTileIntersectsView } from "./sky-hips-tile-mesh";
 
 export type SkyHipsTileSelection =
   | { state: "SELECTED"; order: number; pixels: readonly number[] }
@@ -71,6 +72,27 @@ export function selectSkyHipsTiles(input: {
     const pixels=query(order);
     if(pixels.length>maxTiles)break;
     accepted={order,pixels};
+  }
+  // Base-face publications keep their existing selection/consumer contract.
+  // The optional W3 owner already suppresses its certified empty base faces.
+  if(accepted.order>0){
+    // A portrait viewport's conservative circular cap includes cells that the
+    // current renderer cannot paint. Reuse its certified footprint before
+    // spending image slots, retaining unknown geometry and the camera centre.
+    const intersects=(order:number,pixel:number,middle:number)=>pixel===middle||
+      skyHipsTileIntersectsView(order,pixel,frame.equatorialToEnu,view,width,height);
+    const coarseOrder=accepted.order,coarseMiddle=vec2PixNest(2**coarseOrder,center);
+    accepted.pixels=accepted.pixels.filter(pixel=>intersects(coarseOrder,pixel,coarseMiddle));
+    // Probe only one level beyond the bounded cap result. This limits geometry
+    // work even for extreme aspect ratios; no source-alpha or science mask is
+    // used to withdraw demand, and the original twelve-image limit still owns it.
+    if(accepted.order<input.maxOrder){
+      const order=accepted.order+1,pixels:number[]=[],middle=vec2PixNest(2**order,center);
+      queryDiscInclusiveNest(2**order,center,radius,pixel=>{
+        if(pixels.length<=maxTiles&&intersects(order,pixel,middle))pixels.push(pixel);
+      });
+      if(pixels.length<=maxTiles)accepted={order,pixels};
+    }
   }
   const middle=vec2PixNest(2**accepted.order,center);
   if(!accepted.pixels.includes(middle))return {state:"INVALID_VIEW"};

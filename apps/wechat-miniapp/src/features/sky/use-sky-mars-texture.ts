@@ -11,16 +11,16 @@ import type {SkyArtworkCanvas} from "./sky-artwork-request";
 /** Loads a single low-resolution Mars surface only when its globe is resolved. */
 export function useSkyMarsTexture(report:Pick<SkyGeometryReport,"hourly">|undefined,at:string|undefined,
   view:SkyArtworkView|null,width:number,height:number,canvas:SkyArtworkCanvas|null,
-  canvasRevision:number,active:boolean){
+  canvasRevision:number,active:boolean,paused=false){
   const disc=useMemo(()=>active&&view&&width>0&&height>0
     ? skyPlanetDiscsAt(report?.hourly,at,view.basis,width,height,view.verticalFovDeg,view.center,"MARS")?.[0]??null
     : null,[report?.hourly,at,view?.basis,view?.verticalFovDeg,view?.center?.x,view?.center?.y,width,height,active]);
   const wanted=active&&Boolean(disc?.surfaceOrientation&&disc.radiusPx>=4);
   const manifest=useResourceQuery({queryKey:["mars-texture-manifest"],queryFn:getMarsTextureManifest,
-    enabled:wanted,staleTime:60_000,structuralSharing:false});
+    enabled:wanted&&!paused,staleTime:60_000,structuralSharing:false});
   const publication=manifest.data;
   const images=useSkyFixedImage(canvas,canvasRevision,publication,active,wanted,"mars:mdim21",
-    asset=>({url:marsTextureImageUrl(asset.downloadUrl),format:"jpeg"}));
+    asset=>({url:marsTextureImageUrl(asset.downloadUrl),format:"jpeg"}),paused);
   const image=images.image;
   const status=skyFixedImageStatus(wanted,image,manifest.isError,Boolean(manifest.refreshError),images.failed);
   return {image,publication,loading:wanted&&(manifest.isFetching||images.loading),

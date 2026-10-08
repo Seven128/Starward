@@ -3,9 +3,10 @@ import { readFileSync } from "node:fs";
 import { OPTICAL_IMAGE_LEVELS } from "../../packages/miniapp-contracts/src/optical-publication-content.ts";
 import { assertPreparedRenderedOpticalPublication, assertPreparedRenderedOpticalManifest,
   preparedRenderedOpticalPublicationHash, type PreparedRenderedOpticalManifest } from "../../packages/miniapp-contracts/src/prepared-rendered-optical-publication.ts";
+import { opticalPublicationReference } from "../../packages/miniapp-contracts/src/prepared-rendered-optical-publication.ts";
 
 const publication: unknown = JSON.parse(readFileSync(0, "utf8"));
-const reference = (publication as { objectRef?: string } | null)?.objectRef;
+const reference = publication && typeof publication === "object" ? opticalPublicationReference(publication as { objectRef: string } | { reference: string }) : undefined;
 if (typeof reference !== "string") throw new Error("prepared_optical_reference_missing");
 assertPreparedRenderedOpticalPublication(publication, reference);
 const publicationHash = preparedRenderedOpticalPublicationHash(publication);

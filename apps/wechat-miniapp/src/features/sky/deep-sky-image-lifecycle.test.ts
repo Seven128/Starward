@@ -122,6 +122,8 @@ test("the production Canvas release port retires deep-sky pixels on reset or GPU
   }
   visit(source); assert.ok(releasePort);
   const bindings = { canvasNodeRef: { current: {} as object | null }, canvasGenerationRef: { current: 1 },
+    artworkContributionRetryRef: { current: undefined },
+    targetOpticalRetryRef: { current: undefined }, hipsRetryRef: { current: undefined },
     canvasDeepSkyImageRef: { current: { image: { onload() {}, onerror() {} } } as any },
     storeCanvasDeepSkyImage(value: unknown) { assert.equal(value, null); }, retireDeepSkyDecodeRef: { current: () => {} } };
   bindings.retireDeepSkyDecodeRef.current = callbackWith("retireDeepSkyDecode", bindings) as () => void;
@@ -195,9 +197,11 @@ test("selected W3 uses the accepted footprint while preserving independent refin
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   const acceptedCenter = { x: 190, y: 414 }, image = {};
   const input = { geometryReport: report, row: { at }, canvasSize: { width: 390, height: 844 },
+    canvasNodeRef: { current: { width: 390, height: 844 } },
     currentViewBasis: createSkyViewBasis(0, 80, 0), presentedFov: .05, presentedCenter: acceptedCenter, verticalFovDeg: .2,
     selectedDeepSkyEntry: { objectRef: publication.objectRef }, deepSkyRegistrationReady: true, deepSkyImageDiscovery: publication,
-    canvasDeepSkyImage: image, mode: "NIGHT", useMemo: (read: () => unknown) => read(), skyDeepSkyImageIntersectsView, deepSkyImageLevelForFov };
+    canvasDeepSkyImage: image, mode: "NIGHT", report: { data: { dataState: "FRESH" }, isError: false },
+    useMemo: (read: () => unknown) => read(), skyDeepSkyImageIntersectsView, deepSkyImageLevelForFov };
   const near = vm.runInNewContext(code, input);
   assert.equal(near.footprint.report, report); assert.equal(near.footprint.view.basis, input.currentViewBasis);
   assert.equal(near.footprint.view.center, acceptedCenter); assert.equal(near.footprint.view.verticalFovDeg, .05);
@@ -207,6 +211,21 @@ test("selected W3 uses the accepted footprint while preserving independent refin
   const unknown = vm.runInNewContext(code, { ...input, currentViewBasis: createSkyViewBasis(90, 80, 0), geometryReport: undefined });
   assert.equal(unknown.level, "DETAIL"); assert.equal(unknown.painted, image);
   assert.equal(vm.runInNewContext(code, { ...input, verticalFovDeg: 16 }).level, null);
+  assert.equal(vm.runInNewContext(code, { ...input, report: { data: { dataState: "STALE_USABLE" }, isError: false } }).level, "DETAIL");
+  for (const dataState of ["EXPIRED", "UNAVAILABLE"])
+    assert.equal(vm.runInNewContext(code, { ...input, report: { data: { dataState }, isError: false } }).level, null,
+      "retained report geometry must not keep deep-sky demand after report validity ends");
+  assert.equal(vm.runInNewContext(code, { ...input, report: { data: undefined, isError: true } }).level, null);
+});
+
+test("a ready deep-sky bitmap rejects a lost or changed selection scope before effect cleanup", () => {
+  const h = decoder(); Object.assign(h.bindings, { registerSkyNativeImageLifetime });
+  h.render(h.bindings); h.images[0]!.onload?.(); const ready = h.painted() as { image: object };
+  assert.equal(skyNativeImageIsCurrent(ready.image), true);
+  h.bindings.deepSkyImageIntentRef.current = null;
+  assert.equal(skyNativeImageIsCurrent(ready.image), false, "a queued ready bitmap cannot outlive current image eligibility");
+  h.bindings.deepSkyImageIntentRef.current = { reference: "M:42", level: "DETAIL" };
+  assert.equal(skyNativeImageIsCurrent(ready.image), false);
 });
 
 test("discovery checks the latest view and cannot relabel stale selection metadata", () => {

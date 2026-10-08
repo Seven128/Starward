@@ -1,0 +1,538 @@
+{
+  "status": "CANVAS_NATIVE_RELEASE_FAILURE_DEVELOPMENT_REPAIRED_TARGET_ACCEPTANCE_OPEN",
+  "scope": "Original lifecycle and page retirement boundary; actual complete current official Page through controlled native ports. Self-review only.",
+  "sourceBefore": {
+    "lifecycle": {
+      "bytes": 7980,
+      "sha256": "84a34c6d51237336427e40d9362a2b7684f0a7c3069ef4b1216f885f75d87c3a"
+    },
+    "page": {
+      "bytes": 222157,
+      "sha256": "0a3b2b820a638c8f7e690bd35f0c36cc754a5ff322cad411a55ae1abec3ac7d2"
+    }
+  },
+  "affectedProductFiles": [
+    "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.ts",
+    "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx"
+  ],
+  "regression": "Before:19 tests,14 pass,5 fail; raw native release exception escaped hide/resize/unmount/dispose, and paint failure report was lost. After:22 owner/surface tests pass; invalid-return previously recovered and remains covered.",
+  "typecheck": {
+    "initialRootCompiler": "FAILED_TYPE_SCRIPT_6_BASEURL_DEPRECATION_WRONG_COMPILER_ENTRY_NOT_PRODUCT_FIX",
+    "projectCompiler": "apps/wechat-miniapp/node_modules/typescript/lib/tsc.js; package pinned5.9.3",
+    "result": "PASS"
+  },
+  "normal": {
+    "status": "CURRENT_COMPLETE_PAGE_MIXED_DEVELOPMENT_SCOPE",
+    "firstUsableMs": 875.9000000953674,
+    "completeMs": 2284.100000143051,
+    "images": 9,
+    "imageBodyBytes": 1234674,
+    "objectCount": 377,
+    "sao": {
+      "input": {
+        "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+        "catalogVersion": "sao-visual-supplement.v2",
+        "frameAt": "2026-10-08T13:00:00.000Z",
+        "pointCount": 839
+      },
+      "paintedCount": 123
+    },
+    "actualHttpOverlaps": 29,
+    "errors": []
+  },
+  "nativeMutation": {
+    "status": "CURRENT_COMPLETE_PAGE_MIXED_DEVELOPMENT_SCOPE",
+    "injectedRendererFaults": 1,
+    "fault": "before renderer dispose; original page native surface must retire independently",
+    "readback": {
+      "scope": "One actual controlled Page native-port renderer-release failure. No native WXML, physical release or capacity claim.",
+      "rows": [
+        {
+          "mutation": {
+            "wrappedRenderers": 1,
+            "backCalls": 1,
+            "releaseFaults": 1,
+            "fault": "task_native_renderer_release_failed"
+          },
+          "resources": {
+            "activeCanvases": 0,
+            "appHideListeners": 0,
+            "deviceMotionListeners": 0,
+            "compassListeners": 0,
+            "encodedFiles": 28,
+            "encodedFileBytes": 1397615
+          },
+          "routes": [],
+          "backingStores": [
+            {
+              "width": 0,
+              "height": 0,
+              "contextLost": true
+            }
+          ]
+        },
+        {
+          "mutation": {
+            "wrappedRenderers": 0,
+            "backCalls": 0,
+            "releaseFaults": 0,
+            "fault": "task_native_renderer_release_failed"
+          },
+          "resources": {
+            "activeCanvases": 0,
+            "appHideListeners": 0,
+            "deviceMotionListeners": 0,
+            "compassListeners": 0,
+            "encodedFiles": 0,
+            "encodedFileBytes": 0
+          },
+          "routes": [],
+          "backingStores": []
+        },
+        {
+          "mutation": {
+            "wrappedRenderers": 0,
+            "backCalls": 0,
+            "releaseFaults": 0,
+            "fault": "task_native_renderer_release_failed"
+          },
+          "resources": {
+            "activeCanvases": 0,
+            "appHideListeners": 0,
+            "deviceMotionListeners": 0,
+            "compassListeners": 0,
+            "encodedFiles": 0,
+            "encodedFileBytes": 0
+          },
+          "routes": [],
+          "backingStores": []
+        }
+      ]
+    },
+    "firstUsableMs": 668.2000000476837,
+    "completeMs": 1748.3999998569489,
+    "images": 9,
+    "sao": {
+      "input": {
+        "publicationHash": "97d581f282df7c627304980d14ac4a7a0f53754f5945b1d6ef6658b4712f2b10",
+        "catalogVersion": "sao-visual-supplement.v2",
+        "frameAt": "2026-10-08T13:00:00.000Z",
+        "pointCount": 915
+      },
+      "paintedCount": 126
+    },
+    "actualHttpOverlaps": 29,
+    "pageErrors": []
+  },
+  "retirement": [
+    {
+      "dir": "output/playwright/sky-whole-page-1008-retirement-normal",
+      "host": {
+        "appClosed": true,
+        "caddyStopped": true,
+        "errors": [],
+        "scope": "This owned fixture host only; existing services/data unchanged."
+      },
+      "page": {
+        "browserClosed": true,
+        "samplerClosed": true,
+        "cleanupErrors": []
+      },
+      "input": {
+        "frontendInputs": 523,
+        "localRuntimeInputs": 183,
+        "listedInputsUnchanged": true,
+        "scope": "Only the listed pinned inputs; not a complete backend/public-data closure."
+      }
+    },
+    {
+      "dir": "output/playwright/sky-whole-page-1008-retirement-native-fault",
+      "host": {
+        "appClosed": true,
+        "caddyStopped": true,
+        "errors": [],
+        "scope": "This owned fixture host only; existing services/data unchanged."
+      },
+      "page": {
+        "browserClosed": true,
+        "samplerClosed": true,
+        "cleanupErrors": []
+      },
+      "input": {
+        "frontendInputs": 523,
+        "localRuntimeInputs": 183,
+        "listedInputsUnchanged": true,
+        "scope": "Only the listed pinned inputs; not a complete backend/public-data closure."
+      }
+    }
+  ],
+  "commonMeasurementScripts": {
+    "unchanged": true,
+    "count": 4
+  },
+  "stablePins": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/ACCEPTANCE-CURRENT.md",
+      "bytes": 48141,
+      "sha256": "34549de3f9d2f17ab7f344c5dfb700f988977d004bf033a59aa881edfa9053e3"
+    },
+    {
+      "path": "apps/wechat-miniapp/project.config.json",
+      "bytes": 975,
+      "sha256": "7ab530fac785c3716dcc6293837492ff2098e7698b382e47fa057800a03f8ad6"
+    },
+    {
+      "path": "workers/miniapp-api/assets/celestial-object-introductions.zh-cn.v72.json",
+      "bytes": 643978,
+      "sha256": "587c4b3f7f773d352925932062716ea570485f18ddaa0a6d2c9730c29b5c204d"
+    }
+  ],
+  "nativeCandidate": {
+    "historicalRecord": "output/devtools-window-2026-10-07/native-final-candidate.json",
+    "compiledFilesUnchanged": true,
+    "fileCount": 274,
+    "changedSourceInputs": [
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+        "unchanged": false,
+        "beforeSha256": "0a3b2b820a638c8f7e690bd35f0c36cc754a5ff322cad411a55ae1abec3ac7d2",
+        "currentSha256": "cda0906bc3e640cc4c764d5e61992341db6f2520e415c22848746f09432c9086"
+      }
+    ],
+    "qualification": "HISTORICAL_FAILED_NOT_CURRENT_SOURCE_ACCEPTANCE; compiled candidate was not rebuilt/consumed for this lifecycle change"
+  },
+  "historicalE2": "2/10 scoped qualification and20 diagnostic failure preserved at prior source epoch; not replayed or relabelled",
+  "open": [
+    "native controls FAILED",
+    "original root Map restoration UNKNOWN",
+    "full imagery/periphery/continuous background",
+    "Android/iOS",
+    "real principals/providers",
+    "target Linux and full machine physical capacity",
+    "publication/live/off-host/real reference restore",
+    "final independent review MISSING",
+    "all33 obligations"
+  ],
+  "pins": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/build-sky-current-page.mts",
+      "bytes": 9083,
+      "sha256": "ed1703050df0a297711e8200d148c48060ab1185696052ca07f26255032fdbc1"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/measure-sky-page-resources.mts",
+      "bytes": 36468,
+      "sha256": "c813ec1e1c64b9fe7d9b3f3ab5ba870c3ea7791f90ff3a5f5460d1565a2e6214"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/sky-measurement-host.mts",
+      "bytes": 6808,
+      "sha256": "bd2f570e191831d422bda8bd64f2d35d95d6a2561bd6f080c6c32464507a1163"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-owned-process-memory.py",
+      "bytes": 5620,
+      "sha256": "9517fff79c753026f8597cfa6b237645afa3457632e18ca138d499afa3bfb82a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.ts",
+      "bytes": 8830,
+      "sha256": "3a5eac02d0eee799226383fa0b27fed12433440b1c93e8581ed5bc7a503a1d36"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.test.ts",
+      "bytes": 16162,
+      "sha256": "0d42a0c90ee9b352f66d3a1bedd4d3666abcb0395fc2ea373730f631750b28fa"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "bytes": 222335,
+      "sha256": "cda0906bc3e640cc4c764d5e61992341db6f2520e415c22848746f09432c9086"
+    },
+    {
+      "path": "project_context/architecture/runtime-and-domain.md",
+      "bytes": 343117,
+      "sha256": "e6dfff86754d22298c7a02a9a6a5f187eb6142ea4b85beb2ba10112c7e82ddcb"
+    },
+    {
+      "path": "output/playwright/sky-canvas-retirement-1008/after.tap",
+      "bytes": 2357,
+      "sha256": "cb907a2668ac909b04ac184ddee8aa3c69b7b07fb7f314af7ea90df3ad035505"
+    },
+    {
+      "path": "output/playwright/sky-canvas-retirement-1008/failing-before.tap",
+      "bytes": 11275,
+      "sha256": "904ca09bbb8b0e1c53115c3a29f3f8060d433f73c474d8964c9a32e47bff42dc"
+    },
+    {
+      "path": "output/playwright/sky-canvas-retirement-1008/native-mutation-readback.json",
+      "bytes": 1579,
+      "sha256": "a20193f30fb815a1ad69fb8aac35dc41274e1c8b032d4c9e2dd9b74af2e57c3f"
+    },
+    {
+      "path": "output/playwright/sky-canvas-retirement-1008/retirement-native-mutation.mjs",
+      "bytes": 3490,
+      "sha256": "f97f98543f355e492a3f4d28deb72ca14d7c290f3d60fb52c83f94f99cbfbc91"
+    },
+    {
+      "path": "output/playwright/sky-canvas-retirement-1008/source-before.json",
+      "bytes": 244,
+      "sha256": "24f593d292181a3ac376463ec021336e977936ee45d4e1b626cf4b2d81fcc44c"
+    },
+    {
+      "path": "output/playwright/sky-canvas-retirement-1008/typecheck-project.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "output/playwright/sky-canvas-retirement-1008/typecheck.log",
+      "bytes": 263,
+      "sha256": "afebed5213ae666349f1b48865d2325635c3fd650a4e227a3ac73a96f9bf8701"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-current/build-result.json",
+      "bytes": 416,
+      "sha256": "79bda568b5a19874777c2e50fe64687d2a854ddccff4a98f4adf7e7c0fcf565a"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-current/metafile.json",
+      "bytes": 402939,
+      "sha256": "be81a5297da90abc739d8309e0b64773d4e694970ad3214149fbde25b660f181"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-current/observed-boundaries.json",
+      "bytes": 5043,
+      "sha256": "20607be612fb19b0883198e7b9bf8280b637dfd816e24d59b3ad58425e3c90ae"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-current/page-bundle.js",
+      "bytes": 2499375,
+      "sha256": "740b3ef6298e97cdb2402032eb2cd1ba7169e0641bc9608a78b0329a9644037c"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-current/source-bindings-before.json",
+      "bytes": 96124,
+      "sha256": "a941aa3a8231534dd6fd629eb2b9ddc3089f559d23cdc02fede37038aacc7ae9"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/Caddyfile",
+      "bytes": 910,
+      "sha256": "d91894622ec0bec2825d1d4ade645fc9384a457c5ca60321237baff9f929cbc8"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/client-results.json",
+      "bytes": 1622,
+      "sha256": "cb652e2cd3802420cc394caf2e20477356ad10c1886c8153205ab2645aa4320f"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/current-display.png",
+      "bytes": 215185,
+      "sha256": "13c43ef7c570d859b14ae03b8dd5f5aaa472d56b593b8b4cc2fa64dc543a30bf"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/current-page-ready-client-0.json",
+      "bytes": 33133,
+      "sha256": "22d5306da8be74c198535bb68915498ede66c2218d6c2c6184c253264a3d61f8"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/display-effect-guard-client-0.json",
+      "bytes": 267,
+      "sha256": "fbd4d77baf77a72f871d6aa43e79caf27de587f1ca4abe53b884b19571b4e19b"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/edge-browser-reconciliation.json",
+      "bytes": 291,
+      "sha256": "601ab5af175dfc14cf80ee26da4583e57a70598804ffe4be20ce6f4f5266877d"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/host-retirement.json",
+      "bytes": 142,
+      "sha256": "b5827114cdb286168e756483e883b2d09337eb17c32fb33e7b513bc99d68248e"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/listed-inputs-after.json",
+      "bytes": 179,
+      "sha256": "c6fc71ccfddd6d4e807cb83784abddb6b7a3f5a7c5c5dbc6e3fdb32f0a9e4292"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/listed-runtime-inputs-before.json",
+      "bytes": 34400,
+      "sha256": "e4b2c5167dbab146d755e6338467e3c28bbc3115ab880700d8480a14042e04ce"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/native-page-retirements.json",
+      "bytes": 2492,
+      "sha256": "a062ae8e94b31d91b59c4661a1bfd18d95f73d5ed7539fe07500b5474b540678"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/native-port-origin-client-0.json",
+      "bytes": 394,
+      "sha256": "ca0c4325c5e0f938658989ca4efafff61f98d57b9aedfc4ac8c78cba2237db36"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/native-port-origin-client-1.json",
+      "bytes": 394,
+      "sha256": "ca0c4325c5e0f938658989ca4efafff61f98d57b9aedfc4ac8c78cba2237db36"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/native-port-origin-client-2.json",
+      "bytes": 394,
+      "sha256": "ca0c4325c5e0f938658989ca4efafff61f98d57b9aedfc4ac8c78cba2237db36"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/ordinary-results.json",
+      "bytes": 370,
+      "sha256": "61d0f2354ec60f329c412ba15294ad96edd1642f17fe8bf0ee8bf67ae351ad7f"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/owned-host.json",
+      "bytes": 489,
+      "sha256": "4cc3519145ed73dd67e8c77b637e9124f00dc2c930c101318de0c132939c1cdd"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/page-retirement.json",
+      "bytes": 76,
+      "sha256": "c4b18f98ee608e57eb40acab71fe3cd0ca074bb7070e4f9a58eba9c77203ea05"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/privacy-filtered-caddy.log",
+      "bytes": 23493,
+      "sha256": "bd586fb10b677e34e7715695313147785332c02c489798b7957c3f783131403d"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/request-measurements.json",
+      "bytes": 44859,
+      "sha256": "b05c8d8b98abbef873f1dda823302f45abd93f8b0825030eb228d97bc46747d7"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/result.json",
+      "bytes": 5255,
+      "sha256": "7a07857f092b7a51490943b85a6c871e5bc00486e22f9fd252db9311ee262b78"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/reused-current-build.json",
+      "bytes": 283,
+      "sha256": "84cedb582d56e61776a948b0810b8d7fd473fd45271db8056f98087691e0e350"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/same-time-owned-process-samples.json",
+      "bytes": 98745,
+      "sha256": "ca0bd8da98486d9b701fb57c1ac9fe8420500bc49543fb59b613ff4c26a1c2a7"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-normal/scenario-outcomes.json",
+      "bytes": 2305,
+      "sha256": "84bd7e99bd6792790eb853ef804359a42de6c4a6a45f8d3805e8a2635b27fb49"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/Caddyfile",
+      "bytes": 910,
+      "sha256": "399ddd2785a4e8beb1f773d2f48ba87a51f669ff4f96eebf4abe7fb78675bf88"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/client-results.json",
+      "bytes": 1622,
+      "sha256": "95c4b712051b556408647ef25d860dce034ed61c997cc66c7fa4a921c2e4e901"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/current-display.png",
+      "bytes": 215185,
+      "sha256": "13c43ef7c570d859b14ae03b8dd5f5aaa472d56b593b8b4cc2fa64dc543a30bf"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/current-page-ready-client-0.json",
+      "bytes": 34354,
+      "sha256": "9c0d79f5ea0be7a9eac13363698cc7e332c936b26670e1594771c15acc93a50e"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/display-effect-guard-client-0.json",
+      "bytes": 267,
+      "sha256": "fbd4d77baf77a72f871d6aa43e79caf27de587f1ca4abe53b884b19571b4e19b"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/edge-browser-reconciliation.json",
+      "bytes": 291,
+      "sha256": "9b6be3f43ca369abe02dbbad9af2b4086fb10c798be704593208d079e3d497b6"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/host-retirement.json",
+      "bytes": 142,
+      "sha256": "b5827114cdb286168e756483e883b2d09337eb17c32fb33e7b513bc99d68248e"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/listed-inputs-after.json",
+      "bytes": 179,
+      "sha256": "c6fc71ccfddd6d4e807cb83784abddb6b7a3f5a7c5c5dbc6e3fdb32f0a9e4292"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/listed-runtime-inputs-before.json",
+      "bytes": 34400,
+      "sha256": "e4b2c5167dbab146d755e6338467e3c28bbc3115ab880700d8480a14042e04ce"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/native-page-retirements.json",
+      "bytes": 2492,
+      "sha256": "a062ae8e94b31d91b59c4661a1bfd18d95f73d5ed7539fe07500b5474b540678"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/native-port-origin-client-0.json",
+      "bytes": 394,
+      "sha256": "ca0c4325c5e0f938658989ca4efafff61f98d57b9aedfc4ac8c78cba2237db36"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/native-port-origin-client-1.json",
+      "bytes": 394,
+      "sha256": "ca0c4325c5e0f938658989ca4efafff61f98d57b9aedfc4ac8c78cba2237db36"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/native-port-origin-client-2.json",
+      "bytes": 394,
+      "sha256": "ca0c4325c5e0f938658989ca4efafff61f98d57b9aedfc4ac8c78cba2237db36"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/ordinary-results.json",
+      "bytes": 369,
+      "sha256": "8f5e9f68c15d351a3646b1eb5943b97439b996e401dee5f6ed70a2ec852e2b42"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/owned-host.json",
+      "bytes": 494,
+      "sha256": "62b4266f87627f8ca5890daf1f6631c5d55c73ce2fe1ea2d2223afe0fcbd4f24"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/page-retirement.json",
+      "bytes": 76,
+      "sha256": "c4b18f98ee608e57eb40acab71fe3cd0ca074bb7070e4f9a58eba9c77203ea05"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/privacy-filtered-caddy.log",
+      "bytes": 23480,
+      "sha256": "bfe2f43afb595f882f90fb622b9a5b6da318ded0b9f80e923c1c3b70c3987c47"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/request-measurements.json",
+      "bytes": 44767,
+      "sha256": "63efb6e0fc9994675b74c7c783ce344836e16ea1c8b90b129ec46d350a9a1a8a"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/result.json",
+      "bytes": 5254,
+      "sha256": "cda178ce5f4282ab74125661287bd682ac7b637432659f050c90a8f2a7de7e68"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/reused-current-build.json",
+      "bytes": 283,
+      "sha256": "84cedb582d56e61776a948b0810b8d7fd473fd45271db8056f98087691e0e350"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/same-time-owned-process-samples.json",
+      "bytes": 74756,
+      "sha256": "c5fe2b5b8ee262fa5627075de9dc7a9519b3d52ce38e5fb5891946a0984e3a3c"
+    },
+    {
+      "path": "output/playwright/sky-whole-page-1008-retirement-native-fault/scenario-outcomes.json",
+      "bytes": 2304,
+      "sha256": "6968ff7001b533b2296db0b70132a1766d31755afc5bb94226b0bc6c1654a567"
+    }
+  ]
+}

@@ -60,12 +60,13 @@ export function createSkyLandscapeMasks(publication: SkyLandscapeManifestData, d
 }) {
   type Entry = { state: "loading" | "ready" | "error"; abort: AbortController; mask?: SkyPanoramaMask };
   const entries = new Map<string, Entry>();
-  let live = true, wanted: readonly SkyLandscapeResource[] = [];
+  let live = true, paused = false, wanted: readonly SkyLandscapeResource[] = [];
   const emit = () => {
     if (live) deps.changed({ masks: new Map([...entries].flatMap(([id, entry]) => entry.mask ? [[id, entry.mask]] : [])),
       failed: wanted.some(resource => entries.get(resource.id)?.state === "error") });
   };
   const start = () => {
+    if (!live || paused) return;
     for (const resource of wanted) {
       if (entries.has(resource.id)) continue;
       const entry: Entry = { state: "loading", abort: new AbortController() }; entries.set(resource.id, entry);
@@ -79,6 +80,15 @@ export function createSkyLandscapeMasks(publication: SkyLandscapeManifestData, d
     }
   };
   return {
+    pause() {
+      if (!live || paused) return;
+      paused = true;
+      for (const [id, entry] of entries) if (entry.state === "loading") {
+        entries.delete(id); entry.abort.abort();
+      }
+      emit();
+    },
+    resume() { if (live && paused) { paused = false; start(); emit(); } },
     update(resources: readonly SkyLandscapeResource[]) {
       if (!live) return;
       wanted = resources;

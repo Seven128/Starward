@@ -5,7 +5,7 @@ import { basename, dirname, join } from "node:path";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-import { assertSdssOpticalManifest, assertSdssScienceOpticalManifest, sdssOpticalPublication,
+import { opticalPublicationReference, assertSdssOpticalManifest, assertSdssScienceOpticalManifest, sdssOpticalPublication,
   sdssScienceOpticalPublicationHash, type SdssOpticalLevel, type SdssOpticalManifest,
   type SdssScienceOpticalManifest } from "@starward/miniapp-contracts";
 import { createSyntheticSdssSciencePublication } from "../../../../../workers/miniapp-api/src/test-fixtures/sdss-science-publication.ts";
@@ -215,7 +215,13 @@ test("bounded in-memory mutants demonstrate the foreign-asset and native-retirem
   assert.equal(identityText.split(expression).length, 2);
   const mutatedIdentity = {} as typeof exactIdentity;
   vm.runInNewContext(ts.transpileModule(identityText.replace(expression, "true &&"), { compilerOptions: {
-    target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText, { exports: mutatedIdentity });
+    target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText, {
+      exports: mutatedIdentity,
+      require(name: string) {
+        assert.equal(name, "@starward/miniapp-contracts");
+        return { opticalPublicationReference };
+      },
+    });
   const foreignMutant = compile(text, mutatedIdentity);
   assert.notEqual(foreignMutant.completeScienceSkyOptical(foreign, draw, receipt()), null,
     "the exact foreign descriptor rejection would fail with the identity guard removed");

@@ -12,13 +12,18 @@ const unique = (values: readonly (string | null | undefined)[]) =>
   [...new Set(values.filter((value): value is string => Boolean(value)))];
 
 export function brightStarAliases(row: Readonly<Bsc5pStarRow>, chineseAliases: readonly string[] = []) {
+  // Q680341 has two unrelated locale labels; its Chinese article and fixed
+  // stellar source identify 參宿三. Keep the source snapshot, exclude bad names.
+  const qualifiedAliases = row.hr === "1852"
+    ? chineseAliases.filter(value => value !== "明铁盖达坂" && value !== "明铁盖达阪")
+    : chineseAliases;
   return unique([row.properName, `HR ${row.hr}`, row.hip ? `HIP ${row.hip}` : null,
     row.hd ? `HD ${row.hd}` : null, row.alternateName, ...(CELESTIAL_CHINESE_ALIASES[row.sourceId] ?? []),
-    ...chineseAliases]);
+    ...qualifiedAliases]);
 }
-export function deepSkyAliases(row: DeepSkyCatalogRow) {
-  return unique([`M ${row.messier}`, row.ngcName, ...row.commonNames,
-    ...(CELESTIAL_CHINESE_ALIASES[row.objectRef] ?? [])]);
+export function deepSkyAliases(row: DeepSkyCatalogRow, chineseAliases: readonly string[] = []) {
+  return unique([row.messier === null ? null : `M ${row.messier}`, row.ngcName, ...row.commonNames,
+    ...(CELESTIAL_CHINESE_ALIASES[row.objectRef] ?? []), ...chineseAliases]);
 }
 export function saoStarAliases(row: Readonly<SaoStarRow>) {
   const aliases = [row.sourceId.replace(":", " ")];

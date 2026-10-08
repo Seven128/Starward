@@ -1,4 +1,4 @@
-import type {OpticalHipsIndexData,OpticalHipsManifestData} from "@starward/miniapp-contracts";
+import {opticalHipsSourceIdentityValid,type OpticalHipsIndexData,type OpticalHipsManifestData} from "@starward/miniapp-contracts";
 
 const sha=(value:unknown):value is string=>typeof value==="string"&&/^[a-f0-9]{64}$/u.test(value);
 const id=(value:unknown):value is string=>typeof value==="string"&&/^[a-z0-9-]{1,40}$/u.test(value);
@@ -11,7 +11,7 @@ const url=(value:unknown,path:string):value is string=>value===path;
  * an arbitrary download URL or claim coverage that was not listed. */
 export function assertOpticalHipsManifest(value:unknown):asserts value is OpticalHipsManifestData {
   const root=value as OpticalHipsManifestData;
-  if(root?.schemaVersion!=="starward-optical-hips-v1"||!sha(root.publicationHash)||
+  if(!["starward-optical-hips-v1","starward-optical-hips-v2"].includes(root?.schemaVersion)||!sha(root.publicationHash)||
     (root.scope!=="TRIAL"&&root.scope!=="PRODUCTION")||
     !Array.isArray(root.sources)||root.sources.length<1||root.sources.length>4||
     !Array.isArray(root.shards)||root.shards.length<1||root.shards.length>20_000||
@@ -22,7 +22,8 @@ export function assertOpticalHipsManifest(value:unknown):asserts value is Optica
     if(!id(source.id)||sourceIds.has(source.id)||!order(source.maxOrder)||
       source.tileWidth!==512||(source.format!=="jpeg"&&source.format!=="png")||
       ![source.title,source.provider,source.originalDataUrl,source.originalRights,
-        source.originalRightsUrl,source.hipsRecordUrl,source.hipsDoi].every(a=>typeof a==="string"&&a.length>0)||
+        source.originalRightsUrl,source.hipsRecordUrl].every(a=>typeof a==="string"&&a.length>0)||
+      !opticalHipsSourceIdentityValid(source,root.schemaVersion)||
       source.hipsLicense!=="ODbL-1.0")throw new Error("optical_publication_invalid");
     sourceIds.add(source.id);
   }

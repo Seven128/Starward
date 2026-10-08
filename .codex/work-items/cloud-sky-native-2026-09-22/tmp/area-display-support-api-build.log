@@ -1,4 +1,0 @@
-
-> @starward/miniapp-api@0.1.0 build:release
-> node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js -p tsconfig.build.json
-

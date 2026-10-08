@@ -1,4 +1,6 @@
-import { assertStellarRotation, type SkyObservationFrame } from "@starward/miniapp-contracts";
+import { assertStellarRotation, isPreparedNativeTanGeometry, type PreparedNativeOpticalManifest,
+  type PreparedNativeOpticalAsset, type SkyObservationFrame } from "@starward/miniapp-contracts";
+import { nativeTanDirection } from "@starward/astronomy-core/tan-optical-geometry";
 import { registerSkyArtworkPlane } from "./sky-artwork-registration";
 import { skyEquatorialDirectionToEnu } from "./sky-observation-frame";
 import type { SkyVector } from "./sky-view-projection";
@@ -16,8 +18,16 @@ export interface SkyTanOpticalPublication {
  * The ready descriptor must belong to this publication. Catalog rounded centers
  * and +0.1-degree north samples do not define this field's pixel coordinates.
  */
-export function registerSkyTanOpticalField(publication: SkyTanOpticalPublication,
-  asset: SkyTanOpticalAsset, observation: SkyObservationFrame | null) {
+export function registerSkyTanOpticalField(publication: SkyTanOpticalPublication | PreparedNativeOpticalManifest,
+  asset: SkyTanOpticalAsset | PreparedNativeOpticalAsset, observation: SkyObservationFrame | null) {
+  if ("nominalTan" in publication) {
+    if (!observation || !Object.values<PreparedNativeOpticalAsset>(publication.levels).includes(asset as PreparedNativeOpticalAsset) ||
+      !("width" in asset) || !isPreparedNativeTanGeometry(publication.nominalTan)) return null;
+    try { assertStellarRotation(observation.equatorialToEnu); } catch { return null; }
+    return registerSkyArtworkPlane(([[0, 0], [1, 0], [0, 1]] as const).map(uv => ({ uv,
+      point: skyEquatorialDirectionToEnu(observation.equatorialToEnu, nativeTanDirection(publication.nominalTan, uv)) })));
+  }
+  if (!("pixels" in asset)) return null;
   if (!observation || !Object.values(publication.levels).includes(asset) ||
     publication.orientation !== "north-up/east-left" || publication.center.frame !== "ICRS J2000" ||
     ![publication.center.raDeg, publication.center.decDeg, asset.fieldDegrees].every(Number.isFinite) ||

@@ -14,6 +14,8 @@ import {
 } from "./database-recovery-operations.mjs";
 import { publicReadiness } from "./public-readiness.mjs";
 import { decryptBackup, postgresIdentifier, schemaVersion } from "./verified-backup.mjs";
+import { readSkyStaticBackup, restoreSkyStaticBackup, verifiedBackupSkyRecord } from "./sky-static-backup.mjs";
+import { restoreManagedSkyStaticBackup } from "./sky-static-release.mjs";
 
 async function writeRecoveryReceipt({
   validation,
@@ -28,6 +30,7 @@ async function writeRecoveryReceipt({
   rollback,
   steps,
   errorCode,
+  skyRestore,
 }) {
   await mkdir(validation.operations.receiptDirectory, { recursive: true, mode: 0o700 });
   const stamp = startedAt.replace(/[:.]/gu, "-");
@@ -36,7 +39,7 @@ async function writeRecoveryReceipt({
     `${validation.environment}-${stamp}-${manifest.encrypted.sha256.slice(0, 12)}.recovery.json`,
   );
   const receipt = Object.freeze({
-    schemaVersion: "starward-database-recovery-receipt-v1",
+    schemaVersion: manifest.schemaVersion === "starward-verified-backup-v2" ? "starward-database-recovery-receipt-v2" : "starward-database-recovery-receipt-v1",
     status,
     environment: validation.environment,
     composeProject: manifest.composeProject,
@@ -47,6 +50,7 @@ async function writeRecoveryReceipt({
       schemaMigration: manifest.schemaMigration,
       encryptedSha256: manifest.encrypted.sha256,
       createdAt: manifest.createdAt,
+      ...(manifest.skyStaticBackup ? { skyStaticBackup: manifest.skyStaticBackup } : {}),
     }),
     operator,
     startedAt,
@@ -57,6 +61,7 @@ async function writeRecoveryReceipt({
     rollback,
     steps,
     errorCode,
+    ...(manifest.skyStaticBackup ? { skyRestore } : {}),
   });
   await writeFile(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, { mode: 0o600, flag: "wx" });
   return Object.freeze({ receiptPath, receipt });
@@ -72,8 +77,12 @@ export async function executeDatabaseRecovery({
   confirmEnvironment,
   confirmBackupSha256,
   confirmTargetDatabase,
+  skyRestoreDirectory,
+  skyManagedRestoreDirectory,
+  confirmSkyPublicationHash,
   operator,
   run,
+  execute,
   fetchImpl,
   inspectTls,
   delay,
@@ -91,7 +100,21 @@ export async function executeDatabaseRecovery({
     confirmTargetDatabase,
     operator,
   });
-  const dump = decryptBackup(envelope, key);
+  const skyRecord = verifiedBackupSkyRecord(manifest);
+  if (skyRestoreDirectory && skyManagedRestoreDirectory) fail("recovery_sky_restore_modes_exclusive");
+  const skyOutput = skyRestoreDirectory || skyManagedRestoreDirectory;
+  if ((skyOutput || confirmSkyPublicationHash) && !skyRecord) fail("recovery_sky_snapshot_missing");
+  if (confirmSkyPublicationHash && !skyOutput) fail("recovery_sky_restore_directory_required");
+  if (skyOutput && validation.operations.skyStaticDirectory) {
+    const source = path.resolve(validation.operations.skyStaticDirectory), target = path.resolve(skyOutput);
+    const overlaps = (parent, child) => { const relative = path.relative(parent, child);
+      return !relative || (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative)); };
+    if (overlaps(source, target) || overlaps(target, source)) fail("recovery_sky_restore_directory_overlaps_store");
+  }
+  if (skyRecord) await readSkyStaticBackup({ backupDirectory: validation.operations.backupDirectory, record: skyRecord });
+  let skyRestore = skyRecord ? Object.freeze({ status: "VERIFIED_PUBLIC_SNAPSHOT", publicationHash: skyRecord.publicationHash,
+    files: skyRecord.files, bytes: skyRecord.bytes, runtimeApplied: false }) : null;
+  const dump = decryptBackup(envelope, key, skyRecord);
   if (dump.length < 512 || dump.length > validation.operations.maxBackupBytes) {
     dump.fill(0);
     fail("recovery_dump_size_invalid");
@@ -111,6 +134,16 @@ export async function executeDatabaseRecovery({
     passed(name);
   };
   try {
+    if (skyManagedRestoreDirectory) {
+      skyRestore = await restoreManagedSkyStaticBackup({ validation, deploy, record: skyRecord,
+        outputDirectory: skyManagedRestoreDirectory, confirmPublicationHash: confirmSkyPublicationHash, execute });
+      passed("sky-managed-prepared-restore", skyRestore);
+    }
+    if (skyRestoreDirectory) {
+      skyRestore = await restoreSkyStaticBackup({ backupDirectory: validation.operations.backupDirectory, record: skyRecord,
+        outputDirectory: skyRestoreDirectory, confirmPublicationHash: confirmSkyPublicationHash });
+      passed("sky-public-isolated-restore", skyRestore);
+    }
     createRestoreDatabase(run, postgresUser, restoredDatabase);
     restoredCreated = true;
     loadRestoreDatabase(run, postgresUser, restoredDatabase, dump, validation.operations.maxBackupBytes);
@@ -146,6 +179,7 @@ export async function executeDatabaseRecovery({
       rollback: null,
       steps,
       errorCode: null,
+      skyRestore,
     });
   } catch (error) {
     const originalErrorCode = failureCode(error);
@@ -203,6 +237,7 @@ export async function executeDatabaseRecovery({
       rollback,
       steps,
       errorCode,
+      skyRestore,
     });
     throw new Error(`recovery_failed:${failed.receiptPath}:${errorCode}`);
   } finally {

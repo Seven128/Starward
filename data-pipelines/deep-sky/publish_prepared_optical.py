@@ -244,7 +244,8 @@ def publish_prepared_candidate(payload: dict, products: tuple, bindings: tuple[d
     """One exclusive Prepared publication boundary for raw and display producers.
 
     Each producer has already verified its own pixels/units/provenance. Shared
-    packing retains the full typed payload and writes only its three PNGs.
+    packing retains the full typed payload and writes only its three bound
+    encoded fields. Legacy products retain their original PNG bytes.
     """
     root, output = root.resolve(), output.resolve()
     if not output.is_relative_to(root) or output == root or output.is_relative_to(generation_directory) or any(
@@ -282,8 +283,14 @@ def publish_prepared_candidate(payload: dict, products: tuple, bindings: tuple[d
             destination = (output / payload["levels"][product.level]["file"]).resolve()
             if not destination.is_relative_to(output):
                 raise RuntimeError("prepared_optical_output_locator_invalid")
+            encoded = getattr(product, "encoded_bytes", None)
+            if encoded is None:
+                encoded = product.png_bytes
+            asset = payload["levels"][product.level]
+            if len(encoded) != asset["bytes"] or hashlib.sha256(encoded).hexdigest() != asset["sha256"]:
+                raise RuntimeError("prepared_optical_encoded_product_identity_invalid")
             with destination.open("xb") as file:
-                file.write(product.png_bytes)
+                file.write(encoded)
         implementation_after = [bound_file(path, root=root) for path in owners]
         for row in bindings:
             bound_file(root / row["path"], root=root, expected=row)

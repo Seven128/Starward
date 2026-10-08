@@ -6,8 +6,10 @@ import ts from "typescript";
 import {createSkyCanvasLifecycle, type CanvasClock} from "./sky-canvas-lifecycle";
 import {resolvedSkyBodyReferences} from "./sky-body-label-presentation";
 import {completeLegacySkyOptical,liveSkyOpticalCompletion,sameSkyOpticalCompletion,sameSkyOpticalInput} from "./sky-sdss-optical-completion";
-import {createSkyViewBasis} from "./sky-view-projection";
+import {createSkyViewBasis,sameSkyViewBasis} from "./sky-view-projection";
 import {copySkyDeepAuxiliaryDecisions,sameSkyDeepAuxiliaryDecisions} from "./sky-deep-auxiliary-visibility";
+import {sameSkyHipsCompletion} from "./sky-hips-source-credit";
+import {skyNativeImageIsCurrent} from "./sky-artwork-loader";
 
 // Actual page callbacks + actual Canvas lifecycle, controlled draw completion.
 // This tests publication fences, not rendered pixels, native timing or driver races.
@@ -30,11 +32,12 @@ function harness(){
   const generation={current:1},pending={current:null as any},picking={current:null as any};
   const state={presented:null as any,camera:null as any,inspections:[] as any[],failure:null as unknown};
   const attempts:Array<{complete:()=>void;view:unknown;frameSources:unknown}>=[];
-  let view=basis,defer=true,drawFault=false;
+  let view=basis,defer=true,drawFault=false,copyFault=false,copies=0;
   const orientation={latestPresentation:{current:null},presented:{current:null as any}};
   const bindings:any={liveSkyOpticalCompletion,sameSkyOpticalCompletion,sameSkyOpticalInput,resolvedSkyBodyReferences,
-    copySkyDeepAuxiliaryDecisions,sameSkyDeepAuxiliaryDecisions,
+    copySkyDeepAuxiliaryDecisions,sameSkyDeepAuxiliaryDecisions,sameSkyHipsCompletion,skyNativeImageIsCurrent,sameSkyViewBasis,
     canvasGenerationRef:generation,pendingSkyPaintRef:pending,paintedSkyObjectsRef:picking,orientation,
+    canvasSurfaceRef:{current:{present(){if(copyFault)throw new Error("controlled_display_copy_failure");copies++;}}},
     orientationController:{snapshot:()=>({})},manualBasisRef:{current:null},zoomRef:{current:.05},viewportInsetsRef:{current:{}},reducedMotionRef:{current:false},
     resolveSkyCanvasView:()=>({verticalFovDeg:.05,progress:1,center:{x:195,y:422},localView:view,intent:"manual"}),
     browsingCamera:{update:()=>({view,animating:false})},
@@ -42,7 +45,7 @@ function harness(){
     setPresentedCamera:(update:any)=>{state.camera=typeof update === "function" ? update(state.camera) : update;},
     setCanvasSize:()=>{},setCanvasError:()=>{},canvasDrawRevisionRef:{current:0},
     publishAcceptanceSkySceneInspection:(_owner:unknown,inspection:unknown)=>state.inspections.push(inspection),
-    EMPTY_SKY_IMAGES:new Map(),setSolarLightUnavailable:()=>{},setMoonDiscUnavailable:()=>{},setPlanetDiscUnavailable:()=>{},setSunDiscUnavailable:()=>{},
+    EMPTY_SKY_IMAGES:new Map(),setArtworkContributionUnavailable:()=>{},setSolarLightUnavailable:()=>{},setMoonDiscUnavailable:()=>{},setPlanetDiscUnavailable:()=>{},setSunDiscUnavailable:()=>{},
     setGalacticBandUnavailable:()=>{},setLandscapeUnavailable:()=>{},
     drawSkyScene:(...args:any[])=>{
       const drawnView=args[12],image=args[30];
@@ -68,6 +71,7 @@ function harness(){
     owner:"formal",inspection:{spotId:"spot"},sdssOpticalImage:optical,deepSkyImage:null,coordinateGrids:{horizontal:false,equatorial:false}};
   lifecycle.ready();
   return {lifecycle,frame,state,attempts,pending,picking,generation,orientation,step,
+    copies:()=>copies,failCopy:()=>{copyFault=true;},
     setView:(value:typeof basis)=>{view=value;},synchronous:()=>{defer=false;},failDraw:()=>{drawFault=true;}};
 }
 
@@ -76,12 +80,14 @@ test("painted callbacks stage only; accepted done publishes actual view/source/p
   assert.equal(h.state.presented,null,"paint alone must not bypass lifecycle acceptance");
   assert.equal(h.picking.current,null);assert.equal(h.state.camera,null);assert.equal(h.orientation.presented.current,null);
   h.attempts[0]!.complete();
+  assert.equal(h.state.failure,null,"accepted completion must not hide a callback dependency failure");
   // Callback-controlled mutation is intentionally opaque to static flow narrowing.
   const accepted=h.state as {presented:any;camera:any},picked=h.picking as {current:any};
   assert.equal(accepted.presented.frameAt,h.frame.frameAt);assert.strictEqual(accepted.camera.basis,basis);
   assert.equal(accepted.presented.nativeCanvasGeneration,1);assert.strictEqual(picked.current.view.basis,basis);
   assert.strictEqual(h.orientation.presented.current,basis);assert.equal(h.state.inspections.length,1);
   assert.equal(h.pending.current,null);
+  assert.equal(h.copies(),1);
   const saved=h.state.presented;h.attempts[0]!.complete();assert.strictEqual(h.state.presented,saved);assert.equal(h.state.inspections.length,1);
 });
 
@@ -95,7 +101,15 @@ test("hide, resize, remount, changed scene and hide-until-presented reject stage
     h.attempts[0]!.complete();
     assert.equal(h.state.presented,null,action);assert.equal(h.picking.current,null,action);assert.equal(h.state.inspections.length,0,action);
     assert.equal(h.pending.current,null,action);
+    assert.equal(h.copies(),0,"rejected completion must not copy stale pixels into the display");
   }
+});
+
+test("a native display-copy failure publishes no camera, source, pick or READY identity",()=>{
+  const h=harness();h.synchronous();h.failCopy();h.lifecycle.request(h.frame);h.step();
+  assert.match(String(h.state.failure),/controlled_display_copy_failure/u);
+  assert.equal(h.copies(),0);assert.equal(h.state.presented,null);assert.equal(h.picking.current,null);
+  assert.equal(h.state.camera,null);assert.equal(h.state.inspections.length,0);
 });
 
 test("same-scene newer pose can accept older actual view without relabeling or starving visibility",()=>{

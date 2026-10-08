@@ -1,9 +1,0 @@
-file:///E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-scene-v49-readback-2026-09-30.mjs:27
-assert.equal(reportData.contextRevision,1);assert.equal(reportData.observationContext.contextId,context.contextId);
-                                                                                      ^
-
-TypeError: Cannot read properties of undefined (reading 'contextId')
-    at file:///E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-scene-v49-readback-2026-09-30.mjs:27:87
-    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
-
-Node.js v24.16.0

@@ -1,1 +1,0 @@
-{"tripletCount": 114, "associationReasons": {"rSupportUnknown": 3, "missingOrAmbiguousBand": 128, "ambiguousReverse": 0}, "elapsedSeconds": 21.211710599949583, "memory": {"workingSetBytes": 208547840, "peakWorkingSetBytes": 228069376, "privateCommitBytes": 990547968, "peakPagefileBytes": 996986880}}

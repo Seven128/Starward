@@ -163,8 +163,11 @@ test("production frame requests preserve exact data/time and clear expired or un
   const artwork = { images: new Map() };
   const pose = { alphaDeg: 0, betaDeg: 90, gammaDeg: 0, headingDeg: 0,
     basis: projection.createSkyViewBasis(0, 90, 0)!, sampledAt: 1 };
+  let currentHips: unknown[] = [];
+  const readHipsTiles = () => currentHips;
   const sandbox = vm.createContext({
-    orientation: { snapshot: { presentationRevision: 0 } },
+    orientation: { snapshot: { presentationRevision: 0 }, latestPresentation: { current: null } },
+    readHipsTiles,
     useCallback: (fn: unknown) => fn,
     skySceneHasContent: stellarScene.skySceneHasContent,
     skyTargetOpticalFrame,
@@ -199,6 +202,18 @@ test("production frame requests preserve exact data/time and clear expired or un
   assert.equal(requests.at(-1)!.frame.frameAt, committed);
   assert.equal(requests.at(-1)!.frame.sceneReady, true);
   assert.equal(requests.at(-1)!.hidden, false);
+  assert.strictEqual(requests.at(-1)!.frame.readHipsTiles, readHipsTiles);
+  currentHips = [{ id: "ready-after-queued-frame" }];
+  assert.strictEqual(requests.at(-1)!.frame.readHipsTiles(), currentHips,
+    "the queued native boundary must preserve the live getter rather than freeze its earlier empty snapshot");
+  sandbox.orientation.latestPresentation.current = { pose: null };
+  request();
+  assert.equal(requests.at(-1)!.frame.pose, null,
+    "a synchronous native presentation clear overrides the retained React pose");
+  assert.equal(requests.at(-1)!.frame.heading, null);
+  assert.equal(requests.at(-1)!.frame.sceneReady, false);
+  assert.equal(requests.at(-1)!.hidden, true);
+  sandbox.orientation.latestPresentation.current = null;
   const sdssPixels = { id: "sdss-M51" };
   // Already-admitted structural loader state, as in sky-sdss-optical-frame's
   // legacy handoff control. The real owner needs exact descriptor identities.
@@ -229,6 +244,8 @@ test("production frame requests preserve exact data/time and clear expired or un
     sandbox.report.data.dataState = state; request();
     assert.equal(requests.at(-1)!.frame.data, undefined);
     assert.equal(requests.at(-1)!.frame.sdssOpticalImage, null);
+    assert.equal(requests.at(-1)!.frame.readHipsTiles, undefined);
+    assert.equal(requests.at(-1)!.frame.hipsTiles.length, 0);
     assert.equal(requests.at(-1)!.frame.constellations, null);
     assert.equal(requests.at(-1)!.frame.sceneReady, false);
     assert.equal(requests.at(-1)!.hidden, true);

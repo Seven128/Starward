@@ -1,8 +1,0 @@
-file:///E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-artwork-window-binding-2026-10-01.mjs:70
-assert.equal(event('artwork-window-moon-track-current').canvas.serializedFactsPresent,false);
-                                                              ^
-
-TypeError: Cannot read properties of undefined (reading 'serializedFactsPresent')
-    at file:///E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-artwork-window-binding-2026-10-01.mjs:70:63
-
-Node.js v24.16.0

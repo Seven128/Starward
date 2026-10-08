@@ -9,7 +9,9 @@ import ts from "typescript";
 import { assertSdssScienceOpticalManifest, sdssScienceOpticalPublicationHash, assertPreparedOpticalManifest, preparedOpticalPublicationHash,
   type SdssScienceOpticalManifest, type SdssDisplayOpticalManifest, assertSdssDisplayOpticalManifest, type PreparedOpticalManifest } from "@starward/miniapp-contracts";
 import { createSkyArtworkLoader, type SkyArtworkLoadState, type SkyNativeImageAsset } from "./sky-artwork-loader";
-import { sdssOpticalLevelForFov, sdssScienceOpticalLevelForFov, skyTargetOpticalLevelForFov } from "./sky-sdss-optical-selection";
+import { skyTargetOpticalLevelForView } from "./sky-sdss-optical-selection";
+import { sdssOpticalPublication } from "@starward/miniapp-contracts";
+import * as opticalContracts from "@starward/miniapp-contracts";
 import { skyFixedImageStatus } from "./sky-fixed-image-status";
 import { skyTargetOpticalIntersectsView } from "./sky-target-optical-visibility";
 import { OBSERVATION_FRAME_FORMAT } from "@starward/miniapp-contracts";
@@ -76,14 +78,25 @@ for (const asset of Object.values(preparedReplacement.levels))
   asset.downloadUrl = `/v2/sky/prepared-optical/${preparedReplacement.publicationHash}/${asset.file}`;
 assertPreparedOpticalManifest(preparedReplacement, "M:51", preparedReplacement.publicationHash);
 
+function samplingFootprint(publication: { center: { raDeg: number; decDeg: number } }, fov: number): SkyTargetOpticalView {
+  const at = "2026-10-03T13:00:00.000Z";
+  return { at, width: 390, height: 844, drawingWidth: 390, drawingHeight: 844,
+    report: { hourly: [{ at }], observationFrames: [{ at, format: OBSERVATION_FRAME_FORMAT,
+      observer: { latitude: 0, longitude: 0, elevationM: 0 }, equatorialToEnu: [1, 0, 0, 0, 1, 0, 0, 0, 1] }] } as any,
+    view: { basis: createSkyViewBasis((90 - publication.center.raDeg + 360) % 360,
+      90 + publication.center.decDeg, 0)!, verticalFovDeg: fov } };
+}
+
 function world(prepared = false, display = false) {
   let metadataCurrent = true, publication: SdssScienceOpticalManifest | SdssDisplayOpticalManifest | PreparedOpticalManifest = display ? displayActual : prepared ? preparedActual : actual, queryData: unknown;
   let state: SkyArtworkLoadState = { images: new Map(), retainedImages: new Map(), failed: false, loading: false };
-  let currentHash: string | undefined, owner: ReturnType<typeof createSkyArtworkLoader> | undefined;
+  let currentHash: string | undefined, currentCanvas: unknown, currentRevision: number | undefined;
+  let owner: ReturnType<typeof createSkyArtworkLoader> | undefined;
   let released = 0, canceled = 0, refetches = 0;
   const queries: any[] = [], starts: any[] = [], metadataCalls: any[] = [], resolutions: any[] = [];
   const resource = () => ({ publication, isCurrent: () => metadataCurrent });
   const compiled = new Map<string, Record<string, any>>();
+  const selectionRef = { current: null as unknown };
   const load = (file: string): Record<string, any> => {
     if (compiled.has(file)) return compiled.get(file)!;
     const exports: Record<string, any> = {}; compiled.set(file, exports);
@@ -92,7 +105,9 @@ function world(prepared = false, display = false) {
       exports, require(name: string) {
         if (name === "./use-sky-target-optical") return load("./use-sky-target-optical.ts");
       const bindings: Record<string, unknown> = {
-        react: { useMemo: (read: () => unknown) => read() },
+        react: { useMemo: (read: () => unknown) => read(), useRef: () => selectionRef,
+          useEffect: (effect: () => void) => effect() },
+        "@starward/miniapp-contracts": opticalContracts,
         "@/hooks/use-resource-query": { useResourceQuery(options: unknown) {
           queries.push(options); return { data: queryData, isError: false, isFetching: queryData === undefined,
             refetch() { refetches++; metadataCurrent = true; queryData = resource(); return Promise.resolve(queryData); } };
@@ -102,20 +117,21 @@ function world(prepared = false, display = false) {
         "@/services/sdss-science-optical-resource": { async getSdssCalibratedOpticalResource(...args: unknown[]) {
           metadataCalls.push(args); return resource();
         } },
-        "./sky-sdss-optical-selection": { sdssOpticalLevelForFov, skyTargetOpticalLevelForFov },
+        "./sky-sdss-optical-selection": { skyTargetOpticalLevelForView },
         "@/services/prepared-optical-client": { preparedOpticalImageUrl: (url: string) => url },
         "@/services/prepared-optical-resource": { async getPreparedOpticalResource(...args: unknown[]) {
           metadataCalls.push(args); return resource();
         } },
         "./sky-fixed-image-status": { skyFixedImageStatus },
         "./sky-target-optical-visibility": { skyTargetOpticalIntersectsView },
-        "./use-sky-artwork": { useSkyNativeImages(_canvas: unknown, _revision: number, hash: string | undefined,
-          active: boolean, wanted: readonly SkyNativeImageAsset[], resolve: (asset: SkyNativeImageAsset) => unknown) {
-          if (!active || currentHash !== hash) {
-            owner?.dispose(); owner = undefined; currentHash = hash;
+        "./use-sky-artwork": { useSkyNativeImages(canvas: unknown, revision: number, hash: string | undefined,
+          active: boolean, wanted: readonly SkyNativeImageAsset[], resolve: (asset: SkyNativeImageAsset) => unknown,
+          byteBudget: number, retainedFallbackIds: readonly string[]) {
+          if (!active || currentHash !== hash || currentCanvas !== canvas || currentRevision !== revision) {
+            owner?.dispose(); owner = undefined; currentHash = hash; currentCanvas = canvas; currentRevision = revision;
             state = { images: new Map(), retainedImages: new Map(), failed: false, loading: false };
           }
-          if (active && hash && !owner) owner = createSkyArtworkLoader({ byteBudget: 2 * 512 * 512 * 4,
+          if (active && hash && !owner) owner = createSkyArtworkLoader({ byteBudget, retainedFallbackIds,
             changed(value) { state = value; }, start(asset, ready, fail) {
               const pending = { asset, ready, fail, resolve() { const value = resolve(asset); resolutions.push(value); return value; } };
               starts.push(pending); pending.resolve(); return () => { canceled++; };
@@ -133,14 +149,16 @@ function world(prepared = false, display = false) {
   const hook = prepared ? (reference: string, fov: number, canvas: object, revision: number, active: boolean, hash: string, footprint?: SkyTargetOpticalView) =>
     exports.useSkyPreparedOptical(reference, hash, fov, canvas, revision, active, footprint) : exports.useSkySdssOptical;
   const canvas = { createImage() { throw Error("native callback is controlled at the existing loader boundary"); } };
-  const read = (fov = .05, hash = publication.publicationHash, reference = publication.objectRef, active = true, footprint?: SkyTargetOpticalView) =>
-    hook(reference, fov, canvas, 1, active, hash, footprint);
+  const read = (fov = .05, hash = publication.publicationHash, reference = publication.objectRef, active = true, footprint?: SkyTargetOpticalView,
+    surface = { canvas, revision: 1 }) =>
+    hook(reference, fov, surface.canvas, surface.revision, active, hash, footprint ?? samplingFootprint(publication, fov));
   const ready = (index: number) => {
     const image = { asset: starts[index].asset.id };
     starts[index].ready({ image, release() { released++; } }); return image;
   };
   return { read, ready, starts, queries, metadataCalls, resolutions,
-    accept() { queryData = resource(); }, retireMetadata() { metadataCurrent = false; },
+    accept() { queryData = resource(); }, refetchSamePublication() { publication = structuredClone(publication); queryData = resource(); },
+    retireMetadata() { metadataCurrent = false; },
     replace() { publication = prepared ? preparedReplacement : replacement; }, injectForeignKind() { publication = prepared ? actual : preparedActual; }, dispose() { owner?.dispose(); },
     get counts() { return { released, canceled, refetches }; } };
 }
@@ -153,7 +171,8 @@ test("both exact-source wrappers retire only a certified offscreen family and pr
     const report = { hourly: [{ at }], observationFrames: [{ at, format: OBSERVATION_FRAME_FORMAT,
       observer: { latitude: 0, longitude: 0, elevationM: 0 }, equatorialToEnu: [1, 0, 0, 0, 1, 0, 0, 0, 1] }] } as any;
     const view = (offset: number, suppliedReport = report): SkyTargetOpticalView => ({ report: suppliedReport, at,
-      width: 390, height: 844, view: { basis: createSkyViewBasis(az + offset, 90 + publication.center.decDeg, 0)!, verticalFovDeg: .05 } });
+      width: 390, height: 844, drawingWidth: 390, drawingHeight: 844,
+      view: { basis: createSkyViewBasis(az + offset, 90 + publication.center.decDeg, 0)!, verticalFovDeg: .05 } });
     const read = (footprint: SkyTargetOpticalView) => w.read(.05, publication.publicationHash, "M:51", true, footprint);
     w.accept(); assert.equal(read(view(90)).image, null); assert.equal(w.starts.length, 0);
     read(view(0)); const fine = w.ready(0); w.ready(1); assert.equal(read(view(0)).image, fine);
@@ -227,14 +246,46 @@ test("new hash and reference transitions reject retained old metadata before ima
   w.dispose();
 });
 
-test("science refinement keeps the current angular policy without inventing a photograph-fills-viewport requirement", () => {
-  assert.equal(sdssScienceOpticalLevelForFov(.3, actual), "OVERVIEW");
-  assert.equal(sdssScienceOpticalLevelForFov(.1, actual), "MEDIUM");
-  assert.equal(sdssScienceOpticalLevelForFov(.05, actual), "DETAIL");
-  assert.equal(sdssScienceOpticalLevelForFov(.31, actual), null);
-  assert.equal(sdssScienceOpticalLevelForFov(Number.NaN, actual), null);
-  assert.equal(sdssScienceOpticalLevelForFov(0, actual), null);
-  assert.equal(sdssOpticalLevelForFov(.5, "M:81"), "OVERVIEW");
+test("science refinement uses the actual source grid and rejects invalid camera intent", () => {
+  assert.equal(skyTargetOpticalLevelForView(actual, samplingFootprint(actual, 1)), "OVERVIEW");
+  assert.equal(skyTargetOpticalLevelForView(actual, samplingFootprint(actual, .2)), "MEDIUM");
+  assert.equal(skyTargetOpticalLevelForView(actual, samplingFootprint(actual, .05)), "DETAIL");
+  for (const fov of [Number.NaN, 0, -1]) {
+    const w = world(); w.accept();
+    assert.equal(w.read(fov).requested, false);
+    assert.equal(w.queries.at(-1).enabled, false);
+    assert.equal(w.starts.length, 0);
+    w.dispose();
+  }
+});
+
+test("pixel hysteresis survives metadata refresh without new image jobs and resets with publication or Canvas", () => {
+  for (const prepared of [false, true]) {
+    const publication = prepared ? preparedActual : actual;
+    const w = world(prepared); w.accept(); w.read(.2);
+    assert.deepEqual(w.starts.map(entry => entry.asset.id.split(":").at(-1)), ["MEDIUM", "OVERVIEW"]);
+    const medium = w.ready(0); w.ready(1);
+    for (const fov of [.38, .4, .38, .4]) assert.strictEqual(w.read(fov).image, medium);
+    assert.equal(w.starts.length, 2, "jitter within reverse headroom must not start a new file/decode job");
+    w.refetchSamePublication();
+    assert.strictEqual(w.read(.4).image, medium, "fresh metadata objects with the same immutable identity keep sampling history");
+    assert.equal(w.starts.length, 2);
+    const newCanvas = { createImage() { throw Error("controlled decoder"); } };
+    assert.equal(w.read(.4, publication.publicationHash, publication.objectRef, true, undefined,
+      { canvas: newCanvas, revision: 2 }).image, null);
+    assert.equal(w.starts.at(-1).asset.id.split(":").at(-1), "OVERVIEW", "a new Canvas must not inherit old level history");
+    assert.equal(w.counts.released, 2);
+    w.dispose();
+
+    const changed = world(prepared); changed.accept(); changed.read(.2); changed.ready(0); changed.ready(1);
+    changed.read(.4); changed.replace(); changed.accept();
+    const next = prepared ? preparedReplacement : replacement;
+    assert.equal(changed.read(.4, next.publicationHash).image, null);
+    assert.equal(changed.starts.length, 3);
+    assert.equal(changed.starts.at(-1).asset.id.split(":").at(-1), "OVERVIEW");
+    assert.equal(changed.counts.released, 2, "a new publication retires old images and sampling history together");
+    changed.dispose();
+  }
 });
 
 

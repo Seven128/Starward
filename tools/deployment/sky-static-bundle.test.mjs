@@ -3,10 +3,27 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile, readdir, stat, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { assertSkyStaticRecord, mergeSkyStaticBundles, skyStaticDeliveryFragment, skyStaticHash, validateSkyStaticBundle, writeSkyStaticBundle } from "./sky-static-bundle.mjs";
+import { assertSkyStaticRecord, mergeSkyStaticBundles, skyStaticDeliveryFragment, skyStaticHash, validSkyStaticRoute, validateSkyStaticBundle, writeSkyStaticBundle } from "./sky-static-bundle.mjs";
 
 const headers = { "content-type": "image/jpeg", "cache-control": "public, max-age=31536000, immutable", "x-content-type-options": "nosniff" };
 const asset = (version, bytes = Buffer.from("image")) => ({ route: `/v2/sky/moon/${version.repeat(64)}/texture.jpg`, bytes, headers });
+
+test("HiPS static paths bind canonical versions, source and actual HEALPix index bounds",()=>{
+  const base=`/v2/sky/optical/${"1".repeat(64)}`;
+  for(const suffix of ["manifest","ps1-dr1/0/11","ps1-dr1/11/50331647","ps1-dr1/8/40000/index"])
+    assert.equal(validSkyStaticRoute(`${base}/${suffix}`),true,suffix);
+  for(const suffix of ["current","manifest.json","ps1-dr1/0/12","ps1-dr1/12/0","ps1-dr1/11/50331648",
+    "ps1-dr1/08/40000/index","ps1-dr1/8/040000/index","ps1-dr1/8/40001/index","ps1-dr1/0/10000/index",
+    "ps1-dr1/8/43345.jpg","../8/0","ps1-dr1/8/0?x=1","ps1-dr1/8/-1","ps1-dr1/8/0/extra"])
+    assert.equal(validSkyStaticRoute(`${base}/${suffix}`),false,suffix);
+  const image={route:`${base}/ps1-dr1/8/43345`,bytes:32,sha256:"2".repeat(64),headers:{...headers,"x-starward-image-source":"ps1-dr1"}};
+  assertSkyStaticRecord(image);
+  const metadata={...image,route:`${base}/manifest`,headers:{...headers,"content-type":"application/json; charset=utf-8"}};
+  assertSkyStaticRecord(metadata);
+  for(const bad of [{...image,headers}, {...image,headers:{...image.headers,"x-starward-image-source":"skymapper"}},
+    {...image,headers:metadata.headers}, {...metadata,headers:image.headers}])
+    assert.throws(()=>assertSkyStaticRecord(bad),/header_invalid/);
+});
 
 test("selected immutable JSON headers cannot become Caddy tokens or placeholders", () => {
   const record = { route: `/v2/sky/deep-sky/${"1".repeat(64)}/M-42/M-42-detail.${"2".repeat(64)}.png`,

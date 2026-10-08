@@ -6,31 +6,36 @@ import {
 import {
   DEEP_SKY_CATALOG_MANIFEST,
   DEEP_SKY_CATALOG_PACK,
+  DEEP_SKY_CATALOG_VERSION, EXTENDED_DEEP_SKY_CATALOG_VERSION,
+  EXTENDED_DEEP_SKY_CATALOG_MANIFEST, EXTENDED_DEEP_SKY_CATALOG_PACK,
   type DeepSkyCatalogRow,
 } from "./deep-sky-catalog-data.ts";
 
 export * from "./deep-sky-catalog-data.ts";
 export const DEEP_SKY_PROJECTION_ALGORITHM = "starward-fixed-icrs-projection@1.0.1+astronomy-engine@2.1.19";
 
-function packHash() {
-  return createHash("sha256").update(JSON.stringify(DEEP_SKY_CATALOG_PACK)).digest("hex");
+function packHash(pack: typeof DEEP_SKY_CATALOG_PACK) {
+  return createHash("sha256").update(JSON.stringify(pack)).digest("hex");
 }
 
-export function loadDeepSkyCatalog() {
-  if (DEEP_SKY_CATALOG_MANIFEST.catalogVersion !== DEEP_SKY_CATALOG_PACK.catalogVersion ||
-    DEEP_SKY_CATALOG_MANIFEST.rowCount !== DEEP_SKY_CATALOG_PACK.rows.length ||
-    DEEP_SKY_CATALOG_MANIFEST.derivedAssetSha256 !== packHash())
+export function loadDeepSkyCatalog(version: string = DEEP_SKY_CATALOG_VERSION) {
+  if (version !== DEEP_SKY_CATALOG_VERSION && version !== EXTENDED_DEEP_SKY_CATALOG_VERSION)
+    throw new Error("deep_sky_catalog_version_invalid");
+  const extended = version === EXTENDED_DEEP_SKY_CATALOG_VERSION;
+  const pack = extended ? EXTENDED_DEEP_SKY_CATALOG_PACK : DEEP_SKY_CATALOG_PACK;
+  const manifest = extended ? EXTENDED_DEEP_SKY_CATALOG_MANIFEST : DEEP_SKY_CATALOG_MANIFEST;
+  if (manifest.catalogVersion !== pack.catalogVersion || manifest.rowCount !== pack.rows.length ||
+    manifest.derivedAssetSha256 !== packHash(pack))
     throw new Error("deep_sky_catalog_invalid:manifest_asset_mismatch");
   return Object.freeze({
-    catalogVersion: DEEP_SKY_CATALOG_PACK.catalogVersion,
-    catalogHash: DEEP_SKY_CATALOG_MANIFEST.derivedAssetSha256,
-    rows: DEEP_SKY_CATALOG_PACK.rows,
-    manifest: DEEP_SKY_CATALOG_MANIFEST,
+    catalogVersion: pack.catalogVersion, catalogHash: manifest.derivedAssetSha256,
+    rows: pack.rows, manifest,
   });
 }
 
 export function deepSkyRowByReference(reference: string): DeepSkyCatalogRow | null {
-  return DEEP_SKY_CATALOG_PACK.rows.find((row) => row.objectRef === reference) ?? null;
+  return (reference.startsWith("M:") ? DEEP_SKY_CATALOG_PACK.rows : loadDeepSkyCatalog(EXTENDED_DEEP_SKY_CATALOG_VERSION).rows)
+    .find((row) => row.objectRef === reference) ?? null;
 }
 
 export function positionDeepSkyCatalog(input: {

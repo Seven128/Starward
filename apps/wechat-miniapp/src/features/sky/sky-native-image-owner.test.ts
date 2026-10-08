@@ -9,7 +9,7 @@ import { startSkyArtworkRequest, type SkyArtworkImage } from "./sky-artwork-requ
 import { skyImageFileSession } from "../../services/sky-image-file-session";
 import { startDeepSkyImageRequest, type OwnedDeepSkyImageAsset } from "./deep-sky-image-request";
 import { publishedDeepSkyDiscovery } from "./deep-sky-image-test-support";
-import { OBSERVATION_FRAME_FORMAT,SKY_PLANET_ORDER } from "@starward/miniapp-contracts";
+import { OBSERVATION_FRAME_FORMAT,SKY_PLANET_ORDER,galacticImageFormat } from "@starward/miniapp-contracts";
 import { skyGalacticBandAt } from "./sky-galactic-band";
 import { skyFixedImageStatus } from "./sky-fixed-image-status";
 import { skyMoonDiscAt } from "./sky-moon-disc";
@@ -90,7 +90,7 @@ function pageArtworkActive(enabled: boolean): boolean {
     }));
 }
 
-function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'mercury'|'opal'|'wide'='native') {
+function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'mercury'|'opal'|'wide'='native',ordinaryOptical=false) {
   const slots: any[] = [], pending: Array<() => void> = [];
   const requests: Array<{ success: (response: { statusCode: number; data: ArrayBuffer }) => void }> = [];
   const images: SkyArtworkImage[] = [], released: string[] = [];
@@ -127,6 +127,7 @@ function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'merc
     moonTextureImageUrl:(url:string)=>url,
     getGalacticImageManifest:()=>{throw Error('query function is controlled by resource owner');},
     galacticImageUrl:(url:string)=>url,
+    galacticImageFormat,
     useResourceQuery(options:{enabled:boolean}){queryOptions.push(options);return{data:publication,isError:false,isFetching:false,refreshError,refetch(){}};},
     constellationAssetUrl:(hash:string,file:string)=>`/published/${hash}/assets/${file}`,
     Taro: { env: { USER_DATA_PATH: "/owned" },
@@ -166,13 +167,14 @@ function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'merc
   const hook = vm.runInNewContext(ts.transpileModule(hookSource,
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, bindings) as (...values:any[]) => {
         images: ReadonlyMap<string, object>;
+        currentImages(): {images:ReadonlyMap<string,object>};
         image:object|null;failed:boolean;refreshFailed:boolean;loading:boolean;retry():boolean;
         tiles:Array<{pixel:number;image:object}>;
       };
   const bytes = new Uint8Array(32);
   bytes.set([0xff, 0xd8, 0xff, 0xe0, 0, 4, 0, 0, 0xff, 0xc0, 0, 8, 8, 2, 0, 2, 0, 0]);
   bytes.set([0xff, 0xda], 18); bytes.set([0xff, 0xd9], 30);
-  if(consumer==='illustration'||consumer==='moon'||consumer==='opal'){
+  if(consumer==='illustration'||consumer==='moon'||consumer==='opal'||ordinaryOptical){
     bytes.fill(0);bytes.set([137,80,78,71,13,10,26,10]);const header=new DataView(bytes.buffer);
     header.setUint32(12,0x49484452);header.setUint32(16,512);header.setUint32(20,512);
   }
@@ -183,7 +185,7 @@ function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'merc
   } }; }
   const resolve = () => ({ url: "/published/asset-0.jpg", format: "jpeg" });
   function render(node: object | null, revision: number, hash: string | undefined, active = true,
-    wanted: readonly object[] = [asset]) {
+    wanted: readonly object[] = [asset], paused = false) {
     cursor = 0; dirty = false;
     if(consumer==='wide'){
       publication=hash?{publicationHash:hash,tiles:[{...asset,pixel:0,downloadUrl:'/published/w3.jpg'}]}:undefined;
@@ -211,21 +213,22 @@ function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'merc
       return consumer==='opal'?hook({body,id:'jupiter:opal-2024c-bands',queryKey:'jupiter-bands-manifest',getManifest(){},imageUrl:(url:string)=>url},...args):hook(...args);
     }
     if(consumer==='galactic'){
-      publication=hash?{publicationHash:hash,image:{...asset,downloadUrl:'/published/galaxy.jpg'}}:undefined;
+      publication=hash?{publicationHash:hash,schemaVersion:ordinaryOptical?'starward-mellinger-optical-milky-way-v1':'starward-2mass-galactic-v1',
+        image:{...asset,downloadUrl:ordinaryOptical?'/published/galaxy.png':'/published/galaxy.jpg'}}:undefined;
       const report={hourly:[{at:galacticAt,sunAzimuthDeg:270,sunAltitudeDeg:sunAltitude}],
         observationFrames:[{format:OBSERVATION_FRAME_FORMAT,at:galacticAt,
           observer:{latitude:30,longitude:110,elevationM:100},equatorialToEnu:[1,0,0,0,1,0,0,0,1]}]};
       return hook(report,currentAt,fov,node,revision,active);
     }
-    return hook(node, revision, hash, active, wanted, resolve);
+    return hook(node, revision, hash, active, wanted, resolve, undefined, [], undefined, paused);
   }
   function commit(node: object | null, revision: number, hash: string | undefined, active = true,
-    wanted: readonly object[] = [asset]) {
+    wanted: readonly object[] = [asset], paused = false) {
     do {
       for (const effect of pending.splice(0)) effect();
-      if (dirty) render(node, revision, hash, active, wanted);
+      if (dirty) render(node, revision, hash, active, wanted, paused);
     } while (pending.length || dirty);
-    return render(node, revision, hash, active, wanted);
+    return render(node, revision, hash, active, wanted, paused);
   }
   function finishRequest(index: number) {
     requests[index]!.success({ statusCode: 200, data: bytes.buffer });
@@ -314,6 +317,18 @@ test('galactic daylight and local fading release decoded state but return throug
     assert.equal(h.commit(node,1,'publication-a',active).image,returning);
   }
   h.render(node,1,'publication-a',false);h.commit(node,1,'publication-a',false);
+  assert.equal(h.released.length,1);assert.equal(h.heldNativeState(),null);
+});
+
+test('the ordinary optical manifest enters the existing PNG consumer under its own image identity',()=>{
+  const h=fixture('galactic',true),node=h.canvas();
+  h.render(node,1,'ordinary-optical');h.commit(node,1,'ordinary-optical');
+  const image=h.finishRequest(0);
+  assert.ok(image.src.endsWith('.png'),'the normal optical schema must not resolve as JPEG');
+  assert.equal(h.commit(node,1,'ordinary-optical').image,image);
+  assert.ok(h.heldNativeState().value.images.has('galactic:mellinger-optical'),
+    'the ordinary schema must not inherit the retained 2MASS identity');
+  h.render(null,2,undefined,false);h.commit(null,2,undefined,false);
   assert.equal(h.released.length,1);assert.equal(h.heldNativeState(),null);
 });
 
@@ -432,6 +447,37 @@ test("hide, Canvas removal and publication loss retire decoded images held by th
     assert.equal(h.heldNativeState(), null, `${stop} must release the Hook's retired Canvas and decoded-image graph`);
     assert.equal(image.onload, null); assert.equal(image.onerror, null);
   }
+});
+
+test("paused native Hook retains ready owner, cancels acquisition and returns no drawable images until resumed",()=>{
+  const h=fixture(),node=h.canvas(),a=h.asset,b={...a,id:'second',sha256:'b'.repeat(64)},wanted=[a,b];
+  h.render(node,1,'publication-a',true,wanted);h.commit(node,1,'publication-a',true,wanted);
+  const ready=h.finishRequest(0);h.render(node,1,'publication-a',true,wanted);const owner=h.heldNativeState().owner;
+  const hidden=h.render(node,1,'publication-a',true,wanted,true);assert.equal(hidden.images.size,0,'paused view must not expose ready images');assert.equal(hidden.currentImages().images.size,0);
+  h.commit(node,1,'publication-a',true,wanted,true);assert.equal(h.heldNativeState().owner,owner);assert.equal(h.heldNativeState().value.images.get(a.id),ready);assert.equal(h.released.length,0);
+  h.requests[1]!.success({statusCode:200,data:new ArrayBuffer(32)});assert.equal(h.images.length,1,'canceled acquisition cannot create a hidden bitmap');
+  h.render(node,1,'publication-a',true,wanted);h.commit(node,1,'publication-a',true,wanted);assert.equal(h.requests.length,3);assert.equal(h.heldNativeState().owner,owner);
+  const resumed=h.finishRequest(2);const current=h.render(node,1,'publication-a',true,wanted);assert.equal(current.images.get(a.id),ready);assert.equal(current.images.get(b.id),resumed);
+  h.render(node,1,'publication-a',false,wanted,true);h.commit(node,1,'publication-a',false,wanted,true);assert.equal(h.released.length,2);assert.equal(h.heldNativeState(),null);
+});
+
+test("resume and a changed wanted set in one commit acquire only the current asset",()=>{
+  const h=fixture(),node=h.canvas(),a=h.asset,b={...a,id:'replacement',sha256:'c'.repeat(64)};
+  h.render(node,1,'publication-a',true,[a],true);h.commit(node,1,'publication-a',true,[a],true);assert.equal(h.requests.length,0);
+  h.render(node,1,'publication-a',true,[b]);h.commit(node,1,'publication-a',true,[b]);
+  assert.equal(h.requests.length,1,'resume must update current wanted before pumping, without starting the stale asset');
+  const image=h.finishRequest(0),current=h.render(node,1,'publication-a',true,[b]);assert.equal(current.images.get(b.id),image);assert.equal(current.images.has(a.id),false);
+  h.render(node,1,'publication-a',false,[b]);h.commit(node,1,'publication-a',false,[b]);assert.equal(h.released.length,1);
+});
+
+test("paused creation and publication loss cannot start work or revive the retired image owner",()=>{
+  const h=fixture(),node=h.canvas();h.render(node,1,'publication-a',true,[h.asset],true);h.commit(node,1,'publication-a',true,[h.asset],true);
+  assert.equal(h.requests.length,0);h.render(node,1,'publication-a');h.commit(node,1,'publication-a');const image=h.finishRequest(0);h.render(node,1,'publication-a');
+  h.render(node,1,'publication-a',true,[h.asset],true);h.commit(node,1,'publication-a',true,[h.asset],true);
+  h.render(node,1,undefined,true,[h.asset],true);h.commit(node,1,undefined,true,[h.asset],true);assert.equal(h.released.length,1);assert.equal(h.heldNativeState(),null);
+  h.render(node,1,'publication-a',true,[h.asset],true);h.commit(node,1,'publication-a',true,[h.asset],true);assert.equal(h.requests.length,1);
+  h.render(node,1,'publication-a');h.commit(node,1,'publication-a');assert.equal(h.requests.length,2);const next=h.finishRequest(1);assert.notEqual(next,image);
+  h.render(node,1,'publication-a',false);h.commit(node,1,'publication-a',false);assert.equal(h.released.length,2);
 });
 
 test("the page's constellation off intent retires ready files and decoded state, and re-enabling creates a fresh owner", () => {

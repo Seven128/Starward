@@ -12,9 +12,10 @@ function unavailableScene(hourlyAt: readonly string[], reason: string, deepSky?:
 
 export function buildSkyScene(input: {
   provider: SkyCatalogProvider; hourlyAt: readonly string[]; spot: Pick<SpotSummary, "wgs84" | "altitudeM">;
+  deepSkyCatalogVersion?: string;
 }): SkyScene {
   if (!input.hourlyAt.length) return unavailableScene(input.hourlyAt, "NO_TIME_SLICES");
-  const deepSky = buildDeepSkyScene(input.hourlyAt, input.spot);
+  const deepSky = buildDeepSkyScene(input.hourlyAt, input.spot, input.deepSkyCatalogVersion);
   try {
     const catalog = input.provider.load();
     const observer = { latitude: input.spot.wgs84.latitude, longitude: input.spot.wgs84.longitude, elevationM: input.spot.altitudeM ?? 0 };

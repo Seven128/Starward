@@ -10,8 +10,41 @@ import { CelestialObjectSearchService, type CelestialSearchProvider } from "./ce
 import { CelestialObjectInformationService } from "./celestial-object-information.ts";
 
 const service = new CelestialObjectSearchService();
-test("Altair common Chinese names resolve its exact HR identity through the current publication", () => {
+test("simplified, traditional and mixed input find the supplied Chinese alias without rewriting identity or information", () => {
   const details = new CelestialObjectInformationService();
+  for (const query of ["参宿四", "參宿四"]) {
+    const response = service.search(query, 20, "bsc5p-bright-stars.v3");
+    const hit = response.data.results.find(row => row.reference === "HR:2061");
+    assert.ok(hit, query);
+    assert.equal(hit.matchedAlias, "參宿四", "show the original publication alias, not a generated name");
+    const information = details.get(hit.reference, "zh-CN", "bsc5p-bright-stars.v3").data;
+    assert.deepEqual(hit.aliases, information.aliases);
+    assert.equal(information.aliases.includes("参宿四"), false);
+    assert.match(information.introduction!, /参宿四.*红超巨星/u);
+    assert.equal(information.contentState, "READY");
+    assert(information.sources.some(source => source.provider === "Wikipedia contributors" && source.license === "CC-BY-SA-4.0"));
+  }
+  const original = service.search("積水", 50, "bsc5p-bright-stars.v3").data.results;
+  assert.deepEqual(service.search("积水", 50, "bsc5p-bright-stars.v3").data.results, original);
+  assert.ok(original.some(row => row.reference === "HR:2793") && original.some(row => row.reference === "HR:1261"));
+  assert.equal(service.search("獵户座大星雲", 20, "bsc5p-bright-stars.v3").data.results[0]?.reference, "M:42");
+  assert.deepEqual(service.search("ＨＲ　００２０６１", 20, "bsc5p-bright-stars.v3").data.results.map(row => row.reference), ["HR:2061"]);
+});
+
+test("Chinese search-key collisions retain each source alias and separate catalogue identity", () => {
+  const collision = new CelestialObjectSearchService([{ id: "distinct", load() {
+    return { catalogVersion: "test", catalogHash: "a".repeat(64), rowCount: 2, sources: [], entries: [
+      { reference: "HR:1", displayName: "First", kind: "STAR", aliases: ["臺", "HR 1"] },
+      { reference: "HR:2", displayName: "Second", kind: "STAR", aliases: ["台", "HR 2"] },
+    ] };
+  } }]);
+  const results = collision.search("台").data.results;
+  assert.deepEqual(results.map(row => [row.reference, row.matchedAlias]), [["HR:1", "臺"], ["HR:2", "台"]]);
+  assert.deepEqual(collision.search("HR 1").data.results.map(row => row.reference), ["HR:1"]);
+});
+
+test("Altair aliases resolve exact identity independently of whether prose is available", () => {
+  const details = new CelestialObjectInformationService(undefined, undefined, undefined, undefined, () => null);
   for (const query of ["牛郎星", "天鹰座α", "河鼓二", "Altair"]) {
     const response = service.search(query, 20, "bsc5p-bright-stars.v3");
     const hit = response.data.results[0];
@@ -78,7 +111,7 @@ test("seven planet identities search by Chinese and English names and preserve d
     const information = details.get(reference).data;
     assert.equal(information.kind, "PLANET");
     assert.deepEqual(information.aliases, hit.aliases);
-    assert.equal(information.contentState, "BASIC_ONLY");
+    assert.equal(information.contentState, "READY");
     assert.equal(information.facts.some(fact => fact.label.includes("方位")), false);
   }
 });
@@ -185,4 +218,36 @@ test("public HTTP search and selected detail retain the same real identity; inva
     assert.equal((await fetch(`${base}/v2/celestial-objects?q=x&limit=1000`)).status, 400);
     assert.equal((await fetch(`${base}/v2/celestial-objects`)).status, 400);
   } finally { await app.close(); }
+});
+
+
+test("adopted Chinese deep aliases match both spelling forms and the same information identity", () => {
+ const details=new CelestialObjectInformationService();
+ for(const [query, reference]of [["蟹状星云","M:1"],["蟹狀星雲","M:1"],["玉夫座星系","NGC:253"],["銀元星系","NGC:253"]]) {
+  const result=service.search(query,20,"bsc5p-bright-stars.v3",undefined,"opengc-deep-sky.v20260501-extended-v1");
+  const hit=result.data.results.find(r=>r.reference===reference)!;assert(hit,query);
+  assert.deepEqual(hit.aliases,details.get(reference).data.aliases);
+  assert(result.sources.some(s=>s.provider==="Wikipedia contributors"));
+ }
+ assert.deepEqual(service.search("玉夫座星系").data.results,[],"old catalogue boundary is preserved");
+});
+
+
+test("one unavailable Chinese deep row preserves independent search results and retries the partial index", async () => {
+ const {publishedDeepSkyIntroduction}=await import("./celestial-object-introductions.ts");
+ let unavailable=true;const partial=new CelestialObjectSearchService(undefined,row=>{if(unavailable&&row.objectRef==="M:1")throw Error("unavailable");return publishedDeepSkyIntroduction(row);});
+ const version="opengc-deep-sky.v20260501-extended-v1";
+ const before=partial.search("玉夫座星系",20,"bsc5p-bright-stars.v3",undefined,version);
+ assert.equal(before.dataState,"PARTIAL");assert(before.data.results.some(r=>r.reference==="NGC:253"));assert(before.data.unavailableCatalogs.includes("Chinese-deep-prose-zh"));
+ assert(partial.search("M1",20,"bsc5p-bright-stars.v3",undefined,version).data.results.some(r=>r.reference==="M:1"));
+ assert(!partial.search("蟹状星云",20,"bsc5p-bright-stars.v3",undefined,version).data.results.some(r=>r.reference==="M:1"));
+ unavailable=false;const after=partial.search("蟹状星云",20,"bsc5p-bright-stars.v3",undefined,version);
+ assert.equal(after.dataState,"FRESH");assert(after.data.results.some(r=>r.reference==="M:1"));assert.deepEqual(after.data.unavailableCatalogs,[]);
+});
+
+test("search ETag changes when licensed source metadata changes while results stay identical", async () => {
+ const {publishedDeepSkyIntroduction}=await import("./celestial-object-introductions.ts");
+ const first=new CelestialObjectSearchService().search("M1");
+ const second=new CelestialObjectSearchService(undefined,row=>{const p=publishedDeepSkyIntroduction(row);return p?{...p,source:{...p.source,retrievedAt:"2026-10-07T00:00:00Z"}}:null;}).search("M1");
+ assert.deepEqual(first.data,second.data);assert.notEqual(first.etag,second.etag);
 });

@@ -1,33 +1,42 @@
 import type { SdssOpticalLevel } from "@/services/sdss-optical-publication";
-import { sdssOpticalPublication, type SdssScienceOpticalManifest } from "@starward/miniapp-contracts";
+import { opticalAssetDimensions } from "@starward/miniapp-contracts";
+import { artworkIntersectsView } from "./sky-artwork-visibility";
+import { skyOpticalPixelMagnification } from "./sky-optical-pixel-sampling";
+import { skyTargetOpticalFieldRegistrations, type SkyTargetOpticalGeometry,
+  type SkyTargetOpticalView } from "./sky-target-optical-visibility";
 
-/** Keep the adopted angular refinement policy for this opt-in format, using
- * each actual TAN footprint. A cutout may occupy only part of the viewport;
- * the view is not required to fit inside the photograph. These ratios express
- * the existing M51 0.3/.16/.065 degree policy against its reference footprints,
- * and never replace the new publication's geometry with JPEG scales. */
-export function skyTargetOpticalLevelForFov(fov: number,
-  publication: { readonly levels: Readonly<Record<SdssOpticalLevel, { readonly fieldDegrees: number }>> }): SdssOpticalLevel | null {
-  if (!Number.isFinite(fov) || fov <= 0 ||
-    fov > .3 * publication.levels.OVERVIEW.fieldDegrees / (512 * 1.6 / 3600)) return null;
-  if (fov > .16 * publication.levels.MEDIUM.fieldDegrees / (512 * .8 / 3600)) return "OVERVIEW";
-  if (fov > .065 * publication.levels.DETAIL.fieldDegrees / (512 * .4 / 3600)) return "MEDIUM";
-  return "DETAIL";
-}
+const levels = ["OVERVIEW", "MEDIUM", "DETAIL"] as const;
 
-/** Shared angular refinement does not confer colour or scientific coverage meaning. */
-export function sdssScienceOpticalLevelForFov(fov: number,
-  publication: SdssScienceOpticalManifest): SdssOpticalLevel | null {
-  return skyTargetOpticalLevelForFov(fov, publication);
-}
-
-export function sdssOpticalLevelForFov(fov: number, reference: string | null = "M:51"): SdssOpticalLevel | null {
-  const publication = sdssOpticalPublication(reference);
-  if (!publication || !Number.isFinite(fov) || fov > 0.3 * publication.scales.OVERVIEW / 1.6 || fov <= 0) return null;
-  // Preserve the adopted M51 selection; larger admitted fields follow their actual scales.
-  if (fov > 0.16 * publication.scales.MEDIUM / .8) return "OVERVIEW";
-  if (fov > 0.065) return "MEDIUM";
-  return "DETAIL";
+/** Choose the coarsest visible published grid that does not magnify its texels
+ * beyond a framebuffer pixel. Finite finer fields cannot refine an exterior
+ * they do not cover. If every grid is magnified, use the finest available;
+ * this does not claim new source detail or precise instrument resolution.
+ *
+ * Downshift requires 20% pixel headroom. A round trip across the 1px sampling
+ * boundary therefore survives small view/backing-store jitter without repeated
+ * decode/upload. History belongs to the same publication/Canvas Hook owner.
+ */
+export function skyTargetOpticalLevelForView(publication: SkyTargetOpticalGeometry,
+  footprint?: SkyTargetOpticalView, previous: SdssOpticalLevel | null = null): SdssOpticalLevel | null {
+  if (!footprint) return previous ?? "OVERVIEW";
+  const fields = skyTargetOpticalFieldRegistrations(publication, footprint);
+  const visible = levels.filter(level => !fields[level] ||
+    artworkIntersectsView(fields[level]!, footprint.view, footprint.width, footprint.height));
+  if (!visible.length) return null;
+  const demands = visible.map(level => ({ level, magnification: fields[level]
+    ? skyOpticalPixelMagnification(fields[level]!, opticalAssetDimensions(publication.levels[level]), footprint) : null }));
+  if (demands.some(demand => demand.magnification === null))
+    return previous && visible.includes(previous) ? previous : visible[0]!;
+  const chosen = demands.find(demand => demand.magnification! <= 1) ?? demands.at(-1)!;
+  const previousIndex = previous ? levels.indexOf(previous) : -1;
+  if (previous && visible.includes(previous) && previousIndex > levels.indexOf(chosen.level) &&
+    chosen.magnification! > .8) {
+    // A large reverse move can skip a level. Prefer an intermediate grid with
+    // sufficient headroom instead of holding an unnecessarily fine image.
+    return demands.find(demand => levels.indexOf(demand.level) <= previousIndex &&
+      demand.magnification! <= .8)?.level ?? previous;
+  }
+  return chosen.level;
 }
 
 export function sdssOpticalPresentation(input: {

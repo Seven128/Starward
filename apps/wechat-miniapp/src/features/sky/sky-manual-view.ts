@@ -9,6 +9,11 @@ const TWO_PI = Math.PI * 2;
 const ELEVATION_LIMIT = Math.PI / 2;
 
 function rotateGrabbedRay(basis: SkyViewBasis, from: SkyVector, to: SkyVector): SkyViewBasis {
+  // Unprojection inherits tiny basis-length errors. Rodrigues' sine/cosine
+  // require unit rays; otherwise repeated pans amplify them into a rejected view.
+  const fromLength = Math.hypot(...from), toLength = Math.hypot(...to);
+  from = from.map(value => value / fromLength) as unknown as SkyVector;
+  to = to.map(value => value / toLength) as unknown as SkyVector;
   const product = cross(from, to), sine = Math.hypot(...product);
   if (sine < 1e-12) return basis;
   const cosine = Math.max(-1, Math.min(1, dot(from, to)));

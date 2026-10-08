@@ -7,8 +7,8 @@ import type {SkyArtworkCanvas} from "./sky-artwork-request";
 /** A licensed historical latitude profile, not current longitudinal weather. */
 export function useSkySaturnBands(report:Pick<SkyGeometryReport,"hourly">|undefined,at:string|undefined,
   view:SkyArtworkView|null,width:number,height:number,canvas:SkyArtworkCanvas|null,
-  canvasRevision:number,active:boolean){
+  canvasRevision:number,active:boolean,paused=false){
   return useSkyOpalBands({body:"SATURN",id:"saturn:opal-2025a-bands",
     queryKey:"saturn-bands-manifest",getManifest:getSaturnBandsManifest,imageUrl:saturnBandsImageUrl},
-  report,at,view,width,height,canvas,canvasRevision,active);
+  report,at,view,width,height,canvas,canvasRevision,active,paused);
 }

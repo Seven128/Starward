@@ -15,11 +15,11 @@ import type {SkyHipsCanvasTile} from "./sky-scene-render";
  * selected by the report's exact observer frame, never by a guessed GPS/time. */
 export function useSkyWideFieldW3(report:Pick<SkyGeometryReport,"hourly"|"observationFrames">|undefined,
   at:string|undefined,view:SkyArtworkView|null,width:number,height:number,
-  canvas:SkyArtworkCanvas|null,canvasRevision:number,active:boolean){
+  canvas:SkyArtworkCanvas|null,canvasRevision:number,active:boolean,paused=false){
   const sun=skySolarLightAt(report?.hourly,at);
   const wantedWide=active&&Boolean(view&&view.verticalFovDeg>=60&&sun&&sun.altitudeDeg<=-12);
   const manifest=useResourceQuery({queryKey:["wide-field-w3-manifest"],queryFn:getWideFieldW3Manifest,
-    enabled:wantedWide,staleTime:60_000,structuralSharing:false});
+    enabled:wantedWide&&!paused,staleTime:60_000,structuralSharing:false});
   const publication=manifest.data;
   const frame=exactSkyObservationFrame(report,at);
   const selection=useMemo(()=>{
@@ -36,7 +36,7 @@ export function useSkyWideFieldW3(report:Pick<SkyGeometryReport,"hourly"|"observ
     [publication,selected.join(":")]);
   const images=useSkyNativeImages(canvas,canvasRevision,publication?.publicationHash,
     wantedWide&&selection?.state==="SELECTED",wanted,
-    asset=>({url:wideFieldW3TileUrl(asset.downloadUrl),format:"jpeg"}));
+    asset=>({url:wideFieldW3TileUrl(asset.downloadUrl),format:"jpeg"}),undefined,[],undefined,paused);
   // W3 has one published resolution: an out-of-view face is not a coarse
   // fallback. Keep its bounded encoded file while releasing its decoded image.
   useEffect(()=>{images.suspendUnusedDecoded();},[images.images,images.retainedImages,images.suspendUnusedDecoded]);

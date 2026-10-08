@@ -1,5 +1,5 @@
-import type { PreparedRenderedOpticalManifest, SdssOpticalLevel, SdssOpticalManifest, SdssScienceOpticalManifest,
-  SdssDisplayOpticalManifest, SdssCalibratedOpticalManifest } from "@starward/miniapp-contracts";
+import { opticalPublicationReference, type PreparedRenderedOpticalManifest, type SdssOpticalLevel, type SdssOpticalManifest, type SdssScienceOpticalManifest,
+  type SdssDisplayOpticalManifest, type SdssCalibratedOpticalManifest } from "@starward/miniapp-contracts";
 
 export interface SkySdssOpticalField {
   readonly image: object;
@@ -10,6 +10,7 @@ export type SkySdssLegacyOpticalImage = SkySdssOpticalField & {
   readonly reference: string;
   readonly publicationHash: string;
   readonly coarser?: SkySdssOpticalField | null;
+  readonly fallback?: SkySdssOpticalField | null;
 };
 export type SkySdssScienceOpticalField = SkySdssOpticalField & {
   /** The actual immutable PNG descriptor, including CRPIX, crop and availability.
@@ -23,6 +24,7 @@ export type SkySdssScienceOpticalImage = SkySdssScienceOpticalField & {
    * Legacy drawing must not reinterpret these PNG alpha values as opacity. */
   readonly sciencePublication: SdssScienceOpticalManifest;
   readonly coarser: SkySdssScienceOpticalField | null;
+  readonly fallback?: SkySdssScienceOpticalField | null;
 };
 export type SkySdssDisplayOpticalField = SkySdssOpticalField & {
   readonly asset: SdssDisplayOpticalManifest["levels"][SdssOpticalLevel];
@@ -33,6 +35,7 @@ export type SkySdssDisplayOpticalImage = SkySdssDisplayOpticalField & {
   /** Actual display estimates retain the original science mother, not a new measurement. */
   readonly displayPublication: SdssDisplayOpticalManifest;
   readonly coarser: SkySdssDisplayOpticalField | null;
+  readonly fallback?: SkySdssDisplayOpticalField | null;
 };
 export type SkySdssOpticalImage = SkySdssLegacyOpticalImage | SkySdssScienceOpticalImage | SkySdssDisplayOpticalImage;
 export type SkyPreparedOpticalField = SkySdssOpticalField & {
@@ -43,6 +46,7 @@ export type SkyPreparedOpticalImage = SkyPreparedOpticalField & {
   readonly publicationHash: string;
   readonly preparedPublication: PreparedRenderedOpticalManifest;
   readonly coarser: SkyPreparedOpticalField | null;
+  readonly fallback?: SkyPreparedOpticalField | null;
 };
 export type SkyTargetOpticalImage = SkySdssOpticalImage | SkyPreparedOpticalImage;
 
@@ -53,6 +57,7 @@ type LoadedOptical = {
   renderedAsset: TargetOpticalManifest["levels"][SdssOpticalLevel] | null;
   publication: TargetOpticalManifest | undefined;
   coarser: { image: object; level: SdssOpticalLevel; asset: TargetOpticalManifest["levels"][SdssOpticalLevel] | null } | null;
+  fallback?: { image: object; level: SdssOpticalLevel; asset: TargetOpticalManifest["levels"][SdssOpticalLevel] | null } | null;
 };
 
 /** Atomic native-loader → queued-scene handoff. Transport owns admission; this
@@ -67,14 +72,22 @@ export function skyTargetOpticalFrame(loaded: LoadedOptical): SkyTargetOpticalIm
   const validCoarser = coarser && coarser.image !== image &&
     order.indexOf(coarser.level) < order.indexOf(level) &&
     coarser.asset === publication.levels[coarser.level] ? coarser : null;
+  const fallback = loaded.fallback;
+  const validFallback = fallback && fallback.image !== image && fallback.image !== validCoarser?.image &&
+    order.indexOf(fallback.level) > order.indexOf(level) &&
+    fallback.asset === publication.levels[fallback.level] ? fallback : null;
   const common = { image, level, fieldDegrees: asset.fieldDegrees,
-    reference: publication.objectRef, publicationHash: publication.publicationHash };
-  if ("imageVersion" in publication && (publication.imageVersion === "prepared-optical-v1" || publication.imageVersion === "prepared-display-optical-v1" || publication.imageVersion === "prepared-optical-v2")) {
+    reference: opticalPublicationReference(publication), publicationHash: publication.publicationHash };
+  if ("imageVersion" in publication && (publication.imageVersion === "prepared-optical-v1" || publication.imageVersion === "prepared-display-optical-v1" || publication.imageVersion === "prepared-optical-v2" || publication.imageVersion === "prepared-native-optical-v1")) {
     return Object.freeze({ ...common, preparedPublication: publication,
       asset: publication.levels[level], coarser: validCoarser ? Object.freeze({
         image: validCoarser.image, level: validCoarser.level,
         fieldDegrees: publication.levels[validCoarser.level].fieldDegrees,
         asset: publication.levels[validCoarser.level],
+      }) : null, fallback: validFallback ? Object.freeze({
+        image: validFallback.image, level: validFallback.level,
+        fieldDegrees: publication.levels[validFallback.level].fieldDegrees,
+        asset: publication.levels[validFallback.level],
       }) : null });
   }
   if ("imageVersion" in publication &&
@@ -84,6 +97,10 @@ export function skyTargetOpticalFrame(loaded: LoadedOptical): SkyTargetOpticalIm
         image: validCoarser.image, level: validCoarser.level,
         fieldDegrees: publication.levels[validCoarser.level].fieldDegrees,
         asset: publication.levels[validCoarser.level],
+      }) : null, fallback: validFallback ? Object.freeze({
+        image: validFallback.image, level: validFallback.level,
+        fieldDegrees: publication.levels[validFallback.level].fieldDegrees,
+        asset: publication.levels[validFallback.level],
       }) : null });
   }
   if ("imageVersion" in publication && publication.imageVersion === "sdss-display-optical-v1") {
@@ -92,12 +109,19 @@ export function skyTargetOpticalFrame(loaded: LoadedOptical): SkyTargetOpticalIm
         image: validCoarser.image, level: validCoarser.level,
         fieldDegrees: publication.levels[validCoarser.level].fieldDegrees,
         asset: publication.levels[validCoarser.level],
+      }) : null, fallback: validFallback ? Object.freeze({
+        image: validFallback.image, level: validFallback.level,
+        fieldDegrees: publication.levels[validFallback.level].fieldDegrees,
+        asset: publication.levels[validFallback.level],
       }) : null });
   }
   if ("imageVersion" in publication) return null;
   return Object.freeze({ ...common, coarser: validCoarser ? Object.freeze({
     image: validCoarser.image, level: validCoarser.level,
     fieldDegrees: publication.levels[validCoarser.level].fieldDegrees,
+  }) : null, fallback: validFallback ? Object.freeze({
+    image: validFallback.image, level: validFallback.level,
+    fieldDegrees: publication.levels[validFallback.level].fieldDegrees,
   }) : null });
 }
 

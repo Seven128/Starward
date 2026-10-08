@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "starward-mellinger-optical-milky-way-v1",
+  "scope": "DISPLAY",
+  "role": "OPTICAL_MILKY_WAY_DISPLAY",
+  "publicationId": "mellinger-optical-milky-way-display-2048x1024-v1",
+  "source": {
+    "title": "Axel Mellinger optical Milky Way / Stellarium bundled display texture",
+    "provider": "Axel Mellinger / Stellarium bundled texture",
+    "recordUrl": "https://github.com/Stellarium/stellarium/blob/608db95859f2393d5cc5067d90850ab2d7560c0c/textures/milkyway.png",
+    "rightsUrl": "https://github.com/Stellarium/stellarium/blob/608db95859f2393d5cc5067d90850ab2d7560c0c/CREDITS.md#full-reference--credits",
+    "credit": "Milky Way panorama: Axel Mellinger; bundled display texture: Stellarium contributors",
+    "sourceUrl": "https://raw.githubusercontent.com/Stellarium/stellarium/608db95859f2393d5cc5067d90850ab2d7560c0c/textures/milkyway.png",
+    "sourceSha256": "95ca887ae2fd6811a202f83bccb1376819957d074eed92e4df17f9cbea83df97",
+    "grant": "Specific bundled Milky Way panorama: modification and redistribution permitted with credit to Axel Mellinger.",
+    "producerProcessing": "UNKNOWN"
+  },
+  "projection": {
+    "kind": "equirectangular",
+    "frame": "equatorial-j2000",
+    "centerLongitudeDeg": -90,
+    "longitudeIncreases": "left",
+    "north": "up"
+  },
+  "image": {
+    "file": "milkyway.png",
+    "sha256": "95ca887ae2fd6811a202f83bccb1376819957d074eed92e4df17f9cbea83df97",
+    "bytes": 1003398,
+    "width": 2048,
+    "height": 1024,
+    "format": "png"
+  },
+  "scientificAvailability": "UNKNOWN",
+  "absoluteRegistration": "UNVERIFIED",
+  "processing": "Historical optical Milky Way panorama; original bundled display PNG, with no pixel changes by Starward.",
+  "limitations": [
+    "Low-resolution optical Milky Way display, not a general high-resolution survey or target-outskirts background.",
+    "Producer complete processing and scientific availability UNKNOWN; nominal J2000 orientation is not verified absolute astrometry.",
+    "No source exposure or scientific missing-data mask. Black display pixels do not establish zero brightness or missing observations.",
+    "Retained photographic structures and point sources are not independently selectable stars. Stellar identity remains in the separate catalogue; no stars or nebulae are erased."
+  ]
+}

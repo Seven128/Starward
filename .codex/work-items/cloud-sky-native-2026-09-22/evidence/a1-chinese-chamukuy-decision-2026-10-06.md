@@ -1,0 +1,15 @@
+# C07 金牛座θ历史名称与两个原目录点
+
+[原文](chinese-chamukuy-text-inspection-2026-10-06.json)revision61827285按HR1412/HD28319定位，完整HTML一份，原页两表分别明确θ² HR1412/HD28319/HIP20894与θ¹ HR1411/HD28307/外部HIP20885，参考中有两个独立HD-labelled SIMBAD引用。页脚CC BY-SA4.0，[出版](chinese-chamukuy-publication-2026-10-06.json)随文字保作者/固定稿/节选简体改编/共享链接与质量限定、confidenceNULL。[CC0系统Q1151577](chinese-chamukuy-Q1151577-2026-10-06.json)revision2467385120的P527指向θ¹ [Q6145893](chinese-chamukuy-Q6145893-2026-10-06.json)revision2467386716与θ² [Q6145898](chinese-chamukuy-Q6145898-2026-10-06.json)revision2467389615，子项各有合格HR/HD/HIP和P361回指系统；没有中文标签或A/B序号，不造子名或序号、不扩CC0registry。
+
+原中文两表分别采用θ²“毕宿增十三”、θ¹“毕宿六”；原文还说明毕宿六可用于整个系统，故带“金牛座θ系统”限定的共同名称保两条独立结果，不强把θ²单颗称毕宿六或系统等同一个HR。具体θ²名与带θ¹限定的具体名各返回一条。原HR1411 HIP真实null保持，不填外部20885或复制20894；原HR1412 Chamukuy保持，旧Phaesula未采用。正文有限采用毕宿星团、白色A型/橘色K型巨星与分光双星背景，θ²盾牌座δ型变星为背景，不导入周期/振幅或脉动模拟。原A7III/K0IIIbFe-0.5、星等3.40/3.84、色指数0.18/0.95、位置与自行不改；距离/最近星团排名/角距/轨道/伴星测量或新位置、SAO关联、成员全覆盖或物理分辨/肉眼保证均未采用，无媒体下载。
+
+v18 101行/217539B/SHA2f4f5eba2d31a60c7088173e08969d4b77c977b63b11240bac741dcfc8d790ef，原v17九十九行和值、v1–v17字节保。四有意义回归修前0pass4fail，18个实际相关文件102pass0fail、worker类型通过，新增显式v17旧版兼容；现owner扩v18兼容，精确HR/HD/present-nullHIP保，无通配/新公共合同。1原owner/2原测试/1新测试/1asset共5源码变化，227源码pins/300WEAPP不变，无依赖/前端变化。
+
+[实际消费者](../../../../output/playwright/chinese-chamukuy-1006-r1/chinese-chamukuy-result.json)与[读回](chinese-chamukuy-final-readback-2026-10-06.json)：正式Map→普通NoProps Sky/fixture关闭，原525源/20client文件0构建复用，原公共精确00:00提交保持。两具体单结果资料、近旁署名/全部限定、固定链接复制与完整Sources Back同身份数据地点时刻通过；真实展开列表中系统共同名保两个独立HR，分别定位并正常0.5°pinch后按实际已绘核心重新点选正确资料。一次62Scene116请求，最终encoded/decode/GPU/request逻辑模型0/helpers退出、原服务0重启。logicalJSX/softwareGL不替nativeCSS-WXML/DevTools/Android-iOS/物理内存或完整验收。
+
+[供给实态](chinese-chamukuy-next-coverage-2026-10-06.json)468有名中49缺中文、381有中文缺正文；107介绍/102许可/52深空非上限。全部33行保，前轮上卫增一定位收起列表后的任务断言失败51Scene87请求/终态后绑定MISSING、原错误源/404、房宿四/参宿一失败及MISSING、SAO414-vs4 FAILED、开阳相关身份/后缀HIP保原。Map panel/照片FAILED和旧null/UNKNOWN/MISSING保持；普通Prepared空/HiPS关/Mellinger LOWRES DISPLAY，完整账号/native交互/44px焦点滚动/设备新版月面/图质/物理200DAU/独审开放。无子代理、其它业务/六项Settings变化，无提交推送采购部署发布外联，Goal active无预算未完成。
+
+## 唯一下一依赖
+
+A1 C07 真实已命名目录中文供给缺口：金牛座θ²/毕宿增十三HR1412/HD28319/HIP20894与θ¹/毕宿六HR1411/HD28307/HIP原null沿v18分别闭合；带“金牛座θ系统”的共同历史名保持两独立结果，系统不强等同单个HR。外部20885不填null，Chamukuy不改Phaesula，原光谱/位置测量保，无新分光成员/周期模拟/SAO点。当前107介绍/102许可/52深空不是上限，实际468有名BSC中49无采用中文别名、381已有中文但缺正文，供给实态不授权逐点造名/造百科。唯一下一复用原BSC v3、CC0与已许可文字/别名owner，按实际缺口核Rasalgethi HR6406/HD156014/HIP84345的成熟中文及系统/分量关联，先据精确编号定位正确原文再核具体权利，不凭名称猜标题；仅按真实编号扩合格分量，不把系统强等同单颗或复制系统HIP。合格才沿检索→独立结果→资料/署名/复制/来源Back与已绘身份采用，不建通用命名/百科框架。其余49名缺口和381正文适用覆盖持续，不拿当前107或限量候选缩范围。原101行与v1–v17、目录位置测量影像/null合同保，无文/失配/部分失败可恢复。上卫增一首轮在定位已收起列表后断言匹配数而失败的任务取证51Scene87请求/终态与后绑定MISSING保，原产品无改，列表展开时核两身份后复验通过。少宰错误HR7582原文/404标题不采用、房宿四任务ISO替换/18:00无已绘点三失败与终态/后绑定MISSING、开阳四相关身份/带后缀HIP原义、23:00参宿一近地平点选失败/终态与后绑定MISSING、旧Sky场景SAO414与断言4 FAILED保原，排原A1责任，不重做SAO去重。完整33、Map候选panel FAILED、真实账号、原生CSS/44px焦点滚动/完整设置、DevTools-WXML/Android-iOS新版月面、图质/物理200DAU/独审开放；大字号/旧Sky稿暂停。普通Prepared空/HiPS关、Mellinger LOWRES DISPLAY、照片FAILED与旧null/UNKNOWN/MISSING保；Q1只新合格覆盖/几何/权益再开，ESO6k退出；P1只新callback/window/rehydration证据再开，复用有效服务不循环初始化。Goal active无预算，不提交推送采购部署发布外联。

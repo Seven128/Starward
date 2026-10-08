@@ -1,0 +1,14 @@
+import assert from "node:assert/strict";import test from "node:test";import {readFileSync} from "node:fs";import vm from "node:vm";import ts from "typescript";
+import {opticalHipsSourceSelection,opticalHipsSources} from "../../services/optical-hips-source";
+const source=ts.createSourceFile("hips-sources.tsx",readFileSync(new URL("./hips-sources.tsx",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
+const declaration=source.statements.find((node):node is ts.FunctionDeclaration=>ts.isFunctionDeclaration(node)&&node.name?.text==="SkyHipsSourcesPage")!;
+const code=ts.transpileModule(declaration.getText(source).replace(/^export\s+/,"")+"\nSkyHipsSourcesPage;",{compilerOptions:{target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.React}}).outputText;
+test("source page retains exact processing/notices and all rights links; conflicting/foreign versions cannot replace it",()=>{
+  const hash="a".repeat(64),root:any={publicationHash:hash,scope:"TRIAL",processing:"Unchanged original JPEG; no scientific mask",limitations:["Full original notice"],sources:[{id:"ps1",provider:"PS1 / CDS",title:"historical image",originalDataUrl:"https://example.org/data",originalRights:"original rights",originalRightsUrl:"https://example.org/rights",hipsRecordUrl:"https://example.org/record",hipsLicense:"ODbL-1.0",hipsDoi:"10.123/a"}]};
+  const params:any={hipsPublicationHash:hash,hipsSourceIds:"ps1"};let data:any=root,enabled=false,retries=0;
+  const render=vm.runInNewContext(code,{React:{createElement:(type:unknown,props:any,...children:unknown[])=>({type,props:props??{},children})},View:"View",Text:"Text",ScrollView:"ScrollView",CustomNav:"CustomNav",Provenance:"Provenance",StatusPanel:"StatusPanel",useState:(v:unknown)=>[v,()=>{}],useDidHide(){},useDidShow(){},useThemeClass:()=>"mode-night",__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:true,opticalHipsSourceSelection,opticalHipsSources,opticalHipsTileUrl:(p:string)=>"http://owned.test"+p,useResourceQuery:(o:any)=>{if(o.queryKey[0]==="optical-hips-rights")return {isError:true,isPending:false,refetch(){}};enabled=o.enabled;return {data,isPending:false,isError:false,refetch(){retries++;}};}}) as (args:any)=>any;
+  const flatten=(t:any):any[]=>!t?[]:Array.isArray(t)?t.flatMap(flatten):[t,...flatten(t.children)];
+  const tree=flatten(render({params}));assert(enabled);const credits=tree.filter(n=>n.type==="Provenance");assert.equal(credits.length,2);assert.equal(credits[1].props.downloadUrl,`http://owned.test/v2/sky/optical/${hash}/manifest`);assert(tree.some(n=>n.children?.includes(root.processing)));assert(tree.some(n=>n.children?.includes(root.limitations[0])));
+  data={...root,publicationHash:"b".repeat(64)};const foreign=flatten(render({params}));assert(!foreign.some(n=>n.type==="Provenance"));foreign.find(n=>n.type==="StatusPanel"&&n.props.state==="ERROR").props.onRecover();assert.equal(retries,1);
+  params.reference="HR:1";render({params});assert.equal(enabled,false);
+});

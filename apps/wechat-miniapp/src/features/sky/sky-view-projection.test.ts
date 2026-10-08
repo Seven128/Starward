@@ -4,10 +4,25 @@ import test from "node:test";
 import {
   createSkyDirectionProjector,
   createSkyViewBasis,
+  sameSkyViewBasis,
   projectSkyDirection,
   type SkyViewBasis,
   type SkyVector,
 } from "./sky-view-projection.ts";
+
+test("exact camera identity preserves copied views and every real component change", () => {
+  const view = createSkyViewBasis(20, 70, 10)!;
+  assert(sameSkyViewBasis(view, structuredClone(view)));
+  assert(sameSkyViewBasis(null, null));
+  assert(!sameSkyViewBasis(view, null));
+  assert(!sameSkyViewBasis(null, view));
+  for (const axis of ["right", "up", "forward"] as const) for (const index of [0, 1, 2]) {
+    const values = [...view[axis]] as [number, number, number];
+    values[index] = values[index]! + Number.EPSILON;
+    const changed = { ...view, [axis]: values };
+    assert(!sameSkyViewBasis(view, changed), `${axis}[${index}] must invalidate`);
+  }
+});
 
 const EPSILON = 1e-9;
 

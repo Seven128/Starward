@@ -4,7 +4,8 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { createSkyCanvasLifecycle, type CanvasClock } from "./sky-canvas-lifecycle";
-import { createSkyArtworkLoader, registerSkyNativeImageLifetime } from "./sky-artwork-loader";
+import { createSkyArtworkLoader, registerSkyNativeImageLifetime, skyNativeImageIsCurrent } from "./sky-artwork-loader";
+import { sameSkyHipsCompletion } from "./sky-hips-source-credit";
 import { startSkyArtworkRequest, type SkyArtworkImage } from "./sky-artwork-request";
 import { drawSkyScene } from "./sky-scene-render";
 import { copySkyDeepAuxiliaryDecisions, deepSkyAuxiliaryOpacity, sameSkyDeepAuxiliaryDecisions,
@@ -12,7 +13,7 @@ import { copySkyDeepAuxiliaryDecisions, deepSkyAuxiliaryOpacity, sameSkyDeepAuxi
 import { liveSkyOpticalCompletion, sameSkyOpticalCompletion, sameSkyOpticalInput } from "./sky-sdss-optical-completion";
 import { skyTargetOpticalFrame } from "./sky-sdss-optical-frame";
 import { skyTargetOpticalIntersectsView } from "./sky-target-optical-visibility";
-import { sdssOpticalLevelForFov, sdssScienceOpticalLevelForFov, skyTargetOpticalLevelForFov } from "./sky-sdss-optical-selection";
+import { skyTargetOpticalLevelForView } from "./sky-sdss-optical-selection";
 import { skyFixedImageStatus } from "./sky-fixed-image-status";
 import { createSkyViewBasis } from "./sky-view-projection";
 import { projectHorizontalPoint } from "./sky-scene-projection";
@@ -21,7 +22,8 @@ import { resolveSkyDeepSkyScene, resolveSkySceneFrame } from "./sky-stellar-scen
 import { skyStarAppearance } from "./sky-star-appearance";
 import { skySolarLightAt } from "./sky-solar-light";
 import { resolvedSkyBodyReferences } from "./sky-body-label-presentation";
-import { sdssOpticalPublication } from "@starward/miniapp-contracts";
+import { sdssOpticalPublication, opticalPublicationReference } from "@starward/miniapp-contracts";
+import * as miniappContracts from "@starward/miniapp-contracts";
 
 // Actual Scene, page callbacks/dependencies and lifecycle; only React scheduling,
 // native image/lease callbacks and the render surface are controlled. No GPU claim.
@@ -43,7 +45,7 @@ const evaluate = (node: ts.Node, context: vm.Context) => vm.runInContext(ts.tran
 const at = "2026-10-02T12:00:00.000Z", basis = createSkyViewBasis(20, 110, 0)!;
 const data: any = { hourly: [{ at, sunAltitudeDeg: -24, sunAzimuthDeg: 270 }], targetFrames: [],
   skyScene: { state: "UNAVAILABLE", catalog: null, frames: [], deepSky: { state: "AVAILABLE",
-    catalog: { catalogVersion: "controlled", catalogHash: "controlled", imageRegistration: "ICRS_TAN_NORTH_0_1_V1",
+    catalog: { catalogVersion: "controlled", catalogHash: "controlled", frame: "ICRS J2000", imageRegistration: "ICRS_TAN_NORTH_0_1_V1",
       entries: [{ objectRef: "M:51", displayName: "M51", kind: "GALAXY", magnitude: 8.4, majorAxisArcmin: 11 },
         { objectRef: "M:63", displayName: "M63", kind: "GALAXY", magnitude: 9, majorAxisArcmin: 10 }] },
     frames: [{ at, state: "AVAILABLE", points: [[0,20,20,20,20.1,19.9,20],[1,28,20,28,20.1,27.9,20]] }] } } };
@@ -57,7 +59,8 @@ function harness() {
   const image = { width: 512, height: 512 };
   const optical = { image, level: "DETAIL", fieldDegrees: .0568888889, reference: "M:51", publicationHash: "controlled-legacy" };
   const context = vm.createContext({ copySkyDeepAuxiliaryDecisions, sameSkyDeepAuxiliaryDecisions, liveSkyOpticalCompletion,
-    sameSkyOpticalCompletion, sameSkyOpticalInput, resolvedSkyBodyReferences, canvasGenerationRef: generation,
+    sameSkyOpticalCompletion, sameSkyOpticalInput, sameSkyHipsCompletion, skyNativeImageIsCurrent,
+    resolvedSkyBodyReferences, canvasGenerationRef: generation,
     pendingSkyPaintRef: pending, paintedSkyObjectsRef: picking,
     orientation: { latestPresentation: { current: null }, presented: { current: null } },
     orientationController: { snapshot: () => ({}) }, manualBasisRef: { current: basis }, zoomRef: { current: 2.2 },
@@ -93,7 +96,8 @@ function harness() {
     tasks.delete(job[0]); job[1].callback(); };
   return { state, attempts, context, lifecycle, frame, image, generation, pending, picking, step,
     size(w: number, h: number) { width = w; height = h; }, late(callback: () => void) { late = callback; }, fail() { fault = true; },
-    request(patch: object = {}) { Object.assign(frame, patch); context.zoomRef.current = frame.verticalFovDeg; lifecycle.request({ ...frame }); },
+    request(patch: object = {}) { Object.assign(frame, patch); frame.nativeImageGeneration = generation.current;
+      context.zoomRef.current = frame.verticalFovDeg; lifecycle.request({ ...frame }); },
     paint(patch: object = {}) { this.request(patch); step(); return attempts.at(-1)!; } };
 }
 function names(h: ReturnType<typeof harness>, page = source) {
@@ -198,10 +202,11 @@ test("actual lease onRetire emits new Hook maps and actual page dependencies que
         release() {}, onRetire(handler: () => void) { handlers.add(handler); return () => { handlers.delete(handler); }; } }) };
     } } });
   const sharedOpticalHook = compile("./use-sky-target-optical.ts", { react, "./use-sky-artwork": hook,
+    "@starward/miniapp-contracts": miniappContracts,
     "@/hooks/use-resource-query": { useResourceQuery: () => ({ data: publication, isError: false, isFetching: false }) },
     "@/services/sdss-optical-client": { sdssOpticalImageUrl: (url: string) => url }, "@/services/sdss-science-optical-resource": {},
     "@/services/prepared-optical-client": {}, "@/services/prepared-optical-resource": {},
-    "./sky-sdss-optical-selection": { sdssOpticalLevelForFov, skyTargetOpticalLevelForFov }, "./sky-fixed-image-status": { skyFixedImageStatus },
+    "./sky-sdss-optical-selection": { skyTargetOpticalLevelForView }, "./sky-fixed-image-status": { skyFixedImageStatus },
     "./sky-target-optical-visibility": { skyTargetOpticalIntersectsView } });
   const opticalHook = compile("./use-sky-sdss-optical.ts", { "./use-sky-target-optical": sharedOpticalHook });
   const canvas = { createImage() { const image: SkyArtworkImage = { src: "", onload: null, onerror: null, width: 512, height: 512 }; decoded.push(image); return image; } };
@@ -211,12 +216,14 @@ test("actual lease onRetire emits new Hook maps and actual page dependencies que
     skySceneHasContent: () => true, canvasFrameInfo: { inspection: {} }, canvasLifecycle: h.lifecycle, canvasNodeRevision: 1,
     verticalFovDeg: .05, desiredDeepSkyImageLevel: "DETAIL", canvasDeepSkyImage: null, orientation: { snapshot: { presentationRevision: 0 }, latestPresentation: { current: null }, presented: { current: null } },
     mode: "NIGHT", constellationFrame: null, artwork: { images: new Map() }, constellationsEnabled: false, landscapeEnabled: false,
-    coordinateGrids: { horizontal: false, equatorial: false }, hipsTiles: [], stellarSupplement: { frame: null },
+    coordinateGrids: { horizontal: false, equatorial: false }, hipsTiles: [], readHipsTiles: () => [], stellarSupplement: { frame: null },
     moonTexture: {}, marsTexture: {}, mercuryTexture: {}, jupiterBands: {}, saturnBands: {}, uranusBands: {}, neptuneBands: {}, galacticImage: {},
     landscapeImage: { opacity: 0 }, viewportInsets: {}, previousCanvasModeRef: { current: "NIGHT" },
     activeIndex: 0, activeContext: true, contextComplete: true, nativeCanvasMounted: true });
   let optical: any;
-  const render = () => { cursor = 0; dirty = false; optical = opticalHook.useSkySdssOptical("M:51", .05, canvas, 1, true);
+  const render = () => { cursor = 0; dirty = false; optical = opticalHook.useSkySdssOptical("M:51", .05, canvas, 1, true, undefined,
+    { report: data, at, width: 390, height: 844, drawingWidth: 390, drawingHeight: 844,
+      view: { basis, verticalFovDeg: .05 } });
     h.context.sdssOptical = optical; h.context.draw = evaluate(nodes.get("draw")!, h.context); evaluate(drawEffect!, h.context); };
   const commit = () => { render(); do { for (const effect of effects.splice(0)) effect(); if (dirty) render(); } while (dirty || effects.length); };
   commit(); await Promise.resolve(); await Promise.resolve(); assert.equal(decoded.length, 2);

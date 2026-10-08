@@ -11,6 +11,20 @@ const detail = { id: "detail", image: { width: 2048, height: 1024 } } as SkyLand
 const publication = { resources: [overview, detail] } as SkyLandscapeManifestData;
 const flush = async () => { await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); };
 
+test("Sources pauses alpha work, ignores canceled completion and resumes only current wanted grids", async () => {
+  let state: SkyLandscapeMaskState = { masks:new Map(),failed:false };
+  let complete!: (value:Uint8Array)=>void, signal!:AbortSignal; const requests:string[]=[];
+  const owner=createSkyLandscapeMasks(publication,{load(resource,abort){requests.push(resource.id);
+    if(resource.id==="overview")return Promise.resolve(new Uint8Array(1024*512));
+    signal=abort;return new Promise(resolve=>{complete=resolve;});},changed:value=>{state=value;}});
+  owner.update([overview,detail]);await flush();const ready=state.masks.get("overview");assert.ok(ready);
+  owner.pause();assert.equal(signal.aborted,true);complete(new Uint8Array(2048*1024));await flush();
+  assert.equal(state.masks.get("overview"),ready);assert.equal(state.masks.has("detail"),false);
+  owner.update([overview]);owner.resume();await flush();assert.deepEqual(requests,["overview","detail"]);
+  owner.update([overview,detail]);assert.deepEqual(requests,["overview","detail","detail"]);
+  owner.dispose();complete(new Uint8Array(2048*1024));await flush();assert.equal(state.masks.has("detail"),false);
+});
+
 test("foreground detail shares the GPU allocation target without counting a decoded identity twice or guessing unknown inputs", () => {
   const galaxy = { width: 2048, height: 1024 }, art = { width: 512, height: 512 };
   assert.equal(selectSkyLandscapeResource(publication, [galaxy, galaxy], false), detail);

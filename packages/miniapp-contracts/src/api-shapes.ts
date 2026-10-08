@@ -200,24 +200,12 @@ export type NeptuneBandsManifestData=OpalLatitudeBandsManifestData<"starward-opa
 export type NeptuneBandsImageData = Uint8Array;
 export type UranusBandsManifestData=OpalLatitudeBandsManifestData<"starward-opal-uranus-bands-v1",421>;
 export type UranusBandsImageData = Uint8Array;
-/** Historical 2MASS near-infrared all-sky panorama, not visible-light photometry. */
-export interface GalacticImageManifestData {
-  schemaVersion: "starward-2mass-galactic-v1";
-  publicationId: string;
-  publicationHash: string;
-  source: {title:string;provider:"IPAC / Cool Cosmos";recordUrl:string;rightsUrl:string;
-    galleryRightsUrl:string;credit:string;sourceUrl:string;sourceSha256:string};
-  projection: {kind:"equirectangular";frame:"galactic";centerLongitudeDeg:0;
-    longitudeIncreases:"left";north:"up"};
-  image: {file:string;sha256:string;bytes:number;width:2048;height:1024;downloadUrl:string};
-  processing:string;
-  limitations:string[];
-}
+export type { GalacticImageManifestData } from "./galactic-image-publication.ts";
 export type GalacticImageData = Uint8Array;
 /** Metadata for a bounded, same-origin optical HiPS publication. Coverage is
  * exactly the listed tiles; a source name or declared maxOrder is not coverage. */
 export interface OpticalHipsManifestData {
-  schemaVersion: "starward-optical-hips-v1";
+  schemaVersion: "starward-optical-hips-v1" | "starward-optical-hips-v2";
   publicationId: string;
   publicationHash: string;
   scope: "TRIAL" | "PRODUCTION";
@@ -225,7 +213,7 @@ export interface OpticalHipsManifestData {
   limitations: string[];
   sources: Array<{ id:string; title:string; provider:string; originalDataUrl:string;
     originalRights:string; originalRightsUrl:string; hipsRecordUrl:string;
-    hipsLicense:"ODbL-1.0"; hipsDoi:string; format:"jpeg"|"png";
+    hipsLicense:"ODbL-1.0"; hipsDoi:string|null; hipsCreatorDid?:string; format:"jpeg"|"png";
     tileWidth:512; maxOrder:number }>;
   shards: Array<{ sourceId:string; order:number; dir:number; file:string;
     sha256:string; bytes:number; tileCount:number; indexUrl:string }>;

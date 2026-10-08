@@ -1,4 +1,4 @@
-import { DEEP_SKY_IMAGE_PIXELS, type DisplayMode } from "@starward/miniapp-contracts";
+import { DEEP_SKY_IMAGE_PIXELS, type DisplayMode, type GalacticImageManifestData, type OpticalHipsManifestData } from "@starward/miniapp-contracts";
 import type { DeviceOrientationFrame as DevicePose } from "./device-orientation-view";
 import { createSkyDirectionProjector, type SkyViewBasis } from "./sky-view-projection";
 import type { SkyProjectionCenter } from "./sky-viewport";
@@ -8,7 +8,7 @@ import type { DeepSkyImageAsset } from "./deep-sky-image-request";
 import type { PaintedSkyObject, SkyPickSnapshot } from "./sky-object-picking";
 import { SKY_OBSERVING_VERTICAL_FOV_DEG as SKY_VERTICAL_FOV_DEG } from "./sky-zoom";
 import { projectSkyTarget } from "./sky-scene-projection";
-import type { SkyLineSegment, SkyRenderSurface } from "./sky-render-surface";
+import type { SkyHipsSourceGroup, SkyLineSegment, SkyRenderSurface } from "./sky-render-surface";
 import { drawSkyConstellations, type SkyConstellationLayer } from "./sky-constellation-render";
 import { skyStarAppearance } from "./sky-star-appearance";
 import {currentStellarSupplement,type SkyStellarSupplementFrame} from './sky-stellar-supplement-scene';
@@ -20,7 +20,7 @@ import { PROCEDURAL_SKY_LANDSCAPE, skyLandscapeHasPaintedModel, skyLandscapeMask
   type SkyLandscapeMask, type SkyLandscapePanorama, type SkyPanoramaMask } from "./sky-landscape-mask";
 import { skySolarLightAt } from "./sky-solar-light";
 import { skyLandscapeViewOpacity } from "./sky-landscape-visibility";
-import { skyGalacticBandAt } from "./sky-galactic-band";
+import { skyGalacticBandAt, skyGalacticImageBand } from "./sky-galactic-band";
 import { skySunDiscAt } from "./sky-sun-disc";
 import { skyMoonDiscAt } from "./sky-moon-disc";
 import { skyPlanetDiscsAt } from "./sky-planet-disc";
@@ -31,6 +31,7 @@ import { skyHipsRenderTileGeometry, projectSkyHipsTileMesh } from "./sky-hips-ti
 import { SKY_PLANET_CATALOG_HASH, SKY_PLANET_CATALOG_VERSION, SKY_PLANET_NAMES,
   SKY_LUMINARY_CATALOG_HASH, SKY_LUMINARY_CATALOG_VERSION, SKY_LUMINARY_NAMES } from "@starward/miniapp-contracts";
 import type { SkyTargetOpticalImage } from "./sky-sdss-optical-frame";
+import { skyNativeImageIsCurrent } from "./sky-artwork-loader";
 import { completeLegacySkyOptical, completeTargetSkyOptical, type SkyTargetOpticalCompletion } from "./sky-sdss-optical-completion";
 import { submitSkySceneScienceOptical, submitSkySceneCalibratedOptical,
   type SkySceneScienceOpticalPort, type SkySceneCalibratedOpticalPort } from "./sky-sdss-science-scene";
@@ -42,13 +43,22 @@ export type { SkySceneScienceOpticalPort } from "./sky-sdss-science-scene";
 export type { SkySceneCalibratedOpticalPort } from "./sky-sdss-science-scene";
 export type { SkySdssOpticalField, SkySdssOpticalImage } from "./sky-sdss-optical-frame";
 type SkyCanvasImageAsset = DeepSkyImageAsset & { image: object };
-export type SkyScenePaintedSources = { readonly sdssOptical: SkyTargetOpticalCompletion | null; readonly deepSkyImage: object | null };
+export interface SkyGalacticImageCompletion {readonly image:object;readonly publication:GalacticImageManifestData}
+export type SkyScenePaintedSources = { readonly sdssOptical: SkyTargetOpticalCompletion | null; readonly deepSkyImage: object | null;
+  readonly galacticImage?:SkyGalacticImageCompletion|null; readonly opticalHips?:readonly SkyHipsCanvasTile[] };
 export interface SkyCoordinateGrids { horizontal: boolean; equatorial: boolean }
 export interface SkyHipsCanvasTile {
   layer:"WIDE_FIELD_W3"|"OPTICAL";
+  /** Explicit publication source; absence cannot establish same-source LOD. */
+  sourceId?:string;
+  /** Native owner binds retained and wanted images to this immutable version. */
+  publication?:OpticalHipsManifestData;
   order:number;
   pixel:number;
   image:object;
+  /** Ready detail retained while widening; withdraw only after a successful
+   * same-version opaque parent submission in this frame. */
+  retainedDetailFallback?:boolean;
 }
 export function dispatchSkyHipsImageFailure(tile:SkyHipsCanvasTile,
   wideFieldFailed:(image:object)=>void,opticalFailed:(image:object)=>void):void {
@@ -133,6 +143,7 @@ export function drawSkyScene(
   scienceOptical?: SkySceneScienceOpticalPort,
   preparedOptical?: SkyScenePreparedOpticalPort,
   calibratedOptical?: SkySceneCalibratedOpticalPort,
+  galacticPublication?: GalacticImageManifestData|null,
 ) {
   const palette =
     mode === "OBSERVATION"
@@ -171,20 +182,71 @@ export function drawSkyScene(
   if (mode !== "OBSERVATION" && sun && !context.solarLight(
     {basis,verticalFovDeg,...(center ? {center} : {})},sun)) solarLightFailed?.();
   const galacticBand = mode === "OBSERVATION" ? null : skyGalacticBandAt(data,frameAt,verticalFovDeg);
+  let paintedGalacticImage:SkyGalacticImageCompletion|null=null;
+  const imageBand=galacticBand&&galacticPublication?skyGalacticImageBand(data,frameAt,galacticBand,galacticPublication):galacticBand;
   if (galacticBand && !context.galacticBand(
-    {basis,verticalFovDeg,...(center ? {center} : {})},galacticBand,
-    hipsTiles?.some(tile=>tile.layer==="WIDE_FIELD_W3")?null:galacticImage)) galacticBandFailed?.();
+    {basis,verticalFovDeg,...(center ? {center} : {})},imageBand??galacticBand,
+    !imageBand||hipsTiles?.some(tile=>tile.layer==="WIDE_FIELD_W3")?null:galacticImage,
+    image=>{if(image===galacticImage&&galacticPublication)paintedGalacticImage=Object.freeze({image,publication:galacticPublication});}
+  )) galacticBandFailed?.();
   // Historical W3 belongs below registered target cutouts; optical tiles,
   // including a published order-0 base, belong above them. Resolution is not
   // a layer identity. Both use the same exact sky frame and native mesh.
   const observation=mode === "OBSERVATION" ? null : exactSkyObservationFrame(data,frameAt);
+  const paintedOpticalHips:SkyHipsCanvasTile[]=[];
+  const sourceGroups=new Map<OpticalHipsManifestData,Map<string,SkyHipsSourceGroup>>();
+  const submittedHipsGroups=new Map<SkyHipsCanvasTile,SkyHipsSourceGroup>();
+  const hipsGroup=(tile:SkyHipsCanvasTile)=>{
+    const publication=tile.layer==="OPTICAL"&&tile.publication;
+    if(!publication||!publication.sources.some(source=>source.id===tile.sourceId))return undefined;
+    let groups=sourceGroups.get(publication);if(!groups)sourceGroups.set(publication,groups=new Map());
+    let group=groups.get(tile.sourceId!);
+    if(!group){group=Object.freeze({publicationHash:publication.publicationHash,sourceId:tile.sourceId!});groups.set(tile.sourceId!,group);}
+    return group;
+  };
   const drawHips=(tiles:readonly SkyHipsCanvasTile[],opacity:number)=>{
     if(!observation)return;
     const view={basis,verticalFovDeg,...(center ? {center} : {})};
-    for(const tile of tiles){
+    const attemptedGroups=new Set<object>();
+    for(let index=0;index<tiles.length;index++){
+      const tile=tiles[index]!;
+      if(!skyNativeImageIsCurrent(tile.image))continue;
+      const group=hipsGroup(tile);
+      if(group&&!attemptedGroups.has(group)&&context.skyImageMeshLevels&&tile.publication?.sources.some(source=>source.id===tile.sourceId&&source.format==="png")){
+        let end=index+1;while(end<tiles.length&&hipsGroup(tiles[end]!)===group)end++;
+        const run=tiles.slice(index,end).filter(value=>skyNativeImageIsCurrent(value.image)),
+          hierarchical=run.some(parent=>run.some(child=>child.order>parent.order&&
+            Math.floor(child.pixel/4**(child.order-parent.order))===parent.pixel)),
+          contiguous=!tiles.slice(end).some(value=>hipsGroup(value)===group);
+        if(hierarchical&&contiguous){
+          const projected=run.map(value=>{const geometry=skyHipsRenderTileGeometry(value.order,value.pixel),
+            triangles=geometry&&projectSkyHipsTileMesh(geometry,observation.equatorialToEnu,view,width,height);
+            return triangles?.length?{tile:value,image:value.image,triangles,priority:value.order}:null;
+          }).filter((value):value is NonNullable<typeof value>=>value!==null);
+          if(projected.length){
+            attemptedGroups.add(group);
+            const results=context.skyImageMeshLevels(projected,view,opacity,group);
+            if(Array.isArray(results)&&results.length===projected.length&&results.every(value=>typeof value==="boolean")){
+              for(const [i,value] of projected.entries()){
+                if(!results[i])hipsImageFailed?.(value.tile);
+                else if(opacity>0){paintedOpticalHips.push(value.tile);submittedHipsGroups.set(value.tile,group);}
+              }
+              index=end-1;continue;
+            }
+          }
+        }
+      }
+      if(tile.retainedDetailFallback&&paintedOpticalHips.some(parent=>
+        parent.publication?.publicationHash===tile.publication?.publicationHash&&
+        parent.sourceId===tile.sourceId&&parent.order<tile.order&&
+        Math.floor(tile.pixel/4**(tile.order-parent.order))===parent.pixel&&
+        parent.publication?.sources.some(source=>source.id===parent.sourceId&&source.format==="jpeg")))continue;
       const geometry=skyHipsRenderTileGeometry(tile.order,tile.pixel);
       const triangles=geometry&&projectSkyHipsTileMesh(geometry,observation.equatorialToEnu,view,width,height);
-      if(triangles?.length&&!context.skyImageMesh(tile.image,triangles,view,opacity))hipsImageFailed?.(tile);
+      if(triangles?.length){
+        if(!context.skyImageMesh(tile.image,triangles,view,opacity,...(group?[group]:[])))hipsImageFailed?.(tile);
+        else if(opacity>0&&group){paintedOpticalHips.push(tile);submittedHipsGroups.set(tile,group);}
+      }
     }
   };
   // The optional historical W3 layer enters with the same exact-time
@@ -256,6 +318,15 @@ export function drawSkyScene(
           else sdssOpticalFailed?.(field.image);
         }
       }
+      const fallback = sdssOpticalImage.fallback;
+      if (!paintedSdssOpticalImage && fallback && skyNativeImageIsCurrent(fallback.image)) {
+        const registration = registerSkySurvey(point, fallback.fieldDegrees, 512, 256.5);
+        if (registration && artworkIntersectsView(registration, artworkView, width, height) &&
+          context.artwork(fallback.image, registration, artworkView, 1, "#FFFFFF", "optical-cutout")) {
+          paintedSdssOpticalImage = fallback.image;
+          paintedSdssFields.push({ image: fallback.image, registration });
+        } else sdssOpticalFailed?.(fallback.image);
+      }
     }
   }
   // The scene owns one selected target cutout. A painted optical field takes
@@ -268,7 +339,10 @@ export function drawSkyScene(
   deepSkyRegistration = infraredSubmission?.registration ?? null;
   // Higher-resolution HiPS tiles cover the coarser registered object image.
   // Their observer transform is independent of bright-star catalog health.
-  if(hipsTiles?.length)drawHips(hipsTiles.filter(tile=>tile.layer==="OPTICAL"),.8);
+  // Preserve original alpha. Opaque fine pixels replace the already-painted
+  // parent exactly where their own mesh actually draws; failed regions keep it.
+  // Per-tile display attenuation would mix the same source twice at each LOD.
+  if(hipsTiles?.length)drawHips(hipsTiles.filter(tile=>tile.layer==="OPTICAL"),1);
   const grid = skyHorizontalGrid(basis, width, height, verticalFovDeg, center, grids.horizontal);
   if (grids.horizontal) {
     context.segments(grid.horizon, palette.grid);
@@ -509,6 +583,8 @@ export function drawSkyScene(
     if (deepSkyRegistration && (coveredView || skyLandscapeMaskCoversRayHull(paintedLandscape,deepSkyRegistration.corners))) paintedDeepSkyImage=null;
   }
   context.finish();
+  const contributingHipsGroups=new Set([...new Set(submittedHipsGroups.values())].filter(group=>
+    context.skyImageMeshContribution?.(group)==="positive"));
   const completedOptical = targetOpticalSubmission?.draw.submitted ? completeTargetSkyOptical(targetOpticalSubmission.frame,
     targetOpticalSubmission.draw, targetOpticalSubmission.surface.artworkLevelsContribution(targetOpticalSubmission.draw)) :
     completeLegacySkyOptical(sdssOpticalImage, paintedSdssOpticalImage);
@@ -523,6 +599,9 @@ export function drawSkyScene(
     objects: paintedObjects,
     suppressedBodyReferences,
     deepSkyAuxiliaryDecisions: copySkyDeepAuxiliaryDecisions(deepSkyAuxiliaryDecisions),
-  } : null, Object.freeze({ sdssOptical: completedOptical, deepSkyImage: paintedDeepSkyImage }));
+  } : null, Object.freeze({ sdssOptical: completedOptical, deepSkyImage: paintedDeepSkyImage,galacticImage:paintedGalacticImage,
+    opticalHips:Object.freeze(paintedLandscape&&skyLandscapeMaskCoversRayHull(paintedLandscape,
+      skyArtworkViewRayHull(artworkView,width,height))?[]:paintedOpticalHips.filter(tile=>skyNativeImageIsCurrent(tile.image)&&
+        contributingHipsGroups.has(submittedHipsGroups.get(tile)!))) }));
   completed?.();
 }

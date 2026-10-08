@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
-import { readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { appendFile, readFile, readdir, realpath, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { executeRelease } from "./release.mjs";
+import { createSkyStaticBackup } from "./sky-static-backup.mjs";
+import { writeSkyStaticBundle } from "./sky-static-bundle.mjs";
 import {
   createReleaseEnvironmentFixture,
   createVerifiedBackupFixture,
@@ -61,9 +64,60 @@ async function withFixture(overrides, assertion) {
   try {
     await assertion(fixture);
   } finally {
+    const resolved = await realpath(fixture.root), temporary = await realpath(os.tmpdir());
+    assert.equal(path.dirname(resolved).toLowerCase(), temporary.toLowerCase());
+    assert.ok(path.basename(resolved).startsWith("starward-release-env-"));
     await rm(fixture.root, { recursive: true, force: true });
   }
 }
+
+test("configured Sky release rejects a database-only backup before any process", async () => {
+  await withFixture({}, async (fixture) => {
+    await appendFile(fixture.deployPath, `STARWARD_SKY_STATIC_DIRECTORY=${path.join(fixture.root, "sky")}\n`);
+    const backup = await createVerifiedBackupFixture({ fixture });
+    let calls = 0;
+    await assert.rejects(executeRelease({
+      deployEnvPath: fixture.deployPath, backupManifestPath: backup.manifestPath, operator: "ci:sky-backup",
+      now: releaseClock(), execute() { calls++; throw new Error("unexpected_process_before_sky_backup_check"); },
+    }), /release_backup_sky_snapshot_required/u);
+    assert.equal(calls, 0);
+  });
+});
+
+test("Sky release verifies real backup bytes before preparing a different candidate union", async () => {
+  await withFixture({}, async fixture => {
+    await appendFile(fixture.deployPath, `STARWARD_SKY_STATIC_DIRECTORY=${path.join(fixture.root, "sky")}\n`);
+    const headers = { "content-type": "image/jpeg", "cache-control": "public, max-age=31536000, immutable", "x-content-type-options": "nosniff" };
+    const oldRoute = `/v2/sky/galactic/${"1".repeat(64)}/texture.jpg`, newRoute = `/v2/sky/galactic/${"2".repeat(64)}/texture.jpg`;
+    const old = await writeSkyStaticBundle(path.join(fixture.root, "old-image"), [{ route: oldRoute, headers, bytes: Buffer.from("old-public-image") }]);
+    const future = await writeSkyStaticBundle(path.join(fixture.root, "candidate-image"), [
+      { route: oldRoute, headers, bytes: Buffer.from("old-public-image") }, { route: newRoute, headers, bytes: Buffer.from("new-public-image") }]);
+    const inventoryBytes = Buffer.from(JSON.stringify({ schemaVersion: "starward-sky-static-prepared-inventory-v1",
+      generation: "generation-00000000-0000-0000-0000-000000000001", publicationHash: old.publicationHash,
+      sources: [{ directory: "source-00000000-0000-0000-0000-000000000001", revision: "1".repeat(40),
+        imageDigest: `sha256:${"1".repeat(64)}`, imagePublicationHash: old.publicationHash }] }));
+    const { record } = await createSkyStaticBackup({ bundleDirectory: old.output, inventoryBytes, backupDirectory: fixture.backupDirectory });
+    const backup = await createVerifiedBackupFixture({ fixture, overrides: { schemaVersion: "starward-verified-backup-v2", skyStaticBackup: record } });
+    const identity = { schemaVersion: "starward-sky-static-delivery-v1", revision: releaseRevision, imageDigest: releaseImageDigest,
+      imagePublicationHash: future.publicationHash, deliveryPublicationHash: future.publicationHash, files: future.files, bytes: future.bytes };
+    let disposed = false, calls = 0;
+    const result = await executeRelease({ deployEnvPath: fixture.deployPath, backupManifestPath: backup.manifestPath, operator: "ci:sky-backup", now: releaseClock(),
+      execute() { calls++; return { stdout: Buffer.alloc(0), stderr: Buffer.alloc(0) }; },
+      prepareStatic: async () => ({ identity, directory: future.output, overlayPaths: [], dispose: async () => { disposed = true; } }),
+      verifyStatic: async () => ({ status: "passed", identity, checkedFiles: future.files, checkedBytes: future.bytes }),
+      fetchImpl: async () => readyResponse({ domain: fixture.domain, environment: "staging" }), inspectTls: async () => tlsEvidence, delay: async () => {},
+    });
+    assert.equal(result.receipt.status, "succeeded"); assert.equal(disposed, true); assert.ok(calls > 0);
+    assert.equal(result.receipt.backup.manifestSchema, "starward-verified-backup-v2");
+    assert.equal(result.receipt.backup.skyStaticBackup.publicationHash, old.publicationHash);
+    assert.notEqual(result.receipt.skyStaticDelivery.deliveryPublicationHash, old.publicationHash);
+    await writeFile(path.join(fixture.backupDirectory, record.directory, "publication/files", oldRoute), "damaged");
+    calls = 0;
+    await assert.rejects(executeRelease({ deployEnvPath: fixture.deployPath, backupManifestPath: backup.manifestPath, operator: "ci:sky-backup",
+      now: releaseClock("2026-08-26T12:00:30.000Z"), execute() { calls++; throw new Error("unexpected_process"); } }), /file_identity_mismatch/u);
+    assert.equal(calls, 0);
+  });
+});
 
 test("staging release promotes one immutable candidate through the fixed sequence", async () => {
   await withFixture({}, async (fixture) => {

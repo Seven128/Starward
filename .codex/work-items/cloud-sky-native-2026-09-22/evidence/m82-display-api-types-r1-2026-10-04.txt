@@ -1,1 +1,0 @@
-FAILED exit2: TS2339 at sdss-optical-imagery.ts(137,53) and (157,37): mutable nested publication.value is not narrowed by the calibrated const. Repaired with a stable local imageVersion discriminant; no contract widening or suppressed type errors.

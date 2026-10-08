@@ -7,7 +7,7 @@ type SurveyPath = "optical" | "sdss-optical" | "prepared-optical" | "wide-field"
 export function skyResourceUrl(path:string,kind:SurveyPath){
   if (kind === "prepared-optical") {
     const object = "(?:[1-9]|[1-9][0-9]|10[0-9]|110)";
-    if (!new RegExp(`^/v2/sky/prepared-optical/[a-f0-9]{64}/(?:manifest|M-${object}-(?:overview|medium|detail)\\.png)$`, "u").test(path))
+    if (!new RegExp(`^/v2/sky/prepared-optical/[a-f0-9]{64}/(?:manifest|M-${object}-(?:overview|medium|detail)\\.png|[a-z0-9]+(?:-[a-z0-9]+)*-(?:overview|medium|detail)\\.(?:png|jpg))$`, "u").test(path))
       throw new Error("sky_resource_path_invalid");
     return __MINIAPP_API_BASE__.replace(/\/+$/u, "") + path;
   }

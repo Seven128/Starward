@@ -3,13 +3,34 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { decodeBackupKey, decryptBackup, encryptBackup, executeVerifiedBackup } from "./verified-backup.mjs";
+import { decodeBackupKey, decryptBackup, encryptBackup, executeVerifiedBackup, schemaVersion } from "./verified-backup.mjs";
 import { maintainTrialBackups } from "./backup-maintenance.mjs";
 import { dispatchBackupMaintenance } from "./backup-maintenance-cli.mjs";
 import { managedCrontab } from "./install-backup-schedule.mjs";
 
 const revision = "a".repeat(40);
 const imageDigest = `sha256:${"b".repeat(64)}`;
+
+test("schema identity supports a first-release database without parsing its absent migration table", () => {
+  let absentReads = 0;
+  const empty = schemaVersion(call => {
+    absentReads++;
+    const sql = call.args.at(-1);
+    assert.doesNotMatch(sql, /FROM\s+(?:public\.)?schema_migrations|SELECT\s+MAX/iu,
+      "an absent relation must not occur in a parsed query even behind CASE");
+    return {stdout: Buffer.from("f\n")};
+  }, "starward", "starward", 1024, "empty-schema");
+  assert.equal(empty, "EMPTY_UNINITIALIZED");
+  assert.equal(absentReads, 1);
+  for (const version of ["EMPTY_UNINITIALIZED", "022_plan_reminder_subscription_challenges"]) {
+    let reads = 0;
+    assert.equal(schemaVersion(() => ({stdout: Buffer.from(++reads === 1 ? "t" : version)}),
+      "starward", "starward", 1024, "present-schema"), version);
+    assert.equal(reads, 2);
+  }
+  assert.throws(() => schemaVersion(() => ({stdout: Buffer.from("unknown")}),
+    "starward", "starward", 1024, "untrusted-schema"), /backup_schema_relation_invalid/u);
+});
 
 test("encrypted dump round-trips and rejects tampering", () => {
   const key = decodeBackupKey("11".repeat(32));
@@ -28,6 +49,7 @@ test("backup restores before publishing and scopes trial expiry without pruning"
       const calls = [];
       const run = (input) => {
         calls.push(input);
+        if (input.step.endsWith("-schema-relation")) return {stdout: Buffer.from("t"), stderr: Buffer.alloc(0)};
         if (input.step === "backup-source-schema" || input.step === "backup-restored-schema")
           return { stdout: Buffer.from("006_contribution_intake\n"), stderr: Buffer.alloc(0) };
         if (input.step === "backup-dump")
@@ -55,10 +77,12 @@ test("backup restores before publishing and scopes trial expiry without pruning"
         assert.equal(result.manifest.status, "verified");
         assert.equal(result.manifest.restore.temporaryDatabaseDropped, true);
         assert.deepEqual(calls.map((entry) => entry.step), [
+          "backup-source-schema-relation",
           "backup-source-schema",
           "backup-dump",
           "backup-restore-create",
           "backup-restore-load",
+          "backup-restored-schema-relation",
           "backup-restored-schema",
           "backup-restore-cleanup",
         ]);
@@ -107,6 +131,7 @@ test("restore mismatch fails and still drops the temporary database", async () =
       key: decodeBackupKey("33".repeat(32)),
       run(input) {
         calls.push(input.step);
+        if (input.step.endsWith("-schema-relation")) return {stdout: Buffer.from("t"), stderr: Buffer.alloc(0)};
         if (input.step === "backup-source-schema")
           return { stdout: Buffer.from("006_contribution_intake\n"), stderr: Buffer.alloc(0) };
         if (input.step === "backup-restored-schema")
@@ -134,7 +159,7 @@ async function maintenanceFixture(t) {
   return { validation, deploy, postgres, now: new Date("2026-09-05T00:00:00.000Z"),
     make: (date, overrides = {}) => executeVerifiedBackup({ validation, deploy, postgres,
       key: decodeBackupKey("44".repeat(32)), now: () => new Date(date),
-      run: ({ step }) => ({ stdout: Buffer.from(step === "backup-dump" ? "PGDMP".repeat(200) : "009_account_erasure_guards"), stderr: Buffer.alloc(0) }),
+      run: ({ step }) => ({ stdout: Buffer.from(step.endsWith("-schema-relation") ? "t" : step === "backup-dump" ? "PGDMP".repeat(200) : "009_account_erasure_guards"), stderr: Buffer.alloc(0) }),
       ...overrides,
     }),
   };

@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\readback-m82-recovered-interior-2026-10-04.py", line 154, in <module>
-    try: main()
-         ^^^^^^
-  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\readback-m82-recovered-interior-2026-10-04.py", line 71, in main
-    assert q[ys,xs].all(); selected = ~strong[ys,xs]; assert selected.any()
-           ^^^^^^^^^^^^^^
-AssertionError

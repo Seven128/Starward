@@ -1,7 +1,0 @@
-{
-  ".sky-orientation-time-ruler__current": "00:00预览",
-  ".sky-object-tracking-status": "Vega · 跟踪中停止跟踪",
-  ".sky-located-object": "Vega · 定位",
-  "marker": "<button id=\"_pX\" class=\"sky-located-object\" style=\"left: 195.1999969482422px; top: 422px;\" aria-expanded=\"\" aria-hidden=\"\" aria-label=\"Vega定位标记，查看资料\" aria-role=\"\" hover-start-time=\"20\" hover-stay-time=\"70\" hover-class=\"button-hover\" hover-stop-propagation=\"false\" disabled=\"false\" type=\"\" size=\"default\" plain=\"false\" loading=\"false\" form-type=\"\" open-type=\"\" app-parameter=\"\" lang=\"\" session-from=\"\" business-id=\"\" send-message-title=\"\" send-message-path=\"\" send-message-img=\"\" show-message-card=\"false\" data-sid=\"_pX\"><view id=\"_pS\" class=\"sky-located-object__ring\" aria-expanded=\"\" aria-hidden=\"true\" aria-label=\"\" aria-role=\"\" hover-start-time=\"50\" hover-stay-time=\"400\" hover-class=\"none\" hover-stop-propagation=\"false\" data-sid=\"_pS\"></view><text id=\"_pW\" aria-expanded=\"\" aria-hidden=\"\" aria-label=\"\" aria-role=\"\" selectable=\"false\" user-select=\"false\" decode=\"false\" space=\"\" data-sid=\"_pW\">Vega · 定位</text></button>",
-  "position": "方位 303.9° · 高度 24.0° · 几何位置不保证可见定位到星空跟踪天体"
-}

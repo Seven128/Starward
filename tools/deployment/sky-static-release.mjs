@@ -2,9 +2,11 @@ import { randomUUID } from "node:crypto";
 import { lstat, mkdir, open, readFile, readdir, realpath, rename, unlink, writeFile } from "node:fs/promises";
 import https from "node:https";
 import path from "node:path";
-import { runProcess } from "./compose-runtime.mjs";
+import { fileURLToPath } from "node:url";
+import { composeExecutor, runProcess } from "./compose-runtime.mjs";
 import { publicIpTlsOptions } from "./operator-preview-tls.mjs";
-import { assertSkyStaticContains, mergeSkyStaticBundles, readPlainSkyFile, skyStaticHash, validateSkyStaticBundle } from "./sky-static-bundle.mjs";
+import { assertSkyStaticContains, assertSkyStaticImageArtifact, mergeSkyStaticBundles, readPlainSkyFile, skyStaticFilePath, skyStaticHash, validateSkyStaticBundle, writeSkyStaticBundle } from "./sky-static-bundle.mjs";
+import { createSkyStaticBackup, readSkyStaticBackup, verifiedBackupSkyRecord } from "./sky-static-backup.mjs";
 
 const fail = (code) => { throw new Error(`sky_static_${code}`); };
 const keys = (value, expected) => value && typeof value === "object" && !Array.isArray(value) &&
@@ -12,6 +14,52 @@ const keys = (value, expected) => value && typeof value === "object" && !Array.i
 const hash = (value) => typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
 const sourceName = (value) => typeof value === "string" && /^source-[a-f0-9-]{36}$/.test(value);
 const generationName = (value) => typeof value === "string" && /^generation-[a-f0-9-]{36}$/.test(value);
+const leasedStores = new WeakMap();
+const releasePreparations = new WeakMap();
+const releaseRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+/** Move the existing Sky release preflight before its application backup.
+ * Empty stores are populated only by the exact candidate OCI producer; the
+ * resulting retained union is prepared, never asserted to be old current. */
+export async function prepareSkyStaticRelease({ validation, deploy, deployEnvPath, execute = runProcess }) {
+  if (!selectedStore(validation, deploy)) return null;
+  if (!path.isAbsolute(deployEnvPath ?? "")) fail("release_environment_path_invalid");
+  const descriptorSha256 = skyStaticHash(await readFile(deployEnvPath));
+  const run = composeExecutor({ composePath: path.join(releaseRoot, "infrastructure/deployment/compose.yml"),
+    deployEnvPath, cwd: releaseRoot, execute });
+  const steps = [];
+  for (const [name, args, step] of [["compose-version", ["version"], "release-compose-version"],
+    ["compose-config", ["config", "--quiet"], "release-compose-config"], ["image-pull", ["pull"], "release-image-pull"]]) {
+    run({ args, step });
+    steps.push(Object.freeze({ name, status: "passed", executionPhase: "BEFORE_VERIFIED_BACKUP" }));
+  }
+  const delivery = await prepareSkyStaticDelivery({ validation, deploy, execute });
+  try {
+    if (skyStaticHash(await readFile(deployEnvPath)) !== descriptorSha256) fail("release_preparation_changed");
+    releasePreparations.set(delivery, Object.freeze({ deployEnvPath: path.resolve(deployEnvPath),
+      revision: validation.revision, imageDigest: validation.imageDigest, descriptorSha256, steps }));
+    return delivery;
+  } catch (error) {
+    await delivery.dispose(); throw error;
+  }
+}
+
+/** In-process handoff only: revalidate the live original lease, source seals,
+ * union, identity and overlay. A JSON assertion cannot skip a real preflight. */
+export async function reuseSkyStaticRelease({ validation, deploy, deployEnvPath, delivery }) {
+  const directory = selectedStore(validation, deploy), prepared = releasePreparations.get(delivery);
+  if (!directory || !prepared || prepared.deployEnvPath !== path.resolve(deployEnvPath) ||
+    prepared.revision !== validation.revision || prepared.imageDigest !== validation.imageDigest ||
+    leasedStores.get(delivery.dispose) !== directory) fail("release_preparation_invalid");
+  if (skyStaticHash(await readFile(deployEnvPath)) !== prepared.descriptorSha256) fail("release_preparation_changed");
+  const state = await inventory(directory);
+  if (!state) fail("inventory_missing");
+  const originalIdentity = assertSkyStaticDeliveryIdentity(delivery.identity, validation);
+  const canonical = await deliveryResult({ directory, state, validation, dispose: delivery.dispose });
+  if (delivery.directory !== canonical.directory || JSON.stringify(delivery.overlayPaths) !== JSON.stringify(canonical.overlayPaths) ||
+    Object.keys(originalIdentity).some(key => originalIdentity[key] !== canonical.identity[key])) fail("release_preparation_changed");
+  return Object.freeze({ delivery: canonical, steps: prepared.steps });
+}
 
 export function assertSkyStaticDeliveryIdentity(value, { revision, imageDigest } = {}) {
   if (!keys(value, ["schemaVersion", "imagePublicationHash", "deliveryPublicationHash", "revision", "imageDigest", "files", "bytes"]) ||
@@ -41,21 +89,52 @@ async function leaseStore(directory, create) {
   try { await lock.writeFile(JSON.stringify({ schemaVersion: "starward-sky-static-lease-v1", pid: process.pid, startedAt: new Date().toISOString() })); }
   catch (error) { await lock.close(); await unlink(lockPath); throw error; }
   let released = false;
-  return async () => {
+  const dispose = async () => {
     if (released) return;
     released = true;
+    leasedStores.delete(dispose);
     try { await lock.close(); } finally { await unlink(lockPath); }
   };
+  leasedStores.set(dispose, directory);
+  return dispose;
+}
+
+/** Capture the retained union, not a guessed production current. Preview
+ * reuses its active delivery lease; standalone backup acquires that same lease.
+ * No Docker, service restart, publication adoption or pointer mutation. */
+export async function captureSkyStaticBackup({ validation, deploy, delivery }) {
+  const directory = selectedStore(validation, deploy);
+  if (!directory) {
+    if (delivery) fail("backup_unconfigured_delivery");
+    return null;
+  }
+  if (delivery && (leasedStores.get(delivery.dispose) !== directory ||
+    path.dirname(path.dirname(path.resolve(delivery.directory))) !== directory)) fail("backup_delivery_lease_invalid");
+  const dispose = delivery ? null : await leaseStore(directory, false);
+  try {
+    const state = await inventory(directory);
+    if (!state) fail("inventory_missing");
+    const pointerBytes = await readPlainSkyFile(directory, "prepared-inventory.json");
+    const sourceMetadata = [];
+    for (const source of state.pointer.sources) sourceMetadata.push({ directory: source.directory,
+      indexBytes: await readPlainSkyFile(directory, `${source.directory}/publication/index.json`),
+      fragmentBytes: await readPlainSkyFile(directory, `${source.directory}/publication/delivery.caddy`),
+      artifactBytes: await readPlainSkyFile(directory, `${source.directory}/publication/image-artifact.json`) });
+    const result = await createSkyStaticBackup({ bundleDirectory: state.bundle.directory, inventoryBytes: pointerBytes,
+      backupDirectory: validation.operations.backupDirectory, sourceMetadata });
+    for (const source of sourceMetadata) for (const [file, bytes] of [["index.json", source.indexBytes],
+      ["delivery.caddy", source.fragmentBytes], ["image-artifact.json", source.artifactBytes]])
+      if (!bytes.equals(await readPlainSkyFile(directory, `${source.directory}/publication/${file}`))) fail("backup_source_metadata_changed");
+    if (!pointerBytes.equals(await readPlainSkyFile(directory, "prepared-inventory.json"))) fail("backup_inventory_changed");
+    return result.record;
+  } finally { await dispose?.(); }
 }
 
 async function sourceArtifact(directory, revision) {
   const bundle = await validateSkyStaticBundle(directory);
   const artifact = JSON.parse((await readPlainSkyFile(directory, "image-artifact.json")).toString("utf8"));
-  if (!keys(artifact, ["schemaVersion", "revision", "publicationHash", "indexSha256", "fragmentSha256"]) ||
-    artifact.schemaVersion !== "starward-sky-static-image-artifact-v1" || artifact.revision !== revision ||
-    artifact.publicationHash !== bundle.publicationHash ||
-    artifact.indexSha256 !== skyStaticHash(await readPlainSkyFile(directory, "index.json")) ||
-    artifact.fragmentSha256 !== skyStaticHash(await readPlainSkyFile(directory, "delivery.caddy"))) fail("image_artifact_mismatch");
+  assertSkyStaticImageArtifact(artifact, { revision, publicationHash: bundle.publicationHash,
+    indexBytes: await readPlainSkyFile(directory, "index.json"), fragmentBytes: await readPlainSkyFile(directory, "delivery.caddy") });
   return bundle;
 }
 
@@ -148,6 +227,15 @@ async function deliveryResult({ directory, state, validation, dispose, createOve
   return Object.freeze({ overlayPaths: [overlayPath], directory: state.bundle.directory, records: state.bundle.records, identity, dispose });
 }
 
+async function writePreparedInventory({ directory, state, validation, dispose }) {
+  const stage = path.join(directory, `.inventory-${randomUUID()}.tmp`), text = JSON.stringify(state.pointer, null, 2) + "\n";
+  await writeFile(stage, text, { flag: "wx", mode: 0o600 });
+  if ((await readFile(stage, "utf8")) !== text) fail("inventory_readback_failed");
+  // Read back the immutable overlay before publishing the prepared pointer.
+  await deliveryResult({ directory, state, validation, dispose, createOverlay: true });
+  await rename(stage, path.join(directory, "prepared-inventory.json"));
+}
+
 /** Preparation records a retained approved inventory, not a successful release.
  * Its lease lasts through caller convergence/verification/failure cleanup. */
 export async function prepareSkyStaticDelivery({ validation, deploy, execute = runProcess }) {
@@ -165,25 +253,75 @@ export async function prepareSkyStaticDelivery({ validation, deploy, execute = r
       return await deliveryResult({ directory, state: prior, validation, dispose });
     }
     const extracted = await extractImageArtifact({ directory, validation, deploy, execute });
-    let state = prior;
-    {
-      const generation = `generation-${randomUUID()}`;
-      const merged = await mergeSkyStaticBundles({ directories: [...(prior ? [prior.bundle.directory] : []), extracted.bundle.directory], outputDirectory: path.join(directory, generation) });
-      const pointer = { schemaVersion: "starward-sky-static-prepared-inventory-v1", generation,
-        publicationHash: merged.publicationHash, sources: [...(prior?.pointer.sources ?? []), extracted.source] };
-      state = { pointer, bundle: await validateSkyStaticBundle(merged.output) };
-      const pointerPath = path.join(directory, "prepared-inventory.json");
-      const stage = path.join(directory, `.inventory-${randomUUID()}.tmp`);
-      const text = JSON.stringify(pointer, null, 2) + "\n";
-      await writeFile(stage, text, { flag: "wx", mode: 0o600 });
-      if ((await readFile(stage, "utf8")) !== text) fail("inventory_readback_failed");
-      // Complete/read back the immutable overlay before its inventory pointer
-      // can be observed by the read-only resolver.
-      await deliveryResult({ directory, state, validation, dispose, createOverlay: true });
-      await rename(stage, pointerPath);
-    }
+    const generation = `generation-${randomUUID()}`;
+    const merged = await mergeSkyStaticBundles({ directories: [...(prior ? [prior.bundle.directory] : []), extracted.bundle.directory], outputDirectory: path.join(directory, generation) });
+    const pointer = { schemaVersion: "starward-sky-static-prepared-inventory-v1", generation,
+      publicationHash: merged.publicationHash, sources: [...(prior?.pointer.sources ?? []), extracted.source] };
+    const state = { pointer, bundle: await validateSkyStaticBundle(merged.output) };
+    await writePreparedInventory({ directory, state, validation, dispose });
     return await deliveryResult({ directory, state, validation, dispose });
   } catch (error) { await dispose(); throw error; }
+}
+
+/** Explicit fresh managed preparation. New snapshots restore recorded source
+ * metadata; legacy public-only snapshots still need original cached OCI. No
+ * image pull, live mount/current switch, prior receipt or source fabrication. */
+export async function restoreManagedSkyStaticBackup({ validation, deploy, record, outputDirectory, confirmPublicationHash, execute = runProcess }) {
+  if (confirmPublicationHash !== record?.publicationHash) fail("restore_publication_confirmation_required");
+  const directory = path.resolve(outputDirectory ?? ""), backupDirectory = validation.operations.backupDirectory;
+  const within = (parent, child) => { const relative = path.relative(parent, child);
+    return !relative || (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative)); };
+  if (!path.isAbsolute(outputDirectory ?? "") || directory === path.parse(directory).root ||
+      within(backupDirectory, directory) || within(directory, backupDirectory) ||
+      (validation.operations.skyStaticDirectory && (within(validation.operations.skyStaticDirectory, directory) || within(directory, validation.operations.skyStaticDirectory))))
+    fail("restore_directory_invalid");
+  const comparable = value => process.platform === "win32" ? value.toLowerCase() : value;
+  if (comparable(await realpath(path.dirname(directory))) !== comparable(path.dirname(directory))) fail("restore_directory_invalid");
+  const snapshot = await readSkyStaticBackup({ backupDirectory, record });
+  const archivedRoutes = new Set(snapshot.bundle.records.map(entry => entry.route));
+  if (!snapshot.sourceMetadata && !/^[a-z0-9.-]+(?::[0-9]+)?(?:\/[a-z0-9._-]+)+$/.test(validation.imageRepository ?? "")) fail("restore_image_repository_invalid");
+  // Nonrecursive exclusive creation: preserve every existing directory/file.
+  try { await mkdir(directory, { mode: 0o700 }); }
+  catch (error) { if (error.code === "EEXIST") fail("restore_directory_exists"); throw error; }
+  const dispose = await leaseStore(directory, false);
+  try {
+    const sources = [], directories = []; let selectedValidation;
+    for (let i = 0; i < snapshot.inventory.sources.length; i++) {
+      const original = snapshot.inventory.sources[i];
+      selectedValidation = { ...validation, revision: original.revision, imageDigest: original.imageDigest };
+      let extracted;
+      if (snapshot.sourceMetadata) {
+        const metadata = snapshot.sourceMetadata[i], name = `source-${randomUUID()}`;
+        const written = await writeSkyStaticBundle(path.join(directory, name), (async function* () {
+          for (const entry of metadata.index.records) yield { route: entry.route, headers: entry.headers,
+            bytes: await readPlainSkyFile(snapshot.bundle.directory, skyStaticFilePath(entry.route, archivedRoutes)) };
+        })(), { indexBytes: metadata.indexBytes, fragmentBytes: metadata.fragmentBytes });
+        await writeFile(path.join(written.output, "image-artifact.json"), metadata.artifactBytes, { flag: "wx", mode: 0o600 });
+        extracted = { source: { ...original, directory: name }, bundle: await sourceArtifact(written.output, original.revision) };
+      } else {
+        const sourceDeploy = { ...deploy, STARWARD_IMAGE_REF: `${validation.imageRepository}@${original.imageDigest}` };
+        extracted = await extractImageArtifact({ directory, validation: selectedValidation, deploy: sourceDeploy, execute });
+      }
+      if (extracted.source.imagePublicationHash !== original.imagePublicationHash) fail("restore_original_source_mismatch");
+      assertSkyStaticContains(snapshot.bundle, extracted.bundle);
+      sources.push(extracted.source); directories.push(extracted.bundle.directory);
+    }
+    const generation = `generation-${randomUUID()}`;
+    const merged = await mergeSkyStaticBundles({ directories, outputDirectory: path.join(directory, generation) });
+    const bundle = await validateSkyStaticBundle(merged.output);
+    if (bundle.publicationHash !== record.publicationHash || bundle.files !== record.files || bundle.bytes !== record.bytes) fail("restore_publication_mismatch");
+    assertSkyStaticContains(bundle, snapshot.bundle); assertSkyStaticContains(snapshot.bundle, bundle);
+    // Backup metadata/data may not drift while original sources are resolved.
+    await readSkyStaticBackup({ backupDirectory, record });
+    const state = { pointer: { schemaVersion: "starward-sky-static-prepared-inventory-v1", generation,
+      publicationHash: bundle.publicationHash, sources }, bundle };
+    await writePreparedInventory({ directory, state, validation: selectedValidation, dispose });
+    const current = await inventory(directory);
+    const delivery = await deliveryResult({ directory, state: current, validation: selectedValidation, dispose });
+    return Object.freeze({ status: "RESTORED_MANAGED_PREPARED_STORE", storeDirectory: directory, directory: delivery.directory,
+      generation, publicationHash: bundle.publicationHash, sources: sources.length, files: bundle.files, bytes: bundle.bytes,
+      overlayPaths: delivery.overlayPaths, sourceAdmission: snapshot.sourceMetadata ? "VERIFIED_BACKUP_RESTORED_ORIGINAL_METADATA" : "ORIGINAL_CACHED_OCI_REVALIDATED", runtimeApplied: false });
+  } finally { await dispose(); }
 }
 
 /** Non-deploy preview operations resolve the last successful current receipt,
@@ -226,13 +364,13 @@ export async function loadSkyStaticDelivery({ validation, deploy, operation = "c
  * preparation; no publication, pointer, stage or unknown file is removed.
  * Explicit references are operator observations, not proof of a complete
  * running/release/rollback/backup inventory. Absence never authorizes deletion. */
-export async function inspectSkyStaticRetention({ validation, deploy, references = [], observeRuntime = false, observeReceipts = false, execute = runProcess }) {
+export async function inspectSkyStaticRetention({ validation, deploy, references = [], observeRuntime = false, observeReceipts = false, observeBackups = false, execute = runProcess }) {
   const directory = selectedStore(validation, deploy);
   if (!directory) return null;
   const kinds = new Set(["RUNNING", "RELEASE", "ROLLBACK", "BACKUP"]);
   if (!Array.isArray(references) || references.some((ref) => !keys(ref, ["kind", "directory"]) ||
     !kinds.has(ref.kind) || (!generationName(ref.directory) && !sourceName(ref.directory)))) fail("retention_reference_invalid");
-  if (typeof observeRuntime !== "boolean" || typeof observeReceipts !== "boolean") fail("retention_runtime_option_invalid");
+  if (typeof observeRuntime !== "boolean" || typeof observeReceipts !== "boolean" || typeof observeBackups !== "boolean") fail("retention_runtime_option_invalid");
   const dispose = await leaseStore(directory, false);
   try {
     const comparable = (value) => process.platform === "win32" ? value.toLowerCase() : value;
@@ -261,6 +399,7 @@ export async function inspectSkyStaticRetention({ validation, deploy, references
     const pointerBytes = state ? await readPlainSkyFile(directory, "prepared-inventory.json") : null;
     const roots = [...new Set([...before.files.map(file => file.path.split("/")[0]),
       ...before.directories.map(name => name.split("/")[0])])].sort();
+    const backups = observeBackups ? await inspectSkyBackupReferences({ directory, state, validation, deploy, roots }) : null;
     for (const ref of references) if (!before.directories.includes(ref.directory)) fail("retention_reference_missing");
     const retainedSources = new Map((state?.pointer.sources ?? []).map(source => [source.directory, source]));
     const entries = roots.map(name => {
@@ -272,6 +411,7 @@ export async function inspectSkyStaticRetention({ validation, deploy, references
       if (name === "prepared-inventory.json") reasons.push("CURRENT_INVENTORY_POINTER");
       if (name === runtime?.generation) reasons.push("OBSERVED_RUNNING_MOUNT");
       if (receipts) reasons.push(...new Set(receipts.references.filter(ref => ref.directory === name).map(ref => `BOUND_${ref.kind}_REFERENCE`)));
+      if (backups?.references.some(ref => ref.directory === name)) reasons.push("BOUND_BACKUP_REFERENCE");
       reasons.push(...refs.map(kind => `DECLARED_${kind}_REFERENCE`));
       const kind = generationName(name) ? "GENERATION" : sourceName(name) ? "SOURCE" :
         /^\.inventory-[a-f0-9-]{36}\.tmp$/.test(name) ? "POINTER_STAGE" : "UNCLASSIFIED";
@@ -286,6 +426,7 @@ export async function inspectSkyStaticRetention({ validation, deploy, references
     if (runtime && JSON.stringify(runtime) !== JSON.stringify(await inspectRunningSkyMount({ directory, state, deploy, execute })))
       fail("retention_runtime_changed_during_inspection");
     await receipts?.verifyUnchanged();
+    await backups?.verifyUnchanged();
     return Object.freeze({ schemaVersion: "starward-sky-static-retention-review-v1", directory, mode: "DRY_RUN",
       inventory: state ? { generation: state.pointer.generation, publicationHash: state.bundle.publicationHash,
         sources: state.pointer.sources.length, publishedFiles: state.bundle.files, publishedPayloadBytes: state.bundle.bytes,
@@ -296,8 +437,87 @@ export async function inspectSkyStaticRetention({ validation, deploy, references
       ...(observeReceipts ? { receiptEvidence: receipts.report,
         runtimeMatchesCurrentPointer: runtime?.generation && receipts.report.currentPointer?.generation
           ? runtime.generation === receipts.report.currentPointer.generation : null } : {}),
+      ...(observeBackups ? { backupEvidence: backups.report } : {}),
       meaning: "Logical file lengths include duplicated source/generation payloads, metadata and failed stages; they are not unique payload or allocated disk. Current inventory/source URLs and declared references stay retained. Other generations/stages need actual mount, release, rollback, backup and compatibility review; age or an absent reference is not deletion approval. External images, logs, database, backups and remaining host capacity are outside this store." });
   } finally { await dispose(); }
+}
+
+/** Local verified backup references only. Public snapshot integrity is checked;
+ * DB-only v1, other lanes and missing store references stay explicit. Neither
+ * this selected directory nor its DB expiry proves full Sky retention. */
+async function inspectSkyBackupReferences({ directory, state, validation, deploy, roots }) {
+  const backupDirectory = validation.operations?.backupDirectory;
+  if (!path.isAbsolute(backupDirectory ?? "") || !["staging", "production"].includes(validation.environment) ||
+    !deploy.COMPOSE_PROJECT_NAME || !Number.isSafeInteger(validation.operations.maxBackupBytes)) fail("retention_backup_source_invalid");
+  const within = value => !value || (value !== ".." && !value.startsWith(`..${path.sep}`) && !path.isAbsolute(value));
+  if (within(path.relative(directory, backupDirectory)) || within(path.relative(backupDirectory, directory))) fail("retention_backup_source_invalid");
+  const names = async () => {
+    try { return (await readdir(backupDirectory)).filter(name => name.endsWith(".pgdump.enc.manifest.json")).sort(); }
+    catch (error) { if (error.code === "ENOENT") return null; throw error; }
+  };
+  const selected = await names();
+  if (selected === null) return { references: [], report: { status: "NO_LOCAL_BACKUP_DIRECTORY_OBSERVED", records: [], referenceCompleteness: "UNVERIFIED" },
+    async verifyUnchanged() { if (await names() !== null) fail("retention_backups_changed_during_inspection"); } };
+  const raw = new Map(), encrypted = new Map(), snapshots = new Map(), records = [], references = [];
+  const verifyEncrypted = async (file, manifest) => {
+    const name = manifest.encrypted?.fileName;
+    if (typeof name !== "string" || path.basename(name) !== name || file !== `${name}.manifest.json` ||
+      !hash(manifest.encrypted?.sha256) || !Number.isSafeInteger(manifest.encrypted.byteLength) || manifest.encrypted.byteLength < 1 ||
+      manifest.encrypted.byteLength > validation.operations.maxBackupBytes + 4096) fail("retention_backup_encrypted_invalid");
+    const info = await lstat(path.join(backupDirectory, name));
+    if (!info.isFile() || info.isSymbolicLink() || info.size !== manifest.encrypted.byteLength) fail("retention_backup_encrypted_invalid");
+    if (skyStaticHash(await readPlainSkyFile(backupDirectory, name)) !== manifest.encrypted.sha256) fail("retention_backup_encrypted_invalid");
+    encrypted.set(file, manifest);
+  };
+  for (const file of selected) {
+    const bytes = await readPlainSkyFile(backupDirectory, file); raw.set(file, bytes);
+    let manifest;
+    try { manifest = JSON.parse(bytes.toString("utf8")); } catch { fail("retention_backup_manifest_invalid"); }
+    const record = { file, sha256: skyStaticHash(bytes), schemaVersion: manifest.schemaVersion, binding: "UNSUPPORTED_BACKUP_SCHEMA" };
+    if (manifest.environment !== validation.environment || manifest.composeProject !== deploy.COMPOSE_PROJECT_NAME) {
+      record.binding = "OTHER_ENVIRONMENT_OR_PROJECT"; records.push(record); continue;
+    }
+    if (!["starward-verified-backup-v1", "starward-verified-backup-v2"].includes(manifest.schemaVersion)) { records.push(record); continue; }
+    if (manifest.status !== "verified" || manifest.restore?.status !== "restored_and_verified" || manifest.restore?.temporaryDatabaseDropped !== true ||
+      !/^[a-f0-9]{40}$/.test(manifest.releaseRevision ?? "") || !/^sha256:[a-f0-9]{64}$/.test(manifest.releaseImageDigest ?? "") ||
+      !Number.isFinite(Date.parse(manifest.createdAt)) || !Number.isFinite(Date.parse(manifest.verifiedAt))) fail("retention_backup_manifest_invalid");
+    await verifyEncrypted(file, manifest);
+    const component = verifiedBackupSkyRecord(manifest);
+    record.binding = "LEGACY_DB_ONLY_WITHOUT_SKY_BINDING";
+    if (component) {
+      const key = skyStaticHash(JSON.stringify(component));
+      if (!snapshots.has(key)) snapshots.set(key, await readSkyStaticBackup({ backupDirectory, record: component }));
+      const snapshot = snapshots.get(key), generations = [], sources = [];
+      for (const generation of roots.filter(generationName)) {
+        let index;
+        try { index = JSON.parse((await readPlainSkyFile(directory, `${generation}/publication/index.json`)).toString("utf8")); }
+        catch (error) { if (error.code === "ENOENT" || error instanceof SyntaxError) continue; throw error; }
+        if (index.publicationHash !== component.publicationHash) continue;
+        const bundle = await validateSkyStaticBundle(path.join(directory, generation, "publication"));
+        assertSkyStaticContains(snapshot.bundle, bundle); assertSkyStaticContains(bundle, snapshot.bundle);
+        generations.push(generation);
+      }
+      for (const image of snapshot.inventory.sources) {
+        const source = state?.pointer.sources.find(entry => entry.revision === image.revision && entry.imageDigest === image.imageDigest &&
+          entry.imagePublicationHash === image.imagePublicationHash);
+        if (source) sources.push(source.directory);
+      }
+      record.binding = generations.length && sources.length === snapshot.inventory.sources.length
+        ? "BOUND_RECORDED_BACKUP_REFERENCE" : "VALID_SNAPSHOT_WITH_MISSING_STORE_REFERENCES";
+      Object.assign(record, { publicationHash: component.publicationHash, files: component.files, bytes: component.bytes,
+        generations, sources, missingSourceReferences: snapshot.inventory.sources.length - sources.length });
+      for (const name of [...generations, ...sources]) references.push({ directory: name });
+    }
+    records.push(record);
+  }
+  return { references, report: { status: "SELECTED_LOCAL_BACKUPS_OBSERVED", records, referenceCompleteness: "UNVERIFIED",
+    meaning: "Only manifests in the configured local backup directory. Snapshots preserve public URL bytes and headers, not deployment/current, off-host backup or supported-client completeness. DB expiry does not delete Sky snapshots." },
+    async verifyUnchanged() {
+      if (JSON.stringify(selected) !== JSON.stringify(await names())) fail("retention_backups_changed_during_inspection");
+      for (const [file, bytes] of raw) if (!bytes.equals(await readPlainSkyFile(backupDirectory, file))) fail("retention_backups_changed_during_inspection");
+      for (const [file, manifest] of encrypted) await verifyEncrypted(file, manifest);
+      for (const snapshot of snapshots.values()) await readSkyStaticBackup({ backupDirectory, record: snapshot.record });
+    } };
 }
 
 /** Bind existing receipt bytes, not new release/backup qualification. Legacy
@@ -473,6 +693,8 @@ async function inspectRunningSkyMount({ directory, state, deploy, execute }) {
 function requestBytes(url, { headers, method, maximumBytes, preview }) {
   return new Promise((resolve, reject) => {
     const options = preview ? publicIpTlsOptions(url.hostname) : {};
+    let deadline;
+    const rejectRequest = (error) => { clearTimeout(deadline); reject(error); };
     const request = https.request(url, { ...options, headers, method, timeout: 15_000 }, (response) => {
       const chunks = []; let count = 0;
       response.on("data", (chunk) => {
@@ -480,11 +702,17 @@ function requestBytes(url, { headers, method, maximumBytes, preview }) {
         if (count > maximumBytes) { request.destroy(new Error("sky_static_http_body_too_large")); return; }
         chunks.push(chunk);
       });
-      response.on("error", reject);
-      response.on("end", () => resolve({ status: response.statusCode, headers: new Headers(response.headers), bytes: Buffer.concat(chunks) }));
+      response.on("error", rejectRequest);
+      response.on("end", () => {
+        clearTimeout(deadline);
+        resolve({ status: response.statusCode, headers: new Headers(response.headers), bytes: Buffer.concat(chunks) });
+      });
     });
+    // The socket timeout only limits inactivity. Bound the entire connection
+    // and body too, including peers that keep sending small periodic chunks.
+    deadline = setTimeout(() => request.destroy(new Error("sky_static_http_timeout")), 15_000);
     request.on("timeout", () => request.destroy(new Error("sky_static_http_timeout")));
-    request.on("error", reject);
+    request.on("error", rejectRequest);
     request.end();
   });
 }

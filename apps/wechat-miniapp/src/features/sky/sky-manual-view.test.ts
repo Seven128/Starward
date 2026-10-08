@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createSkyViewBasis, projectSkyDirection, unprojectSkyPoint, validBasis, type SkyViewBasis } from "./sky-view-projection.ts";
 import { dragSkyView, INITIAL_MANUAL_SKY_VIEW } from "./sky-manual-view.ts";
-import { captureSkyDomeTarget } from "./sky-browsing-camera.ts";
+import { captureSkyDomeTarget, createSkyBrowsingCamera } from "./sky-browsing-camera.ts";
 
 for (const fov of [240, 180, 120, 45, 6, 1.5]) {
   test(`grabbed celestial point follows the finger at ${fov} degrees including rolled camera`, () => {
@@ -91,4 +91,24 @@ test("a zenith overview keeps its existing free-rotation path without a pole sin
   assert.ok(validBasis(offCenter));
   assert.notDeepEqual(captureSkyDomeTarget(offCenter).right, dome.right,
     "existing off-center overview rotation remains available");
+});
+
+test("repeated wide pans retain valid rotations accepted by the browsing camera", () => {
+  const center = { x: 195, y: 423.7221861701512 };
+  for (const fov of [80.00000000000001, 120, 240]) {
+    let basis: SkyViewBasis = INITIAL_MANUAL_SKY_VIEW;
+    const camera = createSkyBrowsingCamera();
+    for (let index = 0; index < 200; index++) {
+      const end = { x: center.x + (index % 2 ? 120 : -120), y: center.y + (index % 3 ? 180 : -180) };
+      const next = dragSkyView(basis, center, end, 390, 844, fov, center);
+      assert.ok(validBasis(next), `pan ${index + 1} at ${fov} degrees must remain usable`);
+      assert.notDeepEqual(next, basis, "continued browsing must move the camera");
+      assert.deepEqual(camera.pan(next, 0.1).view, next, "the original camera must accept each pan");
+      const grabbed = projectSkyDirection(Math.atan2(basis.forward[0], basis.forward[1]) * 180 / Math.PI,
+        Math.asin(basis.forward[2]) * 180 / Math.PI, next, 390, 844, fov, center)!;
+      assert.ok(grabbed && Math.hypot(grabbed.x - end.x, grabbed.y - end.y) < 1e-6,
+        "the grabbed direction must still follow the finger after repeated pans");
+      basis = next;
+    }
+  }
 });

@@ -31,26 +31,39 @@ export function useSkyStellarSupplement(scene:ResolvedStellarScene|undefined,at:
   const loader=useRef<Loader|null>(null);
   const [state,setState]=useState<{owner:Loader;publication:SaoIndexPublication;value:SkyStellarTileState}|null>(null);
   useEffect(()=>{
-    if(!active||!publication)return;
+    if(!publication)return;
     let live=true;
     const owner=createSkyStellarTileLoader({publication,changed:value=>{if(live)setState({owner,publication,value});},
       load:(id,signal)=>saoCatalogClient.getTile(publication,id,signal)});
-    loader.current=owner;owner.update(wantedRef.current);
+    loader.current=owner;if(!active)owner.pause();owner.update(wantedRef.current);
     return()=>{
       live=false;owner.dispose();if(loader.current===owner)loader.current=null;
       setState(previous=>previous?.owner===owner?null:previous);
     };
   // Same source bytes may arrive with a new file-generation capability after
   // clear/refetch. Retire the loader bound to the previous delivered index.
-  },[publication,active]);
+  // Visibility suspends work, not the single bounded ready CPU view. Native
+  // Canvas/images still release on hide. Index loss/replacement and unmount
+  // retire this graph, including a refreshed same-hash file capability.
+  },[publication]);
+  const measuredView=Boolean(view&&view.width>0&&view.height>0);
   const key=selection.ids.join(':');
-  useEffect(()=>{loader.current?.update(wantedRef.current);},[key]);
+  useEffect(()=>{
+    const owner=loader.current;if(!owner)return;
+    if(!active||!measuredView){owner.pause();return;}
+    owner.update(wantedRef.current);owner.resume();
+  },[key,active,measuredView]);
   const loaded=active&&state?.publication===publication&&state?.owner===loader.current?state.value:EMPTY;
   const resolved=useMemo(()=>{
     if(!active||!publication||selection.failed)return {frame:null,failed:false};
-    try{return {frame:resolveSkyStellarSupplement(publication,loaded.tiles,scene,at),failed:false};}
+    try{return {frame:resolveSkyStellarSupplement(publication,
+      // Dimensions reset before a new Canvas is measured. Source rows are
+      // still valid independently of the old viewport; transform them with
+      // current geometry, then the painter clips/styles in its actual view.
+      // Once measured, restrict them to the new selection before effects run.
+      measuredView?loaded.tiles.filter(tile=>selection.ids.includes(tile.tile.tileId)):loaded.tiles,scene,at),failed:false};}
     catch{return {frame:null,failed:true};}
-  },[active,publication,loaded.tiles,scene,at,selection.failed]);
+  },[active,publication,loaded.tiles,scene,at,selection.failed,key,measuredView]);
   const retry=useCallback(()=>{loader.current?.retry();void index.refetch();},[index.refetch]);
   return {publication,frame:resolved.frame,sources:index.data?.sources??[],retry,loading:active&&(index.isFetching||loaded.loading),
     failed:active&&(index.isError||Boolean(index.refreshError)||index.data?.dataState==='STALE_USABLE'||selection.failed||loaded.failed||resolved.failed)};

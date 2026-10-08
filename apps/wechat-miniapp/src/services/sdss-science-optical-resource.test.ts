@@ -304,7 +304,8 @@ test("prepared metadata shares the clear fence and exact encoded cache without p
   borrowed.source.credit = "caller mutation"; assert.equal(resource.publication.source.credit, preparedManifest.source.credit);
   assert(Object.isFrozen(resource.publication.source)); assert(resource.isCurrent());
   const image = resource.publication.levels.OVERVIEW;
-  const asset = { bytes: image.bytes, sha256: image.sha256, width: image.pixels, height: image.pixels, format: image.format };
+  const asset = { bytes: image.bytes, sha256: image.sha256,
+    width: "pixels" in image ? image.pixels : image.width, height: "pixels" in image ? image.pixels : image.height, format: image.format };
   const first = await w.runtime.acquirePublishedSkyImage(asset, w.preparedUrl(image.downloadUrl), preparedHash).promise;
   assert.equal(digest(new Uint8Array(w.files.get(first.filePath)!)), image.sha256); first.release();
   const count = w.requests.length;

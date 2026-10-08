@@ -77,8 +77,14 @@ export function acquirePublishedSkyImage(asset: SkyEncodedImage, url: string, pu
   // Current Moon uses /moon/coverage/{hash}/... rather than /moon/{hash}/... .
   const coverage = /^\/v2\/sky\/moon\/coverage\/([a-f0-9]{64})\/[A-Za-z0-9_-]+\.png$/.exec(path);
   const selected = /^\/v2\/sky\/deep-sky\/([a-f0-9]{64})\/(M-(?:[1-9]|[1-9][0-9]|10[0-9]|110))\/\2-(?:overview|medium|detail)(?:\.([a-f0-9]{64})\.png|\.jpg)$/.exec(path);
-  const prepared = /^\/v2\/sky\/prepared-optical\/([a-f0-9]{64})\/M-(?:[1-9]|[1-9][0-9]|10[0-9]|110)-(?:overview|medium|detail)\.png$/.exec(path);
-  if ((match?.[2] ?? coverage?.[1] ?? selected?.[1] ?? prepared?.[1]) !== publicationHash || path.includes("//") ||
+  const prepared = /^\/v2\/sky\/prepared-optical\/([a-f0-9]{64})\/(?:M-(?:[1-9]|[1-9][0-9]|10[0-9]|110)-(?:overview|medium|detail)\.png|[a-z0-9]+(?:-[a-z0-9]+)*-(?:overview|medium|detail)\.(?:png|jpg))$/.exec(path);
+  // The validated LOCAL HiPS subset uses the same encoded owner. Ordinary
+  // builds cannot admit trial routes; native hide still releases its decode.
+  const optical = typeof __MINIAPP_DEVELOPMENT_FIXTURE_MODE__ !== "undefined" && __MINIAPP_DEVELOPMENT_FIXTURE_MODE__
+    ? /^\/v2\/sky\/optical\/([a-f0-9]{64})\/([a-z0-9-]{1,40})\/(0|[1-9]|10|11)\/(0|[1-9]\d*)$/.exec(path) : null;
+  if ((match?.[2] ?? coverage?.[1] ?? selected?.[1] ?? prepared?.[1] ?? optical?.[1]) !== publicationHash || path.includes("//") ||
+    (optical && (Number(optical[4]) >= 12 * 4 ** Number(optical[3]) || asset.width !== 512 || asset.height !== 512 ||
+      (asset.format !== "jpeg" && asset.format !== "png"))) ||
     (selected?.[3] !== undefined && selected[3] !== asset.sha256)) throw new Error("sky_public_image_route_invalid");
   const environment = skyImageContentHash(Uint8Array.from(base, c => c.charCodeAt(0)));
   return owner().acquire({ ...asset, environment, url });

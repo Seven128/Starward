@@ -2,6 +2,8 @@
 
 This on-demand verification node owns reserved paths, environment isolation, process/resource lifecycle and failure/recovery rules across all Mini Program feedback and acceptance lanes.
 
+Repository resource storage, Git LFS preparation, archive-before-retirement and bounded task records are owned by [resources and artifacts](resources-and-artifacts.md). Apply those boundaries before promoting scratch into version control.
+
 ## Reserved Paths
 
 Local Taro build isolation is owned by `apps/wechat-miniapp/config/index.ts`: ordinary output is `dist/weapp`; fixture builds use `MINIAPP_ISOLATED_FIXTURE_BUILD=1` with fixture mode and write `dist/weapp-fixture`. For a local non-watch inspection build, `MINIAPP_ISOLATED_CHECK_BUILD=1` writes `dist/weapp-check` and rejects fixture or diagnostic modes. This does not select an upload/release environment or replace an active preview. `inspectCandidate({ bundleDirectory })` in `tools/miniapp/inspect-production.mjs` can inspect that output directly.

@@ -24,10 +24,14 @@ test("default and invalid auxiliary policies perform no GL work and cannot turn 
   for (const policy of policies) {
     const owner = createSkyGpuArtworkContributions(forbidden, policy);
     owner.begin(); owner.capture(submitted, prepared);
+    owner.captureMeshAlpha(submitted,{...prepared,alphaFragment:"disabled"});
+    assert.equal(owner.composeMeshGroup(submitted,prepared,()=>{throw new Error("unexpected_group_draw");},
+      ()=>{throw new Error("unexpected_group_composite");}),null);
     owner.afterDraw(() => { throw new Error("unexpected_replay"); }); owner.clearPhoto(); owner.finish();
     assert.equal(owner.hasPending(), false);
     assert.equal(owner.failed(), false, "disabled policy UNKNOWN is not an auxiliary fault");
     assert.deepEqual(owner.contribution(submitted), expectedUnknown);
+    assert.equal(owner.meshAlphaContribution(submitted),"unknown");
     assert(Object.isFrozen(owner.contribution(submitted)));
     assert(Object.isFrozen(owner.qualification(submitted)));
     assert.strictEqual(owner.observeRegion(submitted, null), unknownSkyArtworkLocalObservation);
@@ -75,6 +79,16 @@ test("odd-size full signal and every shared MAX level must fit the original call
   assert.equal(owner.failed(), false, "policy refusal is UNKNOWN, not a failed GL allocation");
   owner.dispose();
   assert.equal(owner.failed(), false, "a disposed owner cannot report a current failure");
+});
+
+test("source-group colour, depth and all MAX levels must fit together before any allocation or draw",()=>{
+  // 3x5 RGBA+depth16=90 B, shared odd-size reduction=12 B.
+  const boundary=boundaryGl(),owner=createSkyGpuArtworkContributions(boundary.gl,{auxiliaryBytesLimit:101,maxGroups:1});
+  owner.begin();
+  assert.equal(owner.composeMeshGroup(submitted,prepared,()=>{throw new Error("unexpected_group_draw");},
+    ()=>{throw new Error("unexpected_group_composite");}),null);
+  assert.equal(boundary.attributeReads(),1);assert.equal(boundary.setupReads(),0);assert.equal(boundary.allocations(),0);
+  assert.equal(owner.failed(),false);assert.equal(owner.meshAlphaContribution(submitted),"unknown");owner.dispose();
 });
 
 test("an existing normal GL error reaches the renderer and latches this owner until explicit reset", () => {

@@ -1,4 +1,6 @@
-import { chmod, rm } from "node:fs/promises";
+import { chmod, realpath, rm } from "node:fs/promises";
+import assert from "node:assert/strict";
+import os from "node:os";
 import path from "node:path";
 import { createReleaseEnvironmentFixture, releaseRevision } from "./test-support.mjs";
 import { readEnvironmentFile } from "./env-file.mjs";
@@ -11,7 +13,12 @@ export async function fixture(t, overrides = {}) {
     ...overrides,
   });
   await chmod(path.join(result.root, "backup.key"), 0o600);
-  t.after(() => rm(result.root, { recursive: true, force: true }));
+  t.after(async () => {
+    const resolved = await realpath(result.root), temporary = await realpath(os.tmpdir());
+    assert.equal(path.dirname(resolved).toLowerCase(), temporary.toLowerCase());
+    assert.ok(path.basename(resolved).startsWith("starward-release-env-"));
+    await rm(resolved, { recursive: true, force: true });
+  });
   return result;
 }
 

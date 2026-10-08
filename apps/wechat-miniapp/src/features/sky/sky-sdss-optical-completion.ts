@@ -47,7 +47,8 @@ export function completeLegacySkyOptical(frame: SkyTargetOpticalImage | null | u
   paintedImage: object | null | undefined): SkySdssLegacyOpticalCompletion | null {
   if (!frame || !isSkyLegacyOpticalFrame(frame) || !paintedImage) return null;
   const selected = paintedImage === frame.image ? frame :
-    paintedImage === frame.coarser?.image ? frame.coarser : null;
+    paintedImage === frame.coarser?.image ? frame.coarser :
+    paintedImage === frame.fallback?.image ? frame.fallback : null;
   if (!selected || !skyNativeImageIsCurrent(selected.image)) return null;
   return Object.freeze({ kind: "legacy", reference: frame.reference, publicationHash: frame.publicationHash,
     field: Object.freeze({ image: selected.image, level: selected.level, fieldDegrees: selected.fieldDegrees }) });
@@ -166,7 +167,8 @@ export function sameSkyOpticalInput(a: SkyTargetOpticalImage | null | undefined,
     if (!ai || !bi || ai.kind !== bi.kind || ai.publication !== bi.publication || ai.frame.asset !== bi.frame.asset)
       return false;
   }
-  const ap = a.coarser, bp = b.coarser;
-  if (!ap || !bp) return !ap && !bp;
-  return fieldEqual(ap, bp) && (legacy || ("asset" in ap && "asset" in bp && ap.asset === bp.asset));
+  const equalAlternative = (ap: SkySdssOpticalField | null | undefined, bp: SkySdssOpticalField | null | undefined) =>
+    !ap || !bp ? !ap && !bp : fieldEqual(ap, bp) &&
+      (legacy || ("asset" in ap && "asset" in bp && ap.asset === bp.asset));
+  return equalAlternative(a.coarser, b.coarser) && equalAlternative(a.fallback, b.fallback);
 }

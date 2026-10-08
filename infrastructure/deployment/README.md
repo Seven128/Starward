@@ -651,6 +651,24 @@ the failed restored database for diagnosis. It never deletes the retained
 original after success; cleanup is a later explicit operator action after an
 evidence-backed retention decision.
 
+Sky-configured new backups include the retained public URL union and original
+per-source index/fragment/artifact metadata in a component bound to the existing
+AES-GCM dump authentication. With the same typed database confirmations, add
+`--sky-managed-restore-directory /absolute/fresh/store` and the exact
+`--confirm-sky-publication-hash <manifest-component-publicationHash>` to
+`deployment:recover` for a fresh managed prepared store. Alternatively,
+`--sky-restore-directory /absolute/fresh/container` restores only an isolated
+public bundle; the two options are mutually exclusive. New source-capable
+components restore recorded originals without cached OCI; legacy public-only
+components still require those original images for managed preparation.
+Neither option changes runtime current or an application image; receipts record
+`runtimeApplied=false`. Retain and inspect failed output instead of overwriting
+an existing store. Select the restored store in a separately validated release
+descriptor, make a fresh verified backup and use the original release/preview
+consumer. New components are key/GCM-authenticated again by formal release
+before Compose or migration. A prior image still requires real schema/accepted
+write compatibility; a preparation or fixture receipt does not prove rollback.
+
 This command is unit-verified but has not yet completed a Docker/remote restore
 drill. Do not treat its presence as a production recovery claim.
 

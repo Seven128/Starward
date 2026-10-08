@@ -8,7 +8,7 @@ import type {SkyScenePaintedSources, SkySdssOpticalImage} from "./sky-scene-rend
 import {registerSkyNativeImageLifetime} from "./sky-artwork-loader";
 import {completeLegacySkyOptical,completeScienceSkyOptical,completePreparedSkyOptical,liveSkyOpticalCompletion,sameSkyOpticalInput,type SkySdssOpticalCompletion} from "./sky-sdss-optical-completion";
 import {skySdssOpticalFrame,skyPreparedOpticalFrame} from "./sky-sdss-optical-frame";
-import {assertSdssScienceOpticalManifest, type SdssScienceOpticalManifest} from "@starward/miniapp-contracts";
+import {assertSdssScienceOpticalManifest, opticalPublicationReference, type SdssScienceOpticalManifest} from "@starward/miniapp-contracts";
 import {sdssOpticalPresentation} from "./sky-sdss-optical-selection";
 import {skyPagePaintCommit} from "./sky-optical-page-test-support";
 import {preparedOpticalTestPublication} from "./sky-prepared-optical-test-support";
@@ -23,7 +23,7 @@ function find(node:ts.Node){
   ts.forEachChild(node,find);
 }
 find(source);
-const execute=(expression:ts.Expression,bindings:object)=>vm.runInNewContext(ts.transpileModule(`(${expression.getText(source)})`,{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,bindings);
+const execute=(expression:ts.Expression,bindings:object)=>vm.runInNewContext(ts.transpileModule(`(${expression.getText(source)})`,{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{opticalPublicationReference,...bindings});
 const fine={},coarse={};
 const optical:SkySdssOpticalImage={image:fine,reference:"M:63",publicationHash:"admitted-M63",fieldDegrees:.0568888889,level:"DETAIL",
   coarser:{image:coarse,fieldDegrees:.1137777778,level:"MEDIUM"}};

@@ -25,6 +25,7 @@ import {
   MINIAPP_API_BASE_PATH,
   CONSTELLATION_CATALOG_VERSION,
   isCelestialObjectReference,
+  isDeepSkyObjectReference, EXTENDED_DEEP_SKY_CATALOG_VERSION,
   DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION,
   SDSS_OPTICAL_PUBLICATIONS,
   SKY_LUMINARY_CATALOG_VERSION,
@@ -925,10 +926,11 @@ export function getSkyReport(
 ) {
   if (!spotId.startsWith("spot:") && !spotId.startsWith("contribution:"))
     throw new Error("night_location_identity_invalid");
-  return requestOperation("spot-sky:v3:" + spotId, "spotSkyGet", {
+  return requestOperation("spot-sky:v4:extended:" + spotId, "spotSkyGet", {
     auth: spotId.startsWith("contribution:") ? "REQUIRED" : "NONE",
     pathParams: { spotId },
-    query: "contextId=" + encodeURIComponent(contextId) + "&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION,
+    query: "contextId=" + encodeURIComponent(contextId) + "&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION +
+      "&deepSkyCatalogVersion=" + encodeURIComponent(EXTENDED_DEEP_SKY_CATALOG_VERSION),
     ...(signal ? { signal } : {}),
   }).then(projectAdoptedSkyCatalog);
 }
@@ -961,19 +963,20 @@ export function getCelestialObjectInformation(
     throw new Error("celestial_object_reference_invalid");
   if (imagePublicationHash !== undefined && !/^[a-f0-9]{64}$/u.test(imagePublicationHash))
     throw new Error("deep_sky_image_publication_hash_invalid");
-  const deepSky = reference.startsWith("M:");
+  const deepSky = isDeepSkyObjectReference(reference), infrared = reference.startsWith("M:");
   if (opticalPublicationHash !== undefined && (!deepSky || !/^[a-f0-9]{64}$/u.test(opticalPublicationHash)))
     throw new Error("sdss_optical_publication_hash_invalid");
-  const key = (reference==="SOLAR:MOON"?"celestial-object:v4:moon-coverage:":deepSky ?
+  const key = (reference==="SOLAR:MOON"?"celestial-object:v4:moon-coverage:":deepSky && !infrared ?
+    `celestial-object:v7:native:optical:${opticalPublicationHash ?? "none"}:` : deepSky ?
     (opticalPublicationHash ? `celestial-object:v6:${DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION}:${imagePublicationHash ?? "current"}:optical:${opticalPublicationHash}:` :
       `celestial-object:v5:${DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION}:${imagePublicationHash ?? "current"}:`) : "celestial-object:v3:") + reference;
   return requestOperation(key, "celestialObjectGet", {
     pathParams: { reference },
     query: "locale=zh-CN&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION+
       (reference==="SOLAR:MOON"?"&moonTextureVersion=coverage-v2":"") +
-      (deepSky ? `&deepSkyImageVersion=${DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION}` +
-        (imagePublicationHash ? `&deepSkyPublicationHash=${imagePublicationHash}` : "") +
-        (opticalPublicationHash ? `&opticalPublicationHash=${opticalPublicationHash}` : "") : ""),
+      (infrared ? `&deepSkyImageVersion=${DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION}` +
+        (imagePublicationHash ? `&deepSkyPublicationHash=${imagePublicationHash}` : "") : "") +
+      (opticalPublicationHash ? `&opticalPublicationHash=${opticalPublicationHash}` : ""),
     ...(signal ? { signal } : {}),
   }).then(response => {
     try { return matchingCelestialInformationResponse(response, reference, imagePublicationHash, opticalPublicationHash); }
@@ -982,9 +985,10 @@ export function getCelestialObjectInformation(
 }
 
 export function searchCelestialObjects(query: string, signal?: AbortSignal) {
-  const key = "celestial-search:v4:" + query.trim();
+  const key = "celestial-search:v5:extended:" + query.trim();
   return requestOperation(key, "celestialObjectSearchGet", {
-    query: "q=" + encodeURIComponent(query.trim()) + "&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION + "&luminaryCatalogVersion=" + encodeURIComponent(SKY_LUMINARY_CATALOG_VERSION),
+    query: "q=" + encodeURIComponent(query.trim()) + "&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION + "&luminaryCatalogVersion=" + encodeURIComponent(SKY_LUMINARY_CATALOG_VERSION) +
+      "&deepSkyCatalogVersion=" + encodeURIComponent(EXTENDED_DEEP_SKY_CATALOG_VERSION),
     ...(signal ? { signal } : {}),
   }).then(response => {
     try { return matchingCelestialSearchResponse(response, query); }
@@ -1004,7 +1008,8 @@ export function getCelestialObjectPosition(binding: CelestialPositionBinding,
   return requestOperation(key, "celestialObjectPositionGet", {
     auth: binding.spotId.startsWith("contribution:") ? "REQUIRED" : "NONE",
     pathParams: { spotId: binding.spotId, reference: binding.reference },
-    query: `contextId=${encodeURIComponent(binding.contextId)}&at=${encodeURIComponent(binding.at)}&catalogVersion=${ADOPTED_SKY_REPORT_CATALOG_VERSION}`,
+    query: `contextId=${encodeURIComponent(binding.contextId)}&at=${encodeURIComponent(binding.at)}&catalogVersion=${ADOPTED_SKY_REPORT_CATALOG_VERSION}` +
+      "&deepSkyCatalogVersion=" + encodeURIComponent(EXTENDED_DEEP_SKY_CATALOG_VERSION),
     ...(signal ? { signal } : {}),
   }).then(response => {
     try { return matchingCelestialPositionResponse(response, binding, catalog); }
@@ -1042,7 +1047,8 @@ export const getConstellationCatalog = createConstellationCatalogClient({
 });
 
 export function constellationAssetUrl(catalogHash: string, file: string) {
-  if (!/^[a-f0-9]{64}$/u.test(catalogHash) || !(file === "geometry-v2.json" || /^[a-z_-]+\.png$/u.test(file))) throw new Error("constellation_asset_reference_invalid");
+  const sourceFile = ["constellationship.fab", "constellationsart.fab", "constellation_names.eng.fab", "info.ini"].includes(file);
+  if (!/^[a-f0-9]{64}$/u.test(catalogHash) || !(sourceFile || file === "geometry-v2.json" || /^[a-z_-]+\.png$/u.test(file))) throw new Error("constellation_asset_reference_invalid");
   return __MINIAPP_API_BASE__.replace(/\/+$/u, "")+MINIAPP_API_BASE_PATH+
     "/sky/constellations/"+catalogHash+"/assets/"+file;
 }

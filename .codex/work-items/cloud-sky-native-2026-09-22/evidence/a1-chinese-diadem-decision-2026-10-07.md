@@ -1,0 +1,17 @@
+# C07 同位与多星有限供给
+
+[三固定原稿](chinese-diadem-text-inspection-2026-10-07.json)、[原子实体](chinese-diadem-components-2026-10-07.json)、[出版前资格](chinese-diadem-qualification-2026-10-07.json)：8实际请求0重试/媒体；三实际页脚CC BY-SA4.0，复用已核WMF条款。有限中文节选译改沿原作者/固定修订URL/改动/许可共享责任，不采用媒体、全文或新测量。
+
+Diadem：Alpha Comae Berenices1370772924的A字段与子Q66477220 rev2468911136精确HR4968/HD114378。根Q1150389 rev2544994477仅系统HIP64241，子没有独立HIP；原HIP保而不称子独立。根P527/子P361均带A，实际英文東上將/太微左垣五与根中文东上将背景加后发座α A限定，不造A个人星官序名或给B同名。原F5V/5.22/H/0.45对源A4.85/B5.53、正文5.05/5.08与系统4.29–4.35不合并；H为历史Harvard测光不是变星分类，预测食未实证不作已发生/动态光变。原B同坐标、不同自行与缺值保，无新增第三C/新测量。
+
+Alwasl：HD 1710341376899642/Q10848644 rev2549799539三项HR6960/HD171034/HIP91014吻合；所有中文标签空、中文入口仅HD171034身份，不冒中文正文或传统名。原B2IV-V/5.28/-0.11对源B2III/IV或B2IV/V、possible Beta Cephei或slowly pulsating B保，只译共同B型星、不同口径及有伴星报道，不判光变已确认，不新增伴星点/分离角/距离等测量。原null不推Var_ID，阿拉伯连接/鸵鸟星群背景不改现代人马座/88星座。
+
+Tegmine：Zeta Cancri1370792360的A字段和实际身份表与子Q66477305 rev2319261835精确HR3208/HD68257；原HIP40167为根Q15708 rev2508758341和原稿系统编号，子无独立HIP。根P527 A但子P361指Q78605447组，不冒双向同根；原文水位四系统背景加巨蟹座ζ¹ A限定。原F8V/5.63/0.54对源共同F型/A5.58与合光4.67保，null不推Var_ID，不导入轨道/月掩/新成员；Tegmen词源citation needed保且不作新别名。原稿B HR3209/HD68255、C HR3210/HD68256与原BSC HD68256/68255交叉冲突FAILED，本次A独立合格；不交换HD、不采用B/C正文或宣称全系统身份齐。
+
+[v39出版](chinese-diadem-publication-2026-10-07.json)148行361565B/SHA f8bcf200c37cf453bb0ee0e37a297eb3c0725e009f3fa0b460b12109cb0c1b3d，145旧行逐字段保持、v1–v38字节/四v19及两v29修复不变。原文字owner/两原测试/一新测试/一asset五变化，269当前源/300WEAPP不变，无前端/依赖/registry/位置/自行变化。五回归改前0pass5fail，当前39文件196pass0fail/worker类型通过；新中文精确HRHD与原英文检索、系统HIP不冒独立子标识、测量与源差异/失败基础事实及独立结果恢复通过。
+
+[当前消费者](../../../../output/playwright/chinese-diadem-1007-r1/chinese-diadem-result.json)/[读回](chinese-diadem-final-readback-2026-10-07.json)：正式Map→普通无props/fixture关，原公共真实02:00时间尺提交；525源20文件clientbundle复用0build，隔离当前HTTP/天文资产/Taro JSX/受控native端口/软件WebGL。三检索/完整资料每条限定/作者许可/原URL复制/SourcesBack同地点时刻Context/原已绘核心通过。0.5°正常手势下Diadem原同基坐标但自行不同，实核心分离0.012550px；Tegmine原A/B同坐标自行，实分离0，原重叠选择均保两HR并选目标，不作人工位移。两近邻不是本次新增译介供给，Tegmine原B点仍显示原目录身份并保已记录冲突。74Scene120请求，最终encoded/decode/GPU/request逻辑模型0，任务API/browser关闭、原服务0重启；不冒native CSS/WXML/实际DevTools、手机或物理总量/200DAU容量证明。
+
+[覆盖](chinese-diadem-next-coverage-2026-10-07.json)：468有名12缺采用中文名381正文，154介绍149许可52深空非上限。Mesarthim失败与Tegmine B/C身份冲突保FAILED；当前3点不缩减完整供给或图质需求。33账逐行不变、普通Prepared空/HiPS关/Mellinger低分辨率显示/照片FAILED、原生/44px焦点滚动/账号/Android-iOS/新版月面/完整图质/整场物理200DAU/独审及旧FAILED/UNKNOWN/MISSING保持。无提交推送、分支迁移、采购外联/部署发布、六Settings或其它业务变化，Goal active无预算未完成。
+
+唯一下一依赖：A1 C07 真实已命名目录中文供给缺口：v39沿原出版/检索/资料owner采用Diadem HR4968、Alwasl HR6960、Tegmine HR3208三原点有限译介，保145旧行/v1–v38字节/四v19及两v29修复，148行361565B。8原稿实体请求0媒体重试，系统HIP/子HRHD、中文系统名/A分量、原H历史Harvard测光、源分类与可能光变/未实证食保持，不填编号或扩点/registry/88星座。Tegmine B HR3209与C HR3210的原HD对原稿交叉冲突FAILED保，只核A，不改邻点或冒全系统供给。五改前失败回归、39文件196检查/类型与实际02:00三资料全部限定/署名复制/SourcesBack/原核心通过；正常0.5°手势，Diadem原同基坐标不同自行核心分离0.012550px、Tegmine A-B原坐标自行相同分离0，两重叠列表保两个HR，不人为分离或冒肉眼可见。74Scene120请求、最终逻辑0/helper退出、525输入0构建/269源5变化300WEAPP不变。154介绍149许可52深空非上限，468有名12缺采用中文名381正文。Mesarthim HRHD冲突FAILED停车，Tegmine B/C独立身份冲突也仅新合格决定性原始身份证据才重评，失败不阻断独立A。唯一下一执行依赖沿原BSC v3和同owner，以独立Kamelos HR2363/HD45866/HIP31940、Urquchillay HR7057/HD173649/HIP91973、Alruba HR6618/HD161693/HIP86782作一小批真实固定原文/具体译改权/精确单点与系统命名归属核实；候选未采用。每条合格才有限准确中文接入并实际检索/完整资料署名复制/来源Back/原已绘点选，失败不阻断独立合格项，不借编号或造传统名，原英文数字/基础事实与恢复保持。缺口/样本/版本不封顶，不建通用百科或巡天框架、不恢复排除源/重做影像加工。普通Prepared空、HiPS关、Mellinger LOWRES DISPLAY、照片FAILED；Q1无新合格覆盖几何权利/P1无新callback或有效会话窗口按原条件停车。旧FAILED/UNKNOWN/MISSING与33账保，native CSS-WXML/44px焦点滚动/账号/Android-iOS/新版月面手机/完整图质/整场物理资源与200DAU/独审开放，Goal active无预算未完成。

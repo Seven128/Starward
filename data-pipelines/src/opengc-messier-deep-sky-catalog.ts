@@ -5,9 +5,10 @@
  */
 
 import { createHash } from "node:crypto";
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isDeepSkyObjectReference } from "@starward/miniapp-contracts";
 
 const OPENNGC_COMMIT = "36cb178a0f69dba8bfc03a99c10512831edf1c6b";
 const SOURCE_URL = `https://raw.githubusercontent.com/mattiaverga/OpenNGC/${OPENNGC_COMMIT}/database_files/NGC.csv`;
@@ -77,7 +78,11 @@ function csvRows(text: string) {
   return rows;
 }
 
-function parseCsv(text: string) {
+export function parseOpenNgcDeepSkyCsv(text: string, additionalReferences: readonly string[] = []) {
+  if (new Set(additionalReferences).size !== additionalReferences.length ||
+    additionalReferences.some(reference => !isDeepSkyObjectReference(reference) || reference.startsWith("M:")))
+    throw new Error("opengc_additional_references_invalid");
+  const requested = new Set(additionalReferences);
   const records = csvRows(text);
   const headings = records.shift();
   if (!headings || headings[0] !== "Name" || !headings.includes("M"))
@@ -87,17 +92,19 @@ function parseCsv(text: string) {
   const rows = records.flatMap((fields) => {
     if (fields.length !== headings.length) throw new Error("opengc_row_shape_invalid");
     const messierRaw = get(fields, "M").trim();
+    const nativeName = /^(NGC|IC)0*([1-9]\d*)$/u.exec(get(fields, "Name"));
+    const nativeReference = nativeName ? `${nativeName[1]}:${Number(nativeName[2])}` : null;
     const kind = INCLUDED_TYPES.get(get(fields, "Type") as keyof typeof INCLUDED_TYPES);
-    if (!messierRaw || !kind) return [];
-    const messier = Number(messierRaw);
-    if (!Number.isInteger(messier) || messier < 1 || messier > 110)
+    if ((!messierRaw && (!nativeReference || !requested.has(nativeReference))) || !kind) return [];
+    const messier = messierRaw ? Number(messierRaw) : null;
+    if (messier !== null && (!Number.isInteger(messier) || messier < 1 || messier > 110))
       throw new Error("opengc_messier_invalid");
-    const ngcName = get(fields, "Name").replace(/^NGC0*/u, "NGC ");
+    const ngcName = get(fields, "Name").replace(/^(NGC|IC)0*/u, "$1 ");
     const commonNames = get(fields, "Common names").split(",").map((value) => value.trim()).filter(Boolean);
     const majorAxisArcmin = optionalNumber(get(fields, "MajAx"));
     const minorAxisArcmin = optionalNumber(get(fields, "MinAx"));
     return [{
-      objectRef: `M:${messier}`,
+      objectRef: messier === null ? nativeReference! : `M:${messier}`,
       messier,
       ngcName,
       kind,
@@ -111,8 +118,10 @@ function parseCsv(text: string) {
       commonNames,
       openNgcType: get(fields, "Type"),
     }];
-  }).sort((left, right) => left.messier - right.messier);
-  if (rows.length !== 51) throw new Error(`opengc_expected_51_rows:${rows.length}`);
+  }).sort((left, right) => (left.messier ?? Infinity) - (right.messier ?? Infinity) || left.objectRef.localeCompare(right.objectRef));
+  if (rows.filter(row => row.messier !== null).length !== 51) throw new Error(`opengc_expected_51_messier_rows:${rows.length}`);
+  for (const reference of requested) if (!rows.some(row => row.objectRef === reference))
+    throw new Error(`opengc_requested_identity_missing_or_messier_alias:${reference}`);
   if (new Set(rows.map((row) => row.objectRef)).size !== rows.length)
     throw new Error("opengc_duplicate_identity");
   for (const required of ["M:31", "M:42"])
@@ -126,7 +135,7 @@ export async function buildOpenNgcMessierDeepSkyCatalog() {
   const response = await fetch(SOURCE_URL, { redirect: "error" });
   if (!response.ok) throw new Error(`opengc_source_http_${response.status}`);
   const bytes = new Uint8Array(await response.arrayBuffer());
-  const rows = parseCsv(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+  const rows = parseOpenNgcDeepSkyCsv(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
   const pack = {
     schemaVersion: "opengc-messier-deep-sky-v1",
     catalogVersion: "opengc-messier-deep-sky.v20260501",
@@ -164,6 +173,28 @@ export async function buildOpenNgcMessierDeepSkyCatalog() {
   } as const;
   await writeFile(resolve(OUTPUT_DIRECTORY, "opengc-messier-deep-sky.v1.json"), packText);
   await writeFile(resolve(OUTPUT_DIRECTORY, "opengc-messier-deep-sky.v1.manifest.json"), JSON.stringify(manifest));
+  return manifest;
+}
+
+/** Offline additive candidate batch. Preserve the exact old pack/manifest and
+ * source identity; adding a batch is not permission to mutate a published v1. */
+export async function buildOpenNgcExtendedDeepSkyCatalog(sourceFile: string, additionalReferences: readonly string[]) {
+  const original = JSON.parse(await readFile(resolve(OUTPUT_DIRECTORY, "opengc-messier-deep-sky.v1.manifest.json"), "utf8"));
+  const bytes = await readFile(sourceFile);
+  if (bytes.length !== original.source.responseBytes || hash(bytes) !== original.source.responseSha256)
+    throw new Error("opengc_pinned_source_invalid");
+  const rows = parseOpenNgcDeepSkyCsv(new TextDecoder("utf-8", { fatal: true }).decode(bytes), additionalReferences);
+  const pack = { schemaVersion: "opengc-deep-sky-v2", catalogVersion: "opengc-deep-sky.v20260501-extended-v1",
+    frame: "ICRS J2000", license: "CC-BY-SA-4.0", rows };
+  const text = JSON.stringify(pack);
+  const manifest = { ...original, schemaVersion: "opengc-deep-sky-manifest-v2", catalogVersion: pack.catalogVersion,
+    selection: { ...original.selection, messierCrossIdentificationRequired: false,
+      additionalReferences: [...additionalReferences], batchMeaning: "Explicit real development batch, not a catalog or product coverage ceiling" },
+    modifications: [...original.modifications, "保留原51项的身份与资料，增加固定原源中明确选入的非Messier行；不存在的Messier编号保留null，派生目录继续按CC BY-SA 4.0提供。"],
+    rowCount: rows.length, rowOrder: "Existing Messier order, then explicit native references",
+    derivedAssetSha256: hash(text), derivedAssetBytes: Buffer.byteLength(text), retrievedAt: new Date().toISOString() };
+  await writeFile(resolve(OUTPUT_DIRECTORY, "opengc-deep-sky.v2.json"), text, { flag: "wx" });
+  await writeFile(resolve(OUTPUT_DIRECTORY, "opengc-deep-sky.v2.manifest.json"), JSON.stringify(manifest), { flag: "wx" });
   return manifest;
 }
 

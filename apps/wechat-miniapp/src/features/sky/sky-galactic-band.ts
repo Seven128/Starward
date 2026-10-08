@@ -1,4 +1,4 @@
-import type { SkyGeometryReport } from "@starward/miniapp-contracts";
+import type { GalacticImageManifestData, SkyGeometryReport } from "@starward/miniapp-contracts";
 import { exactSkyObservationFrame, skyEquatorialDirectionToEnu } from "./sky-observation-frame";
 import { skySolarLightAt } from "./sky-solar-light";
 import type { SkyVector } from "./sky-view-projection";
@@ -8,6 +8,23 @@ export interface SkyGalacticBand {
   pole: SkyVector;
   center: SkyVector;
   strength: number;
+  /** Texture axes are independent of the Galactic schematic fallback. */
+  imageProjection?: {pole:SkyVector;center:SkyVector;smoothInfraredPointSources:boolean};
+}
+
+/** The conditional optical bitmap's J2000 axes use the same exact observer
+ * transform as the rest of the Scene. A failed image still falls back to the
+ * original Galactic band, never an equatorial band. */
+export function skyGalacticImageBand(report:Pick<SkyGeometryReport,"hourly"|"observationFrames">,
+  at:string|undefined,band:SkyGalacticBand,publication:GalacticImageManifestData):SkyGalacticBand|null {
+  if(publication.schemaVersion==="starward-2mass-galactic-v1")return band;
+  const frame=exactSkyObservationFrame(report,at);
+  if(!frame)return null;
+  return {...band,imageProjection:{
+    pole:skyEquatorialDirectionToEnu(frame.equatorialToEnu,[0,0,1]),
+    center:skyEquatorialDirectionToEnu(frame.equatorialToEnu,[0,-1,0]),
+    smoothInfraredPointSources:false,
+  }};
 }
 
 // Canonical ICRS Galactic axes from ERFA's ICRS-to-Galactic definition:

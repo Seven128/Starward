@@ -1,2 +1,0 @@
-{"phase":"current-inputs-ready","constellationHash":"2a53d222e56b513e6b0b9bba753d7864e1535bf98252112ce8e4bebde16dc01e","galacticHash":"f6aeb37d4724ed296ffb4c22f242bbdc83541b54aa1cb67b83e82b9e2d91ac5e","landscapeHash":"e5d1e76069fa002b5e2435a3f78615c2bb32ee52b18003cab036a50ed80056c5"}
-{"output":"E:\\dev\\worktrees\\Starward\\remote-main-20260908\\output\\playwright\\cloud-sky-current-composition-0930","scenarios":12,"returnedPixelsEqual":true,"retired":{"resources":{"created":92,"deleted":92},"fileCounts":{"writes":1,"removes":1,"failed":0},"failures":[]}}

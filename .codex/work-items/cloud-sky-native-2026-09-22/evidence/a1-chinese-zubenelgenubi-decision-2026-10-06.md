@@ -1,0 +1,15 @@
+# C07 氐宿一与氐宿增七的独立名称
+
+[固定中文原文](chinese-zubenelgenubi-text-inspection-2026-10-06.json)revision83164486，经HR5531/HD130841先定位正确入口，只取一份HTML，不重复oldid/图像。原表天秤座α²是氐宿一/HR5531，α¹是氐宿增七/HR5530，两名称不混共同检索别名。α² HD表排版“HD&nbsal-kiffah…”损坏不修原稿；原HR/α²及独立HD130841 SIMBAD引用、[三原CC0实体](chinese-zubenelgenubi-Q13047-2026-10-06.json)Q13047→Q12065240 A/Q3612958 B，子项合格HR-HD和P361双向序号分别核alpha2/alpha1，两个子项无中文标签，不冒已有CC0中文供给。[具体出版](chinese-zubenelgenubi-publication-2026-10-06.json)按页脚和已核再用条款的CC BY-SA4.0文字沿原owner采用，作者/固定修订/节选简体改编/共享与限定随正文；无新CC0registry。
+
+原BSC主HR5531/HD130841/HIP72622/Zubenelgenubi、伴HR5530/HD130819/HIP真实null保；原表和CC0另列72603不填null，不复制主HIP，也不把null通配。正文只采用目视联星背景、主A3白色/伴F4型及南方钩爪语源，两个原目录位置与测量独立。伴星原表F3V、正文F4与BSC F4IV不同，限制可见；不把正文推出主序阶段，不更新原A3IV/F4IV/星等/色指数/自行/位置。原导语拜耳命名原因、距离/角距/位置角/绝对星等、轨道/成员总数/2052掩星预测或肉眼望远镜可见保证未采用；原paragraph0带ruby CSS不进产品文本。原文DSS2照片及其信用只属未采用媒体，没有下载复用，商业排除原样保。
+
+v15 97行/204585B/SHA055d7663ca7a44cd26466aba02aadfcf1cd0d6cd33b81f16296725cb91cf0145，原v14九十五行与v1–v14字节保持。原parser扩v15兼容，HR-HD字符串、present/null HIP精确比较仍原owner；失配拒绝，无通配/新公共合同。四独立中文检索/资料保测量与源差异/拒绝跨分量和外部HIP替代/独立失败恢复修前0pass4fail，首次15相关文件90pass0fail/worker类型通过，新增显式v14旧版95行比较与历史v2–v13兼容。1原owner/2原测试/1新测试/1asset共5源码变化，221源码pins/300WEAPP不变；无依赖/前端/新上游/位置/影像/缓存框架。
+
+[读回](chinese-zubenelgenubi-final-readback-2026-10-06.json)与[当前实际消费者](../../../../output/playwright/chinese-zubenelgenubi-1006-r1/chinese-zubenelgenubi-result.json)：正式Map→普通无props Sky/fixture关，原525源/20client文件0构建复用，公共精确00:00提交。氐宿一查询只HR5531、氐宿增七只HR5530，双资料/近旁完整署名与质量限定/固定链接复制/完整Sources Back同数据身份地点时刻均通过；正常0.5°pinch后两真实已绘核心按HR重新选中资料。一次60Scene113请求，最终Map encoded/decode/GPU/request逻辑模型0，helper退出/原服务0重启。logicalJSX/softwareGL不替nativeCSS-WXML/DevTools/Android-iOS/物理容量/完整验收，也不保证肉眼或物理分辨联星。
+
+[实际供给](chinese-zubenelgenubi-next-coverage-2026-10-06.json)468有名中52缺中文/381有中文缺正文，当前103介绍/98许可/52深空不是上限。原33行原样保；少宰错误标题/HR7582原源不采用，房宿四/参宿一失败及后绑定/终态MISSING、SAO414-vs4 FAILED、开阳四相关身份与后缀HIP保。Map panel/照片FAILED和旧null/UNKNOWN/MISSING仍保持；普通Prepared空/HiPS关/Mellinger LOWRES DISPLAY，完整账号/native交互/44px焦点滚动/设备新版月面/图质/物理200DAU/独审仍开放。无子代理/其它业务/六项Settings变化，无提交推送采购部署发布外联，Goal active无预算未完成。
+
+## 唯一下一依赖
+
+A1 C07 真实已命名目录中文供给缺口：氐宿一α² HR5531/HD130841/HIP72622与氐宿增七α¹ HR5530/HD130819/HIP真实null沿v15独立名称和资料闭合；原HD排版损坏/光谱差异可见，HIP72603不补null，不混共同系统名或复用DSS图。当前103介绍/98许可/52深空不是上限，实际468有名BSC中52无采用中文别名、381已有中文但缺正文，供给实态不授权逐点造名/造百科。唯一下一复用原BSC v3、CC0与已许可文字/别名owner，按实际缺口核Fawaris HR7528/HD186882/HIP97165的成熟中文及系统/分量关联，先据精确编号定位正确原文再核具体权利，不凭名称猜标题；仅按真实编号扩合格分量，不把系统强等同单颗或复制系统HIP。合格才沿检索→独立结果→资料/署名/复制/来源Back与已绘身份采用，不建通用命名/百科框架。其余52名缺口和381正文适用覆盖持续，不拿当前103或限量候选缩范围。原97行与v1–v14、目录位置测量影像/null合同保，无文/失配/部分失败可恢复。少宰错误HR7582原文/404标题不采用、房宿四任务ISO替换/18:00无已绘点三失败与终态/后绑定MISSING、开阳四相关身份/带后缀HIP原义、23:00参宿一近地平点选失败/终态与后绑定MISSING、旧Sky场景SAO414与断言4 FAILED保原，排原A1责任，不重做SAO去重。完整33、Map候选panel FAILED、真实账号、原生CSS/44px焦点滚动/完整设置、DevTools-WXML/Android-iOS新版月面、图质/物理200DAU/独审开放；大字号/旧Sky稿暂停。普通Prepared空/HiPS关、Mellinger LOWRES DISPLAY、照片FAILED与旧null/UNKNOWN/MISSING保；Q1只新合格覆盖/几何/权益再开，ESO6k退出；P1只新callback/window/rehydration证据再开，复用有效服务不循环初始化。Goal active无预算，不提交推送采购部署发布外联。

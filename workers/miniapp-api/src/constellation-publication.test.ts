@@ -14,6 +14,39 @@ import { createStellarMotion } from "@starward/astronomy-core/stellar-vectors";
 import { loadConstellationCatalog } from "@starward/astronomy-core/constellation-catalog";
 import { createConstellationCatalogClient } from "../../../apps/wechat-miniapp/src/services/constellation-catalog-client.ts";
 
+test("constellation visible source summaries preserve modifications and refresh the previous HTTP representation", async () => {
+  class TestModule {}
+  Module({controllers:[ConstellationController],providers:[ConstellationPublicationService]})(TestModule);
+  const app=await NestFactory.create(TestModule,new FastifyAdapter(),{logger:false});
+  app.useGlobalInterceptors(new EtagInterceptor());
+  try {
+    await app.listen(0,'127.0.0.1');const url=await app.getUrl()+'/v2/sky/constellations';
+    const before=new ConstellationPublicationService().get().data;
+    const response=await fetch(url,{headers:{'If-None-Match':`W/"${before.catalogHash}"`}});
+    assert.equal(response.status,200,'the old envelope must not hide corrected source notices behind 304');
+    const envelope=await response.json();
+    const p=envelope.data.provenance;
+    for(const [key,name] of [['definitions',p.definitions.provider],['names',p.names.provider],['art',p.art.author],['astrometry',p.astrometry.provider]]) {
+      const source=envelope.sources.find((s:any)=>s.provider===name);
+      assert.equal(source.attribution?.name,name);
+      assert.equal(source.attribution?.url,p[key].url);
+      assert.ok(source.attribution?.statements.includes(p[key].modifications),'visible disclosure must carry the actual processing statement');
+    }
+    assert.equal(envelope.data.catalogHash,before.catalogHash,'original data and asset identities stay valid');
+    for (const [file,digest] of [
+      ['constellation_names.eng.fab',before.provenance.definitions.sourceFiles['constellation_names.eng.fab']],
+      [before.geometryAsset.file,before.geometryAsset.sha256],
+    ]) {
+      const download=await fetch(`${url}/${before.catalogHash}/assets/${file}`);
+      assert.equal(download.status,200);
+      assert.match(download.headers.get('cache-control')!,/immutable/);
+      assert.equal(createHash('sha256').update(Buffer.from(await download.arrayBuffer())).digest('hex'),digest);
+    }
+    const reused=await fetch(url,{headers:{'If-None-Match':response.headers.get('etag')!}});
+    assert.equal(reused.status,304);await reused.arrayBuffer();
+  } finally {await app.close();}
+});
+
 test("core callers cannot change valid astrometry under the original verified hash",()=>{
   const first=loadConstellationCatalog(),raw=first.data as {stars:number[][]};
   const ra=raw.stars[0]![1];

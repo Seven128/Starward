@@ -1,23 +1,25 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { getSdssOpticalManifest, sdssOpticalImageUrl } from "@/services/sdss-optical-client";
-import type { SdssOpticalManifest, SdssScienceOpticalManifest, SdssCalibratedOpticalManifest, PreparedOpticalManifest, PreparedDisplayOpticalManifest, PreparedProgressiveOpticalManifest, PreparedRenderedOpticalManifest } from "@starward/miniapp-contracts";
+import { sdssOpticalPublication, isPreparedOpticalReference, opticalPublicationReference, opticalAssetDimensions,
+  type PreparedNativeOpticalManifest, type SdssOpticalLevel, type SdssOpticalManifest, type SdssScienceOpticalManifest, type SdssCalibratedOpticalManifest, type PreparedOpticalManifest, type PreparedDisplayOpticalManifest, type PreparedProgressiveOpticalManifest, type PreparedRenderedOpticalManifest } from "@starward/miniapp-contracts";
 import { getPreparedOpticalResource } from "@/services/prepared-optical-resource";
 import { preparedOpticalImageUrl } from "@/services/prepared-optical-client";
 import type { SkyPublicationResource } from "@/services/sky-publication-resource";
 import { getSdssScienceOpticalResource, getSdssCalibratedOpticalResource } from "@/services/sdss-science-optical-resource";
-import { sdssOpticalLevelForFov, skyTargetOpticalLevelForFov } from "./sky-sdss-optical-selection";
+import { skyTargetOpticalLevelForView } from "./sky-sdss-optical-selection";
 import type { SkyArtworkCanvas } from "./sky-artwork-request";
 import { skyFixedImageStatus } from "./sky-fixed-image-status";
 import { useSkyNativeImages } from "./use-sky-artwork";
 import { skyTargetOpticalIntersectsView, type SkyTargetOpticalView } from "./sky-target-optical-visibility";
 
 /** A family selector is separate from the admitted immutable image version. */
-export type SkyTargetOpticalKind = "sdss-legacy" | "sdss-science" | "sdss-calibrated" | "prepared-optical-v1" | "prepared-display-optical-v1" | "prepared-optical-v2";
+export type SkyTargetOpticalKind = "sdss-legacy" | "sdss-science" | "sdss-calibrated" | "prepared-optical-v1" | "prepared-display-optical-v1" | "prepared-optical-v2" | "prepared-native-optical-v1";
 export type SkyTargetOpticalPublication<K extends SkyTargetOpticalKind> =
   K extends "prepared-optical-v1" ? PreparedOpticalManifest :
   K extends "prepared-display-optical-v1" ? PreparedDisplayOpticalManifest :
   K extends "prepared-optical-v2" ? PreparedProgressiveOpticalManifest :
+  K extends "prepared-native-optical-v1" ? PreparedNativeOpticalManifest :
   K extends "sdss-science" ? SdssScienceOpticalManifest :
   K extends "sdss-calibrated" ? SdssCalibratedOpticalManifest : SdssOpticalManifest;
 
@@ -25,11 +27,12 @@ export type SkyTargetOpticalPublication<K extends SkyTargetOpticalKind> =
  * Metadata identity/epoch and the bounded native-image lifecycle stay atomic. */
 export function useSkyTargetOptical<K extends SkyTargetOpticalKind>(kind: K,
   reference: string | null, fov: number, canvas: SkyArtworkCanvas | null,
-  canvasRevision: number, active: boolean, opticalPublicationHash?: string, footprint?: SkyTargetOpticalView) {
-  const immutable = kind !== "sdss-legacy", prepared = kind === "prepared-optical-v1" || kind === "prepared-display-optical-v1" || kind === "prepared-optical-v2";
-  const immutableIntent = immutable && active && !!reference && /^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(reference) &&
+  canvasRevision: number, active: boolean, opticalPublicationHash?: string, footprint?: SkyTargetOpticalView, paused = false) {
+  const immutable = kind !== "sdss-legacy", prepared = kind === "prepared-optical-v1" || kind === "prepared-display-optical-v1" || kind === "prepared-optical-v2" || kind === "prepared-native-optical-v1";
+  const immutableIntent = immutable && active && !!reference && (prepared ? isPreparedOpticalReference(reference) : /^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(reference)) &&
     typeof opticalPublicationHash === "string" && /^[a-f0-9]{64}$/u.test(opticalPublicationHash) && Number.isFinite(fov) && fov > 0;
-  const legacyLevel = !immutable && active ? sdssOpticalLevelForFov(fov, reference) : null;
+  const legacyIntent = !immutable && active && Boolean(sdssOpticalPublication(reference)) &&
+    Number.isFinite(fov) && fov > 0;
   const manifest = useResourceQuery<SdssOpticalManifest | SkyPublicationResource<SdssCalibratedOpticalManifest | PreparedRenderedOpticalManifest>>({
     queryKey: [prepared ? "prepared-optical-manifest" : "sdss-optical-manifest", reference,
       ...(immutable ? [kind, opticalPublicationHash] : [])],
@@ -37,7 +40,7 @@ export function useSkyTargetOptical<K extends SkyTargetOpticalKind>(kind: K,
       kind === "sdss-calibrated" ? getSdssCalibratedOpticalResource(reference!, opticalPublicationHash!, signal) :
       immutable ? getSdssScienceOpticalResource(reference!, opticalPublicationHash!, signal) :
       getSdssOpticalManifest(signal, reference ?? "M:51"),
-    enabled: immutable ? immutableIntent : Boolean(legacyLevel), staleTime: 60_000, structuralSharing: false });
+    enabled: !paused && (immutable ? immutableIntent : legacyIntent), staleTime: 60_000, structuralSharing: false });
   const resource = manifest.data && "publication" in manifest.data ? manifest.data : undefined;
   const metadataRetired = Boolean(immutable && resource && !resource.isCurrent());
   const candidate = immutable ? !metadataRetired ? resource?.publication : undefined :
@@ -49,15 +52,23 @@ export function useSkyTargetOptical<K extends SkyTargetOpticalKind>(kind: K,
     : candidate.imageVersion === "science-optical-v2" || candidate.imageVersion === "science-optical-v3" ||
       kind === "sdss-calibrated" && candidate.imageVersion === "sdss-display-optical-v1") :
     !("imageVersion" in candidate));
-  const publication = kindMatches && candidate.objectRef === reference &&
+  const publication = kindMatches && opticalPublicationReference(candidate) === reference &&
     (!immutable || candidate.publicationHash === opticalPublicationHash)
     ? candidate as SkyTargetOpticalPublication<K> : undefined;
   const inView = useMemo(() => !footprint || !publication || skyTargetOpticalIntersectsView(publication, footprint),
     [publication, footprint?.report, footprint?.at, footprint?.width, footprint?.height,
       footprint?.view.basis, footprint?.view.verticalFovDeg, footprint?.view.center?.x, footprint?.view.center?.y]);
-  const level = !inView ? null : immutable ? immutableIntent && publication && resource
-    ? skyTargetOpticalLevelForFov(fov, publication) : null : legacyLevel;
-  const wantedImage = immutable ? Boolean(immutableIntent && (!publication || level)) : Boolean(level);
+  const selectionIdentity = publication ? `${kind}:${opticalPublicationReference(publication)}:${publication.publicationHash}` : null;
+  const selection = useRef<{ publication: string | null; canvas: SkyArtworkCanvas | null;
+    revision: number; level: SdssOpticalLevel | null } | null>(null);
+  const previousLevel = selection.current && selection.current.publication === selectionIdentity && selection.current.canvas === canvas &&
+    selection.current.revision === canvasRevision ? selection.current.level : null;
+  const intent = immutable ? immutableIntent : legacyIntent;
+  const level = intent && inView && publication && (!immutable || resource)
+    ? skyTargetOpticalLevelForView(publication, footprint, previousLevel) : null;
+  useEffect(() => { selection.current = { publication: selectionIdentity, canvas, revision: canvasRevision, level }; },
+    [selectionIdentity, canvas, canvasRevision, level]);
+  const wantedImage = Boolean(intent && (!publication || level));
   const namespace = prepared ? "prepared" : "sdss";
   const levelOrder = ["OVERVIEW", "MEDIUM", "DETAIL"] as const;
   const wanted = useMemo(() => {
@@ -66,8 +77,8 @@ export function useSkyTargetOptical<K extends SkyTargetOpticalKind>(kind: K,
     // The parent owns the valid exterior of a finite finer field. The current
     // adjacent images share the existing publication and queue.
     return levelOrder.slice(Math.max(0, index - 1), index + 1).reverse().map(candidate => ({
-      ...publication.levels[candidate], id: `${namespace}:${publication.objectRef}:${candidate}`,
-      width: publication.levels[candidate].pixels, height: publication.levels[candidate].pixels,
+      ...publication.levels[candidate], id: `${namespace}:${opticalPublicationReference(publication)}:${candidate}`,
+      ...opticalAssetDimensions(publication.levels[candidate]),
     }));
   }, [publication, level, namespace]);
   const images = useSkyNativeImages(canvas, canvasRevision, publication?.publicationHash,
@@ -77,10 +88,12 @@ export function useSkyTargetOptical<K extends SkyTargetOpticalKind>(kind: K,
       if (immutable && resource?.isCurrent() !== true) throw new Error(prepared ? "prepared_optical_resource_cancelled" : kind === "sdss-calibrated" ? "sdss_calibrated_optical_resource_cancelled" : "sdss_science_optical_resource_cancelled");
       return { url: prepared ? preparedOpticalImageUrl(asset.downloadUrl) : sdssOpticalImageUrl(asset.downloadUrl), format: "format" in asset ? asset.format : "jpeg" };
     },
-    // Keep the existing retention pressure. The loader protects wanted images
-    // and their fallback; this value does not cap the actively drawn images.
-    // Changing it on zoom would dispose the loader and lose coarse fallback.
-    2 * 512 * 512 * 4);
+    // Keep one already decoded alternative outside wanted. Decode readiness is
+    // not GPU success: retain it through upload failure and explicit retry.
+    // Prefer the broadest ready field; identity/Canvas/view retirement above
+    // still disposes this owner. No invisible request or zoom-dependent budget.
+    2 * 512 * 512 * 4,
+    levelOrder.map(candidate => `${namespace}:${reference}:${candidate}`), undefined, paused);
   const decoded = (candidate: typeof levelOrder[number]) => {
     const id = `${namespace}:${reference}:${candidate}`;
     return images.images.get(id) ?? images.retainedImages.get(id) ?? null;
@@ -103,8 +116,18 @@ export function useSkyTargetOptical<K extends SkyTargetOpticalKind>(kind: K,
     image: coarserImage, level: coarserLevel, fieldDegrees: publication.levels[coarserLevel].fieldDegrees,
     asset: publication.levels[coarserLevel],
   } : null, [coarserLevel, coarserImage, publication]);
+  // A decoded wider replacement may still fail its first GPU upload. Supply
+  // one ready finer alternative for failure-only submission in that same
+  // frame; it is not a parent and cannot fill the wider field's exterior.
+  const fallbackLevel = renderedLevel ? levelOrder.slice(levelOrder.indexOf(renderedLevel) + 1)
+    .find(candidate => decoded(candidate)) ?? null : null;
+  const fallbackImage = fallbackLevel ? decoded(fallbackLevel) : null;
+  const fallback = useMemo(() => fallbackLevel && fallbackImage && publication ? {
+    image: fallbackImage, level: fallbackLevel, fieldDegrees: publication.levels[fallbackLevel].fieldDegrees,
+    asset: publication.levels[fallbackLevel],
+  } : null, [fallbackLevel, fallbackImage, publication]);
   const status = skyFixedImageStatus(wantedImage, image, manifest.isError || metadataRetired, Boolean(manifest.refreshError), images.failed);
-  return { image, fieldDegrees, renderedLevel, renderedAsset, coarser, publication, requested: wantedImage,
+  return { image, fieldDegrees, renderedLevel, renderedAsset, coarser, fallback, publication, requested: wantedImage,
     loading: wantedImage && (manifest.isFetching || images.loading), ...status,
     updateFailed: wantedImage && Boolean(image) && images.failed,
     failedImage: images.failedImage,

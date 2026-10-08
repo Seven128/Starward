@@ -2,54 +2,89 @@ import {createHash} from "node:crypto";
 import {readFileSync} from "node:fs";
 import {readFile} from "node:fs/promises";
 import {NotFoundException} from "@nestjs/common";
-import type {GalacticImageManifestData} from "@starward/miniapp-contracts";
-
-const FILE="2mass-galactic-2048x1024.jpg";
-const IMAGE_SHA="e3a70f835197c6a6965871fc4224635aa5d04a4874d2fa1c177a9a1470d1e2a0";
-const SOURCE_SHA="c3a2ea0bebfe79eab5213480e3766c5437369a6da3d6f5ddec46860dfbf6a26c";
-const SOURCE_URL="https://coolcosmos.ipac.caltech.edu/system/avm_image_sqls/binaries/142/original/allsky-2mass.jpg?1373926530=";
-const CREDIT="2MASS/J. Carpenter, T. H. Jarrett, & R. Hurt; UMass/IPAC-Caltech/NASA/NSF";
-const DEFAULT_MANIFEST=new URL("../assets/deep-sky/galactic-2mass/manifest.json",import.meta.url);
+import {assertGalacticImagePublication,galacticImageFormat,type GalacticImageManifestData} from "@starward/miniapp-contracts";
+const DEFAULT_MANIFEST=new URL("../assets/deep-sky/galactic-mellinger/manifest.json",import.meta.url);
+const RETAINED_INFRARED_MANIFEST=new URL("../assets/deep-sky/galactic-2mass/manifest.json",import.meta.url);
 const hash=(bytes:Uint8Array)=>createHash("sha256").update(bytes).digest("hex");
-type Stored=Omit<GalacticImageManifestData,"publicationHash"|"image"> &
-  {image:Omit<GalacticImageManifestData["image"],"downloadUrl">};
+type Stored<P extends GalacticImageManifestData=GalacticImageManifestData>=P extends unknown
+  ? Omit<P,"publicationHash"|"image"> & {image:Omit<P["image"],"downloadUrl">} : never;
 
-/** A fixed, reviewed gallery derivative; do not accept arbitrary survey URLs. */
+/** One current display publication and the concrete retained 2MASS version.
+ * This is not a provider registry. An explicit constructor still supports the
+ * frozen trial/infrared diagnostics without changing immutable version URLs. */
 export class GalacticImagePublicationService {
-  private cached:{root:Stored;publicationHash:string}|null=null;
+  private cached:GalacticImageManifestData|null=null;
+  private retainedInfrared:GalacticImageManifestData|null=null;
   constructor(private readonly manifestUrl:URL=DEFAULT_MANIFEST){}
-  private publication(){
-    if(this.cached)return this.cached;
-    const bytes=readFileSync(this.manifestUrl);
+  private readPublication(url:URL){
+    const bytes=readFileSync(url);
     const root=JSON.parse(bytes.toString("utf8")) as Stored;
-    if(root?.schemaVersion!=="starward-2mass-galactic-v1"||
-      root.source?.provider!=="IPAC / Cool Cosmos"||
-      root.source.recordUrl!=="https://coolcosmos.ipac.caltech.edu/images/142"||
-      root.source.rightsUrl!=="https://coolcosmos.ipac.caltech.edu/page/image_use_policy"||
-      root.source.galleryRightsUrl!=="https://www.ipac.caltech.edu/2mass/gallery/showcase/copyright.html"||
-      root.source.sourceSha256!==SOURCE_SHA||root.source.sourceUrl!==SOURCE_URL||
-      root.source.credit!==CREDIT||
-      root.projection?.kind!=="equirectangular"||root.projection.frame!=="galactic"||
-      root.projection.centerLongitudeDeg!==0||root.projection.longitudeIncreases!=="left"||
-      root.projection.north!=="up"||root.image?.file!==FILE||
-      root.image.sha256!==IMAGE_SHA||root.image.bytes!==703555||
-      root.image.width!==2048||root.image.height!==1024||
-      !root.processing||!Array.isArray(root.limitations)||root.limitations.length<2)
-      throw new Error("galactic_image_publication_invalid");
-    this.cached={root,publicationHash:hash(bytes)};
-    return this.cached;
+    const publicationHash=hash(bytes);
+    const manifest={...root,publicationHash,image:{...root.image,
+      downloadUrl:`/v2/sky/galactic/${publicationHash}/${root.image?.file}`}};
+    try{assertGalacticImagePublication(manifest);}
+    catch{throw new Error("galactic_image_publication_invalid");}
+    return manifest;
+  }
+  private publication(){
+    return this.cached??=this.readPublication(this.manifestUrl);
+  }
+  private infraredPublication(){
+    return this.retainedInfrared??=this.readPublication(RETAINED_INFRARED_MANIFEST);
+  }
+  private selectedImage(publicationHash:string,file?:string){
+    let current:GalacticImageManifestData;
+    try{current=this.publication();}
+    catch(error){
+      // Current discovery still fails closed. A request for the concrete old
+      // version can keep its valid independent bytes during that failure.
+      const retained=this.infraredPublication();
+      if(publicationHash===retained.publicationHash&&(file===undefined||file===retained.image.file))
+        return {manifest:retained,url:RETAINED_INFRARED_MANIFEST};
+      throw error;
+    }
+    if(publicationHash===current.publicationHash&&(file===undefined||file===current.image.file))
+      return {manifest:current,url:this.manifestUrl};
+    if(current.schemaVersion!=="starward-2mass-galactic-v1"){
+      const retained=this.infraredPublication();
+      if(publicationHash===retained.publicationHash&&(file===undefined||file===retained.image.file))
+        return {manifest:retained,url:RETAINED_INFRARED_MANIFEST};
+    }
+    throw new NotFoundException("galactic_image_version_unavailable");
+  }
+  private copyManifest(current:GalacticImageManifestData):GalacticImageManifestData {
+    return {...current,source:{...current.source},projection:{...current.projection},
+      image:{...current.image},limitations:[...current.limitations]} as GalacticImageManifestData;
   }
   manifest():GalacticImageManifestData {
-    const {root,publicationHash}=this.publication();
-    return {...root,publicationHash,image:{...root.image,
-      downloadUrl:`/v2/sky/galactic/${publicationHash}/${FILE}`}};
+    const current=this.publication();
+    // Export callers may annotate their response. They cannot retarget the
+    // immutable file/hash/format or edit the next client's provenance.
+    return this.copyManifest(current);
   }
-  async image(publicationHash:string){
-    if(publicationHash!==this.publication().publicationHash)
-      throw new NotFoundException("galactic_image_version_unavailable");
-    const bytes=await readFile(new URL(FILE,this.manifestUrl));
-    if(bytes.length!==703555||hash(bytes)!==IMAGE_SHA||bytes[0]!==0xff||bytes[1]!==0xd8||
-      bytes.at(-2)!==0xff||bytes.at(-1)!==0xd9)throw new Error("galactic_image_corrupt");
+  /** The original discovery URL remains consumable by old infrared-only
+   * clients. New clients discover the selected display on its separate URL. */
+  infraredManifest():GalacticImageManifestData {
+    return this.copyManifest(this.infraredPublication());
+  }
+  imageManifest(publicationHash:string,file?:string):GalacticImageManifestData {
+    return this.copyManifest(this.selectedImage(publicationHash,file).manifest);
+  }
+  /** Current plus the one concrete prior ordinary publication. Stored trials
+   * and arbitrary files are not discovered or silently admitted. */
+  publishedManifests():readonly GalacticImageManifestData[] {
+    const current=this.publication();
+    return current.schemaVersion==="starward-2mass-galactic-v1"?[this.copyManifest(current)]:
+      [this.copyManifest(current),this.copyManifest(this.infraredPublication())];
+  }
+  async image(publicationHash:string,file?:string){
+    const {manifest,url}=this.selectedImage(publicationHash,file);
+    const bytes=await readFile(new URL(manifest.image.file,url));
+    const signature=galacticImageFormat(manifest)==="png"
+      ? [137,80,78,71,13,10,26,10].every((value,index)=>bytes[index]===value)
+      : bytes[0]===0xff&&bytes[1]===0xd8&&bytes.at(-2)===0xff&&bytes.at(-1)===0xd9;
+    if(bytes.length!==manifest.image.bytes||hash(bytes)!==manifest.image.sha256||!signature)
+      throw new Error("galactic_image_corrupt");
     return bytes;
   }
 }

@@ -1,4 +1,4 @@
-import { isCelestialObjectReference, celestialReferenceKindMatches, type ApiEnvelope, type CelestialObjectInformationData } from "@starward/miniapp-contracts";
+import { isCelestialObjectReference, isDeepSkyObjectReference, celestialReferenceKindMatches, type ApiEnvelope, type CelestialObjectInformationData } from "@starward/miniapp-contracts";
 
 /** Reject a wrong or malformed cached/network identity before either the
  * object modal or its source route can display it. */
@@ -43,7 +43,7 @@ export function matchingCelestialInformationResponse(
     const missingOpticalDisclosed = response.dataState === "PARTIAL" || response.dataState === "STALE_USABLE" &&
       Array.isArray(response.warnings) && (response.warnings.includes("sdss_optical_publication_unavailable") ||
         response.warnings.includes("prepared_optical_publication_unavailable"));
-    if (!reference.startsWith("M:") || !/^[a-f0-9]{64}$/u.test(opticalPublicationHash) ||
+    if (!isDeepSkyObjectReference(reference) || !/^[a-f0-9]{64}$/u.test(opticalPublicationHash) ||
       opticalSources.length > 1 ||
       opticalSources.some(source => !/^(?:prepared-)?optical-imagery:[^:/\\]+:[a-f0-9]{64}$/u.test(source.id) ||
         !source.id.endsWith(`:${opticalPublicationHash}`)) ||

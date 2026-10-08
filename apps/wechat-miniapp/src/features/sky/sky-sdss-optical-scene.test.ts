@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { drawSkyScene, type SkyScenePaintedSources } from "./sky-scene-render";
-import { sdssOpticalLevelForFov, sdssOpticalPresentation } from "./sky-sdss-optical-selection";
+import { sdssOpticalPresentation } from "./sky-sdss-optical-selection";
+import { sdssOpticalPublication } from "@starward/miniapp-contracts";
 import { createSkyViewBasis, type SkyViewBasis } from "./sky-view-projection";
 import { createSkyPanoramaMask } from "./sky-landscape-mask";
 
@@ -60,12 +61,10 @@ function opaquePanoramaBelow(altitude: number) {
   return { image: {}, mask };
 }
 
-test("M51 optical level follows measured field while wider views keep W3", () => {
-  assert.equal(sdssOpticalLevelForFov(15), null);
-  assert.equal(sdssOpticalLevelForFov(0.3), "OVERVIEW");
-  assert.equal(sdssOpticalLevelForFov(0.1), "MEDIUM");
-  assert.equal(sdssOpticalLevelForFov(0.05), "DETAIL");
-  assert.equal(sdssOpticalLevelForFov(Number.NaN), null);
+test("legacy optical discovery remains bound to its admitted source identity", () => {
+  assert(sdssOpticalPublication("M:51"));
+  assert.equal(sdssOpticalPublication("M:31"), null);
+  assert.equal(sdssOpticalPublication("M:51/../outside"), null);
 });
 
 test("science availability metadata cannot enter the legacy independent opacity passes or credit", () => {

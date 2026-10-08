@@ -1,0 +1,108 @@
+{
+  "status": "SOURCE_INSPECTION_NOT_ADOPTION",
+  "rows": [
+    {
+      "key": "prior",
+      "title": "Beta1 Sagittarii",
+      "revision": "1374806485",
+      "sourceUrl": "https://en.wikipedia.org/w/index.php?oldid=1374806485&title=Beta1_Sagittarii",
+      "source": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-arkab-prior-2026-10-07.html",
+        "bytes": 220703,
+        "sha256": "1f9a1cbfe1caa24b1422c78dc581e76bb7fff42e8ca14e3fd16691a4d2786b66"
+      },
+      "retrievedAt": "2026-10-06T16:34:58.530Z",
+      "footer": "Text is available under the Creative Commons Attribution-ShareAlike 4.0 License;\nadditional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy. Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.",
+      "lastModified": " This page was last edited on 14 September 2026, at 04:44 (UTC).",
+      "paragraphs": [
+        "Beta1 Sagittarii, Latinized from β1 Sagittarii, is a binary star system in the southern zodiac constellation of Sagittarius,[11] next to the southern constellation border with Telescopium. The brighter primary is named Arkab Prior /ˈɑːrkæb ˈpraɪər/, Arkab being the traditional name of the system.[12][13] It is visible to the naked eye with a combined apparent visual magnitude of +4.01.[2] Based upon an annual parallax shift of 10.40 mas as seen from Earth,[1] it is located roughly 310 light-years from the Sun. At Beta1 Sagittarii's distance, the visual magnitude is diminished by an extinction factor of 0.17 due to interstellar dust.[9]",
+        "The pair of stars that constitute this system have an angular separation of 28.3[11] arc seconds, with an estimated physical separation of about 3,290 AU.[4] The primary, Beta1 Sagittarii A, is a B-type main sequence star with a stellar classification of B9 V.[3][4] It is about 95% of the way through its lifespan on the main sequence.[7] The star has around 3.7[7] times the mass of the Sun and 2.7[4] times the Sun's radius. It is an estimated 224[9] million years old and is spinning with a projected rotational velocity of 85 km/s.[4] The star is radiating 324[7] times the luminosity of the Sun from its photosphere at an effective temperature of 11,960 K.[8]",
+        "The companion, Beta1 Sagittarii B, is a magnitude 7.4[11] A-type main sequence star with a class of A5 V.[3] It has 1.89[4] times the radius of the Sun and may be spinning faster than the primary with a projected rotational velocity of 140 km/s.[4]",
+        "β1 Sagittarii (Latinised to Beta1 Sagittarii) is the system's Bayer designation. The designations of the two components as Beta1 Sagittarii A and B derive from the convention used by the Washington Multiplicity Catalog (WMC) for multiple star systems, and adopted by the International Astronomical Union (IAU).[14]",
+        "In 2016, the International Astronomical Union organized a Working Group on Star Names (WGSN)[15] to catalog and standardize proper names for stars. The WGSN approved the name Arkab Prior for Beta1 Sagittarii on 5 October 2016 and it is now so included in the List of IAU-approved Star Names.[13]  For such names relating to members of multiple star systems, and where a component letter (from e.g. Washington Double Star Catalog) is not explicitly listed, the WGSN says that the name should be understood to be attributed to the brightest component by visual brightness.[16]",
+        "In Chinese, 天淵 (Tiān Yuān), meaning Celestial Spring, refers to an asterism consisting of Beta1 Sagittarii, Beta2 Sagittarii and Alpha Sagittarii. Consequently, the Chinese name for Beta1 Sagittarii itself is 天淵二 (Tiān Yuān èr, English: the Second Star of Celestial Spring.)[17]"
+      ],
+      "warnings": [],
+      "identityFields": [
+        "Beta1 Sagittarii\n\n     \n     Location of β1 Sagittarii (circled)\n\n\nObservation dataEpoch J2000      Equinox ICRS\n\nConstellation\nSagittarius\n\n\n\n\n\nRight ascension\n19h 22m 38.29770s[1]\n\nDeclination\n−44° 27′ 32.2458″[1]\n\nApparent magnitude (V)\n+4.01[2]\n\n\nCharacteristics\n \n\n \n\n\n\n\nSpectral type\nB9 V + A5 V[3][4]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nU−B color index\n−0.39[2]\n\nB−V color index\n−0.10[2]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAstrometryRadial velocity (Rv)−10.7±2.7[5] km/sProper motion (μ) RA: +13.67[1] mas/yr  Dec.: −19.03[1] mas/yr Parallax (π)10.40±1.14 mas[1]Distanceapprox. 310 ly (approx. 100 pc)Absolute magnitude (MV)−1.32[6]\nDetailsβ1 Sgr AMass3.67±0.14[7] M☉Radius2.73[4] R☉Luminosity324[7] L☉Surface gravity (log g)3.83[8] cgsTemperature11,960[8] KMetallicity [Fe/H]−0.35[8] dexRotational velocity (v sin i)85±13[4] km/sAge224[9] Myrβ1 Sgr BRadius1.89[4] R☉Rotational velocity (v sin i)140±21[4] km/s\nOther designationsArkab Prior, β1 Sgr, CD−44°13277, FK5 1502, HD 181454, HIP 95241, HR 7337, SAO 229646, WDS J19226-4428A[10]\nDatabase referencesSIMBADdata"
+      ],
+      "simbadLinks": [
+        {
+          "text": "data",
+          "url": "https://simbad.cds.unistra.fr/simbad/sim-id?Ident=bet01+Sgr"
+        },
+        {
+          "text": "\"bet01 Sgr\"",
+          "url": "http://simbad.u-strasbg.fr/simbad/sim-basic?Ident=bet01+Sgr"
+        }
+      ],
+      "snapshotMeaning": "Full actual HTML embeds revision; fixed original reuse; no media or duplicate revision download."
+    },
+    {
+      "key": "posterior",
+      "title": "Beta2 Sagittarii",
+      "revision": "1374781471",
+      "sourceUrl": "https://en.wikipedia.org/w/index.php?oldid=1374781471&title=Beta2_Sagittarii",
+      "source": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-arkab-posterior-2026-10-07.html",
+        "bytes": 211758,
+        "sha256": "72d2a79009d6ec0846fff28db787bce747dc4a34f6a8e7a78c32fea68dd55e2c"
+      },
+      "retrievedAt": "2026-10-06T16:35:00.865Z",
+      "footer": "Text is available under the Creative Commons Attribution-ShareAlike 4.0 License;\nadditional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy. Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.",
+      "lastModified": " This page was last edited on 14 September 2026, at 02:06 (UTC).",
+      "paragraphs": [
+        "Beta2 Sagittarii (β2 Sagittarii, abbreviated Beta2 Sgr, β2 Sgr) is a star in the southern zodiac constellation of Sagittarius. It is visible to the naked eye, having an apparent visual magnitude of +4.29.[2] Based upon an annual parallax shift of 24.31 mas as seen from Earth,[1] it is located 134 light-years from the Sun.",
+        "Based upon variations in its proper motion, this is a probable astrometric binary system.[11] As such, its two components would be designated Beta2 Sagittarii A (officially named Arkab Posterior /ˈɑːrkæb pɒˈstɪəriər/, Arkab being the traditional name of the system)[12][13] and B.",
+        "β2 Sagittarii (Latinised to Beta2 Sagittarii) is the system's Bayer designation. The designations of the two components as Beta2 Sagittarii A and B derive from the convention used by the Washington Multiplicity Catalog (WMC) for multiple star systems, and adopted by the International Astronomical Union (IAU).[14]",
+        "In 2016, the International Astronomical Union organized a Working Group on Star Names (WGSN)[15] to catalog and standardize proper names for stars. The WGSN approved the name Arkab Posterior for Beta2 Sagittarii on 5 October 2016 and it is now so included in the List of IAU-approved Star Names.[13]  For such names relating to members of multiple star systems, and where a component letter (from e.g. Washington Double Star Catalog) is not explicitly listed, the WGSN says that the name should be understood to be attributed to the brightest component by visual brightness.[16]",
+        "In Chinese, 天淵 (Tiān Yuān), meaning Celestial Spring, refers to an asterism consisting of Beta2 Sagittarii, Beta1 Sagittarii and Alpha Sagittarii. Consequently, the Chinese name for Beta2 Sagittarii itself is 天淵一 (Tiān Yuān yī, English: the First Star of Celestial Spring.)[17]",
+        "Houk (1978) categorizes the visible component (Beta2 Sagittarii A) as an F-type main-sequence star with a stellar classification of F2/3 V.[3] However, Malaroda (1975) lists it as an F-type giant star.[4] It is spinning rapidly with a projected rotational velocity of 155 km/s. This is giving it an oblate shape with an equatorial bulge that is 22% larger than the polar radius.[9] Beta2 Sagittarii has an estimated 1.4[7] times the mass of the Sun and is around 933[7] million years old."
+      ],
+      "warnings": [],
+      "identityFields": [
+        "Beta2 Sagittarii\n\n     \n     Location of β2 Sagittarii (circled)\n\n\nObservation dataEpoch J2000      Equinox ICRS\n\nConstellation\nSagittarius\n\n\n\n\n\nRight ascension\n19h 23m 13.13745s[1]\n\nDeclination\n−44° 47′ 59.2051″[1]\n\nApparent magnitude (V)\n+4.29[2]\n\n\nCharacteristics\n \n\n \n\n\n\n\nSpectral type\nF2/3 V[3] or F2 III[4]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nU−B color index\n+0.07[2]\n\nB−V color index\n+0.34[2]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAstrometryRadial velocity (Rv)+19.0[5] km/sProper motion (μ) RA: +93.45[1] mas/yr  Dec.: −54.09[1] mas/yr Parallax (π)24.31±0.19 mas[1]Distance134 ± 1 ly (41.1 ± 0.3 pc)Absolute magnitude (MV)+1.20[6]\nDetailsMass1.43[7] M☉Luminosity20[8] L☉Surface gravity (log g)3.57[7] cgsTemperature7,035±239[7] KMetallicity [Fe/H]−0.54[5] dexRotational velocity (v sin i)155[9] km/sAge933[7] Myr\nOther designationsArkab Posterior, β2 Sgr, CD−45°13171, HD 181623, HIP 95294, HR 7343, SAO 229654[10]\nDatabase referencesSIMBADdata"
+      ],
+      "simbadLinks": [
+        {
+          "text": "data",
+          "url": "https://simbad.cds.unistra.fr/simbad/sim-id?Ident=bet02+Sgr"
+        },
+        {
+          "text": "\"bet02 Sgr\"",
+          "url": "http://simbad.u-strasbg.fr/simbad/sim-basic?Ident=bet02+Sgr"
+        }
+      ],
+      "snapshotMeaning": "Full actual HTML embeds revision; fixed original reuse; no media or duplicate revision download."
+    }
+  ],
+  "entities": [
+    {
+      "source": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-arkab-Q671833-2026-10-07.json",
+        "bytes": 62786,
+        "sha256": "bcb84c3f5adbb53e997436ad9b63ea0b414c3de061e10e2ccf485f2fbd396f91"
+      },
+      "id": "Q671833",
+      "revision": 2511136752
+    },
+    {
+      "source": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-arkab-Q671815-2026-10-07.json",
+        "bytes": 81880,
+        "sha256": "e67945dcfdd08093e98c717beb1454b5eb6876f0c6e00fd591563e8dbe5cd448"
+      },
+      "id": "Q671815",
+      "revision": 2511239203
+    }
+  ],
+  "terms": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-arkab-wikimedia-terms-2026-10-07.html",
+    "bytes": 152801,
+    "sha256": "a8020fc409cade8606c89f86fe5ad9b21024f503cdfa35a8bdf91380dbbaf73a"
+  },
+  "termsUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use#7._Licensing_of_Content",
+  "requests": 5,
+  "retries": 0,
+  "mediaFetched": 0
+}

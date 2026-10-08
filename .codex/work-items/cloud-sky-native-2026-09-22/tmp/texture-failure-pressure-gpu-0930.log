@@ -1,4 +1,0 @@
-{"name":"common-dpr3","beforeWarmBytes":8388608,"afterWarmBytes":8388608,"beforeWarmCalls":1,"afterWarmCalls":1,"beforeFailedAttempts":0,"afterFailedAttempts":0,"pixelsEqual":true}
-{"name":"wide","beforeWarmBytes":14942208,"afterWarmBytes":14942208,"beforeWarmCalls":8,"afterWarmCalls":8,"beforeFailedAttempts":0,"afterFailedAttempts":0,"pixelsEqual":true}
-{"name":"wide-failure","beforeWarmBytes":6553600,"afterWarmBytes":6553600,"beforeWarmCalls":7,"afterWarmCalls":7,"beforeFailedAttempts":9,"afterFailedAttempts":1,"pixelsEqual":true}
-{"name":"common-return","beforeWarmBytes":8388608,"afterWarmBytes":8388608,"beforeWarmCalls":1,"afterWarmCalls":1,"beforeFailedAttempts":0,"afterFailedAttempts":0,"pixelsEqual":true}

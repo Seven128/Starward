@@ -111,7 +111,7 @@ export function skyArtworkLevelsFragment(cameraRay: string, output: "display" | 
     uniform sampler2D u_${name}Image;
     uniform float u_${name}Ready, u_${name}Determinant;
     uniform vec3 u_${name}Row0, u_${name}Row1, u_${name}Row2, u_${name}AnchorU, u_${name}AnchorV;
-    uniform vec2 u_${name}Origin, u_${name}Scale, u_${name}Size;
+    uniform vec2 u_${name}WindowOffset, u_${name}WindowSize, u_${name}Size;
     bool ${name}Sample(vec3 ray, out vec3 rgb) {
       if (u_${name}Ready < 0.5) return false;
       vec3 coefficients = vec3(dot(u_${name}Row0,ray),dot(u_${name}Row1,ray),dot(u_${name}Row2,ray));
@@ -123,14 +123,17 @@ export function skyArtworkLevelsFragment(cameraRay: string, output: "display" | 
       vec2 a = (clamp(cell,vec2(0.0),u_${name}Size-1.0)+0.5)/u_${name}Size;
       vec2 b = (clamp(cell+1.0,vec2(0.0),u_${name}Size-1.0)+0.5)/u_${name}Size;
       float availability = min(min(
-        texture2D(u_${name}Image,(a-u_${name}Origin)*u_${name}Scale).a,
-        texture2D(u_${name}Image,(vec2(b.x,a.y)-u_${name}Origin)*u_${name}Scale).a),min(
-        texture2D(u_${name}Image,(vec2(a.x,b.y)-u_${name}Origin)*u_${name}Scale).a,
-        texture2D(u_${name}Image,(b-u_${name}Origin)*u_${name}Scale).a));
+        texture2D(u_${name}Image,(a*u_${name}Size-u_${name}WindowOffset)/u_${name}WindowSize).a,
+        texture2D(u_${name}Image,(vec2(b.x,a.y)*u_${name}Size-u_${name}WindowOffset)/u_${name}WindowSize).a),min(
+        texture2D(u_${name}Image,(vec2(a.x,b.y)*u_${name}Size-u_${name}WindowOffset)/u_${name}WindowSize).a,
+        texture2D(u_${name}Image,(b*u_${name}Size-u_${name}WindowOffset)/u_${name}WindowSize).a));
       // Float32 center-coordinate/LINEAR roundoff only. The next incomplete
       // 8-bit area value is 254/255, far below this tolerance.
       if (availability < 0.999999) return false;
-      rgb = texture2D(u_${name}Image,(uv-u_${name}Origin)*u_${name}Scale).rgb;
+      // Enter the original pixel grid before normalizing to resident storage.
+      // Rounded source/resident ratios otherwise make the same view's sampling
+      // depend on which containing window an intermediate view left cached.
+      rgb = texture2D(u_${name}Image,(uv*u_${name}Size-u_${name}WindowOffset)/u_${name}WindowSize).rgb;
       return true;
     }`;
   return `precision highp float;

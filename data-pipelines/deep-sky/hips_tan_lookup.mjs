@@ -5,7 +5,9 @@ import { ang2PixNest, bitDecombine } from "healpix-ts";
 import { readFileSync, writeFileSync } from "node:fs";
 
 const [order, pixels] = process.argv.slice(2).map(Number);
-if (!Number.isInteger(order) || order < 0 || order > 8 || (pixels !== 256 && pixels !== 512))
+// The 8-square profile also supports 64 bounded target-boundary directions;
+// each coordinate uses the same adopted HEALPix path as the raster profiles.
+if (!Number.isInteger(order) || order < 0 || order > 8 || (pixels !== 8 && pixels !== 256 && pixels !== 512))
   throw new Error("allwise_lookup_profile_invalid");
 const world = readFileSync(0);
 if (world.length !== pixels ** 2 * 16) throw new Error("allwise_lookup_coordinates_invalid");

@@ -1,8 +1,0 @@
-M42 Atlas: one int cutout request
-M42 Atlas: one cov cutout request
-Traceback (most recent call last):
-  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-w3-atlas-pair-2026-09-29.py", line 118, in <module>
-    main()
-  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-w3-atlas-pair-2026-09-29.py", line 56, in main
-    raise RuntimeError("source_pair_incomplete; preserve independent successful input, no automatic retry")
-RuntimeError: source_pair_incomplete; preserve independent successful input, no automatic retry

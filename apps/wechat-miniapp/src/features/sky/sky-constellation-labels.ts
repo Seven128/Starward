@@ -37,11 +37,28 @@ export function projectConstellationLabels(frame:ConstellationFrame|null,view:Sk
   }
   candidates.sort((a,b)=>Math.hypot(a.x-center.x,a.y-center.y)-Math.hypot(b.x-center.x,b.y-center.y) || a.iau.localeCompare(b.iau));
   const result:SkyConstellationLabel[]=[];
+  const blocked:SkyConstellationLabel[]=[];
   for (const candidate of candidates) {
-    if (obstacles.some(([x,y])=>Math.hypot(candidate.x-x,candidate.y-y)<60) ||
-      result.some(label=>Math.hypot(label.x-candidate.x,label.y-candidate.y)<72)) continue;
+    if (obstacles.some(([x,y])=>Math.hypot(candidate.x-x,candidate.y-y)<60)) {
+      blocked.push(candidate); continue;
+    }
+    if (result.some(label=>Math.hypot(label.x-candidate.x,label.y-candidate.y)<72)) continue;
     result.push(candidate);
     if(result.length===6)break;
+  }
+  // Keep every originally visible name first. A nearby interactive star must
+  // not hide a constellation at every usable scale; try only adjacent positions.
+  for (const candidate of blocked) {
+    if(result.length===6)break;
+    const side=Math.max(32,candidate.nameZh.length*6+8);
+    const placed=[[0,-72],[0,72],[-72,0],[72,0]].map(([dx,dy])=>({
+      ...candidate,x:candidate.x+dx!,y:candidate.y+dy!,
+    })).find(label=>label.x>=side && label.x<=width-side &&
+      label.y>=Math.max(100,height*.12) && label.y<=height-125 &&
+      !(label.x<120 && label.y>height-215) &&
+      !obstacles.some(([x,y])=>Math.hypot(label.x-x,label.y-y)<60) &&
+      !result.some(other=>Math.hypot(label.x-other.x,label.y-other.y)<72));
+    if(placed)result.push(placed);
   }
   return result;
 }

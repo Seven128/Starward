@@ -3,6 +3,7 @@ import { assertStellarGeometryFrame } from "./stellar-geometry.ts";
 import { assertStellarCatalogReference } from "./stellar-catalog-publication.ts";
 import { STELLAR_SCENE_FORMAT } from "./stellar-scene.ts";
 import { hasSkyTargetPosition } from "./sky-target-position.ts";
+import { isDeepSkyObjectReference } from "./celestial-identity.ts";
 export { isBrightStarReference, isCelestialObjectReference, celestialReferenceKindMatches } from "./celestial-identity.ts";
 
 export const SKY_SCENE_MAX_CATALOG_ENTRIES = 8_404;
@@ -34,7 +35,7 @@ function assertDeepSky(scene: DeepSkyScene, hourlyAt: readonly string[]) {
     fail("deep_sky_catalog");
   const references = new Set<string>();
   catalog.entries.forEach((entry, index) => {
-    if (!entry || !/^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(entry.objectRef) || references.has(entry.objectRef) ||
+    if (!entry || !isDeepSkyObjectReference(entry.objectRef) || references.has(entry.objectRef) ||
       !entry.displayName.trim() || (entry.kind !== "GALAXY" && entry.kind !== "NEBULA") ||
       !Array.isArray(entry.aliases) || entry.aliases.some((alias: unknown) => typeof alias !== "string" || !alias.trim()) ||
       (entry.magnitudeBand !== "V" && entry.magnitudeBand !== null)) fail(`deep_sky_entry_${index}`);

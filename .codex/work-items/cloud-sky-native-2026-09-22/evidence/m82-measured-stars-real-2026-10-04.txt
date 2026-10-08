@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-m82-measured-stars-2026-10-04.py", line 192, in <module>
-    try:main()
-        ^^^^^^
-  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-m82-measured-stars-2026-10-04.py", line 70, in main
-    ident=group['g'].frame.receipt['identity'];fields[group['g'].model.field_id]=key
-                                                      ^^^^^^^^^^^^^^^^
-AttributeError: 'NoiseDisplaySource' object has no attribute 'model'

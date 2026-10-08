@@ -12,9 +12,9 @@ interface FixedImagePublication {
  * Returning pixels require a fresh successful decode; ownership loss disposes it. */
 export function useSkyFixedImage(canvas:SkyArtworkCanvas|null,revision:number,
   publication:FixedImagePublication|undefined,active:boolean,wanted:boolean,id:string,
-  resolve:(asset:FixedImagePublication["image"])=>{url:string;format:"png"|"jpeg"}){
+  resolve:(asset:FixedImagePublication["image"])=>{url:string;format:"png"|"jpeg"},paused=false){
   const assets=useMemo(()=>publication&&wanted?[{...publication.image,id}]:[],[publication,wanted,id]);
-  const images=useSkyNativeImages(canvas,revision,publication?.publicationHash,active,assets,resolve);
+  const images=useSkyNativeImages(canvas,revision,publication?.publicationHash,active,assets,resolve,undefined,[],undefined,paused);
   useEffect(()=>{images.suspendUnusedDecoded();},[images.images,images.retainedImages,images.suspendUnusedDecoded]);
   return {...images,image:active&&wanted?(images.images.get(id)??null):null};
 }

@@ -25,6 +25,7 @@ import type { DeepSkyImageryService } from "../deep-sky-imagery.ts";
 import type { SdssOpticalImageryService } from "../sdss-optical-imagery.ts";
 import type { PreparedOpticalImageryService } from "../prepared-optical-imagery.ts";
 import type { OpticalHipsPublicationService } from "../optical-hips-publication.ts";
+import type { GalacticImagePublicationService } from "../galactic-image-publication.ts";
 
 export function createTestMiniappService(
   input: {
@@ -43,6 +44,7 @@ export function createTestMiniappService(
     sdssOpticalImages?: SdssOpticalImageryService;
     preparedOpticalImages?: PreparedOpticalImageryService;
     opticalHips?: OpticalHipsPublicationService;
+    galacticImage?: GalacticImagePublicationService;
   } = {},
 ) {
   const config = input.config ?? createTestRuntimeConfig();
@@ -62,5 +64,6 @@ export function createTestMiniappService(
     ...(input.sdssOpticalImages ? { sdssOpticalImages: input.sdssOpticalImages } : {}),
     ...(input.preparedOpticalImages ? { preparedOpticalImages: input.preparedOpticalImages } : {}),
     ...(input.opticalHips ? { opticalHips: input.opticalHips } : {}),
+    ...(input.galacticImage ? { galacticImage: input.galacticImage } : {}),
   });
 }

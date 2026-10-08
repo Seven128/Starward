@@ -1,1 +1,0 @@
-src/features/sky/spot-sky-page.tsx(1969,9): error TS18048: 'sdssOpticalPublication' is possibly 'undefined'.

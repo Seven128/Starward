@@ -10,15 +10,25 @@ import { createSkyLandscapeReadiness } from "./sky-landscape-readiness";
 const EMPTY_MASKS: SkyLandscapeMaskState = { masks: new Map(), failed: false };
 const RETURN_FALLBACK_IDS = ["landscape:overview", "landscape:detail"] as const;
 
-/** Mask, image and publication form one canvas generation. Hide drops decoded alpha too. */
+/** Mask, image and publication form one canvas generation. Sources pauses work;
+ * ordinary hide, background and ownership loss drop that generation. */
 export function useSkyLandscape(canvas: SkyArtworkCanvas | null, revision: number, active: boolean,
   otherImages: readonly object[], otherImagesPending: boolean, footprint: SkyLandscapeFootprint | null,
-  reducedMotion = false) {
+  reducedMotion = false, paused = false) {
   const wanted = active && Boolean(canvas);
   const manifest = useResourceQuery({ queryKey: ["sky-landscape-manifest"], queryFn: getSkyLandscapeManifest,
-    enabled: wanted, structuralSharing: false, staleTime: 60_000 });
+    enabled: wanted && !paused, structuralSharing: false, staleTime: 60_000 });
   const publication = manifest.data;
-  const resource = publication && selectSkyLandscapeResource(publication, otherImages, otherImagesPending);
+  const retainedResource = useRef<{canvas: SkyArtworkCanvas | null; revision: number; hash: string;
+    resource: ReturnType<typeof selectSkyLandscapeResource>} | null>(null);
+  // Paused celestial hooks deliberately expose no drawable pixels. Those empty
+  // views must not select a different landscape level or trigger hidden loads.
+  if (!wanted || !publication) retainedResource.current = null;
+  else if (!paused || retainedResource.current?.canvas !== canvas || retainedResource.current.revision !== revision ||
+    retainedResource.current.hash !== publication.publicationHash) retainedResource.current = {canvas, revision,
+      hash: publication.publicationHash, resource: selectSkyLandscapeResource(publication, otherImages, otherImagesPending)};
+  const resource = retainedResource.current?.resource;
+  const pausedRef = useRef(paused); pausedRef.current = paused;
   const ownerRef = useRef<ReturnType<typeof createSkyLandscapeMasks> | null>(null);
   const wantedRef = useRef(publication && resource ? publication.resources.filter(candidate =>
     candidate.id === "overview" || candidate.id === resource.id) : []);
@@ -31,11 +41,16 @@ export function useSkyLandscape(canvas: SkyArtworkCanvas | null, revision: numbe
     let live = true;
     const owner = createSkyLandscapeMasks(publication, { load: getSkyLandscapeAlpha,
       changed(value) { if (live) setMaskState({ hash: publication.publicationHash, canvas, revision, owner, value }); } });
-    ownerRef.current = owner; owner.update(wantedRef.current);
+    ownerRef.current = owner; if (pausedRef.current) owner.pause(); owner.update(wantedRef.current);
     return () => { live = false; owner.dispose(); if (ownerRef.current === owner) ownerRef.current = null;
       setMaskState(previous => previous?.owner === owner ? null : previous); };
   }, [wanted, canvas, revision, publication?.publicationHash]);
-  useEffect(() => { ownerRef.current?.update(wantedRef.current); }, [resource?.id]);
+  useEffect(() => {
+    const owner = ownerRef.current;
+    if (paused) owner?.pause();
+    owner?.update(wantedRef.current);
+    if (!paused) owner?.resume();
+  }, [paused, resource?.id]);
   const current = wanted && maskState?.owner === ownerRef.current && maskState.canvas === canvas && maskState.revision === revision &&
     maskState.hash === publication?.publicationHash ? maskState.value : EMPTY_MASKS;
   const assets = useMemo(() => selectSkyLandscapeImageResources(wantedRef.current, current.masks, footprint)
@@ -43,7 +58,7 @@ export function useSkyLandscape(canvas: SkyArtworkCanvas | null, revision: numbe
     [current.masks, resource?.id, publication?.publicationHash, footprint?.view.basis,
       footprint?.view.verticalFovDeg, footprint?.view.center, footprint?.width, footprint?.height]);
   const images = useSkyNativeImages(canvas, revision, publication?.publicationHash, wanted, assets,
-    asset => ({ url: skyLandscapeAssetUrl(asset.downloadUrl), format: "png" }), undefined, RETURN_FALLBACK_IDS);
+    asset => ({ url: skyLandscapeAssetUrl(asset.downloadUrl), format: "png" }), undefined, RETURN_FALLBACK_IDS, undefined, paused);
   // Keep one successful coarse return bitmap (detail until its pending coarse
   // replacement succeeds). No invisible cold load; the other images go cold.
   useEffect(() => { images.suspendUnusedDecoded(); },
@@ -62,11 +77,16 @@ export function useSkyLandscape(canvas: SkyArtworkCanvas | null, revision: numbe
       requestFrame: callback => setTimeout(callback, 16),
       cancelFrame: handle => clearTimeout(handle as ReturnType<typeof setTimeout>),
       changed: opacity => setReadiness({ owner, canvas, revision, hash, opacity }) });
-    readinessOwner.current = owner; owner.setAvailable(availableRef.current, reducedRef.current);
+    readinessOwner.current = owner; if (pausedRef.current) owner.pause();
+    else owner.setAvailable(availableRef.current, reducedRef.current);
     return () => { owner.dispose(); if (readinessOwner.current === owner) readinessOwner.current = null;
       setReadiness(previous => previous?.owner === owner ? null : previous); };
   }, [wanted, canvas, revision, publication?.publicationHash]);
-  useEffect(() => { readinessOwner.current?.setAvailable(Boolean(panorama), reducedMotion); }, [Boolean(panorama), reducedMotion]);
+  useEffect(() => {
+    const owner = readinessOwner.current;
+    if (paused) owner?.pause();
+    else { owner?.setAvailable(Boolean(panorama), reducedMotion); owner?.resume(); }
+  }, [paused, Boolean(panorama), reducedMotion]);
   const opacity = panorama && readiness?.owner === readinessOwner.current && readiness.canvas === canvas &&
     readiness.revision === revision && readiness.hash === publication?.publicationHash ? readiness.opacity : 0;
   // A completed alpha grid certifies true zero contribution even without its

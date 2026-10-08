@@ -10,4 +10,5 @@ This stable root remains the single owner of the Mini Program development/test/a
 - [Three-tier feedback structure, native-first invariant and development lane](development-workflow/development-feedback.md)
 - [Deterministic test, WeChat DevTools, representative-device acceptance and candidate promotion](development-workflow/candidate-acceptance.md)
 - [Reserved paths, isolation, process/resource lifecycle and failure recovery](development-workflow/paths-and-lifecycle.md)
+- [Resource storage, LFS preparation and bounded task artifacts](development-workflow/resources-and-artifacts.md)
 - [Open decisions, environment-change admission, rationale and repository verification](development-workflow/change-admission.md)

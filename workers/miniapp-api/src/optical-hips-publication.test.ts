@@ -74,6 +74,10 @@ test("same-origin HTTP exposes hash-bound shard metadata and unchanged tile byte
     const manifest=await http.inject({method:"GET",url:"/v2/sky/optical/manifest"});
     assert.equal(manifest.statusCode,200);
     const publication=manifest.json();
+    const selected=await http.inject({method:"GET",url:`/v2/sky/optical/${publication.publicationHash}/manifest`});
+    assert.equal(selected.statusCode,200);assert.deepEqual(selected.json(),publication);
+    assert.equal(selected.headers["cache-control"],"public, max-age=31536000, immutable");
+    assert.equal((await http.inject({method:"GET",url:`/v2/sky/optical/${"0".repeat(64)}/manifest`})).statusCode,404);
     const index=await http.inject({method:"GET",url:publication.shards[0].indexUrl});
     assert.equal(index.statusCode,200);
     const asset=index.json().tiles[0];

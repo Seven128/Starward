@@ -1,0 +1,1876 @@
+{
+  "branch": "codex/remote-main-20260908",
+  "ordinaryAdoption": false,
+  "next": "Paused. Only after fresh explicit continuation, read PLAN current checkpoint and original owners; address high-DPR shared contribution/resource constraint and current adapter types without rerendering unchanged proof. Background/P1/R/E/A remain independent, phones last.",
+  "preserved": "FAILED/UNKNOWN/MISSING; ordinary Prepared empty and HiPS OFF, P1/native/device/live Linux/provider/retained references/independent acceptance remain open",
+  "vphasFollowup": {
+    "decision": {
+      "status": "FAILED_REPRESENTATIVE_M8_COLOUR_BLOCK_BOUNDARY_AND_SATURATION_STRIPES",
+      "sourceId": "CDS/P/VPHAS/DR4/color",
+      "representative": "M:8",
+      "nominalProfiles": 104,
+      "nominalAllCentresInside": 8,
+      "nominalZeroCentresInside": 96,
+      "coverageSeconds": 19.846472800010815,
+      "otherFullyCoveredRefs": [
+        "M:16",
+        "M:17",
+        "M:20"
+      ],
+      "otherRefsQuality": "NOT_ASSESSED",
+      "representativeTiles": 8,
+      "representativeRawBytes": 4036381,
+      "previews": [
+        {
+          "reference": "M:8",
+          "fieldDegrees": 4,
+          "preview": {
+            "path": "output/vphas-region-batch-2026-10-08/M-8-4deg.png",
+            "bytes": 582507,
+            "sha256": "b81a24a6b575f5f540401be331d699cd0b23d3f64fda87d94559c68b31c9b01f"
+          },
+          "alphaZero": 0,
+          "opaqueBlack": 0,
+          "seconds": 12.370064100017771,
+          "quality": "FAILED"
+        },
+        {
+          "reference": "M:8",
+          "fieldDegrees": 0.4,
+          "preview": {
+            "path": "output/vphas-region-batch-2026-10-08/M-8-0.4deg.png",
+            "bytes": 325207,
+            "sha256": "57b34552de9cc6fbf20b18068ffcf66a7715546e4c8f27c32952c9d965443787"
+          },
+          "alphaZero": 0,
+          "opaqueBlack": 0,
+          "seconds": 11.419403500156477,
+          "quality": "FAILED"
+        }
+      ],
+      "visuallyInspected": [
+        "M-8-4deg.png",
+        "M-8-0.4deg.png",
+        "original-tiles/Norder4-Npix1807.png",
+        "original-tiles/Norder7-Npix115563.png"
+      ],
+      "observation": "Wide M8 surroundings retain an abrupt colour-block boundary near M20; detail has repeated coloured saturation stripes and bright-source trails. Both anomalies are directly present in original PNGs. Nominal MOC/zero-alpha count and advertised background correction do not qualify image quality.",
+      "scene": "NOT_RUN_AFTER_ORIGINAL_QUALITY_FAILURE",
+      "science": "UNKNOWN",
+      "absoluteRegistration": "UNVERIFIED",
+      "ordinaryAdoption": false,
+      "publication": false,
+      "stop": "No unchanged acquisition, reprocessing, Scene expansion or correction by colour tweaks/feather/star removal. Not a source-wide rejection of unassessed VPHAS fields/versions.",
+      "coverageDiscrepancy": {
+        "properties": 0.01007,
+        "registry": 0.0486,
+        "currentMasterNominalMoc": 0.048596858978271484,
+        "exactMasterGeneration": "UNKNOWN"
+      }
+    },
+    "inputs": [
+      {
+        "path": "output/vphas-region-batch-2026-10-08/properties.txt",
+        "bytes": 2733,
+        "sha256": "5ed7d0dd22074bb6c8a4bbda007cf735f0f758b47f4330c830dcd8b326d22cfe"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/record.json",
+        "bytes": 3168,
+        "sha256": "9a21204169f6f390b5d665190f3fc831da8a7f9c28da36126f921b4e6c50e782"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/primary-readback.json",
+        "bytes": 423,
+        "sha256": "dbd8ce8b90655603fa4f3f4137f0ee889fdd8b9ddb29408d3a9134e19d7db327"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/eso-doi.html",
+        "bytes": 9087,
+        "sha256": "360a4acf9c625efbdb90b7ad1f615607c575831f320b12283b3a57c80ec608b6"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/producer-data.html",
+        "bytes": 11263,
+        "sha256": "0d0e093f324326f264773303b9637e869ddb7eca57da8244c7e818fb5697a217"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/known-issues.html",
+        "bytes": 12373,
+        "sha256": "128c7cb0336d0e9a4821dbe89f2bbffc0ae0d270cb127f12c4daafd7c1581aae"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/Moc.fits",
+        "bytes": 120960,
+        "sha256": "9a317e5b0c35b657b4e40129505772e8fc5e1933502bfc88d019d669727bddaa"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/moc.headers.txt",
+        "bytes": 411,
+        "sha256": "13482b26bc030b978abef10cf6a35cf38d11fd04dac9c76d674692b0baec41be"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/moc-acquisition.json",
+        "bytes": 699,
+        "sha256": "db109d70f40be756d56b1eaf391236a9bfdf0fecc3131dbe214418a0082d440c"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/sample-intent.json",
+        "bytes": 3794,
+        "sha256": "31bc9865110cf53a7ea66583f3babaae2ec81f7290935f1bc9229bbc1882cc87"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/coverage-plan.json",
+        "bytes": 29080,
+        "sha256": "6846d9f5b65e981d5ca50030e37b6574e85268f1664c0ffb99fcdd9707eb0ad9"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/tile-receipts.json",
+        "bytes": 5286,
+        "sha256": "e1db6f9881e6ed8dccbf566389e2f09b5cdaa6f1e27f5910560aaae848ad9f88"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/M-8-4deg.json",
+        "bytes": 2300,
+        "sha256": "9c6ebd640ca9225a481370144fadf39b04833e3ed13cc5629f76b33ccacedb8c"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/M-8-0.4deg.json",
+        "bytes": 2320,
+        "sha256": "81d9f6b4bb4798364e44e71116e5049420e7861cf21ce509f5e387e64e83a62b"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/M-8-4deg.png",
+        "bytes": 582507,
+        "sha256": "b81a24a6b575f5f540401be331d699cd0b23d3f64fda87d94559c68b31c9b01f"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/M-8-0.4deg.png",
+        "bytes": 325207,
+        "sha256": "57b34552de9cc6fbf20b18068ffcf66a7715546e4c8f27c32952c9d965443787"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/batch-decision.json",
+        "bytes": 2248,
+        "sha256": "f0460e03f64c7e0bf86090b283293fa133817e41e5d8cb785d5dbd4fc0abc725"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder4-Npix1804.png",
+        "bytes": 627651,
+        "sha256": "b6b4e1e251ad535436d38302b9f1227ed61482d9202ccc9a6ec342f61953df07"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder4-Npix1804.headers.txt",
+        "bytes": 381,
+        "sha256": "e534e605d00b55b945a30d9a255438b102b7b3aa7d36c7def1975e4be3c13db0"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder4-Npix1805.png",
+        "bytes": 618649,
+        "sha256": "571eb95e8de50ee5d39d19fab14d38a5a644e0e2d58a8da111c3fa85045cc13d"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder4-Npix1805.headers.txt",
+        "bytes": 381,
+        "sha256": "34c01ee28d92ebc8c5fefad9e1315e169168c8f57ac7468919f0c6fe6a6cc6e1"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder4-Npix1806.png",
+        "bytes": 562128,
+        "sha256": "13f99f82b1eec8adcf09c5239cfa2a93026001e875cb74ada91692c7f2c3078b"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder4-Npix1806.headers.txt",
+        "bytes": 381,
+        "sha256": "3c8a1c11127bad2f68d6e215cae0cc3a9c2802c5b840f729adc71d701d173b33"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder4-Npix1807.png",
+        "bytes": 566266,
+        "sha256": "dc15c06ca5ad450eb09cadda053fcbf3c725daa8760fab8cec251ca77ee5ef48"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder4-Npix1807.headers.txt",
+        "bytes": 381,
+        "sha256": "08635281dca21e37301bcbea6a781c2149a75acda3e7450716d2aea363cb9e2e"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder7-Npix115561.png",
+        "bytes": 441760,
+        "sha256": "8f01fa1ed3e280068e30b1262cee468bd3d23c865779e316691cccff2aa76c7f"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder7-Npix115561.headers.txt",
+        "bytes": 381,
+        "sha256": "a601ddff01aa7bcb72c4a3931c01cb86cd62f6f7f5c090e1d34ab9363df6b724"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder7-Npix115563.png",
+        "bytes": 377442,
+        "sha256": "4a4df4ac19bddb9e11f0f6a72adce3257febb3855425ccc1ce013e21c06d67d4"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder7-Npix115563.headers.txt",
+        "bytes": 381,
+        "sha256": "91244f934ce39af7ec5af3255abe21f1c5ad259e10bf26032573e2947ed1f583"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder7-Npix115564.png",
+        "bytes": 402345,
+        "sha256": "98ce448e9a01b4c3a529a2da5b11be304613276cbcd2ed2a967b8a3afa890733"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder7-Npix115564.headers.txt",
+        "bytes": 381,
+        "sha256": "5024e084063e796b062491ca213c73a1d9516d530943564aec26cfbbe00e9050"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder7-Npix115566.png",
+        "bytes": 440140,
+        "sha256": "e2e06178742b118490678aa2f2b953b4b40e68d6a03511e24b029a84c952fa78"
+      },
+      {
+        "path": "output/vphas-region-batch-2026-10-08/original-tiles/Norder7-Npix115566.headers.txt",
+        "bytes": 381,
+        "sha256": "d22bfaa47e1691822db315200c1afa784d12baaf86c667c15b244d6aea52253a"
+      },
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-legacy-regions.py",
+        "bytes": 18860,
+        "sha256": "e7b9d37fa813164d60e604fcfe1c2665e1a9481da1b9cbf5def8dd932df34e62"
+      }
+    ],
+    "meaning": "Later independent fixed source preset; prior FDS 78-pin epoch and original failures are retained, not asserted current-equivalent."
+  },
+  "matlasKs4MetadataFollowup": {
+    "status": "EXACT_METADATA_FOLLOWUP_COMPLETE_RIGHTS_NOT_ESTABLISHED_NO_IMAGERY",
+    "scope": "Two exact registered candidates, not all-source completeness",
+    "sources": [
+      {
+        "id": "CDS/P/MATLAS/color",
+        "metadata": "Reuse specific properties and original registry: HiPS/database ODbL-1.0 is present",
+        "producerPages": [
+          {
+            "url": "http://obas-matlas.u-strasbg.fr/WP/",
+            "local": "matlas-producer-redirect-chain.html",
+            "http": 200
+          },
+          {
+            "url": "http://matlas.astro.unistra.fr/WP/?page_id=152",
+            "local": "matlas-databases.html",
+            "http": 200
+          },
+          {
+            "url": "http://matlas.astro.unistra.fr/WP/?cat=6",
+            "local": "matlas-data-release.html",
+            "http": 200
+          }
+        ],
+        "producerConfirmed": {
+          "releasedHips": 2021,
+          "processedJpegPublic": 2020,
+          "role": "Deep early-type-galaxy surroundings in one-square-degree fields, not all-sky continuous photography",
+          "underlyingCredit": "Duc/ObAS/AIM/CFHT; one release image credits Duc/Cuillandre/CFHT/Coleum"
+        },
+        "rights": "UNDERLYING_CONTENT_PROCESSING_AND_REDISTRIBUTION_NOT_ESTABLISHED",
+        "coverage": "MOC_NOT_REQUESTED",
+        "quality": "NOT_ASSESSED",
+        "failures": [
+          {
+            "webRoot": "Internal Error/UNKNOWN, not an empty survey"
+          },
+          {
+            "webIndex": "Internal Error/UNKNOWN"
+          },
+          {
+            "firstCurlIndex": "HTTP301, zero body file exists"
+          },
+          {
+            "httpsOnlyRedirectControl": "exit1: redirect to HTTP WP/ refused; body file MISSING"
+          },
+          {
+            "finalPublicTextRead": "Allowed actual public HTTP slash canonicalization, one redirect, HTTP200; no auth/cookie/credential use"
+          }
+        ]
+      },
+      {
+        "id": "SNU/P/KS4/DR1/colorBVI",
+        "properties": {
+          "url": "https://alasky.cds.unistra.fr/KS4/DR1/SNU_P_KS4_DR1_colorBVI/properties",
+          "http": 200,
+          "bytes": 3768,
+          "retries": 0,
+          "transport": "Existing proven per-command CDS TLS1.2/HTTP1.1 control",
+          "creator": "SNU (Seo-Won Chang)",
+          "copyright": "(c) SNU",
+          "hipsLicense": null,
+          "frame": "equatorial",
+          "tileWidth": 512,
+          "order": 10,
+          "format": "png",
+          "channels": {
+            "red": "DR1_I Asinh",
+            "green": "DR1_V Asinh",
+            "blue": "DR1_B Asinh"
+          },
+          "release": "2025-05-16T10:19Z",
+          "nominalFraction": 0.0981
+        },
+        "primaryReadback": [
+          {
+            "url": "https://arxiv.org/html/2603.28089v1",
+            "scope": "DR1 author paper section6.1 binds this exact BVI URL; institutional full-scale bulk products are upon request",
+            "paperLicense": "CC BY-NC-SA 4.0 for this arXiv version, not inherited by separate HiPS",
+            "knownRisks": "DR1 saturation/readout-region/site-color limits remain; not inspected in actual images"
+          },
+          {
+            "url": "https://datalab.noirlab.edu/data/ks4",
+            "scope": "Distribution documentation, not exact color-HiPS permission"
+          },
+          {
+            "url": "https://datalab.noirlab.edu/about/disclaimers",
+            "scope": "Research-related best-effort service access, not third-party image redistribution grant"
+          },
+          {
+            "url": "https://www.snu.ac.kr/snunow/press?bbsidx=168848&md=v",
+            "scope": "Official announcement, not assumed content permission"
+          }
+        ],
+        "rights": "EXACT_CONTENT_AND_HIPS_DERIVATIVE_DISTRIBUTION_NOT_ESTABLISHED",
+        "coverage": "MOC_NOT_REQUESTED",
+        "quality": "NOT_ASSESSED"
+      }
+    ],
+    "inputs": [
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/color-records.json",
+        "bytes": 253671,
+        "sha256": "03dff03df0ffaeb650cdf7074100f2838bc8e6927d780d25a8dca0680760304e"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/matlas-properties.txt",
+        "bytes": 3432,
+        "sha256": "96185f5ed67ce3dc79e71ada3f8bd1f5341fce764ce51e9008b8580c652086af"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/ks4-properties.txt",
+        "bytes": 3768,
+        "sha256": "e20a38195f8de607913b9ccd91f4acdd5bdbb6998b8b6d4cfed1dd84b4d657f8"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/matlas-producer.html",
+        "bytes": 135,
+        "sha256": "00902acb46c3e817d13c47bf4159d7e5a8ca499c9fb5c131e8de680a60183fdb"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/matlas-producer-followup.html",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/matlas-producer-redirected.html",
+        "status": "MISSING",
+        "meaning": "Failed HTTP-redirect control did not leave a body file; zero observed response bytes are not an empty source or a durable raw file."
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/matlas-producer-redirect-chain.html",
+        "bytes": 80592,
+        "sha256": "71034ad1d09d24aad84d133368e860e6b87616d533ec73397d0c181aa0bc698b"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/matlas-databases.html",
+        "bytes": 74518,
+        "sha256": "05a66a748113f6b5f06159997fd77d09cccf83a30aa0025fc2abd522602490f5"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/matlas-data-release.html",
+        "bytes": 99694,
+        "sha256": "bce22bc17febb6193c5f3888ea1121a87d2cb3f5b06417602a7d3a6525a6f339"
+      }
+    ],
+    "recordingFailure": {
+      "code": "ENOENT",
+      "path": "matlas-producer-redirected.html",
+      "correction": "Record actual MISSING instead of inventing zero body bytes as a file"
+    },
+    "actions": {
+      "metadataOnly": true,
+      "imageRequests": 0,
+      "mocRequests": 0,
+      "sourcePresetExpansion": 0,
+      "rendering": 0,
+      "processing": 0,
+      "adoption": 0,
+      "publish": 0,
+      "contact": 0
+    },
+    "next": "Bounded id-first Optical/image property registry query to identify products omitted by color name, then inspect exact records/exclusions before pixels",
+    "recordingFailures": [
+      {
+        "code": "ENOENT",
+        "path": "matlas-producer-redirected.html",
+        "correction": "Record actual MISSING instead of inventing zero body bytes as a file"
+      },
+      {
+        "code": "ReferenceError",
+        "detail": "sHttpAuditEntryPattern is not defined in Node REPL subsequent cell",
+        "correction": "PLAN was written; sync remaining entry pointers using explicit local pattern, then verify current finite inputs. No product state affected."
+      }
+    ]
+  },
+  "propertyRegistryRubinFollowup": {
+    "status": "MATURE_REGION_REPRESENTATIVES_RENDERED_FULL_PERIPHERY_BACKGROUND_UNVERIFIED",
+    "registry": {
+      "path": "output/optical-hips-registry-research-2026-10-08/optical-property-registry-decision.json",
+      "bytes": 16026,
+      "sha256": "1424d834bd411ca98cb4da640617744b8af01d396ceee630900ddcec9cdeb95c"
+    },
+    "decision": {
+      "path": "output/rubin-region-batch-2026-10-08/batch-decision.json",
+      "bytes": 12764,
+      "sha256": "03bb3b6d4672969f3084c0f7e20e445f9002ef3548205b5e98c1ae7caedf8ece"
+    },
+    "originalEpochs": "Original name-selected registry/FDS/VPHAS/MATLAS-KS4 evidence is retained, not repinned or relabelled as current source equality",
+    "next": "Only PLAN owns current order"
+  },
+  "peripheryOwnerReadback": {
+    "status": "BOUNDED_COMPLETE_REGION_SCENE_AND_COMPLETED_CREDIT_VERIFIED_EXTERIOR_BACKGROUND_FAILED",
+    "geometry": {
+      "path": "output/rubin-region-batch-2026-10-08/periphery-plan.json",
+      "bytes": 12355,
+      "sha256": "27b2b0387c6be5fbbc8dd0f1782ac9ada69fd701afa24248a9ec1d404bd7259b"
+    },
+    "governance": {
+      "owners": [
+        "project_context/development-workflow/resources-and-artifacts.md",
+        "project_context/development-workflow/paths-and-lifecycle.md",
+        "tools/resources/lfs-policy.json"
+      ],
+      "materializedLocalAssets": 2012,
+      "localAssetBytes": 171170429,
+      "offlineVerification": "PASS",
+      "remoteRoundTripAndRemainingQuota": "UNKNOWN",
+      "rawAndTrialAndFrames": "Ignored output, no new LFS staging or runtime adoption",
+      "priorStagingPreserved": true
+    },
+    "goal": {
+      "status": "paused",
+      "budget": null,
+      "complete": false,
+      "readback": "Actual paused; latest user explicitly requests direction/process correction only then stop",
+      "executionAuthorized": false,
+      "planningOnly": true
+    },
+    "newOriginals": {
+      "tiles": 4,
+      "bytes": 101785,
+      "requests": 4,
+      "retries": 0,
+      "protocol": "Strict HTTPS, HTTP200, no redirects, one concurrent request",
+      "readback": "output/rubin-region-batch-2026-10-08/periphery/original-readback.json"
+    },
+    "localTrial": {
+      "schema": "starward-optical-hips-v2",
+      "tileCount": 5,
+      "pixelBytes": 311308,
+      "reusedFineOriginals": 1,
+      "storage": "Hardlinks to unchanged original PNGs",
+      "publicationHash": "f250b416a0498e3346bac8c81afc813580b39912a6080ce7e3a8c0f86c1b4764",
+      "manifest": "output/rubin-region-batch-2026-10-08/periphery/local-trial/manifest.json",
+      "rights": "output/rubin-region-batch-2026-10-08/periphery/local-trial/rights.json",
+      "actualServiceReadback": "output/rubin-region-batch-2026-10-08/periphery/local-trial-readback.json",
+      "externalPublication": false
+    },
+    "scene": {
+      "result": "output/rubin-region-batch-2026-10-08/periphery/current-scene/result.json",
+      "frozenInputs": "output/rubin-region-batch-2026-10-08/periphery/current-scene/inputs-before.json",
+      "currentInputReadback": "output/rubin-region-batch-2026-10-08/periphery/current-scene/input-readback.json",
+      "inputCount": 153,
+      "differences": [],
+      "frames": 7,
+      "networkRequests": 0,
+      "wholeRegions": 2,
+      "viewport": "390x844,20deg",
+      "completedSourceCredit": "Actual worker v2 response, current indexed resolver and completed group, not requested metadata",
+      "creditNegatives": [
+        "Probes-off frame has no credit and same pixels",
+        "Empty imagery has no credit"
+      ],
+      "fineChangedPixels": 164357,
+      "fineFailureChangedCoarsePixels": 0,
+      "glErrors": 0,
+      "liveTexturesAfterRetirement": 0,
+      "contributionPolicy": {
+        "owner": "Existing Scene/Page explicit opticalHipsContributions",
+        "auxiliaryBytes": 2097152,
+        "maxGroups": 1,
+        "scope": "Task caller only, not production default, imagery cache or physical peak"
+      },
+      "firstFailure": {
+        "status": "FAILED",
+        "reason": "Task omitted explicit contribution policy; correct completed-credit assertion rejected",
+        "result": "output/rubin-region-batch-2026-10-08/periphery/failed-no-contribution-policy/result.json",
+        "preserved": true
+      },
+      "oldThreeFrameInputCount": 181,
+      "oldThreeFrameInputs": "Historical frozen task-source epoch; two current task adapter edits are intentional, no claim of current equality"
+    },
+    "quality": {
+      "actualPhotosViewed": true,
+      "originalPixelsChanged": false,
+      "photoExteriorAndContinuousBackground": "FAILED",
+      "smoothFullLOD": "UNVERIFIED",
+      "remainingCandidateTiles": 17,
+      "expansion": "STOPPED_NO_COARSE_QUALITY_GATE",
+      "science": "UNKNOWN",
+      "absoluteRegistration": "UNVERIFIED",
+      "nativeLoaderAndDeviceAndPhysicalPeak": "UNVERIFIED",
+      "independentReview": "MISSING"
+    },
+    "canvasFixture": {
+      "before": "FAILED_READ_HIPS_TILES_FIXTURE_DEPENDENCY",
+      "suitePassed": 16,
+      "suiteFailed": 0,
+      "appTypes": "TS5.9.3_PASS",
+      "productionCanvasChanged": false,
+      "evidence": "output/rubin-region-batch-2026-10-08/periphery/canvas-fixture-check.json"
+    },
+    "codeChange": "Two existing task adapters and one existing VM test fixture, no new runner/version or production renderer change",
+    "imageryChange": "Four new unchanged original source PNGs; no pixel processing",
+    "ordinaryAdoption": false,
+    "next": "Only PLAN latest process correction: on next user continue, existing licensed high-resolution representative source-to-render fidelity first; exterior background and native work independently, joined acceptance; no automatic17 expansion or unchanged old render."
+  },
+  "fdsRepresentativeFrozen": {
+    "status": "FDS_REPRESENTATIVE_FAILED_REGISTRY_BATCH_FINITE_NEW_INPUTS_IDENTIFIED",
+    "scope": "One finite name-matched registration batch plus one new mature region, not all image work or product completion",
+    "registryCounts": {
+      "records": 77,
+      "catalogues": 3,
+      "images": 74,
+      "imagesTaggedOptical": 34
+    },
+    "inputs": [
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/color-records.json",
+        "bytes": 253671,
+        "sha256": "03dff03df0ffaeb650cdf7074100f2838bc8e6927d780d25a8dca0680760304e"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/fram-producer.html",
+        "bytes": 11459,
+        "sha256": "fa851431b38b298185c9c038eb4248968ed0847fcb4f6c398618b85209ce887e"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/fram-properties.txt",
+        "bytes": 4912,
+        "sha256": "ecd68c15fae41f4d921e5df2047acf86fa698d8eee61378d03410161e3f4b84b"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/matlas-producer.html",
+        "bytes": 135,
+        "sha256": "00902acb46c3e817d13c47bf4159d7e5a8ca499c9fb5c131e8de680a60183fdb"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/matlas-properties.txt",
+        "bytes": 3432,
+        "sha256": "96185f5ed67ce3dc79e71ada3f8bd1f5341fce764ce51e9008b8580c652086af"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/fds-properties.txt",
+        "bytes": 2762,
+        "sha256": "a714e4b9a4a12334308938ace29fd7dce102bc50baa1a9414294414784883ac4"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/kids-properties.txt",
+        "bytes": 2676,
+        "sha256": "aefb763a1656f5ae2c8b606c139c93c6abb711e4e6221f776777e108da2f799d"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/kids-producer.html",
+        "bytes": 8839,
+        "sha256": "80fca8bafd123a64e25c3e3c5a59409acbf99a37adb8f135a81819420c986ac6"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/decaps2-properties.txt",
+        "bytes": 3553,
+        "sha256": "35653c477b872542143225003b546a0b10a4b7b72886f96ded37dba0298f3584"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/vphas4-properties.txt",
+        "bytes": 2733,
+        "sha256": "5ed7d0dd22074bb6c8a4bbda007cf735f0f758b47f4330c830dcd8b326d22cfe"
+      },
+      {
+        "path": "output/optical-hips-registry-research-2026-10-08/batch-decision.json",
+        "bytes": 37355,
+        "sha256": "633e5faf82962698dd7a36cf2e0c97a3b3ee68b17657d75f7a46262804dd205e"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/batch-decision.json",
+        "bytes": 3123,
+        "sha256": "88835f535aed11db3c63b08ef6ab8cafbca86de4a7d300c24001243accb18558"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/sample-intent.json",
+        "bytes": 1462,
+        "sha256": "9aa0c7502ce6531aa314ff9ff2183cd19710477a6516a6955c28a4b0204a237f"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/coverage-plan.json",
+        "bytes": 1899,
+        "sha256": "5e63c4548eb3f1cab10ecb3b436b913d2f3e1674f7754d342dc5505f8b9bfbc2"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/moc-rule-check.json",
+        "bytes": 1315,
+        "sha256": "fb19eefb8068e466c4fd82304de0a0e52e3513b3bf22eafe4c94d3677869f127"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-selection-owner-check.json",
+        "bytes": 577,
+        "sha256": "84ebbca4b287c6a4013c2b1db6407c85da4ab6e53f3f1e5ab055321f994a9c6c"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-selection.json",
+        "bytes": 5597,
+        "sha256": "57741f48da108ee35700dcd440c68d10045c1c4abc568449f6d9df7e7191b186"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-selection-moc-check.json",
+        "bytes": 763,
+        "sha256": "9f928b16c31ba7d504d103698384258c4b7ebbc3fc8c76ea52f0b28615f2c759"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-selection-coverage.json",
+        "bytes": 8234,
+        "sha256": "89effe057bbe592915757d26141c5f895d561acada29b54b909d3d2de12c8676"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/tile-receipts.json",
+        "bytes": 12535,
+        "sha256": "334ea1fe3dc1caef03547b0e31047cef2979d118e86136e299c1ec5528577566"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/transport-decision.json",
+        "bytes": 2470,
+        "sha256": "2401f00c7cf05e277fc2122ab55b3178e4de82704cdc00aab6d857a05ae14c6a"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/tile-failure-before-tls12.json",
+        "bytes": 525,
+        "sha256": "8028c1a6ff3901d656fc8ff440f69a55cb246eb55c33ddd059e6e63994bbf09f"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/metadata-acquisition.json",
+        "bytes": 981,
+        "sha256": "992960230c5d859d5b2b3c83ffb49cd7ed4dc7a72d44cdf2c5dc6700e1d6c8a5"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/registry-moc-acquisition.json",
+        "bytes": 185,
+        "sha256": "56e1995d90884c88a36add618c8cf511b79b894ddc0bebff5a49d45d2ac7463e"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/moc-json-acquisition.json",
+        "bytes": 554,
+        "sha256": "9272c638e436b7bbe789829dfa2fd0e90c19c858047a288ced03d9702790c332"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/Moc.fits",
+        "bytes": 28800,
+        "sha256": "9c3f7d6370576fb2510933e8ba1bf9c31d6f20ceb07914e07542efaace2a7aa1"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/registry-Moc.json",
+        "bytes": 23484,
+        "sha256": "35268144dc1adbf58fe0238feb70362a3b4f1f4e264965861b935c803ccc1777"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/properties.txt",
+        "bytes": 2762,
+        "sha256": "a714e4b9a4a12334308938ace29fd7dce102bc50baa1a9414294414784883ac4"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/region-fds-initial-2.1deg.png",
+        "bytes": 428810,
+        "sha256": "017ba900dde976f2d8cc55bc97c20f31beff3d5f062363ba19315f5f3e01bbbb"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/region-fds-initial-0.4deg.png",
+        "bytes": 477620,
+        "sha256": "6707d0e30acf2caa40f0e6b9362fca7051eae176a3f4988c48183fc34da5a649"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-scene/controlled-report.json",
+        "bytes": 12222,
+        "sha256": "48779748349630e61e6f8abf3c1416b40e38b82f9ccc6af1afe7eefe1616d9f9"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-scene/current-scene.js",
+        "bytes": 9810972,
+        "sha256": "cc531e70680cc00a0cbfe64df78b97b81c38d5a0157593d3b762c0373799f0a6"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-scene/failed-pre-render-selection.json",
+        "bytes": 3750,
+        "sha256": "c38ec833b49e5060048d7bb5170861de0ac1d2f9f0c86c09deaf9c5d1fc1a729"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-scene/fds-initial-0.4deg-hips.png",
+        "bytes": 623044,
+        "sha256": "0fd68b65041e86b8af12bd1eb20b3af5cfed35e29ec6a6666d2fc20ab94e6f37"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-scene/fds-initial-2.1deg-hips.png",
+        "bytes": 610745,
+        "sha256": "31cd19a71fc6b6f3d914de49b8db08faa38c99cb0b8027d79d4c97e04bc49a87"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-scene/frames.jsonl",
+        "bytes": 2768,
+        "sha256": "26d4b8e13302e9e3e4213bd0c589515caead26b50fe317d4f306209112ce0ec5"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-scene/inputs-after.json",
+        "bytes": 30956,
+        "sha256": "7ec4b0194e0370cbd457bbce5522d41e9f2059f7ca500db659fd58a8fd104564"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-scene/inputs-before.json",
+        "bytes": 30956,
+        "sha256": "7ec4b0194e0370cbd457bbce5522d41e9f2059f7ca500db659fd58a8fd104564"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-scene/catalogue-projection-readback.json",
+        "bytes": 756,
+        "sha256": "60c80beaab66121a5bf3dc0e5795717391de49b3d44ba40fee942b2e38535c87"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/current-scene/failed-final-catalogue-assumption.json",
+        "bytes": 5736,
+        "sha256": "91d670a3288283df9f4f6fa24583393b26272678459a46fe26ec27fc69344c89"
+      },
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-legacy-regions.py",
+        "bytes": 18240,
+        "sha256": "01511b9f9c0d00ec2fafdd43ec4333925cc9cea09279f5426b5b2d53fdebf765"
+      },
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-noirlab-scene.mts",
+        "bytes": 39008,
+        "sha256": "3b6e666af5f751be230da390fd8dfab9a2e50ba4e776c7c487720959c25467f3"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8621.png",
+        "bytes": 73032,
+        "sha256": "c79300bbd149afa34319219f2858d2cb7e9e79ae67c1f670b348b719efde1009"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/tls12-first-tile.headers.txt",
+        "bytes": 380,
+        "sha256": "16262a0328757cb6d6ba54a3d440a22a5d8a9289f76bb47b890a23376f6ee731"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8622.png",
+        "bytes": 50910,
+        "sha256": "bd0f8aa15ba8119605d6f049071dc16beef7405993690de3493b8c40a894472e"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8622.headers.txt",
+        "bytes": 379,
+        "sha256": "850cfe328d5e49b19297de45f5336a2160b0d41c1417d9c0861a8639d3681057"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8623.png",
+        "bytes": 386852,
+        "sha256": "0d4809963461a636cba9c6e81b1270e874cf984ac3bb687ed6111ee4370c4fc2"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8623.headers.txt",
+        "bytes": 381,
+        "sha256": "2d85402a022f728a34c2599e6fe6b63f6a0b4c512f87024e86e24e5b81072004"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8634.png",
+        "bytes": 390011,
+        "sha256": "2b53123fa41211a549ec21a3cee22d32a508f1617ac5c5328d68be815deecc8c"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8634.headers.txt",
+        "bytes": 381,
+        "sha256": "a6a61020a1b6748e74754370146e32ee197b1bbdb7f4c51dacf317e2177dcfe6"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8965.png",
+        "bytes": 140441,
+        "sha256": "b16154f420cc32ab9e5cb973b8cc30a19592186a822d5fcbd751668db7b43689"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8965.headers.txt",
+        "bytes": 381,
+        "sha256": "89bb058a84eacbe1c1238aeae44d55922f21467768879d4b3c7c09794cb91ecc"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551898.png",
+        "bytes": 423680,
+        "sha256": "e85ccc396cd6f5a963e52c7a105081be6f8ab8f6ea090fd27403501be86d2ba1"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551898.headers.txt",
+        "bytes": 381,
+        "sha256": "461f84dc6792f46e15d7fb115e4c35520ef1970400f9f1168d25559e35276a27"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551899.png",
+        "bytes": 426553,
+        "sha256": "4d479ca41c42813e2f11ad7ff952d5aa353d11fede7c05f6d7d6b8e9aecc6345"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551899.headers.txt",
+        "bytes": 381,
+        "sha256": "4c59e362e5c7095d199e1b38720f34f69ca5ce580a74c2349301585975b0767d"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551909.png",
+        "bytes": 435064,
+        "sha256": "0d0d3baea0568b79d0a693c323ba32b16fa92b46128efe5fa3d76c988a383772"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551909.headers.txt",
+        "bytes": 381,
+        "sha256": "ac0ae26630c2a9580816b36c87dce9f47d4cf027035a587d5920e6c760199a55"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551911.png",
+        "bytes": 419389,
+        "sha256": "18cee5317c0859b51bd91fcdec986a70bf7d735f8907425cd1958af5f0401a2d"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551911.headers.txt",
+        "bytes": 381,
+        "sha256": "585665913b480425b26e3316fd8b546a672ff93734ae2f0abecf964fd9ccad9a"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551920.png",
+        "bytes": 428116,
+        "sha256": "f222b9384b94f6d6b01111b2b27a0c5407f3a07cd09970f65e0f29054fb592b3"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551920.headers.txt",
+        "bytes": 381,
+        "sha256": "77fcc2e86547201c40f5d1351df6b03005d5fff06f2b8a02fc6a594f272c59af"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551921.png",
+        "bytes": 421396,
+        "sha256": "144cc2bb22a9dafd37e1017e5180bad676f93f02032afef064409feeda25cb2d"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551921.headers.txt",
+        "bytes": 381,
+        "sha256": "0045c6f72e6ace7d32c676b76ee42e8213fedb35ba362c2b3fcc0f4043c16629"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551922.png",
+        "bytes": 417796,
+        "sha256": "7eb031696a11529c6722d5bd7a12ee2b1cb49676f1df25d61b047fa4bac37691"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551922.headers.txt",
+        "bytes": 381,
+        "sha256": "6dbd7d01e9324c1e2488cc63b81abd45475055789920a66fcd79cb165d578566"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551923.png",
+        "bytes": 417967,
+        "sha256": "63a4fd9229c055fd5d561d53c5a4383d42c9693a6ccc6b9100ade826b0dbb9f5"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551923.headers.txt",
+        "bytes": 381,
+        "sha256": "756b702ec1b032a46e8fbde91b091e57b7c79003261b518bf5046cce9814a796"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551924.png",
+        "bytes": 414933,
+        "sha256": "c327bd34adf3d143e656c723425321637be7ec56bb18cf9434fd9ec1c7b4491c"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551924.headers.txt",
+        "bytes": 381,
+        "sha256": "4c1d5503747d38d7287fda7f1f6992a058470d730181ea8fa329a6f0fd4ea512"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8632.png",
+        "bytes": 380690,
+        "sha256": "f2e591d6ab54e19f7ba33568c5f523071c8edb7df2fb303f9ba5b1ea06ba9740"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8632.headers.txt",
+        "bytes": 381,
+        "sha256": "60d148bbfa6b6245f3ca5313e4d229d87a33d9d1904840756c685fe201eb33e1"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8964.png",
+        "bytes": 9491,
+        "sha256": "201172c41ad41b8ee1ba064300bf1aeece8e36f44ebaafa95365d42b212997ae"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder5-Npix8964.headers.txt",
+        "bytes": 378,
+        "sha256": "3776436f48d12b725976cfca0ceb4b0d9f8e0e226884165d71bdc4655d14beba"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551902.png",
+        "bytes": 410480,
+        "sha256": "1a6bf53f7e7c37d5e75800573044fcfe3e2dd26fa25eed7f989a5f74f87f5d58"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551902.headers.txt",
+        "bytes": 381,
+        "sha256": "de062bc7ead8407dbefd3e1783ea31199f45e7b10053cf2841cd4280632ded4a"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551928.png",
+        "bytes": 420229,
+        "sha256": "166e24958604ebf92b75a1e3cb04378ed8e3d205d6992fb7691b11b4a7d8820b"
+      },
+      {
+        "path": "output/fds-region-batch-2026-10-08/original-tiles/Norder8-Npix551928.headers.txt",
+        "bytes": 381,
+        "sha256": "13759eae0daa70ed2dae21882292242182d5bfd9b36148bf2982bc4f719b8549"
+      }
+    ],
+    "frames": [
+      {
+        "condition": {
+          "name": "region:fds-initial",
+          "ra": 50.694125,
+          "dec": -36.8862186,
+          "basis": {
+            "right": [
+              -0.5792907665438762,
+              -0.8151209773996791,
+              0
+            ],
+            "up": [
+              0.1569599467497977,
+              -0.11154840862940121,
+              0.9812851408477298
+            ],
+            "forward": [
+              0.7998661031155833,
+              -0.5684494214397969,
+              -0.1925603083489721
+            ]
+          },
+          "fov": 2.1,
+          "display": "hips",
+          "wanted": [
+            {
+              "order": 5,
+              "pixel": 8621
+            },
+            {
+              "order": 5,
+              "pixel": 8622
+            },
+            {
+              "order": 5,
+              "pixel": 8623
+            },
+            {
+              "order": 5,
+              "pixel": 8632
+            },
+            {
+              "order": 5,
+              "pixel": 8634
+            },
+            {
+              "order": 5,
+              "pixel": 8964
+            },
+            {
+              "order": 5,
+              "pixel": 8965
+            }
+          ],
+          "id": "fds-initial-2.1deg-hips"
+        },
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "panoramaPaints": 0,
+        "regionPaints": 0,
+        "hipsPaints": 4,
+        "paintedObjects": 0,
+        "stellarFrameState": "AVAILABLE",
+        "textureObjects": {
+          "created": 4,
+          "deleted": 4
+        },
+        "liveTextures": 0,
+        "opaqueShaderChanges": 0,
+        "opaqueBlendChanges": 0,
+        "camera": {
+          "basis": {
+            "right": [
+              -0.5792907665438762,
+              -0.8151209773996791,
+              0
+            ],
+            "up": [
+              0.1569599467497977,
+              -0.11154840862940121,
+              0.9812851408477298
+            ],
+            "forward": [
+              0.7998661031155833,
+              -0.5684494214397969,
+              -0.1925603083489721
+            ]
+          },
+          "verticalFovDeg": 2.1
+        },
+        "brightCataloguePositionObservations": [],
+        "rgba": {
+          "bytes": 1316640,
+          "sha256": "71bb27620b03cac636c10f15c594b4f3157b77e9d39c5fa5a373cea6fdc19512"
+        },
+        "png": {
+          "path": "output/fds-region-batch-2026-10-08/current-scene/fds-initial-2.1deg-hips.png",
+          "bytes": 610745,
+          "sha256": "31cd19a71fc6b6f3d914de49b8db08faa38c99cb0b8027d79d4c97e04bc49a87"
+        }
+      },
+      {
+        "condition": {
+          "name": "region:fds-initial",
+          "ra": 50.694125,
+          "dec": -36.8862186,
+          "basis": {
+            "right": [
+              -0.5792907665438762,
+              -0.8151209773996791,
+              0
+            ],
+            "up": [
+              0.1569599467497977,
+              -0.11154840862940121,
+              0.9812851408477298
+            ],
+            "forward": [
+              0.7998661031155833,
+              -0.5684494214397969,
+              -0.1925603083489721
+            ]
+          },
+          "fov": 0.4,
+          "display": "hips",
+          "wanted": [
+            {
+              "order": 8,
+              "pixel": 551898
+            },
+            {
+              "order": 8,
+              "pixel": 551899
+            },
+            {
+              "order": 8,
+              "pixel": 551902
+            },
+            {
+              "order": 8,
+              "pixel": 551909
+            },
+            {
+              "order": 8,
+              "pixel": 551911
+            },
+            {
+              "order": 8,
+              "pixel": 551920
+            },
+            {
+              "order": 8,
+              "pixel": 551921
+            },
+            {
+              "order": 8,
+              "pixel": 551922
+            },
+            {
+              "order": 8,
+              "pixel": 551923
+            },
+            {
+              "order": 8,
+              "pixel": 551924
+            },
+            {
+              "order": 8,
+              "pixel": 551928
+            }
+          ],
+          "id": "fds-initial-0.4deg-hips"
+        },
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "panoramaPaints": 0,
+        "regionPaints": 0,
+        "hipsPaints": 6,
+        "paintedObjects": 0,
+        "stellarFrameState": "AVAILABLE",
+        "textureObjects": {
+          "created": 6,
+          "deleted": 6
+        },
+        "liveTextures": 0,
+        "opaqueShaderChanges": 0,
+        "opaqueBlendChanges": 0,
+        "camera": {
+          "basis": {
+            "right": [
+              -0.5792907665438762,
+              -0.8151209773996791,
+              0
+            ],
+            "up": [
+              0.1569599467497977,
+              -0.11154840862940121,
+              0.9812851408477298
+            ],
+            "forward": [
+              0.7998661031155833,
+              -0.5684494214397969,
+              -0.1925603083489721
+            ]
+          },
+          "verticalFovDeg": 0.4
+        },
+        "brightCataloguePositionObservations": [],
+        "rgba": {
+          "bytes": 1316640,
+          "sha256": "b866bc104e7f488d8fb05e63aafa7a39ac67544a446a728d27dcf057d16004b9"
+        },
+        "png": {
+          "path": "output/fds-region-batch-2026-10-08/current-scene/fds-initial-0.4deg-hips.png",
+          "bytes": 623044,
+          "sha256": "0fd68b65041e86b8af12bd1eb20b3af5cfed35e29ec6a6666d2fc20ab94e6f37"
+        }
+      }
+    ],
+    "originalSceneExit": 1,
+    "catalogueReadback": {
+      "catalogIdentity": {
+        "catalogVersion": "bsc5p-bright-stars.v3",
+        "catalogHash": "ba9bef4144d4cfb4c706a5d1d8a0958d8303854e7bfabe780005b63e0c904c2c",
+        "rows": 8404
+      },
+      "frameAt": "2026-10-05T13:00:00.000Z",
+      "points": 8404,
+      "profiles": [
+        {
+          "fieldDegrees": 2.1,
+          "projectedRawPoints": 0
+        },
+        {
+          "fieldDegrees": 0.4,
+          "projectedRawPoints": 0
+        }
+      ],
+      "meaning": "Actual BSC publication, exact resolved time and current projection, before appearance opacity; no image, GL or source request",
+      "earlierReaderFailure": {
+        "status": 1,
+        "error": "Reader incorrectly assumed points were directly stored in geometry; current geometry contract is resolved at its owner",
+        "productFailure": false
+      }
+    },
+    "currentBindingDifferencesAfterRender": [
+      {
+        "before": {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-noirlab-scene.mts",
+          "bytes": 37944,
+          "sha256": "55db35bd2b4cdeef83e5c9de09f1140c609bed1336e3efb8d23d8ea8bfd16ab8"
+        },
+        "current": {
+          "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-noirlab-scene.mts",
+          "bytes": 39008,
+          "sha256": "3b6e666af5f751be230da390fd8dfab9a2e50ba4e776c7c487720959c25467f3"
+        }
+      }
+    ]
+  },
+  "status": "RUBIN_COMPLETE_CATALOGUE_EXTENT_VISUAL_AND_INDEXED_TRIAL_READY_NOT_ADOPTED",
+  "scope": "Current local complete-target detail outcome and indexed original-pixel trial; preserved source failures and earlier finite representative epochs remain separate. No ordinary adoption, full weak periphery/background, source-credit/Back/native/device/capacity or independent acceptance.",
+  "qualityOwnerReadback": {
+    "status": "RUBIN_COMPLETE_TARGET_VISUAL_PUBLISHED_SOURCE_AND_CONTROLLED_NATIVE_CONSUMERS_DEVELOPMENT_PASS_NOT_ADOPTED",
+    "goal": {
+      "actual": "active",
+      "budget": null,
+      "complete": false,
+      "userAuthorization": "Continue goal 2026-10-08"
+    },
+    "before": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/current-scene/result.json",
+      "bytes": 7589,
+      "sha256": "7b497200d240a56231e188d9ef89aa0ca90ee42e2ec8e2df749e1053c8840885"
+    },
+    "selectorRegressionBefore": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/selector-before.json",
+      "bytes": 957,
+      "sha256": "b6f1426b54d2a883b3d5c4a4883fd9b520782aad240bb96d6803391a336cfd2f"
+    },
+    "renderFootprintEvidence": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/selection-footprint-check.json",
+      "bytes": 19381,
+      "sha256": "da3d30a3a5a1b2754cb121beb1cdd7132fd1410bdfb6d48f5e53a26382cfb641"
+    },
+    "affectedChecks": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/checks.json",
+      "bytes": 8036,
+      "sha256": "e5e416fd11155f230c4cbe01439961cafcc85fe1c2c6f2d2bac235a418850c95"
+    },
+    "taskTypecheck": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/adapter-check.json",
+      "bytes": 727,
+      "sha256": "441ab6f03c128919de1298680c37ec228ba7c9f8056df7afce161e7bed3b240d"
+    },
+    "failedPrimaryAcquisition": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/current-selection-coverage.json",
+      "bytes": 12278,
+      "sha256": "92fac6bb121bffffff57597056e403fa4c7fe14f92a40a6bb2136ac457044149"
+    },
+    "registeredMirrorRecovery": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/recovery-readback.json",
+      "bytes": 5327,
+      "sha256": "9f9ba5628488aa963cdde53be871410c8ce2794db8bd359cdfd2cb9189a700a8"
+    },
+    "scene": {
+      "result": {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/current-scene/result.json",
+        "bytes": 14872,
+        "sha256": "70c1917a441c0fcef700c3b4b19b37fc5ce5ffb315dcf1f798e53756dca69061"
+      },
+      "inputTable": {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/current-scene/inputs-before.json",
+        "bytes": 33125,
+        "sha256": "48cfd6fcbd5d7bc7655b401d2cb9155add4078c02cde5672d95496fa9076d266"
+      },
+      "inputReadback": {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/current-scene/input-readback.json",
+        "bytes": 69,
+        "sha256": "84429876e664721ad92245be568fa01e0cfa768911bb79069057e7a98bbb678a"
+      },
+      "inputs": 177,
+      "frames": 4,
+      "glErrors": 0,
+      "retiredTextures": true,
+      "viewedCompletedImages": [
+        "M-8-complete-2x",
+        "M-61-complete-2x"
+      ],
+      "meaning": "Directory extent is fully inside the tested view with margin; this is not a complete weak-structure or scientific-support certification.",
+      "epoch": "Frozen 177-input quality render; task adapter later extended for published consumer. Original four quality frames not rerendered."
+    },
+    "localTrial": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/local-trial-readback.json",
+      "bytes": 17934,
+      "sha256": "eff18b02e0b6670d0aa2afd15e4dfc566610601c5da7a9adda8f01a3ea3620af"
+    },
+    "indexedConsumers": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/indexed-consumer-readback.json",
+      "bytes": 3348,
+      "sha256": "9488e3fc2132834b4c059fb36d5c34e604a4b226f7aa902295c8107fbe7e0487"
+    },
+    "code": [
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-hips-tile-selection.ts",
+        "bytes": 5331,
+        "sha256": "28e4b29a47b38c08943d4431699acb8ae748fe15e0ff853b897a74dedc0ac71a"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-hips-tile-selection.test.ts",
+        "bytes": 3090,
+        "sha256": "100bc3ada378f2445aa9ea6a7a63245dce36347e22891c6a07378f8b8289343a"
+      },
+      {
+        "path": "data-pipelines/deep-sky/hips_tan_lookup.mjs",
+        "bytes": 1589,
+        "sha256": "6125361e7c629f323bc9c6fc19d75c27a847313e369bc05f9e7b267cca30c7b9"
+      },
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-legacy-regions.py",
+        "bytes": 42116,
+        "sha256": "1eed933494a3ac4187823b732aafc7c318cdab5e4528b669c86d3b21cb5c7164"
+      },
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-noirlab-scene.mts",
+        "bytes": 75886,
+        "sha256": "dba19ec7c23c0c6ef837ac363600d49ca00abcece83fde3560fc218547e4a5f9"
+      }
+    ],
+    "quality": {
+      "localDetail": "VISIBLY_IMPROVED_WITH_ORIGINAL_FINER_PIXELS",
+      "fullWeakPeriphery": "UNVERIFIED",
+      "photoExteriorAndContinuousBackground": "FAILED",
+      "absoluteRegistration": "UNVERIFIED",
+      "science": "UNKNOWN",
+      "nativeLoaderAndSourceCreditAndSourceBack": "DEVELOPMENT_PASS_CONTROLLED_TARO_PORT_NOT_WECHAT",
+      "targetDeviceAndPhysicalPeak": "UNVERIFIED",
+      "independentReview": "MISSING"
+    },
+    "sameEndpointRetries": 0,
+    "ordinaryAdoption": false,
+    "externalPublication": false,
+    "legacyM49FailureRetained": true,
+    "unchangedFramesRerendered": false,
+    "publishedScene": {
+      "result": {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/published-scene/result.json",
+        "bytes": 39748,
+        "sha256": "2ec7687a743c2e59c281e5ae3e0b9ad6c9cd0445af65b5bf33c725879d29fd69"
+      },
+      "cases": 9,
+      "pairComparisons": [
+        {
+          "id": "M-8-published-fine",
+          "changedPixels": 275174,
+          "meaning": "Actual same-source detail effect"
+        },
+        {
+          "id": "M-8-published-fine-failed",
+          "changedPixels": 0,
+          "meaning": "Controlled fine submission failure retains coarse pixels"
+        },
+        {
+          "id": "M-61-published-fine",
+          "changedPixels": 324076,
+          "meaning": "Actual same-source detail effect"
+        },
+        {
+          "id": "M-61-published-fine-failed",
+          "changedPixels": 0,
+          "meaning": "Controlled fine submission failure retains coarse pixels"
+        }
+      ],
+      "scope": "Real root/index/original PNG/current resolver and Scene; failed fine submissions preserve coarse complete RGBA; empty and contribution-disabled cases have no credit. Software WebGL only."
+    },
+    "nativeConsumers": {
+      "pins": [
+        {
+          "path": "output/playwright/rubin-complete-target-native-current/build-result.json",
+          "bytes": 329,
+          "sha256": "81cfb9ef421cb3c459300cac00e02b9dfc87e191d453f2fec9746e04e4585c72"
+        },
+        {
+          "path": "output/playwright/rubin-complete-target-native-current/result.json",
+          "bytes": 23579,
+          "sha256": "dfd7201102d0ac3f6280463c26f985a9b261963bc4944a8ab64e3cd916135c7f"
+        },
+        {
+          "path": "output/playwright/rubin-complete-target-native-current/rubin-consumer-result.json",
+          "bytes": 758397,
+          "sha256": "8c66a21d59168cbeec2f4a310dce09a2fc357e7f782b0c02ad4b000f53b2deff"
+        },
+        {
+          "path": "output/playwright/rubin-complete-target-native-current/native-surface-readback.json",
+          "bytes": 237,
+          "sha256": "ffacd980202072f7f5bf5b0a939095f30a07eb1b92d18dbbc5c42190778aa104"
+        },
+        {
+          "path": "output/playwright/rubin-complete-target-native-current/source-bindings-after.json",
+          "bytes": 96098,
+          "sha256": "81faddaa70a311abee93d7b237830c3c9f006d773da5c673bb270e36fd5864ba"
+        },
+        {
+          "path": "output/playwright/rubin-complete-target-native-current/backend-source-bindings-after.json",
+          "bytes": 31020,
+          "sha256": "6c565f0062d5a131670be2994b8d49868858289fa01d5fbef81114ee5101ad8f"
+        },
+        {
+          "path": "output/playwright/rubin-complete-target-native-current/task-owner-bindings-after.json",
+          "bytes": 1761,
+          "sha256": "6896e674c1a6247bf2cb6ea0b346817fba42821d9b031277fb541721acb466d5"
+        },
+        {
+          "path": "output/playwright/rubin-complete-target-native-current/public-asset-read-bindings.json",
+          "bytes": 39463,
+          "sha256": "f3d33467db61cededba1c81386661b84a91403b60140e9712b9f23cfdb1bd6fa"
+        },
+        {
+          "path": "output/playwright/rubin-complete-target-native-current/current-baseline-after.json",
+          "bytes": 3441,
+          "sha256": "1a2d3f12d701d6dade82a2dc02610f969ca6429310deab9929d39c8c9e7d8310"
+        },
+        {
+          "path": "output/playwright/rubin-complete-target-native-current/cleanup.json",
+          "bytes": 91,
+          "sha256": "6efcbee01f2d19cd7d5f5aba774faa5e2477506a04460ca49a4a080ba5067a57"
+        }
+      ],
+      "inputs": 523,
+      "backendInputs": 176,
+      "publicAssets": 91,
+      "requests": 139,
+      "sceneCalls": 88,
+      "sourceBacks": [
+        {
+          "reference": "M:8",
+          "beforeRgbaSha256": "ec90f9f8754f625aa42b586b1192f8d8c988924eb59d16131ce384a5696d3e88",
+          "afterRgbaSha256": "ec90f9f8754f625aa42b586b1192f8d8c988924eb59d16131ce384a5696d3e88",
+          "allBackFramesHaveSource": true,
+          "completedBackFrames": 2,
+          "newOpticalBinaryBodies": 0
+        },
+        {
+          "reference": "M:61",
+          "beforeRgbaSha256": "9d0d72913fc93d791cb06733f44206ad26479d16c1374487b3340b3d13d42602",
+          "afterRgbaSha256": "9d0d72913fc93d791cb06733f44206ad26479d16c1374487b3340b3d13d42602",
+          "allBackFramesHaveSource": true,
+          "completedBackFrames": 1,
+          "newOpticalBinaryBodies": 0
+        }
+      ],
+      "surface": {
+        "scope": "CONTROLLED_NATIVE_PORT_REAL_BROWSER_WEBGL_TO_2D_NOT_WECHAT",
+        "offscreenAllocations": 1,
+        "presentations": 88,
+        "displayWidth": 0,
+        "displayHeight": 0,
+        "sourceWidth": 0,
+        "sourceHeight": 0,
+        "appHideListeners": 0
+      },
+      "cleanup": {
+        "taskBrowserClosed": true,
+        "taskApiClosed": true,
+        "existingServicesRestarted": 0
+      },
+      "failedFixtureEpochs": [
+        "output/playwright/rubin-complete-target-native-1008",
+        "output/playwright/rubin-complete-target-native-current/preflight-decorators",
+        "output/playwright/rubin-complete-target-native-current/run-port-adapter-failure",
+        "output/playwright/rubin-complete-target-native-current/run-back-selector-failure"
+      ],
+      "productChangedForPortRepairs": false,
+      "scope": "Actual complete Taro page and current HTTP/cache/native image owners on controlled platform ports; browser WebGL and 2D copy are real. Styles not composed; no WXML/device/physical acceptance."
+    },
+    "codeEpoch": "Frozen older source/render/runtime evidence retains original tables; current production Scene/GPU/contribution/type boundary and tests changed for grouped PNG geometry. Latest task adapter adds controls/DPR/scale after older checks."
+  },
+  "ps1ExteriorBackground": {
+    "decision": {
+      "path": "output/ps1-region-batch-2026-10-08/batch-decision.json",
+      "bytes": 3562,
+      "sha256": "c1ca89e049fd8518609f2f2c10320e0c24fcf1c30dd78394a0ecc925ee1e1813"
+    },
+    "status": "FAILED_REPRESENTATIVE_M8_WIDE_SOURCE_COLOUR_RINGS_AND_BLOCK",
+    "ordinaryAdoption": false
+  },
+  "decap2SpecificRights": {
+    "decision": {
+      "path": "output/optical-hips-registry-research-2026-10-08/decaps2-rights-followup-decision.json",
+      "bytes": 2021,
+      "sha256": "a8d2a2cc3c9b00041a2b88bd0064a4cf6a11423e18a8221d17084b35ad870c79"
+    },
+    "status": "EXACT_CDS_CONTENT_RIGHTS_NOT_ESTABLISHED_NO_PIXEL_REQUEST"
+  },
+  "producerCoordinateMetadata": {
+    "decision": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/producer-metadata/decision.json",
+      "bytes": 1926,
+      "sha256": "7378be55682fa46a35d56d3e40e128e73ef2564dff2955f35c445a89a31c0c00"
+    },
+    "actualMetadataBytes": 26561,
+    "absoluteRegistration": "UNVERIFIED"
+  },
+  "coordinateDiagnostic": {
+    "status": "CACHED_COORDINATE_DIAGNOSTIC_NOT_ACCEPTANCE",
+    "result": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/coordinate-diagnostic/result.json",
+      "bytes": 56791,
+      "sha256": "061cc1de38b00a320213ea655fde50a94dd3fc074d50755cbeb59fc3dd512246"
+    },
+    "intent": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/coordinate-diagnostic/intent.json",
+      "bytes": 11623,
+      "sha256": "b2f9c60c1bd060a31315182e49d3c59a6f9181b075d0cff2f10e926ecf269c64"
+    },
+    "cacheCheck": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/coordinate-diagnostic/runtime-and-cache-check.json",
+      "bytes": 393,
+      "sha256": "023396d3bf915fb4a400d429c3ed73b1e1882c07e772b7c8aad61486dc4adee7"
+    },
+    "catalogueAnchors": 46,
+    "original": {
+      "count": 40,
+      "median": 0.6299172574892983,
+      "p95": 2.330173303489077,
+      "max": 2.864871418677144,
+      "within1": 31,
+      "within2": 37
+    },
+    "flippedControl": {
+      "count": 38,
+      "median": 1.5655914409822531,
+      "p95": 4.273561575343621,
+      "max": 6.119159386972662,
+      "within1": 7,
+      "within2": 21
+    },
+    "emptyProfiles": [
+      "M:61"
+    ],
+    "absoluteRegistration": "UNVERIFIED",
+    "meaning": "Existing radius7 positive residual moment/local10..12 median on encoded mean RGB. Integer HiPS lookup, no subpixel fit, shift, source epoch correction, PSF or source-quality mask. Crowding and uncalibrated display can produce plausible moments on wrong pixels; flipped control is mandatory and cannot be used to tune a passing threshold.",
+    "networkRequests": 0,
+    "originalPixelChanges": 0,
+    "quantileDefinition": "Linear interpolation at (n-1)*p; even-sized median averages the two middle values. Earlier commentary used selected order statistics, not this arithmetic median."
+  },
+  "sameSourcePngLod": {
+    "status": "ALPHA_EDGE_DIFFERENCE_DIAGNOSED_IMAGE_ONLY_DEPTH_COUNTERFACTUAL_PASS_NOT_ADOPTED",
+    "fineOnly": {
+      "result": {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/fine-only-scene/result.json",
+        "bytes": 16091,
+        "sha256": "84859e519c6dad3811cd060d196931dfc0000084bfbf9bafeca0443674fcdcf0"
+      },
+      "alphaClassification": {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/fine-only-scene/alpha-edge-classification.json",
+        "bytes": 707,
+        "sha256": "d7c763c79bc3f36d2a43d7e48a0e788cb5bee9626bf5fbbd82f96294464448ae"
+      },
+      "adapterCheck": {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/fine-only-scene/adapter-check.json",
+        "bytes": 411,
+        "sha256": "779641c8cd9f5fcd96b1a2027755f7faa70da6adf41510944a912297f298ca2d"
+      },
+      "comparedRenderingAndDataInputs": 218,
+      "changedPixels": {
+        "M:8": 709,
+        "M:61": 0
+      },
+      "oneOpaqueCpuSample": "UNRESOLVED_1_RED_CODE_DIFFERENCE"
+    },
+    "depth": {
+      "result": {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/fine-depth-scene/result.json",
+        "bytes": 25556,
+        "sha256": "706a9ca23477fc9ae0d391a7bc15235824ff338a13ca2dd1661c13afbbdbd8a2"
+      },
+      "adapterCheck": {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/fine-depth-scene/adapter-check.json",
+        "bytes": 411,
+        "sha256": "5cec58b1eee44c609b49a3b2690dd59caef49c52dc5ce80414492f3a210b818a"
+      },
+      "frames": 4,
+      "allCompleteRgbaComparisonsEqual": true,
+      "defaultDepthBits": 24,
+      "depthTestRestoredDisabled": true,
+      "sourceCredit": "UNQUALIFIED_PROBES_EXPLICITLY_DISABLED",
+      "meaning": "Fine success equals frozen fine-only, fine submission failures equal frozen coarse. Current source-contribution owner rejects depth-tested rendering; no source-credit/cross-source/partial-failure/native adoption claim."
+    },
+    "failedPreflight": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/failed-fine-only-frozen-provenance/failed-preflight.json",
+      "bytes": 1319,
+      "sha256": "3ffe981329f3214f459f141ce1961169c03b493c780b775aff99d10446b771b2"
+    },
+    "oldFramesRerendered": false,
+    "networkRequests": 0,
+    "newSourceProcessing": 0,
+    "productChanged": false,
+    "independentReview": "MISSING",
+    "ownerCoupling": {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/fine-depth-scene/owner-coupling-preflight.json",
+      "bytes": 2140,
+      "sha256": "c1859ff454b2c77bd7e3feb441239bc8fb78a0bf01f5664ac67dd2d026dab7d5"
+    },
+    "grouped": {
+      "scope": "Current single source-group workRGBA+depth reuses contribution allocator and A-channel signal; ordinary adoption false.",
+      "originalFrames": 8,
+      "softwareGlErrors": 0,
+      "positiveCredit": true,
+      "partialAndFullFailure": "PASS within declared software scope",
+      "quantization": "Max1 code difference; max2 allowed in pre-edit intent. No geometry/credit/failure tolerance.",
+      "policyRefusal": "Whole RGBA exact independent path, no false source/fault; depth allocation failure latches and releases.",
+      "controls": 12,
+      "partialPixelLocality": "Changed pixels confined to conservative failed Float32 mesh cell intersection; not hardware raster certification.",
+      "cachedAlpha": "200 partial, one outside cached samples remains unverified. Prior CPU-opaque discrepancy retained.",
+      "failureArchive": {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/failed-grouped-policy-repetition",
+        "receiptPrefix": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scene",
+        "meaning": "Original receipt bytes unchanged after directory move; remap this prefix to archive path for first3 frames and failed observation. Repeated refusal attempts fixed in Scene with one attempted group per draw."
+      }
+    },
+    "groupedScale": {
+      "frames": 2,
+      "backing": [
+        780,
+        1688
+      ],
+      "taskAuxiliaryBytesLimit": 8388608,
+      "comparison": [
+        {
+          "id": "M-8-published-grouped-fine",
+          "changedPixels": 816,
+          "maxChannelDifference": 1
+        },
+        {
+          "id": "M-61-published-grouped-fine",
+          "changedPixels": 0,
+          "maxChannelDifference": 0
+        }
+      ],
+      "original2MiBPolicy": "REFUSED_WITH_EXACT_INDEPENDENT_PIXELS; new LOD/source qualification unavailable",
+      "defaultBudgetChanged": false,
+      "physicalCapacity": "UNVERIFIED"
+    }
+  },
+  "pausedCheckpoint": {
+    "status": "PAUSED_BY_USER_2026_10_08",
+    "goal": {
+      "actual": "paused",
+      "budget": null,
+      "complete": false,
+      "userRequest": "云观星这一块暂停开发先，你做个状态保存或者暂存？",
+      "readback": "get_goal paused and idempotent update_goal paused; no create/complete"
+    },
+    "code": [
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-render-surface.ts",
+        "bytes": 4358,
+        "sha256": "dc5d0da092145adbaa7188460c0d181b7adfd1b60bae93965e9f3ecdbc338f3e"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+        "bytes": 36782,
+        "sha256": "32d76d41cd507a1ff8f72e326396eed1d262c8790dbd3ab199961edf3315a81f"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+        "bytes": 63663,
+        "sha256": "f63f01188b1f8b148be68c4226ac1617d966219656d95c8f3ff614a28389c248"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.ts",
+        "bytes": 36964,
+        "sha256": "355cce81a6be8075c9191f0618c3693175861b25817a48a01dc2f2f883ced1d8"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-hips-scene.test.ts",
+        "bytes": 15237,
+        "sha256": "ebbff0076c529f6bb43b274e352632f355ae89ae06782551c0295c38db41130f"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.test.ts",
+        "bytes": 21148,
+        "sha256": "4e9ccc993f461d6758f8d710eac3c14f3e08c0ba88085ef5dd411485af142b96"
+      }
+    ],
+    "proof": [
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-intent.json",
+        "bytes": 2839,
+        "sha256": "88c689c6e85eebf084ff4c93ff5d7eda7ade2e12de24da07ade300ad46727636"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scene/result.json",
+        "bytes": 57282,
+        "sha256": "a7aa20fb0fc4f8db1492a7cb21d912a0b2e73057fccdf87c8f7b099bd85fe025"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scene/input-readback.json",
+        "bytes": 69,
+        "sha256": "135092850e584267dcdf84fa97068e3bab078637b69548255d900b8feafc74f2"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scene/pixel-locality-readback.json",
+        "bytes": 1219,
+        "sha256": "8520da40432a92885312e014db0ac17ba0e00375d67deaba9107bdc43d74b172"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-controls/controls.json",
+        "bytes": 12557,
+        "sha256": "64920980794f15f170d559f07cea35bc3d6f0250c8d358992f081376c6605494"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-controls/adapter-check.json",
+        "bytes": 498,
+        "sha256": "ca56a9bac523f8111d24390712fef8e34ae182a81327b459d001c3f4780cb56e"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-dpr-policy/controls.json",
+        "bytes": 1107,
+        "sha256": "ab5025daecdfa57dcb0e1a2e796e2004287da512fad9e5a4b7c04f8de1a566f4"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scale/result.json",
+        "bytes": 20502,
+        "sha256": "9b8c3789c210d457a038465aafa3ec28a243c4d0f21fd797f6a0c37cfc488a12"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/failed-grouped-policy-repetition/result.json",
+        "bytes": 29247,
+        "sha256": "cfefb8f337b31fc7778d8e1e8a092f1d11dde6b470ed861f5f8800105ca4dd99"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/build-result.json",
+        "bytes": 329,
+        "sha256": "81cfb9ef421cb3c459300cac00e02b9dfc87e191d453f2fec9746e04e4585c72"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/result.json",
+        "bytes": 23573,
+        "sha256": "c8a7c5515d2c243e715d7539704c3d3decae5e241d2039b45696cd86033ee82e"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/rubin-consumer-result.json",
+        "bytes": 722783,
+        "sha256": "b4a0ab6872afc5817662a6f36b9316be01a8c7badb6dce542da53054131f029c"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/native-surface-readback.json",
+        "bytes": 237,
+        "sha256": "ffacd980202072f7f5bf5b0a939095f30a07eb1b92d18dbbc5c42190778aa104"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/cleanup.json",
+        "bytes": 91,
+        "sha256": "6efcbee01f2d19cd7d5f5aba774faa5e2477506a04460ca49a4a080ba5067a57"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/source-bindings-after.json",
+        "bytes": 96098,
+        "sha256": "292c82fc8652e8b1ffe160c68e14a727db32fb113ad7ab363585d8975fec891e"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/task-owner-bindings-after.json",
+        "bytes": 1761,
+        "sha256": "6896e674c1a6247bf2cb6ea0b346817fba42821d9b031277fb541721acb466d5"
+      }
+    ],
+    "refs": {
+      "branch": "codex/remote-main-20260908",
+      "localHead": "e2136ebf59875f02f921bba393d1b11d7782f81e",
+      "actualRemoteAuthorizedBranch": "e2136ebf59875f02f921bba393d1b11d7782f81e",
+      "actualRemoteMain": "a786c2e9732ab8b82d82e90d20e04d728bf645ee",
+      "method": "Latest pre-pause git ls-remote --heads; no fetch/switch/merge/push"
+    },
+    "protected": [
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/GOAL-CURRENT.md",
+        "bytes": 10098,
+        "sha256": "d42b32e9cc738d452698bbf2fc6e2c17725ea2737208b8613914f48f08e3cf60"
+      },
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/ACCEPTANCE-CURRENT.md",
+        "bytes": 48141,
+        "sha256": "34549de3f9d2f17ab7f344c5dfb700f988977d004bf033a59aa881edfa9053e3"
+      },
+      {
+        "path": "apps/wechat-miniapp/project.config.json",
+        "bytes": 975,
+        "sha256": "7ab530fac785c3716dcc6293837492ff2098e7698b382e47fa057800a03f8ad6"
+      },
+      {
+        "path": "workers/miniapp-api/assets/celestial-object-introductions.zh-cn.v72.json",
+        "bytes": 643978,
+        "sha256": "587c4b3f7f773d352925932062716ea570485f18ddaa0a6d2c9730c29b5c204d"
+      }
+    ],
+    "grouped": {
+      "scope": "Current single source-group workRGBA+depth reuses contribution allocator and A-channel signal; ordinary adoption false.",
+      "originalFrames": 8,
+      "softwareGlErrors": 0,
+      "positiveCredit": true,
+      "partialAndFullFailure": "PASS within declared software scope",
+      "quantization": "Max1 code difference; max2 allowed in pre-edit intent. No geometry/credit/failure tolerance.",
+      "policyRefusal": "Whole RGBA exact independent path, no false source/fault; depth allocation failure latches and releases.",
+      "controls": 12,
+      "partialPixelLocality": "Changed pixels confined to conservative failed Float32 mesh cell intersection; not hardware raster certification.",
+      "cachedAlpha": "200 partial, one outside cached samples remains unverified. Prior CPU-opaque discrepancy retained.",
+      "failureArchive": {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/failed-grouped-policy-repetition",
+        "receiptPrefix": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scene",
+        "meaning": "Original receipt bytes unchanged after directory move; remap this prefix to archive path for first3 frames and failed observation. Repeated refusal attempts fixed in Scene with one attempted group per draw."
+      }
+    },
+    "scale": {
+      "frames": 2,
+      "backing": [
+        780,
+        1688
+      ],
+      "taskAuxiliaryBytesLimit": 8388608,
+      "comparison": [
+        {
+          "id": "M-8-published-grouped-fine",
+          "changedPixels": 816,
+          "maxChannelDifference": 1
+        },
+        {
+          "id": "M-61-published-grouped-fine",
+          "changedPixels": 0,
+          "maxChannelDifference": 0
+        }
+      ],
+      "original2MiBPolicy": "REFUSED_WITH_EXACT_INDEPENDENT_PIXELS; new LOD/source qualification unavailable",
+      "defaultBudgetChanged": false,
+      "physicalCapacity": "UNVERIFIED"
+    },
+    "nativeConsumers": {
+      "scope": "Controlled full Taro/HTTP/cache/software GL-to-2D, explicit4MiB/two-group diagnostic policy at1x; not WeChat/WXML/physical.",
+      "inputs": 523,
+      "scenePresentations": 88,
+      "requests": 139,
+      "backs": [
+        {
+          "reference": "M:8",
+          "beforeSha": "1c69b19512b64b2300b1f3798ed5c20dea3bcd91e8ac08eb79ba9a9d36cabb1a",
+          "afterSha": "1c69b19512b64b2300b1f3798ed5c20dea3bcd91e8ac08eb79ba9a9d36cabb1a",
+          "completedBackFrames": 2,
+          "newOpticalBodies": 0
+        },
+        {
+          "reference": "M:61",
+          "beforeSha": "c73b2fa53e871efe4223902c13d99e6790085c176f36a8aac6bfbffc169eaaec",
+          "afterSha": "c73b2fa53e871efe4223902c13d99e6790085c176f36a8aac6bfbffc169eaaec",
+          "completedBackFrames": 1,
+          "newOpticalBodies": 0
+        }
+      ],
+      "cleanup": "Task browser/API closed; final display/source backing and listener owners zero"
+    },
+    "checks": {
+      "appTypes": "Actual app TS5.9.3 PASS with current unchanged strict configuration",
+      "affectedOwnerChecks": "20PASS current source/group/contribution owner checks",
+      "taskTypes": "PASS at89433B adapter epoch; subsequent DPR/scale additions NOT_RECHECKED by type compiler",
+      "latestTaskAdapter": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-noirlab-scene.mts",
+        "bytes": 92177,
+        "sha256": "999e87399462294602e3066b5eb8f2a80eb1b9a7adeca5df362f7c44710cff29"
+      },
+      "newTestsAfterPause": 0
+    },
+    "remaining": [
+      "High-DPR contribution/resource policy is not qualified under original2MiB; no silent budget increase",
+      "Whole photo exterior and continuous background FAILED",
+      "WeChat WXML/controls FAILED; devices/physical peak/capacity UNVERIFIED",
+      "Absolute registration UNVERIFIED, scientific support UNKNOWN, independent review MISSING",
+      "Complete33-obligation ledger remains open; ordinary Prepared empty/HiPS disabled/v72 unchanged"
+    ],
+    "next": "Paused. Only after fresh explicit continuation, read PLAN current checkpoint and original owners; address high-DPR shared contribution/resource constraint and current adapter types without rerendering unchanged proof. Background/P1/R/E/A remain independent, phones last.",
+    "resources": {
+      "ownedRunningTestSessions": 0,
+      "ownedBrowserAndApi": "Closed by actual finalizers; process scan found no current batch/native runners",
+      "existingServices": "Preserved"
+    },
+    "git": {
+      "commitPushStashResetCleanSwitch": false,
+      "preservedWorkingAndIndexChanges": true
+    }
+  }
+}

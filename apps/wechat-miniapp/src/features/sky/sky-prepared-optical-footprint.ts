@@ -46,7 +46,12 @@ export function registerSkyPreparedOpticalFootprints(input: SkyTargetOpticalImag
   const identity = skyExactTargetOpticalIdentity(input);
   if (!identity || identity.kind !== "prepared" || !observation) return null;
   try { assertStellarRotation(observation.equatorialToEnu); } catch { return null; }
-  const { publication } = identity, geometry = publication.source?.nominalAvm;
+  const { publication } = identity;
+  // This diagnostic describes the older reprojected source/mother pair.
+  // Native full-source tiers have no invented 2048 square mother; their plane
+  // is owned directly by registerSkyTanOpticalField.
+  if (publication.imageVersion === "prepared-native-optical-v1") return null;
+  const geometry = publication.source?.nominalAvm;
   if (!geometry || geometry.accuracy !== "UNVERIFIED_APPROXIMATE_PUBLISHER_AVM" ||
     ![geometry.referenceValue, geometry.crpixFitsOneBased, geometry.cdeltDegrees,
       geometry.decodedShapeWidthHeight].every(pair => Array.isArray(pair) && pair.length === 2 && pair.every(Number.isFinite)) ||

@@ -135,6 +135,14 @@ export function createSkyPublicImageCache(deps: {
       if (snapshot !== epoch) throw error("cancelled");
     } finally { await remove(file); }
   };
+  // Concurrent warm touches before the next serialized snapshot share its
+  // durable index write. A touch after that snapshot starts needs a new write.
+  // Leases still wait for their snapshot's verified atomic commit.
+  let warmAccessWrite: Promise<void> | undefined;
+  const persistWarmAccess = () => warmAccessWrite ??= serial(async () => {
+    warmAccessWrite = undefined;
+    await persist();
+  });
   const initialize = async (bootEpoch: number) => {
     try { await deps.fs.mkdir(root); } catch { /* Existing directory is verified by the listing. */ }
     const files = await deps.fs.list(root);
@@ -235,7 +243,7 @@ export function createSkyPublicImageCache(deps: {
       try {
         if (!matchesSkyFileBytes(await readExact(existing.file, job.asset.bytes), job.asset)) throw error("corrupt");
         assertCurrent(job); existing.last = now();
-        await serial(persist); assertCurrent(job); return existing;
+        await persistWarmAccess(); assertCurrent(job); return existing;
       } catch (cause) {
         if (!current(job)) throw cause;
         await serial(async () => { retire(existing); await reap(existing); await persist(); });

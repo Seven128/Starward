@@ -1721,11 +1721,11 @@ export class MiniappService {
   }
 
   async getSky(spotId: string, contextId: string, userId?: UserId | null,
-    catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2") {
+    catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2", deepSkyCatalogVersion?: string) {
     const { context, proposal } = await this.#skyAccess(spotId, contextId, userId);
     return proposal ? this.astronomy.computeCandidate(context, proposal.detail, proposal.id,
-      undefined, undefined, catalogVersion)
-      : this.astronomy.compute(context, undefined, undefined, catalogVersion);
+      undefined, undefined, catalogVersion, deepSkyCatalogVersion)
+      : this.astronomy.compute(context, undefined, undefined, catalogVersion, deepSkyCatalogVersion);
   }
 
   async getSkyTargetInstant(spotId: string, contextId: string, at: string, userId?: UserId | null) {
@@ -1735,7 +1735,6 @@ export class MiniappService {
 
   #candidateSkyDetail(submission: import("@starward/miniapp-contracts").ContributionSubmission, timezone: string): SpotDetail {
     if (!submission.candidateLocation) throw new Error("proposal_location_required");
-    const now = new Date().toISOString();
     const fields = submission.candidateProfile?.fields ?? {};
     const source: SourceSummary = {
       id: `proposal-source:${submission.submissionId}`,
@@ -1746,7 +1745,10 @@ export class MiniappService {
       license: "Private pending submission",
       licenseUrl: "",
       publishedAt: null,
-      retrievedAt: now,
+      // This projection reads the same submitted evidence until its revision
+      // changes. A request-time stamp would change the sky dataRevision and
+      // invalidate the position consumer of the already displayed report.
+      retrievedAt: submission.updatedAt,
       validFrom: null,
       validTo: null,
       state: "PARTIAL",

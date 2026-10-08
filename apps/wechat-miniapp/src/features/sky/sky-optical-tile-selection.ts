@@ -1,6 +1,7 @@
 import type {OpticalHipsIndexData,OpticalHipsManifestData,SkyObservationFrame} from "@starward/miniapp-contracts";
 import type {SkyArtworkView} from "./sky-artwork-registration";
 import {selectSkyHipsTiles} from "./sky-hips-tile-selection";
+import {pix2VecNest} from "healpix-ts";
 
 export interface PublishedOpticalSelection {
   sourceId:string;
@@ -17,6 +18,20 @@ export interface PublishedOpticalTile {
 }
 
 export interface OpticalCoverageReference {order:number;pixels:readonly number[]}
+
+/** Keep the selected coverage and layer groups unchanged. Within each group,
+ * request cells nearest the current camera first, before conservative cap edges.
+ * This is loading order, not a new coverage test or a render-layer priority. */
+export function orderPublishedOpticalTilesForView(tiles:readonly PublishedOpticalTile[],
+  frame:SkyObservationFrame,view:SkyArtworkView):PublishedOpticalTile[] {
+  const m=frame.equatorialToEnu,q=view.basis.forward;
+  const center=[m[0]*q[0]+m[3]*q[1]+m[6]*q[2],m[1]*q[0]+m[4]*q[1]+m[7]*q[2],
+    m[2]*q[0]+m[5]*q[1]+m[8]*q[2]];
+  return tiles.map(tile=>{const direction=pix2VecNest(2**tile.order,tile.pixel);
+    return {tile,dot:direction[0]*center[0]!+direction[1]*center[1]!+direction[2]*center[2]!};
+  }).sort((a,b)=>b.tile.sourcePriority-a.tile.sourcePriority||a.tile.order-b.tile.order||
+    b.dot-a.dot||a.tile.pixel-b.tile.pixel).map(entry=>entry.tile);
+}
 
 /** Shard directories identify possible candidates; actual coverage is resolved
  * from each fetched index. Source names and maxOrder are not coverage. */

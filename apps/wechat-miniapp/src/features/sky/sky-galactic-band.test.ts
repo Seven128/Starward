@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { OBSERVATION_FRAME_FORMAT } from "@starward/miniapp-contracts";
-import { galacticEquirectUv,skyGalacticBandAt } from "./sky-galactic-band";
+import { OBSERVATION_FRAME_FORMAT,MELLINGER_OPTICAL_MILKY_WAY,type OpticalMilkyWayManifestData } from "@starward/miniapp-contracts";
+import { galacticEquirectUv,skyGalacticBandAt,skyGalacticImageBand } from "./sky-galactic-band";
 import { drawSkyScene } from "./sky-scene-render";
 import type { SkyRenderSurface } from "./sky-render-surface";
 import type { ResolvedSkyReport } from "./sky-stellar-scene";
@@ -36,7 +36,49 @@ test("Galactic schematic rotates with the exact observer frame and fades outside
   assert.equal(skyGalacticBandAt(withoutFrame,at,240),null);
 });
 
-test("schematic sits behind independent stars and fails without clearing the scene",()=>{
+const opticalPublication:OpticalMilkyWayManifestData={schemaVersion:"starward-mellinger-optical-milky-way-trial-v1",
+  scope:"TRIAL",role:"OPTICAL_MILKY_WAY_DISPLAY",publicationId:"conditional-optical",publicationHash:"a".repeat(64),
+  source:MELLINGER_OPTICAL_MILKY_WAY.source,projection:MELLINGER_OPTICAL_MILKY_WAY.projection,
+  image:{...MELLINGER_OPTICAL_MILKY_WAY.image,downloadUrl:"/v2/sky/galactic/"+"a".repeat(64)+"/milkyway.png"},
+  scientificAvailability:"UNKNOWN",absoluteRegistration:"UNVERIFIED",processing:"Unmodified bitmap.",
+  limitations:["Producer processing unknown.","Not a general regional background."]};
+
+test("optical axes follow exact time without turning a failed image into an equatorial schematic",()=>{
+  const normal=skyGalacticBandAt(report(-24),at,90)!,rotated=skyGalacticBandAt(report(-24,quarterTurn),at,90)!;
+  const optical=skyGalacticImageBand(report(-24),at,normal,opticalPublication)!;
+  assert.deepEqual(optical.pole,normal.pole);assert.deepEqual(optical.center,normal.center);
+  assert.deepEqual(optical.imageProjection,{pole:[0,0,1],center:[0,-1,0],smoothInfraredPointSources:false});
+  assert.deepEqual(skyGalacticImageBand(report(-24,quarterTurn),at,rotated,opticalPublication)!.imageProjection,
+    {pole:[0,0,1],center:[1,0,0],smoothInfraredPointSources:false});
+  assert.equal(skyGalacticImageBand(report(-24),later,normal,opticalPublication),null);
+  for(const [ra,dec] of [[10.6847083,41.26875],[83.8220833,-5.3911111],[0,-89.9],[359.9,89.9]]){
+    const r=ra!*Math.PI/180,d=dec!*Math.PI/180;
+    const ray:[number,number,number]=[Math.cos(d)*Math.cos(r),Math.cos(d)*Math.sin(r),Math.sin(d)];
+    const uv=galacticEquirectUv(ray,optical.imageProjection!.pole,optical.imageProjection!.center);
+    assert(Math.abs(((uv[0]+1)%1)-((.25-ra!/360+1)%1))<1e-9);
+    assert(Math.abs(uv[1]-(.5-dec!/180))<1e-9);
+  }
+});
+
+test("a successful schematic cannot publish a loaded but undrawn optical bitmap source",()=>{
+  const image={id:"optical"};let drawImage=false;let sources:unknown,received:unknown;
+  const surface=new Proxy({}, {get:(_target,key)=>key==="galacticBand"
+    ? (_view:unknown,band:unknown,input:object|null,painted?:(image:object)=>void)=>{
+      received=band;if(drawImage&&input)painted?.(input);return true;
+    } : ()=>undefined}) as SkyRenderSurface;
+  const args:Parameters<typeof drawSkyScene>=[surface,report(-24),at,null,null,400,800,"NIGHT",
+    (_snapshot,value)=>{sources=value;},undefined,90,null,basis];
+  args[26]=image;args[39]=opticalPublication;
+  drawSkyScene(...args);assert.equal((sources as any).galacticImage,null);
+  assert.deepEqual((received as any).pole,skyGalacticBandAt(report(-24),at,90)!.pole);
+  drawImage=true;drawSkyScene(...args);
+  assert.strictEqual((sources as any).galacticImage.image,image);
+  assert.strictEqual((sources as any).galacticImage.publication,opticalPublication);
+  args[21]=[{layer:"WIDE_FIELD_W3",order:0,pixel:0,image:{}}];drawSkyScene(...args);
+  assert.equal((sources as any).galacticImage,null,"W3 cannot retain the replaced optical source");
+});
+
+test("schematic failure still finishes the independent scene with default grids off",()=>{
   const events:string[]=[];
   const surface=new Proxy({}, {get:(_target,key)=>key==="galacticBand"
     ? ()=>{events.push("galacticBand");return false;}
@@ -48,7 +90,8 @@ test("schematic sits behind independent stars and fails without clearing the sce
   failureArgs[23]=()=>{failed=true;};
   drawSkyScene(...failureArgs);
   assert.equal(failed,true);
-  assert.deepEqual(events.slice(0,4),["begin","solarLight","galacticBand","segments"]);
+  assert.deepEqual(events.slice(0,3),["begin","solarLight","galacticBand"]);
+  assert.equal(events.includes("segments"),false,"default grids remain off");
   assert.equal(events.at(-1),"finish");
   events.length=0;
   drawSkyScene(surface,report(-24),at,null,null,400,800,"OBSERVATION",undefined,undefined,240,null,basis);

@@ -1,0 +1,186 @@
+{
+  "status": "SOURCE_INSPECTION_NOT_ADOPTION",
+  "rows": [
+    {
+      "key": "alpheratz",
+      "title": "Alpheratz",
+      "revision": "1374783243",
+      "entityId": "Q13039",
+      "sourceUrl": "https://en.wikipedia.org/w/index.php?oldid=1374783243&title=Alpha_Andromedae",
+      "source": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-alpheratz-2026-10-07.html",
+        "bytes": 421889,
+        "sha256": "ada3a3dbabe20ca25d0e86663a002d884d85e89018244098c12bcfc1f0796bb2"
+      },
+      "retrievedAt": "2026-10-06T21:38:26.192Z",
+      "footer": "Text is available under the Creative Commons Attribution-ShareAlike 4.0 License;\nadditional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy. Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.",
+      "lastModified": " This page was last edited on 14 September 2026, at 02:17 (UTC).",
+      "paragraphs": [
+        "Alpheratz is a prominent star system in the constellation of Andromeda. Pronounced /ælˈfɪəræts/,[13][14] it has the Bayer designation Alpha Andromedae, Latinised from α Andromedae, and abbreviated Alpha And or α And, respectively. Alpheratz is the brightest star in the constellation when Mirach (β Andromedae) undergoes its periodical dimming. Immediately northeast of the constellation of Pegasus, it is the upper left star of the Great Square of Pegasus. It is located at a distance of 97 light-years from Earth.",
+        "Although it appears to the naked eye as a single star with overall apparent visual magnitude +2.06, it is actually a binary system composed of two stars in close orbit. The chemical composition of the brighter of the two stars is unusual as it is a mercury-manganese star whose atmosphere contains abnormally high abundances of mercury, manganese, and other elements, including gallium and xenon.[15] It is the brightest mercury-manganese star known.[15]",
+        "α Andromedae (Latinised to Alpha Andromedae) is the star's Bayer designation. Ptolemy considered the star (system) to be shared by Pegasus and Johann Bayer assigned it a designation in both constellations: Alpha Andromedae (α And) and Delta Pegasi (δ Peg).  Since the IAU standardized constellation boundaries and widely published them two years after in 1930, the Pegasi alternate name has dropped from use, putting it slightly outside of that constellation.[16]",
+        "To most European centres of learning the star bore names Alpheratz (/ælˈfiːræts/[17]) or the cognate simplification Alpherat or the other part of the fabled description: Sirrah /ˈsɪrə/. The name has no relation with the word \"alpha\".",
+        "The origin of these three, the Arabic phrasal name, is سرة الفرس surrat al-faras \"navel of the mare/horse\", attracting a hard consonant not present above due to a following vowel. The horse corresponds equivalently to the winged horse of the Greeks, Pegasus. The star is in almost all depictions part of the main asterism of Pegasus and Andromeda.[18] In 2016, the International Astronomical Union organized a Working Group on Star Names (WGSN)[19] to catalog and standardize proper names for stars. The WGSN's first bulletin of July 2016[20] confirmed Alpheratz as the name for the main star.",
+        "Other terms for this star used by some medieval astronomers writing were راس المراة المسلسلة rās al-mar'a al-musalsala (head of the woman in chains),[18] al-kaff al-khaḍīb and kaff al-naṣīr (palm of the faithful). The chained woman referenced Andromeda.[21]",
+        "In the Hindu lunar zodiac, this star, together with the other stars in the Great Square of Pegasus (α, β, and γ Pegasi), makes up the nakshatras of Pūrva Bhādrapadā and Uttara Bhādrapadā.[18]",
+        "In Chinese, 壁宿 (Bì Sù), meaning wall, refers to an asterism consisting of α Andromedae and γ Pegasi.[22] Consequently, the Chinese name for α Andromedae itself is 壁宿二 (Bì Sù èr, English: the second star of the wall.)[23]",
+        "It is also known as one of the \"Three Guides\" that mark the prime meridian of the heavens, the other two being Beta Cassiopeiae and Gamma Pegasi. It was believed to bless those born under its influence with honour and riches.[24]",
+        "The radial velocity of a star away from or towards the observer can be determined by measuring the red shift or blue shift of its spectrum. The American astronomer Vesto Slipher made a series of such measurements from 1902 to 1904 and discovered that the radial velocity of α Andromedae varied periodically. He concluded that it was in orbit in a spectroscopic binary star system with a period of about 100 days.[25] A preliminary orbit was published by Hans Ludendorff in 1907,[26] and a more precise orbit was later published by Robert Horace Baker.[27]",
+        "The fainter star in the system was first resolved interferometrically by Xiaopei Pan and his coworkers during 1988 and 1989, using the Mark III Stellar Interferometer at the Mount Wilson Observatory, California, United States. This work was published in 1992.[28] Because of the difference in luminosity between the two stars, its spectral lines were not observed until the early 1990s, in observations made by Jocelyn Tomkin, Xiaopei Pan, and James K. McCarthy between 1991 and 1994 and published in 1995.[29]",
+        "The two stars are now known to orbit each other with a period of 96.9 days.[7] The larger, brighter star, called the primary, has a spectral type of B8IV-VHgMn,[30] a mass of approximately 3.6 solar masses,[7] a surface temperature of about 11,900 K (or 13,850 K[10]), and, measured over all wavelengths, a luminosity of about 160 times the Sun's.[5] Its smaller, fainter companion, the secondary, has a mass of approximately 1.9 solar masses[7] and a surface temperature of about 7,900 K, and, again measured over all wavelengths, a luminosity of about 15 times the Sun's. It is a late-type A star whose spectral type is estimated as A7V.[5]",
+        "In 1906, Norman Lockyer and F. E. Baxandall reported that α Andromedae had a number of unusual lines in its spectrum.[31] In 1914, Baxandall pointed out that most of the unusual lines came from manganese, and that similar lines were present in the spectrum of μ Leporis.[32] In 1931, W. W. Morgan identified 12 additional stars with lines from manganese appearing in their spectra.[33] Many of these stars were subsequently identified as part of the group of mercury-manganese stars,[34] a class of chemically peculiar stars which have an excess of elements such as mercury, manganese, phosphorus, and gallium in their atmospheres.[35], §3.4. In the case of α Andromedae, the brighter primary star is a mercury-manganese star which, as well as the elements already mentioned, has excess xenon.",
+        "In 1970, Georges Michaud suggested that such chemically peculiar stars arose from radiative diffusion. According to this theory, in stars with unusually calm atmospheres, some elements sink under the force of gravity, while others are pushed to the surface by radiation pressure.[35], §4.[36] This theory has successfully explained many observed chemical peculiarities, including those of mercury-manganese stars.[35], §4.",
+        "α Andromedae has been reported to be slightly variable,[37] but observations from 1990 to 1994 found its brightness to be constant to within less than 0.01 magnitude.[38] However, Adelman and his co-workers have discovered, in observations made between 1993 and 1999 and published in 2002, that the mercury line in its spectrum at 398.4 nm varies as the primary rotates. This is because the distribution of mercury in its atmosphere is not uniform. Applying Doppler imaging to the observations allowed Adelman et al. to find that it was concentrated in clouds near the equator.[39] Subsequent Doppler imaging studies, published in 2007, showed that these clouds drift slowly over the star's surface.[9]",
+        "The location of α Andromedae in the sky is shown above. It can be seen by the naked eye and is theoretically visible at all latitudes north of 60° S. During evening from August to October, it will be high in the sky as seen from the northern midlatitudes.[40]",
+        "The binary system described above has an optical visual companion, discovered by William Herschel on July 21, 1781.[11][44][45] Designated as ADS 94 B in the Aitken Double Star Catalogue, it is a G-type star with an apparent visual magnitude of approximately 10.8.[42] Although by coincidence it appears near to the other two stars in the sky, it is much more distant from Earth; the parallax observed by Gaia place this star more than 1,300 light years away.[44]"
+      ],
+      "warnings": [],
+      "identityFields": [
+        "α Andromedae\n\n\n\n  \n\n    \n\n  \n\n  \n\nLocation of Alpheratz in Andromeda (circled)\n\n\nObservation dataEpoch J2000.0      Equinox ICRS\n\nConstellation\nAndromeda\n\n\n\n\n\nRight ascension\n00h 08m 23.25988s[1]\n\nDeclination\n+29° 05′ 25.5520″[1]\n\nApparent magnitude (V)\n2.06 (2.22 + 4.21)[2]\n\n\nCharacteristics\n \n\n \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nU−B color index\n−0.46[3]\n\nB−V color index\n−0.11[3]\n\n\n\nR−I color index\n−0.10[3]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \nA\n \n\n\n\n\nSpectral type\nB8IV-VHgMn[4]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nB−V color index\n−0.06[5]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \nB\n \n\n\n\n\nSpectral type\nA7V[5]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nB−V color index\n0.22[5]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAstrometryARadial velocity (Rv)−10.6 ± 0.3[a] km/sProper motion (μ) RA: 135.68[6] mas/yr  Dec.: −162.95[6] mas/yr Parallax (π)33.62±0.35 mas[1]Distance97 ± 1 ly (29.7 ± 0.3 pc)Absolute magnitude (MV)−0.193[5][b]BAbsolute magnitude (MV)1.797[5]\nOrbit[7]Period (P)96.69±0.06 daysSemi-major axis (a)23.917±0.127 mas[7](0.7146±0.0327 AU)[5]Eccentricity (e)0.526±0.013Inclination (i)105.8±0.17°Longitude of the node (Ω)104.46±0.48°Periastron epoch (T)MJD 47374.563 ± 0.095[2]Argument of periastron (ω)(secondary)257.4 ± 0.31[2]°\nDetailsAMass3.63±0.201[7] M☉Radius2.94 ± 0.34[5][c] R☉Luminosity (bolometric)158+41−33[5] L☉Surface gravity (log g)3.75[8] cgsTemperature11,950[5] KRotation2.38 d[9]Rotational velocity (v sin i)53[10] km/sAge60;[8] 200+117−74[5] MyrBMass1.875±0.096[7] M☉Radius2.03 ± 0.23[5][d] R☉Luminosity (bolometric)14.79+3.83−3.04[5] L☉Surface gravity (log g)4.0[8] cgsTemperature7,935[5] KAge70;[8] 447+184−130[5] Myr\nOther designationsAlpheratz, Sirrah, Sirah, H 5 32A, α And, Alpha Andromedae, Alpha And, δ Pegasi, δ Peg, Delta Pegasi, Delta Peg, 21 Andromedae, 21 And, BD+28°4, FK5 1, GC 127, HD 358, HIP 677, HR 15, SAO 73765, PPM 89441, ADS 94 A, CCDM J00083+2905A, WDS 00084+2905A/Aa, LTT 10039, NLTT 346[6][11][12]\nDatabase referencesSIMBADdata",
+        "ADS 94 B\n\n\nObservation dataEpoch J2000.0      Equinox J2000.0 (ICRS)\n\nConstellation\nAndromeda\n\n\n\n\n\nRight ascension\n00h 08m 16.65194s[41]\n\nDeclination\n+29° 05′ 46.4518″[41]\n\nApparent magnitude (V)\n10.8[42]\n\n\nCharacteristics\n \n\n \n\n\nEvolutionary stage\nsubgiant[41]\n\nSpectral type\nG5[42]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nB−V color index\n1.0[42]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAstrometryRadial velocity (Rv)−34.66±0.29[41] km/sProper motion (μ) RA: 2.863[41] mas/yr  Dec.: −14.172[41] mas/yr Parallax (π)2.4694±0.0184 mas[41]Distance1,321 ± 10 ly (405 ± 3 pc)\n\nPosition (relative to A)\n \nEpoch of observation2000Angular distance89.3″ [11]Position angle284° [11]\nDetailsMass1.030±0.124[43] M☉Radius2.778±0.124[43] R☉Luminosity7.7±0.34[43] L☉Surface gravity (log g)3.5633±0.0699[43] cgsTemperature5766±100[43] KMetallicity−0.1290±0.0120[43]Age3.183±0.00069[43] Gyr\nOther designationsH 5 32B, BD+28°4B, PPM 89439, CCDM J00083+2905B, WDS 00084+2905B[11][42]\nDatabase referencesSIMBADdata"
+      ],
+      "simbadLinks": [
+        {
+          "text": "data",
+          "url": "https://simbad.cds.unistra.fr/simbad/sim-id?Ident=HR+15"
+        },
+        {
+          "text": "data",
+          "url": "https://simbad.cds.unistra.fr/simbad/sim-id?Ident=ADS+94+B"
+        },
+        {
+          "text": "\"* alf And\"",
+          "url": "http://simbad.u-strasbg.fr/simbad/sim-basic?Ident=%2A+alf+And"
+        },
+        {
+          "text": "\"Alpheratz\"",
+          "url": "http://simbad.u-strasbg.fr/simbad/sim-basic?Ident=Alpheratz"
+        },
+        {
+          "text": "\"TYC 1735-3181-1\"",
+          "url": "http://simbad.u-strasbg.fr/simbad/sim-basic?Ident=TYC+1735-3181-1"
+        }
+      ],
+      "snapshotMeaning": "Actual full HTML embedded fixed revision; no duplicate revision fetch or media."
+    },
+    {
+      "key": "mirach",
+      "title": "Mirach",
+      "revision": "1374584335",
+      "entityId": "Q13043",
+      "sourceUrl": "https://en.wikipedia.org/w/index.php?oldid=1374584335&title=Beta_Andromedae",
+      "source": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-mirach-2026-10-07.html",
+        "bytes": 285852,
+        "sha256": "de9a5c7cfad7a8bd40e5198736c80ed20adb08f8e62db57f3bf54a3f09791fdb"
+      },
+      "retrievedAt": "2026-10-06T21:38:28.669Z",
+      "footer": "Text is available under the Creative Commons Attribution-ShareAlike 4.0 License;\nadditional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy. Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.",
+      "lastModified": " This page was last edited on 12 September 2026, at 23:12 (UTC).",
+      "paragraphs": [
+        "Mirach is a prominent star in the northern constellation of Andromeda. It is pronounced /ˈmaɪræk/[16][17] and has the Bayer designation Beta Andromedae, which is Latinized from β Andromedae. This star is positioned northeast of the Great Square of Pegasus and is potentially visible to all observers north of latitude 54° S. It is commonly used by stargazers to find the Andromeda Galaxy. The galaxy NGC 404, also known as Mirach's Ghost, is seven arcminutes away from Mirach.[18]",
+        "This star has an apparent visual magnitude that varies between 2.01 and 2.10,[2] which at times makes it the brightest star in the constellation. Based upon parallax measurements, it is roughly 197 light-years (60 parsecs) from the Solar System.[10] Its apparent magnitude is reduced by 0.06 by extinction due to gas and dust along the line of sight.[9] The star has a negligible radial velocity of 0.1 km/s,[9] but with a relatively large proper motion, traversing the celestial sphere at an angular rate of 0.208″·yr−1.[19]",
+        "Mirach is a single,[21] aging red giant with a stellar classification of M0 III.[4] It is currently on the asymptotic giant branch of its evolution.[3] The star has an estimated 2.49 times the mass of the Sun.[12] Having exhausted the supply of hydrogen at its core, the outer envelope of the star has expanded to around 86 times the size of the Sun. It is radiating 1,675 times the luminosity of the Sun[13] at an effective temperature of 3,762 K.[14] Mirach is suspected of being a semiregular variable star, with an apparent visual magnitude varies from +2.01 to +2.10.[2] Since 1943 the spectrum of this star has been one of the stable anchor points by which other stars are classified.[22]",
+        "Beta Andromedae is the star's Bayer designation. It had the traditional name of Mirach, and its variations, such as Mirac, Mirar, Mirath, Mirak, etc. (the name is spelled Merach in Burritt's The Geography of the Heavens),[23] which come from the star's description in the Alfonsine Tables of 1521 as super mizar. Here, mirat is a corruption of the Arabic مئزر mīzar \"girdle\", which appeared in a Latin translation of the Almagest.[15] This word refers to Mirach's position at the left hip of the princess Andromeda.[24] In 2016, the International Astronomical Union organized a Working Group on Star Names (WGSN)[25] to catalog and standardize proper names for stars. The WGSN's first bulletin of July 2016[26] included a table of the first two batches of names approved by the WGSN; which included Mirach for this star.",
+        "Mirach is listed in the Babylonian MUL.APIN as KA.MUSH.I.KU.E, meaning \"the Deleter\" (the alternative star is α Cas).[27] Medieval astronomers writing in Arabic called Mirach Janb al-Musalsalah (English: The Side of the Chained (Lady)); it was part of the 28th manzil (Arabian lunar mansion) Baṭn al-Ḥūt, the Belly of the Fish, or Qalb al-Ḥūt, the Heart of the Fish.[15][28] The star has also been called Cingulum and Ventrale.[15] This al-Ḥūt was an indigenous Arabic constellation, not the Western \"Northern Fish\" part of the constellation Pisces.[28] These names are not from the Arabic marāqq, loins, because it was never called al-Marāqq in Arabian astronomy.[28] Al Rishā', the Cord (of the well-bucket), on al-Sūfī's star map. It is the origin of the proper name Alrescha for Alpha Piscium.[15][29]",
+        "In Chinese, 奎宿 (Kuí Sù), meaning Legs, refers to an asterism consisting of Mirach (β Andromedae), η Andromedae, 65 Piscium, ζ Andromedae, ε Andromedae, δ Andromedae, π Andromedae, ν Andromedae, μ Andromedae, σ Piscium, τ Piscium, 91 Piscium, υ Piscium, φ Piscium, χ Piscium and ψ1 Piscium. Consequently, the Chinese name for β Andromedae itself is 奎宿九 (Kuí Sù jiǔ, English: the Ninth Star of Legs).[30] Mirach was considered the standard \"black\" star; black could mean \"dark red\" in this context, especially in comparison to Antares, the standard red star.[31]",
+        "The people of Micronesia named this star Kyyw, meaning \"The Porpoise\", and this was used as one of the names of the months in Micronesia.[32]",
+        "A 2023 study detected radial velocity variations in Mirach (HD 6860), showing evidence of a substellar companion, likely a brown dwarf.[5]"
+      ],
+      "warnings": [],
+      "identityFields": [
+        "Mirach\n\n\n\n  \n\n    \n\n  \n\n  \n\nLocation of Mirach (circled)\n\n\nObservation dataEpoch J2000.0      Equinox J2000.0 (ICRS)\n\nConstellation\nAndromeda\n\n\n\n\n\nRight ascension\n01h 09m 43.91s[1]\n\nDeclination\n+35° 37′ 13.8″[1]\n\nApparent magnitude (V)\n2.01 to 2.10[2]\n\n\nCharacteristics\n \n\n \n\n\nEvolutionary stage\nAsymptotic giant branch[3]\n\nSpectral type\nM0 III[4][5]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nU−B color index\n+1.96[6]\n\nB−V color index\n+1.57[6]\n\nV−R color index\n0.9[7]\n\nR−I color index\n+1.00[8]\n\n\n\n\n\nVariable type\nSemiregular[2]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAstrometryRadial velocity (Rv)0.06±0.13[9] km/sProper motion (μ) RA: 175.90[10] mas/yr  Dec.: −112.20[10] mas/yr Parallax (π)16.52±0.56 mas[10]Distance197 ± 7 ly (61 ± 2 pc)Absolute magnitude (MV)−1.76[11]\nDetailsMass2.49[12] M☉Radius86.4[13] R☉Luminosity1,675[13] L☉Surface gravity (log g)0.91±0.10[14] cgsTemperature3,762±40[14] KMetallicity [Fe/H]−0.46±0.03[14] dexRotation<7900 d (<21.6 years)[5]Rotational velocity (v sin i)6[5] km/s\nOther designationsMirach, Merach, Mirac, Mizar, β And, Beta Andromedae, Beta And, 43 Andromedae, 43 And, BD+34°198, FK5 42, GJ 53.3, 9044, HD 6860, HIP 5447, HR 337, SAO 54471, PPM 66010, WDS 01097+3537A, LTT 10420, NLTT 3848[7][15] \nDatabase referencesSIMBADdata"
+      ],
+      "simbadLinks": [
+        {
+          "text": "data",
+          "url": "https://simbad.cds.unistra.fr/simbad/sim-id?Ident=HD+6860"
+        },
+        {
+          "text": "\"bet And\"",
+          "url": "http://simbad.u-strasbg.fr/simbad/sim-basic?Ident=bet+And"
+        }
+      ],
+      "snapshotMeaning": "Actual full HTML embedded fixed revision; no duplicate revision fetch or media."
+    },
+    {
+      "key": "saiph",
+      "title": "Saiph",
+      "revision": "1378332976",
+      "entityId": "Q14028",
+      "sourceUrl": "https://en.wikipedia.org/w/index.php?oldid=1378332976&title=Kappa_Orionis",
+      "source": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-saiph-2026-10-07.html",
+        "bytes": 227535,
+        "sha256": "393456e3d3bcbaa06d0e5b93f8875b72b2fc636aa973de644482c3f158d6c372"
+      },
+      "retrievedAt": "2026-10-06T21:38:30.871Z",
+      "footer": "Text is available under the Creative Commons Attribution-ShareAlike 4.0 License;\nadditional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy. Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc., a non-profit organization.",
+      "lastModified": " This page was last edited on 4 October 2026, at 01:00 (UTC).",
+      "paragraphs": [
+        "Saiph /ˈseɪf/, designation Kappa Orionis (κ Orionis, abbreviated Kappa Ori, κ Ori) and 53 Orionis (53 Ori), is a blue supergiant star and the sixth-brightest star in the constellation of Orion. Of the four bright stars that compose Orion's main quadrangle, it is the star at the south-eastern corner. A northern-hemisphere observer facing south would see it at the lower left of Orion, and a southern-hemisphere observer facing north would see it at the upper right. Parallax measurements yield an estimated distance of 650 light-years (200 parsecs) from the Sun.[1] It is smaller, less luminous but hotter at its surface than Rigel with an apparent visual magnitude of 2.1.[2] The luminosity of this star changes slightly, varying by 0.04 magnitudes.[5]",
+        "Kappa Orionis is the star's Bayer designation and 53 Orionis its Flamsteed designation. The traditional name Saiph is from the Arabic saif al-jabbar (سیف الجبّار), lit. 'saif of the giant'. This name was originally applied to Eta Orionis.[12] In 2016, the International Astronomical Union organized a Working Group on Star Names (WGSN)[13] to catalog and standardize proper names for stars. The WGSN's first bulletin of July 2016[14] included a table of the first two batches of names approved by the WGSN, which included Saiph for this star. It is now so entered in the IAU Catalog of Star Names.[15]",
+        "In the 17th-century catalogue of stars in the Calendarium of Al Achsasi al Mouakket, this star was designated Rekbah al Jauza al Yemeniat, which was translated into Latin as Genu Dextrum Gigantis \"right knee of the giant\".[16]",
+        "Saiph is a supergiant with a stellar classification of B0.5 Ia. The luminosity class 'Ia' represents a bright supergiant star that has exhausted the supply of hydrogen at its core and evolved away from the main sequence. Saiph has a strong stellar wind and is losing mass at the rate of 9.0 × 10−7 times the mass of the Sun per year, or the equivalent of the Sun's mass every 1.1 million years.[7] Using a combination of parallax as determined by Hipparcos and the spectrum yields a mass 15.50 ± 1.25 times and luminosity 56,881 times that of the Sun.[8] Analysis of the spectra and age of the members of the Orion OB1 association yields a mass 28 times that of the Sun (from an original mass 31.8 times that of the Sun) and an age of 6.2 million years.[9] An analysis of the star's spectral energy distribution using the Hipparcos distance give a luminosity of 60,000 L☉ and a radius of 13 R☉.[3] Large stars such as Saiph (and many other stars in Orion) are destined to collapse on themselves and explode as supernovae.[17]",
+        "In Chinese, 參宿 (Shēn Xiù), meaning Three Stars (asterism), refers to an asterism consisting of Saiph, Alnitak, Alnilam, Mintaka, Betelgeuse, Bellatrix and Rigel.[18] Consequently, the Chinese name for Saiph is 參宿六 (Shēn Xiù Liù, English: the Sixth Star of Three Stars).[19]",
+        "The Wardaman people of northern Australia regard Saiph as the Guman digging stick, used to make a canyon by Black-headed Python.[20]"
+      ],
+      "warnings": [],
+      "identityFields": [
+        "Saiph\n\n\n\n  \n\n    \n\n  \n\n  \n\nLocation of Saiph (circled)\n\nObservation dataEpoch J2000      Equinox ICRS\n\nConstellation\nOrion\n\n\n\n\n\nRight ascension\n05h 47m 45.38884s[1]\n\nDeclination\n−09° 40′ 10.5777″[1]\n\nApparent magnitude (V)\n2.09[2]\n\n\nCharacteristics\n \n\n \n\n\nEvolutionary stage\nBlue supergiant[3]\n\nSpectral type\nB0.5 Ia[4]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nU−B color index\n−1.02[2]\n\nB−V color index\n−0.18[2]\n\n\n\n\n\n\n\n\n\nVariable type\nSuspected[5]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nAstrometryRadial velocity (Rv)+20.5[6] km/sProper motion (μ) RA: +1.46[1] mas/yr  Dec.: −1.28[1] mas/yr Parallax (π)5.04±0.22 mas[1]Distance650 ± 30 ly (198 ± 9 pc)Absolute magnitude (MV)−6.1[7]\nDetailsMass15.5±1.25[8] or 21.1[9] M☉Radius13–14[3] R☉Luminosity60,300+10,500−9,000[3] L☉Surface gravity (log g)2.70±0.05[3] cgsTemperature25,700±260[3] KRotational velocity (v sin i)83[7] km/sAge11.1±0.5[10] or 5.6[9] Myr\nOther designationsκ Orionis, 53 Orionis, 141 G. Orionis, BD−09 1235, FK5 220, HD 38771, HIP 27366, HR 2004, SAO 132542.[11]\nDatabase referencesSIMBADdata"
+      ],
+      "simbadLinks": [
+        {
+          "text": "data",
+          "url": "https://simbad.cds.unistra.fr/simbad/sim-id?Ident=Saiph"
+        },
+        {
+          "text": "\"SAIPH -- Variable Star\"",
+          "url": "http://simbad.u-strasbg.fr/simbad/sim-id?Ident=Kappa+Orionis"
+        }
+      ],
+      "snapshotMeaning": "Actual full HTML embedded fixed revision; no duplicate revision fetch or media."
+    }
+  ],
+  "entities": [
+    {
+      "source": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-Q13039-2026-10-07.json",
+        "bytes": 169335,
+        "sha256": "016d4a2157cdab5ed222a79cf5bd6afcc36e272107d8360f0d6f1b3dc03b94b4"
+      },
+      "id": "Q13039",
+      "revision": 2538384278
+    },
+    {
+      "source": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-Q13043-2026-10-07.json",
+        "bytes": 171848,
+        "sha256": "6279369842bd9ec5cfffd2ec3478d7a8b79d78aff736608633dc74f27887e236"
+      },
+      "id": "Q13043",
+      "revision": 2538385050
+    },
+    {
+      "source": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-Q14028-2026-10-07.json",
+        "bytes": 125668,
+        "sha256": "d0b6a9b95897de0d5fa090b1e4fb91fa4fe4dae6c1ad690c97f30bfd9deb5001"
+      },
+      "id": "Q14028",
+      "revision": 2544609320
+    }
+  ],
+  "failures": [],
+  "terms": {
+    "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-arkab-wikimedia-terms-2026-10-07.html",
+    "bytes": 152801,
+    "sha256": "a8020fc409cade8606c89f86fe5ad9b21024f503cdfa35a8bdf91380dbbaf73a"
+  },
+  "termsUrl": "https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use#7._Licensing_of_Content",
+  "termsReused": true,
+  "requests": 6,
+  "retries": 0,
+  "mediaFetched": 0,
+  "candidate": "Inspection only; originalAlpheratz HR15/Mirach HR337/Saiph HR2004 small batch; actual HRHDHIP/member/rights qualification required before adoption."
+}

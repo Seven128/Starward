@@ -6,19 +6,25 @@ export function createSkyLandscapeReadiness(deps: {
   cancelFrame(handle: unknown): void;
   changed(opacity: number): void;
 }) {
-  let live = true, available = false, reduced = false, handle: unknown;
+  let live = true, available = false, reduced = false, paused = false, pausedAt = 0, handle: unknown;
   let start = 0, opacity = 0, generation = 0;
   const cancel = () => { generation++; if (handle !== undefined) deps.cancelFrame(handle); handle = undefined; };
   const publish = (next: number) => { if (next !== opacity) { opacity = next; deps.changed(next); } };
-  const request = () => { const current = generation; handle = deps.requestFrame(() => tick(current)); };
+  const request = () => { if (paused) return; const current = generation; handle = deps.requestFrame(() => tick(current)); };
   const tick = (current: number) => {
-    if (!live || !available || current !== generation) return;
+    if (!live || paused || !available || current !== generation) return;
     handle = undefined;
     const progress = Math.max(0, Math.min(1, (deps.now() - start) / 240));
     publish(progress * progress * (3 - 2 * progress));
     if (progress < 1) request();
   };
   return {
+    pause() { if (live && !paused) { paused = true; pausedAt = deps.now(); cancel(); } },
+    resume() {
+      if (!live || !paused) return;
+      start += deps.now() - pausedAt; paused = false;
+      if (available && !reduced && opacity < 1) request();
+    },
     setAvailable(next: boolean, reducedMotion = false) {
       if (!live || next === available && reducedMotion === reduced) return;
       if (next === available) {

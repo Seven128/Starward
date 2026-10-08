@@ -1,12 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { EventEmitter } from "node:events";
+import https from "node:https";
 import { cpSync, writeFileSync } from "node:fs";
-import { mkdir, mkdtemp, readFile, readdir, stat, symlink, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, realpath, rm, stat, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { skyStaticDeliveryFragment, skyStaticHash, writeSkyStaticBundle } from "./sky-static-bundle.mjs";
-import { inspectSkyStaticRetention, loadSkyStaticDelivery, prepareSkyStaticDelivery, verifySkyStaticDelivery } from "./sky-static-release.mjs";
+import { inspectSkyStaticRetention, loadSkyStaticDelivery, prepareSkyStaticDelivery, restoreManagedSkyStaticBackup, verifySkyStaticDelivery } from "./sky-static-release.mjs";
+import { readSkyStaticBackup, restoreSkyStaticBackup } from "./sky-static-backup.mjs";
+import { decryptBackup, executeVerifiedBackup } from "./verified-backup.mjs";
+import { maintainTrialBackups } from "./backup-maintenance.mjs";
 
 const headers = { "content-type": "image/jpeg", "cache-control": "public, max-age=31536000, immutable", "x-content-type-options": "nosniff" };
 const route = (v) => `/v2/sky/moon/${v.repeat(64)}/texture.jpg`;
@@ -216,6 +221,167 @@ function input(store, image, options = {}) {
     } };
 }
 
+async function skyBackupFixture(t) {
+  const root = await mkdtemp(path.join(os.tmpdir(), "starward-sky-backup-"));
+  t.after(async () => {
+    const resolved = await realpath(root), temporary = await realpath(os.tmpdir());
+    assert.equal(path.dirname(resolved).toLowerCase(), temporary.toLowerCase());
+    assert.ok(path.basename(resolved).startsWith("starward-sky-backup-"));
+    await rm(resolved, { recursive: true, force: true });
+  });
+  const old = await fixtureImage(root, "1"), next = await fixtureImage(root, "2"), store = path.join(root, "store");
+  const backupDirectory = path.join(root, "backups");
+  const selected = image => {
+    const value = input(store, image, { COMPOSE_PROJECT_NAME: "starward-staging" });
+    Object.assign(value.validation, { environment: "staging", schemaVersion: "starward-operator-preview-validation-v1" });
+    Object.assign(value.validation.operations, { backupDirectory, maxBackupBytes: 1024 * 1024 });
+    return value;
+  };
+  const postgres = { POSTGRES_DB: "starward", POSTGRES_USER: "starward" };
+  const save = (selection, delivery, date = "2026-10-01T00:00:00.000Z", byte = 1, calls = []) => executeVerifiedBackup({
+    ...selection, delivery, postgres, key: Buffer.alloc(32, 4), now: () => new Date(date), random: length => Buffer.alloc(length, byte),
+    run: ({ step }) => { calls.push(step); return { stdout: Buffer.from(step.endsWith("-schema-relation") ? "t" : step === "backup-dump" ? "PGDMP".repeat(200) : "006_verified_fixture") }; },
+  });
+  return { root, old, next, store, backupDirectory, postgres, selected, save };
+}
+
+test("configured Sky backup archives exact original source metadata and restores offline without claiming new OCI or current", async t => {
+  const f = await skyBackupFixture(t), firstSelection = f.selected(f.old), nextSelection = f.selected(f.next);
+  const first = await prepareSkyStaticDelivery(firstSelection); await first.dispose();
+  const delivery = await prepareSkyStaticDelivery(nextSelection);
+  const backup = await f.save(nextSelection, delivery); await delivery.dispose();
+  const record = backup.manifest.skyStaticBackup;
+  assert.equal(record.schemaVersion, "starward-sky-static-backup-v2");
+  const encrypted = await readFile(backup.encryptedPath);
+  assert.equal(decryptBackup(encrypted, Buffer.alloc(32, 4), record).toString("utf8"), "PGDMP".repeat(200));
+  assert.throws(() => decryptBackup(encrypted, Buffer.alloc(32, 4)), /backup_sky_binding_invalid/u);
+  const snapshot = await readSkyStaticBackup({ backupDirectory: f.backupDirectory, record });
+  assert.equal(snapshot.sourceMetadata.length, 2);
+  const restored = await restoreManagedSkyStaticBackup({ ...nextSelection, record, outputDirectory: path.join(f.root, "offline-restored-store"),
+    confirmPublicationHash: record.publicationHash, execute() { throw new Error("fixture_original_images_unavailable"); } });
+  assert.equal(restored.sourceAdmission, "VERIFIED_BACKUP_RESTORED_ORIGINAL_METADATA");
+  assert.equal(restored.runtimeApplied, false); assert.equal(restored.sources, 2);
+  const pointer = JSON.parse(await readFile(path.join(restored.storeDirectory, "prepared-inventory.json"), "utf8"));
+  for (let i = 0; i < pointer.sources.length; i++) for (const [file, bytes] of [["index.json", snapshot.sourceMetadata[i].indexBytes],
+    ["delivery.caddy", snapshot.sourceMetadata[i].fragmentBytes], ["image-artifact.json", snapshot.sourceMetadata[i].artifactBytes]])
+    assert.ok((await readFile(path.join(restored.storeDirectory, pointer.sources[i].directory, "publication", file))).equals(bytes));
+  assert.equal((await readdir(restored.storeDirectory)).includes("preparation.lock"), false);
+  const before = await stat(path.join(snapshot.bundle.directory, "index.json"));
+  const recaptured = await f.save(nextSelection, undefined, "2026-10-02T00:00:00.000Z", 2);
+  assert.deepEqual(recaptured.manifest.skyStaticBackup, record);
+  assert.equal((await stat(path.join(snapshot.bundle.directory, "index.json"))).mtimeMs, before.mtimeMs);
+  assert.equal((await readdir(f.backupDirectory)).filter(name => name.startsWith("sky-public-")).length, 1);
+});
+
+test("source archives preserve noncanonical original JSON bytes without forging a replacement image artifact", async t => {
+  const f = await skyBackupFixture(t), selected = f.selected(f.old);
+  const index = JSON.parse(await readFile(path.join(f.old.output, "index.json"), "utf8"));
+  const indexBytes = Buffer.from(JSON.stringify(index) + "\n\n");
+  await writeFile(path.join(f.old.output, "index.json"), indexBytes);
+  const artifact = JSON.parse(await readFile(path.join(f.old.output, "image-artifact.json"), "utf8"));
+  artifact.indexSha256 = skyStaticHash(indexBytes);
+  const artifactBytes = Buffer.from(JSON.stringify(artifact) + "\n");
+  await writeFile(path.join(f.old.output, "image-artifact.json"), artifactBytes);
+  const delivery = await prepareSkyStaticDelivery(selected), backup = await f.save(selected, delivery); await delivery.dispose();
+  const record = backup.manifest.skyStaticBackup;
+  const restored = await restoreManagedSkyStaticBackup({ ...selected, record, outputDirectory: path.join(f.root, "exact-json-store"),
+    confirmPublicationHash: record.publicationHash, execute() { throw new Error("fixture_images_unavailable"); } });
+  const pointer = JSON.parse(await readFile(path.join(restored.storeDirectory, "prepared-inventory.json"), "utf8"));
+  const directory = path.join(restored.storeDirectory, pointer.sources[0].directory, "publication");
+  assert.ok((await readFile(path.join(directory, "index.json"))).equals(indexBytes));
+  assert.ok((await readFile(path.join(directory, "image-artifact.json"))).equals(artifactBytes));
+  assert.equal(restored.sourceAdmission, "VERIFIED_BACKUP_RESTORED_ORIGINAL_METADATA");
+});
+
+test("Sky backup borrows the held preview lease, preserves old URLs, and reuses identical payloads", async t => {
+  const f = await skyBackupFixture(t), firstSelection = f.selected(f.old), nextSelection = f.selected(f.next);
+  const first = await prepareSkyStaticDelivery(firstSelection);
+  const oldBackup = await f.save(firstSelection, first);
+  assert.equal(oldBackup.manifest.schemaVersion, "starward-verified-backup-v2");
+  await first.dispose();
+  const next = await prepareSkyStaticDelivery(nextSelection);
+  const pointer = await readFile(path.join(f.store, "prepared-inventory.json"));
+  const backup = await f.save(nextSelection, next, "2026-10-02T00:00:00.000Z", 2);
+  const record = backup.manifest.skyStaticBackup, snapshot = await readSkyStaticBackup({ backupDirectory: f.backupDirectory, record });
+  assert.deepEqual(snapshot.bundle.records.map(r => r.route), [route("1"), route("2")]);
+  assert.ok((await readFile(path.join(snapshot.bundle.directory, "files", route("1")))).equals(Buffer.from("1")));
+  assert.ok((await readFile(path.join(snapshot.bundle.directory, "files", route("2")))).equals(Buffer.from("2")));
+  const before = await stat(path.join(snapshot.bundle.directory, "index.json"));
+  const reused = await f.save(nextSelection, next, "2026-10-03T00:00:00.000Z", 3);
+  assert.deepEqual(reused.manifest.skyStaticBackup, record);
+  assert.equal((await stat(path.join(snapshot.bundle.directory, "index.json"))).mtimeMs, before.mtimeMs);
+  assert.equal((await readdir(f.backupDirectory)).filter(name => name.startsWith("sky-public-")).length, 2);
+  assert.ok((await readFile(path.join(f.store, "prepared-inventory.json"))).equals(pointer));
+  const restored = await restoreSkyStaticBackup({ backupDirectory: f.backupDirectory, record,
+    outputDirectory: path.join(f.root, "isolated-restore"), confirmPublicationHash: record.publicationHash });
+  assert.equal(restored.runtimeApplied, false);
+  const restoredIndex = JSON.parse(await readFile(path.join(restored.directory, "index.json"), "utf8"));
+  assert.deepEqual(restoredIndex.records, snapshot.bundle.records);
+  for (const r of snapshot.bundle.records) assert.ok((await readFile(path.join(restored.directory, "files", r.route)))
+    .equals(await readFile(path.join(snapshot.bundle.directory, "files", r.route))));
+  await next.dispose();
+  const calls = [];
+  await assert.rejects(f.save(nextSelection, next, "2026-10-04T00:00:00.000Z", 4, calls), /backup_delivery_lease_invalid/);
+  assert.deepEqual(calls, []);
+});
+
+test("retention binds actual older Sky backups and keeps DB v1 and reference completeness explicit", async t => {
+  const f = await skyBackupFixture(t), firstSelection = f.selected(f.old), nextSelection = f.selected(f.next);
+  const first = await prepareSkyStaticDelivery(firstSelection);
+  const backup = await f.save(firstSelection, first); await first.dispose();
+  const latest = await prepareSkyStaticDelivery(nextSelection); await latest.dispose();
+  await executeVerifiedBackup({ validation: { ...firstSelection.validation, operations: { backupDirectory: f.backupDirectory, maxBackupBytes: 1024 * 1024 } },
+    deploy: { COMPOSE_PROJECT_NAME: "starward-staging" }, postgres: f.postgres, key: Buffer.alloc(32, 4),
+    now: () => new Date("2026-10-02T00:00:00.000Z"), random: length => Buffer.alloc(length, 9),
+    run: ({ step }) => ({ stdout: Buffer.from(step.endsWith("-schema-relation") ? "t" : step === "backup-dump" ? "PGDMP".repeat(200) : "006_verified_fixture") }) });
+  const report = await inspectSkyStaticRetention({ ...nextSelection, observeBackups: true });
+  assert.deepEqual(report.backupEvidence.records.map(r => r.binding).sort(),
+    ["BOUND_RECORDED_BACKUP_REFERENCE", "LEGACY_DB_ONLY_WITHOUT_SKY_BINDING"]);
+  assert.ok(report.entries.find(r => r.name === path.basename(path.dirname(first.directory))).reasons.includes("BOUND_BACKUP_REFERENCE"));
+  assert.equal(report.referenceCompleteness, "UNVERIFIED"); assert.equal(report.deletableBytes, null);
+  const component = backup.manifest.skyStaticBackup;
+  const snapshot = await readSkyStaticBackup({ backupDirectory: f.backupDirectory, record: component });
+  await writeFile(path.join(snapshot.bundle.directory, "files", route("1")), "corrupt");
+  await assert.rejects(inspectSkyStaticRetention({ ...nextSelection, observeBackups: true }), /file_identity_mismatch/);
+  await assert.rejects(stat(path.join(f.store, "preparation.lock")), { code: "ENOENT" });
+  // A corrupt older backup does not corrupt a different retained union. Bind
+  // the new union's snapshot before checking its own reuse failure.
+  const current = await f.save(nextSelection, undefined, "2026-10-03T00:00:00.000Z", 3);
+  const currentSnapshot = await readSkyStaticBackup({ backupDirectory: f.backupDirectory, record: current.manifest.skyStaticBackup });
+  await writeFile(path.join(currentSnapshot.bundle.directory, "files", route("1")), "corrupt-current");
+  const calls = [];
+  await assert.rejects(f.save(nextSelection, undefined, "2026-10-04T00:00:00.000Z", 4, calls), /file_identity_mismatch/);
+  assert.deepEqual(calls, []);
+});
+
+test("v2 DB expiry retains public snapshots, and isolated Sky restore rejects overwrite, wrong confirmation and path escape", async t => {
+  const f = await skyBackupFixture(t), selected = f.selected(f.old), delivery = await prepareSkyStaticDelivery(selected);
+  const backup = await f.save(selected, delivery); await delivery.dispose();
+  const record = backup.manifest.skyStaticBackup;
+  const maintenance = await maintainTrialBackups({ ...selected, postgres: f.postgres, apply: true, now: new Date("2026-10-09T00:00:00.000Z") });
+  assert.equal(maintenance.removed, 1);
+  await assert.rejects(stat(backup.encryptedPath), { code: "ENOENT" });
+  await readSkyStaticBackup({ backupDirectory: f.backupDirectory, record });
+  const base = { backupDirectory: f.backupDirectory, record, outputDirectory: path.join(f.root, "restore"), confirmPublicationHash: record.publicationHash };
+  await assert.rejects(restoreSkyStaticBackup({ ...base, confirmPublicationHash: "0".repeat(64) }), /publication_confirmation_required/);
+  await assert.rejects(restoreSkyStaticBackup({ ...base, record: { ...record, directory: "../outside" } }), /record_invalid/);
+  await assert.rejects(restoreSkyStaticBackup({ ...base, outputDirectory: path.join(f.backupDirectory, "unsafe") }), /restore_directory_invalid/);
+  const restored = await restoreSkyStaticBackup(base);
+  const bytes = await readFile(path.join(restored.directory, "index.json"));
+  await assert.rejects(restoreSkyStaticBackup(base), { code: "EEXIST" });
+  assert.ok((await readFile(path.join(restored.directory, "index.json"))).equals(bytes));
+});
+
+test("retention verifies each declared snapshot identity when two manifests share the same payload", async t => {
+  const f = await skyBackupFixture(t), selected = f.selected(f.old), delivery = await prepareSkyStaticDelivery(selected);
+  await f.save(selected, delivery);
+  const second = await f.save(selected, delivery, "2026-10-02T00:00:00.000Z", 2); await delivery.dispose();
+  const altered = JSON.parse(await readFile(second.manifestPath, "utf8")); altered.skyStaticBackup.bytes++;
+  await writeFile(second.manifestPath, JSON.stringify(altered));
+  await assert.rejects(inspectSkyStaticRetention({ ...selected, observeBackups: true }), /publication_identity_mismatch/);
+  await assert.rejects(stat(path.join(f.store, "preparation.lock")), { code: "ENOENT" });
+});
+
 test("unconfigured preparation and resolution do no filesystem or Docker work", async () => {
   const execute = () => { throw new Error("must not run"); };
   assert.equal(await prepareSkyStaticDelivery({ validation: {}, deploy: {}, execute }), null);
@@ -357,6 +523,86 @@ test("HTTP byte equality alone cannot certify static service; preview denial and
     const actual = await verifySkyStaticDelivery({ ...selected, delivery, fetchImpl: fetch("valid") });
     assert.equal(actual.checkedFiles, 1); assert.equal(actual.checkedBytes, 1); assert.equal(actual.unauthorizedStatus, 404);
   } finally { await delivery.dispose(); }
+});
+
+test("native HTTPS verification bounds a periodically active body and retires its deadline on retry success", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "starward-sky-http-deadline-"));
+  const body = Buffer.from("periodic-body");
+  const image = await fixtureImage(root, "1", body.toString());
+  const store = path.join(root, "store"), selected = input(store, image);
+  const delivery = await prepareSkyStaticDelivery(selected);
+  const pointer = await readFile(path.join(store, "prepared-inventory.json"));
+  const started = Promise.withResolvers(), destroyed = [];
+  let slow = true, requests = 0;
+  // Keep the real requestBytes path and its byte/header checks. The transport
+  // supplies activity at 0/5/10/16 seconds, never a 15-second idle interval.
+  // A socket timeout therefore cannot impose the required total deadline.
+  t.mock.method(https, "request", (_url, options, receive) => {
+    assert.equal(options.timeout, 15_000);
+    const request = new EventEmitter(), response = new EventEmitter();
+    let retired = false;
+    response.statusCode = 200;
+    response.headers = { ...headers, "x-starward-sky-delivery": "static" };
+    request.destroy = (error) => {
+      retired = true; destroyed.push(error); request.emit("error", error); return request;
+    };
+    request.end = () => {
+      requests++;
+      receive(response);
+      if (slow && options.method !== "HEAD") {
+        response.emit("data", body.subarray(0, 3));
+        setTimeout(() => { if (!retired) response.emit("data", body.subarray(3, 6)); }, 5_000);
+        setTimeout(() => { if (!retired) response.emit("data", body.subarray(6, 9)); }, 10_000);
+        setTimeout(() => {
+          if (!retired) { response.emit("data", body.subarray(9)); response.emit("end"); }
+        }, 16_000);
+        started.resolve();
+      } else {
+        if (options.method !== "HEAD") response.emit("data", body);
+        response.emit("end");
+      }
+    };
+    return request;
+  });
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  try {
+    const checking = verifySkyStaticDelivery({ ...selected, delivery }).then(value => ({ value }), error => ({ error }));
+    await started.promise;
+    t.mock.timers.tick(14_999);
+    assert.equal(destroyed.length, 0);
+    t.mock.timers.tick(1);
+    const destroyedAtDeadline = destroyed.length;
+    // Settle the old implementation's last chunk too, so the before-fix case
+    // fails with a completed result rather than leaving an unobserved promise.
+    t.mock.timers.tick(1_000);
+    const outcome = await checking;
+    assert.equal(outcome.error?.message, "sky_static_http_timeout", "periodic progress must not keep the verifier and its lease live beyond 15 seconds");
+    assert.equal(destroyedAtDeadline, 1);
+    assert.equal(requests, 1, "a timed-out GET must not advance to HEAD");
+    assert.ok((await readFile(path.join(store, "prepared-inventory.json"))).equals(pointer));
+  } finally {
+    t.mock.timers.reset();
+    await delivery.dispose();
+  }
+  await assert.rejects(stat(path.join(store, "preparation.lock")), { code: "ENOENT" });
+
+  // A fresh operation reuses the same sealed bytes, succeeds, and must not be
+  // destroyed later by the completed GET/HEAD deadlines.
+  const retry = await prepareSkyStaticDelivery(selected);
+  slow = false;
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  try {
+    const result = await verifySkyStaticDelivery({ ...selected, delivery: retry });
+    assert.equal(result.checkedFiles, 1); assert.equal(result.checkedBytes, body.length);
+    assert.equal(requests, 3);
+    t.mock.timers.tick(30_000);
+    assert.equal(destroyed.length, 1, "completed requests must retire their deadline timers");
+    assert.ok((await readFile(path.join(store, "prepared-inventory.json"))).equals(pointer));
+  } finally {
+    t.mock.timers.reset();
+    await retry.dispose();
+  }
+  await assert.rejects(stat(path.join(store, "preparation.lock")), { code: "ENOENT" });
 });
 
 test("self-consistent inventory cannot introduce a URL absent from every retained image publication", async () => {

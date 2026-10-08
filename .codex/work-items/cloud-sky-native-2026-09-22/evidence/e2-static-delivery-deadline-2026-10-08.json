@@ -1,0 +1,124 @@
+{
+  "status": "DEVELOPMENT_FIX_QUALIFIED_TARGET_AND_INDEPENDENT_REVIEW_OPEN",
+  "responsibility": "Existing requestBytes/verifySkyStaticDelivery and existing release/preview failure-finally consumers",
+  "beforeOwner": {
+    "path": "tools/deployment/sky-static-release.mjs",
+    "bytes": 57006,
+    "sha256": "cf69ab98274a86423895b8df76082a10be3487669074f3a3217ed9c25c454ed1"
+  },
+  "sourceFact": {
+    "socketTimeoutMs": 15000,
+    "totalDeadlineWasPresent": false,
+    "reference": "https://nodejs.org/api/http.html#requestsettimeouttimeout-callback"
+  },
+  "regression": {
+    "file": "tools/deployment/sky-static-release.test.mjs",
+    "name": "native HTTPS verification bounds a periodically active body and retires its deadline on retry success",
+    "nativeOwnerPath": true,
+    "fetchImpl": false,
+    "transport": "EventEmitter HTTPS request/response fixture with Node mock timers, not a real TLS peer",
+    "clock": "Node24.16.0 controlled timers",
+    "bodyTimelineMs": [
+      0,
+      5000,
+      10000,
+      16000
+    ],
+    "before": {
+      "exitCode": 1,
+      "verification": "accepted periodic response after total 15000ms",
+      "assertion": "expected sky_static_http_timeout, actual undefined"
+    },
+    "after": {
+      "exitCode": 0,
+      "requestDestroyedAtMs": 15000,
+      "requestsBeforeFailure": 1,
+      "headAfterTimeout": 0,
+      "pointerUnchanged": true,
+      "leaseReleasedByCaller": true,
+      "sealedRetry": "GET and HEAD success",
+      "finishedDeadlineCallbacks": 0
+    }
+  },
+  "checks": {
+    "ownerSuite": {
+      "file": "output/sky-static-http-deadline-2026-10-08/owner-suite.tap",
+      "tests": 23,
+      "passed": 23,
+      "failed": 0
+    },
+    "syntax": "Node --check owner and test PASS",
+    "diffCheck": "PASS; normal CRLF conversion warnings only"
+  },
+  "pins": [
+    {
+      "path": "tools/deployment/sky-static-release.mjs",
+      "bytes": 57422,
+      "sha256": "548b90b1d9c362c2ab9f50bfd759ffeaa497e9b785e15ba78bb73c1e9ecfd5b0"
+    },
+    {
+      "path": "tools/deployment/sky-static-release.test.mjs",
+      "bytes": 50389,
+      "sha256": "f4d2e0cec771dd6dc7aa3d59793df155eb72f2aeb75639dc932e65bc058db932"
+    },
+    {
+      "path": "tools/deployment/release.mjs",
+      "bytes": 12567,
+      "sha256": "38deefa5def2ece067301766e257cf75032aacc8d96fec47ae8901d8ebdd63e6"
+    },
+    {
+      "path": "tools/deployment/operator-preview.mjs",
+      "bytes": 11058,
+      "sha256": "068c7418b01cf2b211d90bbb1ce44809f2fdcec400db09c36237a52c766ad5fd"
+    },
+    {
+      "path": "output/sky-static-http-deadline-2026-10-08/failing-before.tap",
+      "bytes": 1113,
+      "sha256": "45aaf93a99f2081e9f4d3145cac4d23ee07fbe0c2940f8434b78efdeff3216cd"
+    },
+    {
+      "path": "output/sky-static-http-deadline-2026-10-08/passing-after.tap",
+      "bytes": 241,
+      "sha256": "3eb88da10fbe1736cb7655cea43d3b598250160b952ae6e2bb5073beeb17191e"
+    },
+    {
+      "path": "output/sky-static-http-deadline-2026-10-08/owner-suite.tap",
+      "bytes": 6791,
+      "sha256": "08fa126adf508a365b9d31c95b7e74e383e7216c940533399175735661f183dd"
+    }
+  ],
+  "unverified": [
+    "Real TLS/edge timed-transfer cancellation and release/cutover",
+    "Full production Linux/provider/retained-reference inventory and physical capacity",
+    "Current DevTools controls, Android/iOS and final independent review"
+  ],
+  "preserved": {
+    "acceptanceRows": 33,
+    "ordinaryPrepared": "EMPTY",
+    "ordinaryHips": "OFF",
+    "v72": true,
+    "failedInputs": true,
+    "workingTreeChanges": true
+  },
+  "nextResearch": {
+    "status": "MATLAS_KS4_METADATA_FOLLOWUP_COMPLETE_RIGHTS_NOT_ESTABLISHED",
+    "evidence": "output/optical-hips-registry-research-2026-10-08/matlas-ks4-metadata-decision.json",
+    "currentOrder": "PLAN owns finite property-filtered id-first registry input, no all-source or target completion claim"
+  },
+  "actions": {
+    "commit": 0,
+    "push": 0,
+    "purchase": 0,
+    "deployment": 0,
+    "publishing": 0,
+    "externalContact": 0,
+    "subagents": 0,
+    "copiedRunners": 0,
+    "imageRequests": 0,
+    "repeatClosedPgOrRecoveryMatrix": 0
+  },
+  "toolProbeFailures": [
+    "process is not defined in node_repl",
+    "node:process import is not allowed in node_repl"
+  ]
+}

@@ -70,7 +70,16 @@
     "check:miniapp:production": "node tools/run-node.cjs tools/miniapp/inspect-production.mjs",
     "check:miniapp:media": "node tools/run-node.cjs tools/miniapp/verify-media-assets.mjs",
     "node": "node tools/run-node.cjs",
-    "test:node-runtime": "node tools/run-node.cjs --test tools/run-node.test.mjs"
+    "test:node-runtime": "node tools/run-node.cjs --test tools/run-node.test.mjs",
+    "assets:verify": "node tools/run-node.cjs tools/resources/assets.mjs verify",
+    "assets:prepare": "node tools/run-node.cjs tools/resources/assets.mjs prepare",
+    "assets:audit": "node tools/run-node.cjs tools/resources/assets.mjs audit",
+    "assets:rules": "node tools/run-node.cjs tools/resources/assets.mjs rules",
+    "test:resources": "node tools/run-node.cjs --test tools/resources/assets.test.mjs",
+    "prebuild:miniapp:release": "npm run assets:verify",
+    "precheck:miniapp:release-code": "npm run assets:verify",
+    "predev:miniapp": "npm run assets:verify",
+    "predev:miniapp:api": "npm run assets:verify"
   },
   "keywords": [
     "stargazing",

@@ -1,1 +1,0 @@
-{"targets": 465, "allFailuresHistoricExterior": true, "first": [{"target": [14, 8], "radius": 8, "unknownSupportXY": [[19, 2]], "allInHistoricExterior": true}, {"target": [15, 8], "radius": 8, "unknownSupportXY": [[18, 1], [19, 2], [20, 2], [21, 3]], "allInHistoricExterior": true}]}

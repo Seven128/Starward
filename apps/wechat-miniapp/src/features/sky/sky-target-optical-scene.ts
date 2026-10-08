@@ -6,7 +6,7 @@ import { unknownSkyArtworkLocalObservation } from "./sky-artwork-level-compositi
 import type {SkyDeepAuxiliaryDisplayFacts} from "./sky-deep-auxiliary-visibility";
 import { skyNativeImageIsCurrent } from "./sky-artwork-loader";
 import type { SkyRenderSurface } from "./sky-render-surface";
-import type { SkyTargetOpticalImage } from "./sky-sdss-optical-frame";
+import { skyTargetOpticalFrame, type SkyTargetOpticalImage } from "./sky-sdss-optical-frame";
 import { skyExactTargetOpticalIdentity, type SkyExactTargetOpticalField, type SkyExactTargetOpticalImage } from "./sky-target-optical-identity";
 import { registerSkyTanOpticalField } from "./sky-tan-optical-registration";
 import { registerSkyDeepSkyRegion, type SkyDeepSkyRegion } from "./sky-deep-sky-region";
@@ -86,6 +86,18 @@ export function submitSkySceneTargetOptical(context: SkyRenderSurface, sourceKin
   }
   if (!draw.finePrepared) fail(expected.fine);
   if (expected.coarse && !draw.coarsePrepared) fail(expected.coarse);
+  // Only total preparation failure may use the separately admitted finer
+  // alternative. A successful/empty primary draw still owns its own coverage.
+  // Submit before later layers, with today's view and the alternative's exact
+  // descriptor; completion/credit then follow this actual group, not the failed
+  // wider image. No third sampler or cross-source composition is introduced.
+  if (!draw.submitted && frame.fallback && skyNativeImageIsCurrent(frame.fallback.image)) {
+    const alternative = skyTargetOpticalFrame({ publication, image: frame.fallback.image,
+      renderedLevel: frame.fallback.level, renderedAsset: frame.fallback.asset, coarser: null });
+    const restored = submitSkySceneTargetOptical(context, sourceKind, port, alternative,
+      observation, view, failed, catalogEntry);
+    if (restored) return restored;
+  }
   const region = catalogEntry?.objectRef === frame.reference
     ? registerSkyDeepSkyRegion(catalogEntry, observation) : null;
   return Object.freeze({ surface: port.surface, sourceKind, frame, draw, allowInfrared, region });

@@ -1,0 +1,1214 @@
+{
+  "status": "REVIEW_INPUT_READY_INDEPENDENT_REVIEW_MISSING",
+  "scope": "Paused current grouped PNG Scene/GPU/contribution boundary, original1x cases and explicit8MiB2x/software controls, controlled Taro/cache/Source Back/retirement and prior finite source/restore/governance epochs. Original2MiB DPR2 unavailable; no ordinary/WeChat/physical/independent acceptance. Current task additions after89433B typecheck unverified.",
+  "pins": [
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.ts",
+      "bytes": 8830,
+      "sha256": "3a5eac02d0eee799226383fa0b27fed12433440b1c93e8581ed5bc7a503a1d36"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.test.ts",
+      "bytes": 16162,
+      "sha256": "0d42a0c90ee9b352f66d3a1bedd4d3666abcb0395fc2ea373730f631750b28fa"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
+      "bytes": 222335,
+      "sha256": "cda0906bc3e640cc4c764d5e61992341db6f2520e415c22848746f09432c9086"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-surface.ts",
+      "bytes": 3766,
+      "sha256": "0ab0d294c6c00bd570a2a80eaabb5b04e17e02252ac071b4f0a259fddecde372"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+      "bytes": 63663,
+      "sha256": "f63f01188b1f8b148be68c4226ac1617d966219656d95c8f3ff614a28389c248"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-legacy-regions.py",
+      "bytes": 42116,
+      "sha256": "1eed933494a3ac4187823b732aafc7c318cdab5e4528b669c86d3b21cb5c7164"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-noirlab-scene.mts",
+      "bytes": 92177,
+      "sha256": "999e87399462294602e3066b5eb8f2a80eb1b9a7adeca5df362f7c44710cff29"
+    },
+    {
+      "path": "project_context/architecture/runtime-and-domain.md",
+      "bytes": 343117,
+      "sha256": "e6dfff86754d22298c7a02a9a6a5f187eb6142ea4b85beb2ba10112c7e82ddcb"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/GOAL-CURRENT.md",
+      "bytes": 10098,
+      "sha256": "d42b32e9cc738d452698bbf2fc6e2c17725ea2737208b8613914f48f08e3cf60"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+      "bytes": 46778,
+      "sha256": "7e8d1fe94b49e2e82c4d5b1a3e443ef01e3ac30eb8cebce263b751e0c92801c2"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/ACCEPTANCE-CURRENT.md",
+      "bytes": 48141,
+      "sha256": "34549de3f9d2f17ab7f344c5dfb700f988977d004bf033a59aa881edfa9053e3"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/r1-native-release-failure-2026-10-08.json",
+      "bytes": 21087,
+      "sha256": "302ec416024399d821febc804a51162a0b801f67dff2d36c7d01039ff0757190"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/r1-native-release-failure-2026-10-08.md",
+      "bytes": 4526,
+      "sha256": "b5983e3d1a13fbeceb855a3789cc7d94741af6a651e7a77d232e42080a07d0d5"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/q1-mature-hips-batch-2026-10-08.json",
+      "bytes": 77643,
+      "sha256": "7858b22f7796cee6f491b83cfa90db8929a751a2d4261420aa1efe0bd1ee17fa"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/q1-mature-hips-batch-2026-10-08.md",
+      "bytes": 30014,
+      "sha256": "9886664fedc439a808b5db3cbaba8936c25baa8cc308b6b9ede6217aa3acd2ea"
+    },
+    {
+      "path": "output/fds-region-batch-2026-10-08/current-task-typecheck.json",
+      "bytes": 1041,
+      "sha256": "2005bf583bb5af853cdc72a89e3e4dfe36594d07e78606350c71c5c2ff6e87e6"
+    },
+    {
+      "path": "output/fds-region-batch-2026-10-08/current-task-typecheck-after.json",
+      "bytes": 1149,
+      "sha256": "a714e1e23b5c6676af260a5dda51b42076d6384507e764804c59db9255b5019a"
+    },
+    {
+      "path": "output/fds-region-batch-2026-10-08/failed-source-guard-readback.json",
+      "bytes": 399,
+      "sha256": "c20d86a23c407c5d3153f79f27b8b9429136eb4b8b5869a340718abf483594fa"
+    },
+    {
+      "path": "output/vphas-region-batch-2026-10-08/failed-source-guard-readback.json",
+      "bytes": 374,
+      "sha256": "d720f88b5e2133f38144c9ce0425f678639f624a91c057187b466ff5440416c0"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/fram-rights-followup-decision.json",
+      "bytes": 1845,
+      "sha256": "f3e2a166e1a92edbecbb72a1dcd0c5cf61623861c28fd1386d078b58154892d4"
+    },
+    {
+      "path": "output/native-retirement-current-2026-10-08/result.json",
+      "bytes": 226064,
+      "sha256": "d20860745ed423549ec3b893a2473799b3525b433fefe1da7a4803db250ef647"
+    },
+    {
+      "path": "tools/deployment/sky-static-release.mjs",
+      "bytes": 57422,
+      "sha256": "548b90b1d9c362c2ab9f50bfd759ffeaa497e9b785e15ba78bb73c1e9ecfd5b0"
+    },
+    {
+      "path": "tools/deployment/sky-static-release.test.mjs",
+      "bytes": 50389,
+      "sha256": "f4d2e0cec771dd6dc7aa3d59793df155eb72f2aeb75639dc932e65bc058db932"
+    },
+    {
+      "path": "tools/deployment/release.mjs",
+      "bytes": 12567,
+      "sha256": "38deefa5def2ece067301766e257cf75032aacc8d96fec47ae8901d8ebdd63e6"
+    },
+    {
+      "path": "tools/deployment/operator-preview.mjs",
+      "bytes": 11058,
+      "sha256": "068c7418b01cf2b211d90bbb1ce44809f2fdcec400db09c36237a52c766ad5fd"
+    },
+    {
+      "path": "project_context/deployment/data-and-operations.md",
+      "bytes": 26069,
+      "sha256": "cc271aa41974ee643ac146bf7fa26781f674df6161b6757f89c3f54712884f5d"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/e2-static-delivery-deadline-2026-10-08.md",
+      "bytes": 2316,
+      "sha256": "6da12d308ca6a11b0fda24b3ac83f3baeccb92d524303f100a1d3c98d544382e"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/e2-static-delivery-deadline-2026-10-08.json",
+      "bytes": 4245,
+      "sha256": "3ec813f546c69301139f27e3ef797487c87b1c13593ca5cb2c586589eba853ad"
+    },
+    {
+      "path": "output/sky-static-http-deadline-2026-10-08/input-before.json",
+      "bytes": 512,
+      "sha256": "fda05571bccb54b73034fec09b102262080ce1e52b631446c8bfb88eb433dfe5"
+    },
+    {
+      "path": "output/sky-static-http-deadline-2026-10-08/failing-before.tap",
+      "bytes": 1113,
+      "sha256": "45aaf93a99f2081e9f4d3145cac4d23ee07fbe0c2940f8434b78efdeff3216cd"
+    },
+    {
+      "path": "output/sky-static-http-deadline-2026-10-08/passing-after.tap",
+      "bytes": 241,
+      "sha256": "3eb88da10fbe1736cb7655cea43d3b598250160b952ae6e2bb5073beeb17191e"
+    },
+    {
+      "path": "output/sky-static-http-deadline-2026-10-08/owner-suite.tap",
+      "bytes": 6791,
+      "sha256": "08fa126adf508a365b9d31c95b7e74e383e7216c940533399175735661f183dd"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/matlas-ks4-metadata-decision.json",
+      "bytes": 6746,
+      "sha256": "fa942350c9516c07ea596144c60dd1413c372bcc2a3a8096d05ed240398eb4ab"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/color-records.json",
+      "bytes": 253671,
+      "sha256": "03dff03df0ffaeb650cdf7074100f2838bc8e6927d780d25a8dca0680760304e"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/matlas-properties.txt",
+      "bytes": 3432,
+      "sha256": "96185f5ed67ce3dc79e71ada3f8bd1f5341fce764ce51e9008b8580c652086af"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/ks4-properties.txt",
+      "bytes": 3768,
+      "sha256": "e20a38195f8de607913b9ccd91f4acdd5bdbb6998b8b6d4cfed1dd84b4d657f8"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/matlas-producer.html",
+      "bytes": 135,
+      "sha256": "00902acb46c3e817d13c47bf4159d7e5a8ca499c9fb5c131e8de680a60183fdb"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/matlas-producer-followup.html",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/matlas-producer-redirect-chain.html",
+      "bytes": 80592,
+      "sha256": "71034ad1d09d24aad84d133368e860e6b87616d533ec73397d0c181aa0bc698b"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/matlas-databases.html",
+      "bytes": 74518,
+      "sha256": "05a66a748113f6b5f06159997fd77d09cccf83a30aa0025fc2abd522602490f5"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/matlas-data-release.html",
+      "bytes": 99694,
+      "sha256": "bce22bc17febb6193c5f3888ea1121a87d2cb3f5b06417602a7d3a6525a6f339"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/optical-property-registry-decision.json",
+      "bytes": 16026,
+      "sha256": "1424d834bd411ca98cb4da640617744b8af01d396ceee630900ddcec9cdeb95c"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/optical-image-ids-http.json",
+      "bytes": 7047,
+      "sha256": "355c429319e056a1103ef6946d51d4fde793ac5429f47768abd2028db1339228"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/optical-image-records-projected-http.json",
+      "bytes": 147027,
+      "sha256": "82d1afe314a58dcf62f300ea611508c9ed7f5dd540b562a46a01d4617e01b85d"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/rights-and-role.json",
+      "bytes": 3795,
+      "sha256": "9dd477063278f2a5a0dfe6b239206c9cbb8404e451d9951cfaf1e161c1064a15"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/sample-intent.json",
+      "bytes": 1741,
+      "sha256": "073bee22066eb4f4013967648e4b2afec4646dc93b1e2efeb54d6cd1d84df43c"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/rubin-firstlook-properties.txt",
+      "bytes": 2378,
+      "sha256": "15095e6b329a79f01a650177acf2df6e1bc955deafad78e7f73fa42a692a7bd2"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/Moc.fits",
+      "bytes": 17280,
+      "sha256": "4aec1690d433c4e839a9b2ad96a44f002154c76f4bec234bb121759d191132ff"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/coverage-plan.json",
+      "bytes": 29162,
+      "sha256": "c2ef5c76a932c96c1b57607069a037bb1d7f1b669f78439065ae3aa2629aa5e3"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/tile-receipts.json",
+      "bytes": 15198,
+      "sha256": "f12667e8f4608bcc3e5c467e50b8cf3f70a0f89cf2254cb5cacddce8ecfaba0d"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/current-selection.json",
+      "bytes": 8962,
+      "sha256": "73930b46adfb3c731ef41a4d9107bb87b58311b6dd12e8a0b999ae3b81241372"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/current-selection-moc-check.json",
+      "bytes": 939,
+      "sha256": "9e853eb331eabce70b88cde034be6d5db74d643ebf1f0698f648f386b6c39b35"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/current-selection-coverage.json",
+      "bytes": 9221,
+      "sha256": "334d10d91461b27d18ea3defb556311b948b000c5607537cdf69323d7b7842a8"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/selection-ray-readback.json",
+      "bytes": 1790,
+      "sha256": "9cd3d9ec8536d81178b7726b10329955f02a6a1ee71b83ab1e1889f86e6bcdeb"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/original-tile-alpha-readback.json",
+      "bytes": 11871,
+      "sha256": "f874e146539278340ed0b3604c91ee8cd20f8f6e4c118f077604ab9853e7ec39"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/producer-overview-receipts.json",
+      "bytes": 2974,
+      "sha256": "b92a80409d5fe2086d08921c56adb475a5195ade96520d078b0003db5f86cdc7"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/producer-overview-range-receipts.json",
+      "bytes": 5036,
+      "sha256": "aefaa0f9258641b724aac4583f7695c4bacfd10660cea98eee1308bf3d2e2431"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/task-adapter-typecheck.json",
+      "bytes": 436,
+      "sha256": "915f66c4877bcf18a9ac96e28be8e8702f08981e2a15dbe8b99451bae974a1a0"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/failed-selection-binding/failure.json",
+      "bytes": 1353,
+      "sha256": "0618eda8bafd7202d47f00a07504dbc9afc604969da165beb6441511c79e8b73"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/current-scene/result.json",
+      "bytes": 9271,
+      "sha256": "d62de1c133283952a0662dd44e11d2ea126fad8337050738a43380e47b33cc89"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/current-scene/inputs-before.json",
+      "bytes": 33767,
+      "sha256": "fead2ec74ffc9270398a0d99a1ee4e777dad0278b8a7fbe97dadd947c4fc620f"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/current-scene/inputs-after.json",
+      "bytes": 33767,
+      "sha256": "fead2ec74ffc9270398a0d99a1ee4e777dad0278b8a7fbe97dadd947c4fc620f"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/current-scene/M-8-0.4deg-hips.png",
+      "bytes": 483850,
+      "sha256": "b5809a06631d99149c59edb30b7c07b507dcadc614112803910eda7b3015887d"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/current-scene/M-20-0.4deg-hips.png",
+      "bytes": 582326,
+      "sha256": "b550af805a25051ae018c94f9ba0eb016e552ed5d72040f1c69fa903f6a8da3f"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/current-scene/M-61-0.4deg-hips.png",
+      "bytes": 708842,
+      "sha256": "13394abf06c673d50dfef99b26ff6b891101f21ea5b94fd8b8984ebfc5d067c5"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/producer-virgo-overview-2050-complete",
+      "bytes": 4805181,
+      "sha256": "579daed98d429275c55f38cb0dd3e6d9122835569eeec92e42237b2f26a28b87"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/producer-nebula-overview-2050-complete",
+      "bytes": 5649717,
+      "sha256": "e694b1ee8a3dd7970d01827b1484ad2294d9e3096e47f33da349a975aafaaf2b"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/rubin-media-policy.html",
+      "bytes": 236095,
+      "sha256": "235f09a3b6f92fe7b8e017b38af507cb1b024808faa2b12deb90fa40e95463ff"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/rubin-virgo-producer.html",
+      "bytes": 174614,
+      "sha256": "08b7fdd7303ac372ed1046a348b65e7dfd814ebb9cd6982683224ada17043044"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/rubin-nebula-producer.html",
+      "bytes": 173550,
+      "sha256": "50f18869e2f90c4eac8564d998710762c3ef4ce11743fc37e075eb68461ccdc2"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/batch-decision.json",
+      "bytes": 12764,
+      "sha256": "03bb3b6d4672969f3084c0f7e20e445f9002ef3548205b5e98c1ae7caedf8ece"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/START-NEXT-CHAT.md",
+      "bytes": 5553,
+      "sha256": "01a1001f5b597fc4e2f172250703ef2d68f88fbe637c2b37a3704dbd542615dd"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+      "bytes": 8720,
+      "sha256": "a5ba63c7e7edae02e4f5002a6fc2bcf79ed0a85d5c08e1f7e5423bf62d6b06f7"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery-plan.json",
+      "bytes": 12355,
+      "sha256": "27b2b0387c6be5fbbc8dd0f1782ac9ada69fd701afa24248a9ec1d404bd7259b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-time.test.ts",
+      "bytes": 30642,
+      "sha256": "97d939bfcd38318af28beec37c1c9a7ef35504ab04ab7292b34460947554429e"
+    },
+    {
+      "path": "project_context/development-workflow/resources-and-artifacts.md",
+      "bytes": 6279,
+      "sha256": "d5bd529275c3692629ede83169ff1c30fe907bee9e3c4ac7506cc8f89cb2c8fe"
+    },
+    {
+      "path": "project_context/development-workflow/paths-and-lifecycle.md",
+      "bytes": 14596,
+      "sha256": "361e086ee0652f915bd17426f740c2ca2846178a270ef87753d492566ca451ad"
+    },
+    {
+      "path": "tools/resources/lfs-policy.json",
+      "bytes": 1095,
+      "sha256": "b00bb4651d8f6e83e6704311d8b5ff9467eeb7c40af426234b3d3fe0f236e6b3"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 4395,
+      "sha256": "9e60a170e833b5000abffba4ff5df9af80c1555a0d5c7e8b43d966775858530d"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/original-readback.json",
+      "bytes": 3563,
+      "sha256": "b2c99cbe41b5d635aed9e978d5f7a16880589d1ec335602dc3be6f184b5eefdb"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/local-trial-readback.json",
+      "bytes": 8532,
+      "sha256": "bcd1c6c4e32cd7be5a814c71068a2678f04945e07bda5569154cfb5fae006887"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/alpha-edge-point.json",
+      "bytes": 559,
+      "sha256": "90dce73586c51286eb327a40b8adc42389f50c0a201dc3b1236f713dd76f5b3e"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/adapter-check.json",
+      "bytes": 6105,
+      "sha256": "73a8c4d5b75d76c3448246a74ec1eb69309a730649538dc7d99118bd09e463e7"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/canvas-fixture-check.json",
+      "bytes": 1217,
+      "sha256": "0012abee7b2ae344f381530b3e98985014b8fcff75f1194de17d5237f36604f7"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/current-scene/result.json",
+      "bytes": 23676,
+      "sha256": "9aade9036b364d47db444e3e95b472fad48875f6ba84eaf2d4928785a1a9c444"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/current-scene/inputs-before.json",
+      "bytes": 28324,
+      "sha256": "17ccfbe7a2143341ec06220d48f2c5fbe3e1ee65b65eabe439033f3f5e19053e"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/current-scene/input-readback.json",
+      "bytes": 69,
+      "sha256": "2ac6057c8082dcafb0ce09cb33b7d1016defbde3da5cfc86d44fd7010db169da"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/failed-no-contribution-policy/result.json",
+      "bytes": 4205,
+      "sha256": "2ddea083d3c48be31a9ce02e06c733b05812c75042e2cd2ef90ef1298713507d"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/current-scene/whole-virgo-probes-off.png",
+      "bytes": 77230,
+      "sha256": "8fca9ec9c2caa354e60ee950ea5c3dccb96140d382693bc1c80e98d004090196"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/current-scene/whole-virgo.png",
+      "bytes": 77230,
+      "sha256": "8fca9ec9c2caa354e60ee950ea5c3dccb96140d382693bc1c80e98d004090196"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/current-scene/whole-trifid-lagoon.png",
+      "bytes": 111405,
+      "sha256": "153e1033c331332f45020ca1459cdc514a43764b762708011c528217ed800d71"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/current-scene/alpha-edge-coarse.png",
+      "bytes": 53642,
+      "sha256": "074515ba222fa09704e51bb1267c78fd33b157cc989bc812bafd6772c8098011"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/current-scene/alpha-edge-fine.png",
+      "bytes": 375107,
+      "sha256": "25d1b9462dd212bec7f4f36918a7764b4034868dd07765893a3c2ed337c1f02e"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/current-scene/alpha-edge-fine-failed.png",
+      "bytes": 53642,
+      "sha256": "074515ba222fa09704e51bb1267c78fd33b157cc989bc812bafd6772c8098011"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/current-scene/alpha-edge-empty.png",
+      "bytes": 9805,
+      "sha256": "503442898327d57f1f98d94cd2d5ec193a69b0bc6199aa4a8dff9f7326e359dd"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/execution-correction-2026-10-07.md",
+      "bytes": 5646,
+      "sha256": "5d9fc173f612da2030cdf3084ece2d3e6536e9ca8c4bbf202601fec26ac05aa0"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-hips-tile-selection.ts",
+      "bytes": 5331,
+      "sha256": "28e4b29a47b38c08943d4431699acb8ae748fe15e0ff853b897a74dedc0ac71a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-hips-tile-selection.test.ts",
+      "bytes": 3090,
+      "sha256": "100bc3ada378f2445aa9ea6a7a63245dce36347e22891c6a07378f8b8289343a"
+    },
+    {
+      "path": "data-pipelines/deep-sky/hips_tan_lookup.mjs",
+      "bytes": 1589,
+      "sha256": "6125361e7c629f323bc9c6fc19d75c27a847313e369bc05f9e7b267cca30c7b9"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.ts",
+      "bytes": 36964,
+      "sha256": "355cce81a6be8075c9191f0618c3693175861b25817a48a01dc2f2f883ced1d8"
+    },
+    {
+      "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
+      "bytes": 213137,
+      "sha256": "709042d25a67b39a959d4de03655a3485b794be0b204db8d54a7bebd15c2f093"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/checks.json",
+      "bytes": 8036,
+      "sha256": "e5e416fd11155f230c4cbe01439961cafcc85fe1c2c6f2d2bac235a418850c95"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/adapter-check.json",
+      "bytes": 727,
+      "sha256": "441ab6f03c128919de1298680c37ec228ba7c9f8056df7afce161e7bed3b240d"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/local-trial-readback.json",
+      "bytes": 17934,
+      "sha256": "eff18b02e0b6670d0aa2afd15e4dfc566610601c5da7a9adda8f01a3ea3620af"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/indexed-consumer-readback.json",
+      "bytes": 3348,
+      "sha256": "9488e3fc2132834b4c059fb36d5c34e604a4b226f7aa902295c8107fbe7e0487"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/current-selection-coverage.json",
+      "bytes": 12278,
+      "sha256": "92fac6bb121bffffff57597056e403fa4c7fe14f92a40a6bb2136ac457044149"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/recovery-readback.json",
+      "bytes": 5327,
+      "sha256": "9f9ba5628488aa963cdde53be871410c8ce2794db8bd359cdfd2cb9189a700a8"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/published-scene/result.json",
+      "bytes": 39748,
+      "sha256": "2ec7687a743c2e59c281e5ae3e0b9ad6c9cd0445af65b5bf33c725879d29fd69"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/published-scene/inputs-before.json",
+      "bytes": 42712,
+      "sha256": "ddbace96a2297957adc16e3cb2a4ca728b58f175c3574d6e128900317ef7aad1"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/coordinate-diagnostic/intent.json",
+      "bytes": 11623,
+      "sha256": "b2f9c60c1bd060a31315182e49d3c59a6f9181b075d0cff2f10e926ecf269c64"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/coordinate-diagnostic/result.json",
+      "bytes": 56791,
+      "sha256": "061cc1de38b00a320213ea655fde50a94dd3fc074d50755cbeb59fc3dd512246"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/coordinate-diagnostic/runtime-and-cache-check.json",
+      "bytes": 393,
+      "sha256": "023396d3bf915fb4a400d429c3ed73b1e1882c07e772b7c8aad61486dc4adee7"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/fine-only-scene/result.json",
+      "bytes": 16091,
+      "sha256": "84859e519c6dad3811cd060d196931dfc0000084bfbf9bafeca0443674fcdcf0"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/fine-only-scene/alpha-edge-classification.json",
+      "bytes": 707,
+      "sha256": "d7c763c79bc3f36d2a43d7e48a0e788cb5bee9626bf5fbbd82f96294464448ae"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/fine-only-scene/adapter-check.json",
+      "bytes": 411,
+      "sha256": "779641c8cd9f5fcd96b1a2027755f7faa70da6adf41510944a912297f298ca2d"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/fine-depth-scene/result.json",
+      "bytes": 25556,
+      "sha256": "706a9ca23477fc9ae0d391a7bc15235824ff338a13ca2dd1661c13afbbdbd8a2"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/fine-depth-scene/adapter-check.json",
+      "bytes": 411,
+      "sha256": "5cec58b1eee44c609b49a3b2690dd59caef49c52dc5ce80414492f3a210b818a"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/fine-depth-scene/owner-coupling-preflight.json",
+      "bytes": 2140,
+      "sha256": "c1859ff454b2c77bd7e3feb441239bc8fb78a0bf01f5664ac67dd2d026dab7d5"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/failed-fine-only-frozen-provenance/failed-preflight.json",
+      "bytes": 1319,
+      "sha256": "3ffe981329f3214f459f141ce1961169c03b493c780b775aff99d10446b771b2"
+    },
+    {
+      "path": "output/ps1-region-batch-2026-10-08/batch-decision.json",
+      "bytes": 3562,
+      "sha256": "c1ca89e049fd8518609f2f2c10320e0c24fcf1c30dd78394a0ecc925ee1e1813"
+    },
+    {
+      "path": "output/optical-hips-registry-research-2026-10-08/decaps2-rights-followup-decision.json",
+      "bytes": 2021,
+      "sha256": "a8d2a2cc3c9b00041a2b88bd0064a4cf6a11423e18a8221d17084b35ad870c79"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/producer-metadata/decision.json",
+      "bytes": 1926,
+      "sha256": "7378be55682fa46a35d56d3e40e128e73ef2564dff2955f35c445a89a31c0c00"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/producer-metadata/range-receipts.json",
+      "bytes": 756,
+      "sha256": "82ed03ba4df87536afaf6258e1a4d7ebe655421fdd87902e852221b95a03f56b"
+    },
+    {
+      "path": "output/playwright/rubin-complete-target-native-current/build-result.json",
+      "bytes": 329,
+      "sha256": "81cfb9ef421cb3c459300cac00e02b9dfc87e191d453f2fec9746e04e4585c72"
+    },
+    {
+      "path": "output/playwright/rubin-complete-target-native-current/result.json",
+      "bytes": 23579,
+      "sha256": "dfd7201102d0ac3f6280463c26f985a9b261963bc4944a8ab64e3cd916135c7f"
+    },
+    {
+      "path": "output/playwright/rubin-complete-target-native-current/rubin-consumer-result.json",
+      "bytes": 758397,
+      "sha256": "8c66a21d59168cbeec2f4a310dce09a2fc357e7f782b0c02ad4b000f53b2deff"
+    },
+    {
+      "path": "output/playwright/rubin-complete-target-native-current/native-surface-readback.json",
+      "bytes": 237,
+      "sha256": "ffacd980202072f7f5bf5b0a939095f30a07eb1b92d18dbbc5c42190778aa104"
+    },
+    {
+      "path": "output/playwright/rubin-complete-target-native-current/source-bindings-after.json",
+      "bytes": 96098,
+      "sha256": "81faddaa70a311abee93d7b237830c3c9f006d773da5c673bb270e36fd5864ba"
+    },
+    {
+      "path": "output/playwright/rubin-complete-target-native-current/backend-source-bindings-after.json",
+      "bytes": 31020,
+      "sha256": "6c565f0062d5a131670be2994b8d49868858289fa01d5fbef81114ee5101ad8f"
+    },
+    {
+      "path": "output/playwright/rubin-complete-target-native-current/task-owner-bindings-after.json",
+      "bytes": 1761,
+      "sha256": "6896e674c1a6247bf2cb6ea0b346817fba42821d9b031277fb541721acb466d5"
+    },
+    {
+      "path": "output/playwright/rubin-complete-target-native-current/public-asset-read-bindings.json",
+      "bytes": 39463,
+      "sha256": "f3d33467db61cededba1c81386661b84a91403b60140e9712b9f23cfdb1bd6fa"
+    },
+    {
+      "path": "output/playwright/rubin-complete-target-native-current/current-baseline-after.json",
+      "bytes": 3441,
+      "sha256": "1a2d3f12d701d6dade82a2dc02610f969ca6429310deab9929d39c8c9e7d8310"
+    },
+    {
+      "path": "output/playwright/rubin-complete-target-native-current/cleanup.json",
+      "bytes": 91,
+      "sha256": "6efcbee01f2d19cd7d5f5aba774faa5e2477506a04460ca49a4a080ba5067a57"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/visible-priority-profile-2026-10-06.mjs",
+      "bytes": 398,
+      "sha256": "cb7d2c46112470a0cf2eb60f09803aeaf1fb36d415b367298eef41baa6a05550"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-skymapper-native-consumers-2026-10-06.mjs",
+      "bytes": 7202,
+      "sha256": "74b2d176591f2d285299e890fd813c0104056881f439d4d8799983c3c58e0c0b"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/skymapper-source-stage-observer-2026-10-06.mjs",
+      "bytes": 3816,
+      "sha256": "e4082cac859054641123a091b284ccd0f9153128af004b7b2287d66df78bb7ae"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/observe-native-pipeline-2026-10-06.mjs",
+      "bytes": 4152,
+      "sha256": "d6b5a7b8c387cec40016c35467effe10067db6fb5881ce169a277040eb91318a"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/skymapper-native-profile-2026-10-06.mjs",
+      "bytes": 1987,
+      "sha256": "4b5f0118407e7eb7cb458887c782d07306a56e20b6818ce481e6e0735811a530"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/build-native-pipeline-page-r3-2026-10-06.mts",
+      "bytes": 25692,
+      "sha256": "22d1d61d0fa823d2302a434f9fd7d350d050a0b802987b010b2aab968bb7c92c"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-native-pipeline-page-r3-2026-10-06.mts",
+      "bytes": 81699,
+      "sha256": "6e3333a438db12fd95bdedcb7089d047286c1a5ed245973a592d9692afca7ea6"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/native-profile.json",
+      "bytes": 1314,
+      "sha256": "63c29dac061ef4e3d90a978278d7d7a761b990876b7d2fdebe131f15159ddb1a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-render-surface.ts",
+      "bytes": 4358,
+      "sha256": "dc5d0da092145adbaa7188460c0d181b7adfd1b60bae93965e9f3ecdbc338f3e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+      "bytes": 36782,
+      "sha256": "32d76d41cd507a1ff8f72e326396eed1d262c8790dbd3ab199961edf3315a81f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-hips-scene.test.ts",
+      "bytes": 15237,
+      "sha256": "ebbff0076c529f6bb43b274e352632f355ae89ae06782551c0295c38db41130f"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.test.ts",
+      "bytes": 21148,
+      "sha256": "4e9ccc993f461d6758f8d710eac3c14f3e08c0ba88085ef5dd411485af142b96"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-intent.json",
+      "bytes": 2839,
+      "sha256": "88c689c6e85eebf084ff4c93ff5d7eda7ade2e12de24da07ade300ad46727636"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scene/result.json",
+      "bytes": 57282,
+      "sha256": "a7aa20fb0fc4f8db1492a7cb21d912a0b2e73057fccdf87c8f7b099bd85fe025"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scene/input-readback.json",
+      "bytes": 69,
+      "sha256": "135092850e584267dcdf84fa97068e3bab078637b69548255d900b8feafc74f2"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scene/pixel-locality-readback.json",
+      "bytes": 1219,
+      "sha256": "8520da40432a92885312e014db0ac17ba0e00375d67deaba9107bdc43d74b172"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-controls/controls.json",
+      "bytes": 12557,
+      "sha256": "64920980794f15f170d559f07cea35bc3d6f0250c8d358992f081376c6605494"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-controls/adapter-check.json",
+      "bytes": 498,
+      "sha256": "ca56a9bac523f8111d24390712fef8e34ae182a81327b459d001c3f4780cb56e"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-dpr-policy/controls.json",
+      "bytes": 1107,
+      "sha256": "ab5025daecdfa57dcb0e1a2e796e2004287da512fad9e5a4b7c04f8de1a566f4"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scale/result.json",
+      "bytes": 20502,
+      "sha256": "9b8c3789c210d457a038465aafa3ec28a243c4d0f21fd797f6a0c37cfc488a12"
+    },
+    {
+      "path": "output/rubin-region-batch-2026-10-08/quality/refined/failed-grouped-policy-repetition/result.json",
+      "bytes": 29247,
+      "sha256": "cfefb8f337b31fc7778d8e1e8a092f1d11dde6b470ed861f5f8800105ca4dd99"
+    },
+    {
+      "path": "output/playwright/rubin-grouped-lod-native-current/build-result.json",
+      "bytes": 329,
+      "sha256": "81cfb9ef421cb3c459300cac00e02b9dfc87e191d453f2fec9746e04e4585c72"
+    },
+    {
+      "path": "output/playwright/rubin-grouped-lod-native-current/result.json",
+      "bytes": 23573,
+      "sha256": "c8a7c5515d2c243e715d7539704c3d3decae5e241d2039b45696cd86033ee82e"
+    },
+    {
+      "path": "output/playwright/rubin-grouped-lod-native-current/rubin-consumer-result.json",
+      "bytes": 722783,
+      "sha256": "b4a0ab6872afc5817662a6f36b9316be01a8c7badb6dce542da53054131f029c"
+    },
+    {
+      "path": "output/playwright/rubin-grouped-lod-native-current/native-surface-readback.json",
+      "bytes": 237,
+      "sha256": "ffacd980202072f7f5bf5b0a939095f30a07eb1b92d18dbbc5c42190778aa104"
+    },
+    {
+      "path": "output/playwright/rubin-grouped-lod-native-current/cleanup.json",
+      "bytes": 91,
+      "sha256": "6efcbee01f2d19cd7d5f5aba774faa5e2477506a04460ca49a4a080ba5067a57"
+    },
+    {
+      "path": "output/playwright/rubin-grouped-lod-native-current/source-bindings-after.json",
+      "bytes": 96098,
+      "sha256": "292c82fc8652e8b1ffe160c68e14a727db32fb113ad7ab363585d8975fec891e"
+    },
+    {
+      "path": "output/playwright/rubin-grouped-lod-native-current/task-owner-bindings-after.json",
+      "bytes": 1761,
+      "sha256": "6896e674c1a6247bf2cb6ea0b346817fba42821d9b031277fb541721acb466d5"
+    }
+  ],
+  "reviewQuestions": [
+    "Ownership fences and pending completion after native release throws; preserve primary cause and independent cleanup errors, explicit recovery and all original consumers",
+    "One current projection/selection/MOC responsibility; order12 child coverage must not grow to its parent, producer region must not acquire catalogue identity",
+    "Failed sample and invalid/partial header, hash, geometry or callback results cannot trigger unchanged downloads/processing/adoption; cached originals and previous failures remain intact",
+    "Rendered epoch source pins and later task-only verifier/preset edits are distinct; zero projected BSC stars require exact real publication/frame/frustum proof",
+    "Source rights, nominal MOC, raster opacity, image quality, current Scene, publication, native/physical capacity and independent acceptance stay separate",
+    "Verify the native request path has an absolute connection/body deadline and retires it on settle; distinguish controlled transport/clock from actual TLS, retain byte/header validation, inspect unchanged release/preview failure-finally owners and sealed retry.",
+    "Keep MATLAS original image content distinct from its ODbL HiPS and KS4 paper/access/institutional image permissions distinct; verify actual I/V/B display, source role and candidate scope.",
+    "Rubin: compare exact primary content-license links, HiPS ODbL, dated regional role and MOC epoch discrepancy; preserve live/missing subtype and unavailable data meaning. Verify only planned fully nominally covered profiles/actual rays enter this development batch, old binding FAILED and M49 missing body remain, real source alpha/opaque black/science are separate, source credits and publication obligations are not lost. Three local Scene frames cannot establish full regional footprint/continuous background or adoption.",
+    "Complete-region current path: real order2 ancestor bytes, conservative nominal parent envelopes and finite samples are not raster/science masks; inspect actual local v2 root/index/tile/rights, readonly-to-client adapter and completed group/source identity. Preserve first missing contribution-policy FAILED and task-only explicit 2MiB/one-group scope; probes-off/empty source must have no credit. Fine failure must leave coarse RGBA exactly unchanged. Two complete-region views still show a hard photo exterior; no remaining17 expansion or claim of smooth LOD/background/native acceptance.",
+    "Resource governance: raw/intermediate/TRIAL/frame/log output stays ignored; ordinary reusable code/manifests/rights and selected immutable LFS assets follow their existing owners. No copied source tree, history fetch, new LFS staging, publication or index reset. Existing canvas fixture dependencies and new assertions must exercise actual closure/live state without weakening production behavior.",
+    "Current complete-target path: verify actual mesh-footprint selector regression and original W3/order0 invariants, exact mirror identity/provenance with prior transport failure retained, finite TRIAL strict source notices, actual current cache/Source Back byte equality and retirement. Controlled native ports and browser GL/2D do not certify actual WeChat composition.",
+    "New PNG LOD edge: compare frozen original parent-plus-fine with fine-only using218 unchanged renderer/data inputs; two evolved task adapters have explicit provenance, not changed source bytes. Keep one CPU-opaque1-code discrepancy unqualified. Finest-first depth counterfactual has correct image pixels/fine-all-failure but disabled credit. Direct depth/each-entry depth cannot simply be adopted; share one source-group work target and actual contribution owner, honour explicit budgets/partial failure/cross-source/state restoration.",
+    "Coordinate positive moments on wrong flipped source may appear plausible: do not fit/shift photos or derive an acceptance threshold from observed offsets. M61 empty bright catalogue cannot certify image alignment."
+  ],
+  "executedChecks": [
+    "R1 original failing-before5 and owner/surface22PASS, app TS5.9.3 and bounded actual Page normal/release-fault results as original receipt epoch",
+    "Task Scene strict TypeScript PASS after explicit unknown browser input; original implicit-any failure retained",
+    "Batch Python syntax, exact-child membership and cached/failed-source guards; no source image requests during checks",
+    "FDS actual 2 PNG plus VPHAS original/TAN images visually inspected; specific failures closed to unchanged expansion",
+    {
+      "owner": "E2 static total deadline",
+      "before": "new regression FAILED against old owner, controlled 16s periodic response accepted",
+      "after": "15s request destroy; no HEAD after timeout; unchanged pointer; caller lease release; sealed GET/HEAD retry; completed deadlines retired",
+      "ownerSuite": {
+        "passed": 23,
+        "failed": 0
+      },
+      "syntaxAndDiff": "PASS",
+      "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/e2-static-delivery-deadline-2026-10-08.json"
+    },
+    {
+      "owner": "Q1 exact metadata followup",
+      "products": 2,
+      "presentInputs": 8,
+      "missingFailedOutput": 1,
+      "imageryRequests": 0,
+      "pipelineExpansion": 0,
+      "evidence": "output/optical-hips-registry-research-2026-10-08/matlas-ks4-metadata-decision.json",
+      "rights": "NOT_ESTABLISHED, not globally excluded"
+    },
+    {
+      "owner": "Optical/image finite registry and Rubin source batch",
+      "metadata": "261 id/record filters and exact sets verified; 62 colour-containing records include 11 color live",
+      "sample": "52 objects/104 fields once; only four 0.4 degree profiles fully inside nominal MOC; three completed representative previews and current Scene frames",
+      "actualSource": "22 original RGBA PNGs read back; 3 true alpha edges; 2 complete 2050 producer overviews after exact conditional range recovery, original timeout kept",
+      "binding": "Stale source recipe actually rejected before download, old recipe/rays kept FAILED; fresh three ray files byte-equal; actual current Scene181 before/after inputs equal",
+      "typescript": "TS5.9.3 strict existing Node adapter/imports PASS; noUncheckedIndexedAccess false is adapter scope",
+      "diff": "No trailing whitespace/merge markers. git diff-check0 for untracked task files is not change evidence",
+      "scope": "No current product code changes in this source batch, no repeated E2/PG/device/full software matrix"
+    },
+    {
+      "owner": "Q2/E1 complete-region local contract and source-credit followup after resource governance",
+      "preparation": "Original paused geometry epoch retained in periphery-plan.json;21 candidates are not a raster-mask or download obligation",
+      "newOriginals": {
+        "tiles": 4,
+        "bytes": 101785,
+        "retries": 0
+      },
+      "localTrial": {
+        "tiles": 5,
+        "bytes": 311308,
+        "originalHardlinks": true,
+        "actualWorkerReadback": true
+      },
+      "scene": {
+        "frames": 7,
+        "inputCount": 153,
+        "currentEqual": true,
+        "completedCredit": "PASS within explicit task contribution policy; probes-off and empty have no credit",
+        "fineChangedPixels": 164357,
+        "fineFailureChangedCoarsePixels": 0,
+        "glErrors": 0,
+        "liveTexturesAfterRetirement": 0,
+        "photoExteriorAndContinuousBackground": "FAILED"
+      },
+      "firstNoContributionPolicy": "FAILED preserved in output/rubin-region-batch-2026-10-08/periphery/failed-no-contribution-policy/result.json",
+      "expansion": "Stopped, remaining17 not acquired, no coarse-quality gate",
+      "canvasFixture": {
+        "before": "FAILED missing live getter/pose dependencies",
+        "afterPassed": 16,
+        "afterFailed": 0,
+        "appTypecheck": "TS5.9.3 PASS",
+        "productionCanvasChanged": false
+      },
+      "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/q1-mature-hips-batch-2026-10-08.json"
+    },
+    {
+      "owner": "Resource governance",
+      "offlineAssets": "2012 materialized files/171170429B PASS",
+      "priorStaging": "Preserved",
+      "outputLocations": "Ignored task output for raw cache/local trial/frames/failures, no LFS promotion",
+      "remoteLfsAndQuota": "UNKNOWN",
+      "unchangedE2PgMatrices": "Not rerun"
+    },
+    {
+      "owner": "Resumed complete-target current pipeline and source decisions",
+      "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/q1-mature-hips-batch-2026-10-08.json",
+      "selector": "32 affected checks and actual app/taskTS5.9.3 PASS at selector epoch",
+      "publishedScene": "9 conditions, frozen220 inputs, fine submission failure exact coarse pixels, empty/probes-off no credit",
+      "controlledPage": "523 frontend/176 backend/91 public assets;139 requests/88 scenes; two Source Backs exact RGBA/all completed frames source/extra optical body0; actual browserGL-to2D equal and final owner/backing/listener/GPU retired",
+      "ps1": "M8 wide original source core rings/green block FAILED, other3 profiles not assessed; no unchanged expansion",
+      "metadata": "DECaPS no new decisive original-content grant; original VirgoTIFF top-directory/XMP26,561B no AVM, nebulaHEAD UNKNOWN",
+      "coordinates": "46 cached M8 anchors,40 diagnostic/6 skipped, flipped38; absolute UNVERIFIED, no source requests/shift; quantiles definition explicit",
+      "alpha": "Two fine-only frames: M8 709 changed pixels/M61 zero; four finest-first depth image-only frames all expectedRGBA equal, depth state restored/GL0/textures retired; credit probes disabled therefore no adoption",
+      "ownerCoupling": "Logical single-target2,063,400B fits2MiB onlyat390x844;2x/doubletarget does not. No new allocation proof, no budget expansion",
+      "types": "Current task adapter/import graphTS5.9.3 PASS; persistent REPL heap failure retained separately"
+    }
+  ],
+  "independentReview": "MISSING",
+  "scopeLimits": [
+    "No fresh WXML/device/independent certification",
+    "Ordinary Prepared still empty, HiPS OFF, source-wide/image-coverage completion not established",
+    "Actual production/provider/off-host/full retained references remain unverified",
+    "E2 deadline check uses real requestBytes/immutable-file owner but EventEmitter HTTPS and controlled Node mock timers, without real TLS/edge or wall-clock capacity qualification.",
+    "Rubin controlled current Taro/native ports/HTTP/cache/Source Back/retirement have scoped development evidence; actual WXML/control composition remains FAILED and phones/physical/native acceptance remain unverified. Continuous background/absolute astrometry/science/ordinary adoption and independent review remain open. Source-alpha depth counterfactual has credit disabled, not source-qualified."
+  ],
+  "noNewProductChangeDuringSourceBatch": true,
+  "productChangeAfterSourceBatch": {
+    "owner": "tools/deployment/sky-static-release.mjs",
+    "test": "tools/deployment/sky-static-release.test.mjs",
+    "meaning": "Source-batch no-product-change assertion remains specific to its earlier phase."
+  },
+  "testOnlyChangeDuringGovernanceFollowup": {
+    "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-time.test.ts",
+    "productionCanvasChanged": false,
+    "meaning": "Governance known FAILED fixture repaired; independent/native qualification still open"
+  },
+  "planningCorrectionFrozen": {
+    "status": "DIRECTION_AND_PROCESS_READY_NOT_EXECUTED",
+    "owner": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+    "reason": "Coarse edge tiles cannot certify image quality; actual full-target visual evidence lagged engineering checks, background failure was over-coupled to independent high-resolution work",
+    "nextWhenAuthorized": "Existing licensed high-resolution source-to-render fidelity with complete target and wide context, then role-qualified batching; background/native independently, joined acceptance",
+    "userRequestedStop": true,
+    "implementationChanges": 0,
+    "newImageAcquisitionOrProcessingOrRender": 0,
+    "productTestsRerun": 0,
+    "fullScope": "Original Goal/33 obligations unchanged, all prior FAILED/UNKNOWN/MISSING retained"
+  },
+  "terminalReadbackFrozen": {
+    "status": "FINITE_CURRENT_INPUTS_READBACK_EQUAL",
+    "pins": 96,
+    "differences": [],
+    "protected": [
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/ACCEPTANCE-CURRENT.md",
+        "bytes": 48141,
+        "sha256": "34549de3f9d2f17ab7f344c5dfb700f988977d004bf033a59aa881edfa9053e3",
+        "equal": true
+      },
+      {
+        "path": "workers/miniapp-api/assets/celestial-object-introductions.zh-cn.v72.json",
+        "bytes": 643978,
+        "sha256": "587c4b3f7f773d352925932062716ea570485f18ddaa0a6d2c9730c29b5c204d",
+        "equal": true
+      },
+      {
+        "path": "apps/wechat-miniapp/project.config.json",
+        "bytes": 975,
+        "sha256": "7ab530fac785c3716dcc6293837492ff2098e7698b382e47fa057800a03f8ad6",
+        "equal": true
+      }
+    ],
+    "acceptanceRows": 33,
+    "failedMetadataOutput": "MISSING",
+    "syntaxAndDiff": "Latest change is documentation-only, product/task code pins unchanged; prior Python/TS/runtime checks are retained, not rerun",
+    "contextValidation": "PASS after durable E2 note; later task-only metadata/pointers require no unchanged rerun",
+    "refs": {
+      "branch": "codex/remote-main-20260908",
+      "localHead": "e2136ebf59875f02f921bba393d1b11d7782f81e",
+      "actualRemoteAuthorizedBranch": "e2136ebf59875f02f921bba393d1b11d7782f81e",
+      "actualRemoteMain": "5cc6743ec9b9f3f2d2b8bd54be5882e18974f27b",
+      "remoteMainDiffers": true,
+      "noSwitchMergePush": true
+    },
+    "goal": {
+      "status": "paused",
+      "budget": null,
+      "complete": false,
+      "source": "Latest user explicitly requests direction/process correction only, then stop; actual get_goal paused",
+      "executionAuthorized": false,
+      "planningOnly": true
+    },
+    "independentReview": "MISSING",
+    "newExternalMutationsAndOutreach": 0,
+    "newLongRunningServices": 0,
+    "ownedRunningTestSessions": 0,
+    "next": "Await next user continue; read PLAN current image-quality representative path and independent background/native responsibilities. Do not restore old background-first dependency or treat planning as implementation.",
+    "ownedSourceProcessSnapshot": [],
+    "currentSourceDecision": {
+      "path": "output/rubin-region-batch-2026-10-08/periphery/current-scene/result.json",
+      "bytes": 23676,
+      "sha256": "9aade9036b364d47db444e3e95b472fad48875f6ba84eaf2d4928785a1a9c444"
+    },
+    "taskSourceChecks": {
+      "typescript": "PASS scoped task/imports",
+      "appTypecheck": "PASS actual app TS5.9.3",
+      "sourceWhitespace": "PASS",
+      "gitDiffScope": "Tracked test PASS; untracked task files manually checked"
+    },
+    "currentSceneFrozenInputs": {
+      "count": 153,
+      "differences": [],
+      "currentEqual": true,
+      "inputTable": "output/rubin-region-batch-2026-10-08/periphery/current-scene/inputs-before.json"
+    },
+    "peripheryPreparation": {
+      "path": "output/rubin-region-batch-2026-10-08/periphery-plan.json",
+      "bytes": 12355,
+      "sha256": "27b2b0387c6be5fbbc8dd0f1782ac9ada69fd701afa24248a9ec1d404bd7259b"
+    },
+    "currentChecks": "Latest correction: task documents and finite bindings only; protected Goal/33 ledger/v72/config and prior code/render inputs unchanged. Prior executed product/task checks retain their own evidence epoch; no test/image/processing/render run for this correction.",
+    "priorSceneFrozenEpoch": {
+      "count": 181,
+      "meaning": "Earlier three narrow frames used frozen old task source; current two task adapters intentionally differ, no current equality claim"
+    },
+    "terminalReaderCorrection": {
+      "before": "Transient Node reader referenced non-existent variable sGovernPeripherySceneInputs153; no product/render/request effects, preceding doc writes succeeded",
+      "after": "Read original current-scene/inputs-before.json directly; all153 actual inputs still equal, all95 finite review pins equal"
+    },
+    "epoch": "Earlier documentation-only pause/periphery153 epoch. None of its paused/currentEqual/currentChecks claims describe the resumed execution."
+  },
+  "sourceBatchNoProductChangeEpoch": "Earlier no-change claims belong to frozen source and alpha counterfactual epochs; current grouped PNG changed4 production responsibilities and2 tests, not original publication pixels. Pause saving changes only state/evidence/Context.",
+  "terminalReadback": {
+    "status": "PAUSED_FINITE_CURRENT_INPUTS_SAVED",
+    "pins": 161,
+    "goal": {
+      "actual": "paused",
+      "budget": null,
+      "complete": false,
+      "userRequest": "云观星这一块暂停开发先，你做个状态保存或者暂存？",
+      "readback": "get_goal paused and idempotent update_goal paused; no create/complete"
+    },
+    "protected": [
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/GOAL-CURRENT.md",
+        "bytes": 10098,
+        "sha256": "d42b32e9cc738d452698bbf2fc6e2c17725ea2737208b8613914f48f08e3cf60",
+        "equal": true
+      },
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/ACCEPTANCE-CURRENT.md",
+        "bytes": 48141,
+        "sha256": "34549de3f9d2f17ab7f344c5dfb700f988977d004bf033a59aa881edfa9053e3",
+        "equal": true
+      },
+      {
+        "path": "apps/wechat-miniapp/project.config.json",
+        "bytes": 975,
+        "sha256": "7ab530fac785c3716dcc6293837492ff2098e7698b382e47fa057800a03f8ad6",
+        "equal": true
+      },
+      {
+        "path": "workers/miniapp-api/assets/celestial-object-introductions.zh-cn.v72.json",
+        "bytes": 643978,
+        "sha256": "587c4b3f7f773d352925932062716ea570485f18ddaa0a6d2c9730c29b5c204d",
+        "equal": true
+      }
+    ],
+    "acceptanceRows": 33,
+    "refs": {
+      "branch": "codex/remote-main-20260908",
+      "localHead": "e2136ebf59875f02f921bba393d1b11d7782f81e",
+      "actualRemoteAuthorizedBranch": "e2136ebf59875f02f921bba393d1b11d7782f81e",
+      "actualRemoteMain": "a786c2e9732ab8b82d82e90d20e04d728bf645ee",
+      "method": "Latest pre-pause git ls-remote --heads; no fetch/switch/merge/push"
+    },
+    "currentChecks": "Previously completed current app/owner checks and original GPU/native runs preserved. Only state/finite-pin readback now; no tests or development after pause.",
+    "ownedRunningTestSessions": 0,
+    "ownedBrowsersAndApi": "Actual runner cleanup saved; no batch/native runner found by process scan",
+    "newExternalMutationsAndOutreach": 0,
+    "preservedWorkingAndIndexChanges": true,
+    "independentReview": "MISSING",
+    "differences": [],
+    "next": "Paused. Only after fresh explicit continuation, read PLAN current checkpoint and original owners; address high-DPR shared contribution/resource constraint and current adapter types without rerendering unchanged proof. Background/P1/R/E/A remain independent, phones last.",
+    "protectedGoalAndLedgerAndV72AndConfig": true
+  },
+  "groupedCheckpoint": {
+    "owner": {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/q1-mature-hips-batch-2026-10-08.json",
+      "bytes": 77643,
+      "sha256": "7858b22f7796cee6f491b83cfa90db8929a751a2d4261420aa1efe0bd1ee17fa"
+    },
+    "code": [
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-render-surface.ts",
+        "bytes": 4358,
+        "sha256": "dc5d0da092145adbaa7188460c0d181b7adfd1b60bae93965e9f3ecdbc338f3e"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
+        "bytes": 36782,
+        "sha256": "32d76d41cd507a1ff8f72e326396eed1d262c8790dbd3ab199961edf3315a81f"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
+        "bytes": 63663,
+        "sha256": "f63f01188b1f8b148be68c4226ac1617d966219656d95c8f3ff614a28389c248"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.ts",
+        "bytes": 36964,
+        "sha256": "355cce81a6be8075c9191f0618c3693175861b25817a48a01dc2f2f883ced1d8"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-hips-scene.test.ts",
+        "bytes": 15237,
+        "sha256": "ebbff0076c529f6bb43b274e352632f355ae89ae06782551c0295c38db41130f"
+      },
+      {
+        "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.test.ts",
+        "bytes": 21148,
+        "sha256": "4e9ccc993f461d6758f8d710eac3c14f3e08c0ba88085ef5dd411485af142b96"
+      }
+    ],
+    "proof": [
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-intent.json",
+        "bytes": 2839,
+        "sha256": "88c689c6e85eebf084ff4c93ff5d7eda7ade2e12de24da07ade300ad46727636"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scene/result.json",
+        "bytes": 57282,
+        "sha256": "a7aa20fb0fc4f8db1492a7cb21d912a0b2e73057fccdf87c8f7b099bd85fe025"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scene/input-readback.json",
+        "bytes": 69,
+        "sha256": "135092850e584267dcdf84fa97068e3bab078637b69548255d900b8feafc74f2"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scene/pixel-locality-readback.json",
+        "bytes": 1219,
+        "sha256": "8520da40432a92885312e014db0ac17ba0e00375d67deaba9107bdc43d74b172"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-controls/controls.json",
+        "bytes": 12557,
+        "sha256": "64920980794f15f170d559f07cea35bc3d6f0250c8d358992f081376c6605494"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-controls/adapter-check.json",
+        "bytes": 498,
+        "sha256": "ca56a9bac523f8111d24390712fef8e34ae182a81327b459d001c3f4780cb56e"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-dpr-policy/controls.json",
+        "bytes": 1107,
+        "sha256": "ab5025daecdfa57dcb0e1a2e796e2004287da512fad9e5a4b7c04f8de1a566f4"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-scale/result.json",
+        "bytes": 20502,
+        "sha256": "9b8c3789c210d457a038465aafa3ec28a243c4d0f21fd797f6a0c37cfc488a12"
+      },
+      {
+        "path": "output/rubin-region-batch-2026-10-08/quality/refined/failed-grouped-policy-repetition/result.json",
+        "bytes": 29247,
+        "sha256": "cfefb8f337b31fc7778d8e1e8a092f1d11dde6b470ed861f5f8800105ca4dd99"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/build-result.json",
+        "bytes": 329,
+        "sha256": "81cfb9ef421cb3c459300cac00e02b9dfc87e191d453f2fec9746e04e4585c72"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/result.json",
+        "bytes": 23573,
+        "sha256": "c8a7c5515d2c243e715d7539704c3d3decae5e241d2039b45696cd86033ee82e"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/rubin-consumer-result.json",
+        "bytes": 722783,
+        "sha256": "b4a0ab6872afc5817662a6f36b9316be01a8c7badb6dce542da53054131f029c"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/native-surface-readback.json",
+        "bytes": 237,
+        "sha256": "ffacd980202072f7f5bf5b0a939095f30a07eb1b92d18dbbc5c42190778aa104"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/cleanup.json",
+        "bytes": 91,
+        "sha256": "6efcbee01f2d19cd7d5f5aba774faa5e2477506a04460ca49a4a080ba5067a57"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/source-bindings-after.json",
+        "bytes": 96098,
+        "sha256": "292c82fc8652e8b1ffe160c68e14a727db32fb113ad7ab363585d8975fec891e"
+      },
+      {
+        "path": "output/playwright/rubin-grouped-lod-native-current/task-owner-bindings-after.json",
+        "bytes": 1761,
+        "sha256": "6896e674c1a6247bf2cb6ea0b346817fba42821d9b031277fb541721acb466d5"
+      }
+    ],
+    "appTypes": "Current actual TS5.9.3 PASS",
+    "affectedOwnerChecks": "20PASS",
+    "latestTaskAdapterTypes": "NOT_RECHECKED_AFTER89433B_EPOCH",
+    "independentReview": "MISSING",
+    "userPaused": true
+  }
+}

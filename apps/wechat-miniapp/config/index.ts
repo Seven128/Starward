@@ -13,6 +13,7 @@ const sharedSourceInclude = [
   path.resolve(repoRoot, "packages/coordinate-system/src"),
   path.resolve(repoRoot, "packages/astronomy-core/src/stellar-vectors.ts"),
   path.resolve(repoRoot, "packages/astronomy-core/src/sky-time-model.ts"),
+  path.resolve(repoRoot, "packages/astronomy-core/src/tan-optical-geometry.ts"),
 ];
 
 const adoptedBRuntimeIconRoot = path.resolve(
@@ -187,6 +188,7 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
     alias: {
       "@starward/astronomy-core/stellar-vectors$": path.resolve(repoRoot, "packages/astronomy-core/src/stellar-vectors.ts"),
       "@starward/astronomy-core/sky-time-model$": path.resolve(repoRoot, "packages/astronomy-core/src/sky-time-model.ts"),
+      "@starward/astronomy-core/tan-optical-geometry$": path.resolve(repoRoot, "packages/astronomy-core/src/tan-optical-geometry.ts"),
       "@": path.resolve(here, "../src"),
       react: path.resolve(here, "../node_modules/react"),
       "@tarojs/plugin-framework-react": path.resolve(

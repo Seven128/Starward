@@ -14,7 +14,7 @@ import type { SkyArtworkLevels, SkyArtworkLevelsContribution, SkyArtworkLevelsDr
 import { unknownSkyArtworkLocalObservation } from "./sky-artwork-level-composition";
 import { registerSkyNativeImageLifetime } from "./sky-artwork-loader";
 import { drawSkyScene, type SkyScenePaintedSources, type SkySceneScienceOpticalPort } from "./sky-scene-render";
-import { skySdssOpticalFrame, skyPreparedOpticalFrame } from "./sky-sdss-optical-frame";
+import { skyTargetOpticalFrame, skySdssOpticalFrame, skyPreparedOpticalFrame } from "./sky-sdss-optical-frame";
 import { registerSkyScienceOpticalField } from "./sky-sdss-science-registration";
 import { submitSkySceneScienceOptical, skyScienceOpticalDisplayFacts } from "./sky-sdss-science-scene";
 import { createSkyViewBasis } from "./sky-view-projection";
@@ -306,6 +306,7 @@ test("bounded helper mutations expose expected-ready and exact-context regressio
       if (name === "./sky-artwork-loader") return { skyNativeImageIsCurrent: () => true };
       if (name === "./sky-tan-optical-registration") return { registerSkyTanOpticalField };
       if (name === "./sky-target-optical-identity") return { skyExactTargetOpticalIdentity };
+      if (name === "./sky-sdss-optical-frame") return { skyTargetOpticalFrame };
       if (name === "./sky-deep-sky-region") return { registerSkyDeepSkyRegion };
       if (name === "./sky-artwork-level-composition") return { unknownSkyArtworkLocalObservation };
       throw new Error(`unexpected import ${name}`);
@@ -420,6 +421,51 @@ test("Prepared ordinary draw/finish failures never publish an accepted painted s
   for (const throwAt of ["group", "disc", "finish"] as const) {
     const s = surface({ throwAt }); assert.throws(() => paint(s, preparedWorld().frame), /ordinary-/);
     assert.equal(s.events.includes("painted"), false); assert.equal(s.events.includes("contribution"), false);
+  }
+});
+
+test("a failed wider upload submits its ready finer alternative in the same frame with exact source credit", () => {
+  for (const selected of [publication, prepared]) {
+    const overview = { width: 512, height: 512 }, medium = { width: 1024, height: 1024 };
+    const retireOverview = registerSkyNativeImageLifetime(overview, () => true);
+    const retireMedium = registerSkyNativeImageLifetime(medium, () => true);
+    try {
+      const loaded = skyTargetOpticalFrame({publication: selected, image: overview, renderedLevel: "OVERVIEW",
+        renderedAsset: selected.levels.OVERVIEW, coarser: null,
+        fallback: {image: medium, level: "MEDIUM", asset: selected.levels.MEDIUM}});
+      const identity = skyExactTargetOpticalIdentity(loaded);assert(identity);const frame = identity.frame;
+      const s = surface({draw: {...submitted,coarsePrepared:false}, receipt: receipt(has,"positive","unknown")});
+      const base = s.actual.artworkLevels;
+      s.actual.artworkLevels = (levels,view,opacity) => {
+        if (levels.fine?.image === overview) {
+          s.events.push("failed-wider-upload");s.groups.push(levels);
+          return {submitted:false,finePrepared:false,coarsePrepared:false};
+        }
+        return base(levels,view,opacity);
+      };
+      const result = paint(s, frame, {34:{enabled:true}});
+      assert.equal(result.completed,1);assert.equal(s.groups.length,2);
+      assert.strictEqual(s.groups[1]!.fine!.image,medium);assert.equal(s.groups[1]!.coarse,null);
+      assert.deepEqual(result.failures,[overview]);assert.equal(s.images.length,0,'a same-source fallback cannot reveal W3');
+      const completed = result.sources?.sdssOptical;assert(completed && completed.kind !== 'legacy');
+      assert.deepEqual(completed.participatingFields.map(field=>[field.level,field.image,field.asset]),
+        [['MEDIUM',medium,selected.levels.MEDIUM]]);
+      assert(s.events.indexOf('group')<s.events.indexOf('landscape'),'fallback is drawn before later scene layers');
+      for (const invalid of [{...frame.fallback!,asset:{...frame.fallback!.asset}},
+        {...frame.fallback!,level:'OVERVIEW' as const,asset:selected.levels.OVERVIEW},
+        {...frame.fallback!,image:overview}]) {
+        assert.equal(skyExactTargetOpticalIdentity({...frame,fallback:invalid} as SkyExactTargetOpticalImage),null);
+      }
+      for (const qualification of [has,empty,unknown]) {
+        const valid = surface({draw:{...submitted,coarsePrepared:false},qualification,
+          receipt:receipt(qualification,'unknown','unknown')});
+        paint(valid,frame);
+        assert.equal(valid.groups.length,1,'black, empty or unknown successful coverage is not an upload failure');
+      }
+      retireMedium();const unavailable=surface({draw:{submitted:false,finePrepared:false,coarsePrepared:false}});
+      paint(unavailable,frame);
+      assert.equal(unavailable.groups.length,1,'a retired alternative cannot enter the current frame');
+    } finally {retireOverview();retireMedium();}
   }
 });
 

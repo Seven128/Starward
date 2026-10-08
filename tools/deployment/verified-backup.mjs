@@ -5,13 +5,15 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { composeExecutor } from "./compose-runtime.mjs";
 import { readEnvironmentFile } from "./env-file.mjs";
 import { validateReleaseEnvironment } from "./validate-release-environment.mjs";
+import { captureSkyStaticBackup } from "./sky-static-release.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const composePath = path.join(root, "infrastructure", "deployment", "compose.yml");
 const envelopeMagic = Buffer.from("STARWARD-ENCRYPTED-PGDUMP-V1\n", "utf8");
 export const PERSONAL_TRIAL_BACKUP_DAYS = 7;
 export const PERSONAL_TRIAL_BACKUP_POLICY = "personal-trial-7d";
-const schemaQuery = "SELECT CASE WHEN to_regclass('public.schema_migrations') IS NULL THEN 'EMPTY_UNINITIALIZED' ELSE COALESCE((SELECT MAX(version) FROM schema_migrations), 'EMPTY_UNINITIALIZED') END";
+const schemaRelationQuery = "SELECT to_regclass('public.schema_migrations') IS NOT NULL";
+const schemaQuery = "SELECT COALESCE(MAX(version), 'EMPTY_UNINITIALIZED') FROM public.schema_migrations";
 
 function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
@@ -31,23 +33,33 @@ export function decodeBackupKey(text) {
   return key;
 }
 
-export function encryptBackup(plaintext, key, nonce = randomBytes(12)) {
+function skyBackupBinding(record) {
+  return record ? sha256(JSON.stringify(Object.fromEntries(Object.keys(record).sort().map(key => [key, record[key]])))) : null;
+}
+
+function backupAdditionalData(binding) {
+  return binding ? Buffer.concat([envelopeMagic, Buffer.from(`SKY-PUBLIC-BACKUP-SHA256:${binding}\n`)]) : envelopeMagic;
+}
+
+export function encryptBackup(plaintext, key, nonce = randomBytes(12), skyStaticBackup) {
   if (!Buffer.isBuffer(plaintext) || plaintext.length === 0)
     throw new Error("backup_plaintext_invalid");
   if (!Buffer.isBuffer(key) || key.length !== 32 || !Buffer.isBuffer(nonce) || nonce.length !== 12)
     throw new Error("backup_encryption_parameters_invalid");
   const cipher = createCipheriv("aes-256-gcm", key, nonce);
-  cipher.setAAD(envelopeMagic);
+  const binding = skyBackupBinding(skyStaticBackup);
+  cipher.setAAD(backupAdditionalData(binding));
   const ciphertext = Buffer.concat([cipher.update(plaintext), cipher.final()]);
   const header = Buffer.from(`${JSON.stringify({
     algorithm: "aes-256-gcm",
     nonce: nonce.toString("base64"),
     tag: cipher.getAuthTag().toString("base64"),
+    ...(binding ? { skyStaticBackupSha256: binding } : {}),
   })}\n`, "utf8");
   return Buffer.concat([envelopeMagic, header, ciphertext]);
 }
 
-export function decryptBackup(envelope, key) {
+export function decryptBackup(envelope, key, skyStaticBackup) {
   if (!Buffer.isBuffer(envelope) || !envelope.subarray(0, envelopeMagic.length).equals(envelopeMagic))
     throw new Error("backup_envelope_invalid");
   const headerEnd = envelope.indexOf(0x0a, envelopeMagic.length);
@@ -55,11 +67,14 @@ export function decryptBackup(envelope, key) {
     throw new Error("backup_envelope_header_invalid");
   const header = JSON.parse(envelope.subarray(envelopeMagic.length, headerEnd).toString("utf8"));
   if (header.algorithm !== "aes-256-gcm") throw new Error("backup_envelope_algorithm_invalid");
+  const binding = header.skyStaticBackupSha256;
+  if ((binding !== undefined || skyStaticBackup?.schemaVersion === "starward-sky-static-backup-v2") &&
+      (!/^[a-f0-9]{64}$/.test(binding ?? "") || binding !== skyBackupBinding(skyStaticBackup))) throw new Error("backup_sky_binding_invalid");
   const nonce = Buffer.from(header.nonce, "base64");
   const tag = Buffer.from(header.tag, "base64");
   if (nonce.length !== 12 || tag.length !== 16) throw new Error("backup_envelope_header_invalid");
   const decipher = createDecipheriv("aes-256-gcm", key, nonce);
-  decipher.setAAD(envelopeMagic);
+  decipher.setAAD(backupAdditionalData(binding));
   decipher.setAuthTag(tag);
   return Buffer.concat([decipher.update(envelope.subarray(headerEnd + 1)), decipher.final()]);
 }
@@ -81,18 +96,24 @@ export function postgresCommand(executable, args) {
 }
 
 export function schemaVersion(run, databaseName, postgresUser, maxBuffer, step) {
-  const result = run({
+  const query = (command, selectedStep) => run({
     args: postgresCommand("psql", [
       `--username=${postgresUser}`,
       "--dbname", databaseName,
       "--set", "ON_ERROR_STOP=1",
       "--tuples-only",
       "--no-align",
-      "--command", schemaQuery,
+      "--command", command,
     ]),
     maxBuffer,
-    step,
+    step: selectedStep,
   });
+  // PostgreSQL resolves relation names before evaluating CASE. Probe the
+  // catalog separately so a first-release empty database remains dumpable.
+  const exists = query(schemaRelationQuery, `${step}-relation`).stdout.toString("utf8").trim();
+  if (exists !== "t" && exists !== "f") throw new Error(`backup_schema_relation_invalid:${step}`);
+  if (exists === "f") return "EMPTY_UNINITIALIZED";
+  const result = query(schemaQuery, step);
   const selected = result.stdout.toString("utf8").trim();
   if (!/^[a-zA-Z0-9._-]{1,128}$/u.test(selected))
     throw new Error(`backup_schema_identity_invalid:${step}`);
@@ -105,6 +126,7 @@ export async function executeVerifiedBackup({
   postgres,
   key,
   run,
+  delivery,
   now = () => new Date(),
   random = randomBytes,
 }) {
@@ -115,6 +137,7 @@ export async function executeVerifiedBackup({
   const personalTrial = validation.schemaVersion === "starward-operator-preview-validation-v1";
   if (personalTrial && validation.environment !== "staging")
     throw new Error("backup_personal_trial_requires_staging");
+  const skyStaticBackup = await captureSkyStaticBackup({ validation, deploy, delivery });
   // This records the retention target; backup creation never prunes existing files.
   const retention = personalTrial ? Object.freeze({
     policyId: PERSONAL_TRIAL_BACKUP_POLICY,
@@ -185,14 +208,14 @@ export async function executeVerifiedBackup({
     }
   }
 
-  const encrypted = encryptBackup(dump, key, random(12));
+  const encrypted = encryptBackup(dump, key, random(12), skyStaticBackup?.schemaVersion === "starward-sky-static-backup-v2" ? skyStaticBackup : undefined);
   const stamp = createdAt.replace(/[:.]/gu, "-");
   const fileName = `${validation.environment}-${stamp}-${validation.revision.slice(0, 12)}-${suffix}.pgdump.enc`;
   await mkdir(validation.operations.backupDirectory, { recursive: true, mode: 0o700 });
   const encryptedPath = path.join(validation.operations.backupDirectory, fileName);
   await writeFile(encryptedPath, encrypted, { mode: 0o600, flag: "wx" });
   const manifest = Object.freeze({
-    schemaVersion: "starward-verified-backup-v1",
+    schemaVersion: skyStaticBackup ? "starward-verified-backup-v2" : "starward-verified-backup-v1",
     status: "verified",
     environment: validation.environment,
     composeProject: deploy.COMPOSE_PROJECT_NAME,
@@ -203,6 +226,7 @@ export async function executeVerifiedBackup({
     createdAt,
     verifiedAt: now().toISOString(),
     ...(retention ? { retention } : {}),
+    ...(skyStaticBackup ? { skyStaticBackup } : {}),
     encrypted: Object.freeze({
       algorithm: "aes-256-gcm",
       fileName,
@@ -219,13 +243,14 @@ export async function executeVerifiedBackup({
   return Object.freeze({ encryptedPath, manifestPath, manifest });
 }
 
-export async function createVerifiedBackup({ deployEnvPath }) {
+export async function createVerifiedBackup({ deployEnvPath, delivery, execute }) {
   const validation = await validateReleaseEnvironment({ deployEnvPath });
   const deploy = await readEnvironmentFile(deployEnvPath);
   const postgres = await readEnvironmentFile(validation.lanes.postgres);
   const key = await readBackupKeyFile(validation.operations.backupKeyFile);
-  const run = composeExecutor({ composePath, deployEnvPath, cwd: root });
-  return executeVerifiedBackup({ validation, deploy, postgres, key, run });
+  const run = composeExecutor({ composePath, deployEnvPath, cwd: root, execute });
+  try { return await executeVerifiedBackup({ validation, deploy, postgres, key, run, delivery }); }
+  finally { key.fill(0); }
 }
 
 function option(name) {

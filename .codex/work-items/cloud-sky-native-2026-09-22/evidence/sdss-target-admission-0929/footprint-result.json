@@ -1,6 +1,0 @@
-{
-  "exception": "HttpResponseException",
-  "elapsedMs": 1260,
-  "status": "unavailable",
-  "message": "Response status code does not indicate success: 500 (InternalServerError)."
-}

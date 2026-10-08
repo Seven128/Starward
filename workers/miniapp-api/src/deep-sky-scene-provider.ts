@@ -18,13 +18,14 @@ function fixed(value: number) {
   return Object.is(rounded, -0) ? 0 : rounded;
 }
 
-export function deepSkyCatalogSource(): SourceSummary {
-  const manifest = loadDeepSkyCatalog().manifest;
+export function deepSkyCatalogSource(version?: string): SourceSummary {
+  const manifest = loadDeepSkyCatalog(version).manifest;
+  const extended = manifest.schemaVersion === "opengc-deep-sky-manifest-v2";
   return {
     id: `catalog:${manifest.catalogVersion}:${manifest.derivedAssetSha256}`,
     kind: "OPEN_DATA",
     provider: manifest.source.provider,
-    title: "OpenNGC Messier galaxy and nebula subset",
+    title: extended ? "OpenNGC selected galaxy and nebula catalog" : "OpenNGC Messier galaxy and nebula subset",
     sourceUrl: manifest.source.landingUrl,
     license: manifest.source.license,
     licenseUrl: manifest.source.licenseUrl,
@@ -35,13 +36,15 @@ export function deepSkyCatalogSource(): SourceSummary {
     state: "FRESH",
     confidence: 0.95,
     precision: "ICRS J2000 positions and catalog angular extents",
-    limitations: [...manifest.modifications, "仅含OpenNGC中带Messier交叉标识的51个星系/星云类对象；不表示肉眼可见、天气或山体遮挡"],
+    limitations: [...manifest.modifications, extended ? "仅含本版本明确选入的真实目录行，开发批次不是全天目录完整性或需求上限；不表示肉眼可见、天气或山体遮挡。"
+      : "仅含OpenNGC中带Messier交叉标识的51个星系/星云类对象；不表示肉眼可见、天气或山体遮挡"],
   };
 }
 
 export function buildDeepSkyScene(
   hourlyAt: readonly string[],
   spot: Pick<SpotSummary, "wgs84" | "altitudeM">,
+  version?: string,
 ) {
   const unavailable = (reason: string) => ({
     state: "UNAVAILABLE" as const,
@@ -50,10 +53,10 @@ export function buildDeepSkyScene(
     unavailableReason: reason,
   });
   try {
-    const catalog = loadDeepSkyCatalog();
+    const catalog = loadDeepSkyCatalog(version);
     const entries = catalog.rows.map<DeepSkySceneCatalogEntry>((row) => ({
       objectRef: row.objectRef,
-      displayName: `M ${row.messier}`,
+      displayName: row.messier === null ? row.ngcName : `M ${row.messier}`,
       kind: row.kind,
       aliases: [row.ngcName, ...row.commonNames],
       magnitude: row.vMag,
@@ -90,7 +93,7 @@ export function buildDeepSkyScene(
         catalogHash: catalog.catalogHash,
         frame: "ICRS J2000" as const,
         imageRegistration: "ICRS_TAN_NORTH_0_1_V1" as const,
-        sources: [deepSkyCatalogSource()],
+        sources: [deepSkyCatalogSource(version)],
         entries,
       },
       frames,
@@ -101,9 +104,9 @@ export function buildDeepSkyScene(
   }
 }
 
-export function deepSkySceneCacheKey() {
+export function deepSkySceneCacheKey(version?: string) {
   try {
-    const catalog = loadDeepSkyCatalog();
+    const catalog = loadDeepSkyCatalog(version);
     return `${catalog.catalogVersion}:${catalog.catalogHash}:${DEEP_SKY_PROJECTION_ALGORITHM}:${DEEP_SKY_REPORT_GEOMETRY_VERSION}`;
   } catch {
     return "deep-sky-unavailable";

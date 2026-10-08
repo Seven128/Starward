@@ -1,6 +1,0 @@
-{
-  "scope": "Source identity for current culling change, preserves all prior changes",
-  "owner": "apps/wechat-miniapp/src/features/sky/sky-constellation-render.ts",
-  "beforeSha256": "36c3dbbed47fc2986a6b41dbfc347687704de1f44d91afce1deb70e2b4e0b88d",
-  "currentSha256": "c007ff9b4ac9d9064f324110a547499976aad4477b8fa11acfd424c33e4f110f"
-}

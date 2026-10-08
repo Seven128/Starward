@@ -50,3 +50,45 @@ tmp/project-efficiency-android-20260908/*.apk
 /output/miniapp-uiux-alignment-2026-09-13/*
 !/output/miniapp-uiux-alignment-2026-09-13/phone-current-layer-before-back.png
 !/output/miniapp-uiux-alignment-2026-09-13/phone-final-clean-event-list.png
+
+# Task scratch is local. Narrow existing fixture exceptions remain below.
+/.codex/work-items/*/tmp/**
+!/.codex/work-items/cloud-sky-native-2026-09-22/tmp/current-native-report-2026-10-01.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/tmp/resume-preserved-hashes-2026-10-01.json
+
+# Frozen Cloud Sky investigations are preserved in the verified task archive.
+# Keep concise conclusions and exact current/publication/fixture inputs.
+/.codex/work-items/cloud-sky-native-2026-09-22/evidence/**
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/*.md
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-text-inspection-2026-10-07.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-arkab-text-inspection-2026-10-07.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-vindemiatrix-text-inspection-2026-10-07.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/e2-static-delivery-deadline-2026-10-08.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/q1-mature-hips-batch-2026-10-08.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/r1-native-release-failure-2026-10-08.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/wikidata-Q12975-2026-09-30.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/wikidata-chinese-name-probe.json
+
+# Batch owners replace the retired per-object/continuation script collection.
+/.codex/work-items/cloud-sky-native-2026-09-22/scripts/*
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-legacy-regions.py
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-noirlab-scene.mts
+
+# Direct byte-pinned source dependencies of the retained batch regression fixtures.
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-Q13039-2026-10-07.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-Q13043-2026-10-07.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-Q14028-2026-10-07.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-alpheratz-2026-10-07.html
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-mirach-2026-10-07.html
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-saiph-2026-10-07.html
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-arkab-Q671815-2026-10-07.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-arkab-Q671833-2026-10-07.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-arkab-posterior-2026-10-07.html
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-arkab-prior-2026-10-07.html
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-arkab-wikimedia-terms-2026-10-07.html
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-vindemiatrix-Q14198-2026-10-07.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-vindemiatrix-Q384401-2026-10-07.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-vindemiatrix-Q830887-2026-10-07.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-vindemiatrix-langexster-2026-10-07.html
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-vindemiatrix-nihal-2026-10-07.html
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-vindemiatrix-vindemiatrix-2026-10-07.html

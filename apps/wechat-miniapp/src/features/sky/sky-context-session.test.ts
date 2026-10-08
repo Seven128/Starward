@@ -121,17 +121,20 @@ test("actual page lifecycle hooks cancel publishing and reset the visible saving
     !node.expression.arguments[0]?.getText(source).includes("contextLookup") &&
     !node.expression.arguments[0]?.getText(source).includes("restoreObservationContext"));
   const h = harness(); let hide = () => {}, show = () => {}, dispose = () => {};
-  const visible: boolean[] = [], saving: boolean[] = [];
+  const visible: boolean[] = [], saving: boolean[] = [], returning: boolean[] = [];
+  const sourceReturnRef = { current: true };
   vm.runInNewContext(compile(hooks.map(node => node.getText(source)).join("\n")), {
     contextSession: h.session, setPageVisible: (value: boolean) => visible.push(value),
     observationTime: h.sandbox.observationTime, setTimeIntent: () => {},
     setTimeSaving: (value: boolean) => saving.push(value), setPreviewIndex: () => {},
+    sourceReturnRef, setSourceReturn: (value: boolean) => returning.push(value),
     useDidHide: (fn: () => void) => { hide = fn; }, useDidShow: (fn: () => void) => { show = fn; },
     useEffect: (fn: () => () => void) => { dispose = fn(); },
   });
   const old = h.session.begin(context())!; hide();
   assert.equal(h.session.isCurrent(old), false); assert.deepEqual(visible, [false]); assert.deepEqual(saving, [false]);
-  show(); const next = h.session.begin(context())!; assert.ok(next); dispose();
+  show(); assert.equal(sourceReturnRef.current, false); assert.deepEqual(returning, [false]);
+  const next = h.session.begin(context())!; assert.ok(next); dispose();
   assert.equal(h.session.isCurrent(next), false);
 });
 
@@ -139,7 +142,7 @@ test("the actual active Context and weather query follow a successful recovered 
   const h = harness(); const pending = h.actions.commitCivilDate("2026-09-16");
   const recovered = { ...context("ctx:recovered", 2), localDate: "2026-09-16", location: { kind: "FORMAL_SPOT", spotId: "spot:a" } };
   h.requests[0]!.resolve({ data: recovered }); await pending;
-  const names = ["activeContext", "proposalRoute", "contextLocationMatches", "contextComplete", "report"];
+  const names = ["activeContext", "proposalRoute", "contextLocationMatches", "contextComplete", "reportQuery"];
   const declarations = statements.filter(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(d => names.includes(d.name.getText(source))));
   const requests: string[] = [];
   vm.runInNewContext(compile(declarations.map(node => node.getText(source)).join("\n")), {

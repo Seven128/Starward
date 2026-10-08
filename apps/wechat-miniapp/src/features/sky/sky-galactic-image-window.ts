@@ -7,7 +7,7 @@ import type { SkyArtworkView } from "./sky-artwork-registration";
  * the existing unflipped upload: source top is texture v=0. A seam/pole keeps
  * full longitude; neither the horizon nor dark pixels narrow science coverage. */
 export function skyGalacticImageWindow(view: SkyArtworkView, width: number, height: number,
-  band: SkyGalacticBand, imageWidth: number, imageHeight: number): SkyGpuTextureWindow {
+  band: Pick<SkyGalacticBand,"pole"|"center">, imageWidth: number, imageHeight: number): SkyGpuTextureWindow {
   const full = { x: 0, y: 0, width: imageWidth, height: imageHeight };
   const cap = skyArtworkViewBounds(view, width, height);
   if (!cap || ![imageWidth, imageHeight].every(n => Number.isInteger(n) && n > 0)) return full;

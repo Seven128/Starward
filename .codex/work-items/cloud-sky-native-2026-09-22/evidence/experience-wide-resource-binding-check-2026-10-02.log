@@ -1,8 +1,0 @@
-file:///E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-wide-resource-binding-2026-10-02.mjs:74
-const finalView=event('wide-resource-final-view').view;assert.deepEqual(finalView,previous.native.views.final);
-                                                                                                        ^
-
-TypeError: Cannot read properties of undefined (reading 'final')
-    at file:///E:/dev/worktrees/Starward/remote-main-20260908/.codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-wide-resource-binding-2026-10-02.mjs:74:105
-
-Node.js v24.16.0

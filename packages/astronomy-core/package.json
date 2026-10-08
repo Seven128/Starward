@@ -52,6 +52,10 @@
       "production": "./dist/src/deep-sky-catalog.js",
       "default": "./src/deep-sky-catalog.ts"
     },
+    "./tan-optical-geometry": {
+      "production": "./dist/src/tan-optical-geometry.js",
+      "default": "./src/tan-optical-geometry.ts"
+    },
     "./satellite-omm": {
       "production": "./dist/src/satellite-omm.js",
       "default": "./src/satellite-omm.ts"

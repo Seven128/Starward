@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { NotFoundException } from "@nestjs/common";
 import { deepSkyRowByReference } from "@starward/astronomy-core/deep-sky-catalog";
+import { nativeTanNominalWidthDegrees, nativeTanUvAtIcrs } from "@starward/astronomy-core/tan-optical-geometry";
 import { OPTICAL_IMAGE_LEVELS, assertPreparedRenderedOpticalPublication, type PreparedRenderedOpticalPublication,
+  isPreparedOpticalReference, opticalPublicationReference, preparedNativeOpticalSource,
   type PreparedRenderedOpticalManifest, type SourceSummary } from "@starward/miniapp-contracts";
 import { readTargetOpticalImageFile } from "./target-optical-image-file.ts";
 
@@ -17,7 +19,7 @@ export class PreparedOpticalImageryService {
 
   constructor(descriptors: readonly PreparedRenderedOpticalPublicationDescriptor[] = []) {
     for (const descriptor of descriptors) {
-      if (!/^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(descriptor.reference) ||
+      if (!isPreparedOpticalReference(descriptor.reference) ||
         !/^[a-f0-9]{64}$/u.test(descriptor.expectedHash) || !(descriptor.manifestUrl instanceof URL) ||
         descriptor.manifestUrl.protocol !== "file:" || descriptor.manifestUrl.host !== "" ||
         descriptor.manifestUrl.search !== "" || descriptor.manifestUrl.hash !== "" ||
@@ -50,9 +52,21 @@ export class PreparedOpticalImageryService {
     if (previous) return previous;
     const value: unknown = JSON.parse(readFileSync(descriptor.manifestUrl, "utf8"));
     assertPreparedRenderedOpticalPublication(value, descriptor.reference, descriptor.expectedHash);
-    const row = deepSkyRowByReference(descriptor.reference);
-    if (!row || Math.abs(value.center.raDeg - row.raDeg) > 1e-7 || Math.abs(value.center.decDeg - row.decDeg) > 1e-7)
-      throw new Error("prepared_optical_catalog_registration_invalid");
+    if (value.imageVersion === "prepared-native-optical-v1") {
+      const width = nativeTanNominalWidthDegrees(value.nominalTan);
+      if (Math.abs(value.levels.OVERVIEW.fieldDegrees - width) > 1e-10 * Math.max(width, 1))
+        throw new Error("prepared_optical_field_geometry_invalid");
+      if (value.subject.kind === "object") {
+        const row = deepSkyRowByReference(descriptor.reference);
+        const uv = row ? nativeTanUvAtIcrs(value.nominalTan, row.raDeg, row.decDeg) : null;
+        if (!uv || uv.some(coordinate => coordinate < 0 || coordinate > 1))
+          throw new Error("prepared_optical_catalog_registration_invalid");
+      }
+    } else {
+      const row = deepSkyRowByReference(descriptor.reference);
+      if (!row || Math.abs(value.center.raDeg - row.raDeg) > 1e-7 || Math.abs(value.center.decDeg - row.decDeg) > 1e-7)
+        throw new Error("prepared_optical_catalog_registration_invalid");
+    }
     const publication = { value, manifestUrl: descriptor.manifestUrl, hash };
     this.cached.set(hash, publication);
     return publication;
@@ -66,7 +80,8 @@ export class PreparedOpticalImageryService {
 
   source(reference: string, expectedHash: string): SourceSummary {
     const { value, hash } = this.publication(expectedHash);
-    if (value.objectRef !== reference) throw new NotFoundException("prepared_optical_publication_not_found");
+    if (opticalPublicationReference(value) !== reference) throw new NotFoundException("prepared_optical_publication_not_found");
+    if (value.imageVersion === "prepared-native-optical-v1") return preparedNativeOpticalSource({ ...value, publicationHash: hash });
     const { source, processing } = value, name = reference.replace(":", "");
     const display = value.imageVersion === "prepared-display-optical-v1" ? value.processing : null;
     const guard = display?.geometryExclusion;
@@ -92,6 +107,7 @@ export class PreparedOpticalImageryService {
     const publication = this.publication(hash);
     const level = OPTICAL_IMAGE_LEVELS.find(candidate => publication.value.levels[candidate].file === file);
     if (!level) throw new NotFoundException("prepared_optical_image_not_found");
-    return readTargetOpticalImageFile(publication.manifestUrl, publication.value.levels[level], "png", "prepared_optical_asset_invalid");
+    const asset = publication.value.levels[level];
+    return readTargetOpticalImageFile(publication.manifestUrl, asset, asset.format, "prepared_optical_asset_invalid");
   }
 }

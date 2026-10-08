@@ -11,6 +11,15 @@ const hash = value => typeof value === "string" && /^[a-f0-9]{64}$/u.test(value)
 const chinese = value => typeof value === "string" && value.length > 0 && value.length <= 32 &&
   /\p{Script=Han}/u.test(value) && !/[\u0000-\u001f\u007f]/u.test(value);
 
+/** Exact published BSC-qualified identifiers; labels/positions never join objects. */
+export function qualifiedBscReferences(entity) {
+  return new Set((entity.claims?.P528 ?? []).filter(claim => claim.rank !== "deprecated" &&
+    claim.qualifiers?.P972?.some(qualifier => qualifier.datavalue?.value?.id === "Q499138"))
+    .map(claim => claim.mainsnak?.datavalue?.value)
+    .filter(code => typeof code === "string" && /^HR [1-9]\d{0,3}$/u.test(code))
+    .map(code => code.replace(" ", ":")));
+}
+
 export function enrichChineseAliasPublication(baseBytes, baseManifest, entityBytes, retrievedAt) {
   const base = JSON.parse(Buffer.from(baseBytes).toString("utf8"));
   if (base.catalogVersion !== "wikidata-bsc5p-chinese-aliases.v2" ||
@@ -32,11 +41,7 @@ export function enrichChineseAliasPublication(baseBytes, baseManifest, entityByt
       !Number.isSafeInteger(entity.lastrevid) || entity.lastrevid < 1 ||
       !Number.isFinite(Date.parse(entity.modified)) || Date.parse(entity.modified) > Date.parse(retrievedAt))
     throw Error("chinese_alias_enrichment_entity_invalid");
-  const references = new Set((entity.claims?.P528 ?? []).filter(claim => claim.rank !== "deprecated" &&
-    claim.qualifiers?.P972?.some(qualifier => qualifier.datavalue?.value?.id === "Q499138"))
-    .map(claim => claim.mainsnak?.datavalue?.value)
-    .filter(code => typeof code === "string" && /^HR [1-9]\d{0,3}$/u.test(code))
-    .map(code => code.replace(" ", ":")));
+  const references = qualifiedBscReferences(entity);
   if (references.size !== 1) throw Error("chinese_alias_enrichment_hr_invalid");
   const reference = [...references][0];
   const row = base.rows.find(candidate => candidate.reference === reference);

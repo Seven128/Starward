@@ -20,8 +20,14 @@ export function measuredCanvasSize(result: unknown): CanvasSize {
 /** One measured native surface, one outstanding native draw, one latest frame. */
 export function createSkyCanvasLifecycle<Frame, Context>(port: {
   measure(done: (result: unknown) => void): void;
+  /** A retained Sources surface must be checked against the returned native node. */
+  validateContext?(context: Context, measurement: unknown, size: CanvasSize): boolean;
+  suspended?(): void;
   createContext(measurement: unknown, size: CanvasSize): Context;
   releaseContext?(context: Context): void;
+  /** Resolve live native-owned inputs once, before the immutable paint snapshot.
+   * The result also owns this attempt's completion; no additional scheduling. */
+  resolveFrame?(frame: Frame): Frame;
   paint(context: Context, frame: Frame, size: CanvasSize, done: () => void): void;
   sameScene?(completed: Frame, latest: Frame): boolean;
   presented(frame: Frame, size: CanvasSize): void;
@@ -29,7 +35,7 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
   failed(error: unknown, frame: Frame | undefined): void;
 }, clock: CanvasClock = nativeClock) {
   let ready = false, visible = true, mounted = true, disposed = false;
-  let failed = false;
+  let failed = false, retained = false, validate = false;
   let epoch = 0, visibilityEpoch = 0, revision = 0, dirty = false, busy = false;
   let latest: Frame | undefined;
   let size: CanvasSize | undefined, context: Context | undefined;
@@ -44,21 +50,35 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
     epoch++;
     cancelTimers();
     busy = false;
-    size = undefined;
+    size = undefined; retained = validate = false;
     const released = context;
     context = undefined;
     // Clear ownership before release: native failure/re-entrant disposal cannot
     // release this generation twice or leave stale callbacks able to use it.
-    if (released !== undefined) port.releaseContext?.(released);
+    let releaseFailure: { error: unknown } | undefined;
+    try { if (released !== undefined) port.releaseContext?.(released); }
+    catch (error) { releaseFailure = { error }; }
     dirty = latest !== undefined;
     if (!disposed) port.invalidated();
+    return releaseFailure;
+  }
+  function resetAndReportFailure() {
+    const releaseFailure = reset();
+    if (releaseFailure) {
+      failed = true; dirty = false;
+      port.failed(releaseFailure.error, latest);
+    }
+    return releaseFailure === undefined;
   }
   function fail(error: unknown) {
     if (!active()) return;
     failed = true;
-    reset();
+    const releaseFailure = reset();
     dirty = false;
-    port.failed(error, latest);
+    // Preserve the original frame failure and the independent native cleanup
+    // failure; neither establishes successful release or permits stale picks.
+    port.failed(releaseFailure ? Object.assign(new Error("sky_canvas_retirement_failed"),
+      { cause: error, releaseError: releaseFailure.error }) : error, latest);
   }
   function schedule() {
     if (!active() || !dirty || busy || scheduled !== undefined) return;
@@ -73,15 +93,25 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
     deadline = clock.schedule(() => {
       if (active() && generation === epoch) fail(new Error("sky_canvas_callback_timeout"));
     }, 5000);
-    if (!size || context === undefined) {
+    if (!size || context === undefined || validate) {
       let measured = false;
       try {
         port.measure(result => {
           if (measured || !active() || generation !== epoch || !busy) return;
           measured = true;
           try {
-            size = measuredCanvasSize(result);
-            context = port.createContext(result, size);
+            const nextSize = measuredCanvasSize(result);
+            if (validate && context !== undefined) {
+              const valid = size?.width === nextSize.width && size?.height === nextSize.height &&
+                port.validateContext?.(context, result, nextSize) === true;
+              validate = retained = false;
+              if (!valid) {
+                const released = context; context = undefined; size = undefined;
+                port.releaseContext?.(released); port.invalidated();
+              }
+            }
+            size = nextSize;
+            if (context === undefined) context = port.createContext(result, size);
             paint(generation);
           } catch (error) { fail(error); }
         });
@@ -90,6 +120,8 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
   }
   function paint(generation: number) {
     if (!active() || generation !== epoch || latest === undefined || !size || context === undefined) return;
+    try { latest = port.resolveFrame?.(latest) ?? latest; }
+    catch (error) { fail(error); return; }
     const frame = latest, frameRevision = revision, frameSize = size, visibleGeneration = visibilityEpoch;
     dirty = false;
     let finished = false;
@@ -122,12 +154,27 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
     },
     ready() { if (!disposed) { ready = true; schedule(); } },
     retry() { if (!disposed) { failed = false; dirty = latest !== undefined; schedule(); } },
-    resize() { if (!disposed) { reset(); schedule(); } },
-    setMounted(value: boolean) { if (mounted !== value && !disposed) { mounted = value; failed = false; reset(); schedule(); } },
-    hide() { if (!disposed) { visible = false; reset(); latest = undefined; dirty = false; } },
-    show() { if (!disposed) { if (!visible) failed = false; visible = true; schedule(); } },
+    resize() { if (!disposed && resetAndReportFailure()) schedule(); },
+    setMounted(value: boolean) { if (mounted !== value && !disposed) {
+      mounted = value; failed = false;
+      if (resetAndReportFailure()) schedule();
+    } },
+    hide(keepReady = false) { if (!disposed) {
+      visible = false;
+      try {
+        if (keepReady && context !== undefined && !failed) {
+          epoch++; visibilityEpoch++; cancelTimers(); busy = false; retained = true;
+          port.suspended?.();
+        } else resetAndReportFailure();
+      } finally { latest = undefined; dirty = false; }
+    } },
+    show() { if (!disposed) { if (!visible) failed = false; validate = retained; visible = true; schedule(); } },
     fail,
-    dispose() { disposed = true; reset(); latest = undefined; dirty = false; },
+    dispose() {
+      disposed = true;
+      try { resetAndReportFailure(); }
+      finally { latest = undefined; dirty = false; }
+    },
   };
 }
 

@@ -1,3 +1,4 @@
+import { opticalPublicationReference } from "@starward/miniapp-contracts";
 import type { SkyPreparedOpticalField, SkyPreparedOpticalImage, SkySdssDisplayOpticalField,
   SkySdssDisplayOpticalImage, SkySdssScienceOpticalField,
   SkySdssScienceOpticalImage, SkyTargetOpticalImage } from "./sky-sdss-optical-frame";
@@ -30,12 +31,12 @@ export function skyExactTargetOpticalIdentity(frame: SkyTargetOpticalImage | nul
     : "displayPublication" in frame ? { kind: "display", frame, publication: frame.displayPublication }
     : { kind: "prepared", frame: frame as SkyPreparedOpticalImage,
       publication: (frame as SkyPreparedOpticalImage).preparedPublication };
-  const { publication } = identity, parent = identity.frame.coarser;
+  const { publication } = identity, parent = identity.frame.coarser, fallback = identity.frame.fallback;
   if (!publication || (identity.kind === "science"
     ? publication.imageVersion !== "science-optical-v2" && publication.imageVersion !== "science-optical-v3"
     : identity.kind === "display" ? publication.imageVersion !== "sdss-display-optical-v1"
-    : publication.imageVersion !== "prepared-optical-v1" && publication.imageVersion !== "prepared-display-optical-v1" && publication.imageVersion !== "prepared-optical-v2") ||
-    publication.objectRef !== frame.reference || publication.publicationHash !== frame.publicationHash) return null;
+    : publication.imageVersion !== "prepared-optical-v1" && publication.imageVersion !== "prepared-display-optical-v1" && publication.imageVersion !== "prepared-optical-v2" && publication.imageVersion !== "prepared-native-optical-v1") ||
+    opticalPublicationReference(publication) !== frame.reference || publication.publicationHash !== frame.publicationHash) return null;
   const fieldIdentity = (field: SkyExactTargetOpticalField) => !!field.asset &&
     field.asset === publication.levels[field.level] && field.fieldDegrees === field.asset.fieldDegrees &&
     (identity.kind !== "prepared"
@@ -44,6 +45,7 @@ export function skyExactTargetOpticalIdentity(frame: SkyTargetOpticalImage | nul
         field.asset.scientificAvailability === "UNKNOWN");
   const order = { OVERVIEW: 0, MEDIUM: 1, DETAIL: 2 } as const;
   if (!fieldIdentity(identity.frame) || (parent && (!fieldIdentity(parent) || parent.image === frame.image ||
-    order[parent.level] >= order[frame.level]))) return null;
+    order[parent.level] >= order[frame.level])) || (fallback && (!fieldIdentity(fallback) ||
+    fallback.image === frame.image || fallback.image === parent?.image || order[fallback.level] <= order[frame.level]))) return null;
   return Object.freeze(identity);
 }

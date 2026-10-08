@@ -54,6 +54,7 @@ export const MINIAPP_API_OPERATIONS = {
   skyLandscapeManifestGet: { method: "GET", path: "/sky/landscape/manifest" },
   skyLandscapeAssetGet: { method: "GET", path: "/sky/landscape/{publicationHash}/{file}" },
   galacticImageManifestGet: { method: "GET", path: "/sky/galactic/manifest" },
+  galacticDisplayManifestGet: { method: "GET", path: "/sky/galactic/display/manifest" },
   galacticImageGet: { method: "GET", path: "/sky/galactic/{publicationHash}/{file}" },
   opticalHipsManifestGet: { method: "GET", path: "/sky/optical/manifest" },
   opticalHipsIndexGet: { method: "GET", path: "/sky/optical/{publicationHash}/{sourceId}/{order}/{dir}/index" },
@@ -165,7 +166,8 @@ export interface MiniappApiOperationTypes {
   neptuneBandsImageGet: { request: void; response: ApiEnvelope<NeptuneBandsImageData> };
   skyLandscapeManifestGet: { request: void; response: ApiEnvelope<SkyLandscapeManifestData> };
   skyLandscapeAssetGet: { request: void; response: ApiEnvelope<SkyLandscapeAssetData> };
-  galacticImageManifestGet: { request: void; response: ApiEnvelope<GalacticImageManifestData> };
+  galacticImageManifestGet: { request: void; response: GalacticImageManifestData };
+  galacticDisplayManifestGet: { request: void; response: GalacticImageManifestData };
   galacticImageGet: { request: void; response: ApiEnvelope<GalacticImageData> };
   opticalHipsManifestGet: { request: void; response: ApiEnvelope<OpticalHipsManifestData> };
   opticalHipsIndexGet: { request: void; response: ApiEnvelope<OpticalHipsIndexData> };

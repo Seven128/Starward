@@ -4,6 +4,8 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { celestialInformationPartialDetail } from "../../services/celestial-information-presentation";
+import { isDeepSkyObjectReference, isPreparedOpticalReference, preparedNativeOpticalSource, preparedNativeOpticalPublicationHash } from "@starward/miniapp-contracts";
+import { preparedNativeOpticalFixture } from "../../../../../packages/miniapp-contracts/src/test-fixtures/prepared-native-optical-publication.ts";
 
 const source = ts.createSourceFile("index.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"),
   ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -22,7 +24,8 @@ test("source route retains valid credit and offers recovery for a partial inform
     Provenance: "Provenance", StatusPanel: "StatusPanel",
     useRouter: () => ({ params: { reference: "HR%3A7001" } }),
     useState: (value: unknown) => [value, () => {}], useDidHide: () => {}, useDidShow: () => {},
-    useThemeClass: () => "mode-night", isCelestialObjectReference: () => true,
+    useThemeClass: () => "mode-night", isCelestialObjectReference: () => true, isDeepSkyObjectReference,
+    useResourceQuery: () => ({ isPending: false, isError: false }),
     useCelestialInformation: () => ({ isPending: false, isError: false, refreshError: null,
       data: { dataState: "PARTIAL", data: { displayName: "织女星", sources: [{ id: "bsc", provider: "BSC" }] } },
       refetch: () => { retries++; return Promise.resolve(); } }),
@@ -55,7 +58,8 @@ test("the source route reads the image-bound publication and rejects an invalid 
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
     View: "View", ScrollView: "ScrollView", CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
     useRouter: () => ({ params }), useState: (value: unknown) => [value, () => {}], useDidHide() {}, useDidShow() {},
-    useThemeClass: () => "mode-night", isCelestialObjectReference: () => true, isProductSource: () => true,
+    useThemeClass: () => "mode-night", isCelestialObjectReference: () => true, isProductSource: () => true, isDeepSkyObjectReference,
+    useResourceQuery: () => ({ isPending: false, isError: false }),
     deepSkyManifestUrl: (...args: string[]) => { downloads.push(args); return `/manifest/${args[0]!.split(":").at(-1)}`; },
     celestialInformationPartialDetail,
     useCelestialInformation: (...args: unknown[]) => { requests.push(args); return { isPending: false, isError: false,
@@ -84,4 +88,28 @@ test("the source route reads the image-bound publication and rejects an invalid 
   assert.equal(requests.at(-1)?.[1], false);
   params.reference = "M%3A42"; delete params.opticalPublicationHash; render();
   assert.deepEqual(Array.from(requests.at(-1)!), ["M:42", true, hash, undefined]);
+});
+
+test("an independent region source route keeps exact credit/unknown meaning and cannot show retired metadata", () => {
+  const publication = preparedNativeOpticalFixture(true), hash = preparedNativeOpticalPublicationHash(publication);
+  let current = true, retries = 0, enabled = false, objectRequestEnabled = true;
+  const params: any = { reference: encodeURIComponent(publication.reference), preparedPublicationHash: hash };
+  const render = vm.runInNewContext(code, {
+    React: { createElement: (type: string, props: any, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
+    View: "View", ScrollView: "ScrollView", CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
+    useRouter: () => ({ params }), useState: (v: unknown) => [v, () => {}], useDidHide() {}, useDidShow() {},
+    useThemeClass: () => "mode-night", isPreparedOpticalReference, isDeepSkyObjectReference, isProductSource: () => true,
+    preparedNativeOpticalSource, deepSkyManifestUrl: (_source: string, selectedHash: string) => `/manifest/${selectedHash}`,
+    useCelestialInformation: (_reference: string, active: boolean) => { objectRequestEnabled = active; return {}; },
+    useResourceQuery: (options: any) => { enabled = options.enabled; return { data: { publication: { ...publication, publicationHash: hash }, isCurrent: () => current },
+      isPending: false, isError: false, refetch: () => { retries++; } }; },
+  }) as () => any;
+  const flatten = (tree: any): any[] => !tree ? [] : Array.isArray(tree) ? tree.flatMap(flatten) : [tree, ...flatten(tree.children)];
+  const first = flatten(render()), credit = first.find(n => n.type === "Provenance");
+  assert(credit); assert(enabled); assert.equal(objectRequestEnabled, false);
+  assert.equal(credit.props.source.attribution.name, publication.source.credit); assert.equal(credit.props.downloadUrl, `/manifest/${hash}`);
+  assert(credit.props.source.precision.includes("科学有效性和源分辨率未知"));
+  current = false; const retired = flatten(render()); assert(!retired.some(n => n.type === "Provenance"));
+  const error = retired.find(n => n.type === "StatusPanel" && n.props.state === "ERROR"); assert(error); error.props.onRecover(); assert.equal(retries, 1);
+  params.opticalPublicationHash = hash; render(); assert.equal(enabled, false, "conflicting immutable routes cannot open another publication query");
 });

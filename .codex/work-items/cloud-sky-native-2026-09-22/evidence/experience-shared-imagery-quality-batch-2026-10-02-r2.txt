@@ -1,1 +1,0 @@
-{"reports": ".codex\\work-items\\cloud-sky-native-2026-09-22\\evidence\\shared-imagery-quality-2026-10-02-r2", "images": 171, "m42SourceTiles": 20, "m42ExactPublishedPngBytes": true, "m82NewMaskRejected": true, "allExistingAssetFiles": 201, "assetsUnchanged": true, "qualityAcceptance": "UNVERIFIED"}

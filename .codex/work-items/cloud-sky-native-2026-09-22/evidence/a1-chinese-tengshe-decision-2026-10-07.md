@@ -1,0 +1,17 @@
+# C07 星官与分量限定供给
+
+[来源合同](chinese-tengshe-qualification-2026-10-07.json)是出版前阶段记录，原样保留“不采用/零源码改变”时态。[实际原文](chinese-tengshe-text-inspection-2026-10-07.json)/[A-B实体](chinese-tengshe-bodu-components-2026-10-07.json)共6请求0重试/媒体，复用已核WMF7与两固定原稿CC BY-SA4.0页脚。固定英文V424 Lacertae1367909073/Q5175667 rev2539163439精确HR8726/HD216946/HIP113288；无任何zh标签，HD中文入口不是独立中文正文。采用有限红超巨星/变星与实际螣蛇星官背景，不造个人传统序号/腾蛇别名。原K5Ib对源K5/M0、原V4.95/bV1.78对4.91–5.03/1.77保；原表/正文变幅差异、Lc/慢不规则与半规则、伴星假说不补新动态光变或伴星点。
+
+95 Herculis1374787716实际OtherDesignations将Bodu/HR6730/HD164669赋给A，将HR6729/HD164668赋给B。系统Q85016846 rev2386310335仅合格HD164669/HIP88267、无HR6730；P527明确A/B。A子Q66476656 rev2386309003只有合格HR6730，HD/HIP/中文标签缺值不补，完整HD依据实际英文A精确字段；原A的HIP88267保。B子Q4261563 rev2326593790合格HR6729/HD164668、无HIP；原B HIPnull保，不借系统或A。两子P361无序号，不倒推。系统标签帛度/中文入口帛度一、B子帛度一标签与原稿系统星官背景归属有差异；保原已有目录别名，新增B译介名为武仙座95 B（HD164668），不新增帛度一/Bodu给B。A/B原A5IIIn/G8III及4.96/5.18、bV0.12/0.95对源A2IV/G5III、4.83±0.01/5.10保；合成4.31不替单点。只译共同演化A型/巨星背景，不导入精细轨道、演化、红外总光度或新测量。原null测光不判断Var_ID；原坐标自行、星点、registry、88星座不变。
+
+[出版v35](chinese-tengshe-publication-2026-10-07.json)137行331823B/SHA caf8cf8ed493bf4ecfde0a4377d4fe25a2ab3785f0eb00e6a6a4c48634fbf95a，全部134v34行逐字段不变，v1–v34原字节与四v19/两v29修复保。沿原owner的准确身份/hash绑定、固定URL/贡献者/译改声明/许可共享；公开API与前端无变化。5源码变化（原owner/两原测试/一新测试/新asset），261当前源300WEAPP不变；5改前失败回归、35文件176pass0fail/worker类型通过，数字事实/原别名/子编号缺值、星官旧成员/单条失败独立结果和恢复均验证。螣蛇原33成员保并加原HR8726为34；帛度原5成员保并加原HR6730为6；95Her两原点保，腾蛇查询仍空。
+
+[当前消费者](../../../../output/playwright/chinese-tengshe-1007-r2/chinese-tengshe-result.json)/[读回](chinese-tengshe-final-readback-2026-10-07.json)沿正式Map→实际普通无props/fixture关、当前隔离HTTP/实际天文原资产、Taro JSX/native受控端口/软件WebGL；525源20文件复用0构建。原公共时间尺唯一02:00行明确提交，三中文限定检索/完整资料/所有限定/署名许可/复制/SourcesBack同地点时刻Context和原核心点选通过。A/B同已绘帧实分离3.352948px，原重叠列表同时包含两个HR并分别选择；两者披露地平线以下，全天星图不冒肉眼可见。当前69Scene104请求、最终encoded/decode/GPU/request逻辑模型0，两个helper退出，原服务0重启。
+
+[首次超时诊断](chinese-tengshe-time-condition-diagnostic-2026-10-07.json)保首脚本/日志/62Scene93请求、三资料SourcesBack/Tengshe核心通过及终态模型/完整result MISSING。00:00时A实际高度-0.660683°，原渐隐opacity0.046631<同帧拾取0.1，已完成绘制但不可触核心；不用放宽拾取或改大气让测试通过。当前只改公共验证时间输入为02:00并保严格真实核心/双分量重叠要求，两运行合计131Scene197请求。失败保FAILED，未把当前软件成功冒原生CSS/WXML/实际DevTools、账号/Android-iOS/新版月面手机/物理总量或容量证明。
+
+[覆盖](chinese-tengshe-next-coverage-2026-10-07.json)468有名22缺采用中文名381正文，143介绍138许可52深空非上限。Mesarthim HRHD来源冲突仍FAILED停车至新合格输入；下一独立Aurwandilsta。完整33账逐行不变；普通Prepared空/HiPS关/Mellinger LOWRES DISPLAY/照片FAILED、旧UNKNOWN/MISSING、native/44px焦点滚动/账号/设备/完整图质/整场物理200DAU/独审仍开放。无提交推送/迁分支/外联/采购部署发布/子代理/六Settings或其它业务变化，Goal active无预算未完成。
+
+## 唯一下一依赖
+
+A1 C07 真实已命名目录中文供给缺口：v35已沿原文字出版/检索/资料owner接入Tengshe HR8726/HD216946/HIP113288与Bodu A HR6730/HD164669/HIP88267、原B HR6729/HD164668/HIPnull三条有限译介。原134行/v1–v34字节/四v19及两v29修复保，137行331823B；6实际原稿/CC0请求、0媒体/重试，命名星官与单分量/子HDHIP缺值及原分类测光差异保，不填编号/动态光变或新点，不扩registry。五改前失败回归、35文件176检查/类型通过，当前实际02:00三资料署名复制/SourcesBack/原核心与A-B重叠选择通过，69Scene104请求；首00:00近地平渐隐未达到拾取门槛的62Scene93请求/超时及最终模型MISSING保，未改大气/拾取规则。当前最终逻辑0/helper关闭，525输入0构建/261源5变化300WEAPP不变。143介绍138许可52深空非上限，468有名22缺采用中文名381正文。Mesarthim HRHD冲突FAILED仍停车，仅新合格原文或决定性原始身份核实才重评。唯一下一执行依赖沿原BSC v3与同owner，以独立Aurwandilsta HR5971/HD143807/HIP78493核真实固定原文、具体再用译改权及精确单点/系统归属；合格才作有限准确中文译介并继续实际检索/资料限定署名复制/SourcesBack/原已绘点选，单条失败保独立英文数字/基础事实与恢复，不造传统名/借编号。缺源保缺口，样本/版本/目录不封顶，不建通用百科或巡天框架、不恢复排除源/重做影像加工。普通Prepared空、HiPS关、Mellinger LOWRES DISPLAY、照片FAILED；Q1无新合格覆盖几何权利/P1无新callback或有效会话窗口按原条件停车。旧FAILED/UNKNOWN/MISSING及33账保；native CSS-WXML/44px焦点滚动/账号/Android-iOS/新版月面手机/完整图质/整场物理资源与200DAU/独审开放，Goal active无预算未完成。

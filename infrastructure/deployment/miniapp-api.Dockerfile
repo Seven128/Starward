@@ -20,6 +20,8 @@ COPY packages/coordinate-system ./packages/coordinate-system
 COPY packages/miniapp-contracts ./packages/miniapp-contracts
 COPY workers/miniapp-api ./workers/miniapp-api
 COPY tools/run-node.cjs ./tools/run-node.cjs
+COPY .gitattributes ./.gitattributes
+COPY tools/resources/assets.mjs tools/resources/lfs-policy.json ./tools/resources/
 COPY tools/deployment/sky-static-bundle.mjs tools/deployment/sky-static-bundle.d.mts ./tools/deployment/
 ARG STARWARD_RELEASE_REVISION
 # The shared astronomy package also serves other products. Its Gaia DR3 pack

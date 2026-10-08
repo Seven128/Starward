@@ -2,6 +2,17 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createSkyLandscapeReadiness } from "./sky-landscape-readiness";
 
+test("Sources freezes the fade and cancels its timer without advancing hidden time or accepting a late tick",()=>{
+  let now=1000,id=0;const jobs=new Map<number,()=>void>(),values:number[]=[];
+  const owner=createSkyLandscapeReadiness({now:()=>now,requestFrame:fn=>{jobs.set(++id,fn);return id;},
+    cancelFrame:handle=>{jobs.delete(handle as number);},changed:value=>values.push(value)});
+  owner.setAvailable(true);now=1120;const first=[...jobs.values()][0]!;jobs.clear();first();
+  assert.equal(values.at(-1),.5);const late=[...jobs.values()][0]!;owner.pause();assert.equal(jobs.size,0);
+  now=5000;late();assert.equal(values.at(-1),.5);assert.equal(jobs.size,0);
+  owner.resume();now=5120;const resumed=[...jobs.values()][0]!;jobs.clear();resumed();
+  assert.equal(values.at(-1),1);assert.equal(jobs.size,0);owner.dispose();
+});
+
 test("a returning photo fades in after success, with cancellation and canvas retirement", () => {
   let now = 1000, sequence = 0;
   const callbacks = new Map<number, () => void>(), values: number[] = [];

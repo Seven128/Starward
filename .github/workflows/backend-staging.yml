@@ -72,6 +72,8 @@ jobs:
       IMAGE_REPOSITORY: ${{ vars.STARWARD_IMAGE_REPOSITORY }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        env:
+          GIT_LFS_SKIP_SMUDGE: "1"
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0
@@ -100,6 +102,15 @@ jobs:
           for selected in "$REMOTE_INBOX" "$REMOTE_RELEASE_ROOT" "$REMOTE_BASE_DEPLOY_ENV" "$REMOTE_CANDIDATE_ROOT"; do
             [[ "$selected" =~ ^/[A-Za-z0-9._/-]+$ ]]
           done
+      - name: Restore LFS object cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .git/lfs/objects
+          key: ${{ runner.os }}-starward-lfs-${{ hashFiles('tools/resources/lfs-policy.json', 'workers/miniapp-api/assets/**', 'packages/astronomy-core/data/**') }}
+          restore-keys: |
+            ${{ runner.os }}-starward-lfs-
+      - name: Prepare current resource versions
+        run: node tools/run-node.cjs tools/resources/assets.mjs prepare
       - name: Install locked dependencies
         run: npm ci
       - name: Recheck release owners at the promoted revision

@@ -11,7 +11,8 @@ interface Target {
   readonly framebuffer: WebGLFramebuffer;
   readonly width: number;
   readonly height: number;
-  readonly bytes: number;
+  bytes: number;
+  depth: WebGLRenderbuffer | null;
 }
 interface Entry {
   readonly target: Target;
@@ -22,6 +23,8 @@ interface Entry {
   readonly camera: Record<string, unknown>;
   readonly cameraRay: string;
   readonly localCache: Map<SkyDeepSkyRegion, SkyArtworkLocalObservation>;
+  /** A completed source-group RGBA is its own alpha signal. */
+  readonly photoChannel?: "alpha";
 }
 export interface SkyGpuArtworkContributionDraw {
   readonly program: ProgramInfo;
@@ -30,6 +33,8 @@ export interface SkyGpuArtworkContributionDraw {
   readonly uniforms: Record<string, unknown>;
   readonly vertex: string;
   readonly cameraRay: string;
+  /** Native mesh alpha signal; ordinary Prepared keeps its existing shader. */
+  readonly alphaFragment?:string;
 }
 const unknownQualification: SkyArtworkLevelsQualification = Object.freeze({
   fine: "unknown", coarse: "unknown", any: "unknown",
@@ -91,22 +96,26 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
   const auxiliaryBytesLimit = options?.auxiliaryBytesLimit ?? 0, maxGroups = options?.maxGroups ?? 0;
   const enabled = !!options && Number.isFinite(auxiliaryBytesLimit) &&
     auxiliaryBytesLimit > 0 && Number.isSafeInteger(maxGroups) && maxGroups > 0;
-  const entries = new Map<SkyArtworkLevelsDraw, Entry>();
+  const entries = new Map<object, Entry>();
   const pool: Target[] = [], scratch: Target[] = [], used = new Set<Target>();
   let width = 0, height = 0, bytes = 0, frameOpen = false, finished = false, faulted = false, disposed = false;
   let signalProgram: ProgramInfo | null = null, reduceProgram: ProgramInfo | null = null;
+  let meshSignalProgram:ProgramInfo|null=null,meshProgramKey="";
   let reduceBuffer: WebGLBuffer | null = null, positionLocation = -1, programKey = "";
   let localReduceProgram: ProgramInfo | null = null, signalRevision = 0;
 
   const deleteTarget = (target: Target) => {
+    if (target.depth) gl.deleteRenderbuffer(target.depth);
     gl.deleteFramebuffer(target.framebuffer); gl.deleteTexture(target.texture); bytes -= target.bytes;
   };
   const deletePrograms = () => {
     if (signalProgram) gl.deleteProgram(signalProgram.program);
     if (reduceProgram) gl.deleteProgram(reduceProgram.program);
     if (localReduceProgram) gl.deleteProgram(localReduceProgram.program);
+    if (meshSignalProgram) gl.deleteProgram(meshSignalProgram.program);
     if (reduceBuffer) gl.deleteBuffer(reduceBuffer);
     signalProgram = null; reduceProgram = null; localReduceProgram = null; reduceBuffer = null; programKey = ""; positionLocation = -1;
+    meshSignalProgram=null;meshProgramKey="";
   };
   const retire = () => {
     pool.splice(0).forEach(deleteTarget); scratch.splice(0).forEach(deleteTarget);
@@ -158,7 +167,7 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
 
   /** Only the position pointer is modified. WebGL cannot restore a null array
    * pointer after assigning a buffer, so probing requires a real current one. */
-  const guarded = <T>(location: number, work: () => T): T => {
+  const guarded = <T>(location: number, work: () => T, groupState = false): T => {
     const attributeBuffer = gl.getVertexAttrib(location, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING) as WebGLBuffer | null;
     if (!attributeBuffer) throw new Error("sky_gpu_contribution_unrestorable_position");
     const framebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
@@ -188,6 +197,19 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
     const scissor = Array.from(gl.getParameter(gl.SCISSOR_BOX) as Int32Array) as [number, number, number, number];
     const mask = Array.from(gl.getParameter(gl.COLOR_WRITEMASK) as boolean[]) as [boolean, boolean, boolean, boolean];
     const clear = Array.from(gl.getParameter(gl.COLOR_CLEAR_VALUE) as Float32Array) as [number, number, number, number];
+    const depth = groupState ? {
+      func: gl.getParameter(gl.DEPTH_FUNC) as number, write: gl.getParameter(gl.DEPTH_WRITEMASK) as boolean,
+      clear: gl.getParameter(gl.DEPTH_CLEAR_VALUE) as number,
+      renderbuffer: gl.getParameter(gl.RENDERBUFFER_BINDING) as WebGLRenderbuffer | null,
+      pointers: enabledAttributes.map((_enabled, index) => ({ index,
+        buffer: gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING) as WebGLBuffer | null,
+        size: gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_SIZE) as number,
+        type: gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_TYPE) as number,
+        normalized: gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_NORMALIZED) as boolean,
+        stride: gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_STRIDE) as number,
+        offset: gl.getVertexAttribOffset(index,gl.VERTEX_ATTRIB_ARRAY_POINTER),
+      })),
+    } : null;
     try { return work(); }
     finally {
       gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer); gl.viewport(...viewport); gl.useProgram(program);
@@ -195,18 +217,26 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       gl.activeTexture(activeTexture);
       gl.bindBuffer(gl.ARRAY_BUFFER, attributeBuffer);
       gl.vertexAttribPointer(location, attribute.size, attribute.type, attribute.normalized, attribute.stride, attribute.offset);
+      if (depth) for (const pointer of depth.pointers) if (pointer.buffer) {
+        gl.bindBuffer(gl.ARRAY_BUFFER,pointer.buffer);
+        gl.vertexAttribPointer(pointer.index,pointer.size,pointer.type,pointer.normalized,pointer.stride,pointer.offset);
+      }
       enabledAttributes.forEach((enabled, index) => enabled ? gl.enableVertexAttribArray(index) : gl.disableVertexAttribArray(index));
       gl.bindBuffer(gl.ARRAY_BUFFER, arrayBuffer);
       caps.forEach((cap, index) => enabledCaps[index] ? gl.enable(cap) : gl.disable(cap));
       gl.blendFuncSeparate(blend[0]!, blend[1]!, blend[2]!, blend[3]!);
       gl.blendEquationSeparate(blend[4]!, blend[5]!); gl.scissor(...scissor);
       gl.colorMask(...mask); gl.clearColor(...clear);
+      if (depth) {
+        gl.depthFunc(depth.func); gl.depthMask(depth.write); gl.clearDepth(depth.clear);
+        gl.bindRenderbuffer(gl.RENDERBUFFER,depth.renderbuffer);
+      }
     }
   };
-  const auxiliary = <T>(location: number, work: () => T): T | null => {
+  const auxiliary = <T>(location: number, work: () => T, groupState = false): T | null => {
     checkPriorError();
     try {
-      const result = guarded(location, work);
+      const result = guarded(location, work, groupState);
       if (gl.getError() !== gl.NO_ERROR || gl.isContextLost()) throw new Error("sky_gpu_contribution_failed");
       return result;
     } catch {
@@ -267,11 +297,30 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error("sky_gpu_contribution_framebuffer_incomplete");
       if (gl.getError() !== gl.NO_ERROR) throw new Error("sky_gpu_contribution_target_failed");
       bytes += n;
-      return { texture, framebuffer, width: w, height: h, bytes: n };
+      return { texture, framebuffer, width: w, height: h, bytes: n, depth: null };
     } catch (error) {
       if (framebuffer) gl.deleteFramebuffer(framebuffer);
       if (texture) gl.deleteTexture(texture);
       throw error;
+    }
+  };
+  const ensureDepth = (target: Target) => {
+    if (target.depth) return;
+    const n = target.width * target.height * 2;
+    if (!Number.isSafeInteger(n) || bytes + n > auxiliaryBytesLimit) throw new Error("sky_gpu_contribution_budget");
+    const depth = gl.createRenderbuffer();
+    if (!depth) throw new Error("sky_gpu_group_depth_unavailable");
+    try {
+      gl.bindRenderbuffer(gl.RENDERBUFFER,depth);
+      gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT16,target.width,target.height);
+      gl.bindFramebuffer(gl.FRAMEBUFFER,target.framebuffer);
+      gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,depth);
+      if (gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE || gl.getError()!==gl.NO_ERROR)
+        throw new Error("sky_gpu_group_depth_incomplete");
+      target.depth=depth;target.bytes+=n;bytes+=n;
+    } catch (error) {
+      gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,null);
+      gl.deleteRenderbuffer(depth);throw error;
     }
   };
   const ensurePrograms = (prepared: SkyGpuArtworkContributionDraw, location: number) => {
@@ -319,7 +368,7 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
     }
     if (pool.length === 0) { scratch.splice(0).forEach(deleteTarget); deletePrograms(); width = 0; height = 0; }
   };
-  const currentEntry = (draw: SkyArtworkLevelsDraw) => {
+  const currentEntry = (draw: object) => {
     const entry = entries.get(draw);
     // Disabled, foreign and retired draw queries do not touch GL. Current
     // receipts must also fence loss/resize occurring after the last finish.
@@ -386,6 +435,89 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       });
       if (captured) entries.set(draw, captured);
     },
+    /** Every tile of one source accumulates into its existing frame signal.
+     * Actual later draws already attenuate it through afterDraw, including
+     * another source, a transparent PNG, landscape and navigation clear. */
+    captureMeshAlpha(group:object,prepared:SkyGpuArtworkContributionDraw){
+      if(!enabled||disposed||!frameOpen||faulted||!prepared.alphaFragment)return;
+      reopen();checkPriorError();
+      if(gl.isContextLost()){invalidate();return;}
+      const existing=entries.get(group);
+      if(existing&&!existing.photoUsable)return;
+      if((!existing&&entries.size>=maxGroups)||!supportedFramebuffer()||!fullRgbWrite())return;
+      const size=dimensions(),location=gl.getAttribLocation(prepared.program.program,"a_position");
+      if(!size||location<0||!gl.getVertexAttrib(location,gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING))return;
+      const [w,h]=size;
+      if(width>0&&(width!==w||height!==h)){invalidate();return;}
+      const chain=scratchDimensions(w,h),free=existing?.target??pool.find(target=>!used.has(target));
+      const needed=(free?0:w*h*4)+(scratch.length?0:chain.reduce((sum,[x,y])=>sum+x*y*4,0));
+      if(!Number.isSafeInteger(needed)||bytes+needed>auxiliaryBytesLimit)return;
+      const captured=auxiliary(location,()=>{
+        const key=JSON.stringify([prepared.vertex,prepared.alphaFragment,location]);
+        if(meshProgramKey!==key||!meshSignalProgram){
+          if(meshSignalProgram)gl.deleteProgram(meshSignalProgram.program);
+          meshSignalProgram=makeProgram(prepared.vertex,prepared.alphaFragment!,location);meshProgramKey=key;
+        }
+        if(!reduceProgram){reduceProgram=makeProgram(reduceVertex,reduceFragment,location);positionLocation=location;}
+        // An incompatible normal position layout is not silently reinterpreted.
+        if(positionLocation!==location)throw new Error("sky_gpu_mesh_contribution_layout_unavailable");
+        if(!reduceBuffer){reduceBuffer=gl.createBuffer();if(!reduceBuffer)throw new Error("sky_gpu_contribution_buffer_unavailable");gl.bindBuffer(gl.ARRAY_BUFFER,reduceBuffer);gl.bufferData(gl.ARRAY_BUFFER,reductionQuad,gl.STATIC_DRAW);}
+        width=w;height=h;if(!scratch.length)for(const [x,y] of chain)scratch.push(makeTarget(x,y));
+        const target=free??makeTarget(w,h);if(!free)pool.push(target);used.add(target);
+        const scissor=gl.isEnabled(gl.SCISSOR_TEST);
+        gl.bindFramebuffer(gl.FRAMEBUFFER,target.framebuffer);
+        if(!existing){gl.disable(gl.SCISSOR_TEST);gl.colorMask(true,true,true,true);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);if(scissor)gl.enable(gl.SCISSOR_TEST);}
+        gl.enable(gl.BLEND);gl.blendEquation(gl.FUNC_ADD);gl.blendFuncSeparate(gl.ONE,gl.ONE,gl.ONE,gl.ONE);
+        gl.colorMask(true,true,false,false);gl.useProgram(meshSignalProgram!.program);
+        setBuffersAndAttributes(gl,meshSignalProgram!,prepared.buffer);setUniforms(meshSignalProgram!,prepared.uniforms);
+        drawBufferInfo(gl,prepared.buffer,prepared.primitive);
+        if(existing){changed(existing);return existing;}
+        return {target,qualification:unknownQualification,photoUsable:true,receipt:null,revision:++signalRevision,
+          camera:Object.freeze({}),cameraRay:"",localCache:new Map()} as Entry;
+      });
+      if(captured)entries.set(group,captured);
+    },
+    /** One source's finest-first colour work target becomes its A-channel
+     * contribution signal after the completed composite. No second full image
+     * or retained input/VBO is required. Refusal leaves the caller's independent
+     * draw untouched; GL faults latch until the existing explicit reset. */
+    composeMeshGroup(group:object,prepared:SkyGpuArtworkContributionDraw,
+      draw:()=>readonly boolean[],composite:(texture:WebGLTexture)=>void):readonly boolean[]|null {
+      if(!enabled||disposed||!frameOpen||faulted)return null;
+      reopen();checkPriorError();
+      if(gl.isContextLost()){invalidate();return null;}
+      if(entries.has(group)||entries.size>=maxGroups||!supportedFramebuffer()||!fullRgbWrite())return null;
+      const size=dimensions(),location=gl.getAttribLocation(prepared.program.program,"a_position");
+      if(!size||location<0||!gl.getVertexAttrib(location,gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING))return null;
+      const [w,h]=size;
+      if(width>0&&(width!==w||height!==h)){invalidate();return null;}
+      const chain=scratchDimensions(w,h),free=pool.find(target=>!used.has(target));
+      const needed=(free?(free.depth?0:w*h*2):w*h*6)+
+        (scratch.length?0:chain.reduce((sum,[x,y])=>sum+x*y*4,0));
+      if(!Number.isSafeInteger(needed)||bytes+needed>auxiliaryBytesLimit)return null;
+      const maxDepth=gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) as number;
+      if(!Number.isFinite(maxDepth)||w>maxDepth||h>maxDepth)return null;
+      const rendered=auxiliary(location,()=>{
+        if(!reduceProgram){reduceProgram=makeProgram(reduceVertex,reduceFragment,location);positionLocation=location;}
+        if(positionLocation!==location)throw new Error("sky_gpu_group_contribution_layout_unavailable");
+        if(!reduceBuffer){reduceBuffer=gl.createBuffer();if(!reduceBuffer)throw new Error("sky_gpu_contribution_buffer_unavailable");gl.bindBuffer(gl.ARRAY_BUFFER,reduceBuffer);gl.bufferData(gl.ARRAY_BUFFER,reductionQuad,gl.STATIC_DRAW);}
+        width=w;height=h;if(!scratch.length)for(const [x,y] of chain)scratch.push(makeTarget(x,y));
+        const target=free??makeTarget(w,h);if(!free)pool.push(target);used.add(target);ensureDepth(target);
+        gl.bindFramebuffer(gl.FRAMEBUFFER,target.framebuffer);gl.viewport(0,0,w,h);
+        gl.disable(gl.SCISSOR_TEST);gl.disable(gl.STENCIL_TEST);gl.disable(gl.CULL_FACE);
+        gl.colorMask(true,true,true,true);gl.clearColor(0,0,0,0);gl.clearDepth(1);gl.depthMask(true);
+        gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LESS);
+        const results=draw();
+        return {target,results};
+      },true);
+      if(!rendered)return null;
+      // Normal-frame error and cross-source attenuation belong to the actual
+      // composite. Register this signal afterwards, avoiding texture feedback.
+      composite(rendered.target.texture);checkPriorError();
+      entries.set(group,{target:rendered.target,qualification:unknownQualification,photoUsable:true,
+        receipt:null,revision:++signalRevision,camera:Object.freeze({}),cameraRay:"",localCache:new Map(),photoChannel:"alpha"});
+      return rendered.results;
+    },
     afterDraw(replay: () => void) {
       if (!hasPending()) return;
       reopen();
@@ -399,8 +531,9 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       }
       auxiliary(positionLocation, () => {
         gl.enable(gl.BLEND); gl.blendEquation(gl.FUNC_ADD);
-        gl.blendFuncSeparate(gl.ZERO, destination, gl.ZERO, destination); gl.colorMask(true, true, false, false);
+        gl.blendFuncSeparate(gl.ZERO, destination, gl.ZERO, destination);
         for (const entry of entries.values()) if (entry.photoUsable) {
+          gl.colorMask(entry.photoChannel!=="alpha",entry.photoChannel!=="alpha",false,entry.photoChannel==="alpha");
           gl.bindFramebuffer(gl.FRAMEBUFFER, entry.target.framebuffer); replay(); changed(entry);
         }
         return true;
@@ -413,8 +546,9 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       if (!currentSize() || gl.isContextLost()) { invalidate(); return; }
       if (gl.getParameter(gl.FRAMEBUFFER_BINDING) !== null || !fullRgbWrite()) { invalidatePhoto(); return; }
       auxiliary(positionLocation, () => {
-        gl.colorMask(true, true, false, false); gl.clearColor(0, 0, 0, 0);
+        gl.clearColor(0, 0, 0, 0);
         for (const entry of entries.values()) if (entry.photoUsable) {
+          gl.colorMask(entry.photoChannel!=="alpha",entry.photoChannel!=="alpha",false,entry.photoChannel==="alpha");
           gl.bindFramebuffer(gl.FRAMEBUFFER, entry.target.framebuffer); gl.clear(gl.COLOR_BUFFER_BIT); changed(entry);
         }
         return true;
@@ -429,8 +563,8 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
           for (const entry of entries.values()) {
             const max = entry.photoUsable ? maximum(entry.target) : null;
             entry.receipt = Object.freeze({ completed: true, qualification: entry.qualification,
-              finePhoto: max && max[0]! > 0 ? "positive" : "unknown",
-              coarsePhoto: max && max[1]! > 0 ? "positive" : "unknown" });
+              finePhoto: max && max[entry.photoChannel==="alpha"?3:0]! > 0 ? "positive" : "unknown",
+              coarsePhoto: max && entry.photoChannel!=="alpha" && max[1]! > 0 ? "positive" : "unknown" });
           }
           return true;
         });
@@ -447,6 +581,10 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       return finished && entry.receipt ? entry.receipt : Object.freeze({
         completed: false, qualification: entry.qualification, finePhoto: "unknown", coarsePhoto: "unknown",
       });
+    },
+    meshAlphaContribution(group:object):"positive"|"unknown"{
+      const entry=currentEntry(group);
+      return finished&&entry?.receipt?.finePhoto==="positive"?"positive":"unknown";
     },
     observeRegion(draw:SkyArtworkLevelsDraw,region:SkyDeepSkyRegion|null): SkyArtworkLocalObservation {
       const entry=currentEntry(draw);
@@ -467,6 +605,7 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       entry.localCache.set(region,observed); return observed;
     },
     hasPending, invalidate,
+    meshGroupsEnabled() { return enabled&&!disposed&&frameOpen&&!faulted; },
     failed() { return enabled && !disposed && faulted; },
     /** Explicit retry only. begin never repeatedly recompiles/reallocates after
      * a probe failure. Reset also retires every old-frame receipt and object. */

@@ -20,6 +20,8 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        env:
+          GIT_LFS_SKIP_SMUDGE: "1"
         with:
           fetch-depth: 0
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -28,12 +30,26 @@ jobs:
           cache: npm
       - id: scope
         run: node tools/ci/affected-checks.mjs
+      - name: Restore LFS object cache
+        if: steps.scope.outputs.product == 'true'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .git/lfs/objects
+          key: ${{ runner.os }}-starward-lfs-${{ hashFiles('tools/resources/lfs-policy.json', 'workers/miniapp-api/assets/**', 'packages/astronomy-core/data/**') }}
+          restore-keys: |
+            ${{ runner.os }}-starward-lfs-
+      - name: Prepare current resource versions
+        if: steps.scope.outputs.product == 'true'
+        run: node tools/run-node.cjs tools/resources/assets.mjs prepare
       - name: Install locked dependencies
         if: steps.scope.outputs.product == 'true'
         run: npm ci
       - name: Audit Mini Program API production dependencies
         if: steps.scope.outputs.product == 'true'
         run: npm audit --omit=dev --workspace @starward/miniapp-api --audit-level=high
+      - name: Test resource preparation
+        if: steps.scope.outputs.product == 'true'
+        run: npm run test:resources
       - name: Test deployment owners
         if: steps.scope.outputs.product == 'true'
         run: npm run test:deployment

@@ -1,7 +1,0 @@
-{
-  "scope": "Read-only public wx safe area on exact clean-v5/9438; SDK PNG capture scale differs from earlier 197x423 captures and must be derived per image",
-  "candidateHash": "0787c3e850bbf05f7e36965b0aada21f0f8cf923edbc9aa815b3fb3738116826",
-  "screenWidth": 390,
-  "screenHeight": 844,
-  "safeArea": {"top":47,"left":0,"right":390,"bottom":810,"width":390,"height":763}
-}

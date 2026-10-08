@@ -16,7 +16,8 @@ import type {SkyPhaseDisc} from "./sky-phase-disc";
 import {saturnRingFragment} from "./sky-saturn-ring-fragment";
 import { skyLandscapeFragment, skyLandscapePanoramaFragment } from "./sky-landscape";
 import { skyPanoramaMaskIntersectsView } from "./sky-landscape-mask";
-import { SKY_FULL_SPHERE_DISPLAY_FADE_DEG } from "./sky-landscape-visibility";
+import { skySolarDisplayShader, skyBodyDisplayShader } from "./sky-solar-light-shader";
+import type { SkySolarLight } from "./sky-solar-light";
 import {SATURN_BANDS,SATURN_EQUATORIAL_RADIUS_KM,SATURN_REFERENCE_RADIUS_KM} from "./sky-saturn-rings";
 
 const position = `
@@ -176,6 +177,17 @@ const skyMeshFragment = `
     vec4 source=texture2D(u_image,v_uv);
     gl_FragColor=vec4(source.rgb,source.a*u_opacity);
   }`;
+// Display alpha includes legitimate black samples. This signal does not infer
+// calibrated RGB, mask validity or a counterfactual color difference.
+const skyMeshAlphaFragment=`precision highp float;
+  varying vec2 v_uv;uniform sampler2D u_image;uniform float u_opacity;
+  void main(){gl_FragColor=vec4(texture2D(u_image,v_uv).a*u_opacity,0.,0.,0.);}`;
+const meshGroupVertex="attribute vec2 a_position;void main(){gl_Position=vec4(a_position,0.,1.);}";
+// The work target contains premultiplied colour. Its original alpha belongs to
+// the same source; compose it once rather than overpainting coarse pixels.
+const meshGroupFragment=`precision highp float;uniform sampler2D u_image;uniform vec2 u_size;
+  void main(){gl_FragColor=texture2D(u_image,gl_FragCoord.xy/u_size);}`;
+const meshGroupQuad=[-1,-1,1,-1,-1,1,-1,1,1,-1,1,1];
 
 // Clear-sky scattering/display approximation in the shared ENU camera. The
 // Rayleigh/Mie phase functions and optical-air-mass approximation follow the
@@ -191,79 +203,9 @@ const solarLightFragment = `
   ${skyRay}
   uniform vec3 u_sunDirection, u_base;
   uniform float u_sunAltitude;
-  const vec3 BETA_R = vec3(5.804543e-6,1.356291e-5,3.026590e-5);
-  const vec3 BETA_M = vec3(1.597e-6,2.413e-6,3.541e-6);
-  const float PI = 3.141592653589793;
+  ${skySolarDisplayShader}
   void main() {
-    vec3 ray = skyRay(v_pixel);
-    // Continue the horizon colour smoothly into the below-ground finding
-    // chart. This is display adaptation, never underground air mass/scattering.
-    float horizonDisplay = smoothstep(-${Math.sin(SKY_FULL_SPHERE_DISPLAY_FADE_DEG*Math.PI/180)},0.0,ray.z);
-    if (horizonDisplay <= 0.0) { gl_FragColor = vec4(u_base,1.0); return; }
-    if (ray.z < 0.0) ray = normalize(vec3(ray.xy,0.0));
-    // A restrained chart-only low-sky glow gives the simulated horizon
-    // depth at night. It is not measured airglow, light pollution or weather.
-    float lowSky = 1.0-smoothstep(0.0,0.45,ray.z);
-    float nightWeight = 1.0-smoothstep(-18.0,-9.0,u_sunAltitude);
-    vec3 nightGlow = vec3(0.025,0.025,0.035)*lowSky*nightWeight;
-    if (u_sunAltitude <= -18.0) {
-      gl_FragColor = vec4(u_base+nightGlow*horizonDisplay,1.0);
-      return;
-    }
-    float cosine = clamp(ray.z,0.0,1.0);
-    float zenithDeg = acos(cosine)*180.0/PI;
-    float airMass = 1.0/(cosine+0.15*pow(93.885-zenithDeg,-1.253));
-    vec3 extinction = exp(-(BETA_R*8400.0+BETA_M*1250.0)*airMass);
-    float scatterCosine = clamp(dot(ray,u_sunDirection),-1.0,1.0);
-    float rayleighPhase = 3.0*(1.0+scatterCosine*scatterCosine)/(16.0*PI);
-    float g = 0.8;
-    float miePhase = (1.0-g*g)/(4.0*PI*pow(1.0+g*g-2.0*g*scatterCosine,1.5));
-    float mieTwilight = smoothstep(-8.0,0.0,u_sunAltitude);
-    vec3 scattering = (BETA_R*rayleighPhase+BETA_M*miePhase*mieTwilight)
-      / (BETA_R+BETA_M) * (vec3(1.0)-extinction);
-    float sunCosine = max(u_sunDirection.z,0.0);
-    float sunZenithDeg = acos(sunCosine)*180.0/PI;
-    float sunAirMass = 1.0/(sunCosine+0.15*pow(93.885-sunZenithDeg,-1.253));
-    vec3 sunTransmittance = exp(-(BETA_R*8400.0+BETA_M*1250.0)*sunAirMass);
-    // Low sunlight retains its relative spectrum through civil twilight;
-    // its strength is already faded by the exact-time twilight curve below.
-    float lowSun = 1.0-smoothstep(0.0,20.0,u_sunAltitude);
-    float towardSun = max(scatterCosine,0.0);
-    float horizonWeight = 1.0-smoothstep(0.2,0.7,ray.z);
-    float sunsetWeight = lowSun*(0.15+0.85*towardSun)*horizonWeight;
-    // Half-path relative transmittance supplies a fixed display chromaticity,
-    // not measured local sunlight or calibrated radiance.
-    vec3 solarChroma = sqrt(sunTransmittance/max(sunTransmittance.r,0.0001));
-    // Fixed below-horizon display approximation. Curved Earth shadow gives
-    // the depression scale; this is not integrated radiance or local weather.
-    // The multiple-path transmittance approximation follows published math:
-    // Ozlem, Fast Sky Rendering for Daylight & Twilight (2021), Appendix.
-    // https://www.researchgate.net/publication/380396923_Fast_Sky_Rendering_for_Daylight_Twilight
-    float duskWeight = 1.0-smoothstep(-6.0,0.0,u_sunAltitude);
-    float depression = clamp(-u_sunAltitude,0.0,18.0)*PI/180.0;
-    float shadowHeightKm = 6371.0*(1.0/cos(depression)-1.0);
-    float twilightGradient = exp(-(2.0/3.0)*shadowHeightKm/8.4*ray.z);
-    vec3 multiplePath = 2.0/(vec3(2.0)+sqrt(BETA_R*8400.0*airMass*BETA_R*8400.0*75.0));
-    // Indirect light has a less saturated spectrum than the direct low-sun
-    // tint. These fixed display parameters are not site photometry.
-    solarChroma = mix(solarChroma,vec3(1.0),0.23*duskWeight);
-    float twilight = pow(smoothstep(-18.0,3.0,u_sunAltitude),3.0);
-    vec3 radiance = 550.0*twilight*scattering*mix(vec3(1.0),solarChroma,sunsetWeight);
-    radiance *= mix(vec3(1.0),11.0*twilightGradient*multiplePath,duskWeight);
-    // Only the active Mie forward lobe needs near-disc compression. Keeping
-    // that daytime compression after sunset erases the visible twilight band.
-    float horizonSolar = lowSun*towardSun*horizonWeight;
-    float exposure = 0.12*(1.0-0.45*lowSun)*(1.0-0.85*horizonSolar*mieTwilight);
-    // The exponential maps linear scattering radiance. Encode its result
-    // once for the display, without an unrelated dark-chart channel ceiling.
-    // The sRGB transfer is described by W3C CSS Color 4, section 19:
-    // https://www.w3.org/TR/css-color-4/#color-conversion-code
-    // Exposure and fixed atmosphere remain illustrative, not site photometry.
-    vec3 mapped = vec3(1.0)-exp(-exposure*radiance);
-    vec3 encoded = mix(12.92*mapped,1.055*pow(mapped,vec3(1.0/2.4))-0.055,
-      step(vec3(0.0031308),mapped));
-    vec3 sky = u_base+(vec3(1.0)-u_base)*encoded+nightGlow;
-    gl_FragColor = vec4(mix(u_base,sky,horizonDisplay),1.0);
+    gl_FragColor = vec4(skySolarDisplay(skyRay(v_pixel),u_sunDirection,u_sunAltitude,u_base),1.0);
   }`;
 
 // A coordinate-registered orientation cue only. Width and brightness are
@@ -352,6 +294,7 @@ const moonFragment = `
   precision highp float;
   varying vec2 v_uv, v_pixel;
   ${skyRay}
+  ${skyBodyDisplayShader}
   uniform vec2 u_sunward;
   uniform float u_illuminatedFraction;
   uniform vec2 u_minorDirection;
@@ -387,7 +330,7 @@ const moonFragment = `
       }
     }
     float edge = 1.0-smoothstep(0.96,1.0,squared);
-    gl_FragColor = vec4(u_tint*brightness,edge);
+    gl_FragColor = vec4(skyBodyDisplay(u_tint*brightness,v_pixel),edge);
   }`;
 
 // Report-owned phase and body orientation. OPAL latitude profiles are
@@ -396,6 +339,9 @@ const bodyTextureFragment = `
   precision highp float;
   varying vec2 v_uv, v_pixel;
   ${skyRay}
+  ${skyBodyDisplayShader}
+  uniform vec2 u_resolution, u_framebufferScale, u_discCenter;
+  uniform float u_discRadius;
   uniform vec2 u_sunward;
   uniform float u_illuminatedFraction;
   uniform vec3 u_tint;
@@ -408,7 +354,12 @@ const bodyTextureFragment = `
   ${saturnRingShadowFragment}
   const float PI=3.141592653589793;
   void main() {
-    vec2 p=2.0*v_uv-1.0;
+    // Quad interpolation can shift steep polar texture gradients by a texel.
+    // Use the same logical disc geometry as projection and hit testing, with
+    // the actual backing-store scale rather than an assumed device ratio.
+    vec2 pixel=vec2(gl_FragCoord.x/u_framebufferScale.x,
+      u_resolution.y-gl_FragCoord.y/u_framebufferScale.y);
+    vec2 p=(pixel-u_discCenter)/u_discRadius;
     float squared=dot(p,p);
     if(squared>1.0)discard;
     float invPolarSquared=1.0/(u_polarRatio*u_polarRatio);
@@ -438,7 +389,7 @@ const bodyTextureFragment = `
     vec3 surface=mix(vec3(albedo.r),albedo,u_colorMode);
     vec3 textured=u_tint*brightness*(mix(0.3,0.08,u_profile)+
       mix(1.2,0.9,u_profile)*clamp(surface,0.0,1.0));
-    gl_FragColor=vec4(mix(u_fallbackTint*brightness,textured,sampleColor.a),edge);
+    gl_FragColor=vec4(skyBodyDisplay(mix(u_fallbackTint*brightness,textured,sampleColor.a),v_pixel),edge);
   }`;
 
 // Relative photospheric intensity at 579.88 nm: Neckel/Labs coefficients as
@@ -464,7 +415,12 @@ const sunFragment = `
     gl_FragColor=vec4(u_tint*intensity,edge);
   }`;
 
-export interface SkyGpuRenderer extends SkyRenderSurface, SkyArtworkLevelSurface, SkyArtworkContributionSurface { dispose(): void }
+export interface SkyGpuRenderer extends SkyRenderSurface, SkyArtworkLevelSurface, SkyArtworkContributionSurface {
+  /** Explicit optical shader retry, retaining this Canvas and valid textures. */
+  resetTargetOptical(): void;
+  resetHips(): void;
+  dispose(): void;
+}
 
 /** One native WEAPP WebGL node and camera. Optional contribution receipts use
  * bounded internal RGBA8 framebuffers, not a second canvas or renderer. */
@@ -487,6 +443,13 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
   const vertices: number[] = [];
   const colors = new Map<string, readonly number[]>();
   let backgroundRgb: readonly number[] = [0, 0, 0];
+  // Only a successful solarLight in this begin/finish frame supplies foreground.
+  let activeSolarLight: SkySolarLight | null = null;
+  const bodyDisplayUniforms = (observationMode: boolean) => ({
+    u_solarDisplayEnabled: !observationMode && activeSolarLight ? 1 : 0,
+    u_solarDisplaySunDirection: activeSolarLight?.direction ?? [0,0,1],
+    u_solarDisplaySunAltitude: activeSolarLight?.altitudeDeg ?? -90,
+  });
   const color = (hex: string) => {
     let rgb = colors.get(hex);
     if (!rgb) {
@@ -543,6 +506,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
     let artwork: ProgramInfo | null = null, artworkBuffer: BufferInfo | null = null, artworkUnavailable = false;
     let artworkLevels: ProgramInfo | null = null, artworkLevelsBuffer: BufferInfo | null = null, artworkLevelsUnavailable = false;
     let skyMesh: ProgramInfo | null = null, skyMeshBuffer: BufferInfo | null = null, skyMeshUnavailable = false;
+    let meshGroup:ProgramInfo|null=null,meshGroupBuffer:BufferInfo|null=null,meshGroupUnavailable=false,groupDrawing=false;
     let solarLight: ProgramInfo | null = null, solarLightBuffer: BufferInfo | null = null, solarLightUnavailable = false;
     let landscape: ProgramInfo | null = null, landscapeBuffer: BufferInfo | null = null, landscapeUnavailable = false;
     let landscapePanorama: ProgramInfo | null = null, landscapePanoramaUnavailable = false;
@@ -568,7 +532,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
       setUniforms(program, { u_resolution: [width, height], u_pixelRatio: pixelRatio,
         u_maxPointSize: maxPointSize, ...uniforms });
       drawBufferInfo(gl, buffer, primitive);
-      if (contributions.hasPending()) {
+      if (!groupDrawing && contributions.hasPending()) {
         // Preserve normal draw failure before the auxiliary path checks its own
         // operations. Replay immediately while this VBO/uniform state is live.
         const error = gl.getError();
@@ -585,6 +549,19 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
       vertices.length = 0; kind = null;
     };
     const use = (next: typeof kind) => { if (kind !== next) flush(); kind = next; };
+    const ensureSkyMesh = () => {
+      if(skyMeshUnavailable)return false;
+      if(skyMesh)return true;
+      const programCount=programs.length,bufferCount=buffers.length;
+      try{
+        skyMesh=makeProgram(skyMeshVertex,skyMeshFragment);
+        skyMeshBuffer=makeBuffer(4,{a_position:[2,0],a_uv:[2,2]});return true;
+      }catch{
+        for(const program of programs.splice(programCount))gl.deleteProgram(program.program);
+        for(const buffer of buffers.splice(bufferCount))gl.deleteBuffer(buffer);
+        skyMesh=null;skyMeshBuffer=null;skyMeshUnavailable=true;assertAvailable();return false;
+      }
+    };
     const paintPhaseDisc = (disc: SkyPhaseDisc & {oblate?:SkyPlanetDisc["oblate"],
       surfaceOrientation?:SkyPlanetDisc["surfaceOrientation"],ringSunBody?:SkyPlanetDisc["ringSunBody"]},
       view: SkyArtworkView, tint: string, observationMode: boolean) => {
@@ -609,6 +586,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
       try {
         submit(moonProgram,imageBuffer,[x0,y0,0,0,x1,y0,1,0,x0,y1,0,1,
           x0,y1,0,1,x1,y0,1,0,x1,y1,1,1],4,gl.TRIANGLES,{
+          ...bodyDisplayUniforms(observationMode),
           u_sunward:disc.sunward,u_illuminatedFraction:disc.illuminatedFraction,
           u_minorDirection:shape?.minorDirection??[0,1],
           u_minorRatio:shape?shape.minorRadiusPx/shape.majorRadiusPx:1,
@@ -646,6 +624,9 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
       try{
         submit(bodyTextureProgram,imageBuffer,[x0,y0,0,0,x1,y0,1,0,x0,y1,0,1,
           x0,y1,0,1,x1,y0,1,0,x1,y1,1,1],4,gl.TRIANGLES,{
+          ...bodyDisplayUniforms(false),
+          u_discCenter:[disc.x,disc.y],u_discRadius:radius,
+          u_framebufferScale:[gl.drawingBufferWidth/width,gl.drawingBufferHeight/height],
           u_sunward:disc.sunward,u_illuminatedFraction:disc.illuminatedFraction,
           u_tint:color(tint),u_colorMode:colorMode,u_image:texture,
           u_polarRatio:shape?.polarRatio??1,
@@ -663,11 +644,11 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
         return true;
       }catch{assertAvailable();bodyTextureUnavailable=true;options.imageFailed?.(source);return false;}
     };
-    return {
+    const surface:SkyGpuRenderer = {
       begin(w, h, background) {
         assertAvailable();
         if (!(w > 0 && h > 0 && Number.isFinite(w) && Number.isFinite(h))) throw new Error("sky_gpu_invalid_size");
-        width = w; height = h; textures.begin(); contributions.begin();
+        width = w; height = h; activeSolarLight = null; textures.begin(); contributions.begin();
         vertices.length = 0; kind = null;
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
         gl.disable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE); gl.disable(gl.SCISSOR_TEST);
@@ -684,6 +665,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
       },
       solarLight(view, sun) {
         assertAvailable();
+        activeSolarLight = null;
         const parameters = skyArtworkViewParameters(view,width,height);
         if (!parameters || !sun.direction.every(Number.isFinite) ||
           !Number.isFinite(sun.altitudeDeg) || sun.altitudeDeg < -90 || sun.altitudeDeg > 90) return false;
@@ -709,6 +691,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
             u_sunDirection:sun.direction,u_sunAltitude:sun.altitudeDeg,u_base:backgroundRgb,
           });
           if (gl.getError() !== gl.NO_ERROR) throw new Error("sky_gpu_solar_light_draw_failed");
+          activeSolarLight = {direction: [...sun.direction], altitudeDeg: sun.altitudeDeg};
           return true;
         } catch {
           assertAvailable();
@@ -775,7 +758,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
           return false;
         }
       },
-      galacticBand(view, band, source) {
+      galacticBand(view, band, source, imagePainted) {
         assertAvailable();
         const parameters = skyArtworkViewParameters(view,width,height);
         if (!parameters || !Number.isFinite(band.strength) ||
@@ -784,7 +767,9 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
         flush();
         if (source && !galacticImageUnavailable) {
           const imageSize=source as {width:number;height:number};
-          const preparedTexture=textures.getWindow(source,skyGalacticImageWindow(view,width,height,band,imageSize.width,imageSize.height));
+          const imageProjection=band.imageProjection??band;
+          if(!imageProjection.pole.every(Number.isFinite)||!imageProjection.center.every(Number.isFinite))return false;
+          const preparedTexture=textures.getWindow(source,skyGalacticImageWindow(view,width,height,imageProjection,imageSize.width,imageSize.height));
           const texture=preparedTexture.texture;
           if(texture){
             try {
@@ -794,7 +779,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
               submit(galacticImage,galacticBandBuffer,[0,0,width,0,0,height,0,height,width,0,width,height],2,gl.TRIANGLES,{
                 u_center:[parameters.center.x,parameters.center.y],u_scale:parameters.scale,
                 u_right:view.basis.right,u_up:view.basis.up,u_forward:view.basis.forward,
-                u_galacticPole:band.pole,u_galacticCenter:band.center,
+                u_galacticPole:imageProjection.pole,u_galacticCenter:imageProjection.center,
                 u_strength:band.strength,u_image:texture,
                 u_imageOrigin:[preparedTexture.window.x/imageSize.width,preparedTexture.window.y/imageSize.height],
                 u_imageScale:[imageSize.width/preparedTexture.window.width,imageSize.height/preparedTexture.window.height],
@@ -802,9 +787,11 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
                 // The equirectangular source has pi/height radians per texel.
                 // One-to-two logical pixels is a continuous sampling transition;
                 // minified/whole-dome views retain the original panorama.
-                u_filterStrength:Math.max(0,Math.min(1,parameters.scale*Math.PI/(source as {height:number}).height-1)),
+                u_filterStrength:band.imageProjection?.smoothInfraredPointSources===false?0:
+                  Math.max(0,Math.min(1,parameters.scale*Math.PI/(source as {height:number}).height-1)),
               });
               if(gl.getError()!==gl.NO_ERROR)throw new Error("sky_gpu_galactic_image_draw_failed");
+              imagePainted?.(source);
               return true;
             }catch {assertAvailable();galacticImageUnavailable=true;options.imageFailed?.(source);}
             finally {gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);}
@@ -910,6 +897,7 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
             u_minorDirection:shape.minorDirection,u_globeRadii:[shape.majorRadiusPx,shape.minorRadiusPx],
             u_majorEnu:projection.majorEnu,u_planeMinorEnu:projection.planeMinorEnu,u_poleEnu:projection.poleEnu,
             u_sunEnu:projection.sunEnu??[0,0,0],u_sunAvailable:projection.sunEnu?1:0,
+            ...bodyDisplayUniforms(observationMode),
             u_tint:color(tint),u_shadowTint:color(observationMode?"#4B211D":"#4E473B"),
           });
           if(gl.getError()!==gl.NO_ERROR)throw new Error("sky_gpu_saturn_rings_draw_failed");
@@ -929,36 +917,69 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
         submit(image, imageBuffer, quad, 4, gl.TRIANGLES, { u_image: texture, u_opacity: opacity });
         return true;
       },
-      skyImageMesh(source, triangles, view, opacity) {
+      skyImageMesh(source, triangles, view, opacity,sourceGroup) {
         assertAvailable();
         const parameters=skyArtworkViewParameters(view,width,height);
         if(!parameters || !Number.isFinite(opacity) || opacity<0 || opacity>1 ||
           triangles.length%12!==0 || triangles.length>16*16*24 || triangles.some(n=>!Number.isFinite(n)))return false;
         if(!triangles.length || opacity===0)return true;
-        if(skyMeshUnavailable)return false;
         flush();
-        if(!skyMesh){
-          const programCount=programs.length,bufferCount=buffers.length;
-          try{
-            skyMesh=makeProgram(skyMeshVertex,skyMeshFragment);
-            skyMeshBuffer=makeBuffer(4,{a_position:[2,0],a_uv:[2,2]});
-          }catch{
-            for(const program of programs.splice(programCount))gl.deleteProgram(program.program);
-            for(const buffer of buffers.splice(bufferCount))gl.deleteBuffer(buffer);
-            skyMesh=null;skyMeshBuffer=null;skyMeshUnavailable=true;
-            assertAvailable();return false;
-          }
-        }
+        if(!ensureSkyMesh())return false;
         const texture=textures.get(source);
         if(!texture)return false;
-        submit(skyMesh,skyMeshBuffer!,triangles,4,gl.TRIANGLES,{
+        const preparedUniforms={u_resolution:[width,height],
           u_center:[parameters.center.x,parameters.center.y],u_scale:parameters.scale,
           u_right:view.basis.right,u_up:view.basis.up,u_forward:view.basis.forward,
           u_image:texture,u_opacity:opacity,
-        });
+        };
+        gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+        submit(skyMesh!,skyMeshBuffer!,triangles,4,gl.TRIANGLES,preparedUniforms);
         if(gl.getError()!==gl.NO_ERROR)throw new Error("sky_gpu_mesh_draw_failed");
+        if(sourceGroup)contributions.captureMeshAlpha(sourceGroup,{program:skyMesh!,buffer:skyMeshBuffer!,primitive:gl.TRIANGLES,
+          uniforms:preparedUniforms,vertex:skyMeshVertex,cameraRay:skyRay,alphaFragment:skyMeshAlphaFragment});
         return true;
       },
+      skyImageMeshLevels(levels,view,opacity,sourceGroup){
+        assertAvailable();
+        if(groupDrawing||meshGroupUnavailable||!contributions.meshGroupsEnabled()||!levels.length||!skyArtworkViewParameters(view,width,height)||
+          !Number.isFinite(opacity)||opacity<=0||opacity>1||levels.some(level=>!Number.isFinite(level.priority)||
+            level.triangles.length%12!==0||level.triangles.length>16*16*24||level.triangles.some(n=>!Number.isFinite(n))))return null;
+        flush();if(!ensureSkyMesh())return null;
+        if(!meshGroup){
+          const programCount=programs.length,bufferCount=buffers.length;
+          try{meshGroup=makeProgram(meshGroupVertex,meshGroupFragment);meshGroupBuffer=makeBuffer(2,{a_position:[2,0]});}
+          catch{
+            for(const program of programs.splice(programCount))gl.deleteProgram(program.program);
+            for(const buffer of buffers.splice(bufferCount))gl.deleteBuffer(buffer);
+            meshGroup=null;meshGroupBuffer=null;meshGroupUnavailable=true;assertAvailable();return null;
+          }
+        }
+        // Both mesh pointers are live before the guarded group changes them;
+        // WebGL cannot restore a previously null attribute buffer pointer.
+        setBuffersAndAttributes(gl,skyMesh!,skyMeshBuffer!);
+        setBuffersAndAttributes(gl,meshGroup,meshGroupBuffer!);
+        const blend=[gl.BLEND_SRC_RGB,gl.BLEND_DST_RGB,gl.BLEND_SRC_ALPHA,gl.BLEND_DST_ALPHA,
+          gl.BLEND_EQUATION_RGB,gl.BLEND_EQUATION_ALPHA].map(name=>gl.getParameter(name) as number),enabled=gl.isEnabled(gl.BLEND);
+        try{
+          return contributions.composeMeshGroup(sourceGroup,{program:meshGroup,buffer:meshGroupBuffer!,primitive:gl.TRIANGLES,
+            uniforms:{},vertex:meshGroupVertex,cameraRay:""},()=>{
+            const results=levels.map(()=>false);groupDrawing=true;
+            try{for(const {level,index} of levels.map((level,index)=>({level,index})).sort((a,b)=>b.level.priority-a.level.priority))
+              results[index]=surface.skyImageMesh(level.image,level.triangles,view,opacity);
+            }finally{groupDrawing=false;}return results;
+          },texture=>{
+            gl.enable(gl.BLEND);gl.blendEquation(gl.FUNC_ADD);
+            gl.blendFuncSeparate(gl.ONE,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+            submit(meshGroup!,meshGroupBuffer!,meshGroupQuad,2,gl.TRIANGLES,
+              {u_image:texture,u_size:[gl.drawingBufferWidth,gl.drawingBufferHeight]});
+            if(gl.getError()!==gl.NO_ERROR)throw new Error("sky_gpu_mesh_group_composite_failed");
+          });
+        }finally{
+          groupDrawing=false;gl.blendFuncSeparate(blend[0]!,blend[1]!,blend[2]!,blend[3]!);
+          gl.blendEquationSeparate(blend[4]!,blend[5]!);enabled?gl.enable(gl.BLEND):gl.disable(gl.BLEND);
+        }
+      },
+      skyImageMeshContribution:contributions.meshAlphaContribution,
       artwork(source, registration, view, opacity, tint, composite = "additive") {
         assertAvailable();
         const parameters = skyArtworkViewParameters(view,width,height);
@@ -1060,8 +1081,8 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
             [`u_${name}Image`]:prepared.texture,
             [`u_${name}Row0`]:rows[0], [`u_${name}Row1`]:rows[1], [`u_${name}Row2`]:rows[2],
             [`u_${name}Determinant`]:determinant, [`u_${name}AnchorU`]:anchorU, [`u_${name}AnchorV`]:anchorV,
-            [`u_${name}Origin`]:[prepared.window.x/size.width,prepared.window.y/size.height],
-            [`u_${name}Scale`]:[size.width/prepared.window.width,size.height/prepared.window.height],
+            [`u_${name}WindowOffset`]:[prepared.window.x,prepared.window.y],
+            [`u_${name}WindowSize`]:[prepared.window.width,prepared.window.height],
             [`u_${name}Size`]:[size.width,size.height],
           };
         };
@@ -1087,7 +1108,21 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
       artworkLevelsQualification: contributions.qualification,
       artworkLevelsContribution: contributions.contribution,
       artworkContributionsFailed: contributions.failed,
-      resetArtworkContributions: contributions.reset,
+      resetArtworkContributions() { contributions.reset(); meshGroupUnavailable=false; },
+      resetHips() {
+        assertAvailable();
+        // Optional mesh allocation failure can retry on this Canvas. Bitmap
+        // upload failures retire through their loader; independent ready tiles
+        // and other image families must not be retired by a global resize.
+        skyMeshUnavailable = false;
+      },
+      resetTargetOptical() {
+        assertAvailable();
+        // Failed programs/buffers were already released at their allocation
+        // boundary. Failed bitmap identities retire through the native owner;
+        // the next begin removes them. Independent ready images remain valid.
+        artworkUnavailable = artworkLevelsUnavailable = false;
+      },
       segments(segments, hex, opacity = 1) {
         use("lines"); const rgb = color(hex);
         for (const [x1,y1,x2,y2] of segments) {
@@ -1143,5 +1178,6 @@ export function createSkyGpuRenderer(gl: WebGLRenderingContext, pixelRatio: numb
       },
       dispose,
     };
+    return surface;
   } catch (error) { dispose(); throw error; }
 }

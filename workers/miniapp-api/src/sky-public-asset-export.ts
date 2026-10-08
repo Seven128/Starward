@@ -16,8 +16,9 @@ import { ConstellationPublicationService } from "./constellation-publication.ts"
 import { SdssOpticalImageryService } from "./sdss-optical-imagery.ts";
 import { DeepSkyImageryService } from "./deep-sky-imagery.ts";
 import { PreparedOpticalImageryService } from "./prepared-optical-imagery.ts";
-import { skyPublicAssetHeaders, type SkyPublicAssetKind } from "./sky-public-asset-headers.ts";
+import { galacticImagePublicAssetHeaders, opticalHipsPublicAssetHeaders, skyPublicAssetHeaders, type SkyPublicAssetKind } from "./sky-public-asset-headers.ts";
 import { SaoPublicationService } from "./sao-publication.ts";
+import { OpticalHipsPublicationService } from "./optical-hips-publication.ts";
 
 export interface SkyPublicAssetExportInput {
   route: string;
@@ -35,6 +36,35 @@ function asset(kind: SkyPublicAssetKind, route: string, bytes: Buffer, contentTy
   return { route, bytes, headers: skyPublicAssetHeaders(kind, contentType, fieldDegrees) };
 }
 
+/** One publication owner supplies the exact path, bytes and source identity.
+ * Explicit task inputs can exercise a conditional asset without replacing the
+ * default exporter, adding a registry, or admitting arbitrary directories. */
+export async function galacticSkyPublicAsset(owner = new GalacticImagePublicationService()): Promise<SkyPublicAssetExportInput> {
+  const manifest = owner.manifest();
+  return { route: manifest.image.downloadUrl,
+    bytes: await owner.image(manifest.publicationHash, manifest.image.file),
+    headers: galacticImagePublicAssetHeaders(manifest) };
+}
+
+/** The standard consumer preserves both fixed ordinary versions through the
+ * same owner; it never crawls historical trial directories. */
+export async function* galacticSkyPublicAssets(owner = new GalacticImagePublicationService()): AsyncGenerator<SkyPublicAssetExportInput> {
+  for(const manifest of owner.publishedManifests())yield {
+    route:manifest.image.downloadUrl,
+    bytes:await owner.image(manifest.publicationHash,manifest.image.file),
+    headers:galacticImagePublicAssetHeaders(manifest),
+  };
+}
+
+/** Explicit LOCAL trial consumer of the standard bundle writer. This is not
+ * called by approvedSkyPublicAssets or the release/OCI export entry point. */
+export async function* opticalHipsTrialSkyPublicAssets(owner:OpticalHipsPublicationService):AsyncGenerator<SkyPublicAssetExportInput>{
+  if(owner.manifest().scope!=="TRIAL")throw new Error("optical_trial_scope_invalid");
+  for await(const item of owner.publishedAssets())yield {
+    route:item.route,bytes:item.bytes,headers:opticalHipsPublicAssetHeaders(item.contentType,item.sourceId),
+  };
+}
+
 /** Enumerate only assets accepted by the existing publication owners. No disk
  * crawl, remote fetch, trial switch, raw science input or account context. */
 export async function* approvedSkyPublicAssets(prepared = new PreparedOpticalImageryService(),
@@ -44,13 +74,14 @@ export async function* approvedSkyPublicAssets(prepared = new PreparedOpticalIma
     ["moon", moon], ["mars", new MarsTexturePublicationService()],
     ["mercury", new MercuryTexturePublicationService()], ["jupiter", new JupiterBandsPublicationService()],
     ["saturn", new SaturnBandsPublicationService()], ["uranus", new UranusBandsPublicationService()],
-    ["neptune", new NeptuneBandsPublicationService()], ["galactic", new GalacticImagePublicationService()],
+    ["neptune", new NeptuneBandsPublicationService()],
   ] as const;
   for (const [kind, owner] of fixed) {
     const manifest = owner.manifest();
     yield asset(kind, manifest.image.downloadUrl, await owner.image(manifest.publicationHash),
       manifest.image.file.endsWith(".png") ? "image/png" : "image/jpeg");
   }
+  yield* galacticSkyPublicAssets();
   const oldMoon = moon.manifest();
   yield asset("moon", `/v2/sky/moon/${LEGACY_MOON_TEXTURE_PUBLICATION_HASH}/${oldMoon.image.file}`,
     await moon.image(LEGACY_MOON_TEXTURE_PUBLICATION_HASH), "image/jpeg");

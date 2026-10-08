@@ -1,1 +1,0 @@
-src/features/sky/sky-target-optical-visibility.ts(35,30): error TS18047: 'deep.frame.points' is possibly 'null'.

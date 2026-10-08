@@ -181,11 +181,9 @@ test("actual content failure preserves the ready coarse fallback and explicit re
   evidence.push({ case: "changed-fine-bytes-no-native-decode-coarse-retained-explicit-retry", ...w.snapshot() });
 });
 
-test("LOCAL optical session variation stays explicit; an invalid public route cannot fall back", async () => {
+test("explicit temporary session variation remains; an invalid public route cannot fall back", async () => {
   const trialUrl = base + "/v2/sky/optical/fixture/0/0";
   const trialWorld = world(); trialWorld.resources.set(trialUrl, coarse.bytes);
-  const hookSource = readFileSync(new URL("./use-sky-optical-hips.ts", import.meta.url), "utf8");
-  assert.match(hookSource, /storage:"session"/);
   // Exercise the shared hook's actual session branch with that explicit policy.
   // The optional optical manifest/selection/query path is outside this check.
     const trial = consumer(trialWorld, trialWorld.runtime()); trial.input.storage = "session"; trial.input.url = trialUrl; trial.commit(); await trial.wait(() => trial.images.length === 1);

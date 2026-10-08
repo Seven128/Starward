@@ -295,8 +295,8 @@ export class AstronomyService implements AstronomyApplicationPort {
 
   /** Included in the BFF cache identity so a catalog replacement cannot
    * serve a report projected from a previous catalog or time-axis contract. */
-  catalogCacheKey(provider: SkyCatalogProvider = this.skyCatalog): string {
-    return `${SKY_REPORT_TIME_AXIS_CACHE_VERSION}:${provider.cacheKey()}:${deepSkySceneCacheKey()}`;
+  catalogCacheKey(provider: SkyCatalogProvider = this.skyCatalog, deepSkyCatalogVersion?: string): string {
+    return `${SKY_REPORT_TIME_AXIS_CACHE_VERSION}:${provider.cacheKey()}:${deepSkySceneCacheKey(deepSkyCatalogVersion)}`;
   }
 
   private skyCatalogFor(version: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3") {
@@ -424,19 +424,20 @@ export class AstronomyService implements AstronomyApplicationPort {
   }
 
   async compute(context: ObservationContext, signal?: AbortSignal, weatherDeadlineAt = this.now() + WEATHER_DEADLINES.overallMs,
-    catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2"): Promise<ApiEnvelope<SkyReport>> {
+    catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2", deepSkyCatalogVersion?: string): Promise<ApiEnvelope<SkyReport>> {
     const skyCatalog=this.skyCatalogFor(catalogVersion);
     const { computation, spot, key, generation, expiresAt, deliveryBoundary } = await this.prepare(context, undefined, signal, weatherDeadlineAt, skyCatalog);
     signal?.throwIfAborted();
     const representationKey = digest({ key, contextId: context.contextId,
-      contextFingerprint: context.contextFingerprint, revision: context.revision });
+      contextFingerprint: context.contextFingerprint, revision: context.revision,
+      deepSkyCatalog: deepSkySceneCacheKey(deepSkyCatalogVersion) });
     const result = await waitForCaller(this.reportCache.get(representationKey,
       () => {
         if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
-        return this.projectReport(computation, spot, context, skyCatalog);
+        return this.projectReport(computation, spot, context, skyCatalog, deepSkyCatalogVersion);
       },
       (report) => report.data.skyScene.state === "AVAILABLE" && report.data.timeModel ? expiresAt : this.now()), signal);
-    if (this.now() >= deliveryBoundary) return this.compute(context, signal, weatherDeadlineAt, catalogVersion);
+    if (this.now() >= deliveryBoundary) return this.compute(context, signal, weatherDeadlineAt, catalogVersion, deepSkyCatalogVersion);
     return structuredClone(result);
   }
 
@@ -446,7 +447,7 @@ export class AstronomyService implements AstronomyApplicationPort {
    * proposal id supplied by the caller. */
   async computeCandidate(context: ObservationContext, detail: SpotDetail, proposalId: string, signal?: AbortSignal,
     weatherDeadlineAt = this.now() + WEATHER_DEADLINES.overallMs,
-    catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2"): Promise<ApiEnvelope<SkyReport>> {
+    catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2", deepSkyCatalogVersion?: string): Promise<ApiEnvelope<SkyReport>> {
     const skyCatalog=this.skyCatalogFor(catalogVersion);
     const calculationContext: ObservationContext = {
       ...context,
@@ -459,14 +460,15 @@ export class AstronomyService implements AstronomyApplicationPort {
     const { computation, spot, key, generation, expiresAt, deliveryBoundary } = await this.prepare(calculationContext, detail, signal, weatherDeadlineAt, skyCatalog);
     signal?.throwIfAborted();
     const representationKey = digest({ key, proposalId, contextId: context.contextId,
-      contextFingerprint: context.contextFingerprint, revision: context.revision });
+      contextFingerprint: context.contextFingerprint, revision: context.revision,
+      deepSkyCatalog: deepSkySceneCacheKey(deepSkyCatalogVersion) });
     const result = await waitForCaller(this.reportCache.get(representationKey,
       () => {
         if (generation !== this.generation) throw new Error("astronomy_computation_invalidated");
-        return this.projectReport(computation, spot, calculationContext, skyCatalog);
+        return this.projectReport(computation, spot, calculationContext, skyCatalog, deepSkyCatalogVersion);
       },
       (report) => report.data.skyScene.state === "AVAILABLE" && report.data.timeModel ? expiresAt : this.now()), signal);
-    if (this.now() >= deliveryBoundary) return this.computeCandidate(context, detail, proposalId, signal, weatherDeadlineAt, catalogVersion);
+    if (this.now() >= deliveryBoundary) return this.computeCandidate(context, detail, proposalId, signal, weatherDeadlineAt, catalogVersion, deepSkyCatalogVersion);
     return structuredClone({
       ...result,
       data: {
@@ -487,13 +489,13 @@ export class AstronomyService implements AstronomyApplicationPort {
   }
 
   private async projectReport(computation: DecisionComputation, spot: SpotSummary,
-    context: ObservationContext, skyCatalog: SkyCatalogProvider): Promise<ApiEnvelope<SkyReport>> {
+    context: ObservationContext, skyCatalog: SkyCatalogProvider, deepSkyCatalogVersion?: string): Promise<ApiEnvelope<SkyReport>> {
     const generation = this.generation;
     const { report } = computation;
     const hourlyAt = report.data.hourly.map((row) => row.at);
-    const sceneKey = digest({ spot: { wgs84: spot.wgs84, altitudeM: spot.altitudeM }, hourlyAt, catalog: this.catalogCacheKey(skyCatalog) });
+    const sceneKey = digest({ spot: { wgs84: spot.wgs84, altitudeM: spot.altitudeM }, hourlyAt, catalog: this.catalogCacheKey(skyCatalog, deepSkyCatalogVersion) });
     const skyScene = await this.sceneCache.get(sceneKey, async () => buildSkyScene({
-      provider: skyCatalog, hourlyAt, spot,
+      provider: skyCatalog, hourlyAt, spot, ...(deepSkyCatalogVersion ? { deepSkyCatalogVersion } : {}),
     }), (scene) => scene.state === "AVAILABLE" ? this.now() + ASTRONOMY_CACHE_POLICY.computationTtlMs : this.now());
     if (!computation.targetFrames) {
       const frames = hourlyAt.map((at) => ({ at, targets: computation.targetsAt(at) }));

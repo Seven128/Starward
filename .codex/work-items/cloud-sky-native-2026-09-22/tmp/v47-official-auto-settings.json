@@ -1,9 +1,0 @@
-{
-  "ideHttpPort": 23977,
-  "intent": "Official CLI auto on the same project; logged-in account, no test ticket or account substitution; no projectConfig override",
-  "project": "E:/dev/worktrees/Starward/remote-main-20260908/apps/wechat-miniapp/dist/weapp-check-sky-scene-v47",
-  "automationPort": 63757,
-  "sourceAndService": "Frozen v47 candidate and existing backend epoch preserved",
-  "recordedAtUtc": "2026-09-30T03:00:13.7712513Z",
-  "publicApiPort": 60065
-}

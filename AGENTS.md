@@ -4,6 +4,8 @@ These project rules apply throughout authorized research, design and development
 
 ## Development execution
 
+- 子代理用完立即关闭；需要时新建，不复用旧子代理。
+- **先批量化，再处理例外。** 重复的数据、素材和验证工作，先找现有批处理能力并验证代表性样本；规则稳定后批量执行，仅对无法机械判定的异常逐项处理。图像加工同样优先批量化；逐项处理须有具体障碍及收益依据。不得把每个对象变成一轮代码、版本、测试和交接，也不得以容易计数的填充工作挤占关键体验和质量缺口；只在规则、机制或风险变化时补相应验证。
 - **Keep one current plan for substantial work.** Before expanding implementation, establish the intended user result, module responsibilities and dependencies, key risks, and completion evidence. Reuse the task's plan/Goal; keep the current phase, completed work and next dependency explicit. After a context reset, resume from that current state. Revise superseded instructions instead of accumulating competing “next steps”; keep history separately.
 - **Stabilize boundaries, then deliver modules.** Validate uncertain architecture with a small real path through the intended data, state and runtime owners. Develop modules in dependency order, including their normal result, failure/recovery and affected consumers. Adjust architecture when evidence invalidates it; do not design every implementation detail upfront or postpone all integration until the end.
 - **Control changes of direction.** Put new findings under the responsible module. Interrupt only when a finding invalidates current/dependent work, creates material data/security risk, or requires replanning; otherwise queue it, including unrelated defects. When blocked, choose an independent item from the plan and state the dependency. Report progress against module outcomes and remaining obligations, not a count of patches or tests.

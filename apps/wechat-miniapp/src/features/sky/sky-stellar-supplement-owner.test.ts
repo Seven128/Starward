@@ -39,7 +39,7 @@ const tick=()=>new Promise<void>(resolve=>setImmediate(resolve));
 function fixture(){
   const slots:any[]=[],effects:Array<()=>void>=[];
   const requests:Array<{publication:SaoIndexPublication;id:string;signal:AbortSignal;finish():void}>=[];
-  let cursor=0,dirty=false,current:SaoIndexPublication|undefined=publication;
+  let cursor=0,dirty=false,current:SaoIndexPublication|undefined=publication,selected=ids;
   const same=(previous:unknown[]|undefined,next:unknown[])=>previous?.length===next.length&&
     next.every((value,index)=>Object.is(value,previous![index]));
   const bindings={
@@ -53,7 +53,7 @@ function fixture(){
         resolve({data,dataState:'FRESH'});
       }});
     })},
-    supplementGeometry:()=>({}),selectSkyStellarTiles:()=>ids.map(id=>({id})),
+    supplementGeometry:()=>({}),selectSkyStellarTiles:()=>selected.map(id=>({id})),
     resolveSkyStellarSupplement:(_owner:unknown,tiles:readonly SaoTilePublication[])=>({tiles}),
     useRef(initial:unknown){const index=cursor++;return slots[index]??={current:initial};},
     useState(initial:unknown){
@@ -83,25 +83,45 @@ function fixture(){
     return render(active);
   }
   return {requests,render,commit,setPublication(value:SaoIndexPublication|undefined){current=value;},
+    setSelection(value:string[]){selected=value;view.basis={};},
+    setSize(width:number,height:number){view.width=width;view.height=height;},
+    unmount(){for(const slot of slots)slot?.cleanup?.();},
     heldState(){return slots.find(slot=>slot?.owner&&Array.isArray(slot?.value?.tiles))??null;}};
 }
 
-test('page hide retires the Hook tile graph and aborts requests; late replies cannot resurrect it',async()=>{
+test('page hide suspends the bounded ready view; return has ready stars before effects and unmount releases them',async()=>{
   const h=fixture();h.render(pageActive(true));h.commit(pageActive(true));await tick();
   assert.equal(h.requests.length,3);h.requests[0]!.finish();await tick();
   assert.equal(h.render().frame.tiles.length,1);
   const old=h.heldState();assert.equal(old.value.tiles.length,1);
   assert.equal(h.render(pageActive(false)).frame,null);
   h.commit(pageActive(false));
-  assert.equal(h.heldState()===null,true,'returned EMPTY alone must not leave the retired tile graph in React state');
+  assert.equal(h.heldState().owner,old.owner,'one bounded CPU tile owner survives page hide');
+  assert.equal(h.heldState().value.tiles[0],old.value.tiles[0]);
   assert(h.requests.slice(1).every(request=>request.signal.aborted));
   for(const request of h.requests.slice(1))request.finish();await tick();
-  assert.equal(h.heldState(),null);
-  h.render(pageActive(true));h.commit(pageActive(true));await tick();
-  assert.equal(h.requests.length,6);assert.notEqual(h.heldState().owner,old.owner);
-  assert.equal(h.render().frame.tiles.length,0,'reactivation cannot reuse the retired owner');
-  h.requests[3]!.finish();await tick();assert.equal(h.render().frame.tiles.length,1);
-  h.render(false);h.commit(false);
+  assert.equal(h.heldState().value.tiles.length,1,'late aborted replies do not enlarge the retained set');
+  assert.equal(h.render(pageActive(true)).frame.tiles.length,1,'first return render must use valid ready points before effects');
+  h.commit(pageActive(true));await tick();
+  assert.equal(h.requests.length,5);assert.equal(h.heldState().owner,old.owner);
+  h.requests[3]!.finish();await tick();assert.equal(h.render().frame.tiles.length,2);
+  h.unmount();assert.equal(h.heldState(),null);assert(h.requests.at(-1)!.signal.aborted);
+  h.requests.at(-1)!.finish();await tick();assert.equal(h.heldState(),null);
+});
+
+test('return to a changed view excludes retained old tiles before effects can change the wanted set',async()=>{
+  const h=fixture();h.render();h.commit();await tick();h.requests[0]!.finish();await tick();h.render();
+  h.render(false);h.commit(false);h.setSelection([publication.index.tiles[7]!.id]);
+  assert.equal(h.render(true).frame.tiles.length,0,'old view tiles cannot masquerade as the requested new view');
+  h.commit();await tick();h.unmount();
+});
+
+test('return before native measurement retains valid source points instead of depending on the previous painted size',async()=>{
+  const h=fixture();h.render();h.commit();await tick();h.requests[0]!.finish();await tick();h.render();
+  h.render(false);h.commit(false);h.setSize(0,0);
+  assert.equal(h.render(true).frame.tiles.length,1,'native invalidation clears dimensions, not validated source rows');
+  assert.equal(h.commit(true).frame.tiles.length,1,'the visibility effect must not evict ready rows before measurement');
+  h.unmount();
 });
 
 test('publication loss releases ready tiles and publication replacement fences the previous owner',async()=>{
@@ -116,7 +136,7 @@ test('publication loss releases ready tiles and publication replacement fences t
   assert.equal(h.heldState().publication,next);assert.equal(h.render().frame.tiles.length,0);
   h.requests[3]!.finish();await tick();assert.equal(h.render().frame.tiles.length,1);
   assert.equal(h.heldState().publication,next);
-  h.render(false);h.commit(false);
+  h.unmount();
 });
 
 test('refreshed same-hash publication capability retires the old loader and accepts only the new observer',async()=>{
@@ -131,5 +151,5 @@ test('refreshed same-hash publication capability retires the old loader and acce
   assert.notEqual(h.heldState().owner,old.owner);assert.equal(h.heldState().publication,fresh);
   for(const request of h.requests.slice(1,3))request.finish();await tick();assert.equal(h.render().frame.tiles.length,0);
   h.requests[3]!.finish();await tick();assert.equal(h.render().frame.tiles.length,1);
-  h.render(false);h.commit(false);
+  h.unmount();
 });

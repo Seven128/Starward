@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { lstat, readdir, readFile, realpath, unlink } from "node:fs/promises";
 import path from "node:path";
 import { PERSONAL_TRIAL_BACKUP_DAYS, PERSONAL_TRIAL_BACKUP_POLICY } from "./verified-backup.mjs";
+import { readSkyStaticBackup, verifiedBackupSkyRecord } from "./sky-static-backup.mjs";
 
 const day = 86400000;
 const fail = (code) => { throw new Error(`backup_maintenance_${code}`); };
@@ -53,13 +54,15 @@ export async function maintainTrialBackups({ validation, deploy, postgres, apply
     }
     const created = Date.parse(manifest.createdAt);
     const expiry = created + PERSONAL_TRIAL_BACKUP_DAYS * day;
-    if (!Number.isFinite(created) || created > now.getTime() || manifest.schemaVersion !== "starward-verified-backup-v1" ||
+    if (!Number.isFinite(created) || created > now.getTime() || !["starward-verified-backup-v1", "starward-verified-backup-v2"].includes(manifest.schemaVersion) ||
         manifest.status !== "verified" || manifest.restore?.status !== "restored_and_verified" ||
         manifest.restore?.temporaryDatabaseDropped !== true || manifest.retention.days !== PERSONAL_TRIAL_BACKUP_DAYS ||
         manifest.retention.expiresAt !== new Date(expiry).toISOString() ||
         !/^[a-f0-9]{40}$/u.test(manifest.releaseRevision ?? "") ||
         manifest.encrypted?.algorithm !== "aes-256-gcm" || !/^[a-f0-9]{64}$/u.test(manifest.encrypted?.sha256 ?? ""))
       fail("invalid_policy_manifest");
+    const skyStaticBackup = verifiedBackupSkyRecord(manifest);
+    if (skyStaticBackup) await readSkyStaticBackup({ backupDirectory: directory, record: skyStaticBackup });
     const prefix = `${validation.environment}-${new Date(created).toISOString().replace(/[:.]/gu, "-")}-${manifest.releaseRevision.slice(0, 12)}-`;
     const fileName = manifest.encrypted.fileName;
     if (typeof fileName !== "string" || !fileName.startsWith(prefix) ||

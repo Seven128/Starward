@@ -3,6 +3,8 @@ import { prepareReleaseCandidate } from "./prepare-release-candidate.mjs";
 import { executeRelease } from "./release.mjs";
 import { validateReleaseEnvironment, validateStagingQualification } from "./validate-release-environment.mjs";
 import { createVerifiedBackup } from "./verified-backup.mjs";
+import { readEnvironmentFile } from "./env-file.mjs";
+import { assertSkyStaticDeliveryIdentity, prepareSkyStaticRelease } from "./sky-static-release.mjs";
 
 export { validateStagingQualification } from "./validate-release-environment.mjs";
 
@@ -24,6 +26,8 @@ export async function promoteReleaseCandidate({
   backup = createVerifiedBackup,
   release = executeRelease,
   qualifyStaging = validateStagingQualification,
+  prepareStaticRelease = prepareSkyStaticRelease,
+  execute,
 }) {
   const candidate = await prepare({
     baseDeployEnvPath,
@@ -44,26 +48,37 @@ export async function promoteReleaseCandidate({
       requireSkyStatic: !!validation.operations.skyStaticDirectory,
     });
   }
-  const verifiedBackup = await backup({ deployEnvPath: candidate.outputPath });
-  const promoted = await release({
-    deployEnvPath: candidate.outputPath,
-    backupManifestPath: verifiedBackup.manifestPath,
-    operator,
-    confirmProductionDigest,
-    ...(validation.operations.skyStaticDirectory && stagingQualification ? {stagingReceiptPath: stagingQualification.receiptPath} : {}),
-  });
-  return Object.freeze({
-    schemaVersion: promoted.receipt.skyStaticDelivery ? "starward-release-promotion-v2" : "starward-release-promotion-v1",
-    status: promoted.receipt.status,
-    environment: validation.environment,
-    revision: validation.revision,
-    imageDigest: validation.imageDigest,
-    candidatePath: candidate.outputPath,
-    backupManifestPath: verifiedBackup.manifestPath,
-    stagingReceiptPath: stagingQualification?.receiptPath ?? null,
-    receiptPath: promoted.receiptPath,
-    ...(promoted.receipt.skyStaticDelivery ? {skyStaticDelivery: promoted.receipt.skyStaticDelivery} : {}),
-  });
+  let delivery = null;
+  try {
+    if (validation.operations.skyStaticDirectory) {
+      delivery = await prepareStaticRelease({ validation, deploy: await readEnvironmentFile(candidate.outputPath), deployEnvPath: candidate.outputPath, execute });
+      if (!delivery) fail("sky_static_configured_delivery_missing");
+      const identity = assertSkyStaticDeliveryIdentity(delivery.identity, validation);
+      if (stagingQualification && identity.imagePublicationHash !== stagingQualification.skyStaticDelivery.imagePublicationHash)
+        fail("sky_static_staging_image_publication_mismatch");
+    }
+    const verifiedBackup = await backup({ deployEnvPath: candidate.outputPath, ...(delivery ? { delivery, execute } : {}) });
+    const promoted = await release({
+      deployEnvPath: candidate.outputPath,
+      backupManifestPath: verifiedBackup.manifestPath,
+      operator,
+      confirmProductionDigest,
+      ...(delivery ? { preparedStaticDelivery: delivery, execute } : {}),
+      ...(validation.operations.skyStaticDirectory && stagingQualification ? {stagingReceiptPath: stagingQualification.receiptPath} : {}),
+    });
+    return Object.freeze({
+      schemaVersion: promoted.receipt.skyStaticDelivery ? "starward-release-promotion-v2" : "starward-release-promotion-v1",
+      status: promoted.receipt.status,
+      environment: validation.environment,
+      revision: validation.revision,
+      imageDigest: validation.imageDigest,
+      candidatePath: candidate.outputPath,
+      backupManifestPath: verifiedBackup.manifestPath,
+      stagingReceiptPath: stagingQualification?.receiptPath ?? null,
+      receiptPath: promoted.receiptPath,
+      ...(promoted.receipt.skyStaticDelivery ? {skyStaticDelivery: promoted.receipt.skyStaticDelivery} : {}),
+    });
+  } finally { await delivery?.dispose(); }
 }
 
 function option(name) {

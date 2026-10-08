@@ -146,7 +146,7 @@ test("all forecast page queries bind the shared lifecycle owner instead of retai
   for (const [file, bindings] of [
     ["../pages/map/index.tsx", { scene: "useMapForecastQuery", spotSky: "useSkyForecastQuery" }],
     ["../pages/map/search-page.tsx", { scene: "useMapForecastQuery" }],
-    ["../features/sky/spot-sky-page.tsx", { report: "useSkyForecastQuery" }],
+    ["../features/sky/spot-sky-page.tsx", { reportQuery: "useSkyForecastQuery" }],
     ["../content/plan/detail/plan-editor-page.tsx", { skyQuery: "useSkyForecastQuery" }],
   ] as const) {
     const ast = ts.createSourceFile(file, readFileSync(new URL(file, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);

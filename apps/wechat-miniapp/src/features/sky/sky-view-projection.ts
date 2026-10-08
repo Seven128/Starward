@@ -21,6 +21,13 @@ export interface SkyViewBasis {
   readonly forward: SkyVector;
 }
 
+/** Exact rendering identity; never rounds away a real camera change. */
+export function sameSkyViewBasis(left: SkyViewBasis | null, right: SkyViewBasis | null): boolean {
+  return left === right || Boolean(left && right &&
+    (["right", "up", "forward"] as const).every(axis =>
+      left[axis].every((component, index) => component === right[axis][index])));
+}
+
 export interface SkyDirectionProjection {
   /** Absolute canvas x coordinate in the same units as width. */
   readonly x: number;

@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-m82-measured-stars-2026-10-04.py", line 192, in <module>
-    try:main()
-        ^^^^^^
-  File "E:\dev\worktrees\Starward\remote-main-20260908\.codex\work-items\cloud-sky-native-2026-09-22\scripts\experience-m82-measured-stars-2026-10-04.py", line 118, in main
-    kernel=psfields[row['fieldKey']].kernel(b,x,y);assert np.isfinite(kernel).all() and kernel.sum()>0
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'PsfField' object has no attribute 'kernel'

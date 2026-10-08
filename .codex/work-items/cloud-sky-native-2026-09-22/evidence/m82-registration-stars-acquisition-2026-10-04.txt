@@ -1,7 +1,0 @@
-{
-  "state": "RESPONSE_UNVERIFIED",
-  "status": 200,
-  "bytes": 421072,
-  "sha256": "f17eecefb601ab1c653548f44c890cce6c9468ca9383af846975f72a33c13269",
-  "elapsedMs": 2129
-}

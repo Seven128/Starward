@@ -1,0 +1,25 @@
+{
+  "profiles": {
+    "images": [
+      "workers/miniapp-api/assets/**/*.png",
+      "workers/miniapp-api/assets/**/*.jpg",
+      "workers/miniapp-api/assets/**/*.webp",
+      "workers/miniapp-api/assets/**/*.zip"
+    ],
+    "catalogs": [
+      "workers/miniapp-api/assets/sao/catalog.json",
+      "workers/miniapp-api/assets/sao/[0-9]*.json",
+      "workers/miniapp-api/assets/sao-v2/catalog.json",
+      "workers/miniapp-api/assets/sao-v2/[0-9]*.json",
+      "packages/astronomy-core/data/bsc5p-bright-stars.v[23].json"
+    ],
+    "text-history": [
+      "workers/miniapp-api/assets/celestial-object-introductions.zh-cn.v*.json"
+    ]
+  },
+  "ordinaryGit": [
+    "workers/miniapp-api/assets/celestial-object-introductions.zh-cn.v72.json"
+  ],
+  "freeAllowanceGiB": 10,
+  "meaning": "Selected immutable runtime resources and compatible old publications only. Current reviewed text, manifests, rights and provenance stay ordinary Git. Local totals do not establish account-wide remaining storage or monthly download allowance. No automatic upload, plan upgrade or remote budget modification."
+}

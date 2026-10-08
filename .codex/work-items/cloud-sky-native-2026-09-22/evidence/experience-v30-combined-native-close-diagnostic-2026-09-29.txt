@@ -1,9 +1,0 @@
-First closure attempt: exec c4fe4b, Node exit 1.
-AssertionError at search result check: expected string, got undefined.
-Cause: closure helper unwrapped every property named result, including the recorded semantic search result string. Actual native search observation remains "Vega恒星 · HR 7001 · 匹配 织女星".
-Correction is task diagnostic only: unwrap object-valued native RPC wrappers and preserve scalar result fields. No source, candidate, native event or capture changed to satisfy the assertion.
-The first attempt produced no validation artifact; frozen source/evidence inputs remain unchanged.
-
-Second closure attempt: exec c53cf1, Node exit 1 at a self-added exact source-return pixel equality assertion: actual changedPixels 25, expected 0.
-Actual untouched PNG comparison (exec 65a8de): 25 pixels, maximum RGB difference 1/255, bounding box x36..194/y223..807; scattered star pixels, no crop narrowing or resizing.
-Correction is evidence classification only: remove the assumed exact-zero condition and report actual difference plus the unproven mechanism. Context/time/tracking/rounded FOV assertions remain. Do not describe this pair as pixel-equal and do not alter source, native state or images to satisfy a diagnostic assumption.

@@ -1,5 +1,5 @@
 import { Image, View } from "@tarojs/components";
-import Taro from "@tarojs/taro";
+import { useRouter } from "@tarojs/taro";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import { useAppStore } from "@/state/app-store";
 
@@ -65,16 +65,16 @@ const B_ICON_ID: Record<SemanticIconName, string> = {
   terrain: "terrain", star: "four-point-star",
 };
 
-function packageAssetPrefix() {
-  const route = Taro.getCurrentPages().at(-1)?.route ?? "";
+function packageAssetPrefix(pagePath: string) {
+  const route = pagePath.replace(/^\//u, "");
   if (route.startsWith("content/")) return "/content";
   if (route.startsWith("spot/")) return "/spot";
   if (route.startsWith("sky/")) return "/sky";
   return "";
 }
 
-export function adoptedBIconPath(name: SemanticIconName, state: SemanticIconState = "default") {
-  return `${packageAssetPrefix()}/assets/b-icons/${B_ICON_ID[name]}--day--${state}.png`;
+export function adoptedBIconPath(name: SemanticIconName, state: SemanticIconState, pagePath: string) {
+  return `${packageAssetPrefix(pagePath)}/assets/b-icons/${B_ICON_ID[name]}--day--${state}.png`;
 }
 
 const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
@@ -142,12 +142,16 @@ export function SemanticIcon({
   className?: string;
   state?: SemanticIconState;
 }) {
+  // Taro's default useRouter captures this instance's route. A retained page
+  // can repaint while a child route is on top; that child's package is not
+  // the asset owner of this icon.
+  const router = useRouter();
   const mode = useAppStore((state) => state.mode);
   if (mode === "DAY") {
     return (
       <Image
         className={`semantic-icon semantic-icon--b semantic-icon--${name} ${className}`}
-        src={adoptedBIconPath(name, state)}
+        src={adoptedBIconPath(name, state, router?.path ?? "")}
         mode="aspectFit"
         {...(decorative
           ? { "aria-hidden": true }

@@ -49,20 +49,25 @@ export function createSkyArtworkLoader<Asset extends SkyNativeImageAsset>(deps: 
   start(asset: Asset, ready:(image:LoadedSkyArtwork)=>void, fail:()=>void):()=>void;
   changed(state:SkyArtworkLoadState):void;
   byteBudget?:number;
-  /** Prefer one already-ready return bitmap. Never initiates an invisible load. */
+  /** Lower priorities survive non-wanted eviction longer, within byteBudget.
+   * This never starts a load or pins an extra working set above the pressure. */
+  retentionPriority?:(asset:Asset)=>number;
+  /** Protect one already-ready non-wanted return bitmap, even above retention
+   * pressure. The caller supplies applicable identities in preference order.
+   * Never initiates an invisible load; Canvas/publication disposal still wins. */
   retainedFallbackIds?:readonly string[];
 }) {
   type Entry={asset:Asset;ids:Set<string>;state:"loading"|"ready"|"cold"|"error";gpuFailed?:boolean;cancel?:()=>void;unsubscribe?:()=>void;loaded?:LoadedSkyArtwork;file?:SkyArtworkFileCache;request:number;last:number};
   const entries=new Map<string,Entry>();
-  let wanted:readonly Asset[]=[],active=true,tick=0,pumping=false;
+  let wanted:readonly Asset[]=[],active=true,paused=false,tick=0,pumping=false;
   const budget=deps.byteBudget ?? 16*1024*1024;
   const key=(a:Asset)=>a.sha256;
   const usable=(e:Entry)=>e.state==='ready'&&e.loaded&&e.loaded.isCurrent?.()!==false&&skyNativeImageIsCurrent(e.loaded.image);
   const wantedKeys=()=>new Set(wanted.map(key));
   const retainedFallbackKeys=()=>{
+    const selected=wantedKeys();
     const candidates=(deps.retainedFallbackIds??[]).map(id=>[...entries].find(([,entry])=>entry.ids.has(id)));
-    const index=candidates.findIndex(candidate=>candidate && usable(candidate[1]) &&
-      candidate[1].asset.width*candidate[1].asset.height*4<=budget);
+    const index=candidates.findIndex(candidate=>candidate && !selected.has(candidate[0]) && usable(candidate[1]));
     const keep=new Set<string>();
     if(index<0)return keep;
     keep.add(candidates[index]![0]);
@@ -80,7 +85,7 @@ export function createSkyArtworkLoader<Asset extends SkyNativeImageAsset>(deps: 
     if(!active)return;
     const images=new Map<string,object>(),retainedImages=new Map<string,object>();let failed=false,loading=false;
     for(const a of wanted){const e=entries.get(key(a));if(e&&usable(e))images.set(a.id,e.loaded!.image);
-      else if(e?.state==='error'||e?.state==='ready')failed=true;else loading=true;}
+      else if(e?.state==='error'||e?.state==='ready')failed=true;else loading ||= !paused;}
     const currentKeys=wantedKeys();
     for(const [hash,e] of entries)if(usable(e)&&!currentKeys.has(hash))
       for(const id of e.ids)retainedImages.set(id,e.loaded!.image);
@@ -104,13 +109,14 @@ export function createSkyArtworkLoader<Asset extends SkyNativeImageAsset>(deps: 
     // bitmaps does not grant a larger or unbounded encoded-file cache.
     let bytes=[...entries.values()].reduce((n,e)=>n+(e.loaded||e.file?e.asset.width*e.asset.height*4:0),0);
     const keep=activeKeys();
-    for(const [k,e] of [...entries].sort((a,b)=>a[1].last-b[1].last)){
+    const priority=(e:Entry)=>{const value=deps.retentionPriority?.(e.asset)??0;return Number.isFinite(value)?value:0;};
+    for(const [k,e] of [...entries].sort((a,b)=>priority(b[1])-priority(a[1])||a[1].last-b[1].last)){
       if(bytes<=budget)break;
       if(!keep.has(k)&&(e.loaded||e.file)){bytes-=e.asset.width*e.asset.height*4;drop(k,e);}
     }
   };
   const pump=()=>{
-    if(!active||pumping)return;
+    if(!active||paused||pumping)return;
     pumping=true;
     try {
       for(const asset of wanted){
@@ -118,7 +124,7 @@ export function createSkyArtworkLoader<Asset extends SkyNativeImageAsset>(deps: 
         const k=key(asset),cached=entries.get(k);if(cached&&cached.state!=='cold')continue;
         const entry:Entry=cached??{asset,ids:wantedIds(k),state:'loading',request:0,last:++tick};
         entry.state='loading';const request=++entry.request;entries.set(k,entry);
-        const current=()=>active&&entries.get(k)===entry&&entry.request===request;
+        const current=()=>active&&!paused&&entries.get(k)===entry&&entry.request===request;
         const fail=()=>{if(!current())return;entry.state='error';delete entry.cancel;emit();pump();};
         try {
           const ready=(loaded:LoadedSkyArtwork)=>{
@@ -134,6 +140,18 @@ export function createSkyArtworkLoader<Asset extends SkyNativeImageAsset>(deps: 
     } finally {pumping=false;}
   };
   return {
+    /** Suspend work for a retained, still-live Canvas. Ordinary disposal remains
+     * destructive; ready bitmaps and the existing bounded file owner stay put. */
+    pause(){
+      if(!active||paused)return;
+      paused=true;
+      for(const [k,e] of entries)if(e.state==='loading'){
+        if(e.file){e.request++;e.cancel?.();delete e.cancel;e.state='cold';}
+        else drop(k,e);
+      }
+      emit();
+    },
+    resume(){if(active&&paused){paused=false;pump();emit();}},
     update(next:readonly Asset[]){
       if(!active)return;
       const previous=wantedIdentity();wanted=next;
@@ -148,7 +166,7 @@ export function createSkyArtworkLoader<Asset extends SkyNativeImageAsset>(deps: 
       trim();pump();if(previous!==wantedIdentity())emit();
     },
     suspendUnusedDecoded(){
-      if(!active)return;
+      if(!active||paused)return;
       const keep=activeKeys();let changed=false;
       for(const [k,e] of entries)if(!keep.has(k)&&e.state==='ready'&&e.loaded?.retainFile){
         if(!usable(e)){retire(k,e);continue;}

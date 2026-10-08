@@ -1,0 +1,15 @@
+# C07 河鼓一身份、中文供给与异常测量边界
+
+[原文检查](chinese-alshain-text-inspection-2026-10-07.json)只取一份河鼓一HTML，revision69522337，正文与表明确HR7602/HD188512，原SIMBAD引用Ident=HR 7602，未列HIP。CC BY-SA4.0页脚与固定稿保存，无媒体或重复稿下载。[系统Q78181697](chinese-alshain-Q78181697-2026-10-07.json)revision2529781850中文河鼓一及P527/A指向[子项Q428417](chinese-alshain-Q428417-2026-10-07.json)revision2326585920；后者精确合格HR7602/HD188512/HIP98036，与原BSC一致。子项P361回指系统但没有A序号或中文标签，真实关系原样，不伪造对称序号、声称中文表有HIP或扩CC0registry。原系统与既有单点范围分开，不增加B点或成员覆盖。
+
+[出版](chinese-alshain-publication-2026-10-07.json)沿原owner只采用河鼓一/天鹰座β/河鼓星官及资料G8IV的有限文字，A限定别名为现有点消歧。源0.07mas视差与46593.768571429光年距离异常，B1900坐标串混入-11.09银纬数值，自行-40mas/yr且赤纬缺值及0.48km/s径向速度都不导入。原J2000位置、自行0.048/-0.482arcsec/yr、V星等3.71、bV0.86、G8IV、HIP98036与photometry null保持。测光null不判断Var_ID，旧Pulsating variable Star引用标题不独立成为变星分类/脉动动画；无新测量/轨道/伴星位置/SAO125235关联/媒体/物理解像或肉眼可见保证。贡献者署名、固定原文、简体节选改编/共享链接、近旁所有限定与confidenceNULL保留。
+
+v23 110行249902B，SHA57f81fbf57c736228305e472b6dcb990d6b8b5c11615df28dd7c8569565acb72；v22全部109行逐字段原样，四v19测光纠正及v1–v22字节保留。四新回归修前0pass4fail。首轮23实际相关文件123pass，但worker类型发现新测试宽泛版本类型不适用v2/v3接口；原通过日志与类型失败日志都保存，新测试改为实际v3字面量后23文件123pass0fail/worker类型通过。1原owner/2原测试/1新测试/1asset共5源码变化，237源pins/300WEAPP原样，无依赖/公共合同/前端或构建变化。
+
+[实际消费者](../../../../output/playwright/chinese-alshain-1007-r1/chinese-alshain-result.json)及[读回](chinese-alshain-final-readback-2026-10-07.json)：正式Map→普通NoProps Sky/fixture关闭，525输入/20client文件复用、0构建。原公开时间轴当前唯一本地00:00明确提交，无产品时钟改写；中文独立一结果/资料、近旁完整限定与署名、固定链接复制、完整SourcesBack同身份数据地点时刻及正常pinch后的实际已绘核心点选通过。一次56Scene101请求，最终encoded/decode/GPU/request逻辑模型0、helper退出、原服务0重启。软件JSX/WebGL受控验证不完成nativeCSS/WXML、实际DevTools/Android-iOS或物理容量。
+
+[供给实态](chinese-alshain-next-coverage-2026-10-07.json)：468有名中44无采用中文、381有中文缺正文；116介绍/111许可/52深空都不是上限，下一Gang。全部33行原样，历史失败/MISSING、错误来源/404、SAO414-vs4、Map panel/照片FAILED及UNKNOWN保持。Prepared普通空/HiPS关闭/Mellinger LOWRES DISPLAY，完整账号/native交互/44px焦点滚动/手机新版月面/图质/物理200DAU/独审开放。未启用子代理，未改其它业务或六Settings，未提交推送、采购、部署、发布或外联；Goal active、无预算、未完成。
+
+## 唯一下一依赖
+
+A1 C07 真实已命名目录中文供给缺口：Alshain/河鼓一HR7602/HD188512/HIP98036沿v23采用。原69522337明确HR/HD与独立HR引用，中文表无HIP；合格CC0系统P527/A及子项精确HR/HD/HIP/P361回指核原点，子项无A序号或中文标签，不伪造。异常视差/距离/B1900坐标串/自行/径向速度不导入；测光null不判断Var_ID，引用标题不作脉动分类。不增伴星点/SAO/媒体，具体中文与原已绘身份/来源Back通过。保v22原109行/四v19测光纠正/v1–v22字节。当前116介绍/111许可/52深空非上限，实际468有名中44缺采用中文别名、381有中文缺正文。唯一下一沿原BSC v3、CC0及许可文字/别名owner，先按Gang HR580/HD12216/HIP9598定位正确成熟中文原文，核具体身份、系统/分量范围和权利；不凭名猜标题、无合格来源不造名或借系统编号补缺值。仅合格来源和真实身份沿检索→独立结果→资料/署名/复制/SourcesBack与已绘身份采用，不造正文/观测细节/成员位置或建通用框架。44缺名与381正文适用覆盖持续，无合格来源保缺口并推进独立项。原目录测量/缺值、v1–v22旧字节及原109行保留。上卫增一首轮在定位已收起列表后断言匹配数而失败的任务取证51Scene87请求/终态与后绑定MISSING保，原产品无改，列表展开时核两身份后复验通过。少宰错误HR7582原文/404标题不采用、房宿四任务ISO替换/18:00无已绘点三失败与终态/后绑定MISSING、开阳四相关身份/带后缀HIP原义、23:00参宿一近地平点选失败/终态与后绑定MISSING、旧Sky场景SAO414与断言4 FAILED保原，排原A1责任，不重做SAO去重。完整33、Map候选panel FAILED、真实账号、原生CSS/44px焦点滚动/完整设置、DevTools-WXML/Android-iOS新版月面、图质/物理200DAU/独审开放；大字号/旧Sky稿暂停。普通Prepared空/HiPS关、Mellinger LOWRES DISPLAY、照片FAILED与旧null/UNKNOWN/MISSING保；Q1只新合格覆盖/几何/权益再开，ESO6k退出；P1只新callback/window/rehydration证据再开，复用有效服务不循环初始化。Goal active无预算，不提交推送采购部署发布外联。

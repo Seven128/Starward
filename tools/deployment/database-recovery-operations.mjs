@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { verifiedBackupSkyRecord } from "./sky-static-backup.mjs";
 import { postgresCommand, postgresIdentifier } from "./verified-backup.mjs";
 
 const DIGEST_PATTERN = /^sha256:[0-9a-f]{64}$/u;
@@ -117,11 +118,12 @@ export function validateRecoveryInputs({
   if (confirmTargetDatabase !== targetDatabase) fail("recovery_database_confirmation_required");
   if (!operator || !/^[A-Za-z0-9._:@/-]{2,120}$/u.test(operator)) fail("recovery_operator_invalid");
   if (
-    manifest.schemaVersion !== "starward-verified-backup-v1" ||
+    !["starward-verified-backup-v1", "starward-verified-backup-v2"].includes(manifest.schemaVersion) ||
     manifest.status !== "verified" ||
     manifest.restore?.status !== "restored_and_verified" ||
     manifest.restore?.temporaryDatabaseDropped !== true
   ) fail("recovery_manifest_not_verified");
+  verifiedBackupSkyRecord(manifest);
   if (manifest.environment !== validation.environment) fail("recovery_manifest_environment_mismatch");
   if (manifest.composeProject !== deploy.COMPOSE_PROJECT_NAME) fail("recovery_manifest_project_mismatch");
   if (manifest.sourceDatabase !== targetDatabase) fail("recovery_manifest_database_mismatch");

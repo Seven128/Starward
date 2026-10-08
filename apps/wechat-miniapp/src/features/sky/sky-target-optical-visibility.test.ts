@@ -10,7 +10,7 @@ import { artworkIntersectsView } from "./sky-artwork-visibility";
 const at = "2026-10-03T13:00:00.000Z";
 const point = [0, 0, -10, 0, -9.9, 359.9, -10] as const;
 const publication = { objectRef: "M:51", levels: Object.fromEntries(["OVERVIEW", "MEDIUM", "DETAIL"].map((level, index) =>
-  [level, { fieldDegrees: .2275555556 / 2 ** index }])) } as any;
+  [level, { fieldDegrees: .2275555556 / 2 ** index, pixels: 512 }])) } as any;
 const report = { hourly: [{ at }], skyScene: { deepSky: { state: "AVAILABLE", catalog: {
   frame: "ICRS J2000", imageRegistration: "ICRS_TAN_NORTH_0_1_V1", entries: [{ objectRef: "M:51" }] },
   frames: [{ at, state: "AVAILABLE", points: [point] }] } } } as any;

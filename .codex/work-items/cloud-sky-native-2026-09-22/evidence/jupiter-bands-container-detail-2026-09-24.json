@@ -1,7 +1,0 @@
-{
-  "status": "ok",
-  "contentRevision": "4ad90ef625119c48563724a6",
-  "sourceCount": 3,
-  "opalLicense": "CC BY 4.0; Starward longitude-median adaptation",
-  "limitation": "星图按木星赤道和极半径绘制扁球轮廓及相位；高倍率可显示2024年HST OPAL历史纬度云带，已移除全部经度细节，不表示当前大红斑位置、实时云系或自然真彩。"
-}

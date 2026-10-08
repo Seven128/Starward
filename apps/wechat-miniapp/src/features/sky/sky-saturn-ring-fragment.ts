@@ -1,3 +1,4 @@
+import { skyBodyDisplayShader } from "./sky-solar-light-shader";
 import {SATURN_BANDS,SATURN_REFERENCE_RADIUS_KM,SATURN_EQUATORIAL_RADIUS_KM,
   SATURN_POLAR_RADIUS_KM} from "./sky-saturn-rings";
 
@@ -8,6 +9,7 @@ export function saturnRingFragment(skyRay: string): string {
   precision highp float;
   varying vec2 v_pixel;
   ${skyRay}
+  ${skyBodyDisplayShader}
   uniform vec2 u_discCenter,u_ringMajor,u_ringMinor,u_minorDirection;
   uniform vec2 u_globeRadii;
   uniform float u_opening,u_pixelRatio,u_sunAvailable;
@@ -37,6 +39,6 @@ export function saturnRingFragment(skyRay: string): string {
     float qb=dot(point,u_sunEnu)+k*pp*sp;
     float qc=dot(point,point)+k*pp*pp-1.0;
     bool shadow=u_sunAvailable>0.5&&qb<0.0&&qc>0.0&&qb*qb>=qa*qc;
-    gl_FragColor=vec4(shadow?u_shadowTint:u_tint,opacity);
+    gl_FragColor=vec4(skyBodyDisplay(shadow?u_shadowTint:u_tint,v_pixel),opacity);
   }`;
 }

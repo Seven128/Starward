@@ -12,6 +12,25 @@ function tile(id:string):SaoTilePublication{return {publicationHash:publication.
   tile:JSON.parse(readFileSync(new URL(`${id}.json`,location),'utf8'))};}
 const tick=()=>new Promise<void>(resolve=>setImmediate(resolve));
 
+test('pause retains only the bounded ready view, cancels pending work and resumes without reloading ready tiles',async()=>{
+  const requests:{id:string;signal:AbortSignal;finish():void}[]=[],states:SkyStellarTileState[]=[];
+  const owner=createSkyStellarTileLoader({publication,changed:s=>states.push(s),load:(id,signal)=>new Promise(resolve=>{
+    requests.push({id,signal,finish:()=>resolve({data:tile(id),dataState:'FRESH'})});
+  })});
+  owner.update(ids.slice(0,3));await tick();requests[0]!.finish();await tick();
+  const ready=states.at(-1)!.tiles[0]!;
+  owner.pause();assert(requests.slice(1).every(r=>r.signal.aborted));
+  for(const request of requests.slice(1))request.finish();await tick();
+  assert.deepEqual(states.at(-1)!.tiles,[ready],'aborted late replies cannot add hidden data');
+  assert.equal(requests.length,3,'hidden owner cannot pump more requests');
+  owner.resume();await tick();assert.equal(requests.length,5,'resume loads only the two unfinished tiles');
+  assert.equal(states.at(-1)!.tiles[0],ready,'same ready object remains available before new replies');
+  owner.pause();owner.update([ids[7]!]);
+  assert.deepEqual(states.at(-1)!.tiles,[],'a changed view must evict the old view even when paused');
+  const count=states.length;owner.dispose();for(const request of requests.slice(3))request.finish();await tick();
+  owner.resume();assert.equal(states.length,count,'final disposal fences late replies and resume');
+});
+
 test('cached stale tiles stay visible with recovery state; retry really reloads them and keeps old points while pending',async()=>{
   let calls=0,finish:()=>void=()=>{};const states:SkyStellarTileState[]=[];
   const loader=createSkyStellarTileLoader({publication,changed:s=>states.push(s),load:async id=>{
@@ -22,6 +41,19 @@ test('cached stale tiles stay visible with recovery state; retry really reloads 
   loader.retry();await tick();assert.equal(calls,2);assert.equal(states.at(-1)!.tiles.length,1);
   assert.equal(states.at(-1)!.loading,true);finish();await tick();
   assert.equal(states.at(-1)!.failed,false);assert.equal(states.at(-1)!.loading,false);assert.equal(states.at(-1)!.tiles.length,1);loader.dispose();
+});
+
+test('pausing a stale-tile retry preserves the failure until explicit retry and never resumes hidden work',async()=>{
+  let calls=0,finish:()=>void=()=>{};const states:SkyStellarTileState[]=[];
+  const owner=createSkyStellarTileLoader({publication,changed:s=>states.push(s),load:async id=>{
+    calls++;if(calls===1)return {data:tile(id),dataState:'STALE_USABLE'};
+    await new Promise<void>(resolve=>{finish=resolve;});return {data:tile(id),dataState:'FRESH'};
+  }});
+  owner.update([ids[0]!]);await tick();owner.retry();await tick();owner.pause();finish();await tick();
+  assert.equal(states.at(-1)!.tiles.length,1);assert.equal(states.at(-1)!.failed,true);
+  owner.resume();await tick();assert.equal(calls,2,'visibility alone must not retry an observed stale failure');
+  owner.retry();await tick();assert.equal(calls,3);finish();await tick();
+  assert.equal(states.at(-1)!.failed,false);owner.dispose();
 });
 
 test('bounded requests keep only current view; late aborted replies and dispose never publish obsolete stars',async()=>{

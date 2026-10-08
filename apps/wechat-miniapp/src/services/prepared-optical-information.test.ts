@@ -153,6 +153,7 @@ test("the actual source page passes original Prepared credit and its exact link 
     useRouter: () => ({ params: { reference: "M%3A51", opticalPublicationHash: hash } }),
     useState: (value: unknown) => [value, () => {}], useDidHide() {}, useDidShow() {}, useThemeClass: () => "mode-night",
     isProductSource: () => true, deepSkyManifestUrl: manifestUrl(), celestialInformationPartialDetail,
+    useResourceQuery: (options: { enabled: boolean }) => { assert.equal(options.enabled, false); return { isPending: false, isError: false }; },
     useCelestialInformation: (...args: unknown[]) => { requests.push(args); return { isPending: false, isError: false, refreshError: null,
       data: current, refetch: () => { retries++; return Promise.resolve(); } }; },
   });

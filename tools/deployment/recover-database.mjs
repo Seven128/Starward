@@ -33,14 +33,18 @@ export async function recoverDatabase({
   confirmEnvironment,
   confirmBackupSha256,
   confirmTargetDatabase,
+  skyRestoreDirectory,
+  skyManagedRestoreDirectory,
+  confirmSkyPublicationHash,
   operator,
+  execute,
 }) {
   const validation = await validateReleaseEnvironment({ deployEnvPath });
   const deploy = await readEnvironmentFile(deployEnvPath);
   const postgres = await readEnvironmentFile(validation.lanes.postgres);
   const key = await readBackupKeyFile(validation.operations.backupKeyFile);
   const { manifest, envelope } = await loadRecoveryMaterial({ manifestPath, validation });
-  const run = composeExecutor({ composePath, deployEnvPath, cwd: root });
+  const run = composeExecutor({ composePath, deployEnvPath, cwd: root, execute });
   try {
     return await executeDatabaseRecovery({
       validation,
@@ -52,8 +56,12 @@ export async function recoverDatabase({
       confirmEnvironment,
       confirmBackupSha256,
       confirmTargetDatabase,
+      skyRestoreDirectory,
+      skyManagedRestoreDirectory,
+      confirmSkyPublicationHash,
       operator,
       run,
+      execute,
     });
   } finally {
     key.fill(0);
@@ -74,6 +82,9 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
       confirmEnvironment: option("--confirm-environment"),
       confirmBackupSha256: option("--confirm-backup-sha256"),
       confirmTargetDatabase: option("--confirm-target-database"),
+      skyRestoreDirectory: option("--sky-restore-directory"),
+      skyManagedRestoreDirectory: option("--sky-managed-restore-directory"),
+      confirmSkyPublicationHash: option("--confirm-sky-publication-hash"),
       operator: option("--operator") ?? process.env.USER,
     });
     process.stdout.write(`${JSON.stringify({

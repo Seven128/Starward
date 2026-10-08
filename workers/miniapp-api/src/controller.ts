@@ -1,4 +1,5 @@
 import type { AccountAvatarSaveRequest, AccountNicknameSaveRequest } from "@starward/miniapp-contracts";
+import { isDeepSkyCatalogVersion } from "@starward/miniapp-contracts";
 import {
   Body,
   BadRequestException,
@@ -51,7 +52,7 @@ import {
   type WechatLoginRequest,
 } from "@starward/miniapp-contracts";
 import { MiniappService } from "./miniapp-service.ts";
-import { skyPublicAssetHeaders } from "./sky-public-asset-headers.ts";
+import { galacticImagePublicAssetHeaders, opticalHipsPublicAssetHeaders, skyPublicAssetHeaders } from "./sky-public-asset-headers.ts";
 
 function required(value: string | undefined, code: string) {
   if (!value?.trim()) throw new Error(code);
@@ -376,10 +377,13 @@ export class MiniappController {
     @Query("contextId") contextId?: string,
     @Headers("authorization") authorization?: string,
     @Query("catalogVersion") catalogVersion?: string,
+    @Query("deepSkyCatalogVersion") deepSkyCatalogVersion?: string,
   ) {
     if (catalogVersion !== undefined && catalogVersion !== "bsc5p-bright-stars.v2" &&
         catalogVersion !== "bsc5p-bright-stars.v3") throw new BadRequestException("sky_catalog_version_invalid");
     const selectedCatalog = catalogVersion ?? "bsc5p-bright-stars.v2";
+    if (deepSkyCatalogVersion !== undefined && !isDeepSkyCatalogVersion(deepSkyCatalogVersion))
+      throw new BadRequestException("deep_sky_catalog_version_invalid");
     const locationId = decodeURIComponent(spotId);
     if (locationId.startsWith("contribution:")) {
       return this.service.auth.requirePrincipal(authorization).then((userId) => this.service.getSky(
@@ -387,9 +391,10 @@ export class MiniappController {
         required(contextId, "observation_context_required"),
         userId,
         selectedCatalog,
+        deepSkyCatalogVersion,
       ));
     }
-    return this.service.getSky(locationId, required(contextId, "observation_context_required"), undefined, selectedCatalog);
+    return this.service.getSky(locationId, required(contextId, "observation_context_required"), undefined, selectedCatalog, deepSkyCatalogVersion);
   }
 
   @Get("spots/:spotId/sky/targets")
@@ -416,17 +421,19 @@ export class MiniappController {
     @Query("at") at?: string,
     @Headers("authorization") authorization?: string,
     @Query("catalogVersion") catalogVersion?: string,
+    @Query("deepSkyCatalogVersion") deepSkyCatalogVersion?: string,
   ) {
-    const report = await this.sky(spotId, contextId, authorization, catalogVersion);
+    const report = await this.sky(spotId, contextId, authorization, catalogVersion, deepSkyCatalogVersion);
     return celestialObjectPosition(decodeURIComponent(reference), required(at, "observation_time_required"), report);
   }
 
   @Get("celestial-objects")
   celestialSearch(@Query("q") query = "", @Query("limit") limit = "20", @Query("catalogVersion") catalogVersion?: string,
-    @Query("luminaryCatalogVersion") luminaryCatalogVersion?: string) {
+    @Query("luminaryCatalogVersion") luminaryCatalogVersion?: string,
+    @Query("deepSkyCatalogVersion") deepSkyCatalogVersion?: string) {
     if (catalogVersion !== undefined && catalogVersion !== "bsc5p-bright-stars.v2" && catalogVersion !== "bsc5p-bright-stars.v3")
       throw new BadRequestException("sky_catalog_version_invalid");
-    return this.service.celestialSearch.search(query, Number(limit), catalogVersion ?? "bsc5p-bright-stars.v2", luminaryCatalogVersion);
+    return this.service.celestialSearch.search(query, Number(limit), catalogVersion ?? "bsc5p-bright-stars.v2", luminaryCatalogVersion, deepSkyCatalogVersion);
   }
   @Get("celestial-objects/:reference")
   celestialObject(
@@ -508,7 +515,7 @@ export class MiniappController {
   preparedOpticalManifest(@Param("publicationHash") publicationHash: string, @Res() reply: FastifyReply) {
     const manifest = this.service.preparedOpticalImages.manifest(publicationHash);
     return reply.header("content-type", "application/json; charset=utf-8")
-      .header("content-disposition", `attachment; filename="${manifest.objectRef.replace(":", "-")}-prepared-optical-manifest.json"`)
+      .header("content-disposition", `attachment; filename="${manifest.imageVersion === "prepared-native-optical-v1" ? manifest.publicationId : manifest.objectRef.replace(":", "").toLowerCase()}-prepared-optical-manifest.json"`)
       .header("cache-control", "public, max-age=31536000, immutable")
       .header("x-content-type-options", "nosniff").send(manifest);
   }
@@ -645,15 +652,22 @@ export class MiniappController {
     return reply.header("content-type","application/json; charset=utf-8")
       .header("cache-control","no-cache")
       .header("x-content-type-options","nosniff")
+      .send(this.service.galacticImage.infraredManifest());
+  }
+
+  @Get("sky/galactic/display/manifest")
+  galacticDisplayManifest(@Res() reply:FastifyReply){
+    return reply.header("content-type","application/json; charset=utf-8")
+      .header("cache-control","no-cache")
+      .header("x-content-type-options","nosniff")
       .send(this.service.galacticImage.manifest());
   }
 
   @Get("sky/galactic/:publicationHash/:file")
   async galacticImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
     @Res() reply:FastifyReply){
-    if(file!=="2mass-galactic-2048x1024.jpg")throw new NotFoundException("galactic_image_unavailable");
-    const bytes=await this.service.galacticImage.image(publicationHash);
-    return reply.headers(skyPublicAssetHeaders("galactic", "image/jpeg")).send(bytes);
+    const bytes=await this.service.galacticImage.image(publicationHash,file);
+    return reply.headers(galacticImagePublicAssetHeaders(this.service.galacticImage.imageManifest(publicationHash,file))).send(bytes);
   }
 
   @Get("sky/mars/:publicationHash/:file")
@@ -713,14 +727,32 @@ export class MiniappController {
       .send(this.service.opticalHips.manifest());
   }
 
+  @Get("sky/optical/:publicationHash/manifest")
+  opticalSelectedManifest(@Param("publicationHash") publicationHash:string,@Res() reply:FastifyReply){
+    return reply.headers(opticalHipsPublicAssetHeaders("application/json; charset=utf-8"))
+      .send(this.service.opticalHips.manifest(publicationHash));
+  }
+
+  @Get("sky/optical/:publicationHash/rights")
+  async opticalRights(@Param("publicationHash") publicationHash: string,@Res() reply: FastifyReply) {
+    const offer=await this.service.opticalHips.rights(publicationHash);
+    // Discovery may gain a companion later. Only its SHA-bound URL is immutable.
+    return reply.type("application/json; charset=utf-8").header("cache-control","no-store").send(offer.reference);
+  }
+
+  @Get("sky/optical/:publicationHash/rights/:offerHash")
+  async opticalRightsAsset(@Param("publicationHash") publicationHash: string,
+    @Param("offerHash") offerHash: string,@Res() reply: FastifyReply) {
+    const offer=await this.service.opticalHips.rightsAsset(publicationHash,offerHash);
+    return reply.headers(opticalHipsPublicAssetHeaders("application/json; charset=utf-8")).send(offer.bytes);
+  }
+
   @Get("sky/optical/:publicationHash/:sourceId/:order/:dir/index")
   async opticalIndex(@Param("publicationHash") publicationHash: string,
     @Param("sourceId") sourceId: string,@Param("order") order: string,@Param("dir") dir: string,
     @Res() reply: FastifyReply) {
     const index=await this.service.opticalHips.index(publicationHash,sourceId,Number(order),Number(dir));
-    return reply.header("content-type", "application/json; charset=utf-8")
-      .header("cache-control", "public, max-age=31536000, immutable")
-      .header("x-content-type-options", "nosniff").send(index);
+    return reply.headers(opticalHipsPublicAssetHeaders("application/json; charset=utf-8")).send(index);
   }
 
   @Get("sky/optical/:publicationHash/:sourceId/:order/:pixel")
@@ -728,11 +760,7 @@ export class MiniappController {
     @Param("sourceId") sourceId: string,@Param("order") order: string,@Param("pixel") pixel: string,
     @Res() reply: FastifyReply) {
     const tile=await this.service.opticalHips.tile(publicationHash,sourceId,Number(order),Number(pixel));
-    return reply.header("content-type",tile.contentType)
-      .header("cache-control", "public, max-age=31536000, immutable")
-      .header("x-content-type-options", "nosniff")
-      .header("x-starward-image-source",tile.sourceId)
-      .send(tile.bytes);
+    return reply.headers(opticalHipsPublicAssetHeaders(tile.contentType,tile.sourceId)).send(tile.bytes);
   }
 
   @Get("celestial-objects/:reference/image")

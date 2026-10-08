@@ -15,17 +15,21 @@ function clockFixture() {
     jobs.delete(selected[0]); selected[1].run();
   } };
 }
-function canvasFixture() {
+function canvasFixture(validateContext?: () => boolean) {
   const timing = clockFixture();
   const measurements: ((rect: unknown) => void)[] = [];
   const painted: { frame: number; size: { width: number; height: number }; context: object; done: () => void }[] = [];
   const presented: number[] = [], errors: unknown[] = [], released: object[] = [];
   let contexts = 0, invalidations = 0, failure = "";
   const canvas = createSkyCanvasLifecycle<number, object>({
+    ...(validateContext ? { validateContext } : {}),
     measure: done => { if (failure === "measure") throw Error("query_failed"); measurements.push(done); },
     createContext: () => { if (failure === "context") throw Error("context_failed"); return { id: ++contexts }; },
-    releaseContext: context => released.push(context),
-    paint: (context, frame, size, done) => { if (failure === "paint") throw Error("draw_failed"); painted.push({ context, frame, size, done }); },
+    releaseContext: context => {
+      released.push(context);
+      if (failure === "release" || failure === "paint-release") throw Error("native_release_failed");
+    },
+    paint: (context, frame, size, done) => { if (failure === "paint" || failure === "paint-release") throw Error("draw_failed"); painted.push({ context, frame, size, done }); },
     presented: frame => presented.push(frame), invalidated: () => { invalidations++; },
     failed: error => errors.push(error),
   }, timing.clock);
@@ -34,6 +38,83 @@ function canvasFixture() {
     measure: (size = { width: 375, height: 812 }) => measurements.at(-1)!(size),
   };
 }
+
+test("Sources suspension fences late draws and reuses only a revalidated surface with a fresh frame", () => {
+  const h = canvasFixture(() => true); h.canvas.ready(); h.canvas.request(1); h.tick(); h.measure();
+  const first = h.painted[0]!;
+  h.canvas.hide(true); first.done();
+  assert.deepEqual(h.presented, []); assert.equal(h.released.length, 0); assert.equal(h.jobs.size, 0);
+  h.canvas.show(); assert.equal(h.jobs.size, 0, "a retained surface cannot replay the old frame");
+  h.canvas.request(2); h.tick(); assert.equal(h.measurements.length, 2); h.measure();
+  assert.equal(h.painted[1]!.context, first.context); h.painted[1]!.done();
+  assert.deepEqual(h.presented, [2]); assert.equal(h.counts().contexts, 1);
+  h.canvas.hide(); h.canvas.dispose(); assert.deepEqual(h.released, [first.context]);
+});
+
+for (const transition of ["hide", "resize", "unmount", "dispose", "invalid-return"] as const) {
+  test(`native release failure still fences ${transition} and permits only a fresh recovery`, () => {
+    const h = canvasFixture(() => false);
+    h.canvas.ready(); h.canvas.request(1); h.tick(); h.measure();
+    const previous = h.painted[0]!;
+    h.fail("release");
+    const invalidations = h.counts().invalidations;
+    assert.doesNotThrow(() => {
+      if (transition === "hide") h.canvas.hide();
+      if (transition === "resize") h.canvas.resize();
+      if (transition === "unmount") h.canvas.setMounted(false);
+      if (transition === "dispose") h.canvas.dispose();
+      if (transition === "invalid-return") {
+        h.canvas.hide(true); h.canvas.show(); h.canvas.request(2); h.tick(); h.measure();
+      }
+    });
+    previous.done();
+    assert.deepEqual(h.presented, [], "a failed retired generation cannot publish picking or sources");
+    assert.deepEqual(h.released, [previous.context], "retirement is attempted once, not claimed successful");
+    assert.equal(h.jobs.size, 0);
+    assert.equal(h.errors.length, 1);
+    assert.equal((h.errors[0] as Error).message, "native_release_failed");
+    if (transition !== "dispose") assert(h.counts().invalidations > invalidations);
+    h.canvas.request(3);
+    assert.equal(h.jobs.size, 0, "ordinary requests cannot silently clear a retirement failure");
+    h.fail(""); h.canvas.show(); h.canvas.setMounted(true); h.canvas.retry();
+    if (transition !== "dispose") {
+      h.tick(); h.measure(); h.painted[1]!.done();
+      assert.deepEqual(h.presented, [3]);
+      assert.notEqual(h.painted[1]!.context, previous.context);
+    }
+    h.canvas.dispose(); previous.done();
+    assert.equal(h.jobs.size, 0);
+    assert.equal(h.released.length, transition === "dispose" ? 1 : 2);
+  });
+}
+
+test("paint and native release failures both survive the single failure report and explicit retry", () => {
+  const h = canvasFixture();
+  h.canvas.ready(); h.canvas.request(1); h.tick(); h.fail("paint-release");
+  assert.doesNotThrow(() => h.measure());
+  assert.equal(h.errors.length, 1);
+  const failure = h.errors[0] as Error & { cause: Error; releaseError: Error };
+  assert.equal(failure.cause.message, "draw_failed");
+  assert.equal(failure.releaseError.message, "native_release_failed");
+  assert.equal(h.counts().invalidations, 1);
+  assert.equal(h.released.length, 1); assert.equal(h.jobs.size, 0);
+  h.canvas.request(2); assert.equal(h.jobs.size, 0);
+  h.fail(""); h.canvas.retry(); h.tick(); h.measure(); h.painted[0]!.done();
+  assert.deepEqual(h.presented, [2]);
+  h.canvas.dispose(); assert.equal(h.released.length, 2);
+});
+
+test("Sources return falls back to release/rebuild for invalid, unavailable or resized native surface", () => {
+  for (const mode of ["invalid", "unavailable", "resized"] as const) {
+    const h = canvasFixture(mode === "unavailable" ? undefined : () => mode !== "invalid");
+    h.canvas.ready(); h.canvas.request(1); h.tick(); h.measure(); h.painted[0]!.done();
+    h.canvas.hide(true); h.canvas.show(); h.canvas.request(2); h.tick();
+    h.measure(mode === "resized" ? {width:812,height:375} : undefined);
+    assert.notEqual(h.painted[1]!.context,h.painted[0]!.context,mode);
+    assert.deepEqual(h.released,[h.painted[0]!.context]); h.canvas.dispose();
+    assert.equal(h.released.length,2);
+  }
+});
 
 test("canvas measurement rejects missing geometry and accepts both platform result shapes", () => {
   for (const value of [null, undefined, [], {}, { width: 0, height: 800 }, { width: 375, height: -1 },

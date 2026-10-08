@@ -1,4 +1,5 @@
-import { readSkyImageDisplaySupport, type DeepSkyImageDescriptor } from "@starward/miniapp-contracts";
+import { assertGalacticImagePublication, galacticImageFormat, readSkyImageDisplaySupport,
+  type GalacticImageManifestData, type DeepSkyImageDescriptor } from "@starward/miniapp-contracts";
 
 /** Immutable public response contract shared by API and static export.
  * Legacy selected W3 responses and mutable discovery keep their own policy. */
@@ -17,7 +18,30 @@ const SOURCES = {
   "prepared-optical": "Historical prepared observation RGB",
   "deep-sky": "NASA/IPAC IRSA - AllWISE W3 12um",
 } as const;
-export type SkyPublicAssetKind = keyof typeof SOURCES | "constellations" | "wide-field-properties" | "sao";
+export type SkyPublicAssetKind = keyof typeof SOURCES | "constellations" | "wide-field-properties" | "sao" | "optical-hips";
+
+/** Identical immutable metadata/tile headers for API and conditional export.
+ * Rights and processing stay in the bound manifest, never inferred here. */
+export function opticalHipsPublicAssetHeaders(contentType:string,sourceId?:string):Record<string,string>{
+  if(sourceId===undefined ? contentType!=="application/json; charset=utf-8" :
+    !/^[a-z0-9-]{1,40}$/u.test(sourceId)||!["image/jpeg","image/png"].includes(contentType))
+    throw new Error("optical_public_asset_identity_invalid");
+  const headers=skyPublicAssetHeaders("optical-hips",contentType);
+  if(sourceId!==undefined)headers["x-starward-image-source"]=sourceId;
+  return headers;
+}
+
+/** API and static delivery describe the same validated bitmap. Preserve the
+ * existing infrared headers; an optical display image is never 2MASS. */
+export function galacticImagePublicAssetHeaders(publication: GalacticImageManifestData): Record<string, string> {
+  assertGalacticImagePublication(publication);
+  const headers = skyPublicAssetHeaders("galactic", galacticImageFormat(publication) === "png" ? "image/png" : "image/jpeg");
+  if (publication.schemaVersion === "starward-mellinger-optical-milky-way-trial-v1")
+    headers["x-starward-image-source"] = "Axel Mellinger / Stellarium historical optical Milky Way; conditional trial";
+  else if (publication.schemaVersion === "starward-mellinger-optical-milky-way-v1")
+    headers["x-starward-image-source"] = "Axel Mellinger / Stellarium historical optical Milky Way display";
+  return headers;
+}
 
 export function skyPublicAssetHeaders(kind: SkyPublicAssetKind, contentType: string, fieldDegrees?: number,
   deepSky?: { publicationHash: string; sourceId: string; descriptor: DeepSkyImageDescriptor }): Record<string, string> {

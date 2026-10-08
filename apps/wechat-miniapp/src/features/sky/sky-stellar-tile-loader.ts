@@ -16,15 +16,15 @@ export function createSkyStellarTileLoader(deps:{
   changed(state:SkyStellarTileState):void;
 }){
   const metadata=new Map(deps.publication.index.tiles.map(tile=>[tile.id,tile]));
-  let wanted:string[]=[],disposed=false,overBudget=false;
+  let wanted:string[]=[],disposed=false,paused=false,overBudget=false;
   const loaded=new Map<string,SaoTilePublication>(),failed=new Set<string>(),refresh=new Set<string>();
   // Aborted requests keep their slot until settled: rapid turns cannot create
   // unbounded native requests even if abort completion is delayed.
   const pending=new Map<string,AbortController>();
   function publish(){if(!disposed)deps.changed({tiles:wanted.flatMap(id=>loaded.has(id)?[loaded.get(id)!]:[]),
-    loading:!overBudget&&wanted.some(id=>refresh.has(id)||!loaded.has(id)&&!failed.has(id)),failed:overBudget||failed.size>0});}
+    loading:!paused&&!overBudget&&wanted.some(id=>refresh.has(id)||!loaded.has(id)&&!failed.has(id)),failed:overBudget||failed.size>0});}
   function pump(){
-    if(disposed||overBudget)return;
+    if(disposed||paused||overBudget)return;
     for(const id of wanted){
       if(pending.size>=SKY_STELLAR_REQUESTS)break;
       if(loaded.has(id)&&!refresh.has(id)||failed.has(id)||pending.has(id))continue;
@@ -59,6 +59,13 @@ export function createSkyStellarTileLoader(deps:{
       pump();publish();
     },
     retry(){if(!disposed){for(const id of failed)refresh.add(id);failed.clear();pump();publish();}},
+    // A retained page may hide for Sources or app background. Keep only its
+    // already bounded ready view; no hidden transfers or accepted late reply.
+    pause(){if(!disposed&&!paused){paused=true;for(const [id,request] of pending){
+      if(refresh.has(id)&&loaded.has(id))failed.add(id);
+      request.abort();
+    }publish();}},
+    resume(){if(!disposed&&paused){paused=false;pump();publish();}},
     dispose(){disposed=true;wanted=[];loaded.clear();failed.clear();refresh.clear();for(const request of pending.values())request.abort();},
   };
 }

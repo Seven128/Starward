@@ -93,7 +93,7 @@ test("unknown/black, uncompleted, contradictory and foreign identities cannot bo
   assert.equal(skyOpticalSourceCredit({ ...legacy, publicationHash: prepared.publicationHash }), null);
 });
 
-interface Element { type: string; props: { children?: unknown; onClick?: () => void } }
+interface Element { type: string; props: { children?: unknown; disabled?: boolean; onClick?: () => void } }
 function jsx(type: string | ((props: object) => Element), props: object): Element {
   return typeof type === "function" ? type(props) : { type, props };
 }
@@ -106,7 +106,7 @@ vm.runInNewContext(componentCode, { exports: moduleExports, require(name: string
   throw new Error(`unexpected_component_dependency:${name}`);
 } });
 const Credit = moduleExports.SkyOpticalImageCredit as (props: {
-  credit: SkyOpticalSourceCredit | null; onOpenSources: (credit: SkyOpticalSourceCredit) => void;
+  credit: SkyOpticalSourceCredit | null; disabled?: boolean; onOpenSources: (credit: SkyOpticalSourceCredit) => void;
 }) => Element | null;
 function flatten(element: unknown): Element[] {
   if (Array.isArray(element)) return element.flatMap(flatten);
@@ -125,6 +125,15 @@ test("actual caption component renders the complete attribution and its captured
   action.props.onClick();
   assert.equal(opened, original);
   assert.equal(Credit({ credit: null, onOpenSources() { assert.fail("no credit action"); } }), null);
+});
+
+test("calibration locks the actual caption action while retaining full attribution", () => {
+  const original = skyOpticalSourceCredit(world().completion)!;
+  const nodes = flatten(Credit({ credit: original, disabled: true, onOpenSources() { assert.fail("locked source action"); } }));
+  assert(nodes.some(node => node.type === "text" && node.props.children === fullHubbleCredit));
+  const action = nodes.find(node => node.type === "button"); assert(action?.props.onClick);
+  assert.equal(action.props.disabled, true);
+  action.props.onClick();
 });
 
 const page = ts.createSourceFile("spot-sky-page.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -153,7 +162,7 @@ test("actual page caption consumer follows accepted frame, Canvas generation and
       canvasSize: { width: 390, height: 844 }, canvasGenerationRef: { current: 7 },
       presentedSkyFrame: { nativeCanvasGeneration: generation, sdssOptical: state.completion },
       selectedDeepSkyEntry: { reference: "M:82" }, sdssOptical: { publication: science },
-      openOpticalSources() {}, result: null as Element | null };
+      alignmentEditing: false, openOpticalSources() {}, result: null as Element | null };
     vm.runInNewContext(pageCode, context);
     assert.equal(flatten(context.result).some(node => node.props.children === fullHubbleCredit), expected);
   }

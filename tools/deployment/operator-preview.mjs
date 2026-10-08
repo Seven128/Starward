@@ -107,7 +107,7 @@ export async function operatePreview({ deployEnvPath, operation = "check", opera
     if (needsBackup) {
       const result = await perform("verified-backup", async () => backup({
         validation, deploy, postgres: await readEnvironmentFile(validation.lanes.postgres),
-        key: await readBackupKeyFile(validation.operations.backupKeyFile), run,
+        key: await readBackupKeyFile(validation.operations.backupKeyFile), run, delivery,
       }));
       receipt.backupManifestPath = result.manifestPath;
     }

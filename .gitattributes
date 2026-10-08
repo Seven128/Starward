@@ -45,3 +45,18 @@ workers/miniapp-api/assets/landscape/LICENSE.txt -text whitespace=-trailing-spac
 workers/miniapp-api/assets/moon/coverage-manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
 workers/miniapp-api/assets/neptune/manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
 workers/miniapp-api/assets/uranus/manifest.json -text whitespace=-trailing-space,-blank-at-eof,cr-at-eol
+
+# Starward managed resource LFS rules
+workers/miniapp-api/assets/**/*.png filter=lfs diff=lfs merge=lfs -text
+workers/miniapp-api/assets/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+workers/miniapp-api/assets/**/*.webp filter=lfs diff=lfs merge=lfs -text
+workers/miniapp-api/assets/**/*.zip filter=lfs diff=lfs merge=lfs -text
+workers/miniapp-api/assets/sao/catalog.json filter=lfs diff=lfs merge=lfs -text
+workers/miniapp-api/assets/sao/[0-9]*.json filter=lfs diff=lfs merge=lfs -text
+workers/miniapp-api/assets/sao-v2/catalog.json filter=lfs diff=lfs merge=lfs -text
+workers/miniapp-api/assets/sao-v2/[0-9]*.json filter=lfs diff=lfs merge=lfs -text
+packages/astronomy-core/data/bsc5p-bright-stars.v[23].json filter=lfs diff=lfs merge=lfs -text
+workers/miniapp-api/assets/celestial-object-introductions.zh-cn.v*.json filter=lfs diff=lfs merge=lfs -text
+# Current authored text remains reviewable; old immutable publications use LFS.
+workers/miniapp-api/assets/celestial-object-introductions.zh-cn.v72.json !filter !diff !merge -text
+# End Starward managed resource LFS rules

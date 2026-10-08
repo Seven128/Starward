@@ -1,60 +1,113 @@
-# 成品影像：当前来源、覆盖与成本盘点
+# Prepared影像：当前来源、覆盖与成本
 
-**最新v2与当前保留成本边界（2026-10-05）：** [同源多网格出版/咨询快照](experience-prepared-progressive-publication-2026-10-05.md)复用宽母/细网格，源下载/解码/投影/fit新增0，OV512/MED1024/DETAIL1024三PNG4357051B。先前8MiB保留假设撤回现有2MiB（非活动硬cap）；窄实际page Prepared native等效8→1→8MiB、89请求body8980347B、PNG各首传/最终退休0。整段max texture11800576/nativeRGBAeq13369344/FS6224209/encoded6181707B分层，不能相加物理峰。暖过渡Scene无图/三次来源null保OPEN；稳定恢复0差不能证明连续无闪烁。原v2完整503/来源Back/hide代次104请求body10138051B独立保。标准v1+v2六PNG5509446B、整导出86075579B非全机盘/实际公网；新Caddy/TLS出口、旧版回滚暂存保留/全机资源与200DAU混合容量仍未验。成品采用/质量/独审/native未过，未知不填零，三512旧成本段仅为其历史版本。
+更新于2026-10-06；替代本文件旧的累积进度摘要。这里记录库存和资格，不设对象数量、照片边界或像素上限。唯一执行顺序见[PLAN](../PLAN.md)，各代完整输出见下方证据；旧失败不因新输入或新版本自动升级。普通Prepared registry仍空。
 
-**前代真实边界/同源中档成本边界（2026-10-05收口）：** [细粗边界与适用性](experience-prepared-boundary-applicability-2026-10-05.md)production/源RGB解码/投影/背景fit/前端build新增0。原母图1024中心裁片原样PNG1886809B/单图RGBA4194304B/约.206s，细1024复用前代不重做；两网格不是新4096同母v1，旧出版不变。新实际page原三512＋两1024native等效11MiB，GPU完成4194456B/buffer9540B、该阶段copy观察9830552B，整段952观察textureMAX11800576B/native13369344B/FS3019252B/encoded2977051-reserve703555B各分层，不冒物理峰；本代活动/退休0不倒填四帧失败的缺回执。89请求body5776962B，旧三PNG只首传1152395B，新1024由task dataURL未走新HTTP/static/cache/lease，真实出版出口仍缺。四主输出35494523B含失败/bundle/GL诊断，不含reader/scope、不是生产库存/180GB全机余量或wire。跨源raw/display父层图质失败、严格还原2RGB各差1/cause UNKNOWN保持；同源1024父层更清晰但完整质量未过。无新源下载/许可费/设施采购部署，未知成本不填零。普通registry空、独审/设备、标准静态/旧版回滚暂存保留/全机混合容量仍未验。
+## 已有真实输入与输出
 
-**前代采样/实际细图成本边界：** [Hubble细源与512出口](experience-prepared-sampling-applicability-2026-10-04.md)已分开原源与导出损失：同.05°实际DPR1页面512纹理约1.875558屏幕像素/texel，1024约.937779。新Hubble细域仅一次cached JPEG RGB/一次现有TAN1024投影（约2.498s），不重建4096母或旧三级/背景；原PNG586384B→任务PNG2334559B、单图RGBA1→4MiB，离线RGB37392000B逻辑不是RSS。原三512+额外1024共同登记7MiB，理论替换+3MiB不能冒本次实际共存；实际GPU完成帧4681880B/该阶段保存copy观察9662616B，整段MAX11800576纹理/13369344native-RGBAeq独立，最终活动/退休0。r1 skip归因查询但绘制已copy，r2执行查询没有新增模型峰；中心细纹改善不供边界/完整质量。两actual page每段89请求body5776962B，旧三PNG各首传1152395B，新PNG由task dataURL不经HTTP/static/cache/lease，普通新出口、临时峰/容量尚缺。四主输出44722516B不含reader/scope，含两bundle/GL诊断，不是生产库存/全机SSD；无新外部图源下载、许可费、付费设施/采购/部署。旧出版/母图/六保护保持，512不是需求上限，但1024尚未版本化/采用；NOIRLab低名义源采样约482/411不因加像素成高清。完整发布/旧版回滚暂存保留、跨源接续、静态真实出口/全机成本与200DAU混合容量继续未验。
-
-
-**最新同page组合与资源成本边界：** [处理版真实组合/迟到](experience-prepared-display-combinations-2026-10-04.md)新增production/源RGB解码/投影/背景fit/前端build均0。沿原真实三PNG，组合154请求body13321242B/迟到100请求body5855168B，各PNG只首传1208058B；六当前实际参与家族的3228观察texture模型17309696B/native登记RGBA等效20185088B/FS8385298B/encoded8319238B及reserve3316173B分别最大，不相加成物理峰/200DAU混合容量。延迟callback同帧登记2MiB＋端口暂持1MiB＝已知bitmap逻辑3MiB，取消detach并晚交付后无新资源/Scene，活动最终0；压缩/native/GPU/临时共存分别核，不放宽缓存。四新增输出目录96607991B含两bundle副本/GL诊断，不是生产库存或180GB全机余量；来源/母图/旧出版pins保持，无重复处理。真实昼暮夜与时间/全景恢复通过开发读回，主体仍软/颗粒、昼暮亮部偏白、完整质量/弱结构/边缘/配准未过，本宽场细档不能代替合格目标高清；标准静态真实出口/兼容回滚暂存保留/全机成本仍未验，普通registry空。
-
-**此前处理版出版与实际成本边界：** [真实处理身份/同page](experience-prepared-display-identity-2026-10-04.md)复用8315源/母图/背景，新增RGB解码/投影/拟合0；标准父raw三PNG1213030B和显示三PNG1208058B分别保，实际终端仅后三张，manifest18260B/父7330B。正式Map→同Sky实际109请求body7011889B，PNG只首传，失败保粗/重试/完整来源/Back/hide暖恢复成立；是受控body字节，不是公网wire或200DAU容量。新参考Hubble只供估计排除geometry/独立credit，不混RGB；原source RGB115794690B只原解码逻辑数组，不新增其磁盘保存或终端发送。新8输出组70583970B含两个raw验证副本/失败/GL诊断，非生产库存或180GB余量；离线背景NPZ仍原79513803B，展开100663296B，不重拟合。四家族逻辑资源各项峰值不可相加成物理端云峰；该时点完整质量/配准/弱结构/实际组合/标准静态出口/保留及全机混合容量未过，不采用、不填未知为零。
-
-**此前较大同源输入与成本（当时试验）：** [M82真实8315成品及当前Scene](experience-noirlab-m82-large-detail-2026-10-04.md)只下载一次Large JPEG，实际8315×4642/9250383B，原XMP/ICC精确。当前owner只对这项新输入RGB解码/投影各一次，同Photutils参数估计一次；DETAIL约482原像素，实际主体仍软/颗粒更可见，不冒PSF或高质量替代。raw三PNG1213030/派生1208058B，仅512²实际终端档，原图和115794690B source RGB留离线；每PNG1048576B RGBA逻辑与原档尺寸相同，不证物理峰。投影/解码墙时11.265秒，全试验21.652秒/CPU21.469秒为离线开发；lossless Float64背景NPZ79513803B、解压约100.66MB。六输出组逻辑144447521B（含失败）非生产库存/全机SSD/RSS/wire/容量。100个当前源码绑定旧控制，3个新Scene/保存读回成立、全部纹理退休，旧Scene重跑0；处理来源UNKNOWN，完整图质/真实发布page及成本未过、不采用。未取86MB TIFF，无新许可费/付费设施/外联/下发；未知工程时间、批量异常率/库存最高档与混合业务容量不填零。
-
-**前代4k供给/单源背景结果：** [完整4k照片范围与当前相邻层](experience-prepared-native-extent-and-background-2026-10-04.md)无新增源请求，范围检查仅两原JPEG各一次RGB解码、重投影/出版写入0。采样周界名义上界M82约15.489′/M51约25.142′非安全质量/科学覆盖上限；M51北晕/拼接不能算blank sky。M82一次source-masked显示背景估计与实际Scene粗细接续降低暗底，细图仍软、完整弱结构/来源身份/完整publish/page/native未过、不采用。派生三PNG851488B不替换原v1/pins；七组保留逻辑180009380B包含约100.66MB Float64背景、母图与GL诊断，不是生产库存、物理分配、端云峰或180GB全机余量。该阶段Large JPEG仅页面标8.8MB、原TIFF86.0MB尚未取得；较大JPEG的后续真实值见顶部，不发送离线原图到用户端。Agent工程时间、批量异常率与完整成本仍未知，不填零。
-
-**既有兼容性结论：** [真实对应点/线性光合成](experience-prepared-wide-compatibility-2026-10-04.md)未采用全图修正或跨源校色；两NOIRLab及M51 Hubble有具体sRGB ICC，M82 Hubble编码保UNKNOWN。复用原源/母图/出版和旧Scene参考，本代源请求、JPEG RGB解码及重投影均0，只解码两原OV PNG；每个合成帧新增RGB背景copy按1316640B RGBA等效计，8个texture objects全退休，不能外推物理峰/WEAPP性能。夜矩形FAILED，宽图不换全部高清档；旧库存/成本未知及许可决定保持，不以零新增图源请求冒零工程成本。保留本代失败和诊断，未新增生产库存/下发资产/付费设施。
-
-**既有具体宽图：** [NOIRLab实际路径](experience-noirlab-prepared-wide-2026-10-04.md)补当前总览几何覆盖，但当前Scene仍有母图crop方形背景；绝对配准、跨源颜色/PSF与融合未过。两source各一次Browser下载，后续复用；空Spatial.Notes窄修、真实缓存/本地标准链已核，普通registry保持空。两组三PNG合1999718B；源/质量/验证/本地标准候选/Scene五组保留逻辑102368931B（不含reader及scope），并非全机SSD/RSS/wire/200DAU容量。新增宽图不足以直接替换全部Hubble高清档。
-
-2026-10-04。本表是当前库存与缺口，不是对象范围上限或新来源采用。执行顺序只由 PLAN 顶部维护。
-
-## 实际库存
-
-|对象/层|当前可复用输入|视野/覆盖事实|传输与缺口|
+|对象/层|可复用输入与语义|范围和有效细节|产物/状态|
 |---|---|---|---|
-|M51 Prepared|缓存 Hubble heic0506a，4000×2776 JPEG|同一 2048² 母图三级；总览几何支持约34.0%、中档96.7%、细档100%；出版方声明约5″坐标偏差|原JPEG 4,060,187B；三PNG 1,315,239B。已有实际Scene矩形/背景接缝失败，未采用|
-|M82 Prepared|本次取得 Hubble heic0604a，4000×3116 JPEG|原参考视野约7.91×6.17角分；当前目标总览13.653′内几何支持26.134%、中档83.555%、细档100%|原JPEG 9,657,945B；三PNG 1,152,395B。同page显式三级/来源/提交时间后的全景暖回已开发核，三个PNG仅首传；总览矩形FAILED，绝对配准/完整图质/native未过，不采用|
-|M82 NOIRLab候选|同照片4000×2233出版JPEG及8315×4642 Large JPEG；Mosaic I历史B/V/R/I/H-alpha|原约58.87×32.87′；当前13.653′三档几何支持100%；4k采样名义上界15.489′非安全质量范围；科学未知，DETAIL原像素约232/482跨512输出|原JPEG1163247/较大9250383B；4k raw三PNG848405/派生851488B；较大raw1213030/派生1208058B。暗底改善但主体软/颗粒更多，处理身份及当前同page组合/迟到已开发核；完整图质/native/成本未过，不采用|
-|M51 NOIRLab候选|noao1309a，4000×3725出版JPEG；ODI历史蓝/绿/红滤镜，具体滤镜名未知|原约33.22×30.98′；当前13.653′三档几何支持100%；采样周界名义上界25.142′非安全质量范围；科学未知，DETAIL约411源像素跨512输出|JPEG 1162674B；三PNG 1151313B；当前Scene背景接缝FAILED、与Hubble配色不同，不采用|
-|M51 SDSS|现有三层 ImgCutout JPEG|当前总览0.2275556°，中档0.1137778°，细档0.0568889°|64,352B；保留已有路径，不等于Prepared质量通过|
-|M63 SDSS|同上|同M51三视野|57,894B；合格Prepared替代尚未盘定|
-|M64 SDSS|同上|同M51三视野|49,114B；合格Prepared替代尚未盘定|
-|M81 SDSS|同上|总览0.4551111°、中档0.2275556°、细档0.0568889°|48,611B；合格Prepared替代尚未盘定|
-|M82 SDSS|同上；另存科学/显示候选|同M51三视野；科学母图供应与图质按旧证据分别保留|62,314B；原始候选条带/颗粒未过，不因新成品成功打包而升级|
-|M87 SDSS|同上|同M51三视野|53,959B；合格Prepared替代尚未盘定|
-|广角2MASS|2048×1024历史近红外银河图|全天投影背景，不是可见光全天高清|703,555B，RGBA等效8,388,608B；既有谱段/来源语义保留|
-|广角W3|12张512² order0瓦片|历史12μm红外全天低阶；不证明光学覆盖|JPEG合计678,144B；既有51个目标切片也不补光学全天缺口|
-|全天光学背景/其它高清目标与区域|尚无完整合格库存|PS1/SkyMapper仍是权益/自托管路径未闭合候选；排除源保持|未选定范围、最高档和完整存储/加工投入均为未知，不填零；不把现有六/51项当上限|
+|M51 Hubble heic0506a|4000×2776 JPEG，4,060,187B；保存XMP/政策，坐标约5″不确定性|约9.56×6.64′；旧2048²母图目标网格OV几何支持约34%、MEDIUM96.7%、DETAIL100%|旧三PNG 1,315,239B；矩形/背景接缝FAILED，完整外围及绝对配准未过|
+|M82 Hubble heic0604a|4000×3116 JPEG，9,657,945B；历史B/V/H-alpha/I合成、sRGB ICC未知|参考9500×7400、TAN旋转50.1°，约7.91×6.17′；目标OV13.653′中几何支持26.134%/83.555%/100%|旧v1三PNG 1,152,395B；v2 512/1024/1024三PNG合4,357,051B；局部清晰度有改善，完整图质/边界/配准/运行连续性仍未过|
+|M82 NOIRLab noao-m81m82|4000×2233/8315×4642 JPEG，1,163,247/9,250,383B；Mosaic I历史B/V/R/I/H-alpha|约58.87×32.87′；当前13.653′网格三档几何支持100%；512细档分别约232/482源像素；科学/实际PSF未知|4k raw/display三PNG 848,405/851,488B；大源1,213,030/1,208,058B。背景改善但主体软、颗粒明显，跨源颜色/结构不同；不作Hubble同母父层|
+|M51 NOIRLab noao1309a|4000×3725 JPEG，1,162,674B；ODI历史蓝/绿/红，具体滤镜名未知|约33.22×30.98′；当前网格三档几何支持100%；细档约411源像素跨512输出|三PNG 1,151,313B；矩形/接缝FAILED，北晕/拼接不能当blank sky|
+|M51/M63/M64 SDSS|已存各三层ImgCutout JPEG，分别64,352/57,894/49,114B|各OV/MEDIUM/DETAIL视野0.2275556°/0.1137778°/0.0568889°|保现有正式路径与各自限制；不是Prepared采用|
+|NGC6752 ESO eso1323a密星区域|一次publication JPEG4000×3904/6,815,112B；原XMP/CC BY 4.0/ESO/sRGB，历史V-yellow/B-cyan|约32.60×31.82′名义TAN，全幅弱星/核心/光晕保持；绝对配准/science UNKNOWN，不认证完整星团边界|512×500/1024×999/2048×1999三JPEG2,664,164B；实际page/source Back/退休开发通过，矩形/密星断边FAILED退出、普通枚举0，见[决定](q1-ngc6752-prepared-decision-2026-10-06.md)|
+|NGC891 NOIRLab iotw2023a完整星系区域|缓存4000×3154/3,570,760B，原XMP/完整credit/CC BY4.0/sRGB，历史U/B/R/H-alpha|约18.23×14.38′名义TAN，全照片/弱结构/星点保留；绝对/science/完整外围未验|512×404/1024×807/2048×1615三JPEG1,293,708B，现page/source Back/退休开发通过；矩形/星密度断层FAILED退出、普通0，未作正式导出，见[决定](q1-q2-ngc891-native-consumer-decision-2026-10-06.md)|
+|M87匹配Legacy DR10 grz条件区域|新原JPEG59,253B/g FITS1,054,080B；原DETAIL复用、128/256降档，三图90,368B|名义中心与现M87 OV一致、宽13.653′；独立region/无RGBscience/绝对配准|实际三档/source Back/退休开发通过；明显矩形/亮星彩色饱和伪影FAILED退出，普通registry空，见[M87匹配小样/退出决定](q1-q2-m87-matched-region-decision-2026-10-05.md)|
+|M81/M82/M87 SDSS|各三JPEG，48,611/62,314/53,959B|M81视野0.4551111°/0.2275556°/0.0568889°；另两同上|M82旧SCI/display条带/颗粒失败保留；替代库存尚未合格|
+|广角2MASS|2048×1024历史近红外银河图，703,555B|保旧metadata/image URL和J/H/K语义，不是当前光学默认或全天高清|RGBA等效8,388,608B，版本/来源headers原样保留|
+|广角Mellinger光学银河|固定随包原PNG2048×1024，1,003,398B；指定署名grant、名义J2000|已选低分辨率DISPLAY，不补一般区域/目标外围；producer/science UNKNOWN、绝对配准未验|普通owner/新发现入口与原page/static开发增量通过，target质量/运行时/生产未验；详[决定](q2-optical-milky-way-display-decision-2026-10-05.md)|
+|广角W3|12张512² order0 JPEG合678,144B；另有51个目标切片|历史12μm红外低阶背景；不补光学全天缺口|12张逻辑RGBA合12MiB，非同时物理驻留值；51不是目标数上限|
 
-M51数据来自 `output/hubble-m51-nominal-projection-trial-1002-r1/result.json`；M82来自[保存输出读回](../../../../output/hubble-m82-prepared-coverage-1004-r1/saved-output-readback.json)。现有SDSS、2MASS、W3字节取各自 `workers/miniapp-api/assets/deep-sky/` manifest；这里是清单逻辑字节，不是新盘点的全机磁盘/完整性验收。M51/M82支持率是目标方形母网格内的离散几何支持，不是科学有效性或星系完整率。
+上述支持率只是目标母网格中的离散几何支持，不是科学有效性、完整星系比例或安全可展示边界。4k照片的采样周界名义上界（M82约15.489′、M51约25.142′）也不作为图质/科学范围。弱外围、星点、喷流和尘埃不能为去矩形而直接扣除。
 
-## M82具体权利和源含义
+当前v2 hash为`69e8425904e3288624c9f77a1339574c3868f4a37540c2a5258f1942474e9d5a`，严格父v1为`c9b0592eb6409636739d58ed147266d7f0f1bf37bc4c91eeb0d99d78fccd667c`。复用同源宽2048母图及独立1024细网格，不是完整4096同母。三PNG依次135,683/1,886,809/2,334,559B；v1+v2六PNG合5,509,446B，当前标准静态bundle逻辑86,075,579B。它们不是全机库存/流量/物理峰，也不是普通registry批准。
 
-本次实际读取并保存[图片页](https://esahubble.org/images/heic0604a/)、[使用政策](https://esahubble.org/copyright/)与[出版JPEG](https://cdn.esahubble.org/archives/images/publicationjpg/heic0604a.jpg)。页面及嵌入XMP的资源ID、完整credit与CC BY 4.0相符，未见该图片另行限制；政策允许按条件复用，不要求再逐项征求credit机构许可。清楚关联的完整署名、许可链接、修改披露和不暗示背书仍须真实消费者履行。本次没有联系机构、采购或云发布。
+## 新候选：先作适用性决定
 
-完整署名：NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: J. Gallagher (University of Wisconsin), M. Mountain (STScI) and P. Puxley (NSF).
+|候选|本次审查后要解决的实际问题|采用前缺口|
+|---|---|---|
+|ESO eso0932a公开6000×3000|广角可见光候选已缓存/查看；复用6k，不取受限800MP原作|现Galactic直接UV小样未配准，不采用；历史行星/真实Scene、接缝极区及完整credit仍保；详[Q1决定](q1-real-candidate-decision-2026-10-05.md)|
+|Legacy DR10 observed / DR9 north、SDSS|有真实覆盖的区域和目标外围；cutout512限制不等于项目最高档|按正式产品路线选一个真实区域；有效波段、缺测、颜色/配准、外围、网络/加工/出版资格。M51/M104旧失败保持|
+|Hubble/NOIRLab/ESO具体目标成品|高细节目标与同源外围，扩展合格覆盖|逐具体产品核权/观测含义及边界；优先复用缓存，缺口成立才取新源；不先全量批下载|
+|PS1/SkyMapper及CDS派生HiPS|可能的更广光学覆盖或区域来源|原内容权利、服务获取、实际加工/分发和数据库义务分别闭合；不因non-transferable/ODbL误解直接排除，也不据开放元数据直接采用|
+|真实NGC253＋Legacy Virgo小区域|原全幅8285×7510 JPEG/AVM与细0.8arcsec/pixel区域/g FITS推动独立object/region及原生矩形TAN合同|E1真实HTTP/cache/Hook/Scene/source Back有开发范围；普通registry空，完整图质/有效性/绝对配准/发布与目标验收未过，不能外推全库或一般区域|
 
-B/V/H-alpha/I历史观测合成，出版配色为蓝/绿/红/红，不是SDSS gri、实时肉眼颜色或定标流量。ICRS/J2000 TAN、旋转50.1°，原参考9500×7400；AVM的“Full”是出版方元数据标签，不是我们独立配准通过。2006-04-24是发布相关日期，不能替代未知的精确曝光时刻。源和请求回执均在 `output/hubble-m82-prepared-source-1004-r1/`，不重新下载。
 
-## 成本与适用尺度
+具体官方页面、权利纠偏及审查范围见[2026-10-05归并](pro-review-reconciliation-2026-10-05.md)与[外部能力owner](../../../../project_context/external-capabilities.md)。代表性组合还须包含紧凑目标、弱外围、弥散结构、密星和缺边情况，可以由同一资源承担多个类型；样本不是永久范围上限。同类批量加工/审核负担应随共享链成熟下降，不能逐天体手工修图。
 
-成品优先省去不必要的原始科研重建，仍需离线配准、多级输出、完整来源与真实融合。M82新源仅一次JPEG下载；后续浏览用按需512² PNG，不向终端发送9.66MB原图。三个档位每张解码RGBA为1,048,576B；全部三张逻辑RGBA为3,145,728B，原JPEG RGB解码为37,392,000B。压缩字节、native、GPU、副本、临时峰值不能互相代替。
+## 权利与显示事实
 
-若只计12Mbps传输载荷，M82原JPEG的理论下界约6.44秒，三PNG合计约0.77秒；这不是实测延迟，未包含并发、握手、重试、解码和其它业务。200DAU不等于每人每天下载每张图，月流量按真实命中/访问分布测量，不能机械乘上库存当容量结论。
+M82 Hubble的[具体图片页](https://esahubble.org/images/heic0604a/)、[政策](https://esahubble.org/copyright/)、原JPEG/XMP和请求回执已保存在`output/hubble-m82-prepared-source-1004-r1/`，不重复下载。完整credit：NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: J. Gallagher (University of Wisconsin), M. Mountain (STScI) and P. Puxley (NSF).
 
-本次具体图片没有新增逐项授权费/付费设施；不把免费许可等同于加工和维护零成本。Agent时间、原源与中间产物、候选/兼容/回滚/暂存、最终静态出口及全机180GB余量分开核算；完整批量异常率、端云成本和200DAU混合容量仍未验证。
+原核查为具体CC BY 4.0产品及清楚关联的完整署名/许可链接/修改披露/不背书要求，不扩展至所有机构资源。B/V/H-alpha/I出版配色为蓝/绿/红/红，不是SDSS gri、实时肉眼颜色或定标流量；2006-04-24发布时间不能代替曝光时刻。AVM“Full”不等于独立配准通过。NOIRLab宽图继续绑定已有具体图片政策和原观测来源，不将网页DSS2查看器混入其源链。
 
-当前两张高质量原照片均不能直接充当无边界总览。M82细档有完整几何支持，但“细档可用”不等于完整星系覆盖或融合完成。完整源/边界供给已有本代小样，安全范围和完整弱结构仍未闭合；下一依赖只由PLAN顶部维护。不能靠把边界真实尘埃/喷流透明化假装补齐。
+背景估计/显示alpha、原几何支持、科学UNKNOWN和最终实际来源参与分别保有。ICC只约束该输入编码色域，不证明不同源颜色可互换；保raw/display/v2处理身份和兼容父版本。需要新混合时分别处理同源LOD、照片边界、跨源颜色三类问题。
+
+## 成本核算与证据边界
+
+- 客户端按需接收出版档，不默认接收9.66MB原JPEG或全6k纹理。当前512档逻辑RGBA1MiB，1024档4MiB，两1024 wanted为8MiB；2MiB非当前保留只是当前压力配置。R1已沿原owner保护一个ready备用项并保同帧失败回退，光学源RGBA等效9→5→9MiB；整场物理峰及设备仍未验，不为守旧数字允许空档，也不扩为通用缓存框架。
+- 压缩传输、文件保留/租约、解码/native、GPU及上传/copy暂峰各记本身；逐层MAX不能相加冒同帧物理峰。PNG/JPEG、直接原生TAN采样与重采样均先在同一冻结输入作质量/字节/decode/upload对比；WebP另需真实WEAPP证据。
+- 旧M82原JPEG和旧v1三PNG在12Mbps独占载荷下的理论下界约6.44/0.77秒，只是旧输入算例，不能套给v2或当实测等待。200DAU是全小程序，不是200并发；命中、访问、细化比例和重试需实测。10/20冷进入是初始突发场景，不是并发上限。
+- 生产预期4核16GB、12Mbps、2000GB/月、180GB SSD；测试4GB。源与中间产物尽量留离线加工环境，生产核当前/兼容/回滚/暂存、镜像、DB、日志、备份与余量。E2复用sealed链保12图本地真实HTTPS/46请求核算，选定Windows链本机报告分配已有范围；这些不代真实云端/current/回滚/Sky备份/引用全集、Linux全盘或200DAU容量。已有静态/retention owner不重做。
+- 已有NOIRLab大源六组离线输出逻辑144,447,521B、其中Float64背景NPZ79,513,803B只是历史开发产物；不是生产库存或RSS。旧21.652秒全试验/21.469秒CPU也不外推批量工时。现金、Agent/维护投入、机器时间、用户等待分列；批量异常率、库存最高档、混合容量和完整成本仍未知。
+- 不新增无证据付费设施，不因单图免许可费填零总成本。现有原始SCI/噪声研究保留作为明确成品缺口的补充；不是默认重启路径。
+
+## 可直接复用的证据入口
+
+- [当前v2完整出版/实际消费者](experience-prepared-progressive-publication-2026-10-05.md)：版本、静态文件、实际page组合、同源档与暖过渡缺口。
+- [当前未改loader缺口复现](prepared-transition-reproduction-2026-10-05.json)：换档先退休；只证明受控loader原因，不是所有source-null帧的完整根因。
+- [M82 Hubble首代覆盖](experience-hubble-m82-prepared-2026-10-04.md)、[实际page组合](experience-prepared-m82-page-combination-2026-10-04.md)。
+- [NOIRLab原宽图](experience-noirlab-prepared-wide-2026-10-04.md)、[大原源细节](experience-noirlab-m82-large-detail-2026-10-04.md)、[显示处理身份](experience-prepared-display-identity-2026-10-04.md)、[组合/迟到](experience-prepared-display-combinations-2026-10-04.md)。
+- [实际对应点/线性光结果](experience-prepared-wide-compatibility-2026-10-04.md)、[完整照片与背景](experience-prepared-native-extent-and-background-2026-10-04.md)：不重复无变化重加工或闭合旧矩阵。
+- 实际冻结源/产物目录、watch/服务状态、脚本及当前失败的完整导航见[CONTINUE](../CONTINUE-CLOUD-SKY.md)。源、开发验证、目标运行时、最终验收继续分开。
+
+具体随包光学银河已采用低分辨率DISPLAY并接普通开发消费者，详[角色/版本兼容](q2-optical-milky-way-display-decision-2026-10-05.md)。原TRIAL和普通r1协议保原时态，当前新版/旧2MASS发现4HTTPS和标准enum两文件1,706,953B封存复用原1741 mount；不重复制全包。原条件delta+combined88,307,902B、普通r1额外89,311,300B均只是本机logical payload复制，当前新两文件另计，物理分配/去重未重测。一般区域/外围、全图重复/配准/完整图质、设备与生产资格仍缺，Prepared registry空。
+
+## 2026-10-06有限照片合成责任更正
+
+[NGC6752实际Scene合成边界/决定](q2-ngc6752-composition-decision-2026-10-06.md)：native原alpha可用不等于显示不透明；当前最大通道编码RGB贡献在实际1.34°Scene（galactic未绘）与线性光对照仍有完整矩形/密星断边。仅色彩路径退出，普通Prepared仍空。原星点/弱结构完整、source科学UNKNOWN保持。RGB临时copy987480组件B/1316640 RGBA等效B、各1创建删除，仅任务软件模型，无新母图/源下载/产品缓存或生产资源结论。更广可交付区域成品继续按PLAN最小小样，不以全库/PSF或旧SIAP核对替代。
+
+## 2026-10-06具体PS1官方成品/相邻供给
+
+[PS1 NGC884成品/相邻供给决定](q1-ps1-ngc884-finished-and-supply-decision-2026-10-06.md)：一个真实NGC884默认25′彩色cutout配置因35%顶部空白/星点伪影退出，不是PS1全面排除，也不统计成全库异常率。官方已处理stack公开显示授予与第三方CDS分开；北邻小i/权重和原mask保零有新实际供给，父同TAN整数5831px偏移但frame标签差异未解释。源端11次请求/10个200 body共1,058,066B；没有全CCD/全库、新出版资产或普通采用。400 body/机器物理峰/未来离线处理及生产费用未知，不填0；原缓存和六项业务保持，下一只按PLAN。
+
+## 2026-10-06 PS1已处理邻片的实际小路径成本/退出
+
+[PS1原格接缝/名义坐标与退出决定](q1-ps1-ngc884-native-seam-decision-2026-10-06.md)：新增2个206原头前缀131,072B与18个200原格小FITS38,188,800B（20请求38,319,872B），串行供给约51.094s；前阶段11请求/10个200共1,058,066B另计。现成熟库名义frame/原格选择闭合，不做重投影/PSF；一次单位错配纠正未消除1,232缺测及亮星洞，当前完整显示退出、合格覆盖扩大0。离线原格进程PeakWorkingSet181,514,240B/PeakPagefileUsage537,640,960B，显示纠正进程130,850,816B/488,333,312B，各自含库；非同时峰/整机/端上/生产容量。输入6科学/6权重/6mask只供应一份2.13′×4.27′接缝，不能外推全NGC884/全天质量、总费用或异常率。普通Prepared空，原服务/闭合矩阵/源图不重取，独立P1下一由PLAN拥有。
+
+## 2026-10-06独立P1诊断与Q1新输入边界
+
+[P1控制协议读回/决定](p1-control-protocol-decision-2026-10-06.md)：只读原安装/路径/监听及两个控制协议请求，heartbeat body96B、初始化四秒未得响应；不当截图/SDK/产品通过，服务端未确认取消。不重取已失败亮星团或加工旧照片；固定原表NGC0891 G型、13.03′×3.03′只是下一候选身份，不是外围裁框/覆盖上限或零异常保证；尚无新图/出版或普通Prepared采用，离线/生产机器与费用没有新增通过结论。
+
+## 2026-10-06 NGC891供给与完整成品条件决定
+
+[NGC891成品供给/下一消费决定](q1-ngc891-source-route-decision-2026-10-06.md)：PS1已发现两父片各缺已知目标一端，8请求/68,593B，未取彩图，供给退出而图质未验。NOIRLab同目标完整JPEG一次取得3,570,760B，原AVM/ICC与完整信用保留，现读取器无产品修改直接接受；目录范围名义余量充分，全幅观察仅支持一次实际page/Scene条件小样，未认证完整外围/目录重复/发布、普通采用或目标runtime。R1任务调用错误及失败R2启动日志保原，R2只用缓存补必需限额。 原源/全幅/名义读回与实际Scene资格分开，完整U/B/R/H-alpha成品未当PS1通带或校准RGB。一次JPEG保存量与8次PS1完成body分别计，Browser页面/协议费用未抓取，不冒计费、加工峰或可运营容量；没有新source bulk、产品采用或出版。
+
+## 2026-10-06 NGC891实际成品消费退出
+
+[NGC891实际page/Scene退出决定](q1-q2-ngc891-native-consumer-decision-2026-10-06.md)：原缓存JPEG/XMP/ICC沿现native whole-source producer，三档512×404/1024×807/2048×1615共1,293,708B；49名义方向/现plane、515/173输入原样、98 loopback/61 Scene，7暖帧null0/回细与source Back像素差0/退出活动资源0。实际概览明显照片矩形/密星断边FAILED，配置退出、普通枚举0，正式静态导出未开始。较暗延展源不补一般背景；三捕获帧照片内目录对象0只限局部、不闭合一般重复。源像素/20产品pins/原WEAPP未动、外网取图/SDK0，软件模型不冒设备/物理容量。 此次新外网源body为0，三图仅loopback1293708B，原源/JPEG总字节与本机模型不冒计费、物理内存或容量。整幅照片同类失败不再靠逐图重复修色处理；连贯区域成品具体供给/权益/几何核验是新的依赖，不代表已采用HiPS或建设巡天框架。
+
+## 2026-10-06 PS1具体连贯HiPS内部子集
+
+[PS1连贯HiPS源小样/现出版消费者决定](q1-ps1-contiguous-hips-source-decision-2026-10-06.md)：具体主站properties与旧缓存一致；一次12个200/1,364,424B，11原512 JPEG共1,360,243B，成熟HEALPix采样半度预览无明显照片矩形/密星断边，仅内部条件候选。原HiPS清单/索引/15真实loopback/缺tile与错hash404/production拒绝、名义mesh已读回；0.15/0.3°cell完整，0.45°缺38579、0.8°无order6，不冒已绘/科学有效。原JPEG/20产品pins/515与173输入/原服务/WEAPP保原，无新page/Scene/SDK或正式静态出口；普通Prepared空，商业公开内容与完整消费者未验。 原源JPEG1,360,243B；源端完成body1,364,424B与loopback影像body1,360,243B分别计，本地原tile复制不是第二次外网下载。当前ordinary合格覆盖扩大0；有限源预览只支持下一native消费者，不是全库异常率/绝对配准或运营容量。0.45°缺一参考单元与0.8°所需粗层缺失原样记录，不能靠缓存/限FOV解供给；无逐图PSF、科学重加工、alpha或公开出口。
+
+## 2026-10-06 PS1实际HiPS消费者小样（不关闭整项）
+
+[PS1实际page/Scene决定](q1-q2-ps1-hips-native-consumer-decision-2026-10-06.md)：r1文件名适配器/r2列表脚本失败保原，r3当前完整page 115请求/79帧，8暖帧null0/严格像素0/暖body0，hide/show/最终退休通过；0.45°可见细cell全有，0.8°名义可见17,279中心缺源且无所需粗层。来源同帧/独立Back与权利链接缺，仍未采用；无新产品/WEAPP/SDK，整场物理峰/最终验收未通过。 原33行/旧时态保留。
+
+## 2026-10-06 PS1原粗层与同源LOD失败（不关闭整项）
+
+[PS1九原粗层/实际同源LOD决定](q1-q2-ps1-hips-coarse-decision-2026-10-06.md)：原供给补0.8°，137请求/98帧/9暖null0/像素0/暖新增1body、细503保粗/重试/hide-show/退休开发通过；同相机细图+parent使304,918像素改变，粗细0.8 over合成FAILED先修。无产品/缓存扩展/WEAPP/SDK，普通Prepared空/HiPS关，完整消费者与验收保未完成。 九原粗JPEG1,331,625B+原细1,360,243B=2,691,868B，暖body1/生命周期14分开；GPU纹理模型14,680,064B/source RGBA17,367,040B峰不同时间不相加，物理容量未验。
+
+## 2026-10-06 PS1同源LOD修复与剩余逐帧失败（不关闭整项）
+
+[PS1同源LOD修复/逐帧失败](q1-q2-ps1-hips-lod-decision-r2-2026-10-06.md)：细图父贡献0像素差、负控65/恢复0、25检查及类型通过；实际115帧/156请求，71候选完成帧揭露暖wide局部洞约238.3ms/GPU重试整Canvas空窗/失败细线，仍FAILED，下一先修原交接与共享网格边界。暖像素5/max2/body5保原；普通Prepared空/HiPS关，完整消费者与33项未完成。
+
+## 2026-10-06 PS1原alpha、局部重试与有界保留（不关闭整项）
+
+[PS1原alpha/局部重试/实测保留](q1-q2-ps1-hips-handoff-decision-2026-10-06.md)：原alpha替代UV裁父，24检查及类型通过；当前114 Scene/140请求，9暖帧与3 GPU重试帧名义coverage齐，暖像素/新body0，Canvas/粗层身份保留。16/20MiB比较后仅光学source保留20MiB，旧细黑线未再见；冷/show/新wide仍11全null/19未齐，粗细失败边界/完整图质未过。下一补已绘来源/权益record/独立route Back/标准发布；普通Prepared空/HiPS关，完整33项仍未完成。
+
+## 2026-10-06 HiPS完成帧来源与独立Back（不关闭整项）
+
+[HiPS完成帧来源/独立Back](q1-e1-ps1-hips-source-consumers-2026-10-06.md)：原Scene成功提交→生命周期接受→同代caption/精确版本Sources，原图/HiPS许可分开、完整record/DOI/原notice保；19检查及固定TS5.9双类型通过。当前518/173输入，119请求/64 Scene、16来源帧43真实提交；既有自动重试耗尽后公开重试、四链接复制/Back像素0/退出退休。普通Prepared空/HiPS关，商业发布/完整图质/局部可见贡献/runtime/33项仍未过；下一标准静态出版实际消费者。

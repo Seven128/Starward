@@ -6,7 +6,9 @@ import { composeExecutor } from "./compose-runtime.mjs";
 import { readEnvironmentFile } from "./env-file.mjs";
 import { publicReadiness } from "./public-readiness.mjs";
 import { validateReleaseEnvironment, validateStagingQualification } from "./validate-release-environment.mjs";
-import { prepareSkyStaticDelivery, verifySkyStaticDelivery, assertSkyStaticDeliveryIdentity } from "./sky-static-release.mjs";
+import { prepareSkyStaticDelivery, reuseSkyStaticRelease, verifySkyStaticDelivery, assertSkyStaticDeliveryIdentity } from "./sky-static-release.mjs";
+import { readSkyStaticBackup, verifiedBackupSkyRecord } from "./sky-static-backup.mjs";
+import { decryptBackup, readBackupKeyFile } from "./verified-backup.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const composePath = path.join(root, "infrastructure", "deployment", "compose.yml");
@@ -34,11 +36,16 @@ async function validateBackupManifest({ manifestPath, validation, deploy, now })
     throw new Error("release_backup_manifest_path_must_be_absolute");
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
   if (
-    manifest.schemaVersion !== "starward-verified-backup-v1" ||
+    !["starward-verified-backup-v1", "starward-verified-backup-v2"].includes(manifest.schemaVersion) ||
     manifest.status !== "verified" ||
     manifest.restore?.status !== "restored_and_verified" ||
     manifest.restore?.temporaryDatabaseDropped !== true
   ) throw new Error("release_backup_manifest_not_verified");
+  const skyStaticBackup = verifiedBackupSkyRecord(manifest);
+  if (validation.operations.skyStaticDirectory && !skyStaticBackup) throw new Error("release_backup_sky_snapshot_required");
+  if (path.resolve(path.dirname(manifestPath)) !== path.resolve(validation.operations.backupDirectory))
+    throw new Error("release_backup_manifest_outside_backup_directory");
+  if (skyStaticBackup) await readSkyStaticBackup({ backupDirectory: validation.operations.backupDirectory, record: skyStaticBackup });
   if (manifest.environment !== validation.environment)
     throw new Error("release_backup_environment_mismatch");
   if (manifest.composeProject !== deploy.COMPOSE_PROJECT_NAME)
@@ -56,14 +63,32 @@ async function validateBackupManifest({ manifestPath, validation, deploy, now })
   const metadata = await stat(encryptedPath);
   if (!metadata.isFile() || metadata.size !== manifest.encrypted.byteLength)
     throw new Error("release_backup_file_size_mismatch");
+  const authenticateSky = skyStaticBackup?.schemaVersion === "starward-sky-static-backup-v2";
+  // Reuse the recovery owner's configured dump ceiling plus envelope allowance.
+  // Legacy backups retain their original verification path.
+  if (authenticateSky && metadata.size > validation.operations.maxBackupBytes + 4096)
+    throw new Error("release_backup_size_limit_exceeded");
   const bytes = await readFile(encryptedPath);
   if (digest(bytes) !== manifest.encrypted.sha256)
     throw new Error("release_backup_file_digest_mismatch");
+  if (authenticateSky) {
+    let key, dump;
+    try {
+      key = await readBackupKeyFile(validation.operations.backupKeyFile);
+      dump = decryptBackup(bytes, key, skyStaticBackup);
+      if (dump.length < 512 || dump.length > validation.operations.maxBackupBytes)
+        throw new Error("backup_dump_size_invalid");
+    } catch {
+      throw new Error("release_backup_sky_authentication_invalid");
+    } finally { dump?.fill(0); key?.fill(0); }
+  }
   return Object.freeze({
     manifestSchema: manifest.schemaVersion,
     schemaMigration: manifest.schemaMigration,
     verifiedAt: manifest.verifiedAt,
     encryptedSha256: manifest.encrypted.sha256,
+    ...(skyStaticBackup ? { skyStaticBackup } : {}),
+    ...(authenticateSky ? { skyStaticAuthentication: "AES_256_GCM_BOUND_COMPONENT_VERIFIED" } : {}),
   });
 }
 
@@ -106,6 +131,7 @@ export async function executeRelease({
   now = () => new Date(),
   prepareStatic = prepareSkyStaticDelivery,
   verifyStatic = verifySkyStaticDelivery,
+  preparedStaticDelivery,
 }) {
   const validation = await validateReleaseEnvironment({ deployEnvPath });
   const deploy = await readEnvironmentFile(deployEnvPath);
@@ -133,16 +159,23 @@ export async function executeRelease({
       now: new Date(startedAt),
     });
     steps.push(Object.freeze({ name: "backup-verification", status: "passed" }));
-    perform("compose-version", () => run({ args: ["version"], step: "release-compose-version" }));
-    perform("compose-config", () => run({ args: ["config", "--quiet"], step: "release-compose-config" }));
-    perform("image-pull", () => run({ args: ["pull"], step: "release-image-pull" }));
+    if (preparedStaticDelivery) {
+      const reused = await reuseSkyStaticRelease({ validation, deploy, deployEnvPath, delivery: preparedStaticDelivery });
+      delivery = reused.delivery;
+      steps.push(...reused.steps);
+    } else {
+      perform("compose-version", () => run({ args: ["version"], step: "release-compose-version" }));
+      perform("compose-config", () => run({ args: ["config", "--quiet"], step: "release-compose-config" }));
+      perform("image-pull", () => run({ args: ["pull"], step: "release-image-pull" }));
+    }
     if (validation.operations.skyStaticDirectory) {
-      delivery = await prepareStatic({validation, deploy, execute});
+      if (!delivery) delivery = await prepareStatic({validation, deploy, execute});
       if (!delivery) throw new Error("sky_static_configured_delivery_missing");
       skyStaticDelivery = assertSkyStaticDeliveryIdentity(delivery.identity, {revision: validation.revision, imageDigest: validation.imageDigest});
       if (stagingQualification && skyStaticDelivery.imagePublicationHash !== stagingQualification.skyStaticDelivery.imagePublicationHash)
         throw new Error("sky_static_staging_image_publication_mismatch");
-      steps.push(Object.freeze({name: "sky-static-preparation", status: "passed"}));
+      steps.push(Object.freeze({name: "sky-static-preparation", status: "passed",
+        ...(preparedStaticDelivery ? { executionPhase: "BEFORE_VERIFIED_BACKUP" } : {}) }));
       run = composeExecutor({composePath, overlayPaths: delivery.overlayPaths, deployEnvPath, cwd: root, execute});
       perform("sky-static-compose-config", () => run({args: ["config", "--quiet"], step: "release-static-compose-config"}));
     }

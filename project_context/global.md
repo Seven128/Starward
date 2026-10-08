@@ -24,5 +24,6 @@ Only this file is default body Context. Use project_context/context.toml and ord
 - [Product surfaces](areas/main/product-surface-contract.md) and [Screen Contracts](areas/main/screen-contracts.md)
 - [Mini Program Screen Contract](areas/main/screen-contracts/wechat-miniapp.md)
 - [Verification entrypoints](areas/main/verification.md) and [Mini Program development](development-workflow.md)
+- [Resource storage and task artifacts](development-workflow/resources-and-artifacts.md): Git/LFS/local cache boundaries, resource preparation and bounded batch records.
 - [Deployment and external release boundaries](deployment.md)
 - [Context maintenance and retained resource interpretation](context-maintenance.md)

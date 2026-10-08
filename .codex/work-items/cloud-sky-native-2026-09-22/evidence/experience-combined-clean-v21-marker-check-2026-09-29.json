@@ -1,7 +1,0 @@
-{
-  "scope": "initial checker representation error, not missing production helper",
-  "firstAssertion": "source_recovery_consumer_missing",
-  "rawChinesePresent": false,
-  "unicodeEscapedChinesePresent": true,
-  "warningCodePresent": true
-}

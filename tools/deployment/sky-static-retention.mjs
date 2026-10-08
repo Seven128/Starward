@@ -11,7 +11,7 @@ export async function inspectConfiguredSkyRetention({ deployEnvPath, lane, execu
     throw new Error("sky_static_retention_arguments_invalid");
   const validation = await (lane === "operator-preview" ? validateOperatorPreviewEnvironment : validateReleaseEnvironment)({ deployEnvPath });
   const deploy = await readEnvironmentFile(deployEnvPath);
-  const report = await inspectSkyStaticRetention({ validation, deploy, observeRuntime: true, observeReceipts: true, execute });
+  const report = await inspectSkyStaticRetention({ validation, deploy, observeRuntime: true, observeReceipts: true, observeBackups: true, execute });
   return report ?? { schemaVersion: "starward-sky-static-retention-review-v1", status: "STATIC_STORE_NOT_CONFIGURED",
     runtime: null, referenceCompleteness: "UNVERIFIED", meaning: "Configuration has no selected store; no runtime mount/receipt inventory inspected." };
 }

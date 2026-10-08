@@ -1,0 +1,15 @@
+# C07 开阳分量与相关名称的独立身份
+
+[原标题入口](chinese-mizar-text-inspection-2026-10-06.json)revision83821211为消歧义页，未采用。[正确恒星原文](chinese-mizar-star-text-inspection-2026-10-06.json)revision87127756，具体文字按CC BY-SA4.0作者/修订/改编/共享条件采用，无媒体或重复oldid请求。原信息框明确HR5054/HD116656/HIP65378，正文分别称开阳A/B以及开阳增一（辅），未直接列B的HR5055/HD116657。[三个原CC0实体](chinese-mizar-component-inspection-2026-10-06.json)系统Q66477109 P527 A/B→Q13086/Q12064840，子项P361双向顺序及合格HR/HD精确关联；两分量没有中文标签。原文没有A/B SIMBAD超链接，不伪造链接证据。[固定出版](chinese-mizar-publication-2026-10-06.json)保具体来源/hash/identity意义。
+
+原BSC A HR5054/HD116656/HIP65378、A1VpSrSi，B HR5055/HD116657/HIP null、A1m，原位置/星等/别名不动。CC0带后缀HIP65378A/B不是相同无后缀编号，不去后缀合并，B仍null。中文开阳作为系统背景及分量别名沿既有许可文字owner，A保原Mizar，B仍HR身份。只采用北斗斗柄背景、A/B各光谱双星及辅的独立身份；原文A1V/A7不改原光谱，20年周期、五成员总数、距离/组合亮度/裸眼视力保证不采用。对辅物理关联的旧疑问不化为新观测结论；内部成员不增绘制点，不冒手机已物理分辨双星。百科文字许可不授整条图像。两份补充论文正文在线获取403/不可访问，未声称完整读论文或借它们导入周期/测量。
+
+原公开开阳查询已匹配HR5062 Alcor/開陽增一及HR5142/开阳增二。复用原substring/OpenCC规则，新增精确A/B后保四独立结果，未缩检索到双结果；原增一/增二资料事实保、无新开阳正文或精确系统别名。初次任务测试沿旧双结果预期，读实际供给修为四结果后再次确认四回归修前0pass4fail；两原日志保，最终74相关检查/worker类型通过。v11共90行、183885B、SHA256 a7ed68fdd48bee7dd6c8651ea107a0de057462fe5ca605dd4ad767c45aab134b，保原v10八十八行/v1–v10字节；旧v2–v10显式解析，v7至v11合法null HIP精确比较。失配拒绝、单项失败保其它分量及相关结果并可恢复。1原owner/2原测试/1新测试/1资产共5源码变化，213源码pins/300WEAPP不变，无依赖/前端/公共合同/新CC0注册表/缓存框架/位置/影像。
+
+[当前读回](chinese-mizar-final-readback-2026-10-06.json)与[实际消费者](../../../../output/playwright/chinese-mizar-1006-r1/chinese-mizar-result.json)复用525输入/20现bundle文件、0构建。正式Map→普通无props Sky，沿公开时间轴00:00提交；两查询捕获均找到4个匹配天体，各精确HR模态正文/近旁署名/限制、原链接复制、完整Sources Back同身份数据地点时刻通过。正常0.5°pinch，两真实已绘核心重新点选，原重叠选择器按HR选；所选地平线以下标签保，星图浏览不冒肉眼可见，未移动星点或强制pickable。一次56Scene106请求，最终Map encoded/decode/GPU/request逻辑模型0，helper退出/原服务0重启；logicalJSX/softwareGL不代native CSS-WXML/DevTools/Android-iOS/物理容量。
+
+[实际供给账](chinese-mizar-next-coverage-2026-10-06.json)：468有名中56缺采用中文/381有中文缺正文，当前96介绍/91许可/52深空非范围上限。[上一轮参宿一](a1-chinese-alnitak-decision-2026-10-06.md)23:00点选失败、终态与后源码绑定MISSING/原SAO414-vs4 FAILED均保，不无变化重跑或改判。原33义务行原样；真实账号/native完整交互/44px焦点滚动/Android-iOS新版月面/图质/物理200DAU/独审开放。Map候选panel/照片FAILED、旧null/UNKNOWN/MISSING、普通Prepared空/HiPS关/Mellinger LOWRES DISPLAY保。无子代理/其它业务/六项Settings变化，无提交推送采购部署发布外联。Goal active无预算未完成。
+
+## 唯一下一依赖
+
+A1 C07 真实已命名目录中文供给缺口：开阳系统别名与HR5054/HD116656/HIP65378、HR5055/HD116657/HIP真实null两独立分量沿v11闭合；检索保原开阳增一HR5062/增二HR5142四独立身份，不去后缀复制CC0的HIP65378A/B。当前96介绍/91许可/52深空不是上限，实际468有名BSC中56无采用中文别名、381已有中文但缺正文，供给实态不授权逐点造名/造百科。唯一下一复用原BSC v3、CC0与已许可文字/别名owner，按实际缺口核Algieba HR4057/HD89484/HIP50583的成熟中文及系统/分量关联，直接读原供给/排除/原文与具体权利；仅按真实编号扩合格分量，不把系统强等同单颗或复制系统HIP。合格才沿检索→独立结果→资料/署名/复制/来源Back与已绘身份采用，不建通用命名/百科框架。其余56名缺口和381正文适用覆盖持续，不拿当前96或限量候选缩范围。原90行与v1–v10、目录位置测量影像/null合同保，无文/失配/部分失败可恢复。23:00参宿一近地平点选失败/终态与后绑定MISSING、旧Sky场景SAO414与断言4 FAILED保原，排原A1责任，不重做SAO去重。完整33、Map候选panel FAILED、真实账号、原生CSS/44px焦点滚动/完整设置、DevTools-WXML/Android-iOS新版月面、图质/物理200DAU/独审开放；大字号/旧Sky稿暂停。普通Prepared空/HiPS关、Mellinger LOWRES DISPLAY、照片FAILED与旧null/UNKNOWN/MISSING保；Q1只新合格覆盖/几何/权益再开，ESO6k退出；P1只新callback/window/rehydration证据再开，复用有效服务不循环初始化。Goal active无预算，不提交推送采购部署发布外联。

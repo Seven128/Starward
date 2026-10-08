@@ -1,5 +1,0 @@
-{
-  "query": "SELECT dbo.fInFootprintEq(198.95554166666668,42.02927777777778,0.001) AS M_63, dbo.fInFootprintEq(194.18183333333334,21.682972222222222,0.001) AS M_64, dbo.fInFootprintEq(148.88820833333332,69.06530555555555,0.001) AS M_81, dbo.fInFootprintEq(148.96970833333333,69.6793888888889,0.001) AS M_82, dbo.fInFootprintEq(187.70591666666667,12.39111111111111,0.001) AS M_87",
-  "requestUrl": "https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=SELECT%20dbo.fInFootprintEq(198.95554166666668%2C42.02927777777778%2C0.001)%20AS%20M_63%2C%20dbo.fInFootprintEq(194.18183333333334%2C21.682972222222222%2C0.001)%20AS%20M_64%2C%20dbo.fInFootprintEq(148.88820833333332%2C69.06530555555555%2C0.001)%20AS%20M_81%2C%20dbo.fInFootprintEq(148.96970833333333%2C69.6793888888889%2C0.001)%20AS%20M_82%2C%20dbo.fInFootprintEq(187.70591666666667%2C12.39111111111111%2C0.001)%20AS%20M_87&format=json",
-  "reason": "Previous UNION request failed with explicit server SQL syntax near ALL#SELECT, not a negative coverage result. Use one row/5 scalar columns and standard percent-encoding."
-}

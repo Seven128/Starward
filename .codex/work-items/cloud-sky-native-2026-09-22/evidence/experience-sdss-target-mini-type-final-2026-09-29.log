@@ -1,1 +1,0 @@
-src/features/sky/sky-scene-render.ts(432,115): error TS2339: Property 'corners' does not exist on type 'never'.
