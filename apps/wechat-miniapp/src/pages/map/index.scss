@@ -3371,6 +3371,22 @@
 .map-observation-cover > text:first-child { font-size: 16Px; font-weight: 600; }
 .map-observation-cover > text:last-child { font-size: 13Px; line-height: 20Px; }
 
+.spot-panel__red-photo-label { display: none; }
+
+.theme-observation.map-page {
+  .spot-panel__media-image,
+  .spot-panel__facility-image { display: none; }
+  .spot-panel__red-photo-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    font-size: var(--type-body-size);
+  }
+}
+
 .theme-night.map-page,
 .theme-observation.map-page {
   .map-search-entry::before { background: var(--surface-elevated); }
@@ -3461,6 +3477,7 @@
 }
 
 .theme-observation.map-page {
+  .spot-panel__proposal-status { background: var(--surface); color: var(--text-primary); }
   .spot-panel__facility-shade { background: var(--surface); }
   .spot-panel__action--share::before,
   .spot-panel__action-bar--proposal .spot-panel__action::before,

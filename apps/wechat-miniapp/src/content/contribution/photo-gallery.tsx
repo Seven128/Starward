@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { SpotImageViewer, type SpotViewerMedia } from "@/components/spot-image-viewer";
 import { StatusPanel } from "@/components/status-panel";
-import { useRedLightHandoff } from "@/components/red-light-handoff";
+import { PHOTO_VIEWER_HANDOFF, useRedLightHandoff } from "@/components/red-light-handoff";
 import { CONTRIBUTION_PHOTO_LABELS as labels, photoGroupEntries, type ContributionPhotoGroup } from "./photo-groups";
 import "./photo-gallery.scss";
 
@@ -21,7 +21,7 @@ export function ContributionPhotoGallery({ groups, paths, failedIds, scope, name
   live.current = visible ? identity : null;
   const back = useRef<(() => void) | null>(null);
   const registerBack = useCallback((handler: (() => void) | null) => { back.current = handler; }, []);
-  const handoff = useRedLightHandoff({ nativeBackBoundary: false, title: "照片可能较亮" });
+  const handoff = useRedLightHandoff({ nativeBackBoundary: false, title: PHOTO_VIEWER_HANDOFF.title });
   useDidHide(() => { setVisible(false); setViewer(null); });
   useDidShow(() => setVisible(true));
   useEffect(() => { handoff.cancel(); setViewer(null); }, [identity]);
@@ -41,7 +41,7 @@ export function ContributionPhotoGallery({ groups, paths, failedIds, scope, name
       return <Button id={`spot-media-source-${position}`} key={`${entry.side}:${id}`}
         className={`contribution-frozen-media__photo focus-ring${comparison ? " contribution-photo-diff__photo" : ""}${old ? " contribution-photo-diff__old" : ""}`}
         ariaLabel={`查看${labels[entry.kind]}${old ? "原图" : comparison ? "修改后" : ""}第${ids.indexOf(id) + 1}张`}
-        onClick={() => { void handoff.confirm("照片和查看器保留原始颜色，可能影响暗适应。").then(accepted => {
+        onClick={() => { void handoff.confirm(PHOTO_VIEWER_HANDOFF.detail).then(accepted => {
           if (accepted && live.current === identity) setViewer({ identity, index: position });
         }); }}>
         {paths[id] ? <><Image src={paths[id]!} mode="aspectFill" onError={() => onImageError(id)} />

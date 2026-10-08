@@ -203,6 +203,7 @@ export function SpotInformationPanel({
   onContribution,
   onEvidence,
   onViewerBackHandlerChange,
+  onPhotoIntent,
 }: {
   spot: SpotSummary;
   visible?: boolean;
@@ -259,6 +260,7 @@ export function SpotInformationPanel({
   onContribution: () => void;
   onEvidence: (kind: "guides" | "field" | "sources", articleId?: string) => void;
   onViewerBackHandlerChange?: (handler: (() => void) | null) => void;
+  onPhotoIntent: () => Promise<boolean>;
 }) {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [viewerKind, setViewerKind] = useState<"parking" | "toilet" | null>(null);
@@ -362,13 +364,20 @@ export function SpotInformationPanel({
     mediaIsRenderable(item, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__),
   );
   const galleryPosition = useSpotMediaGalleryPosition(`${effectiveSpot.spotId}:${media.map(item => item.id).join("|")}`);
+  const photoScope = JSON.stringify([effectiveSpot.spotId, media.map(item => item.id), detail?.formalMedia]);
+  const currentPhotoScope = useRef(photoScope);
+  currentPhotoScope.current = photoScope;
   const openPhoto = (kind: typeof viewerKind, index: number) => {
-    setSectionRequest(null);
-    setScrollAnchor("");
+    const requestedScope = currentPhotoScope.current;
     documentPosition.remember();
-    if (!kind) galleryPosition.remember();
-    setViewerKind(kind);
-    setViewerIndex(index);
+    galleryPosition.remember();
+    void onPhotoIntent().then(accepted => {
+      if (!accepted || currentPhotoScope.current !== requestedScope) return;
+      setSectionRequest(null);
+      setScrollAnchor("");
+      setViewerKind(kind);
+      setViewerIndex(index);
+    });
   };
   useHiddenNativeScrollbar("spot-panel-scroll", extent !== "small", `${effectiveSpot.spotId}:${extent}`);
   useHiddenNativeScrollbar("spot-panel-media-strip", extent === "large" && media.length > 1, effectiveSpot.spotId);
@@ -512,6 +521,7 @@ export function SpotInformationPanel({
                       lazyLoad
                       ariaLabel={item.alt || `${effectiveSpot.name}现场照片`}
                     />
+                    <Text className="spot-panel__red-photo-label" aria-hidden="true">现场照片</Text>
                     <Text className="spot-panel__media-caption">{index + 1} / {media.length}</Text>
                   </Button>)}
                 </View>

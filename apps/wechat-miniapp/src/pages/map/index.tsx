@@ -18,7 +18,7 @@ import { nativeNavigationInsets } from "@/theme/native-metrics";
 import { restoreMapBootstrapContext, retryObservationScene, spotSelectionAllowsContextRestore } from "./context-restore";
 import { canApplyContextRestore, sameContextVersion } from "@/services/observation-context-version";
 import { FloatingNotificationHost } from "@/components/notification";
-import { useRedLightHandoff } from "@/components/red-light-handoff";
+import { PHOTO_VIEWER_HANDOFF, useRedLightHandoff } from "@/components/red-light-handoff";
 import Taro, { useDidHide, useDidShow, useResize } from "@tarojs/taro";
 import {
   Button,
@@ -190,6 +190,7 @@ export default function MapPage() {
   const themeClass = useThemeClass();
   const reducedMotion = useReducedMotion();
   const navigationHandoff = useRedLightHandoff({ nativeBackBoundary: false });
+  const photoHandoff = useRedLightHandoff({ nativeBackBoundary: false, title: PHOTO_VIEWER_HANDOFF.title });
   const [coverageExpanded, setCoverageExpanded] = useState(false);
   const [terrainSourceId, setTerrainSourceId] = useState<string | null>(null);
   const mode = useAppStore((state) => state.mode);
@@ -383,6 +384,21 @@ export default function MapPage() {
   const lastHandledSpotOpenVersion = useRef(0);
   const detailRequestGeneration = useRef(0);
   const privateTransitionGeneration = useRef(0);
+  useEffect(() => { photoHandoff.cancel(); }, [panelGeometryIdentity, pageVisible, bottomPresentation]);
+  const onPanelPhotoIntent = async () => {
+    if (!pageVisible || bottomPresentationRef.current !== "spot-panel") return false;
+    const generation = privateTransitionGeneration.current;
+    const epoch = navigationEpoch.current;
+    const owner = currentDraftUserId();
+    const spotId = useAppStore.getState().selectedSpotId;
+    const resetVersion = useAppStore.getState().mapResetVersion;
+    const submissionId = selectedProposalRef.current?.submissionId;
+    const accepted = await photoHandoff.confirm(PHOTO_VIEWER_HANDOFF.detail);
+    return accepted && generation === privateTransitionGeneration.current && epoch === navigationEpoch.current &&
+      owner === currentDraftUserId() && spotId === useAppStore.getState().selectedSpotId &&
+      resetVersion === useAppStore.getState().mapResetVersion &&
+      submissionId === selectedProposalRef.current?.submissionId && bottomPresentationRef.current === "spot-panel";
+  };
   useEffect(() => () => {
     useAppStore.getState().retireObservationContextEdit();
     detailRequestGeneration.current += 1;
@@ -1718,6 +1734,10 @@ export default function MapPage() {
   };
 
   const handleMapPresentationSystemBack = async () => {
+    if (photoHandoff.active) {
+      photoHandoff.cancel();
+      return;
+    }
     if (navigationHandoff.active) {
       navigationHandoff.cancel();
       return;
@@ -2176,6 +2196,7 @@ export default function MapPage() {
     >
       {!eventModalPresent ? <FloatingNotificationHost /> : null}
       {navigationHandoff.warning}
+      {photoHandoff.warning}
       <NativeBackBoundary
         active={pageVisible && (eventModalOpen || eventModalPresent || bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet" || bottomPresentation === "spot-editor")}
         onBack={handleMapPresentationSystemBack}
@@ -2403,6 +2424,7 @@ export default function MapPage() {
                 phase={panelPhase}
                 onExtent={onPanelExtent}
                 onClose={closeSpotPanel}
+                onPhotoIntent={onPanelPhotoIntent}
                 onCloud={() => void onProposalCloud(selectedProposal)}
                 onEdit={() => {
                   invalidateMapPointIntent();
@@ -2466,6 +2488,7 @@ export default function MapPage() {
                 onViewerBackHandlerChange={registerImageViewerBack}
                 onExtent={onPanelExtent}
                 onClose={closeSpotPanel}
+                onPhotoIntent={onPanelPhotoIntent}
                 onRecover={() => void spotOverview.refetch()}
             onSkyRecover={() => void spotSky.refetch()}
                 onFavorite={() => void toggleFavorite(selected.spotId)}

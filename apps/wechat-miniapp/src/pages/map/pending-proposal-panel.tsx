@@ -10,7 +10,7 @@ import { currentDraftUserId, getContributionMedia } from "@/services/api-client"
 import type { SpotPanelExtent, SpotPanelPhase } from "./spot-panel";
 import { pendingProposalPanelValues } from "./pending-proposal-model";
 
-export function PendingProposalPanel({ submission, variant = "PENDING", extent, documentScrollEnabled, phase, onExtent, onClose, onCloud, onEdit,
+export function PendingProposalPanel({ submission, variant = "PENDING", extent, documentScrollEnabled, phase, onExtent, onClose, onCloud, onEdit, onPhotoIntent,
   onHandleTouchStart, onHandleTouchMove, onHandleTouchEnd, onHandleTouchCancel, onViewerBackHandlerChange }: {
   submission: ContributionSubmission;
   variant?: "DRAFT" | "PENDING";
@@ -19,6 +19,7 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   phase: SpotPanelPhase;
   onExtent: (extent: SpotPanelExtent) => void;
   onClose: () => void;
+  onPhotoIntent: () => Promise<boolean>;
   onCloud?: () => void;
   onEdit?: () => void;
   onHandleTouchStart: (event: unknown) => void;
@@ -38,6 +39,8 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   const owner = currentDraftUserId();
   const mediaKey = model.media.map(item => item.uploadId).join("|");
   const mediaScope = `${owner ?? "none"}:${submission.submissionId}:${mediaKey}`;
+  const currentMediaScope = useRef(mediaScope);
+  currentMediaScope.current = mediaScope;
   const galleryPosition = useSpotMediaGalleryPosition(mediaScope);
   const documentPosition = useSpotMediaDocumentPosition(`${owner ?? "none"}:${submission.submissionId}`);
   useHiddenNativeScrollbar("spot-proposal-scroll", extent !== "small", `${mediaScope}:${extent}`);
@@ -138,10 +141,16 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
                 const photo = mediaState[item.uploadId];
                 return <Button id={`spot-media-source-${index}`} className="spot-panel__media-slide" key={item.uploadId}
                   ariaLabel={`查看${item.label} ${index + 1}，共 ${model.media.length} 张`}
-                  onClick={() => { documentPosition.remember(); galleryPosition.remember(); setViewerIndex(index); loadMedia(index, photo?.state === "error"); }}>
+                  onClick={() => { const requestedScope = currentMediaScope.current;
+                    documentPosition.remember(); galleryPosition.remember();
+                    void onPhotoIntent().then(accepted => {
+                    if (!accepted || currentMediaScope.current !== requestedScope) return;
+                    setViewerIndex(index); loadMedia(index, photo?.state === "error");
+                  }); }}>
                   {photo?.state === "ready" && photo.src
                     ? <Image className="spot-panel__media-image" src={photo.src} mode="aspectFill" lazyLoad ariaLabel={item.label} />
                     : <View className="spot-panel__proposal-media-placeholder"><Text>{item.label}</Text><Text>{photo?.state === "error" ? "照片暂时无法读取" : "正在读取照片…"}</Text></View>}
+                  {photo?.state === "ready" && photo.src ? <Text className="spot-panel__red-photo-label" aria-hidden="true">{item.label}</Text> : null}
                   <Text className="spot-panel__media-caption">{index + 1} / {model.media.length}</Text>
                 </Button>;
               })}

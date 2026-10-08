@@ -14,7 +14,7 @@ test("sample media is visible only in the explicit fixture lane", () => {
   assert.equal(mediaIsRenderable({ ...sample, license: "" }, true), false);
 });
 
-test("site and facility photo entry retain the actual scrolled document before mounting the viewer", () => {
+test("site and facility photo entry retain the actual scrolled document before mounting the viewer", async () => {
   const source = ts.createSourceFile("spot-panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let openPhoto = "", onScroll = "";
   const visit = (node: ts.Node) => {
@@ -34,10 +34,12 @@ test("site and facility photo entry retain the actual scrolled document before m
       terrainOffset: { current: null }, astronomyOffset: { current: null }, scrollMeasureTimer: { current: null },
       setTimeout: () => 1, clearTimeout() {}, setLayoutVersion() {}, setSection() {}, setSectionRequest() {}, setScrollAnchor() {},
       galleryPosition: { remember() {} }, setViewerKind() {}, setViewerIndex: () => commands.push({ kind: "open" }),
+      onPhotoIntent: async () => true, currentPhotoScope: { current: "spot:a:photos" },
       documentPosition: { record(value: number) { top = value; }, remember() { commands.push({ kind: "scroll", top }); } },
       setRestoredScrollTop: (top: number) => commands.push({ kind: "scroll", top }),
     });
     handlers.recordScroll({ detail: { scrollTop: 440 } }); handlers.openPhoto(kind, 0);
+    await Promise.resolve();
     assert.deepEqual(commands, [{ kind: "scroll", top: 440 }, { kind: "open" }]);
   }
 });
