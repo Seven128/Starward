@@ -349,7 +349,7 @@ export default function SettingsPage() {
         title: "账户已删除",
         content:
           !localCleanupComplete
-            ? "账户和会话已在服务端撤销，本地数据未能全部清除。请通过微信清理本小程序的数据后重新进入。"
+            ? "账户和会话已在服务端撤销，本机清理尚未全部确认。重新进入后若仍显示旧账户内容，可通过微信清理本小程序的数据。"
             : response.data.mediaCleanupState === "QUEUED"
             ? "身份和会话已撤销；投稿媒体清理已进入可靠队列。"
             : "身份、会话和可删除账户数据已移除。",
@@ -368,7 +368,7 @@ export default function SettingsPage() {
         body: accountDeleted
           ? localCleanupComplete
             ? "账户删除已完成，本机会话已清除。请退出小程序后重新进入。"
-            : "账户删除已完成，本地数据未能全部清除。请通过微信清理本小程序的数据后重新进入。"
+            : "账户和会话已在服务端撤销，本机清理尚未全部确认。重新进入后若仍显示旧账户内容，可通过微信清理本小程序的数据。"
           : `${errorMessage(error)}；本机状态和登录会话保持不变，可重试。`,
         dismissible: true,
         dedupeKey: "settings-account-delete-failed",

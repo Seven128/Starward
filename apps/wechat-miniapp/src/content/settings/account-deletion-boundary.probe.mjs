@@ -44,7 +44,7 @@ assert.ok(resetMethod);
 const page = settingsSource.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SettingsPage");
 assert.ok(page?.body);
 const pageCode = compile(`function PageProbe(){${page.body.statements.filter(node => !ts.isReturnStatement(node)).map(node => node.getText(settingsSource)).join("\n")}\nreturn {deleteAccount};}\nPageProbe();`);
-const apiCode = compile(declarations(apiSource, ["SESSION_STORAGE_KEY", "INSTALLATION_STORAGE_KEY", "SESSION_EXPIRY_SKEW_MS", "readStoredSession", "clearStoredSession", "markAccountErased", "currentDraftUserId", "ensureSession", "accountReauthentication", "deleteAccount"]) + "\n({deleteAccount,ensureSession,currentDraftUserId,erased:()=>[...erasedStoredAccountIds]});");
+const apiCode = compile(declarations(apiSource, ["SESSION_STORAGE_KEY", "INSTALLATION_STORAGE_KEY", "SESSION_EXPIRY_SKEW_MS", "pendingErasedInstallation", "nativeSessionOwner", "settleErasedInstallation", "readStoredSession", "clearStoredSession", "markAccountErased", "currentDraftUserId", "ensureSession", "accountReauthentication", "deleteAccount"]) + "\n({deleteAccount,ensureSession,currentDraftUserId,erased:()=>[...erasedStoredAccountIds]});");
 const tick = () => new Promise(done => setImmediate(done));
 const A = "synthetic:A", B = "synthetic:B";
 const AUTH = "starward.wechat-miniapp.auth.current", INSTALL = "starward.wechat-miniapp.installation.current";

@@ -17,6 +17,6 @@ test('server deletion success clears the session before result UI and is never r
   await run();
   if(failure==='api'){assert.deepEqual(calls,['api']);assert.equal(notices[0].title,'账户未删除');}
   else if(failure.startsWith('account-switched')){assert.deepEqual(calls,['api']);assert.equal(notices.length,0);}
-  else{assert.deepEqual(calls.slice(0,2),['api','result']);if(['result-modal','navigation','cleanup-navigation'].includes(failure)){assert.match(notices[0].title,/账户已删除/);assert.doesNotMatch(notices[0].body,/会话保持不变/);}else assert.equal(notices.length,0);if(failure.includes('cleanup'))assert.match(resultBodies[0]!,/本地.*未能/);}
+  else{assert.deepEqual(calls.slice(0,2),['api','result']);if(['result-modal','navigation','cleanup-navigation'].includes(failure)){assert.match(notices[0].title,/账户已删除/);assert.doesNotMatch(notices[0].body,/会话保持不变/);if(failure==='cleanup-navigation')assert.match(notices[0].body,/本机清理尚未全部确认/);}else assert.equal(notices.length,0);if(failure.includes('cleanup'))assert.match(resultBodies[0]!,/本机清理尚未全部确认/);}
  }
 });

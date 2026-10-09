@@ -728,6 +728,7 @@ export class PostgresMiniappRepository
         "INSERT INTO users(user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING",
         [userId],
       );
+      await this.#lockActiveAccount(client, userId);
       await client.query(
         `INSERT INTO user_preferences(user_id, payload, revision)
          VALUES ($1, $2, 1)
@@ -793,15 +794,18 @@ export class PostgresMiniappRepository
     tokenDigest: string;
     expiresAt: string;
   }): Promise<void> {
-    await this.pool.query(
-      `INSERT INTO user_sessions(token_digest, user_id, expires_at)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (token_digest) DO UPDATE SET
-         user_id = EXCLUDED.user_id,
-         expires_at = EXCLUDED.expires_at,
-         revoked_at = NULL`,
-      [input.tokenDigest, input.userId, input.expiresAt],
-    );
+    await this.#transaction(async (client) => {
+      await this.#lockActiveAccount(client, input.userId);
+      await client.query(
+        `INSERT INTO user_sessions(token_digest, user_id, expires_at)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (token_digest) DO UPDATE SET
+           user_id = EXCLUDED.user_id,
+           expires_at = EXCLUDED.expires_at,
+           revoked_at = NULL`,
+        [input.tokenDigest, input.userId, input.expiresAt],
+      );
+    });
   }
 
   async resolveSession(tokenDigest: string): Promise<UserId | null> {
@@ -1557,7 +1561,7 @@ export class PostgresMiniappRepository
 
   async saveFormalUploadIntent(userId: UserId, intent: ContributionFormalUploadIntent, idempotencyKey: string) {
     return this.#transaction(async client => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay=await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey); if(replay)return clone(replay);
       await client.query(`INSERT INTO formal_feedback_upload_intents(intent_id,user_id,spot_id,baseline_revision,revision,payload,expires_at,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,[intent.intentId,userId,intent.spotId,intent.baselineRevision,intent.revision,intent,intent.expiresAt,intent.createdAt]);
       await this.#recordMutation(client,{idempotencyKey,operation:"formal-upload-intent.create",response:intent,eventType:"FormalUploadIntentCreated",scopeId:userId,payload:{userId,intentId:intent.intentId,spotId:intent.spotId}}); return clone(intent);
@@ -1566,7 +1570,7 @@ export class PostgresMiniappRepository
 
   async createFormalContributionUpload(userId: UserId, intentId: string, upload: ContributionFormalMediaUpload, expectedRevision: number, idempotencyKey: string) {
     return this.#transaction(async client => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay=await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey); if(replay)return clone(replay);
       const result=await client.query<{revision:number;payload:ContributionFormalUploadIntent;expires_at:string}>("SELECT revision,payload,expires_at FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE",[intentId,userId]); const row=result.rows[0];
       if(!row)throw new Error("formal_upload_intent_not_found"); if(row.revision!==expectedRevision)throw new Error("formal_upload_intent_revision_conflict"); if(Date.parse(row.expires_at)<=Date.now())throw new Error("formal_upload_intent_expired"); if(row.payload.uploads.length>=9)throw new Error("contribution_media_count_invalid");
@@ -1579,7 +1583,7 @@ export class PostgresMiniappRepository
 
   async completeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, completion: { byteSize: number; sha256: string; objectKey: string; uploadedAt: string }, idempotencyKey: string, writeObject: () => Promise<void>) {
     return this.#transaction(async client => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const result = await client.query<{ revision: number; payload: ContributionFormalUploadIntent }>(
         "SELECT revision,payload FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE", [intentId,userId]);
       const row = result.rows[0];
@@ -1608,7 +1612,7 @@ export class PostgresMiniappRepository
 
   async removeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
     return this.#transaction(async client => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey);
       if (replay) return clone(replay);
       const result = await client.query<{ revision: number; payload: ContributionFormalUploadIntent }>(
@@ -1636,7 +1640,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionSubmission>(
         client,
         userId,
@@ -1729,7 +1733,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionSubmission>(client, userId, idempotencyKey);
       if (replay) return clone(replay);
       const result = await client.query<{
@@ -1814,7 +1818,7 @@ export class PostgresMiniappRepository
     replaceUploadId?: ContributionUploadId,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionSubmission>(
         client,
         userId,
@@ -1923,7 +1927,7 @@ export class PostgresMiniappRepository
     writeObject: () => Promise<void>,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const submissionResult = await client.query<{
         user_id: string;
         revision: number;
@@ -2046,7 +2050,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionSubmission>(
         client,
         userId,
@@ -2170,7 +2174,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ContributionFormalSubmitResult> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionFormalSubmitResult>(client, userId, idempotencyKey);
       if (replay) return clone(replay);
       // Serialize the user/spot subject so two first submissions cannot both pass
@@ -2312,7 +2316,7 @@ export class PostgresMiniappRepository
 
   async removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionSubmission>(client, userId, idempotencyKey);
       if (replay) return clone(replay);
       const result = await client.query<{ user_id: string; state: string; revision: number; payload: ContributionSubmission }>(
@@ -3964,7 +3968,7 @@ export class PostgresMiniappRepository
     }
   }
 
-  async #lockContributionOwner(client: PoolClient, userId: UserId) {
+  async #lockActiveAccount(client: PoolClient, userId: UserId) {
     const user = await client.query<{ state: string }>("SELECT state FROM users WHERE user_id=$1 FOR KEY SHARE", [userId]);
     if (user.rows[0]?.state !== "ACTIVE") throw new Error("account_not_active");
   }

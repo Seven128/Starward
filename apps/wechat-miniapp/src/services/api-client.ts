@@ -312,6 +312,47 @@ function installationIdentity() {
   }
 }
 
+let pendingErasedInstallation: { deletedUserId: string; installationId: string } | null = null;
+
+function nativeSessionOwner(value: unknown): string | null {
+  if (typeof value !== "object" || value === null) return null;
+  const userId = (value as Partial<AuthSessionData>).userId;
+  return typeof userId === "string" && userId.trim() ? userId.trim() : null;
+}
+
+function settleErasedInstallation(): boolean {
+  const intent = pendingErasedInstallation;
+  if (!intent) return true;
+  // A pending login may establish a genuine successor. Its own finally retries
+  // this intent, including when an older login was superseded.
+  if (sessionPromise) return false;
+  try {
+    const rawSession = Taro.getStorageSync(SESSION_STORAGE_KEY) as unknown;
+    if (rawSession !== undefined && rawSession !== null && rawSession !== "") {
+      const nativeOwner = nativeSessionOwner(rawSession);
+      if (!nativeOwner) return false;
+      if (nativeOwner !== intent.deletedUserId) {
+        pendingErasedInstallation = null;
+        return true;
+      }
+    }
+    const boundOwner = useAppStore.getState().accountOwnerId;
+    if (boundOwner !== null) {
+      if (boundOwner === intent.deletedUserId) return false;
+      pendingErasedInstallation = null;
+      return true;
+    }
+    // A changed installation belongs to another lifecycle, even when its
+    // login failed or its native credentials cannot yet be verified.
+    if (Taro.getStorageSync(INSTALLATION_STORAGE_KEY) === intent.installationId)
+      Taro.removeStorageSync(INSTALLATION_STORAGE_KEY);
+    pendingErasedInstallation = null;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function resolveSession(
   policy: AuthPolicy,
 ): Promise<AuthSessionData | null> {
@@ -608,6 +649,7 @@ async function ensureSession(force = false): Promise<AuthSessionData> {
     return await pending;
   } finally {
     if (sessionPromise === pending) sessionPromise = null;
+    settleErasedInstallation();
   }
 }
 
@@ -1201,6 +1243,13 @@ export async function exportAccountData(signal?: AbortSignal) {
 
 export async function deleteAccount(onCurrentAccountDeleted?: (userId: string) => void) {
   const { userId: deletedUserId, code } = await accountReauthentication();
+  let installationId: string | null = null;
+  let installationReadComplete = true;
+  try {
+    const stored = Taro.getStorageSync(INSTALLATION_STORAGE_KEY) as unknown;
+    if (typeof stored === "string" && stored) installationId = stored;
+    else if (stored !== undefined && stored !== null && stored !== "") installationReadComplete = false;
+  } catch { installationReadComplete = false; }
   const result = await requestOperation("account-delete", "accountDelete", {
     auth: "REQUIRED",
     reauthenticationCode: code,
@@ -1209,7 +1258,15 @@ export async function deleteAccount(onCurrentAccountDeleted?: (userId: string) =
   }, false, deletedUserId);
   let currentSession: AuthSessionData | null = null;
   let acknowledgementComplete = true;
-  try { currentSession = readStoredSession(); }
+  // Ownership checks must not expire or unbind B while acknowledging A. The
+  // normal session reader may retire expired credentials, even for a known B.
+  const hasSuccessor = () => {
+    const nativeOwner = nativeSessionOwner(Taro.getStorageSync(SESSION_STORAGE_KEY));
+    const boundOwner = useAppStore.getState().accountOwnerId;
+    return (nativeOwner !== null && nativeOwner !== deletedUserId) ||
+      (typeof boundOwner === "string" && boundOwner !== deletedUserId);
+  };
+  try { if (!hasSuccessor()) currentSession = readStoredSession(); }
   catch { acknowledgementComplete = false; }
   const resetCurrentAccount = currentSession?.userId === deletedUserId;
   if (resetCurrentAccount) {
@@ -1217,16 +1274,13 @@ export async function deleteAccount(onCurrentAccountDeleted?: (userId: string) =
     // cleanup from an external account departure. UI cannot block revocation.
     try { onCurrentAccountDeleted?.(deletedUserId); } catch { acknowledgementComplete = false; }
   }
-  let localCleanupComplete = acknowledgementComplete;
+  let localCleanupComplete = acknowledgementComplete && installationReadComplete;
   try { localCleanupComplete = useAppStore.getState().resetAfterAccountDeletion(deletedUserId) && localCleanupComplete; }
   catch { localCleanupComplete = false; }
   markAccountErased(deletedUserId);
   try {
     const nativeSession = Taro.getStorageSync(SESSION_STORAGE_KEY) as unknown;
-    const nativeOwner = typeof nativeSession === "object" && nativeSession !== null &&
-      typeof (nativeSession as Partial<AuthSessionData>).userId === "string" &&
-      (nativeSession as AuthSessionData).userId.trim()
-      ? (nativeSession as Partial<AuthSessionData>).userId : null;
+    const nativeOwner = nativeSessionOwner(nativeSession);
     if (nativeOwner === deletedUserId) Taro.removeStorageSync(SESSION_STORAGE_KEY);
     else if (nativeSession !== undefined && nativeSession !== null && nativeSession !== "" && !nativeOwner)
       localCleanupComplete = false;
@@ -1243,18 +1297,12 @@ export async function deleteAccount(onCurrentAccountDeleted?: (userId: string) =
   catch { localCleanupComplete = false; }
   let localAccountReset = false;
   try {
-    localAccountReset = resetCurrentAccount && currentDraftUserId() === null &&
+    localAccountReset = resetCurrentAccount && !hasSuccessor() && currentDraftUserId() === null &&
       useAppStore.getState().accountOwnerId === null;
   } catch { localCleanupComplete = false; }
-  // A successor may establish its identity while cache persistence waits.
-  // Rotate the installation only when no such session/login owns it; a failed
-  // native read is not evidence that the installation is still ours to remove.
-  if (localAccountReset && !sessionPromise) {
-    try {
-      const nativeSession = Taro.getStorageSync(SESSION_STORAGE_KEY) as Partial<AuthSessionData> | null;
-      if (!nativeSession || nativeSession.userId === deletedUserId)
-        Taro.removeStorageSync(INSTALLATION_STORAGE_KEY);
-    } catch { localCleanupComplete = false; }
+  if (localAccountReset && installationId) {
+    pendingErasedInstallation = { deletedUserId, installationId };
+    localCleanupComplete = settleErasedInstallation() && localCleanupComplete;
   }
   return { ...result, localAccountReset, localCleanupComplete };
 }

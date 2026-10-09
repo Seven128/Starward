@@ -220,14 +220,16 @@ test("missing or unreadable auth hides mounted private state and same-account re
     store.getState().replacePlans([{ planId: "plan:a" }] as never);
     store.getState().setObservationContext(validObservationContext as never);
     const api = ts.createSourceFile("api-client.ts", readFileSync(new URL("../services/api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
-    const names = ["readStoredSession", "ensureSession", "ensureFavoriteOwner"];
+    const names = ["readStoredSession", "nativeSessionOwner", "settleErasedInstallation", "ensureSession", "ensureFavoriteOwner"];
     const code = names.map(name => {
       const declaration = api.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === name);
       assert.ok(declaration);
       return declaration.getText(api).replace(/^export /u, "");
     }).join("\n");
+    const installationOwner = api.statements.find(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(item => item.name.getText(api) === "pendingErasedInstallation"));
+    assert.ok(installationOwner);
     let unreadable = false;
-    const run = vm.runInNewContext(ts.transpileModule(code + "\nensureFavoriteOwner;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    const run = vm.runInNewContext(ts.transpileModule(installationOwner.getText(api) + "\n" + code + "\nensureFavoriteOwner;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
       SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, erasedStoredAccountIds: new Set(), invalidatedStoredSession: null, sessionPromise: null,
       useAppStore: store, requestOperation: async () => { throw Error("synthetic offline"); },
       Taro: { getStorageSync: () => { if (unreadable) throw Error("synthetic read failed"); return storage.session; } },

@@ -11,12 +11,16 @@ import { transportHarness } from "./api-request-test-support";
 
 const source = ts.createSourceFile("api.ts", readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
 function codeFor(names: string[], expression: string) {
+  const needsInstallationOwner = names.some(name => name === "deleteAccount" || name === "ensureSession");
+  if (needsInstallationOwner) names = ["nativeSessionOwner", "settleErasedInstallation", ...names];
   const declarations = names.map(name => {
     const node = source.statements.find(n => ts.isFunctionDeclaration(n) && n.name?.text === name);
     assert.ok(node);
     return node.getText(source).replace(/^export /u, "");
   });
-  return ts.transpileModule(declarations.join("\n") + "\n" + expression, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
+  const installationOwner = needsInstallationOwner ? source.statements.find(n => ts.isVariableStatement(n) && n.declarationList.declarations.some(d => d.name.getText(source) === "pendingErasedInstallation")) : undefined;
+  if (needsInstallationOwner) assert.ok(installationOwner);
+  return ts.transpileModule((installationOwner?.getText(source) ?? "") + "\n" + declarations.join("\n") + "\n" + expression, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
 }
 
 function loadSessionRuntime(login: (attempt: number) => Promise<AuthSessionData> = async attempt => ({
@@ -368,7 +372,7 @@ test("deletion receipts clean only the initiating account after an account switc
         assert.equal(deleted, "a"); if (owner === deleted) owner = null; return true;
       } }) },
       markAccountErased: (userId: string) => assert.equal(userId, "a"),
-      Taro: { getStorageSync: (key: string) => key === "auth" && !switched ? { userId: "a" } : null, getStorageInfoSync: () => ({ keys: ["draft:a", "draft:b"] }), removeStorageSync: (key: string) => {
+      Taro: { getStorageSync: (key: string) => key === "installation" ? "synthetic-installation" : key === "auth" && !switched ? { userId: "a" } : null, getStorageInfoSync: () => ({ keys: ["draft:a", "draft:b"] }), removeStorageSync: (key: string) => {
         removed.push(key); if (key === "auth") cleared++;
       } }, SESSION_STORAGE_KEY: "auth",
       planDraftBelongsTo: belongs, contributionDraftBelongsTo: belongs, contributionSubmitBelongsTo: belongs,
@@ -466,6 +470,86 @@ test("an old login response completing after erasure cannot rewrite the revoked 
   finishLogin({ data: { userId: "a", accessToken: "synthetic", expiresAt: "2999-01-01" } });
   await rejection;
   assert.equal(writes.length, 0);
+});
+
+test("erasure settles the old installation after rejected or superseded login without clearing a successor", async () => {
+  for (const scenario of ["erased-a", "successor-b", "replaced-pending", "changed-installation", "unknown-session"]) {
+    const native = new Map<string, unknown>([["auth", { userId: "a", accessToken: "original", expiresAt: "2999-01-01" }], ["installation", "original-installation"]]);
+    let owner: string | null = "a", flushStarted!: () => void, finishFlush!: () => void;
+    const flushArrival = new Promise<void>(resolve => { flushStarted = resolve; });
+    const flush = new Promise<void>(resolve => { finishFlush = resolve; });
+    const logins: ((userId: string) => void)[] = [];
+    const none = () => false;
+    const run = vm.runInNewContext(codeFor(["readStoredSession", "clearStoredSession", "markAccountErased", "currentDraftUserId", "ensureSession", "deleteAccount"], "({ensureSession, deleteAccount});"), {
+      SESSION_STORAGE_KEY: "auth", INSTALLATION_STORAGE_KEY: "installation", SESSION_EXPIRY_SKEW_MS: 60_000,
+      erasedStoredAccountIds: new Set(), invalidatedStoredSession: null, sessionPromise: null, MiniappRequestCancelled,
+      installationIdentity: () => "original-installation", accountReauthentication: async () => ({ userId: "a", code: "synthetic" }), idempotencyKey: () => "synthetic",
+      Taro: { getStorageSync: (key: string) => native.get(key), setStorageSync: (key: string, value: unknown) => native.set(key, value), removeStorageSync: (key: string) => native.delete(key), getStorageInfoSync: () => ({ keys: [...native.keys()] }) },
+      useAppStore: { getState: () => ({ accountOwnerId: owner, bindAccount: (next: string | null) => { owner = next; }, resetAfterAccountDeletion: () => { owner = null; return true; } }) },
+      requestOperation: async (_key: string, operation: string) => {
+        if (operation === "accountDelete") return { data: { deleted: true } };
+        if (operation === "capabilitiesGet") return { data: { flags: { WECHAT_AUTH_ENABLED: false } } };
+        return new Promise(resolve => { logins.push(userId => resolve({ data: { userId, accessToken: "synthetic", expiresAt: "2999-01-01" } })); });
+      },
+      planDraftBelongsTo: none, contributionDraftBelongsTo: none, contributionSubmitBelongsTo: none, profileDraftBelongsTo: none, profileSaveBelongsTo: none, importSaveBelongsTo: none, importLocalDraftBelongsTo: none, planChecklistBelongsTo: none, planEventSelectionBelongsTo: none, planSaveBelongsTo: none,
+      miniappQueryClient: { removeQueries: () => undefined }, responseCache: { removeScope: async () => { flushStarted(); await flush; return true; } },
+    }) as { ensureSession(force?: boolean): Promise<AuthSessionData>; deleteAccount(): Promise<{ data: { deleted: boolean }; localAccountReset: boolean; localCleanupComplete: boolean }> };
+    const deletion = run.deleteAccount(); await flushArrival;
+    const pending = run.ensureSession(true).then(value => value.userId, error => error.message);
+    await new Promise<void>(resolve => setImmediate(resolve)); assert.equal(logins.length, 1);
+    finishFlush(); const receipt = await deletion;
+    assert.equal(receipt.data.deleted, true); assert.equal(receipt.localAccountReset, true);
+    assert.equal(receipt.localCleanupComplete, false, "an unresolved login leaves native cleanup unconfirmed");
+    if (scenario === "replaced-pending") {
+      const replacement = run.ensureSession(true).then(value => value.userId, error => error.message);
+      await new Promise<void>(resolve => setImmediate(resolve)); assert.equal(logins.length, 2);
+      logins[0]!("a"); await pending;
+      assert.equal(native.get("installation"), "original-installation", "the older completion cannot clear an installation while the replacement login owns it");
+      logins[1]!("a"); assert.equal(await replacement, "account_identity_revoked");
+    } else {
+      if (scenario === "changed-installation") native.set("installation", "successor-installation");
+      if (scenario === "unknown-session") native.set("auth", { opaque: "unclaimed" });
+      logins[0]!(scenario === "successor-b" ? "b" : "a"); await pending;
+    }
+    if (scenario === "erased-a" || scenario === "replaced-pending") {
+      assert.equal(native.has("installation"), false, scenario + " must release the deleted installation after the last login settles");
+      assert.equal(native.has("auth"), false); assert.equal(owner, null);
+    } else {
+      assert.equal(native.get("installation"), scenario === "changed-installation" ? "successor-installation" : "original-installation");
+      if (scenario === "successor-b") { assert.equal((native.get("auth") as AuthSessionData).userId, "b"); assert.equal(owner, "b"); }
+      if (scenario === "unknown-session") assert.deepEqual(native.get("auth"), { opaque: "unclaimed" });
+    }
+  }
+});
+
+test("late deletion preserves an established successor even if its credentials expire during cache cleanup", async () => {
+  const native = new Map<string, unknown>([["auth", { userId: "a", accessToken: "original", expiresAt: "2999-01-01" }], ["installation", "original-installation"]]);
+  let owner: string | null = "a", flushStarted!: () => void, finishFlush!: () => void;
+  const arrival = new Promise<void>(resolve => { flushStarted = resolve; });
+  const flush = new Promise<void>(resolve => { finishFlush = resolve; });
+  const none = () => false;
+  const run = vm.runInNewContext(codeFor(["readStoredSession", "clearStoredSession", "markAccountErased", "currentDraftUserId", "ensureSession", "deleteAccount"], "({ensureSession, deleteAccount});"), {
+    SESSION_STORAGE_KEY: "auth", INSTALLATION_STORAGE_KEY: "installation", SESSION_EXPIRY_SKEW_MS: 60_000,
+    erasedStoredAccountIds: new Set(), invalidatedStoredSession: null, sessionPromise: null, MiniappRequestCancelled,
+    installationIdentity: () => "original-installation", accountReauthentication: async () => ({ userId: "a", code: "synthetic" }), idempotencyKey: () => "synthetic",
+    Taro: { getStorageSync: (key: string) => native.get(key), setStorageSync: (key: string, value: unknown) => native.set(key, value), removeStorageSync: (key: string) => native.delete(key), getStorageInfoSync: () => ({ keys: [...native.keys()] }) },
+    useAppStore: { getState: () => ({ accountOwnerId: owner, bindAccount: (next: string | null) => { owner = next; }, resetAfterAccountDeletion: () => { owner = null; return true; } }) },
+    requestOperation: async (_key: string, operation: string) => operation === "accountDelete" ? { data: { deleted: true } }
+      : operation === "capabilitiesGet" ? { data: { flags: { WECHAT_AUTH_ENABLED: false } } }
+      : { data: { userId: "b", accessToken: "successor", expiresAt: "2999-01-01" } },
+    planDraftBelongsTo: none, contributionDraftBelongsTo: none, contributionSubmitBelongsTo: none, profileDraftBelongsTo: none, profileSaveBelongsTo: none, importSaveBelongsTo: none, importLocalDraftBelongsTo: none, planChecklistBelongsTo: none, planEventSelectionBelongsTo: none, planSaveBelongsTo: none,
+    miniappQueryClient: { removeQueries: () => undefined }, responseCache: { removeScope: async () => { flushStarted(); await flush; return true; } },
+  });
+  const deletion = run.deleteAccount(); await arrival;
+  const successor = await run.ensureSession(true);
+  assert.equal(successor.userId, "b"); assert.equal(owner, "b");
+  native.set("auth", { ...successor, expiresAt: "2001-01-01" });
+  finishFlush(); const receipt = await deletion;
+  assert.equal(receipt.data.deleted, true);
+  assert.equal(receipt.localAccountReset, false, "A completion cannot claim B's departure as its own reset");
+  assert.equal(native.get("installation"), "original-installation");
+  assert.equal((native.get("auth") as AuthSessionData).userId, "b");
+  assert.equal(owner, "b");
 });
 
 test("revoking another identity cannot make an earlier erased native session valid again", () => {
