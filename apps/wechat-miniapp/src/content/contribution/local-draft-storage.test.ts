@@ -49,6 +49,68 @@ test("cached requested draft cannot erase recovery loaded earlier in the same ef
   }
 });
 
+test("a withdrawn copy left by failed cleanup does not block the next requested draft", () => {
+  const localSource = ts.createSourceFile("local.ts", readFileSync(new URL("./use-local-draft.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const localDeclaration = localSource.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useLocalContributionDraft");
+  const formSource = ts.createSourceFile("form.ts", readFileSync(new URL("./use-contribution-form.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  let retireEffect = "", requestedEffect = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && node.expression.getText(formSource) === "useEffect") {
+      const body = node.arguments[0]?.getText(formSource) ?? "";
+      if (body.includes("withdrawnBase")) retireEffect = body;
+      if (body.includes("appliedRequestedDraft.current =")) requestedEffect = body;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(formSource);
+  assert.ok(localDeclaration && requestedEffect);
+  assert.ok(retireEffect, "confirmed withdrawal must retire an obsolete recovery copy before loading the next draft");
+  const model = ts.createSourceFile("model.ts", readFileSync(new URL("./contribution-model.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const stateDeclaration = model.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "contributionSubmissionState");
+  assert.ok(stateDeclaration);
+  const contributionSubmissionState = vm.runInNewContext(ts.transpileModule(stateDeclaration.getText(model).replace(/^export /, "") + "\ncontributionSubmissionState;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText);
+  const empty = { schema: 1, baseSubmissionId: null, baseRevision: null, spotId: "", spotName: "", kind: "NEW_SPOT_PROPOSAL", topics: ["OTHER"], date: "", time: "", detail: "", candidateName: "", candidateRegion: "", latitude: "", longitude: "", rightsConfirmed: false, preciseLocationConsent: false };
+  const abandoned = { ...empty, baseSubmissionId: "contribution:withdrawn", baseRevision: 1, detail: "删除已批准但本机清理失败留下的输入" };
+  const next = { ...empty, baseSubmissionId: "contribution:next", baseRevision: 3, detail: "另一份原草稿的保存内容" };
+  for (const scenario of ["WITHDRAWN", "DRAFT", "CHANGES_REQUESTED", "REJECTED", "PENDING_REVIEW", "ACCEPTED", "missing", "other-id", "other-owner", "hidden", "clear-failed"] as const) {
+    let owner = "a", failRemoval = scenario === "clear-failed", stored: unknown = abandoned;
+    let cursor = 0, stateCursor = 0, applied = 0, currentValue: unknown = empty, effects: Array<() => unknown> = [];
+    const refs: Array<{ current: unknown }> = [], states: unknown[] = [];
+    const hook = vm.runInNewContext(ts.transpileModule(localDeclaration.getText(localSource).replace(/^export /, "") + "\nuseLocalContributionDraft;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+      Taro: { getStorageSync: () => stored, setStorageSync: (_key: string, input: unknown) => { stored = input; }, removeStorageSync: () => { if (failRemoval) throw Error("storage unavailable"); stored = undefined; } },
+      currentDraftUserId: () => owner, contributionDraftKey, parseLocalContributionDraft,
+      useRef: (initial: unknown) => refs[cursor++] ?? (refs[cursor - 1] = { current: initial }),
+      useState: (initial: unknown) => { const index = stateCursor++; if (!(index in states)) states[index] = initial; return [states[index], (value: unknown) => { states[index] = value; }]; },
+      useEffect: (effect: () => unknown) => effects.push(effect), useDidHide() {}, setTimeout: () => 1, clearTimeout() {},
+    });
+    const context = vm.createContext({
+      pageVisible: scenario !== "hidden", ownerChanged: false, currentDraftUserId: () => owner,
+      submissions: scenario === "missing" ? [] : [{ submissionId: scenario === "other-id" ? "contribution:unrelated" : abandoned.baseSubmissionId, submissionState: ["other-id", "other-owner", "hidden", "clear-failed"].includes(scenario) ? "WITHDRAWN" : scenario }],
+      contributionSubmissionState, localDraft: null as ReturnType<typeof import("./use-local-draft").useLocalContributionDraft> | null,
+      requestedSubmissionId: next.baseSubmissionId, matchingDraft: { submissionId: next.baseSubmissionId }, draft: null,
+      appliedRequestedDraft: { current: "" }, applyDraft: () => { applied++; context.localDraft!.markSaved(next as never); currentValue = next; context.draft = { submissionId: next.baseSubmissionId }; },
+    });
+    const retire = vm.runInContext(ts.transpileModule(`(${retireEffect});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, context);
+    const applyRequested = vm.runInContext(ts.transpileModule(`(${requestedEffect});`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, context);
+    const render = () => { cursor = 0; stateCursor = 0; effects = []; context.localDraft = hook(currentValue, "", false); effects.forEach(effect => effect()); retire(); applyRequested(); return context.localDraft!; };
+    render();
+    if (scenario === "other-owner") owner = "b";
+    const current = render();
+    if (scenario === "WITHDRAWN") {
+      assert.equal(stored, undefined); assert.equal(applied, 1, "the next original draft must load without manual dismissal of deleted input");
+      assert.equal(render().recovery, null);
+    } else {
+      assert.deepEqual(stored, abandoned, `${scenario} must not authorize erasing an independent recovery copy`);
+      assert.equal(applied, 0);
+      if (scenario === "clear-failed") {
+        assert.equal(render().storageError, true); failRemoval = false;
+        context.submissions = [...context.submissions];
+        render(); assert.equal(stored, undefined); assert.equal(applied, 1, "a refreshed terminal record permits cleanup when storage works again");
+      }
+    }
+  }
+});
+
 test("hiding a feedback page flushes its own input and never overwrites an unrestored copy", () => {
   const source = ts.createSourceFile("local.ts", readFileSync(new URL("./use-local-draft.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const declaration = source.statements.find((node) => ts.isFunctionDeclaration(node) && node.name?.text === "useLocalContributionDraft");

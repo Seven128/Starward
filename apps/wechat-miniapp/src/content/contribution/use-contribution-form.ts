@@ -263,6 +263,14 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     setPhase(nextPhase);
   };
 
+  useEffect(() => {
+    const baseId = localDraft.recovery?.baseSubmissionId;
+    if (!baseId || !pageVisible || ownerChanged || currentDraftUserId() !== localDraft.owner) return;
+    const withdrawnBase = submissions.find(item => item.submissionId === baseId && contributionSubmissionState(item) === "WITHDRAWN");
+    // A confirmed withdrawal retires its input even if native cleanup failed on the deleting page.
+    if (withdrawnBase) localDraft.clear();
+  }, [localDraft.recovery, ownerChanged, pageVisible, submissions]);
+
   const appliedRequestedDraft = useRef("");
   useEffect(() => {
     // Local hydration runs earlier in this commit, before its recovery state rerenders.
