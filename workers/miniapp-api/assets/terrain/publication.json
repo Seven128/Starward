@@ -33,6 +33,25 @@
     "minimum": -69.7,
     "maximum": 1268.4
   },
+  "elevationColorEncoding": {
+    "format": "starward-terrain-elevation-color-v1",
+    "minimumM": -20.0,
+    "maximumM": 880.0,
+    "lowRgb": [
+      215,
+      224,
+      207
+    ],
+    "highRgb": [
+      112,
+      139,
+      104
+    ],
+    "alpha": 224,
+    "clipping": "CLAMP",
+    "shading": "SYNTHETIC_HILLSHADE",
+    "imageSha256": "5e1a3b6f4bdc827cd720c643f2ea4c3eb6876af9cf6f163c6cffb1f5c8678654"
+  },
   "validPixelPercent": 99.34,
   "image": {
     "file": "glo30-greater-bay-area-85km.png",

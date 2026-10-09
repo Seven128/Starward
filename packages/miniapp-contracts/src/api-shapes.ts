@@ -285,6 +285,19 @@ export interface TerrainLightCell {
   unit: "nW/cm²/sr";
 }
 
+/** Base elevation colour before synthetic hillshade, alpha blending and display themes. */
+export interface TerrainElevationColorEncoding {
+  format: "starward-terrain-elevation-color-v1";
+  imageSha256: string;
+  minimumM: number;
+  maximumM: number;
+  lowRgb: readonly [number, number, number];
+  highRgb: readonly [number, number, number];
+  alpha: number;
+  clipping: "CLAMP";
+  shading: "SYNTHETIC_HILLSHADE";
+}
+
 export interface TerrainOverlayData {
   state: TerrainProjectionState;
   /** Missing coverage has no failureCode; failures remain independently recoverable. */
@@ -303,6 +316,8 @@ export interface TerrainOverlayData {
   imageUrl: string | null;
   imageBoundsGcj02: { west: number; south: number; east: number; north: number } | null;
   elevationM: { minimum: number; maximum: number } | null;
+  /** Absent on older servers; null when no verified encoding is published or covered. */
+  elevationColorEncoding?: TerrainElevationColorEncoding | null;
   coverageLabel: string;
   limitations: readonly string[];
   /** Source and redistribution notices for the derived terrain product. */

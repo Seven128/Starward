@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import type { SourceSummary, TerrainOverlayData, TerrainOverlayRequest } from "@starward/miniapp-contracts";
+import type { SourceSummary, TerrainElevationColorEncoding, TerrainOverlayData, TerrainOverlayRequest } from "@starward/miniapp-contracts";
 
 export const COPERNICUS_DEM_LICENSE_URL = "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM";
 export const COPERNICUS_DEM_DOI = "10.5270/ESA-c5d3d65";
@@ -27,6 +27,7 @@ export interface TerrainPublication {
   maximumRadiusKm: number;
   boundsGcj02: { west: number; south: number; east: number; north: number };
   elevationM: { minimum: number; maximum: number };
+  elevationColorEncoding?: TerrainElevationColorEncoding;
   validPixelPercent: number;
   image: { file: string; sha256: string; byteSize: number; width: number; height: number };
   sources: Array<{ tileId: string; url: string; sha256: string; byteSize: number; etag: string | null }>;
@@ -41,7 +42,7 @@ const sha256Pattern = /^[a-f0-9]{64}$/u;
 const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
 const nonEmpty = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0;
 
-function validatePublication(value: TerrainPublication) {
+export function validateTerrainPublication(value: TerrainPublication) {
   const bounds = value.boundsGcj02;
   const center = value.centerGcj02;
   const image = value.image;
@@ -80,12 +81,24 @@ function validatePublication(value: TerrainPublication) {
     || !Array.isArray(value.unavailableSourceTiles)
     || !Array.isArray(value.limitations) || value.limitations.length === 0 || value.limitations.some(limit => !nonEmpty(limit))
   ) throw new Error("terrain_publication_invalid");
+  const encoding = value.elevationColorEncoding;
+  const rgb = (channels: unknown) => Array.isArray(channels) && channels.length === 3
+    && channels.every(channel => Number.isInteger(channel) && channel >= 0 && channel <= 255);
+  if (encoding !== undefined && (!encoding
+    || encoding.format !== "starward-terrain-elevation-color-v1"
+    || encoding.imageSha256 !== image.sha256
+    || !finite(encoding.minimumM) || !finite(encoding.maximumM)
+    || encoding.minimumM >= encoding.maximumM || !finite(encoding.maximumM - encoding.minimumM)
+    || !rgb(encoding.lowRgb) || !rgb(encoding.highRgb)
+    || !Number.isInteger(encoding.alpha) || encoding.alpha < 1 || encoding.alpha > 255
+    || encoding.clipping !== "CLAMP" || encoding.shading !== "SYNTHETIC_HILLSHADE"
+  )) throw new Error("terrain_elevation_color_encoding_invalid");
   return value;
 }
 
 export async function terrainPublication() {
   publicationPromise ??= readFile(manifestUrl, "utf8").then((text) => {
-    return validatePublication(JSON.parse(text) as TerrainPublication);
+    return validateTerrainPublication(JSON.parse(text) as TerrainPublication);
   }).catch(error => {
     publicationPromise = null;
     throw error;
@@ -113,6 +126,9 @@ export function terrainPublicationSource(publication: TerrainPublication): Sourc
       publication.attributionNotice,
       publication.modifiedProductNotice,
       publication.derivation,
+      ...(publication.elevationColorEncoding ? [
+        `地形基色的高程色带为 ${publication.elevationColorEncoding.minimumM} 至 ${publication.elevationColorEncoding.maximumM} m，高程超出色带区间时使用端点颜色；明暗还含合成阴影，不能仅凭颜色读取精确海拔或判断现场光照。`,
+      ] : []),
       ...publication.limitations,
     ],
   };
@@ -165,6 +181,7 @@ export function terrainUnavailable(input: TerrainOverlayRequest, reason: string)
     imageUrl: null,
     imageBoundsGcj02: null,
     elevationM: null,
+    elevationColorEncoding: null,
     coverageLabel: reason,
     limitations: [reason],
     source: null,

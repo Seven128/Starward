@@ -1096,6 +1096,7 @@ export class MiniappService {
       imageUrl: `/v2/terrain/assets/${encodeURIComponent(publication.image.file)}`,
       imageBoundsGcj02: publication.boundsGcj02,
       elevationM: publication.elevationM,
+      elevationColorEncoding: publication.elevationColorEncoding ?? null,
       coverageLabel: `已发布中心周边 ${publication.maximumRadiusKm.toFixed(0)} km，当前查看 ${input.radiusKm.toFixed(1)} km。`,
       limitations: publication.limitations,
       source: terrainSource,

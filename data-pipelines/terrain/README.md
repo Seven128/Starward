@@ -5,6 +5,17 @@ into a bounded GCJ-02 registered RGBA hillshade for the Mini Program. The
 publication manifest carries source URLs, full-file SHA-256 values, derived
 resolution, transform version and honest coverage limits.
 
+`elevationColorEncoding` describes the elevation base colour used by the same
+`_terrain_rgba` producer and is bound to the PNG SHA-256. Version
+`starward-terrain-elevation-color-v1` linearly interpolates RGB `[215, 224, 207]` to
+`[112, 139, 104]` over -20 to 880 m, clamps outside that range, then applies
+synthetic hillshade and alpha 224; missing pixels have alpha 0. These bounds
+describe the colour encoding, not the dataset's measured elevation range.
+Display themes and compositing further affect appearance, so a displayed
+colour cannot be read as an exact height or actual lighting. The API exposes
+the optional descriptor and this explanation through the shared source notice;
+legacy manifests without it remain usable without an invented colour meaning.
+
 The selected objects are the 2021 GLO-30 Public AWS COG mirror of Copernicus
 DEM. GLO-30 is available under the free worldwide licence described on the
 [official collection page](https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM),
