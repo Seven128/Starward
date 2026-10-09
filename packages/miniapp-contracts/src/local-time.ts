@@ -1,3 +1,19 @@
+/** Calendar arithmetic on a civil date, independent of elapsed DST hours. */
+export function shiftCivilDate(localDate: string, days: number) {
+  const [year, month, day] = localDate.split("-").map(Number);
+  const value = new Date(Date.UTC(year!, month! - 1, day! + days));
+  if (!Number.isFinite(value.getTime())) throw new RangeError("observation_date_invalid");
+  return value.toISOString().slice(0, 10);
+}
+
+/** A civil time before noon belongs to the previous observation night. */
+export function observationNightForCivilDate(localDate: string, localTime: string) {
+  const hour = Number(localTime.slice(0, 2));
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23)
+    throw new RangeError("observation_time_invalid");
+  return hour < 12 ? shiftCivilDate(localDate, -1) : localDate;
+}
+
 export function localParts(date: Date, timezone: string) {
   let parts: Intl.DateTimeFormatPart[];
   try {

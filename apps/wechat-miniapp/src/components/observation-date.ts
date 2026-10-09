@@ -1,4 +1,5 @@
-import { zonedLocalToUtc } from "@starward/miniapp-contracts";
+import { observationNightForCivilDate, shiftCivilDate, zonedLocalToUtc } from "@starward/miniapp-contracts";
+export { observationNightForCivilDate, shiftCivilDate } from "@starward/miniapp-contracts";
 import {
   calendarDateInTimezone,
   clockTimeInTimezone,
@@ -6,13 +7,6 @@ import {
 
 export const OBSERVATION_DATE_PAST_DAYS = 7;
 export const OBSERVATION_DATE_FUTURE_DAYS = 15;
-
-export function shiftCivilDate(localDate: string, days: number) {
-  const [year, month, day] = localDate.split("-").map(Number);
-  const value = new Date(Date.UTC(year!, month! - 1, day! + days));
-  if (!Number.isFinite(value.getTime())) throw new RangeError("observation_date_invalid");
-  return value.toISOString().slice(0, 10);
-}
 
 export function observationDateOptions(now: Date, timezone: string) {
   const today = calendarDateInTimezone(now, timezone);
@@ -30,13 +24,6 @@ export function observationNightLabel(nightDate: string, at: string, timezone: s
   if (civilDateForInstant(at, timezone) !== nightDate)
     return `${nightDate.slice(5, 7)}月${nightDate.slice(8, 10)}日观测夜`;
   return nightDate < today ? "历史时段" : nightDate === today ? "今晚" : "观测夜";
-}
-
-export function observationNightForCivilDate(localDate: string, localTime: string) {
-  const hour = Number(localTime.slice(0, 2));
-  if (!Number.isInteger(hour) || hour < 0 || hour > 23)
-    throw new RangeError("observation_time_invalid");
-  return hour < 12 ? shiftCivilDate(localDate, -1) : localDate;
 }
 
 export function observationNightForInstant(at: string, timezone: string) {

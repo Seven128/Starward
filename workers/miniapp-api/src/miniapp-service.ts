@@ -1,6 +1,7 @@
 import { CelestialObjectSearchService } from "./celestial-object-search.ts";
 import {
   PLAN_NOTES_MAX_LENGTH,
+  observationNightForCivilDate,
   parsePlanEventOccurrenceIds,
   parsePlanReminders,
   parsePlanTravel,
@@ -2280,7 +2281,7 @@ export class MiniappService {
     const context = await this.observationContexts.resolve({
       location: { kind: "FORMAL_SPOT", spotId: input.spotId },
       routeOriginContextId,
-      localDate: input.localDate,
+      localDate: observationNightForCivilDate(input.localDate, input.localTime),
       selectedAt,
       targetProfile: "DAILY",
     });

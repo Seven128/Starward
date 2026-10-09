@@ -131,6 +131,8 @@ Avatar opens album / camera / cancel actions, then preview and explicit save; ni
 
 ## 观星计划：出行与观测的组织职责
 
+计划保留用户输入的民用日期、当地时刻及由地点时区确定的绝对时刻；其 Observation Context 快照使用中午至次日中午的观测夜日期。民用日期移位和中午归属由 `packages/miniapp-contracts/src/local-time.ts` 的 `shiftCivilDate` / `observationNightForCivilDate` 共同拥有，客户端日期 owner 沿原入口导出；计划保存仅在解析 Context 时转换日期，不改变计划字段或历史记录。
+
 计划列表的“接下来/过往”和“进行中”由有效计划起止时刻决定；前台停留时在下一有效开始或结束边界更新，页面隐藏时释放计时器，返回时重新核对。不能用已选分区或定期轮询的旧标签代替当前时刻状态。无效历史时间仍留在可编辑入口供核对，不计入成就。
 
 列表空态须区分当前分区没有计划与整个列表没有计划；若另一分区有记录，说明其所在分区并提供切换入口，不把“接下来”为空写成“暂无观星计划”。当前点位筛选下只依据该点位的计划判断。
@@ -221,6 +223,8 @@ The fourteen current conditions share one committed filter state and a sheet-loc
 
 The plan’s draft owns its explicit destination, observing start/end, departure arrangement, event links and checklist changes. Browser Observation Context can initialize a new plan but is not the save authority; keep the existing server re-resolution from submitted plan location/time and versioned snapshot, including recoverable origin. Returning from an event or another place must not overwrite the draft. Saving a valid plan does not require weather success; valid plan dates are independent from the -7/+15 weather/sky browsing target and from published event coverage. Date input validity and end-after-start/departure-before-start still apply. Lack of event/weather coverage is unavailable evidence, not a reason to delete or retime a saved plan.
  新建计划从My或点位入口消费浏览Context时，已退休身份必须通过现有重建接口恢复原确认位置、日期、时刻及路线起点；不能GET复活旧可写ID的迟到修改。计划只使用该本地参照，显式点位入口在新起点上解析目标点，不安装到Map、不覆盖草稿；已保存计划仍从版本化快照独立恢复，浏览退休提示不改变其快照。
+
+账号归属的计划保存恢复由 `services/plan-save-retry` 保留同一计划身份、原幂等键和显式输入。重建 Context 后，只有同一保存意图（含地点、当地时间、时段、出发安排、关联事件、提醒、备注、预期版本及时区/路线起点身份）才能持久更新其 Context 引用后重试；改变意图仍核对原请求。服务端先回放原保存回执再解析 Context，客户端随后读取当前计划，不能用历史回执恢复已删除或已更新的记录。恢复信息无法持久化时不得派发请求。
 
 The 2026-09-09 rules for Search, My ongoing plans, arrival/reminder states, sky context and contribution transitions are confirmed product requirements. Their scoped revisions are now consolidated through each page’s ADOPTED.md / CURRENT.md entry under the user’s instruction; unchanged regions retain their previous authority. Production implementation and WEAPP validation remain outstanding.
 

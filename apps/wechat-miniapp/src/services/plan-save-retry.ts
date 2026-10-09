@@ -104,6 +104,13 @@ export function createPlanSaveRetry(storage: Storage, makeKey: () => string, def
       if (!existing && entries.length >= 32) throw new Error("too many pending saves");
       entry = existing ?? { input: value, key: makeKey(), stableIdentity: true };
       if (!existing) entries.push(entry);
+      else if (samePlanSaveIntent(existing.input, value) && existing.input.observationContextId !== value.observationContextId) {
+        // The service replays this same key's receipt before loading Context.
+        // Renew only its transport reference; changed intent still replays the
+        // original request and requires explicit review of the current plan.
+        entry = { ...existing, input: { ...existing.input, observationContextId: value.observationContextId } };
+        entries[entries.indexOf(existing)] = entry;
+      }
       storage.setStorageSync(key, { schema: 1, entries });
     } catch (error) {
       if (error instanceof PlanSaveRecoveryError) throw error;
