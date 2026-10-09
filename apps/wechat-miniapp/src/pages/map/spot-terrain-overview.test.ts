@@ -35,6 +35,34 @@ const base = { state: "AVAILABLE", datasetVersion: "测试高程", imageBoundsGc
   source: { id: "terrain-source", provider: "Copernicus", limitations: ["produced using Copernicus WorldDEM-30"], licenseUrl: "https://example.org/license" },
   lightPollution: { state: "PARTIAL", cells: [{ id: "test-light", radiance: 0, unit: "nW/cm²/sr", label: "测试夜光", color: "#888", boundsGcj02: { west: 114.24, south: 22.54, east: 114.26, north: 22.56 } }], legend: [] } };
 
+test("published terrain colour meaning has its own key and follows only the visible terrain", () => {
+  const h = harness();
+  const encoding = { format: "starward-terrain-elevation-color-v1", minimumM: -20, maximumM: 880,
+    lowRgb: [215, 224, 207], highRgb: [112, 139, 104], alpha: 224, clipping: "CLAMP", shading: "SYNTHETIC_HILLSHADE" };
+  const data = { ...base, state: "PARTIAL", elevationColorEncoding: encoding };
+  h.set({ data: { data }, imagePath: "/local/terrain.png" });
+  let all = nodes(h.render());
+  const key = all.find(node => node.props?.className === "spot-terrain__elevation-key");
+  assert.ok(key, "the source paragraph cannot replace the adopted terrain low-to-high key");
+  assert.match(text(key), /地形.*低.*高/);
+  const swatch = nodes(key).find(node => node.props?.style?.background);
+  assert.match(swatch.props.style.background, /215,224,207/);
+  assert.match(swatch.props.style.background, /112,139,104/);
+  assert.equal(swatch.props.style.opacity, 224 / 255);
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "光污染，已开启").props.onClick();
+  all = nodes(h.render());
+  assert.ok(all.some(node => node.props?.className === "spot-terrain__elevation-key"));
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "地形，已开启").props.onClick();
+  assert.equal(nodes(h.render()).some(node => node.props?.className === "spot-terrain__elevation-key"), false);
+  const unavailable = harness();
+  for (const query of [{ data: { data: base }, imagePath: "/local/terrain.png" },
+    { data: { data }, imagePending: true }, { data: { data }, imageError: new Error("decode") },
+    { data: { data: { ...data, state: "UNAVAILABLE" } }, imagePath: "/local/terrain.png" }]) {
+    unavailable.set(query);
+    assert.equal(nodes(unavailable.render()).some(node => node.props?.className === "spot-terrain__elevation-key"), false);
+  }
+});
+
 test("terrain center follows display mode and preserves independent layer data on return", () => {
   const h = harness(); h.set({ data: { data: base }, imagePath: "/local/terrain.png" });
   for (const [mode, asset] of [

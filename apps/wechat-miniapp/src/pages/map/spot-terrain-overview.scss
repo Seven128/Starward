@@ -35,6 +35,10 @@
 .spot-terrain__legend { --brightness:.5; display:flex; justify-content:center; gap:22rpx; color:var(--text-secondary); font-size:20rpx; }
 .spot-terrain__legend > view { display:flex; align-items:center; gap:7rpx; }
 .spot-terrain__legend > view > view { width:16rpx; height:16rpx; border-radius:50%; }
+.spot-terrain__legends { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12Px; }
+.spot-terrain__elevation-key { display:flex; align-items:center; gap:5Px; }
+.spot-terrain__elevation-key > view { width:28Px; height:5Px; border-radius:2Px; background-color:var(--terrain-bg,#e8ede5); }
+.theme-night .spot-terrain__elevation-key > view { filter:saturate(.7) brightness(.65); }
 .spot-terrain__layer-state { display:block; color:var(--text-tertiary); font-size:20rpx; }
 .spot-terrain__source { display:flex; flex-direction:column; gap:5rpx; padding-top:4rpx; color:var(--text-tertiary); font-size:20rpx; line-height:1.45; }
 .theme-night .spot-terrain__map { filter:saturate(.7) brightness(.65); }
@@ -44,7 +48,7 @@
   --terrain-line:var(--text-primary);
 }
 .theme-observation {
-  .spot-terrain__image,.spot-terrain__light-cell,.spot-terrain__legend > view > view {
+  .spot-terrain__image,.spot-terrain__light-cell,.spot-terrain__legend > view > view,.spot-terrain__elevation-key > view {
     filter:grayscale(1) brightness(var(--brightness,.12)) sepia(1) saturate(6) hue-rotate(340deg) saturate(2);
   }
 }

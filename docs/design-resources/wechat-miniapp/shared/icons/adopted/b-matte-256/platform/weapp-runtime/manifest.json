@@ -15,6 +15,18 @@
   ],
   "format": "RGBA PNG",
   "resampling": "Lanczos",
+  "losslessCompression": {
+    "method": "Zopfli DEFLATE",
+    "iterations": 15,
+    "files": [
+      "bulb--day--default.png",
+      "favorite-satellite--day--default.png",
+      "favorite-star--day--selected.png",
+      "favorite-trail--day--default.png",
+      "layers--day--default.png",
+      "terrain--day--default.png"
+    ]
+  },
   "files": [
     {
       "filename": "account-user--day--default.png",
@@ -99,8 +111,8 @@
     {
       "filename": "bulb--day--default.png",
       "sourceSha256": "f03bc6e4cc91eabff89f3c537ea746b206fcc761732829812cf12da061e271f7",
-      "sha256": "012fe73ddfb5fd8586a4cdfadb48cf632e2437530e8a38595fb1e5b07926be45",
-      "bytes": 17010,
+      "sha256": "7d38ff9241d1b95efee68ccdd8ce86164ef25680b3be174bf9cd8698e37c88d0",
+      "bytes": 15858,
       "outputSize": [
         192,
         192
@@ -259,8 +271,8 @@
     {
       "filename": "favorite-satellite--day--default.png",
       "sourceSha256": "a9f76e0c859b6ead31e68179f4457338312f1d581d416f42dfe0afce93074ec3",
-      "sha256": "1fa2dc9c3fa380e33d4666bb5908da48038d2763507228ab0eb052b24d19e579",
-      "bytes": 7297,
+      "sha256": "c77d6d8e735632f3d75f367e424337bee6bc187c6df2f6c9da10c8e48c892b8e",
+      "bytes": 6778,
       "outputSize": [
         192,
         192
@@ -279,8 +291,8 @@
     {
       "filename": "favorite-star--day--selected.png",
       "sourceSha256": "616c63e736eb4e789e7686b6ff6c03cf364cb6c506ebff83c985717003c0459c",
-      "sha256": "180b4e091aa86769af19da71845c5b9e9568a49882880bbafdad897b605a2776",
-      "bytes": 20754,
+      "sha256": "d69195835ea77f5528d2a72785c379677cfb2e6dacf12126925026316fc067a2",
+      "bytes": 19442,
       "outputSize": [
         192,
         192
@@ -289,8 +301,8 @@
     {
       "filename": "favorite-trail--day--default.png",
       "sourceSha256": "6f0f08a089dca1dcd2348aa0ce2b072f9139d27f7625f12ace727c51c8e33e21",
-      "sha256": "5e0db23e07f4474650614845321a2941bad3ee57596bf8c3223921af8d72f493",
-      "bytes": 12237,
+      "sha256": "42b20ff6eac12864d53c292c6983c73983092e231a6af1831619ea9931dc95bb",
+      "bytes": 11349,
       "outputSize": [
         192,
         192
@@ -349,8 +361,8 @@
     {
       "filename": "layers--day--default.png",
       "sourceSha256": "7332e8d5d39e027e3fce375e8b0654d8eef0f6f2e70292cab2008deb86e2ea76",
-      "sha256": "906d5cabc186cedf3dca4ce51b10cf648dfbf1448753f1b2bb60079410ba5234",
-      "bytes": 20755,
+      "sha256": "9b062c97734f2f8c0b3349bf45b14cb479623f01023b30d6eee9b3cc1af9031f",
+      "bytes": 19785,
       "outputSize": [
         192,
         192
@@ -639,8 +651,8 @@
     {
       "filename": "terrain--day--default.png",
       "sourceSha256": "ae40eff5393a49690ac32b1a6daedcbf8788f4a103c71398e6c3b624a2c80e21",
-      "sha256": "3ed5615583e575f8ffe38a4d83bd4db4e636e2eb31ff751b0c53acb58c6c1ca2",
-      "bytes": 16281,
+      "sha256": "8068b33ed0534652c743a7b28d04738f8c2e35a62f4a9dd467eab5613cd502a0",
+      "bytes": 15292,
       "outputSize": [
         192,
         192

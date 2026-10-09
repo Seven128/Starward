@@ -39,6 +39,7 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
   }, [data?.imageBoundsGcj02, requested]);
   const lightCells = data?.lightPollution.cells ?? [];
   const ready = Boolean(data && data.state !== "UNAVAILABLE" && terrain.imagePath);
+  const encoding = terrainVisible && ready && cropStyle ? data?.elevationColorEncoding : null;
   const notify = useAppStore(state => state.notify);
   const requestFailed = Boolean(terrain.isError || terrain.refreshError);
   const terrainAvailability = terrainLayerAvailability(data?.state, data?.failureCode, requestFailed);
@@ -88,7 +89,12 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
     </View>
     {terrainMissing ? <Text className="spot-terrain__layer-state">地形：当前地区暂无数据</Text> : null}
     {failed && hasPicture ? <SoftButton label="重新读取图层" onClick={() => void terrain.refetch()}>重试</SoftButton> : null}
-    {lightVisible ? data?.lightPollution.state === "UNAVAILABLE" ? <Text className="spot-terrain__layer-state">光污染：{lightFailed ? "暂时无法读取，请重试" : data.lightPollution.coverageLabel}</Text> : <View className="spot-terrain__legend">{data?.lightPollution.legend.map(item => <View key={item.label}><View style={{ backgroundColor: item.color }} /><Text>{item.label}</Text></View>)}</View> : null}
+    <View className="spot-terrain__legends">
+      {encoding ? <View className="spot-terrain__elevation-key" ariaLabel="地形高程基色，低至高">
+        <Text className="type-caption">地形</Text><View aria-hidden="true" style={{ background: `linear-gradient(90deg,rgb(${encoding.lowRgb}),rgb(${encoding.highRgb}))`, opacity: encoding.alpha / 255 }} /><Text className="type-caption">低 — 高</Text>
+      </View> : null}
+      {lightVisible ? data?.lightPollution.state === "UNAVAILABLE" ? <Text className="spot-terrain__layer-state">光污染：{lightFailed ? "暂时无法读取，请重试" : data.lightPollution.coverageLabel}</Text> : <View className="spot-terrain__legend">{data?.lightPollution.legend.map(item => <View key={item.label}><View style={{ backgroundColor: item.color }} /><Text>{item.label}</Text></View>)}</View> : null}
+    </View>
     <View className="spot-terrain__source" data-control="spot-terrain-source">
       {lightVisible && lightCells.length > 0 && data?.lightPollution.source ? <SourceAttribution sources={[data.lightPollution.source]} /> : null}
       {data?.datasetVersion ? <Text>{data.datasetVersion}</Text> : null}
