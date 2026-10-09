@@ -12,8 +12,7 @@ export function panelPresentationAtProgress(progress: number, hasMedia: boolean,
     "--map-chrome-opacity": String(chrome),
     "--map-chrome-offset": `${-10 * (1 - chrome)}rpx`,
     "--panel-media-reveal": String(reveal),
-    "--panel-media-height": `${Math.round(300 * reveal)}rpx`,
-    "--panel-media-margin-top": `${-40 * reveal}rpx`,
+    "--panel-media-height": `${160 * reveal}px`,
     "--panel-handle-band-height": `${Math.round(40 * (1 - reveal))}rpx`,
     "--panel-media-image-offset": `${Math.round(-18 * (1 - reveal))}rpx`,
     "--panel-media-image-scale": String(1.02 - 0.02 * reveal),
@@ -38,11 +37,9 @@ export function panelSpringStyle(frames: readonly { height: number; offset: numb
     const projected = panelPresentationAtProgress(panelHeightProgress(presentation.geometry, height), presentation.hasMedia);
     style[`--ph${index}`] = `${height}px`;
     // Short private slots bound WXSS and bridge payload; the projection above
-    // owns their meaning: media height/reveal/top/gap, image offset/scale, chrome.
+    // owns their meaning: media height/reveal, image offset/scale, chrome.
     style[`--pmh${index}`] = projected.style["--panel-media-height"];
     style[`--pmr${index}`] = String(projected.reveal);
-    style[`--pmt${index}`] = projected.style["--panel-media-margin-top"];
-    style[`--pmg${index}`] = `${12 * projected.reveal}px`;
     style[`--pio${index}`] = projected.style["--panel-media-image-offset"];
     style[`--pis${index}`] = projected.style["--panel-media-image-scale"];
     style[`--pc${index}`] = String(projected.chrome);

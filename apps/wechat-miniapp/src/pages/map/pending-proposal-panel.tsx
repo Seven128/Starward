@@ -5,6 +5,7 @@ import type { ContributionSubmission } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SpotImageViewer, type SpotViewerMedia } from "@/components/spot-image-viewer";
 import { useSpotMediaDocumentPosition, useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
+import { photoStripSlideWidth } from "@/components/spot-media-gallery-geometry";
 import { useHiddenNativeScrollbar } from "@/components/use-hidden-native-scrollbar";
 import { currentDraftUserId, getContributionMedia } from "@/services/api-client";
 import type { SpotPanelExtent, SpotPanelPhase } from "./spot-panel";
@@ -127,13 +128,13 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
         {...(documentPosition.returnTop === undefined ? {} : { scrollTop: documentPosition.returnTop })}
         onScroll={event => documentPosition.record(event.detail.scrollTop)}
         ariaLabel={`${draft ? "草稿" : "审核中"}观星点资料`}>
-        {leadMedia ? <View className="spot-panel__proposal-media" data-control="spot-media-gallery" ariaLabel={`${model.name}提交照片，共${model.media.length}张`}>
+        {leadMedia ? <View className="spot-panel__media spot-panel__proposal-media" data-control="spot-media-gallery" ariaLabel={`${model.name}提交照片，共${model.media.length}张`}>
           <ScrollView id="spot-proposal-media-strip" className="spot-panel__media-strip" scrollX={model.media.length > 1} scrollLeft={galleryPosition.returnLeft} enhanced showScrollbar={false}
             ariaLabel={`${model.name}提交照片`}
             onScroll={(event) => {
               const width = Taro.getWindowInfo().windowWidth || 390;
               galleryPosition.onScroll(event);
-              const start = Math.floor(event.detail.scrollLeft / (width * .68 + 8));
+              const start = Math.floor(event.detail.scrollLeft / (photoStripSlideWidth(width) + 8));
               if (Number.isFinite(start)) setMediaWindowStart(Math.max(0, Math.min(model.media.length - 1, start)));
             }}>
             <View className="spot-panel__media-track">

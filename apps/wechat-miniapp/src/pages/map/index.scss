@@ -1510,7 +1510,6 @@
   --map-chrome-opacity: 1;
   --panel-media-reveal: 0;
   --panel-media-height: 0rpx;
-  --panel-media-margin-top: 0rpx;
   --panel-handle-band-height: 40rpx;
   --panel-media-image-offset: -18rpx;
   --panel-media-image-scale: 1.02;
@@ -1840,7 +1839,6 @@
 }
 .spot-panel .spot-panel__media {
   height: var(--panel-media-height);
-  margin-top: var(--panel-media-margin-top);
   margin-right: -24rpx !important;
   margin-bottom: 16rpx !important;
   margin-left: -24rpx !important;
@@ -1912,15 +1910,6 @@
   padding: 4rpx 0;
 }
 .spot-panel__proposal-note { padding: 12rpx 0 24rpx; }
-.spot-panel__proposal-media {
-  position: relative;
-  height: var(--panel-media-height);
-  margin: var(--panel-media-margin-top) calc(var(--spot-panel-inline-padding) * -1) calc(12Px * var(--panel-media-reveal));
-  overflow: hidden;
-  opacity: var(--panel-media-reveal);
-  transition: height 180ms ease-out, margin 180ms ease-out, opacity 180ms ease-out;
-  background: var(--surface-subtle);
-}
 .spot-panel__proposal-media-placeholder {
   width: 100%;
   height: 100%;
@@ -2732,10 +2721,6 @@
       #{($frame * 2.5)}% {
         height: var(--pmh#{$frame});
         opacity: var(--pmr#{$frame});
-        // The formal full-bleed owner keeps vertical margins at zero. Only
-        // private media consumes the live top offset and bottom gap.
-        margin-top: var(--pmt#{$frame});
-        margin-bottom: var(--pmg#{$frame});
       }
     }
   }
@@ -3346,8 +3331,9 @@
 .spot-panel__media-slide {
   position: relative;
   display: inline-block;
-  flex: 0 0 68vw;
-  width: 68vw;
+  // Adopted 68% of the strip inside its two 12px edge paddings.
+  flex: 0 0 calc(68vw - 16.32Px);
+  width: calc(68vw - 16.32Px);
   max-width: 520Px;
   height: 100%;
   overflow: hidden;

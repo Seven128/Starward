@@ -5,6 +5,30 @@ import { pendingProposalPanelValues } from "./pending-proposal-model.ts";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
 import { emptyCandidateIntake } from "@starward/miniapp-contracts";
+import vm from "node:vm";
+import { photoStripSlideWidth } from "@/components/spot-media-gallery-geometry";
+
+test("private photo loading advances when the next adopted slide enters the strip", () => {
+  const source = ts.createSourceFile("pending-proposal-panel.tsx", readFileSync(new URL("pending-proposal-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let callback: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxOpeningElement(node) && node.attributes.properties.some(attribute => ts.isJsxAttribute(attribute) && attribute.name.getText(source) === "id" && attribute.initializer?.getText(source) === '"spot-proposal-media-strip"')) {
+      const attribute = node.attributes.properties.find(attribute => ts.isJsxAttribute(attribute) && attribute.name.getText(source) === "onScroll") as ts.JsxAttribute;
+      if (attribute.initializer && ts.isJsxExpression(attribute.initializer)) callback = attribute.initializer.expression;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source); assert.ok(callback);
+  const changes: number[] = [];
+  const onScroll = vm.runInNewContext(`(${callback.getText(source)})`, {
+    Taro: { getWindowInfo: () => ({ windowWidth: 390 }) },
+    galleryPosition: { onScroll() {} }, photoStripSlideWidth,
+    model: { media: [{}, {}, {}, {}] }, setMediaWindowStart: (value: number) => changes.push(value),
+  });
+  onScroll({ detail: { scrollLeft: 257 } });
+  assert.deepEqual(changes, [1], "the second 248.88px photo has entered after its 8px gap; loading must not still use 68% of screen width");
+  onScroll({ detail: { scrollLeft: NaN } });assert.deepEqual(changes, [1]);
+});
 
 test("formal and private panel handles remain in the same scroll document as their identity", () => {
   for (const file of ["spot-panel.tsx", "pending-proposal-panel.tsx"]) {

@@ -3,6 +3,12 @@ import test from "node:test";
 import { panelSpringStyle, panelPresentationAtProgress, panelChromeTimeline, PANEL_CSS_STEPS } from "./panel-spring-style";
 import { panelHeightProgress } from "./panel-snap";
 const presentation = { geometry: { small: 220, medium: 350, large: 700, startHeight: 350 }, hasMedia: true };
+test("adopted gallery keeps its 160px region while live reveal remains continuous", () => {
+  assert.equal(panelPresentationAtProgress(1, true).style["--panel-media-height"], "160px");
+  const half = panelPresentationAtProgress(.64, true).style["--panel-media-height"];
+  assert.match(half, /px$/);
+  assert.ok(Math.abs(parseFloat(half) - 80) < 1e-9);
+});
 test("CSS trajectory preserves endpoints, reversal and bounds without per-frame updates", () => {
   const frames = [{height: 350, offset: 0}, {height: 330, offset: .25}, {height: 700, offset: 1}];
   const style = panelSpringStyle(frames, 320, 1, presentation);
@@ -14,7 +20,7 @@ test("CSS trajectory preserves endpoints, reversal and bounds without per-frame 
   assert.notEqual(style["--phn"], panelSpringStyle(frames,320,2,presentation)["--phn"]);
 });
 
-test("release media, private spacing, image and chrome project the same live height through reversal", () => {
+test("release media, image and chrome project the same live height through reversal", () => {
   const frames = [{ height: 350, offset: 0 }, { height: 630, offset: .25 }, { height: 700, offset: .5 }, { height: 350, offset: 1 }];
   const style = panelSpringStyle(frames, 400, 3, presentation);
   for (let i = 0; i <= PANEL_CSS_STEPS; i++) {
@@ -22,8 +28,6 @@ test("release media, private spacing, image and chrome project the same live hei
     const projected = panelPresentationAtProgress(panelHeightProgress(presentation.geometry, height), true);
     assert.equal(style[`--pmh${i}`], projected.style["--panel-media-height"]);
     assert.equal(style[`--pmr${i}`], String(projected.reveal));
-    assert.equal(style[`--pmt${i}`], projected.style["--panel-media-margin-top"]);
-    assert.equal(style[`--pmg${i}`], `${12 * projected.reveal}px`);
     assert.equal(style[`--pio${i}`], projected.style["--panel-media-image-offset"]);
     assert.equal(style[`--pis${i}`], projected.style["--panel-media-image-scale"]);
     assert.equal(style[`--pc${i}`], String(projected.chrome));
@@ -32,12 +36,12 @@ test("release media, private spacing, image and chrome project the same live hei
   assert.equal(style["--pmr20"], "1"); assert.equal(style["--pc20"], "0");
   assert.equal(style["--pmr40"], "0"); assert.equal(style["--pc40"], "1");
   const noMedia = panelSpringStyle(frames, 400, 3, { ...presentation, hasMedia: false });
-  for (let i = 0; i <= PANEL_CSS_STEPS; i++) { assert.equal(noMedia[`--pmh${i}`], "0rpx"); assert.equal(noMedia[`--pmr${i}`], "0"); }
+  for (let i = 0; i <= PANEL_CSS_STEPS; i++) { assert.equal(noMedia[`--pmh${i}`], "0px"); assert.equal(noMedia[`--pmr${i}`], "0"); }
 });
 
 test("media onset and chrome translation remain continuous and semantics follow every native opacity crossing", () => {
-  assert.equal(panelPresentationAtProgress(.5, true).style["--panel-media-margin-top"], "0rpx");
-  assert.ok(Math.abs(parseFloat(panelPresentationAtProgress(.501, true).style["--panel-media-margin-top"])) < .15);
+  assert.equal(panelPresentationAtProgress(.5, true).reveal, 0);
+  assert.ok(panelPresentationAtProgress(.501, true).reveal > 0 && panelPresentationAtProgress(.501, true).reveal < .004);
   assert.ok(Math.abs(parseFloat(panelPresentationAtProgress(.88, true).style["--map-chrome-offset"]) + 5) < 1e-12);
   const style = panelSpringStyle([{height:350,offset:0},{height:700,offset:.5},{height:350,offset:1}], 280, 1, presentation);
   const timeline = panelChromeTimeline(style, 280);

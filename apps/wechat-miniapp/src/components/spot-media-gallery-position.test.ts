@@ -12,6 +12,13 @@ test("paged photo reveals its own thumbnail while one-photo galleries stay fixed
   assert.equal(photoRevealLeft(3, 3, 320), null);
 });
 
+test("photo return centers the adopted strip inside its twelve-pixel edge padding", () => {
+  // The 390px adopted strip has 366px inside its padding; its 68% photo is
+  // 248.88px wide. Centering the second photo must command 198.32px.
+  assert.ok(Math.abs(photoRevealLeft(1, 3, 390)! - 198.32) < 1e-9);
+  assert.ok(Math.abs(photoRevealLeft(1, 3, 320)! - 161.92) < 1e-9);
+});
+
 test("viewer retention captures the current document without replaying ordinary events or another identity", () => {
   let state: number | undefined, ref: any, effect: () => void, currentIdentity = "spot:a";
   const commands: (number | undefined)[] = [], exports: any = {};
