@@ -79,7 +79,7 @@ EOG 小幅夜光地图复用 `SourceAttribution` 的供应方许可短署名，�
 
 The [shared date/calendar/ruler resource](../../../../../docs/design-resources/wechat-miniapp/shared/observation-time/README.md) owns the adopted reusable browser composition and demonstrated motion for the consumers linked from current page entries, within those entries' theme/state scope. Date, slicing and commit semantics remain with the relevant Map and Spot/Sky contracts; production uses the existing Taro component and Observation Context owners. Consumer pages follow this shared owner rather than redeclaring the same resource. Its browser implementation is not WEAPP verification.
 
-`ObservationDateControl` 默认维护日历的原生返回层；同页已有统一弹层返回 owner 时，消费者以 `nativeBackBoundary=false` 交回页面管理。云观星以页面唯一 `NativeBackBoundary` 同时处理日期、天体详情和重叠候选，不能叠挂多个 PageContainer；日期内容和选择仍由公共组件负责。
+`ObservationDateControl` 默认维护日历的原生返回层；同页已有统一弹层返回 owner 时，消费者以 `nativeBackBoundary=false` 交回页面管理。云观星以页面唯一 `NativeBackBoundary` 同时处理日期、天体详情和重叠候选，不能叠挂多个 PageContainer；日期内容和选择仍由公共组件负责。日间日历保留共享采用稿的暖色选中材质，夜间与红光选中日期沿既有 `choice-selected` 表面、边框和文案角色，不把日间亮色 fallback 用于深色主题；两处 Map 消费者继续共用该呈现责任。
 
 `NativeBackBoundary` 持有自定义呈现的原生返回层、单次 leave 委派、确认期间去重及存活时重新布防。Map 复用其既有全屏原生前景容器变体并持续保留事件 Modal 子树；其它消费者仍使用原有隐藏容器生命周期。返回优先级和关闭确认由调用者持有，嵌入表单将媒体交接返回也交给 Map，不能另挂一层。异步委派失败不泄露错误细节，卸载后不重新布防；这一共享实现不承诺各设备上未验证的拦截能力。
 
@@ -166,7 +166,7 @@ Map的云量尺与正式点天文尺在同一观测身份等待新Scene时，只
 - Panel/ruler/map gesture arbitration waits for directional intent, selects exactly one owner and does not transfer mid-gesture. At medium/large, only the actual full-width compact information-panel header band can initiate extent manipulation while it is visible; a scrolled-away band has no residual viewport-top hit region; pointer down or a sub-threshold tap cannot commit an extent. All direct manipulation is interruptible and retargets from live position. The Map bottom owner is exactly `none | spot-panel | layer-sheet | spot-editor`; it cannot expose two active states, and a marker intent while layer is open retargets directly to the new medium panel. Search/media phases, the three-state mode thumb, ruler drag, layer dismissal, disclosure and My flow use causal motion from live presentation rather than remounting or queued timeouts.
 - Day/night/observation retain semantic-role parity. Observation is a closed black/warm-red palette; media is opt-in, skeletons cannot flash white, and system/native boundaries avoid an unowned bright transition.
 
-账号模态的红光蒙层由 `components/modal-scrim.scss` 共用纯黑呈现，设置确认、昵称编辑与头像选项/预览均使用该角色；日间与夜间仍由各自采用材质负责。My 首屏在红光模式用已有账户语义图标代替自动展示的彩色头像，不清除服务端图片、版本、缩放或缓存，回到普通模式仍呈现同一头像。相册/相机沿原亮屏确认进入，提示同时说明彩色头像预览；只有明确选择媒体后才展示预览，缩放条的原生颜色沿当前主题，日间保留本页采用颜色。共享原生返回层的辅助 `PageContainer` 从普通布局流中移出，不能因模态打开而占用资料行的 flex 间距；Map 的可见原生前景子树仍保留其原呈现责任。这些实现责任不替代真机原生返回、媒体权限或连续过程验收。
+应用自有模态的红光蒙层由 `components/modal-scrim.scss` 共用纯黑呈现，设置确认、昵称编辑与头像选项/预览均使用其默认透明度，搜索筛选与共享日历保留各自原透明度；日间与夜间仍由各自采用材质负责。红光筛选的分类激活标记、分类已选标记和确认计数背景沿既有主题角色，不保留蓝色标记或白色计数底。My 首屏在红光模式用已有账户语义图标代替自动展示的彩色头像，不清除服务端图片、版本、缩放或缓存，回到普通模式仍呈现同一头像。相册/相机沿原亮屏确认进入，提示同时说明彩色头像预览；只有明确选择媒体后才展示预览，缩放条的原生颜色沿当前主题，日间保留本页采用颜色。共享原生返回层的辅助 `PageContainer` 从普通布局流中移出，不能因模态打开而占用资料行的 flex 间距；Map 的可见原生前景子树仍保留其原呈现责任。这些实现责任不替代真机原生返回、媒体权限或连续过程验收。
 
 微信原生选点无法随观测红光着色。`components/red-light-handoff.tsx`负责在打开不可着色界面之前显示应用内黑红确认和取消，`services/platform-location.ts`在红光模式只接受消费者已明确确认的交接；当前消费者为 Search 的微信地点选择、计划出发地选择、新增点位地址选择。各消费者仍负责自身页面/账户/草稿身份和异步结果，取消不调用原生选点、不改变当前输入。官方WEAPP 320×700 已抽样确认三处应用内提示、取消，以及 Search 显式继续后才打开微信选点；该模拟器样本不认证真机系统颜色、Back或其它原生交接。此处实现映射不扩大任何视觉候选的采用范围。
 

@@ -1,5 +1,5 @@
-/* Account modals retain their scoped day/night materials. Observation shares
- * the adopted black backdrop instead of blending a blue/gray tint into black. */
+/* Modals retain their scoped day/night materials and original opacity.
+ * Observation uses black instead of blending a blue/gray tint into black. */
 .theme-observation .modal-scrim {
-  background: rgba(0, 0, 0, .6);
+  background: rgba(0, 0, 0, var(--modal-scrim-opacity, .6));
 }

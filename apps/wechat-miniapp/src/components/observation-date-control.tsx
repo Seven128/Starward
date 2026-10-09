@@ -90,7 +90,7 @@ export function ObservationDateControl({
       </View>
       {open ? (
         <View className="observation-calendar" role="dialog" aria-modal="true" aria-label="选择观测日期">
-          <Button className="observation-calendar__backdrop" ariaLabel="关闭日期选择" onClick={() => onOpenChange(false)} />
+          <Button className="observation-calendar__backdrop modal-scrim" ariaLabel="关闭日期选择" onClick={() => onOpenChange(false)} />
           <View className="observation-calendar__sheet">
             <View className="observation-calendar__header">
               <Text>选择日期</Text>

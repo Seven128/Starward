@@ -27,7 +27,7 @@ export function FilterSheet({ capabilities, initialCategory = "OBSERVATION" }: {
   const selectedInCategory = (id: FilterCategoryId) => FILTER_OPTIONS.some((option) => option.category === id && draft[option.group].includes(option.id));
   const options = FILTER_OPTIONS.filter((option) => option.category === category);
 
-  return <View className="filter-sheet-layer" data-control="spot-search-filter-overlay" onClick={cancel}>
+  return <View className="filter-sheet-layer modal-scrim" data-control="spot-search-filter-overlay" onClick={cancel}>
     <View className="filter-sheet" role="region" aria-label="搜索筛选条件" onClick={(event) => event.stopPropagation()}>
       <View className="filter-sheet__handle" />
       <View className="filter-sheet__heading"><Text>筛选</Text><Button className="filter-sheet__close" ariaLabel="关闭并取消更改" onClick={cancel}><SemanticIcon name="close" /></Button></View>
