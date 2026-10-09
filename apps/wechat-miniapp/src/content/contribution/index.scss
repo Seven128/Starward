@@ -201,9 +201,6 @@
   font-weight: var(--type-metadata-weight);
   white-space: nowrap;
 }
-.contribution-page--standalone-editor .custom-nav__bar {
-  grid-template-columns: var(--target-min) minmax(0, 1fr) auto;
-}
 .contribution-page--standalone-editor .custom-nav__title {
   align-items: flex-start;
   text-align: left;

@@ -179,7 +179,7 @@ export default function FormalFeedbackEditor() {
       const restored = valuesFrom(view.baseline);
       for (const [key, value] of Object.entries(view.proposal.fields)) restored[key as ContributionFormalFieldKey] = value ?? "";
       const frozenMedia = pending.media.map(media => ({ ...media, kind: mediaKindOf(frozen, media.uploadId) }));
-      setBaseline(view.baseline); setValues(restored); setSubmitted(true); setActiveSubmissionId(pending.submissionId);
+      setBaseline(view.baseline); setValues(restored); setSubmitted(true); setActiveSubmissionId(pending.submissionId); setReviewReason(pending.review?.reason ?? "");
       setPriorMedia(frozenMedia); setMediaSelection(createFormalMediaSelection(view.baseline, view.proposal, frozenMedia.map(media => media.uploadId)));
       setRightsConfirmed(pending.rightsConfirmed);
       return;
@@ -410,6 +410,7 @@ export default function FormalFeedbackEditor() {
           setMediaSelection(createFormalMediaSelection(view.baseline, view.proposal, attached.map(media => media.uploadId)));
         }
         setActiveSubmissionId(response.data.submission.submissionId);
+        setReviewReason(response.data.submission.review?.reason ?? "");
         setSubmitted(true); setConflicts([]);
         notify({ owner: "contribution", placement: "inline", tone: "success", title: "已提交反馈", body: "反馈已进入审核，正式地点资料暂不改变。", dismissible: true });
       }
@@ -422,10 +423,12 @@ export default function FormalFeedbackEditor() {
   };
 
   const showSubmit = !ownerChanged && hasEditorContent && !submitted && !noRemainingChanges;
+  // A resubmission revision is captured only from a confirmed editable review.
+  const reviewStateLabel = submitted ? "审核中" : resubmissionRevision !== null ? "审核未通过" : null;
   return <><SystemMotionProbe /><View className={`${themeClass} formal-feedback-page`} data-route="formal-spot-feedback" data-od-id="formal-feedback-editor">
     {mediaHandoff.warning}
     <FloatingNotificationHost />
-    <CustomNav title={`${ownerChanged ? (spotName || "观星点") : (baseline?.fields.name ?? (spotName || "观星点"))}反馈页`} back beforeBack={ownerChanged ? undefined : confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} backFallbackTab="/pages/map/index" />
+    <CustomNav title={`${ownerChanged ? (spotName || "观星点") : (baseline?.fields.name ?? (spotName || "观星点"))}反馈页`} right={!ownerChanged && hasEditorContent && reviewStateLabel ? <Text className={`formal-feedback-review-tag${submitted ? "" : " formal-feedback-review-tag--rejected"}`}>{reviewStateLabel}</Text> : undefined} back beforeBack={ownerChanged ? undefined : confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} backFallbackTab="/pages/map/index" />
     {!ownerChanged && hasEditorContent ? <SelectionTabs className="formal-feedback-tabs"
       items={CHAPTERS.map(([id, label]) => ({ id, label }))}
       activeId={chapter}
@@ -443,7 +446,6 @@ export default function FormalFeedbackEditor() {
             recoveryLabel="重新获取" onRecover={retryResourceFailures} />
         ) : null}
         {ownerChanged ? <StatusPanel state="ERROR" title="账号已变化" detail="请返回观星点后重新打开反馈页。" recoveryLabel="返回地图" onRecover={() => void Taro.switchTab({ url: "/pages/map/index" })} /> : query.isError || history.isError ? <StatusPanel state="ERROR" detail={`暂时无法读取正式资料或本人反馈状态：${errorMessage(query.error ?? history.error)}`} recoveryLabel="重试" onRecover={retryResourceFailures} /> : requestedFeedback.status === "UNAVAILABLE" && !baseline ? <StatusPanel state="ERROR" title="无法继续编辑这条反馈" detail="这条反馈不存在、已进入其他状态，或不属于当前账号。请到“我的”核对最新记录。" recoveryLabel="返回我的记录" onRecover={() => void Taro.switchTab({ url: "/pages/my/index" })} /> : !baseline && (query.refreshError || query.data?.dataState === "STALE_USABLE" || history.refreshError || history.data?.dataState === "STALE_USABLE") ? null : query.isPending || history.isPending || !values || !baseline ? <StatusPanel state="LOADING" detail="正在读取当前正式地点资料与本人反馈状态。" /> : <>
-          {submitted ? <Text className="formal-feedback-review-tag">审核中</Text> : null}
           {reviewReason ? <View className="formal-feedback-review-note"><Text>审核意见</Text><Text>{reviewReason}</Text></View> : null}
           <SpotDocumentFields
             values={values}
@@ -484,7 +486,7 @@ export default function FormalFeedbackEditor() {
         </>}
       </View>
     </ScrollView>
-    {showSubmit ? <View className="formal-feedback-submit safe-bottom"><Button disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || !hasChanges} onClick={() => void submit()}>{busy ? "提交中…" : "提交反馈"}</Button></View> : null}
+    {showSubmit ? <View className="formal-feedback-submit safe-bottom"><Button disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || !hasChanges} onClick={() => void submit()}>{busy ? "提交中…" : resubmissionRevision !== null ? "再次提交" : "提交反馈"}</Button></View> : null}
   </View></>;
 }
 
