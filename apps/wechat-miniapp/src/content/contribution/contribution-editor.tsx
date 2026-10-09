@@ -21,7 +21,7 @@ import { ToggleField } from "@/components/toggle-field";
 import { SpotDocumentFields } from "../spot-document-fields";
 import { SPOT_DOCUMENT_CHAPTERS } from "../spot-document";
 import { useSpotDocumentNavigation } from "../use-spot-document-navigation";
-import { contributionSavedState } from "./contribution-save-state";
+import { contributionEditorSaveState } from "./contribution-save-state";
 import { contributionSubmissionState } from "./contribution-model";
 import { currentDraftUserId, getContributionMedia } from "@/services/api-client";
 import { loadAvailableMediaPreviews } from "./media-preview";
@@ -200,11 +200,9 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
   const title = readonlyRecord ? "本次提交记录" : form.kind === "NEW_SPOT_PROPOSAL"
     ? (forceNew ? "新增观星点" : form.draft ? "编辑观星点" : "新增观星点")
     : "现场反馈与纠错";
-  const savedState = form.saving
-    ? "保存中…"
-    : form.draft
-      ? contributionSavedState(form.draft.updatedAt)
-      : "尚未保存";
+  const savedState = contributionEditorSaveState(form.draft, form.saving);
+  const standaloneDraftEditor = !embedded && isNewSpotDocument && !readonlyRecord;
+  const saveStatus = <Text className={`contribution-editor-save-state${savedState.reviewed ? " contribution-editor-save-state--review" : ""}${savedState.reviewed && form.draft?.review?.resolution === "REJECTED" ? " contribution-editor-save-state--rejected" : ""}`}>{savedState.label}</Text>;
   const openRecordDetail = () => {
     recordsScrollTransition.current++;
     recordsSavedPosition.current = recordsScrollPosition.current;
@@ -241,9 +239,9 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
     recordsGroupPositions.current[recordsGroup.current] = event.detail.scrollTop;
     setRecordsScrollTop(event.detail.scrollTop);
   };
-  return <View className={`${themeClass} contribution-page${embedded ? " contribution-page--embedded" : ""}`} style={embedded ? { height: embeddedHeightPx === undefined ? "calc(100vh - 184Px)" : `${embeddedHeightPx}px`, minHeight: 0, maxHeight: "none" } : {}} data-route="contribution-intake">
+  return <View className={`${themeClass} contribution-page${embedded ? " contribution-page--embedded" : ""}${standaloneDraftEditor ? " contribution-page--standalone-editor" : ""}`} style={embedded ? { height: embeddedHeightPx === undefined ? "calc(100vh - 184Px)" : `${embeddedHeightPx}px`, minHeight: 0, maxHeight: "none" } : {}} data-route="contribution-intake">
     {commands.handoffWarning}
-    {embedded ? <View className="contribution-editor-header"><Text className="type-section">{title}</Text>{!readonlyRecord ? <Text className="contribution-editor-save-state">{savedState}</Text> : null}<Button className="contribution-editor-close focus-ring" aria-label="关闭新增观星点" onClick={() => void requestClose()}>×</Button></View> : <CustomNav title={managesRecords ? "观星点创建与反馈" : readonlyRecord ? "本次提交记录" : form.hasFormalSpot ? "现场反馈与纠错" : title} back backFallbackTab={managesRecords ? "/pages/my/index" : "/pages/map/index"} beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} />}
+    {embedded ? <View className="contribution-editor-header"><Text className="type-section">{title}</Text>{!readonlyRecord ? saveStatus : null}<Button className="contribution-editor-close focus-ring" aria-label="关闭新增观星点" onClick={() => void requestClose()}>×</Button></View> : <CustomNav title={managesRecords ? "观星点创建与反馈" : readonlyRecord ? "本次提交记录" : form.hasFormalSpot ? "现场反馈与纠错" : title} right={standaloneDraftEditor ? saveStatus : undefined} back backFallbackTab={managesRecords ? "/pages/my/index" : "/pages/map/index"} beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} />}
     {form.ownerChanged && !managesRecords ? <StatusPanel state="ERROR" title="账号已变化"
       detail="请返回地图后重新打开，原账号的输入不会交给当前账号。" recoveryLabel="返回地图"
       onRecover={() => embedded ? onClose?.() : void Taro.switchTab({ url: "/pages/map/index" })} /> : <>

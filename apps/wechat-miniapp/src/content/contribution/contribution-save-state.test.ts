@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { contributionSavedState } from "./contribution-save-state";
+import { contributionEditorSaveState, contributionSavedState } from "./contribution-save-state";
 
 test("saved state shows time only for the current Beijing date", () => {
   assert.equal(
@@ -26,4 +26,27 @@ test("saved state adds the date outside today and the year across years", () => 
 
 test("invalid saved timestamps do not break the editor header", () => {
   assert.equal(contributionSavedState("not-a-time"), "已保存");
+});
+
+test("review timestamps identify the review result rather than a draft save", () => {
+  const reviewedAt = "2026-10-09T05:05:28.460Z";
+  assert.deepEqual(contributionEditorSaveState({ updatedAt: reviewedAt,
+    review: { resolution: "REJECTED", reviewedAt, reason: "测试审核意见" } }, false),
+  { label: "审核未通过", reviewed: true });
+  assert.deepEqual(contributionEditorSaveState({ updatedAt: "2026-10-09T13:05:28.460+08:00",
+    review: { resolution: "CHANGES_REQUESTED", reviewedAt, reason: "测试补充意见" } }, false),
+  { label: "需补充", reviewed: true });
+});
+
+test("saving a reviewed working copy replaces the header label with its save time", () => {
+  const draft = { updatedAt: "2026-10-09T05:06:00.000Z",
+    review: { resolution: "REJECTED" as const, reviewedAt: "2026-10-09T05:05:28.460Z", reason: "测试审核意见" } };
+  assert.deepEqual(contributionEditorSaveState(draft, true), { label: "保存中…", reviewed: true });
+  assert.deepEqual(contributionEditorSaveState(draft, false, new Date("2026-10-09T06:00:00.000Z")),
+    { label: "13:06 已保存", reviewed: true });
+});
+
+test("a new editor does not claim a server save before one exists", () => {
+  assert.deepEqual(contributionEditorSaveState(null, false), { label: "尚未保存", reviewed: false });
+  assert.deepEqual(contributionEditorSaveState(null, true), { label: "保存中…", reviewed: false });
 });

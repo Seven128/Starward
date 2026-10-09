@@ -196,9 +196,26 @@
 }
 .contribution-editor-save-state {
   color: var(--text-tertiary);
-  font-size: 20rpx;
-  line-height: 1.2;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+  font-weight: var(--type-metadata-weight);
   white-space: nowrap;
+}
+.contribution-page--standalone-editor .custom-nav__bar {
+  grid-template-columns: var(--target-min) minmax(0, 1fr) auto;
+}
+.contribution-page--standalone-editor .custom-nav__title {
+  align-items: flex-start;
+  text-align: left;
+}
+.contribution-editor-save-state--review {
+  padding: 3Px 5Px;
+  color: var(--warning);
+  background: var(--surface-subtle);
+}
+.theme-day .contribution-editor-save-state--rejected {
+  color: #b17f6b;
+  background: #faf0e9;
 }
 .contribution-document-tabs {
   z-index: 2;
