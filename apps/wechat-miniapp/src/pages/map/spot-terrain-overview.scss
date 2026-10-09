@@ -21,10 +21,7 @@
 .spot-terrain__scale > view,.spot-terrain__scale > text { margin-left:40rpx; background:var(--terrain-bg); }
 .spot-terrain__scale > view { height:10rpx; border:0 solid currentColor; border-width:0 3rpx 3rpx; }
 .spot-terrain__empty { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12rpx; padding:40rpx; background:var(--terrain-bg,repeating-linear-gradient(135deg,#edf0ec 0,#edf0ec 12rpx,#e4e9e4 12rpx,#e4e9e4 24rpx)); color:var(--text-secondary); text-align:center; }
-.spot-terrain__empty > view,.spot-terrain__empty > text { position:relative; z-index:4; }
-.spot-terrain__empty > text { transform:translateY(-120rpx); background:var(--terrain-bg,transparent); }
-.spot-terrain__empty button { min-height:72rpx; padding:0 28rpx; border:1rpx solid var(--border); border-radius:36rpx; background:var(--surface); }
-.spot-terrain__empty--error { color:var(--danger); }
+.spot-terrain__empty > text { position:relative; z-index:4; transform:translateY(-120rpx); background:var(--terrain-bg,transparent); }
 .spot-terrain__coverage { color:var(--text-tertiary); font-size:20rpx; }
 .spot-terrain__toggles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12rpx; }
 .spot-terrain__toggle { min-height:92rpx; padding:12rpx 16rpx; display:flex; align-items:center; gap:10rpx; border:1rpx solid var(--border); border-radius:16rpx; background:var(--surface); text-align:left; }

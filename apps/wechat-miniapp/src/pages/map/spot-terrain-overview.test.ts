@@ -10,7 +10,7 @@ import { formalSpotMarkerIconPath } from "./map-markers";
 function harness() {
   const ast = ts.createSourceFile("terrain.tsx", readFileSync(new URL("./spot-terrain-overview.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declaration = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotTerrainOverview")!;
-  const states: any[] = [], deps: any[][] = [], notices: any[] = [];
+  const states: any[] = [], deps: any[][] = [], notices: any[] = [], queries: any[] = [];
   let si = 0, ei = 0, pending: (() => void)[] = [], query: any, retries = 0, imageFailures = 0;
   const notify = (value: any) => notices.push(value);
   let mode = "DAY";
@@ -18,11 +18,11 @@ function harness() {
     ...geometry, terrainLayerAvailability, formalSpotMarkerIconPath, useMemo: (fn: () => unknown) => fn(), useAppStore: (selector: (state: any) => unknown) => selector({ mode, notify }),
     useState(initial: any) { const i = si++; if (!(i in states)) states[i] = initial; return [states[i], (next: any) => states[i] = typeof next === "function" ? next(states[i]) : next]; },
     useEffect(fn: () => void, values: any[]) { const i = ei++; if (!deps[i] || values.some((value, n) => value !== deps[i]![n])) pending.push(fn); deps[i] = values; },
-    useTerrainOverlay: () => query,
+    useTerrainOverlay: (input: any, enabled: boolean, imageEnabled: boolean) => { queries.push({ input, enabled, imageEnabled }); return query; },
     View: "View", Text: "Text", Button: "Button", Slider: "Slider", Image: "Image", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", SoftButton: "SoftButton", Provenance: "Provenance", SourceAttribution: "SourceAttribution",
     React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
   });
-  return { notices, get retries() { return retries; }, get imageFailures() { return imageFailures; },
+  return { notices, queries, get retries() { return retries; }, get imageFailures() { return imageFailures; },
     setMode(value: string) { mode = value; },
     set(value: any) { query = { isPending: false, isError: false, imagePending: false, imagePath: null, ...value,
       reportImageFailure: () => { imageFailures++; }, refetch: async () => { retries++; } }; },
@@ -114,6 +114,49 @@ test("a failed refresh of old uncovered layers shows error without asserting cur
   assert.ok(all.some(node => node.type === "Button" && node.props.ariaLabel === "光污染，已开启" && !node.props.disabled));
   await all.find(node => node.type === "StatusPanel").props.onRecover();
   assert.equal(h.retries, 1);
+});
+
+test("terrain recovery states use the reading flow without covering geographic references", () => {
+  const h = harness();
+  for (const [state, query, coverage] of [
+    ["LOADING", { isPending: true }, "地形加载中"],
+    ["EMPTY", { data: { data: { ...base, state: "UNAVAILABLE", lightPollution: { state: "UNAVAILABLE", cells: [], legend: [] } } } }, "地形不可用"],
+    ["ERROR", { isError: true }, "地形读取失败"],
+  ] as const) {
+    h.set(query);
+    const tree = h.render(), all = nodes(tree);
+    const map = all.find(node => node.props?.className === "spot-terrain__map");
+    assert.equal(nodes(map).some(node => node.type === "StatusPanel"), false,
+      `${state}: the recovery content must not compete with the centered spot marker`);
+    assert.equal(all.filter(node => node.type === "StatusPanel" && node.props.state === state).length, 1);
+    assert.match(text(all.find(node => node.props?.className === "spot-terrain__coverage")), new RegExp(coverage));
+    assert.ok(nodes(map).some(node => node.props?.className === "spot-terrain__center"));
+    assert.equal(nodes(map).filter(node => node.props?.className?.startsWith("spot-terrain__direction ")).length, 4);
+  }
+});
+
+test("closed terrain stays closed when a new radius has no active layer request", () => {
+  const h = harness(); h.set({ data: { data: base }, imagePath: "/local/terrain.png" });
+  let all = nodes(h.render());
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "地形，已开启").props.onClick();
+  all = nodes(h.render());
+  const lightOnlyCoverage = text(all.find(node => node.props?.className === "spot-terrain__coverage"));
+  assert.equal(h.queries.at(-1).enabled, true, "light remains an independently requested layer");
+  assert.equal(h.queries.at(-1).imageEnabled, false);
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "光污染，已开启").props.onClick();
+  all = nodes(h.render());
+  all.find(node => node.type === "Slider").props.onChange({ detail: { value: geometry.terrainSliderForRadius(10) } });
+  h.set({ isPending: true });
+  const tree = h.render(); all = nodes(tree);
+  assert.equal(h.queries.at(-1).input.radiusKm, 10);
+  assert.equal(h.queries.at(-1).enabled, false);
+  assert.equal(h.queries.at(-1).imageEnabled, false);
+  assert.match(text(all.find(node => node.props?.className === "spot-terrain__coverage")), /地形已关闭/);
+  assert.match(lightOnlyCoverage, /地形已关闭/);
+  assert.match(text(tree), /地形与光污染均已关闭/);
+  assert.equal(all.some(node => node.type === "StatusPanel"), false);
+  assert.doesNotMatch(text(tree), /加载中|正在加载/);
+  assert.equal(h.notices.length, 0); assert.equal(h.retries, 0);
 });
 
 test("native image decode failure is returned to the terrain owner", () => {

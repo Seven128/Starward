@@ -71,15 +71,16 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
         return <View key={cell.id} className="spot-terrain__light-cell" ariaLabel={`${cell.label}，${cell.radiance} ${cell.unit}`} style={{ left: `${(cell.boundsGcj02.west - requested.west) / width * 100}%`, top: `${(requested.north - cell.boundsGcj02.north) / height * 100}%`, width: `${(cell.boundsGcj02.east - cell.boundsGcj02.west) / width * 100}%`, height: `${(cell.boundsGcj02.north - cell.boundsGcj02.south) / height * 100}%`, backgroundColor: cell.color }} />;
       }) : null}
       {!terrainVisible && !lightVisible ? <View className="spot-terrain__empty"><Text>地形与光污染均已关闭</Text></View> : null}
-      {!hasPicture && (terrainVisible || lightVisible) ? <View className="spot-terrain__empty"><StatusPanel state={pending ? "LOADING" : failed ? "ERROR" : "EMPTY"}
-        detail={pending ? "正在加载图层…" : failed ? "图层暂时无法读取，请重试。" : "当前所选图层暂无可用数据。"}
-        recoveryLabel={failed && !pending ? "重试图层" : undefined} onRecover={failed && !pending ? () => void terrain.refetch() : undefined} /></View> : null}
+      {!hasPicture && (terrainVisible || lightVisible) ? <View className="spot-terrain__empty" /> : null}
       <View className="spot-terrain__ring spot-terrain__ring--outer" aria-hidden="true" /><View className="spot-terrain__ring spot-terrain__ring--inner" aria-hidden="true" />
       {([["north", "北"], ["east", "东"], ["south", "南"], ["west", "西"]] as const).map(([direction, label]) => <Text key={direction} className={`spot-terrain__direction spot-terrain__direction--${direction}`}>{label}</Text>)}
       <Image className="spot-terrain__center" src={formalSpotMarkerIconPath(mode, true)} mode="aspectFit" ariaLabel="当前观星点" />
       {(() => { const scaleKm = radiusKm <= 5 ? 1 : radiusKm <= 20 ? 5 : 10; return <View className="spot-terrain__scale" aria-hidden="true"><View style={{ width: `${scaleKm / (2 * radiusKm) * 100}%` }} /><Text>{scaleKm} km</Text></View>; })()}
     </View>
-    <View className="spot-terrain__coverage"><Text>外圈半径 {radiusText} km</Text><Text>{data?.state === "PARTIAL" ? "局部缺测" : data?.state === "AVAILABLE" ? "地形可用" : "地形不可用"}</Text></View>
+    {!hasPicture && (terrainVisible || lightVisible) ? <StatusPanel state={pending ? "LOADING" : failed ? "ERROR" : "EMPTY"}
+      detail={pending ? "正在加载图层…" : failed ? "图层暂时无法读取，请重试。" : "当前所选图层暂无可用数据。"}
+      recoveryLabel={failed && !pending ? "重试图层" : undefined} onRecover={failed && !pending ? () => void terrain.refetch() : undefined} /> : null}
+    <View className="spot-terrain__coverage"><Text>外圈半径 {radiusText} km</Text><Text>{!terrainVisible ? "地形已关闭" : terrainFailed ? "地形读取失败" : terrainAvailability === "PENDING" || terrain.imagePending ? "地形加载中" : data?.state === "PARTIAL" ? "局部缺测" : data?.state === "AVAILABLE" ? "地形可用" : "地形不可用"}</Text></View>
     <View className="spot-terrain__toggles" ariaLabel="地形图层选择">
       {[{ key: "terrain", label: "地形", detail: "高程派生阴影", enabled: terrainVisible && !terrainMissing, disabled: terrainMissing, icon: "terrain" as const }, { key: "light", label: "光污染", detail: "年度卫星估算", enabled: lightVisible && !lightMissing, disabled: lightMissing, icon: "bulb" as const }].map(item => <Button key={item.key} disabled={item.disabled} className={`spot-terrain__toggle${item.enabled ? " spot-terrain__toggle--active" : ""}`} ariaLabel={`${item.label}${item.disabled ? "，当前地区暂无数据" : item.enabled ? "，已开启" : "，已关闭"}`} aria-checked={item.enabled} onClick={() => item.key === "terrain" ? setTerrainVisible(value => !value) : setLightVisible(value => !value)}>
         <SemanticIcon name={item.icon} /><View><Text>{item.label}</Text><Text>{item.detail}</Text></View>{item.enabled ? <SemanticIcon name="check" /> : null}
