@@ -30,6 +30,7 @@ export type SemanticIconName =
   | "conditions"
   | "bell"
   | "info"
+  | "warning"
   | "compass"
   | "horizon"
   | "undo"
@@ -72,6 +73,7 @@ export function adoptedBIconPath(name: SemanticIconName, state: SemanticIconStat
 
 const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
   bell: "/content/assets/icons/bell.svg",
+  warning: "/content/assets/icons/warning.svg",
   settings: "/assets/icons/settings.svg",
   pencil: "/assets/icons/pencil.svg",
   "account-user": "/assets/icons/account-user.svg",

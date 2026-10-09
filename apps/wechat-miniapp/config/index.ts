@@ -48,6 +48,7 @@ const retainedLegacyIconFiles = [
 // These legacy night/observation icons are used only by content pages.
 const contentLegacyIconFiles = [
   "bell-night.svg", "bell-observation.svg",
+  "warning-night.svg", "warning-observation.svg",
   "download-night.svg", "download-observation.svg",
   "trash-2-night.svg", "trash-2-observation.svg",
   "wind-night.svg", "wind-observation.svg",
@@ -77,6 +78,7 @@ const bIconFiles = {
     "terrain--day--default.png", "clock--day--default.png",
   ],
   content: [
+    "clock--day--default.png", "warning--day--default.png",
     "cloud--day--default.png", "wind--day--default.png", "telescope--day--default.png",
     "account-user--day--default.png", "arrow-left--day--default.png",
     "bell--day--default.png", "bell-off--day--default.png",

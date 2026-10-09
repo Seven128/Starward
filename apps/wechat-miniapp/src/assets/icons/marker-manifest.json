@@ -258,6 +258,18 @@
       "sha256": "8ce3b70c1b8270183c9c5594606a12e3ffe4f942237d24883f3dd7613fdbdd19"
     },
     {
+      "path": "warning-day.svg",
+      "sha256": "a5d97640c93af11097fedf4abc5a7f487607ff52f81cdcdf592acb5e3891ea26"
+    },
+    {
+      "path": "warning-night.svg",
+      "sha256": "40033e04bb4f2735a0400a82f28eeb53da84f3df98d967416964d617710ea0e5"
+    },
+    {
+      "path": "warning-observation.svg",
+      "sha256": "1dfbee10a848d4ba5f67fe691b94b75218a9f7d063925281d7244acadd1645f1"
+    },
+    {
       "path": "wifi-off-day.svg",
       "sha256": "7935ed4fe742ab3e7e7d11162e93eac5baaea3c47b6f3e261e0afed8636d8e41"
     },

@@ -56,7 +56,7 @@ for (let phase = 0; phase < 8; phase++) {
   generatedMoonAssets.set(file, Buffer.from(source));
 }
 const themedSvgNames = [];
-for (const name of ["chevron-right", "download", "trash-2", "wifi-off", "images", "account-user", "pencil", "settings", "share", "eye", "bulb", "cloud", "wind", "telescope", "sun", "moon", "bell"]) {
+for (const name of ["chevron-right", "download", "trash-2", "wifi-off", "images", "account-user", "pencil", "settings", "share", "eye", "bulb", "cloud", "wind", "telescope", "sun", "moon", "bell", "warning"]) {
   const source = (await readFile(path.join(iconRoot, `${name}.svg`), "utf8")).replace(/\r\n?/gu, "\n");
   if (!source.includes('stroke="currentColor"')) throw new Error(`source_icon_stroke_missing:${name}`);
   for (const mode of ["day", "night", "observation"]) {

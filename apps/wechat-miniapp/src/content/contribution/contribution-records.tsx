@@ -12,6 +12,7 @@ import { contributionSubmissionState } from "./contribution-model";
 import type { ContributionForm } from "./use-contribution-form";
 import { contributionRecordGroup, contributionRecordIdentity, contributionRecordPrimaryAction, contributionRecordStatus, resolveContributionRecordDetail, type ContributionRecordDetailSelection, type ContributionRecordGroup } from "./contribution-record-model";
 import { ContributionRecordDetail, ContributionSpotIdentityCard } from "./contribution-record-detail";
+import { ContributionRecordStatus } from "./contribution-record-status";
 
 type CreationFilter = "ALL" | "DRAFT" | "PENDING" | "ONLINE" | "REJECTED";
 type FeedbackFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED";
@@ -148,7 +149,7 @@ export function ContributionRecords({ form, onDetailOpen, onDetailClose, onGroup
     {form.history.refreshError || form.history.data?.dataState === "STALE_USABLE" ? <StatusPanel state="STALE" detail="记录尚未确认最新状态，暂时显示上次内容。" recoveryLabel="重新获取" onRecover={() => void form.history.refetch().catch(() => {})} /> : null}
     {form.history.isPending ? <StatusPanel state="LOADING" detail="正在读取创建与反馈记录。" /> : form.history.isError ? <StatusPanel state="ERROR" detail="暂时无法读取记录。" recoveryLabel="重试" onRecover={() => void form.history.refetch().catch(() => {})} /> : visible.length ? <View className="contribution-records__list">
       {visible.map((item) => { const status = contributionRecordStatus(item); const submissionState = contributionSubmissionState(item).toLowerCase(); const recordKind = item.kind.toLowerCase().replaceAll("_", "-"); return <View className={`contribution-record contribution-record--${submissionState} contribution-record--${recordKind}`} key={item.submissionId}>
-        <View className="contribution-record-card"><ContributionSpotIdentityCard item={item} /><View className="contribution-record-card__extension"><Text className={`contribution-status-pill contribution-status-pill--${status.tone}`}>{status.label}</Text><Text className="type-caption contribution-record-card__meta">{displayBeijingTimestamp(item.updatedAt)}</Text></View></View>
+        <View className="contribution-record-card"><ContributionSpotIdentityCard item={item} /><View className="contribution-record-card__extension"><ContributionRecordStatus status={status} /><Text className="type-caption contribution-record-card__meta">{displayBeijingTimestamp(item.updatedAt)}</Text></View></View>
         {item.review?.reason ? <Text className="contribution-record__reason">审核意见：{item.review.reason}</Text> : null}
         {renderRecordActions(item)}
       </View>; })}

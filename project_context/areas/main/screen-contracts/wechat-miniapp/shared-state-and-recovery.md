@@ -42,6 +42,8 @@ EOG 小幅夜光地图复用 `SourceAttribution` 的供应方许可短署名，�
 
 2026-09-13用户采用[最新B行256px图标](../../../../../docs/design-resources/wechat-miniapp/shared/icons/ADOPTED.md)中已核对的71份日间资源（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态）；selected经本地合成保留default主体像素，仅添加独立光线。这个共享家族已由`apps/wechat-miniapp/src/components/semantic-asset.tsx`及地图marker/原生Tab责任迁移到Map/Search、观星点信息、Sky控件、My/Settings、计划/事件、贡献/反馈等真实DAY消费者；不按页面另起素材映射。微信包从256px唯一母版生成保持完整画布与RGBA的224px页面派生和192px原生Tab派生，满足主包及单图限制；状态、数据和交互仍留在原组件owner。允许已有语义的尺寸/状态变体，不能混淆普通地点针与正式观星点针、静态流星与想去动画分件、月亮入口与真实月相。NIGHT/OBSERVATION未提供B主题资源，继续使用原合法主题且不伪装齐全；44px命中区、焦点、按压、选中语义与现有动效不被图标材质覆盖。真实月相照明图、时间尺月相、地形科学图、系统状态栏/微信胶囊和控件勾选几何保留数据/平台责任，不拿静态月亮或装饰PNG替代。当前消费者和验证边界见[图标应用检查](../../../../../docs/design-resources/wechat-miniapp/shared/icons/application-review.md)。
 
+创建／反馈记录列表和只读详情共用 `contribution-record-status`，消费原记录状态 owner 的结果；草稿、待审、未通过、已上线／已通过分别使用 pencil、clock、warning、check 语义。日间沿当前创建／反馈采用源的无框行、12px图标槽、4px图文间距及状态色，图形由唯一 `SemanticIcon` 提供已采用B资产；状态文字遵循当前标准 metadata 12/18。未覆盖主题保留主题角色和合法单色图形，不把B日间材质复制为夜间／观测图标；文字、审核意见和原动作保持完整。
+
 ## Shared Tab selection feedback
 
 <!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/tabs/README.md" -->

@@ -487,14 +487,44 @@
 }
 .contribution-status-pill {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4Px;
   padding: 8rpx 12rpx;
   border: 1rpx solid var(--border);
   border-radius: 18rpx;
   color: var(--text-secondary);
-  font-size: 21rpx;
-  line-height: 1.2;
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+  font-weight: var(--type-metadata-weight);
   white-space: normal;
 }
+.contribution-status-pill__icon {
+  position: relative;
+  flex: 0 0 12Px;
+  width: 12Px;
+  height: 12Px;
+}
+.contribution-status-pill__icon .semantic-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20Px;
+  height: 20Px;
+  transform: scale(.6);
+  transform-origin: top left;
+  --semantic-icon-color: currentColor;
+}
+.theme-day .contribution-status-pill {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #85949e;
+}
+.theme-day .contribution-status-pill--pending { color: #a58a54; }
+.theme-day .contribution-status-pill--rejected { color: #b1786a; }
+.theme-day .contribution-status-pill--online,
+.theme-day .contribution-status-pill--approved { color: #608a7d; }
 .contribution-status-pill--success {
   border-color: var(--success);
   color: var(--success);
