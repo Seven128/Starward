@@ -962,9 +962,10 @@ export class PostgresMiniappRepository
 
   async saveAccountNickname(userId: UserId, nickname: string, expectedRevision: number, idempotencyKey: string): Promise<AccountProfileRecord> {
     return this.#transaction(async client => {
-      const existing = await client.query<{ profile_revision: number; avatar_sha256: string | null; avatar_mime_type: "image/jpeg" | "image/png" | "image/webp" | null; avatar_zoom: string | null }>(
-        "SELECT profile_revision, avatar_sha256, avatar_mime_type, avatar_zoom FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      const existing = await client.query<{ state: string; profile_revision: number; avatar_sha256: string | null; avatar_mime_type: "image/jpeg" | "image/png" | "image/webp" | null; avatar_zoom: string | null }>(
+        "SELECT state, profile_revision, avatar_sha256, avatar_mime_type, avatar_zoom FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
       if (!existing.rows[0]) throw new Error("account_profile_not_found");
+      this.#assertActiveAccount(existing.rows[0]);
       const replay = await this.#replay<AccountProfileRecord>(client, userId, idempotencyKey);
       if (replay) {
         if (replay.nickname !== nickname || replay.revision !== expectedRevision + 1) throw new Error("account_profile_idempotency_conflict");
@@ -992,10 +993,11 @@ export class PostgresMiniappRepository
 
   async saveAccountAvatar(userId: UserId, avatar: { objectKey: string; version: string; mimeType: "image/jpeg" | "image/png" | "image/webp"; zoom: number; byteSize: number; sha256: string }, expectedRevision: number, idempotencyKey: string) {
     return this.#transaction(async client => {
-      const existing = await client.query<{ profile_revision: number; nickname: string | null; avatar_object_key: string | null }>(
-        "SELECT profile_revision, nickname, avatar_object_key FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      const existing = await client.query<{ state: string; profile_revision: number; nickname: string | null; avatar_object_key: string | null }>(
+        "SELECT state, profile_revision, nickname, avatar_object_key FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
       const row = existing.rows[0];
       if (!row) throw new Error("account_profile_not_found");
+      this.#assertActiveAccount(row);
       const replay = await this.#replay<{ profile: AccountProfileRecord; previousObjectKey: string | null }>(client, userId, idempotencyKey);
       if (replay) {
         if (replay.profile.avatar?.version !== avatar.version || replay.profile.revision !== expectedRevision + 1) throw new Error("account_profile_idempotency_conflict");
@@ -1035,6 +1037,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<UserPreferencesRecord> {
     return this.#transaction(async (client) => {
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<UserPreferencesRecord>(
         client,
         userId,
@@ -1090,6 +1093,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<void> {
     await this.#transaction(async (client) => {
+      await this.#lockActiveAccount(client, userId);
       if (await this.#replay(client, userId, idempotencyKey)) return;
       const exists = await client.query("SELECT 1 FROM spots WHERE spot_id = $1", [
         spotId,
@@ -1158,8 +1162,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ObservationPlan> {
     return this.#transaction(async (client) => {
-      const account = await client.query<{ state: string }>("SELECT state FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
-      if (account.rows[0]?.state !== "ACTIVE") throw new Error("account_not_active");
+      await this.#lockActiveAccount(client, userId, "UPDATE");
       const replay = await this.#replay<ObservationPlan>(
         client,
         userId,
@@ -1274,8 +1277,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<void> {
     await this.#transaction(async (client) => {
-      const account = await client.query<{ state: string }>("SELECT state FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
-      if (account.rows[0]?.state !== "ACTIVE") throw new Error("account_not_active");
+      await this.#lockActiveAccount(client, userId, "UPDATE");
       if (await this.#replay(client, userId, idempotencyKey)) return;
       await client.query(
         `UPDATE plan_reminder_schedules SET active = false,
@@ -1319,7 +1321,7 @@ export class PostgresMiniappRepository
   ): Promise<ProfileLink> {
     return this.#transaction(async (client) => {
       // Serialize a user's link writes, including initially empty lists.
-      await client.query("SELECT user_id FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      await this.#lockActiveAccount(client, userId, "UPDATE");
       const replay = await this.#replay<ProfileLink>(
         client,
         userId,
@@ -1371,6 +1373,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<void> {
     await this.#transaction(async (client) => {
+      await this.#lockActiveAccount(client, userId, "UPDATE");
       if (await this.#replay(client, userId, idempotencyKey)) return;
       await client.query(
         "DELETE FROM user_profile_links WHERE profile_link_id = $1 AND user_id = $2",
@@ -1403,7 +1406,7 @@ export class PostgresMiniappRepository
     return this.#transaction(async (client) => {
       // A retried create may have a different generated draft ID. Lock the owner
       // before looking up its receipt so concurrent retries share one result.
-      await client.query("SELECT user_id FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      await this.#lockActiveAccount(client, userId, "UPDATE");
       const replay = await this.#replay<ImportDraft>(
         client,
         userId,
@@ -3968,9 +3971,15 @@ export class PostgresMiniappRepository
     }
   }
 
-  async #lockActiveAccount(client: PoolClient, userId: UserId) {
-    const user = await client.query<{ state: string }>("SELECT state FROM users WHERE user_id=$1 FOR KEY SHARE", [userId]);
-    if (user.rows[0]?.state !== "ACTIVE") throw new Error("account_not_active");
+  #assertActiveAccount(account: { state: string } | undefined) {
+    if (account?.state !== "ACTIVE") throw new Error("account_not_active");
+  }
+
+  async #lockActiveAccount(client: PoolClient, userId: UserId, lock: "KEY SHARE" | "UPDATE" = "KEY SHARE") {
+    // UPDATE also preserves owner-level serialization for revisioned/list writes.
+    // Both modes are held through COMMIT and conflict with account erasure.
+    const user = await client.query<{ state: string }>(`SELECT state FROM users WHERE user_id=$1 FOR ${lock}`, [userId]);
+    this.#assertActiveAccount(user.rows[0]);
   }
 
   async #transaction<T>(operation: (client: PoolClient) => Promise<T>) {
