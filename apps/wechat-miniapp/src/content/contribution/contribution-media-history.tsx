@@ -120,6 +120,9 @@ export function ContributionActions({
   placement?: "inline" | "sticky";
 }) {
   const disabled = form.commandBusy;
+  const draftState = form.draft ? contributionSubmissionState(form.draft) : null;
+  const isResubmission = draftState === "REJECTED" || draftState === "CHANGES_REQUESTED";
+  const submitLabel = form.pendingSubmission ? "确认上次提交结果" : isResubmission ? "再次提交" : "提交审核";
   return (
     <View
       className="contribution-actions"
@@ -154,11 +157,11 @@ export function ContributionActions({
       {placement === "inline" ? <ContributionDeleteDraftAction form={form} commands={commands} onWithdrawn={onWithdrawn} /> : null}
       <SoftButton
         variant="primary"
-        label={form.pendingSubmission ? "确认上次提交结果" : "提交人工审核"}
+        label={form.pendingSubmission ? "确认上次提交结果" : isResubmission ? "再次提交" : "提交人工审核"}
         disabled={form.submissionCommandBusy || (!form.pendingSubmission && form.mediaNeedsRecovery)}
         onClick={() => void commands.submit()}
       >
-        {form.submitting ? "提交中…" : form.pendingSubmission ? "确认上次提交结果" : "提交审核"}
+        {form.submitting ? "提交中…" : submitLabel}
       </SoftButton>
     </View>
   );
