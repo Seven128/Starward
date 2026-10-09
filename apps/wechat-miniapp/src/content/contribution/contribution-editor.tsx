@@ -179,6 +179,7 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
   };
   const leaveAfterWithdrawal = () => {
     if (embedded) { onClose?.(); return; }
+    nativeLeaveGuard.suspendForProgrammaticLeave();
     const fallback = () => Taro.switchTab({ url: managesRecords ? "/pages/my/index" : "/pages/map/index" });
     let hasPriorPage = false;
     try { hasPriorPage = Taro.getCurrentPages().length > 1; } catch { /* No reliable back target. */ }

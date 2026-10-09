@@ -506,7 +506,7 @@ function createWithdrawDraft(form: ContributionForm, operation: AccountOperation
     assertAccount();
     if (contributionSubmissionState(response.data) !== "WITHDRAWN")
       throw new Error("服务端尚未确认草稿已删除");
-    form.discardLocalDraft();
+    form.applyDraft(response.data);
     await form.history.refetch().catch(() => undefined);
     assertAccount();
     form.announce("success", "草稿已删除", "这份草稿不会进入审核，未提交照片已安排清理。");
