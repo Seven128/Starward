@@ -1,5 +1,6 @@
 import { mediaSource } from "@/utils/media-source";
 import { isProductSource, productSourceNames } from "@/utils/source-presentation";
+import { FACILITY_LABEL, facilityStatusLabel } from "@/utils/facility-presentation";
 import { Block, Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import type {
   MapSceneTimeFrame,
@@ -80,29 +81,7 @@ function statusLabel(status: SpotSummary["status"]) {
 }
 
 function facilityLabel(type: string) {
-  return (
-    {
-      PARKING: "停车",
-      TOILET: "厕所",
-      PLATFORM: "观测平台",
-      CHARGING: "充电",
-      CAMPING: "露营",
-      ROAD: "末段道路",
-      WALKING: "徒步",
-      SIGNAL: "通信信号",
-    } as Record<string, string>
-  )[type] ?? type;
-}
-
-function facilityStatusLabel(status: string) {
-  return (
-    {
-      AVAILABLE: "可用",
-      UNAVAILABLE: "不可用",
-      UNKNOWN: "待核验",
-      SEASONAL: "季节性",
-    } as Record<string, string>
-  )[status] ?? "状态暂无数据";
+  return FACILITY_LABEL[type as keyof typeof FACILITY_LABEL] ?? type;
 }
 
 function opennessLabel(value: SpotDetail["accessAndSafety"]["openness"] | undefined) {
@@ -610,6 +589,7 @@ export function SpotInformationPanel({
                 const mediaKind = facility.type === "PARKING" ? "parking" : facility.type === "TOILET" ? "toilet" : null;
                 const facilityImages = mediaKind ? facilityPhotos(mediaKind) : [];
                 const facilityMedia = facilityImages[0];
+                const description = facility.detail?.trim() || facility.summary?.trim();
                 return <View id={`spot-facility-source-${mediaKind}`} className={`spot-panel__facility${facilityMedia ? " spot-panel__facility--with-media" : ""}`} key={`${facility.type}-${facility.summary}`}
                   {...(facilityMedia ? { role: "button", ariaLabel: `查看${facilityLabel(facility.type)}照片，共 ${facilityImages.length} 张` } : {})}
                   onClick={() => { if (facilityMedia && mediaKind) openPhoto(mediaKind, 0); }}>
@@ -620,7 +600,7 @@ export function SpotInformationPanel({
                       <Text className="spot-panel__facility-name">{facilityLabel(facility.type)}</Text>
                       <Text className="spot-panel__facility-status">{facilityStatusLabel(facility.status)}{facility.distanceM === null ? "" : ` · ${facility.distanceM}m`}</Text>
                     </View>
-                    {facility.summary ? <Text className="spot-panel__facility-summary">{facility.summary}</Text> : null}
+                    {description ? <Text className="spot-panel__facility-summary">{description}</Text> : null}
                   </View>
                   {facilityMedia ? <View className="spot-panel__facility-count"><SemanticIcon name="images" /><Text>{facilityImages.length}</Text></View> : null}
                 </View>;

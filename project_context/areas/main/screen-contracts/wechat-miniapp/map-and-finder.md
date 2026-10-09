@@ -65,6 +65,8 @@ Map/Search 的固定搜索锚点由同一占位文案与文本色责任维护：
 
 The visible TOTAL_CLOUD label is `云量`; the domain key and percentage meaning are unchanged. LIGHT carries a bulb outline and CLOUD a cloud outline beside the label; keep a separate checked indicator so icons do not replace selection semantics.
 
+正式设施的名称和状态文案由 `utils/facility-presentation` 供 Map、场地资料和文章设施引用共用；洗手间沿已采用名称，UNKNOWN 保持 `暂无数据`，不可用和季节性保留其独立意义。Map设施卡正文优先展示真实设施 `detail`，无说明时才使用 `summary`，不能以默认摘要遮掉审核合并后的停车/洗手间说明。共享设施资料的缺失开放时间、使用条件沿同一普通缺值表达，既有来源、核验、许可和媒体关联不变。
+
 ## My account and plans
 
 The sole daytime adopted resource is [My resource entry](../../../../../docs/design-resources/wechat-miniapp/my/ADOPTED.md). Root has no visible 我的 page title; retain native capsule, editable avatar and nickname, one Settings gear, one 观星计划 card and one 观星点创建与反馈 entry. No personal/external-profile link summary or entry, content-import entry, direct contribution form entry, or pending-count strip remains on My. External-profile management is retired from the Mini Program product topology; removing UI does not authorize deleting stored account data. Existing import infrastructure is not a visible My feature and has no newly approved replacement entry.

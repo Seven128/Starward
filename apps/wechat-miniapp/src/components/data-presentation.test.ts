@@ -6,6 +6,7 @@ import ts from "typescript";
 import { isProductSource, productSourceNames, SOURCE_KIND_LABEL } from "../utils/source-presentation";
 import { calendarDateInTimezone, clockTimeInTimezone } from "../utils/zoned-date";
 import type { SourceSummary } from "@starward/miniapp-contracts";
+import { FACILITY_LABEL, facilityStatusLabel } from "../utils/facility-presentation";
 
 const React = { createElement(type: any, props: any, ...children: any[]): any {
   return typeof type === "function" ? type({ ...props, children }) : { type, props, children };
@@ -25,10 +26,42 @@ const sample = Object.freeze({ id: "sample", kind: "TEST_FIXTURE", state: "SAMPL
   title: "测试数据说明", retrievedAt: "2026-09-15T00:00:00Z", publishedAt: null, validFrom: null, validTo: null,
   sourceUrl: "", licenseUrl: "", license: "Internal fixture", precision: "internal", limitations: ["仅测试"], confidence: null }) as SourceSummary;
 
+test("formal facility cards retain submitted descriptions and adopted missing-value labels", () => {
+  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("../pages/map/spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.CallExpression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && node.expression.getText(source) === "visibleFacilities.map") expression = node;
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  assert.ok(expression, "render the actual formal facility card mapping");
+  const labels = source.statements.filter(node => ts.isFunctionDeclaration(node) && ["facilityLabel", "facilityStatusLabel"].includes(node.name?.text ?? "")).map(node => node.getText(source)).join("\n");
+  const rendered = vm.runInNewContext(ts.transpileModule(labels + "\n" + expression.getText(source), {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
+  }).outputText, { React, Text: "Text", View: "View", Image: "Image", SemanticIcon: "SemanticIcon", mediaSource: (value: string) => value,
+    FACILITY_LABEL, facilityStatusLabel,
+    visibleFacilities: [{ type: "TOILET", status: "UNKNOWN", summary: "待核验", detail: "隔离TEST洗手间照片绑定；不是现实设施。", distanceM: null }],
+    facilityPhotos: () => [], openPhoto: () => {},
+  });
+  assert.match(text(rendered), /洗手间.*暂无数据.*隔离TEST洗手间照片绑定；不是现实设施。/s);
+  assert.doesNotMatch(text(rendered), /待核验/);
+});
+
+test("shared facility details distinguish unavailable from missing status, hours and conditions", () => {
+  const render = load("./facility-evidence.tsx", "FacilityEvidenceDetails", { Provenance: "Provenance", facilityStatusLabel, formatDisplayDate: (value: string) => value });
+  const evidence = { status: "UNKNOWN", detail: "用户提供的设施说明", summary: "待核验", distanceM: null, openingHours: null, usageCondition: null, verifiedAt: null, source: sample };
+  const missing = text(render({ evidence }));
+  assert.equal((missing.match(/暂无数据/g) ?? []).length, 3);
+  assert.match(missing, /用户提供的设施说明/);
+  assert.doesNotMatch(missing, /待核验/);
+  assert.match(text(render({ evidence: { ...evidence, status: "UNAVAILABLE", openingHours: "18:00–06:00", usageCondition: "出入需登记" } })), /不可用.*18:00–06:00.*出入需登记/s);
+});
+
 test("fixture navigation has identical content and geometry to ordinary navigation", () => {
   const render = (fixture: boolean) => load("./custom-nav.tsx", "CustomNav", {
     __MINIAPP_DEVELOPMENT_FIXTURE_MODE__: fixture, nativeStatusBarHeightPx: () => 44,
     nativeMenuClearancePx: () => 96, nativeNavigationInsets: () => ({ safeTop: 48 }), Taro: {},
+    usePageNavigation: () => ({ navigationError: null }),
   })({ title: "场地资料", back: true, right: "操作" });
   assert.equal(JSON.stringify(render(true)), JSON.stringify(render(false)));
   assert.match(text(render(true)), /场地资料.*操作/s);

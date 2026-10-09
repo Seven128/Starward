@@ -3,6 +3,20 @@ import test from "node:test";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import { projectPublicSpotMedia } from "./public-spot-media.ts";
 
+test("published facility photos use product labels while preserving submitted legacy captions", () => {
+  const spot = TEST_PUBLISHED_SPOT;
+  const legacy = { ...spot.media[0]!, id: "legacy:toilet", alt: "投稿者记录的厕所外观", caption: "投稿者原始厕所说明" };
+  const projected = projectPublicSpotMedia({ ...spot, media: [legacy] }, {
+    groups: { site: [], parking: ["upload:parking"], toilet: ["upload:toilet", legacy.id] },
+    uploads: [{ id: "upload:parking", kind: "parking" }, { id: "upload:toilet", kind: "toilet" }],
+  });
+  assert.deepEqual(projected.media.slice(0, 2).map(({ caption, alt }) => ({ caption, alt })), [
+    { caption: "停车照片", alt: `${spot.name}停车照片` },
+    { caption: "洗手间照片", alt: `${spot.name}洗手间照片` },
+  ]);
+  assert.deepEqual(projected.media[2], legacy, "original submitted media text is preserved");
+});
+
 test("current groups, order and canonical ownership govern public photos, including removals", () => {
   const spot = TEST_PUBLISHED_SPOT;
   const uploads = [{ id: "upload:one", kind: "parking" as const },

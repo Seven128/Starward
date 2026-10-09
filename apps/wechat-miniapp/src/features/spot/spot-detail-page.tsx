@@ -31,17 +31,9 @@ import "./spot-detail-page.scss";
 import { guideThumbnail } from "./guide-media";
 import { FacilityEvidenceDetails } from "@/components/facility-evidence";
 
+import { FACILITY_LABEL } from "@/utils/facility-presentation";
+
 export type SpotSegment = "GUIDES" | "SITE";
-const FACILITY_LABEL = {
-  PARKING: "停车",
-  TOILET: "厕所",
-  PLATFORM: "观测平台",
-  CHARGING: "充电",
-  CAMPING: "露营",
-  ROAD: "末段道路",
-  WALKING: "徒步",
-  SIGNAL: "通信信号",
-} as const;
 
 const OPENNESS_LABEL = {
   OPEN: "开放",
