@@ -83,8 +83,9 @@ test("Map retains its event modal subtree while inactive and rearms one foregrou
   const open = owner.render({ ...props, active: true }).props;
   assert.equal(open.show, true); assert.equal(open.children, content);
   assert.equal(open.position, "center"); assert.equal(open.zIndex, 1200);
-  assert.equal(open.onAfterLeave, undefined, "Map uses its existing before-leave callback timing");
+  assert.equal(typeof open.onAfterLeave, "function", "Map acknowledges native exit without delegating a second Back");
   open.onBeforeLeave(); open.onBeforeLeave(); assert.equal(commands, 1);
+  open.onAfterLeave();
   await new Promise(resolve => setImmediate(resolve)); owner.advance();
   assert.equal(owner.render({ ...props, active: true }).props.show, true);
   owner.render(props); owner.advance();
@@ -105,4 +106,60 @@ test("an unresolved or failed Back command cannot rearm or write after unmount",
     assert.equal(owner.timers.size, 0); assert.equal(owner.lateWrites, 0);
     assert.deepEqual(owner.warnings, failure ? ["native_back_command_failed"] : []);
   }
+});
+
+test("one native leave cycle waits for exit and enter acknowledgements before accepting another Back", async () => {
+  for (const nativeMapContent of [undefined, { eventModal: "retained" }]) {
+    const owner = boundary();
+    let commands = 0;
+    const props = { active: true, nativeMapContent, onBack: () => { commands++; } };
+    owner.render(props); owner.advance();
+    const open = owner.render(props).props;
+    open.onBeforeLeave(); owner.render(props);
+    await new Promise(resolve => setImmediate(resolve)); owner.advance();
+    assert.equal(owner.render(props).props.show, false,
+      "a settled command cannot rearm before the native container finishes leaving");
+    open.onBeforeLeave(); assert.equal(commands, 1, "a delayed duplicate beforeleave still belongs to the same exit");
+    owner.render(props).props.onAfterLeave(); owner.advance();
+    const reentering = owner.render(props).props;
+    assert.equal(reentering.show, true);
+    reentering.onBeforeLeave(); assert.equal(commands, 1, "rearming does not release the old cycle before native entry completes");
+    reentering.onAfterEnter();
+    owner.render(props).props.onBeforeLeave(); assert.equal(commands, 2, "the next acknowledged native presentation accepts one new Back");
+    owner.unmount(); await new Promise(resolve => setImmediate(resolve)); owner.advance();
+    assert.equal(owner.lateWrites, 0);
+  }
+});
+
+test("a retired asynchronous Back cannot rearm a newer presentation", async () => {
+  const owner = boundary();
+  const commands: (() => void)[] = [];
+  const props = { active: true, onBack: () => new Promise<void>(resolve => { commands.push(resolve); }) };
+  owner.render(props); owner.advance();
+  owner.render(props).props.onBeforeLeave();
+  owner.render({ ...props, active: false }); owner.advance();
+  owner.render(props); owner.advance();
+  const current = owner.render(props).props;
+  current.onAfterEnter(); current.onBeforeLeave(); current.onAfterLeave();
+  owner.render(props); assert.equal(commands.length, 2);
+  const [retired, currentCommand] = commands;
+  assert.ok(retired && currentCommand);
+  retired(); await new Promise(resolve => setImmediate(resolve)); owner.advance();
+  assert.equal(owner.render(props).props.show, false, "the old completion cannot settle the new native cycle");
+  currentCommand(); await new Promise(resolve => setImmediate(resolve)); owner.advance();
+  assert.equal(owner.render(props).props.show, true);
+  owner.unmount();
+});
+
+test("a late native callback cannot delegate or write after its owner unmounts", async () => {
+  const owner = boundary();
+  let commands = 0;
+  const props = { active: true, onBack: () => { commands++; } };
+  owner.render(props); owner.advance();
+  const shown = owner.render(props).props;
+  shown.onBeforeLeave(); owner.unmount(); shown.onBeforeLeave();
+  await new Promise(resolve => setImmediate(resolve)); owner.advance();
+  assert.equal(commands, 1);
+  assert.equal(owner.lateWrites, 0);
+  assert.equal(owner.timers.size, 0);
 });

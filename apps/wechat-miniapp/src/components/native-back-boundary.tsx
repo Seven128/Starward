@@ -2,6 +2,8 @@ import { PageContainer, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
+type LeaveCycle = { commandSettled: boolean; exited: boolean };
+
 /**
  * Gives a custom modal surface one native WEAPP Back layer. The visible modal
  * remains owned by its caller. This invisible PageContainer stays mounted and
@@ -20,7 +22,7 @@ export function NativeBackBoundary({
 }) {
   const activeRef = useRef(active);
   const onBackRef = useRef(onBack);
-  const leaveHandled = useRef(false);
+  const leaveCycle = useRef<LeaveCycle | null>(null);
   const alive = useRef(true);
   const rearmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [present, setPresent] = useState(false);
@@ -31,10 +33,14 @@ export function NativeBackBoundary({
     alive.current = true;
     return () => {
       alive.current = false;
+      leaveCycle.current = null;
       if (rearmTimer.current) clearTimeout(rearmTimer.current);
     };
   }, []);
   useEffect(() => {
+    leaveCycle.current = null;
+    if (rearmTimer.current) clearTimeout(rearmTimer.current);
+    rearmTimer.current = null;
     setArmed(false);
     if (!active) {
       const timer = setTimeout(() => setPresent(false), 32);
@@ -48,10 +54,22 @@ export function NativeBackBoundary({
     return () => clearTimeout(timer);
   }, [active]);
 
+  const rearm = (cycle: LeaveCycle) => {
+    if (!alive.current || !activeRef.current || leaveCycle.current !== cycle
+      || !cycle.commandSettled || !cycle.exited || rearmTimer.current) return;
+    // The native exit must finish before WEAPP observes another shown frame.
+    // Keep the old cycle fenced until the new native presentation acknowledges
+    // entry; a delayed beforeleave must not close the caller's next surface.
+    rearmTimer.current = setTimeout(() => {
+      rearmTimer.current = null;
+      if (alive.current && activeRef.current && leaveCycle.current === cycle) setArmed(true);
+    }, 32);
+  };
+
   const handleLeave = () => {
-    if (!activeRef.current) return;
-    if (leaveHandled.current) return;
-    leaveHandled.current = true;
+    if (!alive.current || !activeRef.current || !armed || leaveCycle.current) return;
+    const cycle: LeaveCycle = { commandSettled: false, exited: false };
+    leaveCycle.current = cycle;
     setArmed(false);
     let request: Promise<void>;
     try {
@@ -62,14 +80,22 @@ export function NativeBackBoundary({
     void request.catch(() => {
       console.warn("native_back_command_failed");
     }).finally(() => {
-      if (!alive.current) return;
-      rearmTimer.current = setTimeout(() => {
-        rearmTimer.current = null;
-        if (!alive.current) return;
-        leaveHandled.current = false;
-        if (activeRef.current) setArmed(true);
-      }, nativeMapContent ? 0 : 32);
+      if (!alive.current || leaveCycle.current !== cycle) return;
+      cycle.commandSettled = true;
+      rearm(cycle);
     });
+  };
+
+  const handleAfterLeave = () => {
+    if (!alive.current) return;
+    const cycle = leaveCycle.current;
+    if (!cycle) return;
+    cycle.exited = true;
+    rearm(cycle);
+  };
+
+  const handleAfterEnter = () => {
+    if (alive.current && activeRef.current && armed) leaveCycle.current = null;
   };
 
   if (!present && !nativeMapContent) return null;
@@ -90,7 +116,8 @@ export function NativeBackBoundary({
         ? "width:100vw;height:100vh;min-height:100vh;overflow:visible;background:transparent;pointer-events:none;"
         : "width:1px;height:1px;min-height:0;overflow:hidden;background:transparent;pointer-events:none;"}
       onBeforeLeave={handleLeave}
-      {...(nativeMapContent ? {} : { onAfterLeave: handleLeave })}
+      onAfterLeave={handleAfterLeave}
+      onAfterEnter={handleAfterEnter}
     >
       {nativeMapContent ?? <View aria-hidden="true" />}
     </PageContainer>

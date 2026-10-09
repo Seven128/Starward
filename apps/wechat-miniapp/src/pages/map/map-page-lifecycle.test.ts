@@ -50,7 +50,7 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
     };
     visit(source);
     let show: (() => void) | undefined, hide: (() => void) | undefined;
-    let visible = false, stopped = 0, offset = 40, dragging = true;
+    let visible = false, stopped = 0, offset = 40, dragging = true, calendarOwner: string | null = "current-calendar";
     let retainedFailure = false;
     const epoch = { current: 3 }, drag = { current: {} as object | null };
     const editorScope = {current: "visible owner" as string | null};
@@ -59,6 +59,7 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
       useDidShow: (callback: () => void) => { show = callback; },
       useDidHide: (callback: () => void) => { hide = callback; },
       setPageVisible: (value: boolean) => { visible = value; },
+      setCalendarOwner: (value: string | null) => { calendarOwner = value; },
       invalidateMapPointIntent: (preserveFailure: boolean) => { retainedFailure = preserveFailure; },
       stopPanelSpring: () => { stopped++; }, navigationEpoch: epoch, panelDrag: drag,
       setPanelDragOffset: (value: number) => { offset = value; },
@@ -77,6 +78,7 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
     assert.equal(drag.current, null);
     assert.equal(offset, 0);
     assert.equal(dragging, false);
+    assert.equal(calendarOwner, null, "a hidden retained page cannot reopen its previous calendar");
     assert.equal(retainedFailure, true, "hiding cancels in-flight work but retains the failed location for recovery");
     assert.equal(editorScope.current, null, "a late confirmation or exit cannot retain the hidden page's scope");
     assert.equal(cancelledEditor, 1);

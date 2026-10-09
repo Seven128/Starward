@@ -170,6 +170,8 @@ test("the astronomy host keeps confirmed time presentation while its request con
   assert.ok(expression);
   const confirmed = { selectedAtUtc: "2026-10-07T16:00:00Z", timezone: "Asia/Shanghai", localDate: "2026-10-07" };
   for (const context of [null, confirmed]) {
+    const calendarChanges: boolean[] = [], dates: string[] = [];
+    let cancellations = 0;
     const tree = vm.runInNewContext(ts.transpileModule(`(${expression.getText(source)});`, {
       compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
     }).outputText, {
@@ -177,7 +179,9 @@ test("the astronomy host keeps confirmed time presentation while its request con
       dateOptions: [confirmed.localDate], selectedDate: confirmed.localDate, datePickerOpen: false, timeSaving: false,
       timeFrames: [], timeFramesPending: true, timeFramesFailed: false, timeRulerIdentity: "same-observation",
       skyPending: false, skyReport: {}, skyError: null, skyStale: false, temporalFailure: null,
-      setDatePickerOpen() {}, onTimeCancel() {}, onDateCommit() {}, onTimePreview() {}, onTimeCommit() {},
+      onDatePickerOpenChange: (open: boolean) => calendarChanges.push(open),
+      onTimeCancel: () => { cancellations++; }, onDateCommit: (date: string) => dates.push(date),
+      onTimePreview() {}, onTimeCommit() {},
       onTimeFramesRecover() {}, observationNightLabel: () => "观测夜",
       ObservationDateControl: "date", MapTimeRuler: "ruler", Text: "text", StatusPanel: "status",
       React: { Fragment: "fragment", createElement: (type: string, props: object, ...children: Element[]) => ({ type, props, children: children.flat() }) },
@@ -186,7 +190,15 @@ test("the astronomy host keeps confirmed time presentation while its request con
     assert.ok(ruler, "a confirmed time must not lose its ruler when the request Context is temporarily null");
     assert.equal(ruler.props.selectedAt, confirmed.selectedAtUtc);
     assert.equal(ruler.props.disabled, true);
-    assert.equal(tree.children.find((child: Element) => child?.type === "date").props.busy, !context);
+    const calendar = tree.children.find((child: Element) => child?.type === "date");
+    assert.equal(calendar.props.busy, !context);
+    assert.equal(calendar.props.nativeBackBoundary, false);
+    if (context) {
+      calendar.props.onOpenChange(true); calendar.props.onSelect("2026-10-08");
+      assert.deepEqual(calendarChanges, [true, false]);
+      assert.equal(cancellations, 1);
+      assert.deepEqual(dates, ["2026-10-08"]);
+    }
   }
 });
 

@@ -164,6 +164,8 @@ export function SpotInformationPanel({
   dateOptions,
   selectedDate,
   todayDate,
+  datePickerOpen,
+  onDatePickerOpenChange,
   onDateCommit,
   onTimePreview,
   onTimeCommit,
@@ -220,6 +222,8 @@ export function SpotInformationPanel({
   dateOptions: readonly string[];
   selectedDate: string;
   todayDate: string;
+  datePickerOpen: boolean;
+  onDatePickerOpenChange: (open: boolean) => void;
   onDateCommit: (date: string) => void;
   onTimePreview: (index: number) => void;
   onTimeCommit: (index: number) => void;
@@ -241,7 +245,6 @@ export function SpotInformationPanel({
   onViewerBackHandlerChange?: (handler: (() => void) | null) => void;
   onPhotoIntent: () => Promise<boolean>;
 }) {
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [viewerKind, setViewerKind] = useState<"parking" | "toilet" | null>(null);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [section, setSection] = useState<
@@ -655,11 +658,12 @@ export function SpotInformationPanel({
                 dates={dateOptions}
                 selectedDate={selectedDate}
                 today={todayDate}
+                nativeBackBoundary={false}
                 open={datePickerOpen}
                 busy={!context || timeSaving}
-                onOpenChange={setDatePickerOpen}
+                onOpenChange={onDatePickerOpenChange}
                 onSelect={(date) => {
-                  setDatePickerOpen(false);
+                  onDatePickerOpenChange(false);
                   onTimeCancel();
                   onDateCommit(date);
                 }}

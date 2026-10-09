@@ -13,9 +13,10 @@ test("custom modal owners share one native WEAPP Back boundary", () => {
   assert.match(boundary, /<PageContainer\s+show=\{active && armed\}/u);
   assert.doesNotMatch(boundary, /RootPortal/u);
   assert.match(boundary, /onBeforeLeave=\{handleLeave\}/u);
-  assert.match(boundary, /onAfterLeave: handleLeave/u);
-  assert.match(boundary, /leaveHandled\.current/u);
-  assert.match(boundary, /if \(activeRef\.current\) setArmed\(true\)/u);
+  assert.match(boundary, /onAfterLeave=\{handleAfterLeave\}/u);
+  assert.match(boundary, /onAfterEnter=\{handleAfterEnter\}/u);
+  assert.match(boundary, /leaveCycle\.current/u);
+  assert.match(boundary, /activeRef\.current && leaveCycle\.current === cycle\) setArmed\(true\)/u);
 
   const nickname = source("../features/my/my-nickname.tsx");
   const nicknameVisible = nickname.match(/\{(\w+) \? <View className="[^"]*\bmy-nickname-overlay\b[^"]*"/u)?.[1];

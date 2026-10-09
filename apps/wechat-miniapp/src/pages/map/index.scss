@@ -23,6 +23,13 @@
   top: max(var(--notification-top), calc(100vh - var(--notification-bottom-reserve) - 156Px));
   --notification-available-height: 156Px;
 }
+// The same host remains active above the actual calendar sheet. Its scroll
+// region cannot cover dates; unseen entries retain the shared queue/timer rule.
+.map-page--calendar-open .notification-host {
+  --map-notification-top: max(var(--notification-top), calc(var(--map-search-top) + var(--map-search-height) + 8Px));
+  top: var(--map-notification-top);
+  --notification-available-height: max(0Px, calc(var(--map-calendar-top, 0Px) - var(--map-notification-top) - 8Px));
+}
 .map-workspace {
   position: relative;
   flex: 1;

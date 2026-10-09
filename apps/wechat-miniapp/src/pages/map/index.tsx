@@ -229,7 +229,8 @@ export default function MapPage() {
     requestGeneration: number;
     mapResetVersion: number;
   }) | null>(null);
-  const [layerDatePickerOpen, setLayerDatePickerOpen] = useState(false);
+  const [calendarOwner, setCalendarOwner] = useState<string | null>(null);
+  const [calendarBounds, setCalendarBounds] = useState<{ identity: string; top: number } | null>(null);
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [eventModalPresent, setEventModalPresent] = useState(false);
   const eventModalOpenRef = useRef(false);
@@ -289,6 +290,7 @@ export default function MapPage() {
     ? JSON.stringify([currentDraftUserId(), nativeMap.mapId, mapResetVersion, navigationEpoch.current])
     : null;
   const setBottomPresentation = useCallback((presentation: BottomPresentation) => {
+    setCalendarOwner(null);
     if (presentation !== "spot-editor") editorPresentation.cancel();
     else if (bottomPresentationRef.current !== "spot-editor") editorPresentation.enter(getReducedMotion());
     bottomPresentationRef.current = presentation;
@@ -406,6 +408,7 @@ export default function MapPage() {
 
   useDidShow(() => setPageVisible(true));
   useDidHide(() => {
+    setCalendarOwner(null);
     invalidateMapPointIntent(true); stopPanelSpring(); navigationEpoch.current += 1;
     editorPresentationScope.current = null;
     if (editorPresentation.isClosing()) setBottomPresentation("none");
@@ -967,6 +970,35 @@ export default function MapPage() {
   const presentedMapCivilDate = timeReference
     ? civilDateForInstant(projectedAt, timeReference.timezone)
     : selectedMapCivilDate;
+  // Both date consumers belong to the current page/presentation and confirmed
+  // Context. A replacement cannot render a previous owner's open calendar.
+  const calendarScope = JSON.stringify([accountOwnerId, mapResetVersion, bottomPresentation,
+    panelGeometryIdentity, timeReference?.contextId, timeReference?.revision,
+    timeReference?.contextFingerprint, retiredObservationContextId]);
+  const setDatePickerOpen = (open: boolean) => setCalendarOwner(open ? calendarScope : null);
+  const datePickerVisible = pageVisible && calendarOwner === calendarScope &&
+    ((bottomPresentation === "layer-sheet" && visibleLayer === "TOTAL_CLOUD") ||
+      (bottomPresentation === "spot-panel" && !selectedProposal && Boolean(spotTimeContext)));
+  const calendarLayoutIdentity = datePickerVisible
+    ? JSON.stringify([calendarScope, panelLayoutVersion, mapDateOptions]) : null;
+  useEffect(() => {
+    if (!calendarLayoutIdentity) { setCalendarBounds(null); return; }
+    let disposed = false;
+    Taro.nextTick(() => {
+      if (disposed) return;
+      try {
+        Taro.createSelectorQuery().select(".observation-calendar__sheet").boundingClientRect().exec(results => {
+          const top = (results?.[0] as { top?: number } | null)?.top;
+          if (!disposed && typeof top === "number" && Number.isFinite(top) && top >= 0)
+            setCalendarBounds({ identity: calendarLayoutIdentity, top });
+        });
+      } catch {
+        // Unmeasured space has no floating hit area. Notices stay queued and
+        // their original inline recovery remains available after closing.
+      }
+    });
+    return () => { disposed = true; };
+  }, [calendarLayoutIdentity]);
   const visibleTemporalFailure = temporalFailure && activeContext &&
     temporalFailure.contextId === activeContext.contextId &&
     temporalFailure.revision === activeContext.revision &&
@@ -1748,6 +1780,11 @@ export default function MapPage() {
       imageViewerBack.current();
       return;
     }
+    if (datePickerVisible) {
+      if (!timeSaving && activeContext && (bottomPresentation !== "spot-panel" || detailContextReady))
+        setDatePickerOpen(false);
+      return;
+    }
     const presentation = bottomPresentationRef.current;
     if (presentation === "spot-editor") {
       if (editorHandoffBack.current) {editorHandoffBack.current(); return;}
@@ -2132,6 +2169,9 @@ export default function MapPage() {
     // The CSS fallback remains bounded when native window metrics are absent.
   }
   const mapPresentationStyle = {
+    ...(datePickerVisible ? {
+      "--map-calendar-top": `${calendarBounds?.identity === calendarLayoutIdentity ? calendarBounds.top : 0}px`,
+    } : {}),
     ...(mapStatusBarHeight === undefined ? {} : {
       "--map-title-top": `${mapStatusBarHeight + 4}px`,
     }),
@@ -2162,6 +2202,7 @@ export default function MapPage() {
           : "") +
         (panelDragging ? " map-page--panel-dragging" : "") +
         (panelSettling ? " map-page--panel-settling" : "") +
+        (datePickerVisible ? " map-page--calendar-open" : "") +
         (bottomPresentation === "spot-editor" ? " map-page--spot-editor" : "")
       }
       style={mapPresentationStyle}
@@ -2275,7 +2316,7 @@ export default function MapPage() {
               aria-label="浏览天文事件"
               onClick={(event) => {
                 event.stopPropagation();
-                setLayerDatePickerOpen(false);
+                setDatePickerOpen(false);
                 setEventModalOpen(true);
               }}
             ><SemanticIcon name="meteor" /></Button> : null}
@@ -2443,6 +2484,8 @@ export default function MapPage() {
                 dateOptions={mapDateOptions}
                 selectedDate={presentedMapCivilDate}
                 todayDate={mapTodayCivilDate}
+                datePickerOpen={datePickerVisible}
+                onDatePickerOpenChange={setDatePickerOpen}
                 onDateCommit={(date) => void commitMapDate(date)}
                 onTimePreview={(index) => {
                   setPanelPreviewFrameIndex(index);
@@ -2486,7 +2529,7 @@ export default function MapPage() {
                         disabled={!activeContext || scene.isPending || timeSaving}
                         aria-label={`${overlayLabels[overlay]}${selectedLayer ? "，已选择" : ""}`}
                         onClick={() => {
-                          if (overlay === "LIGHT") setLayerDatePickerOpen(false);
+                          if (overlay === "LIGHT") setDatePickerOpen(false);
                           setAnalysisOverlay(overlay);
                           setAnnouncement(`已选择${overlayLabels[overlay]}。`);
                         }}
@@ -2551,14 +2594,15 @@ export default function MapPage() {
                       dates={mapDateOptions}
                       selectedDate={presentedMapCivilDate}
                       today={mapTodayCivilDate}
-                      open={layerDatePickerOpen}
+                      nativeBackBoundary={false}
+                      open={datePickerVisible}
                       busy={!activeContext || timeSaving}
                       onOpenChange={(open) => {
                         if (open) setTimePreviewing(false);
-                        setLayerDatePickerOpen(open);
+                        setDatePickerOpen(open);
                       }}
                       onSelect={(date) => {
-                        setLayerDatePickerOpen(false);
+                        setDatePickerOpen(false);
                         setTimePreviewing(false);
                         void commitMapDate(date);
                       }}
