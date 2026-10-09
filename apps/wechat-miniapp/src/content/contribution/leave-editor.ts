@@ -4,6 +4,8 @@ export async function confirmContributionEditorLeave(input: {
   busy: boolean;
   dirty: boolean;
   confirm: () => Promise<boolean>;
+  discard: () => boolean;
 }) {
-  return confirmEditorLeave(input);
+  if (!(await confirmEditorLeave(input))) return false;
+  return !input.dirty || input.discard();
 }

@@ -157,10 +157,11 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
     return () => { active = false; };
   }, [form.kind, form.ownerChanged, readonlyRecord, pageVisible, previewDraftId, previewFailureKey, previewMediaKey, previewPathKey]);
 
-  const leaveState = useRef({ busy: !form.ownerChanged && form.commandBusy, dirty: form.hasUnsavedChanges });
-  leaveState.current = { busy: !form.ownerChanged && form.commandBusy, dirty: form.hasUnsavedChanges };
+  const leaveState = useRef({ busy: !form.ownerChanged && form.commandBusy, dirty: form.hasUnsavedChanges, discard: form.discardUnsavedChanges });
+  leaveState.current = { busy: !form.ownerChanged && form.commandBusy, dirty: form.hasUnsavedChanges, discard: form.discardUnsavedChanges };
   const confirmLeave = useCallback(() => confirmContributionEditorLeave({
     ...leaveState.current,
+    discard: () => !leaveState.current.busy && leaveState.current.discard(),
     confirm: async () => {
       const result = await Taro.showModal({ title: "放弃未保存的修改？", content: "已保存的远端草稿不会删除；本次未保存输入将被放弃。", confirmText: "放弃修改", confirmColor: "#b3261e" });
       return result.confirm;

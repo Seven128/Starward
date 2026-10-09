@@ -12,6 +12,9 @@ export function useLocalContributionDraft(value: LocalContributionDraft, routeSp
   const loaded = useRef<string | null>(null);
   const initial = useRef(JSON.stringify(value));
   const saved = useRef<string | null>(null);
+  const discarded = useRef<string | null>(null);
+  const serialized = JSON.stringify(value);
+  if (discarded.current !== serialized) discarded.current = null;
   const latest = useRef({ value, key, suspended });
   latest.current = { value, key, suspended };
   const [recovery, setRecovery] = useState<LocalContributionDraft | null>(null);
@@ -20,7 +23,7 @@ export function useLocalContributionDraft(value: LocalContributionDraft, routeSp
   const [storageError, setStorageError] = useState(false);
   const persist = (reportError: boolean) => {
     const item = latest.current;
-    if (!item.key || item.suspended || recoveryRef.current || loaded.current !== item.key || currentDraftUserId() !== owner.current) return;
+    if (!item.key || item.suspended || recoveryRef.current || loaded.current !== item.key || currentDraftUserId() !== owner.current || JSON.stringify(item.value) === discarded.current) return;
     const input = item.value;
     try {
       const hasContent = input.detail || input.candidateName || input.latitude || input.longitude ||
@@ -30,7 +33,6 @@ export function useLocalContributionDraft(value: LocalContributionDraft, routeSp
       if (reportError) setStorageError(false);
     } catch { if (reportError) setStorageError(true); }
   };
-  const serialized = JSON.stringify(value);
   useEffect(() => {
     if (!key) return;
     if (loaded.current !== key) {
@@ -59,13 +61,21 @@ export function useLocalContributionDraft(value: LocalContributionDraft, routeSp
     if (!key || currentDraftUserId() !== owner.current) return;
     clear();
   };
+  const discardChanges = () => {
+    const snapshot = JSON.stringify(latest.current.value);
+    if (!clear()) return false;
+    // Pending timers and hide/unmount must not recreate an explicitly discarded copy.
+    // A subsequent edit retires this marker and keeps normal recovery working.
+    discarded.current = snapshot;
+    return true;
+  };
   const advanceSavedRevision = (submissionId: string, revision: number) => {
     if (currentDraftUserId() !== owner.current || !saved.current) return;
     const baseline = JSON.parse(saved.current) as LocalContributionDraft;
     if (baseline.baseSubmissionId !== submissionId || revision < (baseline.baseRevision ?? 0)) return;
     saved.current = JSON.stringify({ ...baseline, baseRevision: revision });
   };
-  return { recovery, isRecoveryPending: () => Boolean(recoveryRef.current), storageError, clear, markSaved, advanceSavedRevision,
+  return { recovery, isRecoveryPending: () => Boolean(recoveryRef.current), storageError, clear, discardChanges, markSaved, advanceSavedRevision,
     hasUnsavedChanges: serialized !== (saved.current ?? initial.current),
     owner: owner.current, accept: () => { recoveryRef.current = null; setRecovery(null); } };
 }

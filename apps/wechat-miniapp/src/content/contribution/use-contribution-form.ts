@@ -368,6 +368,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     localStorageError: localDraft.storageError,
     restoreLocalDraft,
     discardLocalDraft: localDraft.clear,
+    discardUnsavedChanges: localDraft.discardChanges,
     inheritedSpot: initialSpotId.startsWith("spot:"),
     forceNew,
     requestedSubmissionId,

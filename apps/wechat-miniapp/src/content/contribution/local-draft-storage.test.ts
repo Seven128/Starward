@@ -144,6 +144,44 @@ test("partial field edits survive hiding and reverting an empty form removes the
   assert.equal(stored, undefined, "unrelated or older receipts must not move the saved baseline");
 });
 
+test("explicitly discarded edits stay retired through pending timers, hiding and unmount, while later edits remain recoverable", () => {
+  const source = ts.createSourceFile("local.ts", readFileSync(new URL("./use-local-draft.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const declaration = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useLocalContributionDraft");
+  assert.ok(declaration);
+  const empty = { schema: 1, baseSubmissionId: null, baseRevision: null, spotId: "", spotName: "", kind: "NEW_SPOT_PROPOSAL", topics: ["OTHER"], date: "", time: "", detail: "", candidateName: "", candidateRegion: "", latitude: "", longitude: "", rightsConfirmed: false, preciseLocationConsent: false };
+  for (const remote of [false, true]) {
+    let owner = "a", failRemoval = false, stored: unknown, cursor = 0, stateCursor = 0, hide = () => {}, effects: Array<() => unknown> = [], timers: Array<() => void> = [];
+    const refs: Array<{ current: unknown }> = [], states: unknown[] = [], cleanups: Array<() => void> = [];
+    const hook = vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export /, "") + "\nuseLocalContributionDraft;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+      Taro: { getStorageSync: () => stored, setStorageSync: (_key: string, input: unknown) => { stored = input; }, removeStorageSync: () => { if (failRemoval) throw Error("storage unavailable"); stored = undefined; } },
+      currentDraftUserId: () => owner, contributionDraftKey, parseLocalContributionDraft,
+      useRef: (current: unknown) => refs[cursor++] ?? (refs[cursor - 1] = { current }),
+      useState: (initial: unknown) => { const index = stateCursor++; if (!(index in states)) states[index] = initial; return [states[index], (next: unknown) => { states[index] = next; }]; },
+      useEffect: (effect: () => unknown) => effects.push(effect), useDidHide: (callback: () => void) => { hide = callback; },
+      setTimeout: (callback: () => void) => { timers.push(callback); return timers.length; }, clearTimeout() {},
+    });
+    const render = (input: unknown) => { cursor = 0; stateCursor = 0; effects = []; const result = hook(input, "", false); effects.forEach(effect => { const cleanup = effect(); if (typeof cleanup === "function") cleanups.push(cleanup as () => void); }); return result; };
+    const saved = remote ? { ...empty, baseSubmissionId: "contribution:saved", baseRevision: 11, detail: "远端已保存内容" } : empty;
+    render(empty).markSaved(saved);
+    const edited = { ...saved, detail: "明确放弃的输入" }, current = render(edited);
+    hide(); assert.deepEqual(stored, edited);
+    failRemoval = true;
+    assert.equal(current.discardChanges(), false, "failed removal must keep input and refuse discard");
+    hide(); assert.deepEqual(stored, edited);
+    failRemoval = false; owner = "b";
+    assert.equal(current.discardChanges(), false, "a late confirmation cannot remove another owner's copy");
+    assert.deepEqual(stored, edited); owner = "a";
+    assert.equal(current.discardChanges(), true);
+    timers.forEach(timer => timer()); hide(); cleanups.forEach(cleanup => cleanup());
+    assert.equal(stored, undefined, "discarded content must not be resurrected by lifecycle flushes");
+    render(edited); timers.forEach(timer => timer()); hide();
+    assert.equal(stored, undefined, "unchanged rendering after failed navigation must not resurrect the discarded copy");
+    const nextEdit = { ...edited, detail: "离页失败后继续编辑" };
+    render(nextEdit); hide(); assert.deepEqual(stored, nextEdit, "later edits still get a recovery copy");
+    render(edited); hide(); assert.deepEqual(stored, edited, "returning to the same text after a new edit is a new intent");
+  }
+});
+
 for (const [name, candidateProfile, datedLocation] of [
   ["PostgreSQL jsonb profile key order", JSON.parse('{"media":{},"fields":{"name":"未选址的草稿"},"intake":{"contact":{"kind":null,"number":"","source":"","purpose":"","publicPermissionConfirmed":false},"version":1,"openness":null,"legalEntry":null,"nightSafety":null}}'), false],
   ["legacy profile without structured intake", { fields: { name: "未选址的草稿", openness: "开放" }, media: {} }, false],
