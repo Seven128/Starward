@@ -204,6 +204,29 @@ test("partial field edits survive hiding and reverting an empty form removes the
   baseline.advanceSavedRevision(saved.baseSubmissionId, 3);
   render(reverted);
   assert.equal(stored, undefined, "unrelated or older receipts must not move the saved baseline");
+
+  const photoDraft = { ...saved, baseRevision: 7,
+    candidateProfile: { fields: { detail: "已保存的点位说明" }, media: { site: ["upload:original"] } } };
+  render(photoDraft).markSaved(photoDraft);
+  const removing = render(photoDraft);
+  removing.advanceSavedRevision(saved.baseSubmissionId, 8, {});
+  const withoutPhoto = { ...photoDraft, baseRevision: 8,
+    candidateProfile: { ...photoDraft.candidateProfile, media: {} } };
+  assert.equal(render(withoutPhoto).hasUnsavedChanges, false,
+    "confirmed media removal alone must not create unsaved field changes");
+  assert.equal(stored, undefined);
+
+  const editedPhotoDraft = { ...withoutPhoto, candidateProfile: {
+    ...withoutPhoto.candidateProfile, fields: { detail: "媒体写入期间未保存的点位说明" } } };
+  render(editedPhotoDraft).advanceSavedRevision(saved.baseSubmissionId, 9, { site: ["upload:replacement"] });
+  const editedAfterMedia = { ...editedPhotoDraft, baseRevision: 9, candidateProfile: {
+    ...editedPhotoDraft.candidateProfile, media: { site: ["upload:replacement"] } } };
+  assert.equal(render(editedAfterMedia).hasUnsavedChanges, true);
+  assert.deepEqual(stored, editedAfterMedia, "only the confirmed media baseline advances; unsaved fields survive hiding");
+  const revertedFields = { ...editedAfterMedia, candidateProfile: {
+    ...editedAfterMedia.candidateProfile, fields: photoDraft.candidateProfile.fields } };
+  assert.equal(render(revertedFields).hasUnsavedChanges, false);
+  assert.equal(stored, undefined, "reverting fields after a media write retires the recovery copy");
 });
 
 test("explicitly discarded edits stay retired through pending timers, hiding and unmount, while later edits remain recoverable", () => {
@@ -278,7 +301,7 @@ for (const [name, candidateProfile, datedLocation] of [
       candidateFields: emptySpotDocumentValues(), candidateIntake: emptyCandidateIntake(), candidateMedia: {},
       candidateDocumentProposal, candidateIntakeFromProfile, spotDocumentValuesFromProposal, calendarDateInTimezone, clockTimeInTimezone,
     });
-    for (const field of ["draft", "pendingSubmission", "conflictDraft", "boundSpotId", "boundSpotName", "kind", "topics", "detail", "rightsConfirmed", "preciseLocationConsent", "candidateFields", "candidateIntake", "candidateMedia", "candidateMediaPreviews", "date", "time", "candidateName", "candidateRegion", "candidatePlaceLabel", "latitude", "longitude", "phase"])
+    for (const field of ["draft", "savedAt", "pendingSubmission", "conflictDraft", "boundSpotId", "boundSpotName", "kind", "topics", "detail", "rightsConfirmed", "preciseLocationConsent", "candidateFields", "candidateIntake", "candidateMedia", "candidateMediaPreviews", "date", "time", "candidateName", "candidateRegion", "candidatePlaceLabel", "latitude", "longitude", "phase"])
       context[`set${field[0]!.toUpperCase()}${field.slice(1)}`] = (value: unknown) => { context[field] = value; };
     const form = vm.runInContext(ts.transpileModule(`({ apply: ${applyText}, current: () => (${currentValueText}) });`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, context);
     const render = () => { cursor = 0; effects = []; const result = hook(form.current(), "", false); effects.forEach(effect => effect()); hide(); return result; };

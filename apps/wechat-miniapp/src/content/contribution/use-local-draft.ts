@@ -69,11 +69,15 @@ export function useLocalContributionDraft(value: LocalContributionDraft, routeSp
     discarded.current = snapshot;
     return true;
   };
-  const advanceSavedRevision = (submissionId: string, revision: number) => {
+  const advanceSavedRevision = (submissionId: string, revision: number, media?: NonNullable<LocalContributionDraft["candidateProfile"]>["media"]) => {
     if (currentDraftUserId() !== owner.current || !saved.current) return;
     const baseline = JSON.parse(saved.current) as LocalContributionDraft;
     if (baseline.baseSubmissionId !== submissionId || revision < (baseline.baseRevision ?? 0)) return;
-    saved.current = JSON.stringify({ ...baseline, baseRevision: revision });
+    saved.current = JSON.stringify({ ...baseline, baseRevision: revision,
+      ...(baseline.candidateProfile && media !== undefined ? {
+        candidateProfile: { ...baseline.candidateProfile, media },
+      } : {}),
+    });
   };
   return { recovery, isRecoveryPending: () => Boolean(recoveryRef.current), storageError, clear, discardChanges, markSaved, advanceSavedRevision,
     hasUnsavedChanges: serialized !== (saved.current ?? initial.current),

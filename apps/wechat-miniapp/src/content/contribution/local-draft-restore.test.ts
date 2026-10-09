@@ -36,14 +36,14 @@ test("local recovery preserves editable draft revisions and refuses submitted or
         if (interruption === "aba") { owner = "a"; reset++; operations.observe(); }
         if (interruption === "hide") operations.hide();
         if (interruption === "unmount") operations.dispose();
-        return { data: { submissions: [{ submissionId: "contribution:a", revision, state }] } };
+        return { data: { submissions: [{ submissionId: "contribution:a", revision, state, updatedAt: "2026-09-06T12:00:00Z" }] } };
       },
       contributionSubmissionState: (item: { state: string }) => item.state,
       spotDocumentValuesFromProposal: (proposal: { fields?: Record<string, string> } | undefined) => ({ name: "", address: "", ...(proposal?.fields ?? {}) }),
       announce: (_tone: string, title: string) => notices.push(title),
       candidateIntakeFromProfile,
     };
-    for (const field of ["CommandBusy", "Draft", "ConflictDraft", "BoundSpotId", "BoundSpotName", "Kind", "Topics", "Date", "Time", "Detail", "CandidateName", "CandidateRegion", "CandidatePlaceLabel", "CandidateFields", "CandidateMedia", "CandidateIntake", "Latitude", "Longitude", "RightsConfirmed", "PreciseLocationConsent", "Phase"]) {
+    for (const field of ["CommandBusy", "Draft", "SavedAt", "ConflictDraft", "BoundSpotId", "BoundSpotName", "Kind", "Topics", "Date", "Time", "Detail", "CandidateName", "CandidateRegion", "CandidatePlaceLabel", "CandidateFields", "CandidateMedia", "CandidateIntake", "Latitude", "Longitude", "RightsConfirmed", "PreciseLocationConsent", "Phase"]) {
       sandbox[`set${field}`] = (value: unknown) => { fields[field] = value; };
     }
     const operation = operations.begin()!;
@@ -54,6 +54,7 @@ test("local recovery preserves editable draft revisions and refuses submitted or
   const same = await run("DRAFT", 3);
   assert.equal(same.accepted, 1);
   assert.equal(same.fields.Detail, local.detail);
+  assert.equal(same.fields.SavedAt, "2026-09-06T12:00:00Z");
   assert.equal((same.fields.CandidateFields as Record<string, string>).detail, "候选地点结构化说明");
   assert.equal(same.fields.ConflictDraft, null);
   const changed = await run("DRAFT", 5);

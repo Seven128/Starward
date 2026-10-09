@@ -72,6 +72,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     return hideNotifications;
   }, []);
   const [draft, setDraft] = useState<ContributionSubmission | null>(null);
+  const [savedAt, setSavedAt] = useState<string | undefined>();
   const [pendingSubmission, setPendingSubmission] = useState<ContributionSubmission | null>(null);
   const [conflictDraft, setConflictDraft] = useState<ContributionSubmission | null>(null);
   const [phase, setPhase] = useState<ContributionPhase>("TYPE");
@@ -235,6 +236,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       candidateProfile: candidateDocumentProposal(nextCandidateFields, nextCandidateMedia, nextCandidateIntake),
     });
     setDraft(submission);
+    setSavedAt(submission.updatedAt);
     setPendingSubmission(null);
     setConflictDraft(null);
     setBoundSpotId(submission.spotId ?? "");
@@ -299,6 +301,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       operation.assertCurrent();
       if (currentDraftUserId() !== owner) return;
       setDraft(server ? { ...server, revision: local.baseRevision! } : null);
+      setSavedAt(server?.updatedAt);
       setConflictDraft(server && server.revision !== local.baseRevision ? server : null);
       setBoundSpotId(local.spotId); setBoundSpotName(local.spotName);
       setKind(local.kind); setTopics(local.topics); setDate(local.date); setTime(local.time);
@@ -323,6 +326,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
   const selectKind = (nextKind: ContributionKind) => {
     setKind(nextKind);
     setDraft(null);
+    setSavedAt(undefined);
   };
   const restorePendingSubmission = async (operation: AccountOperation, submissionId: string, expectedRevision: number) => {
     operation.assertCurrent();
@@ -386,6 +390,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     setRouteSpotName: setBoundSpotName,
     hasFormalSpot,
     draft,
+    savedAt,
     pendingSubmission,
     setPendingSubmission,
     conflictDraft,
@@ -445,7 +450,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       return true;
     },
     applyMediaDraft: (submission: ContributionSubmission) => {
-      localDraft.advanceSavedRevision(submission.submissionId, submission.revision);
+      localDraft.advanceSavedRevision(submission.submissionId, submission.revision, submission.candidateProfile?.media);
       setDraft(submission);
       setCandidateMedia(submission.candidateProfile?.media ?? {});
     },

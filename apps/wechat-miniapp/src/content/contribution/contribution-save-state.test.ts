@@ -50,3 +50,33 @@ test("a new editor does not claim a server save before one exists", () => {
   assert.deepEqual(contributionEditorSaveState(null, false), { label: "尚未保存", reviewed: false });
   assert.deepEqual(contributionEditorSaveState(null, true), { label: "保存中…", reviewed: false });
 });
+
+test("a media receipt does not claim that concurrent field edits were saved", () => {
+  const draft = { updatedAt: "2026-10-09T12:01:00.000Z",
+    review: { resolution: "CHANGES_REQUESTED" as const,
+      reviewedAt: "2026-10-09T11:58:00.000Z", reason: "补充说明并移除照片" } };
+  const now = new Date("2026-10-09T12:02:00.000Z");
+  assert.deepEqual(contributionEditorSaveState(draft, false, now, true),
+    { label: "有未保存修改", reviewed: true });
+  assert.deepEqual(contributionEditorSaveState(draft, true, now, true),
+    { label: "保存中…", reviewed: true });
+  assert.deepEqual(contributionEditorSaveState(null, false, now, true),
+    { label: "尚未保存", reviewed: false });
+  assert.deepEqual(contributionEditorSaveState(draft, false, now, false),
+    { label: "20:01 已保存", reviewed: true });
+});
+
+test("clean media receipts and reverted fields keep the preceding complete save status", () => {
+  const reviewedAt = "2026-10-09T11:58:00.000Z";
+  const draft = { updatedAt: "2026-10-09T12:01:00.000Z",
+    review: { resolution: "CHANGES_REQUESTED" as const, reviewedAt, reason: "补充说明" } };
+  const now = new Date("2026-10-09T12:02:00.000Z");
+  assert.deepEqual(contributionEditorSaveState(draft, false, now, false, reviewedAt),
+    { label: "需补充", reviewed: true });
+  assert.deepEqual(contributionEditorSaveState(draft, false, now, false, "2026-10-09T11:59:00.000Z"),
+    { label: "19:59 已保存", reviewed: true });
+  assert.deepEqual(contributionEditorSaveState(draft, false, now, true, reviewedAt),
+    { label: "有未保存修改", reviewed: true });
+  assert.deepEqual(contributionEditorSaveState(draft, false, now, false, draft.updatedAt),
+    { label: "20:01 已保存", reviewed: true });
+});

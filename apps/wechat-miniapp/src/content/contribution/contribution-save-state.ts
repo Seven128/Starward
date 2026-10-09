@@ -10,17 +10,20 @@ export function contributionEditorSaveState(
   draft: Pick<ContributionSubmission, "updatedAt" | "review"> | null,
   saving: boolean,
   now = new Date(),
+  hasUnsavedChanges = false,
+  savedAt = draft?.updatedAt,
 ): { label: string; reviewed: boolean } {
   const resolution = draft?.review?.resolution;
   const reviewed = resolution === "REJECTED" || resolution === "CHANGES_REQUESTED";
   if (saving) return { label: "保存中…", reviewed };
   if (!draft) return { label: "尚未保存", reviewed: false };
-  // A review changes updatedAt too. Only a later draft write is a new save.
-  if (reviewed && Number.isFinite(Date.parse(draft.updatedAt)) &&
-      Date.parse(draft.updatedAt) === Date.parse(draft.review!.reviewedAt)) {
+  if (hasUnsavedChanges) return { label: "有未保存修改", reviewed };
+  // Review and partial media writes must not advance the complete-save label.
+  if (reviewed && savedAt && Number.isFinite(Date.parse(savedAt)) &&
+      Date.parse(savedAt) === Date.parse(draft.review!.reviewedAt)) {
     return { label: resolution === "REJECTED" ? "审核未通过" : "需补充", reviewed };
   }
-  return { label: contributionSavedState(draft.updatedAt, now), reviewed };
+  return { label: savedAt ? contributionSavedState(savedAt, now) : "已保存", reviewed };
 }
 
 export function contributionSavedState(

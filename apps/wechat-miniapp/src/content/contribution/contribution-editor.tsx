@@ -202,7 +202,7 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
   const title = readonlyRecord ? "本次提交记录" : form.kind === "NEW_SPOT_PROPOSAL"
     ? (forceNew ? "新增观星点" : form.draft ? "编辑观星点" : "新增观星点")
     : "现场反馈与纠错";
-  const savedState = contributionEditorSaveState(form.draft, form.saving);
+  const savedState = contributionEditorSaveState(form.draft, form.saving, undefined, form.hasUnsavedChanges, form.savedAt);
   const standaloneDraftEditor = !embedded && isNewSpotDocument && !readonlyRecord;
   const saveStatus = <Text className={`contribution-editor-save-state${savedState.reviewed ? " contribution-editor-save-state--review" : ""}${savedState.reviewed && form.draft?.review?.resolution === "REJECTED" ? " contribution-editor-save-state--rejected" : ""}`}>{savedState.label}</Text>;
   const openRecordDetail = () => {
