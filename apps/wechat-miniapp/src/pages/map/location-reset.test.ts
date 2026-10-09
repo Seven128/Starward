@@ -42,7 +42,7 @@ function mapRuntime(response: Promise<{ data: object }> | (() => Promise<{ data:
     mapPointIntent: { current: 0 }, currentDraftUserId: () => "owner",
     failedMapRegion: { current: null }, setSpotContextAttempt() {},
     nativeMap: { isCurrent: () => true },
-    gcj02ToWgs84: () => ({ lat: 20, lon: 110 }), activeContext: null,
+    gcj02ToWgs84: () => ({ lat: 20, lon: 110 }), activeContext: null, timeReference: null,
     currentTimezoneHint: () => "UTC", localDateForNow: () => "2026-08-29",
     resolveObservationContext: () => { calls++; return typeof response === "function" ? response() : response; },
     isMiniappRequestCancelled,

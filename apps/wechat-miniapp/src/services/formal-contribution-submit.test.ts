@@ -115,6 +115,7 @@ test("feedback submit takes a synchronous busy lock until the first request sett
   let rejectFirst: (error: Error) => void = () => undefined;
   let calls = 0;
   let submitted = false;
+  let reviewReason: string | undefined;
   const notices: { title: string; tone: string }[] = [];
   const submit = vm.runInNewContext(code, feedbackContext({
     baseline: { revision: 1 }, proposal: { fields: { name: "新地点" } }, hasChanges: true, noRemainingChanges: false, conflictOutcome: null, busy: false, uploading: false, sessionUnconfirmed: false,
@@ -123,6 +124,7 @@ test("feedback submit takes a synchronous busy lock until the first request sett
     MiniappApiError: class extends Error {},
     submitBusy: { current: false }, mediaBusy: { current: false }, setBusy: () => undefined, setSubmitted: (value: boolean) => { submitted = value; },
     setActiveSubmissionId: () => undefined,
+    setReviewReason: (value: string) => { reviewReason = value; },
     assertEditorOwner: () => undefined,
     setConflicts: () => undefined, notify: (notice: { title: string; tone: string }) => { notices.push(notice); }, errorMessage: (error: Error) => error.message,
     submitFormalContribution: async () => {
@@ -141,6 +143,8 @@ test("feedback submit takes a synchronous busy lock until the first request sett
   await submit();
   assert.equal(calls, 2, "a failed attempt must release the busy lock");
   assert.equal(submitted, true);
+  assert.equal(reviewReason, "");
+  assert.deepEqual(notices.map(({ title }) => title), ["提交结果未确认", "已提交反馈"]);
 });
 
 test("formal photo handoff locks other photos and submit before native selection settles", async () => {

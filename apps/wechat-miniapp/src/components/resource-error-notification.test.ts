@@ -20,7 +20,7 @@ function effect(path: string, marker: string) {
 
 test("map cold data failures emit a floating info while inactive and permission states stay quiet", () => {
   const effectRun = effect("../pages/map/index.tsx", "map-scene-failed");
-  const run = (context: Record<string, unknown>) => effectRun({ mapContextFailed: false, mapSceneFailed: true, ...context });
+  const run = (context: Record<string, unknown>) => effectRun({ mapContextFailed: false, mapSceneFailed: true, layerSheetOwnsSceneFailure: false, ...context });
   const notices: any[] = [], notify = (value: any) => notices.push(value);
   run({ pageVisible: false, pageState: "ERROR", activeContext: {}, notify });
   run({ pageVisible: true, pageState: "PERMISSION_DENIED", activeContext: {}, notify });

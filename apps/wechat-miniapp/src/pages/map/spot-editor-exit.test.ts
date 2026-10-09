@@ -14,7 +14,9 @@ function actualMapCommand(name: string, environment: Record<string, unknown>) {
   };
   visit(source);
   assert.ok(declaration, `production ${name} exists`);
-  return vm.runInNewContext(ts.transpileModule(`const ${declaration}; ${name};`, {compilerOptions: {target: ts.ScriptTarget.ES2022}}).outputText, environment) as () => unknown;
+  return vm.runInNewContext(ts.transpileModule(`const ${declaration}; ${name};`, {compilerOptions: {target: ts.ScriptTarget.ES2022}}).outputText, {
+    photoHandoff: { active: false }, datePickerVisible: false, ...environment,
+  }) as () => unknown;
 }
 
 function actualSubmittedCommand(environment: Record<string, unknown>) {

@@ -32,7 +32,7 @@ function render(options: { pending?: boolean; failed?: boolean; article?: boolea
       refetch: () => retries.push("site"),
     }, FACILITY_LABEL: { PARKING: "停车" }, GUIDE_AUTHOR_LABELS: { SELF: "作者" }, formatDisplayDate: () => "未知日期",
   };
-  for (const name of ["View", "Text", "ScrollView", "CustomNav", "FloatingNotificationHost", "StatusPanel", "Provenance", "FacilityEvidenceDetails"]) context[name] = name;
+  for (const name of ["View", "Text", "ScrollView", "SystemMotionProbe", "CustomNav", "FloatingNotificationHost", "StatusPanel", "Provenance", "FacilityEvidenceDetails"]) context[name] = name;
   const tree = vm.runInNewContext(ts.transpileModule(`const ${loading.getText(source)}; (${result.expression!.getText(source)});`, {
     compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
   }).outputText, context);

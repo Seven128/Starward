@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { createAccountOperationOwner } from "../../hooks/account-operation";
 
 type Element = { type: string; props: Record<string, any> };
 type Effect = { deps?: unknown[]; clean?: () => void };
@@ -19,6 +20,10 @@ function mount(kind: "SPOT" | "PLAN" | "MISSING") {
   const data = { kind, spotId: "public-spot", spotGcj02: point, name: "Public spot", spotName: "Public plan",
     events: [], expiresAt: new Date(Date.now() + 600_000).toISOString() };
   const actions = { setViewport: (v: unknown) => { map.viewport = v; }, requestSpotOpen: (id: string) => { map.selectedSpotId = id; } };
+  const accountState = { ...actions, accountOwnerId: "account:public-reader", mapResetVersion: 0 };
+  const appStore = Object.assign((select: (state: typeof accountState) => unknown) => select(accountState), {
+    getState: () => accountState, subscribe: () => () => {},
+  });
   const react = {
     useState: (initial: unknown) => { const i = cursor++; if (!(i in slots)) slots[i] = initial;
       return [slots[i], (next: any) => { slots[i] = typeof next === "function" ? next(slots[i]) : next; }]; },
@@ -40,7 +45,7 @@ function mount(kind: "SPOT" | "PLAN" | "MISSING") {
   const load = (source: string, module: { exports: any }) => vm.runInNewContext(ts.transpileModule(source, { compilerOptions: {
     module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true,
   } }).outputText, {
-    module, exports: module.exports, Date, encodeURIComponent, decodeURIComponent,
+    module, exports: module.exports, Date, AbortController, encodeURIComponent, decodeURIComponent,
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; }, clearTimeout: (id: number) => timers.delete(id),
     require: (name: string) => {
       if (name === "react") return react;
@@ -50,10 +55,15 @@ function mount(kind: "SPOT" | "PLAN" | "MISSING") {
       if (name.endsWith("use-page-navigation")) {
         const owner = { exports: {} }; load(readFileSync(new URL("../../hooks/use-page-navigation.ts", import.meta.url), "utf8"), owner); return owner.exports;
       }
+      if (name.endsWith("use-account-operation")) {
+        const owner = { exports: {} }; load(readFileSync(new URL("../../hooks/use-account-operation.ts", import.meta.url), "utf8"), owner); return owner.exports;
+      }
+      if (name === "./account-operation") return { createAccountOperationOwner };
       if (name === "@tarojs/components") return { View: "View", Text: "Text", Button: "Button", ScrollView: "ScrollView" };
       if (name.endsWith("use-theme")) return { useMotionThemeClass: () => "theme-day" };
-      if (name.endsWith("app-store")) return { useAppStore: (select: (s: typeof actions) => unknown) => select(actions) };
-      if (name.endsWith("api-client")) return { getSharedSpot: async () => ({ data }), getSharedPlan: async () => ({ data, generatedAt: new Date().toISOString() }), MiniappApiError: Error };
+      if (name.endsWith("app-store")) return { useAppStore: appStore };
+      if (name.endsWith("api-client")) return { getSharedSpot: async () => ({ data }), getSharedPlan: async () => ({ data, generatedAt: new Date().toISOString() }), MiniappApiError: Error,
+        currentDraftUserId: () => accountState.accountOwnerId };
       if (name.endsWith("share-lifetime")) return { remainingPublicPlanLifetimeMs: () => 600_000 };
       if (name.endsWith("zoned-date")) return { displayZonedShareExpiry: () => "valid until" };
       if (name.endsWith("public-share-copy")) return { planSpotRiskMessage: () => null };

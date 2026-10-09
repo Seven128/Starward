@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import type { ApiEnvelope, AuthSessionData } from "@starward/miniapp-contracts";
+import { createAuthenticatedOperationRequester, type AuthPolicy } from "./authenticated-operation";
+import { transportHarness } from "./api-request-test-support";
 
 const source = ts.createSourceFile(
   "api-client.ts",
@@ -16,11 +19,12 @@ const declaration = source.statements.find(
     ts.isFunctionDeclaration(node) && node.name?.text === "getSkyReport",
 );
 if (!declaration) throw new Error("getSkyReport declaration missing");
+const reportCode = ts.transpileModule(
+  declaration.getText(source).replace(/^export /u, "") + "\ngetSkyReport;",
+  { compilerOptions: { target: ts.ScriptTarget.ES2020 } },
+).outputText;
 const getSkyReport = vm.runInNewContext(
-  ts.transpileModule(
-    declaration.getText(source).replace(/^export /u, "") + "\ngetSkyReport;",
-    { compilerOptions: { target: ts.ScriptTarget.ES2020 } },
-  ).outputText,
+  reportCode,
   {
     ADOPTED_SKY_REPORT_CATALOG_VERSION: "bsc5p-bright-stars.v3",
     requestOperation: (
@@ -43,8 +47,51 @@ test("pending proposal sky requires owner authentication", async () => {
 
 test("published spot sky remains publicly readable", async () => {
   const result = await getSkyReport("spot:published-1", "context:one");
-  assert.equal(result.options.auth, "NONE");
+  assert.equal(result.options.auth, "OPTIONAL", "a formal spot may still be addressed by its contributor's owned Context");
   assert.equal(result.options.query, "contextId=context%3Aone&catalogVersion=bsc5p-bright-stars.v3");
+
+  const resolveDeclaration = source.statements.find(
+    (node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "resolveSession",
+  );
+  assert.ok(resolveDeclaration);
+  const resolveCode = ts.transpileModule(resolveDeclaration.getText(source) + "\nresolveSession;", {
+    compilerOptions: { target: ts.ScriptTarget.ES2020 },
+  }).outputText;
+  for (const loggedIn of [false, true]) {
+    const session: AuthSessionData = { userId: "user:synthetic-reader" as AuthSessionData["userId"], accessToken: "synthetic:reader", expiresAt: "2999-01-01T00:00:00Z" };
+    const unavailable = new Error("native login unavailable");
+    const resolveSession = vm.runInNewContext(resolveCode, {
+      ensureSession: async () => { if (!loggedIn) throw unavailable; return session; },
+    }) as (policy: AuthPolicy) => Promise<AuthSessionData | null>;
+    const transport = transportHarness();
+    const requestOperation = createAuthenticatedOperationRequester({
+      resolveSession, readStoredSession: () => loggedIn ? session : null,
+      clearStoredSession: () => assert.fail("a successful public read cannot clear identity"),
+      isPermissionDenied: () => false,
+      request: <T>(key: string, path: string, options: Parameters<Parameters<typeof createAuthenticatedOperationRequester>[0]["request"]>[2]) => {
+        const { session: requestSession, ...rest } = options;
+        return transport.request(key, path, { ...rest, ...(requestSession ? { session: requestSession } : {}) }) as unknown as Promise<ApiEnvelope<T>>;
+      },
+    });
+    const readReport = vm.runInNewContext(reportCode, {
+      ADOPTED_SKY_REPORT_CATALOG_VERSION: "bsc5p-bright-stars.v3", requestOperation,
+      projectAdoptedSkyCatalog: (value: unknown) => value,
+    }) as (spotId: string, contextId: string) => Promise<unknown>;
+    const pending = readReport("spot:published-1", "context:one");
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(transport.calls.length, 1, "a public report dispatches even when native login is unavailable");
+    const call = transport.calls[0]!;
+    assert.equal(call.header.Authorization, loggedIn ? "Bearer synthetic:reader" : undefined,
+      "available identity must survive the formal-spot projection of an owned Context");
+    assert.match(call.url, /\/spots\/spot%3Apublished-1\/sky\?contextId=context%3Aone&catalogVersion=bsc5p-bright-stars\.v3$/);
+    call.success({ statusCode: 200, data: transport.response });
+    assert.deepEqual(await pending, transport.response);
+    if (!loggedIn) {
+      await assert.rejects(readReport("contribution:private-1", "context:private"), unavailable);
+      assert.equal(transport.calls.length, 1, "private proposal failure must not dispatch an anonymous report");
+    }
+    transport.queryClient.clear();
+  }
 });
 
 test("planet, SAO and deep-sky positions request the same report catalog as the Sky page", async () => {
