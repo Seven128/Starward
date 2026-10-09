@@ -60,7 +60,7 @@ export function SettingsSheet({
       ? `${CONTENT.EXPORT.body} 微信文件分享界面可能亮屏；可取消并先切换日间或夜间。`
       : CONTENT[sheet].body;
 
-  return <View className={`settings-sheet-scrim${closing ? " settings-sheet-scrim--closing" : ""}`} onClick={() => { if (!busy) close(); }}>
+  return <View className={`modal-scrim settings-sheet-scrim${closing ? " settings-sheet-scrim--closing" : ""}`} onClick={() => { if (!busy) close(); }}>
     <View className={`settings-sheet${closing ? " settings-sheet--closing" : ""}`} role="dialog" aria-modal="true" aria-label={title}
       catchMove onClick={(event) => event.stopPropagation()}>
       <View className="settings-sheet__header">

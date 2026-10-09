@@ -91,7 +91,7 @@ export function MyNickname({ owner }: { owner: string | null }) {
       <Text className="type-section">{profile.data?.data.nickname ?? (profile.isError ? "资料暂不可用" : profile.isPending ? "正在加载" : "设置昵称")}</Text>
       <SemanticIcon name="pencil" />
     </Button>
-    {editorVisible ? <View className="my-nickname-overlay" onClick={cancel}>
+    {editorVisible ? <View className="modal-scrim my-nickname-overlay" onClick={cancel}>
       <View className="my-nickname-dialog" role="dialog" aria-modal="true" aria-label="修改昵称" onClick={event => event.stopPropagation()}>
         <Text className="type-section">修改昵称</Text>
         <Input focus value={value} maxlength={40} disabled={saving} aria-label="昵称" placeholder="请输入昵称"

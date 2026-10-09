@@ -74,9 +74,12 @@ export function NativeBackBoundary({
 
   if (!present && !nativeMapContent) return null;
 
+  // The invisible slot must not become a flex item in its caller. Map's visible
+  // foreground subtree keeps its existing presentation owner.
   return (
     <PageContainer
       show={active && armed}
+      {...(nativeMapContent ? {} : { style: { position: "fixed" as const, left: 0, top: 0, width: 0, height: 0 } })}
       duration={1}
       zIndex={nativeMapContent ? 1200 : 1}
       overlay={false}

@@ -18,13 +18,13 @@ test("custom modal owners share one native WEAPP Back boundary", () => {
   assert.match(boundary, /if \(activeRef\.current\) setArmed\(true\)/u);
 
   const nickname = source("../features/my/my-nickname.tsx");
-  const nicknameVisible = nickname.match(/\{(\w+) \? <View className="my-nickname-overlay"/u)?.[1];
+  const nicknameVisible = nickname.match(/\{(\w+) \? <View className="[^"]*\bmy-nickname-overlay\b[^"]*"/u)?.[1];
   assert.ok(nicknameVisible, "nickname's editor has an explicit visibility owner");
   assert.match(nickname, new RegExp(`NativeBackBoundary active=\\{${nicknameVisible}\\} onBack=\\{cancel\\}`, "u"),
     "nickname's native Back layer follows the same current-account visibility as its editor");
   const avatar = source("../features/my/my-avatar.tsx");
   assert.equal(avatar.match(/<NativeBackBoundary\b/gu)?.length, 1, "avatar sheet and red handoff share one native owner");
-  const avatarPreviewVisible = avatar.match(/\{(\w+) && preview \? <View className="my-avatar-overlay"/u)?.[1];
+  const avatarPreviewVisible = avatar.match(/\{(\w+) && preview \? <View className="[^"]*\bmy-avatar-overlay\b[^"]*"/u)?.[1];
   assert.ok(avatarPreviewVisible, "avatar's preview has an explicit visibility owner");
   assert.match(avatar, new RegExp(`NativeBackBoundary active=\\{sheet \\|\\| ${avatarPreviewVisible} \\|\\| mediaHandoff\\.active\\}`, "u"),
     "avatar's native Back layer follows its visible sheet, current-account preview or media handoff");
