@@ -6,6 +6,7 @@ import { createTestMiniappService } from "./test-fixtures/create-test-service.ts
 import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts";
 import { terrainPublication, terrainPublicationSource, validateTerrainAsset, validateTerrainPublication } from "./terrain-publication.ts";
 import type { DarkSkyGridCellRecord } from "./ports.ts";
+import { sourceAttributions } from "../../../apps/wechat-miniapp/src/utils/source-presentation.ts";
 
 const independentLightCell: DarkSkyGridCellRecord = {
   cellId: "test-light-outside-terrain", datasetVersion: "test-dark-sky", productBand: "LOW", label: "测试夜光网格",
@@ -23,6 +24,18 @@ function repositoryWithLight(read: () => Promise<DarkSkyGridCellRecord[]>) {
   Object.defineProperty(repository, "listDarkSkyGridCells", { value: read });
   return repository;
 }
+
+test("published terrain feeds both exact redistribution notices to the real visible-credit consumer", async () => {
+  const publication = await terrainPublication(), source = terrainPublicationSource(publication);
+  assert.deepEqual(sourceAttributions([source]), [{
+    name: publication.sourceProvider, url: `https://doi.org/${publication.doi}`,
+    statements: [publication.attributionNotice, publication.modifiedProductNotice],
+  }], "source metadata without attribution must not pass with an empty visible credit");
+  assert.ok(source.limitations.includes(publication.derivation));
+  assert.ok(source.limitations.includes(publication.attributionNotice));
+  assert.ok(source.limitations.includes(publication.modifiedProductNotice));
+  assert.equal(source.retrievedAt, null, "the derived PNG timestamp cannot stand in for unknown upstream acquisition");
+});
 
 test("terrain outside coverage preserves independently available annual light cells, including zero radiance", async () => {
   const service = createTestMiniappService({ repository: repositoryWithLight(async () => [independentLightCell]) });
@@ -88,8 +101,11 @@ test("published GLO-30 terrain is hash-bound, GCJ-02 registered and range gated"
     assert.notEqual(covered.data.state, "UNAVAILABLE");
     assert.equal(covered.data.coordinateTransformVersion, "starward-wgs84-gcj02-grid-v1");
     assert.equal(covered.data.source?.licenseUrl, publication.licenseUrl);
+    assert.equal(covered.data.source?.retrievedAt, null);
+    assert.equal(covered.data.derivedAt, publication.derivedAt, "the raster's own derivation timestamp remains available");
     assert.ok(covered.data.source?.limitations.includes(publication.attributionNotice));
     assert.ok(covered.data.source?.limitations.includes(publication.modifiedProductNotice));
+    assert.deepEqual(sourceAttributions([covered.data.source!]), sourceAttributions([terrainPublicationSource(publication)]));
     assert.ok(covered.sources.some(source => source.id === covered.data.source?.id));
     assert.ok(covered.data.elevationColorEncoding, "the raster's elevation colour must have a published meaning");
     assert.equal(covered.data.elevationColorEncoding.format, "starward-terrain-elevation-color-v1");

@@ -19,7 +19,7 @@ function harness() {
     useState(initial: any) { const i = si++; if (!(i in states)) states[i] = initial; return [states[i], (next: any) => states[i] = typeof next === "function" ? next(states[i]) : next]; },
     useEffect(fn: () => void, values: any[]) { const i = ei++; if (!deps[i] || values.some((value, n) => value !== deps[i]![n])) pending.push(fn); deps[i] = values; },
     useTerrainOverlay: (input: any, enabled: boolean, imageEnabled: boolean) => { queries.push({ input, enabled, imageEnabled }); return query; },
-    View: "View", Text: "Text", Button: "Button", Slider: "Slider", Image: "Image", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", SoftButton: "SoftButton", Provenance: "Provenance", SourceAttribution: "SourceAttribution",
+    View: "View", Text: "Text", Button: "Button", Slider: "Slider", Image: "Image", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", SoftButton: "SoftButton", SourceDisclosure: "SourceDisclosure", SourceAttribution: "SourceAttribution",
     React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
   });
   return { notices, queries, get retries() { return retries; }, get imageFailures() { return imageFailures; },
@@ -98,6 +98,44 @@ test("night-light image carries its own credit only while that layer is shown", 
   all.find(node => node.type === "Button" && node.props.ariaLabel === "光污染，已开启").props.onClick();
   all = nodes(h.render());
   assert.equal(all.some(node => node.type === "SourceAttribution"), false);
+});
+
+test("terrain and light credits follow actual displayed layers while complete sources remain reachable", () => {
+  const lightSource = { ...base.source, id: "declared-night-light-source", provider: "Declared annual night-light input" };
+  const data = { ...base, lightPollution: { ...base.lightPollution, source: lightSource } };
+  const creditSources = (tree: any) => Array.from(nodes(tree).find(node => node.type === "SourceAttribution")?.props.sources ?? []);
+  const assertCompleteSources = (tree: any) => {
+    const sources = nodes(tree).find(node => node.type === "SourceDisclosure").props.sources;
+    assert.deepEqual(Array.from(sources), [base.source, lightSource], "collapse and layer switches must preserve the full redistribution records");
+  };
+  const h = harness(); h.set({ data: { data }, imagePath: "/local/terrain.png" });
+  let tree = h.render();
+  assert.deepEqual(creditSources(tree), [base.source, lightSource]); assertCompleteSources(tree);
+  nodes(tree).find(node => node.type === "Button" && node.props.ariaLabel === "光污染，已开启").props.onClick();
+  tree = h.render();
+  assert.deepEqual(creditSources(tree), [base.source]); assertCompleteSources(tree);
+  nodes(tree).find(node => node.type === "Button" && node.props.ariaLabel === "地形，已开启").props.onClick();
+  tree = h.render();
+  assert.deepEqual(creditSources(tree), []); assertCompleteSources(tree);
+
+  const lightOnly = harness(); lightOnly.set({ data: { data }, imagePath: "/local/terrain.png" });
+  nodes(lightOnly.render()).find(node => node.type === "Button" && node.props.ariaLabel === "地形，已开启").props.onClick();
+  assert.deepEqual(creditSources(lightOnly.render()), [lightSource]);
+  for (const query of [
+    { data: { data } },
+    { data: { data: { ...data, imageBoundsGcj02: undefined } }, imagePath: "/local/terrain.png" },
+  ]) {
+    const missingImage = harness(); missingImage.set(query);
+    tree = missingImage.render();
+    assert.equal(nodes(tree).some(node => node.props?.className === "spot-terrain__image"), false);
+    assert.deepEqual(creditSources(tree), [lightSource]); assertCompleteSources(tree);
+  }
+  const unavailableLight = harness(); unavailableLight.set({ data: { data: { ...data,
+    lightPollution: { ...data.lightPollution, state: "UNAVAILABLE" } } }, imagePath: "/local/terrain.png" });
+  tree = unavailableLight.render();
+  assert.equal(nodes(tree).some(node => node.props?.className === "spot-terrain__light-cell"), false,
+    "nonempty cells from an unavailable response are not a displayed layer");
+  assert.deepEqual(creditSources(tree), [base.source]); assertCompleteSources(tree);
 });
 
 test("image failure preserves light, emits one notice and retains a working retry", async () => {
@@ -193,8 +231,10 @@ test("native image decode failure is returned to the terrain owner", () => {
   assert.ok(image); image.props.onError(); assert.equal(h.imageFailures, 1);
 });
 
-test("terrain scale follows the selected geographic radius and the redistribution source is visible", () => {
-  const h = harness(); h.set({ data: { data: base }, imagePath: "/local/terrain.png" });
+test("terrain scale follows the selected geographic radius and complete redistribution sources stay reachable", () => {
+  const lightSource = { ...base.source, id: "declared-night-light-source", provider: "Declared annual night-light input" };
+  const data = { ...base, lightPollution: { ...base.lightPollution, source: lightSource } };
+  const h = harness(); h.set({ data: { data }, imagePath: "/local/terrain.png" });
   let tree = h.render(), all = nodes(tree);
   const scale = all.find(node => node.props?.className === "spot-terrain__scale");
   assert.equal(scale.children[0].props.style.width, "10%");
@@ -202,7 +242,8 @@ test("terrain scale follows the selected geographic radius and the redistributio
   tree = h.render(); all = nodes(tree);
   assert.equal(all.find(node => node.props?.className === "spot-terrain__scale").children[0].props.style.width, "10%",
     "1 km at radius 5 and 10 km at radius 50 occupy the same fraction of the same geographic viewport");
-  const provenance = all.find(node => node.type === "Provenance");
-  assert.equal(provenance.props.source, base.source);
-  assert.match(JSON.stringify(provenance.props.source.limitations), /produced using Copernicus WorldDEM-30/u);
+  const disclosure = all.find(node => node.type === "SourceDisclosure");
+  assert.equal(disclosure.props.sources[0], base.source);
+  assert.equal(disclosure.props.sources[1], lightSource);
+  assert.match(JSON.stringify(disclosure.props.sources[0].limitations), /produced using Copernicus WorldDEM-30/u);
 });

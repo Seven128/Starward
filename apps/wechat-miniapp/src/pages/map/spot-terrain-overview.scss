@@ -41,6 +41,9 @@
 .theme-night .spot-terrain__elevation-key > view { filter:saturate(.7) brightness(.65); }
 .spot-terrain__layer-state { display:block; color:var(--text-tertiary); font-size:20rpx; }
 .spot-terrain__source { display:flex; flex-direction:column; gap:5rpx; padding-top:4rpx; color:var(--text-tertiary); font-size:20rpx; line-height:1.45; }
+.spot-terrain__source > .source-disclosure { margin: 0; border: 0; }
+.spot-terrain__source .source-disclosure__summary { min-height: 44Px; }
+.theme-day .spot-terrain__source .source-disclosure__body .provenance__header > .type-label { font-size: 18Px; line-height: 26Px; }
 .theme-night .spot-terrain__map { filter:saturate(.7) brightness(.65); }
 .theme-observation .spot-terrain {
   --terrain-bg:var(--surface);

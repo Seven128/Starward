@@ -113,10 +113,16 @@ export function terrainPublicationSource(publication: TerrainPublication): Sourc
     provider: publication.sourceProvider,
     title: publication.dataset,
     sourceUrl: `https://doi.org/${publication.doi}`,
+    attribution: {
+      name: publication.sourceProvider,
+      url: `https://doi.org/${publication.doi}`,
+      statements: [publication.attributionNotice, publication.modifiedProductNotice],
+    },
     license: publication.license,
     licenseUrl: publication.licenseUrl,
     publishedAt: null,
-    retrievedAt: publication.derivedAt,
+    // The manifest records derivation, not acquisition of the upstream DEM.
+    retrievedAt: null,
     validFrom: null,
     validTo: null,
     state: publication.validPixelPercent < 99.9 ? "PARTIAL" : "FRESH",

@@ -21,7 +21,7 @@ function harness() {
     useDidHide(fn: () => void) { hide = fn; }, useDidShow(fn: () => void) { show = fn; },
     useAirQualityQuery(value: any) { options = value; return query; }, useAppStore: () => notify,
     getSpotAirQuality() {}, airQualityState, Date: TestDate, calendarDateInTimezone, clockTimeInTimezone,
-    Text: "Text", View: "View", ForecastCoverageNote: "ForecastCoverageNote", Provenance: "Provenance", SoftButton: "SoftButton", StatusPanel: "StatusPanel",
+    Text: "Text", View: "View", ForecastCoverageNote: "ForecastCoverageNote", Provenance: "Provenance", SourceAttribution: "SourceAttribution", SourceDisclosure: "SourceDisclosure", SoftButton: "SoftButton", StatusPanel: "StatusPanel",
     React: { createElement: (type: any, props: any, ...children: any[]) => typeof type === "function" ? type(props) : ({ type, props, children }) },
   });
   return { notifications, get options() { return options; }, get retries() { return retries; }, hide: () => hide(), show: () => show(),
@@ -46,7 +46,8 @@ test("visible AQ retains forecast on current error, offers persistent retry and 
   assert.ok(!find(tree, node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
   assert.equal(h.notifications.length, 1);
   const order = typesInReadingOrder(tree);
-  assert.ok(order.indexOf("SoftButton") < order.indexOf("Provenance"), "failed readings must offer retry before the long source disclosure");
+  assert.ok(!find(tree, node => node.type === "Provenance"), "source details should be available on demand instead of covering the reading and retry");
+  assert.ok(order.indexOf("SoftButton") < order.indexOf("SourceDisclosure"), "failed readings must offer retry before the expandable source details");
   find(tree, node => node.type === "SoftButton").props.onClick(); assert.equal(h.retries, 1);
   assert.equal(find(tree, node => node.type === "ForecastCoverageNote").props.scope, "air");
   h.render(); assert.equal(h.notifications.length, 1);
@@ -57,7 +58,8 @@ test("visible AQ retains forecast on current error, offers persistent retry and 
 
 test("unsupported AQ emits no error, changing spot rejects old readings and pending proposal does not query", () => {
   const h = harness(); h.set({ data: { ...body, current: { ...body.current, unavailableReason: "NO_DATA" } }, dataState: "PARTIAL", sources: [] });
-  assert.ok(find(h.render(), node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
+  assert.ok(find(h.render(), node => node.props?.role === "status" && /当前空气质量暂无可用数据/.test(text(node))));
+  assert.ok(!find(h.render(), node => node.type === "StatusPanel" && node.props.state === "ERROR"));
   assert.equal(h.notifications.length, 0);
   assert.doesNotMatch(text(h.render("spot:b")), /中国 AQI|32/);
   assert.equal(h.render("contribution:private"), null); assert.equal(h.options.enabled, false);
@@ -96,8 +98,9 @@ test("positive current retrieval and selected-hour heading remain separate readi
       state: "FRESH", unavailableReason: null, source },
   }, dataState: "FRESH", sources: [] });
   const tree = h.render();
-  assert.match(text(tree), /中国 AQI.*0.*获取于.*所选时刻的空气质量预报/s);
-  assert.ok(find(tree, node => node.type === "View" && node.props?.className === "air-quality__retrieved-at"));
+  assert.match(text(tree), /获取于.*中国 AQI.*0.*所选时刻的空气质量预报/s);
+  assert.ok(find(tree, node => node.type === "View" && node.props?.className === "air-quality__segment-heading" &&
+    /当前区域参考.*获取于/.test(text(node))));
   assert.ok(find(tree, node => node.type === "View" && node.props?.className === "air-quality__segment-heading" &&
     /所选时刻的空气质量预报/.test(text(node))));
 });

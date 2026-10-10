@@ -24,11 +24,14 @@ export function Provenance({
   source,
   compact = false,
   showKind = true,
+  presentation = "default",
   downloadUrl,
 }: {
   source: SourceSummary;
   compact?: boolean;
   showKind?: boolean;
+  /** The adopted in-document source card, without changing default consumers. */
+  presentation?: "default" | "disclosure";
   /** Optional machine-readable data offered with this source's license. */
   downloadUrl?: string | undefined;
 }) {
@@ -62,25 +65,26 @@ export function Provenance({
       aria-label={`来源：${source.provider}${stateLabel ? `，状态：${stateLabel}` : ""}`}
     >
       <View className="provenance__header">
-        <Text className="type-label">{source.provider}</Text>
+        <Text className="type-label">{source.provider}{presentation === "disclosure" && source.title && source.title !== source.provider ? ` · ${source.title}` : ""}</Text>
         <DataStateBadge state={source.state} />
       </View>
-      {source.title && source.title !== source.provider ? <Text className="type-secondary">{source.title}</Text> : null}
-      <SourceAttribution sources={[source]} />
+      {presentation !== "disclosure" && source.title && source.title !== source.provider ? <Text className="type-secondary">{source.title}</Text> : null}
+      {!compact && presentation === "disclosure" ? <Text className="provenance__license type-caption">{source.license || "暂无许可说明"}</Text> : null}
+      <SourceAttribution sources={[source]} presentation={presentation} />
       {!compact ? (
         <>
           {showKind ? <Text className="type-caption">
             类型：{SOURCE_KIND_LABEL[source.kind]}
           </Text> : null}
           <View className="provenance__timing">
-          <Text className="type-caption">时间 · 北京时间</Text>
+          {presentation !== "disclosure" || source.publishedAt || source.retrievedAt || source.validFrom || source.validTo ? <Text className="type-caption">时间 · 北京时间</Text> : null}
           <View className="provenance__fact">
             <Text className="type-caption">发布</Text>
             <Text className="type-secondary">{source.publishedAt ? formatRetrievedAt(source.publishedAt) : source.kind === "EDITORIAL_REFERENCE" ? "未提供精确时刻" : "来源未提供"}</Text>
           </View>
           <View className="provenance__fact">
             <Text className="type-caption">获取</Text>
-            <Text className="type-secondary">{formatRetrievedAt(source.retrievedAt)}</Text>
+            <Text className="type-secondary">{presentation === "disclosure" && !source.retrievedAt ? "来源未提供" : formatRetrievedAt(source.retrievedAt)}</Text>
           </View>
           <View className="provenance__fact">
             <Text className="type-caption">适用</Text>
@@ -89,11 +93,12 @@ export function Provenance({
               {" 至 "}{source.validTo ? formatRetrievedAt(source.validTo) : "结束时间未提供"}
             </>}</Text>
           </View>
+          {presentation === "disclosure" ? <View className="provenance__fact">
+            <Text className="type-caption">精度</Text><Text className="type-secondary">{source.precision}</Text>
+          </View> : null}
           </View>
-          <Text className="type-caption">
-            许可：{source.license || "暂无许可说明"}
-          </Text>
-          <Text className="type-secondary">精度：{source.precision}</Text>
+          {presentation !== "disclosure" ? <Text className="type-caption">许可：{source.license || "暂无许可说明"}</Text> : null}
+          {presentation !== "disclosure" ? <Text className="type-secondary">精度：{source.precision}</Text> : null}
           {source.limitations.filter(item => !source.attribution?.statements.includes(item)).map((item) => (
             <Text className="type-secondary" key={item}>
               · {item}
@@ -102,7 +107,7 @@ export function Provenance({
           {source.sourceUrl || source.licenseUrl || downloadUrl ? (
             <View className="provenance__links">
               {source.sourceUrl ? <SoftButton label={`复制${source.provider}的原始出处链接`} disabled={copying} onClick={() => void copyLink(source.sourceUrl)}>复制原始出处</SoftButton> : null}
-              {source.licenseUrl ? <SoftButton label={`复制${source.provider}的许可链接`} disabled={copying} onClick={() => void copyLink(source.licenseUrl)}>复制许可说明</SoftButton> : null}
+              {source.licenseUrl ? <SoftButton label={`复制${source.provider}的许可链接`} disabled={copying} onClick={() => void copyLink(source.licenseUrl)}>{presentation === "disclosure" ? "复制许可链接" : "复制许可说明"}</SoftButton> : null}
               {downloadUrl ? <SoftButton label="复制本次使用的数据下载链接" disabled={copying} onClick={() => void copyLink(downloadUrl,true)}>复制下载链接</SoftButton> : null}
             </View>
           ) : null}

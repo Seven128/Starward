@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { primaryNavigationLayout } from "../../navigation/primary-navigation";
 
 const mapSource = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 
@@ -151,6 +152,7 @@ test("calendar notification space uses current native geometry and retires late 
   }).outputText, {
     datePickerVisible: visible, calendarLayoutIdentity: identity, calendarBounds: { identity: "calendar:A", top: 371.4 },
     mapStatusBarHeight: undefined, mapCapsuleBottom: undefined, mapSafeTop: undefined,
+    primaryNavigation: primaryNavigationLayout("pages/map/index"),
     spotEditorPhase: "open", SPOT_EDITOR_ENTER_MS: 180, SPOT_EDITOR_EXIT_MS: 180, panelCssMotion: null,
   });
   assert.equal(style("calendar:A")["--map-calendar-top"], "371.4px");

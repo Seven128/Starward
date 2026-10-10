@@ -7,7 +7,8 @@ import { getSpotAirQuality } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
 import { ForecastCoverageNote } from "./forecast-coverage-note";
-import { Provenance } from "./provenance";
+import { SourceAttribution } from "./source-attribution";
+import { SourceDisclosure } from "./source-disclosure";
 import { SoftButton } from "./soft-button";
 import { StatusPanel } from "./status-panel";
 import { airQualityState } from "./air-quality-state";
@@ -66,7 +67,10 @@ export function AirQuality({ spotId, selectedAt, timezone, visible = true }: { s
     {view.hours.length ? <ForecastCoverageNote starts={view.hours.map(hour => hour.at)} timezone={timezone} scopeKey={`${spotId}:${selectedAt}`} scope="air" stale={forecastUnavailableByFailure} /> : null}
     <Text className="type-caption air-quality__note">{retrievedAt ? "获取时间不是点位实测时间。" : ""}不同 AQI 标准保留原值；缺失污染物不补齐。空气质量不等于天文透明度或视宁度。</Text>
     {failed || view.expired || envelope?.dataState === "PARTIAL" || envelope?.dataState === "UNAVAILABLE" ? <SoftButton label="重试空气质量" onClick={() => void query.refetch()}>重试</SoftButton> : null}
-    {envelope ? [envelope.data.current.source, envelope.data.forecast.source].map(source => <Provenance key={source.id} source={source} />) : null}
+    {envelope ? <>
+      <SourceAttribution sources={[...(view.current ? [envelope.data.current.source] : []), ...(view.forecast ? [envelope.data.forecast.source] : [])]} />
+      <SourceDisclosure key={spotId} id="air-quality-source" label="空气质量来源" sources={[envelope.data.current.source, envelope.data.forecast.source]} />
+    </> : null}
     </>}
   </View>;
 }

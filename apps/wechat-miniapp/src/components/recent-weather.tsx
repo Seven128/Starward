@@ -1,4 +1,4 @@
-import { Button, Text, View } from "@tarojs/components";
+import { Text, View } from "@tarojs/components";
 import { useDidHide, useDidShow } from "@tarojs/taro";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -7,7 +7,7 @@ import { useCalendarDay } from "@/hooks/use-calendar-day";
 import { getSpotRecentWeather } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
-import { Provenance } from "./provenance";
+import { SourceDisclosure } from "./source-disclosure";
 import { SourceAttribution } from "./source-attribution";
 import { SoftButton } from "./soft-button";
 import { StatusPanel } from "./status-panel";
@@ -17,7 +17,6 @@ import "./recent-weather.scss";
 /** Regional history in the current map's formal-spot document. */
 export function RecentWeather({ spotId, timezone, visible = true }: { spotId: string; timezone: string; visible?: boolean }) {
   const [pageActive, setPageActive] = useState(true);
-  const [explanationOpen, setExplanationOpen] = useState(false);
   const [regionClock, setRegionClock] = useState({ spotId, timezone });
   const [failedSpot, setFailedSpot] = useState<string | null>(null);
   const notify = useAppStore(state => state.notify);
@@ -33,7 +32,7 @@ export function RecentWeather({ spotId, timezone, visible = true }: { spotId: st
     queryFn: signal => getSpotRecentWeather(spotId, signal), enabled, staleTime: 0, gcTime: 0 });
   useDidHide(() => setPageActive(false));
   useDidShow(() => setPageActive(true));
-  useEffect(() => { setExplanationOpen(false); setFailedSpot(previous => previous === spotId ? previous : null); }, [spotId]);
+  useEffect(() => { setFailedSpot(previous => previous === spotId ? previous : null); }, [spotId]);
   useEffect(() => {
     if (!active) { setRegionClock({ spotId, timezone }); setFailedSpot(null); }
   }, [active, spotId, timezone]);
@@ -69,11 +68,9 @@ export function RecentWeather({ spotId, timezone, visible = true }: { spotId: st
   const days = data?.days ?? [];
   const implications = recentWeatherImplications(days);
   const stale = Boolean(query.refreshError) || rejectedStale;
-  return <View className="recent-weather" data-control="spot-recent-weather">
+  return <View className={`recent-weather${days.length ? " recent-weather--with-days" : ""}`} data-control="spot-recent-weather">
     <View className="recent-weather__heading">
       <Text className="type-label">近期天气</Text>
-      <Button className="recent-weather__help focus-ring" aria-label="说明近期天气数据范围" aria-expanded={explanationOpen}
-        onClick={() => setExplanationOpen(value => !value)}><Text aria-hidden="true">?</Text></Button>
     </View>
     {data?.region ? <Text className="type-caption">邻近地区：{data.region.name}</Text> : null}
     {data?.asOfLocalDate ? <Text className="type-caption">截至 {data.asOfLocalDate} 的前两日 · {data.region?.timezone}</Text> : null}
@@ -84,14 +81,12 @@ export function RecentWeather({ spotId, timezone, visible = true }: { spotId: st
       </View>) : failed ? <StatusPanel state="ERROR" detail="地区历史天气暂时无法获取。" recoveryLabel="重试近期天气" onRecover={() => liveFailed ? setFailedSpot(null) : void query.refetch()} /> : <StatusPanel state="EMPTY" emptyIcon="cloud" detail="该地区近期暂无天气记录。" />}
     {stale ? <Text className="type-caption">资料暂未刷新，请重试获取当前地区记录。</Text> : null}
     {implications.map(message => <Text className="type-caption" key={message}>{message}</Text>)}
-    {!explanationOpen && days.length ? <SourceAttribution sources={envelope?.sources ?? []} /> : null}
-    {explanationOpen ? <View className="recent-weather__explanation" role="note">
+    {days.length ? <SourceAttribution sources={envelope?.sources ?? []} /> : null}
+    {active ? <SourceDisclosure key={spotId} id="recent-weather-source" label={days.length ? "近期天气范围与来源" : "说明近期天气数据范围"} sources={envelope?.sources ?? []}>
       <Text className="type-caption">这里展示邻近地区前两个自然日的历史再分析，不含今天，也不是点位过去48小时的现场实测。未返回的日期或字段不补齐；当前选中的观测日期不会改变这些历史记录。</Text>
       {data?.missingDates.length ? <Text className="type-caption">暂无数据：{data.missingDates.join("、")}</Text> : null}
       <Text className="type-caption">天气只提示可能影响，不能确认道路、积水、结冰、开放或通行安全。</Text>
-      {envelope?.sources.map(source => <Provenance key={source.id} source={source} />)}
-      <Button className="recent-weather__close focus-ring" onClick={() => setExplanationOpen(false)}>收起说明</Button>
-    </View> : null}
+    </SourceDisclosure> : null}
     {(days.length || !failed) && (failed || stale || envelope?.dataState === "PARTIAL" || envelope?.dataState === "UNAVAILABLE") ? <SoftButton label="重试近期天气" onClick={() => liveFailed ? setFailedSpot(null) : void query.refetch()}>重试</SoftButton> : null}
   </View>;
 }

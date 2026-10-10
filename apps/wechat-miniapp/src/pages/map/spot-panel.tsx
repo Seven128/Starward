@@ -16,6 +16,7 @@ import { useAppStore } from "@/state/app-store";
 import { WeatherAlerts } from "@/components/weather-alerts";
 import { RecentWeather } from "@/components/recent-weather";
 import { SourceAttribution } from "@/components/source-attribution";
+import { SourceDisclosure } from "@/components/source-disclosure";
 import { AirQuality } from "@/components/air-quality";
 import { DataStateBadge } from "@/components/data-state-badge";
 import { SpotPanelActions } from "./spot-panel-actions";
@@ -732,7 +733,6 @@ export function SpotInformationPanel({
             ) : null}
             {skyReport ? <View className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--professional-matrix" data-control="sky-professional-matrix">
               <Text className="type-label spot-panel__weather-heading">气象条件</Text>
-              {skyRow?.weatherAt ? <SourceAttribution sources={skyReport?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
               <ForecastCoverageNote starts={skyReport?.hourly.flatMap(row => row.weatherAt ? [row.weatherAt] : []) ?? []} stale={Boolean(skyError || skyStale)}
                 timezone={context?.timezone ?? "Asia/Shanghai"} scopeKey={`${effectiveSpot.spotId}:${context?.localDate}`} />
               {skyRow?.weatherAt ? <Text className="type-caption">对应小时预报：{formatSourceTime(skyRow.weatherAt, context?.timezone ?? "Asia/Shanghai")}</Text> : null}
@@ -773,6 +773,7 @@ export function SpotInformationPanel({
               <Text className="spot-panel__night-light-label">{effectiveSpot.lightPollution.state === "ESTIMATED" ? effectiveSpot.lightPollution.label : "暂无数据"}</Text>
               <Text className="type-caption">{effectiveSpot.lightPollution.radiance ? `${effectiveSpot.lightPollution.radiance.median} ${effectiveSpot.lightPollution.radiance.unit}` : "辐亮度暂无数据"}</Text>
               <SourceAttribution sources={[effectiveSpot.lightPollution.source]} />
+              <SourceDisclosure key={effectiveSpot.spotId} id="night-light-source" label="年度夜光来源" sources={[effectiveSpot.lightPollution.source]} />
             </View>
             {skyReport ? <>
             <View className={`spot-panel__block spot-panel__block--astronomy-card spot-panel__block--target-list${targetFrame?.targets.some((target) => target.altitudeDeg === null) ? " spot-panel__block--target-list--missing-altitude" : ""}`} data-control="sky-target-list">
@@ -791,6 +792,10 @@ export function SpotInformationPanel({
                 {formatSourceTime(latestWeatherFetch, context?.timezone ?? "Asia/Shanghai") ? ` · 更新 ${formatSourceTime(latestWeatherFetch, context?.timezone ?? "Asia/Shanghai")}` : ""}
               </Text>
               <Text className="type-caption">天体位置按所选时刻计算</Text>
+            </View>
+            <View className="spot-panel__sky-source-reading">
+              {skyRow?.weatherAt ? <SourceAttribution sources={skyReport.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST")} /> : null}
+              <SourceDisclosure key={effectiveSpot.spotId} id="sky-data-source" label="来源与有效时间" sources={skyReport.sources} />
             </View>
             </> : null}
             <AirQuality spotId={effectiveSpot.spotId} selectedAt={astronomyAt} timezone={effectiveSpot.timezone} visible={visible} />

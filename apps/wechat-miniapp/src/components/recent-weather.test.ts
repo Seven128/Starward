@@ -31,7 +31,7 @@ function harness(queryClient = new QueryClient(), transform = (source: string) =
     useQueryClient: () => queryClient,
     getSpotRecentWeather() {}, recentWeatherFacts, recentWeatherImplications, Date: TestDate, calendarDateInTimezone,
     useCalendarDay: (timezone: string) => calendarDateInTimezone(new TestDate(), timezone),
-    Button: "Button", Text: "Text", View: "View", Provenance: "Provenance", StatusPanel: "StatusPanel", SoftButton: "SoftButton", SourceAttribution: "SourceAttribution",
+    Button: "Button", Text: "Text", View: "View", SourceDisclosure: "SourceDisclosure", StatusPanel: "StatusPanel", SoftButton: "SoftButton", SourceAttribution: "SourceAttribution",
     React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
   });
   return {
@@ -153,21 +153,23 @@ test("refresh failure discards stored Geo data without automatically retrying an
   } finally { unsubscribe(); client.clear(); }
 });
 
-test("partial evidence is visible with dated facts, conditional relevance, question disclosure and persistent retry", () => {
+test("partial evidence keeps dated facts, complete range disclosure and persistent retry", () => {
   const h = harness(); h.set({ data: { data: body, dataState: "PARTIAL", sources: [] } });
   let tree = h.render();
   assert.match(text(tree), /区域甲.*2026-09-15.*2026-09-13.*降水 12 mm/s);
   assert.doesNotMatch(text(tree), /最高 0/);
   assert.match(text(tree), /可能湿滑/);
   assert.equal(h.notifications.length, 1);
-  find(tree, node => node.props?.["aria-label"] === "说明近期天气数据范围").props.onClick(); tree = h.render();
-  assert.match(text(tree), /不含今天.*不是点位过去48小时/);
-  assert.match(text(tree), /暂无数据：2026-09-14/);
+  const disclosure = find(tree, node => node.type === "SourceDisclosure");
+  assert.equal(disclosure.props.label, "近期天气范围与来源");
+  assert.match(text(disclosure), /不含今天.*不是点位过去48小时/);
+  assert.match(text(disclosure), /暂无数据：2026-09-14/);
   find(tree, node => node.type === "SoftButton").props.onClick(); assert.equal(h.retries, 1);
   assert.equal(h.notifications.length, 1, "rerenders do not restart transient notifications");
   h.hide(); h.render(); assert.equal(h.options.enabled, false);
   h.set({ data: undefined, isPending: true }); tree = h.render("spot:b");
-  assert.doesNotMatch(text(tree), /区域甲|降水 12|过去48小时/);
+  assert.doesNotMatch(text(tree), /区域甲|降水 12/);
+  assert.ok(!find(tree, node => node.type === "SourceDisclosure"), "inactive history must release the disclosure with its Geo data");
 });
 
 test("no coverage uses the shared empty state without an exception notification; unpublished spots never query", () => {

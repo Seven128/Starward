@@ -3076,6 +3076,17 @@
 // Current comfortable-scale Source, scoped to formal DAY cards. Private
 // panels and the unadopted themes retain their existing presentation.
 .theme-day.map-page .spot-panel--formal {
+  .spot-panel__sky-source-reading {
+    box-sizing: border-box; min-width: 0; padding: 0 18Px; background: #fff;
+  }
+  .air-quality .source-disclosure__summary,
+  .recent-weather--with-days .source-disclosure__summary { min-height: 44Px; }
+  .recent-weather:not(.recent-weather--with-days) .source-disclosure { margin-top: 14Px; border-color: #e6e9ec; }
+  .recent-weather:not(.recent-weather--with-days) .source-disclosure__summary { color: #3d4857; }
+  .recent-weather:not(.recent-weather--with-days) .source-disclosure__body { padding: 0; }
+  .recent-weather:not(.recent-weather--with-days) .source-disclosure__note {
+    gap: 12Px; padding: 0 0 12Px; border-radius: 0; background: transparent; color: #657181;
+  }
   .air-quality {
     margin: 14Px 0 0;
     padding: 18Px;
@@ -3162,7 +3173,8 @@
     font-weight: 400;
     line-height: 21Px;
   }
-  .spot-panel__night-light > .source-attribution {
+  .spot-panel__night-light > .source-attribution,
+  .spot-panel__night-light > .source-disclosure {
     flex: 1 0 100%;
     width: 100%;
     min-width: 0;

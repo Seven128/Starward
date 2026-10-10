@@ -151,6 +151,26 @@ test("internal provenance is absent from cards and summaries without losing real
   assert.doesNotMatch(unknownTime, /1970|NaN|Invalid/);
 });
 
+test("in-document provenance keeps current precision and time coverage in its full source facts", () => {
+  const provenance = load("./provenance.tsx", "Provenance", { isProductSource, SOURCE_KIND_LABEL,
+    DataStateBadge: load("./data-state-badge.tsx", "DataStateBadge"),
+    DATA_STATE_LABELS: load("./data-state-badge.tsx", "DATA_STATE_LABELS"), calendarDateInTimezone, clockTimeInTimezone });
+  const actual = { ...sample, id: "declared", kind: "OPEN_DATA", state: "FRESH", provider: "公开资料库", title: "完整星表",
+    sourceUrl: "https://example.org/catalog", licenseUrl: "https://example.org/license",
+    license: "开放许可", precision: "角秒；覆盖范围内适用", limitations: ["不表示现场实测"] } as SourceSummary;
+  const before = JSON.stringify(actual), tree = provenance({ source: actual, presentation: "disclosure", showKind: false });
+  const all = (value: any): any[] => !value || typeof value !== "object" ? [] : Array.isArray(value) ? value.flatMap(all) : [value, ...all(value.children)];
+  const timing = all(tree).find(node => node.props?.className === "provenance__timing");
+  const facts = all(timing).filter(node => node.props?.className === "provenance__fact");
+  assert.deepEqual(facts.map(node => text(node.children[0])), ["发布", "获取", "适用", "精度"]);
+  assert.equal(text(facts[3]), "精度角秒；覆盖范围内适用");
+  assert.match(text(timing), /北京时间.*发布来源未提供.*获取2026-09-15 08:00.*适用来源未提供/s);
+  assert.equal(text(all(tree).find(node => node.props?.className === "provenance__header")), "公开资料库 · 完整星表");
+  assert.equal(all(tree).find(node => node.type === "SourceAttribution").props.presentation, "disclosure");
+  assert.match(text(tree), /开放许可.*不表示现场实测.*复制许可链接/s);
+  assert.equal(JSON.stringify(actual), before);
+});
+
 test("map forecast summary never leaks fixture provider or fetch time, and keeps real attribution", () => {
   const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("../pages/map/spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const names = new Set(["visibleWeatherRuns", "weatherProviders", "latestWeatherFetch"]);

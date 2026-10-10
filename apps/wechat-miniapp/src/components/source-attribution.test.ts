@@ -4,7 +4,7 @@ import vm from "node:vm";
 import test from "node:test";
 import ts from "typescript";
 import { validateExternalUrl, type SourceSummary } from "@starward/miniapp-contracts";
-import { sourceAttributions } from "../utils/source-presentation";
+import { isProductSource, sourceAttributions } from "../utils/source-presentation";
 
 const notice = "  原始发布机构 © A & B\n不得更改此声明。  ";
 const source = (statements = [notice]): SourceSummary => ({ id: "forecast", provider: "和风天气", title: "逐小时预报",
@@ -20,7 +20,7 @@ function harness() {
   let message = "", copied = "";
   const render = vm.runInNewContext(ts.transpileModule(code + ";SourceAttribution;", { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, {
     React: { createElement: (type: any, props: any, ...children: any[]) => ({ type, props, children }) },
-    Text: "Text", View: "View", SoftButton: "SoftButton", sourceAttributions, validateExternalUrl,
+    Text: "Text", View: "View", SoftButton: "SoftButton", isProductSource, sourceAttributions, validateExternalUrl,
     useState: () => [message, (value: string) => { message = value; }],
     Taro: { setClipboardData: async ({ data }: { data: string }) => { copied = data; } },
   });
@@ -64,4 +64,39 @@ test("compact map credit keeps the legal notice and exact link action", async ()
   assert.equal(nodes(tree).find(node => node.type === "Text" && node.props?.selectable)?.children[0], notice);
   button.props.onClick(); await new Promise<void>(resolve => setImmediate(resolve));
   assert.equal(h.copied(), "https://www.qweather.com/");
+});
+
+test("disclosure credit keeps the full brand and URL beside its named official copy action", async () => {
+  const h = harness(), input = source();
+  const tree = h.render({ sources: [input, input], presentation: "disclosure" });
+  const all = nodes(tree), buttons = all.filter(node => node.type === "SoftButton");
+  assert.equal(buttons.length, 1, "the layout must retain exact attribution deduplication");
+  assert.equal(renderedText(buttons[0]), "复制官方链接");
+  assert.equal(buttons[0].props.label, "复制和风天气官方链接");
+  assert.equal(all.find(node => node.props?.className === "source-attribution__name").children[0], "和风天气");
+  assert.equal(all.find(node => node.props?.className === "source-attribution__url").children[0], input.attribution!.url);
+  assert.equal(all.find(node => node.type === "Text" && node.props?.selectable && node.children[0] === notice)?.children[0], notice);
+  buttons[0].props.onClick(); await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(h.copied(), "https://www.qweather.com/");
+  assert.match(renderedText(h.render({ sources: [input], presentation: "disclosure" })), /来源链接已复制，可在浏览器中查看。/);
+});
+
+test("a source reading link cannot invent attribution or claim an undeclared official credit", async () => {
+  const h = harness(), { attribution, ...input } = source();
+  assert.deepEqual(sourceAttributions([input]), []);
+  assert.equal(h.render({ sources: [input] }), null, "data-side credits remain explicitly declared only");
+  const tree = h.render({ sources: [input, input], presentation: "disclosure" });
+  const button = nodes(tree).find(node => node.type === "SoftButton");
+  assert.equal(renderedText(button), "复制原始出处");
+  assert.equal(button.props.label, "复制和风天气原始出处链接");
+  assert.equal(nodes(tree).filter(node => node.type === "SoftButton").length, 1);
+  assert.equal(nodes(tree).find(node => node.props?.className === "source-attribution__url").children[0], input.sourceUrl);
+  assert.doesNotMatch(renderedText(tree), /原始发布机构|官方链接/);
+  button.props.onClick(); await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(h.copied(), "https://www.qweather.com/");
+  assert.deepEqual(sourceAttributions([input]), []);
+  const combined = h.render({ sources: [input, source()], presentation: "disclosure" });
+  assert.equal(nodes(combined).filter(node => node.type === "SoftButton").length, 1, "a declared credit replaces an identical reading row");
+  assert.match(renderedText(combined), /复制官方链接/);
+  assert.equal(nodes(combined).find(node => node.props?.selectable && node.children[0] === notice).children[0], notice);
 });
