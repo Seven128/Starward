@@ -109,7 +109,7 @@ export function SpotPanelActions({
       <Button className="spot-panel__action spot-panel__action--cloud" data-control="spot-cloud-stargazing-action"
         ariaLabel={`${cloudReady ? "打开" : "等待正式点位上下文后打开"}${spotName}云观星`} disabled={!cloudReady} onClick={onCloud}>
         <ActionScene kind="cloud" progress={1} breathing={breathing && cloudReady} />
-        <SemanticIcon name="eye" />
+        <SemanticIcon name={dayMode ? "telescope" : "eye"} />
         <Text>云观星</Text>
       </Button>
       <Button className="spot-panel__action spot-panel__action--share" data-control="spot-share-action" ariaLabel={`分享${spotName}`} onClick={onShare}>

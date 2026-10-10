@@ -12,6 +12,10 @@
   background: var(--spot-action-day-surface);
 }
 .spot-panel__action > .spot-action-scene--cloud { background: var(--spot-action-night-surface); }
+.theme-day.map-page .spot-panel__action > .spot-action-scene {
+  inset: 0;
+  border-radius: 14Px;
+}
 .spot-action-scene__day,
 .spot-action-scene__night {
   position: absolute;

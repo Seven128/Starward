@@ -15,10 +15,12 @@ export function panelIdentityMinimumHeight(rows: unknown): number | null {
     const tops = [rectangles[0]?.top, rectangles[1]?.top, rectangles[3]?.top];
     if (!tops.every(top => typeof top === "number" && Number.isFinite(top))) return null;
     const [handleTop, identityTop, routeTop] = tops as [number, number, number];
-    if (identityTop < handleTop + handleHeight || routeTop < identityTop + identityHeight) return null;
+    // The adopted formal header overlays its transparent handle on the title.
+    // Both remain in this document; overlapping targets are not extra rows.
+    if (identityTop < handleTop || routeTop < identityTop + identityHeight) return null;
     // The native span includes the actual plan entry, recovery cards and gaps.
     // All nodes share one scroll document, so scrolling cancels out of the span.
-    contentHeight = routeTop + routeHeight! - handleTop;
+    contentHeight = Math.max(handleTop + handleHeight, routeTop + routeHeight!) - handleTop;
   }
   return Math.ceil(contentHeight + actionHeight + 8);
 }

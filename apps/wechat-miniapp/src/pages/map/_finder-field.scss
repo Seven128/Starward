@@ -1,4 +1,15 @@
 // Map's trigger and Search's native input form one stationary text anchor.
-@mixin text-tone {
+@mixin text-presentation {
   color: var(--text-secondary);
+  font-size: 15Px;
+  .theme-day & { font-size: 14Px; }
+}
+
+// The stationary brand title is shared by Map and Search. Their adopted
+// line boxes differ, so each page retains its own line-height.
+@mixin day-brand-title {
+  color: #0f172a;
+  font-size: 17Px;
+  font-weight: 600;
+  letter-spacing: -.025em;
 }

@@ -60,7 +60,7 @@ const bIconFiles = {
     "arrow-left--day--default.png", "check--day--default.png",
     "chevron-down--day--default.png", "chevron-right--day--default.png",
     "chevron-up--day--default.png", "close--day--default.png",
-    "cloud--day--default.png", "compass--day--default.png",
+    "cloud--day--default.png", "navigation--day--default.png",
     "eye--day--default.png",
     "four-point-star--day--default.png", "horizon--day--default.png",
     "favorite-star--day--default.png", "favorite-star--day--selected.png",

@@ -2687,8 +2687,7 @@
   background: rgba(255, 255, 255, .94);
 }
 .map-search-entry > text {
-  @include finder-field.text-tone;
-  font-size: 15Px;
+  @include finder-field.text-presentation;
   font-weight: 400;
 }
 .map-search-entry > .semantic-icon { width: 22Px; height: 22Px; flex-basis: 22Px; }
@@ -3314,6 +3313,95 @@
   width: 14Px;
   height: 14Px;
   flex: 0 0 14Px;
+}
+
+// Current comfortable-scale DAY source. Keep the same document, native
+// targets and data owners; the handle overlaps the identity as in the source.
+.theme-day.map-page .map-app-title > text {
+  @include finder-field.day-brand-title;
+  line-height: 25.5Px;
+}
+.theme-day.map-page .map-search-entry::before { inset: 5Px 0; }
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) {
+  --spot-panel-inline-padding: 18Px;
+  --panel-action-height: 48Px;
+  border-radius: 28Px 28Px 0 0;
+}
+.theme-day.map-page .spot-panel.spot-panel--large:not(.spot-panel--proposal) { border-radius: 0; }
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__handle-band--document {
+  width: 100%;
+  margin: 0 0 -20Px;
+  background: transparent;
+}
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__handle { padding-top: 10Px; }
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__handle-bar { width: 36Px; }
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__identity { padding-top: 10Px; }
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__scroll { padding-bottom: 76Px; }
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__block--route {
+  min-height: 64Px;
+  padding-top: 12Px;
+  padding-bottom: 12Px;
+}
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__route-note { margin-top: 4Px; }
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__block--route .semantic-icon {
+  width: 24Px;
+  height: 24Px;
+  flex-basis: 24Px;
+}
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__hours-row {
+  color: #475569;
+  line-height: 22Px;
+}
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__hours-row > view { color: #0f172a; }
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__hours-row .semantic-icon {
+  width: 22Px;
+  height: 22Px;
+  flex-basis: 22Px;
+  margin-right: 6Px;
+}
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__access-compact {
+  margin: 6Px 0 14Px;
+  padding: 10Px 14Px;
+  border: 0;
+  border-radius: 16Px;
+}
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__safety-facts .type-body { font-weight: 400; }
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__action-lane { height: 68Px; }
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__action-bar {
+  right: 18Px;
+  bottom: 12Px;
+  left: 18Px;
+  gap: 12Px;
+  height: 48Px;
+  min-height: 48Px;
+}
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__action {
+  height: 48Px;
+  min-height: 48Px;
+  padding: 0;
+  border-radius: 14Px;
+  font-size: 15Px;
+  font-weight: 500;
+  line-height: 22.5Px;
+}
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__action--share::before {
+  inset: 0;
+  border-radius: 14Px;
+}
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__action .semantic-icon {
+  width: 20Px;
+  height: 20Px;
+  flex-basis: 20Px;
+}
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .spot-panel__action .favorite-star {
+  width: 26Px;
+  height: 26Px;
+  flex-basis: 26Px;
+}
+.theme-day.map-page .spot-panel:not(.spot-panel--proposal) .favorite-star__rotor {
+  top: 1Px;
+  width: 24Px;
+  height: 24Px;
 }
 
 @media (max-width: 350px) {

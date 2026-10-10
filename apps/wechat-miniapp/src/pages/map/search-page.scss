@@ -43,6 +43,10 @@
   letter-spacing: -.025em;
   color: var(--text-primary);
 }
+.theme-day.spot-search-page .spot-search-title {
+  @include finder-field.day-brand-title;
+  line-height: normal;
+}
 .spot-search-field {
   position: relative;
   z-index: 20;
@@ -385,13 +389,13 @@
   height: var(--search-control-height);
   min-height: var(--target-min);
   padding-right: 16rpx;
-  font-size: 15Px;
   line-height: var(--type-search-line);
-  @include finder-field.text-tone;
+  @include finder-field.text-presentation;
 }
 .spot-search-field__placeholder {
-  @include finder-field.text-tone;
+  @include finder-field.text-presentation;
 }
+.theme-day.spot-search-page .spot-search-field::before { inset: 5Px 0; }
 .spot-search-query-overlay {
   top: calc(var(--search-safe-top) + var(--search-control-height) + 2Px);
   right: 16Px;

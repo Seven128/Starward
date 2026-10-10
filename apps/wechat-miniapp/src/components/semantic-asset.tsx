@@ -34,6 +34,7 @@ export type SemanticIconName =
   | "info"
   | "warning"
   | "compass"
+  | "navigation"
   | "horizon"
   | "undo"
   | "check"
@@ -167,7 +168,8 @@ export function SemanticIcon({
       />
     );
   }
-  const sourceName = name === "plan-header-chevron" || name === "plan-row-chevron" ? "chevron-right" : name;
+  const sourceName = name === "navigation" ? "compass"
+    : name === "plan-header-chevron" || name === "plan-row-chevron" ? "chevron-right" : name;
   const source = sourceName === "star" ? "/assets/semantic/five-point-star.svg" : SOURCE_ICON_FILE[sourceName];
   if (name === "arrow-left") {
     return (
@@ -210,7 +212,7 @@ export function SemanticIcon({
   }
   return (
     <View
-      className={`semantic-icon semantic-icon--${name} semantic-icon--${mode.toLowerCase()} ${className}`}
+      className={`semantic-icon semantic-icon--${sourceName} semantic-icon--${mode.toLowerCase()} ${className}`}
       {...(decorative
         ? { "aria-hidden": true }
         : { role: "img", "aria-label": label ?? name })}

@@ -560,7 +560,7 @@ export function SpotInformationPanel({
               <Text className="spot-panel__route-note">{route?.parkingGuidance || route?.lastRoad || formalFacts?.parkingNote || `停车与末段道路信息${detailMissingFallback}`}</Text>
               </View>
                 <Button className="spot-panel__text-action" data-control="spot-navigation-action" ariaLabel={`查看${effectiveSpot.name}路线`} onClick={onNavigate}>
-                  <SemanticIcon name="compass" />
+                  <SemanticIcon name="navigation" />
                 </Button>
               </View>
             </View>

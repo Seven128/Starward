@@ -60,6 +60,22 @@ test("private proposals retain the existing identity floor without a fabricated 
   assert.deepEqual(mounted.layouts, [{ identity: "proposal:owner:a", height: 156 }]);
 });
 
+test("formal measurement accepts the adopted handle over the title and reserves the full action lane", () => {
+  // The handle stays in the same document, but its transparent target overlaps
+  // the identity. Counting it as a separate leading row rejects this layout.
+  const overlap = [{ top: 400, height: 20 }, { top: 400, height: 78 },
+    { height: 68 }, { top: 552, height: 74.4 }];
+  const mounted = mountMeasurement(null);
+  mounted.ticks.shift()!(); mounted.deliveries.shift()!([...rulers, ...overlap]);
+  assert.deepEqual(mounted.layouts, [{ identity: "formal:spot:a", height: 303 }]);
+  const stable = mountMeasurement(null, 303);
+  stable.ticks.shift()!(); stable.deliveries.shift()!([...rulers, ...overlap]);
+  assert.equal(stable.panelSnapCache.current?.identity, "formal:spot:a");
+  assert.deepEqual(stable.layouts, []);
+  const scrolled = overlap.map((row, index) => index === 2 ? row : { ...row, top: row.top! - 800 });
+  assert.equal(panelIdentityMinimumHeight(scrolled), 303);
+});
+
 test("invalid and retired native content cannot install a formal floor or cached anchors", () => {
   const invalid = mountMeasurement(null);
   invalid.ticks.shift()!(); invalid.deliveries.shift()!([...rulers, ...content.slice(0, 3), null]);
