@@ -68,6 +68,30 @@ test("fixture navigation has identical content and geometry to ordinary navigati
   assert.doesNotMatch(text(render(true)), /测试|验收|fixture/i);
 });
 
+test("arrow and dismiss presentations share the dirty-leave guard and failed-return recovery", async () => {
+  for (const backPresentation of ["back", "dismiss"] as const) {
+    const effects: string[] = [];
+    let permit = false;
+    const attempt = { active: () => true, stack: [{}, {}], release: () => effects.push("release"), fail: () => effects.push("error") };
+    const render = load("./custom-nav.tsx", "CustomNav", {
+      nativeStatusBarHeightPx: () => 44, nativeMenuClearancePx: () => 96, nativeNavigationInsets: () => ({ safeTop: 88 }),
+      usePageNavigation: () => ({ navigationError: null, begin: () => attempt }),
+      Taro: { navigateBack: async () => { effects.push("back"); throw new Error("native back failed"); },
+        switchTab: async () => { effects.push("fallback"); throw new Error("native fallback failed"); } },
+    });
+    const tree = render({ title: "反馈页", back: true, backPresentation,
+      beforeBack: () => permit, onBackAuthorized: () => effects.push("authorized"), onBackFailure: () => effects.push("restore") });
+    const find = (node: any): any => node?.type === "SoftButton" ? node : Array.isArray(node) ? node.map(find).find(Boolean) : node?.children ? find(node.children) : null;
+    const action = find(tree);
+    assert.ok(action, "real navigation action remains rendered");
+    await action.props.onClick();
+    assert.deepEqual(effects, ["release"], "cancel keeps the page and dirty input");
+    permit = true; effects.length = 0;
+    await action.props.onClick();
+    assert.deepEqual(effects, ["authorized", "back", "fallback", "restore", "error", "release"]);
+  }
+});
+
 test("sample state has no badge while real partial and missing states retain their meaning", () => {
   const badge = load("./data-state-badge.tsx", "DataStateBadge");
   assert.equal(badge({ state: "SAMPLE_DATA" }), null);

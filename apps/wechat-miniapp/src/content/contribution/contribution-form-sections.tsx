@@ -10,6 +10,7 @@ import {
 } from "@tarojs/components";
 import { useEffect, useState } from "react";
 import { SoftButton } from "@/components/soft-button";
+import { SpotDocumentAddressControl } from "../spot-document-fields";
 import { KIND_LABEL, TOPICS } from "./contribution-model";
 import type { ContributionCommands } from "./use-contribution-commands";
 import type { ContributionForm } from "./use-contribution-form";
@@ -177,14 +178,12 @@ export function ContributionLocationSection({
 }
 
 export function ContributionCandidateAddressControl({ form, commands }: { form: ContributionForm; commands: ContributionCommands }) {
-  return <View className="contribution-document-address contribution-address-group" data-field="address">
-    <Text className="formal-feedback-field__label">观星位置 <Text className="formal-feedback-required">*</Text></Text>
+  return <SpotDocumentAddressControl disabled={form.commandBusy} onClear={form.clearCandidateLocation}>
     <Button disabled={form.commandBusy} className="contribution-address-picker focus-ring" aria-label="搜索地址，确定观星位置" onClick={() => void commands.chooseCandidateLocation()}>
       <Text className={form.candidateFields.address ? "" : "contribution-placeholder"}>{form.candidatePlaceLabel || form.candidateFields.address || "搜索地址，确定观星位置"}</Text>
-      <Text aria-hidden="true">⌖</Text>
     </Button>
     {form.validationField === "contribution-candidate-address" ? <FieldError>请先搜索并确定地点地址。</FieldError> : null}
-  </View>;
+  </SpotDocumentAddressControl>;
 }
 
 export function ContributionCandidateCoordinateConsent({ form, commands }: { form: ContributionForm; commands: ContributionCommands }) {

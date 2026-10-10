@@ -24,7 +24,7 @@ export function CandidateIntakeField({ fieldKey, form }: { fieldKey: Contributio
       <Text className="formal-feedback-field__label">{label}<Text className="formal-feedback-required"> *</Text></Text>
       <View className="formal-feedback-choices candidate-intake-choices" role="radiogroup" ariaLabel={label}>
         {options.map(([key, title]) => <Button key={key} disabled={form.commandBusy} className={value === key ? "is-selected" : ""}
-          aria-pressed={value === key} ariaLabel={`${label}：${title}`} onClick={() => { if (value === key) return; onSelect(key); form.setValidationField(null); }}>{title}</Button>)}
+          aria-pressed={value === key} ariaLabel={`${label}：${title}`} onClick={() => { if (value === key) return; onSelect(key); form.setValidationField(null); }}><Text>{title}</Text></Button>)}
       </View>
       {error(field) ? <View className="candidate-intake-error" role="alert"><Text>{error(field)}</Text></View> : null}
     </View>;

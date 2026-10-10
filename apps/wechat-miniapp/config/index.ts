@@ -96,6 +96,7 @@ const bIconFiles = {
     "meteor--day--default.png", "note--day--default.png",
     "pencil--day--default.png", "plan-suv--day--default.png",
     "refresh--day--default.png", "save--day--default.png",
+    "search--day--default.png",
     "verified--day--default.png",
     "share--day--default.png", "navigation--day--default.png",
     "sun--day--default.png", "trash--day--default.png",

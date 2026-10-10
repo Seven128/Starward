@@ -13,3 +13,10 @@
 .custom-nav__side .semantic-icon { color: var(--text-primary); }
 .custom-nav__back-icon { position: absolute; width: var(--icon-medium); height: var(--icon-medium); top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; pointer-events: none; }
 .custom-nav__title .type-section { font-size: var(--type-page-title-size); line-height: var(--type-page-title-line); overflow-wrap: anywhere; }
+.custom-nav--dismiss { padding-inline: 18Px; }
+.custom-nav--dismiss .custom-nav__bar { min-height: 58Px; padding-top: 10Px; grid-template-columns: minmax(0, 1fr) auto; }
+.custom-nav--dismiss .custom-nav__side:first-child { display: none; }
+.custom-nav--dismiss .custom-nav__title { align-items: flex-start; text-align: left; }
+.custom-nav--dismiss .custom-nav__title .type-section { font-size: 20Px; line-height: 28Px; font-weight: 700; }
+.custom-nav--dismiss .custom-nav__side--right { align-items: center; gap: 10Px; margin-right: -12Px; }
+.custom-nav--dismiss .custom-nav__back-icon { width: 22Px; height: 22Px; }

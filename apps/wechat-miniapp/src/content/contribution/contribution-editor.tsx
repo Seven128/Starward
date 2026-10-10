@@ -7,7 +7,7 @@ import { parseCoordinateInput } from "./coordinate-input";
 import { NotificationRegion } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
 import { SoftButton } from "@/components/soft-button";
-import { SelectionTabs } from "@/components/selection-tabs";
+import { SemanticIcon } from "@/components/semantic-asset";
 import { CustomNav } from "@/components/custom-nav";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { contributionValidationAnchor } from "./validation-anchor";
@@ -19,7 +19,7 @@ import { useContributionForm, type ContributionForm } from "./use-contribution-f
 import { contributionRecordPrimaryAction, resolveContributionEditorRecord, type ContributionRecordGroup } from "./contribution-record-model";
 import { ToggleField } from "@/components/toggle-field";
 import { SpotDocumentFields } from "../spot-document-fields";
-import { SPOT_DOCUMENT_CHAPTERS } from "../spot-document";
+import { SpotDocumentTabs } from "../spot-document-tabs";
 import { useSpotDocumentNavigation } from "../use-spot-document-navigation";
 import { contributionEditorSaveState } from "./contribution-save-state";
 import { contributionSubmissionState } from "./contribution-model";
@@ -243,21 +243,18 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
   };
   return <View className={`${themeClass} contribution-page${embedded ? " contribution-page--embedded" : ""}${standaloneDraftEditor ? " contribution-page--standalone-editor" : ""}${managesRecords ? " contribution-page--records" : ""}`} style={embedded ? { height: embeddedHeightPx === undefined ? "calc(100vh - 184Px)" : `${embeddedHeightPx}px`, minHeight: 0, maxHeight: "none" } : {}} data-route="contribution-intake">
     {commands.handoffWarning}
-    {embedded ? <View className="contribution-editor-header"><Text className="type-section">{title}</Text>{!readonlyRecord ? saveStatus : null}<Button className="contribution-editor-close focus-ring" aria-label="关闭新增观星点" onClick={() => void requestClose()}>×</Button></View> : <CustomNav title={managesRecords ? "观星点创建与反馈" : readonlyRecord ? "本次提交记录" : form.hasFormalSpot ? "现场反馈与纠错" : title} right={standaloneDraftEditor ? saveStatus : undefined} back backFallbackTab={managesRecords ? "/pages/my/index" : "/pages/map/index"} beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} />}
+    {embedded ? <View className="contribution-editor-header"><Text className="type-section">{title}</Text>{!readonlyRecord ? saveStatus : null}<Button className="contribution-editor-close focus-ring" aria-label="关闭新增观星点" onClick={() => void requestClose()}><SemanticIcon name="close" /></Button></View> : <CustomNav title={managesRecords ? "观星点创建与反馈" : readonlyRecord ? "本次提交记录" : form.hasFormalSpot ? "现场反馈与纠错" : title} right={standaloneDraftEditor ? saveStatus : undefined} back backPresentation={standaloneDraftEditor && themeClass.includes("theme-day") ? "dismiss" : undefined} backFallbackTab={managesRecords ? "/pages/my/index" : "/pages/map/index"} beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} />}
     {form.ownerChanged && !managesRecords ? <StatusPanel state="ERROR" title="账号已变化"
       detail="请返回地图后重新打开，原账号的输入不会交给当前账号。" recoveryLabel="返回地图"
       onRecover={() => embedded ? onClose?.() : void Taro.switchTab({ url: "/pages/map/index" })} /> : <>
-    {isNewSpotDocument && !readonlyRecord ? <SelectionTabs
-      className="formal-feedback-tabs contribution-document-tabs"
-      items={SPOT_DOCUMENT_CHAPTERS.map(([id, label]) => ({ id, label }))}
-      activeId={documentChapter}
+    {isNewSpotDocument && !readonlyRecord ? <SpotDocumentTabs
+      className="contribution-document-tabs"
+      chapter={documentChapter}
       label="新增地点章节"
       onSelect={jumpDocumentChapter}
-      activeItemClassName="is-active"
-      indicatorClassName="formal-feedback-tabs__line"
     /> : null}
     <ScrollView scrollY {...(managesRecords ? { scrollTop: recordsScrollTop, onScroll: onRecordsScroll } : { onScroll: onDocumentScroll })} scrollIntoView={validationAnchor} scrollWithAnimation={false} enhanced bounces={false} showScrollbar={false} className="contribution-page__scroll hide-scrollbar">
-      <View className={`contribution-content spot-document-scroll-content${isNewSpotDocument && !readonlyRecord ? "" : " page-inset"} safe-bottom`}><NotificationRegion owner="contribution" placement="inline" />
+      <View className={`contribution-content spot-document-scroll-content${isNewSpotDocument && !readonlyRecord ? " contribution-content--document" : " page-inset"} safe-bottom`}><NotificationRegion owner="contribution" placement="inline" />
         {form.capabilities.isError || form.capabilities.refreshError || form.capabilities.data?.dataState === "STALE_USABLE" ? (
           <StatusPanel state={form.capabilities.isError ? "ERROR" : "STALE"}
             detail="投稿能力状态暂时无法更新；当前输入仍会保留。"

@@ -21,7 +21,7 @@ import { CustomNav } from "@/components/custom-nav";
 import { FloatingNotificationHost, NotificationRegion } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
 import { SoftButton } from "@/components/soft-button";
-import { SelectionTabs } from "@/components/selection-tabs";
+import { SpotDocumentTabs } from "../spot-document-tabs";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { currentDraftUserId, errorMessage, getContributionFormalBaseline, getContributionMedia, getContributions, getSpotContributionMedia, getSpotSite, MiniappApiError } from "@/services/api-client";
@@ -39,7 +39,6 @@ import { confirmEditorLeave } from "@/hooks/editor-leave";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
 import { SpotDocumentFields } from "../spot-document-fields";
 import {
-  SPOT_DOCUMENT_CHAPTERS as CHAPTERS,
   SPOT_DOCUMENT_LABELS as LABELS,
   emptySpotDocumentValues,
   type SpotDocumentValues,
@@ -428,14 +427,12 @@ export default function FormalFeedbackEditor() {
   return <><SystemMotionProbe /><View className={`${themeClass} formal-feedback-page`} data-route="formal-spot-feedback" data-od-id="formal-feedback-editor">
     {mediaHandoff.warning}
     <FloatingNotificationHost />
-    <CustomNav title={`${ownerChanged ? (spotName || "观星点") : (baseline?.fields.name ?? (spotName || "观星点"))}反馈页`} right={!ownerChanged && hasEditorContent && reviewStateLabel ? <Text className={`formal-feedback-review-tag${submitted ? "" : " formal-feedback-review-tag--rejected"}`}>{reviewStateLabel}</Text> : undefined} back beforeBack={ownerChanged ? undefined : confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} backFallbackTab="/pages/map/index" />
-    {!ownerChanged && hasEditorContent ? <SelectionTabs className="formal-feedback-tabs"
-      items={CHAPTERS.map(([id, label]) => ({ id, label }))}
-      activeId={chapter}
+    <CustomNav title={`${ownerChanged ? (spotName || "观星点") : (baseline?.fields.name ?? (spotName || "观星点"))}反馈页`} right={!ownerChanged && hasEditorContent && reviewStateLabel ? <Text className={`formal-feedback-review-tag${submitted ? "" : " formal-feedback-review-tag--rejected"}`}>{reviewStateLabel}</Text> : undefined} back backPresentation={themeClass.includes("theme-day") ? "dismiss" : undefined} beforeBack={ownerChanged ? undefined : confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} backFallbackTab="/pages/map/index" />
+    {!ownerChanged && hasEditorContent ? <SpotDocumentTabs
+      chapter={chapter}
       label="反馈章节"
       onSelect={jump}
-      activeItemClassName="is-active"
-      indicatorClassName="formal-feedback-tabs__line" /> : null}
+    /> : null}
     <ScrollView scrollY scrollIntoView={scrollAnchor} onScroll={onScroll} enhanced bounces={false} showScrollbar={false} className="formal-feedback-scroll">
       <View className={`formal-feedback-body spot-document-scroll-content safe-bottom${showSubmit ? "" : " formal-feedback-body--without-submit"}`}>
         <NotificationRegion owner="contribution" placement="inline" />

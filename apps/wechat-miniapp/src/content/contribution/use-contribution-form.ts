@@ -484,6 +484,15 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       }),
     setLatitude,
     setLongitude,
+    clearCandidateLocation: () => {
+      setCandidatePlaceLabel("");
+      setCandidateRegion("");
+      setCandidateFields(current => ({ ...current, address: "" }));
+      setLatitude("");
+      setLongitude("");
+      setPreciseLocationConsent(false);
+      setCandidateSelectionVersion(version => version + 1);
+    },
     selectCandidateLocation: (selection: {
       name: string;
       address: string;

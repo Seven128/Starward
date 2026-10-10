@@ -1,0 +1,113 @@
+// Shared document presentation for new-place intake and formal feedback.
+// Page-specific review, conflict and submission styles stay with their route.
+.formal-feedback-tabs {
+  height: 46Px;
+  display: flex;
+  position: relative;
+  border-bottom: 1Px solid #f1f2f4;
+  background: #fff;
+  flex: none;
+  button { flex: 1; min-width: 0; min-height: 46Px; margin: 0; padding: 0; background: transparent; border: 0; border-radius: 0; font-size: 14Px; color: #9298a0; line-height: 46Px; }
+  button::after { display: none; }
+  button.is-active { color: #30343a; font-size: 15Px; font-weight: 600; }
+}
+.formal-feedback-tabs__line { position: absolute; bottom: 0; width: 25%; height: 2Px; transition: left 180ms ease; }
+.formal-feedback-tabs__line::after { content: ""; display: block; width: 20Px; height: 2Px; margin: auto; background: #6e7d90; }
+.formal-feedback-body { padding: 0 16Px 92Px; }
+.formal-feedback-section { padding: 22Px 0 4Px; scroll-margin-top: 8Px; }
+.formal-feedback-section + .formal-feedback-section { border-top: 8Px solid #fafafa; margin: 18Px -16Px 0; padding: 24Px 16Px 4Px; }
+.formal-feedback-section-title { display: block; font-size: 18Px; line-height: 25Px; font-weight: 700; margin-bottom: 12Px; }
+.formal-feedback-subtitle { display: block; font-size: 15Px; font-weight: 650; margin: 17Px 0 4Px; }
+.formal-feedback-field { min-height: 52Px; display: flex; align-items: center; border-bottom: 1Px solid #f0f1f2; padding: 4Px 0; gap: 14Px; }
+.formal-feedback-field.is-changed { background: #fffaf0; margin: 0 -6Px; padding-left: 6Px; padding-right: 6Px; }
+.formal-feedback-field__label { width: 80Px; flex: none; font-size: 14Px; color: #8b9098; }
+.formal-feedback-required { color: #a86960; }
+.formal-feedback-field input { flex: 1; min-width: 0; height: 44Px; font-size: 14.5Px; color: #31353a; text-align: left; }
+.formal-feedback-choices { flex: 1; display: flex; align-items: center; justify-content: flex-start; gap: 4Px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.formal-feedback-choices button { flex: none; min-width: 0; min-height: 44Px; margin: 0; padding: 0 8Px; height: 44Px; line-height: 44Px; background: transparent; border: 0; color: #9a9fa6; font-size: 13Px; white-space: nowrap; }
+.formal-feedback-choices button::after { display: none; }
+.formal-feedback-choices button.is-selected { background: #f0f4f7; color: #516274; border-radius: 5Px; font-weight: 600; }
+.formal-feedback-choices::-webkit-scrollbar { width: 0; height: 0; display: none; }
+.formal-feedback-address-copy { display: block; font-size: 13Px; line-height: 20Px; color: #9da1a6; padding: 7Px 0 10Px; }
+.formal-feedback-textarea { box-sizing: border-box; width: 100%; height: 112Px; background: #f7f8fa; border-radius: 10Px; padding: 13Px; font-size: 14Px; line-height: 22Px; }
+.formal-feedback-textarea.is-changed { background: #fffaf0; }
+.formal-feedback-photo-group { padding: 4Px 0; }
+.formal-feedback-photo-list { display: flex; gap: 8Px; }
+.formal-feedback-photo { width: 56Px; height: 56Px; position: relative; border-radius: 7Px; background: #f1f3f5; display: flex; align-items: center; justify-content: center; }
+.formal-feedback-photo image { width: 56Px; height: 56Px; border-radius: 7Px; }
+.formal-feedback-photo > button { position: absolute; right: -16Px; top: -16Px; z-index: 1; width: 44Px; height: 44Px; margin: 0; padding: 0; border: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: transparent; box-shadow: none; color: #75808a; font-size: 15Px; line-height: 23Px; }
+.formal-feedback-photo > button::after { display: none; }
+.formal-feedback-photo__remove-glyph { width: 24Px; height: 24Px; border-radius: 50%; background: #fff; color: #75808a; font-size: 16Px; line-height: 24Px; text-align: center; box-shadow: 0 1Px 5Px #26334218; }
+.formal-feedback-photo__red-label { display: none; }
+.formal-feedback-photo-action { display: block; width: auto; min-height: 48Px; margin: 0; padding: 0; background: transparent; border: 0; text-align: left; color: #7d858e; font-size: 13.5Px; line-height: 48Px; }
+.formal-feedback-photo-action::after { display: none; }
+.formal-feedback-photo-group .formal-feedback-photo-action[disabled] { color: var(--text-tertiary); }
+.formal-feedback-address > .formal-feedback-field__label { display: block; width: auto; margin-bottom: 8Px; }
+.formal-feedback-address__control { position: relative; display: flex; align-items: center; gap: 10Px; min-height: 46Px; padding: 0 44Px 0 14Px; border-radius: 12Px; background: var(--surface-subtle); }
+.formal-feedback-address__control.is-changed { background: var(--choice-selected-surface); }
+.formal-feedback-address__control > input { flex: 1; min-width: 0; height: 46Px; font-size: 15Px; color: var(--text-primary); }
+.formal-feedback-address__search { width: 22Px; height: 22Px; flex-shrink: 0; }
+.formal-feedback-address__clear { position: absolute; right: 0; top: 1Px; width: 44Px; height: 44Px; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; }
+.formal-feedback-address__clear::after { display: none; }
+.formal-feedback-address__clear .semantic-icon { width: 22Px; height: 22Px; }
+
+// Both consumers inherit the existing low-luminance theme roles.
+.theme-night, .theme-observation {
+  .formal-feedback-tabs { background: var(--surface); border-bottom-color: var(--border); }
+  .formal-feedback-tabs button { color: var(--text-tertiary); }
+  .formal-feedback-tabs button.is-active { color: var(--text-primary); }
+  .formal-feedback-tabs__line::after { background: var(--primary); }
+  .formal-feedback-section + .formal-feedback-section { border-top-color: var(--surface-subtle); }
+  .formal-feedback-field { border-bottom-color: var(--border); }
+  .formal-feedback-field.is-changed, .formal-feedback-textarea.is-changed { background: var(--choice-selected-surface); }
+  .formal-feedback-field__label, .formal-feedback-choices button, .formal-feedback-address-copy, .formal-feedback-photo-action { color: var(--text-secondary); }
+  .formal-feedback-field input { color: var(--text-primary); }
+  .formal-feedback-placeholder { color: var(--text-tertiary); }
+  .formal-feedback-required { color: var(--danger); }
+  .formal-feedback-choices button.is-selected { background: var(--choice-selected-surface); color: var(--choice-selected-label); }
+  .formal-feedback-textarea { background: var(--surface-subtle); color: var(--text-primary); }
+  .formal-feedback-photo { background: var(--surface-subtle); color: var(--text-secondary); }
+  .formal-feedback-photo > button { color: var(--text-primary); }
+  .formal-feedback-photo__remove-glyph { background: var(--surface-elevated); border: 1Px solid var(--border); color: var(--text-primary); box-shadow: none; }
+}
+.theme-observation .formal-feedback-photo image { display: none; }
+.theme-observation .formal-feedback-photo__red-label { display: block; color: var(--text-primary); font-size: 12Px; text-align: center; }
+.theme-night .formal-feedback-photo image { filter: brightness(.55); }
+
+// Current adopted DAY geometry; the extra button padding is a real hit area.
+.theme-day {
+  .formal-feedback-tabs { --document-tab-start: 24Px; --document-tab-step: 56Px; --document-tab-marker: 20Px; --document-embedded-tab-height: 46Px; height: 46Px; padding: 0 11Px; gap: 12Px; }
+  .formal-feedback-tabs button { flex: none; position: relative; min-width: 44Px; padding: 0 8Px; }
+  .formal-feedback-tabs .selection-tabs__label { font-size: 14Px; transform: none; }
+  .formal-feedback-tabs .is-active .selection-tabs__label { font-size: 15Px; }
+  .formal-feedback-tabs__line { bottom: 4Px; height: 3Px; transition: left 220ms ease; }
+  .formal-feedback-tabs__line::after { height: 3Px; border-radius: 4Px; background: linear-gradient(90deg, #9cb8cb, #c5dce4); }
+  .formal-feedback-body { padding: 10Px 18Px 24Px; }
+  .formal-feedback-section, .formal-feedback-section + .formal-feedback-section { padding: 0; margin: 0; border: 0; }
+  .formal-feedback-section-title { color: #353c48; font-size: 17Px; line-height: 24Px; font-weight: 600; margin: 22Px 0 12Px; }
+  #formal-feedback-notes > .formal-feedback-section-title { font-size: 16Px; margin: 26Px 0 10Px; }
+  .formal-feedback-group { background: #fbfbfc; border-radius: 16Px; padding: 6Px 14Px 12Px; margin-bottom: 16Px; }
+  .formal-feedback-group .formal-feedback-field:last-child,
+  .formal-feedback-group .formal-feedback-field--parkingNote,
+  .formal-feedback-group .formal-feedback-field--toiletNote { border-bottom: 0; }
+  .formal-feedback-subtitle { color: #434b56; font-weight: 600; margin: 12Px 0 4Px; }
+  .formal-feedback-field { padding-block: 0; border-bottom-color: #f1f2f4; }
+  .formal-feedback-field.is-changed { background: #fff9e9; margin: 0; padding-inline: 0; border-radius: 7Px; }
+  .formal-feedback-field__label { color: #747c88; }
+  .formal-feedback-required { color: #d79b99; font-size: 12Px; font-weight: 500; }
+  .formal-feedback-field input { color: #424955; }
+  .formal-feedback-field input[disabled], .formal-feedback-textarea[disabled] { opacity: 1; color: #555f6c; }
+  .formal-feedback-choices { margin-left: -7Px; }
+  .formal-feedback-choices button { min-width: 44Px; padding: 0; color: #929aa5; display: flex; align-items: center; justify-content: center; }
+  .formal-feedback-choices button text { display: inline-flex; align-items: center; box-sizing: border-box; min-height: 40Px; padding: 8Px; line-height: 19.5Px; border-radius: 6Px; }
+  .formal-feedback-choices button.is-selected { background: transparent; }
+  .formal-feedback-choices button.is-selected text { background: #eaf2f5; color: #567481; }
+  .formal-feedback-address > .formal-feedback-field__label { font-size: 12Px; color: #737c88; }
+  .formal-feedback-address__control { background: #f4f6f8; }
+  .formal-feedback-address__control.is-changed { background: #fff9e9; }
+  .formal-feedback-address-copy { color: #9399a2; margin: 8Px 4Px; padding: 0; }
+  .formal-feedback-photo-action { color: #648490; }
+  .formal-feedback-textarea { border-radius: 12Px; padding: 12Px 14Px; }
+  .formal-feedback-textarea.is-changed { background: #fff9e9; }
+}
+@media (prefers-reduced-motion: reduce) { .formal-feedback-tabs__line { transition: none; } }

@@ -24,7 +24,7 @@ function nodes(value: unknown): Node[] {
 }
 function render(form: ContributionForm, props: Record<string, unknown> = {}, source = declaration) {
   const inert = ["View", "Text", "Button", "ScrollView", "NotificationRegion", "CustomNav", "StatusPanel", "SoftButton", "SelectionTabs",
-    "SpotDocumentFields", "ContributionRecordDetail", "ContributionActions", "ContributionDeleteDraftAction", "ContributionHistory", "ContributionContextSection",
+    "SpotDocumentFields", "SpotDocumentTabs", "SemanticIcon", "ContributionRecordDetail", "ContributionActions", "ContributionDeleteDraftAction", "ContributionHistory", "ContributionContextSection",
     "ContributionEvidenceSection", "ContributionLocationSection", "ContributionMediaSection", "ContributionCandidateAddressControl",
     "ContributionCandidateCoordinateConsent", "ToggleField"];
   const component = vm.runInNewContext(ts.transpileModule(source + "\nContributionEditor;", {

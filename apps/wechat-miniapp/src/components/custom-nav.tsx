@@ -9,6 +9,7 @@ export function CustomNav({
   title,
   subtitle,
   back = false,
+  backPresentation = "back",
   backOdId,
   backFallbackTab = "/pages/map/index",
   odId,
@@ -20,6 +21,7 @@ export function CustomNav({
   title: string;
   subtitle?: string | undefined;
   back?: boolean | undefined;
+  backPresentation?: "back" | "dismiss" | undefined;
   backOdId?: string | undefined;
   backFallbackTab?: "/pages/map/index" | "/pages/my/index" | undefined;
   odId?: string | undefined;
@@ -30,7 +32,8 @@ export function CustomNav({
 }) {
   const statusBarHeight = nativeStatusBarHeightPx();
   const menuClearance = nativeMenuClearancePx();
-  const actionSafeTop = right ? nativeNavigationInsets().safeTop : undefined;
+  const dismiss = backPresentation === "dismiss";
+  const actionSafeTop = right || dismiss ? nativeNavigationInsets().safeTop : undefined;
   const navigation = usePageNavigation();
   const backError = navigation.navigationError;
   const goBack = async () => {
@@ -60,9 +63,15 @@ export function CustomNav({
       attempt.release();
     }
   };
+  const backControl = back ? <View {...(backOdId ? { "data-od-id": backOdId } : {})}>
+    <View className="custom-nav__back-control">
+      <SoftButton variant="ghost" label={dismiss ? "关闭页面" : "返回"} onClick={goBack}>{""}</SoftButton>
+      <SemanticIcon name={dismiss ? "close" : "arrow-left"} label={dismiss ? "关闭页面" : "返回"} className="custom-nav__back-icon" />
+    </View>
+  </View> : null;
   return (
     <View
-      className={`custom-nav safe-top${right ? " custom-nav--with-action" : ""}`}
+      className={`custom-nav safe-top${right ? " custom-nav--with-action" : ""}${dismiss ? " custom-nav--dismiss" : ""}`}
       data-control="mini-primary-navigation"
       {...(odId ? { "data-od-id": odId } : {})}
       style={{
@@ -72,20 +81,7 @@ export function CustomNav({
     >
       <View className="custom-nav__bar">
         <View className="custom-nav__side">
-          {back ? (
-            <View {...(backOdId ? { "data-od-id": backOdId } : {})}>
-              <View className="custom-nav__back-control">
-                <SoftButton variant="ghost" label="返回" onClick={goBack}>
-                  {""}
-                </SoftButton>
-                <SemanticIcon
-                  name="arrow-left"
-                  label="返回"
-                  className="custom-nav__back-icon"
-                />
-              </View>
-            </View>
-          ) : null}
+          {!dismiss ? backControl : null}
         </View>
         <View className="custom-nav__title">
           <Text className="type-section">{title}</Text>
@@ -93,6 +89,7 @@ export function CustomNav({
         </View>
         <View className="custom-nav__side custom-nav__side--right">
           {right}
+          {dismiss ? backControl : null}
         </View>
       </View>
       {backError ? (

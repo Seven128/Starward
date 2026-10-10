@@ -22,14 +22,6 @@
   flex-direction: column;
   gap: 20rpx;
 }
-.contribution-document-note {
-  padding: 18rpx 22rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 6rpx;
-  border-left: 4rpx solid var(--primary);
-  box-shadow: none;
-}
 
 .contribution-card {
   padding: 0 0 20rpx;
@@ -53,9 +45,6 @@
   border-bottom: 1rpx solid var(--border);
   border-radius: 0;
   background: transparent;
-}
-.contribution-context--compact {
-  gap: 6rpx;
 }
 .contribution-spot-choice {
   display: grid;
@@ -111,7 +100,6 @@
     grid-template-columns: 64rpx minmax(0, 1fr);
   }
 }
-.contribution-kind-copy,
 .contribution-draft-recovery {
   padding: 12rpx 16rpx;
   display: flex;
@@ -119,8 +107,6 @@
   gap: 6rpx;
   border-radius: 8rpx;
   background: var(--surface-subtle);
-}
-.contribution-draft-recovery {
   border: 1rpx solid var(--border);
 }
 .contribution-draft-recovery__actions {
@@ -164,13 +150,10 @@
   line-height: 44Px;
 }
 .contribution-page--embedded .contribution-document-tabs {
-  height: 40Px;
+  height: var(--document-embedded-tab-height, 40Px);
 }
 .contribution-page--embedded .contribution-document-tabs button {
-  line-height: 40Px;
-}
-.contribution-page--embedded .contribution-document-tabs__line {
-  bottom: 4Px;
+  line-height: var(--document-embedded-tab-height, 40Px);
 }
 .contribution-page--embedded .contribution-document-actions.safe-bottom {
   padding: 10Px 16Px 12Px;
@@ -351,20 +334,6 @@
   gap: 8rpx;
 }
 
-.contribution-switch-row {
-  min-height: var(--target-min);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.contribution-switch-row > view:first-child {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4rpx;
-}
 .contribution-section-heading {
   display: flex;
   align-items: flex-start;
@@ -445,16 +414,6 @@
   width: 100%;
   background: var(--primary);
 }
-.contribution-meaning {
-  padding: 20rpx 24rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 6rpx;
-  box-shadow: none;
-}
-.contribution-actions--flow {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
 .contribution-textarea {
   min-height: 192rpx;
   width: 100%;
@@ -464,10 +423,6 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8rpx;
-}
-.contribution-actions.contribution-actions--submit {
-  width: 100%;
-  grid-template-columns: minmax(0, 1fr);
 }
 
 .contribution-actions .soft-button {
@@ -495,8 +450,7 @@
 
   .contribution-coordinate-grid,
   .contribution-spot-choice,
-  .contribution-actions,
-  .contribution-actions--flow {
+  .contribution-actions {
     grid-template-columns: minmax(0, 1fr);
   }
   .contribution-media-cell {
@@ -518,6 +472,8 @@
 .theme-observation .contribution-frozen-diff__old,
 .theme-night .contribution-coordinate-placeholder,
 .theme-observation .contribution-coordinate-placeholder { color: var(--text-tertiary); }
+.theme-night .contribution-page,
+.theme-observation .contribution-page { color: var(--text-primary); background: var(--canvas); }
 .contribution-submitted-facts { display: flex; flex-direction: column; gap: 8Px; }
 .contribution-submitted-facts__row { display: flex; flex-direction: column; gap: 4Px; padding: 8Px 0; border-bottom: 1Px solid var(--line-subtle); }
 .contribution-route-root {
@@ -571,3 +527,17 @@
 .candidate-intake-error { display: block; flex-basis: 100%; color: var(--danger); font-size: 13Px; line-height: 20Px; margin: 4Px 0; }
 .candidate-intake-legacy { margin: 10Px 0; overflow-wrap: anywhere; }
 .candidate-intake-legacy text { display: block; }
+.formal-feedback-address__control .contribution-address-picker { min-width: 0; min-height: 46Px; padding: 0; background: transparent; font-size: 15Px; }
+.contribution-editor-close .semantic-icon { width: 22Px; height: 22Px; }
+.contribution-page--embedded.theme-day { border-radius: 24Px 24Px 0 0; }
+.contribution-page--embedded.theme-day .contribution-editor-header { min-height: 58Px; height: 58Px; padding: 10Px 18Px 0; border: 0; }
+.contribution-page--embedded.theme-day .contribution-editor-header .type-section { font-size: 20Px; line-height: 28Px; font-weight: 700; }
+.contribution-page--embedded.theme-day .contribution-editor-close { margin-right: -12Px; }
+.theme-day .contribution-content--document { padding-block: 0; gap: 0; }
+.theme-day .contribution-document-actions.safe-bottom { padding: 10Px 18Px max(14Px, env(safe-area-inset-bottom)); }
+.theme-day .contribution-document-actions .contribution-actions { grid-template-columns: 1fr 2fr; gap: 12Px; }
+.theme-day .contribution-document-actions .soft-button { height: 48Px; min-height: 48Px; border-radius: 14Px; font-size: 15Px; font-weight: 600; }
+.contribution-page.theme-day .contribution-document-actions .soft-button--default { background: #eff5f9; color: #68808d; border-color: transparent; }
+.contribution-page.theme-day .contribution-document-actions .soft-button--primary { background: #5e697e; border-color: transparent; }
+.theme-day .candidate-intake-choices button { font-size: 13Px; padding: 0; }
+.theme-day .candidate-intake-choices button text { padding: 10Px 8Px; white-space: normal; }
