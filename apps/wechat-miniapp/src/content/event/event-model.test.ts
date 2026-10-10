@@ -1,6 +1,19 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { compassLabel, eclipseKindLabel, eventDatePresentation, eventDayLabel, eventKindLabel, eventMonthLabel, eventPlanState, eventPreviewDays, groupEventsByPeakMonth, phaseLabel } from "./event-model";
+import { compassLabel, eclipseKindLabel, eventDatePosition, eventDatePresentation, eventDayLabel, eventKindLabel, eventMonthLabel, eventPlanState, eventPreviewDays, groupEventsByPeakMonth, phaseLabel } from "./event-model";
+
+test("event date position preserves calendar coverage, boundaries and unavailable inputs", () => {
+  const interval = { activeStartDate: "2026-12-31", activeEndDate: "2027-01-04" };
+  assert.equal(eventDatePosition(interval, "2026-12-31"), 0);
+  assert.equal(eventDatePosition(interval, "2027-01-01"), 25);
+  assert.equal(eventDatePosition(interval, "2027-01-04"), 100);
+  assert.equal(eventDatePosition(interval, "2027-01-05"), null);
+  assert.equal(eventDatePosition({ activeStartDate: "2028-02-28", activeEndDate: "2028-03-01" }, "2028-02-29"), 50);
+  assert.equal(eventDatePosition({ activeStartDate: "2026-02-28", activeEndDate: "2026-03-01" }, "2026-02-29"), null);
+  assert.equal(eventDatePosition({ activeStartDate: "2026-02-30", activeEndDate: "2026-03-04" }, "2026-03-02"), null);
+  assert.equal(eventDatePosition({ activeStartDate: "2026-12-24", activeEndDate: "2026-12-21" }, "2026-12-22"), null);
+  assert.equal(eventDatePosition({ activeStartDate: "2026-12-22", activeEndDate: "2026-12-22" }, "2026-12-22"), 50);
+});
 
 test("common event date presentation keeps annual references distinct from peaks and eclipses", () => {
   const annual = eventDatePresentation({ kind: "METEOR_SHOWER", annualReference: {} } as never);

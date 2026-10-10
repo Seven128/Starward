@@ -1,4 +1,4 @@
-<view wx:if="{{route}}" class="theme-token-scope {{modeClass}} primary-navigation {{pageClass}}" style="{{layout}}" aria-role="navigation" aria-label="主导航">
+<view wx:if="{{route && !covered}}" class="theme-token-scope {{modeClass}} primary-navigation {{pageClass}}" style="{{layout}}" aria-role="navigation" aria-label="主导航">
   <view class="primary-navigation__row">
     <button wx:for="{{items}}" wx:key="pagePath" data-route="{{item.pagePath}}"
       class="primary-navigation__item {{item.selected ? 'primary-navigation__item--selected' : ''}}"

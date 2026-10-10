@@ -1,13 +1,9 @@
 import Taro, { useDidHide, useDidShow, useResize } from "@tarojs/taro";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { primaryNavigationLayout, type PrimaryPageRoute } from "@/navigation/primary-navigation";
+import type { PrimaryNavigationHandle } from "@/navigation/primary-navigation-cover";
 
 type NativePrimaryPage = { route?: string; getTabBar?(): unknown };
-export type PrimaryNavigationHandle = {
-  show(route: PrimaryPageRoute): void;
-  hide(): void;
-};
-
 function nativeBar(page: NativePrimaryPage) {
   return page.getTabBar?.() as PrimaryNavigationHandle | undefined;
 }

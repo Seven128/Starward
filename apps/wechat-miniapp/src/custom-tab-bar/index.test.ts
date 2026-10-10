@@ -7,10 +7,10 @@ import type { DisplayMode } from "@starward/miniapp-contracts";
 import * as contract from "../navigation/primary-navigation";
 import { createPrimaryNavigationController } from "../navigation/primary-navigation-controller";
 
-type Data = { route: string | null; pending: string | null; failed: string | null; modeClass: string;
+type Data = { route: string | null; pending: string | null; failed: string | null; modeClass: string; covered: boolean;
   layout: string; items: Array<{ dayIcon: string; nightIcon: string; observationIcon: string; label: string }> };
 type Bar = { data: Data; writes: number; setData(data: Partial<Data>): void;
-  show(route: string): void; hide(): void; sync(): void;
+  show(route: string): void; hide(): void; sync(): void; cover(owner: string, active: boolean): void;
   open(event: { currentTarget: { dataset: { route: string } } }): void };
 type Page = { route: string; getTabBar(): Bar };
 type Options = { data: Data; methods: Record<string, Function>; lifetimes: { attached(this: Bar): void; detached(this: Bar): void };
@@ -84,4 +84,21 @@ test("native repeated show preserves a pending request and rejection retry; hidd
   h.tap(map.bar, "pages/my/index"); map.hide(); map.detach(); const writes = map.bar.writes;
   h.rejected.shift()!(new Error("late native failure")); await Promise.resolve(); await Promise.resolve();
   assert.equal(map.bar.writes, writes); assert.equal(h.listeners.size, 0);
+});
+
+test("mounted overlays cover native navigation across resync and independently release without navigating", () => {
+  const h = runtime(), map = h.create("pages/map/index");
+  assert.equal(map.bar.data.covered, false);
+  map.bar.cover("event", true); map.bar.cover("photo", true); map.show(); map.resize(); h.mode("NIGHT");
+  assert.equal(map.bar.data.covered, true); assert.equal(map.bar.data.route, "pages/map/index");
+  h.tap(map.bar, "pages/my/index"); assert.equal(h.switches.length, 0);
+  map.bar.cover("event", false); map.bar.cover("event", false); map.resize();
+  assert.equal(map.bar.data.covered, true, "closing one overlay cannot uncover another");
+  map.bar.cover("photo", false); assert.equal(map.bar.data.covered, false);
+  map.bar.cover("event", true); map.hide();
+  const my = h.create("pages/my/index");
+  map.bar.cover("event", false);
+  assert.equal(my.bar.data.covered, false); assert.equal(my.bar.data.route, "pages/my/index");
+  const writes = map.bar.writes; map.detach(); map.bar.cover("event", false); map.show();
+  assert.equal(map.bar.writes, writes); my.detach();
 });

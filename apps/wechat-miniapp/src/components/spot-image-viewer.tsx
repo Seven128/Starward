@@ -1,5 +1,6 @@
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import Taro from "@tarojs/taro";
+import { retainPrimaryNavigationCover } from "@/navigation/primary-navigation-cover";
 import { Button, Image, RootPortal, Text, View } from "@tarojs/components";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
@@ -102,10 +103,10 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
   useEffect(() => {
     const nativeChrome = retainPhotoViewerNativeChrome();
     void nativeChrome.ready.catch(error => console.warn("photo_viewer_native_chrome_failed", error));
-    void Taro.hideTabBar({ animation: false }).catch(() => undefined);
+    const releaseNavigation = retainPrimaryNavigationCover();
     return () => {
       void nativeChrome.release().catch(error => console.warn("photo_viewer_native_chrome_restore_failed", error));
-      void Taro.showTabBar({ animation: false }).catch(() => undefined);
+      releaseNavigation();
     };
   }, []);
   const clearFlightTimers = () => {

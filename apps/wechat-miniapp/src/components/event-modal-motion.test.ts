@@ -42,6 +42,7 @@ function harness() {
     } : name === "@tarojs/components" ? { Button: "Button", View: "View", Text: "Text", ScrollView: "ScrollView", RootPortal: "RootPortal" }
       : name === "@tarojs/taro" ? { __esModule: true, default: { getCurrentPages: () => [] }, useDidShow() {}, useDidHide() {} }
       : name.includes("event-model") ? eventModel : name.includes("use-reduced-motion") ? { useReducedMotion: () => systemReduced }
+      : name.includes("primary-navigation-cover") ? { retainPrimaryNavigationCover: () => () => {} }
       : name.includes("app-store") ? { useAppStore: store } : name.includes("use-resource-query") ? {
         useResourceQuery: (options: any) => options.queryKey[0] === "astronomical-events" ? catalog : { isPending: false, isError: false, refetch() {} },
       } : name.includes("source-presentation") ? { productSourceNames: () => "", isProductSource: () => false } : {},

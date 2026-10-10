@@ -2,7 +2,7 @@ import Taro from "@tarojs/taro";
 import { useAppStore } from "@/state/app-store";
 import { PRIMARY_NAVIGATION_ITEMS, isPrimaryPageRoute, primaryNavigationIconPath, primaryNavigationLayout } from "@/navigation/primary-navigation";
 import { createPrimaryNavigationController, type PrimaryNavigationState } from "@/navigation/primary-navigation-controller";
-import type { PrimaryNavigationHandle } from "@/hooks/use-primary-navigation";
+import type { PrimaryNavigationHandle } from "@/navigation/primary-navigation-cover";
 import "./index.scss";
 
 type NavigationItem = {
@@ -10,7 +10,7 @@ type NavigationItem = {
   label: string; dayIcon: string; nightIcon: string; observationIcon: string;
 };
 type Data = PrimaryNavigationState & {
-  modeClass: string; pageClass: string; layout: string; items: NavigationItem[];
+  modeClass: string; pageClass: string; layout: string; items: NavigationItem[]; covered: boolean;
 };
 type NativeBar = PrimaryNavigationHandle & {
   data: Data;
@@ -18,17 +18,18 @@ type NativeBar = PrimaryNavigationHandle & {
   sync(): void;
   open(event: { currentTarget: { dataset: { route?: string } } }): void;
   alive?: boolean;
+  covering?: Set<string> | undefined;
   navigation?: ReturnType<typeof createPrimaryNavigationController> | undefined;
   unsubscribe?: (() => void) | undefined;
 };
 
-const initial: Data = { route: null, pending: null, failed: null, modeClass: "", pageClass: "", layout: "", items: [] };
+const initial: Data = { route: null, pending: null, failed: null, modeClass: "", pageClass: "", layout: "", items: [], covered: false };
 
 /** Project canonical state into native data; no React instance or second store. */
 function paint(bar: NativeBar, state: PrimaryNavigationState = bar.data) {
   if (!bar.alive) return;
   const mode = useAppStore.getState().mode;
-  bar.setData({ ...state, modeClass: `theme-${mode.toLowerCase()}`,
+  bar.setData({ ...state, covered: Boolean(bar.covering?.size), modeClass: `theme-${mode.toLowerCase()}`,
     pageClass: state.route === "pages/map/index" ? "primary-navigation--map" : "primary-navigation--my",
     items: PRIMARY_NAVIGATION_ITEMS.map(item => {
       const selected = state.route === item.pagePath, retry = state.failed === item.pagePath;
@@ -49,6 +50,7 @@ const options = {
     attached(this: NativeBar) {
       if (this.alive) return;
       this.alive = true;
+      this.covering = new Set();
       this.navigation = createPrimaryNavigationController({
         currentPage: () => Taro.getCurrentPages().at(-1),
         switchTab: url => Taro.switchTab({ url }),
@@ -61,6 +63,7 @@ const options = {
     },
     detached(this: NativeBar) {
       this.alive = false;
+      this.covering?.clear(); this.covering = undefined;
       this.unsubscribe?.(); this.unsubscribe = undefined;
       this.navigation?.dispose(); this.navigation = undefined;
     },
@@ -86,10 +89,15 @@ const options = {
       paint(this);
     },
     hide(this: NativeBar) { this.navigation?.hide(); },
+    cover(this: NativeBar, owner: string, active: boolean) {
+      if (!this.alive || !this.covering) return;
+      if (active) this.covering.add(owner); else this.covering.delete(owner);
+      paint(this);
+    },
     open(this: NativeBar, event: Parameters<NativeBar["open"]>[0]) {
       const route = event.currentTarget.dataset.route;
       const page = Taro.getCurrentPages().at(-1);
-      if (this.alive && page?.getTabBar?.() === this && isPrimaryPageRoute(route)) void this.navigation?.open(route);
+      if (this.alive && !this.covering?.size && page?.getTabBar?.() === this && isPrimaryPageRoute(route)) void this.navigation?.open(route);
     },
   },
 };

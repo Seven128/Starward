@@ -11,9 +11,24 @@ export function eventDayLabel(localDate: string) {
   return /^\d{4}-\d{2}-\d{2}$/u.test(localDate) ? localDate.slice(8, 10) : "--";
 }
 
+export function eventTypeLabel(event: Pick<AstronomicalEventOccurrence, "kind">) {
+  return event.kind === "METEOR_SHOWER" ? "流星雨" : event.kind === "LUNAR_ECLIPSE" ? "月食" : "日食";
+}
+
 export function eventKindLabel(event: AstronomicalEventOccurrence) {
-  if (event.kind === "METEOR_SHOWER") return `流星雨 · ${event.code}`;
-  return `${event.kind === "LUNAR_ECLIPSE" ? "月食" : "日食"} · ${event.code}`;
+  return `${eventTypeLabel(event)} · ${event.code}`;
+}
+
+/** A calendar date's position in the catalog interval; outside/malformed is unknown. */
+export function eventDatePosition(event: Pick<AstronomicalEventOccurrence, "activeStartDate" | "activeEndDate">, localDate: string) {
+  const dateValue = (value: string) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/u.test(value)) return NaN;
+    const time = Date.parse(`${value}T12:00:00Z`);
+    return Number.isFinite(time) && new Date(time).toISOString().slice(0, 10) === value ? time : NaN;
+  };
+  const start = dateValue(event.activeStartDate), end = dateValue(event.activeEndDate), date = dateValue(localDate);
+  if (![start, end, date].every(Number.isFinite) || end < start || date < start || date > end) return null;
+  return end === start ? 50 : (date - start) / (end - start) * 100;
 }
 
 export function eventDatePresentation(event: AstronomicalEventOccurrence) {

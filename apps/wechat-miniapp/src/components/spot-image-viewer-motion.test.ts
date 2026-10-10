@@ -16,12 +16,13 @@ function harness() {
   const queries: Array<{ selectors: string[]; callback: (rows: unknown[]) => void }> = [];
   const resizeListeners = new Set<() => void>();
   let chromeOwners = 0;
+  let navigationOwners = 0;
   let s = 0, r = 0, e = 0, reduced = false, now = 0, id = 0, closed = 0;
   const exports: any = {}, jsx = (type: unknown, props: any) => ({ type, props });
   const taro = { getWindowInfo: () => ({ windowWidth: 390, windowHeight: 762, statusBarHeight: 47 }),
     getMenuButtonBoundingClientRect: () => ({ bottom: 83 }),
     onWindowResize: (run: () => void) => resizeListeners.add(run), offWindowResize: (run: () => void) => resizeListeners.delete(run),
-    hideTabBar: async () => {}, showTabBar: async () => {}, nextTick: (run: () => void) => run(),
+    nextTick: (run: () => void) => run(),
     createSelectorQuery() { const selectors: string[] = []; const q = { select: (selector: string) => { selectors.push(selector); return q; }, boundingClientRect: () => q,
       exec: (callback: (rows: unknown[]) => void) => queries.push({ selectors, callback }) }; return q; },
   };
@@ -41,6 +42,10 @@ function harness() {
     } : name === "@tarojs/taro" ? { __esModule: true, default: taro }
       : name === "@tarojs/components" ? { Button: "Button", Image: "Image", View: "View", Text: "Text", RootPortal: "RootPortal" }
       : name.includes("use-reduced-motion") ? { useReducedMotion: () => reduced }
+      : name.includes("primary-navigation-cover") ? { retainPrimaryNavigationCover: () => {
+        navigationOwners++; let active = true;
+        return () => { if (active) { active = false; navigationOwners--; } };
+      } }
       : name.includes("spot-image-viewer-gesture") ? gesture
       : name.includes("native-chrome") ? { retainPhotoViewerNativeChrome: () => {
         chromeOwners++;
@@ -72,7 +77,7 @@ function harness() {
     flight: () => find(render(), node => String(node.props?.className).split(" ").includes("spot-media-viewer__flight")).length,
     advance(ms: number) { const end = now + ms; for (;;) { const next = [...timers].sort((a, b) => a[1].at - b[1].at)[0];
       if (!next || next[1].at > end) break; now = next[1].at; timers.delete(next[0]); next[1].run(); } now = end; },
-    unmount() { for (const item of effects) item?.cleanup?.(); }, closed: () => closed, pending: () => timers.size, chromeOwners: () => chromeOwners,
+    unmount() { for (const item of effects) item?.cleanup?.(); }, closed: () => closed, pending: () => timers.size, chromeOwners: () => chromeOwners, navigationOwners: () => navigationOwners,
   };
 }
 
@@ -82,6 +87,12 @@ test("a late opening source query cannot restart flight after system reduction",
   h.reduce(true); h.deliver(); h.render(); h.flush();
   assert.equal(h.flight(), 0); h.advance(1000); assert.equal(h.flight(), 0);
   assert.equal(h.closed(), 0); assert.equal(h.pending(), 0);
+});
+
+test("photo viewer holds its custom-navigation cover until actual unmount", () => {
+  const h = harness(); h.render(); h.flush(); assert.equal(h.navigationOwners(), 1);
+  h.reduce(true); assert.equal(h.navigationOwners(), 1);
+  h.unmount(); h.unmount(); assert.equal(h.navigationOwners(), 0);
 });
 
 test("caption and flight use the measured fullscreen viewport independently of the shorter page and caption length", () => {

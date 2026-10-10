@@ -1,10 +1,11 @@
 import { isProductSource, productSourceNames } from "@/utils/source-presentation";
 import { Button, RootPortal, ScrollView, Text, View } from "@tarojs/components";
-import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
+import { useDidHide, useDidShow } from "@tarojs/taro";
 import type { AstronomicalEventLocalVisibility, AstronomicalEventOccurrence, ObservationContext, SourceSummary } from "@starward/miniapp-contracts";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 
-import { eventDatePresentation, eventDayLabel, eventKindLabel, eventPreviewDays, groupEventsByPeakMonth, phaseLabel } from "@/content/event/event-model";
+import { eventDatePosition, eventDatePresentation, eventDayLabel, eventKindLabel, eventTypeLabel, eventPreviewDays, groupEventsByPeakMonth, phaseLabel } from "@/content/event/event-model";
+import { retainPrimaryNavigationCover } from "@/navigation/primary-navigation-cover";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { getAstronomicalEvent, getAstronomicalEvents, resolveObservationContext } from "@/services/api-client";
@@ -108,14 +109,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
 
   useEffect(() => {
     if (!mounted) return;
-    const route = Taro.getCurrentPages().at(-1)?.route;
-    if (route !== "pages/map/index") return;
-    let active = true;
-    void Taro.hideTabBar({ animation: false }).catch(() => undefined);
-    return () => {
-      if (active) void Taro.showTabBar({ animation: false }).catch(() => undefined);
-      active = false;
-    };
+    return retainPrimaryNavigationCover();
   }, [mounted]);
 
   const catalog = useResourceQuery({
@@ -203,13 +197,13 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
               {catalog.data?.dataState === "PARTIAL" && !catalogFailed ? <StatusPanel state="PARTIAL" detail="事件目录仅有部分资料，重试可检查是否有新内容。" recoveryLabel="重试事件目录" onRecover={() => void catalog.refetch()} /> : null}
               {catalog.data?.dataState === "FRESH" && !catalogFailed && !catalog.data.data.events.length ? <StatusPanel state="EMPTY" detail="当前目录没有可显示的事件。" recoveryLabel="刷新" onRecover={() => void catalog.refetch()} /> : null}
               {mode === "select-one" && initialOccurrenceIds.length > 1 ? <StatusPanel state="PARTIAL" detail={`此历史计划保留了 ${initialOccurrenceIds.length} 个关联；只有确认新选择或清除时才会改为最多一个。`} /> : null}
-              {catalog.data ? <View className="event-modal__catalogue"><Text>{catalogYear} 事件目录</Text><Text>{catalog.data.data.coverage === "ANNUAL_METEOR_REFERENCES_AND_ECLIPSES" ? "常年参考与食事件" : "年度资料"}</Text></View> : null}
+              {catalog.data ? <View className="event-modal__catalogue"><Text>{catalogYear} 天文事件</Text><Text>按月份</Text></View> : null}
               {groups.map((group) => <View key={group.month} className="event-modal__month">
                 <View className="event-modal__month-label"><Text>{Number(group.month.slice(5, 7))}月</Text><Text>{group.month.slice(0, 4)}</Text></View>
                 {group.events.map((event) => <View key={event.occurrenceId} className={`event-modal__row${mode === "select-one" && draftSelection === event.occurrenceId ? " is-selected" : ""}`}>
                   <Button className="event-modal__row-main" onClick={() => setDetailId(event.occurrenceId)} ariaLabel={`查看${event.displayName}详情`}>
                     <View className="event-modal__date"><Text>{Number(event.peakDate.slice(5, 7))}月</Text><Text>{eventDayLabel(event.peakDate)}</Text><Text>{eventDatePresentation(event).ticket}</Text></View>
-                    <View className="event-modal__row-copy"><Text className="event-modal__row-title">{event.displayName}</Text><Text>{eventKindLabel(event)}{mode === "select-one" && draftSelection === event.occurrenceId ? " · 已选" : ""}</Text><Text>{eventDatePresentation(event).range} {event.activeStartDate.slice(5).replace("-", ".")} — {event.activeEndDate.slice(5).replace("-", ".")}</Text></View>
+                    <View className="event-modal__row-copy"><Text className="event-modal__row-title">{event.displayName}</Text><Text>{event.code} · {eventTypeLabel(event)}{mode === "select-one" && draftSelection === event.occurrenceId ? " · 已选" : ""}</Text><Text>{eventDatePresentation(event).range} {event.activeStartDate.slice(5).replace("-", ".")} — {event.activeEndDate.slice(5).replace("-", ".")}</Text></View>
                     <SemanticIcon name="chevron-right" />
                   </Button>
                   {mode === "select-one" ? <Button className={`event-modal__radio${draftSelection === event.occurrenceId ? " is-selected" : ""}`}
@@ -218,7 +212,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
                     onClick={() => setDraftSelection(event.occurrenceId)}><View /></Button> : null}
                 </View>)}
               </View>)}
-              {catalog.data ? <Text className="event-modal__source">{productSourceNames(catalog.data.data.sources) ? `来源：${productSourceNames(catalog.data.data.sources)}。` : ""}目录日期不等于所在地可见性预报；日食必须使用合格太阳观测防护。</Text> : null}
+              {catalog.data ? <Text className="event-modal__source">{catalog.data.data.coverage === "ANNUAL_METEOR_REFERENCES_AND_ECLIPSES" ? "常年参考与食事件。" : "年度资料。"}{productSourceNames(catalog.data.data.sources) ? `来源：${productSourceNames(catalog.data.data.sources)}。` : ""}目录日期不等于所在地可见性预报；日食必须使用合格太阳观测防护。</Text> : null}
             </View>
           </ScrollView>
           <ScrollView scrollY enhanced showScrollbar={false} className="event-modal__page event-modal__detail" ariaLabel="天文事件详情">
@@ -239,7 +233,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
             </View>
           </ScrollView>
         </View>
-        {mode === "select-one" ? <View className="event-modal__footer">
+        {mode === "select-one" && !detailId ? <View className="event-modal__footer">
           <Button className="event-modal__clear" disabled={phase === "closing"} onClick={() => setDraftSelection(null)}>清除选择</Button>
           <Button className="event-modal__confirm" disabled={phase === "closing"} onClick={confirm}>{draftSelection ? "确认选择" : "确认不关联"}</Button>
         </View> : null}
@@ -269,19 +263,24 @@ function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate
 }) {
   const shortDate = (value: string) => value.slice(5).replace("-", ".");
   const presentation = eventDatePresentation(event);
+  const meteor = event.kind === "METEOR_SHOWER";
+  const peakPosition = meteor ? eventDatePosition(event, event.peakDate) : null;
+  const previewPosition = meteor ? eventDatePosition(event, previewDate) : null;
   const previewDays = useMemo(() => eventPreviewDays(event), [event.activeStartDate, event.activeEndDate]);
   const hasLocalContext = Boolean(locationName || visibility?.locationName);
   const eclipseDate = hasLocalContext && event.kind !== "METEOR_SHOWER" && event.peakAtUtc
     ? visibility?.localDate ?? calendarDateInTimezone(new Date(event.peakAtUtc), timezone) : null;
   return <View className="event-modal-detail">
-    <View className="event-modal-detail__hero"><SemanticIcon name={event.kind === "METEOR_SHOWER" ? "meteor" : "moon"} /><View><Text>{eventKindLabel(event)} · {event.peakDate.slice(0, 4)}</Text><Text>{event.displayName}</Text></View></View>
-    <View className="event-modal-detail__facts"><View><Text>{presentation.range}</Text><Text>{shortDate(event.activeStartDate)} — {shortDate(event.activeEndDate)}</Text></View><View><Text>{presentation.date}</Text><Text>{shortDate(event.peakDate)}</Text></View></View>
+    <View className="event-modal-detail__hero"><SemanticIcon name={meteor ? "meteor" : event.kind === "SOLAR_ECLIPSE" ? "sun" : "moon"} /><View><Text>{meteor ? eventKindLabel(event) : eventTypeLabel(event)} · {event.peakDate.slice(0, 4)}</Text><Text>{event.displayName}</Text></View></View>
+    <View className="event-modal-detail__facts"><View><Text>{presentation.range}</Text><Text>{meteor ? `${shortDate(event.activeStartDate)} — ${shortDate(event.activeEndDate)}` : event.activeStartDate === event.activeEndDate ? event.activeStartDate : `${event.activeStartDate} — ${event.activeEndDate}`}</Text></View><View><Text>{presentation.date}</Text><Text>{meteor ? shortDate(event.peakDate) : event.peakDate}</Text></View></View>
     <Text className="event-modal-detail__precision">{presentation.precision}</Text>
-    {event.kind === "SOLAR_ECLIPSE" ? <Text className="event-modal-detail__constraint">日食观测必须使用合格太阳观测防护；普通太阳镜不能保护眼睛。</Text> : null}
-    <View className="event-modal-detail__axis"><Text>{shortDate(event.activeStartDate)} 开始</Text><Text>{shortDate(event.peakDate)} {presentation.ticket}</Text><Text>{shortDate(event.activeEndDate)} 结束</Text></View>
+    {event.kind === "SOLAR_ECLIPSE" ? <Text className="event-modal-detail__constraint event-modal-detail__solar-safety">日食观测必须使用合格太阳观测防护；普通太阳镜不能保护眼睛。</Text> : null}
+    {meteor ? <View className="event-modal-detail__axis"><Text className="event-modal-detail__axis-start">{shortDate(event.activeStartDate)} 开始</Text>{peakPosition !== null ? <Text className="event-modal-detail__peak" style={{ left: `${peakPosition}%` }}>{shortDate(event.peakDate)} {presentation.ticket}</Text> : null}<Text className="event-modal-detail__axis-end">{shortDate(event.activeEndDate)} 结束</Text>{previewPosition !== null ? <View className="event-modal-detail__date-marker" style={{ left: `${previewPosition}%` }} aria-hidden="true" /> : null}</View> : null}
     <View className="event-modal-detail__section"><Text className="type-section">当地观测条件</Text>
-      <View className="event-modal-detail__context-row"><Text>观星点</Text><Text>{visibility?.locationName ?? locationName ?? "尚未选择地点"}</Text></View>
-      <View className="event-modal-detail__context-row"><Text>{eclipseDate ? "事件当地日期" : hasLocalContext ? "观测日期" : presentation.date}</Text><Text>{(eclipseDate ?? previewDate).replaceAll("-", "/")}</Text></View>
+      {meteor ? <>
+        <View className="event-modal-detail__context-row"><Text>观星点</Text><Text>{visibility?.locationName ?? locationName ?? "尚未选择地点"}</Text></View>
+        <View className="event-modal-detail__context-row"><Text>{hasLocalContext ? "观测日期" : presentation.date}</Text><Text>{previewDate.replaceAll("-", "/")}</Text></View>
+      </> : <Text className="event-modal-detail__context-summary">{visibility?.locationName ?? locationName ?? "尚未选择地点"} · {eclipseDate ? "事件当地日期" : presentation.date} {(eclipseDate ?? event.peakDate).replaceAll("-", "/")}</Text>}
       {hasLocalContext ? <Text className="type-caption">以下时刻采用 {visibility?.timezone ?? timezone} 时区。</Text> : null}
       {eclipseDate ? <Text className="type-caption">按这次日月食实际发生时刻计算；{mode === "select-one" ? "计划" : "地图"}日期仍为 {previewDate.replaceAll("-", "/")}，不会随事件改变。</Text> : null}
       {mode === "browse" && event.kind === "METEOR_SHOWER" && canPreviewDate ? <ScrollView scrollX enhanced showScrollbar={false} className="event-modal-detail__days" ariaLabel="弹窗内预览日期">
@@ -295,7 +294,7 @@ function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate
       {pending ? <StatusPanel state="LOADING" detail="正在计算当地观测条件。" /> : !visibility || visibility.state === "UNAVAILABLE"
         ? <StatusPanel state={failed ? "ERROR" : "PARTIAL"} detail={visibility?.reason ?? (locationName ? "当地观测条件暂不可用。" : "选择地点后可计算当地几何条件。")} recoveryLabel={failed ? "重试事件详情" : undefined} onRecover={onRetry} />
         : <>
-          <Text className="type-caption">{visibility.reason}</Text>
+          <Text className="event-modal-detail__reason type-caption">{visibility.reason}</Text>
           {visibility.state === "AVAILABLE" ? <>
             <View className="event-modal-detail__context-row"><Text>几何观测时段</Text><Text>{visibility.bestWindowStartLocal ?? "暂无数据"} — {visibility.bestWindowEndLocal ?? "暂无数据"}</Text></View>
             <View className="event-modal-detail__context-row"><Text>{event.kind === "SOLAR_ECLIPSE" ? "本地食甚" : "最佳几何时刻"}</Text><Text>{visibility.bestAtLocal ?? "暂无数据"}</Text></View>
