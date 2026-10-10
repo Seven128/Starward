@@ -7,6 +7,7 @@ import { ContributionEditor } from "./contribution-editor";
 import { ContributionRecords } from "./contribution-records";
 import { ContributionRecordDetail } from "./contribution-record-detail";
 import "./index.scss";
+import "./contribution-records.scss";
 
 export default function ContributionPage() {
   const router = useRouter();

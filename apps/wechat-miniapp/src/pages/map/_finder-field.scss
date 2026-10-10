@@ -2,7 +2,6 @@
 @mixin text-presentation {
   color: var(--text-secondary);
   font-size: 15Px;
-  .theme-day & { font-size: 14Px; }
 }
 
 // The stationary brand title is shared by Map and Search. Their adopted

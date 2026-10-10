@@ -1,0 +1,160 @@
+// Private record surfaces belong to the content route. The shared intake editor
+// is also mounted by Map and must not promote these rules into the main package.
+.contribution-records { display: flex; flex-direction: column; gap: 22rpx; }
+.contribution-records__groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-bottom: 1rpx solid var(--border); }
+.contribution-records__group { position: relative; min-height: var(--target-min); margin: 0; padding: 10rpx 8rpx 18rpx; border: 0; border-radius: 0; background: transparent; color: var(--text-tertiary); font-size: var(--type-label-size); line-height: var(--type-label-line); }
+.contribution-records__group::after { border: 0; }
+.contribution-records__group--active { color: var(--text-primary); font-weight: 650; }
+.contribution-records__group--active::before { content: ""; position: absolute; right: 24%; bottom: -1rpx; left: 24%; height: 4rpx; border-radius: 999rpx; background: var(--accent-warm); }
+.contribution-records__filters { display: flex; gap: 12rpx; overflow-x: auto; }
+.contribution-records__filters .chip { flex: none; min-width: 112rpx; }
+.contribution-records__list { display: flex; flex-direction: column; gap: 20rpx; }
+.contribution-record { overflow: hidden; border: 1rpx solid var(--border); border-radius: 22rpx; background: var(--surface); }
+.contribution-record-card { display: flex; flex-direction: column; background: var(--surface-subtle); }
+.contribution-record-card .spot-identity-card { margin: 0; background: transparent; }
+.contribution-record-card__extension { min-height: 64rpx; padding: 10rpx 24rpx 16rpx; display: flex; align-items: center; justify-content: space-between; gap: 16rpx; }
+.contribution-record-card__meta { display: block; padding: 0; text-align: right; }
+.contribution-record-card__head { min-width: 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 16rpx; }
+.contribution-record-card__head > view { min-width: 0; display: flex; flex-direction: column; gap: 5rpx; }
+.contribution-record .soft-button { width: calc(100% - 40rpx); margin: 16rpx 20rpx 20rpx; }
+.contribution-record__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12rpx; padding: 16rpx 20rpx 20rpx; }
+.contribution-record__actions .soft-button { width: 100%; margin: 0; }
+.contribution-record__reason { display: block; margin: 16rpx 20rpx 0; padding: 14rpx 16rpx; border-left: 4rpx solid var(--warning); background: var(--surface-subtle); color: var(--text-secondary); font-size: var(--type-caption-size); line-height: var(--type-caption-line); }
+.contribution-record-detail { display: flex; flex-direction: column; gap: 20rpx; }
+.contribution-record-detail__back { align-self: flex-start; min-height: var(--target-min); margin: 0; padding: 0 12rpx; border: 0; background: transparent; color: var(--text-secondary); line-height: var(--target-min); }
+.contribution-record-detail__back::after { border: 0; }
+.contribution-record-card--detail { overflow: hidden; border: 1rpx solid var(--border); border-radius: 22rpx; background: var(--surface-subtle); }
+.contribution-record-card--detail .spot-identity-card { margin: 0; background: transparent; }
+
+// Record extensions own their surface and actions; the shared identity retains
+// its Search layout, media authorization and current/frozen content semantics.
+.theme-day.contribution-page--records {
+  background: #fff;
+  .custom-nav { padding-left: 7Px; padding-right: 18Px; background: #fff; }
+  .custom-nav__bar { gap: 3Px; }
+  .custom-nav__title { align-items: flex-start; text-align: left; }
+  .custom-nav__title .type-section { font-size: 18Px; line-height: 26Px; font-weight: 600; }
+  .contribution-content { padding: 8Px 18Px 36Px; gap: 0; }
+  .contribution-records { gap: 0; }
+  .contribution-records__groups { display: flex; gap: 28Px; border-color: #eff2f3; }
+  .contribution-records__group {
+    flex: none; width: auto; min-height: 50Px; padding: 0 0 8Px;
+    display: flex; align-items: center; color: #a0a9b0; font-size: 15Px; line-height: 22Px;
+  }
+  .contribution-records__group .selection-tabs__label { font-size: inherit; line-height: 22Px; }
+  .contribution-records__group--active { color: #3c5967; font-weight: 600; }
+  .contribution-records__group--active::before {
+    left: 50%; right: auto; width: 29Px; height: 3Px; border-radius: 3Px;
+    transform: translateX(-50%); background: #bca572;
+  }
+  .contribution-records__filters { padding: 12Px 0 8Px; gap: 8Px; }
+  .contribution-records__filters .chip {
+    position: relative; min-width: 0; min-height: 44Px; margin: 0; padding: 0 14Px;
+    display: flex; align-items: center; justify-content: center;
+    border: 0; border-radius: 10Px; background: transparent;
+    color: #8b969f; font-size: 13Px; line-height: 20Px;
+  }
+  .contribution-records__filters .chip::after { border: 0; }
+  .contribution-records__filters .chip::before {
+    content: ""; position: absolute; inset: 8Px 0; z-index: 0; border-radius: 6Px;
+  }
+  .contribution-records__filters .chip--selected { color: #567380; font-weight: 600; }
+  .contribution-records__filters .chip--selected::before { background: #edf3f4; }
+  .contribution-records__filter-label { position: relative; z-index: 1; }
+  .contribution-records__list { padding-top: 4Px; gap: 0; }
+  .contribution-record { margin: 10Px 0 16Px; border: 0; border-radius: 18Px; background: #f8f8fa; }
+  .contribution-record-card { background: transparent; }
+  .contribution-record-card__extension {
+    min-height: 0; padding: 12Px 16Px 6Px; gap: 8Px; background: transparent;
+  }
+  .contribution-record-card__meta { color: #9aa6ac; font-size: 12Px; line-height: 18Px; }
+  .contribution-record__changes { margin: 4Px 16Px 0; display: flex; flex-wrap: wrap; gap: 6Px; color: #8596a0; font-size: 12Px; line-height: 18Px; }
+  .contribution-record__changes text { padding: 3Px 8Px; border-radius: 6Px; background: #eaf0f1; }
+  .contribution-record__reason {
+    margin: 6Px 16Px 0; padding: 0; border: 0; background: transparent;
+    color: #976f62; font-size: 13Px; line-height: 20Px;
+  }
+  .contribution-record .soft-button {
+    width: auto; max-width: calc(100% - 32Px); min-width: 0; min-height: 44Px;
+    margin: 0 16Px 6Px auto; padding: 0; justify-content: flex-end;
+    border: 0; border-radius: 0; background: transparent;
+    color: #657f8b; font-size: 13.5Px; line-height: 20Px; font-weight: 500;
+  }
+  .contribution-record__changes + .contribution-record__reason { margin-top: 12Px; }
+  .contribution-record .soft-button::after { border: 0; }
+  .contribution-record__actions { padding: 0 16Px 6Px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12Px; }
+  .contribution-record__actions .soft-button { max-width: 100%; margin: 0; }
+  .contribution-record--rejected > .soft-button,
+  .contribution-record--rejected .contribution-record__actions .soft-button { color: #9b7e4b; }
+}
+.theme-day .contribution-record-card,
+.theme-day .contribution-record-card--detail {
+  .spot-identity-card { border-radius: 18Px 18Px 0 0; }
+  .spot-identity-card__copy { padding: 14Px; }
+  .spot-identity-card__region { line-height: 14Px; }
+  .spot-identity-card__title { line-height: 20Px; }
+  .spot-identity-card__address { column-gap: 5Px; }
+  .spot-identity-card__address-text { font-size: 13Px; }
+}
+.theme-day .contribution-record-card--detail { border: 0; border-radius: 18Px; background: #f8f8fa; }
+.theme-day .contribution-status-pill { gap: 5Px; font-size: 12Px; line-height: 18Px; }
+.theme-day .contribution-status-pill__icon { flex-basis: 18Px; width: 18Px; height: 18Px; }
+.theme-day .contribution-status-pill__icon .semantic-icon { transform: scale(.9); }
+
+.contribution-record__changes { margin: 12rpx 20rpx 0; display: flex; flex-wrap: wrap; gap: 8rpx; color: var(--text-secondary); font-size: var(--type-metadata-size); line-height: var(--type-metadata-line); }
+.contribution-record__changes text { padding: 4rpx 12rpx; border-radius: 8rpx; background: var(--surface-subtle); }
+
+.contribution-record-cover-retry { position: relative; z-index: 1; min-height: 44Px; margin: 0 14Px 10Px; padding: 0 10Px; border: 1Px solid var(--border); border-radius: 10Px; background: var(--surface); color: var(--text-secondary); font-size: var(--type-action-size); line-height: var(--type-action-line); }
+.contribution-record-cover-retry::after { border: 0; }
+.contribution-status-pill {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4Px;
+  padding: 8rpx 12rpx;
+  border: 1rpx solid var(--border);
+  border-radius: 18rpx;
+  color: var(--text-secondary);
+  font-size: var(--type-metadata-size);
+  line-height: var(--type-metadata-line);
+  font-weight: var(--type-metadata-weight);
+  white-space: normal;
+}
+.contribution-status-pill__icon {
+  position: relative;
+  flex: 0 0 12Px;
+  width: 12Px;
+  height: 12Px;
+}
+.contribution-status-pill__icon .semantic-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20Px;
+  height: 20Px;
+  transform: scale(.6);
+  transform-origin: top left;
+  --semantic-icon-color: currentColor;
+}
+.theme-day .contribution-status-pill {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #85949e;
+}
+.theme-day .contribution-status-pill--pending { color: #a58a54; }
+.theme-day .contribution-status-pill--rejected { color: #b1786a; }
+.theme-day .contribution-status-pill--online,
+.theme-day .contribution-status-pill--approved { color: #608a7d; }
+.contribution-status-pill--success {
+  border-color: var(--success);
+  color: var(--success);
+}
+.contribution-status-pill--warning {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+.contribution-status-pill--danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}

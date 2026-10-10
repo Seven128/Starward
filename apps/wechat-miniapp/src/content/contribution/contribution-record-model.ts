@@ -1,6 +1,15 @@
 import { CONTRIBUTION_FORMAL_FIELD_KEYS, CONTRIBUTION_MEDIA_KINDS, type ContributionMediaKind, type ContributionSubmission } from "@starward/miniapp-contracts";
 import { formalFeedbackFrozenView } from "./formal-feedback-snapshot";
 import { candidateIntakeFacts } from "./candidate-document";
+import { CONTRIBUTION_PHOTO_LABELS, formalPhotoGroups } from "./photo-groups";
+
+export const CONTRIBUTION_RECORD_FIELD_LABELS: Record<(typeof CONTRIBUTION_FORMAL_FIELD_KEYS)[number], string> = {
+  address: "地点地址", name: "地点名称", openness: "开放状态", hours: "开放时间",
+  access: "进入规则", accessNote: "进入条件", road: "末段道路", safety: "夜间安全",
+  parking: "停车设施", parkingNote: "停车说明", toilet: "洗手间", toiletNote: "洗手间说明",
+  platform: "观测平台", horizon: "视野与遮挡", light: "现场灯光", signal: "通信与充电",
+  camping: "露营条件", contact: "场地联系", detail: "补充说明",
+};
 
 export type ContributionRecordGroup = "CREATION" | "FEEDBACK";
 
@@ -138,4 +147,19 @@ export function contributionRecordPhotos(item: ContributionSubmission): Contribu
 export function contributionRecordFormalView(item: ContributionSubmission) {
   const formal = recordSource(item).formalFeedback;
   return formal ? formalFeedbackFrozenView(formal) : null;
+}
+
+/** Summarize this frozen accepted diff, never a working copy or discarded rebase input. */
+export function contributionRecordChangeSummary(item: ContributionSubmission) {
+  if (contributionRecordGroup(item) !== "FEEDBACK") return [];
+  const formal = contributionRecordFormalView(item);
+  if (!formal) return [];
+  return [
+    ...CONTRIBUTION_FORMAL_FIELD_KEYS.filter(key =>
+      Object.prototype.hasOwnProperty.call(formal.proposal.fields, key) &&
+      formal.proposal.fields[key] !== (formal.baseline.fields[key] ?? ""))
+      .map(key => ({ key: `field:${key}`, label: CONTRIBUTION_RECORD_FIELD_LABELS[key] })),
+    ...formalPhotoGroups(formal.baseline, formal.proposal)
+      .map(({ kind }) => ({ key: `photo:${kind}`, label: CONTRIBUTION_PHOTO_LABELS[kind] })),
+  ];
 }
