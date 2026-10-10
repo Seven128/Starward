@@ -1912,9 +1912,6 @@
 .air-quality__segment-heading {
   margin-top: 8Px;
 }
-.air-quality__retrieved-at {
-  margin-top: 6Px;
-}
 .spot-panel__evidence-title {
   display: flex;
   align-items: center;
@@ -3079,6 +3076,61 @@
 // Current comfortable-scale Source, scoped to formal DAY cards. Private
 // panels and the unadopted themes retain their existing presentation.
 .theme-day.map-page .spot-panel--formal {
+  .air-quality {
+    margin: 14Px 0 0;
+    padding: 18Px;
+    border: 0;
+    border-radius: 20Px;
+    background: #fff;
+    color: #3d4857;
+    font-size: 15Px;
+    line-height: 24Px;
+  }
+  .air-quality__heading {
+    display: block;
+    margin: 0 0 10Px;
+    color: #263343;
+    font-size: 17Px;
+    font-weight: 600;
+    line-height: 25Px;
+  }
+  .air-quality__segment-heading,
+  .air-quality__note {
+    display: block;
+    margin: 10Px 0;
+    color: #75808d;
+    font-size: 13Px;
+    font-weight: 400;
+    line-height: 21Px;
+  }
+  .air-quality__segment-heading > .type-secondary { color: inherit; font-size: inherit; line-height: inherit; }
+  .air-quality__unavailable {
+    display: block;
+    margin: 10Px 0;
+    color: #3d4857;
+    font-size: 15Px;
+    font-weight: 400;
+    line-height: 24Px;
+  }
+  .air-quality__readings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12Px;
+    margin: 14Px 0;
+    padding: 14Px 0;
+    border-top: 1Px solid #edf0f2;
+    border-bottom: 1Px solid #edf0f2;
+  }
+  .air-quality__reading { gap: 0; }
+  .air-quality__reading + .air-quality__reading { padding-left: 0; border-left: 0; }
+  .air-quality__reading-label { color: #3d4857; font-size: 13Px; font-weight: 400; line-height: 24Px; }
+  .air-quality__reading-value {
+    display: block;
+    margin-top: 5Px;
+    color: #334353;
+    font-size: 21Px;
+    font-weight: 600;
+    line-height: 30Px;
+  }
   .spot-panel__block--astronomy-card {
     margin-bottom: 12Px;
     padding: 18Px;

@@ -730,8 +730,7 @@ export function SpotInformationPanel({
               </View>
             </View>
             ) : null}
-            <View className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--professional-matrix" data-control="sky-professional-matrix">
-              {skyReport ? <>
+            {skyReport ? <View className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--professional-matrix" data-control="sky-professional-matrix">
               <Text className="type-label spot-panel__weather-heading">气象条件</Text>
               {skyRow?.weatherAt ? <SourceAttribution sources={skyReport?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
               <ForecastCoverageNote starts={skyReport?.hourly.flatMap(row => row.weatherAt ? [row.weatherAt] : []) ?? []} stale={Boolean(skyError || skyStale)}
@@ -768,9 +767,7 @@ export function SpotInformationPanel({
                 </View>
               </View>
               <Text className="spot-panel__measurement-note type-caption">透明度、视宁度暂无独立数据</Text>
-              </> : null}
-              <AirQuality spotId={effectiveSpot.spotId} selectedAt={astronomyAt} timezone={effectiveSpot.timezone} visible={visible} />
-            </View>
+            </View> : null}
             <View className="spot-panel__night-light" data-control="sky-light-pollution">
               <View className="spot-panel__evidence-title"><SemanticIcon name="horizon" /><Text className="type-label">卫星夜光估算</Text></View>
               <Text className="spot-panel__night-light-label">{effectiveSpot.lightPollution.state === "ESTIMATED" ? effectiveSpot.lightPollution.label : "暂无数据"}</Text>
@@ -795,6 +792,7 @@ export function SpotInformationPanel({
               <Text className="type-caption">天体位置按所选时刻计算</Text>
             </View>
             </> : null}
+            <AirQuality spotId={effectiveSpot.spotId} selectedAt={astronomyAt} timezone={effectiveSpot.timezone} visible={visible} />
           </View>
 
           <View className={`spot-panel__disclosure${skyReport ? " spot-panel__disclosure--with-astronomy-source" : ""}`} data-control="data-source-disclosure">
