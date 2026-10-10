@@ -11,6 +11,7 @@ import { StatusPanel } from "@/components/status-panel";
 import { useAccountResourceQuery } from "@/hooks/use-account-resource-query";
 import { useAccountNavigation } from "@/hooks/use-account-navigation";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
+import { usePrimaryNavigation } from "@/hooks/use-primary-navigation";
 import {
   errorMessage,
   currentDraftUserId,
@@ -28,6 +29,7 @@ import "./my-library-page.scss";
  */
 export function MyLibraryPage() {
   const themeClass = useThemeClass();
+  const primaryNavigation = usePrimaryNavigation("pages/my/index");
   const [now, setNow] = useState(() => new Date());
   const clock = useRef<ReturnType<typeof setInterval> | null>(null);
   const stopClock = () => {
@@ -96,6 +98,7 @@ export function MyLibraryPage() {
   return (
     <View
       className={themeClass + " my-page"}
+      style={primaryNavigation.style}
       data-route="my-account-center"
       data-od-id="my-account-center"
     >
@@ -109,7 +112,7 @@ export function MyLibraryPage() {
         enhanced
         showScrollbar={false}
       >
-        <View className="my-content page-inset safe-bottom">
+        <View className="my-content page-inset">
           {navigation.navigationError ? <StatusPanel state="ERROR" title="页面暂未打开"
             detail="请稍后重试当前入口。" /> : null}
           {unavailable || library.data?.dataState === "STALE_USABLE" ? (

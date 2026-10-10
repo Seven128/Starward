@@ -1,0 +1,17 @@
+<view wx:if="{{route}}" class="theme-token-scope {{modeClass}} primary-navigation {{pageClass}}" style="{{layout}}" aria-role="navigation" aria-label="主导航">
+  <view class="primary-navigation__row">
+    <button wx:for="{{items}}" wx:key="pagePath" data-route="{{item.pagePath}}"
+      class="primary-navigation__item {{item.selected ? 'primary-navigation__item--selected' : ''}}"
+      aria-label="{{item.label}}" aria-pressed="{{item.selected}}" aria-busy="{{item.pending}}"
+      disabled="{{pending !== null}}" hover-class="primary-navigation__item--pressed" bindtap="open">
+      <view class="semantic-icon semantic-icon--source semantic-icon--{{modeClass === 'theme-day' ? 'day' : modeClass === 'theme-night' ? 'night' : 'observation'}}" aria-hidden="true">
+        <image class="semantic-icon__theme-source semantic-icon__theme-source--day" src="{{item.dayIcon}}" mode="aspectFit" aria-hidden="true" />
+        <image class="semantic-icon__theme-source semantic-icon__theme-source--night" src="{{item.nightIcon}}" mode="aspectFit" aria-hidden="true" />
+        <image class="semantic-icon__theme-source semantic-icon__theme-source--observation" src="{{item.observationIcon}}" mode="aspectFit" aria-hidden="true" />
+      </view>
+      <view class="primary-navigation__label"><text>{{item.text}}</text>
+        <view wx:if="{{item.retry}}" class="primary-navigation__retry" aria-role="alert"><text>未打开 · 重试</text></view>
+      </view>
+    </button>
+  </view>
+</view>

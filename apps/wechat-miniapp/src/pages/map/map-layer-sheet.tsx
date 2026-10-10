@@ -1,6 +1,7 @@
 import Taro, { useResize } from "@tarojs/taro";
 import { ScrollView, View } from "@tarojs/components";
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { primaryNavigationLayout } from "@/navigation/primary-navigation";
 
 /** Content owns natural height; the viewport caps it. Footer actions keep their
  * position while the evidence above scrolls. CSS retargets height transitions
@@ -17,11 +18,19 @@ export function MapLayerSheet({ cloud, children, footer, revision }: {
       Taro.createSelectorQuery().select(`#${id}-content`).boundingClientRect()
         .select(`#${id}-footer`).boundingClientRect()
         .select(".map-search-anchor").boundingClientRect()
+        .select(".map-workspace").boundingClientRect()
         .exec((rows: any[]) => {
           if (request !== generation.current) return;
           const content = rows?.[0]?.height, bottom = rows?.[1]?.height;
           if (!Number.isFinite(content) || !Number.isFinite(bottom)) return;
-          const viewport = Taro.getWindowInfo().windowHeight;
+          let viewport = rows?.[3]?.bottom;
+          if (!Number.isFinite(viewport) || viewport <= 0) {
+            try {
+              const info = Taro.getWindowInfo();
+              viewport = primaryNavigationLayout("pages/map/index", info).pageHeight ?? info.windowHeight;
+            } catch { return; }
+          }
+          if (!Number.isFinite(viewport) || viewport <= 0) return;
           const top = Number.isFinite(rows?.[2]?.bottom) ? rows[2].bottom : 100;
           const next = Math.ceil(Math.min(content + bottom + 2, 560, Math.max(0, viewport - top - 12)));
           setHeight(previous => previous === next ? previous : next);

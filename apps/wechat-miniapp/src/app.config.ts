@@ -1,4 +1,5 @@
 import { NATIVE_CHROME_THEME } from "./theme/design-tokens";
+import { PRIMARY_NAVIGATION_ITEMS, primaryNavigationIconPath } from "./navigation/primary-navigation";
 
 export default defineAppConfig({
   pages: ["pages/map/index", "pages/my/index", "pages/auth/index"],
@@ -43,24 +44,16 @@ export default defineAppConfig({
     backgroundTextStyle: "dark",
   },
   tabBar: {
+    custom: true,
     color: NATIVE_CHROME_THEME.DAY.color,
     selectedColor: NATIVE_CHROME_THEME.DAY.selectedColor,
     backgroundColor: NATIVE_CHROME_THEME.DAY.backgroundColor,
     borderStyle: NATIVE_CHROME_THEME.DAY.borderStyle,
-    list: [
-      {
-        pagePath: "pages/map/index",
-        text: "地图",
-        iconPath: "assets/b-icons/weapp-tabbar/map--day--default.png",
-        selectedIconPath: "assets/b-icons/weapp-tabbar/map--day--selected.png",
-      },
-      {
-        pagePath: "pages/my/index",
-        text: "我的",
-        iconPath: "assets/b-icons/weapp-tabbar/account-user--day--default.png",
-        selectedIconPath: "assets/b-icons/weapp-tabbar/account-user--day--selected.png",
-      },
-    ],
+    list: PRIMARY_NAVIGATION_ITEMS.map(({ pagePath, text, icon }) => ({
+      pagePath, text,
+      iconPath: primaryNavigationIconPath(icon, "DAY", false),
+      selectedIconPath: primaryNavigationIconPath(icon, "DAY", true),
+    })),
   },
   permission: {
     "scope.userLocation": {

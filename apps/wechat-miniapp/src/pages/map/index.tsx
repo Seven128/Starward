@@ -16,6 +16,8 @@ import { privateContributionMarkerItems, privateContributionMarkers } from "./pr
 import { ContributionEditor, type ContributionCandidatePreview, type ContributionLeaveGuard } from "@/content/contribution/contribution-editor";
 import { panelIdentityMinimumHeight, panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
+import { usePrimaryNavigation } from "@/hooks/use-primary-navigation";
+import { primaryNavigationLayout } from "@/navigation/primary-navigation";
 import { restoreMapBootstrapContext, retryObservationScene, spotSelectionAllowsContextRestore } from "./context-restore";
 import { canApplyContextRestore, sameContextVersion } from "@/services/observation-context-version";
 import { FloatingNotificationHost } from "@/components/notification";
@@ -179,6 +181,7 @@ const overlayLabels: Record<AnalysisOverlay, string> = {
 
 export default function MapPage() {
   const themeClass = useThemeClass();
+  const primaryNavigation = usePrimaryNavigation("pages/map/index");
   const reducedMotion = useReducedMotion();
   const navigationHandoff = useRedLightHandoff({ nativeBackBoundary: false });
   const photoHandoff = useRedLightHandoff({ nativeBackBoundary: false, title: PHOTO_VIEWER_HANDOFF.title });
@@ -640,7 +643,7 @@ export default function MapPage() {
       const windowInfo = Taro.getWindowInfo();
       center = cameraCenterForVisibleMapTarget(
         center,
-        windowInfo.windowHeight,
+        primaryNavigationLayout("pages/map/index", windowInfo).pageHeight ?? windowInfo.windowHeight,
         SPOT_EDITOR_TOP_PX,
         zoom,
       );
@@ -2168,13 +2171,14 @@ export default function MapPage() {
     ) {
       embeddedEditorHeightPx = Math.max(
         320,
-        windowInfo.windowHeight - SPOT_EDITOR_TOP_PX,
+        (primaryNavigation.pageHeight ?? windowInfo.windowHeight) - SPOT_EDITOR_TOP_PX,
       );
     }
   } catch {
     // The CSS fallback remains bounded when native window metrics are absent.
   }
   const mapPresentationStyle = {
+    ...primaryNavigation.style,
     ...(datePickerVisible ? {
       "--map-calendar-top": `${calendarBounds?.identity === calendarLayoutIdentity ? calendarBounds.top : 0}px`,
     } : {}),

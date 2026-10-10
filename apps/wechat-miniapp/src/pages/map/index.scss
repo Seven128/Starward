@@ -3,7 +3,7 @@
 .map-page {
   --map-search-top: calc(env(safe-area-inset-top) + 56Px);
   --map-search-height: max(var(--target-min), calc(var(--type-search-line) + 16Px));
-  height: 100vh;
+  height: var(--primary-page-height, 100vh);
   display: flex;
   flex-direction: column;
 }
@@ -15,12 +15,12 @@
   left: 16Px;
   width: calc(100% - 96Px);
   transform: none;
-  --notification-available-height: max(0Px, calc(100vh - var(--map-search-top) - var(--map-search-height) - 8Px - var(--notification-bottom-reserve)));
+  --notification-available-height: max(0Px, calc(var(--primary-page-height, 100vh) - var(--map-search-top) - var(--map-search-height) - 8Px - var(--notification-bottom-reserve)));
 }
 // The large spot document occupies the search area. Keep transient feedback
 // above its fixed actions instead of covering the date and time controls.
 .map-page--panel-large .notification-host {
-  top: max(var(--notification-top), calc(100vh - var(--notification-bottom-reserve) - 156Px));
+  top: max(var(--notification-top), calc(var(--primary-page-height, 100vh) - var(--notification-bottom-reserve) - 156Px));
   --notification-available-height: 156Px;
 }
 // The same host remains active above the actual calendar sheet. Its scroll
@@ -720,9 +720,8 @@
 
 /* I21 Map / stationary Search / retained panel presentation. */
 .map-page {
-  --primary-nav-clearance: calc(112rpx + env(safe-area-inset-bottom));
-  height: 100vh;
-  min-height: 100vh;
+  height: var(--primary-page-height, 100vh);
+  min-height: var(--primary-page-height, 100vh);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1227,7 +1226,7 @@
   padding: 20rpx 0 32rpx;
 }
 .map-layer-layer {
-  bottom: var(--primary-nav-clearance);
+  bottom: 0;
 }
 .map-layer-sheet {
   width: 100%;
@@ -1347,15 +1346,14 @@
  * selector-query compatibility test; no such nodes are mounted by MapPage.
  */
 .map-page {
-  --primary-nav-clearance: calc(112rpx + env(safe-area-inset-bottom));
   --map-chrome-opacity: 1;
   --panel-media-reveal: 0;
   --panel-media-height: 0rpx;
   --panel-handle-band-height: 40rpx;
   --panel-media-image-offset: -18rpx;
   --panel-media-image-scale: 1.02;
-  height: 100vh;
-  min-height: 100vh;
+  height: var(--primary-page-height, 100vh);
+  min-height: var(--primary-page-height, 100vh);
   overflow: hidden;
   background: var(--canvas);
 }
@@ -1525,9 +1523,9 @@
   pointer-events: auto;
 }
 .spot-panel {
-  // Native tabBar already sits outside this page's viewport.
+  // The shared primary-navigation owner reserves the custom bar and safe area.
   --spot-panel-inline-padding: 24rpx;
-  --panel-available-height: 100vh;
+  --panel-available-height: var(--primary-page-height, 100vh);
   --panel-top-inset: var(--map-search-top);
   --panel-identity-height: calc(var(--target-min) + var(--type-metadata-line) + var(--type-spot-title-line) + var(--type-spot-title-line) + var(--panel-action-height) + env(safe-area-inset-bottom) + 32Px);
   --panel-small-height: min(calc(var(--panel-available-height) - 88Px), var(--panel-identity-height));
@@ -1640,7 +1638,7 @@
 }
 .map-spot-editor-layer {
   --spot-editor-top: 230Px;
-  --embedded-editor-height: calc(100vh - var(--spot-editor-top));
+  --embedded-editor-height: calc(var(--primary-page-height, 100vh) - var(--spot-editor-top));
   position: absolute;
   z-index: 40;
   top: var(--spot-editor-top);
@@ -2083,7 +2081,7 @@
 
 /* Adopted two-card map layer selector. Cloud owns time; annual light does not. */
 .map-layer-layer {
-  // Native tabBar is outside the page viewport, so the sheet meets it directly.
+  // The shared primary-navigation owner reserves the bar; the sheet meets it directly.
   bottom: 0;
 }
 .map-layer-sheet {
@@ -2098,11 +2096,11 @@
   transition: height 180ms ease-out;
 }
 .map-layer-sheet--cloud {
-  height: min(calc(100vh - var(--map-search-top) - 44Px), clamp(352Px, 65vh, 560Px));
+  height: min(calc(var(--primary-page-height, 100vh) - var(--map-search-top) - 44Px), clamp(352Px, 65vh, 560Px));
   min-height: 0;
 }
 .map-layer-sheet--light {
-  height: min(calc(100vh - var(--map-search-top) - 44Px), 260Px);
+  height: min(calc(var(--primary-page-height, 100vh) - var(--map-search-top) - 44Px), 260Px);
   min-height: 0;
 }
 .map-layer-sheet__scroll {
@@ -2644,8 +2642,8 @@
   --map-title-top: calc(env(safe-area-inset-top) + 4Px);
   width: 100vw;
   max-width: 100%;
-  height: 100vh;
-  max-height: 100vh;
+  height: var(--primary-page-height, 100vh);
+  max-height: var(--primary-page-height, 100vh);
 }
 .map-app-title {
   position: absolute;
@@ -2724,13 +2722,13 @@
 
 .spot-panel {
   --spot-panel-inline-padding: 16Px;
-  --panel-available-height: calc(100vh - var(--map-search-top) - 4Px);
+  --panel-available-height: calc(var(--primary-page-height, 100vh) - var(--map-search-top) - 4Px);
   // Snap rulers and the live panel share one ordered set, including short
   // resized viewports. Otherwise height:clamp can disagree with the gesture
   // measurements and readPanelSnapGeometry must reject every drag.
   --panel-snap-gap: min(44Px, calc(var(--panel-available-height) / 4));
   --panel-small-height: min(max(clamp(156Px, 19vh, 196Px), var(--panel-small-content-height, 0px)), calc(var(--panel-available-height) - 2 * var(--panel-snap-gap)));
-  --panel-preferred-medium-height: min(calc(100vh - 132Px), clamp(368Px, 44vh, 480Px));
+  --panel-preferred-medium-height: min(calc(var(--primary-page-height, 100vh) - 132Px), clamp(368Px, 44vh, 480Px));
   --panel-medium-height: clamp(calc(var(--panel-small-height) + var(--panel-snap-gap)), var(--panel-preferred-medium-height), calc(var(--panel-available-height) - var(--panel-snap-gap)));
   --panel-action-height: 46Px;
   border: 0;
@@ -3407,7 +3405,7 @@
 @media (max-width: 350px) {
   .spot-panel {
     --spot-panel-inline-padding: 14Px;
-    --panel-preferred-medium-height: min(368Px, calc(100vh - 120Px));
+    --panel-preferred-medium-height: min(368Px, calc(var(--primary-page-height, 100vh) - 120Px));
   }
   .spot-panel__action-bar {
     right: 14Px;

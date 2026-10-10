@@ -13,12 +13,12 @@ function useThemeInputs() {
   }, [hydrate]);
   useEffect(() => {
     void syncNativeChrome(useAppStore.getState().mode).catch((error: unknown) => {
-      console.warn("tab_bar_theme_sync_failed", error);
+      console.warn("native_chrome_theme_sync_failed", error);
     });
   }, [mode]);
   useDidShow(() => {
     void syncNativeChrome(useAppStore.getState().mode).catch((error: unknown) => {
-      console.warn("tab_bar_theme_sync_failed", error);
+      console.warn("native_chrome_theme_sync_failed", error);
     });
   });
   return { mode, largeText };

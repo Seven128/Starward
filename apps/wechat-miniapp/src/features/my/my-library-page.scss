@@ -1,4 +1,4 @@
-.my-page { height: 100vh; display: flex; flex-direction: column; }
+.my-page { height: 100vh; box-sizing: border-box; padding-bottom: var(--primary-nav-height); display: flex; flex-direction: column; }
 .my-page.theme-day {
   background: radial-gradient(ellipse 100% 75% at 100% 3%, #f9e49eb5, transparent 64%), radial-gradient(ellipse 90% 42% at -7% 20%, #e9ccdda8, transparent 78%), radial-gradient(ellipse 90% 64% at -10% 67%, #bcd8eab5, transparent 80%), radial-gradient(ellipse 70% 54% at 112% 59%, #f4e5b195, transparent 78%), #f2f3f1;
   color: #273640;
