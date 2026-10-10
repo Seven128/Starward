@@ -14,6 +14,7 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
   const generation = useRef(0);
   const measuredStep = useRef(0);
   const suppressTap = useRef(false);
+  const visible = useRef(true);
   const [position, setPosition] = useState<number | null>(null);
   const currentMode = useRef(mode);
   currentMode.current = mode;
@@ -24,7 +25,7 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
     setPosition(null);
     onGestureCapture(false);
   };
-  useEffect(() => () => { generation.current += 1; drag.current = null; }, []);
+  useEffect(() => () => { visible.current = false; generation.current += 1; drag.current = null; }, []);
   useEffect(() => { cancel(); }, [mode]);
   const prepareMeasurement = () => {
     const token = generation.current;
@@ -36,10 +37,11 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
     });
   };
   useEffect(prepareMeasurement, []);
-  useDidShow(prepareMeasurement);
-  useDidHide(() => { suppressTap.current = true; cancel(); });
+  useDidShow(() => { visible.current = true; suppressTap.current = false; prepareMeasurement(); });
+  useDidHide(() => { visible.current = false; suppressTap.current = true; cancel(); });
 
   const start = (input: unknown) => {
+    if (!visible.current) return;
     const event = input as ITouchEvent;
     recordAcceptanceDiagnostic("display-mode-control", "start", `touch_start:${event.touches?.length ?? 0}`);
     cancel();
@@ -104,6 +106,7 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
             className={`settings-display-mode-choice focus-ring${mode === item ? " settings-display-mode-choice--selected" : ""}`}
             ariaLabel={`${DISPLAY_MODE_LABEL[item]}${mode === item ? "，当前已选，再次点击切换下一模式" : "，切换模式"}`}
             onClick={() => {
+              if (!visible.current) return;
               recordAcceptanceDiagnostic("display-mode-control", "start", `tap:${item}:${suppressTap.current ? "suppressed" : "accepted"}`);
               if (suppressTap.current) { suppressTap.current = false; return; }
               onSelect(tappedMode(currentMode.current, item));

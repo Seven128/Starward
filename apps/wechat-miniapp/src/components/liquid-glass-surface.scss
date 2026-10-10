@@ -28,8 +28,40 @@
     inset 0 -1Px 0 rgba(0, 0, 0, .48);
 }
 
-.reduced-transparency .liquid-glass-surface {
-  background: var(--surface);
+@mixin solid-liquid-glass {
+  background: var(--liquid-glass-solid, var(--surface));
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+}
+
+.reduced-transparency .liquid-glass-surface {
+  @include solid-liquid-glass;
+}
+
+// My's adopted DAY material supplies its own solid alternative. Other themes
+// retain the existing product surface; this does not select an optical renderer.
+.my-page.theme-day { --liquid-glass-solid: #f1f3ef; }
+
+.my-page.theme-night .liquid-glass-surface,
+.my-page.theme-observation .liquid-glass-surface {
+  @include solid-liquid-glass;
+}
+
+@mixin my-solid-liquid-glass {
+  .my-page .liquid-glass-surface {
+    @include solid-liquid-glass;
+  }
+  .my-page.theme-day .liquid-glass-surface {
+    border-color: var(--border);
+  }
+}
+
+// Keep platform capability/preferences in CSS rather than adding account state
+// or polling. Test the filter spelling retained by the WXSS build.
+@supports not (backdrop-filter: blur(1Px)) {
+  @include my-solid-liquid-glass;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  @include my-solid-liquid-glass;
 }
