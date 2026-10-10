@@ -22,6 +22,7 @@ function runtime(initialContext: unknown = null, initialRetiredContextId: string
   const attempts: { spotId: string; pending: boolean; error: unknown }[] = [];
   const requests: { input: unknown; resolve(value: unknown): void; reject(error: Error): void }[] = [];
   const replacements: { input: unknown; resolve(value: unknown): void; reject(error: Error): void }[] = [];
+  const restorations: { input: unknown; resolve(value: unknown): void; reject(error: Error): void }[] = [];
   const timers = new Map<number, () => void>();
   let timerId = 0;
   const functions = vm.runInNewContext(ts.transpileModule(declarations.join("\n") + "\n({resolveSpotContext, openDetail, closeSpotPanel, openLayerSheet});", {
@@ -44,15 +45,69 @@ function runtime(initialContext: unknown = null, initialRetiredContextId: string
     isMiniappRequestCancelled: (error: Error) => error.message === "cancelled", localDateForNow: () => "2026-09-06",
     resolveObservationContext: (input: unknown) => new Promise((resolve, reject) => requests.push({ input, resolve, reject })),
     replaceRetiredObservationContext: (input: unknown) => new Promise((resolve, reject) => replacements.push({ input, resolve, reject })),
+    restoreObservationContext: (input: unknown) => new Promise((resolve, reject) => restorations.push({ input, resolve, reject })),
     notify() {},
     clearTimeout: (id: number) => timers.delete(id),
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; },
   }) as { resolveSpotContext(spot: object): Promise<void>; openDetail(spot: object): Promise<void>; closeSpotPanel(): void; openLayerSheet(): void };
-  return { ...functions, requests, replacements, contexts, attempts, presentations, extents,
+  return { ...functions, requests, replacements, restorations, contexts, attempts, presentations, extents,
     selection: () => selectedSpotId,
     installCurrent: (value: unknown) => { observationContext = value; },
     fireTimers: () => { for (const callback of timers.values()) callback(); timers.clear(); } };
 }
+
+test("formal selection revalidates a lost point Context before using its route origin", async () => {
+  const original = { contextId: "ctx:lost-point", revision: 1, contextFingerprint: "point",
+    location: { kind: "MAP_POINT" }, localDate: "2026-10-07", selectedAtUtc: "2026-10-07T16:00:00Z",
+    eventInstanceId: null, targetProfile: "DAILY" };
+  const map = runtime(original), pending = map.openDetail({ spotId: "a", name: "A" });
+  assert.equal(map.restorations.length, 1, "the persisted origin ID may be gone after service restart");
+  assert.equal(map.requests.length, 0, "an unconfirmed origin must not authorize the target request");
+  map.restorations[0]!.resolve({ data: { ...original, contextId: "ctx:recovered-point" } });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(map.requests.length, 1);
+  const input = map.requests[0]!.input as any;
+  assert.equal(input.routeOriginContextId, "ctx:recovered-point");
+  assert.equal(input.localDate, original.localDate);assert.equal(input.selectedAt, original.selectedAtUtc);
+  assert.deepEqual(map.contexts, [], "origin revalidation does not replace the selected page's Context");
+  const target = { ...original, contextId: "ctx:formal-a", location: { kind: "FORMAL_SPOT", spotId: "a" } };
+  map.requests[0]!.resolve({ data: target });await pending;assert.deepEqual(map.contexts, [target]);
+});
+
+test("a public selection without a route origin does not depend on the previous place's availability", async () => {
+  for (const privateProposal of [null, { ownerId: "user:a", submissionId: "proposal:withdrawn" }]) {
+    const original = { contextId: "ctx:unavailable-place", revision: 1, contextFingerprint: "place",
+      location: { kind: privateProposal ? "PENDING_PROPOSAL" : "FORMAL_SPOT", spotId: "old" },
+      privateProposal, routeOrigin: null, localDate: "2026-10-07", selectedAtUtc: "2026-10-07T16:00:00Z",
+      eventInstanceId: "event:confirmed", targetProfile: "DAILY" };
+    const map = runtime(original), pending = map.openDetail({ spotId: "b", name: "B" });
+    assert.equal(map.restorations.length, 0, "the unavailable previous place supplies no route origin");
+    assert.equal(map.requests.length, 1);
+    const input = map.requests[0]!.input as any;
+    assert.equal(input.routeOriginContextId, null);
+    assert.equal(input.selectedAt, original.selectedAtUtc);assert.equal(input.localDate, original.localDate);
+    assert.equal(input.eventInstanceId, original.eventInstanceId);assert.equal(input.targetProfile, original.targetProfile);
+    const target = { ...original, contextId: "ctx:public-b", privateProposal: null, location: { kind: "FORMAL_SPOT", spotId: "b" } };
+    map.requests[0]!.resolve({ data: target });await pending;assert.deepEqual(map.contexts, [target]);
+  }
+});
+
+test("a newer selection retires the old origin revalidation before target dispatch", async () => {
+  const original = { contextId: "ctx:point", revision: 1, contextFingerprint: "point", location: { kind: "MAP_POINT" },
+    localDate: "2026-10-07", selectedAtUtc: "2026-10-07T16:00:00Z" };
+  for (const lateFailure of [false, true]) {
+    const map = runtime(original), first = map.openDetail({ spotId: "a", name: "A" }), last = map.openDetail({ spotId: "b", name: "B" });
+    assert.equal(map.restorations.length, 2);
+    map.restorations[1]!.resolve({ data: { ...original, contextId: "ctx:current-origin" } });
+    await new Promise<void>(resolve => setImmediate(resolve));
+    assert.equal(map.requests.length, 1);assert.equal((map.requests[0]!.input as any).location.spotId, "b");
+    const target = { ...original, contextId: "ctx:b", location: { kind: "FORMAL_SPOT", spotId: "b" } };
+    map.requests[0]!.resolve({ data: target });await last;
+    if (lateFailure) map.restorations[0]!.reject(Error("old origin failed"));
+    else map.restorations[0]!.resolve({ data: { ...original, contextId: "ctx:old-origin" } });
+    await first;assert.equal(map.requests.length, 1);assert.deepEqual(map.contexts, [target]);assert.equal(map.attempts.at(-1)?.error, null);
+  }
+});
 
 test("a later confirmed Context retires a parallel explicit replacement", async () => {
   const original = { contextId: "ctx:a", revision: 1, contextFingerprint: "one", location: { kind: "FORMAL_SPOT", spotId: "a" } };

@@ -433,9 +433,10 @@ export default function MapPage() {
   // A retained spot attempt owns its POST (including retry); bootstrap must not
   // cancel it through the shared resolve request key. Cold restoration has no
   // attempt/summary yet, so it remains owned by bootstrap.
-  const bootstrapReplacementBlocked = Boolean(retiredObservationContextId && selectedSpotId &&
+  const bootstrapReplacementBlocked = Boolean(selectedSpotId &&
     lastHandledSpotOpenVersion.current === spotOpenRequestVersion &&
-    (spotContextAttempt?.spotId === selectedSpotId || lastHandledSelectedId.current === selectedSpotId));
+    (spotContextAttempt?.spotId === selectedSpotId || lastHandledSelectedId.current === selectedSpotId) &&
+    (retiredObservationContextId || !spotSelectionAllowsContextRestore(observationContext, selectedSpotId)));
   // Store selection may render before the local attempt. Invalidate that
   // render's fetch as soon as explicit point resolution takes ownership.
   const bootstrapPointIntent = mapPointIntent.current;
@@ -453,10 +454,7 @@ export default function MapPage() {
     ],
     queryFn: (signal) => {
       const current = useAppStore.getState();
-      const explicitReplacementOwned = current.retiredObservationContextId && current.selectedSpotId &&
-        lastHandledSpotOpenVersion.current === current.spotOpenRequestVersion &&
-        lastHandledSelectedId.current === current.selectedSpotId;
-      if (bootstrapReplacementBlocked || explicitReplacementOwned || bootstrapPointIntent !== mapPointIntent.current || current.selectedSpotId !== selectedSpotId ||
+      if (bootstrapReplacementBlocked || bootstrapPointIntent !== mapPointIntent.current || current.selectedSpotId !== selectedSpotId ||
           current.mapResetVersion !== mapResetVersion || !sameContextVersion(observationContext, current.observationContext))
         throw new Error("context_selection_resolution_pending");
       const point = gcj02ToWgs84({
@@ -496,9 +494,16 @@ export default function MapPage() {
     enabled: pageVisible && !bootstrapReplacementBlocked,
     staleTime: 60_000,
   });
+  const bootstrapReference = bootstrapContext.data?.data ?? null;
   const restoredContext = (spotSelectionAllowsContextRestore(observationContext, selectedSpotId) ||
-    Boolean(retiredObservationContextId && !bootstrapReplacementBlocked))
-    ? bootstrapContext.data?.data ?? null
+    Boolean(!bootstrapReplacementBlocked && (retiredObservationContextId ||
+      (selectedSpotId && lastHandledSelectedId.current !== selectedSpotId && bootstrapReference && observationContext &&
+        bootstrapReference.contextId !== observationContext.contextId &&
+        bootstrapReference.localDate === observationContext.localDate &&
+        Date.parse(bootstrapReference.selectedAtUtc) === Date.parse(observationContext.selectedAtUtc) &&
+        bootstrapReference.eventInstanceId === observationContext.eventInstanceId &&
+        bootstrapReference.targetProfile === observationContext.targetProfile))))
+    ? bootstrapReference
     : observationContext;
   const activeContext = retiredObservationContextId && restoredContext?.contextId === retiredObservationContextId ? null : restoredContext;
   const timeReference = activeContext ?? observationContext;
@@ -1138,6 +1143,7 @@ export default function MapPage() {
     useAppStore.getState().retireObservationContextEdit();
     const requestGeneration = ++detailRequestGeneration.current;
     const current = useAppStore.getState().observationContext;
+    const retired = current?.contextId === useAppStore.getState().retiredObservationContextId;
     const isCurrentRequest = () =>
       intent === mapPointIntent.current &&
       requestGeneration === detailRequestGeneration.current &&
@@ -1146,7 +1152,7 @@ export default function MapPage() {
       sameContextVersion(current, useAppStore.getState().observationContext);
     if (
       current?.location.kind === "FORMAL_SPOT" &&
-      current.contextId !== useAppStore.getState().retiredObservationContextId &&
+      !retired &&
       current.location.spotId === spot.spotId
     ) {
       setSpotContextAttempt(null);
@@ -1156,8 +1162,11 @@ export default function MapPage() {
     }
     setSpotContextAttempt({ spotId: spot.spotId, pending: true, error: null });
     try {
-      const replacement = current && current.contextId === useAppStore.getState().retiredObservationContextId
-        ? await replaceRetiredObservationContext(current) : null;
+      // Revalidate a used route reference; its ID may be gone after restart.
+      // A different place without an origin supplies only the confirmed clock.
+      const replacement = current && (retired ||
+        current.location.kind === "MAP_POINT" || current.routeOrigin) ? await (retired
+        ? replaceRetiredObservationContext(current) : restoreObservationContext(current)) : null;
       if (!isCurrentRequest()) return;
       const reference = replacement?.data ?? current;
       const sameOriginalSpot = current?.location.kind === "FORMAL_SPOT" && current.location.spotId === spot.spotId;
@@ -1683,7 +1692,7 @@ export default function MapPage() {
   const refreshMap = async () => {
     setAnnouncement("正在刷新当前区域");
     try {
-      if (bootstrapReplacementBlocked && selected) {
+      if (selected && (bootstrapReplacementBlocked || visibleSpotContextAttempt?.error)) {
         await resolveSpotContext(selected);
         return;
       }

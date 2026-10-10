@@ -148,7 +148,7 @@ test("a pending formal selection keeps its confirmed time through bootstrap and 
     if (ts.isVariableStatement(node)) {
       for (const item of node.declarationList.declarations) {
         if (item.name.getText(source) === "resolveSpotContext") resolution = node.getText(source);
-        if (["restoredContext", "activeContext"].includes(item.name.getText(source))) active += node.getText(source) + "\n";
+        if (["bootstrapReference", "restoredContext", "activeContext"].includes(item.name.getText(source))) active += node.getText(source) + "\n";
       }
     }
     ts.forEachChild(node, visit);
@@ -161,10 +161,12 @@ test("a pending formal selection keeps its confirmed time through bootstrap and 
   const scope = {
     bootstrapContext: { data: { data: late } }, observationContext: confirmed, selectedSpotId: "spot:b", pageVisible: true, mapResetVersion: 1,
     retiredObservationContextId: null, bootstrapReplacementBlocked: false,
+    lastHandledSelectedId: { current: "spot:b" },
     useAppStore: { getState: () => state }, canApplyContextRestore, sameContextVersion, spotSelectionAllowsContextRestore: contextRestore.spotSelectionAllowsContextRestore,
     setObservationContext(value: any) { state.observationContext = value; installed.push(value); }, selectSpot() {}, setSelectedFallback() {}, setSelectedProposal() {}, setBottomPresentation() {}, notify() {},
     mapPointIntent, invalidateMapPointIntent: () => ++mapPointIntent.current, detailRequestGeneration: { current: 0 },
     setSpotContextAttempt() {}, dismissMapRegionFailure() {}, setAnnouncement() {}, localDateForNow: () => "unexpected", isMiniappRequestCancelled: () => false,
+    restoreObservationContext: async (input: any) => { assert.equal(input, confirmed); return { data: late }; },
     resolveObservationContext: async (input: any) => { requests.push(input); return { data: { ...confirmed, contextId: "ctx:b", location: { kind: "FORMAL_SPOT", spotId: "spot:b" } } }; },
   };
   const compile = (text: string) => ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
@@ -193,7 +195,7 @@ test("spot selection permits initial, unselected and same-place recovery includi
 
 test("explicit spot resolution owns the shared POST while cold recovery can supply a safe scene reference", () => {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  const names = new Set(["bootstrapReplacementBlocked", "bootstrapPointIntent", "bootstrapContext", "restoredContext", "activeContext"]);
+  const names = new Set(["bootstrapReplacementBlocked", "bootstrapPointIntent", "bootstrapContext", "bootstrapReference", "restoredContext", "activeContext"]);
   const statements: string[] = [];
   const visit = (node: ts.Node) => {
     if (ts.isVariableStatement(node) && node.declarationList.declarations.some(item => names.has(item.name.getText(source)))) statements.push(node.getText(source));
@@ -224,6 +226,40 @@ test("explicit spot resolution owns the shared POST while cold recovery can supp
   }
 });
 
+test("a cold non-retired selection uses a rebuilt bootstrap reference to obtain its actual spot summary", () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const names = new Set(["bootstrapReference", "restoredContext", "activeContext", "scene", "spots", "selectedFromScene", "selected"]);
+  const statements: string[] = [];
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableStatement(node) && node.declarationList.declarations.some(d => names.has(d.name.getText(source)))) statements.push(node.getText(source));
+    ts.forEachChild(node, visit);
+  };visit(source);assert.equal(statements.length, names.size);
+  const confirmed = { ...initial, location: { kind: "MAP_POINT" }, selectedAtUtc: "2026-10-07T16:00:00Z" };
+  const recovered = { ...confirmed, contextId: id("ctx:recovered-point"), selectedAtUtc: "2026-10-07T16:00:00.000Z" };
+  for (const fresh of [recovered, { ...recovered, contextId: id("ctx:late-point"), selectedAtUtc: "2026-10-08T16:00:00Z" }]) {
+  let sceneOptions: any;
+  const result = vm.runInNewContext(ts.transpileModule(statements.join("\n") + "\n({activeContext, selected});",
+    { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    observationContext: confirmed, selectedSpotId: "spot:b", selectedFallback: null,
+    bootstrapContext: { data: { data: fresh } }, retiredObservationContextId: null, bootstrapReplacementBlocked: false,
+    lastHandledSelectedId: { current: null },
+    spotSelectionAllowsContextRestore: contextRestore.spotSelectionAllowsContextRestore,
+    accountOwnerId: "user:test", pageVisible: true, preferences: {}, committedFilters: {}, debouncedFinderQuery: "",
+    analysisOverlay: "TOTAL_CLOUD", viewport: { center: { latitude: 22.5, longitude: 114 }, zoom: 12 },
+    useMapForecastQuery: (options: any) => {
+      sceneOptions = options;
+      return options.enabled && options.queryKey[2] === recovered.contextId
+        ? { data: envelope({ spots: [{ spotId: "spot:b" }] }) } : {};
+    },
+  });
+  assert.equal(result.activeContext.contextId, fresh === recovered ? recovered.contextId : confirmed.contextId,
+    "only a rebuilt reference with the confirmed clock can drive the cold scene");
+  assert.equal(sceneOptions.enabled, true);
+  assert.equal(result.selected?.spotId ?? null, fresh === recovered ? "spot:b" : null,
+    "the cold selection obtains its summary only from the safe recovered scene");
+  }
+});
+
 test("an intermediate bootstrap render cannot dispatch after explicit selection takes ownership", () => {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const names = new Set(["bootstrapReplacementBlocked", "bootstrapPointIntent", "bootstrapContext"]), statements: string[] = [];
@@ -250,7 +286,7 @@ test("an intermediate bootstrap render cannot dispatch after explicit selection 
   assert.equal(replacements, 0, "bootstrap must not cancel the explicit replacement POST");
 });
 
-test("a new intermediate render reads the synchronous explicit owner before local attempt arrives", () => {
+test("a non-retired intermediate render reads the synchronous explicit owner before local attempt arrives", () => {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const names = new Set(["bootstrapReplacementBlocked", "bootstrapPointIntent", "bootstrapContext"]), statements: string[] = [];
   const visit = (node: ts.Node) => {
@@ -261,10 +297,11 @@ test("a new intermediate render reads the synchronous explicit owner before loca
   let options: any, replacements = 0;
   vm.runInNewContext(ts.transpileModule(statements.join("\n"), { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     mapPointIntent: { current: 1 }, lastHandledSelectedId: { current: "spot:b" }, lastHandledSpotOpenVersion: { current: 0 }, spotOpenRequestVersion: 0,
-    observationContext: confirmed, retiredObservationContextId: confirmed.contextId,
+    observationContext: confirmed, retiredObservationContextId: null,
     selectedSpotId: "spot:b", spotContextAttempt: null, accountOwnerId: "user:test", mapResetVersion: 1,
     viewport: { center: { latitude: 22, longitude: 114 } }, pageVisible: true, sameContextVersion,
-    useAppStore: { getState: () => ({ selectedSpotId: "spot:b", retiredObservationContextId: confirmed.contextId, spotOpenRequestVersion: 0, mapResetVersion: 1, observationContext: confirmed }) },
+    spotSelectionAllowsContextRestore: contextRestore.spotSelectionAllowsContextRestore,
+    useAppStore: { getState: () => ({ selectedSpotId: "spot:b", retiredObservationContextId: null, spotOpenRequestVersion: 0, mapResetVersion: 1, observationContext: confirmed }) },
     useResourceQuery: (value: any) => { options = value;return {}; },
     gcj02ToWgs84: (value: any) => value, currentTimezoneHint: () => "Asia/Shanghai", localDateForNow: () => "2026-10-07",
     restoreMapBootstrapContext: () => { replacements++;return {}; }, replaceRetiredObservationContext() {},
