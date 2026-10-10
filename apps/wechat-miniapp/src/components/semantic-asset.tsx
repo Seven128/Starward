@@ -21,6 +21,8 @@ export type SemanticIconName =
   | "search"
   | "filter"
   | "chevron-right"
+  | "plan-header-chevron"
+  | "plan-row-chevron"
   | "chevron-down"
   | "chevron-up"
   | "close"
@@ -49,6 +51,7 @@ export type SemanticIconName =
   | "clock"
   | "moon"
   | "meteor"
+  | "more"
   | "terrain"
   | "star";
 
@@ -57,6 +60,14 @@ export type SemanticIconState = "default" | "selected" | "draft" | "pending";
 // Most adopted icon IDs are the semantic name; record only actual aliases.
 const B_ICON_ID: Partial<Record<SemanticIconName, string>> = {
   conditions: "low-cloud", star: "four-point-star",
+  "plan-header-chevron": "chevron-right", "plan-row-chevron": "chevron-right",
+};
+
+// The current My source keeps line chevrons in its plan card. Other page
+// chevrons retain the B family; unadopted themes retain their existing glyph.
+const DAY_SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
+  "plan-header-chevron": "/assets/icons/my-plan-chevron-header.svg",
+  "plan-row-chevron": "/assets/icons/my-plan-chevron-row.svg",
 };
 
 function packageAssetPrefix() {
@@ -68,7 +79,11 @@ function packageAssetPrefix() {
 }
 
 export function adoptedBIconPath(name: SemanticIconName, state: SemanticIconState = "default") {
-  return `${packageAssetPrefix()}/assets/b-icons/${B_ICON_ID[name] ?? name}--day--${state}.png`;
+  const prefix = packageAssetPrefix();
+  // The 36px default My avatar shares the already packaged 192px Tab asset.
+  // Content pages retain their package-local derivatives.
+  const directory = !prefix && name === "account-user" ? "/assets/b-icons/weapp-tabbar" : `${prefix}/assets/b-icons`;
+  return `${directory}/${B_ICON_ID[name] ?? name}--day--${state}.png`;
 }
 
 const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
@@ -85,7 +100,7 @@ const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
   bulb: "/assets/icons/bulb.svg",
   cloud: "/assets/icons/cloud.svg",
   wind: "/content/assets/icons/wind.svg",
-  telescope: "/content/assets/icons/telescope.svg",
+  telescope: "/assets/icons/telescope.svg",
   sun: "/assets/icons/sun.svg",
   moon: "/assets/icons/moon.svg",
   trash: "/content/assets/icons/trash-2.svg",
@@ -140,10 +155,11 @@ export function SemanticIcon({
 }) {
   const mode = useAppStore((state) => state.mode);
   if (mode === "DAY") {
+    const source = DAY_SOURCE_ICON_FILE[name];
     return (
       <Image
-        className={`semantic-icon semantic-icon--b semantic-icon--${name} ${className}`}
-        src={adoptedBIconPath(name, state)}
+        className={`semantic-icon semantic-icon--${source ? "source" : "b"} semantic-icon--${name} ${className}`}
+        src={source ?? adoptedBIconPath(name, state)}
         mode="aspectFit"
         {...(decorative
           ? { "aria-hidden": true }
@@ -151,7 +167,8 @@ export function SemanticIcon({
       />
     );
   }
-  const source = name === "star" ? "/assets/semantic/five-point-star.svg" : SOURCE_ICON_FILE[name];
+  const sourceName = name === "plan-header-chevron" || name === "plan-row-chevron" ? "chevron-right" : name;
+  const source = sourceName === "star" ? "/assets/semantic/five-point-star.svg" : SOURCE_ICON_FILE[sourceName];
   if (name === "arrow-left") {
     return (
       <View
@@ -174,7 +191,7 @@ export function SemanticIcon({
   if (source) {
     return (
       <View
-        className={`semantic-icon semantic-icon--source semantic-icon--${name} semantic-icon--${mode.toLowerCase()} ${className}`}
+        className={`semantic-icon semantic-icon--source semantic-icon--${sourceName} semantic-icon--${mode.toLowerCase()} ${className}`}
         {...(decorative
           ? { "aria-hidden": true }
           : { role: "img", "aria-label": label ?? name })}

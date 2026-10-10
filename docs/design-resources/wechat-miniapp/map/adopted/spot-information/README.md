@@ -1,5 +1,7 @@
 # 观星点信息组件 · 三档已采用
 
+> 当前开发从[地图唯一采用入口](../../ADOPTED.md)读取完整增量源及有效覆盖范围。2026-10-10 用户明确指出本包 `reference/medium.jpg` 已旧；本轮静态图只记录 2026-09-08 采用时的样子，不再是当前整页比较基准。后续舒适尺度、B 批图标、地形/事件、业务与状态修订以其各自当前 owner 为准。可编辑源仍作为完整增量资源的必要依赖，不因截图过时而删除。
+
 2026-09-08 用户确认“小、中、大三个可以收工”。采用反馈13最终修正版，包含顺时针一圈及副星避开主拖尾的最后修正。2026-09-15外部能力方案继续采用这套布局，但更新了其中的数据语义：天气只显示和风实际返回的小时与总云量，分层云/模型一致性退出；缺失范围由问号说明；近期天气另列前1–2个地区自然日事实与有条件影响；无覆盖使用统一暂无数据，异常同时提供顶部通知与局部重试。生产实现与验证状态以当前任务记录为准。唯一地图采用入口为[ADOPTED.md](../../ADOPTED.md)。
 
 2026-10-04历史小档边界修复记录：三档采用范围和单内容树保持。此前 Android 普通预览连续画面发现下拖时地址被裁掉、松手回跳，终态不变不能算连续性通过。该批将 Map 局部拖动高度夹住小/大档边界，保留中途重抓的实时高度、向上反向和原动作；真实 handler 回归曾在旧实现失败，修后相关检查及独立代码审阅通过。修后普通手机预览在本次 Android、DAY、正式点 fixture 样本中，四段真实录像的约20Hz有序采样经 Root 和独立审阅实看：小档下拖及释放无旧地址裁切或回跳，同一可见手柄上拖经中档展开至大档，大档 Back 回到中档，三动作及 Tab 保持。客户端为普通生产构建，服务为本地测试数据；这只证明已观察样本，不认证手机包字节、runtime AppID 或完整 Map 验收。Back 平滑插值、运动中重抓反向、多指及其他主题/设备/宽度仍未验；浮动调试按钮遮挡的大档正文不据此认证完整可读性。
@@ -8,8 +10,8 @@
 
 ## 开发必须读取
 
-- [可运行、可编辑原型](preview/index.html?extent=medium)：同一套HTML/CSS/JS，无需重新生成；small、medium、large通过extent参数选择。开发严格还原这些已采用资源，并遵循Screen Contract的真实数据/交互边界。
-- 基准截图：[小档](reference/small.jpg)、[中档](reference/medium.jpg)、[大档](reference/large.jpg)、[大档多图](reference/large-media.jpg)、[天文](reference/astronomy-shared.jpg)、[想去选中](reference/favorite-active.jpg)。390×844逻辑视口，截图原样保存；实际编码尺寸由文件给出。
+- [可运行、可编辑原型](preview/index.html?extent=medium)：同一套HTML/CSS/JS，是后续增量源的依赖；small、medium、large通过extent参数选择。按地图入口的当前覆盖范围读取，不能单独以本原型覆盖后续修订。
+- 采用时的历史截图：[小档](reference/small.jpg)、[中档](reference/medium.jpg)、[大档](reference/large.jpg)、[大档多图](reference/large-media.jpg)、[天文](reference/astronomy-shared.jpg)、[想去选中](reference/favorite-active.jpg)。390×844逻辑视口，截图原样保存；实际编码尺寸由文件给出。当前整页对照使用地图入口指向的最新完整源。
 - 动效与图标：preview/meteor.js和meteor.css；背景/动作顺序：preview/scenes.js；相册/拖区：preview/gestures.js；章节/日期：preview/chapters.js；最终样式同时受其余级联CSS控制，不只复制最后一个文件。
 - [来源、提示词与历史验证](provenance/README.md)。采用对象为最终Codex交互修订；Stitch原稿和更早反馈稿属于来源，不是另一份当前开发基准。
 

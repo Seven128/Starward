@@ -7,6 +7,8 @@
 
 ## Design And Implementation Boundary
 
+2026-10-10 用户指出旧地图中档图并指定核对 Stitch、使用最新设计资源。当前项目 01–08 已打开，01 地图与 03 我的/设置/计划画面已实看对照；后续开发以[舒适尺度完整源](../../../../docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/README.md)和各页唯一采用入口为视觉依据，旧截图只作历史参考，完整可编辑依赖保留。原真实业务、状态、导航和共享交互责任不变；云观星内部、暂停的大文字组及未交付主题仍按原边界。此项更新资源选择，不认证生产或目标验收。
+
 2026-09-22用户要求隔离旧生成页面，避免后续设计误用。Stitch历史混合项目已退出当前迭代基线；资源状态与项目清单见[Stitch隔离状态](../../../../docs/design-resources/wechat-miniapp/stitch-status.md)，当前源仍经[各页唯一采用入口](../../../../docs/design-resources/wechat-miniapp/README.md)进入。隔离保留现行采用及必要依赖，不代表最新源已重新同步到Stitch，也不授权改变抽屉、Tab或现用3D图标。
 
 2026-09-13本轮是一个完整需求，包含地形、B行图标、天文事件Modal，以及整体UI/UX校验与Context对齐补开发四个部分，产品/技术Context与对应资源必须同时保持一致。变更基于现有采用页面增量完成：地图完整基本信息、三档拖动/单文档/照片查看、原天文内容，以及计划完整地点/观测时间/出发路线/提醒清单/备注/保存与返回不因局部改动而重构或删减。简化宿主不能替代完整页面作为当前资源；本轮最终增量视觉已于2026-09-13获用户确认采用，浏览器验证不代表生产完成。统一审阅及修改范围见[完整资源入口](../../../../docs/design-resources/wechat-miniapp/shared/astronomical-event-modal/README.md)。

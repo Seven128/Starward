@@ -2,7 +2,7 @@
 import importlib.util,os
 from pathlib import Path
 from http.server import ThreadingHTTPServer
-ROOT=Path('E:/Dev/Starward')
+ROOT=Path(__file__).resolve().parents[3]
 os.environ['STARWARD_DESIGN_DB']=str(Path(__file__).with_name('review.sqlite'))
 spec=importlib.util.spec_from_file_location('design_service',ROOT/'docs/design-resources/wechat-miniapp/feedback/adopted/spot-feedback/server.py')
 service=importlib.util.module_from_spec(spec);spec.loader.exec_module(service)

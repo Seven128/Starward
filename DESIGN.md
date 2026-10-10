@@ -514,7 +514,7 @@ This section is the complete canonical visual-system profile for `target.system.
 
 2026-09-22 尺度修订保留原交互：观星点信息组件仍为原地图抽屉，原档位、拖动、内部Tab/章节行为、内容与固定操作不变。调整限定为内容文字、图标、留白及局部圆角；不能将静态大档截图推导成独立详情页、简化内容或新的导航方式。
 
-2026-09-22 尺度方向修订：用户真机反馈当前“小巧”过小，后续小程序设计候选改为正常移动端舒适可读的尺寸与自然圆润。旧“紧凑/小巧”仅保留去冗余、组织有效信息的含义，不再要求压小字级、图标、按钮或卡片；字体层级、行距、内容留白与圆角一起调整，不能整页缩放。现有精确令牌及已采用资源仍标识当前实现/采用基线；2026-09-24 依用户进一步确认的跨页舒适尺度方向，在 Map/Search、我的、设置、计划、共享地点资料表单及天文事件目录的生产 owner 内作局部选择和实测修正。其余候选几何仍待审，不将整包候选参数自动投射到生产或原生 App。
+2026-09-22 尺度方向修订：用户真机反馈当前“小巧”过小，改为正常移动端舒适可读的尺寸与自然圆润。旧“紧凑/小巧”仅保留去冗余、组织有效信息的含义，不再要求压小字级、图标、按钮或卡片；字体层级、行距、内容留白与圆角一起调整，不能整页缩放。2026-09-24 先在生产 owner 落实局部尺度；2026-10-10 用户指定核对 Stitch 并使用最新资源后，[舒适尺度完整源](docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/README.md)覆盖的日间视觉成为当前依据，经各页唯一采用入口读取完整级联与依赖。旧生成令牌不能覆盖已采用具体资源。云观星内部、暂停的大文字组及未交付主题仍按原边界，不将小程序参数投射到原生 App。资源采用与生产迁移/验收分别记录。
 
 2026-09-08 用户明确：持续从新增资源、具体反馈和采用修订中完善项目的风格偏好与UIUX原则，使设计系统更准确地符合用户预期；设计判断依据随之更新。采用表示当前范围内接受该方案，不定义客观“完成度”、审美等级或新页面必须达到的比较门槛。按[Context校准规则](project_context/context-maintenance.md#持续校准设计系统与用户偏好)在原owner更新适用范围，避免只累积资源或复制上一页。“精致、适当丰富、舒适可读、自然圆润”是当前默认要求（尺度依2026-09-22反馈修订）；简洁指信息和操作清晰，不能解释成取消材质、卡片、图标、视觉重心和动效。除非明确要求线框或只讨论结构，不交付等待用户要求“再美化”的基础壳。
 
@@ -607,12 +607,13 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 通用排版精确值在上方 `type` 令牌维护；§5A 已明确采用而尚未迁移的组件/页面按其 scoped profile，不能用旧生成值覆盖采用稿。page-title 为页面、spot-title 为地点身份、section 为章节、body 为核心事实、body-secondary 为说明、action 为全部普通操作/筛选、search 为搜索、metadata 为来源时效、data 为关键数值、article 为长文、critical 为影响操作的状态、display 为少量主要展示。旧 type-label/type-caption 等生产类分别投射 action/metadata，不保留另一套数值。核心值/动作/风险不得借用 metadata 缩小。
 
 - 中文标题、按钮与标签字距均为 `0`，不得负字距或人为追踪。
-- 正文与 helper 使用 400；普通标签/控件使用 400–500；标题使用 500–600；600 只保留给结论与关键时间。普通界面禁止 700，正文禁止脆弱 ultralight。
+- 正文与 helper 使用 400；普通标签/控件使用 400–500；标题使用 500–600；600 只保留给结论与关键时间。普通界面禁止 700，但 2026-10-10 指定最新资源内日间 Map 点位标题 22/30/700、My 昵称 20/28/700 和成就入口标题 16/25.6/700 是 scoped 例外，不能用通用规则降级其层级或推广到正文。正文禁止脆弱 ultralight。
 - 数字采用等宽数字 `font-variant-numeric: tabular-nums`；时间轴每列共享宽度。
 - 导航与分类标题使用中文系统字体、自然字距，不使用 tracked uppercase 或等宽行政标签。
 - 长中文按钮和字段标签需验证；允许换行，不以缩小字号维持单行。紧凑密度不得通过裁切、灰到不可读或全局机械缩放实现。
 - 2026-09-12 用户要求小程序所有图标向拟物、偏可爱且元素克制的统一家族探索，替代“必须全为线性图标”的风格限制。可爱感来自圆润比例、适当材质与一致光照，不能靠堆叠装饰；用户随后选择Web GPT加磨砂质感后最新对比图的B行作为整套生成的唯一风格参考，保留圆润比例、细腻磨砂材质和低饱和奶黄/灰蓝紫/鼠尾草绿关系；用户截图记录在[参考](docs/design-resources/wechat-miniapp/terrain-icon-exploration-2026-09-12/reference/user-latest-b-selection.png)，截图不是可直接使用的图标母版。小型方向/关闭等功能符号也在优化范围内，其材质深度应服从小尺寸识别；科学图形保留真实几何语义。当前图标输入与必要可编辑母版由共享图标采用包维护。2026-09-13用户已采用[共享图标入口](docs/design-resources/wechat-miniapp/shared/icons/ADOPTED.md)内已核对的71份256px日间透明PNG（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态），高清母版保留；地图selected经用户授权使用本地代码复制default主体并叠加独立光线，两种分辨率下主体像素一致，避免独立重画造成状态几何漂移。生产继续由唯一 `SemanticIcon` / `SemanticAsset` adapter 按语义分发，DAY消费者和地图四态已经迁移到B批资源；微信包使用保持完整画布与RGBA的224px页面派生和192px原生Tab派生以满足包体限制。NIGHT/OBSERVATION仍沿用原合法主题资产，真实月相、科学图形和平台标识保持各自owner。沿用当前逻辑像素尺度和独立44px命中区，不引入第二图标状态系统或运行时远程图标；各主题与可中断动效的未实测状态继续分别记录。
 - 图标不单独表达关键含义；无可见标签的 icon action 必须有可访问名称。
+- 当前完整页面资源中的局部例外优先于通用 B 图标基线：最新 My 日间计划卡头和计划行保留源中的两种 16px 线性 chevron，由同一 `SemanticIcon` 的计划角色分发精确 SVG 提取；其他页面的 B chevron 以及 NIGHT/OBSERVATION 原主题素材不改。
 
 ### 4. 间距、密度、占用率与几何
 
@@ -712,7 +713,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 5A.0 已采用观星点信息组件（三档）
 
-地图唯一采用入口为[ADOPTED.md](docs/design-resources/wechat-miniapp/map/ADOPTED.md)。2026-09-08用户确认small/medium/large组件完成，采用[三档资源](docs/design-resources/wechat-miniapp/map/adopted/spot-information/README.md)及最终动效；覆盖日间正式点位的基本信息、天文、相关媒体和底部操作。其具体构图/颜色/图标/动效替换本文件内该组件的旧rpx和中档静态表达，不自动推广到其他页面/主题。2026-09-24按用户确认的舒适尺度方向修订当前生产阅读尺度，见下表；[跨页舒适尺度候选](docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/README.md)的整组视觉仍待审，这次局部尺度修订不构成整组采用。其他未覆盖的生产迁移状态见各资源入口。
+地图唯一采用入口为[ADOPTED.md](docs/design-resources/wechat-miniapp/map/ADOPTED.md)。2026-09-08 的[三档资源](docs/design-resources/wechat-miniapp/map/adopted/spot-information/README.md)保留原组件业务、结构与完整依赖；2026-10-10 用户指定最新资源后，日间正式点位三档、基本信息/地形/天文、相关媒体及底部操作的视觉以[舒适尺度完整源](docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/README.md)完整级联为准，旧中档静态图退为历史参考。三档单内容树、拖动和业务合同继续有效，不扩展到未覆盖主题。下表记录当前生产尺度，不能以局部迁移或浏览器对照宣称整页符合。
 
 | 角色 | 采用表达（逻辑px，具体级联值以采用源文件为准） |
 | --- | --- |
@@ -781,7 +782,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - Settings只保留一个`display-mode-switcher`，值域=`day|night|observation`且默认day；`observation-mode-control`不再是独立组件或页面底部CTA。该控件是single-choice三站滑轨而不是二值Switch：track max-width=`560rpx`、visible height=`72rpx`、三站等宽、每站target≥`88rpx`，thumb包含由`SemanticIcon`提供的Sun/Moon/Star与短label。
 - Tap任意站直接选择；tap当前thumb在有next时前进一步。横拖越过8px后跟手，向右`day→night→observation`、向左反向，不wrap、不跳站；release按position+velocity snap。方向键/Home/End与screen-reader direct choice等价。
 - Day↔Night使用`180ms`thumb transform与Sun/Moon scale/rotation/opacity交叉；Night↔Observation先原子绑定closed black/warm-red tokens，再做Moon/Star opacity/微旋转，过程中禁止白/蓝/黄/绿/中性灰闪现。Reduced motion即时snap并保留≤80ms icon opacity确认。
-- My日间根页采用[唯一资源入口](docs/design-resources/wechat-miniapp/my/ADOPTED.md)：无顶部页名、可编辑头像昵称、唯一设置、观星计划玻璃主卡及已提交。该页明确允许淡色渐变与单张液态玻璃，覆盖本页旧纯白/无玻璃规则，不扩展到地图或其他页面。最终图标为暖米色朝左露营SUV，拟物且圆润可爱，与标题间隔8px；卡头无“全部”文字，箭头与计划行尾箭头同列。具体尺寸与材质以采用资源为准；其他主题使用安全不透明等效呈现。
+- My日间根页采用[唯一资源入口](docs/design-resources/wechat-miniapp/my/ADOPTED.md)：无顶部页名、可编辑头像昵称、唯一设置、观星计划玻璃主卡及已提交。该页明确允许淡色渐变与单张液态玻璃，覆盖本页旧纯白/无玻璃规则，不扩展到地图或其他页面。最终图标为暖米色朝左露营SUV，拟物且圆润可爱，与标题间隔8px；卡头无“全部”文字，卡头箭头位于当前完整源的48px槽内，计划行使用16px尾部箭头。具体尺寸与材质以采用资源为准；其他主题使用安全不透明等效呈现。
 
 ### 5C. 观星点新增、草稿编辑与反馈
 

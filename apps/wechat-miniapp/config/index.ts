@@ -44,6 +44,8 @@ const retainedLegacyIconFiles = [
   "wifi-off-night.svg",
   "wifi-off-observation.svg",
   "sun-night.svg", "sun-observation.svg", "moon-night.svg", "moon-observation.svg",
+  "telescope-night.svg", "telescope-observation.svg",
+  "my-plan-chevron-header.svg", "my-plan-chevron-row.svg",
 ] as const;
 // These legacy night/observation icons are used only by content pages.
 const contentLegacyIconFiles = [
@@ -52,11 +54,9 @@ const contentLegacyIconFiles = [
   "download-night.svg", "download-observation.svg",
   "trash-2-night.svg", "trash-2-observation.svg",
   "wind-night.svg", "wind-observation.svg",
-  "telescope-night.svg", "telescope-observation.svg",
 ] as const;
 const bIconFiles = {
   main: [
-    "account-user--day--default.png",
     "arrow-left--day--default.png", "check--day--default.png",
     "chevron-down--day--default.png", "chevron-right--day--default.png",
     "chevron-up--day--default.png", "close--day--default.png",
@@ -76,6 +76,8 @@ const bIconFiles = {
     "spot-marker--day--draft.png", "spot-marker--day--pending.png",
     "spot-marker--day--selected.png", "sun--day--default.png",
     "terrain--day--default.png", "clock--day--default.png",
+    "telescope--day--default.png",
+    "more--day--default.png",
   ],
   content: [
     "clock--day--default.png", "warning--day--default.png",

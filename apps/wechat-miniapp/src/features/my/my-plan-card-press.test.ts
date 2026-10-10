@@ -136,7 +136,7 @@ test("clock-driven visible plan changes retire pending and active feedback witho
   const plans = [{ planId: "clock-plan", spotId: "clock-spot", localDate: "2026-10-10", localTime: "08:59",
     timing: { endLocalDate: "2026-10-10", endLocalTime: "09:01" },
     contextSnapshot: { timezone: "Asia/Shanghai", selectedAtUtc: "2026-10-10T00:59:00Z" } }];
-  const rows = (h: ReturnType<typeof harness>) => h.render().props.children.flat().filter((child: any) => child?.props?.className === "my-plan-card__row focus-ring");
+  const rows = (h: ReturnType<typeof harness>) => h.render().props.children.flat().filter((child: any) => child?.props?.className?.split(" ").includes("my-plan-card__row"));
   for (const pending of [false, true]) {
     const h = harness(); h.props.plans = plans; h.render(); h.flush(); assert.equal(rows(h).length, 1);
     h.render().props.onTouchStart(touch()); if (!pending) h.deliver();

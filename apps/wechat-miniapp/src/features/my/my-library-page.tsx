@@ -137,9 +137,9 @@ export function MyLibraryPage() {
                 loading={library.isPending} unavailable={unavailable}
                 onOpenAll={openPlan}
                 onOpen={(plan) => void openPage("/content/plan/detail/index?planId=" + encodeURIComponent(plan.planId), "观星计划", "plan")} />
-              <Button className="routine-entry focus-ring" ariaLabel="打开个人行程成就" onClick={openAchievements}>
-                <View className="routine-entry__icon" aria-hidden="true"><SemanticIcon name="star" /></View>
-                <View className="account-row__copy"><Text className="type-section">个人行程成就</Text><Text className="type-caption">按已结束的计划自动统计</Text></View>
+              <Button className="routine-entry routine-entry--achievements focus-ring" ariaLabel="打开个人行程成就" onClick={openAchievements}>
+                <View className="routine-entry__icon" aria-hidden="true"><SemanticIcon name="telescope" /></View>
+                <View className="account-row__copy"><Text className="type-section">个人行程成就</Text><Text className="type-caption">回顾每一份已结束的计划</Text></View>
                 <View className="account-row__chevron" aria-hidden="true"><SemanticIcon name="chevron-right" /></View>
               </Button>
               <Button
@@ -149,8 +149,8 @@ export function MyLibraryPage() {
                 ariaLabel="打开观星点创建与反馈"
                 onClick={openContribution}
               >
-                <View className="routine-entry__icon routine-entry__icon--moon" aria-hidden="true">
-                  <SemanticIcon name="images" />
+                <View className="routine-entry__icon" aria-hidden="true">
+                  <SemanticIcon name="pencil" />
                 </View>
                 <View className="account-row__copy">
                   <Text className="type-section">观星点创建与反馈</Text>

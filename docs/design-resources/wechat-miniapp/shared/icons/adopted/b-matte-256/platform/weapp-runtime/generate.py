@@ -19,6 +19,22 @@ COMPRESSED_FILES = {
     "favorite-star--day--selected.png", "favorite-trail--day--default.png",
     "layers--day--default.png", "bulb--day--default.png",
     "terrain--day--default.png", "favorite-satellite--day--default.png",
+    "account-user--day--default.png", "arrow-left--day--default.png",
+    "check--day--default.png", "chevron-down--day--default.png",
+    "chevron-right--day--default.png", "chevron-up--day--default.png",
+    "close--day--default.png", "cloud--day--default.png",
+    "compass--day--default.png", "eye--day--default.png",
+    "four-point-star--day--default.png", "horizon--day--default.png",
+    "favorite-star--day--default.png", "images--day--default.png",
+    "info--day--default.png", "low-cloud--day--default.png",
+    "location--day--default.png", "meteor--day--default.png",
+    "moon--day--default.png", "pencil--day--default.png",
+    "plan-suv--day--default.png", "search--day--default.png",
+    "settings--day--default.png", "share--day--default.png",
+    "spot-marker--day--default.png", "spot-marker--day--draft.png",
+    "spot-marker--day--pending.png", "spot-marker--day--selected.png",
+    "sun--day--default.png", "clock--day--default.png",
+    "telescope--day--default.png",
 }
 
 

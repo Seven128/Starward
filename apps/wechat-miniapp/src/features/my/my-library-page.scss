@@ -6,30 +6,51 @@
 .my-page__scroll { flex: 1; min-height: 0; }
 .my-content { padding: 12Px 18Px 24Px; display: flex; flex-direction: column; gap: 16Px; }
 .profile-summary { display: flex; flex-direction: column; gap: 8Px; }
+.theme-day .profile-summary { gap: 10Px; }
 .profile-summary__header { display: flex; align-items: center; gap: 16Px; padding: 8Px 6Px 12Px; }
 .profile-summary__avatar { box-sizing: border-box; width: 64Px; height: 64Px; min-height: 64Px; padding: 0; margin: 0; flex: none; display: flex; align-items: center; justify-content: center; border: 1Px solid var(--border); border-radius: 50%; background: var(--surface); overflow: hidden; }
 .profile-summary__avatar::after { border: 0; }
 .profile-summary__avatar-image { width: 100%; height: 100%; transform-origin: center; }
 .theme-day .profile-summary__avatar { border-color: white; background: #ffffffe0; box-shadow: 0 3Px 12Px #657b8a0c; }
 .profile-summary__avatar .semantic-icon { width: 28Px; height: 28Px; flex-basis: 28Px; }
+.theme-day .profile-summary__avatar .semantic-icon { width: 36Px; height: 36Px; flex-basis: 36Px; }
 .profile-summary__copy { flex: 1; min-width: 0; }
 .my-nickname { padding: 0; margin: 0; min-height: 44Px; display: flex; align-items: center; gap: 7Px; border: 0; background: transparent; color: var(--text-primary); text-align: left; white-space: normal; }
 .my-nickname::after, .my-settings-gear::after, .routine-entry::after { border: 0; }
 .my-nickname .type-section { font-size: 20Px; line-height: 28Px; font-weight: 700; overflow-wrap: anywhere; }
 .my-nickname .semantic-icon { width: 16Px; height: 16Px; flex-basis: 16Px; }
+.theme-day .my-nickname .type-section { color: #273640; }
+.theme-day .my-nickname .semantic-icon { width: 26Px; height: 26Px; flex-basis: 26Px; }
 .my-settings-gear { margin: 0; padding: 0; flex: none; width: 48Px; height: 48Px; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; }
 .my-settings-gear .semantic-icon { width: 24Px; height: 24Px; flex-basis: 24Px; }
+.theme-day .my-settings-gear .semantic-icon { width: 32Px; height: 32Px; flex-basis: 32Px; }
 .my-focus-actions { display: flex; flex-direction: column; gap: 18Px; }
+.theme-day .my-focus-actions { gap: 12Px; }
 .my-focus-actions .my-plan-card { width: 100%; }
 .routine-entry { width: 100%; min-height: 74Px; margin: 0; padding: 14Px 18Px; display: flex; align-items: center; gap: 14Px; border: 0; border-radius: 20Px; background: var(--surface); color: var(--text-primary); text-align: left; white-space: normal; }
 .theme-day .routine-entry { background: #ffffffe0; }
 .routine-entry__icon { width: 40Px; height: 40Px; flex: none; border: 1Px solid var(--border); border-radius: 12Px; display: flex; align-items: center; justify-content: center; }
 .routine-entry__icon .semantic-icon { width: 22Px; height: 22Px; flex-basis: 22Px; }
+.theme-day .routine-entry--achievements { padding: 18Px; gap: 12Px; border-radius: 22Px; background: #ffffffc9; }
+.theme-day .routine-entry--achievements .routine-entry__icon { width: 32Px; height: 32Px; border: 0; border-radius: 0; }
+.theme-day .routine-entry--achievements .routine-entry__icon .semantic-icon { width: 32Px; height: 32Px; flex-basis: 32Px; }
+.theme-day .routine-entry--contribution { gap: 12Px; margin-top: 4Px; border: 1Px solid #ffffff96; background: #ffffffbc; box-shadow: 0 4Px 20Px #94a3b81f; }
+.theme-day .routine-entry--contribution .routine-entry__icon { background: white; border-color: #e2e8f0; }
+.theme-day .routine-entry--contribution .routine-entry__icon .semantic-icon { width: 30Px; height: 30Px; flex-basis: 30Px; }
 .account-row__copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1Px; }
+.theme-day .account-row__copy { gap: 4Px; }
+.theme-day .routine-entry--achievements .account-row__copy { gap: 5Px; }
 .account-row__copy .type-section { font-size: 16Px; line-height: 22Px; font-weight: 600; }
 .account-row__copy .type-caption { font-size: 13Px; line-height: 18Px; color: var(--text-secondary); }
+.theme-day .account-row__copy .type-caption, .theme-day .routine-entry--achievements .type-section { line-height: 1.6; }
+.theme-day .routine-entry--achievements .type-section { font-weight: 700; color: #263646; }
+.theme-day .routine-entry--achievements .type-caption { color: #6f8190; }
+.theme-day .routine-entry--contribution .type-section { color: #1f2937; }
+.theme-day .routine-entry--contribution .type-caption { color: #657782; }
 .account-row__chevron { display: flex; align-items: center; justify-content: center; width: 14Px; height: 14Px; }
 .account-row__chevron .semantic-icon { width: 14Px; height: 14Px; flex-basis: 14Px; }
+.theme-day .account-row__chevron { width: 24Px; height: 24Px; }
+.theme-day .account-row__chevron .semantic-icon { width: 24Px; height: 24Px; flex-basis: 24Px; }
 .my-nickname:active, .my-settings-gear:active, .routine-entry:active { background: var(--pressed-overlay); }
 .my-nickname-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: flex-end; justify-content: center; background: #23303955; }
 .my-nickname-dialog { box-sizing: border-box; width: 100%; max-height: 85vh; padding: 20Px 18Px calc(24Px + env(safe-area-inset-bottom)); border-radius: 26Px 26Px 0 0; background: var(--surface); color: var(--text-primary); display: flex; flex-direction: column; gap: 16Px; }

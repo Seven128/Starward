@@ -34,7 +34,7 @@ export function MyPlanCard({ plans, spots, now, loading, unavailable, onOpen, on
   const rows = entries.map(({ plan, ongoing }) => ({ plan, ongoing,
     name: spots.find(spot => spot.spotId === plan.spotId)?.name,
     time: myPlanTimeLabel(plan, now, ongoing) }));
-  const emptyLabel = loading ? "正在读取观星计划" : unavailable ? "计划暂不可用，请重试同步" : "暂无临近的观星计划";
+  const emptyLabel = loading ? "正在读取观星计划" : unavailable ? "计划暂不可用，请重试同步" : "未来24小时暂无观星计划";
   const pressLayout = JSON.stringify([hasMore,
     rows.map(({ plan, ongoing, name, time }) => [plan.planId, ongoing, name, time]), rows.length ? null : emptyLabel]);
   const mode = useAppStore((state) => state.mode);
@@ -93,24 +93,25 @@ export function MyPlanCard({ plans, spots, now, loading, unavailable, onOpen, on
     <View className="my-plan-card__touch" aria-hidden style={{ "--touch-x": `${press.x}%`, "--touch-y": `${press.y}%` } as CSSProperties} />
     <Button {...buttonFeedback} className="my-plan-card__header focus-ring" onClick={onOpenAll}
       aria-label="打开全部观星计划" data-control="my-plan-entry" data-od-id="my-plan-entry">
-      <View className="my-plan-card__title">{mode === "DAY" ? <Image src="/assets/b-icons/plan-suv--day--default.png" className="my-plan-card__suv" mode="aspectFit" aria-hidden /> : <SemanticIcon name="star" className="my-plan-card__suv" />}<Text>观星计划</Text></View><SemanticIcon name="chevron-right" />
+      <View className="my-plan-card__title">{mode === "DAY" ? <Image src="/assets/b-icons/plan-suv--day--default.png" className="my-plan-card__suv" mode="aspectFit" aria-hidden /> : <SemanticIcon name="star" className="my-plan-card__suv" />}<Text>观星计划</Text></View>
+      <View className="my-plan-card__header-chevron" aria-hidden><SemanticIcon name="plan-header-chevron" /></View>
     </Button>
-    {rows.map(({ plan, ongoing, name, time }) => <Button {...buttonFeedback} className="my-plan-card__row focus-ring" key={plan.planId}
+    {rows.map(({ plan, ongoing, name, time }, index) => <Button {...buttonFeedback} className={`my-plan-card__row focus-ring${index === rows.length - 1 ? " my-plan-card__row--last" : ""}`} key={plan.planId}
       onClick={() => onOpen(plan)} aria-label={`打开${name ?? "观星点"}的计划`}>
       <View className="my-plan-card__dot" aria-hidden="true" />
       <View className="my-plan-card__copy">
         <Text className="my-plan-card__name">{name ?? "点位资料暂不可用"}</Text>
-        <View className="my-plan-card__time">
+        <View className={`my-plan-card__time${ongoing ? " my-plan-card__time--ongoing" : ""}`}>
           {ongoing ? <Text className="my-plan-card__ongoing">进行中</Text> : null}
-          <Text>{time.when}</Text>
-          {!ongoing ? <Text>{time.relative}</Text> : null}
+          <Text className="my-plan-card__when">{time.when}</Text>
+          {!ongoing ? <Text className="my-plan-card__relative">{time.relative}</Text> : null}
         </View>
       </View>
-      <SemanticIcon name="chevron-right" />
+      <SemanticIcon name="plan-row-chevron" />
     </Button>)}
     {!rows.length ? <Text className="my-plan-card__empty">{emptyLabel}</Text> : null}
     {hasMore ? <Button {...buttonFeedback} className="my-plan-card__more focus-ring" onClick={onOpenAll} aria-label="查看其余观星计划">
-      <View aria-hidden="true" /><View aria-hidden="true" /><View aria-hidden="true" />
+      {mode === "DAY" ? <SemanticIcon name="more" /> : <><View aria-hidden="true" /><View aria-hidden="true" /><View aria-hidden="true" /></>}
     </Button> : null}
   </View>;
 }

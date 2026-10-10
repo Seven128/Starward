@@ -2,7 +2,9 @@
 
 微信官方预览要求每个原生 TabBar 图标不超过 40 KiB；采用的 256px `map--day--selected.png` 为 46,063 bytes，不能直接进入 `app.json`。
 
-本目录四个文件只服务原生 Map/My TabBar。它们从采用包同名 256×256 RGBA 母版以 Lanczos 缩放为 192×192 RGBA PNG，保持完整透明画布、色彩和状态构图，不裁边、不转调色板、不覆盖母版。生成使用工作区随附 Pillow 12.3.0、`optimize=True`、`compress_level=9`。当前文件均低于 40 KiB；其他消费者继续使用原始 256px 资源。
+本目录四个文件服务原生 Map/My TabBar；主包“我的”页的 DAY 默认头像还复用其中的 `account-user--day--default.png`，按最新设计显示为 36px，避免再打包一份 224px 派生件。用户已保存的头像仍使用原图，内容分包的默认头像仍使用其本地 224px 运行时派生件。
+
+这四个文件从采用包同名 256×256 RGBA 母版以 Lanczos 缩放为 192×192 RGBA PNG，保持完整透明画布、色彩和状态构图，不裁边、不转调色板、不覆盖母版。生成使用工作区随附 Pillow 12.3.0、`optimize=True`、`compress_level=9`。当前文件均低于 40 KiB；其余消费者按各自运行时资源入口取用。
 
 | 文件 | bytes | SHA-256 |
 | --- | ---: | --- |
