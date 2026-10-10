@@ -6,6 +6,7 @@ import {
   parsePlanReminders,
   parsePlanTravel,
   normalizeAccountNickname,
+  uniqueSourceRecords as uniqueSources,
   type AccountAvatarSaveRequest,
   type AccountNicknameSaveRequest,
   type DeepSkyImageSelection,
@@ -216,10 +217,6 @@ const FILTER_GROUP_KEYS: readonly FilterGroupKey[] = FILTER_GROUPS.map(
 const FILTER_GROUP_LABELS = Object.freeze(
   Object.fromEntries(FILTER_GROUPS.map(({ key, title }) => [key, title])),
 ) as Readonly<Record<FilterGroupKey, string>>;
-
-function uniqueSources(sources: readonly SourceSummary[]) {
-  return [...new Map(sources.map((source) => [source.id, source])).values()];
-}
 
 function browsingTimezoneSources(context: ObservationContext): readonly SourceSummary[] {
   return context.location.kind === "MAP_POINT" && context.timezoneSource

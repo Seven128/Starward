@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { uniqueSourceRecords } from "@starward/miniapp-contracts";
 
 type Node = { type: string; props: Record<string, any>; children: any[] };
 const source = ts.createSourceFile("source-page.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -11,7 +12,7 @@ const safe = source.statements.find(node => ts.isFunctionDeclaration(node) && no
 assert.ok(page && safe);
 const code = ts.transpileModule(`${safe.getText(source)}\n${page.getText(source)}`, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, jsxFactory: "jsx", jsxFragmentFactory: "Fragment" } }).outputText;
 
-function render(dataState: string, sources: readonly { id: string; kind: string }[], refreshError = false) {
+function render(dataState: string, sources: readonly { id: string; kind: string; [key: string]: unknown }[], refreshError = false) {
   const scope = {
     exports: {} as any,
     jsx: (type: string, props: any, ...children: any[]): Node => ({ type, props: props ?? {}, children }),
@@ -23,6 +24,7 @@ function render(dataState: string, sources: readonly { id: string; kind: string 
     useResourceQuery: () => ({ isPending: false, isError: false, refreshError: refreshError ? Error("offline") : undefined,
       data: { dataState, data: { spot: { spotId: "spot:a", name: "观星点" }, dataDisclosure: sources } }, refetch: async () => {} }),
     isProductSource: (item: { kind: string }) => item.kind !== "TEST_FIXTURE",
+    uniqueSourceRecords,
     groupSources: (items: readonly { id: string; kind: string }[]) => items.map(item => ({ kind: item.kind, sources: [item] })),
     SOURCE_KIND_LABEL: { OPEN_DATA: "开放数据" }, Taro: { switchTab: async () => {} },
   };
@@ -60,4 +62,11 @@ test("confirmed usable zero sources use the empty state; stale refresh keeps rec
   assert.deepEqual(render("FRESH", []).panels.map(panel => panel.props.state), ["EMPTY"]);
   assert.deepEqual(render("SAMPLE_DATA", []).panels.map(panel => panel.props.state), ["EMPTY"]);
   assert.deepEqual(render("FRESH", [], true).panels.map(panel => panel.props.state), ["STALE"]);
+});
+
+test("the complete source page keeps separate validity and license records sharing an ID", () => {
+  const earlier = { id: "source:reading-regression", kind: "OPEN_DATA", validFrom: "2026-10-01T00:00:00Z", validTo: "2026-10-02T00:00:00Z", license: "TEST previous license record" };
+  const current = { ...earlier, validFrom: "2026-10-02T00:00:00Z", validTo: null, license: "TEST current license record" };
+  const page = render("FRESH", [earlier, current]);
+  assert.deepEqual(page.sourceCards.map(card => card.props.source), [earlier, current]);
 });

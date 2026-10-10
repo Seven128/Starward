@@ -11,6 +11,7 @@ import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { getSpotOverview } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { useEffect, useState } from "react";
+import { uniqueSourceRecords } from "@starward/miniapp-contracts";
 import "./data-source.scss";
 
 function safe(value?: string) {
@@ -47,11 +48,7 @@ export default function DataSourcePage() {
   const detail = validRoute && overview.data?.data.spot.spotId === spotId ? overview.data.data : undefined;
   const themeClass = useThemeClass();
   const sources = detail
-    ? [
-        ...new Map(
-          detail.dataDisclosure.filter(isProductSource).map((source) => [source.id, source]),
-        ).values(),
-      ]
+    ? uniqueSourceRecords(detail.dataDisclosure.filter(isProductSource))
     : [];
   const incomplete = overview.data && ["PARTIAL", "UNAVAILABLE", "EXPIRED"].includes(overview.data.dataState);
 
@@ -100,7 +97,7 @@ export default function DataSourcePage() {
               groupSources(sources).map((group) => (
                 <View className="source-group" key={group.kind}>
                   <Text className="type-section">{SOURCE_KIND_LABEL[group.kind]}</Text>
-                  {group.sources.map((source) => <Provenance source={source} showKind={false} key={source.id} />)}
+                  {group.sources.map((source, index) => <Provenance source={source} showKind={false} key={`${source.id}:${index}`} />)}
                 </View>
               ))
             ) : !overview.refreshError && !incomplete && overview.data?.dataState !== "STALE_USABLE" ? (
