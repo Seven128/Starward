@@ -3071,6 +3071,63 @@
   font-size: 13Px;
   line-height: 20Px;
 }
+// Current comfortable-scale Source, scoped to formal DAY cards. Private
+// panels and the unadopted themes retain their existing presentation.
+.theme-day.map-page .spot-panel--formal {
+  .spot-panel__facility-heading { gap: 8Px; }
+  .spot-panel__facility-name { color: #0f172a; font-weight: 600; }
+  .spot-panel__facility-status {
+    flex: 0 1 auto;
+    margin-left: 5Px;
+    text-align: left;
+    color: #373943;
+    line-height: 22Px;
+  }
+  .spot-panel__facility-summary { color: #373943; }
+  .spot-panel__facility-image { filter: blur(1Px); }
+  .spot-panel__facility-shade {
+    background: linear-gradient(90deg, rgba(255, 255, 255, .93), rgba(255, 255, 255, .84) 44%, rgba(255, 255, 255, .36) 78%, rgba(255, 255, 255, .13));
+  }
+  .spot-panel__facility-count {
+    right: 14Px;
+    bottom: 12Px;
+    padding: 2Px 6Px;
+    border-radius: 6Px;
+    color: #334155;
+    background: #ffffffe6;
+    line-height: 18Px;
+  }
+  .spot-panel__contact-row {
+    margin-top: 4Px;
+    gap: 0;
+    border-bottom: 0;
+    color: #0f172a;
+    font-size: 14Px;
+    line-height: 1.5;
+  }
+  .spot-panel__contact-row > text { color: #0f172a; text-align: left; }
+  .spot-panel__contact-row > .spot-panel__contact-unavailable {
+    color: #94a3b8;
+    font-size: 12Px;
+    font-weight: 400;
+  }
+  .spot-panel__source-row {
+    gap: 8Px;
+    border-bottom: 1Px solid #f1f5f9;
+    font-size: 12Px;
+    line-height: 1.5;
+  }
+  .spot-panel__source-row > text:first-child {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+  .spot-panel__source-row .spot-panel__text-action--contribution {
+    padding-left: 8Px;
+    color: #61636e;
+    line-height: 1.5;
+  }
+}
 .spot-panel__more-site {
   display: flex;
   align-items: center;
@@ -3422,6 +3479,11 @@
   .spot-panel .spot-panel__scroll--full-bleed-plan .spot-panel__media {
     margin-right: 0 !important;
     margin-left: 0 !important;
+  }
+  .theme-day.map-page .spot-panel--formal {
+    .spot-panel__facility-heading { flex-wrap: wrap; }
+    .spot-panel__facility-status { margin-left: 21Px; flex-basis: 100%; }
+    .spot-panel__source-row { flex-wrap: wrap; gap: 0; }
   }
 }
 .map-page--panel-small .map-feedback-column .status-panel--empty,

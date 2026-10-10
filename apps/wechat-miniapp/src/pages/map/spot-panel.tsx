@@ -279,6 +279,7 @@ export function SpotInformationPanel({
   }, [visible]);
   const [layoutVersion, setLayoutVersion] = useState(0);
   const largeText = useAppStore(state => state.preferences.largeText);
+  const dayMode = useAppStore(state => state.mode === "DAY");
   // The report reference only invalidates geometry; no previous evidence is rendered.
   const [warningPresentation, setWarningPresentation] = useState<{ identity: string; height: number; report: SkyReport } | null>(null);
   const onWarningLayoutChange = useCallback(() => setLayoutVersion(value => value + 1), []);
@@ -446,7 +447,7 @@ export function SpotInformationPanel({
   return (
     <View
       id="spot-information-panel"
-      className={`spot-panel spot-panel--${extent}${phase === "closing" ? " spot-panel--closing" : ""}${media.length ? " spot-panel--with-media" : ""}`}
+      className={`spot-panel spot-panel--formal spot-panel--${extent}${phase === "closing" ? " spot-panel--closing" : ""}${media.length ? " spot-panel--with-media" : ""}`}
       data-control="map-spot-information-panel"
       data-extent={extent}
       data-phase={phase}
@@ -602,7 +603,7 @@ export function SpotInformationPanel({
                   {facilityMedia ? <View className="spot-panel__facility-shade" aria-hidden="true" /> : null}
                   <View className="spot-panel__facility-content">
                     <View className="spot-panel__facility-heading">
-                      <Text className="spot-panel__facility-name">{facilityLabel(facility.type)}</Text>
+                      <Text className="spot-panel__facility-name">{facility.type === "PARKING" && dayMode ? "停车设施" : facilityLabel(facility.type)}</Text>
                       <Text className="spot-panel__facility-status">{facilityStatusLabel(facility.status)}{facility.distanceM === null ? "" : ` · ${facility.distanceM}m`}</Text>
                     </View>
                     {description ? <Text className="spot-panel__facility-summary">{description}</Text> : null}
@@ -614,7 +615,7 @@ export function SpotInformationPanel({
               {formalFacts?.contact?.trim() ? <View className="spot-panel__contact-row">
                 <Text>门禁 / 负责人电话</Text><Text>{formalFacts.contact.trim()}</Text>
               </View> : <View className="spot-panel__contact-row">
-                <Text>门禁 / 负责人电话</Text><Text>{detailFieldFallback ?? EMPTY_FIELD_VALUE}</Text>
+                <Text>门禁 / 负责人电话</Text><Text className="spot-panel__contact-unavailable">{detailFieldFallback ?? EMPTY_FIELD_VALUE}</Text>
               </View>}
               <View className="spot-panel__source-row">
                 <Text>{productSourceNames([source]) ? `资料：${productSourceNames([source])}` : "资料暂无数据"}{sourceTime ? ` · ${sourceTime.slice(0, 5)}核验` : ""}</Text>
