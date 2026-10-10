@@ -28,9 +28,13 @@ Map与Search的Context恢复安装及活动场景引用共用 `pages/map/context
 
 Map的场景失败反馈由 `pages/map/map-layer-selection.layerSheetOwnsSceneRecovery` 决定当前可见恢复归属：LIGHT的ERROR/STALE，或CLOUD失败且没有可用时间切片时，图层内既有恢复卡承接同一Scene失败，地图背景不再叠加同故障的通用卡或悬浮消息。关闭图层后回归地图恢复；CLOUD保留切片但没有就地重试时仍由地图承接。Context失败、原生Map故障及权限入口保持各自责任，不按打开图层一概隐藏。该规则复用当前数据状态与重试owner，不重建Context、补数据或改变采用设计。
 
-FilterSheet的分类、选项与底部动作在各自原命中盒内显式垂直居中；分类保留左对齐，选项与“确定＋计数”组合保持水平居中。几何由`components/filter-sheet.scss`承担，不依赖原生Button的默认行高，也不改全局Button reset。保留现行14项、48/44px高度、换行、选中星标、禁用、草稿取消及清空/应用责任；修复源码接线不等于整个筛选面板、其它宽度/主题或连续过程验收。
+FilterSheet的分类、选项与底部动作在各自命中盒内显式垂直居中；分类保留左对齐，选项与“确定＋计数”组合保持水平居中。几何由`components/filter-sheet.scss`承担，正式DAY遵循当前舒适尺度采用源，未交付模式保持既有范围；不依赖原生Button的默认行高，也不改全局Button reset。保留现行14项、换行、选中星标、禁用、草稿取消及清空/应用责任；源码接线不等于整个筛选面板、其它宽度/主题或连续过程验收。
 
 Search 的浮动 Info 在固定原生输入框下方留8px避让，位置与可滚高度共用当前 `--search-safe-top`、`--search-control-height` 推导的同一边界；不移动输入框、丢查询、偷焦点或移除失败通知/行内重试。几何投射归Search页面，通知可见计时与去重仍归共享宿主。Map已有搜索框/右侧工具与large档避让保持各自责任。原生输入与消息不相交须用真实目标输出核验，CSS接线本身不证明通过。
+
+Search筛选条位于固定输入与结果滚动区之间，不随结果文档滚动。原生选地点入口由聚焦输入后的建议层承载；正常结果页不重复同一入口占据筛选前的整行。通常结果数量沿分组计数与既有live announcement表达；DAY计数徽标紧随分组标题，展开箭头朝下、折叠朝右，展开及内容生命周期仍由`SearchResultPartition`负责。更新中、资料过期、未知候选及失败状态仍保留对应可见说明，不把这些状态当作普通数量隐藏。查询、筛选提交、平台选择、恢复与正式点身份仍由各自既有owner负责。
+
+同一14项筛选的语义图标由`components/filter-icon.ts`供横向条与DAY分类Sheet共用；采用源的DAY具体图标与未交付模式的既有映射分开维护。`SemanticIcon`负责资源/主题回退与分包路径，不以位置、罗盘或Info替代当前已采用的停车、厕所、驾车、徒步等DAY角色。搜索及创建/反馈记录的点位身份共同使用`SpotIdentityContent`与`spot-identity-card.scss`，DAY按当前共享卡片源投射，地址使用place-pin、其它模式保留既有location呈现；导航、审核扩展和媒体授权仍在消费者。
 
 Map/Search 的固定搜索锚点由同一占位文案与文本色责任维护：`pages/map/finder-field.ts` 供 Map trigger 与 Search 原生 Input 使用；`pages/map/_finder-field.scss` 将两端 query/placeholder 映射到既有 `text-secondary`，遵循 DESIGN 普通文本对比度要求，不复制旧浅灰低对比。同一样式责任也维护两页的日间品牌标题；各页保留当前采用源的不同标题行框。Search 通过 WEAPP `placeholderClass` 显式控制原生占位样式。建议层仍由现有 ScrollView 承担滚动，并显式限定为父层宽度减去两侧各16Px，与搜索框同边界；保留键盘、外点收起、原生选点、筛选与返回责任。Map 路线动作通过 `SemanticIcon` 的 `navigation` 角色使用当前日间导航资源，云观星入口日间复用 `telescope`；其他模式保留既有呈现，方向/罗盘消费者继续使用 `compass`。源码与尺寸公式不认证实际连续过渡、窄屏或全部主题输出。
 
@@ -130,6 +134,8 @@ Avatar opens album / camera / cancel actions, then preview and explicit save; ni
 本轮地图增量的完整可编辑消费者由[当前Map资源入口](../../../../../docs/design-resources/wechat-miniapp/map/ADOPTED.md)导航。地形插入原基本信息之后、天文之前，不压缩或删去开放/合法进入/安全、路线、设施照片、联系方式、来源和更多场地信息；沿用原同一信息组件及三档拖动。流星工具遵循现有地图工具的extent/编辑互斥规则，不为使其常驻而重构工具栏。
 
 ## 观星计划：出行与观测的组织职责
+
+计划列表、详情和编辑的当前DAY标题几何由`content/plan/_page-chrome.scss`共用，分别由现有页面样式消费；其它模式与全局CustomNav不扩大采用。原生安全区、胶囊避让、返回授权及失败恢复继续由CustomNav和原导航owner承担，不从浏览器的示意状态栏硬编码运行时安全区。
 
 计划保留用户输入的民用日期、当地时刻及由地点时区确定的绝对时刻；其 Observation Context 快照使用中午至次日中午的观测夜日期。民用日期移位和中午归属由 `packages/miniapp-contracts/src/local-time.ts` 的 `shiftCivilDate` / `observationNightForCivilDate` 共同拥有，客户端日期 owner 沿原入口导出；计划保存仅在解析 Context 时转换日期，不改变计划字段或历史记录。
 

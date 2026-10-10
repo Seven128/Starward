@@ -3,6 +3,7 @@ import { Button, Text, View } from "@tarojs/components";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SemanticIcon } from "@/components/semantic-asset";
+import { useAppStore } from "@/state/app-store";
 
 export function SearchResultPartition({ id, label, count, contentRevision, reducedMotion, children }: {
   id: "wanted" | "other";
@@ -12,6 +13,7 @@ export function SearchResultPartition({ id, label, count, contentRevision, reduc
   reducedMotion: boolean;
   children: ReactNode;
 }) {
+  const mode = useAppStore((state) => state.mode);
   const bodyId = `spot-search-${id}-body`;
   const innerId = `spot-search-${id}-inner`;
   const [expanded, setExpanded] = useState(true);
@@ -84,11 +86,11 @@ export function SearchResultPartition({ id, label, count, contentRevision, reduc
     frameTimer.current = setTimeout(tick, 16);
   };
 
-  return <View className="spot-search-partition">
-    <Button className="spot-search-partition__toggle" aria-expanded={expanded} aria-controls={bodyId} onClick={toggle}>
+  return <View className={`spot-search-partition spot-search-partition--${id}`}>
+    <Button className={`spot-search-partition__toggle${expanded ? "" : " spot-search-partition__toggle--closed"}`} aria-expanded={expanded} aria-controls={bodyId} onClick={toggle}>
       <Text className="type-section">{label}</Text>
       <Text className="type-caption">{count}</Text>
-      <SemanticIcon name={expanded ? "chevron-up" : "chevron-down"} />
+      <SemanticIcon name={mode === "DAY" ? "chevron-down" : expanded ? "chevron-up" : "chevron-down"} />
     </Button>
     <View id={bodyId}
       className={`spot-search-partition__body${expanded ? "" : " spot-search-partition__body--target-closed"}${hidden ? " spot-search-partition__body--closed" : ""}`}

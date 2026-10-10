@@ -12,6 +12,20 @@
 .filter-sheet__footer{display:flex;gap:12Px;padding:12Px 16Px max(28Px,env(safe-area-inset-bottom));border-top:1Px solid var(--border)}.filter-sheet__footer>button{display:flex;align-items:center;justify-content:center;height:44Px;min-width:80Px;flex:1;border-radius:10Px;background:var(--surface-subtle);color:var(--text-secondary);font-size:var(--type-action-size);line-height:var(--type-action-line)}.filter-sheet__footer>.filter-sheet__apply{flex:2;background:var(--choice-selected-surface);color:var(--choice-selected-label);font-weight:600}.filter-sheet__apply text{margin-left:8Px;padding:1Px 5Px;border-radius:6Px;background:rgba(255,255,255,.5);font-size:var(--type-metadata-size);font-weight:400}
 @keyframes filter-sheet-enter{from{transform:translateY(20Px);opacity:.5}to{transform:translateY(0);opacity:1}}@media (prefers-reduced-motion:reduce){.filter-sheet{animation:none}}
 
+// Current adopted DAY sheet. The original draft and disabled-state owners stay
+// in FilterSheet; the other modes retain their existing geometry and symbols.
+.theme-day .filter-sheet__heading { min-height: 54Px; padding: 0 12Px 0 20Px; font-size: 18Px; line-height: 24Px; color: #1d2129; }
+.theme-day .filter-sheet__close .semantic-icon { width: 26Px; height: 26Px; }
+.theme-day .filter-sheet__category { height: 54Px; padding-left: 18Px; font-size: 14Px; line-height: 20Px; }
+.theme-day .filter-option { min-height: 48Px; padding: 4Px 3Px; gap: 4Px; border-radius: 14Px; background: transparent; color: #475569; font-size: 13.5Px; line-height: 17Px; }
+.theme-day .filter-option::before { inset: 5Px 2Px; border-radius: 8Px; background: var(--surface); }
+.theme-day .filter-option__prefix { position: relative; z-index: 1; width: 22Px; height: 22Px; flex: 0 0 22Px; }
+.theme-day .filter-option--selected { color: #356583; }
+.theme-day .filter-option--selected::before { background: #e4eff7; border-color: #cce1ef; }
+.theme-day .filter-sheet__footer { padding: 12Px 18Px max(28Px, env(safe-area-inset-bottom)); gap: 14Px; }
+.theme-day .filter-sheet__footer > button { height: 48Px; border-radius: 12Px; background: #f3f5f7; color: #64748b; font-size: 15Px; font-weight: 500; }
+.theme-day .filter-sheet__footer > .filter-sheet__apply { background: #e4eff7; color: #344f68; font-weight: 600; }
+
 .theme-observation .filter-sheet__category--active::before,
 .theme-observation .filter-sheet__category--selected::after {
   background: var(--primary);

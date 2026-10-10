@@ -1,3 +1,4 @@
+@use "../page-chrome" as plan-chrome;
 .plan-list-page { height: 100vh; display: flex; flex-direction: column; background: var(--canvas); color: var(--text-primary); }
 .plan-list-scroll { flex: 1; min-height: 0; }
 .plan-list-content { padding: 4Px 16Px calc(24Px + env(safe-area-inset-bottom)); }
@@ -15,3 +16,9 @@
 .plan-list-empty { display: block; padding: 30Px 6Px; color: var(--text-secondary); text-align: center; }
 .large-text .plan-list-row__heading { font-size: 18Px; }
 .large-text .plan-list-row__time, .large-text .plan-list-row__meta, .large-text .plan-list-date { font-size: 14Px; }
+.theme-day.plan-list-page {
+  @include plan-chrome.day-navigation;
+  .plan-list-content { padding: 8Px 18Px calc(24Px + env(safe-area-inset-bottom)); }
+  .plan-list-filters { gap: 20Px; }
+  .plan-list-filters button { font-size: 15Px; line-height: 24Px; }
+}

@@ -1,3 +1,4 @@
+@use "../page-chrome" as plan-chrome;
 .plan-editor {
   height: 100vh;
   display: flex;
@@ -6,6 +7,7 @@
   background: var(--canvas);
   color: var(--text-primary);
 }
+.theme-day.plan-editor { @include plan-chrome.day-navigation; }
 
 .plan-editor__scroll {
   flex: 1;

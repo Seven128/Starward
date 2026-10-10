@@ -322,7 +322,7 @@
   }
 }
 
-.spot-search-filter-row{height:52Px;display:flex;align-items:center;gap:4Px;border-bottom:1Px solid var(--border)}
+.spot-search-filter-row{height:52Px;flex:none;display:flex;align-items:center;gap:4Px;border-bottom:1Px solid var(--border)}
 .spot-search-filter-open{position:relative;flex:0 0 44Px;width:44Px;height:44Px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary)}
 .spot-search-filter-open__face{width:32Px;height:32Px;display:flex;align-items:center;justify-content:center;border:1Px solid var(--border);border-radius:50%;background:var(--surface)}
 .spot-search-filter-open__face .semantic-icon{width:16Px;height:16Px}
@@ -464,6 +464,22 @@
   font-size: var(--type-section-size);
   line-height: var(--type-section-line);
 }
+.theme-day.spot-search-page .spot-search-result-list { padding-top: 8Px; }
+.theme-day.spot-search-page .spot-search-partition__toggle { min-height: 46Px; grid-template-columns: auto auto minmax(0, 1fr); gap: 6Px; }
+.theme-day.spot-search-page .spot-search-partition__toggle .type-section { color: #4e5969; font-size: 15Px; line-height: 22Px; font-weight: 600; }
+.theme-day.spot-search-page .spot-search-partition__toggle .type-caption { padding: 2Px 7Px; border-radius: 8Px; background: #f2f3f5; color: #86909c; font-size: 12Px; line-height: 19.2Px; font-weight: 500; }
+.theme-day.spot-search-page .spot-search-partition__toggle .semantic-icon { width: 16Px; height: 16Px; justify-self: end; transition: transform 160ms ease; }
+.theme-day.spot-search-page .spot-search-partition__toggle--closed .semantic-icon { transform: rotate(-90deg); }
+.theme-day.spot-search-page .spot-search-result-entry { margin: 0 0 12Px; }
+.theme-day.spot-search-page .spot-search-filter-row { height: 58Px; min-height: 58Px; gap: 8Px; }
+.theme-day.spot-search-page .spot-search-filter-group { gap: 8Px; }
+.theme-day.spot-search-page .spot-search-filter-choice { min-height: 44Px; padding: 4Px 14Px; gap: 6Px; font-size: 13.5Px; line-height: 17Px; }
+.theme-day.spot-search-page .spot-search-filter-choice::before { inset: 4Px 0; }
+.theme-day.spot-search-page .spot-search-filter-choice__prefix { width: 22Px; height: 22Px; flex-basis: 22Px; }
+.theme-day.spot-search-page .spot-search-filter-choice--selected { color: #356583; }
+.theme-day.spot-search-page .spot-search-filter-choice--selected::before { background: #e4eff7; border-color: #cce1ef; }
+.theme-day.spot-search-page .spot-search-filter-open__face { width: 36Px; height: 36Px; }
+.theme-day.spot-search-page .spot-search-filter-open__face .semantic-icon { width: 18Px; height: 18Px; }
 @media (max-width: 340px) {
   .spot-search-shell {
     padding-right: 16Px;
@@ -475,6 +491,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .theme-day.spot-search-page .spot-search-partition__toggle .semantic-icon,
   .spot-search-query-overlay,
   .spot-search-filter-choice,
   .spot-identity-card {

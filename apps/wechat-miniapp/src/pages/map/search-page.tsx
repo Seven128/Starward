@@ -23,10 +23,8 @@ import {
   type SpotFilterEvidence,
 } from "@starward/miniapp-contracts";
 import { NotificationRegion } from "@/components/notification";
-import {
-  SemanticIcon,
-  type SemanticIconName,
-} from "@/components/semantic-asset";
+import { SemanticIcon } from "@/components/semantic-asset";
+import { filterIconName } from "@/components/filter-icon";
 import { StatusPanel } from "@/components/status-panel";
 import { SourceAttribution } from "@/components/source-attribution";
 import { SelectedCardStar } from "@/components/selected-card-star";
@@ -106,22 +104,6 @@ function optionIsSelected(
   return committedFilters[group].includes(optionId);
 }
 
-const FILTER_ICON_BY_ID: Record<FilterOptionId, SemanticIconName> = {
-  lightPollution: "horizon",
-  lessCloud: "conditions",
-  parking: "location",
-  restroom: "info",
-  driveUpAccess: "compass",
-  photoForeground: "images",
-  campingOvernightParking: "location",
-  specificCelestialEvent: "horizon",
-  moonImpact: "conditions",
-  hikingDifficulty: "compass",
-  signal: "wifi-off",
-  charging: "info",
-  openSkyDirection: "horizon",
-  lastVerifiedAt: "info",
-};
 const FILTER_LABEL_BY_GROUP = Object.fromEntries(
   FILTER_GROUPS.map((group) => [group.key, group.title]),
 ) as Readonly<Record<FilterGroupKey, string>>;
@@ -129,6 +111,7 @@ const FILTER_LABEL_BY_GROUP = Object.fromEntries(
 export function MapSearchSurface() {
   const { statusBarHeight, safeTop } = nativeNavigationInsets();
   const themeClass = useThemeClass();
+  const mode = useAppStore((state) => state.mode);
   const reducedMotion = useReducedMotion();
   const handoff = useRedLightHandoff();
   const finderQuery = useAppStore((state) => state.finderQuery);
@@ -583,7 +566,6 @@ export function MapSearchSurface() {
           />
         </View>
 
-        {!suggestionsOpen ? nativeLocationEntry : null}
         {suggestionsOpen ? (
           <ScrollView
             className="spot-search-query-overlay"
@@ -636,7 +618,6 @@ export function MapSearchSurface() {
           </ScrollView>
         ) : null}
 
-        <ScrollView className="spot-search-result-list" data-control="spot-search-result-list" scrollY enhanced showScrollbar={false} aria-label="筛选与正式观星点结果" onClick={(event) => { event.stopPropagation(); blurSearch(); }}>
         <View className="spot-search-filter-row">
         <ScrollView
           className="spot-search-filter-scroll"
@@ -661,7 +642,7 @@ export function MapSearchSurface() {
                   onClick={() => commitFilter(option.id)}
                 >
                   <SemanticIcon
-                    name={FILTER_ICON_BY_ID[option.id]}
+                    name={filterIconName(option.id, mode)}
                     className="spot-search-filter-choice__prefix"
                   />
                   <Text>{option.label}</Text>
@@ -679,6 +660,7 @@ export function MapSearchSurface() {
         </Button>
         </View>
 
+        <ScrollView className="spot-search-result-list" data-control="spot-search-result-list" scrollY enhanced showScrollbar={false} aria-label="正式观星点结果" onClick={(event) => { event.stopPropagation(); blurSearch(); }}>
         <View className="spot-search-feedback" onClick={(event) => event.stopPropagation()}>
           <NotificationRegion owner="search" placement="inline" />
           {staleSearchResource ? <StatusPanel state="STALE" detail={hasRetainedSearchResults
@@ -721,13 +703,13 @@ export function MapSearchSurface() {
         </View>
 
           <View className="spot-search-results" style={{ display: formalSpots.length > 0 || searchState === "READY" || searchState === "PARTIAL" ? "block" : "none" }}>
-          <View className="spot-search-result-summary">
+          {queryUnconfirmed || expiredEmptyFilter || hasUnknownIncludedSpot || (formalSpots.length === 0 && ["STALE", "ERROR", "PERMISSION_DENIED"].includes(searchState)) ? <View className="spot-search-result-summary">
             <Text className="type-caption">{queryUnconfirmed ? "搜索结果更新中"
               : expiredEmptyFilter ? "筛选结果待核验"
               : formalSpots.length === 0 && searchState === "STALE" ? "搜索结果待更新"
               : formalSpots.length === 0 && (searchState === "ERROR" || searchState === "PERMISSION_DENIED") ? "搜索结果暂不可用"
               : `${formalSpots.length} 个${hasUnknownIncludedSpot ? "符合或待核验的" : ""}正式观星点`}</Text>
-          </View>
+          </View> : null}
           <SearchResultPartition id="wanted" label="想去" count={wanted.length} contentRevision={partitionContentRevision(wanted, showPartitionEmpty, activeFilterGroups, visibleScene?.filterEvidence)} reducedMotion={reducedMotion}>
             {wanted.length ? wanted.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
               : showPartitionEmpty ? <Text className="type-caption spot-search-empty">还没有想去的观星点。</Text> : null}

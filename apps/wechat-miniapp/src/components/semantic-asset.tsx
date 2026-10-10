@@ -27,6 +27,15 @@ export type SemanticIconName =
   | "chevron-up"
   | "close"
   | "location"
+  | "place-pin"
+  | "parking"
+  | "restroom"
+  | "plan-suv"
+  | "tent"
+  | "walking"
+  | "signal"
+  | "charging"
+  | "verified"
   | "layers"
   | "refresh"
   | "conditions"
@@ -69,6 +78,14 @@ const B_ICON_ID: Partial<Record<SemanticIconName, string>> = {
 const DAY_SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
   "plan-header-chevron": "/assets/icons/my-plan-chevron-header.svg",
   "plan-row-chevron": "/assets/icons/my-plan-chevron-row.svg",
+};
+
+// These new DAY roles keep the existing presentation in unadopted modes.
+const LEGACY_ICON_NAME: Partial<Record<SemanticIconName, SemanticIconName>> = {
+  navigation: "compass", "place-pin": "location", parking: "location",
+  restroom: "info", "plan-suv": "compass", tent: "location",
+  walking: "compass", signal: "wifi-off", charging: "info", verified: "info",
+  "plan-header-chevron": "chevron-right", "plan-row-chevron": "chevron-right",
 };
 
 function packageAssetPrefix() {
@@ -168,8 +185,7 @@ export function SemanticIcon({
       />
     );
   }
-  const sourceName = name === "navigation" ? "compass"
-    : name === "plan-header-chevron" || name === "plan-row-chevron" ? "chevron-right" : name;
+  const sourceName = LEGACY_ICON_NAME[name] ?? name;
   const source = sourceName === "star" ? "/assets/semantic/five-point-star.svg" : SOURCE_ICON_FILE[sourceName];
   if (name === "arrow-left") {
     return (

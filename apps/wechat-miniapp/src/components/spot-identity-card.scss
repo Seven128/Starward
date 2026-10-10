@@ -27,6 +27,13 @@
 .spot-identity-card__address .semantic-icon { width: 16Px; height: 16Px; margin-top: 2Px; color: var(--text-tertiary); }
 .spot-identity-card__address-text { min-width: 0; display: block; font-size: var(--type-body-secondary-size); line-height: var(--type-body-secondary-line); white-space: normal; overflow-wrap: anywhere; }
 .theme-day .spot-identity-card { background: #f8f8fa; }
+.theme-day .spot-identity-card { border-radius: 18Px; }
+.theme-day .spot-identity-card__copy { padding: 16Px; }
+.theme-day .spot-identity-card__region { font-size: 13Px; line-height: 18Px; }
+.theme-day .spot-identity-card__title { font-size: 17Px; line-height: 24Px; font-weight: 600; letter-spacing: -.025em; }
+.theme-day .spot-identity-card__address { grid-template-columns: 18Px minmax(0, 1fr); column-gap: 6Px; }
+.theme-day .spot-identity-card__address .semantic-icon { width: 18Px; height: 18Px; margin-top: 1Px; }
+.theme-day .spot-identity-card__address-text { font-size: 13.5Px; line-height: 20Px; }
 .theme-day .spot-identity-card--with-media { background: #fff; }
 .theme-day .spot-identity-card--with-media .spot-identity-card__copy { background: linear-gradient(90deg,rgba(255,255,255,.92) 0%,rgba(255,255,255,.82) 48%,rgba(255,255,255,.28) 82%,rgba(255,255,255,.04) 100%); }
 .theme-day .spot-identity-card__region { color: #86909c; }
