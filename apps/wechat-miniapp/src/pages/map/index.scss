@@ -3136,6 +3136,67 @@
     padding: 18Px;
     border-radius: 18Px;
   }
+  .spot-panel__night-light {
+    gap: 5Px 10Px;
+    min-height: 52Px;
+    margin: 0 0 12Px;
+    padding: 12Px 14Px;
+    border-radius: 14Px;
+    background: #fff;
+  }
+  .spot-panel__night-light > .spot-panel__evidence-title .type-label {
+    color: #555866;
+    font-size: 14Px;
+    font-weight: 400;
+    line-height: 21Px;
+  }
+  .spot-panel__night-light-label {
+    color: #334155;
+    font-size: 14Px;
+    font-weight: 500;
+    line-height: 21Px;
+  }
+  .spot-panel__night-light > .type-caption {
+    color: #778392;
+    font-size: 13Px;
+    font-weight: 400;
+    line-height: 21Px;
+  }
+  .spot-panel__night-light > .source-attribution {
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 0;
+  }
+  .spot-panel__block--target-list > .spot-panel__evidence-title { margin-bottom: 10Px; }
+  .spot-panel__block--target-list > .spot-panel__evidence-title .type-label {
+    color: #555866;
+    font-size: 16Px;
+    font-weight: 600;
+    line-height: 24Px;
+  }
+  .spot-panel__night-light > .spot-panel__evidence-title .semantic-icon,
+  .spot-panel__block--target-list > .spot-panel__evidence-title .semantic-icon {
+    width: 22Px;
+    height: 22Px;
+    flex: 0 0 22Px;
+    margin-right: 6Px;
+  }
+  .spot-panel__block--target-list--missing-altitude { --spot-target-altitude-width: calc(14Px * 4); }
+  .spot-panel__target-row { min-height: 36Px; }
+  .spot-panel__target-row > .type-body,
+  .spot-panel__target-row > .type-data {
+    color: #0f172a;
+    font-size: 14Px;
+    font-weight: 400;
+    line-height: 21Px;
+  }
+  .spot-panel__target-row > .type-caption {
+    color: #64748b;
+    font-size: 13Px;
+    font-weight: 400;
+    line-height: 19.5Px;
+  }
+  .spot-panel__target-row > .type-data { font-weight: 500; }
   .spot-panel__block--moon,
   .spot-panel__block--professional-matrix { gap: 0; }
   .spot-panel__block--moon > .type-label,

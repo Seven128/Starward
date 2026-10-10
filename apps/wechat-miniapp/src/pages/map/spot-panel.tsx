@@ -769,13 +769,14 @@ export function SpotInformationPanel({
               <Text className="spot-panel__measurement-note type-caption">透明度、视宁度暂无独立数据</Text>
             </View> : null}
             <View className="spot-panel__night-light" data-control="sky-light-pollution">
-              <View className="spot-panel__evidence-title"><SemanticIcon name="horizon" /><Text className="type-label">卫星夜光估算</Text></View>
+              <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "bulb" : "horizon"} /><Text className="type-label">卫星夜光估算</Text></View>
               <Text className="spot-panel__night-light-label">{effectiveSpot.lightPollution.state === "ESTIMATED" ? effectiveSpot.lightPollution.label : "暂无数据"}</Text>
               <Text className="type-caption">{effectiveSpot.lightPollution.radiance ? `${effectiveSpot.lightPollution.radiance.median} ${effectiveSpot.lightPollution.radiance.unit}` : "辐亮度暂无数据"}</Text>
+              <SourceAttribution sources={[effectiveSpot.lightPollution.source]} />
             </View>
             {skyReport ? <>
             <View className={`spot-panel__block spot-panel__block--astronomy-card spot-panel__block--target-list${targetFrame?.targets.some((target) => target.altitudeDeg === null) ? " spot-panel__block--target-list--missing-altitude" : ""}`} data-control="sky-target-list">
-              <View className="spot-panel__evidence-title"><SemanticIcon name="star" /><Text className="type-label">当前目标</Text></View>
+              <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "telescope" : "star"} /><Text className="type-label">当前目标</Text></View>
               {targetFrame ? targetFrame.targets.length ? targetFrame.targets.map((target) => (
                 <View className="spot-panel__target-row" key={target.targetId} ariaLabel={`${target.displayName}，${target.direction}，${target.altitudeDeg === null ? "高度暂无数据" : `高度 ${Math.round(target.altitudeDeg)} 度`}`}>
                   <Text className="type-body">{target.displayName}</Text>
