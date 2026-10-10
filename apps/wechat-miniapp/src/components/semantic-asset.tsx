@@ -23,6 +23,7 @@ export type SemanticIconName =
   | "chevron-right"
   | "plan-header-chevron"
   | "plan-row-chevron"
+  | "settings-choice-check"
   | "chevron-down"
   | "chevron-up"
   | "close"
@@ -74,11 +75,12 @@ const B_ICON_ID: Partial<Record<SemanticIconName, string>> = {
   "plan-header-chevron": "chevron-right", "plan-row-chevron": "chevron-right",
 };
 
-// The current My source keeps line chevrons in its plan card. Other page
-// chevrons retain the B family; unadopted themes retain their existing glyph.
+// Adopted consumers may retain precise line glyphs alongside the B family.
+// Unrepresented themes retain the existing glyph for each role.
 const DAY_SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
   "plan-header-chevron": "/assets/icons/my-plan-chevron-header.svg",
   "plan-row-chevron": "/assets/icons/my-plan-chevron-row.svg",
+  "settings-choice-check": "/content/assets/icons/settings-choice-check.svg",
 };
 
 // These new DAY roles keep the existing presentation in unadopted modes.
@@ -87,6 +89,7 @@ const LEGACY_ICON_NAME: Partial<Record<SemanticIconName, SemanticIconName>> = {
   restroom: "info", "plan-suv": "compass", tent: "location",
   walking: "compass", signal: "wifi-off", charging: "info", verified: "info",
   "plan-header-chevron": "chevron-right", "plan-row-chevron": "chevron-right",
+  "settings-choice-check": "check",
 };
 
 function packageAssetPrefix() {

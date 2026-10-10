@@ -109,8 +109,8 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
               onSelect(tappedMode(currentMode.current, item));
             }}
           >
-            <SemanticIcon name={item === "DAY" ? "sun" : item === "NIGHT" ? "moon" : "star"} />
-            <Text>{DISPLAY_MODE_LABEL[item]}</Text>
+            <SemanticIcon name={item === "DAY" ? "sun" : item === "NIGHT" ? "moon" : mode === "DAY" ? "telescope" : "star"} />
+            <Text>{mode === "DAY" && item === "OBSERVATION" ? "观测" : DISPLAY_MODE_LABEL[item]}</Text>
           </Button>
         ))}
       </View>

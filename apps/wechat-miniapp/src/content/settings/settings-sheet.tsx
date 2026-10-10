@@ -61,11 +61,11 @@ export function SettingsSheet({
       : CONTENT[sheet].body;
 
   return <View className={`modal-scrim settings-sheet-scrim${closing ? " settings-sheet-scrim--closing" : ""}`} onClick={() => { if (!busy) close(); }}>
-    <View className={`settings-sheet${closing ? " settings-sheet--closing" : ""}`} role="dialog" aria-modal="true" aria-label={title}
+    <View className={`settings-sheet${closing ? " settings-sheet--closing" : ""}`} ariaRole="dialog" ariaLabel={title}
       catchMove onClick={(event) => event.stopPropagation()}>
       <View className="settings-sheet__header">
         <Text className="settings-sheet__title">{title}</Text>
-        <Button className="settings-sheet__close focus-ring" aria-label="关闭" disabled={busy} onClick={close}>
+        <Button className="settings-sheet__close focus-ring" ariaLabel="关闭" disabled={busy} onClick={close}>
           <SemanticIcon name="close" />
         </Button>
       </View>
@@ -76,9 +76,9 @@ export function SettingsSheet({
           const selected = locationPreference === value;
           return <Button key={value} id={`settings-location-${value === "ASK_ONCE" ? "ask-once" : "manual-only"}`}
             className={`settings-sheet__choice focus-ring${selected ? " settings-sheet__choice--selected" : ""}`}
-            aria-pressed={selected} onClick={() => selectLocation(value)}>
+            ariaLabel={`${value === "ASK_ONCE" ? "使用时询问" : "始终手动选择"}，${selected ? "当前已选" : "点击选择"}`} onClick={() => selectLocation(value)}>
             <Text>{value === "ASK_ONCE" ? "使用时询问" : "始终手动选择"}</Text>
-            {selected ? <SemanticIcon name="check" /> : null}
+            {selected ? <SemanticIcon name={mode === "DAY" ? "settings-choice-check" : "check"} /> : null}
           </Button>;
         })}
       </View> : <View className="settings-sheet__actions">

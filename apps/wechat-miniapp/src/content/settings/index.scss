@@ -196,6 +196,14 @@
   flex-basis: 14Px;
 }
 
+.settings-entry-chevron {
+  display: grid;
+  place-items: center;
+  width: 14Px;
+  height: 14Px;
+  flex: 0 0 14Px;
+}
+
 .settings-card--group .toggle-field__indicator {
   gap: 0;
 }
@@ -422,4 +430,104 @@
   .settings-card--group .toggle-field { padding-right: 10Px; padding-left: 10Px; gap: 8Px; }
   .settings-entry-meta { font-size: 12Px; }
   .settings-mode-panel { padding-right: 10Px; padding-left: 10Px; }
+}
+
+// Current DAY source; unrepresented modes retain the existing presentation.
+.theme-day.settings-page {
+  color: #344b59;
+  background: #fff;
+
+  .custom-nav {
+    padding-right: 16Px;
+    padding-left: 8Px;
+    background: #fff;
+  }
+
+  .custom-nav__bar {
+    min-height: 51Px;
+    grid-template-columns: 44Px minmax(0, 1fr) max(44Px, calc(var(--nav-menu-clearance, 100Px) - 16Px));
+    gap: 6Px;
+  }
+
+  .custom-nav__title .type-section {
+    color: #344b59;
+    font-size: 18Px;
+    font-weight: 600;
+    line-height: 26Px;
+  }
+
+  .custom-nav__back-icon { width: 26Px; height: 26Px; }
+  .settings-content { padding: 12Px 18Px calc(36Px + env(safe-area-inset-bottom)); }
+
+  .settings-mode-panel {
+    background: linear-gradient(120deg, #f9f6ed, #f3f6f5 60%, #f0f3f6);
+    box-shadow: inset 0 1Px 0 #fff9, 0 3Px 11Px #364d6010;
+  }
+
+  .settings-mode-panel .type-section { color: #344b59; }
+  .settings-display-mode-track::before { background: #dfe7e660; opacity: 1; box-shadow: inset 0 1Px 3Px #364d6010; }
+  .settings-display-mode-thumb { background: #fff; box-shadow: 0 2Px 6Px #364d6010, inset 0 1Px 0 #fff8; }
+  .settings-display-mode-choice { color: #83929c; font-weight: 400; }
+  .settings-display-mode-choice--selected { color: #344b59; }
+  .settings-display-mode-choice .semantic-icon { width: 26Px; height: 26Px; flex-basis: 26Px; }
+  .settings-section-title,
+  .settings-entry-copy .type-caption,
+  .settings-card--group .toggle-field .type-caption,
+  .settings-entry-meta,
+  .settings-capability-note { color: #83929c; }
+  .settings-card--group { background: #f6f7f8; }
+  .settings-entry-copy .type-label,
+  .settings-card--group .toggle-field .type-label { color: #344b59; }
+
+  .settings-entry-row + .settings-entry-row::before,
+  .settings-entry-row + .toggle-field::before,
+  .toggle-field + .settings-entry-row::before,
+  .settings-card--group .toggle-field + .toggle-field::before {
+    right: 12Px;
+    left: 51Px;
+    background: #e8edf0;
+  }
+
+  .settings-icon-well,
+  .settings-card--group .toggle-field__icon { background: #edf1f2; box-shadow: inset 0 1Px 0 #fff5; }
+  .settings-card--group .toggle-field__icon { flex-basis: 36Px; }
+  .settings-card--group .toggle-field__icon--gold { background: #f0eadf; }
+  .settings-icon-well--coral { background: #f3ece8; }
+  #account-delete .type-label { color: #b0786e; }
+
+  .settings-icon-well .semantic-icon { width: 26Px; height: 26Px; flex-basis: 26Px; }
+  #settings-direction .settings-icon-well .semantic-icon,
+  #settings-precise-location .settings-icon-well .semantic-icon,
+  .settings-card--group .toggle-field__icon .semantic-icon { width: 24Px; height: 24Px; flex-basis: 24Px; }
+  .settings-entry-meta { gap: 8Px; line-height: 16Px; }
+  .settings-entry-chevron { display: flex; align-items: center; justify-content: center; width: 12Px; height: 12Px; flex-basis: 12Px; }
+  .settings-entry-chevron .semantic-icon { width: 26Px; height: 26Px; flex-basis: 26Px; }
+
+  .settings-card--group .toggle-field__track { width: 44Px; height: 26Px; border-radius: 16Px; background: #dce3e6; }
+  .settings-card--group .toggle-field__thumb { top: 3Px; left: 3Px; width: 20Px; height: 20Px; background: #fff; box-shadow: 0 1Px 3Px #364d6010; }
+  .settings-card--group .toggle-field--checked .toggle-field__track { background: #7c999e; }
+  .settings-card--group .toggle-field--checked .toggle-field__thumb { transform: translateX(18Px); }
+
+  .settings-entry-row:active,
+  .settings-card--group .toggle-field--pressed,
+  .settings-display-mode-choice:active { background: #edf1f2; }
+
+  .settings-sheet {
+    padding-top: 0;
+    color: #344b59;
+    background: #fff;
+    box-shadow: 0 -8Px 40Px #0001;
+  }
+
+  .settings-sheet__header { box-sizing: border-box; padding: 10Px 0 4Px; }
+  .settings-sheet__title { font-weight: 550; }
+  .settings-sheet__close .semantic-icon { width: 26Px; height: 26Px; flex-basis: 26Px; }
+  .settings-sheet__body { color: #83929c; }
+  .settings-sheet__choices { gap: 12Px; padding-bottom: 22Px; }
+  .settings-sheet__actions { margin-top: 10Px; }
+  .settings-sheet__choice { color: #344b59; background: #f6f7f8; line-height: 22Px; }
+  .settings-sheet__choice--selected { background: #edf1f2; }
+  .settings-sheet__secondary { color: #344b59; background: #f6f7f8; }
+  .settings-sheet__primary { color: #fff; background: #7c999e; }
+  .settings-sheet__primary--danger { color: #b0786e; background: #f6f7f8; }
 }

@@ -37,7 +37,7 @@ function SettingsEntryRow({
   onClick: () => void;
 }) {
   return <Button id={id} className="settings-entry-row focus-ring"
-    aria-label={`${label}${description ? `；${description}` : ""}${value ? `；${value}` : ""}`}
+    ariaLabel={`${label}${description ? `；${description}` : ""}${value ? `；${value}` : ""}`}
     disabled={disabled} onClick={onClick}>
     <View className={`settings-icon-well settings-icon-well--${tone}`} aria-hidden="true">
       <SemanticIcon name={icon} />
@@ -49,7 +49,7 @@ function SettingsEntryRow({
     <View className="settings-entry-meta">
       {pendingLabel ? <Text>{pendingLabel}</Text> : <>
         {value ? <Text>{value}</Text> : null}
-        <SemanticIcon name="chevron-right" />
+        <View className="settings-entry-chevron" aria-hidden="true"><SemanticIcon name="chevron-right" /></View>
       </>}
     </View>
   </Button>;
@@ -66,12 +66,12 @@ export function SettingsControls({
     <View id="settings-permissions" className="settings-section" data-od-id="settings-permissions">
       <Text className="settings-section-title">位置与隐私</Text>
       <View className="settings-card settings-card--group">
-        <SettingsEntryRow id="nearby-location-preference" label="附近地点" icon="location"
-          value={preferences.locationPreference === "ASK_ONCE" ? "使用时询问" : "始终手动选择"}
+        <SettingsEntryRow id="nearby-location-preference" label="附近地点" icon={mode === "DAY" ? "place-pin" : "location"}
+          value={preferences.locationPreference === "ASK_ONCE" ? "使用时询问" : mode === "DAY" ? "手动选择" : "始终手动选择"}
           onClick={() => openSheet("LOCATION")} />
         <SettingsEntryRow id="settings-direction" label="方位天空" icon="compass" value="按页使用"
           onClick={() => openSheet("DIRECTION")} />
-        <SettingsEntryRow id="settings-precise-location" label="精确位置" icon="info" value="每次确认"
+        <SettingsEntryRow id="settings-precise-location" label="精确位置" icon={mode === "DAY" ? "location" : "info"} value="每次确认"
           onClick={() => openSheet("PRECISE")} />
       </View>
     </View>
@@ -84,7 +84,7 @@ export function SettingsControls({
           checked={preferences.departureConditionReminder}
           onChange={(checked) => updatePreference("departureConditionReminder", checked)} />
         <ToggleField id="contribution-status-reminder" label="审核结果提醒"
-          description="观星点创建与反馈" icon="check" iconTone="lilac"
+          description="观星点创建与反馈" icon={mode === "DAY" ? "checklist" : "check"} iconTone={mode === "DAY" ? "plain" : "lilac"}
           checked={preferences.contributionStatusReminder}
           onChange={(checked) => updatePreference("contributionStatusReminder", checked)} />
       </View>

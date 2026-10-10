@@ -47,8 +47,9 @@ const retainedLegacyIconFiles = [
   "telescope-night.svg", "telescope-observation.svg",
   "my-plan-chevron-header.svg", "my-plan-chevron-row.svg",
 ] as const;
-// These legacy night/observation icons are used only by content pages.
-const contentLegacyIconFiles = [
+// SVG assets used only by content pages, including adopted DAY line glyphs.
+const contentIconFiles = [
+  "settings-choice-check.svg",
   "bell-night.svg", "bell-observation.svg",
   "warning-night.svg", "warning-observation.svg",
   "download-night.svg", "download-observation.svg",
@@ -249,7 +250,7 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
           from: path.resolve(here, "../src/assets/icons", file),
           to: path.resolve(here, "..", outputRoot, "assets/icons", file),
         })),
-        ...contentLegacyIconFiles.map((file) => ({
+        ...contentIconFiles.map((file) => ({
           from: path.resolve(here, "../src/assets/icons", file),
           to: path.resolve(here, "..", outputRoot, "content/assets/icons", file),
         })),

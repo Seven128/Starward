@@ -99,6 +99,8 @@ Map的云量尺与正式点天文尺在同一观测身份等待新Scene时，只
 
 设置采用唯一入口：[设置资源](../../../../../docs/design-resources/wechat-miniapp/settings/ADOPTED.md)。2026-09-08 用户确认：显示模式、位置与隐私、提醒、数据；移除选点偏好及其子页、减少动态效果设置项。保留系统级减少动态效果适配。弹层和蒙层同步进入/退出，关闭时蒙层渐隐露出原页面，页面滚动位置与焦点不跳动；箭头与右侧值垂直居中。产品选择不清除既有账户偏好数据。采用包覆盖三态显示与确认/失败演示，不证明生产代码、微信权限或服务端迁移完成。
 
+DAY 设置消费者沿用该入口当前采用源的图标角色、行尾图标容器、开关及选择弹层样式；选中标记通过现有 SemanticIcon 输出源中线形勾选，不以其他勾选角色代替。未采用的新主题继续沿用既有回退。DAY 显示模式的“观测”短标签保留完整“观测红光”可访问语义及原模式枚举，设置行和弹层使用 WEAPP 支持的 ariaLabel / ariaRole；位置策略、偏好同步和数据命令仍由既有业务 owner 管理。
+
 ## Cross-Control And State Invariants
 
 - A continuous manipulation, its current value and the primary visual or numerical feedback it changes remain together in one mobile viewport or one bounded control-owned scroll surface. A journey never requires scrolling away from a control, manipulating it and scrolling back to inspect its primary effect.
