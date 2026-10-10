@@ -195,6 +195,39 @@ test("panel cancellation and multi-touch never commit a pending drag", async t =
   handlers.onHandleTouchCancel!();
   pending.length = 0;
   geometryRows[0]!.height = 350;
+  await t.test("a warm cache cannot replace the visible frame while release geometry is pending", () => {
+    environment.panelExtent = "medium";
+    geometryRows[0]!.height = geometryRows[2]!.height = 368;
+    delayed = true;
+    panelSnapCache.current = { identity: "formal:spot:a", width: 390, height: 844, geometry: { small: 220, medium: 368, large: 700, startHeight: 368 } };
+    const commitCount = commits.length;
+    const springCount = springs.length;
+    try {
+      now += 1000;
+      handlers.onHandleTouchStart!(touch(100));
+      now += 100;
+      handlers.onHandleTouchMove!(touch(-145));
+      assert.equal(368 - offsets.at(-1)!, 613);
+      handlers.onHandleTouchEnd!();
+      assert.equal(pending.length, 1, "release is waiting for its native frame");
+      handlers.onHandleTouchStart!(touch(200));
+      assert.equal(368 - offsets.at(-1)!, 613, "re-grab retains the frame already drawn");
+      now += 60;
+      handlers.onHandleTouchMove!(touch(242));
+      const oldRelease = pending.shift()!;
+      oldRelease(geometryRows);
+      assert.equal(commits.length, commitCount, "the old release cannot commit after a new touch owns the panel");
+      assert.equal(springs.length, springCount);
+      pending.shift()?.([{ height: 613 }, ...geometryRows.slice(1)]);
+      assert.equal(368 - offsets.at(-1)!, 571, "the new drag moves 42px from the native 613px frame, not the cached 368px anchor");
+      assert.equal(dragging, true);
+    } finally {
+      handlers.onHandleTouchCancel!();
+      pending.length = 0;
+      geometryRows[0]!.height = geometryRows[2]!.height = 350;
+      delayed = false;
+    }
+  });
   delayed = true;
   const beforeSupersededExtent = commits.length;
   handlers.onPanelExtent!("large");

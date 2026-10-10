@@ -230,6 +230,8 @@ The 2026-09-09 rules for Search, My ongoing plans, arrival/reminder states, sky 
 
 2026-09-13外框修订：观星点信息large档在可用区域内全宽、顶部方角，正式/草稿/审核中、有图/无图一致；small/medium与内部内容卡片维持原几何。图层选择sheet采用单一全宽方角外壳，内部白色背景不能在圆角背后再叠方角。保持原高度随内容变化、时间尺、地形复选和LIGHT/TOTAL_CLOUD单选责任，不加入拖柄或新档位。
 
+手柄静止几何缓存只用于没有前一拖动 owner 的新操作；前一释放尚在等待原生高度确认时，新触点沿现有测量路径承接实际绘制帧及等待中的位移，不能从旧档位重新起算。新操作退休原释放代次，迟到结果不得提交档位或覆盖新偏移；取消和身份/布局失效仍交回原 owner。该边界不改变三档、弹性规则、正文树或业务状态。
+
 ## External Location And Travel Capabilities
 
 2026-09-14 adopts WeChat default native map with no custom base-map themes, platform location picking, own published-spot search and external navigation handoff. App-owned day/night/red-light UI themes remain independent. Do not purchase or request national POI, reverse geocoding or road-routing services for this scope. Retain origin, travel preference, manual departure and observation interval, notes/checklists, actual parking/entry/observing-position distinctions and verified last-segment access facts; remove road-distance/time filters and automatic departure/arrival inference. Labeled straight-line distance does not promise access. Formal/private-draft/pending identities and action authorization still govern their existing flows.

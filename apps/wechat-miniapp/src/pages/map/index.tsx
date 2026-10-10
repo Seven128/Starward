@@ -1367,6 +1367,7 @@ export default function MapPage() {
     const touch = value.touches?.[0] ?? value.changedTouches?.[0];
     const startY = touch?.clientY ?? touch?.pageY;
     if (typeof startY !== "number" || !Number.isFinite(startY)) return;
+    const previousDrag = panelDrag.current;
     springRequest.current += 1;
     const startX = touch?.clientX ?? touch?.pageX;
     const drag = { startY, startX: typeof startX === "number" && Number.isFinite(startX) ? startX : undefined, identifier: touch?.identifier, extent: panelExtent, samples: [{ y: startY, at: Date.now() }], releasedAt: 0, moved: false, offset: 0, pointerOffset: 0, rawStartHeight: 0, geometry: null as PanelSnapGeometry | null, released: false };
@@ -1376,7 +1377,9 @@ export default function MapPage() {
     setPanelDragging(true);
     const viewport = panelViewportSize();
     const cached = panelSnapCache.current;
-    if (cached && viewport && cached.identity === panelGeometryIdentity && cached.width === viewport.width && cached.height === viewport.height && !panelSettling && !springTarget.current) {
+    // A pending release still owns a drawn frame different from the cached
+    // resting anchor; let the native measurement path transfer that frame.
+    if (!previousDrag && cached && viewport && cached.identity === panelGeometryIdentity && cached.width === viewport.width && cached.height === viewport.height && !panelSettling && !springTarget.current) {
       drag.geometry = { ...cached.geometry, startHeight: cached.geometry[panelExtent] };
       drag.rawStartHeight = drag.geometry.startHeight;
       stopPanelSpring();
