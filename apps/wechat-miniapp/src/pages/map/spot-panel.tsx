@@ -280,6 +280,13 @@ export function SpotInformationPanel({
   const [layoutVersion, setLayoutVersion] = useState(0);
   const largeText = useAppStore(state => state.preferences.largeText);
   const dayMode = useAppStore(state => state.mode === "DAY");
+  function renderMetricValue(value: number | null | undefined, unit: string, digits = 0, className = "type-data") {
+    const formatted = formatMetric(value, "", digits);
+    const missing = formatted === EMPTY_FIELD_VALUE;
+    return <Text className={`${className} spot-panel__metric-value${missing ? " spot-panel__metric-value--missing" : ""}`}>
+      {formatted}{missing ? null : dayMode ? <Text className="spot-panel__metric-unit">{unit.trim()}</Text> : unit}
+    </Text>;
+  }
   // The report reference only invalidates geometry; no previous evidence is rendered.
   const [warningPresentation, setWarningPresentation] = useState<{ identity: string; height: number; report: SkyReport } | null>(null);
   const onWarningLayoutChange = useCallback(() => setLayoutVersion(value => value + 1), []);
@@ -717,7 +724,7 @@ export function SpotInformationPanel({
                   </View>
                 </View>
                 <View className="spot-panel__metric-grid">
-                  <View className="spot-panel__metric"><Text className="type-secondary">月亮高度</Text><Text className="type-body">{formatMetric(skyRow?.moonAltitudeDeg, "°", 1)}</Text></View>
+                  <View className="spot-panel__metric"><Text className="type-secondary">月亮高度</Text>{renderMetricValue(skyRow?.moonAltitudeDeg, "°", 1, "type-body")}</View>
                   <View className="spot-panel__metric"><Text className="type-secondary">夜间阶段</Text><Text className="type-body">{darknessLabel(skyRow?.darkness)}</Text></View>
                 </View>
               </View>
@@ -730,31 +737,34 @@ export function SpotInformationPanel({
               <ForecastCoverageNote starts={skyReport?.hourly.flatMap(row => row.weatherAt ? [row.weatherAt] : []) ?? []} stale={Boolean(skyError || skyStale)}
                 timezone={context?.timezone ?? "Asia/Shanghai"} scopeKey={`${effectiveSpot.spotId}:${context?.localDate}`} />
               {skyRow?.weatherAt ? <Text className="type-caption">对应小时预报：{formatSourceTime(skyRow.weatherAt, context?.timezone ?? "Asia/Shanghai")}</Text> : null}
-              <View className="spot-panel__evidence-group" ariaLabel="总云量">
-                <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" /><Text className="type-label">总云量</Text></View>
-                <Text className="type-data">{formatMetric(skyRow?.cloudPercent, "%")}</Text>
-              </View>
-              <View className="spot-panel__evidence-group" ariaLabel="温湿">
-                <View className="spot-panel__evidence-title"><SemanticIcon name="sun" /><Text className="type-label">温湿</Text></View>
-                <View className="spot-panel__metric-grid">
-                  <View className="spot-panel__metric"><Text className="type-secondary">气温</Text><Text className="type-data">{formatMetric(skyRow?.temperatureC, "°C", 1)}</Text></View>
-                  <View className="spot-panel__metric"><Text className="type-secondary">湿度</Text><Text className="type-data">{formatMetric(skyRow?.relativeHumidityPercent, "%")}</Text></View>
-                  <View className="spot-panel__metric"><Text className="type-secondary">露点</Text><Text className="type-data">{formatMetric(skyRow?.dewPointC, "°C", 1)}</Text></View>
+              <View className="spot-panel__forecast-groups">
+                <View className="spot-panel__evidence-group" ariaLabel="总云量">
+                  <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" /><Text className="type-label">{dayMode ? "云量" : "总云量"}</Text></View>
+                  {dayMode ? <View className="spot-panel__metric"><Text className="type-secondary">总云量</Text>{renderMetricValue(skyRow?.cloudPercent, "%")}</View>
+                    : renderMetricValue(skyRow?.cloudPercent, "%")}
                 </View>
-              </View>
-              <View className="spot-panel__evidence-group" ariaLabel="风与能见度">
-                <View className="spot-panel__evidence-title"><SemanticIcon name="horizon" /><Text className="type-label">风与能见度</Text></View>
-                <View className="spot-panel__metric-grid">
-                  <View className="spot-panel__metric"><Text className="type-secondary">{windDirectionLabel(skyRow?.windDirectionDeg)}</Text><Text className="type-data">{formatMetric(skyRow?.windKph, " km/h", 1)}</Text></View>
-                  <View className="spot-panel__metric"><Text className="type-secondary">阵风</Text><Text className="type-data">{formatMetric(skyRow?.windGustKph, " km/h", 1)}</Text></View>
-                  <View className="spot-panel__metric"><Text className="type-secondary">能见度</Text><Text className="type-data">{formatMetric(skyRow?.visibilityKm, " km", 1)}</Text></View>
+                <View className="spot-panel__evidence-group" ariaLabel="温湿">
+                  <View className="spot-panel__evidence-title"><SemanticIcon name="sun" /><Text className="type-label">温湿</Text></View>
+                  <View className="spot-panel__metric-grid">
+                    <View className="spot-panel__metric"><Text className="type-secondary">气温</Text>{renderMetricValue(skyRow?.temperatureC, "°C", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">湿度</Text>{renderMetricValue(skyRow?.relativeHumidityPercent, "%")}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">露点</Text>{renderMetricValue(skyRow?.dewPointC, "°C", 1)}</View>
+                  </View>
                 </View>
-              </View>
-              <View className="spot-panel__evidence-group" ariaLabel="降水">
-                <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" /><Text className="type-label">降水</Text></View>
-                <View className="spot-panel__metric-grid spot-panel__metric-grid--two">
-                  <View className="spot-panel__metric"><Text className="type-secondary">降水量</Text><Text className="type-data">{formatMetric(skyRow?.precipitationMm, " mm", 1)}</Text></View>
-                  <View className="spot-panel__metric"><Text className="type-secondary">降水概率</Text><Text className="type-data">{formatMetric(skyRow?.precipitationProbabilityPercent, "%")}</Text></View>
+                <View className="spot-panel__evidence-group" ariaLabel="风与能见度">
+                  <View className="spot-panel__evidence-title"><SemanticIcon name="horizon" /><Text className="type-label">风与能见度</Text></View>
+                  <View className="spot-panel__metric-grid">
+                    <View className="spot-panel__metric"><Text className="type-secondary">{windDirectionLabel(skyRow?.windDirectionDeg)}</Text>{renderMetricValue(skyRow?.windKph, " km/h", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">阵风</Text>{renderMetricValue(skyRow?.windGustKph, " km/h", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">能见度</Text>{renderMetricValue(skyRow?.visibilityKm, " km", 1)}</View>
+                  </View>
+                </View>
+                <View className="spot-panel__evidence-group" ariaLabel="降水">
+                  <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" /><Text className="type-label">降水</Text></View>
+                  <View className="spot-panel__metric-grid spot-panel__metric-grid--two">
+                    <View className="spot-panel__metric"><Text className="type-secondary">降水量</Text>{renderMetricValue(skyRow?.precipitationMm, " mm", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">降水概率</Text>{renderMetricValue(skyRow?.precipitationProbabilityPercent, "%")}</View>
+                  </View>
                 </View>
               </View>
               <Text className="spot-panel__measurement-note type-caption">透明度、视宁度暂无独立数据</Text>

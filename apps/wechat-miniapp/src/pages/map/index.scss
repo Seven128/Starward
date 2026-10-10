@@ -1852,6 +1852,11 @@
   min-width: 0;
   gap: 4Px;
 }
+.spot-panel__forecast-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 8Px;
+}
 .spot-panel__block--route .spot-panel__value {
   flex: 1;
   min-width: 0;
@@ -3074,6 +3079,119 @@
 // Current comfortable-scale Source, scoped to formal DAY cards. Private
 // panels and the unadopted themes retain their existing presentation.
 .theme-day.map-page .spot-panel--formal {
+  .spot-panel__block--astronomy-card {
+    margin-bottom: 12Px;
+    padding: 18Px;
+    border-radius: 18Px;
+  }
+  .spot-panel__block--moon,
+  .spot-panel__block--professional-matrix { gap: 0; }
+  .spot-panel__block--moon > .type-label,
+  .spot-panel__weather-heading {
+    display: block;
+    margin: 0 0 10Px;
+    padding: 0;
+    color: #353742;
+    font-size: 16Px;
+    font-weight: 600;
+    line-height: 24Px;
+  }
+  .spot-panel__moon-inset {
+    padding: 12Px;
+    border-radius: 10Px;
+    background: #fbfbfc;
+  }
+  .spot-panel__moon-summary { gap: 11Px; margin-bottom: 10Px; }
+  .spot-panel__moon-image { width: 42Px; height: 42Px; flex-basis: 42Px; }
+  .spot-panel__moon-copy { gap: 0; }
+  .spot-panel__moon-name {
+    color: #373943;
+    font-size: 16Px;
+    font-weight: 500;
+    line-height: 24Px;
+  }
+  .spot-panel__moon-copy > .type-caption,
+  .spot-panel__moon-events .type-caption {
+    color: #696c78;
+    font-size: 13Px;
+    font-weight: 400;
+    line-height: 19.5Px;
+  }
+  .spot-panel__moon-copy > .type-caption { margin-top: 4Px; }
+  .spot-panel__moon-events {
+    gap: 10Px;
+    padding: 12Px 0;
+    border-top: 1Px solid #e8e8ed;
+    border-bottom: 1Px solid #e8e8ed;
+  }
+  .spot-panel__moon-events > view { gap: 5Px; }
+  .spot-panel__moon-events .type-body {
+    color: #41434e;
+    font-size: 14Px;
+    font-weight: 400;
+    line-height: 21Px;
+  }
+  .spot-panel__block--moon .spot-panel__metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7Px;
+    margin-top: 0;
+    padding-top: 9Px;
+  }
+  .spot-panel__block--moon .spot-panel__metric + .spot-panel__metric {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .spot-panel__block--professional-matrix > .type-caption { margin-bottom: 8Px; }
+  .spot-panel__block--professional-matrix > .spot-panel__evidence-group { margin-top: 8Px; }
+  .spot-panel__forecast-groups {
+    gap: 0;
+    .spot-panel__evidence-group {
+      margin: 0 0 8Px;
+      padding: 10Px 11Px;
+      border: 0;
+      border-radius: 10Px;
+      background: #fbfbfc;
+      &:last-child { margin-bottom: 0; }
+    }
+    .spot-panel__evidence-title {
+      margin-bottom: 8Px;
+      color: #5b5e6b;
+      .type-label { color: inherit; font-size: 14Px; font-weight: 500; line-height: 20Px; }
+    }
+    .spot-panel__metric-grid { margin-top: 0; }
+    .spot-panel__metric + .spot-panel__metric {
+      border-left: 1Px solid #e6e6ec;
+      padding-left: 9Px;
+    }
+  }
+  .spot-panel__block--moon .spot-panel__metric,
+  .spot-panel__forecast-groups .spot-panel__metric { gap: 3Px; }
+  .spot-panel__block--moon .spot-panel__metric > .type-secondary,
+  .spot-panel__forecast-groups .spot-panel__metric > .type-secondary {
+    color: #696c78;
+    font-size: 13Px;
+    font-weight: 400;
+    line-height: 18Px;
+  }
+  .spot-panel__block--moon .spot-panel__metric > .type-body,
+  .spot-panel__block--moon .spot-panel__metric-value,
+  .spot-panel__forecast-groups .spot-panel__metric-value {
+    color: #363944;
+    font-size: 16Px;
+    font-weight: 600;
+    line-height: 24Px;
+  }
+  .spot-panel__block--moon .spot-panel__metric > .spot-panel__metric-value--missing,
+  .spot-panel__forecast-groups .spot-panel__metric-value--missing { color: #727582; font-size: 13Px; }
+  .spot-panel__metric-unit { margin-left: 3Px; font-size: 12Px; font-weight: 400; }
+  .spot-panel__measurement-note {
+    margin-top: 7Px;
+    padding: 0;
+    color: #64748b;
+    font-size: 12Px;
+    font-weight: 400;
+    line-height: 18Px;
+  }
   .spot-panel__facility-heading { gap: 8Px; }
   .spot-panel__facility-name { color: #0f172a; font-weight: 600; }
   .spot-panel__facility-status {
