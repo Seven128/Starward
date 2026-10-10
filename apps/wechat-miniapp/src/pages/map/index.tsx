@@ -340,6 +340,7 @@ export default function MapPage() {
   const [panelIdentityLayout, setPanelIdentityLayout] = useState<{ identity: string; height: number } | null>(null);
   const panelIdentityHeight = panelIdentityLayout?.identity === panelGeometryIdentity ? panelIdentityLayout.height : 0;
   const [panelLayoutVersion, setPanelLayoutVersion] = useState(0);
+  const onPanelContentLayoutChange = useCallback(() => setPanelLayoutVersion(value => value + 1), []);
   useResize(() => { invalidatePanelGeometry(); setPanelLayoutVersion(value => value + 1); });
   const setSelectedProposal = useCallback((submission: ContributionSubmission | null) => {
     const owner = currentDraftUserId();
@@ -1301,17 +1302,19 @@ export default function MapPage() {
     panelSnapCache.current = null;
     if (bottomPresentation !== "spot-panel" || !pageVisible || panelPhase !== "idle") return;
     let cancelled = false;
-    // The first move must not wait for four native selector measurements.
+    // The first move must not wait for native selector measurements.
     // Cache only snap rulers; an interrupted spring still measures its live height.
     Taro.nextTick(() => {
       if (cancelled) return;
       const query = Taro.createSelectorQuery();
       for (const selector of [".spot-panel", ".spot-panel__snap-small", ".spot-panel__snap-medium", ".spot-panel__snap-large"]) query.select(selector).boundingClientRect();
       for (const selector of [".spot-panel__handle-band--document", ".spot-panel__identity", ".spot-panel__action-lane"]) query.select(selector).boundingClientRect();
+      if (!selectedProposal) query.select(".spot-panel__block--route").boundingClientRect();
       query.exec(rows => {
         if (cancelled) return;
         const minimumHeight = panelIdentityMinimumHeight(rows.slice(4));
-        if (minimumHeight !== null && minimumHeight !== panelIdentityHeight) {
+        if (minimumHeight === null) return;
+        if (minimumHeight !== panelIdentityHeight) {
           // Re-read rulers after the shared CSS floor has rendered. Never cache
           // anchors from the previous identity layout, including async detail.
           invalidatePanelGeometry();
@@ -1324,7 +1327,7 @@ export default function MapPage() {
       });
     });
     return () => { cancelled = true; panelSnapCache.current = null; };
-  }, [bottomPresentation, panelGeometryIdentity, panelIdentityHeight, panelLayoutVersion, spotDetail, selectedProposal, pageVisible, panelPhase, mode, preferences.largeText]);
+  }, [bottomPresentation, panelGeometryIdentity, panelIdentityHeight, panelLayoutVersion, spotDetail, spotOverviewProjection.pending, spotOverviewProjection.error, spotOverviewProjection.stale, visibleSpotContextAttempt, selectedProposal, pageVisible, panelPhase, mode, preferences.largeText]);
 
   const onHandleTouchCancel = () => {
     stopPanelSpring();
@@ -2455,6 +2458,7 @@ export default function MapPage() {
                 detailPending={spotOverviewProjection.pending}
                 detailError={spotOverviewProjection.error}
                 detailStale={spotOverviewProjection.stale}
+                onLayoutChange={onPanelContentLayoutChange}
                 contextPending={Boolean(visibleSpotContextAttempt?.pending)}
                 contextError={visibleSpotContextAttempt?.error ?? null}
                 onContextRecover={() => { if (selected) void resolveSpotContext(selected); }}

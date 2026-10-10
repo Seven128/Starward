@@ -78,6 +78,34 @@ test("sample state has no badge while real partial and missing states retain the
     "restoring the removed sample badge must fail the product assertion");
 });
 
+test("ordinary fresh data has no visual badge while full provenance retains real state and facts", () => {
+  const badge = load("./data-state-badge.tsx", "DataStateBadge");
+  const labels = load("./data-state-badge.tsx", "DATA_STATE_LABELS");
+  assert.equal(badge({ state: "FRESH" }), null);
+  assert.equal(labels.FRESH, "当前数据", "source accessibility retains the actual state label");
+  for (const [state, label] of [["STALE_USABLE", "过期可用"], ["PARTIAL", "部分数据"], ["EXPIRED", "已过期"], ["UNAVAILABLE", "不可用"], ["ESTIMATED", "估算"]]) {
+    assert.equal(text(badge({ state })), label);
+  }
+  const attributionInputs: unknown[] = [];
+  const provenance = load("./provenance.tsx", "Provenance", { isProductSource, SOURCE_KIND_LABEL,
+    DataStateBadge: badge, DATA_STATE_LABELS: labels, calendarDateInTimezone, clockTimeInTimezone,
+    SourceAttribution: ({ sources }: { sources: unknown[] }) => { attributionInputs.push(sources); return "原始归因"; } });
+  const actual = Object.freeze({ ...sample, id: "actual-fresh", kind: "OPEN_DATA", state: "FRESH", provider: "公开资料库",
+    title: "星表", sourceUrl: "https://example.org/catalog", licenseUrl: "https://example.org/license", license: "开放许可", precision: "角秒",
+    publishedAt: "2026-10-08T01:00:00Z", retrievedAt: "2026-10-09T02:00:00Z", validFrom: "2026-10-08T00:00:00Z", validTo: "2026-10-10T00:00:00Z",
+    limitations: Object.freeze(["覆盖范围内适用"]) }) as unknown as SourceSummary;
+  const before = JSON.stringify(actual);
+  const tree = provenance({ source: actual });
+  assert.equal(tree.props["aria-label"], "来源：公开资料库，状态：当前数据");
+  assert.match(text(tree), /公开资料库.*星表.*原始归因.*2026-10-08 09:00.*2026-10-09 10:00.*2026-10-08 08:00 至 2026-10-10 08:00.*开放许可.*角秒.*覆盖范围内适用.*复制原始出处.*复制许可说明/s);
+  assert.doesNotMatch(text(tree), /当前数据/);
+  assert.equal((attributionInputs[0] as SourceSummary[])[0], actual);
+  assert.equal(JSON.stringify(actual), before);
+  const oldBadge = load("./data-state-badge.tsx", "DataStateBadge", {}, source => source.replace('state === "FRESH" || ', ""));
+  assert.throws(() => assert.equal(oldBadge({ state: "FRESH" }), null), assert.AssertionError,
+    "restoring the ordinary fresh visual badge must fail the product assertion");
+});
+
 test("internal provenance is absent from cards and summaries without losing real attribution or mutating metadata", () => {
   const badge = load("./data-state-badge.tsx", "DataStateBadge");
   const labels = load("./data-state-badge.tsx", "DATA_STATE_LABELS");

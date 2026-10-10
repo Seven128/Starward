@@ -3095,16 +3095,16 @@
 }
 .spot-panel__block--route .spot-panel__text-action {
   position: relative;
-  width: 32Px;
-  min-width: 32Px;
-  height: 32Px;
-  min-height: 32Px;
+  width: 44Px;
+  min-width: 44Px;
+  height: 44Px;
+  min-height: 44Px;
   padding: 0;
   color: #576d61;
 }
 .spot-panel__block--route .spot-panel__text-action::after {
   position: absolute;
-  inset: -6Px;
+  inset: 0;
   content: "";
 }
 .spot-panel__block--route .semantic-icon {

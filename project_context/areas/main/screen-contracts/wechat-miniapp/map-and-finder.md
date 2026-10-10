@@ -2,7 +2,7 @@
 
 This on-demand subdomain node normatively continues `Cross-Control And State Invariants` for Map, dedicated Search, the spot information panel and shared Observation Context behavior.
 
-小档静止高度必须容纳完整身份信息与固定动作，不能把采用资源的样例高度当内容上限。Map 现有原生几何 owner 测量文档手柄、身份区和动作栏，由 `panel-snap.panelIdentityMinimumHeight` 保留既有内容间距；同一 CSS 内容下限同时用于面板与吸附标尺，仍受三档有序视口边界约束。正式点与私人草稿/待审提案共用该责任，保留当前已采用字号、状态和原动作。异步详情改变高度、真实 resize 或完整点位/账号/提案身份切换时，退休旧拖动、回弹与缓存，再读取当前标尺，迟到测量不得提交旧档位。当前 DAY/390×762 的正式和私人长名称样本已有有限 WEAPP 可见性、档位往返与取消输出；这不认证连续释放、窄屏、真机或完整设计一致性。
+小档静止高度必须容纳完整身份信息与固定动作，不能把采用资源的样例高度当内容上限。正式点还必须保留原采用的路线摘要与具名导航：Map 现有原生几何 owner 测量文档手柄起点到路线块末端的实际跨度，包含现有计划入口、恢复卡及其间距；私人草稿/待审提案继续测量文档手柄、身份区和动作栏，不合成正式路线。两者由 `panel-snap.panelIdentityMinimumHeight` 保留固定动作及既有内容间距，同一 CSS 内容下限同时用于面板与吸附标尺，仍受三档有序视口边界约束，保留当前已采用字号、状态和原动作。异步详情、Context 恢复或计划入口内容改变高度、真实 resize 或完整点位/账号/提案身份切换时，退休旧拖动、回弹与缓存，再读取当前标尺，迟到或无效的必需测量不得安装旧标尺。短视口边界不足不能通过裁掉有效路线或缩字掩盖；连续释放、窄屏、真机或完整设计一致性仍需各自证据。
 
 手柄与正文纵滚的竞争由 Map 现有 `panelDragging` owner 处理：有效单指按下即占有手柄操作，不等待异步几何；正式点和私人草稿/待审面板的主 ScrollView 共用 `panelDocumentScrollEnabled`，小档或手柄操作中关闭纵滚。正常结束、取消及既有页面/身份/布局失效路径释放该 owner，保留文档阅读位置并恢复可滚动档位的正文操作；横向照片相册仍由其自身 ScrollView 负责。手柄继续在原文档中随内容离开视口，三档、内容与固定动作不变。当前 WEAPP 实测原生 `catchMove` 不能单独阻止 ScrollView 的正文位移，不能把事件拦截成功当作手柄竞争已解决；自然平台取消、运动中重抓和真机连续表现仍需分别核验。
 

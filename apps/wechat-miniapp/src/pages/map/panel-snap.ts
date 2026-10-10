@@ -3,12 +3,24 @@ import { ELASTIC_LIMIT } from "@/components/elastic-motion";
 export type PanelExtent = "small" | "medium" | "large";
 export type PanelSnapGeometry = Record<PanelExtent, number> & { startHeight: number };
 
-/** Flowing handle + complete identity + fixed actions, with the existing 8px content gap. */
+/** Private identity, or the formal document through its route, above fixed actions. */
 export function panelIdentityMinimumHeight(rows: unknown): number | null {
-  if (!Array.isArray(rows) || rows.length !== 3) return null;
-  const heights = rows.map(row => row && typeof row === "object" ? (row as { height?: unknown }).height : undefined);
+  if (!Array.isArray(rows) || (rows.length !== 3 && rows.length !== 4)) return null;
+  const rectangles = rows.map(row => row && typeof row === "object" ? row as { height?: unknown; top?: unknown } : null);
+  const heights = rectangles.map(rectangle => rectangle?.height);
   if (!heights.every(height => typeof height === "number" && Number.isFinite(height) && height > 0)) return null;
-  return Math.ceil((heights as number[]).reduce((sum, height) => sum + height, 8));
+  const [handleHeight, identityHeight, actionHeight, routeHeight] = heights as [number, number, number, number?];
+  let contentHeight = handleHeight + identityHeight;
+  if (rows.length === 4) {
+    const tops = [rectangles[0]?.top, rectangles[1]?.top, rectangles[3]?.top];
+    if (!tops.every(top => typeof top === "number" && Number.isFinite(top))) return null;
+    const [handleTop, identityTop, routeTop] = tops as [number, number, number];
+    if (identityTop < handleTop + handleHeight || routeTop < identityTop + identityHeight) return null;
+    // The native span includes the actual plan entry, recovery cards and gaps.
+    // All nodes share one scroll document, so scrolling cancels out of the span.
+    contentHeight = routeTop + routeHeight! - handleTop;
+  }
+  return Math.ceil(contentHeight + actionHeight + 8);
 }
 
 export function previousPanelExtent(extent: PanelExtent): PanelExtent | null {

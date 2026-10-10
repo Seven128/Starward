@@ -13,6 +13,30 @@ test("small anchor reserves complete native identity above fixed actions", () =>
   }
 });
 
+test("formal small anchor includes the actual plan, recovery and route span above fixed actions", () => {
+  const rows = [
+    { top: 400, height: 20 },
+    { top: 420, height: 78 },
+    { height: 50 },
+    { top: 572, height: 66.5 },
+  ];
+  assert.equal(panelIdentityMinimumHeight(rows), 297,
+    "the plan entry and its gaps between identity and route cannot disappear from the small floor");
+  for (const extra of [30, 60, 160]) {
+    assert.equal(panelIdentityMinimumHeight([rows[0], rows[1], rows[2], { top: 572 + extra, height: 66.5 }]), 297 + extra,
+      "wrapped plan labels and real recovery cards extend the measured prefix");
+  }
+  assert.equal(panelIdentityMinimumHeight([rows[0], { top: 420, height: 138 }, rows[2], { top: 632, height: 66.5 }]), 357);
+  assert.equal(panelIdentityMinimumHeight([rows[0], rows[1], rows[2], { top: 572, height: 106.5 }]), 337,
+    "wrapped route facts remain above the action lane");
+  assert.equal(panelIdentityMinimumHeight(rows.map((row, index) => index === 2 ? row : { ...row, top: row.top! - 800 })), 297,
+    "scrolling the retained document changes coordinates, not its content floor");
+  for (const route of [null, { top: NaN, height: 66 }, { top: 490, height: 66 }, { top: 572, height: 0 }]) {
+    assert.equal(panelIdentityMinimumHeight([...rows.slice(0, 3), route]), null,
+      "a formal point cannot install an identity-only floor when its required route measurement is invalid");
+  }
+});
+
 test("release starts at the last bounded drag frame when native measurement is stale", () => {
   const geometry = { small: 156, medium: 368, large: 661, startHeight: 368 };
   assert.equal(panelReleaseStartHeight(geometry, 661, 700), 661);

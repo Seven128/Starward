@@ -7,7 +7,7 @@ import { currentDraftUserId, getPlans } from "@/services/api-client";
 import { spotPlanRoute } from "./spot-plan-route";
 import "./spot-plan-entry.scss";
 
-export function SpotPlanEntry({ spotId }: { spotId: SpotId }) {
+export function SpotPlanEntry({ spotId, onLayoutChange }: { spotId: SpotId; onLayoutChange?: (() => void) | undefined }) {
   const mount = useId(), busy = useRef(false);
   const active = useRef(true);
   const [opening, setOpening] = useState(false), [failed, setFailed] = useState(false);
@@ -20,6 +20,7 @@ export function SpotPlanEntry({ spotId }: { spotId: SpotId }) {
   useEffect(() => () => { active.current = false; }, []);
   const route = query.data ? spotPlanRoute(spotId, query.data.data.plans) : null;
   const unavailable = query.isError || query.refreshError || failed;
+  useEffect(() => { onLayoutChange?.(); }, [spotId, route?.label, route?.count, unavailable, opening, onLayoutChange]);
   const open = async () => {
     if (busy.current) return;
     busy.current = true; setOpening(true); setFailed(false);

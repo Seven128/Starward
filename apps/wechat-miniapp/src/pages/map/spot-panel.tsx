@@ -136,6 +136,7 @@ export function SpotInformationPanel({
   detailPending,
   detailError,
   detailStale = false,
+  onLayoutChange,
   contextPending,
   contextError,
   onContextRecover,
@@ -194,6 +195,7 @@ export function SpotInformationPanel({
   detailPending: boolean;
   detailError: unknown;
   detailStale?: boolean;
+  onLayoutChange?: (() => void) | undefined;
   contextPending: boolean;
   contextError: unknown;
   onContextRecover: () => void;
@@ -527,7 +529,7 @@ export function SpotInformationPanel({
             </View>
           </View>
 
-          <SpotPlanEntry spotId={effectiveSpot.spotId} />
+          <SpotPlanEntry spotId={effectiveSpot.spotId} onLayoutChange={onLayoutChange} />
 
           {contextPending ? <StatusPanel state="LOADING" detail="正在确认地点的观测条件；已确认的地图摘要仍可查看。" /> : null}
           {contextError ? <StatusPanel
