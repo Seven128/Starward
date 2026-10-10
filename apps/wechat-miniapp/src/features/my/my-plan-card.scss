@@ -2,6 +2,15 @@
 .my-plan-card button { margin: 0; border: 0; border-radius: 0; background: transparent; color: inherit; text-align: left; line-height: 1.5; }
 .my-plan-card button::after { border: 0; }
 .my-plan-card button:active { opacity: .72; }
+.theme-day .my-plan-card { transition: box-shadow 180ms, transform 180ms; }
+.theme-day .my-plan-card button { transition: background-color 130ms, transform 130ms; }
+.theme-day .my-plan-card button:active, .theme-day .my-plan-card .my-plan-card__button--pressed { opacity: 1; background: #ffffff38; transform: scale(.99); }
+.my-plan-card > button, .my-plan-card > .my-plan-card__empty { position: relative; z-index: 1; }
+.my-plan-card__touch { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: 0; opacity: 0; background: radial-gradient(circle at var(--touch-x, 50%) var(--touch-y, 40%), #ffffff5c, transparent 55%); transition: opacity 200ms; }
+.theme-day .my-plan-card.my-plan-card--pressed { transform: scale(.998); }
+.theme-day .my-plan-card--pressed .my-plan-card__touch { opacity: 1; }
+.reduced-motion .my-plan-card, .reduced-motion .my-plan-card.my-plan-card--pressed, .reduced-motion .my-plan-card__touch { transition: none; transform: none; }
+.reduced-motion .my-plan-card button { transition: none; }
 .my-plan-card__header { display: flex; align-items: center; justify-content: space-between; min-height: 58Px; padding: 12Px 16Px 10Px; font-size: 18Px; line-height: 26Px; font-weight: 600; }
 .my-plan-card__row { display: flex; align-items: center; gap: 14Px; min-height: 68Px; width: 100%; padding: 12Px 16Px; border-top: 1Px solid var(--border) !important; }
 .my-plan-card__dot { width: 8Px; height: 8Px; flex: none; border-radius: 50%; background: var(--text-secondary); }
