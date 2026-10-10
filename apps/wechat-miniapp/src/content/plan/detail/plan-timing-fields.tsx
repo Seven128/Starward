@@ -11,7 +11,7 @@ export function PlanObservationEndField({ value, disabled, onChange }: {
   disabled: boolean;
   onChange(value: PlanTiming): void;
 }) {
-  return <PlanTimeRow label="观测结束" dateKey="endLocalDate" timeKey="endLocalTime"
+  return <PlanTimeRow label="结束观测" dateKey="endLocalDate" timeKey="endLocalTime"
     value={value} disabled={disabled} onChange={onChange} />;
 }
 
@@ -21,7 +21,7 @@ export function PlanDepartureTimeFields({ value, disabled, onChange }: {
   disabled: boolean;
   onChange(value: PlanTiming): void;
 }) {
-  return <PlanTimeRow label="计划出发" dateKey="departureLocalDate" timeKey="departureLocalTime"
+  return <PlanTimeRow label="出发时间" dateKey="departureLocalDate" timeKey="departureLocalTime"
     value={value} disabled={disabled} onChange={onChange} />;
 }
 

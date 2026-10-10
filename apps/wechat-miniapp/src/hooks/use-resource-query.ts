@@ -1,4 +1,4 @@
-import { onlineManager, useQuery } from "@tanstack/react-query";
+import { onlineManager, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { recordAcceptanceDiagnostic } from "@/services/acceptance-diagnostics";
 
@@ -16,6 +16,13 @@ export interface QueryOptions<T> {
 }
 
 type RefetchOptions = { cancelRefetch?: boolean };
+
+export interface ResourceSnapshot<T> {
+  data: T | undefined;
+  error: unknown;
+  isInvalidated: boolean;
+  updatedAt: number;
+}
 
 type QueryResult<T> = (
   | {
@@ -38,7 +45,7 @@ type QueryResult<T> = (
       isError: false;
       isPending: true;
       refetch: (options?: RefetchOptions) => Promise<T | undefined>;
-    }) & { refreshError?: unknown; isFetching: boolean };
+    }) & { refreshError?: unknown; isFetching: boolean; readCurrent(): ResourceSnapshot<T> };
 
 export function useResourceQuery<T>({
   queryKey,
@@ -50,6 +57,14 @@ export function useResourceQuery<T>({
   throwOnRefetchError = false,
   structuralSharing = true,
 }: QueryOptions<T>): QueryResult<T> {
+  const client = useQueryClient();
+  // Native confirmations can settle before React receives a newer publication.
+  // Read the same query owner synchronously before dispatching an external effect.
+  const readCurrent = (): ResourceSnapshot<T> => {
+    const current = client.getQueryState<T>(queryKey);
+    return { data: current?.data, error: current?.error ?? null,
+      isInvalidated: current?.isInvalidated ?? true, updatedAt: current?.dataUpdatedAt ?? 0 };
+  };
   const diagnosticKey = String(queryKey[0] ?? "resource-query");
   const result = useQuery<T>({
     queryKey,
@@ -82,6 +97,7 @@ export function useResourceQuery<T>({
       isError: false,
       isPending: false,
       refetch,
+      readCurrent,
       refreshError: result.error ?? undefined,
       isFetching: result.isFetching,
     };
@@ -92,6 +108,7 @@ export function useResourceQuery<T>({
       isError: true,
       isPending: false,
       refetch,
+      readCurrent,
       isFetching: result.isFetching,
     };
   return {
@@ -100,6 +117,7 @@ export function useResourceQuery<T>({
     isError: false,
     isPending: true,
     refetch,
+    readCurrent,
     isFetching: result.isFetching,
   };
 }

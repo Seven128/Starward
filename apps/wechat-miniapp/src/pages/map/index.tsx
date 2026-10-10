@@ -17,6 +17,8 @@ import { ContributionEditor, type ContributionCandidatePreview, type Contributio
 import { panelIdentityMinimumHeight, panelReleaseStartHeight, panelReleaseVelocity, previousPanelExtent, releasePanelExtent, readPanelSnapGeometry, type PanelMotionSample, type PanelSnapGeometry } from "./panel-snap";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import { usePrimaryNavigation } from "@/hooks/use-primary-navigation";
+import { useSpotNavigationCommand } from "@/hooks/use-spot-navigation";
+import { currentNavigationResource } from "@/navigation/spot-navigation-controller";
 import { primaryNavigationLayout } from "@/navigation/primary-navigation";
 import { restoreMapBootstrapContext, retryObservationScene, spotSelectionAllowsContextRestore } from "./context-restore";
 import { canApplyContextRestore, sameContextVersion } from "@/services/observation-context-version";
@@ -851,6 +853,28 @@ export default function MapPage() {
     refetchInterval: WEATHER_ALERT_REFRESH_MS,
   });
   const spotDetail = detailContextReady && selected && spotOverview.data && spotOverview.data.data.spot.spotId === selected.spotId ? spotOverview.data.data : null;
+  const spotNavigation = useSpotNavigationCommand({
+    readSnapshot: () => {
+      const current = useAppStore.getState();
+      const resource = spotOverview.readCurrent();
+      const detail = resource.data?.data.spot.spotId === current.selectedSpotId ? resource.data.data : null;
+      return {
+        scope: JSON.stringify([currentDraftUserId(), current.mode, current.mapResetVersion, current.selectedSpotId,
+          current.observationContext?.contextId, current.observationContext?.contextFingerprint, current.observationContext?.revision]),
+        version: JSON.stringify([resource.updatedAt, resource.data?.etag, resource.data?.generatedAt]),
+        spot: detail?.spot ?? null,
+        safety: detail?.accessAndSafety ?? null,
+        available: Boolean(pageVisible && bottomPresentation === "spot-panel" && selected
+          && current.selectedSpotId === selected.spotId && detailContextReady && detail
+          && current.observationContext?.contextId === activeContext?.contextId
+          && current.observationContext?.contextFingerprint === activeContext?.contextFingerprint
+          && current.observationContext?.revision === activeContext?.revision
+          && currentNavigationResource(resource)),
+      };
+    },
+    confirmHandoff: () => navigationHandoff.confirm("微信导航界面可能较亮，无法跟随红光模式。"),
+    feedback: { owner: "map", placement: "floating", dedupeKeyPrefix: "map-navigation:" },
+  });
   const spotOverviewProjection = projectSpotPanelResource(detailContextReady, {
     isPending: spotOverview.isPending,
     error: spotOverview.error,
@@ -1964,70 +1988,7 @@ export default function MapPage() {
     void openMapPage(`${route}?${query}${articleId ? `&articleId=${encodeURIComponent(articleId)}` : ""}`, "资料页面", "evidence");
   };
 
-  const onPanelNavigate = async () => {
-    if (!selected) return;
-    const operation = ++navigationEpoch.current;
-    const current = () => operation === navigationEpoch.current && useAppStore.getState().selectedSpotId === selected.spotId;
-    if (selected.visibilityPolicy !== "PUBLIC_EXACT") {
-      notify({
-        owner: "map",
-        placement: "floating",
-        tone: "warning",
-        title: "坐标不对外开放",
-        body: "该点位不允许向外部地图发送精确坐标；请查看公开的到达说明。",
-        dismissible: true,
-        dedupeKey: `map-navigation-restricted:${selected.spotId}`,
-      });
-      return;
-    }
-    if (
-      !Number.isFinite(selected.gcj02.latitude) ||
-      !Number.isFinite(selected.gcj02.longitude)
-    ) {
-      notify({
-        owner: "map",
-        placement: "floating",
-        tone: "warning",
-        title: "坐标暂不可用",
-        body: "请先查看到达说明。",
-        dismissible: true,
-        dedupeKey: "map-navigation-no-coordinate",
-      });
-      return;
-    }
-    try {
-      const allowed = await navigationHandoff.confirm("微信导航界面可能较亮，无法跟随红光模式。");
-      if (!allowed || !current()) return;
-      const safety = spotDetail?.accessAndSafety;
-      if (safety && (safety.explicitDanger || safety.openness === "CLOSED" || safety.legalAccess === "PROHIBITED" || safety.nightSafety === "DANGER")) {
-        const warning = await Taro.showModal({
-          title: "当前存在出行阻断",
-          content: [...safety.restrictions, ...safety.guidance].join("；") || "当前开放、进入或夜间安全状态不支持直接前往。",
-          confirmText: "仍要查看",
-          cancelText: "暂不前往",
-        });
-        if (!current() || !warning.confirm) return;
-      }
-      await Taro.openLocation({
-        latitude: selected.gcj02.latitude,
-        longitude: selected.gcj02.longitude,
-        name: selected.name,
-        address: selected.address,
-        scale: 14,
-      });
-    } catch (error) {
-      if (!current()) return;
-      notify({
-        owner: "map",
-        placement: "floating",
-        tone: "warning",
-        title: "外部地图未打开",
-        body: `${errorMessage(error)}。请稍后重试，或查看到达说明。`,
-        dismissible: true,
-        dedupeKey: "map-navigation-failed",
-      });
-    }
-  };
+  const onPanelNavigate = () => spotNavigation.openDirect();
 
   const onPanelCloud = () => {
     if (

@@ -14,7 +14,7 @@ Revisit when: A new Spot Night interaction changes time/scene ownership or intro
 
 Owner: wechat-miniapp-maintainers. Tracking: WECHAT-MINIAPP-MOD-006.
 
-The current Spot Detail surface keeps context validation, section states and attributable actions visible in one reviewed owner while drift repair is verified; section extraction remains explicit bounded debt and does not retain a superseded product path.
+The current Spot Detail surface keeps context validation and section states visible in one owner. Map, Spot Detail and Plan native map/clipboard commands share `navigation/spot-navigation-controller.ts` and `hooks/use-spot-navigation.ts`; consumers supply their current query publications and precise feedback placement. Detail section extraction remains explicit bounded debt and does not retain a superseded product path.
 
 Revisit when: Extract Detail section presenters and action orchestration before adding another segment or materially changing context recovery.
 

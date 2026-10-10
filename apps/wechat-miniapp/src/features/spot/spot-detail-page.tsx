@@ -17,7 +17,10 @@ import { FavoriteStar } from "@/components/selected-card-star";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useFavoriteMutation } from "@/hooks/use-favorite-mutation";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
+import { useSpotNavigationCommand } from "@/hooks/use-spot-navigation";
+import { currentNavigationResource, currentNavigationSiteResource } from "@/navigation/spot-navigation-controller";
 import {
+  currentDraftUserId,
   getSpotGuides,
   getSpotOverview,
   getSpotSite,
@@ -75,23 +78,16 @@ function formatObservationTime(value: string, timezone: string) {
   }
 }
 
-function isCancelledAction(error: unknown) {
-  const message =
-    error instanceof Error ? error.message
-      : error && typeof error === "object" && "errMsg" in error
-        ? String(error.errMsg)
-        : String(error ?? "");
-  return message.toLowerCase().includes("cancel");
-}
-
 export function SpotDetailPage({
   initialSegment,
   observationContextOverride,
+  readObservationContextOverride,
   contextRefreshError = false,
   onContextRefresh,
 }: {
   initialSegment: SpotSegment;
   observationContextOverride?: ObservationContext;
+  readObservationContextOverride?: () => ObservationContext | null;
   contextRefreshError?: boolean;
   onContextRefresh?: () => void;
 }) {
@@ -168,6 +164,30 @@ export function SpotDetailPage({
     ? facilities[0]!.verifiedAt : null;
   const accessAndSafety =
     site.data?.data.accessAndSafety ?? detail?.accessAndSafety;
+  const locationNavigation = useSpotNavigationCommand({
+    readSnapshot: () => {
+      const current = useAppStore.getState();
+      const publication = overview.readCurrent(), siteFacts = site.readCurrent();
+      const currentContext = observationContextOverride ? readObservationContextOverride?.() ?? null : current.observationContext;
+      const publishedDetail = publication.data?.data.spot.spotId === spotId ? publication.data.data : null;
+      const publishedSite = siteFacts.data?.data.spotId === spotId ? siteFacts.data.data : null;
+      return {
+        scope: JSON.stringify([currentDraftUserId(), current.mode, current.mapResetVersion, navigationEpoch.current, scope,
+          currentContext?.contextId, currentContext?.contextFingerprint, currentContext?.revision]),
+        version: JSON.stringify([publication.updatedAt, publication.data?.etag,
+          segment === "SITE" ? siteFacts.updatedAt : null, segment === "SITE" ? siteFacts.data?.etag : null]),
+        spot: publishedDetail?.spot ?? null,
+        safety: segment === "SITE" ? publishedSite?.accessAndSafety ?? null : publishedDetail?.accessAndSafety ?? null,
+        available: Boolean(pageVisible && validRoute && publishedDetail && currentNavigationResource(publication)
+          && currentContext?.contextId === observationContext?.contextId
+          && currentContext?.contextFingerprint === observationContext?.contextFingerprint
+          && currentContext?.revision === observationContext?.revision
+          && (segment !== "SITE" || (publishedSite && currentNavigationSiteResource(siteFacts)))),
+      };
+    },
+    confirmHandoff: () => navigationHandoff.confirm("微信导航选项和地图界面可能较亮，无法跟随红光模式。"),
+    feedback: { owner: "spot-detail", placement: "inline", dedupeKeyPrefix: "spot-navigation:" },
+  });
   const siteMediaState =
     site.data?.data.siteMediaState ?? detail?.siteMediaState;
   useEffect(() => {
@@ -233,99 +253,7 @@ export function SpotDetailPage({
     } finally { detailPagePending.current = false; }
   };
 
-  const openNavigation = async () => {
-    if (!detail) return;
-    const operation = ++navigationEpoch.current;
-    const current = () => operation === navigationEpoch.current && navigationScope.current === scope;
-
-    try {
-    const canCopyExact = detail.spot.visibilityPolicy === "PUBLIC_EXACT";
-    if (!canCopyExact) {
-      notify({ owner: "spot-detail", placement: "inline", tone: "warning", title: "坐标不对外开放", body: "该点位不允许向外部地图发送精确坐标；请查看公开的到达说明。", dismissible: true, dedupeKey: `spot-navigation-restricted:${detail.spot.spotId}` });
-      return;
-    }
-    const allowed = await navigationHandoff.confirm("微信导航选项和地图界面可能较亮，无法跟随红光模式。");
-    if (!allowed || !current()) return;
-    const hasTravelBlocker = Boolean(
-      detail.accessAndSafety.explicitDanger ||
-        detail.accessAndSafety.openness === "CLOSED" ||
-        detail.accessAndSafety.legalAccess === "PROHIBITED" ||
-        detail.accessAndSafety.nightSafety === "DANGER",
-    );
-    if (hasTravelBlocker) {
-      const warning = await Taro.showModal({
-        title: "当前存在出行阻断",
-        content: [
-          ...detail.accessAndSafety.restrictions,
-          ...detail.accessAndSafety.guidance,
-        ].join("；") || "当前开放、进入或夜间安全状态不支持直接前往。",
-        confirmText: "仍要查看",
-        cancelText: "暂不前往",
-      });
-      if (!current() || !warning.confirm) return;
-    }
-
-    let tapIndex: number;
-    try {
-      const choice = await Taro.showActionSheet({
-        itemList: canCopyExact
-          ? ["在微信地图查看位置", "复制坐标"]
-          : ["在微信地图查看位置"],
-      });
-      if (!current()) return;
-      tapIndex = choice.tapIndex;
-    } catch (error) {
-      if (!current() || isCancelledAction(error)) return;
-      notify({ owner: "spot-detail", placement: "inline", tone: "warning", title: "导航选项暂未打开", body: "请重试并选择查看位置或复制坐标。", dismissible: true, dedupeKey: "spot-navigation-choice-failed" });
-      return;
-    }
-
-    try {
-      if (tapIndex === 0) {
-        await Taro.openLocation({
-          latitude: detail.spot.gcj02.latitude,
-          longitude: detail.spot.gcj02.longitude,
-          name: detail.spot.name,
-          address: detail.spot.address,
-          scale: 14,
-        });
-      } else if (canCopyExact) {
-        await Taro.setClipboardData({
-          data: `${detail.spot.wgs84.latitude},${detail.spot.wgs84.longitude}`,
-        });
-      }
-    } catch (error) {
-      if (!current() || isCancelledAction(error)) return;
-      if (tapIndex === 1) {
-        notify({ owner: "spot-detail", placement: "inline", tone: "warning", title: "坐标未能复制", body: "请重试复制坐标；本次没有打开外部地图。", dismissible: true, dedupeKey: "spot-coordinate-copy-failed" });
-        return;
-      }
-      if (!canCopyExact) {
-        await Taro.showModal({
-          title: "无法打开地图",
-          content: "外部地图暂未打开。此点位不公开精确坐标，请稍后重试。",
-          showCancel: false,
-          confirmText: "知道了",
-        });
-        return;
-      }
-      const result = await Taro.showModal({
-        title: "无法打开地图",
-        content: "外部地图暂未打开。你可以复制该公开点位坐标，或稍后重试。",
-        confirmText: "复制坐标",
-        cancelText: "取消",
-      });
-      if (current() && result.confirm) {
-        await Taro.setClipboardData({
-          data: `${detail.spot.wgs84.latitude},${detail.spot.wgs84.longitude}`,
-        });
-      }
-    }
-    } catch (error) {
-      if (!current() || isCancelledAction(error)) return;
-      notify({ owner: "spot-detail", placement: "inline", tone: "warning", title: "本次导航操作未完成", body: "提示或复制操作暂不可用，请返回页面重试。", dismissible: true, dedupeKey: "spot-navigation-native-failed" });
-    }
-  };
+  const openNavigation = () => locationNavigation.openOptions();
 
   return (
     <View
@@ -413,6 +341,7 @@ export function SpotDetailPage({
                 className="detail-route-action focus-ring"
                 data-od-id="spot-detail-route-action"
                 aria-label={`去这里，打开${detail.spot.name}外部地图`}
+                disabled={locationNavigation.busy}
                 onClick={openNavigation}
               >
                 <Text>去这里 →</Text>

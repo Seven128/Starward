@@ -1,5 +1,8 @@
 import { useSkyForecastQuery } from "@/hooks/use-forecast-query";
 import { SemanticIcon } from "@/components/semantic-asset";
+import { useRedLightHandoff } from "@/components/red-light-handoff";
+import { useSpotNavigationCommand } from "@/hooks/use-spot-navigation";
+import { currentNavigationResource, currentNavigationSiteResource } from "@/navigation/spot-navigation-controller";
 import { PLAN_NOTES_MAX_LENGTH, parsePlanReminders, resolvePlanTiming, type PlanReminder } from "@starward/miniapp-contracts";
 import { distanceMeters, gcj02ToWgs84 } from "@starward/coordinate-system";
 import { PlanReminderEditor } from "./plan-reminder-editor";
@@ -394,6 +397,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     notes,
   });
   const themeClass = useThemeClass();
+  const mode = useAppStore(state => state.mode);
   useEffect(() => { setStatusReminderId(null); }, [activePlan?.planId, editing]);
   const statusReminder = !editing ? activePlan?.reminders?.find(reminder => reminder.reminderId === statusReminderId) : null;
   const selectedReminderNotification = statusReminder
@@ -594,6 +598,32 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const selectedSpot = formalSpots.find(
     (spot) => spot.spotId === activePlan?.spotId,
   );
+  const navigationHandoff = useRedLightHandoff();
+  const planNavigation = useSpotNavigationCommand({
+    readSnapshot: () => {
+      const current = useAppStore.getState(), owner = currentDraftUserId();
+      const planResource = planQuery.readCurrent(), spotResource = spotsQuery.readCurrent(), siteResource = siteOverviewQuery.readCurrent();
+      const currentPlan = planResource.data?.data.plans.find(plan => plan.planId === activePlanId) ?? null;
+      const publishedSpot = currentPlan ? spotResource.data?.data.spots.find(spot => spot.spotId === currentPlan.spotId) ?? null : null;
+      const siteFacts = currentPlan && siteResource.data?.data.spotId === currentPlan.spotId ? siteResource.data.data : null;
+      return {
+        scope: JSON.stringify([owner, planOwner, current.accountOwnerId, current.mode, current.mapResetVersion, activePlanId]),
+        version: JSON.stringify([planResource.updatedAt, currentPlan?.revision, currentPlan?.spotId,
+          current.plans.find(plan => plan.planId === activePlanId)?.revision,
+          spotResource.updatedAt, spotResource.data?.etag, siteResource.updatedAt, siteResource.data?.etag]),
+        spot: publishedSpot,
+        safety: siteFacts?.accessAndSafety ?? null,
+        available: Boolean(pageVisible && !editing && owner && owner === planOwner && owner === formOwner.current
+          && owner === current.accountOwnerId
+          && currentPlan && activePlan && currentPlan.revision === activePlan.revision
+          && currentPlan.spotId === selectedSpotId && currentPlan.spotId === selectedSpot?.spotId
+          && currentNavigationResource(planResource) && planResource.data?.dataState === "FRESH"
+          && currentNavigationResource(spotResource) && currentNavigationSiteResource(siteResource) && siteFacts),
+      };
+    },
+    confirmHandoff: () => navigationHandoff.confirm("微信地图界面可能较亮，无法跟随红光模式。"),
+    feedback: { owner: "plan", placement: "floating", dedupeKeyPrefix: "plan-navigation:" },
+  });
   const distanceOrigin = activePlan?.travel?.originLocation?.wgs84 ??
     (activePlan?.travel?.originLocation !== null && distanceOriginMatches ? activeContext?.routeOrigin?.wgs84 : null);
   const straightDistanceKm = selectedSpot && distanceOrigin
@@ -619,6 +649,11 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       dismissible: true,
       dedupeKey: `plan-${tone}-${title}-${body.slice(0, 48)}`,
     });
+  };
+  const openPlanShare = () => {
+    if (!activePlan) return;
+    void Taro.navigateTo({ url: `/content/share/index?planId=${encodeURIComponent(activePlan.planId)}` })
+      .catch(() => announce("warning", "分享页暂未打开", "请稍后重试，计划仍保留。"));
   };
   const retainDraft = (patch: Partial<PlanDraft>) => {
     appliedContextDefaults.current = true;
@@ -1016,6 +1051,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       data-control="plan-editor"
     >
       {!eventModalPresent ? <FloatingNotificationHost /> : null}
+      {navigationHandoff.warning}
       <AstronomicalEventModal open={eventModalOpen} onPresenceChange={setEventModalPresent} mode={editing ? "select-one" : "browse"}
         context={activeContext} initialOccurrenceIds={eventOccurrenceIds} initialDetailId={eventDetailId}
         onClose={() => { setEventModalOpen(false); setEventDetailId(null); }}
@@ -1110,12 +1146,15 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 <Text className="plan-hero__title">{selectedSpot?.name ?? "点位资料暂不可用"}</Text>
                 <SemanticIcon name="chevron-right" className="plan-hero__chevron" />
               </Button>
-              <Text className="plan-hero__subtitle">{selectedSpot?.region ?? "正式点位资料暂不可用；计划内容仍保留。"}</Text>
+              <Text className="plan-hero__subtitle">{selectedSpot?.address || selectedSpot?.region || "正式点位资料暂不可用；计划内容仍保留。"}</Text>
               <View className="plan-period" aria-label="计划观测时段">
                 <Text className="plan-period__date">{activePlan.localDate} · 观测时段</Text>
                 <View className="plan-period__time"><Text>{activePlan.localTime}</Text><Text>—</Text><Text>{activePlan.timing?.endLocalTime || "未填写"}</Text></View>
                 <Text className="plan-period__meta">{activePlan.timing?.endLocalDate && activePlan.timing.endLocalDate !== activePlan.localDate ? `至 ${activePlan.timing.endLocalDate} · ` : ""}地点当地时间 · {activePlan.contextSnapshot.timezone}</Text>
               </View>
+              {mode === "DAY" ? <SoftButton className="plan-hero__share" variant="ghost" label="分享这份行程" onClick={openPlanShare}>
+                <SemanticIcon name="share" /><Text>分享行程</Text>
+              </SoftButton> : null}
             </View>
             {planQuery.isError || planQuery.refreshError || planQuery.data?.dataState === "STALE_USABLE" ? (
               <StatusPanel
@@ -1125,49 +1164,6 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 onRecover={() => void planQuery.refetch().catch(() => {})}
               />
             ) : null}
-            <View className="plan-section plan-route" data-od-id="plan-route-nodes">
-              <View className="plan-section-heading">
-                <Text className="type-section"><Text className="plan-section-symbol">↗</Text>出行安排</Text>
-                <Text className="plan-section-caption">
-                  {activePlan.travel ? planTravelModeLabel(activePlan.travel.mode) : "待补充"}
-                </Text>
-              </View>
-              <View className="plan-route__card">
-                <View className="plan-route__timeline">
-                  <View className="plan-route__node">
-                    <View className="plan-route__dot" aria-hidden="true" />
-                    <View className="plan-route__node-copy">
-                      <Text className="plan-route__node-title">
-                        {activePlan.timing ? activePlan.timing.departureLocalDate + " " + activePlan.timing.departureLocalTime : "出发时间待补充"}
-                      </Text>
-                      <Text className="plan-route__node-detail">{activePlan.travel?.origin || "出发地待补充"}</Text>
-                    </View>
-                  </View>
-                  <View className="plan-route__node plan-route__node--summary">
-                    <View className="plan-route__dot" aria-hidden="true" />
-                    <View className="plan-route__node-copy">
-                      <Text className="plan-route__node-title">到达与停车信息</Text>
-                      <Text className="plan-route__node-detail">{siteRoute?.lastRoad || siteRoute?.parkingGuidance
-                        ? [siteRoute.lastRoad, siteRoute.parkingGuidance].filter(Boolean).join(" · ")
-                        : siteOverviewQuery.isError || siteOverviewQuery.refreshError || siteOverviewQuery.data?.dataState === "STALE_USABLE"
-                          ? "场地信息暂未获取" : EMPTY_FIELD_VALUE}</Text>
-                    </View>
-                    {straightDistanceKm != null
-                      ? <Text className="plan-route__node-meta">直线 {straightDistanceKm.toFixed(1)} km</Text> : null}
-                  </View>
-                  <View className="plan-route__node">
-                    <View className="plan-route__dot" aria-hidden="true" />
-                    <View className="plan-route__node-copy">
-                      <Text className="plan-route__node-title">{activePlan.localDate} {activePlan.localTime} · {selectedSpot?.name ?? "正式观星点"}</Text>
-                      <Text className="plan-route__node-detail">计划开始观测；到达后请核实现场开放与安全情况</Text>
-                    </View>
-                  </View>
-                </View>
-                <Text className="plan-route__source-note">时间由你安排；直线距离不代表道路里程或用时。</Text>
-                {siteOverviewQuery.isError || siteOverviewQuery.refreshError || siteOverviewQuery.data?.dataState === "STALE_USABLE"
-                  ? <SoftButton variant="ghost" label="重新获取场地信息" onClick={() => void siteOverviewQuery.refetch()} /> : null}
-              </View>
-            </View>
             {contextQuery.isError && !sky ? null : <PlanReference plan={activePlan} report={sky}
               failed={!sky && (skyQuery.isError || Boolean(skyQuery.refreshError) || skyQuery.data?.dataState === "STALE_USABLE")}
               stale={Boolean(sky && (skyQuery.refreshError || skyQuery.data?.dataState === "STALE_USABLE"))}
@@ -1183,8 +1179,57 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 onRecover={() => void contextQuery.refetch()}
               />
             ) : null}
+            <View className="plan-section plan-route" data-od-id="plan-route-nodes">
+              <View className="plan-section-heading">
+                <View className="plan-section-title">{mode === "DAY" ? <SemanticIcon name="navigation" /> : <Text className="plan-section-symbol">↗</Text>}<Text className="type-section">出行安排</Text></View>
+                {mode !== "DAY" ? <Text className="plan-section-caption">
+                  {activePlan.travel ? planTravelModeLabel(activePlan.travel.mode) : "待补充"}
+                </Text> : null}
+              </View>
+              <View className="plan-route__options">
+                {mode === "DAY" ? <Text className="plan-route__mode">{activePlan.travel ? planTravelModeLabel(activePlan.travel.mode) : "待补充"}</Text> : <View />}
+                <Button className="plan-route__external-map focus-ring" data-od-id="plan-route-external-map"
+                  aria-label="在微信地图查看当前计划地点" disabled={planNavigation.busy}
+                  onClick={() => void planNavigation.openDirect()}>{planNavigation.busy ? "打开中…" : "在微信地图查看 ›"}</Button>
+              </View>
+              <View className="plan-route__card">
+                <View className="plan-route__timeline">
+                  <View className="plan-route__node">
+                    <View className="plan-route__dot" aria-hidden="true" />
+                    <View className="plan-route__node-copy">
+                      <Text className="plan-route__node-title">
+                        <Text className="plan-route__time">{activePlan.timing?.departureLocalTime || "出发时间待补充"}</Text>{activePlan.travel?.origin || "出发地待补充"}
+                      </Text>
+                      <Text className="plan-route__node-detail">{activePlan.timing?.departureLocalDate || "出发日期待补充"} 出发</Text>
+                    </View>
+                  </View>
+                  <View className="plan-route__node plan-route__node--summary">
+                    <View className="plan-route__dot" aria-hidden="true" />
+                    <View className="plan-route__node-copy">
+                      <Text className="plan-route__node-title">{selectedSpot?.address || "到达与停车信息"}</Text>
+                      <Text className="plan-route__node-detail">{siteRoute?.lastRoad || siteRoute?.parkingGuidance
+                        ? [siteRoute.lastRoad, siteRoute.parkingGuidance].filter(Boolean).join(" · ")
+                        : siteOverviewQuery.isError || siteOverviewQuery.refreshError || siteOverviewQuery.data?.dataState === "STALE_USABLE"
+                          ? "场地信息暂未获取" : EMPTY_FIELD_VALUE}</Text>
+                    </View>
+                    {straightDistanceKm != null
+                      ? <Text className="plan-route__node-meta">直线 {straightDistanceKm.toFixed(1)} km</Text> : null}
+                  </View>
+                  <View className="plan-route__node">
+                    <View className="plan-route__dot" aria-hidden="true" />
+                    <View className="plan-route__node-copy">
+                      <Text className="plan-route__node-title"><Text className="plan-route__time">{activePlan.localTime}</Text>开始观测</Text>
+                      <Text className="plan-route__node-detail">{activePlan.localDate} · 预留停车、步行与架设器材的时间</Text>
+                    </View>
+                  </View>
+                </View>
+                <Text className="plan-route__source-note">出发时间由你安排；请在微信地图核实到达方式。{straightDistanceKm !== null ? "直线距离不代表道路里程或用时。" : ""}</Text>
+                {siteOverviewQuery.isError || siteOverviewQuery.refreshError || siteOverviewQuery.data?.dataState === "STALE_USABLE"
+                  ? <SoftButton variant="ghost" label="重新获取场地信息" onClick={() => void siteOverviewQuery.refetch()} /> : null}
+              </View>
+            </View>
             <View className="plan-section plan-events" data-od-id="plan-events">
-              <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">◌</Text>天文事件</Text></View>
+              <View className="plan-section-heading"><View className="plan-section-title">{mode === "DAY" ? <SemanticIcon name="meteor" /> : <Text className="plan-section-symbol">◌</Text>}<Text className="type-section">天文事件</Text></View></View>
               {(activePlan.eventOccurrenceIds ?? []).map(id => {
                 const event = eventCatalog.find(item => item.occurrenceId === id);
                 return <Button key={id} className="plan-event-row" onClick={() => { setEventDetailId(id); setEventModalOpen(true); }}>
@@ -1196,7 +1241,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 title="暂无关联事件" detail="编辑计划可关联一项天文事件。" /> : null}
             </View>
             <View className="plan-section plan-preparation" data-od-id="plan-preparation">
-              <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">☷</Text>提醒与清单</Text><Text className="plan-section-caption">{activePlan.reminders?.length ?? 0}/5 个提醒</Text></View>
+              <View className="plan-section-heading"><View className="plan-section-title">{mode === "DAY" ? <SemanticIcon name="checklist" /> : <Text className="plan-section-symbol">☷</Text>}<Text className="type-section">提醒与清单</Text></View><Text className="plan-section-caption">{activePlan.reminders?.length ?? 0}/5 个提醒</Text></View>
               <Text className="plan-form-footnote">通知状态按每组记录，清单可独立使用。</Text>
               {(activePlan.reminders ?? []).map(reminder => {
                 const notification = reminderNotifications.find(status => status.planId === activePlan.planId && status.reminderId === reminder.reminderId);
@@ -1218,22 +1263,6 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             <View className="plan-section plan-notes" data-od-id="plan-notes">
               <View className="plan-section-heading"><Text className="type-section">备注</Text></View>
               <Text>{activePlan.notes || "未添加备注"}</Text>
-            </View>
-            <View className="plan-actions">
-              <SoftButton variant="default" label="分享这份行程" onClick={() => {
-                void Taro.navigateTo({ url: `/content/share/index?planId=${encodeURIComponent(activePlan.planId)}` }).catch(() => announce("warning", "分享页暂未打开", "请稍后重试，计划仍保留。"));
-              }}>分享行程</SoftButton>
-              <SoftButton
-                variant="ghost"
-                label="删除观测计划"
-                disabled={deleting}
-                onClick={() => void remove()}
-              >{deleting ? "删除中…" : "删除"}</SoftButton>
-              <SoftButton variant="primary" label="编辑计划" onClick={() => {
-                void Taro.navigateTo({ url: `/content/plan/edit/index?planId=${encodeURIComponent(activePlan.planId)}` }).catch(() => announce("warning", "编辑页暂未打开", "请重试，已保存计划保持不变。"));
-              }}>
-                编辑计划
-              </SoftButton>
             </View>
             {plans.length > 1 ? (
               <View className="plan-list plan-list--secondary card" data-od-id="plan-list">
@@ -1277,11 +1306,9 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 ? "最新修改仅保留在当前页面，尚未存入本机草稿。请保存成功后再离开。"
                 : "已恢复未保存的草稿，请核对后保存。"}
             /> : null}
+            <View className="plan-editor-section">
             <View className="plan-editor-form__heading">
               <Text className="type-section">这次去哪里</Text>
-              <Text className="type-caption">
-                保存后仍需在出发前复核天气与到达条件。
-              </Text>
             </View>
             {fieldErrorView("location")}
             <View className="form-group plan-location-field">
@@ -1353,6 +1380,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 </View>
               ) : null}
             </View>
+            </View>
+            <View className="plan-editor-section">
             <View className="plan-editor-form__heading">
               <Text className="type-section">留给星空的时间</Text>
             </View>
@@ -1392,6 +1421,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             <Text className="plan-form-footnote">{timezone
               ? `观星点当地时间 · ${timezone}，支持跨日观测。`
               : "选择正式观星点后显示当地时区；支持跨日观测。"}</Text>
+            </View>
+            <View className="plan-editor-section">
             <View className="plan-editor-form__heading">
               <Text className="type-section">出发安排</Text>
             </View>
@@ -1406,6 +1437,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             <Text className="plan-form-footnote">
               出发地、交通方式和时间由你填写。出发前可通过微信地图核实到达方式。
             </Text>
+            </View>
+            <View className="plan-editor-section">
             <View className="plan-editor-form__heading plan-editor-form__heading--row">
               <Text className="type-section">天文事件</Text>
             </View>
@@ -1427,11 +1460,15 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
               }}>{eventOccurrenceIds.length ? `已关联 ${eventOccurrenceIds.length} 个 ›` : "选择事件 ›"}</SoftButton>
             </View>
             <Text className="plan-form-footnote">事件目录只提供年度参考；历史多关联会原样保留，确认新选择或清除后改为最多一个。</Text>
+            </View>
+            <View className="plan-editor-section">
             <View className="plan-editor-form__heading">
               <Text className="type-section">自己的提醒清单</Text>
             </View>
             {fieldErrorView("reminders")}
             <PlanReminderEditor reminders={reminders} onChange={value => { retainDraft({ reminders: value }); setReminders(value); clearFieldError("reminders"); }} />
+            </View>
+            <View className="plan-editor-section">
             <View className="form-group plan-notes-field">
               <Text className="type-section">备注</Text>
               <Textarea
@@ -1444,6 +1481,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 aria-label="观测计划备注"
                 onInput={(event) => { retainDraft({ notes: event.detail.value }); setNotes(event.detail.value); }}
               />
+            </View>
             </View>
             {conflictPlan ? (
               <View className="form-group">
@@ -1477,6 +1515,16 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         ) : null}
       </View>
       </ScrollView>
+      {activePlan && !editing ? <View className="plan-actions">
+        {mode !== "DAY" ? <SoftButton variant="default" label="分享这份行程" onClick={openPlanShare}>分享行程</SoftButton> : null}
+        <SoftButton variant="ghost" label="删除观测计划" disabled={deleting} onClick={() => void remove()}>
+          {deleting ? "删除中…" : "删除"}
+        </SoftButton>
+        <SoftButton variant="primary" label="编辑计划" onClick={() => {
+          void Taro.navigateTo({ url: `/content/plan/edit/index?planId=${encodeURIComponent(activePlan.planId)}` })
+            .catch(() => announce("warning", "编辑页暂未打开", "请重试，已保存计划保持不变。"));
+        }}>编辑计划</SoftButton>
+      </View> : null}
       {editing ? <View className="plan-editor-footer safe-bottom">
         <SoftButton label="取消编辑" disabled={saving || deleting} onClick={async () => {
           if (!scopedDraftUserId() || !(await beforeLeavingEditor())) return;

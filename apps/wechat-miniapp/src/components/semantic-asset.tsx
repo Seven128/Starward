@@ -61,6 +61,7 @@ export type SemanticIconName =
   | "clock"
   | "moon"
   | "meteor"
+  | "checklist"
   | "more"
   | "terrain"
   | "star";

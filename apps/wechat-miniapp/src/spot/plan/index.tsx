@@ -39,6 +39,12 @@ export default function PlanSpotPage() {
   const context = query.data?.data;
   if (context?.location.kind === "FORMAL_SPOT" && context.location.spotId === spotId)
     return <><SystemMotionProbe /><SpotDetailPage initialSegment="SITE" observationContextOverride={context}
+      readObservationContextOverride={() => {
+        const current = query.readCurrent();
+        return !current.error && !current.isInvalidated && current.data?.dataState === "FRESH"
+          && current.data.data.contextId === contextId && current.data.data.location.kind === "FORMAL_SPOT"
+          && current.data.data.location.spotId === spotId ? current.data.data : null;
+      }}
       contextRefreshError={Boolean(query.refreshError || query.data?.dataState === "STALE_USABLE")} onContextRefresh={() => void query.refetch()} /></>;
   return <><SystemMotionProbe /><View className={themeClass}>
     <FloatingNotificationHost />
