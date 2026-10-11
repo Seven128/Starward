@@ -224,6 +224,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
                 timezone={context?.timezone ?? "Asia/Shanghai"} source={record?.source ?? catalog.data?.data.sources.find(source => source.id === selectedDetail.sourceId)}
                 catalogVersion={record?.catalogVersion ?? catalog.data?.data.catalogVersion}
                 articleSource={record?.articleSource}
+                sourcePresentation={themeClass === "theme-day" ? "disclosure" : "default"}
                 failed={geometryFailed} onRetry={() => { void eventRecord.refetch(); if (context && previewDate) void detail.refetch(); }}
                 previewDate={previewDate ?? selectedDetail.peakDate}
                 canPreviewDate={Boolean(context)}
@@ -245,7 +246,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
   </>;
 });
 
-function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate, onPreviewDate, locationName, pending, timezone, source, articleSource, catalogVersion, failed, onRetry }: {
+function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate, onPreviewDate, locationName, pending, timezone, source, articleSource, sourcePresentation, catalogVersion, failed, onRetry }: {
   event: AstronomicalEventOccurrence;
   visibility: AstronomicalEventLocalVisibility | null;
   mode: ModalMode;
@@ -257,6 +258,7 @@ function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate
   timezone: string;
   source?: SourceSummary | undefined;
   articleSource?: SourceSummary | undefined;
+  sourcePresentation: "default" | "disclosure";
   catalogVersion?: string | undefined;
   failed?: boolean;
   onRetry?: () => void;
@@ -270,7 +272,7 @@ function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate
   const hasLocalContext = Boolean(locationName || visibility?.locationName);
   const eclipseDate = hasLocalContext && event.kind !== "METEOR_SHOWER" && event.peakAtUtc
     ? visibility?.localDate ?? calendarDateInTimezone(new Date(event.peakAtUtc), timezone) : null;
-  return <View className="event-modal-detail">
+  return <View className={`event-modal-detail${meteor ? "" : " event-modal-detail--eclipse"}`}>
     <View className="event-modal-detail__hero"><SemanticIcon name={meteor ? "meteor" : event.kind === "SOLAR_ECLIPSE" ? "sun" : "moon"} /><View><Text>{meteor ? eventKindLabel(event) : eventTypeLabel(event)} · {event.peakDate.slice(0, 4)}</Text><Text>{event.displayName}</Text></View></View>
     <View className="event-modal-detail__facts"><View><Text>{presentation.range}</Text><Text>{meteor ? `${shortDate(event.activeStartDate)} — ${shortDate(event.activeEndDate)}` : event.activeStartDate === event.activeEndDate ? event.activeStartDate : `${event.activeStartDate} — ${event.activeEndDate}`}</Text></View><View><Text>{presentation.date}</Text><Text>{meteor ? shortDate(event.peakDate) : event.peakDate}</Text></View></View>
     <Text className="event-modal-detail__precision">{presentation.precision}</Text>
@@ -308,12 +310,12 @@ function EventModalDetail({ event, visibility, mode, previewDate, canPreviewDate
     {event.kind === "METEOR_SHOWER" ? <View className="event-modal-detail__section event-modal-detail__catalogue"><Text className="type-section">数据来源与日期精度</Text>
       <Text className="type-body">{event.nominalPeakZhr === null ? "流量参考：暂无数据" : `参考峰值 ZHR ${event.nominalPeakZhr}`} · {event.velocityKmPerSecond === null ? "速度：暂无数据" : `速度 ${event.velocityKmPerSecond} km/s`}</Text>
       <Text className="type-caption">{event.nominalPeakZhr === null ? "现有资料不提供可用流量值，不能据此估算现场可见数量。" : "ZHR 是理想条件下的目录参考率，不是现场每小时可见数量。"}</Text></View> : null}
-    {source && isProductSource(source) ? <View className="event-modal-detail__section"><Text className="type-section">资料来源</Text><Provenance source={source} />{catalogVersion ? <Text className="event-modal-detail__version type-caption">目录版本：{catalogVersion}</Text> : null}</View> : null}
+    {source && isProductSource(source) ? <View className="event-modal-detail__section event-modal-detail__source">{sourcePresentation !== "disclosure" ? <Text className="type-section">资料来源</Text> : null}<Provenance source={source} presentation={sourcePresentation} />{catalogVersion ? <Text className="event-modal-detail__version type-caption">目录版本：{catalogVersion}</Text> : null}</View> : null}
     {event.article ? <View className="event-modal-detail__section event-modal-detail__article"><Text className="type-section">{event.article.title}</Text>
       {event.article.authorName ? <Text className="type-caption">作者：{event.article.authorName}</Text> : null}
       {event.article.publishedTime ? <Text className="type-caption">原文日期：{event.article.publishedTime}</Text> : null}
       {event.article.paragraphs.map((paragraph, index) => <Text key={index} className="type-article" selectable>{paragraph}</Text>)}
-      {articleSource && isProductSource(articleSource) ? <Provenance source={articleSource} /> : null}
+      {articleSource && isProductSource(articleSource) ? <Provenance source={articleSource} presentation={sourcePresentation} /> : null}
     </View> : null}
   </View>;
 }

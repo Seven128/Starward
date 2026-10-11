@@ -294,6 +294,7 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
           collapse_vars: true, computed_props: true, hoist_props: true,
           inline: true, loops: true, negate_iife: true, properties: true,
           reduce_funcs: true, reduce_vars: true, switches: true,
+          passes: 2,
         },
         output: { ascii_only: false },
       } },

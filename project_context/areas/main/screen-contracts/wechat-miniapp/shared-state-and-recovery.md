@@ -28,7 +28,7 @@ Map 点位的年度夜光、天气/天文、地形与夜光、空气质量和近
 
 完整来源记录的去重由 `packages/miniapp-contracts/src/source-records.ts` 供 BFF 聚合与独立来源页共用：只有完整 `SourceSummary` 相等时合并重复项，同 ID 的获取时间、适用范围、状态、许可或署名不同均保留。记录顺序与缺失含义保持，数据归类及发布资格仍归原 owner；该函数不将测试来源变为产品来源。
 
-已采用的点位文档来源卡通过上述两 owner 的 `disclosure` 呈现变体，把完整品牌和独立“复制官方链接”动作同行、完整网址另行，精度与发布／获取／适用共用事实行；出处、许可和官方链接仍各归原复制 owner，声明原文、缺失含义和时间单位保留。文档之外的默认／compact 消费者沿原呈现，不能由此扩认其他页面的资源或验收。
+已采用的点位文档与 DAY 事件详情通过上述两 owner 的 `disclosure` 呈现变体，把完整品牌和独立复制动作同行、完整网址另行，精度与发布／获取／适用共用事实行。卡片布局和 DAY 样式归 `Provenance` 的显式变体，不依赖 `SourceDisclosure` 展开壳；事件科学来源与补充文章来源直接复用同一变体并保持独立，目录版本留在科学来源之后。出处、许可和官方链接仍各归原复制 owner，声明原文、缺失含义和时间单位保留。默认／compact 消费者及事件非 DAY 主题沿原呈现，不能由此扩认其他页面的资源或验收。
 
 来源卡没有明确 `attribution` 时，只能以当前 `provider/title` 与 `sourceUrl` 呈现“复制原始出处”的阅读链接，不推断必要署名、原文声明或官方身份；数据旁的短署名仍仅取明确 attribution。已发布地形的 attribution 由 terrain publication owner 绑定 manifest 的完整权利及 WorldDEM-30 派生声明、provider和DOI；manifest未记上游获取时间时保留未知，派生时间继续由地形数据自身提供。
 

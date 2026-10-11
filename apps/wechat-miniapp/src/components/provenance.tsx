@@ -61,7 +61,7 @@ export function Provenance({
   const stateLabel = DATA_STATE_LABELS[source.state];
   return (
     <View
-      className={`provenance${compact ? " provenance--compact" : ""}`}
+      className={`provenance${compact ? " provenance--compact" : ""}${presentation === "disclosure" ? " provenance--disclosure" : ""}`}
       aria-label={`来源：${source.provider}${stateLabel ? `，状态：${stateLabel}` : ""}`}
     >
       <View className="provenance__header">

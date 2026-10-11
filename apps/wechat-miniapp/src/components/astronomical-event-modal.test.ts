@@ -268,6 +268,31 @@ test("reviewed article keeps every paragraph and an independent source without c
   assert.doesNotMatch(text(missing), /测试文章题目|独立第二段/);
 });
 
+test("DAY event sources use full disclosure while other themes retain their source presentation", () => {
+  const article = { title: "独立文章", paragraphs: ["完整正文"], sourceId: "article-source" };
+  const articleSource = Object.freeze({ ...source, id: article.sourceId, kind: "EDITORIAL_REFERENCE", provider: "文章作者" });
+  const record = { event: { ...meteor, article }, source, articleSource, catalogVersion: "retained-version" };
+  const check = (mutate?: (value: string) => string) => {
+    for (const theme of ["DAY", "NIGHT", "OBSERVATION"]) {
+      const ui = harness(mutate, {
+        useAppStore: (select: any) => select({ preferences: {}, mode: theme, notify() {} }),
+        useResourceQuery: (options: any) => ({ isPending: false, isError: false, refetch() {}, data: { dataState: "FRESH",
+          data: options.queryKey[0] === "astronomical-events" ? { events: [record.event], sources: [source], catalogVersion: record.catalogVersion } : record } }),
+      });
+      const modal = ui.render({ open: true, mode: "browse", context: null, initialDetailId: meteor.occurrenceId, onClose() {} });
+      const detail = ui.detail(find(modal, node => node.type === ui.detail)[0]!.props);
+      const cards = find(detail, node => node.type === "Provenance");
+      assert.equal(cards.length, 2);
+      assert.equal(cards[0]!.props.source, source);
+      assert.equal(cards[1]!.props.source, articleSource);
+      assert.deepEqual(cards.map(node => node.props.presentation), Array(2).fill(theme === "DAY" ? "disclosure" : "default"));
+      assert.match(text(detail), /目录版本：retained-version.*独立文章完整正文/s);
+    }
+  };
+  check();
+  assert.throws(() => check(value => value.replace('sourcePresentation={themeClass === "theme-day" ? "disclosure" : "default"}', 'sourcePresentation="default"')), assert.AssertionError);
+});
+
 test("article query and visible text survive local context failure and date changes", async () => {
   const articleEvent = { ...meteor, article: { title: "已发布文章", paragraphs: ["正文不依赖地点计算。"] } };
   const queries: any[] = [];

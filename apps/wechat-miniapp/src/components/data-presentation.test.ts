@@ -39,7 +39,7 @@ test("formal facility cards retain submitted descriptions and adopted missing-va
   const rendered = vm.runInNewContext(ts.transpileModule(labels + "\n" + expression.getText(source), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
   }).outputText, { React, Text: "Text", View: "View", Image: "Image", SemanticIcon: "SemanticIcon", mediaSource: (value: string) => value,
-    FACILITY_LABEL, facilityStatusLabel,
+    FACILITY_LABEL, facilityStatusLabel, dayMode: true,
     visibleFacilities: [{ type: "TOILET", status: "UNKNOWN", summary: "待核验", detail: "隔离TEST洗手间照片绑定；不是现实设施。", distanceM: null }],
     facilityPhotos: () => [], openPhoto: () => {},
   });
