@@ -54,6 +54,8 @@ export type SemanticIconName =
   | "bulb"
   | "cloud"
   | "wind"
+  | "temperature"
+  | "droplet"
   | "telescope"
   | "trash"
   | "wifi-off"
@@ -90,6 +92,7 @@ const LEGACY_ICON_NAME: Partial<Record<SemanticIconName, SemanticIconName>> = {
   walking: "compass", signal: "wifi-off", charging: "info", verified: "info",
   "plan-header-chevron": "chevron-right", "plan-row-chevron": "chevron-right",
   "settings-choice-check": "check",
+  temperature: "sun", droplet: "conditions",
 };
 
 function packageAssetPrefix() {
@@ -168,15 +171,27 @@ export function SemanticIcon({
   decorative = true,
   className = "",
   state = "default",
+  presentation = "default",
 }: {
   name: SemanticIconName;
   label?: string;
   decorative?: boolean;
   className?: string;
   state?: SemanticIconState;
+  presentation?: "default" | "forecast";
 }) {
   const mode = useAppStore((state) => state.mode);
   if (mode === "DAY") {
+    if (presentation === "forecast" && (name === "temperature" || name === "wind" || name === "droplet")) {
+      // Taro discovers native bindings from explicit props; JSX spreads lose them.
+      return <weather-icon
+        kind={name}
+        class={`semantic-icon semantic-icon--b semantic-icon--forecast semantic-icon--${name} ${className}`}
+        aria-hidden={decorative ? true : undefined}
+        aria-role={decorative ? undefined : "img"}
+        aria-label={decorative ? undefined : label ?? name}
+      />;
+    }
     const source = DAY_SOURCE_ICON_FILE[name];
     return (
       <Image

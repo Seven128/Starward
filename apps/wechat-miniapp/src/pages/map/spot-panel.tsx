@@ -744,7 +744,7 @@ export function SpotInformationPanel({
                     : renderMetricValue(skyRow?.cloudPercent, "%")}
                 </View>
                 <View className="spot-panel__evidence-group" ariaLabel="温湿">
-                  <View className="spot-panel__evidence-title"><SemanticIcon name="sun" /><Text className="type-label">温湿</Text></View>
+                  <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "temperature" : "sun"} presentation="forecast" /><Text className="type-label">温湿</Text></View>
                   <View className="spot-panel__metric-grid">
                     <View className="spot-panel__metric"><Text className="type-secondary">气温</Text>{renderMetricValue(skyRow?.temperatureC, "°C", 1)}</View>
                     <View className="spot-panel__metric"><Text className="type-secondary">湿度</Text>{renderMetricValue(skyRow?.relativeHumidityPercent, "%")}</View>
@@ -752,7 +752,7 @@ export function SpotInformationPanel({
                   </View>
                 </View>
                 <View className="spot-panel__evidence-group" ariaLabel="风与能见度">
-                  <View className="spot-panel__evidence-title"><SemanticIcon name="horizon" /><Text className="type-label">风与能见度</Text></View>
+                  <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "wind" : "horizon"} presentation="forecast" /><Text className="type-label">风与能见度</Text></View>
                   <View className="spot-panel__metric-grid">
                     <View className="spot-panel__metric"><Text className="type-secondary">{windDirectionLabel(skyRow?.windDirectionDeg)}</Text>{renderMetricValue(skyRow?.windKph, " km/h", 1)}</View>
                     <View className="spot-panel__metric"><Text className="type-secondary">阵风</Text>{renderMetricValue(skyRow?.windGustKph, " km/h", 1)}</View>
@@ -760,7 +760,7 @@ export function SpotInformationPanel({
                   </View>
                 </View>
                 <View className="spot-panel__evidence-group" ariaLabel="降水">
-                  <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" /><Text className="type-label">降水</Text></View>
+                  <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "droplet" : "conditions"} presentation="forecast" /><Text className="type-label">降水</Text></View>
                   <View className="spot-panel__metric-grid spot-panel__metric-grid--two">
                     <View className="spot-panel__metric"><Text className="type-secondary">降水量</Text>{renderMetricValue(skyRow?.precipitationMm, " mm", 1)}</View>
                     <View className="spot-panel__metric"><Text className="type-secondary">降水概率</Text>{renderMetricValue(skyRow?.precipitationProbabilityPercent, "%")}</View>
