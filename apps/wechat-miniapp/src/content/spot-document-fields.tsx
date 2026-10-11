@@ -19,6 +19,7 @@ const CHOICE_LABELS: Readonly<Record<string, string>> = { "有条件开放": "�
 export function SpotDocumentFields({
   values,
   disabled,
+  readOnly = false,
   baseline,
   onChange,
   addressControl,
@@ -29,6 +30,7 @@ export function SpotDocumentFields({
 }: {
   values: SpotDocumentValues;
   disabled: boolean;
+  readOnly?: boolean;
   baseline?: ContributionFormalBaseline;
   onChange(key: ContributionFormalFieldKey, value: string): void;
   addressControl?: ReactNode;
@@ -45,36 +47,38 @@ export function SpotDocumentFields({
           onInput={event => onChange("address", event.detail.value)} />
       </SpotDocumentAddressControl>}
       <Text className="formal-feedback-address-copy">{values.address || (renderField ? "地址资料未提供" : "尚未填写地点地址")}</Text>
-      {renderField?.("name") ?? <SpotDocumentField fieldKey="name" value={values.name} baseline={baseline} disabled={disabled} onChange={onChange} required />}
+      {renderField?.("name") ?? <SpotDocumentField fieldKey="name" value={values.name} baseline={baseline} disabled={disabled} readOnly={readOnly} onChange={onChange} required />}
     </SpotDocumentSection>
     <SpotDocumentSection id="formal-feedback-access" title="开放与到达">
       <View className="formal-feedback-group">{(["openness", "hours", "access", "accessNote", "road", "safety"] as const).map((key) =>
-        renderField?.(key) ?? <SpotDocumentField key={key} fieldKey={key} value={values[key]} baseline={baseline} disabled={disabled} onChange={onChange} />)}</View>
+        renderField?.(key) ?? <SpotDocumentField key={key} fieldKey={key} value={values[key]} baseline={baseline} disabled={disabled} readOnly={readOnly} onChange={onChange} />)}</View>
     </SpotDocumentSection>
     <SpotDocumentSection id="formal-feedback-facilities" title="设施与现场">
       <View className="formal-feedback-group"><Text className="formal-feedback-subtitle">停车设施</Text>
-      <SpotDocumentField fieldKey="parking" value={values.parking} baseline={baseline} disabled={disabled} onChange={onChange} />
-      <SpotDocumentField fieldKey="parkingNote" value={values.parkingNote} baseline={baseline} disabled={disabled} onChange={onChange} />
+      <SpotDocumentField fieldKey="parking" value={values.parking} baseline={baseline} disabled={disabled} readOnly={readOnly} onChange={onChange} />
+      <SpotDocumentField fieldKey="parkingNote" value={values.parkingNote} baseline={baseline} disabled={disabled} readOnly={readOnly} onChange={onChange} />
       {renderPhotoGroup?.("parking")}</View>
       <View className="formal-feedback-group"><Text className="formal-feedback-subtitle">洗手间</Text>
-      <SpotDocumentField fieldKey="toilet" value={values.toilet} baseline={baseline} disabled={disabled} onChange={onChange} />
-      <SpotDocumentField fieldKey="toiletNote" value={values.toiletNote} baseline={baseline} disabled={disabled} onChange={onChange} />
+      <SpotDocumentField fieldKey="toilet" value={values.toilet} baseline={baseline} disabled={disabled} readOnly={readOnly} onChange={onChange} />
+      <SpotDocumentField fieldKey="toiletNote" value={values.toiletNote} baseline={baseline} disabled={disabled} readOnly={readOnly} onChange={onChange} />
       {renderPhotoGroup?.("toilet")}</View>
       <View className="formal-feedback-group"><Text className="formal-feedback-subtitle">其他场地信息</Text>
       {(["platform", "horizon", "light", "signal", "camping", "contact"] as const).map((key) =>
-        renderField?.(key) ?? <SpotDocumentField key={key} fieldKey={key} value={values[key]} baseline={baseline} disabled={disabled} onChange={onChange} />)}</View>
+        renderField?.(key) ?? <SpotDocumentField key={key} fieldKey={key} value={values[key]} baseline={baseline} disabled={disabled} readOnly={readOnly} onChange={onChange} />)}</View>
     </SpotDocumentSection>
     <SpotDocumentSection id="formal-feedback-notes" title="补充说明">
-      <Textarea
+      {readOnly && values.detail ? <View className={`formal-feedback-textarea formal-feedback-textarea--readonly${baseline && values.detail !== (baseline.fields.detail ?? "") ? " is-changed" : ""}`}>
+        <Text>{values.detail}</Text>
+      </View> : <Textarea
         className={`formal-feedback-textarea${baseline && values.detail !== (baseline.fields.detail ?? "") ? " is-changed" : ""}`}
-        disabled={disabled}
+        disabled={disabled || readOnly}
         fixed={textareaFixed}
         value={values.detail}
         maxlength={2000}
         placeholder={SPOT_DOCUMENT_PLACEHOLDERS.detail ?? ""}
         placeholderClass="formal-feedback-placeholder"
         onInput={(event) => onChange("detail", event.detail.value)}
-      />
+      />}
       {renderPhotoGroup?.("site")}
       {notesFooter}
     </SpotDocumentSection>
@@ -101,11 +105,12 @@ export function SpotDocumentSection({ id, title, children }: { id: string; title
   return <View id={id} className="formal-feedback-section">{title ? <Text className="formal-feedback-section-title">{title}</Text> : null}{children}</View>;
 }
 
-export function SpotDocumentField({ fieldKey, value, baseline, disabled, onChange, required = false, error, focus = false, label }: {
+export function SpotDocumentField({ fieldKey, value, baseline, disabled, readOnly = false, onChange, required = false, error, focus = false, label }: {
   fieldKey: ContributionFormalFieldKey;
   value: string;
   baseline: ContributionFormalBaseline | undefined;
   disabled: boolean;
+  readOnly?: boolean;
   onChange(key: ContributionFormalFieldKey, value: string): void;
   required?: boolean;
   error?: string | undefined;
@@ -117,8 +122,9 @@ export function SpotDocumentField({ fieldKey, value, baseline, disabled, onChang
   return <View className={`formal-feedback-field formal-feedback-field--${fieldKey}${changed ? " is-changed" : ""}${error ? " candidate-intake-input" : ""}`} data-field={fieldKey}>
     <Text className="formal-feedback-field__label">{label ?? SPOT_DOCUMENT_LABELS[fieldKey]}{required ? <Text className="formal-feedback-required"> *</Text> : null}</Text>
     {choices ? <View className="formal-feedback-choices">{choices.map((choice) =>
-      <Button key={choice || "unknown"} disabled={disabled} ariaLabel={`${label ?? SPOT_DOCUMENT_LABELS[fieldKey]}：${choice || "不清楚"}`} aria-pressed={value === choice} className={value === choice ? "is-selected" : ""} onClick={() => onChange(fieldKey, choice)}><Text>{CHOICE_LABELS[choice] ?? (choice || "不清楚")}</Text></Button>)}</View>
-      : <Input disabled={disabled} focus={focus} ariaLabel={label ?? SPOT_DOCUMENT_LABELS[fieldKey]} value={value} maxlength={fieldKey === "detail" ? 2000 : 300} placeholder={SPOT_DOCUMENT_PLACEHOLDERS[fieldKey] ?? ""} placeholderClass="formal-feedback-placeholder" onInput={(event) => onChange(fieldKey, event.detail.value)} />}
+      <Button key={choice || "unknown"} disabled={disabled || readOnly} ariaLabel={`${label ?? SPOT_DOCUMENT_LABELS[fieldKey]}：${choice || "不清楚"}`} aria-pressed={value === choice} className={value === choice ? "is-selected" : ""} onClick={() => onChange(fieldKey, choice)}><Text>{CHOICE_LABELS[choice] ?? (choice || "不清楚")}</Text></Button>)}</View>
+      : readOnly && value ? <Text className="formal-feedback-field__readonly-value">{value}</Text>
+        : <Input disabled={disabled || readOnly} focus={focus} ariaLabel={label ?? SPOT_DOCUMENT_LABELS[fieldKey]} value={value} maxlength={fieldKey === "detail" ? 2000 : 300} placeholder={SPOT_DOCUMENT_PLACEHOLDERS[fieldKey] ?? ""} placeholderClass="formal-feedback-placeholder" onInput={(event) => onChange(fieldKey, event.detail.value)} />}
     {error ? <View className="candidate-intake-error" role="alert"><Text>{error}</Text></View> : null}
   </View>;
 }

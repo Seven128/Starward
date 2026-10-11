@@ -448,6 +448,7 @@ export default function FormalFeedbackEditor() {
             values={values}
             baseline={baseline}
             disabled={busy || submitted}
+            readOnly={submitted}
             onChange={setField}
             renderPhotoGroup={(kind) => <PhotoGroup kind={kind} ids={mediaSelection?.[kind] ?? []} uploads={visibleUploads} paths={previewPaths} failedIds={previewFailures} onRetry={retryPhotoPreviews} disabled={busy||uploading||submitted} readOnly={submitted} onAdd={addPhoto} onRemove={removePhoto} />}
             notesFooter={<>

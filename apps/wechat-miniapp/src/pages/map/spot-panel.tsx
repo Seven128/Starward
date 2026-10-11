@@ -611,6 +611,7 @@ export function SpotInformationPanel({
                   {facilityMedia ? <View className="spot-panel__facility-shade" aria-hidden="true" /> : null}
                   <View className="spot-panel__facility-content">
                     <View className="spot-panel__facility-heading">
+                      {dayMode && mediaKind ? <SemanticIcon name={mediaKind === "parking" ? "parking" : "restroom"} className="spot-panel__facility-icon" /> : null}
                       <Text className="spot-panel__facility-name">{facility.type === "PARKING" && dayMode ? "停车设施" : facilityLabel(facility.type)}</Text>
                       <Text className="spot-panel__facility-status">{facilityStatusLabel(facility.status)}{facility.distanceM === null ? "" : ` · ${facility.distanceM}m`}</Text>
                     </View>

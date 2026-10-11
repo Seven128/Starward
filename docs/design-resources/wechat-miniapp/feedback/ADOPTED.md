@@ -1,5 +1,7 @@
 # 观星点反馈与远端多草稿 · 当前采用资源
 
+2026-10-11用户批准冻结只读长内容完整展开：按原值列宽自动换行，短值保持原字体、标签列及至少52px行高；补充说明保留原背景/圆角/内边距和至少112px高度，随全文增高。空值仍用原禁用控件的占位提示，填写示例不作为已提交正文。编辑态和短暂busy、枚举、照片及审核状态保持。当前可编辑实现位于[完整源 candidate.mjs](../shared/comfortable-scale-2026-09-22/preview/candidate.mjs)与[refinements.css](../shared/comfortable-scale-2026-09-22/preview/refinements.css)，原editor继续拥有冻结和表单数据；[长字段](../shared/comfortable-scale-2026-09-22/review/feedback-readonly-access.png)与[长说明](../shared/comfortable-scale-2026-09-22/review/feedback-readonly-notes.png)为390×844日间资源参考。此为经批准的本地增量，不声称原始Stitch生成或生产验收。
+
 2026-10-10 用户指定使用 Stitch 最新资源；日间新增/反馈表单与记录视觉优先按[舒适尺度完整源](../shared/comfortable-scale-2026-09-22/review.html#feedback)及其 CSS/JS 级联。下方旧源保留完整源实际引用的结构、业务/交互及未覆盖范围，旧静态图不再是整页基准。未交付主题沿原 Context；资源采用不证明生产符合。
 
 > 2026-09-23：对应 Stitch 旧版本项目已删除；本文件声明的当前采用源及必要依赖继续有效。历史项目 ID 只用于来源追溯，续改从[当前 Stitch 状态与入口](../stitch-status.md)核对。

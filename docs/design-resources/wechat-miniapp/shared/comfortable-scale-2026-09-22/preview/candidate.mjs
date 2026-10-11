@@ -29,8 +29,24 @@ function iconize(){
  if(surface==='layers')all('#primary-nav>div').forEach((e,i)=>replaceGraphic(e,'svg',i?'account-user':'map',{size:28,state:i?'default':'selected'}));
  all('iframe[src]').forEach(f=>{const raw=f.getAttribute('src');if(raw.includes('/map/')&&/panel\.html|spot-information\/preview\/index.html/.test(raw)&&!raw.includes('comfortable-scale'))f.src=root+'map-panel.html'+new URL(raw,location.href).search;});
 }
+// Approved frozen reading variant. The original editor retains the form, values and submit owner.
+function syncFrozenReading(){
+ if(surface!=='feedback')return;
+ const frozen=$('#phone')?.dataset.frozen==='true';
+ for(const input of all('#spot-form .field-row input:not([type=hidden]),#spot-form .evidence textarea')){
+  const className=input.tagName==='TEXTAREA'?'readonly-notes-value':'readonly-field-value';
+  let value=input.nextElementSibling?.classList.contains(className)?input.nextElementSibling:null;
+  if(!frozen||!input.value){input.hidden=false;value?.remove();continue;}
+  if(!value){value=document.createElement('div');value.className=className;input.after(value);}
+  if(value.textContent!==input.value)value.textContent=input.value;
+  value.classList.toggle('changed',input.classList.contains('changed'));
+  input.hidden=true;
+ }
+}
+document.addEventListener('draft-restored',syncFrozenReading);
 function patchDynamic(){
  iconize();
+ syncFrozenReading();
  // Retired providers/route semantics must not reappear in dynamic renderers.
  all('svg text').filter(e=>e.textContent.includes('© OpenStreetMap')).forEach(e=>e.parentElement.remove());
  all('span,div').filter(e=>e.childElementCount===0&&e.textContent.trim()==='© OpenStreetMap 贡献者').forEach(e=>e.remove());
@@ -99,7 +115,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(surface==='feedback'&&b.closest('nav')&&b.textContent.trim()==='我的')dest='my.html';
  if(dest){e.preventDefault();e.stopImmediatePropagation();location.href=root+dest;}
 },true);
-const observer=new MutationObserver(()=>{observer.disconnect();patchDynamic();observe();});function observe(){observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-selected','aria-pressed']});}patchDynamic();observe();
+const observer=new MutationObserver(()=>{observer.disconnect();patchDynamic();observe();});function observe(){observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-selected','aria-pressed','data-frozen']});}patchDynamic();observe();
 
 // New journey resource entry; shared product navigation remains in each current owner.
 const journeyRoot='/docs/design-resources/wechat-miniapp/shared/journey-sharing-2026-09-22/index.html';

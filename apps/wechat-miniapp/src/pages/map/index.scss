@@ -3109,7 +3109,7 @@
   .air-quality__note {
     display: block;
     margin: 10Px 0;
-    color: #75808d;
+    color: #6d7784;
     font-size: 13Px;
     font-weight: 400;
     line-height: 21Px;
@@ -3168,7 +3168,7 @@
     line-height: 21Px;
   }
   .spot-panel__night-light > .type-caption {
-    color: #778392;
+    color: #6d7785;
     font-size: 13Px;
     font-weight: 400;
     line-height: 21Px;
@@ -3307,7 +3307,7 @@
     line-height: 24Px;
   }
   .spot-panel__block--moon .spot-panel__metric > .spot-panel__metric-value--missing,
-  .spot-panel__forecast-groups .spot-panel__metric-value--missing { color: #727582; font-size: 13Px; }
+  .spot-panel__forecast-groups .spot-panel__metric-value--missing { color: #717480; font-size: 13Px; }
   .spot-panel__metric-unit { margin-left: 3Px; font-size: 12Px; font-weight: 400; }
   .spot-panel__measurement-note {
     margin-top: 7Px;
@@ -3318,6 +3318,7 @@
     line-height: 18Px;
   }
   .spot-panel__facility-heading { gap: 8Px; }
+  .spot-panel__facility-icon { flex: 0 0 24Px; width: 24Px; height: 24Px; }
   .spot-panel__facility-name { color: #0f172a; font-weight: 600; }
   .spot-panel__facility-status {
     flex: 0 1 auto;

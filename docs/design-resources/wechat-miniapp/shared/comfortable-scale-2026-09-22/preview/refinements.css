@@ -1,5 +1,11 @@
 /* Integration repairs after Stitch CSS. Shared tokens preserve the accepted drawer scale. */
 :root{--comfortable-body:15px;--comfortable-secondary:13px;--comfortable-title:22px;--comfortable-radius:20px}
+/* 2026-10-11 explicitly approved local accessibility repairs; unchanged Stitch originals remain in stitch-input. */
+.source-disclosure .source-timing dt{color:#687280}
+.metric-group dd.missing{color:#717480}
+body[data-scale-surface=feedback] .readonly-field-value{flex:1;min-width:0;padding:8px 0;font-size:14.5px;line-height:22px;color:#555f6c;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+body[data-scale-surface=feedback] .readonly-notes-value{box-sizing:border-box;min-height:112px;padding:12px 14px;border-radius:12px;background:#f7f8fa;color:#555f6c;font-size:14px;line-height:22px;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+body[data-scale-surface=feedback] .readonly-notes-value.changed{background:#fff9e9}
 #map-layer-credit{position:absolute;bottom:94px;left:14px;right:70px;z-index:9;border:0;border-radius:12px;background:#fffffff0;color:#50606a;padding:9px 12px;min-height:44px;font-size:13px;text-align:left;line-height:19px}
 .source-url{font-size:13px!important;line-height:20px!important}
 [hidden]{display:none!important}
@@ -34,7 +40,7 @@ body[data-scale-surface=plan] .footnote,body[data-scale-surface=plan] .enddate,b
 .weather-supplement{color:#3d4857;font-size:15px;line-height:24px}
 .weather-supplement>h3,.warning-heading h3{margin:0 0 10px!important;color:#263343;font-size:17px!important;font-weight:600;line-height:25px}
 .weather-supplement>p{margin:10px 0;line-height:24px}
-.weather-supplement>p.secondary{font-size:13px;line-height:21px;color:#75808d}
+.weather-supplement>p.secondary{font-size:13px;line-height:21px;color:#6d7784}
 .weather-supplement>details:not(.source-details){margin-top:14px;border-top:1px solid #e6e9ec}
 .weather-supplement>details:not(.source-details)>summary{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:10px 0;font-size:14px;font-weight:500;line-height:22px;list-style:none;cursor:pointer}
 .weather-supplement>details:not(.source-details)>summary::after{content:'›';font-size:20px;color:#8b949f;transition:transform .15s}
@@ -56,17 +62,17 @@ body[data-scale-surface=plan] .footnote,body[data-scale-surface=plan] .enddate,b
 .weather-metrics strong{font-size:21px;font-weight:600;line-height:30px;margin-top:5px;color:#334353}
 .terrain-provenance{padding:0 18px 4px;background:#fff;border-radius:20px;margin:12px 0 14px}
 .terrain-provenance>.source-details{border:0;margin:0}
-.source-credit{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;padding:12px 0;font-size:13px;line-height:21px;color:#718092}
+.source-credit{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;padding:12px 0;font-size:13px;line-height:21px;color:#657383}
 .source-credit>span{flex:1 1 140px;min-width:0;font-weight:500;overflow-wrap:anywhere}
-.source-credit>.source-copy{flex:0 0 auto;padding:0;min-height:44px;font-size:13px;color:#627487}
+.source-credit>.source-copy{flex:0 0 auto;padding:0;min-height:44px;font-size:13px;color:#627386}
 .source-credit>.source-url,.source-credit>p{flex:1 0 100%;min-width:0;margin:0;font-size:13px!important;line-height:21px!important;overflow-wrap:anywhere}
-.source-credit>.source-url{color:#8792a0}
+.source-credit>.source-url{color:#6a727d}
 .source-details>summary{gap:12px;color:#5b6879;font-weight:500;line-height:22px;padding:10px 0}
 .source-details>summary>span{flex:0 0 auto;color:#8b96a3;font-size:20px;line-height:24px}
 .source-disclosure{color:#566375;font-size:14px;line-height:23px}
 .source-disclosure h3{font-size:16px!important;line-height:24px!important;font-weight:600!important;color:#344355;margin:0 0 8px!important}
 .source-disclosure p{font-size:14px;line-height:23px;margin:10px 0}
-.source-disclosure .source-license{font-size:13px;color:#7b8794}
+.source-disclosure .source-license{font-size:13px;color:#68737e}
 .source-timing{margin:14px 0;padding:10px 0;border-top:1px solid #e5eaf0;border-bottom:1px solid #e5eaf0;font-size:13px;line-height:21px}
 .source-timing>div{grid-template-columns:38px minmax(0,1fr)}
 .source-timing dd{color:#617085;overflow-wrap:anywhere}
@@ -78,7 +84,7 @@ body[data-scale-surface=plan] .footnote,body[data-scale-surface=plan] .enddate,b
 .event-modal .local-context>p{margin:10px 0;font-size:14px;line-height:23px}
 .event-article h3{margin:0 0 12px;font-size:18px;font-weight:600;line-height:26px}
 .event-modal .event-article>p{margin:12px 0;font-size:14px;line-height:24px}
-.night-light>span:last-of-type{margin-left:auto;font-size:13px;line-height:21px;color:#778392}
+.night-light>span:last-of-type{margin-left:auto;font-size:13px;line-height:21px;color:#6d7785}
 .source-links>.source-status{flex:1 0 100%;min-width:0;margin:4px 0 0;line-height:21px}
 .weather-source{padding:0;border:0;min-height:0}
 .weather-source .source-copy{font-weight:500}

@@ -4,11 +4,6 @@
 
 本目录四个文件服务原生 Map/My TabBar；主包“我的”页的 DAY 默认头像还复用其中的 `account-user--day--default.png`，按最新设计显示为 36px，避免再打包一份 224px 派生件。用户已保存的头像仍使用原图，内容分包的默认头像仍使用其本地 224px 运行时派生件。
 
-这四个文件从采用包同名 256×256 RGBA 母版以 Lanczos 缩放为 192×192 RGBA PNG，保持完整透明画布、色彩和状态构图，不裁边、不转调色板、不覆盖母版。生成使用工作区随附 Pillow 12.3.0、`optimize=True`、`compress_level=9`。当前文件均低于 40 KiB；其余消费者按各自运行时资源入口取用。
+这四个文件从采用包同名 256×256 RGBA 母版以 Lanczos 缩放为 192×192 RGBA PNG，保持完整透明画布、色彩和状态构图，不裁边、不转调色板、不覆盖母版。由相邻 [`weapp-runtime/generate.py`](../weapp-runtime/generate.py) 统一生成：Pillow 12.3.0 的 `optimize=True`、`compress_level=9` 后使用离线 Zopfli 无损压缩，逐像素校验模式、尺寸及全部RGBA（含透明区域RGB），仅接收更小的结果。当前文件均低于 40 KiB；其余消费者按各自运行时资源入口取用。
 
-| 文件 | bytes | SHA-256 |
-| --- | ---: | --- |
-| account-user--day--default.png | 18,956 | c7aa85953491fd060c1dbba9e43cf646335e2583f4dc44ea48a42213a314d7dd |
-| account-user--day--selected.png | 19,989 | f4b2aa7b39d947ef6786b8414ec2ca47f5319a1901fc57b8ba9119d403febacd |
-| map--day--default.png | 27,155 | 9019875c05308c5488403e46af3c9c8e329b776a2b45f642286b48101c48b500 |
-| map--day--selected.png | 30,767 | 769b149a13f781d3cb75edf4decca84139a97057c779b0b4e644b3a596fe084b |
+精确源哈希、输出哈希和字节数由 [`weapp-runtime/manifest.json`](../weapp-runtime/manifest.json) 的 `tabBarVariants` 维护，避免生成器与静态表分别拥有当前值。

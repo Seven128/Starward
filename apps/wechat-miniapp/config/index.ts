@@ -23,6 +23,7 @@ const adoptedBTabBarIconRoot = path.resolve(
   repoRoot,
   "docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256/platform/weapp-tabbar/assets",
 );
+const mainBIconVariants = new Set(["parking--day--default.png", "restroom--day--default.png"]);
 const bTabBarIconFiles = [
   "map--day--default.png", "map--day--selected.png",
   "account-user--day--default.png", "account-user--day--selected.png",
@@ -78,6 +79,7 @@ const bIconFiles = {
     "terrain--day--default.png", "clock--day--default.png",
     "telescope--day--default.png",
     "more--day--default.png",
+    "parking--day--default.png", "restroom--day--default.png",
   ],
   content: [
     "clock--day--default.png", "warning--day--default.png",
@@ -125,7 +127,8 @@ const bIconFiles = {
 function adoptedBIconCopyPatterns(outputRoot: string) {
   return [
     ...Object.entries(bIconFiles).flatMap(([packageName, files]) => files.map((file) => ({
-    from: path.resolve(adoptedBRuntimeIconRoot, file),
+    from: path.resolve(packageName === "main" && mainBIconVariants.has(file)
+      ? path.resolve(adoptedBRuntimeIconRoot, "../assets-main") : adoptedBRuntimeIconRoot, file),
     to: path.resolve(
       here,
       "..",
@@ -283,9 +286,17 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
       options: {},
     },
     mini: {
-      // Keep Taro's conservative compression defaults. UTF-8 literals avoid
-      // expanding Chinese copy into six-byte ASCII escapes in the main bundle.
-      terser: { config: { output: { ascii_only: false } } },
+      // Keep default template depth/native selector boundaries. These standard
+      // Terser reductions retain ES5, no unsafe transforms, and Taro's disabled
+      // arrows/comparisons/typeof/directives. Property names are not mangled.
+      terser: { config: {
+        compress: {
+          collapse_vars: true, computed_props: true, hoist_props: true,
+          inline: true, loops: true, negate_iife: true, properties: true,
+          reduce_funcs: true, reduce_vars: true, switches: true,
+        },
+        output: { ascii_only: false },
+      } },
       compile: { include: sharedSourceInclude },
       postcss: {
         pxtransform: { enable: true, config: {} },

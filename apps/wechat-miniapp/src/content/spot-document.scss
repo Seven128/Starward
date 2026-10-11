@@ -23,6 +23,7 @@
 .formal-feedback-field__label { width: 80Px; flex: none; font-size: 14Px; color: #8b9098; }
 .formal-feedback-required { color: #a86960; }
 .formal-feedback-field input { flex: 1; min-width: 0; height: 44Px; font-size: 14.5Px; color: #31353a; text-align: left; }
+.formal-feedback-field__readonly-value { flex: 1; min-width: 0; padding: 8Px 0; font-size: 14.5Px; line-height: 22Px; color: #31353a; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
 .formal-feedback-choices { flex: 1; display: flex; align-items: center; justify-content: flex-start; gap: 4Px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .formal-feedback-choices button { flex: none; min-width: 0; min-height: 44Px; margin: 0; padding: 0 8Px; height: 44Px; line-height: 44Px; background: transparent; border: 0; color: #9a9fa6; font-size: 13Px; white-space: nowrap; }
 .formal-feedback-choices button::after { display: none; }
@@ -31,6 +32,7 @@
 .formal-feedback-address-copy { display: block; font-size: 13Px; line-height: 20Px; color: #9da1a6; padding: 7Px 0 10Px; }
 .formal-feedback-textarea { box-sizing: border-box; width: 100%; height: 112Px; background: #f7f8fa; border-radius: 10Px; padding: 13Px; font-size: 14Px; line-height: 22Px; }
 .formal-feedback-textarea.is-changed { background: #fffaf0; }
+.formal-feedback-textarea--readonly { height: auto; min-height: 112Px; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
 .formal-feedback-photo-group { padding: 4Px 0; }
 .formal-feedback-photo-list { display: flex; gap: 8Px; }
 .formal-feedback-photo { width: 56Px; height: 56Px; position: relative; border-radius: 7Px; background: #f1f3f5; display: flex; align-items: center; justify-content: center; }
@@ -61,7 +63,7 @@
   .formal-feedback-field { border-bottom-color: var(--border); }
   .formal-feedback-field.is-changed, .formal-feedback-textarea.is-changed { background: var(--choice-selected-surface); }
   .formal-feedback-field__label, .formal-feedback-choices button, .formal-feedback-address-copy, .formal-feedback-photo-action { color: var(--text-secondary); }
-  .formal-feedback-field input { color: var(--text-primary); }
+  .formal-feedback-field input, .formal-feedback-field__readonly-value { color: var(--text-primary); }
   .formal-feedback-placeholder { color: var(--text-tertiary); }
   .formal-feedback-required { color: var(--danger); }
   .formal-feedback-choices button.is-selected { background: var(--choice-selected-surface); color: var(--choice-selected-label); }
@@ -97,6 +99,7 @@
   .formal-feedback-required { color: #d79b99; font-size: 12Px; font-weight: 500; }
   .formal-feedback-field input { color: #424955; }
   .formal-feedback-field input[disabled], .formal-feedback-textarea[disabled] { opacity: 1; color: #555f6c; }
+  .formal-feedback-field__readonly-value, .formal-feedback-textarea--readonly { color: #555f6c; }
   .formal-feedback-choices { margin-left: -7Px; }
   .formal-feedback-choices button { min-width: 44Px; padding: 0; color: #929aa5; display: flex; align-items: center; justify-content: center; }
   .formal-feedback-choices button text { display: inline-flex; align-items: center; box-sizing: border-box; min-height: 40Px; padding: 8Px; line-height: 19.5Px; border-radius: 6Px; }

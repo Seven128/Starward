@@ -1,5 +1,7 @@
 # 小程序共享图标 · 当前采用入口
 
+2026-10-11用户批准仅停车/洗手间两份DAY主包专用96px派生，显示24px，从原256px母版以Lanczos保留完整画布和RGBA生成。由既有[运行派生manifest](adopted/b-matte-256/platform/weapp-runtime/manifest.json)的mainPackageVariants和同目录生成器维护，输出到assets-main；子包仍用原192px文件，其他192/224px页面与192pxTab资源不变。此项不授权缩小其他图标或迁移到远程资源，包预算与目标显示另行验证。
+
 2026-09-13用户明确采用256px版本，并授权本地代码合成最后的地图selected。当前资源为 [最新B行磨砂图标71份](adopted/b-matte-256/README.md)，覆盖62种基础图标、想去轮廓态、2份导航选中态、2份动画分件及地图4态；256×256全彩透明PNG是唯一采用母版。微信发布包因主包2048KB及原生Tab单图40KiB硬限制，分别使用可重建的[192/224px页面运行时派生](adopted/b-matte-256/platform/weapp-runtime/README.md)和[192px原生Tab派生](adopted/b-matte-256/platform/weapp-tabbar/README.md)，均保留完整画布、RGBA、锚点、颜色、状态和构图。该范围取代此前已覆盖语义的日间图标材质/造型依据，不改变各页面构图、动作及命中规则。
 
 本轮日间71份清单已完成静态资源采用，无待返修图。地图selected以已采用default主体逐像素复制，仅在透明空白叠加原图提取的三条光线，1254px与256px主体RGBA均保持一致；核对记录、可重建母版及独立覆盖层见[本地合成源](adopted/b-matte-256/editable/spot-marker-selected/README.md)。已查看32/64/144px明暗底；生产WEAPP已观察DAY地图点位、工具与原生Tab的B批渲染，四态反复切换和想去快速中断仍按任务验证边界记录。旧候选和过期返修提示词已清理；仅保留当前采用资产与必要可编辑来源。夜间/红光仍未交付。备用素材的采用不要求增加页面功能；`horizon`是入口图标而非真实地形图。
