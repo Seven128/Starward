@@ -60,7 +60,7 @@ export default function PlanListPage() {
         <View className="plan-list-filters" role="group" aria-label="计划时间分区">
           <Button className={partition === "upcoming" ? "plan-list-filter--active" : ""}
             aria-pressed={partition === "upcoming"} onClick={() => choosePartition("upcoming")}>接下来</Button>
-          <Button className={partition === "past" ? "plan-list-filter--active" : ""}
+          <Button className={partition === "past" ? "plan-list-filter--active" : "plan-list-past"}
             aria-pressed={partition === "past"} onClick={() => choosePartition("past")}>过往</Button>
           <Button className="plan-list-new" onClick={() => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)}>＋ 新建</Button>
         </View>

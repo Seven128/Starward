@@ -176,31 +176,34 @@
   .event-modal__icon-button { padding: 0; display: flex; align-items: center; justify-content: center; }
   .event-modal__icon-button > .semantic-icon { width: 26Px; height: 26Px; flex-basis: 26Px; }
   .event-modal__content { padding: 16Px; }
-  .event-modal__catalogue { color: #89919e; font-size: 13Px; letter-spacing: .6Px; }
+  .event-modal__catalogue { color: #717782; font-size: 13Px; letter-spacing: .6Px; }
   .event-modal__month-label text:first-child { font-size: 17Px; font-weight: 500; }
-  .event-modal__month-label text:last-child { color: #9aa3b1; font-size: 10Px; font-weight: 400; letter-spacing: 1Px; }
+  .event-modal__month-label text:last-child { color: #717782; font-size: 10Px; font-weight: 400; letter-spacing: 1Px; }
   .event-modal__row { min-height: 0; border-radius: 18Px; }
   .event-modal__row-main { min-height: 44Px; padding: 18Px 12Px; font-size: 14Px; font-weight: 400; line-height: 1.55; }
-  .event-modal__date { color: #92794a; }
+  .event-modal__date { color: #846d43; }
   .event-modal__date text:first-child, .event-modal__date text:last-child { font-size: 13Px; }
-  .event-modal__row-copy > text { color: #8e96a3; font-size: 13Px; font-weight: 400; line-height: 1.55; }
-  .event-modal__row-copy > text:last-child { color: #788290; }
+  .event-modal__row-copy > text { color: #6b717b; font-size: 13Px; font-weight: 400; line-height: 1.55; }
+  .event-modal__row-copy > text:last-child { color: #69717e; }
+  .event-modal__chosen-label { color: #8a6c3b; }
   .event-modal__row-copy .event-modal__row-title { color: #334155; font-size: 17Px; font-weight: 550; line-height: 1.45; }
   .event-modal__radio { min-height: 44Px; }
-  .event-modal__source { color: #7c8796; }
+  .event-modal__source { color: #6b727a; }
+  .event-modal__list .status-panel--empty > .type-label,
+  .event-modal__list .status-panel--empty > .type-caption { color: #6f7784; }
   .event-modal__footer button { min-height: 48Px; border-radius: 14Px; font-size: 15Px; }
   .event-modal__footer .event-modal__clear { color: #334155; font-size: 12Px; }
-  .event-modal-detail__hero > view text:first-child { color: #8a93a0; font-size: 13Px; font-weight: 400; line-height: 1.55; }
+  .event-modal-detail__hero > view text:first-child { color: #707782; font-size: 13Px; font-weight: 400; line-height: 1.55; }
   .event-modal-detail__hero > view text:last-child { font-size: 24Px; }
   .event-modal-detail__facts { margin-bottom: 0; }
-  .event-modal-detail__facts text:first-child { color: #9199a5; font-size: 13Px; font-weight: 400; line-height: 1.55; }
+  .event-modal-detail__facts text:first-child { color: #6b717a; font-size: 13Px; font-weight: 400; line-height: 1.55; }
   .event-modal-detail__facts text:last-child { font-size: 15Px; font-weight: 500; line-height: 1.55; }
-  .event-modal-detail__precision { display: block; margin: 12Px 0 18Px; color: #9098a4; font-size: 14Px; line-height: 1.6; }
-  .event-modal-detail__axis { height: 31.15Px; margin: 28Px 0; font-size: 13Px; color: #9299a3; }
+  .event-modal-detail__precision { display: block; margin: 12Px 0 18Px; color: #717781; font-size: 14Px; line-height: 1.6; }
+  .event-modal-detail__axis { height: 31.15Px; margin: 28Px 0; font-size: 13Px; color: #72777f; }
   .event-modal-detail__axis text { font-size: 13Px; font-weight: 400; line-height: 1.55; }
-  .event-modal-detail__axis .event-modal-detail__peak { top: -22Px; color: #a3874d; font-size: 9Px; font-weight: 500; }
+  .event-modal-detail__axis .event-modal-detail__peak { top: -22Px; color: #8b7342; font-size: 9Px; font-weight: 500; }
   .event-modal-detail__section > .type-section { font-weight: 550; }
-  .event-modal-detail__section > .type-caption { color: #9099a5; font-size: 14Px; font-weight: 400; line-height: 23Px; }
+  .event-modal-detail__section > .type-caption { color: #6b727a; font-size: 14Px; font-weight: 400; line-height: 23Px; }
   .event-modal-detail__section > .type-body { font-size: 14Px; line-height: 23Px; }
   .event-modal-detail__section > .event-modal-detail__reason { color: #334155; font-size: 14Px; line-height: 23Px; }
   .event-modal-detail__context-row { gap: 8Px; }
@@ -211,7 +214,7 @@
   .event-modal-detail__phase { align-items: flex-start; gap: 14Px; border-top: 1Px solid #e1e7ed; padding: 12Px 0; }
   .event-modal-detail__phase > view { gap: 4Px; }
   .event-modal-detail__days { margin: 12Px 0; }
-  .event-modal-detail__day-strip button text:first-child { color: #919ca5; font-size: 13Px; }
+  .event-modal-detail__day-strip button text:first-child { color: #61686e; font-size: 13Px; }
   .event-modal-detail__solar-safety { display: block; margin: 14Px 0 18Px; padding: 14Px; border-radius: 14Px; background: #fff5dd; color: #806426; font-size: 14Px; line-height: 1.6; }
   .event-modal-detail__context-summary { font-size: 14Px; line-height: 1.6; }
   .event-modal-detail__select { min-height: 48Px; margin: 14Px 0; border-radius: 14Px; font-size: 15Px; }

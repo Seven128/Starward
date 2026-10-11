@@ -203,7 +203,7 @@ export const AstronomicalEventModal = forwardRef<AstronomicalEventModalHandle, {
                 {group.events.map((event) => <View key={event.occurrenceId} className={`event-modal__row${mode === "select-one" && draftSelection === event.occurrenceId ? " is-selected" : ""}`}>
                   <Button className="event-modal__row-main" onClick={() => setDetailId(event.occurrenceId)} ariaLabel={`查看${event.displayName}详情`}>
                     <View className="event-modal__date"><Text>{Number(event.peakDate.slice(5, 7))}月</Text><Text>{eventDayLabel(event.peakDate)}</Text><Text>{eventDatePresentation(event).ticket}</Text></View>
-                    <View className="event-modal__row-copy"><Text className="event-modal__row-title">{event.displayName}</Text><Text>{event.code} · {eventTypeLabel(event)}{mode === "select-one" && draftSelection === event.occurrenceId ? " · 已选" : ""}</Text><Text>{eventDatePresentation(event).range} {event.activeStartDate.slice(5).replace("-", ".")} — {event.activeEndDate.slice(5).replace("-", ".")}</Text></View>
+                    <View className="event-modal__row-copy"><Text className="event-modal__row-title">{event.displayName}</Text><Text>{event.code} · {eventTypeLabel(event)}{mode === "select-one" && draftSelection === event.occurrenceId ? <Text className="event-modal__chosen-label"> · 已选</Text> : null}</Text><Text>{eventDatePresentation(event).range} {event.activeStartDate.slice(5).replace("-", ".")} — {event.activeEndDate.slice(5).replace("-", ".")}</Text></View>
                     <SemanticIcon name="chevron-right" />
                   </Button>
                   {mode === "select-one" ? <Button className={`event-modal__radio${draftSelection === event.occurrenceId ? " is-selected" : ""}`}

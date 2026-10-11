@@ -88,3 +88,46 @@ body[data-scale-surface=plan] .footnote,body[data-scale-surface=plan] .enddate,b
 .source-links>.source-status{flex:1 0 100%;min-width:0;margin:4px 0 0;line-height:21px}
 .weather-source{padding:0;border:0;min-height:0}
 .weather-source .source-copy{font-weight:500}
+
+/* 2026-10-11 approved Plan23 and shared-event19 ordinary-text increments. */
+body[data-scale-surface=plan] #past[aria-selected=false]{color:#6f787d}
+body[data-scale-surface=plan] p.date-group{color:#6b797e}
+body[data-scale-surface=plan] button.plan-row>p{color:#66737b}
+body[data-scale-surface=plan] button.plan-row>small,
+body[data-scale-surface=plan] div.reminder-edit>small{color:#697378}
+body[data-scale-surface=plan] div.hero>p{color:#6d7880}
+body[data-scale-surface=plan] div.period>div.date{color:#657177}
+body[data-scale-surface=plan] .period strong>span{color:#627279}
+body[data-scale-surface=plan] div.period>div.enddate{color:#677176}
+body[data-scale-surface=plan] div.section-title>span{color:#70787c}
+body[data-scale-surface=plan] div.fact>small{color:#697378}
+body[data-scale-surface=plan] p.footnote{color:#6f787d}
+body[data-scale-surface=plan] div.row>span.mode{color:#697378}
+body[data-scale-surface=plan] div.travel-stop>p{color:#6a7981}
+body[data-scale-surface=plan] p.arrival-note{color:#5f757f}
+body[data-scale-surface=plan] .event-entry small,
+body[data-scale-surface=plan] div.reminder-status>small,
+body[data-scale-surface=plan] #reminder-count{color:#6d787d}
+body[data-scale-surface=plan] div.reminder-head>strong{color:#607b84}
+body[data-scale-surface=plan] div.reminder-head>span.count{color:#70787c}
+body[data-scale-surface=plan] p.notes{color:#697982}
+body[data-scale-surface=plan] #remove:not(:disabled),
+body[data-scale-surface=plan] #cancel:not(:disabled){color:#6b7880}
+body[data-scale-surface=plan] label.field>span{color:#65747b}
+body[data-scale-surface=plan] div.reminder-edit>div.row>button.delete,
+body[data-scale-surface=plan] div.item-edit>button.delete{color:#886b65}
+body[data-scale-surface=plan] div.reminder-edit>button.add:not(:disabled){color:#5a7581}
+body[data-scale-surface=plan] #add-reminder:not(:disabled){color:#5e7b87}
+.event-modal .catalogue,.event-modal .month-heading span{color:#717782}
+.event-modal .date-ticket{color:#846d43}
+.event-modal .event-copy small{color:#6b717b}
+.event-modal .event-period{color:#69717e}
+.event-modal .chosen-label{color:#8a6c3b}
+.event-modal .quiet{color:#6b727a}
+.event-modal .event-identity small{color:#707782}
+.event-modal .event-facts small{color:#6b717a}
+.event-modal p.precision{color:#717781}
+.event-modal .activity-axis>span{color:#72777f}
+.event-modal .activity-axis>b{color:#8b7342}
+.event-modal .event-day-strip small{color:#61686e}
+.event-modal .event-empty p,.event-modal .event-empty h3{color:#6f7784}

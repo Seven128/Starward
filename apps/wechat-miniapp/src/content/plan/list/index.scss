@@ -21,4 +21,8 @@
   .plan-list-content { padding: 8Px 18Px calc(24Px + env(safe-area-inset-bottom)); }
   .plan-list-filters { gap: 20Px; }
   .plan-list-filters button { font-size: 15Px; line-height: 24Px; }
+  .plan-list-past { color: #6f787d; }
+  .plan-list-date { color: #6b797e; }
+  .plan-list-row__time { color: #66737b; }
+  .plan-list-row__meta { color: #697378; }
 }

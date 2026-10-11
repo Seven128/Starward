@@ -39,13 +39,13 @@ export function PlanReminderEditor({ reminders, onChange }: {
           onInput={event => change(reminder.reminderId, { items: reminder.items.map(i => i.itemId === item.itemId ? { ...i, text: event.detail.value } : i) })} />
         <Button className="plan-reminder-editor__remove-item" aria-label={`删除清单项 ${itemIndex + 1}`} onClick={() => change(reminder.reminderId, { items: reminder.items.filter(i => i.itemId !== item.itemId) })}>×</Button>
       </View>)}
-      <Button disabled={reminder.items.length >= 20} onClick={() => change(reminder.reminderId, { items: [...reminder.items, { itemId: id(), text: "", completed: false }] })}>＋ 添加清单项（{reminder.items.length}/20）</Button>
+      <Button className={reminder.items.length < 20 ? "plan-reminder-editor__add-item" : ""} disabled={reminder.items.length >= 20} onClick={() => change(reminder.reminderId, { items: [...reminder.items, { itemId: id(), text: "", completed: false }] })}>＋ 添加清单项（<Text className="plan-reminder-editor__item-count">{reminder.items.length}/20</Text>）</Button>
       <Button className="plan-reminder-editor__notification" aria-pressed={reminder.notifyOnWechat}
         onClick={() => change(reminder.reminderId, { notifyOnWechat: !reminder.notifyOnWechat })}>
         微信通知意向 · {reminder.notifyOnWechat ? "希望开启" : "不发送"}
       </Button>
       <Text className="plan-reminder-editor__notice">微信通知服务尚未接通；这里仅保存通知意向，清单内容可独立使用。</Text>
     </View>)}
-    <Button disabled={reminders.length >= 5} onClick={() => onChange([...reminders, { reminderId: id(), title: `个人提醒 ${reminders.length + 1}`, hoursBeforeDeparture: 1, notifyOnWechat: false, items: [] }])}>＋ 添加提醒</Button>
+    <Button className={reminders.length < 5 ? "plan-reminder-editor__add-reminder" : ""} disabled={reminders.length >= 5} onClick={() => onChange([...reminders, { reminderId: id(), title: `个人提醒 ${reminders.length + 1}`, hoursBeforeDeparture: 1, notifyOnWechat: false, items: [] }])}>＋ 添加提醒</Button>
   </View>;
 }
