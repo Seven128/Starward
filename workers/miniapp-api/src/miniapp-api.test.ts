@@ -145,7 +145,11 @@ test("map time axis includes the exact off-cadence observing instant without dup
   } finally { await service.onModuleDestroy(); }
 });
 
-test("map scene is context-bound and computes actual dynamic projections", async () => {
+test("map scene is context-bound and computes actual dynamic projections", async (t) => {
+  // The controlled forecast belongs to this observing night. Keep its clock
+  // inside that window instead of asking production freshness rules to show
+  // historical forecast cells as current data.
+  t.mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-08-06T12:00:00.000Z") });
   const service = testService();
   try {
     const context = await contextFor(service);

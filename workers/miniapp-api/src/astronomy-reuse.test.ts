@@ -14,6 +14,7 @@ import type { WeatherPort, WeatherEvidenceResult } from "./ports.ts";
 async function setup() {
   let now = Date.now();
   let weatherCalls = 0, positions = 0;
+  const weatherRequests: Array<{ latitude: number; longitude: number; localDate: string }> = [];
   let revision = 1;
   let detail = { ...buildTestSpotDetail(TEST_PUBLISHED_SPOT.spotId)! };
   const repository = new InMemoryTestRepository();
@@ -22,6 +23,7 @@ async function setup() {
   let weatherTransform = (value: WeatherEvidenceResult) => value;
   const weather: WeatherPort = { key: "isolated-test-weather", getHourly: async (input) => {
     weatherCalls++;
+    weatherRequests.push({ latitude: input.point.latitude, longitude: input.point.longitude, localDate: input.localDate });
     const value = await fixture.getHourly(input);
     const validTo = new Date(now + 86_400_000).toISOString();
     value.source.validTo = validTo;
@@ -43,6 +45,9 @@ async function setup() {
   const astronomy = new AstronomyService(weather, repository, createTestRuntimeConfig(), catalog, () => now);
   return { service, astronomy, contexts, repository,
     counts: () => ({ weatherCalls, positions }),
+    formalWeatherCalls: (localDate: string) => weatherRequests.filter(request =>
+      request.latitude === TEST_PUBLISHED_SPOT.wgs84.latitude &&
+      request.longitude === TEST_PUBLISHED_SPOT.wgs84.longitude && request.localDate === localDate).length,
     now: () => now,
     advance: (ms: number) => { now += ms; },
     changeCatalog: () => { revision++; },
@@ -56,16 +61,21 @@ test("map → layer → overview → sky shares public evidence and projects sta
   try {
     const [context, second] = h.contexts;
     const map = await h.service.getMapScene({ contextId: context!.contextId });
-    await h.service.getMapScene({ contextId: context!.contextId, layer: "CLOUD" });
-    const overview = await h.service.getSpotOverview(TEST_PUBLISHED_SPOT.spotId, second!.contextId);
     assert.equal(h.counts().weatherCalls, 1);
+    await h.service.getMapScene({ contextId: context!.contextId, layer: "CLOUD" });
+    assert.equal(h.formalWeatherCalls(context!.localDate), 1, "Map → Cloud reuses the same formal-point weather read");
+    // Geographic cloud samples have their own locations; subsequent formal
+    // spot consumers must still reuse the evidence already read by Map.
+    const weatherCallsAfterLayer = h.counts().weatherCalls;
+    const overview = await h.service.getSpotOverview(TEST_PUBLISHED_SPOT.spotId, second!.contextId);
+    assert.equal(h.counts().weatherCalls, weatherCallsAfterLayer);
     assert.equal(h.counts().positions, 0);
     const [sky, other] = await Promise.all([
       h.service.getSky(TEST_PUBLISHED_SPOT.spotId, context!.contextId),
       h.service.getSky(TEST_PUBLISHED_SPOT.spotId, second!.contextId),
     ]);
     assert.equal(h.counts().positions, sky.data.hourly.length);
-    assert.equal(h.counts().weatherCalls, 1);
+    assert.equal(h.counts().weatherCalls, weatherCallsAfterLayer);
     assert.equal(sky.data.context.contextId, context!.contextId);
     assert.equal(other.data.context.contextId, second!.contextId);
     assert.equal(sky.data.context.dataRevision, other.data.context.dataRevision);
