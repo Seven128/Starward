@@ -24,6 +24,8 @@ export type SemanticIconName =
   | "plan-header-chevron"
   | "plan-row-chevron"
   | "settings-choice-check"
+  | "layer-choice-check"
+  | "terrain-toggle-check"
   | "chevron-down"
   | "chevron-up"
   | "close"
@@ -83,6 +85,8 @@ const DAY_SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
   "plan-header-chevron": "/assets/icons/my-plan-chevron-header.svg",
   "plan-row-chevron": "/assets/icons/my-plan-chevron-row.svg",
   "settings-choice-check": "/content/assets/icons/settings-choice-check.svg",
+  "layer-choice-check": "/assets/icons/map-layer-choice-check.svg",
+  "terrain-toggle-check": "/assets/icons/terrain-toggle-check.png",
 };
 
 // These new DAY roles keep the existing presentation in unadopted modes.
@@ -92,6 +96,8 @@ const LEGACY_ICON_NAME: Partial<Record<SemanticIconName, SemanticIconName>> = {
   walking: "compass", signal: "wifi-off", charging: "info", verified: "info",
   "plan-header-chevron": "chevron-right", "plan-row-chevron": "chevron-right",
   "settings-choice-check": "check",
+  "layer-choice-check": "check",
+  "terrain-toggle-check": "check",
   temperature: "sun", droplet: "conditions",
 };
 

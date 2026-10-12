@@ -396,6 +396,7 @@
   @include finder-field.text-presentation;
 }
 .theme-day.spot-search-page .spot-search-field::before { inset: 5Px 0; }
+.theme-day.spot-search-page .spot-search-field__placeholder { @include finder-field.day-placeholder; }
 .spot-search-query-overlay {
   top: calc(var(--search-safe-top) + var(--search-control-height) + 2Px);
   right: 16Px;
@@ -467,7 +468,7 @@
 .theme-day.spot-search-page .spot-search-result-list { padding-top: 8Px; }
 .theme-day.spot-search-page .spot-search-partition__toggle { min-height: 46Px; grid-template-columns: auto auto minmax(0, 1fr); gap: 6Px; }
 .theme-day.spot-search-page .spot-search-partition__toggle .type-section { color: #4e5969; font-size: 15Px; line-height: 22Px; font-weight: 600; }
-.theme-day.spot-search-page .spot-search-partition__toggle .type-caption { padding: 2Px 7Px; border-radius: 8Px; background: #f2f3f5; color: #86909c; font-size: 12Px; line-height: 19.2Px; font-weight: 500; }
+.theme-day.spot-search-page .spot-search-partition__toggle .type-caption { padding: 2Px 7Px; border-radius: 8Px; background: #f2f3f5; color: #69707a; font-size: 12Px; line-height: 19.2Px; font-weight: 500; }
 .theme-day.spot-search-page .spot-search-partition__toggle .semantic-icon { width: 16Px; height: 16Px; justify-self: end; transition: transform 160ms ease; }
 .theme-day.spot-search-page .spot-search-partition__toggle--closed .semantic-icon { transform: rotate(-90deg); }
 .theme-day.spot-search-page .spot-search-result-entry { margin: 0 0 12Px; }

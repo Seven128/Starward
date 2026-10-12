@@ -23,7 +23,7 @@ export function CandidateIntakeField({ fieldKey, form }: { fieldKey: Contributio
     <View id={`contribution-intake-${field}`} className="candidate-intake-group" data-field={field} key={field}>
       <Text className="formal-feedback-field__label">{label}<Text className="formal-feedback-required"> *</Text></Text>
       <View className="formal-feedback-choices candidate-intake-choices" role="radiogroup" ariaLabel={label}>
-        {options.map(([key, title]) => <Button key={key} disabled={form.commandBusy} className={value === key ? "is-selected" : ""}
+        {options.map(([key, title]) => <Button key={key} disabled={form.commandBusy} className={`${value === key ? "is-selected" : ""}${!form.commandBusy ? " is-enabled" : ""}`}
           aria-pressed={value === key} ariaLabel={`${label}：${title}`} onClick={() => { if (value === key) return; onSelect(key); form.setValidationField(null); }}><Text>{title}</Text></Button>)}
       </View>
       {error(field) ? <View className="candidate-intake-error" role="alert"><Text>{error(field)}</Text></View> : null}
@@ -52,7 +52,7 @@ export function CandidateIntakeField({ fieldKey, form }: { fieldKey: Contributio
             <Text className="formal-feedback-field__label">{title}<Text className="formal-feedback-required"> *</Text></Text>
             <Input disabled={form.commandBusy} value={intake.contact[key]} maxlength={maximum} ariaLabel={title} focus={Boolean(error(`contact-${key}`))}
               placeholder={key === "number" ? "管理方可公开的电话号码" : key === "purpose" ? "如预约、入场或安全咨询" : "如管理方公开告示或官方网站"}
-              placeholderClass="formal-feedback-placeholder" onInput={event => update(key, event.detail.value)} />
+              placeholderClass={`formal-feedback-placeholder${!form.commandBusy ? " formal-feedback-placeholder--field" : ""}`} onInput={event => update(key, event.detail.value)} />
             {error(`contact-${key}`) ? <View className="candidate-intake-error" role="alert"><Text>{error(`contact-${key}`)}</Text></View> : null}
           </View>)}
         <View id="contribution-intake-contact-permission"><ToggleField disabled={form.commandBusy} id="contribution-contact-permission" label="管理方允许公开此号码" checked={intake.contact.publicPermissionConfirmed}

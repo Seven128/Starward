@@ -106,7 +106,7 @@ if(surface==='sky'){
  const objects=$('#objects');if(objects)objects.replaceChildren(matteImage('telescope',{size:30}),Object.assign(document.createElement('span'),{textContent:'天体'}));
 }
 if(surface==='feedback'){
- const search=$('.map-search');if(search){search.replaceChildren(matteImage('search',{size:24}),document.createTextNode('搜索观星点'));search.setAttribute('role','button');search.tabIndex=0;search.onclick=()=>location.href=root+'search.html';}
+ const search=$('.map-search');if(search){const text=document.createElement('span');text.className='map-search-label';text.textContent='搜索观星点';search.replaceChildren(matteImage('search',{size:24}),text);search.setAttribute('role','button');search.tabIndex=0;search.onclick=()=>location.href=root+'search.html';}
 }
 // Keep route destinations inside this review package, while retaining each original form/modal owner.
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;let dest=null;

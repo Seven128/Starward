@@ -469,12 +469,17 @@
   .settings-display-mode-thumb { background: #fff; box-shadow: 0 2Px 6Px #364d6010, inset 0 1Px 0 #fff8; }
   .settings-display-mode-choice { color: #83929c; font-weight: 400; }
   .settings-display-mode-choice--selected { color: #344b59; }
+  .settings-display-mode-choice:not(.settings-display-mode-choice--selected) > text { color: #657178; }
   .settings-display-mode-choice .semantic-icon { width: 26Px; height: 26Px; flex-basis: 26Px; }
   .settings-section-title,
   .settings-entry-copy .type-caption,
   .settings-card--group .toggle-field .type-caption,
   .settings-entry-meta,
   .settings-capability-note { color: #83929c; }
+  .settings-section-title { color: #6c7881; }
+  .settings-entry-row:not(.settings-entry-row--disabled) .settings-entry-copy .type-caption,
+  .settings-card--group .toggle-field:not(.toggle-field--disabled) .type-caption,
+  .settings-entry-row:not(.settings-entry-row--disabled) .settings-entry-meta > text { color: #68737b; }
   .settings-card--group { background: #f6f7f8; }
   .settings-entry-copy .type-label,
   .settings-card--group .toggle-field .type-label { color: #344b59; }
@@ -494,6 +499,7 @@
   .settings-card--group .toggle-field__icon--gold { background: #f0eadf; }
   .settings-icon-well--coral { background: #f3ece8; }
   #account-delete .type-label { color: #b0786e; }
+  #account-delete:not(.settings-entry-row--disabled) .type-label { color: #95665d; }
 
   .settings-icon-well .semantic-icon { width: 26Px; height: 26Px; flex-basis: 26Px; }
   #settings-direction .settings-icon-well .semantic-icon,
@@ -522,7 +528,7 @@
   .settings-sheet__header { box-sizing: border-box; padding: 10Px 0 4Px; }
   .settings-sheet__title { font-weight: 550; }
   .settings-sheet__close .semantic-icon { width: 26Px; height: 26Px; flex-basis: 26Px; }
-  .settings-sheet__body { color: #83929c; }
+  .settings-sheet__body { color: #6c7881; }
   .settings-sheet__choices { gap: 12Px; padding-bottom: 22Px; }
   .settings-sheet__actions { margin-top: 10Px; }
   .settings-sheet__choice { color: #344b59; background: #f6f7f8; line-height: 22Px; }
@@ -530,4 +536,6 @@
   .settings-sheet__secondary { color: #344b59; background: #f6f7f8; }
   .settings-sheet__primary { color: #fff; background: #7c999e; }
   .settings-sheet__primary--danger { color: #b0786e; background: #f6f7f8; }
+  .settings-sheet__primary--ready { color: #2d2d2d; }
+  .settings-sheet__primary--ready.settings-sheet__primary--danger { color: #95665d; }
 }

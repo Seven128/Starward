@@ -338,6 +338,6 @@ function CandidatePhotoGroup({ kind, form, commands, failedIds, onRetry }: {
     {media.some(item => failedIds.includes(item.uploadId) && !form.candidateMediaPreviews[item.uploadId])
       ? <StatusPanel state="ERROR" detail={`${label}照片暂时无法预览，其他资料仍可查看。`} recoveryLabel="重试照片预览" onRecover={() => onRetry(media.map(item => item.uploadId))} />
       : null}
-    <Button className="formal-feedback-photo-action" disabled={form.commandBusy || media.length >= 3} onClick={() => void commands.addMedia(kind)}>＋ 添加{label}照片</Button>
+    <Button className={`formal-feedback-photo-action${!form.commandBusy && media.length < 3 ? " formal-feedback-photo-action--ready" : ""}`} disabled={form.commandBusy || media.length >= 3} onClick={() => void commands.addMedia(kind)}><Text>＋ <Text className="formal-feedback-photo-action__label">添加{label}照片</Text></Text></Button>
   </View>;
 }

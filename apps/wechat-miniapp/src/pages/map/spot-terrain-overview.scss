@@ -42,6 +42,50 @@
 .spot-terrain__layer-state { display:block; color:var(--text-tertiary); font-size:20rpx; }
 .spot-terrain__source { display:flex; flex-direction:column; gap:5rpx; padding-top:4rpx; color:var(--text-tertiary); font-size:20rpx; line-height:1.45; }
 .spot-terrain__source > .source-disclosure { margin: 0; border: 0; }
+.theme-day {
+  .spot-terrain__toggles { gap: 10Px; }
+  .spot-terrain__toggle {
+    box-sizing: border-box;
+    height: 48Px;
+    min-height: 48Px;
+    padding: 0 12Px;
+    gap: 8Px;
+    border: 1Px solid #e8ece9;
+    border-radius: 14Px;
+    background: #fff;
+  }
+  .spot-terrain__toggle > .semantic-icon:first-child { flex: 0 0 24Px; width: 24Px; height: 24Px; opacity: .65; }
+  .spot-terrain__toggle--active > .semantic-icon:first-child { opacity: 1; }
+  .spot-terrain__toggle > view > text:first-child { color: #77847d; font-size: 14Px; font-weight: 400; }
+  .spot-terrain__toggle-detail { position: absolute; width: 1Px; height: 1Px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+  .spot-terrain__toggle--active { border-color: #b7c9bc; background: #f0f5f0; }
+  .spot-terrain__toggle--active > view > text:first-child { color: #516b5d; }
+  .spot-terrain__toggle--light.spot-terrain__toggle--active { border-color: #dfd2ad; background: #faf6eb; }
+  .spot-terrain__toggle > .semantic-icon:last-child,
+  .spot-terrain__unchecked {
+    box-sizing: border-box;
+    flex: 0 0 16Px;
+    width: 16Px;
+    height: 16Px;
+    margin-left: auto;
+    padding: 0;
+    border: 1Px solid #ced6d0;
+    border-radius: 50%;
+    background: transparent;
+  }
+  .spot-terrain__toggle--active > .semantic-icon:last-child { border-color: #819c89; background: #819c89; }
+  .spot-terrain__toggle--light.spot-terrain__toggle--active > .semantic-icon:last-child { border-color: #b6a16b; background: #b6a16b; }
+  .spot-terrain__heading .type-caption,
+  .spot-terrain__coverage > text:first-child { color: #70787c; }
+  .spot-terrain__radius-row > .type-secondary { color: #6e787d; }
+  .spot-terrain__radius-value .type-caption { color: #6f7874; }
+  .spot-terrain__ticks > text { color: #6f7974; }
+  .spot-terrain__toggle--light.spot-terrain__toggle--ready > view > text:first-child { color: #836f41; }
+  .spot-terrain__elevation-key .type-caption,
+  .spot-terrain__legend text { color: #717873; }
+}
+.theme-night .spot-terrain__unchecked,
+.theme-observation .spot-terrain__unchecked { display: none; }
 .spot-terrain__source .source-disclosure__summary { min-height: 44Px; }
 .theme-day .spot-terrain__source .source-disclosure__body .provenance__header > .type-label { font-size: 18Px; line-height: 26Px; }
 .theme-night .spot-terrain__map { filter:saturate(.7) brightness(.65); }

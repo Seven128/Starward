@@ -9,7 +9,7 @@
         <image class="semantic-icon__theme-source semantic-icon__theme-source--night" src="{{item.nightIcon}}" mode="aspectFit" aria-hidden="true" />
         <image class="semantic-icon__theme-source semantic-icon__theme-source--observation" src="{{item.observationIcon}}" mode="aspectFit" aria-hidden="true" />
       </view>
-      <view class="primary-navigation__label"><text>{{item.text}}</text>
+      <view class="primary-navigation__label {{pending === null ? 'primary-navigation__label--ready' : ''}}"><text>{{item.text}}</text>
         <view wx:if="{{item.retry}}" class="primary-navigation__retry" aria-role="alert"><text>未打开 · 重试</text></view>
       </view>
     </button>

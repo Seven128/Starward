@@ -11,6 +11,8 @@
 
 2026-10-11用户进一步明确批准DAY计划23组及共享事件19组普通文字配色增量，以满足现有可读性要求；范围由[计划入口](../../../../docs/design-resources/wechat-miniapp/plan/ADOPTED.md)和[事件入口](../../../../docs/design-resources/wechat-miniapp/events/ADOPTED.md)控制，精确值在共同完整源的refinements.css。仅改变列明的普通文字角色，背景、字级、构图、图标、内容及行为继续沿原采用范围；禁用状态、其它主题和未列角色不自动扩展，资源采用与实际生产验证仍分别判断。
 
+2026-10-12用户明确批准[DAY普通文字R01–R50](../../../../docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/day-text-2026-10-12.md)，包括设置浅色主按钮深色文字；设置、Search/My、两类记录、共享表单及Map/图层按列明责任同步。独立图形、禁用/加载、背景、字级、布局、业务内容/动作及未列模式保留，旧42组证据复用。隐藏语义标题不新增可见组件或视觉矩阵；具体业务字段/资格仍以各Screen Contract为准。
+
 2026-09-22用户要求隔离旧生成页面，避免后续设计误用。Stitch历史混合项目已退出当前迭代基线；资源状态与项目清单见[Stitch隔离状态](../../../../docs/design-resources/wechat-miniapp/stitch-status.md)，当前源仍经[各页唯一采用入口](../../../../docs/design-resources/wechat-miniapp/README.md)进入。隔离保留现行采用及必要依赖，不代表最新源已重新同步到Stitch，也不授权改变抽屉、Tab或现用3D图标。
 
 2026-09-13本轮是一个完整需求，包含地形、B行图标、天文事件Modal，以及整体UI/UX校验与Context对齐补开发四个部分，产品/技术Context与对应资源必须同时保持一致。变更基于现有采用页面增量完成：地图完整基本信息、三档拖动/单文档/照片查看、原天文内容，以及计划完整地点/观测时间/出发路线/提醒清单/备注/保存与返回不因局部改动而重构或删减。简化宿主不能替代完整页面作为当前资源；本轮最终增量视觉已于2026-09-13获用户确认采用，浏览器验证不代表生产完成。统一审阅及修改范围见[完整资源入口](../../../../docs/design-resources/wechat-miniapp/shared/astronomical-event-modal/README.md)。

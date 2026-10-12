@@ -58,4 +58,5 @@
 .theme-day.primary-navigation--map { border-color: #f1f5f9; background: #fff; color: #94a3b8; }
 .theme-day.primary-navigation--map .primary-navigation__item--selected { color: #0f172a; }
 .theme-day.primary-navigation--map .primary-navigation__label { letter-spacing: -.35Px; }
+.theme-day.primary-navigation--map .primary-navigation__item:not(.primary-navigation__item--selected) .primary-navigation__label--ready > text { color: #6c7787; }
 @media (max-width: 350px) { .primary-navigation--map { padding-right: 20Px; padding-left: 20Px; } }

@@ -1244,31 +1244,6 @@
   gap: 3rpx;
   padding-bottom: 16rpx;
 }
-.map-layer-sheet__choices {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10rpx;
-}
-.map-layer-sheet__choice {
-  min-width: 0;
-  min-height: 86rpx;
-  padding: 12rpx 8rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2rpx;
-  border: 1rpx solid var(--border);
-  border-radius: 16rpx;
-  background: var(--surface);
-  color: var(--text-secondary);
-  text-align: center;
-}
-.map-layer-sheet__choice--active {
-  border-color: var(--choice-selected-border);
-  background: var(--choice-selected-surface);
-  color: var(--choice-selected-label);
-}
 .map-layer-sheet__choice[disabled] {
   opacity: .58;
 }
@@ -2692,6 +2667,88 @@
   font-weight: 400;
 }
 .map-search-entry > .semantic-icon { width: 22Px; height: 22Px; flex-basis: 22Px; }
+.theme-day.map-page .map-search-entry--placeholder > text { @include finder-field.day-placeholder; }
+.theme-day.map-page .map-context-time-summary { color: #627288; }
+.theme-day.map-page .map-layer-sheet__choice--ready .map-layer-sheet__choice-copy .type-caption { color: #6f737b; }
+.theme-day.map-page .map-layer-sheet__terrain-row--ready .map-layer-sheet__choice-copy .type-caption { color: #70777d; }
+.theme-day.map-page .map-layer-sheet--cloud .map-layer-sheet__source-note--ready { color: #72777f; }
+// Current comfortable-scale layers.html + interaction.css: DAY radio cards.
+// The tiny texture derivatives preserve the source SVG circles/curves.
+.theme-day.map-page {
+  .map-layer-sheet__footer { padding: 0 18Px 14Px; }
+  .map-layer-sheet__choices { gap: 14Px; padding-top: 10Px; }
+  .map-layer-sheet__choice {
+    box-sizing: border-box;
+    height: 64Px;
+    min-height: 64Px;
+    padding: 0 16Px;
+    gap: 0;
+    border: 1Px solid #eceef0;
+    border-radius: 16Px;
+    background: #fff;
+    box-shadow: none;
+  }
+  .map-layer-sheet__choice::before {
+    background-repeat: no-repeat;
+  }
+  .map-layer-sheet__choice:nth-child(1)::before {
+    opacity: .07;
+    background-image:
+      radial-gradient(circle 10Px at 35Px 30Px, #fbbf24 10Px, transparent 10Px),
+      radial-gradient(circle 8Px at 20Px 15Px, #d97706 8Px, transparent 8Px),
+      radial-gradient(circle 16Px at 50Px 20Px, #f59e0b 16Px, transparent 16Px);
+    background-size: 70Px 40Px;
+    background-position: right 8Px center;
+  }
+  .map-layer-sheet__choice:nth-child(2)::before {
+    opacity: .14;
+    background-image: url('../../assets/map-layer-textures/cloud.png');
+    background-size: 80Px 45Px;
+    background-position: right 4Px center;
+  }
+  .map-layer-sheet__choice > .semantic-icon:not(.map-layer-sheet__choice-check) {
+    position: absolute;
+    left: 16Px;
+    top: calc(50% - 21.5Px);
+    width: 22Px;
+    height: 22Px;
+  }
+  .map-layer-sheet__choice-copy { gap: 2Px; }
+  .map-layer-sheet__choice-title {
+    padding-left: 27Px;
+    color: #41434e;
+    font-size: 16Px;
+    font-weight: 500;
+    line-height: 22Px;
+  }
+  .map-layer-sheet__choice-copy .type-caption {
+    font-size: 12.5Px;
+    font-weight: 400;
+    line-height: 19Px;
+  }
+  .map-layer-sheet__choice--active {
+    border-color: #71999f;
+    background: #f6faf9;
+    box-shadow: inset 0 0 0 .5Px #71999f;
+  }
+  .map-layer-sheet__choice--active .map-layer-sheet__choice-title {
+    color: #315c64;
+    font-weight: 600;
+  }
+  .map-layer-sheet__choice-check.semantic-icon,
+  .map-layer-sheet__choice-unchecked {
+    box-sizing: border-box;
+    flex: 0 0 22Px;
+    width: 22Px;
+    height: 22Px;
+    border: 1Px solid #cbd2d9;
+    background: #fff;
+  }
+  .map-layer-sheet__choice-check.semantic-icon {
+    border-color: #356d77;
+    background: #356d77;
+  }
+}
 .map-page { --map-tool-size: 52Px; }
 .map-tool { width: var(--map-tool-size); min-width: var(--map-tool-size); height: var(--map-tool-size); min-height: var(--map-tool-size); }
 .map-tool::before { inset: 4Px; }
@@ -3352,7 +3409,7 @@
   }
   .spot-panel__contact-row > text { color: #0f172a; text-align: left; }
   .spot-panel__contact-row > .spot-panel__contact-unavailable {
-    color: #94a3b8;
+    color: #6c7787;
     font-size: 12Px;
     font-weight: 400;
   }

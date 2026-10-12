@@ -36,7 +36,7 @@ function SettingsEntryRow({
   pendingLabel?: string | undefined;
   onClick: () => void;
 }) {
-  return <Button id={id} className="settings-entry-row focus-ring"
+  return <Button id={id} className={`settings-entry-row focus-ring${disabled ? " settings-entry-row--disabled" : ""}`}
     ariaLabel={`${label}${description ? `；${description}` : ""}${value ? `；${value}` : ""}`}
     disabled={disabled} onClick={onClick}>
     <View className={`settings-icon-well settings-icon-well--${tone}`} aria-hidden="true">

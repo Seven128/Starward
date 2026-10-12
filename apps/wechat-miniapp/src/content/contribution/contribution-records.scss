@@ -39,7 +39,7 @@
   .contribution-records__groups { display: flex; gap: 28Px; border-color: #eff2f3; }
   .contribution-records__group {
     flex: none; width: auto; min-height: 50Px; padding: 0 0 8Px;
-    display: flex; align-items: center; color: #a0a9b0; font-size: 15Px; line-height: 22Px;
+    display: flex; align-items: center; color: #71777c; font-size: 15Px; line-height: 22Px;
   }
   .contribution-records__group .selection-tabs__label { font-size: inherit; line-height: 22Px; }
   .contribution-records__group--active { color: #3c5967; font-weight: 600; }
@@ -52,7 +52,7 @@
     position: relative; min-width: 0; min-height: 44Px; margin: 0; padding: 0 14Px;
     display: flex; align-items: center; justify-content: center;
     border: 0; border-radius: 10Px; background: transparent;
-    color: #8b969f; font-size: 13Px; line-height: 20Px;
+    color: #6f777f; font-size: 13Px; line-height: 20Px;
   }
   .contribution-records__filters .chip::after { border: 0; }
   .contribution-records__filters .chip::before {
@@ -67,12 +67,12 @@
   .contribution-record-card__extension {
     min-height: 0; padding: 12Px 16Px 6Px; gap: 8Px; background: transparent;
   }
-  .contribution-record-card__meta { color: #9aa6ac; font-size: 12Px; line-height: 18Px; }
-  .contribution-record__changes { margin: 4Px 16Px 0; display: flex; flex-wrap: wrap; gap: 6Px; color: #8596a0; font-size: 12Px; line-height: 18Px; }
+  .contribution-record-card__meta { color: #6b7478; font-size: 12Px; line-height: 18Px; }
+  .contribution-record__changes { margin: 4Px 16Px 0; display: flex; flex-wrap: wrap; gap: 6Px; color: #626e76; font-size: 12Px; line-height: 18Px; }
   .contribution-record__changes text { padding: 3Px 8Px; border-radius: 6Px; background: #eaf0f1; }
   .contribution-record__reason {
     margin: 6Px 16Px 0; padding: 0; border: 0; background: transparent;
-    color: #976f62; font-size: 13Px; line-height: 20Px;
+    color: #8f695d; font-size: 13Px; line-height: 20Px;
   }
   .contribution-record .soft-button {
     width: auto; max-width: calc(100% - 32Px); min-width: 0; min-height: 44Px;
@@ -86,6 +86,8 @@
   .contribution-record__actions .soft-button { max-width: 100%; margin: 0; }
   .contribution-record--rejected > .soft-button,
   .contribution-record--rejected .contribution-record__actions .soft-button { color: #9b7e4b; }
+  .contribution-record .soft-button:not(.soft-button--disabled) .contribution-record__action-label { color: #5e7682; }
+  .contribution-record .contribution-record__resubmit:not(.soft-button--disabled) .contribution-record__action-label { color: #886f42; }
 }
 .theme-day .contribution-record-card,
 .theme-day .contribution-record-card--detail {
@@ -146,6 +148,11 @@
 .theme-day .contribution-status-pill--rejected { color: #b1786a; }
 .theme-day .contribution-status-pill--online,
 .theme-day .contribution-status-pill--approved { color: #608a7d; }
+.theme-day .contribution-status-pill--draft > text { color: #69747c; }
+.theme-day .contribution-status-pill--pending > text { color: #857044; }
+.theme-day .contribution-status-pill--rejected > text { color: #97665b; }
+.theme-day .contribution-status-pill--online > text,
+.theme-day .contribution-status-pill--approved > text { color: #557a6f; }
 .contribution-status-pill--success {
   border-color: var(--success);
   color: var(--success);

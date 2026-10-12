@@ -43,7 +43,7 @@ export function SpotDocumentFields({
     <SpotDocumentSection id="formal-feedback-place">
       {addressControl ?? <SpotDocumentAddressControl disabled={disabled} changed={Boolean(baseline && values.address !== (baseline.fields.address ?? ""))} onClear={() => onChange("address", "")}>
         <Input disabled={disabled} ariaLabel="搜索地址" value={values.address} maxlength={300}
-          placeholder={SPOT_DOCUMENT_PLACEHOLDERS.address ?? ""} placeholderClass="formal-feedback-placeholder"
+          placeholder={SPOT_DOCUMENT_PLACEHOLDERS.address ?? ""} placeholderClass={`formal-feedback-placeholder${!disabled ? " formal-feedback-placeholder--address" : ""}`}
           onInput={event => onChange("address", event.detail.value)} />
       </SpotDocumentAddressControl>}
       <Text className="formal-feedback-address-copy">{values.address || (renderField ? "地址资料未提供" : "尚未填写地点地址")}</Text>
@@ -76,7 +76,7 @@ export function SpotDocumentFields({
         value={values.detail}
         maxlength={2000}
         placeholder={SPOT_DOCUMENT_PLACEHOLDERS.detail ?? ""}
-        placeholderClass="formal-feedback-placeholder"
+        placeholderClass={`formal-feedback-placeholder${!disabled && !readOnly ? " formal-feedback-placeholder--detail" : ""}`}
         onInput={(event) => onChange("detail", event.detail.value)}
       />}
       {renderPhotoGroup?.("site")}
@@ -122,9 +122,9 @@ export function SpotDocumentField({ fieldKey, value, baseline, disabled, readOnl
   return <View className={`formal-feedback-field formal-feedback-field--${fieldKey}${changed ? " is-changed" : ""}${error ? " candidate-intake-input" : ""}`} data-field={fieldKey}>
     <Text className="formal-feedback-field__label">{label ?? SPOT_DOCUMENT_LABELS[fieldKey]}{required ? <Text className="formal-feedback-required"> *</Text> : null}</Text>
     {choices ? <View className="formal-feedback-choices">{choices.map((choice) =>
-      <Button key={choice || "unknown"} disabled={disabled || readOnly} ariaLabel={`${label ?? SPOT_DOCUMENT_LABELS[fieldKey]}：${choice || "不清楚"}`} aria-pressed={value === choice} className={value === choice ? "is-selected" : ""} onClick={() => onChange(fieldKey, choice)}><Text>{CHOICE_LABELS[choice] ?? (choice || "不清楚")}</Text></Button>)}</View>
+      <Button key={choice || "unknown"} disabled={disabled || readOnly} ariaLabel={`${label ?? SPOT_DOCUMENT_LABELS[fieldKey]}：${choice || "不清楚"}`} aria-pressed={value === choice} className={`${value === choice ? "is-selected" : ""}${!disabled && !readOnly ? " is-enabled" : ""}`} onClick={() => onChange(fieldKey, choice)}><Text>{CHOICE_LABELS[choice] ?? (choice || "不清楚")}</Text></Button>)}</View>
       : readOnly && value ? <Text className="formal-feedback-field__readonly-value">{value}</Text>
-        : <Input disabled={disabled || readOnly} focus={focus} ariaLabel={label ?? SPOT_DOCUMENT_LABELS[fieldKey]} value={value} maxlength={fieldKey === "detail" ? 2000 : 300} placeholder={SPOT_DOCUMENT_PLACEHOLDERS[fieldKey] ?? ""} placeholderClass="formal-feedback-placeholder" onInput={(event) => onChange(fieldKey, event.detail.value)} />}
+        : <Input disabled={disabled || readOnly} focus={focus} ariaLabel={label ?? SPOT_DOCUMENT_LABELS[fieldKey]} value={value} maxlength={fieldKey === "detail" ? 2000 : 300} placeholder={SPOT_DOCUMENT_PLACEHOLDERS[fieldKey] ?? ""} placeholderClass={`formal-feedback-placeholder${!disabled && !readOnly ? " formal-feedback-placeholder--field" : ""}`} onInput={(event) => onChange(fieldKey, event.detail.value)} />}
     {error ? <View className="candidate-intake-error" role="alert"><Text>{error}</Text></View> : null}
   </View>;
 }

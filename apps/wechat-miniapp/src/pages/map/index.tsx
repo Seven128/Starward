@@ -2235,7 +2235,7 @@ export default function MapPage() {
 
           <MapPanelChrome className="map-search-anchor" motionId={panelCssMotion?.sequence ?? 0} onAnimationStart={name => panelPresentation.current?.startReleaseClock(name)}>
             <Button
-              className="map-search-entry focus-ring"
+              className={`map-search-entry focus-ring${!finderQuery ? " map-search-entry--placeholder" : ""}`}
               data-control="map-search-entry"
               ariaLabel={
                 finderQuery
@@ -2506,7 +2506,7 @@ export default function MapPage() {
                     return (
                       <Button
                         key={overlay}
-                        className={`map-layer-sheet__choice${selectedLayer ? " map-layer-sheet__choice--active" : ""}`}
+                        className={`map-layer-sheet__choice${selectedLayer ? " map-layer-sheet__choice--active" : ""}${activeContext && !scene.isPending && !timeSaving ? " map-layer-sheet__choice--ready" : ""}`}
                         disabled={!activeContext || scene.isPending || timeSaving}
                         aria-label={`${overlayLabels[overlay]}${selectedLayer ? "，已选择" : ""}`}
                         onClick={() => {
@@ -2522,7 +2522,7 @@ export default function MapPage() {
                             {overlay === "LIGHT" ? "夜光年度估算" : "选定时刻气象"}
                           </Text>
                         </View>
-                        {selectedLayer ? <SemanticIcon name="check" className="map-layer-sheet__choice-check" /> : <View className="map-layer-sheet__choice-unchecked" aria-hidden />}
+                        {selectedLayer ? <SemanticIcon name="layer-choice-check" className="map-layer-sheet__choice-check" /> : <View className="map-layer-sheet__choice-unchecked" aria-hidden />}
                       </Button>
                     );
                   })}
@@ -2530,7 +2530,7 @@ export default function MapPage() {
               </>}>
                 <View className="map-layer-sheet__terrain-choice" aria-label="地形叠加选择">
                   <Button
-                    className={`map-layer-sheet__terrain-row${terrainEnabled && !mapTerrainMissing ? " map-layer-sheet__terrain-row--active" : ""}`}
+                    className={`map-layer-sheet__terrain-row${terrainEnabled && !mapTerrainMissing ? " map-layer-sheet__terrain-row--active" : ""}${!mapTerrainMissing ? " map-layer-sheet__terrain-row--ready" : ""}`}
                     disabled={mapTerrainMissing}
                     aria-checked={terrainEnabled && !mapTerrainMissing}
                     aria-label={`地形${mapTerrainMissing ? "，当前地区暂无数据" : terrainEnabled ? "，已开启" : "，已关闭"}`}
@@ -2607,7 +2607,7 @@ export default function MapPage() {
                       onCancel={() => setTimePreviewing(false)}
                     />
                     <MapTemporalFeedback failure={visibleTemporalFailure} onRetry={retryTemporalFailure} />
-                    <Text className="map-layer-sheet__source-note type-caption">
+                    <Text className={`map-layer-sheet__source-note type-caption${!scene.isPending && !mapSceneFailed ? " map-layer-sheet__source-note--ready" : ""}`}>
                       云量预报 · 仅覆盖有效数据区域
                     </Text>
                     <SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} />
@@ -2678,7 +2678,7 @@ export default function MapPage() {
         id={`map-layer-projection-${layerProjectionProbe}`}
         aria-hidden="true"
       >
-        <Text>{contextTimeLabel}</Text>
+        <Text className={timeReference ? "map-context-time-summary" : ""}>{contextTimeLabel}</Text>
       </View>
     </MapPanelPresentation></>
   );

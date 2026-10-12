@@ -83,11 +83,11 @@ export function SettingsSheet({
         })}
       </View> : <View className="settings-sheet__actions">
         {sheet === "DIRECTION" || sheet === "PRECISE" ?
-          <Button className="settings-sheet__primary focus-ring" onClick={close}>知道了</Button> : <>
+          <Button className="settings-sheet__primary settings-sheet__primary--ready focus-ring" onClick={close}>知道了</Button> : <>
             <Button className="settings-sheet__secondary focus-ring" disabled={busy} onClick={close}>
               {sheet === "DELETE" ? "保留账户" : "取消"}
             </Button>
-            <Button className={`settings-sheet__primary focus-ring${sheet === "DELETE" || sheet === "DELETE_FINAL" ? " settings-sheet__primary--danger" : ""}`}
+            <Button className={`settings-sheet__primary focus-ring${!busy ? " settings-sheet__primary--ready" : ""}${sheet === "DELETE" || sheet === "DELETE_FINAL" ? " settings-sheet__primary--danger" : ""}`}
               loading={busy} disabled={busy}
               onClick={sheet === "CACHE" ? confirmCache : sheet === "EXPORT" ? confirmExport : sheet === "DELETE" ? advanceDelete : confirmDelete}>
               {busy ? "处理中" : sheet === "CACHE" ? "清理缓存" : sheet === "EXPORT" ? "准备数据" : sheet === "DELETE" ? "继续" : "确认删除"}

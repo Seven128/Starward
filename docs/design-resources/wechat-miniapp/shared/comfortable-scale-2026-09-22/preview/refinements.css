@@ -131,3 +131,73 @@ body[data-scale-surface=plan] #add-reminder:not(:disabled){color:#5e7b87}
 .event-modal .activity-axis>b{color:#8b7342}
 .event-modal .event-day-strip small{color:#61686e}
 .event-modal .event-empty p,.event-modal .event-empty h3{color:#6f7784}
+
+/* 2026-10-12 explicitly approved DAY ordinary-text R01-R50. */
+body[data-scale-surface=settings] #phone[data-mode=DAY] #mode-track button[aria-checked=false] .mode-label{color:#657178!important}
+body[data-scale-surface=settings] #phone[data-mode=DAY] .section-title,
+body[data-scale-surface=settings] #phone[data-mode=DAY] #sheet-body>p{color:#6c7881!important}
+body[data-scale-surface=settings] #phone[data-mode=DAY] .setting-row:not(:disabled) .row-value,
+body[data-scale-surface=settings] #phone[data-mode=DAY] .setting-row:not(:disabled) .row-copy>small{color:#68737b!important}
+body[data-scale-surface=settings] #phone[data-mode=DAY] .danger:not(:disabled) .row-copy>strong,
+body[data-scale-surface=settings] #phone[data-mode=DAY] #sheet-actions button.destructive:not(:disabled){color:#95665d!important}
+body[data-scale-surface=settings] #phone[data-mode=DAY] #sheet-actions button.primary:not(:disabled){color:#2d2d2d!important}
+body[data-scale-surface=settings] .mode-label{font:inherit;line-height:inherit}
+body[data-scale-surface=search] .spot-region,
+body[data-scale-surface=contributions] .spot-region{color:#6b737d!important}
+body[data-scale-surface=search] .group-count{color:#69707a!important}
+body[data-scale-surface=contributions] .groups [data-group][aria-selected=false] .starward-tab-label{color:#71777c!important}
+body[data-scale-surface=contributions] #filters button:not(.active):not(.selected):not([aria-pressed=true]):not([aria-selected=true]):not(:disabled)>span{color:#6f777f!important}
+body[data-scale-surface=contributions] .record-meta>time{color:#6b7478!important}
+body[data-scale-surface=contributions] .badge.DRAFT>.badge-name{color:#69747c!important}
+body[data-scale-surface=contributions] .badge.PENDING>.badge-name{color:#857044!important}
+body[data-scale-surface=contributions] .badge.REJECTED>.badge-name{color:#97665b!important}
+body[data-scale-surface=contributions] .badge.PUBLISHED>.badge-name,
+body[data-scale-surface=contributions] .badge.APPROVED>.badge-name{color:#557a6f!important}
+body[data-scale-surface=contributions] .record:not(:disabled) .record-action-label{color:#5e7682!important}
+body[data-scale-surface=contributions] .record.REJECTED:not(:disabled) .record-action-label{color:#886f42!important}
+body[data-scale-surface=contributions] p.reason{color:#8f695d!important}
+body[data-scale-surface=contributions] .field-summary>span{color:#626e76!important}
+body[data-scale-surface=contributions] .badge-name,
+body[data-scale-surface=contributions] .record-action-label{font:inherit;line-height:inherit;letter-spacing:inherit;display:inline;margin:0;padding:0}
+body[data-scale-surface=my] .plan-row:not([data-ongoing=true]) .plan-time>span:first-child{color:#526573!important}
+body[data-scale-surface=my] .plan-relative{color:#48686c!important}
+body[data-scale-surface=my] div.text-\[11px\].text-\[\#94A3B8\].mt-0\.5{color:#62737e!important}
+body[data-scale-surface=my] #journey-achievements>span>small{color:#647482!important}
+body[data-scale-surface=feedback] #add-sheet .chapter-nav>button:not(.active):not(.is-active):not([aria-selected=true]):not([aria-current=true]){color:#727780!important}
+body[data-scale-surface=feedback] #add-sheet .required-address{color:#6f7783!important}
+body[data-scale-surface=feedback] #add-sheet #selected-address{color:#72777e!important}
+body[data-scale-surface=feedback] #add-sheet .field-row>span{color:#6c737f!important}
+body[data-scale-surface=feedback] #add-sheet .choice-group>button[aria-checked=false]:not(:disabled){color:#6e747d!important}
+body[data-scale-surface=feedback] #add-sheet .choice-group>button[aria-checked=true]:not(:disabled){color:#55727f!important}
+body[data-scale-surface=feedback] #add-sheet .photo-upload:has(input:not(:disabled))>.photo-upload-label{color:#5b7983!important}
+body[data-scale-surface=feedback] #add-sheet #save-draft:not(:disabled){color:#5e737f!important}
+body[data-scale-surface=feedback] #add-sheet .consent-copy{color:#6e7784!important}
+body[data-scale-surface=feedback] #add-sheet p.quiet{color:#73777d!important}
+body[data-scale-surface=feedback] #add-sheet .delta>strong{color:#6f7782!important}
+body[data-scale-surface=feedback] #add-sheet .delta-line>del{color:#a26765!important}
+body[data-scale-surface=feedback] #add-sheet #address:not(:disabled)::placeholder{color:#6a717f!important}
+body[data-scale-surface=feedback] #add-sheet .field-row input:not(:disabled)::placeholder{color:#71747a!important}
+body[data-scale-surface=feedback] #add-sheet textarea[name=detail]:not(:disabled)::placeholder{color:#6e7379!important}
+body[data-scale-surface=feedback] .photo-upload-label,
+body[data-scale-surface=feedback] .consent-copy,
+body[data-scale-surface=feedback] .map-search-label{font:inherit;line-height:inherit;letter-spacing:inherit;display:inline;margin:0;padding:0}
+body[data-scale-surface=feedback] .map-search-label,
+body[data-scale-surface=layers] span.text-\[13px\].text-gray-400.font-normal,
+body[data-scale-surface=search] .search-input:not(:disabled)::placeholder{color:#6c7787!important}
+body[data-scale-surface=feedback] span.text-\[11px\].font-normal.tracking-tight,
+body[data-scale-surface=layers] span.text-\[13\.5px\].font-medium,
+body[data-scale-surface=map] button.text-slate-400.py-1.font-normal.text-\[13px\]>span{color:#6c7787!important}
+body[data-scale-surface=layers] .layer-subtitle{color:#6f737b!important}
+body[data-scale-surface=layers]:has([data-layer=TOTAL_CLOUD][aria-checked=true]) #layer-source{color:#72777f!important}
+body[data-scale-surface=layers] .terrain-layer-choice>span>small{color:#70777d!important}
+body[data-scale-surface=map] #selected-time{color:#627288!important}
+body[data-scale-surface=map] #contact-value{color:#6c7787!important}
+body[data-scale-surface=map] .terrain-map-title>small,
+body[data-scale-surface=map] #terrain-map-range,
+body[data-scale-surface=map] .terrain-map-caption>span:nth-of-type(2){color:#70787c!important}
+body[data-scale-surface=map] .radius-heading>label{color:#6e787d!important}
+body[data-scale-surface=map] #radius-value>small{color:#6f7874!important}
+body[data-scale-surface=map] .radius-ticks>span{color:#6f7974!important}
+body[data-scale-surface=map] .terrain-layer-chip.light>span{color:#836f41!important}
+body[data-scale-surface=map] #terrain-relief-key,
+body[data-scale-surface=map] #terrain-light-key{color:#717873!important}

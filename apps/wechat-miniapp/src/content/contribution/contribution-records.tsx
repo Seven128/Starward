@@ -19,6 +19,9 @@ type FeedbackFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED";
 function recordName(item: ContributionSubmission) {
   return contributionRecordIdentity(item).name;
 }
+function recordActionLabel(label: string) {
+  return <Text><Text className="contribution-record__action-label">{label}</Text> ↗</Text>;
+}
 
 export function ContributionRecords({ form, onDetailOpen, onDetailClose, onGroupChange, onFilterChange }: {
   form: ContributionForm; onDetailOpen(): void; onDetailClose(): void;
@@ -83,16 +86,16 @@ export function ContributionRecords({ form, onDetailOpen, onDetailClose, onGroup
     const busy = form.submissionCommandBusy || openingId !== null;
     const name = recordName(item);
     if (action === "EDIT") return <SoftButton label={`继续编辑${name}`} disabled={busy}
-      onClick={() => void Taro.navigateTo({ url: `/content/contribution/index?submissionId=${encodeURIComponent(item.submissionId)}` })}>继续编辑 ↗</SoftButton>;
+      onClick={() => void Taro.navigateTo({ url: `/content/contribution/index?submissionId=${encodeURIComponent(item.submissionId)}` })}>{recordActionLabel("继续编辑")}</SoftButton>;
     if (action === "REVIEW_AND_EDIT") return <View className="contribution-record__actions">
-      <SoftButton label={`查看${name}审核意见`} disabled={busy} onClick={() => showDetail(item)}>查看审核意见 ↗</SoftButton>
-      <SoftButton label={`修改并重新提交${name}`} disabled={busy} onClick={() => item.formalFeedback && item.spotId
+      <SoftButton label={`查看${name}审核意见`} disabled={busy} onClick={() => showDetail(item)}>{recordActionLabel("查看审核意见")}</SoftButton>
+      <SoftButton label={`修改并重新提交${name}`} className="contribution-record__resubmit" disabled={busy} onClick={() => item.formalFeedback && item.spotId
         ? void Taro.navigateTo({ url: `/content/spot-feedback/index?spotId=${encodeURIComponent(item.spotId)}&spotName=${encodeURIComponent(name)}&submissionId=${encodeURIComponent(item.submissionId)}` })
-        : void Taro.navigateTo({ url: `/content/contribution/index?submissionId=${encodeURIComponent(item.submissionId)}` })}>修改后再提交 ↗</SoftButton>
+        : void Taro.navigateTo({ url: `/content/contribution/index?submissionId=${encodeURIComponent(item.submissionId)}` })}>{recordActionLabel("修改后再提交")}</SoftButton>
     </View>;
     if (action === "OPEN_PUBLISHED_SPOT") return <>
       <SoftButton label={`打开${name}正式观星点`} disabled={busy} onClick={() => void openPublishedSpot(item)}>
-        {openingId === item.submissionId ? "正在打开…" : "查看正式观星点 ↗"}
+        {openingId === item.submissionId ? "正在打开…" : recordActionLabel("查看正式观星点")}
       </SoftButton>
       {openError?.id === item.submissionId ? <>
         <StatusPanel state="ERROR"
@@ -100,10 +103,10 @@ export function ContributionRecords({ form, onDetailOpen, onDetailClose, onGroup
           detail={openError.missing ? "这个正式观星点当前不可公开查看；本次提交记录仍可查看。" : "正式观星点暂时无法打开，请检查网络后重试。"}
           recoveryLabel={openError.missing ? "查看本次记录" : "重试打开"}
           onRecover={() => openError.missing ? showDetail(item) : void openPublishedSpot(item)} />
-        {!openError.missing ? <SoftButton label={`查看${name}本次提交记录`} onClick={() => showDetail(item)}>查看本次记录 ↗</SoftButton> : null}
+        {!openError.missing ? <SoftButton label={`查看${name}本次提交记录`} onClick={() => showDetail(item)}>{recordActionLabel("查看本次记录")}</SoftButton> : null}
       </> : null}
     </>;
-    return <SoftButton label={`查看${name}本次记录`} disabled={busy} onClick={() => showDetail(item)}>{contributionRecordGroup(item) === "FEEDBACK" ? "查看本次反馈 ↗" : "查看提交内容 ↗"}</SoftButton>;
+    return <SoftButton label={`查看${name}本次记录`} disabled={busy} onClick={() => showDetail(item)}>{recordActionLabel(contributionRecordGroup(item) === "FEEDBACK" ? "查看本次反馈" : "查看提交内容")}</SoftButton>;
   };
   if (selected) {
     const detail = resolveContributionRecordDetail(selected, currentDraftUserId(), form.history.data?.data.submissions ?? null);

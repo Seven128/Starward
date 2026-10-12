@@ -26,10 +26,10 @@
 .my-plan-card__name { display: block; font-size: 16Px; line-height: 22Px; font-weight: 600; overflow-wrap: anywhere; }
 .theme-day .my-plan-card__name { color: #273a45; }
 .my-plan-card__time { display: flex; align-items: center; flex-wrap: wrap; gap: 9Px; color: var(--text-secondary); font-size: 13Px; line-height: 18Px; margin-top: 4Px; }
-.theme-day .my-plan-card__time { color: #526674; }
+.theme-day .my-plan-card__time { color: #526573; }
 .theme-day .my-plan-card__time--ongoing { align-items: center; }
 .theme-day .my-plan-card__time--ongoing .my-plan-card__when { line-height: 16Px; }
-.theme-day .my-plan-card__relative { color: #577f83; }
+.theme-day .my-plan-card__relative { color: #48686c; }
 .my-plan-card__ongoing { flex: none; padding: 3Px 9Px; border: 1Px solid var(--border); border-radius: 5Px; }
 .theme-day .my-plan-card__ongoing { border-color: #dce5de; background: #f0f4f0; color: #496354; font-size: 12Px; line-height: 18Px; padding: 2Px 8Px; border-radius: 6Px; }
 .my-plan-card__empty { display: block; padding: 16Px; font-size: 13Px; line-height: 20Px; color: var(--text-secondary); }

@@ -47,6 +47,8 @@ const retainedLegacyIconFiles = [
   "sun-night.svg", "sun-observation.svg", "moon-night.svg", "moon-observation.svg",
   "telescope-night.svg", "telescope-observation.svg",
   "my-plan-chevron-header.svg", "my-plan-chevron-row.svg",
+  "map-layer-choice-check.svg",
+  "terrain-toggle-check.png",
 ] as const;
 // SVG assets used only by content pages, including adopted DAY line glyphs.
 const contentIconFiles = [

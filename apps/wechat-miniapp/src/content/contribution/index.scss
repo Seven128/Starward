@@ -539,5 +539,9 @@
 .theme-day .contribution-document-actions .soft-button { height: 48Px; min-height: 48Px; border-radius: 14Px; font-size: 15Px; font-weight: 600; }
 .contribution-page.theme-day .contribution-document-actions .soft-button--default { background: #eff5f9; color: #68808d; border-color: transparent; }
 .contribution-page.theme-day .contribution-document-actions .soft-button--primary { background: #5e697e; border-color: transparent; }
+.contribution-page.theme-day .contribution-document-actions .soft-button--default:not(.soft-button--disabled) > text { color: #5e737f; }
+.theme-day .contribution-address-picker--ready > .contribution-placeholder { color: #6a717f; }
+.theme-day .contribution-candidate-coordinate-consent .toggle-field:not(.toggle-field--disabled) .type-label { color: #6e7784; }
+.theme-day .contribution-candidate-coordinate-consent .toggle-field:not(.toggle-field--disabled) .type-caption { color: #73777d; }
 .theme-day .candidate-intake-choices button { font-size: 13Px; padding: 0; }
 .theme-day .candidate-intake-choices button text { padding: 10Px 8Px; white-space: normal; }

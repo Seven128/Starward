@@ -95,7 +95,8 @@
   .formal-feedback-subtitle { color: #434b56; font-weight: 600; margin: 12Px 0 4Px; }
   .formal-feedback-field { padding-block: 0; border-bottom-color: #f1f2f4; }
   .formal-feedback-field.is-changed { background: #fff9e9; margin: 0; padding-inline: 0; border-radius: 7Px; }
-  .formal-feedback-field__label { color: #747c88; }
+  .formal-feedback-field__label { color: #6c737f; }
+  .formal-feedback-tabs button:not(.is-active) .selection-tabs__label { color: #727780; }
   .formal-feedback-required { color: #d79b99; font-size: 12Px; font-weight: 500; }
   .formal-feedback-field input { color: #424955; }
   .formal-feedback-field input[disabled], .formal-feedback-textarea[disabled] { opacity: 1; color: #555f6c; }
@@ -105,11 +106,17 @@
   .formal-feedback-choices button text { display: inline-flex; align-items: center; box-sizing: border-box; min-height: 40Px; padding: 8Px; line-height: 19.5Px; border-radius: 6Px; }
   .formal-feedback-choices button.is-selected { background: transparent; }
   .formal-feedback-choices button.is-selected text { background: #eaf2f5; color: #567481; }
-  .formal-feedback-address > .formal-feedback-field__label { font-size: 12Px; color: #737c88; }
+  .formal-feedback-choices button.is-enabled > text { color: #6e747d; }
+  .formal-feedback-choices button.is-enabled.is-selected > text { color: #55727f; }
+  .formal-feedback-address > .formal-feedback-field__label { font-size: 12Px; color: #6f7783; }
   .formal-feedback-address__control { background: #f4f6f8; }
   .formal-feedback-address__control.is-changed { background: #fff9e9; }
-  .formal-feedback-address-copy { color: #9399a2; margin: 8Px 4Px; padding: 0; }
+  .formal-feedback-address-copy { color: #72777e; margin: 8Px 4Px; padding: 0; }
   .formal-feedback-photo-action { color: #648490; }
+  .formal-feedback-photo-action--ready .formal-feedback-photo-action__label { color: #5b7983; }
+  .formal-feedback-placeholder--address { color: #6a717f; }
+  .formal-feedback-placeholder--field { color: #71747a; }
+  .formal-feedback-placeholder--detail { color: #6e7379; }
   .formal-feedback-textarea { border-radius: 12Px; padding: 12Px 14Px; }
   .formal-feedback-textarea.is-changed { background: #fff9e9; }
 }

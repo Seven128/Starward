@@ -5,7 +5,7 @@ const $=s=>document.querySelector(s),phone=$('#phone'),track=$('#mode-track'),sh
 let prefs=structuredClone(initialPreferences),mode='DAY',drag,failNext=false,returnFocus,busy=false;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 $('#back').innerHTML=icon('back');$('#sheet-close').innerHTML=icon('close');
-let modeMotion=null;DISPLAY_MODES.forEach((m,i)=>{const b=document.createElement('button');b.type='button';b.role='radio';b.dataset.mode=m;b.innerHTML=celestial(m)+['日间','夜间','观测'][i];b.onclick=()=>{if(!suppressClick)setMode(tappedMode(mode,m));};track.append(b);});
+let modeMotion=null;DISPLAY_MODES.forEach((m,i)=>{const b=document.createElement('button');b.type='button';b.role='radio';b.dataset.mode=m;b.innerHTML=celestial(m)+'<span class="mode-label">'+['日间','夜间','观测'][i]+'</span>';b.onclick=()=>{if(!suppressClick)setMode(tappedMode(mode,m));};track.append(b);});
 function setMode(m){mode=m;phone.dataset.mode=m;track.querySelectorAll('button').forEach(b=>{b.setAttribute('aria-checked',String(b.dataset.mode===m));b.tabIndex=b.dataset.mode===m?0:-1;});if(modeMotion)modeMotion.to(DISPLAY_MODES.indexOf(m));}
 let suppressClick=false;
 modeMotion=StarwardFluid.mountMode(track,{getIndex:()=>DISPLAY_MODES.indexOf(mode),onCommit:i=>setMode(DISPLAY_MODES[i])});

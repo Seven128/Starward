@@ -504,6 +504,6 @@ function PhotoGroup({ kind, ids, uploads: allUploads, paths, failedIds, onRetry,
   return <View className="formal-feedback-photo-group">
     <View className="formal-feedback-photo-list">{ids.map(id => <View className="formal-feedback-photo" key={id}>{paths[id] ? <><Image src={paths[id]!} mode="aspectFill" /><Text className="formal-feedback-photo__red-label">{label}照片</Text></> : <Text>{uploads.has(id) ? "图片" : "原照片"}</Text>}{!readOnly ? <Button disabled={disabled} ariaLabel={`移除${label}照片`} onClick={() => void onRemove(id)}><Text className="formal-feedback-photo__remove-glyph">×</Text></Button> : null}</View>)}</View>
     {ids.some(id => failedIds.includes(id) && !paths[id]) ? <StatusPanel state="ERROR" detail={`${label}照片暂时无法预览，其他资料仍可查看。`} recoveryLabel="重试照片预览" onRecover={onRetry} /> : null}
-    {!readOnly ? <Button className="formal-feedback-photo-action" disabled={disabled || ids.length >= 3} onClick={() => void onAdd(kind)}>＋ 添加{label}照片</Button> : null}
+    {!readOnly ? <Button className={`formal-feedback-photo-action${!disabled && ids.length < 3 ? " formal-feedback-photo-action--ready" : ""}`} disabled={disabled || ids.length >= 3} onClick={() => void onAdd(kind)}><Text>＋ <Text className="formal-feedback-photo-action__label">添加{label}照片</Text></Text></Button> : null}
   </View>;
 }

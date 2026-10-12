@@ -179,7 +179,7 @@ export function ContributionLocationSection({
 
 export function ContributionCandidateAddressControl({ form, commands }: { form: ContributionForm; commands: ContributionCommands }) {
   return <SpotDocumentAddressControl disabled={form.commandBusy} onClear={form.clearCandidateLocation}>
-    <Button disabled={form.commandBusy} className="contribution-address-picker focus-ring" aria-label="搜索地址，确定观星位置" onClick={() => void commands.chooseCandidateLocation()}>
+    <Button disabled={form.commandBusy} className={`contribution-address-picker focus-ring${!form.commandBusy ? " contribution-address-picker--ready" : ""}`} aria-label="搜索地址，确定观星位置" onClick={() => void commands.chooseCandidateLocation()}>
       <Text className={form.candidateFields.address ? "" : "contribution-placeholder"}>{form.candidatePlaceLabel || form.candidateFields.address || "搜索地址，确定观星位置"}</Text>
     </Button>
     {form.validationField === "contribution-candidate-address" ? <FieldError>请先搜索并确定地点地址。</FieldError> : null}
