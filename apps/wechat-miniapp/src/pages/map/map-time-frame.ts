@@ -7,8 +7,20 @@ import type {
 /** Keep original indices: filtering weather choices must not retarget astronomy or plan time. */
 export function cloudTimeFrameChoices(frames: readonly MapSceneTimeFrame[]) {
   return frames.map((frame, sourceIndex) => ({ frame, sourceIndex })).filter(({ frame }) =>
+    (frame.dynamicLayer?.kind === "CLOUD" && frame.dynamicLayer.state !== "UNAVAILABLE" &&
+      frame.dynamicLayer.polygons.some(polygon => Number.isFinite(polygon.value))) ||
     Object.values(frame.spotSignals).some(signal => signal.weatherAt && signal.cloudPercent !== null &&
       Number.isFinite(signal.cloudPercent) && signal.state !== "UNAVAILABLE"));
+}
+
+/** Display ticks may share a source hour; they never extend its coverage. */
+export function cloudForecastStarts(frames: readonly MapSceneTimeFrame[]) {
+  return frames.flatMap(frame => [
+    ...(frame.dynamicLayer?.kind === "CLOUD" && frame.dynamicLayer.state !== "UNAVAILABLE"
+      ? frame.dynamicLayer.polygons : []),
+    ...Object.values(frame.spotSignals),
+  ].flatMap(signal => signal.weatherAt && signal.state !== "UNAVAILABLE" &&
+    Number.isFinite("value" in signal ? signal.value : signal.cloudPercent) ? [signal.weatherAt] : []));
 }
 
 export function nearestMapTimeFrameIndex(

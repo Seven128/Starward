@@ -55,7 +55,8 @@ test("official alerts bind their exact minute interval even inside one forecast 
   }
 });
 
-test("actual forecast holes remain empty through SkyReport and Map while celestial frames retain their exact time", async () => {
+test("actual forecast holes remain empty through SkyReport and Map while celestial frames retain their exact time", async t => {
+  t.mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-09-15T11:00:00Z") });
   const fixture = new DeterministicWeatherTestAdapter();
   const service = createTestMiniappService({ repository: new InMemoryTestRepository([TEST_PUBLISHED_SPOT]), weather: {
     key: "partial-hour-fixture", getHourly: async input => {

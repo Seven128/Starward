@@ -54,6 +54,7 @@ export async function createReleaseEnvironmentFixture(overrides = {}) {
     QWEATHER_FORECAST_HOURS: "240",
     QWEATHER_API_HOST: "example.qweatherapi.com",
     QWEATHER_CREDENTIAL_ID: "qweather-credential",
+    QWEATHER_DEVELOPER_ID: "Q12345ABCD",
     QWEATHER_PROJECT_ID: "qweather-project",
     QWEATHER_PRIVATE_KEY_PEM: "-----BEGIN PRIVATE KEY-----fake-test-material-----END PRIVATE KEY-----",
     MINIAPP_ROUTE_PROVIDER: "DISABLED",

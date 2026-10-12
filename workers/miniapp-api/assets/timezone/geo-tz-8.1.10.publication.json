@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "starward-timezone-geo-publication-v1",
+  "packageVersion": "8.1.10",
+  "datasetProduct": "comprehensive",
+  "sourceUrl": "https://registry.npmjs.org/geo-tz/-/geo-tz-8.1.10.tgz",
+  "verifiedAt": "2026-10-12T15:07:40.640Z",
+  "codeLicense": "MIT",
+  "dataLicense": "ODbL-1.0",
+  "files": [
+    {
+      "file": "timezones.geojson.index.json",
+      "byteSize": 938298,
+      "sha256": "21e347d90dc388e8028eb461c34af61ce8f65d75216fc0bb8f2b98fe0079aad9"
+    },
+    {
+      "file": "timezones.geojson.geo.dat",
+      "byteSize": 30196840,
+      "sha256": "f6ee7fb72fe804998c0b0542c2c0e6a36397c26ba26a485765c22c1cd175ea74"
+    }
+  ]
+}

@@ -45,3 +45,10 @@ test("natural height and shared safe-area fallback stay bounded; retired measure
   const retired = harness([{ height: 1000 }, { height: 50 }, { bottom: 100 }, { bottom: 410 }]);
   retired.unmount(); retired.complete(); assert.equal(retired.height(), null);
 });
+
+test("long real-data evidence leaves the existing Map tools reachable", () => {
+  const actual = harness([{ height: 700 }, { height: 100 }, { bottom: 144 },
+    { bottom: 756 }, { bottom: 324 }]);
+  actual.complete();
+  assert.equal(actual.height(), 420);
+});

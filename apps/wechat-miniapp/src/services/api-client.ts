@@ -428,6 +428,9 @@ async function request<T>(
     const cacheFence = responseCache.beginRequest(exactCacheKey);
     releaseCache = cacheFence.release;
     const header: Record<string, string> = { Accept: "application/json" };
+    // A cold terrain range read and raster derivation needs a longer bounded
+    // window than ordinary DTO reads. Other operations keep their deadline.
+    const timeoutMs = key.startsWith("terrain:") ? 18_000 : 10_000;
     // WeChat defaults to JSON; an empty DELETE body must not trigger JSON parsing.
     if (method === "DELETE" && options.body === undefined) header["Content-Type"] = "text/plain";
     if (__MINIAPP_OPERATOR_PREVIEW_TOKEN__)
@@ -479,7 +482,7 @@ async function request<T>(
           new Error("bff_request_timeout"),
         );
       }, true);
-    }, 12_000);
+    }, timeoutMs + 2_000);
 
     try {
       options.signal?.addEventListener("abort", onAbort, { once: true });
@@ -490,7 +493,7 @@ async function request<T>(
       task = Taro.request<ApiEnvelope<T> | ApiError>({
         url: apiBase + path,
         method,
-        timeout: 10_000,
+        timeout: timeoutMs,
         header,
         // WeChat's request transport can send a bodyless POST as invalid input.
         // An empty object preserves the operation's no-payload contract.

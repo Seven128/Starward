@@ -72,6 +72,7 @@ import { terrainLayerAvailability } from "./terrain-layer-availability";
 import {
   nearestMapTimeFrameIndex,
   cloudTimeFrameChoices,
+  cloudForecastStarts,
   mapTimeFrameAt,
   projectedLayerPolygons,
   projectMapEvaluations,
@@ -2302,13 +2303,15 @@ export default function MapPage() {
             ><SemanticIcon name="meteor" /></Button> : null}
           </MapPanelChrome>
 
-          <View className="map-feedback-column">
+          <View className="map-source-attributions">
             {activeContext?.timezoneSource && bottomPresentation === "none" ?
               <View className="map-source-attribution"><SourceAttribution compact sources={[activeContext.timezoneSource]} /></View> : null}
             {analysisOverlay === "TOTAL_CLOUD" && layerPolygons.length > 0 && bottomPresentation !== "layer-sheet" ?
-              <View className="map-source-attribution"><SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /></View> : null}
+              <View className="map-source-attribution map-source-attribution--weather"><SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /></View> : null}
             {analysisOverlay === "LIGHT" && layerPolygons.length > 0 && bottomPresentation !== "layer-sheet" && scene.data?.data.layer?.source ?
               <View className="map-source-attribution"><SourceAttribution sources={[scene.data.data.layer.source]} /></View> : null}
+          </View>
+          <View className="map-feedback-column">
             <NotificationRegion owner="map" placement="inline" actionHandlers={{ "map-context-region-failed": () => void refreshMap() }} />
             {mapRuntimeError || nativeMap.pending ? (
               <StatusPanel
@@ -2324,7 +2327,7 @@ export default function MapPage() {
               recoveryLabel="重试"
               onRecover={() => void refreshMap()}
             /> : null}
-            {!(pageState === "EMPTY" && bottomPresentation === "spot-panel") &&
+            {!(pageState === "EMPTY" && (bottomPresentation === "spot-panel" || layerPolygons.length > 0)) &&
             !(pageState === "EMPTY" && mapDataStale) &&
             !(pageState === "LOADING" && bottomPresentation === "spot-panel" && bootstrapReplacementBlocked && visibleSpotContextAttempt) &&
             pageState !== "READY" &&
@@ -2611,8 +2614,7 @@ export default function MapPage() {
                       云量预报 · 仅覆盖有效数据区域
                     </Text>
                     <SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} />
-                    {(!scene.isPending || scene.data) && !(mapSceneFailed && !scene.data) ? <ForecastCoverageNote onExpandedChange={setCoverageExpanded} scope="map" stale={mapSceneFailed} starts={cloudTimeChoices.flatMap(choice => Object.values(choice.frame.spotSignals)
-                      .flatMap(signal => signal.weatherAt && signal.cloudPercent !== null ? [signal.weatherAt] : []))}
+                    {(!scene.isPending || scene.data) && !(mapSceneFailed && !scene.data) ? <ForecastCoverageNote onExpandedChange={setCoverageExpanded} scope="map" stale={mapSceneFailed} starts={cloudForecastStarts(timeFrames)}
                       timezone={activeContext?.timezone ?? "Asia/Shanghai"} scopeKey={`${activeContext?.contextId}:${activeContext?.localDate}`} /> : null}
                   </>
                 ) : lightLayerState === "LOADING" ? (

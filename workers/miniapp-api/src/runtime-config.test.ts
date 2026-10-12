@@ -28,6 +28,7 @@ function releaseEnvironment(
     MINIAPP_SESSION_SECRET: "session-secret-at-least-thirty-two-characters",
     QWEATHER_API_HOST: "example.qweatherapi.com",
     QWEATHER_CREDENTIAL_ID: "credential-id",
+    QWEATHER_DEVELOPER_ID: "Q12345ABCD",
     QWEATHER_PROJECT_ID: "project-id",
     QWEATHER_PRIVATE_KEY_PEM:
       "-----BEGIN PRIVATE KEY-----\\nprivate-test-material\\n-----END PRIVATE KEY-----",
@@ -122,6 +123,7 @@ test("TRIAL and COMMERCIAL use QWeather alone without an Open-Meteo key", () => 
   for (const profile of ["TRIAL", "COMMERCIAL"] as const) {
     const config = withEnvironment(releaseEnvironment(profile, "OPEN_METEO_COMMERCIAL"), loadRuntimeConfig);
     assert.equal(config.weatherProvider, "QWEATHER");
+    assert.equal(config.qweather.developerId, "Q12345ABCD");
     assert.equal(config.qweather.forecastHours, 240);
     assert.equal(config.features.LAYERED_CLOUD_ENABLED, false);
     assert.equal("openMeteoApiKey" in config, false);

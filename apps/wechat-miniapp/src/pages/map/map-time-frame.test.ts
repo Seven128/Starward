@@ -8,10 +8,12 @@ import type {
 import {
   nearestMapTimeFrameIndex,
   cloudTimeFrameChoices,
+  cloudForecastStarts,
   mapTimeFrameAt,
   projectedLayerPolygons,
   projectMapEvaluations,
 } from "./map-time-frame.ts";
+import { forecastCoverage } from "../../components/forecast-coverage.ts";
 
 const baseEvaluation: MapSpotEvaluation = {
   spotId: "spot:test" as MapSpotEvaluation["spotId"],
@@ -187,4 +189,33 @@ test("off-cadence and duplicate map instants cannot borrow adjacent signals", ()
   assert.equal(projectMapEvaluations({ "spot:test": baseEvaluation }, missing)["spot:test"]?.state, "UNAVAILABLE");
   assert.equal(mapTimeFrameAt(frames, frames[1]!.atUtc), frames[1]);
   assert.deepEqual(mapTimeFrameAt([frames[1]!, frames[1]!], frames[1]!.atUtc).spotSignals, {});
+});
+
+test("geographic cloud readings enable time choices without formal spots, including genuine zero", () => {
+  const layer = frames[1]!.dynamicLayer!;
+  const geographic: MapSceneTimeFrame = {
+    ...frames[1]!, spotSignals: {},
+    dynamicLayer: { ...layer, polygons: [{ ...layer.polygons[0]!, value: 0 }] },
+  };
+  const source = [frames[0]!, geographic, { ...geographic, dynamicLayer: { ...geographic.dynamicLayer!, state: "UNAVAILABLE" as const } }];
+  assert.deepEqual(cloudTimeFrameChoices(source).map(choice => choice.sourceIndex), [1]);
+});
+
+test("cloud coverage uses true source hours, preserving the tail and missing-hour gap", () => {
+  const layer = frames[1]!.dynamicLayer!;
+  const make = (atUtc: string, weatherAt: string): MapSceneTimeFrame => ({
+    ...frames[1]!, atUtc, spotSignals: {},
+    dynamicLayer: { ...layer, polygons: [{ ...layer.polygons[0]!, value: 0, weatherAt }] },
+  });
+  const source = [
+    make("2026-09-15T18:00:00Z", "2026-09-15T18:00:00Z"),
+    make("2026-09-15T18:30:00Z", "2026-09-15T18:00:00Z"),
+    make("2026-09-15T20:30:00Z", "2026-09-15T20:00:00Z"),
+  ];
+  assert.deepEqual(forecastCoverage(cloudForecastStarts(source)), [
+    { start: "2026-09-15T18:00:00.000Z", end: "2026-09-15T19:00:00.000Z" },
+    { start: "2026-09-15T20:00:00.000Z", end: "2026-09-15T21:00:00.000Z" },
+  ]);
+  assert.deepEqual(cloudForecastStarts([{ ...frames[1]!, dynamicLayer: null,
+    spotSignals: { "spot:test": baseEvaluation } }]), [baseEvaluation.weatherAt]);
 });

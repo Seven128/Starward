@@ -16,7 +16,7 @@
 
 | 能力 | Secret/配置 | 用法 |
 | --- | --- | --- |
-| QWeather | `QWEATHER_API_HOST`、`QWEATHER_CREDENTIAL_ID`、`QWEATHER_PROJECT_ID`、`QWEATHER_ED25519_PRIVATE_KEY`、`QWEATHER_LICENSE_VERSION` | 服务端用 Ed25519 私钥生成约 15 分钟 JWT；Authorization Bearer；API Host 必须是控制台分配的 `*.qweatherapi.com` |
+| QWeather | `QWEATHER_API_HOST`、`QWEATHER_CREDENTIAL_ID`、`QWEATHER_DEVELOPER_ID`、`QWEATHER_PROJECT_ID`、`QWEATHER_PRIVATE_KEY_PEM` | 服务端用 Ed25519 私钥生成约 15 分钟 JWT；`iss` 为开发者 ID，`sub` 为项目 ID；Authorization Bearer；API Host 必须是控制台分配的 `*.qweatherapi.com`。私钥在本机保管，官网不能取回；参见[官方认证文档](https://dev.qweather.com/docs/configuration/authentication/) |
 | Open-Meteo | `OPEN_METEO_API_KEY`、`OPEN_METEO_MODELS`、`OPEN_METEO_LICENSE_VERSION` | 商业生产只允许 `customer-api.open-meteo.com`；免费 host 仅非商业 POC |
 | 高德 | `AMAP_WEB_SERVICE_KEY`、`AMAP_ANDROID_KEY`、`AMAP_IOS_KEY` | Web Service key 只在 API；原生 key 分别绑定包名/签名与 Bundle ID；禁止互用 |
 | CDSE | `CDSE_S3_ACCESS_KEY`、`CDSE_S3_SECRET_KEY` | worker 经 STAC 选 tile，再从 `eodata` S3 下载；凭证按到期日轮换 |

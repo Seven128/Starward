@@ -57,12 +57,16 @@ export function localParts(date: Date, timezone: string) {
  * WeChat runtimes construct Intl.DateTimeFormat but omit formatToParts, so keep
  * the exact same bounded fallback used by the Mini Program presentation layer.
  */
+export function isModernEastEightTimezone(timezone: string) {
+  return timezone === "Asia/Shanghai" || timezone === "Asia/Hong_Kong" || timezone === "Asia/Macau" || timezone === "Asia/Taipei";
+}
+
 function fixedEastEightLocalParts(
   date: Date,
   timezone: string,
   required = true,
 ) {
-  const supported = timezone === "Asia/Shanghai" || timezone === "Asia/Hong_Kong" || timezone === "Asia/Macau";
+  const supported = isModernEastEightTimezone(timezone);
   const year = date.getUTCFullYear();
   if (!supported || year < 2000 || year > 2100) {
     if (required) throw new Error("zoned_date_intl_unavailable");

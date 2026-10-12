@@ -13,13 +13,14 @@ import type {
 import { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.ts";
 import { isHongKongDistrictPoint } from "./hong-kong-boundary.ts";
 import { isMacaoTimezonePoint, MACAO_TIMEZONE_SOURCE } from "./macao-boundary.ts";
+import { domesticTimezone, DOMESTIC_TIMEZONE_SOURCE } from "./domestic-timezone.ts";
 import type { CachePort, MiniappRepositoryPort } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
 
 const CONTEXT_TTL_SECONDS = 48 * 60 * 60;
 const PRECISE_CONTEXT_TTL_SECONDS = 2 * 60 * 60;
 
-function timezoneForTrialPoint(
+function timezoneForBrowsingPoint(
   latitude: number,
   longitude: number,
 ) {
@@ -30,16 +31,14 @@ function timezoneForTrialPoint(
     Math.abs(longitude) > 180
   )
     throw new Error("observation_location_invalid");
-  // The current product population is the Greater Bay Area. Fail closed
-  // outside that declared timezone-resolution boundary instead of silently
-  // assigning the device timezone to an arbitrary map point.
+  // Preserve the established GBA jurisdiction handling; the formal-place
+  // population does not constrain timezone coverage for domestic map points.
   const inTrialRegion =
     latitude >= 20 &&
     latitude <= 25.5 &&
     longitude >= 110 &&
     longitude <= 116.8;
-  if (!inTrialRegion)
-    throw new Error("observation_timezone_resolution_unavailable");
+  if (!inTrialRegion) return domesticTimezone(latitude, longitude);
   if (isMacaoTimezonePoint(latitude, longitude))
     return "Asia/Macau" as const;
   const inHongKongLongitude = longitude >= 113.78 && longitude <= 114.52;
@@ -180,8 +179,8 @@ export class ObservationContextService {
       revision: 1,
       ...fingerprintInput,
       ...("privateProposal" in resolvedLocation ? { privateProposal: resolvedLocation.privateProposal } : {}),
-      ...(input.location.kind === "MAP_POINT" && resolvedLocation.timezone === "Asia/Macau"
-        ? { timezoneSource: MACAO_TIMEZONE_SOURCE } : {}),
+      ...("timezoneSource" in resolvedLocation && resolvedLocation.timezoneSource
+        ? { timezoneSource: resolvedLocation.timezoneSource } : {}),
       nightStartUtc,
       nightEndUtc,
       selectedAtUtc,
@@ -382,7 +381,7 @@ export class ObservationContextService {
       location.displayName.length > 80
     )
       throw new Error("observation_location_invalid");
-    const timezone = timezoneForTrialPoint(
+    const timezone = timezoneForBrowsingPoint(
       location.wgs84.latitude,
       location.wgs84.longitude,
     );
@@ -394,6 +393,9 @@ export class ObservationContextService {
         source: location.source,
       },
       timezone,
+      timezoneSource: location.wgs84.latitude < 20 || location.wgs84.latitude > 25.5
+        || location.wgs84.longitude < 110 || location.wgs84.longitude > 116.8
+        ? DOMESTIC_TIMEZONE_SOURCE : timezone === "Asia/Macau" ? MACAO_TIMEZONE_SOURCE : null,
       privacyClass:
         location.source === "USER_LOCATION"
           ? ("SESSION_PRECISE" as const)

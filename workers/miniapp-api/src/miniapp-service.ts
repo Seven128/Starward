@@ -144,12 +144,14 @@ import {
   validateExternalUrl,
 } from "./security.ts";
 import { createWeatherPort } from "./weather-provider.ts";
+import { readMapCloudForecast, projectMapCloudLayer, mapCloudForecastEnds, type MapCloudSample } from "./map-cloud-forecast.ts";
 import { QWeatherRecentWeatherAdapter, type RecentWeatherPort } from "./recent-weather-provider.ts";
 import { QWeatherAirQualityAdapter, type AirQualityPort } from "./air-quality-provider.ts";
 import { SpotEnvironmentService } from "./spot-environment-service.ts";
 import { derivePlanReminderSchedules, publicReminderStatus } from "./plan-reminder-schedule.ts";
 import { readFile } from "node:fs/promises";
-import { terrainImageUrl, terrainPublication, terrainPublicationSource, terrainRequestIsCovered, terrainUnavailable, validateTerrainAsset } from "./terrain-publication.ts";
+import { terrainPublicationSource, terrainRequestIsCovered, terrainUnavailable } from "./terrain-publication.ts";
+import { TerrainService, type TerrainPort } from "./terrain-service.ts";
 import { WEATHER_DEADLINES } from "./provider-deadline.ts";
 import {
   AstronomicalEventCatalogOwner,
@@ -219,7 +221,7 @@ const FILTER_GROUP_LABELS = Object.freeze(
 ) as Readonly<Record<FilterGroupKey, string>>;
 
 function browsingTimezoneSources(context: ObservationContext): readonly SourceSummary[] {
-  return context.location.kind === "MAP_POINT" && context.timezoneSource
+  return context.location.kind !== "FORMAL_SPOT" && context.timezoneSource
     ? [context.timezoneSource] : [];
 }
 
@@ -447,6 +449,7 @@ function layerFor(input: {
   evaluations: Readonly<Record<string, MapSpotEvaluation>>;
   config: MiniappRuntimeConfig;
   darkSkyCells: readonly DarkSkyGridCellRecord[];
+  cloudSamples?: readonly MapCloudSample[];
 }): MapLayerData {
   if (input.kind === "NORMAL")
     return {
@@ -535,57 +538,7 @@ function layerFor(input: {
         evaluation: MapSpotEvaluation;
       } => Boolean(entry.report && entry.evaluation),
     );
-  if (input.kind === "CLOUD") {
-    const cloudValue = (report: AstronomyDecisionReport) => {
-      const row = exactHourly(report, input.selectedAtUtc);
-      if (!row) return null;
-      return row.cloudPercent;
-    };
-    const available = reportEntries
-      .map((entry) => ({ ...entry, value: cloudValue(entry.report.data) }))
-      .filter(
-        (entry): entry is typeof entry & { value: number } =>
-          entry.value !== null,
-      );
-    const source =
-      available
-        .flatMap((entry) => entry.report.sources)
-        .find((item) => item.kind === "THIRD_PARTY_FORECAST") ?? null;
-    return {
-      kind: input.kind,
-      cloudLayer: input.cloudLayer,
-      polygons: available.map((entry) =>
-        cell(entry.spot, {
-          id: "cloud:" + entry.spot.spotId,
-          color:
-            entry.value <= 30
-              ? dynamicLayerColor("#4E8E9B", entry.value)
-              : entry.value <= 65
-                ? dynamicLayerColor("#76AAB2", entry.value)
-                : dynamicLayerColor("#A9C9CE", entry.value),
-          value: entry.value,
-          label:
-            input.cloudLayer + " 云量 " + String(Math.round(entry.value)) + "%",
-          state: entry.report.dataState === "FRESH" ? "FRESH" : "PARTIAL",
-        }),
-      ),
-      legend: [
-        { label: "少云", color: "#4E8E9B", range: "0–30%" },
-        { label: "中等", color: "#76AAB2", range: "31–65%" },
-        { label: "多云", color: "#A9C9CE", range: "66–100%" },
-      ],
-      validAt: input.selectedAtUtc,
-      datasetVersion: source?.id ?? "weather-unavailable",
-      precision:
-        "按正式点真实预报样本绘制有界单元；未接入连续气象栅格时不插值填空",
-      state: available.length
-        ? available.length === reportEntries.length
-          ? "FRESH"
-          : "PARTIAL"
-        : "UNAVAILABLE",
-      source,
-    };
-  }
+  if (input.kind === "CLOUD") return projectMapCloudLayer(input.cloudSamples ?? [], input.selectedAtUtc);
   const source =
     reportEntries
       .flatMap((entry) => entry.report.sources)
@@ -680,6 +633,8 @@ export class MiniappService {
   readonly route: RoutePort;
   readonly placeSearch: PlaceSearchPort;
   readonly spotEnvironment: SpotEnvironmentService;
+  readonly terrain: TerrainPort;
+  private readonly weather: WeatherPort;
   readonly outbox = new MemoryOutbox();
   private readonly usageStore: PostgresVendorUsageStore | undefined;
   private readonly reminderSubscriptions: PostgresReminderSubscriptionStore | null;
@@ -712,6 +667,7 @@ export class MiniappService {
     galacticImage?: GalacticImagePublicationService;
     landscape?: SkyLandscapePublicationService;
     usageStore?: PostgresVendorUsageStore;
+    terrain?: TerrainPort;
   }) {
     // Optical publications currently contain only bounded rights-unresolved
     // trials. Keep the same release boundary even for direct service injection.
@@ -722,6 +678,8 @@ export class MiniappService {
         throw new Error("optical_trial_scope_invalid");
     }
     this.repository = input.repository;
+    this.weather = input.weather;
+    this.terrain = input.terrain ?? new TerrainService();
     this.config = input.config;
     this.reminderSubscriptions = input.repository instanceof PostgresMiniappRepository
       ? new PostgresReminderSubscriptionStore(input.repository.pool) : null;
@@ -825,6 +783,7 @@ export class MiniappService {
   }
 
   async onModuleDestroy() {
+    this.terrain.close();
     await this.usageStore?.close();
     await this.repository.close();
     this.astronomy.clearCaches();
@@ -1048,7 +1007,7 @@ export class MiniappService {
       system: "GCJ-02",
     });
     const [terrainRead, lightRead] = await Promise.allSettled([
-      terrainPublication(),
+      this.terrain.getPublication(input),
       this.repository.kind === "postgres" && this.config.darkSkyDatasetVersion !== "UNAVAILABLE"
       ? this.repository.listDarkSkyGridCells({
           datasetVersion: this.config.darkSkyDatasetVersion,
@@ -1098,7 +1057,7 @@ export class MiniappService {
       coverageLabel: `已发布中心周边 ${publication.maximumRadiusKm.toFixed(0)} km，当前查看 ${input.radiusKm.toFixed(1)} km。`,
       limitations: publication.limitations,
       source: terrainSource,
-      } : terrainUnavailable(input, publication ? "当前地区暂无已发布的地形数据。" : "地形数据读取失败，请重试。")),
+      } : terrainUnavailable(input, terrainRead.status === "rejected" ? "地形数据读取失败，请重试。" : "当前地区暂无可获取的地形数据。")),
       ...(terrainRead.status === "rejected" ? { failureCode: "TERRAIN_READ_FAILED" as const } : {}),
       lightPollution: {
         state: lightCells.length ? "PARTIAL" : "UNAVAILABLE",
@@ -1119,10 +1078,7 @@ export class MiniappService {
   }
 
   async getTerrainAsset(file: string) {
-    const publication = await terrainPublication();
-    if (file !== publication.image.file) throw new Error("terrain_asset_not_found");
-    const bytes = await readFile(terrainImageUrl(file));
-    return { bytes: validateTerrainAsset(bytes, publication), publicationId: publication.publicationId };
+    return this.terrain.getAsset(file);
   }
 
   async getMapScene(input: {
@@ -1200,6 +1156,17 @@ export class MiniappService {
     const reports: Record<string, ApiEnvelope<AstronomyDecisionReport>> = {};
     const evaluations: Record<string, MapSpotEvaluation> = {};
     const filterEvidence: Record<string, SpotFilterEvidence> = {};
+    const location = context.location;
+    const anchor = location.kind === "FORMAL_SPOT"
+      ? candidates.find(spot => spot.spotId === location.spotId)?.gcj02
+      : wgs84ToGcj02({ lat: location.wgs84.latitude, lon: location.wgs84.longitude, system: "WGS84" });
+    const cloudCenter = input.viewport?.center ?? (anchor && ("latitude" in anchor
+      ? anchor : { latitude: anchor.lat, longitude: anchor.lon }));
+    // Start this independent spatial read inside the same overall Map budget.
+    // Catalogue/filter work cannot remove or delay its geographic responsibility.
+    const cloudWork = layerKind === "CLOUD" && cloudCenter
+      ? readMapCloudForecast(this.weather, cloudCenter, context, weatherDeadlineAt)
+      : Promise.resolve([]);
     const evaluatedAtMs = Date.now();
     const routeOrigin =
       context.location.kind === "MAP_POINT"
@@ -1278,12 +1245,14 @@ export class MiniappService {
 
     // Excluded candidates can become UNKNOWN when their hourly evidence expires.
     // Carry that boundary even when there are no visible rows or polygons.
-    const forecastEnds = Object.values(evaluations)
+    const cloudSamples = await cloudWork;
+    const cloudEnds = mapCloudForecastEnds(cloudSamples, startedAt);
+    const forecastEnds = [...cloudEnds, ...Object.values(evaluations)
       .map((evaluation) => Date.parse(evaluation.weatherAt ?? "") + 3_600_000)
-      .filter(Number.isFinite);
+      .filter(Number.isFinite)];
     const forecastValidUntil = forecastEnds.length
       ? new Date(Math.min(...forecastEnds)).toISOString() : null;
-    const deliveryBoundary = Math.min(...Object.values(reports).flatMap(report => [
+    const deliveryBoundary = Math.min(...cloudEnds, ...Object.values(reports).flatMap(report => [
       ...report.data.hourly.map(row => Date.parse(row.weatherAt ?? "") + 3_600_000),
       ...report.sources.map(source => Date.parse(source.validTo ?? "")),
       ...report.data.weatherEvidence.alerts.filter(alert => alert.status === "ACTIVE")
@@ -1298,7 +1267,7 @@ export class MiniappService {
       : null;
     // Validate current publication facts and weather before reusing the map
     // representation. Context UUID alone cannot establish evidence freshness.
-    cacheKey += ":evidence:" + hash({ spots: queryMatched, population: allCandidates, favoriteSpotIds, evaluations, filterEvidence,
+    cacheKey += ":evidence:" + hash({ spots: queryMatched, population: allCandidates, favoriteSpotIds, evaluations, filterEvidence, cloudSamples,
       revisions: Object.values(reports).map((report) => report.data.context.dataRevision) });
     const cached = await this.cache.get<ApiEnvelope<MapSceneData>>(cacheKey);
     if (cached) {
@@ -1341,6 +1310,7 @@ export class MiniappService {
       evaluations,
       config: this.config,
       darkSkyCells,
+      cloudSamples,
     });
     const visibleEvaluations = Object.fromEntries(
       ranked.spots.flatMap((spot) => {
@@ -1379,6 +1349,7 @@ export class MiniappService {
           evaluations,
           config: this.config,
           darkSkyCells: [],
+          cloudSamples,
         });
         return {
           atUtc,
@@ -1400,6 +1371,7 @@ export class MiniappService {
       ...browsingTimezoneSources(context),
       ...allCandidates.map((spot) => spot.source),
       ...Object.values(reports).flatMap((report) => report.sources),
+      ...cloudSamples.flatMap(sample => sample.forecast?.sources ?? []),
       ...(layer.source ? [layer.source] : []),
     ]);
     const result = envelope<MapSceneData>(
@@ -1437,7 +1409,7 @@ export class MiniappService {
         timeFrames,
       },
       Object.values(reports).every((report) => report.dataState === "FRESH") &&
-        activeUnavailable.length === 0
+        activeUnavailable.length === 0 && (layerKind !== "CLOUD" || layer.state === "FRESH")
         ? "FRESH"
         : "PARTIAL",
       sources,

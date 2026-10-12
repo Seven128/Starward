@@ -42,6 +42,8 @@ test("clear map-point timezone regions are not overridden by the device hint", a
     for (const [latitude, longitude, hint, expected] of [
       [22.282, 114.16, "Asia/Shanghai", "Asia/Hong_Kong"],
       [22.56, 114.59, "Asia/Hong_Kong", "Asia/Shanghai"],
+      [30.27, 120.15, "Asia/Hong_Kong", "Asia/Shanghai"], // Zhejiang
+      [30.75, 103.6, "Asia/Hong_Kong", "Asia/Shanghai"], // Sichuan
     ] as const) {
       const context = (await service.resolveObservationContext({
         location: { kind: "MAP_POINT", displayName: "时区测试地点",
@@ -49,6 +51,12 @@ test("clear map-point timezone regions are not overridden by the device hint", a
         localDate: "2026-09-26",
       })).data;
       assert.equal(context.timezone, expected);
+      if (latitude > 25.5) {
+        assert.equal(context.timezoneSource?.id, "tz-boundary:geo-tz:8.1.10:comprehensive");
+        const scene = await service.getMapScene({ contextId: context.contextId, layer: "NORMAL" });
+        assert.ok(scene.sources.some(source => source.id === context.timezoneSource!.id &&
+          source.attribution?.statements.some(statement => statement.includes("ODbL"))));
+      }
     }
   } finally { await service.onModuleDestroy(); }
 });

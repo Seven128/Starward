@@ -252,6 +252,8 @@ export interface MapLayerPolygon {
   strokeColor: string;
   strokeWidth: number;
   value: number | null;
+  /** CLOUD's actual source-hour start; absent for other layers and older servers. */
+  weatherAt?: string;
   label: string;
   state: MapProjectionState;
 }

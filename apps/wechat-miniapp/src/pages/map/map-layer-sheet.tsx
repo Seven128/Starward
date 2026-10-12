@@ -19,6 +19,7 @@ export function MapLayerSheet({ cloud, children, footer, revision }: {
         .select(`#${id}-footer`).boundingClientRect()
         .select(".map-search-anchor").boundingClientRect()
         .select(".map-workspace").boundingClientRect()
+        .select(".map-top-tools").boundingClientRect()
         .exec((rows: any[]) => {
           if (request !== generation.current) return;
           const content = rows?.[0]?.height, bottom = rows?.[1]?.height;
@@ -31,7 +32,8 @@ export function MapLayerSheet({ cloud, children, footer, revision }: {
             } catch { return; }
           }
           if (!Number.isFinite(viewport) || viewport <= 0) return;
-          const top = Number.isFinite(rows?.[2]?.bottom) ? rows[2].bottom : 100;
+          const top = Math.max(Number.isFinite(rows?.[2]?.bottom) ? rows[2].bottom : 100,
+            Number.isFinite(rows?.[4]?.bottom) ? rows[4].bottom : 0);
           const next = Math.ceil(Math.min(content + bottom + 2, 560, Math.max(0, viewport - top - 12)));
           setHeight(previous => previous === next ? previous : next);
         });

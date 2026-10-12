@@ -4,7 +4,7 @@ import test from "node:test";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts";
-import { terrainPublication, terrainPublicationSource, validateTerrainAsset, validateTerrainPublication } from "./terrain-publication.ts";
+import { COPERNICUS_DEM_LIABILITY_NOTICE, terrainPublication, terrainPublicationSource, validateTerrainAsset, validateTerrainPublication } from "./terrain-publication.ts";
 import type { DarkSkyGridCellRecord } from "./ports.ts";
 import { sourceAttributions } from "../../../apps/wechat-miniapp/src/utils/source-presentation.ts";
 
@@ -29,7 +29,7 @@ test("published terrain feeds both exact redistribution notices to the real visi
   const publication = await terrainPublication(), source = terrainPublicationSource(publication);
   assert.deepEqual(sourceAttributions([source]), [{
     name: publication.sourceProvider, url: `https://doi.org/${publication.doi}`,
-    statements: [publication.attributionNotice, publication.modifiedProductNotice],
+    statements: [publication.attributionNotice, publication.modifiedProductNotice, COPERNICUS_DEM_LIABILITY_NOTICE],
   }], "source metadata without attribution must not pass with an empty visible credit");
   assert.ok(source.limitations.includes(publication.derivation));
   assert.ok(source.limitations.includes(publication.attributionNotice));

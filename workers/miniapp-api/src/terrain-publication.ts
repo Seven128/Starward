@@ -6,9 +6,19 @@ export const COPERNICUS_DEM_LICENSE_URL = "https://dataspace.copernicus.eu/explo
 export const COPERNICUS_DEM_DOI = "10.5270/ESA-c5d3d65";
 export const COPERNICUS_DEM_SOURCE_NOTICE = "© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved";
 export const COPERNICUS_DEM_MODIFIED_PRODUCT_NOTICE = "produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved";
+export const COPERNICUS_DEM_LIABILITY_NOTICE = "依法或受委托负责哥白尼计划的组织，不对哥白尼 WorldDEM-30 的任何使用承担责任。";
+
+export interface TerrainSourceRange { offset: number; byteSize: number; sha256: string }
+export interface TerrainPublicationSourceObject {
+  tileId: string; url: string; sha256: string; byteSize: number; etag: string | null;
+  // Legacy v1 hashes bind the entire downloaded object; v2 binds the exact
+  // retrieved byte ranges, never an invented full-object checksum.
+  hashScope?: "RETRIEVED_RANGES";
+  ranges?: TerrainSourceRange[];
+}
 
 export interface TerrainPublication {
-  schemaVersion: "starward-terrain-publication-v1";
+  schemaVersion: "starward-terrain-publication-v1" | "starward-terrain-publication-v2";
   publicationId: string;
   dataset: string;
   sourceProvider: string;
@@ -30,7 +40,7 @@ export interface TerrainPublication {
   elevationColorEncoding?: TerrainElevationColorEncoding;
   validPixelPercent: number;
   image: { file: string; sha256: string; byteSize: number; width: number; height: number };
-  sources: Array<{ tileId: string; url: string; sha256: string; byteSize: number; etag: string | null }>;
+  sources: TerrainPublicationSourceObject[];
   unavailableSourceTiles: string[];
   limitations: string[];
 }
@@ -47,7 +57,7 @@ export function validateTerrainPublication(value: TerrainPublication) {
   const center = value.centerGcj02;
   const image = value.image;
   if (
-    value.schemaVersion !== "starward-terrain-publication-v1"
+    !["starward-terrain-publication-v1", "starward-terrain-publication-v2"].includes(value.schemaVersion)
     || value.coordinateSystem !== "GCJ02"
     || !nonEmpty(value.publicationId)
     || !nonEmpty(value.dataset)
@@ -81,6 +91,14 @@ export function validateTerrainPublication(value: TerrainPublication) {
     || !Array.isArray(value.unavailableSourceTiles)
     || !Array.isArray(value.limitations) || value.limitations.length === 0 || value.limitations.some(limit => !nonEmpty(limit))
   ) throw new Error("terrain_publication_invalid");
+  if (value.schemaVersion === "starward-terrain-publication-v2" && value.sources.some(source =>
+    source.hashScope !== "RETRIEVED_RANGES" || !nonEmpty(source.etag)
+    || !Array.isArray(source.ranges) || !source.ranges.length
+    || source.ranges.some(range => !Number.isSafeInteger(range.offset) || range.offset < 0
+      || !Number.isSafeInteger(range.byteSize) || range.byteSize <= 0
+      || range.offset + range.byteSize > source.byteSize || !sha256Pattern.test(range.sha256))
+    || createHash("sha256").update(JSON.stringify(source.ranges)).digest("hex") !== source.sha256
+  )) throw new Error("terrain_source_ranges_invalid");
   const encoding = value.elevationColorEncoding;
   const rgb = (channels: unknown) => Array.isArray(channels) && channels.length === 3
     && channels.every(channel => Number.isInteger(channel) && channel >= 0 && channel <= 255);
@@ -116,7 +134,7 @@ export function terrainPublicationSource(publication: TerrainPublication): Sourc
     attribution: {
       name: publication.sourceProvider,
       url: `https://doi.org/${publication.doi}`,
-      statements: [publication.attributionNotice, publication.modifiedProductNotice],
+      statements: [publication.attributionNotice, publication.modifiedProductNotice, COPERNICUS_DEM_LIABILITY_NOTICE],
     },
     license: publication.license,
     licenseUrl: publication.licenseUrl,
@@ -131,6 +149,7 @@ export function terrainPublicationSource(publication: TerrainPublication): Sourc
     limitations: [
       publication.attributionNotice,
       publication.modifiedProductNotice,
+      COPERNICUS_DEM_LIABILITY_NOTICE,
       publication.derivation,
       ...(publication.elevationColorEncoding ? [
         `地形基色的高程色带为 ${publication.elevationColorEncoding.minimumM} 至 ${publication.elevationColorEncoding.maximumM} m，高程超出色带区间时使用端点颜色；明暗还含合成阴影，不能仅凭颜色读取精确海拔或判断现场光照。`,
@@ -149,10 +168,13 @@ export function terrainRequestIsCovered(publication: TerrainPublication, input: 
   const { latitude, longitude } = input.center;
   const latitudeDelta = input.radiusKm / 111.32;
   const longitudeDelta = input.radiusKm / (111.32 * Math.max(0.01, Math.cos(latitude * Math.PI / 180)));
-  const insidePublishedBounds = longitude - longitudeDelta >= publication.boundsGcj02.west
-    && longitude + longitudeDelta <= publication.boundsGcj02.east
-    && latitude - latitudeDelta >= publication.boundsGcj02.south
-    && latitude + latitudeDelta <= publication.boundsGcj02.north;
+  // Dynamic request identities retain 7 coordinate decimals (about 1 cm).
+  // This only covers rounding at that boundary, not missing geographic data.
+  const epsilon = 1e-7;
+  const insidePublishedBounds = longitude - longitudeDelta >= publication.boundsGcj02.west - epsilon
+    && longitude + longitudeDelta <= publication.boundsGcj02.east + epsilon
+    && latitude - latitudeDelta >= publication.boundsGcj02.south - epsilon
+    && latitude + latitudeDelta <= publication.boundsGcj02.north + epsilon;
   const latKm = (latitude - publication.centerGcj02.latitude) * 111.32;
   const lonKm = (longitude - publication.centerGcj02.longitude) * 111.32 * Math.cos(latitude * Math.PI / 180);
   return insidePublishedBounds && Math.hypot(latKm, lonKm) + input.radiusKm <= publication.maximumRadiusKm + 0.05;

@@ -1,4 +1,18 @@
-# HKSAR district boundary publication
+# Browsing-point timezone publications
+
+## Domestic coverage
+
+`domestic-timezone.ts` uses the comprehensive identity dataset in [geo-tz 8.1.10](https://github.com/evansiroky/node-geo-tz), reached through `geo-tz/all`, for domestic browsing points outside the existing Greater Bay Area boundary owner. It preserves Shanghai, Hong Kong, Macao and Taipei identities. Mainland points that also match Asia/Urumqi use Asia/Shanghai for the product's Beijing civil-time convention. Ambiguous foreign overlaps or unsupported zones remain unavailable; a phone hint cannot decide the location's timezone.
+
+The existing precise HKSAR/Macao paths below retain their responsibilities. The former Greater Bay Area trial rectangle no longer limits nationwide browsing Contexts. Formal spots retain their published timezone and are not resolved from this dataset.
+
+geo-tz code is MIT; its encoded Timezone Boundary Builder/OpenStreetMap database is [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/). Commercial use retains source notice and attribution with the derived Context and Map, and provides the original machine-readable database through the pinned [package archive](https://registry.npmjs.org/geo-tz/-/geo-tz-8.1.10.tgz). The unchanged dataset and exact selected file sizes/checksums are bound by `geo-tz-8.1.10.publication.json`. The comprehensive index is 938,298 bytes and its geometry file is 30,196,840 bytes; the installed package includes other variants and is roughly 74.6 MB unpacked. No timezone database enters the Mini Program package.
+
+The release runtime must retain geo-tz's packaged `data/` directory and API publication manifest. Startup validates both selected data files and rejects a different `GEO_TZ_DATA_PATH`. Geometry caching is limited to 32 entries and 8 MiB of serialized data; this is a cache bound, not a measurement of total decoded process memory. Refresh the dependency, publication hashes, source/notice and affected representative checks together. This dataset is approximate OSM-derived civil-zone evidence, not an official administrative or maritime boundary.
+
+The national requirement invalidates the earlier decision to keep only a small trial resolver. A maintained smaller lookup remains an approximation with documented zone mismatches; the precise existing geo-tz implementation is selected here despite its backend data size. It avoids inventing a nationwide bounding rectangle or implementing another polygon database.
+
+## HKSAR district boundary publication
 
 `hksar_18_district_boundary.json` is the unmodified 18-district GeoJSON publication from the Home Affairs Department of the Government of the Hong Kong Special Administrative Region, obtained through [DATA.GOV.HK](https://data.gov.hk/en-data/dataset/hk-had-json1-hong-kong-administrative-boundaries/resource/c3810fd6-7b47-40f8-91bc-3e5bc9618cc8) on 2026-09-26. The direct source is <https://www.had.gov.hk/psi/hong-kong-administrative-boundaries/hksar_18_district_boundary.json>; the department's [data specification](https://www.had.gov.hk/datagovhk/dataspec/en/dataspec_district_boundary_en.pdf) identifies the boundary coordinates as WGS84 (EPSG:4326). The Government and Home Affairs Department own the source data; DATA.GOV.HK provides it under its [Terms and Conditions](https://data.gov.hk/en/terms-and-conditions), which require source attribution on copies and permit reuse. SHA-256: `ab2123b5a48c2e39e29ce594a0c51590cf6081922ab2c5c14ff78338b788f760`.
 

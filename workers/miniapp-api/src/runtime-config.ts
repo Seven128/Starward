@@ -38,6 +38,7 @@ export interface MiniappRuntimeConfig {
   qweather: {
     apiHost: string | null;
     credentialId: string | null;
+    developerId: string | null;
     projectId: string | null;
     privateKeyPem: string | null;
     forecastHours: QWeatherForecastHours;
@@ -161,6 +162,7 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
   const qweather = {
     apiHost: value("QWEATHER_API_HOST"),
     credentialId: value("QWEATHER_CREDENTIAL_ID"),
+    developerId: value("QWEATHER_DEVELOPER_ID"),
     projectId: value("QWEATHER_PROJECT_ID"),
     privateKeyPem: value("QWEATHER_PRIVATE_KEY_PEM")?.replace(/\\n/gu, "\n") ?? null,
     forecastHours: qweatherForecastHours(),
@@ -275,7 +277,9 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
 }
 
 export function createTestRuntimeConfig(
-  overrides: Partial<MiniappRuntimeConfig> = {},
+  overrides: Omit<Partial<MiniappRuntimeConfig>, "qweather"> & {
+    qweather?: Partial<MiniappRuntimeConfig["qweather"]>;
+  } = {},
 ): MiniappRuntimeConfig {
   const base: MiniappRuntimeConfig = {
     releaseProfile: "LOCAL",
@@ -296,6 +300,7 @@ export function createTestRuntimeConfig(
     qweather: {
       apiHost: null,
       credentialId: null,
+      developerId: "QTEST00000",
       projectId: null,
       privateKeyPem: null,
       forecastHours: 240,
@@ -312,7 +317,7 @@ export function createTestRuntimeConfig(
     tripDecisionRuleVersion: "test-trip-decision",
     features: { ...SELECTED_FEATURE_FLAGS, WECHAT_AUTH_ENABLED: false },
   };
-  const config = { ...base, ...overrides };
+  const config = { ...base, ...overrides, qweather: { ...base.qweather, ...overrides.qweather } };
   assertFeatureFlagClosure(config.features);
   return Object.freeze(config);
 }

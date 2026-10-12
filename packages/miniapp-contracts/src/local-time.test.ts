@@ -21,7 +21,7 @@ test("the shared civil-night mapping keeps the DST night bounded by local noon",
   assert.ok(Date.parse(at) >= Date.parse(bounds.nightStartUtc) && Date.parse(at) < Date.parse(bounds.nightEndUtc));
 });
 
-test("modern Shanghai, Hong Kong and Macao conversion survives Intl without formatToParts", () => {
+test("modern domestic conversion survives Intl without formatToParts", () => {
   const original = Intl.DateTimeFormat;
   Object.defineProperty(Intl, "DateTimeFormat", {
     configurable: true,
@@ -44,6 +44,8 @@ test("modern Shanghai, Hong Kong and Macao conversion survives Intl without form
     );
     assert.equal(zonedLocalToUtc({ localDate: "2026-09-13", localTime: "21:00",
       timezone: "Asia/Macau" }), "2026-09-13T13:00:00.000Z");
+    assert.equal(zonedLocalToUtc({ localDate: "2026-09-13", localTime: "21:00",
+      timezone: "Asia/Taipei" }), "2026-09-13T13:00:00.000Z");
     assert.throws(
       () => localParts(new Date("2026-09-13T13:00:00.000Z"), "Europe/London"),
       /zoned_date_intl_unavailable/u,

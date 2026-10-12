@@ -29,19 +29,13 @@ LICENSE_URL = "https://dataspace.copernicus.eu/explore-data/data-collections/cop
 DATASET_DOI = "10.5270/ESA-c5d3d65"
 ATTRIBUTION_NOTICE = "© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved"
 MODIFIED_PRODUCT_NOTICE = "produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved"
+LIABILITY_NOTICE = "依法或受委托负责哥白尼计划的组织，不对哥白尼 WorldDEM-30 的任何使用承担责任。"
 DERIVATION = "Starward resampled the WGS84 DSM onto a GCJ-02 grid, then derived hillshade, elevation colour and transparent no-data pixels."
 DEFAULT_CENTER = (22.55, 114.25)
 DEFAULT_RADIUS_KM = 85.0
-ELEVATION_COLOR_ENCODING = {
-    "format": "starward-terrain-elevation-color-v1",
-    "minimumM": -20.0,
-    "maximumM": 880.0,
-    "lowRgb": [215, 224, 207],
-    "highRgb": [112, 139, 104],
-    "alpha": 224,
-    "clipping": "CLAMP",
-    "shading": "SYNTHETIC_HILLSHADE",
-}
+ELEVATION_COLOR_ENCODING = json.loads(
+    (Path(__file__).resolve().parents[2] / "workers/miniapp-api/assets/terrain/elevation-color.json").read_text(encoding="utf-8")
+)
 
 
 def _tile_id(lat_degree: int, lon_degree: int) -> str:
@@ -204,6 +198,7 @@ def publish(cache: Path, output: Path, size: int, center_lat: float, center_lon:
         "doi": DATASET_DOI,
         "attributionNotice": ATTRIBUTION_NOTICE,
         "modifiedProductNotice": MODIFIED_PRODUCT_NOTICE,
+        "liabilityNotice": LIABILITY_NOTICE,
         "derivation": DERIVATION,
         "sourceResolution": "1 arc-second (approximately 30 m)",
         "derivedResolutionM": round(pixel_metres, 1),

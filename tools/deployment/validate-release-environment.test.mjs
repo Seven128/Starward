@@ -42,6 +42,12 @@ test("remote release keeps QWeather as the selected primary provider", async () 
   );
 });
 
+test("release validation requires the same QWeather developer issuer as the API runtime", async () => {
+  await withFixture({ api: { QWEATHER_DEVELOPER_ID: "" } }, async (deployPath) => {
+    await assert.rejects(() => validateReleaseEnvironment({ deployEnvPath: deployPath }), /release_environment_required:QWEATHER_DEVELOPER_ID/u);
+  });
+});
+
 test("unresolved secret references fail closed without exposing the value", async () => {
   await withFixture({ api: { WECHAT_MINIAPP_APP_SECRET: "secret-ref:wechat" } }, async (deployPath) => {
     await assert.rejects(() => validateReleaseEnvironment({ deployEnvPath: deployPath }), /release_environment_unresolved:WECHAT_MINIAPP_APP_SECRET/u);

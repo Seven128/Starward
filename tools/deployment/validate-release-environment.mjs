@@ -19,6 +19,7 @@ const SECRET_KEYS = new Set([
   "MINIAPP_SESSION_SECRET",
   "OPEN_METEO_API_KEY",
   "QWEATHER_CREDENTIAL_ID",
+  "QWEATHER_DEVELOPER_ID",
   "QWEATHER_PRIVATE_KEY_PEM",
   "QWEATHER_PROJECT_ID",
   "REDIS_PASSWORD",
@@ -156,6 +157,7 @@ function validateApi(api, expected, postgres, redis) {
     fail("release_environment_invalid", "api:QWEATHER_FORECAST_HOURS");
   checkedValue(api, "QWEATHER_API_HOST");
   secret(api, "QWEATHER_CREDENTIAL_ID", 8);
+  secret(api, "QWEATHER_DEVELOPER_ID", 10);
   secret(api, "QWEATHER_PROJECT_ID", 8);
   secret(api, "QWEATHER_PRIVATE_KEY_PEM", 40);
   // Old evidence configuration is ignored by runtime; it supplies no capability

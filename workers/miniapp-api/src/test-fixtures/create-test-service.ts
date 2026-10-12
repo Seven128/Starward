@@ -24,6 +24,7 @@ import type { AirQualityPort } from "../air-quality-provider.ts";
 import type { DeepSkyImageryService } from "../deep-sky-imagery.ts";
 import type { SdssOpticalImageryService } from "../sdss-optical-imagery.ts";
 import type { OpticalHipsPublicationService } from "../optical-hips-publication.ts";
+import { TerrainService, type TerrainPort } from "../terrain-service.ts";
 
 export function createTestMiniappService(
   input: {
@@ -41,6 +42,7 @@ export function createTestMiniappService(
     deepSkyImages?: DeepSkyImageryService;
     sdssOpticalImages?: SdssOpticalImageryService;
     opticalHips?: OpticalHipsPublicationService;
+    terrain?: TerrainPort;
   } = {},
 ) {
   const config = input.config ?? createTestRuntimeConfig();
@@ -48,6 +50,7 @@ export function createTestMiniappService(
     repository: input.repository ?? new InMemoryTestRepository(),
     config,
     weather: input.weather ?? new DeterministicWeatherTestAdapter(),
+    terrain: input.terrain ?? new TerrainService({ renderer: async () => null }),
     ...(input.recentWeather ? { recentWeather: input.recentWeather } : {}),
     ...(input.airQuality ? { airQuality: input.airQuality } : {}),
     route: input.route ?? new DisabledRouteAdapter(),
