@@ -33,6 +33,8 @@ The current Mini Program owners and command ladder are implemented. Any future w
 
 ## Repository Verification Boundary
 
+- The Product CI production-dependency audit remains required. Mini Program API versions are owned by `workers/miniapp-api/package.json` and the root lockfile. The root override currently selects a patched Fastify for the Nest adapter because its published manifest still pins a vulnerable version; reassess that override when the adapter's upstream dependency is patched. Keep the adapter and direct API runtime compatible.
+- Context CI installs only `@starward/context-check`, excluding root dependencies. Its workspace manifest must declare dependencies imported by the scheduled tool tests, including their PNG decoder; a full local install does not establish that lightweight closure.
 - `npm run context:validate`, `make validate-context`, `npm run context:doctor` can validate Context structure, routing and installation health.
 - Repository review must confirm any current Mini Program workspace, acceptance and tool paths match their owners; generated/private artifacts remain ignored; the implementation index matches code truth; the selected visual target remains rooted only in `DESIGN.md`; and no historical output is promoted into Context.
 - Context checks do not build, test, run or accept the Mini Program. Use the project-owned checks and real runtime/device observations appropriate to the current candidate and requirements.
