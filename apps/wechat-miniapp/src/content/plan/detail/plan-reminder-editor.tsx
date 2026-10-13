@@ -44,7 +44,7 @@ export function PlanReminderEditor({ reminders, onChange }: {
         onClick={() => change(reminder.reminderId, { notifyOnWechat: !reminder.notifyOnWechat })}>
         微信通知意向 · {reminder.notifyOnWechat ? "希望开启" : "不发送"}
       </Button>
-      <Text className="plan-reminder-editor__notice">微信通知服务尚未接通；这里仅保存通知意向，清单内容可独立使用。</Text>
+      <Text className="plan-reminder-editor__notice">每个提醒最多 20 项。先保存清单，再按平台能力开启微信通知。</Text>
     </View>)}
     <Button className={reminders.length < 5 ? "plan-reminder-editor__add-reminder" : ""} disabled={reminders.length >= 5} onClick={() => onChange([...reminders, { reminderId: id(), title: `个人提醒 ${reminders.length + 1}`, hoursBeforeDeparture: 1, notifyOnWechat: false, items: [] }])}>＋ 添加提醒</Button>
   </View>;
