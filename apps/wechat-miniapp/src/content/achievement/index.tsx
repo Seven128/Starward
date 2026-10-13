@@ -37,16 +37,16 @@ export default function AchievementPage() {
   const openPlan = (planId: string) => open(`/content/plan/detail/index?planId=${encodeURIComponent(planId)}`);
   return <><SystemMotionProbe /><View className={`${themeClass} achievement-page`}>
     <FloatingNotificationHost />
-    <CustomNav title="我的星旅" back backFallbackTab="/pages/my/index" />
+    <CustomNav title="计划回顾" back backFallbackTab="/pages/my/index" />
     <ScrollView scrollY enhanced showScrollbar={false} className="achievement-page__scroll">
       <View className="achievement-page__content page-inset safe-bottom">
-        <View className="achievement-page__heading"><Text className="type-page-title">我的星旅</Text><Text className="type-secondary">从每一份计划，收藏自己的星空</Text></View>
+        <View className="achievement-page__heading"><Text className="type-page-title">计划回顾</Text><Text className="type-secondary">查看已结束的观星计划</Text></View>
         {plans.isPending && !plans.data ? <StatusPanel state="LOADING" detail="正在读取观星计划。" /> : null}
-        {plans.isError && !plans.data ? <StatusPanel state="ERROR" detail="计划暂时无法读取，成就统计未更新。" recoveryLabel="重试" onRecover={() => void plans.refetch()} /> : null}
+        {plans.isError && !plans.data ? <StatusPanel state="ERROR" detail="计划暂时无法读取，回顾统计未更新。" recoveryLabel="重试" onRecover={() => void plans.refetch()} /> : null}
         {plans.data ? <>
           {plans.refreshError || plans.data.dataState === "STALE_USABLE" ? <StatusPanel state="STALE" detail="计划暂未同步，以下是上次读取的统计。" recoveryLabel="重试" onRecover={() => void plans.refetch()} /> : null}
           {all.length ? <>
-            <View className="achievement-summary" role="group" aria-label={`${selectedYear}年个人行程成就`}>
+            <View className="achievement-summary" role="group" aria-label={`${selectedYear}年计划回顾`}>
               <View className="achievement-summary__main"><Text>{summary.endedPlans}</Text><Text>已结束计划</Text></View>
               <View className="achievement-summary__facts"><Text>{summary.places} 计划地点</Text><Text>{summary.events} 关联天象</Text></View>
             </View>
@@ -66,7 +66,7 @@ export default function AchievementPage() {
                 <View className="achievement-record__footer"><Text>计划已结束</Text><Text>查看行程 ›</Text></View>
               </Button>;
             })}
-          </> : !plans.isError && !plans.refreshError && plans.data.dataState !== "STALE_USABLE" ? <StatusPanel state="EMPTY" emptyLevel="page" title="暂无星旅记录" detail="已结束的观星计划会显示在这里；计划时间经过不代表已到访或观测成功。" recoveryLabel="＋ 新建计划" onRecover={() => void open("/content/plan/edit/index?new=1")} /> : null}
+          </> : !plans.isError && !plans.refreshError && plans.data.dataState !== "STALE_USABLE" ? <StatusPanel state="EMPTY" emptyLevel="page" title="暂无已结束的计划" detail="已结束的观星计划会显示在这里；计划时间经过不代表已到访或观测成功。" recoveryLabel="＋ 新建计划" onRecover={() => void open("/content/plan/edit/index?new=1")} /> : null}
         </> : null}
         {navigationError ? <StatusPanel state="ERROR" detail="行程暂未打开，请再次点击。" /> : null}
       </View>

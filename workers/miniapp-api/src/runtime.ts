@@ -78,35 +78,44 @@ export class MemoryOutbox {
   }
 }
 
+// Recent operator diagnostics: 256 records retain roughly 128 paired Map/Spot
+// reads. This is a bounded navigation window, not a durable audit history.
+export const MEMORY_TELEMETRY_LIMIT = 256;
+
 export class MemoryTelemetry {
   #events: Readonly<Record<string, unknown>>[] = [];
+  #next = 0;
+
+  #record(fields: Readonly<Record<string, unknown>>) {
+    this.#events[this.#next] = this.#sanitize(fields);
+    this.#next = (this.#next + 1) % MEMORY_TELEMETRY_LIMIT;
+  }
 
   event(name: string, fields: Readonly<Record<string, unknown>>): void {
-    this.#events.push(
-      this.#sanitize({
-        type: "event",
-        name,
-        at: new Date().toISOString(),
-        ...fields,
-      }),
-    );
+    this.#record({
+      type: "event",
+      name,
+      at: new Date().toISOString(),
+      ...fields,
+    });
   }
   error(error: unknown, fields: Readonly<Record<string, unknown>>): void {
-    this.#events.push(
-      this.#sanitize({
-        type: "error",
-        message: error instanceof Error ? error.message : String(error),
-        at: new Date().toISOString(),
-        ...fields,
-      }),
-    );
+    this.#record({
+      type: "error",
+      message: error instanceof Error ? error.message : String(error),
+      at: new Date().toISOString(),
+      ...fields,
+    });
   }
   snapshot(): readonly Readonly<Record<string, unknown>>[] {
-    return [...this.#events];
+    return this.#events.length < MEMORY_TELEMETRY_LIMIT
+      ? [...this.#events]
+      : [...this.#events.slice(this.#next), ...this.#events.slice(0, this.#next)];
   }
 
   resetForAcceptance() {
     this.#events = [];
+    this.#next = 0;
   }
 
   #sanitize(

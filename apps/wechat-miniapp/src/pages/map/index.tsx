@@ -2548,13 +2548,13 @@ export default function MapPage() {
                     <SemanticIcon name="terrain" />
                     <View className="map-layer-sheet__choice-copy">
                       <Text className="map-layer-sheet__choice-title">地形</Text>
-                      <Text className="type-caption">高程派生阴影 · 可与下方图层组合</Text>
+                      <Text className="type-caption">显示地势起伏，可叠加其他图层</Text>
                     </View>
 
                     <View className="map-layer-sheet__terrain-check" aria-hidden>{terrainEnabled && !mapTerrainMissing ? <SemanticIcon name="check" /> : null}</View>
                   </Button>
                   {terrainEnabled || mapTerrainMissing ? <Text className="map-layer-sheet__terrain-state">
-                    {terrain.isPending || terrain.imagePending ? "正在读取地形覆盖…" : mapTerrainFailed ? "地形暂时无法显示。" : mapTerrainMissing ? "当前地区暂无地形数据。" : terrain.data ? `${terrain.data.data.datasetVersion} · ${terrain.data.data.coverageLabel}` : ""}
+                    {terrain.isPending || terrain.imagePending ? "正在加载地形…" : mapTerrainFailed ? "地形暂时无法显示。" : mapTerrainMissing ? "当前地区暂无地形数据。" : terrain.data?.data.coverageLabel}
                   </Text> : null}
                   {mapTerrainFailed ? <SoftButton label="重新读取地形" onClick={() => {
                     setTerrainNativeRetry(value => value + 1);
@@ -2566,13 +2566,16 @@ export default function MapPage() {
                     onClick={() => setTerrainSourceId(value => value === terrain.data!.data.source!.id ? null : terrain.data!.data.source!.id)}>
                     {terrainSourceId === terrain.data.data.source.id ? "收起地形来源与许可" : "地形来源与许可"}
                   </SoftButton>
-                  {terrainSourceId === terrain.data.data.source.id ? <Provenance source={terrain.data.data.source} showKind={false} /> : null}
+                  {terrainSourceId === terrain.data.data.source.id ? <>
+                    <Text className="type-caption">数据版本：{terrain.data.data.datasetVersion}</Text>
+                    <Provenance source={terrain.data.data.source} showKind={false} />
+                  </> : null}
                 </View> : null}
                 {visibleLayer === "TOTAL_CLOUD" ? (
                   <>
                     {mapSceneFailed && !cloudTimeChoices.length ? <StatusPanel
                       state={scene.data ? "STALE" : "ERROR"}
-                      detail="云量时间切片暂不可用，当前不能选择预报时刻。"
+                      detail="云量预报暂不可用，暂时无法选时间。"
                       recoveryLabel="重试地图数据"
                       onRecover={() => void refreshMap()}
                     /> : null}
@@ -2601,7 +2604,7 @@ export default function MapPage() {
                       selectedAt={timeReference?.selectedAtUtc ?? ""}
                       timezone={timeReference?.timezone ?? "Asia/Shanghai"}
                       disabled={!activeContext || !cloudTimeChoices.length || timeSaving}
-                      emptyMessage={scene.isPending && !scene.data ? "正在读取云量时间切片。" : mapSceneFailed ? "云量时间切片暂不可用，请重试地图数据。" : "当前日期没有可用的云量时间切片。"}
+                      emptyMessage={scene.isPending && !scene.data ? "正在加载云量预报。" : mapSceneFailed ? "云量预报暂不可用，请重试。" : "所选日期暂无云量预报。"}
                       onPreview={(index) => {
                         const choice = cloudTimeChoices[index];
                         if (!choice) return;

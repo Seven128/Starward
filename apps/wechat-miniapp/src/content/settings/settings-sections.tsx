@@ -89,7 +89,7 @@ export function SettingsControls({
           onChange={(checked) => updatePreference("contributionStatusReminder", checked)} />
       </View>
       {(preferences.departureConditionReminder || preferences.contributionStatusReminder) ?
-        <Text className="type-caption settings-capability-note">提醒意向已保存；微信通知仅在取得订阅授权并有发送回执后生效。</Text> : null}
+        <Text className="type-caption settings-capability-note">微信通知需另行订阅；发送情况请查看具体提醒状态。</Text> : null}
     </View>
   </>;
 }
@@ -104,7 +104,7 @@ export function SettingsDataActions({ dataAction, openSheet }: {
       <SettingsEntryRow id="settings-cache-cleanup" label="清理本机缓存" icon="refresh"
         disabled={dataAction !== null} pendingLabel={dataAction === "CACHE" ? "清理中…" : undefined}
         onClick={() => openSheet("CACHE")} />
-      <SettingsEntryRow id="account-data-export" label="下载我的数据" icon="download"
+      <SettingsEntryRow id="account-data-export" label="导出数据" icon="download"
         disabled={dataAction !== null} pendingLabel={dataAction === "EXPORT" ? "生成中…" : undefined}
         onClick={() => openSheet("EXPORT")} />
       <SettingsEntryRow id="account-delete" label="删除账户" icon="trash" tone="coral"

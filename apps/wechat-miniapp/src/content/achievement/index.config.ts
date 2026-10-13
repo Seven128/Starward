@@ -1,1 +1,1 @@
-export default definePageConfig({ navigationBarTitleText: "我的星旅" });
+export default definePageConfig({ navigationBarTitleText: "计划回顾" });

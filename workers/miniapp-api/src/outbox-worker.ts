@@ -6,6 +6,7 @@ import { MemoryCache } from "./cache.ts";
 import { ObservationContextService } from "./observation-context-service.ts";
 import type { MediaObjectStorePort, WeatherPort } from "./ports.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
+import { handleIdlePoolErrors } from "./postgres-pool-errors.ts";
 import { createMediaObjectStore } from "./media-object-store.ts";
 import {
   loadRuntimeConfig,
@@ -158,6 +159,7 @@ export class OutboxWorkerRuntime {
       max: 4,
       application_name: "starward-miniapp-worker",
     });
+    handleIdlePoolErrors(this.pool, "worker");
     this.reminderDispatcher = options.reminderDispatcher ?? new PlanReminderDispatcher(this.pool,this.config);
     this.queue = new Queue(queueName, {
       connection,

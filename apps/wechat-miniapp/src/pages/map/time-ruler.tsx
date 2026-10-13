@@ -211,7 +211,7 @@ export function MapTimeRuler({
         showScrollbar={false}
         scrollLeft={scrollLeft}
         scrollWithAnimation
-        ariaLabel={`观测时间切片；当前${selectedTimeLabel}；点击切片可直接选择时间`}
+        ariaLabel={`观测时间；当前${selectedTimeLabel}；选择刻度可更改时间`}
         onTouchStart={(event) => {
           if (disabled || (event as unknown as { touches?: readonly unknown[] }).touches?.length !== 1) {
             cancelInteraction();

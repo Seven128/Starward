@@ -214,7 +214,7 @@ test("astronomy time availability follows its Scene owner rather than a successf
   };
   visit(source);
   assert.ok(expression);
-  for (const [timeFramesPending, timeFramesFailed, expected] of [[true, false, "正在读取"], [false, true, "暂不可用"], [false, false, "本观测夜没有可用"]] as const) {
+  for (const [timeFramesPending, timeFramesFailed, expected] of [[true, false, "正在加载"], [false, true, "暂不可用"], [false, false, "本观测夜暂无可选时刻"]] as const) {
     const message = vm.runInNewContext(expression.getText(source), {
       timeFramesPending, timeFramesFailed, timeFrames: [], skyPending: false, skyReport: {}, skyError: null, skyStale: false,
     });

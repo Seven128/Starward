@@ -62,7 +62,7 @@ if(page==='achievements'){
 const state=invalid?'expired':query.get('state');
 if(['error','login','expired','unpublished'].includes(state)){
  const view=$('#view-'+page);const retainedHeader=view.querySelector('.app-header');view.replaceChildren();if(retainedHeader)view.append(retainedHeader);const box=document.createElement('section');box.className='recovery';
- const copy=state==='error'?['暂时无法读取','请稍后重试，你的计划记录仍会保留。','重试']:state==='login'?['登录后查看我的星旅','你的行程记录只对你可见。','返回我的']:state==='unpublished'?['这个观星点暂不可用','地点可能已下架。请返回地图查看其他正式观星点。','返回地图']:['这份分享已失效','发起人可能已撤销分享。','返回地图'];
+ const copy=state==='error'?['暂时无法读取','请稍后重试，你的计划记录仍会保留。','重试']:state==='login'?['登录后查看计划回顾','你的行程记录只对你可见。','返回我的']:state==='unpublished'?['这个观星点暂不可用','地点可能已下架。请返回地图查看其他正式观星点。','返回地图']:['这份分享已失效','发起人可能已撤销分享。','返回地图'];
  box.innerHTML=icon(state==='login'?'account-user':'plan-suv')+`<h2>${copy[0]}</h2><p>${copy[1]}</p><button class="btn-primary-action">${copy[2]}</button>`;view.append(box);
  box.querySelector('button').onclick=()=>{if(state==='error'){const u=new URL(location.href);u.searchParams.delete('state');location.href=u.href;}else location.href=root+(state==='login'?'my.html':'map.html?map=1&browse=1');};
 }

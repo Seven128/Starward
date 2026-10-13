@@ -429,6 +429,7 @@ export interface AstronomyApplicationPort {
 export interface TelemetryPort {
   event(name: string, fields: Readonly<Record<string, unknown>>): void;
   error(error: unknown, fields: Readonly<Record<string, unknown>>): void;
+  /** Recent diagnostics in chronological order; not a durable audit log. */
   snapshot(): readonly Readonly<Record<string, unknown>>[];
 }
 

@@ -34,6 +34,33 @@ function assertExpiryDeadline(expiresAtMs: number) {
 export class MemoryCache implements CachePort {
   readonly kind = "memory" as const;
   #records = new Map<string, MemoryRecord>();
+  #sweep: ReturnType<typeof setInterval> | null = null;
+  #cursor: MapIterator<[string, MemoryRecord]> | null = null;
+  #closed = false;
+
+  #startSweep() {
+    if (this.#sweep) return;
+    // Amortize retirement across ticks without evicting valid Contexts. A
+    // worker creates new UUID keys that may never be read again after expiry.
+    this.#sweep = setInterval(() => {
+      this.#cursor ??= this.#records.entries();
+      const now = Date.now();
+      for (let scanned = 0; scanned < 128; scanned += 1) {
+        const next = this.#cursor.next();
+        if (next.done) { this.#cursor = null; break; }
+        const [key, record] = next.value;
+        if (record.expiresAt <= now) this.#records.delete(key);
+      }
+      if (this.#records.size === 0) this.#stopSweep();
+    }, 1_000);
+    this.#sweep.unref?.();
+  }
+
+  #stopSweep() {
+    if (this.#sweep) clearInterval(this.#sweep);
+    this.#sweep = null;
+    this.#cursor = null;
+  }
 
   async get<T>(key: string): Promise<T | null> {
     const record = this.#records.get(key);
@@ -46,14 +73,16 @@ export class MemoryCache implements CachePort {
   }
 
   async readinessSnapshot() {
-    return { ready: true, cache: this.kind };
+    return { ready: !this.#closed, cache: this.kind };
   }
 
   async set<T>(key: string, value: T, ttlSeconds: number) {
+    if (this.#closed) throw new Error("memory_cache_closed");
     this.#records.set(key, {
       value: structuredClone(value),
       expiresAt: Date.now() + ttlSeconds * 1_000,
     });
+    this.#startSweep();
   }
 
   async replaceIfRevision<T extends { revision: number }>(
@@ -90,7 +119,11 @@ export class MemoryCache implements CachePort {
     return { cache: this.kind, entries: this.#records.size };
   }
 
-  async close() {}
+  async close() {
+    this.#closed = true;
+    this.#stopSweep();
+    this.#records.clear();
+  }
 }
 
 export class RedisCache implements CachePort {

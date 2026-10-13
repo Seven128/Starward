@@ -682,8 +682,8 @@ export function SpotInformationPanel({
               />
               {timeFramesFailed && !timeFrames.length ? <StatusPanel
                 state="ERROR"
-                detail="时间切片暂不可用，当前不能选择预报时刻。"
-                recoveryLabel="重试时间切片"
+                detail="暂时无法选择观测时刻。"
+                recoveryLabel="重试可选时刻"
                 onRecover={onTimeFramesRecover}
               /> : null}
               <MapTimeRuler
@@ -695,7 +695,7 @@ export function SpotInformationPanel({
                 selectedAt={timeContext.selectedAtUtc}
                 timezone={timeContext.timezone}
                 disabled={!context || !timeFrames.length || timeSaving}
-                emptyMessage={timeFramesPending ? "正在读取天文时间切片。" : timeFramesFailed ? "天文时间切片暂不可用，请重试时间切片。" : "本观测夜没有可用的时间切片。"}
+                emptyMessage={timeFramesPending ? "正在加载可选时刻。" : timeFramesFailed ? "可选时刻暂不可用，请重试。" : "本观测夜暂无可选时刻。"}
                 onPreview={onTimePreview}
                 onCommit={onTimeCommit}
                 onCancel={onTimeCancel}

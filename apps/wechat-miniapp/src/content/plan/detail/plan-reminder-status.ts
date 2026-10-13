@@ -39,7 +39,7 @@ export function planReminderStatusDetail(status?: PlanReminderNotificationStatus
     : status.reason==='SPOT_NAME_NOT_SUPPORTED'
     ? '地点名称暂不符合当前通知要求，当前无法申请本组授权。请稍后重新读取通知状态；清单和已保存计划仍可使用。'
     : "微信通知服务尚未接通；清单仍可保存和勾选。";
-  if (status.state === "AUTHORIZATION_REQUIRED") return "需要由用户点击并完成微信订阅授权。";
+  if (status.state === "AUTHORIZATION_REQUIRED") return "点“授权本次提醒”，再按微信提示操作。";
   if (status.state === "SCHEDULED") {
     let trigger = "触发时间暂不可用";
     if (status.triggerAtUtc && timezone) {
@@ -50,7 +50,7 @@ export function planReminderStatusDetail(status?: PlanReminderNotificationStatus
     }
     return `${trigger}；发送前仍会复核计划版本与授权。`;
   }
-  if (status.state === "SENT") return "微信发送接口已接受本次通知，不代表你已收到或阅读。清单仍可使用。";
+  if (status.state === "SENT") return "微信已受理本次提醒，尚未确认送达。清单仍可使用。";
   if (status.state === "SKIPPED") {
     if (status.reason === "DEPARTURE_TIME_REQUIRED") return "缺少有效出发时间，请编辑计划补充出发时间后保存。清单仍可使用。";
     if (status.reason === "DEPARTURE_EXPIRED") return "出发时间已过，本次通知已跳过，不补发过时通知。清单仍可使用。";

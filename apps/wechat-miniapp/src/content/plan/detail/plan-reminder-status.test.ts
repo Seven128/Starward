@@ -24,7 +24,7 @@ test("missing departure is not a missed trigger and completed outcomes have acti
   assert.match(planReminderStatusDetail(status("SKIPPED", "DEPARTURE_TIME_REQUIRED")), /编辑计划.*出发时间/u);
   assert.match(planReminderStatusDetail(status("SKIPPED", "DEPARTURE_EXPIRED")), /出发时间已过.*不补发/u);
   assert.match(planReminderStatusDetail(status("SKIPPED", "TRIGGER_MISSED")), /错过.*不补发/u);
-  assert.match(planReminderStatusDetail(status("SENT", "PROVIDER_ACCEPTED")), /微信.*接受.*不代表.*阅读/u);
+  assert.match(planReminderStatusDetail(status("SENT", "PROVIDER_ACCEPTED")), /微信.*受理.*尚未确认送达/u);
   assert.match(planReminderStatusDetail(status("FAILED", "PROVIDER_NOT_ATTEMPTED")), /未能发起发送/u);
   assert.match(planReminderStatusDetail(status("FAILED", "PROVIDER_REJECTED")), /发送失败/u);
   assert.match(planReminderStatusDetail(status("NOT_REQUESTED", "USER_DID_NOT_REQUEST")), /未开启.*清单/u);

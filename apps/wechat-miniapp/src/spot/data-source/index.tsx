@@ -103,7 +103,7 @@ export default function DataSourcePage() {
             ) : !overview.refreshError && !incomplete && overview.data?.dataState !== "STALE_USABLE" ? (
               <StatusPanel
                 state="EMPTY"
-                detail="当前没有符合来源与时效要求的记录。"
+            detail="暂无适用于此地点和时间的来源记录。"
               />
             ) : null}
             <View className="source-principles card">

@@ -107,7 +107,7 @@ export function Provenance({
           {source.sourceUrl || source.licenseUrl || downloadUrl ? (
             <View className="provenance__links">
               {source.sourceUrl ? <SoftButton label={`复制${source.provider}的原始出处链接`} disabled={copying} onClick={() => void copyLink(source.sourceUrl)}>复制原始出处</SoftButton> : null}
-              {source.licenseUrl ? <SoftButton label={`复制${source.provider}的许可链接`} disabled={copying} onClick={() => void copyLink(source.licenseUrl)}>{presentation === "disclosure" ? "复制许可链接" : "复制许可说明"}</SoftButton> : null}
+              {source.licenseUrl ? <SoftButton label={`复制${source.provider}的许可链接`} disabled={copying} onClick={() => void copyLink(source.licenseUrl)}>复制许可链接</SoftButton> : null}
               {downloadUrl ? <SoftButton label="复制本次使用的数据下载链接" disabled={copying} onClick={() => void copyLink(downloadUrl,true)}>复制下载链接</SoftButton> : null}
             </View>
           ) : null}

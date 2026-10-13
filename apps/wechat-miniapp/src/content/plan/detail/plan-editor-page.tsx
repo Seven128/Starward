@@ -1088,7 +1088,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           onRecover={() => void spotsQuery.refetch()} /> : null}
         {saveRecoveryError ? <>
           {pendingSaveChoices.map(entry => <View className="form-group" key={entry.key}>
-            <Text className="type-section">未确认的保存 · {entry.input.localDate} {entry.input.localTime}</Text>
+            <Text className="type-section">保存结果待确认 · {entry.input.localDate} {entry.input.localTime}</Text>
             <Text className="type-body">{formalSpots.find(spot => spot.spotId === entry.input.spotId)?.name ?? "地点名称暂不可用"}</Text>
             <Text className="type-body">{entry.input.notes || "没有备注"}</Text>
             <SoftButton disabled={saving || deleting} label="核对这次保存" onClick={() => {

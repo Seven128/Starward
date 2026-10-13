@@ -123,7 +123,7 @@ if(surface==='my'){
  const entry=document.createElement('button');entry.id='journey-achievements';
  entry.style.cssText='display:flex;align-items:center;gap:12px;width:100%;padding:18px;background:#ffffffc9;border:0;border-radius:22px;text-align:left;color:#263646;font:inherit';
  entry.append(matteImage('telescope',{size:32}));
- const label=document.createElement('span');label.style.flex='1';label.innerHTML='<strong style="font-size:16px">个人行程成就</strong><small style="display:block;margin-top:5px;font-size:13px;color:#6f8190">回顾每一份已结束的计划</small>';entry.append(label,matteImage('chevron-right',{size:24}));
+ const label=document.createElement('span');label.style.flex='1';label.innerHTML='<strong style="font-size:16px">计划回顾</strong><small style="display:block;margin-top:5px;font-size:13px;color:#6f8190">查看已结束的观星计划</small>';entry.append(label,matteImage('chevron-right',{size:24}));
  entry.onclick=()=>location.href=journeyRoot+'?from=my';document.querySelector('#plan-card').after(entry);
 }
 if(surface==='map')document.addEventListener('click',e=>{

@@ -121,7 +121,7 @@ test("ordinary fresh data has no visual badge while full provenance retains real
   const before = JSON.stringify(actual);
   const tree = provenance({ source: actual });
   assert.equal(tree.props["aria-label"], "来源：公开资料库，状态：当前数据");
-  assert.match(text(tree), /公开资料库.*星表.*原始归因.*2026-10-08 09:00.*2026-10-09 10:00.*2026-10-08 08:00 至 2026-10-10 08:00.*开放许可.*角秒.*覆盖范围内适用.*复制原始出处.*复制许可说明/s);
+  assert.match(text(tree), /公开资料库.*星表.*原始归因.*2026-10-08 09:00.*2026-10-09 10:00.*2026-10-08 08:00 至 2026-10-10 08:00.*开放许可.*角秒.*覆盖范围内适用.*复制原始出处.*复制许可链接/s);
   assert.doesNotMatch(text(tree), /当前数据/);
   assert.equal((attributionInputs[0] as SourceSummary[])[0], actual);
   assert.equal(JSON.stringify(actual), before);

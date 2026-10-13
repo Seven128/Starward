@@ -1,4 +1,5 @@
 import type { AccountProfileRecord } from "@starward/miniapp-contracts";
+import { handleIdlePoolErrors } from "./postgres-pool-errors.ts";
 import { CURRENT_PUBLIC_SPOT_PREDICATE } from './current-public-spot-query.ts';
 import { createHash, randomUUID } from "node:crypto";
 import { assertContributionUploadContent, contributionMediaObjectKey } from "./contribution-media-object.ts";
@@ -518,6 +519,7 @@ export class PostgresMiniappRepository
       idleTimeoutMillis: 10_000,
       application_name: "starward-miniapp-api",
     });
+    handleIdlePoolErrors(this.pool, "api");
   }
 
   async initialize({ migrate = false }: { migrate?: boolean } = {}) {

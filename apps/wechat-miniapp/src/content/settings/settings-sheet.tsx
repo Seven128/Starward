@@ -19,7 +19,7 @@ const CONTENT: Record<Exclude<OpenSettingsSheet, "LOCATION" | "DELETE" | "DELETE
     body: "清理临时地图、筛选、搜索记录与夜空缓存。远端观星计划、想去列表、主页链接和投稿草稿保持不变。",
   },
   EXPORT: {
-    title: "下载我的数据",
+    title: "导出数据",
     body: "服务端会整理当前账户的计划、投稿和设置，生成 JSON 文件；完成后由微信文件分享交付。",
   },
 };
