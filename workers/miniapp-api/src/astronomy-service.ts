@@ -1137,7 +1137,7 @@ export class AstronomyService implements AstronomyApplicationPort {
       ...(spot.lightPollution.state === "UNAVAILABLE"
         ? ["没有已发布的真实光害数据，不能生成肯定的出行结论。"]
         : spot.lightPollution.state === "ESTIMATED"
-          ? ["光害为卫星夜光产品估算，不是现场 SQM 或精确 Bortle。"]
+          ? ["光害为来源数据估算，具体来源与方法见披露，不是现场 SQM 或精确 Bortle。"]
           : []),
       ...(skyOpportunityResult.opportunity.primaryWindow
         ? []

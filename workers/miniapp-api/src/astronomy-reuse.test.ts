@@ -87,6 +87,18 @@ test("map → layer → overview → sky shares public evidence and projects sta
   } finally { await h.service.onModuleDestroy(); }
 });
 
+test("an estimated fixture is not reported as a satellite night-light product", async () => {
+  const h = await setup();
+  try {
+    const report = await h.astronomy.compute(h.contexts[0]!);
+    const light = (await h.repository.getDetail(TEST_PUBLISHED_SPOT.spotId))!.spot.lightPollution;
+    assert.equal(light.state, "ESTIMATED");
+    assert.equal(light.source.kind, "TEST_FIXTURE");
+    assert.ok(report.warnings.some(warning => warning.includes("具体来源与方法见披露")));
+    assert.ok(report.warnings.every(warning => !warning.includes("卫星夜光产品")));
+  } finally { await h.service.onModuleDestroy(); }
+});
+
 test("concurrent cold requests coalesce; exact time, factual edits and catalog change invalidate their own inputs", async () => {
   const h = await setup();
   try {
