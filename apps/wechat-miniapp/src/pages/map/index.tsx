@@ -823,10 +823,12 @@ export default function MapPage() {
     };
   }, [pageVisible, terrain.data?.data, terrain.imagePath, terrainEnabled]);
   const terrainOverlayResult = useRef<(result: TerrainGroundOverlayResult) => void>(() => undefined);
-  terrainOverlayResult.current = ({ error, target }) => {
+  terrainOverlayResult.current = ({ error, target, isCurrent }) => {
     setTerrainNativeError(error);
     if (!error) return;
-    if (target) terrain.reportImageFailure(error, target.src);
+    if (target) void Taro.getImageInfo({ src: target.src }).catch(imageError => {
+      if (nativeMap.isCurrent() && isCurrent()) terrain.reportImageFailure(imageError, target.src);
+    });
     setAnnouncement("地形叠加未能显示，可在图层中重试。");
   };
   const terrainOverlayCoordinator = useMemo(() => {

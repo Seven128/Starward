@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+import ts from "typescript";
 import { createTerrainGroundOverlayCoordinator, type TerrainGroundOverlayTarget } from "./terrain-ground-overlay";
 
 const target = (src: string): TerrainGroundOverlayTarget => ({
@@ -10,6 +13,58 @@ const target = (src: string): TerrainGroundOverlayTarget => ({
   },
   opacity: 0.62,
   zIndex: 0,
+});
+
+test("native Map failure preserves the downloaded terrain image for its ordinary retry", async () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let callback: ts.Node | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isBinaryExpression(node) && node.left.getText(source) === "terrainOverlayResult.current") callback = node.right;
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  assert.ok(callback, "exercise the production Map result handler");
+  let imagePath: string | null = "/local/valid-terrain.png", nativeError: unknown = null, imageFailures = 0, announcement = "", imageReadable = true, delayImageRead = true;
+  let lateImageFailure: ((error: Error) => void) | undefined;
+  const onResult = vm.runInNewContext(ts.transpileModule(`(${callback.getText(source)});`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText, {
+    setTerrainNativeError: (error: unknown) => { nativeError = error; },
+    setAnnouncement: (text: string) => { announcement = text; },
+    Taro: { getImageInfo: async () => {
+      if (delayImageRead) return new Promise((_resolve, reject) => { lateImageFailure = reject; });
+      if (!imageReadable) throw new Error("image decode failed"); return { width: 512, height: 512 };
+    } },
+    nativeMap: { isCurrent: () => true },
+    terrain: { reportImageFailure: () => { imageFailures++; imagePath = null; } },
+  });
+  const failure = new Error("An object could not be cloned.");
+  let rejectNative = true, additions = 0;
+  const coordinator = createTerrainGroundOverlayCoordinator(91301, () => ({
+    addGroundOverlay: options => { additions++; if (rejectNative) return Promise.reject(failure); options.success(); },
+    updateGroundOverlay: options => { if (rejectNative) return Promise.reject(failure); options.success(); },
+    removeGroundOverlay: options => options.success(),
+  }), onResult);
+  await coordinator.apply(target(imagePath));
+  assert.equal(nativeError, failure);
+  assert.match(announcement, /重试/u);
+  assert.equal(imageFailures, 0, "a native publish rejection is not an image decode failure");
+  assert.equal(imagePath, "/local/valid-terrain.png");
+  rejectNative = false; delayImageRead = false;
+  await coordinator.apply(target(imagePath));
+  assert.equal(additions, 2);
+  assert.equal(nativeError, null);
+  lateImageFailure!(new Error("late old image read failure"));
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(imageFailures, 0, "an earlier failed attempt cannot evict the image after a successful retry");
+  assert.equal(imagePath, "/local/valid-terrain.png");
+  rejectNative = true; imageReadable = false;
+  await coordinator.apply(target(imagePath));
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(nativeError, failure);
+  assert.equal(imageFailures, 1, "confirmed image read failure still retires the bad local path");
+  assert.equal(imagePath, null);
+  await coordinator.dispose();
 });
 
 test("hidden cleanup failure is not reported as a visible terrain failure on return", async () => {

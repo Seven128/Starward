@@ -174,6 +174,7 @@ Rollback creates a bounded unique catalog version; HTTP routing must accept the 
 - 点位图固定北向/中心，以已有影像与Canvas/SVG等价机制绘制；不新增可漫游Map实例或方向手势。地形与光污染各有可见状态和图例，全部关闭仍保留方位/距离参照；覆盖掩膜来自各自真实来源，不由山脊背阴推断。两项状态不接管主地图LIGHT/TOTAL_CLOUD单选。
 - 正式点marker的主题与选中态资源由客户端`pages/map/map-markers.ts::formalSpotMarkerIconPath`统一选择，消费者为主地图与点位俯视地形的中心标记；三模式及普通/选中六种资源角色共用此owner，点位身份、坐标、聚合和尺寸继续由各自消费者持有。地形图面和相对光污染图例可分别校准观星模式亮度以保持参照与图例识读，图例保留来源给出的相对等级与次序，不将亮度显示转换当作新测量值或精确色键。
 - 主地图继续现有底图、WGS84→GCJ02边界及合法标识；地形使用WEAPP `MapContext.addGroundOverlay/updateGroundOverlay/removeGroundOverlay`串行维护单一有界影像，隐藏/卸载时清理，未堆数千polygons或换Web地图引擎。当前Taro转交原生context；`terrain-ground-overlay`同时接收success/fail回调及实际返回的Promise确认，沿用Map的10秒恢复窗口，不以void或尚未完成的Promise确认成功，返回的异步失败不会被丢弃。确认安装与未知资源清理分别持有，首装失败后普通重试重新add，移除失败保留清理义务。Taro声明式`groundOverlays`只支持支付宝，不能作为WEAPP实现。历史真机发布图与marker组合观察只覆盖当时候选，不认证随后全国数据/回调修复；当前数据、下载或来源标签不能代替实际原生绘制。
+- 原生地图指令失败由Map的叠加状态与重试owner处理，并通过`Taro.getImageInfo`核实失败目标的本地读图结果；桥接/指令拒绝本身不能清空可读图片缓存。读图回执绑定coordinator现有generation及当前Map实例，过时尝试不再影响当前图片；确认的本地读图失败及实际下载/解码失败仍由`useTerrainOverlay`的图片恢复owner退休对应路径并重新取得图片，保留旧路径晚到保护。
 - 检查关注坐标配准、地形与光污染图例/单位、年度版本、分项缺测、尺度准确性、快速缩放晚响应隔离及数据许可。发布manifest、BFF边界和客户端缓存/取消已有回归，真实Android WEAPP已观察原生地形叠加；VIIRS只在既有PostgreSQL真实格网可用时返回。当前无样点保证所有值误差<20%，单一真机和大湾区样本不证明任意地点、多设备性能或逐点精度。
 
 ### Plan expansion: observing interval, events and reminder checklists

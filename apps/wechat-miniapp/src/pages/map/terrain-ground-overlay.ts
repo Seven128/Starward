@@ -22,6 +22,7 @@ export interface TerrainGroundOverlayContext {
 export interface TerrainGroundOverlayResult {
   error: unknown | null;
   target: TerrainGroundOverlayTarget | null;
+  isCurrent(): boolean;
 }
 
 // Accept actual callbacks or a returned Promise; void alone is not success.
@@ -54,7 +55,8 @@ export function createTerrainGroundOverlayCoordinator(
     queue = queue.catch(() => undefined).then(() => {
       if (currentGeneration !== generation) return;
       const report = (error: unknown | null) => {
-        if (currentGeneration === generation && intent === "display") onResult({ error, target });
+        if (currentGeneration === generation && intent === "display") onResult({ error, target,
+          isCurrent: () => currentGeneration === generation });
       };
       if (!target && !needsCleanup) {
         report(null);
