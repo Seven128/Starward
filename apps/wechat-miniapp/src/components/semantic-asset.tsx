@@ -135,9 +135,9 @@ const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
   sun: "/assets/icons/sun.svg",
   moon: "/assets/icons/moon.svg",
   trash: "/content/assets/icons/trash-2.svg",
-  "wifi-off": "/assets/icons/wifi-off.svg",
+  "wifi-off": "/spot/assets/icons/wifi-off.svg",
   images: "/assets/icons/images.svg",
-  filter: "/assets/icons/filter.svg",
+  filter: "/spot/assets/icons/filter.svg",
 };
 
 const MODE_FILE: Record<DisplayMode, string> = {

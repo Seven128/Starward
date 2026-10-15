@@ -3,6 +3,7 @@ import { LoadingIndicator } from "@/components/loading-indicator";
 import type { DisplayMode, UserPreferences } from "@starward/miniapp-contracts";
 import { Button, Text, View } from "@tarojs/components";
 import type { SettingsSheetKind } from "./settings-sections";
+import type { LocationState } from "@/state/app-store";
 
 export type OpenSettingsSheet = SettingsSheetKind | "DELETE_FINAL";
 
@@ -30,9 +31,11 @@ export function SettingsSheet({
   mode,
   closing,
   locationPreference,
+  locationState,
   busy,
   close,
   selectLocation,
+  openLocation,
   advanceDelete,
   confirmCache,
   confirmExport,
@@ -42,9 +45,11 @@ export function SettingsSheet({
   mode: DisplayMode;
   closing: boolean;
   locationPreference: UserPreferences["locationPreference"];
+  locationState: LocationState;
   busy: boolean;
   close: () => void;
   selectLocation: (value: UserPreferences["locationPreference"]) => void;
+  openLocation: () => void;
   advanceDelete: () => void;
   confirmCache: () => void;
   confirmExport: () => void;
@@ -54,7 +59,9 @@ export function SettingsSheet({
     : sheet === "DELETE" ? "删除账户"
     : sheet === "DELETE_FINAL" ? "确认删除账户？"
     : CONTENT[sheet].title;
-  const body = sheet === "LOCATION" ? "仅在使用附近地点时询问定位权限，也可以一直手动选择地点。"
+  const body = sheet === "LOCATION" ? locationState === "DENIED"
+    ? "定位权限未开启，可继续手动浏览地图。"
+    : "仅获取一次当前位置，用于查找附近观星点。"
     : sheet === "DELETE" ? "账户资料、偏好、个人计划与相关个人数据将被删除。公共观星点所需的审核记录会去标识化保留。"
     : sheet === "DELETE_FINAL" ? "此操作不可撤销。再次进入时，将按新账户开始。"
     : sheet === "EXPORT" && mode === "OBSERVATION"
@@ -72,7 +79,9 @@ export function SettingsSheet({
       </View>
       <Text className="settings-sheet__body">{body}</Text>
 
-      {sheet === "LOCATION" ? <View className="settings-sheet__choices">
+      {sheet === "LOCATION" ? <>
+        <Text className="type-meta" style={mode === "DAY" ? { color: "#6c7b88" } : {}}>不会持续定位，也不会公开你的实时位置。</Text>
+        <View className="settings-sheet__choices">
         {(["ASK_ONCE", "MANUAL_ONLY"] as const).map((value) => {
           const selected = locationPreference === value;
           return <Button key={value} id={`settings-location-${value === "ASK_ONCE" ? "ask-once" : "manual-only"}`}
@@ -82,7 +91,14 @@ export function SettingsSheet({
             {selected ? <SemanticIcon name={mode === "DAY" ? "settings-choice-check" : "check"} /> : null}
           </Button>;
         })}
-      </View> : <View className="settings-sheet__actions">
+        </View>
+        <View className="settings-sheet__actions">
+          <Button className="settings-sheet__secondary focus-ring" onClick={close}>手动浏览</Button>
+          <Button className="settings-sheet__primary settings-sheet__primary--ready focus-ring" onClick={openLocation}>
+            {locationState === "DENIED" ? "查看权限设置" : "获取本次位置"}
+          </Button>
+        </View>
+      </> : <View className="settings-sheet__actions">
         {sheet === "DIRECTION" || sheet === "PRECISE" ?
           <Button className="settings-sheet__primary settings-sheet__primary--ready focus-ring" onClick={close}>知道了</Button> : <>
             <Button className="settings-sheet__secondary focus-ring" disabled={busy} onClick={close}>

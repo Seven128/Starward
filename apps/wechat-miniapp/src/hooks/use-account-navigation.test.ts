@@ -44,7 +44,7 @@ function mount() {
     return module.exports;
   };
   const module = load("./use-account-navigation.ts") as { useAccountNavigation: (o: string | null) => {
-    open: (url: string, feedback?: Feedback) => Promise<void>; navigationError: boolean;
+    open: (url: string, feedback?: Feedback, authenticatedOwner?: string) => Promise<void>; navigationError: boolean;
   } };
   const render = () => { effectIndex = 0; return module.useAccountNavigation(owner); };
   const switchOwner = (next: string | null) => {
@@ -55,12 +55,27 @@ function mount() {
   };
   render();
   return { calls, listeners, open: (url = "/content/plan/detail/index?planId=a", feedback?: Feedback) => render().open(url, feedback),
+    capture: render,
     failed: () => render().navigationError, switchOwner,
     hide: () => hide(), show: () => show(), unmount: () => cleanups.forEach(cleanup => cleanup()),
     mismatch: () => { identity = "b"; }, leavePage: () => { page = {}; }, emptyStack: () => { page = null; },
     throwDispatch: (value: boolean) => { dispatchThrows = value; },
   };
 }
+
+test("a guest entry can resume after its explicit login without authorizing a stale account entry", async () => {
+  const page = mount();
+  page.switchOwner(null);
+  const guest = page.capture();
+  page.switchOwner("a");
+  const resumed = guest.open("/content/plan/list/index", undefined, "a");
+  assert.equal(page.calls.length, 1);
+  page.calls[0]!.succeed(); await resumed;
+  const oldAccount = page.capture();
+  page.switchOwner("b");
+  await oldAccount.open("/content/plan/list/index", undefined, "b");
+  assert.equal(page.calls.length, 1, "the bootstrap allowance cannot override a previously bound identity");
+});
 
 test("normal failure is visible, can retry, and same-attempt repeat is bounded", async () => {
   const page = mount();

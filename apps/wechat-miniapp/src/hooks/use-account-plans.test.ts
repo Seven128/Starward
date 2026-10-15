@@ -108,12 +108,15 @@ test("native and bound identities must agree before private cache is exposed", (
   assert.equal(page.read().query.data, undefined);
 });
 
-test("unresolved identity discovery still uses the existing plan/session owner", async () => {
+test("visitor private readers and explicit refresh do not establish an identity", async () => {
   const page = mount();
   page.switchTo(null);
   await page.read().query.refetch();
-  assert.equal(page.calls[0]?.expected, undefined);
-  assert.equal(page.read().owner, "new");
+  assert.equal(page.options().enabled, false);
+  assert.equal(page.calls.length, 0);
+  assert.equal(page.read().owner, null);
+  page.switchTo("new");
+  assert.equal(page.options().enabled, true);
   assert.equal(page.options().queryKey[1], "new");
 });
 

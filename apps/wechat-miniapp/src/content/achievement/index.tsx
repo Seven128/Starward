@@ -1,5 +1,6 @@
 import { SystemMotionProbe } from "@/components/system-motion-probe";
-import { useDidHide, useDidShow } from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
+import { AccountEntry } from "../account-entry";
 import { Button, Picker, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useMemo, useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
@@ -12,14 +13,18 @@ import { achievementSummary, endedPlanRecords, nextPlanEndAt } from "@/features/
 import { useAccountNavigation } from "@/hooks/use-account-navigation";
 import "./index.scss";
 
-export default function AchievementPage() {
+export default function AchievementRoute() {
+  return <AccountEntry title="计划回顾"><AchievementPage /></AccountEntry>;
+}
+
+function AchievementPage() {
   const themeClass = useThemeClass();
   const [now, setNow] = useState(() => new Date());
   const [visible, setVisible] = useState(true);
   const [year, setYear] = useState<number | null>(null);
   const { owner, query: plans } = useAccountPlans({ enabled: visible, staleTime: 30_000 });
   const { open, navigationError } = useAccountNavigation(owner);
-  useDidShow(() => { setVisible(true); setNow(new Date()); void plans.refetch(); });
+  useDidShow(() => { setVisible(true); setNow(new Date()); if (owner) void plans.refetch(); });
   useDidHide(() => setVisible(false));
   useEffect(() => {
     if (!visible || !plans.data) return;
@@ -41,7 +46,9 @@ export default function AchievementPage() {
     <ScrollView scrollY enhanced showScrollbar={false} className="achievement-page__scroll">
       <View className="achievement-page__content page-inset safe-bottom">
         <View className="achievement-page__heading"><Text className="type-page-title">计划回顾</Text><Text className="type-secondary">查看已结束的观星计划</Text></View>
-        {plans.isPending && !plans.data ? <StatusPanel state="LOADING" detail="正在读取观星计划。" /> : null}
+        {!owner ? <StatusPanel state="PERMISSION_DENIED" title="请先登录" detail="登录后查看计划回顾。" recoveryLabel="返回我的"
+          onRecover={() => void Taro.switchTab({ url: "/pages/my/index" })} /> :
+          plans.isPending && !plans.data ? <StatusPanel state="LOADING" detail="正在读取观星计划。" /> : null}
         {plans.isError && !plans.data ? <StatusPanel state="ERROR" detail="计划暂时无法读取，回顾统计未更新。" recoveryLabel="重试" onRecover={() => void plans.refetch()} /> : null}
         {plans.data ? <>
           {plans.refreshError || plans.data.dataState === "STALE_USABLE" ? <StatusPanel state="STALE" detail="计划暂未同步，以下是上次读取的统计。" recoveryLabel="重试" onRecover={() => void plans.refetch()} /> : null}

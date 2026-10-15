@@ -57,6 +57,8 @@ function render({ initialOwner = "synthetic:A" as string | null, deferredApi = f
       return new Promise<void>((resolve, reject) => shares.push({ resolve, reject }));
     } },
     useThemeClass: () => "theme-day", useReducedMotion: () => false, useAppStore: store,
+    useWechatLogin: () => ({ open: false, dialog: null, requireAccount() {} }),
+    usePageNavigation: () => ({ retire() {} }),
     usePreferencesSync: () => ({ updatePreference() {}, syncNow() {}, status: "" }),
     useState: (initial: unknown) => [initial, (value: unknown) => events.push({ kind: "state", state: value })],
     useRef: (current: unknown) => ({ current }),

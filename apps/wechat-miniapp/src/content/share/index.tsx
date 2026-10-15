@@ -11,7 +11,8 @@ import { SharePoster } from "@/components/share-poster";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { usePageNavigation } from "@/hooks/use-page-navigation";
 import { useAccountOperation } from "@/hooks/use-account-operation";
-import { createPlanShare, getSharedPlan, getSharedSpot, MiniappApiError } from "@/services/api-client";
+import { useWechatLogin } from "@/hooks/use-wechat-login";
+import { createPlanShare, currentDraftUserId, getSharedPlan, getSharedSpot, MiniappApiError } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
 import { planSpotRiskMessage } from "@/utils/public-share-copy";
@@ -19,7 +20,7 @@ import { remainingPublicPlanLifetimeMs } from "./share-lifetime";
 import "./index.scss";
 
 type Shared = PlanPublicShareData | SpotPublicShareData;
-type ShareState = { kind: "loading" } | { kind: "missing" } | { kind: "error" } |
+type ShareState = { kind: "loading" } | { kind: "login" } | { kind: "missing" } | { kind: "error" } |
   { kind: "ready"; data: Shared; path: string; expiresInMs?: number };
 
 function decode(value: string | undefined): string {
@@ -52,6 +53,7 @@ export default function SharedJourneyPage() {
   const creationRequest = useRef<{ current(): boolean; cancel(): void } | null>(null);
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigation = usePageNavigation();
+  const login = useWechatLogin();
 
   useDidShow(() => {
     const wasVisible = pageVisible.current;
@@ -117,6 +119,10 @@ export default function SharedJourneyPage() {
       };
     }
     const privateCreation = Boolean(planId && !token && !spotId);
+    if (privateCreation && !currentDraftUserId()) {
+      setState({ kind: "login" });
+      return () => request.cancel();
+    }
     const creation = privateCreation ? creationOperations.begin({ allowAuthentication: true }) : undefined;
     if (creation) creationRequest.current = request;
     const showPlan = (response: Awaited<ReturnType<typeof getSharedPlan>>, publicToken: string, requestStartedAtMs: number) => {
@@ -192,11 +198,14 @@ export default function SharedJourneyPage() {
   };
   return <><SystemMotionProbe /><View className={`${themeClass} shared-journey`}>
     <FloatingNotificationHost />
+    {login.dialog}
     <CustomNav title={shareTitle} back backFallbackTab="/pages/map/index" />
     <ScrollView scrollY enhanced showScrollbar={false} className="shared-journey__scroll">
       <View className="shared-journey__content page-inset safe-bottom">
         {navigation.navigationError ? <StatusPanel state="ERROR" title="地图暂未打开" detail="请重试返回地图。" recoveryLabel="重试" onRecover={openMap} /> : null}
         {state.kind === "loading" ? <StatusPanel state="LOADING" detail="正在读取公开分享内容。" /> : null}
+        {state.kind === "login" ? <StatusPanel state="PERMISSION_DENIED" title="请先登录" detail="登录后准备这份计划的公开分享。"
+          recoveryLabel="微信快捷登录" onRecover={() => login.requireAccount(() => setAttempt(value => value + 1))} /> : null}
         {state.kind === "missing" ? <StatusPanel state="ERROR" title="分享不可用" detail="这份分享已失效、被删除或暂不公开。" recoveryLabel="返回地图" onRecover={openMap} /> : null}
         {state.kind === "error" ? <StatusPanel state="ERROR" detail="分享内容暂时无法获取，请检查网络后重试。" recoveryLabel="重试" onRecover={() => setAttempt(value => value + 1)} /> : null}
         {data ? <>

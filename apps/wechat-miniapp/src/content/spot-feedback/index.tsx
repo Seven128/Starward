@@ -1,4 +1,5 @@
 import { SystemMotionProbe } from "@/components/system-motion-probe";
+import { AccountEntry } from "../account-entry";
 import { LoadingIndicator } from "@/components/loading-indicator";
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
@@ -74,7 +75,11 @@ function mediaKindOf(feedback: NonNullable<ContributionSubmission["formalFeedbac
   return (["parking", "toilet", "site"] as const).find(kind => formalFeedbackFrozenView(feedback).proposal.media[kind]?.includes(uploadId)) ?? "site";
 }
 
-export default function FormalFeedbackEditor() {
+export default function FormalFeedbackPage() {
+  return <AccountEntry title="反馈现场情况"><FormalFeedbackEditor /></AccountEntry>;
+}
+
+function FormalFeedbackEditor() {
   const router = useRouter();
   const spotId = decodeURIComponent(router.params.spotId ?? "");
   const spotName = decodeURIComponent(router.params.spotName ?? "");

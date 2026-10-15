@@ -2,10 +2,12 @@ import { useId, useState } from "react";
 import { useDidShow } from "@tarojs/taro";
 import { currentDraftUserId, getContributions } from "@/services/api-client";
 import { useResourceQuery } from "./use-resource-query";
+import { useAppStore } from "@/state/app-store";
 
 /** Private history is never cached under a shared anonymous/accountless key. */
 export function useContributionHistory(enabled = true) {
   const mountId = useId();
+  useAppStore(state => state.accountOwnerId);
   const [, refreshIdentity] = useState(0);
   useDidShow(() => refreshIdentity((value) => value + 1));
   const owner = currentDraftUserId();
@@ -14,6 +16,6 @@ export function useContributionHistory(enabled = true) {
     queryFn: (signal) => getContributions(signal, owner ?? undefined),
     staleTime: 10_000,
     throwOnRefetchError: true,
-    enabled,
+    enabled: enabled && Boolean(owner),
   });
 }

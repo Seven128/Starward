@@ -17,12 +17,16 @@ export function useAccountNavigation(owner: string | null) {
       }
     });
   }, []);
-  const open = (url: string, feedback?: NavigationFeedback) => {
+  const open = (url: string, feedback?: NavigationFeedback, authenticatedOwner?: string) => {
+    // A login may finish before the guest render receives its null→account
+    // update. Only that bootstrap may supply the just-confirmed identity.
+    if (owner && authenticatedOwner && owner !== authenticatedOwner) return;
+    const initiatingOwner = owner ?? authenticatedOwner ?? null;
     const reset = useAppStore.getState().mapResetVersion;
     const attempt = navigation.begin({ valid: () => {
       const state = useAppStore.getState();
-      return currentDraftUserId() === owner &&
-        state.accountOwnerId === owner && state.mapResetVersion === reset;
+      return currentDraftUserId() === initiatingOwner &&
+        state.accountOwnerId === initiatingOwner && state.mapResetVersion === reset;
     } });
     if (!attempt) return;
     const failed = () => {

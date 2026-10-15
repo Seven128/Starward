@@ -838,8 +838,9 @@ export const useAppStore = create<AppState>((set, get) => {
     },
     bindAccount(ownerId) {
       if (get().accountOwnerId === ownerId) return;
-      get().retireObservationContextEdit();
-      const previous = get();
+      // Native identity is already committed. Publish its projection atomically;
+      // an intermediate retirement notification would expose a half-bound login.
+      const previous = { ...get(), ...retireContextEdit(get()) };
       if (previous.accountOwnerId) {
         try {
           Taro.setStorageSync(ACCOUNT_STORAGE_PREFIX + previous.accountOwnerId, persisted(previous));

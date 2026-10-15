@@ -16,6 +16,7 @@ import { StatusPanel } from "@/components/status-panel";
 import { FavoriteStar } from "@/components/selected-card-star";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useFavoriteMutation } from "@/hooks/use-favorite-mutation";
+import { useWechatLogin } from "@/hooks/use-wechat-login";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { useSpotNavigationCommand } from "@/hooks/use-spot-navigation";
 import { currentNavigationResource, currentNavigationSiteResource } from "@/navigation/spot-navigation-controller";
@@ -100,6 +101,7 @@ export function SpotDetailPage({
   const [mapReturnFailed, setMapReturnFailed] = useState(false);
   const favoriteIds = useAppStore((state) => state.favoriteIds);
   const { toggleFavorite } = useFavoriteMutation();
+  const login = useWechatLogin();
   const notify = useAppStore((state) => state.notify);
   const storedObservationContext = useAppStore(
     (state) => state.observationContext,
@@ -263,6 +265,7 @@ export function SpotDetailPage({
     >
       <FloatingNotificationHost />
       {navigationHandoff.warning}
+      {login.dialog}
       <CustomNav
         title={segment === "GUIDES" ? "观星攻略" : segment === "SITE" ? "场地资料" : "地点概览"}
         back
@@ -272,7 +275,8 @@ export function SpotDetailPage({
               className={`spot-favorite-action focus-ring${favorite ? " spot-favorite-action--active" : ""}`}
               data-od-id="spot-detail-favorite"
               ariaLabel={`${favorite ? "取消收藏" : "收藏"}${detail.spot.name}`}
-              onClick={() => void toggleFavorite(detail.spot.spotId)}
+              onClick={() => login.requireAccount(() => void toggleFavorite(detail.spot.spotId),
+                () => navigationScope.current === scope)}
             >
               <FavoriteStar active={favorite} />
             </Button>

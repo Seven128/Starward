@@ -10,6 +10,8 @@ import { NotificationRegion } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { usePreferencesSync } from "@/hooks/use-preferences-sync";
+import { useWechatLogin } from "@/hooks/use-wechat-login";
+import { usePageNavigation } from "@/hooks/use-page-navigation";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import {
   deleteAccount as deleteAccountThroughApi,
@@ -54,9 +56,12 @@ function removeJsonFile(filePath: string) {
 }
 
 export default function SettingsPage() {
+  const login = useWechatLogin({ nativeBack: false });
+  const navigation = usePageNavigation();
   const themeClass = useThemeClass();
   const reducedMotion = useReducedMotion();
   const preferences = useAppStore((state) => state.preferences);
+  const locationState = useAppStore((state) => state.locationState);
   const mode = useAppStore((state) => state.mode);
   const setMode = useAppStore((state) => state.setMode);
   const enterObservation = useAppStore((state) => state.enterObservation);
@@ -97,6 +102,8 @@ export default function SettingsPage() {
   useEffect(() => {
     pageAlive.current = true;
     const unsubscribe = useAppStore.subscribe((state, previous) => {
+      if (state.accountOwnerId !== previous.accountOwnerId || state.mapResetVersion !== previous.mapResetVersion)
+        navigation.retire();
       if (cacheAttempt.current && state.accountOwnerId !== previous.accountOwnerId)
         cacheAttempt.current.active = false;
       const deletion = deletionAttempt.current;
@@ -385,6 +392,10 @@ export default function SettingsPage() {
 
   const openSheet = (kind: SettingsSheetKind) => {
     if (accountActionPending.current) return;
+    if ((kind === "EXPORT" || kind === "DELETE") && !currentDraftUserId()) {
+      login.requireAccount(() => openSheet(kind));
+      return;
+    }
     if (sheetCloseTimer.current) clearTimeout(sheetCloseTimer.current);
     sheetCloseTimer.current = null;
     setSheetClosing(false);
@@ -399,6 +410,25 @@ export default function SettingsPage() {
       setSheetClosing(false);
     }, reducedMotion ? 0 : 180);
   };
+  const openLocation = async () => {
+    const owner = currentDraftUserId();
+    const reset = useAppStore.getState().mapResetVersion;
+    const attempt = navigation.begin({ valid: () => {
+      const identity = currentDraftUserId();
+      const state = useAppStore.getState();
+      return identity === owner && state.accountOwnerId === owner && state.mapResetVersion === reset;
+    } });
+    if (!attempt) return;
+    try {
+      const action = locationState === "DENIED" ? "settings" : "locate";
+      await Taro.navigateTo({ url: "/pages/auth/index", success: result => {
+        if (attempt.completed()) result.eventChannel.emit("locationIntent", action);
+      } });
+    } catch {
+      if (attempt.active()) notify({ owner: "settings", placement: "floating", tone: "warning",
+        title: "定位与隐私暂未打开，请重试", body: "", dismissible: true, dedupeKey: "settings-location-navigation" });
+    } finally { attempt.release(); }
+  };
 
   return (
     <><SystemMotionProbe /><View
@@ -407,13 +437,15 @@ export default function SettingsPage() {
       data-od-id="my-settings"
     >
       <FloatingNotificationHost />
-      <NativeBackBoundary active={Boolean(sheet)} onBack={closeSheet} />
+      {login.dialog}
+      <NativeBackBoundary active={login.open || Boolean(sheet)} onBack={login.open ? login.back : closeSheet} />
       <CustomNav
         title="设置"
         back
         backOdId="my-settings-back-action"
         backFallbackTab="/pages/my/index"
         beforeBack={() => {
+          if (login.open) { login.back(); return false; }
           if (!sheet || accountActionPending.current) return !accountActionPending.current;
           closeSheet();
           return false;
@@ -450,7 +482,11 @@ export default function SettingsPage() {
           <SettingsControls
             preferences={preferences}
             mode={mode}
-            updatePreference={updatePreference}
+            updatePreference={(key, value) => {
+              if (key === "departureConditionReminder" || key === "contributionStatusReminder")
+                login.requireAccount(() => updatePreference(key, value));
+              else updatePreference(key, value);
+            }}
             selectDisplayMode={selectDisplayMode}
             onModeGestureCapture={setModeGestureCaptured}
             openSheet={openSheet}
@@ -459,11 +495,12 @@ export default function SettingsPage() {
           <SettingsDataActions dataAction={dataAction} openSheet={openSheet} />
         </View>
       </ScrollView>
-      {sheet ? <SettingsSheet sheet={sheet} mode={mode} locationPreference={preferences.locationPreference}
+      {sheet ? <SettingsSheet sheet={sheet} mode={mode} locationPreference={preferences.locationPreference} locationState={locationState}
         closing={sheetClosing}
         busy={dataAction !== null}
         close={closeSheet}
         selectLocation={(value) => { updatePreference("locationPreference", value); closeSheet(); }}
+        openLocation={() => void openLocation()}
         advanceDelete={() => setSheet("DELETE_FINAL")}
         confirmCache={() => void clearCache()}
         confirmExport={() => void downloadAccountData()}

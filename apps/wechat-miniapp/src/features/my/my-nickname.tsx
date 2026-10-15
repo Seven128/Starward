@@ -11,7 +11,7 @@ import { useAccountOperation } from "@/hooks/use-account-operation";
 import { retainPrimaryNavigationCover } from "@/navigation/primary-navigation-cover";
 
 /** Saved identity is server-owned; a failed edit stays a draft until explicit retry. */
-export function MyNickname({ owner }: { owner: string | null }) {
+export function MyNickname({ owner, onLogin }: { owner: string | null; onLogin?: () => void }) {
   const profile = useResourceQuery({
     queryKey: ["account-profile", owner], enabled: Boolean(owner),
     queryFn: signal => getAccountProfile(owner!, signal), staleTime: 30_000,
@@ -90,8 +90,8 @@ export function MyNickname({ owner }: { owner: string | null }) {
   };
   return <View className="profile-summary__copy">
     <NativeBackBoundary active={editorVisible} onBack={cancel} />
-    <Button className="my-nickname focus-ring" aria-label="修改昵称" onClick={() => void edit()}>
-      <Text className="type-section">{profile.data?.data.nickname ?? (profile.isError ? "资料暂不可用" : profile.isPending ? "正在加载" : "设置昵称")}</Text>
+    <Button className="my-nickname focus-ring" aria-label={owner ? "修改昵称" : "微信快捷登录"} onClick={() => owner ? void edit() : onLogin?.()}>
+      <Text className="type-section">{!owner ? "微信快捷登录" : profile.data?.data.nickname ?? (profile.isError ? "资料暂不可用" : profile.isPending ? "正在加载" : "设置昵称")}</Text>
       <SemanticIcon name="pencil" />
     </Button>
     {editorVisible ? <View className="modal-scrim my-nickname-overlay" onClick={cancel}>

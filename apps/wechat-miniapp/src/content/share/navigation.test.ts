@@ -61,6 +61,7 @@ function mount(kind: "SPOT" | "PLAN" | "MISSING") {
       if (name === "./account-operation") return { createAccountOperationOwner };
       if (name === "@tarojs/components") return { View: "View", Text: "Text", Button: "Button", ScrollView: "ScrollView" };
       if (name.endsWith("use-theme")) return { useMotionThemeClass: () => "theme-day" };
+      if (name.endsWith("use-wechat-login")) return { useWechatLogin: () => ({ dialog: null, requireAccount: () => assert.fail("public receivers must stay anonymous") }) };
       if (name.endsWith("app-store")) return { useAppStore: appStore };
       if (name.endsWith("api-client")) return { getSharedSpot: async () => ({ data }), getSharedPlan: async () => ({ data, generatedAt: new Date().toISOString() }), MiniappApiError: Error,
         currentDraftUserId: () => accountState.accountOwnerId };

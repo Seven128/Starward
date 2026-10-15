@@ -8,6 +8,7 @@ import { DEFAULT_USER_PREFERENCES, EMPTY_FILTER_STATE, cloneFilterState } from "
 import * as transitions from "./app-transitions";
 import * as notifications from "./notification";
 import type { useAppStore } from "./app-store";
+import { createAccountOperationOwner } from "../hooks/account-operation";
 
 const validObservationContext = {
   schemaVersion: "observation-context-v2",
@@ -81,6 +82,23 @@ function loadStore(storage: { value: unknown; failWrites?: boolean; session?: un
   }, { timeout: 1000 });
   return { store: exports.useAppStore as typeof useAppStore, flush: () => { while (scheduled.length) scheduled.shift()!(); }, storage };
 }
+
+test("real account binding publishes one verified identity so an explicit login can resume its task", () => {
+  const storage = { value: {}, session: null as null | { userId: string } };
+  const { store } = loadStore(storage);
+  const page = {};
+  const operations = createAccountOperationOwner(() => ({
+    userId: storage.session?.userId ?? null, ownerId: store.getState().accountOwnerId,
+    reset: store.getState().mapResetVersion, page, target: "wechat-login",
+  }), () => {});
+  const unsubscribe = store.subscribe(operations.observe);
+  const operation = operations.begin({ allowAuthentication: true })!;
+  storage.session = { userId: "user:a" };
+  store.getState().bindAccount("user:a");
+  assert.equal(operation.isCurrent(), true);
+  operation.authenticate();
+  unsubscribe();
+});
 
 test("a departed edit retires its writable identity synchronously and a late completion cannot revive it", () => {
   const { store, storage } = loadStore({ value: { accountOwnerId: "user:test", observationContext: validObservationContext } });
@@ -231,6 +249,7 @@ test("missing or unreadable auth hides mounted private state and same-account re
     let unreadable = false;
     const run = vm.runInNewContext(ts.transpileModule(installationOwner.getText(api) + "\n" + code + "\nensureFavoriteOwner;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
       SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, erasedStoredAccountIds: new Set(), invalidatedStoredSession: null, sessionPromise: null,
+      sessionLoginChoice: "WECHAT", // This case starts from an already authorized account.
       useAppStore: store, requestOperation: async () => { throw Error("synthetic offline"); },
       Taro: { getStorageSync: () => { if (unreadable) throw Error("synthetic read failed"); return storage.session; } },
     }) as () => Promise<string>;

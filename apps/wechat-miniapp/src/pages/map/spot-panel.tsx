@@ -182,6 +182,7 @@ export function SpotInformationPanel({
   onRecover,
   onSkyRecover,
   onFavorite,
+  requireAccount,
   onShare,
   onCloud,
   onNavigate,
@@ -242,6 +243,7 @@ export function SpotInformationPanel({
   onRecover: () => void;
   onSkyRecover: () => void;
   onFavorite: () => void;
+  requireAccount: ReturnType<typeof import("@/hooks/use-wechat-login").useWechatLogin>["requireAccount"];
   onShare: () => void;
   onCloud: () => void;
   onNavigate: () => void;
@@ -540,7 +542,7 @@ export function SpotInformationPanel({
             </View>
           </View>
 
-          <SpotPlanEntry spotId={effectiveSpot.spotId} onLayoutChange={onLayoutChange} />
+          <SpotPlanEntry spotId={effectiveSpot.spotId} onLayoutChange={onLayoutChange} requireAccount={requireAccount} />
 
           {contextPending ? <StatusPanel state="LOADING" detail="正在读取地点资料" recoveryLabel="取消" onRecover={onLoadingCancel} /> : null}
           {contextError ? <StatusPanel

@@ -18,13 +18,14 @@ export function useAccountResourceQuery<T>(
   const query = useResourceQuery({
     queryKey: [resource, owner ?? `unresolved:${mountId}`],
     queryFn: signal => read(signal, owner ?? undefined),
-    enabled,
-    // An unresolved request can establish identity, but is never its cache.
+    enabled: enabled && Boolean(owner),
+    // Only the explicit shortcut-login owner establishes a visitor's identity.
     staleTime: owner ? staleTime : 0,
   });
-  if (!owner && query.data) return {
+  if (!owner) return {
     owner,
-    query: { ...query, data: undefined, refreshError: undefined, isPending: true as const },
+    query: { ...query, data: undefined, refreshError: undefined, error: null, isError: false as const,
+      isPending: true as const, refetch: async () => undefined },
   };
   return { owner, query };
 }

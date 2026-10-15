@@ -10,10 +10,10 @@ import { SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
 import { useAccountResourceQuery } from "@/hooks/use-account-resource-query";
 import { useAccountNavigation } from "@/hooks/use-account-navigation";
+import { useWechatLogin } from "@/hooks/use-wechat-login";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { usePrimaryNavigation } from "@/hooks/use-primary-navigation";
 import {
-  errorMessage,
   currentDraftUserId,
   getUserLibrary,
 } from "@/services/api-client";
@@ -46,6 +46,7 @@ export function MyLibraryPage() {
   const { notify, replacePlans, applyServerPreferences } = useAppStore.getState();
   const { owner: libraryOwner, query: library } = useAccountResourceQuery("user-library", getUserLibrary);
   const navigation = useAccountNavigation(libraryOwner);
+  const login = useWechatLogin();
   useDidShow(() => {
     const owner = currentDraftUserId();
     if (!owner) return;
@@ -55,7 +56,7 @@ export function MyLibraryPage() {
     });
   });
   const plans = library.data?.data.plans ?? [];
-  const unavailable = library.isError || !!library.refreshError;
+  const unavailable = library.isError || !!library.refreshError || library.data?.dataState === "STALE_USABLE";
 
   useEffect(() => {
     if (!library.data || !libraryOwner || currentDraftUserId() !== libraryOwner ||
@@ -69,7 +70,7 @@ export function MyLibraryPage() {
     replacePlans,
   ]);
 
-  const openPage = (url: string, label: string, entry: string) => {
+  const navigatePage = (url: string, label: string, entry: string, authenticatedOwner?: string) => {
     const diagnostic = "my-" + entry + "-navigation";
     const dedupeKey = diagnostic + "-failed";
     const prior = useAppStore.getState().notifications.filter(
@@ -87,10 +88,12 @@ export function MyLibraryPage() {
         notify({ owner: "my", placement: "floating", tone: "warning",
           title: label + "暂未打开", body: "请稍后重试，当前内容已保留。", dismissible: true, dedupeKey });
       }
-    });
+    }, authenticatedOwner);
   };
+  const openPage = (url: string, label: string, entry: string) =>
+    login.requireAccount(owner => { void navigatePage(url, label, entry, owner); });
   const openSettings = () =>
-    openPage("/content/settings/index", "设置", "settings");
+    navigatePage("/content/settings/index", "设置", "settings");
   const openPlan = () => openPage("/content/plan/list/index", "观星计划", "plan");
   const openAchievements = () => openPage("/content/achievement/index", "计划回顾", "achievements");
   const openContribution = () =>
@@ -103,6 +106,7 @@ export function MyLibraryPage() {
       data-od-id="my-account-center"
     >
       <FloatingNotificationHost />
+      {login.dialog}
       <View data-control="my-account-header">
         <CustomNav title="" odId="my-account-header" />
       </View>
@@ -115,14 +119,6 @@ export function MyLibraryPage() {
         <View className="my-content page-inset">
           {navigation.navigationError ? <StatusPanel state="ERROR" title="页面暂未打开"
             detail="请稍后重试当前入口。" /> : null}
-          {unavailable || library.data?.dataState === "STALE_USABLE" ? (
-            <StatusPanel
-              state={library.data ? "STALE" : "ERROR"}
-              detail={library.data ? "账户资料尚未确认最新状态，暂时显示上次记录。" : `账户资料暂不可用：${errorMessage(library.error)}。计划与偏好尚未同步。`}
-              recoveryLabel="重试同步"
-              onRecover={() => void library.refetch()}
-            />
-          ) : null}
           <View
             className="profile-summary"
             data-od-id="my-profile-summary"
@@ -131,13 +127,14 @@ export function MyLibraryPage() {
             aria-label="个人资料摘要"
           >
             <View className="profile-summary__header">
-              <MyAvatar owner={libraryOwner} />
-              <MyNickname owner={libraryOwner} />
+              <MyAvatar owner={libraryOwner} onLogin={() => login.requireAccount()} />
+              <MyNickname owner={libraryOwner} onLogin={() => login.requireAccount()} />
               <Button className="my-settings-gear focus-ring" data-od-id="my-settings-action" data-control="my-settings-action" aria-label="打开设置" onClick={openSettings}><SemanticIcon name="settings" /></Button>
             </View>
             <View className="my-focus-actions" data-od-id="my-focus-actions">
               <MyPlanCard plans={plans} spots={library.data?.data.planSpots ?? []} now={now}
-                loading={library.isPending} unavailable={unavailable}
+                guest={!libraryOwner} loading={Boolean(libraryOwner && library.isPending)} unavailable={unavailable}
+                onRetry={() => void library.refetch()}
                 onOpenAll={openPlan}
                 onOpen={(plan) => void openPage("/content/plan/detail/index?planId=" + encodeURIComponent(plan.planId), "观星计划", "plan")} />
               <Button className="routine-entry routine-entry--achievements focus-ring" ariaLabel="打开计划回顾" onClick={openAchievements}>
@@ -167,12 +164,6 @@ export function MyLibraryPage() {
               </Button>
             </View>
           </View>
-          {library.isPending ? (
-            <StatusPanel
-              state="LOADING"
-              detail="正在回读计划与偏好；账户摘要保持可用。"
-            />
-          ) : null}
         </View>
       </ScrollView>
     </View>

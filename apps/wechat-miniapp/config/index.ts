@@ -33,7 +33,7 @@ const retainedLegacyIconFiles = [
   "arrow-left-light.png", "bulb-night.svg", "bulb-observation.svg",
   "chevron-right-night.svg", "chevron-right-observation.svg",
   "cloud-night.svg", "cloud-observation.svg", "draft-marker.png", "eye-night.svg",
-  "eye-observation.svg", "filter-night.svg", "filter-observation.svg",
+  "eye-observation.svg",
   "formal-spot-marker-night.png", "formal-spot-marker-observation.png",
   "formal-spot-marker-selected-night.png", "formal-spot-marker-selected-observation.png",
   "images-night.svg", "images-observation.svg", "pencil-night.svg",
@@ -42,14 +42,14 @@ const retainedLegacyIconFiles = [
   "tab-map-night.png", "tab-map-observation.png", "tab-map-selected-night.png",
   "tab-map-selected-observation.png", "tab-my-night.png", "tab-my-observation.png",
   "tab-my-selected-night.png", "tab-my-selected-observation.png",
-  "wifi-off-night.svg",
-  "wifi-off-observation.svg",
   "sun-night.svg", "sun-observation.svg", "moon-night.svg", "moon-observation.svg",
   "telescope-night.svg", "telescope-observation.svg",
   "my-plan-chevron-header.svg", "my-plan-chevron-row.svg",
   "map-layer-choice-check.svg",
   "terrain-toggle-check.png",
 ] as const;
+// Search is in the spot package; these legacy filter glyphs have no main-page consumers.
+const spotIconFiles = ["filter-night.svg", "filter-observation.svg", "wifi-off-night.svg", "wifi-off-observation.svg"];
 // SVG assets used only by content pages, including adopted DAY line glyphs.
 const contentIconFiles = [
   "settings-choice-check.svg",
@@ -259,6 +259,10 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
         ...contentIconFiles.map((file) => ({
           from: path.resolve(here, "../src/assets/icons", file),
           to: path.resolve(here, "..", outputRoot, "content/assets/icons", file),
+        })),
+        ...spotIconFiles.map((file) => ({
+          from: path.resolve(here, "../src/assets/icons", file),
+          to: path.resolve(here, "..", outputRoot, "spot/assets/icons", file),
         })),
         ...["night", "observation"].map((theme) => ({
           from: path.resolve(here, "../src/assets/semantic", `five-point-star-${theme}.svg`),

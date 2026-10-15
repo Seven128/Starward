@@ -27,7 +27,7 @@ function readBase64(filePath: string) {
   }));
 }
 
-export function MyAvatar({ owner }: { owner: string | null }) {
+export function MyAvatar({ owner, onLogin }: { owner: string | null; onLogin?: () => void }) {
   const mode = useAppStore(state => state.mode);
   const theme = MINIAPP_DESIGN.themes[mode === "DAY" ? "day" : mode === "NIGHT" ? "night" : "observation"];
   const sliderColors = mode === "DAY"
@@ -118,7 +118,7 @@ export function MyAvatar({ owner }: { owner: string | null }) {
   return <>
     <NativeBackBoundary active={sheet || previewVisible || mediaHandoff.active} onBack={() => mediaHandoff.active ? mediaHandoff.cancel() : close()} />
     {mediaHandoff.warning}
-    <Button className="profile-summary__avatar focus-ring" data-control="my-avatar-action" aria-label={mode === "OBSERVATION" ? "更换头像；红光模式隐藏头像照片" : "更换头像"} disabled={busy} onClick={() => { if (!pending.current) setSheet(true); }}>
+    <Button className="profile-summary__avatar focus-ring" data-control="my-avatar-action" aria-label={!owner ? "微信快捷登录" : mode === "OBSERVATION" ? "更换头像；红光模式隐藏头像照片" : "更换头像"} disabled={busy} onClick={() => { if (!owner) onLogin?.(); else if (!pending.current) setSheet(true); }}>
       {savedSrc ? <Image className="profile-summary__avatar-image" src={savedSrc} mode="aspectFill" style={{ transform: `scale(${saved!.zoom})` }} /> : <SemanticIcon name="account-user" />}
     </Button>
     {sheet ? <View className="modal-scrim my-avatar-overlay" onClick={close}><View className="my-avatar-sheet" role="dialog" aria-modal="true" aria-label="更换头像" onClick={event => event.stopPropagation()}>

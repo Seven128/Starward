@@ -104,11 +104,13 @@ for (const scenario of cases) {
     return new Promise(done => { httpDone = () => done({ data: { userId: A, accountState: "DELETED", mediaCleanupState: "QUEUED" } }); });
   };
   const api = vm.runInNewContext(apiCode, { ...draftOwners, useAppStore: store, Taro: { ...taro, login: async () => ({ code: "synthetic-native-code" }) },
-    sessionPromise: null, erasedStoredAccountIds: new Set(), invalidatedStoredSession: null, responseCache, miniappQueryClient: queries,
+    sessionLoginChoice: 'WECHAT', sessionPromise: null, erasedStoredAccountIds: new Set(), invalidatedStoredSession: null, responseCache, miniappQueryClient: queries,
     requestOperation, getCapabilities: () => requestOperation("capabilities", "capabilitiesGet"), installationIdentity: () => "synthetic-installation", idempotencyKey: () => "synthetic-key",
     MiniappRequestCancelled: class extends Error { constructor(reason) { super("cancelled:" + reason); this.reason = reason; } },
   });
   const actions = vm.runInNewContext(pageCode, {
+    useWechatLogin: () => ({ open: false, dialog: null, requireAccount() {} }),
+    usePageNavigation: () => ({ retire() {} }),
     useReducedMotion: () => false, useAppStore: store, useThemeClass: () => "theme-day", usePreferencesSync: () => ({ updatePreference() {}, syncNow() {}, status: "" }),
     useState: initial => [initial, value => events.push({ kind: "ui-state", mounted, value })], useRef: current => ({ current }),
     useEffect: effect => { const cleanup = effect(); if (cleanup) cleanups.push(cleanup); }, useDidHide: callback => { hide = callback; }, useDidShow: callback => { show = callback; },

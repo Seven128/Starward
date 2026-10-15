@@ -99,6 +99,9 @@ type AnyEnvelope = ApiEnvelope<unknown>;
 
 const responseCache = createResponseCache(Taro);
 let sessionPromise: Promise<AuthSessionData> | null = null;
+// Existing verified sessions may renew. A visitor can only establish identity
+// through an explicit, cancellable login intent, never a background reader.
+let sessionLoginChoice: "UNDECIDED" | "WECHAT" | "GUEST" = "UNDECIDED";
 // A server-confirmed erasure must stay revoked in this runtime even when the
 // native store cannot remove its old session. This is not a disk-erasure claim.
 const erasedStoredAccountIds = new Set<string>();
@@ -243,6 +246,8 @@ function readStoredSession(): AuthSessionData | null {
         !Number.isFinite(Date.parse(session.expiresAt)) ||
         Date.parse(session.expiresAt) <= Date.now() + SESSION_EXPIRY_SKEW_MS
       ) {
+        if (sessionLoginChoice === "UNDECIDED" && Number.isFinite(Date.parse(session.expiresAt)))
+          sessionLoginChoice = "WECHAT";
         try { Taro.removeStorageSync(SESSION_STORAGE_KEY); } catch { /* No stale identity may remain active in memory. */ }
         session = null;
       }
@@ -253,6 +258,7 @@ function readStoredSession(): AuthSessionData | null {
   // Hide unverifiable private projections; bindAccount preserves their scoped
   // recovery snapshot. A network failure with a valid native session stays bound.
   if (!session) useAppStore.getState().bindAccount(null);
+  else sessionLoginChoice = "WECHAT";
   return session;
 }
 
@@ -282,6 +288,7 @@ function clearStoredSession(rejected?: AuthSessionData) {
 
 function markAccountErased(userId: string) {
   erasedStoredAccountIds.add(userId);
+  if (useAppStore.getState().accountOwnerId === userId) sessionLoginChoice = "GUEST";
   // A newer login has no verified identity yet. Its returned identity is checked
   // by ensureSession; deleting A cannot retire a genuine successor B login.
 }
@@ -607,7 +614,8 @@ export const { getAccountProfile, saveAccountNickname, getAccountAvatar, saveAcc
   },
 });
 
-async function ensureSession(force = false): Promise<AuthSessionData> {
+async function ensureSession(force = false, loginIntent?: AbortSignal): Promise<AuthSessionData> {
+  if (loginIntent?.aborted) throw new MiniappRequestCancelled("query_signal");
   if (!force) {
     const stored = readStoredSession();
     if (stored) {
@@ -616,20 +624,22 @@ async function ensureSession(force = false): Promise<AuthSessionData> {
       useAppStore.getState().bindAccount(stored.userId);
       return stored;
     }
-    if (sessionPromise) return sessionPromise;
+    if (sessionPromise && !loginIntent) return sessionPromise;
   } else {
     clearStoredSession();
   }
+  if (!loginIntent && sessionLoginChoice !== "WECHAT") throw new Error("wechat_login_required");
   function assertCurrentLogin() {
-    if (sessionPromise !== pending) throw new MiniappRequestCancelled("superseded");
+    if (loginIntent?.aborted || sessionPromise !== pending) throw new MiniappRequestCancelled("superseded");
   }
   const pending: Promise<AuthSessionData> = (async () => {
     const capabilities = await requestOperation(
       "capabilities:auth",
       "capabilitiesGet",
-      { auth: "NONE" },
+      { auth: "NONE", ...(loginIntent ? { signal: loginIntent } : {}) },
     );
     assertCurrentLogin();
+    if (loginIntent && !capabilities.data.flags.WECHAT_AUTH_ENABLED) throw new Error("wechat_login_unavailable");
     const code = capabilities.data.flags.WECHAT_AUTH_ENABLED
       ? (await Taro.login()).code
       : installationIdentity();
@@ -638,22 +648,37 @@ async function ensureSession(force = false): Promise<AuthSessionData> {
     const result = await requestOperation("auth:login", "wechatLoginPost", {
       auth: "NONE",
       body: { code },
+      ...(loginIntent ? { signal: loginIntent } : {}),
     });
     if (erasedStoredAccountIds.has(result.data.userId))
       throw new Error("account_identity_revoked");
     assertCurrentLogin();
     Taro.setStorageSync(SESSION_STORAGE_KEY, result.data);
     invalidatedStoredSession = null;
+    sessionLoginChoice = "WECHAT";
     useAppStore.getState().bindAccount(result.data.userId);
     return result.data;
   })();
   sessionPromise = pending;
+  const cancelLogin = () => {
+    if (sessionPromise !== pending) return;
+    sessionPromise = null;
+    sessionLoginChoice = "GUEST";
+  };
+  loginIntent?.addEventListener("abort", cancelLogin, { once: true });
+  if (loginIntent?.aborted) cancelLogin();
   try {
     return await pending;
   } finally {
+    loginIntent?.removeEventListener("abort", cancelLogin);
     if (sessionPromise === pending) sessionPromise = null;
     settleErasedInstallation();
   }
+}
+
+/** Called only by the visible shortcut-login action; closing it aborts this intent. */
+export function loginWithWechat(signal: AbortSignal): Promise<AuthSessionData> {
+  return ensureSession(false, signal);
 }
 
 export function getCapabilities(signal?: AbortSignal) {

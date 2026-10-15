@@ -1,6 +1,7 @@
 import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
-import { useDidShow, useDidHide, useRouter } from "@tarojs/taro";
+import Taro, { useDidShow, useDidHide, useRouter } from "@tarojs/taro";
+import { AccountEntry } from "../../account-entry";
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
@@ -15,7 +16,11 @@ import { planTravelModeLabel } from "../detail/plan-travel-fields";
 import { useAccountNavigation } from "@/hooks/use-account-navigation";
 import "./index.scss";
 
-export default function PlanListPage() {
+export default function PlanListRoute() {
+  return <AccountEntry title="观星计划"><PlanListPage /></AccountEntry>;
+}
+
+function PlanListPage() {
   const spotId = spotIdFromPlanRoute(useRouter().params.spotId);
   const themeClass = useThemeClass();
   const [partition, setPartition] = useState<PlanPartition>("upcoming");
@@ -28,7 +33,7 @@ export default function PlanListPage() {
   const { open, navigationError } = useAccountNavigation(owner);
   useDidShow(() => {
     setPageVisible(true); setNow(new Date());
-    void query.refetch();
+    if (owner) void query.refetch();
   });
   useDidHide(() => setPageVisible(false));
   useEffect(() => {
@@ -65,7 +70,9 @@ export default function PlanListPage() {
           <Button className="plan-list-new" onClick={() => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)}>＋ 新建</Button>
         </View>
         {query.isError || query.refreshError || query.data?.dataState === "STALE_USABLE" ? <StatusPanel state={query.data ? "STALE" : "ERROR"} detail="计划暂未同步，请重试。" recoveryLabel="重试" onRecover={() => void query.refetch()} /> : null}
-        {query.isPending ? <StatusPanel state="LOADING" detail="正在读取观星计划" /> : null}
+        {!owner ? <StatusPanel state="PERMISSION_DENIED" title="请先登录" detail="登录后查看观星计划。" recoveryLabel="返回我的"
+          onRecover={() => void Taro.switchTab({ url: "/pages/my/index" })} /> :
+          query.isPending ? <StatusPanel state="LOADING" detail="正在读取观星计划" /> : null}
         {navigationError ? <View role="alert"><Text>页面暂未打开，请再次点击。</Text></View> : null}
         {entries.map((entry, index) => {
           const { plan } = entry;

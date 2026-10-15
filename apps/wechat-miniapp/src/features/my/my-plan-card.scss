@@ -41,3 +41,7 @@
 .my-plan-card__title { display: flex; align-items: center; gap: 8Px; }
 .my-plan-card__suv { width: 31Px; height: 27Px; flex: none; }
 .theme-day .my-plan-card__suv { width: 30Px; height: 26Px; }
+.my-plan-card__guest { display: flex; align-items: center; justify-content: space-between; gap: 10Px; padding: 13Px 0; font-size: 14Px; line-height: 1.5; color: var(--text-secondary); }
+.my-plan-card__guest .soft-button { border: 0; border-radius: 12Px; min-height: 44Px; padding: 10Px 14Px; }
+.theme-day .my-plan-card__guest { color: #435263; }
+.theme-day .my-plan-card__guest .soft-button { color: #2d2d2d; background: #eef1f4; }

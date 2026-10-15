@@ -1,8 +1,8 @@
 import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
-import Taro from "@tarojs/taro";
+import Taro, { useDidHide, useDidShow, useLoad } from "@tarojs/taro";
 import { ScrollView, Text, View } from "@tarojs/components";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PageState } from "@starward/miniapp-contracts";
 import { CustomNav } from "@/components/custom-nav";
 import { SoftButton } from "@/components/soft-button";
@@ -26,90 +26,138 @@ export default function PermissionPage() {
   const [feedback, setFeedback] = useState("");
   const [feedbackState, setFeedbackState] = useState<PageState | null>(null);
   const [busy, setBusy] = useState(false);
-  const locationRequestBusy = useRef(false);
-  const requestOnce = async () => {
-    if (locationRequestBusy.current) return;
-    locationRequestBusy.current = true;
+  const locationRequestBusy = useRef<{
+    owner: string | null; reset: number; previous: LocationState; kind: string;
+  } | null>(null);
+  const pageActive = useRef(true);
+  const intentLive = useRef(true);
+  const permissionReturn = useRef(false);
+  const beginLocation = (kind = "LOCATION") => {
+    if (locationRequestBusy.current || !pageActive.current) return;
+    const state = useAppStore.getState();
+    const attempt = { owner: state.accountOwnerId, reset: state.mapResetVersion, previous: state.locationState, kind };
+    locationRequestBusy.current = attempt;
     setBusy(true);
+    return attempt;
+  };
+  const currentLocation = (attempt: NonNullable<typeof locationRequestBusy.current>) => {
+    const state = useAppStore.getState();
+    return pageActive.current && locationRequestBusy.current === attempt &&
+      state.accountOwnerId === attempt.owner && state.mapResetVersion === attempt.reset;
+  };
+  const cancelLocation = (updatePage = true) => {
+    const attempt = locationRequestBusy.current;
+    locationRequestBusy.current = null;
+    const state = useAppStore.getState();
+    if (attempt && state.accountOwnerId === attempt.owner && state.mapResetVersion === attempt.reset && state.locationState === "REQUESTING")
+      setLocationState(attempt.previous);
+    if (updatePage) { setBusy(false); setFeedbackState(null); setFeedback(""); }
+  };
+  const finishLocation = (attempt: NonNullable<typeof locationRequestBusy.current>) => {
+    if (locationRequestBusy.current !== attempt) return;
+    locationRequestBusy.current = null;
+    if (pageActive.current) setBusy(false);
+  };
+  useDidHide(() => { pageActive.current = false; intentLive.current = false; cancelLocation(); });
+  useDidShow(() => {
+    pageActive.current = true;
+    if (permissionReturn.current) { permissionReturn.current = false; void openPermissions(true); }
+  });
+  useEffect(() => {
+    const unsubscribe = useAppStore.subscribe((state, previous) => {
+      if (state.accountOwnerId !== previous.accountOwnerId || state.mapResetVersion !== previous.mapResetVersion) {
+        permissionReturn.current = false; cancelLocation();
+      }
+    });
+    return () => { pageActive.current = false; permissionReturn.current = false; cancelLocation(false); unsubscribe(); };
+  }, []);
+  useLoad(() => {
+    const page = Taro.getCurrentPages().at(-1);
+    // Only the opener's explicit click can issue this one-use command. URL
+    // parameters and ordinary permission-page entry never request location.
+    page?.getOpenerEventChannel?.()?.once?.("locationIntent", (action: unknown) => {
+      if (!intentLive.current || !pageActive.current || Taro.getCurrentPages().at(-1) !== page) return;
+      intentLive.current = false;
+      if (action === "locate") void requestOnce();
+      else if (action === "settings") void openPermissions();
+    });
+  });
+  const requestOnce = async () => {
+    const attempt = beginLocation();
+    if (!attempt) return;
     setFeedbackState(null);
-    setFeedback("正在获取一次位置；手动路径仍可使用。");
+    setFeedback("正在获取本次位置。");
     setLocationState("REQUESTING");
     try {
       const result = await requestOneShotLocation(Taro);
+      if (!currentLocation(attempt)) return;
       setLocationState(result.state);
-      setFeedback(
-        result.state === "GRANTED"
-          ? "已获取一次位置，地图位置未改变。返回地图后可点击定位；不会持续定位。"
-          : result.state === "DENIED"
-            ? "定位权限未授予；原地图和手动搜索仍可使用。"
-            : "暂时无法取得位置；请检查系统定位服务后重试，原地图和手动搜索仍可使用。",
-      );
+      const detail = result.state === "GRANTED"
+        ? "已取得一次位置，地图未移动。回到地图重新定位后，可选择移动。"
+        : result.state === "DENIED" ? "定位未授权；地图未移动，仍可手动浏览。"
+          : "本次位置暂不可用；地图未移动，请检查系统定位后重试。";
+      setFeedback(detail);
       notify({
         owner: "map", placement: "inline", tone: result.state === "GRANTED" ? "success" : "warning",
-        title: result.state === "GRANTED" ? "本次位置已取得" : result.state === "DENIED" ? "定位权限未授予" : "暂时无法取得位置",
-        body: result.state === "GRANTED"
-          ? "地图视野未改变；点击地图定位可重新获取并移动到当前位置。"
-          : result.state === "DENIED"
-            ? "地图未移动；可查看权限说明后重试，或继续手动搜索。"
-            : "地图未移动；请检查系统定位服务后重试，仍可手动搜索。",
+        title: LOCATION_STATE_LABEL[result.state], body: detail,
         action: result.state === "GRANTED" ? undefined : { label: "查看权限说明", route: "/pages/auth/index" },
         dismissible: true, dedupeKey: "map-location-request",
       });
     } finally {
-      locationRequestBusy.current = false;
-      setBusy(false);
+      finishLocation(attempt);
     }
   };
-  const openPermissions = async () => {
-    if (locationRequestBusy.current) return;
-    locationRequestBusy.current = true;
-    setBusy(true);
+  const openPermissions = async (readOnly = false) => {
+    const attempt = beginLocation("SETTINGS");
+    if (!attempt) return;
     setFeedbackState("LOADING");
-    setFeedback("正在打开微信权限设置。");
+    setFeedback(readOnly ? "正在读取定位权限。" : "正在打开微信权限设置。");
     try {
-      const settings = await Taro.openSetting();
+      permissionReturn.current = !readOnly;
+      const settings = await (readOnly ? Taro.getSetting() : Taro.openSetting());
+      if (!currentLocation(attempt)) return;
+      permissionReturn.current = false;
       const permission = settings.authSetting?.["scope.userLocation"];
+      const locationState = useAppStore.getState().locationState;
       if (permission === false) setLocationState("DENIED");
       else if (permission === true && locationState !== "GRANTED") setLocationState("AUTHORIZED");
+      const detail = permission === true
+        ? locationState === "GRANTED" ? "权限已开启，本次已取得过一次位置；可返回地图重新定位。"
+          : "权限已开启，尚未获取本次位置；可返回地图主动定位。"
+        : permission === false ? "定位权限未开启；仍可手动浏览地图。"
+          : "尚未取得定位授权状态；未获取位置，仍可手动浏览。";
       if (typeof permission === "boolean") notify({
         owner: "map", placement: "inline", tone: permission ? "info" : "warning",
         title: permission ? "定位权限已开启" : "定位权限未开启",
-        body: permission
-          ? locationState === "GRANTED"
-            ? "本次已取得过一次位置；可在地图重新定位。"
-            : "尚未重新获取位置；点击定位按钮获取本次位置。"
-          : "原地图仍可浏览，也可手动搜索地点。",
+        body: detail,
         action: undefined, dismissible: true, dedupeKey: "map-location-request",
       });
-      setFeedbackState(permission === false ? "PERMISSION_DENIED" : permission === true && locationState === "GRANTED" ? "READY" : "INITIAL");
-      setFeedback(permission === true
-        ? locationState === "GRANTED"
-          ? "定位权限已开启；本次位置已获取。可返回地图，或主动再次定位。"
-          : "定位权限已开启；本次尚未获取位置。请主动点击请求一次位置，或返回地图定位。"
-        : permission === false
-          ? "定位权限未开启；原地图和手动搜索仍可使用。"
-          : "尚未取得定位授权状态；没有获取位置，你仍可手动选择地点。");
+      setFeedbackState(permission === false ? "PERMISSION_DENIED" : "READY");
+      setFeedback(detail);
     } catch {
+      if (!currentLocation(attempt)) return;
+      permissionReturn.current = false;
       setFeedbackState("ERROR");
-      setFeedback("暂时无法打开微信权限设置，请重试；原地图和手动搜索仍可使用。");
+      setFeedback("微信权限设置暂未打开，请重试。");
     } finally {
-      locationRequestBusy.current = false;
-      setBusy(false);
+      finishLocation(attempt);
     }
   };
   const useDefaultRegion = async () => {
-    if (locationRequestBusy.current) return;
-    locationRequestBusy.current = true;
-    setBusy(true);
+    if (locationRequestBusy.current?.kind === "NAVIGATION") return;
+    cancelLocation();
+    permissionReturn.current = false;
     resetMapToDefaultRegion();
+    const attempt = beginLocation("NAVIGATION");
+    if (!attempt) return;
     try {
       await Taro.switchTab({ url: "/pages/map/index" });
     } catch {
+      if (!currentLocation(attempt)) return;
       setFeedbackState("ERROR");
-      setFeedback("默认试点区域已恢复，但地图暂时无法打开，请重试。");
+      setFeedback("已恢复默认区域；地图暂未打开，请重试。");
     } finally {
-      locationRequestBusy.current = false;
-      setBusy(false);
+      finishLocation(attempt);
     }
   };
   return (
@@ -121,7 +169,7 @@ export default function PermissionPage() {
         <View className="permission-hero card">
           <Text className="type-page-title">不定位也能浏览</Text>
           <Text className="type-body">
-            仅在你主动查找附近时定位一次。拒绝后仍可浏览地图，或选择默认的深圳区域。
+            主动查找附近时定位一次。拒绝后仍可浏览地图，或使用深圳区域。
           </Text>
         </View>
         <StatusPanel
@@ -131,9 +179,11 @@ export default function PermissionPage() {
               : locationState === "REQUESTING"
                 ? "LOADING"
                 : locationState === "DENIED" ? "PERMISSION_DENIED"
-                  : locationState === "UNAVAILABLE" ? "ERROR" : "INITIAL")
+                  : locationState === "UNAVAILABLE" ? "ERROR" : "READY")
           }
           detail={feedback || `定位状态：${LOCATION_STATE_LABEL[locationState]}。`}
+          recoveryLabel={busy && locationRequestBusy.current?.kind !== "NAVIGATION" ? "取消" : undefined}
+          onRecover={busy && locationRequestBusy.current?.kind !== "NAVIGATION" ? () => { permissionReturn.current = false; cancelLocation(); } : undefined}
         />
         <View className="permission-actions">
           <SoftButton
@@ -153,7 +203,6 @@ export default function PermissionPage() {
           </SoftButton>
           <SoftButton
             label="不获取位置，返回深圳试点地图"
-            disabled={busy}
             onClick={() => void useDefaultRegion()}
           >
             使用默认试点区域

@@ -49,6 +49,7 @@ import { SoftButton } from "@/components/soft-button";
 import { createTerrainGroundOverlayCoordinator, type TerrainGroundOverlayResult, type TerrainGroundOverlayContext } from "./terrain-ground-overlay";
 import { useNativeMapRecovery } from "./native-map-recovery";
 import { reconcileFavoriteSnapshot, useFavoriteMutation } from "@/hooks/use-favorite-mutation";
+import { useWechatLogin } from "@/hooks/use-wechat-login";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { SourceAttribution } from "@/components/source-attribution";
 import { Provenance } from "@/components/provenance";
@@ -65,7 +66,7 @@ import {
   replaceRetiredObservationContext,
   updateObservationContext,
 } from "@/services/api-client";
-import { useAppStore, type AnalysisOverlay } from "@/state/app-store";
+import { useAppStore, type AnalysisOverlay, type LocationState } from "@/state/app-store";
 import { useContributionHistory } from "@/hooks/use-contribution-history";
 import { useTerrainOverlay } from "@/hooks/use-terrain-overlay";
 import { terrainLayerAvailability } from "./terrain-layer-availability";
@@ -217,6 +218,7 @@ export default function MapPage() {
   const setLocationState = useAppStore((state) => state.setLocationState);
   const notify = useAppStore((state) => state.notify);
   const { toggleFavorite, isPending: favoritePending } = useFavoriteMutation();
+  const login = useWechatLogin({ nativeBack: false });
   const [debouncedFinderQuery, setDebouncedFinderQuery] = useState("");
   const nativeMap = useNativeMapRecovery();
   const mapRuntimeError = nativeMap.error;
@@ -246,7 +248,10 @@ export default function MapPage() {
   const [pageVisible, setPageVisible] = useState(true);
   const navigationEpoch = useRef(0);
   const [locationBusy, setLocationBusy] = useState(false);
-  const locationRequestBusy = useRef(false);
+  const locationRequestBusy = useRef<{ intent: number; previous: LocationState } | null>(null);
+  const [locationCandidate, setLocationCandidate] = useState<{
+    center: { latitude: number; longitude: number }; intent: number; owner: string | null; reset: number;
+  } | null>(null);
   const regionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mapPointIntent = useRef(0);
   const failedMapRegion = useRef<{
@@ -415,6 +420,7 @@ export default function MapPage() {
 
   useDidShow(() => setPageVisible(true));
   useDidHide(() => {
+    cancelLocation();
     setCalendarOwner(null);
     invalidateMapPointIntent(true); stopPanelSpring(); navigationEpoch.current += 1;
     editorPresentationScope.current = null;
@@ -1659,27 +1665,39 @@ export default function MapPage() {
     }, 250);
   };
 
+  const cancelLocation = () => {
+    const request = locationRequestBusy.current;
+    locationRequestBusy.current = null;
+    setLocationCandidate(null);
+    setLocationBusy(false);
+    if (!request) return;
+    if (mapPointIntent.current === request.intent) invalidateMapPointIntent();
+    if (useAppStore.getState().locationState === "REQUESTING") setLocationState(request.previous);
+  };
+  useEffect(() => () => { locationRequestBusy.current = null; }, []);
+  const locationCandidateCurrent = (candidate: NonNullable<typeof locationCandidate>) =>
+    candidate.intent === mapPointIntent.current && nativeMap.isCurrent() &&
+    candidate.reset === useAppStore.getState().mapResetVersion && candidate.owner === currentDraftUserId();
   const locateMap = async () => {
     if (locationRequestBusy.current) return;
     const intent = invalidateMapPointIntent();
-    locationRequestBusy.current = true;
+    const request = { intent, previous: useAppStore.getState().locationState };
+    locationRequestBusy.current = request;
+    setLocationCandidate(null);
     const resetVersion = useAppStore.getState().mapResetVersion;
     const owner = currentDraftUserId();
-    const previousLocationState = useAppStore.getState().locationState;
-    const isCurrentLocation = () => intent === mapPointIntent.current && nativeMap.isCurrent() &&
+    const isCurrentLocation = () => locationRequestBusy.current === request && intent === mapPointIntent.current && nativeMap.isCurrent() &&
       useAppStore.getState().mapResetVersion === resetVersion && currentDraftUserId() === owner;
     setLocationBusy(true);
     setLocationState("REQUESTING");
-    const locationNotice = (title: string, body: string, tone: "info" | "success" | "warning") =>
-      notify({ owner: "map", placement: "inline", tone, title, body,
-        action: undefined, dismissible: true, dedupeKey: "map-location-request" });
-    locationNotice("正在获取一次位置", "只请求本次位置；地图仍可手动浏览。", "info");
+    for (const item of useAppStore.getState().notifications)
+      if (item.owner === "map" && item.dedupeKey === "map-location-request") useAppStore.getState().dismissNotification(item.id);
     try {
       const result = await requestOneShotLocation(Taro);
       if (!isCurrentLocation()) return;
       setLocationState(result.state);
       if (result.state !== "GRANTED") {
-        notify({ owner: "map", placement: "inline", tone: "warning",
+        notify({ owner: "map", placement: "floating", tone: "warning",
           title: result.state === "DENIED" ? "定位未授权" : "暂时无法获取位置",
           body: result.state === "DENIED"
             ? "地图位置未改动；你可以查看权限说明，或继续手动搜索。"
@@ -1688,32 +1706,31 @@ export default function MapPage() {
           dismissible: true, dedupeKey: "map-location-request" });
         return;
       }
-      setViewport({ center: result.center, zoom: 10 });
-      locationNotice("已定位，正在更新观测条件", "地图已移动到本次位置；天气和天文结果尚未确认。", "info");
-      try {
-        const context = await resolveMapPoint(result.center, "USER_LOCATION", undefined, intent);
-        if (!isCurrentLocation()) return;
-        if (context === null) {
-          locationNotice("已定位，观测条件更新已取消", "请查看当前地点的条件，或重新定位。", "info");
-          return;
-        }
-        locationNotice("观测位置已更新", "已更新地图位置和观测地点；天气、天文以各自加载状态为准。", "success");
-        setAnnouncement("观测位置已更新。");
-      } catch (error) {
-        if (!isCurrentLocation()) return;
-        locationNotice("位置已获取，动态条件未更新",
-          errorMessage(error) + "。上次观测条件不适用于当前位置，请重试。", "warning");
-      }
+      setLocationCandidate({ center: result.center, intent, owner, reset: resetVersion });
+      setAnnouncement("已取得本次位置，地图未移动。");
     } finally {
-      if (!isCurrentLocation() && useAppStore.getState().mapResetVersion === resetVersion && currentDraftUserId() === owner) {
-        const state = useAppStore.getState();
-        if (state.locationState === "REQUESTING") setLocationState(previousLocationState);
-        for (const item of state.notifications) {
-          if (item.owner === "map" && item.dedupeKey === "map-location-request") state.dismissNotification(item.id);
-        }
+      if (locationRequestBusy.current === request) {
+        if (!isCurrentLocation() && useAppStore.getState().mapResetVersion === resetVersion && currentDraftUserId() === owner &&
+          useAppStore.getState().locationState === "REQUESTING") setLocationState(request.previous);
+        locationRequestBusy.current = null;
+        setLocationBusy(false);
       }
-      locationRequestBusy.current = false;
-      setLocationBusy(false);
+    }
+  };
+  const moveToLocation = async () => {
+    const candidate = locationCandidate;
+    if (!candidate || !locationCandidateCurrent(candidate)) return;
+    setLocationCandidate(null);
+    setViewport({ center: candidate.center, zoom: 10 });
+    try {
+      const context = await resolveMapPoint(candidate.center, "USER_LOCATION", undefined, candidate.intent);
+      if (!context || !locationCandidateCurrent(candidate)) return;
+      setAnnouncement("观测位置已更新，天气和天文以各自加载状态为准。");
+    } catch (error) {
+      if (!locationCandidateCurrent(candidate)) return;
+      notify({ owner: "map", placement: "inline", tone: "warning", title: "位置已获取，观测条件未更新",
+        body: `${errorMessage(error)}。上次条件不适用于当前位置，请重试。`,
+        action: { label: "重新获取位置" }, dismissible: true, dedupeKey: "map-location-request" });
     }
   };
 
@@ -1834,6 +1851,7 @@ export default function MapPage() {
   };
 
   const handleMapPresentationSystemBack = async () => {
+    if (login.open) { login.back(); return; }
     if (photoHandoff.active) {
       photoHandoff.cancel();
       return;
@@ -2102,11 +2120,11 @@ export default function MapPage() {
 
   const onPanelContribution = () => {
     if (!selected) return;
-    void openMapPage(
+    login.requireAccount(() => void openMapPage(
       `/content/spot-feedback/index?spotId=${encodeURIComponent(selected.spotId)}&spotName=${encodeURIComponent(selected.name)}`,
       "反馈页面",
       "contribution",
-    );
+    ), () => useAppStore.getState().selectedSpotId === selected.spotId && nativeMap.isCurrent());
   };
 
   useEffect(() => {
@@ -2219,11 +2237,11 @@ export default function MapPage() {
       {navigationHandoff.warning}
       {photoHandoff.warning}
       <NativeBackBoundary
-        active={pageVisible && (eventModalOpen || eventModalPresent || bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet" || bottomPresentation === "spot-editor")}
+        active={pageVisible && (login.open || eventModalOpen || eventModalPresent || bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet" || bottomPresentation === "spot-editor")}
         onBack={handleMapPresentationSystemBack}
-        nativeMapContent={<AstronomicalEventModal ref={eventModalRef} open={eventModalOpen} mode="browse" onPresenceChange={setEventModalPresent}
+        nativeMapContent={<>{login.dialog}<AstronomicalEventModal ref={eventModalRef} open={eventModalOpen} mode="browse" onPresenceChange={setEventModalPresent}
           context={observationContext} onClose={() => setEventModalOpen(false)}
-          nativeBackBoundary={false} portal={false} />}
+          nativeBackBoundary={false} portal={false} /></>}
       />
       <View className="map-workspace">
         <View
@@ -2311,9 +2329,11 @@ export default function MapPage() {
               aria-label="新增观星点"
               onClick={(event) => {
                 event.stopPropagation();
-                setSpotEditorTarget({ forceNew: true });
-                invalidateMapPointIntent();
-                setBottomPresentation("spot-editor");
+                login.requireAccount(() => {
+                  setSpotEditorTarget({ forceNew: true });
+                  invalidateMapPointIntent();
+                  setBottomPresentation("spot-editor");
+                }, () => nativeMap.isCurrent());
               }}
             >
               <Text className="map-tool__plus" aria-hidden>＋</Text>
@@ -2338,8 +2358,10 @@ export default function MapPage() {
             {analysisOverlay === "LIGHT" && layerPolygons.length > 0 && bottomPresentation !== "layer-sheet" && scene.data?.data.layer?.source ?
               <View className="map-source-attribution"><SourceAttribution sources={[scene.data.data.layer.source]} /></View> : null}
           </View>
-          <View className={`map-feedback-column${pageState === "LOADING" || nativeMap.pending ? " map-feedback-column--loading" : mapRuntimeError || pageState === "ERROR" ? " map-feedback-column--recovery" : ""}`}>
-            <NotificationRegion owner="map" placement="inline" actionHandlers={{ "map-context-region-failed": () => void refreshMap() }} />
+          <View className={`map-feedback-column${locationBusy || pageState === "LOADING" || nativeMap.pending ? " map-feedback-column--loading" : locationCandidate || mapRuntimeError || pageState === "ERROR" ? " map-feedback-column--recovery" : ""}`}>
+            <NotificationRegion owner="map" placement="inline" actionHandlers={{ "map-context-region-failed": () => void refreshMap(), "map-location-request": () => void locateMap() }} />
+            {locationBusy ? <StatusPanel state="LOADING" detail="正在获取本次位置" recoveryLabel="取消" onRecover={cancelLocation} /> : null}
+            {locationCandidate && locationCandidateCurrent(locationCandidate) ? <SoftButton label="移动到本次位置" onClick={() => void moveToLocation()} /> : null}
             {nativeMap.pending ? <StatusPanel state="LOADING" detail="正在重新加载地图" /> :
               mapRuntimeError ? <SoftButton label="重新加载地图" onClick={nativeMap.retry} /> : null}
             {mapDataStale && !layerSheetOwnsSceneFailure ? <StatusPanel
@@ -2502,7 +2524,9 @@ export default function MapPage() {
                 onPhotoIntent={onPanelPhotoIntent}
                 onRecover={() => void spotOverview.refetch()}
             onSkyRecover={() => void spotSky.refetch()}
-                onFavorite={() => void toggleFavorite(selected.spotId)}
+                onFavorite={() => login.requireAccount(() => void toggleFavorite(selected.spotId),
+                  () => useAppStore.getState().selectedSpotId === selected.spotId && nativeMap.isCurrent())}
+                requireAccount={login.requireAccount}
                 onShare={() => void onPanelShare()}
                 onCloud={onPanelCloud}
                 onNavigate={() => void onPanelNavigate()}

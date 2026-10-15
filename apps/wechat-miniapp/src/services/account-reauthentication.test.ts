@@ -20,31 +20,111 @@ function codeFor(names: string[], expression: string) {
   });
   const installationOwner = needsInstallationOwner ? source.statements.find(n => ts.isVariableStatement(n) && n.declarationList.declarations.some(d => d.name.getText(source) === "pendingErasedInstallation")) : undefined;
   if (needsInstallationOwner) assert.ok(installationOwner);
-  return ts.transpileModule((installationOwner?.getText(source) ?? "") + "\n" + declarations.join("\n") + "\n" + expression, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
+  // Historical renewal/erasure scenarios start with an authorized account.
+  // Visitor cases explicitly reset this same production session choice below.
+  return ts.transpileModule("let sessionLoginChoice = 'WECHAT';\n" + (installationOwner?.getText(source) ?? "") + "\n" + declarations.join("\n") + "\n" + expression, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
 }
 
 function loadSessionRuntime(login: (attempt: number) => Promise<AuthSessionData> = async attempt => ({
   userId: "user:a" as UserId, accessToken: "synthetic:" + attempt, expiresAt: "2999-01-01T00:00:00.000Z",
-})) {
+}), authorized = true) {
   const storage = new Map<string, unknown>();
-  const state = { owner: null as string | null, readFails: false, removeFails: false, writeFails: false, logins: 0, capabilities: 0 };
-  const run = vm.runInNewContext(codeFor(["readStoredSession", "clearStoredSession", "ensureSession", "currentDraftUserId"],
-    "({ensureSession, clearStoredSession, readStoredSession, currentDraftUserId});"), {
+  const state = { owner: null as string | null, readFails: false, removeFails: false, writeFails: false, logins: 0, capabilities: 0, codes: 0, wechatEnabled: false };
+  const run = vm.runInNewContext(codeFor(["readStoredSession", "clearStoredSession", "ensureSession", "resolveSession", "loginWithWechat", "currentDraftUserId"],
+    `sessionLoginChoice = '${authorized ? "WECHAT" : "UNDECIDED"}';\n({ensureSession, resolveSession, loginWithWechat, clearStoredSession, readStoredSession, currentDraftUserId});`), {
     SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, erasedStoredAccountIds: new Set(), sessionPromise: null, invalidatedStoredSession: null,
     installationIdentity: () => "local:synthetic", MiniappRequestCancelled,
     useAppStore: { getState: () => ({ accountOwnerId: state.owner, bindAccount: (owner: string | null) => { state.owner = owner; } }) },
     Taro: {
+      login: async () => { state.codes++; return { code: "synthetic-code" }; },
       getStorageSync: (key: string) => { if (state.readFails) throw Error("synthetic native read failed"); return storage.get(key); },
       setStorageSync: (key: string, value: unknown) => { if (state.writeFails) throw Error("synthetic native write failed"); storage.set(key, value); },
       removeStorageSync: (key: string) => { if (state.removeFails) throw Error("synthetic native remove failed"); storage.delete(key); },
     },
     requestOperation: async (_key: string, operation: string) => {
-      if (operation === "capabilitiesGet") { state.capabilities++; return { data: { flags: { WECHAT_AUTH_ENABLED: false } } }; }
+      if (operation === "capabilitiesGet") { state.capabilities++; return { data: { flags: { WECHAT_AUTH_ENABLED: state.wechatEnabled } } }; }
       return { data: await login(++state.logins) };
     },
-  }) as { ensureSession(force?: boolean): Promise<AuthSessionData>; clearStoredSession(rejected?: AuthSessionData): void; readStoredSession(): AuthSessionData | null; currentDraftUserId(): string | null };
+  }) as { ensureSession(force?: boolean): Promise<AuthSessionData>; resolveSession(policy: "NONE" | "OPTIONAL" | "REQUIRED"): Promise<AuthSessionData | null>; loginWithWechat(signal: AbortSignal): Promise<AuthSessionData>; clearStoredSession(rejected?: AuthSessionData): void; readStoredSession(): AuthSessionData | null; currentDraftUserId(): string | null };
   return { ...run, state, storage };
 }
+
+test("visitor background reads cannot start a WeChat login, while an explicit login can", async () => {
+  const run = loadSessionRuntime(undefined, false);
+  run.state.wechatEnabled = true;
+  assert.equal(await run.resolveSession("OPTIONAL"), null);
+  await assert.rejects(run.resolveSession("REQUIRED"), /wechat_login_required/);
+  assert.equal(run.state.capabilities, 0);
+  assert.equal(run.state.codes, 0);
+  assert.equal(run.state.logins, 0);
+  const result = await run.loginWithWechat(new AbortController().signal);
+  assert.equal(run.state.codes, 1);
+  assert.equal(run.state.logins, 1);
+  assert.equal(run.state.owner, result.userId);
+  assert.equal(await run.resolveSession("REQUIRED"), result);
+});
+
+test("closing an explicit login ignores its late session and preserves visitor browsing", async () => {
+  let reply!: (value: AuthSessionData) => void;
+  const run = loadSessionRuntime(() => new Promise(resolve => { reply = resolve; }), false);
+  run.state.wechatEnabled = true;
+  const controller = new AbortController();
+  const login = run.loginWithWechat(controller.signal);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(run.state.codes, 1);
+  controller.abort();
+  assert.equal(await run.resolveSession("OPTIONAL"), null);
+  reply({ userId: "user:a" as UserId, accessToken: "synthetic:cancelled", expiresAt: "2999-01-01" });
+  await assert.rejects(login, /superseded/);
+  assert.equal(run.state.owner, null);
+  assert.equal(run.storage.has("auth"), false);
+  await assert.rejects(run.ensureSession(), /wechat_login_required/);
+  assert.equal(run.state.logins, 1);
+});
+
+test("a cancelled login cannot retire a later explicit login", async () => {
+  const replies: Array<(value: AuthSessionData) => void> = [];
+  const run = loadSessionRuntime(() => new Promise(resolve => replies.push(resolve)), false);
+  run.state.wechatEnabled = true;
+  const firstController = new AbortController();
+  const first = run.loginWithWechat(firstController.signal);
+  await new Promise(resolve => setImmediate(resolve));
+  firstController.abort();
+  const second = run.loginWithWechat(new AbortController().signal);
+  await new Promise(resolve => setImmediate(resolve));
+  replies[0]!({ userId: "user:a" as UserId, accessToken: "synthetic:old", expiresAt: "2999-01-01" });
+  await assert.rejects(first, /superseded/);
+  const fresh = { userId: "user:b" as UserId, accessToken: "synthetic:new", expiresAt: "2999-01-01" };
+  replies[1]!(fresh);
+  assert.equal(await second, fresh);
+  assert.equal(run.state.owner, fresh.userId);
+  assert.equal(run.storage.get("auth"), fresh);
+});
+
+test("an explicit shortcut never substitutes an installation identity for unavailable WeChat auth", async () => {
+  const run = loadSessionRuntime(undefined, false);
+  await assert.rejects(run.loginWithWechat(new AbortController().signal), /wechat_login_unavailable/);
+  assert.equal(run.state.logins, 0);
+  assert.equal(run.storage.has("auth"), false);
+});
+
+test("closing an explicit login also retires the older background renewal it replaced", async () => {
+  const replies: Array<(value: AuthSessionData) => void> = [];
+  const run = loadSessionRuntime(() => new Promise(resolve => replies.push(resolve)));
+  run.state.wechatEnabled = true;
+  const old = run.ensureSession();
+  const oldCancelled = assert.rejects(old, /superseded/);
+  await new Promise(resolve => setImmediate(resolve));
+  const controller = new AbortController();
+  const explicit = run.loginWithWechat(controller.signal);
+  const explicitCancelled = assert.rejects(explicit, /superseded/);
+  await new Promise(resolve => setImmediate(resolve));
+  controller.abort();
+  for (const reply of replies) reply({ userId: "user:a" as UserId, accessToken: "synthetic", expiresAt: "2999-01-01" });
+  await Promise.all([oldCancelled, explicitCancelled]);
+  assert.equal(run.storage.has("auth"), false);
+  assert.equal(await run.resolveSession("OPTIONAL"), null);
+});
 
 test("a settled login is never reused after native session expiry or removal", async () => {
   for (const invalid of ["expired", "missing"]) {
@@ -458,6 +538,7 @@ test("an old login response completing after erasure cannot rewrite the revoked 
   const run = vm.runInNewContext(codeFor(["ensureSession", "markAccountErased"], "({ensureSession, markAccountErased});"), {
     erasedStoredAccountIds: new Set(), invalidatedStoredSession: null, sessionPromise: null, SESSION_STORAGE_KEY: "auth",
     readStoredSession: () => null, installationIdentity: () => "synthetic-installation",
+    useAppStore: { getState: () => ({ accountOwnerId: "a" }) },
     requestOperation: async (_key: string, operation: string) => operation === "capabilitiesGet"
       ? { data: { flags: { WECHAT_AUTH_ENABLED: false } } }
       : new Promise(resolve => { finishLogin = resolve; }),
