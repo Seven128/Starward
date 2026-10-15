@@ -1,4 +1,5 @@
 import { ToggleField } from "@/components/toggle-field";
+import { LoadingIndicator } from "@/components/loading-indicator";
 import { SemanticIcon, type SemanticIconName } from "@/components/semantic-asset";
 import type { usePreferencesSync } from "@/hooks/use-preferences-sync";
 import type { DisplayMode, UserPreferences } from "@starward/miniapp-contracts";
@@ -47,7 +48,7 @@ function SettingsEntryRow({
       {description ? <Text className="type-caption">{description}</Text> : null}
     </View>
     <View className="settings-entry-meta">
-      {pendingLabel ? <Text>{pendingLabel}</Text> : <>
+      {pendingLabel ? <><LoadingIndicator kind="arc" /><Text>{pendingLabel}</Text></> : <>
         {value ? <Text>{value}</Text> : null}
         <View className="settings-entry-chevron" aria-hidden="true"><SemanticIcon name="chevron-right" /></View>
       </>}

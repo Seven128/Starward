@@ -968,6 +968,24 @@ export default function MapPage() {
     contextFailed: mapContextFailed, sceneFailed: mapSceneFailed,
     lightState: lightLayerState, cloudTimeChoiceCount: cloudTimeChoices.length,
   });
+  // Availability is transient; real failures keep recovery with their owner.
+  const ordinaryMapNotice = !pageVisible || mapRuntimeError || mapContextFailed || mapSceneFailed || scene.isPending || scene.isFetching
+    ? null
+    : bottomPresentation === "layer-sheet" && visibleLayerUnavailable
+      ? "当前范围暂无图层覆盖"
+      : bottomPresentation === "none" && pageState === "EMPTY" && layerPolygons.length === 0
+        ? "当前区域暂无观星点" : null;
+  useEffect(() => {
+    if (!ordinaryMapNotice) return;
+    notify({ owner: "map", placement: "floating", tone: "info", title: ordinaryMapNotice,
+      body: "", dedupeKey: "map-availability" });
+    return () => {
+      const state = useAppStore.getState();
+      for (const item of state.notifications) {
+        if (item.owner === "map" && item.dedupeKey === "map-availability") state.dismissNotification(item.id);
+      }
+    };
+  }, [ordinaryMapNotice, notify]);
   useEffect(() => {
     if (pageVisible && layerSheetOwnsSceneFailure) {
       const state = useAppStore.getState();
@@ -1326,6 +1344,13 @@ export default function MapPage() {
       setSelectedFallback(null);
       setSelectedProposal(null);
     }, 220);
+  };
+
+  const cancelSpotLoading = () => {
+    invalidateMapPointIntent();
+    detailRequestGeneration.current += 1;
+    setSpotContextAttempt(null);
+    closeSpotPanel();
   };
 
   const onMapTap = () => {
@@ -2313,50 +2338,37 @@ export default function MapPage() {
             {analysisOverlay === "LIGHT" && layerPolygons.length > 0 && bottomPresentation !== "layer-sheet" && scene.data?.data.layer?.source ?
               <View className="map-source-attribution"><SourceAttribution sources={[scene.data.data.layer.source]} /></View> : null}
           </View>
-          <View className="map-feedback-column">
+          <View className={`map-feedback-column${pageState === "LOADING" || nativeMap.pending ? " map-feedback-column--loading" : mapRuntimeError || pageState === "ERROR" ? " map-feedback-column--recovery" : ""}`}>
             <NotificationRegion owner="map" placement="inline" actionHandlers={{ "map-context-region-failed": () => void refreshMap() }} />
-            {mapRuntimeError || nativeMap.pending ? (
-              <StatusPanel
-                state={nativeMap.pending ? "LOADING" : "ERROR"}
-                detail={nativeMap.pending ? "正在重新加载地图。" : "地图暂时无法显示，可继续搜索观星点。"}
-                recoveryLabel={nativeMap.pending ? undefined : "重试地图"}
-                onRecover={nativeMap.retry}
-              />
-            ) : null}
+            {nativeMap.pending ? <StatusPanel state="LOADING" detail="正在重新加载地图" /> :
+              mapRuntimeError ? <SoftButton label="重新加载地图" onClick={nativeMap.retry} /> : null}
             {mapDataStale && !layerSheetOwnsSceneFailure ? <StatusPanel
               state="STALE"
               detail={spots.length > 0 ? "更新失败，暂时显示上次结果。" : "上次结果没有观星点；当前资料暂时无法更新。"}
               recoveryLabel="重试"
               onRecover={() => void refreshMap()}
             /> : null}
-            {!(pageState === "EMPTY" && (bottomPresentation === "spot-panel" || layerPolygons.length > 0)) &&
-            !(pageState === "EMPTY" && mapDataStale) &&
+            {pageState !== "EMPTY" &&
             !(pageState === "LOADING" && bottomPresentation === "spot-panel" && bootstrapReplacementBlocked && visibleSpotContextAttempt) &&
             pageState !== "READY" &&
             pageState !== "PARTIAL" &&
-            pageState !== "STALE" && !(layerSheetOwnsSceneFailure && pageState === "ERROR") ? (
+            pageState !== "STALE" && !(layerSheetOwnsSceneFailure && pageState === "ERROR") ? pageState === "ERROR" ? (
+              <SoftButton label="刷新观星点" onClick={() => void refreshMap()} />
+            ) : (
               <StatusPanel
                 state={pageState}
                 detail={
-                  pageState === "EMPTY"
-                    ? "可以移动地图或搜索其他区域。"
-                    : pageState === "PERMISSION_DENIED"
+                  pageState === "PERMISSION_DENIED"
                       ? "请登录后重试。"
-                      : pageState === "ERROR"
-                        ? "数据暂时无法加载，请重试。"
-                        : "正在加载观星点。"
+                      : "正在加载观星点"
                 }
                 recoveryLabel={
-                  pageState === "ERROR"
-                    ? "重试"
-                    : pageState === "PERMISSION_DENIED"
+                  pageState === "PERMISSION_DENIED"
                       ? "查看权限说明"
                       : undefined
                 }
                 onRecover={
-                  pageState === "ERROR"
-                    ? () => void refreshMap()
-                    : pageState === "PERMISSION_DENIED"
+                  pageState === "PERMISSION_DENIED"
                       ? () => void openMapPage("/pages/auth/index", "登录页面", "auth")
                     : undefined
                 }
@@ -2444,6 +2456,7 @@ export default function MapPage() {
                 contextPending={Boolean(visibleSpotContextAttempt?.pending)}
                 contextError={visibleSpotContextAttempt?.error ?? null}
                 onContextRecover={() => { if (selected) void resolveSpotContext(selected); }}
+                onLoadingCancel={cancelSpotLoading}
                 extent={panelExtent}
                 documentScrollEnabled={panelDocumentScrollEnabled}
                 phase={panelPhase}

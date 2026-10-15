@@ -63,6 +63,7 @@ export function ContributionMediaSection({
       ))}
       {media.length < 3 ? <SoftButton
         label="选择并上传现场图片"
+        loading={form.uploading ? "arc" : false}
         disabled={disabled}
         onClick={() => void commands.addMedia()}
       >
@@ -149,6 +150,7 @@ export function ContributionActions({
       ) : null}
       <SoftButton
         label={form.kind === "NEW_SPOT_PROPOSAL" ? "保存新增观星点草稿" : "保存现场反馈草稿"}
+        loading={form.saving ? "arc" : false}
         disabled={disabled}
         onClick={() => void commands.saveDraft()}
       >
@@ -158,6 +160,7 @@ export function ContributionActions({
       <SoftButton
         variant="primary"
         label={form.pendingSubmission ? "确认上次提交结果" : isResubmission ? "再次提交" : "提交人工审核"}
+        loading={form.submitting}
         disabled={form.submissionCommandBusy || (!form.pendingSubmission && form.mediaNeedsRecovery)}
         onClick={() => void commands.submit()}
       >

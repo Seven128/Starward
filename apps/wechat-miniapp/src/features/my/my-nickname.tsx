@@ -1,4 +1,5 @@
 import { SemanticIcon } from "@/components/semantic-asset";
+import { LoadingIndicator } from "@/components/loading-indicator";
 import { useDidShow, useDidHide } from "@tarojs/taro";
 import { Button, Input, Text, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
@@ -7,6 +8,7 @@ import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useAppStore } from "@/state/app-store";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { useAccountOperation } from "@/hooks/use-account-operation";
+import { retainPrimaryNavigationCover } from "@/navigation/primary-navigation-cover";
 
 /** Saved identity is server-owned; a failed edit stays a draft until explicit retry. */
 export function MyNickname({ owner }: { owner: string | null }) {
@@ -32,6 +34,7 @@ export function MyNickname({ owner }: { owner: string | null }) {
   useDidHide(() => { visible.current = false; setEditing(false); });
   useEffect(() => () => { visible.current = false; }, []);
   const editorVisible = editing && draft.current?.owner === owner && (draft.current.reset === reset || saving);
+  useEffect(() => editorVisible ? retainPrimaryNavigationCover() : undefined, [editorVisible]);
   useEffect(() => {
     if (saving) return;
     if (draft.current && (draft.current.owner !== owner || draft.current.reset !== reset)) {
@@ -99,7 +102,7 @@ export function MyNickname({ owner }: { owner: string | null }) {
         {errorText ? <View role="alert"><Text>{errorText}</Text></View> : null}
         <View className="my-nickname-dialog__actions">
           <Button disabled={saving} onClick={cancel}>取消</Button>
-          <Button loading={saving} disabled={saving} onClick={() => void save()}>保存</Button>
+          <Button className="loading-button" aria-busy={saving} disabled={saving} onClick={() => void save()}>{saving ? <LoadingIndicator /> : null}保存</Button>
         </View>
       </View>
     </View> : null}

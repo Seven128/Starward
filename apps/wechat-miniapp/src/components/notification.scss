@@ -51,6 +51,26 @@
   pointer-events: auto;
   animation: notification-enter 160ms ease-out;
 }
+.notification--message {
+  display: block;
+  width: 100%;
+  min-height: 44Px;
+  box-sizing: border-box;
+  border: 1Px solid var(--border);
+  border-radius: 16Px;
+  padding: 15Px 18Px;
+  font-size: 14Px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: left;
+  white-space: normal;
+}
+.theme-day .notification--message {
+  border-color: #e4e8ec;
+  background: #ffffffed;
+  color: #344556;
+  box-shadow: 0 6Px 20Px #31465918;
+}
 .notification--floating .notification__dismiss,
 .notification--floating .notification__icon {
   color: inherit;

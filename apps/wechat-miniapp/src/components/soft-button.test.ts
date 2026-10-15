@@ -35,5 +35,27 @@ test("shared button without children renders its action label visibly", () => {
     React: { createElement: (_type: unknown, props: unknown, ...children: unknown[]) => ({ props, children }) },
   });
   const button = exports.SoftButton!({ label: "重新获取场地信息" });
-  assert.equal(button.children[0]?.children[0], "重新获取场地信息");
+  assert.equal(button.children.filter(Boolean)[0]?.children[0], "重新获取场地信息");
+});
+
+test("pending buttons prevent a second command independently of the disabled prop", () => {
+  const source = readFileSync(new URL("./soft-button.tsx", import.meta.url), "utf8");
+  const output = ts.transpileModule(source, { compilerOptions: {
+    target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React,
+  } }).outputText;
+  const exports: any = {};
+  vm.runInNewContext(output, {
+    exports, require: () => ({ Button: "button", Text: "text", LoadingIndicator: "loading" }),
+    React: { createElement: (type: unknown, props: unknown, ...children: unknown[]) => ({ type, props, children }) },
+  });
+  let commands = 0;
+  for (const loading of [true, "arc"] as const) {
+    const button = exports.SoftButton({ label: "保存中", loading, onClick: () => commands++ });
+    assert.equal(button.props.disabled, true);
+    button.props.onClick();
+    assert.equal(commands, 0);
+    assert.equal(button.children[0].type, "loading");
+  }
+  exports.SoftButton({ label: "保存", loading: false, onClick: () => commands++ }).props.onClick();
+  assert.equal(commands, 1);
 });

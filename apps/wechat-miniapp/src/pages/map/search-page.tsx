@@ -663,6 +663,8 @@ export function MapSearchSurface() {
         <ScrollView className="spot-search-result-list" data-control="spot-search-result-list" scrollY enhanced showScrollbar={false} aria-label="正式观星点结果" onClick={(event) => { event.stopPropagation(); blurSearch(); }}>
         <View className="spot-search-feedback" onClick={(event) => event.stopPropagation()}>
           <NotificationRegion owner="search" placement="inline" />
+          {pageVisible && searchState !== "LOADING" && hasRetainedSearchResults && scene.isFetching ?
+            <StatusPanel state="LOADING" detail="正在更新，保留上次结果" /> : null}
           {staleSearchResource ? <StatusPanel state="STALE" detail={hasRetainedSearchResults
             ? "部分搜索资料尚未确认最新状态，当前结果仍会保留。"
             : "当前没有可保留的搜索结果；资料暂时无法更新。"}

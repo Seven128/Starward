@@ -8,7 +8,7 @@ import { sameContextVersion } from "../../services/observation-context-version";
 function runtime(initialContext: unknown = null, initialRetiredContextId: string | null = null) {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declarations: string[] = [];
-  const names = new Set(["invalidateMapPointIntent", "dismissMapRegionFailure", "resolveSpotContext", "openDetail", "closeSpotPanel", "openLayerSheet"]);
+  const names = new Set(["invalidateMapPointIntent", "dismissMapRegionFailure", "resolveSpotContext", "openDetail", "closeSpotPanel", "cancelSpotLoading", "openLayerSheet"]);
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && names.has(node.name.getText(source))) declarations.push(`const ${node.getText(source)};`);
     ts.forEachChild(node, visit);
@@ -25,7 +25,7 @@ function runtime(initialContext: unknown = null, initialRetiredContextId: string
   const restorations: { input: unknown; resolve(value: unknown): void; reject(error: Error): void }[] = [];
   const timers = new Map<number, () => void>();
   let timerId = 0;
-  const functions = vm.runInNewContext(ts.transpileModule(declarations.join("\n") + "\n({resolveSpotContext, openDetail, closeSpotPanel, openLayerSheet});", {
+  const functions = vm.runInNewContext(ts.transpileModule(declarations.join("\n") + "\n({resolveSpotContext, openDetail, closeSpotPanel, cancelSpotLoading, openLayerSheet});", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
     sameContextVersion,
@@ -49,7 +49,7 @@ function runtime(initialContext: unknown = null, initialRetiredContextId: string
     notify() {},
     clearTimeout: (id: number) => timers.delete(id),
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; },
-  }) as { resolveSpotContext(spot: object): Promise<void>; openDetail(spot: object): Promise<void>; closeSpotPanel(): void; openLayerSheet(): void };
+  }) as { resolveSpotContext(spot: object): Promise<void>; openDetail(spot: object): Promise<void>; closeSpotPanel(): void; cancelSpotLoading(): void; openLayerSheet(): void };
   return { ...functions, requests, replacements, restorations, contexts, attempts, presentations, extents,
     selection: () => selectedSpotId,
     installCurrent: (value: unknown) => { observationContext = value; },
@@ -221,6 +221,17 @@ test("completed close invalidates pending spot context", async () => {
   map.requests[0]!.resolve({ data: "closed-a" });
   await pending;
   assert.deepEqual(map.contexts, []);
+});
+
+test("explicit loading cancellation rejects a reply before the closing animation finishes", async () => {
+  const map = runtime();
+  const pending = map.openDetail({ spotId: "a", name: "A" });
+  map.cancelSpotLoading();
+  map.requests[0]!.resolve({ data: "cancelled-a" });
+  await pending;
+  assert.deepEqual(map.contexts, []);
+  map.fireTimers();
+  assert.equal(map.selection(), null);
 });
 
 test("current context failure remains in the selected panel and retries without resetting its extent", async () => {

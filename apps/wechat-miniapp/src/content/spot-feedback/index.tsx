@@ -1,4 +1,5 @@
 import { SystemMotionProbe } from "@/components/system-motion-probe";
+import { LoadingIndicator } from "@/components/loading-indicator";
 import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
@@ -484,7 +485,7 @@ export default function FormalFeedbackEditor() {
         </>}
       </View>
     </ScrollView>
-    {showSubmit ? <View className="formal-feedback-submit safe-bottom"><Button disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || !hasChanges} onClick={() => void submit()}>{busy ? "提交中…" : resubmissionRevision !== null ? "再次提交" : "提交反馈"}</Button></View> : null}
+    {showSubmit ? <View className="formal-feedback-submit safe-bottom"><Button className="loading-button" aria-busy={busy} disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || !hasChanges} onClick={() => void submit()}>{busy ? <LoadingIndicator /> : null}{busy ? "提交中" : resubmissionRevision !== null ? "再次提交" : "提交反馈"}</Button></View> : null}
   </View></>;
 }
 

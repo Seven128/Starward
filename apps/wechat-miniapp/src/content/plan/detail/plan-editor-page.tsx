@@ -1517,7 +1517,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       </ScrollView>
       {activePlan && !editing ? <View className="plan-actions">
         {mode !== "DAY" ? <SoftButton variant="default" label="分享这份行程" onClick={openPlanShare}>分享行程</SoftButton> : null}
-        <SoftButton variant="ghost" label="删除观测计划" disabled={deleting} onClick={() => void remove()}>
+        <SoftButton variant="ghost" label="删除观测计划" loading={deleting ? "arc" : false} disabled={deleting} onClick={() => void remove()}>
           {deleting ? "删除中…" : "删除"}
         </SoftButton>
         <SoftButton variant="primary" label="编辑计划" onClick={() => {
@@ -1548,7 +1548,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           }
           setEditing(false);
         }}>取消</SoftButton>
-        <SoftButton variant="primary" disabled={saving || deleting || (!activePlan && formalSpots.length === 0)} label="保存观测计划" onClick={() => void save()}>
+        <SoftButton variant="primary" loading={saving} disabled={saving || deleting || (!activePlan && formalSpots.length === 0)} label="保存观测计划" onClick={() => void save()}>
           {saving ? "保存中…" : "保存计划"}
         </SoftButton>
       </View> : null}

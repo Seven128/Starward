@@ -3,6 +3,7 @@ import { Button, Image, Slider, Text, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
 import type { AccountAvatarMimeType } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
+import { LoadingIndicator } from "@/components/loading-indicator";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { currentDraftUserId, getAccountAvatar, getAccountProfile, saveAccountAvatar } from "@/services/api-client";
 import { miniappQueryClient } from "@/services/query-client";
@@ -10,6 +11,7 @@ import { useAppStore } from "@/state/app-store";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { useAccountOperation } from "@/hooks/use-account-operation";
+import { retainPrimaryNavigationCover } from "@/navigation/primary-navigation-cover";
 import { MINIAPP_DESIGN } from "@/theme/design-tokens";
 
 function avatarMime(path: string): AccountAvatarMimeType {
@@ -55,6 +57,8 @@ export function MyAvatar({ owner }: { owner: string | null }) {
   // A controlled renewal can temporarily hide identity while this save still owns its intent.
   // Other account/reset changes retire through the shared owner, including batched A→B→A.
   const previewVisible = Boolean(preview && preview.owner === owner && (preview.reset === reset || saving));
+  const coversNavigation = sheet || previewVisible || mediaHandoff.active;
+  useEffect(() => coversNavigation ? retainPrimaryNavigationCover() : undefined, [coversNavigation]);
   useEffect(() => {
     if (saving) return;
     if (preview && (preview.owner !== owner || preview.reset !== reset)) { setPreview(null); setZoom(1); }
@@ -127,7 +131,7 @@ export function MyAvatar({ owner }: { owner: string | null }) {
       <Text className="type-section">调整头像</Text>
       <View className="my-avatar-preview"><Image src={preview.path} mode="aspectFill" style={{ transform: `scale(${zoom})` }} /></View>
       <View className="my-avatar-zoom"><Text>缩小</Text><Slider min={1} max={2.5} step={0.05} value={zoom} disabled={saving} {...sliderColors} blockSize={20} aria-label="头像缩放" onChanging={event => setZoom(Number(event.detail.value))} onChange={event => setZoom(Number(event.detail.value))} /><Text>放大</Text></View>
-      <View className="my-avatar-editor__actions"><Button disabled={saving} onClick={close}>取消</Button><Button className="my-avatar-save" loading={saving} disabled={saving} data-control="my-avatar-save" onClick={() => void save()}>使用此头像</Button></View>
+      <View className="my-avatar-editor__actions"><Button disabled={saving} onClick={close}>取消</Button><Button className="my-avatar-save loading-button" aria-busy={saving} disabled={saving} data-control="my-avatar-save" onClick={() => void save()}>{saving ? <LoadingIndicator /> : null}使用此头像</Button></View>
     </View></View> : null}
   </>;
 }

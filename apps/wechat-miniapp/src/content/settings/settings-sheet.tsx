@@ -1,4 +1,5 @@
 import { SemanticIcon } from "@/components/semantic-asset";
+import { LoadingIndicator } from "@/components/loading-indicator";
 import type { DisplayMode, UserPreferences } from "@starward/miniapp-contracts";
 import { Button, Text, View } from "@tarojs/components";
 import type { SettingsSheetKind } from "./settings-sections";
@@ -87,9 +88,10 @@ export function SettingsSheet({
             <Button className="settings-sheet__secondary focus-ring" disabled={busy} onClick={close}>
               {sheet === "DELETE" ? "保留账户" : "取消"}
             </Button>
-            <Button className={`settings-sheet__primary focus-ring${!busy ? " settings-sheet__primary--ready" : ""}${sheet === "DELETE" || sheet === "DELETE_FINAL" ? " settings-sheet__primary--danger" : ""}`}
-              loading={busy} disabled={busy}
+            <Button className={`settings-sheet__primary loading-button focus-ring${!busy ? " settings-sheet__primary--ready" : ""}${sheet === "DELETE" || sheet === "DELETE_FINAL" ? " settings-sheet__primary--danger" : ""}`}
+              aria-busy={busy} disabled={busy}
               onClick={sheet === "CACHE" ? confirmCache : sheet === "EXPORT" ? confirmExport : sheet === "DELETE" ? advanceDelete : confirmDelete}>
+              {busy ? <LoadingIndicator /> : null}
               {busy ? "处理中" : sheet === "CACHE" ? "清理缓存" : sheet === "EXPORT" ? "准备数据" : sheet === "DELETE" ? "继续" : "确认删除"}
             </Button>
           </>}

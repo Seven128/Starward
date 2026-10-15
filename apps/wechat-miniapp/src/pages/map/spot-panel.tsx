@@ -178,6 +178,7 @@ export function SpotInformationPanel({
   onHandleTouchCancel,
   onExtent,
   onClose,
+  onLoadingCancel = onClose,
   onRecover,
   onSkyRecover,
   onFavorite,
@@ -237,6 +238,7 @@ export function SpotInformationPanel({
   onHandleTouchCancel: () => void;
   onExtent: (extent: SpotPanelExtent) => void;
   onClose: () => void;
+  onLoadingCancel?: () => void;
   onRecover: () => void;
   onSkyRecover: () => void;
   onFavorite: () => void;
@@ -540,7 +542,7 @@ export function SpotInformationPanel({
 
           <SpotPlanEntry spotId={effectiveSpot.spotId} onLayoutChange={onLayoutChange} />
 
-          {contextPending ? <StatusPanel state="LOADING" detail="正在确认地点的观测条件；已确认的地图摘要仍可查看。" /> : null}
+          {contextPending ? <StatusPanel state="LOADING" detail="正在读取地点资料" recoveryLabel="取消" onRecover={onLoadingCancel} /> : null}
           {contextError ? <StatusPanel
             state="ERROR"
             title="观测条件未更新"
@@ -550,7 +552,7 @@ export function SpotInformationPanel({
           /> : null}
 
           <View className="spot-panel__section" ariaLabel="场地资料">
-            {detailPending ? <StatusPanel state="LOADING" detail="正在加载地点信息" /> : null}
+            {detailPending && !contextPending ? <StatusPanel state="LOADING" detail="正在读取地点资料" recoveryLabel="取消" onRecover={onLoadingCancel} /> : null}
             {detailError || detailStale ? (
               <StatusPanel
                 state={detailError ? detailPageState : "STALE"}

@@ -33,6 +33,8 @@ function avatarComponent() {
       if (name === "@tarojs/components") return { Button: "button", Image: "image", Slider: "slider", Text: "text", View: "view" };
       if (name === "@tarojs/taro") return { default: { chooseMedia: async () => ({ tempFiles: [{ tempFilePath: "TEST-avatar.png", size: 100 }] }) }, useDidHide() {}, useDidShow() {} };
       if (name.endsWith("semantic-asset")) return { SemanticIcon: "semantic-icon" };
+      if (name.endsWith("loading-indicator")) return { LoadingIndicator: "loading" };
+      if (name.endsWith("primary-navigation-cover")) return { retainPrimaryNavigationCover: () => () => {} };
       if (name.endsWith("use-resource-query")) return { useResourceQuery: (options: any) => ({ data: { data: options.queryKey[0] === "account-profile" ? profile : saved } }) };
       if (name.endsWith("api-client")) return { currentDraftUserId: () => "account-a", saveAccountAvatar: () => { saves++; } };
       if (name.endsWith("query-client")) return { miniappQueryClient: {} };

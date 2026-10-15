@@ -58,7 +58,7 @@ test("cold resource errors stay distinct from true empty results and retain retr
   assert.match(spotSource, /state="ERROR"/);
   assert.match(statusSource, /ERROR: "暂时无法获取数据"/);
   assert.match(spotSource, /recoveryLabel="重试概览"/);
-  assert.match(mapSource, /pageState === "ERROR"[\s\S]*?"重试"/);
+  assert.match(mapSource, /pageState === "ERROR"[\s\S]*?<SoftButton label="刷新观星点" onClick=\{\(\) => void refreshMap\(\)\}/);
 });
 
 test("independent data pages notify only while visible and keep error recovery", () => {
