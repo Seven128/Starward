@@ -406,6 +406,9 @@
 }
 
 .settings-sheet__secondary { color: var(--text-primary); background: var(--surface-subtle); }
+.settings-export-state { display: flex; flex-direction: column; align-items: flex-start; gap: 10Px; margin: 16Px 0; }
+.settings-export-state .type-caption { color: var(--text-secondary); }
+.settings-export-state text { overflow-wrap: anywhere; }
 .settings-sheet__primary { color: var(--canvas); background: var(--primary); }
 .settings-sheet__primary--danger { color: var(--danger); background: var(--icon-coral-soft); }
 

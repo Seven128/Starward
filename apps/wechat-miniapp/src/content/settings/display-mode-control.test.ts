@@ -5,7 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import * as gesture from "./display-mode-gesture";
 
-function harness() {
+function harness(disabled = false) {
   const refs: any[] = [], states: any[] = [], effects: { deps: unknown[]; cleanup: (() => void) | undefined }[] = [];
   const selected: string[] = [];
   let r = 0, s = 0, e = 0, shown = () => {}, hidden = () => {};
@@ -35,7 +35,7 @@ function harness() {
       : name === "./display-mode-gesture" ? gesture
       : name.includes("acceptance-diagnostics") ? { recordAcceptanceDiagnostic() {} } : {},
   });
-  const render = () => { r = s = e = 0; return exports.DisplayModeControl({ mode: "NIGHT",
+  const render = () => { r = s = e = 0; return exports.DisplayModeControl({ mode: "NIGHT", disabled,
     onSelect: (value: string) => selected.push(value), onGestureCapture() {} }); };
   const track = () => render().props.children[1];
   const choice = (mode: string) => track().props.children[1].find((node: any) => node.props.id === `settings-mode-${mode}`);
@@ -60,4 +60,12 @@ test("cancelling a live touch still suppresses its click, and the next fresh tou
   const h = harness(); h.track().props.onTouchCancel(); h.click("observation"); assert.deepEqual(h.selected, []);
   h.track().props.onTouchStart({ touches: [{ clientX: 80, clientY: 20 }] });
   h.track().props.onTouchEnd(); h.click("observation"); assert.deepEqual(h.selected, ["OBSERVATION"]); h.unmount();
+});
+
+test("a suspended account cannot change mode by direct click or a touch gesture", () => {
+  const h = harness(true); h.click("day");
+  h.track().props.onTouchStart({ touches: [{ clientX: 80, clientY: 20 }] });
+  h.track().props.onTouchMove({ touches: [{ clientX: 200, clientY: 20 }] });
+  h.track().props.onTouchEnd(); h.click("observation");
+  assert.deepEqual(h.selected, []); h.unmount();
 });

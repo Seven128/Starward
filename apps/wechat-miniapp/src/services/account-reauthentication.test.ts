@@ -489,7 +489,7 @@ test("deletion receipts clean only the initiating account after an account switc
 test("confirmed remote deletion reports failed native erasure and cannot restore its old current session", async () => {
   for (const switched of [false, true]) {
     const data = new Map<string, unknown>();
-    let failWrites = false, queryCleared = false, serverDeleted = false;
+    let failWrites = false, queryCleared = false, serverDeleted = false, deleteCalls = 0;
     const taro = {
       getStorageSync: (key: string) => data.get(key),
       getStorageInfoSync: () => ({ keys: [...data.keys()] }),
@@ -509,6 +509,7 @@ test("confirmed remote deletion reports failed native erasure and cannot restore
         resetAfterAccountDeletion: () => !failWrites }) },
       accountReauthentication: async () => ({ userId: "a", code: "synthetic" }), idempotencyKey: () => "synthetic",
       requestOperation: async () => {
+        deleteCalls++;
         serverDeleted = true;
         if (switched) data.set("auth", { userId: "b", accessToken: "synthetic-other", expiresAt: new Date(Date.now() + 3_600_000).toISOString() });
         failWrites = true;
@@ -529,6 +530,10 @@ test("confirmed remote deletion reports failed native erasure and cannot restore
     assert.equal(run.currentDraftUserId(), switched ? "b" : null);
     assert.equal(responseCache.get("plans:/v2/plans:a"), undefined);
     assert.equal(data.has("auth"), true, "failure is real: the native session still exists, but the revoked identity is fenced");
+    failWrites = false;
+    assert.equal(await receipt.retryLocalCleanup(), true);
+    assert.equal(deleteCalls, 1, "local retries never reauthenticate or issue another server DELETE");
+    assert.equal(data.has("auth"), switched, "the retry removes only the confirmed deleted identity, preserving B");
   }
 });
 

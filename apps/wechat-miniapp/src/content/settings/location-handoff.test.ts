@@ -52,6 +52,8 @@ function mount() {
     ...react, ...taro, Taro: taro, useAppStore: store, usePageNavigation: module.exports.usePageNavigation,
     useThemeClass: () => "theme-day", useReducedMotion: () => false,
     useWechatLogin: () => ({ open: false, dialog: null, requireAccount() {} }),
+    useAccountExport: () => ({ state: { phase: "IDLE" }, close() {}, handingOff: () => false }),
+    useSettingsPreferences: () => ({ confirmed: true, state: "READY" }),
     usePreferencesSync: () => ({ updatePreference() {}, syncNow() {}, status: "" }),
     currentDraftUserId: () => identity, clearTimeout, setTimeout,
   }) as { openLocation: () => Promise<void> };

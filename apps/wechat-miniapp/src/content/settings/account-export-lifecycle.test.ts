@@ -1,192 +1,149 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import vm from "node:vm";
 import test from "node:test";
-import ts from "typescript";
+import { createAccountOperationOwner } from "@/hooks/account-operation";
+import { createAccountExportCleanup } from "./account-export-cleanup";
+import { createAccountExport, type AccountExportState } from "./account-export";
 
-// Execute the production handlers and lifecycle subscriptions. Only the React,
-// HTTP and native filesystem/platform ports are simulated; no private data is read.
-const source = ts.createSourceFile("settings.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"),
-  ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-const page = source.statements.find((node): node is ts.FunctionDeclaration =>
-  ts.isFunctionDeclaration(node) && node.name?.text === "SettingsPage");
-assert.ok(page?.body);
-const fileFns = source.statements.filter(node => ts.isFunctionDeclaration(node) &&
-  ["writeJsonFile", "removeJsonFile"].includes(node.name?.text ?? "")).map(node => node.getText(source)).join("\n");
-const body = page.body.statements.filter(node => !ts.isReturnStatement(node)).map(node => node.getText(source)).join("\n");
-const code = ts.transpileModule(`${fileFns}\nfunction PageProbe() {${body}\nreturn {downloadAccountData};}\nPageProbe();`, {
-  compilerOptions: { target: ts.ScriptTarget.ES2020 },
-}).outputText;
 const tick = () => new Promise<void>(resolve => setImmediate(resolve));
-let fileSequence = 0;
-
-function render({ initialOwner = "synthetic:A" as string | null, deferredApi = false,
-  unlinkFailure = false, synchronousShareHide = false } = {}) {
-  let owner = initialOwner;
-  let hide!: () => void, show!: () => void;
-  const cleanups: Array<() => void> = [];
-  const listeners = new Set<(next: any, previous: any) => void>();
-  const events: Array<{ kind: string; path?: string; notice?: any; state?: unknown }> = [];
-  const writes: Array<{ filePath: string; success: () => void; fail: (error: { errMsg: string }) => void }> = [];
-  const shares: Array<{ resolve: () => void; reject: (error: Error) => void }> = [];
-  let finishApi!: (account?: string) => void;
-  let rejectApi!: (error: Error) => void;
-  let signal: AbortSignal | undefined;
-  const state = {
-    accountOwnerId: owner, preferences: { reducedMotion: false }, mode: "DAY", notifications: [],
-    setMode() {}, enterObservation() {}, clearLocalCache() {}, resetAfterAccountDeletion() {},
-    notify(notice: unknown) { events.push({ kind: "notice", notice }); },
-    dismissNotification() {},
-  };
-  const store = Object.assign((selector: (value: typeof state) => unknown) => selector(state), {
-    getState: () => state,
-    subscribe: (listener: (next: typeof state, previous: typeof state) => void) => {
-      listeners.add(listener); return () => listeners.delete(listener);
-    },
+const deferred = () => { let resolve!: () => void, reject!: (error: Error) => void;
+  const promise = new Promise<void>((yes, no) => { resolve = yes; reject = no; });
+  return { promise, resolve, reject }; };
+let sequence = 0;
+function setup({ delayedWrite = false, delayedLoad = false, filesOwner: sharedFiles = undefined as ReturnType<typeof createAccountExportCleanup> | undefined } = {}) {
+  let identity = { userId: "synthetic:A" as string | null, ownerId: "synthetic:A" as string | null,
+    reset: 1, page: {}, target: "account-export" };
+  let controller!: ReturnType<typeof createAccountExport>;
+  const operations = createAccountOperationOwner(() => identity, busy => { if (!busy) controller?.retire(); });
+  const states: AccountExportState[] = [], files = new Map<string, string>();
+  const calls = { load: 0, write: 0, share: [] as string[], remove: [] as string[], warning: 0 };
+  const nativeWrite = deferred(), nativeLoad = deferred(), shares: ReturnType<typeof deferred>[] = [];
+  let signal: AbortSignal | undefined, removeFails = false, responseUser = "synthetic:A";
+  const filesOwner = sharedFiles ?? createAccountExportCleanup(async path => {
+    calls.remove.push(path); if (removeFails) throw Error("device denied"); files.delete(path);
   });
-  const actions = vm.runInNewContext(code, {
-    Taro: { env: { USER_DATA_PATH: "/synthetic" }, getFileSystemManager: () => ({
-      writeFile(options: typeof writes[number]) { writes.push(options); events.push({ kind: "write", path: options.filePath }); },
-      unlink(options: { filePath: string; success: () => void; fail: (error: { errMsg: string }) => void }) {
-        events.push({ kind: "unlink", path: options.filePath });
-        if (unlinkFailure) options.fail({ errMsg: "synthetic permission denied" }); else options.success();
-      },
-    }), shareFileMessage: (options: { filePath: string }) => {
-      events.push({ kind: "share", path: options.filePath });
-      if (synchronousShareHide) hide();
-      return new Promise<void>((resolve, reject) => shares.push({ resolve, reject }));
-    } },
-    useThemeClass: () => "theme-day", useReducedMotion: () => false, useAppStore: store,
-    useWechatLogin: () => ({ open: false, dialog: null, requireAccount() {} }),
-    usePageNavigation: () => ({ retire() {} }),
-    usePreferencesSync: () => ({ updatePreference() {}, syncNow() {}, status: "" }),
-    useState: (initial: unknown) => [initial, (value: unknown) => events.push({ kind: "state", state: value })],
-    useRef: (current: unknown) => ({ current }),
-    useEffect: (effect: () => (() => void) | undefined) => { const cleanup = effect(); if (cleanup) cleanups.push(cleanup); },
-    useDidHide: (callback: () => void) => { hide = callback; },
-    useDidShow: (callback: () => void) => { show = callback; },
-    exportAccountData: (requestSignal: AbortSignal) => {
-      signal = requestSignal;
-      events.push({ kind: "api" });
-      const response = (account = "synthetic:A") => ({ data: {
-        schemaVersion: "starward-account-data-export-v1", generatedAt: "2026-10-05T00:00:00Z", account: { userId: account },
-      } });
-      if (!deferredApi) return Promise.resolve(response());
-      return new Promise((resolve, reject) => { finishApi = account => resolve(response(account)); rejectApi = reject; });
-    },
-    currentDraftUserId: () => owner, AbortController,
-    idempotencyKey: () => `export:synthetic:${++fileSequence}`,
-    errorMessage: () => "synthetic failure", setTimeout, clearTimeout,
-  }) as { downloadAccountData: () => Promise<void> };
-  return {
-    ...actions, events, writes, shares,
-    hide: () => hide(), show: () => show(),
-    unmount: () => { for (const cleanup of cleanups) cleanup(); },
-    owner(next: string | null) {
-      const previous = { ...state }; owner = next; state.accountOwnerId = next;
-      for (const listener of listeners) listener(state, previous);
-    },
-    finishApi: (account?: string) => finishApi(account), rejectApi: (error: Error) => rejectApi(error),
-    get signal() { return signal; }, get subscriptionCount() { return listeners.size; },
+  controller = createAccountExport({ begin: () => operations.begin(), userId: () => identity.userId,
+    load: async abort => { signal = abort; calls.load++; if (delayedLoad) await nativeLoad.promise;
+      return { data: { generatedAt: "2026-10-15T00:00:00Z", account: { userId: responseUser } } }; },
+    destination: () => { const fileName = `account-${++sequence}.json`; return { fileName, filePath: `/private/${fileName}` }; },
+    write: async (path, data) => { calls.write++; if (delayedWrite) await nativeWrite.promise; files.set(path, data); },
+    files: filesOwner,
+    share: path => { calls.share.push(path); const handoff = deferred(); shares.push(handoff); return handoff.promise; },
+    changed: state => states.push(state), message: () => "synthetic failure", cleanupWarning: () => calls.warning++,
+  });
+  return { controller, operations, states, calls, files, filesOwner, nativeWrite, nativeLoad, shares,
+    get signal() { return signal; }, set responseUser(value: string) { responseUser = value; },
+    set removeFails(value: boolean) { removeFails = value; },
+    owner(value: string) { identity = { ...identity, userId: value, ownerId: value, reset: identity.reset + 1 }; operations.observe(); },
+    hide() { operations.hide(); }, show() { operations.show(); },
   };
 }
 
-test("a current export actually writes, shares, removes exactly that file and reports success", async () => {
-  const page = render(), pending = page.downloadAccountData();
-  await tick(); assert.equal(page.writes.length, 1);
-  page.writes[0]!.success(); await tick(); assert.equal(page.shares.length, 1);
-  assert.equal(page.events.filter(event => event.kind === "unlink").length, 0);
-  page.shares[0]!.resolve(); await pending;
-  assert.equal(page.events.filter(event => event.kind === "unlink").length, 1);
-  assert.equal(page.events.find(event => event.kind === "notice")!.notice.title, "账户数据已生成");
+test("preparation creates a readable account file and requires a separate explicit handoff", async () => {
+  const h = setup(); await h.controller.prepare();
+  assert.equal(h.calls.load, 1); assert.equal(h.calls.write, 1); assert.equal(h.calls.share.length, 0);
+  assert.equal(h.states.at(-1)?.phase, "READY");
+  assert.equal(JSON.parse([...h.files.values()][0]!).account.userId, "synthetic:A");
+  assert.doesNotMatch(JSON.stringify(h.states), /filePath|\/private/u);
+  const pending = h.controller.share(); await tick();
+  assert.equal(h.calls.share.length, 1); assert.equal(h.calls.remove.length, 0);
+  h.shares[0]!.resolve(); await pending;
+  assert.equal(h.states.at(-1)?.phase, "COMPLETE"); assert.equal(h.files.size, 0);
 });
 
-for (const boundary of ["account", "account-ABA", "hidden", "hidden-return", "unmount"] as const) {
-  test(`an export retired during a native write by ${boundary} never dispatches the old private file`, async () => {
-    const page = render(), pending = page.downloadAccountData();
-    await tick(); assert.equal(page.writes.length, 1);
-    if (boundary.startsWith("account")) { page.owner("synthetic:B"); if (boundary === "account-ABA") page.owner("synthetic:A"); }
-    else if (boundary === "unmount") page.unmount();
-    else { page.hide(); if (boundary === "hidden-return") page.show(); }
-    assert.equal(page.signal?.aborted, true);
-    assert.equal(page.events.filter(event => event.kind === "unlink").length, 0, "an early unlink would leave a late native write behind");
-    const beforeStateCount = page.events.filter(event => event.kind === "state").length;
-    page.writes[0]!.success(); await pending;
-    assert.equal(page.shares.length, 0);
-    assert.equal(page.events.filter(event => event.kind === "unlink").length, 1);
-    assert.equal(page.events.filter(event => event.kind === "notice").length, 0);
-    if (boundary === "unmount") {
-      assert.equal(page.subscriptionCount, 0);
-      assert.equal(page.events.filter(event => event.kind === "state").length, beforeStateCount);
-    } else assert.ok(page.events.some(event => event.kind === "state" && event.state === null), "a mounted page must release its busy UI");
-  });
-}
-
-test("hide before the API result retires the request even if the port ignores abort", async () => {
-  const page = render({ deferredApi: true }), pending = page.downloadAccountData();
-  page.hide(); page.show(); page.finishApi(); await pending;
-  assert.equal(page.signal?.aborted, true);
-  assert.equal(page.writes.length, 0); assert.equal(page.shares.length, 0);
-  assert.equal(page.events.filter(event => event.kind === "notice").length, 0);
-});
-
-for (const synchronousShareHide of [false, true]) {
-  test(`an already dispatched native share keeps its receipt and cleanup, with ${synchronousShareHide ? "synchronous" : "later"} hide`, async () => {
-    const page = render({ synchronousShareHide }), pending = page.downloadAccountData();
-    await tick(); page.writes[0]!.success(); await tick();
-    assert.equal(page.shares.length, 1);
-    if (!synchronousShareHide) page.hide();
-    page.show(); page.shares[0]!.resolve(); await pending;
-    assert.equal(page.events.filter(event => event.kind === "unlink").length, 1);
-    assert.equal(page.events.filter(event => event.kind === "notice").length, 0, "native success must not become a stale success or failure UI");
-  });
-}
-
-test("a cancelled late partial write is still cleaned exactly once", async () => {
-  const page = render(), pending = page.downloadAccountData();
-  await tick(); page.hide(); page.writes[0]!.fail({ errMsg: "partial synthetic write" }); await pending;
-  assert.equal(page.shares.length, 0);
-  assert.equal(page.events.filter(event => event.kind === "unlink").length, 1);
-  assert.equal(page.events.filter(event => event.kind === "notice").length, 0);
-});
-
-test("a retired export reports only a generic device privacy warning when real cleanup fails", async () => {
-  const page = render({ unlinkFailure: true }), pending = page.downloadAccountData();
-  await tick(); page.owner("synthetic:B"); page.writes[0]!.success(); await pending;
-  assert.equal(page.shares.length, 0);
-  assert.equal(page.events.filter(event => event.kind === "unlink").length, 1);
-  const notices = page.events.filter(event => event.kind === "notice").map(event => event.notice);
-  assert.equal(notices.length, 1); assert.equal(notices[0]!.title, "本机临时文件未清除");
-  assert.doesNotMatch(JSON.stringify(notices), /synthetic:[AB]|\/synthetic|账户数据已生成/u);
-});
-
-test("equal server timestamps on successive pages cannot make old cleanup delete the new export", async () => {
-  const oldPage = render(), oldPending = oldPage.downloadAccountData();
-  await tick(); oldPage.unmount();
-  const newPage = render(), newPending = newPage.downloadAccountData();
-  await tick(); assert.notEqual(oldPage.writes[0]!.filePath, newPage.writes[0]!.filePath);
-  oldPage.writes[0]!.success(); await oldPending;
-  assert.equal(oldPage.events.find(event => event.kind === "unlink")!.path, oldPage.writes[0]!.filePath);
-  newPage.writes[0]!.success(); await tick(); newPage.shares[0]!.resolve(); await newPending;
-  assert.equal(newPage.events.find(event => event.kind === "unlink")!.path, newPage.writes[0]!.filePath);
-});
-
-test("an explicit anonymous export can establish its first owner but rejects a different snapshot identity", async () => {
-  for (const snapshotOwner of ["synthetic:A", "synthetic:B"]) {
-    const page = render({ initialOwner: null, deferredApi: true }), pending = page.downloadAccountData();
-    page.owner("synthetic:A"); page.finishApi(snapshotOwner); await tick();
-    if (snapshotOwner === "synthetic:A") {
-      assert.equal(page.writes.length, 1); page.writes[0]!.success(); await tick();
-      assert.equal(page.shares.length, 1); page.shares[0]!.resolve();
-    } else assert.equal(page.writes.length, 0);
-    await pending;
-    if (snapshotOwner === "synthetic:B") assert.equal(page.events.find(event => event.kind === "notice")!.notice.title, "账户数据导出失败");
+test("cancelled and failed native handoffs retain exactly the prepared file for an explicit retry", async () => {
+  const h = setup(); await h.controller.prepare();
+  for (const [index, message] of ["shareFileMessage:fail cancel", "shareFileMessage:fail unavailable"].entries()) {
+    const pending = h.controller.share(); await tick(); h.shares[index]!.reject(Error(message)); await pending;
+    assert.equal(h.states.at(-1)?.phase, "READY");
+    assert.equal((h.states.at(-1) as { outcome: string }).outcome, index ? "failed" : "cancelled");
+    assert.equal(h.files.size, 1); assert.equal(h.calls.remove.length, 0);
   }
+  const pending = h.controller.share(); await tick(); h.shares[2]!.resolve(); await pending;
+  assert.equal(new Set(h.calls.share).size, 1); assert.equal(h.calls.load, 1); assert.equal(h.calls.write, 1);
 });
 
-test("a still-current anonymous authentication failure remains visible and retryable", async () => {
-  const page = render({ initialOwner: null, deferredApi: true }), pending = page.downloadAccountData();
-  page.rejectApi(Error("synthetic offline")); await pending;
-  assert.equal(page.writes.length, 0);
-  assert.equal(page.events.find(event => event.kind === "notice")!.notice.title, "账户数据导出失败");
+for (const callbackBeforeShow of [false, true]) test(`native handoff survives hide and callback/show order ${callbackBeforeShow}`, async () => {
+  const h = setup(); await h.controller.prepare(); const pending = h.controller.share(); await tick(); h.hide();
+  if (!callbackBeforeShow) h.show();
+  h.shares[0]!.reject(Error("cancel")); await pending;
+  if (callbackBeforeShow) h.show();
+  assert.equal(h.states.at(-1)?.phase, "READY"); assert.equal(h.files.size, 1);
+  h.controller.close(); await tick(); assert.equal(h.files.size, 0);
+});
+
+for (const boundary of ["account", "ABA", "hide-return", "unmount"]) test(`late native write at ${boundary} cannot share and cleans only its owned file`, async () => {
+  const h = setup({ delayedWrite: true }); const pending = h.controller.prepare(); await tick();
+  assert.equal(h.calls.write, 1);
+  if (boundary === "account" || boundary === "ABA") { h.owner("synthetic:B"); if (boundary === "ABA") h.owner("synthetic:A"); }
+  else if (boundary === "unmount") { h.controller.dispose(); h.operations.dispose(); }
+  else { h.hide(); h.show(); }
+  assert.equal(h.signal?.aborted, true); assert.equal(h.calls.remove.length, 0);
+  const count = h.states.length; h.nativeWrite.resolve(); await pending;
+  assert.equal(h.calls.share.length, 0); assert.equal(h.files.size, 0); assert.equal(h.calls.remove.length, 1);
+  if (boundary === "unmount") assert.equal(h.states.length, count);
+});
+
+test("retiring an API request aborts it and ignores an uncooperative late response", async () => {
+  const h = setup({ delayedLoad: true }); const pending = h.controller.prepare(); h.controller.close();
+  assert.equal(h.signal?.aborted, true); h.nativeLoad.resolve(); await pending;
+  assert.equal(h.calls.write, 0); assert.equal(h.calls.share.length, 0);
+});
+
+test("file cleanup after a successful handoff has its own retry and never reshares", async () => {
+  const h = setup(); await h.controller.prepare(); h.removeFails = true;
+  const pending = h.controller.share(); await tick(); h.shares[0]!.resolve(); await pending;
+  assert.equal(h.states.at(-1)?.phase, "CLEANUP_REQUIRED");
+  await h.controller.retryCleanup(); assert.equal(h.states.at(-1)?.phase, "CLEANUP_REQUIRED");
+  h.removeFails = false; await h.controller.retryCleanup();
+  assert.equal(h.states.at(-1)?.phase, "COMPLETE"); assert.equal(h.files.size, 0);
+  assert.equal(h.calls.share.length, 1); assert.equal(h.calls.load, 1);
+});
+
+test("a later account never receives old success or filenames; failed retirement cleanup gives a generic warning", async () => {
+  const h = setup(); await h.controller.prepare(); const pending = h.controller.share(); await tick();
+  h.owner("synthetic:B"); h.removeFails = true; const count = h.states.length;
+  h.shares[0]!.resolve(); await pending;
+  assert.equal(h.states.length, count); assert.equal(h.calls.warning, 1); assert.equal(h.calls.remove.length, 1);
+});
+
+test("a different snapshot account is rejected before creating a private file", async () => {
+  const h = setup(); h.responseUser = "synthetic:B"; await h.controller.prepare();
+  assert.equal(h.calls.write, 0); assert.equal(h.states.at(-1)?.phase, "FAILED");
+});
+
+test("equal server timestamps on successive pages still give distinct cleanup destinations", async () => {
+  const a = setup(), b = setup(); await a.controller.prepare(); await b.controller.prepare();
+  assert.notEqual([...a.files.keys()][0], [...b.files.keys()][0]);
+  a.controller.close(); await tick(); assert.equal(a.files.size, 0); assert.equal(b.files.size, 1);
+  b.controller.close(); await tick(); assert.equal(b.files.size, 0);
+});
+
+test("a failed close keeps the exact file cleanup retry and blocks another export", async () => {
+  const h = setup(); await h.controller.prepare(); h.removeFails = true;
+  h.controller.close(); await tick(); assert.equal(h.files.size, 1);
+  h.controller.open(); assert.equal(h.states.at(-1)?.phase, "CLEANUP_REQUIRED");
+  await h.controller.prepare(); assert.equal(h.calls.write, 1); assert.equal(h.calls.load, 1);
+  h.removeFails = false; await h.controller.retryCleanup();
+  assert.equal(h.files.size, 0); assert.equal(h.states.at(-1)?.phase, "IDLE");
+});
+
+test("a new page and later account can clean an old retired file but cannot read or share it", async () => {
+  const a = setup(); await a.controller.prepare(); a.removeFails = true;
+  a.controller.dispose(); a.operations.dispose(); await tick();
+  const b = setup({ filesOwner: a.filesOwner }); b.owner("synthetic:B"); b.controller.open();
+  assert.equal(b.states.at(-1)?.phase, "CLEANUP_REQUIRED");
+  await b.controller.prepare(); await b.controller.share();
+  assert.equal(b.calls.write, 0); assert.equal(b.calls.load, 0); assert.equal(b.calls.share.length, 0);
+  assert.doesNotMatch(JSON.stringify(b.states), /synthetic:A|fileName|filePath/u);
+  a.removeFails = false; await b.controller.retryCleanup(); assert.equal(a.files.size, 0);
+});
+
+test("a successor cleanup waits for the retired native write terminal before removing its file", async () => {
+  const a = setup({ delayedWrite: true }); const writing = a.controller.prepare(); await tick();
+  a.controller.dispose(); a.operations.dispose();
+  const b = setup({ filesOwner: a.filesOwner }); b.controller.open();
+  const cleaning = b.controller.retryCleanup(); await tick(); assert.equal(a.calls.remove.length, 0);
+  await b.controller.prepare(); assert.equal(b.calls.write, 0);
+  a.nativeWrite.resolve(); await writing; await cleaning;
+  assert.equal(a.files.size, 0); assert.equal(a.calls.remove.length, 1);
 });

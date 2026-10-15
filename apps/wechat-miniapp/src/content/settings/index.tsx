@@ -18,8 +18,6 @@ import {
   clearTemporaryApiCache,
   currentDraftUserId,
   errorMessage,
-  exportAccountData,
-  idempotencyKey,
 } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import {
@@ -28,32 +26,9 @@ import {
   type SettingsSheetKind,
 } from "./settings-sections";
 import { SettingsSheet, type OpenSettingsSheet } from "./settings-sheet";
+import { useAccountExport } from "./use-account-export";
+import { useSettingsPreferences } from "./use-settings-preferences";
 import "./index.scss";
-
-function writeJsonFile(filePath: string, data: string) {
-  return new Promise<void>((resolve, reject) => {
-    Taro.getFileSystemManager().writeFile({
-      filePath,
-      data,
-      encoding: "utf8",
-      success: () => resolve(),
-      fail: (result) => reject(new Error(result.errMsg)),
-    });
-  });
-}
-
-function removeJsonFile(filePath: string) {
-  return new Promise<void>((resolve, reject) => {
-    Taro.getFileSystemManager().unlink({
-      filePath,
-      success: () => resolve(),
-      fail: (result) => {
-        if (/ENOENT|no such file|file not exist|文件不存在/iu.test(result.errMsg)) resolve();
-        else reject(new Error(result.errMsg));
-      },
-    });
-  });
-}
 
 export default function SettingsPage() {
   const login = useWechatLogin({ nativeBack: false });
@@ -72,6 +47,8 @@ export default function SettingsPage() {
   const [sheetClosing, setSheetClosing] = useState(false);
   const sheetCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const accountActionPending = useRef(false);
+  const deletionCleanup = useRef<{ userId: string; retry: () => Promise<boolean> } | null>(null);
+  const [deletionCleanupPending, setDeletionCleanupPending] = useState(false);
   const pageAlive = useRef(true);
   const pageVisible = useRef(true);
   const cacheAttempt = useRef<{ owner: string | null; active: boolean } | null>(null);
@@ -82,12 +59,6 @@ export default function SettingsPage() {
     clearingOwnAccount: boolean;
     clearedOwnAccount: boolean;
   } | null>(null);
-  const exportAttempt = useRef<{
-    owner: string | null;
-    active: boolean;
-    requesting: boolean;
-    abort: AbortController;
-  } | null>(null);
   const [modeGestureCaptured, setModeGestureCaptured] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
   const {
@@ -95,6 +66,11 @@ export default function SettingsPage() {
     syncNow,
     status: preferenceSyncStatus,
   } = usePreferencesSync();
+  const accountExport = useAccountExport(busy => {
+    accountActionPending.current = busy;
+    if (pageAlive.current) setDataAction(busy ? "EXPORT" : null);
+  });
+  const settingsPreferences = useSettingsPreferences();
   const needsAccountRecovery = preferenceSyncStatus.startsWith("账户尚未恢复");
   const canRetryPreferenceSync = preferenceSyncStatus.includes("仅保存在本机") ||
     preferenceSyncStatus.includes("等待重试");
@@ -106,6 +82,12 @@ export default function SettingsPage() {
         navigation.retire();
       if (cacheAttempt.current && state.accountOwnerId !== previous.accountOwnerId)
         cacheAttempt.current.active = false;
+      if (deletionCleanup.current && state.accountOwnerId !== null &&
+        state.accountOwnerId !== deletionCleanup.current.userId) {
+        deletionCleanup.current = null;
+        setDeletionCleanupPending(false);
+        setSheet(null);
+      }
       const deletion = deletionAttempt.current;
       if (deletion?.active && state.accountOwnerId !== previous.accountOwnerId) {
         if (deletion.clearingOwnAccount && !deletion.clearedOwnAccount &&
@@ -116,41 +98,26 @@ export default function SettingsPage() {
           deletion.owner = state.accountOwnerId;
         } else deletion.active = false;
       }
-      const attempt = exportAttempt.current;
-      if (!attempt?.active || state.accountOwnerId === previous.accountOwnerId) return;
-      // An explicitly initiated anonymous export may establish its first real
-      // identity. Any later departure permanently retires this attempt (ABA too).
-      if (attempt.requesting && previous.accountOwnerId === null &&
-        state.accountOwnerId !== null &&
-        (attempt.owner === null || attempt.owner === state.accountOwnerId)) {
-        attempt.owner = state.accountOwnerId;
-        return;
-      }
-      attempt.active = false;
-      attempt.abort.abort();
     });
     return () => {
       pageAlive.current = false;
       pageVisible.current = false;
       if (cacheAttempt.current) cacheAttempt.current.active = false;
       if (deletionAttempt.current) deletionAttempt.current.active = false;
-      if (exportAttempt.current) {
-        exportAttempt.current.active = false;
-        exportAttempt.current.abort.abort();
-      }
       unsubscribe();
       if (sheetCloseTimer.current) clearTimeout(sheetCloseTimer.current);
     };
   }, []);
-  useDidShow(() => { pageVisible.current = true; });
+  useDidShow(() => {
+    pageVisible.current = true;
+    if (deletionCleanup.current && useAppStore.getState().accountOwnerId === null) setSheet("DELETE_CLEANUP");
+  });
   useDidHide(() => {
     pageVisible.current = false;
     if (cacheAttempt.current) cacheAttempt.current.active = false;
     if (deletionAttempt.current) deletionAttempt.current.active = false;
-    if (exportAttempt.current) {
-      exportAttempt.current.active = false;
-      exportAttempt.current.abort.abort();
-    }
+    if (accountExport.handingOff()) return;
+    accountExport.close();
     if (sheetCloseTimer.current) clearTimeout(sheetCloseTimer.current);
     sheetCloseTimer.current = null;
     setSheetClosing(false);
@@ -175,107 +142,12 @@ export default function SettingsPage() {
   };
 
   const downloadAccountData = async () => {
-    if (accountActionPending.current || !pageAlive.current || !pageVisible.current) return;
-    const attempt = { owner: currentDraftUserId(), active: true, requesting: true, abort: new AbortController() };
-    exportAttempt.current = attempt;
-    const canApply = () => {
-      if (!pageAlive.current || !pageVisible.current || !attempt.active || exportAttempt.current !== attempt) return false;
-      const owner = currentDraftUserId();
-      return pageAlive.current && pageVisible.current && attempt.active &&
-        exportAttempt.current === attempt && owner === attempt.owner;
-    };
-    accountActionPending.current = true;
-    setDataAction("EXPORT");
-    let filePath: string | null = null;
-    let fileWritten = false;
-    let cleanupAttempted = false;
-    try {
-      const response = await exportAccountData(attempt.abort.signal);
-      attempt.requesting = false;
-      if (!canApply()) return;
-      if (!attempt.owner || response.data.account.userId !== attempt.owner)
-        throw new Error("账户已变化，请重新下载当前账户的数据。");
-      const root = Taro.env.USER_DATA_PATH;
-      if (!root) throw new Error("user_data_path_unavailable");
-      const generatedAt = new Date(response.data.generatedAt);
-      if (!Number.isFinite(generatedAt.getTime())) throw new Error("账户数据时间无效，请重试下载。");
-      // A retired page can finish writing after a new page starts an export.
-      // Its cleanup must never target the new page's file, even for equal snapshots.
-      const fileName = `starward-account-${generatedAt.toISOString()
-        .replace(/[:.]/gu, "-")}-${idempotencyKey("export").replace(/:/gu, "-")}.json`;
-      const destination = `${root}/${fileName}`;
-      filePath = destination;
-      await writeJsonFile(destination, JSON.stringify(response.data, null, 2));
-      fileWritten = true;
-      if (!canApply()) return;
-      await Taro.shareFileMessage({ filePath, fileName });
-      let cleanupFailed = false;
-      try { cleanupAttempted = true; await removeJsonFile(filePath); filePath = null; }
-      catch { cleanupFailed = true; }
-      if (!canApply()) return;
-      const currentState = useAppStore.getState();
-      for (const notification of currentState.notifications) {
-        if (notification.owner === "settings" && ["settings-account-export-failed", "settings-account-export-cleanup-failed", "settings-account-exported"].includes(notification.dedupeKey ?? ""))
-          currentState.dismissNotification(notification.id);
-      }
-      notify({
-        owner: "settings",
-        placement: cleanupFailed ? "inline" : "floating",
-        tone: cleanupFailed ? "warning" : "success",
-        title: cleanupFailed ? "本机临时文件未清除" : "账户数据已生成",
-        body: cleanupFailed
-          ? "文件已分享，但账户数据仍留在本机临时文件中；请通过微信清理本小程序的数据。"
-          : "账户数据文件已分享。",
-        dismissible: true,
-        dedupeKey: cleanupFailed ? "settings-account-export-cleanup-failed" : "settings-account-exported",
-      });
-    } catch (error) {
-      let cleanupFailed = false;
-      if (filePath) {
-        try { cleanupAttempted = true; await removeJsonFile(filePath); }
-        catch { cleanupFailed = true; }
-        if (!cleanupFailed) filePath = null;
-      }
-      if (!canApply()) return;
-      notify({
-        owner: "settings",
-        placement: "inline",
-        tone: fileWritten || cleanupFailed ? "warning" : "error",
-        title: cleanupFailed ? "本机临时文件未清除" : fileWritten ? "文件分享未完成" : "账户数据导出失败",
-        body: cleanupFailed
-          ? "账户数据可能仍留在本机临时文件中；请通过微信清理本小程序的数据后重试。"
-          : fileWritten
-            ? "微信文件分享未完成；已清理本次临时文件，可重新下载。"
-            : errorMessage(error),
-        dismissible: true,
-        dedupeKey: "settings-account-export-failed",
-      });
-    } finally {
-      // Cancellation cannot cancel native writeFile: unlink only after that
-      // promise settles, including a write failure that left a partial file.
-      if (filePath && !cleanupAttempted) {
-        try { await removeJsonFile(filePath); filePath = null; }
-        catch { /* Report the device's remaining private file below. */ }
-      }
-      if (filePath && !canApply()) {
-        notify({ owner: "settings", placement: "inline", tone: "warning",
-          title: "本机临时文件未清除",
-          body: "账户数据可能仍留在本机临时文件中；请通过微信清理本小程序的数据。",
-          dismissible: true, dedupeKey: "settings-account-export-cleanup-failed" });
-      }
-      if (exportAttempt.current === attempt) {
-        exportAttempt.current = null;
-        accountActionPending.current = false;
-        if (pageAlive.current) {
-          setDataAction(null);
-          setSheet(null);
-        }
-      }
-    }
+    if (accountActionPending.current || deletionCleanup.current || !pageAlive.current || !pageVisible.current) return;
+    await accountExport.prepare();
   };
 
   const clearCache = async () => {
-    if (accountActionPending.current || !pageAlive.current || !pageVisible.current) return;
+    if (accountActionPending.current || deletionCleanup.current || !pageAlive.current || !pageVisible.current) return;
     const attempt = { owner: currentDraftUserId(), active: true };
     cacheAttempt.current = attempt;
     const canApply = () => {
@@ -330,7 +202,7 @@ export default function SettingsPage() {
   };
 
   const deleteAccount = async () => {
-    if (accountActionPending.current || !pageAlive.current || !pageVisible.current) return;
+    if (accountActionPending.current || deletionCleanup.current || !pageAlive.current || !pageVisible.current) return;
     const attempt = { owner: currentDraftUserId(), active: true, requesting: true,
       clearingOwnAccount: false, clearedOwnAccount: false };
     deletionAttempt.current = attempt;
@@ -352,6 +224,12 @@ export default function SettingsPage() {
       accountDeleted = true;
       localCleanupComplete = response.localCleanupComplete;
       if (!canApply() || !response.localAccountReset || !attempt.clearedOwnAccount) return;
+      if (!localCleanupComplete) {
+        deletionCleanup.current = { userId: response.data.userId, retry: response.retryLocalCleanup };
+        setDeletionCleanupPending(true);
+        setSheet("DELETE_CLEANUP");
+        return;
+      }
       await Taro.showModal({
         title: "账户已删除",
         content:
@@ -385,24 +263,53 @@ export default function SettingsPage() {
       if (deletionAttempt.current === attempt) {
         deletionAttempt.current = null;
         accountActionPending.current = false;
-        if (pageAlive.current) { setDataAction(null); setSheet(null); }
+        if (pageAlive.current) { setDataAction(null); if (!deletionCleanup.current) setSheet(null); }
       }
     }
   };
 
+  const retryDeletionCleanup = async () => {
+    const cleanup = deletionCleanup.current;
+    if (!cleanup || accountActionPending.current || !pageAlive.current || !pageVisible.current) return;
+    const intent = navigation.begin({ valid: () => useAppStore.getState().accountOwnerId === null && currentDraftUserId() === null });
+    if (!intent) return;
+    const canApply = () => intent.active() && deletionCleanup.current === cleanup && pageAlive.current && pageVisible.current;
+    accountActionPending.current = true;
+    setDataAction("DELETE");
+    try {
+      const complete = await cleanup.retry();
+      if (!canApply() || !complete) return;
+      deletionCleanup.current = null;
+      setDeletionCleanupPending(false);
+      setSheet(null);
+      try { await Taro.reLaunch({ url: "/pages/auth/index?accountDeleted=1" }); }
+      catch { if (intent.active()) notify({ owner: "settings", placement: "inline", tone: "warning", title: "账户已删除，本机清理已完成",
+        body: "页面尚未关闭，请退出小程序后重新进入。", dismissible: true, dedupeKey: "settings-account-delete-failed" }); }
+    } catch { /* The authoritative server deletion and retry sheet remain in place. */ }
+    finally {
+      accountActionPending.current = false;
+      if (pageAlive.current) setDataAction(null);
+      intent.release();
+    }
+  };
+
   const openSheet = (kind: SettingsSheetKind) => {
-    if (accountActionPending.current) return;
+    if (accountActionPending.current || deletionCleanup.current) return;
     if ((kind === "EXPORT" || kind === "DELETE") && !currentDraftUserId()) {
       login.requireAccount(() => openSheet(kind));
       return;
     }
     if (sheetCloseTimer.current) clearTimeout(sheetCloseTimer.current);
     sheetCloseTimer.current = null;
+    accountExport.close();
+    if (kind === "EXPORT") accountExport.open();
     setSheetClosing(false);
     setSheet(kind);
   };
   const closeSheet = () => {
-    if (accountActionPending.current || !sheet || sheetClosing) return;
+    if (!sheet || sheet === "DELETE_CLEANUP" || sheetClosing || (accountActionPending.current &&
+      !(sheet === "EXPORT" && accountExport.state.phase === "PREPARING"))) return;
+    if (sheet === "EXPORT") accountExport.close();
     setSheetClosing(true);
     sheetCloseTimer.current = setTimeout(() => {
       sheetCloseTimer.current = null;
@@ -446,7 +353,7 @@ export default function SettingsPage() {
         backFallbackTab="/pages/my/index"
         beforeBack={() => {
           if (login.open) { login.back(); return false; }
-          if (!sheet || accountActionPending.current) return !accountActionPending.current;
+          if (!sheet) return !accountActionPending.current;
           closeSheet();
           return false;
         }}
@@ -462,6 +369,12 @@ export default function SettingsPage() {
       >
         <View className="settings-content page-inset safe-bottom">
           <NotificationRegion owner="settings" placement="inline" />
+          {settingsPreferences.state === "LOADING" || settingsPreferences.state === "ERROR" || settingsPreferences.state === "STALE" ?
+            <StatusPanel state={settingsPreferences.state === "LOADING" ? "LOADING" : settingsPreferences.state === "STALE" ? "STALE" : "ERROR"}
+              title={settingsPreferences.state === "LOADING" ? "正在同步偏好" : settingsPreferences.state === "STALE" ? "更新失败，保留上次设置" : "账户偏好暂未取得"}
+              detail={settingsPreferences.confirmed ? "上次设置仍可使用。" : "位置与隐私、提醒设置尚待确认。"}
+              recoveryLabel={settingsPreferences.state === "LOADING" ? undefined : "重试"}
+              onRecover={settingsPreferences.state === "LOADING" ? undefined : settingsPreferences.retry} /> : null}
           {preferenceSyncStatus ? (
             <StatusPanel
               state={
@@ -480,9 +393,12 @@ export default function SettingsPage() {
           ) : null}
 
           <SettingsControls
+            blocked={deletionCleanupPending}
+            preferencesConfirmed={settingsPreferences.confirmed}
             preferences={preferences}
             mode={mode}
             updatePreference={(key, value) => {
+              if (deletionCleanup.current || !settingsPreferences.confirmed) return;
               if (key === "departureConditionReminder" || key === "contributionStatusReminder")
                 login.requireAccount(() => updatePreference(key, value));
               else updatePreference(key, value);
@@ -492,7 +408,7 @@ export default function SettingsPage() {
             openSheet={openSheet}
           />
 
-          <SettingsDataActions dataAction={dataAction} openSheet={openSheet} />
+          <SettingsDataActions dataAction={dataAction} blocked={deletionCleanupPending} openSheet={openSheet} />
         </View>
       </ScrollView>
       {sheet ? <SettingsSheet sheet={sheet} mode={mode} locationPreference={preferences.locationPreference} locationState={locationState}
@@ -503,7 +419,11 @@ export default function SettingsPage() {
         openLocation={() => void openLocation()}
         advanceDelete={() => setSheet("DELETE_FINAL")}
         confirmCache={() => void clearCache()}
+        exportState={accountExport.state}
         confirmExport={() => void downloadAccountData()}
+        shareExport={() => void accountExport.share()}
+        retryExportCleanup={() => void accountExport.retryCleanup()}
+        retryDeletionCleanup={() => void retryDeletionCleanup()}
         confirmDelete={() => void deleteAccount()} /> : null}
     </View></>
   );

@@ -6,9 +6,10 @@ import { SemanticIcon } from "@/components/semantic-asset";
 import { recordAcceptanceDiagnostic } from "@/services/acceptance-diagnostics";
 import { DISPLAY_MODES, DISPLAY_MODE_LABEL, moveModeDrag, releasedMode, tappedMode, type ModeDrag } from "./display-mode-gesture";
 
-export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
+export function DisplayModeControl({ mode, onSelect, onGestureCapture, disabled = false }: {
   mode: DisplayMode; onSelect: (mode: DisplayMode) => void;
   onGestureCapture: (captured: boolean) => void;
+  disabled?: boolean;
 }) {
   const drag = useRef<ModeDrag | null>(null);
   const generation = useRef(0);
@@ -26,7 +27,7 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
     onGestureCapture(false);
   };
   useEffect(() => () => { visible.current = false; generation.current += 1; drag.current = null; }, []);
-  useEffect(() => { cancel(); }, [mode]);
+  useEffect(() => { cancel(); }, [mode, disabled]);
   const prepareMeasurement = () => {
     const token = generation.current;
     Taro.nextTick(() => {
@@ -41,7 +42,7 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
   useDidHide(() => { visible.current = false; suppressTap.current = true; cancel(); });
 
   const start = (input: unknown) => {
-    if (!visible.current) return;
+    if (!visible.current || disabled) return;
     const event = input as ITouchEvent;
     recordAcceptanceDiagnostic("display-mode-control", "start", `touch_start:${event.touches?.length ?? 0}`);
     cancel();
@@ -87,7 +88,7 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
     const active = drag.current;
     recordAcceptanceDiagnostic("display-mode-control", "success", `touch_end:${active?.axis ?? "none"}`);
     cancel();
-    if (active?.axis === "horizontal") onSelect(releasedMode(active, currentMode.current, Date.now()));
+    if (!disabled && active?.axis === "horizontal") onSelect(releasedMode(active, currentMode.current, Date.now()));
   };
 
   return (
@@ -103,10 +104,11 @@ export function DisplayModeControl({ mode, onSelect, onGestureCapture }: {
           style={position === null ? {} : { transform: `translateX(${position * 100}%)`, transition: "none" }} />
         {DISPLAY_MODES.map((item) => (
           <Button key={item} id={`settings-mode-${item.toLowerCase()}`}
+            disabled={disabled}
             className={`settings-display-mode-choice focus-ring${mode === item ? " settings-display-mode-choice--selected" : ""}`}
             ariaLabel={`${DISPLAY_MODE_LABEL[item]}${mode === item ? "，当前已选，再次点击切换下一模式" : "，切换模式"}`}
             onClick={() => {
-              if (!visible.current) return;
+              if (!visible.current || disabled) return;
               recordAcceptanceDiagnostic("display-mode-control", "start", `tap:${item}:${suppressTap.current ? "suppressed" : "accepted"}`);
               if (suppressTap.current) { suppressTap.current = false; return; }
               onSelect(tappedMode(currentMode.current, item));

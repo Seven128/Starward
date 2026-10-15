@@ -1221,12 +1221,16 @@ export async function getUserLibrary(signal?: AbortSignal, expectedUserId?: stri
   return result;
 }
 
-export function getPreferences(signal?: AbortSignal) {
-  return requestOperation("preferences", "preferencesGet", {
+export async function getPreferences(signal?: AbortSignal, expectedUserId?: string) {
+  const { userId } = await ensureSession();
+  const owner = expectedUserId ?? userId;
+  const result = await requestOperation("preferences", "preferencesGet", {
     auth: "REQUIRED",
     cache: false,
     ...(signal ? { signal } : {}),
-  });
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开设置。");
+  return result;
 }
 
 export async function savePreferences(
@@ -1246,23 +1250,28 @@ export async function savePreferences(
   return result;
 }
 
-async function accountReauthentication() {
+async function accountReauthentication(scope?: RequestOperationScope) {
+  scope?.assertCurrent();
   const { userId } = await ensureSession();
+  scope?.assertCurrent();
   const capabilities = await getCapabilities();
+  scope?.assertCurrent();
   const code = capabilities.data.flags.WECHAT_AUTH_ENABLED
     ? (await Taro.login()).code
     : installationIdentity();
   if (!code) throw new Error("wechat_login_code_missing");
+  scope?.assertCurrent();
   if (currentDraftUserId() !== userId) throw new Error("账户已变化，请重新打开页面后再操作。");
   return { userId, code };
 }
 
-export async function exportAccountData(signal?: AbortSignal) {
-  const { userId, code } = await accountReauthentication();
+export async function exportAccountData(signal?: AbortSignal, scope?: RequestOperationScope) {
+  const { userId, code } = await accountReauthentication(scope);
   const result = await requestOperation("account-data-export", "accountDataExportGet", {
     auth: "REQUIRED",
     reauthenticationCode: code,
     cache: false,
+    ...(scope ? { scope } : {}),
     ...(signal ? { signal } : {}),
   }, false, userId);
   if (currentDraftUserId() !== userId) throw new Error("账户已变化，请重新下载当前账户的数据。");
@@ -1302,37 +1311,53 @@ export async function deleteAccount(onCurrentAccountDeleted?: (userId: string) =
     // cleanup from an external account departure. UI cannot block revocation.
     try { onCurrentAccountDeleted?.(deletedUserId); } catch { acknowledgementComplete = false; }
   }
-  let localCleanupComplete = acknowledgementComplete && installationReadComplete;
-  try { localCleanupComplete = useAppStore.getState().resetAfterAccountDeletion(deletedUserId) && localCleanupComplete; }
-  catch { localCleanupComplete = false; }
-  markAccountErased(deletedUserId);
-  try {
-    const nativeSession = Taro.getStorageSync(SESSION_STORAGE_KEY) as unknown;
-    const nativeOwner = nativeSessionOwner(nativeSession);
-    if (nativeOwner === deletedUserId) Taro.removeStorageSync(SESSION_STORAGE_KEY);
-    else if (nativeSession !== undefined && nativeSession !== null && nativeSession !== "" && !nativeOwner)
-      localCleanupComplete = false;
-  } catch { localCleanupComplete = false; }
-  try {
-    for (const key of Taro.getStorageInfoSync().keys) {
-      if (!planDraftBelongsTo(key, deletedUserId) && !contributionDraftBelongsTo(key, deletedUserId) && !contributionSubmitBelongsTo(key, deletedUserId) && !profileDraftBelongsTo(key, deletedUserId) && !profileSaveBelongsTo(key, deletedUserId) && !importSaveBelongsTo(key, deletedUserId) && !importLocalDraftBelongsTo(key, deletedUserId) && !planChecklistBelongsTo(key, deletedUserId) && !planEventSelectionBelongsTo(key, deletedUserId) && !planSaveBelongsTo(key, deletedUserId)) continue;
-      try { Taro.removeStorageSync(key); } catch { localCleanupComplete = false; }
+  // A confirmed server receipt owns all later local retries. No reauthentication,
+  // new DELETE or renewed account authority is needed to remove only A's state.
+  const cleanupLocal = async (initialComplete = true) => {
+    if (!installationReadComplete && initialComplete) {
+      try {
+        if (!hasSuccessor() && !sessionPromise) {
+          const stored = Taro.getStorageSync(INSTALLATION_STORAGE_KEY) as unknown;
+          if (typeof stored === "string" && stored) installationId = stored;
+          installationReadComplete = stored === undefined || stored === null || stored === "" || typeof stored === "string";
+        } else if (hasSuccessor()) installationReadComplete = true;
+      } catch { /* Keep the incomplete result retryable. */ }
     }
-  } catch { localCleanupComplete = false; }
-  try { miniappQueryClient.removeQueries({ predicate: query => query.queryKey.includes(deletedUserId) }); }
-  catch { localCleanupComplete = false; }
-  try { localCleanupComplete = await responseCache.removeScope(deletedUserId) && localCleanupComplete; }
-  catch { localCleanupComplete = false; }
-  let localAccountReset = false;
-  try {
-    localAccountReset = resetCurrentAccount && !hasSuccessor() && currentDraftUserId() === null &&
-      useAppStore.getState().accountOwnerId === null;
-  } catch { localCleanupComplete = false; }
-  if (localAccountReset && installationId) {
-    pendingErasedInstallation = { deletedUserId, installationId };
-    localCleanupComplete = settleErasedInstallation() && localCleanupComplete;
-  }
-  return { ...result, localAccountReset, localCleanupComplete };
+    let localCleanupComplete = initialComplete && installationReadComplete;
+    try { localCleanupComplete = useAppStore.getState().resetAfterAccountDeletion(deletedUserId) && localCleanupComplete; }
+    catch { localCleanupComplete = false; }
+    markAccountErased(deletedUserId);
+    try {
+      const nativeSession = Taro.getStorageSync(SESSION_STORAGE_KEY) as unknown;
+      const nativeOwner = nativeSessionOwner(nativeSession);
+      if (nativeOwner === deletedUserId) Taro.removeStorageSync(SESSION_STORAGE_KEY);
+      else if (nativeSession !== undefined && nativeSession !== null && nativeSession !== "" && !nativeOwner)
+        localCleanupComplete = false;
+    } catch { localCleanupComplete = false; }
+    try {
+      for (const key of Taro.getStorageInfoSync().keys) {
+        if (!planDraftBelongsTo(key, deletedUserId) && !contributionDraftBelongsTo(key, deletedUserId) && !contributionSubmitBelongsTo(key, deletedUserId) && !profileDraftBelongsTo(key, deletedUserId) && !profileSaveBelongsTo(key, deletedUserId) && !importSaveBelongsTo(key, deletedUserId) && !importLocalDraftBelongsTo(key, deletedUserId) && !planChecklistBelongsTo(key, deletedUserId) && !planEventSelectionBelongsTo(key, deletedUserId) && !planSaveBelongsTo(key, deletedUserId)) continue;
+        try { Taro.removeStorageSync(key); } catch { localCleanupComplete = false; }
+      }
+    } catch { localCleanupComplete = false; }
+    try { miniappQueryClient.removeQueries({ predicate: query => query.queryKey.includes(deletedUserId) }); }
+    catch { localCleanupComplete = false; }
+    try { localCleanupComplete = await responseCache.removeScope(deletedUserId) && localCleanupComplete; }
+    catch { localCleanupComplete = false; }
+    let localAccountReset = false;
+    try {
+      localAccountReset = resetCurrentAccount && !hasSuccessor() && currentDraftUserId() === null &&
+        useAppStore.getState().accountOwnerId === null;
+    } catch { localCleanupComplete = false; }
+    if (localAccountReset && installationId) {
+      pendingErasedInstallation = { deletedUserId, installationId };
+      localCleanupComplete = settleErasedInstallation() && localCleanupComplete;
+    }
+    return { localAccountReset, localCleanupComplete };
+  };
+  return { ...result, ...await cleanupLocal(acknowledgementComplete && installationReadComplete),
+    retryLocalCleanup: async () => (await cleanupLocal()).localCleanupComplete };
+
 }
 
 export async function ensureFavoriteOwner() {

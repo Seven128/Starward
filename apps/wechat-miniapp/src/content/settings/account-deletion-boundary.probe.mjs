@@ -111,6 +111,8 @@ for (const scenario of cases) {
   const actions = vm.runInNewContext(pageCode, {
     useWechatLogin: () => ({ open: false, dialog: null, requireAccount() {} }),
     usePageNavigation: () => ({ retire() {} }),
+    useAccountExport: () => ({ state: { phase: "IDLE" }, close() {}, handingOff: () => false }),
+    useSettingsPreferences: () => ({ confirmed: true, state: "READY" }),
     useReducedMotion: () => false, useAppStore: store, useThemeClass: () => "theme-day", usePreferencesSync: () => ({ updatePreference() {}, syncNow() {}, status: "" }),
     useState: initial => [initial, value => events.push({ kind: "ui-state", mounted, value })], useRef: current => ({ current }),
     useEffect: effect => { const cleanup = effect(); if (cleanup) cleanups.push(cleanup); }, useDidHide: callback => { hide = callback; }, useDidShow: callback => { show = callback; },
@@ -178,7 +180,9 @@ for (const scenario of cases) {
     assert.ok(observations.removedADraft && observations.retainedBDraft && observations.quarantinePreserved, "only owned A drafts may be removed; unclaimed quarantine is not deletion authority");
     assert.equal(events.filter(event => event.kind === "ui-state" && !event.mounted).length, 0, "settled deletion cannot set state on an unmounted page");
     if (scenario === "normal" || scenario === "anonymous-first-binding" || scenario === "callback-throws") {
-      assert.equal(events.filter(event => event.kind === "navigate").length, 1, "normal authorized deletion must actually finish its route");
+      assert.equal(events.filter(event => event.kind === "navigate").length, scenario === "callback-throws" ? 0 : 1,
+        "confirmed cleanup finishes its route; an incomplete cleanup stays on the retry sheet");
+      if (scenario === "callback-throws") assert.ok(events.some(event => event.kind === "ui-state" && event.value === "DELETE_CLEANUP"));
       if (scenario === "callback-throws") assert.equal(receipt.localCleanupComplete, false, "a callback failure cannot reject an authoritative receipt or claim complete cleanup");
     } else if (scenario === "B-before-receipt" || scenario === "B-during-flush" || scenario === "callback-switches-B") {
       assert.equal(observations.nativeUser, B, "test must establish a genuinely new B session through production ensureSession");

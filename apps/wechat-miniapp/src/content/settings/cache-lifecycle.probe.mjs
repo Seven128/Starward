@@ -74,6 +74,8 @@ for (const scenario of cases) {
   const actions = vm.runInNewContext(setup, {
     useWechatLogin: () => ({ open: false, dialog: null, requireAccount() {} }),
     usePageNavigation: () => ({ retire() {} }),
+    useAccountExport: () => ({ state: { phase: "IDLE" }, close() {}, handingOff: () => false }),
+    useSettingsPreferences: () => ({ confirmed: true, state: "READY" }),
     useReducedMotion: () => false, useAppStore: store, useThemeClass: () => "theme-day", usePreferencesSync: () => ({ updatePreference() {}, syncNow() {}, status: "" }),
     useState: initial => [initial, value => events.push({ kind: "react-setter", stage, visible, mounted, value })], useRef: current => ({ current }),
     useEffect: effect => { const cleanup = effect(); if (cleanup) cleanups.push(cleanup); }, useDidHide: callback => { hide = callback; }, useDidShow: callback => { show = callback; },

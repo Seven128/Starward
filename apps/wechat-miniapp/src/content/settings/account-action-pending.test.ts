@@ -22,11 +22,12 @@ test("one pending data action excludes cache, export and deletion duplicates and
   }).outputText, {
     accountActionPending: lock,
     pageAlive: { current: true }, pageVisible: { current: true }, deletionAttempt: { current: null },
+    deletionCleanup: { current: null },
     currentDraftUserId: () => "synthetic:a",
     setDataAction: (value: unknown) => busy.push(value),
     setSheet: (value: unknown) => sheets.push(value),
     deleteAccountThroughApi: () => { calls.push("delete"); return new Promise((_, reject) => { rejectDelete = reject; }); },
-    exportAccountData: () => { calls.push("export"); throw Error("unexpected export"); },
+    accountExport: { prepare: () => { calls.push("export"); throw Error("unexpected export"); } },
     clearTemporaryApiCache: () => { calls.push("cache"); throw Error("unexpected cache"); },
     clearLocalCache: () => true,
     notify: () => {}, errorMessage: () => "失败", resetAfterAccountDeletion: () => true,

@@ -19,7 +19,7 @@ test("Settings waits for both cache owners before feedback and reports either cl
     const run = vm.runInNewContext(ts.transpileModule(declaration + "\nclearCache;", {
       compilerOptions: { target: ts.ScriptTarget.ES2020 },
     }).outputText, {
-      accountActionPending: { current: false },
+      accountActionPending: { current: false }, deletionCleanup: { current: null },
       pageAlive: { current: true }, pageVisible: { current: true }, cacheAttempt: { current: null },
       currentDraftUserId: () => "synthetic:a",
       setDataAction: (value: unknown) => busy.push(value), setSheet() {}, setScrollTop: (value: number) => scrolls.push(value),

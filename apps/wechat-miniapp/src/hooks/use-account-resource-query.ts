@@ -5,7 +5,7 @@ import { useResourceQuery } from "./use-resource-query";
 
 /** Private readers share identity visibility, while each API keeps its payload. */
 export function useAccountResourceQuery<T>(
-  resource: "plans" | "user-library",
+  resource: "plans" | "user-library" | "preferences",
   read: (signal: AbortSignal | undefined, owner: string | undefined) => Promise<T>,
   { enabled = true, staleTime = 30_000 } = {},
 ) {
