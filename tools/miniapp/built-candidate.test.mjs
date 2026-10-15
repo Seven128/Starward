@@ -75,7 +75,7 @@ test("Map async weather component and original images share the spot package", (
   for (const extension of ["js", "json", "wxml", "wxss"])
     assert.equal(existsSync(path.join(bundleRoot, `spot/native/weather-icon/index.${extension}`)), true);
   const originals = path.resolve("docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256/platform/weapp-runtime/assets");
-  for (const name of ["temperature", "wind", "droplet"]) {
+  for (const name of ["temperature", "wind", "droplet", "warning", "low-cloud"]) {
     const filename = `${name}--day--default.png`;
     assert.deepEqual(readFileSync(path.join(bundleRoot, "spot/assets/b-icons", filename)), readFileSync(path.join(originals, filename)));
   }

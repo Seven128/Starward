@@ -28,11 +28,11 @@ export function SourceAttribution({ sources, compact = false, presentation = "de
     catch { setMessage("复制未成功，请重试。"); }
   };
   if (!credits.length) return null;
-  return <View className={`source-attribution${presentation === "disclosure" ? " source-attribution--disclosure" : ""}`} aria-label={presentation === "disclosure" ? "资料来源与声明" : "数据来源声明"}>
+  return <View className={`source-attribution${presentation === "disclosure" ? " source-attribution--disclosure" : ""}${compact || presentation === "disclosure" ? " source-attribution--rows" : ""}`} aria-label={presentation === "disclosure" ? "资料来源与声明" : "数据来源声明"}>
     {credits.map(credit => <View className="source-attribution__credit" key={JSON.stringify([credit.name, credit.url])}>
-      {presentation === "disclosure" ? <Text className="source-attribution__name" selectable>{credit.name}</Text> : null}
+      {compact || presentation === "disclosure" ? <Text className="source-attribution__name" selectable>{credit.name}</Text> : null}
       <SoftButton className="source-attribution__link" variant="ghost" label={`复制${credit.name}${credit.declared ? "官方" : "原始出处"}链接`} onClick={() => void copy(credit.url)}>
-        <Text className="source-attribution__link-text">{presentation === "disclosure" ? credit.declared ? "复制官方链接" : "复制原始出处" : compact ? "复制来源链接" : `复制链接 · ${credit.name} · ${credit.url}`}</Text>
+        <Text className="source-attribution__link-text">{presentation === "disclosure" ? credit.declared ? "复制官方链接" : "复制原始出处" : compact ? "复制出处" : `复制链接 · ${credit.name} · ${credit.url}`}</Text>
       </SoftButton>
       {presentation === "disclosure" ? <Text className="source-attribution__url" selectable>{credit.url}</Text> : null}
       {credit.statements.map(statement => <Text className="type-caption" selectable key={statement}>{statement}</Text>)}

@@ -76,6 +76,7 @@ for (const currentExpires of [true, false]) test(`AQ idle ${currentExpires ? "cu
     const after = host.flush();
     assert.doesNotMatch(after, currentExpires ? /71/ : /23/, "elapsed reading must leave the visible tree at its own boundary");
     assert.match(after, currentExpires ? /23/ : /71/, "independent valid sibling must remain visible");
+    assert.match(after, currentExpires ? /当前区域参考已过期/ : /空气质量预报已过期/, "the current rendering must distinguish expiry from missing coverage");
     assert.equal(host.refreshes(), 1, "one boundary refresh, even when it yields no replacement envelope");
     assert.equal(host.refreshOptions[0]?.cancelRefetch, false, "automatic boundary refresh joins any request already in flight");
     assert.equal(host.notifications.length, 0, "normal elapsed coverage is not a transport error");

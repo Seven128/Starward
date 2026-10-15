@@ -47,6 +47,7 @@ const retainedLegacyIconFiles = [
   "my-plan-chevron-header.svg", "my-plan-chevron-row.svg",
   "map-layer-choice-check.svg",
   "terrain-toggle-check.png",
+  "warning-night.svg", "warning-observation.svg",
 ] as const;
 // Search is in the spot package; these legacy filter glyphs have no main-page consumers.
 const spotIconFiles = ["filter-night.svg", "filter-observation.svg", "wifi-off-night.svg", "wifi-off-observation.svg"];
@@ -54,7 +55,6 @@ const spotIconFiles = ["filter-night.svg", "filter-observation.svg", "wifi-off-n
 const contentIconFiles = [
   "settings-choice-check.svg",
   "bell-night.svg", "bell-observation.svg",
-  "warning-night.svg", "warning-observation.svg",
   "download-night.svg", "download-observation.svg",
   "trash-2-night.svg", "trash-2-observation.svg",
   "wind-night.svg", "wind-observation.svg",
@@ -69,7 +69,7 @@ const bIconFiles = {
     "favorite-star--day--default.png", "favorite-star--day--selected.png",
     "favorite-trail--day--default.png", "favorite-satellite--day--default.png",
     "images--day--default.png", "info--day--default.png", "layers--day--default.png",
-    "low-cloud--day--default.png", "bulb--day--default.png",
+    "bulb--day--default.png",
     // Native Map tabs use the dedicated weapp-tabbar files above. The runtime
     // icon adapter has no map subject, so copying these larger twins is unused.
     "location--day--default.png", "meteor--day--default.png", "moon--day--default.png",
@@ -106,6 +106,7 @@ const bIconFiles = {
     "wifi-off--day--default.png",
   ],
   spot: [
+    "warning--day--default.png",
     "temperature--day--default.png", "wind--day--default.png", "droplet--day--default.png",
     "bulb--day--default.png", "cloud--day--default.png", "parking--day--default.png",
     "restroom--day--default.png", "plan-suv--day--default.png", "tent--day--default.png",

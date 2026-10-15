@@ -49,7 +49,7 @@ test("visible AQ retains forecast on current error, offers persistent retry and 
   assert.ok(!find(tree, node => node.type === "Provenance"), "source details should be available on demand instead of covering the reading and retry");
   assert.ok(order.indexOf("SoftButton") < order.indexOf("SourceDisclosure"), "failed readings must offer retry before the expandable source details");
   find(tree, node => node.type === "SoftButton").props.onClick(); assert.equal(h.retries, 1);
-  assert.equal(find(tree, node => node.type === "ForecastCoverageNote").props.scope, "air");
+  assert.equal(find(find(tree, node => node.type === "SourceDisclosure"), node => node.type === "ForecastCoverageNote").props.scope, "air");
   h.render(); assert.equal(h.notifications.length, 1);
   assert.equal(h.options.refetchInterval, 60_000);
   h.hide(); h.render(); assert.equal(h.options.enabled, false);
@@ -58,7 +58,7 @@ test("visible AQ retains forecast on current error, offers persistent retry and 
 
 test("unsupported AQ emits no error, changing spot rejects old readings and pending proposal does not query", () => {
   const h = harness(); h.set({ data: { ...body, current: { ...body.current, unavailableReason: "NO_DATA" } }, dataState: "PARTIAL", sources: [] });
-  assert.ok(find(h.render(), node => node.props?.role === "status" && /当前空气质量暂无可用数据/.test(text(node))));
+  assert.ok(find(h.render(), node => node.props?.role === "status" && /当前区域暂无数据/.test(text(node))));
   assert.ok(!find(h.render(), node => node.type === "StatusPanel" && node.props.state === "ERROR"));
   assert.equal(h.notifications.length, 0);
   assert.doesNotMatch(text(h.render("spot:b")), /中国 AQI|32/);
@@ -98,9 +98,28 @@ test("positive current retrieval and selected-hour heading remain separate readi
       state: "FRESH", unavailableReason: null, source },
   }, dataState: "FRESH", sources: [] });
   const tree = h.render();
-  assert.match(text(tree), /获取于.*中国 AQI.*0.*所选时刻的空气质量预报/s);
+  assert.match(text(tree), /获取于.*中国 AQI.*0.*所选时刻预报.*2026-09-15 09:30/s);
   assert.ok(find(tree, node => node.type === "View" && node.props?.className === "air-quality__segment-heading" &&
     /当前区域参考.*获取于/.test(text(node))));
   assert.ok(find(tree, node => node.type === "View" && node.props?.className === "air-quality__segment-heading" &&
-    /所选时刻的空气质量预报/.test(text(node))));
+    /所选时刻预报.*2026-09-15 09:30/.test(text(node))));
+  const disclosure = find(tree, node => node.type === "SourceDisclosure");
+  assert.match(text(disclosure), /获取时间不是点位实测时间.*不等于天文透明度或视宁度/);
+  assert.match(text(tree), /对应小时：2026-09-15 09:00/);
+});
+
+test("expired AQ is distinct from no coverage while an independent valid segment stays visible", () => {
+  const h = harness();
+  h.set({ data: { ...body, current: { value: null, state: "EXPIRED", unavailableReason: "EXPIRED", source } }, dataState: "PARTIAL", sources: [] });
+  let tree = h.render();
+  assert.match(text(tree), /当前区域参考已过期.*中国 AQI.*32/s);
+  assert.doesNotMatch(text(tree), /当前区域暂无数据/);
+  assert.equal(h.notifications.length, 0);
+  h.set({ data: { ...body,
+    current: { value: { indexes: [{ code: "cn-mee", name: "中国 AQI", display: "0", category: "优" }], pollutants: [] }, state: "FRESH", unavailableReason: null, source },
+    forecast: { value: null, state: "EXPIRED", unavailableReason: "EXPIRED", source },
+  }, dataState: "PARTIAL", sources: [] });
+  tree = h.render();
+  assert.match(text(tree), /中国 AQI.*0.*所选时刻预报.*空气质量预报已过期/s);
+  assert.doesNotMatch(text(tree), /该小时暂无空气质量预报/);
 });

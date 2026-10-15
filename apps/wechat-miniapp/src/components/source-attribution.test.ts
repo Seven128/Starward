@@ -60,8 +60,10 @@ test("compact map credit keeps the legal notice and exact link action", async ()
   const h = harness();
   const tree = h.render({ sources: [source()], compact: true });
   const button = nodes(tree).find(node => node.type === "SoftButton");
-  assert.equal(renderedText(button), "复制来源链接");
-  assert.equal(nodes(tree).find(node => node.type === "Text" && node.props?.selectable)?.children[0], notice);
+  assert.equal(renderedText(button), "复制出处");
+  assert.equal(nodes(tree).find(node => node.props?.className === "source-attribution__name")?.children[0], "和风天气");
+  assert.equal(nodes(tree).find(node => node.type === "Text" && node.props?.selectable && node.children[0] === notice)?.children[0], notice);
+  assert.doesNotMatch(renderedText(tree), /https:/, "long URL remains in the source disclosure, not the compact fact row");
   button.props.onClick(); await new Promise<void>(resolve => setImmediate(resolve));
   assert.equal(h.copied(), "https://www.qweather.com/");
 });

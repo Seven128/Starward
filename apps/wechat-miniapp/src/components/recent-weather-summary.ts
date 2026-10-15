@@ -12,9 +12,15 @@ export function recentWeatherImplications(days: readonly RecentWeatherDay[]): st
 
 export function recentWeatherFacts(day: RecentWeatherDay): string[] {
   const facts: string[] = [];
+  if (day.temperatureMinC !== null && day.temperatureMaxC !== null) facts.push(`${day.temperatureMinC}–${day.temperatureMaxC}°C`);
+  else if (day.temperatureMinC !== null) facts.push(`最低 ${day.temperatureMinC}°C`);
+  else if (day.temperatureMaxC !== null) facts.push(`最高 ${day.temperatureMaxC}°C`);
   if (day.precipitationMm !== null) facts.push(`降水 ${day.precipitationMm} mm`);
-  if (day.temperatureMinC !== null) facts.push(`最低 ${day.temperatureMinC}°C`);
-  if (day.temperatureMaxC !== null) facts.push(`最高 ${day.temperatureMaxC}°C`);
+  return facts;
+}
+
+export function recentWeatherDetails(day: RecentWeatherDay): string[] {
+  const facts: string[] = [];
   if (day.sampledWindMaxKph != null) facts.push(`已返回 ${day.sampledWindHours} 小时中最大风速 ${day.sampledWindMaxKph} km/h`);
   if (day.conditions.length) facts.push(`已返回时段：${day.conditions.join("、")}`);
   return facts;

@@ -11,7 +11,7 @@ import { SourceDisclosure } from "./source-disclosure";
 import { SourceAttribution } from "./source-attribution";
 import { SoftButton } from "./soft-button";
 import { StatusPanel } from "./status-panel";
-import { recentWeatherFacts, recentWeatherImplications } from "./recent-weather-summary";
+import { recentWeatherDetails, recentWeatherFacts, recentWeatherImplications } from "./recent-weather-summary";
 import "./recent-weather.scss";
 
 /** Regional history in the current map's formal-spot document. */
@@ -66,6 +66,11 @@ export function RecentWeather({ spotId, timezone, visible = true }: { spotId: st
   }, [enabled, failed, notify, spotId]);
   if (!spotId.startsWith("spot:")) return null;
   const days = data?.days ?? [];
+  const dates = data ? [...new Set([...days.map(day => day.localDate), ...data.missingDates])].sort() : [];
+  const details = days.flatMap(day => {
+    const facts = recentWeatherDetails(day);
+    return facts.length ? [{ date: day.localDate, facts }] : [];
+  });
   const implications = recentWeatherImplications(days);
   const stale = Boolean(query.refreshError) || rejectedStale;
   return <View className={`recent-weather${days.length ? " recent-weather--with-days" : ""}`} data-control="spot-recent-weather">
@@ -74,19 +79,27 @@ export function RecentWeather({ spotId, timezone, visible = true }: { spotId: st
     </View>
     {data?.region ? <Text className="type-caption">邻近地区：{data.region.name}</Text> : null}
     {data?.asOfLocalDate ? <Text className="type-caption">截至 {data.asOfLocalDate} 的前两日 · {data.region?.timezone}</Text> : null}
-    {query.isPending && !liveFailed ? <View role="status"><Text className="type-caption">正在加载地区天气…</Text></View> : days.length ?
-      days.map(day => <View className="recent-weather__day" key={day.localDate}>
-        <Text className="type-secondary">{day.localDate}</Text>
-        <Text className="type-body">{recentWeatherFacts(day).join(" · ")}</Text>
-      </View>) : failed ? <StatusPanel state="ERROR" detail="地区历史天气暂时无法获取。" recoveryLabel="重试近期天气" onRecover={() => liveFailed ? setFailedSpot(null) : void query.refetch()} /> : <StatusPanel state="EMPTY" emptyIcon="cloud" detail="该地区近期暂无天气记录。" />}
+    {query.isPending && !liveFailed ? <StatusPanel state="LOADING" detail="正在加载地区天气" /> : days.length ?
+      dates.map(date => {
+        const day = days.find(day => day.localDate === date);
+        return <View className="recent-weather__day" key={date}>
+          <Text className="type-secondary">{date}</Text>
+          <Text className="type-body">{day ? recentWeatherFacts(day).join(" · ") || "温度、降水未返回" : "未返回"}</Text>
+        </View>;
+      }) : failed ? <StatusPanel state="ERROR" detail="地区历史天气暂时无法获取。" recoveryLabel="重试近期天气" onRecover={() => liveFailed ? setFailedSpot(null) : void query.refetch()} /> : <View role="status"><Text className="type-body">地区暂无数据</Text></View>}
+    {days.length && failed ? <Text className="type-caption">部分记录暂未取得，请重试</Text> : null}
     {stale ? <Text className="type-caption">资料暂未刷新，请重试获取当前地区记录。</Text> : null}
     {implications.map(message => <Text className="type-caption" key={message}>{message}</Text>)}
-    {days.length ? <SourceAttribution sources={envelope?.sources ?? []} /> : null}
+    {days.length ? <SourceAttribution compact sources={envelope?.sources ?? []} /> : null}
     {active ? <SourceDisclosure key={spotId} id="recent-weather-source" label={days.length ? "近期天气范围与来源" : "说明近期天气数据范围"} sources={envelope?.sources ?? []}>
       <Text className="type-caption">这里展示邻近地区前两个自然日的历史再分析，不含今天，也不是点位过去48小时的现场实测。未返回的日期或字段不补齐；当前选中的观测日期不会改变这些历史记录。</Text>
       {data?.missingDates.length ? <Text className="type-caption">暂无数据：{data.missingDates.join("、")}</Text> : null}
+      {details.map(day => <View className="recent-weather__day" key={day.date}>
+        <Text className="type-secondary">{day.date}</Text>
+        {day.facts.map(fact => <Text className="type-body" key={fact}>{fact}</Text>)}
+      </View>)}
       <Text className="type-caption">天气只提示可能影响，不能确认道路、积水、结冰、开放或通行安全。</Text>
     </SourceDisclosure> : null}
-    {(days.length || !failed) && (failed || stale || envelope?.dataState === "PARTIAL" || envelope?.dataState === "UNAVAILABLE") ? <SoftButton label="重试近期天气" onClick={() => liveFailed ? setFailedSpot(null) : void query.refetch()}>重试</SoftButton> : null}
+    {(days.length || !failed) && (failed || stale || envelope?.dataState === "PARTIAL" || envelope?.dataState === "UNAVAILABLE") ? <SoftButton label="重试近期天气" loading={query.isFetching ? "arc" : false} onClick={() => liveFailed ? setFailedSpot(null) : void query.refetch()}>重试</SoftButton> : null}
   </View>;
 }

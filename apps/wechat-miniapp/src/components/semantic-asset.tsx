@@ -119,7 +119,7 @@ export function adoptedBIconPath(name: SemanticIconName, state: SemanticIconStat
 
 const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
   bell: "/content/assets/icons/bell.svg",
-  warning: "/content/assets/icons/warning.svg",
+  warning: "/assets/icons/warning.svg",
   settings: "/assets/icons/settings.svg",
   pencil: "/assets/icons/pencil.svg",
   "account-user": "/assets/icons/account-user.svg",
@@ -188,11 +188,11 @@ export function SemanticIcon({
 }) {
   const mode = useAppStore((state) => state.mode);
   if (mode === "DAY") {
-    if (presentation === "forecast" && (name === "temperature" || name === "wind" || name === "droplet")) {
+    if (presentation === "forecast" && (name === "temperature" || name === "wind" || name === "droplet" || name === "warning" || name === "conditions")) {
       // Taro discovers native bindings from explicit props; JSX spreads lose them.
       return <weather-icon
-        kind={name}
-        class={`semantic-icon semantic-icon--b semantic-icon--forecast semantic-icon--${name} ${className}`}
+        kind={name === "conditions" ? "low-cloud" : name}
+        class={`semantic-icon semantic-icon--b${name === "conditions" ? "" : " semantic-icon--forecast"} semantic-icon--${name} ${className}`}
         aria-hidden={decorative ? true : undefined}
         aria-role={decorative ? undefined : "img"}
         aria-label={decorative ? undefined : label ?? name}

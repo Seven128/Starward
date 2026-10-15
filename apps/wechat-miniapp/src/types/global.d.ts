@@ -9,7 +9,7 @@ declare const __MINIAPP_SKY_FEEDBACK_ID__: string;
 declare namespace JSX {
   interface IntrinsicElements {
     "weather-icon": {
-      kind: "temperature" | "wind" | "droplet";
+      kind: "temperature" | "wind" | "droplet" | "warning" | "low-cloud";
       class?: string;
       "aria-hidden"?: boolean | undefined;
       "aria-role"?: string | undefined;

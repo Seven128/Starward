@@ -285,11 +285,11 @@ export function SpotInformationPanel({
   const [layoutVersion, setLayoutVersion] = useState(0);
   const largeText = useAppStore(state => state.preferences.largeText);
   const dayMode = useAppStore(state => state.mode === "DAY");
-  function renderMetricValue(value: number | null | undefined, unit: string, digits = 0, className = "type-data") {
+  function renderMetricValue(value: number | null | undefined, unit: string, digits = 0, className = "type-data", empty = EMPTY_FIELD_VALUE) {
     const formatted = formatMetric(value, "", digits);
     const missing = formatted === EMPTY_FIELD_VALUE;
     return <Text className={`${className} spot-panel__metric-value${missing ? " spot-panel__metric-value--missing" : ""}`}>
-      {formatted}{missing ? null : dayMode ? <Text className="spot-panel__metric-unit">{unit.trim()}</Text> : unit}
+      {missing ? empty : formatted}{missing ? null : dayMode ? <Text className="spot-panel__metric-unit">{unit.trim()}</Text> : unit}
     </Text>;
   }
   // The report reference only invalidates geometry; no previous evidence is rendered.
@@ -404,6 +404,13 @@ export function SpotInformationPanel({
     if (!latest || Date.parse(run.fetchedAt) > Date.parse(latest)) return run.fetchedAt;
     return latest;
   }, null) ?? null;
+  const weatherStale = Boolean(skyError || skyStale || visibleWeatherRuns.some(run => run.state === "STALE_USABLE"));
+  const weatherTimezone = context?.timezone ?? effectiveSpot.timezone;
+  const weatherTime = formatSourceTime(skyRow?.weatherAt, weatherTimezone);
+  const weatherUpdated = formatSourceTime(latestWeatherFetch, weatherTimezone);
+  const weatherMissing = skyRow?.state === "EXPIRED" ? "已过期" : "暂无覆盖";
+  const renderWeatherValue = (value: number | null | undefined, unit: string, digits = 0) =>
+    renderMetricValue(value, unit, digits, "type-data", skyRow?.weatherAt ? EMPTY_FIELD_VALUE : weatherMissing);
   const cloudReady = Boolean(
     detail &&
       context?.location.kind === "FORMAL_SPOT" &&
@@ -655,17 +662,17 @@ export function SpotInformationPanel({
             <View className="spot-panel__astronomy-heading">
               <Text className="type-section">天文</Text>
             </View>
-            {skyError || skyStale ? (
+            {!skyReport && (skyError || skyStale) ? (
               <StatusPanel
                 state={skyError ? "ERROR" : "STALE"}
-                detail={skyError ? skyReport ? "更新失败，暂时显示上次天文资料。" : isOfflineError(skyError) ? "网络不可用，请连接网络后重试。" : "天文资料暂时无法加载，请重试。" : "天文资料尚未确认最新状态，暂时显示上次结果。"}
+                detail={isOfflineError(skyError) ? "网络不可用，请连接网络后重试。" : "天气与天文资料暂未获取，请重试。"}
                 recoveryLabel="重试天文资料"
                 onRecover={onSkyRecover}
               />
             ) : null}
             <View {...(retainWarningSpace && !skyReport ? { role: "status", ariaLabel: "正在更新官方预警" } : {})}
               {...(retainWarningSpace ? { style: { minHeight: `${warningPresentation!.height}px`, flexShrink: 0 } } : {})}>
-              <WeatherAlerts evidence={skyReport?.weatherEvidence} timezone={context?.timezone ?? effectiveSpot.timezone}
+              <WeatherAlerts compact evidence={skyReport?.weatherEvidence} timezone={context?.timezone ?? effectiveSpot.timezone}
                 active={visible} refreshing={skyRefreshing} scopeKey={effectiveSpot.spotId} refreshFailed={Boolean(skyError || skyStale)}
                 onRecover={onSkyRecover} onContentChange={onWarningLayoutChange} />
             </View>
@@ -738,36 +745,37 @@ export function SpotInformationPanel({
             ) : null}
             {skyReport ? <View className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--professional-matrix" data-control="sky-professional-matrix">
               <Text className="type-label spot-panel__weather-heading">气象条件</Text>
-              <ForecastCoverageNote starts={skyReport?.hourly.flatMap(row => row.weatherAt ? [row.weatherAt] : []) ?? []} stale={Boolean(skyError || skyStale)}
-                timezone={context?.timezone ?? "Asia/Shanghai"} scopeKey={`${effectiveSpot.spotId}:${context?.localDate}`} />
-              {skyRow?.weatherAt ? <Text className="type-caption">对应小时预报：{formatSourceTime(skyRow.weatherAt, context?.timezone ?? "Asia/Shanghai")}</Text> : null}
+              {weatherStale ? <StatusPanel state="STALE" detail={skyRow?.weatherAt ? "更新未完成，保留仍有效的预报。" : "更新未完成，所选时刻暂无有效预报。"}
+                recoveryLabel="重试天气与天文" onRecover={onSkyRecover} /> : null}
+              <Text className="type-caption">{formatSourceTime(astronomyAt, weatherTimezone)} · {weatherTime ? `对应小时 ${weatherTime}` : weatherMissing}
+                {weatherTime && weatherUpdated ? ` · ${weatherStale ? "上次获取" : "获取"} ${weatherUpdated}` : ""}</Text>
               <View className="spot-panel__forecast-groups">
                 <View className="spot-panel__evidence-group" ariaLabel="总云量">
-                  <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" /><Text className="type-label">{dayMode ? "云量" : "总云量"}</Text></View>
-                  {dayMode ? <View className="spot-panel__metric"><Text className="type-secondary">总云量</Text>{renderMetricValue(skyRow?.cloudPercent, "%")}</View>
-                    : renderMetricValue(skyRow?.cloudPercent, "%")}
+                  <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" presentation="forecast" /><Text className="type-label">{dayMode ? "云量" : "总云量"}</Text></View>
+                  {dayMode ? <View className="spot-panel__metric"><Text className="type-secondary">总云量</Text>{renderWeatherValue(skyRow?.cloudPercent, "%")}</View>
+                    : renderWeatherValue(skyRow?.cloudPercent, "%")}
                 </View>
                 <View className="spot-panel__evidence-group" ariaLabel="温湿">
                   <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "temperature" : "sun"} presentation="forecast" /><Text className="type-label">温湿</Text></View>
                   <View className="spot-panel__metric-grid">
-                    <View className="spot-panel__metric"><Text className="type-secondary">气温</Text>{renderMetricValue(skyRow?.temperatureC, "°C", 1)}</View>
-                    <View className="spot-panel__metric"><Text className="type-secondary">湿度</Text>{renderMetricValue(skyRow?.relativeHumidityPercent, "%")}</View>
-                    <View className="spot-panel__metric"><Text className="type-secondary">露点</Text>{renderMetricValue(skyRow?.dewPointC, "°C", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">气温</Text>{renderWeatherValue(skyRow?.temperatureC, "°C", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">湿度</Text>{renderWeatherValue(skyRow?.relativeHumidityPercent, "%")}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">露点</Text>{renderWeatherValue(skyRow?.dewPointC, "°C", 1)}</View>
                   </View>
                 </View>
                 <View className="spot-panel__evidence-group" ariaLabel="风与能见度">
                   <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "wind" : "horizon"} presentation="forecast" /><Text className="type-label">风与能见度</Text></View>
                   <View className="spot-panel__metric-grid">
-                    <View className="spot-panel__metric"><Text className="type-secondary">{windDirectionLabel(skyRow?.windDirectionDeg)}</Text>{renderMetricValue(skyRow?.windKph, " km/h", 1)}</View>
-                    <View className="spot-panel__metric"><Text className="type-secondary">阵风</Text>{renderMetricValue(skyRow?.windGustKph, " km/h", 1)}</View>
-                    <View className="spot-panel__metric"><Text className="type-secondary">能见度</Text>{renderMetricValue(skyRow?.visibilityKm, " km", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">{windDirectionLabel(skyRow?.windDirectionDeg)}</Text>{renderWeatherValue(skyRow?.windKph, " km/h", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">阵风</Text>{renderWeatherValue(skyRow?.windGustKph, " km/h", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">能见度</Text>{renderWeatherValue(skyRow?.visibilityKm, " km", 1)}</View>
                   </View>
                 </View>
                 <View className="spot-panel__evidence-group" ariaLabel="降水">
                   <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "droplet" : "conditions"} presentation="forecast" /><Text className="type-label">降水</Text></View>
                   <View className="spot-panel__metric-grid spot-panel__metric-grid--two">
-                    <View className="spot-panel__metric"><Text className="type-secondary">降水量</Text>{renderMetricValue(skyRow?.precipitationMm, " mm", 1)}</View>
-                    <View className="spot-panel__metric"><Text className="type-secondary">降水概率</Text>{renderMetricValue(skyRow?.precipitationProbabilityPercent, "%")}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">降水量</Text>{renderWeatherValue(skyRow?.precipitationMm, " mm", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">降水概率</Text>{renderWeatherValue(skyRow?.precipitationProbabilityPercent, "%")}</View>
                   </View>
                 </View>
               </View>
@@ -777,7 +785,7 @@ export function SpotInformationPanel({
               <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "bulb" : "horizon"} /><Text className="type-label">卫星夜光估算</Text></View>
               <Text className="spot-panel__night-light-label">{effectiveSpot.lightPollution.state === "ESTIMATED" ? effectiveSpot.lightPollution.label : "暂无数据"}</Text>
               <Text className="type-caption">{effectiveSpot.lightPollution.radiance ? `${effectiveSpot.lightPollution.radiance.median} ${effectiveSpot.lightPollution.radiance.unit}` : "辐亮度暂无数据"}</Text>
-              <SourceAttribution sources={[effectiveSpot.lightPollution.source]} />
+              <SourceAttribution compact sources={[effectiveSpot.lightPollution.source]} />
               <SourceDisclosure key={effectiveSpot.spotId} id="night-light-source" label="年度夜光来源" sources={[effectiveSpot.lightPollution.source]} />
             </View>
             {skyReport ? <>
@@ -794,13 +802,16 @@ export function SpotInformationPanel({
             <View className="spot-panel__astronomy-source" data-control="sky-weather-source">
               <Text className="type-caption">
                 {weatherProviders.length ? `预报：${weatherProviders.join("、")}` : "预报来源暂无数据"}
-                {formatSourceTime(latestWeatherFetch, context?.timezone ?? "Asia/Shanghai") ? ` · 更新 ${formatSourceTime(latestWeatherFetch, context?.timezone ?? "Asia/Shanghai")}` : ""}
               </Text>
               <Text className="type-caption">天体位置按所选时刻计算</Text>
             </View>
             <View className="spot-panel__sky-source-reading">
-              {skyRow?.weatherAt ? <SourceAttribution sources={skyReport.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST")} /> : null}
-              <SourceDisclosure key={effectiveSpot.spotId} id="sky-data-source" label="来源与有效时间" sources={skyReport.sources} />
+              {skyRow?.weatherAt ? <SourceAttribution compact sources={skyReport.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST")} /> : null}
+              <SourceDisclosure key={effectiveSpot.spotId} id="sky-data-source" label="来源与有效时间" sources={skyReport.sources}>
+                <ForecastCoverageNote starts={skyReport.hourly.flatMap(row => row.weatherAt ? [row.weatherAt] : [])} stale={weatherStale}
+                  timezone={weatherTimezone} scopeKey={`${effectiveSpot.spotId}:${context?.localDate}`} />
+                <Text className="type-caption">所选时刻的天气取自对应小时；缺少天气覆盖时，天文仍按所选时刻计算。获取时间不代表预报发布时间。</Text>
+              </SourceDisclosure>
             </View>
             </> : null}
             <AirQuality spotId={effectiveSpot.spotId} selectedAt={astronomyAt} timezone={effectiveSpot.timezone} visible={visible} />

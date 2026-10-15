@@ -4,7 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { QueryClient, QueryObserver } from "@tanstack/react-query";
-import { recentWeatherFacts, recentWeatherImplications } from "./recent-weather-summary";
+import { recentWeatherDetails, recentWeatherFacts, recentWeatherImplications } from "./recent-weather-summary";
 import { calendarDateInTimezone } from "../utils/zoned-date";
 
 class TestDate extends Date {
@@ -29,7 +29,7 @@ function harness(queryClient = new QueryClient(), transform = (source: string) =
     useDidHide(fn: () => void) { hide = fn; }, useDidShow(fn: () => void) { show = fn; },
     useResourceQuery(value: any) { options = value; return query; }, useAppStore: () => notify,
     useQueryClient: () => queryClient,
-    getSpotRecentWeather() {}, recentWeatherFacts, recentWeatherImplications, Date: TestDate, calendarDateInTimezone,
+    getSpotRecentWeather() {}, recentWeatherDetails, recentWeatherFacts, recentWeatherImplications, Date: TestDate, calendarDateInTimezone,
     useCalendarDay: (timezone: string) => calendarDateInTimezone(new TestDate(), timezone),
     Button: "Button", Text: "Text", View: "View", SourceDisclosure: "SourceDisclosure", StatusPanel: "StatusPanel", SoftButton: "SoftButton", SourceAttribution: "SourceAttribution",
     React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
@@ -164,6 +164,7 @@ test("partial evidence keeps dated facts, complete range disclosure and persiste
   assert.equal(disclosure.props.label, "近期天气范围与来源");
   assert.match(text(disclosure), /不含今天.*不是点位过去48小时/);
   assert.match(text(disclosure), /暂无数据：2026-09-14/);
+  assert.ok(find(tree, node => node.props?.className === "recent-weather__day" && text(node) === "2026-09-14未返回"), "the missing day must be visible before expanding source details");
   find(tree, node => node.type === "SoftButton").props.onClick(); assert.equal(h.retries, 1);
   assert.equal(h.notifications.length, 1, "rerenders do not restart transient notifications");
   h.hide(); h.render(); assert.equal(h.options.enabled, false);
@@ -172,13 +173,26 @@ test("partial evidence keeps dated facts, complete range disclosure and persiste
   assert.ok(!find(tree, node => node.type === "SourceDisclosure"), "inactive history must release the disclosure with its Geo data");
 });
 
-test("no coverage uses the shared empty state without an exception notification; unpublished spots never query", () => {
+test("no coverage keeps a short regional placeholder without an exception notification; unpublished spots never query", () => {
   const h = harness(); h.set({ data: { data: { ...body, region: null, days: [], unavailableReason: "NO_DATA" }, dataState: "UNAVAILABLE", sources: [] } });
   const tree = h.render();
-  assert.ok(find(tree, node => node.type === "StatusPanel" && node.props.state === "EMPTY"));
+  assert.ok(find(tree, node => node.props?.role === "status" && text(node) === "地区暂无数据"));
   assert.equal(h.notifications.length, 0);
   assert.equal(h.render("contribution:private"), null);
   assert.equal(h.options.enabled, false);
+});
+
+test("daily temperature and precipitation stay brief while complete sampled wind facts remain in the disclosure", () => {
+  const h = harness();
+  h.set({ data: { data: { ...body, unavailableReason: null, days: [{ ...body.days[0], temperatureMaxC: 16,
+    precipitationMm: 0, sampledWindMaxKph: 14, sampledWindHours: 7, conditions: ["多云", "小雨"] }] }, dataState: "PARTIAL", sources: [] } });
+  const tree = h.render();
+  const daily = find(tree, node => node.props?.className === "recent-weather__day" && /2026-09-13.*降水/.test(text(node)));
+  assert.equal(text(daily), "2026-09-138–16°C · 降水 0 mm");
+  assert.doesNotMatch(text(daily), /风速|多云|小雨|全天/);
+  const disclosure = find(tree, node => node.type === "SourceDisclosure");
+  assert.match(text(disclosure), /2026-09-13.*已返回 7 小时中最大风速 14 km\/h.*已返回时段：多云、小雨/s);
+  assert.doesNotMatch(text(disclosure), /全天最大风速/);
 });
 
 test("sample history uses ordinary dated facts and recovery without test explanations", () => {
