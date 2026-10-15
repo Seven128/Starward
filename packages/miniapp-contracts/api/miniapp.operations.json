@@ -97,6 +97,7 @@
     { "id": "contributionsGet", "method": "GET", "path": "/me/contributions", "requestType": "void", "responseType": "ContributionsData" },
     { "id": "contributionMediaGet", "method": "GET", "path": "/me/contributions/{submissionId}/media/{uploadId}", "requestType": "void", "responseType": "ContributionMediaData" },
     { "id": "formalContributionSubmitPost", "method": "POST", "path": "/me/formal-contributions/submit", "requestType": "ContributionFormalSubmitRequest", "responseType": "ContributionFormalSubmitResult" },
+    { "id": "formalContributionSubmitResultGet", "method": "GET", "path": "/me/formal-contributions/{spotId}/submit-result", "requestType": "void", "responseType": "ContributionFormalSubmitResultData" },
     { "id": "formalContributionUploadIntentPost", "method": "POST", "path": "/me/formal-contribution-upload-intents", "requestType": "ContributionFormalUploadIntentRequest", "responseType": "ContributionFormalUploadIntent" },
     { "id": "formalContributionUploadPost", "method": "POST", "path": "/me/formal-contribution-upload-intents/{intentId}/uploads", "requestType": "ContributionFormalUploadSessionRequest", "responseType": "ContributionFormalUploadIntent" },
     { "id": "formalContributionUploadPut", "method": "PUT", "path": "/me/formal-contribution-upload-intents/{intentId}/uploads/{uploadId}", "requestType": "ContributionFormalUploadCompleteRequest", "responseType": "ContributionFormalUploadIntent" },
@@ -108,6 +109,7 @@
     { "id": "contributionUploadPut", "method": "PUT", "path": "/me/contributions/{submissionId}/media-uploads/{uploadId}", "requestType": "ContributionUploadCompleteRequest", "responseType": "ContributionSubmission" },
     { "id": "contributionUploadDelete", "method": "DELETE", "path": "/me/contributions/{submissionId}/media-uploads/{uploadId}", "requestType": "ContributionUploadRemoveRequest", "responseType": "ContributionSubmission" },
     { "id": "contributionSubmitPost", "method": "POST", "path": "/me/contributions/{submissionId}/submit", "requestType": "ContributionSubmitRequest", "responseType": "ContributionSubmission" },
+    { "id": "contributionSubmitResultGet", "method": "GET", "path": "/me/contributions/{submissionId}/submit-result", "requestType": "void", "responseType": "ContributionSubmitResultData" },
     { "id": "operationsGet", "method": "GET", "path": "/operations", "requestType": "void", "responseType": "OperationsData" }
   ]
 }

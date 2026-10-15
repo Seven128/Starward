@@ -82,6 +82,12 @@ test("formal submission transport applies the receipt only to its initiating acc
 
 
 function feedbackContext(values: Record<string, unknown>) {
+  values.pendingSubmit ??= { current: null };
+  values.setSubmissionUnknown ??= () => {};
+  values.setSubmissionRetryAvailable ??= () => {};
+  values.submissionRetryAvailable ??= false;
+  values.completeFormalSubmissionIntent ??= () => {};
+  values.applySubmittedRecord ??= () => {};
   const page = {};
   const guard = values.assertEditorOwner as () => void;
   const operations = createAccountOperationOwner(() => {
@@ -102,49 +108,43 @@ function feedbackContext(values: Record<string, unknown>) {
   }
   return { ...values, operations };
 }
-test("feedback submit takes a synchronous busy lock until the first request settles", async () => {
+for (const recovery of ["READ", "REPLAY"] as const) test(`feedback unknown recovery ${recovery} preserves the original input and separates verification from replay`, async () => {
   const source = ts.createSourceFile("feedback.tsx", readFileSync(new URL("../content/spot-feedback/index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  let declaration: ts.VariableDeclaration | undefined;
-  function visit(node: ts.Node): void {
-    if (ts.isVariableDeclaration(node) && node.name.getText(source) === "submit") declaration = node;
-    ts.forEachChild(node, visit);
-  }
-  visit(source);
-  assert.ok(declaration);
-  const code = ts.transpileModule(`const ${declaration.getText(source)};\nsubmit;`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
-  let rejectFirst: (error: Error) => void = () => undefined;
-  let calls = 0;
-  let submitted = false;
-  let reviewReason: string | undefined;
+  const found = new Map<string, ts.VariableDeclaration>();
+  const visit = (node: ts.Node) => { if (ts.isVariableDeclaration(node) && ["submit", "confirmSubmission"].includes(node.name.getText(source))) found.set(node.name.getText(source), node); ts.forEachChild(node, visit); };
+  visit(source); assert.equal(found.size, 2);
+  const code = ts.transpileModule([...found.values()].map(node => `const ${node.getText(source)};`).join("\n") + "\n({submit, confirmSubmission});", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
+  let rejectFirst: (error: Error) => void = () => {};
+  let calls = 0, reads = 0, replays = 0, adopted: unknown, originalIntent: unknown;
+  const pendingSubmit = { current: null as any }, latest = { submissionId: "contribution:one", revision: 4, submissionState: "REJECTED" };
   const notices: { title: string; tone: string }[] = [];
-  const submit = vm.runInNewContext(code, feedbackContext({
+  let ports: Record<string, any>;
+  ports = feedbackContext({
     baseline: { revision: 1 }, proposal: { fields: { name: "新地点" } }, hasChanges: true, noRemainingChanges: false, conflictOutcome: null, busy: false, uploading: false, sessionUnconfirmed: false,
-    submitted: false, activeConflicts: [], resolutions: {}, mediaProposal: {}, rightsConfirmed: true,
+    ownerChanged: false, spotId: "spot:test", pendingSubmit, submitted: false, activeConflicts: [], resolutions: {}, mediaProposal: {}, rightsConfirmed: true,
     uploadIntent: null, activeSubmissionId: "", resubmissionRevision: null,
-    MiniappApiError: class extends Error {},
-    submitBusy: { current: false }, mediaBusy: { current: false }, setBusy: () => undefined, setSubmitted: (value: boolean) => { submitted = value; },
-    setActiveSubmissionId: () => undefined,
-    setReviewReason: (value: string) => { reviewReason = value; },
-    assertEditorOwner: () => undefined,
-    setConflicts: () => undefined, notify: (notice: { title: string; tone: string }) => { notices.push(notice); }, errorMessage: (error: Error) => error.message,
-    submitFormalContribution: async () => {
-      calls++;
-      if (calls === 1) return new Promise((_resolve, reject) => { rejectFirst = reject; });
-      return { data: { state: "SUBMITTED", submission: { submissionId: "contribution:one", formalFeedback: null } } };
+    MiniappApiError: class extends Error {}, submitBusy: { current: false }, mediaBusy: { current: false }, setBusy() {}, setSubmissionUnknown() {}, setSubmissionRetryAvailable(value: boolean) { ports.submissionRetryAvailable = value; },
+    applySubmittedRecord(record: unknown) { adopted = record; pendingSubmit.current = null; }, assertEditorOwner() {},
+    notify: (notice: { title: string; tone: string }) => { notices.push(notice); }, errorMessage: (error: Error) => error.message,
+    submitFormalContribution: async (input: unknown, _scope: unknown, started: (intent: unknown) => void) => {
+      calls++; originalIntent = { input, owner: "account:a", key: "formal:original" }; started(originalIntent);
+      return new Promise((_resolve, reject) => { rejectFirst = reject; });
     },
-  })) as () => Promise<void>;
-  const first = submit();
-  await submit();
-  assert.equal(calls, 1, "a second tap before rerender must not dispatch another write");
-  rejectFirst(new Error("receipt unknown"));
-  await first;
-  assert.equal(notices[0]?.title, "提交结果未确认");
-  assert.equal(notices[0]?.tone, "warning");
-  await submit();
-  assert.equal(calls, 2, "a failed attempt must release the busy lock");
-  assert.equal(submitted, true);
-  assert.equal(reviewReason, "");
-  assert.deepEqual(notices.map(({ title }) => title), ["提交结果未确认", "已提交反馈"]);
+    retryFormalSubmission: async (intent: unknown) => { replays++; assert.equal(intent,originalIntent); },
+    getFormalContributionSubmitResult: async (spot: string, key: string, owner: string) => {
+      assert.deepEqual([spot,key,owner], ["spot:test","formal:original","account:a"]); reads++;
+      return reads === 1 ? { receipt: null, current: null } : { receipt: { state: "SUBMITTED", submission: { revision: 1 } }, current: latest };
+    },
+  });
+  const api = vm.runInNewContext(code, ports) as { submit(): Promise<void>; confirmSubmission(replay?: boolean): Promise<void> };
+  const first = api.submit(); await api.submit(); assert.equal(calls,1);
+  rejectFirst(new Error("receipt unknown")); await first;
+  assert.equal(notices[0]?.title,"提交结果未确认"); assert.ok(pendingSubmit.current);
+  await api.submit(); assert.equal(calls,1,"pending input cannot silently dispatch again");
+  await api.confirmSubmission(); assert.ok(pendingSubmit.current,"missing receipt remains frozen");
+  await api.confirmSubmission(recovery === "REPLAY"); assert.equal(replays,recovery === "REPLAY" ? 1 : 0); assert.equal(adopted,latest,"confirmation displays the latest reviewed version");
+  assert.equal(pendingSubmit.current,null); assert.equal(calls,1); assert.equal(reads,2);
+  assert.equal(notices.at(-1)?.title,"已核对提交结果");
 });
 
 test("formal photo handoff locks other photos and submit before native selection settles", async () => {

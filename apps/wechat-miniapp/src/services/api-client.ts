@@ -1710,6 +1710,7 @@ export async function getContributions(signal?: AbortSignal, expectedUserId?: st
   return result;
 }
 
+
 const retryContributionCreate = createMutationRetry(() => idempotencyKey("contribution-create"));
 
 export async function createContributionDraft(
@@ -1939,36 +1940,34 @@ export async function removeContributionUpload(submissionId: ContributionId, upl
 const retryContributionSubmit = createContributionSubmitRetry(Taro, () => idempotencyKey("contribution-submit"),
   (error) => error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408);
 
-export async function submitContribution(
-  submissionId: ContributionId,
-  expectedRevision: number,
-  scope?: RequestOperationScope,
-) {
+function assertContributionRequestOwner(owner: string | undefined, scope?: RequestOperationScope) {
   scope?.assertCurrent();
-  const initiatingOwner = currentDraftUserId();
-  const session = await ensureSession();
-  scope?.assertCurrent();
-  if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
-  return retryContributionSubmit(session.userId, { submissionId, expectedRevision }, async (retryKey) => {
-  const result = await requestOperation(
-    "contribution-submit:" + submissionId,
-    "contributionSubmitPost",
-    {
-      auth: "REQUIRED",
-      pathParams: { submissionId },
-      body: { expectedRevision },
-      scope,
-      idempotencyKey: retryKey,
-    },
-    false,
-    session.userId,
-  );
-  if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈结果。");
+  const current = currentDraftUserId();
+  if (!current || (owner && current !== owner)) throw new Error("账号已变化，请重新打开反馈页。");
+  return current;
+}
+
+async function sendContributionSubmit(submissionId: ContributionId, expectedRevision: number, retryKey: string, owner: string, scope?: RequestOperationScope) {
+  assertContributionRequestOwner(owner, scope);
+  const result = await requestOperation("contribution-submit:" + submissionId, "contributionSubmitPost", {
+    auth: "REQUIRED", pathParams: { submissionId }, body: { expectedRevision }, scope, idempotencyKey: retryKey,
+  }, false, owner);
+  assertContributionRequestOwner(owner, scope);
   invalidateApiCache("contributions");
   await miniappQueryClient.invalidateQueries({ queryKey: ["contributions"] });
   return result;
-  });
 }
+
+export async function submitContribution(submissionId: ContributionId, expectedRevision: number, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
+  const initiatingOwner = currentDraftUserId(), session = await ensureSession();
+  scope?.assertCurrent();
+  if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
+  return retryContributionSubmit(session.userId, { submissionId, expectedRevision }, key => sendContributionSubmit(submissionId, expectedRevision, key, session.userId, scope));
+}
+
+/** The feature clients retain only projection/recovery; requests and durable intent stay with their existing owners. */
+export const contributionSubmissionTransport = { request: requestOperation, send: sendContributionSubmit, retryExisting: retryContributionSubmit.existing, assertOwner: assertContributionRequestOwner };
 
 export function cancelRequest(key: string) {
   requests.cancel(key);

@@ -30,12 +30,14 @@ export class InMemoryContributionStore {
     { objectKey: string; mimeType: ContributionMediaUpload["mimeType"]; userId: UserId; submissionId: ContributionId; attached: boolean }
   >();
   #idempotency = new Map<string, unknown>();
+  #submitOperations = new Map<string, "DRAFT" | "FORMAL">();
   #pendingDeletion = new Set<string>();
 
   reset() {
     this.#records.clear();
     this.#objects.clear();
     this.#idempotency.clear();
+    this.#submitOperations.clear();
     this.#pendingDeletion.clear();
   }
 
@@ -58,6 +60,8 @@ export class InMemoryContributionStore {
     this.#records.delete(userId);
     for (const key of this.#idempotency.keys())
       if (key.startsWith(`${userId}|`)) this.#idempotency.delete(key);
+    for (const key of this.#submitOperations.keys())
+      if (key.startsWith(`${userId}|`)) this.#submitOperations.delete(key);
     return cleanupRequired;
   }
 
@@ -246,7 +250,20 @@ export class InMemoryContributionStore {
     }
     records.set(submissionId, next);
     this.#remember(userId, idempotencyKey, next);
+    this.#submitOperations.set(`${userId}|${idempotencyKey}`, "DRAFT");
     return structuredClone(next);
+  }
+
+  getSubmitReceipt(userId: UserId, submissionId: ContributionId, key: string) {
+    if (this.#submitOperations.get(`${userId}|${key}`) !== "DRAFT") return null;
+    const receipt = this.#replay<ContributionSubmission>(userId, key);
+    return receipt?.submissionId === submissionId ? structuredClone(receipt) : null;
+  }
+  getFormalSubmitReceipt(userId: UserId, spotId: string, key: string) {
+    if (this.#submitOperations.get(`${userId}|${key}`) !== "FORMAL") return null;
+    const receipt = this.#replay<ContributionFormalSubmitResult>(userId, key);
+    const subject = receipt?.state === "CONFLICT" ? receipt.currentBaseline.spotId : receipt?.state === "SUBMITTED" ? receipt.submission.spotId : null;
+    return subject === spotId ? structuredClone(receipt!) : null;
   }
 
   removeUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
@@ -333,6 +350,7 @@ export class InMemoryContributionStore {
     const result = buildFormalContributionResult({ request, currentBaseline, existing: existing ?? null, uploads });
     if (result.state === "SUBMITTED") records.set(result.submission.submissionId, structuredClone(result.submission));
     this.#remember(userId, idempotencyKey, result);
+    this.#submitOperations.set(`${userId}|${idempotencyKey}`, "FORMAL");
     return structuredClone(result);
   }
 

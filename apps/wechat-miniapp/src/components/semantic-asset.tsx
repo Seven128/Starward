@@ -14,6 +14,7 @@ export type SemanticAssetSubject =
   | "neutral-avatar";
 
 export type SemanticIconName =
+  | "favorite-star"
   | "settings"
   | "pencil"
   | "account-user"
@@ -91,6 +92,7 @@ const DAY_SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
 
 // These new DAY roles keep the existing presentation in unadopted modes.
 const LEGACY_ICON_NAME: Partial<Record<SemanticIconName, SemanticIconName>> = {
+  "favorite-star": "star",
   navigation: "compass", "place-pin": "location", parking: "location",
   restroom: "info", "plan-suv": "compass", tent: "location",
   walking: "compass", signal: "wifi-off", charging: "info", verified: "info",

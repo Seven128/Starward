@@ -53,6 +53,7 @@ const retainedLegacyIconFiles = [
 const spotIconFiles = ["filter-night.svg", "filter-observation.svg", "wifi-off-night.svg", "wifi-off-observation.svg"];
 // SVG assets used only by content pages, including adopted DAY line glyphs.
 const contentIconFiles = [
+  "public-share-track.svg", "public-share-terrain.svg",
   "settings-choice-check.svg",
   "bell-night.svg", "bell-observation.svg",
   "download-night.svg", "download-observation.svg",
@@ -84,6 +85,7 @@ const bIconFiles = {
     "parking--day--default.png", "restroom--day--default.png",
   ],
   content: [
+    "favorite-star--day--default.png",
     // The article's shared facility cards use the same adopted package assets.
     "parking--day--default.png", "restroom--day--default.png",
     "clock--day--default.png", "warning--day--default.png",

@@ -25,6 +25,7 @@ test("pending submission recovery reads current owner, keeps the original revisi
     const restore = vm.runInNewContext(ts.transpileModule(`const restore = ${found.initializer.getText(source)}; restore;`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
       submissionRecovery: { owner: "account-a" }, currentDraftUserId: () => owner, commandBusy: false,
       localDraft: { recovery: scenario === "local-copy" ? {} : null }, setCommandBusy: (value: boolean) => { busy = value; },
+      getContributionSubmitResult: async () => scenario === "review" ? (clears++, { receipt: current, current }) : { receipt: null, current: null },
       getContributions: async (_signal: unknown, expectedOwner: string) => {
         reads++; assert.equal(expectedOwner, "account-a");
         if (scenario === "offline") throw new Error("offline");
@@ -36,6 +37,7 @@ test("pending submission recovery reads current owner, keeps the original revisi
       },
       contributionSubmissionState: (item: typeof current) => item.state,
       applyDraft: (item: unknown) => adopted.push(item), setPendingSubmission: (item: unknown) => pending.push(item),
+      setSubmissionRetryAvailable() {},
       clearContributionSubmitIntent: () => { clears++; }, Taro: {}, history: { refetch: async () => {} }, announce() {},
     });
     const operation = operations.begin()!;

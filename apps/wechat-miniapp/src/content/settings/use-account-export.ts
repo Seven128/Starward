@@ -43,7 +43,7 @@ export function useAccountExport(onBusy: (busy: boolean) => void) {
     },
     message: errorMessage,
     cleanupWarning: () => useAppStore.getState().notify({ owner: "settings", placement: "inline", tone: "warning",
-      title: "本机临时文件未清除", body: "账户数据可能仍留在本机临时文件中；请通过微信清理本小程序的数据。",
+      title: "本机临时文件未清除", body: "请回到导出数据，重试本机清理。",
       dismissible: true, dedupeKey: "settings-account-export-cleanup-failed" }),
   });
   useEffect(() => () => controller.current?.dispose(), []);

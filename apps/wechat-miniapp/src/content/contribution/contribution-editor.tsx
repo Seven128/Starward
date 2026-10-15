@@ -13,7 +13,7 @@ import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { contributionValidationAnchor } from "./validation-anchor";
 import { CandidateIntakeField } from "./candidate-intake-fields";
 import { ContributionCandidateAddressControl, ContributionCandidateCoordinateConsent, ContributionContextSection, ContributionEvidenceSection, ContributionLocationSection } from "./contribution-form-sections";
-import { ContributionActions, ContributionDeleteDraftAction, ContributionMediaRecoveryAction, ContributionMediaSection } from "./contribution-media-history";
+import { ContributionActions, ContributionSubmitRecovery, ContributionDeleteDraftAction, ContributionMediaRecoveryAction, ContributionMediaSection } from "./contribution-media-history";
 import { useContributionCommands } from "./use-contribution-commands";
 import { useContributionForm, type ContributionForm } from "./use-contribution-form";
 import { contributionRecordPrimaryAction, resolveContributionEditorRecord, type ContributionRecordGroup } from "./contribution-record-model";
@@ -255,6 +255,7 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
     /> : null}
     <ScrollView scrollY {...(managesRecords ? { scrollTop: recordsScrollTop, onScroll: onRecordsScroll } : { onScroll: onDocumentScroll })} scrollIntoView={validationAnchor} scrollWithAnimation={false} enhanced bounces={false} showScrollbar={false} className="contribution-page__scroll hide-scrollbar">
       <View className={`contribution-content spot-document-scroll-content${isNewSpotDocument && !readonlyRecord ? " contribution-content--document" : " page-inset"} safe-bottom`}><NotificationRegion owner="contribution" placement="inline" />
+        <ContributionSubmitRecovery form={form} commands={commands} />
         {form.capabilities.isError || form.capabilities.refreshError || form.capabilities.data?.dataState === "STALE_USABLE" ? (
           <StatusPanel state={form.capabilities.isError ? "ERROR" : "STALE"}
             detail="投稿能力状态暂时无法更新；当前输入仍会保留。"

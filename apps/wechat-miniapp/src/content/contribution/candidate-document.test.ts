@@ -125,24 +125,25 @@ test("the real draft projection keeps valid coordinates without region/address a
   assert.equal(actual.candidateProfile.intake.openness, null);
   assert.equal(build({ ...values, latitude: "" }, () => {}).candidateLocation, null);
 });
-test("the real submit owner focuses incomplete intake, submits explicit unknown without address, and retries a pending receipt without saving or validating new edits", async () => {
+test("the real submit owner preserves complete intake and verifies a pending receipt without saving or validating new edits", async () => {
   const requests: unknown[] = []; let saves = 0; let fail = true;
   class ApiError extends Error { statusCode = 422; }
   const create = productionFunction("./use-contribution-commands.ts", "createSubmit", { candidateIntakeIssues, CANDIDATE_INTAKE_ERRORS, parseCoordinateInput,
     MiniappApiError: ApiError, ContributionSubmitStorageError: class extends Error {}, errorMessage: (e: Error) => e.message,
     submitContribution: async (id: string, rev: number) => { requests.push([id, rev]); if (fail) throw new Error("lost receipt"); return { data: { submissionId: id, revision: rev + 1 } }; },
+    getContributionSubmitResult: async (id: string, rev: number) => ({ receipt: { submissionId: id, revision: rev + 1 }, current: { submissionId: id, revision: rev + 1 } }),
   });
   const fields = { ...emptySpotDocumentValues(), name: "山顶" };
   const form = { kind: "NEW_SPOT_PROPOSAL", candidateFields: fields, candidateProfile: candidateDocumentProposal(fields, {}, emptyCandidateIntake()), latitude: "22.5", longitude: "114.5", preciseLocationConsent: true,
     submitting: false, pendingSubmission: null as { submissionId: string; revision: number } | null, mediaNeedsRecovery: false,
     validationField: null as string | null, setValidationField(value: string) { this.validationField = value; },
-    setSubmitting(value: boolean) { this.submitting = value; }, setPendingSubmission(value: typeof this.pendingSubmission) { this.pendingSubmission = value; },
+    setSubmitting(value: boolean) { this.submitting = value; }, setPendingSubmission(value: typeof this.pendingSubmission) { this.pendingSubmission = value; }, setSubmissionRetryAvailable() {},
     applyDraft() { this.pendingSubmission = null; }, history: { refetch: async () => {} }, announce() {},
   };
   const submit = () => create(form, async () => { saves++; return { submissionId: "contribution:original", revision: 7 }; }, testOperation())();
   await submit(); assert.equal(form.validationField, "contribution-intake-openness"); assert.equal(saves, 0);
   form.candidateProfile = candidateDocumentProposal(fields, {}, explicitUnknown()); await submit(); assert.equal(saves, 1);
   form.candidateProfile = candidateDocumentProposal(fields, {}, emptyCandidateIntake()); fail = false; await submit();
-  assert.equal(saves, 1); assert.deepEqual(requests, [["contribution:original", 7], ["contribution:original", 7]]);
+  assert.equal(saves, 1); assert.deepEqual(requests, [["contribution:original", 7]]);
   assert.equal(form.pendingSubmission, null);
 });

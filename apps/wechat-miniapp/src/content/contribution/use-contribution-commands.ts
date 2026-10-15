@@ -1,3 +1,4 @@
+import { getContributionSubmitResult, retryPendingContributionSubmit } from "./submission-result-client";
 import Taro from "@tarojs/taro";
 import { candidateIntakeIssues } from "@starward/miniapp-contracts";
 import { CANDIDATE_INTAKE_ERRORS } from "./candidate-document";
@@ -364,12 +365,43 @@ function createSubmit(
   form: ContributionForm,
   saveDraft: ReturnType<typeof createSaveDraft>,
   operation: AccountOperation,
+  retryOriginal = false,
 ) {
   const { assertCurrent: assertAccount } = operation;
+  const showCurrentRecord = async (current: ContributionSubmission) => {
+    assertAccount();
+    form.applyDraft(current, "HISTORY");
+    await form.history.refetch().catch(() => undefined);
+    assertAccount();
+    form.announce("success", "已核对提交结果", "已回读原提交及最新审核记录。");
+  };
   return async () => {
     if (form.submitting) return;
     assertAccount();
-    if (!form.pendingSubmission && form.mediaNeedsRecovery) {
+    if (form.pendingSubmission) {
+      if (retryOriginal && !form.submissionRetryAvailable) return;
+      const pending = form.pendingSubmission;
+      form.setSubmitting(true);
+      form.setSubmissionRetryAvailable(false);
+      try {
+        if (retryOriginal) {
+          const response = await retryPendingContributionSubmit(pending.submissionId, pending.revision, operation);
+          await showCurrentRecord(response.data);
+          return;
+        }
+        const result = await getContributionSubmitResult(pending.submissionId, pending.revision, operation);
+        assertAccount();
+        if (!result.receipt || !result.current) {
+          form.setSubmissionRetryAvailable(!result.receipt);
+          return;
+        }
+        await showCurrentRecord(result.current);
+      } catch (error) {
+        if (operation.isCurrent()) form.announce("warning", "提交结果待确认", `${errorMessage(error)}；原输入保持冻结，请重试核对。`);
+      } finally { if (operation.isCurrent()) form.setSubmitting(false); }
+      return;
+    }
+    if (form.mediaNeedsRecovery) {
       form.setValidationField("contribution-media-upload");
       form.announce(
         "warning",
@@ -378,7 +410,7 @@ function createSubmit(
       );
       return;
     }
-    if (!form.pendingSubmission && form.kind !== "NEW_SPOT_PROPOSAL" && (form.detail.trim().length < 20 || form.topics.length === 0)) {
+    if (form.kind !== "NEW_SPOT_PROPOSAL" && (form.detail.trim().length < 20 || form.topics.length === 0)) {
       form.setValidationField(
         form.topics.length === 0
           ? "contribution-topic-control"
@@ -393,7 +425,7 @@ function createSubmit(
       );
       return;
     }
-    if (!form.pendingSubmission && form.kind === "NEW_SPOT_PROPOSAL") {
+    if (form.kind === "NEW_SPOT_PROPOSAL") {
       const parsedLatitude = parseCoordinateInput(form.latitude);
       const parsedLongitude = parseCoordinateInput(form.longitude);
       const invalidCoordinate = !Number.isFinite(parsedLatitude) || !Number.isFinite(parsedLongitude) ||
@@ -429,10 +461,11 @@ function createSubmit(
     form.setSubmitting(true);
     let awaitingReceipt = false;
     try {
-      const saved = form.pendingSubmission ?? await saveDraft(true);
+      const saved = await saveDraft(true);
       if (!saved) return;
       assertAccount();
       form.setPendingSubmission(saved);
+      form.setSubmissionRetryAvailable(false);
       awaitingReceipt = true;
       const response = await submitContribution(
         saved.submissionId,
@@ -454,12 +487,12 @@ function createSubmit(
     } catch (error) {
       if (!operation.isCurrent()) return;
       const uncertain = awaitingReceipt && !(error instanceof ContributionSubmitStorageError) && (!(error instanceof MiniappApiError) || error.statusCode >= 500 || error.statusCode === 408);
-      if (!uncertain) form.setPendingSubmission(null);
-      form.announce(
-        "error",
-        uncertain ? "提交结果待确认" : "提交失败",
-        uncertain ? "尚未确认服务端结果。请点击确认上次提交结果；将继续同一次提交，不会重新保存草稿。" : `${errorMessage(error)}；草稿、图片和输入均已保留。`,
-      );
+      // The retained pending snapshot already exposes the persistent recovery
+      // panel; a second floating failure would duplicate that visible result.
+      if (!uncertain) {
+        form.setPendingSubmission(null);
+        form.announce("error", "提交失败", `${errorMessage(error)}；草稿、图片和输入均已保留。`);
+      }
     } finally {
       if (operation.isCurrent()) form.setSubmitting(false);
     }
@@ -556,7 +589,6 @@ export function useContributionCommands(form: ContributionForm, {nativeBackBound
       if (!operation) return;
       try {
         if (form.pendingSubmission && !allowPending) {
-          form.announce("warning", "请先确认提交结果", "上次提交结果尚未确认，请使用确认上次提交结果按钮继续。");
           return undefined;
         }
         if (!currentDraftUserId()) await getContributions(undefined, undefined, operation);
@@ -587,6 +619,7 @@ export function useContributionCommands(form: ContributionForm, {nativeBackBound
     removeMedia: guard(operation => createRemoveMedia(form, operation)),
     withdrawDraft: guard(operation => createWithdrawDraft(form, operation)),
     submit: guard(operation => createSubmit(form, saveDraft(operation), operation), true),
+    retrySubmit: guard(operation => createSubmit(form, saveDraft(operation), operation, true), true),
   };
 }
 

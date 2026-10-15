@@ -998,6 +998,24 @@ export class MiniappController {
     );
   }
 
+  @Get("me/formal-contributions/:spotId/submit-result")
+  async formalContributionSubmitResult(
+    @Param("spotId") spotId: string,
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "",
+  ) {
+    return this.service.getFormalContributionSubmitResult(await this.service.auth.requirePrincipal(authorization), decodeURIComponent(spotId) as SpotId, idempotencyKey);
+  }
+
+  @Get("me/contributions/:submissionId/submit-result")
+  async contributionSubmitResult(
+    @Param("submissionId") submissionId: string,
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "",
+  ) {
+    return this.service.getContributionSubmitResult(await this.service.auth.requirePrincipal(authorization), decodeURIComponent(submissionId) as ContributionId, idempotencyKey);
+  }
+
   @Get("me/contributions/:submissionId/media/:uploadId")
   async contributionMedia(
     @Param("submissionId") submissionId: string,

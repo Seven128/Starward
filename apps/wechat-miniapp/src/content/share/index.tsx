@@ -8,6 +8,10 @@ import { FloatingNotificationHost } from "@/components/notification";
 import { Provenance } from "@/components/provenance";
 import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { SharePoster } from "@/components/share-poster";
+import { NativeBackBoundary } from "@/components/native-back-boundary";
+import { SemanticIcon } from "@/components/semantic-asset";
+import { PublicShareCard } from "./public-share-card";
+import { publicSharePresentation } from "@/components/public-share-presentation";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { usePageNavigation } from "@/hooks/use-page-navigation";
 import { useAccountOperation } from "@/hooks/use-account-operation";
@@ -15,7 +19,6 @@ import { useWechatLogin } from "@/hooks/use-wechat-login";
 import { createPlanShare, currentDraftUserId, getSharedPlan, getSharedSpot, MiniappApiError } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
-import { planSpotRiskMessage } from "@/utils/public-share-copy";
 import { remainingPublicPlanLifetimeMs } from "./share-lifetime";
 import "./index.scss";
 
@@ -46,6 +49,8 @@ export default function SharedJourneyPage() {
   const spotId = decode(router.params.spotId);
   const [state, setState] = useState<ShareState>({ kind: "loading" });
   const [attempt, setAttempt] = useState(0);
+  const [posterVisible, setPosterVisible] = useState(false);
+  const mode = useAppStore(store => store.mode);
   const hasShown = useRef(false);
   const requestEpoch = useRef(0);
   const pageVisible = useRef(true);
@@ -54,6 +59,7 @@ export default function SharedJourneyPage() {
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigation = usePageNavigation();
   const login = useWechatLogin();
+  useEffect(() => { if (state.kind !== "ready") setPosterVisible(false); }, [state.kind]);
 
   useDidShow(() => {
     const wasVisible = pageVisible.current;
@@ -182,7 +188,7 @@ export default function SharedJourneyPage() {
     ? "PLAN" : spotId && !planId && !token ? "SPOT" : null;
   const shareKind = data?.kind ?? requestedKind;
   const shareTitle = shareKind === "PLAN" ? "行程分享" : shareKind === "SPOT" ? "观星点分享" : "公开分享";
-  const planSpotRisk = data?.kind === "PLAN" ? planSpotRiskMessage(data.spotStatus) : null;
+  const planWarnings = data?.kind === "PLAN" ? publicSharePresentation(data).warnings : [];
   const openMap = () => {
     const contentEpoch = requestEpoch.current;
     const attempt = navigation.begin({ valid: () => requestEpoch.current === contentEpoch });
@@ -199,7 +205,9 @@ export default function SharedJourneyPage() {
   return <><SystemMotionProbe /><View className={`${themeClass} shared-journey`}>
     <FloatingNotificationHost />
     {login.dialog}
-    <CustomNav title={shareTitle} back backFallbackTab="/pages/map/index" />
+    <NativeBackBoundary active={posterVisible && state.kind === "ready"} onBack={() => setPosterVisible(false)} />
+    <CustomNav title={posterVisible ? "分享海报" : shareTitle} back backFallbackTab="/pages/map/index"
+      beforeBack={() => { if (!posterVisible) return true; setPosterVisible(false); return false; }} />
     <ScrollView scrollY enhanced showScrollbar={false} className="shared-journey__scroll">
       <View className="shared-journey__content page-inset safe-bottom">
         {navigation.navigationError ? <StatusPanel state="ERROR" title="地图暂未打开" detail="请重试返回地图。" recoveryLabel="重试" onRecover={openMap} /> : null}
@@ -209,12 +217,13 @@ export default function SharedJourneyPage() {
         {state.kind === "missing" ? <StatusPanel state="ERROR" title="分享不可用" detail="这份分享已失效、被删除或暂不公开。" recoveryLabel="返回地图" onRecover={openMap} /> : null}
         {state.kind === "error" ? <StatusPanel state="ERROR" detail="分享内容暂时无法获取，请检查网络后重试。" recoveryLabel="重试" onRecover={() => setAttempt(value => value + 1)} /> : null}
         {data ? <>
-          <View className="shared-journey__card">
+          {posterVisible ? <SharePoster data={data} onClose={() => setPosterVisible(false)} /> : <>
+          {mode === "DAY" ? <PublicShareCard data={data} /> : <View className="shared-journey__card">
             <Text className="type-caption">{data.kind === "PLAN" ? "公开行程" : "正式观星点"}</Text>
             <Text className="type-page-title">{data.kind === "PLAN" ? data.spotName : data.name}</Text>
             <Text className="type-secondary">{data.kind === "PLAN" ? data.spotRegion : data.region}</Text>
             {data.kind === "PLAN" ? <>
-              {planSpotRisk ? <Text className="shared-journey__alert">{planSpotRisk}</Text> : null}
+              {planWarnings.map((warning, index) => <Text key={index} className="shared-journey__alert">{warning}</Text>)}
               <View className="shared-journey__row"><Text>计划出发</Text><Text>{data.departureLocalDate} {data.departureLocalTime}</Text></View>
               <View className="shared-journey__row"><Text>观测时段</Text><Text>{data.localDate} {data.localTime} — {data.endLocalDate} {data.endLocalTime}</Text></View>
               <Text className="type-caption">时间均为 {data.timezone}；计划结束不代表已到访或观测成功。</Text>
@@ -234,12 +243,13 @@ export default function SharedJourneyPage() {
               <PublicSpotFact label="视野" value={data.horizon} />
               <Provenance source={data.source} />
             </>}
-          </View>
+          </View>}
           <View className="shared-journey__actions">
-            <Button className="soft-button soft-button--primary focus-ring shared-journey__button shared-journey__button--primary" openType="share">转发给微信好友</Button>
-            <Button className="soft-button focus-ring shared-journey__button" onClick={openMap}>在地图查看观星点</Button>
+            <Button ariaLabel="在地图查看观星点" className="soft-button soft-button--primary focus-ring shared-journey__button shared-journey__button--primary" onClick={openMap}><SemanticIcon name="place-pin" />查看观星点</Button>
+            <Button id="public-share-poster-open" className="soft-button focus-ring shared-journey__button" onClick={() => setPosterVisible(true)}><SemanticIcon name="download" />制作分享海报</Button>
+            <Button className="soft-button focus-ring shared-journey__button" openType="share"><SemanticIcon name="share" />转发给微信好友</Button>
           </View>
-          <SharePoster data={data} />
+          </>}
         </> : null}
       </View>
     </ScrollView>

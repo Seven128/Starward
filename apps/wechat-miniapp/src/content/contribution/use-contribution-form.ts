@@ -1,3 +1,4 @@
+import { getContributionSubmitResult } from "./submission-result-client";
 import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
 import { parseCoordinateInput } from "./coordinate-input";
 import { parseObservationInput } from "./observation-input";
@@ -74,6 +75,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
   const [draft, setDraft] = useState<ContributionSubmission | null>(null);
   const [savedAt, setSavedAt] = useState<string | undefined>();
   const [pendingSubmission, setPendingSubmission] = useState<ContributionSubmission | null>(null);
+  const [submissionRetryAvailable, setSubmissionRetryAvailable] = useState(false);
   const [conflictDraft, setConflictDraft] = useState<ContributionSubmission | null>(null);
   const [phase, setPhase] = useState<ContributionPhase>("TYPE");
   const [historyFilter, setHistoryFilter] =
@@ -238,6 +240,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     setDraft(submission);
     setSavedAt(submission.updatedAt);
     setPendingSubmission(null);
+    setSubmissionRetryAvailable(false);
     setConflictDraft(null);
     setBoundSpotId(submission.spotId ?? "");
     setBoundSpotName(submission.spotNameSnapshot ?? "");
@@ -333,21 +336,24 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     const owner = submissionRecovery.owner;
     if (!owner || currentDraftUserId() !== owner || localDraft.recovery) return;
     try {
+      const verification = await getContributionSubmitResult(submissionId as never, expectedRevision, operation);
+      operation.assertCurrent();
+      if (verification.receipt && verification.current) {
+        applyDraft(verification.current, "HISTORY");
+        await history.refetch().catch(() => undefined);
+        operation.assertCurrent();
+        announce("info", "已核对提交结果", "原提交已记录，现显示最新审核状态；未重新提交。");
+        return;
+      }
       const response = await getContributions(undefined, owner, operation);
       operation.assertCurrent();
       if (currentDraftUserId() !== owner) return;
       const current = response.data.submissions.find((item) => item.submissionId === submissionId);
       if (!current) throw new Error("Missing submission");
-      applyDraft(current, contributionSubmissionState(current) === "DRAFT" ? "FORM" : "HISTORY");
-      if (contributionSubmissionState(current) === "DRAFT") {
-        setPendingSubmission({ ...current, revision: expectedRevision });
-        announce("info", "已找回上次提交", "请确认上次提交结果；将沿用原提交记录，不会重新保存草稿。");
-      } else {
-        try { clearContributionSubmitIntent(Taro, owner, submissionId, expectedRevision); } catch { /* Keep the server receipt authoritative. */ }
-        await history.refetch().catch(() => undefined);
-        operation.assertCurrent();
-        announce("info", "已回读提交状态", "服务端已有审核状态，未重新提交。请查看近期反馈。");
-      }
+      applyDraft(current, "FORM");
+      setPendingSubmission({ ...current, revision: expectedRevision });
+      setSubmissionRetryAvailable(!verification.receipt);
+      announce("info", "上次提交仍待确认", "原输入已找回，请核对或重试原提交。");
     } catch {
       if (!operation.isCurrent()) return;
       announce("warning", "暂时无法确认提交", "无法核对服务端记录，恢复标识仍保留。请稍后重试。");
@@ -393,6 +399,8 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     savedAt,
     pendingSubmission,
     setPendingSubmission,
+    submissionRetryAvailable,
+    setSubmissionRetryAvailable,
     conflictDraft,
     setConflictDraft,
     keepConflictInput: () => {

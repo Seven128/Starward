@@ -2048,6 +2048,23 @@ export class PostgresMiniappRepository
     });
   }
 
+  async getContributionSubmitReceipt(userId: UserId, submissionId: ContributionId, idempotencyKey: string): Promise<ContributionSubmission | null> {
+    const receipt = await this.#readContributionReceipt<ContributionSubmission>(userId, idempotencyKey, ["contribution.submit"]);
+    return receipt?.submissionId === submissionId ? clone(receipt) : null;
+  }
+  async getFormalContributionSubmitReceipt(userId: UserId, spotId: SpotId, idempotencyKey: string): Promise<ContributionFormalSubmitResult | null> {
+    const receipt = await this.#readContributionReceipt<ContributionFormalSubmitResult>(userId, idempotencyKey, ["formal-contribution.submit", "formal-contribution.conflict"]);
+    const subject = receipt?.state === "CONFLICT" ? receipt.currentBaseline.spotId : receipt?.state === "SUBMITTED" ? receipt.submission.spotId : null;
+    return subject === spotId ? clone(receipt) : null;
+  }
+  async #readContributionReceipt<Result>(userId: UserId, key: string, operations: string[]): Promise<Result | null> {
+    return this.#transaction(async client => {
+      const result = await client.query<{ response: Result }>("SELECT response FROM idempotency_records WHERE scope_id=$1 AND idempotency_key=$2 AND operation=ANY($3::text[])", [userId, key, operations]);
+      const receipt = result.rows[0]?.response ?? null;
+      assertReceiptNotErased(receipt);
+      return receipt;
+    });
+  }
   async submitContribution(
     userId: UserId,
     submissionId: ContributionId,

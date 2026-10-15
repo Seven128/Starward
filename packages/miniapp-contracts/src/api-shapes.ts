@@ -735,6 +735,10 @@ export interface PlanSaveResultData {
   receipt: ObservationPlan | null;
 }
 
+/** Historical acknowledgements of one scoped submission operation. Null remains unknown. */
+export interface ContributionSubmitResultData { receipt: ContributionSubmission | null }
+export interface ContributionFormalSubmitResultData { receipt: import("./contribution-feedback.ts").ContributionFormalSubmitResult | null }
+
 export interface PreferencesSaveRequest {
   preferences: UserPreferences;
   expectedRevision: number;

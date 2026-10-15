@@ -109,6 +109,16 @@ function mediaStateText(
   return "上传尚未完成 · 可续传";
 }
 
+export function ContributionSubmitRecovery({ form, commands }: { form: ContributionForm; commands: ContributionCommands }) {
+  if (!form.pendingSubmission) return null;
+  return <View className="contribution-submit-recovery">
+    <StatusPanel state={form.submitting ? "LOADING" : "STALE"} title={form.submitting ? "正在处理提交" : "提交结果待确认"}
+      detail={form.submitting ? "当前输入保持不变，请稍候。" : "原输入保持冻结。核对只读结果，重试仍是原提交。"}
+      {...(form.submitting ? {} : { recoveryLabel: "确认提交结果", onRecover: () => void commands.submit() })} />
+    {form.submissionRetryAvailable ? <SoftButton label="重试原提交" disabled={form.submitting} onClick={() => void commands.retrySubmit()}>重试原提交</SoftButton> : null}
+  </View>;
+}
+
 export function ContributionActions({
   form,
   commands,
@@ -123,17 +133,13 @@ export function ContributionActions({
   const disabled = form.commandBusy;
   const draftState = form.draft ? contributionSubmissionState(form.draft) : null;
   const isResubmission = draftState === "REJECTED" || draftState === "CHANGES_REQUESTED";
-  const submitLabel = form.pendingSubmission ? "确认上次提交结果" : isResubmission ? "再次提交" : "提交审核";
+  const submitLabel = form.pendingSubmission ? "结果待确认" : isResubmission ? "再次提交" : "提交审核";
   return (
     <View
       className="contribution-actions"
       data-od-id="contribution-submit"
       data-control="contribution-submit"
     >
-      {form.pendingSubmission ? <View className="contribution-draft-recovery" role="status">
-        <Text className="type-section">上次提交结果待确认</Text>
-        <Text className="type-body">内容和图片已保留。确认前暂不修改这份草稿；再次确认会继续同一次提交。</Text>
-      </View> : null}
       {form.conflictDraft ? (
         <View className="contribution-draft-recovery">
           <Text className="type-section">核对最新草稿</Text>
@@ -159,12 +165,12 @@ export function ContributionActions({
       {placement === "inline" ? <ContributionDeleteDraftAction form={form} commands={commands} onWithdrawn={onWithdrawn} /> : null}
       <SoftButton
         variant="primary"
-        label={form.pendingSubmission ? "确认上次提交结果" : isResubmission ? "再次提交" : "提交人工审核"}
+        label={form.pendingSubmission ? "结果待确认" : isResubmission ? "再次提交" : "提交人工审核"}
         loading={form.submitting}
-        disabled={form.submissionCommandBusy || (!form.pendingSubmission && form.mediaNeedsRecovery)}
+        disabled={form.submissionCommandBusy || Boolean(form.pendingSubmission) || form.mediaNeedsRecovery}
         onClick={() => void commands.submit()}
       >
-        {form.submitting ? "提交中…" : submitLabel}
+        {form.submitting ? "处理中…" : submitLabel}
       </SoftButton>
     </View>
   );

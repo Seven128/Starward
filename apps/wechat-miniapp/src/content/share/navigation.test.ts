@@ -68,8 +68,9 @@ function mount(kind: "SPOT" | "PLAN" | "MISSING") {
       if (name.endsWith("share-lifetime")) return { remainingPublicPlanLifetimeMs: () => 600_000 };
       if (name.endsWith("zoned-date")) return { displayZonedShareExpiry: () => "valid until" };
       if (name.endsWith("public-share-copy")) return { planSpotRiskMessage: () => null };
+      if (name.endsWith("public-share-presentation")) return { publicSharePresentation: () => ({ warnings: [] }) };
       if (name.endsWith(".scss")) return {};
-      return Object.fromEntries(["SystemMotionProbe", "CustomNav", "FloatingNotificationHost", "Provenance", "StatusPanel", "SharePoster"].map(n => [n, n]));
+      return Object.fromEntries(["SystemMotionProbe", "CustomNav", "NativeBackBoundary", "SemanticIcon", "PublicShareCard", "FloatingNotificationHost", "Provenance", "StatusPanel", "SharePoster"].map(n => [n, n]));
     },
   });
   load(source, module);
@@ -78,7 +79,7 @@ function mount(kind: "SPOT" | "PLAN" | "MISSING") {
   const nodes = (node: any): Element[] => !node || typeof node !== "object" ? [] : Array.isArray(node) ? node.flatMap(nodes) : [node, ...nodes(node.props?.children)];
   const failure = () => nodes(tree).find(e => e.type === "StatusPanel" && e.props.title === "地图暂未打开");
   const open = () => {
-    render(); const button = nodes(tree).find(e => e.type === "Button" && e.props.children === "在地图查看观星点");
+    render(); const button = nodes(tree).find(e => e.type === "Button" && e.props.ariaLabel === "在地图查看观星点");
     const missing = nodes(tree).find(e => e.type === "StatusPanel" && e.props.title === "分享不可用");
     assert.ok(button || missing); (button?.props.onClick ?? missing!.props.onRecover)(); render();
   };

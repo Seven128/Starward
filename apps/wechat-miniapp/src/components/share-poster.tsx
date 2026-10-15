@@ -1,103 +1,30 @@
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import { Button, Canvas, Image, Text, View } from "@tarojs/components";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import type { DisplayMode, PlanPublicShareData, SourceSummary, SpotPublicShareData } from "@starward/miniapp-contracts";
-import { EMPTY_FIELD_VALUE, StatusPanel } from "./status-panel";
+import type { DisplayMode } from "@starward/miniapp-contracts";
+import { StatusPanel } from "./status-panel";
 import { useAppStore } from "@/state/app-store";
-import { displayZonedShareExpiry } from "@/utils/zoned-date";
-import { planSpotRiskMessage } from "@/utils/public-share-copy";
+import { publicSharePresentation, publicShareCredits, type PublicShare } from "./public-share-presentation";
+import { adoptedBIconPath } from "./semantic-asset";
+import { adoptedSharePosterLayout, drawAdoptedSharePoster, type PosterIcon } from "./adopted-share-poster";
+import { loadPosterIcons } from "./share-poster-icons";
 import { createSharePosterOwner } from "./share-poster-owner";
 import { createSharePosterFiles } from "./share-poster-files";
-import { drawSharePoster, POSTER_WIDTH, POSTER_EXPORT_SCALE, type PosterPalette } from "./share-poster-drawing";
+import { drawSharePoster, POSTER_WIDTH, POSTER_EXPORT_SCALE, wrapPosterText as wrap, type PosterPalette } from "./share-poster-drawing";
 import "./share-poster.scss";
 
-type PublicShare = PlanPublicShareData | SpotPublicShareData;
 type PreviewImage = { canvasId: string; path: string; revision: number };
 let canvasSequence = 0;
 let posterFileSequence = 0;
 const WIDTH = POSTER_WIDTH;
 
-function posterLines(data: PublicShare): { heading: string; lines: string[]; sources: SourceSummary[] } {
-  if (data.kind === "PLAN") {
-    const risk = planSpotRiskMessage(data.spotStatus);
-    return {
-      heading: data.spotName,
-      lines: [
-        `公开行程 · ${data.spotRegion}`,
-        ...(risk ? [risk] : []),
-        `计划出发  ${data.departureLocalDate} ${data.departureLocalTime}`,
-        `观测时段  ${data.localDate} ${data.localTime}`,
-        `至 ${data.endLocalDate} ${data.endLocalTime}`,
-        `地点时区  ${data.timezone}`,
-        ...data.events.map(event => `关联天象  ${event.displayName}`),
-        "计划结束不代表已到访或观测成功。",
-        `分享有效至  ${displayZonedShareExpiry(data.expiresAt, data.timezone)}`,
-      ],
-      sources: [data.spotSource, ...data.events.flatMap(event => event.source ? [event.source] : [])],
-    };
-  }
-  return {
-    heading: data.name,
-    lines: [
-      `正式观星点 · ${data.region}`,
-      data.address,
-      ...(data.status === "TEMPORARILY_CLOSED" ? ["此观星点暂时关闭，请勿按旧信息进入。"] : []),
-      `开放  ${data.opening || EMPTY_FIELD_VALUE}`,
-      `进入  ${data.access || EMPTY_FIELD_VALUE}`,
-      `安全  ${data.safety || EMPTY_FIELD_VALUE}`,
-      `停车  ${data.parking || EMPTY_FIELD_VALUE}`,
-      `视野  ${data.horizon || EMPTY_FIELD_VALUE}`,
-    ],
-    sources: [data.source],
-  };
-}
-
-function wrap(text: string, maxWidth: number, fontSize: number): string[] {
-  const advance = (char: string) => fontSize * (/\s/u.test(char) ? 0.35 : /[\x00-\x7f]/u.test(char) ? 0.68 : 1);
-  const rows: string[] = [];
-  for (const paragraph of text.split("\n")) {
-    let row = "";
-    let rowWidth = 0;
-    for (const token of paragraph.match(/(?:\([A-Za-z0-9:/._-]+\)|（[A-Za-z0-9:/._-]+）)|[A-Za-z0-9:/._-]+|\s+|./gu) ?? []) {
-      const tokenWidth = [...token].reduce((sum, char) => sum + advance(char), 0);
-      if (row && rowWidth + tokenWidth > maxWidth) {
-        rows.push(row.trimEnd());
-        row = "";
-        rowWidth = 0;
-      }
-      if (!row && /^\s+$/u.test(token)) continue;
-      if (tokenWidth > maxWidth) {
-        for (const char of token) {
-          const charWidth = advance(char);
-          if (row && rowWidth + charWidth > maxWidth) {
-            rows.push(row.trimEnd());
-            row = "";
-            rowWidth = 0;
-          }
-          row += char;
-          rowWidth += charWidth;
-        }
-      } else {
-        row += token;
-        rowWidth += tokenWidth;
-      }
-    }
-    rows.push(row.trimEnd());
-  }
-  return rows;
-}
-
 function posterLayout(data: PublicShare) {
-  const content = posterLines(data);
+  const card = publicSharePresentation(data);
+  const content = { heading: card.name, lines: [card.region, card.address, ...card.facts.map(fact => `${fact.label}  ${fact.value}`), ...card.warnings, ...card.notes].filter(Boolean) };
   const contentWidth = WIDTH - 44;
   const heading = wrap(content.heading, contentWidth, 22);
   const body = content.lines.map(line => wrap(line, contentWidth, 13));
-  const credits = content.sources.map(source => [
-    ...wrap(`${source.attribution?.name || source.provider} · ${source.title}`, contentWidth, 11),
-    ...(source.attribution?.statements.flatMap(statement => wrap(statement, contentWidth, 11)) ?? []),
-    ...wrap(`许可：${source.license}`, contentWidth, 11),
-    ...wrap(source.sourceUrl, contentWidth, 11),
-  ]);
+  const credits = publicShareCredits(card.sources).map(credit => wrap(credit, contentWidth, 11));
   const bodyTop = 83 + heading.length * 28 + 12;
   const divider = bodyTop + body.reduce((height, rows) => height + rows.length * 21 + 8, 0) + 8;
   const creditsTop = divider + 44;
@@ -111,7 +38,11 @@ const POSTER_COLORS: Record<DisplayMode, PosterPalette> = {
   OBSERVATION: { background: "#170000", accent: "#a63f3f", text: "#ff9b9b", divider: "#a63f3f", muted: "#e77474" },
 };
 
-export function SharePoster({ data }: { data: PublicShare }) {
+function posterHeight(data: PublicShare, mode: DisplayMode) {
+  return mode === "DAY" ? adoptedSharePosterLayout(data).height : posterLayout(data).height;
+}
+
+export function SharePoster({ data, onClose }: { data: PublicShare; onClose?: () => void }) {
   const mode = useAppStore(state => state.mode);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<"red-light-warning" | "permission" | "export" | null>(null);
@@ -121,16 +52,18 @@ export function SharePoster({ data }: { data: PublicShare }) {
   const previewRevision = useRef(0);
   const content = useMemo(() => ({ data, mode }), [data, mode]);
   const committedContent = useRef<typeof content | null>(null);
+  const regenerationRequested = useRef(false);
   // Each snapshot has its own native node: a late command from an expired
   // instance/theme cannot target the fixed ID of a newly mounted poster.
   const frame = useMemo(() => ({ ...content, canvasId: `public-share-poster-2d-live-${++canvasSequence}`,
-    canvas: null as Taro.Canvas | null, previewImage: null as string | null }), [content, canvasRevision]);
+    canvas: null as Taro.Canvas | null, previewImage: null as string | null,
+    icons: null as Record<PosterIcon, CanvasImageSource> | null, releaseIcons: null as (() => void) | null }), [content, canvasRevision]);
   const currentCanvasId = useRef(frame.canvasId);
   useLayoutEffect(() => { currentCanvasId.current = frame.canvasId; }, [frame.canvasId]);
   const owner = useMemo(() => {
     const files = createSharePosterFiles<typeof frame>({ export: async value => {
       if (!value.canvas) throw new Error("poster_canvas_unavailable");
-      const width = WIDTH * POSTER_EXPORT_SCALE, height = posterLayout(value.data).height * POSTER_EXPORT_SCALE;
+      const width = WIDTH * POSTER_EXPORT_SCALE, height = posterHeight(value.data, value.mode) * POSTER_EXPORT_SCALE;
       const temporary = (await Taro.canvasToTempFilePath({ canvas: value.canvas, fileType: "png",
         x: 0, y: 0, width, height, destWidth: width, destHeight: height })).tempFilePath;
       // SDK temporary files cannot be unlinked. Transfer this acquisition to
@@ -166,9 +99,18 @@ export function SharePoster({ data }: { data: PublicShare }) {
       const paint = (canvas: Taro.Canvas) => {
         if (!current()) return;
         try {
-          drawSharePoster(canvas, posterLayout(value.data), POSTER_COLORS[value.mode]);
-          value.canvas = canvas;
-          done();
+          const finish = () => {
+            if (!current()) return;
+            try {
+              if (value.mode === "DAY") drawAdoptedSharePoster(canvas, adoptedSharePosterLayout(value.data), value.icons!);
+              else drawSharePoster(canvas, posterLayout(value.data), POSTER_COLORS[value.mode]);
+              value.canvas = canvas; done();
+            } catch (cause) { fail(cause); }
+          };
+          if (value.mode !== "DAY" || value.icons) { finish(); return; }
+          const decoding = loadPosterIcons(canvas, adoptedBIconPath);
+          value.releaseIcons = decoding.cancel;
+          void decoding.promise.then(icons => { if (current()) { value.icons = icons; finish(); } }, fail);
         } catch (cause) { fail(cause); }
       };
       if (value.canvas) { paint(value.canvas); return; }
@@ -189,6 +131,7 @@ export function SharePoster({ data }: { data: PublicShare }) {
     },
     presentImage,
     releasePreview: value => {
+      value.releaseIcons?.(); value.releaseIcons = null; value.icons = null; value.canvas = null;
       if (currentPreview.current?.canvasId === value.canvasId) currentPreview.current = null;
       if (value.previewImage) { files.release(value.previewImage); value.previewImage = null; }
     },
@@ -208,7 +151,8 @@ export function SharePoster({ data }: { data: PublicShare }) {
   }, []);
   useLayoutEffect(() => { setError(null); }, [data, mode]);
   useLayoutEffect(() => {
-    const contentChanged = committedContent.current !== content;
+    const contentChanged = committedContent.current !== content || regenerationRequested.current;
+    regenerationRequested.current = false;
     committedContent.current = content;
     owner.update(frame, contentChanged);
   }, [owner, frame, content]);
@@ -228,8 +172,9 @@ export function SharePoster({ data }: { data: PublicShare }) {
 
   return <View className="share-poster">
     <Text className="type-section">分享海报</Text>
+    <Text className="type-caption">这是公开内容的海报预览；保存到相册和转交好友是两个独立动作。</Text>
     <View id={`${frame.canvasId}-slot`} className="share-poster__canvas-slot"
-      style={{ height: `${posterLayout(data).height}px` }}>
+      style={{ height: `${posterHeight(data, mode)}px` }}>
       <Canvas key={frame.canvasId} id={frame.canvasId} type="2d" className="share-poster__canvas" />
       {preview?.canvasId === frame.canvasId ? <Image key={`${frame.canvasId}:${preview.revision}`} src={preview.path} mode="aspectFit"
         className="share-poster__preview" aria-label="公开分享海报预览" onError={() => {
@@ -239,6 +184,8 @@ export function SharePoster({ data }: { data: PublicShare }) {
         }} /> : null}
     </View>
     <Button className="soft-button focus-ring share-poster__save" disabled={busy} onClick={() => void save()}>{busy ? "正在保存…" : "保存海报到相册"}</Button>
+    <Button className="soft-button focus-ring share-poster__cancel" disabled={busy} onClick={() => { setError(null); regenerationRequested.current = true; setCanvasRevision(value => value + 1); }}>重新生成</Button>
+    {onClose ? <Button className="soft-button focus-ring share-poster__cancel" onClick={onClose}>返回分享页</Button> : null}
     {error === "red-light-warning" ? <View className="share-poster__handoff">
       <StatusPanel state="PARTIAL"
         detail="相册界面可能亮屏。微信相册授权及保存界面可能显示亮白色。可先取消，在设置中切换日间或夜间再保存。"

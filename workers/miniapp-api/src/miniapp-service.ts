@@ -2630,6 +2630,16 @@ export class MiniappService {
     assertIdempotencyKey(idempotencyKey);
     return envelope(await this.contributions.submitFormal(userId, input, idempotencyKey), "FRESH", []);
   }
+  async getFormalContributionSubmitResult(userId: UserId, spotId: SpotId, idempotencyKey: string) {
+    assertIdempotencyKey(idempotencyKey);
+    if (!spotId || spotId.length > 180) throw new Error("invalid_spot_id");
+    return envelope({ receipt: await this.repository.getFormalContributionSubmitReceipt(userId, spotId, idempotencyKey) }, "FRESH", []);
+  }
+  async getContributionSubmitResult(userId: UserId, submissionId: ContributionId, idempotencyKey: string) {
+    assertIdempotencyKey(idempotencyKey);
+    if (!submissionId || submissionId.length > 180) throw new Error("invalid_contribution_id");
+    return envelope({ receipt: await this.repository.getContributionSubmitReceipt(userId, submissionId, idempotencyKey) }, "FRESH", []);
+  }
   async createFormalUploadIntent(userId: UserId, input: ContributionFormalUploadIntentRequest, idempotencyKey: string) { assertIdempotencyKey(idempotencyKey); return envelope(await this.contributions.createFormalUploadIntent(userId,input,idempotencyKey),"FRESH",[]); }
   async createFormalUpload(userId: UserId, intentId: string, input: ContributionFormalUploadSessionRequest, idempotencyKey: string) { assertIdempotencyKey(idempotencyKey); return envelope(await this.contributions.createFormalUpload(userId,intentId,input,idempotencyKey),"FRESH",[]); }
   async completeFormalUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, input: ContributionFormalUploadCompleteRequest, idempotencyKey: string) { assertIdempotencyKey(idempotencyKey); return envelope(await this.contributions.completeFormalUpload(userId,intentId,uploadId,input,idempotencyKey),"FRESH",[]); }

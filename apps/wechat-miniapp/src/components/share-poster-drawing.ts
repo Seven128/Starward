@@ -3,6 +3,27 @@ import type Taro from "@tarojs/taro";
 export const POSTER_WIDTH = 320;
 // Keep the existing 640px file contract independently of device pixel density.
 export const POSTER_EXPORT_SCALE = 2;
+export function wrapPosterText(text: string, maxWidth: number, fontSize: number): string[] {
+  const advance = (char: string) => fontSize * (/\s/u.test(char) ? 0.35 : /[\x00-\x7f]/u.test(char) ? 0.68 : 1);
+  const rows: string[] = [];
+  for (const paragraph of text.split("\n")) {
+    let row = "", width = 0;
+    for (const token of paragraph.match(/(?:\([A-Za-z0-9:/._-]+\)|（[A-Za-z0-9:/._-]+）)|[A-Za-z0-9:/._-]+|\s+|./gu) ?? []) {
+      const tokenWidth = [...token].reduce((sum, char) => sum + advance(char), 0);
+      if (row && width + tokenWidth > maxWidth) { rows.push(row.trimEnd()); row = ""; width = 0; }
+      if (!row && /^\s+$/u.test(token)) continue;
+      if (tokenWidth > maxWidth) {
+        for (const char of token) {
+          const step = advance(char);
+          if (row && width + step > maxWidth) { rows.push(row.trimEnd()); row = ""; width = 0; }
+          row += char; width += step;
+        }
+      } else { row += token; width += tokenWidth; }
+    }
+    rows.push(row.trimEnd());
+  }
+  return rows;
+}
 export interface PosterPalette { background: string; accent: string; text: string; divider: string; muted: string }
 interface PosterLayout {
   heading: string[]; body: string[][]; credits: string[][];

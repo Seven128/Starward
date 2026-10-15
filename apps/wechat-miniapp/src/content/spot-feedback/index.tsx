@@ -1,3 +1,4 @@
+import { getFormalContributionSubmitResult } from "./submission-result-client";
 import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { AccountEntry } from "../account-entry";
 import { LoadingIndicator } from "@/components/loading-indicator";
@@ -27,11 +28,11 @@ import { SpotDocumentTabs } from "../spot-document-tabs";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { currentDraftUserId, errorMessage, getContributionFormalBaseline, getContributionMedia, getContributions, getSpotContributionMedia, getSpotSite, MiniappApiError } from "@/services/api-client";
-import { completeFormalContributionUpload, createFormalContributionUpload, createFormalUploadIntent, removeFormalContributionUpload, submitFormalContribution } from "./formal-feedback-mutations";
+import { completeFormalContributionUpload, createFormalContributionUpload, createFormalUploadIntent, removeFormalContributionUpload, submitFormalContribution, retryFormalSubmission, completeFormalSubmissionIntent, type FormalSubmissionIntent } from "./formal-feedback-mutations";
 import { useAppStore } from "@/state/app-store";
 import { choosePlatformImages } from "@/services/platform-image";
 import { ToggleField } from "@/components/toggle-field";
-import { mediaFileName, mediaMimeType, readBase64 } from "../contribution/contribution-model";
+import { mediaFileName, mediaMimeType, readBase64, STATE_LABEL, contributionSubmissionState } from "../contribution/contribution-model";
 import { appendFormalMedia, createFormalMediaSelection, formalMediaProposal, removeFormalMedia, type FormalMediaSelection } from "./formal-media-selection";
 import { loadAvailableMediaPreviews, recoverCompletedPhotoPreviews } from "../contribution/media-preview";
 import { formalFeedbackFrozenView } from "../contribution/formal-feedback-snapshot";
@@ -125,6 +126,11 @@ function FormalFeedbackEditor() {
     }
   });
   const [submitted, setSubmitted] = useState(false);
+  const pendingSubmit = useRef<FormalSubmissionIntent | null>(null);
+  const [submissionUnknown, setSubmissionUnknown] = useState(false);
+  const [submissionRetryAvailable, setSubmissionRetryAvailable] = useState(false);
+  const [confirmedSubmission, setConfirmedSubmission] = useState<ContributionSubmission | null>(null);
+  useDidShow(() => { if (pendingSubmit.current) setSubmissionUnknown(true); });
   const [conflicts, setConflicts] = useState<readonly ContributionFormalConflict[]>([]);
   const [currentBaseline, setCurrentBaseline] = useState<ContributionFormalBaseline | null>(null);
   const [resolutions, setResolutions] = useState<Partial<Record<string, ContributionConflictResolution>>>({});
@@ -244,20 +250,20 @@ function FormalFeedbackEditor() {
     { isError: history.isError, refreshError: history.refreshError, dataState: history.data?.dataState, refetch: () => history.refetch() },
     { isError: site.isError, refreshError: site.refreshError, dataState: site.data?.dataState, refetch: () => site.refetch() },
   ); };
-  const leaveState = useRef({ busy: busy || uploading, dirty: hasChanges && !noRemainingChanges && !submitted });
-  leaveState.current = { busy: busy || uploading, dirty: hasChanges && !noRemainingChanges && !submitted };
+  const leaveState = useRef({ busy: busy || uploading, dirty: hasChanges && !noRemainingChanges && !submitted, unknown: submissionUnknown });
+  leaveState.current = { busy: busy || uploading, dirty: hasChanges && !noRemainingChanges && !submitted, unknown: submissionUnknown };
   const confirmLeave = useCallback(() => confirmEditorLeave({
     ...leaveState.current,
     busy: leaveState.current.busy || mediaBusy.current || submitBusy.current,
     confirm: async () => (await Taro.showModal({
-      title: "放弃未提交的反馈？",
-      content: "本页修改尚未提交，离开后将丢失。",
-      confirmText: "放弃修改",
+      title: leaveState.current.unknown ? "离开待确认的反馈？" : "放弃未提交的反馈？",
+      content: leaveState.current.unknown ? "离开不会取消已发出的提交，本页输入将丢失。可先留在这里核对或重试原提交。" : "本页修改尚未提交，离开后将丢失。",
+      confirmText: leaveState.current.unknown ? "离开反馈" : "放弃修改",
       confirmColor: "#b3261e",
       cancelText: "继续编辑",
     })).confirm,
   }), []);
-  const nativeLeaveGuard = useNativeEditorLeaveGuard(hasChanges && !noRemainingChanges && !submitted && !ownerChanged, "当前反馈尚未提交，确定离开吗？");
+  const nativeLeaveGuard = useNativeEditorLeaveGuard(hasChanges && !noRemainingChanges && !submitted && !ownerChanged, submissionUnknown ? "提交结果尚未确认，离开不会取消已发出的请求。确定离开吗？" : "当前反馈尚未提交，确定离开吗？");
   const assertEditorOwner = () => {
     if (!editorOwner.current || currentDraftUserId() !== editorOwner.current ||
       useAppStore.getState().accountOwnerId !== editorOwner.current)
@@ -270,7 +276,7 @@ function FormalFeedbackEditor() {
     setPreviewFailures(recovered.failedIds);
     setPreviewRetry(value => value + 1);
   };
-  const setField = (key: ContributionFormalFieldKey, value: string) => setValues(current => current ? { ...current, [key]: value } : current);
+  const setField = (key: ContributionFormalFieldKey, value: string) => { if (!submissionUnknown && !pendingSubmit.current) setValues(current => current ? { ...current, [key]: value } : current); };
   const syncMediaProposal = (intent: ContributionFormalUploadIntent) => {
     if (!baseline) return;
     setValues(current => current ? { ...current } : current);
@@ -278,7 +284,7 @@ function FormalFeedbackEditor() {
     setUploadIntent(intent);
   };
   const addPhoto = async (kind: ContributionMediaKind) => {
-    if (!baseline || busy || submitBusy.current || uploading || mediaBusy.current || submitted) return;
+    if (!baseline || busy || submitBusy.current || uploading || mediaBusy.current || submitted || pendingSubmit.current) return;
     const operation = operations.begin();
     if (!operation) return;
     const assertCurrent = () => { operation.assertCurrent(); assertEditorOwner(); };
@@ -344,6 +350,7 @@ function FormalFeedbackEditor() {
     } finally { operation.release(); }
   };
   const removePhoto = async (uploadId: string) => {
+    if (pendingSubmit.current) return;
     if (busy || submitBusy.current || uploading || mediaBusy.current || submitted) return;
     const operation = operations.begin();
     if (!operation) return;
@@ -379,7 +386,53 @@ function FormalFeedbackEditor() {
       operation.release();
     }
   };
+  const applySubmittedRecord = (record: ContributionSubmission) => {
+    const frozen = record.formalFeedback;
+    if (frozen) {
+      const view = formalFeedbackFrozenView(frozen), accepted = valuesFrom(view.baseline);
+      for (const [key, value] of Object.entries(view.proposal.fields)) accepted[key as ContributionFormalFieldKey] = value ?? "";
+      const attached = record.media.map(media => ({ ...media, kind: mediaKindOf(frozen, media.uploadId) }));
+      setBaseline(view.baseline); setValues(accepted); setPriorMedia(attached);
+      setMediaSelection(createFormalMediaSelection(view.baseline, view.proposal, attached.map(media => media.uploadId)));
+    }
+    setActiveSubmissionId(record.submissionId); setReviewReason(record.review?.reason ?? "");
+    setConfirmedSubmission(record); setSubmitted(true); setConflicts([]);
+    if (pendingSubmit.current) completeFormalSubmissionIntent(pendingSubmit.current);
+    pendingSubmit.current = null; setSubmissionUnknown(false); setSubmissionRetryAvailable(false);
+  };
+  const confirmSubmission = async (retryOriginal = false) => {
+    const intent = pendingSubmit.current;
+    if (!intent || busy || submitBusy.current || ownerChanged || (retryOriginal && !submissionRetryAvailable)) return;
+    const operation = operations.begin();
+    if (!operation) return;
+    submitBusy.current = true; setBusy(true);
+    setSubmissionRetryAvailable(false);
+    try {
+      operation.assertCurrent(); assertEditorOwner();
+      if (retryOriginal) await retryFormalSubmission(intent, operation);
+      const result = await getFormalContributionSubmitResult(spotId, intent.key, intent.owner, operation);
+      operation.assertCurrent(); assertEditorOwner();
+      if (!result.receipt || (result.receipt.state === "SUBMITTED" && !result.current)) {
+        setSubmissionRetryAvailable(!result.receipt);
+        notify({ owner: "contribution", placement: "inline", tone: "warning", title: "提交结果待确认", body: result.receipt ? "上次回执已找到，最新记录尚未确认。请稍后重试核验。" : retryOriginal ? "原提交仍待确认，输入保持冻结。请继续核对结果。" : "尚未找到原回执，输入仍冻结；本次核验未重新提交。", dedupeKey: "formal-feedback-submit-result" });
+        return;
+      }
+      if (result.receipt.state === "CONFLICT" && result.baseline) {
+        const conflict = resolveContributionFormalRebase({ baseline: intent.input.baseline, current: result.baseline, proposal: intent.input.proposal });
+        setCurrentBaseline(result.baseline); setConflicts(conflict.conflicts); setResolutions({});
+        completeFormalSubmissionIntent(intent);
+        pendingSubmit.current = null; setSubmissionUnknown(false);
+        notify({ owner: "contribution", placement: "inline", tone: "warning", title: "正式资料已有更新", body: "原提交返回资料冲突，已读取最新正式版本。请核对差异后继续。", dedupeKey: "formal-feedback-submit-result" });
+      } else if (result.current) {
+        applySubmittedRecord(result.current);
+        notify({ owner: "contribution", placement: "inline", tone: "success", title: "已核对提交结果", body: retryOriginal ? "已沿用原提交，现显示最新审核记录。" : "原提交已记录，现显示最新审核记录；未重新提交。", dedupeKey: "formal-feedback-submit-result" });
+      }
+    } catch (error) {
+      if (operation.isCurrent()) notify({ owner: "contribution", placement: "inline", tone: "warning", title: "提交结果待确认", body: `${errorMessage(error)}；输入和原操作标识仍保留。${retryOriginal ? "请继续核对原提交。" : "未重新提交。"}`, dedupeKey: "formal-feedback-submit-result" });
+    } finally { operation.release(); }
+  };
   const submit = async () => {
+    if (pendingSubmit.current) return;
     if (!baseline || !proposal || !hasChanges || noRemainingChanges || busy || submitBusy.current || uploading || mediaBusy.current || sessionUnconfirmed || uploadIntent?.uploads.some(value => value.state === "PENDING") || submitted) return;
     const operation = operations.begin();
     if (!operation) return;
@@ -398,38 +451,29 @@ function FormalFeedbackEditor() {
         ...(uploadIntent ? { uploadIntentId: uploadIntent.intentId, expectedUploadIntentRevision: uploadIntent.revision } : {}),
         ...(activeSubmissionId && resubmissionRevision ? { submissionId: activeSubmissionId as never, expectedSubmissionRevision: resubmissionRevision } : {}),
         ...(conflictOutcome ? { resolutions: conflictOutcome.resolutions } : {}),
-      }, operation);
+      }, operation, intent => { pendingSubmit.current = intent; });
       assertCurrent();
+      pendingSubmit.current = null; setSubmissionUnknown(false);
       if (response.data.state === "CONFLICT") {
         setConflicts(response.data.conflicts); setCurrentBaseline(response.data.currentBaseline); setResolutions({});
         notify({ owner: "contribution", placement: "floating", tone: "warning", title: "正式资料已有更新", body: "请在下方逐项核对原值、当前值和你的修改。", dismissible: true });
       } else {
-        const frozen = response.data.submission.formalFeedback;
-        if (frozen) {
-          const view = formalFeedbackFrozenView(frozen);
-          const accepted = valuesFrom(view.baseline);
-          for (const [key, value] of Object.entries(view.proposal.fields)) accepted[key as ContributionFormalFieldKey] = value ?? "";
-          const attached = response.data.submission.media.map(media => ({ ...media, kind: mediaKindOf(frozen, media.uploadId) }));
-          setBaseline(view.baseline); setValues(accepted);
-          setPriorMedia(attached);
-          setMediaSelection(createFormalMediaSelection(view.baseline, view.proposal, attached.map(media => media.uploadId)));
-        }
-        setActiveSubmissionId(response.data.submission.submissionId);
-        setReviewReason(response.data.submission.review?.reason ?? "");
-        setSubmitted(true); setConflicts([]);
+        applySubmittedRecord(response.data.submission);
         notify({ owner: "contribution", placement: "inline", tone: "success", title: "已提交反馈", body: "反馈已进入审核，正式地点资料暂不改变。", dismissible: true });
       }
     } catch (error) {
       if (!operation.isCurrent()) return;
-      const rejected = error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408 && !error.retryable;
+      const rejected = !pendingSubmit.current || (error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408 && !error.retryable);
+      if (rejected) { pendingSubmit.current = null; setSubmissionUnknown(false); }
+      else setSubmissionUnknown(true);
       const obsolete = error instanceof MiniappApiError && error.message === "CONTRIBUTION_NO_REMAINING_CHANGES";
-      notify({ owner: "contribution", placement: "floating", tone: rejected ? "error" : "warning", title: obsolete ? "本次无需提交" : rejected ? "提交失败" : "提交结果未确认", body: obsolete ? "当前正式资料中已没有需要提交的差异；请核对资料后继续修改或返回地图。" : rejected ? `${errorMessage(error)}；本页输入仍保留。` : `${errorMessage(error)}；本页输入仍保留，请原样重试或到“我的”核对待审记录。`, dismissible: true });
+      notify({ owner: "contribution", placement: "floating", tone: rejected ? "error" : "warning", title: obsolete ? "本次无需提交" : rejected ? "提交失败" : "提交结果未确认", body: obsolete ? "当前正式资料中已没有需要提交的差异；请核对资料后继续修改或返回地图。" : rejected ? `${errorMessage(error)}；本页输入仍保留。` : `${errorMessage(error)}；请通过页面中的确认入口读取原回执。`, dismissible: true });
     } finally { operation.release(); }
   };
 
   const showSubmit = !ownerChanged && hasEditorContent && !submitted && !noRemainingChanges;
   // A resubmission revision is captured only from a confirmed editable review.
-  const reviewStateLabel = submitted ? "审核中" : resubmissionRevision !== null ? "审核未通过" : null;
+  const reviewStateLabel = confirmedSubmission ? STATE_LABEL[contributionSubmissionState(confirmedSubmission)] : submitted ? "审核中" : resubmissionRevision !== null ? "审核未通过" : null;
   return <><SystemMotionProbe /><View className={`${themeClass} formal-feedback-page`} data-route="formal-spot-feedback" data-od-id="formal-feedback-editor">
     {mediaHandoff.warning}
     <FloatingNotificationHost />
@@ -442,6 +486,11 @@ function FormalFeedbackEditor() {
     <ScrollView scrollY scrollIntoView={scrollAnchor} onScroll={onScroll} enhanced bounces={false} showScrollbar={false} className="formal-feedback-scroll">
       <View className={`formal-feedback-body spot-document-scroll-content safe-bottom${showSubmit ? "" : " formal-feedback-body--without-submit"}`}>
         <NotificationRegion owner="contribution" placement="inline" />
+        {submissionUnknown && !ownerChanged ? <View className="formal-feedback-submit-recovery"><StatusPanel state={busy ? "LOADING" : "STALE"} title={busy ? "正在处理原提交" : "提交结果待确认"}
+          detail={busy ? "当前输入保持不变，请稍候。" : "原输入和照片保持冻结。确认只读取上次结果；重试仍是同一次提交。"}
+          {...(busy ? {} : { recoveryLabel: "确认提交结果", onRecover: () => void confirmSubmission() })} />
+          {submissionRetryAvailable ? <SoftButton label="重试原提交" onClick={() => void confirmSubmission(true)}>重试原提交</SoftButton> : null}
+        </View> : null}
         {!ownerChanged && !query.isError && !history.isError && (query.refreshError || query.data?.dataState === "STALE_USABLE" ||
         history.refreshError || history.data?.dataState === "STALE_USABLE" ||
         site.isError || site.refreshError || site.data?.dataState === "STALE_USABLE") ? (
@@ -453,12 +502,12 @@ function FormalFeedbackEditor() {
           <SpotDocumentFields
             values={values}
             baseline={baseline}
-            disabled={busy || submitted}
+            disabled={busy || submitted || submissionUnknown}
             readOnly={submitted}
             onChange={setField}
-            renderPhotoGroup={(kind) => <PhotoGroup kind={kind} ids={mediaSelection?.[kind] ?? []} uploads={visibleUploads} paths={previewPaths} failedIds={previewFailures} onRetry={retryPhotoPreviews} disabled={busy||uploading||submitted} readOnly={submitted} onAdd={addPhoto} onRemove={removePhoto} />}
+            renderPhotoGroup={(kind) => <PhotoGroup kind={kind} ids={mediaSelection?.[kind] ?? []} uploads={visibleUploads} paths={previewPaths} failedIds={previewFailures} onRetry={retryPhotoPreviews} disabled={busy||uploading||submitted||submissionUnknown} readOnly={submitted} onAdd={addPhoto} onRemove={removePhoto} />}
             notesFooter={<>
-              {!submitted && visibleUploads.length ? <ToggleField disabled={busy||uploading} id="formal-feedback-photo-rights" label="我有权使用这些照片" checked={rightsConfirmed} onChange={setRightsConfirmed} stateLabels={{checked:"已确认",unchecked:"未确认"}} /> : null}
+              {!submitted && visibleUploads.length ? <ToggleField disabled={busy||uploading||submissionUnknown} id="formal-feedback-photo-rights" label="我有权使用这些照片" checked={rightsConfirmed} onChange={value => { if (!pendingSubmit.current) setRightsConfirmed(value); }} stateLabels={{checked:"已确认",unchecked:"未确认"}} /> : null}
               {pendingUpload ? <View className="formal-feedback-upload-recovery">
                 <StatusPanel state="STALE" detail="这张照片的上传尚未完成。请重新选择原图续传，或放弃这张照片；文字修改仍保留。" recoveryLabel="重新选择原图" onRecover={() => void addPhoto(pendingUpload.kind)} />
                 <Button disabled={busy||uploading||submitted} onClick={() => void removePhoto(pendingUpload.uploadId)}>放弃这张照片</Button>
@@ -479,7 +528,7 @@ function FormalFeedbackEditor() {
                 }} />
               {!hasChanges ? <Text className="formal-feedback-empty">尚未修改任何信息</Text> : null}
             </View>
-            {activeConflicts.length ? <View className="formal-feedback-conflicts"><Text className="formal-feedback-section-title">资料冲突</Text><Text className="formal-feedback-empty">正式资料已从版本 {baseline.revision} 更新到版本 {currentBaseline?.revision ?? "—"}，请逐项选择。</Text>{activeConflicts.map(conflict => <Conflict key={`${conflict.kind}:${conflict.key}`} conflict={conflict} value={resolutions[`${conflict.kind}:${conflict.key}`]} onChange={value => setResolutions(current => ({ ...current, [`${conflict.kind}:${conflict.key}`]: value }))} />)}</View> : null}
+            {activeConflicts.length ? <View className="formal-feedback-conflicts"><Text className="formal-feedback-section-title">资料冲突</Text><Text className="formal-feedback-empty">正式资料已从版本 {baseline.revision} 更新到版本 {currentBaseline?.revision ?? "—"}，请逐项选择。</Text>{activeConflicts.map(conflict => <Conflict key={`${conflict.kind}:${conflict.key}`} conflict={conflict} value={resolutions[`${conflict.kind}:${conflict.key}`]} disabled={busy || submissionUnknown} onChange={value => { if (!pendingSubmit.current) setResolutions(current => ({ ...current, [`${conflict.kind}:${conflict.key}`]: value })); }} />)}</View> : null}
             {noRemainingChanges ? <View className="formal-feedback-conflict formal-feedback-no-change" role="status" aria-live="polite">
               <Text className="formal-feedback-conflict__label">本次无需提交</Text>
               <Text>当前正式资料中已没有需要提交的差异。可继续修改、选择保留我的修改，或返回地图。</Text>
@@ -490,16 +539,16 @@ function FormalFeedbackEditor() {
         </>}
       </View>
     </ScrollView>
-    {showSubmit ? <View className="formal-feedback-submit safe-bottom"><Button className="loading-button" aria-busy={busy} disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || !hasChanges} onClick={() => void submit()}>{busy ? <LoadingIndicator /> : null}{busy ? "提交中" : resubmissionRevision !== null ? "再次提交" : "提交反馈"}</Button></View> : null}
+    {showSubmit ? <View className="formal-feedback-submit safe-bottom"><Button className="loading-button" aria-busy={busy && !submissionUnknown} disabled={busy || uploading || sessionUnconfirmed || Boolean(pendingUpload) || !hasChanges || submissionUnknown} onClick={() => void submit()}>{busy && !submissionUnknown ? <LoadingIndicator /> : null}{submissionUnknown ? "结果待确认" : busy ? "提交中" : resubmissionRevision !== null ? "再次提交" : "提交反馈"}</Button></View> : null}
   </View></>;
 }
 
-function Conflict({ conflict, value, onChange }: { conflict: ContributionFormalConflict; value: ContributionConflictResolution | undefined; onChange(value: ContributionConflictResolution): void }) {
+function Conflict({ conflict, value, onChange, disabled }: { conflict: ContributionFormalConflict; value: ContributionConflictResolution | undefined; disabled: boolean; onChange(value: ContributionConflictResolution): void }) {
   const display = (input: string | null | readonly string[]) => Array.isArray(input) ? (input.length ? input.join("、") : "无图片") : input || "未填写";
   return <View className="formal-feedback-conflict">
     <Text className="formal-feedback-conflict__label">{LABELS[conflict.key as ContributionFormalFieldKey] ?? conflict.key}</Text>
     <Text>原值：{display(conflict.baselineValue)}</Text><Text>当前：{display(conflict.currentValue)}</Text><Text>我的修改：{display(conflict.proposedValue)}</Text>
-    <View><Button className={value === "CURRENT" ? "is-selected" : ""} onClick={() => onChange("CURRENT")}>使用当前资料</Button><Button className={value === "PROPOSED" ? "is-selected" : ""} onClick={() => onChange("PROPOSED")}>保留我的修改</Button></View>
+    <View><Button disabled={disabled} className={value === "CURRENT" ? "is-selected" : ""} onClick={() => onChange("CURRENT")}>使用当前资料</Button><Button disabled={disabled} className={value === "PROPOSED" ? "is-selected" : ""} onClick={() => onChange("PROPOSED")}>保留我的修改</Button></View>
   </View>;
 }
 

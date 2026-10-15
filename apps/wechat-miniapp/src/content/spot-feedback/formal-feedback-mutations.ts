@@ -33,11 +33,24 @@ export function removeFormalContributionUpload(intentId: string, uploadId: strin
   return ownedFormalUpload(["remove", intentId, uploadId, expectedRevision], (key, owner) => sendRemoval(intentId, uploadId, expectedRevision, key, owner, scope), scope);
 }
 
-export async function submitFormalContribution(input: ContributionFormalSubmitRequest, scope?: RequestOperationScope) {
+export interface FormalSubmissionIntent { owner: string; key: string; input: ContributionFormalSubmitRequest }
+export function completeFormalSubmissionIntent(intent: FormalSubmissionIntent) {
+  retryFormalSubmit.forget(intent.owner, intent.input, intent.key);
+}
+export async function retryFormalSubmission(intent: FormalSubmissionIntent, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
+  if (currentDraftUserId() !== intent.owner) throw new Error("账号已变化，请回到原账号核对反馈。");
+  const result = await sendSubmission(intent.input, intent.key, intent.owner, scope);
+  scope?.assertCurrent();
+  if (currentDraftUserId() !== intent.owner) throw new Error("账号已变化，请回到原账号核对反馈结果。");
+  return result;
+}
+export async function submitFormalContribution(input: ContributionFormalSubmitRequest, scope?: RequestOperationScope, started?: (intent: FormalSubmissionIntent) => void) {
   scope?.assertCurrent();
   const owner = await ensureContributionOwner();
   scope?.assertCurrent();
   return retryFormalSubmit(owner, input, async key => {
+    started?.({ owner, key, input });
     const result = await sendSubmission(input, key, owner, scope);
     if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对反馈结果。");
     return result;

@@ -320,6 +320,8 @@ export interface MiniappRepositoryPort {
     expectedRevision: number,
     idempotencyKey: string,
   ): Promise<ContributionSubmission>;
+  getContributionSubmitReceipt(userId: UserId, submissionId: ContributionId, idempotencyKey: string): Promise<ContributionSubmission | null>;
+  getFormalContributionSubmitReceipt(userId: UserId, spotId: SpotId, idempotencyKey: string): Promise<ContributionFormalSubmitResult | null>;
   submitFormalContribution(
     userId: UserId,
     input: ContributionFormalSubmitRequest,
