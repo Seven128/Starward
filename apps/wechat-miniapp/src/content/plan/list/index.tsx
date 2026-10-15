@@ -8,6 +8,8 @@ import { useEffect, useRef, useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
+import { SoftButton } from "@/components/soft-button";
+import { parsePlanDraft, planDraftKey } from "../detail/plan-draft";
 import { useAccountPlans } from "@/hooks/use-account-plans";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { useAppStore } from "@/state/app-store";
@@ -31,6 +33,13 @@ function PlanListPage() {
   const notify = useAppStore((state) => state.notify);
   const { owner, query } = useAccountPlans({ enabled: pageVisible, staleTime: 15_000 });
   const { open, navigationError } = useAccountNavigation(owner);
+  const draftKey = planDraftKey(owner, null, spotId);
+  const [localDraftKey, setLocalDraftKey] = useState<string | null>(null);
+  useEffect(() => {
+    if (!pageVisible || !draftKey) { setLocalDraftKey(null); return; }
+    try { setLocalDraftKey(parsePlanDraft(Taro.getStorageSync(draftKey)) ? draftKey : null); }
+    catch { setLocalDraftKey(null); }
+  }, [pageVisible, draftKey]);
   useDidShow(() => {
     setPageVisible(true); setNow(new Date());
     if (owner) void query.refetch();
@@ -88,9 +97,13 @@ function PlanListPage() {
             </Button>
           </View>;
         })}
-        {query.data && !query.isError && !query.refreshError && query.data.dataState !== "STALE_USABLE" && !entries.length ? <StatusPanel state="EMPTY" emptyLevel="page"
-          title={emptyState.title} detail={emptyState.detail} recoveryLabel={emptyState.actionLabel}
-          onRecover={emptyState.action === "switch" ? () => choosePartition(otherPartition) : () => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)} /> : null}
+        {query.data && !query.isError && !query.refreshError && query.data.dataState !== "STALE_USABLE" && !entries.length ? <View className="plan-list-status" role="status">
+          <Text>{emptyState.title}。{emptyState.detail}</Text>
+          <SoftButton label={emptyState.actionLabel} onClick={emptyState.action === "switch" ? () => choosePartition(otherPartition)
+            : () => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)}>{emptyState.actionLabel}</SoftButton>
+        </View> : null}
+        {draftKey && localDraftKey === draftKey ? <SoftButton label="继续本机草稿"
+          onClick={() => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)}>继续本机草稿</SoftButton> : null}
       </View>
     </ScrollView>
   </View></>;

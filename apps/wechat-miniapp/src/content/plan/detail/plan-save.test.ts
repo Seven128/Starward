@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-import { acknowledgePlanSave, createPlanSaveRetry, planContextIdentity, PlanSaveRecoveryError, PlanSaveReviewRequired, resolvePlanCreationId, samePlanSaveIntent, type PlanSaveInput } from "../../../services/plan-save-retry";
+import { acknowledgePlanSave, createPlanSaveRetry, pendingPlanSaves, planContextIdentity, PlanSaveRecoveryError, PlanSaveReviewRequired, resolvePlanCreationId, selectPlanSaveRecovery, samePlanSaveIntent, type PlanSaveInput } from "../../../services/plan-save-retry";
 import { clearPlanDraft, clearUnchangedPlanDraft, parsePlanDraft, planDraftMatchesInput } from "./plan-draft";
 import { parsePlanReminders, resolvePlanTiming, type PlanTravel } from "@starward/miniapp-contracts";
 import { planTravelNeedsExplicitOrigin } from "./plan-travel";
@@ -13,24 +13,28 @@ function runtime(changeAccount = false) {
   const source = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declarations: string[] = [];
   const visit = (node: ts.Node) => {
-    if (ts.isVariableDeclaration(node) && ["save", "retainDraft", "confirmPlanConflict"].includes(node.name.getText(source))) declarations.push(`const ${node.getText(source)};`);
+    if (ts.isVariableDeclaration(node) && ["save", "retainDraft", "confirmPlanConflict", "installSavedPlan", "verifySave"].includes(node.name.getText(source))) declarations.push(`const ${node.getText(source)};`);
     ts.forEachChild(node, visit);
   };
   visit(source);
-  assert.equal(declarations.length, 3);
+  assert.equal(declarations.length, 5);
   class Conflict extends Error { code = "CONFLICT"; }
   const calls: string[] = [], submitted: number[] = [];
   const storage = new Map<string, unknown>();
   const context: Record<string, any> = {
     parsePlanReminders, resolvePlanTiming, planTravelNeedsExplicitOrigin, reminders: [],
     planContextIdentity,
-    PlanSaveRecoveryError, PlanSaveReviewRequired, resolvePlanCreationId, parsePlanDraft, clearPlanDraft, clearUnchangedPlanDraft, planDraftMatchesInput, acknowledgePlanSave,
+    PlanSaveRecoveryError, PlanSaveReviewRequired, pendingPlanSaves, resolvePlanCreationId, selectPlanSaveRecovery, parsePlanDraft, clearPlanDraft, clearUnchangedPlanDraft, planDraftMatchesInput, acknowledgePlanSave,
     Taro: { getStorageSync: (key: string) => storage.get(key), setStorageSync: (key: string, value: unknown) => { storage.set(key, structuredClone(value)); }, removeStorageSync: (key: string) => { storage.delete(key); } },
     appliedContextDefaults: { current: false }, draftScopePlanId: { current: null },
     creationPlanId: { current: null }, creationConfirmed: { current: false }, recoveredSaveReceipt: { current: null },
     hydratedPlanId: { current: null }, newPlanRequested: { current: true },
     setDraftStorageFailed() {}, setRecoveredLocalDraft() {}, setEditing() {}, setPendingSaveChoices() {},
     setSaveRecoveryError() {}, setSaveRecoveryReviewed() {}, dedicatedEditor: false,
+    pendingSaveChoices: [], saveReadbackMissing: false,
+    setVerifyingSave() {}, setSaveResultVerified() {}, setSaveReadbackMissing(value: boolean) { context.saveReadbackMissing = value; },
+    hydratedDraftScope: { current: null }, documentScrollTop: { current: 0 },
+    verifyObservationPlanSave: async () => assert.fail("readback port not provided"),
     savePlan: (plan: unknown) => { context.activePlan = plan; },
     setActivePlanId: (id: string) => { context.activePlanId = id; },
     readDraft: () => parsePlanDraft(storage.get("draft")),
@@ -56,12 +60,45 @@ function runtime(changeAccount = false) {
     announce: () => calls.push("notice"), errorMessage: () => "error",
     showFieldError: (field: string) => calls.push(`field:${field}`),
   };
+  context.setPendingSaveChoices = (value: unknown) => { context.pendingSaveChoices = value; };
   context.operations = createPlanTestOperations(() => context.scopedDraftUserId(), context.mutationBusy);
-  const actions = vm.runInNewContext(ts.transpileModule(declarations.join("\n") + "\n({save, retainDraft, confirmPlanConflict});", {
+  const actions = vm.runInNewContext(ts.transpileModule(declarations.join("\n") + "\n({save, retainDraft, confirmPlanConflict, verifySave});", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, context);
-  return { ...actions, context, calls, submitted, storage } as { save: () => Promise<void>; retainDraft: (patch: object) => boolean; confirmPlanConflict: () => void; context: Record<string, any>; calls: string[]; submitted: number[]; storage: Map<string, unknown> };
+  return { ...actions, context, calls, submitted, storage } as { save: (receipt?: unknown) => Promise<void>; retainDraft: (patch: object) => boolean; confirmPlanConflict: () => void; verifySave: (receipt: unknown) => Promise<void>; context: Record<string, any>; calls: string[]; submitted: number[]; storage: Map<string, unknown> };
 }
+
+test("a missing receipt stays read-only until explicit retry reuses the original operation", async () => {
+  const page = runtime();
+  page.context.activePlanId = null; page.context.activePlan = null; page.context.draftBaseRevision.current = null;
+  let nextKey = 0;
+  const retry = createPlanSaveRetry(page.context.Taro, () => `explicit-retry:${++nextKey}`, () => false);
+  const dispatched: { key: string; input: PlanSaveInput }[] = [];
+  page.context.saveObservationPlan = async (plan: PlanSaveInput, observationContextId: string, expectedRevision: number | null) => {
+    const input = { ...plan, observationContextId, expectedRevision, contextIdentity: "same-context" };
+    const result = await retry("owner", input, async (key, original) => {
+      dispatched.push({ key, input: structuredClone(original) });
+      if (dispatched.length === 1) throw new Error("request outcome unknown");
+      return { data: { ...original, revision: 1 } };
+    });
+    return { ...result.result, saveReceipt: result.receipt };
+  };
+  await page.save();
+  const entry = page.context.pendingSaveChoices[0], receipt = { owner: "owner", key: entry.key, planId: entry.input.planId };
+  await page.save();
+  assert.equal(dispatched.length, 1);
+  page.context.verifyObservationPlanSave = async () => null;
+  await page.verifySave(receipt);
+  assert.equal(dispatched.length, 1, "read-only verification cannot resend even when no receipt exists");
+  assert.equal(page.context.saveReadbackMissing, true);
+  assert.equal(page.storage.size, 2, "draft and original operation remain durable");
+  await page.save(receipt);
+  assert.equal(dispatched.length, 2);
+  assert.deepEqual(dispatched[1], dispatched[0], "only explicit retry reuses this exact key, plan and body");
+  assert.equal(nextKey, 1);
+  assert.equal(page.storage.size, 0);
+  assert.equal(page.context.activePlan.revision, 1);
+});
 
 test("saving uses the draft revision and requires review after conflict without modifying input", async () => {
   const page = runtime();
@@ -127,9 +164,18 @@ test("changing a new draft after a lost create receipt cannot create a second pl
   assert.equal(plans.size, 1, "the first request really committed");
   page.context.notes = "same draft, corrected notes";
   await page.save();
+  assert.equal(page.context.conflictPlan, null, "a second save cannot substitute for explicit read-only verification");
+  const pending = page.context.pendingSaveChoices[0];
+  page.context.verifyObservationPlanSave = async () => {
+    // The real read owner installs the fresh list independently of its receipt.
+    page.context.activePlan = { ...plans.get(pending.input.planId), contextSnapshot: { schemaVersion: "observation-context-snapshot-v2", routeOrigin: null } };
+    return { data: page.context.activePlan, input: pending.input,
+      saveReceipt: { owner: "owner", key: pending.key, planId: pending.input.planId } };
+  };
+  await page.verifySave({ owner: "owner", key: pending.key, planId: pending.input.planId });
   assert.equal(plans.size, 1, "editing this draft must not create another plan");
   assert.equal(page.context.notes, "same draft, corrected notes");
-  assert.equal(page.context.conflictPlan.revision, 1);
+  assert.equal((page.context.conflictPlan as unknown as { revision: number }).revision, 1);
   page.confirmPlanConflict();
   await page.save();
   assert.equal(plans.size, 1);

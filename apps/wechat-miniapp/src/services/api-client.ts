@@ -1453,6 +1453,18 @@ export async function sendObservationPlanSave(original: PlanSaveInput, retryKey:
   return result;
 }
 
+/** GET only: a missing receipt remains unknown and cannot authorize a new save. */
+export async function getObservationPlanSaveResult(receipt: import("./plan-save-retry").PlanSaveReceipt, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
+  const result = await requestOperation("plan-save-result:" + receipt.planId, "planSaveResultGet", {
+    auth: "REQUIRED", pathParams: { planId: receipt.planId }, idempotencyKey: receipt.key, cache: false, scope,
+  }, false, receipt.owner);
+  scope?.assertCurrent();
+  if (currentDraftUserId() !== receipt.owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  if (result.dataState !== "FRESH") throw new Error("暂时无法确认这次保存，原草稿和请求仍保留。");
+  return result;
+}
+
 /** A historical receipt must never be installed as the current plan list. */
 export async function getCurrentPlansAfterSave(owner: string, scope?: RequestOperationScope) {
   scope?.assertCurrent();

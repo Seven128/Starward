@@ -898,6 +898,17 @@ export class MiniappController {
     return this.service.getSharedSpot(decodeURIComponent(spotId) as SpotId);
   }
 
+  @Get("me/observation-plans/:planId/save-result")
+  async planSaveResult(
+    @Param("planId") planId: string,
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "",
+  ) {
+    return this.service.getPlanSaveResult(
+      await this.service.auth.requirePrincipal(authorization), decodeURIComponent(planId), idempotencyKey,
+    );
+  }
+
   @Put("me/observation-plans/:planId")
   async plan(
     @Param("planId") planId: string,

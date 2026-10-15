@@ -36,7 +36,7 @@ function AchievementPage() {
   }, [visible, plans.data, now]);
   const all = useMemo(() => endedPlanRecords(plans.data?.data.plans ?? [], now), [plans.data, now]);
   const years = useMemo(() => [...new Set(all.map(record => record.year))], [all]);
-  const selectedYear = year && years.includes(year) ? year : years[0] ?? null;
+  const selectedYear = year && years.includes(year) ? year : years[0] ?? now.getFullYear();
   const records = all.filter(record => record.year === selectedYear);
   const summary = achievementSummary(records);
   const openPlan = (planId: string) => open(`/content/plan/detail/index?planId=${encodeURIComponent(planId)}`);
@@ -52,13 +52,12 @@ function AchievementPage() {
         {plans.isError && !plans.data ? <StatusPanel state="ERROR" detail="计划暂时无法读取，回顾统计未更新。" recoveryLabel="重试" onRecover={() => void plans.refetch()} /> : null}
         {plans.data ? <>
           {plans.refreshError || plans.data.dataState === "STALE_USABLE" ? <StatusPanel state="STALE" detail="计划暂未同步，以下是上次读取的统计。" recoveryLabel="重试" onRecover={() => void plans.refetch()} /> : null}
-          {all.length ? <>
             <View className="achievement-summary" role="group" aria-label={`${selectedYear}年计划回顾`}>
               <View className="achievement-summary__main"><Text>{summary.endedPlans}</Text><Text>已结束计划</Text></View>
               <View className="achievement-summary__facts"><Text>{summary.places} 计划地点</Text><Text>{summary.events} 关联天象</Text></View>
             </View>
             <View className="achievement-page__year">
-              <Picker mode="selector" range={years.map(value => `${value} 年`)} value={Math.max(0, years.indexOf(selectedYear!))} onChange={event => setYear(years[Number(event.detail.value)] ?? null)}>
+              <Picker mode="selector" disabled={!years.length} range={years.map(value => `${value} 年`)} value={Math.max(0, years.indexOf(selectedYear))} onChange={event => setYear(years[Number(event.detail.value)] ?? null)}>
                 <View className="achievement-page__year-picker" role="button" aria-label={`选择统计年份，当前${selectedYear}年`}>{selectedYear} 年 <SemanticIcon name="chevron-down" /></View>
               </Picker>
               <Text className="type-caption">{records.length} 份行程记录</Text>
@@ -73,7 +72,7 @@ function AchievementPage() {
                 <View className="achievement-record__footer"><Text>计划已结束</Text><Text>查看行程 ›</Text></View>
               </Button>;
             })}
-          </> : !plans.isError && !plans.refreshError && plans.data.dataState !== "STALE_USABLE" ? <StatusPanel state="EMPTY" emptyLevel="page" title="暂无已结束的计划" detail="已结束的观星计划会显示在这里；计划时间经过不代表已到访或观测成功。" recoveryLabel="＋ 新建计划" onRecover={() => void open("/content/plan/edit/index?new=1")} /> : null}
+          {!all.length && !plans.isError && !plans.refreshError && plans.data.dataState !== "STALE_USABLE" ? <StatusPanel state="EMPTY" title="暂无已结束的计划" detail="已结束的观星计划会显示在这里；计划时间经过不代表已到访或观测成功。" recoveryLabel="＋ 新建计划" onRecover={() => void open("/content/plan/edit/index?new=1")} /> : null}
         </> : null}
         {navigationError ? <StatusPanel state="ERROR" detail="行程暂未打开，请再次点击。" /> : null}
       </View>

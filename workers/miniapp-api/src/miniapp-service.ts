@@ -2175,6 +2175,13 @@ export class MiniappService {
       horizon: facts.horizon, source: detail.spot.source }, "FRESH", []);
   }
 
+  async getPlanSaveResult(userId: UserId, planId: string, idempotencyKey: string) {
+    assertIdempotencyKey(idempotencyKey);
+    if (typeof planId !== "string" || !planId || planId.length > 180) throw new Error("invalid_plan_id");
+    const receipt = await this.repository.getPlanSaveReceipt(userId, planId, idempotencyKey);
+    return envelope({ receipt }, "FRESH", []);
+  }
+
   async savePlan(
     userId: UserId,
     input: Omit<

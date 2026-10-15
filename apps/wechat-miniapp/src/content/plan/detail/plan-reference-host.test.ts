@@ -65,3 +65,47 @@ test("disabled Sky query after context failure is unavailable, not an endless pe
   assert.equal(expression.loading({ contextQuery: { isPending: false, isFetching: false },
     activeContext: {}, skyQuery: { isPending: false, isFetching: true } }), false, "refresh keeps useful cached facts");
 });
+
+test("viewing the saved version reads its own site and navigation while another place remains in the edit draft", async () => {
+  const source = ts.createSourceFile("page.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const expressions = new Map<string, string>();
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && ["siteOverviewQuery", "planNavigation"].includes(node.name.getText(source)))
+      expressions.set(node.name.getText(source), (node.initializer as ts.CallExpression).arguments[0]!.getText(source));
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  const activePlan = { planId: "plan:one", revision: 2, spotId: "spot:saved" };
+  const storedDraft = { selectedSpotId: "spot:draft" }, before = structuredClone(storedDraft);
+  let queriedSpot = "";
+  const site = { spotId: activePlan.spotId, accessAndSafety: null };
+  const context = { pageVisible: true, editing: false, activePlan, activePlanId: activePlan.planId, selectedSpotId: storedDraft.selectedSpotId,
+    selectedSpot: { spotId: activePlan.spotId }, planOwner: "owner", formOwner: { current: "owner" }, currentDraftUserId: () => "owner",
+    getSpotSite: async (spotId: string) => { queriedSpot = spotId; },
+    useAppStore: { getState: () => ({ accountOwnerId: "owner", mode: "DAY", mapResetVersion: 0, plans: [activePlan] }) },
+    planQuery: { readCurrent: () => ({ data: { dataState: "FRESH", data: { plans: [activePlan] } } }) },
+    spotsQuery: { readCurrent: () => ({ data: { dataState: "FRESH", data: { spots: [{ spotId: activePlan.spotId }] } } }) },
+    siteOverviewQuery: { readCurrent: () => ({ data: { dataState: "FRESH", data: site } }) },
+    currentNavigationResource: () => true, currentNavigationSiteResource: () => true, navigationHandoff: { confirm() {} } };
+  const run = (name: string) => vm.runInNewContext(ts.transpileModule(`(${expressions.get(name)})`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, context);
+  const query = run("siteOverviewQuery");
+  assert.equal(query.enabled, true);
+  await query.queryFn(new AbortController().signal);
+  assert.equal(queriedSpot, activePlan.spotId);
+  assert.equal(run("planNavigation").readSnapshot().available, true);
+  assert.deepEqual(storedDraft, before);
+});
+
+test("a verified save notice belongs only to that saved plan revision", () => {
+  const source = ts.createSourceFile("page.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let condition = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isConditionalExpression(node) && node.condition.getText(source).startsWith("saveResultVerified")) condition = node.condition.getText(source);
+    ts.forEachChild(node, visit);
+  };
+  visit(source); assert.ok(condition);
+  const run = (activePlan: object) => Boolean(vm.runInNewContext(condition, { saveResultVerified: { planId: "plan:A", revision: 1 }, editing: false, activePlan }));
+  assert.equal(run({ planId: "plan:A", revision: 1 }), true);
+  assert.equal(run({ planId: "plan:B", revision: 1 }), false);
+  assert.equal(run({ planId: "plan:A", revision: 2 }), false);
+});

@@ -14,6 +14,8 @@
 .plan-list-row__time, .plan-list-row__meta { display: block; margin-top: 6Px; color: var(--text-secondary); font-size: 14Px; }
 .plan-list-row__meta { font-size: 14Px; }
 .plan-list-empty { display: block; padding: 30Px 6Px; color: var(--text-secondary); text-align: center; }
+.plan-list-status { display: flex; flex-wrap: wrap; align-items: center; gap: 10Px; padding: 13Px 0; color: var(--text-secondary); font-size: 14Px; line-height: 1.5; }
+.plan-list-status > text { flex: 1; min-width: 130Px; }
 .large-text .plan-list-row__heading { font-size: 18Px; }
 .large-text .plan-list-row__time, .large-text .plan-list-row__meta, .large-text .plan-list-date { font-size: 14Px; }
 .theme-day.plan-list-page {

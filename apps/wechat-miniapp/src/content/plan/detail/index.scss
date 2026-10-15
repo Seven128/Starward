@@ -65,6 +65,23 @@
   display: none;
 }
 
+.plan-save-recovery, .plan-draft-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10Px;
+  padding: 13Px 0;
+  font-size: 14Px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.plan-save-recovery > text, .plan-draft-status > text { flex: 1; min-width: 130Px; }
+.plan-save-recovery > .type-section { flex-basis: 100%; color: var(--text-primary); }
+.plan-save-recovery > .type-body { flex-basis: 100%; }
+.plan-save-comparison { flex-basis: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-radius: 12Px; background: var(--surface-subtle); }
+.plan-save-comparison > view { display: flex; flex-direction: column; gap: 6Px; min-width: 0; padding: 14Px; overflow-wrap: anywhere; }
+.theme-day .plan-save-recovery { color: #815e35; }
+
 .plan-field-error {
   padding: 10rpx 14rpx;
   border-left: 3rpx solid var(--danger);

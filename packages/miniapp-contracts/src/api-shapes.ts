@@ -729,6 +729,12 @@ export interface PlanSaveRequest {
   expectedRevision: number | null;
 }
 
+/** Historical result of one account/plan/idempotency key. A missing receipt
+ * does not establish failure: the original request can still be in flight. */
+export interface PlanSaveResultData {
+  receipt: ObservationPlan | null;
+}
+
 export interface PreferencesSaveRequest {
   preferences: UserPreferences;
   expectedRevision: number;

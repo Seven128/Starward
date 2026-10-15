@@ -11,7 +11,7 @@ export function PlanReference({ plan, report, loading, failed, stale = false, on
   return <View className="plan-section plan-reference" data-od-id="plan-reference">
     <View className="plan-section-heading"><View className="plan-reference__heading"><SemanticIcon name="telescope" /><Text className="type-section">观测参考</Text></View><Text className="plan-reference__scope plan-section-caption">所选时间段</Text></View>
     {failed ? <StatusPanel state="ERROR" detail="天气与夜空动态条件暂未获取；计划和出发安排仍可查看。"
-      recoveryLabel="重试动态条件" onRecover={onRetry} /> : loading ? <Text className="type-caption">正在加载</Text> : <>
+      recoveryLabel="重试动态条件" onRecover={onRetry} /> : loading ? <StatusPanel state="LOADING" detail="正在读取天气与夜空条件。" /> : <>
       <Text className="plan-form-footnote">{facts.nightRange ? `天文资料：${facts.nightRange}` : "天文资料暂无数据"}</Text>
       <View className="plan-reference__facts">
         <View><View className="plan-reference__label"><SemanticIcon name="sun" /><Text>天黑与晨光</Text></View><Text>天文昏影终 {facts.dusk}</Text><Text>天文晨光始 {facts.dawn}</Text></View>

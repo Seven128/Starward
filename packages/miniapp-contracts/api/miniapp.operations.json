@@ -81,6 +81,7 @@
     { "id": "sharedPlanGet", "method": "GET", "path": "/shares/plans/{token}", "requestType": "void", "responseType": "PlanPublicShareData" },
     { "id": "sharedSpotGet", "method": "GET", "path": "/shares/spots/{spotId}", "requestType": "void", "responseType": "SpotPublicShareData" },
     { "id": "planPut", "method": "PUT", "path": "/me/observation-plans/{planId}", "requestType": "PlanSaveRequest", "responseType": "ObservationPlan" },
+    { "id": "planSaveResultGet", "method": "GET", "path": "/me/observation-plans/{planId}/save-result", "requestType": "void", "responseType": "PlanSaveResultData" },
     { "id": "planChecklistCompletionPut", "method": "PUT", "path": "/me/observation-plans/{planId}/checklist-completion", "requestType": "PlanChecklistCompletionRequest", "responseType": "ObservationPlan" },
     { "id": "reminderSubscriptionPreparePost", "method": "POST", "path": "/me/observation-plans/{planId}/reminder-subscription", "requestType": "ReminderSubscriptionPrepareRequest", "responseType": "ReminderSubscriptionPrepareData" },
     { "id": "reminderSubscriptionReportPut", "method": "PUT", "path": "/me/reminder-subscriptions/{challengeId}", "requestType": "ReminderSubscriptionReportRequest", "responseType": "ReminderSubscriptionReportData" },

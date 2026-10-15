@@ -1,7 +1,7 @@
 import Taro from "@tarojs/taro";
 import type { ObservationContext, ObservationPlan } from "@starward/miniapp-contracts";
-import { currentDraftUserId, getCurrentPlansAfterSave, idempotencyKey, MiniappApiError, sendObservationPlanSave } from "@/services/api-client";
-import { clearPlanSaveRecovery, createPlanSaveRetry, PlanSaveReviewRequired, samePlanSaveIntent } from "@/services/plan-save-retry";
+import { currentDraftUserId, getCurrentPlansAfterSave, getObservationPlanSaveResult, idempotencyKey, MiniappApiError, sendObservationPlanSave } from "@/services/api-client";
+import { clearPlanSaveRecovery, createPlanSaveRetry, pendingPlanSaves, PlanSaveRecoveryError, PlanSaveReviewRequired, samePlanSaveIntent, type PlanSaveReceipt } from "@/services/plan-save-retry";
 import type { RequestOperationScope } from "@/services/authenticated-operation";
 
 const retryPlanSave = createPlanSaveRetry(Taro, () => idempotencyKey("plan-save"),
@@ -11,6 +11,25 @@ export function clearObservationPlanSaveRecovery(owner: string, scope?: RequestO
   scope?.assertCurrent();
   if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开计划。");
   clearPlanSaveRecovery(Taro, owner);
+}
+
+/** Verify one original operation using only reads. Matching current content is
+ * insufficient without its exact receipt; a newer/deleted plan needs review. */
+export async function verifyObservationPlanSave(receipt: PlanSaveReceipt, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
+  if (currentDraftUserId() !== receipt.owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  const pending = pendingPlanSaves(Taro, receipt.owner, receipt.planId).find(entry => entry.key === receipt.key);
+  if (!pending) throw new PlanSaveRecoveryError("这次保存的恢复记录已变化，请重新打开计划核对。");
+  const result = await getObservationPlanSaveResult(receipt, scope);
+  scope?.assertCurrent();
+  const current = await getCurrentPlansAfterSave(receipt.owner, scope);
+  scope?.assertCurrent();
+  if (currentDraftUserId() !== receipt.owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  const latest = current.data.plans.find(item => item.planId === receipt.planId) ?? null;
+  if (!result.data.receipt) return null;
+  if (!latest || latest.revision !== result.data.receipt.revision)
+    throw new PlanSaveReviewRequired(receipt.planId, latest, result.data.receipt.revision, receipt);
+  return { data: latest, input: pending.input, saveReceipt: receipt };
 }
 
 export async function saveObservationPlan(
