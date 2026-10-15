@@ -7,6 +7,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from urllib.parse import urlparse
 
 import numpy as np
 import psycopg
@@ -48,7 +49,7 @@ def seed_spot(database_url: str, run_id: str) -> tuple[str, str]:
               status, visibility_policy, source_id, payload, display_order
             ) VALUES (
               %s, %s, %s, %s, ST_SetSRID(ST_MakePoint(114.0, 23.0), 4326)::geography,
-              23.0, 114.0, 'PUBLISHED', 'PUBLIC', %s, %s, 1
+              23.0, 114.0, 'PUBLISHED', 'PUBLIC_EXACT', %s, %s, 1
             )
             """,
             (spot_id, spot["name"], spot["region"], spot["timezone"], source_id, Jsonb(spot)),
@@ -65,40 +66,40 @@ def seed_spot(database_url: str, run_id: str) -> tuple[str, str]:
                 f"INSERT INTO {table}(spot_id, payload) VALUES (%s, %s)",
                 (spot_id, Jsonb(spot)),
             )
+        revision_id = f"spot-revision:{spot_id}:1"
+        connection.execute(
+            """
+            INSERT INTO spot_revisions(
+              revision_id, spot_id, revision_no, spot_payload, detail_payload,
+              payload_digest, source_ids, created_by, reason
+            ) VALUES (%s, %s, 1, %s, %s, %s, %s, 'system:integration', 'Original test baseline')
+            """,
+            (revision_id, spot_id, Jsonb(spot), Jsonb(detail),
+             hashlib.sha256(json.dumps({"spot": spot, "detail": detail}, sort_keys=True).encode()).hexdigest(),
+             Jsonb([source_id])),
+        )
+        connection.execute(
+            "UPDATE spots SET active_revision_id = %s WHERE spot_id = %s",
+            (revision_id, spot_id),
+        )
     return source_id, spot_id
-
-
-def remove_fixture(database_url: str, dataset_version: str, source_id: str, spot_id: str) -> None:
-    with psycopg.connect(database_url) as connection:
-        publication_source = connection.execute(
-            "SELECT source_id FROM dark_sky_dataset_publications WHERE dataset_version = %s",
-            (dataset_version,),
-        ).fetchone()
-        connection.execute("DELETE FROM spots WHERE spot_id = %s", (spot_id,))
-        connection.execute(
-            "DELETE FROM dark_sky_grid_cells WHERE dataset_version = %s", (dataset_version,)
-        )
-        connection.execute(
-            "DELETE FROM dark_sky_dataset_publications WHERE dataset_version = %s",
-            (dataset_version,),
-        )
-        connection.execute(
-            "DELETE FROM published_dataset_versions WHERE dataset_kind = 'DARK_SKY' AND dataset_version = %s",
-            (dataset_version,),
-        )
-        removable_sources = [source_id]
-        if publication_source is not None:
-            removable_sources.append(publication_source[0])
-        connection.execute(
-            "DELETE FROM data_source_registry WHERE source_id = ANY(%s)",
-            (removable_sources,),
-        )
 
 
 @unittest.skipUnless(os.environ.get("DATABASE_URL", "").strip(), "DATABASE_URL not configured")
 class EogViirsDatabaseIntegrationTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        # Publishing intentionally changes every spot in the AOI. The caller
+        # must own a fresh disposable database and drop it after this suite;
+        # immutable history is never deleted or its guards relaxed by tests.
+        cls.database_url = os.environ["DATABASE_URL"].strip()
+        if not urlparse(cls.database_url).path.startswith("/starward_eog_test_"):
+            raise RuntimeError("fresh_disposable_eog_database_required")
+        with psycopg.connect(cls.database_url) as connection:
+            if connection.execute("SELECT count(*) FROM spots").fetchone()[0]:
+                raise RuntimeError("fresh_disposable_eog_database_required")
+
     def setUp(self) -> None:
-        self.database_url = os.environ["DATABASE_URL"].strip()
         self.temporary_directory = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary_directory.name)
         self.radiance_path = self.root / "radiance.tif"
@@ -151,12 +152,6 @@ class EogViirsDatabaseIntegrationTest(unittest.TestCase):
         self.manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
     def tearDown(self) -> None:
-        remove_fixture(
-            self.database_url,
-            self.dataset_version,
-            self.spot_source_id,
-            self.spot_id,
-        )
         self.temporary_directory.cleanup()
 
     def test_atomic_publication_read_models_idempotency_and_conflict(self) -> None:
@@ -198,11 +193,52 @@ class EogViirsDatabaseIntegrationTest(unittest.TestCase):
                 (self.dataset_version,),
             ).fetchone()[0]
             self.assertGreaterEqual(synchronized, 1)
+            # Feedback must be able to find the exact immutable baseline of the
+            # version it receives, while the previous baseline remains intact.
+            current = connection.execute(
+                """
+                SELECT s.version, s.payload, r.payload, h.spot_payload, h.detail_payload
+                  FROM spots s JOIN spot_overview_read_models r USING (spot_id)
+                  JOIN spot_revisions h ON h.revision_id = s.active_revision_id
+                 WHERE s.spot_id = %s AND h.revision_no = s.version
+                """, (self.spot_id,),
+            ).fetchone()
+            self.assertIsNotNone(current, "published spot has no exact current immutable feedback baseline")
+            self.assertEqual(current[0], 2, "idempotent publication must not advance the canonical version again")
+            self.assertEqual(current[1], current[3])
+            self.assertEqual(current[2], current[4])
+            original = connection.execute(
+                "SELECT spot_payload, detail_payload FROM spot_revisions WHERE spot_id = %s AND revision_no = 1",
+                (self.spot_id,),
+            ).fetchone()
+            self.assertNotIn("lightPollution", original[0])
+            self.assertEqual(original[1]["dataDisclosure"][0]["id"], self.spot_source_id)
+            self.assertEqual(connection.execute(
+                "SELECT count(*) FROM spot_revisions WHERE spot_id = %s", (self.spot_id,),
+            ).fetchone()[0], 2)
         conflicting = dataclasses.replace(manifest, digest="f" * 64)
         with self.assertRaisesRegex(pipeline.PipelineError, "dataset_version_digest_conflict"):
             pipeline.publish(
                 conflicting, selection, thresholds, cells, self.database_url
             )
+
+    def test_missing_overview_rolls_back_the_whole_publication(self) -> None:
+        manifest, selection, thresholds, cells = pipeline.prepare(self.manifest_path)
+        with psycopg.connect(self.database_url) as connection:
+            connection.execute("DELETE FROM spot_overview_read_models WHERE spot_id = %s", (self.spot_id,))
+            before = connection.execute(
+                "SELECT spot_id, version, active_revision_id, payload FROM spots ORDER BY spot_id"
+            ).fetchall()
+        with self.assertRaisesRegex(pipeline.PipelineError, "spot_overview_missing"):
+            pipeline.publish(manifest, selection, thresholds, cells, self.database_url)
+        with psycopg.connect(self.database_url) as connection:
+            self.assertEqual(connection.execute(
+                "SELECT spot_id, version, active_revision_id, payload FROM spots ORDER BY spot_id"
+            ).fetchall(), before)
+            for table in ("dark_sky_dataset_publications", "dark_sky_grid_cells", "light_pollution_samples"):
+                self.assertEqual(connection.execute(
+                    f"SELECT count(*) FROM {table} WHERE dataset_version = %s", (self.dataset_version,),
+                ).fetchone()[0], 0)
 
 
 if __name__ == "__main__":

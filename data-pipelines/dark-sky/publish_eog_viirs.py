@@ -597,6 +597,7 @@ def _spot_rows(connection: psycopg.Connection[Any], aoi: Aoi) -> list[dict[str, 
                  ST_MakeEnvelope(%s, %s, %s, %s, 4326)
                )
          ORDER BY spot_id
+         FOR UPDATE
         """,
         (aoi.west, aoi.south, aoi.east, aoi.north),
     ).fetchall()
@@ -613,6 +614,43 @@ def _spot_rows(connection: psycopg.Connection[Any], aoi: Aoi) -> list[dict[str, 
 
 def _read_model_digest(value: Mapping[str, Any]) -> str:
     return sha256_bytes(canonical_json(value).encode("utf-8"))
+
+
+def _record_spot_revision(
+    connection: psycopg.Connection[Any],
+    spot_id: str,
+    revision: int,
+    spot: Mapping[str, Any],
+    detail: Mapping[str, Any],
+    *,
+    actor: str,
+    reason: str,
+) -> None:
+    """Append the locked current projection; never replace existing history."""
+    if detail.get("spot") != spot:
+        raise PipelineError("spot_revision_projection_mismatch")
+    revision_id = f"spot-revision:{spot_id}:{revision}"
+    source_ids = list(dict.fromkeys(
+        item["id"] for item in detail.get("dataDisclosure", [])
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    ))
+    connection.execute(
+        """
+        INSERT INTO spot_revisions(
+          revision_id, spot_id, revision_no, spot_payload, detail_payload,
+          payload_digest, source_ids, created_by, reason
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """,
+        (revision_id, spot_id, revision, Jsonb(spot), Jsonb(detail),
+         _read_model_digest({"spot": spot, "detail": detail}),
+         Jsonb(source_ids), actor, reason),
+    )
+    updated = connection.execute(
+        "UPDATE spots SET active_revision_id = %s WHERE spot_id = %s AND version = %s",
+        (revision_id, spot_id, revision),
+    )
+    if updated.rowcount != 1:
+        raise PipelineError("spot_revision_changed")
 
 
 def _wkt_polygon(bounds: Mapping[str, float]) -> str:
@@ -656,9 +694,9 @@ def publish(
             "SELECT pg_advisory_xact_lock(hashtextextended('starward-dark-sky-publication', 0))"
         )
         required = connection.execute(
-            "SELECT to_regclass('public.dark_sky_dataset_publications'), to_regclass('public.dark_sky_grid_cells')"
+            "SELECT to_regclass('public.dark_sky_dataset_publications'), to_regclass('public.dark_sky_grid_cells'), to_regclass('public.spot_revisions')"
         ).fetchone()
-        if required is None or required[0] is None or required[1] is None:
+        if required is None or any(table is None for table in required):
             raise PipelineError("dark_sky_schema_missing_run_migrations")
         existing = connection.execute(
             "SELECT manifest_sha256, state FROM dark_sky_dataset_publications WHERE dataset_version = %s",
@@ -793,30 +831,39 @@ def publish(
                 previous.get("source", {}).get("id") if isinstance(previous, dict) else None
             )
             spot["lightPollution"] = estimate
-            connection.execute(
-                """
-                UPDATE spots
-                   SET payload = %s, version = version + 1, updated_at = now()
-                 WHERE spot_id = %s
-                """,
-                (Jsonb(spot), row["spot_id"]),
-            )
             detail_row = connection.execute(
                 "SELECT payload FROM spot_overview_read_models WHERE spot_id = %s FOR UPDATE",
                 (row["spot_id"],),
             ).fetchone()
-            if detail_row is not None:
-                detail = dict(detail_row[0])
-                detail["spot"] = spot
-                _replace_disclosure(detail, old_source_id, source)
-                connection.execute(
-                    """
-                    UPDATE spot_overview_read_models
-                       SET payload = %s, dependency_digest = %s, generated_at = now()
-                     WHERE spot_id = %s
-                    """,
-                    (Jsonb(detail), _read_model_digest(detail), row["spot_id"]),
-                )
+            if detail_row is None:
+                raise PipelineError("spot_overview_missing")
+            updated = connection.execute(
+                """
+                UPDATE spots
+                   SET payload = %s, version = version + 1, updated_at = now()
+                 WHERE spot_id = %s
+                 RETURNING version
+                """,
+                (Jsonb(spot), row["spot_id"]),
+            ).fetchone()
+            if updated is None:
+                raise PipelineError("spot_revision_missing")
+            detail = dict(detail_row[0])
+            detail["spot"] = spot
+            _replace_disclosure(detail, old_source_id, source)
+            connection.execute(
+                """
+                UPDATE spot_overview_read_models
+                   SET payload = %s, dependency_digest = %s, generated_at = now()
+                 WHERE spot_id = %s
+                """,
+                (Jsonb(detail), _read_model_digest(detail), row["spot_id"]),
+            )
+            _record_spot_revision(
+                connection, row["spot_id"], updated[0], spot, detail,
+                actor="system:dark-sky-publication",
+                reason=f"Published annual night-light dataset {manifest.dataset_version}",
+            )
             for table in ("map_spot_summaries", "favorite_spot_summaries"):
                 connection.execute(
                     f"UPDATE {table} SET payload = %s, generated_at = now() WHERE spot_id = %s",
