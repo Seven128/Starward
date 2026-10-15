@@ -2,7 +2,7 @@ import { mediaSource } from "@/utils/media-source";
 import { FloatingNotificationHost } from "@/components/notification";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
-import { Button, Image, ScrollView, Text, View } from "@tarojs/components";
+import { Button, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
 import type {
   ObservationContext,
@@ -10,7 +10,6 @@ import type {
 import { CustomNav } from "@/components/custom-nav";
 import { NotificationRegion } from "@/components/notification";
 import { Provenance } from "@/components/provenance";
-import { SemanticIcon } from "@/components/semantic-asset";
 import { SoftButton } from "@/components/soft-button";
 import { StatusPanel } from "@/components/status-panel";
 import { FavoriteStar } from "@/components/selected-card-star";
@@ -34,8 +33,12 @@ import {
 import "./spot-detail-page.scss";
 import { guideThumbnail } from "./guide-media";
 import { FacilityEvidenceDetails } from "@/components/facility-evidence";
+import { FacilityCard } from "@/components/facility-card";
+import { SourceDisclosure } from "@/components/source-disclosure";
+import { uniqueSourceRecords } from "@starward/miniapp-contracts";
+import { useFacilityGallery } from "./use-facility-gallery";
+import { ReadingImage } from "@/components/reading-image";
 
-import { FACILITY_LABEL } from "@/utils/facility-presentation";
 
 export type SpotSegment = "GUIDES" | "SITE";
 
@@ -156,6 +159,8 @@ export function SpotDetailPage({
     enabled: validRoute && pageVisible && segment === "SITE" && overview.data?.data.spot.spotId === spotId,
   });
   const detail = validRoute && overview.data?.data.spot.spotId === spotId ? overview.data.data : undefined;
+  const gallery = useFacilityGallery({ identity: `site:${spotId}`, name: detail?.spot.name ?? "场地设施",
+    media: detail?.spot.media ?? [], formalMedia: detail?.formalMedia, enabled: validRoute && pageVisible && segment === "SITE" });
   const favorite = favoriteIds.includes(spotId as (typeof favoriteIds)[number]);
   const facilities =
     site.data?.data.facilities ?? detail?.spot.facilities ?? [];
@@ -206,7 +211,7 @@ export function SpotDetailPage({
   }, [guides.isError, notify, overview.isError, pageVisible, segment, site.isError, spotId]);
   const effectiveRoute = detail?.route;
   const routeHeadline = effectiveRoute?.kind === "STRAIGHT_LINE_ONLY" && effectiveRoute.distanceKm != null
-    ? `直线距离约 ${effectiveRoute.distanceKm} km` : "暂无数据";
+    ? `${effectiveRoute.distanceKm} km` : "暂无数据";
 
   const returnToMap = async () => {
     if (detailPagePending.current) return;
@@ -266,6 +271,7 @@ export function SpotDetailPage({
       <FloatingNotificationHost />
       {navigationHandoff.warning}
       {login.dialog}
+      {gallery.view}
       <CustomNav
         title={segment === "GUIDES" ? "观星攻略" : segment === "SITE" ? "场地资料" : "地点概览"}
         back
@@ -306,7 +312,9 @@ export function SpotDetailPage({
         </View>
       ) : (
         <ScrollView
-          scrollY
+          scrollY={!gallery.visible}
+          {...(gallery.returnTop === undefined ? {} : { scrollTop: gallery.returnTop })}
+          onScroll={event => gallery.record(event.detail.scrollTop)}
           className="spot-detail__scroll"
           data-od-id="spot-detail-panel"
           enhanced
@@ -320,10 +328,8 @@ export function SpotDetailPage({
           /></View> : null}
           <View className="spot-identity page-inset" data-od-id="spot-detail">
             <View className="spot-identity__copy">
-              <Text className="spot-identity__eyebrow type-caption">
-                {detail.spot.region}
-              </Text>
               <Text className="type-page-title">{detail.spot.name}</Text>
+              <Text className="spot-identity__eyebrow type-caption">{detail.spot.region}</Text>
               {detail.spot.address ? <Text className="type-caption">{detail.spot.address}</Text> : null}
               <Text className="type-caption">
                 最近核验{" "}
@@ -331,29 +337,6 @@ export function SpotDetailPage({
               </Text>
             </View>
           </View>
-          {segment === "SITE" ? <View className="spot-detail-lead page-inset">
-            <View className="detail-route-row">
-              <View className="detail-route-row__copy">
-                <Text className="type-data">{routeHeadline}</Text>
-                <Text className="type-caption">
-                  {effectiveRoute?.kind === "STRAIGHT_LINE_ONLY"
-                    ? "这是直线距离，不代表实际道路里程。"
-                    : "出发前请再次核验道路与开放状态。"}
-                </Text>
-              </View>
-              <Button
-                className="detail-route-action focus-ring"
-                data-od-id="spot-detail-route-action"
-                aria-label={`去这里，打开${detail.spot.name}外部地图`}
-                disabled={locationNavigation.busy}
-                onClick={openNavigation}
-              >
-                <Text>去这里 →</Text>
-              </Button>
-            </View>
-            {effectiveRoute?.lastRoad ? <Text className="type-secondary">末段道路：{effectiveRoute.lastRoad}</Text> : null}
-            {effectiveRoute?.parkingGuidance ? <Text className="type-secondary">停车：{effectiveRoute.parkingGuidance}</Text> : null}
-          </View> : null}
             <View className="spot-content page-inset safe-bottom">
               {segment === "GUIDES" ? (
                 <View
@@ -379,18 +362,16 @@ export function SpotDetailPage({
                       onRecover={() => void guides.refetch()}
                     />
                   ) : !guides.data?.data.guides.length ? (
-                    confirmedGuidesEmpty ? <StatusPanel state="EMPTY" detail="暂无本地点的攻略；可继续查看场地与来源资料。" /> : null
+                    confirmedGuidesEmpty ? <StatusPanel state="EMPTY" detail="暂无本地点的攻略；可继续查看场地与来源资料。" recoveryLabel="返回观星点" onRecover={() => void returnToMap()} /> : null
                   ) : (
                     guides.data.data.guides.map((guide) => {
                       const thumbnail = guideThumbnail(guide, detail.spot.media);
                       return <View className={`guide-card card${thumbnail ? " guide-card--with-media" : ""}`} key={guide.articleId}>
                         {thumbnail ? (
-                          <Image
-                            className="guide-card__media"
-                            src={mediaSource(thumbnail.thumbnailPath)}
-                            mode="aspectFill"
-                            aria-label={thumbnail.alt}
-                          />
+                          <View className="guide-card__illustration">
+                            <ReadingImage className="guide-card__media" src={mediaSource(thumbnail.thumbnailPath)} mode="aspectFill" alt={thumbnail.alt} />
+                            <Text className="guide-card__media-credit">{thumbnail.photographer || "来源未注明"} · {thumbnail.license}{thumbnail.isSiteSpecific ? "" : " · 代表媒体，不证明本点现场"}</Text>
+                          </View>
                         ) : null}
                         <View className="guide-card__body">
                           <Text className="type-section">{guide.title}</Text>
@@ -436,102 +417,66 @@ export function SpotDetailPage({
                   role="region"
                   aria-label="场地条件"
                 >
-                  <View className="segment-panel__heading">
-                    <Text className="type-section">场地条件</Text>
-                  </View>
                   {site.refreshError || site.data?.dataState === "STALE_USABLE" ? <StatusPanel
                     state="STALE"
                     detail="场地资料尚未确认最新状态，开放与设施信息可能已变化。"
                     recoveryLabel="重试场地"
                     onRecover={() => void site.refetch()}
                   /> : null}
-                  {site.isPending ? (
-                    <StatusPanel
-                      state="LOADING"
-                      detail="正在加载场地信息。"
-                    />
-                  ) : site.isError ? (
-                    <StatusPanel
-                      state="ERROR"
-                      detail="场地信息暂时无法加载，请重试。"
-                      recoveryLabel="重试场地"
-                      onRecover={() => void site.refetch()}
-                    />
-                  ) : (
-                    <>
-                      {facilities.map((item) => (
-                        <View className="facility-row" key={item.type}>
-                          <FacilityEvidenceDetails evidence={item} title={FACILITY_LABEL[item.type]} showSource={!sharedFacilitySource} showVerification={!sharedFacilityVerification} />
-                        </View>
-                      ))}
-                      {!facilities.length ? <Text className="type-secondary">设施资料待核验</Text> : null}
-                      {sharedFacilityVerification ? <Text className="type-caption">以上设施最近核验：{formatDisplayDate(sharedFacilityVerification)}</Text> : null}
-                      {sharedFacilitySource ? <View>
-                        <Text className="type-secondary">以上设施来源</Text>
-                        <Provenance source={sharedFacilitySource} compact />
-                      </View> : null}
-                      <View className="safety-card card">
-                        <Text className="type-section">夜间安全与限制</Text>
-                        {accessAndSafety ? (
-                          <>
-                            <View className="safety-card__status-row">
-                              <Text className="status-tag">
-                                {OPENNESS_LABEL[accessAndSafety.openness]}
-                              </Text>
-                              <Text className="status-tag">
-                                {LEGAL_ACCESS_LABEL[accessAndSafety.legalAccess]}
-                              </Text>
-                              <Text
-                                className={`status-tag${accessAndSafety.nightSafety === "DANGER" || accessAndSafety.explicitDanger ? " status-tag--warning" : ""}`}
-                              >
-                                {NIGHT_SAFETY_LABEL[accessAndSafety.nightSafety]}
-                              </Text>
-                            </View>
-                            {accessAndSafety.restrictions.map((item) => (
-                              <Text className="type-body" key={item}>
-                                ! {item}
-                              </Text>
-                            ))}
-                            {accessAndSafety.guidance.map((item) => (
-                              <Text className="type-body" key={item}>{item}</Text>
-                            ))}
-                          </>
-                        ) : <Text className="type-secondary">开放与夜间安全资料待核验</Text>}
-                        {siteMediaState === "NO_SITE_MEDIA_VERIFIED" ? (
-                          <Text className="type-caption">
-                            现场照片尚未核验
-                          </Text>
-                        ) : null}
-                      </View>
-                    </>
-                  )}
-                  <Button
-                    className="sources-link contribution-link card"
-                    data-od-id="spot-contribution-entry"
-                    onClick={() =>
-                      openDetailPage(
-                          "/content/spot-feedback/index?spotId=" +
-                          encodeURIComponent(spotId) +
-                          "&spotName=" +
-                          encodeURIComponent(detail.spot.name),
-                        "反馈表单",
-                      )
-                    }
-                    aria-label={`反馈 ${detail.spot.name} 的现场情况或资料错误`}
-                  >
-                    <View>
-                      <Text className="type-section">反馈现场情况</Text>
-                      <Text className="type-caption">
-                        上传道路、停车、开放、安全或地平遮挡等现场依据
-                      </Text>
+                  <View className="site-reading-card card">
+                    <Text className="type-section">到达与夜间安全</Text>
+                    <View className="site-reading-facts">
+                      <View><Text className="type-caption">直线距离</Text><Text className="type-body">{routeHeadline}</Text></View>
+                      <View><Text className="type-caption">末段道路</Text><Text className="type-body">{site.data?.data.arrival?.lastRoad || detail.formalFacts?.road || effectiveRoute?.lastRoad || "来源未提供"}</Text></View>
+                      <View><Text className="type-caption">开放时间</Text><Text className="type-body">{detail.formalFacts?.hours || "来源未提供"}</Text></View>
+                      <View><Text className="type-caption">进入条件</Text><Text className="type-body">{detail.formalFacts?.access || "来源未提供"}</Text></View>
                     </View>
-                    <SemanticIcon name="chevron-right" />
-                  </Button>
+                    <Text className="type-caption">{effectiveRoute?.kind === "STRAIGHT_LINE_ONLY" ? "直线距离不代表实际道路里程。" : "出发前请再次核验道路与开放状态。"}</Text>
+                    {detail.formalFacts?.openness ? <Text className="type-body">{detail.formalFacts.openness}</Text> : null}
+                    {detail.formalFacts?.accessNote ? <Text className="type-body">{detail.formalFacts.accessNote}</Text> : null}
+                    {site.data?.data.arrival?.parkingGuidance || effectiveRoute?.parkingGuidance ? <Text className="type-body">停车：{site.data?.data.arrival?.parkingGuidance || effectiveRoute?.parkingGuidance}</Text> : null}
+                    <View className="site-reading-safety">
+                      {accessAndSafety ? <>
+                        <View className="safety-card__status-row">
+                          <Text className="status-tag">{OPENNESS_LABEL[accessAndSafety.openness]}</Text>
+                          <Text className="status-tag">{LEGAL_ACCESS_LABEL[accessAndSafety.legalAccess]}</Text>
+                          <Text className={`status-tag${accessAndSafety.nightSafety === "DANGER" || accessAndSafety.explicitDanger ? " status-tag--warning" : ""}`}>{NIGHT_SAFETY_LABEL[accessAndSafety.nightSafety]}</Text>
+                        </View>
+                        {[...new Set([detail.formalFacts?.safety, ...accessAndSafety.restrictions, ...accessAndSafety.guidance].filter((item): item is string => Boolean(item)))].map(item => <Text className="type-body" key={item}>{item}</Text>)}
+                      </> : <Text className="type-secondary">开放与夜间安全资料待核验</Text>}
+                    </View>
+                    <SoftButton label={`去这里，打开${detail.spot.name}外部地图`} disabled={locationNavigation.busy} onClick={openNavigation}>去这里</SoftButton>
+                  </View>
+                  <View className="site-reading-card card">
+                    <Text className="type-section">设施与现场</Text>
+                    {site.isPending ? <StatusPanel state="LOADING" detail="正在加载场地信息。" />
+                      : site.isError ? <StatusPanel state="ERROR" detail="场地信息暂时无法加载，请重试。" recoveryLabel="重试场地" onRecover={() => void site.refetch()} /> : <>
+                        {facilities.map(item => <View className="facility-row" key={item.type}>
+                          <FacilityCard id={`site-facility-${item.type}`} evidence={item} photos={gallery.photos(item.type)}
+                            onOpenPhotos={() => gallery.open(item.type, `#site-facility-${item.type}`)} />
+                          <FacilityEvidenceDetails evidence={item} showHeading={false} showDescription={false} showSource={!sharedFacilitySource} showVerification={!sharedFacilityVerification} />
+                        </View>)}
+                        {!facilities.length ? <Text className="type-secondary">设施资料待核验</Text> : null}
+                        {sharedFacilityVerification ? <Text className="type-caption">以上设施最近核验：{formatDisplayDate(sharedFacilityVerification)}</Text> : null}
+                        {sharedFacilitySource ? <View><Text className="type-secondary">以上设施来源</Text><Provenance source={sharedFacilitySource} compact /></View> : null}
+                      </>}
+                    {siteMediaState === "NO_SITE_MEDIA_VERIFIED" ? <Text className="type-caption">现场照片尚未核验</Text> : null}
+                  </View>
+                  <View className="site-reading-card card">
+                    <SourceDisclosure id="site-reading-source" label="资料来源与核验"
+                      sources={uniqueSourceRecords([detail.spot.source, detail.route.source, ...(site.data?.data.sources ?? []), ...facilities.map(item => item.source)])} />
+                    <SoftButton label="全部来源与更新时间" onClick={() => openDetailPage(`/spot/data-source/index?spotId=${encodeURIComponent(spotId)}&contextId=${encodeURIComponent(observationContext.contextId)}`, "来源资料")}>全部来源与更新时间</SoftButton>
+                  </View>
+
                 </View>
               ) : null}
             </View>
           </ScrollView>
       )}
+      {detail && segment === "SITE" ? <View className="spot-detail-footer">
+        <SoftButton label={`反馈 ${detail.spot.name} 的现场情况或资料错误`}
+          onClick={() => openDetailPage(`/content/spot-feedback/index?spotId=${encodeURIComponent(spotId)}&spotName=${encodeURIComponent(detail.spot.name)}`, "反馈表单")}>反馈现场情况</SoftButton>
+      </View> : null}
     </View>
   );
 }

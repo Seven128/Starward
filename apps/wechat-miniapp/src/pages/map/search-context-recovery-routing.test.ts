@@ -27,6 +27,7 @@ function recovery(privateContext: boolean, status: number, code: string, retaine
   const previous = { data: { contextId: "usable" } };
   const useResourceQuery = vm.runInNewContext(ts.transpileModule(queryFunction.getText(querySource).replace(/^export /, "") + "; useResourceQuery;", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
     useQuery: () => ({ data: retained ? previous : undefined, error: sceneDenied ? null : error, isFetching: false }), useEffect: () => {}, recordAcceptanceDiagnostic: () => {},
+    useQueryClient: () => ({ getQueryState: () => undefined }),
   });
   const contextQuery = useResourceQuery({ queryKey: ["search-observation-context"], queryFn: () => {} });
   assert.equal(contextQuery.isError, !retained); assert.equal(contextQuery.refreshError, retained && !sceneDenied ? error : undefined);
@@ -35,7 +36,8 @@ function recovery(privateContext: boolean, status: number, code: string, retaine
     privateContextUnavailable: false, queryUnconfirmed: false, scene: sceneDenied ? { isError: true, error } : {}, placeSearch: {}, expiredEmptyFilter: false,
     activeContext: retained ? previous.data : null, debouncedQuery: "", staleSearchResource: retained && !sceneDenied, formalSpots: [], candidates: [], ordinaryPlaces: [],
     errorMessage: (e: any) => e.message, isOfflineError: () => false,
-    leaveSearch: () => calls.push("map"), retrySearchResources: () => calls.push("retry"), Taro: { navigateTo: () => calls.push("login") },
+    leaveSearch: () => calls.push("map"), retrySearchResources: () => calls.push("retry"),
+    accountOwnerId: null, currentDraftUserId: () => null, login: { requireAccount: () => calls.push("login") },
   };
   const result = vm.runInNewContext(ts.transpileModule(permission.getText(source) + "\n" + declarations.map(d => d.getText(source)).join("\n") + `\n({searchState,${expressions.join(",")}});`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, scope);
   result.onRecover?.(); return { result, calls, contextQuery, previous };

@@ -34,8 +34,10 @@ import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useMapForecastQuery } from "@/hooks/use-forecast-query";
+import { useWechatLogin } from "@/hooks/use-wechat-login";
 import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import {
+  currentDraftUserId,
   errorMessage,
   getMapScene,
   MiniappApiError,
@@ -114,6 +116,7 @@ export function MapSearchSurface() {
   const mode = useAppStore((state) => state.mode);
   const reducedMotion = useReducedMotion();
   const handoff = useRedLightHandoff();
+  const login = useWechatLogin({ nativeBack: false });
   const finderQuery = useAppStore((state) => state.finderQuery);
   const committedFilters = useAppStore((state) => state.committedFilters);
   const filterSheetOpen = useAppStore((state) => state.filterSheetOpen);
@@ -527,7 +530,8 @@ export function MapSearchSurface() {
     >
       <FloatingNotificationHost />
       {handoff.warning}
-      <NativeBackBoundary active={filterSheetOpen} onBack={cancelFilters} />
+      {login.dialog}
+      <NativeBackBoundary active={login.open || filterSheetOpen} onBack={login.open ? login.back : cancelFilters} />
       <View className="spot-search-shell" data-control="spot-search-shell">
         <View className="spot-search-title-row">
           <Text className="spot-search-title">今晚去观星</Text>
@@ -598,7 +602,9 @@ export function MapSearchSurface() {
                     <Text className="type-caption">普通地点 · 只移动地图{result.region || result.address ? ` · ${result.region || result.address}` : ""}</Text>
                   </Button>
                 ))}
-                {!queryUnconfirmed && !placeSearch.isPending && !placeSearch.isError && !visiblePlaces?.formalSpots.length && !candidates.length && !ordinaryPlaces.length ? (
+                {!queryUnconfirmed && !placeSearch.isPending && !placeSearch.isError && !placeSearch.refreshError &&
+                  placeSearch.data && ["FRESH", "PARTIAL", "SAMPLE_DATA"].includes(placeSearch.data.dataState) &&
+                  !visiblePlaces?.formalSpots.length && !candidates.length && !ordinaryPlaces.length ? (
                   <Text className="type-caption spot-search-query-status">没有匹配结果；可以换一个名称或城市。</Text>
                 ) : null}
               </View>
@@ -682,13 +688,14 @@ export function MapSearchSurface() {
                   : expiredEmptyFilter
                     ? "少云筛选资料已到期，结果待核验；请刷新资料。"
                   : searchState === "EMPTY"
-                    ? "换个名称搜索，或返回地图移动到其他区域。"
+                    ? activeFilterGroups.length ? "当前条件下没有匹配结果，可清除或调整筛选。" : "换个名称搜索，或返回地图移动到其他区域。"
                     : "正在搜索观星点。")
               }
-              recoveryLabel={privateContextUnavailable ? "返回地图" : searchState === "EMPTY" ? "换个名称" : searchState === "ERROR" ? "重试搜索" : searchState === "PERMISSION_DENIED" ? "查看登录说明" : undefined}
+              recoveryLabel={privateContextUnavailable ? "返回地图" : searchState === "EMPTY" ? activeFilterGroups.length ? "清除条件" : "换个名称" : searchState === "ERROR" ? "重试搜索" : searchState === "PERMISSION_DENIED" ? accountOwnerId ? "返回地图" : "微信快捷登录" : undefined}
               onRecover={privateContextUnavailable ? () => void leaveSearch() : searchState === "ERROR" ? retrySearchResources : searchState === "PERMISSION_DENIED"
-                ? () => void Taro.navigateTo({ url: "/pages/auth/index" }) : searchState === "EMPTY"
-                  ? () => { setFinderQuery(""); setFocused(true); setSuggestionsOpen(true); } : undefined}
+                ? () => { if (currentDraftUserId()) void leaveSearch(); else login.requireAccount(() => retrySearchResources(true)); } : searchState === "EMPTY"
+                  ? () => { if (activeFilterGroups.length) { setFilterCategory("OBSERVATION"); openFilters(); }
+                    else { setFinderQuery(""); setFocused(true); setSuggestionsOpen(true); } } : undefined}
             />
           ) : null}
           {incompleteActiveCoverage.length ? (

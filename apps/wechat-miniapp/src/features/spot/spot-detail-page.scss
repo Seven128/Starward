@@ -162,6 +162,8 @@
   flex: 1;
   min-height: 0;
 }
+.spot-detail-footer { flex: none; padding: 10Px 18Px max(16Px, env(safe-area-inset-bottom)); background: var(--surface); }
+.spot-detail-footer > button { width: 100%; }
 .spot-content {
   padding-top: 14rpx;
   padding-bottom: calc(var(--space-section) + env(safe-area-inset-bottom));
@@ -303,15 +305,16 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 10Px;
-  padding: 12Px;
+  padding: 18Px;
+  border-radius: 22Px;
 }
 .guide-card--with-media {
-  grid-template-columns: 72Px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
 }
 .guide-card__media {
-  width: 72Px;
-  height: 72Px;
-  border-radius: 6Px;
+  width: 100%;
+  height: 190Px;
+  border-radius: 16Px;
   background: var(--surface-subtle);
 }
 .guide-card__body {
@@ -323,7 +326,8 @@
 .guide-card__footer {
   grid-column: 1 / -1;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 10Px;
 }
 .guide-card__footer > .type-caption {
@@ -332,6 +336,18 @@
 }
 .guide-card__footer > button {
   flex: 0 0 auto;
+  width: 100%;
+}
+.guide-card__illustration { min-width: 0; overflow: hidden; border-radius: 16Px; background: var(--surface-subtle); }
+.guide-card__media-credit { display: block; padding: 6Px 8Px; font-size: 11Px; line-height: 1.5; color: var(--text-secondary); }
+.guide-card__body .type-section { font-size: 17Px; line-height: 1.5; }
+.guide-card__body .type-body { font-size: 15Px; line-height: 24Px; }
+.theme-day .guide-card { background: #fff; color: #2d2d2d; border: 0; }
+.theme-day.spot-detail {
+  background: #f5f6f8;
+  .spot-identity { padding: 16Px 18Px; background: transparent; }
+  .spot-identity__copy .type-page-title { font-size: 21Px; line-height: 1.5; }
+  .spot-content { padding: 0 18Px 28Px; }
 }
 .facility-row {
   padding: 16rpx 0;
@@ -357,6 +373,23 @@
   flex-wrap: wrap;
   gap: 10rpx;
 }
+.site-reading-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12Px;
+  padding: 18Px;
+  border-radius: 22Px;
+}
+.site-reading-card > .type-section { font-size: 17Px; line-height: 1.5; }
+.site-reading-card .type-body { font-size: 14Px; line-height: 1.7; }
+.site-reading-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14Px; }
+.site-reading-facts > view { display: flex; flex-direction: column; gap: 3Px; min-width: 0; }
+.site-reading-safety { display: flex; flex-direction: column; gap: 8Px; padding: 14Px; border: 1Px solid var(--warning); border-radius: 16Px; background: var(--surface-subtle); }
+.theme-day .site-reading-card { background: #fff; color: #2d2d2d; border: 0; }
+.theme-day .site-reading-safety { color: #825b2b; background: #fbf4e8; border-color: #f0dfbd; }
+.site-reading-card .facility-row { padding: 0 0 12Px; border: 0; }
+.site-reading-card .facility-row:last-child { padding-bottom: 0; }
+.large-text .site-reading-facts { grid-template-columns: minmax(0, 1fr); }
 .large-text .spot-detail__scroll .facility-grid,
 .large-text .guide-card,
 .large-text .detail-route-row {

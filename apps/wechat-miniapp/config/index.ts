@@ -84,6 +84,8 @@ const bIconFiles = {
     "parking--day--default.png", "restroom--day--default.png",
   ],
   content: [
+    // The article's shared facility cards use the same adopted package assets.
+    "parking--day--default.png", "restroom--day--default.png",
     "clock--day--default.png", "warning--day--default.png",
     "cloud--day--default.png", "wind--day--default.png", "telescope--day--default.png",
     "account-user--day--default.png", "arrow-left--day--default.png",

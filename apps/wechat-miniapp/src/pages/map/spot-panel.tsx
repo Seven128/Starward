@@ -1,6 +1,8 @@
 import { mediaSource } from "@/utils/media-source";
 import { isProductSource, productSourceNames } from "@/utils/source-presentation";
-import { FACILITY_LABEL, facilityStatusLabel } from "@/utils/facility-presentation";
+import { FACILITY_LABEL } from "@/utils/facility-presentation";
+import { FacilityCard } from "@/components/facility-card";
+import { facilityPhotos as associatedFacilityPhotos } from "@/utils/spot-media";
 import { Block, Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import type {
   MapSceneTimeFrame,
@@ -382,8 +384,7 @@ export function SpotInformationPanel({
   const facilities = detail?.spot.facilities ?? effectiveSpot.facilities;
   const prominentFacilities = facilities.filter((facility) => facility.type === "PARKING" || facility.type === "TOILET");
   const visibleFacilities = prominentFacilities.length ? prominentFacilities : facilities.slice(0, 2);
-  const mediaById = new Map(media.map((item) => [item.id, item]));
-  const facilityPhotos = (kind: "parking" | "toilet") => (detail?.formalMedia?.[kind] ?? []).flatMap(id => mediaById.has(id) ? [mediaById.get(id)!] : []);
+  const facilityPhotos = (kind: "parking" | "toilet") => associatedFacilityPhotos(kind === "parking" ? "PARKING" : "TOILET", media, detail?.formalMedia, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__);
   const viewerItems = viewerKind ? facilityPhotos(viewerKind) : media;
   const formalFacts = detail?.formalFacts;
   const detailLoading = !detail && (detailPending || contextPending);
@@ -613,23 +614,8 @@ export function SpotInformationPanel({
               {visibleFacilities.length ? visibleFacilities.map((facility) => {
                 const mediaKind = facility.type === "PARKING" ? "parking" : facility.type === "TOILET" ? "toilet" : null;
                 const facilityImages = mediaKind ? facilityPhotos(mediaKind) : [];
-                const facilityMedia = facilityImages[0];
-                const description = facility.detail?.trim() || facility.summary?.trim();
-                return <View id={`spot-facility-source-${mediaKind}`} className={`spot-panel__facility${facilityMedia ? " spot-panel__facility--with-media" : ""}`} key={`${facility.type}-${facility.summary}`}
-                  {...(facilityMedia ? { role: "button", ariaLabel: `查看${facilityLabel(facility.type)}照片，共 ${facilityImages.length} 张` } : {})}
-                  onClick={() => { if (facilityMedia && mediaKind) openPhoto(mediaKind, 0); }}>
-                  {facilityMedia ? <Image className="spot-panel__facility-image" src={mediaSource(facilityMedia.thumbnailPath || facilityMedia.localPath)} mode="aspectFill" aria-hidden="true" /> : null}
-                  {facilityMedia ? <View className="spot-panel__facility-shade" aria-hidden="true" /> : null}
-                  <View className="spot-panel__facility-content">
-                    <View className="spot-panel__facility-heading">
-                      {dayMode && mediaKind ? <SemanticIcon name={mediaKind === "parking" ? "parking" : "restroom"} className="spot-panel__facility-icon" /> : null}
-                      <Text className="spot-panel__facility-name">{facility.type === "PARKING" && dayMode ? "停车设施" : facilityLabel(facility.type)}</Text>
-                      <Text className="spot-panel__facility-status">{facilityStatusLabel(facility.status)}{facility.distanceM === null ? "" : ` · ${facility.distanceM}m`}</Text>
-                    </View>
-                    {description ? <Text className="spot-panel__facility-summary">{description}</Text> : null}
-                  </View>
-                  {facilityMedia ? <View className="spot-panel__facility-count"><SemanticIcon name="images" /><Text>{facilityImages.length}</Text></View> : null}
-                </View>;
+                return <FacilityCard id={`spot-facility-source-${mediaKind ?? facility.type}`} key={facility.type}
+                  evidence={facility} photos={facilityImages} onOpenPhotos={mediaKind ? () => openPhoto(mediaKind, 0) : undefined} />;
               }) : <Text className="type-caption">{`设施信息${detailMissingFallback}`}</Text>}
               </View>
               {formalFacts?.contact?.trim() ? <View className="spot-panel__contact-row">

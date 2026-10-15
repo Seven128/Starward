@@ -22,6 +22,8 @@ function render(options: { pending?: boolean; failed?: boolean; article?: boolea
     themeClass: "day", validRoute: options.valid !== false, article, detail: undefined,
     guides: { data: options.staleEnvelope ? { dataState: "STALE_USABLE" } : options.confirmedMissing ? { dataState: "FRESH", data: { spotId: options.spotId ?? "spot:real", guides: [] } } : undefined, isPending: false, isFetching: options.fetching, isError: false, refreshError: options.refreshFailed ? new Error("offline") : undefined, refetch: () => retries.push("guides") },
     overview: { isPending: options.pending, isError: options.failed, refetch: () => retries.push("overview") },
+    returnToGuides: () => navigations.push("/spot/guides/index?spotId=spot%3Areal&contextId=ctx%3Acurrent"), navigation: { navigationError: false },
+    gallery: { view: null, visible: false, returnTop: undefined, record() {}, photos: () => [], open() {} },
     site: {
       isPending: options.facilityState === "pending", isError: options.facilityState === "failed",
       refreshError: options.facilityState === "cached-error" || options.facilityState === "cached-missing" ? new Error("offline") : undefined,
@@ -32,7 +34,7 @@ function render(options: { pending?: boolean; failed?: boolean; article?: boolea
       refetch: () => retries.push("site"),
     }, FACILITY_LABEL: { PARKING: "停车" }, GUIDE_AUTHOR_LABELS: { SELF: "作者" }, formatDisplayDate: () => "未知日期",
   };
-  for (const name of ["View", "Text", "ScrollView", "SystemMotionProbe", "CustomNav", "FloatingNotificationHost", "StatusPanel", "Provenance", "FacilityEvidenceDetails"]) context[name] = name;
+  for (const name of ["View", "Text", "ScrollView", "SystemMotionProbe", "CustomNav", "FloatingNotificationHost", "StatusPanel", "Provenance", "FacilityEvidenceDetails", "FacilityCard", "ArticleMedia", "SoftButton", "SourceDisclosure"]) context[name] = name;
   const tree = vm.runInNewContext(ts.transpileModule(`const ${loading.getText(source)}; (${result.expression!.getText(source)});`, {
     compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
   }).outputText, context);

@@ -52,6 +52,17 @@ test("shared section empty icon is packaged for every Mini Program consumer", ()
   }
 });
 
+test("shared facility cards ship their adopted icons in Map, field and article packages", () => {
+  const originals = path.resolve("docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256/platform/weapp-runtime/assets");
+  for (const prefix of ["", "spot", "content"]) {
+    for (const name of ["parking", "restroom"]) {
+      const filename = `${name}--day--default.png`;
+      const source = prefix ? originals : path.resolve(originals, "../assets-main");
+      assert.deepEqual(readFileSync(path.join(bundleRoot, prefix, "assets/b-icons", filename)), readFileSync(path.join(source, filename)), `${prefix || "main"} facility icon`);
+    }
+  }
+});
+
 test("runtime dependency licenses remain bundled after moving out of the main package", () => {
   assert.equal(existsSync(path.join(bundleRoot, "content/assets/licenses/runtime-dependencies.json")), true);
 });

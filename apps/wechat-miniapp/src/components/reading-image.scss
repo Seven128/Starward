@@ -1,0 +1,7 @@
+.reading-image { position: relative; min-height: 178Px; border-radius: 16Px; overflow: hidden; background: var(--surface-subtle); }
+.reading-image--ready { min-height: 0; }
+.reading-image--cover { height: 190Px; min-height: 190Px; }
+.reading-image__image { display: block; width: 100%; height: auto; opacity: 0; }
+.reading-image--cover .reading-image__image { height: 100%; }
+.reading-image__image--ready { opacity: 1; }
+.reading-image__state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10Px; font-size: 14Px; color: var(--text-secondary); }

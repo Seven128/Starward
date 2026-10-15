@@ -5,14 +5,14 @@ import { facilityStatusLabel } from "@/utils/facility-presentation";
 import { Provenance } from "./provenance";
 import "./facility-evidence.scss";
 
-export function FacilityEvidenceDetails({ evidence, title, showDescription = true, showSource = true, showVerification = true }: { evidence: FacilityEvidence; title?: string; showDescription?: boolean; showSource?: boolean; showVerification?: boolean }) {
+export function FacilityEvidenceDetails({ evidence, title, showDescription = true, showSource = true, showVerification = true, showHeading = true }: { evidence: FacilityEvidence; title?: string; showDescription?: boolean; showSource?: boolean; showVerification?: boolean; showHeading?: boolean }) {
   return <>
-    <View className="facility-evidence__heading">
+    {showHeading ? <View className="facility-evidence__heading">
     {title ? <Text className="type-label">{title}</Text> : null}
     <Text className={`status-tag${evidence.status === "UNKNOWN" || evidence.status === "SEASONAL" ? " status-tag--warning" : evidence.status === "UNAVAILABLE" ? " status-tag--danger" : ""}`}>
       {facilityStatusLabel(evidence.status)}
     </Text>
-    </View>
+    </View> : null}
     {showDescription ? <Text className="type-body">{evidence.detail || evidence.summary || "暂无数据"}</Text> : null}
     <View className="facility-evidence__facts">
       <View className={`facility-evidence__fact${evidence.distanceM === null ? " facility-evidence__fact--wide" : ""}`}>

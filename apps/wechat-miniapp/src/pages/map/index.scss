@@ -1201,27 +1201,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8Px;
 }
-.spot-panel__facility {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4Px 8Px;
-  min-width: 0;
-  padding: 8Px;
-  border-radius: 6Px;
-  background: var(--surface-subtle);
-}
-.spot-panel__facility--described {
-  grid-column: 1 / -1;
-}
-.spot-panel__facility-name {
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
-}
-.spot-panel__facility-status {
-  flex: 1;
-  text-align: right;
-}
+
+
+
+
 
 
 .spot-panel__metric {
@@ -1445,9 +1428,7 @@
   flex: 0 0 14Px;
 }
 
-.spot-panel__facility-summary {
-  flex-basis: 100%;
-}
+
 .spot-panel__disclosure {
   gap: 2rpx;
   padding: 16rpx 0 24rpx;
@@ -2445,75 +2426,15 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 12Px;
 }
-.spot-panel__facility,
-.spot-panel__facility--described {
-  position: relative;
-  display: block;
-  min-height: 84Px;
-  padding: 14Px 16Px;
-  border: 0;
-  border-radius: 18Px;
-  background: #f8fafc;
-  overflow: hidden;
-  isolation: isolate;
-}
-.spot-panel__facility-image {
-  position: absolute;
-  z-index: 0;
-  inset: -4Px;
-  width: calc(100% + 8Px);
-  height: calc(100% + 8Px);
-  filter: blur(1.6Px);
-}
-.spot-panel__facility-shade {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .85) 55%, rgba(255, 255, 255, .15));
-}
-.spot-panel__facility-content {
-  position: relative;
-  z-index: 2;
-}
-.spot-panel__facility-count {
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 2Px;
-  .semantic-icon { width: 12Px; height: 12Px; }
-  position: absolute;
-  right: 8Px;
-  bottom: 6Px;
-  padding: 0 3Px;
-  border-radius: 3Px;
-  color: var(--text-secondary);
-  background: var(--surface-base);
-  font-size: 12Px;
-  line-height: 16Px;
-}
-.spot-panel__facility-heading {
-  display: flex;
-  align-items: center;
-  gap: 7Px;
-}
-.spot-panel__facility-name {
-  color: #334155;
-  font-size: 15Px;
-  font-weight: 500;
-  line-height: 22Px;
-}
-.spot-panel__facility-status {
-  color: #475569;
-  font-size: 13Px;
-  line-height: 20Px;
-}
-.spot-panel__facility-summary {
-  display: block;
-  margin-top: 6Px;
-  color: #475569;
-  font-size: 13Px;
-  line-height: 20Px;
-}
+
+
+
+
+
+
+
+
+
 // Current comfortable-scale Source, scoped to formal DAY cards. Private
 // panels and the unadopted themes retain their existing presentation.
 .theme-day.map-page .spot-panel--formal {
@@ -2758,30 +2679,14 @@
     font-weight: 400;
     line-height: 18Px;
   }
-  .spot-panel__facility-heading { gap: 8Px; }
-  .spot-panel__facility-icon { flex: 0 0 24Px; width: 24Px; height: 24Px; }
-  .spot-panel__facility-name { color: #0f172a; font-weight: 600; }
-  .spot-panel__facility-status {
-    flex: 0 1 auto;
-    margin-left: 5Px;
-    text-align: left;
-    color: #373943;
-    line-height: 22Px;
-  }
-  .spot-panel__facility-summary { color: #373943; }
-  .spot-panel__facility-image { filter: blur(1Px); }
-  .spot-panel__facility-shade {
-    background: linear-gradient(90deg, rgba(255, 255, 255, .93), rgba(255, 255, 255, .84) 44%, rgba(255, 255, 255, .36) 78%, rgba(255, 255, 255, .13));
-  }
-  .spot-panel__facility-count {
-    right: 14Px;
-    bottom: 12Px;
-    padding: 2Px 6Px;
-    border-radius: 6Px;
-    color: #334155;
-    background: #ffffffe6;
-    line-height: 18Px;
-  }
+
+
+
+
+
+
+
+
   .spot-panel__contact-row {
     margin-top: 4Px;
     gap: 0;
@@ -3166,8 +3071,8 @@
     margin-left: 0 !important;
   }
   .theme-day.map-page .spot-panel--formal {
-    .spot-panel__facility-heading { flex-wrap: wrap; }
-    .spot-panel__facility-status { margin-left: 21Px; flex-basis: 100%; }
+
+
     .spot-panel__source-row { flex-wrap: wrap; gap: 0; }
   }
 }
@@ -3195,8 +3100,7 @@
 .spot-panel__red-photo-label { display: none; }
 
 .theme-observation.map-page {
-  .spot-panel__media-image,
-  .spot-panel__facility-image { display: none; }
+  .spot-panel__media-image { display: none; }
   .spot-panel__red-photo-label {
     position: absolute;
     inset: 0;
@@ -3226,26 +3130,23 @@
 .theme-night.map-page,
 .theme-observation.map-page {
   .spot-panel__title,
-  .spot-panel__block--route .spot-panel__value,
-  .spot-panel__hours-row > view,
-  .spot-panel__safety-facts .type-body,
-  .spot-panel__facility-name {
+.spot-panel__block--route .spot-panel__value,
+.spot-panel__hours-row > view,
+.spot-panel__safety-facts .type-body {
     color: var(--text-primary);
   }
 
   .spot-panel__region,
-  .spot-panel__location-facts,
-  .spot-panel__route-note,
-  .spot-panel__hours-row,
-  .spot-panel__safety-facts .type-secondary,
-  .spot-panel__facility-status,
-  .spot-panel__facility-summary,
-  .spot-panel__more-site,
-  .spot-panel__contact-row,
-  .spot-panel__source-row,
-  .spot-panel__guide-row,
-  .spot-panel__source-row > text:first-child,
-  .spot-panel__more-site > text:last-child {
+.spot-panel__location-facts,
+.spot-panel__route-note,
+.spot-panel__hours-row,
+.spot-panel__safety-facts .type-secondary,
+.spot-panel__more-site,
+.spot-panel__contact-row,
+.spot-panel__source-row,
+.spot-panel__guide-row,
+.spot-panel__source-row > text:first-child,
+.spot-panel__more-site > text:last-child {
     color: var(--text-secondary);
   }
 
@@ -3262,8 +3163,6 @@
 
   .spot-panel__access-guidance { color: var(--warning); }
   .spot-panel__handle-bar { background: var(--border-strong); }
-  .spot-panel__facility,
-  .spot-panel__facility--described,
   .spot-panel__media-slide { background: var(--surface-subtle); }
   .spot-panel__section-rail,
   .spot-panel__action-lane { background: var(--surface); }
@@ -3278,9 +3177,7 @@
   .spot-panel__guide-row,
   .spot-panel__section-rail { border-bottom-color: var(--border); }
 
-  .spot-panel__facility-shade {
-    background: linear-gradient(90deg, var(--surface) 0%, var(--surface) 55%, transparent);
-  }
+
 
   .spot-panel__action,
   .spot-panel__action--cloud,
@@ -3299,7 +3196,7 @@
 
 .theme-observation.map-page {
   .spot-panel__proposal-status { background: var(--surface); color: var(--text-primary); }
-  .spot-panel__facility-shade { background: var(--surface); }
+
   .spot-panel__action--share::before,
   .spot-panel__action-bar--proposal .spot-panel__action::before,
   .spot-panel__action > .spot-action-scene { border: 1Px solid var(--border); }

@@ -13,14 +13,16 @@ class TestDate extends Date {
 }
 
 function harness(queryClient = new QueryClient(), transform = (source: string) => source) {
-  const ast = ts.createSourceFile("recent.tsx", transform(readFileSync(new URL("./recent-weather.tsx", import.meta.url), "utf8")), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const ast = ts.createSourceFile("recent.tsx", readFileSync(new URL("./recent-weather.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const hookAst = ts.createSourceFile("history-hook.ts", transform(readFileSync(new URL("../hooks/use-recent-weather-query.ts", import.meta.url), "utf8")), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const hook = hookAst.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useRecentWeatherQuery")!;
   const fn = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "RecentWeather")!;
   const states: unknown[] = [], dependencies: unknown[][] = [];
   let stateIndex = 0, effectIndex = 0, pending: (() => void)[] = [];
   let query: any, options: any, hide = () => {}, show = () => {};
   const notifications: any[] = []; let retries = 0;
   const notify = (value: any) => notifications.push(value);
-  const component = vm.runInNewContext(ts.transpileModule(fn.getText(ast).replace(/^export /, "") + "; RecentWeather;",
+  const component = vm.runInNewContext(ts.transpileModule(hook.getText(hookAst).replace(/^export /, "") + "; " + fn.getText(ast).replace(/^export /, "") + "; RecentWeather;",
     { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, {
     useState(value: unknown) { const index = stateIndex++; if (!(index in states)) states[index] = value;
       return [states[index], (value: any) => { states[index] = typeof value === "function" ? value(states[index]) : value; }]; },
