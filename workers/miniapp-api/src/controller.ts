@@ -175,6 +175,15 @@ function parseCloudLayer(
   return layer as ObservationContext["weatherView"]["cloudLayer"];
 }
 
+async function withTerrainRead<T>(reply: FastifyReply | undefined, read: (signal: AbortSignal) => Promise<T>): Promise<T> {
+  const controller = new AbortController();
+  const cancel = () => { if (!reply?.raw.writableFinished) controller.abort(new Error("terrain_request_cancelled")); };
+  reply?.raw.once("close", cancel);
+  if (reply?.raw.destroyed) cancel();
+  try { return await read(controller.signal); }
+  finally { reply?.raw.off("close", cancel); }
+}
+
 @Controller("v2")
 export class MiniappController {
   constructor(
@@ -248,11 +257,12 @@ export class MiniappController {
   }
 
   @Get("terrain/overlay")
-  terrainOverlay(
+  async terrainOverlay(
     @Query("purpose") purpose?: string,
     @Query("centerLat") centerLat?: string,
     @Query("centerLng") centerLng?: string,
     @Query("radiusKm") radiusKm?: string,
+    @Res({ passthrough: true }) reply?: FastifyReply,
   ) {
     const latitude = Number(centerLat);
     const longitude = Number(centerLng);
@@ -260,12 +270,12 @@ export class MiniappController {
     if ((purpose !== "MAP" && purpose !== "SPOT") || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180 || !Number.isFinite(radius) || radius < 2 || radius > 50)
       throw new Error("terrain_overlay_request_invalid");
     const request: TerrainOverlayRequest = { purpose, center: { system: "GCJ02", latitude, longitude }, radiusKm: radius };
-    return this.service.getTerrainOverlay(request);
+    return withTerrainRead(reply, signal => this.service.getTerrainOverlay(request, signal));
   }
 
   @Get("terrain/assets/:file")
   async terrainAsset(@Param("file") file: string, @Res() reply: FastifyReply) {
-    const asset = await this.service.getTerrainAsset(decodeURIComponent(file));
+    const asset = await withTerrainRead(reply, signal => this.service.getTerrainAsset(decodeURIComponent(file), signal));
     reply.header("content-type", "image/png")
       .header("cache-control", "public, max-age=604800, immutable")
       .header("x-content-type-options", "nosniff")

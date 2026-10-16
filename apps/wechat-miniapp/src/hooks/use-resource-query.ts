@@ -6,7 +6,7 @@ export interface QueryOptions<T> {
   queryKey: readonly unknown[];
   queryFn: (signal: AbortSignal | undefined) => Promise<T>;
   enabled?: boolean;
-  staleTime?: number;
+  staleTime?: number | ((data: T | undefined) => number);
   gcTime?: number;
   refetchInterval?: number | false;
   throwOnRefetchError?: boolean;
@@ -74,7 +74,7 @@ export function useResourceQuery<T>({
       return queryFn(signal);
     },
     enabled,
-    staleTime,
+    staleTime: typeof staleTime === "function" ? query => staleTime(query.state.data) : staleTime,
     ...(gcTime === undefined ? {} : { gcTime }),
     refetchInterval,
     structuralSharing,

@@ -5,6 +5,19 @@ import vm from "node:vm";
 import ts from "typescript";
 import { QueryClient } from "@tanstack/react-query";
 
+test("the resource owner evaluates freshness against the current cached data", () => {
+  const source = ts.createSourceFile("query.ts", readFileSync(new URL("./use-resource-query.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const declaration = source.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "useResourceQuery")!;
+  let options: any;
+  const hook = vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export\s+/, "") + "\nuseResourceQuery;", {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText, { useQuery: (value: any) => { options = value; return { data: undefined, error: null }; },
+    useQueryClient: () => ({}), useEffect() {} });
+  hook({ queryKey: ["partial"], queryFn: async () => null, staleTime: (data: { failed?: boolean } | undefined) => data?.failed ? 0 : 86400000 });
+  assert.equal(options.staleTime({ state: { data: { failed: true } } }), 0);
+  assert.equal(options.staleTime({ state: { data: { failed: false } } }), 86400000);
+});
+
 test("cached resource survives refresh failure while exposing its stale cause", async () => {
   const source = ts.createSourceFile("query.ts", readFileSync(new URL("./use-resource-query.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const declaration = source.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "useResourceQuery")!;

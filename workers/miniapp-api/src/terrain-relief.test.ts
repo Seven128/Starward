@@ -28,3 +28,16 @@ test("missing data is hatched without inventing a cliff on adjacent known level 
   assert.equal(alpha(rgba, 3, 4), 0);
   assert.equal(alpha(rgba, 5, 7), 90, "a missing stripe remains visibly different from a known flat pixel");
 });
+
+test("gentle real slopes remain visible over a pale green basemap while legacy pixels stay recoverable", () => {
+  const slope = Float32Array.from({ length: size * size }, (_, index) => 100 - index % size * 3);
+  const current = terrainReliefRgba(slope, size, 30, rgb);
+  const legacy = terrainReliefRgba(slope, size, 30, rgb, true);
+  const pixel = (4 * size + 4) * 4;
+  const composite = (rgba: Uint8Array) => [202, 238, 184].map((base, channel) =>
+    base * (1 - rgba[pixel + 3] / 255) + rgba[pixel + channel] * rgba[pixel + 3] / 255);
+  assert.ok(composite(legacy)[1] - composite(current)[1] > 20,
+    "contrast repair must change the composed green basemap, not merely nonzero alpha");
+  assert.deepEqual([...legacy.slice(pixel, pixel + 3)], [...rgb]);
+  assert.equal(alpha(legacy, 4, 4), Math.round(255 * Math.atan(0.2) / (Math.PI / 2) * 0.75));
+});

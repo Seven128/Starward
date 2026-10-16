@@ -1000,14 +1000,14 @@ export class MiniappService {
     );
   }
 
-  async getTerrainOverlay(input: TerrainOverlayRequest): Promise<ApiEnvelope<TerrainOverlayData>> {
+  async getTerrainOverlay(input: TerrainOverlayRequest, signal?: AbortSignal): Promise<ApiEnvelope<TerrainOverlayData>> {
     const centerWgs84 = gcj02ToWgs84({
       lat: input.center.latitude,
       lon: input.center.longitude,
       system: "GCJ-02",
     });
     const [terrainRead, lightRead] = await Promise.allSettled([
-      this.terrain.getPublication(input),
+      this.terrain.getPublication(input, signal),
       this.repository.kind === "postgres" && this.config.darkSkyDatasetVersion !== "UNAVAILABLE"
       ? this.repository.listDarkSkyGridCells({
           datasetVersion: this.config.darkSkyDatasetVersion,
@@ -1016,6 +1016,7 @@ export class MiniappService {
         })
       : Promise.resolve([]),
     ]);
+    signal?.throwIfAborted();
     const publication = terrainRead.status === "fulfilled" ? terrainRead.value : null;
     const terrainCovered = publication !== null && terrainRequestIsCovered(publication, input);
     const terrainSource = terrainCovered ? terrainPublicationSource(publication) : null;
@@ -1078,8 +1079,8 @@ export class MiniappService {
       [...data.limitations, ...(lightRead.status === "rejected" ? [data.lightPollution.coverageLabel] : [])]);
   }
 
-  async getTerrainAsset(file: string) {
-    return this.terrain.getAsset(file);
+  async getTerrainAsset(file: string, signal?: AbortSignal) {
+    return this.terrain.getAsset(file, signal);
   }
 
   async getMapScene(input: {

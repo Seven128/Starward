@@ -1,5 +1,5 @@
 import type { TerrainOverlayRequest } from "@starward/miniapp-contracts";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { downloadTerrainAsset, getTerrainOverlay } from "@/services/api-client";
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import { useResourceQuery } from "./use-resource-query";
@@ -12,8 +12,18 @@ export function useTerrainOverlay(input: TerrainOverlayRequest, enabled: boolean
     queryKey: ["terrain-overlay", identity],
     queryFn: (signal) => getTerrainOverlay(input, signal),
     enabled,
-    staleTime: 24 * 60 * 60 * 1000,
+    // A 200 response can contain one failed product and independent valid data.
+    // Preserve that data without treating the failure as a day-long success.
+    staleTime: value => value?.data.failureCode || value?.data.lightPollution.failureCode ? 0 : 24 * 60 * 60 * 1000,
   });
+  const recovery = useRef({ identity, attempted: false });
+  if (recovery.current.identity !== identity) recovery.current = { identity, attempted: false };
+  useEffect(() => {
+    if (!enabled || query.isFetching || (!query.data?.data.failureCode && !query.data?.data.lightPollution.failureCode) || recovery.current.attempted) return;
+    // One short recovery, matching the query client's single-retry policy.
+    const timer = setTimeout(() => { recovery.current.attempted = true; void query.refetch({ cancelRefetch: false }); }, 1000);
+    return () => clearTimeout(timer);
+  }, [enabled, identity, query.isFetching, query.data?.data.failureCode, query.data?.data.lightPollution.failureCode]);
   const imageUrl = query.data?.data.imageUrl ?? null;
   const imageKey = imageUrl ? `${query.data?.data.publicationId ?? ""}:${imageUrl}` : "";
   const [imageAttempt, setImageAttempt] = useState(0);

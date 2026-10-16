@@ -961,6 +961,8 @@ export function getTerrainOverlay(input: TerrainOverlayRequest, signal?: AbortSi
   ].join("&");
   return requestOperation(`terrain:${input.purpose}`, "terrainOverlayGet", {
     query,
+    // The query owner handles immutable successes and partial-product failures.
+    cache: false,
     ...(signal ? { signal } : {}),
   });
 }

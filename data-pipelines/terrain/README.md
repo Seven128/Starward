@@ -82,8 +82,9 @@ Both producers read `workers/miniapp-api/assets/terrain/elevation-color.json`;
 the colour interval remains an encoding, not local elevation or accuracy.
 Map relief uses the same adopted shadow hue while its alpha expresses synthetic
 slope/aspect shading, so it does not attach that colour interval to the image.
-Map `glo30-cn-v2-map` filenames and cache keys are distinct from v1 colour
-products. Both old bundled and dynamic v1 PNG URLs remain hash-bound and readable;
+Map `glo30-cn-v3-map` increases display contrast without changing sampled elevations;
+its filenames and cache keys are distinct from the previous v2 Map shading and
+v1 colour products. Old v2 Map and bundled/dynamic v1 PNG URLs remain hash-bound and readable;
 an in-region old dynamic asset must not be replaced by a bundled or new Map
 publication. PNG transparency alone is not a coverage mask for a relief image;
 valid-pixel metadata and hatching retain the missing-data meaning.
@@ -97,6 +98,12 @@ after eviction without serving changed bytes under an old URL. The terrain-only
 client/server limits are 18/16 seconds. A cold request returned a read failure
 near the former 8.5-second window; the wider terrain-only window accommodates
 the observed source work while ordinary DTO timeouts stay unchanged.
+Metadata and asset regeneration share a reader-aware cancellation owner: a
+disconnected HTTP reader releases its claim, and the source stops when no reader
+remains. One reader cannot cancel another reader's shared derivation. The client
+does not retain a failed product as a 24-hour success; independent valid light
+data survives, with one bounded automatic recovery that does not cancel a manual
+request already in progress.
 
 The [AWS dataset owner](https://registry.opendata.aws/copernicus-dem/) describes
 GLO-30 Public as limited worldwide coverage: unreleased or absent source tiles

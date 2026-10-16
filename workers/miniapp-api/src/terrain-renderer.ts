@@ -11,7 +11,8 @@ import { COPERNICUS_DEM_DOI, COPERNICUS_DEM_LICENSE_URL, COPERNICUS_DEM_SOURCE_N
   type TerrainSourceRange } from "./terrain-publication.ts";
 
 export const TERRAIN_RENDER_VERSION = "glo30-cn-v1";
-export const TERRAIN_MAP_RENDER_VERSION = "glo30-cn-v2-map";
+export const TERRAIN_LEGACY_MAP_RENDER_VERSION = "glo30-cn-v2-map";
+export const TERRAIN_MAP_RENDER_VERSION = "glo30-cn-v3-map";
 const size = 512;
 const sourceRoot = "https://copernicus-dem-30m.s3.amazonaws.com";
 const hash = (data: string | Buffer) => createHash("sha256").update(data).digest("hex");
@@ -19,9 +20,11 @@ const clamp = (value: number, low: number, high: number) => Math.max(low, Math.m
 let encodingPromise: Promise<Omit<TerrainElevationColorEncoding, "imageSha256">> | undefined;
 
 export interface RenderedTerrain { publication: TerrainPublication; bytes: Buffer }
-export type TerrainRenderer = (input: TerrainOverlayRequest, signal: AbortSignal) => Promise<RenderedTerrain | null>;
+/** Only the asset owner may recover a previous immutable Map representation. */
+export type TerrainRenderRequest = TerrainOverlayRequest & { renderVersion?: typeof TERRAIN_LEGACY_MAP_RENDER_VERSION };
+export type TerrainRenderer = (input: TerrainRenderRequest, signal: AbortSignal) => Promise<RenderedTerrain | null>;
 
-export function normalizeTerrainRequest(input: TerrainOverlayRequest): TerrainOverlayRequest {
+export function normalizeTerrainRequest(input: TerrainRenderRequest): TerrainRenderRequest {
   return { ...input, center: { system: "GCJ02", latitude: Math.round(input.center.latitude * 1e7) / 1e7,
     longitude: Math.round(input.center.longitude * 1e7) / 1e7 },
     // Round the source extent outward; never lose a requested sub-metre edge.
@@ -35,9 +38,13 @@ export function terrainBounds(input: TerrainOverlayRequest) {
     east: input.center.longitude + lonDelta, north: input.center.latitude + latDelta };
 }
 
-export function terrainRequestKey(input: TerrainOverlayRequest) {
+function terrainRenderVersion(input: TerrainRenderRequest) {
+  return input.purpose === "MAP" ? input.renderVersion ?? TERRAIN_MAP_RENDER_VERSION : TERRAIN_RENDER_VERSION;
+}
+
+export function terrainRequestKey(input: TerrainRenderRequest) {
   const canonical = normalizeTerrainRequest(input);
-  const version = canonical.purpose === "MAP" ? TERRAIN_MAP_RENDER_VERSION : TERRAIN_RENDER_VERSION;
+  const version = terrainRenderVersion(canonical);
   return `${version}-${Math.round(canonical.center.latitude * 1e7)}-${Math.round(canonical.center.longitude * 1e7)}-${Math.round(canonical.radiusKm * 1000)}`;
 }
 
@@ -100,7 +107,7 @@ async function readTile(lat: number, lon: number, bounds: number[], resolution: 
 
 /** One licensed DSM sampling path. Spot retains elevation colour; the Map
  * consumes a separate relief overlay suitable for compositing on a basemap. */
-export async function renderTerrain(input: TerrainOverlayRequest, signal: AbortSignal, transport: typeof fetch = fetch): Promise<RenderedTerrain | null> {
+export async function renderTerrain(input: TerrainRenderRequest, signal: AbortSignal, transport: typeof fetch = fetch): Promise<RenderedTerrain | null> {
   const bounds = terrainBounds(input), count = size * size;
   const latitudes = new Float64Array(count), longitudes = new Float64Array(count);
   const elevations = new Float32Array(count).fill(Number.NaN);
@@ -153,7 +160,7 @@ export async function renderTerrain(input: TerrainOverlayRequest, signal: AbortS
   };
   const png = new PNG({ width: size, height: size });
   if (input.purpose === "MAP") {
-    png.data.set(terrainReliefRgba(elevations, size, bytesPerPixel, encoding.highRgb));
+    png.data.set(terrainReliefRgba(elevations, size, bytesPerPixel, encoding.highRgb, input.renderVersion === TERRAIN_LEGACY_MAP_RENDER_VERSION));
   } else for (let row = 0; row < size; row++) {
     signal.throwIfAborted();
     for (let column = 0; column < size; column++) {
@@ -170,12 +177,12 @@ export async function renderTerrain(input: TerrainOverlayRequest, signal: AbortS
   }
   const bytes = PNG.sync.write(png), imageSha256 = hash(bytes);
   const publication: TerrainPublication = {
-    schemaVersion: "starward-terrain-publication-v2", publicationId: `terrain:${input.purpose === "MAP" ? TERRAIN_MAP_RENDER_VERSION : TERRAIN_RENDER_VERSION}:${imageSha256}`,
+    schemaVersion: "starward-terrain-publication-v2", publicationId: `terrain:${terrainRenderVersion(input)}:${imageSha256}`,
     dataset: "Copernicus DEM GLO-30 Public AWS COG 2021", sourceProvider: "Copernicus Programme / AWS Open Data",
     license: "Copernicus DEM GLO-30 free worldwide licence", licenseUrl: COPERNICUS_DEM_LICENSE_URL, doi: COPERNICUS_DEM_DOI,
     attributionNotice: COPERNICUS_DEM_SOURCE_NOTICE, modifiedProductNotice: COPERNICUS_DEM_MODIFIED_PRODUCT_NOTICE,
     derivation: input.purpose === "MAP"
-      ? "Starward从真实WGS84 DSM按GCJ-02逐像素取样，采用Horn坡度和Igor坡向阴影表达地势，阴影使用2倍视觉增强；平坦区域透明，灰色斜纹表示缺测。阴影不是实景光照或精确海拔色带。来源校验绑定实际读取的HTTP字节范围及对象ETag，不是全文件哈希。"
+      ? "Starward从真实WGS84 DSM按GCJ-02逐像素取样，采用Horn坡度和Igor坡向阴影表达地势，阴影使用2倍视觉增强及对比度映射；平坦区域透明，灰色斜纹表示缺测。阴影不是实景光照或精确海拔色带。来源校验绑定实际读取的HTTP字节范围及对象ETag，不是全文件哈希。"
       : "Starward从真实WGS84 DSM按GCJ-02逐像素取样，派生高程基色、合成山体阴影及透明缺测像素。来源校验绑定实际读取的HTTP字节范围及对象ETag，不是全文件哈希。",
     sourceResolution: "1 arc-second (approximately 30 m)", derivedResolutionM: Math.round(bytesPerPixel * 10) / 10,
     derivedAt: new Date().toISOString(), coordinateSystem: "GCJ02", transformVersion: "starward-coordinate-system-gcj02-grid-v2",
