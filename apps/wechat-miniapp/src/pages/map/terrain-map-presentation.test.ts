@@ -43,6 +43,7 @@ test("terrain loading remains visible after metadata/download until the actual n
   const target = { src: "/new.png", bounds: { southwest: { latitude: 22, longitude: 113 }, northeast: { latitude: 25, longitude: 117 } }, opacity: 1, zIndex: 0 };
   const desired = `spot-map:${terrainGroundOverlayKey(target)}`;
   const state = { pageVisible: true, terrainEnabled: true, nativeMap: { pending: false }, mapRuntimeError: false,
+    mapTerrainBounds: {}, terrainViewportError: null,
     terrain: { isPending: false, isFetching: false, imagePending: false }, mapTerrainMissing: false, mapTerrainFailed: false,
     terrainGroundOverlay: target, terrainInstalledKey: "spot-map:old", desiredTerrainKey: desired };
   assert.equal(vm.runInNewContext(expression("mapTerrainLoading"), state), true);
@@ -94,6 +95,7 @@ test("resuming after hidden cleanup requires a fresh native acknowledgment even 
   });
   effect(); assert.equal(installed, null); assert.equal(presented, null);
   const state = { pageVisible: true, terrainEnabled: true, nativeMap: { pending: false }, mapRuntimeError: false,
+    mapTerrainBounds: {}, terrainViewportError: null,
     terrain: { isPending: false, isFetching: false, imagePending: false }, mapTerrainMissing: false, mapTerrainFailed: false,
     terrainGroundOverlay: {}, terrainInstalledKey: installed, desiredTerrainKey: "spot-map:old" };
   assert.equal(vm.runInNewContext(expression("mapTerrainLoading"), state), true);

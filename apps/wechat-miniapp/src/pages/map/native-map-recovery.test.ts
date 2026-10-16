@@ -34,6 +34,7 @@ function nativeElement(nativeMap: any, events: string[] = []) {
     markerList: [], layerPolygons: [], locationState: "GRANTED", spotEditorPhase: "open",
     editorPresentation: {isClosing: () => false},
     onMapTap: () => events.push("tap"), onMarkerTap: () => events.push("marker"), onRegionChange: () => events.push("region"),
+    readTerrainViewport: () => events.push("viewport"), mapTerrainBounds: null,
     React: { createElement: (_type: any, props: any) => props },
   });
 }
@@ -47,7 +48,8 @@ test("retry changes the actual Map key/id, preserves viewport, and ignores old n
   before.onUpdated(); before.onError(); before.onTap(); before.onMarkerTap({}); before.onRegionChange({});
   assert.equal(t.render().pending, true); assert.deepEqual(events, []);
   after.onUpdated(); assert.equal(t.render().pending, false); assert.equal(t.render().error, false); assert.equal(t.timers.size, 0);
-  after.onTap(); assert.deepEqual(events, ["tap"]);
+  assert.deepEqual(events, ["viewport"], "the current Map update initiates actual viewport measurement");
+  after.onTap(); assert.deepEqual(events, ["viewport", "tap"]);
 });
 
 test("native failure or missing completion leaves recovery available; stale success cannot erase failure", () => {

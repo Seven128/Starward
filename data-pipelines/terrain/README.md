@@ -35,9 +35,13 @@ This small TypeScript rendering kernel reuses the existing pngjs pipeline
 instead of adding a GDAL deployment dependency. Map relief leaves level
 ground transparent and marks missing source samples with grey hatching; visual
 vertical emphasis does not alter the numeric elevation range or represent live
-lighting. It has no elevation-colour descriptor. The client derives its extent
-from actual logical Map dimensions, latitude and zoom, with the existing loading
-buffer; a design width in rpx is not a native-map pixel count.
+lighting. It has no elevation-colour descriptor. The client retains the existing
+20% loading buffer. Production Map bounds come from native `getRegion` on entry, camera
+settlement and replacement, bound to the camera/Map/layout/visibility owner.
+Android's actual scale did not match the assumed 256px world grid, so the
+standard Mercator frame helper is only a public-data trial input. Missing native
+bounds do not start a misleading narrow-image request; the existing 10s Map
+window, at most two ordinary reads and explicit new-Map recovery handle that failure.
 The Map layer sheet offers its own full source notice in a scrollable disclosure;
 the spot terrain view shows its Copernicus source directly. The fixed Map controls
 must remain outside the long notice. Copernicus products use the WorldDEM-30

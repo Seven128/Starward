@@ -4,7 +4,7 @@ import test from "node:test";
 import { mercatorY } from "@starward/coordinate-system";
 import { TERRAIN_RADIUS_TICKS, terrainCropPercent, terrainMapViewportBounds, terrainBoundsForNativeRegion, terrainRadiusForSlider, terrainSliderForRadius, terrainViewportBounds } from "./terrain-geometry";
 
-test("Map terrain covers the whole logical Mercator window beyond the Spot 50 km limit", () => {
+test("standard Mercator trial frames retain their whole declared extent beyond the Spot 50 km limit", () => {
   const center = { latitude: 22.65, longitude: 114.05 }, frame = { width: 390, height: 700 };
   const bounds = terrainMapViewportBounds(center, 8, frame);
   assert.ok((bounds.north - bounds.south) * 111.32 > 300, "a zoomed-out phone window cannot be limited to a 100 km square");

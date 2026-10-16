@@ -3,7 +3,6 @@ import test from "node:test";
 import fs from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
-import { terrainBoundsForNativeRegion } from "./terrain-geometry";
 
 function code(name: "onRegionChange" | "onMarkerTap") {
   let source = fs.readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
@@ -28,8 +27,8 @@ function code(name: "onRegionChange" | "onMarkerTap") {
 
 test("debounced native region commits only while its originating Map remains current", async () => {
   for (const obsolete of [true, false]) {
-    let current = true, queued: (() => void) | undefined, regionRead: ((value: unknown) => void) | undefined;
-    const writes: unknown[] = [], resolves: unknown[] = [], measured: unknown[] = [];
+    let current = true, queued: (() => void) | undefined;
+    const writes: unknown[] = [], resolves: unknown[] = [];
     const viewport = { center: { latitude: 22, longitude: 114 }, zoom: 10, loadedViewport: "initial" };
     vm.runInNewContext(code("onRegionChange"), {
       event: {}, nativeMap: { mapId: "spot-map", isCurrent: () => current }, editorPresentation: {isClosing: () => false},
@@ -40,21 +39,11 @@ test("debounced native region commits only while its originating Map remains cur
       clearTimeout() {}, setTimeout(fn: () => void) { queued = fn; return 1; },
       useAppStore: { getState: () => ({ mapResetVersion: 0, viewport }) },
       setViewport: (value: object) => { writes.push(value); Object.assign(viewport, value); },
-      panelLayoutVersion: 0, primaryNavigation: { pageHeight: 700 }, terrainBoundsForNativeRegion,
-      Taro: { createMapContext: () => ({ getRegion: (options: { success(value: unknown): void }) => { regionRead = options.success; } }) },
-      setMeasuredTerrainViewport: (value: unknown) => measured.push(value),
       resolveMapPoint: async (value: unknown) => { resolves.push(value); return null; }, notify() {}, errorMessage: String, Date,
     });
     assert.ok(queued); current = !obsolete; queued();
     assert.equal(writes.length, obsolete ? 0 : 1, "an old timer must not move the new native Map");
     assert.equal(resolves.length, obsolete ? 0 : 1, "a current event must still submit its location intent");
-    if (!obsolete) {
-      regionRead!({ southwest: { latitude: 22, longitude: 113 }, northeast: { latitude: 24, longitude: 115 } });
-      assert.equal(measured.length, 1);
-      current = false;
-      regionRead!({ southwest: { latitude: 21, longitude: 112 }, northeast: { latitude: 25, longitude: 116 } });
-      assert.equal(measured.length, 1, "late old native bounds cannot replace the current viewport");
-    }
   }
 });
 

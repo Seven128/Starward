@@ -1,8 +1,8 @@
 export const TERRAIN_RADIUS_TICKS = [2, 5, 10, 20, 50] as const;
 const LOG_RANGE = Math.log(25);
 
-/** Geographic extent of the actual logical native Map window. Buffer both
- * Mercator axes by the existing 20%; Spot's radius is a separate product. */
+/** Standard Web Mercator frame geometry used by public source trials. This
+ * does not calibrate WeChat's scale; production Map coverage uses getRegion. */
 export function terrainMapViewportBounds(center: { latitude: number; longitude: number }, zoom: number,
   frame: { width: number; height: number }): TerrainBounds {
   const pixels = 256 * 2 ** zoom, halfX = Math.min(0.5, frame.width / pixels * 0.6), halfY = frame.height / pixels * 0.6;

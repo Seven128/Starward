@@ -11,15 +11,19 @@ function inRange(value: unknown, min: number, max: number): value is number {
   return typeof value === "number" && Number.isFinite(value) && value >= min && value <= max;
 }
 
+export function mapRegionEnded(event: unknown) {
+  const root = record(event), detail = record(root?.detail);
+  return (detail?.type ?? root?.type) === "end";
+}
+
 /** WeChat puts phase/cause at the event root; Taro's component types also admit a nested wrapper. */
 function gesturePayload(event: unknown): Record<string, unknown> | null {
   const root = record(event);
   const detail = record(root?.detail);
   const nested = record(detail?.detail);
   const payload = nested ?? detail;
-  const phase = detail?.type ?? root?.type;
   const cause = detail?.causedBy ?? root?.causedBy ?? payload?.causedBy;
-  if (phase !== "end" || (cause !== "drag" && cause !== "scale")) return null;
+  if (!mapRegionEnded(event) || (cause !== "drag" && cause !== "scale")) return null;
   return payload;
 }
 
