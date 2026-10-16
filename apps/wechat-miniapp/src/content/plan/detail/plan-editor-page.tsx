@@ -602,7 +602,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     dirty: editing && isDirty,
     confirm: async () => {
       const choice = await Taro.showModal({ title: "离开编辑？",
-        content: "可以保留本机草稿，稍后继续。保留草稿不代表计划已保存。", confirmText: "保留并退出", cancelText: "继续编辑" });
+        content: "可以保留本机草稿，稍后继续。保留草稿不代表计划已保存。", confirmText: "保留退出", cancelText: "继续编辑" });
       return choice.confirm && retainDraft({});
     },
   });

@@ -24,7 +24,12 @@ test("the real keep-and-exit action leaves only after the current draft is durab
     let retains = 0;
     const leave = vm.runInNewContext(ts.transpileModule(declaration + "\nbeforeLeavingEditor;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText,
       { confirmPlanEditorLeave, mutationBusy: { current: false }, editing: true, isDirty: true,
-        Taro: { showModal: async (options: { confirmText: string }) => { assert.equal(options.confirmText, "保留并退出"); return { confirm: scenario !== "cancel" }; } },
+        Taro: { showModal: async (options: { confirmText: string; cancelText: string }) => {
+          // The real WeChat API rejects longer labels before displaying a dialog.
+          assert.ok([...options.confirmText].length <= 4, "WeChat confirmText must fit four characters");
+          assert.ok([...options.cancelText].length <= 4, "WeChat cancelText must fit four characters");
+          return { confirm: scenario !== "cancel" };
+        } },
         retainDraft: () => { retains++; return scenario === "kept"; } });
     assert.equal(await leave(), scenario === "kept");
     assert.equal(retains, scenario === "cancel" ? 0 : 1);
