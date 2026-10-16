@@ -7,24 +7,41 @@ export const COPERNICUS_DEM_DOI = "10.5270/ESA-c5d3d65";
 export const COPERNICUS_DEM_SOURCE_NOTICE = "© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved";
 export const COPERNICUS_DEM_MODIFIED_PRODUCT_NOTICE = "produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved";
 export const COPERNICUS_DEM_LIABILITY_NOTICE = "依法或受委托负责哥白尼计划的组织，不对哥白尼 WorldDEM-30 的任何使用承担责任。";
+export const TERRARIUM_DATASET_URL = "https://registry.opendata.aws/terrain-tiles/";
+export const TERRARIUM_LICENSE_URL = "https://github.com/tilezen/joerd/blob/master/docs/attribution.md";
+export const TERRARIUM_MODIFIED_NOTICE = "Starward对Terrain Tiles进行GCJ-02重投影、双线性取样和合成坡度阴影；这些修改未经USGS或NOAA批准或背书。";
+export const TERRARIUM_LIABILITY_NOTICE = "数据按原样提供，USGS和NOAA不保证其对特定用途的适用性，不承担数据错误或遗漏造成的损失；ETOPO1不能用于导航。所用美国政府原始资料在美国不受版权保护。";
+
+export function terrariumAttribution(contributors: readonly string[]) {
+  if (!contributors.length || contributors.some(source => !/^(srtm|gmted|etopo1)\/[^\s,]+$/u.test(source)))
+    throw new Error("terrain_source_contributors_unsupported");
+  const families = new Set(contributors.map(source => source.split("/")[0]));
+  return ["Terrain Tiles by Mapzen / Linux Foundation.",
+    ...(families.has("srtm") ? ["SRTM data courtesy of the U.S. Geological Survey."] : []),
+    ...(families.has("gmted") ? ["GMTED2010 data courtesy of the U.S. Geological Survey."] : []),
+    ...(families.has("etopo1") ? ["Global ETOPO1 terrain data: DOC/NOAA/NESDIS/NCEI, U.S. Department of Commerce."] : []),
+  ].join(" ");
+}
 
 export interface TerrainSourceRange { offset: number; byteSize: number; sha256: string }
 export interface TerrainPublicationSourceObject {
   tileId: string; url: string; sha256: string; byteSize: number; etag: string | null;
   // Legacy v1 hashes bind the entire downloaded object; v2 binds the exact
   // retrieved byte ranges, never an invented full-object checksum.
-  hashScope?: "RETRIEVED_RANGES";
+  hashScope?: "RETRIEVED_RANGES" | "FULL_FILE";
   ranges?: TerrainSourceRange[];
+  /** Actual provider response metadata, never inferred from the requested area. */
+  contributors?: string[];
 }
 
 export interface TerrainPublication {
-  schemaVersion: "starward-terrain-publication-v1" | "starward-terrain-publication-v2";
+  schemaVersion: "starward-terrain-publication-v1" | "starward-terrain-publication-v2" | "starward-terrain-publication-v3";
   publicationId: string;
   dataset: string;
   sourceProvider: string;
   license: string;
   licenseUrl: string;
-  doi: string;
+  doi: string | null;
   attributionNotice: string;
   modifiedProductNotice: string;
   derivation: string;
@@ -34,7 +51,7 @@ export interface TerrainPublication {
   coordinateSystem: "GCJ02";
   transformVersion: string;
   centerGcj02: { latitude: number; longitude: number };
-  maximumRadiusKm: number;
+  maximumRadiusKm: number | null;
   boundsGcj02: { west: number; south: number; east: number; north: number };
   elevationM: { minimum: number; maximum: number };
   imageStyle?: "ELEVATION_COLOR" | "RELIEF_OVERLAY";
@@ -43,6 +60,7 @@ export interface TerrainPublication {
   image: { file: string; sha256: string; byteSize: number; width: number; height: number };
   sources: TerrainPublicationSourceObject[];
   unavailableSourceTiles: string[];
+  sourceIssues?: { tileId: string; reason: "NOT_FOUND" | "READ_FAILED" | "UNSUPPORTED_SOURCE" }[];
   limitations: string[];
 }
 
@@ -57,24 +75,24 @@ export function validateTerrainPublication(value: TerrainPublication) {
   const bounds = value.boundsGcj02;
   const center = value.centerGcj02;
   const image = value.image;
+  const viewportProduct = value.schemaVersion === "starward-terrain-publication-v3";
   if (
-    !["starward-terrain-publication-v1", "starward-terrain-publication-v2"].includes(value.schemaVersion)
+    !["starward-terrain-publication-v1", "starward-terrain-publication-v2", "starward-terrain-publication-v3"].includes(value.schemaVersion)
     || value.coordinateSystem !== "GCJ02"
     || !nonEmpty(value.publicationId)
     || !nonEmpty(value.dataset)
     || !nonEmpty(value.sourceProvider)
     || !nonEmpty(value.license)
-    || value.licenseUrl !== COPERNICUS_DEM_LICENSE_URL
-    || value.doi !== COPERNICUS_DEM_DOI
-    || value.attributionNotice !== COPERNICUS_DEM_SOURCE_NOTICE
-    || value.modifiedProductNotice !== COPERNICUS_DEM_MODIFIED_PRODUCT_NOTICE
+    || (!viewportProduct && (value.licenseUrl !== COPERNICUS_DEM_LICENSE_URL
+      || value.doi !== COPERNICUS_DEM_DOI || value.attributionNotice !== COPERNICUS_DEM_SOURCE_NOTICE
+      || value.modifiedProductNotice !== COPERNICUS_DEM_MODIFIED_PRODUCT_NOTICE))
     || !nonEmpty(value.derivation)
     || !nonEmpty(value.sourceResolution)
     || !finite(value.derivedResolutionM) || value.derivedResolutionM <= 0
     || !nonEmpty(value.derivedAt) || Number.isNaN(Date.parse(value.derivedAt))
     || !nonEmpty(value.transformVersion)
     || !finite(center?.latitude) || !finite(center?.longitude)
-    || !finite(value.maximumRadiusKm) || value.maximumRadiusKm <= 0
+    || (viewportProduct ? value.maximumRadiusKm !== null : !finite(value.maximumRadiusKm) || value.maximumRadiusKm <= 0)
     || !finite(bounds?.west) || !finite(bounds?.south) || !finite(bounds?.east) || !finite(bounds?.north)
     || bounds.west >= bounds.east || bounds.south >= bounds.north
     || center.longitude < bounds.west || center.longitude > bounds.east
@@ -92,6 +110,20 @@ export function validateTerrainPublication(value: TerrainPublication) {
     || !Array.isArray(value.unavailableSourceTiles)
     || !Array.isArray(value.limitations) || value.limitations.length === 0 || value.limitations.some(limit => !nonEmpty(limit))
   ) throw new Error("terrain_publication_invalid");
+  if (viewportProduct) {
+    if (value.licenseUrl !== TERRARIUM_LICENSE_URL || value.doi !== null
+      || value.modifiedProductNotice !== TERRARIUM_MODIFIED_NOTICE || value.imageStyle !== "RELIEF_OVERLAY"
+      || value.sources.length > 12 || !value.limitations.includes(TERRARIUM_LIABILITY_NOTICE)
+      || !Array.isArray(value.sourceIssues) || value.sourceIssues.length !== value.unavailableSourceTiles.length
+      || value.sourceIssues.some(issue => !value.unavailableSourceTiles.includes(issue.tileId)
+        || !["NOT_FOUND", "READ_FAILED", "UNSUPPORTED_SOURCE"].includes(issue.reason))
+      || value.sources.some(source => source.hashScope !== "FULL_FILE" || source.ranges !== undefined
+        || !nonEmpty(source.etag) || !Array.isArray(source.contributors) || source.contributors.length > 512
+        || !/^terrarium\/\d{1,2}\/\d+\/\d+$/u.test(source.tileId)
+        || source.url !== `https://elevation-tiles-prod.s3.amazonaws.com/${source.tileId}.png`)
+      || value.attributionNotice !== terrariumAttribution(value.sources.flatMap(source => source.contributors!)))
+      throw new Error("terrain_viewport_publication_invalid");
+  }
   if (value.schemaVersion === "starward-terrain-publication-v2" && value.sources.some(source =>
     source.hashScope !== "RETRIEVED_RANGES" || !nonEmpty(source.etag)
     || !Array.isArray(source.ranges) || !source.ranges.length
@@ -128,16 +160,19 @@ export async function terrainPublication() {
 }
 
 export function terrainPublicationSource(publication: TerrainPublication): SourceSummary {
+  const viewportProduct = publication.schemaVersion === "starward-terrain-publication-v3";
+  const sourceUrl = viewportProduct ? TERRARIUM_DATASET_URL : `https://doi.org/${publication.doi}`;
+  const liability = viewportProduct ? TERRARIUM_LIABILITY_NOTICE : COPERNICUS_DEM_LIABILITY_NOTICE;
   return {
     id: `source:${publication.publicationId}`,
     kind: "OPEN_DATA",
     provider: publication.sourceProvider,
     title: publication.dataset,
-    sourceUrl: `https://doi.org/${publication.doi}`,
+    sourceUrl,
     attribution: {
       name: publication.sourceProvider,
-      url: `https://doi.org/${publication.doi}`,
-      statements: [publication.attributionNotice, publication.modifiedProductNotice, COPERNICUS_DEM_LIABILITY_NOTICE],
+      url: sourceUrl,
+      statements: [publication.attributionNotice, publication.modifiedProductNotice, liability],
     },
     license: publication.license,
     licenseUrl: publication.licenseUrl,
@@ -152,7 +187,7 @@ export function terrainPublicationSource(publication: TerrainPublication): Sourc
     limitations: [
       publication.attributionNotice,
       publication.modifiedProductNotice,
-      COPERNICUS_DEM_LIABILITY_NOTICE,
+      liability,
       publication.derivation,
       ...(publication.elevationColorEncoding ? [
         `地形基色的高程色带为 ${publication.elevationColorEncoding.minimumM} 至 ${publication.elevationColorEncoding.maximumM} m，高程超出色带区间时使用端点颜色；明暗还含合成阴影，不能仅凭颜色读取精确海拔或判断现场光照。`,
@@ -168,6 +203,13 @@ export function terrainImageUrl(file: string) {
 }
 
 export function terrainRequestIsCovered(publication: TerrainPublication, input: TerrainOverlayRequest) {
+  if (input.viewportBounds) {
+    const b = input.viewportBounds, p = publication.boundsGcj02, epsilon = 1e-7;
+    return publication.schemaVersion === "starward-terrain-publication-v3"
+      && b.west >= p.west - epsilon && b.east <= p.east + epsilon
+      && b.south >= p.south - epsilon && b.north <= p.north + epsilon;
+  }
+  if (publication.maximumRadiusKm === null) return false;
   const { latitude, longitude } = input.center;
   const latitudeDelta = input.radiusKm / 111.32;
   const longitudeDelta = input.radiusKm / (111.32 * Math.max(0.01, Math.cos(latitude * Math.PI / 180)));
@@ -199,7 +241,7 @@ export function terrainUnavailable(input: TerrainOverlayRequest, reason: string)
   return {
     state: "UNAVAILABLE",
     purpose: input.purpose,
-    requestedRadiusKm: input.radiusKm,
+    requestedRadiusKm: input.radiusKm ?? null,
     effectiveRadiusKm: null,
     centerGcj02: input.center,
     publicationId: null,

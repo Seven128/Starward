@@ -47,7 +47,7 @@ test("abandoned viewports release both existing source slots for the latest zoom
   const terrain = new TerrainService({ directory, renderer: async (request, signal) => {
     active++; peak = Math.max(peak, active);
     try {
-      if (request.radiusKm < 8) {
+      if (request.radiusKm !== undefined && request.radiusKm < 8) {
         signals.push(signal); if (signals.length === 2) entered();
         await new Promise<never>((_, reject) => signal.addEventListener("abort", () => reject(signal.reason), { once: true }));
       }
@@ -71,6 +71,7 @@ test("abandoned viewports release both existing source slots for the latest zoom
 
 function controlledRenderer(): TerrainRenderer {
   return async request => {
+    if (request.viewportBounds) throw new Error("radius_fixture_requires_radius");
     const { elevationColorEncoding, ...base } = await terrainPublication();
     const png = new PNG({ width: 2, height: 2 });
     const map = request.purpose === "MAP";

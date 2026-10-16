@@ -7,7 +7,9 @@ import { useResourceQuery } from "./use-resource-query";
 const downloaded = new Map<string, string>();
 
 export function useTerrainOverlay(input: TerrainOverlayRequest, enabled: boolean, imageEnabled = enabled) {
-  const identity = `${input.purpose}:${input.center.latitude.toFixed(5)}:${input.center.longitude.toFixed(5)}:${input.radiusKm.toFixed(1)}`;
+  const identity = `${input.purpose}:${input.center.latitude.toFixed(7)}:${input.center.longitude.toFixed(7)}:${input.viewportBounds
+    ? [input.viewportBounds.west, input.viewportBounds.south, input.viewportBounds.east, input.viewportBounds.north].map(value => value.toFixed(7)).join(":")
+    : input.radiusKm!.toFixed(1)}`;
   const query = useResourceQuery({
     queryKey: ["terrain-overlay", identity],
     queryFn: (signal) => getTerrainOverlay(input, signal),
@@ -53,6 +55,7 @@ export function useTerrainOverlay(input: TerrainOverlayRequest, enabled: boolean
   }, [shouldReadImage, imageUrl, imageKey, imageAttempt]);
   return useMemo(() => ({
     ...query,
+    identity,
     imagePath: shouldReadImage && imageState.url === imageKey ? imageState.path : null,
     imageError: shouldReadImage && imageState.url === imageKey ? imageState.error : null,
     imagePending: Boolean(shouldReadImage && imageUrl && (imageState.url !== imageKey || (!imageState.path && !imageState.error))),
@@ -68,5 +71,5 @@ export function useTerrainOverlay(input: TerrainOverlayRequest, enabled: boolean
       }
       return query.refetch();
     },
-  }), [shouldReadImage, imageState, imageUrl, imageKey, query]);
+  }), [shouldReadImage, imageState, imageUrl, imageKey, query, identity]);
 }

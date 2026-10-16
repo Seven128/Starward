@@ -1008,7 +1008,7 @@ export class MiniappService {
     });
     const [terrainRead, lightRead] = await Promise.allSettled([
       this.terrain.getPublication(input, signal),
-      this.repository.kind === "postgres" && this.config.darkSkyDatasetVersion !== "UNAVAILABLE"
+      input.radiusKm !== undefined && this.repository.kind === "postgres" && this.config.darkSkyDatasetVersion !== "UNAVAILABLE"
       ? this.repository.listDarkSkyGridCells({
           datasetVersion: this.config.darkSkyDatasetVersion,
           center: { system: "WGS84", latitude: centerWgs84.lat, longitude: centerWgs84.lon },
@@ -1019,6 +1019,7 @@ export class MiniappService {
     signal?.throwIfAborted();
     const publication = terrainRead.status === "fulfilled" ? terrainRead.value : null;
     const terrainCovered = publication !== null && terrainRequestIsCovered(publication, input);
+    const terrainReadFailed = terrainRead.status === "rejected" || Boolean(publication?.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND"));
     const terrainSource = terrainCovered ? terrainPublicationSource(publication) : null;
     const darkSkyCells = lightRead.status === "fulfilled" ? lightRead.value : [];
     const colors: Record<DarkSkyGridCellRecord["productBand"], string> = {
@@ -1041,8 +1042,8 @@ export class MiniappService {
       ...(terrainCovered ? {
       state: publication.validPixelPercent < 99.9 ? "PARTIAL" : "AVAILABLE",
       purpose: input.purpose,
-      requestedRadiusKm: input.radiusKm,
-      effectiveRadiusKm: input.radiusKm,
+      requestedRadiusKm: input.radiusKm ?? null,
+      effectiveRadiusKm: input.radiusKm ?? null,
       centerGcj02: input.center,
       publicationId: publication.publicationId,
       datasetVersion: publication.dataset,
@@ -1056,11 +1057,12 @@ export class MiniappService {
       imageBoundsGcj02: publication.boundsGcj02,
       elevationM: publication.elevationM,
       elevationColorEncoding: publication.elevationColorEncoding ?? null,
-      coverageLabel: `已发布中心周边 ${publication.maximumRadiusKm.toFixed(0)} km，当前查看 ${input.radiusKm.toFixed(1)} km。`,
+      coverageLabel: input.viewportBounds ? `已读取当前地图视窗，有效地形${publication.validPixelPercent}%。`
+        : `已发布中心周边 ${publication.maximumRadiusKm!.toFixed(0)} km，当前查看 ${input.radiusKm!.toFixed(1)} km。`,
       limitations: publication.limitations,
       source: terrainSource,
       } : terrainUnavailable(input, terrainRead.status === "rejected" ? "地形数据读取失败，请重试。" : "当前地区暂无可获取的地形数据。")),
-      ...(terrainRead.status === "rejected" ? { failureCode: "TERRAIN_READ_FAILED" as const } : {}),
+      ...(terrainReadFailed ? { failureCode: "TERRAIN_READ_FAILED" as const } : {}),
       lightPollution: {
         state: lightCells.length ? "PARTIAL" : "UNAVAILABLE",
         ...(lightRead.status === "rejected" ? { failureCode: "LIGHT_READ_FAILED" as const } : {}),
@@ -1072,7 +1074,8 @@ export class MiniappService {
           { label: "相对较高", color: "#E0C998" },
         ] : [],
         source,
-        coverageLabel: lightCells.length ? "年度卫星夜光粗网格，仅作同数据集内相对比较。" : lightRead.status === "rejected" ? "光污染数据读取失败，请重试。" : "当前范围没有已发布的年度卫星夜光网格。",
+        coverageLabel: input.viewportBounds ? "当前请求只读取地形；年度夜光由地图的光污染图层独立读取。"
+          : lightCells.length ? "年度卫星夜光粗网格，仅作同数据集内相对比较。" : lightRead.status === "rejected" ? "光污染数据读取失败，请重试。" : "当前范围没有已发布的年度卫星夜光网格。",
       },
     };
     return envelope(data, data.state === "UNAVAILABLE" && lightCells.length === 0 ? "UNAVAILABLE" : "PARTIAL", [terrainSource, source].filter((item): item is SourceSummary => item !== null),

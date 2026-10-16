@@ -272,11 +272,11 @@ export interface MapLayerData {
 
 export type TerrainProjectionState = "AVAILABLE" | "PARTIAL" | "UNAVAILABLE";
 
-export interface TerrainOverlayRequest {
-  purpose: "MAP" | "SPOT";
-  center: { system: "GCJ02"; latitude: number; longitude: number };
-  radiusKm: number;
-}
+export type TerrainBounds = { west: number; south: number; east: number; north: number };
+type TerrainCenter = { system: "GCJ02"; latitude: number; longitude: number };
+export type TerrainOverlayRequest =
+  | { purpose: "MAP" | "SPOT"; center: TerrainCenter; radiusKm: number; viewportBounds?: never }
+  | { purpose: "MAP"; center: TerrainCenter; viewportBounds: TerrainBounds; radiusKm?: never };
 
 export interface TerrainLightCell {
   id: string;
@@ -305,7 +305,8 @@ export interface TerrainOverlayData {
   /** Missing coverage has no failureCode; failures remain independently recoverable. */
   failureCode?: "TERRAIN_READ_FAILED";
   purpose: TerrainOverlayRequest["purpose"];
-  requestedRadiusKm: number;
+  /** Map viewports have rectangular coverage, not a Spot radius. */
+  requestedRadiusKm: number | null;
   effectiveRadiusKm: number | null;
   centerGcj02: TerrainOverlayRequest["center"];
   publicationId: string | null;

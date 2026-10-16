@@ -1,15 +1,20 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { TERRAIN_RADIUS_TICKS, terrainCropPercent, terrainMapRadiusKm, terrainRadiusForSlider, terrainSliderForRadius, terrainViewportBounds } from "./terrain-geometry";
+import { mercatorY } from "@starward/coordinate-system";
+import { TERRAIN_RADIUS_TICKS, terrainCropPercent, terrainMapViewportBounds, terrainBoundsForNativeRegion, terrainRadiusForSlider, terrainSliderForRadius, terrainViewportBounds } from "./terrain-geometry";
 
-test("Map terrain follows the logical native window and latitude instead of a 750-rpx query span", () => {
-  // At Shenzhen/zoom 12, the logical ground resolution is about 35.3 m/pixel.
-  const radius = terrainMapRadiusKm(12, 22.65, { width: 390, height: 700 });
-  assert.ok(radius > 14.7 && radius < 14.9, "350 logical pixels plus the existing 20% buffer is about 14.8 km");
-  assert.ok(Math.abs(terrainMapRadiusKm(13, 22.65, { width: 390, height: 700 }) * 2 - radius) <= 0.002);
-  assert.equal(terrainMapRadiusKm(12, 22.65, { width: 700, height: 390 }), radius);
-  assert.ok(terrainMapRadiusKm(12, 55, { width: 390, height: 700 }) < radius);
+test("Map terrain covers the whole logical Mercator window beyond the Spot 50 km limit", () => {
+  const center = { latitude: 22.65, longitude: 114.05 }, frame = { width: 390, height: 700 };
+  const bounds = terrainMapViewportBounds(center, 8, frame);
+  assert.ok((bounds.north - bounds.south) * 111.32 > 300, "a zoomed-out phone window cannot be limited to a 100 km square");
+  assert.ok(Math.abs((bounds.east - bounds.west) / 360 - 390 / (256 * 2 ** 8) * 1.2) < 1e-12);
+  assert.ok(Math.abs(mercatorY(bounds.south) - mercatorY(bounds.north) - 700 / (256 * 2 ** 8) * 1.2) < 1e-12);
+  const zoomed = terrainMapViewportBounds(center, 9, frame);
+  assert.ok(Math.abs((bounds.east - bounds.west) / (zoomed.east - zoomed.west) - 2) < 1e-10);
+  const actual = terrainBoundsForNativeRegion({ southwest: { latitude: 20, longitude: 112 }, northeast: { latitude: 25, longitude: 116 } });
+  assert.ok(actual && actual.west < 112 && actual.east > 116 && actual.south < 20 && actual.north > 25);
+  assert.equal(terrainBoundsForNativeRegion({ southwest: { latitude: 20, longitude: 116 }, northeast: { latitude: 25, longitude: 112 } }), null);
 });
 
 test("terrain radius uses the adopted 2-50 km logarithmic scale", () => {

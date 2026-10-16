@@ -957,7 +957,9 @@ export function getTerrainOverlay(input: TerrainOverlayRequest, signal?: AbortSi
     `purpose=${input.purpose}`,
     `centerLat=${input.center.latitude.toFixed(7)}`,
     `centerLng=${input.center.longitude.toFixed(7)}`,
-    `radiusKm=${input.radiusKm.toFixed(1)}`,
+    ...(input.viewportBounds ? [`viewportBounds=${[input.viewportBounds.west, input.viewportBounds.south,
+      input.viewportBounds.east, input.viewportBounds.north].map(value => value.toFixed(7)).join(",")}`]
+      : [`radiusKm=${input.radiusKm!.toFixed(1)}`]),
   ].join("&");
   return requestOperation(`terrain:${input.purpose}`, "terrainOverlayGet", {
     query,

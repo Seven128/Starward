@@ -1,3 +1,4 @@
+export { mercatorY, latitudeForMercatorY, WEB_MERCATOR_MAX_LATITUDE, WEB_MERCATOR_CIRCUMFERENCE_M } from "./mercator.ts";
 export type Wgs84Coordinate = { lat: number; lon: number; system: "WGS84" };
 export type Gcj02Coordinate = { lat: number; lon: number; system: "GCJ-02" };
 

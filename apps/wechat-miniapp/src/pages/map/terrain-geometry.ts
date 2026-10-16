@@ -1,14 +1,30 @@
 export const TERRAIN_RADIUS_TICKS = [2, 5, 10, 20, 50] as const;
 const LOG_RANGE = Math.log(25);
 
-export type TerrainBounds = { west: number; east: number; south: number; north: number };
+/** Geographic extent of the actual logical native Map window. Buffer both
+ * Mercator axes by the existing 20%; Spot's radius is a separate product. */
+export function terrainMapViewportBounds(center: { latitude: number; longitude: number }, zoom: number,
+  frame: { width: number; height: number }): TerrainBounds {
+  const pixels = 256 * 2 ** zoom, halfX = Math.min(0.5, frame.width / pixels * 0.6), halfY = frame.height / pixels * 0.6;
+  const y = mercatorY(center.latitude), x = (center.longitude + 180) / 360;
+  // A wrapped world cannot be one GroundOverlay. Cover the whole longitude
+  // range in that case; never squeeze it into an incorrectly narrow rectangle.
+  const wrapped = x - halfX < 0 || x + halfX > 1;
+  return { west: wrapped ? -180 : (x - halfX) * 360 - 180,
+    east: wrapped ? 180 : (x + halfX) * 360 - 180,
+    south: latitudeForMercatorY(y + halfY), north: latitudeForMercatorY(y - halfY) };
+}
 
-/** Square raster extent for the actual logical native Map window, with the
- * existing 20% loading buffer. rpx design units are not native-map pixels. */
-export function terrainMapRadiusKm(zoom: number, latitude: number, frame: { width: number; height: number }) {
-  const kilometresPerPixel = 156.543033928 * Math.cos(latitude * Math.PI / 180) / 2 ** zoom;
-  const visibleHalfSpanKm = Math.max(frame.width, frame.height) / 2 * kilometresPerPixel;
-  return Math.round(Math.min(50, Math.max(2, visibleHalfSpanKm * 1.2)) * 1000) / 1000;
+export function terrainBoundsForNativeRegion(value: unknown): TerrainBounds | null {
+  const region = value as { southwest?: { latitude?: number; longitude?: number }; northeast?: { latitude?: number; longitude?: number } } | null;
+  const west = region?.southwest?.longitude, south = region?.southwest?.latitude;
+  const east = region?.northeast?.longitude, north = region?.northeast?.latitude;
+  if (![west, south, east, north].every(value => typeof value === "number" && Number.isFinite(value))
+    || west! < -180 || east! > 180 || south! < -85.05112878 || north! > 85.05112878 || west! >= east! || south! >= north!) return null;
+  const middleY = (mercatorY(north!) + mercatorY(south!)) / 2, halfY = (mercatorY(south!) - mercatorY(north!)) * 0.6;
+  const middleX = (west! + east!) / 2, halfX = (east! - west!) * 0.6;
+  return { west: Math.max(-180, middleX - halfX), east: Math.min(180, middleX + halfX),
+    south: latitudeForMercatorY(middleY + halfY), north: latitudeForMercatorY(middleY - halfY) };
 }
 
 export function terrainRadiusForSlider(value: number) {
@@ -36,3 +52,6 @@ export function terrainCropPercent(published: TerrainBounds, requested: TerrainB
     top: -(published.north - requested.north) / requestedHeight * 100,
   };
 }
+import { mercatorY, latitudeForMercatorY } from "@starward/coordinate-system";
+import type { TerrainBounds } from "@starward/miniapp-contracts";
+export type { TerrainBounds } from "@starward/miniapp-contracts";

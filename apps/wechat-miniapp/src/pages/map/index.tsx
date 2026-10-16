@@ -39,14 +39,14 @@ import {
   type DisplayMode,
   type ContributionSubmission,
   type SpotSummary,
-  viewportRadiusKm,
+  type TerrainOverlayData,
 } from "@starward/miniapp-contracts";
 import { NotificationRegion } from "@/components/notification";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { AstronomicalEventModal, type AstronomicalEventModalHandle } from "@/components/astronomical-event-modal";
 import { StatusPanel } from "@/components/status-panel";
 import { SoftButton } from "@/components/soft-button";
-import { createTerrainGroundOverlayCoordinator, type TerrainGroundOverlayResult, type TerrainGroundOverlayContext } from "./terrain-ground-overlay";
+import { createTerrainGroundOverlayCoordinator, terrainGroundOverlayKey, type TerrainGroundOverlayTarget, type TerrainGroundOverlayResult, type TerrainGroundOverlayContext } from "./terrain-ground-overlay";
 import { useNativeMapRecovery } from "./native-map-recovery";
 import { reconcileFavoriteSnapshot, useFavoriteMutation } from "@/hooks/use-favorite-mutation";
 import { useWechatLogin } from "@/hooks/use-wechat-login";
@@ -70,7 +70,7 @@ import { useAppStore, type AnalysisOverlay, type LocationState } from "@/state/a
 import { useContributionHistory } from "@/hooks/use-contribution-history";
 import { useTerrainOverlay } from "@/hooks/use-terrain-overlay";
 import { terrainLayerAvailability } from "./terrain-layer-availability";
-import { terrainMapRadiusKm } from "./terrain-geometry";
+import { terrainMapViewportBounds, terrainBoundsForNativeRegion, type TerrainBounds } from "./terrain-geometry";
 import {
   nearestMapTimeFrameIndex,
   cloudTimeFrameChoices,
@@ -793,12 +793,14 @@ export default function MapPage() {
     // Canonical facts may be published while the retained map is hidden.
     staleTime: 0,
   });
-  const mapTerrainRadiusKm = useMemo(() => {
+  const [measuredTerrainViewport, setMeasuredTerrainViewport] = useState<{ camera: string; bounds: TerrainBounds } | null>(null);
+  const terrainCamera = JSON.stringify([nativeMap.mapId, viewport.center, viewport.zoom, viewport.loadedViewport, panelLayoutVersion, primaryNavigation.pageHeight]);
+  const mapTerrainBounds = useMemo(() => {
+    if (measuredTerrainViewport?.camera === terrainCamera) return measuredTerrainViewport.bounds;
     const frame = panelViewportSize();
-    return frame ? terrainMapRadiusKm(viewport.zoom, viewport.center.latitude,
-      { width: frame.width, height: primaryNavigation.pageHeight ?? frame.height })
-      : Math.min(50, Math.max(2, viewportRadiusKm(viewport.zoom)));
-  }, [viewport.zoom, viewport.center.latitude, primaryNavigation.pageHeight, panelLayoutVersion]);
+    return frame ? terrainMapViewportBounds(viewport.center, viewport.zoom,
+      { width: frame.width, height: primaryNavigation.pageHeight ?? frame.height }) : null;
+  }, [terrainCamera, measuredTerrainViewport, primaryNavigation.pageHeight]);
   const terrain = useTerrainOverlay({
     purpose: "MAP",
     center: {
@@ -806,10 +808,20 @@ export default function MapPage() {
       latitude: viewport.center.latitude,
       longitude: viewport.center.longitude,
     },
-    radiusKm: mapTerrainRadiusKm,
-  }, pageVisible && (terrainEnabled || bottomPresentation === "layer-sheet"), pageVisible && terrainEnabled);
+    // No invented frame: the request remains disabled until a real logical Map
+    // window is available. Its valid centre is only a disabled-hook placeholder.
+    viewportBounds: mapTerrainBounds ?? { west: -180, south: -85.05112878, east: 180, north: 85.05112878 },
+  }, pageVisible && Boolean(mapTerrainBounds) && (terrainEnabled || bottomPresentation === "layer-sheet"), pageVisible && terrainEnabled);
   const [terrainNativeError, setTerrainNativeError] = useState<unknown | null>(null);
+  const [terrainNativeNeedsMapRecovery, setTerrainNativeNeedsMapRecovery] = useState(false);
+  const [terrainInstalledKey, setTerrainInstalledKey] = useState<string | null>(null);
+  const [terrainPresented, setTerrainPresented] = useState<{ mapId: string; key: string; data: TerrainOverlayData } | null>(null);
+  const terrainCandidates = useRef(new globalThis.Map<string, TerrainOverlayData>());
+  useEffect(() => {
+    if (!pageVisible) { setTerrainInstalledKey(null); setTerrainPresented(null); }
+  }, [pageVisible]);
   const [terrainNativeRetry, setTerrainNativeRetry] = useState(0);
+  useEffect(() => { setTerrainNativeError(null); setTerrainNativeNeedsMapRecovery(false); }, [terrain.identity, nativeMap.mapId]);
   const mapTerrainAvailability = terrainLayerAvailability(
     terrain.data?.data.state, terrain.data?.data.failureCode, Boolean(terrain.isError || terrain.refreshError),
   );
@@ -820,11 +832,20 @@ export default function MapPage() {
     notify({ owner: "map-terrain", placement: "floating", tone: "info", title: "地形数据异常",
       body: "地形暂时无法显示，可在图层中重试。", dedupeKey: "map-terrain-failed" });
   }, [pageVisible, terrainEnabled, terrainNativeError, mapTerrainFailed, notify]);
+  const retainedTerrain = useRef<{ mapId: string; target: TerrainGroundOverlayTarget | null }>({ mapId: nativeMap.mapId, target: null });
   const terrainGroundOverlay = useMemo(() => {
+    if (retainedTerrain.current.mapId !== nativeMap.mapId) {
+      retainedTerrain.current = { mapId: nativeMap.mapId, target: null }; terrainCandidates.current.clear();
+    }
     const data = terrain.data?.data;
     const bounds = data?.imageBoundsGcj02;
-    if (!pageVisible || !terrainEnabled || !terrain.imagePath || !bounds || data?.state === "UNAVAILABLE") return null;
-    return {
+    if (!pageVisible || !terrainEnabled || (data?.state === "UNAVAILABLE" && !data.failureCode)) {
+      retainedTerrain.current.target = null; return null;
+    }
+    // Keep the last valid image at its own actual bounds while metadata/PNG
+    // changes. A pending query is not an instruction to remove native terrain.
+    if (!terrain.imagePath || !bounds) return retainedTerrain.current.target;
+    const target = {
       src: terrain.imagePath,
       bounds: {
         southwest: { latitude: bounds.south, longitude: bounds.west },
@@ -833,12 +854,32 @@ export default function MapPage() {
       opacity: data?.imageStyle === "RELIEF_OVERLAY" ? 1 : 0.62,
       zIndex: 0,
     };
-  }, [pageVisible, terrain.data?.data, terrain.imagePath, terrainEnabled]);
+    retainedTerrain.current.target = target;
+    terrainCandidates.current.set(terrainGroundOverlayKey(target)!, data!);
+    // Displayed, in-flight and latest candidate. Superseded candidates cannot
+    // be adopted; the displayed source also has confirmed state below.
+    while (terrainCandidates.current.size > 3) terrainCandidates.current.delete(terrainCandidates.current.keys().next().value!);
+    return target;
+  }, [pageVisible, terrain.data?.data, terrain.imagePath, terrainEnabled, nativeMap.mapId]);
+  const desiredTerrainKey = `${nativeMap.mapId}:${terrainGroundOverlayKey(terrainGroundOverlay)}`;
+  const presentedTerrainData = terrainPresented?.mapId === nativeMap.mapId ? terrainPresented.data : null;
+  const terrainDisclosure = presentedTerrainData ?? (!terrainEnabled ? terrain.data?.data ?? null : null);
+  const mapTerrainLoading = pageVisible && terrainEnabled && !nativeMap.pending && !mapRuntimeError
+    && (terrain.isPending || terrain.isFetching || terrain.imagePending
+      || (!mapTerrainMissing && !mapTerrainFailed && Boolean(terrainGroundOverlay) && terrainInstalledKey !== desiredTerrainKey));
   const terrainOverlayResult = useRef<(result: TerrainGroundOverlayResult) => void>(() => undefined);
-  terrainOverlayResult.current = ({ error, target, isCurrent }) => {
+  terrainOverlayResult.current = ({ error, target, isCurrent, phase, requiresMapRecovery }) => {
     setTerrainNativeError(error);
+    setTerrainNativeNeedsMapRecovery(Boolean(requiresMapRecovery));
+    if (!error) {
+      const key = terrainGroundOverlayKey(target);
+      setTerrainInstalledKey(`${nativeMap.mapId}:${key}`);
+      const data = key ? terrainCandidates.current.get(key) : null;
+      if (!target) setTerrainPresented(null);
+      else if (data) setTerrainPresented({ mapId: nativeMap.mapId, key: key!, data });
+    }
     if (!error) return;
-    if (target) void Taro.getImageInfo({ src: target.src }).catch(imageError => {
+    if (target && phase !== "cleanup") void Taro.getImageInfo({ src: target.src }).catch(imageError => {
       if (nativeMap.isCurrent() && isCurrent()) terrain.reportImageFailure(imageError, target.src);
     });
     setAnnouncement("地形叠加未能显示，可在图层中重试。");
@@ -1650,6 +1691,21 @@ export default function MapPage() {
         ...(region.zoom === undefined ? {} : { zoom: region.zoom }),
         loadedViewport: "viewport:" + String(Date.now()),
       });
+      const camera = useAppStore.getState().viewport;
+      const cameraKey = JSON.stringify([nativeMap.mapId, camera.center, camera.zoom, camera.loadedViewport, panelLayoutVersion, primaryNavigation.pageHeight]);
+      try {
+        const reading = Taro.createMapContext(nativeMap.mapId).getRegion({ success: (actual) => {
+          if (!isCurrentRegion()) return;
+          const currentCamera = useAppStore.getState().viewport;
+          if (JSON.stringify([nativeMap.mapId, currentCamera.center, currentCamera.zoom, currentCamera.loadedViewport,
+            panelLayoutVersion, primaryNavigation.pageHeight]) !== cameraKey) return;
+          const bounds = terrainBoundsForNativeRegion(actual);
+          if (!bounds || region.center.longitude < bounds.west || region.center.longitude > bounds.east
+            || region.center.latitude < bounds.south || region.center.latitude > bounds.north) return;
+          setMeasuredTerrainViewport({ camera: cameraKey, bounds });
+        }, fail: () => undefined });
+        if (reading && typeof reading.then === "function") void reading.catch(() => undefined);
+      } catch { /* The validated camera/frame projection remains available. */ }
       void resolveMapPoint(region.center, "MAP_VIEWPORT", undefined, intent).catch(
         (error) => {
           if (!isCurrentRegion()) return;
@@ -2363,13 +2419,18 @@ export default function MapPage() {
               <View className="map-source-attribution map-source-attribution--weather"><SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /></View> : null}
             {analysisOverlay === "LIGHT" && layerPolygons.length > 0 && bottomPresentation !== "layer-sheet" && scene.data?.data.layer?.source ?
               <View className="map-source-attribution"><SourceAttribution sources={[scene.data.data.layer.source]} /></View> : null}
+            {presentedTerrainData?.source && bottomPresentation === "none" ?
+              <View className="map-source-attribution"><SoftButton variant="ghost" label="查看地形来源与许可" onClick={() => {
+                setTerrainSourceId(presentedTerrainData.source!.id); openLayerSheet();
+              }}><Text className="type-caption">地形 · {presentedTerrainData.source.provider}</Text></SoftButton></View> : null}
           </View>
-          <View className={`map-feedback-column${locationBusy || pageState === "LOADING" || nativeMap.pending ? " map-feedback-column--loading" : locationCandidate || mapRuntimeError || pageState === "ERROR" ? " map-feedback-column--recovery" : ""}`}>
+          <View className={`map-feedback-column${locationBusy || pageState === "LOADING" || nativeMap.pending || mapTerrainLoading ? " map-feedback-column--loading" : locationCandidate || mapRuntimeError || pageState === "ERROR" ? " map-feedback-column--recovery" : ""}`}>
             <NotificationRegion owner="map" placement="inline" actionHandlers={{ "map-context-region-failed": () => void refreshMap(), "map-location-request": () => void locateMap() }} />
             {locationBusy ? <StatusPanel state="LOADING" detail="正在获取本次位置" recoveryLabel="取消" onRecover={cancelLocation} /> : null}
             {locationCandidate && locationCandidateCurrent(locationCandidate) ? <SoftButton label="移动到本次位置" onClick={() => void moveToLocation()} /> : null}
             {nativeMap.pending ? <StatusPanel state="LOADING" detail="正在重新加载地图" /> :
               mapRuntimeError ? <SoftButton label="重新加载地图" onClick={nativeMap.retry} /> : null}
+            {mapTerrainLoading ? <StatusPanel state="LOADING" detail="正在加载地形" /> : null}
             {mapDataStale && !layerSheetOwnsSceneFailure ? <StatusPanel
               state="STALE"
               detail={spots.length > 0 ? "更新失败，暂时显示上次结果。" : "上次结果没有观星点；当前资料暂时无法更新。"}
@@ -2377,6 +2438,7 @@ export default function MapPage() {
               onRecover={() => void refreshMap()}
             /> : null}
             {pageState !== "EMPTY" &&
+            !(pageState === "LOADING" && mapTerrainLoading) &&
             !(pageState === "LOADING" && bottomPresentation === "spot-panel" && bootstrapReplacementBlocked && visibleSpotContextAttempt) &&
             pageState !== "READY" &&
             pageState !== "PARTIAL" &&
@@ -2597,21 +2659,22 @@ export default function MapPage() {
                     <View className="map-layer-sheet__terrain-check" aria-hidden>{terrainEnabled && !mapTerrainMissing ? <SemanticIcon name="check" /> : null}</View>
                   </Button>
                   {terrainEnabled || mapTerrainMissing ? <Text className="map-layer-sheet__terrain-state">
-                    {terrain.isPending || terrain.imagePending ? "正在加载地形…" : mapTerrainFailed ? "地形暂时无法显示。" : mapTerrainMissing ? "当前地区暂无地形数据。" : terrain.data?.data.coverageLabel}
+                    {mapTerrainLoading ? "正在加载地形…" : mapTerrainFailed ? "部分或全部地形暂时无法显示。" : mapTerrainMissing ? "当前地区暂无地形数据。" : terrain.data?.data.coverageLabel}
                   </Text> : null}
-                  {mapTerrainFailed ? <SoftButton label="重新读取地形" onClick={() => {
+                  {mapTerrainFailed ? <SoftButton label={terrainNativeNeedsMapRecovery ? "重新加载地图" : "重新读取地形"} onClick={() => {
+                    if (terrainNativeNeedsMapRecovery) { nativeMap.retry(); return; }
                     setTerrainNativeRetry(value => value + 1);
                     if (terrain.isError || terrain.refreshError || terrain.imageError || terrain.data?.data.failureCode) void terrain.refetch();
-                  }}>重试</SoftButton> : null}
+                  }}>{terrainNativeNeedsMapRecovery ? "重新加载地图" : "重试"}</SoftButton> : null}
                 </View>
-                {!mapTerrainMissing && terrain.data?.data.source ? <View data-control="map-terrain-source">
+                {terrainDisclosure?.source ? <View data-control="map-terrain-source">
                   <SoftButton label="展开或收起地形来源与许可"
-                    onClick={() => setTerrainSourceId(value => value === terrain.data!.data.source!.id ? null : terrain.data!.data.source!.id)}>
-                    {terrainSourceId === terrain.data.data.source.id ? "收起地形来源与许可" : "地形来源与许可"}
+                    onClick={() => setTerrainSourceId(value => value === terrainDisclosure.source!.id ? null : terrainDisclosure.source!.id)}>
+                    {terrainSourceId === terrainDisclosure.source.id ? "收起地形来源与许可" : "地形来源与许可"}
                   </SoftButton>
-                  {terrainSourceId === terrain.data.data.source.id ? <>
-                    <Text className="type-caption">数据版本：{terrain.data.data.datasetVersion}</Text>
-                    <Provenance source={terrain.data.data.source} showKind={false} />
+                  {terrainSourceId === terrainDisclosure.source.id ? <>
+                    <Text className="type-caption">{presentedTerrainData ? "当前显示的地形" : "未开启地形"} · 数据版本：{terrainDisclosure.datasetVersion}</Text>
+                    <Provenance source={terrainDisclosure.source} showKind={false} />
                   </> : null}
                 </View> : null}
                 {visibleLayer === "TOTAL_CLOUD" ? (

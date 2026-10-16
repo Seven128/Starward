@@ -1,18 +1,4 @@
-const WEB_MERCATOR_MAX_LATITUDE = 85.05112878;
-
-function mercatorY(latitude: number) {
-  const bounded = Math.max(
-    -WEB_MERCATOR_MAX_LATITUDE,
-    Math.min(WEB_MERCATOR_MAX_LATITUDE, latitude),
-  );
-  const sin = Math.sin((bounded * Math.PI) / 180);
-  return 0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI);
-}
-
-function latitudeForMercatorY(value: number) {
-  const y = Math.max(0, Math.min(1, value));
-  return (Math.atan(Math.sinh(Math.PI * (1 - 2 * y))) * 180) / Math.PI;
-}
+import { mercatorY, latitudeForMercatorY } from "@starward/coordinate-system";
 
 export function cameraCenterForVisibleMapTarget(
   point: { latitude: number; longitude: number },

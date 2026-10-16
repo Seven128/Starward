@@ -17,6 +17,7 @@ import {
 } from "@nestjs/common";
 import type { FastifyReply } from "fastify";
 import { celestialObjectPosition } from "./celestial-object-position.ts";
+import { validateTerrainRequest } from "./terrain-request.ts";
 import {
   assertFilterState,
   DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION,
@@ -263,13 +264,20 @@ export class MiniappController {
     @Query("centerLng") centerLng?: string,
     @Query("radiusKm") radiusKm?: string,
     @Res({ passthrough: true }) reply?: FastifyReply,
+    @Query("viewportBounds") viewportBounds?: string,
   ) {
     const latitude = Number(centerLat);
     const longitude = Number(centerLng);
     const radius = Number(radiusKm);
-    if ((purpose !== "MAP" && purpose !== "SPOT") || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180 || !Number.isFinite(radius) || radius < 2 || radius > 50)
+    if (purpose !== "MAP" && purpose !== "SPOT")
       throw new Error("terrain_overlay_request_invalid");
-    const request: TerrainOverlayRequest = { purpose, center: { system: "GCJ02", latitude, longitude }, radiusKm: radius };
+    const parts = viewportBounds?.split(",");
+    if (parts && (purpose !== "MAP" || radiusKm !== undefined || parts.length !== 4 || parts.some(part => !part.trim())))
+      throw new Error("terrain_overlay_request_invalid");
+    const request: TerrainOverlayRequest = parts ? { purpose: "MAP", center: { system: "GCJ02", latitude, longitude },
+      viewportBounds: { west: Number(parts[0]), south: Number(parts[1]), east: Number(parts[2]), north: Number(parts[3]) } }
+      : { purpose, center: { system: "GCJ02", latitude, longitude }, radiusKm: radius };
+    validateTerrainRequest(request);
     return withTerrainRead(reply, signal => this.service.getTerrainOverlay(request, signal));
   }
 

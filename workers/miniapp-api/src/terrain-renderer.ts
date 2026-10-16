@@ -4,49 +4,22 @@ import { fromCustomClient } from "geotiff";
 import { PNG } from "pngjs";
 import { terrainReliefRgba } from "./terrain-relief.ts";
 import { gcj02ToWgs84 } from "@starward/coordinate-system";
-import type { TerrainElevationColorEncoding, TerrainOverlayRequest } from "@starward/miniapp-contracts";
+import type { TerrainElevationColorEncoding } from "@starward/miniapp-contracts";
+import { terrainBounds, terrainRenderVersion, terrainRequestKey, TERRAIN_LEGACY_MAP_RENDER_VERSION,
+  type RenderedTerrain, type TerrainRenderRequest } from "./terrain-request.ts";
+export { normalizeTerrainRequest, terrainBounds, terrainRequestKey, TERRAIN_RENDER_VERSION,
+  TERRAIN_LEGACY_MAP_RENDER_VERSION, TERRAIN_MAP_RENDER_VERSION,
+  type RenderedTerrain, type TerrainRenderer, type TerrainRenderRequest } from "./terrain-request.ts";
 import { COPERNICUS_DEM_DOI, COPERNICUS_DEM_LICENSE_URL, COPERNICUS_DEM_SOURCE_NOTICE,
   COPERNICUS_DEM_MODIFIED_PRODUCT_NOTICE, COPERNICUS_DEM_LIABILITY_NOTICE,
   validateTerrainPublication, type TerrainPublication, type TerrainPublicationSourceObject,
   type TerrainSourceRange } from "./terrain-publication.ts";
 
-export const TERRAIN_RENDER_VERSION = "glo30-cn-v1";
-export const TERRAIN_LEGACY_MAP_RENDER_VERSION = "glo30-cn-v2-map";
-export const TERRAIN_MAP_RENDER_VERSION = "glo30-cn-v3-map";
 const size = 512;
 const sourceRoot = "https://copernicus-dem-30m.s3.amazonaws.com";
 const hash = (data: string | Buffer) => createHash("sha256").update(data).digest("hex");
 const clamp = (value: number, low: number, high: number) => Math.max(low, Math.min(high, value));
 let encodingPromise: Promise<Omit<TerrainElevationColorEncoding, "imageSha256">> | undefined;
-
-export interface RenderedTerrain { publication: TerrainPublication; bytes: Buffer }
-/** Only the asset owner may recover a previous immutable Map representation. */
-export type TerrainRenderRequest = TerrainOverlayRequest & { renderVersion?: typeof TERRAIN_LEGACY_MAP_RENDER_VERSION };
-export type TerrainRenderer = (input: TerrainRenderRequest, signal: AbortSignal) => Promise<RenderedTerrain | null>;
-
-export function normalizeTerrainRequest(input: TerrainRenderRequest): TerrainRenderRequest {
-  return { ...input, center: { system: "GCJ02", latitude: Math.round(input.center.latitude * 1e7) / 1e7,
-    longitude: Math.round(input.center.longitude * 1e7) / 1e7 },
-    // Round the source extent outward; never lose a requested sub-metre edge.
-    radiusKm: Math.ceil(input.radiusKm * 1000 - 1e-8) / 1000 };
-}
-
-export function terrainBounds(input: TerrainOverlayRequest) {
-  const latDelta = input.radiusKm / 111.32;
-  const lonDelta = latDelta / Math.cos(input.center.latitude * Math.PI / 180);
-  return { west: input.center.longitude - lonDelta, south: input.center.latitude - latDelta,
-    east: input.center.longitude + lonDelta, north: input.center.latitude + latDelta };
-}
-
-function terrainRenderVersion(input: TerrainRenderRequest) {
-  return input.purpose === "MAP" ? input.renderVersion ?? TERRAIN_MAP_RENDER_VERSION : TERRAIN_RENDER_VERSION;
-}
-
-export function terrainRequestKey(input: TerrainRenderRequest) {
-  const canonical = normalizeTerrainRequest(input);
-  const version = terrainRenderVersion(canonical);
-  return `${version}-${Math.round(canonical.center.latitude * 1e7)}-${Math.round(canonical.center.longitude * 1e7)}-${Math.round(canonical.radiusKm * 1000)}`;
-}
 
 /** Fixed public source; callers cannot supply an upstream URL. Range proofs
  * bind the bytes actually consumed and the S3 object ETag, not a full-file hash. */
@@ -108,6 +81,7 @@ async function readTile(lat: number, lon: number, bounds: number[], resolution: 
 /** One licensed DSM sampling path. Spot retains elevation colour; the Map
  * consumes a separate relief overlay suitable for compositing on a basemap. */
 export async function renderTerrain(input: TerrainRenderRequest, signal: AbortSignal, transport: typeof fetch = fetch): Promise<RenderedTerrain | null> {
+  if (input.viewportBounds) throw new Error("terrain_radius_renderer_requires_radius");
   const bounds = terrainBounds(input), count = size * size;
   const latitudes = new Float64Array(count), longitudes = new Float64Array(count);
   const elevations = new Float32Array(count).fill(Number.NaN);

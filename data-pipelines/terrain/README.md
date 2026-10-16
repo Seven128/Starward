@@ -1,4 +1,4 @@
-# Copernicus DEM terrain publication
+# Terrain publications
 
 `publish_copernicus_dem.py` turns immutable public Copernicus DEM GLO-30 COGs
 into a bounded GCJ-02 registered RGBA hillshade for the Mini Program. The
@@ -25,22 +25,61 @@ both whenever the PNG is distributed. Copernicus DEM is a digital surface
 model acquired during 2011–2015, so buildings, infrastructure and vegetation
 may be represented; it is not a bare-earth terrain model.
 
-Both viewport terrain and spot terrain consume the same publication source.
-They use different presentation products: Spot retains elevation colour and its
-published legend; the main Map derives a `RELIEF_OVERLAY` with Horn gradients
+Map and Spot share `TerrainService` lifecycle, request/asset identity and bounded
+execution. Spot retains this Copernicus elevation-colour publication and its
+2–50 km radius/legend; legacy radius-based Map URLs remain readable. The main
+Map requests an explicit viewport rectangle and derives a `RELIEF_OVERLAY` with Horn gradients
 and Igor slope/aspect shading, following the
 [GDAL hillshade documentation](https://gdal.org/en/stable/programs/gdal_raster_hillshade.html).
-This small TypeScript rendering kernel reuses the existing GeoTIFF.js/pngjs
-pipeline instead of adding a GDAL deployment dependency. Map relief leaves level
+This small TypeScript rendering kernel reuses the existing pngjs pipeline
+instead of adding a GDAL deployment dependency. Map relief leaves level
 ground transparent and marks missing source samples with grey hatching; visual
 vertical emphasis does not alter the numeric elevation range or represent live
 lighting. It has no elevation-colour descriptor. The client derives its extent
 from actual logical Map dimensions, latitude and zoom, with the existing loading
 buffer; a design width in rpx is not a native-map pixel count.
-The Map layer sheet offers its full source notice in a scrollable disclosure;
-the spot terrain view shows its own source directly. The fixed Map controls
-must remain outside the long notice. Use the WorldDEM-30 notice from this
-publication, not a generic Copernicus Sentinel modification notice.
+The Map layer sheet offers its own full source notice in a scrollable disclosure;
+the spot terrain view shows its Copernicus source directly. The fixed Map controls
+must remain outside the long notice. Copernicus products use the WorldDEM-30
+notice, not a generic Sentinel notice or the separate Map source's attribution.
+
+The viewport producer `terrain-viewport-renderer.ts` uses the mature
+[AWS Terrain Tiles Terrarium pyramid](https://registry.opendata.aws/terrain-tiles/).
+The [provider format](https://github.com/tilezen/joerd/blob/master/docs/formats.md)
+encodes elevation as `R*256+G+B/256-32768`. Every contributing 256px PNG is
+dimension/CRC checked and bound by its complete SHA-256, ETag and actual
+`x-amz-meta-x-imagery-sources` response header. Only the currently verified
+SRTM/GMTED/ETOPO1 families are accepted; unknown attribution fails that tile
+instead of inheriting Copernicus rights. Preserve the
+[individual source notices](https://github.com/tilezen/joerd/blob/master/docs/attribution.md),
+Mapzen credit, modification description and USGS/NOAA limitations. This does not
+certify worldwide/commercial entitlement or deployed reachability. Historical
+sampling, buildings/vegetation, coastal/resampling artifacts and ETOPO1
+bathymetry remain disclosed; negative heights are not silently flattened.
+
+`TerrainOverlayRequest` distinguishes this Map rectangle from the radius product;
+requested/effective radius is null for a viewport. The bounds participate in the
+query, cache and reconstructible `terrarium-cn-v1-map` immutable filename.
+GCJ-02 output rows follow Web Mercator, each sample transforms to WGS84, and
+bilinear interpolation crosses source-tile edges. Horn gradients use separate
+horizontal/vertical physical spacing at each row. Pyramid scale is chosen to
+fit the existing 12-tile budget, capped at z12; zooming closer does not invent
+finer SRTM detail. Only the existing domestic technical bounds are processed;
+outside pixels are transparent and explicitly unsupported. A viewport request
+does not also scan an enlarged annual-nightlight grid: Map LIGHT keeps its
+independent existing query owner.
+
+The native Map keeps a valid image at its true bounds during metadata/download.
+Two fixed overlay ids allow a new image and extent to be acknowledged before
+the old id is retired. Failed cleanup prevents reuse; timed-out commands retain
+their id until the actual callback settles, and late obsolete adds are cleaned
+instead of adopted. An id that cannot be safely retired offers the existing
+new-Map recovery rather than looping ordinary retries. Displayed source,
+resolution and limitations advance only with the confirmed image and stay
+paired with retained imagery. Hidden cleanup clears presentation acknowledgment
+so resuming still waits for native confirmation. Metadata, PNG and native acknowledgment share the terrain
+loading state. Point-query loading is separate. Local API/PNG checks do not
+establish actual Android viewport continuity or readability.
 
 ```powershell
 python data-pipelines/terrain/publish_copernicus_dem.py `
@@ -73,7 +112,7 @@ not depend on a client fetching the provider or on a workstation VPN. The
 current local data evidence does not certify that deployment prerequisite or
 native Map rendering.
 
-Dynamic v2 manifests explicitly bind the retrieved range offsets, lengths and
+Dynamic Copernicus v2 manifests explicitly bind the retrieved range offsets, lengths and
 SHA-256 values plus the source object's ETag. Their source checksum is a digest
 of the range proof, **not** a full-object hash. v1 full-file provenance remains
 unchanged. Generated 512px RGBA rasters retain transparent missing pixels,
@@ -89,12 +128,24 @@ an in-region old dynamic asset must not be replaced by a bundled or new Map
 publication. PNG transparency alone is not a coverage mask for a relief image;
 valid-pixel metadata and hatching retain the missing-data meaning.
 
+Terrarium v3 manifests bind full source PNGs and actual contributors, with a
+separate license/source family rather than a Copernicus DOI. v1/v2 and old Map
+v3 image identities retain their original producer and byte validation.
+
 Runtime work is limited to two active derivations and 24 MiB of retrieved source
 bytes per derivation. A workspace-scoped regenerable temp cache holds at most
 128 MiB of PNGs/manifests; successful complete-source results are reused for
-24 hours, partial/source-missing results for one minute. Immutable asset URLs
+24 hours, genuinely missing-source results for one minute. A partial transient
+read/unsupported-source failure retains valid pixels but expires immediately,
+reports its independent failure code and permits bounded recovery. The Map
+source owner also retains at most 16 completed Terrarium tiles for 24 hours;
+pending/failed tiles are not cached. Immutable asset URLs
 include the content hash and geographic request identity, allowing regeneration
 after eviction without serving changed bytes under an old URL. The terrain-only
+source owner keeps a per-image publication proof so an already-published partial
+PNG remains readable after fresh metadata recovers to a different full image.
+Metadata freshness and immutable-asset retrieval are separate responsibilities.
+The terrain-only
 client/server limits are 18/16 seconds. A cold request returned a read failure
 near the former 8.5-second window; the wider terrain-only window accommodates
 the observed source work while ordinary DTO timeouts stay unchanged.
