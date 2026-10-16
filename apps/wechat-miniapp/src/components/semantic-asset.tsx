@@ -190,11 +190,17 @@ export function SemanticIcon({
 }) {
   const mode = useAppStore((state) => state.mode);
   if (mode === "DAY") {
-    if (presentation === "forecast" && (name === "temperature" || name === "wind" || name === "droplet" || name === "warning" || name === "conditions")) {
+    const forecastKind = presentation === "forecast" && (name === "temperature" || name === "wind" || name === "droplet" || name === "warning" || name === "conditions")
+      ? name === "conditions" ? "low-cloud" : name : null;
+    // Keep icon-only controls local; these deferred ornaments have text peers.
+    const mainKind = state === "default" && !packageAssetPrefix() && (name === "images" || name === "plan-suv" || name === "clock")
+      ? name : null;
+    const packagedKind = forecastKind ?? mainKind;
+    if (packagedKind) {
       // Taro discovers native bindings from explicit props; JSX spreads lose them.
-      return <weather-icon
-        kind={name === "conditions" ? "low-cloud" : name}
-        class={`semantic-icon semantic-icon--b${name === "conditions" ? "" : " semantic-icon--forecast"} semantic-icon--${name} ${className}`}
+      return <packaged-icon
+        kind={packagedKind}
+        class={`semantic-icon semantic-icon--b${forecastKind && name !== "conditions" ? " semantic-icon--forecast" : ""} semantic-icon--${name} ${className}`}
         aria-hidden={decorative ? true : undefined}
         aria-role={decorative ? undefined : "img"}
         aria-label={decorative ? undefined : label ?? name}

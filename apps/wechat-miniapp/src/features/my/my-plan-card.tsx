@@ -1,4 +1,4 @@
-import { Button, Image, Text, View, type ButtonProps, type CommonEvent } from "@tarojs/components";
+import { Button, Text, View, type ButtonProps, type CommonEvent } from "@tarojs/components";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import type { ObservationPlan, SpotSummary } from "@starward/miniapp-contracts";
@@ -96,7 +96,7 @@ export function MyPlanCard({ plans, spots, now, loading, unavailable, guest = fa
     <View className="my-plan-card__touch" aria-hidden style={{ "--touch-x": `${press.x}%`, "--touch-y": `${press.y}%` } as CSSProperties} />
     <Button {...buttonFeedback} className="my-plan-card__header focus-ring" onClick={onOpenAll}
       aria-label="打开全部观星计划" data-control="my-plan-entry" data-od-id="my-plan-entry">
-      <View className="my-plan-card__title">{mode === "DAY" ? <Image src="/assets/b-icons/plan-suv--day--default.png" className="my-plan-card__suv" mode="aspectFit" aria-hidden /> : <SemanticIcon name="star" className="my-plan-card__suv" />}<Text>观星计划</Text></View>
+      <View className="my-plan-card__title"><SemanticIcon name={mode === "DAY" ? "plan-suv" : "star"} className="my-plan-card__suv" /><Text>观星计划</Text></View>
       {!guest ? <View className="my-plan-card__header-chevron" aria-hidden><SemanticIcon name="plan-header-chevron" /></View> : null}
     </Button>
     {guest ? <View className="my-plan-card__guest"><Text>登录后查看观星计划</Text><SoftButton label="登录" onClick={onOpenAll} /></View> : null}

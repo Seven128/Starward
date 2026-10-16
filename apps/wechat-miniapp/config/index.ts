@@ -69,17 +69,17 @@ const bIconFiles = {
     "four-point-star--day--default.png",
     "favorite-star--day--default.png", "favorite-star--day--selected.png",
     "favorite-trail--day--default.png", "favorite-satellite--day--default.png",
-    "images--day--default.png", "info--day--default.png", "layers--day--default.png",
+    "info--day--default.png", "layers--day--default.png",
     "bulb--day--default.png",
     // Native Map tabs use the dedicated weapp-tabbar files above. The runtime
     // icon adapter has no map subject, so copying these larger twins is unused.
     "location--day--default.png", "meteor--day--default.png", "moon--day--default.png",
-    "pencil--day--default.png", "plan-suv--day--default.png",
+    "pencil--day--default.png",
     "search--day--default.png", "settings--day--default.png",
     "share--day--default.png", "spot-marker--day--default.png",
     "spot-marker--day--draft.png", "spot-marker--day--pending.png",
     "spot-marker--day--selected.png", "sun--day--default.png",
-    "terrain--day--default.png", "clock--day--default.png",
+    "terrain--day--default.png",
     "telescope--day--default.png",
     "more--day--default.png",
     "parking--day--default.png", "restroom--day--default.png",
@@ -110,6 +110,7 @@ const bIconFiles = {
     "wifi-off--day--default.png",
   ],
   spot: [
+    "clock--day--default.png",
     "warning--day--default.png",
     "temperature--day--default.png", "wind--day--default.png", "droplet--day--default.png",
     "bulb--day--default.png", "cloud--day--default.png", "parking--day--default.png",

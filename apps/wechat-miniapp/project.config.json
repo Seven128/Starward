@@ -10,7 +10,7 @@
     "urlCheck": false,
     "es6": true,
     "enhance": true,
-    "postcss": true,
+    "postcss": false,
     "minified": true,
     "compileHotReLoad": false,
     "useCompilerPlugins": [

@@ -1,2 +1,0 @@
-:host { display: inline-block; vertical-align: middle; }
-.weather-icon { display: block; width: 100%; height: 100%; }

@@ -38,7 +38,8 @@ function harness() {
     useEffect: effect, useLayoutEffect: effect,
   } : name === "@tarojs/taro" ? { __esModule: true, default: taro, useDidHide: (callback: () => void) => { hidden = callback; }, useDidShow: (callback: () => void) => { shown = callback; } }
     : name === "@tarojs/components" ? { Button: "Button", View: "View", Text: "Text", Image: "Image" }
-    : name === "./plan-entry" ? planEntry : name.includes("app-store") ? { useAppStore: (select: (state: any) => unknown) => select(store) } : {},
+    : name === "./plan-entry" ? planEntry : name.endsWith("semantic-asset") ? { SemanticIcon: "SemanticIcon" }
+    : name.includes("app-store") ? { useAppStore: (select: (state: any) => unknown) => select(store) } : {},
   });
   const props = { plans: [] as any[], spots: [], now: new Date("2026-10-10T01:00:00Z"), loading: false, unavailable: false,
     onOpen: () => { opened++; }, onOpenAll: () => { opened++; } };
@@ -56,6 +57,16 @@ function harness() {
 const touch = (clientX = 110, clientY = 235, identifier = 7) => ({ touches: [{ identifier, clientX, clientY }] });
 const light = (card: any) => card.props.children.find((child: any) => child?.props?.className === "my-plan-card__touch");
 const active = (h: ReturnType<typeof harness>) => h.render().props.className.split(" ").includes("my-plan-card--pressed") ? "true" : "false";
+
+test("My plan header resolves its adopted car through the packaged icon owner", () => {
+  const h = harness();
+  const header = h.render().props.children.find((child: any) => child?.props?.className === "my-plan-card__header focus-ring");
+  const icon = header.props.children[0].props.children[0];
+  assert.equal(icon.type, "SemanticIcon");
+  assert.equal(icon.props.name, "plan-suv");
+  assert.equal(icon.props.className, "my-plan-card__suv");
+  h.unmount();
+});
 
 test("adopted press places the rendered highlight at the actual touch point without opening a plan", () => {
   const h = harness(), card = h.render();

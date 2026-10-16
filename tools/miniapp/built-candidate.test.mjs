@@ -69,7 +69,7 @@ test("runtime dependency licenses remain bundled after moving out of the main pa
 
 test("native weather templates retain role, layout and accessibility bindings", () => {
   const templates = readFileSync(path.join(bundleRoot, "base.wxml"), "utf8");
-  const tags = templates.match(/<weather-icon\s[^>]*>/gu) ?? [];
+  const tags = templates.match(/<packaged-icon\s[^>]*>/gu) ?? [];
   assert.ok(tags.length > 0, "native weather tags must exist in the compiled template");
   for (const tag of tags) {
     for (const binding of [
@@ -79,17 +79,23 @@ test("native weather templates retain role, layout and accessibility bindings", 
   }
 });
 
-test("Map async weather component and original images share the spot package", () => {
-  const config = JSON.parse(readFileSync(path.join(bundleRoot, "pages/map/index.json"), "utf8"));
-  assert.equal(config.usingComponents["weather-icon"], "../../spot/native/weather-icon/index");
-  assert.equal(config.componentPlaceholder["weather-icon"], "view");
+test("async bitmap consumers share original spot-package assets", () => {
+  for (const page of ["pages/map", "pages/my"]) {
+    const config = JSON.parse(readFileSync(path.join(bundleRoot, `${page}/index.json`), "utf8"));
+    assert.equal(config.usingComponents["packaged-icon"], "../../spot/native/packaged-icon/index");
+    assert.equal(config.componentPlaceholder["packaged-icon"], "view");
+  }
   for (const extension of ["js", "json", "wxml", "wxss"])
-    assert.equal(existsSync(path.join(bundleRoot, `spot/native/weather-icon/index.${extension}`)), true);
+    assert.equal(existsSync(path.join(bundleRoot, `spot/native/packaged-icon/index.${extension}`)), true);
   const originals = path.resolve("docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256/platform/weapp-runtime/assets");
-  for (const name of ["temperature", "wind", "droplet", "warning", "low-cloud"]) {
+  for (const name of ["temperature", "wind", "droplet", "warning", "low-cloud", "images", "plan-suv", "clock"]) {
     const filename = `${name}--day--default.png`;
     assert.deepEqual(readFileSync(path.join(bundleRoot, "spot/assets/b-icons", filename)), readFileSync(path.join(originals, filename)));
   }
+  for (const name of ["images", "plan-suv", "clock"])
+    assert.equal(existsSync(path.join(bundleRoot, `assets/b-icons/${name}--day--default.png`)), false);
+  assert.deepEqual(readFileSync(path.join(bundleRoot, "assets/b-icons/settings--day--default.png")),
+    readFileSync(path.join(originals, "settings--day--default.png")));
   for (const prefix of ["spot", "sky"])
     assert.equal(existsSync(path.join(bundleRoot, prefix, "assets/b-icons/horizon--day--default.png")), true);
 });
