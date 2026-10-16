@@ -1051,6 +1051,7 @@ export class MiniappService {
       derivedAt: publication.derivedAt,
       coordinateTransformVersion: publication.transformVersion,
       imageUrl: `/v2/terrain/assets/${encodeURIComponent(publication.image.file)}`,
+        imageStyle: publication.imageStyle ?? "ELEVATION_COLOR",
       imageBoundsGcj02: publication.boundsGcj02,
       elevationM: publication.elevationM,
       elevationColorEncoding: publication.elevationColorEncoding ?? null,

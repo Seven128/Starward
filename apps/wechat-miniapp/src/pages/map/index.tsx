@@ -70,6 +70,7 @@ import { useAppStore, type AnalysisOverlay, type LocationState } from "@/state/a
 import { useContributionHistory } from "@/hooks/use-contribution-history";
 import { useTerrainOverlay } from "@/hooks/use-terrain-overlay";
 import { terrainLayerAvailability } from "./terrain-layer-availability";
+import { terrainMapRadiusKm } from "./terrain-geometry";
 import {
   nearestMapTimeFrameIndex,
   cloudTimeFrameChoices,
@@ -792,7 +793,12 @@ export default function MapPage() {
     // Canonical facts may be published while the retained map is hidden.
     staleTime: 0,
   });
-  const mapTerrainRadiusKm = Math.min(50, Math.max(2, viewportRadiusKm(viewport.zoom)));
+  const mapTerrainRadiusKm = useMemo(() => {
+    const frame = panelViewportSize();
+    return frame ? terrainMapRadiusKm(viewport.zoom, viewport.center.latitude,
+      { width: frame.width, height: primaryNavigation.pageHeight ?? frame.height })
+      : Math.min(50, Math.max(2, viewportRadiusKm(viewport.zoom)));
+  }, [viewport.zoom, viewport.center.latitude, primaryNavigation.pageHeight, panelLayoutVersion]);
   const terrain = useTerrainOverlay({
     purpose: "MAP",
     center: {
@@ -824,7 +830,7 @@ export default function MapPage() {
         southwest: { latitude: bounds.south, longitude: bounds.west },
         northeast: { latitude: bounds.north, longitude: bounds.east },
       },
-      opacity: 0.62,
+      opacity: data?.imageStyle === "RELIEF_OVERLAY" ? 1 : 0.62,
       zIndex: 0,
     };
   }, [pageVisible, terrain.data?.data, terrain.imagePath, terrainEnabled]);
@@ -978,7 +984,7 @@ export default function MapPage() {
   const ordinaryMapNotice = !pageVisible || mapRuntimeError || mapContextFailed || mapSceneFailed || scene.isPending || scene.isFetching
     ? null
     : bottomPresentation === "layer-sheet" && visibleLayerUnavailable
-      ? "当前范围暂无图层覆盖"
+      ? visibleLayer === "LIGHT" ? "当前范围暂无光污染数据" : "当前范围暂无云量预报"
       : bottomPresentation === "none" && pageState === "EMPTY" && layerPolygons.length === 0
         ? "当前区域暂无观星点" : null;
   useEffect(() => {

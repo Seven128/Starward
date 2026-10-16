@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { TERRAIN_RADIUS_TICKS, terrainCropPercent, terrainRadiusForSlider, terrainSliderForRadius, terrainViewportBounds } from "./terrain-geometry";
+import { TERRAIN_RADIUS_TICKS, terrainCropPercent, terrainMapRadiusKm, terrainRadiusForSlider, terrainSliderForRadius, terrainViewportBounds } from "./terrain-geometry";
+
+test("Map terrain follows the logical native window and latitude instead of a 750-rpx query span", () => {
+  // At Shenzhen/zoom 12, the logical ground resolution is about 35.3 m/pixel.
+  const radius = terrainMapRadiusKm(12, 22.65, { width: 390, height: 700 });
+  assert.ok(radius > 14.7 && radius < 14.9, "350 logical pixels plus the existing 20% buffer is about 14.8 km");
+  assert.ok(Math.abs(terrainMapRadiusKm(13, 22.65, { width: 390, height: 700 }) * 2 - radius) <= 0.002);
+  assert.equal(terrainMapRadiusKm(12, 22.65, { width: 700, height: 390 }), radius);
+  assert.ok(terrainMapRadiusKm(12, 55, { width: 390, height: 700 }) < radius);
+});
 
 test("terrain radius uses the adopted 2-50 km logarithmic scale", () => {
   assert.equal(terrainRadiusForSlider(-10), 2);

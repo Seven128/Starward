@@ -37,6 +37,7 @@ export interface TerrainPublication {
   maximumRadiusKm: number;
   boundsGcj02: { west: number; south: number; east: number; north: number };
   elevationM: { minimum: number; maximum: number };
+  imageStyle?: "ELEVATION_COLOR" | "RELIEF_OVERLAY";
   elevationColorEncoding?: TerrainElevationColorEncoding;
   validPixelPercent: number;
   image: { file: string; sha256: string; byteSize: number; width: number; height: number };
@@ -100,6 +101,8 @@ export function validateTerrainPublication(value: TerrainPublication) {
     || createHash("sha256").update(JSON.stringify(source.ranges)).digest("hex") !== source.sha256
   )) throw new Error("terrain_source_ranges_invalid");
   const encoding = value.elevationColorEncoding;
+  if ((value.imageStyle !== undefined && value.imageStyle !== "ELEVATION_COLOR" && value.imageStyle !== "RELIEF_OVERLAY")
+    || (value.imageStyle === "RELIEF_OVERLAY" && encoding !== undefined)) throw new Error("terrain_image_style_invalid");
   const rgb = (channels: unknown) => Array.isArray(channels) && channels.length === 3
     && channels.every(channel => Number.isInteger(channel) && channel >= 0 && channel <= 255);
   if (encoding !== undefined && (!encoding

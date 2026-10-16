@@ -26,6 +26,17 @@ model acquired during 2011–2015, so buildings, infrastructure and vegetation
 may be represented; it is not a bare-earth terrain model.
 
 Both viewport terrain and spot terrain consume the same publication source.
+They use different presentation products: Spot retains elevation colour and its
+published legend; the main Map derives a `RELIEF_OVERLAY` with Horn gradients
+and Igor slope/aspect shading, following the
+[GDAL hillshade documentation](https://gdal.org/en/stable/programs/gdal_raster_hillshade.html).
+This small TypeScript rendering kernel reuses the existing GeoTIFF.js/pngjs
+pipeline instead of adding a GDAL deployment dependency. Map relief leaves level
+ground transparent and marks missing source samples with grey hatching; visual
+vertical emphasis does not alter the numeric elevation range or represent live
+lighting. It has no elevation-colour descriptor. The client derives its extent
+from actual logical Map dimensions, latitude and zoom, with the existing loading
+buffer; a design width in rpx is not a native-map pixel count.
 The Map layer sheet offers its full source notice in a scrollable disclosure;
 the spot terrain view shows its own source directly. The fixed Map controls
 must remain outside the long notice. Use the WorldDEM-30 notice from this
@@ -46,9 +57,11 @@ Transparent pixels remain missing data and make the current publication partial.
 
 The bundled Greater Bay Area raster is a retained legacy publication, not the
 product's national coverage boundary. `workers/miniapp-api/src/terrain-service.ts`
-serves it where covered and uses the same licensed GLO-30 Public AWS COG dataset
+serves it to Spot where covered and uses the same licensed GLO-30 Public AWS COG dataset
 on demand for other domestic coordinates. Map and Spot share this owner and the
-unchanged overlay/image contract. The runtime uses the mature MIT-licensed
+overlay/image contract. The optional `imageStyle` distinguishes Map relief from
+the original colour product; old clients/responses retain their original
+compositing. The runtime uses the mature MIT-licensed
 GeoTIFF.js reader for selected COG byte ranges/overviews; it does not require
 Python or download a national DEM into the Node deployment image.
 
@@ -67,6 +80,13 @@ unchanged. Generated 512px RGBA rasters retain transparent missing pixels,
 actual coverage/elevation, derivation time, coordinate transform and notices.
 Both producers read `workers/miniapp-api/assets/terrain/elevation-color.json`;
 the colour interval remains an encoding, not local elevation or accuracy.
+Map relief uses the same adopted shadow hue while its alpha expresses synthetic
+slope/aspect shading, so it does not attach that colour interval to the image.
+Map `glo30-cn-v2-map` filenames and cache keys are distinct from v1 colour
+products. Both old bundled and dynamic v1 PNG URLs remain hash-bound and readable;
+an in-region old dynamic asset must not be replaced by a bundled or new Map
+publication. PNG transparency alone is not a coverage mask for a relief image;
+valid-pixel metadata and hatching retain the missing-data meaning.
 
 Runtime work is limited to two active derivations and 24 MiB of retrieved source
 bytes per derivation. A workspace-scoped regenerable temp cache holds at most

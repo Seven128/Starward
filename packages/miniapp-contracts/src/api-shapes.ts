@@ -316,6 +316,8 @@ export interface TerrainOverlayData {
   derivedAt: string | null;
   coordinateTransformVersion: string | null;
   imageUrl: string | null;
+  /** Older publications omit this and retain elevation-colour compositing. */
+  imageStyle?: "ELEVATION_COLOR" | "RELIEF_OVERLAY";
   imageBoundsGcj02: { west: number; south: number; east: number; north: number } | null;
   elevationM: { minimum: number; maximum: number } | null;
   /** Absent on older servers; null when no verified encoding is published or covered. */

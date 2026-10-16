@@ -3,6 +3,14 @@ const LOG_RANGE = Math.log(25);
 
 export type TerrainBounds = { west: number; east: number; south: number; north: number };
 
+/** Square raster extent for the actual logical native Map window, with the
+ * existing 20% loading buffer. rpx design units are not native-map pixels. */
+export function terrainMapRadiusKm(zoom: number, latitude: number, frame: { width: number; height: number }) {
+  const kilometresPerPixel = 156.543033928 * Math.cos(latitude * Math.PI / 180) / 2 ** zoom;
+  const visibleHalfSpanKm = Math.max(frame.width, frame.height) / 2 * kilometresPerPixel;
+  return Math.round(Math.min(50, Math.max(2, visibleHalfSpanKm * 1.2)) * 1000) / 1000;
+}
+
 export function terrainRadiusForSlider(value: number) {
   return Math.round(2 * Math.exp(LOG_RANGE * Math.min(100, Math.max(0, value)) / 100) * 10) / 10;
 }

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fromCustomClient } from "geotiff";
 import { PNG } from "pngjs";
+import { terrainReliefRgba } from "./terrain-relief.ts";
 import { gcj02ToWgs84 } from "@starward/coordinate-system";
 import type { TerrainElevationColorEncoding, TerrainOverlayRequest } from "@starward/miniapp-contracts";
 import { COPERNICUS_DEM_DOI, COPERNICUS_DEM_LICENSE_URL, COPERNICUS_DEM_SOURCE_NOTICE,
@@ -10,6 +11,7 @@ import { COPERNICUS_DEM_DOI, COPERNICUS_DEM_LICENSE_URL, COPERNICUS_DEM_SOURCE_N
   type TerrainSourceRange } from "./terrain-publication.ts";
 
 export const TERRAIN_RENDER_VERSION = "glo30-cn-v1";
+export const TERRAIN_MAP_RENDER_VERSION = "glo30-cn-v2-map";
 const size = 512;
 const sourceRoot = "https://copernicus-dem-30m.s3.amazonaws.com";
 const hash = (data: string | Buffer) => createHash("sha256").update(data).digest("hex");
@@ -35,7 +37,8 @@ export function terrainBounds(input: TerrainOverlayRequest) {
 
 export function terrainRequestKey(input: TerrainOverlayRequest) {
   const canonical = normalizeTerrainRequest(input);
-  return `${TERRAIN_RENDER_VERSION}-${Math.round(canonical.center.latitude * 1e7)}-${Math.round(canonical.center.longitude * 1e7)}-${Math.round(canonical.radiusKm * 1000)}`;
+  const version = canonical.purpose === "MAP" ? TERRAIN_MAP_RENDER_VERSION : TERRAIN_RENDER_VERSION;
+  return `${version}-${Math.round(canonical.center.latitude * 1e7)}-${Math.round(canonical.center.longitude * 1e7)}-${Math.round(canonical.radiusKm * 1000)}`;
 }
 
 /** Fixed public source; callers cannot supply an upstream URL. Range proofs
@@ -95,8 +98,8 @@ async function readTile(lat: number, lon: number, bounds: number[], resolution: 
   } finally { await tiff.close(); }
 }
 
-/** Same licensed DSM, colour transfer and synthetic hillshade as the offline
- * publisher. Missing data stays transparent; this is not a live obstacle map. */
+/** One licensed DSM sampling path. Spot retains elevation colour; the Map
+ * consumes a separate relief overlay suitable for compositing on a basemap. */
 export async function renderTerrain(input: TerrainOverlayRequest, signal: AbortSignal, transport: typeof fetch = fetch): Promise<RenderedTerrain | null> {
   const bounds = terrainBounds(input), count = size * size;
   const latitudes = new Float64Array(count), longitudes = new Float64Array(count);
@@ -149,7 +152,9 @@ export async function renderTerrain(input: TerrainOverlayRequest, signal: AbortS
     return Number.isFinite(value) ? value : fallback;
   };
   const png = new PNG({ width: size, height: size });
-  for (let row = 0; row < size; row++) {
+  if (input.purpose === "MAP") {
+    png.data.set(terrainReliefRgba(elevations, size, bytesPerPixel, encoding.highRgb));
+  } else for (let row = 0; row < size; row++) {
     signal.throwIfAborted();
     for (let column = 0; column < size; column++) {
       const index = row * size + column, value = elevations[index];
@@ -165,19 +170,24 @@ export async function renderTerrain(input: TerrainOverlayRequest, signal: AbortS
   }
   const bytes = PNG.sync.write(png), imageSha256 = hash(bytes);
   const publication: TerrainPublication = {
-    schemaVersion: "starward-terrain-publication-v2", publicationId: `terrain:${TERRAIN_RENDER_VERSION}:${imageSha256}`,
+    schemaVersion: "starward-terrain-publication-v2", publicationId: `terrain:${input.purpose === "MAP" ? TERRAIN_MAP_RENDER_VERSION : TERRAIN_RENDER_VERSION}:${imageSha256}`,
     dataset: "Copernicus DEM GLO-30 Public AWS COG 2021", sourceProvider: "Copernicus Programme / AWS Open Data",
     license: "Copernicus DEM GLO-30 free worldwide licence", licenseUrl: COPERNICUS_DEM_LICENSE_URL, doi: COPERNICUS_DEM_DOI,
     attributionNotice: COPERNICUS_DEM_SOURCE_NOTICE, modifiedProductNotice: COPERNICUS_DEM_MODIFIED_PRODUCT_NOTICE,
-    derivation: "Starward从真实WGS84 DSM按GCJ-02逐像素取样，派生高程基色、合成山体阴影及透明缺测像素。来源校验绑定实际读取的HTTP字节范围及对象ETag，不是全文件哈希。",
+    derivation: input.purpose === "MAP"
+      ? "Starward从真实WGS84 DSM按GCJ-02逐像素取样，采用Horn坡度和Igor坡向阴影表达地势，阴影使用2倍视觉增强；平坦区域透明，灰色斜纹表示缺测。阴影不是实景光照或精确海拔色带。来源校验绑定实际读取的HTTP字节范围及对象ETag，不是全文件哈希。"
+      : "Starward从真实WGS84 DSM按GCJ-02逐像素取样，派生高程基色、合成山体阴影及透明缺测像素。来源校验绑定实际读取的HTTP字节范围及对象ETag，不是全文件哈希。",
     sourceResolution: "1 arc-second (approximately 30 m)", derivedResolutionM: Math.round(bytesPerPixel * 10) / 10,
     derivedAt: new Date().toISOString(), coordinateSystem: "GCJ02", transformVersion: "starward-coordinate-system-gcj02-grid-v2",
     centerGcj02: { latitude: input.center.latitude, longitude: input.center.longitude }, maximumRadiusKm: input.radiusKm,
     boundsGcj02: bounds, elevationM: { minimum: Math.round(minimum * 10) / 10, maximum: Math.round(maximum * 10) / 10 },
     validPixelPercent: Math.round(valid / count * 10000) / 100,
     image: { file: `${terrainRequestKey(input)}-${imageSha256}.png`, sha256: imageSha256, byteSize: bytes.length, width: size, height: size },
-    elevationColorEncoding: { ...encoding, imageSha256 }, sources, unavailableSourceTiles: unavailable,
-    limitations: [COPERNICUS_DEM_LIABILITY_NOTICE, "按当前位置和查看半径读取公开地形源；透明像素为未取得或无效源数据，不能解释为平地。",
+    imageStyle: input.purpose === "MAP" ? "RELIEF_OVERLAY" : "ELEVATION_COLOR",
+    ...(input.purpose === "MAP" ? {} : { elevationColorEncoding: { ...encoding, imageSha256 } }), sources, unavailableSourceTiles: unavailable,
+    limitations: [COPERNICUS_DEM_LIABILITY_NOTICE, input.purpose === "MAP"
+      ? "按当前位置和查看半径读取公开地形源；平坦区域透明以保留底图，灰色斜纹为未取得或无效源数据，不能解释为平地。阴影深浅不表示精确海拔。"
+      : "按当前位置和查看半径读取公开地形源；透明像素为未取得或无效源数据，不能解释为平地。",
       "Copernicus DEM是2011至2015年获取的数字表面模型，可能包含建筑、基础设施和植被；不是裸地模型或现场遮挡测量。",
       "派生图的像素间隔不代表原始采样更精细或逐点精度；大范围查看使用源产品的既有平均重采样概览。"],
   };

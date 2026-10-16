@@ -64,6 +64,8 @@ test("light read failure preserves published terrain and distinguishes failed li
 
 test("terrain colour encoding is optional for legacy publications and rejects unbound or misleading metadata", async () => {
   const publication = await terrainPublication();
+  assert.throws(() => validateTerrainPublication({ ...publication, imageStyle: "RELIEF_OVERLAY" }), /terrain_image_style_invalid/);
+  assert.throws(() => validateTerrainPublication({ ...publication, imageStyle: "UNKNOWN" as "ELEVATION_COLOR" }), /terrain_image_style_invalid/);
   const legacy = structuredClone(publication);
   delete legacy.elevationColorEncoding;
   assert.equal(validateTerrainPublication(legacy), legacy);
