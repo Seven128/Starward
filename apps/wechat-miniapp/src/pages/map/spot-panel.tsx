@@ -1,4 +1,5 @@
 import { mediaSource } from "@/utils/media-source";
+import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
 import { isProductSource, productSourceNames } from "@/utils/source-presentation";
 import { FACILITY_LABEL } from "@/utils/facility-presentation";
 import { FacilityCard } from "@/components/facility-card";
@@ -101,31 +102,14 @@ function nightSafetyLabel(value: SpotDetail["accessAndSafety"]["nightSafety"] | 
 
 function formatLunarEvent(value: string | null, timezone: string, empty: string) {
   if (!value) return empty;
-  try {
-    return new Intl.DateTimeFormat("zh-CN", {
-      timeZone: timezone,
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    }).format(new Date(value));
-  } catch {
-    return "暂无数据";
-  }
+  return formatSourceTime(value, timezone) ?? "暂无数据";
 }
 
 function formatSourceTime(value: string | null | undefined, timezone: string) {
   if (!value) return null;
   try {
-    return new Intl.DateTimeFormat("zh-CN", {
-      timeZone: timezone,
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    }).format(new Date(value));
+    const date = new Date(value);
+    return `${calendarDateInTimezone(date, timezone).slice(5).replace("-", "/")} ${clockTimeInTimezone(date, timezone)}`;
   } catch {
     return null;
   }
@@ -715,11 +699,11 @@ export function SpotInformationPanel({
                 <View className="spot-panel__moon-events">
                   <View>
                     <Text className="type-caption">月出</Text>
-                    <Text className="type-body">{skyReport ? formatLunarEvent(skyReport.lunarFacts.moonriseAt, context?.timezone ?? "Asia/Shanghai", "本观测夜无月出") : "暂无数据"}</Text>
+                    <Text className="type-body">{skyReport ? formatLunarEvent(skyReport.lunarFacts.moonriseAt, context?.timezone ?? "Asia/Shanghai", "搜索时段内无月出") : "暂无数据"}</Text>
                   </View>
                   <View>
                     <Text className="type-caption">月落</Text>
-                    <Text className="type-body">{skyReport ? formatLunarEvent(skyReport.lunarFacts.moonsetAt, context?.timezone ?? "Asia/Shanghai", "本观测夜无月落") : "暂无数据"}</Text>
+                    <Text className="type-body">{skyReport ? formatLunarEvent(skyReport.lunarFacts.moonsetAt, context?.timezone ?? "Asia/Shanghai", "搜索时段内无月落") : "暂无数据"}</Text>
                   </View>
                 </View>
                 <View className="spot-panel__metric-grid">
