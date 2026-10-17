@@ -8,6 +8,16 @@ interface Dependencies {
   invalidate(reference: StellarCatalogReference): void;
 }
 
+// Only this transport owner can admit an identity, after full validation and
+// freezing validated catalogue fields below. Copying or shallow-freezing input is not admission.
+const admittedPublications = new WeakSet<StellarCatalogPublication>();
+
+/** Admission only establishes this exact transport object's validated fields;
+ * consumers must still bind it to their requested version/hash. */
+export function isAdmittedStellarCatalogPublication(value: StellarCatalogPublication): boolean {
+  return admittedPublications.has(value);
+}
+
 /** Same operation/cache owner as reports; validates all network and cached representations. */
 export function createStellarCatalogClient(deps: Dependencies) {
   return async function getStellarCatalog(reference: StellarCatalogReference, signal?: AbortSignal) {
@@ -31,6 +41,7 @@ export function createStellarCatalogClient(deps: Dependencies) {
       Object.freeze(sources);
     }
     Object.freeze(envelope.data);
+    admittedPublications.add(envelope.data);
     Object.freeze(envelope.warnings);
     return Object.freeze(envelope);
   };

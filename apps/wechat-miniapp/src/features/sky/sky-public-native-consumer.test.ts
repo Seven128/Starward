@@ -5,10 +5,14 @@ import path from "node:path";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { skyResourceOriginTestOwner } from "../../services/sky-resource-origin-test-support";
 import { skyImageContentHash, sdssOpticalPublication, sdssOpticalPublicationHash, decodeSkyLandscapeAlpha, SKY_LANDSCAPE_RESOURCES } from "@starward/miniapp-contracts";
 import { createSkyPublicImageCache } from "../../services/sky-public-image-cache";
 import { skyImageFileSession } from "../../services/sky-image-file-session";
+import { skyNativeArrayBuffer } from "../../services/sky-native-array-buffer";
 import { transportHarness, TEST_API_BASE } from "../../services/api-request-test-support";
+import { reportRuntimeError } from "../../services/runtime-error";
+import { isMiniappRequestCancelled } from "../../services/request-lifecycle";
 import { createSkyArtworkLoader, skyNativeImageIsCurrent } from "./sky-artwork-loader";
 import { startSkyArtworkRequest, type SkyArtworkImage } from "./sky-artwork-request";
 
@@ -25,18 +29,19 @@ const fixtures = levels.map(level => {
   const bytes = readFileSync(new URL("../../../../../workers/miniapp-api/assets/deep-sky/sdss-m51/" + published.file, import.meta.url));
   assert.equal(bytes.length, published.bytes);
   assert.equal(createHash("sha256").update(bytes).digest("hex"), published.sha256);
-  return { bytes, asset: { ...published, id: "sdss:M:51:" + level, width: 512, height: 512 },
+  return { bytes, asset: { ...published, id: "sdss:M:51:" + level, width: 512, height: 512, format: "jpeg" as const },
     url: `${base}/v2/sky/sdss-optical/${publicationHash}/${published.file}` };
 });
 const coarse = fixtures[0]!, fine = fixtures[1]!;
 const asBuffer = (body: Uint8Array) => body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength) as ArrayBuffer;
-const compile = (file: URL, bindings: Record<string, unknown>, sourceOverride?: string) => {
+const compile = (file: URL, bindings: Record<string, unknown>, sourceOverride?: string, delivery = { resource: "", preview: "" }) => {
   const exports: Record<string, any> = {};
   vm.runInNewContext(ts.transpileModule(sourceOverride ?? readFileSync(file, "utf8"), { fileName: file.pathname, compilerOptions: {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX,
   } }).outputText, { exports, ArrayBuffer, Uint8Array, DataView, setTimeout, clearTimeout,
     __MINIAPP_API_BASE__: base, __MINIAPP_ACCEPTANCE_DIAGNOSTICS__: false,
-    require(name: string) { assert.ok(name in bindings, name); return bindings[name]; } });
+    require(name: string) { if (name === "./sky-resource-origin" || name === "./sky-image-diagnostics") return skyResourceOriginTestOwner(base, delivery.resource, delivery.preview);
+      assert.ok(name in bindings, name); return bindings[name]; } });
   return exports;
 };
 const evidence: unknown[] = [];
@@ -47,6 +52,7 @@ test.after(() => {
 
 function world() {
   const root = "/controlled", files = new Map<string, ArrayBuffer>(), requests: string[] = [], fsCalls: unknown[] = [];
+  const requestOptions: any[] = [];
   const caches: ReturnType<typeof createSkyPublicImageCache>[] = [];
   const corruptOnce = new Set<string>(), heldTransfers = new Set<string>(), abortThrows = new Set<string>();
   const pendingTransfers = new Map<string, () => void>();
@@ -70,7 +76,7 @@ function world() {
   };
   const Taro = { env: { USER_DATA_PATH: root }, getFileSystemManager: () => filesystem,
     request(options: any) {
-      requests.push(options.url); let aborted = false;
+      requests.push(options.url); requestOptions.push(options); let aborted = false;
       const complete = () => {
         if (aborted) return;
         const bytes = resources.get(options.url);
@@ -82,17 +88,43 @@ function world() {
       deliver(() => { if (heldTransfers.has(options.url)) pendingTransfers.set(options.url, complete); else complete(); });
       return { abort() { if (abortThrows.has(options.url)) throw Error("controlled_native_abort_throw"); aborted = true; options.fail({ errMsg: "request:fail abort" }); }, catch() {} };
     } };
-  const runtime = () => compile(new URL("../../services/sky-public-image-runtime.ts", import.meta.url), {
+  const runtime = (resource = "", preview = "") => compile(new URL("../../services/sky-public-image-runtime.ts", import.meta.url), {
     "@tarojs/taro": { default: Taro }, "@starward/miniapp-contracts": { skyImageContentHash },
+    "./sky-native-array-buffer": {skyNativeArrayBuffer},
     "./sky-public-image-cache": { createSkyPublicImageCache(deps: Parameters<typeof createSkyPublicImageCache>[0]) {
       const cache = createSkyPublicImageCache({ ...deps, cleanupWaitMs: 10 }); caches.push(cache); return cache;
     } },
-  });
-  return { root, files, requests, fsCalls, caches, corruptOnce, heldTransfers, abortThrows, pendingTransfers, resources, Taro, runtime,
+  }, undefined, { resource, preview });
+  return { root, files, requests, requestOptions, fsCalls, caches, corruptOnce, heldTransfers, abortThrows, pendingTransfers, resources, Taro, runtime,
     snapshot() { return { requests: [...requests], files: [...files].map(([file, bytes]) => ({ file, bytes: bytes.byteLength,
       sha256: createHash("sha256").update(new Uint8Array(bytes)).digest("hex") })), caches: caches.map(c => c.inspect()),
       underlyingNativeCallbacksPending: [...pendingTransfers.keys()], fsCalls: [...fsCalls] }; } };
 }
+test("production cache admits only configured resource origin, keeps warm bytes and coarse lease on CDN failure", async () => {
+  const w = world(), resource = "https://images.fixture.invalid", other = "https://other-images.fixture.invalid";
+  const url = coarse.url.replace(base, resource), detail = fine.url.replace(base, resource);
+  w.resources.set(url, coarse.bytes);
+  const first = w.runtime(resource, "controlled-preview");
+  assert.throws(() => first.acquirePublishedSkyImage(coarse.asset, coarse.url, publicationHash), /route_invalid/u);
+  const lease = await first.acquirePublishedSkyImage(coarse.asset, url, publicationHash).promise;
+  assert(lease.isCurrent()); assert.equal(w.requests.length, 1); assert.equal(w.requests[0], url);
+  assert.equal(w.requestOptions[0].header, undefined);
+  const restarted = w.runtime(resource, "controlled-preview");
+  const warm = await restarted.acquirePublishedSkyImage(coarse.asset, url, publicationHash).promise;
+  assert.equal(warm.filePath, lease.filePath); assert.equal(w.requests.length, 1);
+  await assert.rejects(first.acquirePublishedSkyImage(fine.asset, detail, publicationHash).promise, /sky_public_image_failed/u);
+  assert(lease.isCurrent()); assert(warm.isCurrent());
+  assert.deepEqual(w.requests, [url, detail]);
+  assert(w.requestOptions.every(call => call.header === undefined));
+  const moved = w.runtime(other, "controlled-preview"), nextUrl = coarse.url.replace(base, other);
+  w.resources.set(nextUrl, coarse.bytes);
+  const next = await moved.acquirePublishedSkyImage(coarse.asset, nextUrl, publicationHash).promise;
+  assert.notEqual(next.filePath, lease.filePath); assert.equal(w.requests.at(-1), nextUrl);
+  lease.release(); warm.release(); next.release();
+  evidence.push({ case: "separate-resource-origin", encodedOnly: true, noApiFallback: true, noPreviewHeaderOnResource: true,
+    warmAdditionalRequests: 0, differentOriginReusesEntry: false, snapshot: w.snapshot() });
+});
+
 function consumer(w: ReturnType<typeof world>, runtime: Record<string, any>) {
   const slots: any[] = [], effects: (() => void)[] = [], images: SkyArtworkImage[] = [];
   let cursor = 0, dirty = false;
@@ -107,7 +139,7 @@ function consumer(w: ReturnType<typeof world>, runtime: Record<string, any>) {
   };
   const mutation = process.env.CLOUD_SKY_CACHE_HOOK_MUTATION_SOURCE;
   const module = compile(new URL("./use-sky-artwork.ts", import.meta.url), {
-    react, "@tarojs/taro": { default: w.Taro }, "@/services/api-client": { constellationAssetUrl() { throw Error("not an illustration trial"); } },
+    react, "@tarojs/taro": { default: w.Taro }, "@/services/sky-catalog-api": { constellationAssetUrl() { throw Error("not an illustration trial"); } },
     "../../services/sky-image-file-session": { skyImageFileSession }, "../../services/sky-public-image-runtime": runtime,
     "./sky-artwork-loader": { createSkyArtworkLoader }, "./sky-artwork-request": { startSkyArtworkRequest },
   }, mutation ? readFileSync(mutation, "utf8") : undefined);
@@ -125,6 +157,44 @@ function consumer(w: ReturnType<typeof world>, runtime: Record<string, any>) {
     held() { return slots.find(slot => slot?.owner && slot?.value?.images instanceof Map) ?? null; },
     complete(index: number) { assert.ok(images[index]?.onload); images[index]!.onload!(); return commit(); } };
 }
+
+test("production admission accepts a large fixed file within unchanged total and I/O bounds, then warms after restart", async () => {
+  // CI exercises the encoded boundary, without claiming a real PNG decode.
+  // A task run can supply the frozen file to exercise its exact existing bytes.
+  const fixed = process.env.CLOUD_SKY_LARGE_CACHE_FIXTURE;
+  const bytes = fixed ? readFileSync(fixed) : Buffer.alloc(10 * 1024 * 1024);
+  if (!fixed) {
+    bytes.set([137, 80, 78, 71, 13, 10, 26, 10]);
+    bytes.writeUInt32BE(0x49484452, 12); bytes.writeUInt32BE(3188, 16); bytes.writeUInt32BE(2950, 20);
+  }
+  assert(bytes.length > 8 * 1024 * 1024 && bytes.length <= 16 * 1024 * 1024);
+  const asset = { format: "png" as const, bytes: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex"),
+    width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+  const hash = "d".repeat(64), url = `${base}/v2/sky/prepared-optical/${hash}/cache-fixture-detail.png`;
+  const w = world(), runtime = w.runtime(); w.resources.set(url, bytes); w.heldTransfers.add(url);
+  const retained = await runtime.acquirePublishedSkyImage({ ...coarse.asset, format: "jpeg" }, coarse.url, publicationHash).promise;
+  const detail = runtime.acquirePublishedSkyImage(asset, url, hash);
+  for (let i = 0; i < 2000 && !w.pendingTransfers.has(url); i++) await Promise.resolve();
+  assert(w.pendingTransfers.has(url), "large bytes must reach the normal production transport");
+  assert(retained.isCurrent()); assert(w.files.has(retained.filePath));
+  const inFlight = w.caches[0]!.inspect();
+  assert(inFlight.bytes + inFlight.reserved <= 32 * 1024 * 1024);
+  assert(inFlight.ioBytes <= 16 * 1024 * 1024);
+  w.pendingTransfers.get(url)!(); w.pendingTransfers.delete(url);
+  const lease = await detail.promise;
+  assert.equal(skyImageContentHash(new Uint8Array(w.files.get(lease.filePath)!)), asset.sha256);
+  assert(retained.isCurrent()); retained.release(); lease.release();
+  const requests = w.requests.length, restarted = w.runtime(); await restarted.initializeSkyPublicImageCache();
+  const warm = await restarted.acquirePublishedSkyImage(asset, url, hash).promise;
+  assert.equal(w.requests.length, requests); assert.equal(warm.filePath, lease.filePath);
+  assert.equal(w.caches[1]!.inspect().bytes, asset.bytes + coarse.asset.bytes);
+  warm.release();
+  for (let i = 0; i < 100; i++) await Promise.resolve();
+  assert.equal((await restarted.clearSkyPublicImageCache()).status, "complete");
+  assert.deepEqual([...w.files.keys()], ["/controlled/sky-public-images-v1/index-v2.json"]);
+  evidence.push({ case: "production-large-file-admission-warm-restart-clear", input: fixed ?? "synthetic encoded boundary",
+    asset, inFlight, warmExtraHttpRequests: w.requests.length - requests, ...w.snapshot() });
+});
 
 test("full public hook preserves encoded bytes through cold return, hide, new Canvas and actual cache restart", async () => {
   const w = world(), runtime = w.runtime(), h = consumer(w, runtime); h.commit();
@@ -201,12 +271,14 @@ test("full App launch preserves legacy cleanup and initializes the same public o
   w.files.set(legacy, asBuffer(coarse.bytes)); w.files.set(unrelated, asBuffer(coarse.bytes));
   let launches = 0, chrome = 0;
   const app = compile(new URL("../../app.tsx", import.meta.url), {
-    "@tarojs/taro": { default: w.Taro, useLaunch(callback: () => void) { launches++; callback(); } },
+    "@tarojs/taro": { default: w.Taro, useLaunch(callback: () => void) { launches++; callback(); },
+      useError() {}, useUnhandledRejection() {} },
     "@tanstack/react-query": { QueryClientProvider: () => undefined },
     "react/jsx-runtime": { jsx: () => undefined }, "@/services/query-client": { miniappQueryClient: {} },
     "@/services/api-client": {}, "@/state/app-store": { useAppStore: { getState: () => ({ mode: "NIGHT" }) } },
     "@/theme/native-chrome": { syncNativeChrome: async () => { chrome++; } },
     "@/services/acceptance-diagnostics": {}, "@/services/sky-image-file-session": { skyImageFileSession },
+    "@/services/runtime-error": { reportRuntimeError }, "@/services/request-lifecycle": { isMiniappRequestCancelled },
     "@/services/sky-public-image-runtime": runtime, "./app.scss": {},
   });
   app.default({ children: undefined });

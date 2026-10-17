@@ -4,17 +4,17 @@ This on-demand subdomain node normatively continues shared manipulation, accessi
 
 ## 当前尺寸设计修订
 
-2026-09-22 用户确认观星点大档样板的舒适尺度，授权扩展现有页面并补入当前商业化来源披露。[整组可编辑候选与审阅入口](../../../../../docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/README.md)仍待整体审查，未替代各页采用资源或生产令牌。共享尺寸覆盖地图/点位、搜索、My/Settings、计划/事件、天空、创建/反馈；共享来源呈现遵从下文 SourceAttribution / Provenance 责任，各消费者保留自己的数据及状态。三档抽屉、章节出现与滚动规则、当前 B 批图标不变。Stitch 保存静态总览，可编辑交互源在候选包；不把静态重复画面视为原生共享组件。
+2026-09-22 用户确认观星点大档样板的舒适尺度，授权扩展现有页面并补入当前商业化来源披露。[整组可编辑候选与审阅入口](https://stitch.google.com/projects/7144519510537620825)仍待整体审查，未替代各页采用资源或生产令牌。共享尺寸覆盖地图/点位、搜索、My/Settings、计划/事件、天空、创建/反馈；共享来源呈现遵从下文 SourceAttribution / Provenance 责任，各消费者保留自己的数据及状态。三档抽屉、章节出现与滚动规则、当前 B 批图标不变。Stitch 保存静态总览，可编辑交互源在候选包；不把静态重复画面视为原生共享组件。
 
 ## 公共弹性抽屉：2026-09-22 用户修订
 
 用户要求观星点底部抽屉采用上下边界橡皮筋阻尼、释放速度选择吸附锚点，并作为公共组件。此要求替代小档向下完全不动的旧硬边界，**不改变拖到底不关闭**。保留三档、同一连续文档、基本信息/地形/天文 Tab、照片、固定底部动作及原导航；中/大档仅可见顶部带拖档，小档内容可展开，不将所有滚动区域改成拖区。
 
-共享职责是实时显示高度/目标档位、阻尼位移、最近速度样本、投影吸附、可中断回弹、取消/第二触点/视窗变化、键盘和减少动态效果；内容与业务操作仍归消费者。地图、计划和记录中的点信息引用同一资源，不把不可拖动图层/筛选/编辑表单改为三档抽屉。[公共交互资源与参数](../../../../../docs/design-resources/wechat-miniapp/shared/elastic-sheet/README.md)及当前舒适尺寸原型为待审参考；生产现有 panel-snap/panel-spring 尚未完成此迁移。Web观察不证明WEAPP滚动竞争、帧率或触觉。
+共享职责是实时显示高度/目标档位、阻尼位移、最近速度样本、投影吸附、可中断回弹、取消/第二触点/视窗变化、键盘和减少动态效果；内容与业务操作仍归消费者。地图、计划和记录中的点信息引用同一资源，不把不可拖动图层/筛选/编辑表单改为三档抽屉。[公共交互资源与参数](https://stitch.google.com/projects/7144519510537620825)及当前舒适尺寸原型为待审参考；生产现有 panel-snap/panel-spring 尚未完成此迁移。Web观察不证明WEAPP滚动竞争、帧率或触觉。
 
 ## 公共连续动效：2026-09-22 候选扩展
 
-用户授权将适合的阻尼交互扩展至共享组件。[公共动效可编辑候选及消费者映射](../../../../../docs/design-resources/wechat-miniapp/shared/fluid-motion-2026-09-22/README.md)统一承载图片查看器、公共时间尺、设置三态模式、Tab/按压、面板/来源展开及双分享外壳进入；各职责与允许变体以该映射为准，当前仍待整体审阅，未替代采用资源或生产实现。
+用户授权将适合的阻尼交互扩展至共享组件。[公共动效可编辑候选及消费者映射](https://stitch.google.com/projects/7144519510537620825)统一承载图片查看器、公共时间尺、设置三态模式、Tab/按压、面板/来源展开及双分享外壳进入；各职责与允许变体以该映射为准，当前仍待整体审阅，未替代采用资源或生产实现。
 
 图片可直接操控；时间尺和模式控件按各自有效刻度/模式吸附；普通筛选、编辑和来源说明仅改善原进入/展开，不增加拖拽关闭。数据、确认/取消、日期身份、导航与分享导出仍由既有owner负责。Tab沿用现有文字比例与稳定命中区，事件Modal保留既有动效owner。共享文件由当前舒适尺寸消费者直接引用；Stitch只保存静态总览与动效建议，不能当作原生共享交互。生产迁移需验证目标运行时滚动竞争、生命周期和减少动态效果；浏览器结果不能替代真机证据。
 
@@ -38,25 +38,24 @@ EOG 小幅夜光地图复用 `SourceAttribution` 的供应方许可短署名，�
 
 ## Shared icon resource
 
-<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/icons/ADOPTED.md" -->
 
-2026-09-13用户采用[最新B行256px图标](../../../../../docs/design-resources/wechat-miniapp/shared/icons/ADOPTED.md)中已核对的71份日间资源（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态）；selected经本地合成保留default主体像素，仅添加独立光线。这个共享家族已由`apps/wechat-miniapp/src/components/semantic-asset.tsx`及地图marker/原生Tab责任迁移到Map/Search、观星点信息、Sky控件、My/Settings、计划/事件、贡献/反馈等真实DAY消费者；不按页面另起素材映射。微信包从256px唯一母版生成保持完整画布与RGBA的224px页面派生和192px原生Tab派生，满足主包及单图限制；状态、数据和交互仍留在原组件owner。允许已有语义的尺寸/状态变体，不能混淆普通地点针与正式观星点针、静态流星与想去动画分件、月亮入口与真实月相。NIGHT/OBSERVATION未提供B主题资源，继续使用原合法主题且不伪装齐全；44px命中区、焦点、按压、选中语义与现有动效不被图标材质覆盖。真实月相照明图、时间尺月相、地形科学图、系统状态栏/微信胶囊和控件勾选几何保留数据/平台责任，不拿静态月亮或装饰PNG替代。当前消费者和验证边界见[图标应用检查](../../../../../docs/design-resources/wechat-miniapp/shared/icons/application-review.md)。
+2026-09-13用户采用[最新B行256px图标](https://stitch.google.com/projects/7144519510537620825)中已核对的71份日间资源（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态）；selected经本地合成保留default主体像素，仅添加独立光线。这个共享家族已由`apps/wechat-miniapp/src/components/semantic-asset.tsx`及地图marker/原生Tab责任迁移到Map/Search、观星点信息、Sky控件、My/Settings、计划/事件、贡献/反馈等真实DAY消费者；不按页面另起素材映射。微信包从256px唯一母版生成保持完整画布与RGBA的224px页面派生和192px原生Tab派生，满足主包及单图限制；状态、数据和交互仍留在原组件owner。允许已有语义的尺寸/状态变体，不能混淆普通地点针与正式观星点针、静态流星与想去动画分件、月亮入口与真实月相。NIGHT/OBSERVATION未提供B主题资源，继续使用原合法主题且不伪装齐全；44px命中区、焦点、按压、选中语义与现有动效不被图标材质覆盖。真实月相照明图、时间尺月相、地形科学图、系统状态栏/微信胶囊和控件勾选几何保留数据/平台责任，不拿静态月亮或装饰PNG替代。当前消费者和验证边界见[图标应用检查](https://stitch.google.com/projects/7144519510537620825)。
+
+本地运行输入独立于设计评审副本：`runtime-assets/b-icons`、`runtime-assets/tabbar`由现构建复制owner消费，保原224/192派生字节和包归属，不能因设计目录清理改换图标或重跑生成。资源长期以Stitch owner为准。云观星2026-10-17另行采用的菜单SVG变体只由`SemanticIcon`的`sky-*`分支与Sky子包消费，范围沿[Sky合同](spot-and-sky.md#云观星菜单设计资源2026-10-16用户修订)，不表示B家族的NIGHT/OBSERVATION资源已补齐，也不改变其余页面采用。
 
 ## Shared Tab selection feedback
 
-<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/tabs/README.md" -->
 
-本轮公共Tab与下方共享事件Modal的最终完整增量资源已于2026-09-13获用户确认采用。生产已由`SelectionTabs`和`AstronomicalEventModal`统一承载并迁移现有消费者；模拟器覆盖两种Modal模式及Tab消费者，Android WEAPP已实测Map浏览、list/detail两级系统Back与关闭恢复。iOS、物理平板、减少动态效果、快速反向/重开和前后台生命周期仍需对应真实运行证据。Stitch精确参考、当前源与本轮废案清理见[同步记录](../../../../../docs/design-resources/wechat-miniapp/shared/astronomical-event-modal/stitch-sync.md)。
+本轮公共Tab与下方共享事件Modal的最终完整增量资源已于2026-09-13获用户确认采用。生产已由`SelectionTabs`和`AstronomicalEventModal`统一承载并迁移现有消费者；模拟器覆盖两种Modal模式及Tab消费者，Android WEAPP已实测Map浏览、list/detail两级系统Back与关闭恢复。iOS、物理平板、减少动态效果、快速反向/重开和前后台生命周期仍需对应真实运行证据。Stitch精确参考、当前源与本轮废案清理见[同步记录](https://stitch.google.com/projects/7144519510537620825)。
 
-用户明确此为公共Tab规则：所有同家族消费者同组基础字号一致，active项轻微放大，上一项同步缩回，快速切换从当前视觉接管。文字缩放不改变命中区、相邻项布局与指示器中心；减少动态效果直接切换。公共资源由[Tabs](../../../../../docs/design-resources/wechat-miniapp/shared/tabs/README.md)维护统一文字结构及动效，现消费者为观星点章节导航（含Plan中的同组件）与地图新增/反馈表单章节导航。滚动定位/路由/选中/焦点仍归各消费者owner，公共层只消费aria-current/aria-selected；章节继续是同文档导航。后续生产实现复用公共Tab/章节文字反馈，不能各页复制字号逻辑；筛选、多选、三态模式和主路由导航不自动归入本家族。
+用户明确此为公共Tab规则：所有同家族消费者同组基础字号一致，active项轻微放大，上一项同步缩回，快速切换从当前视觉接管。文字缩放不改变命中区、相邻项布局与指示器中心；减少动态效果直接切换。公共资源由[Tabs](https://stitch.google.com/projects/7144519510537620825)维护统一文字结构及动效，现消费者为观星点章节导航（含Plan中的同组件）与地图新增/反馈表单章节导航。滚动定位/路由/选中/焦点仍归各消费者owner，公共层只消费aria-current/aria-selected；章节继续是同文档导航。后续生产实现复用公共Tab/章节文字反馈，不能各页复制字号逻辑；筛选、多选、三态模式和主路由导航不自动归入本家族。
 
 ## Shared astronomical-event modal
 
 事件可带经运营审核的纯文本补充文章，置于详情内，沿用共享章节与文章字级，不另开测试说明或另起事件页。显示标题、正文、可用作者/原始日期和独立文章来源/许可；原文链接沿用Provenance操作。文章不改科学资料的来源和数值。无文章时省略可选章节。正文读取与地点/日期计算相互独立，地点解析失败不阻止阅读，切日期不清空已取得的正文；无数据/异常仍沿用各自对应的恢复责任。
 
-<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/events/ADOPTED.md" -->
 
-2026-09-13用户要求天文事件从独立列表/详情路由改为一个大型modal，供地图与观星计划共用。具体外壳、卡片及状态资源由[事件唯一入口](../../../../../docs/design-resources/wechat-miniapp/events/ADOPTED.md)维护；地图入口和计划数据责任仍属于[Map/Plan owner](map-and-finder.md)。这是同一个产品组件的两种mode，不能按入口复制两套列表、详情或事件查询。
+2026-09-13用户要求天文事件从独立列表/详情路由改为一个大型modal，供地图与观星计划共用。具体外壳、卡片及状态资源由[事件唯一入口](https://stitch.google.com/projects/7144519510537620825)维护；地图入口和计划数据责任仍属于[Map/Plan owner](map-and-finder.md)。这是同一个产品组件的两种mode，不能按入口复制两套列表、详情或事件查询。
 
 - `astronomical-event-modal`的模式为`browse | select-one`，内容层为`list | detail(occurrenceId)`。地图小流星入口始终browse：无radio、选中标记、确认、关联/加入计划动作，也不为浏览查询私人计划关系。计划选择入口为select-one，最多一个暂存occurrenceId，允许清除为无事件。
 - 两模式卡片主体均进入详情；select-one另有明确的单选控件和独立44px热区，避免点击卡片查看资料时意外选中。详情的“选择此事件”暂存该ID并回列表，最后“确认选择”才写回调用者计划草稿；radio、清除及查看详情均不保存计划。列表/详情共享同一临时选择，不按月份或筛选保存多个选中项。
@@ -72,13 +71,12 @@ EOG 小幅夜光地图复用 `SourceAttribution` 的供应方许可短署名，�
 
 ## Shared observation-time resource
 
-<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/observation-time/README.md" -->
 
-The [shared date/calendar/ruler resource](../../../../../docs/design-resources/wechat-miniapp/shared/observation-time/README.md) owns the adopted reusable browser composition and demonstrated motion for the consumers linked from current page entries, within those entries' theme/state scope. Date, slicing and commit semantics remain with the relevant Map and Spot/Sky contracts; production uses the existing Taro component and Observation Context owners. Consumer pages follow this shared owner rather than redeclaring the same resource. Its browser implementation is not WEAPP verification.
+The [shared date/calendar/ruler resource](https://stitch.google.com/projects/7144519510537620825) owns the adopted reusable browser composition and demonstrated motion for the consumers linked from current page entries, within those entries' theme/state scope. Date, slicing and commit semantics remain with the relevant Map and Spot/Sky contracts; production uses the existing Taro component and Observation Context owners. Consumer pages follow this shared owner rather than redeclaring the same resource. Its browser implementation is not WEAPP verification.
 
-`ObservationDateControl` 默认维护日历的原生返回层；同页已有统一弹层返回 owner 时，消费者以 `nativeBackBoundary=false` 交回页面管理。云观星以页面唯一 `NativeBackBoundary` 同时处理日期、天体详情和重叠候选，不能叠挂多个 PageContainer；日期内容和选择仍由公共组件负责。
+`ObservationDateControl` 默认维护日历的原生返回层；同页已有统一弹层返回 owner 时，消费者以 `nativeBackBoundary=false` 交回页面管理。云观星以页面唯一 `NativeBackBoundary` 同时处理日期、天体详情／重叠候选及列表、时间、校准、图层披露，不能叠挂多个 PageContainer；日期内容和选择仍由公共组件负责。
 
-`NativeBackBoundary` 持有自定义呈现的原生返回层、单次 leave 委派、确认期间去重及存活时重新布防。Map 复用其既有全屏原生前景容器变体并持续保留事件 Modal 子树；其它消费者仍使用原有隐藏容器生命周期。返回优先级和关闭确认由调用者持有，嵌入表单将媒体交接返回也交给 Map，不能另挂一层。异步委派失败不泄露错误细节，卸载后不重新布防；这一共享实现不承诺各设备上未验证的拦截能力。
+`NativeBackBoundary` 持有自定义呈现的原生返回层、单次 leave 委派、确认期间去重及存活时重新布防。辅助层只在活动时以show=true新挂载；消费后卸载，调用者仍活动时下一task新挂载。Map 复用其既有全屏原生前景容器变体，持续保留事件 Modal 子树并使用beforeleave协议。两者共享命令存活和代次守卫，hide即时退休旧回调，即使hide/show发生在React提交前也不复活；返回优先级和关闭确认仍由调用者持有，嵌入表单将媒体交接返回也交给 Map。异步委派失败不泄露错误细节，卸载后不重新布防；各设备系统Back及键盘行为仍需真实目标证据。
 
 云观星在地点、时刻、时区和活动 Context 的既有完整性校验通过后，才通过共享 `observation-date` owner 派生民用日期及日期选项；待确认或无效路由不提前调用时区格式化，以免在既有 Context 恢复内容呈现前抛出异常。日期选项的 memo 同时跟随完整性状态和时区，保证同区 Context 查询完成后刷新正常选项。没有猜测默认时区或新建另一时钟；代码/日期消费者检查不等于原生恢复界面已验证。
 
@@ -86,11 +84,12 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
 
 ## Settings adopted design
 
-<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/settings/ADOPTED.md" -->
 
-设置采用唯一入口：[设置资源](../../../../../docs/design-resources/wechat-miniapp/settings/ADOPTED.md)。2026-09-08 用户确认：显示模式、位置与隐私、提醒、数据；移除选点偏好及其子页、减少动态效果设置项。保留系统级减少动态效果适配。弹层和蒙层同步进入/退出，关闭时蒙层渐隐露出原页面，页面滚动位置与焦点不跳动；箭头与右侧值垂直居中。产品选择不清除既有账户偏好数据。采用包覆盖三态显示与确认/失败演示，不证明生产代码、微信权限或服务端迁移完成。
+设置采用唯一入口：[设置资源](https://stitch.google.com/projects/7144519510537620825)。2026-09-08 用户确认：显示模式、位置与隐私、提醒、数据；移除选点偏好及其子页、减少动态效果设置项。保留系统级减少动态效果适配。弹层和蒙层同步进入/退出，关闭时蒙层渐隐露出原页面，页面滚动位置与焦点不跳动；箭头与右侧值垂直居中。产品选择不清除既有账户偏好数据。采用包覆盖三态显示与确认/失败演示，不证明生产代码、微信权限或服务端迁移完成。
 
 ## Cross-Control And State Invariants
+
+Settings 临时缓存清理同步退休公开影像文件代次，同时由 `services/cache-policy.ts` 清理携带该代次能力的查询元数据；隐藏页返回须取得新能力，旧 publication 值相同也不能复活旧能力。公开元数据清理与账户、远端作品及草稿分责，不能用文件已删除冒完整恢复。
 
 - A continuous manipulation, its current value and the primary visual or numerical feedback it changes remain together in one mobile viewport or one bounded control-owned scroll surface. A journey never requires scrolling away from a control, manipulating it and scrolling back to inspect its primary effect.
 - When direct co-location cannot satisfy that invariant, use one self-explanatory functional trigger plus the named `source-lift-focus-layer` family or a native Modal with the same ownership. A dropdown inside an active focus layer is an anchored disclosure owned by that layer, not another Modal: it overlays rather than reflows owner geometry, owns bounded overflow, closes before its parent and remains mutually exclusive with sibling disclosures.
@@ -127,9 +126,8 @@ Production MapTimeRuler and Sky OrientationTimeRuler share `components/scroll-se
   “重试地图” recreates the native Map instance while retaining the application's viewport, selection and data. The `native-map-recovery` owner waits for that instance's native update or error and restores retry on timeout; clearing an error flag alone is not recovery. Each instance owns its native callbacks and terrain overlay context. Old drag debounce or leave-confirmation callbacks cannot commit after replacement, and old overlay cleanup cannot remove the new instance's overlay. Already committed user location/selection requests remain with their application data owners.
 - `page-state-recovery` is the shared recovery family for INITIAL/LOADING/READY/EMPTY/PARTIAL/STALE/ERROR/PERMISSION_DENIED. It never substitutes realistic fake values for missing data and never hides usable static content because a dynamic layer failed.
 
-<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/notification-and-empty-2026-09-23/README.md" -->
 
-2026-09-23 用户要求统一跨场景的悬浮 `info` 消息，并把“暂无数据”建立为可沿用的设计资源；审阅后确认采用[共享提示与空态资源](../../../../../docs/design-resources/wechat-miniapp/shared/notification-and-empty-2026-09-23/README.md)所示的日间视觉范围。`notification-feedback` 的浮动 info 由 Map/Search、点位天气与地形、Sky、My/Settings 及事件弹窗等实际数据或异步操作消费者共用同一紧凑表达；消息只交代受影响对象、结果及必要的下一步，合计一两句话，详细原因与可持续重试仍归受影响区域。缺测/无覆盖不因空态重复弹提醒，现有单宿主、去重、可见计时和安全区责任不变。
+2026-09-23 用户要求统一跨场景的悬浮 `info` 消息，并把“暂无数据”建立为可沿用的设计资源；审阅后确认采用[共享提示与空态资源](https://stitch.google.com/projects/7144519510537620825)所示的日间视觉范围。`notification-feedback` 的浮动 info 由 Map/Search、点位天气与地形、Sky、My/Settings 及事件弹窗等实际数据或异步操作消费者共用同一紧凑表达；消息只交代受影响对象、结果及必要的下一步，合计一两句话，详细原因与可持续重试仍归受影响区域。缺测/无覆盖不因空态重复弹提醒，现有单宿主、去重、可见计时和安全区责任不变。
 
 `page-state-recovery` 的空内容按字段值、章节局部和列表/整页三个占用层级表达：点位事实值不另起状态卡，近期天气等局部空态留在原章节阅读轴上，计划/记录等真正空列表保留其页面身份与可执行入口。请求错误、旧值可用、权限或部分覆盖保留各自状态及实际恢复路径，不借“暂无数据”伪装成成功的空查询，也不在同一当前画面并列真实空结果和请求失败。共享资源只替代这些状态的日间视觉表达，不替代各页其余采用构图或生产实现。
 

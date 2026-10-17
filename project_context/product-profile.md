@@ -40,6 +40,14 @@ Unless explicitly asking for wireframes or structure-only work, “做一版看�
 
 Before a new page, use its task, current principles and applicable confirmed preferences to form a design hypothesis. Inspect relevant resources as concrete examples with known scope, not as a mandatory finish threshold. Check the rendered result for specific composition/interaction problems and revise those within the request before presenting it. A functional prototype or a list of compliant tokens does not establish visual quality. User preference still decides adoption; no mechanical score, mandatory extra variants or promise of guaranteed first-pass approval is introduced.
 
+## Interface wording and information hierarchy
+
+Starward的功能文案以用户一眼理解任务和结果为目标，采用日常说法，先讲可做什么，再讲必要条件。中文功能名以2–4字、功能说明不超过20字为默认写作尺度；同动作同名称。不要把内部验证、接口、上下文或资源术语放进普通入口，也不要用“暂无”混淆没有资料、加载失败、部分结果和上次记录。保必要的真实状态与可执行恢复。
+
+文案与信息层级一起设计：名称/关键事实、主要动作、次要动作、详细资料与来源各有明确位置，相关内容靠近、同类对齐与重复、重点由对比体现。长链接、完整许可和出处进入可读的说明页；必要的即时限制仍贴近相关事实。正式天体名、科学量、科普内容及版权全文不按按钮字数截断。此为可复用产品原则；当前获准改写的范围及具体硬约束由页面owner持有，不自动授权改写其他页面。
+
+执行方法见[界面文案与信息层级](../.codex/skills/uiux_design/references/interface-wording.md)。通过实际界面与操作确认是否易懂，不能用字数、整齐的代码或提示词角色自称代替效果验证。
+
 ## Design concepts and scope
 
 2026-09-12 小程序全局图标审美反馈：现有图标太呆板，希望统一采用拟物、偏可爱且元素克制的方向，覆盖功能图标与具象素材；可爱不等于给每个对象附加装饰。用户随后明确选择 Web GPT 加磨砂质感后最新对比图的B行，作为整套生成的唯一风格参考；不再重启A/B/C探索。2026-09-13用户进一步采用256px日间透明图标，兼顾手机/平板常用尺寸的清晰度和包体；经用户授权本地合成地图selected后，已核对采用71份日间资源（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态）；同主体状态复用原始像素并独立叠加装饰，避免重画引入几何漂移，接入后的四态切换未验收，用户要求持续提供具体返修提示词直至符合要求。来源与缺口统一见共享图标owner；夜间/红光未交付，资源采用不等于生产替换已完成。表达、参考与资产责任见 DESIGN.md 小程序「字体与图标」。

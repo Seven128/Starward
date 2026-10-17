@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { EXTENDED_DEEP_SKY_CATALOG_VERSION } from "@starward/miniapp-contracts";
+import { EXTENDED_DEEP_SKY_CATALOG_VERSION, CURRENT_DEEP_SKY_CATALOG_VERSION } from "@starward/miniapp-contracts";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import { loadDeepSkyCatalog } from "@starward/astronomy-core/deep-sky-catalog";
 import { CelestialObjectSearchService } from "./celestial-object-search.ts";
@@ -48,4 +48,27 @@ test("same report service keeps catalog-specific geometry/cache/position and old
   const again = await service.getSky(TEST_PUBLISHED_SPOT.spotId, context.contextId, undefined, "bsc5p-bright-stars.v3");
   assert.equal(again.data.skyScene.deepSky?.catalog?.catalogHash, old.data.skyScene.deepSky?.catalog?.catalogHash);
   assert.equal(again.data.context.dataRevision, old.data.context.dataRevision);
+});
+
+test("a whole image-source batch shares search, facts and report positions while older indexes stay isolated", async () => {
+  const references = ["NGC:246", "NGC:300", "NGC:1232", "NGC:2359", "NGC:6744", "NGC:7293"];
+  const search = new CelestialObjectSearchService(), information = new CelestialObjectInformationService();
+  const service = createTestMiniappService();
+  const context = (await service.resolveObservationContext({ location: { kind: "FORMAL_SPOT", spotId: TEST_PUBLISHED_SPOT.spotId },
+    localDate: "2026-10-09", selectedAt: "2026-10-09T13:20:00.000Z" })).data;
+  const report = await service.getSky(TEST_PUBLISHED_SPOT.spotId, context.contextId, undefined,
+    "bsc5p-bright-stars.v3", CURRENT_DEEP_SKY_CATALOG_VERSION);
+  const catalog = report.data.skyScene.deepSky!.catalog;
+  assert(catalog);
+  assert.equal(catalog.entries.length, 58);
+  for (const reference of references) {
+    const query = reference.replace(":", "");
+    const current = search.search(query, 20, "bsc5p-bright-stars.v3", undefined, CURRENT_DEEP_SKY_CATALOG_VERSION);
+    assert(current.data.results.some(row => row.reference === reference), reference);
+    assert.equal(information.get(reference).data.reference, reference);
+    const position = celestialObjectPosition(reference, report.data.hourly[0]!.at, report).data.position;
+    assert(position, reference); assert.equal(position.catalogHash, catalog.catalogHash);
+    for (const version of [undefined, EXTENDED_DEEP_SKY_CATALOG_VERSION])
+      assert(!search.search(query, 20, "bsc5p-bright-stars.v3", undefined, version).data.results.some(row => row.reference === reference));
+  }
 });

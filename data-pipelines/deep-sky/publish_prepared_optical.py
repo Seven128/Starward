@@ -29,6 +29,12 @@ def json_form(value):
 
 
 @dataclass(frozen=True)
+class PreparedEncodedLevel:
+    level: str
+    encoded_bytes: bytes
+
+
+@dataclass(frozen=True)
 class VerifiedPreparedGeneration:
     directory: Path
     receipt_bytes: bytes
@@ -238,9 +244,17 @@ def publish_verified_prepared_generation(verified: VerifiedPreparedGeneration, o
         verified.bindings, verified.directory, output, root=root)
 
 
+def validate_publication_output(output: Path, generation_directory: Path, bindings, *, root: Path):
+    """Shared non-overlap boundary, also usable before expensive generation."""
+    root, output = root.resolve(), output.resolve()
+    if not output.is_relative_to(root) or output == root or output.is_relative_to(generation_directory.resolve()) or any(
+            output.is_relative_to((root / row["path"]).resolve().parent) for row in bindings):
+        raise RuntimeError("prepared_optical_output_overlaps_preserved_input")
+
+
 def publish_prepared_candidate(payload: dict, products: tuple, bindings: tuple[dict, ...],
                                generation_directory: Path, output: Path, *, root: Path,
-                               additional_owners: tuple[Path, ...] = ()) -> dict:
+                               additional_owners: tuple[Path, ...] = (), support_products: dict[str, bytes] | None = None) -> dict:
     """One exclusive Prepared publication boundary for raw and display producers.
 
     Each producer has already verified its own pixels/units/provenance. Shared
@@ -248,9 +262,7 @@ def publish_prepared_candidate(payload: dict, products: tuple, bindings: tuple[d
     encoded fields. Legacy products retain their original PNG bytes.
     """
     root, output = root.resolve(), output.resolve()
-    if not output.is_relative_to(root) or output == root or output.is_relative_to(generation_directory) or any(
-            output.is_relative_to((root / row["path"]).resolve().parent) for row in bindings):
-        raise RuntimeError("prepared_optical_output_overlaps_preserved_input")
+    validate_publication_output(output, generation_directory, bindings, root=root)
     output.mkdir(parents=True, exist_ok=False)
     command = ["node", str(root / "tools/run-node.cjs"), "--import", "tsx", str(root / "data-pipelines/deep-sky/pack_prepared_rendered_optical_publication.mts")]
     owners = [Path(__file__), root / "data-pipelines/deep-sky/prepared_rgb_tan.py", root / "data-pipelines/deep-sky/prepared_rgb_observation.py",
@@ -277,6 +289,12 @@ def publish_prepared_candidate(payload: dict, products: tuple, bindings: tuple[d
         manifest = json.loads(process.stdout)
         content = {key: value for key, value in manifest.items() if key != "publicationHash"}
         content["levels"] = {level: {key: value for key, value in asset.items() if key != "downloadUrl"} for level, asset in manifest["levels"].items()}
+        if manifest['imageVersion']=='prepared-derived-region-optical-v1':
+            content['support']={name:{key:value for key,value in asset.items()if key!='downloadUrl'}for name,asset in manifest['support'].items()}
+            if not support_products or set(support_products)!=set(payload['support']):
+                raise RuntimeError('prepared_optical_derivative_support_incomplete')
+        elif support_products:
+            raise RuntimeError('prepared_optical_unexpected_support_products')
         if content != json_form(payload):
             raise RuntimeError("prepared_optical_shared_payload_changed")
         for product in products:
@@ -290,6 +308,12 @@ def publish_prepared_candidate(payload: dict, products: tuple, bindings: tuple[d
             if len(encoded) != asset["bytes"] or hashlib.sha256(encoded).hexdigest() != asset["sha256"]:
                 raise RuntimeError("prepared_optical_encoded_product_identity_invalid")
             with destination.open("xb") as file:
+                file.write(encoded)
+        for name,encoded in (support_products or {}).items():
+            asset=payload['support'][name];destination=(output/asset['file']).resolve()
+            if not destination.is_relative_to(output) or len(encoded)!=asset['bytes'] or hashlib.sha256(encoded).hexdigest()!=asset['sha256']:
+                raise RuntimeError('prepared_optical_support_identity_or_locator_invalid')
+            with destination.open('xb') as file:
                 file.write(encoded)
         implementation_after = [bound_file(path, root=root) for path in owners]
         for row in bindings:

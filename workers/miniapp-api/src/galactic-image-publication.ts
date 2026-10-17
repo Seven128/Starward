@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 import {readFileSync} from "node:fs";
 import {readFile} from "node:fs/promises";
 import {NotFoundException} from "@nestjs/common";
-import {assertGalacticImagePublication,galacticImageFormat,type GalacticImageManifestData} from "@starward/miniapp-contracts";
+import {assertGalacticImagePublication,galacticImageFormat,galacticImageManifestPath,type GalacticImageManifestData} from "@starward/miniapp-contracts";
 const DEFAULT_MANIFEST=new URL("../assets/deep-sky/galactic-mellinger/manifest.json",import.meta.url);
 const RETAINED_INFRARED_MANIFEST=new URL("../assets/deep-sky/galactic-2mass/manifest.json",import.meta.url);
 const hash=(bytes:Uint8Array)=>createHash("sha256").update(bytes).digest("hex");
@@ -69,6 +69,11 @@ export class GalacticImagePublicationService {
   }
   imageManifest(publicationHash:string,file?:string):GalacticImageManifestData {
     return this.copyManifest(this.selectedImage(publicationHash,file).manifest);
+  }
+  publishedMetadata(publicationHash:string){
+    const manifest=this.imageManifest(publicationHash);
+    return {route:galacticImageManifestPath(manifest.publicationHash),
+      bytes:Buffer.from(JSON.stringify(manifest)+"\n")};
   }
   /** Current plus the one concrete prior ordinary publication. Stored trials
    * and arbitrary files are not discovered or silently admitted. */

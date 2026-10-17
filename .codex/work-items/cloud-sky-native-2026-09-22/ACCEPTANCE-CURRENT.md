@@ -1,5 +1,186 @@
 # 云观星完整义务账（2026-10-05）
 
+2026-10-17最新菜单批次已由用户直接采用并正式实施 UI01–UI06；共享外壳、菜单、搜索资料、公共时间、跟随/红光及新授权的Map源页渐黑已接入源码，唯一PLAN仅按用户明确批准的Sky入口例外修订。两轮新只读[独立审查](evidence/menu-independent-review-2026-10-17.md)发现项已修复并局部复核，133项受影响检查/类型及完整页面软件结果见[本批证据](evidence/menu-implementation-2026-10-17.md)。当前源码/候选/下一动作只见CONTINUE；软件不冒WEAPP原生遮罩/滚动/正常速度转场、真机或物理性能。原33原行及全部FAILED/UNKNOWN/MISSING不变，其余完整Goal和外部依赖保持。
+
+2026-10-16本对话正式实施[PF02/PF03及证据触发PF05](evidence/performance-implementation-2026-10-16.md)：选中层零写幂等、有限动画同writer续约、SAO同内容集合稳定及当前地平线上列表memo有对应owner/实际消费者结果，普通未推r370类型/构建/预算/origin/源复制绑定成立。PF04完成真实非空MODEL/Scene小路径但未证明稳定整体收益，保原生产播放。用户授权的新只读独审已核r369差异/结果及16源码pin、无确定缺陷并结束；后续局部列表memo仅root核对，不扩张独审范围。新原生节奏/合成/物理资源、全部设备/云端及旧图质/正文/公共接入缺口保未验/失败。只追加限定证据，不改变下方原33原行与FAILED/UNKNOWN/MISSING，当前状态只见CONTINUE。
+
+2026-10-16[整体性能研究采用](evidence/performance-plan-adoption-2026-10-16.md)：本轮仅对照现源、评价研究、更新唯一PLAN/Context与交接。PF01–PF05及条件项按多场景共用责任安排；选中层重复零尺寸、非导航timer→RAF与播放独立producer仍是待实施/验证项，不标已修或产品通过。当前r368源码和未推包不变，r322历史手机不代验；原33原行、全部FAILED/UNKNOWN/MISSING与完整原生/物理/外部依赖保持。研究作者与主代理各自核读不冒新增独审。
+
+2026-10-16[UX20–26有效项的当前证据](evidence/interaction-refinements-2026-10-16.md)：弹窗/名称/独立标记层、全天星座球弧和普通宽视野星数已有有限软件输出；当前未推r368含新暮光显示修复，26亮锚匹配，同ROI四等身份35→141/参考141，15行为/类型/构建/预算通过。[新暮光参数/输出独审](evidence/late-twilight-independent-review-2026-10-16.md)已完成、无确定缺陷，r347此前有限独审仍保原范围；UX23取消。r349–361官方模拟器布局/正文可读，但控件合成FAILED且根因UNKNOWN；旧包对照因工具页面元数据错误不可比，关闭实际结果UNCONFIRMED。新原生动效/同层组合、加载撑开、快速拖动总成本及物理资源均UNVERIFIED，不认证原生。仅增加证据索引，不升级下方原33或历史FAILED/UNKNOWN/MISSING。
+
+2026-10-16[拖动节奏与重复工作增量](evidence/drag-cadence-2026-10-16.md)：r272同包TIMER/RAF窗口间隔与用户倾向支持r273实际Canvas RAF准入；r270/r274补无供给/无匹配空依赖，r277省普通重复目标投影与球弧不必要角度计算。分别保修前失败/修后通过、36项生命周期/55项几何消费者/类型、676弧5条件精确等价及有限Android样本；独审范围/新处置、43ms长间隔、字段归属/GPU/物理/iOS/整场未验均保真。只增加I06/I09/V03/V06/V07有限证据，原33及全部FAILED/UNKNOWN/MISSING不升级，当前运行只归CONTINUE。
+
+UX18最新范围：图片失败只降级、界面无错误提示/失败重试，控制台输出有界错误；详REQUIREMENTS顶部。原33原文及技术FAILED/UNKNOWN/MISSING保留，历史图片提示义务由用户本条覆盖，既有软件/设备证据只按实际适用范围复用。
+
+2026-10-16[完整候选只读独审与原生操作日志修复](evidence/resume-implementation-2026-10-14.md#r266r267独审导航与复制错误遗漏修复普通回交2026-10-16)：独审发现一个真实catch漏日志P2，r266以现共同reporter补Sky导航/CustomNav/Provenance，3代表caller修前失败后通过、受影响35/35及最终类型/构建/包体成立，r267普通手机实际显示。用户另实际45→264.4°→主动浏览→44.6°往返，范围归同证据。只增加相应I06/I09/V02/V03/V06/V07有限证据；修后自查不冒独立复审、phone Console、整场物理/iOS/云端或完整Goal通过，原33及全部历史FAILED/UNKNOWN/MISSING逐字保持。
+
+2026-10-16[本体机制、布局与窗口呈现实测](evidence/resume-implementation-2026-10-14.md#r257r260普通android本体机制与缩放提示修复2026-10-1516)：用户完成放大后，土星盘面/纬带/前后环与来源Back、1.1°月相纹理和解析太阳均有有界普通Android实见；最大倍率提示已移到左上且实际无菜单重叠。r264同普通包45°星点/名称/星座拖动后窗口新增36次呈现，median16.648ms/P9533.292ms/max41.613ms；只属AppBrand窗口样本，不冒Sky-only、GPU、整场性能/峰值、完整本体覆盖或iOS通过。原33及全部FAILED/UNKNOWN/MISSING保持，当前动作只归CONTINUE。
+
+2026-10-15[当前v79本地OCI增量](evidence/api-oci-candidate-2026-10-11.md)：536行正文/索引从实际镜像读回，8新增引用的16个支持基版消费者及真实默认main公开HTTP通过；两自有临时容器已退休，14个选定输入pin保持。只补A/F当前打包与本地运行证据，不升级qualifiedCI、真实云端、目标容量或原生验收。原33及全部FAILED/UNKNOWN/MISSING保持。
+
+2026-10-15[共同错误、实际GPU恢复与有界独审增量](evidence/resume-implementation-2026-10-14.md#r245r248一类实际gpu故障恢复普通回交与有界独审2026-10-15)：r245实际可选shader拒绝后星点/连线/全名保留、原Canvas重建后图片恢复；r248获用户明确授权的只读独审指出四类日志缺口，r249已修复并有51项受影响检查、最终类型/构建/包体及普通r250手机实见。I06/I09/V03/V06/V07只增加这些限定证据；修后未再次独审、手机Console未读、其它原生GPU机制/全家族/物理性能及完整Goal审查仍未闭。用户明确暂时没有iPhone，iOS保持未验。原33行及图质/权益/云端等FAILED/UNKNOWN/MISSING不升级；运行与下一动作只见CONTINUE。
+
+2026-10-15[后续Android有界实测](evidence/resume-implementation-2026-10-14.md#原生半淡真实在途取消与双指缩放增量r193r2012026-10-15)：星座在当前半淡目标下从未ready到可绘、实际MEDIUM下载在退出放大时取消且未传图片、普通版真实双指缩放及停稳已有对应证据。用户直接反馈“缩放连续，松手后稳定”；不是全部模式/资源、成功迟到回执、整场性能、iOS或完整验收。原33及历史失败逐字保持。
+
+2026-10-15[UX15–17局部实现与真机反馈](evidence/resume-implementation-2026-10-14.md#功能文案集中收尾与真实转动首样本r189r1902026-10-15)：单菜单/返回、校准内手动与跟随、分层搜索与资料、独立来源说明已生产集成；r187长资料滚动/固定关闭/完整来源、短目标说明/来源Back和时间显示面板/返回原地点有普通Android开发反馈。r185滚动失败原证据保留；r188识别与方向、r189来源短标题/完整署名均已普通构建及手机实看。r190用户亲自左右转、抬高低下和侧倾并停住，三项均反馈跟随正常、停住稳定；pitch录片主要静止，俯仰结果明确归用户现场观察。可复用文案方法已沉淀现交互Skill/产品Context。有限反馈不认证全部文案/设备、绝对实景对齐、帧率、原生完整验收或独审，不升级下方原33及FAILED/UNKNOWN/MISSING。
+
+2026-10-15[本批局部增量](evidence/resume-implementation-2026-10-14.md)：Moon/Saturn实际native绑定/历史图与来源Back，4°全月边界与1°被遮恒星点选缺陷修后有界成立，普通r128已交。61当前Source位置对固定JPL旧表、当前wire/model传递、同参数PCK轴/形状及UTC/TT/TDB边界各有对应结果；新增DE442s日/月/水星/金星两时刻视直径和geocentric照明比较，ITRF93地球姿态影响单独核存，不冒全部天体/地点/时段、绝对对齐或原生验收。现非空SAO成本不支持新增排序前缀，保原选档/复用；收益范围限本机CPU。r154原无线恢复后普通r158已官方回交并fresh实见；缓存修复目标原生结果与当前运行见CONTINUE。图质、物理/iOS/独审及下方原33保真，运行/下一动作只见CONTINUE。
+
+2026-10-14起[恢复实施的局部结果](evidence/resume-implementation-2026-10-14.md)：UTF8准入、星座静态关系/BSC有证前缀及96完整frame/21非空Scene、受影响行为/类型与原包体检查成立，收益限本机CPU；原配对和普通候选回交已实见。M51与W3受控三档/保粗/来源Back、普通日→夜提交及广角/全天自动名称退场、地下整字/末端身份/右缘恢复有界原生证据，照片矩形/接缝仍FAILED。代表纹理负载不支持采用次数调度，保原策略；隐藏UI年龄钟已修并5生命周期/最终类型通过、普通r124实见，耗电提醒和平台listener因果UNKNOWN。不是全部原生/精确时序/HiPS、物理性能/iOS或独审通过。任务入口/恢复/夹具/类型失败与原归档竞争失败保原。下方33原行及全部FAILED/UNKNOWN/MISSING不升级，当前运行和未闭只见CONTINUE。
+
+2026-10-14[r103有效粗地景恢复](evidence/continuous-environment-2026-10-14.md)：细照片绘制失败不再跳过已保留的可绘粗图；Scene回执与现来源/遮挡/名/命中读实际成功档位及自身alpha，原真实零贡献/两档失败恢复保原。修前Scene反例失败，20受影响检查/类型0、4条件实际GL等独立coarse-only；普通r103包/official0且照片/来源可用路径已实看。仅软件失败与普通native有限结果，原生fine failure/四树全部根因、完整UX09/物理资源/独审仍未闭，原33保持。
+
+2026-10-14[r101–102共同名称](evidence/native-catalog-names-2026-10-13.md)：星座、方向目标、所选与自动目录接同layout/真实metrics/短clock/成功copy；保各action、query/recovery及地平下说明，普通有效字不走独立WXML/ellipsis。受影响owner/actual page/类型通过，普通r102包/official0，已实看HR8162所选文字动作及19:00 M8/银河核心完整双行/正确guide资料、一次普通800ms原片整字同点平移。仅有界Android样本，完整地景/全倍率/iOS/运动/物理成本、资料缺字旧失败和独审未闭；原33行仍逐字不变。
+
+2026-10-14[全天暮光与自动整框](evidence/continuous-environment-2026-10-14.md)：r97实际复现全天亮圈，r98/99原共享shader补平滑方向地影，保落日侧、削弱对侧；同源软件day/night像素保持，停稳264.36°/18:30/−8.04°native对照有限成立，四树/整场/iOS/身体合成及物理性能未闭。[r100完整自动名称](evidence/native-catalog-names-2026-10-13.md)接同copy真实前景/源透明与整框判断，字内/字外两反例、actual page/相关手势和类型通过，扫描复用原证书而不添缓存；普通包预算/官方0并已见夜间整字。扩大检查中的9旧fixture失败保原，不冒全套或全名称族/地景native/独审通过；原33行及旧失败仍不升级。
+
+2026-10-14[连续时间与共同夜景](evidence/continuous-environment-2026-10-14.md)：r77让时间尺浮点位置进入原连续模型、拖动期间暂停fineTarget查询；受影响软件检查及类型通过。r78两原地景shader正常夜景压暗/保地下灰cue、天空侧薄柔和微亮，固定source/alpha/几何不变；32GL和普通暗地平/连续秒级时间已实看。r80区分普通输入有松手/吸附与record-swipe缺结束事件；r82桥接原settlement处理取消门控、主包回原预算，普通r82/r86吸附提交已实看，录屏变体根因UNKNOWN。r79修有效细地景被coarse需求误撤并进入后续普通包，不冒四树唯一根因。r94–96另修已确认同夜提交时的新Query空档清空Canvas/资源：原API确认的类型回执和原模型供给作一次有界呈现保留，不改来源Context/天气时刻或Query；5新owner/48相关用例分次收口与最终类型0，普通r96预算及官方推送0，真实保存中仍保天空/照片。修前126编码帧有2纯暗候选，修后146帧同取样区无候选，原帧已看，仅提交空白有界成立。强黄白圈、完整UX09/12、设备/性能/独审保未闭，原33不升级。
+
+2026-10-14[IR与HiPS就绪迁移](evidence/ready-reveal-2026-10-14.md)：r73–75退出IR独立decode/request，复用共享native/epoch/保粗，原W3一次加法与实际档位来源回执；受影响owner/page/类型、21IR及23共享exact GL通过，普通r75入口已实看，选中IR/late HTTP未验。r76 HiPS同clock与原mesh分组渐显已过有界Scene/26GL，透明父片direct/group边缘跳变已在实际GL发现并统一group修复；普通HiPS仍关、无新采用。已含于后续普通包，但独审/原生完整/物理性能MISSING，原33及旧FAILED不升级。
+
+2026-10-14新增[参考四项UX11–UX14](REQUIREMENTS.md#2026-10-14-stellarium参考调研方案修订与新对话交接)已经按明确授权进入实现。[固定银河/程序化亮星](evidence/visual-enrichment-2026-10-14.md)有r83–86受影响GL/类型与普通r86仙王座夜空有限显示证据，红光原输出保留；[实际星数](evidence/star-density-2026-10-14.md)完成一个同天区public条件的源/Scene/像素比较，r88修现目录被过浅局部阈值抑制，原生局部/物理成本仍待验。人工云层取消、图像冻结/不做无障碍不变；不能将有限显示/软件性能升级为全部效果/深度/物理性能或独审。原33行和旧FAILED/MISSING保持，当前阶段只见CONTINUE。
+
+2026-10-14[旧光学切片就绪渐显](evidence/ready-reveal-2026-10-14.md)：r72迁移实际legacy JPEG source-over，零准备不授来源/不闪W3，细化保粗、拓宽保旧细图至新粗图完成；3修前失败/修后通过及5受影响旧行为、最终Mini类型、21张实际Scene/GPU原PNG与限定独审成立。原生与late HTTP仍未验，当前手机仍r71；IR/HiPS和整体性能开放，原33行不变。
+
+2026-10-14[同源两档就绪渐显](evidence/ready-reveal-2026-10-14.md)：r71在原单次composition/贡献owner迁移exact Prepared/science/display与独立REGION实际消费者，保粗渐显、有效黑/源alpha及非零来源语义；独审发现的离屏误阻红外已修复。10项必要行为、最终Mini类型与23张实际产品GL有界成立；普通r71包和手机入口原图经限定独审。IR/legacy/HiPS、原生两档/迟到HTTP及整体性能仍OPEN，原33行不变。
+
+2026-10-14[资源就绪渐显首路径](evidence/ready-reveal-2026-10-14.md)：普通星座实际caller共享零像素准备、成功copy时钟与当前目标包络；4新行为/2受影响旧consumer/类型和真实产品GL有界通过，普通r70与同段手机原帧渐显经限定独审。其它图片族/同源LOD、真实download时钟/完整原生及整体性能仍OPEN，不升级原33。
+
+2026-10-13[星座阶段有界归因](evidence/point-assembly-2026-10-13.md)：r67一次90°实际暮光样本，body20/artDraw16中的image loop15/texture合计14，单lookupmax13；线几何/队列各max2，支持继续纹理内部细分。原GL/质量/科学/预算不改，首诊断类型失败/修后真实exit0及源码/原图/精确恢复/普通回交限定独审保真；不能直接归upload/copy或宣称收益/FPS/完整性能。诊断退出，复用r66prepared普通回交可见、三个owner stop0，原33与其它未闭不改。
+
+2026-10-13[银河canonical窗口有界交付](evidence/point-assembly-2026-10-13.md)：小源按原压力目标固定full、大源保exact crop，唯一caller迁移，5相关行为/类型、真实product浏览器GL冷暖采样/释放、源码与原手机/普通PNG限定独审通过。一次同实际暮光90°暖横拖上传/copy0、银河峰24→2ms，代价full8MiB大于旧裁切，仍artDraw14/gap40ms；不冒FPS、整场/物理峰或完整UX。r66普通build/预算/官方预览及可见回交有界成立，诊断退出，首fixture/转录/记录/cleanup失败保真。原33行与其它未闭不改。
+
+2026-10-13[银河纹理有界归因](evidence/point-assembly-2026-10-13.md)：r64单次90°实际19:00/太阳−14.96°暮光样本，银河最大24ms落在texture调用，两个body30ms的TOP为texture20/24ms；artDraw独立仍13ms。原调用/窗口/质量/预算保持，原图/源/类型及普通回交经限定独审，native updates误录修53/首版保原。不证明纯上传、driver/GC、手机收益或FPS，不混比旧未知天空。四源精确恢复、helper和诊断owners退出，r63普通回交可见；原33行及未闭义务不改。
+
+2026-10-13[星点过渡快照](evidence/point-assembly-2026-10-13.md)：仅plain point独立复制改原生Object.assign，保字段/状态与真实消费者；4受影响检查、Mini类型实际exit0、源码独审及本机591非空点等价/局部CPU结果通过。r62单次暖90°及原图转录/恢复经限定独审，但实际eligible/SAO/天空与r61不同，明确拒绝5.22→2.12作为手机收益；原因UNKNOWN，仍29ms body/23ms银河。r63普通build/预算/官方预览及初始/横拖后可见结果有界成立，phone字节/AppID及普通FOV未独立读取。诊断退出/旧owner退休，原33行和全部未闭保持。
+
+2026-10-13[星点固定组装](evidence/point-assembly-2026-10-13.md)：原9顶点及Scene字段免临时spread，真实BSC非空3视图3430语义对照/实际类型退出/限定源码独审通过；r59普通build/预算/官方预览及Android初始/横拖后可见结果成立。后续同observer暖90°一次配对主循环7.09→5.22ms/SceneBody13.59→11.62ms，仍有32ms body/19ms银河，不冒FPS或完整性能。原图/源恢复与包经独审，artDraw误录已修/原JSON保留，类型日志所指缺失未重跑；首空运行及跨realm条件保原。普通源与同r59已回交，原33和其它未闭义务保持。
+
+2026-10-13[普通目录名称交付](evidence/native-catalog-names-2026-10-13.md)：实际完整字形/44px框、稳定侧向、首copy后readiness及当前帧触控经受影响行为/类型和两次限定独审；普通r58 build/预算/官方预览及Android整字、名称末端点击身份、跨中心横拖和靠边換侧有有界结果。原录像的相对位移不是FPS；完整字框地景/天穹、目标/选中/星座跨层及图片迟到/时间/整体性能仍未闭。用户已明确取消无障碍开发/专项验收，不伪报旧未验通过。原33行与所有历史失败保持。
+
+2026-10-13[r55/r56分段归因及r57普通交付](evidence/native-label-submit-2026-10-13.md)：有界90°实际样本/归档由独审核实，主星表循环与银河/插画长尾分开，嵌套flush不当纯CPU或重复相加。精确投影提前拒绝经实际前后模块151440比较、7受影响检查/普通类型/限定独审及普通build/预算；合并UX08自动深空名尺度退场，原目录/标记/选择/guide保原。普通新包实见45°手动初始/横拖，无诊断控件；仅host投影CPU收益，不认证手机整体FPS、全文字同步/边界、全天物理pinch、迟到包络/时间连续、iOS/朗读或完整性能。三临时源恢复/helpers退休及真实清理失败保证据，下面原33行逐字不变。
+
+2026-10-13最新六组实机反馈已按用户明确授权纳入唯一PLAN与[UX05–UX10](REQUIREMENTS.md#2026-10-13-六组实机反馈与方案修订)，用户随后答复“现在开始按新版方案实施”，已直接实施。名称拖动抖动、边缘挤压、全景常驻名、迟到突现、时间/四树闪现仍按用户实际失败保留；跟随微抖因果、黄白圈/少星是否符合时刻及毛玻璃成本分别待核。[三原图与源码依据](evidence/ux-feedback-2026-10-13.md)保静态照片/现场报告/推测的区别。原33行、UX01–UX04及全部未受影响证据保原，新六组不替代原义务。
+
+[覆盖菜单有限结果](evidence/overlay-viewport-2026-10-13.md)：稳定Canvas投影与UI遮挡分开，探索露出可拖/菜单结算保当前相机，目标/星座遮挡和accepted摘要同步退出；相关真实修前失败、受影响软件/类型/独审/普通build及预算通过。r52普通45°实际时间菜单开关的UI外863,200像素不变、半透明可见，探索露出拖动/Android Back有限成立。列表拖动后资料缺字是新实际失败，r53同场一次跟进未复现不冒根除；全天/活动双指/朗读/iOS/物理成本及整个UX10未闭。完整33行不修改，当前候选与操作状态只见CONTINUE。
+
+此前r49普通摘要漏星座名回归已修，修前失败/修后4受影响行为、Mini类型、限定独审、普通build/预算及14:39普通画面观察见[native-label证据](evidence/native-label-submit-2026-10-13.md)。原生无障碍树/朗读仍UNVERIFIED；该局部修复不证明六组新体验或性能通过。r50临时阶段探针仅类型通过，未build/推送/采样，已归档并逐字恢复普通源，不产生新广角性能结论。当前阶段/候选/Goal真实工具状态只见CONTINUE。
+
+2026-10-13新增[UX01–UX04](REQUIREMENTS.md#2026-10-13-新对话交接与四项体验补充当前尚未实施)已按后续明确恢复授权实施，归原B/E/F；[本轮证据](evidence/ux-continuity-2026-10-13.md)持有具体输入/结果。自动名称倍率/accepted资格与控件边界、星点进入退出/反向/失效、实际地景mask与屏幕拖动有受影响软件证据及类型通过；独审发现的空闲跳变、全局地景边界误判和控件遮挡误判已修，最后insets窄改独立复审通过。r32手机观察到淡化名称、无地景横/竖位移、灰层及其后HR4295（高度−10.4°）可打开资料；r33实见导航/底部漂浮名称退出。静帧不证明160ms动态手感；[原生短录像范围](evidence/native-animation-2026-10-13.md)现另支持普通r43手动横拖渐入和临时r44视场step内部点渐出，均经独立原帧/像素复核，临时按钮已逐字恢复并回交同r43。该范围不认证全场/精确时长；实际连续双指缩放后模式切换、iOS、整机长帧/原生文字差距仍未闭。原33项逐项记录及全部历史失败/未验原样保留；旧完全fade到0证据不认证新灰层。当前运行候选和操作状态只读CONTINUE。
+
+2026-10-13[普通原生星座名整合与成本](evidence/native-label-submit-2026-10-13.md)新增原完整星/深空/目标/地景避让的单一owner及同copy装饰字；受影响软件、Mini类型、源码独审、r47普通build/预算通过。新52原编码帧与7保存图经独立复核，限定中文可读/无双字残留/横拖相对±1px及HR8162资料入口/返回通过。r48同build 45°/90° CAPTION/BASE四原生样本、数量和归档源经独审；实际1名/最多5名时prep/glyphBlock同步call wall最大1ms、样本中未占主导，r47装饰字部分保留。计时重叠/整数分辨率/观察开销/180ms尾段不认证零成本、物理FPS或整体提速；广角仍47/52ms间隔及35/40ms Scene，整体性能FAILED/UNVERIFIED。两普通源逐字恢复并实见回交r47。字体身份/所有名称运动/可访问性/iOS/物理/长帧与完整33项不升级，下面原33行及旧失败未验保原。当前候选/暖资源只见CONTINUE。
+
+前轮[原生文字有界实验](evidence/native-label-submit-2026-10-13.md)支持同一45°横拖样本中Canvas中文星座名可见、相对画面跟随差距减少，52/55原编码帧经独立复核。简化避让与字体差异未采用，探针源逐字恢复并实见回交r43；不是当前新整合r47源或整体验收。不改下面33项原行或旧失败/未验。
+
+2026-10-11最新[T01–T04验证维护](evidence/verification-maintenance-2026-10-11.md)已按后续“你继续吧”实施：退出默认反证／旧结构门槛，复用菜单测试适配，家族投影与统一运输分责；当前60行为＋1相关workflow及App类型通过，没有本轮全量／WEAPP／负载／原生或新mutation结果。33项原行保留，V06及旧AUD04的反证有条件执行；旧结果及FAILED／UNKNOWN／MISSING保各自输入，不能借维护或文档更新升级完整验收。完整Goal active／未完成。
+
+2026-10-11最新[本地实施与验证证据](evidence/local-completion-2026-10-11.md)：前一阶段33项测试失败已通过共同测试边界／真实依赖适配修复，Mini全量1840项为1839通过／0失败／1条件跳过；保留出版输入另获26通过／0跳过。App类型、真实本地PostGIS／Redis／HTTP／备份恢复及1／10／20冷客户端混合请求完成，均保持其本地范围。最小原生控制工程仍未确认启动，Sky／Settings白屏及更早正常Canvas控件不可见的FAILED／UNKNOWN分别保留，不能归为只有真机待验。按最新AGENTS限制测试扩张及条件反证；该说明文件修改没有触发产品构建／测试重跑。全部33项原义务行未改，图像冻结／延期、v74、239未读实体及设备／实际云端／目标容量／物理／独审缺口保留。完整Goal未完成，当前调度只见CONTINUE；以下历史记录依各自输入有效，不作为当前阶段起点。
+
+前一阶段[AUD01–05与菜单直接改版](evidence/menu-audit-implementation-2026-10-11.md)已实施，完整Taro菜单r4／CSS适配、本地CI类包及原始33失败日志继续保留，原生验收未取得。软件和本机检查不关闭目标运行时义务。
+
+2026-10-11交接[有范围自审](evidence/handoff-code-audit-2026-10-11.md)确认菜单Back遗漏和资料缓存边界缺口，并指出共享返回协议／控制owner冲突、受改版影响的测试及实体producer证据改进；已按用户授权写入唯一PLAN，全部尚未生产整改。本轮有界handler和真实service读回不冒native／物理／线上结果，旧成功旅程只保原场景资格，没有覆盖这次菜单Back反例。33项原始行字节不改，新增失败观察和待修责任不被文档整理升级；独审MISSING及既有原生FAILED／外部未验保持。
+
+2026-10-11用户换对话并新增[菜单UI自主重设计](REQUIREMENTS.md#当前交接补充云观星菜单由agent直接重新设计)：归既有E／交互责任，由agent直接设计实现，不走Stitch资源流程。菜单尚未重设计／实现／验收，原生合成FAILED和外部未验保持；本次仅交接，33行原义务未修改。v74阶段完成后单次官方maxlag=5健康GET仍返回maxlag，无实体重试或新正文采用，239映射未读保持。开发阶段1885封印保原输入，本次文档／产品要求修订与前像由最新交接绑定单独持有，不冒代码变化或UI通过。
+
+2026-10-11 B/E[C07／I07当前46份译介与共同消费者](evidence/text-reviewed-batch-2026-10-11.md)：393原稿段完整读取、236支持段绑定选择性中文节选；共同builder采用v74／297行，251旧行与v1–v73文件精确保原。实际HTTP时间与历史mtime缺省分责，误写修前反例及0pass／1未采用consumer反例保留；53相关检查及两类严格类型通过。实际8404 BSC／58深空／9太阳系owner全读，事实／全部旧别名／其他正文来源不改，有名星224 READY／244 BASIC_ONLY、全部BSC242 READY／8162 BASIC_ONLY。原共享Mira公共搜索／定位／中心触摸／Information／署名复制／Sources／Back，418前端／183后端、347checkpoint／6保护项、9阶段／59本机HTTP／48public文件／4严格画面通过，owner最终退休；首reader变量误用失败保留，修后同运行读回通过。截图仍只有底图、native FAILED，239映射实体未读及既有身份例外未闭，独审MISSING，全部33原行／图像冻结延期／外部未验保持。
+
+2026-10-11 B/E[C07／I07当前共同文本输入](evidence/text-input-supply-2026-10-11.md)：当前出版仍v73／251行及既有178有名READY／290 BASIC_ONLY，46份原稿经固定producer／HR／HD／HIP／许可／实际HTTP时间预检，393段仍TEXT_REVIEW_REQUIRED，没有新正文采用或目录事实改动。50实体只读批量响应／4无英文文章／HR546缺映射；第二组HTTP200 maxlag及有界5／10秒恢复保失败，239实体未读。Mira普通消歧义链接误拒修前失败保留，共同guard修复后同批只读46通过，真正消歧义标记负例仍拒；25相关检查／严格类型通过。51外网GET中4错误不冒成功数据，图像／新WEAPP／云写0。全部33原行、冻结图像延期、原生FAILED及设备／物理／云／容量／独审未验保持。
+
+2026-10-11 B/E[C07／I07当前共同文本供给](evidence/content-supply-2026-10-11.md)：四份固定原稿／实体／许可通过共同预检、译稿声明与单一batch构建器，统一v73／251行；旧247行逐字段及v1–v72字节保原。实际全读8404 BSC／58深空身份／9太阳系，目录测量／事实／旧别名不改；468有名恒星178 READY／290 BASIC_ONLY，1缺中文别名HR546，完整内容仍未闭。严格缓存现0新候选／116保原、16无合格HR＋1系统分量例外保持PARTIAL。原完整Taro418前端／183后端仅介绍owner一变，335checkpoint／6保护项、9阶段／62本机HTTP／4严格画面；定位时无modal，实际中心touch打开HR5359正文，署名／限定／Sources／Back及owner退休通过。62首检查有1旧计数fixture失败，修为保留v72后9兼容通过，builder5项与类型通过；首报告／类型／fixture失败保留。软件模态文字不冒native，全部33原行、影像冻结延期、控件FAILED／设备／云／容量／独审未验保持。
+
+2026-10-11 B/E[I08当前面状选择／名称／资料恢复](evidence/area-actions-2026-10-11.md)：同一原area机制两独立正式Context，M31真实GALAXY／177.83角分投影环45°→15°由27.436px增83.263px，M57真实NEBULA／1.27角分保12px最小语义环；原公开search／locate／pinch／持久marker／modal关闭保身份、相机、时刻及独立名称淡化。两运行各11阶段、54／64实际public文件、65／75本机HTTP、330checkpoint／6保护项、同418前端／183后端；合10GL／实际2D／PNG严格核读、4恢复对0差，原owner最终全退休。仅两个task sample适配差异，生产／资源／测试／WEAPP变化0；缺extent回退5原owner检查通过，首reader Numpy序列化错误保留。两个epoch不冒完整旅程，逻辑circle／名称不冒nativeCSS；全部33原行、图像冻结延期、native FAILED及外部未验保持。
+
+2026-10-11 B/E[C07／I07／I08当前真实目录点选与空白取消](evidence/selection-actions-2026-10-11.md)：复用原完整Taro与两个共享消费者，同正式Context18阶段、418前端／183后端、329checkpoint／6保护项、38实际public文件／52本机HTTP、10GL／实际2D／PNG严格核读。真实SAO核心／两项重叠选择／5.20历史视觉测光与缺值说明、资料来源、一次受控剪贴板失败后的原重试／两复制和公共Back保身份／几何／时刻；四post-draw核心窗口与来源往返保存像素严格0。HR关闭modal保选择、过期原快照不误清、有效空白取消／停止跟踪／再次选择与marker资料恢复沿原owner；逻辑名称／十字不冒nativeCSS。独立向量算术、最终owner全退休；32科学叶节点保旧有界资格。生产／测试／资源／新WEAPP变化0，首次观测GL错误与首reader envelope错误、完整owner退休缺口保留。全33原行、影像冻结延期及native FAILED／外部未验保持。
+
+2026-10-11 B/E[C02／C03／C09当前星表与图层消费者](evidence/layer-actions-2026-10-11.md)：原完整Taro同正式Context33阶段、418前端／183后端、326checkpoint／6保护项、62实际public文件／72本机HTTP、26GL／实际2D／PNG严格核读。45°／8.89°两尺度与普通／暖红模式，原星座及两网格开关、水平圆和四类来源正文走原owner；四组当前真HR／SAO同帧身份／位置／拾取结果保原，九对恢复像素严格0。显式关闭六插画native句柄与encoded租约退出，局部淡化保线与目录；全部owner最终退休。32未变科学／几何／数据叶节点保旧有界到达与全88证据，变化的Supplement Hook另核当前恢复，不冒旧整页或完整到达仍当前。30相关检查通过，仅修复两测试夹具遗漏即时守卫／手势与共享恢复边界；无生产／资源／WEAPP修改。首次旧剪贴板诊断失败、模型终态缺口与执行副本保留；五图实际看审限本条件，裁剪sampler源未记录仍有界。原33行、图像冻结延期、Prepared0／HiPS关、native FAILED／设备／物理／真实云／容量／独审未验均保持。
+
+2026-10-11 B/E[C05当前共享消费者](evidence/body-actions-2026-10-11.md)：原完整Taro当前一个正式Context49阶段、418前端／183后端、322checkpoint／6保护项、100实际异步public文件／150本机HTTP、冷场景＋九天体10GL／实际2D／PNG严格核读。七份固定真图核实际GPU上传源／sampler／native资格／接受帧不可变出版及Sources完整文案，太阳／金星解析不借图像信用；九次原点选／资料／Source Back保Context／时刻／view／modal和适用版次，最终资源退休。16科学叶节点仍同原运动图，旧数值／时间／大气范围保原；五个迁移后的消费者补当前链，不冒旧整页仍当前。18检查通过，仅修复测试夹具遗漏实际共享重试守卫；生产／资源／新WEAPP变化0。首轮query先于渲染的harness失败与六次reader错误前提保全，严格像素／出版不放宽。九图实际查看限本条件，近新月／小盘不认证完整图质；原33行、图像冻结延期、Prepared0／HiPS关、native FAILED／设备／物理／真实云／容量／独审未验全保留。
+
+## 当前阶段与延后义务
+
+2026-10-11 B/E[I02当前总览／局部／手动消费者](evidence/overview-actions-2026-10-11.md)：同一Context11阶段、418前端／183后端、85实际public文件、93本机HTTP及8次GL／实际2D／PNG保存。原pinch总览保进入朝向、三轴变化不改已绘总览，回45°局部取当前有效完整姿态；公开拖动与总览往返保手动方向，native采集关。三对保存像素与独立矩阵／执行字节核读由该回执持有；原owner全退休。无生产、测试或WEAPP变更，不重放校准／搜索时间／Sources／固定1785恢复，不以旧整页图当当前。下方33行、图像冻结延期、原生控件FAILED、手机／物理／真实云／容量／独审未闭保持。
+
+2026-10-11 B/E[I01当前本人提案消费者与返回](evidence/proposal-actions-2026-10-11.md)：完整原Map／Sky的同一候选Context、20阶段、111本机HTTP及4额外真实权限负例、73实际public文件、9次GL／实际2D／PNG保存。修复无正式点ID时隐藏Sky导航误清本人候选面板，修前单元与实际r4失败保留；同Map、当前新时刻、原Back及面板恢复不重开marker。私有SAO报告绑定、匿名403／其它owner404／错地点400、预览取消与明确提交／日期精度／旧搜索回调退休走原owner。相关24项、私有位置1项、App TS5.9.3与本地CI类候选3项通过。新包274文件4652287B、fingerprint ba32b6a4…、main2096526B余626B；原正式Sky418输入不变、旧包及各次失败保全。精确保存核读／输入绑定由对应回执持有；下方33行原文、图像冻结延期、普通Prepared0／HiPS关、未采用surface、原生控件FAILED及设备／物理／真实云／容量／独审未闭仍保持。
+
+2026-10-11 A/F[当前固定资源兼容与恢复](evidence/current-static-compatibility-2026-10-11.md)：原1785条／104613871B沿现v2源archive、复用capture及新managed restore完整往返，原3577文件／7控制不变，URL／正文／头／源封印精确保留，lease释放，OCI／DB／HTTP／服务调用0。当前旧HEAD reader接受1752、拒绝33，原whole-index私有wrapper断言不足已由真实序列化index复核，原运行／脚本保留；工具能力和应用镜像回滚分责继续按现owner，不删metadata／support凑旧兼容。原source为controlled fixture，runtimeApplied=false；逻辑备份108086054B／新store212204436B不冒物理／off-host／live rollback。无生产实现／资源／WEAPP变化，33行及图像冻结延期、native失败、设备／云／容量／独审未闭保持。
+
+2026-10-11 B/E[公共搜索／跟踪／时间／日期](evidence/public-actions-date-2026-10-11.md)：原完整Taro当前一个Context、15阶段、81真实本机HTTP／62实际public文件／8GL→实际2D→PNG严格核读完成。修复共享日期helper丢秒／毫秒，修前4回归失败及公共r1终态FAILED保持；相关59项、日期／Map12项（日期6项重叠）、App TS5.9.3及新本地CI类候选3检查通过。revision1→2→3保身份／地点／精确时刻，旧M31搜索闭包退休，原owner最终全退休。新包274文件4652280B、fingerprint a98de0b3…、main2096519B余633B；旧38阶段保原输入，当前前端仅共享日期owner变化，不重放／不冒旧全图字节仍相同。下方33行、图像冻结延期、普通Prepared0／HiPS关、未采用surface、原生控件FAILED、设备／物理／真实云／容量／独审未闭全保持。
+
+2026-10-11 B/E[当前完整Taro组合](evidence/current-combination-2026-10-11.md)：同一当前Context的38阶段、177本机真实HTTP、418前端／183后端静态输入／159实际public文件及16GL→2D→PNG严格核读完成，校准／时间收起／Canvas恢复／AppHide／Sources保留与后台退休／两Back像素差0。四Canvas和监听／Query／GPU／native／encoded owner最终全退休，26B空索引保留；七前次FAILED与夹具前提保真实。生产源码、当前包与311行为等输入原样复用，无新WEAPP构建；33行、图像冻结延期、未采用surface候选、原生控件FAILED、设备／物理／真实云／容量／独审未闭均保持，不升级完整验收。
+
+2026-10-11 B/E[校准事务与恢复范围](evidence/calibration-scope-2026-10-11.md)：开始核live时间／当前已绘帧，确认／取消核原方向事务版本，Canvas failure释放冻结编辑，迟到effect不退休有效替代scope。最终上一实际page 21/48项行为断言失败／27项原通过，逃逸预览标志另1项反例；当前48校准集成、32文件311行为、App TS5.9.3及两CLI／实际候选各3通过。当前r2本地CI类274文件4652187B、fingerprint d9b04525…、main2096426B余726B，原十三目录／19控制／212资源模板保原。33行原文、图像冻结／延期、原生合成FAILED、设备／真实云／容量／独审未闭保留。
+
+2026-10-11 B/E[公共面板与资源恢复](evidence/controls-recovery-2026-10-11.md)：实时面板读回、公共恢复准入、局部GPU／查询恢复及方向设置去重已修。最终修前15项断言失败，32文件287行为、App TS5.9.3与新CLI／实际候选3检查通过；当前本地CI类274文件4650347B、fingerprint f8eb564d…、main2096426B余726B，原十一目录、19源控制及212资源／模板保原。此为受控软件及编译证据；下方33行原文、图像冻结／延期、原生合成FAILED及设备／真实云／容量／独审未闭均保留。
+
+2026-10-11 B/E[页面生命周期所有权](evidence/page-lifecycle-2026-10-11.md)：App后台先到达的Context／时钟／传感器反例、排队来源与Back、手势旧检查点及同Context换版回调已修；29文件267行为、App TS5.9.3及实际新CLI通过。当前本地CI类r2为274文件4649944B、fingerprint 7c5d9e03…、main2096426B余726B；旧十目录、19源控制和212资源／模板保原。实际候选读回及完整保留核验见绑定证据；此仍为受控软件与编译证据。图像冻结、33行原义务、历史失败、原生控件合成FAILED、设备／真实云／容量与独审未闭均保留。
+
+2026-10-11 B/E[公共动作即时所有权](evidence/action-ownership-2026-10-11.md)：修前实际page 21项断言失败，现203受影响行为、App TS5.9.3与新CLI／真实候选3检查通过；时间／选择／定位／跟踪的迟到动作不能绕过当前Context、提交锁或hide/show，活动拖动取消和日历提交中关闭保原语义。该阶段本地CI类r2为274文件4646902B、fingerprint e9502946…、main2096426B余726B；旧八输出、F控制／源project.config／v8／r17及212资源／模板保原。此为源动作／受控生命周期与编译证据，原生控件合成FAILED、设备／真实云／容量及独审未闭，下方33行义务及历史状态不改。
+
+2026-10-11 B/E[校准入口的正常尺度先绘后冻结](evidence/calibration-entry-2026-10-11.md)修复现实际page入口，172影响行为、App TS5.9.3及新CLI/候选3检查通过。新CI类包274文件4646082B、main2096426B余726B，旧六输出、F源控制、源project.config/v8/r17和212资源/模板保原；原生控件合成仍FAILED，完整物理校准/设备/真实云/容量/独审未闭。此有限新增证据不改下方33行原义务与历史状态。
+
+恢复实施后的最新有限证据见[资源origin/来源出口/原生wx分域](evidence/resource-origin-2026-10-10.md)、[OSS/ESA本地适配与合同](evidence/object-store-package-2026-10-10.md)、[官方OSS执行/恢复与固定批SDK](evidence/object-store-upload-2026-10-10.md)、[实际编译绑定及原主包预算失败](evidence/compiled-origin-binding-2026-10-10.md)、[主包归属修复与当前普通包](evidence/package-ownership-2026-10-10.md)、[独立发布候选及实际CI类消费](evidence/release-isolation-2026-10-10.md)及[无Canvas正文观察](evidence/native-wxml-observation-2026-10-10.md)。原超86229B产物/日志保FAILED；普通优化输出main2096423B、余729B，当前本地CI类r3 main2096426B、余726B、274文件4644226B；旧3目录/源配置/冻结输入全保原fingerprint，212资源及模板不变，11静态predicate和编译5角色通过。v3独立目录/预算消费者及45 owner回归、常规release42、真实候选3检查通过，不是protected CI或可部署资格。这些本地合同/编码文件/受控SDK/编译纯owner/本地包/限定原生正文回执不关闭正式发布、完整交互、设备、物理峰、真实store/CDN/旧版/恢复或独审。以下33行原义务和历史状态保持，当前有限修复以上述owner为准。
+
+2026-10-10用户改为“固定在制影像收尾→冻结图像增量→完成其余云观星开发”，完整授权见[REQUIREMENTS当前修订](REQUIREMENTS.md#当前阶段修订在制影像收尾后冻结完成其余开发)。以下33项及其历史结果逐项保留；`DEFERRED_BY_USER`只表示执行安排，不能覆盖FAILED/UNKNOWN/MISSING或变成PASS。
+
+| 范围 | 本阶段完成要求 | 后续迭代 |
+| --- | --- | --- |
+| C04/C06与C05涉及的图像供给 | 固定在制集合有明确复核/退出结论，保已有合格银河、W3/SDSS、日月行星与星座素材；固定候选的运行接入仍按实际资格完成 | 扩展光学覆盖、新来源/换源/去星/降噪/精修和新增纹理供给`DEFERRED_BY_USER`；旧失败保原 |
+| I04/I06、C02/C07及V01/V03 | 无图仍有真实星表/目录/计算、正确搜索点选与资料；无已绘图不抑制应见星点/标记或生成虚假图片credit；细图失败保适用粗层与独立内容，恢复不制造重影或旧身份 | 延后图片不要求先做新图才能验证这些现有消费者；不取消其真实性/恢复义务 |
+| A/B/E/F及其余C/I/D/K/V | 对保留及冻结后准入资源完成原生交互、出版/来源、共享缓存/分发、兼容、成本和适用验证；按最新CDN前提核容量 | 仅新增图像集合的加工与特有验收延后，公共代码缺陷不随之延期 |
+| V04/V05/V07及真实云端条件 | 继续可执行的独立开发与有界验证；记录当前设备/物理/云端/独审的真实缺口 | 不可用条件保持未验，不假装通过，不循环重复无法关闭缺口的检查 |
+
+缺图显示按[产品owner](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#分阶段影像交付与缺图显示)验收；这是用户允许的阶段交付边界，不是图像质量降标或完整Goal完成证明。方法与顺序只读PLAN，当前恢复点只读CONTINUE。
+
+最新用户明确恢复实施，已解除此前仅交接停点。本次固定47行/22版次、88文件核读及[冻结回执](evidence/image-stage-freeze-2026-10-10-r2.json)已完成；三份候选待公共接入，失败/缺条件延期与原质量结论分别保留。B/F[单文件准入与字节队列](evidence/cache-admission-2026-10-10.md)修复实际生产owner，61项影响检查通过；真实固定PNG经受控Taro公共链暖重启无新增请求，随后实际DevTools wx编码请求/文件读回/暖复用/清理在独立任务目录通过。无图相关42项及最终页6项、App类型、普通WEAPP构建和Context校验通过。此为I06/V03/V06相关开发及限定原生文件链结果，不是原生整页/设备/物理/容量/独审通过，33项原状态不变。
+
+## 当前图像验收尺度
+
+2026-10-10用户明确采用[显示质量标准 sky-display-quality-v1](../../../project_context/development-workflow/resources-and-artifacts.md#cloud-sky-display-quality)，适用于C04/C06、照片目录协调I04及相关V01/V04/V06视觉判断。实际支持尺度/夜间晨昏/代表屏幕内肉眼无明显问题，保真实性、正确位置和可辨认结构；轻微自然颗粒/压缩/不突兀底色及诊断增强才显出的微小残差不单独判失败，不逐图要求科研资格或像素级完美。
+
+内容复核记录实际图/Scene身份、显示范围与适用标准；目标手机正常至偏高亮度仍须在设备阶段核验。许可/身份/hash/coverage/合同硬检查、已知加工误删、明显矩形/接缝/重影不放行。原失败及未验均保其epoch，新标准只能产生有证据的新决定，不能批量改状态；历史严格像素差是原观察，不自动等于当前视觉缺陷。全部33项、共享恢复/设备/物理/独审未闭义务保持。此前仅更新文档的停点已被最新恢复指令解除，当前授权与进度见CONTINUE。
+
+图像优先实施的后续[C/D/V06批次证据](evidence/image-batch-repair-and-scene-2026-10-09.md)：真实SXT/PS与原始分辨率组、精确冻结蒙版/PSD/像素读回、实际当前银河背景11帧、同范围0帧复用和两项有效负向回归完成。八条加工epoch覆盖六源，当前仍五源图质需修、NGC246 Scene矩形FAILED；普通采用/可分发0，33项及设备/物理/独审缺口不升级。
+
+末段重复前期复核的范围见[复核证据](evidence/plan-reassessment-2026-10-09.md)；该末段仅文档/有界库验证，不能代表此前数小时的代码实施。用户已纠正错误暂停：正式实施授权持续有效，详当前REQUIREMENTS及交接。全部33行原文与FAILED/UNKNOWN/MISSING保持，下方历史工具状态不覆盖最新用户指令。
+
+当前E的[运行版本核对](evidence/native-runtime-identity-2026-10-09.md)已结束：一次官方auto启动及三份完整保留的隔离构建、实际本地API/Context可读；公开SDK入口属性/文字均未确认构建标识，运行版本UNKNOWN，未进入有效Sky或升级原生验收。页面实际返回Map，自建SDK/API退休；当前29个相关软件consumer及App类型通过，不冒全矩阵新epoch。全部33项及旧FAILED/UNKNOWN/MISSING保持。
+
+D的后续只读BSC v2扫描已覆盖8404颗、原图名义footprint内0颗，未新增对应/批准配准；F[保留引用责任复核](evidence/retention-reference-audit-2026-10-09.md)确认复用现owner，实际完整引用与全机容量未补齐。这两项不升级质量、采用或33项，详情沿各自证据。
+
+当前实施恢复下的I06/V03/V06新增owner/consumer证据见[资源恢复围栏](evidence/image-recovery-and-registration-2026-10-09.md)及[报告与SAO恢复](evidence/report-and-stellar-recovery-2026-10-09.md)：暂停/隐藏/卸载、Canvas/CPU owner换代、当前wanted及Context/报告请求已有修前反例与修后软件结果，七个实际报告JSX consumer通过；原生、设备及全恢复组合不升级。前者另提供D01/C06配准诊断和K02/V05默认包Windows allocation，分别不是质量采用或Linux全机容量通过。最新有限源码/矩阵和实时操作只见CONTINUE；以下各段保各自epoch，旧进程、构建、Context与来源pins不得当当前在途状态。
+
+2026-10-09恢复授权有效，实时Goal active、无预算、未完成。[派生区域合同/consumer](evidence/derived-region-publication-2026-10-09.md)和[细视场背景/精确恢复](evidence/galactic-scale-continuity-2026-10-09.md)限定开发结果保留；[PS组合producer/consumer](evidence/ps-restored-native-publication-2026-10-09.md)现已接通同一native批次/出版/出口/Scene/来源责任：M81/M82原修复细档精确复用，只新增两粗档，NGC5128黄色环仍留异常。原SXT NEEDS_REPAIR与组合文件PASSED、Scene MISSING分清；实际DPR2三档/两Back完整RGBA相同/额外Prepared body0/退出解码GPU模型0，标准静态3PNG/746624B，fresh-review外部像素篡改拒绝、当前缓存0PS/模型/编码读回。没有重跑PS/模型/raster或取图。实际矩形边界仍FAILED，质量/科学UNKNOWN/配准UNVERIFIED/设备物理独审MISSING及全部33项不提高；普通Prepared空/HiPS关/低分辨MellingerDISPLAY/v72保持。
+
+[电脑原生运行/workflow](evidence/native-runtime-and-workflow-2026-10-09.md)：官方DevTools 2.02.2609232/Skill0.3.11 equal，现有PostGIS/Redis开发入口已建立当前源码watch（终端99080，11388→17352；不再重复启动）。单次官方auto实际9420/currentPage可读；Sky缺参数恢复页及真实返回Map route已观察，正常Canvas/控件仍UNVERIFIED，Map白主体/桥接clone与查询失败未归因。26条本地记录按现行发布条件合格公开0，未改状态或绕过。保存点workflow18/22四失败经现owner wiring及既定LF字节修复后22/22，旧日志和21份原字节保存，清单hash/图形/许可未改。局部编译/节点/回执不冒原生正常体验、完整质量、设备、物理或独审通过，33项原值不提高。
+
+[正常WEAPP隔离Scene](evidence/native-fixture-scene-2026-10-09.md)：复用现服务工厂、内存测试点与独立8791 API、现isolated-fixture编译owner；原256文件完整保存，canonical 8787/watch99080保持。实际进入、手动星场、DPR3、后代19:00时间步进及45°→22.71897°→45°双指反向恢复已观察，天空区域恢复逐像素0差。首代19:30时间操作UNAVAILABLE/Canvas错误、SDK选择意图差异与clone/recursive-update、控件不可见仍FAILED/UNKNOWN；trial3.17.4/latest3.17.2一次对照未解组合，原配置和实际trial已恢复。只补固定Canvas失败码边界/公开读回，23影响检查、App类型与WEAPP构建通过；当前故障字段的实际失败读回仍未验，不能当修复/采用/物理/完整验收。合成数据不改真实公开状态、证明持久恢复或容量，33项保持。
+
+[native静态manifest与隔离恢复](evidence/native-static-metadata-2026-10-09.md)：现publication/header/export/writer接显式native裸清单，原图/SXT/PS共新增16,489B；新回归原6图≠8条失败保留，13影响检查/API类型通过。五既有出版→标准1752记录/89,147,665 payload B→backup v2/重捕复用pool→fresh isolated restore已读回；PS三图、派生12记录与原manifest精确保持，0新加工/模型/PS/编码。新attachment需更新后的writer/reader；原derived三头保留、旧二进制回滚/真实引用/OCI/GCM/live/容量/独审均未验，33项不提高。普通注册空，不公开采用。
+
+[局部PS残环试验](evidence/ps-local-residual-median-2026-10-09.md)：1次实际Median/0模型，只改变2460像素，外部与ICC精确保持，可编辑PSD实际读回；8项共享检查含移除守卫到禁止COM反例通过。完整图/ROI仍NEEDS_REPAIR，不沿原恢复producer出版，不循环参数。原执行回执及其pending看审epoch保留，当前独审/Scene/science缺口不提高。
+
+[旧基线reader](evidence/native-static-baseline-reader-2026-10-09.md)：HEAD b73523f1真实旧工具读1752条接受1743、拒绝9新Prepared support路线；移除附件头仍拒绝，实际bundle validator报record_invalid。旧控制工具读取新完整包FAILED，当前工具/旧图兼容限定结果保留；不删文件或运行回滚/部署。
+
+[按需NXT颜色/粒度/队列](evidence/nxt-color-and-grain-queue-2026-10-09.md)：当前sRGB RGB8有/无ICC数值对照精确一致，旧smoke复用，限定补回绑定ICC，不外推未知profile。完整M8区一次NXT0.9、446114像素变化，原alpha/ICC保真；粒度IMPROVED、密星区趋平/残点保NEEDS_REPAIR，不普通采用/出版。已读缓存沿同一image_quality/sxt_batch review入口，独立nxt-review-queue-v1与实际native key/当前validator分开；单像素fresh hash、假alpha、错stage、冲突色、count和guard mutation均有影响检查，有效其他行保留。旧producer拒绝新链。0新SXT/PS/LOD；30不同影响检查有分阶段日志，非整个当前矩阵再次跑。当前queue NEEDS_REPAIR1，Scene/science/原生/物理/独审与33项不提高。
+
+[实际WEAPP来源Back](evidence/native-source-back-2026-10-09.md)：公开列表→M31资料→定位→已绘标记资料→独立来源页→其返回已观察；19:00/45°/M31中心及标签坐标保持，实际天空446907像素RGBA差0。来源页实际可见许可/加工，星空WXML控件/标签仍不可见FAILED；实际完整basis只有Back后一次可读，成对UNVERIFIED。SDK data属性/nth误选已保，现按公开Taro生成id先核文本再操作；不私有注入/猜点/重连。无编译/新服务/图像加工，内存点、真实设备、物理、图像版本及独审/33项不提高。
+
+[原生中文搜索/跟踪/取消](evidence/native-search-tracking-2026-10-09.md)：织女星唯一匹配HR7001，公开跟踪/播放1×/暂停/取消实际已绘；16.142秒、方向0.05255°，取消天空RGBA差0、Context rev3/19:00真实读回不提交。原生控件可见组合FAILED、内存/设备/物理/独审缺口及33项保持。
+
+[原生影像二进制与资源恢复](evidence/native-binary-resource-recovery-2026-10-09.md)：实际跨realm ArrayBuffer被instanceof误拒绝，现三个消费者共用intrinsic品牌校验，原对象零复制、严格长度/hash及生命周期保持。失败前1回归保留，32 owner＋2真实adapter检查/两代App类型通过；完整保存274文件后一次fixture构建，当前274文件/4,623,924B绑定29ff54ea…，早期构建中1文件绑定不接受。实际DPR3银河/插画/地景已绘，v2库存14条/2,125,275B；Polaris Sources/Back保持时刻/45°/坐标及库存，446907天空像素12像素最大1码变化，非逐像素相同/原因UNKNOWN。控件不可见FAILED、图质/科学/设备/物理/独审及33项保持，无新模型/PS/编码或公开采用。
+
+[已加载影像的原生全景/地景/网格](evidence/native-loaded-panorama-layers-2026-10-09.md)：实际DPR3双指274.9276°、地景开关显露地下星空；公共view视觉中心+7.52°/−84.43°与实际部分/完全fade观察相符，完全fade同view开关RGBA差0。地下木星coordinate tap资料保高度−45°；反向basis约4e−16差、36像素最大2码差保UNKNOWN，不冒精确恢复。两网格实际78379像素变化，关闭RGBA差0；局部回45°保手动pan天顶，不冒旧北向/手机跟随。原生encoded16条/5,495,672B含当前地景detail/alpha，非物理峰。无产品变化/构建/图像加工；WXML可见组合FAILED、33项/设备/物理/独审保持。
+
+[原生跨午夜提交/共享时间](evidence/native-midnight-shared-context-2026-10-09.md)：真实00:30刻度提交后Sky READY/时刻16:30Z、公历10月10日；HTTP200/FRESH同Context revision3→4，观测夜localDate仍10月9日。公开返回Map后其sr-live时间投影读回10/10 00:30；不冒可见Map/spot-panel/持久恢复，跨午夜拖动预览取消仍未验。首份误用API字段的null及过期Back id守卫失败保留，重读后实际成功。无产品变化/构建/图像加工，33项与WXML/设备/物理/独审保持。
+
+[原生细尺度天体/新版月面来源](evidence/native-body-fine-and-moon-source-2026-10-09.md)：实际Saturn45°→0.05°纬带/环已显示；同缓存精确匹配8×512/1003B历史OPAL图，公开披露年代/CCBY4.0/加工。Moon0.875°原午夜极暗样本保留，公开日期选10月2日较亮月相实际纹理/核心点选/coverage-v2来源与Back已观察，446907天空RGBA差0。原生Moon2048×1024/1595187B精确缓存；库存80条/8248206B含SAO，不冒物理/GPU绑定或完整退休。公开恢复10月10日00:30后Context rev6/localDate10月9日，手动方向保上一Moon定位，FOV0.875°。无产品变化/构建/源图加工；WXMLFAILED、current-program/SHA/物理/设备/独审与33项保持。
+
+[原生跨午夜拖动/取消](evidence/native-midnight-drag-cancel-2026-10-09.md)：官方coordinate实际拖动00:30→前夜22:30，已绘READY和预览文本同步；持有期间Context仍rev6/00:30。公开取消后再touchend，已绘恢复00:30、同Context仍rev6，完整basis/投影字段相同；无before截图，不冒RGBA精确恢复或全部惯性组合。无产品变化/构建/加工，控件FAILED与33项保留。
+
+[日月行星已绘帧交付](evidence/native-body-painted-binding-2026-10-09.md)：七纹理共用renderer成功提交→Scene原bitmap→queued publication→生命周期accepted帧，基础盘/红光/错误/退休不署名。五新检查、29受影响、45共享消费者通过（保1原SKIP）、最终App类型/构建通过；旧产物完整保留，新274文件/4,627,594B/d6bf94b6…绑定。官方首次刷新未确认新代码，单次清编译缓存后新增字段已确认；实际Saturn0.05°及Moon0.875°接受哈希/SHA与原成品一致，OPAL披露含immutable已绘URL，Moon概览197.84°变[]而身份保留。Context当前rev7/10月02日00:30（夜localDate10月01日），独立Sources精确body版本选择尚未接；WXML FAILED/设备物理独审及33项保持，无图像加工/新服务/采用。
+
+下一：补已绘日月行星到独立Sources的精确body publication选择与错误/失效版本语义，沿现validated manifest、静态独立资料、来源Back和暂停owner；不得借W3或光学hash字段、让current默认替旧帧署名。先Moon与共享OPAL一条小路径，再迁七消费者并验证旧/错版本和来源返回；复用原成品，不重加工或重跑已闭合矩阵。warm canonical/8791保持，当前rev7/Moon概览；WXML窗口/手机/物理/独审后置。
+
 [2026-10-07 执行纠偏](evidence/execution-correction-2026-10-07.md)：用户已否决逐星扩写与逐批重复验证；图像供给和加工恢复优先，所有重复工作先批量化、仅例外逐项复核。v72及既有成果完整保留；Vindemiatrix三项仅已缓存核读，未生成v73或产品测试，停止该逐星计划。Goal本次实际读回paused、无预算、未完成；续接先读回实时状态，不沿用历史active。唯一执行顺序见PLAN当前段，历史摘要中的下一步均失效。
 
 [A1 SAO公开消费者](evidence/a1-sao-public-decision-2026-10-06.md)：真实19229核心/两项重叠/历史视觉5.20与缺值、当前位置/资料来源两复制/Back/公开定位通过，04:00锚点重算13:00方向差0、中心误差3.41e-13px。首Back两7×7差0/Canvas PNG相同，不冒选择十字WXML；两运行41Scene113请求含首锚点诊断FAILED保/该次终态模型MISSING，成功次模型0。产品测试WEAPP构建0改；下一选择语义/真空白取消只按PLAN，完整33/native/物理/独审保留。
@@ -227,3 +408,18 @@
 [PS1有界保粗决定](evidence/q1-ps1-coarse-priority-decision-2026-10-06.md)：原20MiB内优先保粗，67影响检查/WEAPP类型、100 Scene/163请求；回8°无外围不足/粗格重传，九终态同相机RGBA差0、GPU模型峰低1MiB，整场本地body净少437,816B。首次进入/Source Back空窗仍在，该45°小样现已退出，下一只按PLAN，普通入口关/完整验收开放。
 
 原watch自动更新Sky JS/map两文件，三个owner原文在source map精确一致；旧构建epoch回执保留，不作DevTools运行通过。
+
+2026-10-09 PS异常恢复补充：真实2图局部恢复/0新模型，可编辑PSD实际重新打开及核心/外部像素差0；M81/M82仅当前1024工作文件通过待Scene，NGC5128黄色环仍FAILED。当前同字节执行源迁址复核通过，不冒历史epoch。见[PS证据](evidence/photoshop-original-restoration-2026-10-09.md)。33项C/I/D/K/V状态保持，组合加工/区域出版与实际consumer、连续背景、设备/物理/独审仍开放。
+
+2026-10-09派生区域坐标补充：复用两现有连续工作区，Astropy→现TAN数学16探针读回通过；共享plane/旧native拒绝派生provenance/9影响检查及四实际TS配置通过。没有新raster/模型/出版或区域Scene，M8/M61仍NEEDS_REPAIR；33项状态保持。详[坐标边界](evidence/derived-region-coordinate-2026-10-09.md)。
+
+
+2026-10-16 r279–287限定补充：用户约40°观感改善、约115°快速拖动仍FAILED。现单writer/质量不减的顶点整理使本机constSubmit mean1.19→0.19ms；软件gap P95反而34>26ms，不据此判整场性能通过。独审指出测光限定误移，已由共用facts修复并经LOCAL新隔离API/HTTP/Android可见原始H标记验证，完整来源保留。普通r287已回交；图质/权益、iOS、云端与全部其它未验义务保持，原33不改。详见[evidence/drag-cadence-2026-10-16.md](evidence/drag-cadence-2026-10-16.md)。
+
+2026-10-16 r294普通版交付后，用户对约115°快速拖动明确回评“已经不明显”；只为本机当前候选该主观症状的改善证据，旧失败与r293波动数据保持。整场/所有设备/物理成本及完整Goal不因此通过；详见drag-cadence证据，原33行不变。
+
+2026-10-16 r297补充：用户最新“显微镜座为中心95度，向上拖的时候，卡顿较为明显”仍FAILED/待修；r294对约115°快速移动的“已经不明显”仅限原条件。r296普通及r297近似受控视角的阶段/上传样本见drag-cadence证据，不冒整场性能/原33通过。
+
+2026-10-16 r303：用户补充确认“噢对，我记错了，我看95度显微镜座那里看起来好了一些了”。本机普通r301下定性有所改善；不是已经不明显/整场或全部设备通过。115°前次已不明显回评仍只保原范围，本轮不重复它。
+
+2026-10-16新增UX19（用户明确授权更新唯一PLAN并实施）：搜索定位需从已绘相机/FOV沿较短方向连续转向与缩放，同一条运动中完成，保位置/身份/时刻及手势、重选、生命周期中断恢复。已实现共同轨迹、原query/成功copy接入与恢复守卫；r312普通手机远近过渡及marker资料返回已实际查看。软件与有界原生证据见search-navigation-motion-2026-10-16.md；原生中途打断、完整性能/方向尺度、独审/iOS仍未验。责任沿C07/B/E/F，不改原33任何行或既有FAILED/UNKNOWN/MISSING。具体要求见REQUIREMENTS/PLAN UX19，当前执行归CONTINUE。

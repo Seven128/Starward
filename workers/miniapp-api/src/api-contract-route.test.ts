@@ -8,6 +8,7 @@ import { MiniappController } from "./controller.ts";
 import { StellarCatalogController } from "./stellar-catalog.controller.ts";
 import { ConstellationController } from "./constellation.controller.ts";
 import { SaoPublicationController } from "./sao-publication.controller.ts";
+import { BODY_IMAGE_KINDS } from "@starward/miniapp-contracts";
 
 interface OperationManifest {
   basePath: string;
@@ -48,6 +49,7 @@ function controllerRoutes(controller: Function) {
     const handler = controller.prototype[methodName] as Function;
     const path = Reflect.getMetadata(PATH_METADATA, handler) as
       | string
+      | string[]
       | undefined;
     const method = Reflect.getMetadata(METHOD_METADATA, handler) as
       | number
@@ -55,7 +57,13 @@ function controllerRoutes(controller: Function) {
     if (path === undefined || method === undefined) continue;
     const methodLabel = METHOD_NAMES.get(method);
     assert.ok(methodLabel, `unsupported Nest request method on ${methodName}`);
-    routes.push(`${methodLabel} ${normalizePath(`${root}/${path}`)}`);
+    for (const declared of typeof path === "string" ? [path] : path) {
+      // The existing admitted family domain supplies these public literal
+      // paths through one handler. Unknown bodies remain rejected at runtime.
+      const paths = declared === "sky/:body/:publicationHash/manifest" || declared === "sky/:body/:publicationHash/:file"
+        ? BODY_IMAGE_KINDS.map(body => declared.replace(":body", body)) : [declared];
+      for (const route of paths) routes.push(`${methodLabel} ${normalizePath(`${root}/${route}`)}`);
+    }
   }
   return routes.sort();
 }

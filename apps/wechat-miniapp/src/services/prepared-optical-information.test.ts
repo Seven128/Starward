@@ -3,17 +3,21 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { skyResourceOriginTestOwner } from "./sky-resource-origin-test-support";
 import * as contracts from "@starward/miniapp-contracts";
 import { matchingCelestialInformationResponse } from "./celestial-information-response";
 import { celestialInformationPartialDetail } from "./celestial-information-presentation";
 import { transportHarness } from "./api-request-test-support";
+import {sourceRecoveryTestScope} from "../sky/sources/source-recovery-test-support";
 
 function actualFunction(file: string, name: string, bindings: object) {
   const source = ts.createSourceFile(file, readFileSync(new URL(file, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declaration = source.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === name);
   assert.ok(declaration);
-  return vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export\s+(?:default\s+)?/u, "") + `\n${name};`,
-    { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, { ...contracts, ...bindings });
+  const scope=sourceRecoveryTestScope();
+  const actual:(...args:any[])=>any=vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export\s+(?:default\s+)?/u, "") + `\n${name};`,
+    { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, { ...contracts, ...scope.bindings, ...bindings });
+  return (...args:any[])=>scope.render(actual,...args);
 }
 function information(): contracts.ApiEnvelope<contracts.CelestialObjectInformationData> {
   if (process.env.CLOUD_SKY_PREPARED_SOURCE_TRACE_PATH)
@@ -35,8 +39,8 @@ function selected() {
   const response = information(), source = response.data.sources.find(item => item.id.startsWith("prepared-optical-imagery:"))!;
   assert.ok(source); return { response, source, hash: source.id.split(":").at(-1)! };
 }
-const manifestUrl = () => actualFunction("./api-client.ts", "deepSkyManifestUrl", {
-  __MINIAPP_API_BASE__: "https://api.example.test/", MINIAPP_API_BASE_PATH: "/v2",
+const manifestUrl = () => actualFunction("./sky-catalog-api.ts", "deepSkyManifestUrl", {
+  __MINIAPP_API_BASE__: "https://api.example.test/", ...skyResourceOriginTestOwner("https://api.example.test/"), MINIAPP_API_BASE_PATH: "/v2",
 });
 
 test("the actual information client preserves the bound Prepared BFF credit and rejects a later optical version", async () => {
@@ -98,7 +102,7 @@ test("Prepared response identity rejects mixed or malformed optical families and
 test("both information consumers disclose missing Prepared optical credit and preserve stale/retry meaning", () => {
   for (const dataState of ["PARTIAL", "STALE_USABLE"] as const) {
     assert.match(celestialInformationPartialDetail({ dataState, warnings: ["prepared_optical_publication_unavailable"] })!, /光学影像来源暂不可用/u);
-    assert.match(celestialInformationPartialDetail({ dataState, warnings: ["prepared_optical_publication_unavailable", "deep_sky_image_publication_unavailable"] })!, /红外影像与光学影像/u);
+    assert.match(celestialInformationPartialDetail({ dataState, warnings: ["prepared_optical_publication_unavailable", "deep_sky_image_publication_unavailable"] })!, /红外与光学影像来源/u);
   }
   assert.equal(celestialInformationPartialDetail({ dataState: "FRESH", warnings: [] }), null);
 });
@@ -147,7 +151,7 @@ test("actual cache fallback keeps explicit missing-source facts through STALE_US
 test("the actual source page passes original Prepared credit and its exact link to Provenance, retaining partial retry", () => {
   const { response, source, hash } = selected(), requests: unknown[][] = [];
   let retries = 0, current = response;
-  const render = actualFunction("../sky/sources/index.tsx", "CelestialSourcesPage", {
+  const render = actualFunction("../sky/sources/index.tsx", "CelestialObjectSourcesPage", {
     React: { createElement: (type: string, props: object, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
     View: "View", ScrollView: "ScrollView", CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
     useRouter: () => ({ params: { reference: "M%3A51", opticalPublicationHash: hash } }),

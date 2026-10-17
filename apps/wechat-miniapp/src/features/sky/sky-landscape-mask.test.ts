@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createSkyPanoramaMask, skyPanoramaAlpha, skyLandscapeMaskCoversRayHull, skyPanoramaMaskIntersectsView,
-  skyLandscapeMaskAlpha, skyLandscapeMaskOccludes, skyLandscapePaintedPanorama, type SkyLandscapeMask } from "./sky-landscape-mask";
-import { paintedSkyPointVisible, pickPaintedSkyObjects, type SkyPickSnapshot } from "./sky-object-picking";
-import { createSkyViewBasis, skyHorizontalDirection } from "./sky-view-projection";
+  skyLandscapeMaskAlpha, skyLandscapeMaskOccludes, skyLandscapeWindowAlphaBound, skyLandscapePaintedPanorama, type SkyLandscapeMask } from "./sky-landscape-mask";
+import { paintedSkyPointVisible, paintedSkyBoundsVisible, pickPaintedSkyObjects, type SkyPickSnapshot } from "./sky-object-picking";
+import { createSkyViewBasis, skyHorizontalDirection, unprojectSkyPoint } from "./sky-view-projection";
 import type { SkyLandscapeManifestData, SkyLandscapeResource } from "@starward/miniapp-contracts";
 
 function fixture(alpha: Uint8Array, width = 8, height = 8) {
@@ -75,4 +75,40 @@ test("source alpha certifies high-sky zero while retaining tiny alpha and LINEAR
   const empty = fixture(new Uint8Array(64));
   assert.equal(skyPanoramaMaskIntersectsView(empty, high, 390, 844), false, "valid zero is not a missing bitmap");
   assert.equal(skyPanoramaMaskIntersectsView(empty, { ...high, verticalFovDeg: 0 }, 390, 844), true, "invalid geometry cannot grant culling");
+});
+
+test("whole windows enclose actual interior alpha across seam, offset, roll and dome using each painted material",()=>{
+  const width=390,height=844,sw=128,sh=64,alpha=new Uint8Array(sw*sh);
+  for(let y=0;y<sh;y++)for(let x=0;x<sw;x++)alpha[y*sw+x]=y>36?255:(x%11<3&&y>20?127:0);
+  const photo=fixture(alpha,sw,sh);
+  const materials:SkyLandscapeMask[]=[photo,{kind:'procedural'},
+    {kind:'transition',background:{kind:'procedural',opacity:.7},foreground:{...photo,opacity:.5}}];
+  const configurations=[{heading:0,beta:135,roll:0,fov:45},{heading:359,beta:100,roll:45,fov:90},
+    {heading:0,beta:180,roll:0,fov:264},{heading:180,beta:70,roll:-45,fov:100}];
+  const bounds={left:130,top:360,width:130,height:44};
+  for(const configuration of configurations)for(const mask of materials){
+    const view={basis:createSkyViewBasis(configuration.heading,configuration.beta,configuration.roll)!,
+      verticalFovDeg:configuration.fov,center:{x:185,y:430}};
+    const bound=skyLandscapeWindowAlphaBound(mask,view,width,height,bounds);
+    assert(Number.isFinite(bound)&&bound>=0&&bound<=1);
+    for(let y=0;y<=8;y++)for(let x=0;x<=16;x++){
+      const ray=unprojectSkyPoint(bounds.left+x*bounds.width/16,bounds.top+y*bounds.height/8,
+        view.basis,width,height,view.verticalFovDeg,view.center)!;
+      assert(bound+1e-8>=skyLandscapeMaskAlpha(mask,ray),`${mask.kind} must include interior/curved-edge alpha`);
+    }
+  }
+});
+
+test("whole-name visibility preserves actual partial source-over transparency and rejects unknown bounds",()=>{
+  const width=390,height=844,view={basis:createSkyViewBasis(324.462322,100,0)!,verticalFovDeg:5};
+  const bounds={left:170,top:400,width:50,height:44},photo=fixture(new Uint8Array(64).fill(255));
+  const mask:SkyLandscapeMask={kind:'transition',background:{kind:'procedural',opacity:.5},foreground:{...photo,opacity:.5}};
+  const snapshot={width,height,view:{...view,landscape:mask}};
+  assert.equal(skyLandscapeWindowAlphaBound(mask,view,width,height,bounds),.75);
+  assert(paintedSkyBoundsVisible(snapshot,bounds),'transparent painted foreground cannot discard the whole label');
+  assert(!paintedSkyBoundsVisible({...snapshot,view:{...view,landscape:photo}},bounds));
+  assert(paintedSkyBoundsVisible({...snapshot,view:{...view,landscape:fixture(new Uint8Array(64))}},bounds));
+  assert(!paintedSkyBoundsVisible(snapshot,{...bounds,left:-1}));
+  assert(!paintedSkyBoundsVisible({...snapshot,view:{...view,verticalFovDeg:NaN,landscape:photo}},bounds));
+  assert(!paintedSkyBoundsVisible(null,bounds));
 });

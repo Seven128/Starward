@@ -19,10 +19,12 @@ const snapshotOf = (state: ContextSelection): ContextSelection => ({
   spotOpenRequestVersion: state.spotOpenRequestVersion,
 });
 
-const sameSelection = (expected: ContextSelection, current: ContextSelection) =>
+const sameLocationSelection = (expected: ContextSelection, current: ContextSelection) =>
   expected.selectedSpotId === current.selectedSpotId &&
   expected.mapResetVersion === current.mapResetVersion &&
-  expected.spotOpenRequestVersion === current.spotOpenRequestVersion &&
+  expected.spotOpenRequestVersion === current.spotOpenRequestVersion;
+const sameSelection = (expected: ContextSelection, current: ContextSelection) =>
+  sameLocationSelection(expected,current) &&
   sameContextVersion(expected.observationContext, current.observationContext);
 
 /** Page-local ownership only; the store/API remain the sole Context data owners. */
@@ -35,13 +37,25 @@ export function createSkyContextSession(routeContextId: string, read: () => Cont
   let pending: ContextRequest | null = null;
 
   const canLookup = () => visible && !lookupSettled && sameSelection(entry, read());
+  const ownsContext = (expected: ContextVersion) => {
+    const current=read();
+    return sameLocationSelection(entry,current)&&expected.contextId===contextId&&
+      sameContextVersion(expected,current.observationContext);
+  };
+  const canRequest = (expected: ContextVersion) => visible && !pending && ownsContext(expected);
   const isCurrent = (request: ContextRequest) => visible && pending === request &&
     request.epoch === epoch && sameSelection(request.expected, read());
 
   return {
     get contextId() { return contextId; },
     get busy() { return pending !== null; },
+    get visibilityRevision() { return epoch; },
+    // Cleanup for this render may run during its first hide, but must not
+    // retract a new interaction after show or a later visibility cycle.
+    canRetireInteraction(revision: number) { return epoch === revision || (!visible && epoch === revision + 1); },
     canLookup,
+    ownsContext,
+    canRequest,
     acceptLookup(incoming: ContextVersion) {
       if (!canLookup() || incoming.contextId !== contextId ||
         !canApplyContextRestore(entry.observationContext, read().observationContext, incoming)) return false;
@@ -49,10 +63,8 @@ export function createSkyContextSession(routeContextId: string, read: () => Cont
       return true;
     },
     begin(expected: ContextVersion) {
-      const current = snapshotOf(read());
-      if (!visible || pending || expected.contextId !== contextId ||
-        !sameContextVersion(expected, current.observationContext)) return null;
-      pending = { epoch, expected: current };
+      if (!canRequest(expected)) return null;
+      pending = { epoch, expected: snapshotOf(read()) };
       return pending;
     },
     isCurrent,
@@ -68,7 +80,7 @@ export function createSkyContextSession(routeContextId: string, read: () => Cont
       pending = null;
       return true;
     },
-    hide() { visible = false; epoch++; pending = null; },
+    hide() { if (!visible) return; visible = false; epoch++; pending = null; },
     show() { visible = true; },
   };
 }

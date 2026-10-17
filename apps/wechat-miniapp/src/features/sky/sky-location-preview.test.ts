@@ -7,6 +7,12 @@ import { civilDateForInstant } from "../../components/observation-date.ts";
 import { exactSkyTimeFrame } from "./sky-time-frame.ts";
 import { createSkyObjectSelection } from "./sky-object-selection.ts";
 import { presentSkyTime } from "./sky-time-presentation.ts";
+import { createSkyObjectTracking } from "./sky-object-tracking";
+import { createSkyObservationTime } from "./sky-observation-time";
+import { createSkyContextSession } from "./sky-context-session";
+import { skyObjectPositionIsCurrent } from "./sky-object-location";
+import { createSkyViewBasis } from "./sky-view-projection";
+import type { ContextVersion } from "../../services/observation-context-version";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
   readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -15,31 +21,44 @@ const page = source.statements.find(node => ts.isFunctionDeclaration(node) && no
 assert.ok(page?.body);
 const commands = page.body.statements.filter(statement => ts.isVariableStatement(statement) &&
   statement.declarationList.declarations.some(declaration =>
-    ["locateCatalogObject", "trackCatalogObject"].includes(declaration.name.getText(source))));
-assert.equal(commands.length, 2);
+    ["skyInteractionRevision", "skyPageVisibleCurrent", "skyInteractionCurrent", "skyTimeIntentCurrent", "locateCatalogObject", "trackCatalogObject"].includes(declaration.name.getText(source))));
 const code = ts.transpileModule(commands.map(statement => statement.getText(source)).join("\n") +
   "\n({ locateCatalogObject, trackCatalogObject });",
   { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
 
 function harness(isPreviewing: boolean) {
-  const object = { reference: "HR:7001", displayName: "织女星", kind: "STAR" };
-  const data = { reference: object.reference, spotId: "spot:a", position: { azimuthDeg: 15, altitudeDeg: 45 } };
+  const object = { reference: "HR:7001", displayName: "织女星", kind: "STAR" as const };
+  const context = { contextId: "ctx:a" as ContextVersion["contextId"], revision: 1, contextFingerprint: "fp:1", selectedAtUtc: "2026-09-24T15:30:00.000Z" };
+  const store = { observationContext: context, selectedSpotId: "spot:a", mapResetVersion: 0, spotOpenRequestVersion: 0 };
+  const timeBinding = `${context.contextId}:${context.revision}:${context.contextFingerprint}`;
+  const observationTime = createSkyObservationTime();
+  observationTime.bind(timeBinding, context.selectedAtUtc, null);
+  const at = isPreviewing ? "2026-09-24T16:30:00.000Z" : context.selectedAtUtc;
+  if (isPreviewing) observationTime.preview(at);
+  const reportContext = { contextId: context.contextId, contextRevision: context.revision,
+    contextFingerprint: context.contextFingerprint, spotId: "spot:a", dataRevision: "data:1", algorithmVersion: "algo:1" };
+  const catalog = { catalogVersion: "bsc5p-bright-stars.v2", catalogHash: "a".repeat(64) };
+  const data = { ...reportContext, at, reference: object.reference,
+    position: { ...catalog, azimuthDeg: 15, altitudeDeg: 45 }, unavailableReason: null };
+  const selection = createSkyObjectSelection(), tracking = createSkyObjectTracking();
+  selection.select(object, reportContext.spotId);
   let panel: string | null = "time";
   let previewCancelled = false;
-  let tracked = false;
   const sandbox = {
-    selectedCatalogObject: object, reportData: { context: {} }, row: { at: "2026-09-24T16:30:00Z" },
-    positionCatalog: () => ({}), skyObjectPositionIsCurrent: () => true,
-    pageVisible: true, contextSession: { busy: false }, timeSaving: false,
+    selectedCatalogObject: object, selectedCatalogObjectRef: { current: object }, reportData: { context: reportContext }, row: { at },
+    positionCatalog: () => catalog, skyObjectPositionIsCurrent,
+    pageVisible: true, viewportActiveRef: { current: true }, viewportMountedRef:{current:true}, contextComplete: true, activeContext: context,
+    contextSession: createSkyContextSession(context.contextId, () => store), timeSaving: false,
+    observationTime, timeBinding, committedAt: context.selectedAtUtc,
     orientationController: { snapshot: () => ({ alignment: { mode: "auto" } }) },
-    createSkyViewBasis: () => ({}), cancelSkyGestureRef: { current: () => {} },
+    createSkyViewBasis, cancelSkyGestureRef: { current: () => {} }, SKY_VERTICAL_FOV_DEG: 45,
     setVerticalFovDeg: () => {}, enterManualView: () => {},
-    objectSelection: createSkyObjectSelection(), setSelectionState: () => {},
+    objectSelection: selection, setSelectionState: () => {},
     setSelectedCatalogObject: () => {}, setCatalogPickChoices: () => {},
     setOrientationObjectListOpen: () => {},
     isPreviewing, setSkyControlPanel: (value: string | null) => { panel = value; },
     setPreviewIndex: (value: number | null) => { previewCancelled = value === null; },
-    objectTracking: { start: () => { tracked = true; }, accept: () => true, snapshot: () => ({ target: object }) },
+    objectTracking: tracking,
     setTrackingState: () => {},
   };
   const actions = vm.runInNewContext(code, sandbox) as {
@@ -47,7 +66,7 @@ function harness(isPreviewing: boolean) {
     trackCatalogObject: (value: typeof data) => void;
   };
   return { actions, data, get panel() { return panel; }, get previewCancelled() { return previewCancelled; },
-    get tracked() { return tracked; } };
+    get tracked() { return tracking.snapshot().target?.reference === object.reference && tracking.snapshot().position === data; } };
 }
 
 test("locating and tracking a preview-time object keep the shared time ruler available to commit or cancel", () => {

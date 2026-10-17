@@ -1,12 +1,103 @@
+import { reportRuntimeError } from "../../services/runtime-error";
+
 export interface CanvasSize { width: number; height: number }
+
+/** Public scene diagnostics contain only our fixed failure codes. Native
+ * exceptions can include file paths or request details and must stay private. */
+export function skyCanvasFailureCode(error: unknown): string {
+  const message = error instanceof Error ? error.message : "";
+  switch (message) {
+    case "sky_canvas_measurement_unavailable":
+    case "sky_canvas_callback_timeout":
+    case "sky_canvas_display_node_unavailable":
+    case "sky_canvas_display_context_unavailable":
+    case "sky_canvas_webgl_context_unavailable":
+    case "sky_canvas_surface_size_invalid":
+    case "sky_canvas_surface_invalidated":
+    case "sky_canvas_surface_unavailable":
+    case "sky_canvas_retirement_failed":
+    case "sky_canvas_native_error":
+      return message;
+    default:
+      return "sky_canvas_unknown_failure";
+  }
+}
 export interface CanvasClock {
   schedule(callback: () => void, delayMs: number): unknown;
+  /** Next display refresh, with a bounded animation timer when RAF is absent. */
+  scheduleFrame?(callback: () => void): unknown;
   cancel(handle: unknown): void;
 }
 const nativeClock: CanvasClock = {
   schedule: (callback, delay) => setTimeout(callback, delay),
   cancel: handle => clearTimeout(handle as ReturnType<typeof setTimeout>),
 };
+const CANVAS_CALLBACK_TIMEOUT_MS = 5000;
+
+export interface SkyCanvasFrameCanvas {
+  requestAnimationFrame?(callback: () => void): number;
+  cancelAnimationFrame?(handle: number): void;
+}
+
+/** Admit the existing writer on this display's frame callback, without adding
+ * a render loop. Timed deadlines retain their clock; unavailable native frame
+ * APIs fall back to the original timer. Handles always cancel their own node. */
+export function createSkyCanvasFrameClock(readCanvas: () => SkyCanvasFrameCanvas | null,
+  timers: CanvasClock = nativeClock): CanvasClock & { resetFailures(): void } {
+  let unavailable: SkyCanvasFrameCanvas | null = null, cancelFailed: SkyCanvasFrameCanvas | null = null;
+  const schedule = (callback: () => void, delayMs: number, fallbackDelayMs = delayMs) => {
+    const canvas = delayMs === 0 ? readCanvas() : null;
+    let live = true, nativePending = false, handle: number | undefined, timer: unknown;
+    const cancelNative = () => {
+      if (!nativePending || handle === undefined || !canvas) return;
+      nativePending = false;
+      try { canvas.cancelAnimationFrame!(handle); }
+      catch (error) {
+        unavailable = canvas;
+        if (cancelFailed !== canvas) reportRuntimeError("native", "sky_canvas_frame_cancel_failed", error);
+        cancelFailed = canvas;
+      }
+    };
+    const run = () => {
+      if (!live) return;
+      live = false; nativePending = false;
+      if (timer !== undefined) timers.cancel(timer);
+      timer = undefined;
+      callback();
+    };
+    if (canvas && canvas !== unavailable && typeof canvas.requestAnimationFrame === "function" &&
+      typeof canvas.cancelAnimationFrame === "function") {
+      try {
+        nativePending = true;
+        handle = canvas.requestAnimationFrame(run);
+        if (live) timer = timers.schedule(() => {
+          if (!live) return;
+          unavailable = canvas;
+          reportRuntimeError("native", "sky_canvas_frame_callback_timeout");
+          cancelNative(); run();
+        }, CANVAS_CALLBACK_TIMEOUT_MS);
+      } catch (error) {
+        unavailable = canvas;
+        reportRuntimeError("native", "sky_canvas_frame_schedule_failed", error);
+        cancelNative();
+        if (live) timer = timers.schedule(run, fallbackDelayMs);
+      }
+    } else timer = timers.schedule(run, fallbackDelayMs);
+    return () => {
+      if (!live) return;
+      live = false;
+      if (timer !== undefined) timers.cancel(timer);
+      timer = undefined;
+      cancelNative();
+    };
+  };
+  return {
+    resetFailures() { unavailable = cancelFailed = null; },
+    schedule,
+    scheduleFrame: callback => schedule(callback, 0, 16),
+    cancel(handle) { if (typeof handle === "function") handle(); },
+  };
+}
 
 export function measuredCanvasSize(result: unknown): CanvasSize {
   const rect = (Array.isArray(result) ? result[0] : result) as Partial<CanvasSize> | null;
@@ -39,12 +130,13 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
   let epoch = 0, visibilityEpoch = 0, revision = 0, dirty = false, busy = false;
   let latest: Frame | undefined;
   let size: CanvasSize | undefined, context: Context | undefined;
-  let scheduled: unknown, deadline: unknown;
+  let scheduled: unknown, deadline: unknown, scheduledContinuation = false;
   const active = () => ready && visible && mounted && !disposed && !failed;
   const cancelTimers = () => {
     if (scheduled !== undefined) clock.cancel(scheduled);
     if (deadline !== undefined) clock.cancel(deadline);
     scheduled = deadline = undefined;
+    scheduledContinuation = false;
   };
   function reset() {
     epoch++;
@@ -57,7 +149,10 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
     // release this generation twice or leave stale callbacks able to use it.
     let releaseFailure: { error: unknown } | undefined;
     try { if (released !== undefined) port.releaseContext?.(released); }
-    catch (error) { releaseFailure = { error }; }
+    catch (error) {
+      reportRuntimeError("native", "sky_canvas_retirement_failed", error);
+      releaseFailure = { error };
+    }
     dirty = latest !== undefined;
     if (!disposed) port.invalidated();
     return releaseFailure;
@@ -72,6 +167,7 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
   }
   function fail(error: unknown) {
     if (!active()) return;
+    reportRuntimeError("render", skyCanvasFailureCode(error), error);
     failed = true;
     const releaseFailure = reset();
     dirty = false;
@@ -80,11 +176,13 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
     port.failed(releaseFailure ? Object.assign(new Error("sky_canvas_retirement_failed"),
       { cause: error, releaseError: releaseFailure.error }) : error, latest);
   }
-  function schedule() {
+  function schedule(continuation = false) {
     if (!active() || !dirty || busy || scheduled !== undefined) return;
     // React already commits a coalesced sensor value. Yield once so multiple
     // report/time/pose effects share the same next native submission.
-    scheduled = clock.schedule(() => { scheduled = undefined; render(); }, 0);
+    scheduledContinuation = continuation;
+    const run = () => { scheduled = undefined; scheduledContinuation = false; render(); };
+    scheduled = continuation && clock.scheduleFrame ? clock.scheduleFrame(run) : clock.schedule(run, continuation ? 16 : 0);
   }
   function render() {
     if (!active() || busy || !dirty || latest === undefined) return;
@@ -92,7 +190,7 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
     const generation = epoch;
     deadline = clock.schedule(() => {
       if (active() && generation === epoch) fail(new Error("sky_canvas_callback_timeout"));
-    }, 5000);
+    }, CANVAS_CALLBACK_TIMEOUT_MS);
     if (!size || context === undefined || validate) {
       let measured = false;
       try {
@@ -144,13 +242,18 @@ export function createSkyCanvasLifecycle<Frame, Context>(port: {
     } catch (error) { fail(error); }
   }
   return {
-    request(frame: Frame, hideUntilPresented = false) {
+    request(frame: Frame, hideUntilPresented = false, continuation = false) {
       if (disposed) return;
       latest = frame;
       revision++;
       dirty = true;
+      // A real input/resource change takes priority over a fallback animation
+      // timer. Both still share one pending admission and the latest frame.
+      if (!continuation && scheduledContinuation && scheduled !== undefined) {
+        clock.cancel(scheduled); scheduled = undefined; scheduledContinuation = false;
+      }
       if (hideUntilPresented) { visibilityEpoch++; port.invalidated(); }
-      schedule();
+      schedule(continuation);
     },
     ready() { if (!disposed) { ready = true; schedule(); } },
     retry() { if (!disposed) { failed = false; dirty = latest !== undefined; schedule(); } },

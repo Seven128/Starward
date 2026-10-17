@@ -1,5 +1,5 @@
 /** Lines retain local identification after the illustration fades. All
- * constellation consumers share intent and the clear-overview transition.
+ * constellation consumers share intent, including the full-sky overview.
  * Values are presentation tuning, not astronomical/data-coverage thresholds.
  * The portrait reference's 40.6-degree shorter-side field is about 84.6
  * degrees vertically; that useful identification field remains available. */
@@ -7,10 +7,8 @@
 // Match the camera's numerical-noise tolerance without shifting visible fades.
 const BOUNDARY_EPSILON_DEG = 1e-9;
 export function constellationLineVisibility(verticalFovDeg: number, enabled: boolean): number {
-  if (!enabled || !Number.isFinite(verticalFovDeg) || verticalFovDeg <= 0) return 0;
-  if (verticalFovDeg >= 140 - BOUNDARY_EPSILON_DEG) return 0;
-  const overview = Math.max(0,Math.min(1,(140-verticalFovDeg)/50));
-  return overview*overview*(3-2*overview);
+  if (!enabled || !Number.isFinite(verticalFovDeg) || verticalFovDeg <= 0 || verticalFovDeg >= 360) return 0;
+  return 1;
 }
 
 /** Artwork, names and bitmap eligibility retire together in a local crop;

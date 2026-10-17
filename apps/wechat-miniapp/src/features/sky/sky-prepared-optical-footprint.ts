@@ -50,7 +50,7 @@ export function registerSkyPreparedOpticalFootprints(input: SkyTargetOpticalImag
   // This diagnostic describes the older reprojected source/mother pair.
   // Native full-source tiers have no invented 2048 square mother; their plane
   // is owned directly by registerSkyTanOpticalField.
-  if (publication.imageVersion === "prepared-native-optical-v1") return null;
+  if ("nominalTan" in publication) return null;
   const geometry = publication.source?.nominalAvm;
   if (!geometry || geometry.accuracy !== "UNVERIFIED_APPROXIMATE_PUBLISHER_AVM" ||
     ![geometry.referenceValue, geometry.crpixFitsOneBased, geometry.cdeltDegrees,

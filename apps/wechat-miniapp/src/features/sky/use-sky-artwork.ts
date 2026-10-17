@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Taro from "@tarojs/taro";
 import type { ConstellationArtwork } from "@starward/miniapp-contracts";
-import { constellationAssetUrl } from "@/services/api-client";
+import { constellationAssetUrl } from "@/services/sky-catalog-api";
 import { skyImageFileSession } from "../../services/sky-image-file-session";
 import { acquirePublishedSkyImage } from "../../services/sky-public-image-runtime";
 import { createSkyArtworkLoader, type SkyArtworkLoadState, type SkyNativeImageAsset } from "./sky-artwork-loader";
@@ -67,7 +67,12 @@ export function useSkyNativeImages<Asset extends SkyNativeImageAsset & {bytes:nu
   const wantedKey=JSON.stringify(wanted.map(a=>[a.id,a.sha256]));
   useEffect(()=>{loader.current?.update(wantedRef.current);},[wantedKey]);
   const failed=useCallback((image:object)=>loader.current?.failed(image),[]);
-  const retryImages=useCallback(()=>loader.current?.retry()??false,[]);
+  const retryImages=useCallback(()=>{
+    const scope=currentScope.current,value=nativeState.current;
+    if(!active||!scope.active||scope.paused||scope.canvas!==canvas||scope.revision!==revision||scope.hash!==hash)return false;
+    if(value?.owner!==loader.current||value?.canvas!==canvas||value?.revision!==revision||value?.hash!==hash)return false;
+    return loader.current?.retry(wantedRef.current)??false;
+  },[canvas,revision,hash,active]);
   const suspendUnusedDecoded=useCallback(()=>loader.current?.suspendUnusedDecoded(),[]);
   const currentImages=useCallback(()=>{
     const scope=currentScope.current,value=nativeState.current;

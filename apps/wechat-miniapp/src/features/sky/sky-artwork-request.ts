@@ -1,10 +1,23 @@
 import { matchesSkyImageBytes } from "../../services/sky-image-bytes";
-import type { DeepSkyImageRequestOptions,DeepSkyImageWriteOptions } from "./deep-sky-image-request";
+import { skyNativeArrayBuffer } from "../../services/sky-native-array-buffer";
 import type { LoadedSkyArtwork, SkyArtworkFileCache } from "./sky-artwork-loader";
 import { registerSkyNativeImageLifetime } from "./sky-artwork-loader";
 import type { SkyPublicImageAcquisition, SkyPublicImageLease } from "../../services/sky-public-image-cache";
 export interface SkyArtworkImage { src:string;onload:(()=>void)|null;onerror:(()=>void)|null;width?:number;height?:number; }
 export interface SkyArtworkCanvas { createImage():SkyArtworkImage; }
+
+interface SkyArtworkRequestOptions {
+  url: string;
+  responseType: "arraybuffer";
+  success(result: { statusCode: number; data: unknown; header?: Record<string, string | number> }): void;
+  fail(): void;
+}
+interface SkyArtworkWriteOptions {
+  filePath: string;
+  data: ArrayBuffer;
+  success(): void;
+  fail(): void;
+}
 
 export { skyJpegDimensions } from "../../services/sky-image-bytes";
 
@@ -14,13 +27,13 @@ export { skyJpegDimensions } from "../../services/sky-image-bytes";
 type SkyArtworkRequestInput = {
   asset:{bytes:number;width:number;height:number;sha256:string};url:string;canvas:SkyArtworkCanvas;
   format?:"png"|"jpeg";
-  ready(image:LoadedSkyArtwork):void;fail():void;
+  ready(image:LoadedSkyArtwork):void;fail(cause?:unknown):void;
 } & ({
   acquire:()=>SkyPublicImageAcquisition;
 } | {
   filePath:string;
-  request(options:DeepSkyImageRequestOptions):{abort?:()=>void;catch?:(handler:(error:unknown)=>unknown)=>unknown};
-  writeFile(options:DeepSkyImageWriteOptions):void;
+  request(options:SkyArtworkRequestOptions):{abort?:()=>void;catch?:(handler:(error:unknown)=>unknown)=>unknown};
+  writeFile(options:SkyArtworkWriteOptions):void;
   removeFile(path:string):void;
 });
 export function startSkyArtworkRequest(input:SkyArtworkRequestInput):()=>void {
@@ -35,7 +48,7 @@ export function startSkyArtworkRequest(input:SkyArtworkRequestInput):()=>void {
   };
   const release=()=>{if(released)return;released=true;decodeId++;unsubscribe?.();unsubscribe=undefined;detach();
     for(const retireBitmap of bitmapRetirements)retireBitmap();bitmapRetirements.clear();retirementHandlers.clear();remove();};
-  const fail=()=>{if(!active)return;active=false;release();input.fail();};
+  const fail=(cause?:unknown)=>{if(!active)return;active=false;release();input.fail(cause);};
   const isCurrent=()=>!released&&(!lease||lease.isCurrent());
   const retire=()=>{
     const failed=pendingDecodeFail,handlers=[...retirementHandlers];release();failed?.();
@@ -51,14 +64,14 @@ export function startSkyArtworkRequest(input:SkyArtworkRequestInput):()=>void {
     if(!isCurrent()){failed();return()=>{};}
     detach();const id=++decodeId;
     const current=()=>!released&&decodeId===id;
-    const decodeFailed=()=>{if(!current())return;detach();decodeId++;failed();};
+    const decodeFailed=(cause:unknown=new Error("sky_image_decode_failed"))=>{if(!current())return;detach();decodeId++;failed(cause);};
     pendingDecodeFail=failed;
     try{
       image=input.canvas.createImage();
       image.onload=()=>{
         if(!current())return;
         if(lease && !lease.isCurrent()){decodeFailed();return;}
-        if(image?.width!==input.asset.width||image.height!==input.asset.height){decodeFailed();return;}
+        if(image?.width!==input.asset.width||image.height!==input.asset.height){decodeFailed(new Error("sky_image_dimensions_invalid"));return;}
         const decoded=image;detach();
         const retireBitmap=registerSkyNativeImageLifetime(decoded,()=>current()&&isCurrent());
         bitmapRetirements.add(retireBitmap);
@@ -73,9 +86,9 @@ export function startSkyArtworkRequest(input:SkyArtworkRequestInput):()=>void {
             decodeId++;return file;
           }});
       };
-      image.onerror=decodeFailed;
+      image.onerror=()=>decodeFailed();
       if(current())image.src=decodePath;
-    }catch{decodeFailed();}
+    }catch(cause){decodeFailed(cause);}
     return()=>{if(current()){decodeId++;detach();}};
   }};
   if("acquire" in input){
@@ -92,7 +105,7 @@ export function startSkyArtworkRequest(input:SkyArtworkRequestInput):()=>void {
           active=false;input.ready(loaded);
         },fail);
       },fail);
-    }catch{fail();}
+    }catch(cause){fail(cause);}
     return()=>{
       if(!active)return;active=false;
       try{acquisition?.cancel();}
@@ -103,18 +116,19 @@ export function startSkyArtworkRequest(input:SkyArtworkRequestInput):()=>void {
   let task:ReturnType<typeof input.request>|undefined;
   try { task=input.request({url:input.url,responseType:'arraybuffer',fail,success(response){
     if(!active)return;
-    if(response.statusCode!==200 || !(response.data instanceof ArrayBuffer) || response.data.byteLength!==input.asset.bytes || response.data.byteLength<24){fail();return;}
-    if(!matchesSkyImageBytes(response.data,{...input.asset,format:input.format??"png"})){fail();return;}
-    try { input.writeFile({filePath:input.filePath,data:response.data,
-      fail(){written=true;remove();fail();},success(){
+    const data=skyNativeArrayBuffer(response.data);
+    if(response.statusCode!==200 || !data || data.byteLength!==input.asset.bytes || data.byteLength<24){fail(new Error(`sky_image_http_${response.statusCode}_or_size_invalid`));return;}
+    if(!matchesSkyImageBytes(data,{...input.asset,format:input.format??"png"})){fail(new Error("sky_image_integrity_invalid"));return;}
+    try { input.writeFile({filePath:input.filePath,data,
+      fail(){written=true;remove();fail(new Error("sky_image_file_write_failed"));},success(){
       written=true;
       if(!active){remove();return;}
       file.decode(loaded=>{
         if(!active){loaded.release();return;}
         active=false;input.ready(loaded);
       },fail);
-    }}); } catch { written=true;remove();fail(); }
-  }}); } catch { fail(); }
+    }}); } catch (cause) { written=true;remove();fail(cause); }
+  }}); } catch (cause) { fail(cause); }
   task?.catch?.(()=>undefined);
   return()=>{if(!active)return;active=false;try{task?.abort?.();}
     catch{/* An external abort failure cannot retain a decoded graph or file. */}finally{release();}};

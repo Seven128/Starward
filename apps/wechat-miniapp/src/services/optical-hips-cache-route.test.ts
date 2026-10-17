@@ -3,6 +3,7 @@ import test from "node:test";
 import {readFileSync} from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import { skyResourceOriginTestOwner } from "./sky-resource-origin-test-support";
 import {skyImageContentHash} from "@starward/miniapp-contracts";
 
 const source=ts.createSourceFile("runtime.ts",readFileSync(new URL("./sky-public-image-runtime.ts",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true);
@@ -13,7 +14,7 @@ function boundary(trial:boolean){
   const records:any[]=[];
   const acquire=vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export\s+/u,"")+"\nacquirePublishedSkyImage;",
     {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,
-    {__MINIAPP_API_BASE__:base,__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:trial,skyImageContentHash,
+    {__MINIAPP_API_BASE__:base,...skyResourceOriginTestOwner(base),__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:trial,skyImageContentHash,
       owner:()=>({acquire(value:unknown){records.push(value);return {};}})});
   return {records,acquire};
 }

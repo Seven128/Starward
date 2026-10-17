@@ -1,0 +1,341 @@
+import { brightStarAliases, deepSkyAliases, saoStarAliases } from "./celestial-object-aliases.js";
+import { skyLuminaryBody, SKY_LUMINARY_NAMES, SKY_LUMINARY_CATALOG_HASH } from "@starward/miniapp-contracts";
+import { skyLuminaryReferenceSources } from "./sky-luminary-catalog.js";
+import { MoonTexturePublicationService } from "./moon-texture-publication.js";
+import { skyVenusAppearanceSource } from "./sky-planet-catalog.js";
+import { createHash, randomUUID } from "node:crypto";
+import { deepSkyRowByReference, loadDeepSkyCatalog, } from "@starward/astronomy-core/deep-sky-catalog";
+import { loadBsc5pStarCatalog } from "@starward/astronomy-core/bsc5p-catalog";
+import { isCelestialObjectReference, isDeepSkyObjectReference, CURRENT_DEEP_SKY_CATALOG_VERSION, DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION, isSaoStarReference, skyPlanetBody, SKY_PLANET_NAMES, SKY_PLANET_CATALOG_HASH } from "@starward/miniapp-contracts";
+import { loadSaoCatalog } from "./sao-catalog-provider.js";
+import { bsc5pCatalogSources } from "./sky-scene-catalog-provider.js";
+import { deepSkyCatalogSource } from "./deep-sky-scene-provider.js";
+import { DeepSkyImageryService } from "./deep-sky-imagery.js";
+import { SdssOpticalImageryService } from "./sdss-optical-imagery.js";
+import { PreparedOpticalImageryService } from "./prepared-optical-imagery.js";
+import { skyJupiterBandSource, skyJupiterShapeSource, skyPlanetSource, skyUranusBandSource, skyNeptuneBandSource, skySaturnBandSource, skySaturnRingSource, skySaturnShapeSource } from "./sky-planet-catalog.js";
+import { loadChineseStarAliasesForBase } from "./chinese-star-alias-publication.js";
+import { publishedStarIntroduction, publishedBodyIntroduction, publishedDeepSkyIntroduction } from "./celestial-object-introductions.js";
+const EDITORIAL_REVISION = "starward-celestial-editorial-zh-cn@2";
+const PLANET_EDITORIAL_REVISION = "starward-planet-details-zh-cn@7";
+const SAO_PRESENTATION_REVISION = "sao-details-zh-cn@2";
+const INTRODUCTIONS = Object.freeze({
+    "HR:2491": "天狼星是大犬座 α 星，也是 IAU 采用的正式恒星名称。它在当前亮星目录中拥有最低的 V 波段视星等。",
+    "HR:7001": "织女星是天琴座 α 星，IAU 正式名称为 Vega。它是北半球夏季夜空中醒目的亮星之一。",
+    "HR:424": "北极星是小熊座 α 星，IAU 正式名称为 Polaris。它靠近北天极，常用于辨认北方。",
+    "M:31": "仙女座星系是距离银河系最近的大型旋涡星系之一。在暗夜环境中可用肉眼看见它朦胧的核心区域；目录角尺寸描述的是更广阔、较暗的盘面范围。",
+    "M:42": "猎户座大星云位于猎户座剑柄区域，是一处明亮的恒星形成区。肉眼可见的朦胧亮斑只是其发光气体结构的一部分。",
+});
+function digest(value) {
+    return createHash("sha256").update(JSON.stringify(value)).digest("hex");
+}
+/** A numeric fact carries its original measurement meaning even when a client
+ * shows full catalogue notes on a separate source page. No prose parsing. */
+export function bscStarInformationFacts(row) {
+    return [
+        { label: row.vMagCode ? "目录视星等" : "V 波段视星等", value: row.vMag.toFixed(2), unit: "mag" },
+        ...(row.vMagCode ? [{ label: "测光标记", value: `原始标记 ${row.vMagCode}；未转换为统一 Johnson V`, unit: null }] : []),
+        ...(row.vMagUncertainty ? [{ label: "星等标记", value: `${row.vMagUncertainty}（原目录的不确定标记）`, unit: null }] : []),
+        ...(row.bV === null ? [] : [
+            { label: "B−V 色指数", value: row.bV.toFixed(3), unit: "mag" },
+            ...(row.bVUncertainty ? [{ label: "色值标记", value: `${row.bVUncertainty}（原目录的不确定标记）`, unit: null }] : []),
+        ]),
+        ...(row.spectralType ? [{ label: "光谱型", value: row.spectralType, unit: null }] : []),
+    ];
+}
+function envelope(data, sources, dataState = "FRESH", warnings = []) {
+    const generatedAt = new Date().toISOString();
+    return {
+        apiVersion: "v2",
+        data,
+        dataState,
+        generatedAt,
+        validAt: null,
+        etag: `W/"${digest(data).slice(0, 24)}"`,
+        sources,
+        warnings,
+        requestId: `celestial:${randomUUID()}`,
+    };
+}
+export class CelestialObjectInformationService {
+    imagery;
+    optical;
+    moon;
+    preparedOptical;
+    starIntroduction;
+    bodyIntroduction;
+    deepSkyIntroduction;
+    cache = new Map();
+    constructor(imagery = new DeepSkyImageryService(), optical = new SdssOpticalImageryService(), moon = new MoonTexturePublicationService(), preparedOptical = new PreparedOpticalImageryService(), starIntroduction = publishedStarIntroduction, bodyIntroduction = publishedBodyIntroduction, deepSkyIntroduction = publishedDeepSkyIntroduction) {
+        this.imagery = imagery;
+        this.optical = optical;
+        this.moon = moon;
+        this.preparedOptical = preparedOptical;
+        this.starIntroduction = starIntroduction;
+        this.bodyIntroduction = bodyIntroduction;
+        this.deepSkyIntroduction = deepSkyIntroduction;
+    }
+    result(cacheKey, response, cacheable) {
+        if (cacheable) {
+            this.cache.set(cacheKey, response);
+            // Preserve the existing 256-entry FIFO policy for every information
+            // family. Partial/retryable responses never become cached successes.
+            while (this.cache.size > 256)
+                this.cache.delete(this.cache.keys().next().value);
+        }
+        return structuredClone(response);
+    }
+    get(reference, locale = "zh-CN", catalogVersion = "bsc5p-bright-stars.v2", moonTextureVersion, imageSelection = {}, opticalPublicationHash) {
+        if (!isCelestialObjectReference(reference))
+            throw new Error("celestial_object_reference_invalid");
+        if (locale !== "zh-CN")
+            throw new Error("celestial_object_locale_unsupported");
+        if (catalogVersion !== "bsc5p-bright-stars.v2" && catalogVersion !== "bsc5p-bright-stars.v3")
+            throw new Error("sky_catalog_version_invalid");
+        if (moonTextureVersion !== undefined && moonTextureVersion !== "coverage-v2")
+            throw new Error("moon_texture_version_invalid");
+        if (imageSelection.imageVersion !== undefined && imageSelection.imageVersion !== DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION)
+            throw new Error("deep_sky_image_version_invalid");
+        if (imageSelection.publicationHash !== undefined && !/^[a-f0-9]{64}$/u.test(imageSelection.publicationHash))
+            throw new Error("deep_sky_image_publication_hash_invalid");
+        if (opticalPublicationHash !== undefined && (!isDeepSkyObjectReference(reference) || !/^[a-f0-9]{64}$/u.test(opticalPublicationHash)))
+            throw new Error("sdss_optical_publication_hash_invalid");
+        const luminary = skyLuminaryBody(reference), planet = skyPlanetBody(reference);
+        // Legacy callers may send globally selected versions to every family.
+        // Validate those inputs, but only applicable selectors define identity.
+        const selection = isDeepSkyObjectReference(reference)
+            ? [imageSelection.imageVersion ?? "legacy-image", imageSelection.publicationHash ?? "current", opticalPublicationHash ?? null]
+            : luminary === "MOON" ? [moonTextureVersion ?? "legacy-v1"]
+                : luminary || planet ? [] : [catalogVersion];
+        const cacheKey = JSON.stringify([reference, locale, ...selection]);
+        const cached = this.cache.get(cacheKey);
+        if (cached)
+            return structuredClone(cached);
+        if (luminary) {
+            let moonManifest;
+            let publicationUnavailable = false;
+            if (luminary === "MOON") {
+                try {
+                    moonManifest = moonTextureVersion === "coverage-v2" ? this.moon.coverageManifest() : this.moon.manifest();
+                }
+                catch {
+                    publicationUnavailable = true;
+                }
+            }
+            let published = null, introductionUnavailable = false;
+            try {
+                published = this.bodyIntroduction(reference);
+            }
+            catch {
+                introductionUnavailable = true;
+            }
+            const names = SKY_LUMINARY_NAMES[luminary], sources = [...skyLuminaryReferenceSources(luminary, moonManifest),
+                ...(published ? [published.source] : [])];
+            const data = {
+                reference, kind: names.kind, displayName: names.zh, catalogId: names.en,
+                aliases: names.aliases, introduction: published?.introduction ?? null, contentState: published ? "READY" : "BASIC_ONLY",
+                contentRevision: digest({ catalog: SKY_LUMINARY_CATALOG_HASH, editorial: "sun-moon@1", sources, luminary, locale,
+                    ...(published ? { publishedIntroduction: published } : {}) }).slice(0, 24),
+                facts: [{ label: "类别", value: luminary === "SUN" ? "恒星" : "地球的天然卫星", unit: null }],
+                sources,
+                limitations: ["当前位置、相位与视直径使用所选地点和时刻的观测报告；静态身份不代表现场可见。",
+                    luminary === "SUN" ? "星图为单波段历史平均临边模型及显示配色，不是实时日面、自然真彩、黑子或日冕。"
+                        : moonTextureVersion === "coverage-v2"
+                            ? "高倍率月面采用Clementine历史750nm灰阶图，配合同刻本体方向与月相；不是实时或自然彩色月面。中低纬和极区缺测处使用统一灰色盘面示意，不补出地貌；部分覆盖按有效面积混合。"
+                            : "高倍率月面采用有独立来源说明的Clementine历史750nm灰阶图，配合同刻本体方向与月相；不是实时或自然彩色月面。原始影像在中低纬和极区均有缺测，部分显示为黑色矩形，不代表真实地貌或当前阴影。",
+                    ...(published ? published.source.limitations : [])],
+            };
+            const warnings = [...(publicationUnavailable ? ["moon_texture_publication_unavailable"] : []),
+                ...(introductionUnavailable ? ["celestial_introduction_publication_unavailable"] : [])];
+            const result = envelope(data, sources, warnings.length ? "PARTIAL" : "FRESH", warnings);
+            return this.result(cacheKey, result, !warnings.length);
+        }
+        if (planet) {
+            const names = SKY_PLANET_NAMES[planet];
+            const bodySources = planet === "JUPITER" ? [skyPlanetSource, skyJupiterShapeSource, skyJupiterBandSource]
+                : planet === "SATURN" ? [skyPlanetSource, skySaturnShapeSource, skySaturnRingSource, skySaturnBandSource]
+                    : planet === "URANUS" ? [skyPlanetSource, skyUranusBandSource]
+                        : planet === "NEPTUNE" ? [skyPlanetSource, skyNeptuneBandSource]
+                            : planet === "VENUS" ? [skyPlanetSource, skyVenusAppearanceSource]
+                                : [skyPlanetSource];
+            let published = null, introductionUnavailable = false;
+            try {
+                published = this.bodyIntroduction(reference);
+            }
+            catch {
+                introductionUnavailable = true;
+            }
+            const sources = [...bodySources, ...(published ? [published.source] : [])];
+            const data = {
+                reference, kind: "PLANET", displayName: names.zh, catalogId: names.en,
+                aliases: [names.zh, names.en, reference], introduction: published?.introduction ?? null,
+                facts: [{ label: "类别", value: "太阳系行星", unit: null }],
+                contentState: published ? "READY" : "BASIC_ONLY",
+                contentRevision: digest({ catalog: SKY_PLANET_CATALOG_HASH, editorial: PLANET_EDITORIAL_REVISION, planet, locale,
+                    ...(published ? { publishedIntroduction: published } : {}) }).slice(0, 24),
+                sources,
+                limitations: [published ? "此页介绍与身份是静态资料；方位、相位、视星等和视直径随观测地点与时刻变化，应读取当前观测报告。"
+                        : "当前仅提供静态身份资料；方位、相位、视星等和视直径随观测地点与时刻变化，应读取当前观测报告。",
+                    planet === "MARS" ? "此资料页不提供表面图；星图中可按需加载有独立来源说明的火星历史影像，不代表实时或自然真彩。"
+                        : planet === "MERCURY" ? "此资料页不提供表面图；星图中可按需加载有独立来源说明的水星历史 750 nm 灰阶影像，不代表实时或自然彩色。"
+                            : planet === "JUPITER" ? "星图按木星赤道和极半径绘制扁球轮廓及相位；高倍率可显示2024年HST OPAL历史纬度云带，已移除全部经度细节，不表示当前大红斑位置、实时云系或自然真彩。"
+                                : planet === "SATURN" ? "星图按土星1-bar扁球和环尺寸、同刻观察几何绘制轮廓与相位；高倍率可显示2025年HST OPAL历史纬度云带，已移除经度细节，环遮挡及极区缺图回退基础盘面。云带不是实时天气、自然真彩或当前环影，环不是实拍纹理。"
+                                    : planet === "URANUS" || planet === "NEPTUNE" ? "高倍率可显示2025年HST OPAL历史纬度色带，已移除经度结构；未观测纬度回退基础盘面，不表示实时天气或自然真彩。本体轴无效或缺图时仍保留有效位置与相位。"
+                                        : planet === "VENUS" ? skyVenusAppearanceSource.limitations.join(" ")
+                                            : "此资料页不提供表面纹理；星图球面按当前相位计算示意。",
+                    ...(published ? published.source.limitations : [])],
+            };
+            const warnings = introductionUnavailable ? ["celestial_introduction_publication_unavailable"] : [];
+            const result = envelope(data, sources, warnings.length ? "PARTIAL" : "FRESH", warnings);
+            return this.result(cacheKey, result, !introductionUnavailable);
+        }
+        if (isSaoStarReference(reference)) {
+            const { catalog, source } = loadSaoCatalog(catalogVersion), star = catalog.get(reference);
+            if (!star)
+                throw new Error("celestial_object_not_found");
+            const label = reference.replace(':', ' '), sources = [source];
+            const data = { reference, kind: 'STAR', displayName: label, catalogId: label,
+                aliases: saoStarAliases(star),
+                introduction: null, contentState: 'BASIC_ONLY', contentRevision: digest({ catalog: catalog.catalogHash, editorial: EDITORIAL_REVISION, presentation: SAO_PRESENTATION_REVISION, locale }).slice(0, 24),
+                facts: [{ label: '视星等（视觉测光）', value: star.visualMagnitude.toFixed(2), unit: 'mag' },
+                    ...(star.spectralType ? [{ label: '光谱型', value: star.spectralType === '+++' ? '复合、变化或特殊光谱（目录未区分）' : star.spectralType, unit: null }] : [])], sources,
+                limitations: ['保留原始视觉星等，未转换为统一 Johnson V。',
+                    '当前只有目录基本资料，尚无已采用的中文介绍；未提供本层采用的距离或色指数。'] };
+            return this.result(cacheKey, envelope(data, sources), true);
+        }
+        const deepSkyRow = deepSkyRowByReference(reference);
+        if (deepSkyRow) {
+            const catalog = loadDeepSkyCatalog(deepSkyRow.objectRef.startsWith("M:") ? undefined : CURRENT_DEEP_SKY_CATALOG_VERSION);
+            let imagerySource = null;
+            let imageryUnavailable = false;
+            try {
+                imagerySource = this.imagery.source(reference, imageSelection);
+            }
+            catch {
+                imageryUnavailable = true; /* Catalog facts remain independent of the selected image publication. */
+            }
+            if (imageSelection.publicationHash && !imagerySource)
+                imageryUnavailable = true;
+            let opticalSource = null, opticalUnavailable = false;
+            const preparedSelected = opticalPublicationHash !== undefined &&
+                this.preparedOptical.hasRegisteredPublicationHash(opticalPublicationHash);
+            try {
+                if (preparedSelected && opticalPublicationHash !== undefined) {
+                    // A conflicting declaration cannot lend another family's provenance.
+                    if (this.optical.hasRegisteredPublicationHash(opticalPublicationHash))
+                        throw new Error("optical_publication_family_ambiguous");
+                    opticalSource = this.preparedOptical.source(reference, opticalPublicationHash);
+                }
+                else
+                    opticalSource = this.optical.source(reference, opticalPublicationHash);
+            }
+            catch {
+                opticalUnavailable = true;
+            }
+            if (opticalPublicationHash && !opticalSource)
+                opticalUnavailable = true;
+            let published = null, introductionWarning = null;
+            try {
+                published = this.deepSkyIntroduction(deepSkyRow);
+            }
+            catch (error) {
+                introductionWarning = error instanceof Error && error.message === "celestial_introduction_identity_mismatch"
+                    ? error.message : "celestial_introduction_publication_unavailable";
+            }
+            const sources = [deepSkyCatalogSource(catalog.catalogVersion), ...(imagerySource ? [imagerySource] : []), ...(opticalSource ? [opticalSource] : []), ...(published ? [published.source] : [])];
+            const introduction = published?.introduction ?? INTRODUCTIONS[reference] ?? null;
+            const aliases = deepSkyAliases(deepSkyRow, published?.aliases);
+            const facts = [
+                { label: "类型", value: deepSkyRow.kind === "GALAXY" ? "星系" : "星云", unit: null },
+                ...(deepSkyRow.vMag === null ? [] : [{ label: "V 波段视星等", value: deepSkyRow.vMag.toFixed(2), unit: "mag" }]),
+                ...(deepSkyRow.majorAxisArcmin === null ? [] : [{ label: "目录长轴", value: deepSkyRow.majorAxisArcmin.toFixed(1), unit: "角分" }]),
+                ...(deepSkyRow.minorAxisArcmin === null ? [] : [{ label: "目录短轴", value: deepSkyRow.minorAxisArcmin.toFixed(1), unit: "角分" }]),
+                ...(deepSkyRow.positionAngleDeg === null ? [] : [{ label: "位置角", value: deepSkyRow.positionAngleDeg.toFixed(0), unit: "°" }]),
+            ];
+            const data = {
+                reference,
+                kind: deepSkyRow.kind,
+                displayName: deepSkyRow.messier === null ? deepSkyRow.ngcName : `M ${deepSkyRow.messier}`,
+                catalogId: deepSkyRow.messier === null ? deepSkyRow.ngcName : `${deepSkyRow.ngcName} · M ${deepSkyRow.messier}`,
+                aliases,
+                introduction,
+                facts,
+                contentState: introduction ? "READY" : "BASIC_ONLY",
+                contentRevision: digest({ catalog: catalog.catalogHash, sources, introduction, aliases, editorial: EDITORIAL_REVISION, locale }).slice(0, 24),
+                sources,
+                limitations: [
+                    "目录资料使用ICRS J2000静态坐标与角尺寸；当前地点和时刻的方位需使用对应天空帧。",
+                    "目录星等和角尺寸不代表肉眼、望远镜或相机在当前天气与光污染下必然可见。",
+                    ...(introduction ? [] : ["当前只有目录基本资料，尚无已采用的中文介绍。"]),
+                    ...(imageryUnavailable ? ["当前选择的影像出版版本来源暂不可用；目录资料仍可读取，请重试来源。"] : []),
+                    ...(opticalUnavailable ? ["当前天体的光学影像来源暂不可用；目录资料与其它已取得的来源仍可读取，请重试来源。"] : []),
+                    ...(published?.source.limitations ?? []),
+                    ...(introductionWarning ? ["中文介绍与别名的出版或身份核对暂不可用；独立目录与其它来源保留，请重试。"] : []),
+                ],
+            };
+            const warnings = [
+                ...(introductionWarning ? [introductionWarning] : []),
+                ...(imageryUnavailable ? ["deep_sky_image_publication_unavailable"] : []),
+                ...(opticalUnavailable ? [preparedSelected ? "prepared_optical_publication_unavailable" : "sdss_optical_publication_unavailable"] : []),
+            ];
+            const result = envelope(data, sources, warnings.length ? "PARTIAL" : "FRESH", warnings);
+            return this.result(cacheKey, result, Boolean(imagerySource) && !warnings.length);
+        }
+        const catalog = loadBsc5pStarCatalog(catalogVersion);
+        const row = catalog.rows.find(candidate => candidate.sourceId === reference);
+        if (!row)
+            throw new Error("celestial_object_not_found");
+        let chinese = null;
+        try {
+            chinese = loadChineseStarAliasesForBase(catalogVersion);
+        }
+        catch { /* Independent BSC facts remain available. */ }
+        let published = null;
+        let introductionUnavailable = false;
+        let introductionWarning = "celestial_introduction_identity_mismatch";
+        try {
+            published = this.starIntroduction(row);
+        }
+        catch (error) {
+            introductionUnavailable = true;
+            if (!(error instanceof Error) || error.message !== "celestial_introduction_identity_mismatch")
+                introductionWarning = "celestial_introduction_publication_unavailable";
+        }
+        const sources = [...bsc5pCatalogSources(catalog), ...(chinese ? [chinese.source] : []),
+            ...(published ? [published.source] : [])];
+        const introduction = published?.introduction ?? INTRODUCTIONS[reference] ?? null;
+        const aliases = brightStarAliases(row, [...(chinese?.aliasesFor(reference) ?? []), ...(published?.aliases ?? [])]);
+        const facts = bscStarInformationFacts(row);
+        const data = {
+            reference,
+            kind: "STAR",
+            displayName: row.properName ?? `HR ${row.hr}`,
+            catalogId: `HR ${row.hr}`,
+            aliases,
+            introduction,
+            facts,
+            contentState: introduction ? "READY" : "BASIC_ONLY",
+            contentRevision: digest({ catalog: catalog.catalogHash, chineseAliases: chinese?.catalogHash ?? null,
+                ...(published ? { publishedIntroduction: published } : {}),
+                facts, editorial: EDITORIAL_REVISION, locale }).slice(0, 24),
+            sources,
+            limitations: [
+                "目录资料是恒星的静态身份与测量值；当前地点和时刻的方位需使用对应天空帧。",
+                ...(row.vMagCode ? [`原始测光标记 ${row.vMagCode}；未转换为统一 Johnson V 测光。`] : []),
+                ...(row.vMagUncertainty ? ["目录视星等带有原始不确定标记。"] : []),
+                ...(row.bVUncertainty ? ["目录色指数带有原始不确定标记。"] : []),
+                ...(introduction ? [] : ["当前只有目录基本资料，尚无已采用的中文介绍。"]),
+                ...(chinese ? [] : ["中文恒星别名出版物暂不可用，现仅显示原有目录名与已审别名。"]),
+                ...(published ? published.source.limitations : []),
+                ...(introductionUnavailable ? [introductionWarning === "celestial_introduction_identity_mismatch"
+                        ? "中文介绍与目录身份未能核对，现保留独立的目录资料，请重试。"
+                        : "中文介绍出版物暂不可用，现保留独立的目录资料，请重试。"] : []),
+            ],
+        };
+        const warnings = [...(chinese ? [] : ["中文恒星别名暂不可用，请稍后重试。"]),
+            ...(introductionUnavailable ? [introductionWarning] : [])];
+        const result = envelope(data, sources, warnings.length ? "PARTIAL" : "FRESH", warnings);
+        return this.result(cacheKey, result, Boolean(chinese) && !introductionUnavailable);
+    }
+}
+//# sourceMappingURL=celestial-object-information.js.map

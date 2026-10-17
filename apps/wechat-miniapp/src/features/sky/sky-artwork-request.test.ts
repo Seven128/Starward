@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { runInNewContext } from "node:vm";
 import type { ConstellationArtwork } from "@starward/miniapp-contracts";
 import { skyJpegDimensions,startSkyArtworkRequest,type SkyArtworkImage } from "./sky-artwork-request.ts";
 function harness(){
@@ -18,6 +19,17 @@ test("request and file success alone cannot claim decoded art; release clears fi
   const h=harness();h.request.success({statusCode:200,data:h.body});assert.equal(h.getReady(),undefined);
   h.write.success();assert.equal(h.getReady(),undefined);assert.equal(h.image.src,'/owned/art-1.png');
   h.image.onload!();assert.equal(h.getReady().image,h.image);h.getReady().release();h.getReady().release();assert.equal(h.removed,1);
+});
+test("native binary from another realm reaches verified file and decode ownership",()=>{
+  const h=harness();
+  const foreign=runInNewContext("Uint8Array.from(input).buffer",{input:Array.from(new Uint8Array(h.body))});
+  assert.equal(foreign instanceof ArrayBuffer,false);
+  h.request.success({statusCode:200,data:foreign});
+  assert.ok(h.write,"real native binary must reach the file boundary");
+  assert.equal(h.getReady(),undefined);
+  h.write.success();h.image.onload!();
+  assert.equal(h.getReady().image,h.image);h.getReady().release();
+  assert.equal(h.errors,0);assert.equal(h.removed,1);
 });
 test("cancellation during write removes the late file and cannot start decoding",()=>{
   const h=harness();h.request.success({statusCode:200,data:h.body});h.cancel();h.write.success();

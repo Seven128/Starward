@@ -92,3 +92,9 @@ export function assertGalacticImagePublication(value:unknown):asserts value is G
 export function galacticImageFormat(publication:GalacticImageManifestData):"jpeg"|"png" {
   return publication.schemaVersion==="starward-2mass-galactic-v1"?"jpeg":"png";
 }
+
+/** Exact metadata for an accepted current or retained image, never discovery. */
+export function galacticImageManifestPath(publicationHash:string):string {
+  if(!/^[a-f0-9]{64}$/u.test(publicationHash))throw new Error("galactic_image_selection_invalid");
+  return `/v2/sky/galactic/${publicationHash}/manifest`;
+}

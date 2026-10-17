@@ -1,10 +1,13 @@
-import { Text, View } from "@tarojs/components";
+import { Button, Text, View } from "@tarojs/components";
+import { useEffect } from "react";
 import type { CelestialObjectPositionData } from "@starward/miniapp-contracts";
-import { SoftButton } from "@/components/soft-button";
-import { StatusPanel } from "@/components/status-panel";
+import { SemanticIcon } from "@/components/semantic-asset";
+import { SkyStatusPanel as StatusPanel } from "@/features/sky/sky-status-panel";
 import { useSkyPresentationPosition as useCelestialPosition } from "./use-sky-presentation-position";
 import type { SkyPositionPresentation } from "./sky-presentation-position";
 import type { CelestialPositionBinding } from "@/services/celestial-position-response";
+import { skyDirectionLabel, skyHeightLabel } from "./sky-position-label";
+import { useSkyObjectPriorityLayout } from "./sky-object-dialog";
 
 export function SkyObjectPositionAction({ binding, catalog, suspended, presentation, onLocate, onTrack, onRetrySky }: {
   binding: CelestialPositionBinding;
@@ -16,26 +19,37 @@ export function SkyObjectPositionAction({ binding, catalog, suspended, presentat
   onRetrySky: () => void;
 }) {
   const result = useCelestialPosition(binding, catalog, !suspended, presentation);
+  const measurePriority = useSkyObjectPriorityLayout();
+  const hasPosition = Boolean(result.data?.data.position);
+  const stale = Boolean(result.refreshError || result.data?.dataState === "STALE_USABLE");
+  // Position loading/error/recovery changes the pinned priority area's height.
+  // Re-measure those layouts only; normal coordinate updates do not query it.
+  useEffect(measurePriority, [measurePriority, suspended, Boolean(catalog), result.isPending, result.isError, hasPosition, stale]);
   const retry = () => {
     // A new position publication can expose an old Infinity-cached catalogue.
     // Refresh its existing owner too, instead of repeating the rejected pair.
     onRetrySky();
     void result.refetch();
   };
-  if (suspended) return <StatusPanel state="LOADING" detail="正在更新观测地点或时刻，完成后可定位或跟踪。" />;
-  if (!catalog) return <StatusPanel state="PARTIAL" detail="当前目录或天空帧尚不可用，暂时无法定位。"
+  if (suspended) return <StatusPanel state="LOADING" detail="正在更新地点与时间" />;
+  if (!catalog) return <StatusPanel state="PARTIAL" detail="星图还未加载，暂时无法定位"
     recoveryLabel="重试天空" onRecover={onRetrySky} />;
-  if (result.isPending) return <StatusPanel state="LOADING" detail="正在计算所选时刻的位置…" />;
-  if (result.isError || !result.data?.data.position) return <StatusPanel state="PARTIAL" detail="当前地点与时刻的天体位置暂不可用。"
+  if (result.isPending) return <StatusPanel state="LOADING" detail="正在计算位置…" />;
+  if (result.isError || !result.data?.data.position) return <StatusPanel state="PARTIAL" detail="此刻的位置暂不可用"
     recoveryLabel="重试位置" onRecover={retry} />;
   const data = result.data.data;
   const point = data.position!;
   return <View className="sky-object-position-action">
-    <Text className="sky-object-modal__limitation">方位 {point.azimuthDeg.toFixed(1)}° · 高度 {point.altitudeDeg.toFixed(1)}°
-      {point.altitudeDeg < 0 ? " · 地平线以下" : " · 几何位置不保证可见"}</Text>
-    {result.refreshError || result.data!.dataState === "STALE_USABLE" ? <StatusPanel state="STALE"
-      detail="位置尚未更新，当前显示同一地点与时刻的缓存计算。" recoveryLabel="重试位置" onRecover={retry} /> : null}
-    <SoftButton className="sky-object-locate" label="将星空视角定位到此天体" onClick={() => onLocate(data)}>定位到星空</SoftButton>
-    <SoftButton className="sky-object-track" label="随观测时刻变化跟踪此天体" onClick={() => onTrack(data)}>跟踪天体</SoftButton>
+    <View className="sky-object-position-action__buttons">
+      <Button className="sky-object-locate" ariaLabel="在星图中查看位置" onClick={() => onLocate(data)}><SemanticIcon name="sky-target" /></Button>
+      <Button className="sky-object-track" ariaLabel="随时间跟踪此天体" onClick={() => onTrack(data)}><SemanticIcon name="sky-follow" /></Button>
+    </View>
+    <View className="sky-object-position-action__facts">
+      <View><Text>方向</Text><Text>{skyDirectionLabel(point.azimuthDeg, 1)}</Text></View>
+      <View><Text>高度</Text><Text>{skyHeightLabel(point.altitudeDeg, 1)}</Text></View>
+    </View>
+    <Text className="sky-object-modal__hint">{point.altitudeDeg < 0 ? "位于地平线下" : "是否可见，还受天气与现场遮挡影响"}</Text>
+    {stale ? <StatusPanel state="STALE"
+      detail="更新失败，保留此刻的已算位置" recoveryLabel="重试位置" onRecover={retry} /> : null}
   </View>;
 }

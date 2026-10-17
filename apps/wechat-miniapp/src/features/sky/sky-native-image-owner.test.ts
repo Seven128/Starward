@@ -1,19 +1,24 @@
+import {SKY_BODY_IMAGE_PROFILES} from "@/services/sky-body-image-profile";
+import {skyBodyImageBinding} from "./sky-body-image-completion";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+import {skyPageResourceTestScope} from "./sky-optical-page-test-support";
 import vm from "node:vm";
 import ts from "typescript";
-import { createSkyArtworkLoader } from "./sky-artwork-loader";
+import { createSkyArtworkLoader, skyNativeImageIsCurrent } from "./sky-artwork-loader";
+import { skyNativeImageLevels } from "./sky-native-image-levels";
+import { skyDeepSkyImageIntersectsView } from "./sky-target-image-visibility";
+import type { SkyDeepSkyImageFrame } from "./sky-deep-sky-image-frame";
 import { startSkyArtworkRequest, type SkyArtworkImage } from "./sky-artwork-request";
 import { skyImageFileSession } from "../../services/sky-image-file-session";
-import { startDeepSkyImageRequest, type OwnedDeepSkyImageAsset } from "./deep-sky-image-request";
 import { publishedDeepSkyDiscovery } from "./deep-sky-image-test-support";
 import { OBSERVATION_FRAME_FORMAT,SKY_PLANET_ORDER,galacticImageFormat } from "@starward/miniapp-contracts";
-import { skyGalacticBandAt } from "./sky-galactic-band";
+import { skyGalacticBandAt,skyGalacticImageBandAt,resolveSkyGalacticView } from "./sky-galactic-band";
 import { skyFixedImageStatus } from "./sky-fixed-image-status";
 import { skyMoonDiscAt } from "./sky-moon-disc";
-import { skyPlanetDiscsAt } from "./sky-planet-disc";
+import { skyPlanetDiscsAt,skyPlanetProjectionsAt } from "./sky-planet-disc";
 import {exactSkyObservationFrame} from "./sky-observation-frame";
 import {skySolarLightAt} from "./sky-solar-light";
 import {selectSkyHipsTiles} from "./sky-hips-tile-selection";
@@ -48,6 +53,12 @@ assert.ok(fixedDeclaration);
 const moonSource=ts.createSourceFile("use-sky-moon-texture.ts",readFileSync(new URL("./use-sky-moon-texture.ts",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
 const moonDeclaration=moonSource.statements.find(statement=>ts.isFunctionDeclaration(statement)&&statement.name?.text==='useSkyMoonTexture') as ts.FunctionDeclaration;
 assert.ok(moonDeclaration);
+const bodySource=ts.createSourceFile("use-sky-body-image.ts",readFileSync(new URL("./use-sky-body-image.ts",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true);
+const bodyDeclaration=bodySource.statements.find(statement=>ts.isFunctionDeclaration(statement)&&statement.name?.text==='useSkyBodyImage') as ts.FunctionDeclaration;
+assert.ok(bodyDeclaration);
+const recoverySource=ts.createSourceFile('use-sky-image-recovery.ts',readFileSync(new URL('./use-sky-image-recovery.ts',import.meta.url),'utf8'),ts.ScriptTarget.Latest,true);
+const recoveryDeclaration=recoverySource.statements.find(statement=>ts.isFunctionDeclaration(statement)&&statement.name?.text==='useSkyImageRecovery') as ts.FunctionDeclaration;
+assert.ok(recoveryDeclaration);
 const planetConsumers=Object.fromEntries([
   ['mars','use-sky-mars-texture.ts','useSkyMarsTexture'],
   ['mercury','use-sky-mercury-texture.ts','useSkyMercuryTexture'],
@@ -57,6 +68,10 @@ const planetConsumers=Object.fromEntries([
   const fn=fileSource.statements.find(statement=>ts.isFunctionDeclaration(statement)&&statement.name?.text===name) as ts.FunctionDeclaration;
   assert.ok(fn);return [key,{source:fileSource,declaration:fn,name}];
 }));
+
+const infraredSource=ts.createSourceFile("use-sky-deep-sky-image.ts",readFileSync(new URL("./use-sky-deep-sky-image.ts",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true);
+const infraredDeclaration=infraredSource.statements.find(node=>ts.isFunctionDeclaration(node)&&node.name?.text==='useSkyDeepSkyImage') as ts.FunctionDeclaration;
+assert.ok(infraredDeclaration);
 
 // Exercise the real page-to-hook ownership input, rather than bypassing the
 // caller with an inactive flag that production never supplies for a layer toggle.
@@ -76,49 +91,57 @@ const artworkActiveSource = artworkActive.getText(pageSource);
 assert.equal(galacticCalls.length,1);
 const galacticActiveSource=galacticCalls[0]!.arguments[5]!.getText(pageSource);
 function pageGalacticActive(overrides:Record<string,unknown>={}){
-  return Boolean(vm.runInNewContext(ts.transpileModule(`(${galacticActiveSource})`,
-    {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{
-    pageVisible:true,rawReportData:{},mode:"NIGHT",wideFieldEnabled:false,presentedFov:45,
+  return Boolean(vm.runInContext(ts.transpileModule(`(${galacticActiveSource})`,
+    {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,skyPageResourceTestScope(pageSource,{
+    pageVisible:true,resourcePageVisible:overrides.pageVisible??true,rawReportData:{},mode:"NIGHT",wideFieldEnabled:false,presentedFov:45,
     report:{data:{dataState:"FRESH"},isError:false},...overrides,
-  }));
+  })));
 }
 function pageArtworkActive(enabled: boolean): boolean {
-  return Boolean(vm.runInNewContext(ts.transpileModule(`(${artworkActiveSource})`,
-    { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
-      pageVisible: true, constellationsEnabled: enabled, rawReportData: {},
+  return Boolean(vm.runInContext(ts.transpileModule(`(${artworkActiveSource})`,
+    { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, skyPageResourceTestScope(pageSource,{
+      pageVisible: true,mode:'NIGHT', constellationsEnabled: enabled, rawReportData: {},
       report: { data: { dataState: "FRESH" }, isError: false },
-    }));
+    })));
 }
 
-function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'mercury'|'opal'|'wide'='native',ordinaryOptical=false) {
+function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'mercury'|'opal'|'wide'|'infrared'='native',ordinaryOptical=false) {
   const slots: any[] = [], pending: Array<() => void> = [];
   const requests: Array<{ success: (response: { statusCode: number; data: ArrayBuffer }) => void }> = [];
+  const acquiredAssets:Array<{id:string;sha256:string}>=[];
   const images: SkyArtworkImage[] = [], released: string[] = [];
-  let cursor = 0, dirty = false;
+  let cursor = 0, dirty = false, manifestRetries = 0;
   const galacticAt='2026-09-23T12:00:00.000Z';
   let sunAltitude=-24,fov=45,currentAt=galacticAt,publication:unknown,refreshError=false;
+  let infraredLevel: "OVERVIEW" | "MEDIUM" | "DETAIL" = "OVERVIEW", infraredReference = "M:51";
+  let infraredPublication = publishedDeepSkyDiscovery(infraredReference), imageWidth=512, imageHeight=512;
+  let infraredFootprint: any, infraredCurrent = true;
+  let infraredResource: any;
   let wideBasis=createSkyViewBasis(0,180,0)!;
   const queryOptions:Array<{enabled:boolean}>=[];
   const same = (a: unknown[] | undefined, b: unknown[]) => a?.length === b.length &&
     b.every((item, index) => Object.is(item, a![index]));
   const bindings = {
     EMPTY: { images: new Map(), retainedImages: new Map(), loading: false, failed: false },
-    skyImageFileSession,
-    createSkyArtworkLoader, startSkyArtworkRequest,
-    acquirePublishedSkyImage(asset:{sha256:string;format:"png"|"jpeg";bytes:number;width:number;height:number},url:string,hash:string){
-      assert.ok(url);assert.ok(hash);assert.equal(asset.width,512);assert.equal(asset.height,512);assert.equal(asset.bytes,32);
+    skyImageFileSession,SKY_BODY_IMAGE_PROFILES,skyBodyImageBinding,
+    getBodyImageManifest(){},bodyImageUrl:(url:string)=>url,
+    createSkyArtworkLoader, startSkyArtworkRequest, skyNativeImageIsCurrent, skyNativeImageLevels, skyDeepSkyImageIntersectsView,
+    LEVELS:["OVERVIEW","MEDIUM","DETAIL"],getDeepSkyImageResource(){},skyResourceUrl:(url:string)=>url,
+    acquirePublishedSkyImage(asset:{id:string;sha256:string;format:"png"|"jpeg";bytes:number;width:number;height:number},url:string,hash:string){
+      assert.ok(url);assert.ok(hash);if(consumer!=="infrared"){assert.equal(asset.width,512);assert.equal(asset.height,512);assert.equal(asset.bytes,32);}
+      acquiredAssets.push({id:asset.id,sha256:asset.sha256});
       const leaseId=`mock-public-lease-${requests.length+1}`;
       let cancelled=false,owned=false,resolve:((lease:unknown)=>void)|undefined,reject:((cause:Error)=>void)|undefined;
       const release=()=>{if(!owned)return;owned=false;released.push(leaseId);};
       const request={success(){
-        if(cancelled)return;owned=true;
+        if(cancelled)return;owned=true;imageWidth=asset.width;imageHeight=asset.height;
         resolve?.({filePath:`/owned/sky-public-images-v1/mock-${asset.sha256}.${asset.format==="jpeg"?"jpg":"png"}`,
           isCurrent:()=>owned,onRetire:()=>()=>{},release});
       }};
       return {promise:{then(ready:(lease:unknown)=>void,failed:(cause:Error)=>void){resolve=ready;reject=failed;requests.push(request);}},
         cancel(){if(owned){release();return;}cancelled=true;reject?.(new Error("controlled_public_acquisition_cancelled"));}};
     },
-    skyGalacticBandAt,skyFixedImageStatus,skyMoonDiscAt,skyPlanetDiscsAt,
+    skyGalacticBandAt,skyGalacticImageBandAt,resolveSkyGalacticView,skyFixedImageStatus,skyMoonDiscAt,skyPlanetDiscsAt,skyPlanetProjectionsAt,
     exactSkyObservationFrame,skySolarLightAt,selectSkyHipsTiles,skyHipsTileIntersectsView,
     getWideFieldW3Manifest(){},wideFieldW3TileUrl:(url:string)=>url,
     getMarsTextureManifest(){},marsTextureImageUrl:(url:string)=>url,
@@ -128,7 +151,7 @@ function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'merc
     getGalacticImageManifest:()=>{throw Error('query function is controlled by resource owner');},
     galacticImageUrl:(url:string)=>url,
     galacticImageFormat,
-    useResourceQuery(options:{enabled:boolean}){queryOptions.push(options);return{data:publication,isError:false,isFetching:false,refreshError,refetch(){}};},
+    useResourceQuery(options:{enabled:boolean}){queryOptions.push(options);return{data:publication,isError:false,isFetching:false,refreshError,refetch(){manifestRetries++;}};},
     constellationAssetUrl:(hash:string,file:string)=>`/published/${hash}/assets/${file}`,
     Taro: { env: { USER_DATA_PATH: "/owned" },
       getFileSystemManager(){throw Error("approved public images must acquire a lease, not use a session writer");},
@@ -158,7 +181,8 @@ function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'merc
       pending.push(() => { previous?.cleanup?.(); slots[index].cleanup = effect(); });
     },
   };
-  const hookSource=declaration.getText(source).replace(/^export /u,'')+'\n'+fixedDeclaration.getText(fixedSource).replace(/^export /u,'')+(consumer==='illustration'
+  const hookSource=recoveryDeclaration.getText(recoverySource).replace(/^export /u,'')+'\n'+bodyDeclaration.getText(bodySource).replace(/^export /u,'')+'\n'+declaration.getText(source).replace(/^export /u,'')+'\n'+fixedDeclaration.getText(fixedSource).replace(/^export /u,'')+(consumer==='infrared'
+    ?'\n'+infraredDeclaration.getText(infraredSource).replace(/^export /u,'')+'\nuseSkyDeepSkyImage':consumer==='illustration'
     ?'\n'+illustrationDeclaration.getText(source).replace(/^export /u,'')+'\nuseSkyArtwork':consumer==='galactic'
       ?'\n'+galacticDeclaration.getText(galacticSource).replace(/^export /u,'')+'\nuseSkyGalacticImage':consumer==='moon'
         ?'\n'+moonDeclaration.getText(moonSource).replace(/^export /u,'')+'\nuseSkyMoonTexture':consumer==='wide'
@@ -166,9 +190,10 @@ function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'merc
           ?'\n'+planetConsumers[consumer]!.declaration.getText(planetConsumers[consumer]!.source).replace(/^export /u,'')+'\n'+planetConsumers[consumer]!.name:'\nuseSkyNativeImages');
   const hook = vm.runInNewContext(ts.transpileModule(hookSource,
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, bindings) as (...values:any[]) => {
+        frame: SkyDeepSkyImageFrame | null;currentFrame():SkyDeepSkyImageFrame|null;state:string;
         images: ReadonlyMap<string, object>;
         currentImages(): {images:ReadonlyMap<string,object>};
-        image:object|null;failed:boolean;refreshFailed:boolean;loading:boolean;retry():boolean;
+        image:object|null;failed:boolean;refreshFailed:boolean;loading:boolean;retry():boolean;retryImages():boolean;failedImage(image:object):void;
         tiles:Array<{pixel:number;image:object}>;
       };
   const bytes = new Uint8Array(32);
@@ -180,26 +205,34 @@ function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'merc
   }
   const asset = { id: "w3:0:0", sha256: createHash('sha256').update(bytes).digest('hex'), file:'asset-0.png',width: 512, height: 512, bytes: 32 };
   function canvas() { return { createImage() {
-    const image: SkyArtworkImage = { src: "", onload: null, onerror: null, width: 512, height: 512 };
+    const image: SkyArtworkImage = { src: "", onload: null, onerror: null, width: imageWidth, height: imageHeight };
     images.push(image); return image;
   } }; }
   const resolve = () => ({ url: "/published/asset-0.jpg", format: "jpeg" });
   function render(node: object | null, revision: number, hash: string | undefined, active = true,
     wanted: readonly object[] = [asset], paused = false) {
     cursor = 0; dirty = false;
+    if(consumer==='infrared'){
+      if(infraredPublication.publicationHash!==hash || infraredPublication.objectRef!==infraredReference)
+        infraredPublication={...publishedDeepSkyDiscovery(infraredReference),publicationHash:hash??""};
+      if(!infraredResource || infraredResource.publication!==infraredPublication)
+        infraredResource={publication:infraredPublication,isCurrent:()=>infraredCurrent};
+      publication=hash?infraredResource:undefined;
+      return hook(infraredReference,infraredLevel,node,revision,active,infraredFootprint,paused);
+    }
     if(consumer==='wide'){
       publication=hash?{publicationHash:hash,tiles:[{...asset,pixel:0,downloadUrl:'/published/w3.jpg'}]}:undefined;
       const report={hourly:[{at:galacticAt,sunAzimuthDeg:270,sunAltitudeDeg:sunAltitude}],
         observationFrames:[{format:OBSERVATION_FRAME_FORMAT,at:galacticAt,
           observer:{latitude:30,longitude:110,elevationM:100},equatorialToEnu:[1,0,0,0,1,0,0,0,1]}]};
-      return hook(report,currentAt,{basis:wideBasis,verticalFovDeg:fov},400,800,node,revision,active);
+      return hook(report,currentAt,{basis:wideBasis,verticalFovDeg:fov},400,800,node,revision,active,paused);
     }
     if(consumer==='moon'){
       publication=hash?{publicationHash:hash,image:{...asset,downloadUrl:'/published/moon.png'}}:undefined;
       const d=Math.SQRT1_2,basis={right:[1,0,0],up:[0,-d,d],forward:[0,d,d]};
       const report={hourly:[{at:galacticAt,moonAzimuthDeg:0,moonAltitudeDeg:45,moonAngularDiameterDeg:.5,moonIllumination:.5,
         sunAzimuthDeg:90,sunAltitudeDeg:0,moonBodyFrame:{primeMeridianEnu:[0,-d,-d],poleEnu:[0,-d,d]}}]};
-      return hook(report,currentAt,{basis,verticalFovDeg:fov},400,800,node,revision,active);
+      return hook(report,currentAt,{basis,verticalFovDeg:fov},400,800,node,revision,active,paused);
     }
     if(planetConsumers[consumer]){
       publication=hash?{publicationHash:hash,image:{...asset,downloadUrl:'/published/planet.'+(consumer==='opal'?'png':'jpg')}}:undefined;
@@ -209,7 +242,7 @@ function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'merc
         planets:SKY_PLANET_ORDER.map(p=>({body:p,azimuthDeg:0,altitudeDeg:p===body?45:-10,
           angularDiameterDeg:.02,illuminatedFraction:.99,visualMagnitude:1,ringTiltDeg:null,ringPoleEnu:null,
           bodyFrame:p===body?{poleEnu:[0,0,1],primeMeridianEnu:[1,0,0]}:null}))}]};
-      const args=[report,currentAt,{basis,verticalFovDeg:fov},400,800,node,revision,active];
+      const args=[report,currentAt,{basis,verticalFovDeg:fov},400,800,node,revision,active,paused];
       return consumer==='opal'?hook({body,id:'jupiter:opal-2024c-bands',queryKey:'jupiter-bands-manifest',getManifest(){},imageUrl:(url:string)=>url},...args):hook(...args);
     }
     if(consumer==='galactic'){
@@ -218,8 +251,9 @@ function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'merc
       const report={hourly:[{at:galacticAt,sunAzimuthDeg:270,sunAltitudeDeg:sunAltitude}],
         observationFrames:[{format:OBSERVATION_FRAME_FORMAT,at:galacticAt,
           observer:{latitude:30,longitude:110,elevationM:100},equatorialToEnu:[1,0,0,0,1,0,0,0,1]}]};
-      return hook(report,currentAt,fov,node,revision,active);
+      return hook(report,currentAt,fov,node,revision,active,paused);
     }
+    if(consumer==='illustration')return hook(node,revision,hash,active,wanted,paused);
     return hook(node, revision, hash, active, wanted, resolve, undefined, [], undefined, paused);
   }
   function commit(node: object | null, revision: number, hash: string | undefined, active = true,
@@ -235,12 +269,110 @@ function fixture(consumer:'native'|'illustration'|'galactic'|'moon'|'mars'|'merc
     images.at(-1)!.onload!();
     return images.at(-1)!;
   }
-  return { asset, canvas, render, commit, finishRequest, requests, images, released,
-    queryOptions,setGalacticView(altitude:number,viewFov=45,at=galacticAt){sunAltitude=altitude;fov=viewFov;currentAt=at;},
+  return { asset, canvas, render, commit, finishRequest, requests, images, released,acquiredAssets,
+    retireInfraredMetadata(){infraredCurrent=false;},
+    setInfrared(level:typeof infraredLevel,reference=infraredReference,footprint=infraredFootprint){infraredLevel=level;infraredReference=reference;infraredFootprint=footprint;},
+    queryOptions,manifestRetries:()=>manifestRetries,setGalacticView(altitude:number,viewFov=45,at=galacticAt){sunAltitude=altitude;fov=viewFov;currentAt=at;},
     setWideView(azimuth:number,tilt:number,viewFov:number){wideBasis=createSkyViewBasis(azimuth,tilt,0)!;fov=viewFov;},
     setManifestRefreshError(value:boolean){refreshError=value;},
     heldNativeState() { return slots.find(slot => slot?.owner && slot?.value?.images instanceof Map) ?? null; } };
 }
+
+test('selected infrared retains its decoded coarse level after finer decode, without an extra coarse request',()=>{
+  const h=fixture('infrared'),node=h.canvas();
+  h.render(node,1,'w3');h.commit(node,1,'w3');const coarse=h.finishRequest(0);
+  assert.strictEqual(h.commit(node,1,'w3').frame!.image,coarse);
+  h.setInfrared('DETAIL');h.render(node,1,'w3');
+  const pending=h.commit(node,1,'w3');
+  assert.strictEqual(pending.frame!.image,coarse);assert.equal(pending.state,'LOADING');
+  assert.equal(h.requests.length,2,'only the requested overview and detail are acquired');
+  const fine=h.finishRequest(1),ready=h.commit(node,1,'w3');
+  assert.strictEqual(ready.frame!.image,fine);assert.strictEqual(ready.frame!.coarser!.image,coarse);
+  assert.equal(skyNativeImageIsCurrent(coarse),true,'decode does not retire the still-needed parent');
+  assert.equal(h.released.length,0);assert.equal(ready.state,'READY');
+  h.setInfrared('OVERVIEW');const wider=h.commit(node,1,'w3');
+  assert.strictEqual(wider.frame!.image,coarse);assert.strictEqual(wider.frame!.fallback!.image,fine);
+  assert.equal(h.requests.length,2,'reverse zoom reuses the same native owner');
+  h.render(node,1,'w3',false);h.commit(node,1,'w3',false);
+  assert.equal(skyNativeImageIsCurrent(coarse),false);assert.equal(skyNativeImageIsCurrent(fine),false);
+  assert.equal(h.released.length,2);
+});
+
+test('selected infrared failed refinement and explicit GPU retry keep the independent coarse image',()=>{
+  const h=fixture('infrared'),node=h.canvas();h.render(node,1,'w3');h.commit(node,1,'w3');
+  const coarse=h.finishRequest(0);h.commit(node,1,'w3');
+  h.setInfrared('DETAIL');h.render(node,1,'w3');h.commit(node,1,'w3');
+  const fine=h.finishRequest(1);const ready=h.commit(node,1,'w3');ready.failedImage(fine);
+  const failed=h.commit(node,1,'w3');assert.equal(failed.state,'ERROR');assert.strictEqual(failed.frame!.image,coarse);
+  assert.equal(skyNativeImageIsCurrent(coarse),true);assert.equal(failed.retry(),true);
+  assert.equal(h.manifestRetries(),1);assert.equal(skyNativeImageIsCurrent(coarse),true);
+  h.render(node,1,'w3',false);h.commit(node,1,'w3',false);
+});
+
+test('selected infrared fences old frames and recovery immediately across selection, pause and Canvas changes',()=>{
+  const h=fixture('infrared'),node=h.canvas();h.render(node,1,'w3');h.commit(node,1,'w3');
+  const image=h.finishRequest(0);const ready=h.commit(node,1,'w3'),frame=ready.frame!;
+  h.render(node,1,'w3',true,[h.asset],true);
+  assert.equal(frame.isCurrent(),false);assert.equal(ready.currentFrame(),null);assert.equal(ready.retry(),false);
+  h.commit(node,1,'w3',true,[h.asset],true);assert.equal(skyNativeImageIsCurrent(image),true);
+  h.render(node,1,'w3');const resumed=h.commit(node,1,'w3');assert.strictEqual(resumed.frame!.image,image);
+  h.setInfrared('DETAIL','M:42');h.render(node,1,'w3');
+  assert.equal(resumed.frame!.isCurrent(),false);assert.equal(resumed.currentFrame(),null);
+  const changed=h.commit(node,1,'w3');assert.equal(changed.frame,null);assert.equal(skyNativeImageIsCurrent(image),false);
+  const other=h.finishRequest(1);const otherReady=h.commit(node,1,'w3');assert.equal(otherReady.frame!.reference,'M:42');
+  h.render(node,2,'w3');assert.equal(otherReady.frame!.isCurrent(),false);assert.equal(otherReady.currentFrame(),null);
+  h.commit(node,2,'w3');assert.equal(skyNativeImageIsCurrent(other),false);
+  h.render(null,2,'w3',false);h.commit(null,2,'w3',false);
+});
+
+test('selected infrared cannot acquire from retired metadata and keeps a retry path after cache clear',()=>{
+  const h=fixture('infrared'),node=h.canvas();h.render(node,1,'w3');h.retireInfraredMetadata();
+  const pending=h.commit(node,1,'w3');
+  assert.equal(h.requests.length,0,'the latest publication epoch is checked at actual acquisition');
+  assert.equal(pending.state,'ERROR');assert.equal(pending.frame,null);
+  pending.retry();assert.equal(h.manifestRetries(),1,'metadata can recover without restoring retired pixels');
+  h.render(null,1,'w3',false);h.commit(null,1,'w3',false);
+});
+
+test('queued image recovery cannot refetch after Sources pause or hide before effect cleanup',()=>{
+  for(const consumer of ['galactic','moon','mars','mercury','opal','wide'] as const){
+    const h=fixture(consumer),node=h.canvas();
+    h.setGalacticView(-24,consumer==='wide'?85:consumer==='moon'?3:.2);
+    if(consumer==='wide')h.setWideView(0,180,85);
+    h.render(node,1,'publication-a');const visible=h.commit(node,1,'publication-a');
+    visible.retry();assert.equal(h.manifestRetries(),1,consumer+' visible recovery');
+    h.render(node,1,'publication-a',true,[h.asset],true);
+    assert.equal(visible.retry(),false,consumer+' paused recovery');
+    assert.equal(h.manifestRetries(),1,consumer+' paused callback must not refetch');
+    h.render(node,1,'publication-a',false);
+    assert.equal(visible.retry(),false,consumer+' hidden recovery');
+    assert.equal(h.manifestRetries(),1,consumer+' hidden callback must not refetch');
+    h.commit(node,1,'publication-a',false);
+  }
+});
+
+test('queued native retry cannot clear a failed image after ownership transition before effects',()=>{
+  const h=fixture(),node=h.canvas();h.render(node,1,'publication-a');h.commit(node,1,'publication-a');
+  const image=h.finishRequest(0),visible=h.commit(node,1,'publication-a');
+  visible.failedImage(image);assert.equal(h.heldNativeState().value.failed,true);
+  const replacement=h.render(node,2,'publication-b');
+  assert.equal(visible.retryImages(),false);
+  assert.equal(replacement.retryImages(),false,'new render callback cannot operate on the preceding effect owner');
+  assert.equal(h.heldNativeState().value.failed,true,'the old owner failure remains until retirement');
+  assert.equal(h.requests.length,1,'queued old retry must not pump an obsolete request');
+  h.commit(node,2,'publication-b');h.render(null,2,'publication-b',false);h.commit(null,2,'publication-b',false);
+});
+
+test('current native recovery adopts new same-publication demand before pumping retry work',()=>{
+  const h=fixture(),node=h.canvas();h.render(node,1,'publication-a');h.commit(node,1,'publication-a');
+  const image=h.finishRequest(0),visible=h.commit(node,1,'publication-a');visible.failedImage(image);
+  const next={...h.asset,id:'w3:0:1',sha256:'b'.repeat(64)};
+  h.render(node,1,'publication-a',true,[next]);
+  assert.equal(visible.retryImages(),true,'the existing GPU failure must still request its shader reset');
+  assert.deepEqual(h.acquiredAssets.map(row=>row.id),[h.asset.id,next.id],
+    'no obsolete same-edition tile may restart before wanted effects commit');
+  h.commit(node,1,'publication-a',true,[next]);h.render(null,1,'publication-a',false);h.commit(null,1,'publication-a',false);
+});
 
 test('the production W3 consumer releases an empty face bitmap, reuses its file on return and retires it on hide',()=>{
   const h=fixture('wide'),node=h.canvas();h.setWideView(0,180,85);
@@ -332,15 +464,23 @@ test('the ordinary optical manifest enters the existing PNG consumer under its o
   assert.equal(h.released.length,1);assert.equal(h.heldNativeState(),null);
 });
 
-test('galactic initial day, narrow or missing exact instant never acquire an image or enable its manifest',()=>{
+test('galactic day/missing instants stay inactive; a fine night discovers the schema without loading narrow infrared pixels',()=>{
   for(const [sun,fov,at] of [[20,45,'2026-09-23T12:00:00.000Z'],[-24,4.8,'2026-09-23T12:00:00.000Z'],
     [-24,45,'2026-09-23T13:00:00.000Z']] as const){
     const h=fixture('galactic'),node=h.canvas();h.setGalacticView(sun,fov,at);
     h.render(node,1,'publication-a');const result=h.commit(node,1,'publication-a');
     assert.equal(result.image,null);assert.equal(result.loading,false);assert.equal(result.failed,false);
-    assert.equal(h.requests.length,0);assert(h.queryOptions.every(options=>options.enabled===false));
+    assert.equal(h.requests.length,0);
+    // The adopted optical panorama works at fine scales. Discovery cannot
+    // assume the old infrared fade before it knows the published schema.
+    assert(h.queryOptions.every(options=>options.enabled===(sun<0&&fov===4.8)));
     h.render(null,2,undefined,false);h.commit(null,2,undefined,false);
   }
+  const optical=fixture('galactic',true),node=optical.canvas();optical.setGalacticView(-24,4.8);
+  optical.render(node,1,'ordinary-fine-optical');optical.commit(node,1,'ordinary-fine-optical');
+  const image=optical.finishRequest(0);
+  assert.equal(optical.commit(node,1,'ordinary-fine-optical').image,image,'fine optical pixels must remain available');
+  optical.render(null,2,undefined,false);optical.commit(null,2,undefined,false);
 });
 
 test('galactic cached decode cancellation, failure latch and explicit retry preserve current source ownership',()=>{
@@ -385,25 +525,6 @@ test('galactic manifest refresh failure retains valid current pixels and stays s
   h.render(node,1,'publication-a',false);h.commit(node,1,'publication-a',false);
 });
 
-test("selected W3 uses a public file lease while its publication metadata retains separate ownership", async () => {
-  const h = fixture(), node = h.canvas();
-  h.render(node, 1, "publication-a"); h.commit(node, 1, "publication-a");
-  const image = h.finishRequest(0);
-  let deep: OwnedDeepSkyImageAsset | undefined;
-  const discovery = publishedDeepSkyDiscovery("M:31"); let current = true, released = 0;
-  startDeepSkyImageRequest({ reference: "M:31", level: "MEDIUM", discover: async () => discovery,
-    demand: { isCurrent: () => true, onRetire: () => () => {}, release() {} },
-    acquire: asset => ({ promise: Promise.resolve({ filePath: `/owned/sky-public-images-v1/file-${asset.sha256}.jpg`,
-      isCurrent: () => current, onRetire: () => () => {}, release() { if (current) { current = false; released++; } } }), cancel() {} }),
-    onReady: value => { deep = value; }, onError() { assert.fail("valid discovered object image"); } });
-  await new Promise<void>(resolve => setImmediate(resolve));
-  assert(deep);
-  assert.match(image.src,/\/sky-public-images-v1\/mock-[a-f0-9]{64}\.jpg$/);
-  assert.match(deep.tempFilePath,/\/sky-public-images-v1\/file-[a-f0-9]{64}\.jpg$/);
-  assert.equal(deep.publicationHash, discovery.publicationHash); assert.notEqual(image.src,deep.tempFilePath);
-  deep.release(); deep.release(); assert.equal(released, 1);
-  h.render(node, 1, "publication-a", false); h.commit(node, 1, "publication-a", false);
-});
 
 test("a publication or Canvas generation switch fences old decoded images before effects and redecodes for the new owner", () => {
   const h = fixture(), firstCanvas = h.canvas(), nextCanvas = h.canvas();

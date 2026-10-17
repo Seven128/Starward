@@ -8,7 +8,7 @@ import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { isDeepSkyObjectReference } from "@starward/miniapp-contracts";
+import { isDeepSkyObjectReference, EXTENDED_DEEP_SKY_CATALOG_VERSION, CURRENT_DEEP_SKY_CATALOG_VERSION } from "@starward/miniapp-contracts";
 
 const OPENNGC_COMMIT = "36cb178a0f69dba8bfc03a99c10512831edf1c6b";
 const SOURCE_URL = `https://raw.githubusercontent.com/mattiaverga/OpenNGC/${OPENNGC_COMMIT}/database_files/NGC.csv`;
@@ -178,13 +178,20 @@ export async function buildOpenNgcMessierDeepSkyCatalog() {
 
 /** Offline additive candidate batch. Preserve the exact old pack/manifest and
  * source identity; adding a batch is not permission to mutate a published v1. */
-export async function buildOpenNgcExtendedDeepSkyCatalog(sourceFile: string, additionalReferences: readonly string[]) {
+export async function buildOpenNgcExtendedDeepSkyCatalog(sourceFile: string, additionalReferences: readonly string[],
+  edition: "extended-v1" | "extended-v2" = "extended-v1") {
+  if (edition !== "extended-v1" && edition !== "extended-v2") throw new Error("opengc_edition_invalid");
   const original = JSON.parse(await readFile(resolve(OUTPUT_DIRECTORY, "opengc-messier-deep-sky.v1.manifest.json"), "utf8"));
   const bytes = await readFile(sourceFile);
   if (bytes.length !== original.source.responseBytes || hash(bytes) !== original.source.responseSha256)
     throw new Error("opengc_pinned_source_invalid");
   const rows = parseOpenNgcDeepSkyCsv(new TextDecoder("utf-8", { fatal: true }).decode(bytes), additionalReferences);
-  const pack = { schemaVersion: "opengc-deep-sky-v2", catalogVersion: "opengc-deep-sky.v20260501-extended-v1",
+  if (edition === "extended-v2") {
+    const previous = JSON.parse(await readFile(resolve(OUTPUT_DIRECTORY, "opengc-deep-sky.v2.json"), "utf8"));
+    for (const row of previous.rows) if (JSON.stringify(rows.find(candidate => candidate.objectRef === row.objectRef)) !== JSON.stringify(row))
+      throw new Error("opengc_retained_identity_changed");
+  }
+  const pack = { schemaVersion: "opengc-deep-sky-v2", catalogVersion: edition === "extended-v1" ? EXTENDED_DEEP_SKY_CATALOG_VERSION : CURRENT_DEEP_SKY_CATALOG_VERSION,
     frame: "ICRS J2000", license: "CC-BY-SA-4.0", rows };
   const text = JSON.stringify(pack);
   const manifest = { ...original, schemaVersion: "opengc-deep-sky-manifest-v2", catalogVersion: pack.catalogVersion,
@@ -193,8 +200,9 @@ export async function buildOpenNgcExtendedDeepSkyCatalog(sourceFile: string, add
     modifications: [...original.modifications, "保留原51项的身份与资料，增加固定原源中明确选入的非Messier行；不存在的Messier编号保留null，派生目录继续按CC BY-SA 4.0提供。"],
     rowCount: rows.length, rowOrder: "Existing Messier order, then explicit native references",
     derivedAssetSha256: hash(text), derivedAssetBytes: Buffer.byteLength(text), retrievedAt: new Date().toISOString() };
-  await writeFile(resolve(OUTPUT_DIRECTORY, "opengc-deep-sky.v2.json"), text, { flag: "wx" });
-  await writeFile(resolve(OUTPUT_DIRECTORY, "opengc-deep-sky.v2.manifest.json"), JSON.stringify(manifest), { flag: "wx" });
+  const stem = edition === "extended-v1" ? "opengc-deep-sky.v2" : "opengc-deep-sky.v3";
+  await writeFile(resolve(OUTPUT_DIRECTORY, `${stem}.json`), text, { flag: "wx" });
+  await writeFile(resolve(OUTPUT_DIRECTORY, `${stem}.manifest.json`), JSON.stringify(manifest), { flag: "wx" });
   return manifest;
 }
 

@@ -3,26 +3,13 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import test from "node:test";
 import ts from "typescript";
+import { skyMenuProps } from "./sky-menu-test-support";
+import { disclosureFixture } from "./sky-disclosure-test-support";
 
 const page = ts.createSourceFile("spot-sky-page.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
   ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-const actions: { name: string; expression: ts.Expression }[] = [];
-function visit(node: ts.Node) {
-  if (ts.isJsxElement(node) && node.openingElement.tagName.getText(page) === "Button") {
-    const attrs = node.openingElement.attributes.properties;
-    const locked = attrs.find(a => ts.isJsxAttribute(a) && a.name.getText(page) === "disabled");
-    const click = attrs.find(a => ts.isJsxAttribute(a) && a.name.getText(page) === "onClick");
-    if (locked?.getText(page).includes("alignmentEditing") && click && ts.isJsxAttribute(click) &&
-      click.initializer && ts.isJsxExpression(click.initializer) && click.initializer.expression) {
-      const expression = click.initializer.expression, text = expression.getText(page);
-      if (/set(?:LandscapeEnabled|ConstellationsEnabled|WideFieldEnabled|CoordinateGrids)/u.test(text))
-        actions.push({ name: text.includes("setCoordinateGrids") ? text.includes("horizontal:") ? "horizontal" : "equatorial"
-          : text.includes("setLandscapeEnabled") ? "landscape" : text.includes("setConstellationsEnabled") ? "constellations" : "wideField", expression });
-    }
-  }
-  ts.forEachChild(node, visit);
-}
-visit(page);
+const menu = skyMenuProps(page);
+const actions = [...menu.layers].map(([name, props]) => ({ name, expression: menu.expression(props, "onClick") }));
 assert.equal(actions.length, 5);
 for (const action of actions) test(`queued actual ${action.name} action preserves editing and recovers after cancel/confirm`, () => {
   let mode = "auto", writes = 0;
@@ -32,6 +19,7 @@ for (const action of actions) test(`queued actual ${action.name} action preserve
   const callback = vm.runInNewContext(ts.transpileModule(`(${action.expression.getText(page)})`,
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
     orientationController: { snapshot: () => ({ alignment: { mode } }) },
+    skyDisplayCurrent:()=>mode!=="editing", skyDisclosures: disclosureFixture("layers").commands,
     setLandscapeEnabled: set("landscape"), setConstellationsEnabled: set("constellations"), setWideFieldEnabled: set("wideField"),
     setCoordinateGrids(update: (value: typeof grids) => typeof grids) { writes++; grids = update(grids); },
   });

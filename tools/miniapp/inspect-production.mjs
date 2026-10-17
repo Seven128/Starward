@@ -2,6 +2,8 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+export const WEAPP_PACKAGE_BYTE_LIMIT = 2 * 1024 * 1024;
+export const WEAPP_AGGREGATE_BYTE_LIMIT = 20 * 1024 * 1024;
 const repositoryPath = relative => path.join(root, relative);
 const readJson = async relative => JSON.parse(await readFile(repositoryPath(relative), 'utf8'));
 async function listFiles(relative, predicate = () => true) {
@@ -131,8 +133,8 @@ export async function inspectCandidate({ bundleDirectory = "apps/wechat-miniapp/
     })),
     appConfig?.subPackages ?? [],
   );
-  const packageByteLimit = 2 * 1024 * 1024;
-  const aggregateByteLimit = 20 * 1024 * 1024;
+  const packageByteLimit = WEAPP_PACKAGE_BYTE_LIMIT;
+  const aggregateByteLimit = WEAPP_AGGREGATE_BYTE_LIMIT;
   const packageBudgetPassed = packageBudgetWithinLimits(packages, totalBytes, {
     perPackageBytes: packageByteLimit,
     aggregateBytes: aggregateByteLimit,

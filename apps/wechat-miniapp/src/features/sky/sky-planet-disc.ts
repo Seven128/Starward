@@ -38,17 +38,20 @@ export interface SkyOblateDisc {
   readonly polarRatio: number;
 }
 
-export interface SkyPlanetDisc extends SkyPhaseDisc {
+export interface SkyPlanetProjection extends SkyPhaseDisc {
   readonly body: SkyPlanetBody;
   readonly altitudeDeg: number;
   readonly angularDiameterDeg: number;
   readonly visualMagnitude: number;
-  readonly rings: readonly SkySaturnRing[];
   readonly ringProjection?: SkySaturnRingProjection | null;
   readonly oblate: SkyOblateDisc | null;
   readonly surfaceOrientation: SkyBodySurfaceOrientation|null;
   /** Saturn sunlight in the same longitude-neutral body frame as its surface. */
   readonly ringSunBody: readonly [number,number,number]|null;
+}
+
+export interface SkyPlanetDisc extends SkyPlanetProjection {
+  readonly rings: readonly SkySaturnRing[];
 }
 
 const dot = (a: readonly number[], b: readonly number[]) => a.reduce((sum,value,index)=>sum+value*b[index]!,0);
@@ -170,10 +173,11 @@ function saturnRingSegments(disc:SkyPhaseDisc, oblate:SkyOblateDisc|null,
   });
 }
 
-/** All seven records must agree on one instant; malformed/retired rows render no invented planets. */
-export function skyPlanetDiscsAt(rows: readonly SkyGeometryRow[] | undefined, at: string | undefined,
+/** Resource demand needs projected size/orientation, not ring strokes. All seven
+ * records still agree on one instant; partial or invalid ephemerides fail closed. */
+export function skyPlanetProjectionsAt(rows: readonly SkyGeometryRow[] | undefined, at: string | undefined,
   basis: SkyViewBasis, width: number, height: number, verticalFovDeg: number,
-  center?: SkyProjectionCenter, onlyBody?: SkyPlanetBody): SkyPlanetDisc[] | null {
+  center?: SkyProjectionCenter, onlyBody?: SkyPlanetBody): SkyPlanetProjection[] | null {
   const row = exactSkyTimeFrame(rows,at);
   const sun = skySolarLightAt(rows,at);
   if (!row || !sun || !Array.isArray(row.planets) || row.planets.length !== SKY_PLANET_ORDER.length ||
@@ -193,7 +197,6 @@ export function skyPlanetDiscsAt(rows: readonly SkyGeometryRow[] | undefined, at
     const disc=projectionExtent!==1?{...projected,radiusPx:projected.radiusPx/projectionExtent}:projected;
     const oblate=oblatePlanetDisc(p,disc,basis,height,verticalFovDeg);
     const ringProjection=saturnRingProjection(p,disc,basis,height,verticalFovDeg);
-    const rings=saturnRingSegments(disc,oblate,ringProjection);
     const saturnFrame=p.body==="SATURN"?skyAxisymmetricBodyFrame(p.ringPoleEnu,
       p.azimuthDeg,p.altitudeDeg):null;
     const surfaceOrientation=saturnFrame?skyBodySurfaceOrientation(saturnFrame,
@@ -203,8 +206,17 @@ export function skyPlanetDiscsAt(rows: readonly SkyGeometryRow[] | undefined, at
         p.azimuthDeg,p.altitudeDeg,disc,basis,width,height,verticalFovDeg,center):null;
     return [{...disc,body:p.body,altitudeDeg:p.altitudeDeg,
       angularDiameterDeg:p.angularDiameterDeg,visualMagnitude:p.visualMagnitude,
-      rings,ringProjection,oblate,surfaceOrientation,
+      ringProjection,oblate,surfaceOrientation,
       ringSunBody:saturnFrame&&surfaceOrientation&&p.ringSunEnu
         ?skyDirectionInBodyFrame(saturnFrame,p.ringSunEnu):null}];
   });
+}
+
+/** Painting and picking keep the complete ring geometry at the original precision. */
+export function skyPlanetDiscsAt(rows: readonly SkyGeometryRow[] | undefined, at: string | undefined,
+  basis: SkyViewBasis, width: number, height: number, verticalFovDeg: number,
+  center?: SkyProjectionCenter, onlyBody?: SkyPlanetBody): SkyPlanetDisc[] | null {
+  return skyPlanetProjectionsAt(rows,at,basis,width,height,verticalFovDeg,center,onlyBody)?.map(disc => ({
+    ...disc, rings:saturnRingSegments(disc,disc.oblate,disc.ringProjection??null),
+  })) ?? null;
 }

@@ -54,7 +54,10 @@ test("a failed detail alpha request preserves the same valid coarse image/mask a
   assert.deepEqual(requests, ["overview", "detail", "detail"]); assert.equal(state.failed, false);
   const fineImage = { width: 2048, height: 1024 }, fineMask = state.masks.get("detail")!;
   const ready = new Map([["landscape:detail", fineImage]]), retained = new Map([["landscape:overview", coarseImage]]);
-  assert.deepEqual(selectSkyLandscapePanorama(detail, state.masks, ready, retained), { image: fineImage, mask: fineMask });
+  const selected=selectSkyLandscapePanorama(detail,state.masks,ready,retained)!;
+  assert.equal(selected.image,fineImage);assert.equal(selected.mask,fineMask);
+  assert.equal(selected.coarser?.image,coarseImage);assert.equal(selected.coarser?.mask,coarseMask,
+    'a fine draw failure can use the retained overview with its own alpha');
   assert.deepEqual(selectSkyLandscapePanorama(overview, state.masks, ready, retained), { image: coarseImage, mask: coarseMask });
   assert.equal(coarseMask.alpha[0], 0); assert.equal(fineMask.alpha[0], 255, "resolution alpha identities cannot be exchanged");
   owner.dispose();
@@ -87,6 +90,22 @@ test("detail image failure still selects valid coarse alpha, without granting a 
   assert.deepEqual(selectSkyLandscapePanorama(detail, masks, new Map(), new Map([["landscape:overview", image]])), { image, mask: coarse });
   assert.equal(selectSkyLandscapePanorama(detail, masks, new Map(), new Map()), null);
   assert.equal(selectSkyLandscapePanorama(detail, new Map(), new Map([["landscape:detail", {}]]), new Map()), null);
+});
+
+test("coarse demand keeps an already decoded detail with its own alpha until the coarse replacement exists", () => {
+  const coarse = createSkyPanoramaMask(publication, overview, new Uint8Array(1024 * 512));
+  const fine = createSkyPanoramaMask(publication, detail, new Uint8Array(2048 * 1024).fill(255));
+  const fineImage = { width: 2048, height: 1024 }, coarseImage = { width: 1024, height: 512 };
+  const masks = new Map([["overview", coarse], ["detail", fine]]);
+  const retained = new Map([["landscape:detail", fineImage]]);
+  const fallback = selectSkyLandscapePanorama(overview, masks, new Map(), retained);
+  assert.equal(fallback?.image, fineImage,
+    "time-dependent celestial demand must not turn a usable photograph into a missing landscape");
+  assert.equal(fallback?.mask, fine);
+  assert.deepEqual(selectSkyLandscapePanorama(overview, masks, new Map([["landscape:overview", coarseImage]]), retained),
+    { image: coarseImage, mask: coarse });
+  assert.equal(selectSkyLandscapePanorama(overview, new Map([["overview", coarse]]), new Map(), retained), null,
+    "retained detail cannot borrow another resolution's alpha");
 });
 
 test("image demand follows each completed resolution alpha and resumes on a horizon return", () => {

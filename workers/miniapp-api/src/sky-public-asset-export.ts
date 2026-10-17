@@ -16,7 +16,7 @@ import { ConstellationPublicationService } from "./constellation-publication.ts"
 import { SdssOpticalImageryService } from "./sdss-optical-imagery.ts";
 import { DeepSkyImageryService } from "./deep-sky-imagery.ts";
 import { PreparedOpticalImageryService } from "./prepared-optical-imagery.ts";
-import { galacticImagePublicAssetHeaders, opticalHipsPublicAssetHeaders, skyPublicAssetHeaders, type SkyPublicAssetKind } from "./sky-public-asset-headers.ts";
+import { galacticImagePublicAssetHeaders, galacticImagePublicMetadataHeaders, opticalHipsPublicAssetHeaders, skyPublicAssetHeaders, skySourceManifestHeaders, type SkyPublicAssetKind } from "./sky-public-asset-headers.ts";
 import { SaoPublicationService } from "./sao-publication.ts";
 import { OpticalHipsPublicationService } from "./optical-hips-publication.ts";
 
@@ -49,11 +49,13 @@ export async function galacticSkyPublicAsset(owner = new GalacticImagePublicatio
 /** The standard consumer preserves both fixed ordinary versions through the
  * same owner; it never crawls historical trial directories. */
 export async function* galacticSkyPublicAssets(owner = new GalacticImagePublicationService()): AsyncGenerator<SkyPublicAssetExportInput> {
-  for(const manifest of owner.publishedManifests())yield {
-    route:manifest.image.downloadUrl,
-    bytes:await owner.image(manifest.publicationHash,manifest.image.file),
-    headers:galacticImagePublicAssetHeaders(manifest),
-  };
+  for(const manifest of owner.publishedManifests()){
+    yield {route:manifest.image.downloadUrl,
+      bytes:await owner.image(manifest.publicationHash,manifest.image.file),
+      headers:galacticImagePublicAssetHeaders(manifest)};
+    const metadata=owner.publishedMetadata(manifest.publicationHash);
+    yield {...metadata,headers:galacticImagePublicMetadataHeaders(manifest)};
+  }
 }
 
 /** Explicit LOCAL trial consumer of the standard bundle writer. This is not
@@ -63,6 +65,19 @@ export async function* opticalHipsTrialSkyPublicAssets(owner:OpticalHipsPublicat
   for await(const item of owner.publishedAssets())yield {
     route:item.route,bytes:item.bytes,headers:opticalHipsPublicAssetHeaders(item.contentType,item.sourceId),
   };
+}
+
+type BodyPublicationOwner=MoonTexturePublicationService|MarsTexturePublicationService|MercuryTexturePublicationService|
+  JupiterBandsPublicationService|SaturnBandsPublicationService|UranusBandsPublicationService|NeptuneBandsPublicationService;
+/** Keep image and metadata on the same explicitly retained edition. */
+export async function* bodySkyPublicAssets(kind:"moon"|"mars"|"mercury"|"jupiter"|"saturn"|"uranus"|"neptune",
+  owner:Pick<BodyPublicationOwner,"publishedManifests"|"imageAsset"|"publishedMetadata">):AsyncGenerator<SkyPublicAssetExportInput>{
+  for(const manifest of owner.publishedManifests()){
+    const image=await owner.imageAsset(manifest.publicationHash,manifest.image.file);
+    yield asset(kind,manifest.image.downloadUrl,image.bytes,image.contentType);
+    const metadata=owner.publishedMetadata(manifest.publicationHash);
+    yield asset(kind,metadata.route,metadata.bytes,"application/json; charset=utf-8");
+  }
 }
 
 /** Enumerate only assets accepted by the existing publication owners. No disk
@@ -76,17 +91,16 @@ export async function* approvedSkyPublicAssets(prepared = new PreparedOpticalIma
     ["saturn", new SaturnBandsPublicationService()], ["uranus", new UranusBandsPublicationService()],
     ["neptune", new NeptuneBandsPublicationService()],
   ] as const;
-  for (const [kind, owner] of fixed) {
-    const manifest = owner.manifest();
-    yield asset(kind, manifest.image.downloadUrl, await owner.image(manifest.publicationHash),
-      manifest.image.file.endsWith(".png") ? "image/png" : "image/jpeg");
-  }
+  for (const [kind, owner] of fixed) yield* bodySkyPublicAssets(kind,owner);
   yield* galacticSkyPublicAssets();
   const oldMoon = moon.manifest();
   yield asset("moon", `/v2/sky/moon/${LEGACY_MOON_TEXTURE_PUBLICATION_HASH}/${oldMoon.image.file}`,
     await moon.image(LEGACY_MOON_TEXTURE_PUBLICATION_HASH), "image/jpeg");
-  const coverage = moon.coverageManifest();
-  yield asset("moon", coverage.image.downloadUrl, await moon.coverageImage(coverage.publicationHash), "image/png");
+  for(const coverage of moon.coveragePublishedManifests()){
+    yield asset("moon",coverage.image.downloadUrl,await moon.coverageImage(coverage.publicationHash),"image/png");
+    const metadata=moon.coveragePublishedMetadata(coverage.publicationHash);
+    yield asset("moon",metadata.route,metadata.bytes,"application/json; charset=utf-8");
+  }
 
   const landscape = new SkyLandscapePublicationService(), lm = landscape.manifest();
   for (const route of [lm.source.originalDownloadUrl, ...lm.resources.flatMap(r => [r.image.downloadUrl, r.alpha.downloadUrl])]) {
@@ -104,13 +118,25 @@ export async function* approvedSkyPublicAssets(prepared = new PreparedOpticalIma
   }
   for await (const image of sdss.publishedAssets())
     yield asset("sdss-optical", image.descriptor.downloadUrl, image.bytes, image.contentType, image.fieldDegrees);
+  for (const manifest of sdss.publishedManifests()) yield {
+    route: `/v2/sky/sdss-optical/${manifest.publicationHash}/manifest`, bytes: Buffer.from(JSON.stringify(manifest)),
+    headers: skySourceManifestHeaders("sdss-optical", manifest.objectRef),
+  };
   const deepSky = new DeepSkyImageryService();
   for await (const image of deepSky.publishedAssets()) yield {
     route: image.descriptor.downloadUrl, bytes: image.bytes,
     headers: skyPublicAssetHeaders("deep-sky", image.contentType, image.fieldDegrees, image),
   };
+  for (const manifest of deepSky.publishedManifests()) yield {
+    route: `/v2/sky/deep-sky/${manifest.publicationHash}/manifest`, bytes: Buffer.from(JSON.stringify(manifest)),
+    headers: skySourceManifestHeaders("deep-sky"),
+  };
   for await (const image of prepared.publishedAssets())
     yield asset("prepared-optical", image.descriptor.downloadUrl, image.bytes, image.contentType, image.fieldDegrees);
+  for (const metadata of prepared.publishedMetadata()) yield {
+    route: metadata.route, bytes: metadata.bytes,
+    headers: metadata.headers,
+  };
   const sao = new SaoPublicationService(new URL('../assets/sao-v2/', import.meta.url));
   for await (const tile of sao.publishedAssets())
     yield asset("sao", `/v2/sky/supplements/sao/v2/${tile.publicationHash}/assets/${tile.tileId}`, tile.bytes, tile.contentType);

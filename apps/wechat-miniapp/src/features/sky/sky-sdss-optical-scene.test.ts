@@ -5,6 +5,7 @@ import { sdssOpticalPresentation } from "./sky-sdss-optical-selection";
 import { sdssOpticalPublication } from "@starward/miniapp-contracts";
 import { createSkyViewBasis, type SkyViewBasis } from "./sky-view-projection";
 import { createSkyPanoramaMask } from "./sky-landscape-mask";
+import { createSkyReadyImages, type SkyReadyImageFrame } from "./sky-ready-presentation";
 
 const paintedOpticalImage = (sources: SkyScenePaintedSources | null) => sources?.sdssOptical?.kind === "legacy" ? sources.sdssOptical.field.image : null;
 const at = "2026-09-25T00:00:00.000Z";
@@ -40,8 +41,8 @@ function draw(surface: object, mode: "NIGHT" | "OBSERVATION", optical: object | 
   failed?: (image: object) => void, frameAt = at,
   painted?: (_snapshot: unknown, sources: SkyScenePaintedSources) => void,
   camera: SkyViewBasis = basis,
-  scene?: { data: object; fov?: number; landscape?: { enabled: boolean; panorama?: object } }) {
-  const args: unknown[] = Array(35).fill(undefined);
+  scene?: { data: object; fov?: number; landscape?: { enabled: boolean; panorama?: object }; ready?: SkyReadyImageFrame }) {
+  const args: unknown[] = Array(43).fill(undefined);
   args[0] = surface; args[1] = scene?.data ?? report; args[2] = frameAt; args[3] = null; args[4] = null;
   args[5] = 390; args[6] = 844; args[7] = mode; args[8] = painted; args[10] = scene?.fov ?? 0.05;
   args[11] = { reference: "M:51", level: "DETAIL", fieldDegrees: 0.25, image: { kind: "W3" } };
@@ -49,8 +50,87 @@ function draw(surface: object, mode: "NIGHT" | "OBSERVATION", optical: object | 
   args[12] = camera; args[14] = failed; args[30] = optical ? {
     reference: "M:51", publicationHash: "legacy-M51", ...optical } : null; args[31] = failed;
   args[34] = scene?.landscape;
+  args[42] = scene?.ready;
   (drawSkyScene as (...values: unknown[]) => void)(...args);
 }
+
+function legacyReadySurface() {
+  const prepared: object[] = [], submitted: Array<{ image: object; opacity: number; composite: string }> = [];
+  const failures: object[] = [];
+  let sources: SkyScenePaintedSources | null = null;
+  const rejected = new Set<object>();
+  const surface = new Proxy({}, { get: (_target, key) => key === "prepareArtwork"
+    ? (image: object) => { prepared.push(image); return !rejected.has(image); }
+    : key === "artwork" ? (image: object, _registration: unknown, _view: unknown, opacity: number, _tint: string, composite: string) => {
+      submitted.push({ image, opacity, composite }); return !rejected.has(image);
+    } : () => undefined });
+  return { surface, prepared, submitted, failures, rejected,
+    paint(optical: object, ready: SkyReadyImageFrame) {
+      prepared.length = submitted.length = failures.length = 0;
+      draw(surface, "NIGHT", optical, image => failures.push(image), at,
+        (_snapshot, value) => { sources = value; }, basis, { data: report, ready });
+      return sources!;
+    } };
+}
+
+test("legacy ready cold image prepares without credit or alternate-spectrum flash, then reveals after the accepted frame", () => {
+  const h = legacyReadySurface(), clocks = createSkyReadyImages(), image = {};
+  const optical = { image, fieldDegrees: .3, level: "OVERVIEW" };
+  const zero = clocks.prepare(1000), first = h.paint(optical, zero);
+  assert.deepEqual(h.prepared, [image]); assert.equal(h.submitted.length, 0);
+  assert.equal(paintedOpticalImage(first), null); assert.equal(first.deepSkyImage, null);
+  assert.deepEqual(h.failures, []); assert.equal(zero.animating, true);
+  zero.commit(1020);
+  const half = clocks.prepare(1100), halfway = h.paint(optical, half);
+  assert.deepEqual(h.submitted, [{ image, opacity: .5, composite: "optical-cutout" }]);
+  assert.strictEqual(paintedOpticalImage(halfway), image); assert.equal(halfway.deepSkyImage, null);
+  half.commit(1100);
+  const full = clocks.prepare(1180); h.paint(optical, full);
+  assert.equal(h.submitted[0]!.opacity, 1); assert.equal(full.animating, false);
+});
+
+test("legacy ready late refinement preserves the accepted wider JPEG and its actual source while detail is zero or fails", () => {
+  const h = legacyReadySurface(), clocks = createSkyReadyImages(), coarse = {}, fine = {};
+  const parent = { image: coarse, fieldDegrees: .3, level: "OVERVIEW" };
+  const frame = clocks.prepare(0); h.paint(parent, frame); frame.commit();
+  const settled = clocks.prepare(160); h.paint(parent, settled); settled.commit();
+  const optical = { image: fine, fieldDegrees: .15, level: "DETAIL", coarser: parent };
+  const zero = clocks.prepare(1000), first = h.paint(optical, zero);
+  assert.deepEqual(h.submitted, [{ image: coarse, opacity: 1, composite: "optical-cutout" }]);
+  assert.deepEqual(h.prepared, [fine]); assert.strictEqual(paintedOpticalImage(first), coarse);
+  assert.equal(first.deepSkyImage, null); assert.deepEqual(h.failures, []); zero.commit();
+  const half = clocks.prepare(1080), halfway = h.paint(optical, half);
+  assert.deepEqual(h.submitted.map(value => [value.image, value.opacity]), [[coarse, 1], [fine, .5]]);
+  assert.strictEqual(paintedOpticalImage(halfway), fine); half.commit();
+  h.rejected.add(fine);
+  const failed = clocks.prepare(1160), recovered = h.paint(optical, failed);
+  assert.strictEqual(paintedOpticalImage(recovered), coarse); assert.equal(recovered.deepSkyImage, null);
+  assert.deepEqual(h.failures, [fine]); assert.equal(failed.animating, false); failed.commit();
+  h.rejected.delete(fine);
+  const retry = clocks.prepare(1200); h.paint(optical, retry);
+  assert.deepEqual(h.prepared, [fine], "failed presentation cannot leave an already-settled fine clock");
+  assert.deepEqual(h.submitted.map(value => value.image), [coarse]);
+});
+
+test("legacy ready widening retains its previously shown finer fallback while the desired wider image begins its reveal", () => {
+  const h = legacyReadySurface(), clocks = createSkyReadyImages(), fine = {}, overview = {};
+  const detail = { image: fine, fieldDegrees: .15, level: "DETAIL" };
+  const frame = clocks.prepare(0); h.paint(detail, frame); frame.commit();
+  const settled = clocks.prepare(160); h.paint(detail, settled); settled.commit();
+  const wider = { image: overview, fieldDegrees: .3, level: "OVERVIEW", fallback: detail };
+  const zero = clocks.prepare(1000), first = h.paint(wider, zero);
+  assert.deepEqual(h.prepared, [overview]);
+  assert.deepEqual(h.submitted, [{ image: fine, opacity: 1, composite: "optical-cutout" }]);
+  assert.strictEqual(paintedOpticalImage(first), fine); assert.equal(first.deepSkyImage, null);
+  assert.deepEqual(h.failures, []); zero.commit();
+  const half = clocks.prepare(1080), halfway = h.paint(wider, half);
+  assert.deepEqual(h.submitted.map(value => [value.image, value.opacity]), [[overview, .5], [fine, 1]]);
+  assert.strictEqual(paintedOpticalImage(halfway), fine); assert.equal(halfway.deepSkyImage, null);
+  half.commit();
+  const full = clocks.prepare(1160), complete = h.paint(wider, full);
+  assert.deepEqual(h.submitted.map(value => [value.image, value.opacity]), [[overview, 1]]);
+  assert.strictEqual(paintedOpticalImage(complete), overview); assert.equal(full.animating, false);
+});
 
 function opaquePanoramaBelow(altitude: number) {
   const width = 4, height = 8192, alpha = new Uint8Array(width * height);
@@ -99,7 +179,7 @@ test("fully covered M51 images lose visible credits only after the foreground ac
       camera,{data,landscape:{enabled,panorama}});
     assert.equal(submissions,1,"a successful optical cutout chooses one spectrum even if the later foreground fails");
     assert.equal(failures,0,"normal occlusion cannot poison downloads or force retries");
-    if(enabled&&available) assert.deepEqual(captured.sources,{sdssOptical:null,deepSkyImage:null},
+    if(enabled&&available) assert.deepEqual(captured.sources,{sdssOptical:null,deepSkyImage:null,galacticImage:null,bodyImages:[],opticalHips:[]},
       "a canvas entirely covered by the model has no visible optical or infrared image");
     else { assert.strictEqual(paintedOpticalImage(captured.sources!),optical.image);
       assert.equal(captured.sources!.deepSkyImage,null,"the chosen optical cutout does not also paint infrared"); }
@@ -137,7 +217,7 @@ test("leaving the image's whole field clears both credits without reporting a lo
   const record = (_snapshot: unknown, sources: SkyScenePaintedSources) => { captured.painted = sources; };
   draw(surface, "NIGHT", optical, () => { failures++; }, at, record, createSkyViewBasis(180, 130, 0)!);
   assert.equal(submissions, 0, "offscreen draws cannot be confused with visible pixels");
-  assert.deepEqual(captured.painted, { sdssOptical: null, deepSkyImage: null });
+  assert.deepEqual(captured.painted, { sdssOptical: null, deepSkyImage: null,galacticImage:null,bodyImages:[],opticalHips:[] });
   assert.equal(failures, 0, "normal camera movement must not poison the retry state");
   draw(surface, "NIGHT", optical, () => { failures++; }, at, record);
   assert.equal(submissions, 1, "returning to the cached optical image resumes its chosen spectrum");
@@ -272,7 +352,7 @@ test("SDSS credit follows committed optical pixels across request and focus tran
   draw(surface, "NIGHT", null, undefined, at, record);
   assert.equal(paintedImage, null);
   assert.equal(sdssOpticalPresentation({ requested: true, photoPresented: Boolean(paintedImage), canvasVisible: true,
-    failed: true, loading: false }), "RETRY");
+    failed: true, loading: false }), "NONE");
   assert.equal(sdssOpticalPresentation({ requested: true, photoPresented: Boolean(first), canvasVisible: false,
     failed: false, loading: true }), "LOADING", "hidden canvas pixels must not claim credit");
   draw(surface, "OBSERVATION", { image: second, fieldDegrees: 0.1, level: "DETAIL" }, undefined, at, record);

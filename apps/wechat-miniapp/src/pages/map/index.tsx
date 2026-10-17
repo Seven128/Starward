@@ -97,6 +97,8 @@ import {
 } from "./map-layer-selection";
 import { cameraCenterForVisibleMapTarget } from "./map-camera";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
+import { createSkyEntryTransition, SKY_ENTRY_FADE_MS } from "./sky-entry-transition";
+import { reportRuntimeError } from "@/services/runtime-error";
 
 function panelViewportSize(): { width: number; height: number } | null {
   try {
@@ -335,6 +337,28 @@ export default function MapPage() {
   }, []);
   const selectedProposalRef = useRef<typeof selectedProposal>(null);
   useEffect(() => { selectedProposalRef.current = selectedProposal; }, [selectedProposal]);
+  const [skyEntryPresentation, setSkyEntryPresentation] = useState<number | null>(null);
+  const skyEntryScope = useRef<() => string | null>(() => null);
+  const skyEntryRef = useRef<ReturnType<typeof createSkyEntryTransition> | null>(null);
+  if (!skyEntryRef.current) skyEntryRef.current = createSkyEntryTransition({
+    getScope: () => skyEntryScope.current(), onPresentation: setSkyEntryPresentation,
+  });
+  const skyEntry = skyEntryRef.current;
+  skyEntryScope.current = () => {
+    if (!nativeMap.isCurrent()) return null;
+    const state = useAppStore.getState(), context = state.observationContext;
+    const proposal = selectedProposalRef.current;
+    return JSON.stringify([currentDraftUserId(), state.mapResetVersion, state.selectedSpotId,
+      proposal?.submissionId, proposal?.revision, context?.contextId, context?.revision, context?.contextFingerprint]);
+  };
+  useEffect(() => {
+    if (skyEntryPresentation !== null) skyEntry.presented(skyEntryPresentation);
+  }, [skyEntry, skyEntryPresentation]);
+  useEffect(() => {
+    const hide = () => skyEntry.hide();
+    Taro.onAppHide(hide);
+    return () => { Taro.offAppHide(hide); skyEntry.dispose(); };
+  }, [skyEntry]);
   useEffect(() => {
     if (!selectedProposalState || selectedProposal) return;
     setSelectedProposalState(null);
@@ -375,8 +399,9 @@ export default function MapPage() {
     selectedSpotId: string | null;
   } | null>(null);
 
-  useDidShow(() => setPageVisible(true));
+  useDidShow(() => { skyEntry.show(); setPageVisible(true); });
   useDidHide(() => {
+    skyEntry.hide();
     invalidateMapPointIntent(true); stopPanelSpring(); navigationEpoch.current += 1;
     editorPresentationScope.current = null;
     if (editorPresentation.isClosing()) setBottomPresentation("none");
@@ -1586,6 +1611,7 @@ export default function MapPage() {
   };
 
   const handleMapPresentationSystemBack = async () => {
+    if (skyEntry.isActive()) { skyEntry.cancel(); return; }
     if (navigationHandoff.active) {
       navigationHandoff.cancel();
       return;
@@ -1725,17 +1751,22 @@ export default function MapPage() {
     }
   };
 
-  const openMapPage = async (url: string, title: string, entry: string) => {
+  const openMapPage = async (url: string, title: string, entry: string, isCurrent = () => true) => {
     const dedupeKey = `map-${entry}-navigation-failed`;
     try {
+      if (!isCurrent()) return false;
       await Taro.navigateTo({ url });
+      if (!isCurrent()) return false;
       const state = useAppStore.getState();
       for (const item of state.notifications) {
         if (item.owner === "map" && item.dedupeKey === dedupeKey) {
           state.dismissNotification(item.id);
         }
       }
-    } catch {
+      return true;
+    } catch (error) {
+      if (!isCurrent()) return false;
+      if (entry === "sky" || entry === "proposal-sky") reportRuntimeError("native", "sky_entry_navigation_failed", error);
       notify({
         owner: "map",
         placement: "floating",
@@ -1745,8 +1776,20 @@ export default function MapPage() {
         dismissible: true,
         dedupeKey,
       });
+      return false;
     }
   };
+
+  const openSkyPage = (url: string, entry: "sky" | "proposal-sky",
+    preparation = skyEntry.prepare(), acceptContext?: () => void) => preparation?.start({
+    reducedMotion: useAppStore.getState().preferences.reducedMotion,
+    navigate: current => openMapPage(url, "云观星", entry, current),
+    onTimeout: () => {
+      reportRuntimeError("native", "sky_entry_navigation_timeout");
+      notify({ owner: "map", placement: "floating", tone: "warning", title: "云观星暂未打开",
+        body: "请稍后重试，当前地点和时间已保留。", dismissible: true, dedupeKey: `map-${entry}-navigation-failed` });
+    },
+  }, acceptContext) ?? false;
 
   const onPanelEvidence = (kind: "guides" | "field" | "sources", articleId?: string) => {
     if (!selected || !activeContext || !detailContextReady || !spotDetail) {
@@ -1853,7 +1896,7 @@ export default function MapPage() {
     ]
       .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
       .join("&");
-    void openMapPage(`/sky/detail/index?${params}`, "云观星", "sky");
+    openSkyPage(`/sky/detail/index?${params}`, "sky");
   };
 
   const onProposalCloud = async (submission: import("@starward/miniapp-contracts").ContributionSubmission) => {
@@ -1862,6 +1905,8 @@ export default function MapPage() {
       notify({ owner: "map", placement: "floating", tone: "warning", title: "观测位置不可用", body: "该审核中点位没有可用于本账号云观星的精确坐标。", dismissible: true, dedupeKey: `proposal-cloud:${submission.submissionId}` });
       return;
     }
+    const preparation = skyEntry.prepare();
+    if (!preparation) return;
     const operation = ++navigationEpoch.current;
     try {
       const current = useAppStore.getState().observationContext;
@@ -1873,8 +1918,7 @@ export default function MapPage() {
         eventInstanceId: current?.eventInstanceId ?? null,
         targetProfile: current?.targetProfile ?? "DAILY",
       });
-      if (operation !== navigationEpoch.current || selectedProposalRef.current?.submissionId !== submission.submissionId) return;
-      setObservationContext(response.data);
+      if (!preparation.isCurrent() || operation !== navigationEpoch.current || selectedProposalRef.current?.submissionId !== submission.submissionId) return;
       const params = [
         ["spotId", submission.submissionId],
         ["locationName", submission.candidateProfile?.fields.name ?? location.displayName],
@@ -1884,10 +1928,12 @@ export default function MapPage() {
         ["timezone", response.data.timezone],
         ["dataRevision", `proposal:${submission.revision}`],
       ].map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`).join("&");
-      await openMapPage(`/sky/detail/index?${params}`, "云观星", "proposal-sky");
+      openSkyPage(`/sky/detail/index?${params}`, "proposal-sky", preparation, () => setObservationContext(response.data));
     } catch (error) {
-      if (operation !== navigationEpoch.current || selectedProposalRef.current?.submissionId !== submission.submissionId || isMiniappRequestCancelled(error)) return;
+      if (!preparation.isCurrent() || operation !== navigationEpoch.current || selectedProposalRef.current?.submissionId !== submission.submissionId || isMiniappRequestCancelled(error)) return;
       notify({ owner: "map", placement: "floating", tone: "warning", title: "观测信息暂不可用", body: `${errorMessage(error)}。提案和当前地图状态已保留。`, dismissible: true, dedupeKey: `proposal-cloud:${submission.submissionId}` });
+    } finally {
+      preparation.cancelPreparation();
     }
   };
 
@@ -1903,7 +1949,9 @@ export default function MapPage() {
   useEffect(() => {
     if (!selectedSpotId) {
       lastHandledSelectedId.current = null;
-      if (!pageVisible && bottomPresentation === "spot-panel") {
+      // Private candidates have their own owner-scoped selection, without a
+      // formal spot ID. Keep that panel through Sky navigation and Back.
+      if (!pageVisible && bottomPresentation === "spot-panel" && !selectedProposal) {
         setBottomPresentation("none");
       }
       return;
@@ -1932,6 +1980,7 @@ export default function MapPage() {
     detailContextReady,
     pageVisible,
     selected,
+    selectedProposal,
     selectedSpotId,
     spotOpenRequestVersion,
   ]);
@@ -2030,7 +2079,7 @@ export default function MapPage() {
       {!eventModalPresent ? <FloatingNotificationHost /> : null}
       {navigationHandoff.warning}
       <NativeBackBoundary
-        active={pageVisible && (eventModalOpen || eventModalPresent || bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet" || bottomPresentation === "spot-editor")}
+        active={pageVisible && (skyEntryPresentation !== null || eventModalOpen || eventModalPresent || bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet" || bottomPresentation === "spot-editor")}
         onBack={handleMapPresentationSystemBack}
         nativeMapContent={<AstronomicalEventModal ref={eventModalRef} open={eventModalOpen} mode="browse" onPresenceChange={setEventModalPresent}
           context={observationContext} onClose={() => setEventModalOpen(false)}
@@ -2502,6 +2551,10 @@ export default function MapPage() {
       >
         <Text>{contextTimeLabel}</Text>
       </View>
+      {skyEntryPresentation !== null ? <View key={skyEntryPresentation} className="map-sky-entry-shield"
+        style={{ animationDuration: `${SKY_ENTRY_FADE_MS}ms` }} catchMove
+        onClick={event => event.stopPropagation()} onTouchStart={event => event.stopPropagation()}
+        onAnimationEnd={() => skyEntry.finishFade(skyEntryPresentation)} /> : null}
     </View>
   );
 }

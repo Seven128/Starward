@@ -1,4 +1,4 @@
-import { opticalPublicationReference } from "@starward/miniapp-contracts";
+import { opticalPublicationReference, isPreparedRenderedOpticalFamily } from "@starward/miniapp-contracts";
 import type { SkyPreparedOpticalField, SkyPreparedOpticalImage, SkySdssDisplayOpticalField,
   SkySdssDisplayOpticalImage, SkySdssScienceOpticalField,
   SkySdssScienceOpticalImage, SkyTargetOpticalImage } from "./sky-sdss-optical-frame";
@@ -35,13 +35,14 @@ export function skyExactTargetOpticalIdentity(frame: SkyTargetOpticalImage | nul
   if (!publication || (identity.kind === "science"
     ? publication.imageVersion !== "science-optical-v2" && publication.imageVersion !== "science-optical-v3"
     : identity.kind === "display" ? publication.imageVersion !== "sdss-display-optical-v1"
-    : publication.imageVersion !== "prepared-optical-v1" && publication.imageVersion !== "prepared-display-optical-v1" && publication.imageVersion !== "prepared-optical-v2" && publication.imageVersion !== "prepared-native-optical-v1") ||
+    : !isPreparedRenderedOpticalFamily(publication)) ||
     opticalPublicationReference(publication) !== frame.reference || publication.publicationHash !== frame.publicationHash) return null;
   const fieldIdentity = (field: SkyExactTargetOpticalField) => !!field.asset &&
     field.asset === publication.levels[field.level] && field.fieldDegrees === field.asset.fieldDegrees &&
     (identity.kind !== "prepared"
       ? "sampleAvailability" in field.asset && field.asset.sampleAvailability === "joint-area-alpha"
-      : "displayAlpha" in field.asset && field.asset.displayAlpha === "geometric-source-area" &&
+      : "displayAlpha" in field.asset && field.asset.displayAlpha ===
+        (publication.imageVersion === "prepared-derived-region-optical-v1" ? "resampled-source-display-alpha" : "geometric-source-area") &&
         field.asset.scientificAvailability === "UNKNOWN");
   const order = { OVERVIEW: 0, MEDIUM: 1, DETAIL: 2 } as const;
   if (!fieldIdentity(identity.frame) || (parent && (!fieldIdentity(parent) || parent.image === frame.image ||

@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+import ts from "typescript";
 import { drawSkyScene } from "./sky-scene-render";
 import type { SkyRenderSurface } from "./sky-render-surface";
 import type { ResolvedSkyReport } from "./sky-stellar-scene";
@@ -150,32 +153,63 @@ test("corners on different trees cannot certify that open sky between them is co
   assert.equal(skyLandscapeCoversRayHull(directions),false,"coverage needs one convex solid, not a union of corner hits");
 });
 
-test("detail-first downgrade waits for its real coarse photo instead of flashing unrelated trees",()=>{
+test("a pending photograph does not flash unrelated trees before its alpha or pixels arrive",()=>{
   const publication={projection:{seamAzimuthDeg:0}} as SkyLandscapeManifestData;
   const resource={id:"overview",image:{width:8,height:8}} as SkyLandscapeResource;
   const coarse=createSkyPanoramaMask(publication,resource,new Uint8Array(64).fill(255));
   const detail=createSkyPanoramaMask(publication,{...resource,id:"detail"},new Uint8Array(64).fill(255));
   const panorama=selectSkyLandscapePanorama(resource,new Map([["overview",coarse],["detail",detail]]),
-    new Map(),new Map([["landscape:detail",{width:8,height:8}]]));
-  assert.equal(panorama,null,"a coarse request cannot spend its budget on the retained fine bitmap");
+    new Map(),new Map());
+  assert.equal(panorama,null,"no independently valid bitmap is available yet");
   let landscapeCalls=0,snapshot:SkyPickSnapshot|null=null;
   const availability:Array<boolean|null>=[];
   const surface=new Proxy({}, {get:(_target,key)=>()=>{if(key==="landscape")landscapeCalls++;return true;}}) as SkyRenderSurface;
   const args=Array(35).fill(undefined);args.splice(0,7,surface,report(),at,null,null,390,844);
   args[7]="NIGHT";args[8]=(value:SkyPickSnapshot|null)=>{snapshot=value;};
   args[12]=createSkyViewBasis(0,110,0)!;
-  args[34]={enabled:true,mask:coarse,panorama,pending:true,availability:(value:boolean|null)=>availability.push(value)};
-  (drawSkyScene as (...values:any[])=>void)(...args);
-  assert.equal(landscapeCalls,0,"a published photo pending pixels cannot substitute unrelated procedural terrain");
-  assert.equal((snapshot as SkyPickSnapshot|null)?.view?.landscape,null);
-  assert.equal(availability.length,1);
-  assert.equal(availability[0],null,"pending is separate from successful material and unavailable failure");
+  for(const state of [{mask:null,failed:false},{mask:null,failed:true},{mask:coarse,failed:false}]) {
+    availability.length=0;
+    args[34]={enabled:true,...state,panorama,pending:true,availability:(value:boolean|null)=>availability.push(value)};
+    (drawSkyScene as (...values:any[])=>void)(...args);
+    assert.equal(landscapeCalls,0,"pending metadata, alpha and pixels cannot substitute unrelated procedural terrain");
+    assert.equal((snapshot as SkyPickSnapshot|null)?.view?.landscape,null);
+    assert.deepEqual(availability,[null],"pending is separate from successful material and unavailable failure");
+  }
   args[34]={enabled:true,mask:coarse,panorama,pending:false,failed:true,
     availability:(value:boolean|null)=>availability.push(value)};
   (drawSkyScene as (...values:any[])=>void)(...args);
   assert.equal(landscapeCalls,1,"an explicit image failure keeps the adopted procedural recovery");
   assert.equal((snapshot as SkyPickSnapshot|null)?.view?.landscape?.kind,"procedural");
   assert.equal(availability.at(-1),true,"only a real successful fallback pass is available");
+});
+
+test("the page waits for its new canvas instead of painting queued old landscape failure",()=>{
+  const page=ts.createSourceFile("spot-sky-page.tsx",readFileSync(new URL("./spot-sky-page.tsx",import.meta.url),"utf8"),
+    ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
+  let landscapeInput:ts.Expression|undefined;
+  const find=(node:ts.Node)=>{
+    if(ts.isCallExpression(node)&&node.expression.getText(page)==="drawSkyScene") {
+      assert.equal(landscapeInput,undefined,"use the single production scene consumer");
+      landscapeInput=node.arguments[34];
+    }
+    ts.forEachChild(node,find);
+  };
+  find(page);assert.ok(landscapeInput);
+  const compiled=ts.transpileModule(`(${landscapeInput.getText(page)})`,
+    {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
+  for(const generation of [2,1]) {
+    let terrainPasses=0,snapshot:SkyPickSnapshot|null=null;
+    const surface=new Proxy({}, {get:(_target,key)=>()=>{if(key==="landscape")terrainPasses++;return true;}}) as SkyRenderSurface;
+    const input=vm.runInNewContext(compiled,{frame:{nativeImageGeneration:1,landscapeEnabled:true,
+      landscapePanorama:null,landscapeMask:null,landscapeOpacity:1,landscapePending:false,landscapeFailed:true},
+      canvasGenerationRef:{current:generation},paintedSkyObjectsRef:{current:null},setLandscapeUnavailable:()=>{}});
+    const args=Array(35).fill(undefined);args.splice(0,7,surface,report(),at,null,null,390,844);
+    args[7]="NIGHT";args[8]=(value:SkyPickSnapshot|null)=>{snapshot=value;};
+    args[12]=createSkyViewBasis(0,110,0)!;args[34]=input;
+    (drawSkyScene as (...values:any[])=>void)(...args);
+    assert.equal(terrainPasses,generation===2?0:1,"only this canvas's terminal failure may introduce recovery terrain");
+    assert.equal((snapshot as SkyPickSnapshot|null)?.view?.landscape?.kind??null,generation===2?null:"procedural");
+  }
 });
 
 test("lobed canopy point hits cannot certify a hull across an open notch",()=>{
@@ -231,7 +265,7 @@ test("a failed photo restores only the missing alpha over a successful partial m
   args[12]=createSkyViewBasis(0,90,0)!;
   args[34]={enabled:true,mask,panorama:{image:{width:8,height:8},mask},readiness:.5,previous:{kind:"procedural",opacity:.5}};
   (drawSkyScene as (...values:any[])=>void)(...args);
-  assert.equal(alpha,.5,"recovery cannot compound the already submitted partial material into .625");
+  assert.equal(alpha,.59,"recovery must retain the current view's grey cue without compounding the partial material");
   assert.equal((snapshot as SkyPickSnapshot|null)?.view?.landscape?.opacity,alpha,
     "committed occlusion must agree with the actual successful source-over passes");
   let modelCalls=0;
@@ -239,6 +273,59 @@ test("a failed photo restores only the missing alpha over a successful partial m
     ? (_view:unknown,_sun:unknown,_red:unknown,photo:unknown)=>!photo && ++modelCalls===1 : ()=>true}) as SkyRenderSurface;
   args[0]=partialOnly;
   (drawSkyScene as (...values:any[])=>void)(...args);
-  assert.equal((snapshot as SkyPickSnapshot|null)?.view?.landscape?.opacity,.25,
+  assert.equal((snapshot as SkyPickSnapshot|null)?.view?.landscape?.opacity,.295,
     "failed restoration cannot erase or upgrade the independent already painted partial model");
+});
+
+test('a failed detail bitmap uses its valid coarse photograph before any unrelated model',()=>{
+  const publication={publicationHash:'same-source',projection:{seamAzimuthDeg:0}} as SkyLandscapeManifestData;
+  const coarse=createSkyPanoramaMask(publication,{id:'overview',image:{width:8,height:8}} as SkyLandscapeResource,new Uint8Array(64).fill(255));
+  const detail=createSkyPanoramaMask(publication,{id:'detail',image:{width:16,height:8}} as SkyLandscapeResource,new Uint8Array(128).fill(255));
+  const fineImage={width:16,height:8},coarseImage={width:8,height:8};
+  const calls:string[]=[],availability:(boolean|null)[]=[];
+  let rejectCoarse=false,rejectModel=false;
+  let snapshot:SkyPickSnapshot|null=null;
+  const surface=new Proxy({}, {get:(_target,key)=>key==='landscape'
+    ?(_view:unknown,_sun:unknown,_red:unknown,photo:any)=>{
+      calls.push(photo?.image===fineImage?'detail':photo?.image===coarseImage?'overview':'model');
+      return photo?photo.image!==fineImage&&(!rejectCoarse||photo.image!==coarseImage):!rejectModel;
+    }:()=>true}) as SkyRenderSurface;
+  const args=Array(35).fill(undefined);args.splice(0,7,surface,report(),at,null,null,390,844);
+  args[7]='NIGHT';args[8]=(value:SkyPickSnapshot|null)=>snapshot=value;args[12]=createSkyViewBasis(0,110,0)!;
+  args[34]={enabled:true,mask:detail,readiness:1,previous:detail,
+    panorama:{image:fineImage,mask:detail,coarser:{image:coarseImage,mask:coarse}},
+    availability:(value:boolean|null)=>availability.push(value)};
+  (drawSkyScene as (...values:any[])=>void)(...args);
+  assert.deepEqual(calls,['detail','overview'],'the independent valid coarse image must be tried before different terrain');
+  assert.equal((snapshot as SkyPickSnapshot|null)?.view?.landscape,coarse,'actual coarse alpha is the accepted picking/name/source boundary');
+  assert.equal(skyLandscapePaintedPanorama((snapshot as SkyPickSnapshot|null)?.view?.landscape),coarse);
+  assert.deepEqual(availability,[true]);
+  // A returning photograph and an already drawn model still use their original
+  // source-over transition. The accepted photo must be the level that worked.
+  calls.length=0;args[34].readiness=.5;args[34].previous={kind:'procedural'};
+  (drawSkyScene as (...values:any[])=>void)(...args);
+  assert.deepEqual(calls,['model','detail','overview']);
+  const transition=(snapshot as SkyPickSnapshot|null)?.view?.landscape;
+  assert.equal(transition?.kind,'transition');
+  const actual=skyLandscapePaintedPanorama(transition);assert(actual);
+  assert.equal(actual.alpha,coarse.alpha);assert.equal(actual.resource,coarse.resource);assert.equal(actual.opacity,.5);
+  // An overview certified transparent in this view grants no photograph credit
+  // and must not produce four trees merely because its fine bitmap failed.
+  const empty=createSkyPanoramaMask(publication,{id:'overview',image:{width:8,height:8}} as SkyLandscapeResource,new Uint8Array(64));
+  args[34].panorama.coarser.mask=empty;args[34].readiness=1;args[34].previous=detail;calls.length=0;
+  (drawSkyScene as (...values:any[])=>void)(...args);
+  assert.deepEqual(calls,['detail']);assert.equal((snapshot as SkyPickSnapshot|null)?.view?.landscape?.opacity,0);
+  assert.equal(skyLandscapePaintedPanorama((snapshot as SkyPickSnapshot|null)?.view?.landscape),null);
+  args[34].readiness=.5;args[34].previous={kind:'procedural'};rejectModel=true;calls.length=0;
+  (drawSkyScene as (...values:any[])=>void)(...args);
+  assert.deepEqual(calls,['model','detail']);assert.equal((snapshot as SkyPickSnapshot|null)?.view?.landscape?.opacity,0);
+  assert.equal(skyLandscapePaintedPanorama((snapshot as SkyPickSnapshot|null)?.view?.landscape),null);
+  // A real failure of both independent bitmaps retains the adopted model and
+  // recovery UI, rather than presenting a failed picture as usable.
+  args[34].panorama.coarser.mask=coarse;args[34].readiness=1;args[34].previous=detail;
+  rejectModel=false;rejectCoarse=true;calls.length=0;
+  (drawSkyScene as (...values:any[])=>void)(...args);
+  assert.deepEqual(calls,['detail','overview','model']);
+  assert.equal((snapshot as SkyPickSnapshot|null)?.view?.landscape?.kind,'procedural');
+  assert.equal(skyLandscapePaintedPanorama((snapshot as SkyPickSnapshot|null)?.view?.landscape),null);
 });

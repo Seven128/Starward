@@ -1,4 +1,4 @@
-import { opticalPublicationReference, type PreparedRenderedOpticalManifest, type SdssOpticalLevel, type SdssOpticalManifest, type SdssScienceOpticalManifest,
+import { opticalPublicationReference, isPreparedRenderedOpticalFamily, type PreparedRenderedOpticalManifest, type SdssOpticalLevel, type SdssOpticalManifest, type SdssScienceOpticalManifest,
   type SdssDisplayOpticalManifest, type SdssCalibratedOpticalManifest } from "@starward/miniapp-contracts";
 
 export interface SkySdssOpticalField {
@@ -78,7 +78,7 @@ export function skyTargetOpticalFrame(loaded: LoadedOptical): SkyTargetOpticalIm
     fallback.asset === publication.levels[fallback.level] ? fallback : null;
   const common = { image, level, fieldDegrees: asset.fieldDegrees,
     reference: opticalPublicationReference(publication), publicationHash: publication.publicationHash };
-  if ("imageVersion" in publication && (publication.imageVersion === "prepared-optical-v1" || publication.imageVersion === "prepared-display-optical-v1" || publication.imageVersion === "prepared-optical-v2" || publication.imageVersion === "prepared-native-optical-v1")) {
+  if (isPreparedRenderedOpticalFamily(publication)) {
     return Object.freeze({ ...common, preparedPublication: publication,
       asset: publication.levels[level], coarser: validCoarser ? Object.freeze({
         image: validCoarser.image, level: validCoarser.level,

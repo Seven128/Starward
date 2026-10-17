@@ -262,7 +262,7 @@ export async function observerCli(argv) {
   const command = argv[0];
   if (!command || command === "--help") {
     // Official mode shares this entrypoint; detailed flags live beside it.
-    const official = "status|text|tap|input|console|network|screenshot --official-ide <absolute installation> --project <absolute project>; see tools/miniapp/development-observer.md";
+    const official = "status|text|wxml|style|size|offset|tap|input|console|network|screenshot|batch --official-ide <absolute installation> --project <absolute project>; see tools/miniapp/development-observer.md";
     return { official, commands: ["status", "layout", "snapshot", "wait", "screenshot"], usage: "miniapp:observe <command> --project <absolute project> --automation-port <owned port> [--selector <stable selector>] [--attribute <attribute> --equals <value>] [--output <absolute png>]", persistent: "import { connectDevelopmentObserver } from tools/miniapp/development-observer.mjs; retain the returned observer between calls" };
   }
   if (!["status", "layout", "snapshot", "wait", "screenshot"].includes(command)) observerFail("unknown_command");

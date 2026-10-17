@@ -1,6 +1,6 @@
 ---
 name: starward-interaction-design
-description: Implement or review Starward mobile interactions and shared UI for the native React Native App or Taro/WEAPP Mini Program. Use for gesture, animation, Bottom Sheet, map/card synchronization, time scrubber, press feedback, haptic, accessibility or shared interaction-component changes. Select the target platform before choosing primitives.
+description: Design, implement or review Starward mobile interactions, interface wording and information hierarchy for the native React Native App or Taro/WEAPP Mini Program. Use for menus, dialogs, task guidance, gesture, animation or shared interaction-component changes. Select the target platform and product owner first.
 ---
 
 # Starward Interaction Design
@@ -19,6 +19,8 @@ Use this project Skill to translate Starward's durable design contract into impl
 8. [Development execution](../../../AGENTS.md#development-execution) and [Project-local Implementation Decisions](../../../AGENTS.md#project-local-implementation-decisions) own the continuous planning, architecture, robustness, maintainability, performance and verification rules. They apply even when this Skill is not loaded. This Skill supplies target-specific interaction methods; use them within the current module and dependency plan.
 
 ## Required Workflow
+
+For menu/function wording, guidance, status messages or information-heavy dialogs, use [interface wording and hierarchy](references/interface-wording.md). Product-wide preferences live in [product Context](../../../project_context/product-profile.md#interface-wording-and-information-hierarchy); exact page scope and limits remain with the Screen Contract. Apply this method to the authorized consumers together with their layout and actions, rather than treating copy as a final label substitution.
 
 ### 1. Establish The Interaction Contract
 

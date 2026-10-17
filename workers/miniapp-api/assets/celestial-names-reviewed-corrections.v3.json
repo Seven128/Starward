@@ -1,0 +1,148 @@
+{
+  "schemaVersion": "reviewed-chinese-star-alias-corrections-v1",
+  "catalogVersion": "starward-reviewed-chinese-star-aliases.v3",
+  "reviewedAt": "2026-10-11T12:42:25.885Z",
+  "license": "CC0 1.0",
+  "upstreamPublications": [
+    {
+      "catalogVersion": "wikidata-bsc5p-chinese-aliases.v1",
+      "assetSha256": "612ad315268e736ea58768444091ab9dd3b79bd5703ec86613e0d7c61062f982"
+    },
+    {
+      "catalogVersion": "wikidata-bsc5p-chinese-aliases.v3",
+      "assetSha256": "8380ab78a9f04426008e34c36abd268003906bffa3e3a0bfaab0500552db6cb0"
+    }
+  ],
+  "rows": [
+    {
+      "reference": "HR:6812",
+      "identity": {
+        "hr": "6812",
+        "hd": "166937",
+        "hip": "89341"
+      },
+      "wikidataItem": "Q2482706",
+      "rejectedAliases": [
+        "斗宿一"
+      ],
+      "aliases": [
+        "斗宿三"
+      ],
+      "rationale": "The same fixed entity links Mu Sagittarii to the Chinese article 斗宿三, and its own fixed English article explicitly gives that asterism designation. The original label 斗宿一 conflicts with those sources and belongs to the independently identified Phi Sagittarii/HR7039 entry. Correct only the factual name; retain the original error and all catalogue measurements.",
+      "evidence": {
+        "sourceUrl": "https://en.wikipedia.org/w/index.php?oldid=1374779864&title=Mu+Sagittarii",
+        "entitySourceUrl": "https://www.wikidata.org/wiki/Q2482706?oldid=2503986224",
+        "entityRevision": 2503986224,
+        "entitySnapshot": {
+          "path": "output/cloud-sky-text-remainder-2026-10-11-r1/entity-recovery-r1/batch-01-attempt-0.json",
+          "bytes": 6183756,
+          "sha256": "2dc209b0876c203ca07ec0acdb13326526ebeddcd8bba7e328ea53a9d6532254"
+        },
+        "englishLabel": "Mu Sagittarii",
+        "chineseArticleTitle": "斗宿三",
+        "articleSnapshot": {
+          "path": "output/cloud-sky-text-remainder-2026-10-11-r1/article-recovery-r1/article-HR-6812.html",
+          "bytes": 285158,
+          "sha256": "e5bdf59da5965a86c5efb0f1505a74923f339c7f6e76a91d9229f5b2fe4d094e"
+        },
+        "sourceParagraphIndex": 5,
+        "bscDesignation": "13Mu  Sgr",
+        "constellationNames": {
+          "path": "data-pipelines/star-catalog/constellation-names.zh-CN.json",
+          "bytes": 4930,
+          "sha256": "3a048500f1695c2640688c5fa27bd1e6e26bfa1f0eb18f5df1d6c78f368f213e"
+        },
+        "catalogs": [
+          "bsc5p-bright-stars.v2",
+          "bsc5p-bright-stars.v3"
+        ]
+      }
+    },
+    {
+      "reference": "HR:7116",
+      "identity": {
+        "hr": "7116",
+        "hd": "174974",
+        "hip": "92761"
+      },
+      "wikidataItem": "Q10893105",
+      "rejectedAliases": [
+        "六分儀座ν"
+      ],
+      "aliases": [
+        "人马座ν¹",
+        "人馬座ν¹"
+      ],
+      "rationale": "The fixed own English article title, entity enwiki link and BSC designation identify Nu1 Sagittarii. The upstream Chinese label incorrectly identifies Sextans. Correct only the factual designation; no English entity label is claimed, and no prose or measurements are adopted.",
+      "evidence": {
+        "sourceUrl": "https://en.wikipedia.org/w/index.php?oldid=1378261677&title=Nu1+Sagittarii",
+        "entitySourceUrl": "https://www.wikidata.org/wiki/Q10893105?oldid=2476794131",
+        "entityRevision": 2476794131,
+        "entitySnapshot": {
+          "path": "output/cloud-sky-text-remainder-2026-10-11-r1/entity-recovery-r1/batch-04-attempt-0.json",
+          "bytes": 4232319,
+          "sha256": "0e9b36f989e052ac8146b1468c3c6b6e2c3350940ebbaa45f57547e4e30cdb00"
+        },
+        "articleTitle": "Nu1 Sagittarii",
+        "articleSnapshot": {
+          "path": "output/cloud-sky-text-remainder-2026-10-11-r1/article-recovery-r1/article-HR-7116.html",
+          "bytes": 231095,
+          "sha256": "69487685280d6285fd2bf94f7ff4eb84aab5fa48a656cf4aa6b84b4960306d30"
+        },
+        "bscDesignation": "32Nu 1Sgr",
+        "constellationNames": {
+          "path": "data-pipelines/star-catalog/constellation-names.zh-CN.json",
+          "bytes": 4930,
+          "sha256": "3a048500f1695c2640688c5fa27bd1e6e26bfa1f0eb18f5df1d6c78f368f213e"
+        },
+        "catalogs": [
+          "bsc5p-bright-stars.v2",
+          "bsc5p-bright-stars.v3"
+        ]
+      }
+    },
+    {
+      "reference": "HR:8812",
+      "identity": {
+        "hr": "8812",
+        "hd": "218594",
+        "hip": "114341"
+      },
+      "wikidataItem": "Q2446786",
+      "rejectedAliases": [
+        "天鹰座88",
+        "天鷹座88"
+      ],
+      "aliases": [
+        "宝瓶座88",
+        "寶瓶座88"
+      ],
+      "rationale": "The fixed English label and BSC Flamsteed designation identify Aquarius; the upstream Chinese labels incorrectly identify Aquila. Correct the factual designation only, without adopting prose or measurements.",
+      "evidence": {
+        "sourceUrl": "https://www.wikidata.org/wiki/Q2446786?oldid=2298499194",
+        "entityRevision": 2298499194,
+        "entitySnapshot": {
+          "path": "output/cloud-sky-text-remainder-2026-10-11-r1/entity-recovery-r1/batch-01-attempt-0.json",
+          "bytes": 6183756,
+          "sha256": "2dc209b0876c203ca07ec0acdb13326526ebeddcd8bba7e328ea53a9d6532254"
+        },
+        "englishLabel": "88 Aquarii",
+        "bscDesignation": "88    Aqr",
+        "constellationNames": {
+          "path": "data-pipelines/star-catalog/constellation-names.zh-CN.json",
+          "bytes": 4930,
+          "sha256": "3a048500f1695c2640688c5fa27bd1e6e26bfa1f0eb18f5df1d6c78f368f213e"
+        },
+        "catalogs": [
+          "bsc5p-bright-stars.v2",
+          "bsc5p-bright-stars.v3"
+        ]
+      }
+    }
+  ],
+  "previousCorrectionPublication": {
+    "path": "workers/miniapp-api/assets/celestial-names-reviewed-corrections.v2.json",
+    "bytes": 3992,
+    "sha256": "486db9fe20a2a2d54bf56bfe49ffc80beab4caf4ec0e89c01c58661c9f7aa3ec"
+  }
+}

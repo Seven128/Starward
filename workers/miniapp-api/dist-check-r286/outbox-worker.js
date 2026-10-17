@@ -1,0 +1,863 @@
+import { createHash, randomUUID } from "node:crypto";
+import { Queue, Worker } from "bullmq";
+import pg from "pg";
+import { AstronomyService } from "./astronomy-service.js";
+import { MemoryCache } from "./cache.js";
+import { ObservationContextService } from "./observation-context-service.js";
+import { PostgresMiniappRepository } from "./postgres-repository.js";
+import { createMediaObjectStore } from "./media-object-store.js";
+import { loadRuntimeConfig, } from "./runtime-config.js";
+import { createWeatherPort } from "./weather-provider.js";
+import { createVendorUsageTransport } from "./vendor-usage.js";
+import { PostgresVendorUsageStore, readVendorUsageBudget } from "./postgres-vendor-usage.js";
+import { AstronomicalEventCatalogOwner } from "./astronomical-event-catalog-owner.js";
+import { PostgresAstronomicalEventCatalogStore } from "./postgres-astronomical-event-catalog-store.js";
+const { Pool } = pg;
+const DEFAULT_QUEUE_NAME = "starward-miniapp-current";
+export const OPERATIONAL_JOB_KINDS = Object.freeze([
+    "WEATHER",
+    "ASTRONOMY",
+    "DECISION",
+    "LIGHT",
+    "MEDIA",
+    "FRESHNESS",
+    "PROVIDER_HEALTH",
+    "COST",
+    "NOTIFICATION",
+    "BACKUP",
+    "EVENT_CATALOG",
+]);
+const HOURLY_OPERATIONAL_JOB_KINDS = OPERATIONAL_JOB_KINDS.filter(kind => kind !== "EVENT_CATALOG");
+function isOperationalJobKind(value) {
+    return (typeof value === "string" &&
+        OPERATIONAL_JOB_KINDS.includes(value));
+}
+function digest(value) {
+    return createHash("sha256").update(JSON.stringify(value)).digest("hex");
+}
+function hourBucket(at = new Date()) {
+    return `${at.toISOString().slice(0, 13)}:00:00.000Z`;
+}
+function intervalBucket(days, at = new Date()) {
+    const width = days * 24 * 60 * 60 * 1_000;
+    return new Date(Math.floor(at.getTime() / width) * width).toISOString();
+}
+function localDate(timezone) {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: timezone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+}
+function connectionFromUrl(redisUrl) {
+    const parsed = new URL(redisUrl);
+    if (parsed.protocol !== "redis:" && parsed.protocol !== "rediss:")
+        throw new Error("redis_url_protocol_invalid");
+    return {
+        host: parsed.hostname,
+        port: Number(parsed.port || 6379),
+        username: parsed.username || undefined,
+        password: parsed.password || undefined,
+        tls: parsed.protocol === "rediss:" ? {} : undefined,
+        maxRetriesPerRequest: null,
+    };
+}
+function mapEventToJob(eventType, payload) {
+    if (typeof payload === "object" &&
+        payload !== null &&
+        "jobKind" in payload &&
+        isOperationalJobKind(payload.jobKind))
+        return payload.jobKind;
+    if (/Import|FieldReport|Media/iu.test(eventType))
+        return "MEDIA";
+    if (/Favorite|ObservationPlan/iu.test(eventType))
+        return "NOTIFICATION";
+    if (/Preference/iu.test(eventType))
+        return "DECISION";
+    if (/ProfileLink/iu.test(eventType))
+        return "FRESHNESS";
+    return "PROVIDER_HEALTH";
+}
+export class OutboxWorkerRuntime {
+    pool;
+    queue;
+    worker;
+    config;
+    repository;
+    cache = new MemoryCache();
+    weather;
+    mediaStore;
+    observationContexts;
+    astronomy;
+    eventCatalog;
+    usageStore;
+    constructor(options) {
+        this.config = options.runtimeConfig ?? loadRuntimeConfig();
+        this.repository = new PostgresMiniappRepository(options.databaseUrl);
+        this.usageStore = new PostgresVendorUsageStore(options.databaseUrl);
+        this.weather = options.weather ?? createWeatherPort(this.config, createVendorUsageTransport(this.usageStore));
+        this.mediaStore = createMediaObjectStore(this.config);
+        this.eventCatalog = new AstronomicalEventCatalogOwner(new PostgresAstronomicalEventCatalogStore(this.repository.pool));
+        this.observationContexts = new ObservationContextService(this.repository, this.cache, this.config, this.eventCatalog);
+        this.astronomy = new AstronomyService(this.weather, this.repository, this.config, undefined, Date.now, this.eventCatalog);
+        const connection = connectionFromUrl(options.redisUrl);
+        const queueName = options.queueName ?? DEFAULT_QUEUE_NAME;
+        this.pool = new Pool({
+            connectionString: options.databaseUrl,
+            max: 4,
+            application_name: "starward-miniapp-worker",
+        });
+        this.queue = new Queue(queueName, {
+            connection,
+            defaultJobOptions: {
+                attempts: 3,
+                backoff: { type: "exponential", delay: 250 },
+                removeOnComplete: 100,
+                removeOnFail: 100,
+            },
+        });
+        this.worker = new Worker(queueName, async (job) => this.#process(job), { connection, concurrency: 1 });
+    }
+    async enqueueOperationalSweep(bucket = hourBucket()) {
+        const client = await this.pool.connect();
+        try {
+            await client.query("BEGIN");
+            let inserted = 0;
+            for (const jobKind of HOURLY_OPERATIONAL_JOB_KINDS) {
+                const result = await client.query(`INSERT INTO outbox_events(
+             event_id, event_type, idempotency_key, payload
+           ) VALUES ($1, $2, $3, $4)
+           ON CONFLICT (idempotency_key) DO NOTHING`, [
+                    randomUUID(),
+                    `Operational${jobKind}Requested`,
+                    `operational:${bucket}:${jobKind}`,
+                    {
+                        jobKind,
+                        scheduleBucket: bucket,
+                        trigger: "BOUNDED_HOURLY_SWEEP",
+                    },
+                ]);
+                inserted += result.rowCount ?? 0;
+            }
+            await client.query("COMMIT");
+            return inserted;
+        }
+        catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        }
+        finally {
+            client.release();
+        }
+    }
+    async enqueueEventCatalogSweep(bucket = intervalBucket(this.config.eventCatalogCheckIntervalDays)) {
+        const result = await this.pool.query(`INSERT INTO outbox_events(event_id,event_type,idempotency_key,payload)
+       VALUES ($1,'OperationalEVENT_CATALOGRequested',$2,$3)
+       ON CONFLICT (idempotency_key) DO NOTHING`, [randomUUID(), `operational:${bucket}:EVENT_CATALOG`, { jobKind: "EVENT_CATALOG", scheduleBucket: bucket, trigger: "BOUNDED_INTERVAL_SWEEP", intervalDays: this.config.eventCatalogCheckIntervalDays }]);
+        return result.rowCount ?? 0;
+    }
+    async dispatchBatch(limit = 50) {
+        const client = await this.pool.connect();
+        try {
+            await client.query("BEGIN");
+            const result = await client.query(`SELECT event_id::text, event_type, payload
+           FROM outbox_events
+          WHERE state = 'PENDING' AND available_at <= now()
+          ORDER BY created_at,
+                   CASE event_type
+                     WHEN 'OperationalWEATHERRequested' THEN 0
+                     WHEN 'OperationalASTRONOMYRequested' THEN 1
+                     WHEN 'OperationalDECISIONRequested' THEN 2
+                     ELSE 0
+                   END,
+                   event_id
+          FOR UPDATE SKIP LOCKED
+          LIMIT $1`, [limit]);
+            for (const event of result.rows) {
+                const jobKind = mapEventToJob(event.event_type, event.payload);
+                await this.queue.add(jobKind, {
+                    eventId: event.event_id,
+                    eventType: event.event_type,
+                    payload: event.payload,
+                }, { jobId: event.event_id });
+                await client.query(`UPDATE outbox_events
+              SET state = 'DISPATCHED', dispatched_at = now()
+            WHERE event_id = $1`, [event.event_id]);
+            }
+            await client.query("COMMIT");
+            return result.rows.length;
+        }
+        catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        }
+        finally {
+            client.release();
+        }
+    }
+    async waitForIdle(timeoutMs = 15_000) {
+        const deadline = Date.now() + timeoutMs;
+        while (Date.now() < deadline) {
+            const counts = await this.queue.getJobCounts("active", "waiting", "delayed", "prioritized");
+            if (Object.values(counts).every((count) => count === 0))
+                return;
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        throw new Error("outbox_worker_idle_timeout");
+    }
+    async snapshot() {
+        const result = await this.pool.query(`SELECT
+      (SELECT count(*) FROM outbox_events WHERE state = 'PENDING')::text AS pending,
+      (SELECT count(*) FROM outbox_events WHERE state = 'DISPATCHED')::text AS dispatched,
+      (SELECT count(*) FROM outbox_events WHERE state = 'COMPLETE')::text AS complete,
+      (SELECT count(*) FROM outbox_events WHERE state = 'DEAD_LETTER')::text AS dead_letter,
+      (SELECT count(*) FROM job_executions)::text AS executions,
+      (SELECT count(*) FROM job_effects)::text AS effects,
+      (SELECT coalesce(sum(manual_replay_count), 0) FROM outbox_events)::text AS manual_replays`);
+        const effectKinds = await this.pool.query("SELECT DISTINCT job_kind FROM job_effects ORDER BY job_kind");
+        const deadLetters = await this.pool.query(`SELECT event_id::text, event_type, attempts, last_error_code
+          FROM outbox_events
+         WHERE state = 'DEAD_LETTER'
+         ORDER BY created_at`);
+        const row = result.rows[0];
+        return {
+            pending: Number(row.pending),
+            dispatched: Number(row.dispatched),
+            complete: Number(row.complete),
+            dead_letter: Number(row.dead_letter),
+            executions: Number(row.executions),
+            effects: Number(row.effects),
+            effect_kinds: effectKinds.rows.map((item) => item.job_kind),
+            manual_replays: Number(row.manual_replays),
+            dead_letters: deadLetters.rows,
+        };
+    }
+    async replayDeadLetter(eventId) {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(eventId))
+            throw new Error("dead_letter_event_id_invalid");
+        const existingJob = await this.queue.getJob(eventId);
+        if (existingJob)
+            await existingJob.remove();
+        const replay = await this.pool.query(`UPDATE outbox_events
+          SET state = 'PENDING', available_at = now(), dispatched_at = NULL,
+              completed_at = NULL, last_error_code = NULL,
+              manual_replay_count = manual_replay_count + 1,
+              last_replayed_at = now()
+        WHERE event_id = $1 AND state = 'DEAD_LETTER'`, [eventId]);
+        if (replay.rowCount !== 1)
+            throw new Error("dead_letter_event_not_replayable");
+        await this.dispatchBatch();
+        await this.waitForIdle();
+        return this.snapshot();
+    }
+    async close() {
+        await this.worker.close();
+        await this.usageStore.close();
+        await this.queue.close();
+        await this.pool.end();
+        await this.repository.close();
+        await this.cache.close();
+        await this.mediaStore.close();
+    }
+    async #applyEffect(client, input) {
+        const effectKey = `${input.eventId}:${input.jobKind}:current`;
+        const prior = await client.query(`SELECT result_state, result_payload
+         FROM job_effects
+        WHERE effect_key = $1`, [effectKey]);
+        if (prior.rows[0])
+            return {
+                resultState: prior.rows[0].result_state,
+                resultPayload: prior.rows[0].result_payload,
+            };
+        if (typeof input.payload === "object" &&
+            input.payload !== null &&
+            "forceFailure" in input.payload &&
+            input.payload.forceFailure === true)
+            throw new Error("forced_operational_job_failure");
+        let outcome;
+        switch (input.jobKind) {
+            case "WEATHER": {
+                const spots = await client.query(`SELECT s.spot_id, s.timezone,
+                  ST_Y(s.geom_wgs84::geometry) AS latitude,
+                  ST_X(s.geom_wgs84::geometry) AS longitude
+             FROM spots s
+             JOIN spot_publication_assessments a USING (spot_id)
+            WHERE s.status IN ('PUBLISHED', 'TEMPORARILY_CLOSED')
+              AND s.visibility_policy = 'PUBLIC_EXACT'
+              AND a.complete = true
+              AND a.spot_revision = s.version
+              AND a.assessed_at >= now() - interval '30 days'
+            ORDER BY s.display_order`);
+                let availableCount = 0;
+                let unavailableCount = 0;
+                let hourlyCount = 0;
+                // This job publishes a rolling forecast, not a selected observing night.
+                // Keep morning hours even though interactive queries use noon-to-noon.
+                const weatherStart = Math.floor(Date.now() / 3_600_000) * 3_600_000;
+                const windowUtc = { start: new Date(weatherStart).toISOString(),
+                    end: new Date(weatherStart + 24 * 3_600_000).toISOString() };
+                for (const spot of spots.rows) {
+                    const date = localDate(spot.timezone);
+                    const weather = await this.weather.getHourly({
+                        point: {
+                            system: "WGS84",
+                            latitude: Number(spot.latitude),
+                            longitude: Number(spot.longitude),
+                        },
+                        localDate: date,
+                        timezone: spot.timezone,
+                        windowUtc,
+                    });
+                    const rows = weather.value ?? [];
+                    const validFrom = rows[0]?.at ?? new Date().toISOString();
+                    const validTo = rows.at(-1)?.at ??
+                        new Date(Date.now() + 60 * 60 * 1_000).toISOString();
+                    const runId = "weather:" +
+                        digest({
+                            spotId: spot.spot_id,
+                            provider: this.weather.key,
+                            sources: weather.sources.map((source) => source.id),
+                            validFrom,
+                        }).slice(0, 32);
+                    await client.query(`INSERT INTO weather_runs(
+               run_id, spot_id, source_snapshot_id, state, payload,
+               valid_from, valid_to
+             ) VALUES ($1, $2, NULL, $3, $4, $5, $6)
+             ON CONFLICT (run_id) DO UPDATE SET
+               state = EXCLUDED.state,
+               payload = EXCLUDED.payload,
+               valid_from = EXCLUDED.valid_from,
+               valid_to = EXCLUDED.valid_to`, [
+                        runId,
+                        spot.spot_id,
+                        weather.state,
+                        {
+                            sources: weather.sources,
+                            errorCode: weather.errorCode,
+                            providerKey: this.weather.key,
+                            windowUtc,
+                            warningState: weather.warningState,
+                            alerts: weather.alerts,
+                            timelineRole: weather.timelineRole,
+                            modelRuns: weather.modelRuns,
+                            warnings: weather.warnings,
+                        },
+                        validFrom,
+                        validTo,
+                    ]);
+                    await client.query("DELETE FROM weather_hourly WHERE run_id = $1", [runId]);
+                    for (const row of rows) {
+                        await client.query(`INSERT INTO weather_hourly(run_id, observed_at, payload)
+               VALUES ($1, $2, $3)`, [runId, row.at, row]);
+                        hourlyCount += 1;
+                    }
+                    if (rows.length)
+                        availableCount += 1;
+                    else
+                        unavailableCount += 1;
+                    await client.query(`INSERT INTO provider_health_checks(
+               provider, state, failure_code, checked_at, payload
+             ) VALUES ($1, $2, $3, now(), $4)
+             ON CONFLICT (provider) DO UPDATE SET
+               state = EXCLUDED.state,
+               failure_code = EXCLUDED.failure_code,
+               checked_at = EXCLUDED.checked_at,
+               payload = EXCLUDED.payload`, [
+                        this.weather.key,
+                        rows.length ? "READY" : "UNAVAILABLE",
+                        weather.errorCode,
+                        {
+                            sourceId: weather.source.id,
+                            state: weather.state,
+                            rowCount: rows.length,
+                        },
+                    ]);
+                }
+                outcome = {
+                    resultState: availableCount === 0
+                        ? "UNAVAILABLE"
+                        : unavailableCount > 0
+                            ? "PARTIAL"
+                            : "PRECOMPUTED",
+                    resultPayload: {
+                        provider: this.weather.key,
+                        spotCount: spots.rows.length,
+                        availableCount,
+                        unavailableCount,
+                        hourlyCount,
+                        fixtureFallbackUsed: false,
+                    },
+                };
+                break;
+            }
+            case "ASTRONOMY": {
+                const spots = await client.query(`SELECT s.spot_id, s.timezone
+             FROM spots s
+             JOIN spot_publication_assessments a USING (spot_id)
+            WHERE s.status IN ('PUBLISHED', 'TEMPORARILY_CLOSED')
+              AND s.visibility_policy = 'PUBLIC_EXACT'
+              AND a.complete = true
+              AND a.spot_revision = s.version
+              AND a.assessed_at >= now() - interval '30 days'
+            ORDER BY s.display_order`);
+                let targetCount = 0;
+                for (const spot of spots.rows) {
+                    const date = localDate(spot.timezone);
+                    const context = await this.observationContexts.resolve({
+                        location: { kind: "FORMAL_SPOT", spotId: spot.spot_id },
+                        localDate: date,
+                        targetProfile: "DAILY",
+                    });
+                    const report = await this.astronomy.compute(context);
+                    const algorithm = report.data.context.algorithmVersion;
+                    const nightId = `night:${digest({ spotId: spot.spot_id, date, algorithm }).slice(0, 32)}`;
+                    const stored = await client.query(`INSERT INTO astronomy_nights(
+               night_id, spot_id, local_date, algorithm_version, payload
+             ) VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (spot_id, local_date, algorithm_version) DO UPDATE SET
+               payload = EXCLUDED.payload,
+               generated_at = now()
+             RETURNING night_id`, [nightId, spot.spot_id, date, algorithm, report.data]);
+                    const storedNightId = stored.rows[0].night_id;
+                    await client.query("DELETE FROM astronomy_targets WHERE night_id = $1", [storedNightId]);
+                    for (const target of report.data.targets) {
+                        await client.query(`INSERT INTO astronomy_targets(night_id, target_id, payload)
+               VALUES ($1, $2, $3)`, [storedNightId, target.targetId, target]);
+                        targetCount += 1;
+                    }
+                    await client.query(`INSERT INTO spot_sky_summaries(spot_id, local_date, payload)
+             VALUES ($1, $2, $3)
+             ON CONFLICT (spot_id, local_date) DO UPDATE SET
+               payload = EXCLUDED.payload,
+               generated_at = now()`, [spot.spot_id, date, report.data]);
+                }
+                outcome = {
+                    resultState: "PRECOMPUTED",
+                    resultPayload: {
+                        spotCount: spots.rowCount ?? spots.rows.length,
+                        targetCount,
+                        engine: "Astronomy Engine",
+                        weatherBoundary: "Current configured provider state is preserved per report",
+                    },
+                };
+                break;
+            }
+            case "DECISION": {
+                const tripRuleVersion = this.config.tripDecisionRuleVersion;
+                const opportunityRuleVersion = this.config.opportunityRuleVersion;
+                for (const [ruleVersion, payload] of [
+                    [
+                        opportunityRuleVersion,
+                        {
+                            conclusion: "SKY_OPPORTUNITY",
+                            perSliceNormalizedInputs: true,
+                            weightedGeometricMean: true,
+                            confidenceSeparateFromScore: true,
+                            continuousWindow: {
+                                hysteresis: true,
+                                minimumDurationMinutes: 60,
+                                maximumSmoothedGapMinutes: 15,
+                            },
+                        },
+                    ],
+                    [
+                        tripRuleVersion,
+                        {
+                            conclusion: "TRIP_DECISION",
+                            formalSpotOnly: true,
+                            hardBlockersFirst: true,
+                            skyOpportunityCannotOverrideTripBlocker: true,
+                        },
+                    ],
+                ])
+                    await client.query(`INSERT INTO rule_versions(rule_version, state, payload)
+             VALUES ($1, 'ACTIVE', $2)
+             ON CONFLICT (rule_version) DO UPDATE SET payload = EXCLUDED.payload`, [ruleVersion, payload]);
+                const nights = await client.query("SELECT night_id, spot_id, local_date, payload FROM astronomy_nights ORDER BY spot_id, local_date");
+                let decisionCount = 0;
+                let opportunityCount = 0;
+                for (const night of nights.rows) {
+                    const decision = night.payload.decision;
+                    if (!decision?.inputDigest)
+                        continue;
+                    const date = night.local_date instanceof Date
+                        ? night.local_date.toISOString().slice(0, 10)
+                        : String(night.local_date).slice(0, 10);
+                    const snapshotId = `decision:${digest({ night: night.night_id, ruleVersion: tripRuleVersion }).slice(0, 32)}`;
+                    const sourceIds = (night.payload.sources ?? [])
+                        .map((source) => source.id)
+                        .filter((id) => typeof id === "string");
+                    const skyOpportunity = decision.skyOpportunity;
+                    const sliceInputs = (night.payload.hourly ?? [])
+                        .map((row) => row.opportunityInput)
+                        .filter((value) => value !== undefined);
+                    if (skyOpportunity?.inputDigest &&
+                        skyOpportunity.status &&
+                        Array.isArray(skyOpportunity.windows) &&
+                        Array.isArray(skyOpportunity.factors) &&
+                        sliceInputs.length > 0) {
+                        const opportunitySnapshotId = `opportunity:${digest({ night: night.night_id, ruleVersion: opportunityRuleVersion }).slice(0, 32)}`;
+                        await client.query(`INSERT INTO sky_opportunity_snapshots(
+                 snapshot_id, context_fingerprint, location_kind, location_ref,
+                 spot_id, local_date, rule_version, input_digest,
+                 source_snapshot_ids, slice_inputs, windows, status, factors,
+                 confidence, payload
+               ) VALUES ($1, $2, 'FORMAL_SPOT', $3, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+               ON CONFLICT (snapshot_id) DO UPDATE SET
+                 input_digest = EXCLUDED.input_digest,
+                 source_snapshot_ids = EXCLUDED.source_snapshot_ids,
+                 slice_inputs = EXCLUDED.slice_inputs,
+                 windows = EXCLUDED.windows,
+                 status = EXCLUDED.status,
+                 factors = EXCLUDED.factors,
+                 confidence = EXCLUDED.confidence,
+                 payload = EXCLUDED.payload,
+                 generated_at = now()`, [
+                            opportunitySnapshotId,
+                            night.payload.context?.contextFingerprint ?? night.night_id,
+                            night.spot_id,
+                            date,
+                            skyOpportunity.ruleVersion ?? opportunityRuleVersion,
+                            skyOpportunity.inputDigest,
+                            JSON.stringify(sourceIds),
+                            JSON.stringify(sliceInputs),
+                            JSON.stringify(skyOpportunity.windows),
+                            skyOpportunity.status,
+                            JSON.stringify(skyOpportunity.factors),
+                            skyOpportunity.confidence ?? null,
+                            skyOpportunity,
+                        ]);
+                        opportunityCount += 1;
+                    }
+                    await client.query(`INSERT INTO tonight_decision_snapshots(
+               snapshot_id, spot_id, local_date, rule_version, input_digest,
+               source_snapshot_ids, payload
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+             ON CONFLICT (snapshot_id) DO UPDATE SET
+               input_digest = EXCLUDED.input_digest,
+               source_snapshot_ids = EXCLUDED.source_snapshot_ids,
+               payload = EXCLUDED.payload,
+               generated_at = now()`, [
+                        snapshotId,
+                        night.spot_id,
+                        date,
+                        tripRuleVersion,
+                        decision.inputDigest,
+                        JSON.stringify(sourceIds),
+                        decision,
+                    ]);
+                    decisionCount += 1;
+                }
+                outcome = {
+                    resultState: decisionCount > 0 ? "RECOMPUTED" : "NO_INPUT",
+                    resultPayload: {
+                        decisionCount,
+                        opportunityCount,
+                        tripRuleVersion,
+                        opportunityRuleVersion,
+                        hardBlockersFirst: true,
+                    },
+                };
+                break;
+            }
+            case "LIGHT": {
+                const publication = this.config.darkSkyDatasetVersion === "UNAVAILABLE"
+                    ? null
+                    : (await client.query(`SELECT p.dataset_version,
+                          p.source_id,
+                          (SELECT count(*)::integer
+                             FROM dark_sky_grid_cells c
+                            WHERE c.dataset_version = p.dataset_version
+                              AND c.state = 'ESTIMATED') AS cell_count,
+                          (SELECT count(*)::integer
+                             FROM light_pollution_samples l
+                            WHERE l.dataset_version = p.dataset_version) AS sample_count
+                     FROM dark_sky_dataset_publications p
+                    WHERE p.dataset_version = $1
+                      AND p.state = 'PUBLISHED'`, [this.config.darkSkyDatasetVersion])).rows[0] ?? null;
+                outcome = {
+                    resultState: publication ? "PUBLISHED_DATASET_READY" : "UNAVAILABLE",
+                    resultPayload: publication
+                        ? {
+                            datasetVersion: publication.dataset_version,
+                            sourceId: publication.source_id,
+                            sampleCount: publication.sample_count,
+                            cellCount: publication.cell_count,
+                            runtimeMutation: false,
+                        }
+                        : {
+                            datasetVersion: this.config.darkSkyDatasetVersion,
+                            reason: "no_matching_published_dark_sky_dataset",
+                            runtimeMutation: false,
+                        },
+                };
+                break;
+            }
+            case "MEDIA": {
+                if (typeof input.payload === "object" &&
+                    input.payload !== null &&
+                    "action" in input.payload &&
+                    input.payload.action === "DELETE_ACCOUNT_MEDIA" &&
+                    "deletionBatchId" in input.payload &&
+                    typeof input.payload.deletionBatchId === "string") {
+                    const deletionBatchId = input.payload.deletionBatchId;
+                    const queued = await client.query(`SELECT object_key
+               FROM account_deletion_media_queue
+              WHERE deletion_batch_id = $1
+              ORDER BY object_key
+              FOR UPDATE`, [deletionBatchId]);
+                    for (const row of queued.rows)
+                        await this.mediaStore.delete(row.object_key);
+                    await client.query("DELETE FROM account_deletion_media_queue WHERE deletion_batch_id = $1", [deletionBatchId]);
+                    outcome = {
+                        resultState: "ACCOUNT_MEDIA_DELETED",
+                        resultPayload: {
+                            deletionBatchId,
+                            deletedObjectCount: queued.rows.length,
+                        },
+                    };
+                    break;
+                }
+                const counts = await client.query(`SELECT
+          (SELECT count(*) FROM external_post_imports
+            WHERE moderation_state = 'PENDING')::text AS pending_imports,
+          (SELECT count(*) FROM spot_media
+            WHERE payload ->> 'origin' = 'USER_UPLOAD')::text AS uploaded_media`);
+                outcome = {
+                    resultState: "CAPABILITY_GATED",
+                    resultPayload: {
+                        pendingImports: Number(counts.rows[0].pending_imports),
+                        uploadedMedia: Number(counts.rows[0].uploaded_media),
+                        manualTextImport: true,
+                        uploadPipeline: "DISABLED_NO_PRIVATE_OBJECT_STORAGE_OR_REVIEW_CALLBACK",
+                    },
+                };
+                break;
+            }
+            case "FRESHNESS": {
+                const freshness = await client.query(`SELECT
+          (SELECT count(*) FROM weather_runs WHERE valid_to <= now())::text AS expired_weather,
+          (SELECT count(*) FROM astronomy_nights)::text AS computed_nights,
+          (SELECT count(*) FROM data_source_snapshots)::text AS source_snapshots`);
+                outcome = {
+                    resultState: "INSPECTED",
+                    resultPayload: {
+                        expiredWeather: Number(freshness.rows[0].expired_weather),
+                        computedNights: Number(freshness.rows[0].computed_nights),
+                        sourceSnapshots: Number(freshness.rows[0].source_snapshots),
+                        hardExpiredMayRecommend: false,
+                    },
+                };
+                break;
+            }
+            case "PROVIDER_HEALTH": {
+                const providers = [
+                    {
+                        key: this.weather.key,
+                        configured: this.config.features.REAL_WEATHER_ENABLED,
+                    },
+                    {
+                        key: "route:" + this.config.routeProvider.toLowerCase(),
+                        configured: this.config.routeProvider !== "DISABLED",
+                    },
+                    { key: "media-upload", configured: false },
+                    {
+                        key: "external-parser",
+                        configured: this.config.features.OWN_POST_IMPORT_ENABLED,
+                    },
+                ];
+                for (const provider of providers)
+                    await client.query(`INSERT INTO provider_health_checks(
+               provider, state, failure_code, checked_at, payload
+             ) VALUES ($1, $2, $3, now(), $4)
+             ON CONFLICT (provider) DO UPDATE SET
+               state = EXCLUDED.state,
+               failure_code = EXCLUDED.failure_code,
+               checked_at = EXCLUDED.checked_at,
+               payload = EXCLUDED.payload`, [
+                        provider.key,
+                        provider.configured ? "CONFIGURED" : "DISABLED",
+                        provider.configured ? null : "CAPABILITY_NOT_CONFIGURED",
+                        {
+                            provider: provider.key,
+                            configured: provider.configured,
+                            runtimeSuccessClaimed: false,
+                        },
+                    ]);
+                outcome = {
+                    resultState: "CHECKED",
+                    resultPayload: {
+                        providers,
+                        configuredCount: providers.filter((provider) => provider.configured)
+                            .length,
+                        runtimeSuccessClaimed: false,
+                    },
+                };
+                break;
+            }
+            case "COST": {
+                const budget = await readVendorUsageBudget(this.repository.pool);
+                if (budget.hardMonthlyMax !== null && budget.knownEstimatedCostCny !== null && budget.knownEstimatedCostCny > budget.hardMonthlyMax)
+                    throw new Error("provider_budget_hard_limit_exceeded");
+                outcome = {
+                    resultState: "UNASSESSED",
+                    resultPayload: budget,
+                };
+                break;
+            }
+            case "NOTIFICATION": {
+                const flag = await client.query("SELECT payload FROM feature_flags WHERE flag_key = 'NOTIFICATION_ENABLED'");
+                const enabled = flag.rows[0]?.payload.value === true;
+                await client.query(`UPDATE plan_reminder_schedules
+              SET state = 'SKIPPED', reason = CASE
+                    WHEN departure_at <= now() THEN 'DEPARTURE_EXPIRED'
+                    ELSE 'TRIGGER_MISSED' END,
+                  updated_at = now()
+            WHERE active = true
+              AND state IN ('WAITING_AUTHORIZATION', 'SCHEDULED')
+              AND trigger_at <= now()`);
+                const schedules = await client.query(`SELECT
+             count(*) FILTER (WHERE active AND state = 'WAITING_AUTHORIZATION')::text AS waiting,
+             count(*) FILTER (WHERE active AND state = 'SCHEDULED')::text AS scheduled,
+             count(*) FILTER (WHERE state = 'SKIPPED')::text AS skipped
+           FROM plan_reminder_schedules`);
+                outcome = {
+                    resultState: "CAPABILITY_GATED",
+                    resultPayload: {
+                        enabled,
+                        schedulingConnected: true,
+                        waitingAuthorization: Number(schedules.rows[0]?.waiting ?? 0),
+                        scheduled: Number(schedules.rows[0]?.scheduled ?? 0),
+                        skipped: Number(schedules.rows[0]?.skipped ?? 0),
+                        authorizationConnected: false,
+                        deliveryAttempted: false,
+                        reason: enabled
+                            ? "Scheduling is connected; approved template mapping, subscription authorization and the sender are not connected"
+                            : "Notification capability is disabled by the current feature flag",
+                    },
+                };
+                break;
+            }
+            case "EVENT_CATALOG": {
+                await this.eventCatalog.initialize();
+                const sources = (await this.eventCatalog.listSourceConfigs()).filter(source => source.enabled);
+                const runs = [];
+                for (const source of sources)
+                    runs.push(await this.eventCatalog.retrieve({ sourceId: source.sourceId, trigger: "SCHEDULED" }));
+                outcome = {
+                    resultState: sources.length === 0
+                        ? "SOURCE_UNAVAILABLE"
+                        : runs.some(run => run.state === "FAILED" || run.state === "SOURCE_UNAVAILABLE")
+                            ? "PARTIAL"
+                            : "CHECKED",
+                    resultPayload: {
+                        intervalDays: this.config.eventCatalogCheckIntervalDays,
+                        sourceCount: sources.length,
+                        runs: runs.map(run => ({ runId: run.runId, sourceId: run.sourceId, state: run.state, candidateId: run.candidateId, errorCode: run.errorCode })),
+                        activeCatalogVersion: this.eventCatalog.snapshot().catalogVersion,
+                        priorCatalogRetainedOnFailure: true,
+                    },
+                };
+                break;
+            }
+            case "BACKUP": {
+                const schema = await client.query(`SELECT
+          (SELECT max(version) FROM schema_migrations) AS version,
+          (SELECT count(*) FROM information_schema.tables
+            WHERE table_schema = 'public')::text AS required_tables`);
+                outcome = {
+                    resultState: "READY_FOR_RESTORE_VALIDATION",
+                    resultPayload: {
+                        migrationVersion: schema.rows[0].version,
+                        tableCount: Number(schema.rows[0].required_tables),
+                        restoreProofOwner: "tools/miniapp/run-infrastructure-check.mjs",
+                    },
+                };
+                break;
+            }
+        }
+        await client.query(`INSERT INTO job_effects(
+         effect_key, event_id, job_kind, result_state, result_payload
+       ) VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (effect_key) DO NOTHING`, [effectKey, input.eventId, input.jobKind, outcome.resultState, outcome.resultPayload]);
+        return outcome;
+    }
+    async #process(job) {
+        const eventId = String(job.data.eventId);
+        const executionId = randomUUID();
+        const client = await this.pool.connect();
+        try {
+            await client.query(`INSERT INTO job_executions(
+           execution_id, event_id, job_kind, attempt, state, started_at
+         ) VALUES ($1, $2, $3, $4, 'RUNNING', now())`, [executionId, eventId, job.name, job.attemptsMade + 1]);
+            if (!isOperationalJobKind(job.name))
+                throw new Error("outbox_job_kind_invalid");
+            await client.query("BEGIN");
+            const event = await client.query("SELECT event_type, payload FROM outbox_events WHERE event_id = $1 FOR UPDATE", [eventId]);
+            if (!event.rows[0])
+                throw new Error("outbox_event_not_found");
+            const outcome = await this.#applyEffect(client, {
+                eventId,
+                eventType: event.rows[0].event_type,
+                jobKind: job.name,
+                payload: event.rows[0].payload,
+            });
+            await client.query(`UPDATE outbox_events
+            SET state = 'COMPLETE', completed_at = now(), attempts = attempts + 1,
+                last_error_code = NULL
+          WHERE event_id = $1`, [eventId]);
+            await client.query(`UPDATE job_executions
+            SET state = 'COMPLETE', completed_at = now(),
+                result_state = $2, result_payload = $3
+          WHERE execution_id = $1`, [executionId, outcome.resultState, outcome.resultPayload]);
+            await client.query("COMMIT");
+            return { eventId, jobKind: job.name, ...outcome };
+        }
+        catch (error) {
+            try {
+                await client.query("ROLLBACK");
+            }
+            catch { }
+            const code = error instanceof Error ? error.message : "worker_failure";
+            await client.query(`UPDATE job_executions
+            SET state = 'FAILED', completed_at = now(), error_code = $2
+          WHERE execution_id = $1`, [executionId, code]);
+            const maximumAttempts = Number(job.opts.attempts ?? 3);
+            if (job.attemptsMade + 1 >= maximumAttempts)
+                await client.query(`UPDATE outbox_events
+              SET state = 'DEAD_LETTER', attempts = attempts + 1,
+                  last_error_code = $2
+            WHERE event_id = $1`, [eventId, code]);
+            else
+                await client.query(`UPDATE outbox_events
+              SET state = 'DISPATCHED', attempts = attempts + 1,
+                  last_error_code = $2
+            WHERE event_id = $1`, [eventId, code]);
+            throw error;
+        }
+        finally {
+            client.release();
+        }
+    }
+}
+export async function runOutboxOnce(options) {
+    const runtime = new OutboxWorkerRuntime(options);
+    try {
+        const scheduled = await runtime.enqueueOperationalSweep() + await runtime.enqueueEventCatalogSweep();
+        let enqueued = 0;
+        let dispatched = 0;
+        do {
+            dispatched = await runtime.dispatchBatch();
+            enqueued += dispatched;
+        } while (dispatched === 50);
+        await runtime.waitForIdle();
+        return { scheduled, enqueued, ...(await runtime.snapshot()) };
+    }
+    finally {
+        await runtime.close();
+    }
+}
+//# sourceMappingURL=outbox-worker.js.map

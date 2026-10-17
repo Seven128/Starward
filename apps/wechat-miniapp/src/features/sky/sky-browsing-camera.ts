@@ -1,5 +1,7 @@
 import { validBasis, type SkyVector, type SkyViewBasis } from "./sky-view-projection";
 import { interpolateSkyView } from "./sky-view-rotation";
+import { createSkyNavigationPath } from "./sky-navigation-path";
+import { skyDomeProgress } from "./sky-zoom";
 
 const smooth = (value: number) => value * value * (3 - 2 * value);
 const bounded = (value: number) => Math.max(0, Math.min(1, value));
@@ -43,6 +45,21 @@ export interface SkyBrowsingCameraFrame {
   readonly at: number;
   readonly reducedMotion?: boolean;
 }
+export interface SkyBrowsingCameraSnapshot {
+  readonly phase: CameraState["phase"] | "navigating";
+  readonly view: SkyViewBasis | null;
+  readonly animating: boolean;
+  readonly navigation: boolean;
+  readonly verticalFovDeg: number | null;
+}
+interface NavigationState {
+  readonly path: NonNullable<ReturnType<typeof createSkyNavigationPath>>;
+  readonly width: number;
+  readonly height: number;
+  elapsed: number;
+  at: number;
+  fov: number;
+}
 
 /** Independent browsing state; it never writes sensor/alignment state. Caller
  * drives frames while `animating` and supplies one shared result to all layers.
@@ -52,7 +69,16 @@ export function createSkyBrowsingCamera() {
   let state: CameraState = { phase: "local", view: null, progress: 0, path: null, returnElapsed: 0 };
   let lastAt: number | null = null;
   let canReturn = false;
-  const snapshot = () => ({ phase: state.phase, view: state.view, animating: state.phase === "returning" && canReturn });
+  let navigation: NavigationState | null = null;
+  let pendingNavigation: { owner: NavigationState; result: SkyBrowsingCameraSnapshot; elapsed: number; at: number } | null = null;
+  const cancelNavigation = () => { navigation = null; pendingNavigation = null; };
+  const current = (result: SkyBrowsingCameraSnapshot) => !result.navigation ||
+    Boolean(pendingNavigation?.result === result && pendingNavigation.owner === navigation);
+  const snapshot = (): SkyBrowsingCameraSnapshot => ({
+    phase: navigation ? "navigating" : state.phase, view: state.view,
+    animating: navigation ? navigation.elapsed < navigation.path.duration : state.phase === "returning" && canReturn,
+    navigation: navigation !== null, verticalFovDeg: navigation?.fov ?? null,
+  });
   const pathView = (path: OverviewPath, progress: number): SkyViewBasis => {
     if (progress >= path.fromProgress) {
       return interpolateSkyView(path.from, path.target,
@@ -65,12 +91,40 @@ export function createSkyBrowsingCamera() {
   });
   return {
     snapshot,
+    current,
     /** An opaque checkpoint belongs to this page's gesture transaction. */
     checkpoint: () => state,
-    restore(checkpoint: CameraState) { state = checkpoint; lastAt = null; canReturn = false; },
-    suspend() { lastAt = null; canReturn = false; },
+    restore(checkpoint: CameraState) { cancelNavigation(); state = checkpoint; lastAt = null; canReturn = false; },
+    suspend() { cancelNavigation(); lastAt = null; canReturn = false; },
+    /** Start only from an actual presented view. Sampling does not grant a new
+     * displayed camera; the single writer must accept the returned frame. */
+    navigate(from: SkyViewBasis, target: SkyViewBasis, fromFov: number, targetFov: number,
+      width: number, height: number, at: number) {
+      if (!Number.isFinite(at)) return false;
+      const path = createSkyNavigationPath(from, target, fromFov, targetFov, width, height);
+      if (!path) return false;
+      state = { phase: "local", view: from, progress: 0, path: null, returnElapsed: 0 };
+      navigation = { path, width, height, elapsed: 0, at, fov: path.sample(0).fov };
+      pendingNavigation = null; lastAt = null; canReturn = false;
+      return true;
+    },
+    accept(result: SkyBrowsingCameraSnapshot) {
+      const pending = pendingNavigation;
+      if (!pending || pending.result !== result || pending.owner !== navigation ||
+        !result.view || result.verticalFovDeg === null) return false;
+      const owner = pending.owner;
+      owner.elapsed = pending.elapsed; owner.at = pending.at; owner.fov = result.verticalFovDeg;
+      const progress = skyDomeProgress(owner.fov, owner.width, owner.height);
+      const view = result.view;
+      state = { phase: progress > 0 ? "overview" : "local", view, progress, returnElapsed: 0,
+        path: progress > 0 ? { ...capture(view, progress), target: view } : null };
+      pendingNavigation = null;
+      if (!result.animating) navigation = null;
+      return true;
+    },
     /** Calibration owns the frozen direction and normal scale from this point. */
     freeze(view: SkyViewBasis | null) {
+      cancelNavigation();
       state = { phase: "local", view: validBasis(view) ? view : state.view, progress: 0, path: null, returnElapsed: 0 };
       lastAt = null;
       return snapshot();
@@ -79,6 +133,7 @@ export function createSkyBrowsingCamera() {
      * view. It cancels follow recovery; the caller retains manual user intent. */
     pan(view: SkyViewBasis, progress: number) {
       if (!validBasis(view) || !Number.isFinite(progress)) return snapshot();
+      cancelNavigation();
       const p = bounded(progress);
       const displayed = view;
       state = { phase: p > 0 ? "overview" : "local", view: displayed, progress: p,
@@ -88,6 +143,18 @@ export function createSkyBrowsingCamera() {
     },
     update(frame: SkyBrowsingCameraFrame) {
       if (!Number.isFinite(frame.at) || !Number.isFinite(frame.progress)) return snapshot();
+      if (navigation && frame.intent !== "locked") {
+        const elapsed = frame.at - navigation.at;
+        const step = elapsed > 0 && elapsed <= 100 ? elapsed : 0;
+        const nextElapsed = frame.reducedMotion ? navigation.path.duration
+          : Math.min(navigation.path.duration, navigation.elapsed + step);
+        const point = navigation.path.sample(navigation.path.duration ? nextElapsed / navigation.path.duration : 1);
+        const result: SkyBrowsingCameraSnapshot = { phase: "navigating", view: point.view,
+          verticalFovDeg: point.fov, navigation: true, animating: nextElapsed < navigation.path.duration };
+        pendingNavigation = { owner: navigation, result, elapsed: nextElapsed, at: frame.at };
+        return result;
+      }
+      if (navigation) cancelNavigation();
       const elapsed = lastAt === null ? 0 : frame.at - lastAt;
       lastAt = frame.at;
       // Background gaps and out-of-order timestamps cannot advance a return.

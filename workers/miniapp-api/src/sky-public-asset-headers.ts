@@ -1,5 +1,5 @@
 import { assertGalacticImagePublication, galacticImageFormat, readSkyImageDisplaySupport,
-  type GalacticImageManifestData, type DeepSkyImageDescriptor } from "@starward/miniapp-contracts";
+  type GalacticImageManifestData, type DeepSkyImageDescriptor, type PreparedRenderedOpticalManifest } from "@starward/miniapp-contracts";
 
 /** Immutable public response contract shared by API and static export.
  * Legacy selected W3 responses and mutable discovery keep their own policy. */
@@ -18,7 +18,26 @@ const SOURCES = {
   "prepared-optical": "Historical prepared observation RGB",
   "deep-sky": "NASA/IPAC IRSA - AllWISE W3 12um",
 } as const;
-export type SkyPublicAssetKind = keyof typeof SOURCES | "constellations" | "wide-field-properties" | "sao" | "optical-hips";
+export type SkyPublicAssetKind = keyof typeof SOURCES | "constellations" | "wide-field-properties" | "sao" | "optical-hips" | "prepared-optical-metadata";
+
+/** The source-download contract is shared by API and static publication. Its
+ * fixed filename does not add scientific validity or a different image source. */
+export function skySourceManifestHeaders(kind: "deep-sky" | "sdss-optical", objectRef?: string): Record<string, string> {
+  if (kind === "sdss-optical" && !/^M:(?:[1-9]|[1-9][0-9]|10[0-9]|110)$/u.test(objectRef ?? ""))
+    throw new Error("sky_source_manifest_reference_invalid");
+  const file = kind === "deep-sky" ? "allwise-w3-manifest.json" : `sdss-${objectRef!.replace(":", "").toLowerCase()}-optical-manifest.json`;
+  return { "content-type": "application/json; charset=utf-8", "content-disposition": `attachment; filename="${file}"`,
+    "cache-control": "public, max-age=31536000, immutable", "x-content-type-options": "nosniff" };
+}
+
+/** The publication owner has already admitted this immutable manifest. Keep
+ * the existing API filename for every family and share it with new native
+ * static metadata; previously sealed region metadata keeps its old headers. */
+export function preparedOpticalManifestHeaders(manifest: PreparedRenderedOpticalManifest): Record<string, string> {
+  const name = "reference" in manifest ? manifest.publicationId : manifest.objectRef.replace(":", "").toLowerCase();
+  return { ...skyPublicAssetHeaders("prepared-optical-metadata", "application/json; charset=utf-8"),
+    "content-disposition": `attachment; filename="${name}-prepared-optical-manifest.json"` };
+}
 
 /** Identical immutable metadata/tile headers for API and conditional export.
  * Rights and processing stay in the bound manifest, never inferred here. */
@@ -41,6 +60,10 @@ export function galacticImagePublicAssetHeaders(publication: GalacticImageManife
   else if (publication.schemaVersion === "starward-mellinger-optical-milky-way-v1")
     headers["x-starward-image-source"] = "Axel Mellinger / Stellarium historical optical Milky Way display";
   return headers;
+}
+
+export function galacticImagePublicMetadataHeaders(publication: GalacticImageManifestData): Record<string,string> {
+  return {...galacticImagePublicAssetHeaders(publication),"content-type":"application/json; charset=utf-8"};
 }
 
 export function skyPublicAssetHeaders(kind: SkyPublicAssetKind, contentType: string, fieldDegrees?: number,

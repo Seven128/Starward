@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { skyResourceOriginTestOwner } from "./sky-resource-origin-test-support";
 import * as contracts from "@starward/miniapp-contracts";
 import { matchingCelestialInformationResponse } from "./celestial-information-response";
 
@@ -70,8 +71,8 @@ test("actual shared information hook keeps independent query identities and sele
 });
 
 test("actual source links require the selected science version and cannot relabel a registered old version", () => {
-  const url = actualFunction("./api-client.ts", "deepSkyManifestUrl", {
-    __MINIAPP_API_BASE__: "https://api.example.test/", MINIAPP_API_BASE_PATH: "/v2",
+  const url = actualFunction("./sky-catalog-api.ts", "deepSkyManifestUrl", {
+    __MINIAPP_API_BASE__: "https://api.example.test/", ...skyResourceOriginTestOwner("https://api.example.test/"), MINIAPP_API_BASE_PATH: "/v2",
   });
   const optical = "b".repeat(64), infrared = "a".repeat(64);
   const sourceId = `optical-imagery:science-optical:${optical}`;

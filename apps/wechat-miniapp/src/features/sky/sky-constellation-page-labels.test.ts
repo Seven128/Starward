@@ -7,6 +7,9 @@ import ts from "typescript";
 import { paintedSkyPointVisible, type SkyPickSnapshot } from "./sky-object-picking";
 import { createSkyViewBasis } from "./sky-view-projection";
 import { skyPresentedTimeCurrent } from "./sky-observation-time";
+import { projectSkyConstellationNames } from "./sky-label-presentation";
+import {createSkyNameLayouts} from "./sky-name-layout";
+import {skyPagePaintCommit} from "./sky-optical-page-test-support";
 
 // Run the page's actual overlay selection against a pending native frame.
 const source = ts.createSourceFile("spot-sky-page.tsx",
@@ -44,36 +47,74 @@ const constellationFrame = { at };
 const openSnapshot: SkyPickSnapshot = { frameAt: at, catalogVersion: "v", catalogHash: "h",
   width: 390, height: 844, objects: [] };
 function labels(presentedSkyFrame: object | null, painted: SkyPickSnapshot = openSnapshot) {
+  const basis = painted.view?.basis ?? createSkyViewBasis(0,135,0)!;
+  const presented = presentedSkyFrame as { constellations?: { at?: string } } | null;
+  const figures = presented?.constellations?.at === at ? { at, lines: [], images: [],
+    labels: [{ iau: "Ori", nameZh: "猎户座", nameEn: "Orion", direction: basis.forward }] } : presented?.constellations;
   return vm.runInNewContext(selection, {
-    orientationData: reportData, reportData, rawReportData:reportData, row: { at }, mode: "NIGHT", canvasError: null,
+    orientationData: reportData, reportData, rawReportData:reportData, row: { at }, mode: "OBSERVATION", canvasError: null,
     skyPresentedTimeCurrent, timePlaying:false, timeIntent:{runStartAt:null},
-    currentViewBasis: painted.view?.basis??createSkyViewBasis(0,135,0)!, constellationFrame,
-    presentedSkyFrame: presentedSkyFrame?{...presentedSkyFrame,landscape:painted.view?.landscape??null}:null,
+    currentViewBasis: basis, constellationFrame,
+    presentedSkyFrame: presentedSkyFrame?{...presentedSkyFrame,constellations:figures,landscape:painted.view?.landscape??null}:null,
     presentedFov: 45, presentedCenter: { x: 195, y: 422 },
     canvasSize: { width: 390, height: 844 }, constellationsEnabled: true,
+    viewportInsets:{top:0,bottom:0},
     visibleNamedCatalogObjects: [], visibleOrientationTargets: [],
     paintedSkyPointVisible, paintedSkyObjectsRef: { current: painted },
-    projectConstellationLabels: () => [{ iau: "Ori", nameZh: "猎户座", x: 195, y: 422 }],
+    projectSkyConstellationNames,
   }) as Array<{ iau: string }>;
 }
 
 test("constellation names wait for the current native scene and figure edition", () => {
   assert.deepEqual(Array.from(labels(null), label => label.iau), []);
-  assert.deepEqual(Array.from(labels({ data: reportData, frameAt: at, mode: "NIGHT",
+  assert.deepEqual(Array.from(labels({ data: reportData, frameAt: at, mode: "OBSERVATION",
     constellations: {}, constellationsEnabled: true }), label => label.iau), []);
-  assert.deepEqual(Array.from(labels({ data: reportData, frameAt: at, mode: "NIGHT",
+  assert.deepEqual(Array.from(labels({ data: reportData, frameAt: at, mode: "OBSERVATION",
     constellations: constellationFrame, constellationsEnabled: false }), label => label.iau), []);
-  assert.deepEqual(Array.from(labels({ data: reportData, frameAt: at, mode: "NIGHT",
+  assert.deepEqual(Array.from(labels({ data: reportData, frameAt: at, mode: "OBSERVATION",
     constellations: constellationFrame, constellationsEnabled: true }), label => label.iau), ["Ori"]);
-  assert.deepEqual(Array.from(labels({ data: { ...reportData, context:{dataRevision:'previous-report'} }, frameAt:at, mode:"NIGHT",
+  assert.deepEqual(Array.from(labels({ data: { ...reportData, context:{dataRevision:'previous-report'} }, frameAt:at, mode:"OBSERVATION",
     constellations:constellationFrame, constellationsEnabled:true }), label=>label.iau),[],
     'the previous report cannot expose current constellation names');
 });
 
 test("a constellation name covered by the actual virtual foreground returns after an unobstructed repaint", () => {
-  const frame = { data: reportData, frameAt: at, mode: "NIGHT",
+  const frame = { data: reportData, frameAt: at, mode: "OBSERVATION",
     constellations: constellationFrame, constellationsEnabled: true };
   const view = { basis: createSkyViewBasis(324.462322,100,0)!,verticalFovDeg:85 };
   assert.deepEqual(Array.from(labels(frame,{...openSnapshot,view:{...view,landscape:PROCEDURAL_SKY_LANDSCAPE}}),label=>label.iau),[]);
   assert.deepEqual(Array.from(labels(frame,{...openSnapshot,view:{...view,landscape:null}}),label=>label.iau),["Ori"]);
+});
+
+test("ordinary constellation names and their receipt wait for the shared successful-copy reveal",()=>{
+  const basis=createSkyViewBasis(0,135,0)!,nameLayouts=createSkyNameLayouts();
+  const figures={at,lines:[],images:[],labels:[{iau:'Ori',nameZh:'猎户座',nameEn:'Orion',direction:basis.forward}]};
+  let now=1000,presented:any=null;const copies:any[]=[];
+  const NativeClock=class extends Date{static now(){return now;}};
+  const bindings={basis,nameLayouts,Date:NativeClock,zoomRef:{current:45},
+    canvasSurfaceRef:{current:{present(_reticle:any,captions:any){copies.push(captions);}}},
+    frame:{data:reportData,frameAt:at,mode:'NIGHT',sceneReady:true,constellations:figures,constellationsEnabled:true},
+    setPresentedCamera(){},setPresentedSkyFrame(update:(previous:any)=>any){presented=update(presented);}};
+  const snapshot={width:390,height:844,frameAt:at,catalogVersion:'v',catalogHash:'h',
+    view:{basis,verticalFovDeg:45,landscape:null},objects:[],namedStars:[]};
+  skyPagePaintCommit(source,bindings)(snapshot,{});
+  assert.equal(copies[0].length,0,'opacity-zero decoration cannot be submitted as readable text');
+  assert.deepEqual(Array.from(presented.constellationNames),[]);
+  now=1080;skyPagePaintCommit(source,bindings)(snapshot,{});
+  assert.equal(copies[1].length,1);assert.equal(copies[1][0].text,'猎户座');
+  assert(copies[1][0].opacity>0&&copies[1][0].opacity<1);
+  assert.deepEqual(Array.from(presented.constellationNames),['猎户座']);
+  assert.equal(presented.catalogNames.length,0,'decorative text does not grant a catalog hit rectangle');
+  now=1200;bindings.frame.constellationsEnabled=false;skyPagePaintCommit(source,bindings)(snapshot,{});
+  assert.deepEqual(Array.from(presented.constellationNames),['猎户座'], 'current projected text remains during its fixed exit');
+  const exitStart=copies.at(-1)[0].opacity;
+  now=1280;skyPagePaintCommit(source,bindings)(snapshot,{});
+  assert(copies.at(-1)[0].opacity>0&&copies.at(-1)[0].opacity<exitStart);
+  const reversing=copies.at(-1)[0].opacity;
+  now=1300;bindings.frame.constellationsEnabled=true;skyPagePaintCommit(source,bindings)(snapshot,{});
+  assert.equal(copies.at(-1)[0].opacity,reversing,'re-entry starts from its last accepted opacity');
+  now=1500;skyPagePaintCommit(source,bindings)(snapshot,{});
+  bindings.frame.constellationsEnabled=false;skyPagePaintCommit(source,bindings)(snapshot,{});
+  now=1700;skyPagePaintCommit(source,bindings)(snapshot,{});
+  assert.deepEqual(Array.from(presented.constellationNames),[], 'a completed exit retires the receipt');
 });

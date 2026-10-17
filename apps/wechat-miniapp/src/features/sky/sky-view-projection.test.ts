@@ -6,6 +6,7 @@ import {
   createSkyViewBasis,
   sameSkyViewBasis,
   projectSkyDirection,
+  prepareSkyDirection,
   type SkyViewBasis,
   type SkyVector,
 } from "./sky-view-projection.ts";
@@ -212,6 +213,13 @@ test("a prepared projection preserves one accepted view and refreshes for the ne
   assert.equal(accepted.unclipped(180,0), null, "the stereographic antipode remains rejected");
   assert.equal(accepted.project(NaN,0), null);
   assert.equal(accepted.project(0,91), null);
+  for (const [azimuth, altitude] of [[360,0],[90,0],[180,0],[350,-35]] as const) {
+    const direction = prepareSkyDirection(azimuth, altitude)!;
+    assert.deepEqual(accepted.prepared(direction), accepted.project(azimuth, altitude),
+      "prepared directions retain raw projection, clipping and normalized coordinates");
+  }
+  assert.equal(prepareSkyDirection(NaN,0), null);
+  assert.equal(prepareSkyDirection(0,91), null);
   const next = createSkyViewBasis(90,90,0)!;
   for (const key of ["right","up","forward"] as const)
     for (let index=0; index<3; index++) mutable[key][index] = next[key][index]!;

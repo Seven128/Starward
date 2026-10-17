@@ -8,8 +8,8 @@ import {
   deepSkyRowByReference,
   loadDeepSkyCatalog,
 } from "@starward/astronomy-core/deep-sky-catalog";
-import { loadBsc5pStarCatalog } from "@starward/astronomy-core/bsc5p-catalog";
-import { isCelestialObjectReference, isDeepSkyObjectReference, EXTENDED_DEEP_SKY_CATALOG_VERSION, isSaoStarReference, skyPlanetBody, SKY_PLANET_NAMES, SKY_PLANET_CATALOG_HASH } from "@starward/miniapp-contracts";
+import { loadBsc5pStarCatalog, type Bsc5pStarRow } from "@starward/astronomy-core/bsc5p-catalog";
+import { isCelestialObjectReference, isDeepSkyObjectReference, CURRENT_DEEP_SKY_CATALOG_VERSION, DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION, isSaoStarReference, skyPlanetBody, SKY_PLANET_NAMES, SKY_PLANET_CATALOG_HASH } from "@starward/miniapp-contracts";
 import { loadSaoCatalog } from "./sao-catalog-provider.ts";
 import type {
   ApiEnvelope,
@@ -42,6 +42,21 @@ function digest(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
 
+/** A numeric fact carries its original measurement meaning even when a client
+ * shows full catalogue notes on a separate source page. No prose parsing. */
+export function bscStarInformationFacts(row: Bsc5pStarRow): CelestialObjectInformation["facts"] {
+  return [
+    { label: row.vMagCode ? "目录视星等" : "V 波段视星等", value: row.vMag.toFixed(2), unit: "mag" },
+    ...(row.vMagCode ? [{ label: "测光标记", value: `原始标记 ${row.vMagCode}；未转换为统一 Johnson V`, unit: null }] : []),
+    ...(row.vMagUncertainty ? [{ label: "星等标记", value: `${row.vMagUncertainty}（原目录的不确定标记）`, unit: null }] : []),
+    ...(row.bV === null ? [] : [
+      { label: "B−V 色指数", value: row.bV.toFixed(3), unit: "mag" },
+      ...(row.bVUncertainty ? [{ label: "色值标记", value: `${row.bVUncertainty}（原目录的不确定标记）`, unit: null }] : []),
+    ]),
+    ...(row.spectralType ? [{ label: "光谱型", value: row.spectralType, unit: null }] : []),
+  ];
+}
+
 function envelope(data: CelestialObjectInformation, sources: readonly SourceSummary[],
   dataState: "FRESH" | "PARTIAL" = "FRESH", warnings: string[] = []): ApiEnvelope<CelestialObjectInformation> {
   const generatedAt = new Date().toISOString();
@@ -69,18 +84,41 @@ export class CelestialObjectInformationService {
     private readonly bodyIntroduction = publishedBodyIntroduction,
     private readonly deepSkyIntroduction = publishedDeepSkyIntroduction) {}
 
+  private result(cacheKey: string, response: ApiEnvelope<CelestialObjectInformation>, cacheable: boolean) {
+    if (cacheable) {
+      this.cache.set(cacheKey, response);
+      // Preserve the existing 256-entry FIFO policy for every information
+      // family. Partial/retryable responses never become cached successes.
+      while (this.cache.size > 256) this.cache.delete(this.cache.keys().next().value!);
+    }
+    return structuredClone(response);
+  }
+
   get(reference: string, locale = "zh-CN", catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2",moonTextureVersion?:"coverage-v2",
     imageSelection: DeepSkyImageSelection = {}, opticalPublicationHash?: string) {
     if (!isCelestialObjectReference(reference))
       throw new Error("celestial_object_reference_invalid");
     if (locale !== "zh-CN") throw new Error("celestial_object_locale_unsupported");
+    if (catalogVersion !== "bsc5p-bright-stars.v2" && catalogVersion !== "bsc5p-bright-stars.v3")
+      throw new Error("sky_catalog_version_invalid");
+    if (moonTextureVersion !== undefined && moonTextureVersion !== "coverage-v2")
+      throw new Error("moon_texture_version_invalid");
+    if (imageSelection.imageVersion !== undefined && imageSelection.imageVersion !== DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION)
+      throw new Error("deep_sky_image_version_invalid");
+    if (imageSelection.publicationHash !== undefined && !/^[a-f0-9]{64}$/u.test(imageSelection.publicationHash))
+      throw new Error("deep_sky_image_publication_hash_invalid");
     if (opticalPublicationHash !== undefined && (!isDeepSkyObjectReference(reference) || !/^[a-f0-9]{64}$/u.test(opticalPublicationHash)))
       throw new Error("sdss_optical_publication_hash_invalid");
-    const cacheKey = `${reference}:${locale}:${catalogVersion}:${moonTextureVersion??"legacy-v1"}:${imageSelection.imageVersion ?? "legacy-image"}:${imageSelection.publicationHash ?? "current"}` +
-      (opticalPublicationHash ? `:optical:${opticalPublicationHash}` : "");
+    const luminary = skyLuminaryBody(reference), planet = skyPlanetBody(reference);
+    // Legacy callers may send globally selected versions to every family.
+    // Validate those inputs, but only applicable selectors define identity.
+    const selection = isDeepSkyObjectReference(reference)
+      ? [imageSelection.imageVersion ?? "legacy-image", imageSelection.publicationHash ?? "current", opticalPublicationHash ?? null]
+      : luminary === "MOON" ? [moonTextureVersion ?? "legacy-v1"]
+        : luminary || planet ? [] : [catalogVersion];
+    const cacheKey = JSON.stringify([reference, locale, ...selection]);
     const cached = this.cache.get(cacheKey);
     if (cached) return structuredClone(cached);
-    const luminary = skyLuminaryBody(reference);
     if (luminary) {
       let moonManifest: ReturnType<MoonTexturePublicationService["manifest"]|MoonTexturePublicationService["coverageManifest"]> | undefined;
       let publicationUnavailable = false;
@@ -108,10 +146,8 @@ export class CelestialObjectInformationService {
       const warnings = [...(publicationUnavailable ? ["moon_texture_publication_unavailable"] : []),
         ...(introductionUnavailable ? ["celestial_introduction_publication_unavailable"] : [])];
       const result = envelope(data, sources, warnings.length ? "PARTIAL" : "FRESH", warnings);
-      if (!warnings.length) this.cache.set(cacheKey, result);
-      return structuredClone(result);
+      return this.result(cacheKey, result, !warnings.length);
     }
-    const planet = skyPlanetBody(reference);
     if (planet) {
       const names = SKY_PLANET_NAMES[planet];
       const bodySources = planet === "JUPITER" ? [skyPlanetSource,skyJupiterShapeSource,skyJupiterBandSource]
@@ -144,8 +180,7 @@ export class CelestialObjectInformationService {
       };
       const warnings = introductionUnavailable ? ["celestial_introduction_publication_unavailable"] : [];
       const result = envelope(data, sources, warnings.length ? "PARTIAL" : "FRESH", warnings);
-      if (!introductionUnavailable) this.cache.set(cacheKey, result);
-      return structuredClone(result);
+      return this.result(cacheKey, result, !introductionUnavailable);
     }
     if (isSaoStarReference(reference)) {
       const {catalog,source}=loadSaoCatalog(catalogVersion),star=catalog.get(reference);
@@ -159,13 +194,11 @@ export class CelestialObjectInformationService {
           ...(star.spectralType?[{label:'光谱型',value:star.spectralType === '+++' ? '复合、变化或特殊光谱（目录未区分）' : star.spectralType,unit:null}]:[])],sources,
         limitations:['保留原始视觉星等，未转换为统一 Johnson V。',
           '当前只有目录基本资料，尚无已采用的中文介绍；未提供本层采用的距离或色指数。']};
-      const result=envelope(data,sources);this.cache.set(cacheKey,result);
-      if(this.cache.size>256)this.cache.delete(this.cache.keys().next().value!);
-      return structuredClone(result);
+      return this.result(cacheKey, envelope(data, sources), true);
     }
     const deepSkyRow = deepSkyRowByReference(reference);
     if (deepSkyRow) {
-      const catalog = loadDeepSkyCatalog(deepSkyRow.objectRef.startsWith("M:") ? undefined : EXTENDED_DEEP_SKY_CATALOG_VERSION);
+      const catalog = loadDeepSkyCatalog(deepSkyRow.objectRef.startsWith("M:") ? undefined : CURRENT_DEEP_SKY_CATALOG_VERSION);
       let imagerySource: SourceSummary | null = null;
       let imageryUnavailable = false;
       try { imagerySource = this.imagery.source(reference, imageSelection); }
@@ -223,9 +256,7 @@ export class CelestialObjectInformationService {
         ...(opticalUnavailable ? [preparedSelected ? "prepared_optical_publication_unavailable" : "sdss_optical_publication_unavailable"] : []),
       ];
       const result = envelope(data, sources, warnings.length ? "PARTIAL" : "FRESH", warnings);
-      if (imagerySource && !warnings.length) this.cache.set(cacheKey, result);
-      if (this.cache.size > 256) this.cache.delete(this.cache.keys().next().value!);
-      return structuredClone(result);
+      return this.result(cacheKey, result, Boolean(imagerySource) && !warnings.length);
     }
     const catalog = loadBsc5pStarCatalog(catalogVersion);
     const row = catalog.rows.find(candidate => candidate.sourceId === reference);
@@ -244,11 +275,7 @@ export class CelestialObjectInformationService {
       ...(published ? [published.source] : [])];
     const introduction = published?.introduction ?? INTRODUCTIONS[reference] ?? null;
     const aliases = brightStarAliases(row, [...(chinese?.aliasesFor(reference) ?? []), ...(published?.aliases ?? [])]);
-    const facts = [
-      { label: "V 波段视星等", value: row.vMag.toFixed(2), unit: "mag" },
-      ...(row.bV === null ? [] : [{ label: "B−V 色指数", value: row.bV.toFixed(3), unit: "mag" }]),
-      ...(row.spectralType ? [{ label: "光谱型", value: row.spectralType, unit: null }] : []),
-    ];
+    const facts = bscStarInformationFacts(row);
     const data: CelestialObjectInformation = {
       reference,
       kind: "STAR",
@@ -260,7 +287,7 @@ export class CelestialObjectInformationService {
       contentState: introduction ? "READY" : "BASIC_ONLY",
       contentRevision: digest({ catalog: catalog.catalogHash, chineseAliases: chinese?.catalogHash ?? null,
         ...(published ? { publishedIntroduction: published } : {}),
-        editorial: EDITORIAL_REVISION, locale }).slice(0, 24),
+        facts, editorial: EDITORIAL_REVISION, locale }).slice(0, 24),
       sources,
       limitations: [
         "目录资料是恒星的静态身份与测量值；当前地点和时刻的方位需使用对应天空帧。",
@@ -278,8 +305,6 @@ export class CelestialObjectInformationService {
     const warnings = [...(chinese ? [] : ["中文恒星别名暂不可用，请稍后重试。"]),
       ...(introductionUnavailable ? [introductionWarning] : [])];
     const result = envelope(data, sources, warnings.length ? "PARTIAL" : "FRESH", warnings);
-    if (chinese && !introductionUnavailable) this.cache.set(cacheKey, result);
-    if (this.cache.size > 256) this.cache.delete(this.cache.keys().next().value!);
-    return structuredClone(result);
+    return this.result(cacheKey, result, Boolean(chinese) && !introductionUnavailable);
   }
 }

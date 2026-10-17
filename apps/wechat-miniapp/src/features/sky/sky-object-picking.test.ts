@@ -1,7 +1,7 @@
 import { PROCEDURAL_SKY_LANDSCAPE } from "./sky-landscape-mask";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isUnambiguousTapGesture, pickPaintedSkyObjects, type SkyPickSnapshot } from "./sky-object-picking.ts";
+import { filterSkyBodyOccludedStars, isUnambiguousTapGesture, pickPaintedSkyObjects, type SkyPickSnapshot } from "./sky-object-picking.ts";
 import { createSkyViewBasis, projectSkyDirection, skyHorizontalDirection } from "./sky-view-projection.ts";
 import { skyLandscapeOccludes } from "./sky-landscape-geometry.ts";
 
@@ -71,4 +71,21 @@ test("near-edge tap tolerance never revives a hidden point but exposed globe and
     hitDisc:{majorRadiusPx:20,minorRadiusPx:20,minorDirection:[0,1]}}]},input)[0]?.reference,"HR:2","the exposed limb remains selectable");
   assert.equal(pickPaintedSkyObjects({...frame,objects:[{...object,
     hitSegments:[[covered.x,open.y,open.x+30,open.y]]}]},input)[0]?.reference,"HR:2","the exposed ring stroke remains selectable");
+});
+
+test("solid round and oblate bodies retire the same covered star hit and name, preserving the visible limb and ring gaps", () => {
+  for (const [kind, minorRadiusPx] of [["MOON", 20], ["PLANET", 10]] as const) {
+    const body = { reference: kind === "MOON" ? "SOLAR:MOON" : "PLANET:SATURN", displayName: kind,
+      kind, magnitude: null, x: 100, y: 100,
+      hitDisc: { majorRadiusPx: 20, minorRadiusPx, minorDirection: [1, 0] as const },
+      hitSegments: [[80, 130, 120, 130] as const] };
+    const points = [{ ...snapshot.objects[0]!, reference: "HR:1", x: 100, y: 100 },
+      { ...snapshot.objects[0]!, reference: "HR:2", x: 100 + minorRadiusPx * .995, y: 100 },
+      { ...snapshot.objects[0]!, reference: "HR:3", x: 100, y: 130 }];
+    const names = points.map(point => ({ ...point, opacity: 1 }));
+    const visible = filterSkyBodyOccludedStars([...points, body], names);
+    assert.deepEqual(visible.objects.map(value => value.reference), ["HR:2", "HR:3", body.reference]);
+    assert.deepEqual(visible.namedStars.map(value => value.reference), ["HR:2", "HR:3"]);
+    assert.strictEqual(filterSkyBodyOccludedStars(points, names).objects, points, "no successful globe preserves the original receipt");
+  }
 });

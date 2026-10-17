@@ -168,8 +168,11 @@ test("actual page caption consumer follows accepted frame, Canvas generation and
   }
 });
 
-test("modal and caption route formatting preserves both optional identities and escapes values", () => {
+test("modal and caption routes preserve two valid same-object editions and reject mixed identities", () => {
   assert.equal(celestialInformationSourceRoute("M:51"), "/sky/sources/index?reference=M%3A51");
-  assert.equal(celestialInformationSourceRoute("M:51", "image&v=2", "optical#new"),
-    "/sky/sources/index?reference=M%3A51&imagePublicationHash=image%26v%3D2&opticalPublicationHash=optical%23new");
+  const image="a".repeat(64),optical="b".repeat(64);
+  assert.equal(celestialInformationSourceRoute("M:51",image,optical),
+    `/sky/sources/index?reference=M%3A51&imagePublicationHash=${image}&opticalPublicationHash=${optical}`);
+  assert.throws(()=>celestialInformationSourceRoute("M:51","image&v=2","optical#new"),/selection_invalid/);
+  assert.throws(()=>celestialInformationSourceRoute("SOLAR:MOON",image,undefined,optical),/selection_invalid/);
 });

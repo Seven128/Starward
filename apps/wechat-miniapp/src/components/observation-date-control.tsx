@@ -128,7 +128,8 @@ export function ObservationDateControl({
                   </View>
                 );
               })}
-              <Text className="observation-calendar__note">日期按地点当地时间显示；天文信息可用，天气覆盖按当日服务实际结果呈现。</Text>
+              <Text className="observation-calendar__note">日期按地点当地时间显示</Text>
+              <Text className="observation-calendar__note">天气是否可用，以当天资料为准</Text>
             </ScrollView>
           </View>
         </View>

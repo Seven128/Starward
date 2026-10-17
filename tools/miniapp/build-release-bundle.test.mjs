@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { writeCompiledSkyFixture } from "./compiled-sky-origin-test-support.mjs";
 
 import {
   acquireBuildLock,
@@ -12,6 +13,7 @@ import {
   resolveNpmCli,
   validateBuildRequest,
   validateSourceProjectIdentity,
+  verifyCompiledOrigin,
 } from "./build-release-bundle.mjs";
 
 const revision = "a".repeat(40);
@@ -27,6 +29,8 @@ test("formal release builds clear an inherited operator-preview access token", (
       MINIAPP_ISOLATED_CHECK_BUILD: "1",
       MINIAPP_ISOLATED_CHECK_BUILD_SLOT: "sky-provenance-0925",
       MINIAPP_SKY_FEEDBACK_ID: "P1RING25A",
+      MINIAPP_SKY_RESOURCE_BASE: "https://unbound-stale.example.com",
+      MINIAPP_RELEASE_BUNDLE_ID: "inherited-release-id",
       UNRELATED: "preserved",
     },
   );
@@ -36,7 +40,9 @@ test("formal release builds clear an inherited operator-preview access token", (
   assert.equal(environment.MINIAPP_ISOLATED_CHECK_BUILD, "0");
   assert.equal(environment.MINIAPP_ISOLATED_CHECK_BUILD_SLOT, "");
   assert.equal(environment.MINIAPP_SKY_FEEDBACK_ID, "");
+  assert.equal(environment.MINIAPP_RELEASE_BUNDLE_ID, "");
   assert.equal(environment.MINIAPP_API_BASE, "https://api.starward-ci.invalid");
+  assert.equal(environment.MINIAPP_SKY_RESOURCE_BASE, "https://api.starward-ci.invalid");
   assert.equal(environment.UNRELATED, "preserved");
 });
 
@@ -62,6 +68,38 @@ function request(overrides = {}) {
     ...overrides,
   });
 }
+
+test("release resource origin is explicit, lane-valid and cannot leak from the ambient build environment", () => {
+  const same = request(), bound = request({ "--sky-resource-origin": "https://images.starward-ci.invalid/" });
+  assert.equal(same.skyResourceOrigin, same.apiOrigin);
+  assert.equal(bound.skyResourceOrigin, "https://images.starward-ci.invalid");
+  assert.equal(releaseBuildEnvironment(bound, { MINIAPP_SKY_RESOURCE_BASE: "https://stale.invalid" }).MINIAPP_SKY_RESOURCE_BASE,
+    bound.skyResourceOrigin);
+  for (const origin of ["http://images.starward-ci.invalid", "https://images.example.com", "https://user:password@images.starward-ci.invalid",
+    "https://images.starward-ci.invalid/path", "https://images.starward-ci.invalid?x=1", "https://127.0.0.1", ""])
+    assert.throws(() => request({ "--sky-resource-origin": origin }), /release_bundle_/u);
+  assert.throws(() => request({ "--lane": "staging", "--api-origin": "https://api-staging.starward.cn", "--app-id": stagingAppId,
+    "--sky-resource-origin": "https://images.invalid" }), /deployable_origin_reserved/u);
+});
+
+test("the shared artifact verifier requires both compiled origins before a v2 candidate is consumed", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "starward-origin-binding-"));
+  try {
+    const bound = request({ "--sky-resource-origin": "https://images.starward-ci.invalid" });
+    await writeFile(path.join(root, "app.js"), `const api = ${JSON.stringify(bound.apiOrigin)};`);
+    await assert.rejects(verifyCompiledOrigin(bound, await fingerprintBundle(root), root), /expected_sky_resource_origin_missing/u);
+    await writeFile(path.join(root, "app.js"), `const api = ${JSON.stringify(bound.apiOrigin)}; const resource = ${JSON.stringify(bound.skyResourceOrigin)};`);
+    await assert.rejects(verifyCompiledOrigin(bound, await fingerprintBundle(root), root), /compiled_sky_runtime_missing/u);
+    await writeCompiledSkyFixture(root, bound);
+    const binding = await verifyCompiledOrigin(bound, await fingerprintBundle(root), root);
+    assert.equal(binding.scope, "COMPILED_PURE_ADDRESS_OWNER");
+    assert.ok(Object.values(binding.roles).every(value => value === true));
+  } finally {
+    if (!path.resolve(root).startsWith(path.resolve(os.tmpdir()) + path.sep + "starward-origin-binding-"))
+      throw new Error("test_cleanup_target_outside_owned_prefix");
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 test("CI bundles are structurally nondeployable and accept no AppID", () => {
   const validated = request();

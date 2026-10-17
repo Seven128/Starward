@@ -11,6 +11,9 @@ if (typeof reference !== "string") throw new Error("prepared_optical_reference_m
 assertPreparedRenderedOpticalPublication(publication, reference);
 const publicationHash = preparedRenderedOpticalPublicationHash(publication);
 const manifest = { ...publication, publicationHash,
+  ...(publication.imageVersion === "prepared-derived-region-optical-v1" ? { support:
+    Object.fromEntries(Object.entries(publication.support).map(([key, asset]) => [key, { ...asset,
+      downloadUrl: `/v2/sky/prepared-optical/${publicationHash}/${asset.file}` }])) } : {}),
   levels: Object.fromEntries(OPTICAL_IMAGE_LEVELS.map(level => [level, { ...publication.levels[level],
     downloadUrl: `/v2/sky/prepared-optical/${publicationHash}/${publication.levels[level].file}` }])) } as PreparedRenderedOpticalManifest;
 assertPreparedRenderedOpticalManifest(manifest, reference, publicationHash);

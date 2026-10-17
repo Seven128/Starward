@@ -5,6 +5,7 @@ import { basename, dirname, join } from "node:path";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { skyResourceOriginTestOwner } from "./sky-resource-origin-test-support";
 import { MINIAPP_API_BASE_PATH, SDSS_OPTICAL_PUBLICATIONS, SDSS_OPTICAL_LEVELS, sdssOpticalPublication, assertSdssOpticalManifest,
   assertSdssScienceOpticalManifest, type SdssEncodedScienceOpticalManifest } from "@starward/miniapp-contracts";
 import { createSyntheticSdssSciencePublication } from "../../../../workers/miniapp-api/src/test-fixtures/sdss-science-publication.ts";
@@ -24,7 +25,7 @@ test("actual client requests the admitted immutable target through the existing 
     requestBareSkyResource: async (path:string,kind:string,signal:unknown) => { calls.push({path,kind,signal}); return {status:200,body:response}; },
   }) as typeof import("./sdss-optical-client").getSdssOpticalManifest;
   const url = vm.runInNewContext(ts.transpileModule(declaration("./bare-sky-resource.ts", "skyResourceUrl") + "\nskyResourceUrl;",
-    {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText, {__MINIAPP_API_BASE__: "http://127.0.0.1:8791"}) as (path:string,kind:string)=>string;
+    {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText, {__MINIAPP_API_BASE__: "http://127.0.0.1:8791", ...skyResourceOriginTestOwner("http://127.0.0.1:8791")}) as (path:string,kind:string)=>string;
   const signal = new AbortController().signal;
   for (const [reference, offer] of Object.entries(SDSS_OPTICAL_PUBLICATIONS)) {
     const original = JSON.parse(readFileSync(new URL(`../../../../workers/miniapp-api/assets/deep-sky/sdss-${reference.replace(":", "").toLowerCase()}/manifest.json`, import.meta.url), "utf8"));
@@ -47,7 +48,7 @@ test("actual client requests the admitted immutable target through the existing 
 test("source download links exist for each real target and reject forged publication identities", () => {
   const download = vm.runInNewContext(ts.transpileModule(declaration("./api-client.ts", "deepSkyManifestUrl") + "\ndeepSkyManifestUrl;",
     {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText, {SDSS_OPTICAL_PUBLICATIONS, MINIAPP_API_BASE_PATH,
-    __MINIAPP_API_BASE__: "http://127.0.0.1:8791"}) as (id:string)=>string|undefined;
+    __MINIAPP_API_BASE__: "http://127.0.0.1:8791", ...skyResourceOriginTestOwner("http://127.0.0.1:8791")}) as (id:string)=>string|undefined;
   for (const offer of Object.values(SDSS_OPTICAL_PUBLICATIONS)) {
     assert.equal(download(`optical-imagery:${offer.publicationId}:${offer.publicationHash}`),
       `http://127.0.0.1:8791/v2/sky/sdss-optical/${offer.publicationHash}/manifest`);

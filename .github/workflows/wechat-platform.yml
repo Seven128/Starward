@@ -61,6 +61,7 @@ jobs:
       WECHAT_PRODUCTION_CONFIRMATION: ${{ inputs.production_confirmation }}
       WECHAT_APP_ID: ${{ vars.STARWARD_WECHAT_APP_ID }}
       WECHAT_API_ORIGIN: ${{ vars.STARWARD_WECHAT_API_ORIGIN }}
+      WECHAT_SKY_RESOURCE_ORIGIN: ${{ vars.STARWARD_WECHAT_SKY_RESOURCE_ORIGIN }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         env:
@@ -79,6 +80,9 @@ jobs:
           [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$WECHAT_APP_ID" =~ ^wx[0-9a-f]{16}$ ]]
           [[ "$WECHAT_API_ORIGIN" =~ ^https://[A-Za-z0-9.-]+$ ]]
+          if [[ -n "$WECHAT_SKY_RESOURCE_ORIGIN" ]]; then
+            [[ "$WECHAT_SKY_RESOURCE_ORIGIN" =~ ^https://[A-Za-z0-9.-]+$ ]]
+          fi
           [[ "$WECHAT_VERSION" =~ ^[0-9A-Za-z][0-9A-Za-z._-]{0,63}$ ]]
           [[ "$WECHAT_ROBOT" =~ ^[0-9]{1,2}$ ]] && (( WECHAT_ROBOT >= 1 && WECHAT_ROBOT <= 30 ))
       - name: Restore LFS object cache
@@ -104,8 +108,11 @@ jobs:
           npm run miniapp:bundle -- \
             --lane "$WECHAT_LANE" \
             --api-origin "$WECHAT_API_ORIGIN" \
+            --sky-resource-origin "${WECHAT_SKY_RESOURCE_ORIGIN:-$WECHAT_API_ORIGIN}" \
             --app-id "$WECHAT_APP_ID" \
             --source-revision "$GITHUB_SHA"
+          MINIAPP_BUILT_CANDIDATE_MANIFEST="$GITHUB_WORKSPACE/artifacts/miniapp/release/$WECHAT_LANE.manifest.json" \
+            node --test tools/miniapp/built-candidate.test.mjs
       - name: Preview or upload verified bundle
         shell: bash
         env:

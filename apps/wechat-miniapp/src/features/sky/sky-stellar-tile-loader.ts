@@ -1,4 +1,6 @@
 import type { ApiEnvelope, SaoIndexPublication, SaoTilePublication } from '@starward/miniapp-contracts';
+import { reportRuntimeError } from '../../services/runtime-error';
+import { isMiniappRequestCancelled } from '../../services/request-lifecycle';
 
 export interface SkyStellarTileState {
   tiles: readonly SaoTilePublication[];
@@ -21,8 +23,19 @@ export function createSkyStellarTileLoader(deps:{
   // Aborted requests keep their slot until settled: rapid turns cannot create
   // unbounded native requests even if abort completion is delayed.
   const pending=new Map<string,AbortController>();
-  function publish(){if(!disposed)deps.changed({tiles:wanted.flatMap(id=>loaded.has(id)?[loaded.get(id)!]:[]),
-    loading:!paused&&!overBudget&&wanted.some(id=>refresh.has(id)||!loaded.has(id)&&!failed.has(id)),failed:overBudget||failed.size>0});}
+  let published:SkyStellarTileState|undefined;
+  function publish(){
+    if(disposed)return;
+    const nextTiles=wanted.flatMap(id=>loaded.has(id)?[loaded.get(id)!]:[]);
+    // Keep only the current bounded view. Status-only changes and cancelled
+    // request completions do not invalidate its exact-time point aggregation.
+    const tiles=published&&nextTiles.length===published.tiles.length&&nextTiles.every((tile,i)=>tile===published!.tiles[i])
+      ?published.tiles:nextTiles;
+    const loading=!paused&&!overBudget&&wanted.some(id=>refresh.has(id)||!loaded.has(id)&&!failed.has(id));
+    const failedState=overBudget||failed.size>0;
+    if(published&&published.tiles===tiles&&published.loading===loading&&published.failed===failedState)return;
+    published={tiles,loading,failed:failedState};deps.changed(published);
+  }
   function pump(){
     if(disposed||paused||overBudget)return;
     for(const id of wanted){
@@ -38,7 +51,10 @@ export function createSkyStellarTileLoader(deps:{
         if(tile.publicationHash!==deps.publication.publicationHash||tile.tile.tileId!==id)throw Error('stellar_tile_result_mismatch');
         loaded.set(id,tile);
         if(result.dataState==='STALE_USABLE')failed.add(id);
-      }).catch(()=>{
+      }).catch(error=>{
+        const cancelled=controller.signal.aborted||isMiniappRequestCancelled(error)||
+          error instanceof Error&&['sky_public_json_cancelled','sky_public_image_cancelled','sao_publication_invalid:retired_index'].includes(error.message);
+        if(!cancelled)reportRuntimeError('request','sky_stellar_tile_failed',error,{stage:'sao_tile',resource:`sao:${id}`});
         if(!disposed&&!controller.signal.aborted&&wanted.includes(id))failed.add(id);
       }).finally(()=>{pending.delete(id);refresh.delete(id);if(!disposed){pump();publish();}});
     }
@@ -66,6 +82,6 @@ export function createSkyStellarTileLoader(deps:{
       request.abort();
     }publish();}},
     resume(){if(!disposed&&paused){paused=false;pump();publish();}},
-    dispose(){disposed=true;wanted=[];loaded.clear();failed.clear();refresh.clear();for(const request of pending.values())request.abort();},
+    dispose(){disposed=true;published=undefined;wanted=[];loaded.clear();failed.clear();refresh.clear();for(const request of pending.values())request.abort();},
   };
 }

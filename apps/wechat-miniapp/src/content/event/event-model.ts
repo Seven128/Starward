@@ -52,12 +52,6 @@ export function phaseLabel(key: string) {
   } as Record<string, string>)[key] ?? key;
 }
 
-export function compassLabel(azimuthDeg: number | null | undefined) {
-  if (azimuthDeg == null) return "";
-  const labels = ["北", "东北", "东", "东南", "南", "西南", "西", "西北"] as const;
-  return labels[Math.round(((azimuthDeg % 360) + 360) % 360 / 45) % 8]!;
-}
-
 export function groupEventsByPeakMonth(events: readonly AstronomicalEventOccurrence[]) {
   const groups = new Map<string, AstronomicalEventOccurrence[]>();
   for (const event of events) {

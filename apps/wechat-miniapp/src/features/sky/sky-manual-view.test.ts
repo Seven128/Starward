@@ -3,6 +3,7 @@ import test from "node:test";
 import { createSkyViewBasis, projectSkyDirection, unprojectSkyPoint, validBasis, type SkyViewBasis } from "./sky-view-projection.ts";
 import { dragSkyView, INITIAL_MANUAL_SKY_VIEW } from "./sky-manual-view.ts";
 import { captureSkyDomeTarget, createSkyBrowsingCamera } from "./sky-browsing-camera.ts";
+import { skyLandscapeVisibleInView, PROCEDURAL_SKY_LANDSCAPE } from "./sky-landscape-mask";
 
 for (const fov of [240, 180, 120, 45, 6, 1.5]) {
   test(`grabbed celestial point follows the finger at ${fov} degrees including rolled camera`, () => {
@@ -30,6 +31,34 @@ test("manual initialization is explicit north/up and invalid geometry cannot cor
   assert.ok(Math.abs(point.x-195)<1e-6 && Math.abs(point.y-390)<1e-6);
   assert.equal(dragSkyView(initial,point,{ x:NaN,y:2 },390,780,45),initial);
   assert.equal(dragSkyView(initial,point,{ x:22,y:2 },390,0,45),initial);
+});
+
+test("a local sky without landscape pans near the centre without orbiting the whole view", () => {
+  const width = 390, height = 844, fov = 8, center = { x: 195, y: 422 };
+  const basis = createSkyViewBasis(0, 168, 0)!;
+  assert.equal(skyLandscapeVisibleInView(PROCEDURAL_SKY_LANDSCAPE,
+    { basis, verticalFovDeg: fov, center }, width, height), false);
+  assert.equal(skyLandscapeVisibleInView(PROCEDURAL_SKY_LANDSCAPE,
+    { basis, verticalFovDeg: 267.8, center }, width, height), true);
+  const end = { x: 280, y: 450 };
+  const moved = dragSkyView(basis, center, end, width, height, fov, center, "screen");
+  const other = { x: 195, y: 222 }, ray = unprojectSkyPoint(other.x, other.y, basis, width, height, fov, center)!;
+  const projected = projectSkyDirection(Math.atan2(ray[0], ray[1]) * 180 / Math.PI,
+    Math.asin(ray[2]) * 180 / Math.PI, moved, width, height, fov, center)!;
+  assert(Math.abs(projected.x - other.x - (end.x - center.x)) < 1);
+  assert(Math.abs(projected.y - other.y - (end.y - center.y)) < 1);
+  assert.equal(dragSkyView(basis, center, center, width, height, fov, center, "screen"), basis);
+  assert.equal(skyLandscapeVisibleInView(PROCEDURAL_SKY_LANDSCAPE,
+    { basis: createSkyViewBasis(180, 100, 0)!, verticalFovDeg: 2, center }, width, height), false,
+    "trees outside this azimuth cannot force horizon rotation in empty local sky");
+  const original = createSkyViewBasis(180, 95.5, 0)!;
+  const rolled: SkyViewBasis = { forward: original.forward,
+    right: [-original.right[0], -original.right[1], -original.right[2]],
+    up: [-original.up[0], -original.up[1], -original.up[2]] };
+  const nearEdge = { basis: rolled, verticalFovDeg: 8, center };
+  assert.equal(skyLandscapeVisibleInView(PROCEDURAL_SKY_LANDSCAPE, nearEdge, width, height), true);
+  assert.equal(skyLandscapeVisibleInView(PROCEDURAL_SKY_LANDSCAPE, nearEdge, width, height,
+    { top: 80, bottom: 0 }), false, "terrain hidden by native controls is not a visible direction cue");
 });
 
 test("repeated horizontal browsing keeps the horizon level while a grabbed off-center ray follows the finger", () => {

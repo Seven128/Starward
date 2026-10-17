@@ -5,26 +5,26 @@ import { artworkIntersectsView } from "./sky-artwork-visibility.ts";
 import { registerSkyArtwork } from "./sky-artwork-registration.ts";
 import { createSkyViewBasis,type SkyVector } from "./sky-view-projection.ts";
 
-test("native pinch roundoff retires constellation consumers at their declared boundaries",()=>{
+test("native pinch roundoff keeps the new all-sky visibility and the original close-crop retirement",()=>{
   // Actual public 140-degree pinch readback, not a rounded fixture angle.
   const overview=139.99999999999986;
-  assert.equal(constellationLineVisibility(overview,true),0);
-  assert.equal(constellationVisibility(overview,true),0);
+  assert.equal(constellationLineVisibility(overview,true),1);
+  assert.equal(constellationVisibility(overview,true),1);
   assert.equal(constellationVisibility(10.000000000000002,true),0);
   assert.equal(constellationLineVisibility(10.000000000000002,true),1);
   assert.ok(constellationVisibility(139.999,true)>0,'real intermediate fades remain available');
   assert.ok(constellationVisibility(10.001,true)>0,'real local widening retains its continuous fade');
   assert.equal(constellationVisibility(17.5,true),.5);
-  assert.equal(constellationVisibility(115,true),.5);
+  assert.equal(constellationVisibility(115,true),1);
 });
 
-test("zoom visibility preserves an identification field, fades before the dome and respects off intent",()=>{
-  for(const fov of [140,180,270])assert.equal(constellationVisibility(fov,true),0);
+test("zoom visibility preserves identification through the whole dome and respects off intent",()=>{
+  for(const fov of [140,180,264.4,270,359])assert.equal(constellationVisibility(fov,true),1);
   for(const fov of [45,84.63316191100171,90])assert.equal(constellationVisibility(fov,true),1);
   assert.equal(constellationVisibility(25,true),1);
-  assert.ok(constellationVisibility(115,true)>0&&constellationVisibility(115,true)<1);
+  assert.equal(constellationVisibility(115,true),1);
   for(const fov of [1.5,25,32,45,84.63316191100171,115])assert.equal(constellationVisibility(fov,false),0);
-  assert.ok(constellationVisibility(139.999,true)<1e-6);
+  assert.equal(constellationVisibility(139.999,true),1);
 });
 test("constellation context fades out in a close stellar crop and returns on widening",()=>{
   for(const fov of [0.05,2.67,8.89])assert.equal(constellationVisibility(fov,true),0,

@@ -11,6 +11,7 @@ import type { SkyScenePaintedSources } from "./sky-scene-render";
 import { skyPresentedTimeCurrent } from "./sky-observation-time";
 import { completeLegacySkyOptical } from "./sky-sdss-optical-completion";
 import { skyPagePaintCommit } from "./sky-optical-page-test-support";
+import { projectSkyTargetLabels } from "./sky-label-presentation";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
   readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -43,26 +44,34 @@ const selection = ts.transpileModule(
    const presentedSkyVisibility = ${visibilityInitializer.getText(source)};
    const selected = ${initializer.getText(source)}; selected`,
   { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
-const evaluateSelection = (context: object) => vm.runInNewContext(selection, {
-  skyPresentedTimeCurrent, timePlaying: false, timeIntent: { runStartAt: null }, ...context,
-});
+const evaluateSelection = (context: Record<string, any>) => {
+  // These admission/mask cases control a centre point. Give that point real
+  // horizontal geometry now that the shared production projection is executed.
+  const ray = context.currentViewBasis.forward;
+  const targets = context.orientationTargets.map((target: object) => ({ ...target,
+    azimuthDeg: (Math.atan2(ray[0], ray[1]) * 180 / Math.PI + 360) % 360,
+    altitudeDeg: Math.asin(ray[2]) * 180 / Math.PI }));
+  return vm.runInNewContext(selection, { skyPresentedTimeCurrent, projectSkyTargetLabels,
+    timePlaying: false, timeIntent: { runStartAt: null }, viewportInsets:{top:0,bottom:0},...context, orientationTargets: targets });
+};
 const openSnapshot: SkyPickSnapshot = { frameAt: "t", catalogVersion: "v", catalogHash: "h",
   width: 390, height: 844, objects: [] };
 
-test("planet and other target labels only follow the native frame actually presented", () => {
+// Existing OBSERVATION DOM labels; ordinary names use the shared Canvas copy.
+test("planet and other DOM target labels only follow the frame actually presented", () => {
   const target = { targetId: "target:venus", type: "PLANET" };
   const projectSkyTarget = () => ({ x: 195, y: 422 });
   const at = "2026-10-08T12:00:00.000Z", reportData = {};
   const context = { orientationTargets: [target], projectSkyTarget, orientationData: reportData,
-    row: { at }, mode: "NIGHT", canvasError: null,
+    row: { at }, mode: "OBSERVATION", canvasError: null,
     sensorHeadingForScene: null, devicePose: null, canvasSize: { width: 390, height: 844 },
     presentedFov: 45, currentViewBasis: createSkyViewBasis(0,135,0)!, presentedCenter: { x: 195, y: 422 } };
   const labels = (frame: { data: object; frameAt: string; mode: string;
     suppressedBodyReferences?: readonly string[] } | null,
-    canvasError: string | null = null) => evaluateSelection(
+    canvasError: string | null = null,viewportInsets={top:0,bottom:0}) => evaluateSelection(
     { ...context, skyTargetLabelSuppressed, paintedSkyPointVisible,
-      paintedSkyObjectsRef: { current: openSnapshot }, presentedSkyFrame: frame, canvasError }) as Array<{ target: { targetId: string } }>;
-  const current = { data: reportData, frameAt: at, mode: "NIGHT",landscape:null };
+      paintedSkyObjectsRef: { current: openSnapshot }, presentedSkyFrame: frame, canvasError,viewportInsets }) as Array<{ target: { targetId: string } }>;
+  const current = { data: reportData, frameAt: at, mode: "OBSERVATION",landscape:null };
   assert.deepEqual(Array.from(labels({ ...current, suppressedBodyReferences:["PLANET:VENUS"] }), item => item.target.targetId), []);
   assert.deepEqual(Array.from(labels({ ...current, suppressedBodyReferences:["PLANET:JUPITER"] }), item => item.target.targetId), [target.targetId]);
   assert.deepEqual(Array.from(labels(null), item => item.target.targetId), []);
@@ -70,6 +79,8 @@ test("planet and other target labels only follow the native frame actually prese
   assert.deepEqual(Array.from(labels({ ...current, frameAt: "2026-10-08T13:00:00.000Z" }), item => item.target.targetId), []);
   assert.deepEqual(Array.from(labels({ ...current, data: {} }), item => item.target.targetId), []);
   assert.deepEqual(Array.from(labels(current), item => item.target.targetId), [target.targetId]);
+  assert.deepEqual(Array.from(labels(current,null,{top:0,bottom:450}), item=>item.target.targetId),[],
+    "an overlay hides its target guide without moving the actual target");
 });
 
 test("same-camera native redraw commits resolved labels and both credits, including failure recovery", () => {
@@ -90,7 +101,8 @@ test("same-camera native redraw commits resolved labels and both credits, includ
   commit(snapshot, sources);
   const visible = state.current!;
   assert.deepEqual(Array.from(visible.resolvedBodyReferences), ["PLANET:VENUS"]);
-  assert.strictEqual(visible.deepSkyImage, frame.deepSkyImage);
+  assert.strictEqual(visible.deepSkyImage.image, frame.deepSkyImage.image);
+  assert.equal((visible.deepSkyImage as typeof visible.deepSkyImage & { isCurrent(): boolean }).isCurrent(), true);
   assert.strictEqual(visible.sdssOptical!.field.image, frame.sdssOpticalImage.image);
   commit(snapshot, sources);
   assert.strictEqual(state.current, visible, "unchanged frames must not cause extra DOM commits");
@@ -144,8 +156,8 @@ test("a submitted resolved Venus disc replaces only its old label, and failure r
     { targetId: "target:jupiter", type: "PLANET" }, { targetId: "other", type: "EVENT" }];
   const labels = (resolvedBodyReferences: readonly string[]) => Array.from(evaluateSelection( {
     skyTargetLabelSuppressed, paintedSkyPointVisible, paintedSkyObjectsRef: { current: openSnapshot },
-    orientationTargets: targets, orientationData: data, row: { at }, mode: "NIGHT", canvasError: null,
-    presentedSkyFrame: { data, frameAt: at, mode: "NIGHT", resolvedBodyReferences,landscape:null },
+    orientationTargets: targets, orientationData: data, row: { at }, mode: "OBSERVATION", canvasError: null,
+    presentedSkyFrame: { data, frameAt: at, mode: "OBSERVATION", resolvedBodyReferences,landscape:null },
     projectSkyTarget: () => ({ x: 195, y: 422 }), sensorHeadingForScene: null, devicePose: null,
     canvasSize: { width: 390, height: 844 }, presentedFov: .05, currentViewBasis: createSkyViewBasis(0,135,0)!,
     presentedCenter: { x: 195, y: 422 },
@@ -162,7 +174,7 @@ test("target labels use the completed virtual scene mask rather than the current
     skyTargetLabelSuppressed, paintedSkyPointVisible,
     paintedSkyObjectsRef: { current: { ...openSnapshot, view: { ...view, landscape } } },
     landscapeEnabled: intent, orientationTargets: [target], orientationData: data, row: { at },
-    mode: "NIGHT", canvasError: null, presentedSkyFrame: { data, frameAt: at, mode: "NIGHT",landscape },
+    mode: "OBSERVATION", canvasError: null, presentedSkyFrame: { data, frameAt: at, mode: "OBSERVATION",landscape },
     projectSkyTarget: () => ({ x: 195, y: 422 }), sensorHeadingForScene: null, devicePose: null,
     canvasSize: { width: 390, height: 844 }, presentedFov: 85, currentViewBasis: view.basis,
     presentedCenter: { x: 195, y: 422 },
@@ -179,8 +191,8 @@ test("a later native mask cannot hide a label before its corresponding DOM camer
     // The mutable Canvas ref has advanced; React is still presenting the
     // previous camera and its successfully painted unobstructed scene.
     paintedSkyObjectsRef:{current:{...openSnapshot,view:{...view,landscape:PROCEDURAL_SKY_LANDSCAPE}}},
-    orientationTargets:[{targetId:"other",type:"EVENT"}],orientationData:data,row:{at},mode:"NIGHT",canvasError:null,
-    presentedSkyFrame:{data,frameAt:at,mode:"NIGHT",landscape:null},
+    orientationTargets:[{targetId:"other",type:"EVENT"}],orientationData:data,row:{at},mode:"OBSERVATION",canvasError:null,
+    presentedSkyFrame:{data,frameAt:at,mode:"OBSERVATION",landscape:null},
     projectSkyTarget:()=>({x:195,y:422}),sensorHeadingForScene:null,devicePose:null,
     canvasSize:{width:390,height:844},presentedFov:85,currentViewBasis:view.basis,presentedCenter:{x:195,y:422},
   }) as Array<{target:{targetId:string}}>;

@@ -10,6 +10,8 @@ import {createSkyViewBasis,sameSkyViewBasis} from "./sky-view-projection";
 import {copySkyDeepAuxiliaryDecisions,sameSkyDeepAuxiliaryDecisions} from "./sky-deep-auxiliary-visibility";
 import {sameSkyHipsCompletion} from "./sky-hips-source-credit";
 import {skyNativeImageIsCurrent} from "./sky-artwork-loader";
+import * as bodyImages from "./sky-body-image-completion";
+import { skyPageCanvasTestBindings, skyPageCanvasTestFrame } from "./sky-optical-page-test-support";
 
 // Actual page callbacks + actual Canvas lifecycle, controlled draw completion.
 // This tests publication fences, not rendered pixels, native timing or driver races.
@@ -28,19 +30,21 @@ function harness(){
   let id=0,contextId=0;
   const tasks=new Map<number,{callback:()=>void;delay:number}>();
   const clock:CanvasClock={schedule(callback,delay){tasks.set(++id,{callback,delay});return id;},cancel(handle){tasks.delete(handle as number);}};
-  const step=()=>{const pending=[...tasks].find(([,task])=>task.delay===0);assert(pending,"a real scheduled render must exist");tasks.delete(pending[0]);pending[1].callback();};
+  const step=(delay=0)=>{const pending=[...tasks].find(([,task])=>task.delay===delay);assert(pending,"a real scheduled render must exist");tasks.delete(pending[0]);pending[1].callback();};
   const generation={current:1},pending={current:null as any},picking={current:null as any};
   const state={presented:null as any,camera:null as any,inspections:[] as any[],failure:null as unknown};
   const attempts:Array<{complete:()=>void;view:unknown;frameSources:unknown}>=[];
-  let view=basis,defer=true,drawFault=false,copyFault=false,copies=0;
+  let view=basis,defer=true,drawFault=false,copyFault=false,copies=0,animating=false;
+  const renewals:boolean[]=[];
   const orientation={latestPresentation:{current:null},presented:{current:null as any}};
-  const bindings:any={liveSkyOpticalCompletion,sameSkyOpticalCompletion,sameSkyOpticalInput,resolvedSkyBodyReferences,
+  const bindings:any=skyPageCanvasTestBindings({...bodyImages,liveSkyOpticalCompletion,sameSkyOpticalCompletion,sameSkyOpticalInput,resolvedSkyBodyReferences,
     copySkyDeepAuxiliaryDecisions,sameSkyDeepAuxiliaryDecisions,sameSkyHipsCompletion,skyNativeImageIsCurrent,sameSkyViewBasis,
     canvasGenerationRef:generation,pendingSkyPaintRef:pending,paintedSkyObjectsRef:picking,orientation,
+    automaticContributionGroupsRef:{current:0},preparedRegionFailureRef:{current:()=>{}},
     canvasSurfaceRef:{current:{present(){if(copyFault)throw new Error("controlled_display_copy_failure");copies++;}}},
-    orientationController:{snapshot:()=>({})},manualBasisRef:{current:null},zoomRef:{current:.05},viewportInsetsRef:{current:{}},reducedMotionRef:{current:false},
+    orientationController:{snapshot:()=>({alignment:{mode:'auto'}})},manualBasisRef:{current:null},zoomRef:{current:.05},viewportInsetsRef:{current:{}},reducedMotionRef:{current:false},
     resolveSkyCanvasView:()=>({verticalFovDeg:.05,progress:1,center:{x:195,y:422},localView:view,intent:"manual"}),
-    browsingCamera:{update:()=>({view,animating:false})},
+    browsingCamera:{update:()=>({view,animating})},
     setPresentedSkyFrame:(update:any)=>{state.presented=typeof update === "function" ? update(state.presented) : update;},
     setPresentedCamera:(update:any)=>{state.camera=typeof update === "function" ? update(state.camera) : update;},
     setCanvasSize:()=>{},setCanvasError:()=>{},canvasDrawRevisionRef:{current:0},
@@ -58,7 +62,7 @@ function harness(){
       args[8](snapshot,frameSources);attempts.push({complete:args[9],view:drawnView,frameSources});
       if(drawFault)throw new Error("controlled_draw_completion_failure");
       if(!defer)args[9]();
-    }};
+    }});
   const context=vm.createContext(bindings);
   const read=(name:string)=>{const expression=expressions.get(name);assert(expression,name);return vm.runInContext(ts.transpileModule(`(${expression.getText(source)})`,{
     compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,context);};
@@ -67,13 +71,24 @@ function harness(){
     createContext:()=>({id:++contextId}),releaseContext:()=>{generation.current++;},paint:read("paint"),sameScene:read("sameScene"),
     presented:accepted,invalidated,failed:error=>{state.failure=error;}},clock);
   const data={},image={},optical={image,level:"DETAIL",fieldDegrees:.05,reference:"M:51",publicationHash:"legacy-M51"};
-  const frame={nativeImageGeneration:1,orientationRevision:0,data,frameAt:"2026-10-02T12:00:00.000Z",mode:"NIGHT",sceneReady:true,
-    owner:"formal",inspection:{spotId:"spot"},sdssOpticalImage:optical,deepSkyImage:null,coordinateGrids:{horizontal:false,equatorial:false}};
+  const frame=skyPageCanvasTestFrame({nativeImageGeneration:1,orientationRevision:0,data,frameAt:"2026-10-02T12:00:00.000Z",mode:"NIGHT",sceneReady:true,
+    owner:"formal",inspection:{spotId:"spot"},sdssOpticalImage:optical,preparedRegionImages:[],deepSkyImage:null,coordinateGrids:{horizontal:false,equatorial:false}});
+  bindings.browsingDrawRef.current=(continuation=false)=>{renewals.push(continuation);lifecycle.request(frame,false,continuation);};
   lifecycle.ready();
   return {lifecycle,frame,state,attempts,pending,picking,generation,orientation,step,
-    copies:()=>copies,failCopy:()=>{copyFault=true;},
+    copies:()=>copies,failCopy:()=>{copyFault=true;},animate:(value:boolean)=>{animating=value;},renewals,tasks,
     setView:(value:typeof basis)=>{view=value;},synchronous:()=>{defer=false;},failDraw:()=>{drawFault=true;}};
 }
+
+test("the actual page renews a finite non-navigation camera only after its copy, then stops",()=>{
+  const h=harness();h.animate(true);h.lifecycle.request(h.frame);h.step();
+  assert.deepEqual(h.renewals,[],"preparation alone cannot renew an unaccepted animation");
+  h.attempts[0]!.complete();assert.deepEqual(h.renewals,[true]);
+  assert.equal(h.copies(),1);assert.equal([...h.tasks.values()].filter(task=>task.delay===16).length,1);
+  h.animate(false);h.step(16);h.attempts[1]!.complete();
+  assert.equal(h.copies(),2);assert.deepEqual(h.renewals,[true]);assert.equal(h.tasks.size,0);
+  h.lifecycle.dispose();
+});
 
 test("painted callbacks stage only; accepted done publishes actual view/source/picking together",()=>{
   const h=harness();h.lifecycle.request(h.frame);h.step();

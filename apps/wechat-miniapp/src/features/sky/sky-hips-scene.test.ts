@@ -5,6 +5,8 @@ import { dispatchSkyHipsImageFailure, drawSkyScene, type SkyHipsCanvasTile } fro
 import type { SkyRenderSurface } from "./sky-render-surface";
 import type { SkyViewBasis } from "./sky-view-projection";
 import type { ResolvedSkyReport } from "./sky-stellar-scene";
+import { createSkyReadyImages } from "./sky-ready-presentation";
+import type { SkyHipsMeshLevel } from "./sky-render-surface";
 
 const at = "2026-09-23T00:00:00.000Z";
 const basis: SkyViewBasis = { right:[1,0,0], up:[0,0,1], forward:[0,1,0] };
@@ -16,6 +18,60 @@ const report = { hourly:[{at}], observationFrames:[{
 const darkReport={...report,hourly:[{at,sunAzimuthDeg:180,sunAltitudeDeg:-18}]} as unknown as ResolvedSkyReport;
 const image={};
 const tile:SkyHipsCanvasTile={layer:"OPTICAL",order:8,pixel:43345,image};
+
+function readyScene(surface:SkyRenderSurface, tiles:readonly SkyHipsCanvasTile[],
+  clock:ReturnType<typeof createSkyReadyImages>,now:number,commit=true) {
+  const ready=clock.prepare(now),args:Parameters<typeof drawSkyScene>=[surface,darkReport,at,null,null,390,844,"NIGHT"];
+  let sources:readonly SkyHipsCanvasTile[]=[];
+  args[8]=(_s,value)=>{sources=value.opticalHips??[];};args[10]=267.8;args[12]=basis;args[21]=tiles;args[42]=ready;
+  drawSkyScene(...args);if(commit)ready.commit(now);
+  return {sources,animating:ready.animating};
+}
+
+test("late independent HiPS prepares at zero and follows the same committed readiness clock",()=>{
+  const publication={publicationHash:"a".repeat(64),sources:[{id:"jpeg",format:"jpeg"}]} as unknown as import("@starward/miniapp-contracts").OpticalHipsManifestData;
+  const parent:SkyHipsCanvasTile={layer:"OPTICAL",publication,sourceId:"jpeg",order:0,pixel:4,image:{}};
+  const calls:number[]=[];let prepares=0;
+  const surface=new Proxy({}, {get:(_t,key)=>key==="prepareSkyImageMesh"?()=>{prepares++;return true;}:
+    key==="skyImageMesh"?(_i:object,_t:unknown,_v:unknown,opacity:number)=>{calls.push(opacity);return true;}:
+    key==="skyImageMeshContribution"?()=>"positive":()=>true}) as SkyRenderSurface;
+  const clock=createSkyReadyImages();
+  assert.equal(readyScene(surface,[parent],clock,0,false).sources.length,0);
+  assert.equal(readyScene(surface,[parent],clock,500).sources.length,0,"uncommitted preparation cannot advance");
+  assert.equal(prepares,2);assert.deepEqual(calls,[]);
+  assert.deepEqual(readyScene(surface,[parent],clock,580).sources,[parent]);assert.deepEqual(calls,[.5]);
+  assert.equal(readyScene(surface,[parent],clock,660).animating,false);assert.deepEqual(calls,[.5,1]);
+});
+
+test("widening HiPS keeps ready detail until the opaque parent's reveal settles",()=>{
+  const publication={publicationHash:"a".repeat(64),sources:[{id:"jpeg",format:"jpeg"}]} as unknown as import("@starward/miniapp-contracts").OpticalHipsManifestData;
+  const parent:SkyHipsCanvasTile={layer:"OPTICAL",publication,sourceId:"jpeg",order:0,pixel:4,image:{}};
+  const fine:SkyHipsCanvasTile={...parent,order:1,pixel:16,image:{},retainedDetailFallback:true};
+  const calls:Array<{image:object;opacity:number}>=[];
+  const surface=new Proxy({}, {get:(_t,key)=>key==="prepareSkyImageMesh"?()=>true:
+    key==="skyImageMesh"?(image:object,_t:unknown,_v:unknown,opacity:number)=>{calls.push({image,opacity});return true;}:
+    key==="skyImageMeshContribution"?()=>"positive":()=>true}) as SkyRenderSurface;
+  const clock=createSkyReadyImages();readyScene(surface,[fine],clock,0);readyScene(surface,[fine],clock,160);calls.length=0;
+  readyScene(surface,[parent,fine],clock,1000);assert.deepEqual(calls,[{image:fine.image,opacity:1}]);calls.length=0;
+  readyScene(surface,[parent,fine],clock,1080);assert.deepEqual(calls,[{image:parent.image,opacity:.5},{image:fine.image,opacity:1}]);calls.length=0;
+  readyScene(surface,[parent,fine],clock,1160);assert.deepEqual(calls,[{image:parent.image,opacity:1}]);
+});
+
+test("PNG hierarchy keeps the parent clock and refuses zero or failed fine provenance",()=>{
+  const publication={publicationHash:"a".repeat(64),sources:[{id:"png",format:"png"}]} as unknown as import("@starward/miniapp-contracts").OpticalHipsManifestData;
+  const parent:SkyHipsCanvasTile={layer:"OPTICAL",publication,sourceId:"png",order:0,pixel:4,image:{}};
+  const fine:SkyHipsCanvasTile={...parent,order:1,pixel:16,image:{}};
+  let failed=false,progress:readonly number[]=[];
+  const surface=new Proxy({}, {get:(_t,key)=>key==="prepareSkyImageMesh"?()=>true:
+    key==="skyImageMeshLevels"?(levels:readonly SkyHipsMeshLevel[],_v:unknown,_o:number,_g:unknown,readiness:(ok:readonly boolean[])=>readonly number[])=>{
+      const result=levels.map(level=>!(failed&&level.image===fine.image));progress=readiness(result);return result;
+    }:key==="skyImageMeshContribution"?()=>"positive":()=>true}) as SkyRenderSurface;
+  const clock=createSkyReadyImages();readyScene(surface,[parent],clock,0);readyScene(surface,[parent],clock,160);
+  failed=true;assert.deepEqual(readyScene(surface,[parent,fine],clock,900).sources,[parent]);assert.deepEqual(progress,[1,0]);
+  failed=false;assert.deepEqual(readyScene(surface,[parent,fine],clock,1000).sources,[parent]);assert.deepEqual(progress,[1,0]);
+  assert.deepEqual(readyScene(surface,[parent,fine],clock,1080).sources,[parent,fine]);assert.deepEqual(progress,[1,.5]);
+  assert.equal(readyScene(surface,[parent,fine],clock,1160).animating,false);assert.deepEqual(progress,[1,1]);
+});
 
 test("one immutable PNG hierarchy uses the grouped surface, reports partial failures and preserves source order",()=>{
   const publication={publicationHash:"a".repeat(64),sources:[{id:"png",format:"png"},{id:"jpeg",format:"jpeg"}]} as unknown as import("@starward/miniapp-contracts").OpticalHipsManifestData;
@@ -111,7 +167,7 @@ test("original optical alpha replaces parents through the actual fine mesh witho
   drawSkyScene(surface,darkReport,at,null,null,390,844,"NIGHT",undefined,undefined,267.8,null,basis,
     undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,[parent,fine,foreign]);
   const result=calls.find(r=>r.image===parent.image)!;assert(result);
-  assert(calls.every(r=>r.opacity===1&&r.extra.length===0));
+  assert(calls.every(r=>r.opacity===1&&r.extra[0]===undefined),"ungrouped consumers carry no invented source group");
   assert(calls.findIndex(r=>r.image===fine.image)>calls.findIndex(r=>r.image===parent.image));
   calls.length=0;
   drawSkyScene(surface,darkReport,at,null,null,390,844,"NIGHT",undefined,undefined,267.8,null,basis,

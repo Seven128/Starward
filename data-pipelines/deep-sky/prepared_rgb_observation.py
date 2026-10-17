@@ -240,6 +240,21 @@ def _pair(value, *, positive: bool = False) -> tuple[float, float]:
     return float(value[0]), float(value[1])
 
 
+def parse_prepared_rgb_avm(raw: bytes):
+    """Read provider metadata using the same mature parser as image admission.
+
+    PyAVM handles Adobe/Dublin Core and AVM attribute/element representations;
+    parsed fields alone do not approve source rights, geometry or an image.
+    """
+    parser_xml, removed = _parser_xml(raw)
+    parser_xml, removed_spatial = _parser_xml(parser_xml, note_name="Spatial.Notes")
+    try:
+        avm = AVM.from_xml(parser_xml)
+    except (TypeError, ValueError, KeyError, AttributeError) as error:
+        raise RuntimeError("prepared_rgb_avm_parse_unsupported") from error
+    return avm, parser_xml, removed, removed_spatial
+
+
 def load_prepared_rgb_observation(jpeg_path: Path, xmp_path: Path, source: PreparedRgbSource, *,
                                   max_encoded_bytes: int, max_decoded_pixels: int,
                                   max_xmp_bytes: int = 256 * 1024) -> PreparedRgbObservation:
@@ -273,12 +288,7 @@ def load_prepared_rgb_observation(jpeg_path: Path, xmp_path: Path, source: Prepa
             rgb = image.tobytes()
     except (OSError, ValueError) as error:
         raise RuntimeError("prepared_rgb_jpeg_decode_failed") from error
-    parser_xml, removed = _parser_xml(raw)
-    parser_xml, removed_spatial = _parser_xml(parser_xml, note_name="Spatial.Notes")
-    try:
-        avm = AVM.from_xml(parser_xml)
-    except (TypeError, ValueError, KeyError, AttributeError) as error:
-        raise RuntimeError("prepared_rgb_avm_parse_unsupported") from error
+    avm, parser_xml, removed, removed_spatial = parse_prepared_rgb_avm(raw)
     if (avm.ResourceID != source.resource_id or avm.Credit != source.credit or
             avm.Rights != source.rights_label or avm.ReferenceURL != source.metadata_reference_url):
         raise RuntimeError("prepared_rgb_avm_source_identity_mismatch")

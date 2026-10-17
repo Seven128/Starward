@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { compassLabel, eclipseKindLabel, eventDatePresentation, eventDayLabel, eventKindLabel, eventMonthLabel, eventPlanState, eventPreviewDays, groupEventsByPeakMonth, phaseLabel } from "./event-model";
+import { eclipseKindLabel, eventDatePresentation, eventDayLabel, eventKindLabel, eventMonthLabel, eventPlanState, eventPreviewDays, groupEventsByPeakMonth, phaseLabel } from "./event-model";
+import { compassLabel } from "../../utils/compass-label";
 
 test("common event date presentation keeps annual references distinct from peaks and eclipses", () => {
   const annual = eventDatePresentation({ kind: "METEOR_SHOWER", annualReference: {} } as never);

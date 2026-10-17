@@ -1,3 +1,4 @@
+import { reportSkyImageError } from "../../services/sky-image-diagnostics";
 export interface SkyNativeImageAsset {
   id: string;
   sha256: string;
@@ -7,7 +8,7 @@ export interface SkyNativeImageAsset {
 /** A cached immutable file can supply a fresh bitmap within its Canvas owner.
  * Releasing the cache also cancels any pending decode. */
 export interface SkyArtworkFileCache {
-  decode(ready: (image: LoadedSkyArtwork) => void, fail: () => void): () => void;
+  decode(ready: (image: LoadedSkyArtwork) => void, fail: (cause?: unknown) => void): () => void;
   release(): void;
   isCurrent?(): boolean;
   onRetire?(handler: () => void): () => void;
@@ -46,7 +47,7 @@ export interface SkyArtworkLoadState {
  * published sky tiles. Astronomy and camera changes select wanted identities;
  * they never re-download a ready image each frame. */
 export function createSkyArtworkLoader<Asset extends SkyNativeImageAsset>(deps: {
-  start(asset: Asset, ready:(image:LoadedSkyArtwork)=>void, fail:()=>void):()=>void;
+  start(asset: Asset, ready:(image:LoadedSkyArtwork)=>void, fail:(cause?:unknown)=>void):()=>void;
   changed(state:SkyArtworkLoadState):void;
   byteBudget?:number;
   /** Lower priorities survive non-wanted eviction longer, within byteBudget.
@@ -125,7 +126,8 @@ export function createSkyArtworkLoader<Asset extends SkyNativeImageAsset>(deps: 
         const entry:Entry=cached??{asset,ids:wantedIds(k),state:'loading',request:0,last:++tick};
         entry.state='loading';const request=++entry.request;entries.set(k,entry);
         const current=()=>active&&!paused&&entries.get(k)===entry&&entry.request===request;
-        const fail=()=>{if(!current())return;entry.state='error';delete entry.cancel;emit();pump();};
+        const fail=(cause?:unknown)=>{if(!current()||entry.state==='error')return;entry.state='error';delete entry.cancel;
+          reportSkyImageError('load',asset.id,cause);emit();pump();};
         try {
           const ready=(loaded:LoadedSkyArtwork)=>{
             if(!current()){loaded.release();return;}
@@ -135,9 +137,22 @@ export function createSkyArtworkLoader<Asset extends SkyNativeImageAsset>(deps: 
           };
           const cancel=entry.file?entry.file.decode(ready,fail):deps.start(asset,ready,fail);
           if(entries.get(k)===entry&&entry.state==='loading')entry.cancel=cancel;
-        }catch{fail();}
+        }catch(cause){fail(cause);}
       }
     } finally {pumping=false;}
+  };
+  /** Change demand without pumping, so explicit recovery can first replace
+   * obsolete work and preserve its prior GPU reset requirement atomically. */
+  const replaceWanted=(next:readonly Asset[])=>{
+    const previous=wantedIdentity();wanted=next;
+    const selectedKeys=wantedKeys(),keep=activeKeys();
+    for(const [k,e] of entries)if(!keep.has(k)&&e.state==='loading'){
+      if(e.file){e.request++;e.cancel?.();delete e.cancel;e.state='cold';}
+      else drop(k,e);
+    }
+    for(const [k,e] of entries)if(selectedKeys.has(k))e.ids=wantedIds(k);
+    for(const a of wanted){const e=entries.get(key(a));if(e)e.last=++tick;}
+    trim();return previous!==wantedIdentity();
   };
   return {
     /** Suspend work for a retained, still-live Canvas. Ordinary disposal remains
@@ -154,16 +169,7 @@ export function createSkyArtworkLoader<Asset extends SkyNativeImageAsset>(deps: 
     resume(){if(active&&paused){paused=false;pump();emit();}},
     update(next:readonly Asset[]){
       if(!active)return;
-      const previous=wantedIdentity();wanted=next;
-      const selectedKeys=wantedKeys();
-      const keep=activeKeys();
-      for(const [k,e] of entries)if(!keep.has(k)&&e.state==='loading'){
-        if(e.file){e.request++;e.cancel?.();delete e.cancel;e.state='cold';}
-        else drop(k,e);
-      }
-      for(const [k,e] of entries)if(selectedKeys.has(k))e.ids=wantedIds(k);
-      for(const a of wanted){const e=entries.get(key(a));if(e)e.last=++tick;}
-      trim();pump();if(previous!==wantedIdentity())emit();
+      const changed=replaceWanted(next);pump();if(changed)emit();
     },
     suspendUnusedDecoded(){
       if(!active||paused)return;
@@ -177,11 +183,14 @@ export function createSkyArtworkLoader<Asset extends SkyNativeImageAsset>(deps: 
     },
     failed(image:object){
       for(const e of entries.values())if(e.loaded?.image===image&&e.state==='ready'){
+        reportSkyImageError('render',e.asset.id);
         e.unsubscribe?.();delete e.unsubscribe;e.loaded.release();delete e.loaded;e.state='error';e.gpuFailed=true;emit();break;
       }
     },
-    retry(){
+    retry(next?:readonly Asset[]){
+      if(!active)return false;
       const resetGpu=[...entries.values()].some(e=>e.state==='error'&&e.gpuFailed);
+      if(next)replaceWanted(next);
       for(const [k,e] of entries)if(e.state==='error')drop(k,e);
       pump();emit();
       return resetGpu;

@@ -3,6 +3,12 @@ import { projectSkyDirection, type SkyViewBasis } from "./sky-view-projection";
 import type { SkyProjectionCenter } from "./sky-viewport";
 import type { SkyObjectIdentity } from "./sky-object-picking";
 
+/** Shared name detail, independent of persistent selection or object identity. */
+export function skyObjectNameOpacity(verticalFovDeg: number): number {
+  const detail = Math.max(0, Math.min(1, (60 - verticalFovDeg) / 35));
+  return detail * detail * (3 - 2 * detail);
+}
+
 /** One geometric marker for selected point and area objects. Name detail can
  * fade without erasing selection. Values below are presentation tuning. */
 export function projectSkySelectionMarker(object: SkyObjectIdentity,
@@ -16,8 +22,7 @@ export function projectSkySelectionMarker(object: SkyObjectIdentity,
   const disc = area && angularDiameterDeg !== null
     ? projectSkyAngularDisc({ ...position, angularDiameterDeg }, view.basis,
       view.width, view.height, view.verticalFovDeg, view.center) : null;
-  const detail = Math.max(0, Math.min(1, (60 - view.verticalFovDeg) / 35));
   return { ...point, shape: area ? "circle" as const : "cross" as const,
     radiusPx: Math.max(12, disc?.radiusPx ?? 0),
-    nameOpacity: detail * detail * (3 - 2 * detail) };
+    nameOpacity: skyObjectNameOpacity(view.verticalFovDeg) };
 }

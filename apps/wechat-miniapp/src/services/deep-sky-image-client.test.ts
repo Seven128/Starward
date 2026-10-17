@@ -3,33 +3,45 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { skyResourceOriginTestOwner } from "./sky-resource-origin-test-support";
 import * as contracts from "@starward/miniapp-contracts";
+import {skyNativeArrayBuffer} from "./sky-native-array-buffer";
 import { publishedDeepSkyDiscovery } from "../features/sky/deep-sky-image-test-support.ts";
 
 function module(file: string, bindings: Record<string, unknown>) {
   const exports: any = {};
   vm.runInNewContext(ts.transpileModule(readFileSync(new URL(file, import.meta.url), "utf8"), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
-  }).outputText, { exports, Error, Promise, __MINIAPP_API_BASE__: "https://approved.fixture.invalid",
-    __MINIAPP_OPERATOR_PREVIEW_TOKEN__: "controlled-test-token", require(name: string) { assert(name in bindings, name); return bindings[name]; } });
+  }).outputText, { exports, Error, Promise, AbortController, __MINIAPP_API_BASE__: "https://approved.fixture.invalid",
+    __MINIAPP_OPERATOR_PREVIEW_TOKEN__: "controlled-test-token", require(name: string) {
+      if(name==='./sky-resource-origin'||name==='./sky-image-diagnostics')return skyResourceOriginTestOwner("https://approved.fixture.invalid", "", "controlled-test-token");
+      if(name==='@starward/miniapp-contracts')return contracts;
+      if(name==='./sky-native-array-buffer')return {skyNativeArrayBuffer};
+      assert(name in bindings, name); return bindings[name]; } });
   return exports;
 }
 
-test("actual bare discovery and immutable acquisition use typed operation, exact metadata and preview boundary", async () => {
-  const calls: any[] = [], acquisitions: any[] = [];
+test("actual bare discovery and its immutable epoch resource use typed operation and preview boundary", async () => {
+  const calls: any[] = [];
   const body = publishedDeepSkyDiscovery();
   const bare = module("./bare-sky-resource.ts", { "@tarojs/taro": { default: {
     request(options: any) { calls.push(options); queueMicrotask(() => options.success({ statusCode: 200, data: body })); return { abort() {} }; },
   } } });
+  let current=true;
+  const resource=module("./sky-publication-resource.ts",{"./sky-public-image-runtime":{
+    capturePublishedSkyImageGeneration:()=>({isCurrent:()=>current}),
+    beginPublishedSkyImageDemand:()=>({isCurrent:()=>current,onRetire:()=>()=>{},release(){}}),
+  }});
   const client = module("./deep-sky-image-client.ts", { "@starward/miniapp-contracts": contracts, "./bare-sky-resource": bare,
-    "./sky-public-image-runtime": { acquirePublishedSkyImage(...args: unknown[]) { acquisitions.push(args); return { promise: Promise.resolve(null), cancel() {} }; } } });
+    "./sky-publication-resource":resource });
   const result = await client.getDeepSkyImageDiscovery("M:42");
   assert.equal(result, body); assert.equal(calls[0].url, "https://approved.fixture.invalid/v2/sky/deep-sky/selected/M%3A42?imageVersion=source-finite-v3");
   assert.equal(calls[0].header["X-Starward-Operator-Preview"], "controlled-test-token");
   assert.equal(Object.keys(calls[0].header).length, 1);
-  client.acquireDeepSkyImage(body.levels.DETAIL, body.publicationHash);
-  assert.equal(acquisitions[0][0], body.levels.DETAIL); assert.equal(acquisitions[0][1], "https://approved.fixture.invalid" + body.levels.DETAIL.downloadUrl);
-  assert.equal(acquisitions[0][2], body.publicationHash);
+  const owned=await client.getDeepSkyImageResource("M:42");
+  assert.notStrictEqual(owned.publication,body);assert.equal(owned.publication.publicationHash,body.publicationHash);
+  assert(Object.isFrozen(owned.publication.levels.DETAIL));assert.equal(owned.isCurrent(),true);
+  current=false;assert.equal(owned.isCurrent(),false,"settled metadata cannot refill a cleared image-cache epoch");
   for (const path of [body.levels.DETAIL.downloadUrl + "?anything=1", body.levels.DETAIL.downloadUrl.replace("/M-42/", "/M-31/"),
     body.levels.DETAIL.downloadUrl.replace("/M-42/", "/../"), "/v2/celestial-objects/M%3A42/image?level=DETAIL",
     "/v2/sky/deep-sky/selected/M%3A42?imageVersion=old"])
@@ -54,6 +66,34 @@ test("bare cancellation settles before throwing/reentrant abort and observes dup
   await assert.rejects(promise, /request_cancelled/); assert.equal(aborted, 1);
   await new Promise<void>(resolve => setImmediate(resolve));
   await assert.rejects(bare.requestBareSkyResource("/v2/sky/deep-sky/not-canonical", "deep-sky"), /request_failed/);
+});
+
+test("bare metadata transport preserves native causes and reports abort failure without turning cancellation into failure",async()=>{
+  const before=console.error,errors:unknown[][]=[];console.error=(...parts)=>{errors.push(parts);};
+  const path="/v2/sky/deep-sky/selected/M%3A42?imageVersion=source-finite-v3";
+  try{
+    for(const mode of ['callback','rejection','dispatch']){
+      const cause={errno:600001,errCode:-1202,errMsg:'private signed URL'};
+      const bare=module('./bare-sky-resource.ts',{'@tarojs/taro':{default:{request(options:any){
+        if(mode==='dispatch')throw cause;
+        if(mode==='callback')queueMicrotask(()=>options.fail(cause));
+        return Object.assign(Promise.reject(cause),{abort(){}});
+      }}}});
+      await assert.rejects(bare.requestBareSkyResource(path,'deep-sky'),(error:any)=>error.cause===cause);
+      await new Promise<void>(resolve=>setImmediate(resolve));
+    }
+    assert.equal(errors.length,3,'callback and task rejection share the original settlement');
+    for(const row of errors){assert.equal((row[1] as {errno:number}).errno,600001);assert.equal((row[1] as {errCode:number}).errCode,-1202);}
+    let aborts=0;const abortCause={errCode:999,errMsg:'private abort'};
+    const bare=module('./bare-sky-resource.ts',{'@tarojs/taro':{default:{request(){return {abort(){aborts++;throw abortCause;}};}}}});
+    const controller=new AbortController(),pending=bare.requestBareSkyResource(path,'deep-sky',controller.signal);
+    controller.abort();await assert.rejects(pending,/request_cancelled/);assert.equal(aborts,1);
+    assert.equal(errors.length,4);assert.equal((errors[3]![1] as {errCode:number}).errCode,999);
+    const quiet=module('./bare-sky-resource.ts',{'@tarojs/taro':{default:{request(options:any){return {abort(){options.fail({errCode:123});}};}}}});
+    const normal=new AbortController(),cancelled=quiet.requestBareSkyResource(path,'deep-sky',normal.signal);
+    normal.abort();await assert.rejects(cancelled,/request_cancelled/);assert.equal(errors.length,4);
+    assert.doesNotMatch(JSON.stringify(errors),/private|signed|URL/u);
+  }finally{console.error=before;}
 });
 
 test("public runtime admits only selected immutable identities, with PNG route digest equal to descriptor", () => {

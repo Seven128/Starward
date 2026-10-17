@@ -1,8 +1,9 @@
 import type { SkyLandscapeManifestData, SkyLandscapeResource } from "@starward/miniapp-contracts";
-import type { SkyVector } from "./sky-view-projection";
-import { skyLandscapeOccludes, skyLandscapeCoversRayHull } from "./sky-landscape-geometry";
-import { skyArtworkViewBounds } from "./sky-artwork-visibility";
+import { unprojectSkyPoint, skyProjectionScale, type SkyVector } from "./sky-view-projection";
+import { skyLandscapeOccludes, skyLandscapeCoversRayHull, skyLandscapeIntersectsCap, SKY_LANDSCAPE_MAXIMUM_Z } from "./sky-landscape-geometry";
+import { skyArtworkViewBounds, skyArtworkViewRayHull } from "./sky-artwork-visibility";
 import type { SkyArtworkView } from "./sky-artwork-registration";
+import { NO_SKY_INSETS, skyVisibleViewport, type SkyViewportInsets, type SkyCanvasBounds } from "./sky-viewport";
 
 export interface SkyPanoramaMask {
   kind: "panorama";
@@ -22,7 +23,12 @@ export type SkyLandscapeMask = SkyProceduralLandscapeMask | SkyPanoramaMask | {
   /** Actual source-over passes, in drawing order; never an invented photo mask. */
   background: SkyProceduralLandscapeMask; foreground: SkyPanoramaMask;
 };
-export interface SkyLandscapePanorama { image: object; mask: SkyPanoramaMask }
+export interface SkyLandscapePanorama {
+  image: object; mask: SkyPanoramaMask;
+  /** One already decoded same-publication overview, never another request or
+   * a recursive history. A failed fine bitmap cannot erase independent pixels. */
+  coarser?: { image:object; mask:SkyPanoramaMask } | null;
+}
 export const PROCEDURAL_SKY_LANDSCAPE: SkyLandscapeMask = { kind: "procedural" };
 
 export function skyLandscapeMaskWithOpacity(mask: SkyLandscapeMask, opacity: number): SkyLandscapeMask {
@@ -81,6 +87,38 @@ export function skyPanoramaMaskIntersectsView(mask: SkyPanoramaMask, view: SkyAr
   return lowestViewAltitude <= highestAlphaAltitude + 1e-6;
 }
 
+/** Gesture selection uses the accepted foreground and the same conservative
+ * viewport boundary as rendering. Unknown geometry keeps horizon behaviour. */
+export function skyLandscapeIntersectsView(mask: SkyLandscapeMask | null | undefined,
+  view: SkyArtworkView, width: number, height: number): boolean {
+  if (!mask || (mask.opacity ?? 1) <= 0) return false;
+  if (mask.kind === "transition") return skyLandscapeIntersectsView(mask.background, view, width, height) ||
+    skyLandscapeIntersectsView(mask.foreground, view, width, height);
+  if (mask.kind === "panorama") return skyPanoramaMaskIntersectsView(mask, view, width, height);
+  const bounds = skyArtworkViewBounds(view, width, height);
+  return !bounds || Math.asin(clamp(bounds.center[2], -1, 1)) - bounds.radius <=
+    Math.asin(SKY_LANDSCAPE_MAXIMUM_Z) + 1e-6;
+}
+
+/** Is there a visible orientation cue in this screen, rather than merely a
+ * bounding cap touching it? Sample the actual source/model alpha on a bounded
+ * screen grid once at gesture start. This interaction choice is not a new
+ * rendering/picking mask or a claim about every subpixel silhouette. */
+export function skyLandscapeVisibleInView(mask: SkyLandscapeMask | null | undefined,
+  view: SkyArtworkView, width: number, height: number, insets: SkyViewportInsets = NO_SKY_INSETS): boolean {
+  if (!mask || !skyLandscapeIntersectsView(mask, view, width, height)) return false;
+  const visible = skyVisibleViewport(width, height, insets);
+  if (!visible) return true;
+  const columns = Math.max(1, Math.ceil(width / 24)), rows = Math.max(1, Math.ceil(visible.height / 24));
+  for (let y = 0; y <= rows; y++) for (let x = 0; x <= columns; x++) {
+    const ray = unprojectSkyPoint(x * width / columns, insets.top + y * visible.height / rows,
+      view.basis, width, height, view.verticalFovDeg, view.center);
+    if (!ray) return true;
+    if (skyLandscapeMaskAlpha(mask, ray) > 1 / 255) return true;
+  }
+  return false;
+}
+
 /** Same texel-centred LINEAR sampling as the shader, including the horizontal seam. */
 export function skyPanoramaAlpha(mask: SkyPanoramaMask, ray: SkyVector): number {
   const { width, height } = mask.resource.image;
@@ -99,6 +137,87 @@ export function skyPanoramaAlpha(mask: SkyPanoramaMask, ray: SkyVector): number 
 export function skyLandscapeMaskOccludes(mask: SkyLandscapeMask, ray: SkyVector): boolean {
   // Partially transparent foliage can leave an actual celestial fragment visible.
   return skyLandscapeMaskAlpha(mask, ray) >= 254.5 / 255;
+}
+
+/** Upper bound of the actual successful foreground alpha over a whole label
+ * window, including its interior and curved stereographic edges. This does not
+ * sample a few corners or substitute requested terrain for the painted mask. */
+export function skyLandscapeWindowAlphaBound(mask: SkyLandscapeMask, view: SkyArtworkView,
+  width: number, height: number, bounds: SkyCanvasBounds): number {
+  if (![bounds.left,bounds.top,bounds.width,bounds.height,width,height].every(Number.isFinite) ||
+    bounds.width<=0 || bounds.height<=0 || bounds.left<0 || bounds.top<0 ||
+    bounds.left+bounds.width>width || bounds.top+bounds.height>height) return 1;
+  const scale=skyProjectionScale(height,view.verticalFovDeg);
+  const center=unprojectSkyPoint(bounds.left+bounds.width/2,bounds.top+bounds.height/2,
+    view.basis,width,height,view.verticalFovDeg,view.center);
+  if(!scale||!center)return 1;
+  const cx=view.center?.x??width/2,cy=view.center?.y??height/2;
+  const ux=[(bounds.left-cx)/scale,(bounds.left+bounds.width-cx)/scale];
+  const vy=[(cy-bounds.top-bounds.height)/scale,(cy-bounds.top)/scale];
+  const minSquared=(a:number[])=>a[0]!<=0&&a[1]!>=0?0:Math.min(a[0]!*a[0]!,a[1]!*a[1]!);
+  // The inverse stereographic map stretches by 2/(1+u²+v²). Its maximum
+  // on this rectangle times the longest centre-to-corner path encloses EVERY
+  // interior ray. Float/LINEAR uncertainty is retained at the source boundary.
+  const radius=Math.min(Math.PI,Math.hypot(bounds.width,bounds.height)/scale/
+    (1+minSquared(ux)+minSquared(vy))+1e-6);
+  // Reuse the existing rectangular ray-cone certificate where the window is
+  // in the forward hemisphere. A positive convex cone cannot have a lower Z
+  // than its least-positive unit vertex. This avoids treating opaque texels
+  // below a clear word as though they were inside its circumcircle.
+  const hull=skyArtworkViewRayHull({...view,
+    verticalFovDeg:Math.atan(bounds.height/(2*scale))*720/Math.PI,
+    center:{x:cx-bounds.left,y:cy-bounds.top}},bounds.width,bounds.height);
+  const minimumZ=hull?.every(ray=>ray[2]>0)?Math.max(0,Math.min(...hull.map(ray=>ray[2]))-1e-6):undefined;
+  let longitudes:readonly [number,number]|null=null;
+  if(hull?.every(ray=>Math.hypot(ray[0],ray[1])>1e-7)){
+    const angles=hull.map(ray=>wrap(Math.atan2(ray[0],ray[1]),2*Math.PI)).sort((a,b)=>a-b);
+    let gap=-1,index=0;
+    for(let i=0;i<angles.length;i++){
+      const difference=(angles[(i+1)%angles.length]!+(i===angles.length-1?2*Math.PI:0))-angles[i]!;
+      if(difference>gap){gap=difference;index=i;}
+    }
+    const span=2*Math.PI-gap;
+    if(span<Math.PI-1e-6){const start=angles[(index+1)%angles.length]!;longitudes=[start-1e-6,start+span+1e-6];}
+  }
+  const alphaBound=(value:SkyLandscapeMask):number=>{
+    const opacity=value.opacity??1;
+    if(!Number.isFinite(opacity)||opacity<0||opacity>1)return 1;
+    if(opacity===0)return 0;
+    if(value.kind==='procedural')return opacity*(skyLandscapeIntersectsCap(center,radius,minimumZ)?1:0);
+    if(value.kind==='transition'){
+      const foreground=alphaBound(value.foreground),background=alphaBound(value.background);
+      return opacity*(foreground+(1-foreground)*background);
+    }
+    const {width:sw,height:sh}=value.resource.image;
+    if(!Number.isSafeInteger(sw)||!Number.isSafeInteger(sh)||sw<=0||sh<=0||value.alpha.length!==sw*sh)return 1;
+    const altitude=Math.asin(clamp(center[2],-1,1));
+    const firstRow=Math.max(0,Math.floor((.5-Math.min(Math.PI/2,altitude+radius)/Math.PI)*sh-.5)-1);
+    const lowestAltitude=minimumZ===undefined?Math.max(-Math.PI/2,altitude-radius):Math.asin(minimumZ);
+    const lastRow=Math.min(sh-1,Math.ceil((.5-lowestAltitude/Math.PI)*sh-.5)+1);
+    if(lastRow<value.firstNonzeroAlphaRow)return 0;
+    const allLongitudes=radius>=Math.PI/2||Math.abs(altitude)+radius>=Math.PI/2;
+    const delta=allLongitudes?Math.PI:Math.asin(clamp(Math.sin(radius)/Math.cos(altitude),0,1));
+    const seam=value.publication.projection.seamAzimuthDeg*Math.PI/180;
+    const azimuth=Math.atan2(center[0],center[1]);
+    if(!Number.isFinite(azimuth)||!Number.isFinite(seam))return 1;
+    const firstAzimuth=(longitudes?.[0]??azimuth-delta)-seam,lastAzimuth=(longitudes?.[1]??azimuth+delta)-seam;
+    const first=Math.floor(firstAzimuth/(2*Math.PI)*sw-.5)-1;
+    const count=Math.min(sw,Math.ceil(lastAzimuth/(2*Math.PI)*sw-.5)+1-first+1);
+    let maximum=0;
+    // Reuse existing source certificates: rows before the first nonzero alpha
+    // are empty, and every row at/after opaqueFromRow in a column is 255.
+    // Neither shortcut adds a view trail, mask cache or sampled opacity rule.
+    for(let x=0;x<count;x++){
+      const column=wrap(first+x,sw),opaqueRow=value.opaqueFromRow[column];
+      if(Number.isInteger(opaqueRow)&&opaqueRow!>=0&&opaqueRow!<sh&&lastRow>=opaqueRow!)return opacity;
+      for(let y=Math.max(firstRow,value.firstNonzeroAlphaRow);y<=lastRow;y++){
+        maximum=Math.max(maximum,value.alpha[y*sw+column]!);
+        if(maximum===255)return opacity;
+      }
+    }
+    return opacity*maximum/255;
+  };
+  return alphaBound(mask);
 }
 
 /** Certify an entire convex ray cone, never a union of sampled corner hits. */

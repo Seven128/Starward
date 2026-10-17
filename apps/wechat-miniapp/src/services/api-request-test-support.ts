@@ -15,7 +15,7 @@ export const TEST_API_BASE = "https://synthetic.invalid";
 export function transportHarness(abortThrows = false, onDispatch = () => {}, promiseTask = false, apiBase = TEST_API_BASE, now = Date.now,
   clearPublicImages: typeof clearSkyPublicImageCache = async () => ({ status: "complete", files: 0 })) {
   const source = ts.createSourceFile("api-client.ts",
-    readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"),
+    readFileSync(process.env.MINIAPP_API_REQUEST_TEST_SOURCE ?? new URL("./api-client.ts", import.meta.url), "utf8"),
     ts.ScriptTarget.Latest, true);
   const names = new Set([
     "request", "abortTask", "staleCandidate", "isEnvelope", "isApiError",
@@ -39,6 +39,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
   const taskRejections: ((error: { errMsg: string }) => void)[] = [];
   const timers = new Map<number, () => void>();
   const diagnostics: string[][] = [];
+  const runtimeErrors: unknown[][] = [];
   let timerId = 0;
   let aborts = 0;
   let writes = 0;
@@ -55,6 +56,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
     __MINIAPP_API_BASE__: apiBase, __MINIAPP_OPERATOR_PREVIEW_TOKEN__: "",
     __MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__: false,
     recordAcceptanceDiagnostic: (...parts: string[]) => diagnostics.push(parts),
+    reportRuntimeError: (...parts: unknown[]) => runtimeErrors.push(parts),
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; },
     clearTimeout: (id: number) => timers.delete(id),
     Taro: {
@@ -100,7 +102,7 @@ export function transportHarness(abortThrows = false, onDispatch = () => {}, pro
     etag: "synthetic-etag", dataState: "FRESH", warnings: [] as string[],
     sources: [{ kind: "PROVIDER" }], data: { value: "synthetic cached payload" },
   };
-  return { ...actual, calls, timers, diagnostics, response, taskRejections, storage, queryClient,
+  return { ...actual, calls, timers, diagnostics, runtimeErrors, response, taskRejections, storage, queryClient,
     flush: () => actual.responseCache.flush(),
     counts: () => ({ aborts, writes }),
     publicImageClearCount: () => publicImageClears,

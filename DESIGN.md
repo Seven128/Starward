@@ -611,7 +611,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - 数字采用等宽数字 `font-variant-numeric: tabular-nums`；时间轴每列共享宽度。
 - 导航与分类标题使用中文系统字体、自然字距，不使用 tracked uppercase 或等宽行政标签。
 - 长中文按钮和字段标签需验证；允许换行，不以缩小字号维持单行。紧凑密度不得通过裁切、灰到不可读或全局机械缩放实现。
-- 2026-09-12 用户要求小程序所有图标向拟物、偏可爱且元素克制的统一家族探索，替代“必须全为线性图标”的风格限制。可爱感来自圆润比例、适当材质与一致光照，不能靠堆叠装饰；用户随后选择Web GPT加磨砂质感后最新对比图的B行作为整套生成的唯一风格参考，保留圆润比例、细腻磨砂材质和低饱和奶黄/灰蓝紫/鼠尾草绿关系；用户截图记录在[参考](docs/design-resources/wechat-miniapp/terrain-icon-exploration-2026-09-12/reference/user-latest-b-selection.png)，截图不是可直接使用的图标母版。小型方向/关闭等功能符号也在优化范围内，其材质深度应服从小尺寸识别；科学图形保留真实几何语义。当前图标输入与必要可编辑母版由共享图标采用包维护。2026-09-13用户已采用[共享图标入口](docs/design-resources/wechat-miniapp/shared/icons/ADOPTED.md)内已核对的71份256px日间透明PNG（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态），高清母版保留；地图selected经用户授权使用本地代码复制default主体并叠加独立光线，两种分辨率下主体像素一致，避免独立重画造成状态几何漂移。生产继续由唯一 `SemanticIcon` / `SemanticAsset` adapter 按语义分发，DAY消费者和地图四态已经迁移到B批资源；微信包使用保持完整画布与RGBA的224px页面派生和192px原生Tab派生以满足包体限制。NIGHT/OBSERVATION仍沿用原合法主题资产，真实月相、科学图形和平台标识保持各自owner。沿用当前逻辑像素尺度和独立44px命中区，不引入第二图标状态系统或运行时远程图标；各主题与可中断动效的未实测状态继续分别记录。
+- 2026-09-12 用户要求小程序所有图标向拟物、偏可爱且元素克制的统一家族探索，替代“必须全为线性图标”的风格限制。可爱感来自圆润比例、适当材质与一致光照，不能靠堆叠装饰；用户随后选择Web GPT加磨砂质感后最新对比图的B行作为整套生成的唯一风格参考，保留圆润比例、细腻磨砂材质和低饱和奶黄/灰蓝紫/鼠尾草绿关系；用户截图记录在[参考](https://stitch.google.com/projects/7144519510537620825)，截图不是可直接使用的图标母版。小型方向/关闭等功能符号也在优化范围内，其材质深度应服从小尺寸识别；科学图形保留真实几何语义。当前图标输入与必要可编辑母版由共享图标采用包维护。2026-09-13用户已采用[共享图标入口](https://stitch.google.com/projects/7144519510537620825)内已核对的71份256px日间透明PNG（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态），高清母版保留；地图selected经用户授权使用本地代码复制default主体并叠加独立光线，两种分辨率下主体像素一致，避免独立重画造成状态几何漂移。生产继续由唯一 `SemanticIcon` / `SemanticAsset` adapter 按语义分发，DAY消费者和地图四态已经迁移到B批资源；微信包使用保持完整画布与RGBA的224px页面派生和192px原生Tab派生以满足包体限制。NIGHT/OBSERVATION仍沿用原合法主题资产，真实月相、科学图形和平台标识保持各自owner。沿用当前逻辑像素尺度和独立44px命中区，不引入第二图标状态系统或运行时远程图标；各主题与可中断动效的未实测状态继续分别记录。
 - 图标不单独表达关键含义；无可见标签的 icon action 必须有可访问名称。
 
 ### 4. 间距、密度、占用率与几何
@@ -712,7 +712,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 5A.0 已采用观星点信息组件（三档）
 
-地图唯一采用入口为[ADOPTED.md](docs/design-resources/wechat-miniapp/map/ADOPTED.md)。2026-09-08用户确认small/medium/large组件完成，采用[三档资源](docs/design-resources/wechat-miniapp/map/adopted/spot-information/README.md)及最终动效；覆盖日间正式点位的基本信息、天文、相关媒体和底部操作。其具体构图/颜色/图标/动效替换本文件内该组件的旧rpx和中档静态表达，不自动推广到其他页面/主题。2026-09-24按用户确认的舒适尺度方向修订当前生产阅读尺度，见下表；[跨页舒适尺度候选](docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/README.md)的整组视觉仍待审，这次局部尺度修订不构成整组采用。其他未覆盖的生产迁移状态见各资源入口。
+地图唯一采用入口为[ADOPTED.md](https://stitch.google.com/projects/7144519510537620825)。2026-09-08用户确认small/medium/large组件完成，采用[三档资源](https://stitch.google.com/projects/7144519510537620825)及最终动效；覆盖日间正式点位的基本信息、天文、相关媒体和底部操作。其具体构图/颜色/图标/动效替换本文件内该组件的旧rpx和中档静态表达，不自动推广到其他页面/主题。2026-09-24按用户确认的舒适尺度方向修订当前生产阅读尺度，见下表；[跨页舒适尺度候选](https://stitch.google.com/projects/7144519510537620825)的整组视觉仍待审，这次局部尺度修订不构成整组采用。其他未覆盖的生产迁移状态见各资源入口。
 
 | 角色 | 采用表达（逻辑px，具体级联值以采用源文件为准） |
 | --- | --- |
@@ -739,7 +739,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 5A.2 Dedicated Search、统一 filters 与 results
 
-搜索页唯一采用入口为[ADOPTED.md](docs/design-resources/wechat-miniapp/search/ADOPTED.md)。2026-09-08用户确认[搜索页资源](docs/design-resources/wechat-miniapp/search/adopted/search-page/README.md)完成，采用A方向的日间紧凑尺度及最终交互、地址对齐修正。下述组合替换该页旧全换行筛选、统一结果卡描边、固定半宽文字区及大号选中星标表达；未覆盖主题和状态保留原规则。具体页面级联值、图片与完整组合以采用包为准，生产页面、筛选/选点链路和生成tokens尚未迁移，本次采用不触发生产生成。
+搜索页唯一采用入口为[ADOPTED.md](https://stitch.google.com/projects/7144519510537620825)。2026-09-08用户确认[搜索页资源](https://stitch.google.com/projects/7144519510537620825)完成，采用A方向的日间紧凑尺度及最终交互、地址对齐修正。下述组合替换该页旧全换行筛选、统一结果卡描边、固定半宽文字区及大号选中星标表达；未覆盖主题和状态保留原规则。具体页面级联值、图片与完整组合以采用包为准，生产页面、筛选/选点链路和生成tokens尚未迁移，本次采用不触发生产生成。
 
 - 页面按 Search → titleless unified filters → `想去`/`其他观星点` partitions 排列，一个 keyboard-safe vertical scroll owner。Map entry 与 Search field 使用同一 visual frame和同一可见query/placeholder字符串：outer rect、fill、border、radius、shadow、text、type baseline、slot 与 caret origin不变；leading glyph只在相同`88rpx`slot内Search→Back交叉替换，两态均无trailing `x`/clear/chevron。Field默认autofocus；任意外部有效tap可blur、关闭suggestions/IME而保留route/query/filter/result/scroll，再次tap可重新focus。Back glyph、系统/微信Back与平台edge-back都pop Search child回Map。Field以下内容以clip/reveal + `translateY(-12px→0)` + opacity `0→1` / `180ms`向下展开，field自身不动；退出反向`160ms`。
 - Query suggestion overlay紧贴field下沿，保持紧凑可读行和至少44px目标，不移动原框。筛选只展示一行，按Screen Contract的16个终端值可横向滑动，末端具名筛选图标固定；不分quick/more，不显示“筛选条件”标题或额外介绍带。日间胶囊、间距、轻分隔线与首分组距离沿用采用稿；横滑结束不误触选项。未覆盖主题的overlay保留4rpx贴边、72rpx可见行/88rpx目标、22rpx图标、16rpx水平内距与1rpx行分隔；胶囊保留44rpx可见/88rpx目标、10rpx内距、20rpx图标、4rpx图文间距、10.5/14.5px文字，以及原4–6rpx贴边与12–16rpx首分组距离。
@@ -771,21 +771,27 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - Loading/empty/partial/stale/error/offline/permission 使用 `notification-feedback` 与 `page-state-recovery`，保留可信地图、点位、filter 和 panel state，不用 fixture 补值。只有具体影响判断/动作/恢复的状态可见并说明其影响；Search/filter/panel/layer/selection 的局部状态已是反馈，不另弹 floating notification，也不展示操作教程或实现说明。
 - `320/375/390/430` 标准字号与 safe area 必须适配。每个 action 有 role/name/state/value/focus order；Search、filters、results、panel extents/sections/actions、layer/time/close 可 keyboard/assistive 操作。Back/Escape 先关闭 owning disclosure/panel，再返回逻辑 opener focus。
 
-云观星旧设计稿已由用户于2026-09-23明确撤销采用，见[资源状态](docs/design-resources/wechat-miniapp/sky/ADOPTED.md)；不再以旧稿确定页面构图或视觉验收。已独立确认的全屏天空、真实星表与投影、共享日期时间及传感器恢复等功能和交互要求仍按 Screen Contract 执行，具体呈现以目标运行时迭代。
+云观星旧整页设计稿于2026-09-23撤销，2026-10-17仅采用下段菜单范围；旧稿不再决定星图构图或视觉验收。已独立确认的全屏天空、真实星表与投影、共享日期时间及传感器恢复等功能和交互要求仍按 Screen Contract 执行，具体呈现以目标运行时迭代。
+
+2026-10-17用户直接采用最新云观星菜单/披露批次：具体范围与UI/UX沿[Sky owner](project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星菜单设计资源2026-10-16用户修订)；星图不受资源覆盖，Map不改。设计长期以Stitch为准，远端对齐缺口由当前交接明确，不用较旧节点冒最新采用稿。普通半透明玻璃是本稿采用材质，真实模糊/折射仍需WEAPP合成和实际成本证明。
+
+2026-10-17该范围新增底部时间控制及高性能玻璃方向：时间面板贴真实底部安全区，上方保持天空可看可操作；菜单/弹窗可用克制半透明玻璃，当前资源以RGBA、薄高光和细边近似，红光只用黑/暖红。此为本范围明确材质例外，不扩展到星图、Map或全产品；真实背景模糊/折射沿共享材质owner的目标支持及成本对照条件，不能以网页外观宣称原生性能或已采用。
+
+同日十二项修订以[最新云观星合同](project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星菜单设计资源2026-10-16用户修订)覆盖旧菜单顺序和披露chrome：返回门置首、显示更名叠加并用层叠图标，圆形按钮仅图标；观测点/时区移至左上无盒信息。四类modal无通用header/关闭，外点关闭回展开菜单，共用中心scale/opacity；底部时间六字段可调、居中时钟回箭头应用。第五圆钮直接切手势/眼睛、跟随时左侧竖排校准/确定，校准modal删除，转轮/竖钮运动完成前锁住切换。红光眼睛＋星星图标普通为红、红光下白，**仅该图标**允许白色，其它红光材质与界面仍守黑/暖红；竖钮“校准/确定”是图标动作的明确文字例外。采用资源不等于原生结果，生产与验收进度归现有任务交接。后续细修沿同一合同：信息位于页面最左上安全区，底部六字段有长按重复及现实当前时刻上限，中间动作留清楚间距；叠加开关保节点连续滑动。星体说明动作前置/核心信息居中、长正文有界滚动，搜索入口有小返回箭头、直接点选没有；长列表的“更多＋∨”居中且是文字例外，新结果有限逐项弹入。
 
 ### 5B. Settings 与 My
 
-- Settings采用[唯一资源入口](docs/design-resources/wechat-miniapp/settings/ADOPTED.md)：紧凑日月星滑轨、浅灰分组、位置与隐私、提醒、数据操作。选点偏好与减少动态效果设置项已移除，系统减少动态效果适配仍遵循共享规则。底部确认层的蒙层独立随进退渐变透明度，退出露出原页面而非闪白，控件值与箭头保持垂直居中。
-- 观星点创建与反馈采用[唯一资源入口](docs/design-resources/wechat-miniapp/contributions/ADOPTED.md)：沿用搜索公共观星点卡片，在卡片下扩展审核信息；一级Tab指示线按选中标签实际几何居中，切换与字体/容器变化保持对齐。
+- Settings采用[唯一资源入口](https://stitch.google.com/projects/7144519510537620825)：紧凑日月星滑轨、浅灰分组、位置与隐私、提醒、数据操作。选点偏好与减少动态效果设置项已移除，系统减少动态效果适配仍遵循共享规则。底部确认层的蒙层独立随进退渐变透明度，退出露出原页面而非闪白，控件值与箭头保持垂直居中。
+- 观星点创建与反馈采用[唯一资源入口](https://stitch.google.com/projects/7144519510537620825)：沿用搜索公共观星点卡片，在卡片下扩展审核信息；一级Tab指示线按选中标签实际几何居中，切换与字体/容器变化保持对齐。
 
 - Settings只保留一个`display-mode-switcher`，值域=`day|night|observation`且默认day；`observation-mode-control`不再是独立组件或页面底部CTA。该控件是single-choice三站滑轨而不是二值Switch：track max-width=`560rpx`、visible height=`72rpx`、三站等宽、每站target≥`88rpx`，thumb包含由`SemanticIcon`提供的Sun/Moon/Star与短label。
 - Tap任意站直接选择；tap当前thumb在有next时前进一步。横拖越过8px后跟手，向右`day→night→observation`、向左反向，不wrap、不跳站；release按position+velocity snap。方向键/Home/End与screen-reader direct choice等价。
 - Day↔Night使用`180ms`thumb transform与Sun/Moon scale/rotation/opacity交叉；Night↔Observation先原子绑定closed black/warm-red tokens，再做Moon/Star opacity/微旋转，过程中禁止白/蓝/黄/绿/中性灰闪现。Reduced motion即时snap并保留≤80ms icon opacity确认。
-- My日间根页采用[唯一资源入口](docs/design-resources/wechat-miniapp/my/ADOPTED.md)：无顶部页名、可编辑头像昵称、唯一设置、观星计划玻璃主卡及已提交。该页明确允许淡色渐变与单张液态玻璃，覆盖本页旧纯白/无玻璃规则，不扩展到地图或其他页面。最终图标为暖米色朝左露营SUV，拟物且圆润可爱，与标题间隔8px；卡头无“全部”文字，箭头与计划行尾箭头同列。具体尺寸与材质以采用资源为准；其他主题使用安全不透明等效呈现。
+- My日间根页采用[唯一资源入口](https://stitch.google.com/projects/7144519510537620825)：无顶部页名、可编辑头像昵称、唯一设置、观星计划玻璃主卡及已提交。该页明确允许淡色渐变与单张液态玻璃，覆盖本页旧纯白/无玻璃规则，不扩展到地图或其他页面。最终图标为暖米色朝左露营SUV，拟物且圆润可爱，与标题间隔8px；卡头无“全部”文字，箭头与计划行尾箭头同列。具体尺寸与材质以采用资源为准；其他主题使用安全不透明等效呈现。
 
 ### 5C. 观星点新增、草稿编辑与反馈
 
-- 使用[统一采用表单](docs/design-resources/wechat-miniapp/feedback/ADOPTED.md)，复用已有 contribution/form/upload/notification owner。新增、编辑远端草稿、反馈完整回填共用字段文档：地点搜索与名称、开放与到达、设施与现场（含停车/洗手间图片）、现场照片、补充说明。字段语义和校验以 Map/Shared State Context 为准；移除旧 report kind/topics/到访时间表单构图。
+- 使用[统一采用表单](https://stitch.google.com/projects/7144519510537620825)，复用已有 contribution/form/upload/notification owner。新增、编辑远端草稿、反馈完整回填共用字段文档：地点搜索与名称、开放与到达、设施与现场（含停车/洗手间图片）、现场照片、补充说明。字段语义和校验以 Map/Shared State Context 为准；移除旧 report kind/topics/到访时间表单构图。
 - 地图非拖动弹层无顶部横杠；进入上滑、退出下滑，系统返回关闭。搜索和三个悬浮控件淡出，弹层顶位于原加号位置，地图仍可操作。候选点在剩余可视地图中心，名称来自地点名称。切换其他点按同一 coordinator 关闭表单、打开目标信息组件。
 - 单一连续垂直文档，tab/标题分层，不用设施折叠。字段左对齐，设施组浅灰与观星点天文容器一致。真实必填以浅红星号标识，不重复“选填”；触摸焦点无装饰高亮，键盘 focus-visible 仍可识别。补充说明固定高度、内部滚动，不可拖拽缩放；图片上传进度/失败/删除留在原格。
 - 仅新增/编辑草稿有手动存草稿，每次加号为空表单；多个远端草稿经成功请求回执更新。无自动/关闭保存或本地草稿权威。保存时间放标题右侧，不加高底栏；当天显示时间，跨日显示日期。保存操作不弹通知。
@@ -794,8 +800,8 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 ### 5D. 观星计划与天文事件
 
-- [计划采用资源](docs/design-resources/wechat-miniapp/plan/ADOPTED.md)确定列表、详情和编辑构图：观测时段与参考靠前，出行安排按时间串联，之后为关联事件、用户提醒清单和备注。蓝灰正文、浅灰信息区、暖金小图标；不把 My 的玻璃材质扩散至普通页面。
-- [事件采用资源](docs/design-resources/wechat-miniapp/events/ADOPTED.md)以月份分组、日期票签和轻灰卡呈现具体年度记录。详情保留微立体暖金流星、活动日期轴、地点/日期联动、真实观测条件和来源。删除通用科普及准备建议填充段落，不编造天文或天气数值。
+- [计划采用资源](https://stitch.google.com/projects/7144519510537620825)确定列表、详情和编辑构图：观测时段与参考靠前，出行安排按时间串联，之后为关联事件、用户提醒清单和备注。蓝灰正文、浅灰信息区、暖金小图标；不把 My 的玻璃材质扩散至普通页面。
+- [事件采用资源](https://stitch.google.com/projects/7144519510537620825)以月份分组、日期票签和轻灰卡呈现具体年度记录。详情保留微立体暖金流星、活动日期轴、地点/日期联动、真实观测条件和来源。删除通用科普及准备建议填充段落，不编造天文或天气数值。
 - 事件列表和详情共享同一具体记录身份；日期选择点轻滑，地点/来源弹层进退，按压反馈克制；减少动态效果取消位移。返回实际来源，不固定回 My。计划关联不覆盖用户既定日期与地点。
 
 2026-09-13用户修订上述事件承载方式：地图工具组增加采用B材质的小流星入口，打开较大的居中白色modal；列表仍按月份竖排日期票签卡片，点击主体后列表向左、详情从右进入同一外壳，返回反向。头部和外壳稳定，内容各自滚动并保留位置；移动端避开胶囊及安全区，平板居中限宽，不做全屏独立路由或下拉关闭抽屉。地图仅浏览；计划编辑复用同壳同卡，独立44px单选热区与固定确认区，选中用实心圆点及文字等价表达，关闭取消临时选择。确切事务与Back规则只由[共享事件owner](project_context/areas/main/screen-contracts/wechat-miniapp/shared-state-and-recovery.md#shared-astronomical-event-modal)拥有。
@@ -910,10 +916,10 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 6.12 Full-Sky Orientation Canvas
 
-- **Anatomy**：全屏sky canvas、独立quiet Back action、锚定在天空中的真实对象mark/label；左下竖排重新校准、天体列表、时间轴入口，默认收起、互斥披露。模式与星座入口独立。时间轴展开时复用公共Curved Time Ruler；仅在影响可用性时出现recovery，天体资料由明确点选或列表打开。交互与状态以[云观星Screen Contract](project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)为准。普通following成功没有可见sensor state行。
+- **Anatomy**：全屏真实sky canvas，左上无盒观星点/时区信息与右上默认收起的三横菜单。展开为X，下方六个纯图标槽为返回门、搜索、时间、叠加层片、手动/随手机、红光眼星；槽位沿现Map工具几何，Map不改。红光直接切全局观测模式、恢复此前DAY/NIGHT，不跳Settings；仅该眼星图标在红光下允许白色。搜索、资料、底部时间和叠加共无通用header/关闭条的披露，外部点击关闭后恢复展开菜单，内部操作不穿透。搜索用长列表且只名字/行星或星系或区域，居中“更多＋∨”追加新项；资料身份/核心信息居中、动作前置，真实长正文有界滚动。仅搜索进入有小返回箭头，直接点选没有；科学事实与完整来源保留。公共时间保六字段输入/短按/长按重复、1×播放与居中时钟回箭头应用，所有入口限制完整时刻不晚于现在，仅限该Sky控制。手势/眼睛圆钮直接切浏览模式，左侧竖排校准/确定取代旧校准modal，只有明确开始校准才锁画面。当前是待审资源，生产接线与原生状态另验；following正常成功不显示sensor state行。
 - **Variants**：permission required、calibrating、following、low accuracy、stale、denied、unavailable；day/night/observation；reduced motion/transparency。
-- **Layout**：canvas 从 top safe area 延伸到 bottom safe area；chrome 覆盖而不把天空缩成 card。展开的时间轴按实际dock/面板尺寸避让，并复用公共 Ruler 的有效共享规则；其旧 Sky 设计稿特定 inset、颜色与材质不再作采用值。减少透明度时保持可读的实体表面，所有scroll owner隐藏scrollbar chrome。
-- **Motion**：前台设备姿态 `alpha/beta/gamma` 连续控制朝向/俯仰/横滚，绝对方位需要时与 compass owner 组合；新姿态立即接管，不叠加 inertia/bounce/ambient animation。离开/隐藏停止监听，不记录轨迹。Reduced motion 移除插值/settle，保留功能性直接跟随。
+- **Layout**：菜单和披露覆盖天空，开合不移动/缩放Canvas、相机、FOV或投影中心。左上信息与面板错开，时间贴真实底部安全区，露出天空可浏览。披露无通用标题/关闭，长内容在有界区滚动。关闭未应用时间或未确认校准沿原取消事务，搜索词/列表展开保留。竖校准按钮有独立命中区且从圆钮后方进退。减少透明度保可读实体回退，scroll owner隐藏scrollbar chrome。
+- **Motion**：三横上下线成X、中线退隐，关闭反向。四类披露从自身占位中心scale/opacity入退场，重开从当前进度逆转并取消迟到卸载；时间取代旧平移。手势→眼睛逆时针、反向顺时针，圆面裁剪；左侧竖钮随跟随态滑入/滑出，两者运动完成前锁住再次切换。校准中切回手动立即结束跟随/编辑、保当前静态天空，旧回调不得复活。前页应用内整体渐黑→黑桥→完整云观星淡入，不扩大星图设计范围或控制系统栏。前台alpha/beta/gamma及绝对方位/compass继续归姿态owner，新姿态直接接管，离开隐藏退休监听、不记录轨迹；既有减少运动保功能性直接跟随。
 - **A11y**：canvas targets 有同源文本语义；`sky-orientation-object-list` 只作 screen-reader equivalent、传感器降级或用户明确 disclosure，不是常驻主区。不可用状态不伪造 heading。
 - **Composition**：星点、星座、太阳系与动态天体、巡天影像、环境层、标签及低对比地平线/坐标网格共同服务当前地点与时刻的天空；功能范围及数据有效性遵循[已确认的Stellarium Web对齐目标](project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星对齐-stellarium-web)，不再受旧targets集合限制。真实数据、计算与同一相机投影决定呈现，不用装饰星点或示意影像冒充观测数据，不添加AR。顶部不显示boxed title/地点·时间card/右侧target action，不显示“方向跟随中”、手势教程、实现说明或通用“部分数据”badge。扩展范围不等于新增资源采用、数据授权或目标运行时已验证。
 
@@ -1044,6 +1050,8 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 7.14 Dialog / Bottom Sheet
 
+- **Sky scoped motion**：搜索与天体说明淡入并从自身中心小幅放大，退出反向；异步加载不得先撑开小壳，长内容在稳定阅读视口内滚动。关闭、重开、覆盖下搜索及Back沿[Sky交互owner](project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#名称选中与天空叠层2026-10-16用户修订)保同一状态语义；此为用户已授权局部修订，不改变其它sheet的采用构图。
+
 - **Anatomy**：title、body、actions；只有可拖动sheet/panel另有handle、停靠边与安全区。
 - **Variants / states**：dialog confirm、sheet task、hidden/small/medium/full-screen-large/dragging/settling/loading/error。Map spot information panel使用三档visible extent；Search不使用Sheet；layer selector使用随所选图层内容伸缩的单一sheet且无drag/multi-extent暗示。
 - **Geometry**：dialog radius24rpx；spot panel small/medium沿用圆角，large无论有无图片均radius0且全宽；本轮Map layer sheet采用全宽方角外壳；只在真实浮层使用elevation-2；动作遵守ordinary/final梯级。所有内部scroll owner隐藏scrollbar chrome。
@@ -1053,7 +1061,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 ### 8. 运动系统
 
-所有运动均由明确操作或数据因果触发，可中断、可反向，除明确授权的按钮夜空星点明暗外无环境循环；normal motion下material route/surface/state不得突然出现或消失。基础缓动：standard `cubic-bezier(.2,0,0,1)`，exit `cubic-bezier(.4,0,1,1)`；press 80ms、short 120ms、medium 160ms、long 200ms，direct-manipulation panel沿用可中断物理收敛；2026-09-22弹性修订的参数、上端内容安全边界与验证状态由[共享弹性抽屉资源](docs/design-resources/wechat-miniapp/shared/elastic-sheet/README.md)拥有，候选不受旧280ms硬截止限制。bounded spring：mass 1、stiffness 420、damping 34、rest delta 0.5；禁止持续弹跳。
+所有运动均由明确操作或数据因果触发，可中断、可反向，除明确授权的按钮夜空星点明暗外无环境循环；normal motion下material route/surface/state不得突然出现或消失。基础缓动：standard `cubic-bezier(.2,0,0,1)`，exit `cubic-bezier(.4,0,1,1)`；press 80ms、short 120ms、medium 160ms、long 200ms，direct-manipulation panel沿用可中断物理收敛；2026-09-22弹性修订的参数、上端内容安全边界与验证状态由[共享弹性抽屉资源](https://stitch.google.com/projects/7144519510537620825)拥有，候选不受旧280ms硬截止限制。bounded spring：mass 1、stiffness 420、damping 34、rest delta 0.5；禁止持续弹跳。
 
 | Recipe | Trigger / current → target | Timing | Interruption / reverse | Reduced motion | Haptic | Observation |
 |---|---|---|---|---|---|---|

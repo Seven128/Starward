@@ -47,6 +47,55 @@ function adbDriver({ changed = false, permissions = false, osLocation = false, s
   return { driver, calls };
 }
 
+test("recording failure consumes the reviewed screenshot authority without publishing media or replaying input", async (t) => {
+  for (const action of ["record-tap","record"]) {
+  const state = await session(t), { driver, calls } = adbDriver(), output = [];
+  const context = { adb: driver, emit: value => output.push(value) };
+  await main(["capture", "--session", state.directory], context);
+  await assert.rejects(main([action, "--session", state.directory, ...(action==="record"?[]:["--x", ".5", "--y", ".5"])], context));
+  assert.equal((await loadSession(state.directory)).capture, null);
+  assert.equal(output.length, 1);
+  assert.ok(!calls.some(args => args.includes("input")));
+  await assert.rejects(main(["tap", "--session", state.directory, "--x", ".5", "--y", ".5"], context), /recent_capture_required/);
+  }
+});
+
+test("permission screenshots cannot extend the input grant into a recording", async (t) => {
+  for (const action of ["record-tap","record"]) {
+  const state = await session(t), { driver, calls } = adbDriver({ permissions: true });
+  const context = { adb: driver, emit: () => {} };
+  await main(["capture-permissions", "--session", state.directory], context);
+  await assert.rejects(main([action, "--session", state.directory, ...(action==="record"?[]:["--x", ".5", "--y", ".5"])], context), /recording_scope_invalid/);
+  assert.equal((await loadSession(state.directory)).capture, null);
+  assert.ok(!calls.some(args => args.includes("input") || args.includes("sh")));
+  }
+});
+
+test("read-only recording command stores guarded private media and explicitly reports no input", async (t) => {
+  const state=await session(t),{driver,calls}=adbDriver(),output=[];
+  const originalCommand=driver.command.bind(driver),video=Buffer.alloc(64);
+  video.writeUInt32BE(24,0);video.write("ftypisom",4,"ascii");
+  driver.command=async(args,options)=>{
+    if(args[0]==="exec-out"&&args[1]==="sh"){
+      assert.match(args[3], /--time-limit 15 /);
+      options.onStdout(Buffer.from("4712\n"));
+      return Buffer.concat([Buffer.from("4712\n"),video]);
+    }
+    return originalCommand(args,options);
+  };
+  const context={adb:driver,emit:value=>output.push(value)};
+  await main(["capture","--session",state.directory],context);
+  await main(["record","--session",state.directory,"--seconds","15"],context);
+  assert.equal(output.length,2);
+  assert.equal(output[1].inputSent,false);
+  assert.equal(output[1].requestedSeconds,15);
+  assert.equal(output[1].actionSent,undefined);
+  assert.deepEqual(await readFile(output[1].video),video);
+  assert.equal(path.dirname(output[1].video),state.directory);
+  assert.equal((await loadSession(state.directory)).capture.permissionScope,"none");
+  assert.ok(!calls.some(args=>args.includes("input")));
+});
+
 function appBrandForegroundState(current = activity, focus = current) {
   return {
     activity: `mResumedActivity: ActivityRecord{abc u0 ${current} t1}`,
@@ -394,6 +443,13 @@ test("argument and endpoint allowlists block command passthrough or remote hosts
   assert.throws(() => parseArguments(["capture"]), /argument_missing/u);
   assert.equal(parseArguments(["doctor", "--transport", "wireless"]).options.transport, "wireless");
   assert.equal(parseArguments(["capture", "--session", "private", "--transport", "wireless"]).options.transport, "wireless");
+  assert.equal(parseArguments(["record", "--session", "private", "--transport", "wireless"]).action, "record");
+  assert.equal(parseArguments(["record-tap", "--session", "private", "--x", ".5", "--y", ".5", "--seconds", "15"]).options.seconds, "15");
+  for (const seconds of ["5", "16", "6.5", "015", "NaN", "Infinity"]) {
+    assert.throws(() => parseArguments(["record", "--session", "private", "--seconds", seconds]), /recording_duration_invalid/);
+  }
+  assert.throws(() => parseArguments(["tap", "--session", "private", "--x", ".5", "--y", ".5", "--seconds", "15"]), /argument_invalid/);
+  assert.throws(()=>parseArguments(["record", "--session", "private", "--x", ".5"]),/argument_invalid/);
   assert.throws(() => parseArguments(["doctor", "--transport", "network"]), /transport_invalid/u);
   assert.equal(automationEndpoint("ws://127.0.0.1:9420"), "ws://127.0.0.1:9420/");
   for (const value of ["ws://example.com:9420", "ws://user:pass@127.0.0.1:9420", "ws://127.0.0.1:9420/?token=secret", "https://127.0.0.1:9420"]) assert.throws(() => automationEndpoint(value), /endpoint_required/u);

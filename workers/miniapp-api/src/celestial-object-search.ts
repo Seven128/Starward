@@ -19,6 +19,7 @@ type Entry = Omit<CelestialObjectSearchData["results"][number], "matchedAlias">;
 interface Publication {
   catalogVersion: string; catalogHash: string; rowCount: number;
   entries: Iterable<Entry>; sources: readonly SourceSummary[];
+  entrySources?: ReadonlyMap<string, SourceSummary>;
   relatedCatalogs?: CelestialObjectSearchData["catalogs"];
   unavailableCatalogs?: readonly string[];
   cacheable?: boolean;
@@ -37,16 +38,17 @@ const providers = (baseVersion: BaseVersion, includeLuminaries: boolean, deepSky
     try { chinese = loadChineseStarAliasesForBase(baseVersion); } catch { /* The base catalogue remains searchable. */ }
     let introductionUnavailable = false;
     const sources = [...bsc5pCatalogSources(catalog), ...(chinese ? [chinese.source] : [])];
+    const entrySources = new Map<string, SourceSummary>();
     const entries = catalog.rows.map(row => {
       let published: ReturnType<typeof publishedStarIntroduction> = null;
       try { published = starIntroduction(row); } catch { introductionUnavailable = true; }
-      // Only publications contributing aliases belong to this discovery index.
-      if (published?.aliases?.length) sources.push(published.source);
+      // Keep alias provenance with its object; only returned entries emit it.
+      if (published?.aliases?.length) entrySources.set(row.sourceId, published.source);
       return { reference: row.sourceId, displayName: row.properName ?? `HR ${row.hr}`,
         kind: "STAR" as const, aliases: brightStarAliases(row, [...(chinese?.aliasesFor(row.sourceId) ?? []), ...(published?.aliases ?? [])]) };
     });
     return { ...catalog, rowCount: catalog.rows.length,
-      sources,
+      sources, entrySources,
       relatedCatalogs: chinese ? [{ catalogVersion: chinese.catalogVersion, catalogHash: chinese.catalogHash,
         rowCount: chinese.rowCount }] : [],
       unavailableCatalogs: [...(chinese ? [] : ["Wikidata-zh"]), ...(introductionUnavailable ? ["Chinese-star-prose-zh"] : [])],
@@ -56,14 +58,15 @@ const providers = (baseVersion: BaseVersion, includeLuminaries: boolean, deepSky
     const catalog = loadDeepSkyCatalog(deepSkyCatalogVersion);
     let introductionUnavailable = false;
     const sources: SourceSummary[] = [deepSkyCatalogSource(deepSkyCatalogVersion)];
+    const entrySources = new Map<string, SourceSummary>();
     const entries = catalog.rows.map(row => {
       let published: ReturnType<typeof publishedDeepSkyIntroduction> = null;
       try { published = deepSkyIntroduction(row); } catch { introductionUnavailable = true; }
-      if (published) sources.push(published.source);
+      if (published?.aliases?.length) entrySources.set(row.objectRef, published.source);
       return { reference: row.objectRef, displayName: row.messier === null ? row.ngcName : `M ${row.messier}`,
         kind: row.kind, aliases: deepSkyAliases(row, published?.aliases) };
     });
-    return { ...catalog, rowCount: catalog.rows.length, sources, entries, cacheable: !introductionUnavailable,
+    return { ...catalog, rowCount: catalog.rows.length, sources, entrySources, entries, cacheable: !introductionUnavailable,
       unavailableCatalogs: introductionUnavailable ? ["Chinese-deep-prose-zh"] : [] };
   } },
   { id: "SAO", load() {
@@ -131,7 +134,7 @@ export class CelestialObjectSearchService {
       !Number.isInteger(limit) || limit < 1 || limit > 50) throw new BadRequestException("celestial_search_query_invalid");
     const needle = normalize(query), identity = catalogId(query);
     if (!needle) throw new BadRequestException("celestial_search_query_invalid");
-    const results: { result: CelestialObjectSearchData["results"][number]; score: number }[] = [];
+    const results: { result: CelestialObjectSearchData["results"][number]; score: number; source?: SourceSummary }[] = [];
     let matchedCount = 0;
     const compare = (a: typeof results[number], b: typeof results[number]) =>
       a.score - b.score || a.result.reference.localeCompare(b.result.reference);
@@ -203,9 +206,11 @@ export class CelestialObjectSearchService {
         continue;
       }
       for (const { entry, normalizedAliases, identities } of index.entries) {
+        const source = index.entrySources?.get(entry.reference);
         if (identity) {
           if (identities.includes(`\0${identity}\0`)) offer({ result: { ...entry,
-            matchedAlias: entry.aliases.find(alias => identifiers(alias).includes(identity)) ?? entry.reference }, score: 0 });
+            matchedAlias: entry.aliases.find(alias => identifiers(alias).includes(identity)) ?? entry.reference },
+            score: 0, ...(source ? { source } : {}) });
           continue;
         }
         let best: { label: string; score: number } | undefined;
@@ -214,11 +219,12 @@ export class CelestialObjectSearchService {
           const score = normalized === needle ? 0 : normalized.startsWith(needle) ? 1 : normalized.includes(needle) ? 2 : 3;
           if (score < 3 && (!best || score < best.score)) best = { label: entry.aliases[i]!, score };
         }
-        if (best) offer({ result: { ...entry, matchedAlias: best.label }, score: best.score });
+        if (best) offer({ result: { ...entry, matchedAlias: best.label }, score: best.score, ...(source ? { source } : {}) });
       }
     }
     data.results = structuredClone(results.map(item => item.result));
     data.truncated = matchedCount > limit;
+    sources.push(...results.flatMap(item => item.source ? [item.source] : []));
     return { apiVersion: "v2", data, generatedAt: new Date().toISOString(), validAt: null,
       dataState: !data.catalogs.length ? "UNAVAILABLE" : data.unavailableCatalogs.length ? "PARTIAL" : "FRESH",
       sources: structuredClone(sources), warnings: data.unavailableCatalogs.map(id => id === "Wikidata-zh"

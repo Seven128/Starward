@@ -66,9 +66,8 @@ Retired Control keys are not compatibility controls and cannot remain in current
 
 ## Shared liquid-glass material
 
-<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/shared/liquid-glass/README.md" -->
 
-My plan card and celestial detail modal share one material responsibility: transmission of the actual backdrop, edge refraction/reflection, bounded blur, theme and accessibility/performance fallback. The consumers own content, typography, geometry, focus, gestures and lifecycle of their screen; a reusable material must not become a shared modal/card business controller. Light/dark/red are parameters of one implementation, not copied page CSS. See the [candidate resource and research](../../../../../docs/design-resources/wechat-miniapp/shared/liquid-glass/README.md); this is the consolidated design reference for the shared material, not a completed production renderer.
+My plan card and celestial detail modal share one material responsibility: transmission of the actual backdrop, edge refraction/reflection, bounded blur, theme and accessibility/performance fallback. The consumers own content, typography, geometry, focus, gestures and lifecycle of their screen; a reusable material must not become a shared modal/card business controller. Light/dark/red are parameters of one implementation, not copied page CSS. See the [candidate resource and research](https://stitch.google.com/projects/7144519510537620825); this is the consolidated design reference for the shared material, not a completed production renderer.
 
 Keep recognizable underlying colors/details instead of covering them with an opaque tint or large blur. In sky, preserve the real catalog canvas behind the surface, suppress duplicate background labels while detail is open, and never add decorative astronomical imagery to make glass visible. Reduced transparency and unsupported rendering use an explicit readable fallback. Verify changing backdrops and edge bending with a separate diagnostic surface as well as actual pages; a visually similar border alone does not establish refraction.
 

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import {CURRENT_DEEP_SKY_CATALOG_VERSION} from "@starward/miniapp-contracts";
 
 const source = ts.createSourceFile(
   "api-client.ts",
@@ -23,6 +24,7 @@ const getSkyReport = vm.runInNewContext(
   ).outputText,
   {
     ADOPTED_SKY_REPORT_CATALOG_VERSION: "bsc5p-bright-stars.v3",
+    CURRENT_DEEP_SKY_CATALOG_VERSION,
     requestOperation: (
       key: string,
       operation: string,
@@ -44,7 +46,9 @@ test("pending proposal sky requires owner authentication", async () => {
 test("published spot sky remains publicly readable", async () => {
   const result = await getSkyReport("spot:published-1", "context:one");
   assert.equal(result.options.auth, "NONE");
-  assert.equal(result.options.query, "contextId=context%3Aone&catalogVersion=bsc5p-bright-stars.v3");
+  const query=new URLSearchParams(result.options.query);
+  assert.equal(query.get('contextId'),'context:one');assert.equal(query.get('catalogVersion'),'bsc5p-bright-stars.v3');
+  assert.equal(query.get('deepSkyCatalogVersion'),CURRENT_DEEP_SKY_CATALOG_VERSION);
 });
 
 test("planet, SAO and deep-sky positions request the same report catalog as the Sky page", async () => {
@@ -60,6 +64,7 @@ test("planet, SAO and deep-sky positions request the same report catalog as the 
     ).outputText,
     {
       ADOPTED_SKY_REPORT_CATALOG_VERSION: "bsc5p-bright-stars.v3",
+      CURRENT_DEEP_SKY_CATALOG_VERSION,
       isCelestialObjectReference: () => true,
       requestOperation: (_key: string, _operation: string, options: Record<string, unknown>) => Promise.resolve(options),
       matchingCelestialPositionResponse: (value: unknown) => value,
@@ -79,5 +84,6 @@ test("planet, SAO and deep-sky positions request the same report catalog as the 
     );
     assert.equal(new URLSearchParams(result.query).get("catalogVersion"), skyCatalogVersion,
       `${reference} must select the report catalog, independently of its object catalog`);
+    assert.equal(new URLSearchParams(result.query).get('deepSkyCatalogVersion'),CURRENT_DEEP_SKY_CATALOG_VERSION);
   }
 });

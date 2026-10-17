@@ -4,8 +4,9 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 
+const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+
 test("map navigation respects travel warning cancellation and changing selection", async () => {
-  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let declaration = "";
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && node.name.getText(source) === "onPanelNavigate") declaration = `const ${node.getText(source)};`;
@@ -39,5 +40,83 @@ test("map navigation respects travel warning cancellation and changing selection
     }) as () => Promise<void>;
     await navigate();
     assert.deepEqual(calls, scenario === "confirm" ? ["warning", "open"] : scenario === "failed" ? ["warning", "notice"] : scenario === "redCancel" ? ["handoff"] : ["warning"]);
+  }
+});
+
+test("private proposal entry preserves the current candidate and rejects obsolete resolve results", async () => {
+  let declaration = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(source) === "onProposalCloud") declaration = `const ${node.getText(source)};`;
+    ts.forEachChild(node, visit);
+  };
+  visit(source); assert.ok(declaration);
+  for (const scenario of ["success", "missing-location", "no-consent", "changed", "hidden", "owner-changed", "failed", "late-failed"] as const) {
+    const epoch = { current: 0 }, proposal = { current: { submissionId: "contribution:owned" } as { submissionId: string } | null };
+    const original = { localDate: "2026-10-11", selectedAtUtc: "2026-10-11T13:00:01.527Z", eventInstanceId: null, targetProfile: "DAILY" };
+    const resolved = { ...original, contextId: "ctx:candidate", timezone: "Asia/Shanghai" };
+    const calls: string[] = []; let payload: any, navigation: string | undefined, accepted: unknown;
+    let finish!: (value: { data: typeof resolved }) => void, fail!: (error: Error) => void;
+    const response = new Promise<{ data: typeof resolved }>((resolve, reject) => { finish = resolve; fail = reject; });
+    const entry = vm.runInNewContext(ts.transpileModule(declaration + "\nonProposalCloud;", {
+      compilerOptions: { target: ts.ScriptTarget.ES2022 },
+    }).outputText, {
+      navigationEpoch: epoch, selectedProposalRef: proposal,
+      skyEntry: {prepare: () => ({isCurrent: () => true, cancelPreparation() {}})},
+      useAppStore: { getState: () => ({ observationContext: original }) },
+      currentTimezoneHint: () => "Asia/Shanghai", localDateForNow: () => "2026-10-11",
+      resolveObservationContext: (input: unknown) => { calls.push("resolve"); payload = input; return response; },
+      setObservationContext: (context: unknown) => { calls.push("accept"); accepted = context; },
+      openSkyPage: (url: string, _entry: string, _preparation: unknown, accept: () => void) => { accept(); calls.push("navigate"); navigation = url; },
+      notify: () => calls.push("notice"), errorMessage: () => "unavailable", isMiniappRequestCancelled: () => false,
+    }) as (submission: Record<string, unknown>) => Promise<void>;
+    const submission = { submissionId: "contribution:owned", revision: 2, preciseLocationConsent: scenario !== "no-consent",
+      candidateLocation: scenario === "missing-location" ? null : { displayName: "来源名", wgs84: { system: "WGS84", latitude: 22.588, longitude: 114.302 } },
+      candidateProfile: { fields: { name: "候选名称" } },
+    };
+    const work = entry(submission);
+    if (scenario === "changed") proposal.current = { submissionId: "contribution:other" };
+    if (scenario === "hidden" || scenario === "late-failed") epoch.current++;
+    if (scenario === "owner-changed") proposal.current = null;
+    if (scenario === "failed" || scenario === "late-failed") fail(new Error("unavailable"));
+    else if (scenario !== "missing-location" && scenario !== "no-consent") finish({ data: resolved });
+    await work;
+    assert.deepEqual(calls, scenario === "success" ? ["resolve", "accept", "navigate"] :
+      scenario === "missing-location" || scenario === "no-consent" ? ["notice"] : scenario === "failed" ? ["resolve", "notice"] : ["resolve"]);
+    if (payload) {
+      assert.equal(payload.location.kind, "MAP_POINT"); assert.equal(payload.location.displayName, "候选名称");
+      assert.deepEqual(JSON.parse(JSON.stringify(payload.location.wgs84)), submission.candidateLocation!.wgs84);
+      assert.equal(payload.selectedAt, original.selectedAtUtc); assert.equal(payload.localDate, original.localDate);
+    }
+    if (scenario === "success") {
+      assert.equal(accepted, resolved); assert.ok(navigation?.startsWith("/sky/detail/index?"));
+      const route = new URL(navigation!, "https://fixture.invalid").searchParams;
+      assert.equal(route.get("spotId"), submission.submissionId); assert.equal(route.get("locationName"), "候选名称");
+      assert.equal(route.get("contextId"), resolved.contextId); assert.equal(route.get("selectedAt"), original.selectedAtUtc);
+      assert.equal(route.get("dataRevision"), "proposal:2");
+    } else { assert.equal(accepted, undefined); assert.equal(navigation, undefined); }
+  }
+});
+
+test("return from private Sky keeps the same owner's candidate panel without retaining a foreign selection", () => {
+  let callback = "", selectedExpression = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(source) === "selectedProposal") selectedExpression = node.initializer!.getText(source);
+    if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" &&
+      node.arguments[0]?.getText(source).includes("lastHandledSelectedId.current = null")) callback = node.arguments[0].getText(source);
+    ts.forEachChild(node, visit);
+  };
+  visit(source); assert.ok(callback && selectedExpression);
+  for (const scenario of ["own", "foreign", "none"] as const) {
+    const submission = { submissionId: "contribution:owned" }, state = scenario === "none" ? null : { owner: "user:one", submission };
+    const scope = { selectedSpotId: null, pageVisible: false, bottomPresentation: "spot-panel", selectedProposalState: state,
+      currentContributionOwner: scenario === "foreign" ? "user:two" : "user:one", selectedProposal: null as unknown,
+      lastHandledSelectedId: { current: "spot:previous" as string | null }, setBottomPresentation(value: string) { this.bottomPresentation = value; } };
+    const context = vm.createContext({ ...scope, setBottomPresentation: (value: string) => { context.bottomPresentation = value; } });
+    context.selectedProposal = vm.runInContext(ts.transpileModule(selectedExpression, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context);
+    const effect = vm.runInContext(ts.transpileModule(callback, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context) as () => void;
+    effect(); context.pageVisible = true; effect();
+    assert.equal(context.bottomPresentation, scenario === "own" ? "spot-panel" : "none", scenario);
+    assert.equal(context.selectedProposal, scenario === "own" ? submission : null);
+    assert.equal(context.lastHandledSelectedId.current, null);
   }
 });

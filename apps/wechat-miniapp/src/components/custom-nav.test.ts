@@ -20,15 +20,16 @@ function navigation(
   };
   visit(source);
   assert.ok(declaration);
-  const busy = { current: false }, errors: boolean[] = [];
+  const busy = { current: false }, errors: boolean[] = [], runtimeErrors: unknown[][] = [];
   const goBack = vm.runInNewContext(ts.transpileModule(declaration + "\ngoBack;", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
     navigationBusy: busy, setBackError: (value: boolean) => errors.push(value),
+    reportRuntimeError: (...event: unknown[]) => runtimeErrors.push(event),
     backFallbackTab: "/pages/my/index",
     Taro: { getCurrentPages: stack, navigateBack: back, switchTab: tab }, beforeBack, onBackAuthorized, onBackFailure,
   }) as () => Promise<void>;
-  return { goBack, busy, errors };
+  return { goBack, busy, errors, runtimeErrors };
 }
 
 test("back success preserves the actual previous page rather than switching tabs", async () => {
@@ -45,6 +46,7 @@ test("a declined editor back guard retains the route and releases the navigation
   const nav = navigation(() => [{}, {}], async () => { backs++; }, async () => assert.fail("unexpected fallback"), () => allowed);
   await nav.goBack();
   assert.equal(backs, 0);
+  assert.equal(nav.runtimeErrors.length, 0);
   allowed = true;
   await nav.goBack();
   assert.equal(backs, 1);
@@ -92,4 +94,20 @@ test("rapid repeated activation does not pop a second page", async () => {
   resolve();
   await first;
   assert.equal(nav.busy.current, false);
+});
+
+test("native Back failure is logged even when the configured fallback succeeds", async () => {
+  const failure = { errno: 600001, errMsg: "native private route" };
+  let fallbacks = 0;
+  const nav = navigation(() => [{}, {}], async () => { throw failure; }, async () => { fallbacks++; });
+  await nav.goBack();
+  assert.equal(fallbacks, 1);
+  assert.deepEqual(nav.errors, [false]);
+  assert.equal(nav.busy.current, false);
+  assert.equal(nav.runtimeErrors.length, 1, "a handled native rejection still needs the shared console boundary");
+  assert.equal(nav.runtimeErrors[0]![0], "native");
+  assert.strictEqual(nav.runtimeErrors[0]![2], failure);
+  const root = navigation(() => [{}], async () => assert.fail("no back target"), async () => {});
+  await root.goBack();
+  assert.equal(root.runtimeErrors.length, 0, "the ordinary root-page fallback is not a native failure");
 });

@@ -11,7 +11,8 @@ export * from "./viewport.ts";
 export * from "./ranking.ts";
 export * from "./preferences.ts";
 export * from "./sky-scene.ts";
-export { isDeepSkyObjectReference, DEEP_SKY_MESSIER_CATALOG_VERSION, EXTENDED_DEEP_SKY_CATALOG_VERSION, isDeepSkyCatalogVersion } from "./celestial-identity.ts";
+export * from "./sky-source-selection.ts";
+export { isDeepSkyObjectReference, DEEP_SKY_MESSIER_CATALOG_VERSION, EXTENDED_DEEP_SKY_CATALOG_VERSION, CURRENT_DEEP_SKY_CATALOG_VERSION, isDeepSkyCatalogVersion, type DeepSkyCatalogVersion } from "./celestial-identity.ts";
 export * from "./sky-planet-identity.ts";
 export * from "./sky-luminary-identity.ts";
 export * from "./moon-coverage-publication.ts";
@@ -26,7 +27,10 @@ export * from "./prepared-optical-publication.ts";
 export * from "./prepared-progressive-optical-publication.ts";
 export * from "./prepared-display-optical-publication.ts";
 export * from "./prepared-rendered-optical-publication.ts";
+export * from "./prepared-optical-discovery.ts";
 export * from "./prepared-native-optical-publication.ts";
+export * from "./optical-tan-plane.ts";
+export * from "./prepared-derived-region-optical-publication.ts";
 export { OPTICAL_IMAGE_LEVELS, type OpticalImageLevel } from "./optical-publication-content.ts";
 export * from "./sky-target-position.ts";
 export * from "./stellar-geometry.ts";
@@ -48,3 +52,5 @@ export * from "./recent-weather.ts";
 export * from "./air-quality.ts";
 
 export * from "./sky-landscape-publication.ts";
+
+export * from "./body-image-publication.ts";

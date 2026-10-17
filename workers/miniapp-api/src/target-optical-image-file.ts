@@ -35,21 +35,26 @@ function jpegDimensions(bytes: Buffer): readonly [number, number] | null {
  * Hash the exact returned buffer, rather than a separate pre-read file. */
 type OpticalFileResponse<Pixels> = { bytes: Buffer; contentType: "image/png" | "image/jpeg";
   fieldDegrees: number; pixelSize: Pixels; pixelWidth: number; pixelHeight: number };
+type OpticalPngContainer = { pngColorTypes: readonly (0 | 2 | 6)[] };
 export function readTargetOpticalImageFile<Pixels extends 512 | 1024>(manifestUrl: URL, asset: OpticalFileAsset<Pixels>,
   format: "png" | "jpeg", invalidCode: "sdss_optical_asset_invalid" | "prepared_optical_asset_invalid"): Promise<OpticalFileResponse<Pixels>>;
 export function readTargetOpticalImageFile(manifestUrl: URL, asset: OpticalFileAsset<512 | 1024> | RectangularOpticalFileAsset,
-  format: "png" | "jpeg", invalidCode: "sdss_optical_asset_invalid" | "prepared_optical_asset_invalid"): Promise<OpticalFileResponse<512 | 1024 | undefined>>;
+  format: "png" | "jpeg", invalidCode: "sdss_optical_asset_invalid" | "prepared_optical_asset_invalid",
+  pngContainer?: OpticalPngContainer): Promise<OpticalFileResponse<512 | 1024 | undefined>>;
 export async function readTargetOpticalImageFile(manifestUrl: URL, asset: OpticalFileAsset<512 | 1024> | RectangularOpticalFileAsset,
-  format: "png" | "jpeg", invalidCode: "sdss_optical_asset_invalid" | "prepared_optical_asset_invalid") {
+  format: "png" | "jpeg", invalidCode: "sdss_optical_asset_invalid" | "prepared_optical_asset_invalid",
+  pngContainer?: OpticalPngContainer) {
   const bytes = await readFile(new URL(asset.file, manifestUrl));
   const rectangular = "width" in asset;
   const width = rectangular ? asset.width : asset.pixels, height = rectangular ? asset.height : asset.pixels;
   const jpegSize = format === "jpeg" && rectangular ? jpegDimensions(bytes) : null;
+  const colorTypes: readonly number[] = pngContainer?.pngColorTypes ?? [rectangular ? 2 : 6];
+  if (!colorTypes.length || colorTypes.some(type => ![0, 2, 6].includes(type))) throw new Error(invalidCode);
   const formatValid = format === "png" ? bytes.length >= 45 &&
     bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) &&
     bytes.readUInt32BE(8) === 13 && bytes.toString("ascii", 12, 16) === "IHDR" &&
     bytes.readUInt32BE(16) === width && bytes.readUInt32BE(20) === height &&
-    bytes[24] === 8 && bytes[25] === (rectangular ? 2 : 6) && bytes[26] === 0 && bytes[27] === 0 && bytes[28] === 0 &&
+    bytes[24] === 8 && colorTypes.includes(bytes[25]!) && bytes[26] === 0 && bytes[27] === 0 && bytes[28] === 0 &&
     bytes.readUInt32BE(bytes.length - 12) === 0 && bytes.subarray(-8, -4).toString("ascii") === "IEND" :
     bytes[0] === 0xff && bytes[1] === 0xd8 && bytes.at(-2) === 0xff && bytes.at(-1) === 0xd9 &&
     (!rectangular || jpegSize?.[0] === width && jpegSize[1] === height);

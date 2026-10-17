@@ -1,6 +1,6 @@
 import { unprojectSkyPoint, type SkyViewBasis } from "./sky-view-projection";
-import type { SkyProjectionCenter } from "./sky-viewport";
-import { skyLandscapeMaskOccludes, type SkyLandscapeMask } from "./sky-landscape-mask";
+import type { SkyProjectionCenter, SkyCanvasBounds } from "./sky-viewport";
+import { skyLandscapeMaskOccludes, skyLandscapeWindowAlphaBound, type SkyLandscapeMask } from "./sky-landscape-mask";
 import type { SkyDeepAuxiliaryDecision } from "./sky-deep-auxiliary-visibility";
 
 export interface SkyObjectIdentity {
@@ -11,6 +11,14 @@ export interface SkyObjectIdentity {
 
 export function skyObjectKindLabel(kind: SkyObjectIdentity["kind"] | "MILKY_WAY") {
   return { STAR: "恒星", MOON: "月球", PLANET: "行星", GALAXY: "星系", NEBULA: "星云", MILKY_WAY: "银河" }[kind];
+}
+
+/** Public catalogue numbers aid recognition. Solar-system transport IDs do not;
+ * the original reference still owns every key, selection and source request. */
+export function skyObjectIdentityLabel(object: { kind: SkyObjectIdentity["kind"] | "MILKY_WAY"; reference: string }) {
+  const kind = skyObjectKindLabel(object.kind);
+  return /^(?:PLANET|SOLAR):/.test(object.reference)
+    ? kind : `${kind} · ${object.reference.replace(":", " ")}`;
 }
 
 export interface PaintedSkyObject extends SkyObjectIdentity {
@@ -38,11 +46,37 @@ export interface SkyPickSnapshot {
     /** The actual successful landscape pass, bound to this completed camera. */
     landscape?: SkyLandscapeMask | null };
   objects: readonly PaintedSkyObject[];
+  /** Automatic bright-star labels use these actual current points, including
+   * their display fade. Exit remnants are deliberately absent. */
+  namedStars?: readonly (PaintedSkyObject & { opacity: number })[];
   /** Valid bodies whose unresolved point is below the same display/pick threshold
    * as stars, bound to this completed frame. Not missing geometry or GPU failure. */
   suppressedBodyReferences?: readonly string[];
   /** Actual pre-aid scalars, not recomputed from the final source receipt. */
   deepSkyAuxiliaryDecisions?: readonly SkyDeepAuxiliaryDecision[];
+}
+
+/** Stars are submitted before the solid solar-system globes. Only successful
+ * globe silhouettes can withdraw a covered star from the completed hit/name
+ * receipt. Keep the translucent limb: both phase and textured globe shaders
+ * have an opaque core within normalized squared radius .96. Rings do not
+ * certify opaque coverage, and an unavailable globe supplies no silhouette. */
+export function filterSkyBodyOccludedStars(objects: readonly PaintedSkyObject[],
+  namedStars: NonNullable<SkyPickSnapshot["namedStars"]>) {
+  const globes = objects.filter(object => object.hitDisc &&
+    (object.reference === "SOLAR:SUN" || object.kind === "MOON" || object.kind === "PLANET") &&
+    object.hitDisc.majorRadiusPx > 0 && object.hitDisc.minorRadiusPx > 0);
+  if (!globes.length) return { objects, namedStars };
+  const visible = (star: Pick<PaintedSkyObject, "x" | "y">) => !globes.some(globe => {
+    const disc = globe.hitDisc!, dx = star.x - globe.x, dy = star.y - globe.y;
+    const minor = (dx * disc.minorDirection[0] + dy * disc.minorDirection[1]) / disc.minorRadiusPx;
+    const major = (-dx * disc.minorDirection[1] + dy * disc.minorDirection[0]) / disc.majorRadiusPx;
+    return minor * minor + major * major <= .96;
+  });
+  return {
+    objects: objects.filter(object => object.kind !== "STAR" || object.reference === "SOLAR:SUN" || visible(object)),
+    namedStars: namedStars.filter(visible),
+  };
 }
 
 function pointToSegmentDistance(x:number,y:number,[x0,y0,x1,y1]:readonly [number,number,number,number]):number{
@@ -77,6 +111,20 @@ export function paintedSkyPointVisible(snapshot: Pick<SkyPickSnapshot,"view"|"wi
   const ray = unprojectSkyPoint(x, y, snapshot.view.basis, snapshot.width, snapshot.height,
     snapshot.view.verticalFovDeg, snapshot.view.center);
   return Boolean(ray && (!snapshot.view.landscape || !skyLandscapeMaskOccludes(snapshot.view.landscape, ray)));
+}
+
+/** Whole native glyph/hit rectangles use the same completed mask as picks.
+ * Unknown geometry cannot certify a clear rectangle; partial foreground still
+ * permits the sky fragments admitted by the original point visibility rule. */
+export function paintedSkyBoundsVisible(snapshot:Pick<SkyPickSnapshot,'view'|'width'|'height'>|null,
+  bounds:SkyCanvasBounds):boolean {
+  if(!snapshot||![bounds.left,bounds.top,bounds.width,bounds.height,snapshot.width,snapshot.height].every(Number.isFinite)||
+    bounds.width<=0||bounds.height<=0||bounds.left<0||bounds.top<0||
+    bounds.left+bounds.width>snapshot.width||bounds.top+bounds.height>snapshot.height)return false;
+  if(!snapshot.view||!unprojectSkyPoint(bounds.left+bounds.width/2,bounds.top+bounds.height/2,
+    snapshot.view.basis,snapshot.width,snapshot.height,snapshot.view.verticalFovDeg,snapshot.view.center))return false;
+  return !snapshot.view.landscape||skyLandscapeWindowAlphaBound(snapshot.view.landscape,snapshot.view,
+    snapshot.width,snapshot.height,bounds)<254.5/255;
 }
 
 export function skyPickSnapshotIsCurrent(

@@ -271,15 +271,17 @@ export class DeepSkyImageryService {
   }
 
   /** All and only admitted current/allowed archives; no filesystem crawl. */
-  async *publishedAssets(): AsyncGenerator<DeepSkyImmutableImageResult> {
+  publishedManifests() {
     const current = this.publication({ imageVersion: DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION });
     const hashes = [this.hash(current), ...(current.previousPublicationHashes ??
       (current.previousPublicationHash ? [current.previousPublicationHash] : []))];
-    for (const publicationHash of new Set(hashes)) {
-      const publication = this.publication({ publicationHash });
+    return [...new Set(hashes)].map(hash => this.manifest(hash));
+  }
+
+  async *publishedAssets(): AsyncGenerator<DeepSkyImmutableImageResult> {
+    for (const publication of this.publishedManifests())
       for (const entry of publication.entries) for (const asset of Object.values(entry.levels))
-        yield await this.getByFile(publicationHash, asset.file);
-    }
+        yield await this.getByFile(publication.publicationHash, asset.file);
   }
 
   async get(reference: string, levelInput = "MEDIUM", publicationHash?: string,

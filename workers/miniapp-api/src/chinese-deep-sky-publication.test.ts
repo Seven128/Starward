@@ -6,7 +6,7 @@ import { EXTENDED_DEEP_SKY_CATALOG_VERSION } from "@starward/miniapp-contracts";
 import { loadDeepSkyCatalog } from "@starward/astronomy-core/deep-sky-catalog";
 import { CelestialObjectInformationService } from "./celestial-object-information.ts";
 import { CelestialObjectSearchService } from "./celestial-object-search.ts";
-import { parseChineseIntroductionPublication, publishedDeepSkyIntroduction } from "./celestial-object-introductions.ts";
+import { parseChineseIntroductionPublication, publishedDeepSkyIntroduction, CHINESE_INTRODUCTION_PUBLICATION } from "./celestial-object-introductions.ts";
 
 const admitted = [8,16,20,27,32,33,43,49,51,57,58,59,60,61,63,64,65,66,74,76,77,78,81,82,83,84,85,86,87,88,89,90,91,94,96,97,98,99,101,104,105,106,108,109];
 const catalog = loadDeepSkyCatalog(EXTENDED_DEEP_SKY_CATALOG_VERSION);
@@ -52,7 +52,7 @@ test("pair, cluster and shared nickname descriptions preserve their distinct cat
 test("the enlarged edition retains prior rows except four photometry wording repairs and validates unchanged historical bytes", () => {
   const oldBytes = readFileSync(new URL("../assets/celestial-object-introductions.zh-cn.v2.json", import.meta.url));
   const old = parseChineseIntroductionPublication(oldBytes, createHash("sha256").update(oldBytes).digest("hex"));
-  const currentBytes = readFileSync(new URL("../assets/celestial-object-introductions.zh-cn.v72.json", import.meta.url));
+  const currentBytes = readFileSync(new URL(`../assets/${CHINESE_INTRODUCTION_PUBLICATION.file}`, import.meta.url));
   const current = parseChineseIntroductionPublication(currentBytes);
   const comparePriorRow = (key: string, value: ReturnType<typeof parseChineseIntroductionPublication> extends ReadonlyMap<string, infer Row> ? Row : never) => {
     const row = current.get(key)!;
@@ -209,7 +209,10 @@ test("the enlarged edition retains prior rows except four photometry wording rep
   const v71Bytes = readFileSync(new URL('../assets/celestial-object-introductions.zh-cn.v71.json', import.meta.url));
   const v71 = parseChineseIntroductionPublication(v71Bytes, '8529a1c36c176ed250701c18d971ff9a4b0e64e68cd254a83f1d9e5a8358c88b');
   assert.equal(v71.size,244); for (const [key,value] of v71) assert.deepEqual(current.get(key),value);
-  assert.equal(current.size,247); for (const [key, value] of old) comparePriorRow(key, value);
+  const v72Bytes = readFileSync(new URL('../assets/celestial-object-introductions.zh-cn.v72.json', import.meta.url));
+  const v72 = parseChineseIntroductionPublication(v72Bytes, '587c4b3f7f773d352925932062716ea570485f18ddaa0a6d2c9730c29b5c204d');
+  assert.equal(v72.size,247); for (const [key,value] of v72) assert.deepEqual(current.get(key),value);
+  for (const [key, value] of old) comparePriorRow(key, value);
   const v3Bytes = readFileSync(new URL("../assets/celestial-object-introductions.zh-cn.v3.json", import.meta.url));
   const v3 = parseChineseIntroductionPublication(v3Bytes, createHash("sha256").update(v3Bytes).digest("hex"));
   assert.equal(v3.size, 56); for (const [key, value] of v3) comparePriorRow(key, value);

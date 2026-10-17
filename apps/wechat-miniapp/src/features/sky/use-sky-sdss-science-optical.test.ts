@@ -6,6 +6,7 @@ import { basename, dirname, join } from "node:path";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import {skyImageRecoveryTestOwner} from './sky-image-recovery-test-support';
 import { assertSdssScienceOpticalManifest, sdssScienceOpticalPublicationHash, assertPreparedOpticalManifest, preparedOpticalPublicationHash,
   type SdssScienceOpticalManifest, type SdssDisplayOpticalManifest, assertSdssDisplayOpticalManifest, type PreparedOpticalManifest } from "@starward/miniapp-contracts";
 import { createSkyArtworkLoader, type SkyArtworkLoadState, type SkyNativeImageAsset } from "./sky-artwork-loader";
@@ -97,6 +98,7 @@ function world(prepared = false, display = false) {
   const resource = () => ({ publication, isCurrent: () => metadataCurrent });
   const compiled = new Map<string, Record<string, any>>();
   const selectionRef = { current: null as unknown };
+  const recovery = skyImageRecoveryTestOwner();
   const load = (file: string): Record<string, any> => {
     if (compiled.has(file)) return compiled.get(file)!;
     const exports: Record<string, any> = {}; compiled.set(file, exports);
@@ -104,6 +106,7 @@ function world(prepared = false, display = false) {
       { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText, {
       exports, require(name: string) {
         if (name === "./use-sky-target-optical") return load("./use-sky-target-optical.ts");
+        if (name === "./use-sky-image-recovery") return recovery;
       const bindings: Record<string, unknown> = {
         react: { useMemo: (read: () => unknown) => read(), useRef: () => selectionRef,
           useEffect: (effect: () => void) => effect() },

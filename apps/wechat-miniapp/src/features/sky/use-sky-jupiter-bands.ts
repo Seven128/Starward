@@ -1,14 +1,6 @@
-import type {SkyGeometryReport} from "@starward/miniapp-contracts";
-import {getJupiterBandsManifest,jupiterBandsImageUrl} from "@/services/jupiter-bands-client";
-import {useSkyOpalBands} from "./use-sky-opal-bands";
-import type {SkyArtworkView} from "./sky-artwork-registration";
-import type {SkyArtworkCanvas} from "./sky-artwork-request";
+import {SKY_BODY_IMAGE_PROFILES} from "@/services/sky-body-image-profile";
+import {useSkyBodyImage,type SkyBodyImageInput} from "./use-sky-body-image";
 
-/** A licensed historical latitude profile, not current longitudinal weather. */
-export function useSkyJupiterBands(report:Pick<SkyGeometryReport,"hourly">|undefined,at:string|undefined,
-  view:SkyArtworkView|null,width:number,height:number,canvas:SkyArtworkCanvas|null,
-  canvasRevision:number,active:boolean,paused=false){
-  return useSkyOpalBands({body:"JUPITER",id:"jupiter:opal-2024c-bands",
-    queryKey:"jupiter-bands-manifest",getManifest:getJupiterBandsManifest,imageUrl:jupiterBandsImageUrl},
-  report,at,view,width,height,canvas,canvasRevision,active,paused);
+export function useSkyJupiterBands(...input:SkyBodyImageInput){
+  return useSkyBodyImage(SKY_BODY_IMAGE_PROFILES.jupiter,...input);
 }

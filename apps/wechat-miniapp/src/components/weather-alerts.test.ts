@@ -6,6 +6,8 @@ import ts from "typescript";
 import type { WeatherEvidenceSummary, WeatherAlertEvidence, SourceSummary } from "@starward/miniapp-contracts";
 import { weatherAlertState } from "./weather-alert-state";
 import { calendarDateInTimezone, clockTimeInTimezone } from "../utils/zoned-date";
+import { skyReportTestPolicy } from "../features/sky/sky-report-test-support";
+const {skyReportRecovery}=skyReportTestPolicy;
 
 const now = Date.parse("2026-09-15T04:00:00Z");
 const iso = (offset: number) => new Date(now + offset).toISOString();
@@ -120,8 +122,10 @@ test("actual Map and Sky report queries refresh while visible, including a previ
     const ast = ts.createSourceFile(file, readFileSync(new URL(file, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     let expression = "";
     function visit(node: ts.Node) {
-      if (ts.isVariableDeclaration(node) && node.name.getText(ast) === declaration && node.initializer && ts.isCallExpression(node.initializer))
-        expression = node.initializer.arguments[0]!.getText(ast);
+      if (ts.isCallExpression(node) && node.expression.getText(ast) === 'useSkyForecastQuery') {
+        assert.equal(expression,'','one report forecast consumer per page');
+        expression = node.arguments[0]!.getText(ast);
+      }
       ts.forEachChild(node, visit);
     }
     visit(ast); assert.ok(expression);
@@ -169,7 +173,7 @@ test("actual Sky report feedback and warning consumer produce one notice without
   for (const dataState of ["STALE_USABLE", "UNAVAILABLE", "EXPIRED", "PARTIAL"]) for (const fresh of [false, true]) {
     notices.length = 0;
     const report = { data: { dataState, warnings: [] }, isFetching: false, isError: false, refreshError: undefined };
-    run(`(${hostEffect})()`, { report, contextComplete: true, pageVisible: true, notify, routeContext: { spotId: "spot:a", localDate: "2026-09-15" } });
+    run(`(${hostEffect})()`, { report,reportRecovery:skyReportRecovery(undefined,true,dataState as any),activeContext:{contextId:'ctx'},contextComplete: true, pageVisible: true, notify, routeContext: { spotId: "spot:a", localDate: "2026-09-15" } });
     const tree = render({ evidence: evidence({ warningState: fresh ? "FRESH" : "UNAVAILABLE", alerts: fresh ? [alert] : [] }),
       timezone: "Asia/Shanghai", active: true, scopeKey: "spot:a", refreshing: false,
       ...Object.fromEntries(Object.entries(expressions).map(([key, expression]) => [key, run(expression, { report })])), onRecover: () => {} });

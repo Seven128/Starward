@@ -1,10 +1,67 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CelestialObjectInformationService } from "./celestial-object-information.ts";
-import { publishedStarIntroduction, publishedBodyIntroduction, publishedDeepSkyIntroduction, parseChineseIntroductionPublication } from "./celestial-object-introductions.ts";
+import { CelestialObjectInformationService, bscStarInformationFacts } from "./celestial-object-information.ts";
+import { publishedStarIntroduction, publishedBodyIntroduction, publishedDeepSkyIntroduction, parseChineseIntroductionPublication, CHINESE_INTRODUCTION_PUBLICATION } from "./celestial-object-introductions.ts";
 import { readFileSync } from "node:fs";
 import { loadBsc5pStarCatalog } from "@starward/astronomy-core/bsc5p-catalog";
 import { CelestialObjectSearchService } from "./celestial-object-search.ts";
+
+test("BSC facts retain raw photometry types and uncertainty next to their numeric values", () => {
+  const service = new CelestialObjectInformationService();
+  for (const version of ["bsc5p-bright-stars.v2", "bsc5p-bright-stars.v3"] as const) {
+    const rows = loadBsc5pStarCatalog(version).rows;
+    const marked = rows.find(row => row.vMagCode)!;
+    const facts = service.get(marked.sourceId, "zh-CN", version).data.facts;
+    const magnitude = facts.find(fact => fact.label === "目录视星等");
+    assert(magnitude, "a marked raw measurement must not assert a uniform V photometry system");
+    assert.equal(magnitude.value, marked.vMag.toFixed(2));
+    assert.equal(magnitude.unit, "mag");
+    assert.match(facts[facts.indexOf(magnitude) + 1]!.value, new RegExp(`原始标记 ${marked.vMagCode}.*未转换.*Johnson V`, "u"));
+    const uncertain = rows.find(row => row.bV !== null && row.bVUncertainty)!;
+    const colourFacts = service.get(uncertain.sourceId, "zh-CN", version).data.facts;
+    const colour = colourFacts.find(fact => fact.label === "B−V 色指数")!;
+    assert.equal(colour.value, uncertain.bV!.toFixed(3));
+    assert.equal(colour.unit, "mag");
+    assert.match(colourFacts[colourFacts.indexOf(colour) + 1]!.value, /不确定标记/u);
+    assert(colourFacts[colourFacts.indexOf(colour) + 1]!.value.includes(uncertain.bVUncertainty!));
+    const plain = rows.find(row => !row.vMagCode && !row.vMagUncertainty && row.bV !== null && !row.bVUncertainty)!;
+    assert.equal(service.get(plain.sourceId, "zh-CN", version).data.facts[0]!.label, "V 波段视星等");
+  }
+});
+
+test("supported photometry uncertainty flags stay attached without inventing an error bar", () => {
+  const row = loadBsc5pStarCatalog("bsc5p-bright-stars.v3").rows.find(row => row.bV !== null)!;
+  // The current editions have no vMagUncertainty rows; exercise that supported
+  // field at its actual fact owner without changing a publication or its cache.
+  const facts = bscStarInformationFacts({ ...row, vMagUncertainty: ":", bVUncertainty: "?" });
+  assert.equal(facts.find(fact => fact.label === "星等标记")?.value, ":（原目录的不确定标记）");
+  assert.equal(facts.find(fact => fact.label === "色值标记")?.value, "?（原目录的不确定标记）");
+  assert.equal(facts.find(fact => fact.unit === "mag")?.value, row.vMag.toFixed(2));
+});
+
+test("reviewed names keep constellation meaning in search and detail for supported BSC clients", () => {
+  const search = new CelestialObjectSearchService(undefined, undefined, () => null);
+  const details = new CelestialObjectInformationService(undefined, undefined, undefined, undefined, () => null);
+  for (const version of ["bsc5p-bright-stars.v2", "bsc5p-bright-stars.v3"] as const) {
+    for (const [reference, corrected, traditional, rejected] of [
+      ["HR:8812", "宝瓶座88", "寶瓶座88", ["天鹰座88", "天鷹座88"]],
+      ["HR:7116", "人马座ν¹", "人馬座ν¹", ["六分儀座ν"]],
+      ["HR:6812", "斗宿三", "斗宿三", ["斗宿一"]],
+    ] as const) {
+      const detail = details.get(reference, "zh-CN", version);
+      assert(detail.data.aliases.includes(corrected), reference);
+      assert(!detail.data.aliases.some(alias => (rejected as readonly string[]).includes(alias)), reference);
+      const found = search.search(traditional, 20, version).data.results.find(row => row.reference === reference);
+      assert(found, "the corrected Chinese designation must find the actual BSC identity");
+      assert.deepEqual(found.aliases, detail.data.aliases);
+      for (const alias of rejected) assert(!search.search(alias, 20, version).data.results.some(row => row.reference === reference));
+      assert(detail.sources.some(source => source.precision?.includes("名称订正")));
+      const raw = loadBsc5pStarCatalog(version).rows.find(row => row.sourceId === reference)!;
+      assert.deepEqual(detail.data.facts.find(fact => fact.label === "光谱型")?.value, raw.spectralType);
+      assert.equal(detail.data.contentState, "BASIC_ONLY", "name repair must not invent adopted prose");
+    }
+  }
+});
 
 for (const [reference, query, traditional, meaning, notice] of [
   ["HR:1457", "毕宿五", "畢宿五", /红巨星.*亮度.*缓慢/u, /引用需要清理/u],
@@ -45,7 +102,7 @@ test("three-star pinned prose read failures remain partial and recover without c
 });
 
 test("corrupt offline prose fails closed and all nine solar bodies retry without losing independent sources", () => {
-  const bytes = readFileSync(new URL("../assets/celestial-object-introductions.zh-cn.v72.json", import.meta.url));
+  const bytes = readFileSync(new URL(`../assets/${CHINESE_INTRODUCTION_PUBLICATION.file}`, import.meta.url));
   const pack = parseChineseIntroductionPublication(bytes);
   assert.deepEqual([...pack.keys()].slice(0, 12), ["HR:2326", "SOLAR:SUN", "SOLAR:MOON", "PLANET:VENUS", "PLANET:MERCURY", "PLANET:MARS", "PLANET:JUPITER", "PLANET:SATURN", "PLANET:URANUS", "PLANET:NEPTUNE", "M:1", "NGC:253"]);
   const corrupt = Buffer.from(bytes); corrupt[corrupt.length - 2] ^= 1;

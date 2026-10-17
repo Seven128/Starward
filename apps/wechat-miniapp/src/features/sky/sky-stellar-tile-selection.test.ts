@@ -33,3 +33,10 @@ test('twilight does not request a faint tile that the same-frame renderer cannot
   // Observation mode deliberately omits the solar limit so chart stars remain available.
   assert.deepEqual(selectSkyStellarTiles(tiles,input).map(tile=>tile.id),['east-equatorial']);
 });
+
+test('normal local-depth demand shares the painter limit and keeps deferred observation selection',()=>{
+  const local={...input,verticalFovDeg:10.8,sunAltitudeDeg:-25};
+  assert.deepEqual(selectSkyStellarTiles(tiles,local).map(tile=>tile.id),['east-equatorial']);
+  assert.deepEqual(selectSkyStellarTiles(tiles,{...local,mode:'OBSERVATION'}),[]);
+  assert.deepEqual(selectSkyStellarTiles(tiles,{...local,sunAltitudeDeg:-12}),[]);
+});

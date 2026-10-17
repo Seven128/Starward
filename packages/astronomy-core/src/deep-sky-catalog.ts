@@ -8,6 +8,7 @@ import {
   DEEP_SKY_CATALOG_PACK,
   DEEP_SKY_CATALOG_VERSION, EXTENDED_DEEP_SKY_CATALOG_VERSION,
   EXTENDED_DEEP_SKY_CATALOG_MANIFEST, EXTENDED_DEEP_SKY_CATALOG_PACK,
+  CURRENT_DEEP_SKY_CATALOG_VERSION, CURRENT_DEEP_SKY_CATALOG_PACK, CURRENT_DEEP_SKY_CATALOG_MANIFEST,
   type DeepSkyCatalogRow,
 } from "./deep-sky-catalog-data.ts";
 
@@ -19,11 +20,12 @@ function packHash(pack: typeof DEEP_SKY_CATALOG_PACK) {
 }
 
 export function loadDeepSkyCatalog(version: string = DEEP_SKY_CATALOG_VERSION) {
-  if (version !== DEEP_SKY_CATALOG_VERSION && version !== EXTENDED_DEEP_SKY_CATALOG_VERSION)
+  if (version !== DEEP_SKY_CATALOG_VERSION && version !== EXTENDED_DEEP_SKY_CATALOG_VERSION && version !== CURRENT_DEEP_SKY_CATALOG_VERSION)
     throw new Error("deep_sky_catalog_version_invalid");
   const extended = version === EXTENDED_DEEP_SKY_CATALOG_VERSION;
-  const pack = extended ? EXTENDED_DEEP_SKY_CATALOG_PACK : DEEP_SKY_CATALOG_PACK;
-  const manifest = extended ? EXTENDED_DEEP_SKY_CATALOG_MANIFEST : DEEP_SKY_CATALOG_MANIFEST;
+  const current = version === CURRENT_DEEP_SKY_CATALOG_VERSION;
+  const pack = current ? CURRENT_DEEP_SKY_CATALOG_PACK : extended ? EXTENDED_DEEP_SKY_CATALOG_PACK : DEEP_SKY_CATALOG_PACK;
+  const manifest = current ? CURRENT_DEEP_SKY_CATALOG_MANIFEST : extended ? EXTENDED_DEEP_SKY_CATALOG_MANIFEST : DEEP_SKY_CATALOG_MANIFEST;
   if (manifest.catalogVersion !== pack.catalogVersion || manifest.rowCount !== pack.rows.length ||
     manifest.derivedAssetSha256 !== packHash(pack))
     throw new Error("deep_sky_catalog_invalid:manifest_asset_mismatch");
@@ -34,7 +36,7 @@ export function loadDeepSkyCatalog(version: string = DEEP_SKY_CATALOG_VERSION) {
 }
 
 export function deepSkyRowByReference(reference: string): DeepSkyCatalogRow | null {
-  return (reference.startsWith("M:") ? DEEP_SKY_CATALOG_PACK.rows : loadDeepSkyCatalog(EXTENDED_DEEP_SKY_CATALOG_VERSION).rows)
+  return (reference.startsWith("M:") ? DEEP_SKY_CATALOG_PACK.rows : loadDeepSkyCatalog(CURRENT_DEEP_SKY_CATALOG_VERSION).rows)
     .find((row) => row.objectRef === reference) ?? null;
 }
 

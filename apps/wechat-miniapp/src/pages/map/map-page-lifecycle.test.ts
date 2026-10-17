@@ -22,6 +22,7 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
     const epoch = { current: 3 }, drag = { current: {} as object | null };
     const editorScope = {current: "visible owner" as string | null};
     let cancelledEditor = 0, presentation = "spot-editor";
+    const skyLifecycle: string[] = [];
     vm.runInNewContext(ts.transpileModule(hooks.join("\n"), { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
       useDidShow: (callback: () => void) => { show = callback; },
       useDidHide: (callback: () => void) => { hide = callback; },
@@ -32,6 +33,7 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
       setPanelDragging: (value: boolean) => { dragging = value; },
       editorPresentationScope: editorScope,
       editorPresentation: {isClosing: () => editorClosing, cancel: () => {cancelledEditor++;}},
+      skyEntry: {show() {skyLifecycle.push("show");}, hide() {skyLifecycle.push("hide");}},
       setBottomPresentation: (next: string) => {presentation = next; cancelledEditor++;},
     });
     assert.ok(show && hide);
@@ -45,6 +47,7 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
     assert.equal(offset, 0);
     assert.equal(dragging, false);
     assert.equal(retainedFailure, true, "hiding cancels in-flight work but retains the failed location for recovery");
+    assert.deepEqual(skyLifecycle, ["show", "hide"], "Map retires the same Sky entry owner and restores it on a later show");
     assert.equal(editorScope.current, null, "a late confirmation or exit cannot retain the hidden page's scope");
     assert.equal(cancelledEditor, 1);
     assert.equal(presentation, editorClosing ? "none" : "spot-editor", "only an already approved exit is finalized on hide");

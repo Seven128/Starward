@@ -1,0 +1,52 @@
+.sky-overlay-motion { position: absolute; inset: 0; pointer-events: none; }
+.sky-overlay-motion--search { z-index: 9; }
+.sky-overlay-motion--object { z-index: 30; }
+.sky-overlay-motion--layers, .sky-overlay-motion--time { z-index: 11; }
+.sky-overlay-motion__surface {
+  pointer-events: auto;
+  transform-origin: center center;
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity var(--sky-overlay-motion-ms) cubic-bezier(.2, 0, 0, 1),
+    transform var(--sky-overlay-motion-ms) cubic-bezier(.2, .7, .2, 1);
+}
+.sky-overlay-motion__backdrop { pointer-events: auto; opacity: 1; transition: opacity var(--sky-overlay-motion-ms) ease; }
+.sky-overlay-motion--opening, .sky-overlay-motion--closing, .sky-overlay-motion--closed {
+  .sky-overlay-motion__surface { opacity: 0; transform: scale(.76); }
+  .sky-overlay-motion__backdrop { opacity: 0; }
+}
+.sky-overlay-motion--closing .sky-overlay-motion__surface { pointer-events: none; transition-timing-function: cubic-bezier(.4, 0, 1, 1); }
+.sky-overlay-motion__shield { position: absolute; inset: 0; z-index: 99; pointer-events: auto; }
+
+.sky-orientation-page {
+  --sky-glass-fill: rgba(24, 26, 23, .82);
+  --sky-glass-edge: rgba(190, 194, 184, .28);
+  --sky-glass-highlight: rgba(245, 243, 236, .10);
+  --sky-glass-rim: rgba(245, 243, 236, .17);
+  --sky-glass-inner: rgba(36, 39, 32, .58);
+}
+.theme-observation.sky-orientation-page {
+  --sky-glass-fill: rgba(17, 0, 0, .9);
+  --sky-glass-edge: rgba(122, 30, 24, .8);
+  --sky-glass-highlight: rgba(216, 74, 60, .06);
+  --sky-glass-rim: rgba(216, 74, 60, .22);
+  --sky-glass-inner: rgba(25, 0, 0, .76);
+}
+.reduced-transparency.sky-orientation-page { --sky-glass-fill: var(--surface); --sky-glass-inner: var(--surface-subtle); }
+.sky-disclosure { position: absolute; inset: 0; pointer-events: none; }
+.sky-disclosure__backdrop {
+  position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0;
+  border: 0; border-radius: 0; background: transparent; pointer-events: auto;
+}
+.sky-disclosure__backdrop::after { border: 0; }
+.sky-disclosure__surface {
+  position: absolute; top: calc(var(--sky-controls-top) + 72Px); bottom: max(46Px, calc(env(safe-area-inset-bottom) + 12Px));
+  left: 20Px; right: 20Px; width: auto; min-height: 0; box-sizing: border-box;
+  display: flex; flex-direction: column; overflow: hidden;
+  border: 1Px solid var(--sky-glass-edge); border-radius: 18Px;
+  background: linear-gradient(135deg, var(--sky-glass-highlight), transparent 45%) var(--sky-glass-fill);
+  box-shadow: inset 0 1Px 0 var(--sky-glass-rim), 0 4Px 12Px rgba(0, 0, 0, .24);
+  color: var(--text-primary);
+}
+.theme-observation .sky-disclosure__surface { box-shadow: inset 0 1Px 0 var(--sky-glass-rim); }
+.sky-disclosure--time .sky-disclosure__surface { top: auto; bottom: calc(env(safe-area-inset-bottom) + 12Px); max-height: calc(100% - var(--sky-controls-top) - 76Px); }

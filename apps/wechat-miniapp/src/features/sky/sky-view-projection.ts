@@ -42,6 +42,14 @@ export interface SkyDirectionProjection {
 export interface SkyDirectionProjector {
   project(azimuthDeg: number, altitudeDeg: number): SkyDirectionProjection | null;
   unclipped(azimuthDeg: number, altitudeDeg: number): SkyDirectionProjection | null;
+  prepared(direction: PreparedSkyDirection): SkyDirectionProjection | null;
+}
+
+/** A validated direction may outlive a camera, but never its source time. */
+export interface PreparedSkyDirection {
+  readonly degrees: number;
+  readonly altitude: number;
+  readonly vector: SkyVector;
 }
 
 const DEGREES_TO_RADIANS = Math.PI / 180;
@@ -63,6 +71,12 @@ export function skyHorizontalDirection(azimuthDeg: number, altitudeDeg: number):
   const altitudeRad = altitudeDeg * DEGREES_TO_RADIANS;
   const cosAltitude = Math.cos(altitudeRad);
   return [cosAltitude * Math.sin(azimuthRad), cosAltitude * Math.cos(azimuthRad), Math.sin(altitudeRad)];
+}
+
+export function prepareSkyDirection(azimuthDeg: number, altitudeDeg: number): PreparedSkyDirection | null {
+  const direction = skyHorizontalDirection(azimuthDeg, altitudeDeg);
+  return direction ? Object.freeze({ degrees: normalizeDegrees(azimuthDeg), altitude: altitudeDeg,
+    vector: Object.freeze(direction) }) : null;
 }
 
 function cleanZero(value: number): number {
@@ -252,23 +266,30 @@ export function createSkyDirectionProjector(
   const acceptedRight: SkyVector = [...right];
   const acceptedUp: SkyVector = [...up];
   const acceptedForward: SkyVector = [...forward];
-  const unclipped = (azimuthDeg: number, altitudeDeg: number): SkyDirectionProjection | null => {
-    const direction = skyHorizontalDirection(azimuthDeg, altitudeDeg);
-    if (!direction) return null;
-    const cameraRight = dot(direction, acceptedRight);
-    const cameraUp = dot(direction, acceptedUp);
+  const project = (direction: SkyVector, degrees: number, altitude: number, clipped: boolean): SkyDirectionProjection | null => {
     const cameraForward = dot(direction, acceptedForward);
     const denominator = 1 + cameraForward;
     if (!(denominator > 1e-9)) return null;
+    const cameraRight = dot(direction, acceptedRight);
     const x = originX + (scale * cameraRight) / denominator;
+    // Most catalogue rays leave a portrait viewport horizontally. Preserve
+    // the exact projection/boundary formula, but skip the other axis once
+    // this one has already rejected a point. Extended anchors stay unclipped.
+    if (!finite(x) || clipped && (x < -1e-9 || x > width+1e-9)) return null;
+    const cameraUp = dot(direction, acceptedUp);
     const y = originY - (scale * cameraUp) / denominator;
-    if (!finite(x) || !finite(y)) return null;
-    return { x, y, degrees: normalizeDegrees(azimuthDeg), altitude: altitudeDeg };
+    if (!finite(y) || clipped && (y < -1e-9 || y > height+1e-9)) return null;
+    return { x, y, degrees, altitude };
   };
-  return { unclipped, project(azimuthDeg, altitudeDeg) {
-    const point = unclipped(azimuthDeg,altitudeDeg);
-    return point && point.x >= -1e-9 && point.x <= width+1e-9 && point.y >= -1e-9 && point.y <= height+1e-9 ? point : null;
-  } };
+  const fromAngles = (azimuthDeg: number, altitudeDeg: number, clipped: boolean) => {
+    const direction = skyHorizontalDirection(azimuthDeg, altitudeDeg);
+    return direction ? project(direction, normalizeDegrees(azimuthDeg), altitudeDeg, clipped) : null;
+  };
+  return {
+    unclipped: (azimuthDeg, altitudeDeg) => fromAngles(azimuthDeg, altitudeDeg, false),
+    project: (azimuthDeg, altitudeDeg) => fromAngles(azimuthDeg, altitudeDeg, true),
+    prepared: direction => project(direction.vector, direction.degrees, direction.altitude, true),
+  };
 }
 
 /** Stereographic radius = scale * tan(angular distance from center / 2).

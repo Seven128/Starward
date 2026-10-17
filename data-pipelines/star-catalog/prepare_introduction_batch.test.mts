@@ -15,6 +15,80 @@ for (const pin of [fixture.terms, ...fixture.rows.map((row: any) => row.source),
 const read = async (pin: { path: string }) => sourceBytes.get(pin.path)!;
 const hash = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 
+const liveBatch = JSON.parse(await readFile(new URL("../../output/cloud-sky-text-inputs-2026-10-11-r1/article-mechanism-r1/inspection.json", import.meta.url), "utf8"));
+const readLive = async (pin: { path: string }) => await readFile(new URL(pin.path, root));
+const acquired = JSON.parse(await readFile(new URL("../../output/cloud-sky-text-inputs-2026-10-11-r1/article-batch-r1/inspection.json", import.meta.url), "utf8"));
+const miraFixture = { ...acquired, rows: acquired.rows.filter((row: any) => row.title === "Mira") };
+test("normal Mira article with a disambiguation link retains its exact star identity", async () => {
+  assert.equal(miraFixture.rows.length, 1);
+  const html = await readLive(miraFixture.rows[0].source); assert.match(html.toString("utf8"), /class="mw-disambig"/u);
+  const result = await prepareIntroductionInputs(miraFixture, catalog, readLive);
+  assert.deepEqual(result.exceptions, []); assert.deepEqual(result.candidates.map(row => row.reference), ["HR:681"]);
+});
+
+test("slash-separated catalogue designations cannot silently choose the first identifier", async () => {
+  const input = structuredClone(fixture);
+  input.rows = [input.rows[0]];
+  const pin = input.rows[0].source, original = sourceBytes.get(pin.path)!;
+  assert(original.toString("utf8").includes("113226"));
+  const ambiguous = Buffer.from(original.toString("utf8").replaceAll("113226", "113226/113227"));
+  pin.bytes = ambiguous.length; pin.sha256 = hash(ambiguous);
+  const result = await prepareIntroductionInputs(input, catalog,
+    async requested => requested.path === pin.path ? ambiguous : read(requested));
+  assert.equal(result.candidates.length, 0);
+  assert.match(result.exceptions[0]!.reason, /article_catalog_identity_mismatch/u);
+});
+test("a disambiguation page marker still rejects an otherwise matching star article", async () => {
+  const original = await readLive(miraFixture.rows[0].source);
+  const bytes = Buffer.from(original.toString("utf8").replace('id="mw-content-text"', 'class="dmbox dmbox-disambig" id="mw-content-text"'));
+  assert.notDeepEqual(bytes, original);
+  const changed = structuredClone(miraFixture); changed.rows[0].source.bytes = bytes.length; changed.rows[0].source.sha256 = hash(bytes);
+  changed.rows[0].httpRetrieval.source = { ...changed.rows[0].source };
+  const result = await prepareIntroductionInputs(changed, catalog, async pin => pin.path === changed.rows[0].source.path ? bytes : readLive(pin));
+  assert.equal(result.candidates.length, 0); assert.equal(result.exceptions.length, 1);
+  assert.match(result.exceptions[0]!.reason, /article_identity_invalid/u);
+});
+test("real grouped entity response and article preserve fixed identity and actual HTTP completion", async () => {
+  const collection = await collectCachedIntroductionInputs(liveBatch, [{ path: "actual-mechanism-inspection", value: liveBatch }], readLive);
+  const result = await prepareCachedIntroductionInputs(collection, catalog, readLive);
+  assert.deepEqual(result.exceptions, []); assert.deepEqual(result.collection.exceptions, []);
+  assert.deepEqual(result.candidates.map(row => row.reference), ["HR:1165"]);
+  const candidate = result.candidates[0]!;
+  assert.equal(candidate.actualHttpRetrievedAt, liveBatch.rows[0].httpRetrieval.completedAt);
+  assert.match(candidate.sourceTimeMeaning, /^Actual article HTTP/u);
+  assert.equal(candidate.entity.pin.path, liveBatch.entities[0].source.path);
+  const reordered = structuredClone(liveBatch), source = reordered.rows[0].httpRetrieval.source;
+  reordered.rows[0].httpRetrieval.source = { sha256: source.sha256, bytes: source.bytes, path: source.path };
+  assert.equal((await prepareIntroductionInputs(reordered, catalog, readLive)).candidates.length, 1);
+});
+test("separate selected entities sharing one raw response are retained and wrong article producer is rejected", async () => {
+  const changed = structuredClone(liveBatch), first = changed.rows[0];
+  const other = changed.entities.find((entity: any) => entity.id === "Q1054991"); assert(other);
+  changed.rows.push({ ...first, key: "wrong-shared-article", entityId: other.id });
+  const collection = await collectCachedIntroductionInputs(changed, [{ path: "shared-container", value: changed }], readLive);
+  assert.equal(collection.inspection.rows.length, 2); assert.equal(collection.inspection.entities.length, 2);
+  const result = await prepareCachedIntroductionInputs(collection, catalog, readLive);
+  assert.deepEqual(result.candidates.map(row => row.reference), ["HR:1165"]);
+  assert.equal(result.exceptions.length, 1); assert.match(result.exceptions[0]!.reason, /article_binding_mismatch/u);
+});
+test("container annotation, selected IDs, real time and acquisition failures cannot be silently dropped", async () => {
+  for (const mutate of [
+    (value: any) => { delete value.entities[0].container; },
+    (value: any) => { value.entities[0].container.requestedIds = [value.entities[0].id]; },
+    (value: any) => { value.rows[0].httpRetrieval.completedAt = "2000-01-01T00:00:00.000Z"; },
+    (value: any) => { value.rows[0].httpRetrieval.source.bytes++; },
+  ]) {
+    const changed = structuredClone(liveBatch); mutate(changed);
+    const result = await prepareIntroductionInputs(changed, catalog, readLive);
+    assert.equal(result.candidates.length, 0); assert.equal(result.exceptions.length, 1);
+  }
+  const partial = structuredClone(liveBatch); partial.sourceExceptions = [{ title: "Unavailable article", reason: "article_http_unavailable" }];
+  const collection = await collectCachedIntroductionInputs(partial, [{ path: "partial-acquisition", value: partial }], readLive);
+  const result = await prepareCachedIntroductionInputs(collection, catalog, readLive);
+  assert.equal(result.status, "PARTIAL_INPUTS_PREPARED"); assert.equal(result.candidates.length, 1);
+  assert.deepEqual(result.collection.exceptions, [{ path: "partial-acquisition", title: "Unavailable article", reason: "article_http_unavailable" }]);
+});
+
 test("one batch re-reads real fixed text and exact catalog identities without publishing prose", async () => {
   const result = await prepareIntroductionInputs(fixture, catalog, read);
   assert.deepEqual(result.exceptions, []);

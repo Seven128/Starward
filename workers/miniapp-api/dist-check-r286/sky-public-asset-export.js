@@ -1,0 +1,158 @@
+import { readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { skyStaticHash, validSkyStaticRoute, skyStaticDeliveryFragment as sharedSkyStaticDeliveryFragment, writeSkyStaticBundle } from "../../../tools/deployment/sky-static-bundle.mjs";
+import { pathToFileURL } from "node:url";
+import { MoonTexturePublicationService, LEGACY_MOON_TEXTURE_PUBLICATION_HASH } from "./moon-texture-publication.js";
+import { MarsTexturePublicationService } from "./mars-texture-publication.js";
+import { MercuryTexturePublicationService } from "./mercury-texture-publication.js";
+import { JupiterBandsPublicationService } from "./jupiter-bands-publication.js";
+import { SaturnBandsPublicationService } from "./saturn-bands-publication.js";
+import { UranusBandsPublicationService } from "./uranus-bands-publication.js";
+import { NeptuneBandsPublicationService } from "./neptune-bands-publication.js";
+import { GalacticImagePublicationService } from "./galactic-image-publication.js";
+import { SkyLandscapePublicationService } from "./sky-landscape-publication.js";
+import { WideFieldW3PublicationService } from "./wide-field-w3-publication.js";
+import { ConstellationPublicationService } from "./constellation-publication.js";
+import { SdssOpticalImageryService } from "./sdss-optical-imagery.js";
+import { DeepSkyImageryService } from "./deep-sky-imagery.js";
+import { PreparedOpticalImageryService } from "./prepared-optical-imagery.js";
+import { galacticImagePublicAssetHeaders, galacticImagePublicMetadataHeaders, opticalHipsPublicAssetHeaders, skyPublicAssetHeaders, skySourceManifestHeaders } from "./sky-public-asset-headers.js";
+import { SaoPublicationService } from "./sao-publication.js";
+function asset(kind, route, bytes, contentType, fieldDegrees) {
+    return { route, bytes, headers: skyPublicAssetHeaders(kind, contentType, fieldDegrees) };
+}
+/** One publication owner supplies the exact path, bytes and source identity.
+ * Explicit task inputs can exercise a conditional asset without replacing the
+ * default exporter, adding a registry, or admitting arbitrary directories. */
+export async function galacticSkyPublicAsset(owner = new GalacticImagePublicationService()) {
+    const manifest = owner.manifest();
+    return { route: manifest.image.downloadUrl,
+        bytes: await owner.image(manifest.publicationHash, manifest.image.file),
+        headers: galacticImagePublicAssetHeaders(manifest) };
+}
+/** The standard consumer preserves both fixed ordinary versions through the
+ * same owner; it never crawls historical trial directories. */
+export async function* galacticSkyPublicAssets(owner = new GalacticImagePublicationService()) {
+    for (const manifest of owner.publishedManifests()) {
+        yield { route: manifest.image.downloadUrl,
+            bytes: await owner.image(manifest.publicationHash, manifest.image.file),
+            headers: galacticImagePublicAssetHeaders(manifest) };
+        const metadata = owner.publishedMetadata(manifest.publicationHash);
+        yield { ...metadata, headers: galacticImagePublicMetadataHeaders(manifest) };
+    }
+}
+/** Explicit LOCAL trial consumer of the standard bundle writer. This is not
+ * called by approvedSkyPublicAssets or the release/OCI export entry point. */
+export async function* opticalHipsTrialSkyPublicAssets(owner) {
+    if (owner.manifest().scope !== "TRIAL")
+        throw new Error("optical_trial_scope_invalid");
+    for await (const item of owner.publishedAssets())
+        yield {
+            route: item.route, bytes: item.bytes, headers: opticalHipsPublicAssetHeaders(item.contentType, item.sourceId),
+        };
+}
+/** Keep image and metadata on the same explicitly retained edition. */
+export async function* bodySkyPublicAssets(kind, owner) {
+    for (const manifest of owner.publishedManifests()) {
+        const image = await owner.imageAsset(manifest.publicationHash, manifest.image.file);
+        yield asset(kind, manifest.image.downloadUrl, image.bytes, image.contentType);
+        const metadata = owner.publishedMetadata(manifest.publicationHash);
+        yield asset(kind, metadata.route, metadata.bytes, "application/json; charset=utf-8");
+    }
+}
+/** Enumerate only assets accepted by the existing publication owners. No disk
+ * crawl, remote fetch, trial switch, raw science input or account context. */
+export async function* approvedSkyPublicAssets(prepared = new PreparedOpticalImageryService(), sdss = new SdssOpticalImageryService()) {
+    const moon = new MoonTexturePublicationService();
+    const fixed = [
+        ["moon", moon], ["mars", new MarsTexturePublicationService()],
+        ["mercury", new MercuryTexturePublicationService()], ["jupiter", new JupiterBandsPublicationService()],
+        ["saturn", new SaturnBandsPublicationService()], ["uranus", new UranusBandsPublicationService()],
+        ["neptune", new NeptuneBandsPublicationService()],
+    ];
+    for (const [kind, owner] of fixed)
+        yield* bodySkyPublicAssets(kind, owner);
+    yield* galacticSkyPublicAssets();
+    const oldMoon = moon.manifest();
+    yield asset("moon", `/v2/sky/moon/${LEGACY_MOON_TEXTURE_PUBLICATION_HASH}/${oldMoon.image.file}`, await moon.image(LEGACY_MOON_TEXTURE_PUBLICATION_HASH), "image/jpeg");
+    for (const coverage of moon.coveragePublishedManifests()) {
+        yield asset("moon", coverage.image.downloadUrl, await moon.coverageImage(coverage.publicationHash), "image/png");
+        const metadata = moon.coveragePublishedMetadata(coverage.publicationHash);
+        yield asset("moon", metadata.route, metadata.bytes, "application/json; charset=utf-8");
+    }
+    const landscape = new SkyLandscapePublicationService(), lm = landscape.manifest();
+    for (const route of [lm.source.originalDownloadUrl, ...lm.resources.flatMap(r => [r.image.downloadUrl, r.alpha.downloadUrl])]) {
+        const file = route.slice(route.lastIndexOf("/") + 1), result = await landscape.asset(lm.publicationHash, file);
+        yield asset("landscape", route, result.bytes, result.contentType);
+    }
+    const wide = new WideFieldW3PublicationService(), wm = wide.manifest();
+    yield asset("wide-field-properties", wm.propertiesUrl, Buffer.from(await wide.properties(wm.publicationHash)), "text/plain; charset=utf-8");
+    for (const tile of wm.tiles)
+        yield asset("wide-field", tile.downloadUrl, await wide.tile(wm.publicationHash, tile.pixel), "image/jpeg");
+    const constellation = new ConstellationPublicationService(), cm = constellation.get().data;
+    for (const file of [...cm.images.map(i => i.file), cm.geometryAsset.file, ...Object.keys(cm.provenance.definitions.sourceFiles)]) {
+        const result = await constellation.asset(cm.catalogHash, file);
+        yield asset("constellations", `/v2/sky/constellations/${cm.catalogHash}/assets/${file}`, result.bytes, result.contentType);
+    }
+    for await (const image of sdss.publishedAssets())
+        yield asset("sdss-optical", image.descriptor.downloadUrl, image.bytes, image.contentType, image.fieldDegrees);
+    for (const manifest of sdss.publishedManifests())
+        yield {
+            route: `/v2/sky/sdss-optical/${manifest.publicationHash}/manifest`, bytes: Buffer.from(JSON.stringify(manifest)),
+            headers: skySourceManifestHeaders("sdss-optical", manifest.objectRef),
+        };
+    const deepSky = new DeepSkyImageryService();
+    for await (const image of deepSky.publishedAssets())
+        yield {
+            route: image.descriptor.downloadUrl, bytes: image.bytes,
+            headers: skyPublicAssetHeaders("deep-sky", image.contentType, image.fieldDegrees, image),
+        };
+    for (const manifest of deepSky.publishedManifests())
+        yield {
+            route: `/v2/sky/deep-sky/${manifest.publicationHash}/manifest`, bytes: Buffer.from(JSON.stringify(manifest)),
+            headers: skySourceManifestHeaders("deep-sky"),
+        };
+    for await (const image of prepared.publishedAssets())
+        yield asset("prepared-optical", image.descriptor.downloadUrl, image.bytes, image.contentType, image.fieldDegrees);
+    for (const metadata of prepared.publishedMetadata())
+        yield {
+            route: metadata.route, bytes: metadata.bytes,
+            headers: metadata.headers,
+        };
+    const sao = new SaoPublicationService(new URL('../assets/sao-v2/', import.meta.url));
+    for await (const tile of sao.publishedAssets())
+        yield asset("sao", `/v2/sky/supplements/sao/v2/${tile.publicationHash}/assets/${tile.tileId}`, tile.bytes, tile.contentType);
+}
+/** Compatibility entry point; the canonical layout has one shared owner. */
+export function skyStaticDeliveryFragment(records) {
+    if (records.some(record => !validSkyStaticRoute(record.route)))
+        throw new Error("sky_static_route_invalid");
+    return sharedSkyStaticDeliveryFragment(records);
+}
+export async function exportSkyPublicAssets(outputDirectory, revision, prepared, sdss) {
+    if (revision !== undefined && !/^[a-f0-9]{40}$/.test(revision))
+        throw new Error("sky_static_revision_invalid");
+    const result = await writeSkyStaticBundle(outputDirectory, approvedSkyPublicAssets(prepared, sdss));
+    if (revision !== undefined) {
+        const artifact = {
+            schemaVersion: "starward-sky-static-image-artifact-v1", revision,
+            publicationHash: result.publicationHash,
+            indexSha256: skyStaticHash(await readFile(join(result.output, "index.json"))),
+            fragmentSha256: skyStaticHash(await readFile(join(result.output, "delivery.caddy"))),
+        };
+        const bytes = Buffer.from(JSON.stringify(artifact, null, 2) + "\n");
+        const target = join(result.output, "image-artifact.json");
+        await writeFile(target, bytes, { flag: "wx" });
+        if (!(await readFile(target)).equals(bytes))
+            throw new Error("sky_static_artifact_write_readback_failed");
+    }
+    return result;
+}
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+    const i = process.argv.indexOf("--output");
+    if (i < 0 || !process.argv[i + 1])
+        throw new Error("sky_static_output_required");
+    const ri = process.argv.indexOf("--revision");
+    console.log(JSON.stringify(await exportSkyPublicAssets(process.argv[i + 1], ri < 0 ? undefined : process.argv[ri + 1])));
+}
+//# sourceMappingURL=sky-public-asset-export.js.map

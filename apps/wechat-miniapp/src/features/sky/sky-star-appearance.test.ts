@@ -20,10 +20,11 @@ test("catalog-independent star sizes preserve magnitude order without coarse bri
 
 test("zoom progressively reveals faint points and reverses without discrete level jumps", () => {
   for (const mag of [6, 8, 10]) {
-    let previousAlpha = 0;
-    let previousRadius = 0;
+    const initial=skyStarAppearance(mag,270);
+    let previousAlpha = initial?.opacity ?? 0;
+    let previousRadius = initial?.radiusPx ?? 0;
     let maximumStep = 0;
-    for (let fov = 270; fov >= SKY_MIN_VERTICAL_FOV_DEG; fov -= 0.01) {
+    for (let fov = 269.99; fov >= SKY_MIN_VERTICAL_FOV_DEG; fov -= 0.01) {
       const a = skyStarAppearance(mag, fov);
       const alpha = a?.opacity ?? 0;
       assert.ok(alpha + 1e-12 >= previousAlpha);
@@ -37,6 +38,22 @@ test("zoom progressively reveals faint points and reverses without discrete leve
   assert.equal(skyStarAppearance(8, 45), null);
   assert.ok(skyStarAppearance(8, 6));
   assert.equal(skyStarAppearance(8, 45), null, "zooming back out does not retain a revealed layer");
+});
+
+test("normal local views reveal existing ninth-magnitude identities while wide and deferred observation stay bounded", () => {
+  // SAO 128842 is supplied at visual magnitude 9 and visible in the matched
+  // 10.8-degree reference. It previously vanished before reaching the GPU.
+  const local = skyStarAppearance(9,10.8,-25,32);
+  assert.ok(local && local.opacity > .5 && local.radiusPx < 1.2);
+  assert.equal(skyStarAppearance(9,45,-25,32),null);
+  assert.equal(skyStarAppearance(9,10.8,undefined,undefined,"OBSERVATION"),null);
+  for (const mag of [0,3,6,7,9])
+    assert.deepEqual(skyStarAppearance(mag,45),skyStarAppearance(mag,45,undefined,undefined,"OBSERVATION"));
+  for (const fov of [90,115,185,264.4]) {
+    assert.ok(skyStarAppearance(6.3,fov,-25,32),'ordinary wide views retain supplied bright-catalogue stars');
+    assert.equal(skyStarAppearance(6.3,fov,-25,32,'OBSERVATION'),null,'deferred red display keeps its previous depth');
+    assert.equal(skyStarAppearance(6.3,fov,-12,32),null,'the deeper night overview cannot bypass twilight');
+  }
 });
 
 test("invalid photometry or projection cannot produce non-finite GPU geometry", () => {
@@ -90,5 +107,18 @@ test("civil, nautical and astronomical twilight reveal faint stars after bright 
     const opacity=skyStarAppearance(1,fov,altitude)?.opacity??0;
     assert.ok(opacity+1e-12>=previous,"the same star cannot dim as the Sun descends");
     previous=opacity;
+  }
+});
+
+test("late nautical display retains supplied fourth-magnitude identities seen in the matched wide field", () => {
+  // Public Singapore / HR224, 2026-10-16T11:42:41Z: the matched reference
+  // contains these existing catalogue magnitudes while the old 4.49 cut
+  // removed them before drawing. This is display contrast, not eye visibility.
+  const sun = -13.175699349046937;
+  for (const fov of [45,120,264.4]) {
+    const ordinary = skyStarAppearance(4.9,fov,sun,45);
+    assert.ok(ordinary && ordinary.opacity > .5,"supplied fourth-magnitude stars reach a readable point");
+    assert.equal(skyStarAppearance(6.3,fov,sun,45),null,"twilight still withholds the faint night layer");
+    assert.equal(skyStarAppearance(4.9,fov,sun,45,"OBSERVATION"),null,"deferred red display keeps its original twilight rule");
   }
 });

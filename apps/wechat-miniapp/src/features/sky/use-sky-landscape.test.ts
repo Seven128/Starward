@@ -5,6 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import * as resources from "./sky-landscape-resources";
 import * as readiness from "./sky-landscape-readiness";
+import {skyImageRecoveryTestOwner} from './sky-image-recovery-test-support';
 
 test("cached landscape publication does not leave disabled or unmounted consumers loading",()=>{
   const effects:Function[]=[],cleanups:Function[]=[],queries:boolean[]=[],nativeActive:boolean[]=[];
@@ -13,7 +14,7 @@ test("cached landscape publication does not leave disabled or unmounted consumer
   const source=readFileSync(new URL("./use-sky-landscape.ts",import.meta.url),"utf8");
   const react={useMemo:(fn:Function)=>fn(),useRef:(current:any)=>({current}),useState:(value:any)=>[value,()=>{}],
     useEffect:(effect:Function)=>effects.push(effect)};
-  const bindings:Record<string,any>={react,"@/hooks/use-resource-query":{useResourceQuery:(options:any)=>{
+  const bindings:Record<string,any>={react,"./use-sky-image-recovery":skyImageRecoveryTestOwner(),"@/hooks/use-resource-query":{useResourceQuery:(options:any)=>{
     queries.push(options.enabled);return {data:publication,isFetching:false,isError:false};
   }},"@/services/sky-landscape-client":{getSkyLandscapeAlpha:()=>new Promise(()=>{}),getSkyLandscapeManifest:()=>{},skyLandscapeAssetUrl:()=>""},
     "./use-sky-artwork":{useSkyNativeImages:(_canvas:any,_revision:any,_hash:any,active:boolean)=>{

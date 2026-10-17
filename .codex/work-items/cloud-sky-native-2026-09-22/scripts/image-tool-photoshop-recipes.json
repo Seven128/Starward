@@ -1,0 +1,58 @@
+{
+  "action": {
+    "set": "SkyBenchmarkSXT-20261009-r1",
+    "sha256": "e4ddb0eacdf5bfc2faf4e7fa8df93e40e65c227e9dc19665a2add054b44719ef",
+    "bytes": 227,
+    "path": "output/image-tool-full-comparison-2026-10-08/ps-sxt-action-r1/SkyBenchmarkSXT-20261009-r1.atn",
+    "name": "SXT ML11 Default",
+    "overlap": 0.2,
+    "model": 11
+  },
+  "schema": 1,
+  "ordinaryAdoption": false,
+  "photoshopVersion": "27.10.0",
+  "recipes": {
+    "ps-sxt": {
+      "protectionFeatherPixels": 8,
+      "id": "ps-sxt-ml11-protect-v1",
+      "baseEligibility": "sxt"
+    },
+    "ps-only": {
+      "minimumRadiusPixels": 1,
+      "starFeatherPixels": 1,
+      "fuzziness": 40,
+      "expandPixels": 1,
+      "baseEligibility": "original",
+      "protectionFeatherPixels": 8,
+      "highlightMinimum": 170,
+      "id": "ps-highlight-minimum-protect-v1"
+    },
+    "roundtrip": {
+      "id": "roundtrip-v1",
+      "baseEligibility": "original"
+    }
+  },
+  "quality": "COMPLETED_NOT_QUALITY_ACCEPTANCE",
+  "tools": [
+    {
+      "path": "E:/photoshop2026/Adobe Photoshop 2026/Photoshop.exe",
+      "bytes": 268665840,
+      "sha256": "aff3d47dc1aac80df610a1c9bed69a12d90538d3fafd456226e860cabca3be8a"
+    },
+    {
+      "path": "E:/RC-Astro-Photoshop/RC-Astro.8bf",
+      "bytes": 27951616,
+      "sha256": "5ebd7b1b64b6f3f9d821da3f82faf0a3102ec2bfd38cea7267ab5e5a90ee85e1"
+    },
+    {
+      "path": "E:/RC-Astro-Photoshop/RCA_DirectML.dll",
+      "bytes": 18527776,
+      "sha256": "9c9e6d822561c6c41b90e6994b3e8857cf1d66dbfb1e0c4c799c7c89b4e92da1"
+    },
+    {
+      "path": "C:/Users/777/AppData/Roaming/RC-Astro/StarXTerminator.11.onnx",
+      "bytes": 66478084,
+      "sha256": "d15b0ea04e7b41d179b68316511a5bd08d2faaa459789baf3379d9a678076821"
+    }
+  ]
+}

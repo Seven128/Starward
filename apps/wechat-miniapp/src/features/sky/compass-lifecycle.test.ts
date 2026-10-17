@@ -162,7 +162,9 @@ test("required orientation lifecycle fails closed when device motion is unavaila
   assert.equal(lifecycle.active, false);
 });
 
-test("required orientation lifecycle identifies the native start stage without exposing it to product state", async () => {
+test("required orientation lifecycle identifies the native start stage without exposing it to product state", async t => {
+  const errors: unknown[][] = [];
+  t.mock.method(console, "error", (...parts: unknown[]) => errors.push(parts));
   for (const [failedStage, expectedMessage] of [
     ["device_motion", "device_motion_start_failed:synthetic motion failure"],
     ["compass", "compass_start_failed:synthetic compass failure"],
@@ -175,14 +177,14 @@ test("required orientation lifecycle identifies the native start stage without e
       startCompass() {
         compassStarts++;
         return failedStage === "compass"
-          ? Promise.reject(new Error("synthetic compass failure"))
+          ? Promise.reject(Object.assign(new Error("synthetic compass failure"), { errCode: 2001 }))
           : Promise.resolve();
       },
       stopCompass() { return Promise.resolve(); },
       onDeviceMotionChange() {},
       offDeviceMotionChange() {},
       startDeviceMotionListening(options) {
-        if (failedStage === "device_motion") options.fail?.({ errMsg: "synthetic motion failure" });
+        if (failedStage === "device_motion") options.fail?.({ errMsg: "synthetic motion failure", errCode: 2001 });
         else options.success?.();
       },
       stopDeviceMotionListening() {},
@@ -197,6 +199,9 @@ test("required orientation lifecycle identifies the native start stage without e
     assert.equal(compassStarts, failedStage === "compass" ? 1 : 0);
     assert.equal(lifecycle.active, false);
   }
+  assert.equal(errors.length, 2, "each actual native startup failure must reach the shared console boundary");
+  assert.ok(errors.every(parts => JSON.stringify(parts).includes("2001")), "retain native numeric causes");
+  assert.doesNotMatch(JSON.stringify(errors), /synthetic/u, "native error text stays out of logs");
 });
 
 test("orientation startup diagnostics retain only bounded stage, reason and numeric code", () => {
@@ -228,7 +233,9 @@ test("explicit compass startup precedes listener registration to avoid WeChat au
   assert.equal(await lifecycle.stop(), true);
 });
 
-test("an implicit compass start from listener registration accepts the native already-active result", async () => {
+test("an implicit compass start from listener registration accepts the native already-active result", async t => {
+  const errors: unknown[][] = [];
+  t.mock.method(console, "error", (...parts: unknown[]) => errors.push(parts));
   const listeners = new Set<(event: CompassEvent) => void>();
   let running = false;
   let failure: unknown;
@@ -255,6 +262,7 @@ test("an implicit compass start from listener registration accepts the native al
   assert.equal(events, 1);
   assert.equal(await lifecycle.stop(), true);
   assert.equal(running, false);
+  assert.equal(errors.length, 0, "already-active recovery is not a new failure");
 });
 
 test("native stop settles before removing the last listener, without publishing during release", async () => {
@@ -310,7 +318,9 @@ test("native stop settles before removing the last listener, without publishing 
   assert.equal(await lifecycle.stop(), true);
 });
 
-test("failed native stop retains its listener until retry confirms release", async () => {
+test("failed native stop retains its listener until retry confirms release", async t => {
+  const errors: unknown[][] = [];
+  t.mock.method(console, "error", (...parts: unknown[]) => errors.push(parts));
   const listeners = new Set<(event: CompassEvent) => void>();
   let running = false;
   let rejectNextStop = true;
@@ -326,7 +336,7 @@ test("failed native stop retains its listener until retry confirms release", asy
     async stopCompass() {
       if (rejectNextStop) {
         rejectNextStop = false;
-        throw new Error("temporary native stop failure");
+        throw Object.assign(new Error("temporary native stop failure"), { errno: -1202 });
       }
       if (!running) throw new Error("fail to disable, not enable?");
       running = false;
@@ -335,6 +345,9 @@ test("failed native stop retains its listener until retry confirms release", asy
   const start = () => lifecycle.start(() => publications++, error => { throw error; });
   await start();
   assert.equal(await lifecycle.stop(), false);
+  assert.equal(errors.length, 1, "failed release is observable even when stop returns false");
+  assert.match(JSON.stringify(errors), /-1202/u);
+  assert.doesNotMatch(JSON.stringify(errors), /temporary/u);
   assert.equal(listeners.size, 1, "do not disable an uncertain stream by removing its final listener");
   for (const listener of listeners) listener({ direction: 20, accuracy: 5 });
   assert.equal(publications, 0, "retained native listener has no publication authority");
@@ -344,6 +357,38 @@ test("failed native stop retains its listener until retry confirms release", asy
   assert.equal(listeners.size, 1);
   assert.equal(await lifecycle.stop(), true);
   assert.equal(listeners.size, 0);
+  assert.equal(errors.length, 1, "successful cleanup retry does not add an error");
+});
+
+test("optional compass failure logs once while the valid motion stream remains usable", async t => {
+  const errors: unknown[][] = [];
+  t.mock.method(console, "error", (...parts: unknown[]) => errors.push(parts));
+  const motionListeners = new Set<(event: DeviceMotionEvent) => void>();
+  let motionEvents = 0, compassUnavailable = 0, motionStops = 0;
+  const failure = { errMsg: "startCompass:fail private vendor detail", errCode: 2001 };
+  const lifecycle = createCompassLifecycle({
+    onCompassChange() { assert.fail("failed optional compass must not install a listener"); },
+    offCompassChange() {},
+    async startCompass() { throw failure; },
+    async stopCompass() {},
+    onDeviceMotionChange(listener) { motionListeners.add(listener); },
+    offDeviceMotionChange(listener) { motionListeners.delete(listener); },
+    startDeviceMotionListening(options) { options.success?.(); },
+    stopDeviceMotionListening() { motionStops++; },
+  }, { requireDeviceMotion: true, compassOptional: true,
+    compassUnavailable: error => { assert.equal(error, failure); compassUnavailable++; } });
+  await lifecycle.start(() => undefined, error => { throw error; }, () => { motionEvents++; });
+  assert.equal(lifecycle.active, true);
+  for (const listener of motionListeners) listener({ alpha: 0.2, beta: 0.1, gamma: 0 });
+  assert.equal(motionEvents, 1);
+  assert.equal(compassUnavailable, 1);
+  assert.equal(errors.length, 1, "successful degradation must still log its real failure");
+  assert.match(JSON.stringify(errors), /2001/u);
+  assert.doesNotMatch(JSON.stringify(errors), /private|vendor/u);
+  assert.equal(await lifecycle.stop(), true);
+  assert.equal(motionStops, 1);
+  assert.equal(motionListeners.size, 0);
+  assert.equal(errors.length, 1);
 });
 
 test("WeChat listener registration starts the compass initially and after lifecycle stop", async () => {

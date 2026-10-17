@@ -6,21 +6,24 @@ import ts from "typescript";
 import { projectAdoptedSkyCatalog } from "./sky-report-catalog";
 import { TEST_API_BASE, transportHarness } from "./api-request-test-support";
 import { responseCacheKey } from "./cache-policy";
-import { isCelestialObjectReference, SKY_PLANET_ORDER } from "@starward/miniapp-contracts";
+import { SKY_PLANET_ORDER } from "@starward/miniapp-contracts";
+import * as reportContracts from "@starward/miniapp-contracts";
 
 const source = ts.createSourceFile("api-client.ts", readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
 const declaration = source.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "getSkyReport")!;
-function facade(h: ReturnType<typeof transportHarness>, project = projectAdoptedSkyCatalog) {
+function facade(h: ReturnType<typeof transportHarness>) {
   return vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export /u, "") + "\ngetSkyReport;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    ...reportContracts,
     ADOPTED_SKY_REPORT_CATALOG_VERSION: "bsc5p-bright-stars.v3",
-    projectAdoptedSkyCatalog: project,
+    projectAdoptedSkyCatalog,
     requestOperation: () => h.request("scene", "/scene"),
   }) as (spot: string, context: string) => Promise<any>;
 }
-function skyEnvelope(h: ReturnType<typeof transportHarness>, legacy = true) {
+function skyEnvelope(legacy = true) {
   const source = { id: "catalog:stars", kind: "OPEN_DATA" };
   const ref = legacy ? "HIP:32349" : "HR:2491";
-  return { ...h.response, sources: [source, { id: "weather", kind: "PROVIDER" }],
+  return { apiVersion: "v2", generatedAt: new Date().toISOString(), requestId: "synthetic-sky-report",
+    etag: "synthetic-etag", dataState: "FRESH", warnings: [] as string[], sources: [source, { id: "weather", kind: "PROVIDER" }],
     data: { sources: [source], targets: [], targetFrames: [{ at: "2026-09-15T12:00:00.000Z", targets: [{ targetId: "target:jupiter", azimuthDeg: 123.256789, altitudeDeg: 36.123456 }] }],
       hourly: [{ at: "2026-09-15T12:00:00.000Z", totalCloudPct: 20, sunAzimuthDeg: 279.5, sunAltitudeDeg: -7.25, sunAngularDiameterDeg: .53,
         moonAzimuthDeg: 121.25, moonAltitudeDeg: 37.5, moonAngularDiameterDeg: .51, moonIllumination: .63,
@@ -32,295 +35,211 @@ function skyEnvelope(h: ReturnType<typeof transportHarness>, legacy = true) {
         deepSky: { state: "AVAILABLE", catalog: { entries: [{ objectRef: "M:31" }] } } } } };
 }
 
-test("upgraded client rejects retired star cache after restart on offline and 304, and rejects a legacy server response", async () => {
-  for (const outcome of ["offline", "200", "304"]) {
-    const old = transportHarness(), data = skyEnvelope(old);
-    await old.seed(data as any);
-    const current = transportHarness();
-    for (const [key, value] of old.storage) current.storage.set(key, structuredClone(value));
-    const pending = facade(current)("spot:published", "context:unchanged");
-    if (outcome === "offline") current.calls.at(-1)!.fail({ errMsg: "offline" });
-    else current.calls.at(-1)!.success({ statusCode: Number(outcome), data: outcome === "200" ? data : undefined });
-    const result = await pending;
-    assert.equal(result.data.skyScene.state, "UNAVAILABLE");
-    assert.equal(result.data.skyScene.catalog, null);
-    assert.equal(result.data.skyScene.frames[0].geometry, null);
-    assert.equal(result.dataState, outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
-    assert.deepEqual(result.data.hourly, data.data.hourly);
-    assert.deepEqual(result.data.targetFrames, data.data.targetFrames);
-    assert.deepEqual(result.data.skyScene.deepSky, data.data.skyScene.deepSky);
-    assert.equal(result.sources.some((item: any) => item.id === "catalog:stars"), false);
-    assert.ok(result.warnings.some((message: string) => message.includes("联网后刷新")));
-    // Retired bytes cannot leak via an untouched cached object after projection.
-    assert.equal((current.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).skyScene.catalog.entries[0].objectRef, "HIP:32349");
-    old.queryClient.clear(); current.queryClient.clear();
-  }
-});
-
-test("old or malformed solar positions stay missing across offline, 304 and old server, then recover from exact data", async () => {
-  for (const outcome of ["offline", "304", "200", "null-pair"] as const) {
-    const h = transportHarness(), call = facade(h);
-    const old = skyEnvelope(h, false);
-    if (outcome === "null-pair") {
-      (old.data.hourly[0] as any).sunAzimuthDeg = null;
-      (old.data.hourly[0] as any).sunAltitudeDeg = null;
-    } else delete (old.data.hourly[0] as any).sunAzimuthDeg;
-    await h.seed(old as any);
-    const pending = call("spot:published", "context:unchanged");
-    if (outcome === "offline") h.calls.at(-1)!.fail({ errMsg: "offline" });
-    else h.calls.at(-1)!.success({ statusCode: outcome === "null-pair" ? 200 : Number(outcome), data: outcome === "200" || outcome === "null-pair" ? old : undefined });
-    const degraded = await pending;
-    assert.deepEqual([degraded.data.hourly[0].sunAzimuthDeg, degraded.data.hourly[0].sunAltitudeDeg], [null, null]);
-    assert.equal(degraded.data.offlineReady, false);
-    assert.equal(degraded.dataState, outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
-    assert.ok(degraded.warnings.some((warning: string) => warning.includes("太阳精确位置")));
-    assert.equal((h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).hourly[0].sunAltitudeDeg, outcome === "null-pair" ? null : -7.25,
-      "presentation projection cannot rewrite the cached original");
-    const fresh = skyEnvelope(h, false);
-    const next = call("spot:published", "context:unchanged");
-    h.calls.at(-1)!.success({ statusCode: 200, data: fresh });
-    const restored = await next;
-    assert.deepEqual([restored.data.hourly[0].sunAzimuthDeg, restored.data.hourly[0].sunAltitudeDeg], [279.5, -7.25]);
-    h.queryClient.clear();
-  }
-});
-
-test("missing solar diameter does not invent a disc or discard a still-valid twilight direction", async () => {
-  for (const outcome of ["offline", "304", "200", "bad-diameter"] as const) {
-    const h = transportHarness(), call = facade(h), old = skyEnvelope(h,false);
-    if (outcome === "bad-diameter") (old.data.hourly[0] as any).sunAngularDiameterDeg = 2;
-    else delete (old.data.hourly[0] as any).sunAngularDiameterDeg;
-    await h.seed(old as any);
-    const pending = call("spot:published","context:unchanged");
-    if (outcome === "offline") h.calls.at(-1)!.fail({errMsg:"offline"});
-    else h.calls.at(-1)!.success({statusCode:outcome === "bad-diameter" ? 200 : Number(outcome),
-      data:outcome === "200" || outcome === "bad-diameter" ? old : undefined});
-    const degraded = await pending;
-    assert.deepEqual([degraded.data.hourly[0].sunAzimuthDeg,degraded.data.hourly[0].sunAltitudeDeg,
-      degraded.data.hourly[0].sunAngularDiameterDeg],[279.5,-7.25,null]);
-    assert.equal(degraded.dataState,outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
-    assert.ok(degraded.warnings.some((warning:string)=>warning.includes("太阳盘角直径")));
-    assert.equal((h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).hourly[0].sunAngularDiameterDeg,
-      outcome === "bad-diameter" ? 2 : undefined,"presentation must not rewrite cached bytes");
-    const next=call("spot:published","context:unchanged");
-    h.calls.at(-1)!.success({statusCode:200,data:skyEnvelope(h,false)});
-    const restored=await next;
-    assert.equal(restored.data.hourly[0].sunAngularDiameterDeg,.53);
-    h.queryClient.clear();
-  }
-});
-
-test("old or malformed lunar disc geometry cannot survive offline, 304 or old server recovery", async () => {
-  for (const outcome of ["offline", "304", "200", "bad-diameter"] as const) {
-    const h = transportHarness(), call = facade(h);
-    const old = skyEnvelope(h,false);
-    if (outcome === "bad-diameter") (old.data.hourly[0] as any).moonAngularDiameterDeg = 2;
-    else delete (old.data.hourly[0] as any).moonAzimuthDeg;
-    await h.seed(old as any);
-    const pending = call("spot:published","context:unchanged");
-    if (outcome === "offline") h.calls.at(-1)!.fail({errMsg:"offline"});
-    else h.calls.at(-1)!.success({statusCode:outcome === "bad-diameter" ? 200 : Number(outcome),
-      data:outcome === "200" || outcome === "bad-diameter" ? old : undefined});
-    const degraded = await pending;
-    assert.deepEqual([degraded.data.hourly[0].moonAzimuthDeg,degraded.data.hourly[0].moonAngularDiameterDeg],[null,null]);
-    assert.equal(degraded.dataState,outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
-    assert.ok(degraded.warnings.some((warning:string)=>warning.includes("月球精确位置")));
-    assert.equal((h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).hourly[0].moonAngularDiameterDeg,
-      outcome === "bad-diameter" ? 2 : .51,"presentation must not rewrite the cached original");
-    const next = call("spot:published","context:unchanged");
-    h.calls.at(-1)!.success({statusCode:200,data:skyEnvelope(h,false)});
-    const restored = await next;
-    assert.deepEqual([restored.data.hourly[0].moonAzimuthDeg,restored.data.hourly[0].moonAngularDiameterDeg],[121.25,.51]);
-    h.queryClient.clear();
-  }
-});
-
-test("retired or mixed planetary rows lose their geometry on offline, 304 and server recovery", async () => {
-  for (const outcome of ["offline", "304", "200", "mixed"] as const) {
-    const h = transportHarness(), call = facade(h), old = skyEnvelope(h,false);
-    if (outcome === "mixed") (old.data.hourly[0]!.planets as any[])[2]!.body = "JUPITER";
-    else delete (old.data.hourly[0] as any).planets;
-    await h.seed(old as any);
-    const pending = call("spot:published","context:unchanged");
-    if (outcome === "offline") h.calls.at(-1)!.fail({errMsg:"offline"});
-    else h.calls.at(-1)!.success({statusCode:outcome === "mixed" ? 200 : Number(outcome),
-      data:outcome === "200" || outcome === "mixed" ? old : undefined});
-    const degraded = await pending;
-    assert.equal(degraded.data.hourly[0].planets,null);
-    assert.equal(degraded.dataState,outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
-    assert.ok(degraded.warnings.some((warning:string)=>warning.includes("行星精确位置")));
-    assert.equal((h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).hourly[0].planets?.[2]?.body,
-      outcome === "mixed" ? "JUPITER" : undefined,"projection cannot rewrite the cached source");
-    const next = call("spot:published","context:unchanged");
-    h.calls.at(-1)!.success({statusCode:200,data:skyEnvelope(h,false)});
-    const restored = await next;
-    assert.deepEqual(restored.data.hourly[0].planets.map((p:any)=>p.body),SKY_PLANET_ORDER);
-    h.queryClient.clear();
-  }
-});
-
-for (const outcome of ["200", "304", "offline"] as const) {
-  test(`a null planetary record preserves independent sky content on ${outcome} and recovers from fresh data`, async () => {
-    const h = transportHarness(), call = facade(h);
-    try {
-      const damaged = skyEnvelope(h, false);
-      (damaged.data.hourly[0]!.planets as unknown[])[2] = null;
-      await h.seed(damaged as any);
-      const pending = call("spot:published", "context:unchanged");
-      if (outcome === "offline") h.calls.at(-1)!.fail({ errMsg: "offline" });
-      else h.calls.at(-1)!.success({ statusCode: Number(outcome), data: outcome === "200" ? damaged : undefined });
-      const result = await pending;
-      assert.equal(result.data.hourly[0].planets, null);
-      const { planets: _damaged, ...independent } = damaged.data.hourly[0]!;
-      const { planets: _withdrawn, ...retained } = result.data.hourly[0];
-      assert.deepEqual(retained, independent, "sun, moon, time and weather remain usable");
-      assert.equal(result.data.skyScene.state, "AVAILABLE");
-      assert.deepEqual(result.data.skyScene, damaged.data.skyScene, "stars and independent deep-sky content remain usable");
-      assert.deepEqual(result.data.targetFrames, damaged.data.targetFrames);
-      assert.equal(result.dataState, outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
-      assert.equal(result.data.offlineReady, false);
-      assert.ok(result.warnings.some((warning: string) => warning.includes("行星精确位置")));
-      const cached = h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any;
-      assert.deepEqual(cached.hourly[0].planets, damaged.data.hourly[0]!.planets,
-        "presentation degradation must not replace the stored response");
-
-      const fresh = skyEnvelope(h, false);
-      const recovering = call("spot:published", "context:unchanged");
-      h.calls.at(-1)!.success({ statusCode: 200, data: fresh });
-      const restored = await recovering;
-      assert.deepEqual(restored.data.hourly[0].planets, fresh.data.hourly[0]!.planets);
-      assert.equal(restored.dataState, "FRESH");
-      assert.equal(restored.warnings.some((warning: string) => warning.includes("行星精确位置")), false);
-    } finally { h.queryClient.clear(); }
-  });
+/** Family rules use the actual projection; transport is exercised once per
+ * distinct response path below. These checks never mutate the retained input. */
+function projected(input: ReturnType<typeof skyEnvelope>) {
+  const before = structuredClone(input);
+  const result = projectAdoptedSkyCatalog(input as any);
+  assert.deepEqual(input, before, "projection must preserve source/cache bytes");
+  return result;
 }
 
-test("a null target frame is isolated across network/cache reads without losing valid frames", async () => {
-  for (const outcome of ["200", "304", "offline"] as const) {
-    const h = transportHarness(), call = facade(h);
+test("shared projection cleans retired fields after cache restart on offline, 304 and legacy server responses", async () => {
+  for (const outcome of ["offline", "304", "200"]) {
+    const old = transportHarness(), current = transportHarness(), data = skyEnvelope();
+    const target = { targetId: "target:jupiter", direction: "123°", altitudeDeg: 36 };
+    delete (data.data.hourly[0] as any).sunAzimuthDeg;
+    delete (data.data.hourly[0] as any).moonAzimuthDeg;
+    delete (data.data.hourly[0] as any).planets;
+    data.data.targets = [target] as any;
+    data.data.targetFrames[0]!.targets = [target] as any;
     try {
-      const damaged = skyEnvelope(h, false);
-      const validFrames = [...damaged.data.targetFrames];
-      (damaged.data.targetFrames as unknown[]).unshift(null);
-      await h.seed(damaged as any);
-      const pending = call("spot:published", "context:unchanged");
-      if (outcome === "offline") h.calls.at(-1)!.fail({ errMsg: "offline" });
-      else h.calls.at(-1)!.success({ statusCode: Number(outcome), data: outcome === "200" ? damaged : undefined });
-      const result = await pending;
-      assert.deepEqual(result.data.targetFrames, validFrames);
-      assert.deepEqual(result.data.hourly, damaged.data.hourly);
-      assert.equal(result.data.skyScene.state, "AVAILABLE");
-      assert.deepEqual(result.data.skyScene, damaged.data.skyScene);
+      await old.seed(data as any);
+      for (const [key, value] of old.storage) current.storage.set(key, structuredClone(value));
+      const pending = facade(current)("spot:published", "context:unchanged");
+      if (outcome === "offline") current.calls.at(-1)!.fail({ errMsg: "offline" });
+      else current.calls.at(-1)!.success({ statusCode: Number(outcome), data: outcome === "200" ? data : undefined });
+      const result = await pending, row = result.data.hourly[0];
+      assert.equal(result.data.skyScene.state, "UNAVAILABLE");
+      assert.equal(result.data.skyScene.catalog, null);
+      assert.equal(result.data.skyScene.frames[0].geometry, null);
+      assert.deepEqual([row.sunAzimuthDeg, row.sunAltitudeDeg, row.sunAngularDiameterDeg], [null, null, null]);
+      assert.deepEqual([row.moonAzimuthDeg, row.moonAngularDiameterDeg, row.planets], [null, null, null]);
+      assert.equal(row.totalCloudPct, data.data.hourly[0]!.totalCloudPct);
+      assert.equal(row.moonIllumination, data.data.hourly[0]!.moonIllumination);
+      assert.equal(result.data.targetFrames[0].targets[0].targetId, target.targetId);
+      assert.deepEqual([result.data.targets[0].azimuthDeg, result.data.targets[0].altitudeDeg], [null, null]);
+      assert.deepEqual([result.data.targetFrames[0].targets[0].azimuthDeg,
+        result.data.targetFrames[0].targets[0].altitudeDeg], [null, null]);
+      assert.deepEqual(result.data.skyScene.deepSky, data.data.skyScene.deepSky);
+      assert.equal(result.sources.some((item: any) => item.id === "catalog:stars"), false);
       assert.equal(result.dataState, outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
-      assert.ok(result.warnings.some((warning: string) => warning.includes("天体精确方位")));
-      const cached = h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any;
-      assert.deepEqual(cached.targetFrames, damaged.data.targetFrames);
-      const recovering = call("spot:published", "context:unchanged");
-      h.calls.at(-1)!.success({ statusCode: 200, data: skyEnvelope(h, false) });
-      const restored = await recovering;
-      assert.deepEqual(restored.data.targetFrames, validFrames);
-      assert.equal(restored.dataState, "FRESH");
-      assert.equal(restored.warnings.some((warning: string) => warning.includes("天体精确方位")), false);
-    } finally { h.queryClient.clear(); }
+      assert.ok(result.warnings.some((message: string) => message.includes("联网后刷新")));
+      const cached = current.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous");
+      assert.deepEqual(cached?.envelope.data, data.data, "projection cannot rewrite the restarted cache");
+    } finally { old.queryClient.clear(); current.queryClient.clear(); }
   }
+});
+
+test("missing or null solar positions remain missing and recover from exact data", () => {
+  for (const missing of ["absent", "null-pair"]) {
+    const input = skyEnvelope(false);
+    if (missing === "null-pair") {
+      (input.data.hourly[0] as any).sunAzimuthDeg = null;
+      (input.data.hourly[0] as any).sunAltitudeDeg = null;
+    } else delete (input.data.hourly[0] as any).sunAzimuthDeg;
+    const result = projected(input);
+    assert.deepEqual([result.data.hourly[0]!.sunAzimuthDeg, result.data.hourly[0]!.sunAltitudeDeg], [null, null]);
+    assert.equal(result.data.offlineReady, false);
+    assert.equal(result.dataState, "PARTIAL");
+    assert.ok(result.warnings.some(warning => warning.includes("太阳精确位置")));
+    const restored = projected(skyEnvelope(false));
+    assert.deepEqual([restored.data.hourly[0]!.sunAzimuthDeg, restored.data.hourly[0]!.sunAltitudeDeg], [279.5, -7.25]);
+  }
+});
+
+test("missing or invalid solar diameter never invents a disc or discards valid twilight direction", () => {
+  for (const missing of ["absent", "bad-diameter"]) {
+    const input = skyEnvelope(false);
+    if (missing === "bad-diameter") input.data.hourly[0]!.sunAngularDiameterDeg = 2;
+    else delete (input.data.hourly[0] as any).sunAngularDiameterDeg;
+    const result = projected(input);
+    assert.deepEqual([result.data.hourly[0]!.sunAzimuthDeg, result.data.hourly[0]!.sunAltitudeDeg,
+      result.data.hourly[0]!.sunAngularDiameterDeg], [279.5, -7.25, null]);
+    assert.equal(result.dataState, "PARTIAL");
+    assert.ok(result.warnings.some(warning => warning.includes("太阳盘角直径")));
+    assert.equal(projected(skyEnvelope(false)).data.hourly[0]!.sunAngularDiameterDeg, .53);
+  }
+});
+
+test("missing lunar position or invalid diameter withdraws lunar geometry and recovers", () => {
+  for (const missing of ["absent", "bad-diameter"]) {
+    const input = skyEnvelope(false);
+    if (missing === "bad-diameter") input.data.hourly[0]!.moonAngularDiameterDeg = 2;
+    else delete (input.data.hourly[0] as any).moonAzimuthDeg;
+    const result = projected(input);
+    assert.deepEqual([result.data.hourly[0]!.moonAzimuthDeg, result.data.hourly[0]!.moonAngularDiameterDeg], [null, null]);
+    assert.equal(result.dataState, "PARTIAL");
+    assert.ok(result.warnings.some(warning => warning.includes("月球精确位置")));
+    const restored = projected(skyEnvelope(false));
+    assert.deepEqual([restored.data.hourly[0]!.moonAzimuthDeg, restored.data.hourly[0]!.moonAngularDiameterDeg], [121.25, .51]);
+  }
+});
+
+test("retired or mixed planetary rows lose geometry independently and recover seven identities", () => {
+  for (const missing of ["absent", "mixed"]) {
+    const input = skyEnvelope(false);
+    if (missing === "mixed") (input.data.hourly[0]!.planets as any[])[2]!.body = "JUPITER";
+    else delete (input.data.hourly[0] as any).planets;
+    const result = projected(input);
+    assert.equal(result.data.hourly[0]!.planets, null);
+    assert.equal(result.dataState, "PARTIAL");
+    assert.ok(result.warnings.some(warning => warning.includes("行星精确位置")));
+    assert.deepEqual(projected(skyEnvelope(false)).data.hourly[0]!.planets!.map(planet => planet.body), SKY_PLANET_ORDER);
+  }
+});
+
+test("a null planetary record preserves independent content and recovers from fresh data", () => {
+  const input = skyEnvelope(false);
+  (input.data.hourly[0]!.planets as unknown[])[2] = null;
+  const result = projected(input);
+  const { planets: _damaged, ...independent } = input.data.hourly[0]!;
+  const { planets: _withdrawn, ...retained } = result.data.hourly[0]!;
+  assert.equal(result.data.hourly[0]!.planets, null);
+  assert.deepEqual(retained, independent, "sun, moon, time and weather remain usable");
+  assert.deepEqual(result.data.skyScene, input.data.skyScene, "stars and deep sky remain usable");
+  assert.deepEqual(result.data.targetFrames, input.data.targetFrames);
+  assert.equal(result.dataState, "PARTIAL");
+  assert.equal(result.data.offlineReady, false);
+  assert.ok(result.warnings.some(warning => warning.includes("行星精确位置")));
+  const fresh = skyEnvelope(false), restored = projected(fresh);
+  assert.deepEqual(restored.data.hourly[0]!.planets, fresh.data.hourly[0]!.planets);
+  assert.equal(restored.dataState, "FRESH");
+  assert.equal(restored.warnings.some(warning => warning.includes("行星精确位置")), false);
+});
+
+test("a null target frame is isolated without losing valid frames or independent content", () => {
+  const input = skyEnvelope(false), validFrames = structuredClone(input.data.targetFrames);
+  (input.data.targetFrames as unknown[]).unshift(null);
+  const result = projected(input);
+  assert.deepEqual(result.data.targetFrames, validFrames);
+  assert.deepEqual(result.data.hourly, input.data.hourly);
+  assert.deepEqual(result.data.skyScene, input.data.skyScene);
+  assert.equal(result.dataState, "PARTIAL");
+  assert.ok(result.warnings.some(warning => warning.includes("天体精确方位")));
+  const restored = projected(skyEnvelope(false));
+  assert.deepEqual(restored.data.targetFrames, validFrames);
+  assert.equal(restored.dataState, "FRESH");
+  assert.equal(restored.warnings.some(warning => warning.includes("天体精确方位")), false);
 });
 
 test("HTTP 503 remains a failure and cannot return the retired catalog", async () => {
-  const h = transportHarness(); await h.seed(skyEnvelope(h) as any);
-  const pending = facade(h)("spot:published", "context:unchanged");
-  h.calls.at(-1)!.success({ statusCode: 503, data: undefined });
-  await assert.rejects(pending, /bff_http_503/);
-  h.queryClient.clear();
+  const h = transportHarness();
+  try {
+    await h.seed(skyEnvelope() as any);
+    const pending = facade(h)("spot:published", "context:unchanged");
+    h.calls.at(-1)!.success({ statusCode: 503, data: undefined });
+    await assert.rejects(pending, /bff_http_503/);
+  } finally { h.queryClient.clear(); }
 });
 
-test("network recovery returns selectable HR stars and retains their provenance", async () => {
+test("network recovery returns selectable HR stars and their precise independent geometry", async () => {
   const h = transportHarness(), call = facade(h);
-  const fresh = skyEnvelope(h, false);
-  const pending = call("spot:published", "context:unchanged");
-  h.calls.at(-1)!.success({ statusCode: 200, data: fresh });
-  const result = await pending;
-  assert.equal(result.data.skyScene.state, "AVAILABLE");
-  assert.equal(result.data.skyScene.catalog.rowCount, 1630);
-  assert.equal(result.data.skyScene.frames[0].geometry.catalogHash, result.data.skyScene.catalog.catalogHash);
-  assert.equal(result.sources.some((item: any) => item.id === "catalog:stars"), true);
-  h.queryClient.clear();
-});
-
-test("retired-identity regression detects omission of the response projection", async () => {
-  const h = transportHarness(); await h.seed(skyEnvelope(h) as any);
-  const pending = facade(h, value => value)("spot:published", "context:unchanged");
-  h.calls.at(-1)!.fail({ errMsg: "offline" });
-  const wrong = await pending;
-  assert.throws(() => assert.equal(wrong.data.skyScene.state, "UNAVAILABLE"));
-  assert.equal(isCelestialObjectReference(wrong.data.skyScene.catalog.entries[0].objectRef), false);
-  h.queryClient.clear();
+  try {
+    await h.seed(skyEnvelope() as any);
+    const fresh = skyEnvelope(false);
+    const pending = call("spot:published", "context:unchanged");
+    h.calls.at(-1)!.success({ statusCode: 200, data: fresh });
+    const result = await pending;
+    assert.equal(result.data.skyScene.state, "AVAILABLE");
+    assert.equal(result.data.skyScene.catalog.rowCount, 1630);
+    assert.equal(result.data.skyScene.frames[0].geometry.catalogHash, result.data.skyScene.catalog.catalogHash);
+    assert.equal(result.sources.some((item: any) => item.id === "catalog:stars"), true);
+    assert.deepEqual(result.data.hourly, fresh.data.hourly);
+    assert.deepEqual(result.data.targetFrames, fresh.data.targetFrames);
+    assert.equal(result.dataState, "FRESH");
+    assert.equal(result.warnings.length, 0);
+  } finally { h.queryClient.clear(); }
 });
 
 test("malformed source rows retire only stars and keep independent content", () => {
- const h=transportHarness(),envelope=skyEnvelope(h,true);
- (envelope.data.skyScene.catalog as any).sources=[null];
- const result=projectAdoptedSkyCatalog(envelope as any);
- assert.equal(result.data.skyScene.state,"UNAVAILABLE");
- assert.equal(result.data.hourly,envelope.data.hourly);
- assert.equal(result.data.skyScene.deepSky,envelope.data.skyScene.deepSky);
- h.queryClient.clear();
+  const input = skyEnvelope();
+  (input.data.skyScene.catalog as any).sources = [null];
+  const result = projected(input);
+  assert.equal(result.data.skyScene.state, "UNAVAILABLE");
+  assert.equal(result.data.hourly, input.data.hourly);
+  assert.equal(result.data.skyScene.deepSky, input.data.skyScene.deepSky);
 });
 
-test("a mirrored optical frame is removed from network and offline projections without retiring valid stars",async()=>{
- const h=transportHarness(), at="2026-09-15T12:00:00.000Z";
- const old=skyEnvelope(h,false);
- (old.data as any).observationFrames=[{format:"eqj-enu-observer-v1",at,
-   observer:{latitude:0,longitude:0,elevationM:0},equatorialToEnu:[-1,0,0,0,1,0,0,0,1]}];
- await h.seed(old as any);
- const pending=facade(h)("spot:published","context:unchanged");
- h.calls.at(-1)!.fail({errMsg:"offline"});
- const degraded=await pending;
- assert.equal(degraded.data.skyScene.state,"AVAILABLE");
- assert.equal(degraded.data.observationFrames,undefined);
- assert.ok(degraded.warnings.some((warning:string)=>warning.includes("巡天影像观测几何")));
- assert.equal((h.responseCache.get(responseCacheKey("scene", TEST_API_BASE, "/scene") + ":anonymous")?.envelope.data as any).observationFrames[0].equatorialToEnu[0],-1);
- const fresh=skyEnvelope(h,false);
- const frame={format:"eqj-enu-observer-v1",at,observer:{latitude:0,longitude:0,elevationM:0},
-   equatorialToEnu:[1,0,0,0,1,0,0,0,1]};
- (fresh.data as any).observationFrames=[frame];
- const next=facade(h)("spot:published","context:unchanged");
- h.calls.at(-1)!.success({statusCode:200,data:fresh});
- assert.deepEqual((await next).data.observationFrames,[frame]);
- h.queryClient.clear();
+test("mirrored optical geometry is withdrawn without retiring valid stars and exact geometry recovers", () => {
+  const input = skyEnvelope(false), at = input.data.hourly[0]!.at;
+  const frame = { format: "eqj-enu-observer-v1", at, observer: { latitude: 0, longitude: 0, elevationM: 0 },
+    equatorialToEnu: [1, 0, 0, 0, 1, 0, 0, 0, 1] };
+  (input.data as any).observationFrames = [{ ...frame, equatorialToEnu: [-1, 0, 0, 0, 1, 0, 0, 0, 1] }];
+  const result = projected(input);
+  assert.equal(result.data.skyScene.state, "AVAILABLE");
+  assert.equal(result.data.observationFrames, undefined);
+  assert.ok(result.warnings.some(warning => warning.includes("巡天影像观测几何")));
+  const fresh = skyEnvelope(false);
+  (fresh.data as any).observationFrames = [frame];
+  assert.deepEqual(projected(fresh).data.observationFrames, [frame]);
 });
 
-test("rounded-only target caches lose geometry independently on offline, 304 and old-server reads, then recover", async () => {
-  for (const outcome of ["offline", "200", "304"]) {
-    const h = transportHarness(), call = facade(h);
-    const prior = skyEnvelope(h, false);
-    const oldTarget = { targetId: "target:jupiter", direction: "123°", altitudeDeg: 36 };
-    prior.data.targets = [oldTarget] as any;
-    prior.data.targetFrames[0]!.targets = [oldTarget] as any;
-    await h.seed(prior as any);
-    const pending = call("spot:published", "context:unchanged");
-    if (outcome === "offline") h.calls.at(-1)!.fail({ errMsg: "offline" });
-    else h.calls.at(-1)!.success({ statusCode: Number(outcome), data: outcome === "200" ? prior : undefined });
-    const result = await pending;
-    assert.equal(result.data.skyScene.state, "AVAILABLE");
-    assert.deepEqual(result.data.skyScene, prior.data.skyScene);
-    assert.deepEqual(result.data.hourly, prior.data.hourly);
-    assert.equal(result.data.targetFrames[0].targets[0].targetId, oldTarget.targetId);
-    assert.equal(result.data.targetFrames[0].targets[0].azimuthDeg, null);
-    assert.equal(result.data.targetFrames[0].targets[0].altitudeDeg, null);
-    assert.equal(result.data.targets[0].azimuthDeg, null);
-    assert.equal(result.dataState, outcome === "offline" ? "STALE_USABLE" : "PARTIAL");
-    assert.ok(result.warnings.some((message: string) => message.includes("天体精确方位")));
-    assert.equal(oldTarget.altitudeDeg, 36, "projection cannot rewrite source/cache bytes");
-
-    // A subsequent live representation, not a synthesized bearing, restores geometry.
-    h.queryClient.clear();
-    const fresh = skyEnvelope(h, false);
-    const recovering = call("spot:published", "context:unchanged");
-    h.calls.at(-1)!.success({ statusCode: 200, data: fresh });
-    const recovered = await recovering;
-    assert.equal(recovered.data.targetFrames[0].targets[0].azimuthDeg, 123.256789);
-    assert.equal(recovered.data.targetFrames[0].targets[0].altitudeDeg, 36.123456);
-    assert.equal(recovered.data.skyScene.state, "AVAILABLE");
-    h.queryClient.clear();
-  }
+test("rounded target bearings retain identity but cannot become precise geometry, then recover", () => {
+  const input = skyEnvelope(false);
+  const target = { targetId: "target:jupiter", direction: "123°", altitudeDeg: 36 };
+  input.data.targets = [target] as any;
+  input.data.targetFrames[0]!.targets = [target] as any;
+  const result = projected(input);
+  assert.deepEqual(result.data.skyScene, input.data.skyScene);
+  assert.deepEqual(result.data.hourly, input.data.hourly);
+  assert.equal(result.data.targetFrames[0]!.targets[0]!.targetId, target.targetId);
+  assert.deepEqual([result.data.targetFrames[0]!.targets[0]!.azimuthDeg,
+    result.data.targetFrames[0]!.targets[0]!.altitudeDeg], [null, null]);
+  assert.deepEqual([result.data.targets[0]!.azimuthDeg, result.data.targets[0]!.altitudeDeg], [null, null]);
+  assert.equal(result.dataState, "PARTIAL");
+  assert.ok(result.warnings.some(warning => warning.includes("天体精确方位")));
+  const restored = projected(skyEnvelope(false));
+  assert.deepEqual([restored.data.targetFrames[0]!.targets[0]!.azimuthDeg,
+    restored.data.targetFrames[0]!.targets[0]!.altitudeDeg], [123.256789, 36.123456]);
 });

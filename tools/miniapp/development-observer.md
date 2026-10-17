@@ -10,9 +10,25 @@ npm run miniapp:observe -- input --official-ide <installation> --project <projec
 npm run miniapp:observe -- console --official-ide <installation> --project <project> --filter specific_marker
 npm run miniapp:observe -- network --official-ide <installation> --project <project> --filter endpoint_segment
 npm run miniapp:observe -- screenshot --official-ide <installation> --project <project> --expected-page pages/map/index --output <new-absolute.jpg>
+npm run miniapp:observe -- style --official-ide <installation> --project <project> --expected-page <current-route> --selector '#observed-id' --name display
+npm run miniapp:observe -- batch --official-ide <installation> --project <project> --steps-file <absolute-local-json>
 ```
 
-Use actual current selectors/routes. Each invocation verifies official readiness; page operations check the expected route before acting. Timeouts are reported without replaying the action or reopening the project. Network output contains only bounded method/URL-without-query/status summaries; headers and bodies are omitted. Filtered empty results mean no matching events. The current official grep implementation was verified with `-i`; `-F` silently returned empty in the evaluated version. Filters accept a bounded marker or path segment, not arbitrary grep syntax. Screenshots contain rendered data and belong in authorized local artifacts. One controller should operate a project at a time. Official per-command startup costs more than the persistent SDK's warm layout calls below; choose based on the needed capability.
+Choose only observations that answer the current question. A batch file is a JSON array such as:
+
+```json
+[
+  { "command": "wxml", "expectedPage": "pages/known/index", "selector": "#observed-id" },
+  { "command": "style", "expectedPage": "pages/known/index", "selector": "#observed-id", "name": "display" },
+  { "command": "size", "expectedPage": "pages/known/index", "selector": "#observed-id" }
+]
+```
+
+Use actual routes/selectors rather than those examples. `wxml` reads `outerWxml`; `style` reads one property; `size` and `offset` use the corresponding official element actions. Supported batch commands also include the existing status/text/tap/input/log/screenshot operations. A failed batch returns `success: false`, `completed`, a zero-based `failedStep` and a bounded error; inspect that result, not just process exit. Earlier mutations may already have happened. Do not replay the full batch. It does not refresh, navigate, profile or collect screenshots unless explicitly requested by its steps.
+
+If synchronization returns `skill_reload_required`, no project action was sent. Follow the project [development skill](../../.codex/skills/starward-miniapp-development/SKILL.md) to refresh/reread before resuming. The adapter supports optional-token-free official CLI sessions; if a CLI token is required, use the already authorized official channel under its matching skill rather than borrowing the MCP token. No credential is persisted by this helper.
+
+Use actual current selectors/routes. The official adapter synchronizes the matching skill package once per invocation and requests reload before project actions when it changes. Readiness is checked once; page operations still verify the expected route. `batch` runs up to 12 supplied steps serially and returns completed observations plus the failed step without replay. It is not atomic and does not cache login across invocations. Network summaries omit headers, bodies and URL queries; logs are bounded and redacted. Empty filtered output means no matches. The adapter starts neither another IDE nor another automation scene.
 
 This helper reuses the installed official `miniprogram-automator` connection for short development observations. It does not run the cold candidate collector, modify product source, load H5, preview/upload, or establish physical-device/final-candidate acceptance.
 

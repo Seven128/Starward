@@ -11,6 +11,8 @@ import hashlib
 import io
 import json
 import math
+import html
+import os
 from pathlib import Path
 from typing import Any
 
@@ -355,6 +357,255 @@ def write_report(path: Path, result: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("x", encoding="utf-8") as output:
         output.write(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n")
+
+
+def saved_display_review(processing, processing_binding, decisions_path, directory, *, root,
+                         schema, key_for_row, outputs_for_row, verify_row, meaning):
+    """Shared saved-display quality decisions and independent exception queue.
+
+    The pixel owner supplies its key/output mapping and hard verifier. This
+    owner seals review state, evidence, per-row failure and retained readback.
+    It never decides visual quality from a metric or executes processing.
+    """
+    from optical_publication_io import bound_bytes, bound_file
+    rows = processing.get('rows')
+    if not rows: raise ValueError('saved_display_empty_processing')
+    raw, decision_binding = bound_bytes(decisions_path, root=root, max_bytes=8 * 1024 * 1024) if decisions_path else (None, None)
+    saved = json.loads(raw) if raw else {'processingReceipt': processing_binding, 'decisions': []}
+    ids = [r['id'] for r in rows]
+    if (saved['processingReceipt'] != processing_binding or len(ids) != len(set(ids)) or
+            any(d['id'] not in ids for d in saved['decisions']) or
+            len({d['id'] for d in saved['decisions']}) != len(saved['decisions'])):
+        raise ValueError('saved_display_review_identity_invalid')
+    directory.mkdir(parents=True, exist_ok=False)
+    reviewed_rows, retained = [], [processing_binding] + ([decision_binding] if decision_binding else [])
+    for row in rows:
+        reviewed = {'id': row['id'], 'status': 'HARD_CHECK_FAILED', 'outputs': outputs_for_row(row),
+            'processingKeySha256': key_for_row(row), 'sceneAcceptance': 'MISSING', 'ordinaryAdoption': False}
+        reviewed_rows.append(reviewed)
+        try:
+            retained.extend(verify_row(row)); reviewed['status'] = 'PENDING_FILE_REVIEW'
+            decision = next((d for d in saved['decisions'] if d['id'] == row['id']), None)
+            if decision:
+                if (decision['processingKeySha256'] != reviewed['processingKeySha256'] or
+                        decision['outputs'] != reviewed['outputs'] or not decision['reason'].strip() or
+                        not decision.get('evidence') or
+                        decision['status'] not in ('FILE_REVIEW_PASSED_SCENE_PENDING', 'NEEDS_REPAIR')):
+                    raise ValueError('saved_display_review_decision_invalid')
+                retained.extend(bound_file(root / b['path'], root=root, expected=b) for b in decision['evidence'])
+                reviewed.update(status=decision['status'], reason=decision['reason'])
+        except (ValueError, RuntimeError, OSError, KeyError, TypeError) as error:
+            reviewed.update(status='HARD_CHECK_FAILED', error=str(error))
+    for b in retained: bound_file(root / b['path'], root=root, expected=b)
+    result = {'schemaVersion': schema, 'processingReceipt': processing_binding, 'decisionReceipt': decision_binding,
+        'rows': reviewed_rows, 'inputs': retained, 'ordinaryAdoption': False, 'meaning': meaning}
+    write_report(directory / 'review.json', result)
+    return result
+
+
+def processing_review(processing_path: Path, directory: Path, *, root: Path,
+                      decisions_path: Path | None = None) -> dict:
+    """One review/exception queue for a whole SXT batch, including failed rows.
+
+    File checks and display-change statistics do not decide structural fidelity.
+    Explicit review decisions bind the exact row key and complete outputs; a
+    passed file remains pending actual Scene acceptance and publication.
+    """
+    import numpy as np
+    from PIL import ImageDraw
+    from optical_publication_io import bound_bytes, bound_file
+    from sxt_processing import validate_job, checked_work_image
+    root, directory = root.resolve(), directory.resolve()
+    if directory.exists() or directory == root or not directory.is_relative_to(root):
+        raise ValueError('image_review_output_must_be_new_directory_under_root')
+    raw, processing_binding = bound_bytes(processing_path, root=root, max_bytes=8 * 1024 * 1024)
+    processing = json.loads(raw)
+    if processing.get('schemaVersion') == 'optical-display-background-batch-result-v1':
+        from reviewed_background_display import review_background_batch
+        return review_background_batch(processing, processing_binding, decisions_path, directory, root=root)
+    if processing.get('schemaVersion') == 'background-display-nxt-trial-result-v1':
+        from reviewed_denoised_display import review_denoise_batch
+        return review_denoise_batch(processing, processing_binding, decisions_path, directory, root=root)
+    nxt_trial=processing.get('status')=='NATIVE_NXT_GRAIN_TRIAL_PIXELS_VERIFIED_VISUAL_PENDING'
+    if nxt_trial:
+        from nxt_review import review_processing
+        processing=review_processing(processing,processing_binding,root=root)
+    if (processing.get('schema')!='sxt-processing-v1' and not(nxt_trial and processing.get('schema')=='nxt-processing-v1')) or not processing.get('rows'):
+        raise ValueError('image_review_processing_receipt_invalid')
+    if len({r['id'] for r in processing['rows']}) != len(processing['rows']):
+        raise ValueError('image_review_duplicate_id')
+    decisions, decision_binding = {}, None
+    if decisions_path:
+        decision_raw, decision_binding = bound_bytes(decisions_path, root=root, max_bytes=8 * 1024 * 1024)
+        saved = json.loads(decision_raw)
+        if saved.get('processingReceipt') != processing_binding:
+            raise ValueError('image_review_decisions_for_different_receipt')
+        for decision in saved['decisions']:
+            if decision['id'] in decisions or decision['id'] not in {r['id'] for r in processing['rows']}:
+                raise ValueError('image_review_decision_id_invalid')
+            decisions[decision['id']] = decision
+    directory.mkdir(parents=True, exist_ok=False)
+    rows, cards = [], []
+    for processed in processing['rows']:
+        sid = processed['id']
+        row = {'id': sid, 'processingStatus': processed['status'], 'status': 'HARD_CHECK_FAILED',
+               'processingKeySha256': digest(json.dumps(processed['key'], sort_keys=True).encode()),
+               'outputs': processed.get('outputs'), 'sceneAcceptance': 'MISSING',
+               'scientificValidity': 'UNKNOWN', 'absoluteRegistration': 'UNVERIFIED'}
+        rows.append(row)
+        try:
+            if processed['status'] != 'PROCESSED_PENDING_REVIEW':
+                raise RuntimeError(processed.get('error', 'image_processing_incomplete'))
+            job = processed['key']['job']
+            size = tuple(job['outputSize'])
+            factor = 2 if processed['key']['method'] == 'sxt-upsample' else 1
+            validate_job(job, root=root, factor=factor)
+            for binding in processed['outputs'].values():
+                bound_file(root / binding['path'], root=root, expected=binding)
+            layers = processed['outputs']
+            checked_work_image(root / layers['starless']['path'], layers['starless'], size, root=root)
+            for layer in ('vendorStarless', 'vendorStars'):
+                encoded, _ = bound_bytes(root / layers[layer]['path'], root=root,
+                    expected=layers[layer], max_bytes=layers[layer]['bytes'])
+                with Image.open(io.BytesIO(encoded)) as image:
+                    image.verify()
+                with Image.open(io.BytesIO(encoded)) as image:
+                    image.load()
+                    if image.mode != 'RGB' or image.size != tuple(v * factor for v in size):
+                        raise ValueError('image_review_vendor_geometry_changed')
+            def load(binding, target_size):
+                encoded, _ = bound_bytes(root / binding['path'], root=root,
+                    expected=binding, max_bytes=binding['bytes'])
+                with Image.open(io.BytesIO(encoded)) as image:
+                    image.load()
+                    if image.mode != 'RGB':
+                        raise ValueError('image_review_rgb_contract_changed')
+                    return image.copy() if image.size == target_size else image.resize(target_size, Image.Resampling.LANCZOS)
+            original = load(job['input'], size)
+            starless = load(layers['starless'], size)
+            stars = load(layers['vendorStars'], size)
+            if original.info.get('icc_profile') != starless.info.get('icc_profile'):
+                raise ValueError('image_review_icc_changed')
+            if 'restoration' in job:
+                from photoshop_original_restore import validate_restoration_output
+                proof=validate_restoration_output(job,layers,root)
+                if processed.get('restorationProof')!=proof:
+                    raise ValueError('image_review_restoration_proof_changed')
+                row['restorationProof']=proof
+                row['localRestoration']=job['restoration']
+            if 'denoising' in job:
+                from nxt_review import validate_review_row
+                proof=validate_review_row(job,layers,root=root)
+                if proof!=processed.get('denoisingProof'):
+                    raise ValueError('image_review_denoising_proof_changed')
+                row['denoisingProof']=proof
+                row['localDenoising']=job['denoising']
+                row['publicationContract']=processed['publicationContract']
+            rgb, after = np.asarray(original), np.asarray(starless)
+            opaque = np.full((size[1], size[0]), 255, dtype='uint8')
+            if 'coverage' in job:
+                from covered_rgb_display import validate_covered_output, covered_source, image_from_binding, covered_pixels
+                validate_covered_output(job, layers, root)
+                if processed.get('coverageProof') != covered_pixels(job,layers['starless'],root)[2]:
+                    raise ValueError('image_review_coverage_proof_changed')
+                _, source_pixels, _ = covered_source(job['coverage'], size, root)
+                covered = image_from_binding(layers['coveredStarless'], root)
+                opaque = source_pixels[:,:,3]
+                # Review actual source support, not the opaque model canvas.
+                # Hidden original RGB remains in its immutable source file.
+                rgb = source_pixels[:,:,:3].copy()
+                rgb[opaque==0] = 0
+                after = np.asarray(covered)[:,:,:3]
+                original = Image.fromarray(np.dstack((rgb,opaque)))
+                starless = covered
+                stars = Image.fromarray(np.dstack((np.asarray(stars),opaque)))
+                row['coverageProof'] = processed.get('coverageProof')
+                row['originalCoveredSource'] = job['coverage']['originalRgba']
+                row['modelCanvasMeaning'] = 'Opaque working zero padding outside alpha is not source coverage or observed black.'
+            delta = np.abs(after.astype('int16') - rgb.astype('int16'))
+            bounds = [(0, 0, *size)]
+            for roi in job.get('reviewRois', []):
+                if (not isinstance(roi, list) or len(roi) != 4 or any(type(v) is not int for v in roi) or
+                        not 0 <= roi[0] < roi[2] <= size[0] or not 0 <= roi[1] < roi[3] <= size[1]):
+                    raise ValueError('image_review_roi_invalid')
+                bounds.append(tuple(roi))
+            warnings = ['STRUCTURAL_FIDELITY_REQUIRES_VISUAL_REVIEW', 'BACKGROUND_AND_SEAMS_REQUIRE_SCENE_REVIEW',
+                        *processed.get('processingWarnings', [])]
+            if not np.any(delta):
+                warnings.append('NO_RGB_EFFECT_REQUIRES_REVIEW')
+            row.update(status='PENDING_REVIEW', warnings=warnings, sourceContext=job['sourceContext'],
+                displayDiagnostics={'changedPixels': int(np.any(delta != 0, axis=2).sum()),
+                    'meanAbsoluteRGB': float(delta.mean()), 'maxAbsoluteRGB': int(delta.max()),
+                    'meaning': 'Encoded display differences locate review work; not photometry or quality scores.',
+                    'regions': [{'original': _region_statistics(rgb, opaque, b),
+                                 'starless': _region_statistics(after, opaque, b)} for b in bounds]})
+            images = []
+            for index, bounds_ in enumerate(bounds):
+                # Bounded preview only; full resolution originals remain linked.
+                crops = [image.crop(bounds_) for image in (original, starless, stars)]
+                for crop in crops:
+                    crop.thumbnail((640, 640), Image.Resampling.LANCZOS)
+                width, height = crops[0].size
+                contact = Image.new('RGB', (width * 3, height + 28), '#202020')
+                draw = ImageDraw.Draw(contact)
+                labels=('Original','Locally restored display','SXT stars before restoration') if 'restoration' in job else ('Original','SXT starless','Vendor stars (display)')
+                if 'denoising'in job:labels=('Original','SXT + NXT display','SXT stars before NXT')
+                for column, (label, crop) in enumerate(zip(labels, crops)):
+                    draw.text((column * width + 6, 6), label, fill='white')
+                    contact.paste(crop, (column * width, 28), crop.getchannel('A') if crop.mode=='RGBA' else None)
+                name = f'{sid}-{index}.png'
+                with (directory / name).open('xb') as stream:
+                    contact.save(stream, format='PNG', icc_profile=starless.info.get('icc_profile'))
+                images.append(bound_file(directory / name, root=root))
+            row['comparisons'] = images
+            decision = decisions.get(sid)
+            if decision:
+                if (decision.get('processingKeySha256') != row['processingKeySha256'] or
+                        decision.get('outputs') != row['outputs'] or not decision.get('reason') or
+                        decision.get('status') not in ('NEEDS_REPAIR', 'REPLACE_SOURCE', 'FILE_REVIEW_PASSED_SCENE_PENDING')):
+                    raise ValueError('image_review_decision_identity_or_status_invalid')
+                if processed.get('processingWarnings') and decision['status'] == 'FILE_REVIEW_PASSED_SCENE_PENDING':
+                    raise ValueError('image_review_incomplete_processing_cannot_pass')
+                row.update(status=decision['status'], reason=decision['reason'], categories=decision.get('categories', []))
+            links = [('Original work image', job['input']), *layers.items()]
+            if 'coverage' in job:
+                links.extend([('Original RGBA source',job['coverage']['originalRgba']),
+                              ('Independent supplied mask',job['coverage']['suppliedMask'])])
+            link_html = ' '.join(f'<a href="{html.escape(Path(os.path.relpath(root / b["path"], directory)).as_posix(), quote=True)}">{html.escape(label)}</a>' for label, b in links)
+            cards.append(f'<article><h2>{html.escape(sid)}: {html.escape(row["status"])}</h2><p>{html.escape(row.get("reason", "Visual review pending"))}</p>{link_html}' +
+                         ''.join(f'<img src="{html.escape(Path(b["path"]).name, quote=True)}" alt="Original, starless and stars comparison">' for b in images) + '</article>')
+        except (ValueError, RuntimeError, OSError, KeyError) as error:
+            row.update(status='HARD_CHECK_FAILED', error=str(error))
+            cards.append(f'<article><h2>{html.escape(str(sid))}: HARD_CHECK_FAILED</h2><p>{html.escape(str(error))}</p></article>')
+    # Fence all bytes again before sealing the review. Rows whose sources changed
+    # during a long batch cannot retain an earlier file pass.
+    bound_file(processing_path, root=root, expected=processing_binding)
+    if decision_binding:
+        bound_file(decisions_path, root=root, expected=decision_binding)
+    for processed, row in zip(processing['rows'], rows):
+        if row['status'] != 'HARD_CHECK_FAILED':
+            try:
+                job = processed['key']['job']
+                validate_job(job, root=root, factor=2 if processed['key']['method'] == 'sxt-upsample' else 1)
+                for binding in row['outputs'].values():
+                    bound_file(root / binding['path'], root=root, expected=binding)
+            except (ValueError, RuntimeError, OSError, KeyError) as error:
+                row.update(status='HARD_CHECK_FAILED', error=str(error))
+    # Render final statuses after the last integrity fence, so a rejected late
+    # change cannot leave the HTML saying that an earlier file review passed.
+    for index, row in enumerate(rows):
+        if row['status'] == 'HARD_CHECK_FAILED':
+            cards[index] = f'<article><h2>{html.escape(str(row["id"]))}: HARD_CHECK_FAILED</h2><p>{html.escape(row["error"])}</p></article>'
+    result = {'schema': 'nxt-review-queue-v1' if nxt_trial else 'sxt-review-queue-v1', 'processingReceipt': processing_binding,
+        'qualityOwner': bound_file(Path(__file__), root=root), 'decisionReceipt': decision_binding,
+        'rows': rows, 'counts': {status: sum(r['status'] == status for r in rows) for status in
+            ('PENDING_REVIEW', 'HARD_CHECK_FAILED', 'NEEDS_REPAIR', 'REPLACE_SOURCE', 'FILE_REVIEW_PASSED_SCENE_PENDING')},
+        'ordinaryAdoption': False, 'reviewSeconds': 'UNKNOWN'}
+    if nxt_trial:result['processingValidator']=processing['importValidator']
+    write_report(directory / 'review.json', result)
+    with (directory / 'index.html').open('x', encoding='utf8') as stream:
+        stream.write('<!doctype html><meta charset="utf-8"><title>SXT batch review</title><style>body{background:#16191e;color:#eee;font:16px sans-serif;margin:24px}a{color:#9cceff;margin-right:12px}article{border-bottom:1px solid #556;padding:16px 0}img{display:block;max-width:100%;margin-top:16px}</style><h1>SXT batch review</h1><p>File review and Scene acceptance remain separate. Comparisons are bounded previews; links retain full pixels.</p>' + ''.join(cards))
+    return result
 
 
 def main():

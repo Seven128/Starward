@@ -1,0 +1,8 @@
+{
+  "name": "d3-interpolate zoom closed-form adaptation",
+  "version": "3.0.1",
+  "license": "ISC",
+  "source": "https://github.com/d3/d3-interpolate/blob/v3.0.1/src/zoom.js",
+  "text": "Copyright 2010-2021 Mike Bostock\n\nPermission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.\n",
+  "adaptation": "Shortest spherical pointing arc, stereographic FOV width, nearby no-detour branch, stable asinh and bounded interaction duration. No D3 runtime dependency or rendering engine."
+}

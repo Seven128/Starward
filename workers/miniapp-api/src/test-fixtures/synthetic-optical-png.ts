@@ -8,12 +8,16 @@ function chunk(type: string, data: Buffer) {
 }
 
 /** Encoded test pixels only. No scientific source or processing receipt. */
-export function syntheticOpticalPng(red = 32, green = 64, blue = 96): Buffer {
-  const header = Buffer.alloc(13); header.writeUInt32BE(512); header.writeUInt32BE(512, 4); header[8] = 8; header[9] = 6;
-  const scanlines = Buffer.alloc(512 * (1 + 512 * 4));
-  for (let y = 0; y < 512; y++) for (let x = 0; x < 512; x++) {
-    const p = y * (1 + 512 * 4) + 1 + x * 4;
-    scanlines[p] = red; scanlines[p + 1] = green; scanlines[p + 2] = blue; scanlines[p + 3] = x < 256 ? 255 : 0;
+export function syntheticOpticalPng(red = 32, green = 64, blue = 96,
+  options = { width: 512, height: 512, colorType: 6 as 0 | 2 | 6 }): Buffer {
+  const { width, height, colorType } = options, channels = colorType === 0 ? 1 : colorType === 2 ? 3 : 4;
+  const header = Buffer.alloc(13); header.writeUInt32BE(width); header.writeUInt32BE(height, 4); header[8] = 8; header[9] = colorType;
+  const scanlines = Buffer.alloc(height * (1 + width * channels));
+  for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+    const p = y * (1 + width * channels) + 1 + x * channels;
+    scanlines[p] = red;
+    if (channels > 1) { scanlines[p + 1] = green; scanlines[p + 2] = blue; }
+    if (channels === 4) scanlines[p + 3] = x < width / 2 ? 255 : 0;
   }
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", header),
     chunk("IDAT", deflateSync(scanlines)), chunk("IEND", Buffer.alloc(0))]);

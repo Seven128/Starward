@@ -10,7 +10,7 @@ export interface SkyPublicationResource<Publication> {
  * metadata. Each source client keeps its own pin, URLs and physical meaning. */
 export async function getSkyPublicationResource<Publication>(
   request: (signal: AbortSignal) => Promise<Publication>,
-  cancelledCode: "sdss_science_optical_resource_cancelled" | "sdss_calibrated_optical_resource_cancelled" | "prepared_optical_resource_cancelled",
+  cancelledCode: "sdss_science_optical_resource_cancelled" | "sdss_calibrated_optical_resource_cancelled" | "prepared_optical_resource_cancelled" | "deep_sky_image_resource_cancelled",
   signal?: AbortSignal): Promise<SkyPublicationResource<Publication>> {
   if (signal?.aborted) throw new Error(cancelledCode);
   const generation = capturePublishedSkyImageGeneration(), demand = beginPublishedSkyImageDemand();

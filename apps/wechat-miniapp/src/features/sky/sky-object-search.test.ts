@@ -22,7 +22,7 @@ function find(tree: unknown, type: string): Element | undefined {
 }
 
 /** Keep event callbacks on their committed render while native input runs ahead. */
-function search() {
+function search(queryOwner = { value: "" }) {
   const state: unknown[] = [];
   const selected: unknown[] = [];
   let cursor = 0, timerId = 0, cleanup: (() => void) | undefined;
@@ -31,7 +31,7 @@ function search() {
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) =>
       ({ type, props: props ?? {}, children }) },
     Taro: { hideKeyboard: async () => undefined },
-    View: "View", Text: "Text", Input: "Input", SkySearchResults: "Results",
+    View: "View", Text: "Text", Input: "Input", ScrollView: "ScrollView", Button: "Button", SemanticIcon: "SemanticIcon", SkySearchResults: "Results",
     useState(initial: unknown) {
       const index = cursor++;
       if (!(index in state)) state[index] = initial;
@@ -46,10 +46,27 @@ function search() {
     setTimeout(callback: () => void) { timers.set(++timerId, callback); return timerId; },
     clearTimeout(id: number) { timers.delete(id); },
   });
-  const render = () => { cursor = 0; return component({ children: "catalog", onSelect(object: unknown) { selected.push(object); } }); };
+  const render = () => { cursor = 0; return component({ children: "catalog", query: queryOwner.value,
+    onQueryChange(value: string) { queryOwner.value = value; },
+    onSelect(object: unknown) { selected.push(object); } }); };
   return { render, selected, timers, dispose: () => cleanup?.(),
     flush() { const pending = [...timers.values()]; timers.clear(); pending.forEach(callback => callback()); } };
 }
+
+test("returning to a remounted search restores the page's query and matching results", () => {
+  const queryOwner = { value: "" };
+  const leaving = search(queryOwner);
+  find(leaving.render(), "Input")!.props.onInput({ detail: { value: "Polaris" } });
+  leaving.render();
+  leaving.flush();
+  assert.equal(find(leaving.render(), "Results")?.props.query, "Polaris");
+  leaving.dispose();
+
+  const returned = search(queryOwner);
+  assert.equal(find(returned.render(), "Input")?.props.value, "Polaris");
+  assert.equal(find(returned.render(), "Results")?.props.query, "Polaris");
+  returned.dispose();
+});
 
 test("keyboard search commits the native final text before React input state catches up", () => {
   const screen = search();
@@ -107,5 +124,24 @@ test("a result from the previous query cannot select after native input advances
   const jupiter = { reference: "PLANET:JUPITER", displayName: "木星", kind: "PLANET" };
   currentResult.props.onSelect(jupiter);
   assert.deepEqual(screen.selected, [vega, jupiter]);
+  screen.dispose();
+});
+
+test("the fixed input stays outside result scrolling; only a different query issues a top reset", () => {
+  const screen = search();
+  const original = screen.render(), originalScroll = find(original, "ScrollView")!;
+  assert.ok(find(original, "Input")); assert.equal(find(originalScroll, "Input"), undefined);
+  const top = originalScroll.props.scrollIntoView;
+  assert.equal(find(screen.render(), "ScrollView")!.props.scrollIntoView, top, "ordinary rerender or information Back preserves scrolling");
+  find(original, "Input")!.props.onInput({detail: {value: "M"}});
+  const first = find(screen.render(), "ScrollView")!.props.scrollIntoView;
+  assert.notEqual(first, top); screen.flush();
+  assert.equal(find(screen.render(), "ScrollView")!.props.scrollIntoView, first, "result arrival does not reset scroll a second time");
+  find(screen.render(), "Input")!.props.onInput({detail: {value: "M5"}});
+  const second = find(screen.render(), "ScrollView")!.props.scrollIntoView; assert.notEqual(second, first);
+  find(screen.render(), "Input")!.props.onInput({detail: {value: "M"}});
+  const returned = find(screen.render(), "ScrollView")!.props.scrollIntoView;
+  assert.notEqual(returned, first, "returning to an older query still issues a new native reset command");
+  assert.equal(find(screen.render(), "ScrollView")!.props.scrollWithAnimation, false);
   screen.dispose();
 });

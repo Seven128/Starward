@@ -10,7 +10,8 @@ import {completeLegacySkyOptical,completeScienceSkyOptical,completePreparedSkyOp
 import {skySdssOpticalFrame,skyPreparedOpticalFrame} from "./sky-sdss-optical-frame";
 import {assertSdssScienceOpticalManifest, opticalPublicationReference, type SdssScienceOpticalManifest} from "@starward/miniapp-contracts";
 import {sdssOpticalPresentation} from "./sky-sdss-optical-selection";
-import {skyPagePaintCommit} from "./sky-optical-page-test-support";
+import {skyPagePaintCommit,skyPageSceneTestDependencies} from "./sky-optical-page-test-support";
+import {sameSkyBodyImages} from "./sky-body-image-completion";
 import {preparedOpticalTestPublication} from "./sky-prepared-optical-test-support";
 const preparedFixture=preparedOpticalTestPublication("page");
 
@@ -23,7 +24,7 @@ function find(node:ts.Node){
   ts.forEachChild(node,find);
 }
 find(source);
-const execute=(expression:ts.Expression,bindings:object)=>vm.runInNewContext(ts.transpileModule(`(${expression.getText(source)})`,{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{opticalPublicationReference,...bindings});
+const execute=(expression:ts.Expression,bindings:object)=>vm.runInNewContext(ts.transpileModule(`(${expression.getText(source)})`,{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{...skyPageSceneTestDependencies,opticalPublicationReference,sameSkyBodyImages,...bindings});
 const fine={},coarse={};
 const optical:SkySdssOpticalImage={image:fine,reference:"M:63",publicationHash:"admitted-M63",fieldDegrees:.0568888889,level:"DETAIL",
   coarser:{image:coarse,fieldDegrees:.1137777778,level:"MEDIUM"}};
@@ -40,6 +41,12 @@ test("all actual ready primary/parent identities schedule a same-camera scene up
   assert(sameScene);const compare=execute(sameScene,{sameSkyOpticalInput}) as (a:object,b:object)=>boolean;
   const completed={inspection:{spotId:"formal-example"},sdssOpticalImage:optical};
   assert.equal(compare(completed,{...completed}),true);
+  const infrared={image:fine,coarser:{image:coarse},publicationHash:"same-source"};
+  assert.equal(compare({...completed,deepSkyImage:infrared},{...completed,deepSkyImage:infrared}),true);
+  for(const deepSkyImage of [{...infrared,coarser:null},{...infrared,fallback:{image:coarse}},
+    {...infrared,publicationHash:"new-source"}])
+    assert.equal(compare({...completed,deepSkyImage:infrared},{...completed,deepSkyImage}),false,
+      "the memoized native IR frame includes companion readiness and source metadata");
   for(const changed of [{...optical,coarser:null},{...optical,coarser:{...optical.coarser!,image:{}}},
     {...optical,coarser:{...optical.coarser!,fieldDegrees:.2275555556}},
     {...optical,coarser:{...optical.coarser!,level:"OVERVIEW"}}, {...optical,fieldDegrees:.057}])
@@ -81,17 +88,6 @@ test("accepted page commits actual coarse completion without flattening the queu
   apply(null,{sdssOptical:null,deepSkyImage:null});assert.equal(presented,null);
 });
 
-test("public recovery matches any live participating field of the completed publication",()=>{
-  const sdssOptical={image:fine,coarser:optical.coarser,publication:{objectRef:"M:63",publicationHash:optical.publicationHash}};
-  const read=(snapshot:SkySdssOpticalCompletion|null)=>execute(nodes.get("sdssOpticalCurrentImagePresented")!,{
-    presentedSdssOptical:snapshot,sdssOptical});
-  assert.equal(read(completion(coarse)),true);assert.equal(read(completion()),true);
-  assert.equal(read({...completion(),publicationHash:"retired-publication"}),false);
-  assert.equal(read({...completion(),reference:"M:82"}),false);
-  assert.equal(read({...completion(),field:{...completion().field,image:{}}}),false);
-  assert.equal(read(null),false);
-});
-
 test("status and recovery share live accepted generation; IR remains independent",()=>{
   let opticalCurrent=true,infraredCurrent=true;const image={};
   const retire=registerSkyNativeImageLifetime(image,()=>opticalCurrent);
@@ -102,15 +98,15 @@ test("status and recovery share live accepted generation; IR remains independent
       publication:{objectRef:"M:63",publicationHash:optical.publicationHash}}};
   const read=(changes:object={})=>{
     const state=gates({...input,...changes});
-    return {status:execute(nodes.get("sdssOpticalStatus")!,state),recovery:execute(nodes.get("sdssOpticalCurrentImagePresented")!,state),
+    return {status:execute(nodes.get("sdssOpticalStatus")!,state),
       infrared:state.deepSkyImagePresented};
   };
-  assert.deepEqual(read(),{status:"CREDIT",recovery:true,infrared:true});
-  opticalCurrent=false;infraredCurrent=false;assert.deepEqual(read(),{status:"NONE",recovery:false,infrared:false});
+  assert.deepEqual(read(),{status:"CREDIT",infrared:true});
+  opticalCurrent=false;infraredCurrent=false;assert.deepEqual(read(),{status:"NONE",infrared:false});
   opticalCurrent=true;infraredCurrent=true;
-  assert.deepEqual(read({presentedSceneCurrent:false}),{status:"NONE",recovery:false,infrared:false});
-  assert.deepEqual(read({nativeCanvasMounted:false}),{status:"NONE",recovery:false,infrared:false});
-  opticalCurrent=false;assert.deepEqual(read(),{status:"NONE",recovery:false,infrared:true});
+  assert.deepEqual(read({presentedSceneCurrent:false}),{status:"NONE",infrared:false});
+  assert.deepEqual(read({nativeCanvasMounted:false}),{status:"NONE",infrared:false});
+  opticalCurrent=false;assert.deepEqual(read(),{status:"NONE",infrared:true});
   retire();infraredCurrent=false;assert.equal(read().status,"NONE");
 });
 
@@ -138,20 +134,20 @@ test("science source consumers keep an independently live actual coarse field an
       const state=gates({presentedSceneCurrent:true,nativeCanvasMounted:true,canvasSize:{width:390,height:844},canvasError:null,
         presentedSkyFrame:presented,selectedCatalogObject:{reference:"M:51"},entry:{objectRef:"M:51"},
         sdssOptical:{requested:true,failed:false,loading:false,image:{},coarser:{image:parent},publication},...changes});
-      return {status:execute(nodes.get("sdssOpticalStatus")!,state),recovery:execute(nodes.get("sdssOpticalCurrentImagePresented")!,state),
+      return {status:execute(nodes.get("sdssOpticalStatus")!,state),
         binding:execute(informationBinding!,state),live:state.presentedSdssOptical};
     };
     retireFine();const actual=read();
-    assert.equal(actual.status,"CREDIT");assert.equal(actual.recovery,true);
+    assert.equal(actual.status,"CREDIT");
     assert.equal(actual.binding.opticalPublicationHash,publication.publicationHash);
     assert.equal(actual.live.participatingFields.length,1);assert.strictEqual(actual.live.participatingFields[0].image,parent);
     assert.equal(actual.live.participatingFields[0].level,"OVERVIEW");assert.equal(completed.participatingFields.length,2);
     const advanced=read({sdssOptical:{requested:true,failed:false,loading:false,image:{},coarser:null,
       publication:{...publication,publicationHash:"b".repeat(64)}}});
-    assert.equal(advanced.status,"CREDIT");assert.equal(advanced.recovery,false);
+    assert.equal(advanced.status,"CREDIT");
     assert.equal(advanced.binding.opticalPublicationHash,publication.publicationHash);
     assert.equal(read({canvasGenerationRef:{current:2}}).status,"NONE");
-    retireCoarse();assert.equal(read().status,"NONE");assert.equal(read().recovery,false);
+    retireCoarse();assert.equal(read().status,"NONE");
     assert.equal(Object.keys(read().binding).length,0);
   } finally {retireFine();retireCoarse();}
 });
@@ -177,20 +173,20 @@ test("explicit Prepared accepted completion keeps full source, actual coarse and
       const state=gates({presentedSceneCurrent:true,nativeCanvasMounted:true,canvasSize:{width:390,height:844},canvasError:null,
         presentedSkyFrame:presented,selectedCatalogObject:{reference:"M:51"},entry:{objectRef:"M:51"},
         sdssOptical:{requested:true,failed:false,loading:false,image:{},coarser:{image:parent},publication},...changes});
-      return {status:execute(nodes.get("sdssOpticalStatus")!,state),recovery:execute(nodes.get("sdssOpticalCurrentImagePresented")!,state),
+      return {status:execute(nodes.get("sdssOpticalStatus")!,state),
         binding:execute(informationBinding!,state),live:state.presentedSdssOptical};
     };
-    retireFine();const actual=read();assert.equal(actual.status,"CREDIT");assert.equal(actual.recovery,true);
+    retireFine();const actual=read();assert.equal(actual.status,"CREDIT");
     assert.equal(actual.live.kind,"prepared");assert.equal(actual.live.participatingFields.length,1);
     assert.strictEqual(actual.live.participatingFields[0].image,parent);assert.equal(actual.live.participatingFields[0].level,"OVERVIEW");
     assert.strictEqual(actual.live.preparedPublication,publication);assert.equal(actual.binding.opticalPublicationHash,publication.publicationHash);
     const advanced=read({sdssOptical:{requested:true,failed:false,loading:false,image:{},coarser:null,
       publication:{...publication,publicationHash:"b".repeat(64)}}});
-    assert.equal(advanced.status,"CREDIT");assert.equal(advanced.recovery,false);
+    assert.equal(advanced.status,"CREDIT");
     assert.equal(advanced.binding.opticalPublicationHash,publication.publicationHash);
     for(const change of [{presentedSceneCurrent:false},{nativeCanvasMounted:false},{canvasGenerationRef:{current:2}},
       {canvasSize:{width:0,height:844}}])assert.equal(read(change).status,"NONE");
-    retireCoarse();assert.equal(read().status,"NONE");assert.equal(read().recovery,false);
+    retireCoarse();assert.equal(read().status,"NONE");
     assert.equal(Object.keys(read().binding).length,0);
   } finally {retireFine();retireCoarse();}
 });

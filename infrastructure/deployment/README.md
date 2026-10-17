@@ -64,6 +64,64 @@ npm run deployment:preview -- --deploy-env /absolute/private/candidate/deploy.en
 本机加密备份不等于异机容灾；异机备份、正式生产回滚演练与正式上线继续暂缓。
 手机预览是独立的开发交付步骤，后端更新不代表小程序自动上传、审核或公开发布。
 
+## Cloud-sky OSS upload and recovery
+
+The OSS operator consumes the same sealed export as the existing static lane.
+Ordinary release/preview, local package preparation and HTTP verification do
+not call it. It changes no service/current pointer, ESA site or bucket policy.
+Run this separate writing command only for an authorized cloud publication.
+
+Install the locked operator dependency with
+`npm ci --ignore-scripts --prefix tools/deployment/oss-runtime`. Product,
+staging and production owner checks install it before deployment tests; their
+control archives exclude `node_modules`. An authorized target needs the same
+installation in its exact control checkout before using this optional command.
+
+Prepare `sky-object-store-package.mjs` from the managed generation selected by
+the existing OCI/static preparation, with an explicit publication hash and
+resource origin. The upload command independently obtains that original
+preparation lease and requires the resulting retained union/package to match.
+An offline export or a copied successful receipt supplies no OCI qualification.
+
+```sh
+node tools/run-node.cjs tools/deployment/sky-object-store-upload.mjs \
+  --deploy-env /absolute/private/candidate/deploy.env \
+  --package /absolute/selected-oss-package/package \
+  --expect-publication-hash <exact-retained-union-sha256> \
+  --resource-origin https://assets.example.com \
+  --bucket <dedicated-sky-bucket> --region oss-cn-hangzhou
+```
+
+Provision `OSS_ACCESS_KEY_ID`, `OSS_ACCESS_KEY_SECRET` and optional
+`OSS_SECURITY_TOKEN` privately in the operator environment. Do not put them in
+arguments, package JSON, receipts or checked-in descriptors. Credential debug
+logging (`DEBUG`/`NODE_DEBUG`) is rejected. Use a scoped identity for bucket
+version-state reads and GetObject/PutObject under the selected `v2/sky/` prefix;
+it needs no delete, bucket-policy or version-policy mutation permission.
+
+The dedicated bucket must never have enabled versioning. Enabled, Suspended or
+malformed version responses stop writes. Exclude concurrent administrative
+version-policy changes during the operation; version queries and PutObject
+are separate provider operations. The operator never disables old history to
+make a bucket eligible.
+
+Each missing key gets at most one PUT with forbid-overwrite and Content-MD5,
+followed by exact byte/metadata readback. Existing conflicts are accepted only
+when they already match; different bytes/metadata stop without overwrite.
+Lost responses are reconciled once by readback, then stop if unresolved.
+During the upload phase, SIGINT/SIGTERM close owned SDK requests and leave an
+aborted journal; the existing image preflight retains its own process limits.
+Run the same
+command again to recover after fixing the actual cause: every object is read
+again, and prior journal rows never skip validation. Synced append-only
+`sky-oss-upload-*.jsonl` records stay in `STARWARD_RECEIPT_DIRECTORY`; a crash
+may leave an unfinished last row, so only complete rows are diagnostic evidence.
+
+`VERIFIED_OSS_OBJECTS` certifies this scoped origin readback, not ESA configuration,
+publication adoption, Mini App delivery or capacity. Independently use
+`sky-object-store-verification.mjs` at the real resource origin for the public
+GET/header/HEAD/Range contract, then complete the native and capacity acceptance.
+
 ## Safety boundary
 
 - Run from a clean checkout of the exact source revision being promoted.
@@ -133,6 +191,27 @@ connection and bind the local side to loopback:
 ssh -N -T -o ExitOnForwardFailure=yes \
   -L 127.0.0.1:8787:172.30.10.3:8787 <staging-deploy-host>
 ```
+
+Environment-bound release candidates are created only by `npm run miniapp:bundle`.
+The builder allocates a fresh `artifacts/miniapp/release/bundles/<UUID>/weapp`
+directory and emits a v3 manifest binding that directory, byte fingerprint,
+API/resource origins, source AppID identity and measured repository package
+budget. It preserves `dist/weapp`, earlier candidates and existing manifests.
+If the default lane manifest already exists, pass a fresh `--output-manifest`
+path inside `artifacts/miniapp/release`; do not edit or replace the old receipt.
+Failed/partial candidate directories remain for diagnosis and are not adopted.
+
+To inspect an exact built candidate, set `MINIAPP_BUILT_CANDIDATE_MANIFEST` to
+its manifest path and run `node --test tools/miniapp/built-candidate.test.mjs`.
+The default is the CI manifest, and the protected WeChat workflow supplies its
+selected lane manifest. Platform operations freshly resolve/fingerprint the
+same v3 directory and check its compiled bindings and budget before using the
+upload key or driver. Historical v1/v2 manifests retain the legacy directory;
+they cannot acquire an injected v3 directory field. Local raw byte checks do
+not establish the platform's actual upload-package size or native acceptance.
+CI candidates use `.invalid` origins and cannot be previewed or uploaded.
+Deployable lanes and any platform/cloud operation still need their existing
+account, domain, credential and explicit authorization conditions.
 
 Compile the ordinary development WEAPP lane with
 `MINIAPP_API_BASE=http://127.0.0.1:8787`; the tracked development project keeps
@@ -814,3 +893,16 @@ descriptor and fresh verified backup bound to the selected prior revision and
 digest, then run the same release command. Database recovery uses the separate
 typed-confirmation command above and must be exercised against the selected
 remote topology before production can be declared recoverable or launch-ready.
+
+Keep the static control tools compatible with the complete retained URL union
+when selecting an older application image. The `starward-sky-static-export-v1`
+schema alone does not establish reader support: current bundles can include
+versioned body/Galactic manifests, Prepared manifests with their fixed attachment
+header, and derived-region original/support PNGs. The current bundle reader,
+release preparation, backup and restore owners must accept those exact records
+and source seals before switching anything. Do not also roll the control package
+back to a reader that rejects them, strip required records/headers, or republish
+old URLs to obtain compatibility. Existing preflight rejection leaves the old
+pointer in place. Local candidate HTTP readback is separate from trusted OCI,
+application rollback and live deployment qualification; its source-bound evidence
+is in the Cloud Sky task's current delivery review.

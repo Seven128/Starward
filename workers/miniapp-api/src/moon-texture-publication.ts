@@ -1,5 +1,6 @@
 import {MOON_COVERAGE_PUBLICATION,isMoonCoverageMetadata,type MoonTextureManifestData,type MoonCoverageManifestData} from "@starward/miniapp-contracts";
 import {FixedBodyTexturePublicationService} from "./fixed-body-texture-publication.ts";
+import {NotFoundException} from "@nestjs/common";
 
 const DEFAULT_MANIFEST=new URL("../assets/moon/manifest.json",import.meta.url);
 export const LEGACY_MOON_TEXTURE_PUBLICATION_HASH="ccdcceac70cf74c041cff589f59ea6a2b06f8b741f0be97e67b59799b22b73e6";
@@ -18,8 +19,18 @@ export class MoonTexturePublicationService extends FixedBodyTexturePublicationSe
       ...MOON_COVERAGE_PUBLICATION,format:"png",validateMetadata:isMoonCoverageMetadata});
   }
 
-  coverageManifest(){return this.coverage.manifest();}
+  coverageManifest(publicationHash?:string){return this.coverage.manifest(publicationHash);}
+  coveragePublishedManifests(){return this.coverage.publishedManifests();}
+  coveragePublishedMetadata(publicationHash:string){return this.coverage.publishedMetadata(publicationHash);}
   coverageImage(publicationHash:string){return this.coverage.image(publicationHash);}
+  coverageImageAsset(publicationHash:string,file:string){return this.coverage.imageAsset(publicationHash,file);}
+
+  override async imageAsset(publicationHash:string,file:string){
+    if(publicationHash!==LEGACY_MOON_TEXTURE_PUBLICATION_HASH)return super.imageAsset(publicationHash,file);
+    // A retained image-only alias supplies no historical metadata.
+    if(file!=="clementine-uv750-v2-wms-2048x1024.jpg")throw new NotFoundException("body_texture_image_unavailable");
+    return {bytes:await this.image(publicationHash),contentType:"image/jpeg"};
+  }
 
   override async image(publicationHash:string){
     // The metadata-only correction retains exactly the original JPEG bytes.

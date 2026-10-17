@@ -4,18 +4,16 @@ import {readFile,writeFile,link,unlink} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash,randomUUID} from 'node:crypto';
-import {parseChineseIntroductionPublication,parseChineseIntroductionIndex,CHINESE_INTRODUCTION_PUBLICATION}
+import {parseChineseIntroductionPublication,parseChineseIntroductionIndex,encodeChineseIntroductionIndex,CHINESE_INTRODUCTION_PUBLICATION}
  from '../../workers/miniapp-api/src/celestial-object-introductions.ts';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const input=path.join(root,'workers/miniapp-api/assets',CHINESE_INTRODUCTION_PUBLICATION.file);
 const output=path.join(root,'workers/miniapp-api/assets/celestial-object-introductions.index.json');
 if(process.argv.length!==2)throw Error('introduction_index_no_arbitrary_input_or_output');
-const bytes=await readFile(input),rows=parseChineseIntroductionPublication(bytes),pack=JSON.parse(bytes.toString('utf8'));
+const bytes=await readFile(input),rows=parseChineseIntroductionPublication(bytes);
 const digest=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
-const index={format:'celestial-introductions-index-v1',locale:pack.locale,publication:{file:path.basename(input),
- version:pack.version,bytes:bytes.length,sha256:digest(bytes)},references:[...rows.keys()].sort()};
-const encoded=Buffer.from(JSON.stringify(index,null,2)+'\n');
+const encoded=encodeChineseIntroductionIndex(bytes);
 parseChineseIntroductionIndex(encoded,digest(encoded));
 if(!(await readFile(input)).equals(bytes))throw Error('introduction_source_changed_before_index_write');
 let exists=false;

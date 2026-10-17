@@ -40,6 +40,9 @@ const mediaStorageRoot = path.join(
   "miniapp-infrastructure-media",
   runId,
 );
+if (path.dirname(path.resolve(mediaStorageRoot)) !== path.resolve(root, "tmp", "miniapp-infrastructure-media") ||
+    path.basename(mediaStorageRoot) !== runId)
+  throw new Error("infrastructure_cleanup_path_not_owned");
 const adminUrl = runtime.adminUrl;
 const databaseUrl = databaseUrlFor(runtime, databaseName);
 const redisUrl = runtime.redisUrl;

@@ -86,6 +86,49 @@ export function parseChineseStarAliasPublication(bytes: Uint8Array, manifest: un
 }
 
 const loaded = new Map<string, ChineseStarAliases>();
+
+/** Reviewed factual-name corrections qualify the immutable upstream labels at
+ * their shared publication owner, so search and details cannot diverge. */
+function reviewedChineseStarAliases(publication: ChineseStarAliases, base: Base): ChineseStarAliases {
+  const bytes = readFileSync(new URL("../assets/celestial-names-reviewed-corrections.v3.json", import.meta.url));
+  const correctionHash = sha256(bytes);
+  if (correctionHash !== "32fb98dcb19988fc409798d4561923a3eaecaf0f44161b97f4fc4fa4ec00fffe")
+    throw Error("chinese_star_alias_corrections_hash_mismatch");
+  const corrections = JSON.parse(bytes.toString("utf8"));
+  if (!corrections.upstreamPublications.some((upstream: { catalogVersion: string; assetSha256: string }) =>
+    upstream.catalogVersion === publication.catalogVersion && upstream.assetSha256 === publication.catalogHash))
+    throw Error("chinese_star_alias_corrections_upstream_mismatch");
+  const corrected = new Map<string, readonly string[]>();
+  for (const correction of corrections.rows) {
+    const star = base.rows.find(row => row.sourceId === correction.reference);
+    const previous = publication.aliasesFor(correction.reference);
+    if (!star || star.hr !== correction.identity.hr || star.hd !== correction.identity.hd ||
+      star.hip !== correction.identity.hip || !correction.evidence.catalogs.includes(base.catalogVersion) ||
+      !correction.rejectedAliases.every((alias: string) => previous.includes(alias)))
+      throw Error("chinese_star_alias_corrections_identity_mismatch");
+    corrected.set(correction.reference, Object.freeze([...new Set([
+      ...previous.filter(alias => !correction.rejectedAliases.includes(alias)), ...correction.aliases,
+    ])] as string[]));
+  }
+  const catalogHash = sha256(Buffer.from(JSON.stringify({ upstream: publication.catalogHash, correctionHash })));
+  const source: SourceSummary = Object.freeze({ ...publication.source,
+    id: `catalog:reviewed-wikidata-zh:${catalogHash}`,
+    provider: "Wikidata contributors；Starward 名称复核",
+    title: "Wikidata 中文恒星检索名称（含已审订正）",
+    publishedAt: corrections.reviewedAt,
+    precision: `${publication.source.precision}；名称订正依据固定来源和相符的目录身份`,
+    attribution: { name: "Wikidata contributors；Starward", url: publication.source.sourceUrl!,
+      statements: ["原固定标签与本版事实名称订正按 CC0 1.0 提供；没有修改上游 Wikidata。",
+        ...corrections.rows.map((row: { evidence: { englishLabel?: string; articleTitle?: string; sourceUrl: string } }) =>
+          `名称订正依据：${row.evidence.englishLabel ?? row.evidence.articleTitle}（${row.evidence.sourceUrl}）。`)] },
+    limitations: [...(publication.source.limitations ?? []),
+      "本版只订正有明确来源及目录身份依据的名称；不代表全目录已经人工复核。",
+      "名称订正不供应中文介绍，不改变坐标、测光或恒星分量。"],
+  });
+  return Object.freeze({ ...publication, catalogVersion: corrections.catalogVersion, catalogHash,
+    aliasesFor: (reference: string) => corrected.get(reference) ?? publication.aliasesFor(reference), source });
+}
+
 export function loadChineseStarAliasesForBase(baseVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3") {
   const cached = loaded.get(baseVersion);
   if (cached) return cached;
@@ -93,7 +136,8 @@ export function loadChineseStarAliasesForBase(baseVersion: "bsc5p-bright-stars.v
   const location = new URL(revised ? "../assets/celestial-names-v3/" : "../assets/celestial-names/", import.meta.url);
   const bytes = readFileSync(new URL(revised ? "chinese-bright-star-aliases.v3.json" : "chinese-bright-star-aliases.v1.json", location));
   const manifest = JSON.parse(readFileSync(new URL("publication.json", location), "utf8"));
-  const current = parseChineseStarAliasPublication(bytes, manifest, loadBsc5pStarCatalog(baseVersion));
+  const base = loadBsc5pStarCatalog(baseVersion);
+  const current = reviewedChineseStarAliases(parseChineseStarAliasPublication(bytes, manifest, base), base);
   loaded.set(baseVersion, current);
   return current;
 }

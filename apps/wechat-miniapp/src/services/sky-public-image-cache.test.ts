@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { createSkyPublicImageCache, type PublicSkyImageDescriptor, type PublicSkyFileDescriptor, type SkyPublicImageFileSystem } from "./sky-public-image-cache";
 
-function image(seed = 1) {
-  const body = new Uint8Array(64); body.set([137, 80, 78, 71, 13, 10, 26, 10]);
+function image(seed = 1, bytes = 64) {
+  const body = new Uint8Array(bytes); body.set([137, 80, 78, 71, 13, 10, 26, 10]);
   const view = new DataView(body.buffer); view.setUint32(12, 0x49484452); view.setUint32(16, 128); view.setUint32(20, 256);
   body[40] = seed;
   const asset: PublicSkyImageDescriptor = { environment: "e".repeat(64), sha256: createHash("sha256").update(body).digest("hex"),
@@ -24,8 +24,8 @@ function harness() {
     async rename(from, to) { const body = files.get(from); if (!body) throw Error("missing"); files.set(to, body); files.delete(from); },
     async remove(path) { removed.push(path); files.delete(path); },
   };
-  const make = (session = "runtime_a", byteBudget = 256) => createSkyPublicImageCache({ fs, root: "/owned/sky-public-images-v1",
-    session, byteBudget, maxFileBytes: 128, now: () => ++clock, cleanupWaitMs: 10,
+  const make = (session = "runtime_a", byteBudget = 256, ioByteBudget?: number) => createSkyPublicImageCache({ fs, root: "/owned/sky-public-images-v1",
+    session, byteBudget, maxFileBytes: 128, ...(ioByteBudget === undefined ? {} : { ioByteBudget }), now: () => ++clock, cleanupWaitMs: 10,
     transfer(asset) {
       downloads.push(asset.sha256);
       return transferHook?.(asset) ?? { promise: Promise.resolve(bodies.get(asset.sha256)!.slice(0)), cancel() {} };
@@ -35,6 +35,58 @@ function harness() {
 }
 const drain = async () => { for (let i = 0; i < 30; i++) await Promise.resolve(); };
 async function waitFor(condition: () => boolean) { for (let i = 0; i < 200; i++) { if (condition()) return; await Promise.resolve(); } assert.fail("callback not reached"); }
+
+test("large files share a byte-bounded I/O queue without retiring a displayed coarse lease", async () => {
+  const h = harness(), coarse = image(1, 64), first = image(2, 96), second = image(3, 96), small = image(4, 48);
+  h.bodies.set(coarse.asset.sha256, coarse.body);
+  const cache = h.make("weighted_io", 384, 128), displayed = await cache.acquire(coarse.asset).promise;
+  await waitFor(() => cache.inspect().running === 0);
+  const finishes = new Map<string, () => void>();
+  h.transferHook = asset => ({ promise: new Promise<ArrayBuffer>(resolve => {
+    const value = [first, second, small].find(v => v.asset.sha256 === asset.sha256)!;
+    finishes.set(asset.sha256, () => resolve(value.body));
+  }), cancel() {} });
+  const a = cache.acquire(first.asset), b = cache.acquire(second.asset), c = cache.acquire(small.asset);
+  await waitFor(() => finishes.has(first.asset.sha256)); await drain();
+  assert.equal(finishes.size, 1, "two large buffers must not start together");
+  assert.equal(cache.inspect().ioBytes, 96); assert(displayed.isCurrent());
+  finishes.get(first.asset.sha256)!(); const firstLease = await a.promise;
+  await waitFor(() => finishes.has(second.asset.sha256)); await drain();
+  assert.equal(finishes.size, 2, "large plus small still exceeds the byte bound");
+  assert.equal(cache.inspect().ioBytes, 96); assert(displayed.isCurrent());
+  finishes.get(second.asset.sha256)!(); const secondLease = await b.promise;
+  await waitFor(() => finishes.has(small.asset.sha256)); finishes.get(small.asset.sha256)!();
+  const smallLease = await c.promise; await waitFor(() => cache.inspect().running === 0);
+  assert.equal(cache.inspect().ioBytes, 0); assert.equal(cache.inspect().reserved, 0);
+  assert.equal(cache.inspect().bytes, 304); assert(h.files.has(displayed.filePath));
+  for (const lease of [displayed, firstLease, secondLease, smallLease]) lease.release();
+  await cache.clear();
+});
+
+test("cancelling a queued large file advances a fitting request but abort cannot free active byte reservations", async () => {
+  const h = harness(), first = image(1, 96), blocked = image(2, 96), fitting = image(3, 32), fresh = image(4, 64);
+  const finishes = new Map<string, () => void>(); let aborts = 0;
+  h.transferHook = asset => ({ promise: new Promise<ArrayBuffer>(resolve => {
+    const value = [first, blocked, fitting, fresh].find(v => v.asset.sha256 === asset.sha256)!;
+    finishes.set(asset.sha256, () => resolve(value.body));
+  }), cancel() { aborts++; throw Error("unsettled native abort"); } });
+  const cache = h.make("weighted_cancel", 384, 128), a = cache.acquire(first.asset), b = cache.acquire(blocked.asset), c = cache.acquire(fitting.asset);
+  const rejected = [a, b, c].map(value => value.promise.catch(cause => cause));
+  await waitFor(() => finishes.has(first.asset.sha256)); b.cancel();
+  await waitFor(() => finishes.has(fitting.asset.sha256));
+  assert.equal(finishes.has(blocked.asset.sha256), false); assert.equal(cache.inspect().ioBytes, 128);
+  assert.equal((await cache.clear()).status, "pending"); assert.equal(aborts, 2);
+  const replacement = cache.acquire(fresh.asset); await drain();
+  assert.equal(finishes.has(fresh.asset.sha256), false, "clear cannot fabricate native I/O completion");
+  assert.equal(cache.inspect().ioBytes, 128);
+  finishes.get(first.asset.sha256)!(); finishes.get(fitting.asset.sha256)!();
+  await waitFor(() => finishes.has(fresh.asset.sha256)); finishes.get(fresh.asset.sha256)!();
+  const lease = await replacement.promise;
+  for (const result of await Promise.all(rejected)) assert.match(result.message, /cancelled/);
+  await waitFor(() => cache.inspect().running === 0);
+  assert.equal(cache.inspect().ioBytes, 0); assert.equal(cache.inspect().entries, 1);
+  lease.release(); await cache.clear();
+});
 
 function jsonFile(seed: number) {
   const body = new TextEncoder().encode(JSON.stringify({ seed, published: true, padding: "012345678901234567890123456789" }));
@@ -207,12 +259,44 @@ test("two Canvas acquisitions share one file/request, independent leases survive
   assert.equal(cache.inspect().leased, 0);
 });
 
-test("same-length on-disk corruption is rejected by SHA and reacquired; valid black content is retained", async () => {
+test("same-length on-disk corruption is rejected by SHA and reacquired; valid black content is retained", async t => {
+  const errors: unknown[][] = [];
+  t.mock.method(console, "error", (...parts: unknown[]) => errors.push(parts));
   const h = harness(), i = image(0); h.bodies.set(i.asset.sha256, i.body);
   const cache = h.make(); const a = await cache.acquire(i.asset).promise; a.release(); await drain();
+  assert.equal(errors.length, 0, "a missing cold-start inventory is normal");
   const bad = i.body.slice(0); new Uint8Array(bad)[41] = 7; h.files.set(a.filePath, bad);
   const b = await cache.acquire(i.asset).promise;
   assert.equal(h.downloads.length, 2); assert.notEqual(a.filePath, b.filePath); assert.equal(h.files.has(a.filePath), false); b.release();
+  assert.equal(errors.length, 1, "successful reacquisition must retain the corrupt-cache diagnostic");
+  assert.match(JSON.stringify(errors), /sky_public_image_corrupt/u);
+  assert.doesNotMatch(JSON.stringify(errors), /https|\/owned/u);
+});
+
+test("failed native cleanup and retirement callbacks are logged without interrupting independent retirement", async t => {
+  const errors: unknown[][] = [];
+  t.mock.method(console, "error", (...parts: unknown[]) => errors.push(parts));
+  const h = harness(), i = image(); h.bodies.set(i.asset.sha256, i.body);
+  const cache = h.make("cleanup_diagnostics"), live = await cache.acquire(i.asset).promise;
+  await waitFor(() => cache.inspect().running === 0);
+  const failure = Object.assign(new Error("private native unlink detail"), { errno: -28 });
+  const remove = h.fs.remove;
+  h.fs.remove = async path => { if (path === live.filePath) throw failure; await remove(path); };
+  let retired = 0;
+  live.onRetire(() => { throw Object.assign(new Error("private callback detail"), { errCode: 2001 }); });
+  live.onRetire(() => { retired++; });
+  assert.equal((await cache.clear()).status, "partial");
+  assert.equal(retired, 1);
+  assert.equal(live.isCurrent(), false);
+  live.release(); await drain();
+  assert.equal(cache.inspect().retired, 1, "failed unlink retains ownership and its byte accounting");
+  assert.equal(errors.length, 2, "callback failure and native unlink failure both need diagnostics");
+  assert.match(JSON.stringify(errors), /2001/u); assert.match(JSON.stringify(errors), /-28/u);
+  assert.doesNotMatch(JSON.stringify(errors), /private|https|\/owned/u);
+  h.fs.remove = remove;
+  assert.equal((await cache.clear()).status, "complete");
+  assert.equal(cache.inspect().bytes, 0);
+  assert.equal(errors.length, 2, "successful retry adds no failure");
 });
 
 test("clear during an unabortable write cannot publish/delete the new same-SHA attempt", async () => {
@@ -281,7 +365,9 @@ test("half-committed/orphan files cannot become a restart hit and unrelated file
   assert.ok(h.files.has("/owned/sky-public-images-v1/account-export.json")); assert.ok(h.files.has("/owned/avatar.png")); a.release();
 });
 
-test("one cancelled waiter does not abort a remaining consumer; final waiter aborts its request", async () => {
+test("one cancelled waiter does not abort a remaining consumer; final waiter aborts its request", async t => {
+  const errors: unknown[][] = [];
+  t.mock.method(console, "error", (...parts: unknown[]) => errors.push(parts));
   const h = harness(), i = image(); let resolve!: (body: ArrayBuffer) => void, aborted = 0;
   h.transferHook = () => ({ promise: new Promise<ArrayBuffer>(yes => { resolve = yes; }), cancel() { aborted++; } });
   const cache = h.make(); const a = cache.acquire(i.asset), b = cache.acquire(i.asset);
@@ -292,6 +378,7 @@ test("one cancelled waiter does not abort a remaining consumer; final waiter abo
   await waitFor(() => h.downloads.length === 2); c.cancel(); assert.equal(aborted, 1);
   resolve(second.body); assert.match((await rejected).message, /cancelled/); await drain();
   assert.equal(cache.inspect().leased, 0);
+  assert.equal(errors.length, 0, "ordinary cancellation is not a file or download failure");
 });
 
 test("restart trims old inventories to the current encoded budget before a warm lease", async () => {

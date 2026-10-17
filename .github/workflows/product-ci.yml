@@ -43,7 +43,9 @@ jobs:
         run: node tools/run-node.cjs tools/resources/assets.mjs prepare
       - name: Install locked dependencies
         if: steps.scope.outputs.product == 'true'
-        run: npm ci
+        run: |
+          npm ci
+          npm ci --ignore-scripts --prefix tools/deployment/oss-runtime
       - name: Audit Mini Program API production dependencies
         if: steps.scope.outputs.product == 'true'
         run: npm audit --omit=dev --workspace @starward/miniapp-api --audit-level=high

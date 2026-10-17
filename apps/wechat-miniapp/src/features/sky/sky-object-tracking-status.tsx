@@ -28,7 +28,7 @@ export function SkyObjectTrackingStatus({ name, binding, catalog, overview, susp
   const failed = !catalog || !usable && (result.isError || Boolean(result.refreshError) || result.data?.dataState === "UNAVAILABLE");
   const pending = (suspended || result.isPending) && !failed;
   const stale = usable && (result.data?.dataState === "STALE_USABLE" || Boolean(result.refreshError));
-  const state = failed ? "位置暂不可用" : stale ? "使用缓存位置" : pending ? "正在更新位置" : overview ? "全天总览中保留跟踪" : "跟踪中";
+  const state = failed ? "位置暂不可用" : stale ? "更新失败，保留上次位置" : pending ? "正在更新位置" : overview ? "总览中仍在跟踪" : "跟踪中";
   return <View className="sky-object-tracking-status" role="group" aria-label={`${name}天体跟踪`}>
     <Text className="type-caption" aria-live="polite">{name} · {state}</Text>
     {failed || stale ? <Button className="sky-view-mode__button" onClick={() => {

@@ -4,13 +4,17 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-import { skyStarAppearance } from "./sky-star-appearance";
-import { paintedSkyPointVisible, type SkyPickSnapshot } from "./sky-object-picking";
+import { skyStarAppearance, createSkyStarAppearance } from "./sky-star-appearance";
+import { paintedSkyPointVisible, paintedSkyBoundsVisible, type SkyPickSnapshot } from "./sky-object-picking";
 import { createSkyViewBasis } from "./sky-view-projection";
 import { resolveSkyDeepSkyScene } from "./sky-stellar-scene";
 import { skyPresentedTimeCurrent } from "./sky-observation-time";
 import { skySolarLightAt } from "./sky-solar-light";
 import { skyDeepAuxiliaryDecisionOpacity } from "./sky-deep-auxiliary-visibility";
+import { skyObjectNameOpacity } from "./sky-selection-marker";
+import { projectSkyCatalogNames } from "./sky-label-presentation";
+import {skyPagePaintCommit} from "./sky-optical-page-test-support";
+import {labelInteriorForeground} from "./sky-name-layout-test-support";
 
 // Exercise the page's rendered-label eligibility, including the shared selection owner.
 const source = ts.createSourceFile("spot-sky-page.tsx",
@@ -50,38 +54,71 @@ function labels(sunAltitudeDeg: number, mode: "NIGHT" | "OBSERVATION",
   presentation: "current" | "old-time" | "old-report" | "old-mode" | "none" = "current",
   starAltitude = 40, deepAltitude: number | null = null, paintedView?: SkyPickSnapshot["view"],
   starLayer: "available" | "catalog-missing" | "frame-unavailable" = "available",
-  selectedReference: string | null = null) {
-  const basis = paintedView?.basis ?? { forward: [0, 1, 0], right: [1, 0, 0], up: [0, 0, 1] };
+  selectedReference: string | null = null, fov = 45, paintedOpacity?: number,
+  viewportInsets = { top: 0, bottom: 0 }) {
+  const basis = paintedView?.basis ?? createSkyViewBasis(0, 90 + (deepAltitude ?? 0), 0)!;
   const reportData = { context: {}, hourly: [{ at, sunAltitudeDeg, sunAzimuthDeg: 180 }], skyScene: { catalog: starLayer === "catalog-missing" ? null : { entries: [entry] },
     deepSky: deepAltitude === null ? null : { state: "AVAILABLE", catalog: { entries: [
-      { objectRef: "M:31", displayName: "Andromeda Galaxy", kind: "GALAXY", magnitude: 3.44 },
-    ] }, frames: [{ at, state: "AVAILABLE", points: [[0,160,deepAltitude]] }] } } };
-  const presentedSkyFrame = presentation === "none" ? null : {
+      { objectRef: "M:31", displayName: "M 31", kind: "GALAXY", magnitude: 3.44 },
+    // Keep the scale fixture clear of the independent whole-name edge band.
+    ] }, frames: [{ at, state: "AVAILABLE", points: [[0,4,deepAltitude]] }] } } };
+  const appearance = skyStarAppearance(entry.magnitude, fov, mode === "OBSERVATION" ? undefined : sunAltitudeDeg,
+    mode === "OBSERVATION" ? undefined : starAltitude);
+  let presentedSkyFrame:any = presentation === "none" ? null : {
     data: presentation === "old-report" ? {} : reportData,
     frameAt: presentation === "old-time" ? "2026-10-08T13:00:00.000Z" : at,
     mode: presentation === "old-mode" ? (mode === "NIGHT" ? "OBSERVATION" : "NIGHT") : mode,
     landscape: paintedView?.landscape ?? null,
+    namedStars: starLayer !== "available" || !appearance || appearance.opacity < .1 ? [] : [{
+      reference: entry.objectRef, displayName: entry.displayName, kind: "STAR", magnitude: entry.magnitude,
+      x: 195, y: 422, opacity: paintedOpacity ?? appearance.opacity }],
     deepSkyAuxiliaryDecisions: [{ reference: "M:31", opacity: 1 }],
   };
+  if (presentedSkyFrame && mode !== "OBSERVATION") {
+    const before=presentedSkyFrame;
+    const paint=skyPagePaintCommit(source,{basis,zoomRef:{current:fov},reducedMotionRef:{current:true},
+      viewportInsetsRef:{current:viewportInsets},objectSelection:{snapshot:()=>({object:selectedReference?{reference:selectedReference}:null})},
+      frame:{data:before.data,frameAt:before.frameAt,mode:before.mode,sceneReady:skySceneReady,constellations:null,constellationsEnabled:false},
+      setPresentedCamera(){},setPresentedSkyFrame(update:(previous:any)=>any){presentedSkyFrame=update(null);}});
+    paint({frameAt:before.frameAt,catalogVersion:"v",catalogHash:"h",width:390,height:844,
+      view:{basis,verticalFovDeg:fov,landscape:paintedView?.landscape??null},objects:[],
+      namedStars:before.namedStars,deepSkyAuxiliaryDecisions:before.deepSkyAuxiliaryDecisions},{});
+  }
   return vm.runInNewContext(selection, {
     reportData, rawReportData: reportData, orientationData: reportData, presentedSkyFrame,
     skyPresentedTimeCurrent, timePlaying: false, timeIntent: { runStartAt: null },
-    skySolarLightAt, skyDeepAuxiliaryDecisionOpacity,
+    skySolarLightAt, skyDeepAuxiliaryDecisionOpacity, skyObjectNameOpacity, projectSkyCatalogNames,
     row: { at }, currentViewBasis: basis, canvasSize: { width: 390, height: 844 },
-    presentedFov: 45, presentedCenter: { x: 195, y: 422 },
+    viewportInsets,
+    presentedFov: fov, presentedCenter: { x: 195, y: 422 },
     sensorHeadingForScene: null, devicePose: null, mode, skySceneReady, canvasError,
     selectionState: { object: selectedReference ? { reference: selectedReference } : null },
     starSunAltitudeDeg: mode === "OBSERVATION" ? undefined : sunAltitudeDeg,
-    skyStarAppearance,
+    useMemo: (compute: () => unknown) => compute(), createSkyStarAppearance, skyStarAppearance,
+    createSkyDirectionProjector: () => ({project: (azimuth: number) => ({ x: azimuth === 160 ? 285 : 195, y: 422 })}),
     resolveSkyDeepSkyScene,
     paintedSkyPointVisible, paintedSkyObjectsRef: { current: { frameAt:at,catalogVersion:"v",catalogHash:"h",
       width:390,height:844,objects:[],...(paintedView?{view:paintedView}:{}) } },
     resolveSkySceneFrame: () => starLayer === "available" ? ({ at, state: "AVAILABLE", points: [[0, 180, starAltitude]] }) : undefined,
     exactSkyTimeFrame: () => deepAltitude === null ? null :
       ({ at, state: "AVAILABLE", points: [[0, 160, deepAltitude]] }),
-    projectHorizontalPoint: (azimuth: number) => ({ x: azimuth === 160 ? 285 : 195, y: 422 }),
-  }) as Array<{ reference: string }>;
+  }) as Array<{ reference: string; auxiliaryOpacity: number }>;
 }
+
+test("automatic catalog names share scale fading while retaining their own painted eligibility", () => {
+  const atScale = (fov: number, opacity?: number) => Array.from(labels(-18, "NIGHT", true, null,
+    "current", 40, 40, undefined, "available", null, fov, opacity));
+  const local = atScale(25), normal = atScale(45), wide = atScale(80);
+  assert(local.find(value => value.reference === entry.objectRef)!.auxiliaryOpacity >
+    normal.find(value => value.reference === entry.objectRef)!.auxiliaryOpacity);
+  assert.deepEqual(wide.map(value => value.reference), [],"automatic deep-sky names must also leave the wide overview");
+  assert(local.find(value=>value.reference==="M:31")!.auxiliaryOpacity>
+    normal.find(value=>value.reference==="M:31")!.auxiliaryOpacity);
+  assert.deepEqual(atScale(25, 0).map(value => value.reference), ["M:31"]);
+  assert(atScale(25, .2)[0]!.auxiliaryOpacity < local[0]!.auxiliaryOpacity);
+  assert.equal(labels(-18, "NIGHT", true, null, "current", 40, null, undefined, "available", null,
+    25, .92, { top: 420, bottom: 0 }).length, 0, "a name cannot float over an opaque control while its star is covered");
+});
 
 test("a bright star label follows the same twilight and red-light visibility as the painted star", () => {
   assert.equal(skyStarAppearance(entry.magnitude, 45, 0, 40), null);
@@ -142,4 +179,28 @@ test("only the selected object's automatic name withdraws, and clearing selectio
   assert.deepEqual(names("M:31"), [entry.objectRef], "switching to a galaxy restores the independent star name");
   assert.deepEqual(names("HR:7001"), [entry.objectRef, "M:31"], "an off-screen selection cannot suppress another identity");
   assert.deepEqual(names(null), [entry.objectRef, "M:31"], "blank deselection restores the current-frame names");
+});
+
+test("actual page copy publishes only the whole name clear of its completed foreground",()=>{
+  const width=390,height=844,basis=createSkyViewBasis(0,135,0)!,fov=45;
+  const mask=labelInteriorForeground(width,height,{basis,verticalFovDeg:fov},225,398);
+  const snapshot:SkyPickSnapshot={width,height,frameAt:at,catalogVersion:'v',catalogHash:'h',
+    view:{basis,verticalFovDeg:fov,landscape:mask},objects:[],namedStars:[{
+      reference:entry.objectRef,displayName:entry.displayName,kind:'STAR',magnitude:entry.magnitude,
+      x:195,y:422,opacity:.8}]};
+  assert(paintedSkyPointVisible(snapshot,195,422));assert(!paintedSkyPointVisible(snapshot,225,398));
+  let presented:any=null;
+  const data={context:{spotId:'spot:bounds'},skyScene:{state:'UNAVAILABLE',catalog:null,frames:[]},hourly:[],targetFrames:[]};
+  const paint=skyPagePaintCommit(source,{basis,zoomRef:{current:fov},reducedMotionRef:{current:true},
+    frame:{data,frameAt:at,mode:'NIGHT',sceneReady:true,constellations:null,constellationsEnabled:false},
+    setPresentedCamera(){},setPresentedSkyFrame(update:(previous:any)=>any){presented=update(null);}});
+  paint(snapshot,{});
+  assert.equal(presented.catalogNames.length,0,'a covered above-name cannot move sideways to evade the foreground');
+  const clearSnapshot={...snapshot,view:{...snapshot.view!,landscape:null}};
+  paint(clearSnapshot,{});
+  const name=presented.catalogNames[0];assert(name);
+  assert.equal(name.reference,entry.objectRef);assert.equal(name.side,'above');
+  assert.equal(name.caption.x,195);assert(name.caption.y<422);
+  assert.equal(name.caption.text,entry.displayName);assert(paintedSkyBoundsVisible(clearSnapshot,name.bounds));
+  assert.equal(name.x,195);assert.equal(name.y,422);
 });

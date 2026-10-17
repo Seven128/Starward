@@ -1,5 +1,8 @@
 import path from "node:path";
+import { lstatSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { applyContractReexportRule, type ContractReexportChain } from "./contracts-reexports.cjs";
+import { releaseBundleLocation } from "../../../tools/miniapp/release-bundle-location.cjs";
 import {
   defineConfig,
   type UserConfigExport,
@@ -17,12 +20,10 @@ const sharedSourceInclude = [
 ];
 
 const adoptedBRuntimeIconRoot = path.resolve(
-  repoRoot,
-  "docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256/platform/weapp-runtime/assets",
+  here, "../runtime-assets/b-icons",
 );
 const adoptedBTabBarIconRoot = path.resolve(
-  repoRoot,
-  "docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256/platform/weapp-tabbar/assets",
+  here, "../runtime-assets/tabbar",
 );
 const bTabBarIconFiles = [
   "map--day--default.png", "map--day--selected.png",
@@ -106,7 +107,11 @@ const bIconFiles = {
   sky: [
     "arrow-left--day--default.png", "close--day--default.png",
     "compass--day--default.png", "horizon--day--default.png",
-    "info--day--default.png",
+    "info--day--default.png", "settings--day--default.png",
+    "search--day--default.png", "clock--day--default.png", "layers--day--default.png",
+    "four-point-star--day--default.png", "terrain--day--default.png",
+    "images--day--default.png", "check--day--default.png",
+    "chevron-up--day--default.png", "chevron-down--day--default.png",
   ],
 } as const;
 
@@ -146,6 +151,7 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
   if (isolatedFixtureBuild && process.env.MINIAPP_DEVELOPMENT_FIXTURE_MODE !== "1")
     throw new Error("miniapp_isolated_build_requires_fixture_mode");
   const isolatedCheckBuild = process.env.MINIAPP_ISOLATED_CHECK_BUILD === "1";
+  const releaseBundleId = process.env.MINIAPP_RELEASE_BUNDLE_ID?.trim() ?? "";
   const isolatedCheckSlot = process.env.MINIAPP_ISOLATED_CHECK_BUILD_SLOT?.trim() ?? "";
   const skyFeedbackId = process.env.MINIAPP_SKY_FEEDBACK_ID?.trim() ?? "";
   if (skyFeedbackId && (!isolatedCheckBuild || !/^[A-Z0-9]{6,16}$/u.test(skyFeedbackId)))
@@ -157,7 +163,17 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
       process.env.MINIAPP_ACCEPTANCE_DIAGNOSTICS === "1" ||
       process.env.MINIAPP_DEVICE_REQUEST_DIAGNOSTICS === "1"))
     throw new Error("miniapp_isolated_check_requires_plain_build");
-  const outputRoot = isolatedCheckBuild ? `dist/weapp-check${isolatedCheckSlot ? `-${isolatedCheckSlot}` : ""}` :
+  if (releaseBundleId && (command !== "build" || process.argv.includes("--watch") || isolatedCheckBuild || isolatedFixtureBuild ||
+      process.env.MINIAPP_DEVELOPMENT_FIXTURE_MODE === "1" || process.env.MINIAPP_ACCEPTANCE_DIAGNOSTICS === "1" ||
+      process.env.MINIAPP_DEVICE_REQUEST_DIAGNOSTICS === "1" || operatorPreviewToken()))
+    throw new Error("miniapp_release_output_requires_plain_build");
+  const releaseLocation = releaseBundleId ? releaseBundleLocation(releaseBundleId, repoRoot) : null;
+  if (releaseLocation) {
+    try { lstatSync(releaseLocation.bundleRoot); throw new Error("miniapp_release_output_exists"); }
+    catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
+  }
+  const outputRoot = releaseLocation ? releaseLocation.taroOutputRoot :
+    isolatedCheckBuild ? `dist/weapp-check${isolatedCheckSlot ? `-${isolatedCheckSlot}` : ""}` :
     isolatedFixtureBuild ? "dist/weapp-fixture" : "dist/weapp";
   const config: UserConfigExport = {
     projectName: "tonight-stargazing-wechat-miniapp",
@@ -208,6 +224,9 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
       __MINIAPP_API_BASE__: JSON.stringify(
         process.env.MINIAPP_API_BASE ?? "http://127.0.0.1:8787",
       ),
+      __MINIAPP_SKY_RESOURCE_BASE__: JSON.stringify(
+        process.env.MINIAPP_SKY_RESOURCE_BASE ?? "",
+      ),
       __MINIAPP_OPERATOR_PREVIEW_TOKEN__: JSON.stringify(
         operatorPreviewToken(),
       ),
@@ -227,6 +246,10 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
     },
     copy: {
       patterns: [
+        {
+          from: path.resolve(here, "../runtime-assets/sky-controls"),
+          to: path.resolve(here, "..", outputRoot, "sky/assets/controls"),
+        },
         ...["moon", "ornaments"].map((directory) => ({
           from: path.resolve(here, "../src/assets", directory),
           to: path.resolve(here, "..", outputRoot, "assets", directory),
@@ -247,7 +270,7 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
           from: path.resolve(here, "../src/assets/media"),
           to: path.resolve(here, "..", outputRoot, "sky/assets/media"),
         },
-        ...["twgl", "quaternion", "healpix-ts"].map((name) => ({
+        ...["twgl", "quaternion", "healpix-ts", "sky-navigation"].map((name) => ({
           from: path.resolve(here, `../src/assets/licenses/${name}.json`),
           to: path.resolve(here, "..", outputRoot, `sky/assets/licenses/${name}.json`),
         })),
@@ -279,8 +302,11 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
           },
         },
       },
-      webpackChain(chain: { resolve: { symlinks(value: boolean): void } }) {
+      webpackChain(chain: ContractReexportChain & {
+        resolve: { symlinks(value: boolean): void };
+      }) {
         chain.resolve.symlinks(false);
+        applyContractReexportRule(chain, path.resolve(repoRoot, "packages/miniapp-contracts/src/index.ts"));
       },
     },
     logger: { quiet: false, stats: true },

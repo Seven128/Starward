@@ -12,12 +12,14 @@ export const skySolarDisplayShader = `vec3 skySolarDisplay(vec3 ray,vec3 sunDire
     // chart. This is display adaptation, never underground air mass/scattering.
     float horizonDisplay = smoothstep(-${Math.sin(SKY_FULL_SPHERE_DISPLAY_FADE_DEG*Math.PI/180)},0.0,ray.z);
     if (horizonDisplay <= 0.0) { return base; }
+    // A narrow, soft sky-side horizon cue. Retain the original signed ray
+    // before below-ground chart adaptation; do not light the whole ground.
+    float lowSky = (1.0-smoothstep(0.0,0.12,max(ray.z,0.0)))*smoothstep(-0.02,0.0,ray.z);
     if (ray.z < 0.0) ray = normalize(vec3(ray.xy,0.0));
     // A restrained chart-only low-sky glow gives the simulated horizon
     // depth at night. It is not measured airglow, light pollution or weather.
-    float lowSky = 1.0-smoothstep(0.0,0.45,ray.z);
     float nightWeight = 1.0-smoothstep(-18.0,-9.0,sunAltitude);
-    vec3 nightGlow = vec3(0.025,0.025,0.035)*lowSky*nightWeight;
+    vec3 nightGlow = vec3(0.040,0.042,0.046)*lowSky*nightWeight;
     if (sunAltitude <= -18.0) {
       return base+nightGlow*horizonDisplay;
     }
@@ -55,12 +57,20 @@ export const skySolarDisplayShader = `vec3 skySolarDisplay(vec3 ray,vec3 sunDire
     float shadowHeightKm = 6371.0*(1.0/cos(depression)-1.0);
     float twilightGradient = exp(-(2.0/3.0)*shadowHeightKm/8.4*ray.z);
     vec3 multiplePath = 2.0/(vec3(2.0)+sqrt(BETA_R*8400.0*airMass*BETA_R*8400.0*75.0));
+    // The original height-only dusk gradient illuminated the whole horizon.
+    // Adapt the paper's sea-level Earth-shadow angular boundary (section 3.14),
+    // normalised toward the Sun to retain the adopted solar-side display.
+    // The small indirect remainder is illustrative, not measured sky light.
+    float shadowView = (2.0/120.0)*sin((91.0-zenithDeg)*PI/180.0)
+      / max(1.0-cos(depression+PI/180.0),0.0001);
+    float litDusk = smoothstep(0.0,1.0,(shadowView+scatterCosine)/(shadowView+1.0));
+    float duskDirection = mix(0.06,1.0,litDusk);
     // Indirect light has a less saturated spectrum than the direct low-sun
     // tint. These fixed display parameters are not site photometry.
     solarChroma = mix(solarChroma,vec3(1.0),0.23*duskWeight);
     float twilight = pow(smoothstep(-18.0,3.0,sunAltitude),3.0);
     vec3 radiance = 550.0*twilight*scattering*mix(vec3(1.0),solarChroma,sunsetWeight);
-    radiance *= mix(vec3(1.0),11.0*twilightGradient*multiplePath,duskWeight);
+    radiance *= mix(vec3(1.0),11.0*twilightGradient*multiplePath*duskDirection,duskWeight);
     // Only the active Mie forward lobe needs near-disc compression. Keeping
     // that daytime compression after sunset erases the visible twilight band.
     float horizonSolar = lowSun*towardSun*horizonWeight;

@@ -1,4 +1,4 @@
-import { opticalPublicationReference, type SdssOpticalManifest, type SdssCalibratedOpticalManifest, type PreparedRenderedOpticalManifest } from "@starward/miniapp-contracts";
+import { opticalPublicationReference, isPreparedRenderedOpticalFamily, type SdssOpticalManifest, type SdssCalibratedOpticalManifest, type PreparedRenderedOpticalManifest } from "@starward/miniapp-contracts";
 import { exactSkyObservationFrame } from "./sky-observation-frame";
 import { registerSkySurvey } from "./sky-survey-registration";
 import { registerSkyTanOpticalField } from "./sky-tan-optical-registration";
@@ -36,7 +36,7 @@ export function skyTargetOpticalIntersectsView(
   footprint: SkyTargetOpticalView): boolean {
   const exact = "imageVersion" in publication;
   if (exact && publication.imageVersion !== "science-optical-v2" && publication.imageVersion !== "science-optical-v3" &&
-    publication.imageVersion !== "sdss-display-optical-v1" && publication.imageVersion !== "prepared-optical-v1" && publication.imageVersion !== "prepared-display-optical-v1" && publication.imageVersion !== "prepared-optical-v2" && publication.imageVersion !== "prepared-native-optical-v1") return true;
+    publication.imageVersion !== "sdss-display-optical-v1" && !isPreparedRenderedOpticalFamily(publication)) return true;
   const fields = skyTargetOpticalFieldRegistrations(publication, footprint);
   return skyTargetImageFamilyIntersectsView(footprint, level => fields[level]);
 }

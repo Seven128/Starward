@@ -1,38 +1,25 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
-import {readFileSync} from 'node:fs';
-import vm from 'node:vm';
-import ts from 'typescript';
+import assert from "node:assert/strict";
+import test from "node:test";
+import {readFileSync} from "node:fs";
+import ts from "typescript";
+import {skyPagePaintCommit} from "./sky-optical-page-test-support";
+import {registerSkyNativeImageLifetime} from "./sky-artwork-loader";
+const source=ts.createSourceFile("sky.tsx",readFileSync(new URL("./spot-sky-page.tsx",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
 
-const source=ts.createSourceFile('spot-sky-page.tsx',readFileSync(new URL('./spot-sky-page.tsx',import.meta.url),'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
-const callbacks=new Map<string,string>();let decodeEffect:string|undefined;
-function visit(node:ts.Node){
- if(ts.isVariableDeclaration(node)&&['setDeepSkyImageAsset','setCanvasDeepSkyImage','retireDeepSkyDecode'].includes(node.name.getText(source)))
-  callbacks.set(node.name.getText(source),(node.initializer as ts.CallExpression).arguments[0]!.getText(source));
- if(ts.isCallExpression(node)&&node.expression.getText(source)==='useEffect'&&node.arguments[0]?.getText(source).includes('const image = node.createImage()'))decodeEffect=node.arguments[0].getText(source);
- ts.forEachChild(node,visit);
-}visit(source);assert.equal(callbacks.size,3);assert(decodeEffect);
-function world(separate:boolean){
- const releases:number[]=[];
- const file=(id:number)=>({reference:'M:51',level:'DETAIL',release:()=>releases.push(id)});
- const recovery=file(1),requested=separate?file(2):recovery,image={onload:()=>{},onerror:()=>{}};
- const env:any={pageVisible:true,selectedDeepSkyEntry:{objectRef:'M:51'},desiredDeepSkyImageLevel:'DETAIL',
-  canvasNodeRef:{current:null},deepSkyImageFileRef:{current:requested},deepSkyRecoveryFileRef:{current:recovery},
-  canvasDeepSkyImageRef:{current:{...recovery,image,canvasGeneration:1}},deepSkyImageAsset:requested,deepSkyImageState:'READY'};
- env.storeDeepSkyImageAsset=(value:any)=>{env.deepSkyImageAsset=value;};env.storeCanvasDeepSkyImage=(value:any)=>{env.canvasDeepSkyImage=value;};
- env.setDeepSkyImageState=(value:any)=>{env.deepSkyImageState=value;};
- const context=vm.createContext(env),evaluate=(s:string)=>vm.runInContext(ts.transpileModule('('+s+')',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,context);
- for(const [name,code]of callbacks)env[name]=evaluate(code);
- return {env,releases,image,run:evaluate(decodeEffect!)};
-}
-test('page hide releases both selected file roles once, including a shared lease',()=>{
- for(const separate of [false,true]){const w=world(separate);w.env.pageVisible=false;w.run();
-  assert.equal(w.env.deepSkyImageFileRef.current,null);assert.equal(w.env.deepSkyRecoveryFileRef.current,null);
-  assert.equal(w.env.canvasDeepSkyImageRef.current,null);assert.equal(w.env.deepSkyImageState,'IDLE');
-  assert.deepEqual(w.releases,separate?[2,1]:[1]);assert.equal(w.image.onload,null);assert.equal(w.image.onerror,null);
-  w.run();assert.deepEqual(w.releases,separate?[2,1]:[1],'repeated hidden effect cannot release again');}
-});
-test('visible native reconstruction gap retains selected file recovery until the new Canvas exists',()=>{
- const w=world(true);w.run();assert.deepEqual(w.releases,[]);
- assert(w.env.deepSkyImageFileRef.current);assert(w.env.deepSkyRecoveryFileRef.current);
+test("accepted IR frame publishes the actually surviving coarse identity only after native copy",()=>{
+  const coarse={},fine={};let current=true,presented:any=null;
+  const accepted=()=>presented;
+  const retire=registerSkyNativeImageLifetime(coarse,()=>true);
+  const infrared={reference:"M:51",level:"DETAIL",fieldDegrees:.25,image:fine,publicationHash:"edition",sourceId:"w3",sourceMissingPixels:9,
+    canvasGeneration:1,isCurrent:()=>current,coarser:{reference:"M:51",level:"OVERVIEW",fieldDegrees:2,image:coarse,publicationHash:"edition",sourceId:"w3"}};
+  const frame={data:{},frameAt:"2026-10-14T13:00:00.000Z",mode:"NIGHT",deepSkyImage:infrared};
+  const owner=skyPagePaintCommit(source,{frame,setPresentedSkyFrame:(update:(previous:any)=>any)=>{presented=update(presented);},setPresentedCamera(){}});
+  const sources={sdssOptical:null,deepSkyImage:coarse};
+  owner.stage(null,sources);assert.equal(presented,null);owner.complete();
+  assert.strictEqual(accepted().deepSkyImage.image,coarse);assert.equal(accepted().deepSkyImage.level,"OVERVIEW");
+  assert.equal(accepted().deepSkyImage.fieldDegrees,2);assert.equal(accepted().deepSkyImage.publicationHash,"edition");
+  assert.equal(accepted().deepSkyImage.sourceMissingPixels,undefined,"a coarse receipt cannot inherit the fine field's missing-data facts");
+  owner(null,{sdssOptical:null,deepSkyImage:null});assert.equal(presented,null,"zero preparation cannot borrow prior credit");
+  current=false;owner(null,sources);assert.equal(presented,null,"a retired selection cannot publish the old source");
+  current=true;retire();owner(null,sources);assert.equal(presented,null,"a retired native companion cannot borrow current primary identity");
 });

@@ -4,6 +4,10 @@ import path from "node:path";
 
 export const skyStaticHash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const HASH = "[a-f0-9]{64}";
+const PREPARED_SUPPORT_ROUTE = new RegExp(`^/v2/sky/prepared-optical/${HASH}/(?:manifest|[a-z0-9]+(?:-[a-z0-9]+)*-(?:original-region|supplied-mask)\\.png)$`);
+const PREPARED_MANIFEST_ROUTE = new RegExp(`^/v2/sky/prepared-optical/${HASH}/manifest$`);
+const IMAGE_MANIFEST_ROUTE = new RegExp(`^/v2/sky/(?:moon(?:/coverage)?|mars|mercury|jupiter|saturn|uranus|neptune|galactic|sdss-optical|deep-sky)/${HASH}/manifest$`);
+const SOURCE_MANIFEST_ROUTE = new RegExp(`^/v2/sky/(deep-sky|sdss-optical)/${HASH}/manifest$`);
 const SAO_ROUTE = new RegExp(`^/v2/sky/supplements/sao/v2/${HASH}/assets/\\d{2}-\\d{2}-(?:7|8|9|10)-\\d{1,3}$`);
 const OPTICAL_ROUTE = new RegExp(`^/v2/sky/optical/${HASH}/(?:manifest|rights/${HASH}|([a-z0-9-]{1,40})/(0|[1-9][0-9]*)/(0|[1-9][0-9]*)(/index)?)$`);
 function validOpticalRoute(route) {
@@ -14,9 +18,10 @@ function validOpticalRoute(route) {
   return order<=11 && Number.isSafeInteger(pixel) && pixel<12*4**order && (!match[4] || pixel%10000===0);
 }
 const ROUTE = new RegExp(`^/v2/sky/(?:(?:moon(?:/coverage)?|mars|mercury|jupiter|saturn|uranus|neptune|galactic|landscape|sdss-optical)/${HASH}/[A-Za-z0-9_.-]+\\.(?:jpg|png|json|zip)|prepared-optical/${HASH}/(?:M-(?:[1-9]|[1-9][0-9]|10[0-9]|110)-(?:overview|medium|detail)\\.png|[a-z0-9]+(?:-[a-z0-9]+)*-(?:overview|medium|detail)\\.(?:png|jpg))|deep-sky/${HASH}/M-(?:[1-9]|[1-9][0-9]|10[0-9]|110)/M-(?:[1-9]|[1-9][0-9]|10[0-9]|110)-(?:overview|medium|detail)(?:\\.${HASH}\\.png|\\.jpg)|constellations/${HASH}/assets/[A-Za-z0-9_.-]+|wide-field/${HASH}/(?:properties|Norder0/Dir0/Npix(?:[0-9]|1[01])\\.jpg))$`);
-export const validSkyStaticRoute = (route) => typeof route === "string" && (ROUTE.test(route) || SAO_ROUTE.test(route) || validOpticalRoute(route)) &&
+export const validSkyStaticRoute = (route) => typeof route === "string" && (ROUTE.test(route) || IMAGE_MANIFEST_ROUTE.test(route) || PREPARED_SUPPORT_ROUTE.test(route) || SAO_ROUTE.test(route) || validOpticalRoute(route)) &&
   !route.includes("//") && route.split("/").every((part) => part !== "." && part !== "..") &&
-  (!route.startsWith("/v2/sky/deep-sky/") || route.split("/").at(-1).startsWith(route.split("/").at(-2) + "-"));
+  (!route.startsWith("/v2/sky/deep-sky/") || SOURCE_MANIFEST_ROUTE.test(route) ||
+    route.split("/").at(-1).startsWith(route.split("/").at(-2) + "-"));
 const fail = (code) => { throw new Error(`sky_static_${code}`); };
 const opticalIndexPrefix = route => {
   const m = OPTICAL_ROUTE.exec(route);
@@ -31,7 +36,7 @@ export function skyStaticFilePath(route, routes) {
 }
 const exactKeys = (value, keys) => value && typeof value === "object" && !Array.isArray(value) &&
   Object.keys(value).sort().join("\0") === [...keys].sort().join("\0");
-const headerNames = new Set(["content-type", "cache-control", "x-content-type-options", "x-starward-image-source", "x-starward-image-field-degrees",
+const headerNames = new Set(["content-type", "content-disposition", "cache-control", "x-content-type-options", "x-starward-image-source", "x-starward-image-field-degrees",
   "x-starward-image-publication-hash", "x-starward-image-source-id", "x-starward-image-pixels", "x-starward-image-missing-pixels", "x-starward-image-display-support", "x-starward-data-source"]);
 
 export function assertSkyStaticRecord(record) {
@@ -40,9 +45,18 @@ export function assertSkyStaticRecord(record) {
   if (!record.headers || typeof record.headers !== "object" || Array.isArray(record.headers)) fail("header_invalid");
   for (const [key, value] of Object.entries(record.headers)) {
     if (!headerNames.has(key) || typeof value !== "string" || !value || /[^\x20-\x7e]/.test(value)) fail("header_invalid");
-    // Only byte-bound JSON display metadata needs quoted/braced values. Never
-    // admit Caddyfile environment interpolation, or executable header names.
-    if (key === "x-starward-image-display-support") {
+    // Only the fixed attachment convention and byte-bound JSON display
+    // metadata admit quoted values. Never admit Caddyfile interpolation.
+    if (key === "content-disposition") {
+      // Only admitted source manifests' fixed download conventions may
+      // contain quotes. This is not arbitrary Caddy/header interpolation.
+      const family = SOURCE_MANIFEST_ROUTE.exec(record.route)?.[1];
+      const valid = PREPARED_MANIFEST_ROUTE.test(record.route) ?
+        /^attachment; filename="[a-z0-9]+(?:-[a-z0-9]+)*-prepared-optical-manifest\.json"$/.test(value) :
+        family === "deep-sky" ? value === 'attachment; filename="allwise-w3-manifest.json"' :
+        family === "sdss-optical" && /^attachment; filename="sdss-m(?:[1-9]|[1-9][0-9]|10[0-9]|110)-optical-manifest\.json"$/.test(value);
+      if (!valid) fail("header_invalid");
+    } else if (key === "x-starward-image-display-support") {
       if (/[$`]/.test(value) || !value.startsWith("{") || !value.endsWith("}")) fail("header_invalid");
       try { if (JSON.stringify(JSON.parse(value)) !== value) fail("header_invalid"); }
       catch { fail("header_invalid"); }
@@ -57,6 +71,11 @@ export function assertSkyStaticRecord(record) {
       !["image/jpeg","image/png"].includes(record.headers["content-type"]) ||
       record.headers["x-starward-image-source"]!==record.route.split("/")[5]) fail("header_invalid");
   }
+  if (IMAGE_MANIFEST_ROUTE.test(record.route) && record.headers["content-type"] !== "application/json; charset=utf-8") fail("header_invalid");
+  if (SOURCE_MANIFEST_ROUTE.test(record.route) && !record.headers["content-disposition"]) fail("header_invalid");
+  if (PREPARED_SUPPORT_ROUTE.test(record.route) &&
+    record.headers["content-type"] !== (record.route.endsWith("/manifest") ? "application/json; charset=utf-8" : "image/png"))
+    fail("header_invalid");
   return record;
 }
 

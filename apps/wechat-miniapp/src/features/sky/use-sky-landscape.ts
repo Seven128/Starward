@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { getSkyLandscapeManifest, getSkyLandscapeAlpha, skyLandscapeAssetUrl } from "@/services/sky-landscape-client";
 import { useSkyNativeImages } from "./use-sky-artwork";
+import { useSkyImageRecovery } from "./use-sky-image-recovery";
 import type { SkyArtworkCanvas } from "./sky-artwork-request";
 import { createSkyLandscapeMasks, selectSkyLandscapeResource, selectSkyLandscapePanorama,
   selectSkyLandscapeImageResources, type SkyLandscapeFootprint, type SkyLandscapeMaskState } from "./sky-landscape-resources";
@@ -93,8 +94,11 @@ export function useSkyLandscape(canvas: SkyArtworkCanvas | null, revision: numbe
   // bitmap. The drawing owner rechecks it against the actual submitted view;
   // absence/loading must never substitute an unrelated procedural tree there.
   const mask = panorama?.mask ?? (resource && current.masks.get(resource.id)) ?? current.masks.get("overview") ?? null;
+  const retry = useSkyImageRecovery(wanted && !paused, images.retryImages, () => {
+    ownerRef.current?.retry(); void manifest.refetch();
+  });
   return { panorama, mask, opacity, loading: wanted && (manifest.isFetching || images.loading ||
     Boolean(publication && resource && !current.masks.has(resource.id) && !current.failed)), failedImage: images.failedImage,
     failed: wanted && (manifest.isError || current.failed || images.failed),
-    retry() { const resetGpu = images.retryImages(); ownerRef.current?.retry(); void manifest.refetch(); return resetGpu; } };
+    retry };
 }

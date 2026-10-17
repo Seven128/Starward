@@ -13,7 +13,9 @@ export type SemanticAssetSubject =
   | "backpack"
   | "neutral-avatar";
 
-export type SemanticIconName =
+export type SkyControlIconName = `sky-${"door" | "search" | "clock" | "layers" | "observation" | "up" | "down" | "apply" | "play" | "pause" | "target" | "follow" | "source" | "hand" | "eye" | "chevronBack" | "cancel"}`;
+export type SemanticIconName = SkyControlIconName
+  | "menu"
   | "settings"
   | "pencil"
   | "account-user"
@@ -52,7 +54,7 @@ export type SemanticIconName =
 
 export type SemanticIconState = "default" | "selected" | "draft" | "pending";
 
-const B_ICON_ID: Record<SemanticIconName, string> = {
+const B_ICON_ID: Record<Exclude<SemanticIconName, "menu" | SkyControlIconName>, string> = {
   settings: "settings", pencil: "pencil", "account-user": "account-user",
   "arrow-left": "arrow-left", search: "search", filter: "filter",
   "chevron-right": "chevron-right", "chevron-down": "chevron-down",
@@ -73,7 +75,7 @@ function packageAssetPrefix(pagePath: string) {
   return "";
 }
 
-export function adoptedBIconPath(name: SemanticIconName, state: SemanticIconState, pagePath: string) {
+export function adoptedBIconPath(name: Exclude<SemanticIconName, "menu" | SkyControlIconName>, state: SemanticIconState, pagePath: string) {
   return `${packageAssetPrefix(pagePath)}/assets/b-icons/${B_ICON_ID[name]}--day--${state}.png`;
 }
 
@@ -147,11 +149,18 @@ export function SemanticIcon({
   // the asset owner of this icon.
   const router = useRouter();
   const mode = useAppStore((state) => state.mode);
+  if (name.startsWith("sky-")) return <Image className={`semantic-icon semantic-icon--sky-control ${className}`}
+    src={`/sky/assets/controls/${name.slice(4)}-${mode === "OBSERVATION" ? "observation" : "normal"}.svg`}
+    mode="aspectFit" {...(decorative ? { "aria-hidden": true } : { role: "img", "aria-label": label ?? name })} />;
+  if (name === "menu") return <View className={`semantic-icon semantic-icon--menu semantic-icon--${mode.toLowerCase()} ${className}`}
+    {...(decorative ? { "aria-hidden": true } : { role: "img", "aria-label": label ?? "菜单" })}>
+    <View className="semantic-icon__menu-line" />
+  </View>;
   if (mode === "DAY") {
     return (
       <Image
         className={`semantic-icon semantic-icon--b semantic-icon--${name} ${className}`}
-        src={adoptedBIconPath(name, state, router?.path ?? "")}
+        src={adoptedBIconPath(name as Exclude<SemanticIconName, "menu" | SkyControlIconName>, state, router?.path ?? "")}
         mode="aspectFit"
         {...(decorative
           ? { "aria-hidden": true }

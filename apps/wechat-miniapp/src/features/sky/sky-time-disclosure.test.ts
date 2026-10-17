@@ -1,140 +1,158 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import vm from "node:vm";
 import test from "node:test";
-import ts from "typescript";
-import { createSkyObservationTime } from "./sky-observation-time";
+import { skyHasDisclosure } from "./sky-disclosure-commands";
+import { disclosureFixture, committedAt } from "./sky-disclosure-test-support";
 
-const committedAt = "2026-09-30T15:59:58.000Z";
-const source = ts.createSourceFile("sky.tsx", readFileSync(process.env.SKY_TIME_DISCLOSURE_SOURCE ??
-  new URL("./spot-sky-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-
-function pageDeclaration(name: string) {
-  const matches: string[] = [];
-  function visit(node: ts.Node) {
-    if (ts.isVariableDeclaration(node) && node.name.getText(source) === name) matches.push(`const ${node.getText(source)};`);
-    ts.forEachChild(node, visit);
-  }
-  visit(source);
-  assert.equal(matches.length, 1);
-  return matches[0]!;
-}
-
-// Exercise the actual page's public dock callbacks with its existing time
-// owner. Ruler unmount cancellation only covers an active drag; playback and
-// located previews must also be dismissed by the enclosing time disclosure.
-function dockAction(kind: "time" | "list") {
-  const callbacks: string[] = [];
-  function visit(node: ts.Node) {
-    if (ts.isJsxOpeningElement(node) && node.tagName.getText(source) === "Button") {
-      const attributes = node.attributes.properties.filter(ts.isJsxAttribute);
-      const className = attributes.find(attribute => attribute.name.getText(source) === "className")?.initializer;
-      const marker = attributes.find(attribute => attribute.name.getText(source) === "data-od-id")?.initializer;
-      const matches = kind === "time" ? className?.getText(source).includes("sky-control-dock__button--time") :
-        marker?.getText(source) === '"sky-orientation-object-list-toggle"';
-      if (matches) {
-        const callback = attributes.find(attribute => attribute.name.getText(source) === "onClick")?.initializer;
-        assert.ok(callback && ts.isJsxExpression(callback) && callback.expression);
-        callbacks.push(callback.expression.getText(source));
+for (const kind of ["time", "list", "layers", "calibration", "menu"] as const) {
+  test(`${kind} retires a cross-midnight playback/located preview when leaving time`, () => {
+    for (const intent of ["playing", "paused", "located"] as const) {
+      const page = disclosureFixture("time");
+      if (intent === "located") page.time.preview("2026-09-30T16:30:00.000Z");
+      else {
+        page.time.play(1000);
+        assert.equal(page.time.tick(4500).at, "2026-09-30T16:00:01.500Z");
+        if (intent === "paused") page.time.pause();
       }
-    }
-    ts.forEachChild(node, visit);
-  }
-  visit(source);
-  assert.equal(callbacks.length, 1, "one public dock action owns this disclosure");
-  return callbacks[0]!;
-}
-
-function render(kind: "time" | "list", panel: "time" | "calibration" | null = "time", editing = false) {
-  const time = createSkyObservationTime();
-  time.bind("context:revision1", committedAt, { startAt: committedAt, endAt: "2026-09-30T17:00:00.000Z" });
-  let listOpen = false;
-  let disclosureClosed = 0;
-  let dateOpen = true;
-  let nextPanel = panel;
-  const update = (previous: any, change: any) => typeof change === "function" ? change(previous) : change;
-  const scope = vm.createContext({
-    skyControlPanel: panel,
-    observationTime: time,
-    setTimeIntent: (value: ReturnType<typeof time.snapshot>) => assert.strictEqual(value, time.snapshot()),
-    orientationController: { snapshot: () => ({ alignment: { mode: editing ? "editing" : "auto" } }) },
-    closeSkyObjectDisclosure: () => { disclosureClosed++; },
-    setOrientationObjectListOpen: (value: unknown) => { listOpen = update(listOpen, value); },
-    setDatePickerOpen: (value: boolean) => { dateOpen = value; },
-    // React setters enqueue the next render; this callback retains the
-    // panel value from the render that created it for its entire execution.
-    setSkyControlPanel: (value: unknown) => { nextPanel = update(nextPanel, value); },
-  });
-  const action = vm.runInContext(ts.transpileModule(`${pageDeclaration("setPreviewIndex")}\n${pageDeclaration("pauseSkyTime")}\n(${dockAction(kind)});`, {
-    compilerOptions: { target: ts.ScriptTarget.ES2020 },
-  }).outputText, scope) as () => void;
-  return { time, action, panel: () => nextPanel,
-    listOpen: () => listOpen, disclosureClosed: () => disclosureClosed, dateOpen: () => dateOpen };
-}
-
-for (const kind of ["time", "list"] as const) {
-  test(`${kind} closes a paused cross-midnight playback preview and fences its late timer`, () => {
-    const page = render(kind);
-    page.time.play(1000);
-    const preview = page.time.tick(4500).at;
-    assert.equal(preview, "2026-09-30T16:00:01.500Z", "the preview has crossed local midnight at UTC+8");
-    page.time.pause();
-    page.action();
-    assert.equal(page.time.snapshot().at, committedAt,
-      "closing time disclosure must restore the committed instant, including previews with no active ruler gesture");
-    assert.equal(page.time.snapshot().mode, "FIXED");
-    assert.equal(page.time.tick(9000).at, committedAt, "a retired playback callback cannot revive the hidden preview");
-    assert.equal(page.panel(), null);
-    assert.equal(page.listOpen(), kind === "list");
-    assert.equal(page.disclosureClosed(), 1);
-    assert.equal(page.dateOpen(), false);
-  });
-
-  test(`${kind} also dismisses active playback and a located preview`, () => {
-    for (const intent of ["playing", "located"] as const) {
-      const page = render(kind);
-      if (intent === "playing") { page.time.play(1000); page.time.tick(4500); }
-      else page.time.preview("2026-09-30T16:30:00.000Z");
-      page.action();
+      page.commands.toggle(kind);
       assert.equal(page.time.snapshot().at, committedAt, intent);
-      assert.equal(page.time.tick(9000).at, committedAt, intent);
+      assert.equal(page.time.snapshot().mode, "FIXED");
+      assert.equal(page.time.tick(9000).at, committedAt, "retired playback cannot revive a closed preview");
+      assert.equal(page.state.panel, kind === "list" ? null : kind === "time" ? "menu" : kind);
+      assert.equal(page.state.list, kind === "list");
+      assert.equal(page.state.date, false);
+      assert.equal(page.state.object, false);
+      assert.equal(page.left, 0);
     }
-  });
-
-  test(`${kind} preserves a newly committed Context when the time disclosure closes`, () => {
-    const page = render(kind);
-    const selectedAt = "2026-09-30T16:30:00.000Z";
-    page.time.preview(selectedAt);
-    page.time.bind("context:revision2", selectedAt, { startAt: committedAt, endAt: "2026-09-30T17:00:00.000Z" });
-    page.action();
-    assert.equal(page.time.snapshot().binding, "context:revision2");
-    assert.equal(page.time.snapshot().at, selectedAt);
-    assert.equal(page.time.snapshot().committedAt, selectedAt);
-  });
-
-  test(`${kind} cannot dismiss the frozen calibration through a late dock callback`, () => {
-    const page = render(kind, "calibration", true);
-    page.action();
-    assert.equal(page.panel(), "calibration");
-    assert.equal(page.disclosureClosed(), 0);
-    assert.equal(page.listOpen(), false);
-    assert.equal(page.dateOpen(), true);
   });
 }
 
-test("opening the time disclosure retains its current preview", () => {
-  const page = render("time", null);
-  page.time.preview("2026-09-30T16:30:00.000Z");
-  page.action();
-  assert.equal(page.panel(), "time");
-  assert.equal(page.time.snapshot().at, "2026-09-30T16:30:00.000Z");
+test("closing time preserves the newly committed Context", () => {
+  const page = disclosureFixture("time");
+  const selectedAt = "2026-09-30T16:30:00.000Z";
+  page.time.bind("revision2", selectedAt, { startAt: committedAt, endAt: "2026-09-30T17:00:00.000Z" });
+  page.commands.toggle("time");
+  assert.equal(page.time.snapshot().at, selectedAt);
+  assert.equal(page.time.snapshot().binding, "revision2");
 });
 
-test("opening the list without closing time pauses playback at its current reading", () => {
-  const page = render("list", null);
-  page.time.play(1000);
-  const at = page.time.tick(4500).at;
-  page.action();
+test("opening time preserves its preview; opening list pauses the existing reading", () => {
+  const page = disclosureFixture(null);
+  page.time.preview("2026-09-30T16:30:00.000Z");
+  page.commands.toggle("time");
+  assert.equal(page.state.panel, "time");
+  assert.equal(page.time.snapshot().at, "2026-09-30T16:30:00.000Z");
+  page.state.panel = null;
+  page.time.play(1000); const at = page.time.tick(4500).at;
+  page.commands.toggle("list");
   assert.equal(page.time.snapshot().at, at);
   assert.equal(page.time.snapshot().mode, "PAUSED");
+});
+
+test("live edit locks reject queued switches; Back cancels calibration through its original owner", () => {
+  const page = disclosureFixture("calibration");
+  page.editing = true;
+  for (const panel of ["time", "list", "layers", "menu"] as const) page.commands.toggle(panel);
+  page.commands.leave();
+  assert.equal(page.left, 0, "a queued menu Return cannot leave while calibration edits are frozen");
+  page.commands.date(true);
+  let revealed = false;
+  page.commands.openObject(() => { revealed = true; });
+  assert.equal(revealed, false);
+  assert.equal(page.state.panel, "calibration");
+  assert.equal(page.calibrationCancelled, 0);
+  page.commands.back();
+  assert.equal(page.state.panel, "menu");
+  assert.equal(page.calibrationCancelled, 1);
+  assert.equal(page.left, 0);
+});
+
+test("Back consumes date, object, list and each control before leaving the route", async () => {
+  const page = disclosureFixture("time");
+  page.state.date = true;
+  page.state.object = true;
+  page.time.preview("2026-09-30T16:30:00.000Z");
+  await page.commands.back();
+  assert.equal(page.state.date, false);
+  assert.equal(page.state.object, true);
+  assert.equal(page.time.snapshot().at, "2026-09-30T16:30:00.000Z", "calendar Back does not cancel its parent");
+  await page.commands.back();
+  assert.equal(page.state.object, false);
+  assert.equal(page.state.panel, "menu");
+  assert.equal(page.time.snapshot().at, committedAt, "closing the outer object also cancels its underlying unapplied time");
+  await page.commands.back();
+  assert.equal(page.time.snapshot().at, committedAt);
+  assert.equal(page.state.panel, null);
+  assert.equal(page.left, 0);
+  for (const disclosure of ["list", "layers", "calibration", "menu"] as const) {
+    page.commands.toggle(disclosure);
+    assert.equal(skyHasDisclosure(page.state), true);
+    await page.commands.back();
+    if (disclosure !== "menu") {
+      assert.equal(page.state.panel, "menu", "a disclosure returns to the expanded rail");
+      await page.commands.back();
+    }
+    assert.equal(skyHasDisclosure(page.state), false);
+    assert.equal(page.left, 0);
+  }
+  await page.commands.back();
+  assert.equal(page.left, 1);
+});
+
+test("menu remains usable during context recovery and its explicit Return leaves the route", async () => {
+  const page = disclosureFixture(null);
+  page.busy = true;
+  page.commands.toggle("list");
+  assert.equal(page.state.list, false);
+  page.commands.toggle("menu");
+  assert.equal(page.state.panel, "menu");
+  await page.commands.back();
+  assert.equal(page.state.panel, null);
+  assert.equal(page.left, 0, "system Back only closes the menu");
+  page.commands.toggle("menu");
+  await page.commands.leave();
+  assert.equal(skyHasDisclosure(page.state), false);
+  assert.equal(page.left, 1, "explicit menu Return leaves instead of only closing itself");
+  page.visible = false;
+  await page.commands.leave();
+  assert.equal(page.left, 1);
+});
+
+test("rapid toggles use live state and hidden callbacks cannot close or leave", () => {
+  const page = disclosureFixture(null);
+  page.commands.toggle("time"); page.commands.toggle("list"); page.commands.toggle("layers");
+  assert.equal(page.state.panel, "layers"); assert.equal(page.state.list, false);
+  page.commands.toggle("layers");
+  assert.equal(page.state.panel, "menu");
+  page.commands.toggle("menu");
+  assert.equal(skyHasDisclosure(page.state), false);
+  page.visible = false;
+  page.commands.toggle("time"); page.commands.back(); page.commands.closeObject();
+  assert.equal(skyHasDisclosure(page.state), false); assert.equal(page.left, 0);
+});
+
+test("search-origin object Back preserves the list, while outside close restores the menu", () => {
+  const page = disclosureFixture(null);
+  page.state.list = true; page.state.object = true;
+  page.commands.returnToList();
+  assert.equal(page.state.list, true); assert.equal(page.state.object, false);
+  page.state.object = true; page.commands.closeObject();
+  assert.equal(page.state.object, false); assert.equal(page.state.list, false); assert.equal(page.state.panel, "menu");
+});
+
+test("closing direct information preserves an already expanded menu", () => {
+  for (const close of ["closeObject", "back"] as const) {
+    const page = disclosureFixture("menu"); page.state.object = true;
+    page.commands[close]();
+    assert.equal(page.state.object, false); assert.equal(page.state.panel, "menu");
+  }
+});
+
+test("a retained close button cannot switch or dismiss the replacement panel", () => {
+  const page = disclosureFixture("calibration");
+  const close = () => page.commands.close("calibration");
+  page.commands.toggle("time");
+  page.time.preview("2026-09-30T16:30:00.000Z");
+  close();
+  assert.equal(page.state.panel, "time");
+  assert.equal(page.time.snapshot().at, "2026-09-30T16:30:00.000Z");
 });

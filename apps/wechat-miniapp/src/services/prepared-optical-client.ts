@@ -1,5 +1,14 @@
-import { MINIAPP_API_BASE_PATH, isPreparedOpticalReference, assertPreparedRenderedOpticalManifest, type PreparedRenderedOpticalManifest } from "@starward/miniapp-contracts";
+import { MINIAPP_API_BASE_PATH, PREPARED_OPTICAL_DISCOVERY_PATH, assertPreparedOpticalDiscovery,
+  isPreparedOpticalReference, assertPreparedRenderedOpticalManifest, type PreparedRenderedOpticalManifest,
+  type PreparedOpticalDiscovery } from "@starward/miniapp-contracts";
 import { requestBareSkyResource, skyResourceUrl } from "./bare-sky-resource";
+
+export async function getPreparedOpticalDiscovery(signal?: AbortSignal): Promise<PreparedOpticalDiscovery> {
+  const response = await requestBareSkyResource(PREPARED_OPTICAL_DISCOVERY_PATH, "prepared-optical", signal);
+  if (response.status !== 200) throw new Error("prepared_optical_discovery_unavailable");
+  assertPreparedOpticalDiscovery(response.body);
+  return response.body;
+}
 
 export async function getPreparedOpticalManifest(reference: string, expectedHash: string,
   signal?: AbortSignal): Promise<PreparedRenderedOpticalManifest> {

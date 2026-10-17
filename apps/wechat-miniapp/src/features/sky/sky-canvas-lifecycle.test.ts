@@ -1,6 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createPoseFramePublisher, createSkyCanvasLifecycle, measuredCanvasSize, type CanvasClock } from "./sky-canvas-lifecycle";
+import { createPoseFramePublisher, createSkyCanvasFrameClock, createSkyCanvasLifecycle, measuredCanvasSize, skyCanvasFailureCode,
+  type CanvasClock, type SkyCanvasFrameCanvas } from "./sky-canvas-lifecycle";
+import { createSkyReadyImages } from "./sky-ready-presentation";
+
+test("public Canvas failure diagnostics retain known stages and exclude native details", () => {
+  assert.equal(skyCanvasFailureCode(new Error("sky_canvas_callback_timeout")), "sky_canvas_callback_timeout");
+  assert.equal(skyCanvasFailureCode(new Error("sky_canvas_retirement_failed", { cause: new Error("private native detail") })), "sky_canvas_retirement_failed");
+  for (const error of [new Error("native request failed: https://private.invalid/?credential=example"),
+    new Error("sky_canvas_callback_timeout: private path"), "sky_canvas_native_error", null]) {
+    assert.equal(skyCanvasFailureCode(error), "sky_canvas_unknown_failure");
+  }
+});
 
 function clockFixture() {
   let id = 0;
@@ -15,6 +26,167 @@ function clockFixture() {
     jobs.delete(selected[0]); selected[1].run();
   } };
 }
+function nativeFrames() {
+  let next = 0;
+  const callbacks = new Map<number, () => void>(), cancelled: number[] = [];
+  const canvas: SkyCanvasFrameCanvas = {
+    requestAnimationFrame(run) { callbacks.set(++next, run); return next; },
+    cancelAnimationFrame(id) { cancelled.push(id); callbacks.delete(id); },
+  };
+  return { canvas, callbacks, cancelled, frame() {
+    const selected = [...callbacks][0]; assert.ok(selected, "expected a native frame callback");
+    callbacks.delete(selected[0]); selected[1]();
+  } };
+}
+
+test("display frame admission keeps startup and deadlines timed, and cancels the original native node", () => {
+  const timing = clockFixture(), first = nativeFrames(), second = nativeFrames();
+  let display: SkyCanvasFrameCanvas | null = null, runs = 0;
+  const clock = createSkyCanvasFrameClock(() => display, timing.clock);
+  clock.schedule(() => runs++, 0); timing.tick();
+  assert.equal(runs, 1, "first measurement cannot depend on a not-yet-created display");
+  display = first.canvas;
+  const deadline = clock.schedule(() => runs++, 5000);
+  assert.equal(first.callbacks.size, 0, "failure deadlines do not wait for a display frame");
+  clock.cancel(deadline); assert.equal(timing.jobs.size, 0);
+  const pending = clock.schedule(() => runs++, 0), late = [...first.callbacks.values()][0]!;
+  display = second.canvas; clock.cancel(pending); late();
+  assert.equal(first.cancelled.length, 1); assert.equal(second.cancelled.length, 0);
+  assert.equal(runs, 1); assert.equal(timing.jobs.size, 0);
+  clock.schedule(() => runs++, 0); const duplicate = [...second.callbacks.values()][0]!;
+  second.frame(); duplicate();
+  assert.equal(runs, 2); assert.equal(timing.jobs.size, 0); assert.equal(second.callbacks.size, 0);
+  display = {}; clock.schedule(() => runs++, 0); timing.tick(); assert.equal(runs, 3);
+});
+
+test("native frame request failure falls back once per surface and recovers after explicit reset", t => {
+  const log = t.mock.method(console, "error", () => {}), timing = clockFixture();
+  const native = nativeFrames(); let attempts = 0, broken = true, runs = 0;
+  const request = native.canvas.requestAnimationFrame!;
+  native.canvas.requestAnimationFrame = callback => {
+    attempts++; if (broken) throw new Error("private native request detail"); return request(callback);
+  };
+  const clock = createSkyCanvasFrameClock(() => native.canvas, timing.clock);
+  for (let i = 0; i < 3; i++) { clock.schedule(() => runs++, 0); timing.tick(); }
+  assert.equal(runs, 3); assert.equal(attempts, 1);
+  assert.deepEqual(log.mock.calls.map(call => call.arguments), [["[starward-native]", { code: "sky_canvas_frame_schedule_failed" }]]);
+  broken = false; clock.resetFailures(); clock.schedule(() => runs++, 0); native.frame();
+  assert.equal(attempts, 2); assert.equal(runs, 4); assert.equal(timing.jobs.size, 0);
+});
+
+test("missing frame callbacks recover once without a late draw; failed native cancellation remains fenced", t => {
+  const log = t.mock.method(console, "error", () => {}), timing = clockFixture(), native = nativeFrames();
+  let display = native.canvas, runs = 0;
+  const clock = createSkyCanvasFrameClock(() => display, timing.clock);
+  clock.schedule(() => runs++, 0); const late = [...native.callbacks.values()][0]!;
+  timing.tick(5000); late();
+  assert.equal(runs, 1); assert.equal(native.cancelled.length, 1); assert.equal(timing.jobs.size, 0);
+  clock.schedule(() => runs++, 0); timing.tick(); assert.equal(runs, 2);
+  const replacement = nativeFrames(); display = replacement.canvas;
+  replacement.canvas.cancelAnimationFrame = () => { throw new Error("private native cancel detail"); };
+  const handles = [clock.schedule(() => runs++, 0), clock.schedule(() => runs++, 0)];
+  const stale = [...replacement.callbacks.values()];
+  handles.forEach(handle => clock.cancel(handle)); stale.forEach(callback => callback());
+  assert.equal(runs, 2); assert.equal(timing.jobs.size, 0);
+  clock.schedule(() => runs++, 0); timing.tick(); assert.equal(runs, 3);
+  assert.deepEqual(log.mock.calls.map(call => call.arguments), [
+    ["[starward-native]", { code: "sky_canvas_frame_callback_timeout" }],
+    ["[starward-native]", { code: "sky_canvas_frame_cancel_failed" }],
+  ]);
+});
+
+test("the real Canvas lifecycle admits the latest frame on RAF and fences retained, resized and disposed callbacks", () => {
+  const timing = clockFixture(), displays: ReturnType<typeof nativeFrames>[] = [];
+  let display: SkyCanvasFrameCanvas | null = null, measurements = 0;
+  const painted: { frame: number; done: () => void }[] = [], presented: number[] = [], released: object[] = [];
+  const clock = createSkyCanvasFrameClock(() => display, timing.clock);
+  const canvas = createSkyCanvasLifecycle<number, object>({
+    measure(done) { measurements++; done({ width: 390, height: 844 }); },
+    createContext() { const next = nativeFrames(); displays.push(next); display = next.canvas; clock.resetFailures(); return next; },
+    releaseContext(context) { released.push(context); display = null; clock.resetFailures(); },
+    validateContext: () => true,
+    paint: (_context, frame, _size, done) => painted.push({ frame, done }),
+    presented: frame => presented.push(frame), invalidated() {}, failed(error) { throw error; },
+  }, clock);
+  canvas.ready(); canvas.request(0); timing.tick(); painted[0]!.done();
+  for (let frame = 1; frame <= 50; frame++) canvas.request(frame);
+  assert.equal(displays[0]!.callbacks.size, 1); assert.equal(painted.length, 1);
+  displays[0]!.frame(); assert.equal(painted[1]!.frame, 50);
+  canvas.request(51); assert.equal(displays[0]!.callbacks.size, 0, "one writer remains in flight");
+  painted[1]!.done(); displays[0]!.frame(); painted[2]!.done();
+  assert.deepEqual(presented, [0, 51]);
+  assert.equal(timing.jobs.size, 0); assert.equal(displays[0]!.callbacks.size, 0, "idle does not create a render loop");
+  canvas.request(52); const hidden = [...displays[0]!.callbacks.values()][0]!;
+  canvas.hide(true); hidden(); assert.equal(painted.length, 3); assert.equal(timing.jobs.size, 0);
+  canvas.show(); assert.equal(displays[0]!.callbacks.size, 0, "show cannot replay a hidden frame");
+  canvas.request(53); displays[0]!.frame(); painted[3]!.done();
+  assert.equal(measurements, 2); assert.equal(displays.length, 1, "Sources reuses only the revalidated display");
+  canvas.request(54); const resized = [...displays[0]!.callbacks.values()][0]!;
+  canvas.resize(); resized(); timing.tick(); painted[4]!.done();
+  assert.equal(displays.length, 2); assert.equal(released.length, 1); assert.equal(painted[4]!.frame, 54);
+  canvas.request(55); const disposed = [...displays[1]!.callbacks.values()][0]!;
+  canvas.dispose(); disposed(); canvas.request(56);
+  assert.deepEqual(presented, [0, 51, 53, 54]); assert.equal(released.length, 2);
+  assert.equal(timing.jobs.size, 0); assert(displays.every(item => item.callbacks.size === 0));
+});
+
+test("finite image reveal renews the single display writer on RAF and returns to idle", () => {
+  const timing = clockFixture(), native = nativeFrames(), images = createSkyReadyImages(), image = {};
+  let now = 0, count = 0, pending: ReturnType<typeof images.prepare>;
+  const pixels: number[] = [];
+  const clock = createSkyCanvasFrameClock(() => native.canvas, timing.clock);
+  const canvas = createSkyCanvasLifecycle<number, object>({
+    measure: done => done({ width: 390, height: 844 }), createContext: () => ({}),
+    paint(_context, _frame, _size, done) {
+      pending = images.prepare(now); pending.draw(image, .5, () => true, value => { pixels.push(value); return true; }); done();
+    },
+    presented(frame) { count++; pending.commit(now); if (pending.animating) canvas.request(frame, false, true); },
+    invalidated() {}, failed(error) { throw error; },
+  }, clock);
+  canvas.ready(); canvas.request(1);
+  for (now = 0; now <= 160; now += 16) {
+    assert.equal(native.callbacks.size, 1, "one admission, no animation timer before RAF");
+    assert([...timing.jobs.values()].every(job => job.delay === 5000), "only the callback watchdog may be timed");
+    native.frame();
+  }
+  assert.equal(count, 11); assert.equal(pixels.length, 10); assert.equal(pixels.at(-1), .5);
+  assert.equal(native.callbacks.size, 0); assert.equal(timing.jobs.size, 0);
+  canvas.dispose();
+});
+
+test("finite continuation retains timed fallback, latest input priority and lifecycle cancellation", () => {
+  for (const supported of [true, false]) {
+    const timing = clockFixture(), native = nativeFrames(), painted: number[] = [];
+    const clock = createSkyCanvasFrameClock(() => supported ? native.canvas : {}, timing.clock);
+    let renew = true;
+    const canvas = createSkyCanvasLifecycle<number, object>({
+      measure: done => done({ width: 390, height: 844 }), createContext: () => ({}), validateContext: () => true,
+      paint(_context, frame, _size, done) { painted.push(frame); done(); },
+      presented(frame) { if (renew) canvas.request(frame, false, true); }, invalidated() {}, failed(error) { throw error; },
+    }, clock);
+    const next = (continuation = false) => supported ? native.frame() : timing.tick(continuation ? 16 : 0);
+    canvas.ready(); canvas.request(1); next();
+    assert.equal(supported ? native.callbacks.size : [...timing.jobs.values()].filter(job => job.delay === 16).length, 1);
+    canvas.request(2); renew = false; next();
+    assert.deepEqual(painted, [1, 2], "new input replaces the continuation's snapshot without another writer");
+    assert.equal(timing.jobs.size, 0); assert.equal(native.callbacks.size, 0);
+    for (const action of ["hide", "retain", "resize", "dispose"] as const) {
+      if (action !== "hide") canvas.show();
+      renew = true; canvas.request(3); next();
+      const late = supported ? [...native.callbacks.values()][0]! : [...timing.jobs.values()].find(job => job.delay === 16)!.run;
+      const count = painted.length;
+      if (action === "resize") canvas.resize();
+      else if (action === "dispose") canvas.dispose();
+      else canvas.hide(action === "retain");
+      late();
+      assert.equal(painted.length, count, action + " fences a cancelled continuation");
+      if (action === "resize") { renew = false; next(); }
+      else assert.equal(timing.jobs.size, 0);
+    }
+    assert.equal(native.callbacks.size, 0); assert.equal(timing.jobs.size, 0);
+  }
+});
+
 function canvasFixture(validateContext?: () => boolean) {
   const timing = clockFixture();
   const measurements: ((rect: unknown) => void)[] = [];

@@ -31,6 +31,28 @@ test('pause retains only the bounded ready view, cancels pending work and resume
   owner.resume();assert.equal(states.length,count,'final disposal fences late replies and resume');
 });
 
+test('unchanged ready tiles retain their identity through loading, cancellation and idle recovery',async()=>{
+  const states:SkyStellarTileState[]=[],pending:{signal:AbortSignal;finish():void}[]=[];
+  const owner=createSkyStellarTileLoader({publication,changed:state=>states.push(state),load:async(id,signal)=>{
+    if(id===ids[1])await new Promise<void>(resolve=>pending.push({signal,finish:resolve}));
+    return {data:tile(id),dataState:'FRESH'};
+  }});
+  owner.update([ids[0]!]);await tick();
+  const ready=states.at(-1)!.tiles;assert.equal(ready.length,1);
+  owner.update(ids.slice(0,2));await tick();
+  assert.equal(states.at(-1)!.loading,true);
+  assert.strictEqual(states.at(-1)!.tiles,ready,'status changes cannot manufacture a new points collection');
+  owner.update([ids[0]!]);assert(pending[0]!.signal.aborted);
+  assert.equal(states.at(-1)!.loading,false);assert.strictEqual(states.at(-1)!.tiles,ready);
+  const settled=states.at(-1)!;
+  pending[0]!.finish();await tick();owner.retry();owner.pause();owner.resume();await tick();
+  assert.strictEqual(states.at(-1),settled,'cancelled completion and healthy retry cannot republish unchanged state');
+  owner.update(ids.slice(0,2));await tick();pending[1]!.finish();await tick();
+  assert.notStrictEqual(states.at(-1)!.tiles,ready,'a real first arrival must publish immediately');
+  assert.equal(states.at(-1)!.tiles.length,2);assert.equal(states.at(-1)!.loading,false);
+  owner.dispose();
+});
+
 test('cached stale tiles stay visible with recovery state; retry really reloads them and keeps old points while pending',async()=>{
   let calls=0,finish:()=>void=()=>{};const states:SkyStellarTileState[]=[];
   const loader=createSkyStellarTileLoader({publication,changed:s=>states.push(s),load:async id=>{
@@ -90,4 +112,25 @@ test('oversized requests fail explicitly without silently selecting a subset or 
   loader.update(publication.index.tiles.map(t=>t.id));assert.equal(requests,0);
   assert.equal(states.at(-1)!.failed,true);assert.equal(states.at(-1)!.loading,false);
   assert.deepEqual(states.at(-1)!.tiles,[]);loader.dispose();
+});
+
+test('handled tile failures log once per attempt, preserve recovery and keep normal retirement quiet',async()=>{
+  const before=console.error,errors:unknown[][]=[],states:SkyStellarTileState[]=[];
+  console.error=(...parts)=>{errors.push(parts);};
+  let broken=true,calls=0;
+  const owner=createSkyStellarTileLoader({publication,changed:s=>states.push(s),load:async id=>{
+    calls++;if(broken)throw Object.assign(new Error('private tile path'),{errno:600001});
+    return {data:tile(id),dataState:'FRESH'};
+  }});
+  try{
+    owner.update([ids[0]!]);await tick();
+    assert.equal(states.at(-1)!.failed,true);assert.equal(states.at(-1)!.tiles.length,0);
+    assert.equal(errors.length,1,'the file path has no Query error callback to report its handled failure');
+    assert.equal((errors[0]![1] as {errno:number}).errno,600001);
+    owner.update([ids[0]!]);await tick();assert.equal(calls,1);assert.equal(errors.length,1);
+    broken=false;owner.retry();await tick();assert.equal(states.at(-1)!.failed,false);assert.equal(states.at(-1)!.tiles.length,1);
+    const cancelled=createSkyStellarTileLoader({publication,changed(){},load:async()=>{throw Error('sky_public_json_cancelled');}});
+    cancelled.update([ids[1]!]);await tick();cancelled.dispose();assert.equal(errors.length,1);
+    assert.doesNotMatch(JSON.stringify(errors),/private/u);
+  }finally{owner.dispose();console.error=before;}
 });

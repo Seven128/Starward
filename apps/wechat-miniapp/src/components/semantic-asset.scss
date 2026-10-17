@@ -14,6 +14,20 @@
   object-fit: contain;
 }
 
+.semantic-icon--menu::before,
+.semantic-icon--menu::after,
+.semantic-icon--menu .semantic-icon__menu-line {
+  position: absolute;
+  left: 12%;
+  width: 76%;
+  height: 2Px;
+  border-radius: 2Px;
+  background: currentColor;
+}
+.semantic-icon--menu::before { top: 24%; }
+.semantic-icon--menu .semantic-icon__menu-line { top: calc(50% - 1Px); }
+.semantic-icon--menu::after { bottom: 24%; }
+
 .semantic-icon::before,
 .semantic-icon::after {
   position: absolute;

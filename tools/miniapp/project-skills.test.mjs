@@ -7,6 +7,16 @@ const repository = path.resolve(import.meta.dirname, "../..");
 
 const definitions = [
   {
+    name: "starward-miniapp-development",
+    requiredReferences: [
+      "project_context/global.md",
+      "project_context/development-workflow/development-feedback.md",
+      "project_context/development-workflow.md",
+      "tools/miniapp/development-observer.md",
+      "AGENTS.md",
+    ],
+  },
+  {
     name: "starward-interaction-design",
     directory: "uiux_design",
     requiredReferences: [

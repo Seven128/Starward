@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "reviewed-chinese-star-alias-corrections-v1",
+  "catalogVersion": "starward-reviewed-chinese-star-aliases.v1",
+  "reviewedAt": "2026-10-11T10:09:35.288Z",
+  "license": "CC0 1.0",
+  "upstreamPublications": [
+    {
+      "catalogVersion": "wikidata-bsc5p-chinese-aliases.v1",
+      "assetSha256": "612ad315268e736ea58768444091ab9dd3b79bd5703ec86613e0d7c61062f982"
+    },
+    {
+      "catalogVersion": "wikidata-bsc5p-chinese-aliases.v3",
+      "assetSha256": "8380ab78a9f04426008e34c36abd268003906bffa3e3a0bfaab0500552db6cb0"
+    }
+  ],
+  "rows": [
+    {
+      "reference": "HR:8812",
+      "identity": {
+        "hr": "8812",
+        "hd": "218594",
+        "hip": "114341"
+      },
+      "wikidataItem": "Q2446786",
+      "rejectedAliases": [
+        "天鹰座88",
+        "天鷹座88"
+      ],
+      "aliases": [
+        "宝瓶座88",
+        "寶瓶座88"
+      ],
+      "rationale": "The fixed English label and BSC Flamsteed designation identify Aquarius; the upstream Chinese labels incorrectly identify Aquila. Correct the factual designation only, without adopting prose or measurements.",
+      "evidence": {
+        "sourceUrl": "https://www.wikidata.org/wiki/Q2446786?oldid=2298499194",
+        "entityRevision": 2298499194,
+        "entitySnapshot": {
+          "path": "output/cloud-sky-text-remainder-2026-10-11-r1/entity-recovery-r1/batch-01-attempt-0.json",
+          "bytes": 6183756,
+          "sha256": "2dc209b0876c203ca07ec0acdb13326526ebeddcd8bba7e328ea53a9d6532254"
+        },
+        "englishLabel": "88 Aquarii",
+        "bscDesignation": "88    Aqr",
+        "constellationNames": {
+          "path": "data-pipelines/star-catalog/constellation-names.zh-CN.json",
+          "bytes": 4930,
+          "sha256": "3a048500f1695c2640688c5fa27bd1e6e26bfa1f0eb18f5df1d6c78f368f213e"
+        },
+        "catalogs": [
+          "bsc5p-bright-stars.v2",
+          "bsc5p-bright-stars.v3"
+        ]
+      }
+    }
+  ]
+}

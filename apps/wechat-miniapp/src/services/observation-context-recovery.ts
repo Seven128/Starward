@@ -7,6 +7,13 @@ import type {
 } from "@starward/miniapp-contracts";
 import { observationNightBounds } from "@starward/miniapp-contracts";
 
+declare const confirmedContextReply: unique symbol;
+/** Only updateObservationContext returns this after its existing full edit
+ * acknowledgement/readback validation. The proof adds no wire or cache field. */
+export type ConfirmedObservationContextReply = ApiEnvelope<ObservationContext> & {
+  readonly [confirmedContextReply]: true;
+};
+
 function samePoint(left: Wgs84Point | undefined, right: Wgs84Point | undefined) {
   return Boolean(left && right && left.system === right.system &&
     left.latitude === right.latitude && left.longitude === right.longitude);

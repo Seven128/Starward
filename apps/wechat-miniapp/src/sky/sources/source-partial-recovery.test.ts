@@ -6,18 +6,25 @@ import ts from "typescript";
 import { celestialInformationPartialDetail } from "../../services/celestial-information-presentation";
 import { isDeepSkyObjectReference, isPreparedOpticalReference, preparedNativeOpticalSource, preparedNativeOpticalPublicationHash } from "@starward/miniapp-contracts";
 import { preparedNativeOpticalFixture } from "../../../../../packages/miniapp-contracts/src/test-fixtures/prepared-native-optical-publication.ts";
+import * as contracts from "@starward/miniapp-contracts";
+import {sourceRecoveryTestScope} from "./source-recovery-test-support";
 
 const source = ts.createSourceFile("index.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"),
   ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const component = source.statements.find(node => ts.isFunctionDeclaration(node) &&
-  node.name?.text === "CelestialSourcesPage") as ts.FunctionDeclaration;
+  node.name?.text === "CelestialObjectSourcesPage") as ts.FunctionDeclaration;
 assert.ok(component);
-const code = ts.transpileModule(`${component.getText(source).replace(/^export\s+default\s+/, "")}\nCelestialSourcesPage;`,
+const code = ts.transpileModule(`${component.getText(source).replace(/^export\s+default\s+/, "")}\nCelestialObjectSourcesPage;`,
   { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText;
+function renderPage(bindings:object){
+  const scope=sourceRecoveryTestScope();
+  const render=vm.runInNewContext(code,{...contracts,...scope.bindings,Text:"Text",...bindings});
+  return ()=>scope.render(render);
+}
 
 test("source route retains valid credit and offers recovery for a partial information publication", () => {
   let retries = 0;
-  const render = vm.runInNewContext(code, {
+  const render = renderPage({
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) =>
       ({ type, props: props ?? {}, children }) },
     View: "View", ScrollView: "ScrollView", CustomNav: "CustomNav",
@@ -27,7 +34,9 @@ test("source route retains valid credit and offers recovery for a partial inform
     useThemeClass: () => "mode-night", isCelestialObjectReference: () => true, isDeepSkyObjectReference,
     useResourceQuery: () => ({ isPending: false, isError: false }),
     useCelestialInformation: () => ({ isPending: false, isError: false, refreshError: null,
-      data: { dataState: "PARTIAL", data: { displayName: "织女星", sources: [{ id: "bsc", provider: "BSC" }] } },
+      data: { dataState: "PARTIAL", data: { displayName: "织女星", sources: [{ id: "bsc", provider: "BSC",
+        limitations: ["目录修订与原始字段的完整核对说明"] }],
+        limitations: ["目录修订与原始字段的完整核对说明", "资料适用范围保持完整"] } },
       refetch: () => { retries++; return Promise.resolve(); } }),
     isProductSource: () => true, deepSkyManifestUrl: () => undefined,
     celestialInformationPartialDetail,
@@ -45,6 +54,12 @@ test("source route retains valid credit and offers recovery for a partial inform
   const partial = find(tree, node => node?.type === "StatusPanel" && node.props.state === "PARTIAL");
   assert.ok(partial);
   assert.ok(find(tree, node => node?.type === "Provenance" && node.props.source.provider === "BSC"));
+  assert.ok(find(tree, node => node?.type === "Text" && node.children?.includes("资料适用范围保持完整")),
+    "global applicability remains complete");
+  assert.equal(find(tree, node => node?.type === "Text" && node.children?.includes("目录修订与原始字段的完整核对说明")), null,
+    "a full note already rendered by its source credit must not be repeated below");
+  assert.ok(find(tree, node => node?.type === "Provenance" &&
+    node.props.source.limitations.includes("目录修订与原始字段的完整核对说明")), "credit still owns the full original note");
   partial.props.onRecover();
   assert.equal(retries, 1);
 });
@@ -54,7 +69,7 @@ test("the source route reads the image-bound publication and rejects an invalid 
     params: { reference: string; imagePublicationHash: string; opticalPublicationHash?: string } =
       { reference: "M%3A42", imagePublicationHash: hash, opticalPublicationHash: opticalHash },
     requests: unknown[][] = [], downloads: unknown[][] = [];
-  const render = vm.runInNewContext(code, {
+  const render = renderPage({
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
     View: "View", ScrollView: "ScrollView", CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
     useRouter: () => ({ params }), useState: (value: unknown) => [value, () => {}], useDidHide() {}, useDidShow() {},
@@ -94,7 +109,7 @@ test("an independent region source route keeps exact credit/unknown meaning and 
   const publication = preparedNativeOpticalFixture(true), hash = preparedNativeOpticalPublicationHash(publication);
   let current = true, retries = 0, enabled = false, objectRequestEnabled = true;
   const params: any = { reference: encodeURIComponent(publication.reference), preparedPublicationHash: hash };
-  const render = vm.runInNewContext(code, {
+  const render = renderPage({
     React: { createElement: (type: string, props: any, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
     View: "View", ScrollView: "ScrollView", CustomNav: "CustomNav", Provenance: "Provenance", StatusPanel: "StatusPanel",
     useRouter: () => ({ params }), useState: (v: unknown) => [v, () => {}], useDidHide() {}, useDidShow() {},

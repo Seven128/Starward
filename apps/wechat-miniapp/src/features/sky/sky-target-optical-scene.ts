@@ -10,9 +10,12 @@ import { skyTargetOpticalFrame, type SkyTargetOpticalImage } from "./sky-sdss-op
 import { skyExactTargetOpticalIdentity, type SkyExactTargetOpticalField, type SkyExactTargetOpticalImage } from "./sky-target-optical-identity";
 import { registerSkyTanOpticalField } from "./sky-tan-optical-registration";
 import { registerSkyDeepSkyRegion, type SkyDeepSkyRegion } from "./sky-deep-sky-region";
+import { drawSkyReadyArtworkLevels } from "./sky-ready-artwork";
+import type { SkyReadyImageFrame } from "./sky-ready-presentation";
 
-/** Explicit task capability and publication intent. Normal Scene callers omit
- * this port; having group methods on a renderer does not enable an exact-source family. */
+/** Exact admitted publication intent. Ordinary discovery and conditional trial
+ * consumers both bind it to the same surface and immutable edition; having
+ * group methods on a renderer alone cannot enable a source family. */
 export interface SkySceneTargetOpticalPort {
   readonly surface: SkyRenderSurface & SkyArtworkLevelSurface & SkyArtworkContributionSurface;
   readonly reference: string;
@@ -43,7 +46,7 @@ export function submitSkySceneTargetOptical(context: SkyRenderSurface, sourceKin
   port: SkySceneTargetOpticalPort | undefined, input: SkyTargetOpticalImage | null | undefined,
   observation: SkyObservationFrame | null, view: SkyArtworkView,
   failed?: (image: object) => void,
-  catalogEntry?: DeepSkySceneCatalogEntry | null): SkySceneTargetOpticalSubmission | null {
+  catalogEntry?: DeepSkySceneCatalogEntry | null, ready?: SkyReadyImageFrame): SkySceneTargetOpticalSubmission | null {
   const identity = skyExactTargetOpticalIdentity(input);
   if (!port || port.surface !== context || !identity || identity.kind !== sourceKind ||
     port.reference !== identity.frame.reference || port.publicationHash !== identity.frame.publicationHash) return null;
@@ -73,11 +76,16 @@ export function submitSkySceneTargetOptical(context: SkyRenderSurface, sourceKin
   const levels: SkyArtworkLevels = {
     fine: fine ? level(expected.fine, fine) : null,
     coarse: coarse && expected.coarse ? level(expected.coarse, coarse) : null,
+    ...(publication.imageVersion === "prepared-native-optical-v1" &&
+      ["prepared-native-source-background-display-v1", "prepared-native-source-background-denoised-display-v1", "prepared-native-source-denoised-background-display-v1"].includes(publication.processing.producerVersion)
+      ? { composite: "linear-display-addition" as const } : {}),
   };
   // Ordinary draw/context errors propagate to the Scene frame owner. Auxiliary
   // probe failure is represented by UNKNOWN and is never an image failure.
-  const draw = fine || coarse ? port.surface.artworkLevels(levels, view, 1) : unsubmitted;
-  let allowInfrared = !draw.submitted; // independent whole-unavailable policy
+  const draw = fine || coarse ? drawSkyReadyArtworkLevels(port.surface, levels, view, 1, ready) : unsubmitted;
+  // A prepared zero-display frame owns its spectrum without claiming pixels
+  // or EMPTY. Whole preparation failure still keeps the original fallback.
+  let allowInfrared = !draw.submitted && !draw.finePrepared && !draw.coarsePrepared;
   if (draw.submitted) {
     const qualification = port.surface.artworkLevelsQualification(draw);
     allowInfrared = !!fine && draw.finePrepared && (!expected.coarse || (!!coarse && draw.coarsePrepared)) &&
@@ -91,11 +99,11 @@ export function submitSkySceneTargetOptical(context: SkyRenderSurface, sourceKin
   // Submit before later layers, with today's view and the alternative's exact
   // descriptor; completion/credit then follow this actual group, not the failed
   // wider image. No third sampler or cross-source composition is introduced.
-  if (!draw.submitted && frame.fallback && skyNativeImageIsCurrent(frame.fallback.image)) {
+  if (!draw.submitted && !draw.finePrepared && !draw.coarsePrepared && frame.fallback && skyNativeImageIsCurrent(frame.fallback.image)) {
     const alternative = skyTargetOpticalFrame({ publication, image: frame.fallback.image,
       renderedLevel: frame.fallback.level, renderedAsset: frame.fallback.asset, coarser: null });
     const restored = submitSkySceneTargetOptical(context, sourceKind, port, alternative,
-      observation, view, failed, catalogEntry);
+      observation, view, failed, catalogEntry, ready);
     if (restored) return restored;
   }
   const region = catalogEntry?.objectRef === frame.reference

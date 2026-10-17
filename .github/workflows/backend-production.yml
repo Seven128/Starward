@@ -74,6 +74,7 @@ jobs:
       - name: Recheck production promotion owners
         run: |
           npm ci
+          npm ci --ignore-scripts --prefix tools/deployment/oss-runtime
           npm run test:deployment
           sh -n infrastructure/deployment/run-remote-promotion.sh
       - name: Prepare production control package and request
@@ -85,7 +86,7 @@ jobs:
           released_at=$(date -u +'%Y-%m-%dT%H:%M:%S.000Z')
           archive="$RUNNER_TEMP/starward-control-$REVISION.tar.gz"
           request="$RUNNER_TEMP/starward-production-$REVISION.request.json"
-          tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner -czf "$archive" package.json tools/run-node.cjs tools/deployment infrastructure/deployment
+          tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner --exclude=tools/deployment/oss-runtime/node_modules -czf "$archive" package.json tools/run-node.cjs tools/deployment infrastructure/deployment
           archive_sha256=$(sha256sum "$archive" | cut -d' ' -f1)
           npm run deployment:create-request -- \
             --output "$request" \

@@ -3,6 +3,12 @@ import { assertSkyTargetFrames, type ApiEnvelope, type SkyTargetInstantData } fr
 export type SkyTargetInstantBinding = Pick<SkyTargetInstantData,
   "spotId" | "contextId" | "contextRevision" | "contextFingerprint" | "at">;
 
+/** Sky and its read-only source page share the same settled-time query. */
+export function skyTargetInstantQueryKey(binding: SkyTargetInstantBinding | null, dataRevision: string | undefined) {
+  return ["spot-sky-target-instant", binding ? `${binding.contextId}:${binding.contextRevision}:${binding.contextFingerprint}` : "",
+    dataRevision, binding?.at ?? ""] as const;
+}
+
 /** A cached fine-time result must still belong to the current Context and
  * presentation instant. An absent frame is not a genuine zero-target result. */
 export function matchingSkyTargetInstantResponse(response: ApiEnvelope<SkyTargetInstantData>,

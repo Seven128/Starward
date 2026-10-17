@@ -1,4 +1,5 @@
 import {useCallback,useMemo} from "react";
+import {useSkyImageRecovery} from "./use-sky-image-recovery";
 import type {SkyGeometryReport} from "@starward/miniapp-contracts";
 import {useResourceQuery} from "@/hooks/use-resource-query";
 import {getOpticalHipsIndex,getOpticalHipsManifest,opticalHipsTileUrl} from "@/services/optical-hips-client";
@@ -16,6 +17,11 @@ import type {SkyArtworkLoadState} from "./sky-artwork-loader";
 // Within this bound, retain already loaded broad tiles ahead of intermediate
 // detail so repeated refinement does not remove the exterior on a warm return.
 const OPTICAL_HIPS_SOURCE_PRESSURE_BYTES = 20 * 1024 * 1024;
+// Camera motion is not a resource update when this optional layer is absent.
+// These empty values keep its page/writer dependencies stable without retaining
+// any publication, bitmap or previous view.
+const EMPTY_CANDIDATES: ReturnType<typeof selectPublishedOpticalCandidates> = [];
+const EMPTY_TILES: readonly SkyHipsCanvasTile[] = [];
 
 /** Optional optical layer. Missing publication or missing coverage never
  * withdraws the independent stars, targets or registered deep-sky image. */
@@ -29,8 +35,11 @@ export function useSkyOpticalHips(report:Pick<SkyGeometryReport,"hourly"|"observ
     enabled:trialActive&&!paused,staleTime:60_000,structuralSharing:false});
   const publication=trialActive?manifest.data:null;
   const frame=exactSkyObservationFrame(report,at);
-  const candidates=useMemo(()=>trialActive&&publication&&frame&&view&&width>0&&height>0
-    ? selectPublishedOpticalCandidates(publication,frame,view,width,height):[],
+  const candidates=useMemo(()=>{
+    if(!trialActive||!publication||!frame||!view||!(width>0&&height>0))return EMPTY_CANDIDATES;
+    const selected=selectPublishedOpticalCandidates(publication,frame,view,width,height);
+    return selected.length?selected:EMPTY_CANDIDATES;
+  },
     [trialActive,publication,frame,view?.basis,view?.verticalFovDeg,view?.center?.x,view?.center?.y,width,height]);
   const shardKey=candidates.map(candidate=>
     `${candidate.sourceId}:${candidate.order}:${candidate.pixels.join(":")}`).join("|");
@@ -67,7 +76,7 @@ export function useSkyOpticalHips(report:Pick<SkyGeometryReport,"hourly"|"observ
     trialActive&&candidates.length>0,assets,asset=>({url:opticalHipsTileUrl(asset.downloadUrl),format:asset.format}),
     OPTICAL_HIPS_SOURCE_PRESSURE_BYTES,[],asset=>asset.order,paused);
   const resolveTiles=useCallback((state:Pick<SkyArtworkLoadState,"images"|"retainedImages">)=>{
-    if(!trialActive||!candidates.length)return [] as SkyHipsCanvasTile[];
+    if(!trialActive||!candidates.length)return EMPTY_TILES;
     const ready=new Map([...state.retainedImages,...state.images]);
     const result:Array<SkyHipsCanvasTile & {sourcePriority:number}>=[];
     for(const [id,image] of ready){
@@ -92,10 +101,13 @@ export function useSkyOpticalHips(report:Pick<SkyGeometryReport,"hourly"|"observ
     const current=images.currentImages();
     return current.images===images.images&&current.retainedImages===images.retainedImages?tiles:resolveTiles(current);
   },[resolveTiles,images.currentImages,images.images,images.retainedImages,tiles]);
+  const retry=useSkyImageRecovery(trialActive&&!paused,images.retryImages,()=>{
+    void manifest.refetch();void indexes.refetch();
+  });
   return {tiles,currentTiles,loading:trialActive&&(manifest.isFetching||indexes.isFetching||images.loading),
     failed:trialActive&&(manifest.isError||Boolean(manifest.refreshError)||indexes.isError||
       Boolean(indexes.refreshError)||Boolean(indexes.data?.failed)||images.failed),
-    retry(){if(!trialActive)return false;const resetGpu=images.retryImages();void manifest.refetch();void indexes.refetch();return resetGpu;},
+    retry,
     failedImage:images.failedImage,
     publication,selection:candidates[0]??null};
 }

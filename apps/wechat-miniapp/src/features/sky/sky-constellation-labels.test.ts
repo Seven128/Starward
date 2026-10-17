@@ -23,7 +23,8 @@ test('same stereographic camera places one real name, while zoom/intent and view
   const identification=projectConstellationLabels(frame,{...view,verticalFovDeg:84.63316191100171},390.4,844,true);
   assert.equal(identification[0]?.iau,'Ori');
   assert.equal(identification[0]?.opacity,1);
-  assert.deepEqual(projectConstellationLabels(frame,{...view,verticalFovDeg:180},360,640,true),[]);
+  assert.ok(projectConstellationLabels(frame,{...view,verticalFovDeg:180},360,640,true).some(label=>label.iau==='Ori'),
+    'the widest view keeps valid whole constellation names');
   assert.deepEqual(projectConstellationLabels(frame,view,360,640,false),[]);
   assert.deepEqual(projectConstellationLabels(null,view,360,640,true),[]);
   assert.deepEqual(projectConstellationLabels(frame,view,0,640,true),[]);

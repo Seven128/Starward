@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { SKY_PLANET_ORDER } from "@starward/miniapp-contracts";
-import { skyPlanetDiscsAt } from "./sky-planet-disc";
+import { skyPlanetDiscsAt, skyPlanetProjectionsAt } from "./sky-planet-disc";
 import { drawSkyScene } from "./sky-scene-render";
 import { resolvedSkyBodyReferences } from "./sky-body-label-presentation";
 import { paintedSkyPointVisible, pickPaintedSkyObjects, type SkyPickSnapshot } from "./sky-object-picking";
@@ -145,10 +145,10 @@ test("a texture hook selects one body's exact painted geometry without accepting
     angularDiameterDeg:p.body==="SATURN"?.02:.01}))};
   const full=skyPlanetDiscsAt([together] as any,at,basis,400,800,.25)!;
   for(const body of ["MARS","MERCURY","JUPITER","SATURN"] as const)
-    assert.deepEqual(skyPlanetDiscsAt([together] as any,at,basis,400,800,.25,undefined,body),
-      full.filter(planet=>planet.body===body));
+    assert.deepEqual(skyPlanetProjectionsAt([together] as any,at,basis,400,800,.25,undefined,body),
+      full.filter(planet=>planet.body===body).map(({rings,...projection})=>projection));
   const incomplete={...together,planets:together.planets.slice(0,6)};
-  assert.equal(skyPlanetDiscsAt([incomplete] as any,at,basis,400,800,.25,undefined,"MARS"),null);
+  assert.equal(skyPlanetProjectionsAt([incomplete] as any,at,basis,400,800,.25,undefined,"MARS"),null);
 });
 
 test("one exact planetary frame projects a changing physical phase without stale or malformed rows",()=>{

@@ -1,3 +1,5 @@
+import { reportRuntimeError } from "../../services/runtime-error";
+
 export interface CompassEvent {
   direction: number;
   accuracy: number | string;
@@ -98,7 +100,7 @@ function orientationErrorDetail(error: unknown) {
 
 function orientationStartError(stage: "device_motion" | "compass", error: unknown) {
   const detail = orientationErrorDetail(error);
-  return new Error(`${stage}_start_failed:${detail}`);
+  return Object.assign(new Error(`${stage}_start_failed:${detail}`), { cause: error });
 }
 
 function compassAlreadyActive(error: unknown) {
@@ -149,6 +151,11 @@ function nativeCoordinator(
     // Preserve uncertain ownership on failure so the next request retries cleanup.
     let releaseError: unknown;
     let releaseFailed = false;
+    const failedRelease = (stage: string, error: unknown) => {
+      releaseFailed = true;
+      releaseError ??= error;
+      reportRuntimeError("native", "sky_orientation_release_failed", error, { stage });
+    };
 
     // Removing the last WeChat listener can disable its native stream. Stop
     // first and await acknowledgement. A failed stop retains its listener so
@@ -159,8 +166,7 @@ function nativeCoordinator(
         await stopDeviceMotion(port);
         motionMayBeRunning = false;
       } catch (error) {
-        releaseFailed = true;
-        releaseError ??= error;
+        failedRelease("device_motion_stop", error);
       }
     }
     if (mayBeRunning) {
@@ -168,8 +174,7 @@ function nativeCoordinator(
         await port.stopCompass();
         mayBeRunning = false;
       } catch (error) {
-        releaseFailed = true;
-        releaseError ??= error;
+        failedRelease("compass_stop", error);
       }
     }
 
@@ -178,8 +183,7 @@ function nativeCoordinator(
         port.offDeviceMotionChange!(installedMotion.listener);
         installedMotion = null;
       } catch (error) {
-        releaseFailed = true;
-        releaseError ??= error;
+        failedRelease("device_motion_unlisten", error);
       }
     }
     if (installed && !mayBeRunning) {
@@ -187,8 +191,7 @@ function nativeCoordinator(
         port.offCompassChange(installed.listener);
         installed = null;
       } catch (error) {
-        releaseFailed = true;
-        releaseError ??= error;
+        failedRelease("compass_unlisten", error);
       }
     }
 
@@ -274,6 +277,7 @@ function nativeCoordinator(
                 // A valid full-attitude stream can use the compass solely
                 // for quality metadata. Its failure must not stop motion.
                 if (session.compassOptional && installedMotion && desired === session) {
+                  reportRuntimeError("native", "sky_compass_start_failed", error, { stage: "optional_compass" });
                   session.compassUnavailable?.(error);
                   return;
                 }
@@ -297,6 +301,8 @@ function nativeCoordinator(
           // Native starts have no cancellation handle; compensate after they settle.
           if (desired !== session) await release();
         } catch (error) {
+          reportRuntimeError("native", "sky_orientation_start_failed", error,
+            { stage: orientationStartFailureDiagnostic(error) });
           if (desired === session) {
             desired = null;
             failed(error);

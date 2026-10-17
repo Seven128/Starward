@@ -1,5 +1,6 @@
 import type { SkyEncodedImage } from "./sky-image-bytes";
 import { matchesSkyFileBytes, sameSkyEncodedFileBinding, skyEncodedFileBinding, type SkyEncodedFile } from "./sky-public-file-bytes";
+import { reportSkyImageError } from "./sky-image-diagnostics";
 
 export interface PublicSkyImageDescriptor extends SkyEncodedImage {
   /** Hash of the approved server environment, never an account/cache key. */
@@ -54,6 +55,10 @@ const INDEX_STAGING = /^index-[a-z0-9_]+-[1-9]\d*\.stage$/;
 const INDEX = "index-v2.json", LEGACY_INDEX = "index-v1.json";
 const MAX_INDEX_BYTES = 256 * 1024;
 const error = (code: string) => new Error(`sky_public_image_${code}`);
+const reportCacheError = (stage: string, cause: unknown) => {
+  if (cause instanceof Error && cause.message === "sky_public_image_cancelled") return;
+  reportSkyImageError("load", `encoded-cache:${stage}`, cause);
+};
 const key = (asset: Pick<PublicSkyFileDescriptor, "environment" | "sha256" | "format">) =>
   `${asset.environment}:${asset.sha256}:${asset.format}`;
 const catalogFile = (asset: Pick<PublicSkyFileDescriptor, "environment" | "sha256">, id: string) =>
@@ -82,20 +87,25 @@ export function createSkyPublicImageCache(deps: {
   root: string;
   byteBudget: number;
   maxFileBytes: number;
+  /** Sum of admitted read/transfer sizes, held until actual I/O and cleanup
+   * settle. This bounds encoded work, not native/GPU or physical memory. */
+  ioByteBudget?: number;
   session: string;
   transfer(asset: PublicSkyFileDescriptor): SkyPublicImageTransfer;
   now?: () => number;
   cleanupWaitMs?: number;
 }) {
+  const ioByteBudget = deps.ioByteBudget ?? 2 * deps.maxFileBytes;
   if (!/^[a-z0-9_]+$/.test(deps.session) || !deps.root || !Number.isSafeInteger(deps.byteBudget) ||
-    deps.byteBudget < 24 || deps.maxFileBytes > deps.byteBudget || deps.maxFileBytes < 24) throw error("config_invalid");
+    deps.byteBudget < 24 || !Number.isSafeInteger(deps.maxFileBytes) || deps.maxFileBytes > deps.byteBudget || deps.maxFileBytes < 24 ||
+    !Number.isSafeInteger(ioByteBudget) || ioByteBudget < deps.maxFileBytes) throw error("config_invalid");
   const root = deps.root.replace(/\/+$/, ""), path = (file: string) => `${root}/${file}`;
   const now = deps.now ?? Date.now, entries = new Map<string, Entry>(), retired = new Set<Entry>();
   const pending = new Map<string, Pending>(), queue: Pending[] = [], garbage = new Map<string, number>();
-  let epoch = 0, sequence = 0, running = 0, reserved = 0, failures = 0;
+  let epoch = 0, sequence = 0, running = 0, ioBytes = 0, reserved = 0, failures = 0;
   const abort = (job: Pending) => {
     try { job.transfer?.cancel(); return true; }
-    catch { failures++; return false; }
+    catch (cause) { failures++; reportCacheError("abort", cause); return false; }
   };
   let mutations: Promise<unknown> = Promise.resolve();
   const serial = <T>(run: () => Promise<T>): Promise<T> => {
@@ -104,11 +114,13 @@ export function createSkyPublicImageCache(deps: {
   const ownFile = (name: string) => FILE.test(name) || STAGING.test(name) || INDEX_STAGING.test(name);
   const remove = async (file: string) => {
     try { await deps.fs.remove(path(file)); garbage.delete(file); return true; }
-    catch {
+    catch (cause) {
       failures++;
+      reportCacheError("remove", cause);
       if (![...entries.values(), ...retired].some(entry => entry.file === file)) {
         let size = INDEX_STAGING.test(file) ? MAX_INDEX_BYTES : deps.maxFileBytes;
-        try { size = await deps.fs.size(path(file)); } catch { /* Reserve conservatively when native stat fails. */ }
+        try { size = await deps.fs.size(path(file)); }
+        catch (cause) { reportCacheError("stat", cause); /* Reserve conservatively when native stat fails. */ }
         garbage.set(file, size);
       }
       return false;
@@ -163,7 +175,11 @@ export function createSkyPublicImageCache(deps: {
           file: entry.file, last: entry.last, refs: 0, retired: false, listeners: new Set() });
       }
       if (epoch === bootEpoch) for (const [k, entry] of restored) entries.set(k, entry);
-    } catch { /* Missing/invalid index never promotes an orphan file to a hit. */ }
+    } catch (cause) {
+      // A cold cache has no inventory. An existing but unreadable/invalid one
+      // still degrades to a clean inventory, with its actual failure observable.
+      if (files.includes(INDEX) || files.includes(LEGACY_INDEX)) reportCacheError("index", cause);
+    }
     // A previous v2 cache used .json, invisible to the image-only rollback's
     // cleanup/budget. Move those owned files before admitting any lease. Rename
     // changes no source bytes and every later acquisition still verifies them.
@@ -201,7 +217,9 @@ export function createSkyPublicImageCache(deps: {
   };
   const retire = (entry: Entry) => {
     entries.delete(key(entry)); entry.retired = true; retired.add(entry);
-    for (const listener of [...entry.listeners]) { try { listener(); } catch { failures++; } }
+    for (const listener of [...entry.listeners]) {
+      try { listener(); } catch (cause) { failures++; reportCacheError("retire", cause); }
+    }
   };
   const reap = async (entry: Entry) => {
     if (entry.refs || !entry.retired) return;
@@ -218,7 +236,7 @@ export function createSkyPublicImageCache(deps: {
       }, release() {
       if (!active) return; active = false; entry.refs--;
       for (const listener of listeners) entry.listeners.delete(listener); listeners.clear();
-      if (entry.retired) void serial(() => reap(entry)).catch(() => { failures++; });
+      if (entry.retired) void serial(() => reap(entry)).catch(cause => { failures++; reportCacheError("reap", cause); });
     } };
   };
   async function room(bytes: number, protectPending = true) {
@@ -232,6 +250,16 @@ export function createSkyPublicImageCache(deps: {
   }
   const current = (job: Pending) => !job.cancelled && job.epoch === epoch && job.waiters.size > 0;
   const assertCurrent = (job: Pending) => { if (!current(job)) throw error("cancelled"); };
+  // Keep the response and its settled Promise out of the subsequent readback
+  // scope. Large encoded data need not remain reachable during both disk reads.
+  const transferToStage = async (job: Pending, staged: string) => {
+    assertCurrent(job); job.transfer = deps.transfer(job.asset);
+    try {
+      const data = await job.transfer.promise; assertCurrent(job);
+      if (!matchesSkyFileBytes(data, job.asset)) throw error("content_invalid");
+      await serial(async () => { assertCurrent(job); await deps.fs.write(path(staged), data); assertCurrent(job); });
+    } finally { delete job.transfer; }
+  };
   const run = async (job: Pending): Promise<Entry> => {
     await ensureBoot(); assertCurrent(job);
     const k = key(job.asset);
@@ -246,6 +274,7 @@ export function createSkyPublicImageCache(deps: {
         await persistWarmAccess(); assertCurrent(job); return existing;
       } catch (cause) {
         if (!current(job)) throw cause;
+        reportCacheError("warm_read", cause);
         await serial(async () => { retire(existing); await reap(existing); await persist(); });
       }
     }
@@ -255,12 +284,9 @@ export function createSkyPublicImageCache(deps: {
       `${job.asset.environment}-${job.asset.sha256}-${id}.${job.asset.format === "png" ? "png" : "jpg"}`;
     try {
       await serial(async () => { assertCurrent(job); await room(job.asset.bytes); reserved += job.asset.bytes; held = true; await persist(); });
-      assertCurrent(job); job.transfer = deps.transfer(job.asset);
-      const data = await job.transfer.promise; assertCurrent(job);
-      if (!matchesSkyFileBytes(data, job.asset)) throw error("content_invalid");
+      await transferToStage(job, staged);
       return await serial(async () => {
         assertCurrent(job);
-        await deps.fs.write(path(staged), data); assertCurrent(job);
         if (!matchesSkyFileBytes(await readExact(staged, job.asset.bytes), job.asset)) throw error("write_readback");
         assertCurrent(job); await deps.fs.rename(path(staged), path(file)); assertCurrent(job);
         if (!matchesSkyFileBytes(await readExact(file, job.asset.bytes), job.asset)) throw error("commit_readback");
@@ -282,9 +308,12 @@ export function createSkyPublicImageCache(deps: {
   };
   const pump = () => {
     while (running < 2 && queue.length) {
-      const job = queue.shift()!;
-      if (!current(job)) { if (pending.get(key(job.asset)) === job) pending.delete(key(job.asset)); continue; }
-      running++;
+      const job = queue[0]!;
+      if (!current(job)) { queue.shift(); if (pending.get(key(job.asset)) === job) pending.delete(key(job.asset)); continue; }
+      // FIFO prevents a large current request being starved by new small ones.
+      // Cancelled jobs and clear keep their bytes until real completion below.
+      if (ioBytes + job.asset.bytes > ioByteBudget) break;
+      queue.shift(); running++; ioBytes += job.asset.bytes;
       void run(job).then(entry => {
         const deliver = current(job);
         job.cancelled = true;
@@ -294,9 +323,10 @@ export function createSkyPublicImageCache(deps: {
       }, cause => {
         job.cancelled = true;
         if (pending.get(key(job.asset)) === job) pending.delete(key(job.asset));
-        for (const waiter of job.waiters) waiter.reject(cause instanceof Error ? cause : error("failed"));
+        const failure = cause instanceof Error ? cause : Object.assign(error("failed"), { cause });
+        for (const waiter of job.waiters) waiter.reject(failure);
       }).finally(() => {
-        job.waiters.clear(); running--;
+        job.waiters.clear(); running--; ioBytes -= job.asset.bytes;
         if (pending.get(key(job.asset)) === job) pending.delete(key(job.asset)); pump();
       });
     }
@@ -324,7 +354,7 @@ export function createSkyPublicImageCache(deps: {
         if (cancelled) return; cancelled = true;
         if (owned) { owned.release(); owned = undefined; return; }
         target.waiters.delete(waiter); waiter.reject(error("cancelled"));
-        if (!target.waiters.size && !target.cancelled) { target.cancelled = true; abort(target); }
+        if (!target.waiters.size && !target.cancelled) { target.cancelled = true; abort(target); pump(); }
       } };
     },
     async clear(): Promise<{ status: "complete" | "partial" | "pending"; files: number }> {
@@ -362,7 +392,7 @@ export function createSkyPublicImageCache(deps: {
       boot = cleanup.then(() => undefined); observeBoot(boot);
       // A native write cannot be aborted. Report pending without waiting for a
       // stuck callback; its unique attempt and epoch prohibit late publication.
-      if (running) { void cleanup.catch(() => { failures++; }); return { status: "pending", files: retired.size }; }
+      if (running) { void cleanup.catch(cause => { failures++; reportCacheError("clear", cause); }); return { status: "pending", files: retired.size }; }
       // Boot/unlink/index I/O may also be unabortable, even with zero image
       // acquisitions. The UI gets an honest pending result within a bound;
       // cleanup retains ownership and continues until actual callbacks settle.
@@ -372,7 +402,7 @@ export function createSkyPublicImageCache(deps: {
       });
     },
     inspect: () => ({ entries: entries.size, leased: [...entries.values(), ...retired].reduce((n, e) => n + e.refs, 0),
-      bytes: bytesUsed(), reserved, running, pending: pending.size, retired: retired.size, failures, epoch }),
+      bytes: bytesUsed(), reserved, running, ioBytes, pending: pending.size, retired: retired.size, failures, epoch }),
   };
 }
 

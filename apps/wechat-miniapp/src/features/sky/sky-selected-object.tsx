@@ -1,5 +1,6 @@
 import { Button, Text, View } from "@tarojs/components";
-import type { SpotSkyContext } from "@starward/miniapp-contracts";
+import { useEffect } from "react";
+import type { CelestialObjectPositionData, SpotSkyContext } from "@starward/miniapp-contracts";
 import { useSkyPresentationPosition as useCelestialPosition } from "./use-sky-presentation-position";
 import type { SkyPositionPresentation } from "./sky-presentation-position";
 import type { SkyObjectIdentity } from "./sky-object-picking";
@@ -8,11 +9,17 @@ import { projectSkySelectionMarker } from "./sky-selection-marker";
 import type { SkyViewBasis } from "./sky-view-projection";
 import type { SkyProjectionCenter } from "./sky-viewport";
 
+export interface SkySelectionPosition {
+  readonly data: CelestialObjectPositionData;
+  readonly catalog: { readonly catalogVersion: string; readonly catalogHash: string };
+  readonly report: SkyPositionPresentation["rendered"] | undefined;
+}
+
 /** Selection, disclosure and tracking subscribe to the same identity-bound
  * cancellable query. Zoom is presentation only and never changes its key. */
 export function SkySelectedObject({ object, context, at, catalog, view,
-  angularDiameterDeg, discIsItsMarker, landscapeCovered, reducedMotion,
-  suspended, presentation, onSelect, onRetrySky }: {
+  angularDiameterDeg, discIsItsMarker, landscapeCovered,
+  suspended, presentation, visualName = true, onPosition, onSelect, onRetrySky }: {
   object: SkyObjectIdentity;
   context: SpotSkyContext;
   at: string;
@@ -22,9 +29,12 @@ export function SkySelectedObject({ object, context, at, catalog, view,
   angularDiameterDeg: number | null;
   discIsItsMarker: boolean;
   landscapeCovered: (x: number, y: number) => boolean;
-  reducedMotion: boolean;
   suspended: boolean;
   presentation?: SkyPositionPresentation;
+  /** Ordinary names/hits are drawn by the accepted Canvas frame. The query and
+   * unavailable-position recovery still belong to this component. */
+  visualName?: boolean;
+  onPosition: (position: SkySelectionPosition | null) => void;
   onSelect: (object: SkyObjectIdentity) => void;
   onRetrySky: () => void;
 }) {
@@ -34,8 +44,13 @@ export function SkySelectedObject({ object, context, at, catalog, view,
     dataRevision: context.dataRevision, algorithmVersion: context.algorithmVersion, at },
   catalog, !suspended, presentation);
   const data = result.data?.data;
-  if (suspended || !data || data.reference !== object.reference ||
-    !skyObjectPositionIsCurrent(data, context, at, catalog)) {
+  const positionCurrent = Boolean(!suspended && data && data.reference === object.reference &&
+    skyObjectPositionIsCurrent(data, context, at, catalog));
+  useEffect(() => {
+    onPosition(positionCurrent && data && catalog ? { data, catalog, report: presentation?.rendered } : null);
+    return () => onPosition(null);
+  }, [onPosition, positionCurrent, data, object, catalog?.catalogVersion, catalog?.catalogHash, presentation?.rendered]);
+  if (!positionCurrent) {
     if (suspended || result.isPending && catalog) return null;
     return <View className="sky-selection-status" role="status">
       <Text>{object.displayName}的位置暂不可用</Text>
@@ -43,20 +58,15 @@ export function SkySelectedObject({ object, context, at, catalog, view,
         onClick={() => { onRetrySky(); if (catalog) void result.refetch(); }}>重试位置</Button>
     </View>;
   }
-  const marker = projectSkySelectionMarker(object, data.position!, view, angularDiameterDeg);
+  if (!visualName) return null;
+  const marker = projectSkySelectionMarker(object, data!.position!, view, angularDiameterDeg);
   if (!marker) return null;
-  const locationLabel = data.position!.altitudeDeg < 0 ? "地平线以下"
-    : landscapeCovered(marker.x, marker.y) ? "模拟地景遮挡" : null;
-  return <Button className={`sky-selected-object sky-selected-object--${marker.shape}${reducedMotion ? " sky-selected-object--still" : ""}${discIsItsMarker ? " sky-selected-object--disc" : ""}`}
+  const locationLabel = data!.position!.altitudeDeg < 0 ? "地平线以下"
+    : landscapeCovered(marker.x, marker.y) ? "图中地面遮挡" : null;
+  return <Button className={`sky-selected-object sky-selected-object--${marker.shape}${discIsItsMarker ? " sky-selected-object--disc" : ""}`}
     style={{ left: `${marker.x}px`, top: `${marker.y}px` }}
     ariaLabel={`${object.displayName}已选中${locationLabel ? `，${locationLabel}` : ""}，查看资料`}
     onClick={() => onSelect(object)}>
-    <View className="sky-selected-object__reticle" aria-hidden
-      style={{ width: `${marker.radiusPx * 2}px`, height: `${marker.radiusPx * 2}px` }}>
-      <View className="sky-selected-object__ring" />
-      {(["top", "right", "bottom", "left"] as const).map(side =>
-        <View key={side} className={`sky-selected-object__tick sky-selected-object__tick--${side}`} />)}
-    </View>
     <Text className="sky-selected-object__name" style={{ opacity: marker.nameOpacity,
       top: `calc(50% - ${marker.radiusPx + 24}px)` }}>
       {object.displayName}{locationLabel ? ` · ${locationLabel}` : ""}

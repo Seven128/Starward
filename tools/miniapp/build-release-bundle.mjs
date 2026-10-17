@@ -1,24 +1,25 @@
 import { spawn } from "node:child_process";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { lstat, open, readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import {
   acquireBuildLock,
   bindBundleProjectIdentity,
   fingerprintBundle,
+  verifyCompiledOrigin,
   validateSourceProjectIdentity,
+  createReleaseBundleOutput,
+  ensureReleaseDirectory,
+  inspectReleaseBundleBudget,
 } from "./release-bundle-artifact.mjs";
 import {
-  bundleRoot,
   fail,
   repositoryRoot,
   sha256,
   validateBuildRequest,
 } from "./release-bundle-request.mjs";
 
-export { acquireBuildLock, bindBundleProjectIdentity, fingerprintBundle, validateBuildRequest, validateSourceProjectIdentity };
-
-const textExtensions = new Set([".css", ".html", ".js", ".json", ".map", ".txt", ".wxml", ".wxss"]);
+export { acquireBuildLock, bindBundleProjectIdentity, fingerprintBundle, validateBuildRequest, validateSourceProjectIdentity, verifyCompiledOrigin };
 
 export function resolveNpmCli(environment = process.env) {
   const configured = environment.npm_execpath;
@@ -29,12 +30,13 @@ export function resolveNpmCli(environment = process.env) {
   return path.normalize(configured);
 }
 
-export function releaseBuildEnvironment(request, environment = process.env) {
+export function releaseBuildEnvironment(request, environment = process.env, location = null) {
   return {
     ...environment,
     NODE_ENV: "production",
     TARO_ENV: "weapp",
     MINIAPP_API_BASE: request.apiOrigin,
+    MINIAPP_SKY_RESOURCE_BASE: request.skyResourceOrigin ?? request.apiOrigin,
     MINIAPP_OPERATOR_PREVIEW_TOKEN: "",
     MINIAPP_ACCEPTANCE_DIAGNOSTICS: "0",
     MINIAPP_DEVICE_REQUEST_DIAGNOSTICS: "0",
@@ -43,12 +45,13 @@ export function releaseBuildEnvironment(request, environment = process.env) {
     MINIAPP_ISOLATED_CHECK_BUILD: "0",
     MINIAPP_ISOLATED_CHECK_BUILD_SLOT: "",
     MINIAPP_SKY_FEEDBACK_ID: "",
+    MINIAPP_RELEASE_BUNDLE_ID: location?.id ?? "",
   };
 }
 
 function parseArguments(argv) {
   const values = new Map();
-  const supported = new Set(["--lane", "--api-origin", "--source-revision", "--app-id", "--output-manifest"]);
+  const supported = new Set(["--lane", "--api-origin", "--sky-resource-origin", "--source-revision", "--app-id", "--output-manifest"]);
   for (let index = 0; index < argv.length; index += 1) {
     const key = argv[index];
     if (!supported.has(key)) fail(`release_bundle_unknown_argument:${key}`);
@@ -61,7 +64,7 @@ function parseArguments(argv) {
   return Object.fromEntries(values);
 }
 
-async function runWeappBuild(request) {
+async function runWeappBuild(request, location) {
   const npmCli = resolveNpmCli();
   await new Promise((resolve, reject) => {
     const child = spawn(
@@ -69,7 +72,7 @@ async function runWeappBuild(request) {
       [npmCli, "run", "build:weapp", "--workspace", "@starward/wechat-miniapp"],
       {
         cwd: repositoryRoot,
-        env: releaseBuildEnvironment(request),
+        env: releaseBuildEnvironment(request, process.env, location),
         stdio: "inherit",
         windowsHide: true,
       },
@@ -82,62 +85,67 @@ async function runWeappBuild(request) {
   });
 }
 
-async function verifyCompiledOrigin(request, fingerprint) {
-  let expectedOriginFound = false;
-  const compiledAppIds = new Set();
-  for (const file of fingerprint.files) {
-    if (!textExtensions.has(path.extname(file.path).toLowerCase())) continue;
-    const text = await readFile(path.join(bundleRoot, file.path), "utf8");
-    if (text.includes(request.apiOrigin)) expectedOriginFound = true;
-    for (const match of text.matchAll(/\bwx[a-f0-9]{16}\b/gu)) compiledAppIds.add(match[0]);
-    if (
-      request.lane !== "ci" &&
-      (text.includes("http://127.0.0.1:8787") || text.includes("http://localhost:8787"))
-    ) fail("release_bundle_loopback_origin_compiled");
-  }
-  if (!expectedOriginFound) fail("release_bundle_expected_origin_missing");
-  if (request.lane === "ci" && compiledAppIds.size > 0) fail("release_bundle_ci_app_id_compiled");
-  if (request.lane !== "ci" && (compiledAppIds.size !== 1 || !compiledAppIds.has(request.appId)))
-    fail("release_bundle_deployable_app_id_compiled_mismatch");
-}
-
-async function buildReleaseBundle(request) {
-  const releaseLock = await acquireBuildLock();
+export async function buildReleaseBundle(request, { root = repositoryRoot, build = runWeappBuild } = {}) {
+  root = path.resolve(root);
+  const releaseRoot = path.join(root, "artifacts", "miniapp", "release");
+  const outputManifest = path.resolve(request.outputManifest);
+  const relative = path.relative(releaseRoot, outputManifest);
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative) || path.extname(outputManifest) !== ".json")
+    fail("release_bundle_manifest_path_outside_artifact_root");
+  await ensureReleaseDirectory(root, releaseRoot, { create: true });
+  const releaseLock = await acquireBuildLock(releaseRoot);
   try {
-    const sourceProjectConfigSha256 = await validateSourceProjectIdentity(request);
-    const expectedBundleRoot = path.resolve(repositoryRoot, "apps", "wechat-miniapp", "dist", "weapp");
-    if (path.resolve(bundleRoot) !== expectedBundleRoot) fail("release_bundle_output_root_invalid");
-    await rm(bundleRoot, { recursive: true, force: true });
-    await runWeappBuild(request);
+    const sourceConfig = path.join(root, "apps", "wechat-miniapp", "project.config.json");
+    const sourceProjectConfigSha256 = await validateSourceProjectIdentity(request, sourceConfig);
+    await ensureReleaseDirectory(root, path.dirname(outputManifest), { create: true });
+    try { await lstat(outputManifest); fail("release_bundle_manifest_exists"); }
+    catch (error) { if (error.code !== "ENOENT") throw error; }
+    const location = await createReleaseBundleOutput(root), bundleRoot = location.bundleRoot;
+    await build(request, location);
+    await ensureReleaseDirectory(root, bundleRoot);
     const appJson = await readFile(path.join(bundleRoot, "app.json"));
     if (appJson.length === 0) fail("release_bundle_app_json_empty");
-    const bundleProjectConfigSha256 = await bindBundleProjectIdentity(request);
+    if (await validateSourceProjectIdentity(request, sourceConfig) !== sourceProjectConfigSha256)
+      fail("release_bundle_source_project_changed");
+    const bundleProjectConfigSha256 = await bindBundleProjectIdentity(request, bundleRoot);
     const fingerprint = await fingerprintBundle(bundleRoot);
-    await verifyCompiledOrigin(request, fingerprint);
+    const compiledSkyOrigin = await verifyCompiledOrigin(request, fingerprint, bundleRoot);
+    const packageBudget = await inspectReleaseBundleBudget(fingerprint, bundleRoot);
     const manifest = {
-      schemaVersion: "starward-weapp-release-bundle-v1",
+      schemaVersion: "starward-weapp-release-bundle-v3",
       status: "built",
       lane: request.lane,
       candidateClass: request.candidateClass,
       sourceRevision: request.sourceRevision,
       apiOrigin: request.apiOrigin,
+      skyResourceOrigin: request.skyResourceOrigin,
+      compiledSkyOrigin,
+      bundleDirectory: location.bundleDirectory,
+      packageBudget,
       appIdSha256: request.appIdSha256,
       sourceProjectConfigSha256,
       bundleProjectConfigSha256,
       generatedAt: new Date().toISOString(),
       bundle: fingerprint,
     };
-    await mkdir(path.dirname(request.outputManifest), { recursive: true });
-    await writeFile(request.outputManifest, `${JSON.stringify(manifest, null, 2)}\n`, { mode: 0o600 });
+    if (JSON.stringify(await fingerprintBundle(bundleRoot)) !== JSON.stringify(fingerprint))
+      fail("release_bundle_changed_before_manifest");
+    await ensureReleaseDirectory(root, path.dirname(outputManifest));
+    const handle = await open(outputManifest, "wx", 0o600);
+    try { await handle.writeFile(`${JSON.stringify(manifest, null, 2)}\n`); await handle.sync(); }
+    finally { await handle.close(); }
     process.stdout.write(`${JSON.stringify({
       status: manifest.status,
       lane: manifest.lane,
       candidateClass: manifest.candidateClass,
       sourceRevision: manifest.sourceRevision,
       apiOrigin: manifest.apiOrigin,
+      skyResourceOrigin: manifest.skyResourceOrigin,
       bundleSha256: manifest.bundle.sha256,
-      manifestPath: path.relative(repositoryRoot, request.outputManifest).replaceAll("\\", "/"),
+      bundleDirectory: manifest.bundleDirectory,
+      manifestPath: path.relative(root, outputManifest).replaceAll("\\", "/"),
     })}\n`);
+    return Object.freeze({ manifest, outputManifest, bundleRoot });
   } finally {
     await releaseLock();
   }

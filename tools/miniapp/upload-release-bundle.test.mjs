@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { fingerprintBundle } from "./build-release-bundle.mjs";
+import { writeCompiledSkyFixture } from "./compiled-sky-origin-test-support.mjs";
+import { fingerprintBundle, verifyCompiledOrigin } from "./build-release-bundle.mjs";
+import { createReleaseBundleOutput, inspectReleaseBundleBudget } from "./release-bundle-artifact.mjs";
 import {
   executeWechatPlatformOperation,
   validatePlatformRequest,
@@ -74,6 +76,97 @@ async function withFixture(lane, assertion) {
     await rm(fixture.root, { recursive: true, force: true });
   }
 }
+
+test("v2 candidates bind the resource origin through consumption and receipts while old v1 cannot smuggle it", async () => {
+  await withFixture("staging", async fixture => {
+    fixture.manifest.skyResourceOrigin = "https://sky-images.starward.cn";
+    await writeFile(fixture.manifestPath, JSON.stringify(fixture.manifest));
+    const request = validatePlatformRequest(fixture.raw, fixture.roots);
+    let calls = 0;
+    const driver = { async preview(input) { calls++; await writeFile(input.qrcodeOutputPath, Buffer.alloc(256, 4));
+      return { packages: [], pluginCount: 0 }; } };
+    await assert.rejects(executeWechatPlatformOperation({ request, driver }), /legacy_resource_origin_unbound/u);
+    assert.equal(calls, 0);
+    fixture.manifest.schemaVersion = "starward-weapp-release-bundle-v2";
+    await writeFile(fixture.manifestPath, JSON.stringify(fixture.manifest));
+    await assert.rejects(executeWechatPlatformOperation({ request, driver }), /expected_origin_missing/u);
+    assert.equal(calls, 0);
+    await writeFile(path.join(fixture.bundleRoot, "pages", "index", "index.js"),
+      `const api = ${JSON.stringify(fixture.manifest.apiOrigin)}; const resource = ${JSON.stringify(fixture.manifest.skyResourceOrigin)};`);
+    await writeCompiledSkyFixture(fixture.bundleRoot, fixture.manifest);
+    fixture.manifest.bundle = await fingerprintBundle(fixture.bundleRoot);
+    await writeFile(fixture.manifestPath, JSON.stringify(fixture.manifest));
+    const result = await executeWechatPlatformOperation({ request, driver });
+    assert.equal(calls, 1); assert.equal(result.receipt.schemaVersion, "starward-weapp-platform-receipt-v2");
+    assert.equal(result.receipt.skyResourceOrigin, fixture.manifest.skyResourceOrigin);
+    const persisted = JSON.parse(await readFile(result.receiptPath, "utf8"));
+    assert.equal(persisted.skyResourceOrigin, fixture.manifest.skyResourceOrigin);
+    assert.equal(persisted.compiledSkyOrigin.scope, "COMPILED_PURE_ADDRESS_OWNER");
+  });
+});
+
+test("v3 platform consumption uses the exact isolated directory and freshly verifies budget/binding before the driver", async () => {
+  await withFixture("staging", async fixture => {
+    const location = await createReleaseBundleOutput(fixture.repositoryRoot);
+    await cp(fixture.bundleRoot, location.bundleRoot, { recursive: true, force: false, errorOnExist: true });
+    fixture.manifest.schemaVersion = "starward-weapp-release-bundle-v3";
+    fixture.manifest.bundleDirectory = location.bundleDirectory;
+    fixture.manifest.skyResourceOrigin = "https://images-staging.starward.cn";
+    await writeCompiledSkyFixture(location.bundleRoot, fixture.manifest);
+    fixture.manifest.bundle = await fingerprintBundle(location.bundleRoot);
+    fixture.manifest.compiledSkyOrigin = await verifyCompiledOrigin({ ...fixture.manifest, appId }, fixture.manifest.bundle, location.bundleRoot);
+    fixture.manifest.packageBudget = await inspectReleaseBundleBudget(fixture.manifest.bundle, location.bundleRoot);
+    // The legacy root is deliberately stale; reading it cannot satisfy the
+    // selected candidate's fingerprint, even though request.bundleRoot retains it.
+    await writeFile(path.join(fixture.bundleRoot, "app.json"), "{\"legacy\":true}\n");
+    const retainedLegacy = await fingerprintBundle(fixture.bundleRoot);
+    const request = validatePlatformRequest(fixture.raw, fixture.roots);
+    let calls = 0;
+    const driver = { preview: async input => {
+      calls += 1; assert.equal(input.projectPath, location.bundleRoot);
+      await writeFile(input.qrcodeOutputPath, Buffer.alloc(256, 3));
+      return { packages: [], pluginCount: 0 };
+    } };
+    const canonical = JSON.stringify(fixture.manifest);
+    for (const mutation of [manifest => { manifest.bundleDirectory = "../weapp"; },
+      manifest => { manifest.packageBudget.packages.main.bytes += 1; },
+      manifest => { delete manifest.packageBudget; },
+      manifest => { manifest.compiledSkyOrigin.ownerId = "injected"; }]) {
+      const manifest = JSON.parse(canonical); mutation(manifest);
+      await writeFile(fixture.manifestPath, JSON.stringify(manifest));
+      await assert.rejects(executeWechatPlatformOperation({ request, driver }), /release_bundle_output_|package_budget_mismatch|compiled_sky_binding_mismatch/u);
+      assert.equal(calls, 0);
+    }
+    await writeFile(fixture.manifestPath, canonical);
+    const result = await executeWechatPlatformOperation({ request, driver });
+    assert.equal(calls, 1); assert.equal(result.receipt.schemaVersion, "starward-weapp-platform-receipt-v2");
+    assert.equal(result.receipt.bundleDirectory, location.bundleDirectory);
+    assert.deepEqual(result.receipt.packageBudget, fixture.manifest.packageBudget);
+    assert.deepEqual(result.receipt.compiledSkyOrigin, fixture.manifest.compiledSkyOrigin);
+    assert.deepEqual(await fingerprintBundle(fixture.bundleRoot), retainedLegacy);
+  });
+});
+
+test("v2 compiled-origin pins are rederived before a platform driver can consume the candidate", async () => {
+  await withFixture("staging", async fixture => {
+    fixture.manifest.schemaVersion = "starward-weapp-release-bundle-v2";
+    fixture.manifest.skyResourceOrigin = "https://sky-images.starward.cn";
+    await writeCompiledSkyFixture(fixture.bundleRoot, fixture.manifest);
+    fixture.manifest.bundle = await fingerprintBundle(fixture.bundleRoot);
+    const binding = await verifyCompiledOrigin({ ...fixture.manifest, appId }, fixture.manifest.bundle, fixture.bundleRoot);
+    fixture.manifest.compiledSkyOrigin = { ...binding, ownerId: "injected-owner" };
+    await writeFile(fixture.manifestPath, JSON.stringify(fixture.manifest));
+    const request = validatePlatformRequest(fixture.raw, fixture.roots); let calls = 0;
+    const driver = { async preview(input) { calls++; await writeFile(input.qrcodeOutputPath, Buffer.alloc(256, 4));
+      return { packages: [], pluginCount: 0 }; } };
+    await assert.rejects(executeWechatPlatformOperation({ request, driver }), /compiled_sky_binding_mismatch/u);
+    assert.equal(calls, 0);
+    fixture.manifest.compiledSkyOrigin = binding;
+    await writeFile(fixture.manifestPath, JSON.stringify(fixture.manifest));
+    const result = await executeWechatPlatformOperation({ request, driver });
+    assert.equal(calls, 1); assert.deepEqual(result.receipt.compiledSkyOrigin, binding);
+  });
+});
 
 test("CI lane and repository-owned private keys are never platform candidates", async () => {
   await withFixture("staging", async (fixture) => {

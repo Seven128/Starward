@@ -7,6 +7,8 @@ export type * from "./prepared-optical-publication.ts";
 export type * from "./prepared-progressive-optical-publication.ts";
 export type * from "./prepared-display-optical-publication.ts";
 export type * from "./prepared-rendered-optical-publication.ts";
+export type * from "./prepared-optical-discovery.ts";
+export type * from "./optical-hips-rights.ts";
 export type * from "./preferences.ts";
 export type * from "./contribution-feedback.ts";
 

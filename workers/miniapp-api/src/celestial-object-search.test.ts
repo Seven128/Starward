@@ -8,8 +8,30 @@ import { MiniappController } from "./controller.ts";
 import { MiniappService } from "./miniapp-service.ts";
 import { CelestialObjectSearchService, type CelestialSearchProvider } from "./celestial-object-search.ts";
 import { CelestialObjectInformationService } from "./celestial-object-information.ts";
+import { loadChineseStarAliasesForBase } from "./chinese-star-alias-publication.ts";
 
 const service = new CelestialObjectSearchService();
+test("bounded search attributes returned aliases without unrelated star or deep introductions", () => {
+  const details = new CelestialObjectInformationService();
+  const unrelated = ["HR:2061", "M:1"].map(reference => {
+    const source = details.get(reference, "zh-CN", "bsc5p-bright-stars.v3").sources
+      .find(source => source.provider === "Wikipedia contributors");
+    assert(source, "the excluded introductions must actually exist");
+    return { reference, source };
+  });
+  const bounded = service.search("HR", 1, "bsc5p-bright-stars.v3");
+  assert.equal(bounded.data.results.length, 1);
+  assert(bounded.data.truncated);
+  for (const { reference, source } of unrelated) {
+    assert(!bounded.data.results.some(result => result.reference === reference));
+    assert(!bounded.sources.some(candidate => candidate.id === source.id), "unreturned introductions must not accompany this result");
+  }
+  const selected = service.search("蟹状星云", 20, "bsc5p-bright-stars.v3");
+  assert(selected.data.results.some(result => result.reference === "M:1"));
+  assert(selected.sources.some(source => source.id === unrelated[1]!.source.id && source.license === "CC-BY-SA-4.0"),
+    "the returned aliases retain their actual attribution and license");
+});
+
 test("simplified, traditional and mixed input find the supplied Chinese alias without rewriting identity or information", () => {
   const details = new CelestialObjectInformationService();
   for (const query of ["参宿四", "參宿四"]) {
@@ -53,7 +75,7 @@ test("Altair aliases resolve exact identity independently of whether prose is av
     const detail = details.get("HR:7557", "zh-CN", "bsc5p-bright-stars.v3");
     assert.deepEqual(detail.data.aliases, hit.aliases);
     assert.equal(detail.data.contentState, "BASIC_ONLY", "an alias does not add a reviewed introduction");
-    assert.ok(detail.sources.some(source => source.provider === "Wikidata contributors" && source.license === "CC0 1.0"));
+    assert.ok(detail.sources.some(source => source.provider.includes("Wikidata contributors") && source.license === "CC0 1.0"));
   }
   assert.deepEqual(service.search("牛郎星").data.results, [], "the original BSC v2 publication remains unchanged");
 });
@@ -66,7 +88,8 @@ test("Acrux is discoverable only through the v3 catalog and keeps revised SAO an
   assert.equal(revised.data.results[0]?.displayName, "Acrux");
   assert.ok(revised.data.catalogs.some(row => row.catalogVersion === "bsc5p-bright-stars.v3"));
   assert.ok(revised.data.catalogs.some(row => row.catalogVersion.includes("sao") && row.catalogVersion.endsWith("v2")));
-  assert.ok(revised.data.catalogs.some(row => row.catalogVersion === "wikidata-bsc5p-chinese-aliases.v3"));
+  const chinese = loadChineseStarAliasesForBase("bsc5p-bright-stars.v3");
+  assert.ok(revised.data.catalogs.some(row => row.catalogVersion === chinese.catalogVersion && row.catalogHash === chinese.catalogHash));
 });
 test("real catalogue names, Chinese aliases and normalized identifiers resolve the same component", () => {
   for (const query of ["Sirius", "sIrIuS", "天狼星", "HR:2491", "ＨＲ　００２４９１"]) {
@@ -90,7 +113,7 @@ test("fixed CC0 Chinese labels join only exact HR identities and remain attribut
     const response = service.search(query);
     assert.equal(response.data.results[0]?.reference, reference, query);
     assert.equal(response.data.results[0]?.matchedAlias, query);
-    assert.ok(response.sources.some(source => source.provider === "Wikidata contributors"));
+    assert.ok(response.sources.some(source => source.provider.includes("Wikidata contributors") && source.license === "CC0 1.0"));
     const detail = details.get(reference);
     assert.ok(detail.data.aliases.includes(query));
     assert.deepEqual(detail.data.aliases, response.data.results[0]?.aliases);

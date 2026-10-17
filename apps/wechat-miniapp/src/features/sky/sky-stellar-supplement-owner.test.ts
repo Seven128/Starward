@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import ts from 'typescript';
 import type {SaoIndexPublication,SaoTilePublication} from '@starward/miniapp-contracts';
 import {createSkyStellarTileLoader} from './sky-stellar-tile-loader';
+import {reportRuntimeError} from '../../services/runtime-error';
 
 // This exercises the production Hook's React ownership and real tile loader.
 // Scientific selection/projection are controlled here; their correctness is
@@ -38,23 +39,27 @@ const tick=()=>new Promise<void>(resolve=>setImmediate(resolve));
 
 function fixture(){
   const slots:any[]=[],effects:Array<()=>void>=[];
-  const requests:Array<{publication:SaoIndexPublication;id:string;signal:AbortSignal;finish():void}>=[];
-  let cursor=0,dirty=false,current:SaoIndexPublication|undefined=publication,selected=ids;
+  const requests:Array<{publication:SaoIndexPublication;id:string;signal:AbortSignal;finish(dataState?:'FRESH'|'STALE_USABLE'):void}>=[];
+  let cursor=0,dirty=false,current:SaoIndexPublication|undefined=publication,selected=ids,indexRetries=0;
+  let failure:'selection'|'resolution'|'missing'|null=null;
   const same=(previous:unknown[]|undefined,next:unknown[])=>previous?.length===next.length&&
     next.every((value,index)=>Object.is(value,previous![index]));
   const bindings={
-    EMPTY:{tiles:[],loading:false,failed:false},createSkyStellarTileLoader,
+    EMPTY:{tiles:[],loading:false,failed:false},createSkyStellarTileLoader,reportRuntimeError,
     useResourceQuery:()=>({data:current?{data:current,sources:[],dataState:'FRESH'}:undefined,
-      isFetching:false,isError:false,refetch:()=>undefined}),
+      isFetching:false,isError:false,refetch:()=>{indexRetries++;}}),
     saoCatalogClient:{getTile:(owner:SaoIndexPublication,id:string,signal:AbortSignal)=>new Promise(resolve=>{
-      requests.push({publication:owner,id,signal,finish(){
+      requests.push({publication:owner,id,signal,finish(dataState='FRESH'){
         const data:SaoTilePublication={publicationHash:owner.publicationHash,
           tile:JSON.parse(readFileSync(new URL(`${id}.json`,assets),'utf8'))};
-        resolve({data,dataState:'FRESH'});
+        resolve({data,dataState});
       }});
     })},
-    supplementGeometry:()=>({}),selectSkyStellarTiles:()=>selected.map(id=>({id})),
-    resolveSkyStellarSupplement:(_owner:unknown,tiles:readonly SaoTilePublication[])=>({tiles}),
+    supplementGeometry:()=>{if(failure==='selection')throw Object.assign(Error('private geometry'),{errCode:1234});return failure==='missing'?null:{};},
+    selectSkyStellarTiles:()=>selected.map(id=>({id})),
+    resolveSkyStellarSupplement:(_owner:unknown,tiles:readonly SaoTilePublication[])=>{
+      if(failure==='resolution')throw Object.assign(Error('private projection'),{errCode:5678});return failure==='missing'?null:{tiles};
+    },
     useRef(initial:unknown){const index=cursor++;return slots[index]??={current:initial};},
     useState(initial:unknown){
       const index=cursor++;if(!(index in slots))slots[index]=initial;
@@ -76,13 +81,15 @@ function fixture(){
   };
   const hook=vm.runInNewContext(ts.transpileModule(`${declaration.getText(source).replace(/^export /u,'')}\nuseSkyStellarSupplement`,
     {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,bindings);
-  const scene={publication:{},observer:{}},view={basis:{},width:390,height:844,verticalFovDeg:9.1,center:{x:195,y:422}};
+  let scene={publication:{},observer:{}};
+  const view={basis:{},width:390,height:844,verticalFovDeg:9.1,center:{x:195,y:422}};
   function render(active=true){cursor=0;dirty=false;return hook(scene,'2026-09-30T13:50:33.000Z',view,active);}
   function commit(active=true){
     do{for(const effect of effects.splice(0))effect();if(dirty)render(active);}while(effects.length||dirty);
     return render(active);
   }
-  return {requests,render,commit,setPublication(value:SaoIndexPublication|undefined){current=value;},
+  return {requests,render,commit,indexRetries:()=>indexRetries,setPublication(value:SaoIndexPublication|undefined){current=value;},
+    setFailure(value:typeof failure){failure=value;scene={...scene};view.basis={};},
     setSelection(value:string[]){selected=value;view.basis={};},
     setSize(width:number,height:number){view.width=width;view.height=height;},
     unmount(){for(const slot of slots)slot?.cleanup?.();},
@@ -107,6 +114,40 @@ test('page hide suspends the bounded ready view; return has ready stars before e
   h.requests[3]!.finish();await tick();assert.equal(h.render().frame.tiles.length,2);
   h.unmount();assert.equal(h.heldState(),null);assert(h.requests.at(-1)!.signal.aborted);
   h.requests.at(-1)!.finish();await tick();assert.equal(h.heldState(),null);
+});
+
+test('queued retry uses current visibility and cannot refetch after hide or unmount',async()=>{
+  const h=fixture();const retry=h.render().retry;h.commit();await tick();
+  h.render(false);retry();
+  assert.equal(h.indexRetries(),0,'rendered hidden demand must fence a queued callback before pause effects');
+  h.commit(false);retry();await tick();assert.equal(h.requests.length,3);
+  h.render(true);h.commit(true);retry();assert.equal(h.indexRetries(),1);
+  h.unmount();retry();assert.equal(h.indexRetries(),1,'retired Hook cannot refetch the index');
+});
+
+test('retry cannot operate an old delivered index capability before replacement effects',async()=>{
+  const h=fixture();h.setSelection([ids[0]!]);const retry=h.render().retry;h.commit();await tick();
+  h.requests[0]!.finish('STALE_USABLE');await tick();h.render();
+  h.setPublication({...publication});h.setSelection([ids[1]!]);h.render();retry();await tick();
+  assert.equal(h.requests.length,1,'old loader cannot fetch new demand with its retired index capability');
+  assert.equal(h.indexRetries(),1,'current index discovery remains recoverable during owner replacement');
+  h.commit();await tick();assert.equal(h.requests.length,2);h.unmount();
+});
+
+test('retry adopts the current selected view before pumping any tiles',async()=>{
+  const h=fixture();h.setSelection([ids[0]!]);const retry=h.render().retry;h.commit();await tick();
+  h.requests[0]!.finish();await tick();h.render();
+  h.setSelection([ids[1]!]);h.render();retry();await tick();
+  assert.deepEqual(h.requests.map(request=>request.id),[ids[0],ids[1]],'queued callback must request current selected tile before effects');
+  h.unmount();
+});
+
+test('missing index and unmeasured view still allow current index recovery',async()=>{
+  const h=fixture();h.setPublication(undefined);const retry=h.render().retry;h.commit();retry();
+  assert.equal(h.indexRetries(),1);assert.equal(h.requests.length,0);
+  h.setPublication(publication);h.setSize(0,0);h.render();h.commit();retry();await tick();
+  assert.equal(h.indexRetries(),2);assert.equal(h.requests.length,0);
+  h.unmount();
 });
 
 test('return to a changed view excludes retained old tiles before effects can change the wanted set',async()=>{
@@ -152,4 +193,21 @@ test('refreshed same-hash publication capability retires the old loader and acce
   for(const request of h.requests.slice(1,3))request.finish();await tick();assert.equal(h.render().frame.tiles.length,0);
   h.requests[3]!.finish();await tick();assert.equal(h.render().frame.tiles.length,1);
   h.unmount();
+});
+
+test('scientific failures report at committed transitions without logging each camera update or normal absence',()=>{
+  const before=console.error,errors:unknown[][]=[];console.error=(...parts)=>{errors.push(parts);};
+  const h=fixture();
+  try{
+    for(let i=0;i<3;i++){h.setFailure('selection');assert.equal(h.render().failed,true);h.commit();}
+    assert.equal(errors.length,1);assert.equal((errors[0]![1] as {errCode:number}).errCode,1234);
+    h.setFailure(null);h.render();h.commit();
+    for(let i=0;i<3;i++){h.setFailure('resolution');assert.equal(h.render().failed,true);h.commit();}
+    assert.equal(errors.length,2);assert.equal((errors[1]![1] as {errCode:number}).errCode,5678);
+    h.render(false);h.commit(false);h.render(true);h.commit(true);assert.equal(errors.length,2,'hide is not recovery');
+    h.setPublication({...publication});h.render();h.commit();assert.equal(errors.length,3,'new delivered owner has its own failure episode');
+    h.setFailure(null);h.render();h.commit();h.setFailure('resolution');h.render();h.commit();assert.equal(errors.length,4);
+    h.setFailure('missing');assert.equal(h.render().frame,null);h.commit();assert.equal(errors.length,4);
+    assert.doesNotMatch(JSON.stringify(errors),/private/u);
+  }finally{h.unmount();console.error=before;}
 });

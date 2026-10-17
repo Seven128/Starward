@@ -3,3 +3,7 @@ astropy==8.0.1
 numpy==2.5.3
 # Offline prepared-observation AVM geometry only; MIT + included BSD-3 notices.
 PyAVM==0.9.9
+# Astropy's offline fit_wcs_from_points for bounded publisher-corner conversion.
+scipy==1.17.1
+# Offline SXT process-tree cleanup and bounded RSS observations.
+psutil==7.2.2

@@ -14,17 +14,23 @@ export interface SkyConstellationLabel {
 }
 
 const dot=(a:SkyVector,b:SkyVector)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+/** Keep the existing guide exclusion while consumers migrate whole bounds. */
+export function skyConstellationAvoidsPoints(x:number,y:number,obstacles:readonly (readonly [number,number])[]):boolean {
+  return !obstacles.some(([ox,oy])=>Math.hypot(x-ox,y-oy)<60);
+}
 
 /** Presentation only. The frame owns identity/time and the same camera basis
  * owns lines, stars and names. Labels never substitute for object picking. */
 export function projectConstellationLabels(frame:ConstellationFrame|null,view:SkyArtworkView,
-  width:number,height:number,enabled:boolean,obstacles:readonly (readonly [number,number])[]=[]):SkyConstellationLabel[] {
+  width:number,height:number,enabled:boolean,obstacles:readonly (readonly [number,number])[]=[],wholeLayout=false,
+  retained:ReadonlySet<string>=new Set()):SkyConstellationLabel[] {
   const opacity=constellationVisibility(view.verticalFovDeg,enabled);
   const params=skyArtworkViewParameters(view,width,height);
-  if (!frame || !params || opacity<.14 || !Number.isFinite(height) || height<=0) return [];
+  if (!frame || !params || opacity<.14 && !retained.size || !Number.isFinite(height) || height<=0) return [];
   const {scale,center}=params;
   const candidates:SkyConstellationLabel[]=[];
   for (const label of frame.labels) {
+    if (opacity<.14 && !retained.has(label.iau)) continue;
     const ray=label.direction;
     const denominator=1+dot(ray,view.basis.forward);
     if (!(denominator>1e-9)) continue;
@@ -33,13 +39,16 @@ export function projectConstellationLabels(frame:ConstellationFrame|null,view:Sk
     const side=Math.max(32,label.nameZh.length*6+8);
     if (x<side || x>width-side || y<Math.max(100,height*.12) || y>height-125 ||
       (x<120 && y>height-215)) continue;
-    candidates.push({iau:label.iau,nameZh:label.nameZh,nameEn:label.nameEn,x,y,opacity});
+    candidates.push({iau:label.iau,nameZh:label.nameZh,nameEn:label.nameEn,x,y,opacity:opacity<.14?0:opacity});
   }
   candidates.sort((a,b)=>Math.hypot(a.x-center.x,a.y-center.y)-Math.hypot(b.x-center.x,b.y-center.y) || a.iau.localeCompare(b.iau));
+  // The ordinary same-copy consumer owns measured whole-rectangle avoidance
+  // and the original six-name limit. Do not move its anchor a second time.
+  if(wholeLayout)return candidates;
   const result:SkyConstellationLabel[]=[];
   const blocked:SkyConstellationLabel[]=[];
   for (const candidate of candidates) {
-    if (obstacles.some(([x,y])=>Math.hypot(candidate.x-x,candidate.y-y)<60)) {
+    if (!skyConstellationAvoidsPoints(candidate.x,candidate.y,obstacles)) {
       blocked.push(candidate); continue;
     }
     if (result.some(label=>Math.hypot(label.x-candidate.x,label.y-candidate.y)<72)) continue;
@@ -56,7 +65,7 @@ export function projectConstellationLabels(frame:ConstellationFrame|null,view:Sk
     })).find(label=>label.x>=side && label.x<=width-side &&
       label.y>=Math.max(100,height*.12) && label.y<=height-125 &&
       !(label.x<120 && label.y>height-215) &&
-      !obstacles.some(([x,y])=>Math.hypot(label.x-x,label.y-y)<60) &&
+      skyConstellationAvoidsPoints(label.x,label.y,obstacles) &&
       !result.some(other=>Math.hypot(label.x-other.x,label.y-other.y)<72));
     if(placed)result.push(placed);
   }

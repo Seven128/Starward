@@ -11,7 +11,7 @@ const input = (changes: Partial<SkyCanvasViewInput> = {}): SkyCanvasViewInput =>
   queuedOrientationRevision: 1, queuedBasis: east,
   live: { presentationRevision: 2, alignment: { mode: "aligned", view: north } },
   manualBasis: null, tracking: false, requestedFov: 45,
-  width: 390, height: 844, insets: { top: 104, bottom: 168 }, ...changes,
+  width: 390, height: 844, occlusionInsets: { top: 104, bottom: 168 }, ...changes,
 });
 function centered(basis: SkyViewBasis | null, azimuth: number, view: ReturnType<typeof resolveSkyCanvasView>) {
   assert.ok(basis);
@@ -41,7 +41,7 @@ test("calibration replaces a queued overview with the frozen full rotation and o
   };
   const view = resolveSkyCanvasView(input({
     live: { presentationRevision: 2, alignment: { mode: "editing", view: frozen } },
-    requestedFov: skyDomeFieldOfView(390, 844, { top: 104, bottom: 168 }),
+    requestedFov: skyDomeFieldOfView(390, 844),
   }));
   const painted = camera.update({ localView: view.localView, intent: view.intent, progress: view.progress, at: 32 });
   assert.equal(painted.phase, "local");
@@ -70,4 +70,19 @@ test("explicit manual and tracking intent preserve their own view through sensor
   const tracked = resolveSkyCanvasView(input({ manualBasis: east, tracking: true }));
   assert.equal(tracked.intent, "track");
   centered(tracked.localView, 90, tracked);
+});
+
+test("opening an overlay menu keeps the displayed sky geometry while its occlusion region changes", () => {
+  const requestedFov = skyDomeFieldOfView(390, 844);
+  const closed = input({ manualBasis: east, requestedFov, occlusionInsets: { top: 104, bottom: 168 } });
+  const opened = input({ manualBasis: east, requestedFov, occlusionInsets: { top: 104, bottom: 500 } });
+  const before = resolveSkyCanvasView(closed), after = resolveSkyCanvasView(opened);
+  assert.deepEqual(after.center, before.center, "the menu must cover the sky instead of pushing its center upwards");
+  assert.equal(after.verticalFovDeg, before.verticalFovDeg);
+  assert.equal(after.progress, before.progress, "an overlay must not retarget the browsing-camera phase");
+  assert.deepEqual(after.occlusionInsets, opened.occlusionInsets, "covered input and labels still see the new menu region");
+  const camera = createSkyBrowsingCamera();
+  const first = camera.update({ localView: before.localView, intent: before.intent, progress: before.progress, at: 0 });
+  const second = camera.update({ localView: after.localView, intent: after.intent, progress: after.progress, at: 16 });
+  assert.deepEqual(second.view, first.view, "a visible object retains the same drawn rotation through menu opening");
 });

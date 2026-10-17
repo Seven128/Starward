@@ -6,19 +6,20 @@ import { readFileSync } from "node:fs";
 import { isCelestialObjectReference, isDeepSkyObjectReference, skyLuminaryBody, skyPlanetBody } from "@starward/miniapp-contracts";
 
 type PublishedIntroduction = { introduction: string; source: SourceSummary };
-interface IntroductionRow extends PublishedIntroduction {
+export interface IntroductionRow extends PublishedIntroduction {
   reference: string;
   identity: { hr: string; hd: string; hip: string | null } | { ngcName: string; messier: number | null; kind: "GALAXY" | "NEBULA" } | null;
   aliases?: readonly string[];
   sourceLanguage?: "en";
 }
 export const CHINESE_INTRODUCTION_PUBLICATION = Object.freeze({
-  file: "celestial-object-introductions.zh-cn.v72.json",
-  version: "starward-celestial-introductions.zh-cn.v72",
-  bytes: 643978,
-  sha256: "587c4b3f7f773d352925932062716ea570485f18ddaa0a6d2c9730c29b5c204d",
+  file: "celestial-object-introductions.zh-cn.v79.json",
+  version: "starward-celestial-introductions.zh-cn.v79",
+  bytes: 1323326,
+  sha256: "ec640a1a5297edac7f8070474aa116d66aef75684b2d2c5ca605e9658703c059",
 });
-const indexSha256 = "de94f9230a564ef33bcce3a3a6eab2366f3af5701ee7eaa66702fa2fae08e7e7";
+const indexSha256 = "c9698a6051f32ecc721b3bf1fce5d39d2192df44d8ffdcd75e1623e8599565f5";
+const publicationEdition = (version: string) => Number(/^starward-celestial-introductions\.zh-cn\.v([1-9]\d*)$/u.exec(version)?.[1]);
 
 function validOriginalSource(row: IntroductionRow, allowTranslated: boolean) {
   const source = row.source;
@@ -52,13 +53,12 @@ function validIdentity(row: IntroductionRow, allowMissingHip: boolean) {
 }
 
 /** The admitted offline edition is independent of measurements and renderer assets. */
-export function parseChineseIntroductionPublication(bytes: Uint8Array, expectedHash: string = CHINESE_INTRODUCTION_PUBLICATION.sha256) {
+function parsePublication(bytes: Uint8Array, expectedHash: string, maximumEdition: number) {
   if (createHash("sha256").update(bytes).digest("hex") !== expectedHash)
     throw Error("celestial_introduction_publication_hash_mismatch");
   const pack = JSON.parse(Buffer.from(bytes).toString("utf8"));
-  const editionText = /^starward-celestial-introductions\.zh-cn\.v([1-9]\d*)$/u.exec(pack.version)?.[1];
-  const edition = Number(editionText);
-  if (!(edition >= 2 && edition <= 72) || pack.locale !== "zh-CN" || !Array.isArray(pack.rows))
+  const edition = publicationEdition(pack.version);
+  if (!(edition >= 2 && edition <= maximumEdition) || pack.locale !== "zh-CN" || !Array.isArray(pack.rows))
     throw Error("celestial_introduction_publication_invalid");
   const rows = new Map<string, IntroductionRow>();
   for (const row of pack.rows as IntroductionRow[]) {
@@ -73,6 +73,31 @@ export function parseChineseIntroductionPublication(bytes: Uint8Array, expectedH
     rows.set(row.reference, row);
   }
   return rows;
+}
+
+export function parseChineseIntroductionPublication(bytes: Uint8Array, expectedHash: string = CHINESE_INTRODUCTION_PUBLICATION.sha256) {
+  return parsePublication(bytes, expectedHash, publicationEdition(CHINESE_INTRODUCTION_PUBLICATION.version));
+}
+
+/** Offline preview of exactly the next edition; it cannot change runtime admission. */
+export function parseNextChineseIntroductionPublication(bytes: Uint8Array, expectedHash: string) {
+  const next = publicationEdition(CHINESE_INTRODUCTION_PUBLICATION.version) + 1;
+  const rows = parsePublication(bytes, expectedHash, next);
+  if (publicationEdition(JSON.parse(Buffer.from(bytes).toString("utf8")).version) !== next)
+    throw Error("celestial_introduction_candidate_version_invalid");
+  return rows;
+}
+
+/** Shared derived index encoding for a retained, current, or next offline edition. */
+export function encodeChineseIntroductionIndex(bytes: Uint8Array) {
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+  const pack = JSON.parse(Buffer.from(bytes).toString("utf8"));
+  const edition = publicationEdition(pack.version);
+  const rows = edition === publicationEdition(CHINESE_INTRODUCTION_PUBLICATION.version) + 1
+    ? parseNextChineseIntroductionPublication(bytes, sha256) : parseChineseIntroductionPublication(bytes, sha256);
+  return Buffer.from(JSON.stringify({ format: "celestial-introductions-index-v1", locale: pack.locale,
+    publication: { file: `celestial-object-introductions.zh-cn.v${edition}.json`, version: pack.version, bytes: bytes.length, sha256 },
+    references: [...rows.keys()].sort() }, null, 2) + "\n");
 }
 
 /** Hash-bound membership is derived from the admitted asset, never edited per object. */

@@ -1,10 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { lstat, mkdir, open, readFile, readdir, realpath, rename, unlink, writeFile } from "node:fs/promises";
-import https from "node:https";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { composeExecutor, runProcess } from "./compose-runtime.mjs";
-import { publicIpTlsOptions } from "./operator-preview-tls.mjs";
+import { requestSkyStaticBytes } from "./sky-static-http.mjs";
 import { assertSkyStaticContains, assertSkyStaticImageArtifact, mergeSkyStaticBundles, readPlainSkyFile, skyStaticFilePath, skyStaticHash, validateSkyStaticBundle, writeSkyStaticBundle } from "./sky-static-bundle.mjs";
 import { createSkyStaticBackup, readSkyStaticBackup, verifiedBackupSkyRecord } from "./sky-static-backup.mjs";
 
@@ -44,14 +43,23 @@ export async function prepareSkyStaticRelease({ validation, deploy, deployEnvPat
   }
 }
 
-/** In-process handoff only: revalidate the live original lease, source seals,
- * union, identity and overlay. A JSON assertion cannot skip a real preflight. */
-export async function reuseSkyStaticRelease({ validation, deploy, deployEnvPath, delivery }) {
+/** Check the held original preparation capability without hashing the entire
+ * retained union for every object. Callers still revalidate their exact bytes;
+ * reuseSkyStaticRelease owns the complete boundary readback. */
+export async function assertSkyStaticReleaseLease({ validation, deploy, deployEnvPath, delivery }) {
   const directory = selectedStore(validation, deploy), prepared = releasePreparations.get(delivery);
   if (!directory || !prepared || prepared.deployEnvPath !== path.resolve(deployEnvPath) ||
     prepared.revision !== validation.revision || prepared.imageDigest !== validation.imageDigest ||
     leasedStores.get(delivery.dispose) !== directory) fail("release_preparation_invalid");
   if (skyStaticHash(await readFile(deployEnvPath)) !== prepared.descriptorSha256) fail("release_preparation_changed");
+  return directory;
+}
+
+/** In-process handoff only: revalidate the live original lease, source seals,
+ * union, identity and overlay. A JSON assertion cannot skip a real preflight. */
+export async function reuseSkyStaticRelease({ validation, deploy, deployEnvPath, delivery }) {
+  const directory = await assertSkyStaticReleaseLease({ validation, deploy, deployEnvPath, delivery });
+  const prepared = releasePreparations.get(delivery);
   const state = await inventory(directory);
   if (!state) fail("inventory_missing");
   const originalIdentity = assertSkyStaticDeliveryIdentity(delivery.identity, validation);
@@ -690,33 +698,6 @@ async function inspectRunningSkyMount({ directory, state, deploy, execute }) {
     preparedGenerationMatches: generation === state.pointer.generation, readOnly: true, referenceCompleteness: "UNVERIFIED" };
 }
 
-function requestBytes(url, { headers, method, maximumBytes, preview }) {
-  return new Promise((resolve, reject) => {
-    const options = preview ? publicIpTlsOptions(url.hostname) : {};
-    let deadline;
-    const rejectRequest = (error) => { clearTimeout(deadline); reject(error); };
-    const request = https.request(url, { ...options, headers, method, timeout: 15_000 }, (response) => {
-      const chunks = []; let count = 0;
-      response.on("data", (chunk) => {
-        count += chunk.length;
-        if (count > maximumBytes) { request.destroy(new Error("sky_static_http_body_too_large")); return; }
-        chunks.push(chunk);
-      });
-      response.on("error", rejectRequest);
-      response.on("end", () => {
-        clearTimeout(deadline);
-        resolve({ status: response.statusCode, headers: new Headers(response.headers), bytes: Buffer.concat(chunks) });
-      });
-    });
-    // The socket timeout only limits inactivity. Bound the entire connection
-    // and body too, including peers that keep sending small periodic chunks.
-    deadline = setTimeout(() => request.destroy(new Error("sky_static_http_timeout")), 15_000);
-    request.on("timeout", () => request.destroy(new Error("sky_static_http_timeout")));
-    request.on("error", rejectRequest);
-    request.end();
-  });
-}
-
 /** Exact byte/header verification and a delivery-only marker prevent identical
  * API fallback bytes from being mistaken for proven static service. */
 export async function verifySkyStaticDelivery({ delivery, validation, deploy, fetchImpl }) {
@@ -728,11 +709,7 @@ export async function verifySkyStaticDelivery({ delivery, validation, deploy, fe
   const base = `https://${validation.domain}`;
   const request = async (route, { authorized = true, method = "GET", maximumBytes } = {}) => {
     const headers = { "Accept-Encoding": "identity", ...(preview && authorized ? { "X-Starward-Operator-Preview": deploy.STARWARD_OPERATOR_PREVIEW_TOKEN } : {}) };
-    if (!fetchImpl) return requestBytes(new URL(base + route), { headers, method, maximumBytes, preview });
-    const response = await fetchImpl(base + route, { headers, method, redirect: "error", signal: AbortSignal.timeout(15_000) });
-    const bytes = Buffer.from(await response.arrayBuffer());
-    if (bytes.length > maximumBytes) fail("http_body_too_large");
-    return { status: response.status, headers: response.headers, bytes };
+    return requestSkyStaticBytes(new URL(base + route), { headers, method, maximumBytes, preview, fetchImpl });
   };
   let unauthorizedStatus = null;
   if (preview) {

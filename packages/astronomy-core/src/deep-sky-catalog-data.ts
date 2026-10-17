@@ -2,10 +2,12 @@ import rawPack from "../data/opengc-messier-deep-sky.v1.json" with { type: "json
 import rawManifest from "../data/opengc-messier-deep-sky.v1.manifest.json" with { type: "json" };
 import extendedPack from "../data/opengc-deep-sky.v2.json" with { type: "json" };
 import extendedManifest from "../data/opengc-deep-sky.v2.manifest.json" with { type: "json" };
-import { DEEP_SKY_MESSIER_CATALOG_VERSION, EXTENDED_DEEP_SKY_CATALOG_VERSION, isDeepSkyObjectReference } from "@starward/miniapp-contracts";
+import currentPack from "../data/opengc-deep-sky.v3.json" with { type: "json" };
+import currentManifest from "../data/opengc-deep-sky.v3.manifest.json" with { type: "json" };
+import { DEEP_SKY_MESSIER_CATALOG_VERSION, EXTENDED_DEEP_SKY_CATALOG_VERSION, CURRENT_DEEP_SKY_CATALOG_VERSION, isDeepSkyObjectReference, type DeepSkyCatalogVersion } from "@starward/miniapp-contracts";
 
 export const DEEP_SKY_CATALOG_VERSION = DEEP_SKY_MESSIER_CATALOG_VERSION;
-export { EXTENDED_DEEP_SKY_CATALOG_VERSION };
+export { EXTENDED_DEEP_SKY_CATALOG_VERSION, CURRENT_DEEP_SKY_CATALOG_VERSION };
 export type DeepSkyObjectKind = "GALAXY" | "NEBULA";
 
 export interface DeepSkyCatalogRow {
@@ -26,7 +28,7 @@ export interface DeepSkyCatalogRow {
 
 export interface DeepSkyCatalogPack {
   schemaVersion: "opengc-messier-deep-sky-v1" | "opengc-deep-sky-v2";
-  catalogVersion: typeof DEEP_SKY_CATALOG_VERSION | typeof EXTENDED_DEEP_SKY_CATALOG_VERSION;
+  catalogVersion: DeepSkyCatalogVersion;
   frame: "ICRS J2000";
   license: "CC-BY-SA-4.0";
   rows: readonly DeepSkyCatalogRow[];
@@ -34,7 +36,7 @@ export interface DeepSkyCatalogPack {
 
 export interface DeepSkyCatalogManifest {
   schemaVersion: "opengc-messier-deep-sky-manifest-v1" | "opengc-deep-sky-manifest-v2";
-  catalogVersion: typeof DEEP_SKY_CATALOG_VERSION | typeof EXTENDED_DEEP_SKY_CATALOG_VERSION;
+  catalogVersion: DeepSkyCatalogVersion;
   source: {
     provider: string;
     release: string;
@@ -56,11 +58,12 @@ export interface DeepSkyCatalogManifest {
 function fail(reason: string): never { throw new Error(`deep_sky_catalog_invalid:${reason}`); }
 function finite(value: unknown): value is number { return typeof value === "number" && Number.isFinite(value); }
 
-function validate(value: unknown, extended = false): DeepSkyCatalogPack {
+function validate(value: unknown, version: DeepSkyCatalogVersion = DEEP_SKY_CATALOG_VERSION): DeepSkyCatalogPack {
   if (!value || typeof value !== "object") fail("pack");
   const pack = value as DeepSkyCatalogPack;
+  const extended = version !== DEEP_SKY_CATALOG_VERSION;
   if (pack.schemaVersion !== (extended ? "opengc-deep-sky-v2" : "opengc-messier-deep-sky-v1") ||
-    pack.catalogVersion !== (extended ? EXTENDED_DEEP_SKY_CATALOG_VERSION : DEEP_SKY_CATALOG_VERSION) || pack.frame !== "ICRS J2000" ||
+    pack.catalogVersion !== version || pack.frame !== "ICRS J2000" ||
     pack.license !== "CC-BY-SA-4.0" || !Array.isArray(pack.rows) || (extended ? pack.rows.length <= 51 : pack.rows.length !== 51))
     fail("identity");
   const ids = new Set<string>();
@@ -86,10 +89,16 @@ function validate(value: unknown, extended = false): DeepSkyCatalogPack {
 
 export const DEEP_SKY_CATALOG_PACK = validate(rawPack);
 export const DEEP_SKY_CATALOG_MANIFEST = rawManifest as unknown as DeepSkyCatalogManifest;
-export const EXTENDED_DEEP_SKY_CATALOG_PACK = validate(extendedPack, true);
+export const EXTENDED_DEEP_SKY_CATALOG_PACK = validate(extendedPack, EXTENDED_DEEP_SKY_CATALOG_VERSION);
 export const EXTENDED_DEEP_SKY_CATALOG_MANIFEST = extendedManifest as unknown as DeepSkyCatalogManifest;
+export const CURRENT_DEEP_SKY_CATALOG_PACK = validate(currentPack, CURRENT_DEEP_SKY_CATALOG_VERSION);
+export const CURRENT_DEEP_SKY_CATALOG_MANIFEST = currentManifest as unknown as DeepSkyCatalogManifest;
 // The additive generation cannot rewrite existing identities or measurements.
 for (const row of DEEP_SKY_CATALOG_PACK.rows) {
   if (JSON.stringify(EXTENDED_DEEP_SKY_CATALOG_PACK.rows.find(candidate => candidate.objectRef === row.objectRef)) !== JSON.stringify(row))
     fail("extended_legacy_row_changed");
+}
+for (const row of EXTENDED_DEEP_SKY_CATALOG_PACK.rows) {
+  if (JSON.stringify(CURRENT_DEEP_SKY_CATALOG_PACK.rows.find(candidate => candidate.objectRef === row.objectRef)) !== JSON.stringify(row))
+    fail("current_retained_row_changed");
 }

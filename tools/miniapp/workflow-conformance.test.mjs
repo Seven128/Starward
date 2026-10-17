@@ -231,10 +231,17 @@ test("Map keeps one presentation back boundary while the adopted new-spot editor
     "map",
     "index.tsx",
   );
-  assert.match(mapPage, /import \{[\s\S]*?PageContainer,[\s\S]*?\} from "@tarojs\/components"/u);
-  assert.equal((mapPage.match(/<PageContainer\b/gu) ?? []).length, 1);
-  assert.match(mapPage, /<PageContainer[\s\S]*?show=\{mapPresentationBackBoundaryVisible\}[\s\S]*?overlay=\{false\}[\s\S]*?closeOnSlideDown=\{false\}[\s\S]*?onBeforeLeave=\{handleMapPresentationSystemBack\}/u);
-  assert.doesNotMatch(mapPage, /<PageContainer[\s\S]*?show=\{bottomPresentation === "spot-editor"\}/u);
+  const boundary = await text("apps", "wechat-miniapp", "src", "components", "native-back-boundary.tsx");
+  // The shared owner now supplies the one native container. The caller still
+  // owns which presentations intercept Back and how editor exits are guarded.
+  assert.match(mapPage, /import \{ NativeBackBoundary \} from "@\/components\/native-back-boundary"/u);
+  assert.equal((mapPage.match(/<NativeBackBoundary\b/gu) ?? []).length, 1);
+  assert.equal((mapPage.match(/<PageContainer\b/gu) ?? []).length, 0);
+  assert.match(mapPage, /<NativeBackBoundary\s+active=\{pageVisible && \(eventModalOpen \|\| eventModalPresent \|\| bottomPresentation === "spot-panel" \|\| bottomPresentation === "layer-sheet" \|\| bottomPresentation === "spot-editor"\)\}\s+onBack=\{handleMapPresentationSystemBack\}\s+nativeMapContent=/u);
+  assert.equal((boundary.match(/<PageContainer\b/gu) ?? []).length, 1);
+  assert.match(boundary, /overlay=\{false\}/u);
+  assert.match(boundary, /closeOnSlideDown=\{false\}/u);
+  assert.match(boundary, /onBeforeLeave=\{handleLeave\}/u);
   assert.match(mapPage, /<ContributionEditor[\s\S]*?embedded[\s\S]*?onLeaveGuardChange=[\s\S]*?onClose=\{closeSpotEditor\}/u);
   assert.match(mapPage, /confirmEditorLeave[\s\S]*?editorLeaveGuard\.current/u);
   assert.match(mapPage, /onClose=\{closeSpotEditor\}/u);
@@ -1219,7 +1226,9 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   // Wiring only; sky-canvas-time.test.ts executes the production drawing
   // function to establish exact-time selection and missing-frame behavior.
   assert.match(sky, /resolveSkySceneFrame\(reportData\?\.skyScene, row\?\.at\)/u);
-  assert.match(sky, /exactSkyTimeFrame\(reportData\?\.targetFrames, row\?\.at\)/u);
+  // Orientation targets come from the completed paint, including during a
+  // later request or transient time presentation; never borrow its next row.
+  assert.match(sky, /exactSkyTimeFrame\(paintedData\?\.targetFrames, paintedAt\)/u);
   assert.match(sky, /catalog\.entries\[catalogIndex\]/u);
   assert.match(sky, /altitude <= 0/u);
   assert.match(sky, /星图暂不可用，仍可在对象列表查看天体与事件/u);

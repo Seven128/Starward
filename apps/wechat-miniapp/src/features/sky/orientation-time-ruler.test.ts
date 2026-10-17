@@ -1,11 +1,35 @@
-import { createScrollSettlement } from "../../components/scroll-settlement";
+import { createSkyTimeRulerSettlement } from "./sky-time-ruler-settlement";
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
 import ts from 'typescript';
+import { createSkyObservationTime } from './sky-observation-time';
+import { skyRulerTime } from './sky-time-presentation';
 
-function render(saving=false, interactionLocked=false) {
+test('actual page previews the fractional public time and withholds fine target requests only during drag',()=>{
+ const source=ts.createSourceFile('sky.tsx',readFileSync(new URL('./spot-sky-page.tsx',import.meta.url),'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
+ const page=source.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='SpotSkyPage') as ts.FunctionDeclaration;
+ const expression=(name:string)=>{
+  const declaration=page.body!.statements.filter(ts.isVariableStatement).flatMap(n=>[...n.declarationList.declarations]).find(n=>n.name.getText(source)===name);
+  assert(declaration?.initializer);return ts.transpileModule(`(${declaration.initializer.getText(source)})`,{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
+ };
+ const start='2026-10-14T00:00:00.000Z',end='2026-10-14T01:00:00.000Z';
+ const time=createSkyObservationTime();time.bind('current',start,{startAt:start,endAt:end});
+ let current=true;
+ const rawReportData={hourly:[{at:start},{at:end}],context:{spotId:'test',contextId:'test',contextRevision:1,contextFingerprint:'test'}};
+ const sandbox={skyTimeIntentCurrent:()=>current,datePickerOpenRef:{current:false},rawReportData,
+  timeModel:{startAt:start,endAt:end},skyRulerTime,cancelSkyCalibration:()=>{},setTimeIntent:()=>{},observationTime:time};
+ const preview=vm.runInNewContext(expression('onPreview'),sandbox);
+ preview(.25);assert.equal(time.snapshot().at,'2026-10-14T00:15:00.000Z');
+ current=false;preview(.75);assert.equal(time.snapshot().at,'2026-10-14T00:15:00.000Z','retired UI cannot replace current time');
+ const binding=expression('fineTargetBinding'),at=time.snapshot().at;
+ const input={timePresentation:{mode:'MODEL'},timePlaying:false,timeScrubbing:true,rawReportData,requestedAt:at};
+ assert.equal(vm.runInNewContext(binding,input),null);
+ assert.equal(vm.runInNewContext(binding,{...input,timeScrubbing:false}).at,at);
+});
+
+function render(saving=false, interactionLocked=false, isPreviewing=false) {
   const source=ts.createSourceFile('sky.tsx',readFileSync(new URL('./spot-sky-page.tsx',import.meta.url),'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
   const declaration=source.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='OrientationTimeRuler');
   assert.ok(declaration);
@@ -13,18 +37,34 @@ function render(saving=false, interactionLocked=false) {
   const effects:Array<()=>void|(()=>void)>=[];let hide=()=>{};
   const component=vm.runInNewContext(ts.transpileModule(declaration.getText(source)+'\nOrientationTimeRuler;',{compilerOptions:{target:ts.ScriptTarget.ES2020,jsx:ts.JsxEmit.React}}).outputText,{
     React:{createElement:(type:string,props:object,...children:unknown[])=>({type,props,children:children.flat()})},
-    useDidShow:()=>{},createRulerScrollPosition:()=>({move:(value:number)=>positions.push(value),cancel:()=>{}}),createScrollSettlement,View:'view',Text:'text',Button:'button',ScrollView:'scroll',SoftButton:'soft',
+    useDidShow:()=>{},createRulerScrollPosition:()=>({move:(value:number)=>positions.push(value),cancel:()=>{}}),createSkyTimeRulerSettlement,View:'view',Text:'text',Button:'button',ScrollView:'scroll',SoftButton:'soft',
     useState:(v:unknown)=>[v,()=>{}],useRef:(v:unknown)=>({current:v}),useCallback:(fn:unknown)=>fn,
     useEffect:(fn:()=>void|(()=>void))=>effects.push(fn),useDidHide:(fn:()=>void)=>{hide=fn;},
     clampIndex:(i:number,n:number)=>Math.max(0,Math.min(i,n-1)),orientationRulerStepPx:()=>44,
     orientationRulerDistance:()=>0,formatTime:(s:string)=>s,orientationRulerLabel:()=>'',
   });
-  const previews:number[]=[],commits:number[]=[];let cancels=0;
-  const tree=component({rows:[{at:'2026-09-06T13:00:00Z',opportunityBlockers:[]},{at:'2026-09-06T13:20:00Z',opportunityBlockers:[]}],activeIndex:0,committedIndex:0,timezone:'UTC',isPreviewing:false,saving,interactionLocked,reducedMotion:false,onPreview:(i:number)=>previews.push(i),onCommit:(i:number)=>commits.push(i),onCancel:()=>{cancels++;}});
+  const previews:number[]=[],commits:number[]=[],scrubs:boolean[]=[];let cancels=0;
+  const tree=component({rows:[{at:'2026-09-06T13:00:00Z',opportunityBlockers:[]},{at:'2026-09-06T13:20:00Z',opportunityBlockers:[]}],activeIndex:0,committedIndex:0,timezone:'UTC',isPreviewing,saving,interactionLocked,reducedMotion:false,onPreview:(i:number)=>previews.push(i),onCommit:(i:number)=>commits.push(i),onCancel:()=>{cancels++;},onScrubChange:(active:boolean)=>scrubs.push(active)});
   const cleanups=effects.map(fn=>fn());
-  return {positions,tree,scroll:tree.children.find((n:any)=>n?.type==='scroll').props,previews,commits,hide:()=>hide(),unmount:()=>cleanups.forEach(fn=>fn?.()),changeInputs:()=>effects.at(-2)?.(),get cancels(){return cancels;}};
+  return {positions,tree,scroll:tree.children.find((n:any)=>n?.type==='scroll').props,previews,commits,scrubs,hide:()=>hide(),unmount:()=>cleanups.forEach(fn=>fn?.()),changeInputs:()=>effects.at(-2)?.(),get cancels(){return cancels;}};
 }
 const one={touches:[{identifier:1}]},two={touches:[{identifier:1},{identifier:2}]},scroll={detail:{scrollLeft:44}};
+test('sky drag preserves fractional time intention while settlement still commits a supplied tick',t=>{
+ t.mock.timers.enable({apis:['setTimeout']});const r=render();
+ r.scroll.onTouchStart(one);r.scroll.onScroll({detail:{scrollLeft:11}});
+ assert.deepEqual(r.previews,[.25]);assert.deepEqual(r.scrubs,[true]);assert.deepEqual(r.commits,[]);
+ r.scroll.onTouchEnd();t.mock.timers.tick(150);
+ assert.deepEqual(r.commits,[0]);assert.deepEqual(r.scrubs,[true,false]);
+ const cancelled=render();cancelled.scroll.onTouchStart(one);cancelled.hide();
+ assert.deepEqual(cancelled.scrubs,[true,false]);assert.equal(cancelled.cancels,1);
+});
+test('empty touch and explicit preview cancellation retire the same drag demand without a commit',()=>{
+ const tap=render();tap.scroll.onTouchStart(one);tap.scroll.onTouchEnd();
+ assert.deepEqual(tap.scrubs,[true,false]);assert.deepEqual(tap.commits,[]);
+ const r=render(false,false,true);r.scroll.onTouchStart(one);r.scroll.onScroll({detail:{scrollLeft:11}});
+ const cancel=r.tree.children.find((child:any)=>child?.type==='soft');assert(cancel);
+ cancel.props.onClick();assert.deepEqual(r.scrubs,[true,false]);assert.equal(r.cancels,1);assert.deepEqual(r.commits,[]);
+});
 test('sky programmatic scroll cannot preview or commit',t=>{
  t.mock.timers.enable({apis:['setTimeout']});
  const r=render();r.scroll.onScroll(scroll);r.scroll.onTouchEnd();r.scroll.onScrollEnd(scroll);assert.deepEqual(r.previews,[]);assert.deepEqual(r.commits,[]);

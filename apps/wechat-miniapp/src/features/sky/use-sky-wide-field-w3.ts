@@ -9,6 +9,7 @@ import {skyHipsTileIntersectsView} from "./sky-hips-tile-mesh";
 import type {SkyArtworkView} from "./sky-artwork-registration";
 import type {SkyArtworkCanvas} from "./sky-artwork-request";
 import {useSkyNativeImages} from "./use-sky-artwork";
+import {useSkyImageRecovery} from "./use-sky-image-recovery";
 import type {SkyHipsCanvasTile} from "./sky-scene-render";
 
 /** Archived 12 µm data is a low-resolution, optional wide-sky layer. It is
@@ -49,8 +50,9 @@ export function useSkyWideFieldW3(report:Pick<SkyGeometryReport,"hourly"|"observ
     }
     return result.sort((a,b)=>a.pixel-b.pixel);
   },[wantedWide,selection,images.images]);
+  const retry=useSkyImageRecovery(wantedWide&&!paused,images.retryImages,manifest.refetch);
   return {tiles,publication,loading:wantedWide&&(manifest.isFetching||images.loading),
     failed:wantedWide&&(manifest.isError||Boolean(manifest.refreshError)||images.failed),
     failedImage:images.failedImage,
-    retry(){const resetGpu=images.retryImages();void manifest.refetch();return resetGpu;}};
+    retry};
 }

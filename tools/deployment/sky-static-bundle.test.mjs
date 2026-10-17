@@ -8,6 +8,54 @@ import { assertSkyStaticRecord, mergeSkyStaticBundles, skyStaticDeliveryFragment
 const headers = { "content-type": "image/jpeg", "cache-control": "public, max-age=31536000, immutable", "x-content-type-options": "nosniff" };
 const asset = (version, bytes = Buffer.from("image")) => ({ route: `/v2/sky/moon/${version.repeat(64)}/texture.jpg`, bytes, headers });
 
+test("SDSS/W3 source metadata admits only its fixed attachment and JSON contract", () => {
+  const sourceHeaders = { "content-type": "application/json; charset=utf-8", "cache-control": headers["cache-control"],
+    "x-content-type-options": "nosniff" };
+  for (const [kind, file] of [["deep-sky", "allwise-w3-manifest.json"], ["sdss-optical", "sdss-m51-optical-manifest.json"]]) {
+    const record = { route: `/v2/sky/${kind}/${"a".repeat(64)}/manifest`, bytes: 16, sha256: "b".repeat(64),
+      headers: { ...sourceHeaders, "content-disposition": `attachment; filename="${file}"` } };
+    assertSkyStaticRecord(record);
+    assert.throws(() => assertSkyStaticRecord({ ...record, headers: sourceHeaders }), /header_invalid/u);
+    for (const bad of ["other.json", "../" + file, kind === "deep-sky" ? "sdss-m51-optical-manifest.json" : "allwise-w3-manifest.json"])
+      assert.throws(() => assertSkyStaticRecord({ ...record, headers: { ...record.headers,
+        "content-disposition": `attachment; filename="${bad}"` } }), /header_invalid/u);
+    assert.throws(() => assertSkyStaticRecord({ ...record, headers: { ...record.headers, "content-type": "image/jpeg" } }), /header_invalid/u);
+  }
+});
+
+test("Prepared attachment headers round-trip only the fixed manifest download convention", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "starward-sky-attachment-"));
+  const input = { route: `/v2/sky/prepared-optical/${"1".repeat(64)}/manifest`, bytes: Buffer.from('{"publicationHash":"fixture"}'),
+    headers: { ...headers, "content-type": "application/json; charset=utf-8",
+      "content-disposition": 'attachment; filename="native-first-prepared-optical-manifest.json"' } };
+  const written = await writeSkyStaticBundle(path.join(root, "valid"), [input]);
+  const observed = await validateSkyStaticBundle(written.output);
+  assert.deepEqual(observed.records[0].headers, input.headers);
+  assert.equal(await readFile(path.join(written.output, "delivery.caddy"), "utf8"), skyStaticDeliveryFragment(observed.records));
+  const record = { ...observed.records[0] };
+  for (const value of [
+    'inline; filename="native-first-prepared-optical-manifest.json"',
+    'attachment; filename="../native-first-prepared-optical-manifest.json"',
+    'attachment; filename="${ENV}-prepared-optical-manifest.json"',
+    'attachment; filename="native-first-prepared-optical-manifest.json"\nrespond 200',
+    'attachment; filename="native-first.json"',
+  ]) assert.throws(() => assertSkyStaticRecord({ ...record, headers: { ...input.headers, "content-disposition": value } }), /header_invalid/);
+  for (const route of [asset("2").route, input.route.replace("manifest", "native-first-detail.png")])
+    assert.throws(() => assertSkyStaticRecord({ ...record, route }), /header_invalid/);
+});
+
+test("Prepared complete-data support admits only canonical PNGs and JSON metadata", () => {
+  const prefix = `/v2/sky/prepared-optical/${"1".repeat(64)}/`;
+  for (const file of ["region-original-region.png", "region-supplied-mask.png", "manifest"]) {
+    const record = { route: prefix + file, bytes: 16, sha256: "2".repeat(64), headers: { ...headers,
+      "content-type": file === "manifest" ? "application/json; charset=utf-8" : "image/png" } };
+    assertSkyStaticRecord(record);
+    assert.throws(() => assertSkyStaticRecord({ ...record, headers }), /header_invalid/);
+  }
+  for (const file of ["current", "manifest.json", "recipe.json", "region-original-region.jpg", "../region-supplied-mask.png"])
+    assert.equal(validSkyStaticRoute(prefix + file), false);
+});
+
 test("HiPS static paths bind canonical versions, source and actual HEALPix index bounds",()=>{
   const base=`/v2/sky/optical/${"1".repeat(64)}`;
   for(const suffix of ["manifest","ps1-dr1/0/11","ps1-dr1/11/50331647","ps1-dr1/8/40000/index"])

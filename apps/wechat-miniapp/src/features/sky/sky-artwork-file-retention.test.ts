@@ -112,16 +112,17 @@ test('a cached decode still checks native dimensions before making the image usa
 
 test('landscape refinement keeps the correct overview mask while returning to its cached detail file',()=>{
   const h=harness(),overview=asset('landscape:overview'),detail=asset('landscape:detail');
-  const coarseMask={id:'overview'} as unknown as SkyPanoramaMask,fineMask={id:'detail'} as unknown as SkyPanoramaMask;
+  const publication={publicationHash:'same-test-publication'};
+  const coarseMask={id:'overview',publication} as unknown as SkyPanoramaMask,fineMask={id:'detail',publication} as unknown as SkyPanoramaMask;
   const masks=new Map([['overview',coarseMask],['detail',fineMask]]);
   const selected=(id:'overview'|'detail')=>selectSkyLandscapePanorama({id} as SkyLandscapeResource,masks,h.state.images,h.state.retainedImages);
   h.loader.update([overview,detail]);const coarse=h.finishRequest(0);
   assert.deepEqual(selected('detail'),{image:coarse,mask:coarseMask},'fine loading preserves real coarse identity');
-  const firstDetail=h.finishRequest(1);assert.deepEqual(selected('detail'),{image:firstDetail,mask:fineMask});
+  const firstDetail=h.finishRequest(1);assert.deepEqual(selected('detail'),{image:firstDetail,mask:fineMask,coarser:{image:coarse,mask:coarseMask}});
   h.loader.update([overview]);h.loader.suspendUnusedDecoded();assert.equal(h.state.retainedImages.size,0);assert.equal(h.files.size,2);
   assert.deepEqual(selected('overview'),{image:coarse,mask:coarseMask});
   h.loader.update([overview,detail]);assert.deepEqual(selected('detail'),{image:coarse,mask:coarseMask});
   const returning=h.images[2]!;assert.equal(returning.src,firstDetail.src);returning.onload!();
-  assert.deepEqual(selected('detail'),{image:returning,mask:fineMask});assert.equal(h.requests.length,2);
+  assert.deepEqual(selected('detail'),{image:returning,mask:fineMask,coarser:{image:coarse,mask:coarseMask}});assert.equal(h.requests.length,2);
   h.loader.dispose();assert.equal(h.files.size,0);
 });

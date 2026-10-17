@@ -9,7 +9,7 @@ description: 为 Starward 组合 Tiny Context design-resource 与项目设计方
 
 ## 读取与组合
 
-1. 从仓库根读取 `project_context/global.md`、manifest 的默认项和本次页面/组件 owner。读取 `project_context/product-profile.md` 的设计质量、概念分工与跨场景一致性原则，根 `DESIGN.md` 的目标平台档案，以及 `project_context/context-maintenance.md` 的设计资源、[资源生命周期](../../../project_context/context-maintenance.md#design-resource-lifecycle)与持续校准规则。精确 tokens 留在 DESIGN，业务/状态留在 Screen Contract，已采用构图留在资源包；本 Skill 不另存风格事实。
+1. 从仓库根读取 `project_context/global.md`、manifest 的默认项和本次页面/组件 owner。读取 `project_context/product-profile.md` 的设计质量、概念分工与跨场景一致性原则，根 `DESIGN.md` 的目标平台档案，以及 `project_context/context-maintenance.md` 的设计资源、[资源生命周期](../../../project_context/context-maintenance.md#design-resource-lifecycle)与持续校准规则。精确 tokens 留在 DESIGN，业务/状态留在 Screen Contract，已采用构图与可编辑源留在 Stitch；本 Skill 不另存风格事实。
 2. 完整读取仓库安装的 [Tiny Context design-resource](../../../node_modules/project-tiny-context-harness/assets/skills/design-resource/SKILL.md)，按任务读取其 Stitch 或 adoption 引用；相对引用以包内 Skill 所在目录解析。通用生成、恢复、保存、交付与采用流程直接使用该能力，不复制一份到本项目。包缺失时明确报告缺少的文件，不声称已读取，也不自动换生成器。
 3. 小程序按 [当前 owner 导航](references/starward-miniapp.md) 找到相关 Screen Contract、当前采用入口、源文件与视觉/动效参考，实际查看适用资源。使用 `.codex/skills/uiux_design/SKILL.md` 中适用于 WEAPP 的交互原则；原生 App 使用自己的档案和 Source，不继承小程序值。
 4. 生成或视觉修订时读 [设计推敲方法](references/design-method.md) 与 [项目 Stitch 补充](references/stitch-route.md)。涉及复杂能力时，按设计方法先用成熟方案与真实示例校验功能范围和可行性，不等到开发阶段才调研；局部视觉微调复用既有结论。仅检查、整理或采用已有资源时无需建立生成连接。包内能力与项目扩展只加载一次，反向提及不形成递归读取。
@@ -17,12 +17,13 @@ description: 为 Starward 组合 Tiny Context design-resource 与项目设计方
 ## 保留的项目体验
 
 - 视觉生成与修改默认由 Stitch 完成。Codex 协调跟随调用任务的实际模型/effort，不固定模型；宿主与 Stitch 服务模型分开，任务需要记录时以实际可见值为准，未知不猜测。
+- Stitch 可使用宿主已连接的官方 MCP，或 Google Labs 发布的 `@google/stitch` CLI；官方认证网站保留为所需操作的回退。CLI 是同一提供方的操作入口，不是另一个设计生成器。连接和 Windows 参数/退出恢复见[项目 Stitch 补充](references/stitch-route.md#官方-stitch-cli)。先核目标平台与项目实际身份，小程序资源不进入原生 App 项目。
 - 沿用已选方向，把用户普通语言、需要改善的具体区域与明确保留项交给 Stitch。新探索未指定数量时，保留从一屏两个有实质区别方向开始的项目默认；用户指定数量/范围优先，已有方向不重新制造候选。没有修改要求不凑修改轮数。
 - 在设计资源阶段建立本次涉及的公共组件定义与消费者关系，按[设计方法](references/design-method.md#设计阶段就建立公共组件)复用/记录共享职责和变体，让后续开发沿用同一契约；可编辑共享资源、静态复制和生产组件分别如实标注。
 - 按 DESIGN.md 小程序 §1.3 与产品 Context 形成正向设计目标：阅读重心、紧凑而可读的层级、恰当材质与图标、连续交互。实际查看有用途的参考区域；不预写一套任意精确字号/圆角/间距，也不把“简洁”降成默认控件或线框壳。同一业务对象沿用可辨认的共同表达。
 - 首次交付包含原请求范围内的精修。按设计方法先看完整真实画面，再修具体比例、层级、密度或交互问题；探索期临时保存原稿与修订，不以自评分替用户决定审美。可见面与独立命中区分别设计，不靠整体缩小获得密度。
-- 持久化资源留在 `docs/design-resources/`，从当前完整采用源增量修改。候选、偏好选择和采用范围遵循上游 adoption；留存/清理遵循项目[资源生命周期](../../../project_context/context-maintenance.md#design-resource-lifecycle)，优先于通用流程的历史保留建议。已有采用或实现授权直接执行其范围，不重复索取授权。
-- 每次需求开发的设计资源候选完成、可供审阅时，按[资源生命周期](../../../project_context/context-maintenance.md#design-resource-lifecycle)集中收敛 Stitch 画布与本地资源；旧版本和明确废案都列入核对。**每次删除前**先按当前采用入口、待审稿及实际依赖逐项列明拟删项目/画板/文件，自己核对项目 ID、画板范围和有效依赖，再向用户确认本轮具体清单；得到确认后执行、修复引用并读回两端结果。不要在候选制作中途零散清理，也不要把“旧日期”“隔离历史稿”标题直接等同可删。混有仍有效采用源、必要母版或待决设计的旧项目，先迁出依赖再判断；不能只改 Context、只删本地或在 Stitch 隐藏/归档。待采用状态不伪称已采用；当前必要母版/分件和状态变体随包保留，Windows 本地删除按 AGENTS 移入回收站。
+- 设计稿长期只以 Stitch 为准，按现有 Context 的[资源生命周期](../../../project_context/context-maintenance.md#design-resource-lifecycle)管理；该项目规则优先于通用包要求保存本地导出/历史包的建议，不修改 node_modules。当前项目、页面/状态和采用范围沿 Screen Contract，临时下载/迁移材料不是本地第二权威。已有采用/删除授权直接执行其准确范围。
+- 候选完成时按资源生命周期核当前源、待决稿与实际依赖，准确清理已替代节点和本地副本；先完成唯一有效内容的迁移再删除。用户明确说直接采用/删除且范围已清楚时，不重复请求确认；只对真实歧义或工具要求的额外权限说明具体原因。跨分支以当前 Stitch 为准，不用本地旧稿覆盖别人的新稿。删除后读回，Windows 用回收站；无法同步/删除须如实保缺口。
 - 每次明确反馈、修订或采用后，执行维护 owner 的持续校准：在原 owner 更新有新增事实的原则、偏好、风格或页面决定及范围/原因，并修正相关旧说法。不能只更新资源链接，也不把单页材质自动推广到全产品。无新增事实不制造 Context 修改。
 - 开发遵循 AGENTS 的通用契约及当前采用来源，无需再次调用生成 Skill。采用与生产迁移分别如实报告；升级 skill 不重新采用或重生成现有资源。
 

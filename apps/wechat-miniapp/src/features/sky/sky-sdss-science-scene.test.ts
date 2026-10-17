@@ -23,6 +23,7 @@ import { registerSkyTanOpticalField } from "./sky-tan-optical-registration";
 import { skyExactTargetOpticalIdentity, type SkyExactTargetOpticalImage } from "./sky-target-optical-identity";
 import { submitSkySceneTargetOptical } from "./sky-target-optical-scene";
 import { preparedOpticalTestPublication } from "./sky-prepared-optical-test-support";
+import { createSkyReadyImages } from "./sky-ready-presentation";
 const preparedFixture = preparedOpticalTestPublication("scene"), prepared = preparedFixture.publication;
 const preparedRetirements: Array<() => void> = [];
 
@@ -101,6 +102,83 @@ function surface(options: { draw?: SkyArtworkLevelsDraw; qualification?: SkyArtw
 }
 const port = (surface: SkySceneScienceOpticalPort["surface"]): SkySceneScienceOpticalPort =>
   ({ surface, reference: publication.objectRef, publicationHash: publication.publicationHash });
+
+test("ready exact groups prepare at zero without photo credit, source failures or a different spectrum", () => {
+  for (const w of [world(), preparedWorld()]) {
+    const ready = createSkyReadyImages().prepare(10000), s = surface();
+    let calls = 0;
+    s.actual.artworkLevels = (levels, _view, _target, resolve) => {
+      calls++; s.groups.push(levels); assert(resolve, "the actual Scene must pass common readiness to its exact group");
+      assert.deepEqual(resolve({ fine: true, coarse: true }), { fine: 0, coarse: 0 });
+      return { submitted: false, finePrepared: true, coarsePrepared: true };
+    };
+    const result = paint(s, w.frame, { 42: ready });
+    assert.equal(calls, 1); assert.equal(result.completed, 1); assert.equal(result.sources?.sdssOptical, null);
+    assert.equal(result.sources?.deepSkyImage, null, "prepared optical must not flash another spectrum while its first display is zero");
+    assert.equal(s.images.length, 0); assert.equal(s.getters.length, 0, "zero preparation cannot borrow a qualification/contribution receipt");
+    assert.deepEqual(result.failures, []); assert.equal(ready.animating, true); ready.commit(10100);
+    w.retireFine(); w.retireCoarse();
+  }
+});
+
+test("late exact detail preserves its accepted same-source parent and advances credit only with displayed weight", () => {
+  for (const w of [world(), preparedWorld()]) {
+    const selected = "preparedPublication" in w.frame ? w.frame.preparedPublication : w.frame.sciencePublication;
+    const coarseFrame = skyTargetOpticalFrame({ publication: selected, image: w.coarse,
+      renderedLevel: "MEDIUM", renderedAsset: selected.levels.MEDIUM, coarser: null });
+    const coarseIdentity = skyExactTargetOpticalIdentity(coarseFrame); assert(coarseIdentity);
+    const images = createSkyReadyImages(), s = surface();
+    let weights = { fine: 0, coarse: 0 }, actualDraw: SkyArtworkLevelsDraw;
+    s.actual.artworkLevels = (levels, _view, _target, resolve) => {
+      s.events.push("group"); s.groups.push(levels); assert(resolve);
+      weights = resolve({ coarse: Boolean(levels.coarse), fine: Boolean(levels.fine) });
+      actualDraw = { submitted: weights.coarse > 0 || weights.fine > 0,
+        coarsePrepared: Boolean(levels.coarse), finePrepared: Boolean(levels.fine) };
+      return actualDraw;
+    };
+    const qualification = () => ({ fine: "has" as const, coarse: actualDraw.coarsePrepared && weights.fine < 1 ? "has" as const : "empty" as const, any: "has" as const });
+    s.actual.artworkLevelsQualification = draw => { assert.strictEqual(draw, actualDraw); assert(draw.submitted); return qualification(); };
+    s.actual.artworkLevelsObserveRegion = draw => { assert.strictEqual(draw, actualDraw); return unknownSkyArtworkLocalObservation; };
+    // Controlled compositor results establish the real Scene/receipt join;
+    // the GPU trial separately verifies these nonzero component weights.
+    s.actual.artworkLevelsContribution = draw => { assert.strictEqual(draw, actualDraw); assert(draw.submitted);
+      return { completed: true, qualification: qualification(), finePhoto: weights.fine > 0 ? "positive" : "unknown",
+        coarsePhoto: weights.coarse > 0 && weights.fine < 1 ? "positive" : "unknown" }; };
+    const prepareParent = images.prepare(0); paint(s, coarseIdentity.frame, { 42: prepareParent }); prepareParent.commit(100);
+    const parent = images.prepare(260); paint(s, coarseIdentity.frame, { 42: parent }); parent.commit(); assert.equal(parent.animating, false);
+    const first = images.prepare(10000), firstResult = paint(s, w.frame, { 42: first });
+    assert.deepEqual(weights, { coarse: 1, fine: 0 }, "arrival must not restart the already presented parent");
+    assert(firstResult.sources?.sdssOptical && firstResult.sources.sdssOptical.kind !== "legacy");
+    assert.deepEqual(firstResult.sources.sdssOptical.participatingFields.map(field => field.image), [w.coarse]);
+    assert.deepEqual(firstResult.failures, []); assert.equal(firstResult.sources.deepSkyImage, null); first.commit(10100);
+    const half = images.prepare(10180), halfResult = paint(s, w.frame, { 42: half }); half.commit();
+    assert.deepEqual(weights, { coarse: 1, fine: .5 });
+    assert(halfResult.sources?.sdssOptical && halfResult.sources.sdssOptical.kind !== "legacy");
+    assert.deepEqual(halfResult.sources.sdssOptical.participatingFields.map(field => field.image), [w.image, w.coarse]);
+    const full = images.prepare(10260), fullResult = paint(s, w.frame, { 42: full }); full.commit();
+    assert.deepEqual(weights, { coarse: 1, fine: 1 }); assert.equal(full.animating, false);
+    assert(fullResult.sources?.sdssOptical && fullResult.sources.sdssOptical.kind !== "legacy");
+    assert.deepEqual(fullResult.sources.sdssOptical.participatingFields.map(field => field.image), [w.image]);
+    assert.deepEqual(fullResult.failures, []); w.retireFine(); w.retireCoarse();
+  }
+});
+
+test("offscreen prepared exact fields retain the original measured-empty infrared fallback without a clock", () => {
+  const w = world(), s = surface({ qualification: empty, receipt: receipt(empty,"unknown","unknown") });
+  const ready = createSkyReadyImages().prepare(10000), base = s.actual.artworkLevels;
+  s.actual.artworkLevels = (levels, view, target, resolve) => {
+    assert(resolve); assert.deepEqual(resolve({ coarse: false, fine: false }), { coarse: 0, fine: 0 });
+    // The GPU must perform its actual empty qualification in this case, rather
+    // than confuse offscreen fields with a visible first zero-display frame.
+    return base(levels,view,target);
+  };
+  const result = paint(s, w.frame, { 42: ready });
+  assert(result.sources?.sdssOptical && result.sources.sdssOptical.kind !== "legacy");
+  assert.equal(result.sources.sdssOptical.participatingFields.length, 0, "a completed empty receipt is not a visible photo credit");
+  assert.strictEqual(result.sources?.deepSkyImage, infrared.image);
+  assert.deepEqual(result.failures, []); assert.equal(ready.animating, false); assert(s.getters.length > 0);
+  w.retireFine(); w.retireCoarse();
+});
 type SceneArgs = Parameters<typeof drawSkyScene>;
 type SceneOverrides = { [K in keyof SceneArgs as K extends `${number}` ? K : never]?: SceneArgs[K] };
 function paint(s: ReturnType<typeof surface>, frame: SkyExactTargetOpticalImage,
@@ -293,7 +371,7 @@ test("ordinary group/later draw/finish errors propagate and never publish a comp
   const s = surface(), result = paint(s, world().frame, { 21: [{ layer: "OPTICAL", order: 8,
     pixel: lonLat2PixNest(256, publication.center.raDeg, publication.center.decDeg), image: {} }] });
   assert(s.events.includes("opticalHiPS")); assert(s.events.indexOf("opticalHiPS") > s.events.indexOf("qualification"));
-  assert.deepEqual(s.meshOpacities, [.8]);
+  assert.deepEqual(s.meshOpacities, [1]);
   assert.equal(result.completed, 1);
 });
 

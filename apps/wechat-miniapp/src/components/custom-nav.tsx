@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { nativeStatusBarHeightPx, nativeMenuClearancePx, nativeNavigationInsets } from "@/theme/native-metrics";
 import { SemanticIcon } from "./semantic-asset";
 import { SoftButton } from "./soft-button";
+import { reportRuntimeError } from "@/services/runtime-error";
 
 export function CustomNav({
   title,
@@ -41,7 +42,8 @@ export function CustomNav({
     let hasPriorPage = false;
     try {
       hasPriorPage = Taro.getCurrentPages().length > 1;
-    } catch {
+    } catch (error) {
+      reportRuntimeError("native", "navigation_page_stack_failed", error);
       // An unavailable page stack is equivalent to an unprovable back target.
     }
     try {
@@ -50,13 +52,15 @@ export function CustomNav({
       if (hasPriorPage) {
         try {
           await Taro.navigateBack();
-        } catch {
+        } catch (error) {
+          reportRuntimeError("native", "navigation_back_failed", error);
           await fallback();
         }
       } else {
         await fallback();
       }
-    } catch {
+    } catch (error) {
+      reportRuntimeError("native", "navigation_return_failed", error);
       try {
         await onBackFailure?.();
       } finally {

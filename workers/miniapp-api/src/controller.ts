@@ -1,5 +1,5 @@
 import type { AccountAvatarSaveRequest, AccountNicknameSaveRequest } from "@starward/miniapp-contracts";
-import { isDeepSkyCatalogVersion } from "@starward/miniapp-contracts";
+import { isBodyImageKind, isDeepSkyCatalogVersion, isDeepSkyObjectReference, MINIAPP_API_OPERATIONS, type BodyImageKind } from "@starward/miniapp-contracts";
 import {
   Body,
   BadRequestException,
@@ -52,7 +52,7 @@ import {
   type WechatLoginRequest,
 } from "@starward/miniapp-contracts";
 import { MiniappService } from "./miniapp-service.ts";
-import { galacticImagePublicAssetHeaders, opticalHipsPublicAssetHeaders, skyPublicAssetHeaders } from "./sky-public-asset-headers.ts";
+import { galacticImagePublicAssetHeaders, galacticImagePublicMetadataHeaders, opticalHipsPublicAssetHeaders, preparedOpticalManifestHeaders, skyPublicAssetHeaders, skySourceManifestHeaders } from "./sky-public-asset-headers.ts";
 
 function required(value: string | undefined, code: string) {
   if (!value?.trim()) throw new Error(code);
@@ -449,7 +449,7 @@ export class MiniappController {
       throw new BadRequestException("sky_catalog_version_invalid");
     if(moonTextureVersion!==undefined&&moonTextureVersion!=="coverage-v2")
       throw new BadRequestException("moon_texture_version_invalid");
-    if (opticalPublicationHash !== undefined && (!decodeURIComponent(reference).startsWith("M:") ||
+    if (opticalPublicationHash !== undefined && (!isDeepSkyObjectReference(decodeURIComponent(reference)) ||
       !/^[a-f0-9]{64}$/u.test(opticalPublicationHash)))
       throw new BadRequestException("sdss_optical_publication_hash_invalid");
     return this.service.getCelestialObject(decodeURIComponent(reference), locale, catalogVersion ?? "bsc5p-bright-stars.v2",moonTextureVersion,
@@ -458,11 +458,7 @@ export class MiniappController {
 
   @Get("sky/deep-sky/:publicationHash/manifest")
   deepSkyManifest(@Param("publicationHash") publicationHash: string, @Res() reply: FastifyReply) {
-    return reply.header("content-type", "application/json; charset=utf-8")
-      .header("content-disposition", 'attachment; filename="allwise-w3-manifest.json"')
-      .header("cache-control", "public, max-age=31536000, immutable")
-      .header("x-content-type-options", "nosniff")
-      .send(this.service.deepSkyImages.manifest(publicationHash));
+    return reply.headers(skySourceManifestHeaders("deep-sky")).send(this.service.deepSkyImages.manifest(publicationHash));
   }
 
   @Get("sky/deep-sky/selected/:reference")
@@ -495,11 +491,7 @@ export class MiniappController {
   @Get("sky/sdss-optical/:publicationHash/manifest")
   sdssOpticalManifest(@Param("publicationHash") publicationHash: string, @Res() reply: FastifyReply) {
     const manifest = this.service.sdssOpticalImages.manifest(publicationHash);
-    return reply.header("content-type", "application/json; charset=utf-8")
-      .header("content-disposition", `attachment; filename="sdss-${manifest.objectRef.replace(":", "").toLowerCase()}-optical-manifest.json"`)
-      .header("cache-control", "public, max-age=31536000, immutable")
-      .header("x-content-type-options", "nosniff")
-      .send(manifest);
+    return reply.headers(skySourceManifestHeaders("sdss-optical", manifest.objectRef)).send(manifest);
   }
 
   @Get("sky/sdss-optical/:publicationHash/:file")
@@ -509,15 +501,20 @@ export class MiniappController {
     return reply.headers(skyPublicAssetHeaders("sdss-optical", image.contentType, image.fieldDegrees)).send(image.bytes);
   }
 
-  /** Each profile keeps its own immutable content admission; this route has no
-   * current/discovery alias and an empty default publication owner. */
+  @Get(MINIAPP_API_OPERATIONS.preparedOpticalDiscoveryGet.path.slice(1))
+  preparedOpticalDiscovery(@Res() reply: FastifyReply) {
+    return reply.header("content-type", "application/json; charset=utf-8")
+      .header("cache-control", "no-cache")
+      .header("x-content-type-options", "nosniff")
+      .send(this.service.preparedOpticalImages.discovery());
+  }
+
+  /** Selected metadata keeps its own immutable admission. It does not resolve
+   * through mutable discovery, and the default publication owner stays empty. */
   @Get("sky/prepared-optical/:publicationHash/manifest")
   preparedOpticalManifest(@Param("publicationHash") publicationHash: string, @Res() reply: FastifyReply) {
     const manifest = this.service.preparedOpticalImages.manifest(publicationHash);
-    return reply.header("content-type", "application/json; charset=utf-8")
-      .header("content-disposition", `attachment; filename="${manifest.imageVersion === "prepared-native-optical-v1" ? manifest.publicationId : manifest.objectRef.replace(":", "").toLowerCase()}-prepared-optical-manifest.json"`)
-      .header("cache-control", "public, max-age=31536000, immutable")
-      .header("x-content-type-options", "nosniff").send(manifest);
+    return reply.headers(preparedOpticalManifestHeaders(manifest)).send(manifest);
   }
 
   @Get("sky/prepared-optical/:publicationHash/:file")
@@ -533,6 +530,32 @@ export class MiniappController {
       .header("cache-control","no-cache")
       .header("x-content-type-options","nosniff")
       .send(this.service.wideFieldW3.manifest());
+  }
+
+  private bodyImageOwner(body:string){
+    const owners={moon:this.service.moonTexture,mars:this.service.marsTexture,mercury:this.service.mercuryTexture,
+      jupiter:this.service.jupiterBands,saturn:this.service.saturnBands,uranus:this.service.uranusBands,neptune:this.service.neptuneBands} satisfies Record<BodyImageKind,unknown>;
+    if(!isBodyImageKind(body))throw new NotFoundException("body_texture_version_unavailable");
+    return {kind:body,owner:owners[body]};
+  }
+
+  @Get("sky/:body/:publicationHash/manifest")
+  bodyImageManifest(@Param("body") body:string,@Param("publicationHash") publicationHash:string,@Res() reply:FastifyReply){
+    const {kind,owner}=this.bodyImageOwner(body),metadata=owner.publishedMetadata(publicationHash);
+    return reply.headers(skyPublicAssetHeaders(kind,"application/json; charset=utf-8")).send(metadata.bytes);
+  }
+
+  @Get("sky/:body/:publicationHash/:file")
+  async bodyImageAsset(@Param("body") body:string,@Param("publicationHash") publicationHash:string,
+    @Param("file") file:string,@Res() reply:FastifyReply){
+    const {kind,owner}=this.bodyImageOwner(body),image=await owner.imageAsset(publicationHash,file);
+    return reply.headers(skyPublicAssetHeaders(kind,image.contentType)).send(image.bytes);
+  }
+
+  @Get("sky/moon/coverage/:publicationHash/manifest")
+  moonCoverageVersionManifest(@Param("publicationHash") publicationHash:string,@Res() reply:FastifyReply){
+    const metadata=this.service.moonTexture.coveragePublishedMetadata(publicationHash);
+    return reply.headers(skyPublicAssetHeaders("moon","application/json; charset=utf-8")).send(metadata.bytes);
   }
 
   @Get("sky/moon/manifest")
@@ -553,18 +576,8 @@ export class MiniappController {
   @Get("sky/moon/coverage/:publicationHash/:file")
   async moonCoverageImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
     @Res() reply:FastifyReply){
-    const manifest=this.service.moonTexture.coverageManifest();
-    if(file!==manifest.image.file)throw new NotFoundException("moon_texture_image_unavailable");
-    const bytes=await this.service.moonTexture.coverageImage(publicationHash);
-    return reply.headers(skyPublicAssetHeaders("moon", "image/png")).send(bytes);
-  }
-
-  @Get("sky/moon/:publicationHash/:file")
-  async moonTextureImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
-    @Res() reply:FastifyReply){
-    if(file!=="clementine-uv750-v2-wms-2048x1024.jpg")throw new NotFoundException("moon_texture_image_unavailable");
-    const bytes=await this.service.moonTexture.image(publicationHash);
-    return reply.headers(skyPublicAssetHeaders("moon", "image/jpeg")).send(bytes);
+    const image=await this.service.moonTexture.coverageImageAsset(publicationHash,file);
+    return reply.headers(skyPublicAssetHeaders("moon",image.contentType)).send(image.bytes);
   }
 
   @Get("sky/mars/manifest")
@@ -607,30 +620,12 @@ export class MiniappController {
       .send(this.service.uranusBands.manifest());
   }
 
-  @Get("sky/uranus/:publicationHash/:file")
-  async uranusBandsImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
-    @Res() reply:FastifyReply){
-    if(file!=="uranus-opal-2025a-median-bands-8x512.png")
-      throw new NotFoundException("uranus_bands_image_unavailable");
-    const bytes=await this.service.uranusBands.image(publicationHash);
-    return reply.headers(skyPublicAssetHeaders("uranus", "image/png")).send(bytes);
-  }
-
   @Get("sky/neptune/manifest")
   neptuneBandsManifest(@Res() reply:FastifyReply){
     return reply.header("content-type","application/json; charset=utf-8")
       .header("cache-control","no-cache")
       .header("x-content-type-options","nosniff")
       .send(this.service.neptuneBands.manifest());
-  }
-
-  @Get("sky/neptune/:publicationHash/:file")
-  async neptuneBandsImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
-    @Res() reply:FastifyReply){
-    if(file!=="neptune-opal-2025b-median-bands-8x512.png")
-      throw new NotFoundException("neptune_bands_image_unavailable");
-    const bytes=await this.service.neptuneBands.image(publicationHash);
-    return reply.headers(skyPublicAssetHeaders("neptune", "image/png")).send(bytes);
   }
 
   @Get("sky/landscape/manifest")
@@ -663,45 +658,18 @@ export class MiniappController {
       .send(this.service.galacticImage.manifest());
   }
 
+  @Get("sky/galactic/:publicationHash/manifest")
+  galacticPublishedManifest(@Param("publicationHash") publicationHash:string,@Res() reply:FastifyReply){
+    const manifest=this.service.galacticImage.imageManifest(publicationHash);
+    const metadata=this.service.galacticImage.publishedMetadata(publicationHash);
+    return reply.headers(galacticImagePublicMetadataHeaders(manifest)).send(metadata.bytes);
+  }
+
   @Get("sky/galactic/:publicationHash/:file")
   async galacticImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
     @Res() reply:FastifyReply){
     const bytes=await this.service.galacticImage.image(publicationHash,file);
     return reply.headers(galacticImagePublicAssetHeaders(this.service.galacticImage.imageManifest(publicationHash,file))).send(bytes);
-  }
-
-  @Get("sky/mars/:publicationHash/:file")
-  async marsTextureImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
-    @Res() reply:FastifyReply){
-    if(file!=="mars-mdim21-color-usgs-wms-1024x512.jpg")throw new NotFoundException("mars_texture_image_unavailable");
-    const bytes=await this.service.marsTexture.image(publicationHash);
-    return reply.headers(skyPublicAssetHeaders("mars", "image/jpeg")).send(bytes);
-  }
-
-  @Get("sky/mercury/:publicationHash/:file")
-  async mercuryTextureImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
-    @Res() reply:FastifyReply){
-    if(file!=="mercury-messenger-2013-usgs-wms-1024x512.jpg")throw new NotFoundException("mercury_texture_image_unavailable");
-    const bytes=await this.service.mercuryTexture.image(publicationHash);
-    return reply.headers(skyPublicAssetHeaders("mercury", "image/jpeg")).send(bytes);
-  }
-
-  @Get("sky/jupiter/:publicationHash/:file")
-  async jupiterBandsImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
-    @Res() reply:FastifyReply){
-    if(file!=="jupiter-opal-2024c-median-bands-8x512.png")
-      throw new NotFoundException("jupiter_bands_image_unavailable");
-    const bytes=await this.service.jupiterBands.image(publicationHash);
-    return reply.headers(skyPublicAssetHeaders("jupiter", "image/png")).send(bytes);
-  }
-
-  @Get("sky/saturn/:publicationHash/:file")
-  async saturnBandsImage(@Param("publicationHash") publicationHash:string,@Param("file") file:string,
-    @Res() reply:FastifyReply){
-    if(file!=="saturn-opal-2025a-median-bands-8x512.png")
-      throw new NotFoundException("saturn_bands_image_unavailable");
-    const bytes=await this.service.saturnBands.image(publicationHash);
-    return reply.headers(skyPublicAssetHeaders("saturn", "image/png")).send(bytes);
   }
 
   @Get("sky/wide-field/:publicationHash/properties")

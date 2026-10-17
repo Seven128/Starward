@@ -3,12 +3,14 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { instantForCivilDate } from "../../components/observation-date";
 
-function runtime(bypassOwnershipGuard = false) {
+function runtime(bypassOwnershipGuard = false, kind: "time" | "date" = "time") {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const callback = kind === "date" ? "commitMapDate" : "commitMapTime";
   let declaration = "";
   const visit = (node: ts.Node) => {
-    if (ts.isVariableDeclaration(node) && node.name.getText(source) === "commitMapTime") declaration = `const ${node.getText(source)};`;
+    if (ts.isVariableDeclaration(node) && node.name.getText(source) === callback) declaration = `const ${node.getText(source)};`;
     ts.forEachChild(node, visit);
   };
   visit(source);
@@ -22,12 +24,13 @@ function runtime(bypassOwnershipGuard = false) {
     assert.notEqual(mutated, declaration, "the intended ownership guard must be located");
     declaration = mutated;
   }
-  const activeContext = { contextId: "a", revision: 1, contextFingerprint: "first", selectedAtUtc: "2026-09-06T12:00:00Z" };
+  const activeContext = { contextId: "a", revision: 1, contextFingerprint: "first", timezone: "Asia/Shanghai",
+    selectedAtUtc: kind === "date" ? "2026-10-11T16:00:00.264Z" : "2026-09-06T12:00:00Z" };
   const state = { mapResetVersion: 0, selectedSpotId: "a", observationContext: { ...activeContext } };
   const generation = { current: 0 }, busy = { current: false };
   const contexts: unknown[] = [], failures: unknown[] = [], saving: boolean[] = [];
-  const requests: { resolve(value: unknown): void; reject(error: Error): void }[] = [];
-  const commit = vm.runInNewContext(ts.transpileModule(declaration + "\ncommitMapTime;", {
+  const requests: { resolve(value: unknown): void; reject(error: Error): void; patch: Record<string, unknown> }[] = [];
+  const commit = vm.runInNewContext(ts.transpileModule(declaration + `\n${callback};`, {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
     activeContext, mapResetVersion: 0, detailRequestGeneration: generation, timeRequestBusy: busy,
@@ -38,9 +41,10 @@ function runtime(bypassOwnershipGuard = false) {
     setTemporalFailure: (value: unknown) => failures.push(value),
     setObservationContext: (value: unknown) => contexts.push(value),
     nearestMapTimeFrameIndex: () => 0, formatContextTime: () => "time", errorMessage: () => "failure",
+    selectedMapCivilDate: "2026-10-12", instantForCivilDate,
     isMiniappRequestCancelled: () => false,
-    updateObservationContext: () => new Promise((resolve, reject) => requests.push({ resolve, reject })),
-  }) as (index: number) => Promise<void>;
+    updateObservationContext: (_context: unknown, patch: Record<string, unknown>) => new Promise((resolve, reject) => requests.push({ resolve, reject, patch })),
+  }) as (value: number | string) => Promise<void>;
   return { commit, state, generation, busy, requests, contexts, failures, saving };
 }
 
@@ -99,4 +103,36 @@ test("current time failure remains actionable", async () => {
   assert.equal(map.failures.length, 2);
   assert.equal((map.failures[1] as { kind: string; target: string }).kind, "time");
   assert.equal((map.failures[1] as { kind: string; target: string }).target, "2026-09-06T13:00:00Z");
+});
+
+test("Map date commit sends the precise local time and observation night through the shared date owner", async () => {
+  const map = runtime(false, "date");
+  const pending = map.commit("2026-10-13");
+  await map.commit("2026-10-14");
+  assert.equal(map.requests.length, 1, "a busy date commit cannot submit another request");
+  assert.deepEqual({ ...map.requests[0]!.patch }, {
+    localDate: "2026-10-12", selectedAt: "2026-10-12T16:00:00.264Z", eventInstanceId: null,
+  });
+  const next = { ...map.state.observationContext, revision: 2, selectedAtUtc: "2026-10-12T16:00:00.264Z" };
+  map.requests[0]!.resolve({ data: next });
+  await pending;
+  assert.deepEqual(map.contexts, [next]);
+  assert.equal(map.busy.current, false);
+});
+
+test("Map date success and failure stay retired after a Context or selection replacement", async () => {
+  for (const change of ["spot", "reset", "revision", "selection-generation"] as const) {
+    for (const failure of [false, true]) {
+      const map = runtime(false, "date");
+      const pending = map.commit("2026-10-13");
+      if (change === "spot") map.state.selectedSpotId = "b";
+      if (change === "reset") map.state.mapResetVersion++;
+      if (change === "revision") map.state.observationContext.revision++;
+      if (change === "selection-generation") map.generation.current++;
+      if (failure) map.requests[0]!.reject(new Error("late date"));
+      else map.requests[0]!.resolve({ data: { selectedAtUtc: "late date" } });
+      await pending;
+      assertNoStaleEffects(map);
+    }
+  }
 });

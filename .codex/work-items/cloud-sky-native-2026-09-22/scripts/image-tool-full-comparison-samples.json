@@ -1,0 +1,192 @@
+{
+  "purpose": "Standalone independent image-tool review only; StarNet outputs must not become product assets, fixtures, reference results or enter the Starward renderer under the bundled license",
+  "tools": {
+    "nox": "C:/Users/777/.cache/starward-image-tools/nox-1.1.0",
+    "siril": "C:/Users/777/.cache/starward-image-tools/siril-1.4.4/siril/bin/siril-cli.exe",
+    "starnet": "C:/Users/777/.cache/starward-image-tools/starnet-2.6.2/starnet2_win_2.6.2-0242_ORT_x64_cli/starnet2.exe",
+    "sirilStarnet": "C:/Users/777/.cache/starward-image-tools/StarNet-Siril.py",
+    "sirilPython": "C:/Users/777/AppData/Local/siril/venv/Scripts/python.exe",
+    "sxt": "E:/CLI/rc-astro.exe",
+    "sxtModel": "C:/Users/777/AppData/Roaming/RC-Astro/StarXTerminator.11.onnx"
+  },
+  "samples": [
+    {
+      "id": "ngc253",
+      "kind": "galaxy",
+      "width": 1024,
+      "input": {
+        "path": "output/prepared-candidate-samples-1005-r1/eso0902c.jpg",
+        "bytes": 8339408,
+        "sha256": "76bd6fd768c6503e7b1c2092dad6efbb295f7725d5bdff54447443bf4dfd6fe6"
+      },
+      "metadata": "output/prepared-candidate-inspection-1005-r2/ngc253-candidate.json",
+      "source": "https://www.eso.org/public/images/eso0902c/",
+      "credit": "ESO",
+      "license": "CC BY 4.0",
+      "question": "Do background estimation or star separation reduce photographic field contrast without deleting faint disk ends and dust structure?",
+      "backgroundEligible": true,
+      "protectEllipses": [
+        [
+          0.5,
+          0.52,
+          0.46,
+          0.18,
+          43
+        ]
+      ],
+      "methods": [
+        "original",
+        "nox",
+        "starnet",
+        "starnet-upsample",
+        "nox-upsample",
+        "siril-starnet",
+        "sxt",
+        "sxt-overlap",
+        "sxt-upsample"
+      ]
+    },
+    {
+      "id": "ngc5128",
+      "kind": "galaxy",
+      "width": 1024,
+      "input": {
+        "path": "output/eso-ngc5128-finished-1006-q1-r1/eso1221a-publication.jpg",
+        "bytes": 3404178,
+        "sha256": "6c0e4465655cc2524871270fc9d7d323f4c2544cd776bca836d32100c45c8023"
+      },
+      "metadata": "output/eso-ngc5128-finished-1006-q1-r1/result.json",
+      "source": "https://www.eso.org/public/images/eso1221a/",
+      "credit": "ESO",
+      "license": "CC BY 4.0",
+      "question": "Protect diffuse halo and thin off-centre filaments while testing crowded foreground stars",
+      "backgroundEligible": true,
+      "protectEllipses": [
+        [
+          0.5,
+          0.55,
+          0.37,
+          0.36,
+          0
+        ],
+        [
+          0.31,
+          0.3,
+          0.1,
+          0.32,
+          -27
+        ]
+      ],
+      "methods": [
+        "original",
+        "nox",
+        "starnet",
+        "starnet-upsample",
+        "nox-upsample",
+        "siril-starnet",
+        "sxt",
+        "sxt-overlap",
+        "sxt-upsample"
+      ]
+    },
+    {
+      "id": "m81-m82",
+      "kind": "galaxy-pair",
+      "width": 1024,
+      "input": {
+        "path": "output/noirlab-m82-large-source-1004-r1/noao-m81m82-large.jpg",
+        "bytes": 9250383,
+        "sha256": "71a539df75c8af574e98d3da13c1381e525093dd2e8814d9588f35b73b4e3479"
+      },
+      "metadata": "output/noirlab-m82-large-source-1004-r1/result.json",
+      "source": "https://noirlab.edu/public/images/noao-m81m82/",
+      "credit": "T.A. Rector (University of Alaska Anchorage) and NOIRLab/NSF/AURA/",
+      "license": "CC BY 4.0",
+      "question": "Transfer background rule to two off-centre targets, preserving M81 faint disk and M82 filaments",
+      "backgroundEligible": true,
+      "protectEllipses": [
+        [
+          0.25,
+          0.46,
+          0.2,
+          0.29,
+          0
+        ],
+        [
+          0.87,
+          0.4,
+          0.07,
+          0.18,
+          20
+        ]
+      ],
+      "methods": [
+        "original",
+        "nox",
+        "starnet",
+        "starnet-upsample",
+        "nox-upsample",
+        "siril-starnet",
+        "sxt",
+        "sxt-overlap",
+        "sxt-upsample"
+      ]
+    },
+    {
+      "metadata": "output/rubin-region-batch-2026-10-08/quality/refined/current-selection.json",
+      "question": "Preserve faint diffuse emission and narrow dust lanes while separating crowded stars; HEALPix order6 original tile, no crop or reprojection",
+      "id": "m8-tile-28891",
+      "credit": "NSF-DOE Vera C. Rubin Observatory; CNRS/Unistra CDS HiPS",
+      "license": "CC BY 4.0 image; ODbL-1.0 HiPS",
+      "width": 512,
+      "kind": "nebula",
+      "input": {
+        "path": "output/rubin-region-batch-2026-10-08/original-tiles/Norder6-Npix28891.png",
+        "bytes": 744871,
+        "sha256": "35be80384632e59c90e1fdbab4b5738e4bd7ac00f38193d0ec64b193b867f90d"
+      },
+      "untaggedColorInterpretation": "sRGB-web-display",
+      "methods": [
+        "original",
+        "nox",
+        "starnet",
+        "starnet-upsample",
+        "nox-upsample",
+        "siril-starnet",
+        "sxt",
+        "sxt-overlap",
+        "sxt-upsample"
+      ],
+      "source": "https://alasky.cds.unistra.fr/Rubin/CDS_P_Rubin_FirstLook",
+      "backgroundEligible": false
+    },
+    {
+      "metadata": "output/rubin-region-batch-2026-10-08/quality/refined/current-selection.json",
+      "question": "Preserve faint diffuse emission and narrow dust lanes while separating crowded stars; HEALPix order6 original tile, no crop or reprojection",
+      "id": "m8-tile-28892",
+      "credit": "NSF-DOE Vera C. Rubin Observatory; CNRS/Unistra CDS HiPS",
+      "license": "CC BY 4.0 image; ODbL-1.0 HiPS",
+      "width": 512,
+      "kind": "nebula",
+      "input": {
+        "path": "output/rubin-region-batch-2026-10-08/original-tiles/Norder6-Npix28892.png",
+        "bytes": 720137,
+        "sha256": "319a16cfca370e57483a83cb69be0c19d0786028e872f9581ceac2e319ea8165"
+      },
+      "untaggedColorInterpretation": "sRGB-web-display",
+      "methods": [
+        "original",
+        "nox",
+        "starnet",
+        "starnet-upsample",
+        "nox-upsample",
+        "siril-starnet",
+        "sxt",
+        "sxt-overlap",
+        "sxt-upsample"
+      ],
+      "source": "https://alasky.cds.unistra.fr/Rubin/CDS_P_Rubin_FirstLook",
+      "backgroundEligible": false
+    }
+  ]
+}

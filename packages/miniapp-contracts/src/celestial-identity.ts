@@ -16,8 +16,10 @@ export function isDeepSkyObjectReference(value: unknown): value is string {
  * clients keep the original default, references, bytes and derived hash. */
 export const DEEP_SKY_MESSIER_CATALOG_VERSION = "opengc-messier-deep-sky.v20260501" as const;
 export const EXTENDED_DEEP_SKY_CATALOG_VERSION = "opengc-deep-sky.v20260501-extended-v1" as const;
-export function isDeepSkyCatalogVersion(value: unknown): value is typeof DEEP_SKY_MESSIER_CATALOG_VERSION | typeof EXTENDED_DEEP_SKY_CATALOG_VERSION {
-  return value === DEEP_SKY_MESSIER_CATALOG_VERSION || value === EXTENDED_DEEP_SKY_CATALOG_VERSION;
+export const CURRENT_DEEP_SKY_CATALOG_VERSION = "opengc-deep-sky.v20260501-extended-v2" as const;
+export type DeepSkyCatalogVersion = typeof DEEP_SKY_MESSIER_CATALOG_VERSION | typeof EXTENDED_DEEP_SKY_CATALOG_VERSION | typeof CURRENT_DEEP_SKY_CATALOG_VERSION;
+export function isDeepSkyCatalogVersion(value: unknown): value is DeepSkyCatalogVersion {
+  return value === DEEP_SKY_MESSIER_CATALOG_VERSION || value === EXTENDED_DEEP_SKY_CATALOG_VERSION || value === CURRENT_DEEP_SKY_CATALOG_VERSION;
 }
 /** Shared identity/category boundary for search, cached facts and their consumers. */
 export function celestialReferenceKindMatches(reference: unknown, kind: unknown): boolean {

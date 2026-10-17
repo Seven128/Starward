@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { getSdssOpticalManifest, sdssOpticalImageUrl } from "@/services/sdss-optical-client";
-import { sdssOpticalPublication, isPreparedOpticalReference, opticalPublicationReference, opticalAssetDimensions,
-  type PreparedNativeOpticalManifest, type SdssOpticalLevel, type SdssOpticalManifest, type SdssScienceOpticalManifest, type SdssCalibratedOpticalManifest, type PreparedOpticalManifest, type PreparedDisplayOpticalManifest, type PreparedProgressiveOpticalManifest, type PreparedRenderedOpticalManifest } from "@starward/miniapp-contracts";
+import { sdssOpticalPublication, isPreparedOpticalReference, opticalPublicationReference, opticalAssetDimensions, isPreparedRenderedOpticalVersion,
+  type PreparedDerivedRegionOpticalManifest, type PreparedNativeOpticalManifest, type SdssOpticalLevel, type SdssOpticalManifest, type SdssScienceOpticalManifest, type SdssCalibratedOpticalManifest, type PreparedOpticalManifest, type PreparedDisplayOpticalManifest, type PreparedProgressiveOpticalManifest, type PreparedRenderedOpticalManifest } from "@starward/miniapp-contracts";
 import { getPreparedOpticalResource } from "@/services/prepared-optical-resource";
 import { preparedOpticalImageUrl } from "@/services/prepared-optical-client";
 import type { SkyPublicationResource } from "@/services/sky-publication-resource";
@@ -11,15 +11,18 @@ import { skyTargetOpticalLevelForView } from "./sky-sdss-optical-selection";
 import type { SkyArtworkCanvas } from "./sky-artwork-request";
 import { skyFixedImageStatus } from "./sky-fixed-image-status";
 import { useSkyNativeImages } from "./use-sky-artwork";
+import { skyNativeImageLevels } from "./sky-native-image-levels";
+import { useSkyImageRecovery } from "./use-sky-image-recovery";
 import { skyTargetOpticalIntersectsView, type SkyTargetOpticalView } from "./sky-target-optical-visibility";
 
 /** A family selector is separate from the admitted immutable image version. */
-export type SkyTargetOpticalKind = "sdss-legacy" | "sdss-science" | "sdss-calibrated" | "prepared-optical-v1" | "prepared-display-optical-v1" | "prepared-optical-v2" | "prepared-native-optical-v1";
+export type SkyTargetOpticalKind = "sdss-legacy" | "sdss-science" | "sdss-calibrated" | PreparedRenderedOpticalManifest["imageVersion"];
 export type SkyTargetOpticalPublication<K extends SkyTargetOpticalKind> =
   K extends "prepared-optical-v1" ? PreparedOpticalManifest :
   K extends "prepared-display-optical-v1" ? PreparedDisplayOpticalManifest :
   K extends "prepared-optical-v2" ? PreparedProgressiveOpticalManifest :
   K extends "prepared-native-optical-v1" ? PreparedNativeOpticalManifest :
+  K extends "prepared-derived-region-optical-v1" ? PreparedDerivedRegionOpticalManifest :
   K extends "sdss-science" ? SdssScienceOpticalManifest :
   K extends "sdss-calibrated" ? SdssCalibratedOpticalManifest : SdssOpticalManifest;
 
@@ -28,7 +31,7 @@ export type SkyTargetOpticalPublication<K extends SkyTargetOpticalKind> =
 export function useSkyTargetOptical<K extends SkyTargetOpticalKind>(kind: K,
   reference: string | null, fov: number, canvas: SkyArtworkCanvas | null,
   canvasRevision: number, active: boolean, opticalPublicationHash?: string, footprint?: SkyTargetOpticalView, paused = false) {
-  const immutable = kind !== "sdss-legacy", prepared = kind === "prepared-optical-v1" || kind === "prepared-display-optical-v1" || kind === "prepared-optical-v2" || kind === "prepared-native-optical-v1";
+  const immutable = kind !== "sdss-legacy", prepared = isPreparedRenderedOpticalVersion(kind);
   const immutableIntent = immutable && active && !!reference && (prepared ? isPreparedOpticalReference(reference) : /^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(reference)) &&
     typeof opticalPublicationHash === "string" && /^[a-f0-9]{64}$/u.test(opticalPublicationHash) && Number.isFinite(fov) && fov > 0;
   const legacyIntent = !immutable && active && Boolean(sdssOpticalPublication(reference)) &&
@@ -98,19 +101,15 @@ export function useSkyTargetOptical<K extends SkyTargetOpticalKind>(kind: K,
     const id = `${namespace}:${reference}:${candidate}`;
     return images.images.get(id) ?? images.retainedImages.get(id) ?? null;
   };
-  const levelIndex = level ? levelOrder.indexOf(level) : -1;
   // Prefer the closest coarser publication while refinement loads/fails. A
   // previously finer image can still provide its registered partial footprint
   // while zooming out, if no appropriate coarse image is ready yet.
-  const retained = !level || decoded(level) ? null : [
-    ...levelOrder.slice(0,levelIndex).reverse(),...levelOrder.slice(levelIndex+1),
-  ].find(candidate => decoded(candidate)) ?? null;
-  const renderedLevel = level && decoded(level) ? level : retained;
+  const selectedLevels = skyNativeImageLevels(levelOrder, level, decoded);
+  const renderedLevel = selectedLevels.primary;
   const image = renderedLevel ? decoded(renderedLevel) : null;
   const fieldDegrees = renderedLevel && publication ? publication.levels[renderedLevel].fieldDegrees : null;
   const renderedAsset = renderedLevel && publication ? publication.levels[renderedLevel] : null;
-  const coarserLevel = renderedLevel ? levelOrder.slice(0, levelOrder.indexOf(renderedLevel))
-    .reverse().find(candidate => decoded(candidate)) ?? null : null;
+  const coarserLevel = selectedLevels.coarser;
   const coarserImage = coarserLevel ? decoded(coarserLevel) : null;
   const coarser = useMemo(() => coarserLevel && coarserImage && publication ? {
     image: coarserImage, level: coarserLevel, fieldDegrees: publication.levels[coarserLevel].fieldDegrees,
@@ -119,17 +118,17 @@ export function useSkyTargetOptical<K extends SkyTargetOpticalKind>(kind: K,
   // A decoded wider replacement may still fail its first GPU upload. Supply
   // one ready finer alternative for failure-only submission in that same
   // frame; it is not a parent and cannot fill the wider field's exterior.
-  const fallbackLevel = renderedLevel ? levelOrder.slice(levelOrder.indexOf(renderedLevel) + 1)
-    .find(candidate => decoded(candidate)) ?? null : null;
+  const fallbackLevel = selectedLevels.fallback;
   const fallbackImage = fallbackLevel ? decoded(fallbackLevel) : null;
   const fallback = useMemo(() => fallbackLevel && fallbackImage && publication ? {
     image: fallbackImage, level: fallbackLevel, fieldDegrees: publication.levels[fallbackLevel].fieldDegrees,
     asset: publication.levels[fallbackLevel],
   } : null, [fallbackLevel, fallbackImage, publication]);
   const status = skyFixedImageStatus(wantedImage, image, manifest.isError || metadataRetired, Boolean(manifest.refreshError), images.failed);
+  const retry = useSkyImageRecovery(wantedImage && !paused, images.retryImages, manifest.refetch);
   return { image, fieldDegrees, renderedLevel, renderedAsset, coarser, fallback, publication, requested: wantedImage,
     loading: wantedImage && (manifest.isFetching || images.loading), ...status,
     updateFailed: wantedImage && Boolean(image) && images.failed,
     failedImage: images.failedImage,
-    retry() { const resetGpu = images.retryImages(); void manifest.refetch(); return resetGpu; } };
+    retry };
 }

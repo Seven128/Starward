@@ -1,10 +1,29 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { approvedSkyPublicAssets, galacticSkyPublicAsset, skyStaticDeliveryFragment, type SkyPublicAssetExportInput, type SkyPublicAssetExportRecord } from "./sky-public-asset-export.ts";
-import { galacticImagePublicAssetHeaders, skyPublicAssetHeaders } from "./sky-public-asset-headers.ts";
+import { galacticImagePublicAssetHeaders, galacticImagePublicMetadataHeaders, skyPublicAssetHeaders, skySourceManifestHeaders } from "./sky-public-asset-headers.ts";
 import { GalacticImagePublicationService } from "./galactic-image-publication.ts";
 import { MELLINGER_OPTICAL_MILKY_WAY, type OpticalMilkyWayManifestData } from "@starward/miniapp-contracts";
 import { MoonTexturePublicationService } from "./moon-texture-publication.ts";
+import { DeepSkyImageryService } from "./deep-sky-imagery.ts";
+import { SdssOpticalImageryService } from "./sdss-optical-imagery.ts";
+
+test("standard export includes exact SDSS/W3 source manifests for every admitted current and retained image publication", async () => {
+  const expected = new Map<string, SkyPublicAssetExportInput>();
+  for (const manifest of new DeepSkyImageryService().publishedManifests()) {
+    const route = `/v2/sky/deep-sky/${manifest.publicationHash}/manifest`;
+    expected.set(route, { route, bytes: Buffer.from(JSON.stringify(manifest)), headers: skySourceManifestHeaders("deep-sky") });
+  }
+  for (const manifest of new SdssOpticalImageryService().publishedManifests()) {
+    const route = `/v2/sky/sdss-optical/${manifest.publicationHash}/manifest`;
+    expected.set(route, { route, bytes: Buffer.from(JSON.stringify(manifest)), headers: skySourceManifestHeaders("sdss-optical", manifest.objectRef) });
+  }
+  assert(expected.size >= 8, "current and retained W3 plus all six SDSS references must be represented");
+  const observed = new Map<string, SkyPublicAssetExportInput>();
+  for await (const row of approvedSkyPublicAssets()) if (expected.has(row.route)) observed.set(row.route, row);
+  assert.deepEqual(observed, expected);
+  for (const row of observed.values()) assert(skyStaticDeliveryFragment([{ ...row, bytes: row.bytes.length, sha256: "0".repeat(64) }]).includes(row.route));
+});
 
 test("optical source headers reject infrared attribution and preserve the retained 2MASS export", async () => {
   const owner = new GalacticImagePublicationService(new URL("../assets/deep-sky/galactic-2mass/manifest.json",import.meta.url)), manifest = owner.manifest();
@@ -48,15 +67,19 @@ test("standard default enumerator retains both the optical current and legacy in
   for await(const row of approvedSkyPublicAssets()){
     if(row.route.startsWith('/v2/sky/galactic/'))rows.push(row);
     else if(rows.length)break;
-    if(rows.length===2)break;
+    if(rows.length===4)break;
   }
-  assert.equal(rows.length,2,'default export must not strand the old 2MASS URL');
+  assert.equal(rows.length,4,'default export must retain both real images and their immutable metadata');
   const current=new GalacticImagePublicationService().manifest();
   const retained=new GalacticImagePublicationService(new URL('../assets/deep-sky/galactic-2mass/manifest.json',import.meta.url)).manifest();
   for(const manifest of [current,retained]){
     const row=rows.find(r=>r.route===manifest.image.downloadUrl);assert(row);
     assert.deepEqual(row.headers,galacticImagePublicAssetHeaders(manifest));
     assert.deepEqual(row.bytes,await new GalacticImagePublicationService().image(manifest.publicationHash,manifest.image.file));
+    const metadata=new GalacticImagePublicationService().publishedMetadata(manifest.publicationHash);
+    const meta=rows.find(r=>r.route===metadata.route);assert(meta);
+    assert.deepEqual(meta.bytes,metadata.bytes);assert.deepEqual(meta.headers,galacticImagePublicMetadataHeaders(manifest));
+    assert.ok(skyStaticDeliveryFragment([{...meta,bytes:meta.bytes.length,sha256:'0'.repeat(64)}]).includes(metadata.route));
   }
 });
 

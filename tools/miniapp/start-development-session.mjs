@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { nodeEnvironment } from "../run-node.cjs";
 import { resolveOfficialCli } from "./device-feedback-official.mjs";
+import { syncWechatideSkill } from "./wechatide-skill-sync.mjs";
 import { canListen, developmentOptions, startDevelopmentAutomation } from "./development-automation.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -120,6 +121,13 @@ const signalHandlers = ["SIGINT", "SIGTERM", "SIGHUP"].map(signal => {
 });
 
 try {
+// Refresh the matching official instructions before starting services or opening
+// the IDE. No IDE is needed in the explicit no-open authoring lane.
+if (!noOpen) {
+  const skillSync = await syncWechatideSkill();
+  process.stdout.write(`${JSON.stringify({ scope: "devtools_skill_sync", ...skillSync })}\n`);
+  if (skillSync.reloadRequired) throw new Error("development_skill_reload_required_before_start");
+}
 if (!(await canListen(apiPort)))
   throw new Error(`development_api_port_in_use:${apiPort}`);
 if (automationPort !== null && !(await canListen(automationPort)))

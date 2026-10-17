@@ -35,8 +35,12 @@ test("solar light selects only the exact report instant and shares star ENU orie
 
 test("scene draws current solar light beneath other content; red and missing data suppress it", () => {
   const events: string[] = [];
+  const pointModes: boolean[] = [];
   const surface = new Proxy({}, {get: (_target, key) => key === "solarLight"
     ? (_view: unknown, sun: {direction: readonly number[]}) => { events.push(`solar:${Math.sign(sun.direction[0]!)}`); return true; }
+    : key === "begin" ? (_w:number,_h:number,_background:string,_images:unknown,observation:boolean) => {
+      events.push("begin");pointModes.push(observation);
+    }
     : () => { events.push(String(key)); }}) as SkyRenderSurface;
   const data = report([row(night,270,-24),row(dusk,90,-5)]);
   drawSkyScene(surface,data,dusk,null,null,400,800,"NIGHT",undefined,undefined,240,null,basis);
@@ -49,6 +53,7 @@ test("scene draws current solar light beneath other content; red and missing dat
   events.length=0;
   drawSkyScene(surface,report([row(dusk,null,null)]),dusk,null,null,400,800,"NIGHT",undefined,undefined,240,null,basis);
   assert.ok(!events.some(event=>event.startsWith("solar:")));
+  assert.deepEqual(pointModes,[false,true,false],"normal point tuning must not enter the deferred observation mode");
 });
 
 test("optional solar shader failure preserves independent scene completion", () => {

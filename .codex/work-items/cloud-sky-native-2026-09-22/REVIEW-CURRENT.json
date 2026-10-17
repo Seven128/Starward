@@ -1,21 +1,120 @@
 {
-  "status": "REVIEW_INPUT_READY_INDEPENDENT_REVIEW_MISSING",
-  "scope": "Paused current grouped PNG Scene/GPU/contribution boundary, original1x cases and explicit8MiB2x/software controls, controlled Taro/cache/Source Back/retirement and prior finite source/restore/governance epochs. Original2MiB DPR2 unavailable; no ordinary/WeChat/physical/independent acceptance. Current task additions after89433B typecheck unverified.",
+  "lateTwilightDisplay20261016": {
+    "state": "REVIEWED_NO_DEFINITE_DEFECT_NATIVE_AND_PHYSICAL_EVIDENCE_OPEN",
+    "reviewer": "twilight_display_review",
+    "reviewerClosed": true,
+    "requiredFixes": 0,
+    "evidence": "evidence/late-twilight-independent-review-2026-10-16.md",
+    "scope": "Ordinary twilight endpoint, shared appearance consumers, matched ROI identities and original images, existing logs, r366 source and r368 compiled output",
+    "commonRoiIdentities": 1046,
+    "commonRoiThreshold16": { "reference": 329, "before": 108, "after": 417 },
+    "magnitude4To499Identities": 141,
+    "ordinaryCandidate": "r368 late-twilight-stars-clean; local only; not pushed",
+    "limits": "Display calibration only; no new catalogue adoption; no native composition, rapid-drag performance, physical resource or full Goal acceptance",
+    "original33": "EXACTLY_UNCHANGED",
+    "fullGoalComplete": false
+  },
+  "deliveryReadiness20261016": {
+    "state": "ONE_P2_REPAIRED_SELF_VERIFIED_FULL_TARGET_EVIDENCE_OPEN",
+    "reviewer": "goal_delivery_review",
+    "reviewerClosed": true,
+    "sourcePinsStableDuringReview": 15,
+    "originalImagesActuallyViewed": 9,
+    "findings": { "P2": "handled native navigation and source clipboard failures missing shared console output", "P3": "CONTINUE retained completed r264 as next action" },
+    "rootDisposition": "P2 fixed in r266; P3 synchronized; 3 before failures then 3/3, 35 distinct affected checks, final type/Context/build/package/origins and ordinary r267 delivery",
+    "evidence": "evidence/independent-delivery-review-2026-10-16.md",
+    "assessment": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r266-267-native-operation-assessment.json",
+    "postFixIndependentReview": false,
+    "fullGoalComplete": false
+  },
+  "artworkCost20261013": {
+    "state": "ATTRIBUTION_SOURCE_AND_BOUNDED_OUTPUT_REVIEWED_PERFORMANCE_OPEN",
+    "reviewer": "sky_artwork_cost_review",
+    "reviewerClosed": true,
+    "requiredFixes": 0,
+    "evidence": "evidence/point-assembly-2026-10-13.md",
+    "result": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r67-artwork-cost-result.json",
+    "closure": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r67-artwork-cost-closure.json",
+    "scope": "Observer GL/exception preservation, current/preimage hashes, original diagnostic and ordinary PNGs, readable transcription, restoration/retirement",
+    "limits": "One warm90 twilight attribution; per-lookup texture max13 not correlated to individual transfer; no product optimization/gain/FPS/physical peak or whole acceptance",
+    "officialAndOwnerStops": "root actual process records; reviewer did not operate target",
+    "original33": "EXACTLY_UNCHANGED"
+  },
+  "panoramaCanonical20261013": {
+    "state": "SOURCE_AND_BOUNDED_RENDERED_DELIVERY_REVIEWED_WHOLE_PERFORMANCE_OPEN",
+    "reviewer": "sky_panorama_window_review",
+    "reviewerClosed": true,
+    "remainingRequiredFixes": 0,
+    "correction": "TOP3 landscape:1 omitted, now restored; first JSON/record script preserved",
+    "evidence": "evidence/point-assembly-2026-10-13.md",
+    "checks": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r65-panorama-source-checks.json",
+    "browserGl": "output/playwright/cloud-sky-panorama-window-1013-r65-r2/result.json",
+    "native": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r65-panorama-native-result.json",
+    "closure": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r65-panorama-closure.json",
+    "scope": "Three source preimages/current and real consumers; actual product WebGL, original r64/r65 phone PNGs, correction/restoration and r66 ordinary return PNG",
+    "limits": "One warm90 twilight pair, not exact per-frame/FPS/whole performance/physical peak; larger retained full source; phone bytes/AppID and ordinary FOV not independently read",
+    "ownerCleanup": "ROOT stop actual exit1 cleanup_pending then bounded retry exit0; original cause UNKNOWN",
+    "original33": "EXACTLY_UNCHANGED"
+  },
+  "galacticCost20261013": {
+    "state": "ATTRIBUTION_SOURCE_AND_BOUNDED_OUTPUT_REVIEWED_PERFORMANCE_OPEN",
+    "reviewer": "sky_galactic_cost_review",
+    "reviewerClosed": true,
+    "requiredCorrection": "native updates 55 to original 53; first result and recorder preserved",
+    "remainingRequiredFixes": 0,
+    "evidence": "evidence/point-assembly-2026-10-13.md",
+    "result": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r64-galactic-cost-result.json",
+    "closure": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r64-galactic-cost-closure.json",
+    "scope": "Observer GL semantics, actual accepted input stamp, type process record, original two diagnostic PNGs, corrected transcription, source restoration, ordinary return PNG",
+    "limits": "Texture call wall attribution only, twilight workload, no pure-transfer/driver/GC cause, gain, phone bytes/AppID, ordinary FOV, FPS or whole performance",
+    "ownerStops": "ROOT actual exit0, not independently executed",
+    "original33": "EXACTLY_UNCHANGED"
+  },
+  "starSnapshot20261013": {
+    "state": "SOURCE_AND_BOUNDED_OUTPUT_REVIEWED_PRODUCT_PERFORMANCE_OPEN",
+    "reviewers": [
+      "sky_star_snapshot_review",
+      "sky_star_snapshot_native_review"
+    ],
+    "reviewersClosed": true,
+    "requiredFixes": 0,
+    "evidence": "evidence/point-assembly-2026-10-13.md",
+    "software": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r62-star-snapshot-checks.json",
+    "native": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r62-snapshot-native-result.json",
+    "closure": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r62-star-snapshot-closure.json",
+    "scope": "Detached plain point clone, true Scene and Page consumers, host nonempty same-realm measurement, original native phase transcription/restoration",
+    "comparison": "REJECTED_DIFFERENT_REAL_SKY_WORKLOAD; native gain UNVERIFIED",
+    "ordinaryReturn": "ROOT_BOUNDED_OBSERVATION; not independently reviewed",
+    "original33": "EXACTLY_UNCHANGED"
+  },
+  "pointPairNative20261013": {
+    "reviewer": "sky_point_pair_native_review",
+    "state": "COMPLETED_AND_CLOSED",
+    "evidence": "evidence/point-assembly-2026-10-13.md",
+    "result": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r60-point-pair-result.json",
+    "closure": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r60-point-pair-closure.json",
+    "scope": "Original four PNGs, two local bundles, identical Page/helper, Scene/GPU delta and ordinary source restoration",
+    "requiredCorrections": "artDraw max 7 to 6 corrected with first record retained; missing diagnostic typecheck log reference explicitly removed as evidence",
+    "limits": "One sequential call-wall pair; remaining 32ms body; no FPS, complete performance or independent ordinary-return acceptance",
+    "original33": "EXACTLY_UNCHANGED"
+  },
+  "status": "PREPARATION_COMPLETE_LIMITED_REVIEWED_PRODUCT_ACCEPTANCE_OPEN",
+  "scope": "Authorized active unbudgeted development; explicit SXT + original PS restoration processing now shares native publisher/static/API/Scene/source/Back. Historical PS/producer/runtime execution epochs retained. Current cache rechecks pixels; complete visual fusion FAILED, all33 unchanged, science UNKNOWN, registration UNVERIFIED, native/physical/independent MISSING; ordinary registry empty/HiPS off. No public adoption. Native pinned metadata now enters the existing static/backup writer, exact prior image/region records retained; isolated restore only, new-header readers required, no live/OCI/reference/capacity adoption.",
   "pins": [
     {
       "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.ts",
-      "bytes": 8830,
-      "sha256": "3a5eac02d0eee799226383fa0b27fed12433440b1c93e8581ed5bc7a503a1d36"
+      "bytes": 9660,
+      "sha256": "97a1505ff8e69c7b9545c532cd5fdf272b6086c49e725cac82082a9136801289"
     },
     {
       "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-lifecycle.test.ts",
-      "bytes": 16162,
-      "sha256": "0d42a0c90ee9b352f66d3a1bedd4d3666abcb0395fc2ea373730f631750b28fa"
+      "bytes": 16838,
+      "sha256": "a0edc2902ecb9849f64637470fb5398a548e1919bfefc8e8e013c963ef71bb62"
     },
     {
       "path": "apps/wechat-miniapp/src/features/sky/spot-sky-page.tsx",
-      "bytes": 222335,
-      "sha256": "cda0906bc3e640cc4c764d5e61992341db6f2520e415c22848746f09432c9086"
+      "bytes": 226029,
+      "sha256": "99faf8e8b099b10e27797359b62184a172423c8b32fe7859444602bf19b1a305"
     },
     {
       "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-surface.ts",
@@ -24,8 +123,8 @@
     },
     {
       "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-renderer.ts",
-      "bytes": 63663,
-      "sha256": "f63f01188b1f8b148be68c4226ac1617d966219656d95c8f3ff614a28389c248"
+      "bytes": 65028,
+      "sha256": "f51f6523d3b55eedf809cbc81d2fcf880e8df8d38d260c207ebb99f28d567fda"
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-legacy-regions.py",
@@ -34,28 +133,28 @@
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-noirlab-scene.mts",
-      "bytes": 92177,
-      "sha256": "999e87399462294602e3066b5eb8f2a80eb1b9a7adeca5df362f7c44710cff29"
+      "bytes": 95641,
+      "sha256": "515a998e877cbab4b4042503f684a2f2cae0a259176df309b106a8d1e3091708"
     },
     {
       "path": "project_context/architecture/runtime-and-domain.md",
-      "bytes": 343117,
-      "sha256": "e6dfff86754d22298c7a02a9a6a5f187eb6142ea4b85beb2ba10112c7e82ddcb"
+      "bytes": 345009,
+      "sha256": "79a1755d44134b782676efe701ed9571c1af6de9b818bdd4cff20f24db51e7ff"
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/GOAL-CURRENT.md",
-      "bytes": 10098,
-      "sha256": "d42b32e9cc738d452698bbf2fc6e2c17725ea2737208b8613914f48f08e3cf60"
+      "bytes": 11194,
+      "sha256": "4f3f53615e982f75cd940d1e1882ddea1fa25484eeea884cbf2b10ca334f43ae"
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
-      "bytes": 46778,
-      "sha256": "7e8d1fe94b49e2e82c4d5b1a3e443ef01e3ac30eb8cebce263b751e0c92801c2"
+      "bytes": 57907,
+      "sha256": "26e5b03f874a658d87565b1608509f436d5ed3e6f3396ae5ef398c012ee90433"
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/ACCEPTANCE-CURRENT.md",
-      "bytes": 48141,
-      "sha256": "34549de3f9d2f17ab7f344c5dfb700f988977d004bf033a59aa881edfa9053e3"
+      "bytes": 59564,
+      "sha256": "b1f98e6268f1fb1c00cbf079347215db3c2304334843586944efadad8d470450"
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/r1-native-release-failure-2026-10-08.json",
@@ -129,8 +228,8 @@
     },
     {
       "path": "project_context/deployment/data-and-operations.md",
-      "bytes": 26069,
-      "sha256": "cc271aa41974ee643ac146bf7fa26781f674df6161b6757f89c3f54712884f5d"
+      "bytes": 27564,
+      "sha256": "9760b8d2e71b27174bb2ad52699afecaa237e151d66738b9a39380025949e04c"
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/e2-static-delivery-deadline-2026-10-08.md",
@@ -359,13 +458,13 @@
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/START-NEXT-CHAT.md",
-      "bytes": 5553,
-      "sha256": "01a1001f5b597fc4e2f172250703ef2d68f88fbe637c2b37a3704dbd542615dd"
+      "bytes": 14244,
+      "sha256": "374ba8cfb5ced3839652b73a2c53201e6b4434a24c054ab50e350011bdd2708f"
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
-      "bytes": 8720,
-      "sha256": "a5ba63c7e7edae02e4f5002a6fc2bcf79ed0a85d5c08e1f7e5423bf62d6b06f7"
+      "bytes": 18423,
+      "sha256": "6e5118f15ce1b3b9262db14c9f1d50481b03141ec984d94cefd6b7a768fb94f4"
     },
     {
       "path": "output/rubin-region-batch-2026-10-08/periphery-plan.json",
@@ -374,13 +473,13 @@
     },
     {
       "path": "apps/wechat-miniapp/src/features/sky/sky-canvas-time.test.ts",
-      "bytes": 30642,
-      "sha256": "97d939bfcd38318af28beec37c1c9a7ef35504ab04ab7292b34460947554429e"
+      "bytes": 30670,
+      "sha256": "751497212eca2c8c9e9d73b7e9517be8d5710ac41f93e1f27c864d8dfcf2b956"
     },
     {
       "path": "project_context/development-workflow/resources-and-artifacts.md",
-      "bytes": 6279,
-      "sha256": "d5bd529275c3692629ede83169ff1c30fe907bee9e3c4ac7506cc8f89cb2c8fe"
+      "bytes": 17114,
+      "sha256": "808f30038757ec29bb4a07cb52226ab36fa5495be007643ae5ec490d1256dee1"
     },
     {
       "path": "project_context/development-workflow/paths-and-lifecycle.md",
@@ -479,8 +578,8 @@
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/execution-correction-2026-10-07.md",
-      "bytes": 5646,
-      "sha256": "5d9fc173f612da2030cdf3084ece2d3e6536e9ca8c4bbf202601fec26ac05aa0"
+      "bytes": 6073,
+      "sha256": "3e9918e3ed9f44286964c021504f160a62464608e8b1c8a08fe8fcc4c3b67cd5"
     },
     {
       "path": "apps/wechat-miniapp/src/features/sky/sky-hips-tile-selection.ts",
@@ -494,18 +593,18 @@
     },
     {
       "path": "data-pipelines/deep-sky/hips_tan_lookup.mjs",
-      "bytes": 1589,
-      "sha256": "6125361e7c629f323bc9c6fc19d75c27a847313e369bc05f9e7b267cca30c7b9"
+      "bytes": 2067,
+      "sha256": "1c69e116a4b32c10e4721526d4955a34dfa3580131287f4ba0fb5457119b502d"
     },
     {
       "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.ts",
-      "bytes": 36964,
-      "sha256": "355cce81a6be8075c9191f0618c3693175861b25817a48a01dc2f2f883ced1d8"
+      "bytes": 36785,
+      "sha256": "b1fd4c4a593189feff73ba62fa9703a47b271b102b85e91fcaa7e1cc62c2cedf"
     },
     {
       "path": "project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md",
-      "bytes": 213137,
-      "sha256": "709042d25a67b39a959d4de03655a3485b794be0b204db8d54a7bebd15c2f093"
+      "bytes": 215560,
+      "sha256": "16b83aee96ddd4ff5d06a830b7f2da09358fb4f57b7489619907328414580251"
     },
     {
       "path": "output/rubin-region-batch-2026-10-08/quality/refined/checks.json",
@@ -689,18 +788,18 @@
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/skymapper-native-profile-2026-10-06.mjs",
-      "bytes": 1987,
-      "sha256": "4b5f0118407e7eb7cb458887c782d07306a56e20b6818ce481e6e0735811a530"
+      "bytes": 4076,
+      "sha256": "ee58ecad88038e51854e88d672bdd14a1c1bcb2803d2c818344bdb364bbe07b8"
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/build-native-pipeline-page-r3-2026-10-06.mts",
-      "bytes": 25692,
-      "sha256": "22d1d61d0fa823d2302a434f9fd7d350d050a0b802987b010b2aab968bb7c92c"
+      "bytes": 25982,
+      "sha256": "16b64d9497be7bfdf28e6075b01d10209553f084d98e34079f18ea1d9178e228"
     },
     {
       "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-native-pipeline-page-r3-2026-10-06.mts",
-      "bytes": 81699,
-      "sha256": "6e3333a438db12fd95bdedcb7089d047286c1a5ed245973a592d9692afca7ea6"
+      "bytes": 84176,
+      "sha256": "075ebae88104aa7e1fdfabcb7d51979900ba3d362097435c1209c089148e720b"
     },
     {
       "path": "output/rubin-region-batch-2026-10-08/quality/refined/native-profile.json",
@@ -709,13 +808,13 @@
     },
     {
       "path": "apps/wechat-miniapp/src/features/sky/sky-render-surface.ts",
-      "bytes": 4358,
-      "sha256": "dc5d0da092145adbaa7188460c0d181b7adfd1b60bae93965e9f3ecdbc338f3e"
+      "bytes": 4448,
+      "sha256": "68b002ba5cf9adff76df3708c8f6687bb8d380e83f704cc0bcc8bbdf100c1898"
     },
     {
       "path": "apps/wechat-miniapp/src/features/sky/sky-scene-render.ts",
-      "bytes": 36782,
-      "sha256": "32d76d41cd507a1ff8f72e326396eed1d262c8790dbd3ab199961edf3315a81f"
+      "bytes": 38000,
+      "sha256": "6f3696e6882a6520fc3154899a37db9bc19a7f04cc8648b98a8cdc7c990d217c"
     },
     {
       "path": "apps/wechat-miniapp/src/features/sky/sky-hips-scene.test.ts",
@@ -724,8 +823,8 @@
     },
     {
       "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions.test.ts",
-      "bytes": 21148,
-      "sha256": "4e9ccc993f461d6758f8d710eac3c14f3e08c0ba88085ef5dd411485af142b96"
+      "bytes": 21978,
+      "sha256": "f18b08867f403aaedee19969a4f381c610c8d3171e072dd58eb9898a16a2b8d3"
     },
     {
       "path": "output/rubin-region-batch-2026-10-08/quality/refined/grouped-intent.json",
@@ -806,6 +905,2446 @@
       "path": "output/playwright/rubin-grouped-lod-native-current/task-owner-bindings-after.json",
       "bytes": 1761,
       "sha256": "6896e674c1a6247bf2cb6ea0b346817fba42821d9b031277fb541721acb466d5"
+    },
+    {
+      "path": "project_context/external-capabilities.md",
+      "bytes": 117582,
+      "sha256": "bc2a664c55baf3925aeac607d9f2d53aa5ff2e0d03be5e9ed866dc79f47e6dc8"
+    },
+    {
+      "path": "data-pipelines/deep-sky/README.md",
+      "bytes": 83818,
+      "sha256": "d7fc1d416f31409db46d137112e2495d025f6edce7f492f575c01f14a2a4e854"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/image-processing-workflow-adoption-2026-10-09.md",
+      "bytes": 6414,
+      "sha256": "603682b638b30ee47d0f9673c4d697b5634e764913962d186e7cf9ebe3d3ed30"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/image-tool-final-results-2026-10-09.md",
+      "bytes": 27720,
+      "sha256": "f6053f09acb3db784c819fc9b8cf8b2afdc5603526ad6cc5db3317071a2b8410"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/image-tool-full-comparison-2026-10-08.md",
+      "bytes": 20570,
+      "sha256": "379625e9853c393b7a5f83c80d9938c11d39f9b5ac820e2e9e1c2b11af2d4312"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/benchmark-image-tools.py",
+      "bytes": 31796,
+      "sha256": "4df838c46f838e6455d124a7d43c37d9c164eee2875b05a2d1e0a70c4e57d739"
+    },
+    {
+      "path": "output/image-tool-full-comparison-2026-10-08/tool-adoption-2026-10-09/nxt-smoke-status.json",
+      "bytes": 516,
+      "sha256": "7c41a3d083777c6a3fa0cccdac35f303739b5e80090cd9a2a3f3fc6ac2af56df"
+    },
+    {
+      "path": "output/image-tool-full-comparison-2026-10-08/tool-adoption-2026-10-09/nxt-readback.json",
+      "bytes": 1620,
+      "sha256": "e3cb2f1ad65ae129a1b2d2b99b18368c3b2d8b979ec93082800e1ea606ad5383"
+    },
+    {
+      "path": "data-pipelines/deep-sky/normalized_rgb_source.py",
+      "bytes": 2722,
+      "sha256": "e6fb75f11f24ada0358d1e6ca661317042bfc66d638fdfe5fd3440169f4d7696"
+    },
+    {
+      "path": "data-pipelines/deep-sky/reviewed_sxt_display.py",
+      "bytes": 7127,
+      "sha256": "1e1f0fa4b4a8fd75931aaeb47e5f2eb4d69ef0ee9f982d8b14abaf19779878cf"
+    },
+    {
+      "path": "data-pipelines/deep-sky/publish_prepared_native.py",
+      "bytes": 26230,
+      "sha256": "098345b47cc94e075700a31d24250763db23d6c178876a1e586a09fea2484bf8"
+    },
+    {
+      "path": "data-pipelines/deep-sky/sxt_processing.py",
+      "bytes": 26664,
+      "sha256": "acb9d769ef4469beadbb167374c0eda358ef7e5b1c834e4e59f3efc0de2c9241"
+    },
+    {
+      "path": "data-pipelines/deep-sky/sxt_batch.py",
+      "bytes": 12305,
+      "sha256": "751e12b7d0a7224047f31f328268ed272afaee70c50569df385bc9d8e82db3ab"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_sxt_processing.py",
+      "bytes": 19923,
+      "sha256": "976e97af102c2f2301f29030b02c17f50418be019ea0923ce416e2dbabc000dd"
+    },
+    {
+      "path": "data-pipelines/deep-sky/image_quality.py",
+      "bytes": 37769,
+      "sha256": "1ca5b9de2c356bc1881d9f4cac90e961227759174b3042345589929cdf405fc7"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/prepared-native-optical-publication.ts",
+      "bytes": 16718,
+      "sha256": "260023309dd8304c3f109d2eea8c00feb3c3e32c6e5e9e7f0cdf95559cdda9be"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/prepared-native-optical-publication.test.ts",
+      "bytes": 8911,
+      "sha256": "b8ff4eb3d6df2735cfe72da9bb0aeffd0899f02e2c3edfd179053618ae993691"
+    },
+    {
+      "path": "output/sky-dpr-integration-2026-10-09/evidence.json",
+      "bytes": 7081,
+      "sha256": "8583df40428c44cc7ffd0b2e3df0c0e2f87b8373e773a6ae6d9223f9ab1fa916"
+    },
+    {
+      "path": "output/sxt-native-integration-2026-10-09/evidence.json",
+      "bytes": 9738,
+      "sha256": "9bc9f2681ffe6be9fcf56cc2c32a8bf1b6a4abee18b9b878951a7e3793d5c285"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/sxt-native-integration-2026-10-09.md",
+      "bytes": 5746,
+      "sha256": "b5c22cfd7abc01a04938f55158a0c37eb63689ca4b4927ce7c45b02bc72d1c0c"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/sky-native-frame-budget-2026-10-09.md",
+      "bytes": 4832,
+      "sha256": "01045a662379163f3b88ce455c4ec4bf4a656a088712c42d172898ef82f7aa62"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/sxt-pipeline-integration-2026-10-09.md",
+      "bytes": 4459,
+      "sha256": "b40ec58c6ed4abe71502a0f50a3bc7b7fefb0fa54872f243654b2c1917c3487b"
+    },
+    {
+      "path": "data-pipelines/deep-sky/hips_rgb_region.py",
+      "bytes": 10151,
+      "sha256": "5e191f63dc6297c9bf7bbcad21adda8ac2273f7073c2a51a7a1cc58e1205971a"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_hips_rgb_region.py",
+      "bytes": 8431,
+      "sha256": "69dc60301aa7d24fb2c80798882b1793c856099773120a01c99584fbc007daee"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/prepare-cached-hips-regions.py",
+      "bytes": 7316,
+      "sha256": "bbc6ff91f5fbb8d3c2c71a57243554ffe428230c9ae3030dc5392d28f4c84a88"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/continuous-hips-regions-2026-10-09.md",
+      "bytes": 5805,
+      "sha256": "7fb989b8820f1ce53700b23a579b804b6bce463c500327a9961b99bbe9f1ab6f"
+    },
+    {
+      "path": "output/continuous-hips-regions-2026-10-09-evidence.json",
+      "bytes": 8017,
+      "sha256": "86a392a6785a78f500e6139b2013e7768fcbfd53f58ee02af16e0d0ff71a43da"
+    },
+    {
+      "path": "output/continuous-sxt-processing-2026-10-09-r1/review-decided/review.json",
+      "bytes": 15225,
+      "sha256": "6428c76d2a59d770f46eba5c18acca4c0f9a08cd7bcbbb6b007f52a76272be7d"
+    },
+    {
+      "path": "output/sxt-static-export-2026-10-09-r1/verification.json",
+      "bytes": 3109,
+      "sha256": "e65fbeb7269b927d57d933d9b71150234e2c3c3f3c5f58abb8e40941547d47b9"
+    },
+    {
+      "path": "data-pipelines/deep-sky/covered_rgb_display.py",
+      "bytes": 4781,
+      "sha256": "a5b4e3a1bca26ffe9f8e45fe9b18056e675068f391fd8f1ae86a09addb7022d2"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_covered_rgb_display.py",
+      "bytes": 7605,
+      "sha256": "75c74656e16ee492dfd3433c5fde872dbc057fba70f67be39fb7dbb297c1de1b"
+    },
+    {
+      "path": "output/covered-continuous-sxt-2026-10-09-evidence.json",
+      "bytes": 5150,
+      "sha256": "dc40db16f35b67a9a43f2ec104205a4ce3178887f836986d734ea89cea7d4dc1"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/photoshop-original-restoration-2026-10-09.md",
+      "bytes": 4443,
+      "sha256": "ec12a9d0ff6d03fc28be539a76952fb18305395138fb4fc0bb81f58f60fc5ecd"
+    },
+    {
+      "path": "output/ps-original-restoration-2026-10-09-evidence.json",
+      "bytes": 12441,
+      "sha256": "2ec8dd649a329ace0095fdd8e8fb6a01f6302353efa1505dcde20ea0346894a7"
+    },
+    {
+      "path": "output/ps-original-restoration-readback-2026-10-09-r2/result.json",
+      "bytes": 50038,
+      "sha256": "78cbf0365bfecfa9d26d163cff09aa55040493b21b114b0cc0e7858c815a5cfc"
+    },
+    {
+      "path": "output/ps-original-restoration-readback-2026-10-09-r2/review-decided/review.json",
+      "bytes": 24278,
+      "sha256": "b2553bea07669ab7a910b2d7f75a4cb0d2c0c9ab2ac78ae0c2cb56ac6e0a3ab7"
+    },
+    {
+      "path": "data-pipelines/deep-sky/photoshop_original_restore.py",
+      "bytes": 19689,
+      "sha256": "c844b64588a1d78c270493d6f2a8b9768cb75150b761dbde53b207ba5e7d3150"
+    },
+    {
+      "path": "data-pipelines/deep-sky/photoshop_host.py",
+      "bytes": 2327,
+      "sha256": "c78bf05bf20bf1ebfb1ffc9126340a59be7a0163ddabb85d19b910ffb4829e25"
+    },
+    {
+      "path": "data-pipelines/deep-sky/photoshop_batch.ps1",
+      "bytes": 5027,
+      "sha256": "7e3e3feea79886e40d885ab2ac19981f9ca56dc9e766d4274d1199717fd4cfd8"
+    },
+    {
+      "path": "data-pipelines/deep-sky/photoshop_batch.jsx",
+      "bytes": 15122,
+      "sha256": "7919e22fc61432574596747846014688f12135c02a30ebb7a77b888fe96f0adc"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_photoshop_original_restore.py",
+      "bytes": 12007,
+      "sha256": "9568a6c66bd1b1914cd5fe173b5614270de25f1a45453ee88899242b4abf920d"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/optical-tan-plane.ts",
+      "bytes": 1749,
+      "sha256": "80b8fc88d741506dbe8407a0dfdcc46f47825b94f52a929294cf88e9d3ec6934"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/optical-tan-plane.test.ts",
+      "bytes": 1496,
+      "sha256": "993ca331ebd1f5c5f7601767b0834adeb7794999ecc97142b5adfa3aceb2f750"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/index.ts",
+      "bytes": 2324,
+      "sha256": "d09169d690fe47b162998bc9edfc495125d478929ae1596dd0060ffa91180da1"
+    },
+    {
+      "path": "packages/astronomy-core/src/tan-optical-geometry.ts",
+      "bytes": 2394,
+      "sha256": "8fa89c536d548a624ec57d690175e583739bdc226547c574d91d9e8ac1d56c3c"
+    },
+    {
+      "path": "packages/astronomy-core/src/tan-optical-geometry.test.ts",
+      "bytes": 2173,
+      "sha256": "e084945ae7aead5e8435a1192f7aaea6ff2ce81e563ea4ee0dc93b1f669f0eeb"
+    },
+    {
+      "path": "output/derived-region-contract-2026-10-09/geometry-input.json",
+      "bytes": 33953,
+      "sha256": "1684ab3469a72a62a7b26d5cd154b41d91f22b7175cc03263160c9ccb4fdc443"
+    },
+    {
+      "path": "output/derived-region-contract-2026-10-09/geometry-readback.json",
+      "bytes": 1689,
+      "sha256": "2224c1893d488db4309b8b09254f1124d74ac3f921f215d7980a8d5885fb9af5"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/derived-region-coordinate-2026-10-09.md",
+      "bytes": 4353,
+      "sha256": "fcd9654345942a8fe6b2d245e8a127371b47d8d8f676baf3300980e30ceac57a"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/prepared-derived-region-optical-publication.ts",
+      "bytes": 18143,
+      "sha256": "1ec2af9e1f38e1e03094bffb3831d0f6c32d0173e2338ce47aceaee0706a0564"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/prepared-derived-region-optical-publication.test.ts",
+      "bytes": 4031,
+      "sha256": "054f3b1834af24101f560f72e3673094f17c8ff6054cb231382dd61af66ae529"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/test-fixtures/prepared-derived-region-optical-publication.ts",
+      "bytes": 6659,
+      "sha256": "60dc98d7f5aaca10dec8d6b0362d227c0af1521f8f207a62bbb3529eb4a68e16"
+    },
+    {
+      "path": "data-pipelines/deep-sky/publish_prepared_derived_region.py",
+      "bytes": 21840,
+      "sha256": "a3701f26444c2eae2e2871cd7176c83df366199e5fac1cb4e05445e5aace4875"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_prepared_derived_region.py",
+      "bytes": 3122,
+      "sha256": "c5119ee55d119140384854a4fd820a13ca9cb119c5c0fb1cb4d61038edb81600"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/sky/sources/index.tsx",
+      "bytes": 5969,
+      "sha256": "b7b7aca1b47e7f5c351da5800047b6b0babf6cce82c09249a8348dcae7e309e5"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-native-optical.test.ts",
+      "bytes": 8137,
+      "sha256": "53e901893fbc157ecf6f479269e3bcd45725802ddd03c127f2fa337d93ad36da"
+    },
+    {
+      "path": "workers/miniapp-api/src/target-optical-image-file.ts",
+      "bytes": 4429,
+      "sha256": "dea38be17ede3abe95637bb5c4f5621761bd7a5b15ae88872d4a5343781df5e8"
+    },
+    {
+      "path": "workers/miniapp-api/src/target-optical-image-file.test.ts",
+      "bytes": 1724,
+      "sha256": "ace684001b3dad8cabc87ce77187ddc9ae327b23589aab33f276a2ab3f0842cf"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-public-asset-export.ts",
+      "bytes": 9340,
+      "sha256": "f3e90d1ce8605f3409144204b9482270082ddd50cc07d3f8eabc367aeb4e9611"
+    },
+    {
+      "path": "workers/miniapp-api/src/sky-public-asset-headers.ts",
+      "bytes": 6278,
+      "sha256": "bc82b6c393f8ca9cf74bd6af806218a7871bafebf57701ea7a465d766e57a09d"
+    },
+    {
+      "path": "workers/miniapp-api/src/test-fixtures/synthetic-optical-png.ts",
+      "bytes": 1362,
+      "sha256": "4c232ef586309d8dfb1e058bf025b0099a98244b96ef44ffff97f83d087208d0"
+    },
+    {
+      "path": "tools/deployment/sky-static-bundle.mjs",
+      "bytes": 15586,
+      "sha256": "83d512bb3bf377e620468019c2a2ea260628c1bf8e247d188431b83f7d36bf47"
+    },
+    {
+      "path": "tools/deployment/sky-static-bundle.test.mjs",
+      "bytes": 9564,
+      "sha256": "5584019c313e1c882e6f55cd6dc5b6772a9c04e27161834b5e4899b801371459"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/derived-region-publication-2026-10-09.md",
+      "bytes": 7041,
+      "sha256": "be5d9a72451d495aeea264df96c6fa5dee13846784ecdf29cec66893885e1163"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/experience-prepared-reviewed-consumers.mjs",
+      "bytes": 9330,
+      "sha256": "c1a14792fce04fb10b871162a1633b1fc42c9d3b89c8f69eedbb504e934817e4"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-galactic-band.ts",
+      "bytes": 5154,
+      "sha256": "9111e902238c14a69f9d3871c8aa6175d7345127513a5369579f4df3da572e77"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-galactic-band.test.ts",
+      "bytes": 12725,
+      "sha256": "64ee5c439d52a5371105f479495f978e174b25cfd0ff4c0f60fce9688199dddf"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-galactic-image.ts",
+      "bytes": 2075,
+      "sha256": "ffd3fa3948f430f87ca592a683d2db66a2d77675c0dba12664c78f5b9b9190ec"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-textures.ts",
+      "bytes": 9600,
+      "sha256": "4d27f6b3802f50c7ff7d01ff70465561ca3fbef5055632ce30e416a89d47de2b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-gpu-textures.test.ts",
+      "bytes": 14293,
+      "sha256": "d0bd6cba2c300a61d5bb74c7400034d4b7fefbb4bae393940f914b4d59302030"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/galactic-scale-continuity-2026-10-09.md",
+      "bytes": 3815,
+      "sha256": "106f117b88d1b0b888d6f8640467bc12a8d668168c6f6554ce1d4bbe5bb05251"
+    },
+    {
+      "path": "data-pipelines/deep-sky/reviewed_restored_display.py",
+      "bytes": 3594,
+      "sha256": "b647881d84bf6df989d79cc6f8008348f6de638adc3c252cf342accb68fb4e7b"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/ps-restored-native-publication-2026-10-09.md",
+      "bytes": 4513,
+      "sha256": "a341368cae9f99e09aef4cebd8c95d45436b308684bd945eb4946530b14fc82e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/chevron-right-day.svg",
+      "bytes": 259,
+      "sha256": "ec1ee898b63df70a17866172c48b0a30fa2e71af646e9da3234231b11b1164e7"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/chevron-right-night.svg",
+      "bytes": 259,
+      "sha256": "5353b0bcf78364bac733d4700062fc19a6ae22043cec14f1bda5c82d2a1f2d95"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/chevron-right-observation.svg",
+      "bytes": 259,
+      "sha256": "a534459a36a21a4148c2ed3c9e94cb8f2b262e6363adbc9637da119338564dfe"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/download-day.svg",
+      "bytes": 340,
+      "sha256": "a084e4cf1fa7024ae9f72b4f99e2ea1e1c6338a40c178c0449367d141bdd047e"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/download-night.svg",
+      "bytes": 340,
+      "sha256": "8a728c5696db32333ea43da9a096c800bcbfc8a3f261e488077d4d9712fd5694"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/download-observation.svg",
+      "bytes": 340,
+      "sha256": "c45edeb7df48e1971577602916aa365c07dadc5cb6c945316f970212b7df6491"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/images-day.svg",
+      "bytes": 517,
+      "sha256": "2459b1b616d596d15f27b46ce42ebb9ee067e05524c1120544ee2d44ca96c2b8"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/images-night.svg",
+      "bytes": 517,
+      "sha256": "37ff4f1812e7972350d350d6b23e94703b71a81421ed0bdc125ea781b359051b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/images-observation.svg",
+      "bytes": 517,
+      "sha256": "093c7047ed9105005bdbbf42c4ac4c4a5ef5f13ec402778915bf7a02e84deb69"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/trash-2-day.svg",
+      "bytes": 411,
+      "sha256": "263bddc4f7ef2758ae9f72ff9ab33513ab9127c91e56dc316fcf9908a3e6b111"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/trash-2-night.svg",
+      "bytes": 411,
+      "sha256": "358005cbd93c691beb5b6ec16825979ebc0dea481075a5059dda74125a7769d2"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/trash-2-observation.svg",
+      "bytes": 411,
+      "sha256": "8ce3b70c1b8270183c9c5594606a12e3ffe4f942237d24883f3dd7613fdbdd19"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/wifi-off-day.svg",
+      "bytes": 568,
+      "sha256": "7935ed4fe742ab3e7e7d11162e93eac5baaea3c47b6f3e261e0afed8636d8e41"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/wifi-off-night.svg",
+      "bytes": 568,
+      "sha256": "a96d90f418a6586293f66af8f9078cc08cd4bc6b8ffff61381e3ab63f3eab8b5"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/wifi-off-observation.svg",
+      "bytes": 568,
+      "sha256": "449e8d084c92ec3ec27a757f092c5998a14025d47e90eb64af6c4642d8ab169f"
+    },
+    {
+      "path": "tools/miniapp/semantic-art.mjs",
+      "bytes": 3218,
+      "sha256": "a8cfe8602dd909ba195cf9207ea38eb9187e8eb4281f2816cc108eae61e286f8"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/chevron-right.svg",
+      "bytes": 264,
+      "sha256": "c36c68da6fb326e0d7fe33e1b427db6d3026bce69867e855b3302ab4743cc8b3"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/download.svg",
+      "bytes": 345,
+      "sha256": "9fd9375539e4dc7a5e1a7b8b54e946c0b21137d83ee1d229ab862a18b1062603"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/images.svg",
+      "bytes": 522,
+      "sha256": "d1342bec5cf6359cf761127401faa41d736fd1e519bc43bbe726e77c4bb756df"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/trash-2.svg",
+      "bytes": 416,
+      "sha256": "d61d42c843c3d50898b7c27510de3f38e3bdc1780d42b7fccc92503f041f8147"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/assets/icons/wifi-off.svg",
+      "bytes": 573,
+      "sha256": "bde8a8457fb3e8fe6816ee82ad099a299d5918cf07ed527a602b6cb9d43877e0"
+    },
+    {
+      "path": "tools/miniapp/workflow-conformance.test.mjs",
+      "bytes": 54439,
+      "sha256": "47036f4f665d752e7bc04fb8c646dc53914f39b98ff8fa0082d4fe69adf7a231"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-runtime-and-workflow-2026-10-09.md",
+      "bytes": 7111,
+      "sha256": "d8c3716d79cc088a1a8058050dc4e4cb4a96368edcbf7f77c5460ae8d196053c"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-fixture-scene-2026-10-09.md",
+      "bytes": 5554,
+      "sha256": "01e573bf390101e56fb60b9bb99ec4ad7d1c2d8583925bb1b13c1652faebcfd5"
+    },
+    {
+      "path": "workers/miniapp-api/src/runtime-config.ts",
+      "bytes": 11205,
+      "sha256": "171e84ad1ae0c2378b08e1834c76b09b7fb84a7729167eabbba1f22f178a4f63"
+    },
+    {
+      "path": "workers/miniapp-api/src/test-fixtures/in-memory-repository.ts",
+      "bytes": 28503,
+      "sha256": "7bb5949d5472f2a33987dc8ba130049cc2afccc08ab0c5a68a7fcb9ed25edc69"
+    },
+    {
+      "path": "packages/miniapp-contracts/src/catalog.ts",
+      "bytes": 24868,
+      "sha256": "b53fc05862f531b22c54bbf415c8f04a01a30ee52b80c0600ad9814af25a2eef"
+    },
+    {
+      "path": "apps/wechat-miniapp/config/index.ts",
+      "bytes": 13985,
+      "sha256": "6aace4190d5f6eaf0e789e68b383145037dde66ae251adfb398914e063f8bd75"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-static-metadata-2026-10-09.md",
+      "bytes": 5651,
+      "sha256": "22279ec010146a2ff8bce4f3db8bb39702d3a8d91b0a728c51bacf7d4b2d5ea5"
+    },
+    {
+      "path": "workers/miniapp-api/src/prepared-optical-imagery.ts",
+      "bytes": 9382,
+      "sha256": "27feae8e534c3767d43e9b0cc4aa1f9dde925c0abd10ccc856b6bda441b6a104"
+    },
+    {
+      "path": "workers/miniapp-api/src/controller.ts",
+      "bytes": 50075,
+      "sha256": "28e20a9c0807c62a691361e19593d8cf74d27f0d04196ce8218f1c414d19a85a"
+    },
+    {
+      "path": "workers/miniapp-api/src/prepared-optical-static-export.test.ts",
+      "bytes": 7992,
+      "sha256": "51dc4c0311434bd3cfbf780acb1b1d4c885b063dec3fa011ef7e71507bce4985"
+    },
+    {
+      "path": "output/native-static-metadata-2026-10-09/verify.mts",
+      "bytes": 9089,
+      "sha256": "b83640b17d5d2524cb0dd3ada5fdb35f7e72651ead0304949004b0b661d75e79"
+    },
+    {
+      "path": "output/native-static-metadata-2026-10-09/verification.json",
+      "bytes": 7038,
+      "sha256": "7d893937dc729e54fa95ec600c1676bc888d823794aef76e37fb4c47e5843d3f"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/ps-local-residual-median-2026-10-09.md",
+      "bytes": 2925,
+      "sha256": "913d9cc4662ce1cf7f09852214e8651d7f4990ce330d20343684b14b0dc4e556"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-static-baseline-reader-2026-10-09.md",
+      "bytes": 1467,
+      "sha256": "b291869c4a6cb8419d0e52c6bcc5aca5ec4dff10fdfdc73ab9f7afb83c734551"
+    },
+    {
+      "path": "output/ps-residual-filter-pilot-2026-10-09/pilot.py",
+      "bytes": 4924,
+      "sha256": "f1ae75793d6b4fc1289b66ba289f5d10b6ba927d2b6846dd9e322f219fd42da5"
+    },
+    {
+      "path": "output/ps-residual-filter-pilot-2026-10-09/result.json",
+      "bytes": 4009,
+      "sha256": "95edee46221de7cf7acb53adf99a03da3e41ae1f87540beda12c51508b37117f"
+    },
+    {
+      "path": "output/ps-residual-filter-pilot-2026-10-09/visual-review.json",
+      "bytes": 1386,
+      "sha256": "096a938d5c8b1ce2ee5e7e21d7234010fb427b57cf4227e989035eb529deedc6"
+    },
+    {
+      "path": "output/ps-residual-filter-pilot-2026-10-09/boundary-tests.log",
+      "bytes": 1751,
+      "sha256": "fb05cf216ab32cce5f3f63809b2d08a2f1384c355becc331d9b491b1db4cd96b"
+    },
+    {
+      "path": "output/native-static-reader-compatibility-2026-10-09/investigate.mjs",
+      "bytes": 2669,
+      "sha256": "00d87b8d4452779c7aced159195d1b89caa93def683567add26f810b27522c1c"
+    },
+    {
+      "path": "output/native-static-reader-compatibility-2026-10-09/failing-before.json",
+      "bytes": 4370,
+      "sha256": "08d24d71c17508fa38792a685d356be560eb697b7c1ae7548c7712e39b1c3f6f"
+    },
+    {
+      "path": "output/native-static-reader-compatibility-2026-10-09/baseline-reader.mjs",
+      "bytes": 14693,
+      "sha256": "f088835b8da2ac265ef86e760b9837fb96fa13fcb0dee6357c7cd2511ccb49a8"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/nxt-color-and-grain-queue-2026-10-09.md",
+      "bytes": 5418,
+      "sha256": "7dfeaeeadb3c939e79782d0fc4ad0ecbcfdf9d3bdfbd945421ce56d45488bc90"
+    },
+    {
+      "path": "data-pipelines/deep-sky/nxt_review.py",
+      "bytes": 9413,
+      "sha256": "cb42784e7d5b4571437cb26a13fa4638bba2c356c93667df5339889020c75e80"
+    },
+    {
+      "path": "data-pipelines/deep-sky/test_nxt_review.py",
+      "bytes": 11118,
+      "sha256": "d7a69279fb51284c65d0f8f2b1451afd5da5c2dedbf66f652ba1cc59f417d7ce"
+    },
+    {
+      "path": "output/nxt-grain-exception-2026-10-09/trial.py",
+      "bytes": 5689,
+      "sha256": "43b2633466961c443388b37d356109d1df7824de3ab02d8bb0fec4ed9b304564"
+    },
+    {
+      "path": "output/nxt-grain-exception-2026-10-09/input.json",
+      "bytes": 653,
+      "sha256": "244baaa7369207b9dc77fa46d69241cdaf72dffb6156b9599b763debaaf626f5"
+    },
+    {
+      "path": "output/nxt-grain-exception-2026-10-09/admission.json",
+      "bytes": 2764,
+      "sha256": "ca30b8daadf82403d407931fd94c2f83031b02bc6541ee54dc62363f55ba4b87"
+    },
+    {
+      "path": "output/nxt-grain-exception-2026-10-09/result.json",
+      "bytes": 5043,
+      "sha256": "aa07cd9032502a373f6ac63868c830ce594d633e50d4253c1dfdc7ae03b01bcc"
+    },
+    {
+      "path": "output/nxt-grain-exception-2026-10-09/visual-review.json",
+      "bytes": 928,
+      "sha256": "367ed879ab4c7a659780804ad460bc193b7b97961a832b17d2f7fd61ca36d70d"
+    },
+    {
+      "path": "output/nxt-grain-exception-2026-10-09/decisions-current.json",
+      "bytes": 2197,
+      "sha256": "d5bbf3c2d0aef2c6e10edab0e784b7fc90f5be6085dff35d897b7e1ff58ca327"
+    },
+    {
+      "path": "output/nxt-grain-exception-2026-10-09/current-queue/review.json",
+      "bytes": 18223,
+      "sha256": "b981dbfa37a6ee067baf54b11421b6b40c784fb5085612c3445ec0663c63bbf3"
+    },
+    {
+      "path": "output/nxt-grain-exception-2026-10-09/current-queue/index.html",
+      "bytes": 1396,
+      "sha256": "dd414bbad28716730d2134ac61208d834d2262ce112e6d0be649748bfbfc70d3"
+    },
+    {
+      "path": "output/nxt-grain-exception-2026-10-09/owner-tests.log",
+      "bytes": 5345,
+      "sha256": "623aa24a32594668f59c478f3698de0490c950bf4893ec91473ab28a672ffd65"
+    },
+    {
+      "path": "output/nxt-grain-exception-2026-10-09/nxt-identity-boundary-tests.log",
+      "bytes": 1374,
+      "sha256": "52f3809f6732a9481d8be5577c930e542d9cf97e00768ebd3377bf406757662c"
+    },
+    {
+      "path": "output/nxt-grain-exception-2026-10-09/pixel-guard-mutation.log",
+      "bytes": 318,
+      "sha256": "46e0966059022a4cb46753694d38c5227ba8fbc1e3f4dca3e19586e2c080583c"
+    },
+    {
+      "path": "output/nxt-color-boundary-2026-10-09/verify.py",
+      "bytes": 5458,
+      "sha256": "25ff76d9843b67a15f49d7470454bae8688c6071258b811dd8a7a6ac8783eb3c"
+    },
+    {
+      "path": "output/nxt-color-boundary-2026-10-09/admission.json",
+      "bytes": 3101,
+      "sha256": "5a114e6c6fd84813a83ded4843a80480779b30472c3ddd0b99cb8052b3311170"
+    },
+    {
+      "path": "output/nxt-color-boundary-2026-10-09/result.json",
+      "bytes": 1830,
+      "sha256": "9cedac41f88841a0a9ba37fca092706a71eea7008e813118406c19ca898ac85e"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-source-back-2026-10-09.md",
+      "bytes": 4076,
+      "sha256": "00b8db11d6670ee1e125cf64c3d954ca0712d45821c2247f88006f390b823cab"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/source-back-pixels.json",
+      "bytes": 591,
+      "sha256": "7d9d9f5453bf6d9ffd4542f78b4b49b5602e297e9ba40b6fee1564bb3c310dde"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/m31-located-before-source.png",
+      "bytes": 15850,
+      "sha256": "f317a9537ba729aeac6b446176d98ae545e0bf69051928bd0b323640559bfdb6"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/m31-source-page.png",
+      "bytes": 66857,
+      "sha256": "103ede96fe5286d5306627b4188484f483e00b6a280d0d763bf20bd1b6ec1bc6"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/m31-returned-after-source.png",
+      "bytes": 15844,
+      "sha256": "8638b6af225c12dc044f1fabd6e0980a894b85c9ab056b27045c4a430e18a4b9"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791513555893.json",
+      "bytes": 900,
+      "sha256": "c008313d545ecb93e94f99318b3ee6bbd22de70df394d62bd6cd73f034505784"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791513670337.json",
+      "bytes": 573,
+      "sha256": "e63d686d7f579e365da760334487d4e667ea2ae95310de0dd8a59c4fe84ff4eb"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791513882650.json",
+      "bytes": 537,
+      "sha256": "6edafb25836eb47e9c11ce4f9cb709caf2ef4626714e3ad51bccf7bc8d581654"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791513890217.json",
+      "bytes": 551,
+      "sha256": "ef17ea204b9ca6f19eed716496825a52208849e86100606acaba39c1c439fac5"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791513914635.json",
+      "bytes": 569,
+      "sha256": "4410226cfbae72028d3bc60e0dce6d90e96e0aacf28b47e1da01590d76722623"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791513927612.json",
+      "bytes": 551,
+      "sha256": "fd9ee466a19d08ad066536af547692de628e566be82347b1e548914e81a1c416"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791513939497.json",
+      "bytes": 540,
+      "sha256": "feba03ccceba8bb1507950785db70d71a066012e4842662d36deeca0225c8e6b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791513941581.json",
+      "bytes": 551,
+      "sha256": "c672dfb4d52d6d0b73a72a50b90767122745cda9309182e7b8b378066e8ee3a3"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791513968040.json",
+      "bytes": 551,
+      "sha256": "b8545a4adf89f0c335f2c9e246ea70a6d6ebbf2ff166f2fa67e9820d1e83ed63"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791513982145.json",
+      "bytes": 540,
+      "sha256": "f3fada05b49cce651b4d496714b236225026d471d343f3190f5c4979718b8472"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791513984246.json",
+      "bytes": 551,
+      "sha256": "d67c525715c7c97d2a977b7508e76df772b9817c896caac05da4e34eab249e69"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791513999366.json",
+      "bytes": 568,
+      "sha256": "1a34629b72ec165e9bf7bf06a378ecd3990ea82e1173f09c189bbef14262590b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791514008256.json",
+      "bytes": 551,
+      "sha256": "8c4102da3b41a6f2218f6c47116990dfd599cf7e32f3d2970982b349a073b87b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791514019421.json",
+      "bytes": 551,
+      "sha256": "726b0122ca5bb35ca07e048c3c5c48535bcb65f74c82d9f59c949f23ff9215c8"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791513477102.json",
+      "bytes": 2272,
+      "sha256": "86ac03df8b06d873d347a6371170480ae6b63d35ba8431d7a77653833a5d8947"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791513870054.json",
+      "bytes": 2502,
+      "sha256": "6a92264ec113c3994c31412b35dd9c3e91f8b8c71ed8e60fcd8bd2d2f639d07d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791513892542.json",
+      "bytes": 2058,
+      "sha256": "cbece0b5575cac12e65fb206baf509c2c983aa8eea0a18714b77efab5374f346"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791513903915.json",
+      "bytes": 8802,
+      "sha256": "f63f3a77a28dc390754ad5009d54dc758c432a00ae498d91ad209984123b7c84"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791513929856.json",
+      "bytes": 17214,
+      "sha256": "071491b655cf5dcbd65244786e9b2bd7beb10e02a9695eb6dbb554458823cb46"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791513943842.json",
+      "bytes": 1352,
+      "sha256": "c700a0a89ecce0b659dd3eee6d8b07c33894ed8c402c18fdc0055a6f5acf60ae"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791513953512.json",
+      "bytes": 8780,
+      "sha256": "71fd884960a989c2e87efa99e8884b75dd3cebc152aae5c365bcea3d238a029d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791513970367.json",
+      "bytes": 2231,
+      "sha256": "2963002408adc9a0863e5571d75a319cd10872b124a6b08f9d00ea3c5eee4f93"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791513986795.json",
+      "bytes": 7014,
+      "sha256": "abd6a60209e48736361c70d7028f9234a5916d9476a6186b65178d30715bf8a2"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791514010676.json",
+      "bytes": 9682,
+      "sha256": "4d1691af47c4daacef8c9a80f51e8c5c6ad5c389fd733f021f9c983da13431b1"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791514073437.json",
+      "bytes": 7637,
+      "sha256": "29ba4eff371e10d9484ac987512a404c9a91ca516c3d0bb78f3d19fd7be83c26"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_page_action-1791513607579.json",
+      "bytes": 6107,
+      "sha256": "16e198bee33e56f1cf398ca1d6e7441eed02a8704ce2a673eb91e893c93b2935"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_page_action-1791513670334.json",
+      "bytes": 846,
+      "sha256": "6bad40571da4fe9b2b5fa4ea673b680b38ebe0142c0080d76af031e0433e05e9"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/get_simulator_console-1791514084609.json",
+      "bytes": 845,
+      "sha256": "a9b0fd3b97d39407d21a0905c593b5625fc3339d26d1d149c019497dc5e7ebab"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/get_simulator_console-1791514097599.json",
+      "bytes": 497,
+      "sha256": "dad9fdb1ce1edd433c1100c67a37ae7517aff3bc0758907d34d55c02bd8395e7"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_screenshot-1791513954796.json",
+      "bytes": 821,
+      "sha256": "9f697a12fdc28b207d774dfd546e873ac9254f87bb02307d71bcec6b0e8c9ea6"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_screenshot-1791513996268.json",
+      "bytes": 801,
+      "sha256": "75eece066dd80dc7d6a4b2d9930afe10a1eac1175d07f6b66eae6b301dfce1e2"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_screenshot-1791514020683.json",
+      "bytes": 821,
+      "sha256": "750ed8bcea902233047842b6b7706cf8fd606b4158a772a5a285ef09a40fd4ce"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-binary-resource-recovery-2026-10-09.md",
+      "bytes": 5379,
+      "sha256": "dbbc46d5343aa82986c9849d6eed72700dca3240c7dce194268ec69f7d690150"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-search-tracking-2026-10-09.md",
+      "bytes": 2789,
+      "sha256": "114071c4b124c89053e441f7503f8d75991ea0c0035a2d923b708866b42e9f9b"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-native-array-buffer.ts",
+      "bytes": 597,
+      "sha256": "8d1ededea77f3637c47dff6b65d803691044b092a0df8b176d4287cb99442243"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-native-array-buffer.test.ts",
+      "bytes": 1456,
+      "sha256": "6faca5de0d304960a3d16433249954b6a29465b5ec236cdc91c5f0ca7dca1519"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-public-image-runtime.ts",
+      "bytes": 12118,
+      "sha256": "2a6941385aacf7fe2841455cc1b4ff1f5dce6f6ae28ae9e01ae4c3143f1dd5b6"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/services/sky-public-image-runtime.native.test.ts",
+      "bytes": 3160,
+      "sha256": "c597efb25c4665b96b9b5d57640b5935f9feafdf9f4793cbeafc498e1c40ccd1"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-request.ts",
+      "bytes": 6446,
+      "sha256": "de1dd6dcd135aa208c22c9ec50c9fb3db9053909397a3ddf3658211a05fdbee5"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-artwork-request.test.ts",
+      "bytes": 6992,
+      "sha256": "9aa8c7ba718d0abf9382ba38e3a44ab4110547860bf442731a44a1764b8c8c1b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-observe.mjs",
+      "bytes": 1794,
+      "sha256": "927174dbc9296bcca21824b9c4ccb787603f844e79a982ccad4acf46c531f168"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/official-call.mjs",
+      "bytes": 3700,
+      "sha256": "26259a0aa923a46b1b6018c15ae4d7d1d81437417987babfaed4f60abe74db57"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-before.log",
+      "bytes": 1897,
+      "sha256": "b0c127d236a3f4fcac503a92e6c62489d95238f0dfaf3d548f619fc022838598"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-owner-tests.log",
+      "bytes": 3531,
+      "sha256": "9a0af62a224d09427bba8bbe82ad68733721868dacb10669abb58a559dc5e81e"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-adapter-tests.log",
+      "bytes": 312,
+      "sha256": "9d90b472c3068e99422f9af9869a86cd10a115c054cd93e5e379a3f1f9a242d3"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-typecheck.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-adapter-typecheck.log",
+      "bytes": 144,
+      "sha256": "1e7137e434d0121bb69677a53d7a32442466d7dde41d1b63d2e7fd29cbb361e7"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-build.log",
+      "bytes": 89151,
+      "sha256": "3f5f464450bffe08cc89da1bb933a3666eee89db3d51fed7f585c7925f82e818"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-built-binding.json",
+      "bytes": 50034,
+      "sha256": "08774f6a3201d81e04280eddcff44367e4bae215da327da2b15904bbe54c5ee5"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-preservation.json",
+      "bytes": 98542,
+      "sha256": "12844f867c2e33b1f6c71ed2a46563c8842ff28731da226afd360be4b5549597"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-binding.json",
+      "bytes": 453,
+      "sha256": "bad6f2c33195412dc84c52c1b485600cfb9f0b05751ca151ee1cd26856449e2d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-source-pixels.json",
+      "bytes": 603,
+      "sha256": "98774ab80cdd3d6d1caceade5a13164acbf7292b8e50ca6633c87b0d692a03aa"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/image-family-manifest-readback.json",
+      "bytes": 7330,
+      "sha256": "563ed9a45df2d72ff9d5300fa6d9b9985a5ef6f29e12b9e6ce37fffc5ef45a9d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-resource-ready.png",
+      "bytes": 20418,
+      "sha256": "d297797cb2786d0d89aded1d625d0f2a497b0ea0838d49aa02763742ef9680f8"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-landscape-ready.png",
+      "bytes": 14334,
+      "sha256": "7fd3d15844936abdd872bc404d129ba660262fd80c9e4bfdaa6a394798ed8e4a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-before-source.png",
+      "bytes": 14316,
+      "sha256": "b440f79b266238fb93ca2660e244407ab7c0af52b675a2ea7c37cb2bb60d587b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-binary-after-source.png",
+      "bytes": 14349,
+      "sha256": "5da8e5efd56682c5e1a61dab2ad05d5c0801f042f0697da81b2803eb10fb417d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791514530853.json",
+      "bytes": 2306,
+      "sha256": "3a4a971af9a57231035f259e6e6a7e76d3fa87960ea7e33e6ae25ca1aa68f1d4"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791514554203.json",
+      "bytes": 1892,
+      "sha256": "328acc5363558d9f02012a936f96cef514005fc74c7d8f521e35e3aa7f37bc95"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791515253797.json",
+      "bytes": 7121,
+      "sha256": "31bb249df75abcb05f8256be699a49d00c99bdc044bde71db6a4208837cccefa"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791515620632.json",
+      "bytes": 7121,
+      "sha256": "c43ca29f96809cccac202fe9c36df5bfc7aa881d0ce5d96f615fd35f315028d6"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791515597502.json",
+      "bytes": 5677,
+      "sha256": "57af9b13a520671a0ffdaba48604f9780e3033beb419df613e9e3a994e1c4b67"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-loaded-panorama-layers-2026-10-09.md",
+      "bytes": 3122,
+      "sha256": "b7a31fc9794993ac07365b46dcd994b0fba853df8f9a3efb8ecf5cd8a594a958"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-loaded-view-readback.mts",
+      "bytes": 1725,
+      "sha256": "09a8cbd29d76c6c58ff9d5bb025c6b3d0c2a596a15d9e20ab3c93ca5d2155558"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-loaded-view-readback.json",
+      "bytes": 13301,
+      "sha256": "e4a310bb1f235534650a87aace3b40613cbfe8ccef4816e5b2df2012a02e1cb3"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/compare-native-loaded.py",
+      "bytes": 1719,
+      "sha256": "40f366052db46ebc82f3689aefbcd02276da4b3240cf76287314f7630b0f66d2"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-loaded-pixels.json",
+      "bytes": 2288,
+      "sha256": "e7eef58b664b8a40a0124c1310d97a1c547ebd30d99ba81a86c1852a9c947993"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/official-screenshot-implementation.json",
+      "bytes": 32821,
+      "sha256": "6d7e8874103c305f69b7d235fcda158ef05b30d7c3960a0f4124dfe3cc5a6538"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/official-240979cff0aa18558b30bf9c89dd700f.js",
+      "bytes": 16133,
+      "sha256": "21b62bf0d2f4836487bfac8254d356443d5693b0bd1b97291cbbe795c40e8077"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/official-8c30fd019ca8e4ea3a0486e3cd18695c.js",
+      "bytes": 2529,
+      "sha256": "fd9f67d3c1cf8a7331aa9cf2c5ecabdbb7d2a3a3b1b09a2c69ec089d8b060e74"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-loaded-below-faded-off.png",
+      "bytes": 31732,
+      "sha256": "ae01c8f923865f20b2698942c7926470439dd7c02b5be836be61b18d72d7cb21"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-loaded-below-faded.png",
+      "bytes": 31714,
+      "sha256": "4904da9fcf23592f08deeb11c425298163830bff0f20e662f0e4796b9a23279b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-loaded-below-horizon.png",
+      "bytes": 23741,
+      "sha256": "bc038ebb57fa56b05722f2115402c76576478a1b116560eb1fb37ef1d58d84f5"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-loaded-local-return.png",
+      "bytes": 24102,
+      "sha256": "3c0e654ddec0c7aa6ab4111330e4194b9e43ca100c5ca9e75fcebb8887ac53ac"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-loaded-panorama-grids-off.png",
+      "bytes": 27229,
+      "sha256": "fd7b3714626d9c90fd299cec89fe1eaed2b90fb351058b050f4ef11b0edc8541"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-loaded-panorama-grids.png",
+      "bytes": 37047,
+      "sha256": "edb4d57411b48e351cb3572689c5c7b19c92db1b79e448fce42d0f0858680922"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-loaded-panorama-landscape-off.png",
+      "bytes": 31743,
+      "sha256": "6c3042164159a5dbd2918e7cdf1c4c8802013ec027b9dd2334023d81b0d1ba8a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-loaded-panorama-reversed.png",
+      "bytes": 27229,
+      "sha256": "fd7b3714626d9c90fd299cec89fe1eaed2b90fb351058b050f4ef11b0edc8541"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-loaded-panorama.png",
+      "bytes": 27223,
+      "sha256": "f8a50ab26f5fb6e2796b0b3772dbefc6a70bf3c5902809eec87bcb764aaa5d72"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791515857907.json",
+      "bytes": 1211,
+      "sha256": "72b6f2c4f849d28d115d9eb83c252638fa660ca180cb456282d09584de453ad8"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791516094308.json",
+      "bytes": 11813,
+      "sha256": "f5654d697696ca1328b2ad2f999976b84a3582d0a67ba6d89172f0c88dccf7e9"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791516162434.json",
+      "bytes": 11576,
+      "sha256": "8e73ff1a198328557da5f80674f6cf832ef97cb2ec1205a81ef6700fa7eb55d8"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791516207538.json",
+      "bytes": 12011,
+      "sha256": "74f9eaf6d5ae72053d2fcefe91c320cf48282dd3623b42d027d105b70b54dc75"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791516294799.json",
+      "bytes": 12274,
+      "sha256": "bcc1f143e34cba3a068494f6a2098edc401b08885b77a87283594f2ac716ed7e"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791516353096.json",
+      "bytes": 11272,
+      "sha256": "16b835c616b0750455a8c86c1eb31db1e2ff461fe29969c6e34cafc38d37f219"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791516369461.json",
+      "bytes": 11283,
+      "sha256": "b24ea7367c463e5a257ba57f22443e84be90cc346f46bd89a811ef46192205a7"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791516391117.json",
+      "bytes": 7912,
+      "sha256": "4e8310481559ae8e327c510d1e4cbba43fe8ddf3284f8ebc96836ccd009b02f4"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791516469095.json",
+      "bytes": 7694,
+      "sha256": "64869232beeb1ed6e504130a3173315f9e6db78796df3265ff26d5c2106a5b72"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-midnight-shared-context-2026-10-09.md",
+      "bytes": 2547,
+      "sha256": "f5ef242a4785677c006a1f949f795fc3051b57142a895063d314892af54a9340"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-midnight-before-context.json",
+      "bytes": 360,
+      "sha256": "d7cb49b8ca3f63e4fb0d356a60f4b438cda8c804718b9ae54b553a00f569ecfd"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-midnight-before-context-fields.json",
+      "bytes": 405,
+      "sha256": "1e16483d57ffe3e9b8f0eff60022a3be515ecee5a323012df0c2595136fc721f"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-midnight-committed-context.json",
+      "bytes": 405,
+      "sha256": "1e77dd6e0fe2476d96457e5fbfef5b0082dc27dafab7597b48c53d82ba948aba"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-midnight-committed.png",
+      "bytes": 30821,
+      "sha256": "9f0d1a55f5d2181bee3a2b49a152a550e23ea28003d17790c45cd265ef7b4291"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791516658497.json",
+      "bytes": 21135,
+      "sha256": "d8d49886a004d9e6d7eb2826220de736c56592ecbbf3d79ab0992fb8ce088da2"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791516771382.json",
+      "bytes": 1230,
+      "sha256": "7e679fbf9f7ce9f18903cf79a637b5d867a2ce9c5c8cf8f7ff7f702a1b974720"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_runtime_info-1791516759348.json",
+      "bytes": 706,
+      "sha256": "4649a1d747b73244e160a6081296dc4fe58fe7acb2f12f4d370150725178db77"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-body-fine-and-moon-source-2026-10-09.md",
+      "bytes": 5403,
+      "sha256": "226de73b2f7b27db7f8bfb2859b923aab5f2887fbdd18b2a868a265572f4d6a7"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-bright-moon-context.json",
+      "bytes": 1818,
+      "sha256": "da27117ff39e5e266e0e61a46c7dccba3dc72c5da3cd6026556812c0303adf08"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-moon-after-source.png",
+      "bytes": 24274,
+      "sha256": "dd1814f316c8de0a364709ffb8df33cde9e6a469ed8ef4b75c4057e5c4fa0343"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-moon-bright.png",
+      "bytes": 24253,
+      "sha256": "8e12cce96bba9ed5abf9a8987a72811681f51d3f846f3bfdba76cbf855f238c3"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-moon-current.png",
+      "bytes": 11864,
+      "sha256": "ee2efea74cfa7f09b67f5d6b356537cb131a7bf5b8813b13906586aad35f7eeb"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-moon-manifest.json",
+      "bytes": 2406,
+      "sha256": "08dc651940314b76dee0a2b33994a7144bcedeb8fa7295d81a3fb5ab9910a637"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-moon-sources.png",
+      "bytes": 70271,
+      "sha256": "bcb6db8feffab223ad93ade546fcddf31688980fcbef73817b7cd51fe865dc16"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-pixel-pairs-valid.json",
+      "bytes": 146,
+      "sha256": "f5611582bd601c8c2b6f639fe9c22bb6f783859cda212808343a3a92f8fdd5d2"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-pixel-pairs.json",
+      "bytes": 168,
+      "sha256": "2e3c933a87dc6e37ed264e03c7ba5aa611d23fc8942f7c01ff8d4f54cc683296"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-pixels.json",
+      "bytes": 544,
+      "sha256": "6bb2f6c00d035e6f60802fbe4072fae0520dd069084d465604982938180b9135"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-restored-context.json",
+      "bytes": 1818,
+      "sha256": "78126ab97bb07f9a1536c0a947f3669a6c4e24ed0aec025deb79b36ad066be28"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-saturn-fine.png",
+      "bytes": 14298,
+      "sha256": "2fcbddb3681c60123e4f01f4743bd1a1773f78dd583d4fec96f29f6d534f9c81"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-saturn-manifest.json",
+      "bytes": 665,
+      "sha256": "2e28d44637b4cd540d4fc41c20b35c0dd31d949243f99f4822f6c10d9fb71b21"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517235594.json",
+      "bytes": 574,
+      "sha256": "23368b2caf82ed57fbcb740edfae8cf0120111d59663e02ef1e05fc2eabb5250"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517236751.json",
+      "bytes": 576,
+      "sha256": "d4e201f7fdccdfc92b6ec97136bbe348c199c8d4ba9467cda52c689a7ca76d36"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517465173.json",
+      "bytes": 537,
+      "sha256": "5e8afa492a11d5a3f80253de0d969fa47062b0dfa011af6b4076da4c1430b148"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517477984.json",
+      "bytes": 537,
+      "sha256": "d70a05c714785e661b2b7a35cbc0e1a5839543dae1e4dde5c5f943a63c774a12"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517479322.json",
+      "bytes": 550,
+      "sha256": "3f86b92dd035ff6f76f2498f409532c8ec062e0f486459ae65829666cb45baba"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517495508.json",
+      "bytes": 601,
+      "sha256": "a410cac607fd9730a849e009330ab66c45948f643506bdc7c37dfa9db51765e4"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517496845.json",
+      "bytes": 551,
+      "sha256": "f5c6dc7624c6e298b63e264f0d33b0935d2332fd6f6b6d56983b5df7165a1654"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517499449.json",
+      "bytes": 607,
+      "sha256": "46f29cc0c09f368990365173f2537d82296f28d376a4da76473509bf7162910d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517514365.json",
+      "bytes": 3999,
+      "sha256": "be2cda355328f751214bca93c38118b9deb98b998e813d197cf53f11d703c100"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517515756.json",
+      "bytes": 606,
+      "sha256": "2732571099cae63a9f7901aa57bca4b92173c02f54fbc736537009856780c263"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517516939.json",
+      "bytes": 581,
+      "sha256": "8634423af72da19b91adbca5ed9046dd92fd2c524718bc74ae61b5faaf69b9d9"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517535259.json",
+      "bytes": 596,
+      "sha256": "c463b6f61890b75532c3b01ae4336d0be4bc41378bdf91027fb62f964832b5e3"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517536572.json",
+      "bytes": 551,
+      "sha256": "1b0ea7ffe4852ae6b236a6dcca3e6afd7f2efab86b2bd5b85769521de204df5d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517548536.json",
+      "bytes": 595,
+      "sha256": "7c3361b41db2fcadb7024fb958f85df6ac9df7afb7e98ca94f1d3b9aa48a24ec"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517549771.json",
+      "bytes": 551,
+      "sha256": "4771d8f8fef4313921c083fc7508bc7162c7b57fd8139f051770b261b7afd296"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517565957.json",
+      "bytes": 1025,
+      "sha256": "283dd50c74d414b0369cb3e9fab725feb714a3b85c8776bbec6d4f66532d39e1"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517567194.json",
+      "bytes": 1030,
+      "sha256": "2d1cbc6d97132944c6ff845c1b1d958afbcd6ffd5c97dae2758965cca29feec9"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517568437.json",
+      "bytes": 832,
+      "sha256": "e33509387d1e2294e7d959008ffd3847a5a58e64acaf29e5cd486431d10f83c4"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517609039.json",
+      "bytes": 534,
+      "sha256": "8aa474c8e4ae0055ffaa27d1e6a8c9c76f6f3f0c8936e6350581c00041eadcc7"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517610491.json",
+      "bytes": 551,
+      "sha256": "5e0c98c0ed82cfb266ae6e091946e2861798c11306b83d175fe17b809e1b4e36"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517621613.json",
+      "bytes": 600,
+      "sha256": "724b7114a815023eaab50fb572e6499b1aaa62a6986e968effcebb91d9fc915a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517622958.json",
+      "bytes": 551,
+      "sha256": "d2f55be51305da46d8a746b684a929189b3cef9c98bc20e6d9fd402686d94efb"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517638712.json",
+      "bytes": 580,
+      "sha256": "86f18ba6aec53b4d81f4bf279818fc26217a0041eebcb5a2aec19201215f04f0"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517639902.json",
+      "bytes": 552,
+      "sha256": "f641ee5e18d503a363746f8034d5afec5fbdcbd862b3d8ca5a0ea466e8ec2681"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517653455.json",
+      "bytes": 537,
+      "sha256": "9da5ee96ceff62201a95c0fc1e8e65de95398f93517be47446e681fd0f72dfc9"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517654879.json",
+      "bytes": 551,
+      "sha256": "d54215ba30354ed5c592ecc77b2430f9186654bb77ddc76c67c03953a2851bbf"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517671964.json",
+      "bytes": 552,
+      "sha256": "c8c6aa0c4ca6b1e5b4deea88e0511238ab097f45300e4b66a66993f17cb3ac87"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517673182.json",
+      "bytes": 551,
+      "sha256": "ad63bdb78252df126448e71e376f88bbeb0a7833c91655b69c3baa8128a98d4a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517675799.json",
+      "bytes": 596,
+      "sha256": "13b9b817a8ee82d24c0603a5d86add26dbeba68cbaeea9bdf5aa3f9356287e97"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517676975.json",
+      "bytes": 552,
+      "sha256": "b36c59d11179e2f3005b37cd4db6351afdf0d7e7aca615df33c0679fecb111f9"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517715943.json",
+      "bytes": 651,
+      "sha256": "c2eb4d89b09c6157b89f8aad981f5c830ff3c88f5158a81a0f9484b0983993a4"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517718768.json",
+      "bytes": 596,
+      "sha256": "078e150a6d50c10163708ce627d214b40681661e5c359a748c370ce5384c2a39"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517719947.json",
+      "bytes": 552,
+      "sha256": "9f6e616a23bcdd40ed576ea0c4f418346e2c86dcf3941297ae7ed675f28b9fcc"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517739747.json",
+      "bytes": 568,
+      "sha256": "10ea89e50c1872d8863351ce3e4a444805abf4ed559b988090a72514b27029b3"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517740926.json",
+      "bytes": 551,
+      "sha256": "71d988f2dce7ca85db078c0329a4630b782a4e000a4aa492b0772bf1f41ae972"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517759947.json",
+      "bytes": 581,
+      "sha256": "8bd2a19f094cfa47f04921e2d16226afad0543ef529142e1ce6161ee64cd0476"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517761610.json",
+      "bytes": 551,
+      "sha256": "a5868172f74686e1453c847876db041408bbb5787da6ece511e10bec09c464d0"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517829782.json",
+      "bytes": 534,
+      "sha256": "e14b04ffd558f3476df5a0d8ef650b55d497cbda4e25c1904b9215918a254a54"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517831127.json",
+      "bytes": 551,
+      "sha256": "2a9da9a66c8aea052417dac75925a6fdb4449b987e8e66fee2fa0390c893d45d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517833924.json",
+      "bytes": 600,
+      "sha256": "6a347697a9e0f302a393b6cd0a34abe56abb139638b74285d5b272c27de14196"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517835088.json",
+      "bytes": 551,
+      "sha256": "365fb75bb15cd7ada6e33e7dbb777eb84e525c7b3e96f968263a166c2a763597"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517850637.json",
+      "bytes": 580,
+      "sha256": "8551da4e1aba9893be634835833d78f759d6f60bf75c0089ecb82b9c894609d9"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517851984.json",
+      "bytes": 551,
+      "sha256": "5f33e93ba86b0c855eb30aae9ea0f91e835771ac308d7f6e4d9cf94dfcbd0786"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517979327.json",
+      "bytes": 596,
+      "sha256": "36e81870ce1b12e33544caddf9e937f14b55c98c65281bbacde8218a32f03a8c"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517980695.json",
+      "bytes": 597,
+      "sha256": "3b60cbdbd61df2fea8468b55aa86c72febf9438b49ba6d53908a0a9cede5be56"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791517981879.json",
+      "bytes": 636,
+      "sha256": "2594e201fa4cbd4d5b3b1b1fa48e487e46b72ac513bdfa2694c5e581e6ca0e38"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791518020397.json",
+      "bytes": 632,
+      "sha256": "ae87e1856cb53ff3f04b7ae28ca321e428c3541a53db1363be7ae2581894be0b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791518021717.json",
+      "bytes": 630,
+      "sha256": "fe7f4479a96ef8c9dcc46eff42423321494e0c118d3e01cf0078a451cc5cd6b5"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791518054399.json",
+      "bytes": 587,
+      "sha256": "adc53039e368b26b917bcc970b0605dc2900cdbbdd0d3b093782e04f4764e662"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791518055603.json",
+      "bytes": 551,
+      "sha256": "83d3ab3150c28beeb90ac68d6f480f871671aecdb952e6d51acf61f1b6a39514"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791518056797.json",
+      "bytes": 630,
+      "sha256": "793d22923ad7d27e8fc3fb1d93940f3fbcd2258752124ca0a467d4f346105cfc"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517128494.json",
+      "bytes": 6078,
+      "sha256": "dfd56074ca3d77cc640e69bb2e8f051af4cb7666828fea767dd1051265522dca"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517143229.json",
+      "bytes": 6078,
+      "sha256": "5cd09b74f591a77e59f34824532cfb11b5ab8352b3efbe242ee3b7d38bf55a2a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517144705.json",
+      "bytes": 26228,
+      "sha256": "c02e44c2fe259fde8be720fb6402c7ad93efa63d42ce4a57e30058100eed506f"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517199957.json",
+      "bytes": 1201,
+      "sha256": "7aaa0d443aacd059da77cd20f224921fe9122fc32464840c16bdb8f9f238573d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517234215.json",
+      "bytes": 6078,
+      "sha256": "f80e2aa1f0c3e40d4971dccfd94f7d884f88054a48d978b94085cf2956b6cb3a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517452175.json",
+      "bytes": 6229,
+      "sha256": "64a4fbe127ec2a0c8cfb551a1a6dde083772e2a0efe99a339a9936a2c80ae68d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517463905.json",
+      "bytes": 1840,
+      "sha256": "2a0c0926eedf9c539f8bd7058bcc63a13c5da29e819b145949f85a54ea3c047d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517480660.json",
+      "bytes": 13933,
+      "sha256": "877d32cf7646854e1f3e27b1f5bec56a5a75e35b8cec42b97bf1d9b4a05eb7a7"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517498257.json",
+      "bytes": 13933,
+      "sha256": "cba5fe92bdf1d19292f758c5b502a1761df4a146382b0c74d184db46be8f4b48"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517518206.json",
+      "bytes": 9239,
+      "sha256": "808d4f89a3804dea6590a7423749678df8ba52e64939b1a426d49fc2c0e7673d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517538088.json",
+      "bytes": 11730,
+      "sha256": "0b8188693ce818b246a530e543c6b49daa476bac764ff8cf57d14b22f844c239"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517551200.json",
+      "bytes": 5739,
+      "sha256": "aeb527a773c0b8a4b5153ad6ad49f36dfa5af8fd36680e2533c3aabbc885ad58"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517569821.json",
+      "bytes": 6144,
+      "sha256": "8cd1cfe02bb9e5b1afe310c5c22d3a76a384039ba45c431f7e331612ba2ece32"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517594270.json",
+      "bytes": 1847,
+      "sha256": "d85de1d9c930d315d81b9724f3cc692ede175fce1898bed62113b8f146a42419"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517595798.json",
+      "bytes": 6145,
+      "sha256": "65e88da9d005030f1315aba60af5b3daabf3c38e85308b2b04007f5e81685aac"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517611980.json",
+      "bytes": 19059,
+      "sha256": "de078662daf468b35ef8c1ad47162c03252a021a940806edfd916f33395a4b62"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517624377.json",
+      "bytes": 23617,
+      "sha256": "d344bf07254ee70b4ae149e84bb9b752e4d6db107f6638ff4788925bece4f164"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517641338.json",
+      "bytes": 18202,
+      "sha256": "52c8c0e2627f1b518c3a2a1f81fd1b0e457c36a0b8a7a54bc83ca9372743a2ca"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517656327.json",
+      "bytes": 13282,
+      "sha256": "676ca03deb056bc5c601583ee38522664b4b0a387214ca321b398ececff5c039"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517674527.json",
+      "bytes": 16338,
+      "sha256": "453266bfb7e0b407497a328a935b615ad9ac2f874f0c87f7bcd352f761cef518"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517678451.json",
+      "bytes": 5645,
+      "sha256": "898de67acb1b5fddf1057ad033ef7f8741fec5284eb8c9be87765abf4d6d2337"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517700788.json",
+      "bytes": 5646,
+      "sha256": "1f9ed3324f1bcab13cfd2cc53401ec7d07e01dc9deebb5bc65ff23cadfc231b7"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517717473.json",
+      "bytes": 8701,
+      "sha256": "a45a0ab6e97b698379d60d8c8d9f297fe380e3ebf5aaeaa97ce1dba93cce0ca6"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517721337.json",
+      "bytes": 5049,
+      "sha256": "f07007fb4c1f26050ca6167546b665ac6beec9ea037be753f36b0c057d060e78"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517738412.json",
+      "bytes": 3286,
+      "sha256": "3803be6141d0d5dfb3551b4cc08894dd8f913278f9c62b59d5c69ec717e48869"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517742378.json",
+      "bytes": 9279,
+      "sha256": "a84d61c646560744ed9b151da0a0db8d48d3178063c3280fe08406fac16ce91e"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517762901.json",
+      "bytes": 5645,
+      "sha256": "3b78834db029fa96410da7b8c5af4d0059be748843069c0194319b329ee1cf65"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517766348.json",
+      "bytes": 2343,
+      "sha256": "0fc7287eceb772b20f91ccb326fd06a51d779293492f5699ef5ccfce773b9dbd"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517814100.json",
+      "bytes": 5646,
+      "sha256": "c238d434f4d3f6d06a562e1b283d080b919d048c0dec3e0be7e0d25126807ac3"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517832601.json",
+      "bytes": 18178,
+      "sha256": "ff5171e2aca756991d054f1237e3956465232d68069804f0cfaefd1ca8c5d23b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517836428.json",
+      "bytes": 23312,
+      "sha256": "62b3b3953b2ed641b4f4635a82806d4e412e6cd428cf709941ed639fceb93d68"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517853430.json",
+      "bytes": 18448,
+      "sha256": "117fc1398347a0bd7f2d9b990dcc2ba9c2d6eb079ad8d91394ced54c5c993d41"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517963882.json",
+      "bytes": 18448,
+      "sha256": "28fa9644f9d68656b48c7e6b6ff86435413c718a300ade13b578f69b0cea01cc"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791517996400.json",
+      "bytes": 1211,
+      "sha256": "1599bac02e1bdd61a68b0ddb95057e2d05d9fced9f6da8d3b44fc721edc6f237"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791518022999.json",
+      "bytes": 18936,
+      "sha256": "d12c4642bb3c1366ee7b3faca3df45eecea32dac8e81fcef814d8427b1113258"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791518058216.json",
+      "bytes": 18448,
+      "sha256": "a0c680e0ff1019ed19af591ee9929fe4555fe97f267cde5604356db3b2ef1f0b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_screenshot-1791517129737.json",
+      "bytes": 817,
+      "sha256": "6c4068af1132601d7d274f263d59f0aec97c7d802421d795acd0837862d36cd3"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_screenshot-1791517570966.json",
+      "bytes": 819,
+      "sha256": "f3abfe590f1e3cebf187070f9a68a70bd10d59edf5a17ec8dd976d8726218cee"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_screenshot-1791517679709.json",
+      "bytes": 817,
+      "sha256": "11812ff664e1ea8aadbb3e61ab95875ccdd0e2ad54873419c0a34e37b79d66d5"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_screenshot-1791517723083.json",
+      "bytes": 819,
+      "sha256": "4d0ee470174cec337e30b6814e048b6ab5136fdd3b79732982d5b20c5a09a8da"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_screenshot-1791517764065.json",
+      "bytes": 829,
+      "sha256": "fba7a024e616e0d83c1d2a63927afd7f54c64b1685fd5861d10195caceed6a79"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_screenshot-1791518052014.json",
+      "bytes": 827,
+      "sha256": "cef255a3f4044920db586aca780e722344734fd27ea43adba43d7d3de30cc17c"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-midnight-drag-cancel-2026-10-09.md",
+      "bytes": 2870,
+      "sha256": "2d68bd4ddd4563a07833619638187759e4533bc53a8c5b6f6efdd54a78a1f610"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-midnight-held-preview-context.json",
+      "bytes": 1818,
+      "sha256": "e6bf2c02e9b7ffa81f753feef5327b83339dc1b06315e4c27c3bd0fd3dcb0c70"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-midnight-drag-cancel-context.json",
+      "bytes": 1818,
+      "sha256": "9621187fc488c425187573c422de8b805cb9b4ba3c0e8d85659fbd5971757956"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-midnight-held-preview.png",
+      "bytes": 10204,
+      "sha256": "7f4dc8486766d9bb9cda39872931ae7b1f74c9e06f91755c28161412a2df52d8"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-body-painted-binding-2026-10-09.md",
+      "bytes": 5877,
+      "sha256": "2f46a504d10619cead5ce63f37bb2cde0a459c3f9464be1c19894fa1d7e6ae49"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-body-image-completion.ts",
+      "bytes": 2547,
+      "sha256": "b3d87357b09ebaa1a9cfbecc69dfd37e3256cfa504ec483692e18a30a7ff503c"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-body-image-painted.test.ts",
+      "bytes": 11367,
+      "sha256": "c264ecce9c1f69fe85e72c05983a7350b6fffa070031c2c9e899ac68796fe123"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/use-sky-opal-bands.ts",
+      "bytes": 2399,
+      "sha256": "2d67871ffd230397652efd21872900b92da2ec28148f3bb84269af7fbab34f25"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-opal-bands-source.tsx",
+      "bytes": 1668,
+      "sha256": "3712b0fd57cbee17bc0e3547d077b125310a30d774ae816dd019d4e9d67d7336"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-optical-page-test-support.ts",
+      "bytes": 2721,
+      "sha256": "e52937a26f7422ddf2bc2263dd1e9e08d9a9b04d46d4e8f8455e989ab1a344d4"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-alignment-render.test.ts",
+      "bytes": 12238,
+      "sha256": "e3d063a5aef5e228fae189a710eb2fa40900a042637cb856798ede1fd848f10a"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-native-image-owner.test.ts",
+      "bytes": 42601,
+      "sha256": "c192cfebe5d3a6ff9e5ffa6b9b6d1bc53bc558a8f7a2c01333e95d49ecb1f9c0"
+    },
+    {
+      "path": "apps/wechat-miniapp/src/features/sky/sky-sdss-optical-page.test.ts",
+      "bytes": 15822,
+      "sha256": "5683850254cd9f1e98c375e3718f0c119dbde27aae3529f205b308e2c0f0124a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519640673.json",
+      "bytes": 592,
+      "sha256": "9dae9d656ae26e4f684ed7aa10dad9389b81ae50c896cb5b5dd80fd7d16e3060"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519642096.json",
+      "bytes": 551,
+      "sha256": "6df1751016d34106bef1701f4d17e908e6d39df246336cef4bc861fa905033d2"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519662548.json",
+      "bytes": 537,
+      "sha256": "4f8cadd1b117c563aaba5514e0a5b317f2df36f425e79fa3b9e801c67237de02"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519664029.json",
+      "bytes": 551,
+      "sha256": "20def8f9315db4d2a181b6cd82855b8093bc865c146126f4c4de94f1386b8b48"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519680284.json",
+      "bytes": 575,
+      "sha256": "e2ff01b3d8ce308b7541785d72713ce09321b6f10802444049d6401eb921b08e"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519696597.json",
+      "bytes": 575,
+      "sha256": "9e88823e95dce25c19167b11064671ebac26dea206170c6675a047a956f320fa"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519697915.json",
+      "bytes": 551,
+      "sha256": "50c7dfe5fe9d2cce26776ea6e5fda7c38d868108e104ee7097a09ce4ed500618"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519711447.json",
+      "bytes": 595,
+      "sha256": "9361f7979fae36245437b0be82c4c279ea7486443dc72cfbb51a3aaa1f1146af"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519712965.json",
+      "bytes": 550,
+      "sha256": "921776058d94793aa4f3b2e51c30d5ec3d2cb7c52cdda14e144e57f78197ea65"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519754249.json",
+      "bytes": 1031,
+      "sha256": "0ec20b240ae7409e740a1525ad13796af387c32f2f0b08b2cbb0294d009a4e9b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519755593.json",
+      "bytes": 1024,
+      "sha256": "16874ca8b7c0e1f346632843019acf91fe9a2ae1bbd1c69df26e3354f18baec9"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519756848.json",
+      "bytes": 829,
+      "sha256": "f71a4879fa45224a740ccbca7c45d58cc3d31bf5c5ecf2f00dbaf0268d699b4a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519758049.json",
+      "bytes": 1031,
+      "sha256": "8d31d4ec6f88b9a452506f23daed6bfbbd4efc01e00a2160a842408fcc2548ae"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519759293.json",
+      "bytes": 1024,
+      "sha256": "dad0c6cb710da2565ed90c396837318c0d03671b81341940f8d9f2dc92c36ad1"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519760574.json",
+      "bytes": 829,
+      "sha256": "9917add9915a653aa24a6315a591778870b0bd1cb7909a54e3d37a096129ed7c"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519761770.json",
+      "bytes": 1030,
+      "sha256": "d7f5476a833180a552b7d8520c99f565c9645cce345578815a00a1cee7a88161"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519762875.json",
+      "bytes": 1024,
+      "sha256": "ad57f2fdcad89101cc48aa3aa289f17a66a442d397e1fc2d698e15d23f459b95"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519764153.json",
+      "bytes": 829,
+      "sha256": "1f9d931a523faa84d2e2d11d3799e05f7b464b811225c83a7d6e2fb74114d29b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519788468.json",
+      "bytes": 599,
+      "sha256": "8ad6661ee6ccccfd2c264409f1a73f9ddadc5f1b2177e5a3d0a81fd56ab87b7d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519801831.json",
+      "bytes": 537,
+      "sha256": "5f3917c243b0fa61fc2438cbd0150778e5de320a04f10e8377f7312bc52d9e7d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519803136.json",
+      "bytes": 551,
+      "sha256": "f74764b876960e5713adbde7d41f842e8a232c988a0341d833b2762271219a86"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519818988.json",
+      "bytes": 601,
+      "sha256": "1c1c8f281027d9a2bfc86db7d09138f50dd046f37010aca10cc233a79f500751"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519820223.json",
+      "bytes": 551,
+      "sha256": "8cd17f244dd69517c2c691aac77f9f295d7876b0ef5d10087b0b8086a060adfd"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519886120.json",
+      "bytes": 592,
+      "sha256": "ad617adb24b030bef854cd18c75eedeaf7985d752ba1767c27dbf71a66d14495"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519887376.json",
+      "bytes": 551,
+      "sha256": "987874ae329baf245b82d0d2c3ed89ad95d9326003a4e473ccba07d3028c9a2c"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519906477.json",
+      "bytes": 537,
+      "sha256": "57c2ac98af909540682382bacdfab5331598bda28ed8e13fbf903cdd36d2a758"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519907860.json",
+      "bytes": 551,
+      "sha256": "ba714dfd66e188c0e538a1b25d2a267372ef56a0d41339258000f236153269ab"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519910910.json",
+      "bytes": 575,
+      "sha256": "ea924a36bd0d6eb67a16ae6393637b5455a9aec13442c50e1d4b730d1bef39f0"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519912189.json",
+      "bytes": 551,
+      "sha256": "1dd3549d1c94cca0172981bf4e383061f8b0651448607b02991cd50863297502"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519915073.json",
+      "bytes": 540,
+      "sha256": "6fbafae89fcb523004f3f62bfe05ae89048d831703034680f4e207001a669af4"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519916419.json",
+      "bytes": 551,
+      "sha256": "fb9e1b936c4c0e04ca9424ed0ac3a4627fadc9e10f16b3896e47ba0f31457ec7"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519939756.json",
+      "bytes": 1031,
+      "sha256": "f1fd620d6a2d5af6e22951eb01f48c8fb57a9eb44c07f373d8a117b6aeddb098"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519941087.json",
+      "bytes": 1024,
+      "sha256": "5499311fb0bb39fdf6e3a3d6542ff8b179714ac82ebaafecb08cb68480a2bb0a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519942416.json",
+      "bytes": 829,
+      "sha256": "5251112f3150fd4173f59b1cdf4b0f7f831613fb03f1ab59409ebbf587cf1ee0"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519943700.json",
+      "bytes": 1031,
+      "sha256": "a4b5a611ca195ce83bcd3de856c4262ca8681bca6b1b3035bf019b10a0bde1d4"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519944947.json",
+      "bytes": 1023,
+      "sha256": "15db0589f92ef818b52764bc4905c9243662212ea1ede467f68c7b0eff92fc4a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519946099.json",
+      "bytes": 828,
+      "sha256": "63237bb1eaeafc8cd7252cac2c5e55d2423509685f7e26ac95088bc16a9d0114"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519947253.json",
+      "bytes": 1030,
+      "sha256": "3b4a34ef6e251880422c9189ed66e5ad68ed13398452d97ab35fe4e4664176b7"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519948333.json",
+      "bytes": 1024,
+      "sha256": "3c799f4de399e849afcb45215f2e743b1be61710416dcc15f7b32e78a1cf2e67"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519949598.json",
+      "bytes": 829,
+      "sha256": "8dac5b6f3faedad09a8ff75be23d3764c939538497ee49c68e2dbfc6af308954"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519973781.json",
+      "bytes": 536,
+      "sha256": "85ac954b1bbe7797be005818cc31f057031b2635e91439d16bc14af5b61c8bed"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519974919.json",
+      "bytes": 550,
+      "sha256": "fd89d214de5593338c61086bd01c6041575c8c43722bca9cd2da55adf3784364"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519977437.json",
+      "bytes": 560,
+      "sha256": "4d924cdc6b5aba358e13eac31bdde7a4b5d61dcec5277a92af4a065f07dad8ca"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791519978576.json",
+      "bytes": 550,
+      "sha256": "da43c4a659a210ea95c4d2fe03571a6218bb69cd760ae7d0636f704667d8d999"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520024283.json",
+      "bytes": 537,
+      "sha256": "90d9acbba4c551d6e1a49b737583c4863d8755297f7426e7c76a9ec18ff27b82"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520025618.json",
+      "bytes": 551,
+      "sha256": "4a59389da88fa2b1f0289d7e0b2d57674c4430472c1daa9102dc47baa0be0095"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520028334.json",
+      "bytes": 534,
+      "sha256": "0a29972b22617f526adfdc2370bc1d88bcb8ad423b1a76d2c43fc33b2f9ace44"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520029654.json",
+      "bytes": 551,
+      "sha256": "4e2578c135c8f97d68ccd3a71ae578559b6ad62a1419d7fc9137b722596c2b7d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520062943.json",
+      "bytes": 600,
+      "sha256": "63dfc92183f640127f412ff3d8d731ce3016803d2ba2968eef3ce28e441434bc"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520064281.json",
+      "bytes": 551,
+      "sha256": "d6b901cf4828e2bb4cd833ceb495f21c730866e6e9ce5224b5f4f15ec74a5d93"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520084205.json",
+      "bytes": 579,
+      "sha256": "8961672ad5d764f5bc6dd209ccb73d59e27311f94e1d98d38c56d580035627b3"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520085595.json",
+      "bytes": 551,
+      "sha256": "e09b1e4f7b9b3dc3edc2064a21e73f3465142988b950b0b6ff7ef9531aa36e26"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520086854.json",
+      "bytes": 1025,
+      "sha256": "2298a1cf6ce945fa7d08f12d901990093051d6577e464ea733b507e4060c1579"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520088273.json",
+      "bytes": 1030,
+      "sha256": "a9c9db6f97049b29643199f80999044cfa5c559e06e29f9c677a465e1c3397e5"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520089612.json",
+      "bytes": 832,
+      "sha256": "12b5add6b1692149710c931f7241cdc058ded623762d94504af0045488ce890a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520104105.json",
+      "bytes": 540,
+      "sha256": "18d6f63652ae6ae4445b7a3e589b9b7b67ddae7bd1213d1064a21a5dfc8930ba"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520105398.json",
+      "bytes": 551,
+      "sha256": "9f3db6d179701111701ea51cbf480f0ee83738f61fb8d65eaeb3358991f7ef76"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520107953.json",
+      "bytes": 537,
+      "sha256": "b54eeca84ad51482edd733d2ecf9f9542c68c36a0c3ed956896cce614a8b7def"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520109131.json",
+      "bytes": 550,
+      "sha256": "0e98e85c9524c39f2beb47e63aa2b5e3d58274eb4f5f155cc048ad4ff981c40a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520123437.json",
+      "bytes": 551,
+      "sha256": "acc95a5984838580218ba9dcf4f22a0af727b603dad34214e8f97ee9f3976c89"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520124682.json",
+      "bytes": 551,
+      "sha256": "d32c237a54a7080a48dba9ebeaada53169c40b316b658b3d9b54e108cf2d7821"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520127429.json",
+      "bytes": 540,
+      "sha256": "6b4ca65cbca2fa8223a3e6f182bc151c2cbcf69af3f570b49167d897ddee9c42"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520128698.json",
+      "bytes": 550,
+      "sha256": "697bc49cf88e4277aa935a5c7f10208868cdc6ac9332da0b6939ff903824ff6a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520180850.json",
+      "bytes": 1025,
+      "sha256": "b29ef5809c250d6b4e4318a9bfa27a4cefd0b4ee2b622d82a8b31471ff09fe91"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520182187.json",
+      "bytes": 1030,
+      "sha256": "f429804a4a8ccb4dcb32476d3cd34fb0c47d45abfc044516033a70fe98ec11a0"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520183576.json",
+      "bytes": 832,
+      "sha256": "9efdcc47c4711fb3f81e7143cb6759ded437161b15e2a1f10ed5698be7165783"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520185140.json",
+      "bytes": 1025,
+      "sha256": "7c58701d787a2e61b06eb1012abc6cc00a22009130c31f87538b79e3e527e7c0"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520186623.json",
+      "bytes": 1030,
+      "sha256": "2e847e7966f43b632bb5a8edbd84d0ce614d79c3564b698d7b82f906340fb380"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_element_action-1791520188104.json",
+      "bytes": 832,
+      "sha256": "476ad5b30c883fc46c2914c388c9f6bf21f66f71a1eb297d9f20a2d641845757"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519590520.json",
+      "bytes": 3040,
+      "sha256": "75dce73cf1b13eee6ef93fbc631792d9a04feec5bb4e9aa75caf9395578a567a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519623257.json",
+      "bytes": 5458,
+      "sha256": "0e42d826c19c79d7809b27c96058f651a18501a95ca8706030036a4d4bd00f33"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519651289.json",
+      "bytes": 8359,
+      "sha256": "818c69cb563dd2baa95339186ecb6671548f8f18e3177a02b217dd3e218899b9"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519671646.json",
+      "bytes": 15909,
+      "sha256": "2912911a265ebdce0767a661b59d04e7f7b5bf2bc67327252f03aa60752f9d69"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519699335.json",
+      "bytes": 19098,
+      "sha256": "0454cacd27f2ba59688d70e0d3de55c5f6a72f255d28c5b4d1142a83a3642f06"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519723502.json",
+      "bytes": 6790,
+      "sha256": "97ce18b7dd2054a76b9dcd5f31e447050230199c49e84558b6d44ef9048177b6"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519765659.json",
+      "bytes": 6116,
+      "sha256": "856aecf6fec5790a32d7c890a9550897c16c6490c825784975c4591086e66e71"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519773010.json",
+      "bytes": 1337,
+      "sha256": "5bb6c058150b77ab8c16a0a8456e34d29fc8a04c7b5b157f017074095c5a01ed"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519789960.json",
+      "bytes": 6116,
+      "sha256": "d6ec7c66274bd6437bef9045860763fc4bb17a306fadf9feba14c092cf02c8f2"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519804575.json",
+      "bytes": 13972,
+      "sha256": "a4442da765b0320a7f071d0fcdc86a4b4f964f7f1cd1ddec363ec107859780b6"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519821460.json",
+      "bytes": 4523,
+      "sha256": "593045a54755e57daa960733df46c1d2fc11f7fc717e4cc1da8b5056ffce271e"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519866969.json",
+      "bytes": 5531,
+      "sha256": "82978577c849e0ee99ff3897c41b503f3fc91b52bd072bad06178de1c10a38ae"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519889166.json",
+      "bytes": 8292,
+      "sha256": "3b8b59099b4e3c5d497e754a5169f14ee94ca394f7a2d124f15bb90ed22aa039"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519905110.json",
+      "bytes": 8292,
+      "sha256": "266579356c7c34a3fb39a91adf9cd5316d8da95d2b57e4714f811aa5be478efb"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519909633.json",
+      "bytes": 15810,
+      "sha256": "52845011cc7477204461d86e54598ce779059c5f87fb81d7db18ba307049a73d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519913752.json",
+      "bytes": 18999,
+      "sha256": "c03d0b8fdfcdc5788b668aee7c626875720ee1271852da876a3e4ce1143701d4"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519950985.json",
+      "bytes": 6255,
+      "sha256": "d36c2db5a8168512a99358457197310e0b1d96ef7ee85d570795ae772ca52ecf"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519972319.json",
+      "bytes": 6256,
+      "sha256": "bb338743ce6806328a4952795d17a7f5552732869573a1187f1983d809209118"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519976239.json",
+      "bytes": 13873,
+      "sha256": "cde74f8c2f5687d8fd53a2edcff726e2a340e28907196fc543caa5633a9ec5cf"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519979768.json",
+      "bytes": 4681,
+      "sha256": "7cf15c06976df9ce23f56437fcf393655a13aa4a3b4975108f34b3e885fc4c96"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520022721.json",
+      "bytes": 13873,
+      "sha256": "fad643c912b2c0de0e921a399886e06e01407e25b0587c3a6377ff08c81e584d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520027050.json",
+      "bytes": 5601,
+      "sha256": "c3f05cd18a5eb8f1d52520d8ed92290e0bc81fa9c36b076e45cdfc36d5974f38"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520031155.json",
+      "bytes": 18317,
+      "sha256": "f4b28794052fd2b3f8303f053ae25a4f512a018d24c1fe485c7a31bb8899d6a2"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520065865.json",
+      "bytes": 23425,
+      "sha256": "e10ab84791afd0af4be6c5e67786be1cf08eb20d6c77d7eda2a3acc5670ab5c0"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520091122.json",
+      "bytes": 18122,
+      "sha256": "eace7257f441495f137f259cdac3382bed037197d1bd5c501eb8b3a4de829542"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520102790.json",
+      "bytes": 18123,
+      "sha256": "a24207e3dbb9c0c09498d71e9a594794ad6bd95fffc0f77a7851dff9198891a8"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520106808.json",
+      "bytes": 5035,
+      "sha256": "7585c54d01091699fa433168fec59791763578d0e567606c91f0ac20d4db833d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520110430.json",
+      "bytes": 12732,
+      "sha256": "44e0e8d36a69c0b896944679dd366c3b2b2b135049eed6db6955d338f6cc19db"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520121968.json",
+      "bytes": 12733,
+      "sha256": "2a146c2a697c15943d3b729113d15b11fa10a7d734caaa1262ef67eb9c43e35c"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520126133.json",
+      "bytes": 15781,
+      "sha256": "991b6fd3e64b336a43f809dfb1b0c9d40b96b10e474e561c46d1ed04f3a201a8"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520129993.json",
+      "bytes": 5819,
+      "sha256": "4bcfe1820987ee33cb762dc4c7aacd4324d007e34f015f624fe18a12e0007d29"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520164610.json",
+      "bytes": 5819,
+      "sha256": "1d2fad65933f296db139d39399249f11d8e1878a0a7e420e941e55719aebd8d6"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520189716.json",
+      "bytes": 10640,
+      "sha256": "db6abb916dfc708b8d0ffd2fb6ce2d051f644299507421725189c4ef71bd7631"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/automation_navigate-1791519606207.json",
+      "bytes": 732,
+      "sha256": "cd72440df8629d59f38f1003abd0f2033e2984a91bfaa036070b1bbf9b55a207"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/debug_clear_cache-1791519845058.json",
+      "bytes": 599,
+      "sha256": "ee29c401625ff93f845913ea0cf7c38421e906254d2450c1aef5c942e3863266"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/get_simulator_console-1791519868795.json",
+      "bytes": 497,
+      "sha256": "51a0d79e6c0e8e0d7c370830f64161a7bd8f28b3e08e77dda67bfe62f632b617"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-affected-current.log",
+      "bytes": 3176,
+      "sha256": "ecf068e2a3fac6f2d1bc2400b5f06a125a9176cb1759df1f541f6792d0787566"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-affected-repaired.log",
+      "bytes": 4051,
+      "sha256": "b9f93a2dbf7d15a82eab46b947d098fb399b4874438cf3f5cf90f9acd04f1b53"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-affected-tests.log",
+      "bytes": 9237,
+      "sha256": "2d6444bb7d6515981d93d27b0cdee5b1e5e340bc550cdebedb82ac6117129e1b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-before.log",
+      "bytes": 2356,
+      "sha256": "2bfffefb8f99fa1e3f96e40d3c19f75f30a35a94c180c4b1f4d1323534bd1b8f"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-bright-context.json",
+      "bytes": 1817,
+      "sha256": "5b2063626036042bb369247e40392b4eaa8267605c511fbbb49aefcacf7bf24c"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-build.log",
+      "bytes": 82873,
+      "sha256": "66b882fbc07ebf7738aaab52ed6b5a53cfc5f37f91ec9fac90d3fb4035cfd8d3"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-built-binding.json",
+      "bytes": 104870,
+      "sha256": "31300d1ea57fd444636095af371235e85f3c50eeed8e5241f8587842789a75ac"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-current-typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-final-current-typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-final-typecheck.log",
+      "bytes": 242,
+      "sha256": "d805f2099f1f63c4ee4ed3be9630f3051d1b7ecb3447feffad6ae0afe0ac4bf6"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-fixture-diagnostic.log",
+      "bytes": 2366,
+      "sha256": "4e9fa11e77a9a8414cf683f9311e832dfb86226d4ad3eea32907a3ff1ded2113"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-moon.png",
+      "bytes": 24308,
+      "sha256": "fccabf069c8403039e5589bdf50eb3cbecb448907db130b5f68be6e3d6117a13"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-page-contract-tests.log",
+      "bytes": 698,
+      "sha256": "4ff5cd63817b646c4fb4372acbf0f1af91a15e44c6107915caffd4d875c5e0a6"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-page-fallback-current.log",
+      "bytes": 699,
+      "sha256": "86e0c06ea4dee767788db039117629c479e71883f60c9f12c3bafea7ac06a9ff"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-page-typecheck.log",
+      "bytes": 1750,
+      "sha256": "60da98a58ac4d30eef2ab5c83c46472c522e11da6b8e3e66dbf8f5917a33782b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-preservation.json",
+      "bytes": 98439,
+      "sha256": "bea4ee8d87023af105cf9fc52679582f8b9113e1d85e3ca260b5599f058c107c"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-renderer-tests.log",
+      "bytes": 360,
+      "sha256": "ce3b851d97ee4ab6ce3720f64ea3ad8d5434a93b345e0a203bb1384996f9c07b"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-renderer-typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-saturn.png",
+      "bytes": 14235,
+      "sha256": "48c2fb68b96e9b153bf2768455d644f642cfec7432086af8dadf7e034f704dd4"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-scene-contract-tests.log",
+      "bytes": 474,
+      "sha256": "8cefe44cdfb10ff8e91dde945ca7c28a90b97c946f6b088c0e05b5dd61bb1b71"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-scene-shape-tests.log",
+      "bytes": 3182,
+      "sha256": "7ce5647352b1dee0217889e2377099e69fb98b2c24b0c4e3efc8fd8ac6815882"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-shared-consumers.log",
+      "bytes": 16140,
+      "sha256": "44ffe3e4c80c6f7b0c2e6e7c46ad6cc9e7aefde44b822df6b8d479b5fc1b8386"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-shared-current.log",
+      "bytes": 5357,
+      "sha256": "13d09a1edcc381a0b6126cdd1091ba1eb72d8839c773c5b7d1f11e6c9c23929d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-shared-repaired.log",
+      "bytes": 7411,
+      "sha256": "3dbd2cd120fdb9b97b7ff25bf16901503eecc55c5fa9ab67dfd731f12fcb211d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-valid-before.log",
+      "bytes": 1209,
+      "sha256": "0f5a8e574864fdbdc47be6f7654a65dea59c3da9e31d5222600dd27a0b089475"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/native-body-binding-verified-typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_open_page-1791519855576.json",
+      "bytes": 971,
+      "sha256": "681b735b180f58c67640e4780bb3fd8d7373a52dbcbc11dada8654b765c222c2"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_refresh-1791519580781.json",
+      "bytes": 478,
+      "sha256": "282ad6afaf60b62f6883733fc8ab66011697d0be7e2636eb4ce609111d9b497a"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_screenshot-1791519822702.json",
+      "bytes": 823,
+      "sha256": "bcd0479e66b67f34c4ff86e0a83da522e41f7cdcdf7fe90aadc2fda7d299c56d"
+    },
+    {
+      "path": "output/cloud-sky-native-session-2026-10-09/simulator_screenshot-1791520131297.json",
+      "bytes": 819,
+      "sha256": "efbde31dfd24b238a16ab700a8a936bb6767e9a92a80623d49798935b5e8eb59"
     }
   ],
   "reviewQuestions": [
@@ -1032,58 +3571,66 @@
   },
   "sourceBatchNoProductChangeEpoch": "Earlier no-change claims belong to frozen source and alpha counterfactual epochs; current grouped PNG changed4 production responsibilities and2 tests, not original publication pixels. Pause saving changes only state/evidence/Context.",
   "terminalReadback": {
-    "status": "PAUSED_FINITE_CURRENT_INPUTS_SAVED",
-    "pins": 161,
+    "status": "PAUSED_HANDOFF_FINITE_INPUTS_READ_BACK",
+    "date": "2026-10-09",
     "goal": {
-      "actual": "paused",
+      "status": "paused",
       "budget": null,
       "complete": false,
-      "userRequest": "云观星这一块暂停开发先，你做个状态保存或者暂存？",
-      "readback": "get_goal paused and idempotent update_goal paused; no create/complete"
+      "threadId": "01a113df-ccf9-7a93-b3d8-c0924bf38cdc"
     },
+    "refs": {
+      "branch": "codex/remote-main-20260908",
+      "localHead": "b73523f1c76bf50a3811fcff65f3e2d2f791373d",
+      "remoteBranch": "b73523f1c76bf50a3811fcff65f3e2d2f791373d",
+      "remoteMain": "02599720560b68463ddae9f64e47996f360f8bda",
+      "mainWasNotChanged": true
+    },
+    "pins": 169,
+    "differences": [],
+    "acceptanceRows": 33,
     "protected": [
       {
-        "path": ".codex/work-items/cloud-sky-native-2026-09-22/GOAL-CURRENT.md",
-        "bytes": 10098,
-        "sha256": "d42b32e9cc738d452698bbf2fc6e2c17725ea2737208b8613914f48f08e3cf60",
-        "equal": true
+        "path": ".gitignore",
+        "bytes": 6725,
+        "sha256": "cb3ff42018e78ec923c9b8a5ec80f71d0c956e58ef9739bbdef2f85a5d094471"
+      },
+      {
+        "path": "data-pipelines/deep-sky/README.md",
+        "bytes": 73286,
+        "sha256": "dddcfba7281f4902c9dcb837c3cebd5193b94981021a0445ee3c676480307f5c"
+      },
+      {
+        "path": "project_context/development-workflow/resources-and-artifacts.md",
+        "bytes": 8811,
+        "sha256": "6b657976ae4fc3fed0c8d921e1dcbac6f9744f619a35a7918a75d733d7e0dd58"
+      },
+      {
+        "path": "project_context/external-capabilities.md",
+        "bytes": 117045,
+        "sha256": "d5e6c8d57af81547bfa7a89ee9fe5d6e0a2350b5d4ad1619ac58c4f99c828508"
       },
       {
         "path": ".codex/work-items/cloud-sky-native-2026-09-22/ACCEPTANCE-CURRENT.md",
         "bytes": 48141,
-        "sha256": "34549de3f9d2f17ab7f344c5dfb700f988977d004bf033a59aa881edfa9053e3",
-        "equal": true
+        "sha256": "34549de3f9d2f17ab7f344c5dfb700f988977d004bf033a59aa881edfa9053e3"
       },
       {
         "path": "apps/wechat-miniapp/project.config.json",
         "bytes": 975,
-        "sha256": "7ab530fac785c3716dcc6293837492ff2098e7698b382e47fa057800a03f8ad6",
-        "equal": true
+        "sha256": "7ab530fac785c3716dcc6293837492ff2098e7698b382e47fa057800a03f8ad6"
       },
       {
         "path": "workers/miniapp-api/assets/celestial-object-introductions.zh-cn.v72.json",
         "bytes": 643978,
-        "sha256": "587c4b3f7f773d352925932062716ea570485f18ddaa0a6d2c9730c29b5c204d",
-        "equal": true
+        "sha256": "587c4b3f7f773d352925932062716ea570485f18ddaa0a6d2c9730c29b5c204d"
       }
     ],
-    "acceptanceRows": 33,
-    "refs": {
-      "branch": "codex/remote-main-20260908",
-      "localHead": "e2136ebf59875f02f921bba393d1b11d7782f81e",
-      "actualRemoteAuthorizedBranch": "e2136ebf59875f02f921bba393d1b11d7782f81e",
-      "actualRemoteMain": "a786c2e9732ab8b82d82e90d20e04d728bf645ee",
-      "method": "Latest pre-pause git ls-remote --heads; no fetch/switch/merge/push"
-    },
-    "currentChecks": "Previously completed current app/owner checks and original GPU/native runs preserved. Only state/finite-pin readback now; no tests or development after pause.",
-    "ownedRunningTestSessions": 0,
-    "ownedBrowsersAndApi": "Actual runner cleanup saved; no batch/native runner found by process scan",
-    "newExternalMutationsAndOutreach": 0,
-    "preservedWorkingAndIndexChanges": true,
     "independentReview": "MISSING",
-    "differences": [],
-    "next": "Paused. Only after fresh explicit continuation, read PLAN current checkpoint and original owners; address high-DPR shared contribution/resource constraint and current adapter types without rerendering unchanged proof. Background/P1/R/E/A remain independent, phones last.",
-    "protectedGoalAndLedgerAndV72AndConfig": true
+    "newProductChanges": false,
+    "newProcessingOrTests": false,
+    "newCommitPushDeploymentPurchaseOutreach": false,
+    "next": "Only after explicit continuation in the new chat: read START-NEXT-CHAT and PLAN current section; integrate adopted SXT batch/review responsibilities through existing pipeline owners. DPR/background/native and remaining obligations remain independent as PLAN specifies."
   },
   "groupedCheckpoint": {
     "owner": {
@@ -1210,5 +3757,528 @@
     "latestTaskAdapterTypes": "NOT_RECHECKED_AFTER89433B_EPOCH",
     "independentReview": "MISSING",
     "userPaused": true
+  },
+  "terminalReadbackPause20261008": {
+    "status": "PAUSED_FINITE_CURRENT_INPUTS_SAVED",
+    "pins": 161,
+    "goal": {
+      "actual": "paused",
+      "budget": null,
+      "complete": false,
+      "userRequest": "云观星这一块暂停开发先，你做个状态保存或者暂存？",
+      "readback": "get_goal paused and idempotent update_goal paused; no create/complete"
+    },
+    "protected": [
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/GOAL-CURRENT.md",
+        "bytes": 10098,
+        "sha256": "d42b32e9cc738d452698bbf2fc6e2c17725ea2737208b8613914f48f08e3cf60",
+        "equal": true
+      },
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/ACCEPTANCE-CURRENT.md",
+        "bytes": 48141,
+        "sha256": "34549de3f9d2f17ab7f344c5dfb700f988977d004bf033a59aa881edfa9053e3",
+        "equal": true
+      },
+      {
+        "path": "apps/wechat-miniapp/project.config.json",
+        "bytes": 975,
+        "sha256": "7ab530fac785c3716dcc6293837492ff2098e7698b382e47fa057800a03f8ad6",
+        "equal": true
+      },
+      {
+        "path": "workers/miniapp-api/assets/celestial-object-introductions.zh-cn.v72.json",
+        "bytes": 643978,
+        "sha256": "587c4b3f7f773d352925932062716ea570485f18ddaa0a6d2c9730c29b5c204d",
+        "equal": true
+      }
+    ],
+    "acceptanceRows": 33,
+    "refs": {
+      "branch": "codex/remote-main-20260908",
+      "localHead": "e2136ebf59875f02f921bba393d1b11d7782f81e",
+      "actualRemoteAuthorizedBranch": "e2136ebf59875f02f921bba393d1b11d7782f81e",
+      "actualRemoteMain": "a786c2e9732ab8b82d82e90d20e04d728bf645ee",
+      "method": "Latest pre-pause git ls-remote --heads; no fetch/switch/merge/push"
+    },
+    "currentChecks": "Previously completed current app/owner checks and original GPU/native runs preserved. Only state/finite-pin readback now; no tests or development after pause.",
+    "ownedRunningTestSessions": 0,
+    "ownedBrowsersAndApi": "Actual runner cleanup saved; no batch/native runner found by process scan",
+    "newExternalMutationsAndOutreach": 0,
+    "preservedWorkingAndIndexChanges": true,
+    "independentReview": "MISSING",
+    "differences": [],
+    "next": "Paused. Only after fresh explicit continuation, read PLAN current checkpoint and original owners; address high-DPR shared contribution/resource constraint and current adapter types without rerendering unchanged proof. Background/P1/R/E/A remain independent, phones last.",
+    "protectedGoalAndLedgerAndV72AndConfig": true
+  },
+  "handoff20261009": {
+    "preReadbackDifferences": [
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/GOAL-CURRENT.md",
+        "reason": "Commit checkpoint header already changed before this handoff"
+      },
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/PLAN.md",
+        "reason": "Commit checkpoint header already changed before this handoff"
+      },
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/START-NEXT-CHAT.md",
+        "reason": "Commit checkpoint header already changed before this handoff"
+      },
+      {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/CONTINUE-CLOUD-SKY.md",
+        "reason": "Commit checkpoint header already changed before this handoff"
+      },
+      {
+        "path": "project_context/development-workflow/resources-and-artifacts.md",
+        "reason": "Adopted workflow already changed before this handoff"
+      }
+    ],
+    "currentWorkflow": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/image-processing-workflow-adoption-2026-10-09.md",
+    "toolDecision": "SXT CLI selected; PS exception repair; NXT optional; StarNet not pursued",
+    "productionAdapterAndReviewQueue": "NOT_IMPLEMENTED",
+    "nxt": "Actual activation/GPU smoke only; quality not evaluated; vendor raw PNG dropped ICC",
+    "latestTaskAdapterTypes": "NOT_RECHECKED_AFTER_DPR_SCALE_ADDITIONS",
+    "preservation": "All 30 pre-existing Git changed paths retained. Main scope ledger, v72, miniapp config and pre-existing resource/Context changes stayed byte-identical during handoff. Old raw failures and 2026-10-08 proof pins retain their epochs.",
+    "benchmarkIndependentReview": "Specific tool stages have separate review records; subsequent ranking/adoption prose and overall cloud-sky acceptance are not certified by those records.",
+    "documentChecks": {
+      "localLinks": 71,
+      "missingLinks": 0,
+      "diffCheck": "PASS",
+      "currentFinitePins": 169,
+      "pinDifferences": 0,
+      "protectedDifferences": 0,
+      "acceptanceRows": 33
+    }
+  },
+  "resumedDevelopment20261009": {
+    "goal": "ACTIVE_UNBUDGETED_INCOMPLETE",
+    "evidence": [
+      ".codex/work-items/cloud-sky-native-2026-09-22/evidence/sky-native-frame-budget-2026-10-09.md",
+      ".codex/work-items/cloud-sky-native-2026-09-22/evidence/sxt-native-integration-2026-10-09.md"
+    ],
+    "currentSxtChecks": 14,
+    "benchmarkChecks": 13,
+    "nativeContractChecks": 3,
+    "nativeDpr2Page": "PASS_LIMITED_DEVELOPMENT",
+    "sxtReviewedPage": "PASS_LIMITED_DEVELOPMENT",
+    "currentBatch": "1_REUSED_4_QUEUED_EXCEPTIONS_ZERO_NEW_DECODE_INFERENCE_ENCODE",
+    "continuousBackground": "FAILED",
+    "devicePhysicalCapacity": "UNVERIFIED",
+    "independentReview": "MISSING",
+    "next": "Only PLAN: explicit derived-region coordinate/provenance/content+ODbL publication contract, actual Scene/source/Back and PS localized exceptions. Preserve all historical epochs and FAILED/UNKNOWN/MISSING; no unchanged raster/model rerun.",
+    "preservedReviewArchive": {
+      "path": "output/sxt-native-integration-2026-10-09/review-before-resume-update.json",
+      "bytes": 64726,
+      "sha256": "cca4ab27e4919363da755fb8af83134658dd531bb81a709cff3d8e07595fb580"
+    },
+    "continuousRegions": {
+      "evidence": {
+        "path": "output/continuous-hips-regions-2026-10-09-evidence.json",
+        "bytes": 8017,
+        "sha256": "86a392a6785a78f500e6139b2013e7768fcbfd53f58ee02af16e0d0ff71a43da"
+      },
+      "regionChecksPassed": 5,
+      "sxtChecksPassed": 14,
+      "newModelCalls": 1,
+      "m8": "COVERAGE_ADAPTER_REQUIRED: 110582 native-transparent, zero missing tile samples",
+      "m61": "NEEDS_REPAIR: full continuous RGB processed once, right-source halo/streak, not published",
+      "static": "3 current native PNG standard enumerator/writer exact readback, 1128964B, no public deployment",
+      "independentReview": "MISSING"
+    },
+    "coveredContinuousRegion": {
+      "evidence": {
+        "path": "output/covered-continuous-sxt-2026-10-09-evidence.json",
+        "bytes": 5150,
+        "sha256": "dc40db16f35b67a9a43f2ec104205a4ce3178887f836986d734ea89cea7d4dc1"
+      },
+      "alphaDifferences": 0,
+      "addedCoverage": 0,
+      "newModelCalls": 1,
+      "m61": "NOT_REPROCESSED",
+      "quality": "NEEDS_REPAIR",
+      "publicationConsumer": "MISSING",
+      "independentReview": "MISSING"
+    },
+    "photoshopOriginalRestoration": {
+      "evidence": {
+        "path": "output/ps-original-restoration-2026-10-09-evidence.json",
+        "bytes": 12441,
+        "sha256": "2ec8dd649a329ace0095fdd8e8fb6a01f6302353efa1505dcde20ea0346894a7"
+      },
+      "actualPhotoshopBatches": 1,
+      "actualJobs": 2,
+      "nativeInferenceCalls": 0,
+      "currentImportPhotoshopCalls": 0,
+      "currentImportEncodes": 0,
+      "coreAndExteriorChannelDifferences": 0,
+      "editablePsdReopened": true,
+      "filePassScenePending": [
+        "m81-m82"
+      ],
+      "needsRepair": [
+        "ngc5128-yellow-ring"
+      ],
+      "ordinaryAdoption": false,
+      "sceneAcceptance": "MISSING",
+      "independentReview": "MISSING",
+      "historicalOwnerRejectionPreserved": true,
+      "sameByteExecutionSourceRelocationOnly": true
+    },
+    "derivedRegionCoordinate": {
+      "evidence": {
+        "path": "output/derived-region-contract-2026-10-09/geometry-readback.json",
+        "bytes": 1689,
+        "sha256": "2224c1893d488db4309b8b09254f1124d74ac3f921f215d7980a8d5885fb9af5"
+      },
+      "actualRegions": 2,
+      "actualAstropyProbes": 16,
+      "rasterCalls": 0,
+      "nativeInferenceCalls": 0,
+      "impactTestsPassed": 9,
+      "typechecks": {
+        "contracts": "PASS",
+        "astronomyCore": "PASS",
+        "api": "PASS",
+        "appTypescript5_9_3": "PASS",
+        "appWithRootTypescript6": "FAILED_TOOL_VERSION_MISMATCH_BASEURL_DEPRECATION"
+      },
+      "oldNativeRejectsDerivedProvenance": true,
+      "coordinateMeaning": "Nominal affine work plane only, not source astrometry/coverage/science",
+      "directionMetricMeaning": "Unit-vector Euclidean chord norm; historical field maximumDirectionRadians is not an independent angle measurement",
+      "newRegionPublication": "MISSING",
+      "regionScene": "MISSING",
+      "ordinaryAdoption": false,
+      "independentReview": "MISSING"
+    }
+  },
+  "nativeRuntimeAndWorkflow20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-runtime-and-workflow-2026-10-09.md",
+    "status": "LIMITED_DEVELOPMENT_NATIVE_RECOVERY_AND_WORKFLOW_REPAIR",
+    "workflow": {
+      "before": {
+        "passed": 18,
+        "total": 22
+      },
+      "after": {
+        "passed": 22,
+        "total": 22
+      },
+      "oldFailuresRetained": true
+    },
+    "normalNativeSky": "UNVERIFIED",
+    "mapCaptureAndBridgeCause": "UNKNOWN",
+    "publicDevelopmentSpots": 0,
+    "warmDevelopment": {
+      "terminalSession": 99080,
+      "ownerPid": 17352,
+      "ownerStartedAt": "2026-10-09T00:43:48.365963Z",
+      "wrapperPid": 11388,
+      "apiOrigin": "http://127.0.0.1:8787"
+    },
+    "independentReview": "MISSING",
+    "ledgerRowsUnchanged": 33,
+    "manifestOrVisualOrLicenseChanges": 0
+  },
+  "nativeFixtureScene20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-fixture-scene-2026-10-09.md",
+    "normalScene": "LIMITED_ISOLATED_DEVELOPMENT_OBSERVED",
+    "firstTimeTransition": "FAILED_CAUSE_UNKNOWN",
+    "controlsComposition": "FAILED_DEVTOOLS_CAPTURE_WINDOW_CAUSE_UNKNOWN",
+    "pinch": {
+      "fovDeg": [
+        45,
+        22.71896639495375,
+        45
+      ],
+      "pixelRestoreChanged": 0
+    },
+    "actualSdkRestored": "3.17.4",
+    "dpr": 3,
+    "fixedFailureCodeBoundary": "23_CHECKS_AND_TYPECHECK_PASS_NATIVE_FAILURE_READBACK_UNVERIFIED",
+    "ordinaryAdoption": false,
+    "independentReview": "MISSING",
+    "ledgerRowsUnchanged": 33
+  },
+  "nativeStaticMetadata20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-static-metadata-2026-10-09.md",
+    "result": "output/native-static-metadata-2026-10-09/verification.json",
+    "tests": 13,
+    "apiTypecheck": "PASS",
+    "nativeMetadataBytes": 16489,
+    "existingPsImageRecordsUnchanged": 3,
+    "existingDerivedRecordsUnchanged": 12,
+    "isolatedRestore": "OBSERVED_EXACT_FILES_CONTRACT_READBACK_RUNTIME_NOT_APPLIED",
+    "oldReaderRollback": "UNVERIFIED_NEW_HEADER_REQUIRES_UPDATED_READER",
+    "trustedOci": "MISSING",
+    "liveRecovery": "MISSING",
+    "referenceCompleteness": "UNVERIFIED",
+    "capacity": "UNVERIFIED",
+    "independentReview": "MISSING",
+    "ordinaryAdoption": false,
+    "ledgerRowsUnchanged": 33
+  },
+  "currentExecutionPhase": "P1_SOLAR_SOURCE_ROUTE_IDENTITY",
+  "psLocalMedian20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/ps-local-residual-median-2026-10-09.md",
+    "execution": "output/ps-residual-filter-pilot-2026-10-09/result.json",
+    "visualReview": "output/ps-residual-filter-pilot-2026-10-09/visual-review.json",
+    "psCalls": 1,
+    "modelCalls": 0,
+    "tests": 8,
+    "visual": "NEEDS_REPAIR",
+    "adopted": false,
+    "scene": "MISSING",
+    "independent": "MISSING"
+  },
+  "baselineReader20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-static-baseline-reader-2026-10-09.md",
+    "result": "output/native-static-reader-compatibility-2026-10-09/failing-before.json",
+    "status": "FAILED_BASELINE_ROUTE_CONTRACT",
+    "accepted": 1743,
+    "rejected": 9,
+    "runtimeApplied": false
+  },
+  "nxtColorGrainQueue20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/nxt-color-and-grain-queue-2026-10-09.md",
+    "colour": "output/nxt-color-boundary-2026-10-09/result.json",
+    "nativeTrial": "output/nxt-grain-exception-2026-10-09/result.json",
+    "queue": "output/nxt-grain-exception-2026-10-09/current-queue/review.json",
+    "colourPair": "PASS_BOUNDED_SRGB_RGB8_NUMERICS",
+    "grain": "IMPROVED_FILE_NEEDS_REPAIR",
+    "nativeBatchCalls": 2,
+    "nativeFiles": 3,
+    "sxtCalls": 0,
+    "psCalls": 0,
+    "publicationCalls": 0,
+    "distinctChecks": 30,
+    "guardMutation": "REMOVING_RAW_PIXEL_GUARD_ACCEPTS_FRESH_HASH_PIXEL_CHANGE",
+    "nxtPublisher": "MISSING_DISTINCT_CHAIN",
+    "independent": "MISSING",
+    "scene": "MISSING",
+    "adopted": false,
+    "ledgerRowsUnchanged": 33
+  },
+  "nativeSourceBack20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-source-back-2026-10-09.md",
+    "pixels": "output/cloud-sky-native-session-2026-10-09/source-back-pixels.json",
+    "scope": "ACTUAL_WEAPP_MEMORY_FIXTURE",
+    "source": "M:31_CATALOG_INFORMATION",
+    "skyRgba": "EXACT_AFTER_SYSTEM_TOP102_ROWS",
+    "composition": "FAILED",
+    "fullBasisPair": "UNVERIFIED",
+    "physical": "UNVERIFIED",
+    "independent": "MISSING",
+    "ledgerRowsUnchanged": 33
+  },
+  "nativeBinaryRecovery20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-binary-resource-recovery-2026-10-09.md",
+    "status": "LIMITED_NATIVE_DEVELOPMENT_REAL_RESOURCE_RECOVERY",
+    "affectedChecks": 34,
+    "builds": 1,
+    "models": 0,
+    "ps": 0,
+    "newImageEncoding": 0,
+    "cache": {
+      "entries": 14,
+      "encodedBytes": 2125275
+    },
+    "backSkyPixelChanges": 12,
+    "maxChannelDelta": 1,
+    "backPixelCause": "UNKNOWN",
+    "nativeComposition": "FAILED",
+    "physicalAndPhone": "MISSING",
+    "independentReview": "MISSING",
+    "ledgerRowsUnchanged": 33
+  },
+  "nativeLoadedPanorama20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-loaded-panorama-layers-2026-10-09.md",
+    "status": "LIMITED_NATIVE_LOADED_RESOURCE_GESTURE_AND_LAYER_EFFECT",
+    "fov": 274.9276323255338,
+    "completelyFadedSwitchRgbaDelta": 0,
+    "gridOffRgbaDelta": 0,
+    "reversePixels": 36,
+    "reverseMaxDelta": 2,
+    "reversePixelCause": "UNKNOWN",
+    "nativeComposition": "FAILED",
+    "encodedInventoryEntries": 16,
+    "encodedInventoryBytes": 5495672,
+    "productChanges": 0,
+    "builds": 0,
+    "newProcessing": 0,
+    "independentReview": "MISSING",
+    "ledgerRowsUnchanged": 33
+  },
+  "nativeMidnight20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-midnight-shared-context-2026-10-09.md",
+    "status": "LIMITED_NATIVE_CROSS_DATE_TICK_COMMIT_SHARED_MAP_TIME",
+    "contextId": "ctx:da84136d-c910-4599-b93b-4f6ffe7937e0",
+    "revision": 4,
+    "selectedAtUtc": "2026-10-09T16:30:00Z",
+    "observationNightDate": "2026-10-09",
+    "civilDisplay": "2026-10-10 00:30",
+    "mapLogicalTime": "10/10 00:30",
+    "crossMidnightDragPreviewCancel": "UNVERIFIED",
+    "nativeVisibleComposition": "FAILED",
+    "persistence": "NOT_APPLICABLE_MEMORY_FIXTURE",
+    "independentReview": "MISSING",
+    "ledgerRowsUnchanged": 33
+  },
+  "nativeBodies20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-body-fine-and-moon-source-2026-10-09.md",
+    "status": "LIMITED_NATIVE_BODY_RENDER_AND_MOON_SOURCE_BACK",
+    "contextRevision": 6,
+    "selectedAtUtc": "2026-10-09T16:30:00Z",
+    "moonBackPixelDelta": 0,
+    "nativeComposition": "FAILED",
+    "actualProgramHashBinding": "UNVERIFIED",
+    "physical": "UNVERIFIED",
+    "independentReview": "MISSING",
+    "ledgerRowsUnchanged": 33
+  },
+  "nativeMidnightDrag20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-midnight-drag-cancel-2026-10-09.md",
+    "status": "LIMITED_NATIVE_COORDINATE_DRAG_PREVIEW_CANCEL",
+    "contextRevision": 6,
+    "committedAt": "2026-10-09T16:30:00Z",
+    "previewAt": "2026-10-09T14:30:00Z",
+    "cancelAt": "2026-10-09T16:30:00Z",
+    "projectionExact": true,
+    "rgbaRestoration": "UNVERIFIED",
+    "nativeComposition": "FAILED",
+    "ledgerRowsUnchanged": 33
+  },
+  "nativeSolarPaintedBinding20261009": {
+    "evidence": ".codex/work-items/cloud-sky-native-2026-09-22/evidence/native-body-painted-binding-2026-10-09.md",
+    "status": "LIMITED_DEVELOPMENT_NATIVE_SUBMISSION_IDENTITY_AND_OVERVIEW",
+    "newChecks": 5,
+    "affectedChecks": 29,
+    "sharedPassed": 45,
+    "originalSkipped": 1,
+    "appTypecheck": "PASSED",
+    "build": "PASSED",
+    "fixtureBinding": "output/cloud-sky-native-session-2026-10-09/native-body-binding-built-binding.json",
+    "actualSaturn": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519950985.json",
+    "actualSaturnDisclosure": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791519979768.json",
+    "actualMoon": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520164610.json",
+    "actualOverview": "output/cloud-sky-native-session-2026-10-09/automation_evaluate-1791520189716.json",
+    "sourceRouteVersionSelection": "MISSING",
+    "nativeComposition": "FAILED",
+    "physical": "UNVERIFIED",
+    "independentReview": "MISSING",
+    "ledgerRowsUnchanged": 33
+  },
+  "textureSteps20261014": {
+    "scope": "r68 observer only; product and original GL unchanged",
+    "sourceAndPixels": "PASS_LIMITED",
+    "reviewer": "sky_texture_steps_r68_review",
+    "reviewerClosed": true,
+    "counterDiscrepancy": "FIXED_AND_FIRST_PRESERVED",
+    "result": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r68-texture-steps-result.json",
+    "closure": "output/cloud-sky-native-updated-ide-2026-10-12-r1/r68-texture-steps-closure.json",
+    "attribution": "TOP1 post-upload getError call-wall12 with same-scene returned1MiB upload attempt; no pure GPU/gain inference",
+    "ordinary": "EXACT_SOURCE_AND_PREPARED_RETURN_OBSERVED",
+    "temporaryFeedbackCleanup": "PENDING_EBUSY_RMDIR_PROJECT_HOLDER_UNKNOWN",
+    "wholePerformance": "UNVERIFIED",
+    "original33Unchanged": true
+  },
+  "readyReveal20261014": {
+    "agent": "sky_ready_reveal_r70_review",
+    "closed": true,
+    "noBlockingFinding": true,
+    "scope": [
+      "six preimages and eight current source/test files",
+      "actual product GL with bound source hashes and four viewed PNGs",
+      "ordinary phone PNG and same-video original frames n4/13/27 and n14/18/22/26"
+    ],
+    "result": "Source readiness and zero preparation/copy clock/failed commit/reset/pause/reduced invariants hold; controlled GL zero equals baseline, 80/160ms nonempty increases, settled idle; ordinary encoded phone pixels show right artwork absent/faint/stronger/near settled with fixed star and line positions.",
+    "limits": [
+      "withdraw/reenter and explicit reset are controlled models, not actual PageHide acceptance",
+      "non-monotonic DTS warnings retained",
+      "no download completion clock, exact 160ms, native FPS, phone bytes/AppID or full recovery claim",
+      "other registered families/grouped LOD/full UX07 and performance OPEN"
+    ]
+  },
+  "readyLevels20261014": {
+    "agent": "sky_ready_levels_r71_review",
+    "closed": true,
+    "noRemainingBlockingFinding": true,
+    "scope": [
+      "nine preimages and current sources",
+      "bound actual product GL results and seven viewed original PNGs",
+      "ordinary build fingerprint and original 01:39 phone PNG"
+    ],
+    "repairedFinding": "Wholly offscreen prepared images now keep the original completed EMPTY qualification and do not start readiness or suppress the wider infrared fallback.",
+    "result": "Shared exact registered two-level callers retain the parent during late detail reveal in one composite, without double brightness; valid black, four-neighbor alpha availability, current target and actual component credit remain distinct.",
+    "limits": [
+      "ordinary Prepared remains empty and HiPS off",
+      "native two-level/late HTTP/phone bytes/AppID/FOV and performance unverified",
+      "IR/legacy/HiPS/full UX07 still open",
+      "r68 EBUSY cleanup gap retained"
+    ],
+    "evidence": "evidence/ready-reveal-2026-10-14.md"
+  },
+  "legacyReady20261014": {
+    "agent": "sky_legacy_ready_r72_review",
+    "closed": true,
+    "noBlockingFinding": true,
+    "scope": [
+      "two preimages/current source and changed tests",
+      "six actual GL source bindings/script/results",
+      "eight viewed original GL PNGs"
+    ],
+    "result": "Cold PREPARED has no optical credit or W3 flash; original JPEG source-over retains the accepted coarse clock and finer fallback through widening; native current, later landscape, finish/copy and exact-family separation preserved.",
+    "limits": [
+      "reviewer did not run tests/build/phone",
+      "reviewer saw Mini TS pending; root later actual0 4dd5a4",
+      "no current native candidate for this source change or late HTTP acceptance",
+      "IR/native lifetime/HiPS/full UX07/performance remain open"
+    ]
+  },
+  "stellariumReference20261014": {
+    "state": "PREPARATION_COMPLETE_SAVED_READBACK_AND_LIMITED_REVIEWED",
+    "scope": "Authorized four-point reference research and finite unique plan/context/handoff revision only",
+    "evidence": "evidence/stellarium-reference-research-2026-10-14.md",
+    "newProductImplementation": false,
+    "artificialClouds": "CANCELLED_BY_USER",
+    "goalStatus": "active",
+    "goalComplete": false,
+    "toolObjectiveEdited": false,
+    "original33": "EXACTLY_UNCHANGED",
+    "sourceAheadOfOrdinaryPhone": "r72 source; r71 phone",
+    "limits": [
+      "One cached DSS tile not exact user sky",
+      "No same-condition visible-star comparison",
+      "Four reference outcomes/native/performance not accepted",
+      "Images still frozen; accessibility specialist work cancelled"
+    ],
+    "independentReview": {
+      "agent": "sky_stellarium_handoff_review",
+      "closed": true,
+      "noBlockingFinding": true,
+      "viewed": [
+        "user-1.png",
+        "user-2.png",
+        "user-5.png",
+        "user-6.png",
+        "reference-only-Norder3-Npix61.webp"
+      ],
+      "readback": "Original33 exact, five retained sources and fifteen initial documents",
+      "limits": "No product test/build/phone, matching visible-star count, four outcomes, current connection, native or FPS acceptance"
+    },
+    "documentChecks": {
+      "chunk": "2c44c4",
+      "actualExitCode": 0,
+      "newLocalLinksAndHeadings": 60
+    },
+    "contextStructure": {
+      "chunk": "a206ec",
+      "actualExitCode": 0,
+      "productAcceptance": false
+    },
+    "closeClarification": "Match actual angular coverage, not labelled FOV numbers; restored connection is not asserted",
+    "nextStep": "WAIT_FOR_NEXT_CHAT_EXPLICIT_START_THEN_SAVED_PLAN",
+    "finalReadback": "output/cloud-sky-stellarium-reference-2026-10-14/handoff-final-readback.json"
   }
 }

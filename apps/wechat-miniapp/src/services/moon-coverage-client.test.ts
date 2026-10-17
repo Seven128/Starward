@@ -16,10 +16,19 @@ function publication(){
 
 test("actual Moon client selects PNG contract, preserves cancellation and rejects incompatible or malformed delivery",async()=>{
   let response={status:200,body:publication()},calls:any[]=[];
+  const bodyExports:Record<string,any>={};
+  vm.runInNewContext(ts.transpileModule(readFileSync(new URL('./body-image-client.ts',import.meta.url),'utf8'),
+    {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,
+    {exports:bodyExports,require(name:string){
+      if(name==='@starward/miniapp-contracts')return contracts;
+      if(name==='./bare-sky-resource')return {requestBareSkyResource(...args:any[]){calls.push(args);return Promise.resolve(response);},skyResourceUrl:(url:string)=>url};
+      throw Error(name);
+    }});
   const exports_:Record<string,any>={};
   vm.runInNewContext(ts.transpileModule(readFileSync(new URL("./moon-texture-client.ts",import.meta.url),"utf8"),
     {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,
     {exports:exports_,require(name:string){
+      if(name==='./body-image-client')return bodyExports;
       if(name==="@starward/miniapp-contracts")return contracts;
       if(name==="./bare-sky-resource")return {requestBareSkyResource(...args:any[]){calls.push(args);return Promise.resolve(response);},skyResourceUrl:(url:string)=>url};
       throw Error(name);
@@ -44,7 +53,7 @@ test("Moon facts opt in and separate old cached data without changing other obje
   const declaration=source.statements.find((n):n is ts.FunctionDeclaration=>ts.isFunctionDeclaration(n)&&n.name?.text==="getCelestialObjectInformation")!;
   const get=vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export /u,"")+"\ngetCelestialObjectInformation;",
     {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{
-    isCelestialObjectReference:contracts.isCelestialObjectReference,ADOPTED_SKY_REPORT_CATALOG_VERSION:"bsc5p-bright-stars.v3",
+    ...contracts,ADOPTED_SKY_REPORT_CATALOG_VERSION:"bsc5p-bright-stars.v3",
     requestOperation:(key:string,op:string,options:unknown)=>Promise.resolve({key,op,options}),
     matchingCelestialInformationResponse:(value:unknown)=>value,invalidateApiCache(){throw Error("unexpected invalidation");},
   });

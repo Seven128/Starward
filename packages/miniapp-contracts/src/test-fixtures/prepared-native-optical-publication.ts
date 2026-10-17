@@ -1,4 +1,4 @@
-import type { PreparedNativeOpticalPublication } from "../prepared-native-optical-publication.ts";
+import { preparedNativeOpticalPublicationHash, type PreparedNativeOpticalPublication } from "../prepared-native-optical-publication.ts";
 import { OPTICAL_IMAGE_LEVELS } from "../optical-publication-content.ts";
 
 /** Structural fixture using the real trial's rectangular nominal geometry;
@@ -28,4 +28,21 @@ export function preparedNativeOpticalFixture(region = false): PreparedNativeOpti
         fieldDegrees: .547768637306493, sourceUvBounds: [0, 0, 1, 1], displayAlpha: "geometric-source-area",
         scientificAvailability: "UNKNOWN", decodedRgb: { ...id, bytes: width * height * 3 } }];
     })) as PreparedNativeOpticalPublication["levels"] };
+}
+
+/** Synthetic measured-placement contract; no real source accuracy is claimed. */
+export function preparedRegisteredNativeFixture(region = false): PreparedNativeOpticalPublication {
+  const p = preparedNativeOpticalFixture(region), parentPublicationHash = preparedNativeOpticalPublicationHash(p);
+  const { accuracy: _accuracy, ...geometry } = structuredClone(p.nominalTan);
+  geometry.referencePixelFitsOneBased[0] += 37;
+  geometry.referencePixelFitsOneBased[1] -= 23;
+  p.schemaVersion = "prepared-native-optical-publication-v2";
+  p.registration = { method: "reference-catalogue-tan-display-v1", geometry,
+    evidence: { bytes: 456, sha256: "9".repeat(64) }, sourceImage: p.source.encoded, parentPublicationHash,
+    catalogue: { name: "Synthetic independent reference", url: "https://example.invalid/reference",
+      rightsUrl: "https://example.invalid/rights", credit: "Fixture reference attribution" },
+    training: { count: 10, rmsPixels: .2, maxPixels: .4 }, holdout: { count: 10, rmsPixels: .5, maxPixels: 1.2 },
+    residualUnit: "original-source-pixel", pixelTransform: "none", quality: "MEASURED_LOCAL_CANDIDATE",
+    limitations: "Synthetic test only; no measured real accuracy or full-image acceptance." };
+  return p;
 }

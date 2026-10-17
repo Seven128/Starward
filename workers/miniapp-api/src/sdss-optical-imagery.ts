@@ -84,13 +84,17 @@ export class SdssOpticalImageryService {
 
   /** The same admitted immutable assets as HTTP: all existing JPEG offers and
    * only explicitly registered calibrated generations. Never crawl provenance. */
-  async *publishedAssets() {
+  publishedManifests() {
     const hashes = [
       ...Object.values(SDSS_OPTICAL_PUBLICATIONS).map(offer => offer.publicationHash),
       ...this.calibratedDescriptors.keys(),
     ];
-    for (const hash of hashes) {
-      const manifest = this.manifest(hash);
+    return [...new Set(hashes)].map(hash => this.manifest(hash));
+  }
+
+  async *publishedAssets() {
+    for (const manifest of this.publishedManifests()) {
+      const hash = manifest.publicationHash;
       for (const level of SDSS_OPTICAL_LEVELS) {
         const descriptor = manifest.levels[level];
         const image = await this.getByFile(hash, descriptor.file);

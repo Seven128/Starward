@@ -25,12 +25,13 @@ export function skyPresentedTimeCurrent(requestedAt: string, paintedAt: string |
 /** One public Sky presentation-time intent. The app store/API still own the
  * committed Context. Elapsed time comes from the caller's scheduling clock;
  * zoom, camera, ephemeris and network effects do not live in this owner. */
-export function createSkyObservationTime() {
+export function createSkyObservationTime(options: { latestInstant?: () => number } = {}) {
   let state: SkyObservationTimeState = { binding: "", committedAt: "", at: "", mode: "FIXED", reachedEnd: false, runStartAt: null };
   let coverage: SkyTimeCoverage | null = null;
   let anchor: { elapsedAt: number; instant: number; latestElapsed: number } | null = null;
+  const latest = () => options.latestInstant?.() ?? Infinity;
   const covered = (at: string) => Boolean(coverage && canonical(at) &&
-    Date.parse(at) >= Date.parse(coverage.startAt) && Date.parse(at) <= Date.parse(coverage.endAt));
+    Date.parse(at) >= Date.parse(coverage.startAt) && Date.parse(at) <= Math.min(Date.parse(coverage.endAt), latest()));
   const publish = (change: Partial<SkyObservationTimeState>) => { state = { ...state, ...change }; return state; };
   const pause = () => { anchor = null; return state.mode === "PLAYING" ? publish({ mode: "PAUSED", runStartAt: null }) : state; };
   return {
@@ -52,11 +53,14 @@ export function createSkyObservationTime() {
     },
     preview(at: string) {
       if (!state.binding || !canonical(at)) return state;
+      const limit = latest();
+      if (!Number.isFinite(limit) && limit !== Infinity) return state;
+      if (Date.parse(at) > limit) at = new Date(limit).toISOString();
       anchor = null;
       return publish({ at, mode: at === state.committedAt ? "FIXED" : "PREVIEW", reachedEnd: false, runStartAt: null });
     },
     play(elapsedAt: number) {
-      if (!Number.isFinite(elapsedAt) || !covered(state.at) || Date.parse(state.at) >= Date.parse(coverage!.endAt)) return state;
+      if (!Number.isFinite(elapsedAt) || !covered(state.at) || Date.parse(state.at) >= Math.min(Date.parse(coverage!.endAt), latest())) return state;
       anchor = { elapsedAt, instant: Date.parse(state.at), latestElapsed: elapsedAt };
       return publish({ mode: "PLAYING", reachedEnd: false, runStartAt: state.at });
     },
@@ -64,9 +68,11 @@ export function createSkyObservationTime() {
       if (state.mode !== "PLAYING" || !anchor || !coverage || !Number.isFinite(elapsedAt)) return state;
       // A backwards scheduling clock cannot move observation time backwards.
       anchor.latestElapsed = Math.max(anchor.latestElapsed, elapsedAt);
-      const instant = Math.min(Date.parse(coverage.endAt), anchor.instant + anchor.latestElapsed - anchor.elapsedAt);
+      const limit = Math.min(Date.parse(coverage.endAt), latest());
+      if (!Number.isFinite(limit)) return pause();
+      const instant = Math.min(limit, anchor.instant + anchor.latestElapsed - anchor.elapsedAt);
       const at = new Date(Math.floor(instant)).toISOString();
-      const ended = instant >= Date.parse(coverage.endAt);
+      const ended = instant >= limit;
       if (ended) anchor = null;
       if (at === state.at && !ended) return state;
       return publish({ at, ...(ended ? { mode: "PAUSED" as const, reachedEnd: true, runStartAt: null } : {}) });

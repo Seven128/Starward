@@ -5,6 +5,59 @@ import { createSkyViewBasis, validBasis, type SkyViewBasis } from "./sky-view-pr
 const view = (a: number, b = 90, c = 0) => createSkyViewBasis(a, b, c)!;
 const delta = (a: SkyViewBasis, b: SkyViewBasis) => Math.max(...(["right", "up", "forward"] as const)
   .map(axis => Math.hypot(...a[axis].map((n, i) => n - b[axis][i]!))));
+
+test("object navigation commits only the accepted joint camera and finishes at the target", () => {
+  const camera = createSkyBrowsingCamera(), from = view(20), target = view(170);
+  assert.ok(camera.navigate(from, target, 95, 4, 390, 844, 0));
+  const frame = (at: number) => camera.update({ localView: from, intent: "manual", progress: 0, at });
+  const rejected = frame(16), current = frame(32);
+  assert.equal(camera.snapshot().view, from, "sampling is not an actual displayed frame");
+  assert.equal(camera.accept(rejected), false, "a superseded paint cannot advance the camera");
+  assert.equal(camera.accept(current), true);
+  assert.equal(camera.snapshot().view, current.view);
+  assert.equal(camera.snapshot().verticalFovDeg, current.verticalFovDeg);
+  let last = current;
+  for (let at = 48; at <= 2000 && camera.snapshot().navigation; at += 16) {
+    last = frame(at); assert.ok(camera.accept(last));
+  }
+  assert.equal(camera.snapshot().navigation, false); assert.equal(last.verticalFovDeg, 4);
+  assert.ok(Math.hypot(...last.view!.forward.map((n, i) => n - target.forward[i]!)) < 1e-10);
+});
+
+test("retargeting, gestures, locks and retirement cannot revive a superseded navigation", () => {
+  for (const action of ["retarget", "suspend", "pan", "freeze", "restore", "lock"] as const) {
+    const camera = createSkyBrowsingCamera(), start = view(20);
+    const checkpoint = camera.checkpoint();
+    camera.navigate(start, view(170), .05, 45, 390, 844, 0);
+    const accepted = camera.update({ localView: start, intent: "manual", progress: 0, at: 32 });
+    camera.accept(accepted);
+    const obsolete = camera.update({ localView: start, intent: "manual", progress: 0, at: 48 });
+    if (action === "retarget") {
+      camera.navigate(accepted.view!, view(300), accepted.verticalFovDeg!, 4, 390, 844, 48);
+      const first = camera.update({ localView: start, intent: "manual", progress: 0, at: 48 });
+      assert.equal(first.view, accepted.view); assert.equal(first.verticalFovDeg, accepted.verticalFovDeg);
+    } else if (action === "suspend") camera.suspend();
+    else if (action === "pan") camera.pan(accepted.view!, 0);
+    else if (action === "freeze") camera.freeze(accepted.view);
+    else if (action === "restore") camera.restore(checkpoint);
+    else camera.update({ localView: start, intent: "locked", progress: 0, at: 48 });
+    assert.equal(camera.accept(obsolete), false, action);
+    if (action !== "retarget") assert.equal(camera.snapshot().navigation, false, action);
+  }
+});
+
+test("navigation ignores background and reversed clock gaps and retains the existing reduced-motion result", () => {
+  const camera = createSkyBrowsingCamera(), from = view(20), target = view(170);
+  camera.navigate(from, target, 45, 4, 390, 844, 100);
+  for (const at of [90, 3000]) {
+    const frame = camera.update({ localView: from, intent: "manual", progress: 0, at });
+    assert.equal(frame.view, from); camera.accept(frame);
+  }
+  const final = camera.update({ localView: from, intent: "manual", progress: 0, at: 3016, reducedMotion: true });
+  assert.equal(final.animating, false); assert.equal(final.verticalFovDeg, 4);
+  camera.accept(final); assert.equal(camera.snapshot().navigation, false);
+  assert.ok(Math.hypot(...final.view!.forward.map((n, i) => n - target.forward[i]!)) < 1e-10);
+});
 function harness(start = view(20)) {
   const camera = createSkyBrowsingCamera(); let now = 0;
   const frame = (progress: number, localView: SkyViewBasis | null = start, intent: "follow" | "track" | "manual" | "locked" = "follow", dt = 16) => {

@@ -1,5 +1,4 @@
-import { sha256 } from "@noble/hashes/sha2.js";
-import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils.js";
+import { utf8ContentIntegrity } from "./utf8-content-integrity.ts";
 import { OPTICAL_IMAGE_LEVELS, type OpticalImageLevel } from "./optical-publication-content.ts";
 
 export const SDSS_OPTICAL_LEVELS = OPTICAL_IMAGE_LEVELS;
@@ -58,7 +57,7 @@ export function sdssOpticalPublicationHash(root: SdssOpticalPublication): string
         fieldDegrees: asset.fieldDegrees, bytes: asset.bytes, sha256: asset.sha256, requestUrl: asset.requestUrl }];
     })),
   };
-  return bytesToHex(sha256(utf8ToBytes(JSON.stringify(publication))));
+  return utf8ContentIntegrity(JSON.stringify(publication)).sha256;
 }
 
 export function assertSdssOpticalPublication(value: unknown, reference: string): asserts value is SdssOpticalPublication {

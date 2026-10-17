@@ -10,10 +10,11 @@ import * as zoom from "./sky-zoom.ts";
 import * as sceneRender from "./sky-scene-render";
 import { projectHorizontalPoint } from "./sky-scene-projection";
 import type { SdssOpticalManifest, SkyReport } from "@starward/miniapp-contracts";
-import { presentSkyTime } from "./sky-time-presentation";
+import { presentSkyTime, skyRulerTime, skyPresentationTimeModel } from "./sky-time-presentation";
 import { exactSkyObservationFrame, skyEquatorialDirectionToEnu } from "./sky-observation-frame";
 import { registerSkyDeepSkyRegion, skyDeepSkyRegionCoordinates } from "./sky-deep-sky-region";
 import { skyTargetOpticalFrame } from "./sky-sdss-optical-frame";
+import { skyPageCanvasTestBindings } from "./sky-optical-page-test-support";
 
 // Execute the production drawing function with a recorded native-canvas boundary.
 // This establishes call/data selection, not WEAPP rendering or physical pointing.
@@ -36,6 +37,30 @@ vm.runInNewContext(code, {
 }, { timeout: 1000 });
 
 const committed = "2026-09-05T13:00:00.000Z";
+test("fractional ruler input moves actual solar and observation geometry between supplied instants", () => {
+  const report = JSON.parse(readFileSync(new URL("../../../../../.codex/work-items/cloud-sky-native-2026-09-22/tmp/current-native-report-2026-10-01.json", import.meta.url), "utf8")).data as SkyReport;
+  const model=skyPresentationTimeModel(report);assert(model);
+  const rows=report.hourly.filter(row=>row.at>=model.startAt&&row.at<=model.endAt);
+  assert(rows.length>1);
+  const at=skyRulerTime(rows,.25,model);assert(at);
+  assert.equal(Date.parse(at),Math.round(Date.parse(rows[0]!.at)+.25*(Date.parse(rows[1]!.at)-Date.parse(rows[0]!.at))));
+  const current=presentSkyTime(report,at),start=presentSkyTime(report,rows[0]!.at);assert(current&&start);
+  assert.equal(current.row.at,at);assert.equal(current.mode,"MODEL");
+  assert.notEqual(current.row.sunAltitudeDeg,start.row.sunAltitudeDeg);
+  assert.notDeepEqual(exactSkyObservationFrame(current.report,at)?.equatorialToEnu,
+    exactSkyObservationFrame(start.report,rows[0]!.at)?.equatorialToEnu);
+});
+
+test("ruler interpolation uses real adjacent durations and leaves unsupported model coverage on supplied rows", () => {
+  const rows=[{at:"2026-10-13T23:50:00.000Z"},{at:"2026-10-14T00:10:00.000Z"},{at:"2026-10-14T01:10:00.000Z"}];
+  const coverage={startAt:rows[0]!.at,endAt:rows[2]!.at};
+  assert.equal(skyRulerTime(rows,.5,coverage),"2026-10-14T00:00:00.000Z");
+  assert.equal(skyRulerTime(rows,1.5,coverage),"2026-10-14T00:40:00.000Z");
+  assert.equal(skyRulerTime(rows,.2,null),rows[0]!.at);
+  assert.equal(skyRulerTime(rows,1.5,{...coverage,endAt:rows[1]!.at}),rows[2]!.at);
+  assert.equal(skyRulerTime(rows,99,coverage),rows[2]!.at);
+  assert.equal(skyRulerTime(rows,NaN,coverage),null);assert.equal(skyRulerTime([],0,coverage),null);
+});
 test("continuous presentation preserves the static catalog center and leaves old missing centers unknown", () => {
   const report = JSON.parse(readFileSync(new URL("../../../../../.codex/work-items/cloud-sky-native-2026-09-22/tmp/current-native-report-2026-10-01.json", import.meta.url), "utf8")).data as SkyReport;
   const pack = JSON.parse(readFileSync(new URL("../../../../../packages/astronomy-core/data/opengc-messier-deep-sky.v1.json", import.meta.url), "utf8"));
@@ -165,9 +190,10 @@ test("production frame requests preserve exact data/time and clear expired or un
     basis: projection.createSkyViewBasis(0, 90, 0)!, sampledAt: 1 };
   let currentHips: unknown[] = [];
   const readHipsTiles = () => currentHips;
-  const sandbox = vm.createContext({
+  const sandbox = vm.createContext(skyPageCanvasTestBindings({
     orientation: { snapshot: { presentationRevision: 0 }, latestPresentation: { current: null } },
     readHipsTiles,
+    bodyImageBindings: ['SOLAR:MOON','PLANET:MARS','PLANET:MERCURY','PLANET:JUPITER','PLANET:SATURN','PLANET:URANUS','PLANET:NEPTUNE'].map(reference=>({reference,image:{reference},publication:{publicationHash:reference}})),
     useCallback: (fn: unknown) => fn,
     skySceneHasContent: stellarScene.skySceneHasContent,
     skyTargetOpticalFrame,
@@ -183,7 +209,7 @@ test("production frame requests preserve exact data/time and clear expired or un
     canvasFrameInfo: { catalog: {}, frame: { state: "AVAILABLE", points: [] }, targetFrame: { at: committed, targets: [target(0)] },
       inspection: { spotId: "spot:test", frameAt: committed, catalogVersion: "test", starCount: 0 } },
     publishAcceptanceSkySceneInspection: (_owner: unknown, value: { state: string }) => states.push(value.state),
-  });
+  }));
   const code = ts.transpileModule(declaration + "\nglobalThis.requestDraw = draw;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
   vm.runInContext(code, sandbox);
   const request = () => vm.runInContext("requestDraw()", sandbox);
@@ -191,13 +217,8 @@ test("production frame requests preserve exact data/time and clear expired or un
   assert.equal(requests.at(-1)!.frame.data, data);
   assert.strictEqual(requests.at(-1)!.frame.constellations, constellationFrame);
   assert.strictEqual(requests.at(-1)!.frame.constellationImages, artwork.images);
-  assert.equal(requests.at(-1)!.frame.moonTexture.id,"moon");
-  assert.equal(requests.at(-1)!.frame.marsTexture.id,"mars");
-  assert.equal(requests.at(-1)!.frame.mercuryTexture.id,"mercury");
-  assert.equal(requests.at(-1)!.frame.jupiterBands.id,"jupiter");
-  assert.equal(requests.at(-1)!.frame.saturnBands.id,"saturn");
-  assert.equal(requests.at(-1)!.frame.uranusBands.id,"uranus");
-  assert.equal(requests.at(-1)!.frame.neptuneBands.id,"neptune");
+  assert.strictEqual(requests.at(-1)!.frame.bodyImageBindings,sandbox.bodyImageBindings);
+  assert.equal(requests.at(-1)!.frame.bodyImageBindings.length,7);
   assert.equal(requests.at(-1)!.frame.galacticImage.id,"galactic");
   assert.equal(requests.at(-1)!.frame.frameAt, committed);
   assert.equal(requests.at(-1)!.frame.sceneReady, true);
@@ -247,6 +268,7 @@ test("production frame requests preserve exact data/time and clear expired or un
     assert.equal(requests.at(-1)!.frame.readHipsTiles, undefined);
     assert.equal(requests.at(-1)!.frame.hipsTiles.length, 0);
     assert.equal(requests.at(-1)!.frame.constellations, null);
+    assert.equal(requests.at(-1)!.frame.bodyImageBindings.length,0);
     assert.equal(requests.at(-1)!.frame.sceneReady, false);
     assert.equal(requests.at(-1)!.hidden, true);
   }

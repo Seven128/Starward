@@ -1,32 +1,8 @@
-import {useMemo} from "react";
-import type {JupiterBandsManifestData,SaturnBandsManifestData,UranusBandsManifestData,NeptuneBandsManifestData,SkyGeometryReport} from "@starward/miniapp-contracts";
-import {useResourceQuery} from "@/hooks/use-resource-query";
-import {useSkyFixedImage} from "./use-sky-fixed-image";
-import {skyPlanetDiscsAt} from "./sky-planet-disc";
-import {skyFixedImageStatus} from "./sky-fixed-image-status";
-import type {SkyArtworkView} from "./sky-artwork-registration";
-import type {SkyArtworkCanvas} from "./sky-artwork-request";
+import {SKY_BODY_IMAGE_PROFILES} from "@/services/sky-body-image-profile";
+import {useSkyBodyImage,type SkyBodyImageInput} from "./use-sky-body-image";
 
-type Manifest=JupiterBandsManifestData|SaturnBandsManifestData|UranusBandsManifestData|NeptuneBandsManifestData;
-type Profile={body:"JUPITER"|"SATURN"|"URANUS"|"NEPTUNE";id:string;queryKey:string;
-  getManifest:(signal?:AbortSignal)=>Promise<Manifest>;imageUrl:(path:string)=>string};
-
-/** Historical axisymmetric cloud bands share one eligibility and image lifecycle. */
-export function useSkyOpalBands(profile:Profile,report:Pick<SkyGeometryReport,"hourly">|undefined,at:string|undefined,
-  view:SkyArtworkView|null,width:number,height:number,canvas:SkyArtworkCanvas|null,
-  canvasRevision:number,active:boolean,paused=false){
-  const disc=useMemo(()=>active&&view&&width>0&&height>0
-    ?skyPlanetDiscsAt(report?.hourly,at,view.basis,width,height,view.verticalFovDeg,view.center,profile.body)?.[0]??null
-    :null,[report?.hourly,at,view?.basis,view?.verticalFovDeg,view?.center?.x,view?.center?.y,width,height,active,profile.body]);
-  const wanted=active&&Boolean(disc?.surfaceOrientation&&disc.oblate&&disc.oblate.majorRadiusPx>=4);
-  const manifest=useResourceQuery({queryKey:[profile.queryKey],queryFn:profile.getManifest,
-    enabled:wanted&&!paused,staleTime:60_000,structuralSharing:false});
-  const publication=manifest.data;
-  const images=useSkyFixedImage(canvas,canvasRevision,publication,active,wanted,profile.id,
-    asset=>({url:profile.imageUrl(asset.downloadUrl),format:"png"}),paused);
-  const image=images.image;
-  const status=skyFixedImageStatus(wanted,image,manifest.isError,Boolean(manifest.refreshError),images.failed);
-  return {image,publication,loading:wanted&&(manifest.isFetching||images.loading),
-    ...status,failedImage:images.failedImage,
-    retry(){const resetGpu=images.retryImages();void manifest.refetch();return resetGpu;}};
+/** Compatibility facade; all supported bands use the shared resource owner. */
+export function useSkyOpalBands(profile:{body:'JUPITER'|'SATURN'|'URANUS'|'NEPTUNE'},...input:SkyBodyImageInput){
+  const kind=profile.body.toLowerCase() as 'jupiter'|'saturn'|'uranus'|'neptune';
+  return useSkyBodyImage(SKY_BODY_IMAGE_PROFILES[kind],...input);
 }

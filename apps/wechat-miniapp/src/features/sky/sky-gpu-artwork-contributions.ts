@@ -5,14 +5,16 @@ import { skyArtworkLevelsFragment, type SkyArtworkContributionBudget,
   type SkyArtworkLevelsQualification, type SkyArtworkLocalObservation,
   unknownSkyArtworkLocalObservation } from "./sky-artwork-level-composition";
 import type { SkyDeepSkyRegion } from "./sky-deep-sky-region";
+import { reportRuntimeError } from "../../services/runtime-error";
 
 interface Target {
   readonly texture: WebGLTexture;
   readonly framebuffer: WebGLFramebuffer;
   readonly width: number;
   readonly height: number;
-  bytes: number;
-  depth: WebGLRenderbuffer | null;
+  readonly bytes: number;
+  /** A default RGB framebuffer cannot be copied into RGBA in WebGL 1. */
+  format: number;
 }
 interface Entry {
   readonly target: Target;
@@ -47,6 +49,32 @@ const reduceVertex = "attribute vec2 a_position;void main(){gl_Position=vec4(a_p
  * using fewer draw passes and intermediate RGBA8 texels than a 2x2 chain.
  * This fan-in is not a probe budget or a native timing/capacity guarantee. */
 export const SKY_ARTWORK_MAX_REDUCTION_STRIDE = 4;
+const reductionDimensions = (w: number, h: number) => {
+  const sizes: (readonly [number, number])[] = [];
+  while (w > 1 || h > 1) {
+    w = Math.ceil(w / SKY_ARTWORK_MAX_REDUCTION_STRIDE);
+    h = Math.ceil(h / SKY_ARTWORK_MAX_REDUCTION_STRIDE);
+    sizes.push([w, h]);
+  }
+  return sizes;
+};
+
+/** Opted-in callers reserve exactly one native RGBA target per permitted
+ * source group plus the shared MAX chain. The actual drawing buffer owns the
+ * dimensions; logical CSS size is insufficient at high DPR. This is a logical
+ * allocation allowance, separate from image pressure and physical capacity.
+ * An explicit byte limit remains fixed, including invalid/disabled policies. */
+export function skyArtworkContributionFrameBudget(width: number, height: number,
+  maxGroups: number, explicitBytesLimit?: number): SkyArtworkContributionBudget {
+  let auxiliaryBytesLimit = explicitBytesLimit ?? 0;
+  if (explicitBytesLimit === undefined && Number.isSafeInteger(width) && width > 0 &&
+    Number.isSafeInteger(height) && height > 0 && Number.isSafeInteger(maxGroups) && maxGroups > 0) {
+    const bytes = width * height * 4 * maxGroups +
+      reductionDimensions(width, height).reduce((sum, [w, h]) => sum + w * h * 4, 0);
+    if (Number.isSafeInteger(bytes)) auxiliaryBytesLimit = bytes;
+  }
+  return Object.freeze({ auxiliaryBytesLimit, maxGroups });
+}
 const reductionMain = `void main(){
   vec2 p=floor(gl_FragCoord.xy)*${SKY_ARTWORK_MAX_REDUCTION_STRIDE}.+.5;
   vec4 value=sampleAt(p);
@@ -91,11 +119,17 @@ const reductionQuad = new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1
  * target or a native capacity claim. No budget means no GL work or allocation.
  * Draw replay is synchronous: no historical VBO, texture or image lease is kept.
  */
+export type SkyArtworkContributionPolicy = SkyArtworkContributionBudget | (() => SkyArtworkContributionBudget);
 export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
-  options?: SkyArtworkContributionBudget) {
-  const auxiliaryBytesLimit = options?.auxiliaryBytesLimit ?? 0, maxGroups = options?.maxGroups ?? 0;
-  const enabled = !!options && Number.isFinite(auxiliaryBytesLimit) &&
-    auxiliaryBytesLimit > 0 && Number.isSafeInteger(maxGroups) && maxGroups > 0;
+  options?: SkyArtworkContributionPolicy) {
+  let auxiliaryBytesLimit = 0, maxGroups = 0, enabled = false;
+  const readPolicy = () => {
+    const policy = typeof options === "function" ? options() : options;
+    auxiliaryBytesLimit = policy?.auxiliaryBytesLimit ?? 0; maxGroups = policy?.maxGroups ?? 0;
+    enabled = !!policy && Number.isFinite(auxiliaryBytesLimit) &&
+      auxiliaryBytesLimit > 0 && Number.isSafeInteger(maxGroups) && maxGroups > 0;
+  };
+  if (typeof options !== "function") readPolicy();
   const entries = new Map<object, Entry>();
   const pool: Target[] = [], scratch: Target[] = [], used = new Set<Target>();
   let width = 0, height = 0, bytes = 0, frameOpen = false, finished = false, faulted = false, disposed = false;
@@ -105,7 +139,6 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
   let localReduceProgram: ProgramInfo | null = null, signalRevision = 0;
 
   const deleteTarget = (target: Target) => {
-    if (target.depth) gl.deleteRenderbuffer(target.depth);
     gl.deleteFramebuffer(target.framebuffer); gl.deleteTexture(target.texture); bytes -= target.bytes;
   };
   const deletePrograms = () => {
@@ -156,14 +189,7 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       w <= maxTexture && h <= maxTexture && w <= maxViewport[0]! && h <= maxViewport[1]! ? [w, h] as const : null;
   };
   const currentSize = () => width === gl.drawingBufferWidth && height === gl.drawingBufferHeight;
-  const scratchDimensions = (w: number, h: number) => {
-    const sizes: (readonly [number, number])[] = [];
-    while (w > 1 || h > 1) {
-      w = Math.ceil(w / SKY_ARTWORK_MAX_REDUCTION_STRIDE); h = Math.ceil(h / SKY_ARTWORK_MAX_REDUCTION_STRIDE);
-      sizes.push([w, h]);
-    }
-    return sizes;
-  };
+  const scratchDimensions = reductionDimensions;
 
   /** Only the position pointer is modified. WebGL cannot restore a null array
    * pointer after assigning a buffer, so probing requires a real current one. */
@@ -176,7 +202,8 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
     const arrayBuffer = gl.getParameter(gl.ARRAY_BUFFER_BINDING) as WebGLBuffer | null;
     const activeTexture = gl.getParameter(gl.ACTIVE_TEXTURE) as number;
     const textureBindings: (WebGLTexture | null)[] = [];
-    for (let unit = 0; unit < 2; unit++) {
+    // The explicit display-residual draw also samples its pooled backdrop.
+    for (let unit = 0; unit < 3; unit++) {
       gl.activeTexture(gl.TEXTURE0 + unit);
       textureBindings.push(gl.getParameter(gl.TEXTURE_BINDING_2D) as WebGLTexture | null);
     }
@@ -239,9 +266,10 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       const result = guarded(location, work, groupState);
       if (gl.getError() !== gl.NO_ERROR || gl.isContextLost()) throw new Error("sky_gpu_contribution_failed");
       return result;
-    } catch {
+    } catch (error) {
       // Ordinary drawing has already succeeded. Optional setup/readback failure
       // does not fail it or retain partially created auxiliary objects.
+      if (!faulted) reportRuntimeError("render", "sky_gpu_contribution_failed", error);
       invalidate();
       // Consume only errors produced after the checked normal-renderer boundary.
       // WebGL keeps distinct pending error flags. Recovery is bounded even on a
@@ -297,31 +325,23 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error("sky_gpu_contribution_framebuffer_incomplete");
       if (gl.getError() !== gl.NO_ERROR) throw new Error("sky_gpu_contribution_target_failed");
       bytes += n;
-      return { texture, framebuffer, width: w, height: h, bytes: n, depth: null };
+      return { texture, framebuffer, width: w, height: h, bytes: n, format: gl.RGBA };
     } catch (error) {
       if (framebuffer) gl.deleteFramebuffer(framebuffer);
       if (texture) gl.deleteTexture(texture);
       throw error;
     }
   };
-  const ensureDepth = (target: Target) => {
-    if (target.depth) return;
-    const n = target.width * target.height * 2;
-    if (!Number.isSafeInteger(n) || bytes + n > auxiliaryBytesLimit) throw new Error("sky_gpu_contribution_budget");
-    const depth = gl.createRenderbuffer();
-    if (!depth) throw new Error("sky_gpu_group_depth_unavailable");
-    try {
-      gl.bindRenderbuffer(gl.RENDERBUFFER,depth);
-      gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT16,target.width,target.height);
-      gl.bindFramebuffer(gl.FRAMEBUFFER,target.framebuffer);
-      gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,depth);
-      if (gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE || gl.getError()!==gl.NO_ERROR)
-        throw new Error("sky_gpu_group_depth_incomplete");
-      target.depth=depth;target.bytes+=n;bytes+=n;
-    } catch (error) {
-      gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,null);
-      gl.deleteRenderbuffer(depth);throw error;
+  const signalStorage = (target: Target): Target => {
+    // Snapshot sampling has completed before the same pooled target is reused
+    // for a signal. Restore all four writable channels on that texture handle;
+    // RGB's implicit alpha=1 would otherwise manufacture coarse eligibility.
+    if (target.format !== gl.RGBA) {
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, target.texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, target.width, target.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      target.format = gl.RGBA;
     }
+    return target;
   };
   const ensurePrograms = (prepared: SkyGpuArtworkContributionDraw, location: number) => {
     const key = JSON.stringify([prepared.vertex, prepared.cameraRay, location]);
@@ -386,9 +406,54 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
   return {
     begin() {
       entries.clear(); used.clear(); frameOpen = !disposed; finished = false;
+      if (typeof options === "function" && !disposed) {
+        readPolicy();
+        // Shrinking a frame's allowance retires pooled storage; it cannot reset
+        // an auxiliary failure or implicitly enlarge an explicit caller limit.
+        if ((!enabled || bytes > auxiliaryBytesLimit) && bytes > 0) retire();
+      }
       if (disposed || !enabled) return;
       if (gl.isContextLost()) invalidate();
       else if (width > 0 && !currentSize()) retire();
+    },
+    /** Borrow the future signal target for a synchronous backdrop snapshot.
+     * Paint before capture overwrites it; no second full-frame allocation,
+     * CPU readback, escaped texture or unbudgeted storage is introduced. */
+    withBackdropSnapshot(prepared: SkyGpuArtworkContributionDraw, paint: (texture: WebGLTexture) => void): boolean {
+      if (!enabled || disposed || !frameOpen || faulted) return false;
+      reopen(); checkPriorError();
+      if (gl.isContextLost()) { invalidate(); return false; }
+      if (entries.size >= maxGroups || !supportedFramebuffer() || !fullRgbWrite()) return false;
+      const size = dimensions(), location = gl.getAttribLocation(prepared.program.program, "a_position");
+      if (!size || location < 0 || !gl.getVertexAttrib(location, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING)) return false;
+      const [w, h] = size;
+      if (width > 0 && (width !== w || height !== h)) { invalidate(); return false; }
+      const free = pool.find(target => !used.has(target)), chain = scratchDimensions(w, h);
+      const needed = (free ? 0 : w * h * 4) +
+        (scratch.length ? 0 : chain.reduce((sum, [x, y]) => sum + x * y * 4, 0));
+      if (!Number.isSafeInteger(needed) || bytes + needed > auxiliaryBytesLimit) return false;
+      const snapshot = auxiliary(location, () => {
+        width = w; height = h;
+        const target = free ?? makeTarget(w, h);
+        if (!free) pool.push(target);
+        used.add(target);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, target.texture);
+        const format = (gl.getParameter(gl.ALPHA_BITS) as number) > 0 ? gl.RGBA : gl.RGB;
+        if (target.format === format) gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, w, h);
+        else {
+          // Match the actual default framebuffer, preserving its alpha where
+          // present. This replaces the borrowed image within its 4 B/px budget.
+          gl.copyTexImage2D(gl.TEXTURE_2D, 0, format, 0, 0, w, h, 0);
+          target.format = format;
+        }
+        return target;
+      });
+      if (!snapshot) return false;
+      // Ordinary paint failure propagates, rather than becoming optional probe
+      // degradation. Every exit returns this lease to the existing pool.
+      try { paint(snapshot.texture); checkPriorError(); return true; }
+      finally { used.delete(snapshot); }
     },
     capture(draw: SkyArtworkLevelsDraw, prepared: SkyGpuArtworkContributionDraw) {
       if (!enabled || disposed || !frameOpen || faulted || !draw.submitted) return;
@@ -408,7 +473,7 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       const captured = auxiliary(location, () => {
         ensurePrograms(prepared, location); width = w; height = h;
         if (scratch.length === 0) for (const [x, y] of chain) scratch.push(makeTarget(x, y));
-        const target = free ?? makeTarget(w, h);
+        const target = signalStorage(free ?? makeTarget(w, h));
         if (!free) pool.push(target);
         used.add(target);
         // Clear every pixel, then replay the original viewport/scissor. A zero
@@ -463,7 +528,7 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
         if(positionLocation!==location)throw new Error("sky_gpu_mesh_contribution_layout_unavailable");
         if(!reduceBuffer){reduceBuffer=gl.createBuffer();if(!reduceBuffer)throw new Error("sky_gpu_contribution_buffer_unavailable");gl.bindBuffer(gl.ARRAY_BUFFER,reduceBuffer);gl.bufferData(gl.ARRAY_BUFFER,reductionQuad,gl.STATIC_DRAW);}
         width=w;height=h;if(!scratch.length)for(const [x,y] of chain)scratch.push(makeTarget(x,y));
-        const target=free??makeTarget(w,h);if(!free)pool.push(target);used.add(target);
+        const target=signalStorage(free??makeTarget(w,h));if(!free)pool.push(target);used.add(target);
         const scissor=gl.isEnabled(gl.SCISSOR_TEST);
         gl.bindFramebuffer(gl.FRAMEBUFFER,target.framebuffer);
         if(!existing){gl.disable(gl.SCISSOR_TEST);gl.colorMask(true,true,true,true);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);if(scissor)gl.enable(gl.SCISSOR_TEST);}
@@ -477,9 +542,10 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       });
       if(captured)entries.set(group,captured);
     },
-    /** One source's finest-first colour work target becomes its A-channel
+    /** One source's coarse-to-fine colour work target becomes its A-channel
      * contribution signal after the completed composite. No second full image
-     * or retained input/VBO is required. Refusal leaves the caller's independent
+     * or depth buffer is required: the caller replaces every covered sample,
+     * including transparent fine pixels. Refusal leaves the caller's independent
      * draw untouched; GL faults latch until the existing explicit reset. */
     composeMeshGroup(group:object,prepared:SkyGpuArtworkContributionDraw,
       draw:()=>readonly boolean[],composite:(texture:WebGLTexture)=>void):readonly boolean[]|null {
@@ -492,21 +558,19 @@ export function createSkyGpuArtworkContributions(gl: WebGLRenderingContext,
       const [w,h]=size;
       if(width>0&&(width!==w||height!==h)){invalidate();return null;}
       const chain=scratchDimensions(w,h),free=pool.find(target=>!used.has(target));
-      const needed=(free?(free.depth?0:w*h*2):w*h*6)+
+      const needed=(free?0:w*h*4)+
         (scratch.length?0:chain.reduce((sum,[x,y])=>sum+x*y*4,0));
       if(!Number.isSafeInteger(needed)||bytes+needed>auxiliaryBytesLimit)return null;
-      const maxDepth=gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) as number;
-      if(!Number.isFinite(maxDepth)||w>maxDepth||h>maxDepth)return null;
       const rendered=auxiliary(location,()=>{
         if(!reduceProgram){reduceProgram=makeProgram(reduceVertex,reduceFragment,location);positionLocation=location;}
         if(positionLocation!==location)throw new Error("sky_gpu_group_contribution_layout_unavailable");
         if(!reduceBuffer){reduceBuffer=gl.createBuffer();if(!reduceBuffer)throw new Error("sky_gpu_contribution_buffer_unavailable");gl.bindBuffer(gl.ARRAY_BUFFER,reduceBuffer);gl.bufferData(gl.ARRAY_BUFFER,reductionQuad,gl.STATIC_DRAW);}
         width=w;height=h;if(!scratch.length)for(const [x,y] of chain)scratch.push(makeTarget(x,y));
-        const target=free??makeTarget(w,h);if(!free)pool.push(target);used.add(target);ensureDepth(target);
+        const target=signalStorage(free??makeTarget(w,h));if(!free)pool.push(target);used.add(target);
         gl.bindFramebuffer(gl.FRAMEBUFFER,target.framebuffer);gl.viewport(0,0,w,h);
-        gl.disable(gl.SCISSOR_TEST);gl.disable(gl.STENCIL_TEST);gl.disable(gl.CULL_FACE);
-        gl.colorMask(true,true,true,true);gl.clearColor(0,0,0,0);gl.clearDepth(1);gl.depthMask(true);
-        gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LESS);
+        gl.disable(gl.SCISSOR_TEST);gl.disable(gl.STENCIL_TEST);gl.disable(gl.CULL_FACE);gl.disable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);gl.blendEquation(gl.FUNC_ADD);
+        gl.colorMask(true,true,true,true);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
         const results=draw();
         return {target,results};
       },true);

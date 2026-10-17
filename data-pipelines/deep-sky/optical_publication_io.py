@@ -62,25 +62,40 @@ def pinned_json(path: Path, pin: str, *, root: Path) -> tuple[dict, dict]:
     return value, identity
 
 
-def decode_bound_npy(raw: bytes, *, shape: tuple[int, ...], dtype: str):
-    """Validate the caller-owned shape/dtype and exact C payload before loading.
-
-    Domain callers supply actual fixed supported dimensions, not an untrusted
-    header's dimensions. Both header and decoder consume the same pinned bytes.
-    """
+def bound_npy_header(stream, *, shape: tuple[int, ...], dtype: str):
+    """Validate a bounded NPY header against caller-owned dimensions."""
     import numpy as np
     expected=np.dtype(dtype)
     if (not isinstance(shape,tuple) or not shape or any(type(v) is not int or v<=0 for v in shape) or
-            expected.hasobject or expected.kind not in 'bifu' or
-            math.prod(shape)*expected.itemsize>128*1024*1024):
+            expected.hasobject or expected.kind not in 'bifu'):
         raise RuntimeError('optical_publication_array_expectation_invalid')
-    header=io.BytesIO(raw);version=np.lib.format.read_magic(header)
-    if version==(1,0):actual,fortran,parsed=np.lib.format.read_array_header_1_0(header,max_header_size=16384)
-    elif version==(2,0):actual,fortran,parsed=np.lib.format.read_array_header_2_0(header,max_header_size=16384)
-    else:raise RuntimeError('optical_publication_array_version_invalid')
+    try:
+        version=np.lib.format.read_magic(stream)
+        if version not in ((1,0),(2,0)):
+            raise RuntimeError('optical_publication_array_version_invalid')
+        offset=stream.tell(); length=stream.read(2 if version==(1,0) else 4)
+        if len(length)!=(2 if version==(1,0) else 4) or int.from_bytes(length,'little')>16384:
+            raise RuntimeError('optical_publication_array_header_invalid')
+        stream.seek(offset)
+        if version==(1,0):actual,fortran,parsed=np.lib.format.read_array_header_1_0(stream,max_header_size=16384)
+        elif version==(2,0):actual,fortran,parsed=np.lib.format.read_array_header_2_0(stream,max_header_size=16384)
+        else:raise RuntimeError('optical_publication_array_version_invalid')
+    except (ValueError, EOFError) as error:
+        raise RuntimeError('optical_publication_array_header_invalid') from error
     if actual!=shape or fortran or parsed!=expected:
         raise RuntimeError('optical_publication_array_shape_invalid')
-    if len(raw)-header.tell()!=math.prod(shape)*expected.itemsize:
+    return stream.tell()
+
+
+def decode_bound_npy(raw: bytes, *, shape: tuple[int, ...], dtype: str):
+    """Validate fixed dimensions and exact C payload before a bounded load."""
+    import numpy as np
+    expected=np.dtype(dtype)
+    if (not isinstance(shape,tuple) or not shape or any(type(v) is not int or v<=0 for v in shape) or
+            math.prod(shape)*expected.itemsize>128*1024*1024):
+        raise RuntimeError('optical_publication_array_expectation_invalid')
+    offset=bound_npy_header(io.BytesIO(raw),shape=shape,dtype=dtype)
+    if len(raw)-offset!=math.prod(shape)*expected.itemsize:
         raise RuntimeError('optical_publication_array_payload_invalid')
     value=np.load(io.BytesIO(raw),allow_pickle=False,max_header_size=16384)
     value.setflags(write=False);return value

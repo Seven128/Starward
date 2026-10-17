@@ -1,16 +1,22 @@
 import type { SkyPublicImageDemand } from "./sky-public-image-cache";
 export type { SkyPublicImageDemand } from "./sky-public-image-cache";
 import Taro from "@tarojs/taro";
+import { skyPublishedResourceOrigin, skyResourceEnvironmentIdentity, skyResourcePreviewHeaders } from "./sky-resource-origin";
 import { skyImageContentHash } from "@starward/miniapp-contracts";
 import { createSkyPublicImageCache, type SkyPublicImageAcquisition, type SkyPublicImageFileSystem } from "./sky-public-image-cache";
 import type { SkyEncodedImage } from "./sky-image-bytes";
 import type { SkyEncodedJson } from "./sky-public-file-bytes";
+import { skyNativeArrayBuffer } from "./sky-native-array-buffer";
+import { reportSkyImageError } from "./sky-image-diagnostics";
 
-// Initial encoded-file policy: two copies of the measured current 13.57 MiB
-// library plus its 3.16 MiB largest-write headroom fit 32 MiB. Staging counts
-// inside this limit. This is not the 200 MiB whole-app limit or a GPU budget.
+// Keep the existing 32 MiB encoded budget, including staging and retired leases.
+// A fixed, qualified 10,374,947-byte PNG exceeds the former 8 MiB per-file cap.
+// Admit up to 16 MiB while keeping the previous 2 x 8 MiB maximum sum of active
+// encoded I/O; large files therefore queue instead of doubling that envelope.
+// These are logical file/I/O policies, not whole-app, native or GPU memory limits.
 const ENCODED_BYTE_BUDGET = 32 * 1024 * 1024;
-const MAX_FILE_BYTES = 8 * 1024 * 1024;
+const MAX_FILE_BYTES = 16 * 1024 * 1024;
+const IO_BYTE_BUDGET = 16 * 1024 * 1024;
 let cache: ReturnType<typeof createSkyPublicImageCache> | undefined;
 const pendingDemands = new Set<() => void>();
 
@@ -28,7 +34,10 @@ function fileSystem(): SkyPublicImageFileSystem {
         else resolve(stats.size);
       }, fail: reject })),
     read: (filePath, length) => new Promise((resolve, reject) => fs.readFile({ filePath, position: 0, length,
-      success: result => result.data instanceof ArrayBuffer ? resolve(result.data) : reject(new Error("sky_public_image_read_invalid")), fail: reject })),
+      success: result => {
+        const data = skyNativeArrayBuffer(result.data);
+        if (data) resolve(data); else reject(new Error("sky_public_image_read_invalid"));
+      }, fail: reject })),
     write: (filePath, data) => new Promise((resolve, reject) => fs.writeFile({ filePath, data, success: () => resolve(), fail: reject })),
     rename: (oldPath, newPath) => new Promise((resolve, reject) => fs.rename({ oldPath, newPath, success: () => resolve(), fail: reject })),
     remove: filePath => new Promise((resolve, reject) => fs.unlink({ filePath, success: () => resolve(),
@@ -38,20 +47,22 @@ function fileSystem(): SkyPublicImageFileSystem {
 function owner() {
   return cache ??= createSkyPublicImageCache({
     fs: fileSystem(), root: `${Taro.env.USER_DATA_PATH}/sky-public-images-v1`,
-    byteBudget: ENCODED_BYTE_BUDGET, maxFileBytes: MAX_FILE_BYTES,
+    byteBudget: ENCODED_BYTE_BUDGET, maxFileBytes: MAX_FILE_BYTES, ioByteBudget: IO_BYTE_BUDGET,
     session: `${Date.now().toString(36)}_${Math.floor(Math.random() * 0x1_0000_0000).toString(36)}`,
     transfer(asset) {
       let task: ReturnType<typeof Taro.request> | undefined;
       let settled = false;
       const promise = new Promise<ArrayBuffer>((resolve, no) => {
         task = Taro.request<ArrayBuffer>({ url: asset.url, responseType: "arraybuffer", timeout: 15_000,
-          ...(typeof __MINIAPP_OPERATOR_PREVIEW_TOKEN__ !== "undefined" && __MINIAPP_OPERATOR_PREVIEW_TOKEN__ ?
-            { header: { "X-Starward-Operator-Preview": __MINIAPP_OPERATOR_PREVIEW_TOKEN__ } } : {}),
+          ...skyResourcePreviewHeaders(asset.url),
           success(result) {
             if (settled) return; settled = true;
-            if (result.statusCode === 200 && result.data instanceof ArrayBuffer) resolve(result.data);
-            else no(new Error("sky_public_image_response_invalid"));
-          }, fail() { if (!settled) { settled = true; no(new Error("sky_public_image_request_failed")); } } });
+            const data = skyNativeArrayBuffer(result.data);
+            if (result.statusCode === 200 && data) resolve(data);
+            else no(new Error(result.statusCode === 200 ? "sky_public_image_response_invalid" : `sky_image_http_${result.statusCode}`));
+          }, fail(cause) {
+            if (!settled) { settled = true; no(Object.assign(new Error("sky_public_image_request_failed"), { cause })); }
+          } });
         task.catch?.(() => undefined);
       });
       return { promise, cancel() {
@@ -68,7 +79,7 @@ function owner() {
 /** The caller has already validated its publication manifest. Only immutable
  * public image routes from that same configured environment enter this cache. */
 export function acquirePublishedSkyImage(asset: SkyEncodedImage, url: string, publicationHash: string): SkyPublicImageAcquisition {
-  const base = __MINIAPP_API_BASE__.replace(/\/+$/, "");
+  const base = skyPublishedResourceOrigin();
   if (!/^[a-f0-9]{64}$/.test(publicationHash) || !/^(?:https?:\/\/)[A-Za-z0-9.:_-]+$/.test(base) ||
     !url.startsWith(`${base}/v2/sky/`)) throw new Error("sky_public_image_route_invalid");
   const path = url.slice(base.length);
@@ -86,21 +97,21 @@ export function acquirePublishedSkyImage(asset: SkyEncodedImage, url: string, pu
     (optical && (Number(optical[4]) >= 12 * 4 ** Number(optical[3]) || asset.width !== 512 || asset.height !== 512 ||
       (asset.format !== "jpeg" && asset.format !== "png"))) ||
     (selected?.[3] !== undefined && selected[3] !== asset.sha256)) throw new Error("sky_public_image_route_invalid");
-  const environment = skyImageContentHash(Uint8Array.from(base, c => c.charCodeAt(0)));
+  const environment = skyImageContentHash(Uint8Array.from(skyResourceEnvironmentIdentity(), c => c.charCodeAt(0)));
   return owner().acquire({ ...asset, environment, url });
 }
 
 /** Validated SAO/landscape publications supply identity/byte bounds. This is the same owner,
  * directory, byte budget and native transfer queue as images, not a JSON store. */
 export function acquirePublishedSkyJson(asset: SkyEncodedJson, url: string, publicationHash: string): SkyPublicImageAcquisition {
-  const base = __MINIAPP_API_BASE__.replace(/\/+$/, "");
+  const base = skyPublishedResourceOrigin();
   const route = /^\/v2\/sky\/supplements\/sao\/v2\/([a-f0-9]{64})\/assets\/\d{2}-\d{2}-(?:7|8|9|10)-\d{1,3}$/;
   const landscape = /^\/v2\/sky\/landscape\/([a-f0-9]{64})\/panorama-(?:1024|2048)\.alpha-rle\.json$/;
   const resourcePath = url.slice(base.length);
   if (!/^[a-f0-9]{64}$/.test(publicationHash) || !/^(?:https?:\/\/)[A-Za-z0-9.:_-]+$/.test(base) ||
     !url.startsWith(base + "/v2/sky/") || (route.exec(resourcePath)?.[1] ?? landscape.exec(resourcePath)?.[1]) !== publicationHash ||
     asset.format !== "json" || asset.bytes > 192 * 1024) throw new Error("sky_public_json_route_invalid");
-  const environment = skyImageContentHash(Uint8Array.from(base, c => c.charCodeAt(0)));
+  const environment = skyImageContentHash(Uint8Array.from(skyResourceEnvironmentIdentity(), c => c.charCodeAt(0)));
   return owner().acquire({ ...asset, environment, url });
 }
 
@@ -176,6 +187,8 @@ export const clearSkyPublicImageCache = () => {
   // independent entry retirement or fabricate settlement of native image I/O.
   const clearing = owner().clear();
   const retired = [...pendingDemands]; pendingDemands.clear();
-  for (const handler of retired) { try { handler(); } catch { /* Other demands still retire. */ } }
+  for (const handler of retired) {
+    try { handler(); } catch (cause) { reportSkyImageError("load", "encoded-cache:demand_retire", cause); }
+  }
   return clearing;
 };

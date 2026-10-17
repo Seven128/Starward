@@ -463,9 +463,10 @@ function sphereAngularDiameterDeg(radiusKm: number, distanceAu: number): number 
  * yields north/west/up, so convert all axes to the renderer's east/north/up. */
 function bodyFrameAt(body:EngineBody,at: Date, observer: EngineObserver,
   emittedAt:Date=at): import("@starward/miniapp-contracts").SkyBodyFrame {
-  // Body spin belongs to the photon emission instant; the ENU basis belongs
-  // to the observer's reception instant. Lunar light time is sub-second, but
-  // using reception spin for distant Mars shifts surface features by degrees.
+  // Planet spin uses the photon emission instant; the ENU basis belongs to
+  // reception. The adopted lunar ME approximation keeps reception spin;
+  // lunar light travel is roughly one second. Distant Mars needs emission
+  // spin to avoid shifting surface features by degrees.
   const axis = RotationAxis(body, emittedAt);
   const ra = axis.ra * Math.PI / 12, spin = axis.spin * Math.PI / 180;
   const north = [axis.north.x, axis.north.y, axis.north.z] as const;

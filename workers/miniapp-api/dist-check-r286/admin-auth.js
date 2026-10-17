@@ -1,0 +1,98 @@
+import { timingSafeEqual } from "node:crypto";
+const ROLE_OPERATIONS = {
+    OWNER: [
+        "QUEUE_READ",
+        "CASE_READ",
+        "CASE_REVIEW",
+        "MEDIA_READ",
+        "MEDIA_REVIEW",
+        "MERGE_PREVIEW",
+        "MERGE_COMMIT",
+        "PUBLICATION_ASSESS",
+        "PUBLISH",
+        "SUSPEND",
+        "UNPUBLISH",
+        "REPLACE",
+        "RETIRE",
+        "AUDIT_READ",
+        "EVENT_CATALOG_READ",
+        "EVENT_CATALOG_IMPORT",
+        "EVENT_CATALOG_REVIEW",
+        "EVENT_CATALOG_PUBLISH",
+        "EVENT_CATALOG_ROLLBACK",
+        "EVENT_CATALOG_SOURCE_MANAGE",
+        "EVENT_CATALOG_RERUN",
+    ],
+    MODERATOR: [
+        "QUEUE_READ",
+        "CASE_READ",
+        "CASE_REVIEW",
+        "MERGE_PREVIEW",
+        "EVENT_CATALOG_READ",
+        "EVENT_CATALOG_IMPORT",
+        "EVENT_CATALOG_REVIEW",
+    ],
+    MEDIA_REVIEWER: ["MEDIA_READ", "MEDIA_REVIEW"],
+    PUBLISHER: [
+        "CASE_READ",
+        "MERGE_PREVIEW",
+        "PUBLICATION_ASSESS",
+        "PUBLISH",
+        "SUSPEND",
+        "UNPUBLISH",
+        "REPLACE",
+        "RETIRE",
+        "EVENT_CATALOG_READ",
+        "EVENT_CATALOG_PUBLISH",
+        "EVENT_CATALOG_ROLLBACK",
+    ],
+    AUDITOR: ["QUEUE_READ", "CASE_READ", "MEDIA_READ", "AUDIT_READ", "EVENT_CATALOG_READ"],
+};
+export function assertAdminToken(provided) {
+    const expected = process.env.MINIAPP_ADMIN_TOKEN?.trim();
+    if (!expected)
+        throw new Error("admin_capability_disabled");
+    if (!provided)
+        throw new Error("admin_auth_required");
+    const expectedBytes = Buffer.from(expected);
+    const providedBytes = Buffer.from(provided);
+    if (expectedBytes.length !== providedBytes.length ||
+        !timingSafeEqual(expectedBytes, providedBytes))
+        throw new Error("admin_auth_required");
+}
+export function normalizeAdminActor(value) {
+    const actor = value?.trim() || "admin:local";
+    if (!/^admin:[a-zA-Z0-9._-]{1,64}$/u.test(actor))
+        throw new Error("admin_actor_invalid");
+    return actor;
+}
+function configuredRoles(actor) {
+    const raw = process.env.MINIAPP_ADMIN_RBAC?.trim();
+    if (!raw) {
+        if (process.env.NODE_ENV === "production")
+            throw new Error("admin_rbac_disabled");
+        return ["OWNER"];
+    }
+    let parsed;
+    try {
+        parsed = JSON.parse(raw);
+    }
+    catch {
+        throw new Error("admin_rbac_invalid");
+    }
+    const roles = parsed && typeof parsed === "object" && !Array.isArray(parsed)
+        ? parsed[actor]
+        : undefined;
+    if (!Array.isArray(roles) ||
+        roles.some((role) => typeof role !== "string" ||
+            !["OWNER", "MODERATOR", "MEDIA_REVIEWER", "PUBLISHER", "AUDITOR"].includes(role)))
+        throw new Error("admin_rbac_actor_not_configured");
+    return roles;
+}
+export function assertAdminOperation(actor, operation) {
+    const roles = configuredRoles(actor);
+    if (!roles.some((role) => ROLE_OPERATIONS[role].includes(operation)))
+        throw new Error("admin_permission_denied");
+    return roles;
+}
+//# sourceMappingURL=admin-auth.js.map

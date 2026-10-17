@@ -63,6 +63,9 @@ function useForecastQuery<T>(options: QueryOptions<ApiEnvelope<T>>, presentation
 export function useSkyForecastQuery(options: QueryOptions<ApiEnvelope<SkyReport>>) {
   return useForecastQuery(options, skyForecastPresentation);
 }
+// Keep the pure validity policy with the query entry that already exports it
+// across WEAPP packages; transient presentation need not duplicate the rule.
+useSkyForecastQuery.presentation = skyForecastPresentation;
 
 export function useMapForecastQuery(options: QueryOptions<ApiEnvelope<MapSceneData>>) {
   return useForecastQuery(options, mapForecastPresentation);

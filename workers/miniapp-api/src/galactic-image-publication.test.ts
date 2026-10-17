@@ -14,10 +14,40 @@ import {MiniappController} from "./controller.ts";
 import {MiniappService} from "./miniapp-service.ts";
 import {createTestMiniappService} from "./test-fixtures/create-test-service.ts";
 import {galacticImagePublicAssetHeaders} from "./sky-public-asset-headers.ts";
+import {galacticImageManifestPath} from "@starward/miniapp-contracts";
+import {galacticSkyPublicAssets,type SkyPublicAssetExportInput} from "./sky-public-asset-export.ts";
+import {assertSkyStaticRecord,skyStaticHash} from "../../../tools/deployment/sky-static-bundle.mjs";
 import {assertGalacticImagePublication,galacticImageFormat} from "@starward/miniapp-contracts";
 
 const file="2mass-galactic-2048x1024.jpg";
 const bundle=new URL("../assets/deep-sky/galactic-2mass/",import.meta.url);
+
+test("the two real Galactic editions export immutable metadata with identical HTTP bytes and headers",async()=>{
+  const service=createTestMiniappService();
+  class MetadataModule {}
+  Module({controllers:[MiniappController],providers:[{provide:MiniappService,useValue:service}]})(MetadataModule);
+  const app=await NestFactory.create<NestFastifyApplication>(MetadataModule,new FastifyAdapter(),{logger:false});
+  try{
+    await app.init();const http=app.getHttpAdapter().getInstance(),owner=service.galacticImage;
+    const rows:SkyPublicAssetExportInput[]=[];for await(const row of galacticSkyPublicAssets(owner))rows.push(row);
+    assert.equal(rows.length,4);assert.equal(rows.filter(row=>row.route.endsWith('/manifest')).length,2);
+    const publications=owner.publishedManifests();assert.equal(publications.length,2);
+    for(const publication of publications){
+      const response=await http.inject({method:'GET',url:galacticImageManifestPath(publication.publicationHash)});
+      assert.equal(response.statusCode,200);assert.deepEqual(response.json(),publication);
+      for(const row of rows.filter(row=>row.route.includes(publication.publicationHash))){
+        assertSkyStaticRecord({...row,bytes:row.bytes.length,sha256:skyStaticHash(row.bytes)});
+        const read=await http.inject({method:'GET',url:row.route});assert.equal(read.statusCode,200);
+        assert.deepEqual(read.rawPayload,row.bytes);
+        for(const [key,value]of Object.entries(row.headers))assert.equal(read.headers[key],value);
+      }
+    }
+    assert.equal((await http.inject({method:'GET',url:galacticImageManifestPath('0'.repeat(64))})).statusCode,404);
+    const metadata=rows.find(row=>row.route.endsWith('/manifest'))!;
+    assert.throws(()=>assertSkyStaticRecord({...metadata,bytes:metadata.bytes.length,sha256:skyStaticHash(metadata.bytes),
+      headers:{...metadata.headers,'content-type':'image/png'}}),/header_invalid/);
+  }finally{await app.close();}
+});
 
 test("2MASS publication serves only the manifest-bound reviewed JPEG",async()=>{
   const service=new GalacticImagePublicationService(new URL("manifest.json",bundle));
@@ -144,11 +174,14 @@ test("a missing or invalid current optical manifest cannot strand valid legacy m
         const legacy=await http.inject({method:"GET",url:"/v2/sky/galactic/manifest"});
         assert.equal(legacy.statusCode,200,"valid old publication is independent of current-manifest failure");
         assert.deepEqual(legacy.json(),infrared);
+        const exactLegacy=await http.inject({method:"GET",url:galacticImageManifestPath(infrared.publicationHash)});
+        assert.equal(exactLegacy.statusCode,200);assert.deepEqual(exactLegacy.json(),infrared);
         const image=await http.inject({method:"GET",url:infrared.image.downloadUrl});
         assert.equal(image.statusCode,200);
         assert.equal(createHash("sha256").update(image.rawPayload).digest("hex"),infrared.image.sha256);
         for(const [k,v]of Object.entries(galacticImagePublicAssetHeaders(infrared)))assert.equal(image.headers[k],v);
         assert.equal((await http.inject({method:"GET",url:"/v2/sky/galactic/display/manifest"})).statusCode,500);
+        assert.equal((await http.inject({method:"GET",url:galacticImageManifestPath(current.publicationHash)})).statusCode,500);
         assert.equal((await http.inject({method:"GET",url:current.image.downloadUrl})).statusCode,500,
           "current optical failure must not return infrared success at an optical URL");
       }finally{await app.close();}

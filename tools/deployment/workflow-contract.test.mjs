@@ -98,5 +98,9 @@ test("WeChat platform operations use a protected dedicated runner and never publ
   assert.match(source, /npm ci --ignore-scripts --prefix tools\/miniapp-uploader/u);
   assert.match(source, /STARWARD_WECHAT_UPLOAD_PRIVATE_KEY/u);
   assert.match(source, /production_confirmation/u);
+  assert.match(source, /WECHAT_SKY_RESOURCE_ORIGIN: \$\{\{ vars\.STARWARD_WECHAT_SKY_RESOURCE_ORIGIN \}\}/u);
+  assert.match(source, /--sky-resource-origin "\$\{WECHAT_SKY_RESOURCE_ORIGIN:-\$WECHAT_API_ORIGIN\}"/u);
+  assert.match(source, /MINIAPP_BUILT_CANDIDATE_MANIFEST="\$GITHUB_WORKSPACE\/artifacts\/miniapp\/release\/\$WECHAT_LANE\.manifest\.json"/u);
+  assert.match(source, /node --test tools\/miniapp\/built-candidate\.test\.mjs/u);
   assert.doesNotMatch(source, /deployment:promote|STARWARD_SSH_PRIVATE_KEY|packages: write/u);
 });

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import {skyImageRecoveryTestOwner} from './sky-image-recovery-test-support';
 import {readFileSync} from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
@@ -7,12 +8,77 @@ import {orderPublishedOpticalTilesForView} from "./sky-optical-tile-selection";
 const testFrame={equatorialToEnu:[1,0,0,0,1,0,0,0,1]};
 const testBasis={right:[1,0,0],up:[0,1,0],forward:[0,0,1]};
 
+test("camera motion cannot request another resource draw for disabled or uncovered optical layers",()=>{
+  // Execute the full Hook, then observe the same dependency boundary used by
+  // the page writer. A real new tile and retirement must still invalidate it.
+  const slots:{deps:unknown[];value:unknown}[]=[];let cursor=0;
+  const memo=(evaluate:()=>unknown,deps:unknown[])=>{
+    const index=cursor++,old=slots[index];
+    if(!old||old.deps.length!==deps.length||deps.some((value,i)=>!Object.is(value,old.deps[i])))
+      slots[index]={deps,value:evaluate()};
+    return slots[index]!.value;
+  };
+  let publication:object|undefined,queries=0,enabledQueries=0,candidatesAvailable=false;
+  let payload={images:new Map<string,object>(),retainedImages:new Map<string,object>()};
+  const currentImages=()=>payload;
+  const recovery=skyImageRecoveryTestOwner();
+  const bindings:Record<string,unknown>={
+    react:{useMemo:memo,useCallback:(call:()=>unknown,deps:unknown[])=>memo(()=>call,deps)},
+    "./use-sky-image-recovery":{useSkyImageRecovery:recovery.useSkyImageRecovery},
+    "@/hooks/use-resource-query":{useResourceQuery(options:{enabled:boolean}){
+      if(options.enabled)enabledQueries++;
+      return {data:queries++%2===0?publication:{data:[]},isFetching:false,refetch(){}};
+    }},
+    "@/services/optical-hips-client":{getOpticalHipsManifest(){},getOpticalHipsIndex(){},opticalHipsTileUrl(){}},
+    "./sky-observation-frame":{exactSkyObservationFrame:()=>testFrame},
+    "./sky-hips-tile-selection":{selectSkyHipsTiles:()=>({state:"SELECTED",order:3,pixels:[166]})},
+    "./sky-optical-tile-selection":{selectPublishedOpticalCandidates:()=>candidatesAvailable?[{sourceId:"ps1",order:3,pixels:[166],dirs:[0]}]:[],
+      resolvePublishedOpticalTiles:()=>[],orderPublishedOpticalTilesForView,publishedOpticalCoverageComplete:()=>true},
+    "./use-sky-artwork":{useSkyNativeImages:()=>({...payload,currentImages,loading:false,failed:false})},
+  };
+  const runtime={exports:{} as Record<string,any>,__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:false,
+    require(name:string){assert(name in bindings,name);return bindings[name];}};
+  vm.runInNewContext(ts.transpileModule(readFileSync(new URL("./use-sky-optical-hips.ts",import.meta.url),"utf8"),
+    {compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,runtime);
+  const render=(heading:number,active=true)=>{
+    cursor=0;
+    const angle=heading*Math.PI/180;
+    const basis={right:[Math.cos(angle),-Math.sin(angle),0],up:[0,0,1],forward:[Math.sin(angle),Math.cos(angle),0]};
+    return runtime.exports.useSkyOpticalHips(undefined,"public-instant",{basis,verticalFovDeg:90},390,844,{},1,active);
+  };
+  let drawDependencies:unknown[]|undefined,redraws=0;
+  const consume=(value:ReturnType<typeof render>)=>{
+    const next=[value.tiles,value.currentTiles];
+    if(!drawDependencies||next.some((item,index)=>item!==drawDependencies![index]))redraws++;
+    drawDependencies=next;
+  };
+  const initial=render(0);consume(initial);
+  for(const heading of [1,2,3,4,5]){
+    const moved=render(heading);assert.equal(moved.tiles.length,0);consume(moved);
+  }
+  assert.equal(enabledQueries,0);
+  assert.equal(redraws,1,"a camera-only move cannot manufacture an optical resource change and feed another Canvas draw");
+  runtime.__MINIAPP_DEVELOPMENT_FIXTURE_MODE__=true;
+  publication={publicationHash:"a".repeat(64)};const image={};
+  consume(render(6));
+  for(const heading of [7,8,9,10,11]){
+    const uncovered=render(heading);consume(uncovered);assert.equal(uncovered.currentTiles().length,0);
+  }
+  assert.equal(redraws,2,"an admitted publication with no matching shard is still an absent resource");
+  candidatesAvailable=true;
+  payload={images:new Map([["ps1:3:166",image]]),retainedImages:new Map()};
+  const ready=render(12);consume(ready);
+  assert.equal(ready.tiles[0].image,image);assert.equal(redraws,3,"real admitted resources must reach the writer");
+  const hidden=render(13,false);consume(hidden);
+  assert.equal(hidden.tiles.length,0);assert.equal(redraws,4,"retirement must withdraw the actual previous layer");
+});
+
 test("validated trial tiles use bounded encoded reuse without changing wanted/decoded pressure",()=>{
   const source=ts.createSourceFile("use-sky-optical-hips.ts",readFileSync(new URL("./use-sky-optical-hips.ts",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true);
   const declaration=source.statements.find((node):node is ts.FunctionDeclaration=>ts.isFunctionDeclaration(node)&&node.name?.text==="useSkyOpticalHips")!;
   const publication={publicationHash:"a".repeat(64)},asset={id:"ps1:3:166",order:3,pixel:166,sourcePriority:0,format:"jpeg",downloadUrl:"/v2/sky/optical/"+"a".repeat(64)+"/ps1/3/166"};
   let query=0,parameters:any[]=[];
-  const runtime={__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:true,useMemo:(run:()=>unknown)=>run(),useCallback:(run:unknown)=>run,
+  const runtime={useSkyImageRecovery:skyImageRecoveryTestOwner().useSkyImageRecovery,__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:true,useMemo:(run:()=>unknown)=>run(),useCallback:(run:unknown)=>run,
     useResourceQuery:()=>({data:query++%2===0?publication:{data:[]},isFetching:false}),
     getOpticalHipsManifest(){},exactSkyObservationFrame:()=>testFrame,orderPublishedOpticalTilesForView,
     selectPublishedOpticalCandidates:()=>[{sourceId:"ps1",order:3,pixels:[166],dirs:[0]}],
@@ -42,7 +108,7 @@ test("widening keeps already decoded fine descendants through coarse loading and
   const native={images:new Map<string,object>(),retainedImages,loading:true,failed:false};
   const candidates=[{sourceId:"ps1",format:"jpeg",order:6,pixels:[2409,2411],dirs:[0]}];
   let query=0;
-  const runtime={__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:true,
+  const runtime={useSkyImageRecovery:skyImageRecoveryTestOwner().useSkyImageRecovery,__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:true,
     useMemo:(evaluate:()=>unknown)=>evaluate(),useCallback:(run:unknown)=>run,
     getOpticalHipsManifest:()=>Promise.resolve(publication),
     useResourceQuery:()=>({data:query++%2===0?publication:{data:[]},isFetching:false}),
@@ -83,7 +149,7 @@ test("commercial sky does not request or retry an unpublished optical trial", ()
     return {data:undefined,isFetching:false,isError:true,refreshError:null,
       refetch(){refetches++;return Promise.resolve(undefined)}};
   };
-  const runtime={
+  const runtime={useSkyImageRecovery:skyImageRecoveryTestOwner().useSkyImageRecovery,
     __MINIAPP_DEVELOPMENT_FIXTURE_MODE__:false,
     useMemo:(evaluate:()=>unknown)=>evaluate(),useCallback:(run:unknown)=>run,useResourceQuery,
     getOpticalHipsManifest:()=>Promise.resolve(null),
@@ -116,7 +182,7 @@ test("live optical snapshot reuses source qualification and stable order before 
   const source=ts.createSourceFile("use-sky-optical-hips.ts",readFileSync(new URL("./use-sky-optical-hips.ts",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true);
   const declaration=source.statements.find((n):n is ts.FunctionDeclaration=>ts.isFunctionDeclaration(n)&&n.name?.text==="useSkyOpticalHips")!;
   const publication={publicationHash:"a".repeat(64)},empty={images:new Map(),retainedImages:new Map()},fine={},coarse={},foreign={},outside={};let current=empty,query=0;
-  const runtime={__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:true,useMemo:(run:()=>unknown)=>run(),useCallback:(run:unknown)=>run,
+  const runtime={useSkyImageRecovery:skyImageRecoveryTestOwner().useSkyImageRecovery,__MINIAPP_DEVELOPMENT_FIXTURE_MODE__:true,useMemo:(run:()=>unknown)=>run(),useCallback:(run:unknown)=>run,
     useResourceQuery:()=>({data:query++%2===0?publication:{data:[]},isFetching:false}),getOpticalHipsManifest(){},
     exactSkyObservationFrame:()=>testFrame,orderPublishedOpticalTilesForView,
     selectPublishedOpticalCandidates:()=>[{sourceId:"ps1",order:6,pixels:[2409],dirs:[0]}],

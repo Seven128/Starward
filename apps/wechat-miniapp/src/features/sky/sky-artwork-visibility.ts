@@ -18,6 +18,13 @@ function conesSeparated(a: readonly SkyVector[], b: readonly SkyVector[]): boole
   });
 }
 
+/** Conservative intersection of two registered convex photographic fields.
+ * Unknown/degenerate separation keeps overlap; no pixel brightness, catalogue
+ * identity or scientific-availability claim is inferred. */
+export function skyArtworkFootprintsIntersect(a: SkyArtworkRegistration, b: SkyArtworkRegistration): boolean {
+  return !conesSeparated(a.corners, b.corners) && !conesSeparated(b.corners, a.corners);
+}
+
 /** The viewport lies inside this circular stereographic footprint, including
  * an offset projection center. This cap is a bound, not its rectangular edge. */
 export function skyArtworkViewBounds(view: SkyArtworkView, width: number, height: number) {
@@ -130,21 +137,34 @@ export function artworkDisplaySupportIntersectsView(registration: SkyArtworkRegi
  * cap is eligible, not proof of exact pixel coverage near a viewport corner. */
 export function artworkIntersectsView(registration: SkyArtworkRegistration, view: SkyArtworkView,
   width: number, height: number): boolean {
-  const viewport = skyArtworkViewBounds(view,width,height);
-  if (!viewport) return false;
-  // The tangent-plane hull below intentionally over-encloses curved viewport
-  // edges. Reuse the renderer's complete projected cap to reject a certified
-  // empty rectangle before requests, decode retention or texture upload. Keep
-  // its outward pixel/float margin; an unbounded cap stays eligible. The source
-  // image, UVs and scientific coverage do not change.
-  const raster = skyArtworkRasterBounds(registration,view,width,height,Math.ceil(width),Math.ceil(height));
-  if (raster && (raster.width === 0 || raster.height === 0)) return false;
-  const { center, radius } = registration.bounds;
-  if (radius >= Math.PI/2) return true;
-  // Never drop a partial image merely because its center/anchors left the view.
-  if (viewport.radius + radius < Math.PI && dot(center,view.basis.forward) < Math.cos(viewport.radius + radius) - 1e-9) return false;
-  const hull = skyArtworkViewRayHull(view, width, height);
-  // This enclosure certifies only a forward-hemisphere local viewport. Wider
-  // views keep the previous conservative cap, never a corner-only rejection.
-  return !hull || !(conesSeparated(registration.corners, hull) || conesSeparated(hull, registration.corners));
+  return createSkyArtworkViewCuller(view, width, height)(registration);
+}
+
+/** One accepted view for a synchronous request/draw batch. Only the view's
+ * preparation is shared; every image keeps its exact conservative tests. */
+export function createSkyArtworkViewCuller(input: SkyArtworkView, width: number, height: number):
+  (registration: SkyArtworkRegistration) => boolean {
+  const viewport = skyArtworkViewBounds(input,width,height);
+  if (!viewport) return () => false;
+  const view: SkyArtworkView = { basis: { right: [...input.basis.right], up: [...input.basis.up],
+    forward: [...input.basis.forward] }, verticalFovDeg: input.verticalFovDeg,
+    ...(input.center ? { center: { ...input.center } } : {}) };
+  let hull: readonly SkyVector[] | null | undefined;
+  return registration => {
+    // The tangent-plane hull below intentionally over-encloses curved viewport
+    // edges. Reuse the renderer's complete projected cap to reject a certified
+    // empty rectangle before requests, decode retention or texture upload. Keep
+    // its outward pixel/float margin; an unbounded cap stays eligible. The source
+    // image, UVs and scientific coverage do not change.
+    const raster = skyArtworkRasterBounds(registration,view,width,height,Math.ceil(width),Math.ceil(height));
+    if (raster && (raster.width === 0 || raster.height === 0)) return false;
+    const { center, radius } = registration.bounds;
+    if (radius >= Math.PI/2) return true;
+    // Never drop a partial image merely because its center/anchors left the view.
+    if (viewport.radius + radius < Math.PI && dot(center,view.basis.forward) < Math.cos(viewport.radius + radius) - 1e-9) return false;
+    if (hull === undefined) hull = skyArtworkViewRayHull(view, width, height);
+    // This enclosure certifies only a forward-hemisphere local viewport. Wider
+    // views keep the previous conservative cap, never a corner-only rejection.
+    return !hull || !(conesSeparated(registration.corners, hull) || conesSeparated(hull, registration.corners));
+  };
 }

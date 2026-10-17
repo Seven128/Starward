@@ -6,6 +6,23 @@ import { evaluateSkyTimeModel, reprojectSkyTimeDirection } from "@starward/astro
 import { exactSkyTimeFrame } from "./sky-time-frame";
 
 const prepared = new WeakMap<SkyReport, SkyTimeModel | null>();
+
+/** The ruler spaces supplied rows uniformly, not their elapsed durations.
+ * Interpolate the actual adjacent instants only within admitted model coverage;
+ * older reports keep their independently valid nearest supplied row. */
+export function skyRulerTime(rows: readonly Pick<HourlySkyRow, "at">[], position: number,
+  model: Pick<SkyTimeModel, "startAt" | "endAt"> | null): string | null {
+  if (!rows.length || !Number.isFinite(position)) return null;
+  const bounded = Math.max(0, Math.min(position, rows.length - 1));
+  const nearest = rows[Math.round(bounded)]!.at;
+  const left = Math.floor(bounded), right = Math.ceil(bounded);
+  if (!model || left === right) return nearest;
+  const start = Date.parse(rows[left]!.at), end = Date.parse(rows[right]!.at);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start ||
+    !(start >= Date.parse(model.startAt) && end <= Date.parse(model.endAt))) return nearest;
+  return new Date(Math.round(start + (end - start) * (bounded - left))).toISOString();
+}
+
 function freezeGeometry(value: unknown): void {
   if (!value || typeof value !== "object" || Object.isFrozen(value)) return;
   for (const child of Object.values(value)) freezeGeometry(child);

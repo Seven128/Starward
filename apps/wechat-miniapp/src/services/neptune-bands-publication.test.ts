@@ -24,6 +24,6 @@ test("Neptune bands accept only the pinned rights, source, latitude profile and 
     (root:ReturnType<typeof manifest>)=>{root.image.downloadUrl="https://example.com/cloud.png";},
   ]){
     const wrong=manifest();mutate(wrong);
-    assert.throws(()=>assertNeptuneBandsManifest(wrong),/neptune_bands_manifest_invalid/u);
+    assert.throws(()=>assertNeptuneBandsManifest(wrong),/body_image_manifest_invalid/u);
   }
 });

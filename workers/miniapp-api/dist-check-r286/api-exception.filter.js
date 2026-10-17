@@ -1,0 +1,96 @@
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+import { Catch, HttpException } from "@nestjs/common";
+import { requestIdFromHeaders } from "./request-id.js";
+import { SpotPublicationBlockedError } from "./spot-completeness-policy.js";
+export function classifyExceptionMessage(message) {
+    if (message === "observation_timezone_resolution_unavailable")
+        return { status: 400, code: "INVALID_INPUT", retryable: false, message: "OBSERVATION_LOCATION_OUTSIDE_SUPPORTED_REGION", recovery: ["CHOOSE_SUPPORTED_LOCATION"] };
+    if (message === "observation_timezone_resolution_ambiguous")
+        return { status: 400, code: "INVALID_INPUT", retryable: false };
+    if (/^(?:plan_(?:end_must_follow_start|departure_must_precede_start|timing_invalid)|observation_local_(?:date_invalid|time_invalid|time_nonexistent_or_ambiguous))$/u.test(message))
+        return { status: 400, code: "INVALID_INPUT", retryable: false };
+    if (/^event_article_(?:source_unavailable|dns_unavailable|timeout)$/u.test(message))
+        return { status: 503, code: "PROVIDER_UNAVAILABLE", retryable: true };
+    if (/^event_article_/u.test(message))
+        return { status: 400, code: "INVALID_INPUT", retryable: false };
+    if (/^event_catalog_(?:active_changed|review_baseline_changed|candidate_changed|source_exists|version_exists|candidate_duplicate|candidate_not_reviewable|candidate_not_publishable|already_active)$/u.test(message))
+        return { status: 409, code: "CONFLICT", retryable: true };
+    if (message === "event_catalog_retired_baseline_not_restorable")
+        return { status: 400, code: "INVALID_INPUT", retryable: false };
+    if (/^(?:contribution_account_deleted|operation_receipt_privacy_erased)$/u.test(message))
+        return { status: 410, code: "STALE_REJECTED", retryable: false };
+    if (message === "contribution_formal_changes_obsolete")
+        return { status: 409, code: "CONFLICT", retryable: false, message: "CONTRIBUTION_NO_REMAINING_CHANGES", recovery: ["REFETCH", "REVIEW_CHANGES"] };
+    if (message === "account_not_active")
+        return { status: 403, code: "PERMISSION_DENIED", retryable: false };
+    if (/not_found/u.test(message))
+        return { status: 404, code: "NOT_FOUND", retryable: false };
+    if (/conflict|revision|not_editable|already_resolved/u.test(message))
+        return { status: 409, code: "CONFLICT", retryable: true };
+    if (/admin_auth|admin_rbac|permission|identity_scope|auth_(?:header_invalid|required|session|reauthentication)|wechat_auth_rejected/u.test(message))
+        return { status: 403, code: "PERMISSION_DENIED", retryable: false };
+    if (/expired/u.test(message))
+        return { status: 410, code: "STALE_REJECTED", retryable: false };
+    if (/budget/u.test(message))
+        return { status: 429, code: "BUDGET_EXCEEDED", retryable: true };
+    if (/provider/u.test(message))
+        return { status: 503, code: "PROVIDER_UNAVAILABLE", retryable: true };
+    if (/capability|requires_postgres|schema_missing/u.test(message))
+        return { status: 503, code: "CAPABILITY_DISABLED", retryable: false };
+    if (/invalid|required|unsupported|closure|incomplete|too_short|mismatch|rights|consent/u.test(message))
+        return { status: 400, code: "INVALID_INPUT", retryable: false };
+    return { status: 500, code: "PROVIDER_UNAVAILABLE", retryable: true };
+}
+let ApiExceptionFilter = class ApiExceptionFilter {
+    catch(exception, host) {
+        const context = host.switchToHttp();
+        const response = context.getResponse();
+        const request = context.getRequest();
+        const message = exception instanceof Error ? exception.message : "unknown";
+        if (process.env.STARWARD_ACCEPTANCE_DIAGNOSTICS === "1") {
+            process.stderr.write(`[starward-acceptance-error] ${message}\n`);
+        }
+        const requestId = requestIdFromHeaders(request.headers);
+        if (exception instanceof SpotPublicationBlockedError) {
+            response.status(422).send({
+                code: "INVALID_INPUT",
+                message: "SPOT_PUBLICATION_INCOMPLETE",
+                retryable: false,
+                recovery: ["COMPLETE_MISSING_SPOT_EVIDENCE", "REVIEW_AND_RETRY"],
+                requestId,
+                details: exception.assessment,
+            });
+            return;
+        }
+        const classified = exception instanceof HttpException
+            ? {
+                status: exception.getStatus(),
+                code: exception.getStatus() === 404 ? "NOT_FOUND" : "INVALID_INPUT",
+                retryable: false,
+            }
+            : classifyExceptionMessage(message);
+        response.status(classified.status).send({
+            code: classified.code,
+            message: "message" in classified ? classified.message : classified.code,
+            retryable: classified.retryable,
+            recovery: "recovery" in classified
+                ? classified.recovery
+                : classified.code === "CONFLICT"
+                    ? ["REFETCH", "PRESERVE_DRAFT", "RETRY"]
+                    : classified.retryable
+                        ? ["RETRY", "USE_STABLE_FALLBACK"]
+                        : ["CORRECT_INPUT_OR_USE_AVAILABLE_FALLBACK"],
+            requestId,
+        });
+    }
+};
+ApiExceptionFilter = __decorate([
+    Catch()
+], ApiExceptionFilter);
+export { ApiExceptionFilter };
+//# sourceMappingURL=api-exception.filter.js.map

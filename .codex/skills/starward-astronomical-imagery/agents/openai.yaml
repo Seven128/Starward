@@ -1,0 +1,6 @@
+interface:
+  display_name: "Starward 天文图像处理"
+  short_description: "云观星星体素材提取、批量加工、异常修复、成熟方案调研与经验维护"
+  default_prompt: "使用 $starward-astronomical-imagery 把真实天文图像加工为云观星可用素材；按机制处理异常、主动调研成熟方法，并将可复用经验合并到技能或对应 owner。"
+policy:
+  allow_implicit_invocation: true

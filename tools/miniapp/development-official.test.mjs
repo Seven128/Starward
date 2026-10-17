@@ -64,3 +64,47 @@ test('screenshot checks actual bytes and never overwrites an existing output', a
   await assert.rejects(officialObserverCli(['screenshot', ...args, '--output', output], { run }), /output_exists/);
   assert.equal(await readFile(output, 'utf8'), 'preserve');
 });
+
+test('a serial WXML/style batch shares readiness and preserves primitive observations', async t => {
+  const { root, args } = await fixture(t), steps = path.join(root, 'steps.json');
+  await writeFile(steps, JSON.stringify([
+    { command: 'wxml', expectedPage: 'pages/index/index', selector: '#title' },
+    { command: 'style', expectedPage: 'pages/index/index', selector: '#title', name: 'display' },
+  ]));
+  let checks = 0;
+  const actions = [];
+  const run = async ([tool, ...parameters]) => {
+    if (tool === 'check_wechatide_status') { checks++; return { loginExpired: false, cliTokenRequired: false, mcpTokenRequired: true, versionRelation: 'equal' }; }
+    if (tool === 'automation_runtime_info') return { currentPage: { path: 'pages/index/index', pageId: 1 } };
+    if (tool === 'automation_page_action') return { elements: [{}] };
+    const action = parameters[parameters.indexOf('--action') + 1]; actions.push(action);
+    return action === 'outerWxml' ? '<view id="title">Title</view>' : 'flex';
+  };
+  const result = await officialObserverCli(['batch', ...args, '--steps-file', steps], { run });
+  assert.equal(checks, 1);
+  assert.equal(result.success, true);
+  assert.deepEqual(actions, ['outerWxml', 'style']);
+  assert.deepEqual(result.completed.map(item => item.value), ['<view id="title">Title</view>', 'flex']);
+});
+
+test('a batch reports partial results and never sends actions after the first failed step', async t => {
+  const { root, args } = await fixture(t), steps = path.join(root, 'steps.json');
+  await writeFile(steps, JSON.stringify([
+    { command: 'status' },
+    { command: 'tap', expectedPage: 'pages/index/index', selector: '#button' },
+    { command: 'input', expectedPage: 'pages/index/index', selector: '#field', value: 'not sent' },
+  ]));
+  let actions = 0;
+  const run = async ([tool]) => {
+    if (tool === 'check_wechatide_status') return { loginExpired: false, tokenRequired: false, versionRelation: 'equal' };
+    if (tool === 'automation_runtime_info') return { currentPage: { path: 'pages/index/index', pageId: 1 } };
+    if (tool === 'automation_page_action') return { elements: [{}] };
+    actions++; throw Error('failure including private data must not be printed');
+  };
+  const result = await officialObserverCli(['batch', ...args, '--steps-file', steps], { run });
+  assert.equal(result.success, false);
+  assert.equal(result.completed.length, 1);
+  assert.equal(result.failedStep, 1);
+  assert.equal(actions, 1);
+  assert.equal(result.error, 'step_failed_no_replay');
+});

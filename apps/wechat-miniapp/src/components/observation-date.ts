@@ -45,9 +45,16 @@ export function instantForCivilDate(
   currentInstant: string,
   timezone: string,
 ) {
-  const localTime = clockTimeInTimezone(new Date(currentInstant), timezone);
+  const instant = new Date(currentInstant);
+  const localTime = clockTimeInTimezone(instant, timezone);
+  const minuteAt = zonedLocalToUtc({ localDate, localTime, timezone });
+  // The shared calendar converts the local minute. Date changes must also keep
+  // the precise committed time used by sky playback and the Map consumer.
+  const selectedAt = new Date(
+    Date.parse(minuteAt) + instant.getUTCSeconds() * 1000 + instant.getUTCMilliseconds(),
+  ).toISOString();
   return {
     localDate: observationNightForCivilDate(localDate, localTime),
-    selectedAt: zonedLocalToUtc({ localDate, localTime, timezone }),
+    selectedAt,
   };
 }

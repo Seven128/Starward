@@ -21,6 +21,6 @@ test("Saturn bands accept only the pinned rights, source, latitude profile and l
     (root:ReturnType<typeof manifest>)=>{root.image.downloadUrl="https://example.com/cloud.png";},
   ]){
     const wrong=manifest();mutate(wrong);
-    assert.throws(()=>assertSaturnBandsManifest(wrong),/saturn_bands_manifest_invalid/u);
+    assert.throws(()=>assertSaturnBandsManifest(wrong),/body_image_manifest_invalid/u);
   }
 });

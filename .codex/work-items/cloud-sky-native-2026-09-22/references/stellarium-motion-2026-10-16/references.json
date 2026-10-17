@@ -1,0 +1,55 @@
+{
+  "source": "User supplied Stellarium screenshots,2026-10-16",
+  "scope": "User supplied reference only: free-angle sky/ground appearance,rejected fixed-axis hypothesis,all-sky constellations and above-name three-stroke selected reticle;no pixel/data adoption",
+  "adoptedPixels": false,
+  "pins": [
+    {
+      "file": "all-sky-1.png",
+      "sha256": "f41bf2a3e6bc3470871f57e9df7e27d646229f4c92ec8c1624703dbaa9874799",
+      "width": 2560,
+      "height": 1270
+    },
+    {
+      "file": "all-sky-2.png",
+      "sha256": "aa4f84eb013c056dff4de3943f39988354c4775a6498bcb192e4c319e98eea29",
+      "width": 2560,
+      "height": 1270
+    },
+    {
+      "file": "all-sky-3.png",
+      "sha256": "ee77f28ee5d3c358971f960ba5f2855ab4c67ac17aa3ce6459e7755fb30ffbe1",
+      "width": 2560,
+      "height": 1270
+    },
+    {
+      "file": "all-sky-4.png",
+      "sha256": "6a29c9c96acc0344008196a472c006e3b073164ad962dc1416d7e1544c333186",
+      "width": 2560,
+      "height": 1270
+    },
+    {
+      "file": "local-1.png",
+      "sha256": "3f76c3232d74262c75931a80c1147a80d6595c8ae6d86aa9104eec7c8b5ba751",
+      "width": 2560,
+      "height": 1270
+    },
+    {
+      "file": "local-2.png",
+      "sha256": "a54099e3d9e779fd46fcccb8022f60abceab0daff25b38e531105b6d43556d85",
+      "width": 2560,
+      "height": 1270
+    },
+    {
+      "file": "local-3.png",
+      "sha256": "b1ee230cfb0a46d23b2b70a14dc2e6fcd749c4a6a213e616ac64221a9cb46aff",
+      "width": 2560,
+      "height": 1270
+    },
+    {
+      "file": "selected-reticle.png",
+      "sha256": "6dcdb29a35663d8808a158ba4cc6025181d270c0ad58f72690e662016a510c9a",
+      "width": 265,
+      "height": 195
+    }
+  ]
+}

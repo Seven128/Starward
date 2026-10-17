@@ -45,11 +45,11 @@ export function sdssOpticalPresentation(input: {
   canvasVisible: boolean;
   failed: boolean;
   loading: boolean;
-}): "CREDIT" | "RETRY" | "LOADING" | "NONE" {
+}): "CREDIT" | "LOADING" | "NONE" {
   // Attribution follows the last completed native frame. The requested level
   // can change while its previous pixels remain on the canvas.
   if (input.canvasVisible && input.photoPresented) return "CREDIT";
   if (!input.requested) return "NONE";
-  if (input.failed) return "RETRY";
+  if (input.failed) return "NONE";
   return input.loading ? "LOADING" : "NONE";
 }

@@ -10,6 +10,7 @@ import { SOURCE_KIND_LABEL, isProductSource } from "@/utils/source-presentation"
 export { SOURCE_KIND_LABEL, isProductSource } from "@/utils/source-presentation";
 import { DATA_STATE_LABELS, DataStateBadge } from "./data-state-badge";
 import "./provenance.scss";
+import { reportRuntimeError } from "@/services/runtime-error";
 
 function formatRetrievedAt(value: string | null) {
   if (!value) return "时间未知";
@@ -43,14 +44,15 @@ export function Provenance({
     const normalizedUrl = result.normalizedUrl ??
       (ownedDownload && result.code === "SSRF_PRIVATE_DESTINATION" ? value : null);
     if (!normalizedUrl) {
-      setCopyState("此链接暂不可用，可根据来源名称查找原始资料。");
+      setCopyState("链接暂不可用，可按来源名称查找");
       return;
     }
     setCopying(true);
     try {
       await Taro.setClipboardData({ data: normalizedUrl });
       setCopyState("链接已复制，可在浏览器中查看。");
-    } catch {
+    } catch (error) {
+      reportRuntimeError("native", "source_clipboard_failed", error);
       setCopyState("未能复制链接，请重试。");
     } finally { setCopying(false); }
   };
@@ -101,9 +103,9 @@ export function Provenance({
           ))}
           {source.sourceUrl || source.licenseUrl || downloadUrl ? (
             <View className="provenance__links">
-              {source.sourceUrl ? <SoftButton label={`复制${source.provider}的原始出处链接`} disabled={copying} onClick={() => void copyLink(source.sourceUrl)}>复制原始出处</SoftButton> : null}
-              {source.licenseUrl ? <SoftButton label={`复制${source.provider}的许可链接`} disabled={copying} onClick={() => void copyLink(source.licenseUrl)}>复制许可说明</SoftButton> : null}
-              {downloadUrl ? <SoftButton label="复制本次使用的数据下载链接" disabled={copying} onClick={() => void copyLink(downloadUrl,true)}>复制下载链接</SoftButton> : null}
+              {source.sourceUrl ? <SoftButton label={`复制${source.provider}的原始出处链接`} disabled={copying} onClick={() => void copyLink(source.sourceUrl)}>复制出处</SoftButton> : null}
+              {source.licenseUrl ? <SoftButton label={`复制${source.provider}的许可链接`} disabled={copying} onClick={() => void copyLink(source.licenseUrl)}>复制许可</SoftButton> : null}
+              {downloadUrl ? <SoftButton label="复制本次使用的数据下载链接" disabled={copying} onClick={() => void copyLink(downloadUrl,true)}>复制下载</SoftButton> : null}
             </View>
           ) : null}
           {copyState ? <View role="status"><Text className="type-secondary">{copyState}</Text></View> : null}

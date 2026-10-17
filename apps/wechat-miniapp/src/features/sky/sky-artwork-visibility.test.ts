@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { artworkIntersectsView, artworkDisplaySupportIntersectsView } from "./sky-artwork-visibility.ts";
+import { artworkIntersectsView, artworkDisplaySupportIntersectsView, skyArtworkFootprintsIntersect } from "./sky-artwork-visibility.ts";
 import { readFileSync } from "node:fs";
 import { registerSkySurvey } from "./sky-survey-registration.ts";
 import type { SkyImageDisplaySupport, DeepSkyScenePoint } from "@starward/miniapp-contracts";
@@ -18,6 +18,17 @@ function plane(left: number, right: number, bottom: number, top: number, camera 
     { uv: [1, 1], direction: ray(right, bottom) },
   ])!;
 }
+
+test("photographic footprint overlap preserves edge crossings and separates independent fields", () => {
+  const horizontal = plane(-1, 1, -.02, .02), vertical = plane(-.02, .02, -1, 1);
+  assert.equal(skyArtworkFootprintsIntersect(horizontal, vertical), true);
+  for (const other of [plane(-.1, .1, .5, .8), plane(1.5, 2, -.01, .01),
+    plane(-.1, .1, -.1, .1, createSkyViewBasis(180, 60, 0)!)]) {
+    assert.equal(skyArtworkFootprintsIntersect(horizontal, other), false);
+    assert.equal(skyArtworkFootprintsIntersect(other, horizontal), false);
+  }
+  assert.equal(skyArtworkFootprintsIntersect(horizontal, plane(-.1, .1, .01, .1)), true);
+});
 
 test("a long offscreen image does not enter the texture working set through its loose circular bound", () => {
   const image = plane(-.6, -.4, -1, 1);

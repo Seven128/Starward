@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { QueryObserver } from "@tanstack/react-query";
 import { TEST_API_BASE, transportHarness } from "./api-request-test-support";
 import { responseCacheKey } from "./cache-policy";
 import type { clearSkyPublicImageCache } from "./sky-public-image-runtime";
 
 const temporary = "map-scene:clear-fixture", retained = "plans:clear-fixture";
+const tick = () => new Promise<void>(resolve => setImmediate(resolve));
 async function seeded(clearImages: typeof clearSkyPublicImageCache) {
   const h = transportHarness(false, () => {}, false, TEST_API_BASE, Date.now, clearImages);
   // Keep unrelated inactive query data across the deliberate event-loop yield;
@@ -28,6 +30,54 @@ function assertSelectiveCleanup(h: Awaited<ReturnType<typeof seeded>>) {
   const bodies = [...h.storage.values()].filter((value): value is string => typeof value === "string" && value.startsWith("{"));
   assert.equal(bodies.length, 1, "durable response cleanup preserves only the unrelated response body");
 }
+
+test("hidden image publication observers discard retired capabilities and fetch a current one after temporary clear", async () => {
+  let epoch = 0;
+  const h = await seeded(async () => { epoch++; return { status: "complete", files: 0 }; });
+  const roots = ["deep-sky-image-discovery", "prepared-optical-manifest", "sdss-optical-manifest"];
+  const observers = roots.map(root => {
+    let reads = 0, release!: () => void;
+    const options = { queryKey: [root, "M:51"], staleTime: Infinity, structuralSharing: false, enabled: true,
+      queryFn: () => {
+        reads++;
+        const captured = epoch, resource = { publication: { objectRef: "M:51" }, isCurrent: () => captured === epoch };
+        return reads === 1 ? Promise.resolve(resource) : new Promise<typeof resource>(resolve => { release = () => resolve(resource); });
+      } };
+    const observer = new QueryObserver(h.queryClient, options), unsubscribe = observer.subscribe(() => {});
+    return { options, observer, unsubscribe, reads: () => reads, release: () => release() };
+  });
+  try {
+    await tick();
+    const old = observers.map(({ observer, options }) => {
+      const data = observer.getCurrentResult().data!;
+      assert.equal(data.isCurrent(), true);
+      observer.setOptions({ ...options, enabled: false });
+      return data;
+    });
+    await h.clearTemporaryApiCache();
+    assertSelectiveCleanup(h);
+    for (const [index, { options, observer, reads, release }] of observers.entries()) {
+      assert.equal(old[index]!.isCurrent(), false);
+      assert.equal(h.queryClient.getQueryData(options.queryKey), undefined, options.queryKey[0]!);
+      const hidden = h.queryClient.defaultQueryOptions({ ...options, enabled: false });
+      const shown = h.queryClient.defaultQueryOptions(options);
+      hidden._optimisticResults = "optimistic"; shown._optimisticResults = "optimistic";
+      observer.getOptimisticResult(hidden); observer.setOptions(hidden);
+      observer.getOptimisticResult(shown); observer.setOptions(shown);
+      await tick();
+      assert.equal(reads(), 2);
+      assert.equal(observer.getCurrentResult().data, undefined, "return must wait for the new capability");
+      assert.equal(observer.getCurrentResult().isError, false, "retired metadata cannot masquerade as a current failure");
+      release(); await tick();
+      const current = observer.getCurrentResult().data!;
+      assert.notEqual(current, old[index]); assert.equal(current.isCurrent(), true);
+      assert.equal(old[index]!.isCurrent(), false);
+    }
+  } finally {
+    for (const { observer, unsubscribe } of observers) { unsubscribe(); observer.destroy(); }
+    h.queryClient.clear();
+  }
+});
 
 test("public image epoch is fenced synchronously before API cancellation; pending file I/O does not postpone response/query cleanup", async () => {
   let releaseImages!: (result: Awaited<ReturnType<typeof clearSkyPublicImageCache>>) => void;

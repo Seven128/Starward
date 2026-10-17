@@ -58,26 +58,25 @@ export const SKY_LANDSCAPE_CANOPIES = canopies.map(canopy => {
   const distance = Math.hypot(...relative);
   const radius = Math.max(canopy.halfWidth, canopy.halfHeight) * SKY_LANDSCAPE_CANOPY_OUTER_RADIUS;
   const axis: SkyVector = [relative[0] / distance, relative[1] / distance, relative[2] / distance];
-  return { ...canopy, normal, right, axis, cosineBound: Math.sqrt(1 - (radius / distance) ** 2) };
+  const top=canopy.center[2]+canopy.halfHeight*SKY_LANDSCAPE_CANOPY_OUTER_RADIUS-SKY_LANDSCAPE_EYE_HEIGHT;
+  const maximumZ=top/Math.hypot(top,horizontalDistance);
+  return { ...canopy, normal, right, axis, maximumZ, cosineBound: Math.sqrt(1 - (radius / distance) ** 2) };
 });
 
 // Conservative angular bounds avoid solving every solid for every high-sky
 // fragment. They come from the geometry, not a second skyline model.
-export const SKY_LANDSCAPE_SOLIDS: readonly (LandscapeSolid & { axis: SkyVector; cosineBound: number })[] = solids.map(solid => {
+export const SKY_LANDSCAPE_SOLIDS: readonly (LandscapeSolid & { axis: SkyVector; cosineBound: number; maximumZ:number })[] = solids.map(solid => {
   const relative: SkyVector = [solid.center[0], solid.center[1], solid.center[2] - SKY_LANDSCAPE_EYE_HEIGHT];
   const distance = Math.hypot(...relative);
   const radius = Math.max(...solid.radii);
   const axis: SkyVector = [relative[0] / distance, relative[1] / distance, relative[2] / distance];
-  return { ...solid, axis, cosineBound: radius < distance ? Math.sqrt(1 - (radius / distance) ** 2) : -1 };
+  const top=Math.max(0,solid.center[2]+solid.radii[2]-SKY_LANDSCAPE_EYE_HEIGHT);
+  const nearestHorizontal=Math.max(0,Math.hypot(solid.center[0],solid.center[1])-Math.max(solid.radii[0],solid.radii[1]));
+  const maximumZ=top/Math.hypot(top,nearestHorizontal);
+  return { ...solid, axis, maximumZ, cosineBound: radius < distance ? Math.sqrt(1 - (radius / distance) ** 2) : -1 };
 });
-export const SKY_LANDSCAPE_MAXIMUM_Z = Math.max(...solids.map(({ center, radii }) => {
-  const top = Math.max(0, center[2] + radii[2] - SKY_LANDSCAPE_EYE_HEIGHT);
-  const nearestHorizontal = Math.max(0, Math.hypot(center[0], center[1]) - Math.max(radii[0], radii[1]));
-  return top / Math.hypot(top, nearestHorizontal);
-}), ...canopies.map(({ center, halfHeight }) => {
-  const top = center[2] + halfHeight * SKY_LANDSCAPE_CANOPY_OUTER_RADIUS - SKY_LANDSCAPE_EYE_HEIGHT;
-  return top / Math.hypot(top, Math.hypot(center[0], center[1]));
-}));
+export const SKY_LANDSCAPE_MAXIMUM_Z = Math.max(...SKY_LANDSCAPE_SOLIDS.map(shape=>shape.maximumZ),
+  ...SKY_LANDSCAPE_CANOPIES.map(shape=>shape.maximumZ));
 
 function canopyOccludes(canopy: typeof SKY_LANDSCAPE_CANOPIES[number], direction: SkyVector, convexCore = false): boolean {
   if (direction[0] * canopy.axis[0] + direction[1] * canopy.axis[1] + direction[2] * canopy.axis[2] < canopy.cosineBound) return false;
@@ -113,6 +112,20 @@ export function skyLandscapeOccludes(direction: SkyVector): boolean {
   if (direction[2] > SKY_LANDSCAPE_MAXIMUM_Z) return false;
   return SKY_LANDSCAPE_SOLIDS.some(solid=>solidOccludes(solid,direction))
     || SKY_LANDSCAPE_CANOPIES.some(canopy=>canopyOccludes(canopy,direction));
+}
+
+/** Conservative overlap with the existing finite model. The outer canopy and
+ * ellipsoid cones retain possible edge lobes; an empty cone is genuinely clear. */
+export function skyLandscapeIntersectsCap(center: SkyVector, radius: number, minimumZ?:number): boolean {
+  if (!center.every(Number.isFinite)||Math.abs(Math.hypot(...center)-1)>1e-5||
+    !Number.isFinite(radius) || radius < 0 || radius >= Math.PI / 2) return true;
+  const lowest=minimumZ??Math.sin(Math.max(-Math.PI/2,Math.asin(Math.max(-1,Math.min(1,center[2])))-radius));
+  if(!Number.isFinite(lowest)||lowest<=0)return true;
+  return [...SKY_LANDSCAPE_SOLIDS,...SKY_LANDSCAPE_CANOPIES].some(shape => {
+    if(lowest>shape.maximumZ+1e-6)return false;
+    const separation=Math.acos(Math.max(-1,Math.min(1,center[0]*shape.axis[0]+center[1]*shape.axis[1]+center[2]*shape.axis[2])));
+    return separation <= radius+Math.acos(Math.max(-1,Math.min(1,shape.cosineBound)))+1e-7;
+  });
 }
 
 /** A single convex solid must contain every corner ray. Its positive ray cone

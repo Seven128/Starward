@@ -81,7 +81,7 @@ test("legacy handoff keeps exact admitted JPEG fields without science availabili
   assert(frame); assert(!("sciencePublication" in frame)); assert(!("asset" in frame));
   assert.deepEqual(frame, { image, level: "DETAIL", fieldDegrees: legacy.levels.DETAIL.fieldDegrees,
     reference: "M:51", publicationHash: legacy.publicationHash,
-    coarser: { image: parent, level: "MEDIUM", fieldDegrees: legacy.levels.MEDIUM.fieldDegrees } });
+    coarser: { image: parent, level: "MEDIUM", fieldDegrees: legacy.levels.MEDIUM.fieldDegrees },fallback:null });
 });
 
 test("actual page hands science and Prepared envelopes to its queued frame, respecting page mode", () => {

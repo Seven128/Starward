@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
+import { reportRuntimeError } from "../../services/runtime-error";
 import fs from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-import { createSkyGpuArtworkContributions, type SkyGpuArtworkContributionDraw } from "./sky-gpu-artwork-contributions";
+import { createSkyGpuArtworkContributions, skyArtworkContributionFrameBudget,
+  type SkyGpuArtworkContributionDraw } from "./sky-gpu-artwork-contributions";
 import { skyArtworkLevelsFragment, unknownSkyArtworkLocalObservation,
   type SkyArtworkContributionBudget, type SkyArtworkLevelsDraw } from "./sky-artwork-level-composition";
 import { registerSkyDeepSkyRegion } from "./sky-deep-sky-region";
@@ -13,6 +15,19 @@ const submitted: SkyArtworkLevelsDraw = { submitted: true, finePrepared: true, c
 const prepared = { program: { program: {} } } as unknown as SkyGpuArtworkContributionDraw;
 const expectedUnknown = { completed: false, qualification: { fine: "unknown", coarse: "unknown", any: "unknown" },
   finePhoto: "unknown", coarsePhoto: "unknown" };
+
+test("native-frame requests preserve explicit limits and refuse invalid or overflowing dimensions", () => {
+  for (const [width, height, groups] of [[0, 844, 1], [780, Infinity, 1], [780, 1688, 0],
+    [780, 1688, 1.5], [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, 1]]) {
+    const policy = skyArtworkContributionFrameBudget(width!, height!, groups!);
+    assert.equal(policy.auxiliaryBytesLimit, 0);
+    assert(Object.isFrozen(policy));
+  }
+  for (const limit of [0, -1, 2 * 1024 * 1024, Infinity]) {
+    assert.equal(skyArtworkContributionFrameBudget(780, 1688, 2, limit).auxiliaryBytesLimit, limit,
+      "a native-frame size must not silently enlarge an explicit caller allowance");
+  }
+});
 
 test("default and invalid auxiliary policies perform no GL work and cannot turn submission into credit", () => {
   const forbidden = new Proxy({}, { get(_target, property) { throw new Error(`unexpected_gl_access:${String(property)}`); } }) as WebGLRenderingContext;
@@ -25,6 +40,7 @@ test("default and invalid auxiliary policies perform no GL work and cannot turn 
     const owner = createSkyGpuArtworkContributions(forbidden, policy);
     owner.begin(); owner.capture(submitted, prepared);
     owner.captureMeshAlpha(submitted,{...prepared,alphaFragment:"disabled"});
+    assert.equal(owner.withBackdropSnapshot(prepared, () => { throw new Error("unexpected_snapshot_paint"); }), false);
     assert.equal(owner.composeMeshGroup(submitted,prepared,()=>{throw new Error("unexpected_group_draw");},
       ()=>{throw new Error("unexpected_group_composite");}),null);
     owner.afterDraw(() => { throw new Error("unexpected_replay"); }); owner.clearPhoto(); owner.finish();
@@ -81,9 +97,10 @@ test("odd-size full signal and every shared MAX level must fit the original call
   assert.equal(owner.failed(), false, "a disposed owner cannot report a current failure");
 });
 
-test("source-group colour, depth and all MAX levels must fit together before any allocation or draw",()=>{
-  // 3x5 RGBA+depth16=90 B, shared odd-size reduction=12 B.
-  const boundary=boundaryGl(),owner=createSkyGpuArtworkContributions(boundary.gl,{auxiliaryBytesLimit:101,maxGroups:1});
+test("source-group full colour and all MAX levels must fit together before any allocation or draw",()=>{
+  // 3x5 RGBA=60 B, shared odd-size reduction=12 B. Same-source replacement
+  // requires the complete native buffer, while no depth storage is involved.
+  const boundary=boundaryGl(),owner=createSkyGpuArtworkContributions(boundary.gl,{auxiliaryBytesLimit:71,maxGroups:1});
   owner.begin();
   assert.equal(owner.composeMeshGroup(submitted,prepared,()=>{throw new Error("unexpected_group_draw");},
     ()=>{throw new Error("unexpected_group_composite");}),null);
@@ -113,7 +130,8 @@ test("an existing normal GL error reaches the renderer and latches this owner un
 /** Execute the unchanged current owner with controlled GL/TWGL method results.
  * The readback [10,0,255,0] is an explicit fixture, not rendered-pixel evidence.
  * This checks receipt currentness, recovery and resource ownership only. */
-function controlledOwner(source = fs.readFileSync(new URL("./sky-gpu-artwork-contributions.ts", import.meta.url), "utf8")) {
+function controlledOwner() {
+  const source = fs.readFileSync(new URL("./sky-gpu-artwork-contributions.ts", import.meta.url), "utf8");
   const compiled = ts.transpileModule(source, { compilerOptions: {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS,
   } }).outputText;
@@ -124,6 +142,7 @@ function controlledOwner(source = fs.readFileSync(new URL("./sky-gpu-artwork-con
       setBuffersAndAttributes: () => {}, setUniforms: () => {}, drawBufferInfo: () => {},
     };
     if (name === "./sky-artwork-level-composition") return { skyArtworkLevelsFragment, unknownSkyArtworkLocalObservation };
+    if (name === "../../services/runtime-error") return { reportRuntimeError };
     throw new Error(`unexpected_controlled_import:${name}`);
   } });
   return exports.createSkyGpuArtworkContributions!;
@@ -199,6 +218,117 @@ const controlledPrepared = { program: { program: {} }, buffer: {}, primitive: 4,
     u_right: [1, 0, 0], u_up: [0, 1, 0], u_forward: [0, 0, 1] },
   vertex: "void main(){}", cameraRay: "" } as unknown as SkyGpuArtworkContributionDraw;
 
+test("ordinary frame policy is lazy, grows only with this frame and releases storage when demand shrinks", () => {
+  const boundary = lifetimeGl(2, 2);
+  let groups = 0, reads = 0;
+  const owner = controlledOwner()(boundary.gl, () => {
+    reads++; return skyArtworkContributionFrameBudget(2, 2, groups);
+  });
+  owner.begin(); owner.finish();
+  assert.equal(reads, 1); assert.equal(boundary.allocations(), 0); assert.equal(boundary.queries(), 0);
+  groups = 2; owner.begin();
+  assert.equal(boundary.allocations(), 0, "a declaration without a submitted photo cannot allocate");
+  const first = { ...submitted }, second = { ...submitted };
+  owner.capture(first, controlledPrepared); owner.capture(second, controlledPrepared); owner.finish();
+  assert.equal(owner.contribution(first).completed, true); assert.equal(owner.contribution(second).completed, true);
+  assert(boundary.live() > 0);
+  groups = 0; owner.begin(); owner.finish();
+  assert.equal(boundary.live(), 0); assert.equal(owner.contribution(first).completed, false);
+  groups = 1; owner.begin(); owner.capture(first, controlledPrepared); owner.finish();
+  assert.equal(owner.contribution(first).completed, true);
+  owner.dispose(); assert.equal(boundary.live(), 0);
+});
+
+/** Controlled format/state/lifetime boundary. Real driver and pixel proof live
+ * in the common Scene harness; this fixture does not certify visual quality. */
+function backdropBoundary(alphaBits: number) {
+  const boundary = lifetimeGl(3, 5), gl = boundary.gl;
+  const getParameter = gl.getParameter.bind(gl), getError = gl.getError.bind(gl);
+  const createTexture = gl.createTexture.bind(gl), deleteTexture = gl.deleteTexture.bind(gl);
+  const initial = [{}, {}, {}] as WebGLTexture[], bindings = [...initial];
+  const formats = new Map<WebGLTexture, number>();
+  let active = gl.TEXTURE0 + 2, framebuffer: WebGLFramebuffer | null = null;
+  let error = 0, copies = 0, failCopy = false, createdTextures = 0;
+  gl.getParameter = parameter => {
+    if (parameter === gl.ALPHA_BITS) return alphaBits;
+    if (parameter === gl.ACTIVE_TEXTURE) return active;
+    if (parameter === gl.TEXTURE_BINDING_2D) return bindings[active - gl.TEXTURE0] ?? null;
+    if (parameter === gl.FRAMEBUFFER_BINDING) return framebuffer;
+    return getParameter(parameter);
+  };
+  gl.activeTexture = unit => { active = unit; };
+  gl.bindTexture = (_target, texture) => { bindings[active - gl.TEXTURE0] = texture!; };
+  gl.bindFramebuffer = (_target, value) => { framebuffer = value; };
+  gl.createTexture = () => { createdTextures++; return createTexture(); };
+  gl.deleteTexture = texture => { if (texture) formats.delete(texture); deleteTexture(texture); };
+  gl.texImage2D = ((_target: number, _level: number, format: number) => {
+    formats.set(bindings[active - gl.TEXTURE0]!, format);
+  }) as typeof gl.texImage2D;
+  gl.getError = () => { const result = error; error = 0; return result || getError(); };
+  const copy = (format: number) => {
+    copies++;
+    if (failCopy || (alphaBits === 0 && format === gl.RGBA)) error = 1282;
+  };
+  gl.copyTexSubImage2D = () => copy(formats.get(bindings[active - gl.TEXTURE0]!)!);
+  gl.copyTexImage2D = (_target, _level, format) => {
+    const texture = bindings[active - gl.TEXTURE0]!; formats.set(texture, format); copy(format);
+  };
+  return { ...boundary, initial, bindings, formats, active: () => active, copies: () => copies,
+    createdTextures: () => createdTextures, failCopy: (value: boolean) => { failCopy = value; } };
+}
+
+test("backdrop borrow matches default framebuffer channels and returns RGBA signal storage without another full target", () => {
+  for (const alphaBits of [0, 8]) {
+    const boundary = backdropBoundary(alphaBits), gl = boundary.gl;
+    const owner = controlledOwner()(gl, skyArtworkContributionFrameBudget(3, 5, 1));
+    let borrowed: WebGLTexture | null = null;
+    owner.begin();
+    assert.equal(owner.withBackdropSnapshot(controlledPrepared, texture => {
+      borrowed = texture;
+      assert.equal(boundary.active(), gl.TEXTURE0 + 2);
+      assert.deepEqual(boundary.bindings, boundary.initial, "all three prior texture bindings survive the snapshot");
+      assert.equal(boundary.formats.get(texture), alphaBits === 0 ? gl.RGB : gl.RGBA);
+    }), true);
+    assert.equal(boundary.createdTextures(), 1);
+    assert.equal(boundary.reads(), 0, "the snapshot must not copy a full framebuffer through CPU readback");
+    owner.capture(submitted, controlledPrepared); owner.finish();
+    assert.equal(boundary.formats.get(borrowed!), gl.RGBA, "eligibility's alpha channel must be writable again");
+    assert.equal(boundary.createdTextures(), 3, "one full signal and two MAX targets exhaust exactly the existing 72 B policy");
+    assert.deepEqual(boundary.bindings, boundary.initial);
+    assert.equal(owner.contribution(submitted).completed, true);
+    owner.begin();
+    assert.equal(owner.withBackdropSnapshot(controlledPrepared, texture => assert.strictEqual(texture, borrowed)), true);
+    owner.capture(submitted, controlledPrepared); owner.finish();
+    assert.equal(boundary.createdTextures(), 3, "a new frame must reuse the same target handles");
+    owner.dispose(); assert.equal(boundary.live(), 0);
+  }
+});
+
+test("backdrop refusal paints nothing; driver failure latches and explicit reset releases every target", () => {
+  const boundary = backdropBoundary(0), gl = boundary.gl;
+  const insufficient = controlledOwner()(gl, { auxiliaryBytesLimit: 71, maxGroups: 1 });
+  insufficient.begin();
+  assert.equal(insufficient.withBackdropSnapshot(controlledPrepared, () => assert.fail("unbudgeted paint")), false);
+  assert.equal(boundary.allocations(), 0); assert.equal(boundary.copies(), 0);
+  insufficient.dispose();
+  const owner = controlledOwner()(gl, skyArtworkContributionFrameBudget(3, 5, 1));
+  boundary.failCopy(true); owner.begin();
+  assert.equal(owner.withBackdropSnapshot(controlledPrepared, () => assert.fail("failed snapshot painted")), false);
+  assert.equal(owner.failed(), true); assert.equal(boundary.live(), 0);
+  const copies = boundary.copies(); boundary.failCopy(false); owner.begin();
+  assert.equal(owner.withBackdropSnapshot(controlledPrepared, () => assert.fail("latched snapshot painted")), false);
+  assert.equal(boundary.copies(), copies);
+  owner.reset(); owner.begin();
+  assert.throws(() => owner.withBackdropSnapshot(controlledPrepared, () => { throw new Error("ordinary_paint_failure"); }), /ordinary_paint_failure/);
+  assert.equal(owner.failed(), false, "a normal paint exception is not swallowed as auxiliary degradation");
+  const allocations = boundary.allocations();
+  assert.equal(owner.withBackdropSnapshot(controlledPrepared, () => {}), true);
+  assert.equal(boundary.allocations(), allocations, "even a throwing paint returns the borrowed target to its pool");
+  owner.capture(submitted, controlledPrepared); owner.finish();
+  assert.equal(owner.withBackdropSnapshot(controlledPrepared, () => assert.fail("excess source painted")), false);
+  owner.dispose(); assert.equal(boundary.live(), 0);
+});
+
 test("both completed-token getters retire late loss/resize; loss requires reset and resize permits a fresh begin", () => {
   const createOwner = controlledOwner();
   for (const change of ["loss", "resize"] as const) for (const firstGetter of ["qualification", "contribution"] as const) {
@@ -271,18 +401,6 @@ test("local facts cache exact draw/region/revision once and retire after signal 
   assert.strictEqual(owner.observeRegion(submitted, region), unknownSkyArtworkLocalObservation); assert.equal(boundary.queries(), queries);
   owner.dispose(); assert.equal(boundary.live(), 0);
   assert.strictEqual(owner.observeRegion(submitted, region), unknownSkyArtworkLocalObservation);
-});
-
-test("a bounded replay-revision mutant demonstrates the stale local-cache regression", () => {
-  const source = fs.readFileSync(new URL("./sky-gpu-artwork-contributions.ts", import.meta.url), "utf8");
-  const mutant = source.replace("replay(); changed(entry);", "replay();"); assert.notEqual(mutant, source);
-  const stale = (text: string) => {
-    const boundary = lifetimeGl(2, 2), owner = controlledOwner(text)(boundary.gl, { auxiliaryBytesLimit: 20, maxGroups: 1 });
-    owner.begin(); owner.capture(submitted, localPrepared); const first = owner.observeRegion(submitted, region);
-    owner.afterDraw(() => {}); const next = owner.observeRegion(submitted, region); owner.dispose();
-    return first === next;
-  };
-  assert.equal(stale(source), false); assert.equal(stale(mutant), true);
 });
 
 test("actual renderer observation method asserts, flushes queued drawing, then reasserts before the owner", () => {

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { skyDirectionLabel, skyHeightLabel } from "./sky-position-label";
 
 const source = ts.createSourceFile("sky-object-position-action.tsx",
   readFileSync(new URL("./sky-object-position-action.tsx", import.meta.url), "utf8"),
@@ -33,7 +34,7 @@ const parentCode = ts.transpileModule(`(${parentSuspended.getText(page)})`,
 
 test("a pending shared time commit suspends position requests and camera actions", () => {
   const parentBinding = (busy: boolean, timeSaving: boolean) => Boolean(vm.runInNewContext(parentCode, {
-    contextSession: { busy }, timeSaving,
+    contextSession: { busy }, timeSaving, active: true,
   }));
   assert.equal(parentBinding(false, false), false);
   assert.equal(parentBinding(true, false), true);
@@ -42,7 +43,8 @@ test("a pending shared time commit suspends position requests and camera actions
   const action = vm.runInNewContext(code, {
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) =>
       ({ type, props: props ?? {}, children }) },
-    Text: "Text", View: "View", SoftButton: "SoftButton", StatusPanel: "StatusPanel",
+    Text: "Text", View: "View", Button: "Button", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", skyDirectionLabel, skyHeightLabel,
+    useSkyObjectPriorityLayout: () => () => {}, useEffect: (effect: () => void) => effect(),
     useCelestialPosition: (_binding: unknown, _catalog: unknown, active: boolean) => {
       enabled.push(active);
       return { isPending: false, isError: false, data: { data: { position: { azimuthDeg: 45, altitudeDeg: 30 } } } };
@@ -60,5 +62,9 @@ test("a pending shared time commit suspends position requests and camera actions
   const ready = action({ ...props, suspended: false });
   assert.equal(enabled.at(-1), true);
   assert.equal(ready.type, "View");
-  assert.equal(ready.children.filter((child: any) => child?.type === "SoftButton").length, 2);
+  const buttons: any[] = [];
+  const visit = (node: any) => { if (!node || typeof node !== "object") return;
+    if (node.type === "Button") buttons.push(node); for (const child of node.children ?? []) visit(child); };
+  visit(ready);
+  assert.equal(buttons.length, 2);
 });

@@ -6,6 +6,7 @@ import { locatedBodyOccludesMarker } from "./sky-located-object";
 import { createSkyViewBasis, projectSkyDirectionUnclipped } from "./sky-view-projection";
 import type { SkyRenderSurface } from "./sky-render-surface";
 import type { ResolvedSkyReport } from "./sky-stellar-scene";
+import type { SkyStellarSupplementFrame } from "./sky-stellar-supplement-scene";
 
 const at = "2026-09-28T04:00:00.000Z";
 function paint(altitude = 45, failed = "", duplicate = false) {
@@ -44,15 +45,43 @@ test("failed or ambiguous discs cannot be picked; the independent successful bod
   assert.deepEqual(paint(45, "sun").snapshot?.objects.map(object => object.reference), ["SOLAR:MOON"]);
   assert.deepEqual(paint(45, "moon").snapshot?.objects.map(object => object.reference), ["SOLAR:SUN"]);
   assert.deepEqual(paint(45, "", true).snapshot?.objects, []);
-  assert.deepEqual(paint(-1).snapshot?.objects, []);
+  assert.deepEqual(paint(-1).snapshot?.objects.map(object=>object.reference),['SOLAR:SUN','SOLAR:MOON'],
+    'full-sphere browsing keeps below-horizon bodies when no foreground hides them');
 });
 
-test("partial sunrise keeps its visible limb selectable but rejects the below-horizon area", () => {
+test("full-sphere sunrise keeps both above and below-horizon portions selectable without a foreground", () => {
   const { snapshot, basis, report } = paint(-.1);
   assert.ok(snapshot?.objects.some(object => object.reference === "SOLAR:SUN"));
   const above = projectSkyDirectionUnclipped(90, .08, basis, 400, 800, 2)!;
   const below = projectSkyDirectionUnclipped(90, -.1, basis, 400, 800, 2)!;
   const input = { frameAt: at, ...skyPickIdentity(report) };
   assert.ok(pickPaintedSkyObjects(snapshot, { ...input, x: above.x, y: above.y }).some(object => object.reference === "SOLAR:SUN"));
-  assert.deepEqual(pickPaintedSkyObjects(snapshot, { ...input, x: below.x, y: below.y }), []);
+  assert.ok(pickPaintedSkyObjects(snapshot, { ...input, x: below.x, y: below.y }).some(object=>object.reference==='SOLAR:SUN'));
+});
+
+test("the completed Moon frame cannot pick a background star hidden by its opaque disc; failed Moon painting preserves the star", () => {
+  const row = { at, sunAzimuthDeg: 270, sunAltitudeDeg: -45, sunAngularDiameterDeg: .53,
+    moonAzimuthDeg: 90, moonAltitudeDeg: 45, moonAngularDiameterDeg: .5, moonIllumination: .7 };
+  const geometry = { at } as SkyStellarSupplementFrame["geometry"];
+  // A controlled same-frame supplement enters the actual Scene/star/body
+  // owners. The ray is a regression fixture, not a new SAO astrometric claim.
+  const report = { hourly: [row], skyScene: { state: "UNAVAILABLE", frames: [{ at, geometry }] },
+    targetFrames: [] } as unknown as ResolvedSkyReport;
+  const supplement: SkyStellarSupplementFrame = { catalogVersion: "controlled-sao", publicationHash: "a".repeat(64),
+    geometry, points: [["SAO:76142", 8.8, 90, 45], ["SAO:1", 8.8, 90.5, 45]] };
+  const basis = createSkyViewBasis(90, 135, 0)!;
+  for (const moonAvailable of [true, false]) {
+    let snapshot: SkyPickSnapshot | null = null;
+    const stars: number[] = [];
+    const surface = new Proxy({}, { get: (_target, key) => key === "moon" ? () => moonAvailable :
+      key === "disc" ? (x: number) => { stars.push(x); } : () => true }) as SkyRenderSurface;
+    drawSkyScene(surface, report, at, null, null, 400, 800, "NIGHT", value => { snapshot = value; },
+      undefined, 2, null, basis, undefined, undefined, undefined, supplement);
+    assert.equal(stars.length, 2, "both original stars still reach their original drawing owner");
+    assert(snapshot);
+    const frame = snapshot as SkyPickSnapshot;
+    const choices = pickPaintedSkyObjects(frame, { x: 200, y: 400, frameAt: at, ...skyPickIdentity(report, supplement) });
+    assert.deepEqual(choices.map(value => value.reference), moonAvailable ? ["SOLAR:MOON"] : ["SAO:76142"]);
+    assert(frame.objects.some(value => value.reference === "SAO:1"), "the unoccluded independent star survives");
+  }
 });

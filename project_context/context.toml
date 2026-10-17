@@ -103,7 +103,7 @@ triggers = ["wechat miniapp screen", "miniapp route", "miniapp surface", "miniap
 path = "project_context/architecture/runtime-and-domain.md"
 role = "foundation"
 read_policy = "on-demand"
-triggers = ["miniapp bff", "weather composition", "formal spot publication", "contribution moderation", "account data", "sky rendering", "云观星引擎"]
+triggers = ["miniapp bff", "weather composition", "formal spot publication", "contribution moderation", "account data", "sky rendering", "cloud sky performance", "云观星引擎", "云观星性能", "星空卡顿", "纹理驻留", "微信平台限制", "小程序存储", "图像缓存"]
 
 [[context]]
 path = "project_context/architecture/assurance-and-lifecycle.md"
@@ -152,7 +152,7 @@ triggers = ["deployment secrets", "backup restore", "rollback monitoring", "部�
 path = "project_context/deployment/decisions-and-verification.md"
 role = "deployment"
 read_policy = "on-demand"
-triggers = ["deployment decision", "provider capacity", "deployment verification", "部署决策"]
+triggers = ["deployment decision", "provider capacity", "deployment verification", "部署决策", "CDN", "图片分发", "带宽", "云资源费用"]
 
 # Mini Program workflow continuations.
 [[context]]
@@ -165,7 +165,7 @@ triggers = ["selected design authority", "workflow scope", "dependency direction
 path = "project_context/development-workflow/development-feedback.md"
 role = "verification"
 read_policy = "on-demand"
-triggers = ["native-first feedback", "warm devtools", "physical development feedback", "开发反馈"]
+triggers = ["native-first feedback", "warm devtools", "physical development feedback", "开发反馈", "wechatide", "WXML", "小程序调试", "性能测量", "GPU计时", "官方 skill 同步"]
 
 [[context]]
 path = "project_context/development-workflow/candidate-acceptance.md"

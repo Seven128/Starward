@@ -5,7 +5,7 @@ import { resolveSkySceneFrame, type ResolvedSkyReport, type ResolvedStellarScene
 import { createSkyViewBasis, projectSkyDirection } from "./sky-view-projection";
 import { pickPaintedSkyObjects, type SkyPickSnapshot } from "./sky-object-picking";
 import type { SkyRenderSurface } from "./sky-render-surface";
-import { skyLandscapeViewOpacity } from "./sky-landscape-visibility";
+import { skyLandscapeViewOpacity, SKY_LANDSCAPE_BROWSE_OPACITY } from "./sky-landscape-visibility";
 import { skyLandscapeMaskWithOpacity, skyLandscapeMaskCoversRayHull, skyLandscapeMaskOccludes,
   createSkyPanoramaMask } from "./sky-landscape-mask";
 import { selectSkyLandscapeImageResources } from "./sky-landscape-resources";
@@ -13,6 +13,8 @@ import { unprojectSkyPoint, skyHorizontalDirection } from "./sky-view-projection
 import type { SkyLandscapeManifestData, SkyLandscapeResource } from "@starward/miniapp-contracts";
 import type { SaoIndexPublication, SaoTilePublication } from "@starward/miniapp-contracts";
 import { resolveSkyStellarSupplement, currentStellarSupplement } from "./sky-stellar-supplement-scene";
+import { skyStarAppearance } from "./sky-star-appearance";
+import { createSkyStarTransitions } from "./sky-star-transition";
 
 const at = "2026-10-02T13:00:00.000Z";
 const identity = { format: "bsc5p-stellar-geometry-v1", referenceAt: "2000-01-01T12:00:00.000Z",
@@ -51,10 +53,34 @@ function render(altitude: number) {
 }
 
 test("the exact catalog frame retains a below-horizon star for full-sphere browsing", () => {
-  const frame = resolveSkySceneFrame(scene, at)!;
+  const nextAt = "2026-10-02T14:00:00.000Z";
+  const changingScene: ResolvedStellarScene = { ...scene, frames: [...scene.frames, {
+    at: nextAt, state: "AVAILABLE", geometry: { ...scene.frames[0]!.geometry!, at: nextAt,
+      julianYears: (Date.parse(nextAt) - Date.parse(identity.referenceAt)) / (365.25 * 86400000),
+      equatorialToEnu: [1, 0, 0, 0, -1, 0, 0, 0, -1] },
+  }] };
+  const frame = resolveSkySceneFrame(changingScene, at)!;
   assert.equal(frame.points?.length, 1);
   assert.equal(frame.points![0]![2], -45);
-  assert.equal(resolveSkySceneFrame(scene, at), frame, "gestures reuse the exact time transform");
+  assert.equal(resolveSkySceneFrame(changingScene, at), frame, "gestures reuse the exact time transform");
+  const direction = frame.displayDirection!(0)!;
+  assert.equal(frame.displayDirection!(0), direction, "camera changes reuse the exact-time direction");
+  assert.deepEqual(direction.vector, skyHorizontalDirection(0, -45));
+  assert(Object.isFrozen(direction) && Object.isFrozen(direction.vector));
+  const later = resolveSkySceneFrame(changingScene, nextAt)!;
+  assert.equal(later.points[0]![2], 45);
+  assert.notEqual(later.displayTransmission!(0), frame.displayTransmission!(0),
+    "the new time cannot reuse the previous altitude's display factor");
+  assert.notDeepEqual(later.displayDirection!(0), direction, "a time change must replace prepared projection inputs");
+  const unattenuated = skyStarAppearance(1, 45, -24)!;
+  for (const selected of [frame, later, resolveSkySceneFrame(changingScene, at)!]) {
+    assert.deepEqual(selected.displayDirection!(0)!.vector,
+      skyHorizontalDirection(selected.points[0]![1], selected.points[0]![2]));
+    assert.equal(unattenuated.opacity * selected.displayTransmission!(0),
+      skyStarAppearance(1, 45, -24, selected.points[0]![2])!.opacity,
+      "forward and restored times retain the original appearance formula");
+  }
+  assert.equal(resolveSkySceneFrame(changingScene, "2026-10-02T15:00:00.000Z"), undefined);
 });
 
 test("the shared SAO tile transform retains the lower hemisphere and exact time identity", () => {
@@ -67,6 +93,35 @@ test("the shared SAO tile transform retains the lower hemisphere and exact time 
   assert.deepEqual(frame.points, [["SAO:1", 6.5, 0, -45]]);
   assert.equal(currentStellarSupplement(frame, scene, at), frame);
   assert.equal(currentStellarSupplement(frame, scene, "2026-10-02T14:00:00.000Z"), null);
+  const direction=frame.displayDirection!(0)!;
+  assert.equal(frame.displayDirection!(0),direction,"camera changes reuse this exact frame's prepared ray");
+  const nextAt="2026-10-02T14:00:00.000Z";
+  const changingScene:ResolvedStellarScene={...scene,frames:[...scene.frames,{
+    at:nextAt,state:"AVAILABLE",geometry:{...scene.frames[0]!.geometry!,at:nextAt,
+      julianYears:(Date.parse(nextAt)-Date.parse(identity.referenceAt))/(365.25*86400000),
+      equatorialToEnu:[1,0,0,0,-1,0,0,0,-1]},
+  }]};
+  const later=resolveSkyStellarSupplement(publication,[tile],changingScene,nextAt)!;
+  assert.notDeepEqual(later.displayDirection!(0),direction);
+  assert.notEqual(later.displayTransmission!(0),frame.displayTransmission!(0));
+  for(const selected of [frame,later,resolveSkyStellarSupplement(publication,[tile],changingScene,at)!]){
+    assert.deepEqual(selected.displayDirection!(0)!.vector,skyHorizontalDirection(selected.points[0]![2],selected.points[0]![3]));
+    assert.equal(skyStarAppearance(6.5,10.8,-24)!.opacity*selected.displayTransmission!(0),
+      skyStarAppearance(6.5,10.8,-24,selected.points[0]![3])!.opacity);
+  }
+  // Actual Scene must preserve both point geometry and the accepted identities
+  // when a controlled/legacy frame has no optional display accessors.
+  const {displayDirection,displayTransmission,...withoutMemo}=frame;
+  for(const mode of ["NIGHT","OBSERVATION"] as const){
+    const paint=(supplement:typeof frame)=>{
+      const discs:unknown[][]=[];let snapshot:SkyPickSnapshot|null=null;
+      const surface=new Proxy({}, {get:(_target,key)=>(...args:unknown[])=>{if(key==="disc")discs.push(args);return true;}}) as SkyRenderSurface;
+      drawSkyScene(surface,report,at,null,null,390,844,mode,value=>{snapshot=value;},undefined,
+        10.8,null,createSkyViewBasis(0,45,0),undefined,undefined,undefined,supplement);
+      return {discs,snapshot};
+    };
+    assert.deepEqual(paint(frame),paint(withoutMemo));
+  }
 });
 
 test("below-horizon star is drawn and pickable after ground fades, then hidden on return", () => {
@@ -84,8 +139,43 @@ test("landscape pass and completed mask share the same continuous viewport-cente
   const result = render(0);
   assert.equal(result.landscape.length, 1);
   const opacity = (result.snapshot.view!.landscape as { opacity?: number }).opacity;
-  assert.equal(opacity, .5);
+  assert.equal(opacity, .5 + SKY_LANDSCAPE_BROWSE_OPACITY / 2);
   assert.equal(result.landscape[0]![4], opacity);
+  const revealed = render(-45);
+  assert(Math.abs(revealed.snapshot.view!.landscape!.opacity! - SKY_LANDSCAPE_BROWSE_OPACITY) < 1e-12);
+  assert.equal(revealed.landscape.length, 1, "the ground cue still needs an actual foreground pass");
+});
+
+test("Scene draws fading real stars while keeping exiting and invalid-time remnants out of picking", () => {
+  const stars = createSkyStarTransitions(), scope = { context: {}, at, mode: "NIGHT" };
+  const dimScene = { ...scene, catalog: { ...scene.catalog!, entries: [{ ...scene.catalog!.entries[0]!, magnitude: 6 }] },
+    publication: { ...scene.publication!, rows: [["HR:1", "Below", 6, null, 0, Math.SQRT1_2, -Math.SQRT1_2, 0, 0, 0]] } } as ResolvedStellarScene;
+  const data = { ...report, skyScene: dimScene }, basis = createSkyViewBasis(0, 45, 0)!;
+  const paint = (now: number, fov: number, valid = true) => {
+    const values: number[] = []; let snapshot: SkyPickSnapshot | null = null;
+    const transition = stars.prepare(scope, now);
+    const surface = new Proxy({}, { get: (_target, key) => (...args: any[]) => {
+      if (key === "disc" && args[6] === "star") values.push(args[4]);
+      return true;
+    } }) as SkyRenderSurface;
+    const args = Array(42).fill(undefined);
+    args.splice(0, 8, surface, data, valid ? at : "missing-time", null, null, 390, 844, "NIGHT");
+    args[8] = (value: SkyPickSnapshot | null) => { snapshot = value; };
+    args[10] = fov; args[12] = basis; args[41] = transition;
+    (drawSkyScene as (...values: any[]) => void)(...args);
+    transition.commit();
+    return { values, snapshot: snapshot as SkyPickSnapshot | null, animating: transition.animating };
+  };
+  assert.deepEqual(paint(0, 45).values, []);
+  const entering = paint(80, 45), settled = paint(160, 45);
+  assert(entering.values[0]! > 0 && entering.values[0]! < settled.values[0]!);
+  assert.equal(settled.snapshot?.objects[0]?.reference, "HR:1");
+  const exiting = paint(1000, 270);
+  assert(exiting.values[0]! > 0 && exiting.animating);
+  assert.deepEqual(exiting.snapshot?.objects, [], "a visual exit cannot restore current pick eligibility");
+  const invalid = paint(1040, 270, false);
+  assert.deepEqual(invalid.values, []); assert.deepEqual(invalid.snapshot?.objects, []);
+  assert.equal(invalid.animating, false);
 });
 
 test("fade follows the actual offset and rolled viewport centre and preserves physical alpha", () => {
@@ -108,6 +198,7 @@ test("fade follows the actual offset and rolled viewport centre and preserves ph
   assert.equal(skyLandscapeMaskCoversRayHull(partial, [behind]), false);
   assert.equal((partial as typeof mask).alpha, mask.alpha, "camera adaptation cannot mutate source coverage");
   const footprint = { view: { basis: createSkyViewBasis(0, 45, 0)!, verticalFovDeg: 45 }, width: 390, height: 844 };
-  assert.deepEqual(selectSkyLandscapeImageResources([resource], new Map([[resource.id, mask]]), footprint), []);
+  assert.deepEqual(selectSkyLandscapeImageResources([resource], new Map([[resource.id, mask]]), footprint), [resource],
+    "looking below the horizon still needs the grey foreground cue");
   assert.deepEqual(selectSkyLandscapeImageResources([resource], new Map([[resource.id, mask]]), null), [resource]);
 });

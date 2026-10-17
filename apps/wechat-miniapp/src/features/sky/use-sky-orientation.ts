@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import Taro from "@tarojs/taro";
+import { reportRuntimeError } from "../../services/runtime-error";
 import { createPoseFramePublisher } from "./sky-canvas-lifecycle";
 import { createSkyOrientationController, type SkyOrientationSnapshot } from "./sky-orientation-controller";
 import type { SkyViewBasis } from "./sky-view-projection";
@@ -12,7 +13,8 @@ export function useSkyOrientation() {
   const publisher = useMemo(() => createPoseFramePublisher<SkyOrientationSnapshot>(setSnapshot), []);
   const controller = useMemo(() => {
     let platform = "";
-    try { platform = String(Taro.getDeviceInfo().platform ?? ""); } catch {}
+    try { platform = String(Taro.getDeviceInfo().platform ?? ""); }
+    catch (error) { reportRuntimeError("native", "sky_device_info_failed", error); }
     const stabilize = platform.toLowerCase() === "android" ? createSkyPresentationFilter() :
       (next: SkyOrientationSnapshot) => next;
     return createSkyOrientationController({ port: Taro, platform,

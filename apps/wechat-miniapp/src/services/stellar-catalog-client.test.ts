@@ -4,6 +4,11 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import { createStellarCatalogClient } from "./stellar-catalog-client";
+import { assertRetainedStellarCatalogPublication, attachSkyCatalog, type ResolvedSkyReport } from "../features/sky/sky-stellar-scene";
+import { drawSkyScene } from "../features/sky/sky-scene-render";
+import { createSkyViewBasis } from "../features/sky/sky-view-projection";
+import type { SkyRenderSurface } from "../features/sky/sky-render-surface";
+import type { SkyPickSnapshot } from "../features/sky/sky-object-picking";
 import { createAuthenticatedOperationRequester } from "./authenticated-operation";
 import { TEST_API_BASE, transportHarness } from "./api-request-test-support";
 import { responseCacheKey } from "./cache-policy";
@@ -30,6 +35,60 @@ function client(h: ReturnType<typeof transportHarness>) {
     invalidate: () => h.invalidateApiCache(`${group}:`),
   });
 }
+
+test("ordered magnitude optimization preserves bright identities in sorted and unsorted admitted editions", async () => {
+  const at = STELLAR_GEOMETRY_REFERENCE_AT;
+  const observer = { latitude: 0, longitude: 0, elevationM: 0 };
+  for (const reverse of [false, true]) {
+    const h = transportHarness(), envelope = fixture(h);
+    const rows = envelope.data.rows.map((row, index) =>
+      [row[0], null, index < 100 ? 1 : 4, null, 0, Math.SQRT1_2, Math.SQRT1_2, 0, 0, 0] as const);
+    if (reverse) rows.reverse();
+    envelope.data = { ...envelope.data, rows };
+    try {
+      const pending = client(h)(reference);
+      h.calls.at(-1)!.success({ statusCode: 200, data: envelope });
+      const admitted = (await pending).data;
+      const input = { hourly: [{ at, sunAzimuthDeg: 270, sunAltitudeDeg: -10 }], targetFrames: [],
+        skyScene: { format: "stellar-scene-v2", state: "AVAILABLE", observer,
+          catalog: { ...reference, magnitudeLimit: 5, rowCount: 1630, sources: admitted.sources },
+          frames: [{ at, state: "AVAILABLE", geometry: { ...reference, format: STELLAR_GEOMETRY_FORMAT,
+            referenceAt: STELLAR_GEOMETRY_REFERENCE_AT, at, observer, julianYears: 0,
+            equatorialToEnu: [1, 0, 0, 0, 1, 0, 0, 0, 1] } }] } };
+      const report = attachSkyCatalog(input as unknown as ResolvedSkyReport, admitted);
+      const discs: unknown[][] = [];
+      let snapshot: SkyPickSnapshot | null = null;
+      const surface = new Proxy({}, { get: (_target, key) => (...args: unknown[]) => {
+        if (key === "disc") discs.push(args);
+        return true;
+      } }) as SkyRenderSurface;
+      drawSkyScene(surface, report, at, null, null, 390, 844, "NIGHT",
+        value => { snapshot = value; }, undefined, 45, null, createSkyViewBasis(0, 135, 0));
+      assert.equal(discs.length, 100, "a dim leading row must not suppress later bright stars");
+      assert.deepEqual((snapshot as SkyPickSnapshot | null)?.objects.map(object => object.reference),
+        rows.filter(row => row[2] === 1).map(row => row[0]), "draw and picking keep the admitted row order");
+      assert.equal(report.skyScene.catalog?.entries.length, 1630, "display filtering cannot erase catalog identities");
+    } finally { await h.flush(); h.queryClient.clear(); }
+  }
+});
+
+test("retained admission keeps version binding and never trusts copied or shallow-frozen publications", async () => {
+  const h = transportHarness(), get = client(h), data = fixture(h);
+  const pending = get(reference);
+  h.calls.at(-1)!.success({ statusCode: 200, data });
+  const admitted = (await pending).data;
+  assertRetainedStellarCatalogPublication(admitted, reference);
+  assert.throws(() => assertRetainedStellarCatalogPublication(admitted,
+    { ...reference, catalogHash: "b".repeat(64) }), /catalog_binding/);
+  const copied = structuredClone(admitted);
+  assertRetainedStellarCatalogPublication(copied, reference);
+  (copied.rows[0] as unknown as number[])[2] = 99;
+  assert.throws(() => assertRetainedStellarCatalogPublication(copied, reference), /photometry/);
+  Object.freeze(copied);
+  assert.throws(() => assertRetainedStellarCatalogPublication(copied, reference), /photometry/);
+  assert.throws(() => { (admitted.rows[0] as unknown as number[])[2] = 99; }, TypeError);
+  await h.flush(); h.queryClient.clear();
+});
 
 test("catalog survives chunked cache restart and validates both offline and 304 representations", async () => {
   const old = transportHarness(), data = fixture(old);
@@ -90,7 +149,7 @@ test("public API facade uses generated version/hash route and evicts its exact c
     resolveSession: async () => null, readStoredSession: () => null, clearStoredSession: () => {}, isPermissionDenied: () => false,
     request: h.request as never,
   });
-  const source = ts.createSourceFile("api-client.ts", readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const source = ts.createSourceFile("sky-catalog-api.ts", readFileSync(new URL("./sky-catalog-api.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const declaration = source.statements.find(node => ts.isVariableStatement(node) &&
     node.declarationList.declarations.some(item => item.name.getText(source) === "getStellarCatalog"));
   assert.ok(declaration);

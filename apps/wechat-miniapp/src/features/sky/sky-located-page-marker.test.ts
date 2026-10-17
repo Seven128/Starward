@@ -29,7 +29,7 @@ function visit(node: ts.Node) {
   if (ts.isVariableDeclaration(node) && node.name.getText(source) === "onSkyTouchEnd" &&
     node.initializer && ts.isArrowFunction(node.initializer) && ts.isBlock(node.initializer.body)) {
     const guard = node.initializer.body.statements.find(statement => ts.isIfStatement(statement) &&
-      statement.expression.getText(source).includes("!gesture"));
+      statement.expression.getText(source).includes("!presentedSceneCurrent"));
     touchEndCondition = guard && ts.isIfStatement(guard) ? guard.expression : undefined;
   }
   ts.forEachChild(node, visit);
@@ -76,6 +76,9 @@ test("sky touch cannot pick an old native frame during report replacement", () =
       skySceneReady: true, presentedSceneCurrent: current, selectedCatalogObject: null,
       selectedTargetId: null, orientationObjectListOpen: false, datePickerOpen: false,
       timeSaving: false, gesture: {}, point: {}, paintedRow: { at: "2026-10-08T12:00:00.000Z" },
+      skyTimeIntentCurrent: () => true, skyGestureCurrent: () => true,
+      selectedCatalogObjectRef:{current:null},selectedTargetIdRef:{current:null},
+      orientationObjectListOpenRef:{current:false},datePickerOpenRef:{current:false},
       identity: { catalogVersion: "v1" }, isUnambiguousTapGesture: () => true },
   ));
   assert.equal(run(touchStartCondition!, false), true, "new gestures must wait for the replacement Canvas frame");

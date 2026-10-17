@@ -73,6 +73,20 @@ tmp/project-efficiency-android-20260908/*.apk
 /.codex/work-items/cloud-sky-native-2026-09-22/scripts/*
 !/.codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-legacy-regions.py
 !/.codex/work-items/cloud-sky-native-2026-09-22/scripts/inspect-noirlab-scene.mts
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/benchmark-image-tools.py
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/benchmark-image-scene.mjs
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/benchmark-image-protection.py
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/benchmark-image-photoshop.jsx
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/benchmark-image-photoshop.py
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/benchmark-image-photoshop-host.ps1
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/image-tool-photoshop-recipes.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/test-image-protection.py
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/test-image-photoshop.py
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/image-tool-benchmark-samples.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/image-tool-full-comparison-samples.json
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/test-image-tool-benchmark.py
+!/.codex/work-items/cloud-sky-native-2026-09-22/scripts/image-tool-benchmark-requirements.txt
+!/.codex/work-items/cloud-sky-native-2026-09-22/evidence/image-tool-benchmark-2026-10-08.json
 
 # Direct byte-pinned source dependencies of the retained batch regression fixtures.
 !/.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-alpheratz-Q13039-2026-10-07.json

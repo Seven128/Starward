@@ -4,7 +4,8 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import ts from 'typescript';
-import {MINIAPP_API_BASE_PATH} from '@starward/miniapp-contracts';
+import { skyResourceOriginTestOwner } from './sky-resource-origin-test-support';
+import {MINIAPP_API_BASE_PATH,galacticImageManifestPath} from '@starward/miniapp-contracts';
 import {assertGalacticImageManifest} from './galactic-image-publication';
 
 // Actual consumer and same-origin/cancellation boundary; transport callbacks
@@ -21,16 +22,16 @@ function manifest(directory:string){
 const optical=manifest('galactic-mellinger'),infrared=manifest('galactic-2mass');
 function consumer(responses:Array<{status:number;body?:unknown;transportFailure?:boolean}>){
   const requests:string[]=[];
-  const get=vm.runInNewContext(ts.transpileModule(functions('./bare-sky-resource.ts')+'\n'+functions('./galactic-image-client.ts')+'\ngetGalacticImageManifest',
+  const api=vm.runInNewContext(ts.transpileModule(functions('./bare-sky-resource.ts')+'\n'+functions('./galactic-image-client.ts')+'\n({get:getGalacticImageManifest,metadataUrl:galacticImageManifestUrl})',
     {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{
-    MINIAPP_API_BASE_PATH,__MINIAPP_API_BASE__:'https://sky-test.starward.invalid',assertGalacticImageManifest,
+    MINIAPP_API_BASE_PATH,galacticImageManifestPath,__MINIAPP_API_BASE__:'https://sky-test.starward.invalid',...skyResourceOriginTestOwner('https://sky-test.starward.invalid'),assertGalacticImageManifest,
     Taro:{request(options:any){
       requests.push(options.url);const response=responses[requests.length-1];assert(response,'unexpected extra request');
       queueMicrotask(()=>response.transportFailure?options.fail():options.success({statusCode:response.status,data:response.body}));
       return {abort(){}};
     }},
-  }) as ()=>Promise<unknown>;
-  return {get,requests};
+  }) as {get:(signal?:AbortSignal,publicationHash?:string)=>Promise<unknown>;metadataUrl:(publicationHash:string)=>string};
+  return {...api,requests};
 }
 
 test('new clients discover the ordinary optical role on its versioned URL',async()=>{
@@ -50,5 +51,35 @@ test('server, transport and corrupt-current failures cannot mask an optical erro
   for(const response of [{status:500},{status:0,transportFailure:true},{status:200,body:{...optical,scope:'TRIAL'}}]){
     const c=consumer([response,{status:200,body:infrared}]);
     await assert.rejects(c.get());assert.equal(c.requests.length,1);
+  }
+});
+
+test('accepted optical and retained infrared selections read only their exact metadata and reject another edition',async()=>{
+  for(const publication of [optical,infrared]){
+    const c=consumer([{status:200,body:publication}]);
+    assert.deepEqual(await c.get(undefined,publication.publicationHash),publication);
+    assert.deepEqual(c.requests,['https://sky-test.starward.invalid'+galacticImageManifestPath(publication.publicationHash)]);
+    const wrong=consumer([{status:200,body:publication===optical?infrared:optical}]);
+    await assert.rejects(wrong.get(undefined,publication.publicationHash),/version_unavailable/);
+  }
+  for(const status of [404,500]){
+    const c=consumer([{status},{status:200,body:optical}]);
+    await assert.rejects(c.get(undefined,infrared.publicationHash));assert.equal(c.requests.length,1,'missing selected edition cannot borrow discovery');
+  }
+  const invalid=consumer([]);await assert.rejects(invalid.get(undefined,'../manifest'),/selection_invalid/);assert.equal(invalid.requests.length,0);
+});
+
+test('the actual Sky source panel links the accepted edition instead of changing discovery',()=>{
+  const page=ts.createSourceFile('sky.tsx',readFileSync(new URL('../features/sky/spot-sky-page.tsx',import.meta.url),'utf8'),
+    ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
+  const calls:ts.CallExpression[]=[];
+  function visit(node:ts.Node){if(ts.isCallExpression(node)&&node.expression.getText(page)==='galacticImageManifestUrl')calls.push(node);ts.forEachChild(node,visit);}
+  visit(page);assert.equal(calls.length,1);
+  const expression=ts.transpileModule(calls[0]!.getText(page),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
+  const c=consumer([]);
+  for(const publication of [optical,infrared]){
+    const url=vm.runInNewContext(expression,{galacticImageManifestUrl:c.metadataUrl,presentedGalacticPublication:publication});
+    assert.equal(url,'https://sky-test.starward.invalid'+galacticImageManifestPath(publication.publicationHash));
+    assert(!url.includes('/display/manifest'));
   }
 });

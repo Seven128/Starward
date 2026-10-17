@@ -3,6 +3,7 @@ import type { SkyProjectionCenter } from "./sky-viewport";
 import { SKY_OBSERVING_VERTICAL_FOV_DEG } from "./sky-zoom";
 
 export interface SkyScreenPoint { x: number; y: number }
+export type SkyPanMode = "horizon" | "screen";
 const dot = (a: SkyVector, b: SkyVector) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const cross = (a: SkyVector, b: SkyVector): SkyVector => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
 const TWO_PI = Math.PI * 2;
@@ -81,7 +82,8 @@ function elevationForGrab(targetUp: number, cameraUp: number, cameraForward: num
  * Each move uses the gesture-start basis, so reversing returns exactly home.
  */
 export function dragSkyView(basis: SkyViewBasis, start: SkyScreenPoint, end: SkyScreenPoint,
-  width: number, height: number, verticalFovDeg: number, center?: SkyProjectionCenter): SkyViewBasis {
+  width: number, height: number, verticalFovDeg: number, center?: SkyProjectionCenter,
+  mode: SkyPanMode = "horizon"): SkyViewBasis {
   if (![start.x,start.y,end.x,end.y,width,height,verticalFovDeg].every(Number.isFinite) ||
     width <= 0 || height <= 0 || verticalFovDeg <= 0 || verticalFovDeg >= 360) return basis;
   if (Math.hypot(start.x - end.x, start.y - end.y) < 1e-12) return basis;
@@ -93,7 +95,7 @@ export function dragSkyView(basis: SkyViewBasis, start: SkyScreenPoint, end: Sky
   // free rotation: a fixed-roll solution can jump between the two poles when
   // a wide gesture has no exact level-camera solution. The same rule applies
   // when the local view already points at a pole, where azimuth is undefined.
-  if (verticalFovDeg > SKY_OBSERVING_VERTICAL_FOV_DEG ||
+  if (mode === "screen" || verticalFovDeg > SKY_OBSERVING_VERTICAL_FOV_DEG ||
     Math.abs(basis.forward[2]) > Math.cos(Math.PI / 360)) return rotateGrabbedRay(basis, endRay, target);
 
   const elevation = Math.asin(Math.max(-1, Math.min(1, basis.forward[2])));

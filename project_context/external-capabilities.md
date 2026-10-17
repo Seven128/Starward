@@ -1,5 +1,9 @@
 # 小程序外部能力：采用方案与成本
 
+Stellarium参考只用于辨别真实银河/小视场巡天的职责及显示规则；用户已取消人工明暗云层/矩形叠片模拟。公开引擎AGPL/商业许可不改变现TWGL/Astronomy Engine选择，不复制上游实现；官网公开瓦片不授DSS商用权。固定Mellinger随包图的grant与其它高分辨率产品分别核，图像冻结时只修现资源显示，不重新采用DSS/Gaia/ESA或扩图。
+
+星量需求先比较同条件实际已绘星，复用当前已采用BSC/SAO，照片小星点不计目录身份；现库存无需新增素材许可费但不冒零存储/分发成本。只有必要真实深度缺口且具体免许可费商用、取得、修改/自托管/分发条件已核，才沿原publisher/按需星表链扩展；未验证数据不冒可用。亮星已有程序化profile优先，无需外部模板采购/图库权利。原政策/范围、源码pin与有限官网证据见[本次参考依据](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/stellarium-reference-research-2026-10-14.md)，具体产品/运行责任沿Sky与runtime owner，研究不是生产采用。
+
 PS1官方已处理stack/服务成品与第三方CDS派生图分别核权，原公开授予不能因non-transferable改写成绝对禁商用。单skycell默认成品不自动补邻片；实际相邻stack/weight/保零mask有原格供给，原完整头缺frame标记、cutout依官方补FK5/TAI，getWCS标签不作精度认证。现Astropy按publisher文档/FK5默认J2000解释作名义ICRS TAN转换，不改原头、不重采样，绝对精度仍未验；已线性化cutout不得二次逆asinh。Lupton显示参数须匹配输入单位，同尺度不等于通带/零点校准。原mask/weight/观测支持、有效编码黑和显示alpha分别处理；BLANK/SAT等原flags不被修补或冒科学通过，未列bit保UNKNOWN。具体NGC884亮星团原格仍缺测/核心洞，当前显示配置退出；不扩生产合同/消费者或否决所有PS1。普通Prepared保空，完整信用/图质/实际发布另验。见[原格及退出决定](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/q1-ps1-ngc884-native-seam-decision-2026-10-06.md)。
 
 具体固定Stellarium随包Axel Mellinger原PNG已选作普通低分辨率光学银河显示，名义J2000与真实目录身份独立。指定bitmap的署名/修改再分发grant与程序GPL、作者新版付费/高分辨率/FITS产品分别核；原图不改像素、不去照片恒星、不生成细节。制作方完整处理/科学有效性UNKNOWN、绝对配准未验，黑像素不作missing/真实零；不是一般区域或目标照片外围高清底图。当前原owner/普通assets已接DISPLAY，新客户端版本发现保旧2MASS语义/URL，Prepared registry仍空；普通开发采用不等于生产发布或完整图质/runtime通过。见[具体角色及兼容边界](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/q2-optical-milky-way-display-decision-2026-10-05.md)。
@@ -10,7 +14,7 @@ PS1官方已处理stack/服务成品与第三方CDS派生图分别核权，原�
 
 云观星Prepared来源需对具体成品与服务分别核权。[NOIRLab公开图像政策](https://noirlab.edu/public/copyright/)默认CC BY 4.0有明确可见credit和不暗示背书条件，不延伸至logo/代码/论文或所有科研数据。具体`noao-m81m82`与`noao1309a`图片/嵌入XMP/关联发布已核并保存，各图片未见单独限制，但图质/绝对配准与融合尚未采用；网页DSS2查看器不是所下载Mosaic/ODI观测源，不恢复排除的DSS。M51关联发布仅说明蓝/绿/红滤镜，不能猜为SDSS gri或具体BVR。来源事实及局限见[宽视野具体成品实测](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/experience-noirlab-prepared-wide-2026-10-04.md)，产品采用与实际输出责任继续由Sky owner维护。
 
-**2026-10-04云观星影像成本复核：** 成品照片与原始科学数据加工是可复用同一发布/原生渲染链的不同输入，不应因已有加工投入而默认逐对象重建。依据[时间与现金调研](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/galaxy-imagery-time-money-research-2026-10-04.md)及用户后续归并授权，现采纳合格成品优先、原始加工仅补明确缺口的开发方向，执行顺序已归入唯一PLAN；这不代表新来源采用或解除商业排除。SkyMapper官方`hips_estsize`按HiPS规范为KB，当前6336620843约6.34TB，旧任务研究约6.34GB错误已纠正；这是发布者估算而非实际库存。`clonableOnce`指只从主站复制，不是只能下载一次，亦不替代图像内容权、数据库义务和供给条件。免许可费不等于零加工/分发成本，商业图库及引擎未获报价不能判定昂贵或便宜；广角背景、高清目标层与任意方向高分辨率巡天分别验证，成品照片不得冒科学测光或实时真彩。具体新图/实例仍只属候选，不开启原关闭的生产路径。ESA/Hubble具体成品与此前排除的esa.int Gaia/银河产品分别核权，机构名称不能互相推定许可。按现有资源采用广角较低分辨率背景与目标/区域高清组合，不默认全库最高阶自托管；具体覆盖和细节限制须公开记录。成熟产品复用成品/标准的做法可以借鉴，不推定其所有数据和私有处理算法相同或我们已达到同等质量。完整库存的存储缺口不能由渐进加载或缓存消除；容量由[部署owner](deployment/decisions-and-verification.md#current-capacity-target-200-dau-2026-10-02)核算，具体归并理由见[方向决定](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/galaxy-imagery-direction-reconciliation-2026-10-04.md)。
+**云观星影像成本边界：** 当前[合规成品供给方向](#云观星合规图像供给)复用原发布/渲染链，原始科学加工仅补收益明确的缺口。免许可费不等于零加工/分发成本；广角较低分辨率背景与合格目标/区域高清组合不承诺任意方向高清，成品不冒科学测光或实时真彩。SkyMapper所述`hips_estsize`单位KB、约6.34TB是发布者估算；`clonableOnce`指从主站复制而非只能下载一次，也不授内容权。缓存不能消除完整库存存储量，不镜像全库最高阶；容量统一由[部署owner](deployment/decisions-and-verification.md#current-capacity-target-200-dau-2026-10-02)持有。ESA/Hubble具体成品与已排除的esa.int Gaia/银河产品分别核权。既有背景与纠错依据保留在[时间/现金研究](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/galaxy-imagery-time-money-research-2026-10-04.md)及[方向归并](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/galaxy-imagery-direction-reconciliation-2026-10-04.md)，不把旧候选或来源选择当质量采用。
 
 当前状态：来源方案与下列产品取舍已获用户采用，正在基于当前工作区迁移。采用决定不代表各功能、设计资源、数据发布与生产验证已经完成。
 
@@ -55,6 +59,24 @@ PS1官方已处理stack/服务成品与第三方CDS派生图分别核权，原�
 
 现有地点身份、正式点发布、草稿/提案隔离、安全动作检查、计划版本、来源披露和数据失败恢复继续适用。支付、短信、原生推送、产品内AI、雷达、卫星云动画、科研级视宁度、相机AR和全天无限高清不因云观星引擎选型而新增。2026-09-14合规迁移中对空间站/彗星动态轨道的排除不再作为后续云观星能力对齐的上限；新目标见[云观星对齐Stellarium Web](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星对齐-stellarium-web)，具体数据覆盖、权益和验证仍须落实。
 
+## 云观星合规图像供给
+
+当前选择是**免素材许可费的合规成品优先，真实Scene预检后按需加工**。背景是现加工链的主要风险不只在模型速度：去星可能误删星系/星团成员，后续恢复和底色处理仍不能保证弱结构及融合；成熟产品已有照片、坐标和分级供给可复用，但不保证符合本产品画质。采用理由与外部研究边界见[供给与提效归并](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/image-supply-efficiency-decision-2026-10-10.md)，制作职责见[图像流程](development-workflow/resources-and-artifacts.md#cloud-sky-image-processing)。
+
+用户当前排除付费素材/图库授权和要求开放整个项目源码的选项；允许尝试取得免费许可。优先已有明确商用、加工、自托管与分发权的CC BY、CC0或公有领域具体资产；按来源/版本核公共规则一次，资产元数据批量绑定条款和例外，不逐图人工核对相同规则。免费申请是独立补源分支，未获书面许可不采用，收费条件暂缓；已有公开许可足够时不重复申请。该决定不撤销既有合规工具，也不授权新采购、发布或无关外联；DSS及已指定Gaia/ESA产品排除不自动重开。
+
+**获权判定与署名呈现分责。** 获取前确认来源及实际用途的许可资格；署名、链接、许可/修改说明和适用数据获取入口是后续共享交付工序，由来源元数据映射到现有来源文案/渲染owner。普通新增图片仅增加数据映射，新的授权语义才扩类型/适配；公共模板与消费者按机制验证，全批字段/版本/链接绑定自动检查，只有缺项、冲突或明确单图例外人工处理。不得逐张抄credit、逐张校对来源页或为重复署名要求串行阻塞取图/加工；公共呈现义务必须在该组普通采用/发布前真正落实。
+
+软件、图片、派生图片、数据库和获取服务分别核权。[CC BY-SA素材的适用共享义务](https://creativecommons.org/faq/#if-i-create-a-collection-that-includes-a-work-offered-under-a-cc-license-which-licenses-may-i-choose-for-the-collection)及[ODbL派生数据库义务](https://opendatacommons.org/licenses/odbl/1-0/)不一概排除；按真实组合/派生关系落实署名、修改说明、许可和数据获取，不把单独存放当法律豁免，也不泛化为整个自有应用开源。素材开放与自有代码、业务数据边界须在采用前明确。
+
+| 供给路线 | 选择理由与准入边界 |
+| --- | --- |
+| 机构观测成品，借鉴WWT生产链 | 优先复用已处理照片、AVM/WCS和来源元数据；[AstroPix](https://www.astropix.org/page/developers)用于发现，回具体机构/资产核权取源。[WWT/Toasty](https://toasty.readthedocs.io/en/latest/pipeline.html)的增量获取、分级、审核后采用可借鉴，不整套替换现流水线，也不假定其所有适配器当前可用或照片都已去星。 |
+| Stellarium已准备纹理 | 仅取许可和显示尺度适用的具体资产白名单，可节省部分准备工作；不整库采用，不以程序GPL覆盖图片权利，也不把小纹理放大成高清。[纹理准备指南](https://github.com/Stellarium/stellarium/blob/67a8dcef2fedf4f7943ff9443392b6bcb9916b21/guide/ch_dso.tex)给小场J2000四角与左下UV约定；现共享publisher以Astropy转换名义TAN、保完整成品像素及上游加工未知。成品仍可能有照片星场边缘或细节不足，先看实际Scene/最大缩放再决定采用；四角拟合误差不是独立天文配准。具体边界沿[流水线](../data-pipelines/deep-sky/README.md#sxt-batch-processing-workflow)与[有界成品试点](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/image-ready-texture-pilot-2026-10-10.md)。 |
+| 具体HiPS连续巡天/区域产品 | 复用现有HiPS/区域入口，适合连续覆盖、分级及保留真实点源；只取所需区域/层级，逐产品核图像权、数据库与服务复制条件。HiPS标准不授内容权或保证接缝、色彩、弱结构；优先明确许可的实际观测层，model/residual不冒去星实图。 |
+
+重评限于具体许可、版本/获取条件、适用覆盖/清晰度、实际融合、用户确认的显示标准或总成本变化。视觉资格沿[显示质量标准](development-workflow/resources-and-artifacts.md#cloud-sky-display-quality)：不是逐像素完美，也不把整片观测层强制加工为无星独立纹理。既有失败保原；标准改变可复核精确旧输出，不因换路线名称重跑模型。无合格免费来源时保缺口，不放行明显缺陷、改成照片矩形展示或承诺任意方向高清。
+
 ## 云观星成品候选与权利纠偏（2026-10-05）
 
 具体PS1有限原JPEG TRIAL保原alpha/局部mesh重试与实测20MiB光学压力，GPU/encoded不扩。现成功Scene mesh提交经同Canvas/time生命周期接受后取得版本/实际源集合，精确hash来源route不冒天体目录，原图权益与加工HiPS ODbL/record/DOI及完整notice分别披露；未知精确版本不得回退current。实际source回执/请求失败公开重试/四链接/独立Back/退休有受控开发证据，显式TRIAL标准bundle/API/真实本机HTTPS消费者已补，ordinary/OCI导出未收录，不冒正式商业发布；整体viewport地景遮挡撤销，但局部地景/跨源逐像素可见贡献与科学支持仍MISSING/UNKNOWN。冷/show/新wide/完整图质/runtime/物理资源/商业发布未过，普通HiPS关/Prepared空。具体输入/压力不作需求上限，见[当前消费者](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/q1-e1-ps1-hips-source-consumers-2026-10-06.md)。
@@ -71,11 +93,23 @@ PS1官方已处理stack/服务成品与第三方CDS派生图分别核权，原�
 - [ODbL](https://opendatacommons.org/licenses/odbl/1-0/)的数据库许可不自动授予图片内容权利，也不自动要求开放应用代码或镜像整个上游6TB库存；所形成的衍生数据库、通知、共享及相应数据库/改动获取义务需按实际产品落实。不要以误解的义务直接排除，也不要以数据库开放直接认定内容全部获权。
 - CC BY的一般合理署名方式与具体提供方附加展示规则分别核。[ESO政策](https://www.eso.org/public/outreach/copyright/)要求清晰可见完整credit、在线有效链接等，并允许游戏用所有用户可见的启动credit；无需推成逐个联系credit中的机构。Hubble/NOIRLab继续绑定已经保存的具体图片/XMP/政策和例外，不把这次外部审查当它们全部资源的新许可认证。已绘来源/完整来源页须实际履行当前输入的适用要求。
 
+## 云观星图像处理工具
+
+**需要去星的适用分支继续使用StarXTerminator（SXT）CLI，PS仅修真实局部异常；StarNet暂不考虑。** 去星不是默认必经步骤，整幅观测成品和密星/紧致成员优先按[合规供给方向](#云观星合规图像供给)分流。原2026-10-09选型理由仍有效：SXT与StarNet实测同属画质第一梯队，没有整体画质冠军证据；SXT原生GPU批处理及5张同参数PS插件/CLI输出RGB一致，便于批处理与异常修复衔接。StarNet所测许可限制产品素材用途是暂不选它的主要原因，不写成SXT画质绝对领先。[实测与版本证据](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/image-tool-final-results-2026-10-09.md)。
+
+NoiseXTerminator仅作为按需降噪候选；当前已拉伸RGB/JPEG流程不采用要求线性输入的BlurXTerminator。RC工具按[官方许可](https://www.rc-astro.com/rc-astro-software-license-agreement/)由获授权用户本地工作加工，不分发软件/模型、不提供代客处理服务或训练竞争模型；原图权利、署名及素材出版沿原owner核验。选型不等于已购买永久许可或完成产品接线；流程见[批量影像加工](development-workflow/resources-and-artifacts.md#cloud-sky-image-processing)。工具/模型、素材类型、用途或条款实质变化时重评。
+
+NXT在已核CLI/model与明确sRGB RGB8工作图上的ICC有/无标签配对数值一致，不能外推未知profile或科学颜色。部分coverage旧trial与完整RGB显式显示variant分别准入；完整RGB现有背景前/后两种有限阶段合同，保vendor raw、原绑定ICC与精确顺序，冲突标签拒绝。接线存在不等于完整质量或普通采用，NXT不保证背景精确归零。适用边界与入口由[资源流程owner](development-workflow/resources-and-artifacts.md#cloud-sky-image-processing)持有，不恢复无变化推理或整体去星工具选型。
+
+背景/透明问题的成熟参考按职责复用：[Stellarium素材准备及渲染](https://github.com/Stellarium/stellarium/blob/e0750c36b5becfe8704424edb6fd40e5c51531af/guide/ch_dso.tex)说明显示纯黑底与additive的配合；[Photutils](https://photutils.readthedocs.io/en/stable/user_guide/background.html)为现有背景估计owner的成熟基础；[Siril](https://siril.readthedocs.io/en/stable/processing/background.html)和[GraXpert](https://github.com/Steffenhir/GraXpert/blob/c3bc2211f8a4bee864d301987e9a154ad4480969/README.md)作为背景模型有明确缺口时的对照候选；[GIMP Color to Alpha](https://docs.gimp.org/3.2/en/gimp-filter-color-to-alpha.html)供显示软透明机制参考。后几项未因此安装、实测采用或替换已定工具；源保护、输入线性/拉伸状态、可批调用、模型/许可和实际Scene收益需分别成立。具体限制与重评条件沿[背景显示owner](development-workflow/resources-and-artifacts.md#astronomical-background-and-display)，不复制第三方引擎代码或推定其图片处理全部公开。
+
 ## 云观星引擎选型
 
 2026-09-22用户明确采用**扩展现有引擎**，以Agent主导开发，使云观星能力对齐Stellarium Web。沿用原生WEAPP Canvas/WebGL、TWGL、Astronomy Engine及当前天文/数据服务，复用现有姿态校准、地点时间、绘制和点选责任；不接入网页容器或不可自主修改的成品页面/黑盒SDK。能力范围由[星空产品owner](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星对齐-stellarium-web)控制，实现边界见[天文与渲染架构](architecture/runtime-and-domain.md#cloud-sky-progressive-imagery)。本次采用是技术路线决定，不是功能、数据、设计资源或真机验收已完成。
 
 选择理由：当前已有可复用的小程序原生渲染与交互基础；现有MIT基础库无需购买商业引擎许可，也不要求开放我们的业务源码。接受更多Agent开发和维护投入，以保持功能改造及代码许可的自主性。这个选择不是认定所有第三方引擎不可用，也不是已证明自建完整成本最低；符合责任边界、目标运行时和商业条件的成熟库/算法仍可按需要复用。
+
+2026-10-14固定公开Web `7d45c8fec393fbbabadcefa935794290fc39723d`及桌面`8e3062e220808537936e492b108dabaed0c3faa4`的[源码调研](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/stellarium-source-architecture-performance-2026-10-14.md)支持在现owner评估纹理准备/上传调度、静态拓扑与候选筛选方法；没有提供更换引擎的同条件收益证据。采用边界由[运行架构](architecture/runtime-and-domain.md#stellarium-method-reuse)持有，不把公开源码等同官网/商业移动版，不把Web的名义thread/fade接口视作已实现能力。借鉴方法不等于许可复制/翻译具体实现，也不采用其巡天/星表/图片或官网接口；代码、数据、图片及分发权益仍各自核实。现引擎、固定图像与商业排除保持，WASM等候选只有原重评条件成立才重新决策。
 
 | 未采用的路线 | 决定性原因与保留边界 |
 | --- | --- |
@@ -118,7 +152,7 @@ PS1官方已处理stack/服务成品与第三方CDS派生图分别核权，原�
 
 ## 成本基准
 
-**当前容量口径（2026-10-02）：** 用户将小程序初期目标更新为 **200 DAU**，生产预期为单台4核16GB／12Mbps／2000GB月出流量／180GB SSD，测试服保持4GB。权威资源、端云分工与验证边界见[部署容量owner](deployment/decisions-and-verification.md#current-capacity-target-200-dau-2026-10-02)。尚未采购或升级确认；不把预期配置写为已部署。云观星初期采用同机静态分发＋客户端持久缓存方向，CDN并非前置；其他业务对象存储义务不变。
+**当前容量与分发口径（2026-10-10）：** 小程序初期目标为 **200 DAU**，预期生产主机及4GB测试服边界由[部署容量owner](deployment/decisions-and-verification.md#current-capacity-target-200-dau-2026-10-02)维护。云观星大图采用对象存储＋CDN独立分发的容量方向，解除业务主机12Mbps共享出口限制；当前优惠优先选型为阿里OSS＋ESA基础版，配置、用量前提、价格及小规模可行性结论统一见[图片分发与费用](deployment/decisions-and-verification.md#cloud-sky-image-delivery-and-cost)。尚未采购、部署或通过目标体验验收；其他业务对象存储义务不变。
 
 **以下表格保留为历史选型算例。** 其中500 DAU、生产8GB、100GB存储及CDN命中率不能继续当作当前规模或账单；约820/1080元也不是200 DAU的新报价。天气成本依独立位置、刷新和实际权限计算，不能因DAU降为200就同比乘0.4；云资源价格、全站文件流量和影像加工成本须按实际配置/使用另算。无新逐项授权费及现有商业排除保持。
 
@@ -291,7 +325,7 @@ Original constellation PNGs and their publication remain unchanged by the numeri
 
 深空中文短文与别名继续采用同一固定文字/具体署名审查责任，现有M1/NGC1952和非Messier NGC253通过精确目录交叉身份后纳入v2文字版；[两对象固定原文与出版复现](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-deep-sky-publication-reproduction-2026-10-06.json)保 CC BY-SA4.0、Wikipedia contributors、作者历史入口及简体节选改编说明。NASA/ESO仅用于科学身份核对，不采用媒体。百科亮度/尺寸不覆盖OpenNGC测量，星系不混同星系群；旧十篇固定稿和五篇编辑资料保持。文字和名称授权不扩展为照片/目录/代码许可或全百科采用。
 
-中文固定短文当前保留[固定文字v72](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-kausborealis-publication-2026-10-07.json)，247行及原身份/许可/历史修复不变。中文资料供给复用既有批量别名流水线和出版/检索/资料owner；统一缓存、固定版本、身份映射、译改权和来源披露，正常记录批处理、冲突单独复核，不再逐三颗星发布版本或重复完整消费者矩阵。完整中文覆盖仍有缺口，不阻塞图像供给与加工；当前试验不改变商业排除或普通Prepared空/HiPS关的资格。
+云观星当前中文短文的实际采用文件、版本、hash与完整成员由[介绍owner](../workers/miniapp-api/src/celestial-object-introductions.ts)唯一持有；[历史固定文字v72](../.codex/work-items/cloud-sky-native-2026-09-22/evidence/chinese-kausborealis-publication-2026-10-07.json)及旧行／身份／许可保留。文本供给复用既有CC0别名与共同出版／检索／资料owner，官方wbgetentities最多50项的串行读取经[pure协议](../data-pipelines/star-catalog/wikimedia_text_input_protocol.mjs)、[实体供给](../data-pipelines/star-catalog/collect_introduction_entities.mjs)和[文章供给](../data-pipelines/star-catalog/acquire_introduction_articles.mts)进入[离线预检](../data-pipelines/star-catalog/prepare_introduction_batch.mts)。maxlag按[官方规则](https://www.mediawiki.org/wiki/Manual:Maxlag_parameter)有界等待后仍忙就停止余组；HTTP200错误不作数据成功。固定稿的producer实体、精确HR／HD／HIP、具体CC BY-SA4链接和许可输入分别核验，系统／分量、缺映射／文章与冲突不猜补。共同译稿声明／构建保旧正文、异常和自审边界，独审不能由构建器认证；有实际HTTP回执才使用获取时刻，旧mtime仍不冒取得时间。不逐星发布版次或重跑同型消费者矩阵，完整覆盖与真实原生可读性仍须相符证据。文本获取独立于当前图像冻结，不获得媒体／照片权利或放宽普通Prepared空／HiPS关的资格。
 
 
 ### HiPS规范来源与实际供给记录（2026-10-08）

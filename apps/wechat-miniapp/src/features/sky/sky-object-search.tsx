@@ -1,90 +1,109 @@
-import { Button, Input, Text, View } from "@tarojs/components";
+import { Button, Input, ScrollView, Text, View } from "@tarojs/components";
 import Taro from "@tarojs/taro";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { StatusPanel } from "@/components/status-panel";
+import { SkyStatusPanel as StatusPanel } from "@/features/sky/sky-status-panel";
+import { SemanticIcon } from "@/components/semantic-asset";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { searchCelestialObjects } from "@/services/api-client";
 import { SKY_LUMINARY_CATALOG_VERSION } from "@starward/miniapp-contracts";
 import { skyObjectKindLabel, type SkyObjectIdentity } from "./sky-object-picking";
+import { SkySearchRow } from "./sky-search-row";
 
-/** Mounted only while the visible page discloses its object list. Query's
- * subscription owns cancellation, including the debounce gap after an edit. */
-export function SkyObjectSearch({ children, onSelect }: {
+/** The retained search owns its text debounce and query cancellation; covering
+ * or closing it revokes active work without losing the native scroll subtree. */
+export function SkyObjectSearch({ children, footer, onSelect, query, onQueryChange, active = true }: {
+  active?: boolean;
   children: ReactNode;
+  footer?: ReactNode;
   onSelect: (object: SkyObjectIdentity) => void;
+  query: string;
+  onQueryChange: (query: string) => void;
 }) {
-  const [query, setQuery] = useState("");
-  const [settledQuery, setSettledQuery] = useState("");
+  const [settledQuery, setSettledQuery] = useState(query.trim());
   // Native input can display the next value before React removes an old row.
   // Check the live text at commit so that row cannot select the wrong object.
-  const currentQuery = useRef("");
+  const currentQuery = useRef(query.trim());
   const updateQuery = (value: string) => {
+    if (!active) return;
     currentQuery.current = value.trim();
-    setQuery(value);
+    onQueryChange(value);
   };
   const trimmedQuery = query.trim();
+  // Native scroll commands must change even when a new query returns to the
+  // same text later. Keep the ScrollView itself stable for append and Back.
+  const scrollIntent = useRef({query: trimmedQuery, revision: 0});
+  if (scrollIntent.current.query !== trimmedQuery)
+    scrollIntent.current = {query: trimmedQuery, revision: scrollIntent.current.revision + 1};
+  const scrollAnchor = `sky-search-start-${scrollIntent.current.revision}`;
   useEffect(() => {
+    if (!active) return;
     const timer = setTimeout(() => setSettledQuery(trimmedQuery), 250);
     return () => clearTimeout(timer);
-  }, [trimmedQuery]);
+  }, [trimmedQuery, active]);
   return <View className="sky-object-search">
-    <Text className="type-label">搜索日月、行星、恒星与深空天体</Text>
-    <Input className="field sky-object-search__input" value={query} maxlength={80}
-      ariaLabel="搜索日月、行星、恒星与深空天体，输入名称或目录编号"
-      placeholder="名称或编号，如织女星、M31、SAO 1" confirmType="search"
+    <View className="sky-object-search__field">
+    <SemanticIcon name="sky-search" />
+    <Input className="sky-object-search__input" value={query} maxlength={80}
+      ariaLabel="搜索天体名称或编号"
+      placeholder="名称或编号，如织女星、M31" confirmType="search"
       onInput={event => updateQuery(event.detail.value)}
       onConfirm={event => {
+        if (!active) return;
         // Native confirmation can arrive before the last input render commits.
         updateQuery(event.detail.value);
         setSettledQuery(event.detail.value.trim());
       }} />
+    {query ? <Button className="sky-object-search__clear focus-ring" aria-label="清空搜索"
+      onClick={() => { updateQuery(""); setSettledQuery(""); }}><SemanticIcon name="sky-cancel" /></Button> : null}
+    </View>
+    <ScrollView scrollY enhanced showScrollbar={false} className="sky-search-scroll" scrollIntoView={scrollAnchor} scrollWithAnimation={false}>
+    <View id={scrollAnchor} />
     {trimmedQuery ? <>
-      <Text className="type-caption">目录匹配不代表在所选地点与时刻可见。</Text>
       {trimmedQuery === settledQuery
-        ? <SkySearchResults key={settledQuery} query={settledQuery} onSelect={object => {
-            if (currentQuery.current !== settledQuery) return;
+        ? <SkySearchResults active={active} key={settledQuery} query={settledQuery} onSelect={object => {
+            if (!active || currentQuery.current !== settledQuery) return;
             void Taro.hideKeyboard().catch(() => undefined);
             onSelect(object);
           }} />
         : <View role="status" aria-live="polite" className="type-caption">正在查找…</View>}
     </> : children}
+    {footer}
+    </ScrollView>
   </View>;
 }
 
-function SkySearchResults({ query, onSelect }: {
+function SkySearchResults({ query, onSelect, active }: {
+  active: boolean;
   query: string;
   onSelect: (object: SkyObjectIdentity) => void;
 }) {
   const result = useResourceQuery({
     queryKey: ["celestial-search", SKY_LUMINARY_CATALOG_VERSION, query],
     queryFn: signal => searchCelestialObjects(query, signal),
+    enabled: active,
     staleTime: 60_000,
     gcTime: 60_000,
   });
-  const retry = () => void result.refetch();
+  const retry = () => { if (active) void result.refetch(); };
   if (result.isPending) return <View role="status" aria-live="polite" className="type-caption">正在查找…</View>;
   if (result.isError || result.data.dataState === "UNAVAILABLE" || result.data.dataState === "EXPIRED")
-    return <StatusPanel state="ERROR" detail="天体搜索暂不可用，请重试或修改关键词。"
-      recoveryLabel="重试搜索" onRecover={retry} />;
+    return <StatusPanel state="ERROR" detail="搜索失败，请重试"
+      recoveryLabel="重试" onRecover={retry} />;
   const { results, truncated, unavailableCatalogs } = result.data.data;
   const partial = result.data.dataState === "PARTIAL" || unavailableCatalogs.length > 0;
   const stale = Boolean(result.refreshError) || result.data.dataState === "STALE_USABLE";
   return <View className="sky-object-search__results" role="list" aria-label="天体搜索结果">
-    {partial ? <StatusPanel state="PARTIAL" detail="部分目录暂不可用，当前结果不完整。"
-      recoveryLabel="重试搜索" onRecover={retry} /> : null}
-    {stale ? <StatusPanel state="STALE" detail="搜索结果尚未更新，暂时显示上次结果。"
-      recoveryLabel="重试搜索" onRecover={retry} /> : null}
-    <View role="status" aria-live="polite" className="type-caption">
-      {results.length ? `找到 ${results.length} 个${truncated ? "以上" : ""}匹配天体`
-        : partial || stale ? "当前可用结果中没有匹配项，可重试或修改关键词。"
-          : "已接入的目录中没有匹配项，可尝试其他别名或目录编号。"}
+    {partial ? <StatusPanel state="PARTIAL" detail="部分星表未加载，结果可能不全"
+      recoveryLabel="重试" onRecover={retry} /> : null}
+    {stale ? <StatusPanel state="STALE" detail="更新失败，显示上次结果"
+      recoveryLabel="重试" onRecover={retry} /> : null}
+    <View role="status" aria-live="polite" className="sky-search-hint">
+      {results.length ? `${results.length}${truncated ? "+" : ""} 个结果`
+        : partial || stale ? "现有结果中未找到，可重试或换个名称"
+          : "未找到，试试别名或编号"}
     </View>
-    {results.map(object => <Button key={object.reference} className="sky-catalog-row sky-object-search__result"
-      ariaLabel={`${object.displayName}，${object.reference.replace(":", " ")}，查看资料`}
-      onClick={() => onSelect(object)}>
-      <Text>{object.displayName}</Text>
-      <Text>{skyObjectKindLabel(object.kind)} · {object.reference.replace(":", " ")} · 匹配 {object.matchedAlias}</Text>
-    </Button>)}
-    {truncated ? <Text className="type-caption">仅显示前 {results.length} 项，请补全名称或编号缩小范围。</Text> : null}
+    {results.map((object, index) => <SkySearchRow key={object.reference} name={object.displayName}
+      kind={skyObjectKindLabel(object.kind)} ordinal={index} onSelect={() => onSelect(object)} />)}
+    {truncated ? <Text className="sky-search-hint">结果较多，可补全名称或编号</Text> : null}
   </View>;
 }

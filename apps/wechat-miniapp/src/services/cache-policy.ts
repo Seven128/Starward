@@ -24,9 +24,9 @@ const TEMPORARY_QUERY_ROOTS = new Set([
   "map-scene", "spot-overview", "spot-guides", "spot-site", "spot-sky",
   "observation-context", "place-search", "spot-search",
   "map-observation-context", "search-observation-context", "search-scene",
-  // This immutable index also carries the Sky file owner's generation. Keeping
-  // it after file clear would strand returning observers on a retired capability.
-  "sao-index",
+  // These immutable publications also carry the Sky file owner's generation.
+  // File clear must remove their old capabilities from hidden query observers.
+  "sao-index", "deep-sky-image-discovery", "prepared-optical-manifest", "sdss-optical-manifest",
 ]);
 
 /** Settings clears trip-discovery cache, never account/library data or drafts. */
@@ -34,29 +34,18 @@ export function isTemporaryCacheKey(key: string): boolean {
   return TEMPORARY_QUERY_ROOTS.has(key.split(":", 1)[0]!);
 }
 
+function frozenPolicy(responsePrefixes: readonly string[], queryRoots = responsePrefixes): MutationInvalidationPolicy {
+  return Object.freeze({ responsePrefixes: Object.freeze(responsePrefixes), queryRoots: Object.freeze(queryRoots) });
+}
+
 export const READ_MODEL_INVALIDATION_POLICY: Readonly<
   Record<MiniappMutationKind, MutationInvalidationPolicy>
 > = Object.freeze({
-  FAVORITE: Object.freeze({
-    responsePrefixes: Object.freeze(["favorites", "user-library", "map-scene"]),
-    queryRoots: Object.freeze(["favorites", "user-library", "map-scene"]),
-  }),
-  PLAN: Object.freeze({
-    responsePrefixes: Object.freeze(["plans", "user-library"]),
-    queryRoots: Object.freeze(["plans", "user-library"]),
-  }),
-  PROFILE_LINK: Object.freeze({
-    responsePrefixes: Object.freeze(["profile-links", "user-library"]),
-    queryRoots: Object.freeze(["profile-links", "user-library"]),
-  }),
-  IMPORT: Object.freeze({
-    responsePrefixes: Object.freeze(["import:", "user-library"]),
-    queryRoots: Object.freeze(["import", "user-library"]),
-  }),
-  PREFERENCES: Object.freeze({
-    responsePrefixes: Object.freeze(["preferences", "user-library", "map-scene"]),
-    queryRoots: Object.freeze(["preferences", "user-library", "map-scene"]),
-  }),
+  FAVORITE: frozenPolicy(["favorites", "user-library", "map-scene"]),
+  PLAN: frozenPolicy(["plans", "user-library"]),
+  PROFILE_LINK: frozenPolicy(["profile-links", "user-library"]),
+  IMPORT: frozenPolicy(["import:", "user-library"], ["import", "user-library"]),
+  PREFERENCES: frozenPolicy(["preferences", "user-library", "map-scene"]),
 });
 
 export function invalidationPolicy(

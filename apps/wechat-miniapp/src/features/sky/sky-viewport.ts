@@ -1,5 +1,7 @@
 export interface SkyViewportInsets { readonly top: number; readonly bottom: number }
 export interface SkyProjectionCenter { readonly x: number; readonly y: number }
+/** Canvas-local logical pixels, independent of the native backing-store DPR. */
+export interface SkyCanvasBounds { readonly left: number; readonly top: number; readonly width: number; readonly height: number }
 export interface SkyScreenRect { readonly top: number; readonly bottom: number; readonly height: number }
 export const NO_SKY_INSETS: SkyViewportInsets = { top: 0, bottom: 0 };
 
@@ -19,11 +21,12 @@ export function skyVisibleViewport(width: number, height: number, insets: SkyVie
   return { width, height: availableHeight, center: { x: width / 2, y: insets.top + availableHeight / 2 }, shortSide: Math.min(width, availableHeight) };
 }
 
-/** Keep the existing full-screen local composition; only a widened view moves
- * continuously towards the unobscured region's center. Background stays full-screen. */
-export function skyViewportCenter(width: number, height: number, progress: number, insets: SkyViewportInsets = NO_SKY_INSETS): SkyProjectionCenter {
-  const viewport = skyVisibleViewport(width, height, insets);
-  const p = Number.isFinite(progress) ? Math.max(0, Math.min(1, progress)) : 0;
-  const amount = p * p * (3 - 2 * p);
-  return { x: width / 2, y: height / 2 + ((viewport?.center.y ?? height / 2) - height / 2) * amount };
+/** Projection uses the physical Canvas. UI occlusion has its own measured
+ * region and must not move or refit a displayed sky when a menu opens. */
+export function skyProjectionViewport(width: number, height: number) {
+  return skyVisibleViewport(width, height);
+}
+
+export function skyViewportCenter(width: number, height: number): SkyProjectionCenter {
+  return skyProjectionViewport(width, height)?.center ?? { x: width / 2, y: height / 2 };
 }

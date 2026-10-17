@@ -10,11 +10,20 @@ const glslVector = (value: SkyVector) => `vec3(${value.map(glslFloat).join(",")}
 // These fixed display levels preserve a faint night foreground; they do not
 // estimate site weather, moonlight or the photograph's original illumination.
 const landscapeLighting = `
+  uniform float u_viewReveal;
+  vec3 landscapeBrowseColor(vec3 material, float observationMode) {
+    vec3 cue = observationMode > 0.5 ? vec3(0.19,0.0,0.0) : vec3(0.16);
+    // The normal horizon view retains its dark material. The muted grey cue
+    // enters only as the camera looks into the below-ground finding chart;
+    // the existing geometry/alpha and object visibility remain independent.
+    float cueWeight = observationMode > 0.5 ? u_viewReveal : smoothstep(0.5,1.0,u_viewReveal);
+    return mix(material,cue,cueWeight);
+  }
   float landscapeDaylight(float solarAltitude) {
     return smoothstep(-6.0,6.0,solarAltitude);
   }
   float landscapeAmbient(float solarAltitude) {
-    return 0.03+0.10*smoothstep(-12.0,0.0,solarAltitude);
+    return 0.01+0.12*smoothstep(-12.0,0.0,solarAltitude);
   }`;
 
 /** The same world ray and transparent pixels as the completed CPU mask. */
@@ -45,7 +54,7 @@ export function skyLandscapePanoramaFragment(skyRay: string): string {
     // shared time-dependent ambient/display exposure without altering alpha.
     vec3 result=material.rgb*(landscapeAmbient(u_sunAltitude)+0.87*daylight);
     if(u_observationMode>0.5) result=vec3(0.005+0.045*dot(material.rgb,vec3(0.2126,0.7152,0.0722)),0.0,0.0);
-    gl_FragColor=vec4(result,material.a*u_opacity);
+    gl_FragColor=vec4(landscapeBrowseColor(result,u_observationMode),material.a*u_opacity);
   }`;
 }
 
@@ -148,13 +157,13 @@ export function skyLandscapeFragment(skyRay: string): string {
     vec3 meadow=albedo*(ambient+0.21*daylight+0.66*direct);
     float lowSun=1.0-smoothstep(0.0,18.0,u_sunAltitude);
     float towardSun=max(dot(normalize(vec3(ray.xy,0.001)),u_sunDirection),0.0);
-    vec3 haze=u_base+daylight*mix(vec3(0.07,0.12,0.16),vec3(0.19,0.10,0.04),lowSun*towardSun);
+    vec3 haze=u_base*(0.18+0.82*daylight)+daylight*mix(vec3(0.07,0.12,0.16),vec3(0.19,0.10,0.04),lowSun*towardSun);
     float hazeAmount=smoothstep(18.0,400.0,distanceToEye)*0.88;
     vec3 result=mix(meadow,haze,hazeAmount);
     if(u_observationMode>0.5) {
       // Red-light rendering has no hidden blue/white transition or day texture.
       result=vec3((0.007+0.010*broad)*(1.0-0.55*hazeAmount),0.0,0.0);
     }
-    gl_FragColor=vec4(result,u_opacity);
+    gl_FragColor=vec4(landscapeBrowseColor(result,u_observationMode),u_opacity);
   }`;
 }

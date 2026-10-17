@@ -93,7 +93,9 @@ test("existing source catalog supplies 39 oriented shapes and keeps the 12 missi
 });
 test("actual Scene call binds only its selected ICRS catalog domain to the exact science submission", () => {
   const science = JSON.parse(readFileSync(new URL("./sky-sdss-science-registration.fixture.json", import.meta.url), "utf8"));
-  const publication: any = { objectRef: "M:51", publicationHash: science.publicationHash, center: science.center,
+  // Partial registration fixture for an already admitted science caller;
+  // not a transport-admission or source-accuracy proof.
+  const publication: any = { imageVersion:'science-optical-v2',objectRef: "M:51", publicationHash: science.publicationHash, center: science.center,
     orientation: "north-up/east-left", levels: science.levels };
   const image = { width: 512, height: 512 }, parent = { width: 512, height: 512 };
   const frame: any = { image, reference: "M:51", publicationHash: publication.publicationHash, sciencePublication: publication,
@@ -102,11 +104,15 @@ test("actual Scene call binds only its selected ICRS catalog domain to the exact
   let groups = 0, qualified = 0;
   const surface: any = { artworkLevels() { groups++; return { submitted: true, finePrepared: true, coarsePrepared: true }; },
     artworkLevelsQualification() { qualified++; return { fine: "has", coarse: "has", any: "has" }; } };
-  const page = ts.createSourceFile("actual-scene.ts", readFileSync(new URL("./sky-scene-render.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const page = ts.createSourceFile("actual-scene.ts", readFileSync(process.env.CLOUD_SKY_COMMON_SCENE_SOURCE ?? new URL("./sky-scene-render.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   let call: ts.CallExpression | undefined;
-  const find = (node: ts.Node) => { if (ts.isCallExpression(node) && node.expression.getText(page) === "submitSkySceneScienceOptical") call = node; ts.forEachChild(node, find); }; find(page); assert(call);
-  const code = ts.transpileModule(call.getText(page), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  let selectedEntry:ts.Expression|undefined;
+  const find = (node: ts.Node) => { if (ts.isCallExpression(node) && node.expression.getText(page) === "submitSkySceneScienceOptical") call = node;
+    if(ts.isVariableDeclaration(node)&&node.name.getText(page)==='opticalEntry')selectedEntry=node.initializer;
+    ts.forEachChild(node, find); }; find(page); assert(call);assert(selectedEntry);
+  const code = ts.transpileModule(`const opticalEntry=${selectedEntry.getText(page)};\n${call.getText(page)}`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   const run = (catalog: any, candidate: any = entry, enabled = true) => vm.runInNewContext(code, { submitSkySceneScienceOptical, context: surface,
+    calibratedOptical:undefined,preparedOptical:undefined,
     scienceOptical: enabled ? { surface, reference: "M:51", publicationHash: publication.publicationHash } : undefined, sdssOpticalImage: frame,
     observation: identity, artworkView: { basis: { forward: [1,0,0], right: [0,1,0], up: [0,0,1] }, verticalFovDeg: 1 },
     sdssOpticalFailed() {}, deepCatalog: catalog === null ? null : { frame: catalog, entries: [candidate] } });

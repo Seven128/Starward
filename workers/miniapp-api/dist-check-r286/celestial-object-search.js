@@ -1,0 +1,256 @@
+import { createHash, randomUUID } from "node:crypto";
+import { BadRequestException } from "@nestjs/common";
+import { loadBsc5pStarCatalog } from "@starward/astronomy-core/bsc5p-catalog";
+import { loadDeepSkyCatalog } from "@starward/astronomy-core/deep-sky-catalog";
+import { isDeepSkyCatalogVersion } from "@starward/miniapp-contracts";
+import { brightStarAliases, deepSkyAliases, saoStarAliases } from "./celestial-object-aliases.js";
+import { loadChineseStarAliasesForBase } from "./chinese-star-alias-publication.js";
+import { loadSaoCatalog } from "./sao-catalog-provider.js";
+import { bsc5pCatalogSources } from "./sky-scene-catalog-provider.js";
+import { deepSkyCatalogSource } from "./deep-sky-scene-provider.js";
+import { skyPlanetCatalog } from "./sky-planet-catalog.js";
+import { SKY_LUMINARY_CATALOG_VERSION } from "@starward/miniapp-contracts";
+import { skyLuminaryCatalog } from "./sky-luminary-catalog.js";
+import { Converter } from "opencc-js/t2cn";
+import { publishedDeepSkyIntroduction, publishedStarIntroduction } from "./celestial-object-introductions.js";
+const providers = (baseVersion, includeLuminaries, deepSkyCatalogVersion, deepSkyIntroduction, starIntroduction) => [
+    { id: "Solar-System", load() { return skyPlanetCatalog; } },
+    ...(includeLuminaries ? [{ id: "Sun-Moon", load() { return skyLuminaryCatalog; } }] : []),
+    { id: "BSC5P", load() {
+            const catalog = loadBsc5pStarCatalog(baseVersion);
+            let chinese = null;
+            try {
+                chinese = loadChineseStarAliasesForBase(baseVersion);
+            }
+            catch { /* The base catalogue remains searchable. */ }
+            let introductionUnavailable = false;
+            const sources = [...bsc5pCatalogSources(catalog), ...(chinese ? [chinese.source] : [])];
+            const entrySources = new Map();
+            const entries = catalog.rows.map(row => {
+                let published = null;
+                try {
+                    published = starIntroduction(row);
+                }
+                catch {
+                    introductionUnavailable = true;
+                }
+                // Keep alias provenance with its object; only returned entries emit it.
+                if (published?.aliases?.length)
+                    entrySources.set(row.sourceId, published.source);
+                return { reference: row.sourceId, displayName: row.properName ?? `HR ${row.hr}`,
+                    kind: "STAR", aliases: brightStarAliases(row, [...(chinese?.aliasesFor(row.sourceId) ?? []), ...(published?.aliases ?? [])]) };
+            });
+            return { ...catalog, rowCount: catalog.rows.length,
+                sources, entrySources,
+                relatedCatalogs: chinese ? [{ catalogVersion: chinese.catalogVersion, catalogHash: chinese.catalogHash,
+                        rowCount: chinese.rowCount }] : [],
+                unavailableCatalogs: [...(chinese ? [] : ["Wikidata-zh"]), ...(introductionUnavailable ? ["Chinese-star-prose-zh"] : [])],
+                cacheable: Boolean(chinese) && !introductionUnavailable, entries };
+        } },
+    { id: "OpenNGC-Messier", load() {
+            const catalog = loadDeepSkyCatalog(deepSkyCatalogVersion);
+            let introductionUnavailable = false;
+            const sources = [deepSkyCatalogSource(deepSkyCatalogVersion)];
+            const entrySources = new Map();
+            const entries = catalog.rows.map(row => {
+                let published = null;
+                try {
+                    published = deepSkyIntroduction(row);
+                }
+                catch {
+                    introductionUnavailable = true;
+                }
+                if (published?.aliases?.length)
+                    entrySources.set(row.objectRef, published.source);
+                return { reference: row.objectRef, displayName: row.messier === null ? row.ngcName : `M ${row.messier}`,
+                    kind: row.kind, aliases: deepSkyAliases(row, published?.aliases) };
+            });
+            return { ...catalog, rowCount: catalog.rows.length, sources, entrySources, entries, cacheable: !introductionUnavailable,
+                unavailableCatalogs: introductionUnavailable ? ["Chinese-deep-prose-zh"] : [] };
+        } },
+    { id: "SAO", load() {
+            const { catalog, source } = loadSaoCatalog(baseVersion);
+            return { catalogVersion: catalog.catalogVersion, catalogHash: catalog.catalogHash,
+                rowCount: catalog.rowCount, sources: [source], saoCatalog: catalog };
+        } },
+];
+// Convert search keys only. Keep the publication's spelling in aliases and
+// matchedAlias, and keep separate results when conversion makes names collide.
+const simplifiedChineseKey = Converter({ from: "t", to: "cn" });
+const normalize = (value) => {
+    const key = value.normalize("NFKC").toLowerCase().replace(/[\s:]+/gu, "");
+    return /\p{Script=Han}/u.test(key) ? simplifiedChineseKey(key) : key;
+};
+const catalogId = (value) => {
+    const match = normalize(value).match(/^(hr|hip|hd|sao|m|ngc|ic)0*(\d+)$/u);
+    return match ? `${match[1]}${Number(match[2])}` : null;
+};
+const identifiers = (alias) => [...alias.normalize("NFKC").matchAll(/\b(HR|HIP|HD|SAO|M|NGC|IC)\s*:?\s*(\d+)\b/giu)]
+    .map(match => `${match[1].toLowerCase()}${Number(match[2])}`);
+function buildSaoIndex(publication) {
+    const references = [], saoTokens = [], hdTokens = [];
+    const hdNumbers = new Float64Array(publication.rowCount), joint = new Uint8Array(publication.rowCount);
+    let i = 0;
+    for (const reference of publication.saoCatalog.references()) {
+        const row = publication.saoCatalog.get(reference);
+        if (!row || i >= publication.rowCount)
+            throw new Error("celestial_search_publication_incomplete");
+        const aliases = saoStarAliases(row);
+        references.push(reference);
+        saoTokens.push(normalize(aliases[0]));
+        hdTokens.push(aliases[1] ? normalize(aliases[1]) : "");
+        hdNumbers[i] = row.hd ? Number(row.hd) : NaN;
+        joint[i] = row.hdComponent === "9" ? 1 : 0;
+        i++;
+    }
+    if (i !== publication.rowCount)
+        throw new Error("celestial_search_publication_incomplete");
+    return { ...publication, references, saoTokens, hdTokens, hdNumbers, joint };
+}
+/** Static, publication-bound discovery; never joins catalogue aliases into one
+ * physical star or computes a competing observing position. A failed catalogue
+ * is retried on a later request without dropping independently valid results. */
+export class CelestialObjectSearchService {
+    catalogs;
+    deepSkyIntroduction;
+    starIntroduction;
+    indexes = new Map();
+    constructor(catalogs, deepSkyIntroduction = publishedDeepSkyIntroduction, starIntroduction = publishedStarIntroduction) {
+        this.catalogs = catalogs;
+        this.deepSkyIntroduction = deepSkyIntroduction;
+        this.starIntroduction = starIntroduction;
+    }
+    search(input, limit = 20, baseVersion = "bsc5p-bright-stars.v2", luminaryCatalogVersion, deepSkyCatalogVersion) {
+        // Old clients reject unknown reference kinds; opt in to this additive catalogue.
+        if (luminaryCatalogVersion !== undefined && luminaryCatalogVersion !== SKY_LUMINARY_CATALOG_VERSION)
+            throw new BadRequestException("luminary_catalog_version_invalid");
+        if (deepSkyCatalogVersion !== undefined && !isDeepSkyCatalogVersion(deepSkyCatalogVersion))
+            throw new BadRequestException("deep_sky_catalog_version_invalid");
+        const query = typeof input === "string" ? input.trim() : "";
+        if (!query || query.length > 80 || /[\u0000-\u001f\u007f]/u.test(query) ||
+            !Number.isInteger(limit) || limit < 1 || limit > 50)
+            throw new BadRequestException("celestial_search_query_invalid");
+        const needle = normalize(query), identity = catalogId(query);
+        if (!needle)
+            throw new BadRequestException("celestial_search_query_invalid");
+        const results = [];
+        let matchedCount = 0;
+        const compare = (a, b) => a.score - b.score || a.result.reference.localeCompare(b.result.reference);
+        const offer = (candidate, alreadyCounted = false) => {
+            if (!alreadyCounted)
+                matchedCount++;
+            if (results.length === limit && compare(candidate, results[limit - 1]) >= 0)
+                return;
+            let low = 0, high = results.length;
+            while (low < high) {
+                const middle = (low + high) >>> 1;
+                if (compare(candidate, results[middle]) < 0)
+                    high = middle;
+                else
+                    low = middle + 1;
+            }
+            results.splice(low, 0, candidate);
+            if (results.length > limit)
+                results.pop();
+        };
+        const offerSao = (index, rowIndex, aliasIndex, score) => {
+            matchedCount++;
+            const reference = index.references[rowIndex];
+            if (results.length === limit && (score > results[limit - 1].score ||
+                (score === results[limit - 1].score &&
+                    reference.localeCompare(results[limit - 1].result.reference) >= 0)))
+                return;
+            const row = index.saoCatalog.get(reference);
+            if (!row)
+                throw new Error("celestial_search_publication_incomplete");
+            const aliases = saoStarAliases(row);
+            offer({ result: { reference, displayName: reference.replace(":", " "), kind: "STAR", aliases,
+                    matchedAlias: identity ? aliases.find(alias => identifiers(alias).includes(identity)) ?? reference :
+                        aliases[aliasIndex] }, score }, true);
+        };
+        const data = { query, results: [], truncated: false, catalogs: [], unavailableCatalogs: [] };
+        const sources = [];
+        for (const provider of this.catalogs ?? providers(baseVersion, Boolean(luminaryCatalogVersion), deepSkyCatalogVersion, this.deepSkyIntroduction, this.starIntroduction)) {
+            const indexKey = `${baseVersion}:${provider.id}:${deepSkyCatalogVersion ?? "default"}`;
+            let index = this.indexes.get(indexKey);
+            try {
+                if (!index) {
+                    const publication = provider.load();
+                    if ("saoCatalog" in publication)
+                        index = buildSaoIndex(publication);
+                    else {
+                        index = { ...publication, entries: Array.from(publication.entries, entry => ({ entry,
+                                normalizedAliases: entry.aliases.map(normalize),
+                                identities: "\0" + [...new Set([entry.reference, ...entry.aliases].flatMap(identifiers))].join("\0") + "\0",
+                            })) };
+                        if (index.entries.length !== publication.rowCount)
+                            throw new Error("celestial_search_publication_incomplete");
+                    }
+                    if (index.cacheable !== false)
+                        this.indexes.set(indexKey, index);
+                }
+            }
+            catch {
+                data.unavailableCatalogs.push(provider.id);
+                continue;
+            }
+            data.catalogs.push({ catalogVersion: index.catalogVersion, catalogHash: index.catalogHash, rowCount: index.rowCount });
+            data.catalogs.push(...index.relatedCatalogs ?? []);
+            data.unavailableCatalogs.push(...index.unavailableCatalogs ?? []);
+            sources.push(...index.sources);
+            if ("saoCatalog" in index) {
+                const sao = index;
+                const numericIdentity = identity?.match(/^(sao|hd)(\d+)$/u);
+                const targetNumber = numericIdentity ? Number(numericIdentity[2]) : 0;
+                for (let i = 0; i < sao.references.length; i++) {
+                    if (identity) {
+                        if (!numericIdentity || (numericIdentity[1] === "sao" ? sao.saoTokens[i] !== identity :
+                            sao.hdNumbers[i] !== targetNumber &&
+                                !(sao.joint[i] && sao.hdNumbers[i] + 1 === targetNumber)))
+                            continue;
+                        offerSao(sao, i, 0, 0);
+                        continue;
+                    }
+                    const saoToken = sao.saoTokens[i], hdToken = sao.hdTokens[i];
+                    const saoScore = saoToken === needle ? 0 : saoToken.startsWith(needle) ? 1 : saoToken.includes(needle) ? 2 : 3;
+                    const hdScore = hdToken === needle ? 0 : hdToken.startsWith(needle) ? 1 : hdToken.includes(needle) ? 2 : 3;
+                    const score = Math.min(saoScore, hdScore);
+                    if (score < 3)
+                        offerSao(sao, i, saoScore <= hdScore ? 0 : 1, score);
+                }
+                continue;
+            }
+            for (const { entry, normalizedAliases, identities } of index.entries) {
+                const source = index.entrySources?.get(entry.reference);
+                if (identity) {
+                    if (identities.includes(`\0${identity}\0`))
+                        offer({ result: { ...entry,
+                                matchedAlias: entry.aliases.find(alias => identifiers(alias).includes(identity)) ?? entry.reference },
+                            score: 0, ...(source ? { source } : {}) });
+                    continue;
+                }
+                let best;
+                for (let i = 0; i < normalizedAliases.length; i++) {
+                    const normalized = normalizedAliases[i];
+                    const score = normalized === needle ? 0 : normalized.startsWith(needle) ? 1 : normalized.includes(needle) ? 2 : 3;
+                    if (score < 3 && (!best || score < best.score))
+                        best = { label: entry.aliases[i], score };
+                }
+                if (best)
+                    offer({ result: { ...entry, matchedAlias: best.label }, score: best.score, ...(source ? { source } : {}) });
+            }
+        }
+        data.results = structuredClone(results.map(item => item.result));
+        data.truncated = matchedCount > limit;
+        sources.push(...results.flatMap(item => item.source ? [item.source] : []));
+        return { apiVersion: "v2", data, generatedAt: new Date().toISOString(), validAt: null,
+            dataState: !data.catalogs.length ? "UNAVAILABLE" : data.unavailableCatalogs.length ? "PARTIAL" : "FRESH",
+            sources: structuredClone(sources), warnings: data.unavailableCatalogs.map(id => id === "Wikidata-zh"
+                ? "中文恒星别名暂不可检索；HR 编号和已有星名仍可用。" : id === "Chinese-star-prose-zh"
+                ? "部分中文恒星别名暂不可检索；目录编号和已有名称仍可用，请重试。" : id === "Chinese-deep-prose-zh"
+                ? "中文深空别名暂不可检索；目录编号和已有名称仍可用，请重试。" : `${id}目录暂不可检索，请稍后重试。`),
+            etag: `W/"${createHash("sha256").update(JSON.stringify({ data, sources })).digest("hex").slice(0, 24)}"`,
+            requestId: `celestial-search:${randomUUID()}` };
+    }
+}
+//# sourceMappingURL=celestial-object-search.js.map

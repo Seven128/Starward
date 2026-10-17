@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-import { skyObjectKindLabel } from "./sky-object-picking";
+import { skyObjectKindLabel, skyObjectIdentityLabel } from "./sky-object-picking";
 import { celestialInformationPartialDetail, celestialInformationSourceRoute } from "../../services/celestial-information-presentation";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
@@ -21,15 +21,15 @@ test("a retained stale object description offers an inline retry without losing 
     data: { dataState: "STALE_USABLE", data: { displayName: "织女星", kind: "STAR",
       contentState: "BASIC_ONLY", introduction: null, aliases: ["Vega"],
       facts: [{ label: "视星等", value: "0.03", unit: "mag" }],
-      limitations: [], sources: [] } }, refetch: () => { retries++; return Promise.resolve(); } };
+      limitations: ["目录修订与原始字段的完整核对说明"], sources: [] } }, refetch: () => { retries++; return Promise.resolve(); } };
   const render = vm.runInNewContext(code, {
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) =>
       ({ type, props: props ?? {}, children }) },
-    View: "View", Button: "Button", ScrollView: "ScrollView", Text: "Text",
-    SemanticIcon: "SemanticIcon", SoftButton: "SoftButton", StatusPanel: "StatusPanel",
+    View: "View", Button: "Button", ScrollView: "ScrollView", Text: "Text", SkyObjectDialog: "SkyObjectDialog",
+    SemanticIcon: "SemanticIcon", SoftButton: "SoftButton", SkySourceLink: "SkySourceLink", StatusPanel: "StatusPanel",
     useRef: (current: unknown) => ({ current }), useEffect: () => {},
     useAppStore: (selector: (state: unknown) => unknown) => selector({ notify: () => {} }),
-    useCelestialInformation: () => information, productSourceNames: () => "", skyObjectKindLabel,
+    useCelestialInformation: () => information, productSourceNames: () => "", skyObjectKindLabel, skyObjectIdentityLabel,
     celestialInformationPartialDetail, celestialInformationSourceRoute,
   }) as (props: Record<string, unknown>) => any;
   const tree = render({ reference: "HR:7001", knownName: "Vega", knownKind: "STAR",
@@ -50,6 +50,10 @@ test("a retained stale object description offers an inline retry without losing 
     return null;
   }
   assert.ok(find(tree, node => node?.type === "Text" && node.children?.includes("0.03")));
+  assert.equal(find(tree, node => node?.type === "Text" &&
+    node.children?.includes("目录修订与原始字段的完整核对说明")), null,
+    "long catalogue notes belong to the source page, after the modal's facts");
+  assert.ok(find(tree, node => node?.type === "SkySourceLink"));
   const status = find(tree, node => node?.type === "StatusPanel" && node.props.state === "STALE");
   assert.ok(status, "the retained facts need an actionable stale-state explanation");
   status.props.onRecover();
@@ -80,9 +84,9 @@ test("the actual object modal sends its painted publication to both details and 
   const publicationHash = "a".repeat(64), opticalPublicationHash = "b".repeat(64), requests: unknown[][] = [], urls: string[] = [];
   const render = vm.runInNewContext(code, {
     React: { createElement: (type: string, props: Record<string, unknown>, ...children: unknown[]) => ({ type, props: props ?? {}, children }) },
-    View: "View", Button: "Button", ScrollView: "ScrollView", Text: "Text", SemanticIcon: "SemanticIcon",
-    SoftButton: "SoftButton", StatusPanel: "StatusPanel", useRef: (current: unknown) => ({ current }), useEffect: () => {},
-    useAppStore: (select: (value: unknown) => unknown) => select({ notify() {} }), skyObjectKindLabel,
+    View: "View", Button: "Button", ScrollView: "ScrollView", Text: "Text", SkyObjectDialog: "SkyObjectDialog", SemanticIcon: "SemanticIcon",
+    SoftButton: "SoftButton", SkySourceLink: "SkySourceLink", StatusPanel: "StatusPanel", useRef: (current: unknown) => ({ current }), useEffect: () => {},
+    useAppStore: (select: (value: unknown) => unknown) => select({ notify() {} }), skyObjectKindLabel, skyObjectIdentityLabel,
     Taro: { async navigateTo({ url }: { url: string }) { urls.push(url); } },
     productSourceNames: () => "IRSA",
     celestialInformationPartialDetail, celestialInformationSourceRoute,
@@ -91,12 +95,12 @@ test("the actual object modal sends its painted publication to both details and 
         aliases: [], facts: [], limitations: [], sources: [{ id: `imagery:published:${publicationHash}` }] } } }; },
   }) as (props: Record<string, unknown>) => any;
   const tree = render({ reference: "M:42", knownName: "M 42", knownKind: "NEBULA", imagePublicationHash: publicationHash,
-    opticalPublicationHash, onClose() {} });
+    opticalPublicationHash, onClose() {}, async openSourceRoute(url:string){urls.push(url);} });
   assert.deepEqual(Array.from(requests[0]!), ["M:42", true, publicationHash, opticalPublicationHash]);
   const stack = [tree];
   let button: any;
   while (stack.length) { const item = stack.pop(); if (Array.isArray(item)) stack.push(...item);
-    else if (item?.type === "SoftButton") { button = item; break; } else stack.push(...(item?.children ?? [])); }
+    else if (item?.type === "SkySourceLink") { button = item; break; } else stack.push(...(item?.children ?? [])); }
   assert.ok(button); button.props.onClick();
   await new Promise(resolve => setImmediate(resolve));
   assert.deepEqual(urls, [`/sky/sources/index?reference=M%3A42&imagePublicationHash=${publicationHash}&opticalPublicationHash=${opticalPublicationHash}`]);

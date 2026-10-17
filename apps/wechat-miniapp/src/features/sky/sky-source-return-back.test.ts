@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { skyHasDisclosure } from "./sky-disclosure-commands";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
   readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -36,6 +37,7 @@ test("hidden Sky releases native Back even while a selected object is retained",
   const selectedCatalogObject = { reference: "M:31", displayName: "仙女座星系" };
   const ownsBack = (pageVisible: boolean, datePickerOpen = false) => Boolean(vm.runInNewContext(code, {
     pageVisible, datePickerOpen, selectedTargetId: null, selectedCatalogObject, catalogPickChoices: [],
+    skyHasDisclosure, skyControlPanel: null, orientationObjectListOpen: false,
   }));
   assert.equal(ownsBack(true), true, "the visible object modal consumes Back");
   assert.equal(ownsBack(false), false, "the hidden Sky page must not consume Back on its source route");

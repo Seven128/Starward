@@ -9,11 +9,13 @@ import test from "node:test";
 import { Module } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { FastifyAdapter, type NestFastifyApplication } from "@nestjs/platform-fastify";
+import type { OpticalHipsRightsData } from "@starward/miniapp-contracts";
 import { MiniappController } from "./controller.ts";
 import { MiniappService } from "./miniapp-service.ts";
 import { OpticalHipsPublicationService } from "./optical-hips-publication.ts";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 import { createTestRuntimeConfig } from "./runtime-config.ts";
+import { assertPublicBinary, declaredPublicJson, publicOperationPath } from "./test-fixtures/public-operation-response.ts";
 
 const sha=(bytes:Buffer)=>createHash("sha256").update(bytes).digest("hex");
 async function fixture(order=8,pixel=43345){
@@ -71,25 +73,77 @@ test("same-origin HTTP exposes hash-bound shard metadata and unchanged tile byte
   try {
     await app.init();
     const http=app.getHttpAdapter().getInstance();
-    const manifest=await http.inject({method:"GET",url:"/v2/sky/optical/manifest"});
+    const manifest=await http.inject({method:"GET",url:publicOperationPath("opticalHipsManifestGet")});
     assert.equal(manifest.statusCode,200);
-    const publication=manifest.json();
-    const selected=await http.inject({method:"GET",url:`/v2/sky/optical/${publication.publicationHash}/manifest`});
+    const publication=declaredPublicJson("opticalHipsManifestGet",manifest);
+    assert.equal(publication.scope,"TRIAL");assert.equal(publication.shards.length,1);
+    const selected=await http.inject({method:"GET",url:publicOperationPath("opticalHipsVersionManifestGet",{publicationHash:publication.publicationHash})});
     assert.equal(selected.statusCode,200);assert.deepEqual(selected.json(),publication);
     assert.equal(selected.headers["cache-control"],"public, max-age=31536000, immutable");
+    assert.deepEqual(declaredPublicJson("opticalHipsVersionManifestGet",selected),publication);
     assert.equal((await http.inject({method:"GET",url:`/v2/sky/optical/${"0".repeat(64)}/manifest`})).statusCode,404);
     const index=await http.inject({method:"GET",url:publication.shards[0].indexUrl});
     assert.equal(index.statusCode,200);
-    const asset=index.json().tiles[0];
+    const shard=publication.shards[0]!;
+    assert.equal(shard.indexUrl,publicOperationPath("opticalHipsIndexGet",{publicationHash:publication.publicationHash,sourceId:shard.sourceId,order:shard.order,dir:shard.dir}));
+    const parsedIndex=declaredPublicJson("opticalHipsIndexGet",index),asset=parsedIndex.tiles[0]!;
+    assert.equal(parsedIndex.publicationHash,publication.publicationHash);assert.equal(parsedIndex.tiles.length,1);
     assert.equal(asset.sha256,sha(f.tile));
     const image=await http.inject({method:"GET",url:asset.downloadUrl});
     assert.equal(image.statusCode,200);
     assert.equal(image.headers["content-type"],"image/jpeg");
     assert.equal(image.headers["x-starward-image-source"],"ps1-dr1");
     assert.deepEqual(image.rawPayload,f.tile);
+    assert.equal(asset.downloadUrl,publicOperationPath("opticalHipsTileGet",{publicationHash:publication.publicationHash,sourceId:shard.sourceId,order:shard.order,pixel:asset.pixel}));
+    assertPublicBinary("opticalHipsTileGet",image,asset,sha);
+    const missingNotice=await http.inject({method:"GET",url:publicOperationPath("opticalHipsRightsGet",{publicationHash:publication.publicationHash})});
+    assert.equal(missingNotice.statusCode,404,"missing notices do not disable independently valid metadata or pixels");
     const absent=await http.inject({method:"GET",url:asset.downloadUrl.replace(publication.publicationHash,"0".repeat(64))});
     assert.equal(absent.statusCode,404);
   } finally {await app.close();}
+});
+
+test("rights discovery declares bare metadata and binds immutable notice bytes to the selected version",async()=>{
+  const f=await fixture(),root=f.service.manifest(),shard=root.shards[0]!;
+  const manifestBytes=await readFile(f.manifestPath),indexBytes=await readFile(join(f.root,shard.file));
+  const sourceProperties="Synthetic integrity fixture; no production permission or survey claim.\n";
+  const metadata=(file:string,bytes:Buffer)=>({file,bytes:bytes.length,sha256:sha(bytes),utf8:bytes.toString("utf8")});
+  const notice:OpticalHipsRightsData={schemaVersion:"starward-optical-hips-rights-v1",publicationHash:root.publicationHash,
+    scope:"TRIAL",offerChoice:"ODbL-1.0 4.6(b)",sources:[{sourceId:"ps1-dr1",
+      database:{title:"Synthetic test database",creator:"Test fixture",copyright:"Test fixture",doi:root.sources[0]!.hipsDoi,
+        license:"ODbL-1.0",licenseUrl:"https://opendatacommons.org/licenses/odbl/1-0/",
+        recordUrl:"https://example.invalid/fixture",notice:"Only exercises the integrity contract"},
+      originalContent:{copyright:"Test fixture",grantUrl:"https://example.invalid/fixture/rights",rights:"Synthetic test content",
+        acknowledgementUrl:"https://example.invalid/fixture/credit",acknowledgement:"Test fixture",sourceAcknowledgement:"Test fixture",
+        sourceProperties:{bytes:Buffer.byteLength(sourceProperties),sha256:sha(Buffer.from(sourceProperties)),utf8:sourceProperties}},
+      originalMaster:"https://example.invalid/fixture",sourceInstancePolicy:"Local test only"}],
+    alterations:{type:"Synthetic selected tile fixture",pixelBytes:"UNCHANGED",selectedTiles:[{sourceId:"ps1-dr1",order:8,pixel:43345,
+      originalUrl:"https://example.invalid/fixture/Norder8/Dir40000/Npix43345.jpg",sha256:sha(f.tile),bytes:f.tile.length,
+      localPublishedFile:"ps1-dr1/Norder8/Dir40000/Npix43345.jpg",
+      exactVersionDownloadUrl:publicOperationPath("opticalHipsTileGet",{publicationHash:root.publicationHash,sourceId:"ps1-dr1",order:8,pixel:43345})}],
+      completeResultMetadata:{manifest:metadata("manifest.json",manifestBytes),indexes:[metadata(shard.file,indexBytes)]},
+      reproductionMethod:["Use only the synthetic fixture bytes"]}};
+  const noticeBytes=Buffer.from(JSON.stringify(notice)),noticePath=join(f.root,"test-rights.json");
+  await writeFile(noticePath,noticeBytes);
+  const owner=new OpticalHipsPublicationService(pathToFileURL(f.manifestPath),{url:pathToFileURL(noticePath),sha256:sha(noticeBytes)});
+  const service=createTestMiniappService({opticalHips:owner});
+  class TestModule {}
+  Module({controllers:[MiniappController],providers:[{provide:MiniappService,useValue:service}]})(TestModule);
+  const app=await NestFactory.create<NestFastifyApplication>(TestModule,new FastifyAdapter(),{logger:false});
+  try{
+    await app.init();const http=app.getHttpAdapter().getInstance(),discovery=publicOperationPath("opticalHipsRightsGet",{publicationHash:root.publicationHash});
+    const response=await http.inject({method:"GET",url:discovery});assert.equal(response.statusCode,200);
+    const reference=declaredPublicJson("opticalHipsRightsGet",response);
+    assert.equal(reference.publicationHash,root.publicationHash);assert.equal(reference.bytes,noticeBytes.length);
+    assert.equal(reference.sha256,sha(noticeBytes));assert.equal(response.headers["cache-control"],"no-store");
+    assert.equal(reference.downloadUrl,publicOperationPath("opticalHipsRightsAssetGet",{publicationHash:root.publicationHash,offerHash:reference.sha256}));
+    const asset=await http.inject({method:"GET",url:reference.downloadUrl});assert.equal(asset.statusCode,200);
+    assert.deepEqual(asset.rawPayload,noticeBytes);assert.deepEqual(declaredPublicJson("opticalHipsRightsAssetGet",asset),notice);
+    assert.match(String(asset.headers["content-type"]),/^application\/json/u);
+    assert.equal(asset.headers["cache-control"],"public, max-age=31536000, immutable");
+    for(const route of [discovery.replace(root.publicationHash,"0".repeat(64)),reference.downloadUrl.replace(reference.sha256,"0".repeat(64))])
+      assert.equal((await http.inject({method:"GET",url:route})).statusCode,404,"no substitute edition or notice");
+  }finally{await app.close();}
 });
 
 test("order-zero publication serves only listed base pixels through the same HTTP boundary",async()=>{

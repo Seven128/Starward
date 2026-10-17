@@ -2,6 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { deepSkyRowByReference, loadDeepSkyCatalog, positionDeepSkyCatalog } from "./deep-sky-catalog.ts";
 
+test("the image supply batch resolves all native identities without changing retained catalog generations", () => {
+  const retained = loadDeepSkyCatalog("opengc-deep-sky.v20260501-extended-v1");
+  assert.equal(retained.rows.length, 52);
+  assert.equal(retained.catalogHash, "d57828454c7dfd2d1e2a6fe7570aa52b1366ab79374c4b2c461de768e361c849");
+  for (const reference of ["NGC:246", "NGC:300", "NGC:1232", "NGC:2359", "NGC:6744", "NGC:7293"]) {
+    assert(deepSkyRowByReference(reference), reference);
+    assert(!retained.rows.some(row => row.objectRef === reference));
+  }
+});
+
 test("OpenNGC Messier pack is exact, stable and keeps galaxy and nebula identities", () => {
   const catalog = loadDeepSkyCatalog();
   assert.equal(catalog.rows.length, 51);

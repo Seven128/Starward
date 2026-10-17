@@ -7,8 +7,10 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { skyResourceOriginTestOwner } from "./sky-resource-origin-test-support";
 import * as contracts from "@starward/miniapp-contracts";
 import { createSkyPublicImageCache } from "./sky-public-image-cache";
+import { skyNativeArrayBuffer } from "./sky-native-array-buffer";
 import { createSyntheticSdssSciencePublication } from "../../../../workers/miniapp-api/src/test-fixtures/sdss-science-publication.ts";
 import { createSyntheticPreparedOpticalPublication } from "../../../../workers/miniapp-api/src/test-fixtures/prepared-optical-publication.ts";
 
@@ -84,7 +86,8 @@ const compile = (file: string, bindings: Record<string, unknown>, source?: strin
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS,
   } }).outputText, { exports, ArrayBuffer, Uint8Array, DataView, Object, JSON, Error, setTimeout, clearTimeout, ...globals,
     __MINIAPP_API_BASE__: base,
-    require(name: string) { assert(name in bindings, `Unbound import ${name}`); return bindings[name]; } });
+    require(name: string) { if (name === "./sky-resource-origin" || name === "./sky-image-diagnostics") return skyResourceOriginTestOwner(base);
+      assert(name in bindings, `Unbound import ${name}`); return bindings[name]; } });
   return exports;
 };
 
@@ -135,11 +138,12 @@ function world(imageBytes = pngs) {
     return { abort() { request.aborts++; if (request.throwAbort) throw new Error("controlled_taro_abort_throw"); request.fail(); }, catch() {} };
   } };
   const runtime = compile("./sky-public-image-runtime.ts", { "@tarojs/taro": { default: Taro }, "@starward/miniapp-contracts": contracts,
+    "./sky-native-array-buffer": {skyNativeArrayBuffer},
     "./sky-public-image-cache": { createSkyPublicImageCache(deps: Parameters<typeof createSkyPublicImageCache>[0]) {
       const cache = createSkyPublicImageCache({ ...deps, cleanupWaitMs: 10 }); caches.push(cache); return cache;
     } },
   }, runtimeSource + "\nexport const readPendingMetadataListenersForTest = () => pendingDemands.size;", { AbortController: ControlledController });
-  const bare = compile("./bare-sky-resource.ts", { "@tarojs/taro": { default: Taro } }, undefined, { AbortController: ControlledController });
+  const bare = compile("./bare-sky-resource.ts", { "@tarojs/taro": { default: Taro }, "@starward/miniapp-contracts": contracts }, undefined, { AbortController: ControlledController });
   const client = compile("./sdss-optical-client.ts", { "@starward/miniapp-contracts": contracts, "./bare-sky-resource": bare,
     "./sdss-optical-publication": contracts }, undefined, { AbortController: ControlledController });
   const common = compile("./sky-publication-resource.ts", { "./sky-public-image-runtime": runtime }, undefined, { AbortController: ControlledController });

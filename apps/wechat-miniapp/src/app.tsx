@@ -1,4 +1,4 @@
-import Taro, { useLaunch } from "@tarojs/taro";
+import Taro, { useError, useLaunch, useUnhandledRejection } from "@tarojs/taro";
 import { QueryClientProvider } from "@tanstack/react-query";
 import type { PropsWithChildren } from "react";
 import { miniappQueryClient } from "@/services/query-client";
@@ -12,6 +12,8 @@ import { syncNativeChrome } from "@/theme/native-chrome";
 import { inspectAcceptanceSkyScene } from "@/services/acceptance-diagnostics";
 import { skyImageFileSession } from "@/services/sky-image-file-session";
 import { initializeSkyPublicImageCache } from "@/services/sky-public-image-runtime";
+import { reportRuntimeError } from "@/services/runtime-error";
+import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import "./app.scss";
 
 if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
@@ -108,24 +110,28 @@ if (__MINIAPP_ACCEPTANCE_DIAGNOSTICS__) {
 }
 
 export default function App({ children }: PropsWithChildren) {
+  useError(error => reportRuntimeError("native", "native_uncaught_error", error));
+  useUnhandledRejection(({ reason }) => {
+    if (!isMiniappRequestCancelled(reason)) reportRuntimeError("runtime", "unhandled_rejection", reason);
+  });
   useLaunch(() => {
     try {
       void skyImageFileSession.removePreviousFiles(Taro.getFileSystemManager(), Taro.env.USER_DATA_PATH).then(result => {
-        if (result.status !== "complete") console.warn("sky_image_file_cleanup_incomplete", result);
+        if (result.status !== "complete") reportRuntimeError("native", "sky_image_file_cleanup_incomplete");
       });
-    } catch {
-      console.warn("sky_image_file_cleanup_incomplete", { status: "unavailable" });
+    } catch (error) {
+      reportRuntimeError("native", "sky_image_file_cleanup_incomplete", error);
     }
     try {
-      void initializeSkyPublicImageCache().catch(() => {
-        console.warn("sky_public_image_cache_initialize_failed", { status: "unavailable" });
+      void initializeSkyPublicImageCache().catch(error => {
+        reportRuntimeError("native", "sky_public_image_cache_initialize_failed", error);
       });
-    } catch {
-      console.warn("sky_public_image_cache_initialize_failed", { status: "unavailable" });
+    } catch (error) {
+      reportRuntimeError("native", "sky_public_image_cache_initialize_failed", error);
     }
     void syncNativeChrome(useAppStore.getState().mode).catch(
       (error: unknown) => {
-        console.warn("launch_native_chrome_sync_failed", error);
+        reportRuntimeError("native", "launch_native_chrome_sync_failed", error);
       },
     );
   });

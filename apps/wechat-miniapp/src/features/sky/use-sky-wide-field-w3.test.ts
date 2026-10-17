@@ -12,6 +12,7 @@ import {createSkyViewBasis} from "./sky-view-projection";
 import {drawSkyScene,type SkyHipsCanvasTile} from "./sky-scene-render";
 import type {ResolvedSkyReport} from "./sky-stellar-scene";
 import type {SkyRenderSurface} from "./sky-render-surface";
+import {skyImageRecoveryTestOwner} from './sky-image-recovery-test-support';
 
 const at="2026-09-23T00:00:00.000Z";
 const frame:SkyObservationFrame={format:OBSERVATION_FRAME_FORMAT,at,
@@ -32,6 +33,7 @@ function harness(){
   const hook=vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export /u,"")+"\nuseSkyWideFieldW3;",
     {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{
     useMemo:(factory:()=>unknown)=>factory(),useEffect:(effect:()=>void)=>effect(),
+    useSkyImageRecovery:skyImageRecoveryTestOwner().useSkyImageRecovery,
     useResourceQuery:()=>({data:publication,isFetching:false,isError:false,refreshError:null}),
     getWideFieldW3Manifest(){},wideFieldW3TileUrl:(url:string)=>url,
     exactSkyObservationFrame,skySolarLightAt,selectSkyHipsTiles,skyHipsTileIntersectsView,

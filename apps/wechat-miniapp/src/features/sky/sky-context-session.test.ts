@@ -6,27 +6,36 @@ import ts from "typescript";
 import { createSkyContextSession } from "./sky-context-session.ts";
 import { createSkyObservationTime } from "./sky-observation-time.ts";
 import { presentSkyTime } from "./sky-time-presentation.ts";
+import { createSkyTimeCommitContinuity } from "./sky-time-commit-continuity";
+import { skyForecastPresentation } from "../../services/forecast-presentation";
 import type { ObservationContext } from "@starward/miniapp-contracts";
 
 const source = ts.createSourceFile("sky.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const page = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotSkyPage") as ts.FunctionDeclaration;
 const statements = page.body!.statements;
-const commands = statements.filter(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(d => ["commitInstant", "commitIndex", "commitCivilDate"].includes(d.name.getText(source))));
+const commands = statements.filter(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(d =>
+  ["skyInteractionRevision", "skyPageVisibleCurrent", "skyInteractionCurrent", "skyTimeIntentCurrent", "commitInstant", "commitIndex", "commitCivilDate"].includes(d.name.getText(source))));
 const lookupEffect = statements.find(node => ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) && node.expression.expression.getText(source) === "useEffect" && node.expression.arguments[0]?.getText(source).includes("contextLookup.data?.data"))!;
 const compile = (text: string) => ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
 const commandCode = compile(commands.map(node => node.getText(source)).join("\n") + "\n({commitIndex, commitCivilDate});");
 
-const context = (id = "ctx:a", revision = 1) => ({ contextId: id as ObservationContext["contextId"], revision, contextFingerprint: `${id}:${revision}`, timezone: "Asia/Shanghai", selectedAtUtc: "2026-09-15T12:00:00Z" });
+const context = (id = "ctx:a", revision = 1) => ({ contextId: id as ObservationContext["contextId"], revision, contextFingerprint: `${id}:${revision}`, timezone: "Asia/Shanghai", selectedAtUtc: "2026-09-15T12:00:00.000Z" });
 function harness(initial = context()) {
   let state = { observationContext: initial as ReturnType<typeof context> | null, selectedSpotId: "spot:a", mapResetVersion: 0, spotOpenRequestVersion: 0 };
   const session = createSkyContextSession("ctx:a", () => state);
   const requests: { resolve: (value: { data: ReturnType<typeof context> }) => void; reject: (error: Error) => void }[] = [];
   const writes: unknown[] = [], notifications: unknown[] = [], saving: boolean[] = [];
+  const observationTime = createSkyObservationTime();
+  const timeBinding = `${initial.contextId}:${initial.revision}:${initial.contextFingerprint}`;
+  observationTime.bind(timeBinding, initial.selectedAtUtc, null);
   const sandbox = {
     alignmentMode: "auto",
     orientationController: { snapshot: () => ({ alignment: { mode: sandbox.alignmentMode } }) },
-    activeContext: initial, timeSaving: false, rawReportData: { hourly: [{ at: "2026-09-15T13:00:00Z" }] },
-    presentSkyTime, observationTime: createSkyObservationTime(), setTimeIntent: () => {},
+    activeContext: initial, timeSaving: false, rawReportData: { hourly: [{ at: "2026-09-15T13:00:00.000Z" }] },
+    pageVisible: true, viewportActiveRef: { current: true }, viewportMountedRef: { current: true }, contextComplete: true,
+    timeBinding, datePickerOpenRef: { current: false }, cancelSkyCalibration: () => {},
+    presentSkyTime, observationTime, setTimeIntent: () => {},
+    timeCommitContinuity: createSkyTimeCommitContinuity(skyForecastPresentation), report: { data: undefined }, routeContext: { spotId: "spot:a" },
     committedAt: initial.selectedAtUtc, selectedCivilDate: "2026-09-15", contextSession: session,
     clampIndex: () => 0, setTimeSaving: (value: boolean) => saving.push(value),
     setPreviewIndex: () => {}, setDatePickerOpen: () => {},
@@ -114,26 +123,66 @@ test("hide cancels old requests but allows a fresh request after return", () => 
   assert.equal(h.session.finish(current), true);
 });
 
+test("visibility revision is idempotent while hidden and fences retired cleanup after return", () => {
+  const h = harness(), first = h.session.visibilityRevision;
+  assert.equal(h.session.canRetireInteraction(first), true);
+  h.session.hide(); h.session.hide();
+  assert.equal(h.session.visibilityRevision, first + 1);
+  assert.equal(h.session.canRetireInteraction(first), true, "current hide still allows its own cancellation");
+  h.session.show();
+  assert.equal(h.session.canRetireInteraction(first), false);
+  const returned = h.session.visibilityRevision;
+  assert.equal(h.session.canRetireInteraction(returned), true);
+  h.session.hide();
+  assert.equal(h.session.canRetireInteraction(first), false, "a second hide cannot revive the earlier cleanup");
+  assert.equal(h.session.canRetireInteraction(returned), true);
+});
+
+test('new Context requests cannot begin after the owning location selection was replaced or reset',()=>{
+  for(const field of ['selectedSpotId','mapResetVersion','spotOpenRequestVersion'] as const){
+    let state={observationContext:context(),selectedSpotId:'spot:a',mapResetVersion:0,spotOpenRequestVersion:0};
+    const session=createSkyContextSession('ctx:a',()=>state);
+    state={...state,[field]:field==='selectedSpotId'?'spot:b':1};
+    assert.equal(session.begin(context()),null,`${field} changed before observationContext caught up`);
+  }
+});
+
 test("actual page lifecycle hooks cancel publishing and reset the visible saving state", () => {
+  const lifecycle = statements.filter(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(d =>
+    ["hideSkyPage", "showSkyPage"].includes(d.name.getText(source))) || ts.isExpressionStatement(node) &&
+    /^(hideSkyPageRef|showSkyPageRef)\.current\s*=/.test(node.getText(source)));
   const hooks = statements.filter(node => ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) &&
     ["useDidHide", "useDidShow", "useEffect"].includes(node.expression.expression.getText(source)) &&
-    /contextSession\.(show|hide)\(/.test(node.expression.arguments[0]?.getText(source) ?? "") &&
+    (/contextSession\.(show|hide)\(/.test(node.expression.arguments[0]?.getText(source) ?? "") ||
+      node.expression.expression.getText(source) !== "useEffect" &&
+      /(hideSkyPageRef|showSkyPageRef)\.current/.test(node.expression.arguments[0]?.getText(source) ?? "")) &&
     !node.expression.arguments[0]?.getText(source).includes("contextLookup") &&
     !node.expression.arguments[0]?.getText(source).includes("restoreObservationContext"));
   const h = harness(); let hide = () => {}, show = () => {}, dispose = () => {};
   const visible: boolean[] = [], saving: boolean[] = [], returning: boolean[] = [];
   const sourceReturnRef = { current: true };
-  vm.runInNewContext(compile(hooks.map(node => node.getText(source)).join("\n")), {
+  const skyDisplaySettingsPendingRef = { current: {} as object | null };
+  let calibrationCancelled = 0;
+  vm.runInNewContext(compile([...lifecycle, ...hooks].map(node => node.getText(source)).join("\n")), {
     contextSession: h.session, setPageVisible: (value: boolean) => visible.push(value),
+    cancelSkyCalibration: () => { calibrationCancelled++; },
     observationTime: h.sandbox.observationTime, setTimeIntent: () => {},
     setTimeSaving: (value: boolean) => saving.push(value), setPreviewIndex: () => {},
     sourceReturnRef, setSourceReturn: (value: boolean) => returning.push(value),
+    hideSkyPageRef:{current:()=>{}},showSkyPageRef:{current:()=>{}},
+    viewportActiveRef:h.sandbox.viewportActiveRef,viewportMountedRef:h.sandbox.viewportMountedRef,
+    viewportMeasurementRevision:{current:0},opticalSourcesOpeningRef:{current:null},skyReturnPendingRef:{current:null},
+    orientationSettingsOpeningRef:{current:null}, skyDisplaySettingsPendingRef,
+    skyTapRef:{current:null},cancelSkyGestureRef:{current:()=>{}},stopBrowsingAnimation:()=>{},hideCompass:()=>{},showCompass:()=>{},
+    measureBottomControls:()=>{},canvasLifecycle:{hide:()=>{}},
     useDidHide: (fn: () => void) => { hide = fn; }, useDidShow: (fn: () => void) => { show = fn; },
     useEffect: (fn: () => () => void) => { dispose = fn(); },
   });
   const old = h.session.begin(context())!; hide();
+  assert.equal(calibrationCancelled, 1, "hiding also retires a pending normal-scale calibration action");
   assert.equal(h.session.isCurrent(old), false); assert.deepEqual(visible, [false]); assert.deepEqual(saving, [false]);
   show(); assert.equal(sourceReturnRef.current, false); assert.deepEqual(returning, [false]);
+  assert.equal(skyDisplaySettingsPendingRef.current, null, "return clears stale display Settings navigation");
   const next = h.session.begin(context())!; assert.ok(next); dispose();
   assert.equal(h.session.isCurrent(next), false);
 });
@@ -142,13 +191,14 @@ test("the actual active Context and weather query follow a successful recovered 
   const h = harness(); const pending = h.actions.commitCivilDate("2026-09-16");
   const recovered = { ...context("ctx:recovered", 2), localDate: "2026-09-16", location: { kind: "FORMAL_SPOT", spotId: "spot:a" } };
   h.requests[0]!.resolve({ data: recovered }); await pending;
-  const names = ["activeContext", "proposalRoute", "contextLocationMatches", "contextComplete", "reportQuery"];
+  const names = ["routeContextComplete", "activeContext", "proposalRoute", "contextLocationMatches", "contextComplete", "reportQuery"];
   const declarations = statements.filter(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(d => names.includes(d.name.getText(source))));
   const requests: string[] = [];
   vm.runInNewContext(compile(declarations.map(node => node.getText(source)).join("\n")), {
     contextSession: h.session, storedContext: h.state().observationContext, contextLookup: { data: { data: context() } },
     routeContext: { contextId: "ctx:a", spotId: "spot:a", localDate: "2026-09-15", selectedAt: "2026-09-15T12:00:00Z", timezone: "Asia/Shanghai", dataRevision: "initial" },
     pageVisible: true, WEATHER_ALERT_REFRESH_MS: 300000,
+    useMemo: (compute: () => unknown) => compute(),
     isDate: () => true, isSelectedAt: () => true, validTimezone: () => true, observationDateFor: () => "2026-09-15",
     getSkyReport: (_spot: string, id: string) => { requests.push(id); },
     useSkyForecastQuery: (options: { enabled: boolean; queryFn: () => void }) => { if (options.enabled) options.queryFn(); return {}; },

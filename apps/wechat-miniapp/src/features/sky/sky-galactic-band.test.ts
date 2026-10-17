@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { OBSERVATION_FRAME_FORMAT,MELLINGER_OPTICAL_MILKY_WAY,type OpticalMilkyWayManifestData } from "@starward/miniapp-contracts";
-import { galacticEquirectUv,skyGalacticBandAt,skyGalacticImageBand } from "./sky-galactic-band";
+import { galacticEquirectUv,skyGalacticBandAt,skyGalacticImageBand,skyGalacticImageBandAt } from "./sky-galactic-band";
 import { drawSkyScene } from "./sky-scene-render";
 import type { SkyRenderSurface } from "./sky-render-surface";
 import type { ResolvedSkyReport } from "./sky-stellar-scene";
@@ -43,13 +43,29 @@ const opticalPublication:OpticalMilkyWayManifestData={schemaVersion:"starward-me
   scientificAvailability:"UNKNOWN",absoluteRegistration:"UNVERIFIED",processing:"Unmodified bitmap.",
   limitations:["Producer processing unknown.","Not a general regional background."]};
 
+test("cold narrow discovery and known optical demand share exact night eligibility, without changing old IR demand",()=>{
+  // A discriminator fixture only: publication validation belongs to the client.
+  const infrared={schemaVersion:"starward-2mass-galactic-v1"} as Parameters<typeof skyGalacticImageBandAt>[3];
+  for(const fov of [4,9,18,90,240]){
+    assert.equal(skyGalacticImageBandAt(report(-24),at,fov)!.strength,1);
+    const optical:NonNullable<ReturnType<typeof skyGalacticImageBandAt>>=skyGalacticImageBandAt(report(-24),at,fov,opticalPublication)!;
+    assert.equal(optical.strength,1);
+    assert.equal(optical.schematicStrength,skyGalacticBandAt(report(-24),at,fov)?.strength??0);
+    assert.deepEqual(skyGalacticImageBandAt(report(-24),at,fov,infrared),skyGalacticBandAt(report(-24),at,fov));
+  }
+  for(const fov of [NaN,Infinity,0,-1])assert.equal(skyGalacticImageBandAt(report(-24),at,fov),null);
+  assert.equal(skyGalacticImageBandAt(undefined,at,4),null);
+  assert.equal(skyGalacticImageBandAt(report(-24),later,4),null);
+  assert.equal(skyGalacticImageBandAt(report(-12),at,4),null);
+});
+
 test("optical axes follow exact time without turning a failed image into an equatorial schematic",()=>{
   const normal=skyGalacticBandAt(report(-24),at,90)!,rotated=skyGalacticBandAt(report(-24,quarterTurn),at,90)!;
   const optical=skyGalacticImageBand(report(-24),at,normal,opticalPublication)!;
   assert.deepEqual(optical.pole,normal.pole);assert.deepEqual(optical.center,normal.center);
-  assert.deepEqual(optical.imageProjection,{pole:[0,0,1],center:[0,-1,0],smoothInfraredPointSources:false});
+  assert.deepEqual(optical.imageProjection,{pole:[0,0,1],center:[0,-1,0],smoothInfraredPointSources:false,display:"optical"});
   assert.deepEqual(skyGalacticImageBand(report(-24,quarterTurn),at,rotated,opticalPublication)!.imageProjection,
-    {pole:[0,0,1],center:[1,0,0],smoothInfraredPointSources:false});
+    {pole:[0,0,1],center:[1,0,0],smoothInfraredPointSources:false,display:"optical"});
   assert.equal(skyGalacticImageBand(report(-24),later,normal,opticalPublication),null);
   for(const [ra,dec] of [[10.6847083,41.26875],[83.8220833,-5.3911111],[0,-89.9],[359.9,89.9]]){
     const r=ra!*Math.PI/180,d=dec!*Math.PI/180;
@@ -76,6 +92,31 @@ test("a successful schematic cannot publish a loaded but undrawn optical bitmap 
   assert.strictEqual((sources as any).galacticImage.publication,opticalPublication);
   args[21]=[{layer:"WIDE_FIELD_W3",order:0,pixel:0,image:{}}];drawSkyScene(...args);
   assert.equal((sources as any).galacticImage,null,"W3 cannot retain the replaced optical source");
+});
+
+test("optical panorama survives narrow zoom while night, exact frame, W3 and image completion still govern it",()=>{
+  const image={id:"optical"},calls:any[]=[];let sources:any,paintImage=true;
+  const surface=new Proxy({}, {get:(_target,key)=>key==="galacticBand"
+    ? (_view:unknown,band:unknown,input:object|null,painted?:(image:object)=>void)=>{
+      calls.push({band,input});if(paintImage&&input)painted?.(input);return true;
+    } : ()=>undefined}) as SkyRenderSurface;
+  const args:Parameters<typeof drawSkyScene>=[surface,report(-24),at,null,null,400,800,"NIGHT",
+    (_snapshot,value)=>{sources=value;},undefined,4,null,basis];
+  args[26]=image;args[39]=opticalPublication;
+  drawSkyScene(...args);
+  assert.equal(calls.length,1,"narrow optical display must reach the actual renderer");
+  assert.equal(calls[0].band.strength,1);assert.equal(calls[0].band.schematicStrength,0);
+  assert.strictEqual(sources.galacticImage.image,image);
+  calls.length=0;paintImage=false;drawSkyScene(...args);
+  assert.equal(sources.galacticImage,null,"submission is not a painted source");
+  for(const override of [{26:null},{21:[{layer:"WIDE_FIELD_W3",order:0,pixel:0,image:{}}]},
+    {7:"OBSERVATION"},{1:report(-12)},{2:later},{39:undefined}]){
+    calls.length=0;const suppressed=args.slice();Object.assign(suppressed,override);
+    drawSkyScene(...suppressed as Parameters<typeof drawSkyScene>);
+    assert.equal(calls.length,0);assert.equal(sources.galacticImage,null);
+  }
+  calls.length=0;args[1]=report(-15);drawSkyScene(...args);
+  assert.equal(calls[0].band.strength,.5,"twilight still uses the exact solar altitude");
 });
 
 test("schematic failure still finishes the independent scene with default grids off",()=>{

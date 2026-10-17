@@ -141,6 +141,16 @@ export function normalizedPoint(x, y, size) {
   return [Math.round(x * (size.width - 1)), Math.round(y * (size.height - 1))];
 }
 
+export function screenGestureArguments(action, values, size) {
+  if (action === "tap") return ["tap", ...normalizedPoint(...values, size)];
+  if (action === "swipe") {
+    const [x1, y1, x2, y2, ms] = values;
+    if (!Number.isInteger(ms) || ms < 100 || ms > 2000) fail("swipe_duration_invalid");
+    return ["swipe", ...normalizedPoint(x1, y1, size), ...normalizedPoint(x2, y2, size), ms];
+  }
+  fail("unsupported_input");
+}
+
 function isTransientForegroundRecheckFailure(error) {
   return error?.message === "device_test_tool_failed";
 }
@@ -159,7 +169,7 @@ async function recheckForeground(device, activity, options) {
 
 export class AdbDevice {
   constructor(file, run = runTool, wait = defaultWait) { this.file = file; this.run = run; this.wait = wait; }
-  async invoke(args) { return this.run(this.file, args); }
+  async invoke(args, options) { return this.run(this.file, args, options); }
   async doctor({ transport = "usb" } = {}) {
     const version = (await this.invoke(["version"])).toString().match(/Android Debug Bridge version ([\d.]+)/u)?.[1] ?? "unknown";
     const summary = deviceSummary((await this.invoke(["devices", "-l"])).toString());
@@ -219,7 +229,7 @@ export class AdbDevice {
     this.identity = `transport:${matches[0]}:${devpath}`;
     return this.identity;
   }
-  async command(args) {
+  async command(args, { beforeInvoke, ...options } = {}) {
     if (!this.selector || !this.identity) fail("transport_not_selected");
     if (this.transport === "wireless") {
       let state;
@@ -233,7 +243,10 @@ export class AdbDevice {
       const currentPath = (await this.invoke([...this.selector, "get-devpath"])).toString().trim();
       if (currentPath !== this.transportPath) fail("device_changed_capture_again");
     }
-    return this.invoke([...this.selector, ...args]);
+    // Optional synchronous cancellation is checked after transport work,
+    // immediately before launching the command, without another await.
+    beforeInvoke?.();
+    return this.invoke([...this.selector, ...args], options);
   }
   async foreground(options) {
     const activity = foregroundActivity((await this.command(["shell", "dumpsys", "activity", "activities"])).toString(), options);
@@ -253,7 +266,7 @@ export class AdbDevice {
     await recheckForeground(this, activity, { permissionScope });
     return { bytes, size, activity, permissionScope };
   }
-  async input(action, values, capture) {
+  async input(action, values, capture, { beforeSend } = {}) {
     const permissionScope = capture.permissionScope ?? "none";
     if (permissionScope !== "none" && !["tap", "back"].includes(action)) fail("permission_input_invalid");
     const activity = await this.foreground({ permissionScope });
@@ -262,12 +275,8 @@ export class AdbDevice {
     const current = await this.screenshot({ permissionScope });
     if (current.size.width !== capture.size.width || current.size.height !== capture.size.height) fail("display_changed");
     let args;
-    if (action === "tap") args = ["tap", ...normalizedPoint(...values, current.size)];
-    else if (action === "swipe") {
-      const [x1, y1, x2, y2, ms] = values;
-      if (!Number.isInteger(ms) || ms < 100 || ms > 2000) fail("swipe_duration_invalid");
-      args = ["swipe", ...normalizedPoint(x1, y1, current.size), ...normalizedPoint(x2, y2, current.size), ms];
-    } else if (action === "text") {
+    if (action === "tap" || action === "swipe") args = screenGestureArguments(action, values, current.size);
+    else if (action === "text") {
       // Android's remote shell joins arguments. Admit bounded public queries only;
       // reject shell syntax and literal %s before encoding spaces for input text.
       const [value] = values;
@@ -282,6 +291,6 @@ export class AdbDevice {
       return;
     } else if (action === "back") args = ["keyevent", "KEYCODE_BACK"];
     else fail("unsupported_input");
-    await this.command(["shell", "input", ...args.map(String)]);
+    await this.command(["shell", "input", ...args.map(String)], { beforeInvoke: beforeSend });
   }
 }

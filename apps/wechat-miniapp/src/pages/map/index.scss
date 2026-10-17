@@ -6,6 +6,18 @@
   flex-direction: column;
 }
 
+.map-sky-entry-shield {
+  position: fixed;
+  inset: 0;
+  z-index: 1201;
+  background: #000;
+  pointer-events: auto;
+  animation: map-sky-entry-blackout 220ms ease both;
+}
+@keyframes map-sky-entry-blackout { from { opacity: 0; } to { opacity: 1; } }
+.reduced-motion .map-sky-entry-shield { animation: none; }
+@media (prefers-reduced-motion: reduce) { .map-sky-entry-shield { animation: none; } }
+
 // Keep transient notices clear of the map's search entry and right-hand tools.
 // The shared host still owns safe-area metrics, visibility and expiry.
 .map-page .notification-host {

@@ -1,11 +1,20 @@
-import { sha256 } from "@noble/hashes/sha2.js";
-import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils.js";
+import { utf8ContentIntegrity } from "./utf8-content-integrity.ts";
 
 /** Shared publication content; each producer owns its physical meaning and
  * removes only its own transport envelope before hashing. */
 export const OPTICAL_IMAGE_LEVELS = ["OVERVIEW", "MEDIUM", "DETAIL"] as const;
 export type OpticalImageLevel = typeof OPTICAL_IMAGE_LEVELS[number];
 export interface OpticalContentIdentity { bytes: number; sha256: string }
+export interface OpticalUtf8ContentIdentity extends OpticalContentIdentity { utf8: string }
+export function opticalUtf8ContentIdentity(utf8: string): OpticalUtf8ContentIdentity {
+  return { ...utf8ContentIntegrity(utf8), utf8 };
+}
+export function isOpticalUtf8ContentIdentity(value: unknown): value is OpticalUtf8ContentIdentity {
+  const row = value as OpticalUtf8ContentIdentity | null;
+  if (!isOpticalContentIdentity(row) || typeof row.utf8 !== "string") return false;
+  const actual = opticalUtf8ContentIdentity(row.utf8);
+  return row.bytes === actual.bytes && row.sha256 === actual.sha256;
+}
 export type OpticalRecipeValue = null | boolean | number | string | OpticalRecipeValue[] |
   { [key: string]: OpticalRecipeValue };
 
@@ -44,5 +53,5 @@ function canonical(value: OpticalRecipeValue): string {
 
 export function opticalPublicationContentHash(value: unknown): string {
   if (!isOpticalRecipeValue(value)) throw new Error("optical_publication_json_invalid");
-  return bytesToHex(sha256(utf8ToBytes(canonical(value))));
+  return utf8ContentIntegrity(canonical(value)).sha256;
 }

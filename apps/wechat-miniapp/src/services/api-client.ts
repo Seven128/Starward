@@ -1,9 +1,6 @@
 import { createAccountProfileClient } from "./account-profile-client";
 import { createSpotEnvironmentClient } from "./spot-environment-client";
 import { projectAdoptedSkyCatalog } from "./sky-report-catalog";
-import { createStellarCatalogClient } from "./stellar-catalog-client";
-import { createSaoCatalogClient } from "./sao-catalog-client";
-import { createConstellationCatalogClient } from "./constellation-catalog-client";
 import { matchingCelestialSearchResponse } from "./celestial-search-response";
 import { matchingCelestialInformationResponse } from "./celestial-information-response";
 import { matchingCelestialPositionResponse, type CelestialPositionBinding } from "./celestial-position-response";
@@ -22,12 +19,9 @@ import { contributionDraftBelongsTo, planDraftBelongsTo, profileDraftBelongsTo }
 import { contributionSubmitBelongsTo, createContributionSubmitRetry } from "./contribution-submit-retry";
 import { clearProfileSaveRecovery, createProfileLinkRetry, profileSaveBelongsTo } from "./profile-link-retry";
 import {
-  MINIAPP_API_BASE_PATH,
-  CONSTELLATION_CATALOG_VERSION,
   isCelestialObjectReference,
-  isDeepSkyObjectReference, EXTENDED_DEEP_SKY_CATALOG_VERSION,
+  isDeepSkyObjectReference, CURRENT_DEEP_SKY_CATALOG_VERSION,
   DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION,
-  SDSS_OPTICAL_PUBLICATIONS,
   SKY_LUMINARY_CATALOG_VERSION,
   MINIAPP_API_OPERATIONS,
   type ApiEnvelope,
@@ -61,7 +55,7 @@ import {
   type UserPreferences,
 } from "@starward/miniapp-contracts";
 import { localFailureMessage } from "@/utils/presentation";
-import { confirmedObservationContextEdit, observationContextRecoveryInput } from "./observation-context-recovery";
+import { confirmedObservationContextEdit, observationContextRecoveryInput, type ConfirmedObservationContextReply } from "./observation-context-recovery";
 import {
   invalidationPolicy,
   isTemporaryCacheKey,
@@ -70,8 +64,9 @@ import {
 } from "./cache-policy";
 import { recordAcceptanceDiagnostic } from "./acceptance-diagnostics";
 import { createDeviceFailureReporter } from "./device-request-diagnostic";
+import { reportRuntimeError } from "./runtime-error";
 import { miniappQueryClient } from "./query-client";
-import { clearSkyPublicImageCache, capturePublishedSkyImageGeneration, readPublishedSkyJson } from "./sky-public-image-runtime";
+import { clearSkyPublicImageCache } from "./sky-public-image-runtime";
 import { useAppStore } from "@/state/app-store";
 import { createResponseCache, isResponseEnvelope, MAX_STALE_AGE_MS, type CachedResponse } from "./response-cache";
 import { createMutationRetry } from "./mutation-retry";
@@ -334,7 +329,8 @@ async function request<T>(
       if (abort) {
         try {
           abortTask(task);
-        } catch {
+        } catch (error) {
+          reportRuntimeError("native", "bff_transport_abort_failed", error);
           recordAcceptanceDiagnostic(key, "failure", "transport_abort_failed");
         }
       }
@@ -374,7 +370,8 @@ async function request<T>(
     if (options.reauthenticationCode)
       header["X-Wechat-Reauth-Code"] = options.reauthenticationCode;
 
-    const transportFallback = (failure: string, error: Error) => {
+    const transportFallback = (failure: string, error: Error, stage: "transport" | "watchdog" | "dispatch") => {
+      reportRuntimeError("request", `bff_${stage}_failed`, error, { stage });
       const stale = staleCandidate<T>(cached && responseCache.isCurrent(exactCacheKey, cached, cacheFence) ? cached : undefined, failure);
       if (stale) {
         recordAcceptanceDiagnostic(key, "success", "stale_real_response");
@@ -398,7 +395,8 @@ async function request<T>(
         if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("transport", error);
         transportFallback(
           "连接失败，请联网后刷新。",
-          new Error(message),
+          Object.assign(new Error(message), { cause: error }),
+          "transport",
         );
       });
     };
@@ -410,6 +408,7 @@ async function request<T>(
         transportFallback(
           "请求超时，请联网后刷新。",
           new Error("bff_request_timeout"),
+          "watchdog",
         );
       }, true);
     }, 12_000);
@@ -438,7 +437,9 @@ async function request<T>(
             if (response.statusCode >= 200 && response.statusCode < 300) {
               if (!isEnvelope(response.data)) {
                 if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("contract", undefined, response.statusCode);
-                reject(new Error("bff_response_contract_invalid"));
+                const error = new Error("bff_response_contract_invalid");
+                reportRuntimeError("request", "bff_response_contract_invalid", error, { stage: "contract", status: response.statusCode });
+                reject(error);
                 return;
               }
               const envelope = response.data as ApiEnvelope<T>;
@@ -454,11 +455,10 @@ async function request<T>(
             }
             if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("http", undefined, response.statusCode);
             recordAcceptanceDiagnostic(key, "failure", `http_${response.statusCode}`);
-            if (isApiError(response.data)) {
-              reject(new MiniappApiError(response.data, response.statusCode));
-              return;
-            }
-            reject(new Error("bff_http_" + response.statusCode));
+            const error = isApiError(response.data) ? new MiniappApiError(response.data, response.statusCode)
+              : new Error("bff_http_" + response.statusCode);
+            reportRuntimeError("request", "bff_http_failed", error, { stage: "http", status: response.statusCode });
+            reject(error);
           });
         },
         fail: transportFailure,
@@ -472,7 +472,8 @@ async function request<T>(
         if (__MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__) reportDeviceFailure?.("dispatch", error);
         transportFallback(
           "请求未能发出，请联网后刷新。",
-          error instanceof Error ? error : new Error(String(error)),
+          error instanceof Error ? error : Object.assign(new Error("bff_request_dispatch_failed"), { cause: error }),
+          "dispatch",
         );
       });
     }
@@ -544,7 +545,7 @@ async function invalidateAfter(mutation: MiniappMutationKind) {
   );
 }
 
-const requestOperation = createAuthenticatedOperationRequester({ resolveSession, readStoredSession, clearStoredSession, request,
+export const requestOperation = createAuthenticatedOperationRequester({ resolveSession, readStoredSession, clearStoredSession, request,
   isPermissionDenied: error => error instanceof MiniappApiError && error.code === "PERMISSION_DENIED",
 });
 
@@ -750,7 +751,7 @@ export async function updateObservationContext(
   invalidateApiCache("map-scene");
   invalidateApiCache("spot-overview");
   invalidateApiCache("spot-sky");
-  return result;
+  return result as ConfirmedObservationContextReply;
 }
 
 export function searchPlaces(
@@ -930,7 +931,7 @@ export function getSkyReport(
     auth: spotId.startsWith("contribution:") ? "REQUIRED" : "NONE",
     pathParams: { spotId },
     query: "contextId=" + encodeURIComponent(contextId) + "&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION +
-      "&deepSkyCatalogVersion=" + encodeURIComponent(EXTENDED_DEEP_SKY_CATALOG_VERSION),
+      "&deepSkyCatalogVersion=" + encodeURIComponent(CURRENT_DEEP_SKY_CATALOG_VERSION),
     ...(signal ? { signal } : {}),
   }).then(projectAdoptedSkyCatalog);
 }
@@ -988,7 +989,7 @@ export function searchCelestialObjects(query: string, signal?: AbortSignal) {
   const key = "celestial-search:v5:extended:" + query.trim();
   return requestOperation(key, "celestialObjectSearchGet", {
     query: "q=" + encodeURIComponent(query.trim()) + "&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION + "&luminaryCatalogVersion=" + encodeURIComponent(SKY_LUMINARY_CATALOG_VERSION) +
-      "&deepSkyCatalogVersion=" + encodeURIComponent(EXTENDED_DEEP_SKY_CATALOG_VERSION),
+      "&deepSkyCatalogVersion=" + encodeURIComponent(CURRENT_DEEP_SKY_CATALOG_VERSION),
     ...(signal ? { signal } : {}),
   }).then(response => {
     try { return matchingCelestialSearchResponse(response, query); }
@@ -1009,63 +1010,12 @@ export function getCelestialObjectPosition(binding: CelestialPositionBinding,
     auth: binding.spotId.startsWith("contribution:") ? "REQUIRED" : "NONE",
     pathParams: { spotId: binding.spotId, reference: binding.reference },
     query: `contextId=${encodeURIComponent(binding.contextId)}&at=${encodeURIComponent(binding.at)}&catalogVersion=${ADOPTED_SKY_REPORT_CATALOG_VERSION}` +
-      "&deepSkyCatalogVersion=" + encodeURIComponent(EXTENDED_DEEP_SKY_CATALOG_VERSION),
+      "&deepSkyCatalogVersion=" + encodeURIComponent(CURRENT_DEEP_SKY_CATALOG_VERSION),
     ...(signal ? { signal } : {}),
   }).then(response => {
     try { return matchingCelestialPositionResponse(response, binding, catalog); }
     catch (error) { invalidateApiCache(key + ":"); throw error; }
   });
-}
-
-export const getStellarCatalog = createStellarCatalogClient({
-  request: (reference, signal) => requestOperation(
-    `stellar-catalog:${reference.catalogVersion}:${reference.catalogHash}`, "stellarCatalogGet", {
-      pathParams: { catalogVersion: reference.catalogVersion, catalogHash: reference.catalogHash },
-      ...(signal ? { signal } : {}),
-    }),
-  invalidate: reference => invalidateApiCache(`stellar-catalog:${reference.catalogVersion}:${reference.catalogHash}:`),
-});
-
-export const saoCatalogClient = createSaoCatalogClient({
-  index: signal => requestOperation('sao-index:v2', 'saoIndexGet', { ...(signal ? {signal} : {}) }),
-  tile: (publicationHash, tileId, signal) => requestOperation(`sao-tile:${publicationHash}:${tileId}`, 'saoTileGet', {
-    pathParams: {publicationHash, tileId}, ...(signal ? {signal} : {}),
-  }),
-  invalidateIndex: () => invalidateApiCache('sao-index:v2:'),
-  invalidateTile: (publicationHash, tileId) => invalidateApiCache(`sao-tile:${publicationHash}:${tileId}:`),
-  generation: capturePublishedSkyImageGeneration,
-  fileTile: (publication, tile, signal) => readPublishedSkyJson({format:'json',sha256:tile.sha256,bytes:tile.bytes},
-    `${__MINIAPP_API_BASE__.replace(/\/+$/, '')}/v2/sky/supplements/sao/v2/${publication.publicationHash}/assets/${tile.id}`,
-    publication.publicationHash, signal),
-});
-
-export const getConstellationCatalog = createConstellationCatalogClient({
-  request: signal => requestOperation(`constellation-catalog:${CONSTELLATION_CATALOG_VERSION}`, "constellationCatalogGet", {
-    ...(signal ? {signal} : {}),
-  }),
-  invalidate: () => invalidateApiCache("constellation-catalog:"),
-});
-
-export function constellationAssetUrl(catalogHash: string, file: string) {
-  const sourceFile = ["constellationship.fab", "constellationsart.fab", "constellation_names.eng.fab", "info.ini"].includes(file);
-  if (!/^[a-f0-9]{64}$/u.test(catalogHash) || !(sourceFile || file === "geometry-v2.json" || /^[a-z_-]+\.png$/u.test(file))) throw new Error("constellation_asset_reference_invalid");
-  return __MINIAPP_API_BASE__.replace(/\/+$/u, "")+MINIAPP_API_BASE_PATH+
-    "/sky/constellations/"+catalogHash+"/assets/"+file;
-}
-
-export function deepSkyManifestUrl(sourceId: string, expectedOpticalHash?: string): string | undefined {
-  const optical = Object.values(SDSS_OPTICAL_PUBLICATIONS).find(publication =>
-    sourceId === `optical-imagery:${publication.publicationId}:${publication.publicationHash}`);
-  if (optical) return expectedOpticalHash === undefined || expectedOpticalHash === optical.publicationHash
-    ? __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
-      "/sky/sdss-optical/" + optical.publicationHash + "/manifest" : undefined;
-  const boundOptical = /^(optical-imagery|prepared-optical-imagery):[^:/\\]+:([a-f0-9]{64})$/u.exec(sourceId);
-  if (expectedOpticalHash && boundOptical?.[2] === expectedOpticalHash)
-    return __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
-      (boundOptical[1] === "prepared-optical-imagery" ? "/sky/prepared-optical/" : "/sky/sdss-optical/") + expectedOpticalHash + "/manifest";
-  const match = /^imagery:[^:]+:([a-f0-9]{64})$/u.exec(sourceId);
-  return match ? __MINIAPP_API_BASE__.replace(/\/+$/u, "") + MINIAPP_API_BASE_PATH +
-    "/sky/deep-sky/" + match[1] + "/manifest" : undefined;
 }
 
 export function getFavorites(signal?: AbortSignal) {

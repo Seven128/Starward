@@ -28,9 +28,11 @@ const isPeriphery=variant==='hips-rubin-periphery';
 const isQuality=variant==='hips-rubin-quality';
 const fineOnlyQuality=isQuality&&process.argv[3]==='fine-only';
 const depthQuality=isQuality&&process.argv[3]==='fine-depth';
-const groupedDpr=isQuality&&process.argv[3]==='grouped-dpr';
-const groupedScale=isQuality&&process.argv[3]==='grouped-scale';
-const groupedControls=isQuality&&(process.argv[3]==='grouped-controls'||groupedDpr);
+const groupedAuto=isQuality&&/^grouped-auto(?:-r[2-9])?$/.test(process.argv[3]??'');
+const groupedDpr=isQuality&&(process.argv[3]==='grouped-dpr'||groupedAuto);
+const groupedColor=isQuality&&(process.argv[3]==='grouped-color'||process.argv[3]==='grouped-color-scale');
+const groupedScale=isQuality&&(process.argv[3]==='grouped-scale'||process.argv[3]==='grouped-color-scale');
+const groupedControls=isQuality&&(process.argv[3]==='grouped-controls'||groupedDpr||process.argv[3]==='grouped-color');
 const groupedQuality=isQuality&&(process.argv[3]==='grouped'||groupedControls||groupedScale);
 const diagnosticQuality=fineOnlyQuality||depthQuality||groupedQuality;
 const publishedQuality=isQuality&&(process.argv[3]==='published'||diagnosticQuality);
@@ -40,7 +42,7 @@ const isRubin=variant==='hips-rubin'||isPeriphery||isQuality,isMature=isFds||isR
 const isGeometry=variant==='hips-geometry';
 const isContinuity=variant==='hips-continuity';
 const isHips=variant!=='panorama',isRegions=variant==='hips-regions'||isGeometry||isContinuity||isMature;
-const out=path.join(root,isMature?'output/'+(isFds?'fds':'rubin')+'-region-batch-2026-10-08/'+(isQuality?qualityDirectory+(groupedScale?'/grouped-scale':groupedDpr?'/grouped-dpr-policy':groupedControls?'/grouped-controls':groupedQuality?'/grouped-scene':depthQuality?'/fine-depth-scene':fineOnlyQuality?'/fine-only-scene':publishedQuality?'/published-scene':'/current-scene'):isPeriphery?'periphery/current-scene':'current-scene'):
+const out=path.join(root,isMature?'output/'+(isFds?'fds':'rubin')+'-region-batch-2026-10-08/'+(isQuality?qualityDirectory+(groupedAuto?'/'+process.argv[3]:groupedColor?'/'+process.argv[3]:groupedScale?'/grouped-scale':groupedDpr?'/grouped-dpr-policy':groupedControls?'/grouped-controls':groupedQuality?'/grouped-scene':depthQuality?'/fine-depth-scene':fineOnlyQuality?'/fine-only-scene':publishedQuality?'/published-scene':'/current-scene'):isPeriphery?'periphery/current-scene':'current-scene'):
  'output/noirlab-allsky-source/'+(isHips?'scene-'+variant:'scene-inspection'));
 const exists=async(p:string)=>{try{await fs.stat(p);return true;}catch(e:any){if(e.code==='ENOENT')return false;throw e;}};
 const planMature=isMature&&process.argv[3]==='plan',resumeMature=isMature&&process.argv[3]==='resume';
@@ -276,15 +278,15 @@ if(isQuality){
    // request or a larger wanted limit is implied by the combined draw set.
    const warm=[...coarse,...fine];assert(warm.length*512*512*4<=20*1024*1024);
    const tileIds=(tiles:typeof fine)=>tiles.map(t=>({order:t.order,pixel:t.pixel,sourceId:t.sourceId}));
-   const states=groupedScale?['grouped-fine']:groupedQuality?['grouped-fine','grouped-fine-partial','grouped-fine-failed',...(profile.reference==='M:8'?['grouped-budget-refused','grouped-depth-failed']:[])]:depthQuality?['fine-depth','fine-depth-failed']:fineOnlyQuality?['fine-only']:['coarse','fine','fine-failed','empty'];
+   const states=groupedScale?['grouped-fine']:groupedQuality?['grouped-fine','grouped-fine-partial','grouped-fine-failed',...(profile.reference==='M:8'?['grouped-budget-refused','grouped-target-failed']:[])]:depthQuality?['fine-depth','fine-depth-failed']:fineOnlyQuality?['fine-only']:['coarse','fine','fine-failed','empty'];
    for(const state of states)regionCases.push({name:profile.reference,
     basis:profile.basis,fov:profile.fieldDegrees,display:'hips',pixelRatio:groupedScale?2:1,state,pairKey:profile.reference,
     wanted:tileIds(state==='empty'?[]:state==='coarse'?coarse:state==='fine-only'?fine:warm),
-    failTiles:state==='fine-failed'||state==='fine-depth-failed'||state==='grouped-fine-failed'?fine.map(t=>t.order+':'+t.pixel):state==='grouped-fine-partial'?[fine[0]!.order+':'+fine[0]!.pixel]:[],expectCredit:!depthQuality&&state!=='empty'&&state!=='grouped-budget-refused'&&state!=='grouped-depth-failed',
+    failTiles:state==='fine-failed'||state==='fine-depth-failed'||state==='grouped-fine-failed'?fine.map(t=>t.order+':'+t.pixel):state==='grouped-fine-partial'?[fine[0]!.order+':'+fine[0]!.pixel]:[],expectCredit:!depthQuality&&state!=='empty'&&state!=='grouped-budget-refused'&&state!=='grouped-target-failed',
     ...(depthQuality?{probes:false,depthDiagnostic:true}:{}),
     ...(state==='grouped-budget-refused'?{auxiliaryBytesLimit:1024*1024}:{}),
-    ...(groupedScale?{auxiliaryBytesLimit:8*1024*1024}:{}),
-    ...(state==='grouped-depth-failed'?{depthAllocationFailure:true}:{}),
+    ...(groupedScale?{auxiliaryBytesLimit:(groupedColor?6:8)*1024*1024}:{}),
+    ...(state==='grouped-target-failed'?{targetAllocationFailure:true}:{}),
     id:profile.reference.replace(':','-')+'-published-'+state});
    publishedQualityConsumerReadback.push({reference:profile.reference,referenceSelection:reference,
     wantedFine:fine.map(t=>t.id),retainedParents:coarse.map(t=>t.id),warmSourcePressureBytes:warm.length*512*512*4,
@@ -501,6 +503,7 @@ import {attachSkyCatalog,resolveSkySceneFrame} from './apps/wechat-miniapp/src/f
 import {registerSkyArtwork} from './apps/wechat-miniapp/src/features/sky/sky-artwork-registration';
 import {skyEquatorialDirectionToEnu} from './apps/wechat-miniapp/src/features/sky/sky-observation-frame';
 import {validBasis} from './apps/wechat-miniapp/src/features/sky/sky-view-projection';
+import {skyArtworkContributionFrameBudget} from './apps/wechat-miniapp/src/features/sky/sky-gpu-artwork-contributions';
 import {skyHipsSourceCredit} from './apps/wechat-miniapp/src/features/sky/sky-hips-source-credit';
 const input=${JSON.stringify({report,catalog,regions,hips,isHips,opticalPublication,
  contributionPolicy:publishedQuality||isPeriphery?{auxiliaryBytesLimit:2*1024*1024,maxGroups:1}:isQuality?{auxiliaryBytesLimit:8*1024*1024,maxGroups:1}:null,
@@ -530,13 +533,21 @@ function run(c){const canvas=document.querySelector('canvas'),pixelRatio=c.pixel
  canvas.width=backingWidth;canvas.height=backingHeight;
  const gl=canvas.getContext('webgl',{preserveDrawingBuffer:true,antialias:false,alpha:false});if(!gl)throw Error('webgl_missing');
  const live=new Set(),counts={created:0,deleted:0},create=gl.createTexture.bind(gl),remove=gl.deleteTexture.bind(gl),
-  shader=gl.shaderSource.bind(gl),blend=gl.blendFuncSeparate.bind(gl);
+  shader=gl.shaderSource.bind(gl),blend=gl.blendFuncSeparate.bind(gl),upload=gl.texImage2D.bind(gl),
+  textureBytes=new Map(),logicalGpu={textureBytes:0,peakTextureBytes:0};
+ gl.texImage2D=(...args)=>{const result=upload(...args);if(args[1]===0){
+  const source=args.length===6?args[5]:null,w=source?source.width:args[3],h=source?source.height:args[4],
+   texture=gl.getParameter(gl.TEXTURE_BINDING_2D),bytes=w*h*4;
+  if(texture&&Number.isSafeInteger(bytes)&&bytes>=0){logicalGpu.textureBytes+=bytes-(textureBytes.get(texture)??0);textureBytes.set(texture,bytes);
+   logicalGpu.peakTextureBytes=Math.max(logicalGpu.peakTextureBytes,logicalGpu.textureBytes);}}
+  return result;};
  gl.createTexture=()=>{const t=create();if(t){live.add(t);counts.created++;}return t;};
- gl.deleteTexture=t=>{if(live.delete(t))counts.deleted++;return remove(t);};
- const liveFbos=new Set(),liveDepth=new Set(),fboCounts={created:0,deleted:0},depthCounts={created:0,deleted:0,refused:0},
+ gl.deleteTexture=t=>{if(live.delete(t))counts.deleted++;logicalGpu.textureBytes-=textureBytes.get(t)??0;textureBytes.delete(t);return remove(t);};
+ const liveFbos=new Set(),liveDepth=new Set(),fboCounts={created:0,deleted:0,refused:0},depthCounts={created:0,deleted:0,refused:0},
   createFbo=gl.createFramebuffer.bind(gl),deleteFbo=gl.deleteFramebuffer.bind(gl),
   createDepth=gl.createRenderbuffer.bind(gl),deleteDepth=gl.deleteRenderbuffer.bind(gl);
- gl.createFramebuffer=()=>{const f=createFbo();if(f){liveFbos.add(f);fboCounts.created++;}return f;};
+ gl.createFramebuffer=()=>{if(c.targetAllocationFailure){fboCounts.refused++;return null;}
+  const f=createFbo();if(f){liveFbos.add(f);fboCounts.created++;}return f;};
  gl.deleteFramebuffer=f=>{if(liveFbos.delete(f))fboCounts.deleted++;return deleteFbo(f);};
  gl.createRenderbuffer=()=>{if(c.depthAllocationFailure){depthCounts.refused++;return null;}
   const d=createDepth();if(d){liveDepth.add(d);depthCounts.created++;}return d;};
@@ -547,8 +558,8 @@ function run(c){const canvas=document.querySelector('canvas'),pixelRatio=c.pixel
   text=text.replace(marker,'vec4(infrared,u_strength)');opaqueShaderChanges++;}return shader(s,text);};
  gl.blendFuncSeparate=(...args)=>{if(c.display==='opaque'&&photographicPass&&args[0]===gl.SRC_ALPHA&&args[1]===gl.ONE){
   args=[gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA];opaqueBlendChanges++;}return blend(...args);};
- // The largest quality case has a 780x1688 buffer: its 5,266,560B RGBA
- // signal and bounded reduction chain fit the explicit 8MiB task allowance.
+ // Current source-group colour also supplies its A-channel contribution.
+ // At 780x1688, RGBA plus every MAX level requires 5,618,024B, no depth.
  // This is separate from production policy and target-device physical memory.
  const failed=[],renderer=createSkyGpuRenderer(gl,pixelRatio,{imageFailed:()=>failed.push('image'),
   ...(input.contributionPolicy&&c.probes!==false?{artworkContributions:{...input.contributionPolicy,
@@ -593,7 +604,7 @@ function run(c){const canvas=document.querySelector('canvas'),pixelRatio=c.pixel
  gl.createFramebuffer=createFbo;gl.deleteFramebuffer=deleteFbo;gl.createRenderbuffer=createDepth;gl.deleteRenderbuffer=deleteDepth;
  return {png,rgba:base64(b),backingWidth,backingHeight,pixelRatio,error,completed,failed,panoramaPaints,regionPaints,hipsPaints,paintedObjects,
   stellarFrameState:resolveSkySceneFrame(sceneReport.skyScene,at)?.state??null,textureObjects:counts,
-   liveTextures:live.size,framebufferObjects:fboCounts,depthObjects:depthCounts,liveFramebuffers:liveFbos.size,liveRenderbuffers:liveDepth.size,
+   liveTextures:live.size,logicalGpu,framebufferObjects:fboCounts,depthObjects:depthCounts,liveFramebuffers:liveFbos.size,liveRenderbuffers:liveDepth.size,
    groups,contributionFault,opaqueShaderChanges,opaqueBlendChanges,camera,opticalCredit,opticalCompleted,hipsFailures,fineFailures,depthBits,depthEnabledAfter};}
 // These explicit solid fixtures verify renderer semantics, not astronomical
 // coverage, publication, scientific availability or a replacement source.
@@ -639,10 +650,10 @@ function controls(dprOnly=false){const canvas=document.createElement('canvas');c
   begin();check(renderer.skyImageMesh(green,rect(),view,1,a),'old_mesh_draw');row=observed('old-mesh-before-group',true);
   const oldDepth=counts.Renderbuffer.created,oldFbos=counts.Framebuffer.created,oldTexture=counts.Texture.created;
   begin();result=renderer.skyImageMeshLevels([level(green,0),level(red,1)],view,1,a);row=observed('upgrade-existing-target',result);
-  check(result?.every(Boolean)&&counts.Renderbuffer.created===oldDepth+1&&counts.Framebuffer.created===oldFbos&&counts.Texture.created===oldTexture+1,'reuse_rgba_target_adds_only_depth_and_new_source_texture');
+  check(result?.every(Boolean)&&counts.Renderbuffer.created===oldDepth&&counts.Framebuffer.created===oldFbos&&counts.Texture.created===oldTexture+1,'reuse_rgba_target_without_depth_or_second_colour');
   const allocated=counts.Renderbuffer.created;
   begin();result=renderer.skyImageMeshLevels([level(green,0),level(red,1)],view,1,a);row=observed('warm-reuse',result);
-  check(counts.Renderbuffer.created===allocated,'warm_depth_reused');
+  check(counts.Renderbuffer.created===allocated&&allocated===0,'warm_rgba_reused_without_depth');
   begin();renderer.skyImageMesh(green,rect(),view,1,a);row=observed('old-mesh-after-group',true);check(row.credit[0]==='positive','legacy_mesh_still_qualified');
   canvas.width=canvas.height=32;check(renderer.skyImageMeshContribution(a)==='unknown'&&live.Renderbuffer.size===0&&live.Framebuffer.size===0,'resize_retires_all_auxiliary_objects');
   begin();result=renderer.skyImageMeshLevels([level(green,0),level(red,1)],view,1,a);row=observed('resize-fresh-group',result);check(result?.every(Boolean)&&row.credit[0]==='positive','resize_reallocates_bounded_group');
@@ -665,6 +676,30 @@ function controls(dprOnly=false){const canvas=document.createElement('canvas');c
     rows.push({name:'dpr2-original-2MiB-policy',backing:[780,1688],result,wholeRgbaEqual:true,credit:'unknown',auxiliaryAllocations:0,
      implication:'Current grouped geometric LOD unavailable under original policy; independent opaque image remains drawable. Not a qualified DPR2 fix or physical capacity pass.'});
    }finally{larger.dispose();}
+   // The normal opted-in policy uses actual native dimensions, while the
+   // explicit2MiB legacy caller above retains its refusal and exact fallback.
+   for(const ratio of [2,3]){
+    canvas.width=390*ratio;canvas.height=844*ratio;
+    const policy=skyArtworkContributionFrameBudget(gl.drawingBufferWidth,gl.drawingBufferHeight,2),
+     native=createSkyGpuRenderer(gl,ratio,{artworkContributions:policy}),
+     mesh=(image,priority,right=390)=>({image,priority,triangles:[0,0,0,0,right,0,1,0,0,844,0,1,0,844,0,1,right,0,1,0,right,844,1,1]});
+    try{
+     native.begin(390,844,'#0000FF');
+     const first=native.skyImageMeshLevels([mesh(green,0),mesh(transparent,1)],view,1,a),
+      second=native.skyImageMeshLevels([mesh(red,0)],view,1,b);
+     native.finish();const bytes=pixels(),credits=[a,b].map(group=>native.skyImageMeshContribution(group));
+     check(first?.every(Boolean)&&second?.every(Boolean),'native_frame_policy_draws_both_groups_dpr'+ratio+':'+
+      JSON.stringify({policy,first,second,counts,fault:native.artworkContributionsFailed(),error:gl.getError(),
+       framebuffer:gl.getParameter(gl.FRAMEBUFFER_BINDING)===null,dimensions:[gl.drawingBufferWidth,gl.drawingBufferHeight]}));
+     check(credits[0]==='unknown'&&credits[1]==='positive','native_frame_policy_actual_source_dpr'+ratio);
+     check(bytes.every((v,i)=>v===(i%4===0||i%4===3?255:0)),'native_frame_policy_exact_complete_rgba_dpr'+ratio);
+     check(!native.artworkContributionsFailed()&&gl.getError()===0,'native_frame_policy_no_fault_dpr'+ratio);
+     rows.push({name:'dpr'+ratio+'-native-frame-policy',backing:[canvas.width,canvas.height],policy,
+      wholeRgba:'opaque_red_exact',credits,renderbuffersCreated:counts.Renderbuffer.created,
+      implication:'Actual software native-pixel composition and completed source receipts for two groups; physical/native capacity remains unverified.'});
+    }finally{native.dispose();}
+    check(Object.values(live).every(set=>set.size===0),'native_frame_policy_dpr'+ratio+'_retired');
+   }
   }
  }finally{renderer.dispose();for(const [name,fn] of Object.entries(original))gl[name]=fn;for(const image of [black,green,red,halfRed,transparent])image.width=image.height=0;canvas.width=canvas.height=0;}
  const retired=Object.fromEntries(Object.entries(live).map(([k,v])=>[k,v.size]));check(Object.values(retired).every(value=>value===0),'final_retirement');
@@ -687,7 +722,7 @@ let fineOnlyBaseline:any=null,fineOnlyMatchedInputs=0,depthPixelBaseline:any=nul
 const groupedOwnerChanges:any[]=[];
 const frozenCaseId=(id:string)=>id.replace('-fine-only','-fine').replace('-fine-depth','-fine')
  .replace('-grouped-fine-partial','-fine').replace('-grouped-fine-failed','-fine-failed')
- .replace('-grouped-fine','-fine').replace('-grouped-budget-refused','-fine').replace('-grouped-depth-failed','-fine');
+ .replace('-grouped-fine','-fine').replace('-grouped-budget-refused','-fine').replace('-grouped-target-failed','-fine');
 if(diagnosticQuality){
  const base='output/rubin-region-batch-2026-10-08/'+qualityDirectory+'/published-scene/',
   oldInputs=JSON.parse(await fs.readFile(path.join(root,base+'inputs-before.json'),'utf8')),
@@ -714,7 +749,7 @@ if(diagnosticQuality){
    ...(groupedQuality?{failTiles:c.failTiles,expectCredit:c.expectCredit,
     ...(groupedScale?{pixelRatio:2}:{}),
     ...(c.auxiliaryBytesLimit!==undefined?{auxiliaryBytesLimit:c.auxiliaryBytesLimit}:{}),
-    ...(c.depthAllocationFailure?{depthAllocationFailure:true}:{})}: {})};assert.deepEqual(c,expected);
+    ...(c.targetAllocationFailure?{targetAllocationFailure:true}:{})}: {})};assert.deepEqual(c,expected);
   const raw=await read(old.png.path);assert.equal(raw.length,old.png.bytes);assert.equal(sha(raw),old.png.sha256);
  }
  if(depthQuality||groupedQuality){
@@ -772,7 +807,7 @@ let cases:any[]=wide.flatMap(c=>(isHips?['hips']:['off','current-additive','opaq
 for(const r of regions)for(const region of (isHips?[null]:[null,r.reference]))cases.push({name:r.reference,ra:r.nominalTan.CRVAL1,dec:r.nominalTan.CRVAL2,
  fov:10,display:isHips?'hips':'opaque',region,id:r.reference.replace(':','-')+'-'+(isHips?'hips':region?'same-source-region':'background')});
 if(!isHips)cases.push({...wide[5],display:'opaque',catalog:false,id:'m42-source-attribution-only'});
-if(isRegions)cases=groupedControls?[]:regionCases;
+if(isRegions)cases=groupedControls&&!groupedColor?[]:regionCases;
 const {chromium}=createRequire(import.meta.url)('C:/Users/777/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const frameLog=await fs.open(path.join(out,'frames.jsonl'),'wx');
 const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader']});
@@ -783,7 +818,7 @@ try{
  await page.setContent('<canvas width="390" height="844" style="width:390px;height:844px"></canvas>');
  await page.evaluate('globalThis.__name=fn=>fn');await page.addScriptTag({content:bundle.outputFiles[0]!.text});
  if(groupedControls){groupControlReadback=await page.evaluate((dpr:boolean)=>(globalThis as any).noirlabScene.controls(dpr),groupedDpr);await save('controls.json',groupControlReadback);}
- else await page.evaluate(()=>(globalThis as any).noirlabScene.init());
+ if(cases.length)await page.evaluate(()=>(globalThis as any).noirlabScene.init());
  for(const c of cases){
   const reusable=prior?.rows.find((r:any)=>r.condition.id===c.id);
   if(reusable){assert.deepEqual(reusable.condition,JSON.parse(JSON.stringify(c)));const raw=await fs.readFile(path.join(root,reusable.png.path));
@@ -794,10 +829,11 @@ try{
   assert.equal(row.error,0);assert.equal(row.completed,1);assert.equal(row.liveTextures,0);assert.deepEqual(row.failed,[]);
   assert.equal(row.liveFramebuffers,0);assert.equal(row.liveRenderbuffers,0);
   if(groupedQuality){assert.equal(row.groups.length,1);assert.equal(row.depthEnabledAfter,false);
-   if(c.state==='grouped-budget-refused'||c.state==='grouped-depth-failed'){
-    assert.equal(row.groups[0].result,null);assert.equal(row.contributionFault,c.state==='grouped-depth-failed');
-    assert.equal(row.depthObjects.refused,c.state==='grouped-depth-failed'?1:0);
-   }else{assert.equal(row.contributionFault,false);assert.equal(row.depthObjects.created,1);assert.equal(row.depthObjects.deleted,1);
+   assert.equal(row.depthObjects.created,0);assert.equal(row.depthObjects.deleted,0);assert.equal(row.logicalGpu.textureBytes,0);
+   if(c.state==='grouped-budget-refused'||c.state==='grouped-target-failed'){
+    assert.equal(row.groups[0].result,null);assert.equal(row.contributionFault,c.state==='grouped-target-failed');
+    assert.equal(row.framebufferObjects.refused,c.state==='grouped-target-failed'?1:0);
+   }else{assert.equal(row.contributionFault,false);
     assert.equal(row.groups[0].result.length,c.wanted.length);
     assert.equal(row.groups[0].result.filter((ok:boolean)=>!ok).length,c.failTiles.length);}
   }
@@ -844,12 +880,12 @@ try{
    if(depthQuality){assert.equal(changedPixels,0,'Successful finest geometry must match fine-only; failed fine geometry must preserve exact coarse pixels');assert.equal(row.depthEnabledAfter,false);}
    if(groupedQuality){
     if(c.state==='grouped-fine-partial')assert(changedPixels>0,'A controlled failed fine tile must change the actual frame');
-    else if(c.state==='grouped-budget-refused'||c.state==='grouped-depth-failed')assert.equal(changedPixels,0,'Unavailable groups preserve the exact frozen independent path');
+    else if(c.state==='grouped-budget-refused'||c.state==='grouped-target-failed')assert.equal(changedPixels,0,'Unavailable groups preserve the exact frozen independent path');
     else assert(maxChannelDifference<=2,'Only predeclared bounded offscreen RGBA8 quantization is permitted; geometry/source differences fail');
    }
    baselineComparisons.push({id:c.id,baseline:baseline.png,baselineRgba:baseline.rgba,
     unchangedNonAdapterInputs:fineOnlyMatchedInputs,changedPixels,maxChannelDifference,changedBounds:changedPixels?bounds:null,
-    meaning:groupedQuality?'Current source-group workRGBA/depth and actual A-channel contribution; frozen pixels used as before implementation reference. Partial failure is a distinct actual geometry/fallback condition. Max2 code quantization allowance was declared in grouped-intent before rendering; unavailable groups must retain exact independent pixels.':depthQuality?'Image-only counterfactual uses existing depth buffer with finest-first geometric ownership, no extra image/FBO or source-pixel changes. Probes are explicitly disabled: source credit and actual native acceptance are not qualified.':
+    meaning:groupedQuality?'Current coarse-to-fine sample replacement in one source-group workRGBA and actual A-channel contribution, without depth storage; frozen pixels used as before implementation reference. Partial failure is a distinct actual geometry/fallback condition. Original max2 quantization allowance unchanged; unavailable groups must retain exact independent pixels.':depthQuality?'Image-only counterfactual uses existing depth buffer with finest-first geometric ownership, no extra image/FBO or source-pixel changes. Probes are explicitly disabled: source credit and actual native acceptance are not qualified.':
      'Diagnostic only: remove retained same-source parents while preserving all wanted fine tiles and original alpha. Pixel equality or a difference does not alone certify coverage or acceptable LOD.'});
   }
   if(isPeriphery||publishedQuality){
@@ -922,7 +958,7 @@ const result={status:failure?'FAILED':'CURRENT_SCENE_BATCH_RENDERED',variant,fai
  resumedFrames:prior?.rows.length??0,verificationCorrection:resume?
  'A legitimate zero projected BSC star count in a narrow field is not catalogue unavailability. Exact resolved stellar frame availability is checked; the batch must still visibly paint catalogue stars. The interrupted failure and its two completed frames are preserved.':null,
  newOriginalDecodes:0,networkRequests:0,ordinaryAdoption:false,scientificAvailability:'UNKNOWN',absoluteRegistration:'UNVERIFIED',
-  scope:groupedQuality?'Current shared Scene/GPU/contribution owners compose a same-source PNG hierarchy in one bounded RGBA+depth target, reuse its A-channel for actual completed source participation and retire all texture/FBO/depth resources. Frozen original fine-only/coarse/warm frames, partial and full fine failure, allocation refusal and source credit are checked. Original images, time, camera and budgets remain bound. This is software development evidence; native/device, physical memory, exterior background, ordinary adoption and independent acceptance remain unverified.':depthQuality?'Four image-only diagnostic frames use the existing default depth buffer for finest-first same-source geometric ownership; fine submission failures retain the exact frozen coarse frame. Source pixels, camera and time are unchanged, GL state is restored per mesh, no extra FBO/texture is introduced. Contribution probes are explicitly disabled because their current owner does not accept depth-tested rendering; source credit/native adoption, partial-failure and cross-source semantics remain unqualified.':fineOnlyQuality?'Two new fine-only complete Scene frames compared against frozen parent-plus-fine PNGs whose decoded complete RGBA hashes match their original readbacks. All non-adapter inputs, time, camera, source originals, publication and contribution policy match. Original alpha, current mesh/shader/blend and source credit are retained. This is a diagnostic of same-source parent/fine composition, not an adopted fix, native, physical, scientific, absolute registration, exterior background or independent acceptance.':publishedQuality?'The two current complete-target roles consume actual local v2 worker root/index/tile/rights and the indexed wanted set. Already available same-source parent tiles are a controlled warm snapshot; finest submission failure must retain exact coarse RGBA, empty supply and disabled contribution measurement must have no source credit. Current Scene/GPU/source-over, nominal coverage and original bytes are preserved. This qualifies the completed-source mechanism at 390x844/1x, not actual native retention/cache/Source Back, physical memory, science, absolute registration, photo exterior/background, ordinary adoption, remote publication, WXML/device or independent acceptance.':
+  scope:groupedQuality?'Current shared Scene/GPU/contribution owners compose coarse-to-fine same-source PNG samples in one bounded RGBA target without depth, reuse its A-channel for completed source participation and retire all texture/FBO resources. Frozen original fine-only/coarse/warm frames, partial and full fine failure, allocation refusal and source credit are checked. Original images/time/camera remain bound; DPR2 uses an explicit6MiB task allowance, ordinary defaults unchanged. Software development evidence; native/device, physical memory, exterior background, ordinary adoption and independent acceptance remain unverified.':depthQuality?'Four image-only diagnostic frames use the existing default depth buffer for finest-first same-source geometric ownership; fine submission failures retain the exact frozen coarse frame. Source pixels, camera and time are unchanged, GL state is restored per mesh, no extra FBO/texture is introduced. Contribution probes are explicitly disabled because their current owner does not accept depth-tested rendering; source credit/native adoption, partial-failure and cross-source semantics remain unqualified.':fineOnlyQuality?'Two new fine-only complete Scene frames compared against frozen parent-plus-fine PNGs whose decoded complete RGBA hashes match their original readbacks. All non-adapter inputs, time, camera, source originals, publication and contribution policy match. Original alpha, current mesh/shader/blend and source credit are retained. This is a diagnostic of same-source parent/fine composition, not an adopted fix, native, physical, scientific, absolute registration, exterior background or independent acceptance.':publishedQuality?'The two current complete-target roles consume actual local v2 worker root/index/tile/rights and the indexed wanted set. Already available same-source parent tiles are a controlled warm snapshot; finest submission failure must retain exact coarse RGBA, empty supply and disabled contribution measurement must have no source credit. Current Scene/GPU/source-over, nominal coverage and original bytes are preserved. This qualifies the completed-source mechanism at 390x844/1x, not actual native retention/cache/Source Back, physical memory, science, absolute registration, photo exterior/background, ordinary adoption, remote publication, WXML/device or independent acceptance.':
  isQuality?'Complete catalogue target extent with visible margin at a 390x844 CSS viewport, rendered at 1x and 2x backing-store resolution by the unchanged current Scene/GPU mesh and source-over. Reviewed Rubin source/content/database rights, producer full preview, actual selector/rays, nominal MOC and unchanged original PNGs are separately bound. Nominally absent exterior cells are not fetched or replaced with fabricated pixels. This explicit task image supply is a visual development trial, not formal source-credit/Back, native loader/cache/performance, science, absolute registration, continuous background, publication/adoption or independent acceptance.':
  isPeriphery?'Two complete nominal region parent envelopes at20deg and one original alpha-edge detail path use actual local v2 root/index/tile/rights, current indexed resolver, unmodified PNGs, current GPU/source-over and actually completed source credit. A controlled fine mesh failure must preserve the coarse RGBA; requested metadata with no images must have no credit. Whole-photo boundaries still need a qualified exterior background. Nominal MOC/boundary sampling are not exact raster/science support. No ordinary adoption, remote publication, native loader/cache/physical capacity, device, absolute registration or independent acceptance.':
  isRubin?'Current complete Scene/GPU and real BSC v3 consume fixed Rubin First Look regions with the same saved observer/time. Completed TAN previews, exact content/HiPS licenses, nominal MOC rays, actual current selector and cached original HTTPS PNGs are separately bound. The product mesh, shader, blend and catalogue remain unchanged. One missing M49 PNG retains its failed transport receipt and is not substituted or retried. Three small regions do not qualify full producer periphery, continuous wide background, science, absolute astrometry, native cache/physical capacity, publication, WXML/device or independent acceptance.':

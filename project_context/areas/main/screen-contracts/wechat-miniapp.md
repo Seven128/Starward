@@ -7,9 +7,19 @@
 
 ## Design And Implementation Boundary
 
-2026-09-22用户要求隔离旧生成页面，避免后续设计误用。Stitch历史混合项目已退出当前迭代基线；资源状态与项目清单见[Stitch隔离状态](../../../../docs/design-resources/wechat-miniapp/stitch-status.md)，当前源仍经[各页唯一采用入口](../../../../docs/design-resources/wechat-miniapp/README.md)进入。隔离保留现行采用及必要依赖，不代表最新源已重新同步到Stitch，也不授权改变抽屉、Tab或现用3D图标。
+### Stitch design authority
 
-2026-09-13本轮是一个完整需求，包含地形、B行图标、天文事件Modal，以及整体UI/UX校验与Context对齐补开发四个部分，产品/技术Context与对应资源必须同时保持一致。变更基于现有采用页面增量完成：地图完整基本信息、三档拖动/单文档/照片查看、原天文内容，以及计划完整地点/观测时间/出发路线/提醒清单/备注/保存与返回不因局部改动而重构或删减。简化宿主不能替代完整页面作为当前资源；本轮最终增量视觉已于2026-09-13获用户确认采用，浏览器验证不代表生产完成。统一审阅及修改范围见[完整资源入口](../../../../docs/design-resources/wechat-miniapp/shared/astronomical-event-modal/README.md)。
+微信小程序唯一设计项目：[待审｜舒适尺度·星旅分享·公共动效｜09-23](https://stitch.google.com/projects/7144519510537620825)，项目 ID `7144519510537620825`。标题可能随项目整理变化，身份以 ID 和实际页面范围核对；不得进入独立原生 App 或同名历史项目。
+
+2026-10-17 用户明确云观星以外的设计由另一分支持续更新，**以 Stitch 当前源为准**；本分支旧导出/采用包不再作为远端覆盖依据。仅清理本地副本，本轮不修改、删除或重新采用这些远端范围。实际做相关页面时，从该项目当前页面/共享定义取得具体节点与状态，不把历史静态总览当最新交互。业务/数据义务、运行资产和已验证实现仍归各 owner；当前设计不等于生产已迁移。
+
+云观星最新菜单批次已由用户直接采用，范围与当前入口归 [Sky owner](wechat-miniapp/spot-and-sky.md#云观星菜单设计资源2026-10-16用户修订)。只覆盖菜单/相关披露、指定红光与入场，星图不受覆盖；完整交互源现已在该owner指向的Stitch节点持久化，不能用旧节点替代。资源长期仅在Stitch，实际同步/清理与产品进度归任务交接。
+
+### 历史采用与当前产品义务
+
+以下历史采用说明保留功能、范围及生产证据含义；其中旧构图链接已转到当前 Stitch 项目，不是允许从旧版本反推最新外观。
+
+2026-09-13本轮是一个完整需求，包含地形、B行图标、天文事件Modal，以及整体UI/UX校验与Context对齐补开发四个部分，产品/技术Context与对应资源必须同时保持一致。变更基于现有采用页面增量完成：地图完整基本信息、三档拖动/单文档/照片查看、原天文内容，以及计划完整地点/观测时间/出发路线/提醒清单/备注/保存与返回不因局部改动而重构或删减。简化宿主不能替代完整页面作为当前资源；本轮最终增量视觉已于2026-09-13获用户确认采用，浏览器验证不代表生产完成。统一审阅及修改范围见[完整资源入口](https://stitch.google.com/projects/7144519510537620825)。
 
 本轮owner导航：[地形同级章节与数据边界](wechat-miniapp/spot-and-sky.md#地形以可获得数据为边界)、[地图流星入口/地形叠加与计划单选](wechat-miniapp/map-and-finder.md)、[共享事件Modal与B行图标](wechat-miniapp/shared-state-and-recovery.md)。旧两章节和独立事件页面采用稿只在未修改范围继续有效；当前设计采用与生产迁移分别记录。
 
@@ -26,15 +36,12 @@
 
 ## Route And Package Ownership
 
-<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/map/ADOPTED.md" -->
-<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/search/ADOPTED.md" -->
-<!-- ty-context-controlling-source domain="design" path="docs/design-resources/wechat-miniapp/my/ADOPTED.md" -->
 
-- Map's sole adopted resource entry is [current Map design resources](../../../../docs/design-resources/wechat-miniapp/map/ADOPTED.md). On 2026-09-08 the owner adopted the final small/medium/large formal-spot information component, including basic/astronomy composition, its media/viewer and three bottom actions. Covered visual composition and demonstrated motion must be implemented faithfully; old medium component and historical candidates are superseded. The scope is daytime app-owned UI, not provider geography, fixture facts, unrelated pages/themes or production migration. DESIGN.md §5A.0 resolves shared-rule differences; uncovered states retain their existing owners.
+- Map's sole adopted resource entry is [current Map design resources](https://stitch.google.com/projects/7144519510537620825). On 2026-09-08 the owner adopted the final small/medium/large formal-spot information component, including basic/astronomy composition, its media/viewer and three bottom actions. Covered visual composition and demonstrated motion must be implemented faithfully; old medium component and historical candidates are superseded. The scope is daytime app-owned UI, not provider geography, fixture facts, unrelated pages/themes or production migration. DESIGN.md §5A.0 resolves shared-rule differences; uncovered states retain their existing owners.
 
 - On 2026-09-08 the owner also adopted Map's daytime layer selector through the same Map resource entry: LIGHT annual nightlight hides time input, TOTAL_CLOUD is labelled 云量 with the common date/calendar/ruler, bulb/cloud icons and exclusive checked cards. The bottom choices remain anchored during content-height transitions; Map layer/spot information is mutually exclusive. The shared ruler continuously settles and supports interruption; its date/calendar follows the sample's local civil date across midnight while retaining the domain night grouping. This replaces the old layer candidates, including their point summary and three-choice layout. Production now uses the adopted single-shell selector and the Map presentation coordinator; current simulator and Android WEAPP verification cover its open/Back path, while iOS and physical tablet verification remain separate runtime evidence.
 
-- Search's sole adopted resource entry is [current Search design resources](../../../../docs/design-resources/wechat-miniapp/search/ADOPTED.md). On 2026-09-08 the owner adopted the compact daytime Search page, its stationary Map/Search field, single-line horizontal filter strip and two-level filter sheet, independently collapsible result partitions and aligned borderless image cards. This replaces the earlier wrap-all filter composition and rejected Search candidates; DESIGN.md §5A.1–5A.2 resolves its shared visual differences, and [Map and Search invariants](wechat-miniapp/map-and-finder.md) owns commit/cancel and formal-spot selection. The resource's map is static and cards demonstrate press feedback only; adoption does not establish production navigation, map recentering, filtering, token migration or WEAPP verification. Other pages and unrepresented themes/states keep their existing owners.
+- Search's sole adopted resource entry is [current Search design resources](https://stitch.google.com/projects/7144519510537620825). On 2026-09-08 the owner adopted the compact daytime Search page, its stationary Map/Search field, single-line horizontal filter strip and two-level filter sheet, independently collapsible result partitions and aligned borderless image cards. This replaces the earlier wrap-all filter composition and rejected Search candidates; DESIGN.md §5A.1–5A.2 resolves its shared visual differences, and [Map and Search invariants](wechat-miniapp/map-and-finder.md) owns commit/cancel and formal-spot selection. The resource's map is static and cards demonstrate press feedback only; adoption does not establish production navigation, map recentering, filtering, token migration or WEAPP verification. Other pages and unrepresented themes/states keep their existing owners.
 
 - Main package: the three registered routes are `pages/map/index`, `pages/my/index` and `pages/auth/index`; permission rationale and error/recovery states live in their page or shared-state owners. Only Map and My appear in persistent primary navigation.
 - Map/Search state owner: `pages/map/index` owns the one physical map, one selected typed location (formal spot or authorized private draft/pending proposal), information-panel extent, one `none | spot-panel | layer-sheet | spot-editor` bottom presentation and Observation Context. Spot package `spot/search` is a child Search/filter/results route; it reuses the Map query/filter/selection owner and returns a committed result to the existing map rather than mounting another map. `spot/guides` and `spot/data-source` are optional progressive evidence routes entered from the panel. `spot/field` remains registered for existing deep links; the adopted `更多场地信息` interaction expands within the Map panel rather than navigating there, as specified in [spot and sky](wechat-miniapp/spot-and-sky.md). `spot/plan` restores the formal spot document in a plan's Observation Context. `spot/detail` and `spot/sky` are retired.
@@ -59,7 +66,7 @@ This path is the stable Screen Contract root and owns Map/Search/My adoption. Th
 - Resource integrity inspection proves only resource identity/completeness. Production conformance requires current Taro build plus WeChat DevTools/runtime observations, deterministic data/adapter checks, and design/interaction/accessibility assertions on the same final candidate.
 - Representative physical-device/sensor/field validation is useful external evidence but cannot silently replace the machine-verifiable current contract. Any truly unavailable external prerequisite is an explicitly unverified external prerequisite and cannot be hidden in a complete claim.
 
-The adopted daytime My root is owned by the sole [My resource entry](../../../../docs/design-resources/wechat-miniapp/my/ADOPTED.md). Product rules are in [My account and plans](wechat-miniapp/map-and-finder.md#my-account-and-plans); production route inventories describe existing implementation and do not override the adopted topology.
+The adopted daytime My root is owned by the sole [My resource entry](https://stitch.google.com/projects/7144519510537620825). Product rules are in [My account and plans](wechat-miniapp/map-and-finder.md#my-account-and-plans); production route inventories describe existing implementation and do not override the adopted topology.
 
 ## 整体UIUX与Context对齐补开发
 

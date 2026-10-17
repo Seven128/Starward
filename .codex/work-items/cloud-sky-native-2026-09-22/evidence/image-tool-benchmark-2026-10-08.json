@@ -1,0 +1,3723 @@
+{
+  "status": "BENCHMARK_COMPLETE_NO_PRODUCTION_ADOPTION",
+  "ordinaryAdoption": false,
+  "mainGoal": "PAUSED_DO_NOT_RESUME",
+  "runSummaries": {
+    "representative": {
+      "rows": [
+        {
+          "sample": "ngc253",
+          "method": "original",
+          "cacheHit": false,
+          "seconds": 1.48100549983792,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\6976bc1846cc28290bce050f425d61f425a84c6ea23b3737736a10a0d5d3ca29\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc253",
+          "method": "photutils",
+          "cacheHit": false,
+          "seconds": 7.922593900002539,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\2f3533842508409fcec57139f8374f9afda2dceb2c02edab810f1b5c3bfa9a93\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc253",
+          "method": "siril",
+          "cacheHit": false,
+          "seconds": 2.1235697001684457,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\e64de403675ed2aa47bd32da91e944dd386b57944d9168ed882a09a500dcf724\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc253",
+          "method": "nox",
+          "cacheHit": false,
+          "seconds": 30.22409819997847,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\70b21fac43fa8a41661130a0f781eb701412a6edb68a6da8b5f45cb13efe6e3a\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc5128",
+          "method": "original",
+          "cacheHit": false,
+          "seconds": 0.7292491002008319,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\640139852c7e2154f16b0b9e9b898dfb705c5fad81372f060d46a9df51b25746\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc5128",
+          "method": "photutils",
+          "status": "FAILED",
+          "error": "ValueError: All boxes contain <= 14745.6 unmasked or finite pixels (self.box_size=array([128, 128]), self.exclude_percentile=10.0). Please check your data or increase \"exclude_percentile\" to allow more boxes to be included."
+        },
+        {
+          "sample": "ngc5128",
+          "method": "siril",
+          "cacheHit": false,
+          "seconds": 1.9773132000118494,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\fc00f7b267e9dba0ae26baf1867624fe494f1aa790538fd0fa7fb64b26d991b8\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc5128",
+          "method": "nox",
+          "cacheHit": false,
+          "seconds": 29.805818299995735,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\742f812a0bd902270c7312c9b39bfbb086c7fe0c35f6cf6b49b79e4440f38899\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        }
+      ],
+      "wallSeconds": 74.95469929999672,
+      "packages": {
+        "numpy": "2.5.3",
+        "Pillow": "12.3.0",
+        "astropy": "8.0.1",
+        "photutils": "3.0.0",
+        "scipy": "1.18.1",
+        "psutil": "7.2.2",
+        "PyAVM": "0.9.9"
+      },
+      "manifest": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/image-tool-benchmark-samples.json",
+        "bytes": 1747,
+        "sha256": "7b31aca6eda0a53aa9c9361f18b0c05a42225ebc613708f8fbcd5bbf3789adce"
+      }
+    },
+    "small-batch": {
+      "rows": [
+        {
+          "sample": "ngc253",
+          "method": "original",
+          "cacheHit": false,
+          "seconds": 1.1559500999283046,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\a4e0cabff87c8c4c2d7463ccb5aff35685618aee3c8cd14f50403ea16c06eed3\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc253",
+          "method": "photutils",
+          "cacheHit": false,
+          "seconds": 4.519092299975455,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\7e2d7dbe382ba706eaf416385478c88e3080ac6c8f1dd88ad84ef3a70eef1df2\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc5128",
+          "method": "original",
+          "cacheHit": false,
+          "seconds": 0.6954785999841988,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\31d5e7ccbf22fe782f5911edbc5d2e87dcedf775b0933a933d1597baac1bdc9e\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc5128",
+          "method": "photutils",
+          "cacheHit": false,
+          "status": "FAILED",
+          "error": "ValueError: All boxes contain <= 14745.6 unmasked or finite pixels (self.box_size=array([128, 128]), self.exclude_percentile=10.0). Please check your data or increase \"exclude_percentile\" to allow more boxes to be included.",
+          "seconds": 0.6382764999289066,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\3f36e3e0bad9fac0fdeac51857c896995e1febbd630e16ac6f4bb7b7236c68a9\\failure.json"
+        },
+        {
+          "sample": "m81-m82",
+          "method": "original",
+          "cacheHit": false,
+          "seconds": 0.8759910000953823,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\de4a6c93cf356bc913b7444743aea4fcf03f5022e31fde4dbb3919830f59120e\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "m81-m82",
+          "method": "photutils",
+          "cacheHit": false,
+          "seconds": 2.3552859001792967,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\ed03573db254a67737c75df095da6418dd30b095a1e309c34bb3872590a00b37\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        }
+      ],
+      "wallSeconds": 10.305015999823809,
+      "packages": {
+        "numpy": "2.5.3",
+        "Pillow": "12.3.0",
+        "astropy": "8.0.1",
+        "photutils": "3.0.0",
+        "scipy": "1.18.1",
+        "psutil": "7.2.2",
+        "PyAVM": "0.9.9"
+      },
+      "manifest": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/image-tool-benchmark-samples.json",
+        "bytes": 2662,
+        "sha256": "954dd8768cf8c4deb248f1ec7a00470e2e45aed509f68f367ac523fd21a188d3"
+      }
+    },
+    "small-batch-warm": {
+      "rows": [
+        {
+          "sample": "ngc253",
+          "method": "original",
+          "cacheHit": true,
+          "seconds": 0.04197679995559156,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\a4e0cabff87c8c4c2d7463ccb5aff35685618aee3c8cd14f50403ea16c06eed3\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc253",
+          "method": "photutils",
+          "cacheHit": true,
+          "seconds": 0.06709289993159473,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\7e2d7dbe382ba706eaf416385478c88e3080ac6c8f1dd88ad84ef3a70eef1df2\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc5128",
+          "method": "original",
+          "cacheHit": true,
+          "seconds": 0.030584000051021576,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\31d5e7ccbf22fe782f5911edbc5d2e87dcedf775b0933a933d1597baac1bdc9e\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc5128",
+          "method": "photutils",
+          "cacheHit": true,
+          "seconds": 0.023816300090402365,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\3f36e3e0bad9fac0fdeac51857c896995e1febbd630e16ac6f4bb7b7236c68a9\\failure.json",
+          "status": "FAILED",
+          "error": "ValueError: All boxes contain <= 14745.6 unmasked or finite pixels (self.box_size=array([128, 128]), self.exclude_percentile=10.0). Please check your data or increase \"exclude_percentile\" to allow more boxes to be included."
+        },
+        {
+          "sample": "m81-m82",
+          "method": "original",
+          "cacheHit": true,
+          "seconds": 0.04493870004080236,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\de4a6c93cf356bc913b7444743aea4fcf03f5022e31fde4dbb3919830f59120e\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "m81-m82",
+          "method": "photutils",
+          "cacheHit": true,
+          "seconds": 0.06061820010654628,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\ed03573db254a67737c75df095da6418dd30b095a1e309c34bb3872590a00b37\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        }
+      ],
+      "wallSeconds": 0.28726900019682944,
+      "packages": {
+        "numpy": "2.5.3",
+        "Pillow": "12.3.0",
+        "astropy": "8.0.1",
+        "photutils": "3.0.0",
+        "scipy": "1.18.1",
+        "psutil": "7.2.2",
+        "PyAVM": "0.9.9"
+      },
+      "manifest": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/image-tool-benchmark-samples.json",
+        "bytes": 2662,
+        "sha256": "954dd8768cf8c4deb248f1ec7a00470e2e45aed509f68f367ac523fd21a188d3"
+      }
+    },
+    "verified-batch": {
+      "rows": [
+        {
+          "sample": "ngc253",
+          "method": "original",
+          "cacheHit": false,
+          "seconds": 1.0281263999640942,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\cf7db0bb2000290b95eeb4f8ee8018f80751644ee4833ebe3d07d0b2b30f841f\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc253",
+          "method": "photutils",
+          "cacheHit": false,
+          "seconds": 4.348687099991366,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\2de1e996329fdfa25eca4804248f9333e5b450e134172f02a91467db371e4f0f\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc253",
+          "method": "siril",
+          "cacheHit": false,
+          "seconds": 2.3943266000133008,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc5128",
+          "method": "original",
+          "cacheHit": false,
+          "seconds": 0.5884511999320239,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\e1f46fc4063b37b7579906da9b43397ea36c454abe3ca77669903a1e792feee7\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc5128",
+          "method": "photutils",
+          "cacheHit": false,
+          "status": "FAILED",
+          "error": "ValueError: All boxes contain <= 14745.6 unmasked or finite pixels (self.box_size=array([128, 128]), self.exclude_percentile=10.0). Please check your data or increase \"exclude_percentile\" to allow more boxes to be included.",
+          "seconds": 0.6385268999729306,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\c8474f658cb8c62b37811e95d728e7c595e423fbb0acaef791e03f7f2cee473b\\failure.json"
+        },
+        {
+          "sample": "ngc5128",
+          "method": "siril",
+          "cacheHit": false,
+          "seconds": 1.8990954998880625,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "m81-m82",
+          "method": "original",
+          "cacheHit": false,
+          "seconds": 0.7500535000581294,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\43295932798454bd6ac887c7b0278bb158ec26a0a103503dd2b66af4ba9e4901\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "m81-m82",
+          "method": "photutils",
+          "cacheHit": false,
+          "seconds": 2.247474299976602,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\e5884200e3396767807c5f1fa0df487755eb4ca8e3a4523c3de7efb365d2048f\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "m81-m82",
+          "method": "siril",
+          "status": "SKIPPED_POLICY",
+          "reason": "nox stopped after representative artifacts; Siril first-order recipe had no material benefit; no parameter sweep"
+        }
+      ],
+      "wallSeconds": 13.96954459999688,
+      "packages": {
+        "numpy": "2.5.3",
+        "Pillow": "12.3.0",
+        "astropy": "8.0.1",
+        "photutils": "3.0.0",
+        "scipy": "1.18.1",
+        "psutil": "7.2.2",
+        "PyAVM": "0.9.9"
+      },
+      "manifest": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/image-tool-benchmark-samples.json",
+        "bytes": 2662,
+        "sha256": "954dd8768cf8c4deb248f1ec7a00470e2e45aed509f68f367ac523fd21a188d3"
+      }
+    },
+    "verified-warm": {
+      "rows": [
+        {
+          "sample": "ngc253",
+          "method": "original",
+          "cacheHit": true,
+          "seconds": 0.038580199936404824,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\cf7db0bb2000290b95eeb4f8ee8018f80751644ee4833ebe3d07d0b2b30f841f\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc253",
+          "method": "photutils",
+          "cacheHit": true,
+          "seconds": 0.057697500102221966,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\2de1e996329fdfa25eca4804248f9333e5b450e134172f02a91467db371e4f0f\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc253",
+          "method": "siril",
+          "cacheHit": true,
+          "seconds": 0.32030589994974434,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc5128",
+          "method": "original",
+          "cacheHit": true,
+          "seconds": 0.025819199858233333,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\e1f46fc4063b37b7579906da9b43397ea36c454abe3ca77669903a1e792feee7\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "ngc5128",
+          "method": "photutils",
+          "cacheHit": true,
+          "seconds": 0.020092499908059835,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\c8474f658cb8c62b37811e95d728e7c595e423fbb0acaef791e03f7f2cee473b\\failure.json",
+          "status": "FAILED",
+          "error": "ValueError: All boxes contain <= 14745.6 unmasked or finite pixels (self.box_size=array([128, 128]), self.exclude_percentile=10.0). Please check your data or increase \"exclude_percentile\" to allow more boxes to be included."
+        },
+        {
+          "sample": "ngc5128",
+          "method": "siril",
+          "cacheHit": true,
+          "seconds": 0.2783785001374781,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "m81-m82",
+          "method": "original",
+          "cacheHit": true,
+          "seconds": 0.04126109997741878,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\43295932798454bd6ac887c7b0278bb158ec26a0a103503dd2b66af4ba9e4901\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "m81-m82",
+          "method": "photutils",
+          "cacheHit": true,
+          "seconds": 0.050467299995943904,
+          "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\e5884200e3396767807c5f1fa0df487755eb4ca8e3a4523c3de7efb365d2048f\\receipt.json",
+          "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+        },
+        {
+          "sample": "m81-m82",
+          "method": "siril",
+          "status": "SKIPPED_POLICY",
+          "reason": "nox stopped after representative artifacts; Siril first-order recipe had no material benefit; no parameter sweep"
+        }
+      ],
+      "wallSeconds": 0.8475643000565469,
+      "packages": {
+        "numpy": "2.5.3",
+        "Pillow": "12.3.0",
+        "astropy": "8.0.1",
+        "photutils": "3.0.0",
+        "scipy": "1.18.1",
+        "psutil": "7.2.2",
+        "PyAVM": "0.9.9"
+      },
+      "manifest": {
+        "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/image-tool-benchmark-samples.json",
+        "bytes": 2662,
+        "sha256": "954dd8768cf8c4deb248f1ec7a00470e2e45aed509f68f367ac523fd21a188d3"
+      }
+    }
+  },
+  "selected": {
+    "ngc253:original": {
+      "row": {
+        "sample": "ngc253",
+        "method": "original",
+        "cacheHit": false,
+        "seconds": 1.0281263999640942,
+        "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\cf7db0bb2000290b95eeb4f8ee8018f80751644ee4833ebe3d07d0b2b30f841f\\receipt.json",
+        "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+      },
+      "binding": {
+        "path": "output/image-tool-benchmark-2026-10-08/cache/cf7db0bb2000290b95eeb4f8ee8018f80751644ee4833ebe3d07d0b2b30f841f/receipt.json",
+        "bytes": 4660,
+        "sha256": "a66019594857a1d761f38a3d2abbf51c5febfd229959d70faabc3715563c79fd"
+      },
+      "measurements": {
+        "key": {
+          "input": {
+            "path": "output/prepared-candidate-samples-1005-r1/eso0902c.jpg",
+            "bytes": 8339408,
+            "sha256": "76bd6fd768c6503e7b1c2092dad6efbb295f7725d5bdff54447443bf4dfd6fe6"
+          },
+          "sample": {
+            "id": "ngc253",
+            "kind": "galaxy",
+            "width": 1024,
+            "input": {
+              "path": "output/prepared-candidate-samples-1005-r1/eso0902c.jpg",
+              "bytes": 8339408,
+              "sha256": "76bd6fd768c6503e7b1c2092dad6efbb295f7725d5bdff54447443bf4dfd6fe6"
+            },
+            "metadata": "output/prepared-candidate-inspection-1005-r2/ngc253-candidate.json",
+            "source": "https://www.eso.org/public/images/eso0902c/",
+            "credit": "ESO",
+            "license": "CC BY 4.0",
+            "question": "Do background estimation or star separation reduce photographic field contrast without deleting faint disk ends and dust structure?",
+            "backgroundEligible": true,
+            "protectEllipses": [
+              [
+                0.5,
+                0.52,
+                0.46,
+                0.18,
+                43
+              ]
+            ],
+            "methods": [
+              "original",
+              "photutils",
+              "siril",
+              "nox"
+            ]
+          },
+          "metadata": {
+            "path": "output/prepared-candidate-inspection-1005-r2/ngc253-candidate.json",
+            "bytes": 6458,
+            "sha256": "dc5708ded8e44cdc6aefe4cf956300419507847aeb6802daf83bb8f483006e47"
+          },
+          "formula": {
+            "path": "data-pipelines/deep-sky/publish_prepared_display.py",
+            "bytes": 17250,
+            "sha256": "6a0f6c8afe8fa9556713c0fac0b7fa9f348aa45d0f7ca792397f4a25f1625b2c"
+          },
+          "method": "original",
+          "tools": [],
+          "packages": {
+            "numpy": "2.5.3",
+            "Pillow": "12.3.0",
+            "astropy": "8.0.1",
+            "photutils": "3.0.0",
+            "scipy": "1.18.1",
+            "psutil": "7.2.2",
+            "PyAVM": "0.9.9"
+          },
+          "runner": "0997e1603dd4117098f2b48f7f22882d8554f516a0000905f9bc83be267835b5",
+          "spec": "full-source-LANCZOS-1024-sRGB-8bit-PNG; no crop; geometric alpha opaque"
+        },
+        "timings": {
+          "readHash": 0.029334000078961253,
+          "decode": 0.2939349999651313,
+          "resize": 0.44575590011663735,
+          "toolFormatConversion": 0.10987740010023117,
+          "process": 1.800013706088066e-06,
+          "encodeAndDiagnostics": 0.05812920001335442,
+          "total": 0.9882229999639094
+        },
+        "details": {},
+        "metrics": {
+          "changedPixels": 0,
+          "meanAbsoluteRGB": 0.0,
+          "protectedMeanAbsoluteRGB": 0.0,
+          "newBlackPixels": 0
+        },
+        "parentPeakWorkingSetBytes": 615960576,
+        "manualRepairCount": 0,
+        "manualRepairSeconds": 0,
+        "reviewSeconds": "UNKNOWN",
+        "outputs": [
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/cf7db0bb2000290b95eeb4f8ee8018f80751644ee4833ebe3d07d0b2b30f841f/comparison.jpg",
+            "bytes": 220459,
+            "sha256": "55d1f5eb455c29c19fc2ab6bab665049063a7b0a8196470b38e2b690335f90e7"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/cf7db0bb2000290b95eeb4f8ee8018f80751644ee4833ebe3d07d0b2b30f841f/difference-x8.png",
+            "bytes": 2843,
+            "sha256": "581dacc282bd2d617662299d0c1e8022c76894941146bbc73c855792179a4924"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/cf7db0bb2000290b95eeb4f8ee8018f80751644ee4833ebe3d07d0b2b30f841f/original.png",
+            "bytes": 949252,
+            "sha256": "c67f864449dff0d5bb6954a14a0c204aa30eea2b56b3046a77a53f8ade55d280"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/cf7db0bb2000290b95eeb4f8ee8018f80751644ee4833ebe3d07d0b2b30f841f/processed.png",
+            "bytes": 949252,
+            "sha256": "c67f864449dff0d5bb6954a14a0c204aa30eea2b56b3046a77a53f8ade55d280"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/cf7db0bb2000290b95eeb4f8ee8018f80751644ee4833ebe3d07d0b2b30f841f/protection-region.png",
+            "bytes": 5146,
+            "sha256": "66faec4d6d40741db543fd3797703df214267184fa79073fef76a55f51556008"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/cf7db0bb2000290b95eeb4f8ee8018f80751644ee4833ebe3d07d0b2b30f841f/removed-layer.png",
+            "bytes": 2843,
+            "sha256": "581dacc282bd2d617662299d0c1e8022c76894941146bbc73c855792179a4924"
+          }
+        ]
+      }
+    },
+    "ngc253:photutils": {
+      "row": {
+        "sample": "ngc253",
+        "method": "photutils",
+        "cacheHit": false,
+        "seconds": 4.348687099991366,
+        "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\2de1e996329fdfa25eca4804248f9333e5b450e134172f02a91467db371e4f0f\\receipt.json",
+        "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+      },
+      "binding": {
+        "path": "output/image-tool-benchmark-2026-10-08/cache/2de1e996329fdfa25eca4804248f9333e5b450e134172f02a91467db371e4f0f/receipt.json",
+        "bytes": 5554,
+        "sha256": "a53f4b20a2f72e19b9e045b4a7229c0f7553a0baa0ceb4ea8e43f34d2df6fa23"
+      },
+      "measurements": {
+        "key": {
+          "input": {
+            "path": "output/prepared-candidate-samples-1005-r1/eso0902c.jpg",
+            "bytes": 8339408,
+            "sha256": "76bd6fd768c6503e7b1c2092dad6efbb295f7725d5bdff54447443bf4dfd6fe6"
+          },
+          "sample": {
+            "id": "ngc253",
+            "kind": "galaxy",
+            "width": 1024,
+            "input": {
+              "path": "output/prepared-candidate-samples-1005-r1/eso0902c.jpg",
+              "bytes": 8339408,
+              "sha256": "76bd6fd768c6503e7b1c2092dad6efbb295f7725d5bdff54447443bf4dfd6fe6"
+            },
+            "metadata": "output/prepared-candidate-inspection-1005-r2/ngc253-candidate.json",
+            "source": "https://www.eso.org/public/images/eso0902c/",
+            "credit": "ESO",
+            "license": "CC BY 4.0",
+            "question": "Do background estimation or star separation reduce photographic field contrast without deleting faint disk ends and dust structure?",
+            "backgroundEligible": true,
+            "protectEllipses": [
+              [
+                0.5,
+                0.52,
+                0.46,
+                0.18,
+                43
+              ]
+            ],
+            "methods": [
+              "original",
+              "photutils",
+              "siril",
+              "nox"
+            ]
+          },
+          "metadata": {
+            "path": "output/prepared-candidate-inspection-1005-r2/ngc253-candidate.json",
+            "bytes": 6458,
+            "sha256": "dc5708ded8e44cdc6aefe4cf956300419507847aeb6802daf83bb8f483006e47"
+          },
+          "formula": {
+            "path": "data-pipelines/deep-sky/publish_prepared_display.py",
+            "bytes": 17250,
+            "sha256": "6a0f6c8afe8fa9556713c0fac0b7fa9f348aa45d0f7ca792397f4a25f1625b2c"
+          },
+          "method": "photutils",
+          "tools": [],
+          "packages": {
+            "numpy": "2.5.3",
+            "Pillow": "12.3.0",
+            "astropy": "8.0.1",
+            "photutils": "3.0.0",
+            "scipy": "1.18.1",
+            "psutil": "7.2.2",
+            "PyAVM": "0.9.9"
+          },
+          "runner": "0997e1603dd4117098f2b48f7f22882d8554f516a0000905f9bc83be267835b5",
+          "spec": "full-source-LANCZOS-1024-sRGB-8bit-PNG; no crop; geometric alpha opaque"
+        },
+        "timings": {
+          "readHash": 0.031008200021460652,
+          "decode": 0.2900504998397082,
+          "resize": 0.4501149000134319,
+          "toolFormatConversion": 0.11411279998719692,
+          "process": 3.0859067998826504,
+          "encodeAndDiagnostics": 0.26544540002942085,
+          "total": 4.308126599993557
+        },
+        "details": {
+          "maskedFraction": 0.36737271012931033,
+          "backgroundMedianRGB": [
+            6.000199865107309,
+            5.6735977148044885,
+            5.907460436343007
+          ],
+          "negativeChannelPixels": [
+            188750,
+            233212,
+            256574
+          ],
+          "formulaOwner": "publish_prepared_display.verify_display_pixels"
+        },
+        "metrics": {
+          "changedPixels": 928913,
+          "meanAbsoluteRGB": 5.129070764300467,
+          "protectedMeanAbsoluteRGB": 3.552005372472551,
+          "newBlackPixels": 225912
+        },
+        "parentPeakWorkingSetBytes": 616988672,
+        "manualRepairCount": 0,
+        "manualRepairSeconds": 0,
+        "reviewSeconds": "UNKNOWN",
+        "outputs": [
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/2de1e996329fdfa25eca4804248f9333e5b450e134172f02a91467db371e4f0f/background.npz",
+            "bytes": 19194121,
+            "sha256": "2efe9c91c2d3176385ff79107a5c72f543d9268d07d26b91b9ab3286f214583f"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/2de1e996329fdfa25eca4804248f9333e5b450e134172f02a91467db371e4f0f/comparison.jpg",
+            "bytes": 320701,
+            "sha256": "cfa02753af2b223f1ee2e24cbbe9d18977ebb16ccd48b41c7432e832db59ec5b"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/2de1e996329fdfa25eca4804248f9333e5b450e134172f02a91467db371e4f0f/difference-x8.png",
+            "bytes": 338732,
+            "sha256": "c9c8d082e2991221c5111c98268b91c16ae68ebdcb6e903f7c0ec9011fa60aa7"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/2de1e996329fdfa25eca4804248f9333e5b450e134172f02a91467db371e4f0f/estimation-mask.png",
+            "bytes": 12924,
+            "sha256": "0e0b6d8c281a2671a7049a65331e1c4c7e51f403ff1341031265372deaf14446"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/2de1e996329fdfa25eca4804248f9333e5b450e134172f02a91467db371e4f0f/original.png",
+            "bytes": 949252,
+            "sha256": "c67f864449dff0d5bb6954a14a0c204aa30eea2b56b3046a77a53f8ade55d280"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/2de1e996329fdfa25eca4804248f9333e5b450e134172f02a91467db371e4f0f/processed.png",
+            "bytes": 868159,
+            "sha256": "2a036206abba50ae211719c0badf6e3279dce8304e04e8cab596d16251628fa1"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/2de1e996329fdfa25eca4804248f9333e5b450e134172f02a91467db371e4f0f/protection-region.png",
+            "bytes": 5146,
+            "sha256": "66faec4d6d40741db543fd3797703df214267184fa79073fef76a55f51556008"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/2de1e996329fdfa25eca4804248f9333e5b450e134172f02a91467db371e4f0f/removed-layer.png",
+            "bytes": 338443,
+            "sha256": "ea039f170efe27bbd5c87c71d724f16fd0ce9a70c0fb1d6127b2f4ad86bc162a"
+          }
+        ]
+      }
+    },
+    "ngc253:siril": {
+      "row": {
+        "sample": "ngc253",
+        "method": "siril",
+        "cacheHit": false,
+        "seconds": 2.3943266000133008,
+        "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f\\receipt.json",
+        "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+      },
+      "binding": {
+        "path": "output/image-tool-benchmark-2026-10-08/cache/44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f/receipt.json",
+        "bytes": 26016,
+        "sha256": "dcf100f5ac4ebec7cfd5f7aa4bdd76d93345da0827e761b638c6fd9d21bb6728"
+      },
+      "measurements": {
+        "key": {
+          "input": {
+            "path": "output/prepared-candidate-samples-1005-r1/eso0902c.jpg",
+            "bytes": 8339408,
+            "sha256": "76bd6fd768c6503e7b1c2092dad6efbb295f7725d5bdff54447443bf4dfd6fe6"
+          },
+          "sample": {
+            "id": "ngc253",
+            "kind": "galaxy",
+            "width": 1024,
+            "input": {
+              "path": "output/prepared-candidate-samples-1005-r1/eso0902c.jpg",
+              "bytes": 8339408,
+              "sha256": "76bd6fd768c6503e7b1c2092dad6efbb295f7725d5bdff54447443bf4dfd6fe6"
+            },
+            "metadata": "output/prepared-candidate-inspection-1005-r2/ngc253-candidate.json",
+            "source": "https://www.eso.org/public/images/eso0902c/",
+            "credit": "ESO",
+            "license": "CC BY 4.0",
+            "question": "Do background estimation or star separation reduce photographic field contrast without deleting faint disk ends and dust structure?",
+            "backgroundEligible": true,
+            "protectEllipses": [
+              [
+                0.5,
+                0.52,
+                0.46,
+                0.18,
+                43
+              ]
+            ],
+            "methods": [
+              "original",
+              "photutils",
+              "siril",
+              "nox"
+            ]
+          },
+          "metadata": {
+            "path": "output/prepared-candidate-inspection-1005-r2/ngc253-candidate.json",
+            "bytes": 6458,
+            "sha256": "dc5708ded8e44cdc6aefe4cf956300419507847aeb6802daf83bb8f483006e47"
+          },
+          "formula": {
+            "path": "data-pipelines/deep-sky/publish_prepared_display.py",
+            "bytes": 17250,
+            "sha256": "6a0f6c8afe8fa9556713c0fac0b7fa9f348aa45d0f7ca792397f4a25f1625b2c"
+          },
+          "method": "siril",
+          "tools": [
+            {
+              "name": "siril-cli.exe",
+              "sha256": "132c735ecb623559a945c43a617811da84c19c43988c8a234861f903dd362e0b",
+              "version": "1.4.4",
+              "configuration": "e1a809eabbd817588efcb5294512dcf2cd75d3fd6793f0ddf496eda18a84441c"
+            },
+            {
+              "name": "avcodec-62.dll",
+              "sha256": "c82704962e2746e7d622e6de3e6992bceb47514d97259f06dc0a1f64683de085"
+            },
+            {
+              "name": "avformat-62.dll",
+              "sha256": "aa709545539b26d83a69147664e183d79bc1702febd023cefa11f7caa6b350d1"
+            },
+            {
+              "name": "avutil-60.dll",
+              "sha256": "566739d7ccf6fc8bd101d0a5e0dfbef0f8a632cdc7ea0f73cd6c50d1c5c743bd"
+            },
+            {
+              "name": "libaom.dll",
+              "sha256": "ef3f26fca47724fb07b20d08815bb87506493663d1f0e9f2d997ceb5d78c095b"
+            },
+            {
+              "name": "libatk-1.0-0.dll",
+              "sha256": "c9df8fa5320cf9f2b588e6781ccd942742048adf4432acd9e163524fd29c83b9"
+            },
+            {
+              "name": "libbluray-3.dll",
+              "sha256": "39536de31a5257c03d4340ee6607d9cb9b7996771077f8260327cdae044af1fd"
+            },
+            {
+              "name": "libbrotlicommon.dll",
+              "sha256": "c62c08223e450dfc2fff33c752cc228505ffd9d755201958ba800d5d30481a2c"
+            },
+            {
+              "name": "libbrotlidec.dll",
+              "sha256": "e270b6e576594ee8ee6e33ccc54e34a54304616dd6225652e11e49d6f17ef896"
+            },
+            {
+              "name": "libbrotlienc.dll",
+              "sha256": "82573820fe9cc3f57004b6603428e2fa1bfc9d2048707bfcead3cfc5ef3ab284"
+            },
+            {
+              "name": "libbz2-1.dll",
+              "sha256": "669a4bf9266d5f020e843aa5fd75b93ce8ebde27014d5ac466a8b3cf39d8aba7"
+            },
+            {
+              "name": "libcairo-2.dll",
+              "sha256": "10cb3ddfb67ef352365d5cdf1fce0376693d2d6e90aefefee41b3c0c5ce363e4"
+            },
+            {
+              "name": "libcairo-gobject-2.dll",
+              "sha256": "bdba64fdd18aad8de2773d3553786d0f9560ae3ae005a17b6cc6bef124219370"
+            },
+            {
+              "name": "libcfitsio-10.dll",
+              "sha256": "6a027848b38cbb886342946e371a47cf915f73aea960a3da813b06f469723953"
+            },
+            {
+              "name": "libcrypto-3-x64.dll",
+              "sha256": "616e5c9cfd5c6f786fd81238198ec479076f5bf6702127f81686f46b31b2464d"
+            },
+            {
+              "name": "libcryptopp.dll",
+              "sha256": "43109a7e159418876e4300d45336c5b1c603c6faee5f70bdf58688563dbe51b5"
+            },
+            {
+              "name": "libcurl-4.dll",
+              "sha256": "4637c506f0058d5ecb10f44a76aa63b491830b9ea4d4c34542aba0a553a6af6e"
+            },
+            {
+              "name": "libdatrie-1.dll",
+              "sha256": "40aee3ae9a62a77454dfe8419fe21b54c54d969e0471c9e817b65d4502a9949f"
+            },
+            {
+              "name": "libdav1d-7.dll",
+              "sha256": "787c6c918977247aeea0d91576077435bbed3a58b3438087e8edac549ad9e932"
+            },
+            {
+              "name": "libde265-0.dll",
+              "sha256": "edbd3469daad5996b27f0204b7b4c3d8683b960ca80e1b5e37950d0ef2488093"
+            },
+            {
+              "name": "libdeflate.dll",
+              "sha256": "fb54be03668f41fae3f5d8bbabeedbc24e71b37e637e3cd34acd54f89f128ac1"
+            },
+            {
+              "name": "libepoxy-0.dll",
+              "sha256": "dc4055b53d0d6507740e9f3be18c9f2b1318faa531b9b2913eef3c5332fffedc"
+            },
+            {
+              "name": "libexiv2-28.dll",
+              "sha256": "5f6931141804ba02ebe5d9ae7404ceb74acd1cb0301e392e82b1f09af1c9f503"
+            },
+            {
+              "name": "libexpat-1.dll",
+              "sha256": "2b8f2c669a062c4d0ee1011de51330ec26c2be51c8237312f68714902427f68c"
+            },
+            {
+              "name": "libffi-8.dll",
+              "sha256": "ccd1c21178c2e239eaa6c904a25c7f26efdfadb0faf344e62b1bbb39a30241d5"
+            },
+            {
+              "name": "libffms2-5.dll",
+              "sha256": "ba7d70801bd60504166b82e33134b309d9f0f77493c008ec949941e3f8ab7822"
+            },
+            {
+              "name": "libfftw3f-3.dll",
+              "sha256": "8342e0ea84f21c00946a573232621f0fcdc6cd08b9a9dc98446828585dbe031e"
+            },
+            {
+              "name": "libfftw3f_omp-3.dll",
+              "sha256": "fb11e9897d0c5c8c39b40b122327f8f1b5d882af71ce74dff4dbaa04e5548602"
+            },
+            {
+              "name": "libfontconfig-1.dll",
+              "sha256": "e97e4a41142dd99b25b22f2ce116bc0215d7e4222e72c6f20f02726ddfa350e3"
+            },
+            {
+              "name": "libfreetype-6.dll",
+              "sha256": "a3271784f8366b3c6412e0c35474884fa12899c392bacb08bc8eac00f4be7e64"
+            },
+            {
+              "name": "libfribidi-0.dll",
+              "sha256": "73a712fd51fa0085e8660084743a821ae7388de138069cd6cd8c171d4487da84"
+            },
+            {
+              "name": "libgcc_s_seh-1.dll",
+              "sha256": "ff139cfe956709283f7b70a06af8bc8bb9d1c3bef60ec1bc8d363c91351cfeb2"
+            },
+            {
+              "name": "libgdk-3-0.dll",
+              "sha256": "867de3778673beed6aa5ecaed274c8dbb31eda2cc3f72c814d42e994ac655100"
+            },
+            {
+              "name": "libgdk_pixbuf-2.0-0.dll",
+              "sha256": "3b65e43c2b4ec240358c5b268be1d2be698e8a79e04db72a47b7e4de96e9c30b"
+            },
+            {
+              "name": "libgfortran-5.dll",
+              "sha256": "2cbb28fd66914d68ad52520fc27b4549cd5ae031d678cc543c6d26b406537ac0"
+            },
+            {
+              "name": "libgio-2.0-0.dll",
+              "sha256": "44542ac98f4ba4e5d99b9e4fd46ba7906196d95d064ea90e6ab3c2f44a79ccb0"
+            },
+            {
+              "name": "libgit2-1.9.dll",
+              "sha256": "97e0da488a174c4535177dfa48dd7dabaa75f6d5bee416a6d73c963e8cd3f270"
+            },
+            {
+              "name": "libglib-2.0-0.dll",
+              "sha256": "75164119231988002ef0c809b7b5b249d81b8b044d8cbda7e5848f9fccd12944"
+            },
+            {
+              "name": "libgme.dll",
+              "sha256": "98e306bc1443f4f5a0744baf0477d2f856594bb3f8036440ad7cb1f30a1f5a72"
+            },
+            {
+              "name": "libgmodule-2.0-0.dll",
+              "sha256": "c450d92a5f625f9dda36155b516d2bbf1ce098633a4adca86b21b7a917028b55"
+            },
+            {
+              "name": "libgmp-10.dll",
+              "sha256": "c2567ccf3f410c3411ba7cd4b7ba14f393a0e70a1d0c0593297df6706b5fba96"
+            },
+            {
+              "name": "libgnutls-30.dll",
+              "sha256": "51b7b83cf7ab3f4cba021fe8e955e2562036f7a7881dec40c38bdee3fcf72b34"
+            },
+            {
+              "name": "libgobject-2.0-0.dll",
+              "sha256": "d3fbea73e62539a3303408c39fbaa0bc7b7b4886e2ad7ad31e88469e32e54b6b"
+            },
+            {
+              "name": "libgomp-1.dll",
+              "sha256": "f53cb4da77cd3ec8e9ec15c11a8fd5cfcff448e33b37da1e1eb225c455028037"
+            },
+            {
+              "name": "libgraphite2.dll",
+              "sha256": "93953e4744bcfce9a7bc439b956544bc213095cb1349c3602a58370f32b25c18"
+            },
+            {
+              "name": "libgsl-28.dll",
+              "sha256": "d0f7e108ffbb958b551c798ce733104632002ff5d03f2a1988b8f6bb65cf6552"
+            },
+            {
+              "name": "libgslcblas-0.dll",
+              "sha256": "de35388e089cbcd723ad7ec968ea4ff1d3811f5b0f5c66606bfeb7d7906631f9"
+            },
+            {
+              "name": "libgsm.dll",
+              "sha256": "b3446b547f8894bcabf0aa98a78146c60b1cf6dba7ab55e6a726fb3739276bf4"
+            },
+            {
+              "name": "libgtk-3-0.dll",
+              "sha256": "c5df1e6dcb722602938510a03a6a13af3be46c651ca4c52ff97c92c777593844"
+            },
+            {
+              "name": "libgtksourceview-4-0.dll",
+              "sha256": "bfa20a0e634ffd33a150a95947acfc970852c72028255b103f272f16a859ed9e"
+            },
+            {
+              "name": "libharfbuzz-0.dll",
+              "sha256": "2e1523eddd3a7c5be5fb8ad9a8e8eee819664356752d18c56f7c8f5896126ddb"
+            },
+            {
+              "name": "libheif.dll",
+              "sha256": "683200709977558926374a3033f0e03563fbf68a400580949ce03665a3d291c8"
+            },
+            {
+              "name": "libhogweed-6.dll",
+              "sha256": "41413cc62bbe5541be86e730cb5a7cd9d89f3168a1847855b160119a93d05e01"
+            },
+            {
+              "name": "libhttp_parser-2.dll",
+              "sha256": "c87633a813476f796b6b96a8f253a14e839e61c4a3c588df31023eed5e2644ab"
+            },
+            {
+              "name": "libhwy.dll",
+              "sha256": "9ba0ac7bad82c4c88e9bb8d6ca8c6a83877adc1f71cc48590c65b8d26108a41c"
+            },
+            {
+              "name": "libiconv-2.dll",
+              "sha256": "94ec68fb8d342b6c91b6b48a8d95092819cdcd006a7166e0b68062f946afd08a"
+            },
+            {
+              "name": "libidn2-0.dll",
+              "sha256": "a054a6bb69aaf4666157f968740412e9697085cbc1e48a78f8dd9622169c5aaf"
+            },
+            {
+              "name": "libinih-0.dll",
+              "sha256": "f5061ee77fd13635d800a1307bcc9e3c1f3027900e39b5c3eccaea5c0d67f920"
+            },
+            {
+              "name": "libINIReader-0.dll",
+              "sha256": "12196c40c1386e567087095371a575a744b53a045ad5b6183e5838823a5f7fb0"
+            },
+            {
+              "name": "libintl-8.dll",
+              "sha256": "0e5a178731e6be6d115442a6ade3df7f03265cd1fc4338f8b6f86a8001cbf582"
+            },
+            {
+              "name": "libjbig-0.dll",
+              "sha256": "6d1657e08318630738fb0841ee28bbe7272b41b3b2ef93adaa228c4cd10092c6"
+            },
+            {
+              "name": "libjpeg-8.dll",
+              "sha256": "14a1610a8c486bae8ef2c868aa04bcb202533473bd6975c46da196a236489ca8"
+            },
+            {
+              "name": "libjxl.dll",
+              "sha256": "848e925d89918a64feeb6889ea21751bb451e7057a8c727e48db5aaff68b97fa"
+            },
+            {
+              "name": "libjxl_cms.dll",
+              "sha256": "8391bd69c590bf9f7fc69cfe1ba9b479d7e4d888397717280c383f256e18cd69"
+            },
+            {
+              "name": "libjxl_threads.dll",
+              "sha256": "94aa6263b7b4f70ab9161498ded720ebabef4e664bed42f91cc9a9650988aa15"
+            },
+            {
+              "name": "libkvazaar-7.dll",
+              "sha256": "642f969e7118ae8e8068c30182fbda3cd6100c5f291f404d9f37d6fd00982c30"
+            },
+            {
+              "name": "liblc3-1.dll",
+              "sha256": "970f6d805e215cc17df962c64e21449af3da97e09cb4a14a5f943bbd0e9c0329"
+            },
+            {
+              "name": "liblcms2-2.dll",
+              "sha256": "03314471fadd04cdd63c108472ff85d058903d236a0356c14eda363f0e1ccb65"
+            },
+            {
+              "name": "libLerc.dll",
+              "sha256": "3e3aa1d6e040d9ac93eb81cb5e472543f612373c3ab653ed2b2a86ab1d7c05c4"
+            },
+            {
+              "name": "liblz4.dll",
+              "sha256": "5e83fd34144fa033c12e22718317ec2123f8a3460903932b0bfddb8aad379cfd"
+            },
+            {
+              "name": "liblzma-5.dll",
+              "sha256": "ad9656bf86fb3673fa6af18fa357531096af3d76eccb4a56c4cd6a6171da1554"
+            },
+            {
+              "name": "libmodplug-1.dll",
+              "sha256": "d1425827ff8c5cc81dfc66d7d5660e9ea9bfda8ada71255a0c4847d0889ea62b"
+            },
+            {
+              "name": "libmp3lame-0.dll",
+              "sha256": "7ae709bf841478222fc468d6aa08cdb47a683feb40ff13fe9fb36359333d4559"
+            },
+            {
+              "name": "libnettle-8.dll",
+              "sha256": "6bc0118efb3a96abf5d3babf85e373fdd033b9e086fb02046073c19eaa9441af"
+            },
+            {
+              "name": "libnghttp2-14.dll",
+              "sha256": "090fb5e095489f8853e3ccd6d649921de2dcbab378cc6a430264881853e3a07e"
+            },
+            {
+              "name": "libnghttp3-9.dll",
+              "sha256": "889a89a7e6fcdb30a67366ba4dd38e61a54dfcf6e976ca5598005b4b3e74f6d1"
+            },
+            {
+              "name": "libngtcp2-16.dll",
+              "sha256": "2c15fbc0d582707dfe17fc778787f4f61b0a8b52cf697e773d6af578654f4956"
+            },
+            {
+              "name": "libngtcp2_crypto_ossl-0.dll",
+              "sha256": "f913d6128a02fb99c5430c507a2a6b54f220b99b097a856a5869678655492727"
+            },
+            {
+              "name": "libogg-0.dll",
+              "sha256": "2f102fba6f2a49516be85cb2643f6a9ba394dc5657aedb3ea235b6603c12d3d2"
+            },
+            {
+              "name": "libopenblas.dll",
+              "sha256": "84cdd800f049eb061fcba7eedfa70e382cc180327d1b4686b09534f8e6329e47"
+            },
+            {
+              "name": "libopencore-amrnb-0.dll",
+              "sha256": "9d36d5661fd002f8889d90e0a53f2c5d693c641c075ef55c26ade85d958d1369"
+            },
+            {
+              "name": "libopencore-amrwb-0.dll",
+              "sha256": "54341e49eab692d77e0ff8534a40a3cce6d0d58b9cd157ed69c817c4b852bbdb"
+            },
+            {
+              "name": "libopencv_calib3d-411.dll",
+              "sha256": "eb31a8ff55c1b1879dc56cafd9a94bfb9651db99df4bcdbd3db321b10cbf3372"
+            },
+            {
+              "name": "libopencv_core-411.dll",
+              "sha256": "3e018791a9f0babc5b550b70acb83c94de65fdb708db2994c29bd623331a5e44"
+            },
+            {
+              "name": "libopencv_features2d-411.dll",
+              "sha256": "9ece2ec0cd6463246e2d01e75ed9cfe04553d646da675536cdddd71e356763eb"
+            },
+            {
+              "name": "libopencv_flann-411.dll",
+              "sha256": "45329dfd2e52bf3b2164c277487abbd78d9450de1f93a3a29e9548f5d13347af"
+            },
+            {
+              "name": "libopencv_imgproc-411.dll",
+              "sha256": "e6551a2db8b4c3b8a720e49bcc6ae8501182f0d03d54de0f1239b5f6a7faaac4"
+            },
+            {
+              "name": "libopenh264-7.dll",
+              "sha256": "29ca6f7ec1be9b951edcd61e8f7197071d7266634c9e0af3968ba8282f1c9ded"
+            },
+            {
+              "name": "libopenjp2-7.dll",
+              "sha256": "94f9507828d391cf96d700d34918114f1c1e03f91dd1243a19275e0435690925"
+            },
+            {
+              "name": "libopenjph-0.28.dll",
+              "sha256": "cda3b6373eefe00b7a37fb54fb91fb2dc9e25bc0d80a367fa452b7caf28b1cf1"
+            },
+            {
+              "name": "libopus-0.dll",
+              "sha256": "c12f9a671a106c649a5517d28061670aa57c805d242b80764853a7551099498d"
+            },
+            {
+              "name": "libp11-kit-0.dll",
+              "sha256": "54eed069b113bd3a1b8961acbae48f89d5a4c8d696720d87edf40c95bf815f30"
+            },
+            {
+              "name": "libpango-1.0-0.dll",
+              "sha256": "0b5921d0e26b9906319b245b2a7bbb52ba3bd91e1a869d974d2d36bf3050bc58"
+            },
+            {
+              "name": "libpangocairo-1.0-0.dll",
+              "sha256": "d65b34a20adef5ac69554a87d76f5c3780d4305789944bd5c764b0374e430155"
+            },
+            {
+              "name": "libpangoft2-1.0-0.dll",
+              "sha256": "3775ce3f7a852d1713ed7784e39df34f50fedb7fe9a076b28705a6657934bccc"
+            },
+            {
+              "name": "libpangowin32-1.0-0.dll",
+              "sha256": "bf85641f607be849a85ca4a81673f9132ceb044b31317ca9da0eba148b5d8ab1"
+            },
+            {
+              "name": "libpcre2-8-0.dll",
+              "sha256": "52ccc7e4ec5ad0aecf307c0328826340f5d504aa59f7c4143b9a1b9fff16ccda"
+            },
+            {
+              "name": "libpixman-1-0.dll",
+              "sha256": "12e693d94829f013e0bd7c042b30998b20e91ece7b6f4d5f075ddbb58b373c92"
+            },
+            {
+              "name": "libpng16-16.dll",
+              "sha256": "5c1dd5410af563f4a3c4aee10d1f749aa71e0d7fb3b4fac240eb9e96cadebd26"
+            },
+            {
+              "name": "libpsl-5.dll",
+              "sha256": "a531e72de3c64d43fb83cbfb6fa63e5ee982a970292ec51314e29d0acabf1dd5"
+            },
+            {
+              "name": "libpugixml.dll",
+              "sha256": "079241141c08ff1519fc951ac9d8da4404a1724c476ef8c93a8538a8d4927edd"
+            },
+            {
+              "name": "libquadmath-0.dll",
+              "sha256": "9508edce590f1d78f9364e832f50ed933bfd2b442f5fe1a6e7c42aaee13adc71"
+            },
+            {
+              "name": "librav1e.dll",
+              "sha256": "bc549e2178589f371469d1bd23544859ff118e48218eae2bfca7126654988779"
+            },
+            {
+              "name": "libraw-25.dll",
+              "sha256": "f6509adf691fc46957b111f91900636cd7f3e6088b59c4d922e162f935d3f19b"
+            },
+            {
+              "name": "librsvg-2-2.dll",
+              "sha256": "f359bdbb483519da1d6920d7ba162f48ba53131c97e31531fa8bd9ecf58ecc0c"
+            },
+            {
+              "name": "librtmp-1.dll",
+              "sha256": "fc6ba617fb93787fb3d58e7333921db83f29004fd876fe5b65016b60262fc68a"
+            },
+            {
+              "name": "libshaderc_shared.dll",
+              "sha256": "887d422382f18be097c447ed3922db04397d50ddf7e34f3cc18d2e2abde740b0"
+            },
+            {
+              "name": "libsharpyuv-0.dll",
+              "sha256": "d29380c7056383f3e7a80bf9e150f0b8c425c1cf2568d1336e88979ddc2307af"
+            },
+            {
+              "name": "libsoxr.dll",
+              "sha256": "ac03eccb5567b2fabf6d58a7fb249316e688bdaa718763964d437b8fc887ee4e"
+            },
+            {
+              "name": "libspeex-1.dll",
+              "sha256": "70517dd82e962c0956f0e8d3bb700cd7ecc62b8c08741b35d71f2e95d601621d"
+            },
+            {
+              "name": "libsrt.dll",
+              "sha256": "b8a151547ba578e6d9f477b351c93a6a88ebeac58930cfad2d56d5668b785050"
+            },
+            {
+              "name": "libssh.dll",
+              "sha256": "9aab3a3c76ff3bc79a475fc1a913d4871a66d4d8d3182c6be72e80ffb10d4625"
+            },
+            {
+              "name": "libssh2-1.dll",
+              "sha256": "7c9b4edb678b738b919950492c4a390482fdd644d1276d4728990fdd3c3ea989"
+            },
+            {
+              "name": "libssl-3-x64.dll",
+              "sha256": "7f53951cf786e299521e46d860f7764d6bd671ce85d2a03dc929a8184792e2ab"
+            },
+            {
+              "name": "libstdc++-6.dll",
+              "sha256": "d9a58184f6bb27936ef03c3a3286950e4aa61c66a9f74dfa94a532b1433b368d"
+            },
+            {
+              "name": "libSvtAv1Enc-4.dll",
+              "sha256": "484b89703cc2bc43a8e18f8330f024ff88459fb8ebc19fba74a7f19d1dd1c92f"
+            },
+            {
+              "name": "libtasn1-6.dll",
+              "sha256": "9793128fa5028fe8d8b49407a6ed900a2315444f9f7444a146f0b62f08c1c5bb"
+            },
+            {
+              "name": "libthai-0.dll",
+              "sha256": "d8d8b87e9089a811e088f6a01da57c19ed54d2b6613bb85697f1958473f63666"
+            },
+            {
+              "name": "libtheoradec-2.dll",
+              "sha256": "0b9877e581421abe4090abacf2cd8c04df6de00520d7a34b9f41b46a11a02a80"
+            },
+            {
+              "name": "libtheoraenc-2.dll",
+              "sha256": "ed0fb82d04220070d2f53832a9cb653546ddce2c704a53bfacae7597666db4d7"
+            },
+            {
+              "name": "libtiff-6.dll",
+              "sha256": "876f15a6aab834a18b457bee1bf66435ae244f5f7bc27b6ace2c9cf952f25489"
+            },
+            {
+              "name": "libunistring-5.dll",
+              "sha256": "ee39258fa1086269674a8179d3cfaf7c4e380ada14441b5dd9ed53d82d15c4e3"
+            },
+            {
+              "name": "libva.dll",
+              "sha256": "f02c962ecbfad05f1a1ce85490a150c4d5e7a8474084d8c14ca274dc399d8c60"
+            },
+            {
+              "name": "libva_win32.dll",
+              "sha256": "2f8633fe9b099649654eb7a764d96efde69d70e91e265433fdf5a3c33f10c8e2"
+            },
+            {
+              "name": "libvorbis-0.dll",
+              "sha256": "43b00d5e347b6b35a3912e3179d6433b5bdae7233cc04cbe38bcc61f164cdc6f"
+            },
+            {
+              "name": "libvorbisenc-2.dll",
+              "sha256": "a765abbbe42de7c8bba31b41591cfe4c4307c30af67c478f372f76116f28e72e"
+            },
+            {
+              "name": "libvpl-2.dll",
+              "sha256": "6ddfe5105f2428afdca7613549b4479013bbd08c854a687abbce685015f83a2d"
+            },
+            {
+              "name": "libvpx-1.dll",
+              "sha256": "f43be692ef1cf014931a39545b4d7a191264bed4df05ca112399b49a1fb1d167"
+            },
+            {
+              "name": "libwebp-7.dll",
+              "sha256": "8dfe40c4e0abc90ddf18f080898987e01253d099b2b2d6daf7db521e55c00446"
+            },
+            {
+              "name": "libwebpmux-3.dll",
+              "sha256": "9bd85116a22923d648d6b0ad09f21d08df7bd3d8860b24a5b4a6d4ac788b7340"
+            },
+            {
+              "name": "libwinpthread-1.dll",
+              "sha256": "92e996ab2cb61f5106b8b67a4dc23dd2959958cdb3afe6d2f9c6fc3afef85258"
+            },
+            {
+              "name": "libx264-165.dll",
+              "sha256": "acf3d8f926f42adaceffc4cff91d0dd1c19866ac73c64f4d18cfcb8051509a0a"
+            },
+            {
+              "name": "libx265-216.dll",
+              "sha256": "757f54ba8752c279894be3901773235024261754c76f6a3d671d8f992ff9384f"
+            },
+            {
+              "name": "libXISF.dll",
+              "sha256": "18563cfc29457ad38bf62a08366b9f59eed531cf793f75a1584802ac8b86b22b"
+            },
+            {
+              "name": "libxml2-16.dll",
+              "sha256": "be9f24e4506b73812c5f477a079d4c45b5dc2630222783195e913fcabd6c7eab"
+            },
+            {
+              "name": "libzstd.dll",
+              "sha256": "48368ab0ca622d0ec12f41ce85d91f22866bf5da92c77a69a06483564c93816c"
+            },
+            {
+              "name": "libzvbi-0.dll",
+              "sha256": "846197316af88ef08ac255fbae2f5a348167a28e5bae3fe9c3657c004737aaf1"
+            },
+            {
+              "name": "swresample-6.dll",
+              "sha256": "f52c46b63d659390b74d64e8efe41047d3378439a64cea9832a3693c441d85a0"
+            },
+            {
+              "name": "swscale-9.dll",
+              "sha256": "9043df0f14ffe9ed2aa8dc7495bc0812af6fd2fe4de54fc8994fa7d72c04e775"
+            },
+            {
+              "name": "xvidcore.dll",
+              "sha256": "5107ab029f4f06a5a360ac769c20a150d4bd1a1922575517b9054768ff219611"
+            },
+            {
+              "name": "zlib1.dll",
+              "sha256": "11cd91171765cd65f1c3362e3df67e5f5a618a6b88c8cdec899b802eaf1c7b0d"
+            }
+          ],
+          "packages": {
+            "numpy": "2.5.3",
+            "Pillow": "12.3.0",
+            "astropy": "8.0.1",
+            "photutils": "3.0.0",
+            "scipy": "1.18.1",
+            "psutil": "7.2.2",
+            "PyAVM": "0.9.9"
+          },
+          "runner": "0997e1603dd4117098f2b48f7f22882d8554f516a0000905f9bc83be267835b5",
+          "spec": "full-source-LANCZOS-1024-sRGB-8bit-PNG; no crop; geometric alpha opaque"
+        },
+        "timings": {
+          "readHash": 0.03185050003230572,
+          "decode": 0.30233879992738366,
+          "resize": 0.45567520009353757,
+          "toolFormatConversion": 0.11574460007250309,
+          "process": 0.8926877998746932,
+          "encodeAndDiagnostics": 0.22131319995969534,
+          "total": 2.3447527999524027
+        },
+        "details": {
+          "wallSeconds": 0.8656438998878002,
+          "peakWorkingSetBytes": 67649536,
+          "measurement": "Windows peak working set plus 50ms RSS polling; one child",
+          "gpuPeakBytes": "UNKNOWN"
+        },
+        "metrics": {
+          "changedPixels": 828629,
+          "meanAbsoluteRGB": 0.44243507823724854,
+          "protectedMeanAbsoluteRGB": 0.3145485585753238,
+          "newBlackPixels": 4
+        },
+        "parentPeakWorkingSetBytes": 690593792,
+        "manualRepairCount": 0,
+        "manualRepairSeconds": 0,
+        "reviewSeconds": "UNKNOWN",
+        "outputs": [
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f/comparison.jpg",
+            "bytes": 227105,
+            "sha256": "329e84fbff6b5048616c8054a7a3b0da48ad01ae890346443af354eda1ba5b4a"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f/difference-x8.png",
+            "bytes": 11200,
+            "sha256": "a9b7aa6c89fbfd01bb53ba3dff72009a200c3d3d0660faa763b124e257770e1b"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f/original.png",
+            "bytes": 949252,
+            "sha256": "c67f864449dff0d5bb6954a14a0c204aa30eea2b56b3046a77a53f8ade55d280"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f/process.ssf",
+            "bytes": 433,
+            "sha256": "980783b66b11ef6845c1c313eb085c48e9cda2eea884e6ef0ea2d0245540bd00"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f/processed.png",
+            "bytes": 950019,
+            "sha256": "5b64ffdb7340853238d597f112b075c82c063e8ade11643f8120ad82071f164b"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f/protection-region.png",
+            "bytes": 5146,
+            "sha256": "66faec4d6d40741db543fd3797703df214267184fa79073fef76a55f51556008"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f/removed-layer.png",
+            "bytes": 8172,
+            "sha256": "b7980503aa36cc9057e4e8c723d3a157582394a28aeba785d6fbb52073f5a7e0"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f/siril-result.png",
+            "bytes": 897317,
+            "sha256": "ac0302538136945821edc9782ebc30b4468d4af25b9e30d5fc9e385fcee5ddbe"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f/siril.ini",
+            "bytes": 4288,
+            "sha256": "71fe54b011ed57b0772f94125a7b175744fe85c71599460f0f6d2a33e9c3f89f"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/44aa12ec8011a46c6f75e7981bcfe30249c242af03374265c99b005b4266846f/tool.log",
+            "bytes": 2225,
+            "sha256": "edcefe9b7cdfe837dfef18fc7d68af57836561b3303c408a3fb81c19d8cfd0e7"
+          }
+        ]
+      }
+    },
+    "ngc253:nox": {
+      "row": {
+        "sample": "ngc253",
+        "method": "nox",
+        "cacheHit": false,
+        "seconds": 30.22409819997847,
+        "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\70b21fac43fa8a41661130a0f781eb701412a6edb68a6da8b5f45cb13efe6e3a\\receipt.json",
+        "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+      },
+      "binding": {
+        "path": "output/image-tool-benchmark-2026-10-08/cache/70b21fac43fa8a41661130a0f781eb701412a6edb68a6da8b5f45cb13efe6e3a/receipt.json",
+        "bytes": 5407,
+        "sha256": "0c26a7bacfe35894ab8db91a8b73da2661890d664734d77ffb84c3136054c858"
+      },
+      "measurements": {
+        "key": {
+          "input": {
+            "path": "output/prepared-candidate-samples-1005-r1/eso0902c.jpg",
+            "bytes": 8339408,
+            "sha256": "76bd6fd768c6503e7b1c2092dad6efbb295f7725d5bdff54447443bf4dfd6fe6"
+          },
+          "sample": {
+            "id": "ngc253",
+            "kind": "galaxy",
+            "width": 1024,
+            "input": {
+              "path": "output/prepared-candidate-samples-1005-r1/eso0902c.jpg",
+              "bytes": 8339408,
+              "sha256": "76bd6fd768c6503e7b1c2092dad6efbb295f7725d5bdff54447443bf4dfd6fe6"
+            },
+            "metadata": "output/prepared-candidate-inspection-1005-r2/ngc253-candidate.json",
+            "source": "https://www.eso.org/public/images/eso0902c/",
+            "credit": "ESO",
+            "license": "CC BY 4.0",
+            "question": "Do background estimation or star separation reduce photographic field contrast without deleting faint disk ends and dust structure?",
+            "backgroundEligible": true,
+            "protectEllipses": [
+              [
+                0.5,
+                0.52,
+                0.46,
+                0.18,
+                43
+              ]
+            ],
+            "methods": [
+              "original",
+              "photutils",
+              "siril",
+              "nox"
+            ]
+          },
+          "method": "nox",
+          "tools": [
+            {
+              "name": "nox.exe",
+              "sha256": "3a1669c535927312c51e91c807eae3436cab2613e55cf5485e6475203ea7f0f1"
+            },
+            {
+              "name": "noxGeneratorColor.pb",
+              "sha256": "d54bdca728d1d6db0b3eef41d4187d327909d1ec5cd2a71485bfa9d7924ba546"
+            },
+            {
+              "name": "tensorflow.dll",
+              "sha256": "6c7527427bab32e2684540e681524a129904f34b7380cbdb912b45064314a16f"
+            }
+          ],
+          "packages": {
+            "numpy": "2.5.3",
+            "Pillow": "12.3.0",
+            "astropy": "8.0.1",
+            "photutils": "3.0.0",
+            "scipy": "1.18.1",
+            "psutil": "7.2.2",
+            "PyAVM": "0.9.9"
+          },
+          "runner": "02861ae6cd1df7222999060f5161cc53346756777ee4320f39e98201bd953a41",
+          "spec": "full-source-LANCZOS-1024-sRGB-8bit-PNG; no crop; geometric alpha opaque"
+        },
+        "timings": {
+          "readHash": 0.03179810009896755,
+          "decode": 0.3004249001387507,
+          "resize": 0.47563849994912744,
+          "toolFormatConversion": 0.12918970012106,
+          "process": 28.42822219990194,
+          "encodeAndDiagnostics": 0.2692929001059383,
+          "total": 30.173582199960947
+        },
+        "details": {
+          "wallSeconds": 28.380759099964052,
+          "peakWorkingSetBytes": 3366633472,
+          "measurement": "Windows peak working set plus 50ms RSS polling; one child",
+          "gpuPeakBytes": "UNKNOWN"
+        },
+        "metrics": {
+          "changedPixels": 91840,
+          "meanAbsoluteRGB": 0.6794924681214081,
+          "protectedMeanAbsoluteRGB": 1.2685467623570914,
+          "newBlackPixels": 1002
+        },
+        "parentPeakWorkingSetBytes": 701394944,
+        "manualRepairCount": 0,
+        "manualRepairSeconds": 0,
+        "reviewSeconds": "UNKNOWN",
+        "outputs": [
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/70b21fac43fa8a41661130a0f781eb701412a6edb68a6da8b5f45cb13efe6e3a/comparison.jpg",
+            "bytes": 326215,
+            "sha256": "44a504864ed6474a99d9a18e8bc08c41dd8b7d7fdc1e9cb51315073e5abe1630"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/70b21fac43fa8a41661130a0f781eb701412a6edb68a6da8b5f45cb13efe6e3a/difference-x8.png",
+            "bytes": 202229,
+            "sha256": "48bcc714484b80b4b61dfdb881254a7fe1360b571ead37310147ad7c3fcda568"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/70b21fac43fa8a41661130a0f781eb701412a6edb68a6da8b5f45cb13efe6e3a/nox-16.png",
+            "bytes": 1870511,
+            "sha256": "528fc37c413db6a29f478a4150b74a9d872945a2bed5e76989f4c76b0a21a4f7"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/70b21fac43fa8a41661130a0f781eb701412a6edb68a6da8b5f45cb13efe6e3a/original.png",
+            "bytes": 949252,
+            "sha256": "c67f864449dff0d5bb6954a14a0c204aa30eea2b56b3046a77a53f8ade55d280"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/70b21fac43fa8a41661130a0f781eb701412a6edb68a6da8b5f45cb13efe6e3a/processed.png",
+            "bytes": 937510,
+            "sha256": "01508fba294e2d473c3aa01dcd0c86c11abd6abb7f73a1436d9beef1e8f9f305"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/70b21fac43fa8a41661130a0f781eb701412a6edb68a6da8b5f45cb13efe6e3a/protection-region.png",
+            "bytes": 5146,
+            "sha256": "66faec4d6d40741db543fd3797703df214267184fa79073fef76a55f51556008"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/70b21fac43fa8a41661130a0f781eb701412a6edb68a6da8b5f45cb13efe6e3a/removed-layer.png",
+            "bytes": 215185,
+            "sha256": "7046168259f44b52e2f7de4b86d42a84c96e9e61cb0b25b6b5e6e90f1378593a"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/70b21fac43fa8a41661130a0f781eb701412a6edb68a6da8b5f45cb13efe6e3a/tool.log",
+            "bytes": 2345,
+            "sha256": "dac624a9d84509e4e6c41f718bbbcfa3cfe72d7c04bddc560f15209829e247fb"
+          }
+        ]
+      }
+    },
+    "ngc5128:original": {
+      "row": {
+        "sample": "ngc5128",
+        "method": "original",
+        "cacheHit": false,
+        "seconds": 0.5884511999320239,
+        "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\e1f46fc4063b37b7579906da9b43397ea36c454abe3ca77669903a1e792feee7\\receipt.json",
+        "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+      },
+      "binding": {
+        "path": "output/image-tool-benchmark-2026-10-08/cache/e1f46fc4063b37b7579906da9b43397ea36c454abe3ca77669903a1e792feee7/receipt.json",
+        "bytes": 4712,
+        "sha256": "25d450cddaad991914849a70db27dfe896a8975773136284ee8f3fe146e9d1b6"
+      },
+      "measurements": {
+        "key": {
+          "input": {
+            "path": "output/eso-ngc5128-finished-1006-q1-r1/eso1221a-publication.jpg",
+            "bytes": 3404178,
+            "sha256": "6c0e4465655cc2524871270fc9d7d323f4c2544cd776bca836d32100c45c8023"
+          },
+          "sample": {
+            "id": "ngc5128",
+            "kind": "galaxy",
+            "width": 1024,
+            "input": {
+              "path": "output/eso-ngc5128-finished-1006-q1-r1/eso1221a-publication.jpg",
+              "bytes": 3404178,
+              "sha256": "6c0e4465655cc2524871270fc9d7d323f4c2544cd776bca836d32100c45c8023"
+            },
+            "metadata": "output/eso-ngc5128-finished-1006-q1-r1/result.json",
+            "source": "https://www.eso.org/public/images/eso1221a/",
+            "credit": "ESO",
+            "license": "CC BY 4.0",
+            "question": "Protect diffuse halo and thin off-centre filaments while testing crowded foreground stars",
+            "backgroundEligible": true,
+            "protectEllipses": [
+              [
+                0.5,
+                0.55,
+                0.37,
+                0.36,
+                0
+              ],
+              [
+                0.31,
+                0.3,
+                0.1,
+                0.32,
+                -27
+              ]
+            ],
+            "methods": [
+              "original",
+              "photutils",
+              "siril",
+              "nox"
+            ]
+          },
+          "metadata": {
+            "path": "output/eso-ngc5128-finished-1006-q1-r1/result.json",
+            "bytes": 3020,
+            "sha256": "5e0b10f7d3b11f72cfdc1cf21866a0066bbc3a4aa910e07bb77d5d387300d060"
+          },
+          "formula": {
+            "path": "data-pipelines/deep-sky/publish_prepared_display.py",
+            "bytes": 17250,
+            "sha256": "6a0f6c8afe8fa9556713c0fac0b7fa9f348aa45d0f7ca792397f4a25f1625b2c"
+          },
+          "method": "original",
+          "tools": [],
+          "packages": {
+            "numpy": "2.5.3",
+            "Pillow": "12.3.0",
+            "astropy": "8.0.1",
+            "photutils": "3.0.0",
+            "scipy": "1.18.1",
+            "psutil": "7.2.2",
+            "PyAVM": "0.9.9"
+          },
+          "runner": "0997e1603dd4117098f2b48f7f22882d8554f516a0000905f9bc83be267835b5",
+          "spec": "full-source-LANCZOS-1024-sRGB-8bit-PNG; no crop; geometric alpha opaque"
+        },
+        "timings": {
+          "readHash": 0.018574299989268184,
+          "decode": 0.08584630000405014,
+          "resize": 0.16074870014563203,
+          "toolFormatConversion": 0.10323839983902872,
+          "process": 5.299923941493034e-06,
+          "encodeAndDiagnostics": 0.07301789987832308,
+          "total": 0.5353898999746889
+        },
+        "details": {},
+        "metrics": {
+          "changedPixels": 0,
+          "meanAbsoluteRGB": 0.0,
+          "protectedMeanAbsoluteRGB": 0.0,
+          "newBlackPixels": 0
+        },
+        "parentPeakWorkingSetBytes": 690593792,
+        "manualRepairCount": 0,
+        "manualRepairSeconds": 0,
+        "reviewSeconds": "UNKNOWN",
+        "outputs": [
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e1f46fc4063b37b7579906da9b43397ea36c454abe3ca77669903a1e792feee7/comparison.jpg",
+            "bytes": 715738,
+            "sha256": "1d415b94d99bb742d0fc92220d7e1f66cc4cbc8ec5e7be05df89fe0f80383e0d"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e1f46fc4063b37b7579906da9b43397ea36c454abe3ca77669903a1e792feee7/difference-x8.png",
+            "bytes": 3061,
+            "sha256": "d12a84b765763998d5612d5d73fae5fb20d19cdece08df09f653aaeec40568c2"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e1f46fc4063b37b7579906da9b43397ea36c454abe3ca77669903a1e792feee7/original.png",
+            "bytes": 1631622,
+            "sha256": "5fada759198c6a37aec0aa3ee639b70ecdf95d3d29ef665bd0cc0d2e07d42a15"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e1f46fc4063b37b7579906da9b43397ea36c454abe3ca77669903a1e792feee7/processed.png",
+            "bytes": 1631622,
+            "sha256": "5fada759198c6a37aec0aa3ee639b70ecdf95d3d29ef665bd0cc0d2e07d42a15"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e1f46fc4063b37b7579906da9b43397ea36c454abe3ca77669903a1e792feee7/protection-region.png",
+            "bytes": 6137,
+            "sha256": "684f87072253a706b7dc0c74958e5ffe39b0d57078f19c251dbed9800e0e4998"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e1f46fc4063b37b7579906da9b43397ea36c454abe3ca77669903a1e792feee7/removed-layer.png",
+            "bytes": 3061,
+            "sha256": "d12a84b765763998d5612d5d73fae5fb20d19cdece08df09f653aaeec40568c2"
+          }
+        ]
+      }
+    },
+    "ngc5128:siril": {
+      "row": {
+        "sample": "ngc5128",
+        "method": "siril",
+        "cacheHit": false,
+        "seconds": 1.8990954998880625,
+        "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2\\receipt.json",
+        "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+      },
+      "binding": {
+        "path": "output/image-tool-benchmark-2026-10-08/cache/c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2/receipt.json",
+        "bytes": 26067,
+        "sha256": "75c422d1d16e3af184efe019d8368b5d3d371628f6487f8e956a05a21355cf88"
+      },
+      "measurements": {
+        "key": {
+          "input": {
+            "path": "output/eso-ngc5128-finished-1006-q1-r1/eso1221a-publication.jpg",
+            "bytes": 3404178,
+            "sha256": "6c0e4465655cc2524871270fc9d7d323f4c2544cd776bca836d32100c45c8023"
+          },
+          "sample": {
+            "id": "ngc5128",
+            "kind": "galaxy",
+            "width": 1024,
+            "input": {
+              "path": "output/eso-ngc5128-finished-1006-q1-r1/eso1221a-publication.jpg",
+              "bytes": 3404178,
+              "sha256": "6c0e4465655cc2524871270fc9d7d323f4c2544cd776bca836d32100c45c8023"
+            },
+            "metadata": "output/eso-ngc5128-finished-1006-q1-r1/result.json",
+            "source": "https://www.eso.org/public/images/eso1221a/",
+            "credit": "ESO",
+            "license": "CC BY 4.0",
+            "question": "Protect diffuse halo and thin off-centre filaments while testing crowded foreground stars",
+            "backgroundEligible": true,
+            "protectEllipses": [
+              [
+                0.5,
+                0.55,
+                0.37,
+                0.36,
+                0
+              ],
+              [
+                0.31,
+                0.3,
+                0.1,
+                0.32,
+                -27
+              ]
+            ],
+            "methods": [
+              "original",
+              "photutils",
+              "siril",
+              "nox"
+            ]
+          },
+          "metadata": {
+            "path": "output/eso-ngc5128-finished-1006-q1-r1/result.json",
+            "bytes": 3020,
+            "sha256": "5e0b10f7d3b11f72cfdc1cf21866a0066bbc3a4aa910e07bb77d5d387300d060"
+          },
+          "formula": {
+            "path": "data-pipelines/deep-sky/publish_prepared_display.py",
+            "bytes": 17250,
+            "sha256": "6a0f6c8afe8fa9556713c0fac0b7fa9f348aa45d0f7ca792397f4a25f1625b2c"
+          },
+          "method": "siril",
+          "tools": [
+            {
+              "name": "siril-cli.exe",
+              "sha256": "132c735ecb623559a945c43a617811da84c19c43988c8a234861f903dd362e0b",
+              "version": "1.4.4",
+              "configuration": "e1a809eabbd817588efcb5294512dcf2cd75d3fd6793f0ddf496eda18a84441c"
+            },
+            {
+              "name": "avcodec-62.dll",
+              "sha256": "c82704962e2746e7d622e6de3e6992bceb47514d97259f06dc0a1f64683de085"
+            },
+            {
+              "name": "avformat-62.dll",
+              "sha256": "aa709545539b26d83a69147664e183d79bc1702febd023cefa11f7caa6b350d1"
+            },
+            {
+              "name": "avutil-60.dll",
+              "sha256": "566739d7ccf6fc8bd101d0a5e0dfbef0f8a632cdc7ea0f73cd6c50d1c5c743bd"
+            },
+            {
+              "name": "libaom.dll",
+              "sha256": "ef3f26fca47724fb07b20d08815bb87506493663d1f0e9f2d997ceb5d78c095b"
+            },
+            {
+              "name": "libatk-1.0-0.dll",
+              "sha256": "c9df8fa5320cf9f2b588e6781ccd942742048adf4432acd9e163524fd29c83b9"
+            },
+            {
+              "name": "libbluray-3.dll",
+              "sha256": "39536de31a5257c03d4340ee6607d9cb9b7996771077f8260327cdae044af1fd"
+            },
+            {
+              "name": "libbrotlicommon.dll",
+              "sha256": "c62c08223e450dfc2fff33c752cc228505ffd9d755201958ba800d5d30481a2c"
+            },
+            {
+              "name": "libbrotlidec.dll",
+              "sha256": "e270b6e576594ee8ee6e33ccc54e34a54304616dd6225652e11e49d6f17ef896"
+            },
+            {
+              "name": "libbrotlienc.dll",
+              "sha256": "82573820fe9cc3f57004b6603428e2fa1bfc9d2048707bfcead3cfc5ef3ab284"
+            },
+            {
+              "name": "libbz2-1.dll",
+              "sha256": "669a4bf9266d5f020e843aa5fd75b93ce8ebde27014d5ac466a8b3cf39d8aba7"
+            },
+            {
+              "name": "libcairo-2.dll",
+              "sha256": "10cb3ddfb67ef352365d5cdf1fce0376693d2d6e90aefefee41b3c0c5ce363e4"
+            },
+            {
+              "name": "libcairo-gobject-2.dll",
+              "sha256": "bdba64fdd18aad8de2773d3553786d0f9560ae3ae005a17b6cc6bef124219370"
+            },
+            {
+              "name": "libcfitsio-10.dll",
+              "sha256": "6a027848b38cbb886342946e371a47cf915f73aea960a3da813b06f469723953"
+            },
+            {
+              "name": "libcrypto-3-x64.dll",
+              "sha256": "616e5c9cfd5c6f786fd81238198ec479076f5bf6702127f81686f46b31b2464d"
+            },
+            {
+              "name": "libcryptopp.dll",
+              "sha256": "43109a7e159418876e4300d45336c5b1c603c6faee5f70bdf58688563dbe51b5"
+            },
+            {
+              "name": "libcurl-4.dll",
+              "sha256": "4637c506f0058d5ecb10f44a76aa63b491830b9ea4d4c34542aba0a553a6af6e"
+            },
+            {
+              "name": "libdatrie-1.dll",
+              "sha256": "40aee3ae9a62a77454dfe8419fe21b54c54d969e0471c9e817b65d4502a9949f"
+            },
+            {
+              "name": "libdav1d-7.dll",
+              "sha256": "787c6c918977247aeea0d91576077435bbed3a58b3438087e8edac549ad9e932"
+            },
+            {
+              "name": "libde265-0.dll",
+              "sha256": "edbd3469daad5996b27f0204b7b4c3d8683b960ca80e1b5e37950d0ef2488093"
+            },
+            {
+              "name": "libdeflate.dll",
+              "sha256": "fb54be03668f41fae3f5d8bbabeedbc24e71b37e637e3cd34acd54f89f128ac1"
+            },
+            {
+              "name": "libepoxy-0.dll",
+              "sha256": "dc4055b53d0d6507740e9f3be18c9f2b1318faa531b9b2913eef3c5332fffedc"
+            },
+            {
+              "name": "libexiv2-28.dll",
+              "sha256": "5f6931141804ba02ebe5d9ae7404ceb74acd1cb0301e392e82b1f09af1c9f503"
+            },
+            {
+              "name": "libexpat-1.dll",
+              "sha256": "2b8f2c669a062c4d0ee1011de51330ec26c2be51c8237312f68714902427f68c"
+            },
+            {
+              "name": "libffi-8.dll",
+              "sha256": "ccd1c21178c2e239eaa6c904a25c7f26efdfadb0faf344e62b1bbb39a30241d5"
+            },
+            {
+              "name": "libffms2-5.dll",
+              "sha256": "ba7d70801bd60504166b82e33134b309d9f0f77493c008ec949941e3f8ab7822"
+            },
+            {
+              "name": "libfftw3f-3.dll",
+              "sha256": "8342e0ea84f21c00946a573232621f0fcdc6cd08b9a9dc98446828585dbe031e"
+            },
+            {
+              "name": "libfftw3f_omp-3.dll",
+              "sha256": "fb11e9897d0c5c8c39b40b122327f8f1b5d882af71ce74dff4dbaa04e5548602"
+            },
+            {
+              "name": "libfontconfig-1.dll",
+              "sha256": "e97e4a41142dd99b25b22f2ce116bc0215d7e4222e72c6f20f02726ddfa350e3"
+            },
+            {
+              "name": "libfreetype-6.dll",
+              "sha256": "a3271784f8366b3c6412e0c35474884fa12899c392bacb08bc8eac00f4be7e64"
+            },
+            {
+              "name": "libfribidi-0.dll",
+              "sha256": "73a712fd51fa0085e8660084743a821ae7388de138069cd6cd8c171d4487da84"
+            },
+            {
+              "name": "libgcc_s_seh-1.dll",
+              "sha256": "ff139cfe956709283f7b70a06af8bc8bb9d1c3bef60ec1bc8d363c91351cfeb2"
+            },
+            {
+              "name": "libgdk-3-0.dll",
+              "sha256": "867de3778673beed6aa5ecaed274c8dbb31eda2cc3f72c814d42e994ac655100"
+            },
+            {
+              "name": "libgdk_pixbuf-2.0-0.dll",
+              "sha256": "3b65e43c2b4ec240358c5b268be1d2be698e8a79e04db72a47b7e4de96e9c30b"
+            },
+            {
+              "name": "libgfortran-5.dll",
+              "sha256": "2cbb28fd66914d68ad52520fc27b4549cd5ae031d678cc543c6d26b406537ac0"
+            },
+            {
+              "name": "libgio-2.0-0.dll",
+              "sha256": "44542ac98f4ba4e5d99b9e4fd46ba7906196d95d064ea90e6ab3c2f44a79ccb0"
+            },
+            {
+              "name": "libgit2-1.9.dll",
+              "sha256": "97e0da488a174c4535177dfa48dd7dabaa75f6d5bee416a6d73c963e8cd3f270"
+            },
+            {
+              "name": "libglib-2.0-0.dll",
+              "sha256": "75164119231988002ef0c809b7b5b249d81b8b044d8cbda7e5848f9fccd12944"
+            },
+            {
+              "name": "libgme.dll",
+              "sha256": "98e306bc1443f4f5a0744baf0477d2f856594bb3f8036440ad7cb1f30a1f5a72"
+            },
+            {
+              "name": "libgmodule-2.0-0.dll",
+              "sha256": "c450d92a5f625f9dda36155b516d2bbf1ce098633a4adca86b21b7a917028b55"
+            },
+            {
+              "name": "libgmp-10.dll",
+              "sha256": "c2567ccf3f410c3411ba7cd4b7ba14f393a0e70a1d0c0593297df6706b5fba96"
+            },
+            {
+              "name": "libgnutls-30.dll",
+              "sha256": "51b7b83cf7ab3f4cba021fe8e955e2562036f7a7881dec40c38bdee3fcf72b34"
+            },
+            {
+              "name": "libgobject-2.0-0.dll",
+              "sha256": "d3fbea73e62539a3303408c39fbaa0bc7b7b4886e2ad7ad31e88469e32e54b6b"
+            },
+            {
+              "name": "libgomp-1.dll",
+              "sha256": "f53cb4da77cd3ec8e9ec15c11a8fd5cfcff448e33b37da1e1eb225c455028037"
+            },
+            {
+              "name": "libgraphite2.dll",
+              "sha256": "93953e4744bcfce9a7bc439b956544bc213095cb1349c3602a58370f32b25c18"
+            },
+            {
+              "name": "libgsl-28.dll",
+              "sha256": "d0f7e108ffbb958b551c798ce733104632002ff5d03f2a1988b8f6bb65cf6552"
+            },
+            {
+              "name": "libgslcblas-0.dll",
+              "sha256": "de35388e089cbcd723ad7ec968ea4ff1d3811f5b0f5c66606bfeb7d7906631f9"
+            },
+            {
+              "name": "libgsm.dll",
+              "sha256": "b3446b547f8894bcabf0aa98a78146c60b1cf6dba7ab55e6a726fb3739276bf4"
+            },
+            {
+              "name": "libgtk-3-0.dll",
+              "sha256": "c5df1e6dcb722602938510a03a6a13af3be46c651ca4c52ff97c92c777593844"
+            },
+            {
+              "name": "libgtksourceview-4-0.dll",
+              "sha256": "bfa20a0e634ffd33a150a95947acfc970852c72028255b103f272f16a859ed9e"
+            },
+            {
+              "name": "libharfbuzz-0.dll",
+              "sha256": "2e1523eddd3a7c5be5fb8ad9a8e8eee819664356752d18c56f7c8f5896126ddb"
+            },
+            {
+              "name": "libheif.dll",
+              "sha256": "683200709977558926374a3033f0e03563fbf68a400580949ce03665a3d291c8"
+            },
+            {
+              "name": "libhogweed-6.dll",
+              "sha256": "41413cc62bbe5541be86e730cb5a7cd9d89f3168a1847855b160119a93d05e01"
+            },
+            {
+              "name": "libhttp_parser-2.dll",
+              "sha256": "c87633a813476f796b6b96a8f253a14e839e61c4a3c588df31023eed5e2644ab"
+            },
+            {
+              "name": "libhwy.dll",
+              "sha256": "9ba0ac7bad82c4c88e9bb8d6ca8c6a83877adc1f71cc48590c65b8d26108a41c"
+            },
+            {
+              "name": "libiconv-2.dll",
+              "sha256": "94ec68fb8d342b6c91b6b48a8d95092819cdcd006a7166e0b68062f946afd08a"
+            },
+            {
+              "name": "libidn2-0.dll",
+              "sha256": "a054a6bb69aaf4666157f968740412e9697085cbc1e48a78f8dd9622169c5aaf"
+            },
+            {
+              "name": "libinih-0.dll",
+              "sha256": "f5061ee77fd13635d800a1307bcc9e3c1f3027900e39b5c3eccaea5c0d67f920"
+            },
+            {
+              "name": "libINIReader-0.dll",
+              "sha256": "12196c40c1386e567087095371a575a744b53a045ad5b6183e5838823a5f7fb0"
+            },
+            {
+              "name": "libintl-8.dll",
+              "sha256": "0e5a178731e6be6d115442a6ade3df7f03265cd1fc4338f8b6f86a8001cbf582"
+            },
+            {
+              "name": "libjbig-0.dll",
+              "sha256": "6d1657e08318630738fb0841ee28bbe7272b41b3b2ef93adaa228c4cd10092c6"
+            },
+            {
+              "name": "libjpeg-8.dll",
+              "sha256": "14a1610a8c486bae8ef2c868aa04bcb202533473bd6975c46da196a236489ca8"
+            },
+            {
+              "name": "libjxl.dll",
+              "sha256": "848e925d89918a64feeb6889ea21751bb451e7057a8c727e48db5aaff68b97fa"
+            },
+            {
+              "name": "libjxl_cms.dll",
+              "sha256": "8391bd69c590bf9f7fc69cfe1ba9b479d7e4d888397717280c383f256e18cd69"
+            },
+            {
+              "name": "libjxl_threads.dll",
+              "sha256": "94aa6263b7b4f70ab9161498ded720ebabef4e664bed42f91cc9a9650988aa15"
+            },
+            {
+              "name": "libkvazaar-7.dll",
+              "sha256": "642f969e7118ae8e8068c30182fbda3cd6100c5f291f404d9f37d6fd00982c30"
+            },
+            {
+              "name": "liblc3-1.dll",
+              "sha256": "970f6d805e215cc17df962c64e21449af3da97e09cb4a14a5f943bbd0e9c0329"
+            },
+            {
+              "name": "liblcms2-2.dll",
+              "sha256": "03314471fadd04cdd63c108472ff85d058903d236a0356c14eda363f0e1ccb65"
+            },
+            {
+              "name": "libLerc.dll",
+              "sha256": "3e3aa1d6e040d9ac93eb81cb5e472543f612373c3ab653ed2b2a86ab1d7c05c4"
+            },
+            {
+              "name": "liblz4.dll",
+              "sha256": "5e83fd34144fa033c12e22718317ec2123f8a3460903932b0bfddb8aad379cfd"
+            },
+            {
+              "name": "liblzma-5.dll",
+              "sha256": "ad9656bf86fb3673fa6af18fa357531096af3d76eccb4a56c4cd6a6171da1554"
+            },
+            {
+              "name": "libmodplug-1.dll",
+              "sha256": "d1425827ff8c5cc81dfc66d7d5660e9ea9bfda8ada71255a0c4847d0889ea62b"
+            },
+            {
+              "name": "libmp3lame-0.dll",
+              "sha256": "7ae709bf841478222fc468d6aa08cdb47a683feb40ff13fe9fb36359333d4559"
+            },
+            {
+              "name": "libnettle-8.dll",
+              "sha256": "6bc0118efb3a96abf5d3babf85e373fdd033b9e086fb02046073c19eaa9441af"
+            },
+            {
+              "name": "libnghttp2-14.dll",
+              "sha256": "090fb5e095489f8853e3ccd6d649921de2dcbab378cc6a430264881853e3a07e"
+            },
+            {
+              "name": "libnghttp3-9.dll",
+              "sha256": "889a89a7e6fcdb30a67366ba4dd38e61a54dfcf6e976ca5598005b4b3e74f6d1"
+            },
+            {
+              "name": "libngtcp2-16.dll",
+              "sha256": "2c15fbc0d582707dfe17fc778787f4f61b0a8b52cf697e773d6af578654f4956"
+            },
+            {
+              "name": "libngtcp2_crypto_ossl-0.dll",
+              "sha256": "f913d6128a02fb99c5430c507a2a6b54f220b99b097a856a5869678655492727"
+            },
+            {
+              "name": "libogg-0.dll",
+              "sha256": "2f102fba6f2a49516be85cb2643f6a9ba394dc5657aedb3ea235b6603c12d3d2"
+            },
+            {
+              "name": "libopenblas.dll",
+              "sha256": "84cdd800f049eb061fcba7eedfa70e382cc180327d1b4686b09534f8e6329e47"
+            },
+            {
+              "name": "libopencore-amrnb-0.dll",
+              "sha256": "9d36d5661fd002f8889d90e0a53f2c5d693c641c075ef55c26ade85d958d1369"
+            },
+            {
+              "name": "libopencore-amrwb-0.dll",
+              "sha256": "54341e49eab692d77e0ff8534a40a3cce6d0d58b9cd157ed69c817c4b852bbdb"
+            },
+            {
+              "name": "libopencv_calib3d-411.dll",
+              "sha256": "eb31a8ff55c1b1879dc56cafd9a94bfb9651db99df4bcdbd3db321b10cbf3372"
+            },
+            {
+              "name": "libopencv_core-411.dll",
+              "sha256": "3e018791a9f0babc5b550b70acb83c94de65fdb708db2994c29bd623331a5e44"
+            },
+            {
+              "name": "libopencv_features2d-411.dll",
+              "sha256": "9ece2ec0cd6463246e2d01e75ed9cfe04553d646da675536cdddd71e356763eb"
+            },
+            {
+              "name": "libopencv_flann-411.dll",
+              "sha256": "45329dfd2e52bf3b2164c277487abbd78d9450de1f93a3a29e9548f5d13347af"
+            },
+            {
+              "name": "libopencv_imgproc-411.dll",
+              "sha256": "e6551a2db8b4c3b8a720e49bcc6ae8501182f0d03d54de0f1239b5f6a7faaac4"
+            },
+            {
+              "name": "libopenh264-7.dll",
+              "sha256": "29ca6f7ec1be9b951edcd61e8f7197071d7266634c9e0af3968ba8282f1c9ded"
+            },
+            {
+              "name": "libopenjp2-7.dll",
+              "sha256": "94f9507828d391cf96d700d34918114f1c1e03f91dd1243a19275e0435690925"
+            },
+            {
+              "name": "libopenjph-0.28.dll",
+              "sha256": "cda3b6373eefe00b7a37fb54fb91fb2dc9e25bc0d80a367fa452b7caf28b1cf1"
+            },
+            {
+              "name": "libopus-0.dll",
+              "sha256": "c12f9a671a106c649a5517d28061670aa57c805d242b80764853a7551099498d"
+            },
+            {
+              "name": "libp11-kit-0.dll",
+              "sha256": "54eed069b113bd3a1b8961acbae48f89d5a4c8d696720d87edf40c95bf815f30"
+            },
+            {
+              "name": "libpango-1.0-0.dll",
+              "sha256": "0b5921d0e26b9906319b245b2a7bbb52ba3bd91e1a869d974d2d36bf3050bc58"
+            },
+            {
+              "name": "libpangocairo-1.0-0.dll",
+              "sha256": "d65b34a20adef5ac69554a87d76f5c3780d4305789944bd5c764b0374e430155"
+            },
+            {
+              "name": "libpangoft2-1.0-0.dll",
+              "sha256": "3775ce3f7a852d1713ed7784e39df34f50fedb7fe9a076b28705a6657934bccc"
+            },
+            {
+              "name": "libpangowin32-1.0-0.dll",
+              "sha256": "bf85641f607be849a85ca4a81673f9132ceb044b31317ca9da0eba148b5d8ab1"
+            },
+            {
+              "name": "libpcre2-8-0.dll",
+              "sha256": "52ccc7e4ec5ad0aecf307c0328826340f5d504aa59f7c4143b9a1b9fff16ccda"
+            },
+            {
+              "name": "libpixman-1-0.dll",
+              "sha256": "12e693d94829f013e0bd7c042b30998b20e91ece7b6f4d5f075ddbb58b373c92"
+            },
+            {
+              "name": "libpng16-16.dll",
+              "sha256": "5c1dd5410af563f4a3c4aee10d1f749aa71e0d7fb3b4fac240eb9e96cadebd26"
+            },
+            {
+              "name": "libpsl-5.dll",
+              "sha256": "a531e72de3c64d43fb83cbfb6fa63e5ee982a970292ec51314e29d0acabf1dd5"
+            },
+            {
+              "name": "libpugixml.dll",
+              "sha256": "079241141c08ff1519fc951ac9d8da4404a1724c476ef8c93a8538a8d4927edd"
+            },
+            {
+              "name": "libquadmath-0.dll",
+              "sha256": "9508edce590f1d78f9364e832f50ed933bfd2b442f5fe1a6e7c42aaee13adc71"
+            },
+            {
+              "name": "librav1e.dll",
+              "sha256": "bc549e2178589f371469d1bd23544859ff118e48218eae2bfca7126654988779"
+            },
+            {
+              "name": "libraw-25.dll",
+              "sha256": "f6509adf691fc46957b111f91900636cd7f3e6088b59c4d922e162f935d3f19b"
+            },
+            {
+              "name": "librsvg-2-2.dll",
+              "sha256": "f359bdbb483519da1d6920d7ba162f48ba53131c97e31531fa8bd9ecf58ecc0c"
+            },
+            {
+              "name": "librtmp-1.dll",
+              "sha256": "fc6ba617fb93787fb3d58e7333921db83f29004fd876fe5b65016b60262fc68a"
+            },
+            {
+              "name": "libshaderc_shared.dll",
+              "sha256": "887d422382f18be097c447ed3922db04397d50ddf7e34f3cc18d2e2abde740b0"
+            },
+            {
+              "name": "libsharpyuv-0.dll",
+              "sha256": "d29380c7056383f3e7a80bf9e150f0b8c425c1cf2568d1336e88979ddc2307af"
+            },
+            {
+              "name": "libsoxr.dll",
+              "sha256": "ac03eccb5567b2fabf6d58a7fb249316e688bdaa718763964d437b8fc887ee4e"
+            },
+            {
+              "name": "libspeex-1.dll",
+              "sha256": "70517dd82e962c0956f0e8d3bb700cd7ecc62b8c08741b35d71f2e95d601621d"
+            },
+            {
+              "name": "libsrt.dll",
+              "sha256": "b8a151547ba578e6d9f477b351c93a6a88ebeac58930cfad2d56d5668b785050"
+            },
+            {
+              "name": "libssh.dll",
+              "sha256": "9aab3a3c76ff3bc79a475fc1a913d4871a66d4d8d3182c6be72e80ffb10d4625"
+            },
+            {
+              "name": "libssh2-1.dll",
+              "sha256": "7c9b4edb678b738b919950492c4a390482fdd644d1276d4728990fdd3c3ea989"
+            },
+            {
+              "name": "libssl-3-x64.dll",
+              "sha256": "7f53951cf786e299521e46d860f7764d6bd671ce85d2a03dc929a8184792e2ab"
+            },
+            {
+              "name": "libstdc++-6.dll",
+              "sha256": "d9a58184f6bb27936ef03c3a3286950e4aa61c66a9f74dfa94a532b1433b368d"
+            },
+            {
+              "name": "libSvtAv1Enc-4.dll",
+              "sha256": "484b89703cc2bc43a8e18f8330f024ff88459fb8ebc19fba74a7f19d1dd1c92f"
+            },
+            {
+              "name": "libtasn1-6.dll",
+              "sha256": "9793128fa5028fe8d8b49407a6ed900a2315444f9f7444a146f0b62f08c1c5bb"
+            },
+            {
+              "name": "libthai-0.dll",
+              "sha256": "d8d8b87e9089a811e088f6a01da57c19ed54d2b6613bb85697f1958473f63666"
+            },
+            {
+              "name": "libtheoradec-2.dll",
+              "sha256": "0b9877e581421abe4090abacf2cd8c04df6de00520d7a34b9f41b46a11a02a80"
+            },
+            {
+              "name": "libtheoraenc-2.dll",
+              "sha256": "ed0fb82d04220070d2f53832a9cb653546ddce2c704a53bfacae7597666db4d7"
+            },
+            {
+              "name": "libtiff-6.dll",
+              "sha256": "876f15a6aab834a18b457bee1bf66435ae244f5f7bc27b6ace2c9cf952f25489"
+            },
+            {
+              "name": "libunistring-5.dll",
+              "sha256": "ee39258fa1086269674a8179d3cfaf7c4e380ada14441b5dd9ed53d82d15c4e3"
+            },
+            {
+              "name": "libva.dll",
+              "sha256": "f02c962ecbfad05f1a1ce85490a150c4d5e7a8474084d8c14ca274dc399d8c60"
+            },
+            {
+              "name": "libva_win32.dll",
+              "sha256": "2f8633fe9b099649654eb7a764d96efde69d70e91e265433fdf5a3c33f10c8e2"
+            },
+            {
+              "name": "libvorbis-0.dll",
+              "sha256": "43b00d5e347b6b35a3912e3179d6433b5bdae7233cc04cbe38bcc61f164cdc6f"
+            },
+            {
+              "name": "libvorbisenc-2.dll",
+              "sha256": "a765abbbe42de7c8bba31b41591cfe4c4307c30af67c478f372f76116f28e72e"
+            },
+            {
+              "name": "libvpl-2.dll",
+              "sha256": "6ddfe5105f2428afdca7613549b4479013bbd08c854a687abbce685015f83a2d"
+            },
+            {
+              "name": "libvpx-1.dll",
+              "sha256": "f43be692ef1cf014931a39545b4d7a191264bed4df05ca112399b49a1fb1d167"
+            },
+            {
+              "name": "libwebp-7.dll",
+              "sha256": "8dfe40c4e0abc90ddf18f080898987e01253d099b2b2d6daf7db521e55c00446"
+            },
+            {
+              "name": "libwebpmux-3.dll",
+              "sha256": "9bd85116a22923d648d6b0ad09f21d08df7bd3d8860b24a5b4a6d4ac788b7340"
+            },
+            {
+              "name": "libwinpthread-1.dll",
+              "sha256": "92e996ab2cb61f5106b8b67a4dc23dd2959958cdb3afe6d2f9c6fc3afef85258"
+            },
+            {
+              "name": "libx264-165.dll",
+              "sha256": "acf3d8f926f42adaceffc4cff91d0dd1c19866ac73c64f4d18cfcb8051509a0a"
+            },
+            {
+              "name": "libx265-216.dll",
+              "sha256": "757f54ba8752c279894be3901773235024261754c76f6a3d671d8f992ff9384f"
+            },
+            {
+              "name": "libXISF.dll",
+              "sha256": "18563cfc29457ad38bf62a08366b9f59eed531cf793f75a1584802ac8b86b22b"
+            },
+            {
+              "name": "libxml2-16.dll",
+              "sha256": "be9f24e4506b73812c5f477a079d4c45b5dc2630222783195e913fcabd6c7eab"
+            },
+            {
+              "name": "libzstd.dll",
+              "sha256": "48368ab0ca622d0ec12f41ce85d91f22866bf5da92c77a69a06483564c93816c"
+            },
+            {
+              "name": "libzvbi-0.dll",
+              "sha256": "846197316af88ef08ac255fbae2f5a348167a28e5bae3fe9c3657c004737aaf1"
+            },
+            {
+              "name": "swresample-6.dll",
+              "sha256": "f52c46b63d659390b74d64e8efe41047d3378439a64cea9832a3693c441d85a0"
+            },
+            {
+              "name": "swscale-9.dll",
+              "sha256": "9043df0f14ffe9ed2aa8dc7495bc0812af6fd2fe4de54fc8994fa7d72c04e775"
+            },
+            {
+              "name": "xvidcore.dll",
+              "sha256": "5107ab029f4f06a5a360ac769c20a150d4bd1a1922575517b9054768ff219611"
+            },
+            {
+              "name": "zlib1.dll",
+              "sha256": "11cd91171765cd65f1c3362e3df67e5f5a618a6b88c8cdec899b802eaf1c7b0d"
+            }
+          ],
+          "packages": {
+            "numpy": "2.5.3",
+            "Pillow": "12.3.0",
+            "astropy": "8.0.1",
+            "photutils": "3.0.0",
+            "scipy": "1.18.1",
+            "psutil": "7.2.2",
+            "PyAVM": "0.9.9"
+          },
+          "runner": "0997e1603dd4117098f2b48f7f22882d8554f516a0000905f9bc83be267835b5",
+          "spec": "full-source-LANCZOS-1024-sRGB-8bit-PNG; no crop; geometric alpha opaque"
+        },
+        "timings": {
+          "readHash": 0.01950519997626543,
+          "decode": 0.09099820000119507,
+          "resize": 0.14832100016064942,
+          "toolFormatConversion": 0.103477300144732,
+          "process": 0.8923677001148462,
+          "encodeAndDiagnostics": 0.20058960001915693,
+          "total": 1.8381031998433173
+        },
+        "details": {
+          "wallSeconds": 0.8673905001487583,
+          "peakWorkingSetBytes": 69087232,
+          "measurement": "Windows peak working set plus 50ms RSS polling; one child",
+          "gpuPeakBytes": "UNKNOWN"
+        },
+        "metrics": {
+          "changedPixels": 1025024,
+          "meanAbsoluteRGB": 2.3087462667540795,
+          "protectedMeanAbsoluteRGB": 1.8458156106644479,
+          "newBlackPixels": 1
+        },
+        "parentPeakWorkingSetBytes": 690593792,
+        "manualRepairCount": 0,
+        "manualRepairSeconds": 0,
+        "reviewSeconds": "UNKNOWN",
+        "outputs": [
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2/comparison.jpg",
+            "bytes": 753644,
+            "sha256": "5a381e9cb7f53b328cd345dcfd575116956782c476d50dfbdd3cff0e5b51bac0"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2/difference-x8.png",
+            "bytes": 20710,
+            "sha256": "3519b4a1f413ff5b16cc79d332b600da8fa1ca0ca1a71a0b07a86c46c7c07508"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2/original.png",
+            "bytes": 1631622,
+            "sha256": "5fada759198c6a37aec0aa3ee639b70ecdf95d3d29ef665bd0cc0d2e07d42a15"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2/process.ssf",
+            "bytes": 433,
+            "sha256": "52b6caf5cc388b2c3c70af5127ecbb5c2654e348bdaf80095d4e861818fdc593"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2/processed.png",
+            "bytes": 1631613,
+            "sha256": "3de77c942e2cea7bbe525b748ccc45648ad507d1bf2b8b5d94a9bfcd8e0ca1b4"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2/protection-region.png",
+            "bytes": 6137,
+            "sha256": "684f87072253a706b7dc0c74958e5ffe39b0d57078f19c251dbed9800e0e4998"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2/removed-layer.png",
+            "bytes": 12729,
+            "sha256": "01a7c2b489cbb6cb842fc25a11158b7f85b8f19d87cbaa8affa9a380a07e607d"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2/siril-result.png",
+            "bytes": 1532856,
+            "sha256": "c3a96c2a6bf6fc438effae1d49820c19051605edacde2169907388c279b08fe2"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2/siril.ini",
+            "bytes": 4288,
+            "sha256": "0e0e13b97e7f67dc46d5cd04983c2a3ec8a8bae5597858f42f9bcc48dd2f359c"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/c4556170c1cd60a1aa7c5277dc2878694c85d73307e4d6bb6e834a42239155b2/tool.log",
+            "bytes": 2227,
+            "sha256": "c715b99ef0973d3cea110562f01f8f8eb47724c092060bcedd094586ef991e51"
+          }
+        ]
+      }
+    },
+    "ngc5128:nox": {
+      "row": {
+        "sample": "ngc5128",
+        "method": "nox",
+        "cacheHit": false,
+        "seconds": 29.805818299995735,
+        "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\742f812a0bd902270c7312c9b39bfbb086c7fe0c35f6cf6b49b79e4440f38899\\receipt.json",
+        "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+      },
+      "binding": {
+        "path": "output/image-tool-benchmark-2026-10-08/cache/742f812a0bd902270c7312c9b39bfbb086c7fe0c35f6cf6b49b79e4440f38899/receipt.json",
+        "bytes": 5477,
+        "sha256": "c833494feba75bf98d62ac0b8e15f0b5ff38e623b2fd1cc4998ce2e02cd96012"
+      },
+      "measurements": {
+        "key": {
+          "input": {
+            "path": "output/eso-ngc5128-finished-1006-q1-r1/eso1221a-publication.jpg",
+            "bytes": 3404178,
+            "sha256": "6c0e4465655cc2524871270fc9d7d323f4c2544cd776bca836d32100c45c8023"
+          },
+          "sample": {
+            "id": "ngc5128",
+            "kind": "galaxy",
+            "width": 1024,
+            "input": {
+              "path": "output/eso-ngc5128-finished-1006-q1-r1/eso1221a-publication.jpg",
+              "bytes": 3404178,
+              "sha256": "6c0e4465655cc2524871270fc9d7d323f4c2544cd776bca836d32100c45c8023"
+            },
+            "metadata": "output/eso-ngc5128-finished-1006-q1-r1/result.json",
+            "source": "https://www.eso.org/public/images/eso1221a/",
+            "credit": "ESO",
+            "license": "CC BY 4.0",
+            "question": "Protect diffuse halo and thin off-centre filaments while testing crowded foreground stars",
+            "backgroundEligible": true,
+            "protectEllipses": [
+              [
+                0.5,
+                0.55,
+                0.37,
+                0.36,
+                0
+              ],
+              [
+                0.31,
+                0.3,
+                0.1,
+                0.32,
+                -27
+              ]
+            ],
+            "methods": [
+              "original",
+              "photutils",
+              "siril",
+              "nox"
+            ]
+          },
+          "method": "nox",
+          "tools": [
+            {
+              "name": "nox.exe",
+              "sha256": "3a1669c535927312c51e91c807eae3436cab2613e55cf5485e6475203ea7f0f1"
+            },
+            {
+              "name": "noxGeneratorColor.pb",
+              "sha256": "d54bdca728d1d6db0b3eef41d4187d327909d1ec5cd2a71485bfa9d7924ba546"
+            },
+            {
+              "name": "tensorflow.dll",
+              "sha256": "6c7527427bab32e2684540e681524a129904f34b7380cbdb912b45064314a16f"
+            }
+          ],
+          "packages": {
+            "numpy": "2.5.3",
+            "Pillow": "12.3.0",
+            "astropy": "8.0.1",
+            "photutils": "3.0.0",
+            "scipy": "1.18.1",
+            "psutil": "7.2.2",
+            "PyAVM": "0.9.9"
+          },
+          "runner": "02861ae6cd1df7222999060f5161cc53346756777ee4320f39e98201bd953a41",
+          "spec": "full-source-LANCZOS-1024-sRGB-8bit-PNG; no crop; geometric alpha opaque"
+        },
+        "timings": {
+          "readHash": 0.024606900056824088,
+          "decode": 0.11139039997942746,
+          "resize": 0.18440159992314875,
+          "toolFormatConversion": 0.12421220005489886,
+          "process": 28.410050900187343,
+          "encodeAndDiagnostics": 0.22016809997148812,
+          "total": 29.75701229996048
+        },
+        "details": {
+          "wallSeconds": 28.37486970005557,
+          "peakWorkingSetBytes": 3344756736,
+          "measurement": "Windows peak working set plus 50ms RSS polling; one child",
+          "gpuPeakBytes": "UNKNOWN"
+        },
+        "metrics": {
+          "changedPixels": 119886,
+          "meanAbsoluteRGB": 3.323727054195804,
+          "protectedMeanAbsoluteRGB": 3.236503886959795,
+          "newBlackPixels": 31
+        },
+        "parentPeakWorkingSetBytes": 701394944,
+        "manualRepairCount": 0,
+        "manualRepairSeconds": 0,
+        "reviewSeconds": "UNKNOWN",
+        "outputs": [
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/742f812a0bd902270c7312c9b39bfbb086c7fe0c35f6cf6b49b79e4440f38899/comparison.jpg",
+            "bytes": 1129574,
+            "sha256": "1fb3e669ffa1a6180a67d37cf04c54b2c5feb35bbf29b7398f3a114934ec2740"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/742f812a0bd902270c7312c9b39bfbb086c7fe0c35f6cf6b49b79e4440f38899/difference-x8.png",
+            "bytes": 272480,
+            "sha256": "b4acca5061f868827312535c071bba8093ddb4b6f5ee645a931e25b5b109f8fc"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/742f812a0bd902270c7312c9b39bfbb086c7fe0c35f6cf6b49b79e4440f38899/nox-16.png",
+            "bytes": 2901635,
+            "sha256": "5d3448372671694813252b8657b5be6c5e148bf29f0ca19942e57caa5843eec2"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/742f812a0bd902270c7312c9b39bfbb086c7fe0c35f6cf6b49b79e4440f38899/original.png",
+            "bytes": 1631622,
+            "sha256": "5fada759198c6a37aec0aa3ee639b70ecdf95d3d29ef665bd0cc0d2e07d42a15"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/742f812a0bd902270c7312c9b39bfbb086c7fe0c35f6cf6b49b79e4440f38899/processed.png",
+            "bytes": 1510163,
+            "sha256": "0fac425d5a02aa36ba0dc10307f2ef798eec2a57866399b3ba9b12209eaea798"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/742f812a0bd902270c7312c9b39bfbb086c7fe0c35f6cf6b49b79e4440f38899/protection-region.png",
+            "bytes": 6137,
+            "sha256": "684f87072253a706b7dc0c74958e5ffe39b0d57078f19c251dbed9800e0e4998"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/742f812a0bd902270c7312c9b39bfbb086c7fe0c35f6cf6b49b79e4440f38899/removed-layer.png",
+            "bytes": 399892,
+            "sha256": "3e52f85a4389710b3b2a02ef04a7abbe735b4d4606303638d2242c18c51945a8"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/742f812a0bd902270c7312c9b39bfbb086c7fe0c35f6cf6b49b79e4440f38899/tool.log",
+            "bytes": 2342,
+            "sha256": "85aa42cc649282d2b508cfa0d1ff7664add0849f60e40ffc6e73dae408649163"
+          }
+        ]
+      }
+    },
+    "ngc5128:photutils": {
+      "row": {
+        "sample": "ngc5128",
+        "method": "photutils",
+        "cacheHit": false,
+        "status": "FAILED",
+        "error": "ValueError: All boxes contain <= 14745.6 unmasked or finite pixels (self.box_size=array([128, 128]), self.exclude_percentile=10.0). Please check your data or increase \"exclude_percentile\" to allow more boxes to be included.",
+        "seconds": 0.6385268999729306,
+        "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\c8474f658cb8c62b37811e95d728e7c595e423fbb0acaef791e03f7f2cee473b\\failure.json"
+      },
+      "binding": {
+        "path": "output/image-tool-benchmark-2026-10-08/cache/c8474f658cb8c62b37811e95d728e7c595e423fbb0acaef791e03f7f2cee473b/failure.json",
+        "bytes": 2661,
+        "sha256": "a2965d0c167ee9f2b848d7b0fcbad191945a7ede044c556790ec9505847d7815"
+      },
+      "measurements": {
+        "key": {
+          "input": {
+            "path": "output/eso-ngc5128-finished-1006-q1-r1/eso1221a-publication.jpg",
+            "bytes": 3404178,
+            "sha256": "6c0e4465655cc2524871270fc9d7d323f4c2544cd776bca836d32100c45c8023"
+          },
+          "sample": {
+            "id": "ngc5128",
+            "kind": "galaxy",
+            "width": 1024,
+            "input": {
+              "path": "output/eso-ngc5128-finished-1006-q1-r1/eso1221a-publication.jpg",
+              "bytes": 3404178,
+              "sha256": "6c0e4465655cc2524871270fc9d7d323f4c2544cd776bca836d32100c45c8023"
+            },
+            "metadata": "output/eso-ngc5128-finished-1006-q1-r1/result.json",
+            "source": "https://www.eso.org/public/images/eso1221a/",
+            "credit": "ESO",
+            "license": "CC BY 4.0",
+            "question": "Protect diffuse halo and thin off-centre filaments while testing crowded foreground stars",
+            "backgroundEligible": true,
+            "protectEllipses": [
+              [
+                0.5,
+                0.55,
+                0.37,
+                0.36,
+                0
+              ],
+              [
+                0.31,
+                0.3,
+                0.1,
+                0.32,
+                -27
+              ]
+            ],
+            "methods": [
+              "original",
+              "photutils",
+              "siril",
+              "nox"
+            ]
+          },
+          "metadata": {
+            "path": "output/eso-ngc5128-finished-1006-q1-r1/result.json",
+            "bytes": 3020,
+            "sha256": "5e0b10f7d3b11f72cfdc1cf21866a0066bbc3a4aa910e07bb77d5d387300d060"
+          },
+          "formula": {
+            "path": "data-pipelines/deep-sky/publish_prepared_display.py",
+            "bytes": 17250,
+            "sha256": "6a0f6c8afe8fa9556713c0fac0b7fa9f348aa45d0f7ca792397f4a25f1625b2c"
+          },
+          "method": "photutils",
+          "tools": [],
+          "packages": {
+            "numpy": "2.5.3",
+            "Pillow": "12.3.0",
+            "astropy": "8.0.1",
+            "photutils": "3.0.0",
+            "scipy": "1.18.1",
+            "psutil": "7.2.2",
+            "PyAVM": "0.9.9"
+          },
+          "runner": "0997e1603dd4117098f2b48f7f22882d8554f516a0000905f9bc83be267835b5",
+          "spec": "full-source-LANCZOS-1024-sRGB-8bit-PNG; no crop; geometric alpha opaque"
+        },
+        "seconds": 0.6385268999729306,
+        "outputs": [
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/c8474f658cb8c62b37811e95d728e7c595e423fbb0acaef791e03f7f2cee473b/original.png",
+            "bytes": 1631622,
+            "sha256": "5fada759198c6a37aec0aa3ee639b70ecdf95d3d29ef665bd0cc0d2e07d42a15"
+          }
+        ]
+      }
+    },
+    "m81-m82:original": {
+      "row": {
+        "sample": "m81-m82",
+        "method": "original",
+        "cacheHit": false,
+        "seconds": 0.7500535000581294,
+        "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\43295932798454bd6ac887c7b0278bb158ec26a0a103503dd2b66af4ba9e4901\\receipt.json",
+        "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+      },
+      "binding": {
+        "path": "output/image-tool-benchmark-2026-10-08/cache/43295932798454bd6ac887c7b0278bb158ec26a0a103503dd2b66af4ba9e4901/receipt.json",
+        "bytes": 4880,
+        "sha256": "5ba5e2aae1d94dd209899670652bba7510fb651d17a3d404a17e99b555c2ff9a"
+      },
+      "measurements": {
+        "key": {
+          "input": {
+            "path": "output/noirlab-m82-large-source-1004-r1/noao-m81m82-large.jpg",
+            "bytes": 9250383,
+            "sha256": "71a539df75c8af574e98d3da13c1381e525093dd2e8814d9588f35b73b4e3479"
+          },
+          "sample": {
+            "id": "m81-m82",
+            "kind": "galaxy-pair",
+            "width": 1024,
+            "input": {
+              "path": "output/noirlab-m82-large-source-1004-r1/noao-m81m82-large.jpg",
+              "bytes": 9250383,
+              "sha256": "71a539df75c8af574e98d3da13c1381e525093dd2e8814d9588f35b73b4e3479"
+            },
+            "metadata": "output/noirlab-m82-large-source-1004-r1/result.json",
+            "source": "https://noirlab.edu/public/images/noao-m81m82/",
+            "credit": "T.A. Rector (University of Alaska Anchorage) and NOIRLab/NSF/AURA/",
+            "license": "CC BY 4.0",
+            "question": "Transfer background rule to two off-centre targets, preserving M81 faint disk and M82 filaments",
+            "backgroundEligible": true,
+            "protectEllipses": [
+              [
+                0.25,
+                0.46,
+                0.2,
+                0.29,
+                0
+              ],
+              [
+                0.87,
+                0.4,
+                0.07,
+                0.18,
+                20
+              ]
+            ],
+            "methods": [
+              "original",
+              "photutils"
+            ],
+            "reason": "nox stopped after representative artifacts; Siril first-order recipe had no material benefit; no parameter sweep"
+          },
+          "metadata": {
+            "path": "output/noirlab-m82-large-source-1004-r1/result.json",
+            "bytes": 3046,
+            "sha256": "d9a4f580a52aa4e126feaca0db5e4a5f80f727f46ad95786d1cd97b5f771180a"
+          },
+          "formula": {
+            "path": "data-pipelines/deep-sky/publish_prepared_display.py",
+            "bytes": 17250,
+            "sha256": "6a0f6c8afe8fa9556713c0fac0b7fa9f348aa45d0f7ca792397f4a25f1625b2c"
+          },
+          "method": "original",
+          "tools": [],
+          "packages": {
+            "numpy": "2.5.3",
+            "Pillow": "12.3.0",
+            "astropy": "8.0.1",
+            "photutils": "3.0.0",
+            "scipy": "1.18.1",
+            "psutil": "7.2.2",
+            "PyAVM": "0.9.9"
+          },
+          "runner": "0997e1603dd4117098f2b48f7f22882d8554f516a0000905f9bc83be267835b5",
+          "spec": "full-source-LANCZOS-1024-sRGB-8bit-PNG; no crop; geometric alpha opaque"
+        },
+        "timings": {
+          "readHash": 0.03558050002902746,
+          "decode": 0.2215084999334067,
+          "resize": 0.2875135000795126,
+          "toolFormatConversion": 0.07803529989905655,
+          "process": 3.300141543149948e-06,
+          "encodeAndDiagnostics": 0.04385290015488863,
+          "total": 0.7244990998879075
+        },
+        "details": {},
+        "metrics": {
+          "changedPixels": 0,
+          "meanAbsoluteRGB": 0.0,
+          "protectedMeanAbsoluteRGB": 0.0,
+          "newBlackPixels": 0
+        },
+        "parentPeakWorkingSetBytes": 690593792,
+        "manualRepairCount": 0,
+        "manualRepairSeconds": 0,
+        "reviewSeconds": "UNKNOWN",
+        "outputs": [
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/43295932798454bd6ac887c7b0278bb158ec26a0a103503dd2b66af4ba9e4901/comparison.jpg",
+            "bytes": 184020,
+            "sha256": "ab028df5b9fb9afabe74c60c5661cae0c784a9caae47bdec926a8bfe6290ae97"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/43295932798454bd6ac887c7b0278bb158ec26a0a103503dd2b66af4ba9e4901/difference-x8.png",
+            "bytes": 1782,
+            "sha256": "a262bc91e322729339003739e72092e846df4fb6e9133d7545b85e490291308b"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/43295932798454bd6ac887c7b0278bb158ec26a0a103503dd2b66af4ba9e4901/original.png",
+            "bytes": 662895,
+            "sha256": "a733f583e1d9e89245195c5a991982ef29cca007099ae9ce75c8939446101518"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/43295932798454bd6ac887c7b0278bb158ec26a0a103503dd2b66af4ba9e4901/processed.png",
+            "bytes": 662895,
+            "sha256": "a733f583e1d9e89245195c5a991982ef29cca007099ae9ce75c8939446101518"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/43295932798454bd6ac887c7b0278bb158ec26a0a103503dd2b66af4ba9e4901/protection-region.png",
+            "bytes": 3114,
+            "sha256": "fd8edab21b6edeba9d62af65453ff981f6494e87cf709064f398fe3e4101f03b"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/43295932798454bd6ac887c7b0278bb158ec26a0a103503dd2b66af4ba9e4901/removed-layer.png",
+            "bytes": 1782,
+            "sha256": "a262bc91e322729339003739e72092e846df4fb6e9133d7545b85e490291308b"
+          }
+        ]
+      }
+    },
+    "m81-m82:photutils": {
+      "row": {
+        "sample": "m81-m82",
+        "method": "photutils",
+        "cacheHit": false,
+        "seconds": 2.247474299976602,
+        "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\e5884200e3396767807c5f1fa0df487755eb4ca8e3a4523c3de7efb365d2048f\\receipt.json",
+        "status": "COMPLETED_NOT_QUALITY_ACCEPTANCE"
+      },
+      "binding": {
+        "path": "output/image-tool-benchmark-2026-10-08/cache/e5884200e3396767807c5f1fa0df487755eb4ca8e3a4523c3de7efb365d2048f/receipt.json",
+        "bytes": 5767,
+        "sha256": "7c1c366ac30d57e70a033090eedc528c60d0bc3aa0e6dfa779a1779a9c155c10"
+      },
+      "measurements": {
+        "key": {
+          "input": {
+            "path": "output/noirlab-m82-large-source-1004-r1/noao-m81m82-large.jpg",
+            "bytes": 9250383,
+            "sha256": "71a539df75c8af574e98d3da13c1381e525093dd2e8814d9588f35b73b4e3479"
+          },
+          "sample": {
+            "id": "m81-m82",
+            "kind": "galaxy-pair",
+            "width": 1024,
+            "input": {
+              "path": "output/noirlab-m82-large-source-1004-r1/noao-m81m82-large.jpg",
+              "bytes": 9250383,
+              "sha256": "71a539df75c8af574e98d3da13c1381e525093dd2e8814d9588f35b73b4e3479"
+            },
+            "metadata": "output/noirlab-m82-large-source-1004-r1/result.json",
+            "source": "https://noirlab.edu/public/images/noao-m81m82/",
+            "credit": "T.A. Rector (University of Alaska Anchorage) and NOIRLab/NSF/AURA/",
+            "license": "CC BY 4.0",
+            "question": "Transfer background rule to two off-centre targets, preserving M81 faint disk and M82 filaments",
+            "backgroundEligible": true,
+            "protectEllipses": [
+              [
+                0.25,
+                0.46,
+                0.2,
+                0.29,
+                0
+              ],
+              [
+                0.87,
+                0.4,
+                0.07,
+                0.18,
+                20
+              ]
+            ],
+            "methods": [
+              "original",
+              "photutils"
+            ],
+            "reason": "nox stopped after representative artifacts; Siril first-order recipe had no material benefit; no parameter sweep"
+          },
+          "metadata": {
+            "path": "output/noirlab-m82-large-source-1004-r1/result.json",
+            "bytes": 3046,
+            "sha256": "d9a4f580a52aa4e126feaca0db5e4a5f80f727f46ad95786d1cd97b5f771180a"
+          },
+          "formula": {
+            "path": "data-pipelines/deep-sky/publish_prepared_display.py",
+            "bytes": 17250,
+            "sha256": "6a0f6c8afe8fa9556713c0fac0b7fa9f348aa45d0f7ca792397f4a25f1625b2c"
+          },
+          "method": "photutils",
+          "tools": [],
+          "packages": {
+            "numpy": "2.5.3",
+            "Pillow": "12.3.0",
+            "astropy": "8.0.1",
+            "photutils": "3.0.0",
+            "scipy": "1.18.1",
+            "psutil": "7.2.2",
+            "PyAVM": "0.9.9"
+          },
+          "runner": "0997e1603dd4117098f2b48f7f22882d8554f516a0000905f9bc83be267835b5",
+          "spec": "full-source-LANCZOS-1024-sRGB-8bit-PNG; no crop; geometric alpha opaque"
+        },
+        "timings": {
+          "readHash": 0.03460410004481673,
+          "decode": 0.21679669991135597,
+          "resize": 0.3000237999949604,
+          "toolFormatConversion": 0.07727800006978214,
+          "process": 1.3221885999664664,
+          "encodeAndDiagnostics": 0.19353740010410547,
+          "total": 2.22199620003812
+        },
+        "details": {
+          "maskedFraction": 0.3260079763986014,
+          "backgroundMedianRGB": [
+            7.084972036276227,
+            8.4653415807447,
+            8.74596879253847
+          ],
+          "negativeChannelPixels": [
+            203563,
+            143287,
+            112577
+          ],
+          "formulaOwner": "publish_prepared_display.verify_display_pixels"
+        },
+        "metrics": {
+          "changedPixels": 582668,
+          "meanAbsoluteRGB": 6.653158690268065,
+          "protectedMeanAbsoluteRGB": 4.58424751918828,
+          "newBlackPixels": 90891
+        },
+        "parentPeakWorkingSetBytes": 690593792,
+        "manualRepairCount": 0,
+        "manualRepairSeconds": 0,
+        "reviewSeconds": "UNKNOWN",
+        "outputs": [
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e5884200e3396767807c5f1fa0df487755eb4ca8e3a4523c3de7efb365d2048f/background.npz",
+            "bytes": 11752298,
+            "sha256": "0a9998b75372a69a51a5e45938f9f9a6a45c06a85249b4a2dc66dd4a3c05791d"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e5884200e3396767807c5f1fa0df487755eb4ca8e3a4523c3de7efb365d2048f/comparison.jpg",
+            "bytes": 285785,
+            "sha256": "f4bf4e3024d66a2ad1d9aa6ead87235d5320e7428bfae773f634c93f14557bca"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e5884200e3396767807c5f1fa0df487755eb4ca8e3a4523c3de7efb365d2048f/difference-x8.png",
+            "bytes": 323945,
+            "sha256": "59b98d90a9925203933ea45ff99d05ff09d876ff835d216cf0210faa86e48f6d"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e5884200e3396767807c5f1fa0df487755eb4ca8e3a4523c3de7efb365d2048f/estimation-mask.png",
+            "bytes": 9201,
+            "sha256": "7236a75b0aecf1342ecf633cbb134623ea980a452b6f4a6ccb60029b145824bf"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e5884200e3396767807c5f1fa0df487755eb4ca8e3a4523c3de7efb365d2048f/original.png",
+            "bytes": 662895,
+            "sha256": "a733f583e1d9e89245195c5a991982ef29cca007099ae9ce75c8939446101518"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e5884200e3396767807c5f1fa0df487755eb4ca8e3a4523c3de7efb365d2048f/processed.png",
+            "bytes": 615221,
+            "sha256": "6080e83aecabcf15fb9ab2c0076ee71235b81a4e309049b7ebf4be1c079e39a1"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e5884200e3396767807c5f1fa0df487755eb4ca8e3a4523c3de7efb365d2048f/protection-region.png",
+            "bytes": 3114,
+            "sha256": "fd8edab21b6edeba9d62af65453ff981f6494e87cf709064f398fe3e4101f03b"
+          },
+          {
+            "path": "output/image-tool-benchmark-2026-10-08/cache/e5884200e3396767807c5f1fa0df487755eb4ca8e3a4523c3de7efb365d2048f/removed-layer.png",
+            "bytes": 323543,
+            "sha256": "3076fa79cbbb6714c9c26860b6937eaaf007f01c3441bdd4ebd7f3615d41920d"
+          }
+        ]
+      }
+    }
+  },
+  "scene": {
+    "binding": {
+      "path": "output/image-tool-benchmark-2026-10-08/scene-final/result.json",
+      "bytes": 206878,
+      "sha256": "d8fa9ccaa37a086580f5a619147d1e83a260ee860fa419cea0e64d5e30af7d5a"
+    },
+    "frames": [
+      {
+        "id": "ngc253",
+        "method": "off",
+        "view": "wide",
+        "file": "ngc253-off-wide.png",
+        "encoded": {
+          "bytes": 10060,
+          "sha256": "970f77d85ebfb894cec79bcf44bc227c10c23a5a49da519b7f33f70b13148131"
+        },
+        "decodeSeconds": 0,
+        "renderSeconds": 0.05589999985694885,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [],
+        "completion": null,
+        "objects": 1,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc253",
+        "method": "original",
+        "view": "wide",
+        "file": "ngc253-original-wide.png",
+        "encoded": {
+          "bytes": 127364,
+          "sha256": "a8fd7466f47bd7907468c42271c5c72d37b5e3e4476bb5d6ea9a54299e48a09c"
+        },
+        "decodeSeconds": 0.019,
+        "renderSeconds": 0.2527000000476837,
+        "changedPixelsVsOff": 70334,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "409c18e42850f99e0b8a8a44105e076ce3e694e9fa8d730cd28085d0fb40f639",
+          "reference": "NGC:253"
+        },
+        "objects": 1,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc253",
+        "method": "off",
+        "view": "detail",
+        "file": "ngc253-off-detail.png",
+        "encoded": {
+          "bytes": 10128,
+          "sha256": "86bb2f2ceb251c983edc9fb55383c9b5bc04038bf9671f3354854d76cc75a3ce"
+        },
+        "decodeSeconds": 0,
+        "renderSeconds": 0.05720000004768372,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [],
+        "completion": null,
+        "objects": 1,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc253",
+        "method": "original",
+        "view": "detail",
+        "file": "ngc253-original-detail.png",
+        "encoded": {
+          "bytes": 402207,
+          "sha256": "84d48a5522a7b63d4d2c3cc2ba0243ca98f39a812c530548f61def5a772987c8"
+        },
+        "decodeSeconds": 0.0015,
+        "renderSeconds": 0.29579999995231626,
+        "changedPixelsVsOff": 250771,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "409c18e42850f99e0b8a8a44105e076ce3e694e9fa8d730cd28085d0fb40f639",
+          "reference": "NGC:253"
+        },
+        "objects": 1,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc253",
+        "method": "photutils",
+        "view": "wide",
+        "file": "ngc253-photutils-wide.png",
+        "encoded": {
+          "bytes": 117141,
+          "sha256": "300d4c2a5e58d439bfacc9332a3ee6d57b81f6d5a588a4715136ba638ac99d0d"
+        },
+        "decodeSeconds": 0.014799999952316284,
+        "renderSeconds": 0.2665,
+        "changedPixelsVsOff": 52900,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "49af977897ab5f20d153f0b226900c2949e2a13cb3a2b9e7a67cb6596da86bf7",
+          "reference": "NGC:253"
+        },
+        "objects": 1,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc253",
+        "method": "photutils",
+        "view": "detail",
+        "file": "ngc253-photutils-detail.png",
+        "encoded": {
+          "bytes": 377060,
+          "sha256": "a1ad733d761805ceec61063567c37d67e991b4da7d5f9e87d58d0752fd5c8d7a"
+        },
+        "decodeSeconds": 0.00039999985694885254,
+        "renderSeconds": 0.255,
+        "changedPixelsVsOff": 204936,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "49af977897ab5f20d153f0b226900c2949e2a13cb3a2b9e7a67cb6596da86bf7",
+          "reference": "NGC:253"
+        },
+        "objects": 1,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc253",
+        "method": "siril",
+        "view": "wide",
+        "file": "ngc253-siril-wide.png",
+        "encoded": {
+          "bytes": 127362,
+          "sha256": "c98fde0de09b0cacd7e1d2eb16c5b752db2b4f330b3ab160bb497e9d52810224"
+        },
+        "decodeSeconds": 0.015399999856948853,
+        "renderSeconds": 0.2435,
+        "changedPixelsVsOff": 70334,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "f9db868aab7977d4f77b083c914b2ae6f862092930ec2b212cfab4a478b8107e",
+          "reference": "NGC:253"
+        },
+        "objects": 1,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc253",
+        "method": "siril",
+        "view": "detail",
+        "file": "ngc253-siril-detail.png",
+        "encoded": {
+          "bytes": 401988,
+          "sha256": "3861585e99e375883580c2d91463761dfc9461d163d98ba3f707189d92de7ea6"
+        },
+        "decodeSeconds": 0.0006000001430511475,
+        "renderSeconds": 0.23559999990463257,
+        "changedPixelsVsOff": 250771,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "f9db868aab7977d4f77b083c914b2ae6f862092930ec2b212cfab4a478b8107e",
+          "reference": "NGC:253"
+        },
+        "objects": 1,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc5128",
+        "method": "off",
+        "view": "wide",
+        "file": "ngc5128-off-wide.png",
+        "encoded": {
+          "bytes": 9805,
+          "sha256": "503442898327d57f1f98d94cd2d5ec193a69b0bc6199aa4a8dff9f7326e359dd"
+        },
+        "decodeSeconds": 0,
+        "renderSeconds": 0.036,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [],
+        "completion": null,
+        "objects": 0,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc5128",
+        "method": "original",
+        "view": "wide",
+        "file": "ngc5128-original-wide.png",
+        "encoded": {
+          "bytes": 184906,
+          "sha256": "c85bd6b9e9d02805615545394b9e6a1e52daa21ce8f632c7d8dc48d21ba604de"
+        },
+        "decodeSeconds": 0.02490000009536743,
+        "renderSeconds": 0.151,
+        "changedPixelsVsOff": 75840,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "c9a975098f276e92a17310df4901747192fccfc8d5ecb868a4ed1ead0f223ddd",
+          "reference": "REGION:eso-ngc5128-field"
+        },
+        "objects": 0,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc5128",
+        "method": "off",
+        "view": "detail",
+        "file": "ngc5128-off-detail.png",
+        "encoded": {
+          "bytes": 9805,
+          "sha256": "503442898327d57f1f98d94cd2d5ec193a69b0bc6199aa4a8dff9f7326e359dd"
+        },
+        "decodeSeconds": 0,
+        "renderSeconds": 0.04560000014305115,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [],
+        "completion": null,
+        "objects": 0,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc5128",
+        "method": "original",
+        "view": "detail",
+        "file": "ngc5128-original-detail.png",
+        "encoded": {
+          "bytes": 562697,
+          "sha256": "62a7d58a734f74420e079f767ce771b517cb29fc55aff25a1117590d56e76450"
+        },
+        "decodeSeconds": 0.0005999999046325683,
+        "renderSeconds": 0.1717000000476837,
+        "changedPixelsVsOff": 270270,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "c9a975098f276e92a17310df4901747192fccfc8d5ecb868a4ed1ead0f223ddd",
+          "reference": "REGION:eso-ngc5128-field"
+        },
+        "objects": 0,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc5128",
+        "method": "siril",
+        "view": "wide",
+        "file": "ngc5128-siril-wide.png",
+        "encoded": {
+          "bytes": 184972,
+          "sha256": "1eeca99999708809cee00c7081fcabc5908c8e40b1e8f503d9e137391ff2aa6a"
+        },
+        "decodeSeconds": 0.024200000047683717,
+        "renderSeconds": 0.15860000014305115,
+        "changedPixelsVsOff": 75840,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "bd55f74973cd6e815ce35387165ffbd1bf2ca65809acb363add5d32d5be94fdd",
+          "reference": "REGION:eso-ngc5128-field"
+        },
+        "objects": 0,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc5128",
+        "method": "siril",
+        "view": "detail",
+        "file": "ngc5128-siril-detail.png",
+        "encoded": {
+          "bytes": 563429,
+          "sha256": "45d51d35bb47432ae3e7d4d3f5f03c747aa3b3bca2547ebe2f03593d80efcb0d"
+        },
+        "decodeSeconds": 0.0005,
+        "renderSeconds": 0.1725,
+        "changedPixelsVsOff": 270270,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "bd55f74973cd6e815ce35387165ffbd1bf2ca65809acb363add5d32d5be94fdd",
+          "reference": "REGION:eso-ngc5128-field"
+        },
+        "objects": 0,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc253",
+        "method": "nox",
+        "view": "wide",
+        "file": "ngc253-nox-wide.png",
+        "encoded": {
+          "bytes": 124229,
+          "sha256": "ff117b6939fe7a10f0f6cea48a4288a77d85719094ef221b1b477c7fae4fe426"
+        },
+        "decodeSeconds": 0.01640000009536743,
+        "renderSeconds": 0.24090000009536744,
+        "changedPixelsVsOff": 70330,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "8f4ac4182e6c6b4e9efc437e643bcb26eb029fe23d3e49614e90da31bb3f521b",
+          "reference": "NGC:253"
+        },
+        "objects": 1,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc253",
+        "method": "nox",
+        "view": "detail",
+        "file": "ngc253-nox-detail.png",
+        "encoded": {
+          "bytes": 393967,
+          "sha256": "24f97b2409a26534d16fdd3aaf732bbf54492f34d9fe634ae67d4f0f27ae984d"
+        },
+        "decodeSeconds": 0.0005,
+        "renderSeconds": 0.30909999990463255,
+        "changedPixelsVsOff": 250760,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "8f4ac4182e6c6b4e9efc437e643bcb26eb029fe23d3e49614e90da31bb3f521b",
+          "reference": "NGC:253"
+        },
+        "objects": 1,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc5128",
+        "method": "nox",
+        "view": "wide",
+        "file": "ngc5128-nox-wide.png",
+        "encoded": {
+          "bytes": 164674,
+          "sha256": "5080b20362def4104be48ef7b8f19a8970b9c8b98c7190ec7bd79a14f46f0cea"
+        },
+        "decodeSeconds": 0.023799999952316284,
+        "renderSeconds": 0.14790000009536744,
+        "changedPixelsVsOff": 75840,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "91598e96a310ccae97b7e17c3588d9b44a7de9a0426dae76eb65825ec0954dfc",
+          "reference": "REGION:eso-ngc5128-field"
+        },
+        "objects": 0,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      },
+      {
+        "id": "ngc5128",
+        "method": "nox",
+        "view": "detail",
+        "file": "ngc5128-nox-detail.png",
+        "encoded": {
+          "bytes": 509299,
+          "sha256": "41859319f8c56cd5745410b0385687a7394c22531fe131a3152a94972186bdc0"
+        },
+        "decodeSeconds": 0.00040000009536743164,
+        "renderSeconds": 0.1945,
+        "changedPixelsVsOff": 270270,
+        "error": 0,
+        "completed": 1,
+        "failed": [],
+        "draws": [
+          {
+            "submitted": true,
+            "coarsePrepared": false,
+            "finePrepared": true
+          }
+        ],
+        "completion": {
+          "publicationHash": "91598e96a310ccae97b7e17c3588d9b44a7de9a0426dae76eb65825ec0954dfc",
+          "reference": "REGION:eso-ngc5128-field"
+        },
+        "objects": 0,
+        "contributionFault": false,
+        "liveAfterDispose": {
+          "Texture": 0,
+          "Framebuffer": 0,
+          "Renderbuffer": 0,
+          "Program": 0,
+          "Buffer": 0
+        }
+      }
+    ],
+    "skipped": [
+      {
+        "sample": "ngc5128",
+        "method": "photutils",
+        "cacheHit": false,
+        "status": "FAILED",
+        "error": "ValueError: All boxes contain <= 14745.6 unmasked or finite pixels (self.box_size=array([128, 128]), self.exclude_percentile=10.0). Please check your data or increase \"exclude_percentile\" to allow more boxes to be included.",
+        "seconds": 0.6385268999729306,
+        "receipt": "output\\image-tool-benchmark-2026-10-08\\cache\\c8474f658cb8c62b37811e95d728e7c595e423fbb0acaef791e03f7f2cee473b\\failure.json"
+      }
+    ]
+  },
+  "code": [
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/benchmark-image-tools.py",
+      "bytes": 17474,
+      "sha256": "0997e1603dd4117098f2b48f7f22882d8554f516a0000905f9bc83be267835b5"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/benchmark-image-scene.mjs",
+      "bytes": 11691,
+      "sha256": "7d9a4b31e0591cad3baa935d793753e716aec7452e120a778cbf0b846eafec37"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/test-image-tool-benchmark.py",
+      "bytes": 4694,
+      "sha256": "f1f0966ca291ef1d00f98b079493bcd04c1f85a044083ea61ef673e9f5c53c3a"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/image-tool-benchmark-samples.json",
+      "bytes": 2662,
+      "sha256": "954dd8768cf8c4deb248f1ec7a00470e2e45aed509f68f367ac523fd21a188d3"
+    },
+    {
+      "path": ".codex/work-items/cloud-sky-native-2026-09-22/scripts/image-tool-benchmark-requirements.txt",
+      "bytes": 184,
+      "sha256": "52bf11cdab606792126b258e1bbb276da277893dbba89956629ef50fec832f08"
+    }
+  ],
+  "originals": [
+    {
+      "path": "output/prepared-candidate-samples-1005-r1/eso0902c.jpg",
+      "bytes": 8339408,
+      "sha256": "76bd6fd768c6503e7b1c2092dad6efbb295f7725d5bdff54447443bf4dfd6fe6"
+    },
+    {
+      "path": "output/eso-ngc5128-finished-1006-q1-r1/eso1221a-publication.jpg",
+      "bytes": 3404178,
+      "sha256": "6c0e4465655cc2524871270fc9d7d323f4c2544cd776bca836d32100c45c8023"
+    },
+    {
+      "path": "output/noirlab-m82-large-source-1004-r1/noao-m81m82-large.jpg",
+      "bytes": 9250383,
+      "sha256": "71a539df75c8af574e98d3da13c1381e525093dd2e8814d9588f35b73b4e3479"
+    }
+  ],
+  "setup": {
+    "setup-timing": {
+      "seconds": 69.3311492,
+      "exit": 0,
+      "kind": "isolated-python-install"
+    },
+    "siril-setup": {
+      "exit": 0,
+      "seconds": 33.8010798
+    },
+    "nox-setup": [
+      {
+        "seconds": 24.3590037,
+        "cacheHit": false,
+        "exit": 0,
+        "name": "nox.exe",
+        "bytes": 40540204
+      },
+      {
+        "seconds": 5.0528112,
+        "cacheHit": false,
+        "exit": 35,
+        "name": "libwinpthread-1.dll",
+        "bytes": 0
+      },
+      {
+        "seconds": 58.4254179,
+        "cacheHit": false,
+        "exit": 0,
+        "name": "noxGeneratorColor.pb",
+        "bytes": 217783208
+      },
+      {
+        "seconds": 36.3986577,
+        "cacheHit": false,
+        "exit": 0,
+        "name": "tensorflow.dll",
+        "bytes": 229392384
+      }
+    ]
+  },
+  "validation": {
+    "regressionLog": {
+      "path": "output/image-tool-benchmark-2026-10-08/regressions.txt",
+      "bytes": 925,
+      "sha256": "3f29a26e70d87afb6d906ceb280f1c39c34f6430fca062e60c8fe13af8fc0413"
+    },
+    "tests": 6,
+    "passed": 6,
+    "sirilIsolatedMatchesOriginalEncodedOutputs": true,
+    "catalogOverlap": "UNVERIFIED_NO_VISIBLE_STELLAR_SAMPLE",
+    "science": "UNKNOWN",
+    "absoluteRegistration": "UNVERIFIED",
+    "nativeDevice": "UNVERIFIED",
+    "productionExpansion": "NOT_AUTHORIZED"
+  },
+  "independentReview": {
+    "reviewer": "benchmark_review",
+    "findings": [
+      "Siril user configuration not bound",
+      "Inherited inaccurate coverage metadata",
+      "Scene receipt filter admitted failed rows"
+    ],
+    "fixes": [
+      "Private -i config bound in cache plus DLL hashes",
+      "Coverage declaration rewritten to actual diagnostic processing",
+      "Success status filter with explicit skipped failure"
+    ],
+    "postFixReview": {
+      "reviewer": "benchmark_final_review",
+      "status": "NO_NEW_BLOCKER_THREE_P2_CLOSED",
+      "verified": [
+        "final artifact hashes and runner identities",
+        "18 Scene PNG hashes and 110 bundle input identities",
+        "6 risk regressions",
+        "actual final wide comparisons",
+        "unchanged pixels after private Siril configuration",
+        "failure filtered explicitly"
+      ],
+      "scope": "benchmark evidence only; all documented unknowns remain"
+    }
+  }
+}

@@ -1,10 +1,12 @@
 import {assertStellarGeometryFrame,type SaoIndexPublication,type SaoTilePublication,type StellarGeometryFrame} from '@starward/miniapp-contracts';
 import {projectStellarMotion} from '@starward/astronomy-core/stellar-vectors';
-import type {ResolvedStellarScene} from './sky-stellar-scene';
+import type {ResolvedStellarFrame,ResolvedStellarScene} from './sky-stellar-scene';
 import {exactSkyTimeFrame} from './sky-time-frame';
+import {prepareSkyDirection,type PreparedSkyDirection} from './sky-view-projection';
+import {skyStarDisplayTransmission} from './sky-star-appearance';
 
 export type SupplementPoint=readonly [reference:string,magnitude:number,azimuthDeg:number,altitudeDeg:number];
-export interface SkyStellarSupplementFrame {
+export interface SkyStellarSupplementFrame extends Pick<ResolvedStellarFrame,'displayDirection'|'displayTransmission'> {
   publicationHash:string;
   catalogVersion:string;
   geometry:StellarGeometryFrame;
@@ -41,7 +43,18 @@ export function resolveSkyStellarSupplement(publication:SaoIndexPublication,tile
     }
     points.push(...cached.points);
   }
-  return {publicationHash:publication.publicationHash,catalogVersion:publication.index.catalogVersion,geometry,points:Object.freeze(points)};
+  // Like the BSC frame, retain camera-independent display work only with this
+  // exact time/selected-row frame. A new time or tile set gets new memos; no
+  // camera trail or second catalogue cache survives the frame's consumers.
+  const directions:Array<PreparedSkyDirection|null|undefined>=new Array(points.length);
+  const transmissions:Array<number|undefined>=new Array(points.length);
+  const displayDirection=(index:number)=>{
+    if(directions[index]===undefined)directions[index]=prepareSkyDirection(points[index]![2],points[index]![3]);
+    return directions[index]!;
+  };
+  const displayTransmission=(index:number)=>transmissions[index]??=skyStarDisplayTransmission(points[index]![3]);
+  return {publicationHash:publication.publicationHash,catalogVersion:publication.index.catalogVersion,geometry,points:Object.freeze(points),
+    displayDirection,displayTransmission};
 }
 
 export function currentStellarSupplement(frame:SkyStellarSupplementFrame|null|undefined,scene:ResolvedStellarScene|undefined,at:string|undefined){

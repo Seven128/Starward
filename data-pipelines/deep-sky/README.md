@@ -262,6 +262,216 @@ rectangle, M82's unresolved dark region or source saturation/stripes. The
 representative current inputs and checks do not cap future legitimate coverage
 or authorize excluded survey sources, new rights or runtime source scraping.
 
+## SXT batch processing workflow
+
+The [astronomical imagery skill](../../.codex/skills/starward-astronomical-imagery/SKILL.md)
+owns operational guidance:
+[batch preparation, SXT execution/reuse, review and Scene handoff](../../.codex/skills/starward-astronomical-imagery/references/batch-processing.md),
+and [PS restoration, NXT/background processing and fusion diagnosis](../../.codex/skills/starward-astronomical-imagery/references/exceptions-and-fusion.md).
+This section retains interfaces and data/consumer contracts. Project responsibilities
+stay with [resource preparation](../../project_context/development-workflow/resources-and-artifacts.md#cloud-sky-image-processing);
+selection reasons and reassessment conditions stay with
+[external capabilities](../../project_context/external-capabilities.md#云观星图像处理工具).
+
+| Responsibility | Executable owner and contract |
+| --- | --- |
+| Whole-source RGB normalization | [normalized_rgb_source.py](normalized_rgb_source.py): whole-source LANCZOS RGB8/sRGB; rejects partial alpha, implicit colour assignment and ordinary upscaling. Diagnostic interpolation is not new observed detail. |
+| Declared ESO acquisition | [prepared_eso_source_batch.py](prepared_eso_source_batch.py): pinned `eso-prepared-source-batch-v1`, original JPEG/XMP/page/policy, strict AVM/geometry admission, reviewed rights/colour and bounded resources. Retains per-row failure; ready rows produce `sxt-input.json`. |
+| SXT execution | [sxt_processing.py](sxt_processing.py): tool/model identity, private staging, bounded process retirement, vendor events/layers, RGB/ICC, cache and exact-product import. Benchmarks delegate to this owner; no production 1024-pixel cap. |
+| Processing groups | [sxt_batch.py](sxt_batch.py): pinned `sxt-batch-input-v1` with `method`, local `tools`, `maxBatchPixels`, optional `timeoutSeconds`, and `jobs`. Each job binds unique ID/kind, RGB8/sRGB PNG, output size, source/admission dependencies, sourceContext and optional integer review ROIs. |
+| File review and exceptions | [image_quality.py](image_quality.py), `processing_review`: batch whole-image/ROI comparisons and `review.json`. Decisions bind the processing receipt, key and exact outputs. `NEEDS_REPAIR`, `REPLACE_SOURCE` and `FILE_REVIEW_PASSED_SCENE_PENDING` are distinct; failed/unparsed vendor execution cannot pass. |
+| Original-image restoration | [photoshop_original_restore.py](photoshop_original_restore.py): `photoshop-original-restoration-batch-v1`, exact complete-RGB SXT/NEEDS_REPAIR join, frozen original/base/mask, bounded shared PS host, reopened PSD and core/exterior/feather pixel checks. Import validates retained same-byte execution sources without PS/encoding; historical execution identity remains historical. |
+| Saved background/NXT qualification | [reviewed_background_display.py](reviewed_background_display.py) and [reviewed_denoised_display.py](reviewed_denoised_display.py): finite full-RGB parent stages, actual vendor/ICC/formula readback and distinct review epochs, sharing original SXT/PS qualification. Saved-result verification does not refit or run models. |
+| Native candidate batch | [publish_prepared_native.py](publish_prepared_native.py): pinned `prepared-native-reviewed-batch-v1` joins shared processing/review and source recipes by ID. Unapproved, missing-recipe and failed rows remain explicit; `existing` writer/manifest bindings recheck cached candidates without another source decode, inference or encode. |
+
+Pixel grouping bounds a particular invocation, not product resolution or measured
+GPU capacity. Execution success, file quality, Scene quality, registration and
+adoption are separate states. New local candidate files do not deploy anything.
+The finest reviewed PNG is reused byte-for-byte; only two whole-source coarse
+LODs are generated. Source disclosure retains true working dimensions,
+structure-removal risk and UNKNOWN science/registration. Current native geometry,
+canonical hash, packaging and source owners remain shared; old hashes/URLs stay
+valid and old clients may reject new producers.
+
+An already prepared Stellarium texture uses the same batch/writer with
+`adapter: "stellarium-corners"` and producer
+`prepared-native-ready-texture-v1`. The pinned original opaque RGB/palette PNG,
+`textures.json`, acquisition receipt and source-rights dependencies remain bound.
+[prepared_publisher_corners.py](prepared_publisher_corners.py) joins the exact
+revision, asset, dimensions, credit and one complete UV quadrilateral; Astropy
+fits its published lower-left edge coordinates to the existing nominal TAN.
+Only small fields with at most one degree between corners and at most half a
+source pixel of corner-conversion error are supported. This bound certifies
+neither interior distortion nor absolute registration. Unknown/inherited frames,
+nested/multiple tiles, partial alpha and combined processing branches are rejected.
+The finest source pixels are retained exactly (palette expands losslessly to
+RGB); only coarse LODs are downsampled. Upstream processing stays UNKNOWN and
+separate from Starward's unchanged-pixel preparation. Low-resolution ready
+textures still require actual maximum-zoom and Scene review; they are not
+automatically high-detail assets. SciPy is the existing Astropy fitter's runtime
+dependency, not an additional image-processing model.
+
+`optical-display-background-batch-v1` retains the complete float64 NPZ model.
+Optional positive integer `maxBackgroundBytes` bounds the sum of uncompressed
+RGB model payloads before any fit; omission retains the legacy 128 MiB limit
+per model, alongside `maxBatchPixels`. Declared large models use
+`publish_prepared_display.open_background_npz`: one fixed unencrypted DEFLATE
+member, bounded NPY header checked before a body read, exact caller-owned
+shape/dtype/C payload and ZIP integrity, then 1 MiB copy blocks into a private
+read-only temporary mmap. The map is closed and scratch removed on success or
+failure. Each channel is still capped at 128 MiB, so exact median checks copy
+only one bounded channel; legacy `decode_background_npz` and other NPY consumers
+keep their original in-memory ceiling. The estimator releases each channel
+model and applies the unchanged pointwise formula in 128-row sections. No
+precision, geometry or pixel-processing meaning changes. These are local
+invocation bounds, not whole-machine/cloud capacity or image-quality approval.
+
+New SXT/NXT native export manifests explicitly disclose their AI processing in
+`processing.modification`; derived-region SXT exports do likewise. Registered
+metadata editions retain or add the applicable disclosure without changing
+pixels. Existing immutable manifests are not rewritten, and this alone does
+not establish final attribution/rights or native presentation acceptance.
+
+Measured display placement is separate from pixel processing. An optional
+`displayRegistration` recipe binds `parentRecipe`, `parentCandidate` (manifest
+and writer receipt), a saved TAN `measurement`, its correspondence `review`, and
+reference `catalogue` attribution/rights. [prepared_display_registration.py](prepared_display_registration.py)
+checks the exact original source/grid, disjoint fit/holdout identities, retained
+centroids/reference epochs, FITS/JSON geometry and recomputed residuals without
+fitting again. FITS decimal serialization has explicit subpixel tolerances, not
+an allowance for pixel-origin changes or unrepresented WCS distortions.
+
+The publisher emits `prepared-native-optical-publication-v2` within the existing
+`prepared-native-optical-v1` family. V2 requires a bound `registration`; V1
+forbids it so an old reader cannot silently display new placement at nominal
+coordinates. `nominalTan` and original AVM remain unchanged. All encoded LODs
+are reused; a new receipt/hash binds the parent and measured geometry, and
+`fieldDegrees` follows the display plane. `preparedOpticalDisplayGeometry` is
+the shared runtime/BFF/inventory decision. Source disclosure retains local
+sample residuals, original-pixel units, catalogue credit and limitations;
+measured display placement does not establish science, global accuracy,
+Scene/device quality or adoption. Original hashes/URLs remain readable.
+
+The native display variants have explicit, mutually exclusive recipe entries:
+
+| Processing meaning | Recipe entry / saved-result owner | Producer |
+| --- | --- | --- |
+| SXT-only display estimate | `sxtDisplay` / [reviewed_sxt_display.py](reviewed_sxt_display.py) | `prepared-native-sxt-display-v1` |
+| SXT plus local original-pixel restoration | `restoredDisplay` / [reviewed_restored_display.py](reviewed_restored_display.py) | `prepared-native-sxt-ps-restored-display-v1` |
+| Source-excluded background estimate | `backgroundDisplay` / `reviewed_background_display.py` | `prepared-native-source-background-display-v1` |
+| Background then NXT | `denoisedDisplay` / `reviewed_denoised_display.py` | `prepared-native-source-background-denoised-display-v1` |
+| NXT then background | `backgroundDisplay` with explicit NXT parent / `reviewed_background_display.py` | `prepared-native-source-denoised-background-display-v1` |
+
+These stages cannot be silently reordered, recursively repeated or published under
+an earlier producer. Original SXT failure and later PS/background/NXT reviews retain
+their own identities; a downstream pixel change does not inherit original-core
+pixel equality. Current code admission does not rewrite a historical trial receipt
+or establish visual acceptance. The older binary-coverage grain trial is separate:
+[nxt_review.py](nxt_review.py) validates its fixed recipe and complete parent chain
+into `nxt-review-queue-v1`, but that trial has no admitted publication variant.
+The PS host's `local-residual-median` diagnostic also has no admitted batch/producer;
+its results cannot masquerade as original-pixel restoration.
+
+For continuous regions, [hips_rgb_region.py](hips_rgb_region.py) uses pinned cached
+HiPS cells, Astropy TAN and the existing lookup with a bounded decoded-tile LRU.
+It retains native alpha, missing-tile supply, valid black and UNKNOWN science;
+it neither downloads nor fills coverage. The nominal cell-area sampling grid is
+not an instrument PSF or source-resolution claim. The
+`sxt_batch.stage_continuous_regions` Python API reads actual RGBA plus independent
+supply before staging complete RGB. Its explicit `binary-covered-only` mode uses
+[covered_rgb_display.py](covered_rgb_display.py): model padding is not source data,
+original alpha is restored exactly, hidden RGB is zero, and fractional alpha or
+covered upsample is refused. Complete-region products are not reprocessed in that
+mode. The whole-photograph native publisher rejects covered regions.
+
+[Publish derived regions](publish_prepared_derived_region.py) uses the separate
+`prepared-derived-region-optical-v1` family. Its current SXT-only producer accepts
+explicit LOCAL review candidates, including NEEDS_REPAIR, without ordinary adoption.
+Pinned preparation, HiPS metadata/rights, processing and review must join. The
+finest display PNG and two whole-region coarse levels use the existing Prepared
+writer/service/static exporter; original-region RGBA and grayscale supply are
+immutable support assets, not runtime LODs. The same-version manifest embeds
+byte-bound original HiPS metadata/rights and declares MODIFIED data, retains image
+CC BY 4.0 and database ODbL notices, and offers the complete changed master/support
+under 4.6(b). Source pages expose both license links and the bound download.
+This local offer does not certify public delivery, astrometry, science, visual
+quality or final adoption. Original-photo and unchanged-HiPS contracts keep their
+own admission and URLs; PS-derived regions need a distinct contract.
+
+After candidate packaging, the [read-only inventory](#read-only-prepared-inventory)
+checks exact joins and actual service/static assets. The existing
+[Scene batch runner](../../.codex/work-items/cloud-sky-native-2026-09-22/scripts/benchmark-image-scene.mjs)
+uses the same pinned `prepared-optical-inventory-input-v1`. It collects real
+BFF/BSC/SAO, Galactic background, Scene/GPU, wide/detail and three-LOD/off outputs
+without product encoding or per-object page profiles. Partial runtime/inventory
+failure retains results and exits 2. Quality decisions bind exact publications,
+background, profile and applicable implementation. Shared page/source/Back/cache
+and retirement qualification is mechanism-level; new content identity alone does
+not create another full-page E2E obligation. Software and controlled-fixture
+results do not establish native/device or physical-capacity acceptance.
+
+Development evidence, historical outcomes and current unresolved quality belong
+to the task, not this interface guide: [SXT integration](../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/sxt-pipeline-integration-2026-10-09.md),
+[continuous regions](../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/continuous-hips-regions-2026-10-09.md),
+[PS restoration](../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/photoshop-original-restoration-2026-10-09.md),
+[PS producer/consumers](../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/ps-restored-native-publication-2026-10-09.md),
+[residual diagnostic](../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/ps-local-residual-median-2026-10-09.md),
+[coverage NXT queue](../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/nxt-color-and-grain-queue-2026-10-09.md)
+and [full-RGB background/NXT](../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/image-background-and-denoise-2026-10-10.md).
+
+## Read-only Prepared inventory
+
+`prepared_inventory.mts` joins existing native/derived-region batch results,
+processing and file-review receipts, candidate manifests/writer receipts, explicit
+review decisions, the supplied `PreparedOpticalImageryService` registry and sealed
+standard static bundles. It hashes current inputs and assets without inference,
+image encoding, export, registry writes or remote requests. Run from the repository
+root with a pinned input document and a fresh output path:
+
+```powershell
+node tools/run-node.cjs --import tsx data-pipelines/deep-sky/prepared_inventory.mts `
+  --input output/<batch>/inventory-input.json --input-sha256 <sha256> `
+  --output output/<batch>/inventory.json
+```
+
+The `prepared-optical-inventory-input-v1` document contains `batchReceipts`,
+optional standalone `candidates` (`id`, `manifest`, `writerReceipt`, optional
+`reviewSpec`), `decisions` and `staticIndexes`. Every file binding has a
+repository-relative POSIX `path`, exact `bytes` and `sha256`. Batch adapters retain
+failed/queued rows; original native v1 results use the first input as the batch
+binding, while new results name `batchReceipt`, `reviewReceipt` and each candidate's
+`writerReceipt`. A missing old writer binding is read from its fixed sibling and
+validated against the bound manifest/producer; this does not certify historical
+execution. Binary provenance inputs are hashed rather than parsed as JSON.
+
+Explicit `prepared-optical-review-decisions-v1` receipts have `decisions` with
+`kind` (`FILE`, `SCENE`, `REGISTRATION`, `RIGHTS`), `status`, `publicationHash`, exact
+`manifest` binding, nonempty `reason` and bound `evidence`. Scene decisions also
+bind the applicable `implementation` files. Changed implementation makes the
+decision `STALE`, retaining its recorded status and evidence. Duplicate, mixed or
+orphan decisions are exceptions. File review, Scene quality, independent
+registration, rights, ordinary adoption and sealed delivery remain separate.
+The CLI reads the actual default service configuration; it cannot adopt anything.
+
+`FILE` is only for an unprocessed `prepared-native-full-source-v1` or
+`prepared-native-ready-texture-v1` candidate
+without a processing `reviewSpec`. Its evidence must include the exact original
+encoded source from the writer inputs and every actual IMAGE level, as well as
+the decision's bound manifest. `PASSED` becomes file-passed/Scene-pending;
+`FAILED` remains needs-repair and other states remain pending. It cannot override
+an SXT/PS/background/NXT review or approve only one tier. This lets a suitable
+whole-source image use the existing publication/Scene chain without inventing
+star separation or a synthetic SXT review.
+
+Counts distinguish objects/regions, publication editions, image LOD records,
+support files and actual public metadata-response bytes. SHA deduplication gives
+unique payload bytes, not physical disk usage or full-sky coverage. An independent
+valid row survives another failed candidate; incomplete joins remain exceptions
+and cause exit code 2 with a saved partial report. `distributable` counts only
+publications with every required obligation closed, actual ordinary registration
+and exact complete static delivery. Historical file/Scene checks are read back,
+not rerun or upgraded by this inventory.
+
 ## Commercial-use notices and distribution
 
 The adopted AllWISE W3 HiPS is `CDS/P/allWISE/W3`. Its [CDS record](https://alasky.cds.unistra.fr/MocServer/query?ID=CDS%2FP%2FallWISE%2FW3&fmt=html&get=record) identifies ODbL-1.0, CNRS/Unistra, CDS/Aladin and HiPS DOI `10.26093/cds/aladin/na1n-03`. The IRSA mirror's `unclonable` flag concerns HiPS mirroring; it is not a noncommercial license. See [HiPS §5.4](https://www.ivoa.net/documents/HiPS/20170519/REC-HIPS-1.0-20170519.pdf).

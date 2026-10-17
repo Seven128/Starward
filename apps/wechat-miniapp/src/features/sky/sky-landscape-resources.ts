@@ -2,7 +2,6 @@ import type { SkyLandscapeManifestData, SkyLandscapeResource } from "@starward/m
 import { SKY_GPU_TEXTURE_PRESSURE_BYTES, skyImageRgbaBytes } from "./sky-gpu-textures";
 import { createSkyPanoramaMask, skyPanoramaMaskIntersectsView, type SkyPanoramaMask, type SkyLandscapePanorama } from "./sky-landscape-mask";
 import type { SkyArtworkView } from "./sky-artwork-registration";
-import { skyLandscapeViewOpacity } from "./sky-landscape-visibility";
 
 export interface SkyLandscapeFootprint { view: SkyArtworkView; width: number; height: number }
 
@@ -10,7 +9,6 @@ export interface SkyLandscapeFootprint { view: SkyArtworkView; width: number; he
  * valid alpha remains available without acquiring an invisible bitmap. */
 export function selectSkyLandscapeImageResources(resources: readonly SkyLandscapeResource[],
   masks: ReadonlyMap<string, SkyPanoramaMask>, footprint: SkyLandscapeFootprint | null): SkyLandscapeResource[] {
-  if (footprint && skyLandscapeViewOpacity(footprint.view, footprint.width, footprint.height) === 0) return [];
   return resources.filter(resource => {
     const mask = masks.get(resource.id);
     return mask && (!footprint || skyPanoramaMaskIntersectsView(mask, footprint.view, footprint.width, footprint.height));
@@ -35,14 +33,21 @@ export function selectSkyLandscapeResource(publication: SkyLandscapeManifestData
     reserved + resource.image.width * resource.image.height * 4 <= SKY_GPU_TEXTURE_PRESSURE_BYTES) ?? overview;
 }
 
-/** Match the selected image to its own decoded alpha. A valid overview stays
- * usable during a detail request/failure; a coarser request never paints detail. */
+/** Match the selected image to its own decoded alpha. Keep an already loaded
+ * alternate through a pending/failed replacement in either direction. Selection
+ * requests no image and never substitutes another resolution's alpha. */
 export function selectSkyLandscapePanorama(resource: SkyLandscapeResource | undefined,
   masks: ReadonlyMap<string, SkyPanoramaMask>, images: ReadonlyMap<string, object>,
   retained: ReadonlyMap<string, object>): SkyLandscapePanorama | null {
-  for (const id of resource?.id === "detail" ? ["detail", "overview"] : ["overview"]) {
+  if (!resource) return null;
+  for (const id of resource.id === "detail" ? ["detail", "overview"] : ["overview", "detail"]) {
     const mask = masks.get(id), image = images.get(`landscape:${id}`) ?? retained.get(`landscape:${id}`);
-    if (mask && image) return { image, mask };
+    if (mask && image) {
+      const coarseMask=masks.get('overview'),coarseImage=images.get('landscape:overview')??retained.get('landscape:overview');
+      const coarser=id==='detail'&&coarseMask&&coarseImage&&coarseImage!==image&&
+        coarseMask.publication.publicationHash===mask.publication.publicationHash?{image:coarseImage,mask:coarseMask}:null;
+      return coarser?{image,mask,coarser}:{image,mask};
+    }
   }
   return null;
 }

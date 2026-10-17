@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import test from "node:test";
+import vm from "node:vm";
+import ts from "typescript";
 
 function sourceFiles(directory: URL): URL[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -21,7 +23,23 @@ test("the native Map page stays outside Taro experimental local compile mode", (
 test("the Map root installs a native Back boundary for its non-modal bottom presentations", () => {
   const source = readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
   assert.equal(source.match(/<NativeBackBoundary\b/gu)?.length, 1, "Map owns one shared native Back layer");
-  assert.match(source, /active=\{pageVisible && \(eventModalOpen \|\| eventModalPresent \|\| bottomPresentation === "spot-panel" \|\| bottomPresentation === "layer-sheet" \|\| bottomPresentation === "spot-editor"\)\}/u);
+  const tree = ts.createSourceFile("map.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let active = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(tree) === "NativeBackBoundary") {
+      const prop = node.attributes.properties.find(item => ts.isJsxAttribute(item) && item.name.getText(tree) === "active") as ts.JsxAttribute;
+      active = (prop.initializer as ts.JsxExpression).expression!.getText(tree);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(tree); assert.ok(active);
+  for (const kind of ["none", "spot-panel", "layer-sheet", "spot-editor", "event-open", "event-exit", "sky-entry"]) {
+    for (const visible of [false, true]) {
+      assert.equal(vm.runInNewContext(active, {pageVisible: visible, bottomPresentation: kind,
+        eventModalOpen: kind === "event-open", eventModalPresent: kind === "event-exit",
+        skyEntryPresentation: kind === "sky-entry" ? 1 : null}), visible && kind !== "none", `${kind}/${visible}`);
+    }
+  }
   assert.match(source, /onBack=\{handleMapPresentationSystemBack\}/u);
   assert.match(source, /nativeMapContent=\{/u);
   assert.doesNotMatch(source, /<PageContainer\b/u, "the shared owner also carries Map's event modal instead of installing a second container");

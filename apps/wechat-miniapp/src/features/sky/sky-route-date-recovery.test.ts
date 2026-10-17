@@ -15,9 +15,11 @@ const code = ts.transpileModule(statements.map(statement => statement.getText(so
   "\n({ selectedCivilDate, dateOptions });", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
 const instant = "2026-09-28T16:00:00.000Z";
 class FixedDate extends Date { constructor() { super(instant); } }
-function derive(contextComplete: boolean, timezone: string, useMemo: (factory: () => unknown, deps: unknown[]) => unknown = factory => factory()) {
+function derive(contextComplete: boolean, timezone: string, useMemo: (factory: () => unknown, deps: unknown[], slot: number) => unknown = factory => factory()) {
+  let slot = 0;
   const value = vm.runInNewContext(code, { contextComplete, routeContext: { timezone }, presentedAt: instant,
-    civilDateForInstant, observationDateOptions, Date: FixedDate, useMemo });
+    civilDateForInstant, observationDateOptions, Date: FixedDate,
+    useMemo: (factory: () => unknown, deps: unknown[]) => useMemo(factory, deps, slot++) });
   return { date: value.selectedCivilDate, options: [...value.dateOptions] as string[] };
 }
 
@@ -28,12 +30,13 @@ test("incomplete or invalid route time cannot throw before the existing Context 
 });
 
 test("Context lookup completion refreshes memoized date choices without a timezone change", () => {
-  let previous: unknown[] | undefined, value: unknown;
-  const memo = (factory: () => unknown, deps: unknown[]) => {
-    if (!previous || previous.length !== deps.length || deps.some((item, index) => !Object.is(item, previous![index]))) {
-      previous = [...deps]; value = factory();
+  const slots: Array<{ deps: unknown[]; value: unknown }> = [];
+  const memo = (factory: () => unknown, deps: unknown[], slot: number) => {
+    const previous = slots[slot];
+    if (!previous || previous.deps.length !== deps.length || deps.some((item, index) => !Object.is(item, previous.deps[index]))) {
+      slots[slot] = { deps: [...deps], value: factory() };
     }
-    return value;
+    return slots[slot]!.value;
   };
   assert.deepEqual(derive(false, "Asia/Shanghai", memo), { date: "", options: [] });
   const resolved = derive(true, "Asia/Shanghai", memo);

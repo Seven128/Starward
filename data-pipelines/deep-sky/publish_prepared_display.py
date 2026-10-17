@@ -4,15 +4,17 @@ This owner verifies saved processing, geometry and all pixels; it never refits
 backgrounds, decodes the source JPEG RGB, reprojects or adopts image quality.
 """
 from dataclasses import dataclass
+from contextlib import contextmanager
 from pathlib import Path
 import hashlib
 import io
 import json
 import zipfile
+import tempfile
 import numpy as np
 from PIL import Image
 
-from optical_publication_io import bound_file, bound_bytes, pinned_json, decode_bound_npy
+from optical_publication_io import bound_file, bound_bytes, pinned_json, decode_bound_npy, bound_npy_header
 from prepared_optical_levels import prepared_optical_levels
 from publish_prepared_optical import (VerifiedPreparedGeneration, publication_payload,
                                      publish_prepared_candidate)
@@ -20,25 +22,93 @@ from publish_prepared_optical import (VerifiedPreparedGeneration, publication_pa
 VERSION = "prepared-source-masked-background-display-v1"
 SRGB_ICC_SHA256 = "2b3aa1645779a9e634744faf9b01e9102b0c9b88fd6deced7934df86b949af7e"
 IDENTITY_KEYS = ("bytes", "sha256")
+BACKGROUND_ARRAY_LIMIT_BYTES = 128 * 1024 * 1024
 
 
 def content(row):
     return {key: row[key] for key in IDENTITY_KEYS}
 
 
-def decode_background_npz(raw: bytes):
-    """Exactly one bounded float64 NPY member; no path extraction or zip crawl."""
-    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
-        rows = archive.infolist()
-        if (len(rows) != 1 or rows[0].filename != "background.npy" or rows[0].flag_bits & 1 or
-                rows[0].compress_type != zipfile.ZIP_DEFLATED or
-                not 2048 ** 2 * 3 * 8 < rows[0].file_size <= 2048 ** 2 * 3 * 8 + 16384):
+def background_payload_bytes(shape):
+    if (not isinstance(shape, tuple) or len(shape) != 3 or shape[2] != 3 or
+            any(type(v) is not int or v <= 0 for v in shape)):
+        raise RuntimeError("prepared_display_background_shape_invalid")
+    return shape[0] * shape[1] * shape[2] * 8
+
+
+def background_batch_byte_budget(manifest):
+    limit = manifest.get('maxBackgroundBytes', BACKGROUND_ARRAY_LIMIT_BYTES)
+    if type(limit) is not int or limit <= 0:
+        raise ValueError('display_background_declared_byte_budget_invalid')
+    return limit
+
+
+@contextmanager
+def _background_member(raw, *, payload_bytes):
+    try:
+        with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+            rows = archive.infolist()
+            if (len(rows) != 1 or rows[0].filename != "background.npy" or rows[0].flag_bits & 1 or
+                    rows[0].compress_type != zipfile.ZIP_DEFLATED or
+                    not payload_bytes < rows[0].file_size <= payload_bytes + 16384):
+                raise RuntimeError("prepared_display_background_container_invalid")
+            with archive.open(rows[0]) as file:
+                yield file, rows[0].file_size
+    except zipfile.BadZipFile as error:
+        raise RuntimeError('prepared_display_background_container_invalid') from error
+
+
+def decode_background_npz(raw: bytes, *, shape=(2048, 2048, 3)):
+    """Legacy in-memory reader retains its 128 MiB allocation ceiling."""
+    payload_bytes = background_payload_bytes(shape)
+    if payload_bytes > BACKGROUND_ARRAY_LIMIT_BYTES:
+        raise RuntimeError("prepared_display_background_shape_invalid")
+    with _background_member(raw, payload_bytes=payload_bytes) as (file, member_bytes):
+        encoded = file.read(payload_bytes + 16385)
+        if len(encoded) != member_bytes:
             raise RuntimeError("prepared_display_background_container_invalid")
-        with archive.open(rows[0]) as file:
-            encoded = file.read(2048 ** 2 * 3 * 8 + 16385)
-        if len(encoded) != rows[0].file_size:
-            raise RuntimeError("prepared_display_background_container_invalid")
-    return decode_bound_npy(encoded, shape=(2048, 2048, 3), dtype='f8')
+    return decode_bound_npy(encoded, shape=shape, dtype='f8')
+
+
+@contextmanager
+def open_background_npz(raw, *, shape, max_payload_bytes=BACKGROUND_ARRAY_LIMIT_BYTES):
+    """Large declared models use a private mmap, not two full decode buffers.
+
+    Each channel remains within the existing 128 MiB array bound; exact median
+    verification copies one channel at a time. The map is valid only in scope.
+    """
+    payload_bytes = background_payload_bytes(shape)
+    if (type(max_payload_bytes) is not int or max_payload_bytes <= 0 or
+            payload_bytes > max_payload_bytes or payload_bytes > 3 * BACKGROUND_ARRAY_LIMIT_BYTES):
+        raise RuntimeError('prepared_display_background_byte_budget_exceeded')
+    if payload_bytes <= BACKGROUND_ARRAY_LIMIT_BYTES:
+        yield decode_background_npz(raw, shape=shape)
+        return
+    with _background_member(raw, payload_bytes=payload_bytes) as (file, member_bytes):
+        offset = bound_npy_header(file, shape=shape, dtype='f8')
+        if member_bytes - offset != payload_bytes:
+            raise RuntimeError('optical_publication_array_payload_invalid')
+        file.seek(0)
+        with tempfile.TemporaryDirectory(prefix='starward-background-') as scratch:
+            path = Path(scratch) / 'background.npy'
+            remaining = member_bytes
+            with path.open('xb') as destination:
+                while remaining:
+                    block = file.read(min(remaining, 1024 * 1024))
+                    if not block:
+                        raise RuntimeError('optical_publication_array_payload_invalid')
+                    destination.write(block); remaining -= len(block)
+                if file.read(1):
+                    raise RuntimeError('optical_publication_array_payload_invalid')
+            model = np.load(path, mmap_mode='r', allow_pickle=False, max_header_size=16384)
+            try:
+                yield model
+            finally:
+                model._mmap.close()
+
+
+def background_median_rgb(model):
+    return [float(np.median(model[..., channel])) for channel in range(3)]
 
 
 def verify_display_pixels(raw, display, background, *, chunk_rows=128):

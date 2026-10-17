@@ -1,10 +1,7 @@
 import { assertDeepSkyImageDiscovery, DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION,
-  MINIAPP_API_BASE_PATH, MINIAPP_API_OPERATIONS, type DeepSkyImageDiscoveryData,
-  type DeepSkyImageDescriptor } from "@starward/miniapp-contracts";
-import { requestBareSkyResource, skyResourceUrl } from "./bare-sky-resource";
-import { acquirePublishedSkyImage, beginPublishedSkyImageDemand } from "./sky-public-image-runtime";
-
-export const beginDeepSkyImageDemand = beginPublishedSkyImageDemand;
+  MINIAPP_API_BASE_PATH, MINIAPP_API_OPERATIONS, type DeepSkyImageDiscoveryData } from "@starward/miniapp-contracts";
+import { requestBareSkyResource } from "./bare-sky-resource";
+import { getSkyPublicationResource } from "./sky-publication-resource";
 
 export async function getDeepSkyImageDiscovery(reference: string, signal?: AbortSignal): Promise<DeepSkyImageDiscoveryData> {
   if (!/^M:(?:[1-9]|[1-9]\d|10\d|110)$/u.test(reference)) throw new Error("deep_sky_image_reference_invalid");
@@ -16,7 +13,8 @@ export async function getDeepSkyImageDiscovery(reference: string, signal?: Abort
   return response.body;
 }
 
-/** Only the validated discovery supplies this exact immutable descriptor. */
-export function acquireDeepSkyImage(asset: DeepSkyImageDescriptor, publicationHash: string) {
-  return acquirePublishedSkyImage(asset, skyResourceUrl(asset.downloadUrl, "deep-sky"), publicationHash);
+export function getDeepSkyImageResource(reference: string, signal?: AbortSignal) {
+  return getSkyPublicationResource(pending => getDeepSkyImageDiscovery(reference, pending),
+    "deep_sky_image_resource_cancelled", signal);
 }
+

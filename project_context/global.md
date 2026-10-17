@@ -1,5 +1,7 @@
 # Starward
 
+用户已于2026-10-13明确本项目不做无障碍功能。当前开发不新增/扩展无障碍功能，不安排屏幕阅读器/原生无障碍树专项联调或验收；普通文字可读性、完整边界和正常触控/键盘交互仍按产品合同处理。已有无关属性与历史成果不因此全仓清理，旧未验也不改写为通过；历史文件中的相关开发/验收条款由这项最新范围覆盖。重新开展须有后续明确用户要求。
+
 Starward owns 《今晚去观星》. The native App leads from a trip conclusion to an executable plan and supporting evidence. The independent Mini Program helps users choose places, arrange travel and observe through trustworthy place, weather, astronomy, arrival and safety facts; users decide whether to go. It does not present a combined departure recommendation. Both products keep uncertainty and restrictions explicit.
 
 - There is one current implementation per product responsibility. Native App, WeChat Mini Program and owner operations have distinct surfaces; do not infer one product's behavior or visual values from another.
