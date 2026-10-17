@@ -366,11 +366,20 @@ M51/M63/M64/M81/M82/M87 现有一条受限的 [SDSS DR17 自托管光学定点�
 
 ### 地形：以可获得数据为边界
 
+2026-10-17用户确认新增周边观星环境组合：选点后按真实地面范围聚焦、中档上方居中，复用现有地形/年度夜光，在本地形章节增添简洁的山体遮挡估算轮廓，并用已有现场照片的拍摄时间、方向及来源补充近物证据。轮廓复用既有Copernicus数值高程源，补内部计算/接口，不从RGBA读高程，也不增加第三方遮挡/街景服务。它声明真北方位、观察高度假设、分析范围、模型/来源版本及部分未知；地图可见范围与寻找远山的范围分开。缺测不画成0°/无遮挡，模型不承诺逐树逐楼实景；没有现场资料时如实说明。此增量只替代下文历史简化决定中“没有山体轮廓”的部分，复杂方向滑块/射线/控制点继续取消，云观星内部仍排除。当前采用的[局部可编辑组件、完整宿主参照及共享职责](https://stitch.google.com/projects/7144519510537620825?node-id=5205988829884632961)（源包内 `map/revisions/neighborhood-environment-2026-10-17/README.md`）仅覆盖本增量；图库元信息只进入原查看器caption，不另增照片卡。其余完整内容保持，资源采用不认证数值模型、生产消费者或目标设备效果。
+
+此局部资源的可续改 Stitch 身份只取同步记录的 `current`：15 为可编辑轮廓与状态，16 为宿主截图参照；被替代的生成稿及重复读回不再作为候选。原 01–14、独立云观星稿和完整宿主的有效依赖保留，截图参照不替代交互源。
+
+生产消费者由 `SpotTerrainOverview` 在原章节中独立请求 `useTerrainHorizon`，通过 `terrain-horizon-response` 核验站位、真北扇区索引及完整/部分/未知意义。`SpotTerrainHorizon` 以原生Canvas绘制简洁轮廓；负角保留在0°以下，未知方向同时断开描边与填充。它与原地形/夜光开关、观察时间及俯视图半径独立，失败时保留其它有效资料，重绘失败只重绘已读取模型；换点、隐藏、换主题及迟到原生查询不能污染新图或继续持有旧位图。模型假设、范围、缺测与来源在原轮廓卡披露，Copernicus必需声明沿原章节公共来源区呈现。原查看器只新增可选metadata行：正式点与设施图库共用 `utils/spot-media.sitePhotoContext`，保留来源的时间精度/方向文字，未提供即说明未提供，不用上传、核验或观察时间补值；原署名/许可与照片返回手势保持。源码接入不认证当前目标绘制或完整设备验收。
+
+
+2026-10-12用户明确国内地点的真实云层/地形是核心功能，必须取得有效来源数据并在普通用户界面正常显示和操作；只通过逻辑、受控样本或不可用空态不算跑通。三省各一个地点是代表验证范围，不是产品仅支持三个预设地点。地形继续按真实源覆盖/缺测表达，保留以下已有图形、尺度和独立状态，不增加逐方向现场分析。
+
 2026-09-13用户进一步明确：按能拿到的数据提供有效信息，不要求覆盖所有影响拍摄的因素。首版目标按最新反馈收敛为有来源的俯视地形及光污染分布，帮助用户直观理解周边环境；界面统一使用“光污染”，来源说明保留年度卫星估算的真实含义；近处树木/围墙、临时灯、天气散射和实测方向天空亮度不因缺失阻塞已有地形信息，也不能从DEM/VIIRS虚构这些数据。用户期望估算足够准确，但“所有值误差小于20%”尚无实样支持，不能写成产品保证；高程产品统计精度不等于逐点遮挡角精度，接近0°的相对误差没有稳定意义。
 
 采用的信息结构方向为同一连续文档`基本信息 → 地形 → 天文`：三个同级章节，导航在离开基本信息、地形边界到达阅读顶部时出现，位置规则扩展原天文吸顶逻辑。图形和信息变化不产生新标签页、路线或滚动owner。原基本信息与天文区完整内容、现场/设施照片及查看器、三档高度与拖动热区、底部动作和时间尺保持原有责任；新增地形不能把原页面替换成仅供地形演示的空壳。
 
-- `spot-terrain-horizon`当前承载方形俯视地形概览：中心为当前点、真北向上、东南西北显式标注，含距离圈和随尺度变化的比例尺。山体阴影/等高表达有来源的地理高程。按用户本轮简化要求，删除方向滑块、方向射线/控制点、角度数值及相关分析文案；图面不再承担选方向分析的动作。目的为直观理解周边地形，不要求用户解读角度。
+- `spot-terrain-horizon`当前承载方形俯视地形概览：中心为当前点、真北向上、东南西北显式标注，含距离圈和随尺度变化的比例尺。山体阴影/等高表达有来源的地理高程。已采用的独立“地形 · 低—高”图例消费同一发布响应的高程基色色带及透明度，并与实际地形位图共用主题适配；只有地形开启、发布色带定义存在且当前非不可用数据具备有效裁剪与本地图像路径时显示，图像加载失败沿既有恢复责任处理，不替旧响应、缺图或关闭状态发明色义。来源披露继续说明全局编码、阴影和截断含义，不能将图例或混合后的像素解释为当前位置精确高程；主地图沿用既有来源披露。此前简化已删除复杂方向滑块、方向射线/控制点及手动选方向分析，这些交互继续取消。2026-10-17确认的只读山体遮挡轮廓在同一地形章节补充方向信息，采用简洁图形和模型/缺测说明，用户无需操作角度滑块或解读复杂数值。俯视图继续帮助直观理解周边地势，不单独承担遮挡结论。
 - `spot-directional-light`统一界面术语为“光污染”，同一地理图上以独立半透明栅格表达卫星估算的光源分布，保留弱—强图例。地形/光污染为两个独立多选项，使用B批次图标、轻量填色/边界及勾选反馈，整项至少44px可操作，不能仅靠颜色表达状态。收起其中一项同时隐藏其图例，另一项继续可用；这不修改主地图已有LIGHT/TOTAL_CLOUD单选责任。
 - 半径是本区域唯一拖动轴，实时更新图面范围、比例尺和数值，提供键盘/辅助技术等价操作；拖动轴与正文竖向滚动分离。图上无数据范围用斜纹/未知标记，不能补成平地/零光污染。DEM与光污染分别显示可用/部分/过期/失败及重试，不因其中一项失败清空另一项。
 - `spot-terrain-source`给出数据集/版本、分辨率、派生时间和有效分析范围；只有实际估计/验证过才显示误差范围或精度等级，不凭来源名称生成“高精度”。当前Copernicus派生产品的公共响应与本区来源组件必须携带DOI、许可链接、原始归因、modified-product notice和派生说明，本地manifest不能代替消费者可取得的分发声明。地图图层与点位图形共享数据来源/发布版本，静态地形/年度光污染不随小时标尺改变；缩放只改变地理查看范围。保留真实照片/报告的方向和日期作补充，不把照片亮度当仪器测量。
@@ -473,9 +482,17 @@ The current production slice supplies stable HR identities for the complete boun
 
 2026-09-13 panel geometry correction: large fills the available width with square outer top corners, for formal/draft/pending identities with or without valid media. This supersedes the earlier no-image large-rounding rule. Small/medium retain their rounded outer corners; inner content cards retain their own geometry. Do not paint a square shield behind a visibly rounded large panel. Preserve the continuous header/navigation boundary and established drag/scroll responsibilities.
 
+## Site Reading And Media
+
+Map、场地资料和文章设施引用共用 `components/facility-card` 的有图/无图事实卡；完整开放时段、使用条件、核验和来源仍由 `FacilityEvidenceDetails` 与各阅读消费者保留。`utils/spot-media` 只从当前地点 `formalMedia.parking/toilet` 的明确关联构建设施相册，按发布顺序去重并保留现场身份、许可和可用状态门禁，不借普通现场图。Map 沿其原返回层；场地和文章共用 `features/spot/use-facility-gallery`，复用 SpotImageViewer、红光交接和文档位置 owner，发布/对象/隐藏/卸载撤销迟到打开意图。
+
+攻略目录仍只取该文章 mediaId 关联封面；目录与文章图片共用 `ReadingImage` 的原生解码、单图失败和同 URL 重试，正文、图注、作者/许可及独立图片不随解码失败清空。场地阅读沿“到达与夜间安全→设施与现场→来源”的当前采用源，完整文章保留连续正文及提示块。文章底部返回优先回到页栈中同地点/Context的原目录实例和位置；无匹配返回目标时才重定向同对象目录，导航寿命沿 `usePageNavigation`。Map 原“更多场地信息”继续内联展开。
+
 ## Selected Weather Evidence
 
 QWeather is the sole Mini Program forecast, with separate official alerts and AQ. Retain total hourly cloud and normal weather facts; remove low/mid/high cloud and multi-model/confidence presentation. Data controls expose only actually available weather hours; question-mark disclosure explains omitted times and source coverage without a persistent diagnostic banner. Astronomy and plan dates remain independently usable; absence of future weather cannot remove those dates. Internal gaps are not interpolated from a neighboring hour or another provider.
+
+Map's fact layer names the selected instant, its actual provider hour and retrieval time separately; retrieval is not publication. Uncovered and expired weather remain explicit while astronomy stays independent. Full merged ranges and scientific explanations remain in the existing source disclosures. `WeatherAlerts` supplies a Map-only compact variant: original headline, issuing authority and supplied times are visible, and any supplied defence instruction remains complete in the first layer; detailed description is expandable. Missing instructions or timestamps are never invented. Sky keeps the default full presentation. `SourceAttribution` owns compact provider/copy rows while required statements stay beside the data. The existing asynchronous `weather-icon` native component also serves Map cloud and warning icons from unchanged adopted assets; consumers preserve their established size classes.
 
 Air quality belongs to the Map astronomy section's existing meteorological information group. Current regional reference readings and the selected instant's hourly AQ forecast are separate content responsibilities. Preserve the source standard/name/display and concentration units; do not calculate another AQI, turn AQ into seeing/transparency, or fill future pollution values from current readings. The source's actual AQ hours define its range independently from weather. China forecast may lack detailed pollutants; the question-mark range disclosure explains this and unavailable periods. A missing/expired segment uses the shared local empty state; a request failure adds the shared top info and persistent retry while retaining valid sibling content. Changing spot rejects the prior spot's data; hiding the page stops polling, and showing it refreshes current evidence. Current reading labels distinguish retrieval time from measurement time.
 

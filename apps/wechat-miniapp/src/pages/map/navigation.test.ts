@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { pendingProposalContextLocation, samePendingProposalIntent } from "./private-contribution-transition";
 
 const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 
@@ -53,14 +54,17 @@ test("private proposal entry preserves the current candidate and rejects obsolet
   for (const scenario of ["success", "missing-location", "no-consent", "changed", "hidden", "owner-changed", "failed", "late-failed"] as const) {
     const epoch = { current: 0 }, proposal = { current: { submissionId: "contribution:owned" } as { submissionId: string } | null };
     const original = { localDate: "2026-10-11", selectedAtUtc: "2026-10-11T13:00:01.527Z", eventInstanceId: null, targetProfile: "DAILY" };
-    const resolved = { ...original, contextId: "ctx:candidate", timezone: "Asia/Shanghai" };
+    const resolved = { ...original, contextId: "ctx:candidate", timezone: "Asia/Shanghai", contextFingerprint: "proposal:2",
+      schemaVersion: "observation-context-v3", location: { kind: "PENDING_PROPOSAL", displayName: "候选名称" },
+      privateProposal: { ownerId: "user:owner", submissionId: "contribution:owned", attemptId: "attempt:current", attemptBaseRevision: 1 } };
     const calls: string[] = []; let payload: any, navigation: string | undefined, accepted: unknown;
-    let finish!: (value: { data: typeof resolved }) => void, fail!: (error: Error) => void;
-    const response = new Promise<{ data: typeof resolved }>((resolve, reject) => { finish = resolve; fail = reject; });
+    let finish!: (value: { dataState: string; data: typeof resolved }) => void, fail!: (error: Error) => void;
+    const response = new Promise<{ dataState: string; data: typeof resolved }>((resolve, reject) => { finish = resolve; fail = reject; });
     const entry = vm.runInNewContext(ts.transpileModule(declaration + "\nonProposalCloud;", {
       compilerOptions: { target: ts.ScriptTarget.ES2022 },
     }).outputText, {
       navigationEpoch: epoch, selectedProposalRef: proposal,
+      pendingProposalContextLocation, samePendingProposalIntent, currentDraftUserId: () => "user:owner",
       skyEntry: {prepare: () => ({isCurrent: () => true, cancelPreparation() {}})},
       useAppStore: { getState: () => ({ observationContext: original }) },
       currentTimezoneHint: () => "Asia/Shanghai", localDateForNow: () => "2026-10-11",
@@ -70,21 +74,26 @@ test("private proposal entry preserves the current candidate and rejects obsolet
       notify: () => calls.push("notice"), errorMessage: () => "unavailable", isMiniappRequestCancelled: () => false,
     }) as (submission: Record<string, unknown>) => Promise<void>;
     const submission = { submissionId: "contribution:owned", revision: 2, preciseLocationConsent: scenario !== "no-consent",
+      kind: "NEW_SPOT_PROPOSAL", submissionState: "PENDING_REVIEW", publicationImpact: "CANDIDATE_UPDATED",
+      attempts: [{ attemptId: "attempt:current", baseRevision: 1, snapshot: { preciseLocationConsent: true,
+        candidateLocation: scenario === "missing-location" ? null : { displayName: "候选名称" } } }],
       candidateLocation: scenario === "missing-location" ? null : { displayName: "来源名", wgs84: { system: "WGS84", latitude: 22.588, longitude: 114.302 } },
       candidateProfile: { fields: { name: "候选名称" } },
     };
+    proposal.current = submission;
     const work = entry(submission);
     if (scenario === "changed") proposal.current = { submissionId: "contribution:other" };
     if (scenario === "hidden" || scenario === "late-failed") epoch.current++;
     if (scenario === "owner-changed") proposal.current = null;
     if (scenario === "failed" || scenario === "late-failed") fail(new Error("unavailable"));
-    else if (scenario !== "missing-location" && scenario !== "no-consent") finish({ data: resolved });
+    else if (scenario !== "missing-location" && scenario !== "no-consent") finish({ dataState: "FRESH", data: resolved });
     await work;
     assert.deepEqual(calls, scenario === "success" ? ["resolve", "accept", "navigate"] :
       scenario === "missing-location" || scenario === "no-consent" ? ["notice"] : scenario === "failed" ? ["resolve", "notice"] : ["resolve"]);
     if (payload) {
-      assert.equal(payload.location.kind, "MAP_POINT"); assert.equal(payload.location.displayName, "候选名称");
-      assert.deepEqual(JSON.parse(JSON.stringify(payload.location.wgs84)), submission.candidateLocation!.wgs84);
+      assert.equal(payload.location.kind, "PENDING_PROPOSAL"); assert.equal(payload.location.submissionId, submission.submissionId);
+      assert.equal(payload.location.attemptId, "attempt:current"); assert.equal(payload.location.attemptBaseRevision, 1);
+      assert.equal(payload.location.wgs84, undefined, "the frozen server-owned proposal supplies its coordinates");
       assert.equal(payload.selectedAt, original.selectedAtUtc); assert.equal(payload.localDate, original.localDate);
     }
     if (scenario === "success") {

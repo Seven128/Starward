@@ -26,9 +26,9 @@ function mountedAirQuality(currentExpires: boolean) {
   const envelope = { dataState: "FRESH", sources: [] as any[], data: {
     spotId: "spot:a",
     current: { value: snapshot("71"), state: "FRESH", unavailableReason: null,
-      source: source(currentExpires ? "2026-09-20T11:00:00Z" : "2026-09-20T11:59:00Z") },
+      source: { ...source(currentExpires ? "2026-09-20T11:00:00Z" : "2026-09-20T11:59:00Z"), id: "test-air-current" } },
     forecast: { value: [{ ...snapshot("23"), at: currentExpires ? "2026-09-20T12:00:00Z" : "2026-09-20T11:00:00Z" }],
-      state: "FRESH", unavailableReason: null, source: source("2026-09-20T11:00:00Z") },
+      state: "FRESH", unavailableReason: null, source: { ...source("2026-09-20T11:00:00Z"), id: "test-air-forecast" } },
   } };
   envelope.sources = [envelope.data.current.source, envelope.data.forecast.source];
   const query = { data: envelope, isPending: false, isError: false, refreshError: undefined as unknown,
@@ -45,11 +45,11 @@ function mountedAirQuality(currentExpires: boolean) {
     useEffect(fn: () => unknown, deps: unknown[]) { const index = cursor++; if (!same(slots[index]?.deps, deps)) {
       const old = slots[index]; slots[index] = { deps }; effects.push(() => { old?.cleanup?.(); slots[index].cleanup = fn(); });
     } },
-    Text: "Text", View: "View", ForecastCoverageNote: "ForecastCoverageNote", Provenance: "Provenance", SoftButton: "SoftButton", StatusPanel: "StatusPanel",
+    Text: "Text", View: "View", ForecastCoverageNote: "ForecastCoverageNote", SourceAttribution: "SourceAttribution", SourceDisclosure: "SourceDisclosure", SoftButton: "SoftButton", StatusPanel: "StatusPanel",
     React: { createElement: (type: any, props: any, ...children: any[]) => typeof type === "function" ? type(props) : ({ type, props, children }) },
   });
   const renderedSources = (node: any): any[] => Array.isArray(node) ? node.flatMap(renderedSources)
-    : node && typeof node === "object" ? node.type === "Provenance" ? [node.props.source] : renderedSources(node.children) : [];
+    : node && typeof node === "object" ? node.type === "SourceAttribution" || node.type === "SourceDisclosure" ? node.props.sources : renderedSources(node.children) : [];
   return { envelope, notifications, query, refreshOptions, sources: () => renderedSources(tree), refreshes: () => refreshes, hide: () => hide(), show: () => show(),
     receive(data: typeof envelope) { query.data = data; dirty = true; },
     fail(error: unknown) { query.refreshError = error; dirty = true; },
@@ -76,11 +76,14 @@ for (const currentExpires of [true, false]) test(`AQ idle ${currentExpires ? "cu
     const after = host.flush();
     assert.doesNotMatch(after, currentExpires ? /71/ : /23/, "elapsed reading must leave the visible tree at its own boundary");
     assert.match(after, currentExpires ? /23/ : /71/, "independent valid sibling must remain visible");
+    assert.match(after, currentExpires ? /当前区域参考已过期/ : /空气质量预报已过期/, "the current rendering must distinguish expiry from missing coverage");
     assert.equal(host.refreshes(), 1, "one boundary refresh, even when it yields no replacement envelope");
     assert.equal(host.refreshOptions[0]?.cancelRefetch, false, "automatic boundary refresh joins any request already in flight");
     assert.equal(host.notifications.length, 0, "normal elapsed coverage is not a transport error");
-    assert.notEqual(host.sources()[currentExpires ? 0 : 1]?.state, "FRESH", "visible source card must not keep claiming fresh elapsed data");
-    assert.equal(host.sources()[currentExpires ? 1 : 0]?.state, "FRESH", "independent source remains fresh");
+    const expiredSourceId = currentExpires ? "test-air-current" : "test-air-forecast";
+    const retainedSourceId = currentExpires ? "test-air-forecast" : "test-air-current";
+    assert.equal(host.sources().some(item => item.id === expiredSourceId && item.state === "FRESH"), false, "attribution and disclosure must not keep claiming fresh elapsed data");
+    assert.equal(host.sources().find(item => item.id === retainedSourceId)?.state, "FRESH", "independent source remains fresh");
     assert.equal(host.envelope.data.current.value.indexes[0]!.display, "71", "retained query cache is not mutated");
     assert.equal(host.envelope.data.forecast.value[0]!.indexes[0]!.display, "23");
   } finally { host.dispose(); }
@@ -160,7 +163,7 @@ test("automatic recovery joins the real QueryObserver enable fetch through the p
     const ast = ts.createSourceFile("query.ts", readFileSync(new URL("../hooks/use-resource-query.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
     const code = ast.statements.filter(node => !ts.isImportDeclaration(node)).map(node => node.getText(ast).replace(/^export /, "")).join("\n") + ";useResourceQuery;";
     const hook = vm.runInNewContext(ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
-      useQuery: () => observer.getCurrentResult(), useEffect() {}, onlineManager, recordAcceptanceDiagnostic() {},
+      useQuery: () => observer.getCurrentResult(), useQueryClient: () => client, useEffect() {}, onlineManager, recordAcceptanceDiagnostic() {},
     });
     const retained = hook({ queryKey: options.queryKey, queryFn() {}, enabled: false });
     // useBaseQuery installs new enabled options before the outer hook's resume

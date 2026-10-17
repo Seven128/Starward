@@ -4,6 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { clearPlanDraft } from "./plan-draft";
+import { createPlanTestOperations } from "./plan-operation-test-support";
 
 function runtime(afterDelete?: () => void) {
   const source = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -16,25 +17,30 @@ function runtime(afterDelete?: () => void) {
   assert.ok(declaration);
   const busy = { current: false }, notices: string[] = [], calls: string[] = [];
   let owner: string | null = "owner";
-  let confirm!: (value: { confirm: boolean }) => void;
-  const confirmation = new Promise((resolve) => { confirm = resolve; });
+  const confirmations: Array<(value: { confirm: boolean }) => void> = [];
+  let currentPage = {};
+  const operations = createPlanTestOperations(() => owner, busy, () => currentPage);
   const remove = vm.runInNewContext(ts.transpileModule(declaration + "\nremove;", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
     activePlan: { planId: "saved-plan" }, mutationBusy: busy, isDirty: true,
+    operations,
     scopedDraftUserId: () => owner, planDraftKey: () => null, clearPlanDraft,
     setDeleting() {}, replacePlans: () => calls.push("replace"),
     planChecklistStorageKey: (id: string) => id,
     announce: (_tone: string, title: string) => notices.push(title), errorMessage: () => "error",
     deleteObservationPlan: async () => { calls.push("delete"); if (afterDelete) { owner = null; afterDelete(); } return { data: { plans: [] } }; },
     Taro: {
-      showModal: () => { calls.push("confirm"); return confirmation; },
+      showModal: () => { calls.push("confirm"); return new Promise(resolve => { confirmations.push(resolve); }); },
       removeStorageSync: () => calls.push("cleanup"),
       navigateBack: async () => { calls.push("back"); throw new Error("no history"); },
       switchTab: async () => { calls.push("tab"); throw new Error("navigation unavailable"); },
     },
   }) as () => Promise<void>;
-  return { remove, busy, notices, calls, confirm };
+  return { remove, busy, notices, calls, operations,
+    confirm: (value: { confirm: boolean }) => { assert.ok(confirmations.length); confirmations.shift()!(value); },
+    setOwner: (value: string | null) => { owner = value; operations.observe(); },
+    leavePage: () => { currentPage = {}; operations.hide(); } };
 }
 
 test("cancelled plan deletion releases its lock without a request or cleanup", async () => {
@@ -64,7 +70,7 @@ test("an account change while deletion is pending cannot replace the new account
   page.confirm({ confirm: true });
   await pending;
   assert.deepEqual(page.calls, ["confirm", "delete"]);
-  assert.deepEqual(page.notices, ["账户已变化"]);
+  assert.deepEqual(page.notices, []);
   assert.equal(page.busy.current, false);
 });
 
@@ -76,4 +82,38 @@ test("a failed old-account deletion does not announce unchanged data in the new 
   assert.deepEqual(page.calls, ["confirm", "delete"]);
   assert.deepEqual(page.notices, []);
   assert.equal(page.busy.current, false);
+});
+
+test("retired deletion confirmations cannot dispatch after ABA, unmount or actual page departure", async () => {
+  for (const departure of ["aba", "unmount", "page"] as const) {
+    const page = runtime(), pending = page.remove();
+    if (departure === "aba") { page.setOwner("b"); page.setOwner("owner"); }
+    else if (departure === "unmount") page.operations.dispose();
+    else page.leavePage();
+    page.confirm({ confirm: true }); await pending;
+    assert.deepEqual(page.calls, ["confirm"]); assert.deepEqual(page.notices, []);
+  }
+});
+
+test("old deletion completion cannot release a fresh returning author's pending confirmation", async () => {
+  const page = runtime(), old = page.remove();
+  page.setOwner("b"); page.setOwner("owner");
+  const fresh = page.remove();
+  assert.equal(page.busy.current, true); assert.deepEqual(page.calls, ["confirm", "confirm"]);
+  page.confirm({ confirm: true }); await old;
+  assert.equal(page.busy.current, true); assert.deepEqual(page.calls, ["confirm", "confirm"]);
+  page.confirm({ confirm: false }); await fresh;
+  assert.equal(page.busy.current, false); assert.deepEqual(page.notices, []);
+});
+
+test("known native confirmation preserves callback-before-show and show-before-callback", async () => {
+  for (const ordering of ["callback-first", "show-first"] as const) {
+    const page = runtime(), pending = page.remove();
+    page.operations.hide();
+    if (ordering === "show-first") page.operations.show();
+    page.confirm({ confirm: true }); await pending;
+    if (ordering === "callback-first") page.operations.show();
+    assert.deepEqual(page.calls, ["confirm", "delete", "replace", "cleanup", "back", "tab"]);
+    assert.equal(page.busy.current, false);
+  }
 });

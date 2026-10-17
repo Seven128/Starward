@@ -73,6 +73,36 @@ function deadlinePayload(lane: string) {
   }] };
 }
 
+test("cloud-only reads reuse the full hourly response across six times and retain independent formal alerts", async () => {
+  const requested: string[] = [];
+  const adapter = new QWeatherCompositeAdapter(deadlineConfig(), async input => {
+    const url = new URL(String(input)); requested.push(url.pathname);
+    if (url.pathname.startsWith("/weatheralert/")) return response(deadlinePayload("alerts"));
+    const template = deadlinePayload("primary").hours![0]!;
+    return response({ metadata: { tag: "per-coordinate-source-tag" }, hours: Array.from({ length: 8 }, (_, index) => ({ ...template,
+      forecastTime: `2026-08-23T${String(13 + index).padStart(2, "0")}:00:00Z`, cloudCover: index === 0 ? 0 : 0.8,
+    })) });
+  });
+  let sourceRequestId: string | null = null;
+  for (let index = 0; index < 6; index++) {
+    const result = await adapter.getForecastHourly({ ...weatherInput,
+      windowUtc: { start: `2026-08-23T${13 + index}:00:00Z`, end: `2026-08-23T${14 + index}:00:00Z` } });
+    assert.equal(result.value?.length, 1);
+    assert.equal(result.value![0]!.cloudPercent, index ? 80 : 0);
+    assert.equal(result.acquisition?.cache, index ? "HIT" : "MISS");
+    assert.equal(result.acquisition?.upstreamRequestAttempts, index ? 0 : 1);
+    assert.equal(result.acquisition?.providerTag, "per-coordinate-source-tag");
+    assert.equal(result.modelRun?.modelRunAt, null);
+    if (!index) sourceRequestId = result.acquisition!.sourceRequestId;
+    assert.equal(result.acquisition?.sourceRequestId, sourceRequestId);
+  }
+  assert.equal(requested.length, 1, "six display windows consume one hourly source response");
+  const formal = await adapter.getHourly(weatherInput);
+  assert.equal(formal.warningState, "FRESH");
+  assert.equal(requested.filter(path => path.startsWith("/weather/v1/hourly/")).length, 1);
+  assert.equal(requested.filter(path => path.startsWith("/weatheralert/")).length, 1);
+});
+
 test("each hanging weather lane reaches its deadline without discarding other lanes", async () => {
   for (const hanging of ["primary", "alerts", "all"]) {
     const signals: AbortSignal[] = [];

@@ -1,3 +1,4 @@
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import Taro, { useDidHide, useDidShow, useRouter, useShareAppMessage } from "@tarojs/taro";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
 import { useEffect, useRef, useState } from "react";
@@ -7,20 +8,30 @@ import { FloatingNotificationHost } from "@/components/notification";
 import { Provenance } from "@/components/provenance";
 import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { SharePoster } from "@/components/share-poster";
-import { useThemeClass } from "@/hooks/use-theme";
-import { createPlanShare, getSharedPlan, getSharedSpot, MiniappApiError } from "@/services/api-client";
+import { NativeBackBoundary } from "@/components/native-back-boundary";
+import { SemanticIcon } from "@/components/semantic-asset";
+import { PublicShareCard } from "./public-share-card";
+import { publicSharePresentation } from "@/components/public-share-presentation";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
+import { usePageNavigation } from "@/hooks/use-page-navigation";
+import { useAccountOperation } from "@/hooks/use-account-operation";
+import { useWechatLogin } from "@/hooks/use-wechat-login";
+import { createPlanShare, currentDraftUserId, getSharedPlan, getSharedSpot, MiniappApiError } from "@/services/api-client";
 import { useAppStore } from "@/state/app-store";
 import { displayZonedShareExpiry } from "@/utils/zoned-date";
-import { planSpotRiskMessage } from "@/utils/public-share-copy";
 import { remainingPublicPlanLifetimeMs } from "./share-lifetime";
 import "./index.scss";
 
 type Shared = PlanPublicShareData | SpotPublicShareData;
-type ShareState = { kind: "loading" } | { kind: "missing" } | { kind: "error" } |
+type ShareState = { kind: "loading" } | { kind: "login" } | { kind: "missing" } | { kind: "error" } |
   { kind: "ready"; data: Shared; path: string; expiresInMs?: number };
 
 function decode(value: string | undefined): string {
   try { return decodeURIComponent(value ?? ""); } catch { return ""; }
+}
+
+function currentSharePage(): unknown {
+  try { return Taro.getCurrentPages().at(-1); } catch { return undefined; }
 }
 
 function PublicSpotFact({ label, value }: { label: string; value: string | null }) {
@@ -38,16 +49,24 @@ export default function SharedJourneyPage() {
   const spotId = decode(router.params.spotId);
   const [state, setState] = useState<ShareState>({ kind: "loading" });
   const [attempt, setAttempt] = useState(0);
+  const [posterVisible, setPosterVisible] = useState(false);
+  const mode = useAppStore(store => store.mode);
   const hasShown = useRef(false);
   const requestEpoch = useRef(0);
   const pageVisible = useRef(true);
+  const requestAbort = useRef<AbortController | null>(null);
+  const creationRequest = useRef<{ current(): boolean; cancel(): void } | null>(null);
   const expiryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navigation = usePageNavigation();
+  const login = useWechatLogin();
+  useEffect(() => { if (state.kind !== "ready") setPosterVisible(false); }, [state.kind]);
 
   useDidShow(() => {
+    const wasVisible = pageVisible.current;
     pageVisible.current = true;
     if (!hasShown.current) {
       hasShown.current = true;
-      return;
+      if (wasVisible) return;
     }
     requestEpoch.current += 1;
     setState({ kind: "loading" });
@@ -55,8 +74,20 @@ export default function SharedJourneyPage() {
   });
   useDidHide(() => {
     pageVisible.current = false;
+    requestEpoch.current += 1;
+    requestAbort.current?.abort();
     if (expiryTimer.current) clearTimeout(expiryTimer.current);
     expiryTimer.current = null;
+  });
+
+  // Private capability creation has account intent; public receivers do not.
+  const creationOperations = useAccountOperation(`share-create:${JSON.stringify([planId, token, spotId])}`, busy => {
+    if (busy || !creationRequest.current) return;
+    const retired = creationRequest.current;
+    creationRequest.current = null;
+    const canRecover = retired.current();
+    retired.cancel();
+    if (canRecover) setState({ kind: "error" });
   });
 
   useEffect(() => {
@@ -65,6 +96,7 @@ export default function SharedJourneyPage() {
     const timer = setTimeout(() => {
       if (!pageVisible.current || requestEpoch.current !== epoch) return;
       requestEpoch.current += 1;
+      navigation.retire();
       setState({ kind: "missing" });
     }, state.expiresInMs);
     expiryTimer.current = timer;
@@ -77,9 +109,30 @@ export default function SharedJourneyPage() {
   useEffect(() => {
     let cancelled = false;
     const epoch = ++requestEpoch.current;
-    const stillCurrent = () => !cancelled && requestEpoch.current === epoch;
+    navigation.retire();
+    const page = currentSharePage();
+    const controller = new AbortController();
+    requestAbort.current = controller;
+    const stillCurrent = () => !cancelled && pageVisible.current && requestEpoch.current === epoch && Boolean(page) && currentSharePage() === page;
+    const request = { current: stillCurrent, cancel: () => { cancelled = true; controller.abort(); } };
+    if (!page) {
+      // Unknown native stack cannot authorize requests, but this mounted
+      // initial frame can still expose the existing explicit retry.
+      if (pageVisible.current) setState({ kind: "error" });
+      return () => {
+        request.cancel();
+        if (requestAbort.current === controller) requestAbort.current = null;
+      };
+    }
+    const privateCreation = Boolean(planId && !token && !spotId);
+    if (privateCreation && !currentDraftUserId()) {
+      setState({ kind: "login" });
+      return () => request.cancel();
+    }
+    const creation = privateCreation ? creationOperations.begin({ allowAuthentication: true }) : undefined;
+    if (creation) creationRequest.current = request;
     const showPlan = (response: Awaited<ReturnType<typeof getSharedPlan>>, publicToken: string, requestStartedAtMs: number) => {
-      if (!stillCurrent()) return;
+      if (!stillCurrent() || (creation && !creation.isCurrent())) return;
       const expiresInMs = remainingPublicPlanLifetimeMs(response.generatedAt, response.data.expiresAt, requestStartedAtMs, Date.now());
       if (expiresInMs <= 0) {
         setState({ kind: "missing" });
@@ -91,26 +144,38 @@ export default function SharedJourneyPage() {
     setState({ kind: "loading" });
     void (async () => {
       try {
-        if (planId && !token && !spotId) {
-          const link = await createPlanShare(planId);
+        if (!stillCurrent()) return;
+        if (privateCreation) {
+          if (!creation) { setState({ kind: "error" }); return; }
+          const link = await createPlanShare(planId, undefined, creation);
+          if (!stillCurrent() || !creation.isCurrent()) return;
           const requestStartedAtMs = Date.now();
-          const publicPlan = await getSharedPlan(link.data.token);
+          const publicPlan = await getSharedPlan(link.data.token, controller.signal);
           showPlan(publicPlan, link.data.token, requestStartedAtMs);
         } else if (token && !planId && !spotId) {
           const requestStartedAtMs = Date.now();
-          const publicPlan = await getSharedPlan(token);
+          const publicPlan = await getSharedPlan(token, controller.signal);
           showPlan(publicPlan, token, requestStartedAtMs);
         } else if (spotId && !planId && !token) {
-          const publicSpot = await getSharedSpot(spotId);
+          const publicSpot = await getSharedSpot(spotId, controller.signal);
           if (stillCurrent()) setState({ kind: "ready", data: publicSpot.data,
             path: `/content/share/index?spotId=${encodeURIComponent(publicSpot.data.spotId)}` });
         } else if (stillCurrent()) setState({ kind: "missing" });
       } catch (error) {
-        if (stillCurrent()) setState({ kind: error instanceof MiniappApiError &&
+        if (stillCurrent() && (!creation || creation.isCurrent())) setState({ kind: error instanceof MiniappApiError &&
           (error.code === "NOT_FOUND" || error.code === "STALE_REJECTED") ? "missing" : "error" });
+      } finally {
+        if (creationRequest.current === request) creationRequest.current = null;
+        creation?.release();
+        if (requestAbort.current === controller) requestAbort.current = null;
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      request.cancel();
+      if (creationRequest.current === request) creationRequest.current = null;
+      creation?.release();
+      if (requestAbort.current === controller) requestAbort.current = null;
+    };
   }, [planId, token, spotId, attempt]);
 
   useShareAppMessage(() => state.kind === "ready" ? {
@@ -123,29 +188,42 @@ export default function SharedJourneyPage() {
     ? "PLAN" : spotId && !planId && !token ? "SPOT" : null;
   const shareKind = data?.kind ?? requestedKind;
   const shareTitle = shareKind === "PLAN" ? "行程分享" : shareKind === "SPOT" ? "观星点分享" : "公开分享";
-  const planSpotRisk = data?.kind === "PLAN" ? planSpotRiskMessage(data.spotStatus) : null;
+  const planWarnings = data?.kind === "PLAN" ? publicSharePresentation(data).warnings : [];
   const openMap = () => {
-    if (data) {
-      setViewport({ center: { latitude: data.spotGcj02.latitude, longitude: data.spotGcj02.longitude }, zoom: 11 });
-      requestSpotOpen(data.spotId);
+    const contentEpoch = requestEpoch.current;
+    const attempt = navigation.begin({ valid: () => requestEpoch.current === contentEpoch });
+    if (!attempt) return;
+    try {
+      if (data) {
+        setViewport({ center: { latitude: data.spotGcj02.latitude, longitude: data.spotGcj02.longitude }, zoom: 11 });
+        requestSpotOpen(data.spotId);
+      }
+      void Taro.switchTab({ url: "/pages/map/index" }).then(undefined, attempt.fail).finally(attempt.release);
     }
-    void Taro.switchTab({ url: "/pages/map/index" });
+    catch { attempt.fail(); attempt.release(); }
   };
-  return <View className={`${themeClass} shared-journey`}>
+  return <><SystemMotionProbe /><View className={`${themeClass} shared-journey`}>
     <FloatingNotificationHost />
-    <CustomNav title={shareTitle} back backFallbackTab="/pages/map/index" />
+    {login.dialog}
+    <NativeBackBoundary active={posterVisible && state.kind === "ready"} onBack={() => setPosterVisible(false)} />
+    <CustomNav title={posterVisible ? "分享海报" : shareTitle} back backFallbackTab="/pages/map/index"
+      beforeBack={() => { if (!posterVisible) return true; setPosterVisible(false); return false; }} />
     <ScrollView scrollY enhanced showScrollbar={false} className="shared-journey__scroll">
       <View className="shared-journey__content page-inset safe-bottom">
+        {navigation.navigationError ? <StatusPanel state="ERROR" title="地图暂未打开" detail="请重试返回地图。" recoveryLabel="重试" onRecover={openMap} /> : null}
         {state.kind === "loading" ? <StatusPanel state="LOADING" detail="正在读取公开分享内容。" /> : null}
+        {state.kind === "login" ? <StatusPanel state="PERMISSION_DENIED" title="请先登录" detail="登录后准备这份计划的公开分享。"
+          recoveryLabel="微信快捷登录" onRecover={() => login.requireAccount(() => setAttempt(value => value + 1))} /> : null}
         {state.kind === "missing" ? <StatusPanel state="ERROR" title="分享不可用" detail="这份分享已失效、被删除或暂不公开。" recoveryLabel="返回地图" onRecover={openMap} /> : null}
         {state.kind === "error" ? <StatusPanel state="ERROR" detail="分享内容暂时无法获取，请检查网络后重试。" recoveryLabel="重试" onRecover={() => setAttempt(value => value + 1)} /> : null}
         {data ? <>
-          <View className="shared-journey__card">
+          {posterVisible ? <SharePoster data={data} onClose={() => setPosterVisible(false)} /> : <>
+          {mode === "DAY" ? <PublicShareCard data={data} /> : <View className="shared-journey__card">
             <Text className="type-caption">{data.kind === "PLAN" ? "公开行程" : "正式观星点"}</Text>
             <Text className="type-page-title">{data.kind === "PLAN" ? data.spotName : data.name}</Text>
             <Text className="type-secondary">{data.kind === "PLAN" ? data.spotRegion : data.region}</Text>
             {data.kind === "PLAN" ? <>
-              {planSpotRisk ? <Text className="shared-journey__alert">{planSpotRisk}</Text> : null}
+              {planWarnings.map((warning, index) => <Text key={index} className="shared-journey__alert">{warning}</Text>)}
               <View className="shared-journey__row"><Text>计划出发</Text><Text>{data.departureLocalDate} {data.departureLocalTime}</Text></View>
               <View className="shared-journey__row"><Text>观测时段</Text><Text>{data.localDate} {data.localTime} — {data.endLocalDate} {data.endLocalTime}</Text></View>
               <Text className="type-caption">时间均为 {data.timezone}；计划结束不代表已到访或观测成功。</Text>
@@ -165,14 +243,15 @@ export default function SharedJourneyPage() {
               <PublicSpotFact label="视野" value={data.horizon} />
               <Provenance source={data.source} />
             </>}
-          </View>
+          </View>}
           <View className="shared-journey__actions">
-            <Button className="soft-button soft-button--primary focus-ring shared-journey__button shared-journey__button--primary" openType="share">转发给微信好友</Button>
-            <Button className="soft-button focus-ring shared-journey__button" onClick={openMap}>在地图查看观星点</Button>
+            <Button ariaLabel="在地图查看观星点" className="soft-button soft-button--primary focus-ring shared-journey__button shared-journey__button--primary" onClick={openMap}><SemanticIcon name="place-pin" />查看观星点</Button>
+            <Button id="public-share-poster-open" className="soft-button focus-ring shared-journey__button" onClick={() => setPosterVisible(true)}><SemanticIcon name="download" />制作分享海报</Button>
+            <Button className="soft-button focus-ring shared-journey__button" openType="share"><SemanticIcon name="share" />转发给微信好友</Button>
           </View>
-          <SharePoster data={data} />
+          </>}
         </> : null}
       </View>
     </ScrollView>
-  </View>;
+  </View></>;
 }

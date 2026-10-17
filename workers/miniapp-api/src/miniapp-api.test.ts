@@ -42,6 +42,8 @@ test("clear map-point timezone regions are not overridden by the device hint", a
     for (const [latitude, longitude, hint, expected] of [
       [22.282, 114.16, "Asia/Shanghai", "Asia/Hong_Kong"],
       [22.56, 114.59, "Asia/Hong_Kong", "Asia/Shanghai"],
+      [30.27, 120.15, "Asia/Hong_Kong", "Asia/Shanghai"], // Zhejiang
+      [30.75, 103.6, "Asia/Hong_Kong", "Asia/Shanghai"], // Sichuan
     ] as const) {
       const context = (await service.resolveObservationContext({
         location: { kind: "MAP_POINT", displayName: "时区测试地点",
@@ -49,6 +51,12 @@ test("clear map-point timezone regions are not overridden by the device hint", a
         localDate: "2026-09-26",
       })).data;
       assert.equal(context.timezone, expected);
+      if (latitude > 25.5) {
+        assert.equal(context.timezoneSource?.id, "tz-boundary:geo-tz:8.1.10:comprehensive");
+        const scene = await service.getMapScene({ contextId: context.contextId, layer: "NORMAL" });
+        assert.ok(scene.sources.some(source => source.id === context.timezoneSource!.id &&
+          source.attribution?.statements.some(statement => statement.includes("ODbL"))));
+      }
     }
   } finally { await service.onModuleDestroy(); }
 });
@@ -137,7 +145,11 @@ test("map time axis includes the exact off-cadence observing instant without dup
   } finally { await service.onModuleDestroy(); }
 });
 
-test("map scene is context-bound and computes actual dynamic projections", async () => {
+test("map scene is context-bound and computes actual dynamic projections", async (t) => {
+  // The controlled forecast belongs to this observing night. Keep its clock
+  // inside that window instead of asking production freshness rules to show
+  // historical forecast cells as current data.
+  t.mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-08-06T12:00:00.000Z") });
   const service = testService();
   try {
     const context = await contextFor(service);
@@ -274,7 +286,8 @@ test("map light pollution draws only published grid geometry with a translucent 
       north: origin.wgs84.latitude + 0.005,
     },
     state: "ESTIMATED",
-    source: { ...origin.source, id: "test-published-light-source", title: "测试年度夜光" },
+    source: { ...origin.source, id: "test-published-light-source", title: "测试年度夜光",
+      precision: "自有隔离合成夜光网格，非EOG供应商输入" },
   };
   Object.defineProperty(repository, "listDarkSkyGridCells", { value: async () => [grid] });
   const service = createTestMiniappService({ repository });
@@ -287,6 +300,10 @@ test("map light pollution draws only published grid geometry with a translucent 
     });
     assert.equal(light.data.layer.state, "PARTIAL");
     assert.equal(light.data.layer.polygons.length, 1);
+    assert.ok(light.data.layer.precision.startsWith(grid.source.precision),
+      "layer precision must preserve the actual publication source rather than assume EOG");
+    assert.match(light.data.layer.precision, /不是 Bortle、SQM 或现场实测/u);
+    assert.deepEqual(light.data.layer.source, grid.source);
     assert.equal(light.data.layer.polygons[0]?.id, `light:${grid.cellId}`);
     assert.match(light.data.layer.polygons[0]?.fillColor ?? "", /66$/u);
     const expectedPoints = [
@@ -806,7 +823,10 @@ test("pending proposal sky is owner-scoped and bound to the submitted coordinate
       kind: "NEW_SPOT_PROPOSAL", spotId: null, candidateLocation: location,
       observedAt: null, topics: [], detail: "", rightsConfirmed: false,
       preciseLocationConsent: true,
-      candidateProfile: { fields: { name: "海风观星台", address: "深圳市大鹏新区" }, media: {} },
+      candidateProfile: { fields: { name: "海风观星台", address: "深圳市大鹏新区" }, media: {}, intake: {
+        version: 1, openness: "UNKNOWN", legalEntry: "UNKNOWN", nightSafety: "UNKNOWN",
+        contact: { kind: "UNKNOWN", number: "", purpose: "", source: "", publicPermissionConfirmed: false },
+      } },
     }, "proposal-sky-create:0001")).data;
     const pending = (await service.submitContribution(owner.userId, draft.submissionId, draft.revision, "proposal-sky-submit:0001")).data;
     const context = (await service.resolveObservationContext({

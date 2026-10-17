@@ -83,6 +83,7 @@ import Taro, {
 import { Button, Canvas, ScrollView, Text, View } from "@tarojs/components";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createSkyContextSession } from "./sky-context-session";
+import { matchesPrivateProposal } from "../../services/observation-context-version";
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import { nativeNavigationInsets } from "@/theme/native-metrics";
 import {
@@ -285,6 +286,8 @@ interface SpotNightRouteContext {
   selectedAt: string;
   timezone: string;
   dataRevision: string;
+  proposalAttemptId?: string | undefined;
+  proposalAttemptBaseRevision?: number | undefined;
 }
 
 function safeParam(value: string | undefined) {
@@ -1031,7 +1034,7 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   }) : undefined);
   const automaticContributionGroupsRef = useRef(0);
   const router = useRouter();
-  const routeContext = useMemo<SpotNightRouteContext>(
+  const entryRouteContext = useMemo<SpotNightRouteContext>(
     () => ({
       spotId: safeParam(router.params.spotId || router.params.spot_id),
       locationName: safeParam(router.params.locationName || router.params.location_name),
@@ -1044,6 +1047,8 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       dataRevision: safeParam(
         router.params.dataRevision || router.params.data_revision,
       ),
+      proposalAttemptId: safeParam(router.params.proposalAttemptId) || undefined,
+      proposalAttemptBaseRevision: Number(router.params.proposalAttemptBaseRevision) || undefined,
     }),
     [
       router.params.contextId,
@@ -1060,9 +1065,17 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       router.params.locationName,
       router.params.location_name,
       router.params.timezone,
+      router.params.proposalAttemptId,
+      router.params.proposalAttemptBaseRevision,
     ],
   );
   const storedContext = useAppStore((state) => state.observationContext);
+  const accountOwnerId = useAppStore((state) => state.accountOwnerId);
+  const routeContext: SpotNightRouteContext = storedContext?.location.kind === "FORMAL_SPOT" &&
+    matchesPrivateProposal(storedContext, accountOwnerId, entryRouteContext.spotId, entryRouteContext.proposalAttemptId, entryRouteContext.proposalAttemptBaseRevision)
+    ? { ...entryRouteContext, spotId: storedContext.location.spotId, timezone: storedContext.timezone,
+        localDate: storedContext.localDate, selectedAt: storedContext.selectedAtUtc, dataRevision: storedContext.contextFingerprint, locationName: "" }
+    : entryRouteContext;
   const [pageVisible, setPageVisible] = useState(true);
   const sourceReturnRef = useRef(false);
   const [sourceReturn, setSourceReturn] = useState(false);
@@ -1136,17 +1149,34 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   ), [routeContext]);
   const contextLookupEnabled = routeContextComplete && pageVisible && contextSession.canLookup() &&
     routeContext.contextId.startsWith("ctx:") && storedContext?.contextId !== routeContext.contextId;
-  const contextLookup = useResourceQuery({
-    queryKey: ["observation-context", routeContext.contextId],
-    queryFn: (signal) =>
-      getObservationContext(routeContext.contextId, signal),
-    enabled: contextLookupEnabled,
-    staleTime: 30_000,
-  });
   const activeContext: ObservationContext | null =
-    storedContext?.contextId === contextSession.contextId
-      ? storedContext
-      : null;
+    storedContext?.contextId === contextSession.contextId ? storedContext : null;
+  const privateLookupEnabled = pageVisible && Boolean(activeContext?.privateProposal && activeContext.privateProposal.ownerId === accountOwnerId);
+  const contextLookup = useResourceQuery({
+    queryKey: ["observation-context", accountOwnerId, contextSession.contextId],
+    queryFn: async (signal) => {
+      const current = useAppStore.getState().observationContext;
+      const request = current?.privateProposal ? contextSession.begin(current) : null;
+      try {
+        let response;
+        try { response = await getObservationContext(contextSession.contextId, signal); }
+        catch (error) {
+          if (!request || !current || !contextSession.isCurrent(request) || !(error instanceof MiniappApiError) ||
+              (error.code !== "NOT_FOUND" && error.code !== "STALE_REJECTED")) throw error;
+          response = await restoreObservationContext(current, signal);
+        }
+        if (request && contextSession.accept(request, response.data)) setObservationContext(response.data);
+        return response;
+      } catch (error) {
+        if (request && contextSession.isCurrent(request) && error instanceof MiniappApiError &&
+            (error.code === "PERMISSION_DENIED" || error.code === "NOT_FOUND")) setObservationContext(null);
+        throw error;
+      } finally { if (request) contextSession.finish(request); }
+    },
+    enabled: contextLookupEnabled || privateLookupEnabled,
+    staleTime: privateLookupEnabled ? 0 : 30_000,
+    refetchInterval: privateLookupEnabled ? WEATHER_ALERT_REFRESH_MS : false,
+  });
 
   useEffect(() => {
     if (
@@ -1165,7 +1195,9 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   const proposalRoute = routeContext.spotId.startsWith("contribution:");
   const contextLocationMatches = Boolean(activeContext && (
     (routeContext.spotId.startsWith("spot:") && activeContext.location.kind === "FORMAL_SPOT" && activeContext.location.spotId === routeContext.spotId) ||
-    (proposalRoute && activeContext.location.kind === "MAP_POINT")
+    (proposalRoute && (activeContext.location.kind === "MAP_POINT" ||
+      (activeContext.location.kind === "PENDING_PROPOSAL" && activeContext.privateProposal?.submissionId === routeContext.spotId &&
+        matchesPrivateProposal(activeContext, accountOwnerId, routeContext.spotId, routeContext.proposalAttemptId, routeContext.proposalAttemptBaseRevision))))
   ));
   const contextComplete = Boolean(
     routeContextComplete &&

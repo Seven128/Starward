@@ -514,7 +514,7 @@ This section is the complete canonical visual-system profile for `target.system.
 
 2026-09-22 尺度修订保留原交互：观星点信息组件仍为原地图抽屉，原档位、拖动、内部Tab/章节行为、内容与固定操作不变。调整限定为内容文字、图标、留白及局部圆角；不能将静态大档截图推导成独立详情页、简化内容或新的导航方式。
 
-2026-09-22 尺度方向修订：用户真机反馈当前“小巧”过小，后续小程序设计候选改为正常移动端舒适可读的尺寸与自然圆润。旧“紧凑/小巧”仅保留去冗余、组织有效信息的含义，不再要求压小字级、图标、按钮或卡片；字体层级、行距、内容留白与圆角一起调整，不能整页缩放。现有精确令牌及已采用资源仍标识当前实现/采用基线；2026-09-24 依用户进一步确认的跨页舒适尺度方向，在 Map/Search、我的、设置、计划、共享地点资料表单及天文事件目录的生产 owner 内作局部选择和实测修正。其余候选几何仍待审，不将整包候选参数自动投射到生产或原生 App。
+2026-09-22 尺度方向修订：用户真机反馈当前“小巧”过小，改为正常移动端舒适可读的尺寸与自然圆润。旧“紧凑/小巧”仅保留去冗余、组织有效信息的含义，不再要求压小字级、图标、按钮或卡片；字体层级、行距、内容留白与圆角一起调整，不能整页缩放。2026-09-24 先在生产 owner 落实局部尺度；2026-10-10 用户指定核对 Stitch 并使用最新资源后，[舒适尺度完整源](https://stitch.google.com/projects/7144519510537620825?node-id=5205988829884632961)（源包内 `shared/comfortable-scale-2026-09-22/README.md`）覆盖的日间视觉成为当前依据，经各页唯一采用入口读取完整级联与依赖。旧生成令牌不能覆盖已采用具体资源。云观星内部、暂停的大文字组及未交付主题仍按原边界，不将小程序参数投射到原生 App。资源采用与生产迁移/验收分别记录。
 
 2026-09-08 用户明确：持续从新增资源、具体反馈和采用修订中完善项目的风格偏好与UIUX原则，使设计系统更准确地符合用户预期；设计判断依据随之更新。采用表示当前范围内接受该方案，不定义客观“完成度”、审美等级或新页面必须达到的比较门槛。按[Context校准规则](project_context/context-maintenance.md#持续校准设计系统与用户偏好)在原owner更新适用范围，避免只累积资源或复制上一页。“精致、适当丰富、舒适可读、自然圆润”是当前默认要求（尺度依2026-09-22反馈修订）；简洁指信息和操作清晰，不能解释成取消材质、卡片、图标、视觉重心和动效。除非明确要求线框或只讨论结构，不交付等待用户要求“再美化”的基础壳。
 
@@ -607,12 +607,15 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 通用排版精确值在上方 `type` 令牌维护；§5A 已明确采用而尚未迁移的组件/页面按其 scoped profile，不能用旧生成值覆盖采用稿。page-title 为页面、spot-title 为地点身份、section 为章节、body 为核心事实、body-secondary 为说明、action 为全部普通操作/筛选、search 为搜索、metadata 为来源时效、data 为关键数值、article 为长文、critical 为影响操作的状态、display 为少量主要展示。旧 type-label/type-caption 等生产类分别投射 action/metadata，不保留另一套数值。核心值/动作/风险不得借用 metadata 缩小。
 
 - 中文标题、按钮与标签字距均为 `0`，不得负字距或人为追踪。
-- 正文与 helper 使用 400；普通标签/控件使用 400–500；标题使用 500–600；600 只保留给结论与关键时间。普通界面禁止 700，正文禁止脆弱 ultralight。
+- 正文与 helper 使用 400；普通标签/控件使用 400–500；标题使用 500–600；600 只保留给结论与关键时间。普通界面禁止 700，但 2026-10-10 指定最新资源内日间 Map 与 Plan 点位标题 22/30/700、My 昵称 20/28/700 和成就入口标题 16/25.6/700 是 scoped 例外，不能用通用规则降级其层级或推广到正文。正文禁止脆弱 ultralight。
 - 数字采用等宽数字 `font-variant-numeric: tabular-nums`；时间轴每列共享宽度。
 - 导航与分类标题使用中文系统字体、自然字距，不使用 tracked uppercase 或等宽行政标签。
 - 长中文按钮和字段标签需验证；允许换行，不以缩小字号维持单行。紧凑密度不得通过裁切、灰到不可读或全局机械缩放实现。
-- 2026-09-12 用户要求小程序所有图标向拟物、偏可爱且元素克制的统一家族探索，替代“必须全为线性图标”的风格限制。可爱感来自圆润比例、适当材质与一致光照，不能靠堆叠装饰；用户随后选择Web GPT加磨砂质感后最新对比图的B行作为整套生成的唯一风格参考，保留圆润比例、细腻磨砂材质和低饱和奶黄/灰蓝紫/鼠尾草绿关系；用户截图记录在[参考](https://stitch.google.com/projects/7144519510537620825)，截图不是可直接使用的图标母版。小型方向/关闭等功能符号也在优化范围内，其材质深度应服从小尺寸识别；科学图形保留真实几何语义。当前图标输入与必要可编辑母版由共享图标采用包维护。2026-09-13用户已采用[共享图标入口](https://stitch.google.com/projects/7144519510537620825)内已核对的71份256px日间透明PNG（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态），高清母版保留；地图selected经用户授权使用本地代码复制default主体并叠加独立光线，两种分辨率下主体像素一致，避免独立重画造成状态几何漂移。生产继续由唯一 `SemanticIcon` / `SemanticAsset` adapter 按语义分发，DAY消费者和地图四态已经迁移到B批资源；微信包使用保持完整画布与RGBA的224px页面派生和192px原生Tab派生以满足包体限制。NIGHT/OBSERVATION仍沿用原合法主题资产，真实月相、科学图形和平台标识保持各自owner。沿用当前逻辑像素尺度和独立44px命中区，不引入第二图标状态系统或运行时远程图标；各主题与可中断动效的未实测状态继续分别记录。
+- 2026-09-12 用户要求小程序所有图标向拟物、偏可爱且元素克制的统一家族探索，替代“必须全为线性图标”的风格限制。可爱感来自圆润比例、适当材质与一致光照，不能靠堆叠装饰；用户随后选择Web GPT加磨砂质感后最新对比图的B行作为整套生成的唯一风格参考，保留圆润比例、细腻磨砂材质和低饱和奶黄/灰蓝紫/鼠尾草绿关系；用户截图记录在[参考](https://stitch.google.com/projects/7144519510537620825)，截图不是可直接使用的图标母版。小型方向/关闭等功能符号也在优化范围内，其材质深度应服从小尺寸识别；科学图形保留真实几何语义。当前图标输入与必要可编辑母版由共享图标采用包维护。2026-09-13用户已采用[共享图标入口](https://stitch.google.com/projects/7144519510537620825)内已核对的71份256px日间透明PNG（62种基础图标、想去轮廓态、导航selected、动画分件及地图四态），高清母版保留；地图selected经用户授权使用本地代码复制default主体并叠加独立光线，两种分辨率下主体像素一致，避免独立重画造成状态几何漂移。生产继续由唯一 `SemanticIcon` / `SemanticAsset` adapter 按语义分发，DAY消费者和地图四态已经迁移到B批资源；微信包使用保持完整画布与RGBA的192/224px页面派生和192px原生Tab派生；2026-10-11用户仅批准停车/洗手间两份主包专用96px派生，显示24px，其余源和派生尺寸保持，实际包预算仍须构建核验。NIGHT/OBSERVATION仍沿用原合法主题资产，真实月相、科学图形和平台标识保持各自owner。沿用当前逻辑像素尺度和独立44px命中区，不引入第二图标状态系统或运行时远程图标；各主题与可中断动效的未实测状态继续分别记录。
 - 图标不单独表达关键含义；无可见标签的 icon action 必须有可访问名称。
+- 当前完整页面资源中的局部例外优先于通用 B 图标基线：最新 My 日间计划卡头和计划行保留源中的两种 16px 线性 chevron，由同一 `SemanticIcon` 的计划角色分发精确 SVG 提取；其他页面的 B chevron 以及 NIGHT/OBSERVATION 原主题素材不改。
+- 当前采用资源中的日间主导航是横排图标与文字，官方自定义 TabBar 保留 Map/My 两个原生路由。Map 使用 26px 图标、14px/21px 文本、6px 图文间距和两侧 40px；My 使用 28px 图标、14px/22.4px 文本、12px 实际图文间距和整行均分。Map 选中地图保留源中 default bitmap，My 选中头像用 selected bitmap。字距以当前源局部例外 Map −.35px、My +.35px 为准，选中600、未选中400。Map 白底中性深色选中/浅灰未选中，My 白色80%底中性深色选中/灰色未选中；夜间与观测保留原主题导航资产和调色。命中至少44px，导航和真实系统安全区由同一 geometry owner 提供，资源示意 home indicator 不作为产品绘制内容。
+- 当前 Plan 日间完整源的详情／编辑文档保留灰蓝文字与 `#526f7d` 主操作。详情分享入口位于 hero，B share 保留源中的 256px 逻辑画布；观测参考先于出行安排，底部固定删除／编辑两操作，编辑页固定取消／保存。两种文档由同一 Plan 页面与滚动／footer 空间责任维护；时段、当地时区、恢复、通知状态和公开分享字段继续由既有业务 owner 提供。字段54px、标签13.5px、输入14.5px，辅助说明13px/1.65，不能把这些局部参数推广到未覆盖主题或其他页面。
 
 ### 4. 间距、密度、占用率与几何
 
@@ -712,7 +715,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 5A.0 已采用观星点信息组件（三档）
 
-地图唯一采用入口为[ADOPTED.md](https://stitch.google.com/projects/7144519510537620825)。2026-09-08用户确认small/medium/large组件完成，采用[三档资源](https://stitch.google.com/projects/7144519510537620825)及最终动效；覆盖日间正式点位的基本信息、天文、相关媒体和底部操作。其具体构图/颜色/图标/动效替换本文件内该组件的旧rpx和中档静态表达，不自动推广到其他页面/主题。2026-09-24按用户确认的舒适尺度方向修订当前生产阅读尺度，见下表；[跨页舒适尺度候选](https://stitch.google.com/projects/7144519510537620825)的整组视觉仍待审，这次局部尺度修订不构成整组采用。其他未覆盖的生产迁移状态见各资源入口。
+地图唯一采用入口为[ADOPTED.md](https://stitch.google.com/projects/7144519510537620825)。2026-09-08 的[三档资源](https://stitch.google.com/projects/7144519510537620825)保留原组件业务、结构与完整依赖；2026-10-10 用户指定最新资源后，日间正式点位三档、基本信息/地形/天文、相关媒体及底部操作的视觉以[舒适尺度完整源](https://stitch.google.com/projects/7144519510537620825)完整级联为准，旧中档静态图退为历史参考。三档单内容树、拖动和业务合同继续有效，不扩展到未覆盖主题。下表记录当前生产尺度，不能以局部迁移或浏览器对照宣称整页符合。
 
 | 角色 | 采用表达（逻辑px，具体级联值以采用源文件为准） |
 | --- | --- |
@@ -739,11 +742,11 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 #### 5A.2 Dedicated Search、统一 filters 与 results
 
-搜索页唯一采用入口为[ADOPTED.md](https://stitch.google.com/projects/7144519510537620825)。2026-09-08用户确认[搜索页资源](https://stitch.google.com/projects/7144519510537620825)完成，采用A方向的日间紧凑尺度及最终交互、地址对齐修正。下述组合替换该页旧全换行筛选、统一结果卡描边、固定半宽文字区及大号选中星标表达；未覆盖主题和状态保留原规则。具体页面级联值、图片与完整组合以采用包为准，生产页面、筛选/选点链路和生成tokens尚未迁移，本次采用不触发生产生成。
+搜索页唯一采用入口为[ADOPTED.md](https://stitch.google.com/projects/7144519510537620825)。2026-09-08用户确认[搜索页资源](https://stitch.google.com/projects/7144519510537620825)完成，采用A方向的日间紧凑尺度及最终交互、地址对齐修正。下述组合替换该页旧全换行筛选、统一结果卡描边、固定半宽文字区及大号选中星标表达；未覆盖主题和状态保留原规则。具体页面级联值、图片与完整组合以当前采用入口为准；生产主要布局与交互已迁移，实际已验范围及未验项以当前WEAPP证据解释，资源采用不代表完整目标平台验收。
 
 - 页面按 Search → titleless unified filters → `想去`/`其他观星点` partitions 排列，一个 keyboard-safe vertical scroll owner。Map entry 与 Search field 使用同一 visual frame和同一可见query/placeholder字符串：outer rect、fill、border、radius、shadow、text、type baseline、slot 与 caret origin不变；leading glyph只在相同`88rpx`slot内Search→Back交叉替换，两态均无trailing `x`/clear/chevron。Field默认autofocus；任意外部有效tap可blur、关闭suggestions/IME而保留route/query/filter/result/scroll，再次tap可重新focus。Back glyph、系统/微信Back与平台edge-back都pop Search child回Map。Field以下内容以clip/reveal + `translateY(-12px→0)` + opacity `0→1` / `180ms`向下展开，field自身不动；退出反向`160ms`。
-- Query suggestion overlay紧贴field下沿，保持紧凑可读行和至少44px目标，不移动原框。筛选只展示一行，按Screen Contract的16个终端值可横向滑动，末端具名筛选图标固定；不分quick/more，不显示“筛选条件”标题或额外介绍带。日间胶囊、间距、轻分隔线与首分组距离沿用采用稿；横滑结束不误触选项。未覆盖主题的overlay保留4rpx贴边、72rpx可见行/88rpx目标、22rpx图标、16rpx水平内距与1rpx行分隔；胶囊保留44rpx可见/88rpx目标、10rpx内距、20rpx图标、4rpx图文间距、10.5/14.5px文字，以及原4–6rpx贴边与12–16rpx首分组距离。
-- 筛选图标打开底部二级分类弹层，左侧五类为观测条件、到达方式、设施配套、场地偏好、资料更新，右侧为对应终端值，不再嵌套第三层。无参数横条项点击即时提交；驾车时长打开同一弹层的到达方式分类，按Screen Contract编辑启用状态、时间/距离模式及对应数值。弹层基于同一committed选择和参数建立draft，清空只改draft，确定一次提交，关闭/遮罩/Escape/系统Back取消并恢复入口焦点。具体分组与数据含义由Screen Contract约束；弹层局部draft不成为第二筛选事实源。2026-09-09业务修订后的局部资源待用户审查，现行采用包仍控制未变的视觉组合。
+- Query suggestion overlay紧贴field下沿，保持紧凑可读行和至少44px目标，不移动原框。筛选只展示一行，按Screen Contract的14个终端值可横向滑动，末端具名筛选图标固定；不分quick/more，不显示“筛选条件”标题或额外介绍带。日间胶囊、间距、轻分隔线与首分组距离沿用采用稿；横滑结束不误触选项。未覆盖主题的overlay保留4rpx贴边、72rpx可见行/88rpx目标、22rpx图标、16rpx水平内距与1rpx行分隔；胶囊保留44rpx可见/88rpx目标、10rpx内距、20rpx图标、4rpx图文间距、10.5/14.5px文字，以及原4–6rpx贴边与12–16rpx首分组距离。
+- 筛选图标打开底部二级分类弹层，左侧五类为观测条件、到达方式、设施配套、场地偏好、资料更新，右侧为现行14项终端条件，不再嵌套第三层。横条项点击即时提交；已退役的驾车时长、道路距离及低云阈值不展示，也不从旧状态恢复其参数或选择。弹层基于同一committed选择建立draft，清空只改draft，确定一次提交，关闭/遮罩/Escape/系统Back取消并恢复入口焦点。具体分组、条件含义和旧状态投射由当前Screen Contract约束；弹层局部draft不成为第二筛选事实源。旧16/18项资源只保留其有效构图样本，未变的视觉组合仍由当前采用入口控制。
 - 日间selected使用采用稿的浅蓝填色、边界、文字和小星标，几何保持稳定；原大号半透星标不再约束本页日间稿。未覆盖Night保留 `48rpx` 圆润实心 ornament、`right:-4rpx; top:-8rpx`、meteor opacity `.30`及原sky-soft/`2rpx sky`inset boundary/checked表达，不参与inline sizing且文字仍可读；Observation映射暖红，不保留黄色。未覆盖主题保留原select `scale(.42) rotate(-14deg) opacity(0)`→`scale(1) rotate(5deg)` /170ms、deselect→`scale(.56) rotate(-7deg) opacity(0)` /140ms。选中/取消均从live状态反向接管，减少动态效果只保留≤80ms颜色/透明度变化；精确日间表达见采用源文件。
 - Result Card占满内容列。日间合法图片cover整卡，无边框、无阴影，leading白色到透明的可读性遮罩和名称宽度随采用稿，不再固定52%；图片仍可低对比透出，不用opaque slab、blur/glass。无图时只渲染安静纯色卡，不存在图片节点、placeholder、标签、固定高度空档或附加空间。地址图标与首行文本共用对齐槽，长地址换行仍贴齐首行。未覆盖主题保留原min-height`156rpx`、`radius-panel`、`1rpx border`及52%leading field和主题遮罩。
 - Whole card是唯一selection action；右侧不出现“选择”或第二control。选择提交formal spot、返回现有Map、重定位该点并打开medium panel；重复选择同一spotId也必须执行恢复，不得因ID相同跳过。两个Partition各自拥有44px具名operable heading和expanded状态；展开/收起保留同一DOM/state tree，以measured live height/clip+opacity在`160ms`可中断retarget，完成后才移除hit/semantics，不得remount、`display:none`、reset scroll或产生抖动/闪烁。城市只作group heading。资源中地图为静态、卡片只有按压外观，不代表正式点选择与地图/信息组件联动已验证。
@@ -754,7 +757,7 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - 三档始终挂载同一份、同序、同identity的客观document：有效media→地点identity→route/access/facility/safety→guides/field/source→卡片外天文标题→日期/时间尺→月相/气象/夜光/目标/来源。Small/Medium只是较短viewport裁剪；Large才启用唯一隐藏scrollbar chrome的internal vertical scroll。禁止按extent分别渲染、remount、重新排序或重复mapping。唯一presentation例外是合法media：small/medium不占media，medium→large时才在document顶部连续拉出；无图从不渲染media node/placeholder/空档。
 - Handle 保留短细圆头提示，整条面板宽度的紧凑白色 identity-header band 为拖动热区，触控高度至少44逻辑px。名称上移并可进入热区下部，不靠额外空白撑开；操作按钮不与热区重叠。Band 跟随同一document滚动，绝不fixed/sticky在panel可视区；有图时位于相册之后，无图时为首区。滚出视口后无替代热区，靠系统/平台Back或可用的edge-back返回档位；滚回真实header才恢复拖动。Pointer down仅改变press反馈，未过方向/距离阈值的tap为no-op。
 - Large左边缘`32rpx`edge zone右滑或handle下拉执行Back语义的`large→medium`，保留selected spot、section与meaningful scroll；具名extent controls提供非手势等价。普通Back/Escape顺序为owned disclosure→large→medium→small→hidden→route。中/大档除实际可见header band以外的Panel body/content/media或泛化viewport top-edge均不发起extent drag。小档裁切正文上拖展开，下拖采用越界橡皮筋阻尼并回到小档、不关闭；三档按松手速度投影吸附，中/大档正文均可滚动。
-- Panel top/media/content size必须在每个direct-manipulation帧按live extent、safe area与actual media presence计算。有合法media时`mediaReveal=clamp((p-.50)/.28,0,1)`，clip-height从0到`clamp(300rpx,27dvh,420rpx)`，image从`translateY(-18rpx) scale(1.02)`到0/1；无图没有media phase。
+- Panel top/media/content size必须在每个direct-manipulation帧按live extent、safe area与actual media presence计算。有合法media时`mediaReveal=clamp((p-.50)/.28,0,1)`，clip-height从0到§5A.0采用图库的160逻辑px（含上下内距），不随rpx缩放；image从`translateY(-18rpx) scale(1.02)`到0/1；无图没有media phase。
 - 只有panel top接近screen top才淡出Map chrome：`chromeFade=1-clamp((p-.82)/.12,0,1)`。Search、Location与Layer trigger共享该phase，opacity≤.08才移除hit/semantics；反向先恢复chrome，再收media。不得在图片刚拉出时提前隐藏chrome。
 - Large采用全宽中性白色圆角模块与共享文字内距。章节导航遵循6.11：基本信息首屏隐藏，到地形章节出现并吸顶；仅一层同文档锚点，不恢复旧侧边rail。
 - Bottom action bar沿用§5A.0的三档采用资源几何，顺序想去/云观星/分享；可见区域与44px命中区分别处理。Favorite星形由既有语义图标owner承接已采用矢量，不建立第二套关系状态。
@@ -787,13 +790,13 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 - Settings只保留一个`display-mode-switcher`，值域=`day|night|observation`且默认day；`observation-mode-control`不再是独立组件或页面底部CTA。该控件是single-choice三站滑轨而不是二值Switch：track max-width=`560rpx`、visible height=`72rpx`、三站等宽、每站target≥`88rpx`，thumb包含由`SemanticIcon`提供的Sun/Moon/Star与短label。
 - Tap任意站直接选择；tap当前thumb在有next时前进一步。横拖越过8px后跟手，向右`day→night→observation`、向左反向，不wrap、不跳站；release按position+velocity snap。方向键/Home/End与screen-reader direct choice等价。
 - Day↔Night使用`180ms`thumb transform与Sun/Moon scale/rotation/opacity交叉；Night↔Observation先原子绑定closed black/warm-red tokens，再做Moon/Star opacity/微旋转，过程中禁止白/蓝/黄/绿/中性灰闪现。Reduced motion即时snap并保留≤80ms icon opacity确认。
-- My日间根页采用[唯一资源入口](https://stitch.google.com/projects/7144519510537620825)：无顶部页名、可编辑头像昵称、唯一设置、观星计划玻璃主卡及已提交。该页明确允许淡色渐变与单张液态玻璃，覆盖本页旧纯白/无玻璃规则，不扩展到地图或其他页面。最终图标为暖米色朝左露营SUV，拟物且圆润可爱，与标题间隔8px；卡头无“全部”文字，箭头与计划行尾箭头同列。具体尺寸与材质以采用资源为准；其他主题使用安全不透明等效呈现。
+- My日间根页采用[唯一资源入口](https://stitch.google.com/projects/7144519510537620825)：无顶部页名、可编辑头像昵称、唯一设置、观星计划玻璃主卡及已提交。该页明确允许淡色渐变与单张液态玻璃，覆盖本页旧纯白/无玻璃规则，不扩展到地图或其他页面。最终图标为暖米色朝左露营SUV，拟物且圆润可爱，与标题间隔8px；卡头无“全部”文字，卡头箭头位于当前完整源的48px槽内，计划行使用16px尾部箭头。具体尺寸与材质以采用资源为准；其他主题使用安全不透明等效呈现。
 
 ### 5C. 观星点新增、草稿编辑与反馈
 
 - 使用[统一采用表单](https://stitch.google.com/projects/7144519510537620825)，复用已有 contribution/form/upload/notification owner。新增、编辑远端草稿、反馈完整回填共用字段文档：地点搜索与名称、开放与到达、设施与现场（含停车/洗手间图片）、现场照片、补充说明。字段语义和校验以 Map/Shared State Context 为准；移除旧 report kind/topics/到访时间表单构图。
 - 地图非拖动弹层无顶部横杠；进入上滑、退出下滑，系统返回关闭。搜索和三个悬浮控件淡出，弹层顶位于原加号位置，地图仍可操作。候选点在剩余可视地图中心，名称来自地点名称。切换其他点按同一 coordinator 关闭表单、打开目标信息组件。
-- 单一连续垂直文档，tab/标题分层，不用设施折叠。字段左对齐，设施组浅灰与观星点天文容器一致。真实必填以浅红星号标识，不重复“选填”；触摸焦点无装饰高亮，键盘 focus-visible 仍可识别。补充说明固定高度、内部滚动，不可拖拽缩放；图片上传进度/失败/删除留在原格。
+- 单一连续垂直文档，tab/标题分层，不用设施折叠。字段左对齐，设施组浅灰与观星点天文容器一致。真实必填以浅红星号标识，不重复“选填”；触摸焦点无装饰高亮，键盘 focus-visible 仍可识别。编辑态补充说明固定高度、内部滚动，不可拖拽缩放；2026-10-11用户批准冻结只读长字段按值列宽完整换行，补充说明保留至少112px并随全文增高，短值、空值占位及短暂busy沿原呈现；图片上传进度/失败/删除留在原格。
 - 仅新增/编辑草稿有手动存草稿，每次加号为空表单；多个远端草稿经成功请求回执更新。无自动/关闭保存或本地草稿权威。保存时间放标题右侧，不加高底栏；当天显示时间，跨日显示日期。保存操作不弹通知。
 - 反馈入口为“我要反馈”文字加箭头，无边框背景。全部回填，偏离正式基线的字段浅黄，恢复即清除；底部汇总原文红色划线→新文，旧图灰化微倾斜加停用标记→新图。提交后冻结快照、无提交/存草稿；标题审核中。正式点“我的反馈”标签打开该只读快照。
 - 提交使用按钮内 loading，并防重复及表单变更；失败保留输入和幂等身份，成功仅表达审核中。审核中提案信息组件无想去/分享；草稿无我要反馈。普通消息复用顶部小白底黑字无边框堆叠通知，3秒消失/手动关闭，上浮淡出。
@@ -1082,7 +1085,8 @@ UIUX原则、审美偏好、项目视觉风格、设计系统与页面决定的�
 
 - 当前可用：“开放至 23:30”“停车：暂无数据”“总云量 18%”“猎户座 22:10 后升起”“云量数据较旧，当前数值可能变化”。当前panel不使用“今晚建议出发”“谨慎出发”“最佳/推荐观测窗口”。
 - 避免：“完美观星”“绝对晴朗”“保证可见”“AI 神奇推荐”“梦幻星海”。
-- 允许的可见状态必须具体到受影响事实与结果，例如“官方预警未更新，暂不建议出发”“云量数据较旧，今晚结论可能变化”。`实时`、`部分数据`、`数据较旧`、`离线缓存`、`暂无数据`不得作为脱离上下文的常驻通用badge或实现说明。
+- 允许的可见状态必须具体到受影响事实与结果，例如“官方预警尚未更新，请留意最新公告”“云量数据较旧，当前数值可能变化”。`实时`、`部分数据`、`数据较旧`、`离线缓存`、`暂无数据`不得作为脱离上下文的常驻通用badge或实现说明。
+- 菜单、页签和短动作优先2–4字，普通说明尽量约20字；为保留对象、状态、来源、风险、单位或动作后果可更长。同一功能的入口、标题、结果与可访问名称保持一致；保存回执由实际同步结果产生，授权、发送受理与收到分别表达。
 - 设计资源 viewport 只显示正式产品信息结构，不写“演示数据”或 review/debug disclaimer；代表值的非实时属性在资源外 metadata 说明，实际产品仍必须显示其真实 source/freshness/completeness 状态。
 - 错误说明结构：发生了什么 → 影响什么 → 用户可以做什么。
 - 普通viewport不显示“操作说明”“方向跟随中”“同一地图·一个分析图层·本地时间”、拖动/手势教程、生成方式、实现结构或审计说明；当前也不为这些内容新增通用`?`、hover tooltip或help row。

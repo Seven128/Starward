@@ -7,9 +7,17 @@
 
 ## Design And Implementation Boundary
 
+2026-10-10 用户指出旧地图中档图并指定核对 Stitch、使用最新设计资源。当前项目 01–08 已打开，01 地图与 03 我的/设置/计划画面已实看对照；后续开发以[舒适尺度完整源](https://stitch.google.com/projects/7144519510537620825)和各页唯一采用入口为视觉依据，旧截图只作历史参考，完整可编辑依赖保留。原真实业务、状态、导航和共享交互责任不变；云观星内部、暂停的大文字组及未交付主题仍按原边界。此项更新资源选择，不认证生产或目标验收。
+
+2026-10-11用户进一步明确批准DAY计划23组及共享事件19组普通文字配色增量，以满足现有可读性要求；范围由[计划入口](https://stitch.google.com/projects/7144519510537620825)和[事件入口](https://stitch.google.com/projects/7144519510537620825)控制，精确值在共同完整源的refinements.css。仅改变列明的普通文字角色，背景、字级、构图、图标、内容及行为继续沿原采用范围；禁用状态、其它主题和未列角色不自动扩展，资源采用与实际生产验证仍分别判断。
+
+2026-10-12用户明确批准[DAY普通文字R01–R50](https://stitch.google.com/projects/7144519510537620825)，包括设置浅色主按钮深色文字；设置、Search/My、两类记录、共享表单及Map/图层按列明责任同步。独立图形、禁用/加载、背景、字级、布局、业务内容/动作及未列模式保留，旧42组证据复用。隐藏语义标题不新增可见组件或视觉矩阵；具体业务字段/资格仍以各Screen Contract为准。
+
 ### Stitch design authority
 
 微信小程序唯一设计项目：[待审｜舒适尺度·星旅分享·公共动效｜09-23](https://stitch.google.com/projects/7144519510537620825)，项目 ID `7144519510537620825`。标题可能随项目整理变化，身份以 ID 和实际页面范围核对；不得进入独立原生 App 或同名历史项目。
+
+非云观星范围的[完整可编辑多文件源](https://stitch.google.com/projects/7144519510537620825?node-id=5205988829884632961)补齐原01–16画板不能承载的HTML/CSS/JS、字体、图像、交互状态、许可和采用范围。该节点是包含原始ZIP的HTML源库，下载/解压后可按原相对路径继续编辑与预览；不是把静态图片升级为Stitch原生组件。源包内 `shared/real-scenarios/review.html` 是完整场景入口，`shared/comfortable-scale-2026-09-22/README.md` 与各页 `ADOPTED.md` 解释相应采用范围，`map/revisions/neighborhood-environment-2026-10-17/current.html` 保留周边环境局部更新。原画板及未被替代范围保留，云观星最新菜单仍仅沿下方Sky owner。后续修改先读当前相关节点及完整源；必要下载只作临时工作输入，不恢复仓库设计镜像。合并迁移的字节读回证据留在任务记录，不认证生产还原或真实功能验收。
 
 2026-10-17 用户明确云观星以外的设计由另一分支持续更新，**以 Stitch 当前源为准**；本分支旧导出/采用包不再作为远端覆盖依据。仅清理本地副本，本轮不修改、删除或重新采用这些远端范围。实际做相关页面时，从该项目当前页面/共享定义取得具体节点与状态，不把历史静态总览当最新交互。业务/数据义务、运行资产和已验证实现仍归各 owner；当前设计不等于生产已迁移。
 
@@ -32,7 +40,10 @@
 - Within the carrier there is one current implementation. Current changes replace owner-held routes, compositions, stores and acceptance lanes in place; parallel old/new page trees or compatibility products are forbidden. Protocol versions remain confined to protocol boundaries.
 - A newly recorded location remains an incomplete operator candidate until the server-owned formal-spot completeness policy passes. User reports and media remain contributor-scoped provisional records; only authenticated operations can merge them into canonical evidence and rerun publication. Public Map Search receives only formal spots. The same Map information component also renders authorized private drafts and submitted pending proposals under the identity/capability rules in Map and Search; private records never enter public spot queries.
 - Primary navigation is exactly Map and My. Astronomy information has no primary or standalone parent route. `sky/detail` is reachable from `云观星` in a visible formal-spot or current-account pending-proposal information panel, carrying a server-validated typed identity and Observation Context. Private drafts, ordinary POIs and current location do not synthesize this entry.
+- Primary navigation uses the official WEAPP custom TabBar, authorized by the user on 2026-10-10, retaining both registered `pagePath`s and native `switchTab`. The native Component owner is `src/custom-tab-bar`, with its route/asset/geometry contract in `src/navigation/primary-navigation.ts` and page lifecycle binding in `use-primary-navigation.ts`. Each native tab owns its own instance, accessed through its native Page's `getTabBar()`; attached/detached own the controller and canonical-mode subscription. Real page show commits selection, failed navigation preserves the current page and offers retry, and hide/detach retire stale feedback. Map and My reserve the same measured bar/safe-area geometry; Map panels/actions stay above it, while My retains its full backdrop and reserves the scroll area. Canonical mode remains in App Store; navigation's themed local glyph paths share the route/asset owner with App Config, while other controls retain `SemanticIcon`. Native chrome continues to own status/background and photo-viewer restoration, without native TabBar item/style writes. Latest DAY Map/My horizontal layouts keep their resource-declared variants; unrepresented themes retain their existing palettes/assets.
 - Verification boundary: native map/canvas/sensor, production layout/pixel/accessibility/motion/interaction, real provider facts, coordinate authorization and real WeChat identity/isolation require independent final-candidate verification through their owning runtime lanes. Provider or screenshot success cannot close them.
+
+Mounted full overlays use `navigation/primary-navigation-cover.ts` to retain a cover on the current native Page's own custom TabBar. The native Component holds independent cover identities; show/resize/theme repaint cannot uncover an active overlay, releasing one cannot uncover another, and late release cannot restore another Page or a detached bar. Event modal and photo viewer share this responsibility through their mounted lifetime, including closing; existing page lifecycle, canonical mode and native chrome restoration remain separate owners. Native `hideTabBar`/`showTabBar` do not control this custom Component.
 
 ## Route And Package Ownership
 

@@ -79,6 +79,12 @@ test("real webpack separates sky-only exports, preserves main behavior/setup, an
     for (const file of ["runtime.js", "common.js", "sky.js"])
       vm.runInContext(await readFile(path.join(hinted.directory, file), "utf8"), context, { timeout: 1000 });
     assert.equal(vm.runInContext("skyResult", context), "sky-only-validator-marker");
+    await writeFile(path.join(root, "main.js"), "import data from './scale.json'; export const mainValue = data.value;\n");
+    await writeFile(path.join(root, "scale.json"), '{"value":42}\n');
+    assertContractInitialization(path.join(root, "index.js"));
+    await writeFile(path.join(root, "scale.json"), 'globalThis.registered = true;\n');
+    assert.throws(() => assertContractInitialization(path.join(root, "index.js")), /miniapp_contract_initialization_requires_review/u);
+    await writeFile(path.join(root, "main.js"), "export const mainValue = 42;\n");
     await writeFile(path.join(root, "index.js"), "export * from './main.js'; export * from './sky.js'; export * from './registration.js';\n");
     assert.throws(() => applyContractReexportRule(new Chain(), path.join(root, "index.js")), /miniapp_contract_initialization_requires_review/u,
       "a forwarding-only entry cannot vouch for transitive global initialization");

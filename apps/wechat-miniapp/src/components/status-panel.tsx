@@ -1,7 +1,9 @@
 import { View, Text } from "@tarojs/components";
+import { useRouter } from "@tarojs/taro";
 import type { PageState } from "@starward/miniapp-contracts";
 import { SoftButton } from "./soft-button";
 import { SemanticIcon, type SemanticIconName } from "./semantic-asset";
+import { LoadingIndicator } from "./loading-indicator";
 
 export const EMPTY_FIELD_VALUE = "暂无数据";
 
@@ -41,14 +43,23 @@ export function StatusPanel({
   emptyIcon?: SemanticIconName | undefined;
   title?: string | undefined;
 }) {
+  // The adopted increment excludes Sky's own presentation.
+  const route = useRouter();
+  const waiting = (state === "LOADING" || state === "INITIAL") && !/^\/?sky\//.test(route?.path ?? "");
   return (
     <View
-      className={`status-panel status-panel--${state.toLowerCase()}${state === "EMPTY" ? ` status-panel--empty-${emptyLevel}` : ""}`}
+      className={`status-panel status-panel--${state.toLowerCase()}${waiting ? " status-panel--waiting" : ""}${state === "EMPTY" ? ` status-panel--empty-${emptyLevel}` : ""}`}
       data-control="notification-feedback page-state-recovery"
       role={state === "ERROR" ? "alert" : "status"}
       aria-live={live ? "polite" : undefined}
+      aria-busy={state === "LOADING" || state === "INITIAL"}
     >
-      {state === "EMPTY" && emptyLevel !== "field" ? <SemanticIcon name={emptyIcon ?? (emptyLevel === "page" ? "star" : "info")} className="status-panel__empty-icon" /> : null}
+      {waiting ? <LoadingIndicator /> : null}
+      {state === "EMPTY" && emptyLevel !== "field" ? (
+        <View className="status-panel__empty-illustration" aria-hidden>
+          <SemanticIcon name={emptyIcon ?? (emptyLevel === "page" ? "star" : "info")} className="status-panel__empty-icon" />
+        </View>
+      ) : null}
       {state === "EMPTY" && emptyLevel === "field" ? <Text className="status-panel__field-value">{EMPTY_FIELD_VALUE}</Text> : null}
       {TITLED_STATES.has(state) && !(state === "EMPTY" && emptyLevel === "field") ? (
         <Text className="type-label">{title ?? TITLES[state]}</Text>

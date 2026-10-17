@@ -32,6 +32,8 @@ export function localFailureMessage(value: string): string {
     return "网络连接失败";
   if (message.includes("wechat_login_code_missing"))
     return "微信登录未完成";
+  if (message.includes("wechat_login_required"))
+    return "请先微信快捷登录";
   if (message.includes("night_requires_formal_spot_id"))
     return "请从正式观星点进入今晚夜空";
   return "暂时无法完成此操作，请稍后重试";

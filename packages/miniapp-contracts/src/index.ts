@@ -1,4 +1,7 @@
 export * from "./types.ts";
+export type * from "./map-cloud-snapshot.ts";
+export * from "./night-light-fixed-scale.ts";
+export * from "./source-records.ts";
 export * from "./plan.ts";
 export * from "./plan-timing.ts";
 export * from "./plan-reminders.ts";
@@ -47,6 +50,7 @@ export * from "./optical-hips-source-identity.ts";
 export * from "./generated/miniapp-api.generated.ts";
 
 export * from "./account-profile.ts";
+export * from "./contribution-intake.ts";
 
 export * from "./recent-weather.ts";
 export * from "./air-quality.ts";

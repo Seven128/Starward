@@ -4,6 +4,7 @@ import type { ObservationPlan } from "@starward/miniapp-contracts";
 import { derivePlanReminderSchedules } from "./plan-reminder-schedule.ts";
 import type { WechatSubscriptionSendResult } from "./wechat-subscription-sender.ts";
 import { snapshotReminderSubscriptionBinding, type ReminderSubscriptionBinding } from "./reminder-subscription-binding.ts";
+import { CURRENT_PLAN_SPOT_NAME_SQL } from './current-public-spot-query.ts';
 
 export interface ReservedReminderAttempt {
   attemptId: string;
@@ -14,17 +15,27 @@ export interface ReservedReminderAttempt {
   subscriptionChallengeId: string;
   appId: string;
   templateId: string;
+  planRevision: number;
+}
+
+export interface ReminderReservationQualification {
+  planRevision: number;
+  identityCiphertext: string;
+  maxLatenessMs: number;
+  spotName?: string;
 }
 
 /** Durable attempt ownership only; this store does not grant subscriptions.
  * A dispatcher must first establish authorization and missed-trigger policy,
  * then reserve, revalidate eligibility immediately before send, and finish.
- * No production dispatcher is connected yet. */
+ * The production dispatcher also supplies its mapped revision and destination. */
 export class PostgresReminderAttemptStore {
   constructor(private readonly pool: pg.Pool, private readonly clock: () => Date = () => new Date()) {}
 
-  async reserve(userId: string, scheduleVersion: string, binding: ReminderSubscriptionBinding): Promise<ReservedReminderAttempt | null> {
+  async reserve(userId: string, scheduleVersion: string, binding: ReminderSubscriptionBinding,
+    qualification?: ReminderReservationQualification): Promise<ReservedReminderAttempt | null> {
     binding = snapshotReminderSubscriptionBinding(binding);
+    qualification = qualification ? { ...qualification } : undefined;
     return this.transaction(async client => {
       const user = await client.query("SELECT user_id FROM users WHERE user_id=$1 AND state='ACTIVE' FOR UPDATE", [userId]);
       if (!user.rowCount) return null;
@@ -34,11 +45,13 @@ export class PostgresReminderAttemptStore {
           FROM plan_reminder_schedules s JOIN observation_plans p ON p.plan_id=s.plan_id AND p.user_id=s.user_id
           WHERE s.user_id=$1 AND s.schedule_version=$2 AND s.active AND s.state='SCHEDULED'
             AND s.attempt_count=0 AND s.trigger_at<=$3 AND s.departure_at>$3
-            AND p.revision=s.plan_revision
+            AND p.revision=s.plan_revision AND ($4::text IS NULL OR ${CURRENT_PLAN_SPOT_NAME_SQL}=$4)
             AND NOT EXISTS (SELECT 1 FROM plan_reminder_delivery_attempts a WHERE a.schedule_version=s.schedule_version)
-          FOR UPDATE OF s`, [userId, scheduleVersion, this.clock().toISOString()]);
+          FOR UPDATE OF s`, [userId, scheduleVersion, this.clock().toISOString(),qualification?.spotName ?? null]);
       const row = selected.rows[0];
       if (!row) return null;
+      if (qualification && (row.payload.revision !== qualification.planRevision
+        || this.clock().getTime() > row.trigger_at.getTime() + qualification.maxLatenessMs)) return null;
       const derived = derivePlanReminderSchedules(userId, row.payload).find(item => item.reminderId === row.reminder_id);
       const reminder = row.payload.reminders?.find(item => item.reminderId === row.reminder_id);
       if (!reminder?.notifyOnWechat || derived?.scheduleVersion !== scheduleVersion
@@ -48,8 +61,9 @@ export class PostgresReminderAttemptStore {
         WHERE c.user_id=$1 AND c.schedule_version=$2 AND c.app_id=$3 AND c.template_id=$4
           AND c.state='CLIENT_ACCEPTED' AND c.consumed_at IS NULL
           AND EXISTS(SELECT 1 FROM wechat_identities i WHERE i.user_id=c.user_id
-            AND i.delivery_app_id=c.app_id AND i.delivery_identity_ciphertext IS NOT NULL)
-        ORDER BY c.created_at LIMIT 1 FOR UPDATE`, [userId,scheduleVersion,binding.appId,binding.templateId]);
+            AND i.delivery_app_id=c.app_id AND i.delivery_identity_ciphertext IS NOT NULL
+            AND ($5::text IS NULL OR i.delivery_identity_ciphertext=$5))
+        ORDER BY c.created_at LIMIT 1 FOR UPDATE`, [userId,scheduleVersion,binding.appId,binding.templateId,qualification?.identityCiphertext ?? null]);
       const subscriptionChallengeId = subscription.rows[0]?.challenge_id;
       if (!subscriptionChallengeId) return null;
       const attemptId = randomUUID();
@@ -63,8 +77,40 @@ export class PostgresReminderAttemptStore {
         reason='PROVIDER_OUTCOME_UNKNOWN',attempt_count=1,updated_at=clock_timestamp()
         WHERE schedule_version=$1 AND user_id=$2`, [scheduleVersion, userId]);
       return { attemptId, userId, scheduleVersion, planId: row.payload.planId, reminderId: row.reminder_id,
-        subscriptionChallengeId, appId: binding.appId, templateId: binding.templateId };
+        subscriptionChallengeId, appId: binding.appId, templateId: binding.templateId, planRevision: row.payload.revision };
     });
+  }
+
+  /** Last database qualification immediately before transport submission, after
+   * token acquisition. No transaction/row lock is kept across the network. */
+  async eligibleBeforeSend(attempt: ReservedReminderAttempt, qualification: ReminderReservationQualification): Promise<boolean> {
+    const now = this.clock().toISOString();
+    const result = await this.pool.query<{ payload: ObservationPlan; reminder_id: string; trigger_at: Date; departure_at: Date }>(
+      `SELECT p.payload,s.reminder_id,s.trigger_at,s.departure_at
+       FROM plan_reminder_schedules s JOIN observation_plans p ON p.plan_id=s.plan_id AND p.user_id=s.user_id
+       JOIN users u ON u.user_id=s.user_id
+       JOIN plan_reminder_delivery_attempts a ON a.schedule_version=s.schedule_version AND a.user_id=s.user_id
+       JOIN plan_reminder_subscription_challenges c ON c.challenge_id=a.subscription_challenge_id
+       WHERE a.attempt_id=$1 AND s.user_id=$2 AND s.schedule_version=$3 AND s.plan_id=$4 AND s.reminder_id=$5
+         AND u.state='ACTIVE' AND s.active AND s.state='RESULT_UNKNOWN' AND s.attempt_count=1
+         AND a.outcome='UNKNOWN' AND a.error_code='ATTEMPT_RESERVED'
+         AND c.challenge_id=$6 AND c.user_id=s.user_id AND c.schedule_version=s.schedule_version
+         AND c.app_id=$7 AND c.template_id=$8 AND c.state='CLIENT_ACCEPTED' AND c.consumed_at IS NOT NULL
+         AND p.revision=s.plan_revision AND p.revision=$9 AND s.trigger_at<=$10 AND s.departure_at>$10
+         AND ($13::text IS NULL OR ${CURRENT_PLAN_SPOT_NAME_SQL}=$13)
+         AND EXISTS (SELECT 1 FROM feature_flags f WHERE f.flag_key='NOTIFICATION_ENABLED' AND f.payload->'value'='true'::jsonb)
+         AND s.trigger_at >= $10::timestamptz - ($11::double precision * interval '1 millisecond')
+         AND EXISTS (SELECT 1 FROM wechat_identities i WHERE i.user_id=s.user_id AND i.delivery_app_id=$7
+           AND i.delivery_identity_ciphertext=$12)`,
+      [attempt.attemptId,attempt.userId,attempt.scheduleVersion,attempt.planId,attempt.reminderId,
+        attempt.subscriptionChallengeId,attempt.appId,attempt.templateId,qualification.planRevision,now,
+        qualification.maxLatenessMs,qualification.identityCiphertext,qualification.spotName ?? null]);
+    const row = result.rows[0];
+    const derived = row && derivePlanReminderSchedules(attempt.userId,row.payload).find(item => item.reminderId === attempt.reminderId);
+    return !!row && attempt.planRevision === qualification.planRevision
+      && !!row.payload.reminders?.find(item => item.reminderId === attempt.reminderId)?.notifyOnWechat
+      && derived?.scheduleVersion === attempt.scheduleVersion && derived.triggerAtUtc === row.trigger_at.toISOString()
+      && derived.departureAtUtc === row.departure_at.toISOString();
   }
 
   /** One terminal result per reservation. Late/conflicting callbacks do nothing;

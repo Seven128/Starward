@@ -12,3 +12,44 @@
 .provenance__links { display: flex; flex-wrap: wrap; gap: var(--space-inline); }
 .large-text .provenance__links { flex-direction: column; }
 .provenance--compact { padding: 16rpx 20rpx; }
+
+.theme-day .provenance--disclosure {
+  gap: 0; padding: 16Px; border: 0; border-radius: 18Px; background: #f5f7f8; color: #566375;
+}
+.theme-day .provenance--disclosure .provenance__header { margin-bottom: 10Px; }
+.theme-day .provenance--disclosure .provenance__header > .type-label { color: #344355; font-size: 16Px; line-height: 24Px; font-weight: 600; }
+.theme-day .provenance--disclosure > .type-secondary { color: #566375; font-size: 14Px; line-height: 23Px; margin: 10Px 0; }
+.theme-day .provenance--disclosure > .type-caption { font-size: 13Px; line-height: 23Px; margin: 10Px 0; }
+.theme-day .provenance--disclosure > .provenance__license { color: #68737e; margin-top: 0; }
+.theme-day .provenance--disclosure .source-attribution--disclosure { color: #657383; }
+.theme-day .provenance--disclosure .source-attribution--disclosure .source-attribution__link.soft-button { color: #627386; }
+.theme-day .provenance--disclosure .source-attribution--disclosure .source-attribution__url { color: #6a727d; }
+.theme-day .provenance--disclosure .provenance__timing {
+  gap: 0; margin: 14Px 0; padding: 10Px 0; border-top: 1Px solid #e5eaf0; border-bottom: 1Px solid #e5eaf0;
+}
+.theme-day .provenance--disclosure .provenance__fact { grid-template-columns: 38Px minmax(0, 1fr); gap: 8Px; margin: 6Px 0; }
+.theme-day .provenance--disclosure .provenance__timing text { color: #617085; font-size: 13Px; line-height: 21Px; }
+.theme-day .provenance--disclosure .provenance__fact > .type-caption { color: #687280; }
+.theme-day .provenance--disclosure .provenance__links { gap: 8Px; margin-top: 14Px; }
+.theme-day .provenance--disclosure .provenance__links .soft-button {
+  min-height: 44Px; border: 1Px solid #e4e9ed; border-radius: 12Px; background: #fff;
+  color: #596974; font-size: 13Px; line-height: 20Px; padding: 10Px 12Px;
+}
+
+// The complete source-reading page uses the adopted continuous reading layout.
+// Facts and copy actions remain with this owner; in-document disclosures retain theirs.
+.theme-day .provenance--reading {
+  gap: 8Px; padding: 14Px 0; border: 0; border-top: 1Px solid #edf0f3; border-radius: 0; background: transparent;
+  color: #2d2d2d;
+  .provenance__header > .type-label { font-size: 16Px; line-height: 1.5; }
+  > .type-secondary, > .type-caption { font-size: 13Px; line-height: 1.7; }
+  .provenance__license { color: #516677; }
+  .provenance__timing { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12Px; }
+  .provenance__timing > .type-caption { grid-column: 1 / -1; font-size: 13Px; }
+  .provenance__fact { display: flex; flex-direction: column; align-items: flex-start; gap: 4Px; }
+  .provenance__fact > .type-caption { font-size: 13Px; color: #718393; }
+  .provenance__fact > .type-secondary { font-size: 13Px; line-height: 1.7; }
+  .provenance__links { gap: 8Px; }
+  .provenance__links .soft-button { min-height: 44Px; padding: 8Px 11Px; border: 0; border-radius: 10Px; background: #f0f2f4; font-size: 12Px; }
+}
+.large-text .provenance--reading .provenance__timing { grid-template-columns: minmax(0, 1fr); }

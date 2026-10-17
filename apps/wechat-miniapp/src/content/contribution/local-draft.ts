@@ -2,7 +2,9 @@ import {
   CONTRIBUTION_FORMAL_FIELD_KEYS,
   CONTRIBUTION_MEDIA_KINDS,
   type ContributionFormalFieldKey,
-  type ContributionFormalProposal,
+  type ContributionCandidateProfile,
+  normalizeCandidateIntake,
+  candidateIntakeFields,
   type ContributionKind,
   type ContributionMediaKind,
   type ContributionTopic,
@@ -25,7 +27,7 @@ export interface LocalContributionDraft {
   longitude: string;
   rightsConfirmed: boolean;
   preciseLocationConsent: boolean;
-  candidateProfile?: ContributionFormalProposal;
+  candidateProfile?: ContributionCandidateProfile;
 }
 
 const topics = new Set(["LAST_ROAD", "PARKING", "FACILITIES", "OPENNESS", "LEGAL_ACCESS", "NIGHT_SAFETY", "HORIZON", "SITE_MEDIA", "OTHER"]);
@@ -38,7 +40,7 @@ const formalChoices: Partial<Record<ContributionFormalFieldKey, ReadonlySet<stri
 const textLimits = { spotId: 180, spotName: 180, date: 30, time: 30, detail: 2000, candidateName: 180, candidateRegion: 180, latitude: 100, longitude: 100 } as const;
 const forbiddenControls = /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/u;
 
-function parseCandidateProfile(value: unknown): ContributionFormalProposal | undefined {
+function parseCandidateProfile(value: unknown): ContributionCandidateProfile | undefined {
   if (value === undefined) return undefined;
   if (!value || typeof value !== "object") return undefined;
   const raw = value as Record<string, unknown>;
@@ -54,7 +56,11 @@ function parseCandidateProfile(value: unknown): ContributionFormalProposal | und
     if (!(CONTRIBUTION_MEDIA_KINDS as readonly string[]).includes(key) || !Array.isArray(value) || value.length > 3 || value.some((id) => typeof id !== "string" || !id || id.length > 180 || forbiddenControls.test(id)) || new Set(value).size !== value.length) return undefined;
     media[key as ContributionMediaKind] = [...value] as string[];
   }
-  return { fields, media };
+  try {
+    const intake = raw.intake === undefined ? undefined : normalizeCandidateIntake(raw.intake);
+    if (intake) candidateIntakeFields(intake);
+    return { fields, media, ...(intake ? { intake } : {}) };
+  } catch { return undefined; }
 }
 
 /** Preserve incomplete input, but never copy unrecognized storage fields. */

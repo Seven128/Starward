@@ -34,6 +34,7 @@ for (const [name, args] of operations) {
     const requests: { key: string; owner: string }[] = [];
     const receipt = { data: { intentId: "intent:one", revision: 2, uploads: [] } };
     const send = async (...values: unknown[]) => {
+      if (values.at(-1) === undefined) values.pop();
       requests.push({ key: values.at(-2) as string, owner: values.at(-1) as string });
       if (++attempts === 1) throw new Error("receipt unknown");
       return receipt;

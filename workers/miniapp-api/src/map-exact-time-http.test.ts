@@ -48,8 +48,15 @@ test("HTTP context and map preserve an off-cadence selected instant", async () =
       React: { createElement: (type: string, props: object, ...children: unknown[]) => ({ type, props, children: children.flat() }) },
       useState: (value: unknown) => [value, () => {}], useRef: (value: unknown) => ({ current: value }),
       useEffect() {}, useDidHide() {}, useDidShow() {}, createScrollSettlement,
+      useReducedMotion: () => false,
+      useMemo: (compute: () => unknown) => compute(),
       // Native selector/ScrollViewContext is outside this HTTP/component test.
-      createRulerScrollPosition: () => ({ move: (left: number) => scrollPositions.push(left), cancel() {} }),
+      createRulerScrollPosition: () => ({
+        move: (left: number) => scrollPositions.push(left), cancel() {},
+        settle: (_from: number, left: number, _reduced: boolean, present: (left: number) => void) => {
+          scrollPositions.push(left); present(left);
+        },
+      }),
       calendarDateInTimezone, clockTimeInTimezone,
     });
     const committed: number[] = [];

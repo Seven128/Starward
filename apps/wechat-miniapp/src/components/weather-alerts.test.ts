@@ -81,6 +81,45 @@ test("shared actual rendering removes resolved alerts, shows timestamps, and ret
     "missing forecast must not erase independently valid warning evidence");
 });
 
+test("compact warning facts keep the original authority, missing times and complete defence reading", () => {
+  let expanded = false;
+  const React = { createElement(type: any, props: any, ...children: any[]): any {
+    return typeof type === "function" ? type({ ...props, children }) : { type, props, children };
+  } };
+  const SourceDisclosure = load("./source-disclosure.tsx", "SourceDisclosure", {
+    React, Text: "Text", View: "View", Button: "Button", Provenance: "Provenance", isProductSource: () => true,
+    useState: () => [expanded, (value: any) => { expanded = typeof value === "function" ? value(expanded) : value; }],
+  });
+  const render = load("./weather-alerts.tsx", "WeatherAlerts", {
+    React, Text: "Text", View: "View", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", SourceDisclosure,
+    useWeatherAlertClock: () => now, useEffect: () => {}, useAppStore: () => () => {}, calendarDateInTimezone, clockTimeInTimezone,
+  });
+  const current = { ...alert, senderName: "原始发布机构", effectiveAt: null, expiresAt: null,
+    instruction: "注意安全。\n请停止露天观测，远离孤立树木、金属围栏与水边。" };
+  const props = { evidence: evidence({ alerts: [current] }), timezone: "Asia/Shanghai", active: true, scopeKey: "spot:a", onRecover() {} };
+  const nodes = (tree: any): any[] => !tree || typeof tree !== "object" ? [] : Array.isArray(tree) ? tree.flatMap(nodes) : [tree, ...nodes(tree.children)];
+  const closed = render({ ...props, compact: true });
+  assert.match(text(closed), /暴雨预警.*原始发布机构.*发布2026-09-15 11:59.*生效来源未提供.*到期来源未提供.*北京时间 UTC\+8/);
+  assert.doesNotMatch(text(closed), /发布机构预警正文/);
+  assert.equal(nodes(closed).find(node => node.props?.className === "weather-alerts__instruction")?.children[0], current.instruction,
+    "the complete original safety instruction is readable before expanding details");
+  const toggle = nodes(closed).find(node => node.type === "Button" && node.props["aria-expanded"] === false);
+  assert.equal(toggle.props.ariaLabel, "完整预警与防御指引");
+  assert.equal(nodes(closed).filter(node => node.type === "SourceAttribution").length, 1, "required attribution is beside collapsed content");
+  toggle.props.onClick();
+  const opened = render({ ...props, compact: true });
+  assert.match(text(opened), /发布机构预警正文/);
+  assert.equal(nodes(opened).filter(node => node.props?.className === "weather-alerts__instruction").length, 1);
+  assert.equal(nodes(opened).find(node => node.type === "Provenance").props.source, props.evidence.warningSource);
+  nodes(opened).find(node => node.type === "Button").props.onClick();
+  const closedAgain = render({ ...props, compact: true });
+  assert.doesNotMatch(text(closedAgain), /发布机构预警正文/);
+  assert.ok(text(closedAgain).includes(current.instruction));
+  assert.equal(nodes(render({ ...props, compact: true, evidence: evidence({ alerts: [{ ...current, instruction: null }] }) }))
+    .some(node => node.props?.className === "weather-alerts__instruction"), false, "no safety action is invented when the source omits it");
+  assert.match(text(render(props)), /发布机构预警正文.*注意安全/, "default Sky presentation keeps the complete original text visible");
+});
+
 test("warning content changes notify a measured parent on activation and expiry, without a report replacement",()=>{
   let currentTime=now-2000,measurements=0,slot=0;
   const deps:Array<unknown[]>=[];

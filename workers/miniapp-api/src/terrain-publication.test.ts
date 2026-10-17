@@ -4,8 +4,9 @@ import test from "node:test";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts";
-import { terrainPublication, validateTerrainAsset } from "./terrain-publication.ts";
+import { COPERNICUS_DEM_LIABILITY_NOTICE, terrainPublication, terrainPublicationSource, validateTerrainAsset, validateTerrainPublication } from "./terrain-publication.ts";
 import type { DarkSkyGridCellRecord } from "./ports.ts";
+import { sourceAttributions } from "../../../apps/wechat-miniapp/src/utils/source-presentation.ts";
 
 const independentLightCell: DarkSkyGridCellRecord = {
   cellId: "test-light-outside-terrain", datasetVersion: "test-dark-sky", productBand: "LOW", label: "测试夜光网格",
@@ -23,6 +24,18 @@ function repositoryWithLight(read: () => Promise<DarkSkyGridCellRecord[]>) {
   Object.defineProperty(repository, "listDarkSkyGridCells", { value: read });
   return repository;
 }
+
+test("published terrain feeds both exact redistribution notices to the real visible-credit consumer", async () => {
+  const publication = await terrainPublication(), source = terrainPublicationSource(publication);
+  assert.deepEqual(sourceAttributions([source]), [{
+    name: publication.sourceProvider, url: `https://doi.org/${publication.doi}`,
+    statements: [publication.attributionNotice, publication.modifiedProductNotice, COPERNICUS_DEM_LIABILITY_NOTICE],
+  }], "source metadata without attribution must not pass with an empty visible credit");
+  assert.ok(source.limitations.includes(publication.derivation));
+  assert.ok(source.limitations.includes(publication.attributionNotice));
+  assert.ok(source.limitations.includes(publication.modifiedProductNotice));
+  assert.equal(source.retrievedAt, null, "the derived PNG timestamp cannot stand in for unknown upstream acquisition");
+});
 
 test("terrain outside coverage preserves independently available annual light cells, including zero radiance", async () => {
   const service = createTestMiniappService({ repository: repositoryWithLight(async () => [independentLightCell]) });
@@ -43,9 +56,39 @@ test("light read failure preserves published terrain and distinguishes failed li
     const result = await service.getTerrainOverlay({ purpose: "SPOT", center: { system: "GCJ02", latitude: TEST_PUBLISHED_SPOT.gcj02.latitude, longitude: TEST_PUBLISHED_SPOT.gcj02.longitude }, radiusKm: 5 });
     assert.notEqual(result.data.state, "UNAVAILABLE");
     assert.ok(result.data.imageUrl);
+    assert.ok(result.data.elevationColorEncoding, "a light-layer failure must preserve terrain colour meaning");
     assert.equal(result.data.lightPollution.failureCode, "LIGHT_READ_FAILED");
     assert.equal(result.dataState, "PARTIAL");
   } finally { await service.onModuleDestroy(); }
+});
+
+test("terrain colour encoding is optional for legacy publications and rejects unbound or misleading metadata", async () => {
+  const publication = await terrainPublication();
+  assert.throws(() => validateTerrainPublication({ ...publication, imageStyle: "RELIEF_OVERLAY" }), /terrain_image_style_invalid/);
+  assert.throws(() => validateTerrainPublication({ ...publication, imageStyle: "UNKNOWN" as "ELEVATION_COLOR" }), /terrain_image_style_invalid/);
+  const legacy = structuredClone(publication);
+  delete legacy.elevationColorEncoding;
+  assert.equal(validateTerrainPublication(legacy), legacy);
+  assert.ok(!terrainPublicationSource(legacy).limitations.some(limit => limit.includes("高程色带")));
+
+  const malformed: Record<string, unknown>[] = [
+    { format: "unknown" },
+    { imageSha256: "0".repeat(64) },
+    { minimumM: Number.NaN },
+    { maximumM: publication.elevationColorEncoding!.minimumM },
+    { minimumM: -Number.MAX_VALUE, maximumM: Number.MAX_VALUE },
+    { lowRgb: [215, 224] },
+    { highRgb: [112, 139, 256] },
+    { lowRgb: [215, 224, 207.5] },
+    { alpha: 0 },
+    { clipping: "NONE" },
+    { shading: "FIELD_LIGHT" },
+  ];
+  for (const mutation of malformed) {
+    const candidate = { ...publication, elevationColorEncoding: { ...publication.elevationColorEncoding!, ...mutation } };
+    assert.throws(() => validateTerrainPublication(candidate as typeof publication), /terrain_elevation_color_encoding_invalid/u,
+      `invalid colour metadata ${Object.keys(mutation).join(",")} must not be published`);
+  }
 });
 
 test("published GLO-30 terrain is hash-bound, GCJ-02 registered and range gated", async () => {
@@ -60,9 +103,23 @@ test("published GLO-30 terrain is hash-bound, GCJ-02 registered and range gated"
     assert.notEqual(covered.data.state, "UNAVAILABLE");
     assert.equal(covered.data.coordinateTransformVersion, "starward-wgs84-gcj02-grid-v1");
     assert.equal(covered.data.source?.licenseUrl, publication.licenseUrl);
+    assert.equal(covered.data.source?.retrievedAt, null);
+    assert.equal(covered.data.derivedAt, publication.derivedAt, "the raster's own derivation timestamp remains available");
     assert.ok(covered.data.source?.limitations.includes(publication.attributionNotice));
     assert.ok(covered.data.source?.limitations.includes(publication.modifiedProductNotice));
+    assert.deepEqual(sourceAttributions([covered.data.source!]), sourceAttributions([terrainPublicationSource(publication)]));
     assert.ok(covered.sources.some(source => source.id === covered.data.source?.id));
+    assert.ok(covered.data.elevationColorEncoding, "the raster's elevation colour must have a published meaning");
+    assert.equal(covered.data.elevationColorEncoding.format, "starward-terrain-elevation-color-v1");
+    assert.equal(covered.data.elevationColorEncoding.imageSha256, publication.image.sha256);
+    assert.equal(covered.data.elevationColorEncoding.minimumM, -20);
+    assert.equal(covered.data.elevationColorEncoding.maximumM, 880);
+    assert.deepEqual(covered.data.elevationColorEncoding.lowRgb, [215, 224, 207]);
+    assert.deepEqual(covered.data.elevationColorEncoding.highRgb, [112, 139, 104]);
+    assert.equal(covered.data.elevationColorEncoding.alpha, 224);
+    assert.equal(covered.data.elevationColorEncoding.clipping, "CLAMP");
+    assert.equal(covered.data.elevationColorEncoding.shading, "SYNTHETIC_HILLSHADE");
+    assert.match(covered.data.source!.limitations.join(" "), /合成阴影.*精确海拔/);
     assert.match(covered.data.imageUrl ?? "", /^\/v2\/terrain\/assets\/.+\.png$/u);
     assert.equal(covered.data.lightPollution.state, "UNAVAILABLE", "synthetic point estimates must not become a raster");
     const file = (covered.data.imageUrl ?? "").split("/").at(-1)!;
@@ -80,6 +137,7 @@ test("published GLO-30 terrain is hash-bound, GCJ-02 registered and range gated"
     const outside = await service.getTerrainOverlay({ purpose: "MAP", center: { system: "GCJ02", latitude: 30, longitude: 120 }, radiusKm: 5 });
     assert.equal(outside.data.state, "UNAVAILABLE");
     assert.equal(outside.data.imageUrl, null);
+    assert.equal(outside.data.elevationColorEncoding, null);
   } finally {
     await service.onModuleDestroy();
   }

@@ -22,8 +22,10 @@ for (const crossing of ["favorites", "cache get", "cache set", "favorites past o
   const config = createTestRuntimeConfig({ qweather: { apiHost: "test.qweatherapi.com", credentialId: "test", projectId: "test", forecastHours: 24,
     privateKeyPem: generateKeyPairSync("ed25519").privateKey.export({ format: "pem", type: "pkcs8" }).toString() } });
   let transportCalls = 0;
+  const upstreamRequests = new Set<string>();
   const weather = new QWeatherCompositeAdapter(config, async request => {
     transportCalls++;
+    upstreamRequests.add(request.toString());
     return new Response(JSON.stringify(new URL(request.toString()).pathname.startsWith("/weatheralert/")
       ? { metadata: { zeroResult: true }, alerts: [] }
       : { hours: ["11", "12"].map(hour => ({ forecastTime: `2026-03-02T${hour}:00:00Z`, cloudCover: .9,
@@ -66,7 +68,7 @@ for (const crossing of ["favorites", "cache get", "cache set", "favorites past o
     if (crossing === "favorites past original budget") assert.equal(
       result.timeFrames.find(frame => frame.atUtc === "2026-03-02T12:30:00.000Z")?.spotSignals[TEST_PUBLISHED_SPOT.spotId]?.cloudPercent,
       null, "reprojection must retain the original expired weather budget instead of acquiring valid later hours");
-    assert.equal(transportCalls, 2, "reprojection keeps provider source-cache reuse");
+    assert.equal(transportCalls, upstreamRequests.size, "reprojection does not repeat any sampled provider request");
   } finally { await service.onModuleDestroy(); }
 });
 

@@ -6,7 +6,7 @@ import ts from "typescript";
 
 const actionSource = () => readFileSync(new URL("./spot-panel-actions.tsx", import.meta.url), "utf8");
 function harness(source = actionSource()) {
-  let now = 0, serial = 0, cursor = 0, reduced = false;
+  let now = 0, serial = 0, cursor = 0, reduced = false, systemReduced = false;
   let mode = "DAY";
   let largeText = false;
   let props = { spotName: "当前点", favorite: false, favoritePending: false, cloudReady: true, visible: true,
@@ -31,6 +31,7 @@ function harness(source = actionSource()) {
       },
     } : name === "@tarojs/taro" ? { useDidHide: (callback: () => void) => { hide = callback; }, useDidShow: (callback: () => void) => { show = callback; } }
       : name === "@tarojs/components" ? { Button: "button", Text: "text", View: "view" }
+        : name.includes("use-reduced-motion") ? { useReducedMotion: () => reduced || systemReduced }
         : name.includes("app-store") ? { useAppStore: (select: (state: unknown) => unknown) => select({ mode, preferences: { reducedMotion: reduced, largeText } }) }
           : name.includes("selected-card-star") ? { FavoriteStar: "favorite-star" } : {},
   });
@@ -49,7 +50,7 @@ function harness(source = actionSource()) {
   };
   render();
   return {
-    change(next: Partial<typeof props>, reduce = reduced) { reduced = reduce; props = { ...props, ...next }; render(); },
+    change(next: Partial<typeof props>, reduce = reduced, system = systemReduced) { reduced = reduce; systemReduced = system; props = { ...props, ...next }; render(); },
     advance(ms: number) {
       const end = now + ms;
       for (;;) {
@@ -72,6 +73,17 @@ function harness(source = actionSource()) {
     hide() { hide!(); render(); }, show() { show!(); render(); },
   };
 }
+
+test("system input settles an in-flight backdrop without changing the favorite intent", () => {
+  const h = harness(); h.change({ favorite: true }); h.advance(80);
+  assert.ok(h.scene().params.progress > 0 && h.scene().params.progress < 1);
+  h.change({}, false, true);
+  assert.equal(h.scene().params.progress, 1); assert.equal(h.pending(), 0);
+  assert.equal(h.scene().params.breathing, false);
+  assert.equal(h.favorite().props.children[1].props.active, true);
+  h.change({}, false, false); h.advance(400);
+  assert.equal(h.scene().params.progress, 1); assert.equal(h.pending(), 0);
+});
 
 test("favorite backdrop passes continuously through its readable middle and reverses from the painted value", () => {
   const h = harness();

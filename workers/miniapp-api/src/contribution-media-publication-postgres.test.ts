@@ -4,6 +4,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import type { ContributionDraftRequest } from "@starward/miniapp-contracts";
 import { ContributionService } from "./contribution-service.ts";
 import { LocalFilesystemMediaObjectStore } from "./media-object-store.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
@@ -90,6 +91,11 @@ test("PostgreSQL and filesystem preserve reviewed media across publication and r
       expectedRevision: approved.result.submission!.revision,
     });
     assert.equal(reviewed.result.decision, "ACCEPTED");
+    const reviewedCase = await repository.adminGetModerationCase(caseId);
+    assert.equal(reviewedCase?.submission?.revision, reviewed.receipt.resultingRevision,
+      "the next operation must use the current revision returned by the case reader");
+    assert.deepEqual(reviewedCase?.submission?.attempts[0]?.snapshot, frozen);
+    assert.equal(reviewedCase?.submission?.statusHistory.at(-1)?.to, "MEDIA_ACCEPTED");
     const preview = await repository.adminCreateMergePreview({
       caseId, spotId: spot.spotId, confirmedClaims: ["SITE_MEDIA_PROVENANCE"],
       expectedSubmissionRevision: reviewed.receipt.resultingRevision!, expectedSpotRevision: baseline.revision,
@@ -98,7 +104,7 @@ test("PostgreSQL and filesystem preserve reviewed media across publication and r
     assert.deepEqual(await repository.getDetail(spot.spotId), originalDetail,
       "review must not mutate the published canonical document");
     await assert.rejects(readPublic(), /contribution_upload_not_found/);
-    const merged = await merge(reviewed.receipt.resultingRevision!, "merge-reviewed");
+    const merged = await merge(reviewedCase!.submission!.revision, "merge-reviewed");
     assert.equal(merged.detail.formalMedia?.site?.includes(uploadId), true);
     assert.equal(merged.detail.spot.status, "DATA_INSUFFICIENT");
     await assert.rejects(readPublic(), /contribution_upload_not_found/);
@@ -157,6 +163,41 @@ test("PostgreSQL and filesystem preserve reviewed media across publication and r
     });
     await assert.rejects(readPublic(), /contribution_upload_not_found/);
     assertBytes(await readOwner());
+
+    for (const resolution of ["REJECTED", "CHANGES_REQUESTED"] as const) {
+      const input: ContributionDraftRequest = {
+        kind: "NEW_SPOT_PROPOSAL", spotId: null,
+        candidateLocation: { displayName: "已送审地点", region: "隔离测试", wgs84: spot.wgs84 },
+        observedAt: null, topics: [], detail: "已送审说明",
+        rightsConfirmed: false, preciseLocationConsent: true,
+        candidateProfile: { fields: { name: "已送审地点" }, media: {}, intake: {
+          version: 1, openness: "UNKNOWN", legalEntry: "UNKNOWN", nightSafety: "UNKNOWN",
+          contact: { kind: "UNKNOWN", number: "", purpose: "", source: "", publicPermissionConfirmed: false },
+        } },
+      };
+      const draft = await service.createDraft(owner, input, `${resolution}:draft:${run}`);
+      const submitted = await service.submit(owner, draft.submissionId, draft.revision, `${resolution}:submit:${run}`);
+      const frozen = structuredClone(submitted.attempts[0]!.snapshot);
+      const caseId = `moderation:${submitted.submissionId}`;
+      const reviewed = resolution === "REJECTED"
+        ? await repository.adminResolveModeration({ ...operation(`${resolution}:review`),
+            caseId, resolution, expectedRevision: submitted.revision })
+        : await repository.adminRequestContributionChanges({ ...operation(`${resolution}:review`),
+            caseId, expectedRevision: submitted.revision });
+      const working = await service.updateDraft(owner, submitted.submissionId, {
+        ...input, detail: "尚未重新送审的修改", rightsConfirmed: true,
+        candidateLocation: { ...input.candidateLocation!, displayName: "工作副本地点" },
+        candidateProfile: { ...input.candidateProfile!, fields: { name: "工作副本地点" } },
+        expectedRevision: reviewed.result.submission!.revision,
+      }, `${resolution}:edit:${run}`);
+      const read = await repository.adminGetModerationCase(caseId);
+      assert.equal(read?.submission?.revision, working.revision);
+      for (const key of Object.keys(frozen) as (keyof typeof frozen)[])
+        assert.deepEqual(read?.submission?.[key], frozen[key], `${resolution}: ${key} must remain submitted evidence`);
+      assert.deepEqual(read?.immutableEvidence, { detail: frozen.detail,
+        candidateLocation: frozen.candidateLocation, media: frozen.media });
+      assert.deepEqual(working.attempts[0]!.snapshot, frozen);
+    }
   } finally {
     try { await repository.close(); }
     finally {

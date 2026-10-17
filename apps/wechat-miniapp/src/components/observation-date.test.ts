@@ -5,7 +5,15 @@ import {
   instantForCivilDate,
   observationDateOptions,
   observationNightForInstant,
+  observationNightLabel,
 } from "./observation-date.ts";
+
+test("night attribution follows Context grouping while the civil date crosses midnight", () => {
+  assert.equal(observationNightLabel("2026-10-07", "2026-10-07T13:30:00Z", "Asia/Shanghai", "2026-10-07"), "今晚");
+  assert.equal(observationNightLabel("2026-10-07", "2026-10-07T16:00:00Z", "Asia/Shanghai", "2026-10-07"), "10月07日观测夜");
+  assert.equal(observationNightLabel("2026-10-06", "2026-10-06T13:30:00Z", "Asia/Shanghai", "2026-10-07"), "历史时段");
+  assert.equal(observationNightLabel("2026-10-08", "2026-10-08T13:30:00Z", "Asia/Shanghai", "2026-10-07"), "观测夜");
+});
 
 test("observation date target is exactly local today minus 7 through plus 15", () => {
   const dates = observationDateOptions(

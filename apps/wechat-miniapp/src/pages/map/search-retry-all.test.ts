@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { retryObservationScene } from "./context-restore";
+import { sameContextVersion } from "../../services/observation-context-version";
 
 const source = ts.createSourceFile("search-page.tsx", readFileSync(new URL("./search-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const component = source.statements.find((node): node is ts.FunctionDeclaration =>
@@ -23,15 +25,25 @@ function resource(name: string, calls: string[], state: "fresh" | "error" | "sta
   };
 }
 
+function recovery(environment: Record<string, unknown>) {
+  const page = {};
+  const state = { accountOwnerId: "account:search", mapResetVersion: 0, observationContext: environment.activeContext };
+  return vm.runInNewContext(expression, {
+    Taro: { getCurrentPages: () => [page] }, selectionVersion: { current: 0 },
+    useAppStore: { getState: () => state }, retryObservationScene, sameContextVersion,
+    ...environment,
+  }) as () => void;
+}
+
 test("one Search recovery retries every failed query, leaving healthy owners alone", async () => {
   const calls: string[] = [];
-  const run = vm.runInNewContext(expression, {
+  const run = recovery({
     contextQuery: resource("context", calls, "fresh"),
     scene: resource("scene", calls, "stale"),
     placeSearch: resource("places", calls, "stale"),
     activeContext: { contextId: "context:test" },
     debouncedQuery: "深圳",
-  }) as () => void;
+  });
   run();
   await Promise.resolve();
   assert.deepEqual(calls, ["scene", "places"]);
@@ -39,13 +51,13 @@ test("one Search recovery retries every failed query, leaving healthy owners alo
 
 test("recovery skips the dependent scene without context but still retries independent places", async () => {
   const calls: string[] = [];
-  const run = vm.runInNewContext(expression, {
+  const run = recovery({
     contextQuery: resource("context", calls, "error"),
     scene: resource("scene", calls, "error"),
     placeSearch: resource("places", calls, "error"),
     activeContext: null,
     debouncedQuery: "深圳",
-  }) as () => void;
+  });
   run();
   await Promise.resolve();
   assert.deepEqual(calls, ["context", "places"]);

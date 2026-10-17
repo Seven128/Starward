@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import { isModernEastEightTimezone } from "@starward/miniapp-contracts";
 import { calendarDateInTimezone } from "./zoned-date";
 import {
   GUIDE_AUTHOR_LABELS,
@@ -53,7 +54,13 @@ function zonedDateWithFormatter(DateTimeFormat: unknown) {
   vm.runInNewContext(ts.transpileModule(
     readFileSync(new URL("./zoned-date.ts", import.meta.url), "utf8"),
     { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } },
-  ).outputText, { exports, Intl: { DateTimeFormat } }, { timeout: 1000 });
+  ).outputText, {
+    exports, Intl: { DateTimeFormat },
+    require(name: string) {
+      assert.equal(name, "@starward/miniapp-contracts");
+      return { isModernEastEightTimezone };
+    },
+  }, { timeout: 1000 });
   return exports.calendarDateInTimezone as typeof calendarDateInTimezone;
 }
 

@@ -603,6 +603,15 @@ export class AstronomyService implements AstronomyApplicationPort {
     const astronomySource = calculationSource(context, this.config);
     const weatherRows = weather.value ?? [];
     const base = calculations[0]!;
+    const lunarSource: SourceSummary = {
+      ...astronomySource,
+      id: `${astronomySource.id}:lunar-events-v1`,
+      title: "所选时刻月相及月出月落计算",
+      validFrom: base.moonEventSearch.startAt,
+      validTo: base.moonEventSearch.endAt,
+      precision: "月相与高度对应所选时刻；月出月落自当地正午起连续搜索36小时；不含局部遮挡",
+      limitations: ["不等同于天气或肉眼可见性", "点位海拔未知时使用 0m", "没有事件仅表示明确搜索时段内无对应事件"],
+    };
     type HourlyBaseRow = Omit<
       HourlySkyRow,
       | "opportunityScore"
@@ -845,7 +854,7 @@ export class AstronomyService implements AstronomyApplicationPort {
     );
     const targets = [...eventTargets, ...everydayTargets];
     const catalogCacheKey = this.catalogCacheKey(skyCatalog);
-    const sourceRevision = `${astronomySource.id}:${weather.source.id}:${spot.source.id}:${spot.lightPollution.source.id}:${spot.lightPollution.datasetVersion}:catalog:${catalogCacheKey}`;
+    const sourceRevision = `${astronomySource.id}:${lunarSource.id}:${weather.source.id}:${spot.source.id}:${spot.lightPollution.source.id}:${spot.lightPollution.datasetVersion}:catalog:${catalogCacheKey}`;
     const scoringEvent =
       selectedEvent ??
       (context.targetProfile === "METEOR"
@@ -1094,7 +1103,7 @@ export class AstronomyService implements AstronomyApplicationPort {
         altitudeDeg: selectedLunarRow?.moonAltitudeDeg ?? null,
         moonriseAt: base.moonRise,
         moonsetAt: base.moonSet,
-        source: astronomySource,
+        source: lunarSource,
       },
       nightFacts: {
         startAt: context.nightStartUtc,
@@ -1112,6 +1121,7 @@ export class AstronomyService implements AstronomyApplicationPort {
       },
       sources: [
         astronomySource,
+        lunarSource,
         solarRadiusSource,
         skyPlanetSource,
         skyJupiterShapeSource,
@@ -1139,7 +1149,7 @@ export class AstronomyService implements AstronomyApplicationPort {
       ...(spot.lightPollution.state === "UNAVAILABLE"
         ? ["没有已发布的真实光害数据，不能生成肯定的出行结论。"]
         : spot.lightPollution.state === "ESTIMATED"
-          ? ["光害为卫星夜光产品估算，不是现场 SQM 或精确 Bortle。"]
+          ? ["光害为来源数据估算，具体来源与方法见披露，不是现场 SQM 或精确 Bortle。"]
           : []),
       ...(skyOpportunityResult.opportunity.primaryWindow
         ? []

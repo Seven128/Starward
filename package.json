@@ -113,5 +113,10 @@
   },
   "engines": {
     "node": ">=24"
+  },
+  "overrides": {
+    "@nestjs/platform-fastify": {
+      "fastify": "5.12.5"
+    }
   }
 }

@@ -14,8 +14,9 @@ function actualMapCommand(name: string, environment: Record<string, unknown>) {
   };
   visit(source);
   assert.ok(declaration, `production ${name} exists`);
-  return vm.runInNewContext(ts.transpileModule(`const ${declaration}; ${name};`, {compilerOptions: {target: ts.ScriptTarget.ES2022}}).outputText,
-    {skyEntry: {isActive: () => false}, ...environment}) as () => unknown;
+  return vm.runInNewContext(ts.transpileModule(`const ${declaration}; ${name};`, {compilerOptions: {target: ts.ScriptTarget.ES2022}}).outputText, {
+    skyEntry: { isActive: () => false }, login: { open: false }, photoHandoff: { active: false }, datePickerVisible: false, ...environment,
+  }) as () => unknown;
 }
 
 function actualSubmittedCommand(environment: Record<string, unknown>) {
@@ -114,6 +115,9 @@ test("a successful Map submission exits before centering its proposal and openin
   const presentation = createSpotEditorPresentation({getScope: () => owner, onPhase: () => undefined,
     schedule: callback => {complete = callback; return () => {complete = undefined;};}});
   const submitted = actualSubmittedCommand({
+    spotNeighborhoodCamera: (center: object, zoom: number) => ({ center, zoom }),
+    useAppStore: { getState: () => ({ viewport: { zoom: 8 } }) },
+    spotMapFocus: { begin() {} }, currentDraftUserId: () => owner,
     invalidateMapPointIntent() {}, contributionHistory: {refetch: async () => undefined},
     finishSpotEditorPresentation: (afterExit: () => void) => presentation.close(() => {effects.push("closed"); afterExit();}, false),
     privateContributionMarkers: () => [{latitude: 22, longitude: 113}], viewport: {zoom: 8},

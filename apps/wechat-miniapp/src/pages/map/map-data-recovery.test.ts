@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import test from "node:test";
 import ts from "typescript";
+import { layerSheetOwnsSceneRecovery } from "./map-layer-selection";
+import { retryObservationScene } from "./context-restore";
 
 // Exercise the actual page's projection, notification effect and recovery JSX.
 function renderFailure(owner: "scene" | "context", cached: boolean, visible = true,
@@ -11,7 +13,7 @@ function renderFailure(owner: "scene" | "context", cached: boolean, visible = tr
   const declarations: string[] = [];
   let effect = "", recovery = "";
   const visit = (node: ts.Node) => {
-    if (ts.isVariableDeclaration(node) && ["pageState", "mapContextFailed", "mapSceneFailed", "mapDataStale", "cloudLayerOwnsSceneError"].includes(node.name.getText(source)))
+    if (ts.isVariableDeclaration(node) && ["pageState", "mapContextFailed", "mapSceneFailed", "mapDataStale", "layerSheetOwnsSceneFailure"].includes(node.name.getText(source)))
       declarations.push(`const ${node.getText(source)};`);
     if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" && node.arguments[0]?.getText(source).includes('title: "地图数据异常"'))
       effect = node.arguments[0]!.getText(source);
@@ -32,6 +34,7 @@ function renderFailure(owner: "scene" | "context", cached: boolean, visible = tr
   const result = vm.runInNewContext(ts.transpileModule(code, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     scene, bootstrapContext, pageVisible: visible, activeContext: {}, spots: [{}],
     bottomPresentation: presentation, visibleLayer: layer, lightLayerState: "STALE", cloudTimeChoices: [],
+    layerSheetOwnsSceneRecovery, useAppStore: { getState: () => ({ notifications: [], dismissNotification() {} }) },
     isPermissionError: () => false, notify: (notice: { placement: string; tone: string }) => notices.push(notice),
   });
   return { ...result, notices };
@@ -68,15 +71,18 @@ async function retryMap(activeContext: object | null, mapContextFailed: boolean,
   visit(source);
   assert.ok(declaration);
   const calls: string[] = [], announcements: string[] = [], notices: unknown[] = [];
+  const confirmed = { contextId: "ctx:confirmed", revision: 1, contextFingerprint: "same" };
   const refetch = (owner: string) => async () => {
     calls.push(owner);
     const outcome = outcomes.shift();
-    return outcome === "error" ? undefined : { dataState: outcome === "stale" ? "STALE_USABLE" : "FRESH" };
+    return outcome === "error" ? undefined : { data: owner === "context" ? confirmed : {}, dataState: outcome === "stale" ? "STALE_USABLE" : "FRESH" };
   };
   const run = vm.runInNewContext(ts.transpileModule(`const ${declaration}; refreshMap;`, {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
-    activeContext, mapContextFailed,
+    activeContext: activeContext ? confirmed : null, mapContextFailed, bootstrapReplacementBlocked: false, selected: null,
+    navigationEpoch: { current: 0 }, retryObservationScene,
+    useAppStore: { getState: () => ({ accountOwnerId: "owner", mapResetVersion: 0 }) },
     failedMapRegion: { current: null }, mapPointIntent: { current: 0 },
     bootstrapContext: { refetch: refetch("context") }, scene: { refetch: refetch("scene") },
     setAnnouncement: (text: string) => announcements.push(text), notify: (notice: unknown) => notices.push(notice),
@@ -122,4 +128,31 @@ test("Map empty/error panel keeps concise recovery instead of rendering provider
     assert.equal(text.includes(diagnostic), false);
     assert.ok(text.includes(pageState === "EMPTY" ? "搜索" : "重试"));
   }
+});
+
+test("a retained point resolution owns its pending and cancelled feedback without a phantom map loader", () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let condition = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isConditionalExpression(node)) {
+      let body = node.whenTrue;
+      while (ts.isParenthesizedExpression(body)) body = body.expression;
+      if (ts.isJsxSelfClosingElement(body) && body.tagName.getText(source) === "StatusPanel" && body.getText(source).includes("state={pageState}"))
+        condition = node.condition.getText(source);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  assert.ok(condition);
+  const shown = (pageState: string, blocked: boolean, attempt: { pending: boolean } | null, presentation = "spot-panel") => vm.runInNewContext(condition, {
+    pageState, bootstrapReplacementBlocked: blocked, visibleSpotContextAttempt: attempt,
+    bottomPresentation: presentation, mapDataStale: false, layerSheetOwnsSceneFailure: false,
+  });
+  assert.equal(shown("LOADING", true, { pending: false }), false, "cancelled selection has an owned retry, no running map request");
+  assert.equal(shown("LOADING", true, { pending: true }), false, "pending selection already explains its own loading");
+  assert.equal(shown("LOADING", false, null), true, "normal cold map loading remains visible");
+  assert.equal(shown("LOADING", true, null), true, "an unclaimed recovery cannot silently disappear");
+  assert.equal(shown("ERROR", true, { pending: false }), true, "a separate scene failure retains recovery");
+  assert.equal(shown("LOADING", true, { pending: false }, "layer-sheet"), true, "the hidden spot panel cannot own visible layer feedback");
+  assert.equal(shown("LOADING", true, { pending: false }, "none"), true, "closing the spot panel keeps map feedback");
 });

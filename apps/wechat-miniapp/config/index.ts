@@ -25,6 +25,7 @@ const adoptedBRuntimeIconRoot = path.resolve(
 const adoptedBTabBarIconRoot = path.resolve(
   here, "../runtime-assets/tabbar",
 );
+const mainBIconVariants = new Set(["parking--day--default.png", "restroom--day--default.png"]);
 const bTabBarIconFiles = [
   "map--day--default.png", "map--day--selected.png",
   "account-user--day--default.png", "account-user--day--selected.png",
@@ -34,7 +35,7 @@ const retainedLegacyIconFiles = [
   "arrow-left-light.png", "bulb-night.svg", "bulb-observation.svg",
   "chevron-right-night.svg", "chevron-right-observation.svg",
   "cloud-night.svg", "cloud-observation.svg", "draft-marker.png", "eye-night.svg",
-  "eye-observation.svg", "filter-night.svg", "filter-observation.svg",
+  "eye-observation.svg",
   "formal-spot-marker-night.png", "formal-spot-marker-observation.png",
   "formal-spot-marker-selected-night.png", "formal-spot-marker-selected-observation.png",
   "images-night.svg", "images-observation.svg", "pencil-night.svg",
@@ -43,41 +44,52 @@ const retainedLegacyIconFiles = [
   "tab-map-night.png", "tab-map-observation.png", "tab-map-selected-night.png",
   "tab-map-selected-observation.png", "tab-my-night.png", "tab-my-observation.png",
   "tab-my-selected-night.png", "tab-my-selected-observation.png",
-  "wifi-off-night.svg",
-  "wifi-off-observation.svg",
-  "telescope-night.svg", "telescope-observation.svg",
   "sun-night.svg", "sun-observation.svg", "moon-night.svg", "moon-observation.svg",
+  "telescope-night.svg", "telescope-observation.svg",
+  "my-plan-chevron-header.svg", "my-plan-chevron-row.svg",
+  "map-layer-choice-check.svg",
+  "terrain-toggle-check.png",
+  "warning-night.svg", "warning-observation.svg",
 ] as const;
-// These legacy night/observation icons are used only by content pages.
-const contentLegacyIconFiles = [
+// Search is in the spot package; these legacy filter glyphs have no main-page consumers.
+const spotIconFiles = ["filter-night.svg", "filter-observation.svg", "wifi-off-night.svg", "wifi-off-observation.svg"];
+// SVG assets used only by content pages, including adopted DAY line glyphs.
+const contentIconFiles = [
+  "public-share-track.svg", "public-share-terrain.svg",
+  "settings-choice-check.svg",
+  "bell-night.svg", "bell-observation.svg",
   "download-night.svg", "download-observation.svg",
   "trash-2-night.svg", "trash-2-observation.svg",
   "wind-night.svg", "wind-observation.svg",
 ] as const;
 const bIconFiles = {
   main: [
-    "account-user--day--default.png",
     "arrow-left--day--default.png", "check--day--default.png",
     "chevron-down--day--default.png", "chevron-right--day--default.png",
     "chevron-up--day--default.png", "close--day--default.png",
-    "cloud--day--default.png", "compass--day--default.png",
-    "eye--day--default.png", "filter--day--default.png",
-    "four-point-star--day--default.png", "horizon--day--default.png",
+    "cloud--day--default.png", "navigation--day--default.png",
+    "four-point-star--day--default.png",
     "favorite-star--day--default.png", "favorite-star--day--selected.png",
     "favorite-trail--day--default.png", "favorite-satellite--day--default.png",
-    "images--day--default.png", "info--day--default.png", "layers--day--default.png",
-    "low-cloud--day--default.png", "bulb--day--default.png",
+    "info--day--default.png", "layers--day--default.png",
+    "bulb--day--default.png",
     // Native Map tabs use the dedicated weapp-tabbar files above. The runtime
     // icon adapter has no map subject, so copying these larger twins is unused.
     "location--day--default.png", "meteor--day--default.png", "moon--day--default.png",
-    "pencil--day--default.png", "plan-suv--day--default.png",
+    "pencil--day--default.png",
     "search--day--default.png", "settings--day--default.png",
-    "share--day--default.png", "spot-marker--day--default.png",
+    "spot-marker--day--default.png",
     "spot-marker--day--draft.png", "spot-marker--day--pending.png",
-    "spot-marker--day--selected.png", "sun--day--default.png",
-    "terrain--day--default.png", "clock--day--default.png",
+    "spot-marker--day--selected.png",
+    "terrain--day--default.png",
+    "more--day--default.png",
+    "parking--day--default.png", "restroom--day--default.png",
   ],
   content: [
+    "favorite-star--day--default.png",
+    // The article's shared facility cards use the same adopted package assets.
+    "parking--day--default.png", "restroom--day--default.png",
+    "clock--day--default.png", "warning--day--default.png",
     "cloud--day--default.png", "wind--day--default.png", "telescope--day--default.png",
     "account-user--day--default.png", "arrow-left--day--default.png",
     "bell--day--default.png", "bell-off--day--default.png",
@@ -87,19 +99,34 @@ const bIconFiles = {
     "close--day--default.png", "compass--day--default.png",
     "download--day--default.png", "four-point-star--day--default.png",
     "horizon--day--default.png", "images--day--default.png",
-    "info--day--default.png", "location--day--default.png",
+    "info--day--default.png", "location--day--default.png", "place-pin--day--default.png",
     "low-cloud--day--default.png", "moon--day--default.png",
     "meteor--day--default.png", "note--day--default.png",
     "pencil--day--default.png", "plan-suv--day--default.png",
     "refresh--day--default.png", "save--day--default.png",
+    "search--day--default.png",
+    "verified--day--default.png",
+    "share--day--default.png", "navigation--day--default.png",
     "sun--day--default.png", "trash--day--default.png",
     "wifi-off--day--default.png",
   ],
   spot: [
+    // Main-page cloud/share actions keep their text and use the existing
+    // asynchronous native ornament loader with these original bitmap bytes.
+    "telescope--day--default.png", "share--day--default.png",
+    "clock--day--default.png",
+    "sun--day--default.png",
+    "warning--day--default.png",
+    "temperature--day--default.png", "wind--day--default.png", "droplet--day--default.png",
+    "bulb--day--default.png", "cloud--day--default.png", "parking--day--default.png",
+    "restroom--day--default.png", "plan-suv--day--default.png", "tent--day--default.png",
+    "meteor--day--default.png", "moon--day--default.png", "walking--day--default.png",
+    "signal--day--default.png", "charging--day--default.png", "verified--day--default.png",
+    "place-pin--day--default.png",
     "arrow-left--day--default.png", "chevron-right--day--default.png",
     "chevron-down--day--default.png", "chevron-up--day--default.png",
     "close--day--default.png", "compass--day--default.png",
-    "filter--day--default.png", "horizon--day--default.png",
+    "filter--day--default.png", "four-point-star--day--default.png", "horizon--day--default.png",
     "images--day--default.png", "info--day--default.png",
     "location--day--default.png", "low-cloud--day--default.png",
     "search--day--default.png", "wifi-off--day--default.png",
@@ -118,7 +145,8 @@ const bIconFiles = {
 function adoptedBIconCopyPatterns(outputRoot: string) {
   return [
     ...Object.entries(bIconFiles).flatMap(([packageName, files]) => files.map((file) => ({
-    from: path.resolve(adoptedBRuntimeIconRoot, file),
+    from: path.resolve(packageName === "main" && mainBIconVariants.has(file)
+      ? path.resolve(adoptedBRuntimeIconRoot, "../b-icons-main") : adoptedBRuntimeIconRoot, file),
     to: path.resolve(
       here,
       "..",
@@ -254,13 +282,21 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
           from: path.resolve(here, "../src/assets", directory),
           to: path.resolve(here, "..", outputRoot, "assets", directory),
         })),
+        {
+          from: path.resolve(here, "../src/assets/moon-observation"),
+          to: path.resolve(here, "..", outputRoot, "content/assets/moon"),
+        },
         ...retainedLegacyIconFiles.map((file) => ({
           from: path.resolve(here, "../src/assets/icons", file),
           to: path.resolve(here, "..", outputRoot, "assets/icons", file),
         })),
-        ...contentLegacyIconFiles.map((file) => ({
+        ...contentIconFiles.map((file) => ({
           from: path.resolve(here, "../src/assets/icons", file),
           to: path.resolve(here, "..", outputRoot, "content/assets/icons", file),
+        })),
+        ...spotIconFiles.map((file) => ({
+          from: path.resolve(here, "../src/assets/icons", file),
+          to: path.resolve(here, "..", outputRoot, "spot/assets/icons", file),
         })),
         ...["night", "observation"].map((theme) => ({
           from: path.resolve(here, "../src/assets/semantic", `five-point-star-${theme}.svg`),
@@ -291,6 +327,18 @@ const createConfig: UserConfigFn = async (_merge, { command }) => {
       options: {},
     },
     mini: {
+      // Keep default template depth/native selector boundaries. These standard
+      // Terser reductions retain ES5, no unsafe transforms, and Taro's disabled
+      // arrows/comparisons/typeof/directives. Property names are not mangled.
+      terser: { config: {
+        compress: {
+          collapse_vars: true, computed_props: true, hoist_props: true,
+          inline: true, loops: true, negate_iife: true, properties: true,
+          reduce_funcs: true, reduce_vars: true, switches: true,
+          passes: 2,
+        },
+        output: { ascii_only: false },
+      } },
       compile: { include: sharedSourceInclude },
       postcss: {
         pxtransform: { enable: true, config: {} },

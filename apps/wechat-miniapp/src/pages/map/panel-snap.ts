@@ -1,5 +1,29 @@
+import { ELASTIC_LIMIT } from "@/components/elastic-motion";
+
 export type PanelExtent = "small" | "medium" | "large";
 export type PanelSnapGeometry = Record<PanelExtent, number> & { startHeight: number };
+
+/** Private identity, or the formal document through its route, above fixed actions. */
+export function panelIdentityMinimumHeight(rows: unknown): number | null {
+  if (!Array.isArray(rows) || (rows.length !== 3 && rows.length !== 4)) return null;
+  const rectangles = rows.map(row => row && typeof row === "object" ? row as { height?: unknown; top?: unknown } : null);
+  const heights = rectangles.map(rectangle => rectangle?.height);
+  if (!heights.every(height => typeof height === "number" && Number.isFinite(height) && height > 0)) return null;
+  const [handleHeight, identityHeight, actionHeight, routeHeight] = heights as [number, number, number, number?];
+  let contentHeight = handleHeight + identityHeight;
+  if (rows.length === 4) {
+    const tops = [rectangles[0]?.top, rectangles[1]?.top, rectangles[3]?.top];
+    if (!tops.every(top => typeof top === "number" && Number.isFinite(top))) return null;
+    const [handleTop, identityTop, routeTop] = tops as [number, number, number];
+    // The adopted formal header overlays its transparent handle on the title.
+    // Both remain in this document; overlapping targets are not extra rows.
+    if (identityTop < handleTop || routeTop < identityTop + identityHeight) return null;
+    // The native span includes the actual plan entry, recovery cards and gaps.
+    // All nodes share one scroll document, so scrolling cancels out of the span.
+    contentHeight = Math.max(handleTop + handleHeight, routeTop + routeHeight!) - handleTop;
+  }
+  return Math.ceil(contentHeight + actionHeight + 8);
+}
 
 export function previousPanelExtent(extent: PanelExtent): PanelExtent | null {
   if (extent === "large") return "medium";
@@ -13,7 +37,7 @@ export function readPanelSnapGeometry(rows: unknown): PanelSnapGeometry | null {
   if (!heights.every(height => typeof height === "number" && Number.isFinite(height) && height > 0)) return null;
   const [startHeight, small, medium, large] = heights as [number, number, number, number];
   if (!(small < medium && medium < large)) return null;
-  return { small, medium, large, startHeight: Math.max(small - 72, Math.min(large + 72, startHeight)) };
+  return { small, medium, large, startHeight: Math.max(small - ELASTIC_LIMIT, Math.min(large + ELASTIC_LIMIT, startHeight)) };
 }
 
 export function nearestPanelExtent(geometry: PanelSnapGeometry, height: number, current: PanelExtent): PanelExtent {
@@ -33,10 +57,11 @@ export function panelHeightProgress(geometry: PanelSnapGeometry, height: number)
 
 /** Native geometry can lag the final move; never restart a release from a stale frame. */
 export function panelReleaseStartHeight(geometry: PanelSnapGeometry, visualHeight: number, measuredHeight: unknown): number {
-  const current = Math.max(geometry.small, Math.min(geometry.large, visualHeight));
+  const lower = geometry.small - ELASTIC_LIMIT;
+  const current = Math.max(lower, Math.min(geometry.large, visualHeight));
   return typeof measuredHeight === "number" && Number.isFinite(measuredHeight) &&
     Math.abs(measuredHeight - current) <= 2
-    ? Math.max(geometry.small, Math.min(geometry.large, measuredHeight)) : current;
+    ? Math.max(lower, Math.min(geometry.large, measuredHeight)) : current;
 }
 
 

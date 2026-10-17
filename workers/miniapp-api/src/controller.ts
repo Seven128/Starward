@@ -18,6 +18,8 @@ import {
 } from "@nestjs/common";
 import type { FastifyReply } from "fastify";
 import { celestialObjectPosition } from "./celestial-object-position.ts";
+import { validateTerrainRequest } from "./terrain-request.ts";
+import { HORIZON_RADIUS_M } from "./terrain-horizon-model.ts";
 import {
   assertFilterState,
   DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION,
@@ -128,6 +130,7 @@ function parseViewport(input: {
   centerLat?: string;
   centerLng?: string;
   zoom?: string;
+  bounds?: string;
 }) {
   const values = [input.centerLat, input.centerLng, input.zoom];
   if (
@@ -140,13 +143,17 @@ function parseViewport(input: {
     input.centerLng === undefined ||
     input.zoom === undefined
   )
-    return undefined;
+    { if (input.bounds !== undefined) throw new Error("map_viewport_incomplete"); return undefined; }
+  const parts = input.bounds?.split(",");
+  if (parts && (parts.length !== 4 || parts.some(part => !part.trim()))) throw new Error("map_viewport_invalid");
+  const bounds = parts ? { west: Number(parts[0]), south: Number(parts[1]), east: Number(parts[2]), north: Number(parts[3]) } : undefined;
   const viewport = {
     center: {
       latitude: Number(input.centerLat),
       longitude: Number(input.centerLng),
     },
     zoom: Number(input.zoom),
+    ...(bounds ? { bounds } : {}),
   };
   if (
     !Number.isFinite(viewport.center.latitude) ||
@@ -158,6 +165,10 @@ function parseViewport(input: {
     viewport.zoom > 20
   )
     throw new Error("map_viewport_invalid");
+  if (bounds && (!Object.values(bounds).every(Number.isFinite) || bounds.west < -180 || bounds.east > 180
+    || bounds.south <= -90 || bounds.north >= 90 || bounds.west >= bounds.east || bounds.south >= bounds.north
+    || viewport.center.longitude < bounds.west || viewport.center.longitude > bounds.east
+    || viewport.center.latitude < bounds.south || viewport.center.latitude > bounds.north)) throw new Error("map_viewport_invalid");
   return viewport;
 }
 
@@ -177,6 +188,15 @@ function parseCloudLayer(
   return layer as ObservationContext["weatherView"]["cloudLayer"];
 }
 
+async function withTerrainRead<T>(reply: FastifyReply | undefined, read: (signal: AbortSignal) => Promise<T>): Promise<T> {
+  const controller = new AbortController();
+  const cancel = () => { if (!reply?.raw.writableFinished) controller.abort(new Error("terrain_request_cancelled")); };
+  reply?.raw.once("close", cancel);
+  if (reply?.raw.destroyed) cancel();
+  try { return await read(controller.signal); }
+  finally { reply?.raw.off("close", cancel); }
+}
+
 @Controller("v2")
 export class MiniappController {
   constructor(
@@ -194,23 +214,25 @@ export class MiniappController {
   }
 
   @Post("observation-contexts/resolve")
-  resolveContext(@Body() body: ObservationContextResolveRequest) {
-    return this.service.resolveObservationContext(body);
+  async resolveContext(@Body() body: ObservationContextResolveRequest, @Headers("authorization") authorization?: string) {
+    return this.service.resolveObservationContext(body, await this.service.auth.optionalPrincipal(authorization));
   }
 
   @Get("observation-contexts/:contextId")
-  getContext(@Param("contextId") contextId: string) {
-    return this.service.getObservationContext(decodeURIComponent(contextId));
+  async getContext(@Param("contextId") contextId: string, @Headers("authorization") authorization?: string) {
+    return this.service.getObservationContext(decodeURIComponent(contextId), await this.service.auth.optionalPrincipal(authorization));
   }
 
   @Put("observation-contexts/:contextId")
-  updateContext(
+  async updateContext(
     @Param("contextId") contextId: string,
     @Body() body: ObservationContextUpdateRequest,
+    @Headers("authorization") authorization?: string,
   ) {
     return this.service.updateObservationContext(
       decodeURIComponent(contextId),
       body,
+      await this.service.auth.optionalPrincipal(authorization),
     );
   }
 
@@ -226,6 +248,7 @@ export class MiniappController {
     @Query("zoom") zoom?: string,
     @Query("preferences") preferences?: string,
     @Headers("authorization") authorization?: string,
+    @Query("viewportBounds") viewportBounds?: string,
   ) {
     const userId = await this.service.auth.optionalPrincipal(authorization);
     const parsedFilters = parseFilters(filters);
@@ -234,6 +257,7 @@ export class MiniappController {
       ...(centerLat === undefined ? {} : { centerLat }),
       ...(centerLng === undefined ? {} : { centerLng }),
       ...(zoom === undefined ? {} : { zoom }),
+      ...(viewportBounds === undefined ? {} : { bounds: viewportBounds }),
     });
     return this.service.getMapScene({
       contextId: required(contextId, "observation_context_required"),
@@ -248,28 +272,61 @@ export class MiniappController {
   }
 
   @Get("terrain/overlay")
-  terrainOverlay(
+  async terrainOverlay(
     @Query("purpose") purpose?: string,
     @Query("centerLat") centerLat?: string,
     @Query("centerLng") centerLng?: string,
     @Query("radiusKm") radiusKm?: string,
+    @Res({ passthrough: true }) reply?: FastifyReply,
+    @Query("viewportBounds") viewportBounds?: string,
   ) {
     const latitude = Number(centerLat);
     const longitude = Number(centerLng);
     const radius = Number(radiusKm);
-    if ((purpose !== "MAP" && purpose !== "SPOT") || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180 || !Number.isFinite(radius) || radius < 2 || radius > 50)
+    if (purpose !== "MAP" && purpose !== "SPOT")
       throw new Error("terrain_overlay_request_invalid");
-    const request: TerrainOverlayRequest = { purpose, center: { system: "GCJ02", latitude, longitude }, radiusKm: radius };
-    return this.service.getTerrainOverlay(request);
+    const parts = viewportBounds?.split(",");
+    if (parts && (purpose !== "MAP" || radiusKm !== undefined || parts.length !== 4 || parts.some(part => !part.trim())))
+      throw new Error("terrain_overlay_request_invalid");
+    const request: TerrainOverlayRequest = parts ? { purpose: "MAP", center: { system: "GCJ02", latitude, longitude },
+      viewportBounds: { west: Number(parts[0]), south: Number(parts[1]), east: Number(parts[2]), north: Number(parts[3]) } }
+      : { purpose, center: { system: "GCJ02", latitude, longitude }, radiusKm: radius };
+    validateTerrainRequest(request);
+    return withTerrainRead(reply, signal => this.service.getTerrainOverlay(request, signal));
+  }
+
+  @Get("terrain/horizon")
+  async terrainHorizon(
+    @Query("centerLat") centerLat?: string,
+    @Query("centerLng") centerLng?: string,
+    @Res({ passthrough: true }) reply?: FastifyReply,
+  ) {
+    if (typeof centerLat !== "string" || typeof centerLng !== "string" || !centerLat.trim() || !centerLng.trim())
+      throw new BadRequestException("terrain_horizon_request_invalid");
+    const center = { system: "GCJ02" as const, latitude: Number(centerLat), longitude: Number(centerLng) };
+    try { validateTerrainRequest({ purpose: "SPOT", center, radiusKm: HORIZON_RADIUS_M / 1000 }); }
+    catch { throw new BadRequestException("terrain_horizon_request_invalid"); }
+    return withTerrainRead(reply, signal => this.service.getTerrainHorizon({ center }, signal));
   }
 
   @Get("terrain/assets/:file")
   async terrainAsset(@Param("file") file: string, @Res() reply: FastifyReply) {
-    const asset = await this.service.getTerrainAsset(decodeURIComponent(file));
+    const asset = await withTerrainRead(reply, signal => this.service.getTerrainAsset(decodeURIComponent(file), signal));
     reply.header("content-type", "image/png")
       .header("cache-control", "public, max-age=604800, immutable")
       .header("x-content-type-options", "nosniff")
       .header("x-starward-terrain-publication", asset.publicationId)
+      .send(asset.bytes);
+  }
+
+  @Get("night-light/assets/:datasetVersion/:file")
+  async nightLightAsset(@Param("datasetVersion") datasetVersion: string, @Param("file") file: string, @Res() reply: FastifyReply) {
+    const asset = await withTerrainRead(reply, signal => this.service.getNightLightAsset(datasetVersion, file, signal));
+    if (!asset) throw new NotFoundException("nightlight_asset_not_found");
+    reply.header("content-type", "image/png")
+      .header("cache-control", "public, max-age=604800, immutable")
+      .header("x-content-type-options", "nosniff")
+      .header("x-starward-night-light-publication", asset.publicationId)
       .send(asset.bytes);
   }
 
@@ -302,24 +359,28 @@ export class MiniappController {
   }
 
   @Get("astronomical-events/:occurrenceId")
-  astronomicalEvent(
+  async astronomicalEvent(
     @Param("occurrenceId") occurrenceId: string,
     @Query("contextId") contextId?: string,
+    @Headers("authorization") authorization?: string,
   ) {
     return this.service.getAstronomicalEvent(
       decodeURIComponent(occurrenceId),
       contextId ? decodeURIComponent(contextId) : undefined,
+      await this.service.auth.optionalPrincipal(authorization),
     );
   }
 
   @Get("spots/:spotId/overview")
-  overview(
+  async overview(
     @Param("spotId") spotId: string,
     @Query("contextId") contextId?: string,
+    @Headers("authorization") authorization?: string,
   ) {
     return this.service.getSpotOverview(
       decodeURIComponent(spotId),
       required(contextId, "observation_context_required"),
+      await this.service.auth.optionalPrincipal(authorization),
     );
   }
 
@@ -372,7 +433,7 @@ export class MiniappController {
   }
 
   @Get("spots/:spotId/sky")
-  sky(
+  async sky(
     @Param("spotId") spotId: string,
     @Query("contextId") contextId?: string,
     @Headers("authorization") authorization?: string,
@@ -394,11 +455,11 @@ export class MiniappController {
         deepSkyCatalogVersion,
       ));
     }
-    return this.service.getSky(locationId, required(contextId, "observation_context_required"), undefined, selectedCatalog, deepSkyCatalogVersion);
+    return this.service.getSky(locationId, required(contextId, "observation_context_required"), await this.service.auth.optionalPrincipal(authorization), selectedCatalog, deepSkyCatalogVersion);
   }
 
   @Get("spots/:spotId/sky/targets")
-  skyTargets(
+  async skyTargets(
     @Param("spotId") spotId: string,
     @Query("contextId") contextId?: string,
     @Query("at") at?: string,
@@ -410,7 +471,7 @@ export class MiniappController {
         this.service.getSkyTargetInstant(locationId, required(contextId, "observation_context_required"),
           required(at, "observation_time_required"), userId));
     return this.service.getSkyTargetInstant(locationId, required(contextId, "observation_context_required"),
-      required(at, "observation_time_required"));
+      required(at, "observation_time_required"), await this.service.auth.optionalPrincipal(authorization));
   }
 
   @Get("spots/:spotId/sky/objects/:reference")
@@ -881,6 +942,17 @@ export class MiniappController {
     return this.service.getSharedSpot(decodeURIComponent(spotId) as SpotId);
   }
 
+  @Get("me/observation-plans/:planId/save-result")
+  async planSaveResult(
+    @Param("planId") planId: string,
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "",
+  ) {
+    return this.service.getPlanSaveResult(
+      await this.service.auth.requirePrincipal(authorization), decodeURIComponent(planId), idempotencyKey,
+    );
+  }
+
   @Put("me/observation-plans/:planId")
   async plan(
     @Param("planId") planId: string,
@@ -929,6 +1001,14 @@ export class MiniappController {
     return this.service.reportReminderSubscription(await this.service.auth.requirePrincipal(authorization), decodeURIComponent(challengeId), body);
   }
 
+  @Post("me/reminder-destination/reverify")
+  async reverifyReminderDestination(
+    @Headers("authorization") authorization?: string,
+    @Headers("x-wechat-reauth-code") code?: string,
+  ) {
+    return this.service.reverifyReminderDestination(await this.service.auth.requirePrincipal(authorization),code);
+  }
+
   @Delete("me/observation-plans/:planId")
   async deletePlan(
     @Param("planId") planId: string,
@@ -960,6 +1040,24 @@ export class MiniappController {
       body,
       idempotencyKey,
     );
+  }
+
+  @Get("me/formal-contributions/:spotId/submit-result")
+  async formalContributionSubmitResult(
+    @Param("spotId") spotId: string,
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "",
+  ) {
+    return this.service.getFormalContributionSubmitResult(await this.service.auth.requirePrincipal(authorization), decodeURIComponent(spotId) as SpotId, idempotencyKey);
+  }
+
+  @Get("me/contributions/:submissionId/submit-result")
+  async contributionSubmitResult(
+    @Param("submissionId") submissionId: string,
+    @Headers("authorization") authorization?: string,
+    @Headers("idempotency-key") idempotencyKey = "",
+  ) {
+    return this.service.getContributionSubmitResult(await this.service.auth.requirePrincipal(authorization), decodeURIComponent(submissionId) as ContributionId, idempotencyKey);
   }
 
   @Get("me/contributions/:submissionId/media/:uploadId")

@@ -299,6 +299,13 @@ test(
               safety: "隔离测试夜间安全说明",
             },
             media: {},
+            intake: {
+              version: 1,
+              openness: "OPEN",
+              legalEntry: "PERMITTED",
+              nightSafety: "UNKNOWN",
+              contact: { kind: "UNKNOWN", number: "", purpose: "", publicPermissionConfirmed: false, source: "" },
+            },
           },
         }, `infra:new-place-draft:${runId}`);
         const newPlaceSubmitted = await first.submitContribution(
@@ -321,7 +328,7 @@ test(
         const newPlaceMerged = await newPlaceRepository.adminMergeContributionEvidence({
           caseId: newPlaceCaseId,
           spotId: newPlaceTarget.spotId,
-          confirmedClaims: ["SPOT_DETAILS", "ACCESS_OPENNESS", "ACCESS_LEGAL_ENTRY", "ACCESS_LAST_ROAD", "SAFETY_NIGHT"],
+          confirmedClaims: ["SPOT_DETAILS", "ACCESS_OPENNESS", "ACCESS_LEGAL_ENTRY", "ACCESS_LAST_ROAD"],
           reason: "隔离测试把已核对的新地点资料合并到同坐标规范候选",
           actorId: "admin:integration",
           requestId: `new-place-merge:${runId}`,
@@ -910,7 +917,7 @@ test(
     assert.equal(snapshot.pending, 0);
     assert.equal(snapshot.dispatched, 0, "dispatched work must finish before claiming the outbox drained");
     assert.equal(snapshot.dead_letter, 0, JSON.stringify(snapshot.dead_letters));
-    assert.ok(snapshot.scheduled >= OPERATIONAL_JOB_KINDS.length);
+    assert.ok(snapshot.scheduled >= OPERATIONAL_JOB_KINDS.length - 1, 'notification sweep creates work only when reminders are due');
     assert.ok(snapshot.effects >= OPERATIONAL_JOB_KINDS.length);
     assert.deepEqual([...snapshot.effect_kinds].sort(), [...OPERATIONAL_JOB_KINDS].sort(),
       "repeated effects from one job kind must not hide another kind with no effect");

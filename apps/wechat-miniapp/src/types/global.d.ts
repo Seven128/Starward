@@ -6,3 +6,15 @@ declare const __MINIAPP_ACCEPTANCE_DIAGNOSTICS__: boolean;
 declare const __MINIAPP_DEVICE_REQUEST_DIAGNOSTICS__: boolean;
 declare const __MINIAPP_DEVELOPMENT_FIXTURE_MODE__: boolean;
 declare const __MINIAPP_SKY_FEEDBACK_ID__: string;
+
+declare namespace JSX {
+  interface IntrinsicElements {
+    "packaged-icon": {
+      kind: "temperature" | "wind" | "droplet" | "warning" | "low-cloud" | "images" | "plan-suv" | "clock" | "sun" | "telescope" | "share";
+      class?: string;
+      "aria-hidden"?: boolean | undefined;
+      "aria-role"?: string | undefined;
+      "aria-label"?: string | undefined;
+    };
+  }
+}

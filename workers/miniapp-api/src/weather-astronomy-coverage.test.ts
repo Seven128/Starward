@@ -7,6 +7,25 @@ import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts"
 import { DeterministicWeatherTestAdapter } from "./test-fixtures/deterministic-weather-adapter.ts";
 import { MemoryCache } from "./cache.ts";
 
+test("lunar rise-set provenance retains its full search interval independently of the observation night", async () => {
+  const service = createTestMiniappService({ repository: new InMemoryTestRepository([TEST_PUBLISHED_SPOT]) });
+  try {
+    const context = (await service.resolveObservationContext({ location: { kind: "FORMAL_SPOT", spotId: TEST_PUBLISHED_SPOT.spotId },
+      localDate: "2026-10-16", selectedAt: "2026-10-16T14:00:00Z" })).data;
+    const sky = await service.getSky(TEST_PUBLISHED_SPOT.spotId, context.contextId);
+    const lunar = sky.data.lunarFacts, from = Date.parse(lunar.source.validFrom!), to = Date.parse(lunar.source.validTo!);
+    assert.equal(from, Date.parse(context.nightStartUtc));
+    assert.equal(to - from, 36 * 60 * 60 * 1000, "the 36-hour search must not be labelled as a 24-hour night");
+    for (const event of [lunar.moonriseAt, lunar.moonsetAt]) if (event) {
+      assert.ok(Date.parse(event) >= from && Date.parse(event) <= to);
+    }
+    assert.deepEqual(sky.sources.find(source => source.id === lunar.source.id), lunar.source);
+    assert.deepEqual(sky.data.sources.find(source => source.id === lunar.source.id), lunar.source);
+    assert.ok(sky.data.nightFacts);
+    assert.equal(sky.data.nightFacts.endAt, context.nightEndUtc, "the wider event search cannot extend the selected night");
+  } finally { await service.onModuleDestroy(); }
+});
+
 test("old supplier Context is invalidated and can recover the same point and instant under current source selection", async () => {
   const cache = new MemoryCache();
   const service = createTestMiniappService({ cache, repository: new InMemoryTestRepository([TEST_PUBLISHED_SPOT]) });
@@ -55,7 +74,8 @@ test("official alerts bind their exact minute interval even inside one forecast 
   }
 });
 
-test("actual forecast holes remain empty through SkyReport and Map while celestial frames retain their exact time", async () => {
+test("actual forecast holes remain empty through SkyReport and Map while celestial frames retain their exact time", async t => {
+  t.mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-09-15T11:00:00Z") });
   const fixture = new DeterministicWeatherTestAdapter();
   const service = createTestMiniappService({ repository: new InMemoryTestRepository([TEST_PUBLISHED_SPOT]), weather: {
     key: "partial-hour-fixture", getHourly: async input => {

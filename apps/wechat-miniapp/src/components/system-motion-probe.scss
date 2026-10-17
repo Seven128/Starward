@@ -1,0 +1,14 @@
+.system-motion-probe {
+  position: fixed;
+  left: -100Px;
+  top: 0;
+  width: 1Px;
+  height: 1Px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.system-motion-probe--control { width: 29Px; }
+@media (prefers-reduced-motion: no-preference) { .system-motion-probe--normal { width: 11Px; } }
+@media (prefers-reduced-motion: reduce) { .system-motion-probe--reduce { width: 17Px; } }

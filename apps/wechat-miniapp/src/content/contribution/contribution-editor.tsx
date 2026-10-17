@@ -7,20 +7,21 @@ import { parseCoordinateInput } from "./coordinate-input";
 import { NotificationRegion } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
 import { SoftButton } from "@/components/soft-button";
-import { SelectionTabs } from "@/components/selection-tabs";
+import { SemanticIcon } from "@/components/semantic-asset";
 import { CustomNav } from "@/components/custom-nav";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { contributionValidationAnchor } from "./validation-anchor";
+import { CandidateIntakeField } from "./candidate-intake-fields";
 import { ContributionCandidateAddressControl, ContributionCandidateCoordinateConsent, ContributionContextSection, ContributionEvidenceSection, ContributionLocationSection } from "./contribution-form-sections";
-import { ContributionActions, ContributionDeleteDraftAction, ContributionMediaRecoveryAction, ContributionMediaSection } from "./contribution-media-history";
+import { ContributionActions, ContributionSubmitRecovery, ContributionDeleteDraftAction, ContributionMediaRecoveryAction, ContributionMediaSection } from "./contribution-media-history";
 import { useContributionCommands } from "./use-contribution-commands";
 import { useContributionForm, type ContributionForm } from "./use-contribution-form";
 import { contributionRecordPrimaryAction, resolveContributionEditorRecord, type ContributionRecordGroup } from "./contribution-record-model";
 import { ToggleField } from "@/components/toggle-field";
 import { SpotDocumentFields } from "../spot-document-fields";
-import { SPOT_DOCUMENT_CHAPTERS } from "../spot-document";
+import { SpotDocumentTabs } from "../spot-document-tabs";
 import { useSpotDocumentNavigation } from "../use-spot-document-navigation";
-import { contributionSavedState } from "./contribution-save-state";
+import { contributionEditorSaveState } from "./contribution-save-state";
 import { contributionSubmissionState } from "./contribution-model";
 import { currentDraftUserId, getContributionMedia } from "@/services/api-client";
 import { loadAvailableMediaPreviews } from "./media-preview";
@@ -59,7 +60,7 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
   const form = useContributionForm({
     ...(forceNew === undefined ? {} : { forceNew }),
     ...(submissionId ? { requestedSubmissionId: submissionId } : {}),
-    ...(embedded ? { disableLocalPersistence: true } : {}),
+    ...(embedded || managesRecords ? { disableLocalPersistence: true } : {}),
   });
   const commands = useContributionCommands(form, {nativeBackBoundary: !embedded});
   useEffect(() => {
@@ -156,10 +157,11 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
     return () => { active = false; };
   }, [form.kind, form.ownerChanged, readonlyRecord, pageVisible, previewDraftId, previewFailureKey, previewMediaKey, previewPathKey]);
 
-  const leaveState = useRef({ busy: !form.ownerChanged && form.commandBusy, dirty: form.hasUnsavedChanges });
-  leaveState.current = { busy: !form.ownerChanged && form.commandBusy, dirty: form.hasUnsavedChanges };
+  const leaveState = useRef({ busy: !form.ownerChanged && form.commandBusy, dirty: form.hasUnsavedChanges, discard: form.discardUnsavedChanges });
+  leaveState.current = { busy: !form.ownerChanged && form.commandBusy, dirty: form.hasUnsavedChanges, discard: form.discardUnsavedChanges };
   const confirmLeave = useCallback(() => confirmContributionEditorLeave({
     ...leaveState.current,
+    discard: () => !leaveState.current.busy && leaveState.current.discard(),
     confirm: async () => {
       const result = await Taro.showModal({ title: "放弃未保存的修改？", content: "已保存的远端草稿不会删除；本次未保存输入将被放弃。", confirmText: "放弃修改", confirmColor: "#b3261e" });
       return result.confirm;
@@ -177,6 +179,7 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
   };
   const leaveAfterWithdrawal = () => {
     if (embedded) { onClose?.(); return; }
+    nativeLeaveGuard.suspendForProgrammaticLeave();
     const fallback = () => Taro.switchTab({ url: managesRecords ? "/pages/my/index" : "/pages/map/index" });
     let hasPriorPage = false;
     try { hasPriorPage = Taro.getCurrentPages().length > 1; } catch { /* No reliable back target. */ }
@@ -199,11 +202,9 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
   const title = readonlyRecord ? "本次提交记录" : form.kind === "NEW_SPOT_PROPOSAL"
     ? (forceNew ? "新增观星点" : form.draft ? "编辑观星点" : "新增观星点")
     : "现场反馈与纠错";
-  const savedState = form.saving
-    ? "保存中…"
-    : form.draft
-      ? contributionSavedState(form.draft.updatedAt)
-      : "尚未保存";
+  const savedState = contributionEditorSaveState(form.draft, form.saving, undefined, form.hasUnsavedChanges, form.savedAt);
+  const standaloneDraftEditor = !embedded && isNewSpotDocument && !readonlyRecord;
+  const saveStatus = <Text className={`contribution-editor-save-state${savedState.reviewed ? " contribution-editor-save-state--review" : ""}${savedState.reviewed && form.draft?.review?.resolution === "REJECTED" ? " contribution-editor-save-state--rejected" : ""}`}>{savedState.label}</Text>;
   const openRecordDetail = () => {
     recordsScrollTransition.current++;
     recordsSavedPosition.current = recordsScrollPosition.current;
@@ -240,23 +241,21 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
     recordsGroupPositions.current[recordsGroup.current] = event.detail.scrollTop;
     setRecordsScrollTop(event.detail.scrollTop);
   };
-  return <View className={`${themeClass} contribution-page${embedded ? " contribution-page--embedded" : ""}`} style={embedded ? { height: embeddedHeightPx === undefined ? "calc(100vh - 184Px)" : `${embeddedHeightPx}px`, minHeight: 0, maxHeight: "none" } : {}} data-route="contribution-intake">
+  return <View className={`${themeClass} contribution-page${embedded ? " contribution-page--embedded" : ""}${standaloneDraftEditor ? " contribution-page--standalone-editor" : ""}${managesRecords ? " contribution-page--records" : ""}`} style={embedded ? { height: embeddedHeightPx === undefined ? "calc(100vh - 184Px)" : `${embeddedHeightPx}px`, minHeight: 0, maxHeight: "none" } : {}} data-route="contribution-intake">
     {commands.handoffWarning}
-    {embedded ? <View className="contribution-editor-header"><Text className="type-section">{title}</Text>{!readonlyRecord ? <Text className="contribution-editor-save-state">{savedState}</Text> : null}<Button className="contribution-editor-close focus-ring" aria-label="关闭新增观星点" onClick={() => void requestClose()}>×</Button></View> : <CustomNav title={managesRecords ? "观星点创建与反馈" : readonlyRecord ? "本次提交记录" : form.hasFormalSpot ? "现场反馈与纠错" : title} back backFallbackTab={managesRecords ? "/pages/my/index" : "/pages/map/index"} beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} />}
+    {embedded ? <View className="contribution-editor-header"><Text className="type-section">{title}</Text>{!readonlyRecord ? saveStatus : null}<Button className="contribution-editor-close focus-ring" aria-label="关闭新增观星点" onClick={() => void requestClose()}><SemanticIcon name="close" /></Button></View> : <CustomNav title={managesRecords ? "观星点创建与反馈" : readonlyRecord ? "本次提交记录" : form.hasFormalSpot ? "现场反馈与纠错" : title} right={standaloneDraftEditor ? saveStatus : undefined} back backPresentation={standaloneDraftEditor && themeClass.includes("theme-day") ? "dismiss" : undefined} backFallbackTab={managesRecords ? "/pages/my/index" : "/pages/map/index"} beforeBack={confirmLeave} onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave} onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave} />}
     {form.ownerChanged && !managesRecords ? <StatusPanel state="ERROR" title="账号已变化"
       detail="请返回地图后重新打开，原账号的输入不会交给当前账号。" recoveryLabel="返回地图"
       onRecover={() => embedded ? onClose?.() : void Taro.switchTab({ url: "/pages/map/index" })} /> : <>
-    {isNewSpotDocument && !readonlyRecord ? <SelectionTabs
-      className="formal-feedback-tabs contribution-document-tabs"
-      items={SPOT_DOCUMENT_CHAPTERS.map(([id, label]) => ({ id, label }))}
-      activeId={documentChapter}
+    {isNewSpotDocument && !readonlyRecord ? <SpotDocumentTabs
+      className="contribution-document-tabs"
+      chapter={documentChapter}
       label="新增地点章节"
       onSelect={jumpDocumentChapter}
-      activeItemClassName="is-active"
-      indicatorClassName="formal-feedback-tabs__line"
     /> : null}
     <ScrollView scrollY {...(managesRecords ? { scrollTop: recordsScrollTop, onScroll: onRecordsScroll } : { onScroll: onDocumentScroll })} scrollIntoView={validationAnchor} scrollWithAnimation={false} enhanced bounces={false} showScrollbar={false} className="contribution-page__scroll hide-scrollbar">
-      <View className={`contribution-content spot-document-scroll-content${isNewSpotDocument && !readonlyRecord ? "" : " page-inset"} safe-bottom`}><NotificationRegion owner="contribution" placement="inline" />
+      <View className={`contribution-content spot-document-scroll-content${isNewSpotDocument && !readonlyRecord ? " contribution-content--document" : " page-inset"} safe-bottom`}><NotificationRegion owner="contribution" placement="inline" />
+        <ContributionSubmitRecovery form={form} commands={commands} />
         {form.capabilities.isError || form.capabilities.refreshError || form.capabilities.data?.dataState === "STALE_USABLE" ? (
           <StatusPanel state={form.capabilities.isError ? "ERROR" : "STALE"}
             detail="投稿能力状态暂时无法更新；当前输入仍会保留。"
@@ -278,7 +277,7 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
           </>}
         </> : managesRecords ? renderRecords(form, { onDetailOpen: openRecordDetail, onDetailClose: closeRecordDetail,
           onGroupChange: changeRecordsGroup, onFilterChange: changeRecordsFilter }) : <>
-          {form.localRecovery ? <View className="contribution-card contribution-local-recovery card"><Text className="type-section">本机有未完成的输入</Text><Text className="type-body">可先恢复并核对，恢复不会自动提交审核。</Text><SoftButton label="恢复本机输入" disabled={form.submissionCommandBusy} onClick={() => void form.restoreLocalDraft()}>恢复输入</SoftButton><SoftButton label="放弃本机副本" disabled={form.submissionCommandBusy} onClick={() => form.discardLocalDraft()}>放弃本机副本</SoftButton></View> : null}
+          {form.localRecovery ? <View className="contribution-card contribution-local-recovery card"><Text className="type-section">本机有未完成的输入</Text><Text className="type-body">可先恢复并核对，恢复不会自动提交审核。</Text><SoftButton label="恢复本机输入" disabled={form.submissionCommandBusy} onClick={() => void commands.restoreLocalDraft()}>恢复输入</SoftButton><SoftButton label="放弃本机副本" disabled={form.submissionCommandBusy} onClick={() => form.discardLocalDraft()}>放弃本机副本</SoftButton></View> : null}
           {form.localStorageError ? <StatusPanel state="ERROR" detail="本机输入暂时无法保存，请先保留本页。" /> : null}
           {!embedded && !isNewSpotDocument ? <View id="feedback-context"><ContributionContextSection form={form} /></View> : null}
           {!isNewSpotDocument && recordAction === "REVIEW_AND_EDIT" && editorRecord?.state === "CURRENT" && editorRecord.item.review?.reason ?
@@ -289,6 +288,7 @@ export function ContributionEditor({ renderRecords, renderRecordDetail, embedded
             <SpotDocumentFields
               values={form.candidateFields}
               disabled={form.commandBusy}
+              renderField={key => <CandidateIntakeField fieldKey={key} form={form} key={key} />}
               onChange={form.setCandidateField}
               addressControl={<ContributionCandidateAddressControl form={form} commands={commands} />}
               textareaFixed={embedded}
@@ -339,6 +339,6 @@ function CandidatePhotoGroup({ kind, form, commands, failedIds, onRetry }: {
     {media.some(item => failedIds.includes(item.uploadId) && !form.candidateMediaPreviews[item.uploadId])
       ? <StatusPanel state="ERROR" detail={`${label}照片暂时无法预览，其他资料仍可查看。`} recoveryLabel="重试照片预览" onRecover={() => onRetry(media.map(item => item.uploadId))} />
       : null}
-    <Button className="formal-feedback-photo-action" disabled={form.commandBusy || media.length >= 3} onClick={() => void commands.addMedia(kind)}>＋ 添加{label}照片</Button>
+    <Button className={`formal-feedback-photo-action${!form.commandBusy && media.length < 3 ? " formal-feedback-photo-action--ready" : ""}`} disabled={form.commandBusy || media.length >= 3} onClick={() => void commands.addMedia(kind)}><Text>＋ <Text className="formal-feedback-photo-action__label">添加{label}照片</Text></Text></Button>
   </View>;
 }

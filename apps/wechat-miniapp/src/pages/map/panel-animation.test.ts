@@ -8,7 +8,7 @@ test("spring renderer receives one bounded animation and stale completion cannot
   const host: PanelAnimationHost = {
     animate: (_selector, frames, duration, done) => {
       assert.equal(frames[0]!.offset, 0); assert.equal(frames.at(-1)!.offset, 1);
-      assert.ok(duration <= 650); assert.ok(frames.every(frame => Number.isFinite(frame.height) && frame.height >= 148 && frame.height <= 772));
+      assert.ok(duration <= 280); assert.ok(frames.every(frame => Number.isFinite(frame.height) && frame.height >= 148 && frame.height <= 772));
       callbacks.push(done);
     },
     clearAnimation: (selector, done) => { assert.equal(selector, ".spot-panel"); assert.equal(typeof done, "function"); clears++; done(); },
@@ -23,6 +23,29 @@ test("spring renderer receives one bounded animation and stale completion cannot
   callbacks[1]!();
   assert.equal(finishes, 1); assert.equal(clears, 2);
   controller.cancel(); assert.equal(clears, 2);
+});
+
+test("native playback is not retired by the preceding bridge delay, and missing/stale start acknowledgements stay bounded", context => {
+  context.mock.timers.enable({ apis: ["setTimeout"] });
+  let finished = 0, errors = 0;
+  const starts: (() => void)[] = [];
+  const controller = createPanelAnimation(() => errors++);
+  const host: PanelAnimationHost = {
+    reportsStart: true,
+    animate: (_selector, _frames, _duration, _done, started) => { starts.push(started); },
+    clearAnimation() {},
+  };
+  const frames = [{height:368,duration:0},{height:661,duration:240}];
+  controller.start(host, frames, () => finished++);
+  context.mock.timers.tick(60); starts[0]!();
+  context.mock.timers.tick(230); assert.equal(finished, 0, "dispatch+duration+50 must not truncate late native playback");
+  context.mock.timers.tick(60); assert.equal(finished, 1);
+  controller.start(host, frames, () => finished++);
+  controller.cancel();
+  controller.start(host, frames, () => finished++);
+  starts[1]!();
+  context.mock.timers.tick(699); assert.equal(finished, 1, "a retired start cannot arm a successor's completion");
+  context.mock.timers.tick(1); assert.equal(finished, 2); assert.equal(errors, 1, "missing native start retires as unavailable");
 });
 
 

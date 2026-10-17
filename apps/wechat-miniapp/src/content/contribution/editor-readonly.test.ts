@@ -5,6 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 import { contributionRecordPrimaryAction, resolveContributionEditorRecord } from "./contribution-record-model";
 import { contributionValidationAnchor } from "./validation-anchor";
+import { contributionEditorSaveState } from "./contribution-save-state";
 import type { ContributionForm } from "./use-contribution-form";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
 
@@ -23,7 +24,7 @@ function nodes(value: unknown): Node[] {
 }
 function render(form: ContributionForm, props: Record<string, unknown> = {}, source = declaration) {
   const inert = ["View", "Text", "Button", "ScrollView", "NotificationRegion", "CustomNav", "StatusPanel", "SoftButton", "SelectionTabs",
-    "SpotDocumentFields", "ContributionRecordDetail", "ContributionActions", "ContributionDeleteDraftAction", "ContributionHistory", "ContributionContextSection",
+    "SpotDocumentFields", "SpotDocumentTabs", "SemanticIcon", "ContributionRecordDetail", "ContributionActions", "ContributionDeleteDraftAction", "ContributionHistory", "ContributionContextSection",
     "ContributionEvidenceSection", "ContributionLocationSection", "ContributionMediaSection", "ContributionCandidateAddressControl",
     "ContributionCandidateCoordinateConsent", "ToggleField"];
   const component = vm.runInNewContext(ts.transpileModule(source + "\nContributionEditor;", {
@@ -35,7 +36,7 @@ function render(form: ContributionForm, props: Record<string, unknown> = {}, sou
     useRef: (current: unknown) => ({ current }), useState: (value: unknown) => [value, () => {}],
     useCallback: (callback: unknown) => callback, useEffect() {}, useDidShow() {}, useDidHide() {},
     currentDraftUserId: () => "owner", contributionRecordPrimaryAction, contributionSubmissionState, resolveContributionEditorRecord, contributionValidationAnchor,
-    useNativeEditorLeaveGuard: () => ({}), contributionSavedState: () => "已保存", SPOT_DOCUMENT_CHAPTERS: [["place", "地点"]],
+    useNativeEditorLeaveGuard: () => ({}), contributionEditorSaveState, SPOT_DOCUMENT_CHAPTERS: [["place", "地点"]],
     useSpotDocumentNavigation: () => ({ chapter: "place", anchor: "", jump() {}, scrollTo() {}, onScroll() {} }),
   });
   return nodes(component({ ...(props.embedded ? {} : { renderRecordDetail: (item: unknown, onBack: unknown) =>

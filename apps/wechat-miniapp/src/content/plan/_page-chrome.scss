@@ -1,0 +1,10 @@
+// One current DAY navigation treatment for the list, detail and editor.
+// Safe-area/capsule measurements remain with CustomNav.
+@mixin day-navigation {
+  .custom-nav { padding-left: 16Px; padding-right: 16Px; }
+  .custom-nav__bar { min-height: 48Px; grid-template-columns: 35Px minmax(0, 1fr) max(var(--target-min), calc(var(--nav-menu-clearance, 100Px) - 16Px)); gap: 10Px; }
+  .custom-nav__back-control { margin-left: -9Px; }
+  .custom-nav__back-icon { width: 26Px; height: 26Px; }
+  .custom-nav__title { align-items: flex-start; text-align: left; }
+  .custom-nav__title .type-section { color: #263d4a; font-size: 18Px; line-height: 26Px; font-weight: 600; }
+}

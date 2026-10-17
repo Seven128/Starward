@@ -5,6 +5,8 @@ import {
 } from "@starward/miniapp-contracts";
 import { ASTRONOMICAL_EVENT_CATALOG_VERSION } from "./astronomical-event-catalog.ts";
 import { validateDeliveryIdentityKey } from "./wechat-delivery-identity.ts";
+import { parseReminderFields, type ReminderDeliverySettings } from "./plan-reminder-delivery-config.ts";
+import path from "node:path";
 
 export type ReleaseProfile = "LOCAL" | "TRIAL" | "COMMERCIAL";
 export type StorageMode = "MEMORY_TEST" | "POSTGRES";
@@ -37,6 +39,7 @@ export interface MiniappRuntimeConfig {
   qweather: {
     apiHost: string | null;
     credentialId: string | null;
+    developerId: string | null;
     projectId: string | null;
     privateKeyPem: string | null;
     forecastHours: QWeatherForecastHours;
@@ -47,12 +50,15 @@ export interface MiniappRuntimeConfig {
     sessionSecret: string;
     deliveryIdentityKey?: string | null;
     subscriptionTemplateId?: string | null;
+    reminderDelivery?: ReminderDeliverySettings;
   };
   trialRegion: string;
   eventCatalogVersion: string;
   eventCatalogCheckIntervalDays: number;
   eventArticleDnsMode: EventArticleDnsMode;
   darkSkyDatasetVersion: string;
+  terrainPublicationRoot?: string | null;
+  nightLightPublicationRoot?: string | null;
   skyCatalogVersion: string;
   astronomyAlgorithmVersion: string;
   opportunityRuleVersion: string;
@@ -110,6 +116,10 @@ function selectedFlags(input: {
 }
 
 export function loadRuntimeConfig(): MiniappRuntimeConfig {
+  const terrainPublicationRoot = value("MINIAPP_TERRAIN_PUBLICATION_ROOT");
+  if (terrainPublicationRoot && !path.isAbsolute(terrainPublicationRoot)) throw new Error("runtime_config_invalid:MINIAPP_TERRAIN_PUBLICATION_ROOT");
+  const nightLightPublicationRoot = value("MINIAPP_NIGHT_LIGHT_PUBLICATION_ROOT");
+  if (nightLightPublicationRoot && !path.isAbsolute(nightLightPublicationRoot)) throw new Error("runtime_config_invalid:MINIAPP_NIGHT_LIGHT_PUBLICATION_ROOT");
   const releaseProfile = oneOf(
     "MINIAPP_RELEASE_PROFILE",
     value("MINIAPP_RELEASE_PROFILE"),
@@ -159,6 +169,7 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
   const qweather = {
     apiHost: value("QWEATHER_API_HOST"),
     credentialId: value("QWEATHER_CREDENTIAL_ID"),
+    developerId: value("QWEATHER_DEVELOPER_ID"),
     projectId: value("QWEATHER_PROJECT_ID"),
     privateKeyPem: value("QWEATHER_PRIVATE_KEY_PEM")?.replace(/\\n/gu, "\n") ?? null,
     forecastHours: qweatherForecastHours(),
@@ -172,6 +183,15 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     ),
     deliveryIdentityKey: value("WECHAT_DELIVERY_IDENTITY_KEY"),
     subscriptionTemplateId: value("WECHAT_REMINDER_TEMPLATE_ID"),
+    reminderDelivery: {
+      enabled: process.env.WECHAT_REMINDER_DELIVERY_ENABLED === "1",
+      fields: value("WECHAT_REMINDER_FIELDS_JSON") ? parseReminderFields(value("WECHAT_REMINDER_FIELDS_JSON")!) : null,
+      // No guessed lateness policy enables production sending.
+      maxLatenessMs: value("WECHAT_REMINDER_MAX_LATENESS_SECONDS") === null ? null
+        : boundedInteger("WECHAT_REMINDER_MAX_LATENESS_SECONDS", 300, 300, 3600) * 1000,
+      miniprogramState: value("WECHAT_REMINDER_MINIPROGRAM_STATE") === null ? null
+        : oneOf("WECHAT_REMINDER_MINIPROGRAM_STATE",value("WECHAT_REMINDER_MINIPROGRAM_STATE"),['DEVELOPER','TRIAL','FORMAL'] as const,'DEVELOPER').toLowerCase() as 'developer'|'trial'|'formal',
+    },
   };
   if (wechat.deliveryIdentityKey) {
     validateDeliveryIdentityKey(wechat.deliveryIdentityKey);
@@ -245,6 +265,8 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     eventCatalogCheckIntervalDays: boundedInteger("MINIAPP_EVENT_CATALOG_CHECK_INTERVAL_DAYS", 7, 1, 30),
     eventArticleDnsMode: oneOf("MINIAPP_EVENT_ARTICLE_DNS_MODE", value("MINIAPP_EVENT_ARTICLE_DNS_MODE"), ["SYSTEM", "CLOUDFLARE_DOH"], "SYSTEM"),
     darkSkyDatasetVersion,
+    terrainPublicationRoot,
+    nightLightPublicationRoot,
     skyCatalogVersion:
       value("MINIAPP_SKY_CATALOG_VERSION") ?? "iau-bright-targets-2026.1",
     astronomyAlgorithmVersion:
@@ -264,7 +286,9 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
 }
 
 export function createTestRuntimeConfig(
-  overrides: Partial<MiniappRuntimeConfig> = {},
+  overrides: Omit<Partial<MiniappRuntimeConfig>, "qweather"> & {
+    qweather?: Partial<MiniappRuntimeConfig["qweather"]>;
+  } = {},
 ): MiniappRuntimeConfig {
   const base: MiniappRuntimeConfig = {
     releaseProfile: "LOCAL",
@@ -285,6 +309,7 @@ export function createTestRuntimeConfig(
     qweather: {
       apiHost: null,
       credentialId: null,
+      developerId: "QTEST00000",
       projectId: null,
       privateKeyPem: null,
       forecastHours: 240,
@@ -301,7 +326,7 @@ export function createTestRuntimeConfig(
     tripDecisionRuleVersion: "test-trip-decision",
     features: { ...SELECTED_FEATURE_FLAGS, WECHAT_AUTH_ENABLED: false },
   };
-  const config = { ...base, ...overrides };
+  const config = { ...base, ...overrides, qweather: { ...base.qweather, ...overrides.qweather } };
   assertFeatureFlagClosure(config.features);
   return Object.freeze(config);
 }

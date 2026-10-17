@@ -1,6 +1,58 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { clearPlanDraft, clearUnchangedPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey } from "./plan-draft";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+import ts from "typescript";
+import { clearPlanDraft, clearUnchangedPlanDraft, createDraftOwner, parsePlanDraft, planDraftKey, planDraftMatchesInput, type PlanDraft } from "./plan-draft";
+
+test("the actual editor leaves an unchanged recovered plan without treating nested property order as edits", () => {
+  const source = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const declarations: string[] = [];
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && ["remindersDirty", "eventsDirty", "isDirty"].includes(node.name.getText(source)) && node.initializer)
+      declarations.push(`const ${node.name.getText(source)} = ${node.initializer.getText(source)};`);
+    ts.forEachChild(node, visit);
+  };
+  visit(source);assert.ok(declarations.some(text => text.startsWith("const isDirty =")));
+  const saved: PlanDraft = { selectedSpotId: "spot:journey" as PlanDraft["selectedSpotId"], localDate: "2026-10-05", localTime: "22:00", notes: "原计划保留",
+    timing: { departureLocalTime: "21:00", endLocalDate: "2026-10-06", endLocalTime: "01:00", departureLocalDate: "2026-10-05" },
+    travel: { originLocation: null, mode: "DRIVING", origin: "隔离测试出发地" },
+    reminders: [{ notifyOnWechat: false, items: [{ completed: true, text: "检查照明", itemId: "item:1" }], reminderId: "reminder:1", title: "准备", hoursBeforeDeparture: 1 }],
+    eventOccurrenceIds: ["event-occurrence:009-dra:2026"] };
+  const restored = parsePlanDraft(saved)!;assert.deepEqual(restored, saved);
+  assert.notEqual(JSON.stringify(restored.travel), JSON.stringify(saved.travel));
+  const program = ts.transpileModule(declarations.join("\n") + "\nisDirty", {compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText;
+  const dirty = (current: PlanDraft, activePlan: unknown = { ...saved, spotId: saved.selectedSpotId }, recoveredLocalDraft = true) => vm.runInNewContext(program, {
+    ...current, activePlan, recoveredLocalDraft, initialDraft: {current: {...restored, reminders: []}}, planDraftMatchesInput,
+    emptyPlanTiming: () => ({endLocalDate:"", endLocalTime:"", departureLocalDate:"", departureLocalTime:""}),
+  });
+  assert.equal(dirty(restored), false, "viewing/cancelling an event must not turn an equivalent recovered draft into unsaved edits");
+  for (const changed of [
+    {...restored, notes: "新备注"}, {...restored, localTime: "23:00"}, {...restored, eventOccurrenceIds: []},
+    {...restored, timing: {...restored.timing!, endLocalTime: "02:00"}},
+    {...restored, travel: {...restored.travel!, origin: "另一出发地"}},
+    {...restored, reminders: [{...restored.reminders![0]!, items: [{...restored.reminders![0]!.items[0]!, completed: false}]}]},
+  ]) assert.equal(dirty(changed), true, "actual authored changes must still require the leave decision");
+  const newInput = {...restored, reminders: []};
+  assert.equal(dirty(newInput, null, false), false);
+  assert.equal(dirty(newInput, null, true), true, "an unsaved new-plan recovery still needs protection");
+});
+
+test("a saved service plan owns its equivalent parsed draft regardless of nested field order", () => {
+  const submitted: PlanDraft = { selectedSpotId: "spot:journey" as PlanDraft["selectedSpotId"],
+    localDate: "2026-10-06", localTime: "22:00", notes: "原文保留", baseRevision: 2,
+    timing: { departureLocalTime: "21:00", endLocalTime: "01:00", endLocalDate: "2026-10-07", departureLocalDate: "2026-10-06" },
+    travel: { mode: "DRIVING", origin: "隔离测试出发地", originLocation: null },
+    reminders: [{ items: [{ completed: true, text: "检查手电", itemId: "item:1" }], title: "器材",
+      reminderId: "reminder:1", notifyOnWechat: false, hoursBeforeDeparture: 1 }], eventOccurrenceIds: [] };
+  const restored = parsePlanDraft(JSON.parse(JSON.stringify(submitted)))!;
+  assert.deepEqual(restored, submitted);
+  assert.equal(planDraftMatchesInput(restored, submitted), true);
+  assert.equal(planDraftMatchesInput(restored, { ...submitted, notes: "后来修改" }), false);
+  assert.equal(planDraftMatchesInput(restored, { ...submitted, baseRevision: 3 }), false);
+  assert.equal(planDraftMatchesInput(restored, { ...submitted, reminders: [{ ...submitted.reminders![0]!,
+    items: [{ ...submitted.reminders![0]!.items[0]!, completed: false }] }] }), false);
+});
 
 test("late save completion cannot delete another editor's newer draft or new plan", () => {
   const original = { creationPlanId: "plan:a", notes: "old" };

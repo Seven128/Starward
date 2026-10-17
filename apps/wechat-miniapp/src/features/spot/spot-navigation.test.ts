@@ -3,92 +3,103 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { createSpotNavigationController, currentNavigationResource, currentNavigationSiteResource,
+  type SpotNavigationSnapshot } from "../../navigation/spot-navigation-controller";
 
-function navigation(options: { warningFails?: boolean; copyFails?: boolean; restricted?: boolean; handoffCancelled?: boolean } = {}) {
-  const source = ts.createSourceFile("spot.tsx", readFileSync(new URL("./spot-detail-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  let declaration = "", cancelDeclaration = "";
+function snapshotReader(file: string, variable: string, bindings: Record<string, unknown>): () => SpotNavigationSnapshot {
+  const ast = ts.createSourceFile(file, readFileSync(new URL(file, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let initializer: ts.Expression | undefined;
   const visit = (node: ts.Node) => {
-    if (ts.isFunctionDeclaration(node) && node.name?.text === "isCancelledAction") cancelDeclaration = node.getText(source);
-    if (ts.isVariableDeclaration(node) && node.name.getText(source) === "openNavigation") declaration = `const ${node.getText(source)};`;
+    if (ts.isVariableDeclaration(node) && node.name.getText(ast) === variable && ts.isCallExpression(node.initializer!)) initializer = node.initializer.arguments[0];
     ts.forEachChild(node, visit);
   };
-  visit(source);
-  assert.ok(declaration);
-  let choose!: (value: { tapIndex: number }) => void, rejectChoice!: (error: unknown) => void;
-  const choice = new Promise((resolve, reject) => { choose = resolve; rejectChoice = reject; });
-  const epoch = { current: 0 }, calls: string[] = [];
-  const open = vm.runInNewContext(ts.transpileModule(cancelDeclaration + "\n" + declaration + "\nopenNavigation;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-    Error,
-    detail: { spot: { spotId: "spot:a", visibilityPolicy: options.restricted ? "PUBLIC_APPROXIMATE" : "PUBLIC_EXACT", gcj02: {}, wgs84: {} }, accessAndSafety: { explicitDanger: options.warningFails, restrictions: [], guidance: [] } },
-    navigationEpoch: epoch, navigationScope: { current: "scope" }, scope: "scope",
-    navigationHandoff: { confirm: async () => {
-      if (options.handoffCancelled) { calls.push("handoff"); return false; }
-      return true;
-    } },
-    observationContext: { contextId: "ctx:a" }, effectiveRoute: { originLabel: "origin" },
-    Taro: {
-      showActionSheet: () => choice,
-      showModal: async () => { calls.push("modal"); throw new Error("native failure"); },
-      openLocation: async () => calls.push("open"),
-      setClipboardData: async () => { calls.push("copy"); if (options.copyFails) throw new Error("clipboard failure"); },
-    },
-    estimateSpotRoute: () => { throw new Error("Retired route provider must not be called"); },
-    notify: () => calls.push("notice"),
-  }) as () => Promise<void>;
-  return { open, choose, rejectChoice, calls, invalidate: () => epoch.current++ };
+  visit(ast); assert.ok(initializer, `${variable} uses the production navigation owner`);
+  return vm.runInNewContext(ts.transpileModule(`(${initializer.getText(ast)}).readSnapshot`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText, { currentNavigationResource, currentNavigationSiteResource, ...bindings });
 }
-
-test("a late navigation choice cannot open a location after leaving its context", async () => {
-  const page = navigation(); const pending = page.open();
-  page.invalidate(); page.choose({ tapIndex: 0 }); await pending;
-  assert.deepEqual(page.calls, []);
-});
-
-test("menu failure never defaults to opening the external map", async () => {
-  const page = navigation(); const pending = page.open();
-  page.rejectChoice(new Error("unavailable")); await pending;
-  assert.deepEqual(page.calls, ["notice"]);
-});
-
-test("choosing external navigation opens the destination without any route provider", async () => {
-  const page = navigation(); const pending = page.open();
-  page.choose({ tapIndex: 0 }); await pending;
-  assert.deepEqual(page.calls, ["open"]);
-});
-
-test("failed safety warning stops navigation with a handled result", async () => {
-  const page = navigation({ warningFails: true });
-  await assert.doesNotReject(page.open());
-  assert.deepEqual(page.calls, ["modal", "notice"]);
-});
-
-test("clipboard failure is not misreported as an external map failure", async () => {
-  const page = navigation({ copyFails: true }); const pending = page.open();
-  page.choose({ tapIndex: 1 }); await assert.doesNotReject(pending);
-  assert.deepEqual(page.calls, ["copy", "notice"]);
-});
-
-test("restricted spot coordinates never reach external map or clipboard", async () => {
-  const page = navigation({ restricted: true });
-  await page.open();
-  assert.deepEqual(page.calls, ["notice"]);
-});
-
-test("cancelled red-light handoff does not open native navigation options", async () => {
-  const page = navigation({ handoffCancelled: true });
-  await page.open();
-  assert.deepEqual(page.calls, ["handoff"]);
-});
-
-for (const result of [{ errMsg: 'showActionSheet:fail cancel' }, new Error('showActionSheet:fail cancel')]) {
-  test(`cancelling navigation options is quiet (${result instanceof Error ? 'Error' : 'native result'})`, async () => {
-    const page = navigation(); const pending = page.open();
-    page.rejectChoice(result); await pending;
-    assert.deepEqual(page.calls, []);
+function fixture(page: "Map" | "Spot" | "Plan", override = false) {
+  const context = { contextId: "ctx:a", contextFingerprint: "fingerprint:a", revision: 1 };
+  const state = { mode: "DAY", accountOwnerId: "account:a" as string | null, mapResetVersion: 1, selectedSpotId: "spot:a", observationContext: { ...context }, plans: [{ planId: "plan:a", revision: 1 }] };
+  const spot = { spotId: "spot:a", name: "当前公开点", address: "当前入口", visibilityPolicy: "PUBLIC_EXACT", status: "PUBLISHED",
+    gcj02: { system: "GCJ02", latitude: 22.65, longitude: 114.11 }, wgs84: { system: "WGS84", latitude: 22.654, longitude: 114.106 } };
+  const safety = { openness: "OPEN", legalAccess: "PERMITTED", nightSafety: "NO_KNOWN_HAZARD", explicitDanger: false, restrictions: [], guidance: [] };
+  const plan = { planId: "plan:a", revision: 1, spotId: "spot:a" };
+  const publication = { data: { data: { spot, accessAndSafety: safety }, dataState: "FRESH", etag: "spot:v1" }, error: null as unknown, isInvalidated: false, updatedAt: 1 };
+  const site = { data: { data: { spotId: "spot:a", accessAndSafety: safety }, dataState: "PARTIAL", etag: "site:v1" }, error: null as unknown, isInvalidated: false, updatedAt: 1 };
+  const scene = { data: { data: { spots: [spot] }, dataState: "PARTIAL", etag: "scene:v1" }, error: null as unknown, isInvalidated: false, updatedAt: 1 };
+  const plans = { data: { data: { plans: [plan] }, dataState: "FRESH" }, error: null as unknown, isInvalidated: false, updatedAt: 1 };
+  const paths = { Map: ["../../pages/map/index.tsx", "spotNavigation"], Spot: ["./spot-detail-page.tsx", "locationNavigation"], Plan: ["../../content/plan/detail/plan-editor-page.tsx", "planNavigation"] };
+  let owner = "account:a";
+  let currentOverride: typeof context | null = { ...context };
+  const query = (value: unknown) => ({ readCurrent: () => value });
+  const read = snapshotReader(paths[page][0]!, paths[page][1]!, {
+    useAppStore: { getState: () => state }, currentDraftUserId: () => owner,
+    spotOverview: query(publication), overview: query(publication), site: query(site),
+    planQuery: query(plans), spotsQuery: query(scene), siteOverviewQuery: query(site),
+    activeContext: context, observationContext: context, observationContextOverride: override ? context : undefined,
+    readObservationContextOverride: () => currentOverride,
+    pageVisible: true, bottomPresentation: "spot-panel", detailContextReady: true, selected: spot, selectedSpot: spot,
+    spotId: spot.spotId, segment: "SITE", scope: "spot:scope", validRoute: true, navigationEpoch: { current: 0 },
+    planOwner: owner, formOwner: { current: owner }, activePlanId: plan.planId, activePlan: plan, selectedSpotId: spot.spotId, editing: false,
   });
+  return { read, publication, site, scene, plans, state, spot, setOwner: (value: string) => { owner = value; },
+    replaceOverride: (value: typeof context | null) => { currentOverride = value; } };
 }
-test('a native action sheet failure remains visible', async () => {
-  const page = navigation(); const pending = page.open();
-  page.rejectChoice({ errMsg: 'showActionSheet:fail unavailable' }); await pending;
-  assert.deepEqual(page.calls, ['notice']);
+
+test("all rendered consumers use the current cache publication, not retained renderer coordinates", () => {
+  for (const page of ["Map", "Spot", "Plan"] as const) {
+    const f = fixture(page); assert.equal(f.read().available, true, page);
+    const current = { ...f.spot, address: "已更新入口", gcj02: { ...f.spot.gcj02, latitude: 23.1 } };
+    if (page === "Plan") f.scene.data.data.spots = [current]; else f.publication.data.data.spot = current;
+    assert.equal(f.read().spot?.gcj02.latitude, 23.1, page);
+    assert.equal(f.read().spot?.address, "已更新入口", page);
+    if (page === "Plan") f.site.isInvalidated = true; else f.publication.error = new Error("current refresh failed");
+    assert.equal(f.read().available, false, page);
+  }
+});
+
+test("context or private plan changes before the next render do not begin a mismatched native intent", () => {
+  for (const page of ["Map", "Spot"] as const) {
+    const f = fixture(page); f.state.observationContext.revision++;
+    assert.equal(f.read().available, false, page);
+    f.state.observationContext.revision--; f.state.observationContext.contextFingerprint = "different";
+    assert.equal(f.read().available, false, page);
+  }
+  const plan = fixture("Plan"); plan.plans.data.data.plans = [{ ...plan.plans.data.data.plans[0]!, revision: 2 }];
+  assert.equal(plan.read().available, false); plan.setOwner("account:b"); assert.equal(plan.read().available, false);
+});
+
+test("a late choice after synchronous publication or account reset never dispatches obsolete native coordinates", async () => {
+  for (const page of ["Map", "Spot", "Plan"] as const) {
+    const f = fixture(page); let accept!: (value: boolean) => void; const gate = new Promise<boolean>(resolve => { accept = resolve; });
+    const effects: unknown[] = [];
+    const command = createSpotNavigationController({ readSnapshot: f.read, isCurrent: () => true, confirmHandoff: () => gate,
+      confirmBlocker: async () => true, chooseAction: async () => "MAP", openLocation: async target => { effects.push(target); },
+      copyCoordinates: async value => { effects.push(value); }, confirmCopyFallback: async () => true,
+      report: failure => { effects.push(failure); }, onAttempt() {}, onBusy() {} });
+    const pending = command.openDirect(); f.state.mapResetVersion++; accept(true); await pending;
+    assert.deepEqual(effects, [], page);
+  }
+});
+
+test("missing site facts preserve the plan and destination while disabling external navigation only", () => {
+  const f = fixture("Plan"); f.site.data.data.spotId = "spot:other";
+  const snapshot = f.read(); assert.equal(snapshot.available, false); assert.equal(snapshot.safety, null);
+  assert.equal(snapshot.spot?.spotId, "spot:a"); assert.equal(f.plans.data.data.plans[0]!.revision, 1);
+});
+
+test("plan-linked spot details read their own current Context rather than the unrelated browsing Context", () => {
+  const f = fixture("Spot", true); f.state.observationContext.contextId = "ctx:unrelated-browse";
+  assert.equal(f.read().available, true);
+  f.replaceOverride({ contextId: "ctx:a", contextFingerprint: "fingerprint:a", revision: 2 });
+  assert.equal(f.read().available, false, "new query Context cannot authorize the old rendered key");
+  f.replaceOverride(null); assert.equal(f.read().available, false, "failed or invalidated Context remains unavailable");
+});
+
+test("a retained native session cannot authorize a private plan while the canonical account differs", () => {
+  for (const owner of [null, "account:b"]) {
+    const f = fixture("Plan"); f.state.accountOwnerId = owner;
+    assert.equal(f.read().available, false);
+  }
 });

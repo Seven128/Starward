@@ -24,13 +24,13 @@ test("subscription transport uses generated paths, explicit choices and account 
   await client.report("a","challenge-one","reject");
   assert.equal(calls[1]!.options.method,"PUT");
   assert.deepEqual(calls[1]!.options.body,{choice:"reject"});
-  assert.equal(confirmations,1);
+  assert.equal(confirmations,2);
   recorded=false;
   await client.report("a","challenge-one","accept");
-  assert.equal(confirmations,1,"unrecorded reports cannot claim a changed plan");
+  assert.equal(confirmations,2,"unrecorded reports cannot claim a changed plan");
   switchDuringRequest=true;
   await assert.rejects(client.report("a","challenge-one","accept"),/账户已变化/);
-  assert.equal(confirmations,1);
+  assert.equal(confirmations,2);
   const count=calls.length;
   await assert.rejects(client.prepare("a","plan:one","r"),/账户已变化/);
   assert.equal(calls.length,count,"stale owner cannot start a request");

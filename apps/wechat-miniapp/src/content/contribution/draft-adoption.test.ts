@@ -1,3 +1,4 @@
+import { testOperation } from "./operation-test-support";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -33,8 +34,8 @@ test("saving cannot overwrite a matching draft that the user has not restored", 
     formInput() { assert.fail("unrestored draft cannot be replaced by current input"); },
     announce(_tone: string, title: string) { notices.push(title); },
   };
-  assert.equal(await create(form, () => {})(false), null);
-  assert.equal(await create(form, () => {})(true), null);
+  assert.equal(await create(form, testOperation())(false), null);
+  assert.equal(await create(form, testOperation())(true), null);
   assert.deepEqual(notices, ["请先继续已有草稿", "请先继续已有草稿"]);
   assert.equal(stored.detail, "之前保留的完整现场记录");
   assert.equal(stored.revision, 8);

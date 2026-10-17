@@ -13,7 +13,11 @@ class PosterCancelled extends Error {}
 export function createSharePosterOwner<Frame>(port: {
   nextTick(callback: () => void): void;
   draw(frame: Frame, done: () => void, fail: (cause: unknown) => void, current: () => boolean): void;
-  export(frame: Frame): Promise<string>;
+  preview(frame: Frame, current: () => boolean): Promise<void>;
+  presentImage(frame: Frame, image: string): void;
+  releasePreview(frame: Frame): void;
+  export(frame: Frame, current: () => boolean): Promise<string>;
+  releaseImage(image: string): void;
   save(image: string): Promise<unknown>;
   albumFailure(): Promise<PosterError>;
   retire(frame: Frame): void;
@@ -63,6 +67,7 @@ export function createSharePosterOwner<Frame>(port: {
     const retired = frame;
     frame = undefined;
     invalidate();
+    if (retired !== undefined) port.releasePreview(retired);
     // React must commit a new native Canvas ID and call update before another
     // draw is allowed. Cancelling JS cannot retract already-submitted commands.
     if (!disposed && retired !== undefined) port.retire(retired);
@@ -84,6 +89,8 @@ export function createSharePosterOwner<Frame>(port: {
           assertCurrent(version);
           await draw(value, version);
           assertCurrent(version);
+          await wait<void>((done, fail, pending) => { void port.preview(value, () => pending() && current(version)).then(done, fail); });
+          assertCurrent(version);
         } catch (cause) {
           if (!(cause instanceof PosterCancelled) && current(version)) {
             port.error("export");
@@ -98,13 +105,19 @@ export function createSharePosterOwner<Frame>(port: {
     // Retiring/remounting the same content is an isolation handshake, not a
     // retry. Only new content, an explicit save or returning from hide retries.
     update(value: Frame, contentChanged = true) {
+      const previous = frame;
       invalidate(); frame = value;
+      if (previous !== undefined && previous !== value) port.releasePreview(previous);
       if (contentChanged) previewPaused = false;
       preview();
     },
     show() { if (!disposed && !visible) { visible = true; previewPaused = false; preview(); } },
     hide() { visible = false; retire(); },
-    dispose() { disposed = true; frame = undefined; invalidate(); },
+    dispose() {
+      const previous = frame;
+      disposed = true; frame = undefined; invalidate();
+      if (previous !== undefined) port.releasePreview(previous);
+    },
     save() {
       // React state does not lock a second click in the same event turn.
       if (!active() || saving) return Promise.resolve();
@@ -119,13 +132,18 @@ export function createSharePosterOwner<Frame>(port: {
       return enqueue(async () => {
         let stage: "export" | "album" = "export";
         let exported = false;
+        let image: string | undefined;
         try {
           assertCurrent(version);
           await draw(value, version);
           assertCurrent(version);
-          const image = await wait<string>((done, fail) => { void port.export(value).then(done, fail); });
+          image = await wait<string>((done, fail, pending) => { void port.export(value, () => pending() && current(version)).then(result => {
+            if (!pending() || !current(version)) { port.releaseImage(result); return; }
+            done(result);
+          }, fail); });
           assertCurrent(version);
           exported = true;
+          port.presentImage(value, image);
           stage = "album";
           // An already-issued platform save cannot be revoked. Keep the lock
           // until it settles; hiding only fences subsequent UI and effects.
@@ -142,6 +160,7 @@ export function createSharePosterOwner<Frame>(port: {
             if (current(version)) port.error(failure);
           }
         } finally {
+          if (image !== undefined) port.releaseImage(image);
           saving = false;
           if (!disposed) port.busy(false);
           if (current(version)) {

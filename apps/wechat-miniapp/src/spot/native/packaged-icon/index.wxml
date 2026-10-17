@@ -1,0 +1,1 @@
+<image wx:if="{{src}}" class="packaged-icon" src="{{src}}" mode="aspectFit" aria-hidden="true" />

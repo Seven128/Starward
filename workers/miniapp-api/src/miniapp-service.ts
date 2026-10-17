@@ -1,16 +1,19 @@
 import { CelestialObjectSearchService } from "./celestial-object-search.ts";
 import {
   PLAN_NOTES_MAX_LENGTH,
+  observationNightForCivilDate,
   parsePlanEventOccurrenceIds,
   parsePlanReminders,
   parsePlanTravel,
   normalizeAccountNickname,
+  uniqueSourceRecords as uniqueSources,
   type AccountAvatarSaveRequest,
   type AccountNicknameSaveRequest,
   type DeepSkyImageSelection,
 } from "@starward/miniapp-contracts";
 import { createHash, randomUUID } from "node:crypto";
 import { openPlanShare, sealPlanShare } from "./plan-share-token.ts";
+import { formalSpotFacts } from "./formal-spot-facts.ts";
 import { observationFrameTimes } from "./observation-time-axis.ts";
 import {
   type AccountDataExportData,
@@ -63,6 +66,8 @@ import {
   type SpotSummary,
   type TerrainOverlayData,
   type TerrainOverlayRequest,
+  type TerrainHorizonData,
+  type TerrainHorizonRequest,
   type UserId,
   type UserPreferences,
   type Wgs84Point,
@@ -115,6 +120,9 @@ import {
 } from "./media-object-store.ts";
 import { decodeContributionBase64 } from "./contribution-validation.ts";
 import { PostgresMiniappRepository } from "./postgres-repository.ts";
+import { configuredReminderDelivery, reminderDeliveryEnabled } from "./plan-reminder-delivery-config.ts";
+import { decryptWechatDeliveryIdentity } from "./wechat-delivery-identity.ts";
+import { inspectReminderDeliveryFields } from "./plan-reminder-delivery-payload.ts";
 import { PostgresReminderSubscriptionStore } from "./postgres-reminder-subscription-store.ts";
 import { validateReminderSubscriptionChallengeId } from "./reminder-subscription-binding.ts";
 import type { ReminderSubscriptionPrepareRequest, ReminderSubscriptionPrepareData,
@@ -139,12 +147,17 @@ import {
   validateExternalUrl,
 } from "./security.ts";
 import { createWeatherPort } from "./weather-provider.ts";
+import { readMapCloudForecast, projectMapCloudLayer, mapCloudForecastEnds, mapCloudEvidence, mapCloudSnapshot, type MapCloudSample } from "./map-cloud-forecast.ts";
 import { QWeatherRecentWeatherAdapter, type RecentWeatherPort } from "./recent-weather-provider.ts";
 import { QWeatherAirQualityAdapter, type AirQualityPort } from "./air-quality-provider.ts";
 import { SpotEnvironmentService } from "./spot-environment-service.ts";
 import { derivePlanReminderSchedules, publicReminderStatus } from "./plan-reminder-schedule.ts";
 import { readFile } from "node:fs/promises";
-import { terrainImageUrl, terrainPublication, terrainPublicationSource, terrainRequestIsCovered, terrainUnavailable, validateTerrainAsset } from "./terrain-publication.ts";
+import { terrainPublicationSource, terrainRequestIsCovered, terrainUnavailable } from "./terrain-publication.ts";
+import { TerrainService, type TerrainPort } from "./terrain-service.ts";
+import { terrainHorizonData } from "./terrain-horizon-data.ts";
+import { NightLightService, nightLightUnavailable } from "./night-light-service.ts";
+import { terrainBounds } from "./terrain-request.ts";
 import { WEATHER_DEADLINES } from "./provider-deadline.ts";
 import {
   AstronomicalEventCatalogOwner,
@@ -213,12 +226,8 @@ const FILTER_GROUP_LABELS = Object.freeze(
   Object.fromEntries(FILTER_GROUPS.map(({ key, title }) => [key, title])),
 ) as Readonly<Record<FilterGroupKey, string>>;
 
-function uniqueSources(sources: readonly SourceSummary[]) {
-  return [...new Map(sources.map((source) => [source.id, source])).values()];
-}
-
 function browsingTimezoneSources(context: ObservationContext): readonly SourceSummary[] {
-  return context.location.kind === "MAP_POINT" && context.timezoneSource
+  return context.location.kind !== "FORMAL_SPOT" && context.timezoneSource
     ? [context.timezoneSource] : [];
 }
 
@@ -446,6 +455,7 @@ function layerFor(input: {
   evaluations: Readonly<Record<string, MapSpotEvaluation>>;
   config: MiniappRuntimeConfig;
   darkSkyCells: readonly DarkSkyGridCellRecord[];
+  cloudSamples?: readonly MapCloudSample[];
 }): MapLayerData {
   if (input.kind === "NORMAL")
     return {
@@ -502,7 +512,7 @@ function layerFor(input: {
         validAt: source.validFrom,
         datasetVersion: input.darkSkyCells[0]!.datasetVersion,
         precision:
-          "已发布 EOG 年度夜光粗网格；等级只在同一试点区和同一数据集内相对比较，不是 Bortle、SQM 或现场实测",
+          `${source.precision.trim() || "已发布年度夜光粗网格"}；等级只在同一试点区和同一数据集内相对比较，不是 Bortle、SQM 或现场实测`,
         state: "PARTIAL",
         source,
       };
@@ -534,57 +544,7 @@ function layerFor(input: {
         evaluation: MapSpotEvaluation;
       } => Boolean(entry.report && entry.evaluation),
     );
-  if (input.kind === "CLOUD") {
-    const cloudValue = (report: AstronomyDecisionReport) => {
-      const row = exactHourly(report, input.selectedAtUtc);
-      if (!row) return null;
-      return row.cloudPercent;
-    };
-    const available = reportEntries
-      .map((entry) => ({ ...entry, value: cloudValue(entry.report.data) }))
-      .filter(
-        (entry): entry is typeof entry & { value: number } =>
-          entry.value !== null,
-      );
-    const source =
-      available
-        .flatMap((entry) => entry.report.sources)
-        .find((item) => item.kind === "THIRD_PARTY_FORECAST") ?? null;
-    return {
-      kind: input.kind,
-      cloudLayer: input.cloudLayer,
-      polygons: available.map((entry) =>
-        cell(entry.spot, {
-          id: "cloud:" + entry.spot.spotId,
-          color:
-            entry.value <= 30
-              ? dynamicLayerColor("#4E8E9B", entry.value)
-              : entry.value <= 65
-                ? dynamicLayerColor("#76AAB2", entry.value)
-                : dynamicLayerColor("#A9C9CE", entry.value),
-          value: entry.value,
-          label:
-            input.cloudLayer + " 云量 " + String(Math.round(entry.value)) + "%",
-          state: entry.report.dataState === "FRESH" ? "FRESH" : "PARTIAL",
-        }),
-      ),
-      legend: [
-        { label: "少云", color: "#4E8E9B", range: "0–30%" },
-        { label: "中等", color: "#76AAB2", range: "31–65%" },
-        { label: "多云", color: "#A9C9CE", range: "66–100%" },
-      ],
-      validAt: input.selectedAtUtc,
-      datasetVersion: source?.id ?? "weather-unavailable",
-      precision:
-        "按正式点真实预报样本绘制有界单元；未接入连续气象栅格时不插值填空",
-      state: available.length
-        ? available.length === reportEntries.length
-          ? "FRESH"
-          : "PARTIAL"
-        : "UNAVAILABLE",
-      source,
-    };
-  }
+  if (input.kind === "CLOUD") return projectMapCloudLayer(input.cloudSamples ?? [], input.selectedAtUtc);
   const source =
     reportEntries
       .flatMap((entry) => entry.report.sources)
@@ -680,6 +640,9 @@ export class MiniappService {
   readonly route: RoutePort;
   readonly placeSearch: PlaceSearchPort;
   readonly spotEnvironment: SpotEnvironmentService;
+  readonly terrain: TerrainPort;
+  readonly nightLight: NightLightService;
+  private readonly weather: WeatherPort;
   readonly outbox = new MemoryOutbox();
   private readonly usageStore: PostgresVendorUsageStore | undefined;
   private readonly reminderSubscriptions: PostgresReminderSubscriptionStore | null;
@@ -687,6 +650,7 @@ export class MiniappService {
   constructor(input: {
     repository: MiniappRepositoryPort;
     config: MiniappRuntimeConfig;
+    authTransport?: typeof fetch;
     weather: WeatherPort;
     recentWeather?: RecentWeatherPort;
     airQuality?: AirQualityPort;
@@ -712,6 +676,7 @@ export class MiniappService {
     galacticImage?: GalacticImagePublicationService;
     landscape?: SkyLandscapePublicationService;
     usageStore?: PostgresVendorUsageStore;
+    terrain?: TerrainPort;
   }) {
     // Optical publications currently contain only bounded rights-unresolved
     // trials. Keep the same release boundary even for direct service injection.
@@ -722,6 +687,15 @@ export class MiniappService {
         throw new Error("optical_trial_scope_invalid");
     }
     this.repository = input.repository;
+    this.nightLight = new NightLightService(input.repository, input.config.nightLightPublicationRoot);
+    this.weather = input.weather;
+    this.terrain = input.terrain ?? new TerrainService({
+      ...(input.config.terrainPublicationRoot ? { publishedDirectory: input.config.terrainPublicationRoot } : {}),
+      measured: value => {
+        const { publicationId, ...metrics } = value;
+        this.telemetry.event("terrain_raster_derived", { ...metrics, assetSha256: publicationId.split(":").at(-1) });
+      },
+    });
     this.config = input.config;
     this.reminderSubscriptions = input.repository instanceof PostgresMiniappRepository
       ? new PostgresReminderSubscriptionStore(input.repository.pool) : null;
@@ -758,7 +732,7 @@ export class MiniappService {
       Date.now,
       this.eventCatalog,
     );
-    this.auth = new AuthService(this.repository, this.config);
+    this.auth = new AuthService(this.repository, this.config, input.authTransport);
     this.observationContexts = new ObservationContextService(
       this.repository,
       this.cache,
@@ -827,6 +801,8 @@ export class MiniappService {
   }
 
   async onModuleDestroy() {
+    this.terrain.close();
+    this.nightLight.close();
     await this.usageStore?.close();
     await this.repository.close();
     this.astronomy.clearCaches();
@@ -886,16 +862,16 @@ export class MiniappService {
     return this.auth.login(input);
   }
 
-  async resolveObservationContext(input: ObservationContextResolveRequest) {
-    const context = await this.observationContexts.resolve(input);
+  async resolveObservationContext(input: ObservationContextResolveRequest, userId?: UserId | null) {
+    const context = await this.observationContexts.resolve(input, userId);
     return envelope(context, "FRESH", browsingTimezoneSources(context), [], {
       validAt: context.selectedAtUtc,
       contextRevision: context.revision,
     });
   }
 
-  async getObservationContext(contextId: string) {
-    const context = await this.observationContexts.get(contextId);
+  async getObservationContext(contextId: string, userId?: UserId | null) {
+    const context = await this.observationContexts.get(contextId, userId);
     return envelope(context, "FRESH", browsingTimezoneSources(context), [], {
       validAt: context.selectedAtUtc,
       contextRevision: context.revision,
@@ -905,15 +881,24 @@ export class MiniappService {
   async updateObservationContext(
     contextId: string,
     input: ObservationContextUpdateRequest,
+    userId?: UserId | null,
   ) {
-    const context = await this.observationContexts.update(contextId, input);
+    const context = await this.observationContexts.update(contextId, input, userId);
     await this.cache.deleteByPrefix(
       "map:" + context.contextFingerprint.slice(0, 16),
     );
+    await this.#assertPrivateContextCurrent(context, userId);
     return envelope(context, "FRESH", browsingTimezoneSources(context), [], {
       validAt: context.selectedAtUtc,
       contextRevision: context.revision,
     });
+  }
+
+  async #assertPrivateContextCurrent(context: ObservationContext, userId?: UserId | null) {
+    if (!context.privateProposal) return;
+    const current = await this.observationContexts.get(context.contextId, userId);
+    if (current.revision !== context.revision || current.contextFingerprint !== context.contextFingerprint)
+      throw new Error("observation_context_conflict");
   }
 
   getCapabilities() {
@@ -981,7 +966,7 @@ export class MiniappService {
     );
   }
 
-  async getAstronomicalEvent(occurrenceId: string, contextId?: string) {
+  async getAstronomicalEvent(occurrenceId: string, contextId?: string, userId?: UserId | null) {
     const catalog = this.eventCatalog.snapshot();
     const event = catalog.events.find(event => event.occurrenceId === occurrenceId);
     if (!event) throw new Error("astronomical_event_not_found");
@@ -993,7 +978,7 @@ export class MiniappService {
     };
     let context: ObservationContext | null = null;
     if (contextId) {
-      context = await this.observationContexts.get(contextId);
+      context = await this.observationContexts.get(contextId, userId);
       const spot = context.location.kind === "FORMAL_SPOT"
         ? await this.repository.getSpot(context.location.spotId)
         : null;
@@ -1016,6 +1001,7 @@ export class MiniappService {
         ? projectMeteorShowerAtLocation(event, projectionInput)
         : projectEclipseAtLocation(event, projectionInput);
     }
+    if (context) await this.#assertPrivateContextCurrent(context, userId);
     return envelope(
       {
         catalogVersion: catalog.catalogVersion,
@@ -1033,26 +1019,33 @@ export class MiniappService {
     );
   }
 
-  async getTerrainOverlay(input: TerrainOverlayRequest): Promise<ApiEnvelope<TerrainOverlayData>> {
+  async getTerrainOverlay(input: TerrainOverlayRequest, signal?: AbortSignal): Promise<ApiEnvelope<TerrainOverlayData>> {
+    const terrainStartedAt = performance.now();
     const centerWgs84 = gcj02ToWgs84({
       lat: input.center.latitude,
       lon: input.center.longitude,
       system: "GCJ-02",
     });
     const [terrainRead, lightRead] = await Promise.allSettled([
-      terrainPublication(),
-      this.repository.kind === "postgres" && this.config.darkSkyDatasetVersion !== "UNAVAILABLE"
-      ? this.repository.listDarkSkyGridCells({
-          datasetVersion: this.config.darkSkyDatasetVersion,
-          center: { system: "WGS84", latitude: centerWgs84.lat, longitude: centerWgs84.lon },
-          radiusKm: input.radiusKm,
-        })
-      : Promise.resolve([]),
+      this.terrain.getPublication(input, signal),
+      input.radiusKm !== undefined && this.repository.kind === "postgres" && this.config.darkSkyDatasetVersion !== "UNAVAILABLE"
+      ? (async () => {
+          const fixed = await this.nightLight.layer(this.config.darkSkyDatasetVersion, terrainBounds(input), signal);
+          const cells = fixed ? [] : await this.repository.listDarkSkyGridCells({
+            datasetVersion: this.config.darkSkyDatasetVersion,
+            center: { system: "WGS84", latitude: centerWgs84.lat, longitude: centerWgs84.lon }, radiusKm: input.radiusKm,
+          });
+          return { fixed, cells };
+        })()
+      : Promise.resolve({ fixed: null, cells: [] }),
     ]);
+    signal?.throwIfAborted();
     const publication = terrainRead.status === "fulfilled" ? terrainRead.value : null;
     const terrainCovered = publication !== null && terrainRequestIsCovered(publication, input);
+    const terrainReadFailed = terrainRead.status === "rejected" || Boolean(publication?.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND"));
     const terrainSource = terrainCovered ? terrainPublicationSource(publication) : null;
-    const darkSkyCells = lightRead.status === "fulfilled" ? lightRead.value : [];
+    const darkSkyCells = lightRead.status === "fulfilled" ? lightRead.value.cells : [];
+    const fixedLight = lightRead.status === "fulfilled" ? lightRead.value.fixed : null;
     const colors: Record<DarkSkyGridCellRecord["productBand"], string> = {
       VERY_LOW: "#87714A99", LOW: "#A1845299", MODERATE: "#BE9B6199", HIGH: "#D1B57799", VERY_HIGH: "#E0C99899",
     };
@@ -1068,13 +1061,13 @@ export class MiniappService {
         unit: cell.radiance.unit,
       };
     });
-    const source = darkSkyCells[0]?.source ?? null;
+    const source = fixedLight?.source ?? darkSkyCells[0]?.source ?? null;
     const data: TerrainOverlayData = {
       ...(terrainCovered ? {
-      state: publication.validPixelPercent < 99.9 ? "PARTIAL" : "AVAILABLE",
+      state: publication.validPixelPercent < 99.9 || publication.sourceIssues?.length ? "PARTIAL" : "AVAILABLE",
       purpose: input.purpose,
-      requestedRadiusKm: input.radiusKm,
-      effectiveRadiusKm: input.radiusKm,
+      requestedRadiusKm: input.radiusKm ?? null,
+      effectiveRadiusKm: input.radiusKm ?? null,
       centerGcj02: input.center,
       publicationId: publication.publicationId,
       datasetVersion: publication.dataset,
@@ -1084,36 +1077,64 @@ export class MiniappService {
       derivedAt: publication.derivedAt,
       coordinateTransformVersion: publication.transformVersion,
       imageUrl: `/v2/terrain/assets/${encodeURIComponent(publication.image.file)}`,
+      imageBytes: publication.image.byteSize,
+      imageSha256: publication.image.sha256,
+        imageStyle: publication.imageStyle ?? "ELEVATION_COLOR",
       imageBoundsGcj02: publication.boundsGcj02,
       elevationM: publication.elevationM,
-      coverageLabel: `已发布中心周边 ${publication.maximumRadiusKm.toFixed(0)} km，当前查看 ${input.radiusKm.toFixed(1)} km。`,
+      elevationColorEncoding: publication.elevationColorEncoding ?? null,
+      coverageLabel: input.viewportBounds ? `已读取当前地图视窗，有效地形${publication.validPixelPercent}%。`
+        : `已发布中心周边 ${publication.maximumRadiusKm!.toFixed(0)} km，当前查看 ${input.radiusKm!.toFixed(1)} km。`,
       limitations: publication.limitations,
       source: terrainSource,
-      } : terrainUnavailable(input, publication ? "当前地区暂无已发布的地形数据。" : "地形数据读取失败，请重试。")),
-      ...(terrainRead.status === "rejected" ? { failureCode: "TERRAIN_READ_FAILED" as const } : {}),
+      } : terrainUnavailable(input, terrainRead.status === "rejected" ? "地形数据读取失败，请重试。" : "当前地区暂无可获取的地形数据。")),
+      ...(terrainReadFailed ? { failureCode: "TERRAIN_READ_FAILED" as const } : {}),
       lightPollution: {
-        state: lightCells.length ? "PARTIAL" : "UNAVAILABLE",
+        state: fixedLight ? fixedLight.state === "FRESH" ? "AVAILABLE" : fixedLight.state === "UNAVAILABLE" ? "UNAVAILABLE" : "PARTIAL"
+          : lightCells.length ? "PARTIAL" : "UNAVAILABLE",
         ...(lightRead.status === "rejected" ? { failureCode: "LIGHT_READ_FAILED" as const } : {}),
-        datasetVersion: lightCells.length ? darkSkyCells[0]!.datasetVersion : this.config.darkSkyDatasetVersion,
+        datasetVersion: fixedLight?.datasetVersion ?? (lightCells.length ? darkSkyCells[0]!.datasetVersion : this.config.darkSkyDatasetVersion),
         cells: lightCells,
-        legend: lightCells.length ? [
+        ...(fixedLight?.raster ? { raster: fixedLight.raster } : {}),
+        legend: fixedLight?.legend ?? (lightCells.length ? [
           { label: "相对较低", color: "#87714A" },
           { label: "相对中等", color: "#BE9B61" },
           { label: "相对较高", color: "#E0C998" },
-        ] : [],
+        ] : []),
         source,
-        coverageLabel: lightCells.length ? "年度卫星夜光粗网格，仅作同数据集内相对比较。" : lightRead.status === "rejected" ? "光污染数据读取失败，请重试。" : "当前范围没有已发布的年度卫星夜光网格。",
+        coverageLabel: input.viewportBounds ? "当前请求只读取地形；年度夜光由地图的光污染图层独立读取。"
+          : fixedLight?.precision ?? (lightCells.length ? "年度卫星夜光粗网格，仅作同数据集内相对比较。" : lightRead.status === "rejected" ? "光污染数据读取失败，请重试。" : "当前范围没有已发布的年度卫星夜光网格。"),
       },
     };
-    return envelope(data, data.state === "UNAVAILABLE" && lightCells.length === 0 ? "UNAVAILABLE" : "PARTIAL", [terrainSource, source].filter((item): item is SourceSummary => item !== null),
+    this.telemetry.event("terrain_metadata_read", { milliseconds: performance.now() - terrainStartedAt, state: data.state,
+      assetSha256: publication?.image.sha256 ?? null, fixedWindow: Boolean(publication?.fixedWindow), sourceObjects: publication?.sources.length ?? 0 });
+    return envelope(data, data.state === "UNAVAILABLE" && lightCells.length === 0 && !fixedLight?.raster ? "UNAVAILABLE" : "PARTIAL", [terrainSource, source].filter((item): item is SourceSummary => item !== null),
       [...data.limitations, ...(lightRead.status === "rejected" ? [data.lightPollution.coverageLabel] : [])]);
   }
 
-  async getTerrainAsset(file: string) {
-    const publication = await terrainPublication();
-    if (file !== publication.image.file) throw new Error("terrain_asset_not_found");
-    const bytes = await readFile(terrainImageUrl(file));
-    return { bytes: validateTerrainAsset(bytes, publication), publicationId: publication.publicationId };
+  async getTerrainHorizon(input: TerrainHorizonRequest, signal?: AbortSignal): Promise<ApiEnvelope<TerrainHorizonData>> {
+    const startedAt = performance.now();
+    let data: TerrainHorizonData;
+    try { data = terrainHorizonData(input.center, await this.terrain.getHorizon(input, signal)); }
+    catch {
+      signal?.throwIfAborted();
+      data = terrainHorizonData(input.center, null, "READ_FAILED");
+    }
+    this.telemetry.event("terrain_horizon_read", { milliseconds: performance.now() - startedAt, state: data.state,
+      sourceObjects: data.sourceProof.length, knownSectors: data.model?.knownSectors ?? 0 });
+    return envelope(data, data.state === "AVAILABLE" ? "FRESH" : data.state === "PARTIAL" ? "PARTIAL" : "UNAVAILABLE",
+      data.source ? [data.source] : [], data.limitations);
+  }
+
+  async getTerrainAsset(file: string, signal?: AbortSignal) {
+    const startedAt = performance.now(), asset = await this.terrain.getAsset(file, signal);
+    this.telemetry.event("terrain_asset_read", { milliseconds: performance.now() - startedAt, bytes: asset.bytes.length,
+      assetSha256: createHash("sha256").update(asset.bytes).digest("hex") });
+    return asset;
+  }
+
+  async getNightLightAsset(datasetVersion: string, file: string, signal?: AbortSignal) {
+    return this.nightLight.asset(datasetVersion, file, signal);
   }
 
   async getMapScene(input: {
@@ -1125,12 +1146,13 @@ export class MiniappService {
     viewport?: {
       center: { latitude: number; longitude: number };
       zoom: number;
+      bounds?: { west: number; south: number; east: number; north: number };
     };
     preferences?: SpotRankingPreferences;
     userId?: UserId | null;
   }, weatherDeadlineAt = Date.now() + WEATHER_DEADLINES.mapBudgetMs): Promise<ApiEnvelope<MapSceneData>> {
     const startedAt = Date.now();
-    const context = await this.observationContexts.get(input.contextId);
+    const context = await this.observationContexts.get(input.contextId, input.userId);
     const filters = input.filters ?? EMPTY_FILTER_STATE;
     const layerKind = input.layer ?? "NORMAL";
     const cloudLayer = "TOTAL" as const;
@@ -1191,6 +1213,17 @@ export class MiniappService {
     const reports: Record<string, ApiEnvelope<AstronomyDecisionReport>> = {};
     const evaluations: Record<string, MapSpotEvaluation> = {};
     const filterEvidence: Record<string, SpotFilterEvidence> = {};
+    const location = context.location;
+    const anchor = location.kind === "FORMAL_SPOT"
+      ? candidates.find(spot => spot.spotId === location.spotId)?.gcj02
+      : wgs84ToGcj02({ lat: location.wgs84.latitude, lon: location.wgs84.longitude, system: "WGS84" });
+    const cloudCenter = input.viewport?.center ?? (anchor && ("latitude" in anchor
+      ? anchor : { latitude: anchor.lat, longitude: anchor.lon }));
+    // Start this independent spatial read inside the same overall Map budget.
+    // Catalogue/filter work cannot remove or delay its geographic responsibility.
+    const cloudWork = layerKind === "CLOUD" && cloudCenter
+      ? readMapCloudForecast(this.weather, cloudCenter, context, weatherDeadlineAt, input.viewport?.bounds)
+      : Promise.resolve([]);
     const evaluatedAtMs = Date.now();
     const routeOrigin =
       context.location.kind === "MAP_POINT"
@@ -1269,12 +1302,21 @@ export class MiniappService {
 
     // Excluded candidates can become UNKNOWN when their hourly evidence expires.
     // Carry that boundary even when there are no visible rows or polygons.
-    const forecastEnds = Object.values(evaluations)
+    const cloudSamples = await cloudWork;
+    const cloudAcquisition = mapCloudSnapshot(cloudSamples, input.viewport?.bounds ?? null);
+    if (cloudAcquisition) this.telemetry.event("map_cloud_sampled", {
+      samples: cloudSamples.length, ...cloudAcquisition.requestBudget,
+      viewportAware: Boolean(input.viewport?.bounds),
+      mixedRetrievalTimes: cloudAcquisition.mixedRetrievalTimes,
+      unavailableSamples: cloudAcquisition.cells.filter(cell => cell.quality !== "AVAILABLE").length,
+    });
+    const cloudEnds = mapCloudForecastEnds(cloudSamples, startedAt);
+    const forecastEnds = [...cloudEnds, ...Object.values(evaluations)
       .map((evaluation) => Date.parse(evaluation.weatherAt ?? "") + 3_600_000)
-      .filter(Number.isFinite);
+      .filter(Number.isFinite)];
     const forecastValidUntil = forecastEnds.length
       ? new Date(Math.min(...forecastEnds)).toISOString() : null;
-    const deliveryBoundary = Math.min(...Object.values(reports).flatMap(report => [
+    const deliveryBoundary = Math.min(...cloudEnds, ...Object.values(reports).flatMap(report => [
       ...report.data.hourly.map(row => Date.parse(row.weatherAt ?? "") + 3_600_000),
       ...report.sources.map(source => Date.parse(source.validTo ?? "")),
       ...report.data.weatherEvidence.alerts.filter(alert => alert.status === "ACTIVE")
@@ -1289,10 +1331,13 @@ export class MiniappService {
       : null;
     // Validate current publication facts and weather before reusing the map
     // representation. Context UUID alone cannot establish evidence freshness.
-    cacheKey += ":evidence:" + hash({ spots: queryMatched, population: allCandidates, favoriteSpotIds, evaluations, filterEvidence,
+    cacheKey += ":evidence:" + hash({ spots: queryMatched, population: allCandidates, favoriteSpotIds, evaluations, filterEvidence, cloudSamples: mapCloudEvidence(cloudSamples),
       revisions: Object.values(reports).map((report) => report.data.context.dataRevision) });
     const cached = await this.cache.get<ApiEnvelope<MapSceneData>>(cacheKey);
-    if (cached) return Date.now() >= deliveryBoundary ? this.getMapScene(input, weatherDeadlineAt) : cached;
+    if (cached) {
+      await this.#assertPrivateContextCurrent(context, input.userId);
+      return Date.now() >= deliveryBoundary ? this.getMapScene(input, weatherDeadlineAt) : cached;
+    }
     const routeCapability = { state: "UNAVAILABLE" as const, reason: "道路距离与行程时长未接入；距离仅供直线参考", recovery: "NONE" as const };
     const allFilterEvidence = queryMatched.map((spot) => filterEvidence[spot.spotId]!);
     const byGroup = Object.fromEntries(
@@ -1311,16 +1356,18 @@ export class MiniappService {
           ? "PostGIS published formal spots"
           : "explicit test fixture repository",
     };
-    const darkSkyCells =
-      layerKind === "LIGHT_POLLUTION" && this.repository.kind === "postgres"
-        ? await this.repository.listDarkSkyGridCells({
-            datasetVersion: this.config.darkSkyDatasetVersion,
-            ...(viewportCenterWgs84 && radiusKm
-              ? { center: viewportCenterWgs84, radiusKm }
-              : {}),
-          })
-        : [];
-    const layer = layerFor({
+    let fixedLightLayer: MapLayerData | null = null;
+    let darkSkyCells: readonly DarkSkyGridCellRecord[] = [];
+    if (layerKind === "LIGHT_POLLUTION" && this.repository.kind === "postgres") {
+      try {
+        fixedLightLayer = await this.nightLight.layer(this.config.darkSkyDatasetVersion, input.viewport?.bounds);
+        if (!fixedLightLayer) darkSkyCells = await this.repository.listDarkSkyGridCells({
+          datasetVersion: this.config.darkSkyDatasetVersion,
+          ...(viewportCenterWgs84 && radiusKm ? { center: viewportCenterWgs84, radiusKm } : {}),
+        });
+      } catch { fixedLightLayer = nightLightUnavailable(this.config.darkSkyDatasetVersion, true); }
+    }
+    const layer = fixedLightLayer ?? layerFor({
       kind: layerKind,
       cloudLayer,
       selectedAtUtc: context.selectedAtUtc,
@@ -1329,6 +1376,7 @@ export class MiniappService {
       evaluations,
       config: this.config,
       darkSkyCells,
+      cloudSamples,
     });
     const visibleEvaluations = Object.fromEntries(
       ranked.spots.flatMap((spot) => {
@@ -1367,6 +1415,7 @@ export class MiniappService {
           evaluations,
           config: this.config,
           darkSkyCells: [],
+          cloudSamples,
         });
         return {
           atUtc,
@@ -1388,12 +1437,14 @@ export class MiniappService {
       ...browsingTimezoneSources(context),
       ...allCandidates.map((spot) => spot.source),
       ...Object.values(reports).flatMap((report) => report.sources),
+      ...cloudSamples.flatMap(sample => sample.forecast?.sources ?? (sample.forecast ? [sample.forecast.source] : [])),
       ...(layer.source ? [layer.source] : []),
     ]);
     const result = envelope<MapSceneData>(
       {
         context,
         spots: ranked.spots,
+        cloudSnapshot: cloudAcquisition,
         forecastValidUntil,
         evaluations: visibleEvaluations,
         filterEvidence: visibleFilterEvidence,
@@ -1425,7 +1476,7 @@ export class MiniappService {
         timeFrames,
       },
       Object.values(reports).every((report) => report.dataState === "FRESH") &&
-        activeUnavailable.length === 0
+        activeUnavailable.length === 0 && (!["CLOUD", "LIGHT_POLLUTION"].includes(layerKind) || layer.state === "FRESH")
         ? "FRESH"
         : "PARTIAL",
       sources,
@@ -1450,7 +1501,8 @@ export class MiniappService {
       contextId: context.contextId,
       layer: layerKind,
     });
-    await this.cache.set(cacheKey, result, 120);
+    if (!layer.failureCode) await this.cache.set(cacheKey, result, 120);
+    await this.#assertPrivateContextCurrent(context, input.userId);
     // Repository/cache waits are part of delivery too. A re-projection shares
     // the original weather budget; it must not silently buy another deadline.
     return Date.now() >= deliveryBoundary ? this.getMapScene(input, weatherDeadlineAt) : result;
@@ -1510,8 +1562,8 @@ export class MiniappService {
     );
   }
 
-  async getSpotOverview(spotId: string, contextId: string) {
-    const context = await this.observationContexts.get(contextId);
+  async getSpotOverview(spotId: string, contextId: string, userId?: UserId | null) {
+    const context = await this.observationContexts.get(contextId, userId);
     if (
       context.location.kind !== "FORMAL_SPOT" ||
       context.location.spotId !== spotId
@@ -1577,6 +1629,7 @@ export class MiniappService {
         contextRevision: context.revision,
       },
     );
+    await this.#assertPrivateContextCurrent(context, userId);
     this.telemetry.event("spot_detail_loaded", {
       spotId,
       contextId,
@@ -1585,8 +1638,8 @@ export class MiniappService {
     return result;
   }
 
-  async estimateRoute(input: RouteEstimateRequest) {
-    const context = await this.observationContexts.get(input.contextId);
+  async estimateRoute(input: RouteEstimateRequest, userId?: UserId | null) {
+    const context = await this.observationContexts.get(input.contextId, userId);
     if (
       context.location.kind !== "FORMAL_SPOT" ||
       context.location.spotId !== input.spotId
@@ -1597,6 +1650,7 @@ export class MiniappService {
     if (!detail || detail.spot.status === "DATA_INSUFFICIENT")
       throw new Error("formal_spot_not_found");
     const result = await createRoutePort(this.config).estimate({ origin: context.routeOrigin.wgs84, destination: detail.spot.wgs84 });
+    await this.#assertPrivateContextCurrent(context, userId);
     const route: SpotDetail["route"] = {
       ...(result.value ?? detail.route),
       originLabel: context.routeOrigin.displayName,
@@ -1692,10 +1746,20 @@ export class MiniappService {
   async #skyAccess(spotId: string, contextId: string, userId?: UserId | null): Promise<{
     context: ObservationContext; proposal: { detail: SpotDetail; id: string } | null;
   }> {
-    const context = await this.observationContexts.get(contextId);
+    const context = await this.observationContexts.get(contextId, userId);
     if (spotId.startsWith("contribution:")) {
       if (!userId) throw new Error("authentication_required");
       const submission = await this.contributions.getForOwner(userId, spotId as ContributionId);
+      if (context.privateProposal) {
+        const binding = context.privateProposal;
+        const attempt = submission.attempts.at(-1);
+        if (binding.submissionId !== spotId || !attempt || attempt.attemptId !== binding.attemptId ||
+            attempt.baseRevision !== binding.attemptBaseRevision || !["PENDING_REVIEW", "ACCEPTED"].includes(submission.submissionState) ||
+            !submission.preciseLocationConsent) throw new Error("observation_proposal_permission_denied");
+        if (context.location.kind === "FORMAL_SPOT") return { context, proposal: null };
+        if (context.location.kind !== "PENDING_PROPOSAL") throw new Error("proposal_sky_context_invalid");
+        return { context, proposal: { detail: this.#candidateSkyDetail({ ...submission, ...attempt.snapshot }, context.timezone), id: spotId } };
+      }
       if (
         submission.kind !== "NEW_SPOT_PROPOSAL" ||
         !["PENDING_REVIEW", "ACCEPTED"].includes(submission.submissionState) ||
@@ -1723,14 +1787,18 @@ export class MiniappService {
   async getSky(spotId: string, contextId: string, userId?: UserId | null,
     catalogVersion: "bsc5p-bright-stars.v2" | "bsc5p-bright-stars.v3" = "bsc5p-bright-stars.v2", deepSkyCatalogVersion?: string) {
     const { context, proposal } = await this.#skyAccess(spotId, contextId, userId);
-    return proposal ? this.astronomy.computeCandidate(context, proposal.detail, proposal.id,
+    const result = await (proposal ? this.astronomy.computeCandidate(context, proposal.detail, proposal.id,
       undefined, undefined, catalogVersion, deepSkyCatalogVersion)
-      : this.astronomy.compute(context, undefined, undefined, catalogVersion, deepSkyCatalogVersion);
+      : this.astronomy.compute(context, undefined, undefined, catalogVersion, deepSkyCatalogVersion));
+    await this.#assertPrivateContextCurrent(context, userId);
+    return result;
   }
 
   async getSkyTargetInstant(spotId: string, contextId: string, at: string, userId?: UserId | null) {
     const { context, proposal } = await this.#skyAccess(spotId, contextId, userId);
-    return this.astronomy.computeTargetInstant(context, at, proposal?.detail, proposal?.id);
+    const result = await this.astronomy.computeTargetInstant(context, at, proposal?.detail, proposal?.id);
+    await this.#assertPrivateContextCurrent(context, userId);
+    return result;
   }
 
   #candidateSkyDetail(submission: import("@starward/miniapp-contracts").ContributionSubmission, timezone: string): SpotDetail {
@@ -2040,25 +2108,52 @@ export class MiniappService {
     return this.getFavorites(userId);
   }
 
-  private reminderSubscriptionBinding() {
-    const { appId, subscriptionTemplateId, deliveryIdentityKey } = this.config.wechat;
-    return this.config.authMode === "WECHAT" && appId && subscriptionTemplateId && deliveryIdentityKey && this.reminderSubscriptions
-      ? { appId, templateId: subscriptionTemplateId } : null;
+  private async reminderSubscriptionReadiness(userId: UserId) {
+    const delivery = configuredReminderDelivery(this.config);
+    const unavailable = { configured:null as typeof delivery,binding:null as typeof delivery,identityRequired:false };
+    if (!delivery || !(this.repository instanceof PostgresMiniappRepository)
+      || !await reminderDeliveryEnabled(this.repository.pool)) return unavailable;
+    const identityRequired = {configured:delivery,binding:null as ReturnType<typeof configuredReminderDelivery>,identityRequired:true};
+    const ciphertext=await this.repository.getWechatDeliveryIdentity(userId,delivery.appId);
+    if (!ciphertext) return identityRequired;
+    try {
+      const recipient=decryptWechatDeliveryIdentity(ciphertext,userId,delivery.appId,delivery.identityKey);
+      return /^[A-Za-z0-9_-]{1,128}$/u.test(recipient)
+        ? {configured:delivery,binding:delivery,identityRequired:false} : identityRequired;
+    } catch { return identityRequired; }
+  }
+
+  private async reminderSubscriptionBinding(userId: UserId) {
+    return (await this.reminderSubscriptionReadiness(userId)).binding;
+  }
+
+  async reverifyReminderDestination(userId: UserId, code?: string): Promise<ApiEnvelope<import('@starward/miniapp-contracts').ReminderDestinationData>> {
+    if (!(await this.reminderSubscriptionReadiness(userId)).configured)
+      return envelope({state:'UNAVAILABLE'},'FRESH',[]);
+    await this.auth.refreshWechatDeliveryIdentity(userId,code);
+    return envelope({state:await this.reminderSubscriptionBinding(userId) ? 'READY' : 'UNAVAILABLE'},'FRESH',[]);
   }
 
   async prepareReminderSubscription(userId: UserId, planId: string, input: ReminderSubscriptionPrepareRequest): Promise<ApiEnvelope<ReminderSubscriptionPrepareData>> {
     if (!input || typeof input.reminderId !== "string" || !/^[A-Za-z0-9:_-]{1,128}$/u.test(input.reminderId))
       throw new Error("reminder_subscription_request_invalid");
-    const binding = this.reminderSubscriptionBinding();
-    if (!binding) return envelope({ state: "UNAVAILABLE", reason: "NOT_CONFIGURED" }, "FRESH", []);
-    const challenge = await this.reminderSubscriptions!.prepare(userId, planId, input.reminderId, binding);
+    const readiness = await this.reminderSubscriptionReadiness(userId);
+    const binding = readiness.binding;
+    if (!binding) return envelope({ state: "UNAVAILABLE", reason: readiness.identityRequired ? 'IDENTITY_REQUIRED' : "NOT_CONFIGURED" }, "FRESH", []);
+    const plan=(await this.repository.listPlans(userId)).find(row=>row.planId===planId);
+    const spot=plan ? await this.repository.getSpot(plan.spotId) : null;
+    const content=plan && inspectReminderDeliveryFields(plan,input.reminderId,spot?.name ?? '',binding.fields);
+    if (content && 'issue' in content) return envelope({state:'UNAVAILABLE',reason:'CONTENT_NOT_SUPPORTED'},'FRESH',[]);
+    if(!plan) return envelope({state:'UNAVAILABLE',reason:'REMINDER_NOT_ELIGIBLE'},'FRESH',[]);
+    const challenge = await this.reminderSubscriptions!.prepare(userId, planId, input.reminderId, binding,
+      {planRevision:plan.revision,fields:binding.fields});
     return envelope(challenge ? { state: "READY", ...challenge } : { state: "UNAVAILABLE", reason: "REMINDER_NOT_ELIGIBLE" }, "FRESH", []);
   }
 
   async reportReminderSubscription(userId: UserId, challengeId: string, input: ReminderSubscriptionReportRequest): Promise<ApiEnvelope<ReminderSubscriptionReportData>> {
     validateReminderSubscriptionChallengeId(challengeId);
     if (!input || !["accept", "reject", "ban", "filter"].includes(input.choice)) throw new Error("reminder_subscription_choice_invalid");
-    const binding = this.reminderSubscriptionBinding();
+    const binding = await this.reminderSubscriptionBinding(userId);
     const recorded = binding ? await this.reminderSubscriptions!.record(userId, challengeId, input.choice, binding) : false;
     return envelope({ recorded }, "FRESH", []);
   }
@@ -2068,6 +2163,10 @@ export class MiniappService {
     // cache can be repopulated by a read that began before a committed mutation.
     const plans = await this.repository.listPlans(userId);
     const storedSchedules = await this.repository.listPlanReminderSchedules(userId);
+    const readiness = await this.reminderSubscriptionReadiness(userId);
+    const delivery = readiness.binding;
+    const planSpots = await this.planSpotLabels(plans);
+    const acceptedSchedules = delivery ? await this.reminderSubscriptions!.acceptedScheduleVersions(userId,delivery) : null;
     const schedules = plans.flatMap(plan => {
       const derived = derivePlanReminderSchedules(userId, plan);
       return derived.map(row => storedSchedules.find(stored => stored.planId === row.planId && stored.reminderId === row.reminderId && stored.scheduleVersion === row.scheduleVersion) ?? row);
@@ -2075,10 +2174,22 @@ export class MiniappService {
     const result = envelope(
       {
         plans,
-        planSpots: await this.planSpotLabels(plans),
-        // Optional encrypted recipient registration is not subscription authorization.
-        // The approved template, authorization flow and sender are still unavailable.
-        reminderNotifications: schedules.map(row => publicReminderStatus(row, false)),
+        planSpots,
+        // Configuration is capability readiness, never provider quota or delivery.
+        reminderNotifications: schedules.map(row => {
+          const status=publicReminderStatus(row.state === 'SCHEDULED' && row.attemptCount === 0 && acceptedSchedules && !acceptedSchedules.has(row.scheduleVersion)
+            ? {...row,state:'WAITING_AUTHORIZATION',reason:'AUTHORIZATION_NOT_GRANTED'} : row,
+            !!delivery,new Date(),delivery?.maxLatenessMs);
+          if(status.state==='CAPABILITY_UNAVAILABLE' && readiness.identityRequired)
+            return {...status,reason:'DELIVERY_IDENTITY_REQUIRED' as const};
+          if(delivery && (status.state==='AUTHORIZATION_REQUIRED' || status.state==='SCHEDULED')) {
+            const plan=plans.find(plan=>plan.planId===row.planId);
+            const content=plan && inspectReminderDeliveryFields(plan,row.reminderId,
+              planSpots.find(spot=>spot.spotId===plan.spotId)?.name ?? '',delivery.fields);
+            if(content && 'issue' in content) return {...status,state:'CAPABILITY_UNAVAILABLE' as const,reason:content.issue};
+          }
+          return status;
+        }),
       },
       "FRESH",
       [],
@@ -2123,13 +2234,21 @@ export class MiniappService {
 
   async getSharedSpot(spotId: SpotId): Promise<ApiEnvelope<SpotPublicShareData>> {
     const detail = await this.publicShareSpot(spotId);
-    const facts = detail.formalFacts;
+    const facts = formalSpotFacts(detail);
+    const summary = (...values: (string | null)[]) => [...new Set(values.filter(Boolean))].join("；") || null;
     return envelope({ kind: "SPOT", spotId: detail.spot.spotId, spotGcj02: detail.spot.gcj02, name: detail.spot.name,
       region: detail.spot.region, address: detail.spot.address,
       status: detail.spot.status as SpotPublicShareData["status"],
-      opening: facts?.hours ?? null, access: facts?.accessNote ?? facts?.access ?? null,
-      safety: facts?.safety ?? null, parking: facts?.parkingNote ?? facts?.parking ?? null,
-      horizon: facts?.horizon ?? null, source: detail.spot.source }, "FRESH", []);
+      opening: summary(facts.openness, facts.hours), access: summary(facts.access, facts.accessNote),
+      safety: facts.safety, parking: summary(facts.parking, facts.parkingNote),
+      horizon: facts.horizon, source: detail.spot.source }, "FRESH", []);
+  }
+
+  async getPlanSaveResult(userId: UserId, planId: string, idempotencyKey: string) {
+    assertIdempotencyKey(idempotencyKey);
+    if (typeof planId !== "string" || !planId || planId.length > 180) throw new Error("invalid_plan_id");
+    const receipt = await this.repository.getPlanSaveReceipt(userId, planId, idempotencyKey);
+    return envelope({ receipt }, "FRESH", []);
   }
 
   async savePlan(
@@ -2194,7 +2313,9 @@ export class MiniappService {
     }
     const sourceContext = await this.observationContexts.get(
       input.observationContextId,
+      userId,
     );
+    if (sourceContext.location.kind === "PENDING_PROPOSAL") throw new Error("formal_spot_context_required");
     let routeOriginContextId =
       sourceContext.location.kind === "MAP_POINT"
         ? sourceContext.contextId
@@ -2205,7 +2326,7 @@ export class MiniappService {
     const context = await this.observationContexts.resolve({
       location: { kind: "FORMAL_SPOT", spotId: input.spotId },
       routeOriginContextId,
-      localDate: input.localDate,
+      localDate: observationNightForCivilDate(input.localDate, input.localTime),
       selectedAt,
       targetProfile: "DAILY",
     });
@@ -2577,6 +2698,16 @@ export class MiniappService {
   async submitFormalContribution(userId: UserId, input: ContributionFormalSubmitRequest, idempotencyKey: string) {
     assertIdempotencyKey(idempotencyKey);
     return envelope(await this.contributions.submitFormal(userId, input, idempotencyKey), "FRESH", []);
+  }
+  async getFormalContributionSubmitResult(userId: UserId, spotId: SpotId, idempotencyKey: string) {
+    assertIdempotencyKey(idempotencyKey);
+    if (!spotId || spotId.length > 180) throw new Error("invalid_spot_id");
+    return envelope({ receipt: await this.repository.getFormalContributionSubmitReceipt(userId, spotId, idempotencyKey) }, "FRESH", []);
+  }
+  async getContributionSubmitResult(userId: UserId, submissionId: ContributionId, idempotencyKey: string) {
+    assertIdempotencyKey(idempotencyKey);
+    if (!submissionId || submissionId.length > 180) throw new Error("invalid_contribution_id");
+    return envelope({ receipt: await this.repository.getContributionSubmitReceipt(userId, submissionId, idempotencyKey) }, "FRESH", []);
   }
   async createFormalUploadIntent(userId: UserId, input: ContributionFormalUploadIntentRequest, idempotencyKey: string) { assertIdempotencyKey(idempotencyKey); return envelope(await this.contributions.createFormalUploadIntent(userId,input,idempotencyKey),"FRESH",[]); }
   async createFormalUpload(userId: UserId, intentId: string, input: ContributionFormalUploadSessionRequest, idempotencyKey: string) { assertIdempotencyKey(idempotencyKey); return envelope(await this.contributions.createFormalUpload(userId,intentId,input,idempotencyKey),"FRESH",[]); }

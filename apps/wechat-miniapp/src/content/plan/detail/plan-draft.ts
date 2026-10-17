@@ -18,9 +18,14 @@ export interface PlanDraft {
 
 /** Clearing a save may claim only the authored fields actually being submitted. */
 export function planDraftMatchesInput(stored: PlanDraft, submitted: PlanDraft) {
+  // HTTP/PG objects and parsed local drafts can serialize equal nested fields
+  // in different orders. Compare both through the draft contract before claiming
+  // ownership; authored values and the original revision must still match.
+  const normalizedStored = parsePlanDraft(stored), normalizedSubmitted = parsePlanDraft(submitted);
+  if (!normalizedStored || !normalizedSubmitted) return false;
   const fields = (draft: PlanDraft) => [draft.selectedSpotId, draft.localDate, draft.localTime, draft.notes,
     draft.timing ?? null, draft.travel ?? null, draft.reminders ?? [], draft.eventOccurrenceIds ?? [], draft.baseRevision ?? null];
-  return JSON.stringify(fields(stored)) === JSON.stringify(fields(submitted));
+  return JSON.stringify(fields(normalizedStored)) === JSON.stringify(fields(normalizedSubmitted));
 }
 
 /** Invalidate recovery data even when the storage adapter cannot remove a key. */

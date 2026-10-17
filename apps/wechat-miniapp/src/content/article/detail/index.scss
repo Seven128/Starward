@@ -3,8 +3,24 @@
 .article-meta > text { min-width: 0; overflow-wrap: anywhere; }
 .article-tip, .article-ref { padding: 12Px; display: flex; flex-direction: column; gap: 8Px; }
 .article-paragraph { white-space: pre-wrap; overflow-wrap: anywhere; }
-.article-media { overflow: hidden; display: flex; flex-direction: column; gap: 12rpx; padding-bottom: 20rpx; }
-.article-media image { width: 100%; height: auto; background: var(--surface-subtle); }
-.article-media text { margin: 0 20rpx; }
+.article-media { overflow: hidden; display: flex; flex-direction: column; gap: 10Px; }
+.article-media__caption { white-space: pre-wrap; overflow-wrap: anywhere; }
 .article-page { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 .article-scroll { flex: 1; min-height: 0; }
+.article-footer { flex: none; padding: 10Px 18Px max(16Px, env(safe-area-inset-bottom)); background: var(--surface); }
+.article-footer > button { width: 100%; }
+.article-document { display: flex; flex-direction: column; gap: 14Px; padding: 18Px; border-radius: 22Px; background: var(--surface); }
+.article-document .article-paragraph { font-size: 15Px; line-height: 1.85; }
+.article-document .article-tip { padding: 14Px; border: 1Px solid var(--border); border-radius: 16Px; background: var(--surface-subtle); }
+.article-document .article-ref { padding: 0; gap: 12Px; }
+.theme-day.article-page {
+  background: #f5f6f8;
+  .article-content { padding: 16Px 18Px 28Px; }
+  .article-document { background: #fff; color: #2d2d2d; }
+  .article-meta { gap: 6Px; border: 0; padding: 0; }
+  .article-meta > .type-page-title { font-size: 25Px; line-height: 1.5; }
+  .article-meta > .type-caption { color: #6d7e8d; font-size: 13Px; line-height: 1.7; }
+  .article-tip { background: #fbf4e8; border-color: #f0dfbd; color: #825b2b; }
+  .article-tip .type-section { font-size: 17Px; line-height: 1.5; }
+  .article-tip .type-article { font-size: 14Px; line-height: 1.85; }
+}

@@ -16,6 +16,7 @@ export type SemanticAssetSubject =
 export type SkyControlIconName = `sky-${"door" | "search" | "clock" | "layers" | "observation" | "up" | "down" | "apply" | "play" | "pause" | "target" | "follow" | "source" | "hand" | "eye" | "chevronBack" | "cancel"}`;
 export type SemanticIconName = SkyControlIconName
   | "menu"
+  | "favorite-star"
   | "settings"
   | "pencil"
   | "account-user"
@@ -23,15 +24,32 @@ export type SemanticIconName = SkyControlIconName
   | "search"
   | "filter"
   | "chevron-right"
+  | "plan-header-chevron"
+  | "plan-row-chevron"
+  | "settings-choice-check"
+  | "layer-choice-check"
+  | "terrain-toggle-check"
   | "chevron-down"
   | "chevron-up"
   | "close"
   | "location"
+  | "place-pin"
+  | "parking"
+  | "restroom"
+  | "plan-suv"
+  | "tent"
+  | "walking"
+  | "signal"
+  | "charging"
+  | "verified"
   | "layers"
   | "refresh"
   | "conditions"
+  | "bell"
   | "info"
+  | "warning"
   | "compass"
+  | "navigation"
   | "horizon"
   | "undo"
   | "check"
@@ -41,6 +59,8 @@ export type SemanticIconName = SkyControlIconName
   | "bulb"
   | "cloud"
   | "wind"
+  | "temperature"
+  | "droplet"
   | "telescope"
   | "trash"
   | "wifi-off"
@@ -49,22 +69,40 @@ export type SemanticIconName = SkyControlIconName
   | "clock"
   | "moon"
   | "meteor"
+  | "checklist"
+  | "more"
   | "terrain"
   | "star";
 
 export type SemanticIconState = "default" | "selected" | "draft" | "pending";
 
-const B_ICON_ID: Record<Exclude<SemanticIconName, "menu" | SkyControlIconName>, string> = {
-  settings: "settings", pencil: "pencil", "account-user": "account-user",
-  "arrow-left": "arrow-left", search: "search", filter: "filter",
-  "chevron-right": "chevron-right", "chevron-down": "chevron-down",
-  "chevron-up": "chevron-up", close: "close", location: "location",
-  layers: "layers", refresh: "refresh", conditions: "low-cloud", info: "info",
-  compass: "compass", horizon: "horizon", undo: "undo", check: "check",
-  download: "download", share: "share", eye: "eye", bulb: "bulb",
-  cloud: "cloud", wind: "wind", telescope: "telescope", trash: "trash", "wifi-off": "wifi-off", images: "images",
-  sun: "sun", clock: "clock", moon: "moon", meteor: "meteor",
-  terrain: "terrain", star: "four-point-star",
+// Most adopted icon IDs are the semantic name; record only actual aliases.
+const B_ICON_ID: Partial<Record<SemanticIconName, string>> = {
+  conditions: "low-cloud", star: "four-point-star",
+  "plan-header-chevron": "chevron-right", "plan-row-chevron": "chevron-right",
+};
+
+// Adopted consumers may retain precise line glyphs alongside the B family.
+// Unrepresented themes retain the existing glyph for each role.
+const DAY_SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
+  "plan-header-chevron": "/assets/icons/my-plan-chevron-header.svg",
+  "plan-row-chevron": "/assets/icons/my-plan-chevron-row.svg",
+  "settings-choice-check": "/content/assets/icons/settings-choice-check.svg",
+  "layer-choice-check": "/assets/icons/map-layer-choice-check.svg",
+  "terrain-toggle-check": "/assets/icons/terrain-toggle-check.png",
+};
+
+// These new DAY roles keep the existing presentation in unadopted modes.
+const LEGACY_ICON_NAME: Partial<Record<SemanticIconName, SemanticIconName>> = {
+  "favorite-star": "star",
+  navigation: "compass", "place-pin": "location", parking: "location",
+  restroom: "info", "plan-suv": "compass", tent: "location",
+  walking: "compass", signal: "wifi-off", charging: "info", verified: "info",
+  "plan-header-chevron": "chevron-right", "plan-row-chevron": "chevron-right",
+  "settings-choice-check": "check",
+  "layer-choice-check": "check",
+  "terrain-toggle-check": "check",
+  temperature: "sun", droplet: "conditions",
 };
 
 function packageAssetPrefix(pagePath: string) {
@@ -75,11 +113,17 @@ function packageAssetPrefix(pagePath: string) {
   return "";
 }
 
-export function adoptedBIconPath(name: Exclude<SemanticIconName, "menu" | SkyControlIconName>, state: SemanticIconState, pagePath: string) {
-  return `${packageAssetPrefix(pagePath)}/assets/b-icons/${B_ICON_ID[name]}--day--${state}.png`;
+export function adoptedBIconPath(name: SemanticIconName, state: SemanticIconState = "default", pagePath: string = "") {
+  const prefix = packageAssetPrefix(pagePath);
+  // The 36px default My avatar shares the already packaged 192px Tab asset.
+  // Content pages retain their package-local derivatives.
+  const directory = !prefix && name === "account-user" ? "/assets/b-icons/weapp-tabbar" : `${prefix}/assets/b-icons`;
+  return `${directory}/${B_ICON_ID[name] ?? name}--day--${state}.png`;
 }
 
 const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
+  bell: "/content/assets/icons/bell.svg",
+  warning: "/assets/icons/warning.svg",
   settings: "/assets/icons/settings.svg",
   pencil: "/assets/icons/pencil.svg",
   "account-user": "/assets/icons/account-user.svg",
@@ -95,9 +139,9 @@ const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {
   sun: "/assets/icons/sun.svg",
   moon: "/assets/icons/moon.svg",
   trash: "/content/assets/icons/trash-2.svg",
-  "wifi-off": "/assets/icons/wifi-off.svg",
+  "wifi-off": "/spot/assets/icons/wifi-off.svg",
   images: "/assets/icons/images.svg",
-  filter: "/assets/icons/filter.svg",
+  filter: "/spot/assets/icons/filter.svg",
 };
 
 const MODE_FILE: Record<DisplayMode, string> = {
@@ -137,12 +181,14 @@ export function SemanticIcon({
   decorative = true,
   className = "",
   state = "default",
+  presentation = "default",
 }: {
   name: SemanticIconName;
   label?: string;
   decorative?: boolean;
   className?: string;
   state?: SemanticIconState;
+  presentation?: "default" | "forecast";
 }) {
   // Taro's default useRouter captures this instance's route. A retained page
   // can repaint while a child route is on top; that child's package is not
@@ -157,10 +203,27 @@ export function SemanticIcon({
     <View className="semantic-icon__menu-line" />
   </View>;
   if (mode === "DAY") {
+    const forecastKind = presentation === "forecast" && (name === "temperature" || name === "wind" || name === "droplet" || name === "warning" || name === "conditions")
+      ? name === "conditions" ? "low-cloud" : name : null;
+    // Keep icon-only controls local; these deferred ornaments have text peers.
+    const mainKind = state === "default" && !packageAssetPrefix(router?.path ?? "") && (name === "images" || name === "plan-suv" || name === "clock" || name === "sun" || name === "telescope" || name === "share")
+      ? name : null;
+    const packagedKind = forecastKind ?? mainKind;
+    if (packagedKind) {
+      // Taro discovers native bindings from explicit props; JSX spreads lose them.
+      return <packaged-icon
+        kind={packagedKind}
+        class={`semantic-icon semantic-icon--b${forecastKind && name !== "conditions" ? " semantic-icon--forecast" : ""} semantic-icon--${name} ${className}`}
+        aria-hidden={decorative ? true : undefined}
+        aria-role={decorative ? undefined : "img"}
+        aria-label={decorative ? undefined : label ?? name}
+      />;
+    }
+    const source = DAY_SOURCE_ICON_FILE[name];
     return (
       <Image
-        className={`semantic-icon semantic-icon--b semantic-icon--${name} ${className}`}
-        src={adoptedBIconPath(name as Exclude<SemanticIconName, "menu" | SkyControlIconName>, state, router?.path ?? "")}
+        className={`semantic-icon semantic-icon--${source ? "source" : "b"} semantic-icon--${name} ${className}`}
+        src={source ?? adoptedBIconPath(name, state, router?.path ?? "")}
         mode="aspectFit"
         {...(decorative
           ? { "aria-hidden": true }
@@ -168,7 +231,8 @@ export function SemanticIcon({
       />
     );
   }
-  const source = name === "star" ? "/assets/semantic/five-point-star.svg" : SOURCE_ICON_FILE[name];
+  const sourceName = LEGACY_ICON_NAME[name] ?? name;
+  const source = sourceName === "star" ? "/assets/semantic/five-point-star.svg" : SOURCE_ICON_FILE[sourceName];
   if (name === "arrow-left") {
     return (
       <View
@@ -191,7 +255,7 @@ export function SemanticIcon({
   if (source) {
     return (
       <View
-        className={`semantic-icon semantic-icon--source semantic-icon--${name} semantic-icon--${mode.toLowerCase()} ${className}`}
+        className={`semantic-icon semantic-icon--source semantic-icon--${sourceName} semantic-icon--${mode.toLowerCase()} ${className}`}
         {...(decorative
           ? { "aria-hidden": true }
           : { role: "img", "aria-label": label ?? name })}
@@ -210,7 +274,7 @@ export function SemanticIcon({
   }
   return (
     <View
-      className={`semantic-icon semantic-icon--${name} semantic-icon--${mode.toLowerCase()} ${className}`}
+      className={`semantic-icon semantic-icon--${sourceName} semantic-icon--${mode.toLowerCase()} ${className}`}
       {...(decorative
         ? { "aria-hidden": true }
         : { role: "img", "aria-label": label ?? name })}

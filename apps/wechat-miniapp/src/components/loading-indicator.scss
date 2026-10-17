@@ -1,0 +1,40 @@
+.loading-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4Px;
+  width: 28Px;
+  height: 24Px;
+  flex: none;
+  color: inherit;
+}
+.loading-indicator--dots > view {
+  width: 5Px;
+  height: 5Px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: loading-dot 1.2s infinite ease-in-out;
+}
+.loading-indicator--dots > view:nth-child(2) { animation-delay: .15s; }
+.loading-indicator--dots > view:nth-child(3) { animation-delay: .3s; }
+.loading-indicator--arc {
+  width: 20Px;
+  height: 20Px;
+  border: 2Px solid var(--border);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: loading-turn .9s infinite linear;
+}
+.theme-day .loading-indicator--arc { border-color: #d6dce2; border-top-color: currentColor; }
+.loading-button { display: flex; align-items: center; justify-content: center; gap: 8Px; }
+@keyframes loading-dot {
+  0%, 70%, 100% { opacity: .35; transform: translateY(0); }
+  35% { opacity: 1; transform: translateY(-3Px); }
+}
+@keyframes loading-turn { to { transform: rotate(360deg); } }
+.loading-indicator--paused, .loading-indicator--paused > view { animation-play-state: paused; }
+.reduced-motion .loading-indicator, .reduced-motion .loading-indicator > view { animation: none; }
+.reduced-motion .loading-indicator--dots > view { opacity: .65; }
+@media (prefers-reduced-motion: reduce) {
+  .loading-indicator, .loading-indicator > view { animation: none; }
+  .loading-indicator--dots > view { opacity: .65; }
+}

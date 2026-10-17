@@ -5,22 +5,34 @@ import vm from "node:vm";
 import ts from "typescript";
 import * as geometry from "./terrain-geometry";
 import { terrainLayerAvailability } from "./terrain-layer-availability";
+import { formalSpotMarkerIconPath } from "./map-markers";
+import { mercatorRasterCropPercent } from "../../services/raster-image-geometry";
 
 function harness() {
   const ast = ts.createSourceFile("terrain.tsx", readFileSync(new URL("./spot-terrain-overview.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declaration = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotTerrainOverview")!;
-  const states: any[] = [], deps: any[][] = [], notices: any[] = [];
+  const states: any[] = [], deps: any[][] = [], notices: any[] = [], queries: any[] = [];
   let si = 0, ei = 0, pending: (() => void)[] = [], query: any, retries = 0, imageFailures = 0;
+  let rasterState: any = {}, rasterRetries = 0, rasterFailures = 0;
+  const rasterReads: any[] = [];
   const notify = (value: any) => notices.push(value);
+  let mode = "DAY", horizon: any = { isPending: true };
   const component = vm.runInNewContext(ts.transpileModule(declaration.getText(ast).replace(/^export /, "") + ";SpotTerrainOverview;", { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, {
-    ...geometry, terrainLayerAvailability, useMemo: (fn: () => unknown) => fn(), useAppStore: () => notify,
+    ...geometry, mercatorRasterCropPercent, terrainLayerAvailability, formalSpotMarkerIconPath, useMemo: (fn: () => unknown) => fn(), useAppStore: (selector: (state: any) => unknown) => selector({ mode, notify }),
     useState(initial: any) { const i = si++; if (!(i in states)) states[i] = initial; return [states[i], (next: any) => states[i] = typeof next === "function" ? next(states[i]) : next]; },
     useEffect(fn: () => void, values: any[]) { const i = ei++; if (!deps[i] || values.some((value, n) => value !== deps[i]![n])) pending.push(fn); deps[i] = values; },
-    useTerrainOverlay: () => query,
-    View: "View", Text: "Text", Button: "Button", Slider: "Slider", Image: "Image", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", SoftButton: "SoftButton", Provenance: "Provenance", SourceAttribution: "SourceAttribution",
+    useTerrainHorizon: () => horizon, SpotTerrainHorizon: "SpotTerrainHorizon",
+    useTerrainOverlay: (input: any, enabled: boolean, imageEnabled: boolean) => { queries.push({ input, enabled, imageEnabled }); return query; },
+    useRasterImage: (descriptor: any, enabled: boolean) => { rasterReads.push({ descriptor, enabled });
+      return { imagePath: enabled ? rasterState.imagePath ?? null : null, imagePending: enabled && Boolean(rasterState.imagePending),
+        imageError: enabled ? rasterState.imageError ?? null : null, reportImageFailure: () => { rasterFailures++; }, retryImage: () => { rasterRetries++; } }; },
+    View: "View", Text: "Text", Button: "Button", Slider: "Slider", Image: "Image", SemanticIcon: "SemanticIcon", StatusPanel: "StatusPanel", SoftButton: "SoftButton", SourceDisclosure: "SourceDisclosure", SourceAttribution: "SourceAttribution",
     React: { createElement: (type: string, props: any, ...children: any[]) => ({ type, props, children }) },
   });
-  return { notices, get retries() { return retries; }, get imageFailures() { return imageFailures; },
+  return { notices, queries, get retries() { return retries; }, get imageFailures() { return imageFailures; },
+    rasterReads, get rasterRetries() { return rasterRetries; }, get rasterFailures() { return rasterFailures; }, setRaster(value: any) { rasterState = value; },
+    setMode(value: string) { mode = value; },
+    setHorizon(value: any) { horizon = value; },
     set(value: any) { query = { isPending: false, isError: false, imagePending: false, imagePath: null, ...value,
       reportImageFailure: () => { imageFailures++; }, refetch: async () => { retries++; } }; },
     render(visible = true) { si = ei = 0; const result = component({ spot: { spotId: "spot:terrain-test", name: "测试点", gcj02: { latitude: 22.55, longitude: 114.25 } }, visible }); pending.splice(0).forEach(fn => fn()); return result; },
@@ -32,11 +44,70 @@ const base = { state: "AVAILABLE", datasetVersion: "测试高程", imageBoundsGc
   source: { id: "terrain-source", provider: "Copernicus", limitations: ["produced using Copernicus WorldDEM-30"], licenseUrl: "https://example.org/license" },
   lightPollution: { state: "PARTIAL", cells: [{ id: "test-light", radiance: 0, unit: "nW/cm²/sr", label: "测试夜光", color: "#888", boundsGcj02: { west: 114.24, south: 22.54, east: 114.26, north: 22.56 } }], legend: [] } };
 
+test("the independent horizon keeps mandatory credits when both overview layers are off", () => {
+  const h = harness(); h.set({ data: { data: base }, imagePath: "/local/terrain.png" });
+  const horizon = { data: { data: { state: "PARTIAL", source: { ...base.source, id: "horizon-source" } } } };
+  h.setHorizon(horizon);
+  let all = nodes(h.render());
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "地形，显示地势起伏，已开启").props.onClick();
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "光污染，年度卫星估算，已开启").props.onClick();
+  all = nodes(h.render());
+  assert.equal(h.queries.at(-1).enabled, false);
+  assert.equal(all.find(node => node.type === "SpotTerrainHorizon").props.query, horizon);
+  assert.deepEqual(Array.from(all.find(node => node.type === "SourceAttribution").props.sources), [horizon.data.data.source]);
+});
+
+test("published terrain colour meaning has its own key and follows only the visible terrain", () => {
+  const h = harness();
+  const encoding = { format: "starward-terrain-elevation-color-v1", minimumM: -20, maximumM: 880,
+    lowRgb: [215, 224, 207], highRgb: [112, 139, 104], alpha: 224, clipping: "CLAMP", shading: "SYNTHETIC_HILLSHADE" };
+  const data = { ...base, state: "PARTIAL", elevationColorEncoding: encoding };
+  h.set({ data: { data }, imagePath: "/local/terrain.png" });
+  let all = nodes(h.render());
+  const key = all.find(node => node.props?.className === "spot-terrain__elevation-key");
+  assert.ok(key, "the source paragraph cannot replace the adopted terrain low-to-high key");
+  assert.match(text(key), /地形.*低.*高/);
+  const swatch = nodes(key).find(node => node.props?.style?.background);
+  assert.match(swatch.props.style.background, /215,224,207/);
+  assert.match(swatch.props.style.background, /112,139,104/);
+  assert.equal(swatch.props.style.opacity, 224 / 255);
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "光污染，年度卫星估算，已开启").props.onClick();
+  all = nodes(h.render());
+  assert.ok(all.some(node => node.props?.className === "spot-terrain__elevation-key"));
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "地形，显示地势起伏，已开启").props.onClick();
+  assert.equal(nodes(h.render()).some(node => node.props?.className === "spot-terrain__elevation-key"), false);
+  const unavailable = harness();
+  for (const query of [{ data: { data: base }, imagePath: "/local/terrain.png" },
+    { data: { data }, imagePending: true }, { data: { data }, imageError: new Error("decode") },
+    { data: { data: { ...data, state: "UNAVAILABLE" } }, imagePath: "/local/terrain.png" }]) {
+    unavailable.set(query);
+    assert.equal(nodes(unavailable.render()).some(node => node.props?.className === "spot-terrain__elevation-key"), false);
+  }
+});
+
+test("terrain center follows display mode and preserves independent layer data on return", () => {
+  const h = harness(); h.set({ data: { data: base }, imagePath: "/local/terrain.png" });
+  for (const [mode, asset] of [
+    ["DAY", "/assets/b-icons/spot-marker--day--selected.png"],
+    ["OBSERVATION", "/assets/icons/formal-spot-marker-selected-observation.png"],
+    ["NIGHT", "/assets/icons/formal-spot-marker-selected-night.png"],
+    ["DAY", "/assets/b-icons/spot-marker--day--selected.png"],
+  ]) {
+    h.setMode(mode!);
+    const all = nodes(h.render());
+    assert.equal(all.find(node => node.props?.className === "spot-terrain__center").props.src, asset);
+    assert.equal(all.find(node => node.props?.className === "spot-terrain__image").props.src, "/local/terrain.png");
+    assert.equal(all.find(node => node.props?.className === "spot-terrain__light-cell").props.ariaLabel, "测试夜光，0 nW/cm²/sr");
+    assert.deepEqual(Array.from(all.filter(node => node.props?.className?.startsWith("spot-terrain__direction ")), node => text(node)), ["北", "东", "南", "西"]);
+  }
+  assert.equal(h.retries, 0); assert.equal(h.notices.length, 0);
+});
+
 test("uncovered terrain disables only terrain and cannot obscure valid light", () => {
   const h = harness(); h.set({ data: { data: { ...base, state: "UNAVAILABLE", datasetVersion: null, sourceResolution: null, derivedResolutionM: null } } });
   const tree = h.render(), all = nodes(tree);
   assert.ok(all.some(node => node.props?.className === "spot-terrain__light-cell" && node.props.ariaLabel.includes("0 nW/cm²/sr")));
-  assert.ok(all.some(node => node.type === "Button" && node.props.ariaLabel === "地形，当前地区暂无数据" && node.props.disabled));
+  assert.ok(all.some(node => node.type === "Button" && node.props.ariaLabel === "地形，显示地势起伏，当前地区暂无数据" && node.props.disabled));
   assert.equal(all.some(node => node.type === "StatusPanel"), false);
   assert.equal(h.notices.length, 0); assert.doesNotMatch(text(tree), /源分辨率 null|约 null/);
 });
@@ -46,9 +117,47 @@ test("night-light image carries its own credit only while that layer is shown", 
   const h = harness(); h.set({ data: { data: { ...base, lightPollution: { ...base.lightPollution, source } } } });
   let all = nodes(h.render());
   assert.equal(all.find(node => node.type === "SourceAttribution").props.sources[0], source);
-  all.find(node => node.type === "Button" && node.props.ariaLabel === "光污染，已开启").props.onClick();
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "光污染，年度卫星估算，已开启").props.onClick();
   all = nodes(h.render());
   assert.equal(all.some(node => node.type === "SourceAttribution"), false);
+});
+
+test("terrain and light credits follow actual displayed layers while complete sources remain reachable", () => {
+  const lightSource = { ...base.source, id: "declared-night-light-source", provider: "Declared annual night-light input" };
+  const data = { ...base, lightPollution: { ...base.lightPollution, source: lightSource } };
+  const creditSources = (tree: any) => Array.from(nodes(tree).find(node => node.type === "SourceAttribution")?.props.sources ?? []);
+  const assertCompleteSources = (tree: any) => {
+    const sources = nodes(tree).find(node => node.type === "SourceDisclosure").props.sources;
+    assert.deepEqual(Array.from(sources), [base.source, lightSource], "collapse and layer switches must preserve the full redistribution records");
+  };
+  const h = harness(); h.set({ data: { data }, imagePath: "/local/terrain.png" });
+  let tree = h.render();
+  assert.deepEqual(creditSources(tree), [base.source, lightSource]); assertCompleteSources(tree);
+  nodes(tree).find(node => node.type === "Button" && node.props.ariaLabel === "光污染，年度卫星估算，已开启").props.onClick();
+  tree = h.render();
+  assert.deepEqual(creditSources(tree), [base.source]); assertCompleteSources(tree);
+  nodes(tree).find(node => node.type === "Button" && node.props.ariaLabel === "地形，显示地势起伏，已开启").props.onClick();
+  tree = h.render();
+  assert.deepEqual(creditSources(tree), []); assertCompleteSources(tree);
+
+  const lightOnly = harness(); lightOnly.set({ data: { data }, imagePath: "/local/terrain.png" });
+  nodes(lightOnly.render()).find(node => node.type === "Button" && node.props.ariaLabel === "地形，显示地势起伏，已开启").props.onClick();
+  assert.deepEqual(creditSources(lightOnly.render()), [lightSource]);
+  for (const query of [
+    { data: { data } },
+    { data: { data: { ...data, imageBoundsGcj02: undefined } }, imagePath: "/local/terrain.png" },
+  ]) {
+    const missingImage = harness(); missingImage.set(query);
+    tree = missingImage.render();
+    assert.equal(nodes(tree).some(node => node.props?.className === "spot-terrain__image"), false);
+    assert.deepEqual(creditSources(tree), [lightSource]); assertCompleteSources(tree);
+  }
+  const unavailableLight = harness(); unavailableLight.set({ data: { data: { ...data,
+    lightPollution: { ...data.lightPollution, state: "UNAVAILABLE" } } }, imagePath: "/local/terrain.png" });
+  tree = unavailableLight.render();
+  assert.equal(nodes(tree).some(node => node.props?.className === "spot-terrain__light-cell"), false,
+    "nonempty cells from an unavailable response are not a displayed layer");
+  assert.deepEqual(creditSources(tree), [base.source]); assertCompleteSources(tree);
 });
 
 test("image failure preserves light, emits one notice and retains a working retry", async () => {
@@ -89,10 +198,53 @@ test("a failed refresh of old uncovered layers shows error without asserting cur
   const tree = h.render(), all = nodes(tree);
   assert.equal(all.filter(node => node.type === "StatusPanel" && node.props.state === "ERROR").length, 1);
   assert.doesNotMatch(text(tree), /地形：当前地区暂无数据|光污染：当前地区暂无数据/);
-  assert.ok(all.some(node => node.type === "Button" && node.props.ariaLabel === "地形，已开启" && !node.props.disabled));
-  assert.ok(all.some(node => node.type === "Button" && node.props.ariaLabel === "光污染，已开启" && !node.props.disabled));
+  assert.ok(all.some(node => node.type === "Button" && node.props.ariaLabel === "地形，显示地势起伏，已开启" && !node.props.disabled));
+  assert.ok(all.some(node => node.type === "Button" && node.props.ariaLabel === "光污染，年度卫星估算，已开启" && !node.props.disabled));
   await all.find(node => node.type === "StatusPanel").props.onRecover();
   assert.equal(h.retries, 1);
+});
+
+test("terrain recovery states use the reading flow without covering geographic references", () => {
+  const h = harness();
+  for (const [state, query, coverage] of [
+    ["LOADING", { isPending: true }, "地形加载中"],
+    ["EMPTY", { data: { data: { ...base, state: "UNAVAILABLE", lightPollution: { state: "UNAVAILABLE", cells: [], legend: [] } } } }, "地形不可用"],
+    ["ERROR", { isError: true }, "地形读取失败"],
+  ] as const) {
+    h.set(query);
+    const tree = h.render(), all = nodes(tree);
+    const map = all.find(node => node.props?.className === "spot-terrain__map");
+    assert.equal(nodes(map).some(node => node.type === "StatusPanel"), false,
+      `${state}: the recovery content must not compete with the centered spot marker`);
+    assert.equal(all.filter(node => node.type === "StatusPanel" && node.props.state === state).length, 1);
+    assert.match(text(all.find(node => node.props?.className === "spot-terrain__coverage")), new RegExp(coverage));
+    assert.ok(nodes(map).some(node => node.props?.className === "spot-terrain__center"));
+    assert.equal(nodes(map).filter(node => node.props?.className?.startsWith("spot-terrain__direction ")).length, 4);
+  }
+});
+
+test("closed terrain stays closed when a new radius has no active layer request", () => {
+  const h = harness(); h.set({ data: { data: base }, imagePath: "/local/terrain.png" });
+  let all = nodes(h.render());
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "地形，显示地势起伏，已开启").props.onClick();
+  all = nodes(h.render());
+  const lightOnlyCoverage = text(all.find(node => node.props?.className === "spot-terrain__coverage"));
+  assert.equal(h.queries.at(-1).enabled, true, "light remains an independently requested layer");
+  assert.equal(h.queries.at(-1).imageEnabled, false);
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "光污染，年度卫星估算，已开启").props.onClick();
+  all = nodes(h.render());
+  all.find(node => node.type === "Slider").props.onChange({ detail: { value: geometry.terrainSliderForRadius(10) } });
+  h.set({ isPending: true });
+  const tree = h.render(); all = nodes(tree);
+  assert.equal(h.queries.at(-1).input.radiusKm, 10);
+  assert.equal(h.queries.at(-1).enabled, false);
+  assert.equal(h.queries.at(-1).imageEnabled, false);
+  assert.match(text(all.find(node => node.props?.className === "spot-terrain__coverage")), /地形已关闭/);
+  assert.match(lightOnlyCoverage, /地形已关闭/);
+  assert.match(text(tree), /地形与光污染均已关闭/);
+  assert.equal(all.some(node => node.type === "StatusPanel"), false);
+  assert.doesNotMatch(text(tree), /加载中|正在加载/);
+  assert.equal(h.notices.length, 0); assert.equal(h.retries, 0);
 });
 
 test("native image decode failure is returned to the terrain owner", () => {
@@ -101,8 +253,33 @@ test("native image decode failure is returned to the terrain owner", () => {
   assert.ok(image); image.props.onError(); assert.equal(h.imageFailures, 1);
 });
 
-test("terrain scale follows the selected geographic radius and the redistribution source is visible", () => {
-  const h = harness(); h.set({ data: { data: base }, imagePath: "/local/terrain.png" });
+test("fixed night-light uses its verified image and Mercator bounds independently from terrain", () => {
+  const h = harness(), source = { id: "fixed-night-light", provider: "Declared annual source" };
+  const raster = { publicationId: "night-light:fixed", datasetVersion: "annual-fixed", methodVersion: "fixed-policy",
+    imageUrl: "/v2/night-light/assets/annual-fixed/nightlight.png", imageBytes: 1200, imageSha256: "a".repeat(64),
+    boundsGcj02: { west: 114, east: 115, south: 22, north: 24 }, validPixelCount: 100 };
+  h.set({ data: { data: { ...base, state: "UNAVAILABLE", source: null,
+    lightPollution: { state: "PARTIAL", cells: [], legend: [], coverageLabel: "年度辐亮度", source, raster } } } });
+  h.setRaster({ imagePath: "/local/night-light.png" });
+  let all = nodes(h.render());
+  const image = all.find(node => node.props?.className === "spot-terrain__light-image");
+  assert.ok(image); assert.equal(image.props.src, "/local/night-light.png");
+  const expected = mercatorRasterCropPercent(raster.boundsGcj02, geometry.terrainViewportBounds({ latitude: 22.55, longitude: 114.25 }, 5));
+  assert.equal(image.props.style.height, `${expected.height}%`);
+  assert.equal(all.some(node => node.props?.className === "spot-terrain__light-cell"), false);
+  assert.equal(all.find(node => node.type === "SourceAttribution").props.sources[0], source);
+  assert.equal(h.rasterReads.at(-1).descriptor.expectedSha256, raster.imageSha256);
+  image.props.onError(); assert.equal(h.rasterFailures, 1);
+  all.find(node => node.type === "Button" && node.props.ariaLabel === "光污染，年度卫星估算，已开启").props.onClick();
+  all = nodes(h.render());
+  assert.equal(h.rasterReads.at(-1).enabled, false);
+  assert.equal(all.some(node => node.props?.className === "spot-terrain__light-image"), false);
+});
+
+test("terrain scale follows the selected geographic radius and complete redistribution sources stay reachable", () => {
+  const lightSource = { ...base.source, id: "declared-night-light-source", provider: "Declared annual night-light input" };
+  const data = { ...base, lightPollution: { ...base.lightPollution, source: lightSource } };
+  const h = harness(); h.set({ data: { data }, imagePath: "/local/terrain.png" });
   let tree = h.render(), all = nodes(tree);
   const scale = all.find(node => node.props?.className === "spot-terrain__scale");
   assert.equal(scale.children[0].props.style.width, "10%");
@@ -110,7 +287,8 @@ test("terrain scale follows the selected geographic radius and the redistributio
   tree = h.render(); all = nodes(tree);
   assert.equal(all.find(node => node.props?.className === "spot-terrain__scale").children[0].props.style.width, "10%",
     "1 km at radius 5 and 10 km at radius 50 occupy the same fraction of the same geographic viewport");
-  const provenance = all.find(node => node.type === "Provenance");
-  assert.equal(provenance.props.source, base.source);
-  assert.match(JSON.stringify(provenance.props.source.limitations), /produced using Copernicus WorldDEM-30/u);
+  const disclosure = all.find(node => node.type === "SourceDisclosure");
+  assert.equal(disclosure.props.sources[0], base.source);
+  assert.equal(disclosure.props.sources[1], lightSource);
+  assert.match(JSON.stringify(disclosure.props.sources[0].limitations), /produced using Copernicus WorldDEM-30/u);
 });

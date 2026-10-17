@@ -1,3 +1,5 @@
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
+import { FINDER_FIELD_PLACEHOLDER } from "./finder-field";
 import { mediaSource } from "@/utils/media-source";
 import { FloatingNotificationHost } from "@/components/notification";
 import { choosePlatformLocation } from "@/services/platform-location";
@@ -21,10 +23,8 @@ import {
   type SpotFilterEvidence,
 } from "@starward/miniapp-contracts";
 import { NotificationRegion } from "@/components/notification";
-import {
-  SemanticIcon,
-  type SemanticIconName,
-} from "@/components/semantic-asset";
+import { SemanticIcon } from "@/components/semantic-asset";
+import { filterIconName } from "@/components/filter-icon";
 import { StatusPanel } from "@/components/status-panel";
 import { SourceAttribution } from "@/components/source-attribution";
 import { SelectedCardStar } from "@/components/selected-card-star";
@@ -34,20 +34,25 @@ import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { useRedLightHandoff } from "@/components/red-light-handoff";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useMapForecastQuery } from "@/hooks/use-forecast-query";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useWechatLogin } from "@/hooks/use-wechat-login";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import {
+  currentDraftUserId,
   errorMessage,
   getMapScene,
+  MiniappApiError,
   resolveObservationContext,
   restoreObservationContext,
+  replaceRetiredObservationContext,
   searchPlaces,
 } from "@/services/api-client";
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
 import { useAppStore } from "@/state/app-store";
 import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
-import { canApplyContextRestore } from "@/services/observation-context-version";
+import { canApplyContextRestore, sameContextVersion } from "@/services/observation-context-version";
 import { SearchResultPartition } from "./search-result-partition";
+import { retryObservationScene, spotSelectionAllowsContextRestore } from "./context-restore";
 import "./search-page.scss";
 
 function localDateForNow(timezone = "Asia/Shanghai") {
@@ -101,22 +106,6 @@ function optionIsSelected(
   return committedFilters[group].includes(optionId);
 }
 
-const FILTER_ICON_BY_ID: Record<FilterOptionId, SemanticIconName> = {
-  lightPollution: "horizon",
-  lessCloud: "conditions",
-  parking: "location",
-  restroom: "info",
-  driveUpAccess: "compass",
-  photoForeground: "images",
-  campingOvernightParking: "location",
-  specificCelestialEvent: "horizon",
-  moonImpact: "conditions",
-  hikingDifficulty: "compass",
-  signal: "wifi-off",
-  charging: "info",
-  openSkyDirection: "horizon",
-  lastVerifiedAt: "info",
-};
 const FILTER_LABEL_BY_GROUP = Object.fromEntries(
   FILTER_GROUPS.map((group) => [group.key, group.title]),
 ) as Readonly<Record<FilterGroupKey, string>>;
@@ -124,11 +113,16 @@ const FILTER_LABEL_BY_GROUP = Object.fromEntries(
 export function MapSearchSurface() {
   const { statusBarHeight, safeTop } = nativeNavigationInsets();
   const themeClass = useThemeClass();
+  const mode = useAppStore((state) => state.mode);
+  const reducedMotion = useReducedMotion();
   const handoff = useRedLightHandoff();
+  const login = useWechatLogin({ nativeBack: false });
   const finderQuery = useAppStore((state) => state.finderQuery);
   const committedFilters = useAppStore((state) => state.committedFilters);
   const filterSheetOpen = useAppStore((state) => state.filterSheetOpen);
   const observationContext = useAppStore((state) => state.observationContext);
+  const retiredObservationContextId = useAppStore((state) => state.retiredObservationContextId);
+  const selectedSpotId = useAppStore((state) => state.selectedSpotId);
   const analysisOverlay = useAppStore((state) => state.analysisOverlay);
   const preferences = useAppStore((state) => state.preferences);
   const viewport = useAppStore((state) => state.viewport);
@@ -173,11 +167,14 @@ export function MapSearchSurface() {
       observationContext?.contextId,
       observationContext?.contextFingerprint,
       observationContext?.revision,
+      retiredObservationContextId,
       Number(viewport.center.latitude.toFixed(5)),
       Number(viewport.center.longitude.toFixed(5)),
     ],
     queryFn: (signal) => {
-      if (observationContext) return restoreObservationContext(observationContext, signal);
+      if (observationContext) return observationContext.contextId === retiredObservationContextId
+        ? replaceRetiredObservationContext(observationContext, signal)
+        : restoreObservationContext(observationContext, signal);
       const point = gcj02ToWgs84({
         lat: viewport.center.latitude,
         lon: viewport.center.longitude,
@@ -205,15 +202,22 @@ export function MapSearchSurface() {
     enabled: pageVisible,
     staleTime: 60_000,
   });
-  const activeContext = contextQuery.data?.data ?? null;
+  const restoredContext = spotSelectionAllowsContextRestore(observationContext, selectedSpotId)
+    ? contextQuery.data?.data ?? null
+    : observationContext;
+  const activeContext = retiredObservationContextId && restoredContext?.contextId === retiredObservationContextId ? null : restoredContext;
+  const timeReference = activeContext ?? observationContext;
 
   useEffect(() => {
     const incoming = contextQuery.data?.data;
-    const current = useAppStore.getState().observationContext;
+    const currentState = useAppStore.getState();
+    const current = currentState.observationContext;
     if (
       pageVisible &&
       incoming &&
-      useAppStore.getState().mapResetVersion === mapResetVersion &&
+      incoming.contextId !== currentState.retiredObservationContextId &&
+      currentState.mapResetVersion === mapResetVersion &&
+      spotSelectionAllowsContextRestore(observationContext, currentState.selectedSpotId) &&
       canApplyContextRestore(observationContext, current, incoming) &&
       (current?.contextId !== incoming.contextId ||
         current.revision !== incoming.revision ||
@@ -221,7 +225,7 @@ export function MapSearchSurface() {
     ) {
       setObservationContext(incoming);
     }
-  }, [contextQuery.data?.data, pageVisible, observationContext, mapResetVersion, setObservationContext]);
+  }, [contextQuery.data?.data, pageVisible, observationContext, selectedSpotId, mapResetVersion, setObservationContext]);
 
   const scene = useMapForecastQuery({
     queryKey: [
@@ -307,7 +311,11 @@ export function MapSearchSurface() {
     (!queryUnconfirmed && (scene.refreshError || scene.data?.dataState === "STALE_USABLE" ||
       placeSearch.refreshError || placeSearch.data?.dataState === "STALE_USABLE")),
   );
-  const searchState: PageState = contextQuery.isError
+  const contextFailure = contextQuery.error ?? contextQuery.refreshError;
+  const privateContextUnavailable = Boolean(observationContext?.privateProposal &&
+    contextFailure instanceof MiniappApiError && ((contextFailure.statusCode === 403 && contextFailure.code === "PERMISSION_DENIED") ||
+      (contextFailure.statusCode === 404 && contextFailure.code === "NOT_FOUND")));
+  const searchState: PageState = privateContextUnavailable ? "ERROR" : contextQuery.isError
     ? isPermissionError(contextQuery.error)
       ? "PERMISSION_DENIED"
       : "ERROR"
@@ -338,12 +346,21 @@ export function MapSearchSurface() {
   }, [contextQuery.data?.dataState, contextQuery.error, contextQuery.refreshError, notify, pageVisible, queryUnconfirmed,
     placeSearch.data?.dataState, placeSearch.error, placeSearch.refreshError, scene.data?.dataState,
     scene.error, scene.refreshError]);
-  const retrySearchResources = () => {
-    const requests: Promise<unknown>[] = [];
-    if (contextQuery.isError || contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE")
-      requests.push(contextQuery.refetch());
-    if (activeContext && (scene.isError || scene.refreshError || scene.data?.dataState === "STALE_USABLE"))
-      requests.push(scene.refetch());
+  const retrySearchResources = (forceScene = false) => {
+    const retryPage = Taro.getCurrentPages().at(-1), retryVersion = selectionVersion.current;
+    const retryState = useAppStore.getState();
+    const current = () => Taro.getCurrentPages().at(-1) === retryPage && selectionVersion.current === retryVersion &&
+      useAppStore.getState().accountOwnerId === retryState.accountOwnerId &&
+      useAppStore.getState().mapResetVersion === retryState.mapResetVersion &&
+      sameContextVersion(retryState.observationContext, useAppStore.getState().observationContext);
+    const requests: Promise<unknown>[] = [retryObservationScene({
+      context: activeContext,
+      retryContext: Boolean(contextQuery.isError || contextQuery.refreshError || contextQuery.data?.dataState === "STALE_USABLE"),
+      retryScene: Boolean(forceScene === true || scene.isError || scene.refreshError || scene.data?.dataState === "STALE_USABLE"),
+      sceneFailure: scene.error ?? scene.refreshError,
+      current,
+      refreshContext: contextQuery.refetch, refreshScene: scene.refetch,
+    })];
     if (debouncedQuery && (placeSearch.isError || placeSearch.refreshError || placeSearch.data?.dataState === "STALE_USABLE"))
       requests.push(placeSearch.refetch());
     void Promise.all(requests).catch(() => {});
@@ -355,24 +372,36 @@ export function MapSearchSurface() {
     setSuggestionsOpen(false);
   };
 
+  const beginSelection = () => {
+    const version = ++selectionVersion.current;
+    const { accountOwnerId, mapResetVersion, observationContext } = useAppStore.getState();
+    const ownerPage = Taro.getCurrentPages().at(-1);
+    const owns = () => {
+      const current = useAppStore.getState();
+      return current.accountOwnerId === accountOwnerId && current.mapResetVersion === mapResetVersion;
+    };
+    return { version, owns, current: () => owns() && version === selectionVersion.current &&
+      Taro.getCurrentPages().at(-1) === ownerPage && sameContextVersion(observationContext, useAppStore.getState().observationContext) };
+  };
+
   const leaveSearch = async () => {
-    selectionVersion.current++;
+    const intent = beginSelection();
+    const failures = useAppStore.getState().notifications.filter(item => item.owner === "search" && item.dedupeKey === "search-return-failed");
     try {
       await Taro.navigateBack({ delta: 1 });
     } catch {
+      if (!intent.current()) return;
       try {
         await Taro.switchTab({ url: "/pages/map/index" });
       } catch (error) {
+        if (!intent.current()) return;
         notify({ owner: "search", placement: "inline", tone: "warning", title: "暂时无法返回地图", body: `${errorMessage(error)}。搜索内容和选择已保留，请再次返回。`, dismissible: true, dedupeKey: "search-return-failed" });
         return;
       }
     }
+    if (!intent.owns()) return;
     const state = useAppStore.getState();
-    for (const item of state.notifications) {
-      if (item.owner === "search" && item.dedupeKey === "search-return-failed") {
-        state.dismissNotification(item.id);
-      }
-    }
+    for (const failure of failures) if (state.notifications.includes(failure)) state.dismissNotification(failure.id);
   };
 
   const selectFormal = async (spot: SpotSummary) => {
@@ -391,7 +420,7 @@ export function MapSearchSurface() {
   const moveMapReference = async (
     result: Pick<OrdinaryPlaceRef | DarkSkyCandidateRef, "location" | "label">,
   ) => {
-    const version = ++selectionVersion.current;
+    const intent = beginSelection();
     setSuggestionsOpen(false);
     const center = {
       latitude: result.location.latitude,
@@ -415,16 +444,15 @@ export function MapSearchSurface() {
             source: "MAP_VIEWPORT",
             timezoneHint: currentTimezoneHint(),
           },
-          localDate: activeContext?.localDate ?? localDateForNow(currentTimezoneHint()),
-          ...(activeContext ? {
-            selectedAt: activeContext.selectedAtUtc,
-            eventInstanceId: activeContext.eventInstanceId,
-            targetProfile: activeContext.targetProfile,
+          localDate: timeReference?.localDate ?? localDateForNow(currentTimezoneHint()),
+          ...(timeReference ? {
+            selectedAt: timeReference.selectedAtUtc,
+            eventInstanceId: timeReference.eventInstanceId,
+            targetProfile: timeReference.targetProfile,
           } : {}),
         });
-        if (version !== selectionVersion.current) return;
+        if (!intent.current()) return;
         setObservationContext(response.data);
-      if (version !== selectionVersion.current) return;
       selectSpot(null);
       setViewport({ center, zoom: Math.max(12, viewport.zoom) });
       if (finderQuery.trim()) addSearchHistory(finderQuery);
@@ -432,7 +460,7 @@ export function MapSearchSurface() {
       setAnnouncement(`地图已移动到${result.label}；正在查找附近正式观星点。`);
       await leaveSearch();
     } catch (error) {
-      if (version !== selectionVersion.current) return;
+      if (!intent.current()) return;
       if (isMiniappRequestCancelled(error)) return;
       const outsideSupportedRegion = typeof error === "object" && error !== null
         && "code" in error && error.code === "INVALID_INPUT"
@@ -448,10 +476,10 @@ export function MapSearchSurface() {
 
   const chooseMapLocation = async () => {
     if (nativeSelectionPending.current) return;
-    const version = ++selectionVersion.current;
+    const intent = beginSelection();
+    const version = intent.version;
     nativeSelectionPending.current = version;
-    const ownerPage = Taro.getCurrentPages().at(-1);
-    const current = () => version === selectionVersion.current && Taro.getCurrentPages().at(-1) === ownerPage;
+    const current = intent.current;
     try {
       const allowed = await handoff.confirm("微信选点界面可能较亮，无法跟随红光模式。");
       if (!allowed || !current()) return;
@@ -473,6 +501,7 @@ export function MapSearchSurface() {
   const commitFilter = (optionId: FilterOptionId) => {
     const option = FILTER_OPTIONS.find((item) => item.id === optionId);
     if (!option) return;
+    blurSearch();
     cancelFilters();
     toggleDraftFilter(option.id);
     applyFilters();
@@ -501,7 +530,8 @@ export function MapSearchSurface() {
     >
       <FloatingNotificationHost />
       {handoff.warning}
-      <NativeBackBoundary active={filterSheetOpen} onBack={cancelFilters} />
+      {login.dialog}
+      <NativeBackBoundary active={login.open || filterSheetOpen} onBack={login.open ? login.back : cancelFilters} />
       <View className="spot-search-shell" data-control="spot-search-shell">
         <View className="spot-search-title-row">
           <Text className="spot-search-title">今晚去观星</Text>
@@ -522,7 +552,8 @@ export function MapSearchSurface() {
             className="spot-search-field__input"
             value={finderQuery}
             focus={focused}
-            placeholder="搜观星点 / 所在区域"
+            placeholder={FINDER_FIELD_PLACEHOLDER}
+            placeholderClass="spot-search-field__placeholder"
             confirmType="search"
             aria-label="搜索自有观星点或所在区域"
             onInput={(event) => {
@@ -539,7 +570,6 @@ export function MapSearchSurface() {
           />
         </View>
 
-        {!suggestionsOpen ? nativeLocationEntry : null}
         {suggestionsOpen ? (
           <ScrollView
             className="spot-search-query-overlay"
@@ -572,7 +602,9 @@ export function MapSearchSurface() {
                     <Text className="type-caption">普通地点 · 只移动地图{result.region || result.address ? ` · ${result.region || result.address}` : ""}</Text>
                   </Button>
                 ))}
-                {!queryUnconfirmed && !placeSearch.isPending && !placeSearch.isError && !visiblePlaces?.formalSpots.length && !candidates.length && !ordinaryPlaces.length ? (
+                {!queryUnconfirmed && !placeSearch.isPending && !placeSearch.isError && !placeSearch.refreshError &&
+                  placeSearch.data && ["FRESH", "PARTIAL", "SAMPLE_DATA"].includes(placeSearch.data.dataState) &&
+                  !visiblePlaces?.formalSpots.length && !candidates.length && !ordinaryPlaces.length ? (
                   <Text className="type-caption spot-search-query-status">没有匹配结果；可以换一个名称或城市。</Text>
                 ) : null}
               </View>
@@ -592,7 +624,6 @@ export function MapSearchSurface() {
           </ScrollView>
         ) : null}
 
-        <ScrollView className="spot-search-result-list" data-control="spot-search-result-list" scrollY enhanced showScrollbar={false} aria-label="筛选与正式观星点结果" onClick={(event) => { event.stopPropagation(); blurSearch(); }}>
         <View className="spot-search-filter-row">
         <ScrollView
           className="spot-search-filter-scroll"
@@ -617,7 +648,7 @@ export function MapSearchSurface() {
                   onClick={() => commitFilter(option.id)}
                 >
                   <SemanticIcon
-                    name={FILTER_ICON_BY_ID[option.id]}
+                    name={filterIconName(option.id, mode)}
                     className="spot-search-filter-choice__prefix"
                   />
                   <Text>{option.label}</Text>
@@ -635,8 +666,11 @@ export function MapSearchSurface() {
         </Button>
         </View>
 
+        <ScrollView className="spot-search-result-list" data-control="spot-search-result-list" scrollY enhanced showScrollbar={false} aria-label="正式观星点结果" onClick={(event) => { event.stopPropagation(); blurSearch(); }}>
         <View className="spot-search-feedback" onClick={(event) => event.stopPropagation()}>
           <NotificationRegion owner="search" placement="inline" />
+          {pageVisible && searchState !== "LOADING" && hasRetainedSearchResults && scene.isFetching ?
+            <StatusPanel state="LOADING" detail="正在更新，保留上次结果" /> : null}
           {staleSearchResource ? <StatusPanel state="STALE" detail={hasRetainedSearchResults
             ? "部分搜索资料尚未确认最新状态，当前结果仍会保留。"
             : "当前没有可保留的搜索结果；资料暂时无法更新。"}
@@ -646,21 +680,22 @@ export function MapSearchSurface() {
             <StatusPanel
               state={searchState}
               emptyLevel={searchState === "EMPTY" ? "page" : undefined}
-              title={searchState === "EMPTY" ? "没有匹配的观星点" : undefined}
+              title={privateContextUnavailable ? "原观测位置不可用" : searchState === "EMPTY" ? "没有匹配的观星点" : undefined}
               detail={
-                (contextQuery.isError ? errorMessage(contextQuery.error) : queryUnconfirmed ? "" : scene.isError ? errorMessage(scene.error) : placeSearch.isError ? errorMessage(placeSearch.error) : "") ||
+                (privateContextUnavailable ? "原观测位置无法继续使用，请返回地图重新选择。" : contextQuery.isError ? errorMessage(contextQuery.error) : queryUnconfirmed ? "" : scene.isError ? errorMessage(scene.error) : placeSearch.isError ? errorMessage(placeSearch.error) : "") ||
                 (isOfflineError(contextQuery.error ?? (queryUnconfirmed ? null : scene.error ?? placeSearch.error))
                   ? "网络不可用，请连接后重试。"
                   : expiredEmptyFilter
                     ? "少云筛选资料已到期，结果待核验；请刷新资料。"
                   : searchState === "EMPTY"
-                    ? "换个名称搜索，或返回地图移动到其他区域。"
+                    ? activeFilterGroups.length ? "当前条件下没有匹配结果，可清除或调整筛选。" : "换个名称搜索，或返回地图移动到其他区域。"
                     : "正在搜索观星点。")
               }
-              recoveryLabel={searchState === "EMPTY" ? "换个名称" : searchState === "ERROR" ? "重试搜索" : searchState === "PERMISSION_DENIED" ? "查看登录说明" : undefined}
-              onRecover={searchState === "ERROR" ? retrySearchResources : searchState === "PERMISSION_DENIED"
-                ? () => void Taro.navigateTo({ url: "/pages/auth/index" }) : searchState === "EMPTY"
-                  ? () => { setFinderQuery(""); setFocused(true); setSuggestionsOpen(true); } : undefined}
+              recoveryLabel={privateContextUnavailable ? "返回地图" : searchState === "EMPTY" ? activeFilterGroups.length ? "清除条件" : "换个名称" : searchState === "ERROR" ? "重试搜索" : searchState === "PERMISSION_DENIED" ? accountOwnerId ? "返回地图" : "微信快捷登录" : undefined}
+              onRecover={privateContextUnavailable ? () => void leaveSearch() : searchState === "ERROR" ? retrySearchResources : searchState === "PERMISSION_DENIED"
+                ? () => { if (currentDraftUserId()) void leaveSearch(); else login.requireAccount(() => retrySearchResources(true)); } : searchState === "EMPTY"
+                  ? () => { if (activeFilterGroups.length) { setFilterCategory("OBSERVATION"); openFilters(); }
+                    else { setFinderQuery(""); setFocused(true); setSuggestionsOpen(true); } } : undefined}
             />
           ) : null}
           {incompleteActiveCoverage.length ? (
@@ -670,29 +705,29 @@ export function MapSearchSurface() {
               </Text>
               <View className="spot-search-filter-evidence__actions">
                 <Button onClick={() => { setFilterCategory("OBSERVATION"); openFilters(); }}>调整筛选</Button>
-                <Button onClick={() => void scene.refetch()}>重试资料</Button>
+                <Button onClick={() => retrySearchResources(true)}>重试资料</Button>
               </View>
             </View>
           ) : null}
         </View>
 
-          {formalSpots.length > 0 || searchState === "READY" || searchState === "PARTIAL" ? <>
-          <View className="spot-search-result-summary">
+          <View className="spot-search-results" style={{ display: formalSpots.length > 0 || searchState === "READY" || searchState === "PARTIAL" ? "block" : "none" }}>
+          {queryUnconfirmed || expiredEmptyFilter || hasUnknownIncludedSpot || (formalSpots.length === 0 && ["STALE", "ERROR", "PERMISSION_DENIED"].includes(searchState)) ? <View className="spot-search-result-summary">
             <Text className="type-caption">{queryUnconfirmed ? "搜索结果更新中"
               : expiredEmptyFilter ? "筛选结果待核验"
               : formalSpots.length === 0 && searchState === "STALE" ? "搜索结果待更新"
               : formalSpots.length === 0 && (searchState === "ERROR" || searchState === "PERMISSION_DENIED") ? "搜索结果暂不可用"
               : `${formalSpots.length} 个${hasUnknownIncludedSpot ? "符合或待核验的" : ""}正式观星点`}</Text>
-          </View>
-          <SearchResultPartition id="wanted" label="想去" count={wanted.length} contentRevision={partitionContentRevision(wanted, showPartitionEmpty, activeFilterGroups, visibleScene?.filterEvidence)} reducedMotion={preferences.reducedMotion}>
+          </View> : null}
+          <SearchResultPartition id="wanted" label="想去" count={wanted.length} contentRevision={partitionContentRevision(wanted, showPartitionEmpty, activeFilterGroups, visibleScene?.filterEvidence)} reducedMotion={reducedMotion}>
             {wanted.length ? wanted.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
               : showPartitionEmpty ? <Text className="type-caption spot-search-empty">还没有想去的观星点。</Text> : null}
           </SearchResultPartition>
-          <SearchResultPartition id="other" label="其他观星点" count={other.length} contentRevision={partitionContentRevision(other, showPartitionEmpty, activeFilterGroups, visibleScene?.filterEvidence)} reducedMotion={preferences.reducedMotion}>
+          <SearchResultPartition id="other" label="其他观星点" count={other.length} contentRevision={partitionContentRevision(other, showPartitionEmpty, activeFilterGroups, visibleScene?.filterEvidence)} reducedMotion={reducedMotion}>
             {other.length ? other.map((spot) => <SearchResultCard key={spot.spotId} spot={spot} evidence={visibleScene?.filterEvidence?.[spot.spotId]} activeGroups={activeFilterGroups} onSelect={() => void selectFormal(spot)} />)
               : showPartitionEmpty ? <Text className="type-caption spot-search-empty">{expiredEmptyFilter ? "刷新资料后重新核验候选点。" : "没有其他符合或待核验的观星点。"}</Text> : null}
           </SearchResultPartition>
-          </> : null}
+          </View>
           {activeFilterGroups.includes("LESS_CLOUD") ? <SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
         </ScrollView>
       </View>

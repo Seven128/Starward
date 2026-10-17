@@ -1,0 +1,16 @@
+{
+  "projectId": "7144519510537620825",
+  "sourceScreenId": "5205988829884632961",
+  "sourceUrl": "https://stitch.google.com/projects/7144519510537620825?node-id=5205988829884632961",
+  "sourceCommit": "63b9b6d7",
+  "files": 957,
+  "htmlBytes": 77260252,
+  "htmlSha256": "0e111c821c72ae0ec7c86d304e1e36925c1a746a85a8e8cdf44399851aa10bd8",
+  "zipBytes": 54468849,
+  "zipSha256": "0189d1ab761078178f079fb0f5909dcc896be40dc145758b228cd22ed844c3e6",
+  "fullHtmlReadbackEqual": true,
+  "embeddedOriginalArchiveEqual": true,
+  "format": "HTML source library containing exact recoverable multi-file ZIP, not native Stitch components; existing visual boards retained",
+  "skyScreenId": "5385664345158066168",
+  "skyHtmlSha256": "4c6cfc021e5f3c02db4036eab437fe64d25f57c8adbd49864a755ce598345c79"
+}

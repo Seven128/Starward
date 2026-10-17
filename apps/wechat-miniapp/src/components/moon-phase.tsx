@@ -1,5 +1,6 @@
 import { Image, Text, View } from "@tarojs/components";
 import type { MoonPhaseKey } from "@starward/miniapp-contracts";
+import { useAppStore } from "@/state/app-store";
 
 const PHASES: Readonly<Record<MoonPhaseKey, { index: number; label: string }>> = {
   NEW: { index: 0, label: "新月" },
@@ -25,6 +26,7 @@ export function MoonPhaseImage({
   className?: string;
   decorative?: boolean;
 }) {
+  const mode = useAppStore((state) => state.mode);
   if (!phase) {
     return (
       <View
@@ -38,10 +40,14 @@ export function MoonPhaseImage({
     );
   }
   const definition = PHASES[phase];
+  // Red light is entered in Settings, after the content package is loaded.
+  // Startup restores DAY/NIGHT, which keep the original main-package assets.
+  const src = `${mode === "OBSERVATION" ? "/content" : ""}/assets/moon/phase-${definition.index}.svg`;
   return (
     <Image
+      key={src}
       className={`moon-phase-image ${className}`.trim()}
-      src={`/assets/moon/phase-${definition.index}.svg`}
+      src={src}
       mode="aspectFit"
       {...(decorative
         ? { "aria-hidden": "true" as const }

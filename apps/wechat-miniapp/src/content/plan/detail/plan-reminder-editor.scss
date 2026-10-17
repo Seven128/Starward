@@ -12,3 +12,13 @@
 .plan-reminder-editor__remove-item { width: 44Px; color: var(--text-tertiary) !important; font-size: 16Px !important; }
 .plan-reminder-editor .plan-reminder-editor__notification { width: 100%; min-height: 44Px; margin-top: 6Px; padding: 0; color: var(--primary-pressed); text-align: left; }
 .plan-reminder-editor__notice { display: block; padding-top: 5Px; color: var(--text-secondary); font-size: 14Px; line-height: 21Px; }
+
+// Approved DAY text roles; notification intent and disabled additions retain their styles.
+.theme-day.plan-editor {
+  .plan-reminder-editor__heading > text:last-child { color: #6d787d; }
+  .plan-reminder-editor__row > button { color: #886b65; }
+  .plan-reminder-editor__remove-item { color: #886b65 !important; }
+  .plan-reminder-editor__add-item { color: #5a7581; }
+  .plan-reminder-editor__add-item .plan-reminder-editor__item-count { color: #697378; }
+  .plan-reminder-editor__add-reminder { color: #5e7b87; }
+}

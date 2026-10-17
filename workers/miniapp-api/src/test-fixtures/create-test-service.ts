@@ -26,6 +26,7 @@ import type { SdssOpticalImageryService } from "../sdss-optical-imagery.ts";
 import type { PreparedOpticalImageryService } from "../prepared-optical-imagery.ts";
 import type { OpticalHipsPublicationService } from "../optical-hips-publication.ts";
 import type { GalacticImagePublicationService } from "../galactic-image-publication.ts";
+import { TerrainService, type TerrainPort } from "../terrain-service.ts";
 
 export function createTestMiniappService(
   input: {
@@ -45,6 +46,7 @@ export function createTestMiniappService(
     preparedOpticalImages?: PreparedOpticalImageryService;
     opticalHips?: OpticalHipsPublicationService;
     galacticImage?: GalacticImagePublicationService;
+    terrain?: TerrainPort;
   } = {},
 ) {
   const config = input.config ?? createTestRuntimeConfig();
@@ -52,6 +54,7 @@ export function createTestMiniappService(
     repository: input.repository ?? new InMemoryTestRepository(),
     config,
     weather: input.weather ?? new DeterministicWeatherTestAdapter(),
+    terrain: input.terrain ?? new TerrainService({ renderer: async () => null }),
     ...(input.recentWeather ? { recentWeather: input.recentWeather } : {}),
     ...(input.airQuality ? { airQuality: input.airQuality } : {}),
     route: input.route ?? new DisabledRouteAdapter(),

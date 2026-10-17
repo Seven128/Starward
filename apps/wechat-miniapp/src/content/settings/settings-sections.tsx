@@ -1,4 +1,5 @@
 import { ToggleField } from "@/components/toggle-field";
+import { LoadingIndicator } from "@/components/loading-indicator";
 import { SemanticIcon, type SemanticIconName } from "@/components/semantic-asset";
 import type { usePreferencesSync } from "@/hooks/use-preferences-sync";
 import type { DisplayMode, UserPreferences } from "@starward/miniapp-contracts";
@@ -21,6 +22,8 @@ type SettingsControlsProps = {
   selectDisplayMode: (mode: DisplayMode) => void;
   onModeGestureCapture: (captured: boolean) => void;
   openSheet: (kind: SettingsSheetKind) => void;
+  blocked?: boolean;
+  preferencesConfirmed?: boolean;
 };
 
 function SettingsEntryRow({
@@ -36,8 +39,8 @@ function SettingsEntryRow({
   pendingLabel?: string | undefined;
   onClick: () => void;
 }) {
-  return <Button id={id} className="settings-entry-row focus-ring"
-    aria-label={`${label}${description ? `；${description}` : ""}${value ? `；${value}` : ""}`}
+  return <Button id={id} className={`settings-entry-row focus-ring${disabled ? " settings-entry-row--disabled" : ""}`}
+    ariaLabel={`${label}${description ? `；${description}` : ""}${value ? `；${value}` : ""}`}
     disabled={disabled} onClick={onClick}>
     <View className={`settings-icon-well settings-icon-well--${tone}`} aria-hidden="true">
       <SemanticIcon name={icon} />
@@ -47,9 +50,9 @@ function SettingsEntryRow({
       {description ? <Text className="type-caption">{description}</Text> : null}
     </View>
     <View className="settings-entry-meta">
-      {pendingLabel ? <Text>{pendingLabel}</Text> : <>
+      {pendingLabel ? <><LoadingIndicator kind="arc" /><Text>{pendingLabel}</Text></> : <>
         {value ? <Text>{value}</Text> : null}
-        <SemanticIcon name="chevron-right" />
+        <View className="settings-entry-chevron" aria-hidden="true"><SemanticIcon name="chevron-right" /></View>
       </>}
     </View>
   </Button>;
@@ -57,21 +60,23 @@ function SettingsEntryRow({
 
 export function SettingsControls({
   preferences, mode, updatePreference, selectDisplayMode, onModeGestureCapture, openSheet,
+  blocked = false, preferencesConfirmed = true,
 }: SettingsControlsProps) {
   return <>
     <View className="settings-mode-panel">
-      <DisplayModeControl mode={mode} onSelect={selectDisplayMode} onGestureCapture={onModeGestureCapture} />
+      <DisplayModeControl mode={mode} disabled={blocked} onSelect={selectDisplayMode} onGestureCapture={onModeGestureCapture} />
     </View>
 
     <View id="settings-permissions" className="settings-section" data-od-id="settings-permissions">
       <Text className="settings-section-title">位置与隐私</Text>
       <View className="settings-card settings-card--group">
-        <SettingsEntryRow id="nearby-location-preference" label="附近地点" icon="location"
-          value={preferences.locationPreference === "ASK_ONCE" ? "使用时询问" : "始终手动选择"}
+        <SettingsEntryRow id="nearby-location-preference" label="附近地点" icon={mode === "DAY" ? "place-pin" : "location"}
+          disabled={blocked || !preferencesConfirmed}
+          value={!preferencesConfirmed ? "待确认" : preferences.locationPreference === "ASK_ONCE" ? "使用时询问" : mode === "DAY" ? "手动选择" : "始终手动选择"}
           onClick={() => openSheet("LOCATION")} />
-        <SettingsEntryRow id="settings-direction" label="方位天空" icon="compass" value="按页使用"
+        <SettingsEntryRow id="settings-direction" label="方位天空" icon="compass" disabled={blocked || !preferencesConfirmed} value={preferencesConfirmed ? "按页使用" : "待确认"}
           onClick={() => openSheet("DIRECTION")} />
-        <SettingsEntryRow id="settings-precise-location" label="精确位置" icon="info" value="每次确认"
+        <SettingsEntryRow id="settings-precise-location" label="精确位置" icon={mode === "DAY" ? "location" : "info"} disabled={blocked || !preferencesConfirmed} value={preferencesConfirmed ? "每次确认" : "待确认"}
           onClick={() => openSheet("PRECISE")} />
       </View>
     </View>
@@ -80,35 +85,40 @@ export function SettingsControls({
       <Text className="settings-section-title">提醒</Text>
       <View className="settings-card settings-card--group">
         <ToggleField id="departure-condition-reminder" label="观星计划提醒"
-          description="清单与时间在计划中设置" icon="conditions" iconTone="gold"
+          description="清单与时间在计划中设置" icon="bell" iconTone="gold"
           checked={preferences.departureConditionReminder}
+          disabled={blocked || !preferencesConfirmed}
+          {...(!preferencesConfirmed ? { stateLabels: { checked: "待确认", unchecked: "待确认" } } : {})}
           onChange={(checked) => updatePreference("departureConditionReminder", checked)} />
         <ToggleField id="contribution-status-reminder" label="审核结果提醒"
-          description="观星点创建与反馈" icon="check" iconTone="lilac"
+          description="观星点创建与反馈" icon={mode === "DAY" ? "checklist" : "check"} iconTone={mode === "DAY" ? "plain" : "lilac"}
           checked={preferences.contributionStatusReminder}
+          disabled={blocked || !preferencesConfirmed}
+          {...(!preferencesConfirmed ? { stateLabels: { checked: "待确认", unchecked: "待确认" } } : {})}
           onChange={(checked) => updatePreference("contributionStatusReminder", checked)} />
       </View>
-      {(preferences.departureConditionReminder || preferences.contributionStatusReminder) ?
-        <Text className="type-caption settings-capability-note">提醒意向已保存；微信通知仅在取得订阅授权并有发送回执后生效。</Text> : null}
+      {preferencesConfirmed && (preferences.departureConditionReminder || preferences.contributionStatusReminder) ?
+        <Text className="type-caption settings-capability-note">微信通知需另行订阅；发送情况请查看具体提醒状态。</Text> : null}
     </View>
   </>;
 }
 
-export function SettingsDataActions({ dataAction, openSheet }: {
+export function SettingsDataActions({ dataAction, openSheet, blocked = false }: {
   dataAction: "CACHE" | "EXPORT" | "DELETE" | null;
   openSheet: (kind: SettingsSheetKind) => void;
+  blocked?: boolean;
 }) {
   return <View id="settings-data-actions" className="settings-section" data-od-id="settings-data-actions">
     <Text className="settings-section-title">数据</Text>
     <View className="settings-card settings-card--group">
       <SettingsEntryRow id="settings-cache-cleanup" label="清理本机缓存" icon="refresh"
-        disabled={dataAction !== null} pendingLabel={dataAction === "CACHE" ? "清理中…" : undefined}
+        disabled={blocked || dataAction !== null} pendingLabel={dataAction === "CACHE" ? "清理中…" : undefined}
         onClick={() => openSheet("CACHE")} />
-      <SettingsEntryRow id="account-data-export" label="下载我的数据" icon="download"
-        disabled={dataAction !== null} pendingLabel={dataAction === "EXPORT" ? "生成中…" : undefined}
+      <SettingsEntryRow id="account-data-export" label="导出数据" icon="download"
+        disabled={blocked || dataAction !== null} pendingLabel={dataAction === "EXPORT" ? "生成中…" : undefined}
         onClick={() => openSheet("EXPORT")} />
       <SettingsEntryRow id="account-delete" label="删除账户" icon="trash" tone="coral"
-        disabled={dataAction !== null} pendingLabel={dataAction === "DELETE" ? "处理中…" : undefined}
+        disabled={blocked || dataAction !== null} pendingLabel={dataAction === "DELETE" ? "处理中…" : undefined}
         onClick={() => openSheet("DELETE")} />
     </View>
   </View>;

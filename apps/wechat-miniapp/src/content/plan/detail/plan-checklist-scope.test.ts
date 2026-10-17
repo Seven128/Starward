@@ -4,6 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { planChecklistBelongsTo, planChecklistStorageKey, readOwnedPlanChecklist } from "./plan-checklist";
+import { createPlanTestOperations } from "./plan-operation-test-support";
 
 test("checklist keys isolate exact account and plan identities", () => {
   assert.notEqual(planChecklistStorageKey("one", "a"), planChecklistStorageKey("one", "ab"));
@@ -27,6 +28,7 @@ test("server checklist action rejects stale owners, serializes mutations and ign
     const lock = { current: scenario === "busy" };
     const toggle = vm.runInNewContext(ts.transpileModule(handler + "\ntoggleReminderItem;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
       scopedDraftUserId: () => owner, mutationBusy: lock, activePlan: { planId: "one", revision: 3 },
+      operations: createPlanTestOperations(() => owner, lock),
       setChecklistSaving: () => {},
       setPlanChecklistCompletion: async (account: string, plan: string, payload: { completed: boolean; expectedRevision: number }) => {
         requests++; assert.equal(account, "a"); assert.equal(plan, "one");

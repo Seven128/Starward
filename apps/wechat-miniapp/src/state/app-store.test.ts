@@ -8,6 +8,7 @@ import { DEFAULT_USER_PREFERENCES, EMPTY_FILTER_STATE, cloneFilterState } from "
 import * as transitions from "./app-transitions";
 import * as notifications from "./notification";
 import type { useAppStore } from "./app-store";
+import { createAccountOperationOwner } from "../hooks/account-operation";
 
 const validObservationContext = {
   schemaVersion: "observation-context-v2",
@@ -82,6 +83,123 @@ function loadStore(storage: { value: unknown; failWrites?: boolean; session?: un
   return { store: exports.useAppStore as typeof useAppStore, flush: () => { while (scheduled.length) scheduled.shift()!(); }, storage };
 }
 
+test("real account binding publishes one verified identity so an explicit login can resume its task", () => {
+  const storage = { value: {}, session: null as null | { userId: string } };
+  const { store } = loadStore(storage);
+  const page = {};
+  const operations = createAccountOperationOwner(() => ({
+    userId: storage.session?.userId ?? null, ownerId: store.getState().accountOwnerId,
+    reset: store.getState().mapResetVersion, page, target: "wechat-login",
+  }), () => {});
+  const unsubscribe = store.subscribe(operations.observe);
+  const operation = operations.begin({ allowAuthentication: true })!;
+  storage.session = { userId: "user:a" };
+  store.getState().bindAccount("user:a");
+  assert.equal(operation.isCurrent(), true);
+  operation.authenticate();
+  unsubscribe();
+});
+
+test("a departed edit retires its writable identity synchronously and a late completion cannot revive it", () => {
+  const { store, storage } = loadStore({ value: { accountOwnerId: "user:test", observationContext: validObservationContext } });
+  store.getState().selectSpot("spot:a" as never);
+  const edit = store.getState().beginObservationContextEdit(validObservationContext as never);
+  assert.ok(edit);
+  store.getState().selectSpot("spot:b" as never);
+  assert.equal(store.getState().retiredObservationContextId, validObservationContext.contextId);
+  assert.equal((storage.value as any).retiredObservationContextId, validObservationContext.contextId);
+  assert.equal((storage.value as any).pendingObservationContextEdit, undefined);
+  store.getState().selectSpot("spot:a" as never);
+  store.getState().finishObservationContextEdit(edit);
+  store.getState().setObservationContext({ ...validObservationContext, revision: 2, selectedAtUtc: "2026-08-30T14:00:00.000Z" } as never);
+  assert.equal(store.getState().observationContext?.revision, 1);
+  assert.equal(store.getState().beginObservationContextEdit(validObservationContext as never), null);
+  const fresh = { ...validObservationContext, contextId: "fresh-context" };
+  store.getState().setObservationContext(fresh as never);
+  assert.equal(store.getState().retiredObservationContextId, null);
+  assert.ok(store.getState().beginObservationContextEdit(fresh as never));
+});
+
+test("same-place cancellation keeps its edit; explicit request retirement and completed close retain a recovery hint", () => {
+  for (const close of [false, true]) {
+    const { store } = loadStore({ value: { accountOwnerId: "user:test", observationContext: validObservationContext } });
+    store.getState().selectSpot("spot:a" as never);
+    const edit = store.getState().beginObservationContextEdit(validObservationContext as never);
+    assert.ok(edit);
+    store.getState().openSourceLift("CONDITIONS");
+    store.getState().finishSourceLift("CONDITIONS", { restoreMap: true });
+    store.getState().selectSpot("spot:a" as never);
+    assert.equal(store.getState().pendingObservationContextEdit, edit);
+    if (close) store.getState().selectSpot(null);
+    else store.getState().retireObservationContextEdit();
+    assert.equal(store.getState().pendingObservationContextEdit, null);
+    assert.equal(store.getState().retiredObservationContextId, validObservationContext.contextId);
+  }
+});
+
+test("cold recovery honors only the hint matching its usable saved Context", () => {
+  for (const hint of [validObservationContext.contextId, "unrelated-context", null]) {
+    const { store } = loadStore({ value: { accountOwnerId: "user:test", observationContext: validObservationContext, retiredObservationContextId: hint } });
+    store.getState().hydrate();
+    assert.equal(store.getState().retiredObservationContextId, hint === validObservationContext.contextId ? hint : null);
+    assert.equal(store.getState().pendingObservationContextEdit, null);
+  }
+  const { store } = loadStore({ value: { accountOwnerId: "user:test", observationContext: { ...validObservationContext, privacyClass: "SESSION_PRECISE" }, retiredObservationContextId: validObservationContext.contextId } });
+  assert.equal(store.getState().observationContext, null);
+  assert.equal(store.getState().retiredObservationContextId, null);
+});
+
+test("account departure stashes the retired snapshot and old finish cannot clear a new account edit", () => {
+  const { store } = loadStore({ value: { accountOwnerId: "user:test", observationContext: validObservationContext }, accounts: {} });
+  const first = store.getState().beginObservationContextEdit(validObservationContext as never);
+  assert.ok(first);
+  store.getState().bindAccount("user:b");
+  const next = { ...validObservationContext, contextId: "b-context" };
+  store.getState().setObservationContext(next as never);
+  const second = store.getState().beginObservationContextEdit(next as never);
+  assert.ok(second);
+  store.getState().finishObservationContextEdit(first);
+  assert.equal(store.getState().pendingObservationContextEdit, second);
+  store.getState().bindAccount("user:test");
+  assert.equal(store.getState().retiredObservationContextId, validObservationContext.contextId);
+  assert.equal(store.getState().observationContext?.selectedAtUtc, validObservationContext.selectedAtUtc);
+  store.getState().resetMapToDefaultRegion();
+  assert.equal(store.getState().retiredObservationContextId, null);
+  assert.equal(store.getState().pendingObservationContextEdit, null);
+});
+
+test("source-lift restoration retains the retirement of its original snapshot", () => {
+  const { store } = loadStore({ value: { accountOwnerId: "user:test", observationContext: validObservationContext } });
+  store.getState().selectSpot("spot:a" as never);
+  store.getState().openSourceLift("FINDER");
+  const edit = store.getState().beginObservationContextEdit(validObservationContext as never);
+  assert.ok(edit);
+  store.getState().requestSpotOpen("spot:b" as never);
+  store.getState().setObservationContext({ ...validObservationContext, contextId: "b-context" } as never);
+  store.getState().finishSourceLift("FINDER", { restoreMap: true });
+  assert.equal(store.getState().observationContext?.contextId, validObservationContext.contextId);
+  assert.equal(store.getState().retiredObservationContextId, validObservationContext.contextId);
+  store.getState().setObservationContext({ ...validObservationContext, revision: 2 } as never);
+  assert.equal(store.getState().observationContext?.revision, 1);
+});
+
+test("same-account expired private Context survives actual hydrate and is hidden across accounts", () => {
+  const context = { ...validObservationContext, schemaVersion: "observation-context-v3", privacyClass: "ACCOUNT_PRIVATE", routeOrigin: null,
+    location: { kind: "PENDING_PROPOSAL", displayName: "冻结位置", wgs84: { system: "WGS84", latitude: 22.6, longitude: 114.2 } },
+    privateProposal: { ownerId: "user:a", submissionId: "contribution:one", attemptId: "contribution-attempt:one", attemptBaseRevision: 1 },
+    expiresAt: "2026-10-01T00:00:00.000Z" };
+  const storage = { value: { accountOwnerId: "user:a", observationContext: context }, accounts: {}, session: {
+    userId: "user:a", accessToken: "test-token", expiresAt: "2999-01-01T00:00:00.000Z" } };
+  const { store } = loadStore(storage);
+  store.getState().hydrate();
+  assert.equal(store.getState().observationContext?.privateProposal?.attemptId, context.privateProposal.attemptId);
+  assert.equal(store.getState().observationContext?.selectedAtUtc, context.selectedAtUtc);
+  store.getState().bindAccount("user:b");
+  assert.equal(store.getState().observationContext, null);
+  store.getState().setObservationContext(context as never);
+  assert.equal(store.getState().observationContext, null);
+});
+
 test("switching accounts isolates and restores local preferences and private projections", () => {
   const storage = { value: {}, accounts: {} as Record<string, unknown>, session: {
     userId: "user:a", accessToken: "test-token", expiresAt: "2999-01-01T00:00:00.000Z",
@@ -107,6 +225,52 @@ test("switching accounts isolates and restores local preferences and private pro
   assert.equal(store.getState().preferencesDirty, true);
   assert.deepEqual([...store.getState().favoriteIds], ["spot:a"]);
   assert.equal(store.getState().plans[0]?.planId, "plan:a");
+});
+
+test("missing or unreadable auth hides mounted private state and same-account restoration retains it", async () => {
+  for (const invalid of [undefined, { userId: "user:a" }, "read-failed"]) {
+    const session = { userId: "user:a", accessToken: "synthetic", expiresAt: "2999-01-01" };
+    const storage: { value: unknown; session: unknown } = { value: {}, session };
+    const { store, flush } = loadStore(storage);
+    store.getState().bindAccount("user:a");
+    store.getState().setPreference("equipment", "A 的未同步配置");
+    store.getState().replaceFavoriteIds(["spot:a"] as never);
+    store.getState().replacePlans([{ planId: "plan:a" }] as never);
+    store.getState().setObservationContext(validObservationContext as never);
+    const api = ts.createSourceFile("api-client.ts", readFileSync(new URL("../services/api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+    const names = ["readStoredSession", "nativeSessionOwner", "settleErasedInstallation", "ensureSession", "ensureFavoriteOwner"];
+    const code = names.map(name => {
+      const declaration = api.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === name);
+      assert.ok(declaration);
+      return declaration.getText(api).replace(/^export /u, "");
+    }).join("\n");
+    const installationOwner = api.statements.find(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(item => item.name.getText(api) === "pendingErasedInstallation"));
+    assert.ok(installationOwner);
+    let unreadable = false;
+    const run = vm.runInNewContext(ts.transpileModule(installationOwner.getText(api) + "\n" + code + "\nensureFavoriteOwner;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+      SESSION_STORAGE_KEY: "auth", SESSION_EXPIRY_SKEW_MS: 60_000, erasedStoredAccountIds: new Set(), invalidatedStoredSession: null, sessionPromise: null,
+      sessionLoginChoice: "WECHAT", // This case starts from an already authorized account.
+      useAppStore: store, requestOperation: async () => { throw Error("synthetic offline"); },
+      Taro: { getStorageSync: () => { if (unreadable) throw Error("synthetic read failed"); return storage.session; } },
+    }) as () => Promise<string>;
+    storage.session = invalid;
+    unreadable = invalid === "read-failed";
+    await assert.rejects(run(), /synthetic offline/);
+    flush();
+    assert.equal(store.getState().accountOwnerId, null);
+    assert.deepEqual([...store.getState().favoriteIds], []);
+    assert.deepEqual([...store.getState().plans], []);
+    assert.equal(store.getState().observationContext, null);
+    assert.equal(store.getState().preferences.equipment, DEFAULT_USER_PREFERENCES.equipment);
+    storage.session = session;
+    unreadable = false;
+    assert.equal(await run(), "user:a");
+    assert.deepEqual([...store.getState().favoriteIds], ["spot:a"]);
+    assert.equal(store.getState().plans[0]?.planId, "plan:a");
+    assert.equal(store.getState().observationContext?.contextId, validObservationContext.contextId);
+    assert.equal(store.getState().preferences.equipment, "A 的未同步配置");
+    assert.equal(store.getState().preferencesDirty, true);
+  }
 });
 
 test("several account switches before queued writes preserve each fresh snapshot", () => {
@@ -222,10 +386,31 @@ test("account deletion removes only the deleted account's saved projection", () 
   store.getState().setPreference("equipment", "B 的望远镜");
   flush();
   store.getState().bindAccount("user:a");
-  assert.equal(store.getState().resetAfterAccountDeletion(), true);
+  assert.equal(store.getState().resetAfterAccountDeletion("user:a"), true);
   assert.equal(store.getState().accountOwnerId, null);
   assert.equal(storage.accounts["starward.wechat-miniapp.state.account.user:a"], undefined);
   assert.ok(storage.accounts["starward.wechat-miniapp.state.account.user:b"]);
+});
+
+test("a late deletion purges A recovery without replacing B or quarantined data", () => {
+  const unclaimed = { finderQuery: "unknown owner's private draft" };
+  const storage = { value: {}, unclaimed, accounts: {} as Record<string, unknown> };
+  const { store, flush } = loadStore(storage);
+  store.getState().bindAccount("user:a");
+  store.getState().setPreference("equipment", "A private edit");
+  flush();
+  store.getState().bindAccount("user:b");
+  store.getState().setPreference("equipment", "B private edit");
+  store.getState().replacePlans([{ planId: "B plan" }] as never);
+  flush();
+  const before = store.getState(), current = storage.value;
+  assert.ok(storage.accounts["starward.wechat-miniapp.state.account.user:a"]);
+  assert.equal(store.getState().resetAfterAccountDeletion("user:a"), true);
+  flush();
+  assert.equal(store.getState(), before, "deleted A cannot reset B's active projection");
+  assert.equal(storage.value, current, "deleted A cannot remove B's saved current projection");
+  assert.equal(storage.accounts["starward.wechat-miniapp.state.account.user:a"], undefined);
+  assert.equal(storage.unclaimed, unclaimed);
 });
 
 test("expired identity hides private state while preserving the same account's unsynced edit", () => {
@@ -322,7 +507,7 @@ test("temporary cache reset is synchronous but reports durable write success onl
     flush();
     assert.equal(await pending, !failWrites);
     store.getState().setPreference("equipment", "旧账号的望远镜");
-    assert.equal(store.getState().resetAfterAccountDeletion(), !failWrites);
+    assert.equal(store.getState().resetAfterAccountDeletion(store.getState().accountOwnerId!), !failWrites);
     assert.equal(store.getState().favoriteIds.length, 0);
     assert.equal(store.getState().plans.length, 0);
     assert.equal(store.getState().preferences.equipment, DEFAULT_USER_PREFERENCES.equipment);

@@ -33,6 +33,12 @@ function assertContractInitialization(entry) {
   function visit(file) {
     if (path.dirname(file) !== directory && !file.startsWith(directory + path.sep)) fail();
     if (seen.has(file)) return; seen.add(file);
+    if (path.extname(file) === ".json") {
+      // Local JSON is inert contract data, not a JavaScript initializer.
+      // Parse it as JSON so executable syntax cannot acquire this hint.
+      try { JSON.parse(readFileSync(file, "utf8")); } catch { fail(); }
+      return;
+    }
     const parsed = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true);
     if (parsed.parseDiagnostics.length) fail();
     function intrinsicBindings(node) {

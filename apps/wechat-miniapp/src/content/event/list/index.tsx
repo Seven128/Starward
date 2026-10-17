@@ -1,5 +1,6 @@
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { EventModalHostPage } from "../modal-host-page";
 
 export default function EventListPage() {
-  return <EventModalHostPage />;
+  return <><SystemMotionProbe /><EventModalHostPage /></>;
 }

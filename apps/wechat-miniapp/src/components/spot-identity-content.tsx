@@ -14,7 +14,7 @@ export function SpotIdentityContent({ region, name, address, mediaSrc, mediaAlt 
     <View className="spot-identity-card__copy">
       <Text className="spot-identity-card__region">{region}</Text>
       <Text className="spot-identity-card__title">{name}</Text>
-      {address ? <View className="spot-identity-card__address"><SemanticIcon name="location" /><Text className="spot-identity-card__address-text">{address}</Text></View> : null}
+      {address ? <View className="spot-identity-card__address"><SemanticIcon name="place-pin" /><Text className="spot-identity-card__address-text">{address}</Text></View> : null}
     </View>
   </>;
 }

@@ -11,11 +11,11 @@ export function qweatherAttribution(values: unknown): NonNullable<SourceSummary[
 }
 
 export function qweatherJwt(config: MiniappRuntimeConfig) {
-  const { credentialId, projectId, privateKeyPem } = config.qweather;
-  if (!credentialId || !projectId || !privateKeyPem) throw new Error("qweather_credentials_required");
+  const { credentialId, developerId, projectId, privateKeyPem } = config.qweather;
+  if (!credentialId || !developerId || !projectId || !privateKeyPem) throw new Error("qweather_credentials_required");
   const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString("base64url");
   const now = Math.floor(Date.now() / 1_000) - 30;
-  const unsigned = `${encode({ alg: "EdDSA", kid: credentialId })}.${encode({ sub: projectId, iat: now, exp: now + 900 })}`;
+  const unsigned = `${encode({ alg: "EdDSA", kid: credentialId })}.${encode({ iss: developerId, sub: projectId, iat: now, exp: now + 900 })}`;
   return `${unsigned}.${sign(null, Buffer.from(unsigned), createPrivateKey(privateKeyPem)).toString("base64url")}`;
 }
 

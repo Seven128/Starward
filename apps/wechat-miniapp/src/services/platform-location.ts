@@ -10,7 +10,16 @@ export async function choosePlatformLocation(options: {
 }) {
   if (!options.isCurrent()) return null;
   if (useAppStore.getState().mode === "OBSERVATION" && !options.allowUnthemedHandoff) return null;
-  const selected = await Taro.chooseLocation(options.center ?? {});
+  let selected;
+  try {
+    selected = await Taro.chooseLocation(options.center ?? {});
+  } catch (error) {
+    // Classify the native result before product-copy translation loses its code.
+    const message = error instanceof Error ? error.message
+      : error && typeof error === "object" && "errMsg" in error ? error.errMsg : "";
+    if (typeof message === "string" && /^chooseLocation:fail\s+cancel\b/iu.test(message)) return null;
+    throw error;
+  }
   if (!options.isCurrent()) return null;
   return normalizePlatformLocation(selected);
 }

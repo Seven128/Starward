@@ -28,6 +28,7 @@ function releaseEnvironment(
     MINIAPP_SESSION_SECRET: "session-secret-at-least-thirty-two-characters",
     QWEATHER_API_HOST: "example.qweatherapi.com",
     QWEATHER_CREDENTIAL_ID: "credential-id",
+    QWEATHER_DEVELOPER_ID: "Q12345ABCD",
     QWEATHER_PROJECT_ID: "project-id",
     QWEATHER_PRIVATE_KEY_PEM:
       "-----BEGIN PRIVATE KEY-----\\nprivate-test-material\\n-----END PRIVATE KEY-----",
@@ -84,6 +85,18 @@ test("reminder template defaults to unavailable and rejects malformed IDs", () =
   }
 });
 
+test('reminder delivery has no implicit enablement, version, mapping or lateness policy',()=> {
+  const environment=releaseEnvironment('TRIAL','OPEN_METEO_COMMERCIAL');
+  assert.deepEqual(withEnvironment(environment,loadRuntimeConfig).wechat.reminderDelivery,
+    {enabled:false,fields:null,maxLatenessMs:null,miniprogramState:null});
+  const configured={...environment,WECHAT_REMINDER_DELIVERY_ENABLED:'1',WECHAT_REMINDER_MINIPROGRAM_STATE:'developer',
+    WECHAT_REMINDER_FIELDS_JSON:'{"thing1":"REMINDER_TITLE","time2":"DEPARTURE_LOCAL_TIME"}',WECHAT_REMINDER_MAX_LATENESS_SECONDS:'300'};
+  assert.equal(withEnvironment(configured,loadRuntimeConfig).wechat.reminderDelivery?.miniprogramState,'developer');
+  assert.equal(withEnvironment(configured,loadRuntimeConfig).wechat.reminderDelivery?.maxLatenessMs,300000);
+  for (const invalid of ['0','299','3601','300.5','bad']) assert.throws(()=>withEnvironment({...configured,WECHAT_REMINDER_MAX_LATENESS_SECONDS:invalid},loadRuntimeConfig),/runtime_config_invalid/);
+  assert.throws(()=>withEnvironment({...configured,WECHAT_REMINDER_MINIPROGRAM_STATE:'automatic'},loadRuntimeConfig),/runtime_config_invalid/);
+});
+
 test("event catalog check interval is configurable within a bounded range", () => {
   const config = withEnvironment(
     { ...releaseEnvironment("TRIAL", "OPEN_METEO_NONCOMMERCIAL"), MINIAPP_EVENT_CATALOG_CHECK_INTERVAL_DAYS: "3" },
@@ -110,6 +123,7 @@ test("TRIAL and COMMERCIAL use QWeather alone without an Open-Meteo key", () => 
   for (const profile of ["TRIAL", "COMMERCIAL"] as const) {
     const config = withEnvironment(releaseEnvironment(profile, "OPEN_METEO_COMMERCIAL"), loadRuntimeConfig);
     assert.equal(config.weatherProvider, "QWEATHER");
+    assert.equal(config.qweather.developerId, "Q12345ABCD");
     assert.equal(config.qweather.forecastHours, 240);
     assert.equal(config.features.LAYERED_CLOUD_ENABLED, false);
     assert.equal("openMeteoApiKey" in config, false);

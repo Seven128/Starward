@@ -1,27 +1,30 @@
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import Taro, { useDidHide, useDidShow } from "@tarojs/taro";
+import { AccountEntry } from "../account-entry";
 import { Button, Picker, ScrollView, Text, View } from "@tarojs/components";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { FloatingNotificationHost } from "@/components/notification";
 import { StatusPanel } from "@/components/status-panel";
 import { SemanticIcon } from "@/components/semantic-asset";
-import { useResourceQuery } from "@/hooks/use-resource-query";
-import { useThemeClass } from "@/hooks/use-theme";
-import { currentDraftUserId, getPlans } from "@/services/api-client";
+import { useAccountPlans } from "@/hooks/use-account-plans";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { achievementSummary, endedPlanRecords, nextPlanEndAt } from "@/features/my/plan-achievements";
+import { useAccountNavigation } from "@/hooks/use-account-navigation";
 import "./index.scss";
 
-export default function AchievementPage() {
+export default function AchievementRoute() {
+  return <AccountEntry title="计划回顾"><AchievementPage /></AccountEntry>;
+}
+
+function AchievementPage() {
   const themeClass = useThemeClass();
-  const owner = currentDraftUserId();
-  const mountId = useId();
   const [now, setNow] = useState(() => new Date());
   const [visible, setVisible] = useState(true);
   const [year, setYear] = useState<number | null>(null);
-  const [navigationError, setNavigationError] = useState(false);
-  const plans = useResourceQuery({ queryKey: ["plans", owner ?? `unresolved:${mountId}`],
-    queryFn: signal => getPlans(signal, owner ?? undefined), staleTime: 30_000 });
-  useDidShow(() => { setVisible(true); setNow(new Date()); void plans.refetch(); });
+  const { owner, query: plans } = useAccountPlans({ enabled: visible, staleTime: 30_000 });
+  const { open, navigationError } = useAccountNavigation(owner);
+  useDidShow(() => { setVisible(true); setNow(new Date()); if (owner) void plans.refetch(); });
   useDidHide(() => setVisible(false));
   useEffect(() => {
     if (!visible || !plans.data) return;
@@ -33,31 +36,28 @@ export default function AchievementPage() {
   }, [visible, plans.data, now]);
   const all = useMemo(() => endedPlanRecords(plans.data?.data.plans ?? [], now), [plans.data, now]);
   const years = useMemo(() => [...new Set(all.map(record => record.year))], [all]);
-  const selectedYear = year && years.includes(year) ? year : years[0] ?? null;
+  const selectedYear = year && years.includes(year) ? year : years[0] ?? now.getFullYear();
   const records = all.filter(record => record.year === selectedYear);
   const summary = achievementSummary(records);
-  const openPlan = async (planId: string) => {
-    setNavigationError(false);
-    try { await Taro.navigateTo({ url: `/content/plan/detail/index?planId=${encodeURIComponent(planId)}` }); }
-    catch { setNavigationError(true); }
-  };
-  return <View className={`${themeClass} achievement-page`}>
+  const openPlan = (planId: string) => open(`/content/plan/detail/index?planId=${encodeURIComponent(planId)}`);
+  return <><SystemMotionProbe /><View className={`${themeClass} achievement-page`}>
     <FloatingNotificationHost />
-    <CustomNav title="我的星旅" back backFallbackTab="/pages/my/index" />
+    <CustomNav title="计划回顾" back backFallbackTab="/pages/my/index" />
     <ScrollView scrollY enhanced showScrollbar={false} className="achievement-page__scroll">
       <View className="achievement-page__content page-inset safe-bottom">
-        <View className="achievement-page__heading"><Text className="type-page-title">我的星旅</Text><Text className="type-secondary">从每一份计划，收藏自己的星空</Text></View>
-        {plans.isPending && !plans.data ? <StatusPanel state="LOADING" detail="正在读取观星计划。" /> : null}
-        {plans.isError && !plans.data ? <StatusPanel state="ERROR" detail="计划暂时无法读取，成就统计未更新。" recoveryLabel="重试" onRecover={() => void plans.refetch()} /> : null}
+        <View className="achievement-page__heading"><Text className="type-page-title">计划回顾</Text><Text className="type-secondary">查看已结束的观星计划</Text></View>
+        {!owner ? <StatusPanel state="PERMISSION_DENIED" title="请先登录" detail="登录后查看计划回顾。" recoveryLabel="返回我的"
+          onRecover={() => void Taro.switchTab({ url: "/pages/my/index" })} /> :
+          plans.isPending && !plans.data ? <StatusPanel state="LOADING" detail="正在读取观星计划。" /> : null}
+        {plans.isError && !plans.data ? <StatusPanel state="ERROR" detail="计划暂时无法读取，回顾统计未更新。" recoveryLabel="重试" onRecover={() => void plans.refetch()} /> : null}
         {plans.data ? <>
           {plans.refreshError || plans.data.dataState === "STALE_USABLE" ? <StatusPanel state="STALE" detail="计划暂未同步，以下是上次读取的统计。" recoveryLabel="重试" onRecover={() => void plans.refetch()} /> : null}
-          {all.length ? <>
-            <View className="achievement-summary" role="group" aria-label={`${selectedYear}年个人行程成就`}>
+            <View className="achievement-summary" role="group" aria-label={`${selectedYear}年计划回顾`}>
               <View className="achievement-summary__main"><Text>{summary.endedPlans}</Text><Text>已结束计划</Text></View>
               <View className="achievement-summary__facts"><Text>{summary.places} 计划地点</Text><Text>{summary.events} 关联天象</Text></View>
             </View>
             <View className="achievement-page__year">
-              <Picker mode="selector" range={years.map(value => `${value} 年`)} value={Math.max(0, years.indexOf(selectedYear!))} onChange={event => setYear(years[Number(event.detail.value)] ?? null)}>
+              <Picker mode="selector" disabled={!years.length} range={years.map(value => `${value} 年`)} value={Math.max(0, years.indexOf(selectedYear))} onChange={event => setYear(years[Number(event.detail.value)] ?? null)}>
                 <View className="achievement-page__year-picker" role="button" aria-label={`选择统计年份，当前${selectedYear}年`}>{selectedYear} 年 <SemanticIcon name="chevron-down" /></View>
               </Picker>
               <Text className="type-caption">{records.length} 份行程记录</Text>
@@ -72,10 +72,10 @@ export default function AchievementPage() {
                 <View className="achievement-record__footer"><Text>计划已结束</Text><Text>查看行程 ›</Text></View>
               </Button>;
             })}
-          </> : !plans.isError && !plans.refreshError && plans.data.dataState !== "STALE_USABLE" ? <StatusPanel state="EMPTY" emptyLevel="page" title="暂无星旅记录" detail="已结束的观星计划会显示在这里；计划时间经过不代表已到访或观测成功。" recoveryLabel="＋ 新建计划" onRecover={() => void Taro.navigateTo({ url: "/content/plan/edit/index?new=1" })} /> : null}
+          {!all.length && !plans.isError && !plans.refreshError && plans.data.dataState !== "STALE_USABLE" ? <StatusPanel state="EMPTY" title="暂无已结束的计划" detail="已结束的观星计划会显示在这里；计划时间经过不代表已到访或观测成功。" recoveryLabel="＋ 新建计划" onRecover={() => void open("/content/plan/edit/index?new=1")} /> : null}
         </> : null}
         {navigationError ? <StatusPanel state="ERROR" detail="行程暂未打开，请再次点击。" /> : null}
       </View>
     </ScrollView>
-  </View>;
+  </View></>;
 }

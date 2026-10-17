@@ -3,93 +3,45 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { createAccountExportCleanup } from "./account-export-cleanup";
 
-const source = ts.createSourceFile("settings.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"),
-  ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-let declaration = "", removeDeclaration = "";
-const visit = (node: ts.Node) => {
-  if (ts.isVariableDeclaration(node) && node.name.getText(source) === "downloadAccountData")
-    declaration = `const ${node.getText(source)};`;
-  if (ts.isFunctionDeclaration(node) && node.name?.text === "removeJsonFile")
-    removeDeclaration = node.getText(source);
-  ts.forEachChild(node, visit);
-};
-visit(source);
-assert.ok(declaration);
-assert.ok(removeDeclaration);
-
-function runCase(failure: "api" | "write" | "share" | "cleanup" | "cleanup-after-share" | "none") {
-  const calls: string[] = [];
-  const notices: Array<{ title: string; body: string; placement: string; tone: string; dedupeKey: string }> = [];
-  const pending: unknown[] = [];
-  const dismissed: string[] = [];
-  const run = vm.runInNewContext(ts.transpileModule(`${declaration}\ndownloadAccountData;`, {
-    compilerOptions: { target: ts.ScriptTarget.ES2020 },
+// Execute the actual native filesystem adapters and busy projection in the hook.
+const source = ts.createSourceFile("export.ts", readFileSync(new URL("./use-account-export.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+const cleanupDeclaration = source.statements.find(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(d => d.name.getText(source) === "exportFiles"))!.getText(source);
+const hook = source.statements.find((node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === "useAccountExport")!;
+function harness(errMsg = "") {
+  let ports: any; const writes: any[] = [], busy: boolean[] = [];
+  const run = vm.runInNewContext(ts.transpileModule(cleanupDeclaration + "\n" + hook.getText(source).replace(/^export /u, "") + "\nuseAccountExport;", {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
   }).outputText, {
-    accountActionPending: { current: false },
-    setDataAction: (value: unknown) => pending.push(value),
-    setSheet() {},
-    exportAccountData: async () => {
-      calls.push("api");
-      if (failure === "api") throw Error("api");
-      return { data: { generatedAt: "2026-09-06T12:00:00Z" } };
-    },
-    useAppStore: { getState: () => ({
-      notifications: [
-        { id: "export", owner: "settings", dedupeKey: "settings-account-export-failed" },
-        { id: "cleanup", owner: "settings", dedupeKey: "settings-account-export-cleanup-failed" },
-        { id: "prior-success", owner: "settings", dedupeKey: "settings-account-exported" },
-        { id: "other-owner", owner: "other", dedupeKey: "settings-account-export-failed" },
-        { id: "other-action", owner: "settings", dedupeKey: "settings-account-delete-failed" },
-      ],
-      dismissNotification: (id: string) => dismissed.push(id),
+    useState: (value: unknown) => [value, () => {}], useRef: (value: unknown) => ({ current: value }), useEffect() {},
+    createAccountExportCleanup,
+    useAccountOperation: () => ({ begin() {} }), createAccountExport: (value: unknown) => { ports = value; return {}; },
+    currentDraftUserId: () => "synthetic:A", exportAccountData() {}, idempotencyKey: () => "export:synthetic:1", errorMessage: () => "failure",
+    Taro: { env: { USER_DATA_PATH: "/isolated" }, getFileSystemManager: () => ({
+      unlink: ({ success, fail }: any) => errMsg ? fail({ errMsg }) : success(),
+      writeFile: (input: any) => { writes.push(input); input.success(); },
     }) },
-    writeJsonFile: async () => { calls.push("write"); if (failure === "write") throw Error("disk"); },
-    removeJsonFile: async () => { calls.push("remove"); if (failure === "cleanup" || failure === "cleanup-after-share") throw Error("unlink"); },
-    notify: (notice: { title: string; body: string; placement: string; tone: string; dedupeKey: string }) => notices.push(notice),
-    errorMessage: () => "操作失败",
-    Taro: { env: { USER_DATA_PATH: "/isolated" }, shareFileMessage: async () => {
-      calls.push("share");
-      if (failure === "share" || failure === "cleanup") throw Error("share");
-    } },
-  }) as () => Promise<void>;
-  return { run, calls, notices, pending, dismissed };
+  });
+  run((value: boolean) => busy.push(value));
+  return { ports, writes, busy };
 }
 
-test("account export removes its private file after a share receipt and reports cleanup failures", async () => {
-  for (const failure of ["api", "write", "share", "cleanup", "cleanup-after-share", "none"] as const) {
-    const { run, calls, notices, pending, dismissed } = runCase(failure);
-    await run();
-    assert.deepEqual(pending, ["EXPORT", null]);
-    assert.deepEqual(dismissed, failure === "none" || failure === "cleanup-after-share" ? ["export", "cleanup", "prior-success"] : []);
-    assert.deepEqual(calls, {
-      api: ["api"], write: ["api", "write", "remove"],
-      share: ["api", "write", "share", "remove"],
-      cleanup: ["api", "write", "share", "remove"],
-      "cleanup-after-share": ["api", "write", "share", "remove"],
-      none: ["api", "write", "share", "remove"],
-    }[failure]);
-    assert.equal(notices[0]?.title, {
-      api: "账户数据导出失败", write: "账户数据导出失败", share: "文件分享未完成",
-      cleanup: "本机临时文件未清除", "cleanup-after-share": "本机临时文件未清除", none: "账户数据已生成",
-    }[failure]);
-    if (failure === "share") assert.match(notices[0]!.body, /已清理本次临时文件/u);
-    if (failure === "cleanup") assert.match(notices[0]!.body, /仍留在本机/u);
-    if (failure === "cleanup-after-share") {
-      assert.match(notices[0]!.body, /文件已分享/u);
-      assert.equal(notices[0]!.placement, "inline");
-      assert.equal(notices[0]!.tone, "warning");
-      assert.equal(notices[0]!.dedupeKey, "settings-account-export-cleanup-failed");
-    }
-  }
+test("the real native remove adapter accepts only an absent file as completed cleanup", async () => {
+  await assert.doesNotReject(harness("unlink:fail ENOENT: no such file").ports.files.remove("/isolated/account.json"));
+  assert.equal(await harness("unlink:fail permission denied").ports.files.remove("/isolated/account.json"), false);
 });
 
-test("cleanup treats an absent file as complete but surfaces a real unlink failure", async () => {
-  const unlink = (errMsg: string) => vm.runInNewContext(ts.transpileModule(`${removeDeclaration}\nremoveJsonFile;`, {
-    compilerOptions: { target: ts.ScriptTarget.ES2020 },
-  }).outputText, {
-    Taro: { getFileSystemManager: () => ({ unlink: ({ fail }: { fail: (result: { errMsg: string }) => void }) => fail({ errMsg }) }) },
-  }) as (filePath: string) => Promise<void>;
-  await assert.doesNotReject(unlink("unlink:fail ENOENT: no such file")("/isolated/export.json"));
-  await assert.rejects(unlink("unlink:fail permission denied")("/isolated/export.json"), /permission denied/u);
+test("the native adapter writes UTF-8 JSON only to the current unique private destination", async () => {
+  const h = harness(); const destination = h.ports.destination("2026-10-15T00:00:00.000Z");
+  await h.ports.write(destination.filePath, '{"account":{"userId":"synthetic:A"}}');
+  assert.equal(h.writes.length, 1); assert.equal(h.writes[0].filePath, destination.filePath);
+  assert.equal(h.writes[0].encoding, "utf8"); assert.equal(JSON.parse(h.writes[0].data).account.userId, "synthetic:A");
+});
+
+test("an idle export hook never releases another pending account action's lock", () => {
+  const h = harness(); h.ports.changed({ phase: "IDLE" }); h.ports.changed({ phase: "IDLE" });
+  assert.deepEqual(h.busy, []);
+  h.ports.changed({ phase: "PREPARING" }); h.ports.changed({ phase: "READY" }); h.ports.changed({ phase: "IDLE" });
+  assert.deepEqual(h.busy, [true, false]);
 });

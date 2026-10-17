@@ -4,7 +4,8 @@
 $font-native: "Noto Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
 
 page,
-.theme-page {
+.theme-page,
+.theme-token-scope {
   --type-page-title-size: 18Px;
   --type-page-title-line: 25Px;
   --type-page-title-weight: 600;

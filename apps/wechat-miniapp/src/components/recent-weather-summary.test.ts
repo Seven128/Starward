@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { recentWeatherFacts, recentWeatherImplications } from "./recent-weather-summary";
+import { recentWeatherDetails, recentWeatherFacts, recentWeatherImplications } from "./recent-weather-summary";
 const day = { localDate: "2026-09-13", precipitationMm: 0, temperatureMinC: 10, temperatureMaxC: 18, sampledWindMaxKph: null, sampledWindHours: 0, conditions: [] };
 test("known zero and unknown fields have different factual output, with no inferred safe/dry state", () => {
   assert.ok(recentWeatherFacts(day).includes("降水 0 mm"));
   assert.ok(!recentWeatherFacts({ ...day, precipitationMm: null }).some(text => text.includes("降水")));
+  assert.deepEqual(recentWeatherFacts({ ...day, temperatureMaxC: null }), ["最低 10°C", "降水 0 mm"]);
+  assert.deepEqual(recentWeatherFacts({ ...day, temperatureMinC: null }), ["最高 18°C", "降水 0 mm"]);
+  assert.deepEqual(recentWeatherDetails(day), []);
   assert.deepEqual(recentWeatherImplications([day]), []);
   assert.deepEqual(recentWeatherImplications([{ ...day, precipitationMm: null, temperatureMinC: null }]), []);
 });

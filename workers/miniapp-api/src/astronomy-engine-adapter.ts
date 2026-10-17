@@ -329,6 +329,7 @@ export interface MiniappNightSkyCalculation {
   civilDawn: string | null;
   moonRise: string | null;
   moonSet: string | null;
+  moonEventSearch: { startAt: string; endAt: string };
   moonIlluminationAtMidpoint: number | null;
   samples: MiniappSkySample[];
   limitations: string[];
@@ -894,8 +895,9 @@ export function calculateMiniappNightSky(
         -6,
       )
     : null;
-  const moonRise = SearchRiseSet(Body.Moon, observer, 1, start, 1.5);
-  const moonSet = SearchRiseSet(Body.Moon, observer, -1, start, 1.5);
+  const moonEventSearchDays = 1.5;
+  const moonRise = SearchRiseSet(Body.Moon, observer, 1, start, moonEventSearchDays);
+  const moonSet = SearchRiseSet(Body.Moon, observer, -1, start, moonEventSearchDays);
   const samples: MiniappSkySample[] = [];
   const cadenceMs = (input.cadenceMinutes ?? 30) * 60_000;
   const sampleAt = (at: Date): MiniappSkySample => {
@@ -959,6 +961,7 @@ export function calculateMiniappNightSky(
     civilDawn: civilDawn?.toString() ?? null,
     moonRise: moonRise?.toString() ?? null,
     moonSet: moonSet?.toString() ?? null,
+    moonEventSearch: { startAt: start.toISOString(), endAt: new Date(start.getTime() + moonEventSearchDays * 86_400_000).toISOString() },
     moonIlluminationAtMidpoint: midpoint
       ? round(Illumination(Body.Moon, midpoint).phase_fraction, 4)
       : null,

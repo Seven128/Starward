@@ -29,9 +29,13 @@ LICENSE_URL = "https://dataspace.copernicus.eu/explore-data/data-collections/cop
 DATASET_DOI = "10.5270/ESA-c5d3d65"
 ATTRIBUTION_NOTICE = "© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved"
 MODIFIED_PRODUCT_NOTICE = "produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved"
+LIABILITY_NOTICE = "依法或受委托负责哥白尼计划的组织，不对哥白尼 WorldDEM-30 的任何使用承担责任。"
 DERIVATION = "Starward resampled the WGS84 DSM onto a GCJ-02 grid, then derived hillshade, elevation colour and transparent no-data pixels."
 DEFAULT_CENTER = (22.55, 114.25)
 DEFAULT_RADIUS_KM = 85.0
+ELEVATION_COLOR_ENCODING = json.loads(
+    (Path(__file__).resolve().parents[2] / "workers/miniapp-api/assets/terrain/elevation-color.json").read_text(encoding="utf-8")
+)
 
 
 def _tile_id(lat_degree: int, lon_degree: int) -> str:
@@ -131,14 +135,15 @@ def _terrain_rgba(elevation: np.ndarray, valid: np.ndarray, pixel_metres: float)
     altitude = math.radians(42)
     shade = np.sin(altitude) * np.sin(slope) + np.cos(altitude) * np.cos(slope) * np.cos(azimuth - aspect)
     shade = np.clip((shade + 0.18) / 1.18, 0.0, 1.0)
-    normalized = np.clip((filled + 20.0) / 900.0, 0.0, 1.0)
-    low = np.array([215.0, 224.0, 207.0])
-    high = np.array([112.0, 139.0, 104.0])
+    encoding = ELEVATION_COLOR_ENCODING
+    normalized = np.clip((filled - encoding["minimumM"]) / (encoding["maximumM"] - encoding["minimumM"]), 0.0, 1.0)
+    low = np.array(encoding["lowRgb"], dtype=np.float64)
+    high = np.array(encoding["highRgb"], dtype=np.float64)
     color = low[None, None, :] * (1.0 - normalized[:, :, None]) + high[None, None, :] * normalized[:, :, None]
     color *= (0.67 + 0.42 * shade[:, :, None])
     rgba = np.empty((*filled.shape, 4), dtype=np.uint8)
     rgba[:, :, :3] = np.clip(color, 0, 255).astype(np.uint8)
-    rgba[:, :, 3] = np.where(valid, 224, 0).astype(np.uint8)
+    rgba[:, :, 3] = np.where(valid, encoding["alpha"], 0).astype(np.uint8)
     return rgba
 
 
@@ -193,6 +198,7 @@ def publish(cache: Path, output: Path, size: int, center_lat: float, center_lon:
         "doi": DATASET_DOI,
         "attributionNotice": ATTRIBUTION_NOTICE,
         "modifiedProductNotice": MODIFIED_PRODUCT_NOTICE,
+        "liabilityNotice": LIABILITY_NOTICE,
         "derivation": DERIVATION,
         "sourceResolution": "1 arc-second (approximately 30 m)",
         "derivedResolutionM": round(pixel_metres, 1),
@@ -216,6 +222,7 @@ def publish(cache: Path, output: Path, size: int, center_lat: float, center_lon:
             "源产品采样间隔不等于逐点垂直误差或拍摄方向精度。"
         ]
     }
+    record["elevationColorEncoding"] = {**ELEVATION_COLOR_ENCODING, "imageSha256": record["image"]["sha256"]}
     (output / "publication.json").write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return record
 

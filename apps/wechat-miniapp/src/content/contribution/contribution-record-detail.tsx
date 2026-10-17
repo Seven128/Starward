@@ -6,13 +6,10 @@ import { SpotIdentityContent } from "@/components/spot-identity-content";
 import { currentDraftUserId, getContributionMedia } from "@/services/api-client";
 import { displayBeijingTimestamp } from "@/utils/zoned-date";
 import { KIND_LABEL, MERGE_STATE_LABEL, PUBLICATION_IMPACT_LABEL, TOPICS } from "./contribution-model";
-import { contributionFrozenAttempt, contributionRecordCover, contributionRecordIdentity, contributionRecordStatus, contributionSubmittedPlaceFacts } from "./contribution-record-model";
+import { CONTRIBUTION_RECORD_FIELD_LABELS as FORMAL_FIELD_LABELS, contributionFrozenAttempt, contributionRecordCover, contributionRecordIdentity, contributionRecordStatus, contributionSubmittedPlaceFacts } from "./contribution-record-model";
 import { formalFeedbackFrozenView } from "./formal-feedback-snapshot";
 import { ContributionRecordMedia } from "./contribution-record-media";
-
-const FORMAL_FIELD_LABELS: Record<(typeof CONTRIBUTION_FORMAL_FIELD_KEYS)[number], string> = {
-  address:"地点地址",name:"地点名称",openness:"开放状态",hours:"开放时间",access:"进入规则",accessNote:"进入条件",road:"末段道路",safety:"夜间安全",parking:"停车设施",parkingNote:"停车说明",toilet:"洗手间",toiletNote:"洗手间说明",platform:"观测平台",horizon:"视野与遮挡",light:"现场灯光",signal:"通信与充电",camping:"露营条件",contact:"场地联系",detail:"补充说明",
-};
+import { ContributionRecordStatus } from "./contribution-record-status";
 
 export function ContributionSpotIdentityCard({ item, eager = false }: { item: ContributionSubmission; eager?: boolean }) {
   const identity = contributionRecordIdentity(item);
@@ -69,14 +66,17 @@ export function ContributionRecordDetail({ item, onBack }: { item: ContributionS
   const formalView = frozen.formalFeedback ? formalFeedbackFrozenView(frozen.formalFeedback) : null;
   return <View className="contribution-record-detail" data-control="contribution-record-detail">
     <Button className="contribution-record-detail__back focus-ring" ariaLabel="返回记录列表" onClick={onBack}>‹ <Text>返回记录</Text></Button>
-    <View className="contribution-record-card--detail"><ContributionSpotIdentityCard item={item} eager /><View className="contribution-record-card__extension"><Text className={`contribution-status-pill contribution-status-pill--${status.tone}`}>{status.label}</Text><Text className="type-caption contribution-record-card__meta">{KIND_LABEL[item.kind]} · 更新 {displayBeijingTimestamp(item.updatedAt)}</Text></View></View>
+    <View className="contribution-record-card--detail"><ContributionSpotIdentityCard item={item} eager /><View className="contribution-record-card__extension"><ContributionRecordStatus status={status} /><Text className="type-caption contribution-record-card__meta">{KIND_LABEL[item.kind]} · 更新 {displayBeijingTimestamp(item.updatedAt)}</Text></View></View>
     {item.review?.reason ? <View className="contribution-review-note"><Text className="type-label">审核意见</Text><Text className="type-body">{item.review.reason}</Text></View> : null}
     <View className="contribution-readonly-section">
       <Text className="type-section">本次提交内容</Text>
       {latestAttempt ? <Text className="type-caption">第 {latestAttempt.attemptNo} 次提交 · {displayBeijingTimestamp(latestAttempt.submittedAt)}</Text> : null}
       {submittedPlace ? <View className="contribution-submitted-facts">
         {submittedPlace.selectedLocation ? <Text className="type-secondary">选点：{submittedPlace.selectedLocation}</Text> : null}
-        {submittedPlace.fields.map(({ key, value }) => <View className="contribution-submitted-facts__row" key={key}>
+        {submittedPlace.intakeFacts.map(({ key, label, value }) => <View className="contribution-submitted-facts__row" key={key}>
+          <Text className="type-caption">{label}</Text><Text className="type-body">{value || "未填写"}</Text>
+        </View>)}
+        {submittedPlace.fields.filter(({ key }) => !submittedPlace.intakeFacts.length || !["openness", "access", "contact"].includes(key)).map(({ key, value }) => <View className="contribution-submitted-facts__row" key={key}>
           <Text className="type-caption">{FORMAL_FIELD_LABELS[key]}</Text><Text className="type-body">{value || "未填写"}</Text>
         </View>)}
       </View> : formalView ? <View className="contribution-frozen-diff">{CONTRIBUTION_FORMAL_FIELD_KEYS.filter(key => Object.prototype.hasOwnProperty.call(formalView.proposal.fields,key)).map(key => <View key={key}><Text className="type-caption">{FORMAL_FIELD_LABELS[key]}</Text><Text className="contribution-frozen-diff__old">{formalView.baseline.fields[key] || "未填写"}</Text><Text> → </Text><Text>{formalView.proposal.fields[key] || "已清空"}</Text></View>)}</View> : <><Text className="type-body">{frozen.detail || "没有文字说明"}</Text><Text className="type-caption">涉及事实：{frozen.topics.length ? frozen.topics.map((topic) => TOPICS.find((entry) => entry.key === topic)?.label ?? "其他").join(" · ") : "未提供"}</Text></>}

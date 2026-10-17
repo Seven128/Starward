@@ -26,6 +26,7 @@ before(async () => {
   if (manifest.schemaVersion === "starward-weapp-release-bundle-v3") assert.deepEqual(budget, manifest.packageBudget);
 });
 
+
 // Run after the actual release bundle build; a missing bundle must fail.
 test("built production candidate follows registered routes and package limits", async () => {
   const expectedRoutes = [
@@ -70,6 +71,50 @@ test("shared section empty icon is packaged for every Mini Program consumer", ()
   }
 });
 
+test("shared facility cards ship their adopted icons in Map, field and article packages", () => {
+  const originals = path.resolve("apps/wechat-miniapp/runtime-assets/b-icons");
+  for (const prefix of ["", "spot", "content"]) {
+    for (const name of ["parking", "restroom"]) {
+      const filename = `${name}--day--default.png`;
+      const source = prefix ? originals : path.resolve(originals, "../b-icons-main");
+      assert.deepEqual(readFileSync(path.join(root, prefix, "assets/b-icons", filename)), readFileSync(path.join(source, filename)), `${prefix || "main"} facility icon`);
+    }
+  }
+});
+
 test("runtime dependency licenses remain bundled after moving out of the main package", () => {
   assert.equal(existsSync(path.join(root, "content/assets/licenses/runtime-dependencies.json")), true);
+});
+
+test("native weather templates retain role, layout and accessibility bindings", () => {
+  const templates = readFileSync(path.join(root, "base.wxml"), "utf8");
+  const tags = templates.match(/<packaged-icon\s[^>]*>/gu) ?? [];
+  assert.ok(tags.length > 0, "native weather tags must exist in the compiled template");
+  for (const tag of tags) {
+    for (const binding of [
+      'kind="{{i.kind}}"', 'class="{{i.cl}}"',
+      'aria-hidden="{{i.ariaHidden}}"', 'aria-role="{{i.ariaRole}}"', 'aria-label="{{i.ariaLabel}}"',
+    ]) assert.ok(tag.includes(binding), `compiled weather tag lost ${binding}`);
+  }
+});
+
+test("async bitmap consumers share original spot-package assets", () => {
+  for (const page of ["pages/map", "pages/my"]) {
+    const config = JSON.parse(readFileSync(path.join(root, `${page}/index.json`), "utf8"));
+    assert.equal(config.usingComponents["packaged-icon"], "../../spot/native/packaged-icon/index");
+    assert.equal(config.componentPlaceholder["packaged-icon"], "view");
+  }
+  for (const extension of ["js", "json", "wxml", "wxss"])
+    assert.equal(existsSync(path.join(root, `spot/native/packaged-icon/index.${extension}`)), true);
+  const originals = path.resolve("apps/wechat-miniapp/runtime-assets/b-icons");
+  for (const name of ["temperature", "wind", "droplet", "warning", "low-cloud", "images", "plan-suv", "clock", "sun", "telescope", "share"]) {
+    const filename = `${name}--day--default.png`;
+    assert.deepEqual(readFileSync(path.join(root, "spot/assets/b-icons", filename)), readFileSync(path.join(originals, filename)));
+  }
+  for (const name of ["images", "plan-suv", "clock", "sun", "telescope", "share"])
+    assert.equal(existsSync(path.join(root, `assets/b-icons/${name}--day--default.png`)), false);
+  assert.deepEqual(readFileSync(path.join(root, "assets/b-icons/settings--day--default.png")),
+    readFileSync(path.join(originals, "settings--day--default.png")));
+  for (const prefix of ["spot", "sky"])
+    assert.equal(existsSync(path.join(root, prefix, "assets/b-icons/horizon--day--default.png")), true);
 });

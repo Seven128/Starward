@@ -47,7 +47,7 @@ export function projectPublicSpotMedia(spot: SpotSummary, reference: PublicSpotM
       if (uploads.get(id) !== kind) continue;
       seen.add(id);
       const image = `/v2/spots/${encodeURIComponent(spot.spotId)}/media/${encodeURIComponent(id)}/image`;
-      const label = { site: "现场照片", parking: "停车照片", toilet: "厕所照片" }[kind];
+      const label = { site: "现场照片", parking: "停车照片", toilet: "洗手间照片" }[kind];
       media.push({ id, localPath: image, thumbnailPath: image, alt: `${spot.name}${label}`,
         caption: label, photographer: "经核验的用户投稿", license: "用户授权站内展示，其他使用需另行授权",
         licenseUrl: "", sourceUrl: image, capturedAt: null, direction: null,

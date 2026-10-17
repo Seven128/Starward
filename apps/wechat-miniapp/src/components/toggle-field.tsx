@@ -17,7 +17,7 @@ export function ToggleField({ id, label, description, checked, disabled = false,
   return (
     <Button
       id={id}
-      className={`toggle-field setting-row focus-ring${checked ? " toggle-field--checked" : ""}`}
+      className={`toggle-field setting-row focus-ring${checked ? " toggle-field--checked" : ""}${disabled ? " toggle-field--disabled" : ""}`}
       disabled={disabled}
       ariaLabel={`${label}，${stateLabels ? (checked ? stateLabels.checked : stateLabels.unchecked) : (checked ? "已开启" : "已关闭")}${disabled ? "，不可更改" : `，点击${stateLabels ? (checked ? stateLabels.unchecked : stateLabels.checked) : (checked ? "关闭" : "开启")}`}`}
       hoverClass="toggle-field--pressed"

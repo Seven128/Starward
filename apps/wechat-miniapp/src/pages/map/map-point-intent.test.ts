@@ -3,7 +3,10 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
 import ts from 'typescript';
-import { userMapRegionEnd } from './map-region-event';
+import { userMapRegionEnd, userMapRegionStarted } from './map-region-event';
+import { sameContextVersion } from '../../services/observation-context-version';
+import { retryObservationScene } from './context-restore';
+import { spotNeighborhoodCamera } from './map-camera';
 function runtime() {
     const source = ts.createSourceFile('map.tsx', readFileSync(new URL('./index.tsx', import.meta.url), 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     const names = new Set(['invalidateMapPointIntent', 'dismissMapRegionFailure', 'resolveMapPoint', 'onRegionChange', 'resolveSpotContext', 'openDetail', 'refreshMap']);
@@ -16,6 +19,7 @@ function runtime() {
     visit(source);
     let selected: string | null = null, context: any = null, left = 0, viewportWrites = 0, attempt: any = null;
     let owner = 'owner', resetVersion = 0;
+    const viewport = { center: { latitude: 22, longitude: 114 }, zoom: 9, loadedViewport: 'initial' };
     const notices = new Map<string, any>();
     const timers = new Map<number, () => void>();
     let timer = 0;
@@ -24,31 +28,49 @@ function runtime() {
         resolve(v: any): void;
         reject(e: Error): void;
     }[] = [];
-    const state = () => ({ selectedSpotId: selected, mapResetVersion: resetVersion, observationContext: context, notifications: [...notices.values()], dismissNotification: (id: string) => notices.delete(id) });
+    const state = () => ({ viewport, selectedSpotId: selected, mapResetVersion: resetVersion, spotOpenRequestVersion: 0, observationContext: context, retiredObservationContextId: null,
+        retireObservationContextEdit() {}, notifications: [...notices.values()], dismissNotification: (id: string) => notices.delete(id) });
     const no = () => { };
     const scope: any = { useAppStore: { getState: state }, mapResetVersion: 0, nativeMap: { isCurrent: () => true }, currentDraftUserId: () => owner,
-        mapPointIntent: { current: 0 }, failedMapRegion: { current: null }, detailRequestGeneration: { current: 0 }, privateTransitionGeneration: { current: 0 }, lastHandledSelectedId: { current: null }, regionTimer: { current: null }, candidateCameraGuard: { current: null }, panelCloseTimer: { current: null }, extentBeforeLayer: { current: null }, markerTapAt: { current: 0 },
-        gcj02ToWgs84: ({ lat, lon }: any) => ({ lat, lon }), currentTimezoneHint: () => 'UTC', localDateForNow: () => '2026-09-26', activeContext: null, userMapRegionEnd, isMiniappRequestCancelled: () => false, errorMessage: (e: Error) => e.message,
-        selectSpot: (id: string) => selected = id, setObservationContext: (v: any) => context = v, leaveSelectedLocationForMapPoint: () => { left++; selected = null; }, setViewport: () => viewportWrites++,
+        mapPointIntent: { current: 0 }, failedMapRegion: { current: null }, detailRequestGeneration: { current: 0 }, privateTransitionGeneration: { current: 0 }, lastHandledSelectedId: { current: null }, lastHandledSpotOpenVersion: { current: 0 }, navigationEpoch: { current: 0 }, regionTimer: { current: null }, candidateCameraGuard: { current: null }, panelCloseTimer: { current: null }, extentBeforeLayer: { current: null }, markerTapAt: { current: 0 },
+        gcj02ToWgs84: ({ lat, lon }: any) => ({ lat, lon }), currentTimezoneHint: () => 'UTC', localDateForNow: () => '2026-09-26', activeContext: null, timeReference: null,
+        bootstrapReplacementBlocked: false, selected: null, bootstrapContext: { refetch: async () => undefined }, retryObservationScene, sameContextVersion,
+        userMapRegionEnd, userMapRegionStarted, spotNeighborhoodCamera, spotMapFocus: { begin() {}, cancel() {} }, isMiniappRequestCancelled: () => false, errorMessage: (e: Error) => e.message,
+        selectSpot: (id: string) => selected = id, setObservationContext: (v: any) => context = v, leaveSelectedLocationForMapPoint: () => { left++; selected = null; }, setViewport: (patch: object) => { viewportWrites++; Object.assign(viewport, patch); },
         resolveObservationContext: (input: any) => new Promise((resolve, reject) => requests.push({ input, resolve, reject })),
         notify: (v: any) => notices.set(v.dedupeKey, { ...v, id: v.dedupeKey }), setPanelPhase: no, setPanelExtent: no, setPanelDragOffset: no, setSelectedFallback: no, setSelectedProposal: no, setBottomPresentation: no, setAnnouncement: no, setSpotContextAttempt: (v: any) => { attempt = typeof v === "function" ? v(attempt) : v; }, scene: { refetch: () => assert.fail("must not refresh old scene") },
         clearTimeout: (id: number) => timers.delete(id), setTimeout: (fn: () => void) => { timers.set(++timer, fn); return timer; } };
     const fn = vm.runInNewContext(ts.transpileModule(declarations.join('\n') + '\n({onRegionChange,resolveMapPoint,openDetail,refreshMap,invalidateMapPointIntent});', { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, scope);
-    return { ...fn, requests, notices, switchOwner() { owner = 'other'; }, reset() { resetVersion++; }, fire() { const f = [...timers.values()]; timers.clear(); f.forEach(x => x()); }, get attempt() { return attempt; }, get selected() { return selected; }, get context() { return context; }, get left() { return left; }, get viewportWrites() { return viewportWrites; } };
+    return { ...fn, viewport, requests, notices, switchOwner() { owner = 'other'; }, reset() { resetVersion++; }, fire() { const f = [...timers.values()]; timers.clear(); f.forEach(x => x()); }, get attempt() { return attempt; }, get selected() { return selected; }, get context() { return context; }, get left() { return left; }, get viewportWrites() { return viewportWrites; } };
 }
 const center = { latitude: 22, longitude: 114 };
 const drag = { type: 'end', causedBy: 'drag', detail: { centerLocation: center, scale: 12 } };
 const settle = () => new Promise<void>(r => setImmediate(r));
+const newSpot = { spotId: 'spot:new', name: 'new', gcj02: { latitude: 23, longitude: 115 } };
+
+test('native refined view survives an immediate selection before the conditions debounce', async () => {
+    const m = runtime();
+    m.onRegionChange({ type: 'end', causedBy: 'scale', detail: { centerLocation: center, scale: 17 } });
+    assert.equal(m.requests.length, 0, 'conditions still wait for their existing debounce');
+    const selected = m.openDetail(newSpot);
+    assert.equal(m.viewport.zoom, 17, 'selection must preserve the latest completed native zoom, not the old store value');
+    m.requests[0].resolve({ data: { location: { kind: 'FORMAL_SPOT' }, contextId: 'new' } });
+    await selected;
+    m.fire(); await settle();
+    assert.equal(m.requests.length, 1, 'the retired map-conditions timer cannot submit after selection');
+    assert.equal(m.viewport.zoom, 17);
+});
 test('queued pan cannot dispatch after a newer formal selection', async () => {
     const m = runtime();
     m.onRegionChange(drag);
-    const selected = m.openDetail({ spotId: 'spot:new', name: 'new' });
+    const selected = m.openDetail(newSpot);
+    const afterSelection = structuredClone(m.viewport);
     m.requests[0].resolve({ data: { location: { kind: 'FORMAL_SPOT' }, contextId: 'new' } });
     await selected;
     m.fire();
     await settle();
     assert.equal(m.requests.length, 1);
-    assert.equal(m.viewportWrites, 0);
+    assert.deepEqual(m.viewport, afterSelection, 'queued pan cannot move the selected camera');
     assert.equal(m.selected, 'spot:new');
 });
 test('already dispatched old pan cannot overwrite a newer formal selection or publish its late error', async () => {
@@ -56,7 +78,7 @@ test('already dispatched old pan cannot overwrite a newer formal selection or pu
         const m = runtime();
         m.onRegionChange(drag);
         m.fire();
-        const selected = m.openDetail({ spotId: 'spot:new', name: 'new' });
+        const selected = m.openDetail(newSpot);
         m.requests[1].resolve({ data: { location: { kind: 'FORMAL_SPOT' }, contextId: 'new' } });
         await selected;
         if (fail)
@@ -113,7 +135,7 @@ test('refresh retries the failed pan location; repeated failure stays retryable'
 });
 test('interrupted formal request exposes recovery and same-point retry does not alter the panel selection', async () => {
     const m = runtime();
-    const pending = m.openDetail({ spotId: 'spot:new', name: 'new' });
+    const pending = m.openDetail(newSpot);
     assert.equal(m.attempt.pending, true);
     m.invalidateMapPointIntent();
     assert.equal(m.attempt.pending, false);
@@ -121,11 +143,11 @@ test('interrupted formal request exposes recovery and same-point retry does not 
     m.requests[0].resolve({ data: { contextId: 'obsolete' } });
     await pending;
     assert.equal(m.context, null);
-    const retry = m.openDetail({ spotId: 'spot:new', name: 'new' });
+    const retry = m.openDetail(newSpot);
     m.requests[1].resolve({ data: { location: { kind: 'FORMAL_SPOT', spotId: 'spot:new' }, contextId: 'current' } });
     await retry;
     m.notices.set('map-context-region-failed', { id: 'map-context-region-failed', owner: 'map', dedupeKey: 'map-context-region-failed' });
-    await m.openDetail({ spotId: 'spot:new', name: 'new' });
+    await m.openDetail(newSpot);
     assert.equal(m.requests.length, 2);
     assert(!m.notices.has('map-context-region-failed'));
     assert.equal(m.selected, 'spot:new');

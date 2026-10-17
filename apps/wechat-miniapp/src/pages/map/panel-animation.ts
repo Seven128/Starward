@@ -1,7 +1,8 @@
 import type { PanelSpringFrame } from "./panel-spring";
 export interface PanelAnimationHost {
-  animate(selector: string, frames: { height: number; offset: number; ease: string }[], duration: number, done: () => void): void;
+  animate(selector: string, frames: { height: number; offset: number; ease: string }[], duration: number, done: () => void, started: () => void): void;
   clearAnimation(selector: string, done: () => void): void;
+  reportsStart?: boolean;
 }
 export function createPanelAnimation(onError: () => void = () => {}) {
   let generation = 0;
@@ -37,10 +38,19 @@ export function createPanelAnimation(onError: () => void = () => {}) {
         clear(host);
         done();
       };
-      // WEAPP View does not guarantee CSS animationend. Retire the presentation
-      // after its declared duration plus a render-frame allowance.
-      timeout = setTimeout(finish, duration + 50);
-      try { host.animate(".spot-panel", keyframes, duration, finish); }
+      let started = false;
+      const begin = () => {
+        if (started || current !== generation || active !== host) return;
+        started = true;
+        clearTimeoutOwner();
+        // Time the actual native playback, not the preceding bridge transfer.
+        timeout = setTimeout(finish, duration + 50);
+      };
+      // If a native start never arrives, the existing 650ms solver bound plus
+      // its 50ms render allowance bounds retirement of the failed presentation.
+      if (host.reportsStart) timeout = setTimeout(() => { onError(); finish(); }, 700);
+      else begin();
+      try { host.animate(".spot-panel", keyframes, duration, finish, begin); }
       catch { onError(); finish(); }
     },
   };

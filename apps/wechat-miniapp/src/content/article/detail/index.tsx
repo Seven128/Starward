@@ -1,15 +1,21 @@
-import { mediaSource } from "@/utils/media-source";
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidHide, useDidShow, useRouter } from "@tarojs/taro";
-import { Image, ScrollView, Text, View } from "@tarojs/components";
+import { ScrollView, Text, View } from "@tarojs/components";
 import { articleMedia } from "@/features/spot/guide-media";
 import { FacilityEvidenceDetails } from "@/components/facility-evidence";
-import type { FacilityType } from "@starward/miniapp-contracts";
+import { FacilityCard } from "@/components/facility-card";
+import { useFacilityGallery } from "@/features/spot/use-facility-gallery";
+import { ArticleMedia } from "./article-media";
+import { FACILITY_LABEL } from "@/utils/facility-presentation";
 import { CustomNav } from "@/components/custom-nav";
 import { Provenance } from "@/components/provenance";
 import { StatusPanel } from "@/components/status-panel";
+import { SoftButton } from "@/components/soft-button";
+import { SourceDisclosure } from "@/components/source-disclosure";
 import { useResourceQuery } from "@/hooks/use-resource-query";
-import { useThemeClass } from "@/hooks/use-theme";
+import { usePageNavigation } from "@/hooks/use-page-navigation";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { useAppStore } from "@/state/app-store";
 import {
   getSpotGuides,
@@ -22,17 +28,6 @@ import {
 } from "@/utils/presentation";
 import "./index.scss";
 import { useEffect, useState } from "react";
-
-const FACILITY_LABEL: Readonly<Record<FacilityType, string>> = {
-  PARKING: "停车",
-  TOILET: "厕所",
-  PLATFORM: "观测平台",
-  CHARGING: "充电",
-  CAMPING: "露营",
-  ROAD: "末段道路",
-  WALKING: "徒步",
-  SIGNAL: "通信信号",
-};
 
 function safe(value?: string) {
   try {
@@ -50,6 +45,7 @@ export default function ArticlePage() {
   const articleId = safe(router.params.articleId);
   const context = useAppStore((state) => state.observationContext);
   const notify = useAppStore((state) => state.notify);
+  const navigation = usePageNavigation();
   const [pageVisible, setPageVisible] = useState(true);
   useDidShow(() => setPageVisible(true));
   useDidHide(() => setPageVisible(false));
@@ -78,6 +74,8 @@ export default function ArticlePage() {
     queryFn: (signal) => getSpotSite(spotId, signal),
     enabled: validRoute && pageVisible && Boolean(article?.blocks.some((block) => block.type === "facility_ref")),
   });
+  const gallery = useFacilityGallery({ identity: `article:${spotId}:${articleId}`, name: detail?.spot.name ?? "场地设施",
+    media: detail?.spot.media ?? [], formalMedia: detail?.formalMedia, enabled: validRoute && pageVisible });
   useEffect(() => {
     if (!pageVisible || !validRoute) return;
     const failed = guides.isError || guides.refreshError || guides.data?.dataState === "STALE_USABLE"
@@ -92,18 +90,36 @@ export default function ArticlePage() {
       title: failed[0]!, body: failed[1]!, dedupeKey: `article-resource-failed:${articleId}:${failed[2]}` });
   }, [articleId, guides.data?.dataState, guides.isError, guides.refreshError, notify, overview.data?.dataState,
     overview.isError, overview.refreshError, pageVisible, site.data?.dataState, site.isError, site.refreshError, validRoute]);
+  const returnToGuides = async () => {
+    const attempt = navigation.begin({ valid: () => {
+      const current = useAppStore.getState().observationContext;
+      return current?.contextId === contextId && current.location.kind === "FORMAL_SPOT" && current.location.spotId === spotId;
+    } });
+    if (!attempt) return;
+    try {
+      const previous = attempt.stack.at(-2);
+      if (previous?.route?.replace(/^\//, "") === "spot/guides/index" &&
+        safe(previous.options?.spotId) === spotId && safe(previous.options?.contextId) === contextId) {
+        await Taro.navigateBack();
+      } else await Taro.redirectTo({ url: `/spot/guides/index?spotId=${encodeURIComponent(spotId)}&contextId=${encodeURIComponent(contextId)}` });
+    } catch { attempt.fail(); }
+    finally { attempt.release(); }
+  };
   const loading = (guides.isPending || guides.isFetching) && !article;
 
   return (
-    <View className={themeClass + " article-page"}>
+    <><SystemMotionProbe /><View className={themeClass + " article-page"}>
       <FloatingNotificationHost />
+      {gallery.view}
       <CustomNav
         title="攻略"
         subtitle={detail?.spot.name}
         back
       />
-      <ScrollView scrollY enhanced showScrollbar={false} className="article-scroll">
+      <ScrollView scrollY={!gallery.visible} enhanced showScrollbar={false} className="article-scroll"
+        {...(gallery.returnTop === undefined ? {} : { scrollTop: gallery.returnTop })} onScroll={event => gallery.record(event.detail.scrollTop)}>
       <View className="article-content page-inset safe-bottom">
+        {navigation.navigationError && !article ? <View role="alert"><Text className="type-caption">攻略目录暂未打开，请重试。</Text></View> : null}
         {!validRoute ? (
           <StatusPanel
             state="ERROR"
@@ -119,10 +135,10 @@ export default function ArticlePage() {
           (guides.data.dataState === "FRESH" || guides.data.dataState === "PARTIAL") ? (
           <StatusPanel
             state="EMPTY"
-            title="这篇攻略暂无内容"
+            title="这篇文章已不可用"
             detail="这篇攻略不在当前观星点资料中，可查看本地点的其它攻略。"
             recoveryLabel="查看本地点攻略"
-            onRecover={() => void Taro.redirectTo({ url: `/spot/guides/index?spotId=${encodeURIComponent(spotId)}&contextId=${encodeURIComponent(contextId)}` })}
+            onRecover={returnToGuides}
           />
         ) : !article ? (
           <StatusPanel
@@ -132,7 +148,7 @@ export default function ArticlePage() {
             onRecover={() => void guides.refetch()}
           />
         ) : (
-          <>
+          <View className="article-document">
             {guides.refreshError || guides.data?.dataState === "STALE_USABLE" ? <StatusPanel state="STALE" detail="攻略尚未确认最新状态，以下保留上次读取的内容。" recoveryLabel="重试更新" onRecover={() => void guides.refetch()} /> : null}
             {(site.refreshError || site.data?.dataState === "STALE_USABLE") && article.blocks.some(block => block.type === "facility_ref") ? <StatusPanel
               state="STALE"
@@ -144,6 +160,7 @@ export default function ArticlePage() {
               : overview.isError || !detail ? <StatusPanel state="PARTIAL" detail="地点与媒体资料暂不可用，正文仍可阅读。" recoveryLabel="重试地点资料" onRecover={() => void overview.refetch()} />
               : overview.refreshError || overview.data?.dataState === "STALE_USABLE" ? <StatusPanel state="STALE" detail="地点与媒体资料尚未确认最新状态，以下保留上次读取的资料。" recoveryLabel="重试地点资料" onRecover={() => void overview.refetch()} /> : null}
             <View className="article-meta">
+              {detail ? <Text className="type-caption">{detail.spot.name}{detail.spot.region ? ` · ${detail.spot.region}` : ""}</Text> : null}
               <Text className="type-page-title">{article.title}</Text>
               <Text className="type-caption">
                 {GUIDE_AUTHOR_LABELS[article.authorType]} ·{" "}
@@ -163,30 +180,13 @@ export default function ArticlePage() {
                   {block.text}
                 </Text>
               ) : block.type === "tip" ? (
-                <View className="article-tip card" key={index}>
+                <View className="article-tip" key={index}>
                   <Text className="type-section">{block.title}</Text>
                   <Text className="type-article">{block.text}</Text>
                 </View>
               ) : block.type === "media" ? (
-                <View className="article-media card" key={index}>
-                  {media ? (
-                    <>
-                      <Image
-                        src={mediaSource(media.localPath)}
-                        mode="widthFix"
-                        lazyLoad
-                        aria-label={media.alt}
-                      />
-                      <Text className="type-caption">
-                        {block.caption} · {media.photographer} · {media.license}
-                      </Text>
-                      {!media.isSiteSpecific ? (
-                        <Text className="status-tag status-tag--warning">
-                          代表媒体，不证明本点现场
-                        </Text>
-                      ) : null}
-                    </>
-                  ) : (
+                <View className="article-media-block" key={index}>
+                  {media ? <ArticleMedia key={`${articleId}:${media.id}:${media.localPath}`} media={media} caption={block.caption} sourceId={`article-media-${index}`} /> : (
                     <StatusPanel
                       state={detail ? "EMPTY" : "PARTIAL"}
                       detail={detail ? "该内容没有符合授权与地点归属要求的媒体。" : "媒体资料尚不可用，暂不显示图片。"}
@@ -194,24 +194,33 @@ export default function ArticlePage() {
                   )}
                 </View>
               ) : (
-                <View className="article-ref card" key={index}>
+                <View className="article-ref" key={index}>
                   {site.isPending || site.isError || !facility ? <Text className="type-label">
                     {FACILITY_LABEL[block.facilityType]}
                   </Text> : null}
                   {site.isPending ? <StatusPanel state="LOADING" detail="正在读取设施记录。" />
                     : site.isError ? <StatusPanel state="ERROR" detail="设施资料暂不可用，正文仍可阅读。" recoveryLabel="重试设施资料" onRecover={() => void site.refetch()} />
-                    : facility ? <FacilityEvidenceDetails evidence={facility} title={FACILITY_LABEL[block.facilityType]} />
+                    : facility ? <>
+                      <FacilityCard id={`article-facility-${index}`} evidence={facility} photos={gallery.photos(block.facilityType)}
+                        onOpenPhotos={() => gallery.open(block.facilityType, `#article-facility-${index}`)} />
+                      <FacilityEvidenceDetails evidence={facility} showHeading={false} showDescription={false} showSource={false} />
+                      <SourceDisclosure id={`article-facility-source-${index}`} label="引用设施来源与核验" sources={[facility.source]} />
+                    </>
                     : site.refreshError || site.data?.dataState === "STALE_USABLE"
                       ? <StatusPanel state="PARTIAL" detail="设施记录尚未确认最新状态，暂不能判断是否缺失。" />
                     : <StatusPanel state="EMPTY" detail="暂无该设施的核验记录，不代表设施可用。" />}
                 </View>
               );
             })}
-            <Provenance source={article.source} />
-          </>
+            <Provenance source={article.source} presentation="disclosure" />
+          </View>
         )}
       </View>
       </ScrollView>
-    </View>
+      {validRoute && article ? <View className="article-footer">
+        {navigation.navigationError ? <View role="alert"><Text className="type-caption">攻略目录暂未打开，正文已保留，请重试。</Text></View> : null}
+        <SoftButton label="返回本地点攻略" onClick={returnToGuides}>返回本地点攻略</SoftButton>
+      </View> : null}
+    </View></>
   );
 }

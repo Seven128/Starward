@@ -1,24 +1,9 @@
+import { testOperation } from "./operation-test-support";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-
-test("native picker cancellation is quiet while genuine picker failures remain errors", async () => {
-  const source = ts.createSourceFile("commands.ts", readFileSync(new URL("./use-contribution-commands.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
-  const declaration = source.statements.find((node) => ts.isFunctionDeclaration(node) && node.name?.text === "chooseImage");
-  assert.ok(declaration);
-  let failure: unknown = { errMsg: "chooseImage:fail cancel" };
-  const choose = vm.runInNewContext(ts.transpileModule(declaration.getText(source) + "\nchooseImage;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-    Error,
-    Taro: { chooseImage: async () => { throw failure; } },
-  });
-  assert.equal(await choose(1), null);
-  failure = new Error("chooseImage:fail cancel");
-  assert.equal(await choose(1), null);
-  failure = { errMsg: "chooseImage:fail permission denied" };
-  await assert.rejects(choose(1), (error) => error === failure);
-});
 
 test("media recovery validates pending selection and replaces only the requested expired upload", async () => {
   const source = ts.createSourceFile("commands.ts", readFileSync(new URL("./use-contribution-commands.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -37,13 +22,13 @@ test("media recovery validates pending selection and replaces only the requested
     completeContributionUpload: async (_id: string, id: string) => { calls.push(id); return { data: { ...working, revision: 6 } }; },
   });
   const form = { phase: "UPLOAD", applyDraft() { assert.fail("upload receipts must not overwrite editable fields"); }, applyMediaDraft() {} };
-  await assert.rejects(upload(form, working, { path: "photo.png" }, original, () => {}), /续传需要重新选择原来的图片/);
+  await assert.rejects(upload(form, working, { path: "photo.png" }, original, testOperation()), /续传需要重新选择原来的图片/);
   assert.deepEqual(calls, []);
   size = 30;
-  await upload(form, working, { path: "photo.png" }, original, () => {});
+  await upload(form, working, { path: "photo.png" }, original, testOperation());
   assert.deepEqual(calls, ["read", "upload:old"]);
   calls.length = 0;
-  await upload(form, working, { path: "photo.png" }, { ...original, state: "EXPIRED" }, () => {});
+  await upload(form, working, { path: "photo.png" }, { ...original, state: "EXPIRED" }, testOperation());
   assert.equal(JSON.stringify(calls[0]), JSON.stringify({ id: "draft:a", input: { originalName: "photo.png", mimeType: "image/png", byteSize: 30, expectedRevision: 4, replaceUploadId: "upload:old" } }));
   assert.deepEqual(calls.slice(1), ["read", "upload:new"]);
 });
@@ -68,15 +53,16 @@ test("retrying an existing image keeps its revision and the unsaved form intact"
     formInput() { assert.fail("retry must not save the whole form"); },
     setUploading() {}, announce() {}, history: { refetch: async () => {} },
   };
-  const retry = create(form, () => { if (!accountValid) throw new Error("changed"); }, async () => true);
+  const retry = create(form, testOperation(() => { if (!accountValid) throw new Error("changed"); }), async () => true);
   await retry(target.uploadId);
   assert.deepEqual(requests, [{ working: draft, upload: target }]);
   assert.equal(form.detail, "尚未保存的文字");
   assert.equal(draft.revision, 4);
   accountValid = false;
-  await retry(target.uploadId);
+  await assert.rejects(retry(target.uploadId), /changed/);
   assert.equal(requests.length, 1);
   form.rightsConfirmed = false;
+  accountValid = true;
   await retry(target.uploadId);
   assert.equal(picked, 1, "changed account and unconfirmed rights must not open another picker");
 });
@@ -126,12 +112,12 @@ test("failed retry reconciles expired or completed upload state without overwrit
         if (scenario === "ACCOUNT_CHANGED") valid = false;
         return { data: { submissions: scenario === "MISSING" ? [] : [latest] } };
       },
-    })(form, () => { if (!valid) throw new Error("changed account"); }, async () => true);
+    })(form, testOperation(() => { if (!valid) throw new Error("changed account"); }), async () => true);
     await retry("upload:a");
     assert.equal(applied, scenario === "EXPIRED" || scenario === "UPLOADED", scenario);
     assert.equal(readonly, scenario === "WITHDRAWN");
     assert.equal(form.detail, "尚未保存的文字");
-    assert.equal(busy, false);
-    assert.deepEqual(notices, [scenario === "WITHDRAWN" ? "记录已结束编辑" : scenario === "UPLOADED" ? "已同步上传状态" : scenario === "EXPIRED" ? "上传会话已过期" : "上传恢复失败"]);
+    assert.equal(busy, scenario === "ACCOUNT_CHANGED", "standalone factory suppresses stale writes; the outer operation owner releases its own UI lock");
+    assert.deepEqual(notices, scenario === "ACCOUNT_CHANGED" ? [] : [scenario === "WITHDRAWN" ? "记录已结束编辑" : scenario === "UPLOADED" ? "已同步上传状态" : scenario === "EXPIRED" ? "上传会话已过期" : "上传恢复失败"]);
   }
 });

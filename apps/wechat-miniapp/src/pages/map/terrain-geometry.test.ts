@@ -1,7 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { TERRAIN_RADIUS_TICKS, terrainCropPercent, terrainRadiusForSlider, terrainSliderForRadius, terrainViewportBounds } from "./terrain-geometry";
+import { mercatorY } from "@starward/coordinate-system";
+import { TERRAIN_RADIUS_TICKS, terrainCropPercent, terrainMapViewportBounds, terrainBoundsForNativeRegion, terrainRadiusForSlider, terrainSliderForRadius, terrainViewportBounds } from "./terrain-geometry";
+
+test("standard Mercator trial frames retain their whole declared extent beyond the Spot 50 km limit", () => {
+  const center = { latitude: 22.65, longitude: 114.05 }, frame = { width: 390, height: 700 };
+  const bounds = terrainMapViewportBounds(center, 8, frame);
+  assert.ok((bounds.north - bounds.south) * 111.32 > 300, "a zoomed-out phone window cannot be limited to a 100 km square");
+  assert.ok(Math.abs((bounds.east - bounds.west) / 360 - 390 / (256 * 2 ** 8) * 1.2) < 1e-12);
+  assert.ok(Math.abs(mercatorY(bounds.south) - mercatorY(bounds.north) - 700 / (256 * 2 ** 8) * 1.2) < 1e-12);
+  const zoomed = terrainMapViewportBounds(center, 9, frame);
+  assert.ok(Math.abs((bounds.east - bounds.west) / (zoomed.east - zoomed.west) - 2) < 1e-10);
+  const actual = terrainBoundsForNativeRegion({ southwest: { latitude: 20, longitude: 112 }, northeast: { latitude: 25, longitude: 116 } });
+  assert.ok(actual && actual.west < 112 && actual.east > 116 && actual.south < 20 && actual.north > 25);
+  assert.equal(terrainBoundsForNativeRegion({ southwest: { latitude: 20, longitude: 116 }, northeast: { latitude: 25, longitude: 112 } }), null);
+});
 
 test("terrain radius uses the adopted 2-50 km logarithmic scale", () => {
   assert.equal(terrainRadiusForSlider(-10), 2);

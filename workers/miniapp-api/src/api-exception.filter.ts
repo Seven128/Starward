@@ -4,6 +4,8 @@ import { requestIdFromHeaders } from "./request-id.ts";
 import { SpotPublicationBlockedError } from "./spot-completeness-policy.ts";
 
 export function classifyExceptionMessage(message: string) {
+  if(message==='auth_reauthentication_identity_mismatch')
+    return {status:403,code:'PERMISSION_DENIED',retryable:false,message:'WECHAT_IDENTITY_MISMATCH',recovery:['RETURN_TO_ORIGINAL_WECHAT_ACCOUNT']} as const;
   if (message === "observation_timezone_resolution_unavailable")
     return { status: 400, code: "INVALID_INPUT", retryable: false, message: "OBSERVATION_LOCATION_OUTSIDE_SUPPORTED_REGION", recovery: ["CHOOSE_SUPPORTED_LOCATION"] } as const;
   if (message === "observation_timezone_resolution_ambiguous")
@@ -20,6 +22,12 @@ export function classifyExceptionMessage(message: string) {
     return { status: 410, code: "STALE_REJECTED", retryable: false } as const;
   if (message === "contribution_formal_changes_obsolete")
     return { status: 409, code: "CONFLICT", retryable: false, message: "CONTRIBUTION_NO_REMAINING_CHANGES", recovery: ["REFETCH", "REVIEW_CHANGES"] } as const;
+  if (message === "contribution_candidate_intake_incomplete")
+    return { status: 400, code: "INVALID_INPUT", retryable: false, message: "CONTRIBUTION_CORE_ANSWERS_REQUIRED", recovery: ["COMPLETE_CANDIDATE_INTAKE", "UPDATE_MINIAPP_IF_FIELDS_UNAVAILABLE", "PRESERVE_DRAFT"] } as const;
+  if (message === "contribution_candidate_intake_conflict")
+    return { status: 400, code: "INVALID_INPUT", retryable: false, message: "CONTRIBUTION_CORE_ANSWERS_CONFLICT", recovery: ["REVIEW_CANDIDATE_INTAKE", "PRESERVE_DRAFT"] } as const;
+  if (message === "contribution_review_attempt_mismatch")
+    return { status: 409, code: "CONFLICT", retryable: false, message: "CONTRIBUTION_REQUIRES_RESUBMISSION", recovery: ["REFETCH", "PRESERVE_DRAFT", "REVIEW_SUBMITTED_ATTEMPT"] } as const;
   if (message === "account_not_active")
     return { status: 403, code: "PERMISSION_DENIED", retryable: false } as const;
   if (/not_found/u.test(message))

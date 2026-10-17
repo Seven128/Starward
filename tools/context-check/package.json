@@ -4,6 +4,7 @@
   "private": true,
   "description": "Locked minimal CI dependency closure for repository Context checks.",
   "devDependencies": {
+    "pngjs": "7.0.0",
     "project-tiny-context-harness": "0.12.1"
   }
 }

@@ -75,6 +75,7 @@ test("auxiliary Back mounts shown, consumes one leave and remounts a fresh shown
   const owner = await mountBoundary(props);
   try {
     const first = owner.current;
+    assert.equal(first.style.position, "fixed", "the invisible Back slot stays outside the caller's flex layout");
     assert.equal(first?.show, true, "the first mounted native frame must already be shown");
     await owner.event(() => { first.onBeforeLeave(); first.onAfterLeave(); });
     assert.equal(commands, 1);
@@ -133,10 +134,15 @@ test("Map preserves its foreground child and before-leave protocol through close
     await owner.render({ ...props, active: true }); await owner.settle();
     const open = owner.current;
     assert.equal(open.show, true); assert.equal(open.position, "center"); assert.equal(open.zIndex, 1200);
-    assert.equal(open.onAfterLeave, undefined);
+    assert.equal(typeof open.onAfterLeave, "function");
     await owner.event(() => { open.onBeforeLeave(); open.onBeforeLeave(); });
     assert.equal(commands, 1); await owner.settle();
+    assert.equal(owner.current.show, false, "Map waits for native exit as well as the command");
+    await owner.event(() => open.onAfterLeave()); await owner.settle();
     assert.equal(owner.current.show, true); assert.equal(owner.current.identity, identity);
+    await owner.event(() => owner.current.onBeforeLeave());
+    assert.equal(commands, 1, "delayed leave remains fenced until native entry is acknowledged");
+    await owner.event(() => owner.current.onAfterEnter());
     await owner.render(props); await owner.settle();
     assert.equal(owner.current.show, false); assert.equal(owner.current.identity, identity);
     assert.equal(childMounts, 1); assert.equal(childUnmounts, 0);

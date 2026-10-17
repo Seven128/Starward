@@ -18,6 +18,18 @@
       "sha256": "67675cc9ddd5ca2145ba57023b00ec295241d102e4739af7e46ef04bd4d7f39f"
     },
     {
+      "path": "bell-day.svg",
+      "sha256": "d8cc56c6ac11a8ed84da5e36f8764b045d4e66faea46f4b56fb892fe97f99589"
+    },
+    {
+      "path": "bell-night.svg",
+      "sha256": "6d71329c4a16954ed7f2d2ee13a886154720332af27712c102ac1a854c276b20"
+    },
+    {
+      "path": "bell-observation.svg",
+      "sha256": "ddf9c9b2e1cfe5e0c6f783b738e4bf477be81209e6e85ed681ba89910afa5bba"
+    },
+    {
       "path": "bulb-day.svg",
       "sha256": "7aece9ec557b4bb0bb0fa708740789e268a5a5fb51fe75224b7e63a1ae42202b"
     },
@@ -83,7 +95,7 @@
     },
     {
       "path": "formal-spot-marker-observation.png",
-      "sha256": "6ecb83a8c38c93e9754e000b5f86ab568da05b97faa8a289e6633d020ef01591"
+      "sha256": "4280a2f6b09c2971e71a87f063d275bc463ea7e7bbf6a81d13181595d52b3f91"
     },
     {
       "path": "formal-spot-marker-selected-night.png",
@@ -91,7 +103,7 @@
     },
     {
       "path": "formal-spot-marker-selected-observation.png",
-      "sha256": "5bdba435c1e9aeffa11e90542a1b57dbcd5d5cd9db3a7b159ddc0a89fa0bc71a"
+      "sha256": "d08e4bcabc06cb44e5cdedba5bc32d7095056b487370a496bdde6050e923c1c3"
     },
     {
       "path": "formal-spot-marker-selected.png",
@@ -244,6 +256,18 @@
     {
       "path": "trash-2-observation.svg",
       "sha256": "8ce3b70c1b8270183c9c5594606a12e3ffe4f942237d24883f3dd7613fdbdd19"
+    },
+    {
+      "path": "warning-day.svg",
+      "sha256": "a5d97640c93af11097fedf4abc5a7f487607ff52f81cdcdf592acb5e3891ea26"
+    },
+    {
+      "path": "warning-night.svg",
+      "sha256": "40033e04bb4f2735a0400a82f28eeb53da84f3df98d967416964d617710ea0e5"
+    },
+    {
+      "path": "warning-observation.svg",
+      "sha256": "1dfbee10a848d4ba5f67fe691b94b75218a9f7d063925281d7244acadd1645f1"
     },
     {
       "path": "wifi-off-day.svg",

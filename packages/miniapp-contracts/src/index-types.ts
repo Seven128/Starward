@@ -1,5 +1,6 @@
 export type * from "./types.ts";
 export type * from "./api-shapes.ts";
+export type * from "./map-cloud-snapshot.ts";
 export * from "./moon-coverage-publication.ts";
 export * from "./deep-sky-image-publication.ts";
 export type * from "./sdss-optical-publication.ts";

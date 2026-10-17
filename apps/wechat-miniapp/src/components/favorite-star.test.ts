@@ -5,7 +5,7 @@ import vm from "node:vm";
 import ts from "typescript";
 
 function harness() {
-  let now = 0, serial = 0, progress = 0, reduced = false;
+  let now = 0, serial = 0, progress = 0, reduced = false, systemReduced = false;
   let pendingEffect: (() => (() => void)) | undefined;
   let cleanup: (() => void) | undefined;
   const live = { current: 0 }, timers = new Map<number, { at: number; run: () => void }>();
@@ -19,12 +19,12 @@ function harness() {
     require: (name: string) => name === "react/jsx-runtime" ? { jsx, jsxs: jsx } : name === "react" ? {
       useRef: () => live, useState: () => [progress, (next: number) => { progress = next; }],
       useEffect: (effect: () => (() => void)) => { pendingEffect = effect; },
-    } : name.includes("app-store") ? { useAppStore: (select: (state: unknown) => unknown) => select({ mode: "DAY", preferences: { reducedMotion: reduced } }) } : {},
+    } : name.includes("use-reduced-motion") ? { useReducedMotion: () => reduced || systemReduced } : name.includes("app-store") ? { useAppStore: (select: (state: unknown) => unknown) => select({ mode: "DAY", preferences: { reducedMotion: reduced } }) } : {},
   });
   let visible = true;
   const render = (active: boolean) => exports.FavoriteStar({ active, visible });
   return {
-    change(active: boolean, reduce = false, shown = true) { reduced = reduce; visible = shown; cleanup?.(); render(active); cleanup = pendingEffect!(); },
+    change(active: boolean, reduce = false, shown = true, system = false) { reduced = reduce; systemReduced = system; visible = shown; cleanup?.(); render(active); cleanup = pendingEffect!(); },
     advance(ms: number) {
       const end = now + ms;
       for (;;) {
@@ -70,4 +70,11 @@ test("reduced motion settles immediately and unmount cancels in-flight work", ()
   for (const satellite of nodes[2]) assert.equal(satellite.props.style.transform, "none");
   h.change(false); h.advance(100); const before = h.progress();
   h.unmount(); h.advance(1000); assert.equal(h.progress(), before); assert.equal(h.pending(), 0);
+});
+
+test("system reduction settles the shared star even while the account preference is false", () => {
+  const h = harness(); h.change(true, false, true, true);
+  assert.equal(h.progress(), 1);
+  assert.equal(h.pending(), 0);
+  assert.equal(h.render(true).props.children[1].props.style.transform, "none");
 });

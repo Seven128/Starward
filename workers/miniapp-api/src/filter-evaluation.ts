@@ -67,7 +67,7 @@ export function evaluateSpotFilterEvidence(input: {
     : evidence(
         "LIGHT_POLLUTION",
         spot.lightPollution.productBand === "VERY_LOW" || spot.lightPollution.productBand === "LOW" ? "MATCH" : "NO_MATCH",
-        `夜光产品分级为 ${spot.lightPollution.productBand}`,
+        `夜光产品分级为${spot.lightPollution.label}`,
       );
 
   const cloud = evaluation.cloudPercent === null

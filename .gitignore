@@ -1,4 +1,6 @@
 node_modules/
+# Current Mini Program design sources live in Stitch; downloads are task-local.
+/docs/design-resources/wechat-miniapp/
 packages/coordinate-system/dist/
 packages/astronomy-core/dist/
 packages/miniapp-contracts/dist/

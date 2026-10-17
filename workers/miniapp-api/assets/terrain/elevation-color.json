@@ -1,0 +1,10 @@
+{
+  "format": "starward-terrain-elevation-color-v1",
+  "minimumM": -20,
+  "maximumM": 880,
+  "lowRgb": [215, 224, 207],
+  "highRgb": [112, 139, 104],
+  "alpha": 224,
+  "clipping": "CLAMP",
+  "shading": "SYNTHETIC_HILLSHADE"
+}

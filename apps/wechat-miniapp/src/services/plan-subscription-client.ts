@@ -17,6 +17,11 @@ export function createPlanSubscriptionClient(deps: {
         auth: "REQUIRED", pathParams: { planId }, body: { reminderId },
       }, false, owner);
       check(owner);
+      if(result.data.state==='UNAVAILABLE') {
+        // Reopening the dialog alone does not refetch an enabled query. Read
+        // the current recovery reason/revision instead of looping on old state.
+        await deps.confirmed(owner);check(owner);
+      }
       return result;
     },
     async report(owner: string, challengeId: string, choice: ReminderSubscriptionReportRequest["choice"]) {

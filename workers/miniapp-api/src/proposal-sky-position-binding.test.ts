@@ -15,12 +15,15 @@ test("private proposal position remains bound to the displayed report across rea
     const draft = (await service.createContributionDraft(session.userId, {
       kind: "NEW_SPOT_PROPOSAL", spotId: null, candidateLocation: location,
       observedAt: null, topics: [], detail: "", rightsConfirmed: true, preciseLocationConsent: true,
-      candidateProfile: { fields: { name: location.displayName, address: "隔离测试位置" }, media: {} },
+      candidateProfile: { fields: { name: location.displayName, address: "隔离测试位置" }, media: {}, intake: { version: 1,
+        openness: "UNKNOWN", legalEntry: "UNKNOWN", nightSafety: "UNKNOWN",
+        contact: { kind: "UNKNOWN", number: "", purpose: "", source: "", publicPermissionConfirmed: false } } },
     }, "proposal-position-create:0001")).data;
     const pending = (await service.submitContribution(session.userId, draft.submissionId, draft.revision,
       "proposal-position-submit:0001")).data;
-    const initial = (await service.resolveObservationContext({ location: { kind: "MAP_POINT", ...location,
-      source: "MAP_VIEWPORT", timezoneHint: "Asia/Shanghai" }, localDate: "2026-10-06" })).data;
+    const attempt = pending.attempts.at(-1)!;
+    const initial = (await service.resolveObservationContext({ location: { kind: "PENDING_PROPOSAL", submissionId: pending.submissionId,
+      attemptId: attempt.attemptId, attemptBaseRevision: attempt.baseRevision }, localDate: "2026-10-06" }, session.userId)).data;
     const controller = new MiniappController(service), catalog = loadSaoCatalog("bsc5p-bright-stars.v3").catalog;
     const reference = "SAO:19229", at = "2026-10-06T04:00:00.000Z";
     const verify = async (context: typeof initial) => {
@@ -41,7 +44,7 @@ test("private proposal position remains bound to the displayed report across rea
     };
     const before = await verify(initial);
     const changed = (await service.updateObservationContext(initial.contextId,
-      { expectedRevision: initial.revision, selectedAt: "2026-10-06T14:00:00.000Z" })).data;
+      { expectedRevision: initial.revision, selectedAt: "2026-10-06T14:00:00.000Z" }, session.userId)).data;
     const after = await verify(changed);
     assert.equal(changed.revision, initial.revision + 1);
     assert.deepEqual(changed.location, initial.location);

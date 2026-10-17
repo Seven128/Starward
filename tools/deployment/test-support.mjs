@@ -1,5 +1,5 @@
-import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
+import { mkdir, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
@@ -14,7 +14,9 @@ function lines(values) {
 }
 
 export async function createReleaseEnvironmentFixture(overrides = {}) {
-  const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), "starward-release-env-"));
+  // Hex UUIDs avoid incidental TODO/TBD text in randomized fixture paths.
+  const fixtureRoot = path.join(os.tmpdir(), `starward-release-env-${randomUUID()}`);
+  await mkdir(fixtureRoot);
   const backupDirectory = path.join(fixtureRoot, "backups");
   const receiptDirectory = path.join(fixtureRoot, "receipts");
   const backupKeyFile = path.join(fixtureRoot, "backup.key");
@@ -54,6 +56,7 @@ export async function createReleaseEnvironmentFixture(overrides = {}) {
     QWEATHER_FORECAST_HOURS: "240",
     QWEATHER_API_HOST: "example.qweatherapi.com",
     QWEATHER_CREDENTIAL_ID: "qweather-credential",
+    QWEATHER_DEVELOPER_ID: "Q12345ABCD",
     QWEATHER_PROJECT_ID: "qweather-project",
     QWEATHER_PRIVATE_KEY_PEM: "-----BEGIN PRIVATE KEY-----fake-test-material-----END PRIVATE KEY-----",
     MINIAPP_ROUTE_PROVIDER: "DISABLED",

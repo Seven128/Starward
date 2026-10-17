@@ -61,16 +61,28 @@ function actualCallback(page: "map" | "auth", name: string, ports: object): () =
     readFileSync(new URL(`../pages/${page}/index.tsx`, import.meta.url), "utf8"),
     ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const declarations: string[] = [];
+  const helpers: string[] = [];
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && node.name.getText(source) === name)
       declarations.push(`const ${node.getText(source)};`);
+    if (page === "auth" && ts.isVariableDeclaration(node) &&
+      ["LOCATION_STATE_LABEL", "beginLocation", "currentLocation", "cancelLocation", "finishLocation"].includes(node.name.getText(source)))
+      helpers.push(`const ${node.getText(source)};`);
     ts.forEachChild(node, visit);
   };
   visit(source);
   assert.equal(declarations.length, 1);
-  return vm.runInNewContext(ts.transpileModule(`${declarations[0]}\n${name};`, {
+  let runtime = ports;
+  if (page === "auth") {
+    const provided = ports as Record<string, any>;
+    const state = { accountOwnerId: "owner", mapResetVersion: 0, locationState: provided.locationState ?? "DEFAULT_REGION" };
+    runtime = { pageActive: { current: true }, permissionReturn: { current: false },
+      useAppStore: { getState: () => state }, ...provided,
+      setLocationState: (value: string) => { state.locationState = value; provided.setLocationState?.(value); } };
+  }
+  return vm.runInNewContext(ts.transpileModule(`${helpers.join("\n")}\n${declarations[0]}\n${name};`, {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
-  }).outputText, ports, { timeout: 1000 });
+  }).outputText, runtime, { timeout: 1000 });
 }
 
 test("granting permission after a denial clears the stale denial without claiming a GPS fix", async () => {
@@ -85,7 +97,7 @@ test("granting permission after a denial clears the stale denial without claimin
   });
   await run();
   assert.deepEqual(states, ["AUTHORIZED"]);
-  assert.match(feedback.at(-1) ?? "", /已开启.*尚未获取位置/u);
+  assert.match(feedback.at(-1) ?? "", /已开启.*尚未获取.*位置/u);
 });
 
 test("reopening settings after a successful one-shot fix keeps the acquired-location state", async () => {
@@ -102,7 +114,7 @@ test("reopening settings after a successful one-shot fix keeps the acquired-loca
   await run();
   assert.deepEqual(states, []);
   assert.equal(panels.at(-1), "READY");
-  assert.match(feedback.at(-1) ?? "", /本次位置已获取/u);
+  assert.match(feedback.at(-1) ?? "", /本次已取得过一次位置/u);
   assert.equal(queue[0]?.title, "定位权限已开启");
   assert.match(queue[0]?.body ?? "", /本次已取得过一次位置/u);
   assert.doesNotMatch(queue[0]?.body ?? "", /尚未重新获取位置/u);
@@ -119,8 +131,10 @@ function mapHarness(native: Port, resolveContext: (point: unknown, source: strin
   let locationState = "DEFAULT_REGION";
   const mapPointIntent = { current: 0 };
   const notify = (intent: NotificationIntent) => { queue = enqueueNotification(queue, intent, ++tick); };
-  const run = actualCallback("map", "locateMap", {
-    Taro: native, requestOneShotLocation, locationRequestBusy: { current: false },
+  const ports = {
+    locationCandidate: null as unknown,
+    setLocationCandidate: (candidate: unknown) => { ports.locationCandidate = candidate; },
+    Taro: native, requestOneShotLocation, locationRequestBusy: { current: null },
     mapPointIntent, invalidateMapPointIntent: () => ++mapPointIntent.current, nativeMap: { isCurrent: () => true }, currentDraftUserId: () => "owner",
     useAppStore: { getState: () => ({ mapResetVersion, locationState, notifications: queue,
       dismissNotification: (id: string) => { queue = queue.filter(item => item.id !== id); } }) },
@@ -129,12 +143,16 @@ function mapHarness(native: Port, resolveContext: (point: unknown, source: strin
     setViewport: (viewport: unknown) => viewports.push(viewport),
     setAnnouncement: (message: string) => announcements.push(message),
     notify, resolveMapPoint: resolveContext, errorMessage: () => "暂时不可用",
-  });
-  return { run, states, viewports, busy, announcements, notify,
+  };
+  actualCallback("map", "locationCandidateCurrent", ports);
+  const run = actualCallback("map", "locateMap", ports);
+  const move = actualCallback("map", "moveToLocation", ports);
+  const cancel = actualCallback("map", "cancelLocation", ports);
+  return { run, move, cancel, states, viewports, busy, announcements, notify,
     supersede: () => { mapPointIntent.current++; },
     reset: () => { mapResetVersion++; },
     get queue() { return queue; },
-    visible: () => selectNotification(queue, "inline", "map"),
+    visible: () => selectNotification(queue, queue.some(item => item.owner === "map" && item.placement === "floating") ? "floating" : "inline", "map"),
   };
 }
 
@@ -143,15 +161,16 @@ test("a newer map selection cancels GPS/context progress without leaving REQUEST
     const fix = deferred<typeof center>(), context = deferred<void>(), entered = deferred<void>();
     const map = mapHarness(platform(() => fix.promise, async () => ({})), async () => { entered.resolve(); await context.promise; });
     map.notify({ owner: "map", placement: "inline", tone: "warning", title: "无关资料错误", body: "保留", dedupeKey: "unrelated" });
-    const pending = map.run();
-    if (phase === "CONTEXT") { fix.resolve(center); await entered.promise; }
+    let pending = map.run();
+    if (phase === "CONTEXT") { fix.resolve(center); await pending; pending = map.move(); await entered.promise; }
+    const announcementsBefore = map.announcements.length;
     map.supersede();
     if (phase === "GPS") fix.resolve(center); else context.resolve();
     await pending;
     assert.equal(map.states.at(-1), phase === "GPS" ? "DEFAULT_REGION" : "GRANTED");
     assert.equal(map.queue.some(item => item.dedupeKey === "map-location-request"), false);
     assert.equal(map.queue.some(item => item.dedupeKey === "unrelated"), true);
-    assert.equal(map.announcements.length, 0);
+    assert.equal(map.announcements.length, announcementsBefore);
     assert.equal(map.busy.at(-1), false);
   }
 });
@@ -177,14 +196,14 @@ test("actual Map failure keeps viewport/context untouched and presents the right
 test("Map cannot announce context success when its location update was cancelled", async () => {
   const map = mapHarness(platform(async () => center, async () => ({})), async () => null);
   await map.run();
+  await map.move();
   assert.deepEqual(map.states, ["REQUESTING", "GRANTED"]);
   assert.deepEqual(map.busy, [true, false]);
-  assert.equal(map.announcements.length, 0);
-  assert.equal(map.visible().current?.tone, "info");
-  assert.equal(map.visible().current?.title, "已定位，观测条件更新已取消");
+  assert.deepEqual(map.announcements, ["已取得本次位置，地图未移动。"]);
+  assert.equal(map.visible().current, null);
 });
 
-test("actual Map serializes repeat clicks through GPS and context, then permits retry", async () => {
+test("actual Map suppresses repeated GPS clicks and moves only after explicit confirmation", async () => {
   const fix = deferred<typeof center>();
   const contextEntered = deferred<void>();
   const context = deferred<void>();
@@ -193,29 +212,31 @@ test("actual Map serializes repeat clicks through GPS and context, then permits 
   const map = mapHarness(platform(
     () => { nativeCalls++; return fix.promise; }, async () => ({}),
   ), async (point, source) => {
-    points.push(JSON.stringify({ point, source })); contextEntered.resolve(); await context.promise;
+    points.push(JSON.stringify({ point, source })); contextEntered.resolve(); await context.promise; return {};
   });
   const pending = map.run();
-  assert.equal(map.visible().current?.title, "正在获取一次位置");
+  assert.equal(map.states.at(-1), "REQUESTING");
   await map.run();
   assert.equal(nativeCalls, 1);
   fix.resolve(center);
+  await pending;
+  assert.equal(map.viewports.length, 0);
+  assert.equal(points.length, 0);
+  const moving = map.move();
   await contextEntered.promise;
   assert.equal(JSON.stringify(map.viewports), JSON.stringify([{ center, zoom: 10 }]));
   assert.equal(points[0], JSON.stringify({ point: center, source: "USER_LOCATION" }));
-  assert.equal(map.visible().current?.title, "已定位，正在更新观测条件");
-  assert.match(map.visible().current!.body, /尚未确认/);
-  await map.run();
+  await map.move();
   assert.equal(nativeCalls, 1);
-  assert.equal(map.busy.at(-1), true);
+  assert.equal(map.busy.at(-1), false);
   context.resolve();
-  await pending;
-  assert.equal(map.visible().current?.title, "观测位置已更新");
-  assert.match(map.visible().current!.body, /天气、天文以各自加载状态为准/);
+  await moving;
+  assert.match(map.announcements.at(-1)!, /天气和天文以各自加载状态为准/);
   assert.equal(map.visible().residualCount, 0);
-  assert.equal(map.announcements.length, 1);
+  assert.equal(map.announcements.length, 2);
   assert.deepEqual(map.busy, [true, false]);
   await map.run();
+  await map.move();
   assert.equal(nativeCalls, 2);
 });
 
@@ -223,11 +244,12 @@ test("actual Map context failure preserves the acquired-location state without s
   const map = mapHarness(platform(async () => center, async () => ({})),
     async () => { throw new Error("synthetic context failure"); });
   await map.run();
+  await map.move();
   assert.deepEqual(map.states, ["REQUESTING", "GRANTED"]);
   assert.equal(map.viewports.length, 1);
-  assert.equal(map.announcements.length, 0);
+  assert.deepEqual(map.announcements, ["已取得本次位置，地图未移动。"]);
   assert.equal(map.visible().current?.tone, "warning");
-  assert.match(map.visible().current!.body, /上次观测条件不适用于当前位置/);
+  assert.match(map.visible().current!.body, /上次条件不适用于当前位置/);
   assert.equal(map.visible().residualCount, 0);
   assert.deepEqual(map.busy, [true, false]);
 });
@@ -244,8 +266,8 @@ test("location recovery removes obsolete permission action without discarding an
   denied = false;
   await map.run();
   assert.equal(map.visible().current?.action, undefined);
-  assert.equal(map.visible().current?.tone, "success");
-  assert.equal(map.queue.length, 2);
+  assert.equal(map.visible().current, null);
+  assert.equal(map.queue.length, 1);
   assert.equal(selectNotification(map.queue, "inline", "settings").current?.title, "同步失败");
 });
 
@@ -276,11 +298,11 @@ test("actual permission request distinguishes outcomes, never claims map update,
     pending.resolve(state === "GRANTED" ? { state, center } : { state });
     await first;
     assert.deepEqual(states, ["REQUESTING", state]);
-    assert.match(feedback.at(-1)!, state === "GRANTED" ? /地图位置未改变/ : state === "DENIED" ? /权限未授予/ : /暂时无法取得位置/);
+    assert.match(feedback.at(-1)!, state === "GRANTED" ? /地图未移动/ : state === "DENIED" ? /未授权/ : /本次位置暂不可用/);
     assert.equal(queue.length, 2, "replace the one old location notice without discarding another owner");
     assert.equal(selectNotification(queue, "inline", "settings").current?.title, "设置同步失败");
     const location = selectNotification(queue, "inline", "map").current;
-    assert.equal(location?.title, state === "GRANTED" ? "本次位置已取得" : state === "DENIED" ? "定位权限未授予" : "暂时无法取得位置");
+    assert.equal(location?.title, state === "GRANTED" ? "已取得一次位置" : state === "DENIED" ? "定位权限未授予" : "位置暂不可用");
     assert.doesNotMatch(location?.body ?? "", /尚未重新获取位置/u);
     await run();
     assert.equal(calls, 2);
@@ -294,8 +316,9 @@ test("reset during GPS or context prevents late location state and feedback", as
     const context = deferred<void>();
     const map = mapHarness(platform(() => fix.promise, async () => ({})),
       async () => { entered.resolve(); await context.promise; });
-    const pending = map.run();
-    if (phase !== "GPS") { fix.resolve(center); await entered.promise; }
+    let pending = map.run();
+    if (phase !== "GPS") { fix.resolve(center); await pending; pending = map.move(); await entered.promise; }
+    const announcementsBefore = map.announcements.length;
     const before = JSON.stringify({ states: map.states, queue: map.queue, viewports: map.viewports });
     map.reset();
     if (phase === "GPS") fix.resolve(center);
@@ -303,7 +326,7 @@ test("reset during GPS or context prevents late location state and feedback", as
     else context.reject(new Error("synthetic late rejection"));
     await pending;
     assert.equal(JSON.stringify({ states: map.states, queue: map.queue, viewports: map.viewports }), before);
-    assert.equal(map.announcements.length, 0);
+    assert.equal(map.announcements.length, announcementsBefore);
     assert.equal(map.busy.at(-1), false);
   }
 });
@@ -327,8 +350,8 @@ test("actual permission settings never invent a GPS fix or treat unknown as refu
     else pending.resolve({ authSetting: { "scope.userLocation": permission } });
     await first;
     assert.deepEqual(states, permission === false ? ["DENIED"] : permission === true ? ["AUTHORIZED"] : []);
-    assert.equal(panels.at(-1), permission === false ? "PERMISSION_DENIED" : permission === "ERROR" ? "ERROR" : "INITIAL");
-    assert.match(feedback.at(-1)!, permission === true ? /尚未获取位置/ : permission === false ? /未开启/ : permission === "ERROR" ? /请重试/ : /尚未取得/);
+    assert.equal(panels.at(-1), permission === false ? "PERMISSION_DENIED" : permission === "ERROR" ? "ERROR" : "READY");
+    assert.match(feedback.at(-1)!, permission === true ? /尚未获取.*位置/ : permission === false ? /未开启/ : permission === "ERROR" ? /请重试/ : /尚未取得/);
     assert.deepEqual(busy, [true, false]);
     if (typeof permission === "boolean") {
       assert.equal(queue.length, 1);
@@ -341,7 +364,7 @@ test("actual permission settings never invent a GPS fix or treat unknown as refu
 
 test("actual default-region button resets before navigation and reports failed navigation", async () => {
   const events: string[] = [], feedback: string[] = [];
-  const lock = { current: true };
+  const lock: { current: { kind: string } | null } = { current: { kind: "NAVIGATION" } };
   const run = actualCallback("auth", "useDefaultRegion", {
     locationRequestBusy: lock, setBusy() {}, setFeedbackState() {},
     resetMapToDefaultRegion: () => events.push("reset"),
@@ -349,9 +372,9 @@ test("actual default-region button resets before navigation and reports failed n
     setFeedback: (value: string) => feedback.push(value),
   });
   await run(); assert.equal(events.length, 0);
-  lock.current = false;
+  lock.current = null;
   await run();
   assert.deepEqual(events, ["reset", "/pages/map/index"]);
-  assert.match(feedback.at(-1)!, /默认试点区域已恢复，但地图暂时无法打开/);
-  assert.equal(lock.current, false);
+  assert.match(feedback.at(-1)!, /已恢复默认区域.*地图暂未打开.*重试/);
+  assert.equal(lock.current, null);
 });

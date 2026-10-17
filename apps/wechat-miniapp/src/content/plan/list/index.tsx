@@ -1,37 +1,48 @@
+import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FloatingNotificationHost } from "@/components/notification";
 import Taro, { useDidShow, useDidHide, useRouter } from "@tarojs/taro";
+import { AccountEntry } from "../../account-entry";
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
 import { Button, ScrollView, Text, View } from "@tarojs/components";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CustomNav } from "@/components/custom-nav";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { StatusPanel } from "@/components/status-panel";
-import { useResourceQuery } from "@/hooks/use-resource-query";
-import { useThemeClass } from "@/hooks/use-theme";
-import { currentDraftUserId, getPlans } from "@/services/api-client";
+import { SoftButton } from "@/components/soft-button";
+import { parsePlanDraft, planDraftKey } from "../detail/plan-draft";
+import { useAccountPlans } from "@/hooks/use-account-plans";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import { useAppStore } from "@/state/app-store";
 import { nextPlanListBoundary, planEndLabel, planListEmptyState, planListEntries, type PlanPartition } from "./plan-list-model";
 import { planTravelModeLabel } from "../detail/plan-travel-fields";
+import { useAccountNavigation } from "@/hooks/use-account-navigation";
 import "./index.scss";
 
-export default function PlanListPage() {
+export default function PlanListRoute() {
+  return <AccountEntry title="观星计划"><PlanListPage /></AccountEntry>;
+}
+
+function PlanListPage() {
   const spotId = spotIdFromPlanRoute(useRouter().params.spotId);
-  const themeClass = useThemeClass(), mount = useId();
-  const [, refreshIdentity] = useState(0);
+  const themeClass = useThemeClass();
   const [partition, setPartition] = useState<PlanPartition>("upcoming");
   const [now, setNow] = useState(() => new Date());
-  const [navigationError, setNavigationError] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [scrollTop, setScrollTop] = useState(0);
   const scrollPositions = useRef({ upcoming: 0, past: 0 });
-  const navigating = useRef(false);
-  const owner = currentDraftUserId();
   const notify = useAppStore((state) => state.notify);
-  const query = useResourceQuery({ queryKey: ["plans", owner ?? `unresolved:${mount}`],
-    queryFn: signal => getPlans(signal, owner ?? undefined), enabled: pageVisible, staleTime: 15_000 });
+  const { owner, query } = useAccountPlans({ enabled: pageVisible, staleTime: 15_000 });
+  const { open, navigationError } = useAccountNavigation(owner);
+  const draftKey = planDraftKey(owner, null, spotId);
+  const [localDraftKey, setLocalDraftKey] = useState<string | null>(null);
+  useEffect(() => {
+    if (!pageVisible || !draftKey) { setLocalDraftKey(null); return; }
+    try { setLocalDraftKey(parsePlanDraft(Taro.getStorageSync(draftKey)) ? draftKey : null); }
+    catch { setLocalDraftKey(null); }
+  }, [pageVisible, draftKey]);
   useDidShow(() => {
-    setPageVisible(true); refreshIdentity(v => v + 1); setNow(new Date());
-    void query.refetch();
+    setPageVisible(true); setNow(new Date());
+    if (owner) void query.refetch();
   });
   useDidHide(() => setPageVisible(false));
   useEffect(() => {
@@ -55,13 +66,7 @@ export default function PlanListPage() {
   const emptyState = planListEmptyState(partition, hasPlansInOtherPartition);
   const choosePartition = (next: PlanPartition) => { setPartition(next); setScrollTop(scrollPositions.current[next]); };
   useEffect(() => { scrollPositions.current = { upcoming: 0, past: 0 }; setScrollTop(0); setPartition("upcoming"); }, [owner]);
-  const open = async (url: string) => {
-    if (navigating.current) return;
-    navigating.current = true; setNavigationError(false);
-    try { await Taro.navigateTo({ url }); } catch { setNavigationError(true); }
-    finally { navigating.current = false; }
-  };
-  return <View className={`${themeClass} plan-list-page`}>
+  return <><SystemMotionProbe /><View className={`${themeClass} plan-list-page`}>
     <FloatingNotificationHost />
     <CustomNav title="观星计划" back backFallbackTab="/pages/my/index" />
     <ScrollView scrollY scrollTop={scrollTop} onScroll={event => { scrollPositions.current[partition] = event.detail.scrollTop; setScrollTop(event.detail.scrollTop); }} className="plan-list-scroll" showScrollbar={false} enhanced>
@@ -69,12 +74,14 @@ export default function PlanListPage() {
         <View className="plan-list-filters" role="group" aria-label="计划时间分区">
           <Button className={partition === "upcoming" ? "plan-list-filter--active" : ""}
             aria-pressed={partition === "upcoming"} onClick={() => choosePartition("upcoming")}>接下来</Button>
-          <Button className={partition === "past" ? "plan-list-filter--active" : ""}
+          <Button className={partition === "past" ? "plan-list-filter--active" : "plan-list-past"}
             aria-pressed={partition === "past"} onClick={() => choosePartition("past")}>过往</Button>
           <Button className="plan-list-new" onClick={() => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)}>＋ 新建</Button>
         </View>
         {query.isError || query.refreshError || query.data?.dataState === "STALE_USABLE" ? <StatusPanel state={query.data ? "STALE" : "ERROR"} detail="计划暂未同步，请重试。" recoveryLabel="重试" onRecover={() => void query.refetch()} /> : null}
-        {query.isPending ? <StatusPanel state="LOADING" detail="正在读取观星计划" /> : null}
+        {!owner ? <StatusPanel state="PERMISSION_DENIED" title="请先登录" detail="登录后查看观星计划。" recoveryLabel="返回我的"
+          onRecover={() => void Taro.switchTab({ url: "/pages/my/index" })} /> :
+          query.isPending ? <StatusPanel state="LOADING" detail="正在读取观星计划" /> : null}
         {navigationError ? <View role="alert"><Text>页面暂未打开，请再次点击。</Text></View> : null}
         {entries.map((entry, index) => {
           const { plan } = entry;
@@ -90,10 +97,14 @@ export default function PlanListPage() {
             </Button>
           </View>;
         })}
-        {query.data && !query.isError && !query.refreshError && query.data.dataState !== "STALE_USABLE" && !entries.length ? <StatusPanel state="EMPTY" emptyLevel="page"
-          title={emptyState.title} detail={emptyState.detail} recoveryLabel={emptyState.actionLabel}
-          onRecover={emptyState.action === "switch" ? () => choosePartition(otherPartition) : () => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)} /> : null}
+        {query.data && !query.isError && !query.refreshError && query.data.dataState !== "STALE_USABLE" && !entries.length ? <View className="plan-list-status" role="status">
+          <Text>{emptyState.title}。{emptyState.detail}</Text>
+          <SoftButton label={emptyState.actionLabel} onClick={emptyState.action === "switch" ? () => choosePartition(otherPartition)
+            : () => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)}>{emptyState.actionLabel}</SoftButton>
+        </View> : null}
+        {draftKey && localDraftKey === draftKey ? <SoftButton label="继续本机草稿"
+          onClick={() => void open(`/content/plan/edit/index?new=1${spotId ? `&spotId=${encodeURIComponent(spotId)}` : ""}`)}>继续本机草稿</SoftButton> : null}
       </View>
     </ScrollView>
-  </View>;
+  </View></>;
 }

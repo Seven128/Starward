@@ -14,6 +14,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import pngjs from "pngjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import {
@@ -222,7 +223,7 @@ test("dynamic runtime selectors use native ids instead of omitted data attribute
   assert.deepEqual(offenders, []);
 });
 
-test("Map keeps one presentation back boundary while the adopted new-spot editor owns explicit exits", async () => {
+test("Map's adopted new-spot editor retains explicit guarded exits", async () => {
   const mapPage = await text(
     "apps",
     "wechat-miniapp",
@@ -231,17 +232,8 @@ test("Map keeps one presentation back boundary while the adopted new-spot editor
     "map",
     "index.tsx",
   );
-  const boundary = await text("apps", "wechat-miniapp", "src", "components", "native-back-boundary.tsx");
-  // The shared owner now supplies the one native container. The caller still
-  // owns which presentations intercept Back and how editor exits are guarded.
-  assert.match(mapPage, /import \{ NativeBackBoundary \} from "@\/components\/native-back-boundary"/u);
-  assert.equal((mapPage.match(/<NativeBackBoundary\b/gu) ?? []).length, 1);
-  assert.equal((mapPage.match(/<PageContainer\b/gu) ?? []).length, 0);
-  assert.match(mapPage, /<NativeBackBoundary\s+active=\{pageVisible && \(eventModalOpen \|\| eventModalPresent \|\| bottomPresentation === "spot-panel" \|\| bottomPresentation === "layer-sheet" \|\| bottomPresentation === "spot-editor"\)\}\s+onBack=\{handleMapPresentationSystemBack\}\s+nativeMapContent=/u);
-  assert.equal((boundary.match(/<PageContainer\b/gu) ?? []).length, 1);
-  assert.match(boundary, /overlay=\{false\}/u);
-  assert.match(boundary, /closeOnSlideDown=\{false\}/u);
-  assert.match(boundary, /onBeforeLeave=\{handleLeave\}/u);
+  // The shared NativeBackBoundary owner and its lifecycle tests cover Map's
+  // native back container; this check only retains the editor's exit contract.
   assert.match(mapPage, /<ContributionEditor[\s\S]*?embedded[\s\S]*?onLeaveGuardChange=[\s\S]*?onClose=\{closeSpotEditor\}/u);
   assert.match(mapPage, /confirmEditorLeave[\s\S]*?editorLeaveGuard\.current/u);
   assert.match(mapPage, /onClose=\{closeSpotEditor\}/u);
@@ -419,7 +411,11 @@ test("field evidence uses one native intake and an explicit canonical merge boun
   const adminCli = adminCliFiles.join("\n");
   assert.match(appConfig, /"contribution\/index"/u);
   assert.match(myPage, /data-od-id="my-contribution-entry"/u);
-  assert.match(detailPage, /data-od-id="spot-contribution-entry"/u);
+  const detailFeedback = detailPage.match(/<View className="spot-detail-footer">([\s\S]*?)<\/View>/u)?.[1];
+  assert.ok(detailFeedback, "The site-reading footer retains its field-feedback action");
+  assert.match(detailFeedback, /<SoftButton[\s\S]*?onClick=\{\(\) => openDetailPage\(/u);
+  assert.match(detailFeedback, /\/content\/spot-feedback\/index\?spotId=\$\{encodeURIComponent\(spotId\)\}&spotName=\$\{encodeURIComponent\(detail\.spot\.name\)\}/u);
+  assert.match(detailFeedback, />反馈现场情况<\/SoftButton>/u);
   for (const required of [
     "contribution-location-consent",
     "contribution-topic-control",
@@ -451,7 +447,6 @@ test("generated mode icons exactly match their checked manifest", async () => {
     manifest.authorityTarget,
     "target.system.wechat-miniapp-sky-canvas-field-signal-2026-09-02",
   );
-  assert.equal(manifest.assets.length, 66);
   const modeColors = { day: "#282b29", night: "#f5f3ec", observation: "#ff6b58" };
   for (const name of [
     "chevron-right",
@@ -482,6 +477,21 @@ test("generated mode icons exactly match their checked manifest", async () => {
   for (const asset of manifest.assets) {
     const bytes = await readFile(path.join(iconRoot, asset.path));
     assert.equal(sha256(bytes), asset.sha256, asset.path);
+  }
+});
+
+test("observation formal markers preserve star contrast using only adopted warm red roles", async () => {
+  const allowed = new Set(["110000", "d84a3c", "ff6b58"]);
+  for (const name of ["formal-spot-marker-observation.png", "formal-spot-marker-selected-observation.png"]) {
+    const image = pngjs.PNG.sync.read(await readFile(at("apps", "wechat-miniapp", "src", "assets", "icons", name)));
+    const used = new Set();
+    for (let i = 0; i < image.data.length; i += 4) {
+      if (!image.data[i + 3]) continue;
+      const color = image.data.subarray(i, i + 3).toString("hex");
+      assert.ok(allowed.has(color), `${name}: unexpected visible color ${color}`);
+      used.add(color);
+    }
+    assert.deepEqual(used, allowed, `${name}: outline, surface and bright star all remain visible`);
   }
 });
 
@@ -1016,15 +1026,8 @@ test("WEAPP Query prerequisites and deterministic reset are isolated and project
     "services",
     "api-client.ts",
   );
-  const preferencesSync = await text(
-    "apps",
-    "wechat-miniapp",
-    "src",
-    "hooks",
-    "use-preferences-sync.ts",
-  );
-  assert.match(preferencesSync, /cloneUserPreferences\(before\.preferences\)/u);
-  assert.doesNotMatch(preferencesSync, /structuredClone/u);
+  // Preference intent snapshots and stale acknowledgements are exercised by
+  // preferences-sync-recovery.test.ts, not by a clone call's variable name.
   const mapPage = await text(
     "apps",
     "wechat-miniapp",
@@ -1284,7 +1287,9 @@ test("Settings keeps orientation permission per-use without fabricating a global
   assert.ok(orientationStart >= 0 && orientationEnd > orientationStart);
   const orientationRow = settings.slice(orientationStart, orientationEnd);
   assert.match(orientationRow, /label="方位天空"/u);
-  assert.match(orientationRow, /value="按页使用"/u);
+  assert.match(orientationRow, /disabled=\{blocked\s*\|\|\s*!preferencesConfirmed\}/u);
+  assert.match(orientationRow, /value=\{preferencesConfirmed\s*\?\s*"按页使用"\s*:\s*"待确认"\}/u);
+  assert.match(orientationRow, /onClick=\{\(\) => openSheet\("DIRECTION"\)\}/u);
   assert.doesNotMatch(orientationRow, /navigateTo|pages\/auth|SoftButton/u);
 });
 

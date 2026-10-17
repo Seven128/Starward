@@ -157,6 +157,7 @@ test("new-spot read-only record presents frozen structured submission rather tha
           detail: "东南方向视野较开阔。" }, media: {} } } }],
   });
   assert.deepEqual(contributionSubmittedPlaceFacts(item), {
+    intakeFacts: [],
     selectedLocation: "选点原名 · 广东省深圳市盐田区",
     fields: [{ key: "address", value: "暂无数据" }, { key: "name", value: "暂无数据" },
       { key: "openness", value: "有条件开放" }, { key: "detail", value: "东南方向视野较开阔。" }],

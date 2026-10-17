@@ -9,7 +9,7 @@ npm run miniapp:observe -- tap --official-ide <installation> --project <project>
 npm run miniapp:observe -- input --official-ide <installation> --project <project> --expected-page spot/search/index --selector '#observed-input' --value 'search text'
 npm run miniapp:observe -- console --official-ide <installation> --project <project> --filter specific_marker
 npm run miniapp:observe -- network --official-ide <installation> --project <project> --filter endpoint_segment
-npm run miniapp:observe -- screenshot --official-ide <installation> --project <project> --expected-page pages/map/index --output <new-absolute.jpg>
+npm run miniapp:observe -- screenshot --official-ide <installation> --project <project> --expected-page pages/map/index --output <new-absolute.png>
 npm run miniapp:observe -- style --official-ide <installation> --project <project> --expected-page <current-route> --selector '#observed-id' --name display
 npm run miniapp:observe -- batch --official-ide <installation> --project <project> --steps-file <absolute-local-json>
 ```
@@ -30,7 +30,9 @@ If synchronization returns `skill_reload_required`, no project action was sent. 
 
 Use actual current selectors/routes. The official adapter synchronizes the matching skill package once per invocation and requests reload before project actions when it changes. Readiness is checked once; page operations still verify the expected route. `batch` runs up to 12 supplied steps serially and returns completed observations plus the failed step without replay. It is not atomic and does not cache login across invocations. Network summaries omit headers, bodies and URL queries; logs are bounded and redacted. Empty filtered output means no matches. The adapter starts neither another IDE nor another automation scene.
 
-This helper reuses the installed official `miniprogram-automator` connection for short development observations. It does not run the cold candidate collector, modify product source, load H5, preview/upload, or establish physical-device/final-candidate acceptance.
+Use `.png` for original pixels (`optimize=false`) when reviewing layout or typography; `.jpg` retains the official optimized capture for a quick observation. The helper checks file signatures, PNG header dimensions and the current page before publishing without overwriting. It cannot increase a small simulator's physical resolution; inspect the image and logical viewport. Public official error codes survive process failures without relaying raw diagnostic messages or credentials. CLI readiness uses its optional CLI-token fields independently of MCP authorization. Windows project paths are resolved once to the physical native spelling before official calls.
+
+The remaining examples describe the older SDK adapter, **only for an already admitted compatible connection**. They are not setup requirements or a fallback for a failed current official tool. Do not revive a retired SDK/RPC/port, open another scene or replace a working project merely to use these examples. This adapter does not run the cold candidate collector, modify product source, load H5, preview/upload, or establish physical-device/final-candidate acceptance.
 
 Use `layout` for native element bounds when the installed IDE's `Page.*` element APIs time out. It executes only a fixed `wx.createSelectorQuery` read through the official SDK, requires the expected active route, and returns bounded rectangles without page data. It cannot read text or pierce every custom-component boundary. `snapshot`, default element-based `waitFor`, `tap` and `input` still require working Page/Element APIs; they do not silently fall back to calling event handlers. A failed operation closes the connection and requires explicit reattachment.
 

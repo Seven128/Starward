@@ -11,10 +11,10 @@ export const DATA_STATE_LABELS: Readonly<Record<DataState, string | null>> = {
   SAMPLE_DATA: null,
 };
 export function DataStateBadge({ state }: { state: DataState }) {
-  if (!DATA_STATE_LABELS[state]) return null;
+  if (state === "FRESH" || !DATA_STATE_LABELS[state]) return null;
   return (
     <Text
-      className={`status-tag${state === "EXPIRED" || state === "UNAVAILABLE" ? " status-tag--danger" : state !== "FRESH" ? " status-tag--warning" : ""}`}
+      className={`status-tag${state === "EXPIRED" || state === "UNAVAILABLE" ? " status-tag--danger" : " status-tag--warning"}`}
     >
       {DATA_STATE_LABELS[state]}
     </Text>

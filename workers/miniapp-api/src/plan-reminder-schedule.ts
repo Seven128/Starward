@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { zonedLocalToUtc, type ObservationPlan, type PlanReminderNotificationStatus } from "@starward/miniapp-contracts";
+import { reminderTriggerMissed } from "./plan-reminder-dispatch-window.ts";
 
 export type StoredPlanReminderState =
   | "NOT_REQUESTED"
@@ -94,6 +95,7 @@ export function publicReminderStatus(
   row: StoredPlanReminderSchedule,
   capabilityConfigured: boolean,
   now = new Date(),
+  maxLatenessMs = 0,
 ): PlanReminderNotificationStatus {
   const result = (state: PlanReminderNotificationStatus["state"], reason: PlanReminderNotificationStatus["reason"]): PlanReminderNotificationStatus => ({
     planId: row.planId,
@@ -108,7 +110,8 @@ export function publicReminderStatus(
   });
   if ((row.state === "WAITING_AUTHORIZATION" || row.state === "SCHEDULED") && row.departureAtUtc && Date.parse(row.departureAtUtc) <= now.getTime())
     return result("SKIPPED", "DEPARTURE_EXPIRED");
-  if ((row.state === "WAITING_AUTHORIZATION" || row.state === "SCHEDULED") && row.triggerAtUtc && Date.parse(row.triggerAtUtc) <= now.getTime())
+  if ((row.state === "WAITING_AUTHORIZATION" || row.state === "SCHEDULED") && row.triggerAtUtc
+    && reminderTriggerMissed(row.triggerAtUtc, row.state, now, capabilityConfigured ? maxLatenessMs : 0))
     return result("SKIPPED", "TRIGGER_MISSED");
   if ((row.state === "WAITING_AUTHORIZATION" || row.state === "SCHEDULED") && !capabilityConfigured)
     return result("CAPABILITY_UNAVAILABLE", "DELIVERY_NOT_CONFIGURED");

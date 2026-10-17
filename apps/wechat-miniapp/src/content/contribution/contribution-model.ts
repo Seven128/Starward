@@ -11,7 +11,7 @@ import type {
   ContributionSubmissionState,
   ContributionStatusHistoryEntry,
   ContributionTopic,
-  ContributionFormalProposal,
+  ContributionCandidateProfile,
 } from "@starward/miniapp-contracts";
 
 export const TOPICS: ReadonlyArray<{
@@ -196,7 +196,7 @@ export interface ContributionFormValues {
   detail: string;
   rightsConfirmed: boolean;
   preciseLocationConsent: boolean;
-  candidateProfile: ContributionFormalProposal;
+  candidateProfile: ContributionCandidateProfile;
 }
 
 export function safeParam(value: string | undefined) {
@@ -223,7 +223,7 @@ export function buildDraftInput(
   const parsedLatitude = parseCoordinateInput(values.latitude);
   const parsedLongitude = parseCoordinateInput(values.longitude);
   const validCandidateLocation = candidate && values.candidateName.trim() &&
-    values.candidateRegion.trim() && Number.isFinite(parsedLatitude) &&
+    Number.isFinite(parsedLatitude) &&
     Number.isFinite(parsedLongitude) && Math.abs(parsedLatitude) <= 90 &&
     Math.abs(parsedLongitude) <= 180 && !(parsedLatitude === 0 && parsedLongitude === 0);
   if (!candidate && !values.hasFormalSpot) {

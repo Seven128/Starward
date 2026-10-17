@@ -1,3 +1,4 @@
+import { getContributionSubmitResult } from "./submission-result-client";
 import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
 import { parseCoordinateInput } from "./coordinate-input";
 import { parseObservationInput } from "./observation-input";
@@ -12,6 +13,7 @@ import type {
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { currentDraftUserId, getCapabilities, getContributions, MiniappApiError } from "@/services/api-client";
 import { useLocalContributionDraft } from "./use-local-draft";
+import type { AccountOperation } from "@/hooks/account-operation";
 import { useContributionHistory } from "@/hooks/use-contribution-history";
 import { useAppStore } from "@/state/app-store";
 import {
@@ -23,11 +25,12 @@ import {
 } from "./contribution-model";
 import {
   emptySpotDocumentValues,
-  spotDocumentProposal,
   spotDocumentValuesFromProposal,
   type SpotDocumentValues,
 } from "../spot-document";
 import type { ContributionFormalFieldKey } from "@starward/miniapp-contracts";
+import { emptyCandidateIntake, type ContributionCandidateIntake } from "@starward/miniapp-contracts";
+import { candidateDocumentProposal, candidateIntakeFromProfile } from "./candidate-document";
 import {
   contributionNeedsRecovery,
   countPendingContributions,
@@ -70,7 +73,9 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     return hideNotifications;
   }, []);
   const [draft, setDraft] = useState<ContributionSubmission | null>(null);
+  const [savedAt, setSavedAt] = useState<string | undefined>();
   const [pendingSubmission, setPendingSubmission] = useState<ContributionSubmission | null>(null);
+  const [submissionRetryAvailable, setSubmissionRetryAvailable] = useState(false);
   const [conflictDraft, setConflictDraft] = useState<ContributionSubmission | null>(null);
   const [phase, setPhase] = useState<ContributionPhase>("TYPE");
   const [historyFilter, setHistoryFilter] =
@@ -91,6 +96,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
   const [longitude, setLongitude] = useState("");
   const [candidateSelectionVersion, setCandidateSelectionVersion] = useState(0);
   const [candidateFields, setCandidateFields] = useState<SpotDocumentValues>(emptySpotDocumentValues);
+  const [candidateIntake, setCandidateIntake] = useState<ContributionCandidateIntake>(emptyCandidateIntake);
   const [candidateMedia, setCandidateMedia] = useState<NonNullable<ContributionSubmission["candidateProfile"]>["media"]>({});
   const [candidateMediaPreviews, setCandidateMediaPreviews] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -150,7 +156,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     schema: 1, baseSubmissionId: draft?.submissionId ?? null, baseRevision: draft?.revision ?? null,
     spotId: boundSpotId, spotName: boundSpotName, kind, topics, date, time, detail,
     candidateName, candidateRegion, latitude, longitude, rightsConfirmed, preciseLocationConsent,
-    candidateProfile: spotDocumentProposal(candidateFields, candidateMedia),
+    candidateProfile: candidateDocumentProposal(candidateFields, candidateMedia, candidateIntake),
   }, initialSpotId, Boolean(pendingSubmission) || Boolean(draft && !["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(draft))), !overrides.disableLocalPersistence);
 
   const ownerChanged = localDraft.owner !== null &&
@@ -200,7 +206,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
         detail,
         rightsConfirmed,
         preciseLocationConsent,
-        candidateProfile: spotDocumentProposal(candidateFields, candidateMedia),
+        candidateProfile: candidateDocumentProposal(candidateFields, candidateMedia, candidateIntake),
       },
       announce,
     );
@@ -210,6 +216,13 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     submission: ContributionSubmission,
     nextPhase: ContributionPhase = "FORM",
   ) => {
+    const nextCandidateFields = spotDocumentValuesFromProposal(submission.candidateProfile);
+    if (!nextCandidateFields.name && submission.candidateLocation?.displayName)
+      nextCandidateFields.name = submission.candidateLocation.displayName;
+    if (!nextCandidateFields.address && submission.candidateLocation?.region)
+      nextCandidateFields.address = submission.candidateLocation.region;
+    const nextCandidateIntake = candidateIntakeFromProfile(submission.candidateProfile);
+    const nextCandidateMedia = submission.candidateProfile?.media ?? {};
     localDraft.markSaved({
       schema: 1, baseSubmissionId: submission.submissionId, baseRevision: submission.revision,
       spotId: submission.spotId ?? "", spotName: submission.spotNameSnapshot ?? "",
@@ -217,15 +230,17 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       date: submission.observedAt ? calendarDateInTimezone(new Date(submission.observedAt), "Asia/Shanghai") : date,
       time: submission.observedAt ? clockTimeInTimezone(new Date(submission.observedAt), "Asia/Shanghai") : time,
       detail: submission.detail,
-      candidateName: submission.candidateLocation?.displayName ?? candidateName,
-      candidateRegion: submission.candidateLocation?.region ?? candidateRegion,
+      candidateName: nextCandidateFields.name,
+      candidateRegion: nextCandidateFields.address,
       latitude: submission.candidateLocation ? String(submission.candidateLocation.wgs84.latitude) : latitude,
       longitude: submission.candidateLocation ? String(submission.candidateLocation.wgs84.longitude) : longitude,
       rightsConfirmed: submission.rightsConfirmed, preciseLocationConsent: submission.preciseLocationConsent,
-      ...(submission.candidateProfile ? { candidateProfile: submission.candidateProfile } : {}),
+      candidateProfile: candidateDocumentProposal(nextCandidateFields, nextCandidateMedia, nextCandidateIntake),
     });
     setDraft(submission);
+    setSavedAt(submission.updatedAt);
     setPendingSubmission(null);
+    setSubmissionRetryAvailable(false);
     setConflictDraft(null);
     setBoundSpotId(submission.spotId ?? "");
     setBoundSpotName(submission.spotNameSnapshot ?? "");
@@ -234,13 +249,11 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     setDetail(submission.detail);
     setRightsConfirmed(submission.rightsConfirmed);
     setPreciseLocationConsent(submission.preciseLocationConsent);
-    const nextCandidateFields = spotDocumentValuesFromProposal(submission.candidateProfile);
-    if (!nextCandidateFields.name && submission.candidateLocation?.displayName)
-      nextCandidateFields.name = submission.candidateLocation.displayName;
-    if (!nextCandidateFields.address && submission.candidateLocation?.region)
-      nextCandidateFields.address = submission.candidateLocation.region;
     setCandidateFields(nextCandidateFields);
-    setCandidateMedia(submission.candidateProfile?.media ?? {});
+    setCandidateName(nextCandidateFields.name);
+    setCandidateRegion(nextCandidateFields.address);
+    setCandidateIntake(nextCandidateIntake);
+    setCandidateMedia(nextCandidateMedia);
     setCandidateMediaPreviews({});
     if (submission.observedAt) {
       const observed = new Date(submission.observedAt);
@@ -248,8 +261,6 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       setTime(clockTimeInTimezone(observed, "Asia/Shanghai"));
     }
     if (submission.candidateLocation) {
-      setCandidateName(submission.candidateLocation.displayName);
-      setCandidateRegion(submission.candidateLocation.region);
       setCandidatePlaceLabel(submission.candidateLocation.displayName);
       setLatitude(String(submission.candidateLocation.wgs84.latitude));
       setLongitude(String(submission.candidateLocation.wgs84.longitude));
@@ -257,31 +268,43 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     setPhase(nextPhase);
   };
 
+  useEffect(() => {
+    const baseId = localDraft.recovery?.baseSubmissionId;
+    if (!baseId || !pageVisible || ownerChanged || currentDraftUserId() !== localDraft.owner) return;
+    const withdrawnBase = submissions.find(item => item.submissionId === baseId && contributionSubmissionState(item) === "WITHDRAWN");
+    // A confirmed withdrawal retires its input even if native cleanup failed on the deleting page.
+    if (withdrawnBase) localDraft.clear();
+  }, [localDraft.recovery, ownerChanged, pageVisible, submissions]);
+
   const appliedRequestedDraft = useRef("");
   useEffect(() => {
-    if (!requestedSubmissionId || !matchingDraft || draft || localDraft.recovery) return;
+    // Local hydration runs earlier in this commit, before its recovery state rerenders.
+    if (!requestedSubmissionId || !matchingDraft || draft || localDraft.isRecoveryPending()) return;
     if (appliedRequestedDraft.current === matchingDraft.submissionId) return;
     appliedRequestedDraft.current = matchingDraft.submissionId;
     applyDraft(matchingDraft);
   }, [draft, localDraft.recovery, matchingDraft, requestedSubmissionId]);
 
-  const restoreLocalDraft = async () => {
+  const restoreLocalDraft = async (operation: AccountOperation) => {
+    operation.assertCurrent();
     const local = localDraft.recovery;
     const owner = localDraft.owner;
-    if (!local || !owner || commandBusy || currentDraftUserId() !== owner) return;
-    setCommandBusy(true);
+    if (!local || !owner || currentDraftUserId() !== owner) return;
     try {
       let server: ContributionSubmission | null = null;
       if (local.baseSubmissionId) {
-        const response = await getContributions(undefined, owner);
+        const response = await getContributions(undefined, owner, operation);
+        operation.assertCurrent();
         server = response.data.submissions.find((item) => item.submissionId === local.baseSubmissionId) ?? null;
         if (!server || !["DRAFT", "CHANGES_REQUESTED", "REJECTED"].includes(contributionSubmissionState(server))) {
           announce("warning", "请先核对投稿状态", "对应草稿已提交或不再可编辑。本机输入仍保留，请先查看近期反馈。");
           return;
         }
       }
+      operation.assertCurrent();
       if (currentDraftUserId() !== owner) return;
       setDraft(server ? { ...server, revision: local.baseRevision! } : null);
+      setSavedAt(server?.updatedAt);
       setConflictDraft(server && server.revision !== local.baseRevision ? server : null);
       setBoundSpotId(local.spotId); setBoundSpotName(local.spotName);
       setKind(local.kind); setTopics(local.topics); setDate(local.date); setTime(local.time);
@@ -293,39 +316,48 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       if (!restoredCandidateFields.name) restoredCandidateFields.name = local.candidateName;
       if (!restoredCandidateFields.address) restoredCandidateFields.address = local.candidateRegion;
       setCandidateFields(restoredCandidateFields);
+      setCandidateIntake(candidateIntakeFromProfile(local.candidateProfile));
       setCandidateMedia(local.candidateProfile?.media ?? {});
       setPhase("FORM"); localDraft.accept();
       announce("info", "已恢复本机输入", "尚未自动保存到服务端或提交审核，请核对后继续。");
     } catch {
+      if (!operation.isCurrent()) return;
       announce("warning", "暂时无法恢复草稿", "无法核对服务端记录，本机输入仍保留，恢复网络后可重试。");
-    } finally { setCommandBusy(false); }
+    }
   };
 
   const selectKind = (nextKind: ContributionKind) => {
     setKind(nextKind);
     setDraft(null);
+    setSavedAt(undefined);
   };
-  const restorePendingSubmission = async (submissionId: string, expectedRevision: number) => {
+  const restorePendingSubmission = async (operation: AccountOperation, submissionId: string, expectedRevision: number) => {
+    operation.assertCurrent();
     const owner = submissionRecovery.owner;
-    if (!owner || currentDraftUserId() !== owner || commandBusy || localDraft.recovery) return;
-    setCommandBusy(true);
+    if (!owner || currentDraftUserId() !== owner || localDraft.recovery) return;
     try {
-      const response = await getContributions(undefined, owner);
+      const verification = await getContributionSubmitResult(submissionId as never, expectedRevision, operation);
+      operation.assertCurrent();
+      if (verification.receipt && verification.current) {
+        applyDraft(verification.current, "HISTORY");
+        await history.refetch().catch(() => undefined);
+        operation.assertCurrent();
+        announce("info", "已核对提交结果", "原提交已记录，现显示最新审核状态；未重新提交。");
+        return;
+      }
+      const response = await getContributions(undefined, owner, operation);
+      operation.assertCurrent();
       if (currentDraftUserId() !== owner) return;
       const current = response.data.submissions.find((item) => item.submissionId === submissionId);
       if (!current) throw new Error("Missing submission");
-      applyDraft(current, contributionSubmissionState(current) === "DRAFT" ? "FORM" : "HISTORY");
-      if (contributionSubmissionState(current) === "DRAFT") {
-        setPendingSubmission({ ...current, revision: expectedRevision });
-        announce("info", "已找回上次提交", "请确认上次提交结果；将沿用原提交记录，不会重新保存草稿。");
-      } else {
-        try { clearContributionSubmitIntent(Taro, owner, submissionId, expectedRevision); } catch { /* Keep the server receipt authoritative. */ }
-        await history.refetch().catch(() => undefined);
-        announce("info", "已回读提交状态", "服务端已有审核状态，未重新提交。请查看近期反馈。");
-      }
+      applyDraft(current, "FORM");
+      setPendingSubmission({ ...current, revision: expectedRevision });
+      setSubmissionRetryAvailable(!verification.receipt);
+      announce("info", "上次提交仍待确认", "原输入已找回，请核对或重试原提交。");
     } catch {
+      if (!operation.isCurrent()) return;
       announce("warning", "暂时无法确认提交", "无法核对服务端记录，恢复标识仍保留。请稍后重试。");
-    } finally { setCommandBusy(false); }
+    }
   };
   const toggleTopic = (topic: ContributionTopic) =>
     setTopics((current) =>
@@ -354,6 +386,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     localStorageError: localDraft.storageError,
     restoreLocalDraft,
     discardLocalDraft: localDraft.clear,
+    discardUnsavedChanges: localDraft.discardChanges,
     inheritedSpot: initialSpotId.startsWith("spot:"),
     forceNew,
     requestedSubmissionId,
@@ -363,8 +396,11 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     setRouteSpotName: setBoundSpotName,
     hasFormalSpot,
     draft,
+    savedAt,
     pendingSubmission,
     setPendingSubmission,
+    submissionRetryAvailable,
+    setSubmissionRetryAvailable,
     conflictDraft,
     setConflictDraft,
     keepConflictInput: () => {
@@ -388,6 +424,9 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
     longitude,
     candidateSelectionVersion,
     candidateFields,
+    candidateIntake,
+    candidateProfile: candidateDocumentProposal(candidateFields, candidateMedia, candidateIntake),
+    setCandidateIntake,
     candidateMedia,
     candidateMediaPreviews,
     saving,
@@ -419,7 +458,7 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       return true;
     },
     applyMediaDraft: (submission: ContributionSubmission) => {
-      localDraft.advanceSavedRevision(submission.submissionId, submission.revision);
+      localDraft.advanceSavedRevision(submission.submissionId, submission.revision, submission.candidateProfile?.media);
       setDraft(submission);
       setCandidateMedia(submission.candidateProfile?.media ?? {});
     },
@@ -453,6 +492,15 @@ export function useContributionForm(overrides: { forceNew?: boolean; requestedSu
       }),
     setLatitude,
     setLongitude,
+    clearCandidateLocation: () => {
+      setCandidatePlaceLabel("");
+      setCandidateRegion("");
+      setCandidateFields(current => ({ ...current, address: "" }));
+      setLatitude("");
+      setLongitude("");
+      setPreciseLocationConsent(false);
+      setCandidateSelectionVersion(version => version + 1);
+    },
     selectCandidateLocation: (selection: {
       name: string;
       address: string;

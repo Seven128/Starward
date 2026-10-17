@@ -4,20 +4,23 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SpotImageViewer, type SpotViewerMedia } from "@/components/spot-image-viewer";
-import { useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
+import { useSpotMediaDocumentPosition, useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
+import { photoStripSlideWidth } from "@/components/spot-media-gallery-geometry";
 import { useHiddenNativeScrollbar } from "@/components/use-hidden-native-scrollbar";
 import { currentDraftUserId, getContributionMedia } from "@/services/api-client";
 import type { SpotPanelExtent, SpotPanelPhase } from "./spot-panel";
 import { pendingProposalPanelValues } from "./pending-proposal-model";
 
-export function PendingProposalPanel({ submission, variant = "PENDING", extent, phase, onExtent, onClose, onCloud, onEdit,
+export function PendingProposalPanel({ submission, variant = "PENDING", extent, documentScrollEnabled, phase, onExtent, onClose, onCloud, onEdit, onPhotoIntent,
   onHandleTouchStart, onHandleTouchMove, onHandleTouchEnd, onHandleTouchCancel, onViewerBackHandlerChange }: {
   submission: ContributionSubmission;
   variant?: "DRAFT" | "PENDING";
   extent: SpotPanelExtent;
+  documentScrollEnabled: boolean;
   phase: SpotPanelPhase;
   onExtent: (extent: SpotPanelExtent) => void;
   onClose: () => void;
+  onPhotoIntent: () => Promise<boolean>;
   onCloud?: () => void;
   onEdit?: () => void;
   onHandleTouchStart: (event: unknown) => void;
@@ -37,12 +40,14 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   const owner = currentDraftUserId();
   const mediaKey = model.media.map(item => item.uploadId).join("|");
   const mediaScope = `${owner ?? "none"}:${submission.submissionId}:${mediaKey}`;
+  const currentMediaScope = useRef(mediaScope);
+  currentMediaScope.current = mediaScope;
   const galleryPosition = useSpotMediaGalleryPosition(mediaScope);
+  const documentPosition = useSpotMediaDocumentPosition(`${owner ?? "none"}:${submission.submissionId}`);
   useHiddenNativeScrollbar("spot-proposal-scroll", extent !== "small", `${mediaScope}:${extent}`);
   useHiddenNativeScrollbar("spot-proposal-media-strip", extent === "large" && model.media.length > 1, mediaScope);
   const leadMedia = model.media[0];
-  const handleInDocument = extent === "large" && Boolean(leadMedia);
-  const panelHandle = <View className={`spot-panel__handle-band${handleInDocument ? " spot-panel__handle-band--document" : ""}`}>
+  const panelHandle = <View className="spot-panel__handle-band spot-panel__handle-band--document">
     <Button className="spot-panel__handle focus-ring" data-control="map-spot-panel-handle"
       ariaLabel={`拖动调整${draft ? "草稿" : "审核中"}观星点信息面板大小`}
       onTouchStart={onHandleTouchStart} onTouchMove={onHandleTouchMove}
@@ -118,17 +123,18 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
       <View className="spot-panel__snap-medium" />
       <View className="spot-panel__snap-large" />
     </View>
-    {!handleInDocument ? panelHandle : null}
     <View className="spot-panel__scroll-frame">
-      <ScrollView id="spot-proposal-scroll" className="spot-panel__scroll" scrollY={extent !== "small"} type="custom" enhanced showScrollbar={false}
+      <ScrollView id="spot-proposal-scroll" className="spot-panel__scroll" scrollY={documentScrollEnabled} type="custom" enhanced showScrollbar={false}
+        {...(documentPosition.returnTop === undefined ? {} : { scrollTop: documentPosition.returnTop })}
+        onScroll={event => documentPosition.record(event.detail.scrollTop)}
         ariaLabel={`${draft ? "草稿" : "审核中"}观星点资料`}>
-        {leadMedia ? <View className="spot-panel__proposal-media" data-control="spot-media-gallery" ariaLabel={`${model.name}提交照片，共${model.media.length}张`}>
+        {leadMedia ? <View className="spot-panel__media spot-panel__proposal-media" data-control="spot-media-gallery" ariaLabel={`${model.name}提交照片，共${model.media.length}张`}>
           <ScrollView id="spot-proposal-media-strip" className="spot-panel__media-strip" scrollX={model.media.length > 1} scrollLeft={galleryPosition.returnLeft} enhanced showScrollbar={false}
             ariaLabel={`${model.name}提交照片`}
             onScroll={(event) => {
               const width = Taro.getWindowInfo().windowWidth || 390;
               galleryPosition.onScroll(event);
-              const start = Math.floor(event.detail.scrollLeft / (width * .68 + 8));
+              const start = Math.floor(event.detail.scrollLeft / (photoStripSlideWidth(width) + 8));
               if (Number.isFinite(start)) setMediaWindowStart(Math.max(0, Math.min(model.media.length - 1, start)));
             }}>
             <View className="spot-panel__media-track">
@@ -136,17 +142,23 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
                 const photo = mediaState[item.uploadId];
                 return <Button id={`spot-media-source-${index}`} className="spot-panel__media-slide" key={item.uploadId}
                   ariaLabel={`查看${item.label} ${index + 1}，共 ${model.media.length} 张`}
-                  onClick={() => { galleryPosition.remember(); setViewerIndex(index); loadMedia(index, photo?.state === "error"); }}>
+                  onClick={() => { const requestedScope = currentMediaScope.current;
+                    documentPosition.remember(); galleryPosition.remember();
+                    void onPhotoIntent().then(accepted => {
+                    if (!accepted || currentMediaScope.current !== requestedScope) return;
+                    setViewerIndex(index); loadMedia(index, photo?.state === "error");
+                  }); }}>
                   {photo?.state === "ready" && photo.src
                     ? <Image className="spot-panel__media-image" src={photo.src} mode="aspectFill" lazyLoad ariaLabel={item.label} />
                     : <View className="spot-panel__proposal-media-placeholder"><Text>{item.label}</Text><Text>{photo?.state === "error" ? "照片暂时无法读取" : "正在读取照片…"}</Text></View>}
+                  {photo?.state === "ready" && photo.src ? <Text className="spot-panel__red-photo-label" aria-hidden="true">{item.label}</Text> : null}
                   <Text className="spot-panel__media-caption">{index + 1} / {model.media.length}</Text>
                 </Button>;
               })}
             </View>
           </ScrollView>
         </View> : null}
-        {handleInDocument ? panelHandle : null}
+        {panelHandle}
         <View className="spot-panel__identity">
           <View className="spot-panel__proposal-title-row">
             <Text className="spot-panel__title">{model.name}</Text>

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { createPlanTestOperations } from "./plan-operation-test-support";
 
 test("plan recovery cleanup requires review, a successful refresh and the same mounted account", async () => {
   const ast = ts.createSourceFile("plan.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -14,6 +15,7 @@ test("plan recovery cleanup requires review, a successful refresh and the same m
     const calls: string[] = [], busy = { current: scenario === "busy" };
     const clear = vm.runInNewContext(ts.transpileModule(text + "\nclearSaveRecovery;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
       scopedDraftUserId: () => owner, mutationBusy: busy, saveRecoveryReviewed: scenario !== "review",
+      operations: createPlanTestOperations(() => owner, busy),
       setSaving() {}, setSaveRecoveryReviewed() {}, setSaveRecoveryError() {}, announce() {}, errorMessage: () => "offline",
       planQuery: { refetch: async () => { calls.push("refresh"); if (scenario === "offline") throw new Error("offline"); if (scenario === "changed") owner = null; return { dataState: scenario === "stale" ? "STALE_USABLE" : "FRESH", data: { plans: [] } }; } },
       clearObservationPlanSaveRecovery: (value: string) => { assert.equal(value, "a"); calls.push("clear"); },

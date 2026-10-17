@@ -1,4 +1,5 @@
 import type { ContributionFormalFieldKey, ContributionSubmission, ContributionUploadId } from "@starward/miniapp-contracts";
+import { candidateIntakeFacts } from "../../content/contribution/candidate-document";
 
 function submittedField(submission: ContributionSubmission, key: ContributionFormalFieldKey) {
   return submission.candidateProfile?.fields[key]?.trim() || undefined;
@@ -9,6 +10,9 @@ function value(submission: ContributionSubmission, key: ContributionFormalFieldK
 }
 
 export function pendingProposalPanelValues(submission: ContributionSubmission) {
+  const intakeFacts = candidateIntakeFacts(submission.candidateProfile);
+  const answer = (key: ContributionFormalFieldKey, intakeKey: string) =>
+    submittedField(submission, key) ?? intakeFacts.find(fact => fact.key === intakeKey)?.value ?? "暂无数据";
   const name = submittedField(submission, "name");
   const address = submittedField(submission, "address");
   const media = (["parking", "toilet", "site"] as const).flatMap((kind) =>
@@ -20,10 +24,10 @@ export function pendingProposalPanelValues(submission: ContributionSubmission) {
   return {
     name: name ?? (submission.candidateLocation?.displayName.trim() || "未命名观星点"),
     address: address ?? (submission.candidateLocation?.region.trim() || "暂无数据"),
-    opening: [value(submission, "openness"), value(submission, "hours")],
-    access: [value(submission, "access"), submittedField(submission, "accessNote")],
+    opening: [answer("openness", "openness-answer"), value(submission, "hours")],
+    access: [answer("access", "access-answer"), submittedField(submission, "accessNote")],
     road: submittedField(submission, "road"),
-    safety: value(submission, "safety"),
+    safety: answer("safety", "night-answer"),
     facilities: [
       ["停车", value(submission, "parking"), submittedField(submission, "parkingNote")],
       ["洗手间", value(submission, "toilet"), submittedField(submission, "toiletNote")],
@@ -34,7 +38,7 @@ export function pendingProposalPanelValues(submission: ContributionSubmission) {
       ["视野与遮挡", value(submission, "horizon")],
       ["现场灯光", value(submission, "light")],
       ["露营条件", value(submission, "camping")],
-      ["场地联系", value(submission, "contact")],
+      ["场地联系", answer("contact", "contact-answer")],
     ] as const,
     detail: value(submission, "detail"),
     media,

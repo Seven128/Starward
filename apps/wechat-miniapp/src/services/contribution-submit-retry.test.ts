@@ -56,3 +56,15 @@ test("definitive rejection removes a pending intent while uncertain errors retai
   await assert.rejects(retry("account-a", input, async () => { throw rejected; }));
   assert.equal(values.size, 0);
 });
+
+test("explicit replay uses only a retained original identity and does not mint one for another owner or missing slot", async () => {
+  const values = new Map<string, unknown>(); let minted = 0, writes = 0, requests = 0;
+  const storage = { getStorageSync: (key: string) => values.get(key), setStorageSync: (key: string, value: unknown) => { writes++; values.set(key, value); }, removeStorageSync: (key: string) => { values.delete(key); } };
+  const retry = createContributionSubmitRetry(storage, () => `original:${++minted}`);
+  const input = { submissionId: "contribution:retry", expectedRevision: 4 };
+  await assert.rejects(retry.existing("a", input, async () => { requests++; }), /原提交标识暂不可用/);
+  await assert.rejects(retry("a", input, async () => { throw Error("network before server"); }));
+  await assert.rejects(retry.existing("b", input, async () => { requests++; }), /原提交标识暂不可用/);
+  const result = await retry.existing("a", input, async key => { requests++; assert.equal(key,"original:1"); return "accepted"; });
+  assert.equal(result,"accepted"); assert.deepEqual([minted,writes,requests,values.size],[1,1,1,0]);
+});

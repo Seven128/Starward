@@ -4,6 +4,14 @@ import vm from "node:vm";
 import test from "node:test";
 import ts from "typescript";
 import { createSkyEntryTransition, SKY_ENTRY_FADE_MS, SKY_ENTRY_RECOVERY_MS } from "./sky-entry-transition";
+import { pendingProposalContextLocation, samePendingProposalIntent } from "./private-contribution-transition";
+
+function pendingSubmission() {
+  return { submissionId: "owned:proposal", revision: 2, preciseLocationConsent: true,
+    kind: "NEW_SPOT_PROPOSAL", submissionState: "PENDING_REVIEW", publicationImpact: "CANDIDATE_UPDATED",
+    attempts: [{ attemptId: "contribution-attempt:one", baseRevision: 1,
+      snapshot: { preciseLocationConsent: true, candidateLocation: { displayName: "candidate" } } }] };
+}
 
 const settle = async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); };
 function setup() {
@@ -98,7 +106,10 @@ function actualMapCommands(environment: Record<string, unknown>) {
   };
   visit(source); assert.equal(declarations.length, names.length);
   return vm.runInNewContext(ts.transpileModule(`${declarations.join("\n")}\n({${names.join(",")}});`,
-    {compilerOptions: {target: ts.ScriptTarget.ES2022}}).outputText, environment);
+    {compilerOptions: {target: ts.ScriptTarget.ES2022}}).outputText, {
+      pendingProposalContextLocation, samePendingProposalIntent, currentDraftUserId: () => "user:owner",
+      login: { open: false }, ...environment,
+    });
 }
 
 test("formal Sky action uses the shared blackout while other Map routes remain immediate", async () => {
@@ -139,10 +150,9 @@ test("native Back during a source fade cancels only the pending Sky entry", asyn
 
 test("a private Sky entry reserves preparation before resolving Context and ignores queued repeats", async () => {
   const h = setup(), routes: string[] = [], accepted: string[] = [];
-  let resolves = 0, finish!: (value: {data: any}) => void;
+  let resolves = 0, finish!: (value: {dataState: string; data: any}) => void;
   let context = {contextId: "original", selectedAtUtc: "2026-10-17T12:00:00.789Z", localDate: "2026-10-17"};
-  const submission = {submissionId: "owned:proposal", revision: 2, preciseLocationConsent: true,
-    candidateLocation: {displayName: "candidate", wgs84: {system: "WGS84", latitude: 22.5, longitude: 114.2}}};
+  const submission = pendingSubmission();
   const commands = actualMapCommands({skyEntry: h.entry, navigationEpoch: {current: 0}, selectedProposalRef: {current: submission},
     useAppStore: {getState: () => ({observationContext: context, preferences: {reducedMotion: false}, notifications: []})},
     currentTimezoneHint: () => "Asia/Shanghai", localDateForNow: () => "2026-10-17",
@@ -153,7 +163,10 @@ test("a private Sky entry reserves preparation before resolving Context and igno
   const entering = commands.onProposalCloud(submission);
   await commands.onProposalCloud(submission);
   assert.equal(resolves, 1); assert.equal(h.entry.isActive(), true); assert.equal(h.frames.length, 0, "do not black out Map during Context preparation");
-  finish({data: {...context, contextId: "resolved", timezone: "Asia/Shanghai"}}); await entering;
+  finish({dataState: "FRESH", data: {...context, contextId: "resolved", timezone: "Asia/Shanghai",
+    schemaVersion: "observation-context-v3", location: { kind: "PENDING_PROPOSAL", displayName: "candidate" },
+    privateProposal: { ownerId: "user:owner", submissionId: submission.submissionId,
+      attemptId: "contribution-attempt:one", attemptBaseRevision: 1 } }}); await entering;
   assert.deepEqual(accepted, ["resolved"]);
   await commands.onProposalCloud(submission); assert.equal(resolves, 1, "a queued tap during fade cannot write another Context");
   h.present(); h.advance(SKY_ENTRY_FADE_MS + 32); await settle();
@@ -167,9 +180,8 @@ test("Back, hide, identity change and failure during private preparation cannot 
   for (const reason of ["back", "hide", "scope", "changed-proposal", "error"] as const) {
     const h = setup(), routes: string[] = []; let accepted = 0, notices = 0;
     let finish!: (value: {data: any}) => void, fail!: (error: unknown) => void;
-    const submission = {submissionId: "owned:proposal", revision: 2, preciseLocationConsent: true,
-      candidateLocation: {displayName: "candidate", wgs84: {system: "WGS84", latitude: 22.5, longitude: 114.2}}};
-    const selected = {current: {submissionId: submission.submissionId}};
+    const submission = pendingSubmission();
+    const selected = {current: submission};
     const commands = actualMapCommands({skyEntry: h.entry, navigationEpoch: {current: 0}, selectedProposalRef: selected,
       useAppStore: {getState: () => ({observationContext: null, preferences: {reducedMotion: false}, notifications: []})},
       currentTimezoneHint: () => "Asia/Shanghai", localDateForNow: () => "2026-10-17",
@@ -181,7 +193,7 @@ test("Back, hide, identity change and failure during private preparation cannot 
     if (reason === "back") await commands.handleMapPresentationSystemBack();
     if (reason === "hide") h.entry.hide();
     if (reason === "scope") h.setScope("another account, selection, Context or Map reset");
-    if (reason === "changed-proposal") selected.current = {submissionId: "another-proposal"};
+    if (reason === "changed-proposal") selected.current = {...submission, submissionId: "another-proposal"};
     if (reason === "error") fail(new Error("fixture failed"));
     else finish({data: {contextId: "late", timezone: "Asia/Shanghai"}});
     await entering; h.advance(SKY_ENTRY_RECOVERY_MS); await settle();

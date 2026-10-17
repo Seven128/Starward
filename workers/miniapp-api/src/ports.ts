@@ -121,6 +121,20 @@ export interface WeatherPort {
     windowUtc?: { start: string; end: string };
     signal?: AbortSignal;
   }): Promise<WeatherEvidenceResult>;
+  /** Same full-hourly cache as formal-point weather, without an alert read. */
+  getForecastHourly?(input: Parameters<WeatherPort["getHourly"]>[0]): Promise<WeatherForecastResult>;
+}
+
+export interface WeatherForecastResult extends ProviderResult<readonly CanonicalWeatherHour[]> {
+  modelRun: WeatherModelRunSummary | null;
+  acquisition?: {
+    providerTag: string | null;
+    sourceRequestId: string | null;
+    requestedGcj02: { latitude: number; longitude: number };
+    forecastHours: number;
+    cache: "HIT" | "JOIN" | "MISS";
+    upstreamRequestAttempts: 0 | 1;
+  };
 }
 
 export interface RoutePort {
@@ -164,6 +178,14 @@ export interface DarkSkyGridCellRecord {
   };
   state: "ESTIMATED";
   source: SourceSummary;
+}
+
+export interface DarkSkyPublicationRecord {
+  datasetVersion: string;
+  radianceSha256: string;
+  coverageSha256: string;
+  source: SourceSummary;
+  payload: unknown;
 }
 
 export interface LightPollutionPort {
@@ -213,6 +235,7 @@ export interface MiniappRepositoryPort {
     center?: Wgs84Point;
     radiusKm?: number;
   }): Promise<readonly DarkSkyGridCellRecord[]>;
+  getPublishedDarkSkyDataset(datasetVersion: string): Promise<DarkSkyPublicationRecord | null>;
   searchSpotCandidates(query: string): Promise<readonly SpotSummary[]>;
   getSpot(spotId: SpotId): Promise<SpotSummary | null>;
   getDetail(spotId: SpotId): Promise<SpotDetail | null>;
@@ -320,6 +343,8 @@ export interface MiniappRepositoryPort {
     expectedRevision: number,
     idempotencyKey: string,
   ): Promise<ContributionSubmission>;
+  getContributionSubmitReceipt(userId: UserId, submissionId: ContributionId, idempotencyKey: string): Promise<ContributionSubmission | null>;
+  getFormalContributionSubmitReceipt(userId: UserId, spotId: SpotId, idempotencyKey: string): Promise<ContributionFormalSubmitResult | null>;
   submitFormalContribution(
     userId: UserId,
     input: ContributionFormalSubmitRequest,
@@ -429,6 +454,7 @@ export interface AstronomyApplicationPort {
 export interface TelemetryPort {
   event(name: string, fields: Readonly<Record<string, unknown>>): void;
   error(error: unknown, fields: Readonly<Record<string, unknown>>): void;
+  /** Recent diagnostics in chronological order; not a durable audit log. */
   snapshot(): readonly Readonly<Record<string, unknown>>[];
 }
 

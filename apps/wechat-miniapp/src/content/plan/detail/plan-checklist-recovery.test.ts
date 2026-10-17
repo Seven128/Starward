@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { createPlanTestOperations } from "./plan-operation-test-support";
 
 const source = ts.createSourceFile("page.tsx", readFileSync(new URL("./plan-editor-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 let declaration = "";
@@ -35,6 +36,7 @@ test("confirmed checklist retry removes its obsolete failure without dismissing 
     announce: (tone: string, title: string, body: string) => notify({ owner: "plan", tone, title, body }),
     errorMessage: (error: Error) => error.message, MiniappApiError: class extends Error {},
   };
+  Object.assign(sandbox, { operations: createPlanTestOperations(() => owner, sandbox.mutationBusy) });
   const toggle = vm.runInNewContext(ts.transpileModule(`${declaration}\ntoggleReminderItem`, {
     compilerOptions: { target: ts.ScriptTarget.ES2022 },
   }).outputText, sandbox);

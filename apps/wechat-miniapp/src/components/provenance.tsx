@@ -25,14 +25,18 @@ export function Provenance({
   source,
   compact = false,
   showKind = true,
+  presentation = "default",
   downloadUrl,
 }: {
   source: SourceSummary;
   compact?: boolean;
   showKind?: boolean;
+  /** The adopted in-document source card, without changing default consumers. */
+  presentation?: "default" | "disclosure" | "reading";
   /** Optional machine-readable data offered with this source's license. */
   downloadUrl?: string | undefined;
 }) {
+  const detailed = presentation !== "default";
   const [copyState, setCopyState] = useState("");
   const [copying, setCopying] = useState(false);
   const copyLink = async (value: string, ownedDownload = false) => {
@@ -60,29 +64,30 @@ export function Provenance({
   const stateLabel = DATA_STATE_LABELS[source.state];
   return (
     <View
-      className={`provenance${compact ? " provenance--compact" : ""}`}
+      className={`provenance${compact ? " provenance--compact" : ""}${detailed ? ` provenance--${presentation}` : ""}`}
       aria-label={`来源：${source.provider}${stateLabel ? `，状态：${stateLabel}` : ""}`}
     >
       <View className="provenance__header">
-        <Text className="type-label">{source.provider}</Text>
+        <Text className="type-label">{source.provider}{detailed && source.title && source.title !== source.provider ? ` · ${source.title}` : ""}</Text>
         <DataStateBadge state={source.state} />
       </View>
-      {source.title && source.title !== source.provider ? <Text className="type-secondary">{source.title}</Text> : null}
-      <SourceAttribution sources={[source]} />
+      {!detailed && source.title && source.title !== source.provider ? <Text className="type-secondary">{source.title}</Text> : null}
+      {!compact && detailed ? <Text className="provenance__license type-caption">{source.license || "暂无许可说明"}</Text> : null}
+      <SourceAttribution sources={[source]} presentation={detailed ? "disclosure" : "default"} />
       {!compact ? (
         <>
           {showKind ? <Text className="type-caption">
             类型：{SOURCE_KIND_LABEL[source.kind]}
           </Text> : null}
           <View className="provenance__timing">
-          <Text className="type-caption">时间 · 北京时间</Text>
+          {!detailed || source.publishedAt || source.retrievedAt || source.validFrom || source.validTo ? <Text className="type-caption">时间 · 北京时间</Text> : null}
           <View className="provenance__fact">
             <Text className="type-caption">发布</Text>
             <Text className="type-secondary">{source.publishedAt ? formatRetrievedAt(source.publishedAt) : source.kind === "EDITORIAL_REFERENCE" ? "未提供精确时刻" : "来源未提供"}</Text>
           </View>
           <View className="provenance__fact">
             <Text className="type-caption">获取</Text>
-            <Text className="type-secondary">{formatRetrievedAt(source.retrievedAt)}</Text>
+            <Text className="type-secondary">{detailed && !source.retrievedAt ? "来源未提供" : formatRetrievedAt(source.retrievedAt)}</Text>
           </View>
           <View className="provenance__fact">
             <Text className="type-caption">适用</Text>
@@ -91,11 +96,12 @@ export function Provenance({
               {" 至 "}{source.validTo ? formatRetrievedAt(source.validTo) : "结束时间未提供"}
             </>}</Text>
           </View>
+          {detailed ? <View className="provenance__fact">
+            <Text className="type-caption">精度</Text><Text className="type-secondary">{source.precision}</Text>
+          </View> : null}
           </View>
-          <Text className="type-caption">
-            许可：{source.license || "暂无许可说明"}
-          </Text>
-          <Text className="type-secondary">精度：{source.precision}</Text>
+          {!detailed ? <Text className="type-caption">许可：{source.license || "暂无许可说明"}</Text> : null}
+          {!detailed ? <Text className="type-secondary">精度：{source.precision}</Text> : null}
           {source.limitations.filter(item => !source.attribution?.statements.includes(item)).map((item) => (
             <Text className="type-secondary" key={item}>
               · {item}

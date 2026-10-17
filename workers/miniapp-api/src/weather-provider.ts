@@ -1,5 +1,5 @@
 import { fetchJson, qweatherAttribution, qweatherInstant, qweatherJwt, qweatherRequestPoint } from "./qweather-client.ts";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { observationNightBounds } from "@starward/miniapp-contracts";
 import type { DataState, SourceSummary } from "@starward/miniapp-contracts";
 import type {
@@ -9,6 +9,7 @@ import type {
   WeatherEvidenceResult,
   WeatherModelRunSummary,
   WeatherPort,
+  WeatherForecastResult,
 } from "./ports.ts";
 import type { MiniappRuntimeConfig } from "./runtime-config.ts";
 import { WEATHER_DEADLINES, waitForCaller } from "./provider-deadline.ts";
@@ -224,10 +225,7 @@ function qweatherFractionPercent(value: unknown): number | null {
   return parsed === null || parsed < 0 || parsed > 1 ? null : parsed * 100;
 }
 
-interface QWeatherForecastResult
-  extends ProviderResult<readonly CanonicalWeatherHour[]> {
-  modelRun: WeatherModelRunSummary | null;
-}
+type QWeatherForecastResult = WeatherForecastResult;
 
 // Re-evaluate interval validity when delivering cached data and after waiting on
 // independent alerts. This projection must never mutate retained source rows.
@@ -280,9 +278,15 @@ export class QWeatherForecastAdapter {
   ): Promise<QWeatherForecastResult> {
     input.signal?.throwIfAborted();
     const { signal, ...sharedInput } = input;
+    let cache: "HIT" | "JOIN" | "MISS" = "MISS";
     return waitForCaller(this.cache.get(qweatherSourceKey(this.config, input),
       () => this.fetchHourly(sharedInput),
-      result => qweatherSourceExpiry(result, this.now(), QWEATHER_CACHE.forecastMs)).then(result => currentForecast(result, this.now())), signal);
+      result => qweatherSourceExpiry(result, this.now(), QWEATHER_CACHE.forecastMs), outcome => { cache = outcome; })
+      .then(result => {
+        const current = currentForecast(result, this.now());
+        return current.acquisition ? { ...current, acquisition: { ...current.acquisition, cache,
+          upstreamRequestAttempts: (cache === "MISS" && current.acquisition.sourceRequestId ? 1 : 0) as 0 | 1 } } : current;
+      }), signal);
   }
 
   private async fetchHourly(
@@ -313,6 +317,11 @@ export class QWeatherForecastAdapter {
       localTime: "false",
       lang: "zh",
     }).toString();
+    let sourceRequestId: string | null = null;
+    const acquisition = (providerTag: string | null = null): NonNullable<WeatherForecastResult["acquisition"]> => ({
+      providerTag, sourceRequestId, requestedGcj02: { latitude: Number(point.latitude.toFixed(2)), longitude: Number(point.longitude.toFixed(2)) },
+      forecastHours, cache: "MISS", upstreamRequestAttempts: sourceRequestId ? 1 : 0,
+    });
     try {
       const payload = await fetchJson<QWeatherForecastPayload>(
         url,
@@ -323,7 +332,7 @@ export class QWeatherForecastAdapter {
           },
           ...(input.signal ? { signal: input.signal } : {}),
         },
-        this.transport,
+        ((...args: Parameters<typeof fetch>) => { sourceRequestId = randomUUID(); return this.transport(...args); }) as typeof fetch,
         this.deadlineMs,
       );
       if (!Array.isArray(payload.hours) || !payload.hours.length)
@@ -412,6 +421,7 @@ export class QWeatherForecastAdapter {
         state: dataSource.state,
         source: dataSource,
         errorCode: null,
+        acquisition: acquisition(typeof payload.metadata?.tag === "string" && payload.metadata.tag.length <= 1024 ? payload.metadata.tag : null),
         modelRun: {
           provider: "和风天气",
           modelKey: this.key,
@@ -442,6 +452,7 @@ export class QWeatherForecastAdapter {
         source,
         errorCode,
         modelRun: null,
+        acquisition: acquisition(),
       };
     }
   }
@@ -645,6 +656,13 @@ export class QWeatherCompositeAdapter implements WeatherPort {
     deadlineMs: number = WEATHER_DEADLINES.requestMs) {
     this.forecast = new QWeatherForecastAdapter(config, transport, deadlineMs);
     this.alerts = new QWeatherAlertAdapter(config, transport, deadlineMs);
+  }
+
+  async getForecastHourly(input: Parameters<WeatherPort["getHourly"]>[0]): Promise<WeatherForecastResult> {
+    const window = weatherWindow(input), forecast = await this.forecast.getHourly(input);
+    const rows = forecast.value?.filter(row => Date.parse(row.at) >= window.start && Date.parse(row.at) < window.end) ?? [];
+    return { ...forecast, value: rows.length ? rows : null, state: rows.length ? forecast.state : "UNAVAILABLE",
+      errorCode: rows.length ? forecast.errorCode : forecast.errorCode ?? "weather_window_unavailable" };
   }
 
   async getHourly(input: Parameters<WeatherPort["getHourly"]>[0]): Promise<WeatherEvidenceResult> {

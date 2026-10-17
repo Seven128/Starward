@@ -4,6 +4,30 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 
+test("passive floating feedback can be dismissed by tapping its full message", () => {
+  const source = readFileSync(new URL("./notification.tsx", import.meta.url), "utf8");
+  const ast = ts.createSourceFile("notification.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const component = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "NotificationComponent");
+  assert.ok(component);
+  const code = ts.transpileModule(component.getText(ast).replace(/^export /, ""), {
+    compilerOptions: { jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2020 },
+  }).outputText;
+  const render = vm.runInNewContext(code + "\nNotificationComponent", {
+    Button: "Button", Text: "Text", View: "View", SemanticIcon: "Icon", ICON: { info: "info" },
+    React: { createElement: (type: unknown, props: unknown, ...children: unknown[]) => ({ type, props, children }) },
+  });
+  let dismissed = 0;
+  const notification = { id: "empty", placement: "floating", tone: "info", title: "当前区域暂无观星点", body: "" };
+  const message = render({ notification, onDismiss: () => dismissed++ });
+  assert.equal(message.type, "Button");
+  message.props.onClick();
+  assert.equal(dismissed, 1);
+  // Recovery messages keep a separate action and cannot be dismissed by a body tap.
+  const actionable = render({ notification: { ...notification, action: { label: "重试", route: "/pages/map/index" } }, onDismiss: () => dismissed++ });
+  assert.equal(actionable.props.onClick, undefined);
+  assert.equal(dismissed, 1);
+});
+
 test("the production floating host stops rendering on page hide and resumes on show", () => {
   const source = readFileSync(new URL("./notification.tsx", import.meta.url), "utf8");
   const ast = ts.createSourceFile("notification.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);

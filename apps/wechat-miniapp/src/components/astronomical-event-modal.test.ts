@@ -36,6 +36,7 @@ function harness(mutate = (source: string) => source, overrides: Record<string, 
     useRef: (initial: any) => ({ current: initial }),
     useState: (initial: any) => { const slot = cursor++; if (!(slot in states)) states[slot] = initial; return [states[slot], (value: any) => { states[slot] = value; }]; },
     useAppStore: (fn: any) => fn({ preferences: { reducedMotion: false }, mode: "DAY", notify: () => {} }),
+    useReducedMotion: () => false,
     useResourceQuery: (options: any) => options.queryKey[0] === "astronomical-events" ? resource : { isPending: false, isError: true, refetch: () => {} },
     getAstronomicalEvents: () => {},
     ...overrides,
@@ -45,6 +46,49 @@ function harness(mutate = (source: string) => source, overrides: Record<string, 
   }).outputText, context);
   return { detail: component.EventModalDetail, render: (props: object) => { cursor = 0; return component.AstronomicalEventModal(props, null); } };
 }
+
+test("detail hero preserves solar, lunar and meteor identity without a meteor date axis on eclipses", () => {
+  const detail = harness().detail;
+  const props = { mode: "browse", previewDate: "2026-12-22", onPreviewDate() {}, locationName: null,
+    timezone: "Asia/Shanghai", pending: false, visibility: null };
+  for (const [event, icon] of [[eclipse, "sun"], [{ ...eclipse, kind: "LUNAR_ECLIPSE" }, "moon"], [meteor, "meteor"]] as const) {
+    const tree = detail({ ...props, event });
+    const hero = find(tree, node => node.props.className === "event-modal-detail__hero")[0]!;
+    assert.equal(find(hero, node => node.type === "SemanticIcon")[0]!.props.name, icon);
+    assert.equal(find(tree, node => node.props.className === "event-modal-detail__axis").length, icon === "meteor" ? 1 : 0);
+  }
+});
+
+test("meteor reference and current preview project their actual dates across the full interval", () => {
+  const detail = harness().detail;
+  const props = { event: meteor, mode: "browse", previewDate: "2026-12-23", onPreviewDate() {},
+    locationName: "北京", timezone: "Asia/Shanghai", pending: false, visibility: null };
+  const tree = detail(props);
+  const peak = find(tree, node => node.props.className === "event-modal-detail__peak")[0]!;
+  assert.ok(peak);
+  assert.ok(Math.abs(Number.parseFloat(peak.props.style.left) - 100 / 3) < 1e-9);
+  const date = find(tree, node => node.props.className === "event-modal-detail__date-marker")[0]!;
+  assert.ok(date);
+  assert.ok(Math.abs(Number.parseFloat(date.props.style.left) - 200 / 3) < 1e-9);
+  assert.equal(find(detail({ ...props, previewDate: "2026-12-20" }), node => node.props.className === "event-modal-detail__date-marker").length, 0);
+  const plan = detail({ ...props, mode: "select-one" });
+  assert.equal(find(plan, node => node.props.className === "event-modal-detail__date-marker").length, 1);
+  assert.equal(find(plan, node => node.props.className === "event-modal-detail__days").length, 0);
+});
+
+test("selection detail hides list confirmation until the viewed event is staged or Back returns", () => {
+  const ui = harness();
+  const committed: any[] = [];
+  const props = { open: true, mode: "select-one", context: null, initialOccurrenceIds: ["solar"],
+    initialDetailId: "urs", onClose() {}, onConfirm: (id: string) => committed.push(id) };
+  const detail = ui.render(props);
+  assert.equal(find(detail, node => node.props.className === "event-modal__footer").length, 0);
+  find(detail, node => node.props.ariaLabel === "返回事件列表")[0]!.props.onClick();
+  const list = ui.render(props);
+  assert.equal(find(list, node => node.props.className === "event-modal__footer").length, 1);
+  assert.deepEqual(committed, []);
+  assert.equal(find(list, node => node.type === "Button" && text(node) === "确认选择").length, 1);
+});
 
 test("detail selection stages the viewed identity, then only confirmation commits it", () => {
   const ui = harness();
@@ -76,9 +120,11 @@ test("hiding the modal host suspends new queries and notices without losing draf
   const props = { open: true, mode: "select-one", context: { localDate: "2026-12-22", location: { kind: "FORMAL_SPOT" } }, initialOccurrenceIds: ["urs"], initialDetailId: "urs", onClose() {} };
   ui.render(props); assert.deepEqual(enabled.splice(0), [true, true, true]);
   hide!(); const hidden = ui.render(props); assert.deepEqual(enabled.splice(0), [false, false, false]); assert.deepEqual(cleared, ["event-modal"]);
-  assert.ok(find(hidden, node => node.type === "Button" && text(node) === "确认选择").length);
+  assert.ok(find(hidden, node => node.props.ariaLabel === "已选择小熊座流星雨").length);
   show!(); const returned = ui.render(props); assert.deepEqual(enabled.splice(0), [true, true, true]);
-  assert.ok(find(returned, node => node.type === "Button" && text(node) === "确认选择").length);
+  assert.ok(find(returned, node => node.props.ariaLabel === "已选择小熊座流星雨").length);
+  find(returned, node => node.props.ariaLabel === "返回事件列表")[0]!.props.onClick();
+  assert.ok(find(ui.render(props), node => node.type === "Button" && text(node) === "确认选择").length);
 });
 
 test("detail Back returns to list but backdrop cancels the whole modal, in both modes", () => {
@@ -189,7 +235,7 @@ test("a missing observation context does not offer a date control that cannot qu
 test("fixed eclipse date and phases cannot masquerade as the caller's September date", () => {
   const tree = harness().detail({ event: eclipse, mode: "browse", previewDate: "2026-09-13", onPreviewDate: () => {}, locationName: "北京", timezone: "Asia/Shanghai", pending: false,
     visibility: { state: "NOT_VISIBLE", reason: "地平线以下", phases: [{ key: "PEAK", localDateTime: "2026-08-13 01:46", altitudeDeg: -18 }] } });
-  assert.match(text(tree), /事件当地日期2026\/08\/13/);
+  assert.match(text(tree), /事件当地日期\s*2026\/08\/13/);
   assert.match(text(tree), /地图日期仍为 2026\/09\/13/);
   assert.match(text(tree), /食甚2026-08-13 01:46高度 -18° · 地平线以下/);
   assert.match(text(tree), /合格太阳观测防护/);
@@ -199,7 +245,7 @@ test("fixed eclipse date and phases cannot masquerade as the caller's September 
 test("an eclipse without an observation location keeps the source's Beijing date instead of inventing a local date", () => {
   const tree = harness().detail({ event: eclipse, mode: "browse", previewDate: eclipse.peakDate, onPreviewDate: () => {},
     locationName: null, timezone: "Asia/Shanghai", pending: false, visibility: { state: "UNAVAILABLE", reason: "选择地点后可计算当地几何条件。" } });
-  assert.match(text(tree), /食甚日期（北京时间）2026\/08\/13/);
+  assert.match(text(tree), /食甚日期（北京时间）\s*2026\/08\/13/);
   assert.doesNotMatch(text(tree), /事件当地日期|以下时刻采用 Asia\/Shanghai 时区/);
 });
 
@@ -220,6 +266,31 @@ test("reviewed article keeps every paragraph and an independent source without c
   assert.doesNotMatch(text(tree), /测试数据说明|测试模式|示例数据说明/);
   const missing = harness().detail({ ...props, event: meteor, articleSource: undefined });
   assert.doesNotMatch(text(missing), /测试文章题目|独立第二段/);
+});
+
+test("DAY event sources use full disclosure while other themes retain their source presentation", () => {
+  const article = { title: "独立文章", paragraphs: ["完整正文"], sourceId: "article-source" };
+  const articleSource = Object.freeze({ ...source, id: article.sourceId, kind: "EDITORIAL_REFERENCE", provider: "文章作者" });
+  const record = { event: { ...meteor, article }, source, articleSource, catalogVersion: "retained-version" };
+  const check = (mutate?: (value: string) => string) => {
+    for (const theme of ["DAY", "NIGHT", "OBSERVATION"]) {
+      const ui = harness(mutate, {
+        useAppStore: (select: any) => select({ preferences: {}, mode: theme, notify() {} }),
+        useResourceQuery: (options: any) => ({ isPending: false, isError: false, refetch() {}, data: { dataState: "FRESH",
+          data: options.queryKey[0] === "astronomical-events" ? { events: [record.event], sources: [source], catalogVersion: record.catalogVersion } : record } }),
+      });
+      const modal = ui.render({ open: true, mode: "browse", context: null, initialDetailId: meteor.occurrenceId, onClose() {} });
+      const detail = ui.detail(find(modal, node => node.type === ui.detail)[0]!.props);
+      const cards = find(detail, node => node.type === "Provenance");
+      assert.equal(cards.length, 2);
+      assert.equal(cards[0]!.props.source, source);
+      assert.equal(cards[1]!.props.source, articleSource);
+      assert.deepEqual(cards.map(node => node.props.presentation), Array(2).fill(theme === "DAY" ? "disclosure" : "default"));
+      assert.match(text(detail), /目录版本：retained-version.*独立文章完整正文/s);
+    }
+  };
+  check();
+  assert.throws(() => check(value => value.replace('sourcePresentation={themeClass === "theme-day" ? "disclosure" : "default"}', 'sourcePresentation="default"')), assert.AssertionError);
 });
 
 test("article query and visible text survive local context failure and date changes", async () => {

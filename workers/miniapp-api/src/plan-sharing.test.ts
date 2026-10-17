@@ -1,9 +1,54 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
+import { buildTestSpotDetail, TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import type { SpotSummary } from "@starward/miniapp-contracts";
 import { createTestMiniappService } from "./test-fixtures/create-test-service.ts";
 import { InMemoryTestRepository } from "./test-fixtures/in-memory-repository.ts";
+
+test("public spot sharing retains canonical facts, moderated overrides and explicit clears", async () => {
+  const detail = structuredClone(buildTestSpotDetail(TEST_PUBLISHED_SPOT.spotId)!);
+  delete detail.formalFacts;
+  detail.accessAndSafety = { ...detail.accessAndSafety, openness: "OPEN", legalAccess: "PERMITTED",
+    restrictions: ["仅限指定通道"], guidance: ["夜间结伴进入"] };
+  detail.spot.facilities = detail.spot.facilities.map((facility) => facility.type === "PARKING"
+    ? { ...facility, status: "AVAILABLE", detail: "停车测试区", openingHours: "", usageCondition: "" } : facility);
+  class CanonicalRepository extends InMemoryTestRepository {
+    override async getDetail() { return detail; }
+  }
+  const service = createTestMiniappService({ repository: new CanonicalRepository([TEST_PUBLISHED_SPOT]) });
+  try {
+    const canonical = (await service.getSharedSpot(TEST_PUBLISHED_SPOT.spotId)).data;
+    assert.equal(canonical.opening, "开放");
+    assert.equal(canonical.access, "允许进入；仅限指定通道");
+    assert.equal(canonical.safety, "夜间结伴进入");
+    assert.equal(canonical.parking, "有；停车测试区");
+    assert.equal(canonical.horizon, null);
+    assert.deepEqual(Object.keys(canonical).sort(), ["kind", "spotId", "spotGcj02", "name", "region", "address", "status",
+      "opening", "access", "safety", "parking", "horizon", "source"].sort());
+
+    detail.formalFacts = { openness: "有条件开放", hours: "19:00—23:00", access: "需预约", accessNote: null,
+      safety: null, parking: null, parkingNote: null, horizon: "南向开阔" };
+    const moderated = (await service.getSharedSpot(TEST_PUBLISHED_SPOT.spotId)).data;
+    assert.equal(moderated.opening, "有条件开放；19:00—23:00");
+    assert.equal(moderated.access, "需预约");
+    assert.equal(moderated.safety, null);
+    assert.equal(moderated.parking, null);
+    assert.equal(moderated.horizon, "南向开阔");
+
+    delete detail.formalFacts;
+    detail.accessAndSafety.legalAccess = "CONDITIONAL";
+    detail.spot.facilities = detail.spot.facilities.map(facility => facility.type === "PARKING"
+      ? { ...facility, status: "UNAVAILABLE" } : facility);
+    const restricted = (await service.getSharedSpot(TEST_PUBLISHED_SPOT.spotId)).data;
+    assert.equal(restricted.access, "需预约或其他条件；仅限指定通道");
+    assert.equal(restricted.parking, "没有；停车测试区");
+    detail.accessAndSafety = { ...detail.accessAndSafety, openness: "UNKNOWN", legalAccess: "UNKNOWN", restrictions: [], guidance: [] };
+    detail.spot.facilities = [];
+    detail.evidence = [];
+    const missing = (await service.getSharedSpot(TEST_PUBLISHED_SPOT.spotId)).data;
+    for (const key of ["opening", "access", "safety", "parking", "horizon"] as const) assert.equal(missing[key], null);
+  } finally { await service.onModuleDestroy(); }
+});
 
 test("public plan sharing projects only approved facts and invalidates an edited plan", async () => {
   const service = createTestMiniappService({ repository: new InMemoryTestRepository([TEST_PUBLISHED_SPOT]) });

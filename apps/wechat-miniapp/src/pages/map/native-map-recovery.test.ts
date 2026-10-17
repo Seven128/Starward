@@ -24,7 +24,7 @@ function setup() {
     unmount() { cleanup?.(); } };
 }
 
-function nativeElement(nativeMap: any, events: string[] = []) {
+function nativeElement(nativeMap: any, events: string[] = [], focus = { pending: false }) {
   const source = fs.readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
   const jsx = source.match(/<Map\b[\s\S]*?\/>/u)?.[0];
   // Deliberately execute the real rendered native element, not a copied key rule.
@@ -33,10 +33,18 @@ function nativeElement(nativeMap: any, events: string[] = []) {
     nativeMap, Map: "Map", viewport: { center: { latitude: 22, longitude: 113 }, zoom: 9 },
     markerList: [], layerPolygons: [], locationState: "GRANTED", spotEditorPhase: "open",
     editorPresentation: {isClosing: () => false},
-    onMapTap: () => events.push("tap"), onMarkerTap: () => events.push("marker"), onRegionChange: () => events.push("region"),
+    onMapTap: () => events.push("tap"), onMarkerTap: () => { events.push("marker"); focus.pending = true; }, onRegionChange: () => events.push("region"),
+    spotMapFocus: { cancel() { focus.pending = false; } },
+    readTerrainViewport: () => events.push("viewport"), mapTerrainBounds: null,
     React: { createElement: (_type: any, props: any) => props },
   });
 }
+
+test("a marker's delayed generic native touch event cannot cancel its newly selected camera intent", () => {
+  const focus = { pending: false }, element = nativeElement(setup().render(), [], focus);
+  element.onMarkerTap({}); element.onTouchStart?.({});
+  assert.equal(focus.pending, true, "actual camera movement belongs to region gestures, not the marker tap's touch transport");
+});
 
 test("retry changes the actual Map key/id, preserves viewport, and ignores old native callbacks", () => {
   const t = setup(), events: string[] = []; const before = nativeElement(t.render(), events);
@@ -47,7 +55,8 @@ test("retry changes the actual Map key/id, preserves viewport, and ignores old n
   before.onUpdated(); before.onError(); before.onTap(); before.onMarkerTap({}); before.onRegionChange({});
   assert.equal(t.render().pending, true); assert.deepEqual(events, []);
   after.onUpdated(); assert.equal(t.render().pending, false); assert.equal(t.render().error, false); assert.equal(t.timers.size, 0);
-  after.onTap(); assert.deepEqual(events, ["tap"]);
+  assert.deepEqual(events, ["viewport"], "the current Map update initiates actual viewport measurement");
+  after.onTap(); assert.deepEqual(events, ["viewport", "tap"]);
 });
 
 test("native failure or missing completion leaves recovery available; stale success cannot erase failure", () => {

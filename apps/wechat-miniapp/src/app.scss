@@ -1,6 +1,8 @@
 @use "./styles/tokens.scss";
 @use "./components/semantic-asset.scss";
 @use "./components/status-panel.scss";
+@use "./components/loading-indicator.scss";
+@use "./components/wechat-login.scss";
 @use "./components/weather-alerts.scss";
 @use "./components/notification.scss";
 @use "./components/custom-nav.scss";
@@ -9,6 +11,7 @@
 @use "./components/spot-identity-card.scss";
 @use "./components/selection-tabs.scss";
 @use "./components/red-light-handoff.scss";
+@use "./components/modal-scrim.scss";
 @use "./pages/map/spot-terrain-overview.scss";
 
 page {
@@ -16,11 +19,15 @@ page {
   min-height: 100%;
   background: var(--canvas);
   color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+page,
+.theme-token-scope {
   font-family: tokens.$font-native, system-ui, sans-serif;
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
   font-weight: var(--type-body-weight);
-  overflow-x: hidden;
 }
 
 /* Keep every owner scrollable while removing native scrollbar chrome. */

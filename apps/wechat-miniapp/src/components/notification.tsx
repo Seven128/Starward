@@ -27,6 +27,17 @@ export function NotificationComponent({
   onAction?: () => void;
   onDismiss?: () => void;
 }) {
+  if (notification.placement === "floating" && !notification.action && !notification.pageRoute?.startsWith("sky/")) {
+    const message = [notification.title, notification.body].filter(Boolean).join("。 ");
+    return <Button
+      className={`notification notification--floating notification--message notification--${notification.tone} focus-ring`}
+      id={`notification-floating-${notification.id}`}
+      aria-role={notification.tone === "error" ? "alert" : "status"}
+      aria-live={notification.tone === "error" ? "assertive" : "polite"}
+      ariaLabel={`${message}，点击关闭`}
+      onClick={() => onDismiss?.()}
+    ><Text data-od-id="notification-feedback">{message}</Text></Button>;
+  }
   const action = async () => {
     if (onAction) return onAction();
     if (!notification.action?.route) return;

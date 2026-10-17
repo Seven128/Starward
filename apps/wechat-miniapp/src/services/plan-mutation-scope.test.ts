@@ -4,6 +4,9 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { acknowledgePlanSave, createPlanSaveRetry, PlanSaveReviewRequired, samePlanSaveIntent } from "./plan-save-retry";
+import { createAccountOperationOwner } from "../hooks/account-operation";
+import { createAuthenticatedOperationRequester } from "./authenticated-operation";
+import type { AuthSessionData } from "@starward/miniapp-contracts";
 
 function mutationCode(name: string) {
   const api = ts.createSourceFile("api.ts", readFileSync(new URL("./api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -16,6 +19,112 @@ function mutationCode(name: string) {
     assert.ok(declaration); return declaration.getText(source).replace(/^export /, "");
   }).join("\n") + `\n${name};`;
 }
+
+function scopedRuntime(name: "saveObservationPlan" | "deleteObservationPlan") {
+  let state = { userId: "a" as string | null, ownerId: "a" as string | null, reset: 0, page: {}, target: "plan" };
+  let session = { userId: "a", accessToken: "RAM-a", expiresAt: "2999-01-01" } as AuthSessionData | null;
+  const operations = createAccountOperationOwner(() => state, () => {});
+  const setAccount = (owner: string | null) => {
+    state = { ...state, userId: owner, ownerId: owner, reset: state.reset + 1 };
+    operations.observe();
+  };
+  const resolveSession = async () => {
+    if (!session) {
+      session = { userId: "a", accessToken: "RAM-renewed", expiresAt: "2999-01-01" } as AuthSessionData;
+      setAccount("a");
+    }
+    return session;
+  };
+  const storage = new Map<string, unknown>();
+  const nativeStorage = { getStorageSync: (key: string) => storage.get(key), setStorageSync: (key: string, value: unknown) => { storage.set(key, structuredClone(value)); }, removeStorageSync: (key: string) => { storage.delete(key); } };
+  const sent: Array<{ path: string; options: any }> = [];
+  let keys = 0, cacheWrites = 0, invalidations = 0, denied = false, fail = false;
+  let responseGate: Promise<void> | undefined;
+  let retireOnCache = false;
+  const plan = { planId: "plan:one", spotId: "spot:one", localDate: "2026-09-06", localTime: "22:00", notes: "exact intent", eventOccurrenceIds: ["event-occurrence:geminids:2026"], revision: 2 };
+  const requestOperation = createAuthenticatedOperationRequester({
+    resolveSession, readStoredSession: () => session,
+    clearStoredSession: () => { session = null; setAccount(null); },
+    isPermissionDenied: error => error === "permission",
+    request: async (_key, path, options) => {
+      sent.push({ path, options });
+      assert.equal("scope" in options, false, "operation authorization must not enter HTTP payload");
+      if (denied) { denied = false; throw "permission"; }
+      if (fail) throw new Error("receipt unknown");
+      if (options.method !== "GET" && responseGate) await responseGate;
+      return { dataState: "FRESH", data: options.method === "DELETE" ? { plans: [] } : options.method === "GET" ? { plans: [plan] } : plan } as never;
+    },
+  });
+  const api = vm.runInNewContext(ts.transpileModule(mutationCode(name), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
+    ensureSession: resolveSession, currentDraftUserId: () => state.userId,
+    requestOperation, idempotencyKey: () => `delete:${++keys}`,
+    retryPlanSave: createPlanSaveRetry(nativeStorage, () => `save:${++keys}`, () => false),
+    MiniappApiError: class extends Error {}, PlanSaveReviewRequired, samePlanSaveIntent,
+    miniappQueryClient: { setQueryData() { cacheWrites++; if (retireOnCache) { setAccount("b"); setAccount("a"); } } },
+    invalidateAfter: async () => { invalidations++; },
+  });
+  const invoke = (scope = operations.begin()!) => name === "saveObservationPlan"
+    ? api(plan, "context:one", 1, "a", "context identity", scope)
+    : api(plan.planId, "a", scope);
+  return { operations, setAccount, sent, storage, invoke, cacheWrites: () => cacheWrites, invalidations: () => invalidations,
+    deny: () => { denied = true; }, fail: (value: boolean) => { fail = value; }, gate: (value: Promise<void>) => { responseGate = value; }, retireOnCache: () => { retireOnCache = true; } };
+}
+
+for (const name of ["saveObservationPlan", "deleteObservationPlan"] as const) {
+  test(`${name}: actual outer session await ABA retires dispatch and permits a fresh A intent`, async () => {
+    const f = scopedRuntime(name), old = f.operations.begin()!, pending = f.invoke(old);
+    assert.equal(f.sent.length, 0);
+    f.setAccount("b"); f.setAccount("a");
+    await assert.rejects(pending, /retired/);
+    assert.equal(f.sent.length, 0); assert.equal(f.cacheWrites(), 0);
+    await f.invoke();
+    assert.equal(f.sent.length, name === "saveObservationPlan" ? 2 : 1);
+    assert.equal(f.cacheWrites(), 1); assert.equal(f.invalidations(), 1);
+    if (name === "saveObservationPlan") assert.deepEqual(f.sent[0]!.options.body.eventOccurrenceIds, ["event-occurrence:geminids:2026"]);
+  });
+
+  test(`${name}: permission renewal retains current operation and original dispatch key`, async () => {
+    const f = scopedRuntime(name), operation = f.operations.begin()!; f.deny();
+    await f.invoke(operation);
+    assert.equal(operation.isCurrent(), true);
+    assert.equal(f.sent.length, name === "saveObservationPlan" ? 3 : 2);
+    assert.equal(f.sent[0]!.options.idempotencyKey, f.sent[1]!.options.idempotencyKey);
+    assert.equal(f.cacheWrites(), 1); assert.equal(f.invalidations(), 1);
+    f.setAccount(null); f.setAccount("a"); assert.equal(operation.isCurrent(), false);
+  });
+
+  test(`${name}: an already dispatched response cannot start retired reconciliation or invalidate`, async () => {
+    const f = scopedRuntime(name); let release!: () => void;
+    f.gate(new Promise<void>(resolve => { release = resolve; }));
+    const operation = f.operations.begin()!, pending = f.invoke(operation);
+    for (let i = 0; i < 10 && f.sent.length === 0; i++) await Promise.resolve();
+    assert.equal(f.sent.length, 1, "the write was really dispatched before retirement");
+    f.operations.dispose(); release();
+    await assert.rejects(pending, /retired/);
+    assert.equal(f.sent.length, 1); assert.equal(f.cacheWrites(), 0); assert.equal(f.invalidations(), 0);
+    if (name === "saveObservationPlan") assert.equal(f.storage.size, 1, "the durable unknown write remains recoverable");
+  });
+
+  test(`${name}: synchronous cache ABA suppresses follow-on invalidation and caller acknowledgement`, async () => {
+    const f = scopedRuntime(name); f.retireOnCache();
+    await assert.rejects(f.invoke(), /retired/);
+    assert.equal(f.cacheWrites(), 1, "the initiating current A cache effect occurred before retirement");
+    assert.equal(f.invalidations(), 0);
+    if (name === "saveObservationPlan") assert.equal(f.storage.size, 1);
+  });
+}
+
+test("scoped unknown plan save keeps the original body/key and yields its exact recoverable receipt", async () => {
+  const f = scopedRuntime("saveObservationPlan"), old = f.operations.begin()!; f.fail(true);
+  await assert.rejects(f.invoke(old), /receipt unknown/); old.release();
+  const original = JSON.stringify([...f.storage]);
+  f.fail(false);
+  const result = await f.invoke();
+  assert.equal(f.sent[0]!.options.idempotencyKey, f.sent[1]!.options.idempotencyKey);
+  assert.equal(JSON.stringify([...f.storage]), original, "a successful reconciliation is not author draft acknowledgement");
+  assert.equal(result.data.revision, 2); assert.equal(result.saveReceipt.planId, "plan:one");
+  assert.deepEqual(f.sent[0]!.options.body, f.sent[1]!.options.body);
+});
 
 test("an unknown save rejected on replay can be reconciled and confirmed before a new revision is submitted", async () => {
   class MiniappApiError extends Error { statusCode = 409; }

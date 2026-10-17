@@ -20,4 +20,4 @@ Preserve all authorized branch work, merge current remote main by responsibility
 
 ## Current state
 
-Initial checkout: `codex/remote-main-20260908` at `b73523f1`; local main in `E:/dev/Starward` at `755cd46f`, initially clean. Pending branch changes include 909 retired design-resource files and substantial cloud-sky implementation. Snapshot and remote comparison are next.
+All initial changes are preserved in `18cf17d3`; fetched main is `63b9b6d7`, with common base `755cd46f`. Conflict/automatic-merge reconciliation and Stitch source migration are complete. [Verification](VERIFICATION.md) owns actual checks and the explicit existing failures. The final source-bound build and ordinary branch/main pushes use the final chat and task-local receipts for their commit/readback identity. Existing product acceptance gaps remain with their original owners.

@@ -1,4 +1,6 @@
 import type { AccountProfileRecord } from "@starward/miniapp-contracts";
+import { handleIdlePoolErrors } from "./postgres-pool-errors.ts";
+import { CURRENT_PUBLIC_SPOT_PREDICATE } from './current-public-spot-query.ts';
 import { createHash, randomUUID } from "node:crypto";
 import { assertContributionUploadContent, contributionMediaObjectKey } from "./contribution-media-object.ts";
 import { assertContributionBaselineMatches, assertContributionSubmittable, assertContributionUploadFits } from "./contribution-validation.ts";
@@ -10,6 +12,7 @@ import {
   reviewLatestContributionAttempt,
   removeCandidateProfileMedia,
   contributionMediaHasHistory,
+  assertCandidateAttemptCurrent,
 } from "./contribution-attempts.ts";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -180,6 +183,32 @@ export function contributionResolvedProposal(submission: ContributionSubmission)
     (submission.kind === "NEW_SPOT_PROPOSAL" ? submission.candidateProfile : undefined);
 }
 
+/** Versioned new-point answers own core claims; retained notes cannot certify unknown answers. */
+function contributionFieldMergeClaims(submission: ContributionSubmission, field: string): readonly AdminContributionEvidenceClaim[] {
+  const topic = FORMAL_FIELD_TOPIC[field as keyof typeof FORMAL_FIELD_TOPIC];
+  if (!topic) return [];
+  const intake = submission.kind === "NEW_SPOT_PROPOSAL" ? submission.candidateProfile?.intake : undefined;
+  if (intake) {
+    if (field === "contact") return ["SPOT_DETAILS"];
+    if (topic === "OPENNESS" && (intake.openness === null || intake.openness === "UNKNOWN")) return [];
+    if (topic === "LEGAL_ACCESS" && (intake.legalEntry === null || intake.legalEntry === "UNKNOWN")) return [];
+    if (topic === "NIGHT_SAFETY" && (intake.nightSafety === null || intake.nightSafety === "UNKNOWN")) return [];
+  }
+  return CONTRIBUTION_TOPIC_CLAIMS[topic];
+}
+
+/** Only the operator's explicit selected claim may apply a contributor's structured rating. */
+export function applyReviewedCandidateNightSafety(
+  submission: ContributionSubmission,
+  claims: readonly AdminContributionEvidenceClaim[],
+  state: SpotDetail["accessAndSafety"],
+): SpotDetail["accessAndSafety"] {
+  const rating = submission.kind === "NEW_SPOT_PROPOSAL" ? submission.candidateProfile?.intake?.nightSafety : undefined;
+  if (!claims.includes("SAFETY_NIGHT") || rating === undefined || rating === null || rating === "UNKNOWN") return state;
+  const guidance = submission.candidateProfile?.fields.safety?.trim();
+  return { ...state, nightSafety: rating, guidance: guidance ? [guidance] : [] };
+}
+
 export function contributionAllowedMergeClaims(
   submission: ContributionSubmission,
 ): readonly AdminContributionEvidenceClaim[] {
@@ -187,10 +216,9 @@ export function contributionAllowedMergeClaims(
     return [...new Set(submission.topics.flatMap((topic) => CONTRIBUTION_TOPIC_CLAIMS[topic]))];
   const proposal = contributionResolvedProposal(submission);
   if (!proposal) return [];
-  const claims: AdminContributionEvidenceClaim[] = Object.keys(proposal.fields).flatMap((key) => {
-    const topic = FORMAL_FIELD_TOPIC[key as keyof typeof FORMAL_FIELD_TOPIC];
-    return topic ? CONTRIBUTION_TOPIC_CLAIMS[topic] : [];
-  });
+  const claims: AdminContributionEvidenceClaim[] = Object.keys(proposal.fields).flatMap((key) => contributionFieldMergeClaims(submission, key));
+  const rating = submission.candidateProfile?.intake?.nightSafety;
+  if (rating !== undefined && rating !== null && rating !== "UNKNOWN") claims.push("SAFETY_NIGHT");
   if (Object.values(proposal.media).some((ids) => Boolean(ids?.length)))
     claims.push("SITE_MEDIA_PROVENANCE");
   return [...new Set(claims)];
@@ -331,12 +359,20 @@ function toModerationCaseView(
     payload: Record<string, unknown>;
     created_at: string | Date;
     resolved_at: string | Date | null;
+    current_submission?: ContributionSubmission | null;
   },
   events: readonly ContributionStatusHistoryEntry[],
 ): ModerationCaseView {
   const rawSubmission = row.payload.submission as ContributionSubmission | undefined;
+  // A case keeps the last submitted evidence while later media reviews or
+  // editable working copies advance the aggregate's operation revision.
   const submission = rawSubmission
-    ? normalizeContributionSubmission(rawSubmission)
+    ? {
+        ...normalizeContributionSubmission(rawSubmission),
+        revision: row.current_submission?.revision ?? rawSubmission.revision,
+        updatedAt: row.current_submission?.updatedAt ?? rawSubmission.updatedAt,
+        statusHistory: row.current_submission?.statusHistory ?? rawSubmission.statusHistory ?? [],
+      }
     : null;
   return {
     caseId: row.case_id as ModerationCaseView["caseId"],
@@ -483,6 +519,7 @@ export class PostgresMiniappRepository
       idleTimeoutMillis: 10_000,
       application_name: "starward-miniapp-api",
     });
+    handleIdlePoolErrors(this.pool, "api");
   }
 
   async initialize({ migrate = false }: { migrate?: boolean } = {}) {
@@ -569,6 +606,18 @@ export class PostgresMiniappRepository
     return result.rows.map((row) => ({ spotId: row.spot_id, source: clone(row.source) }));
   }
 
+  async getPublishedDarkSkyDataset(datasetVersion: string) {
+    if (datasetVersion === "UNAVAILABLE") return null;
+    const result = await this.pool.query<{ dataset_version: string; radiance_sha256: string; coverage_sha256: string;
+      source: SourceSummary; payload: unknown }>(
+      `SELECT p.dataset_version, p.radiance_sha256, p.coverage_sha256, p.payload, s.payload AS source
+         FROM dark_sky_dataset_publications p JOIN data_source_registry s ON s.source_id = p.source_id
+        WHERE p.dataset_version = $1 AND p.state = 'PUBLISHED'`, [datasetVersion]);
+    const row = result.rows[0];
+    return row ? { datasetVersion: row.dataset_version, radianceSha256: row.radiance_sha256,
+      coverageSha256: row.coverage_sha256, source: clone(row.source), payload: clone(row.payload) } : null;
+  }
+
   async listDarkSkyGridCells(input: {
     datasetVersion: string;
     center?: { system: "WGS84"; latitude: number; longitude: number };
@@ -642,11 +691,7 @@ export class PostgresMiniappRepository
          FROM spots s
          JOIN spot_publication_assessments a USING (spot_id)
         WHERE s.spot_id = $1
-          AND s.visibility_policy = 'PUBLIC_EXACT'
-          AND s.status IN ('PUBLISHED', 'TEMPORARILY_CLOSED')
-          AND a.complete = true
-          AND a.spot_revision = s.version
-          AND a.assessed_at >= now() - interval '30 days'`,
+          AND ${CURRENT_PUBLIC_SPOT_PREDICATE}`,
       [spotId],
     );
     return result.rows[0]
@@ -697,6 +742,7 @@ export class PostgresMiniappRepository
         "INSERT INTO users(user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING",
         [userId],
       );
+      await this.#lockActiveAccount(client, userId);
       await client.query(
         `INSERT INTO user_preferences(user_id, payload, revision)
          VALUES ($1, $2, 1)
@@ -762,15 +808,18 @@ export class PostgresMiniappRepository
     tokenDigest: string;
     expiresAt: string;
   }): Promise<void> {
-    await this.pool.query(
-      `INSERT INTO user_sessions(token_digest, user_id, expires_at)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (token_digest) DO UPDATE SET
-         user_id = EXCLUDED.user_id,
-         expires_at = EXCLUDED.expires_at,
-         revoked_at = NULL`,
-      [input.tokenDigest, input.userId, input.expiresAt],
-    );
+    await this.#transaction(async (client) => {
+      await this.#lockActiveAccount(client, input.userId);
+      await client.query(
+        `INSERT INTO user_sessions(token_digest, user_id, expires_at)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (token_digest) DO UPDATE SET
+           user_id = EXCLUDED.user_id,
+           expires_at = EXCLUDED.expires_at,
+           revoked_at = NULL`,
+        [input.tokenDigest, input.userId, input.expiresAt],
+      );
+    });
   }
 
   async resolveSession(tokenDigest: string): Promise<UserId | null> {
@@ -927,9 +976,10 @@ export class PostgresMiniappRepository
 
   async saveAccountNickname(userId: UserId, nickname: string, expectedRevision: number, idempotencyKey: string): Promise<AccountProfileRecord> {
     return this.#transaction(async client => {
-      const existing = await client.query<{ profile_revision: number; avatar_sha256: string | null; avatar_mime_type: "image/jpeg" | "image/png" | "image/webp" | null; avatar_zoom: string | null }>(
-        "SELECT profile_revision, avatar_sha256, avatar_mime_type, avatar_zoom FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      const existing = await client.query<{ state: string; profile_revision: number; avatar_sha256: string | null; avatar_mime_type: "image/jpeg" | "image/png" | "image/webp" | null; avatar_zoom: string | null }>(
+        "SELECT state, profile_revision, avatar_sha256, avatar_mime_type, avatar_zoom FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
       if (!existing.rows[0]) throw new Error("account_profile_not_found");
+      this.#assertActiveAccount(existing.rows[0]);
       const replay = await this.#replay<AccountProfileRecord>(client, userId, idempotencyKey);
       if (replay) {
         if (replay.nickname !== nickname || replay.revision !== expectedRevision + 1) throw new Error("account_profile_idempotency_conflict");
@@ -957,10 +1007,11 @@ export class PostgresMiniappRepository
 
   async saveAccountAvatar(userId: UserId, avatar: { objectKey: string; version: string; mimeType: "image/jpeg" | "image/png" | "image/webp"; zoom: number; byteSize: number; sha256: string }, expectedRevision: number, idempotencyKey: string) {
     return this.#transaction(async client => {
-      const existing = await client.query<{ profile_revision: number; nickname: string | null; avatar_object_key: string | null }>(
-        "SELECT profile_revision, nickname, avatar_object_key FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      const existing = await client.query<{ state: string; profile_revision: number; nickname: string | null; avatar_object_key: string | null }>(
+        "SELECT state, profile_revision, nickname, avatar_object_key FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
       const row = existing.rows[0];
       if (!row) throw new Error("account_profile_not_found");
+      this.#assertActiveAccount(row);
       const replay = await this.#replay<{ profile: AccountProfileRecord; previousObjectKey: string | null }>(client, userId, idempotencyKey);
       if (replay) {
         if (replay.profile.avatar?.version !== avatar.version || replay.profile.revision !== expectedRevision + 1) throw new Error("account_profile_idempotency_conflict");
@@ -1000,6 +1051,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<UserPreferencesRecord> {
     return this.#transaction(async (client) => {
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<UserPreferencesRecord>(
         client,
         userId,
@@ -1055,6 +1107,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<void> {
     await this.#transaction(async (client) => {
+      await this.#lockActiveAccount(client, userId);
       if (await this.#replay(client, userId, idempotencyKey)) return;
       const exists = await client.query("SELECT 1 FROM spots WHERE spot_id = $1", [
         spotId,
@@ -1123,8 +1176,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ObservationPlan> {
     return this.#transaction(async (client) => {
-      const account = await client.query<{ state: string }>("SELECT state FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
-      if (account.rows[0]?.state !== "ACTIVE") throw new Error("account_not_active");
+      await this.#lockActiveAccount(client, userId, "UPDATE");
       const replay = await this.#replay<ObservationPlan>(
         client,
         userId,
@@ -1239,8 +1291,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<void> {
     await this.#transaction(async (client) => {
-      const account = await client.query<{ state: string }>("SELECT state FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
-      if (account.rows[0]?.state !== "ACTIVE") throw new Error("account_not_active");
+      await this.#lockActiveAccount(client, userId, "UPDATE");
       if (await this.#replay(client, userId, idempotencyKey)) return;
       await client.query(
         `UPDATE plan_reminder_schedules SET active = false,
@@ -1284,7 +1335,7 @@ export class PostgresMiniappRepository
   ): Promise<ProfileLink> {
     return this.#transaction(async (client) => {
       // Serialize a user's link writes, including initially empty lists.
-      await client.query("SELECT user_id FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      await this.#lockActiveAccount(client, userId, "UPDATE");
       const replay = await this.#replay<ProfileLink>(
         client,
         userId,
@@ -1336,6 +1387,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<void> {
     await this.#transaction(async (client) => {
+      await this.#lockActiveAccount(client, userId, "UPDATE");
       if (await this.#replay(client, userId, idempotencyKey)) return;
       await client.query(
         "DELETE FROM user_profile_links WHERE profile_link_id = $1 AND user_id = $2",
@@ -1368,7 +1420,7 @@ export class PostgresMiniappRepository
     return this.#transaction(async (client) => {
       // A retried create may have a different generated draft ID. Lock the owner
       // before looking up its receipt so concurrent retries share one result.
-      await client.query("SELECT user_id FROM users WHERE user_id = $1 FOR UPDATE", [userId]);
+      await this.#lockActiveAccount(client, userId, "UPDATE");
       const replay = await this.#replay<ImportDraft>(
         client,
         userId,
@@ -1526,7 +1578,7 @@ export class PostgresMiniappRepository
 
   async saveFormalUploadIntent(userId: UserId, intent: ContributionFormalUploadIntent, idempotencyKey: string) {
     return this.#transaction(async client => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay=await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey); if(replay)return clone(replay);
       await client.query(`INSERT INTO formal_feedback_upload_intents(intent_id,user_id,spot_id,baseline_revision,revision,payload,expires_at,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`,[intent.intentId,userId,intent.spotId,intent.baselineRevision,intent.revision,intent,intent.expiresAt,intent.createdAt]);
       await this.#recordMutation(client,{idempotencyKey,operation:"formal-upload-intent.create",response:intent,eventType:"FormalUploadIntentCreated",scopeId:userId,payload:{userId,intentId:intent.intentId,spotId:intent.spotId}}); return clone(intent);
@@ -1535,7 +1587,7 @@ export class PostgresMiniappRepository
 
   async createFormalContributionUpload(userId: UserId, intentId: string, upload: ContributionFormalMediaUpload, expectedRevision: number, idempotencyKey: string) {
     return this.#transaction(async client => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay=await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey); if(replay)return clone(replay);
       const result=await client.query<{revision:number;payload:ContributionFormalUploadIntent;expires_at:string}>("SELECT revision,payload,expires_at FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE",[intentId,userId]); const row=result.rows[0];
       if(!row)throw new Error("formal_upload_intent_not_found"); if(row.revision!==expectedRevision)throw new Error("formal_upload_intent_revision_conflict"); if(Date.parse(row.expires_at)<=Date.now())throw new Error("formal_upload_intent_expired"); if(row.payload.uploads.length>=9)throw new Error("contribution_media_count_invalid");
@@ -1548,7 +1600,7 @@ export class PostgresMiniappRepository
 
   async completeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, completion: { byteSize: number; sha256: string; objectKey: string; uploadedAt: string }, idempotencyKey: string, writeObject: () => Promise<void>) {
     return this.#transaction(async client => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const result = await client.query<{ revision: number; payload: ContributionFormalUploadIntent }>(
         "SELECT revision,payload FROM formal_feedback_upload_intents WHERE intent_id=$1 AND user_id=$2 AND consumed_at IS NULL FOR UPDATE", [intentId,userId]);
       const row = result.rows[0];
@@ -1577,7 +1629,7 @@ export class PostgresMiniappRepository
 
   async removeFormalContributionUpload(userId: UserId, intentId: string, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string) {
     return this.#transaction(async client => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionFormalUploadIntent>(client,userId,idempotencyKey);
       if (replay) return clone(replay);
       const result = await client.query<{ revision: number; payload: ContributionFormalUploadIntent }>(
@@ -1605,7 +1657,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionSubmission>(
         client,
         userId,
@@ -1698,7 +1750,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionSubmission>(client, userId, idempotencyKey);
       if (replay) return clone(replay);
       const result = await client.query<{
@@ -1783,7 +1835,7 @@ export class PostgresMiniappRepository
     replaceUploadId?: ContributionUploadId,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionSubmission>(
         client,
         userId,
@@ -1892,7 +1944,7 @@ export class PostgresMiniappRepository
     writeObject: () => Promise<void>,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const submissionResult = await client.query<{
         user_id: string;
         revision: number;
@@ -2008,6 +2060,23 @@ export class PostgresMiniappRepository
     });
   }
 
+  async getContributionSubmitReceipt(userId: UserId, submissionId: ContributionId, idempotencyKey: string): Promise<ContributionSubmission | null> {
+    const receipt = await this.#readContributionReceipt<ContributionSubmission>(userId, idempotencyKey, ["contribution.submit"]);
+    return receipt?.submissionId === submissionId ? clone(receipt) : null;
+  }
+  async getFormalContributionSubmitReceipt(userId: UserId, spotId: SpotId, idempotencyKey: string): Promise<ContributionFormalSubmitResult | null> {
+    const receipt = await this.#readContributionReceipt<ContributionFormalSubmitResult>(userId, idempotencyKey, ["formal-contribution.submit", "formal-contribution.conflict"]);
+    const subject = receipt?.state === "CONFLICT" ? receipt.currentBaseline.spotId : receipt?.state === "SUBMITTED" ? receipt.submission.spotId : null;
+    return subject === spotId ? clone(receipt) : null;
+  }
+  async #readContributionReceipt<Result>(userId: UserId, key: string, operations: string[]): Promise<Result | null> {
+    return this.#transaction(async client => {
+      const result = await client.query<{ response: Result }>("SELECT response FROM idempotency_records WHERE scope_id=$1 AND idempotency_key=$2 AND operation=ANY($3::text[])", [userId, key, operations]);
+      const receipt = result.rows[0]?.response ?? null;
+      assertReceiptNotErased(receipt);
+      return receipt;
+    });
+  }
   async submitContribution(
     userId: UserId,
     submissionId: ContributionId,
@@ -2015,7 +2084,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionSubmission>(
         client,
         userId,
@@ -2139,7 +2208,7 @@ export class PostgresMiniappRepository
     idempotencyKey: string,
   ): Promise<ContributionFormalSubmitResult> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionFormalSubmitResult>(client, userId, idempotencyKey);
       if (replay) return clone(replay);
       // Serialize the user/spot subject so two first submissions cannot both pass
@@ -2281,7 +2350,7 @@ export class PostgresMiniappRepository
 
   async removeContributionUpload(userId: UserId, submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, idempotencyKey: string): Promise<ContributionSubmission> {
     return this.#transaction(async (client) => {
-      await this.#lockContributionOwner(client, userId);
+      await this.#lockActiveAccount(client, userId);
       const replay = await this.#replay<ContributionSubmission>(client, userId, idempotencyKey);
       if (replay) return clone(replay);
       const result = await client.query<{ user_id: string; state: string; revision: number; payload: ContributionSubmission }>(
@@ -3225,6 +3294,7 @@ export class PostgresMiniappRepository
       if (!submission || (submission.state !== "APPROVED" && submission.submissionState !== "ACCEPTED"))
         throw new Error("contribution_review_state_conflict");
       const normalizedSubmission = normalizeContributionSubmission(submission);
+      assertCandidateAttemptCurrent(normalizedSubmission, true);
       if (
         input.expectedSubmissionRevision !== undefined &&
         normalizedSubmission.revision !== input.expectedSubmissionRevision
@@ -3346,14 +3416,13 @@ export class PostgresMiniappRepository
       const mergedFormalFacts = { ...(current.detail.formalFacts ?? {}) } as Record<string, string | null>;
       const mergedFormalFieldKeys = new Set<string>();
       for (const [field, value] of Object.entries(resolvedProposal?.fields ?? {})) {
-        const topic = FORMAL_FIELD_TOPIC[field as keyof typeof FORMAL_FIELD_TOPIC];
-        if (topic && CONTRIBUTION_TOPIC_CLAIMS[topic].some(claim => claims.includes(claim))) {
+        if (contributionFieldMergeClaims(normalizedSubmission, field).some(claim => claims.includes(claim))) {
           mergedFormalFacts[field] = value.trim() || null;
           mergedFormalFieldKeys.add(field);
         }
       }
       const nextRoute = clone(current.detail.route);
-      const nextAccessAndSafety = clone(current.detail.accessAndSafety);
+      const nextAccessAndSafety = applyReviewedCandidateNightSafety(normalizedSubmission, claims, clone(current.detail.accessAndSafety));
       let nextFacilities = current.detail.spot.facilities.map(clone);
       const upsertFacility = (
         type: FacilityEvidence["type"],
@@ -3933,9 +4002,15 @@ export class PostgresMiniappRepository
     }
   }
 
-  async #lockContributionOwner(client: PoolClient, userId: UserId) {
-    const user = await client.query<{ state: string }>("SELECT state FROM users WHERE user_id=$1 FOR KEY SHARE", [userId]);
-    if (user.rows[0]?.state !== "ACTIVE") throw new Error("account_not_active");
+  #assertActiveAccount(account: { state: string } | undefined) {
+    if (account?.state !== "ACTIVE") throw new Error("account_not_active");
+  }
+
+  async #lockActiveAccount(client: PoolClient, userId: UserId, lock: "KEY SHARE" | "UPDATE" = "KEY SHARE") {
+    // UPDATE also preserves owner-level serialization for revisioned/list writes.
+    // Both modes are held through COMMIT and conflict with account erasure.
+    const user = await client.query<{ state: string }>(`SELECT state FROM users WHERE user_id=$1 FOR ${lock}`, [userId]);
+    this.#assertActiveAccount(user.rows[0]);
   }
 
   async #transaction<T>(operation: (client: PoolClient) => Promise<T>) {
@@ -4997,7 +5072,16 @@ export class PostgresMiniappRepository
       payload: Record<string, unknown>;
       created_at: string | Date;
       resolved_at: string | Date | null;
-    }>("SELECT * FROM moderation_cases WHERE case_id = $1", [caseId]);
+      current_submission: ContributionSubmission | null;
+    }>(
+      `SELECT c.case_id, c.subject_type, c.subject_id, c.state, c.payload,
+              s.payload AS current_submission, c.created_at, c.resolved_at
+         FROM moderation_cases c
+         LEFT JOIN user_submissions s
+           ON c.subject_type = 'USER_CONTRIBUTION' AND s.submission_id = c.subject_id
+        WHERE c.case_id = $1`,
+      [caseId],
+    );
     const row = caseResult.rows[0];
     if (!row) return null;
     const events = await client.query<{

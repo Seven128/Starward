@@ -34,6 +34,52 @@ test("cold retry after editing a draft replays its original body and key until e
   assert.equal(f.values.size, 0);
 });
 
+test("a cold retry renews only an expired Context reference for the unchanged plan intent", async () => {
+  const f = fixture(), storageKey = 'starward.plan-save.v1:["a"]';
+  const original = { ...input, timing: { endLocalDate: "2026-09-07", endLocalTime: "02:00", departureLocalDate: "2026-09-06", departureLocalTime: "20:00" },
+    travel: { origin: "深圳", mode: "TRANSIT" as const, originLocation: null }, eventOccurrenceIds: [], reminders: [] };
+  let firstKey = "";
+  await assert.rejects(f.boot()("a", original, async key => { firstKey = key; throw Error("receipt unknown before Context expiry"); }));
+  const renewed = { ...original, observationContextId: "context:restored-same-timezone-and-origin" };
+  const result = await f.boot()("a", renewed, async (key, body) => {
+    assert.equal(key, firstKey, "the original operation and plan identity must survive");
+    assert.deepEqual(body, renewed, "the expired reference cannot keep blocking an uncommitted request");
+    assert.deepEqual((f.values.get(storageKey) as { entries: { input: PlanSaveInput }[] }).entries[0]!.input, renewed,
+      "the renewed reference must be durable before dispatch");
+    return "confirmed";
+  });
+  assert.equal(result.receipt.planId, input.planId);
+  assert.equal(samePlanSaveIntent(original, result.input), true);
+  assert.equal(f.values.size, 1, "a confirmed receipt remains recoverable until draft reconciliation");
+  acknowledgePlanSave(f.storage, result.receipt);
+  assert.equal(f.values.size, 0);
+});
+
+test("a new Context cannot replace an unknown request when its authored intent or source meaning changed", async () => {
+  const changedInputs: PlanSaveInput[] = [
+    { ...input, spotId: "spot:other" }, { ...input, localDate: "2026-09-07" }, { ...input, localTime: "23:00" },
+    { ...input, notes: "new notes" }, { ...input, expectedRevision: 2 },
+    { ...input, travel: { origin: "other departure", mode: "DRIVING" } },
+    { ...input, contextIdentity: JSON.stringify(["Asia/Hong_Kong", [23, 114, "WGS84"]]) },
+  ];
+  for (const changed of changedInputs) {
+    const f = fixture();let firstKey = "";
+    await assert.rejects(f.boot()("a", input, async key => { firstKey = key; throw Error("unknown"); }));
+    await f.boot()("a", { ...changed, observationContextId: "context:other" }, async (key, body) => {
+      assert.equal(key, firstKey);assert.deepEqual(body, input);return "old receipt";
+    });
+  }
+});
+
+test("failure to persist a renewed Context reference prevents dispatch and retains the previous retry", async () => {
+  const f = fixture();
+  await assert.rejects(f.boot()("a", input, async () => { throw Error("unknown"); }));
+  const before = JSON.stringify([...f.values.entries()]);
+  const retry = createPlanSaveRetry({ ...f.storage, setStorageSync() { throw Error("full"); } }, () => "must-not-make-a-key", () => false);
+  await assert.rejects(retry("a", { ...input, observationContextId: "context:renewed" }, async () => assert.fail("must not dispatch")), PlanSaveRecoveryError);
+  assert.equal(JSON.stringify([...f.values.entries()]), before);
+});
+
 test("different accounts and independently reserved drafts never share a write", async () => {
   const f = fixture(); const keys: string[] = [];
   for (const [owner, planId] of [["a", "plan:first"], ["b", "plan:first"], ["a", "plan:other"]]) {

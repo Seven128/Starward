@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { testOperation } from "./operation-test-support";
 
 for (const state of ["DRAFT", "REJECTED", "CHANGES_REQUESTED"]) test(`removing ${state} media preserves form inputs and cannot cross a changed account`, async () => {
   const source = ts.createSourceFile("commands.ts", readFileSync(new URL("./use-contribution-commands.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -17,7 +18,7 @@ for (const state of ["DRAFT", "REJECTED", "CHANGES_REQUESTED"]) test(`removing $
   const create = vm.runInNewContext(ts.transpileModule(declarations.map((node) => node.getText(source)).join("\n") + "\ncreateRemoveMedia;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
     Taro: { showModal: async () => ({ confirm }) },
     contributionSubmissionState: () => state,
-    removeContributionUpload: async (...args: unknown[]) => { requests.push(args); if (lateAccountChange) accountValid = false; return { data: next }; },
+    removeContributionUpload: async (...args: unknown[]) => { assert.equal(typeof (args.at(-1) as { assertCurrent: unknown }).assertCurrent, "function"); requests.push(args.slice(0, -1)); if (lateAccountChange) accountValid = false; return { data: next }; },
     errorMessage: () => "账号已变化",
   });
   const form = {
@@ -28,7 +29,7 @@ for (const state of ["DRAFT", "REJECTED", "CHANGES_REQUESTED"]) test(`removing $
     removeCandidateMediaPreview() {},
     history: { refetch: async () => {} }, announce() {},
   };
-  const remove = create(form, () => { if (!accountValid) throw new Error("changed"); });
+  const remove = create(form, testOperation(() => { if (!accountValid) throw new Error("changed"); }));
   await remove("upload:a");
   assert.equal(requests.length, 0);
   confirm = true;

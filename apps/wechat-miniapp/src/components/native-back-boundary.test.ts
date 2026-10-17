@@ -10,18 +10,19 @@ test("custom modal owners share one native WEAPP Back boundary", () => {
   assert.match(boundary, /<PageContainer/u);
   assert.doesNotMatch(boundary, /RootPortal/u);
 
-  assert.match(source("../features/my/my-nickname.tsx"), /NativeBackBoundary active=\{editing\} onBack=\{cancel\}/u);
+  assert.match(source("../features/my/my-nickname.tsx"), /NativeBackBoundary active=\{editorVisible\} onBack=\{cancel\}/u);
   const avatar = source("../features/my/my-avatar.tsx");
   assert.equal(avatar.match(/<NativeBackBoundary\b/gu)?.length, 1, "avatar sheet and red handoff share one native owner");
-  assert.match(avatar, /NativeBackBoundary active=\{sheet \|\| Boolean\(preview\) \|\| mediaHandoff\.active\}/u);
+  assert.match(avatar, /NativeBackBoundary active=\{sheet \|\| previewVisible \|\| mediaHandoff\.active\}/u);
   assert.match(avatar, /mediaHandoff\.active \? mediaHandoff\.cancel\(\) : close\(\)/u);
   assert.match(avatar, /useRedLightHandoff\(\{ nativeBackBoundary: false \}\)/u);
-  assert.match(source("../content/settings/index.tsx"), /NativeBackBoundary active=\{Boolean\(sheet\)\} onBack=\{closeSheet\}/u);
-  assert.match(source("../pages/map/search-page.tsx"), /NativeBackBoundary active=\{filterSheetOpen\} onBack=\{cancelFilters\}/u);
+  assert.match(source("../content/settings/index.tsx"), /NativeBackBoundary active=\{login\.open \|\| Boolean\(sheet\)\} onBack=\{login\.open \? login\.back : closeSheet\}/u);
+  assert.match(source("../pages/map/search-page.tsx"), /NativeBackBoundary active=\{login\.open \|\| filterSheetOpen\} onBack=\{login\.open \? login\.back : cancelFilters\}/u);
   assert.match(source("./observation-date-control.tsx"), /<NativeBackBoundary[\s\S]*active=\{open\}[\s\S]*if \(!busy\) onOpenChange\(false\)/u);
   const sky = source("../features/sky/spot-sky-page.tsx");
   assert.equal(sky.match(/<NativeBackBoundary\b/gu)?.length, 1, "date and object disclosures share one native owner");
-  assert.match(sky, /active=\{pageVisible && skyHasDisclosure\([\s\S]*onBack=\{goBack\}/u);
+  assert.match(sky, /active=\{pageVisible && \(searchMotion\.present \|\| objectMotion\.present \|\| skyHasDisclosure\(/u);
+  assert.match(sky, /onBack=\{\(\) => \{ if \(!closingOverlay\) goBack\(\); \}\}/u);
 });
 
 test("the astronomical event modal keeps its native Back layer outside the visible RootPortal", () => {

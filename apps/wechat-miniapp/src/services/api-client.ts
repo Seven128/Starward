@@ -7,7 +7,8 @@ import { matchingCelestialPositionResponse, type CelestialPositionBinding } from
 import { matchingSkyTargetInstantResponse, type SkyTargetInstantBinding } from "./sky-target-instant-response";
 import { createPlanChecklistClient } from "./plan-checklist-client";
 import { createPlanSubscriptionClient } from "./plan-subscription-client";
-import { createAuthenticatedOperationRequester } from "./authenticated-operation";
+import { createPlanDestinationClient } from "./plan-destination-client";
+import { createAuthenticatedOperationRequester, type RequestOperationScope } from "./authenticated-operation";
 import Taro from "@tarojs/taro";
 import { planSaveBelongsTo } from "./local-draft-keys";
 import type { PlanSaveInput } from "./plan-save-retry";
@@ -51,6 +52,7 @@ import {
   type PlatformKind,
   type SpotRankingPreferences,
   type SpotId,
+  type TerrainHorizonRequest,
   type TerrainOverlayRequest,
   type UserPreferences,
 } from "@starward/miniapp-contracts";
@@ -95,9 +97,15 @@ type AnyEnvelope = ApiEnvelope<unknown>;
 
 const responseCache = createResponseCache(Taro);
 let sessionPromise: Promise<AuthSessionData> | null = null;
+// Existing verified sessions may renew. A visitor can only establish identity
+// through an explicit, cancellable login intent, never a background reader.
+let sessionLoginChoice: "UNDECIDED" | "WECHAT" | "GUEST" = "UNDECIDED";
 // A server-confirmed erasure must stay revoked in this runtime even when the
 // native store cannot remove its old session. This is not a disk-erasure claim.
-let erasedStoredAccountId: string | null = null;
+const erasedStoredAccountIds = new Set<string>();
+// A rejected native record stays untrusted if deletion fails. A null token
+// means it could not be read; only a confirmed new login can lift that fence.
+let invalidatedStoredSession: { accessToken: string | null } | null = null;
 
 export class MiniappApiError extends Error {
   readonly code: ApiError["code"];
@@ -130,6 +138,8 @@ function abortTask(task: unknown) {
 
 export function errorMessage(error: unknown): string {
   if (error instanceof MiniappApiError) {
+    if (error.message === "CONTRIBUTION_CORE_ANSWERS_REQUIRED") return "请补充开放、进入、夜间安全和联系情况；若看不到这些字段，请更新小程序后恢复原草稿";
+    if (error.message === "CONTRIBUTION_CORE_ANSWERS_CONFLICT") return "开放、进入或联系答案与提交内容不一致，请核对后再保存；原草稿仍保留";
     const labels: Record<ApiError["code"], string> = {
       INVALID_INPUT: "输入不符合服务端约束",
       NOT_FOUND: "目标不存在或已失效",
@@ -209,30 +219,45 @@ function staleCandidate<T>(
 }
 
 function readStoredSession(): AuthSessionData | null {
+  let session: AuthSessionData | null = null;
   try {
     const value = Taro.getStorageSync(SESSION_STORAGE_KEY) as unknown;
     if (
       typeof value !== "object" ||
       value === null ||
       typeof (value as { userId?: unknown }).userId !== "string" ||
+      !(value as { userId: string }).userId.trim() ||
       typeof (value as { accessToken?: unknown }).accessToken !== "string" ||
+      !(value as { accessToken: string }).accessToken.trim() ||
       typeof (value as { expiresAt?: unknown }).expiresAt !== "string"
-    )
-      return null;
-    const session = value as AuthSessionData;
-    if (session.userId === erasedStoredAccountId) return null;
-    if (
-      !Number.isFinite(Date.parse(session.expiresAt)) ||
-      Date.parse(session.expiresAt) <= Date.now() + SESSION_EXPIRY_SKEW_MS
     ) {
-      try { Taro.removeStorageSync(SESSION_STORAGE_KEY); } catch { /* No stale identity may remain active in memory. */ }
-      useAppStore.getState().bindAccount(null);
-      return null;
+      session = null;
+    } else {
+      session = value as AuthSessionData;
+      if (erasedStoredAccountIds.has(session.userId)) return null;
+      if (invalidatedStoredSession && (
+        invalidatedStoredSession.accessToken === null ||
+        invalidatedStoredSession.accessToken === session.accessToken
+      )) {
+        session = null;
+      } else if (
+        !Number.isFinite(Date.parse(session.expiresAt)) ||
+        Date.parse(session.expiresAt) <= Date.now() + SESSION_EXPIRY_SKEW_MS
+      ) {
+        if (sessionLoginChoice === "UNDECIDED" && Number.isFinite(Date.parse(session.expiresAt)))
+          sessionLoginChoice = "WECHAT";
+        try { Taro.removeStorageSync(SESSION_STORAGE_KEY); } catch { /* No stale identity may remain active in memory. */ }
+        session = null;
+      }
     }
-    return session;
   } catch {
-    return null;
+    session = null;
   }
+  // Hide unverifiable private projections; bindAccount preserves their scoped
+  // recovery snapshot. A network failure with a valid native session stays bound.
+  if (!session) useAppStore.getState().bindAccount(null);
+  else sessionLoginChoice = "WECHAT";
+  return session;
 }
 
 /** Local drafts may be scoped by identity, never by an access token. */
@@ -240,9 +265,15 @@ export function currentDraftUserId(): string | null {
   return readStoredSession()?.userId ?? null;
 }
 
-function clearStoredSession() {
+function clearStoredSession(rejected?: AuthSessionData) {
+  const current = readStoredSession();
+  if (rejected && (
+    (current && (current.userId !== rejected.userId || current.accessToken !== rejected.accessToken)) ||
+    (!current && sessionPromise)
+  )) return false;
+  invalidatedStoredSession = { accessToken: current?.accessToken ?? null };
   sessionPromise = null;
-  if (useAppStore.getState().accountOwnerId !== erasedStoredAccountId)
+  if (!erasedStoredAccountIds.has(useAppStore.getState().accountOwnerId ?? ""))
     useAppStore.getState().bindAccount(null);
   try {
     Taro.removeStorageSync(SESSION_STORAGE_KEY);
@@ -254,8 +285,10 @@ function clearStoredSession() {
 }
 
 function markAccountErased(userId: string) {
-  erasedStoredAccountId = userId;
-  sessionPromise = null;
+  erasedStoredAccountIds.add(userId);
+  if (useAppStore.getState().accountOwnerId === userId) sessionLoginChoice = "GUEST";
+  // A newer login has no verified identity yet. Its returned identity is checked
+  // by ensureSession; deleting A cannot retire a genuine successor B login.
 }
 
 function installationIdentity() {
@@ -281,6 +314,47 @@ function installationIdentity() {
       "-" +
       Math.random().toString(36).slice(2, 14)
     );
+  }
+}
+
+let pendingErasedInstallation: { deletedUserId: string; installationId: string } | null = null;
+
+function nativeSessionOwner(value: unknown): string | null {
+  if (typeof value !== "object" || value === null) return null;
+  const userId = (value as Partial<AuthSessionData>).userId;
+  return typeof userId === "string" && userId.trim() ? userId.trim() : null;
+}
+
+function settleErasedInstallation(): boolean {
+  const intent = pendingErasedInstallation;
+  if (!intent) return true;
+  // A pending login may establish a genuine successor. Its own finally retries
+  // this intent, including when an older login was superseded.
+  if (sessionPromise) return false;
+  try {
+    const rawSession = Taro.getStorageSync(SESSION_STORAGE_KEY) as unknown;
+    if (rawSession !== undefined && rawSession !== null && rawSession !== "") {
+      const nativeOwner = nativeSessionOwner(rawSession);
+      if (!nativeOwner) return false;
+      if (nativeOwner !== intent.deletedUserId) {
+        pendingErasedInstallation = null;
+        return true;
+      }
+    }
+    const boundOwner = useAppStore.getState().accountOwnerId;
+    if (boundOwner !== null) {
+      if (boundOwner === intent.deletedUserId) return false;
+      pendingErasedInstallation = null;
+      return true;
+    }
+    // A changed installation belongs to another lifecycle, even when its
+    // login failed or its native credentials cannot yet be verified.
+    if (Taro.getStorageSync(INSTALLATION_STORAGE_KEY) === intent.installationId)
+      Taro.removeStorageSync(INSTALLATION_STORAGE_KEY);
+    pendingErasedInstallation = null;
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -357,6 +431,9 @@ async function request<T>(
     const cached = cacheFence.cached;
     releaseCache = cacheFence.release;
     const header: Record<string, string> = { Accept: "application/json" };
+    // A cold terrain range read and raster derivation needs a longer bounded
+    // window than ordinary DTO reads. Other operations keep their deadline.
+    const timeoutMs = key.startsWith("terrain:") ? 18_000 : 10_000;
     // WeChat defaults to JSON; an empty DELETE body must not trigger JSON parsing.
     if (method === "DELETE" && options.body === undefined) header["Content-Type"] = "text/plain";
     if (__MINIAPP_OPERATOR_PREVIEW_TOKEN__)
@@ -411,7 +488,7 @@ async function request<T>(
           "watchdog",
         );
       }, true);
-    }, 12_000);
+    }, timeoutMs + 2_000);
 
     try {
       options.signal?.addEventListener("abort", onAbort, { once: true });
@@ -422,7 +499,7 @@ async function request<T>(
       task = Taro.request<ApiEnvelope<T> | ApiError>({
         url: apiBase + path,
         method,
-        timeout: 10_000,
+        timeout: timeoutMs,
         header,
         // WeChat's request transport can send a bodyless POST as invalid input.
         // An empty object preserves the operation's no-payload contract.
@@ -559,43 +636,71 @@ export const { getAccountProfile, saveAccountNickname, getAccountAvatar, saveAcc
   },
 });
 
-async function ensureSession(force = false): Promise<AuthSessionData> {
+async function ensureSession(force = false, loginIntent?: AbortSignal): Promise<AuthSessionData> {
+  if (loginIntent?.aborted) throw new MiniappRequestCancelled("query_signal");
   if (!force) {
     const stored = readStoredSession();
     if (stored) {
+      // Native current identity takes precedence over an older pending login.
+      sessionPromise = null;
       useAppStore.getState().bindAccount(stored.userId);
       return stored;
     }
-    if (sessionPromise) return sessionPromise;
+    if (sessionPromise && !loginIntent) return sessionPromise;
   } else {
     clearStoredSession();
   }
-  sessionPromise = (async () => {
+  if (!loginIntent && sessionLoginChoice !== "WECHAT") throw new Error("wechat_login_required");
+  function assertCurrentLogin() {
+    if (loginIntent?.aborted || sessionPromise !== pending) throw new MiniappRequestCancelled("superseded");
+  }
+  const pending: Promise<AuthSessionData> = (async () => {
     const capabilities = await requestOperation(
       "capabilities:auth",
       "capabilitiesGet",
-      { auth: "NONE" },
+      { auth: "NONE", ...(loginIntent ? { signal: loginIntent } : {}) },
     );
+    assertCurrentLogin();
+    if (loginIntent && !capabilities.data.flags.WECHAT_AUTH_ENABLED) throw new Error("wechat_login_unavailable");
     const code = capabilities.data.flags.WECHAT_AUTH_ENABLED
       ? (await Taro.login()).code
       : installationIdentity();
     if (!code) throw new Error("wechat_login_code_missing");
+    assertCurrentLogin();
     const result = await requestOperation("auth:login", "wechatLoginPost", {
       auth: "NONE",
       body: { code },
+      ...(loginIntent ? { signal: loginIntent } : {}),
     });
-    if (result.data.userId === erasedStoredAccountId)
+    if (erasedStoredAccountIds.has(result.data.userId))
       throw new Error("account_identity_revoked");
+    assertCurrentLogin();
     Taro.setStorageSync(SESSION_STORAGE_KEY, result.data);
+    invalidatedStoredSession = null;
+    sessionLoginChoice = "WECHAT";
     useAppStore.getState().bindAccount(result.data.userId);
     return result.data;
   })();
-  try {
-    return await sessionPromise;
-  } catch (error) {
+  sessionPromise = pending;
+  const cancelLogin = () => {
+    if (sessionPromise !== pending) return;
     sessionPromise = null;
-    throw error;
+    sessionLoginChoice = "GUEST";
+  };
+  loginIntent?.addEventListener("abort", cancelLogin, { once: true });
+  if (loginIntent?.aborted) cancelLogin();
+  try {
+    return await pending;
+  } finally {
+    loginIntent?.removeEventListener("abort", cancelLogin);
+    if (sessionPromise === pending) sessionPromise = null;
+    settleErasedInstallation();
   }
+}
+
+/** Called only by the visible shortcut-login action; closing it aborts this intent. */
+export function loginWithWechat(signal: AbortSignal): Promise<AuthSessionData> {
+  return ensureSession(false, signal);
 }
 
 export function getCapabilities(signal?: AbortSignal) {
@@ -609,29 +714,53 @@ export function getCapabilities(signal?: AbortSignal) {
 export function resolveObservationContext(
   input: ObservationContextResolveRequest,
   signal?: AbortSignal,
+  expectedUserId?: string,
 ) {
+  const privateOwner = input.location.kind === "PENDING_PROPOSAL" ? expectedUserId ?? currentDraftUserId() : null;
+  const privateReset = privateOwner ? useAppStore.getState().mapResetVersion : null;
+  if (input.location.kind === "PENDING_PROPOSAL" && (!privateOwner || currentDraftUserId() !== privateOwner))
+    throw new Error("账户已变化，请回到原账号核对待审点。");
   return requestOperation(
     "observation-context:resolve",
     "observationContextPost",
     {
       body: input,
+      auth: input.location.kind === "PENDING_PROPOSAL" ? "REQUIRED" : "OPTIONAL",
+      cache: false,
       ...(signal ? { signal } : {}),
-    },
-  );
+    }, false, privateOwner ?? undefined,
+  ).then(response => {
+    if (privateOwner && (currentDraftUserId() !== privateOwner || useAppStore.getState().mapResetVersion !== privateReset ||
+        response.data.schemaVersion !== "observation-context-v3" || response.data.privacyClass !== "ACCOUNT_PRIVATE" || response.data.privateProposal?.ownerId !== privateOwner))
+      throw new Error("账户已变化，请回到原账号核对待审点。");
+    return response;
+  });
 }
 
 export function getObservationContext(
   contextId: string,
   signal?: AbortSignal,
+  expectedUserId?: string,
 ) {
+  const owner = expectedUserId ?? currentDraftUserId();
+  const ownerReset = owner ? useAppStore.getState().mapResetVersion : null;
+  if (expectedUserId && currentDraftUserId() !== expectedUserId) throw new Error("账户已变化，请回到原账号核对待审点。");
   return requestOperation(
     "observation-context:" + contextId,
     "observationContextGet",
     {
       pathParams: { contextId },
+      auth: "OPTIONAL", cache: false,
       ...(signal ? { signal } : {}),
-    },
-  );
+    }, false, owner ?? undefined,
+  ).then(response => {
+    if (response.data.schemaVersion === "observation-context-v3" && !response.data.privateProposal)
+      throw new Error("observation_proposal_identity_invalid");
+    if (response.data.privateProposal && (!owner || currentDraftUserId() !== owner || useAppStore.getState().mapResetVersion !== ownerReset ||
+        response.data.schemaVersion !== "observation-context-v3" || response.data.privacyClass !== "ACCOUNT_PRIVATE" || response.data.privateProposal.ownerId !== owner))
+      throw new Error("账户已变化，请回到原账号核对待审点。");
+    return response;
+  });
 }
 
 /**
@@ -644,14 +773,33 @@ export async function restoreObservationContext(
   context: ObservationContext,
   signal?: AbortSignal,
 ) {
+  const privateReset = context.privateProposal ? useAppStore.getState().mapResetVersion : null;
+  if (context.privateProposal && currentDraftUserId() !== context.privateProposal.ownerId)
+    throw new Error("账户已变化，请回到原账号核对待审点。");
+  if (context.privateProposal && context.routeOrigin !== null) throw new Error("observation_proposal_identity_invalid");
   try {
-    return await getObservationContext(context.contextId, signal);
+    return await getObservationContext(context.contextId, signal, context.privateProposal?.ownerId);
   } catch (error) {
     if (
       !(error instanceof MiniappApiError) ||
       (error.code !== "NOT_FOUND" && error.code !== "STALE_REJECTED")
     )
       throw error;
+    if (context.privateProposal && (currentDraftUserId() !== context.privateProposal.ownerId || useAppStore.getState().mapResetVersion !== privateReset))
+      throw new Error("账户已变化，请回到原账号核对待审点。");
+    return rebuildObservationContext(context, signal, privateReset);
+  }
+}
+
+/** Retired writes can still change their ID; resolve the confirmed snapshot under a new identity. */
+export function replaceRetiredObservationContext(context: ObservationContext, signal?: AbortSignal) {
+  return rebuildObservationContext(context, signal, context.privateProposal ? useAppStore.getState().mapResetVersion : null);
+}
+
+async function rebuildObservationContext(context: ObservationContext, signal: AbortSignal | undefined, privateReset: number | null) {
+    if (context.privateProposal && (currentDraftUserId() !== context.privateProposal.ownerId || useAppStore.getState().mapResetVersion !== privateReset))
+      throw new Error("账户已变化，请回到原账号核对待审点。");
+    if (context.privateProposal && context.routeOrigin !== null) throw new Error("observation_proposal_identity_invalid");
     let routeOriginContextId: string | null = null;
     let recoveredRouteOrigin: Awaited<ReturnType<typeof resolveObservationContext>> | null = null;
     if (context.routeOrigin) {
@@ -681,14 +829,14 @@ export async function restoreObservationContext(
       return await resolveObservationContext(
         observationContextRecoveryInput(context, routeOriginContextId),
         signal,
+        context.privateProposal?.ownerId,
       );
     } catch (recoveryError) {
-      if (context.location.kind === "FORMAL_SPOT" && recoveredRouteOrigin &&
+      if (!context.privateProposal && context.location.kind === "FORMAL_SPOT" && recoveredRouteOrigin &&
         recoveryError instanceof MiniappApiError && recoveryError.code === "NOT_FOUND")
         return recoveredRouteOrigin;
       throw recoveryError;
     }
-  }
 }
 
 export { observationContextRecoveryInput };
@@ -698,22 +846,30 @@ export async function updateObservationContext(
   input: Omit<ObservationContextUpdateRequest, "expectedRevision">,
   signal?: AbortSignal,
 ) {
-  const update = async (current: ObservationContext) => {
+  const privateReset = context.privateProposal ? useAppStore.getState().mapResetVersion : null;
+  if (context.privateProposal && currentDraftUserId() !== context.privateProposal.ownerId)
+    throw new Error("账户已变化，请回到原账号核对待审点。");
+  const update = async (current: ObservationContext, allowPublicationRetry = true): Promise<ApiEnvelope<ObservationContext>> => {
+    if (current.privateProposal && (currentDraftUserId() !== current.privateProposal.ownerId || useAppStore.getState().mapResetVersion !== privateReset))
+      throw new Error("账户已变化，请回到原账号核对待审点。");
     try {
       const response = await requestOperation(
         "observation-context:" + current.contextId,
         "observationContextPut",
         {
           pathParams: { contextId: current.contextId },
+          auth: current.privateProposal ? "REQUIRED" : "OPTIONAL", cache: false,
           body: { ...input, expectedRevision: current.revision },
           idempotencyKey: idempotencyKey("observation-context"),
           ...(signal ? { signal } : {}),
-        },
+        }, false, current.privateProposal?.ownerId,
       );
       // A successful status cannot acknowledge a different place/time or an
       // unchanged revision. Normal and uncertain replies share one validator.
       if (!confirmedObservationContextEdit(current, input, response))
         throw new Error("bff_observation_context_update_invalid");
+      if (current.privateProposal && (currentDraftUserId() !== current.privateProposal.ownerId || useAppStore.getState().mapResetVersion !== privateReset))
+        throw new Error("账户已变化，请回到原账号核对待审点。");
       return response;
     } catch (error) {
       if (error instanceof MiniappRequestCancelled || signal?.aborted ||
@@ -723,13 +879,23 @@ export async function updateObservationContext(
       let readback;
       try {
         readback = await requestOperation("observation-context:" + current.contextId, "observationContextGet", {
-          pathParams: { contextId: current.contextId }, cache: false, ...(signal ? { signal } : {}),
-        });
+          pathParams: { contextId: current.contextId }, auth: current.privateProposal ? "REQUIRED" : "OPTIONAL", cache: false, ...(signal ? { signal } : {}),
+        }, false, current.privateProposal?.ownerId);
       } catch (readError) {
         if (readError instanceof MiniappRequestCancelled || signal?.aborted) throw readError;
         throw error;
       }
-      if (!confirmedObservationContextEdit(current, input, readback)) throw error;
+      if (!confirmedObservationContextEdit(current, input, readback)) {
+        // An explicit conflict establishes that this PUT did not commit. Only
+        // the exact same pending identity's authoritative publication, with all
+        // prior time/event values intact, permits one edit on its new revision.
+        if (allowPublicationRetry && error instanceof MiniappApiError && error.code === "CONFLICT" &&
+            current.privateProposal && current.location.kind === "PENDING_PROPOSAL" && readback.data.location.kind === "FORMAL_SPOT" &&
+            confirmedObservationContextEdit(current, {}, readback)) return update(readback.data, false);
+        throw error;
+      }
+      if (current.privateProposal && (currentDraftUserId() !== current.privateProposal.ownerId || useAppStore.getState().mapResetVersion !== privateReset))
+        throw new Error("账户已变化，请回到原账号核对待审点。");
       return readback;
     }
   };
@@ -775,6 +941,7 @@ export function getMapScene(
   viewport?: {
     center: { latitude: number; longitude: number };
     zoom: number;
+    bounds?: { west: number; south: number; east: number; north: number };
   },
   preferences?: SpotRankingPreferences,
   layer: MapLayerKind = "NORMAL",
@@ -792,6 +959,8 @@ export function getMapScene(
           "centerLat=" + viewport.center.latitude.toFixed(6),
           "centerLng=" + viewport.center.longitude.toFixed(6),
           "zoom=" + viewport.zoom,
+          ...(viewport.bounds ? ["viewportBounds=" + [viewport.bounds.west, viewport.bounds.south,
+            viewport.bounds.east, viewport.bounds.north].map(value => value.toFixed(7)).join(",")] : []),
         ]
       : []),
     ...(preferences
@@ -808,46 +977,28 @@ export function getMapScene(
   });
 }
 
+export function getTerrainHorizon(input: TerrainHorizonRequest, signal?: AbortSignal) {
+  return requestOperation("terrain:HORIZON", "terrainHorizonGet", {
+    query: `centerLat=${input.center.latitude.toFixed(7)}&centerLng=${input.center.longitude.toFixed(7)}`,
+    cache: false,
+    ...(signal ? { signal } : {}),
+  });
+}
+
 export function getTerrainOverlay(input: TerrainOverlayRequest, signal?: AbortSignal) {
   const query = [
     `purpose=${input.purpose}`,
     `centerLat=${input.center.latitude.toFixed(7)}`,
     `centerLng=${input.center.longitude.toFixed(7)}`,
-    `radiusKm=${input.radiusKm.toFixed(1)}`,
+    ...(input.viewportBounds ? [`viewportBounds=${[input.viewportBounds.west, input.viewportBounds.south,
+      input.viewportBounds.east, input.viewportBounds.north].map(value => value.toFixed(7)).join(",")}`]
+      : [`radiusKm=${input.radiusKm!.toFixed(1)}`]),
   ].join("&");
   return requestOperation(`terrain:${input.purpose}`, "terrainOverlayGet", {
     query,
+    // The query owner handles immutable successes and partial-product failures.
+    cache: false,
     ...(signal ? { signal } : {}),
-  });
-}
-
-export function terrainAssetUrl(relativePath: string) {
-  if (!/^\/v2\/terrain\/assets\/[A-Za-z0-9][A-Za-z0-9.-]*\.png$/u.test(relativePath))
-    throw new Error("terrain_asset_path_invalid");
-  return __MINIAPP_API_BASE__.replace(/\/+$/u, "") + relativePath;
-}
-
-export function downloadTerrainAsset(relativePath: string, signal?: AbortSignal): Promise<string> {
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) {
-      reject(new MiniappRequestCancelled("superseded"));
-      return;
-    }
-    const task = Taro.downloadFile({
-      url: terrainAssetUrl(relativePath),
-      success(result) {
-        cleanup();
-        if (result.statusCode >= 200 && result.statusCode < 300 && result.tempFilePath) resolve(result.tempFilePath);
-        else reject(new Error(`terrain_asset_download_failed:${result.statusCode}`));
-      },
-      fail(error) {
-        cleanup();
-        reject(signal?.aborted ? new MiniappRequestCancelled("superseded") : new Error(error.errMsg || "terrain_asset_download_failed"));
-      },
-    });
-    const abort = () => task.abort();
-    const cleanup = () => signal?.removeEventListener("abort", abort);
-    signal?.addEventListener("abort", abort, { once: true });
   });
 }
 
@@ -861,6 +1012,7 @@ export function getSpotOverview(
     "spotOverviewGet",
     {
       pathParams: { spotId },
+      auth: "OPTIONAL",
       query: "contextId=" + encodeURIComponent(contextId),
       ...(signal ? { signal } : {}),
     },
@@ -914,6 +1066,7 @@ export function getAstronomicalEvent(
   contextId?: string,
 ) {
   return requestOperation(`astronomical-event:${occurrenceId}:${contextId ?? "catalog"}`, "astronomicalEventGet", {
+    auth: contextId ? "OPTIONAL" : "NONE", cache: contextId ? false : true,
     pathParams: { occurrenceId },
     ...(contextId ? { query: "contextId=" + encodeURIComponent(contextId) } : {}),
     ...(signal ? { signal } : {}),
@@ -928,7 +1081,7 @@ export function getSkyReport(
   if (!spotId.startsWith("spot:") && !spotId.startsWith("contribution:"))
     throw new Error("night_location_identity_invalid");
   return requestOperation("spot-sky:v4:extended:" + spotId, "spotSkyGet", {
-    auth: spotId.startsWith("contribution:") ? "REQUIRED" : "NONE",
+    auth: spotId.startsWith("contribution:") ? "REQUIRED" : "OPTIONAL",
     pathParams: { spotId },
     query: "contextId=" + encodeURIComponent(contextId) + "&catalogVersion=" + ADOPTED_SKY_REPORT_CATALOG_VERSION +
       "&deepSkyCatalogVersion=" + encodeURIComponent(CURRENT_DEEP_SKY_CATALOG_VERSION),
@@ -944,7 +1097,7 @@ export function getSkyTargetInstant(binding: SkyTargetInstantBinding, signal?: A
     throw new Error("night_location_identity_invalid");
   const key = `spot-sky-targets:v1:${spotId}:${contextId}:${binding.contextRevision}:${binding.contextFingerprint}:${at}`;
   return requestOperation(key, "spotSkyTargetsGet", {
-    auth: spotId.startsWith("contribution:") ? "REQUIRED" : "NONE",
+    auth: spotId.startsWith("contribution:") ? "REQUIRED" : "OPTIONAL",
     pathParams: { spotId },
     query: "contextId=" + encodeURIComponent(contextId) + "&at=" + encodeURIComponent(at),
     ...(signal ? { signal } : {}),
@@ -1036,12 +1189,16 @@ export async function getUserLibrary(signal?: AbortSignal, expectedUserId?: stri
   return result;
 }
 
-export function getPreferences(signal?: AbortSignal) {
-  return requestOperation("preferences", "preferencesGet", {
+export async function getPreferences(signal?: AbortSignal, expectedUserId?: string) {
+  const { userId } = await ensureSession();
+  const owner = expectedUserId ?? userId;
+  const result = await requestOperation("preferences", "preferencesGet", {
     auth: "REQUIRED",
     cache: false,
     ...(signal ? { signal } : {}),
-  });
+  }, false, owner);
+  if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开设置。");
+  return result;
 }
 
 export async function savePreferences(
@@ -1061,63 +1218,114 @@ export async function savePreferences(
   return result;
 }
 
-async function accountReauthentication() {
+async function accountReauthentication(scope?: RequestOperationScope) {
+  scope?.assertCurrent();
   const { userId } = await ensureSession();
+  scope?.assertCurrent();
   const capabilities = await getCapabilities();
+  scope?.assertCurrent();
   const code = capabilities.data.flags.WECHAT_AUTH_ENABLED
     ? (await Taro.login()).code
     : installationIdentity();
   if (!code) throw new Error("wechat_login_code_missing");
+  scope?.assertCurrent();
   if (currentDraftUserId() !== userId) throw new Error("账户已变化，请重新打开页面后再操作。");
   return { userId, code };
 }
 
-export async function exportAccountData(signal?: AbortSignal) {
-  const { userId, code } = await accountReauthentication();
+export async function exportAccountData(signal?: AbortSignal, scope?: RequestOperationScope) {
+  const { userId, code } = await accountReauthentication(scope);
   const result = await requestOperation("account-data-export", "accountDataExportGet", {
     auth: "REQUIRED",
     reauthenticationCode: code,
     cache: false,
+    ...(scope ? { scope } : {}),
     ...(signal ? { signal } : {}),
   }, false, userId);
   if (currentDraftUserId() !== userId) throw new Error("账户已变化，请重新下载当前账户的数据。");
   return result;
 }
 
-export async function deleteAccount() {
+export async function deleteAccount(onCurrentAccountDeleted?: (userId: string) => void) {
   const { userId: deletedUserId, code } = await accountReauthentication();
+  let installationId: string | null = null;
+  let installationReadComplete = true;
+  try {
+    const stored = Taro.getStorageSync(INSTALLATION_STORAGE_KEY) as unknown;
+    if (typeof stored === "string" && stored) installationId = stored;
+    else if (stored !== undefined && stored !== null && stored !== "") installationReadComplete = false;
+  } catch { installationReadComplete = false; }
   const result = await requestOperation("account-delete", "accountDelete", {
     auth: "REQUIRED",
     reauthenticationCode: code,
     body: { confirmation: "DELETE_ACCOUNT" },
     idempotencyKey: idempotencyKey("account-delete"),
   }, false, deletedUserId);
-  const localAccountReset = currentDraftUserId() === deletedUserId;
-  markAccountErased(deletedUserId);
-  let localCleanupComplete = !localAccountReset || clearStoredSession();
-  try {
-    for (const key of Taro.getStorageInfoSync().keys) {
-      if (!planDraftBelongsTo(key, deletedUserId) && !contributionDraftBelongsTo(key, deletedUserId) && !contributionSubmitBelongsTo(key, deletedUserId) && !profileDraftBelongsTo(key, deletedUserId) && !profileSaveBelongsTo(key, deletedUserId) && !importSaveBelongsTo(key, deletedUserId) && !importLocalDraftBelongsTo(key, deletedUserId) && !planChecklistBelongsTo(key, deletedUserId) && !planEventSelectionBelongsTo(key, deletedUserId) && !planSaveBelongsTo(key, deletedUserId)) continue;
-      try { Taro.removeStorageSync(key); } catch { localCleanupComplete = false; }
+  let currentSession: AuthSessionData | null = null;
+  let acknowledgementComplete = true;
+  // Ownership checks must not expire or unbind B while acknowledging A. The
+  // normal session reader may retire expired credentials, even for a known B.
+  const hasSuccessor = () => {
+    const nativeOwner = nativeSessionOwner(Taro.getStorageSync(SESSION_STORAGE_KEY));
+    const boundOwner = useAppStore.getState().accountOwnerId;
+    return (nativeOwner !== null && nativeOwner !== deletedUserId) ||
+      (typeof boundOwner === "string" && boundOwner !== deletedUserId);
+  };
+  try { if (!hasSuccessor()) currentSession = readStoredSession(); }
+  catch { acknowledgementComplete = false; }
+  const resetCurrentAccount = currentSession?.userId === deletedUserId;
+  if (resetCurrentAccount) {
+    // This synchronous acknowledgement distinguishes our successful A -> null
+    // cleanup from an external account departure. UI cannot block revocation.
+    try { onCurrentAccountDeleted?.(deletedUserId); } catch { acknowledgementComplete = false; }
+  }
+  // A confirmed server receipt owns all later local retries. No reauthentication,
+  // new DELETE or renewed account authority is needed to remove only A's state.
+  const cleanupLocal = async (initialComplete = true) => {
+    if (!installationReadComplete && initialComplete) {
+      try {
+        if (!hasSuccessor() && !sessionPromise) {
+          const stored = Taro.getStorageSync(INSTALLATION_STORAGE_KEY) as unknown;
+          if (typeof stored === "string" && stored) installationId = stored;
+          installationReadComplete = stored === undefined || stored === null || stored === "" || typeof stored === "string";
+        } else if (hasSuccessor()) installationReadComplete = true;
+      } catch { /* Keep the incomplete result retryable. */ }
     }
-  } catch { localCleanupComplete = false; }
-  if (!localAccountReset) {
-    const cacheRemoved = await responseCache.removeScope(deletedUserId);
-    localCleanupComplete = cacheRemoved && localCleanupComplete;
-    miniappQueryClient.removeQueries({ predicate: query => query.queryKey.includes(deletedUserId) });
-    return { ...result, localAccountReset, localCleanupComplete };
-  }
-  responseCache.clear();
-  await responseCache.flush();
-  localCleanupComplete = responseCache.cleanupComplete() && localCleanupComplete;
-  try {
-    Taro.removeStorageSync(INSTALLATION_STORAGE_KEY);
-  } catch {
-    // Server deletion and session revocation remain authoritative.
-    localCleanupComplete = false;
-  }
-  miniappQueryClient.clear();
-  return { ...result, localAccountReset, localCleanupComplete };
+    let localCleanupComplete = initialComplete && installationReadComplete;
+    try { localCleanupComplete = useAppStore.getState().resetAfterAccountDeletion(deletedUserId) && localCleanupComplete; }
+    catch { localCleanupComplete = false; }
+    markAccountErased(deletedUserId);
+    try {
+      const nativeSession = Taro.getStorageSync(SESSION_STORAGE_KEY) as unknown;
+      const nativeOwner = nativeSessionOwner(nativeSession);
+      if (nativeOwner === deletedUserId) Taro.removeStorageSync(SESSION_STORAGE_KEY);
+      else if (nativeSession !== undefined && nativeSession !== null && nativeSession !== "" && !nativeOwner)
+        localCleanupComplete = false;
+    } catch { localCleanupComplete = false; }
+    try {
+      for (const key of Taro.getStorageInfoSync().keys) {
+        if (!planDraftBelongsTo(key, deletedUserId) && !contributionDraftBelongsTo(key, deletedUserId) && !contributionSubmitBelongsTo(key, deletedUserId) && !profileDraftBelongsTo(key, deletedUserId) && !profileSaveBelongsTo(key, deletedUserId) && !importSaveBelongsTo(key, deletedUserId) && !importLocalDraftBelongsTo(key, deletedUserId) && !planChecklistBelongsTo(key, deletedUserId) && !planEventSelectionBelongsTo(key, deletedUserId) && !planSaveBelongsTo(key, deletedUserId)) continue;
+        try { Taro.removeStorageSync(key); } catch { localCleanupComplete = false; }
+      }
+    } catch { localCleanupComplete = false; }
+    try { miniappQueryClient.removeQueries({ predicate: query => query.queryKey.includes(deletedUserId) }); }
+    catch { localCleanupComplete = false; }
+    try { localCleanupComplete = await responseCache.removeScope(deletedUserId) && localCleanupComplete; }
+    catch { localCleanupComplete = false; }
+    let localAccountReset = false;
+    try {
+      localAccountReset = resetCurrentAccount && !hasSuccessor() && currentDraftUserId() === null &&
+        useAppStore.getState().accountOwnerId === null;
+    } catch { localCleanupComplete = false; }
+    if (localAccountReset && installationId) {
+      pendingErasedInstallation = { deletedUserId, installationId };
+      localCleanupComplete = settleErasedInstallation() && localCleanupComplete;
+    }
+    return { localAccountReset, localCleanupComplete };
+  };
+  return { ...result, ...await cleanupLocal(acknowledgementComplete && installationReadComplete),
+    retryLocalCleanup: async () => (await cleanupLocal()).localCleanupComplete };
+
 }
 
 export async function ensureFavoriteOwner() {
@@ -1159,13 +1367,16 @@ export async function getPlans(signal?: AbortSignal, expectedUserId?: string) {
   return result;
 }
 
-export async function createPlanShare(planId: string, expectedUserId?: string) {
+export async function createPlanShare(planId: string, expectedUserId?: string, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
   const session = await ensureSession();
+  scope?.assertCurrent();
   const owner = expectedUserId ?? session.userId;
   if (session.userId !== owner) throw new Error("账号已变化，请重新打开计划。");
   const result = await requestOperation("plan-share:" + planId, "planSharePost", {
-    auth: "REQUIRED", pathParams: { planId },
+    auth: "REQUIRED", pathParams: { planId }, scope,
   }, false, owner);
+  scope?.assertCurrent();
   if (currentDraftUserId() !== owner) throw new Error("账号已变化，请重新打开计划。");
   return result;
 }
@@ -1182,28 +1393,40 @@ export function getSharedSpot(spotId: string, signal?: AbortSignal) {
   }, false);
 }
 
+async function refreshAccountPlans(owner:string) {
+  invalidateApiCache('plans');
+  await miniappQueryClient.invalidateQueries({queryKey:['plans',owner],exact:true});
+}
+
+export const reverifyPlanReminderDestination = createPlanDestinationClient({
+  request:requestOperation,currentUser:currentDraftUserId,
+  login:()=>Taro.login(),confirmed:refreshAccountPlans,
+});
+
 export const planReminderSubscription = createPlanSubscriptionClient({
   request: requestOperation, currentUser: currentDraftUserId,
-  confirmed: async owner => {
-    invalidateApiCache("plans");
-    await miniappQueryClient.invalidateQueries({ queryKey: ["plans", owner], exact: true });
-  },
+  confirmed: refreshAccountPlans,
 });
 
 export const setPlanChecklistCompletion = createPlanChecklistClient({
   request: requestOperation, currentUser: currentDraftUserId,
   makeKey: () => idempotencyKey("plan-checklist"),
-  confirmed: async (owner, plan) => {
+  confirmed: async (owner, plan, scope) => {
+    scope?.assertCurrent();
     miniappQueryClient.setQueryData<MiniappApiResponse<"plansGet">>(["plans", owner], previous => previous ? {
       ...previous, data: { ...previous.data, plans: previous.data.plans.map(item => item.planId === plan.planId && item.revision <= plan.revision ? plan : item) },
     } : previous);
+    scope?.assertCurrent();
     await invalidateAfter("PLAN");
+    scope?.assertCurrent();
   },
 });
 
 /** Single authenticated HTTP attempt; the plan editor owns durable recovery. */
-export async function sendObservationPlanSave(original: PlanSaveInput, retryKey: string, owner: string) {
+export async function sendObservationPlanSave(original: PlanSaveInput, retryKey: string, owner: string, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (session.userId !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
   const result = await requestOperation("plan-mutation:" + original.planId, "planPut", {
     auth: "REQUIRED", pathParams: { planId: original.planId },
@@ -1216,25 +1439,44 @@ export async function sendObservationPlanSave(original: PlanSaveInput, retryKey:
       ...(original.reminders === undefined ? {} : { reminders: original.reminders }),
       ...(original.eventOccurrenceIds === undefined ? {} : { eventOccurrenceIds: original.eventOccurrenceIds }),
       notes: original.notes, expectedRevision: original.expectedRevision,
-    }, idempotencyKey: retryKey,
+    }, idempotencyKey: retryKey, scope,
   }, false, owner);
+  scope?.assertCurrent();
   if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
   return result;
 }
 
+/** GET only: a missing receipt remains unknown and cannot authorize a new save. */
+export async function getObservationPlanSaveResult(receipt: import("./plan-save-retry").PlanSaveReceipt, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
+  const result = await requestOperation("plan-save-result:" + receipt.planId, "planSaveResultGet", {
+    auth: "REQUIRED", pathParams: { planId: receipt.planId }, idempotencyKey: receipt.key, cache: false, scope,
+  }, false, receipt.owner);
+  scope?.assertCurrent();
+  if (currentDraftUserId() !== receipt.owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
+  if (result.dataState !== "FRESH") throw new Error("暂时无法确认这次保存，原草稿和请求仍保留。");
+  return result;
+}
+
 /** A historical receipt must never be installed as the current plan list. */
-export async function getCurrentPlansAfterSave(owner: string) {
-  const current = await requestOperation("plans", "plansGet", { auth: "REQUIRED", cache: false }, false, owner);
+export async function getCurrentPlansAfterSave(owner: string, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
+  const current = await requestOperation("plans", "plansGet", { auth: "REQUIRED", cache: false, scope }, false, owner);
+  scope?.assertCurrent();
   if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
   if (current.dataState !== "FRESH") throw new Error("暂时无法确认当前计划，上次保存请求仍保留。");
   miniappQueryClient.setQueryData(["plans", owner], current);
+  scope?.assertCurrent();
   await invalidateAfter("PLAN");
+  scope?.assertCurrent();
   if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对计划保存结果。");
   return current;
 }
 
-export async function deleteObservationPlan(planId: string, expectedUserId?: string) {
+export async function deleteObservationPlan(planId: string, expectedUserId?: string, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (expectedUserId && session.userId !== expectedUserId) throw new Error("账号已变化，请回到原账号核对计划删除结果。");
   const result = await requestOperation(
     "plan-delete:" + planId,
@@ -1243,13 +1485,17 @@ export async function deleteObservationPlan(planId: string, expectedUserId?: str
       auth: "REQUIRED",
       pathParams: { planId },
       idempotencyKey: idempotencyKey("plan-delete"),
+      scope,
     },
     false,
     session.userId,
   );
+  scope?.assertCurrent();
   if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对计划删除结果。");
   miniappQueryClient.setQueryData(["plans", session.userId], result);
+  scope?.assertCurrent();
   await invalidateAfter("PLAN");
+  scope?.assertCurrent();
   return result;
 }
 
@@ -1416,11 +1662,14 @@ export async function updatePostImport(
   return result;
 }
 
-export async function getContributions(signal?: AbortSignal, expectedUserId?: string) {
+export async function getContributions(signal?: AbortSignal, expectedUserId?: string, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
   const session = await ensureSession();
+  scope?.assertCurrent();
   const owner = expectedUserId ?? session.userId;
   const result = await requestOperation("contributions", "contributionsGet", {
     auth: "REQUIRED",
+    scope,
     ...(signal ? { signal } : {}),
   }, false, owner);
   if (currentDraftUserId() !== owner) {
@@ -1429,13 +1678,17 @@ export async function getContributions(signal?: AbortSignal, expectedUserId?: st
   return result;
 }
 
+
 const retryContributionCreate = createMutationRetry(() => idempotencyKey("contribution-create"));
 
 export async function createContributionDraft(
   input: ContributionDraftRequest,
+  scope?: RequestOperationScope,
 ) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
   return retryContributionCreate(session.userId, input, async (retryKey) => {
   const result = await requestOperation(
@@ -1444,6 +1697,7 @@ export async function createContributionDraft(
     {
       auth: "REQUIRED",
       body: input,
+      scope,
       idempotencyKey: retryKey,
     },
     false,
@@ -1463,9 +1717,9 @@ export async function ensureContributionOwner() {
   return session.userId;
 }
 
-export async function submitFormalContribution(input: ContributionFormalSubmitRequest, retryKey: string, owner: string) {
+export async function submitFormalContribution(input: ContributionFormalSubmitRequest, retryKey: string, owner: string, scope?: RequestOperationScope) {
   const response = await requestOperation("formal-contribution-submit", "formalContributionSubmitPost", {
-    body: input, auth: "REQUIRED", idempotencyKey: retryKey,
+    body: input, auth: "REQUIRED", idempotencyKey: retryKey, scope,
   }, false, owner);
   if (currentDraftUserId() !== owner) throw new Error("账号已变化，请回到原账号核对反馈结果。");
   invalidateApiCache("contributions");
@@ -1492,17 +1746,17 @@ export async function getContributionMedia(
   return result;
 }
 
-export function createFormalUploadIntent(input: ContributionFormalUploadIntentRequest, retryKey: string, owner: string) {
-  return requestOperation("formal-upload-intent", "formalContributionUploadIntentPost", { body: input, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
+export function createFormalUploadIntent(input: ContributionFormalUploadIntentRequest, retryKey: string, owner: string, scope?: RequestOperationScope) {
+  return requestOperation("formal-upload-intent", "formalContributionUploadIntentPost", { body: input, auth: "REQUIRED", idempotencyKey: retryKey, scope }, false, owner);
 }
-export function createFormalContributionUpload(intentId: string, input: ContributionFormalUploadSessionRequest, retryKey: string, owner: string) {
-  return requestOperation(`formal-upload:${intentId}`, "formalContributionUploadPost", { pathParams: { intentId }, body: input, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
+export function createFormalContributionUpload(intentId: string, input: ContributionFormalUploadSessionRequest, retryKey: string, owner: string, scope?: RequestOperationScope) {
+  return requestOperation(`formal-upload:${intentId}`, "formalContributionUploadPost", { pathParams: { intentId }, body: input, auth: "REQUIRED", idempotencyKey: retryKey, scope }, false, owner);
 }
-export function completeFormalContributionUpload(intentId: string, uploadId: string, input: ContributionFormalUploadCompleteRequest, retryKey: string, owner: string) {
-  return requestOperation(`formal-upload-complete:${uploadId}`, "formalContributionUploadPut", { pathParams: { intentId, uploadId }, body: input, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
+export function completeFormalContributionUpload(intentId: string, uploadId: string, input: ContributionFormalUploadCompleteRequest, retryKey: string, owner: string, scope?: RequestOperationScope) {
+  return requestOperation(`formal-upload-complete:${uploadId}`, "formalContributionUploadPut", { pathParams: { intentId, uploadId }, body: input, auth: "REQUIRED", idempotencyKey: retryKey, scope }, false, owner);
 }
-export function removeFormalContributionUpload(intentId: string, uploadId: string, expectedRevision: number, retryKey: string, owner: string) {
-  return requestOperation(`formal-upload-remove:${uploadId}`, "formalContributionUploadDelete", { pathParams: { intentId, uploadId }, body: { expectedRevision }, auth: "REQUIRED", idempotencyKey: retryKey }, false, owner);
+export function removeFormalContributionUpload(intentId: string, uploadId: string, expectedRevision: number, retryKey: string, owner: string, scope?: RequestOperationScope) {
+  return requestOperation(`formal-upload-remove:${uploadId}`, "formalContributionUploadDelete", { pathParams: { intentId, uploadId }, body: { expectedRevision }, auth: "REQUIRED", idempotencyKey: retryKey, scope }, false, owner);
 }
 
 const retryContributionUpdate = createMutationRetry(() => idempotencyKey("contribution-update"));
@@ -1510,9 +1764,12 @@ const retryContributionUpdate = createMutationRetry(() => idempotencyKey("contri
 export async function updateContributionDraft(
   submissionId: ContributionId,
   input: ContributionUpdateRequest,
+  scope?: RequestOperationScope,
 ) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
   return retryContributionUpdate(session.userId, { submissionId, input }, async (retryKey) => {
   const result = await requestOperation(
@@ -1522,6 +1779,7 @@ export async function updateContributionDraft(
       auth: "REQUIRED",
       pathParams: { submissionId },
       body: input,
+      scope,
       idempotencyKey: retryKey,
     },
     false,
@@ -1538,9 +1796,12 @@ const retryContributionWithdraw = createMutationRetry(() => idempotencyKey("cont
 export async function withdrawContributionDraft(
   submissionId: ContributionId,
   expectedRevision: number,
+  scope?: RequestOperationScope,
 ) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner)
     throw new Error("账号已变化，请回到原账号核对反馈。");
   return retryContributionWithdraw(session.userId, { submissionId, expectedRevision }, async (retryKey) => {
@@ -1551,6 +1812,7 @@ export async function withdrawContributionDraft(
         auth: "REQUIRED",
         pathParams: { submissionId },
         body: { expectedRevision },
+        scope,
         idempotencyKey: retryKey,
       },
       false,
@@ -1569,9 +1831,12 @@ const retryContributionUpload = createMutationRetry(() => idempotencyKey("contri
 export async function createContributionUpload(
   submissionId: ContributionId,
   input: ContributionUploadSessionRequest,
+  scope?: RequestOperationScope,
 ) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
   return retryContributionUpload(session.userId, { submissionId, input }, async (retryKey) => {
   const result = await requestOperation(
@@ -1581,6 +1846,7 @@ export async function createContributionUpload(
       auth: "REQUIRED",
       pathParams: { submissionId },
       body: input,
+      scope,
       idempotencyKey: retryKey,
     },
     false,
@@ -1596,9 +1862,12 @@ export async function completeContributionUpload(
   submissionId: ContributionId,
   uploadId: ContributionUploadId,
   input: ContributionUploadCompleteRequest,
+  scope?: RequestOperationScope,
 ) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
   const result = await requestOperation(
     "contribution-upload-complete:" + uploadId,
@@ -1607,6 +1876,7 @@ export async function completeContributionUpload(
       auth: "REQUIRED",
       pathParams: { submissionId, uploadId },
       body: input,
+      scope,
       idempotencyKey: idempotencyKey("contribution-upload-complete"),
     },
     false,
@@ -1619,13 +1889,15 @@ export async function completeContributionUpload(
 
 const retryContributionRemoval = createMutationRetry(() => idempotencyKey("contribution-upload-remove"));
 
-export async function removeContributionUpload(submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number) {
+export async function removeContributionUpload(submissionId: ContributionId, uploadId: ContributionUploadId, expectedRevision: number, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
   const initiatingOwner = currentDraftUserId();
   const session = await ensureSession();
+  scope?.assertCurrent();
   if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
   return retryContributionRemoval(session.userId, { submissionId, uploadId, expectedRevision }, async (retryKey) => {
     const result = await requestOperation("contribution-upload-remove:" + uploadId, "contributionUploadDelete", {
-      auth: "REQUIRED", pathParams: { submissionId, uploadId }, body: { expectedRevision }, idempotencyKey: retryKey,
+      auth: "REQUIRED", pathParams: { submissionId, uploadId }, body: { expectedRevision }, idempotencyKey: retryKey, scope,
     }, false, session.userId);
     if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈结果。");
     invalidateApiCache("contributions");
@@ -1636,32 +1908,34 @@ export async function removeContributionUpload(submissionId: ContributionId, upl
 const retryContributionSubmit = createContributionSubmitRetry(Taro, () => idempotencyKey("contribution-submit"),
   (error) => error instanceof MiniappApiError && error.statusCode >= 400 && error.statusCode < 500 && error.statusCode !== 408);
 
-export async function submitContribution(
-  submissionId: ContributionId,
-  expectedRevision: number,
-) {
-  const initiatingOwner = currentDraftUserId();
-  const session = await ensureSession();
-  if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
-  return retryContributionSubmit(session.userId, { submissionId, expectedRevision }, async (retryKey) => {
-  const result = await requestOperation(
-    "contribution-submit:" + submissionId,
-    "contributionSubmitPost",
-    {
-      auth: "REQUIRED",
-      pathParams: { submissionId },
-      body: { expectedRevision },
-      idempotencyKey: retryKey,
-    },
-    false,
-    session.userId,
-  );
-  if (currentDraftUserId() !== session.userId) throw new Error("账号已变化，请回到原账号核对反馈结果。");
+function assertContributionRequestOwner(owner: string | undefined, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
+  const current = currentDraftUserId();
+  if (!current || (owner && current !== owner)) throw new Error("账号已变化，请重新打开反馈页。");
+  return current;
+}
+
+async function sendContributionSubmit(submissionId: ContributionId, expectedRevision: number, retryKey: string, owner: string, scope?: RequestOperationScope) {
+  assertContributionRequestOwner(owner, scope);
+  const result = await requestOperation("contribution-submit:" + submissionId, "contributionSubmitPost", {
+    auth: "REQUIRED", pathParams: { submissionId }, body: { expectedRevision }, scope, idempotencyKey: retryKey,
+  }, false, owner);
+  assertContributionRequestOwner(owner, scope);
   invalidateApiCache("contributions");
   await miniappQueryClient.invalidateQueries({ queryKey: ["contributions"] });
   return result;
-  });
 }
+
+export async function submitContribution(submissionId: ContributionId, expectedRevision: number, scope?: RequestOperationScope) {
+  scope?.assertCurrent();
+  const initiatingOwner = currentDraftUserId(), session = await ensureSession();
+  scope?.assertCurrent();
+  if (initiatingOwner && session.userId !== initiatingOwner) throw new Error("账号已变化，请回到原账号核对反馈。");
+  return retryContributionSubmit(session.userId, { submissionId, expectedRevision }, key => sendContributionSubmit(submissionId, expectedRevision, key, session.userId, scope));
+}
+
+/** The feature clients retain only projection/recovery; requests and durable intent stay with their existing owners. */
+export const contributionSubmissionTransport = { request: requestOperation, send: sendContributionSubmit, retryExisting: retryContributionSubmit.existing, assertOwner: assertContributionRequestOwner };
 
 export function cancelRequest(key: string) {
   requests.cancel(key);

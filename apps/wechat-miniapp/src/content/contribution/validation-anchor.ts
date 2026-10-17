@@ -2,6 +2,7 @@ import type { ContributionMediaKind } from "@starward/miniapp-contracts";
 
 export function contributionValidationAnchor(field: string | null, candidateMedia?: readonly { kind?: ContributionMediaKind; state: string }[]): string {
   if (!field) return "";
+  if (field.startsWith("contribution-intake-")) return field;
   if (field === "contribution-spot-context") return "feedback-context";
   if (field === "contribution-media-upload") {
     if (!candidateMedia) return "feedback-media";

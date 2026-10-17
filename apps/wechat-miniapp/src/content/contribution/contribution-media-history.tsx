@@ -63,6 +63,7 @@ export function ContributionMediaSection({
       ))}
       {media.length < 3 ? <SoftButton
         label="选择并上传现场图片"
+        loading={form.uploading ? "arc" : false}
         disabled={disabled}
         onClick={() => void commands.addMedia()}
       >
@@ -108,6 +109,16 @@ function mediaStateText(
   return "上传尚未完成 · 可续传";
 }
 
+export function ContributionSubmitRecovery({ form, commands }: { form: ContributionForm; commands: ContributionCommands }) {
+  if (!form.pendingSubmission) return null;
+  return <View className="contribution-submit-recovery">
+    <StatusPanel state={form.submitting ? "LOADING" : "STALE"} title={form.submitting ? "正在处理提交" : "提交结果待确认"}
+      detail={form.submitting ? "当前输入保持不变，请稍候。" : "原输入保持冻结。核对只读结果，重试仍是原提交。"}
+      {...(form.submitting ? {} : { recoveryLabel: "确认提交结果", onRecover: () => void commands.submit() })} />
+    {form.submissionRetryAvailable ? <SoftButton label="重试原提交" disabled={form.submitting} onClick={() => void commands.retrySubmit()}>重试原提交</SoftButton> : null}
+  </View>;
+}
+
 export function ContributionActions({
   form,
   commands,
@@ -120,16 +131,15 @@ export function ContributionActions({
   placement?: "inline" | "sticky";
 }) {
   const disabled = form.commandBusy;
+  const draftState = form.draft ? contributionSubmissionState(form.draft) : null;
+  const isResubmission = draftState === "REJECTED" || draftState === "CHANGES_REQUESTED";
+  const submitLabel = form.pendingSubmission ? "结果待确认" : isResubmission ? "再次提交" : "提交审核";
   return (
     <View
       className="contribution-actions"
       data-od-id="contribution-submit"
       data-control="contribution-submit"
     >
-      {form.pendingSubmission ? <View className="contribution-draft-recovery" role="status">
-        <Text className="type-section">上次提交结果待确认</Text>
-        <Text className="type-body">内容和图片已保留。确认前暂不修改这份草稿；再次确认会继续同一次提交。</Text>
-      </View> : null}
       {form.conflictDraft ? (
         <View className="contribution-draft-recovery">
           <Text className="type-section">核对最新草稿</Text>
@@ -146,6 +156,7 @@ export function ContributionActions({
       ) : null}
       <SoftButton
         label={form.kind === "NEW_SPOT_PROPOSAL" ? "保存新增观星点草稿" : "保存现场反馈草稿"}
+        loading={form.saving ? "arc" : false}
         disabled={disabled}
         onClick={() => void commands.saveDraft()}
       >
@@ -154,11 +165,12 @@ export function ContributionActions({
       {placement === "inline" ? <ContributionDeleteDraftAction form={form} commands={commands} onWithdrawn={onWithdrawn} /> : null}
       <SoftButton
         variant="primary"
-        label={form.pendingSubmission ? "确认上次提交结果" : "提交人工审核"}
-        disabled={form.submissionCommandBusy || (!form.pendingSubmission && form.mediaNeedsRecovery)}
+        label={form.pendingSubmission ? "结果待确认" : isResubmission ? "再次提交" : "提交人工审核"}
+        loading={form.submitting}
+        disabled={form.submissionCommandBusy || Boolean(form.pendingSubmission) || form.mediaNeedsRecovery}
         onClick={() => void commands.submit()}
       >
-        {form.submitting ? "提交中…" : form.pendingSubmission ? "确认上次提交结果" : "提交审核"}
+        {form.submitting ? "处理中…" : submitLabel}
       </SoftButton>
     </View>
   );

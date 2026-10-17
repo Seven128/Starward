@@ -3,63 +3,90 @@ import type { DisplayMode } from "@starward/miniapp-contracts";
 
 import { NATIVE_CHROME_THEME } from "./design-tokens";
 
-export async function syncNativeChrome(mode: DisplayMode) {
+type ChromeRequest = {
+  mode: DisplayMode;
+  waiters: Array<{ resolve(): void; reject(error: unknown): void }>;
+};
+let active = false;
+let pending: ChromeRequest | undefined;
+let latestMode: DisplayMode = "DAY";
+const photoViewerOwners = new Set<symbol>();
+
+/** Photos always use a dark surface; release restores the latest page theme. */
+export function retainPhotoViewerNativeChrome() {
+  const owner = Symbol("photo-viewer");
+  photoViewerOwners.add(owner);
+  let released = false;
+  return {
+    ready: syncNativeChrome(latestMode),
+    release() {
+      if (released) return Promise.resolve();
+      released = true;
+      photoViewerOwners.delete(owner);
+      return syncNativeChrome(latestMode);
+    },
+  };
+}
+
+// Native writes cannot be cancelled. Finish every dispatched write before the
+// next batch, and retain only the latest pending mode across page consumers.
+export function syncNativeChrome(mode: DisplayMode): Promise<void> {
+  latestMode = mode;
+  return new Promise((resolve, reject) => {
+    if (pending) {
+      pending.mode = mode;
+      pending.waiters.push({ resolve, reject });
+    } else {
+      pending = { mode, waiters: [{ resolve, reject }] };
+    }
+    if (!active) void drainChrome();
+  });
+}
+
+async function drainChrome() {
+  active = true;
+  try {
+    while (pending) {
+      const request = pending;
+      pending = undefined;
+      try {
+        await applyNativeChrome(request.mode);
+        for (const waiter of request.waiters) waiter.resolve();
+      } catch (error) {
+        for (const waiter of request.waiters) waiter.reject(error);
+      }
+    }
+  } finally {
+    active = false;
+  }
+}
+
+async function settleWrites(writes: Array<() => Promise<unknown>>) {
+  // Reflect failures so Promise.all cannot retire a batch while other native
+  // writes are still outstanding. This uses the existing Promise API surface.
+  const results = await Promise.all(writes.map(async write => {
+    try { await write(); return { ok: true as const }; }
+    catch (error) { return { ok: false as const, error }; }
+  }));
+  const failed = results.find(result => !result.ok);
+  if (failed && !failed.ok) throw failed.error;
+}
+
+async function applyNativeChrome(mode: DisplayMode) {
   const theme = NATIVE_CHROME_THEME[mode];
   // Sky remains dark in day mode; native status text must follow the surface.
   const isSky = Taro.getCurrentPages().at(-1)?.route === "sky/detail/index";
-  const canvas = isSky && mode !== "OBSERVATION" ? "#080D17" : theme.canvas;
-  const hasTabBar = () => {
-    const route = Taro.getCurrentPages().at(-1)?.route;
-    return route === "pages/map/index" || route === "pages/my/index";
-  };
-  const syncTabBar = async () => {
-    if (!hasTabBar()) return;
-    try {
-      await Taro.setTabBarStyle({
-        color: theme.color,
-        selectedColor: theme.selectedColor,
-        backgroundColor: theme.backgroundColor,
-        borderStyle: theme.borderStyle,
-      });
-    } catch (error) {
-      // Child routes have no tab bar. Their page background still updates;
-      // useThemeClass reapplies the current mode when a primary page shows.
-      if (
-        error && typeof error === "object" && "errMsg" in error &&
-        error.errMsg === "setTabBarStyle:fail not TabBar page"
-      ) return;
-      throw error;
-    }
-    if (!hasTabBar()) return;
-    await Promise.all([
-      Taro.setTabBarItem({
-        index: 0,
-        iconPath: mode === "DAY" ? "assets/b-icons/weapp-tabbar/map--day--default.png" : `assets/icons/tab-map${theme.suffix}.png`,
-        selectedIconPath: mode === "DAY" ? "assets/b-icons/weapp-tabbar/map--day--selected.png" : `assets/icons/tab-map-selected${theme.suffix}.png`,
-      }),
-      Taro.setTabBarItem({
-        index: 1,
-        iconPath: mode === "DAY" ? "assets/b-icons/weapp-tabbar/account-user--day--default.png" : `assets/icons/tab-my${theme.suffix}.png`,
-        selectedIconPath: mode === "DAY" ? "assets/b-icons/weapp-tabbar/account-user--day--selected.png" : `assets/icons/tab-my-selected${theme.suffix}.png`,
-      }),
-    ]).catch((error: unknown) => {
-      // Native dispatch can outlive the route check above when navigation wins
-      // the race. A tab page's next onShow reapplies its current icons.
-      if (error && typeof error === "object" && "errMsg" in error &&
-        error.errMsg === "setTabBarItem:fail not TabBar page") return;
-      throw error;
-    });
-  };
-  await Promise.all([
-    Taro.setNavigationBarColor({
-      frontColor: mode === "DAY" && !isSky ? "#000000" : "#ffffff",
+  const isPhotoViewer = photoViewerOwners.size > 0;
+  const canvas = isPhotoViewer && mode !== "OBSERVATION" ? "#131419" : isSky && mode !== "OBSERVATION" ? "#080D17" : theme.canvas;
+  await settleWrites([
+    () => Taro.setNavigationBarColor({
+      frontColor: mode === "DAY" && !isSky && !isPhotoViewer ? "#000000" : "#ffffff",
       backgroundColor: canvas,
     }),
-    Taro.setBackgroundColor({
+    () => Taro.setBackgroundColor({
       backgroundColor: canvas,
       backgroundColorTop: canvas,
       backgroundColorBottom: canvas,
     }),
-    syncTabBar(),
   ]);
 }

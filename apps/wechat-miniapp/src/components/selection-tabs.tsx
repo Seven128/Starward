@@ -9,7 +9,7 @@ export interface SelectionTabItem<Id extends string> {
 
 export function SelectionTabs<Id extends string>({
   items, activeId, onSelect, label, semantics = "document", className = "",
-  itemClassName = "", activeItemClassName = "", indicatorClassName, controlId,
+  itemClassName = "", activeItemClassName = "", indicatorClassName, indicatorStyle, controlId,
 }: {
   items: readonly SelectionTabItem<Id>[];
   activeId: Id;
@@ -20,6 +20,7 @@ export function SelectionTabs<Id extends string>({
   itemClassName?: string;
   activeItemClassName?: string;
   indicatorClassName?: string;
+  indicatorStyle?: CSSProperties;
   controlId?: string;
 }) {
   const activeIndex = Math.max(0, items.findIndex((item) => item.id === activeId));
@@ -36,7 +37,7 @@ export function SelectionTabs<Id extends string>({
       </Button>;
     })}
     {indicatorClassName ? <View className={indicatorClassName}
-      style={{ left: `${activeIndex * (100 / Math.max(1, items.length))}%`, width: `${100 / Math.max(1, items.length)}%` } as CSSProperties}
+      style={{ left: `${activeIndex * (100 / Math.max(1, items.length))}%`, width: `${100 / Math.max(1, items.length)}%`, ...indicatorStyle } as CSSProperties}
       aria-hidden /> : null}
   </View>;
 }

@@ -1,6 +1,9 @@
 import { mediaSource } from "@/utils/media-source";
+import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
 import { isProductSource, productSourceNames } from "@/utils/source-presentation";
-import type { PanelCssMotion } from "./panel-spring-style";
+import { FACILITY_LABEL } from "@/utils/facility-presentation";
+import { FacilityCard } from "@/components/facility-card";
+import { facilityPhotos as associatedFacilityPhotos, sitePhotoContext } from "@/utils/spot-media";
 import { Block, Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import type {
   MapSceneTimeFrame,
@@ -10,12 +13,13 @@ import type {
   SpotDetail,
   SpotSummary,
 } from "@starward/miniapp-contracts";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Taro, { useResize } from "@tarojs/taro";
 import { useAppStore } from "@/state/app-store";
 import { WeatherAlerts } from "@/components/weather-alerts";
 import { RecentWeather } from "@/components/recent-weather";
 import { SourceAttribution } from "@/components/source-attribution";
+import { SourceDisclosure } from "@/components/source-disclosure";
 import { AirQuality } from "@/components/air-quality";
 import { DataStateBadge } from "@/components/data-state-badge";
 import { SpotPanelActions } from "./spot-panel-actions";
@@ -26,6 +30,7 @@ import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { MapTimeRuler } from "./time-ruler";
 import { MapTemporalFeedback, type MapTemporalFailure } from "./map-temporal-feedback";
 import { ObservationDateControl } from "@/components/observation-date-control";
+import { observationNightLabel } from "@/components/observation-date";
 import { MoonPhaseImage, moonPhaseLabel } from "@/components/moon-phase";
 import {
   darknessLabel,
@@ -39,7 +44,7 @@ import { SpotTerrainOverview } from "./spot-terrain-overview";
 import { ForecastCoverageNote } from "@/components/forecast-coverage-note";
 import { SpotPlanEntry } from "@/features/spot/spot-plan-entry";
 import { SpotImageViewer } from "@/components/spot-image-viewer";
-import { useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
+import { useSpotMediaDocumentPosition, useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
 import { useHiddenNativeScrollbar } from "@/components/use-hidden-native-scrollbar";
 
 export type SpotPanelExtent = "small" | "medium" | "large";
@@ -50,7 +55,10 @@ const PANEL_SECTIONS = [
   { id: "spot-panel-terrain", label: "地形" },
   { id: "spot-panel-astronomy", label: "天文" },
 ] as const;
-const SECTION_NAV_REVEAL_PX = 44;
+const SECTION_NAV_REVEAL_PX = 48;
+// Native anchor alignment rounds subpixel scroll positions. Keep its reached
+// chapter within one logical pixel, while real reverse scrolling still wins.
+const SECTION_NAV_ALIGNMENT_EPSILON_PX = 1;
 
 function isPermissionError(error: unknown) {
   return (
@@ -77,29 +85,7 @@ function statusLabel(status: SpotSummary["status"]) {
 }
 
 function facilityLabel(type: string) {
-  return (
-    {
-      PARKING: "停车",
-      TOILET: "厕所",
-      PLATFORM: "观测平台",
-      CHARGING: "充电",
-      CAMPING: "露营",
-      ROAD: "末段道路",
-      WALKING: "徒步",
-      SIGNAL: "通信信号",
-    } as Record<string, string>
-  )[type] ?? type;
-}
-
-function facilityStatusLabel(status: string) {
-  return (
-    {
-      AVAILABLE: "可用",
-      UNAVAILABLE: "不可用",
-      UNKNOWN: "待核验",
-      SEASONAL: "季节性",
-    } as Record<string, string>
-  )[status] ?? "状态暂无数据";
+  return FACILITY_LABEL[type as keyof typeof FACILITY_LABEL] ?? type;
 }
 
 function opennessLabel(value: SpotDetail["accessAndSafety"]["openness"] | undefined) {
@@ -116,31 +102,14 @@ function nightSafetyLabel(value: SpotDetail["accessAndSafety"]["nightSafety"] | 
 
 function formatLunarEvent(value: string | null, timezone: string, empty: string) {
   if (!value) return empty;
-  try {
-    return new Intl.DateTimeFormat("zh-CN", {
-      timeZone: timezone,
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    }).format(new Date(value));
-  } catch {
-    return "暂无数据";
-  }
+  return formatSourceTime(value, timezone) ?? "暂无数据";
 }
 
 function formatSourceTime(value: string | null | undefined, timezone: string) {
   if (!value) return null;
   try {
-    return new Intl.DateTimeFormat("zh-CN", {
-      timeZone: timezone,
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    }).format(new Date(value));
+    const date = new Date(value);
+    return `${calendarDateInTimezone(date, timezone).slice(5).replace("-", "/")} ${clockTimeInTimezone(date, timezone)}`;
   } catch {
     return null;
   }
@@ -150,19 +119,22 @@ export function SpotInformationPanel({
   spot,
   visible = true,
   settling = false,
-  springMotion,
   detail,
   detailPending,
   detailError,
   detailStale = false,
+  onLayoutChange,
   contextPending,
   contextError,
   onContextRecover,
   extent,
+  documentScrollEnabled,
   phase,
   favorite,
   favoritePending,
   context,
+  timeContext,
+  timeContextPending,
   astronomyAt,
   skyReport,
   skyPending,
@@ -170,12 +142,18 @@ export function SpotInformationPanel({
   skyError,
   skyStale = false,
   timeFrames,
+  timeFramesPending,
+  timeFramesFailed,
+  onTimeFramesRecover,
+  timeRulerIdentity,
   timeSaving,
   temporalFailure,
   onTemporalRetry,
   dateOptions,
   selectedDate,
   todayDate,
+  datePickerOpen,
+  onDatePickerOpenChange,
   onDateCommit,
   onTimePreview,
   onTimeCommit,
@@ -186,32 +164,38 @@ export function SpotInformationPanel({
   onHandleTouchCancel,
   onExtent,
   onClose,
+  onLoadingCancel = onClose,
   onRecover,
   onSkyRecover,
   onFavorite,
+  requireAccount,
   onShare,
   onCloud,
   onNavigate,
   onContribution,
   onEvidence,
   onViewerBackHandlerChange,
+  onPhotoIntent,
 }: {
   spot: SpotSummary;
   visible?: boolean;
   settling?: boolean;
-  springMotion?: PanelCssMotion | null;
   detail: SpotDetail | null;
   detailPending: boolean;
   detailError: unknown;
   detailStale?: boolean;
+  onLayoutChange?: (() => void) | undefined;
   contextPending: boolean;
   contextError: unknown;
   onContextRecover: () => void;
   extent: SpotPanelExtent;
+  documentScrollEnabled: boolean;
   phase: SpotPanelPhase;
   favorite: boolean;
   favoritePending: boolean;
   context: ObservationContext | null;
+  timeContext: ObservationContext | null;
+  timeContextPending: boolean;
   astronomyAt: string;
   skyReport: SkyReport | null;
   skyPending: boolean;
@@ -219,12 +203,18 @@ export function SpotInformationPanel({
   skyError: unknown;
   skyStale?: boolean;
   timeFrames: readonly MapSceneTimeFrame[];
+  timeFramesPending: boolean;
+  timeFramesFailed: boolean;
+  onTimeFramesRecover: () => void;
+  timeRulerIdentity: string;
   timeSaving: boolean;
   temporalFailure: MapTemporalFailure | null;
   onTemporalRetry: () => void;
   dateOptions: readonly string[];
   selectedDate: string;
   todayDate: string;
+  datePickerOpen: boolean;
+  onDatePickerOpenChange: (open: boolean) => void;
   onDateCommit: (date: string) => void;
   onTimePreview: (index: number) => void;
   onTimeCommit: (index: number) => void;
@@ -235,17 +225,19 @@ export function SpotInformationPanel({
   onHandleTouchCancel: () => void;
   onExtent: (extent: SpotPanelExtent) => void;
   onClose: () => void;
+  onLoadingCancel?: () => void;
   onRecover: () => void;
   onSkyRecover: () => void;
   onFavorite: () => void;
+  requireAccount: ReturnType<typeof import("@/hooks/use-wechat-login").useWechatLogin>["requireAccount"];
   onShare: () => void;
   onCloud: () => void;
   onNavigate: () => void;
   onContribution: () => void;
   onEvidence: (kind: "guides" | "field" | "sources", articleId?: string) => void;
   onViewerBackHandlerChange?: (handler: (() => void) | null) => void;
+  onPhotoIntent: () => Promise<boolean>;
 }) {
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [viewerKind, setViewerKind] = useState<"parking" | "toilet" | null>(null);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [section, setSection] = useState<
@@ -256,9 +248,9 @@ export function SpotInformationPanel({
   const [scrollAnchor, setScrollAnchor] = useState("");
   const terrainOffset = useRef<number | null>(null);
   const astronomyOffset = useRef<number | null>(null);
-  const lastScroll = useRef({ spotId: spot.spotId, top: 0 });
+  const documentPosition = useSpotMediaDocumentPosition(spot.spotId);
+  const { position: lastScroll, returnTop: restoredScrollTop, setReturnTop: setRestoredScrollTop } = documentPosition;
   const wasVisible = useRef(visible);
-  const [restoredScrollTop, setRestoredScrollTop] = useState<number | undefined>(undefined);
   useEffect(() => {
     const returning = visible && !wasVisible.current;
     wasVisible.current = visible;
@@ -267,7 +259,7 @@ export function SpotInformationPanel({
       setRestoredScrollTop(undefined);
       return;
     }
-    if (!returning || lastScroll.current.spotId !== spot.spotId) return;
+    if (!returning || lastScroll.current.identity !== spot.spotId) return;
     const top = lastScroll.current.top;
     const timer = setTimeout(() => setRestoredScrollTop(top), 200);
     return () => clearTimeout(timer);
@@ -277,15 +269,39 @@ export function SpotInformationPanel({
     setViewerIndex(null);
   }, [visible]);
   const [layoutVersion, setLayoutVersion] = useState(0);
+  const largeText = useAppStore(state => state.preferences.largeText);
+  const dayMode = useAppStore(state => state.mode === "DAY");
+  function renderMetricValue(value: number | null | undefined, unit: string, digits = 0, className = "type-data", empty = EMPTY_FIELD_VALUE) {
+    const formatted = formatMetric(value, "", digits);
+    const missing = formatted === EMPTY_FIELD_VALUE;
+    return <Text className={`${className} spot-panel__metric-value${missing ? " spot-panel__metric-value--missing" : ""}`}>
+      {missing ? empty : formatted}{missing ? null : dayMode ? <Text className="spot-panel__metric-unit">{unit.trim()}</Text> : unit}
+    </Text>;
+  }
+  // The report reference only invalidates geometry; no previous evidence is rendered.
+  const [warningPresentation, setWarningPresentation] = useState<{ identity: string; height: number; report: SkyReport } | null>(null);
+  const onWarningLayoutChange = useCallback(() => setLayoutVersion(value => value + 1), []);
+  useEffect(() => {
+    if (!visible || !skyReport || skyRefreshing || settling || extent === "small") return;
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      Taro.createSelectorQuery().select("#spot-panel-astronomy .weather-alerts").boundingClientRect().exec(results => {
+        if (cancelled) return;
+        const height = (results[0] as { height?: number } | null)?.height ?? 0;
+        if (Number.isFinite(height) && height >= 0) setWarningPresentation(previous =>
+          previous?.identity === timeRulerIdentity && previous.height === height && previous.report === skyReport
+            ? previous : { identity: timeRulerIdentity, height, report: skyReport });
+      });
+    }, 80);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [visible, spot.spotId, timeRulerIdentity, skyReport, skyRefreshing, settling, extent, largeText, layoutVersion]);
   const scrollMeasureTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => {
     if (scrollMeasureTimer.current !== null) clearTimeout(scrollMeasureTimer.current);
     scrollMeasureTimer.current = null;
   }, [visible, spot.spotId, extent]);
-  const largeText = useAppStore(state => state.preferences.largeText);
   useResize(() => setLayoutVersion(value => value + 1));
   useEffect(() => {
-    lastScroll.current = { spotId: spot.spotId, top: 0 };
     setViewerIndex(null);
     setRestoredScrollTop(undefined);
     setSection("spot-panel-overview");
@@ -310,7 +326,7 @@ export function SpotInformationPanel({
         if (!Number.isFinite(viewport?.top) || !Number.isFinite(terrain?.top) || !Number.isFinite(astronomy?.top) || !Number.isFinite(scroll?.scrollTop)) return;
         terrainOffset.current = terrain!.top! - viewport!.top! + scroll!.scrollTop!;
         astronomyOffset.current = astronomy!.top! - viewport!.top! + scroll!.scrollTop!;
-        setSection(scroll!.scrollTop! >= astronomyOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-astronomy" : scroll!.scrollTop! >= terrainOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-terrain" : "spot-panel-overview");
+        setSection(scroll!.scrollTop! + SECTION_NAV_ALIGNMENT_EPSILON_PX >= astronomyOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-astronomy" : scroll!.scrollTop! + SECTION_NAV_ALIGNMENT_EPSILON_PX >= terrainOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-terrain" : "spot-panel-overview");
       });
     }, 200);
     return () => { clearTimeout(measurementTimer); cancelled = true; terrainOffset.current = null; astronomyOffset.current = null; };
@@ -331,12 +347,20 @@ export function SpotInformationPanel({
     mediaIsRenderable(item, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__),
   );
   const galleryPosition = useSpotMediaGalleryPosition(`${effectiveSpot.spotId}:${media.map(item => item.id).join("|")}`);
+  const photoScope = JSON.stringify([effectiveSpot.spotId, media.map(item => item.id), detail?.formalMedia]);
+  const currentPhotoScope = useRef(photoScope);
+  currentPhotoScope.current = photoScope;
   const openPhoto = (kind: typeof viewerKind, index: number) => {
-    setSectionRequest(null);
-    setScrollAnchor("");
-    if (!kind) galleryPosition.remember();
-    setViewerKind(kind);
-    setViewerIndex(index);
+    const requestedScope = currentPhotoScope.current;
+    documentPosition.remember();
+    galleryPosition.remember();
+    void onPhotoIntent().then(accepted => {
+      if (!accepted || currentPhotoScope.current !== requestedScope) return;
+      setSectionRequest(null);
+      setScrollAnchor("");
+      setViewerKind(kind);
+      setViewerIndex(index);
+    });
   };
   useHiddenNativeScrollbar("spot-panel-scroll", extent !== "small", `${effectiveSpot.spotId}:${extent}`);
   useHiddenNativeScrollbar("spot-panel-media-strip", extent === "large" && media.length > 1, effectiveSpot.spotId);
@@ -344,8 +368,7 @@ export function SpotInformationPanel({
   const facilities = detail?.spot.facilities ?? effectiveSpot.facilities;
   const prominentFacilities = facilities.filter((facility) => facility.type === "PARKING" || facility.type === "TOILET");
   const visibleFacilities = prominentFacilities.length ? prominentFacilities : facilities.slice(0, 2);
-  const mediaById = new Map(media.map((item) => [item.id, item]));
-  const facilityPhotos = (kind: "parking" | "toilet") => (detail?.formalMedia?.[kind] ?? []).flatMap(id => mediaById.has(id) ? [mediaById.get(id)!] : []);
+  const facilityPhotos = (kind: "parking" | "toilet") => associatedFacilityPhotos(kind === "parking" ? "PARKING" : "TOILET", media, detail?.formalMedia, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__);
   const viewerItems = viewerKind ? facilityPhotos(viewerKind) : media;
   const formalFacts = detail?.formalFacts;
   const detailLoading = !detail && (detailPending || contextPending);
@@ -366,17 +389,26 @@ export function SpotInformationPanel({
     if (!latest || Date.parse(run.fetchedAt) > Date.parse(latest)) return run.fetchedAt;
     return latest;
   }, null) ?? null;
+  const weatherStale = Boolean(skyError || skyStale || visibleWeatherRuns.some(run => run.state === "STALE_USABLE"));
+  const weatherTimezone = context?.timezone ?? effectiveSpot.timezone;
+  const weatherTime = formatSourceTime(skyRow?.weatherAt, weatherTimezone);
+  const weatherUpdated = formatSourceTime(latestWeatherFetch, weatherTimezone);
+  const weatherMissing = skyRow?.state === "EXPIRED" ? "已过期" : "暂无覆盖";
+  const renderWeatherValue = (value: number | null | undefined, unit: string, digits = 0) =>
+    renderMetricValue(value, unit, digits, "type-data", skyRow?.weatherAt ? EMPTY_FIELD_VALUE : weatherMissing);
   const cloudReady = Boolean(
     detail &&
       context?.location.kind === "FORMAL_SPOT" &&
       context.location.spotId === effectiveSpot.spotId,
   );
+  const retainWarningSpace = Boolean(timeContext && !contextError && !skyError &&
+    (skyPending || timeContextPending || skyRefreshing || (skyReport && warningPresentation?.report !== skyReport)) &&
+    warningPresentation?.identity === timeRulerIdentity && warningPresentation.height > 0);
   const detailPageState: PageState = isPermissionError(detailError)
     ? "PERMISSION_DENIED"
     : "ERROR";
-  const handleInDocument = extent === "large" && media.length > 0;
   const panelHandle = (
-    <View className={`spot-panel__handle-band${handleInDocument ? " spot-panel__handle-band--document" : ""}`}>
+    <View className="spot-panel__handle-band spot-panel__handle-band--document">
       <Button
         className="spot-panel__handle focus-ring"
         data-control="map-spot-panel-handle"
@@ -419,7 +451,7 @@ export function SpotInformationPanel({
   return (
     <View
       id="spot-information-panel"
-      className={`spot-panel${springMotion ? " spot-panel--spring" : ""} spot-panel--${extent}${phase === "closing" ? " spot-panel--closing" : ""}${media.length ? " spot-panel--with-media" : ""}`}
+      className={`spot-panel spot-panel--formal spot-panel--${extent}${phase === "closing" ? " spot-panel--closing" : ""}${media.length ? " spot-panel--with-media" : ""}`}
       data-control="map-spot-information-panel"
       data-extent={extent}
       data-phase={phase}
@@ -431,21 +463,21 @@ export function SpotInformationPanel({
         <View className="spot-panel__snap-medium" />
         <View className="spot-panel__snap-large" />
       </View>
-      {!handleInDocument ? panelHandle : null}
 
       <View className="spot-panel__scroll-frame">
         <ScrollView
           className="spot-panel__scroll spot-panel__scroll--full-bleed-plan"
           id="spot-panel-scroll"
-          scrollY={extent !== "small"}
-          scrollTop={restoredScrollTop ?? lastScroll.current.top}
+          scrollY={documentScrollEnabled}
+          {...(restoredScrollTop === undefined ? {} : { scrollTop: restoredScrollTop })}
           scrollIntoView={scrollAnchor}
           scrollWithAnimation={false}
           onScroll={event => {
             const top = event.detail.scrollTop;
             if (!visible || !Number.isFinite(top)) return;
-            lastScroll.current = { spotId: spot.spotId, top };
-            if (restoredScrollTop !== undefined) setRestoredScrollTop(undefined);
+            documentPosition.record(top);
+            // Keep an explicit return command stable. Withdrawing this native
+            // optional prop resets to zero; unrelated renders must not replay events.
             // Native anchor scrolling can finish after the extent layout measurement.
             // Reconcile once after scrolling rests, never query geometry per frame.
             if (extent !== "small") {
@@ -456,7 +488,7 @@ export function SpotInformationPanel({
               }, 80);
             }
             if (extent === "small" || terrainOffset.current === null || astronomyOffset.current === null) return;
-            setSection(top >= astronomyOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-astronomy" : top >= terrainOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-terrain" : "spot-panel-overview");
+            setSection(top + SECTION_NAV_ALIGNMENT_EPSILON_PX >= astronomyOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-astronomy" : top + SECTION_NAV_ALIGNMENT_EPSILON_PX >= terrainOffset.current - SECTION_NAV_REVEAL_PX ? "spot-panel-terrain" : "spot-panel-overview");
           }}
           type="custom"
           enhanced
@@ -478,13 +510,14 @@ export function SpotInformationPanel({
                       lazyLoad
                       ariaLabel={item.alt || `${effectiveSpot.name}现场照片`}
                     />
+                    <Text className="spot-panel__red-photo-label" aria-hidden="true">现场照片</Text>
                     <Text className="spot-panel__media-caption">{index + 1} / {media.length}</Text>
                   </Button>)}
                 </View>
               </ScrollView>
             </View>
           ) : null}
-          {handleInDocument ? panelHandle : null}
+          {panelHandle}
 
           <View id="spot-panel-overview" className="spot-panel__identity" ariaLabel="地点概览">
             <View className="spot-panel__identity-heading">
@@ -501,9 +534,9 @@ export function SpotInformationPanel({
             </View>
           </View>
 
-          <SpotPlanEntry spotId={effectiveSpot.spotId} />
+          <SpotPlanEntry spotId={effectiveSpot.spotId} onLayoutChange={onLayoutChange} requireAccount={requireAccount} />
 
-          {contextPending ? <StatusPanel state="LOADING" detail="正在确认地点的观测条件；已确认的地图摘要仍可查看。" /> : null}
+          {contextPending ? <StatusPanel state="LOADING" detail="正在读取地点资料" recoveryLabel="取消" onRecover={onLoadingCancel} /> : null}
           {contextError ? <StatusPanel
             state="ERROR"
             title="观测条件未更新"
@@ -513,7 +546,7 @@ export function SpotInformationPanel({
           /> : null}
 
           <View className="spot-panel__section" ariaLabel="场地资料">
-            {detailPending ? <StatusPanel state="LOADING" detail="正在加载地点信息" /> : null}
+            {detailPending && !contextPending ? <StatusPanel state="LOADING" detail="正在读取地点资料" recoveryLabel="取消" onRecover={onLoadingCancel} /> : null}
             {detailError || detailStale ? (
               <StatusPanel
                 state={detailError ? detailPageState : "STALE"}
@@ -532,7 +565,7 @@ export function SpotInformationPanel({
               <Text className="spot-panel__route-note">{route?.parkingGuidance || route?.lastRoad || formalFacts?.parkingNote || `停车与末段道路信息${detailMissingFallback}`}</Text>
               </View>
                 <Button className="spot-panel__text-action" data-control="spot-navigation-action" ariaLabel={`查看${effectiveSpot.name}路线`} onClick={onNavigate}>
-                  <SemanticIcon name="compass" />
+                  <SemanticIcon name="navigation" />
                 </Button>
               </View>
             </View>
@@ -565,27 +598,14 @@ export function SpotInformationPanel({
               {visibleFacilities.length ? visibleFacilities.map((facility) => {
                 const mediaKind = facility.type === "PARKING" ? "parking" : facility.type === "TOILET" ? "toilet" : null;
                 const facilityImages = mediaKind ? facilityPhotos(mediaKind) : [];
-                const facilityMedia = facilityImages[0];
-                return <View id={`spot-facility-source-${mediaKind}`} className={`spot-panel__facility${facilityMedia ? " spot-panel__facility--with-media" : ""}`} key={`${facility.type}-${facility.summary}`}
-                  {...(facilityMedia ? { role: "button", ariaLabel: `查看${facilityLabel(facility.type)}照片，共 ${facilityImages.length} 张` } : {})}
-                  onClick={() => { if (facilityMedia && mediaKind) openPhoto(mediaKind, 0); }}>
-                  {facilityMedia ? <Image className="spot-panel__facility-image" src={mediaSource(facilityMedia.thumbnailPath || facilityMedia.localPath)} mode="aspectFill" aria-hidden="true" /> : null}
-                  {facilityMedia ? <View className="spot-panel__facility-shade" aria-hidden="true" /> : null}
-                  <View className="spot-panel__facility-content">
-                    <View className="spot-panel__facility-heading">
-                      <Text className="spot-panel__facility-name">{facilityLabel(facility.type)}</Text>
-                      <Text className="spot-panel__facility-status">{facilityStatusLabel(facility.status)}{facility.distanceM === null ? "" : ` · ${facility.distanceM}m`}</Text>
-                    </View>
-                    {facility.summary ? <Text className="spot-panel__facility-summary">{facility.summary}</Text> : null}
-                  </View>
-                  {facilityMedia ? <View className="spot-panel__facility-count"><SemanticIcon name="images" /><Text>{facilityImages.length}</Text></View> : null}
-                </View>;
+                return <FacilityCard id={`spot-facility-source-${mediaKind ?? facility.type}`} key={facility.type}
+                  evidence={facility} photos={facilityImages} onOpenPhotos={mediaKind ? () => openPhoto(mediaKind, 0) : undefined} />;
               }) : <Text className="type-caption">{`设施信息${detailMissingFallback}`}</Text>}
               </View>
               {formalFacts?.contact?.trim() ? <View className="spot-panel__contact-row">
                 <Text>门禁 / 负责人电话</Text><Text>{formalFacts.contact.trim()}</Text>
               </View> : <View className="spot-panel__contact-row">
-                <Text>门禁 / 负责人电话</Text><Text>{detailFieldFallback ?? EMPTY_FIELD_VALUE}</Text>
+                <Text>门禁 / 负责人电话</Text><Text className="spot-panel__contact-unavailable">{detailFieldFallback ?? EMPTY_FIELD_VALUE}</Text>
               </View>}
               <View className="spot-panel__source-row">
                 <Text>{productSourceNames([source]) ? `资料：${productSourceNames([source])}` : "资料暂无数据"}{sourceTime ? ` · ${sourceTime.slice(0, 5)}核验` : ""}</Text>
@@ -593,56 +613,70 @@ export function SpotInformationPanel({
                   <Text>我要反馈 ↗</Text>
                 </Button>
               </View>
-              {cloudReady ? <View className="spot-panel__guide-row">
+              {effectiveSpot.status === "PUBLISHED" || effectiveSpot.status === "TEMPORARILY_CLOSED" ? <View className="spot-panel__guide-row">
                 <Text>观星攻略</Text>
-                <Button className="spot-panel__text-action" data-control="spot-guide-entry" onClick={() => onEvidence("guides")}>查看攻略 ↗</Button>
+                <Button className="spot-panel__text-action" data-control="spot-guide-entry" disabled={!cloudReady} onClick={() => onEvidence("guides")}>查看攻略 ↗</Button>
               </View> : null}
               <SpotAdditionalInformation spotId={effectiveSpot.spotId} detail={detail} facilities={facilities}
                 facilityLabel={facilityLabel} onLayoutChange={() => setLayoutVersion(value => value + 1)} />
             </View>
             <RecentWeather spotId={effectiveSpot.spotId} timezone={effectiveSpot.timezone} visible={visible} />
           </View>
+          <View id="spot-panel-terrain-anchor" className="spot-panel__chapter-anchor" aria-hidden="true" />
           <View id="spot-panel-terrain" className="spot-panel__section spot-panel__section--terrain" ariaLabel="地形">
             <Text className="type-section">地形</Text>
             <SpotTerrainOverview spot={effectiveSpot} visible={visible} />
           </View>
-          <View id="spot-panel-astronomy-anchor" className="spot-panel__astronomy-anchor" aria-hidden="true" />
+          <View id="spot-panel-astronomy-anchor" className="spot-panel__chapter-anchor" aria-hidden="true" />
           <View id="spot-panel-astronomy" className="spot-panel__section" ariaLabel="天文">
             <View className="spot-panel__astronomy-heading">
               <Text className="type-section">天文</Text>
             </View>
-            {skyPending ? <StatusPanel state="LOADING" detail="正在加载所选观测夜的天文与天气资料" /> : null}
-            {skyError || skyStale ? (
+            {!skyReport && (skyError || skyStale) ? (
               <StatusPanel
                 state={skyError ? "ERROR" : "STALE"}
-                detail={skyError ? skyReport ? "更新失败，暂时显示上次天文资料。" : isOfflineError(skyError) ? "网络不可用，请连接网络后重试。" : "天文资料暂时无法加载，请重试。" : "天文资料尚未确认最新状态，暂时显示上次结果。"}
+                detail={isOfflineError(skyError) ? "网络不可用，请连接网络后重试。" : "天气与天文资料暂未获取，请重试。"}
                 recoveryLabel="重试天文资料"
                 onRecover={onSkyRecover}
               />
             ) : null}
-            <WeatherAlerts evidence={skyReport?.weatherEvidence} timezone={context?.timezone ?? effectiveSpot.timezone}
-              active={visible} refreshing={skyRefreshing} scopeKey={effectiveSpot.spotId} refreshFailed={Boolean(skyError || skyStale)} onRecover={onSkyRecover} />
+            <View {...(retainWarningSpace && !skyReport ? { role: "status", ariaLabel: "正在更新官方预警" } : {})}
+              {...(retainWarningSpace ? { style: { minHeight: `${warningPresentation!.height}px`, flexShrink: 0 } } : {})}>
+              <WeatherAlerts compact evidence={skyReport?.weatherEvidence} timezone={context?.timezone ?? effectiveSpot.timezone}
+                active={visible} refreshing={skyRefreshing} scopeKey={effectiveSpot.spotId} refreshFailed={Boolean(skyError || skyStale)}
+                onRecover={onSkyRecover} onContentChange={onWarningLayoutChange} />
+            </View>
             <View className="spot-panel__block spot-panel__block--astronomy-card">
-              {context ? <><ObservationDateControl
+              {timeContext ? <><ObservationDateControl
                 dates={dateOptions}
                 selectedDate={selectedDate}
                 today={todayDate}
+                nativeBackBoundary={false}
                 open={datePickerOpen}
                 busy={!context || timeSaving}
-                onOpenChange={setDatePickerOpen}
+                onOpenChange={onDatePickerOpenChange}
                 onSelect={(date) => {
-                  setDatePickerOpen(false);
+                  onDatePickerOpenChange(false);
                   onTimeCancel();
                   onDateCommit(date);
                 }}
               />
+              {timeFramesFailed && !timeFrames.length ? <StatusPanel
+                state="ERROR"
+                detail="暂时无法选择观测时刻。"
+                recoveryLabel="重试可选时刻"
+                onRecover={onTimeFramesRecover}
+              /> : null}
               <MapTimeRuler
+                nightLabel={observationNightLabel(timeContext.localDate, astronomyAt, timeContext.timezone, todayDate)}
                 frames={timeFrames}
+                pending={timeFramesPending}
+                identity={timeRulerIdentity}
                 moonPhases={timeFrames.map((frame) => frame.moonPhase)}
-                selectedAt={context?.selectedAtUtc ?? ""}
-                timezone={context?.timezone ?? "Asia/Shanghai"}
+                selectedAt={timeContext.selectedAtUtc}
+                timezone={timeContext.timezone}
                 disabled={!context || !timeFrames.length || timeSaving}
-                emptyMessage={skyPending && !skyReport ? "正在读取天文时间切片。" : skyError || skyStale ? "天文时间切片暂不可用，请重试天文资料。" : "本观测夜没有可用的时间切片。"}
+                emptyMessage={timeFramesPending ? "正在加载可选时刻。" : timeFramesFailed ? "可选时刻暂不可用，请重试。" : "本观测夜暂无可选时刻。"}
                 onPreview={onTimePreview}
                 onCommit={onTimeCommit}
                 onCancel={onTimeCancel}
@@ -650,6 +684,7 @@ export function SpotInformationPanel({
               /></> : <Text className="type-caption">观测条件尚未确认；请回基本信息重试后选择日期与时间。</Text>}
               <MapTemporalFeedback failure={temporalFailure} onRetry={onTemporalRetry} />
             </View>
+            {skyPending ? <StatusPanel state="LOADING" detail="正在加载所选观测夜的天文与天气资料" /> : null}
             {skyReport ? (
             <View className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--moon" data-control="sky-lunar-facts">
               <Text className="type-label">月相</Text>
@@ -664,66 +699,69 @@ export function SpotInformationPanel({
                 <View className="spot-panel__moon-events">
                   <View>
                     <Text className="type-caption">月出</Text>
-                    <Text className="type-body">{skyReport ? formatLunarEvent(skyReport.lunarFacts.moonriseAt, context?.timezone ?? "Asia/Shanghai", "本观测夜无月出") : "暂无数据"}</Text>
+                    <Text className="type-body">{skyReport ? formatLunarEvent(skyReport.lunarFacts.moonriseAt, context?.timezone ?? "Asia/Shanghai", "搜索时段内无月出") : "暂无数据"}</Text>
                   </View>
                   <View>
                     <Text className="type-caption">月落</Text>
-                    <Text className="type-body">{skyReport ? formatLunarEvent(skyReport.lunarFacts.moonsetAt, context?.timezone ?? "Asia/Shanghai", "本观测夜无月落") : "暂无数据"}</Text>
+                    <Text className="type-body">{skyReport ? formatLunarEvent(skyReport.lunarFacts.moonsetAt, context?.timezone ?? "Asia/Shanghai", "搜索时段内无月落") : "暂无数据"}</Text>
                   </View>
                 </View>
                 <View className="spot-panel__metric-grid">
-                  <View className="spot-panel__metric"><Text className="type-secondary">月亮高度</Text><Text className="type-body">{formatMetric(skyRow?.moonAltitudeDeg, "°", 1)}</Text></View>
+                  <View className="spot-panel__metric"><Text className="type-secondary">月亮高度</Text>{renderMetricValue(skyRow?.moonAltitudeDeg, "°", 1, "type-body")}</View>
                   <View className="spot-panel__metric"><Text className="type-secondary">夜间阶段</Text><Text className="type-body">{darknessLabel(skyRow?.darkness)}</Text></View>
                 </View>
               </View>
             </View>
             ) : null}
-            <View className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--professional-matrix" data-control="sky-professional-matrix">
-              {skyReport ? <>
+            {skyReport ? <View className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--professional-matrix" data-control="sky-professional-matrix">
               <Text className="type-label spot-panel__weather-heading">气象条件</Text>
-              {skyRow?.weatherAt ? <SourceAttribution sources={skyReport?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /> : null}
-              <ForecastCoverageNote starts={skyReport?.hourly.flatMap(row => row.weatherAt ? [row.weatherAt] : []) ?? []} stale={Boolean(skyError || skyStale)}
-                timezone={context?.timezone ?? "Asia/Shanghai"} scopeKey={`${effectiveSpot.spotId}:${context?.localDate}`} />
-              {skyRow?.weatherAt ? <Text className="type-caption">对应小时预报：{formatSourceTime(skyRow.weatherAt, context?.timezone ?? "Asia/Shanghai")}</Text> : null}
-              <View className="spot-panel__evidence-group" ariaLabel="总云量">
-                <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" /><Text className="type-label">总云量</Text></View>
-                <Text className="type-data">{formatMetric(skyRow?.cloudPercent, "%")}</Text>
-              </View>
-              <View className="spot-panel__evidence-group" ariaLabel="温湿">
-                <View className="spot-panel__evidence-title"><SemanticIcon name="sun" /><Text className="type-label">温湿</Text></View>
-                <View className="spot-panel__metric-grid">
-                  <View className="spot-panel__metric"><Text className="type-secondary">气温</Text><Text className="type-data">{formatMetric(skyRow?.temperatureC, "°C", 1)}</Text></View>
-                  <View className="spot-panel__metric"><Text className="type-secondary">湿度</Text><Text className="type-data">{formatMetric(skyRow?.relativeHumidityPercent, "%")}</Text></View>
-                  <View className="spot-panel__metric"><Text className="type-secondary">露点</Text><Text className="type-data">{formatMetric(skyRow?.dewPointC, "°C", 1)}</Text></View>
+              {weatherStale ? <StatusPanel state="STALE" detail={skyRow?.weatherAt ? "更新未完成，保留仍有效的预报。" : "更新未完成，所选时刻暂无有效预报。"}
+                recoveryLabel="重试天气与天文" onRecover={onSkyRecover} /> : null}
+              <Text className="type-caption">{formatSourceTime(astronomyAt, weatherTimezone)} · {weatherTime ? `对应小时 ${weatherTime}` : weatherMissing}
+                {weatherTime && weatherUpdated ? ` · ${weatherStale ? "上次获取" : "获取"} ${weatherUpdated}` : ""}</Text>
+              <View className="spot-panel__forecast-groups">
+                <View className="spot-panel__evidence-group" ariaLabel="总云量">
+                  <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" presentation="forecast" /><Text className="type-label">{dayMode ? "云量" : "总云量"}</Text></View>
+                  {dayMode ? <View className="spot-panel__metric"><Text className="type-secondary">总云量</Text>{renderWeatherValue(skyRow?.cloudPercent, "%")}</View>
+                    : renderWeatherValue(skyRow?.cloudPercent, "%")}
                 </View>
-              </View>
-              <View className="spot-panel__evidence-group" ariaLabel="风与能见度">
-                <View className="spot-panel__evidence-title"><SemanticIcon name="horizon" /><Text className="type-label">风与能见度</Text></View>
-                <View className="spot-panel__metric-grid">
-                  <View className="spot-panel__metric"><Text className="type-secondary">{windDirectionLabel(skyRow?.windDirectionDeg)}</Text><Text className="type-data">{formatMetric(skyRow?.windKph, " km/h", 1)}</Text></View>
-                  <View className="spot-panel__metric"><Text className="type-secondary">阵风</Text><Text className="type-data">{formatMetric(skyRow?.windGustKph, " km/h", 1)}</Text></View>
-                  <View className="spot-panel__metric"><Text className="type-secondary">能见度</Text><Text className="type-data">{formatMetric(skyRow?.visibilityKm, " km", 1)}</Text></View>
+                <View className="spot-panel__evidence-group" ariaLabel="温湿">
+                  <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "temperature" : "sun"} presentation="forecast" /><Text className="type-label">温湿</Text></View>
+                  <View className="spot-panel__metric-grid">
+                    <View className="spot-panel__metric"><Text className="type-secondary">气温</Text>{renderWeatherValue(skyRow?.temperatureC, "°C", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">湿度</Text>{renderWeatherValue(skyRow?.relativeHumidityPercent, "%")}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">露点</Text>{renderWeatherValue(skyRow?.dewPointC, "°C", 1)}</View>
+                  </View>
                 </View>
-              </View>
-              <View className="spot-panel__evidence-group" ariaLabel="降水">
-                <View className="spot-panel__evidence-title"><SemanticIcon name="conditions" /><Text className="type-label">降水</Text></View>
-                <View className="spot-panel__metric-grid spot-panel__metric-grid--two">
-                  <View className="spot-panel__metric"><Text className="type-secondary">降水量</Text><Text className="type-data">{formatMetric(skyRow?.precipitationMm, " mm", 1)}</Text></View>
-                  <View className="spot-panel__metric"><Text className="type-secondary">降水概率</Text><Text className="type-data">{formatMetric(skyRow?.precipitationProbabilityPercent, "%")}</Text></View>
+                <View className="spot-panel__evidence-group" ariaLabel="风与能见度">
+                  <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "wind" : "horizon"} presentation="forecast" /><Text className="type-label">风与能见度</Text></View>
+                  <View className="spot-panel__metric-grid">
+                    <View className="spot-panel__metric"><Text className="type-secondary">{windDirectionLabel(skyRow?.windDirectionDeg)}</Text>{renderWeatherValue(skyRow?.windKph, " km/h", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">阵风</Text>{renderWeatherValue(skyRow?.windGustKph, " km/h", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">能见度</Text>{renderWeatherValue(skyRow?.visibilityKm, " km", 1)}</View>
+                  </View>
+                </View>
+                <View className="spot-panel__evidence-group" ariaLabel="降水">
+                  <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "droplet" : "conditions"} presentation="forecast" /><Text className="type-label">降水</Text></View>
+                  <View className="spot-panel__metric-grid spot-panel__metric-grid--two">
+                    <View className="spot-panel__metric"><Text className="type-secondary">降水量</Text>{renderWeatherValue(skyRow?.precipitationMm, " mm", 1)}</View>
+                    <View className="spot-panel__metric"><Text className="type-secondary">降水概率</Text>{renderWeatherValue(skyRow?.precipitationProbabilityPercent, "%")}</View>
+                  </View>
                 </View>
               </View>
               <Text className="spot-panel__measurement-note type-caption">透明度、视宁度暂无独立数据</Text>
-              </> : null}
-              <AirQuality spotId={effectiveSpot.spotId} selectedAt={astronomyAt} timezone={effectiveSpot.timezone} visible={visible} />
-            </View>
+            </View> : null}
             <View className="spot-panel__night-light" data-control="sky-light-pollution">
-              <View className="spot-panel__evidence-title"><SemanticIcon name="horizon" /><Text className="type-label">卫星夜光估算</Text></View>
-              <Text className="spot-panel__night-light-label">{effectiveSpot.lightPollution.state === "ESTIMATED" ? effectiveSpot.lightPollution.label : "暂无数据"}</Text>
-              <Text className="type-caption">{effectiveSpot.lightPollution.radiance ? `${effectiveSpot.lightPollution.radiance.median} ${effectiveSpot.lightPollution.radiance.unit}` : "辐亮度暂无数据"}</Text>
+              <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "bulb" : "horizon"} /><Text className="type-label">卫星夜光估算</Text></View>
+              <Text className="spot-panel__night-light-label">{effectiveSpot.lightPollution.state === "ESTIMATED" || effectiveSpot.lightPollution.quality ? effectiveSpot.lightPollution.label : "暂无数据"}</Text>
+              <Text className="type-caption">{/^\d{4}(?:$|-)/u.test(effectiveSpot.lightPollution.dataDate) ? `${effectiveSpot.lightPollution.dataDate.slice(0, 4)} 年 · ` : ""}{effectiveSpot.lightPollution.radiance ? `约 ${Number(effectiveSpot.lightPollution.radiance.median.toPrecision(6))} ${effectiveSpot.lightPollution.radiance.unit}` : "辐亮度暂无数据"}</Text>
+              {effectiveSpot.lightPollution.quality?.state === "PARTIAL" ? <Text className="type-caption">周边样本有效面积约 {Math.round(effectiveSpot.lightPollution.quality.validAreaFraction * 100)}%，其余范围未作估算。</Text> : null}
+              <SourceAttribution compact sources={[effectiveSpot.lightPollution.source]} />
+              <SourceDisclosure key={effectiveSpot.spotId} id="night-light-source" label="年度夜光来源" sources={[effectiveSpot.lightPollution.source]} />
             </View>
             {skyReport ? <>
-            <View className="spot-panel__block spot-panel__block--astronomy-card spot-panel__block--target-list" data-control="sky-target-list">
-              <View className="spot-panel__evidence-title"><SemanticIcon name="star" /><Text className="type-label">当前目标</Text></View>
+            <View className={`spot-panel__block spot-panel__block--astronomy-card spot-panel__block--target-list${targetFrame?.targets.some((target) => target.altitudeDeg === null) ? " spot-panel__block--target-list--missing-altitude" : ""}`} data-control="sky-target-list">
+              <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "telescope" : "star"} /><Text className="type-label">当前目标</Text></View>
               {targetFrame ? targetFrame.targets.length ? targetFrame.targets.map((target) => (
                 <View className="spot-panel__target-row" key={target.targetId} ariaLabel={`${target.displayName}，${target.direction}，${target.altitudeDeg === null ? "高度暂无数据" : `高度 ${Math.round(target.altitudeDeg)} 度`}`}>
                   <Text className="type-body">{target.displayName}</Text>
@@ -735,15 +773,28 @@ export function SpotInformationPanel({
             <View className="spot-panel__astronomy-source" data-control="sky-weather-source">
               <Text className="type-caption">
                 {weatherProviders.length ? `预报：${weatherProviders.join("、")}` : "预报来源暂无数据"}
-                {formatSourceTime(latestWeatherFetch, context?.timezone ?? "Asia/Shanghai") ? ` · 更新 ${formatSourceTime(latestWeatherFetch, context?.timezone ?? "Asia/Shanghai")}` : ""}
               </Text>
               <Text className="type-caption">天体位置按所选时刻计算</Text>
             </View>
+            <View className="spot-panel__sky-source-reading">
+              {skyRow?.weatherAt ? <SourceAttribution compact sources={skyReport.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST")} /> : null}
+              <SourceDisclosure key={effectiveSpot.spotId} id="sky-data-source" label="来源与有效时间" sources={skyReport.sources}>
+                <ForecastCoverageNote starts={skyReport.hourly.flatMap(row => row.weatherAt ? [row.weatherAt] : [])} stale={weatherStale}
+                  timezone={weatherTimezone} scopeKey={`${effectiveSpot.spotId}:${context?.localDate}`} />
+                <Text className="type-caption">所选时刻的天气取自对应小时；缺少天气覆盖时，天文仍按所选时刻计算。获取时间不代表预报发布时间。</Text>
+              </SourceDisclosure>
+            </View>
             </> : null}
+            <AirQuality spotId={effectiveSpot.spotId} selectedAt={astronomyAt} timezone={effectiveSpot.timezone} visible={visible} />
           </View>
 
-          <View className="spot-panel__disclosure" data-control="data-source-disclosure">
-            <Button className="spot-panel__text-action" ariaLabel="查看完整来源与更新时间" onClick={() => onEvidence("sources")}>来源与更新时间</Button>
+          <View className={`spot-panel__disclosure${skyReport ? " spot-panel__disclosure--with-astronomy-source" : ""}`} data-control="data-source-disclosure">
+            <Button className="spot-panel__text-action" ariaLabel="查看完整来源与更新时间" onClick={() => onEvidence("sources")}>
+              <Text>来源与更新时间</Text>
+              <View className="spot-panel__source-action-hint" aria-hidden="true">
+                <Text>查看详情</Text><SemanticIcon name="chevron-right" />
+              </View>
+            </Button>
           </View>
           </Block>
         </ScrollView>
@@ -758,7 +809,7 @@ export function SpotInformationPanel({
           onSelect={(id) => {
             setSection(id);
             setSectionRequest({
-              id: id === "spot-panel-astronomy" ? "spot-panel-astronomy-anchor" : id,
+              id: id === "spot-panel-overview" ? id : `${id}-anchor`,
               spotId: spot.spotId,
             });
             onExtent("large");
@@ -774,6 +825,7 @@ export function SpotInformationPanel({
           src: mediaSource(item.localPath || item.thumbnailPath),
           alt: item.alt || `${effectiveSpot.name}现场照片`,
           caption: item.caption || item.alt || "现场资料",
+          metadata: sitePhotoContext(item),
           attribution: `${item.photographer || "来源未注明"} · ${item.license}`,
           state: "ready" as const,
         }))}

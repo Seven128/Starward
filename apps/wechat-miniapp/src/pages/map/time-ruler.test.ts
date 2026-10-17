@@ -24,38 +24,87 @@ test("map and panel clocks keep midnight in 00–23 hours on the correct date", 
 });
 
 function render(disabled = false, selectedAt = "2026-09-06T12:00:00Z", frames: { atUtc: string }[] = [{ atUtc: "2026-09-06T12:00:00Z" }, { atUtc: "2026-09-06T13:00:00Z" }], emptyMessage = "当前日期没有可用的时间切片。") {
+  let dateFormats = 0, clockFormats = 0;
   const positions:number[]=[];
   const effects: (() => void | (() => void))[] = [];
+  const hooks: any[] = [], dependencies: unknown[][] = [];
+  let cursor = 0, effectCursor = 0;
+  let pendingEffects: number[] = [];
   let hide = () => {};
   const text = readFileSync(new URL("./time-ruler.tsx", import.meta.url), "utf8")
     .replace(/^import .*;\r?\n/gm, "").replace("export function", "function");
   const component = vm.runInNewContext(ts.transpileModule(text + "\nMapTimeRuler;", {
     compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
   }).outputText, {
-    useDidShow:()=>{},createRulerScrollPosition:()=>({move:(value:number)=>positions.push(value),cancel:()=>{}}),createScrollSettlement, Button: "button", ScrollView: "scroll", Text: "text", View: "view",
+    useReducedMotion:()=>false,useDidShow:()=>{},createRulerScrollPosition:()=>({move:(value:number)=>positions.push(value),settle:(_from:number,value:number,_reduced:boolean,present:(left:number)=>void)=>{positions.push(value);present(value);},cancel:()=>{}}),createScrollSettlement, Button: "button", ScrollView: "scroll", Text: "text", View: "view",
     React: { createElement: (type: string, props: object, ...children: Element[]) => ({ type, props, children: children.flat() }) },
-    useEffect: (effect: () => void | (() => void)) => effects.push(effect),
+    useEffect: (effect: () => void | (() => void), deps: unknown[]) => {
+      const slot = effectCursor++;
+      if (!dependencies[slot] || deps.some((value, i) => value !== dependencies[slot]![i])) pendingEffects.push(slot);
+      effects[slot] = effect; dependencies[slot] = deps;
+    },
     useDidHide: (callback: () => void) => { hide = callback; },
-    useState: (value: unknown) => [value, () => {}],
-    useRef: (value: unknown) => ({ current: value }), nearestMapTimeFrameIndex: () => 0,
-    calendarDateInTimezone, clockTimeInTimezone,
+    useState: (value: unknown) => { const slot = cursor++; if (!(slot in hooks)) hooks[slot] = value; return [hooks[slot], (next: unknown) => { hooks[slot] = next; }]; },
+    useRef: (value: unknown) => { const slot = cursor++; if (!(slot in hooks)) hooks[slot] = {current:value}; return hooks[slot]; },
+    useMemo: (create: () => unknown, deps: unknown[]) => {
+      const slot = cursor++;
+      if (!(slot in hooks) || deps.some((value, index) => value !== hooks[slot].deps[index])) hooks[slot] = { value: create(), deps };
+      return hooks[slot].value;
+    },
+    nearestMapTimeFrameIndex: (rows: {atUtc:string}[], at:string) => Math.max(0,rows.findIndex(row=>row.atUtc===at)),
+    calendarDateInTimezone: (date: Date, timezone: string) => { dateFormats++; return calendarDateInTimezone(date, timezone); },
+    clockTimeInTimezone: (date: Date, timezone: string) => { clockFormats++; return clockTimeInTimezone(date, timezone); },
   });
   const previews: number[] = [], commits: number[] = [];
   let cancelled = 0;
-  const root: Element = component({
+  const props = {
     frames,
     selectedAt, timezone: "UTC", disabled,
+    pending: false, identity: "",
     emptyMessage,
     onPreview: (index: number) => previews.push(index), onCommit: (index: number) => commits.push(index),
     onCancel: () => { cancelled++; },
-  });
-  const scroll = root.children.find((child) => child?.type === "scroll");
-  const cleanups = effects.map((effect) => effect());
-  return { positions, root, scroll: scroll?.props ?? {}, previews, commits, hide: () => hide(),
+  };
+  let root: Element;
+  const cleanups: (() => void)[] = [];
+  const rerender = (changes: Partial<typeof props> = {}) => {
+    Object.assign(props,changes); cursor = 0; effectCursor = 0; pendingEffects = [];
+    root = component(props);
+    for (const slot of pendingEffects) { const cleanup = effects[slot]!(); if (cleanup) cleanups.push(cleanup); }
+  };
+  rerender();
+  return { positions, get root() { return root; }, get formats() { return { date: dateFormats, clock: clockFormats }; }, get scroll() { return root.children.find(child=>child?.type==="scroll")?.props ?? {}; }, previews, commits, hide: () => hide(), rerender,
     unmount: () => cleanups.forEach((cleanup) => cleanup?.()),
-    changeInputs: () => effects.at(-1)!(),
+    changeInputs: () => effects[1]!(),
     get cancelled() { return cancelled; } };
 }
+
+test("panel drag and fractional ruler movement reuse time labels while data changes refresh them", () => {
+  const frames = Array.from({ length: 24 }, (_, index) => ({ atUtc: new Date(Date.UTC(2026, 8, 6, index)).toISOString() }));
+  const ruler = render(false, frames[12]!.atUtc, frames);
+  const original = JSON.stringify(ruler.root);
+  const firstFormats = ruler.formats;
+  assert.ok(firstFormats.clock > 0 && firstFormats.date > 0, "labels must use the real zoned-time owner initially");
+  ruler.rerender({ frames: frames.map(frame => ({ ...frame })) });
+  assert.deepEqual(ruler.formats, firstFormats, "an equivalent scene during panel dragging cannot rebuild all Intl labels");
+  assert.equal(JSON.stringify(ruler.root), original);
+  ruler.scroll.onTouchStart(singleTouch);
+  ruler.scroll.onScroll({ detail: { scrollLeft: 12.5 * 66 } });
+  ruler.rerender();
+  assert.deepEqual(ruler.formats, firstFormats, "native fractional progress changes the arc without formatting unchanged times");
+  const beforeTimeChange = JSON.stringify(ruler.root);
+  ruler.rerender({ selectedAt: frames[13]!.atUtc });
+  assert.notEqual(JSON.stringify(ruler.root), beforeTimeChange);
+  assert.ok(ruler.formats.clock > firstFormats.clock, "the current time's accessible label follows the changed selection");
+  const beforeFrameChange = ruler.formats;
+  ruler.rerender({ frames: [{ atUtc: "2026-09-07T00:00:00Z" }] });
+  assert.ok(ruler.formats.date > beforeFrameChange.date, "a different scene must refresh its labels");
+  assert.match(JSON.stringify(ruler.root), /09\/07 00:00/);
+  const beforeZoneChange = ruler.formats;
+  ruler.rerender({ timezone: "Asia/Shanghai" });
+  assert.ok(ruler.formats.date > beforeZoneChange.date);
+  assert.match(JSON.stringify(ruler.root), /09\/07 08:00/, "both visible and accessible times follow the actual zone");
+});
 test("an empty ruler shows its consumer's actual loading, failure or zero-result meaning", () => {
   for (const message of ["正在读取云量时间切片。", "云量时间切片暂不可用，请重试地图数据。", "当前日期没有可用的云量时间切片。"] ) {
     const ruler = render(true, "2026-09-06T12:00:00Z", [], message);
@@ -66,9 +115,244 @@ test("an empty ruler shows its consumer's actual loading, failure or zero-result
   const pending = JSON.stringify(render(true, "", [], "正在读取云量时间切片。").root);
   assert.doesNotMatch(pending, /暂无数据/);
 });
+
+test("fractional native progress changes the arc without committing, and own confirmation does not reset settling", () => {
+  const ruler = render();
+  ruler.scroll.onTouchStart(singleTouch);
+  ruler.scroll.onScroll({detail:{scrollLeft:33}}); ruler.rerender();
+  const scroll = ruler.root.children.find(child=>child?.type==="scroll")!;
+  const first = scroll.children[0]!.children[0]!;
+  assert.equal(first.props.style["--ruler-offset"],"0.75px");
+  assert.equal(first.props.style["--ruler-opacity"],"0.89");
+  assert.deepEqual(ruler.commits,[]);
+  scroll.children[0]!.children[1]!.props.onClick();
+  const count = ruler.positions.length;
+  ruler.rerender({disabled:true});
+  ruler.rerender({disabled:false,selectedAt:"2026-09-06T13:00:00Z"});
+  assert.equal(ruler.positions.length,count);
+  ruler.rerender({selectedAt:"2026-09-06T12:00:00Z"});
+  assert.equal(ruler.positions.at(-1),0);
+  assert.equal(ruler.positions.length,count+1);
+});
+
+test("failed time confirmation restores the committed native position", () => {
+  const ruler=render();
+  ruler.root.children.find(child=>child?.type==="scroll")!.children[0]!.children[1]!.props.onClick();
+  ruler.rerender({disabled:true}); const count=ruler.positions.length;
+  ruler.rerender({disabled:false});
+  assert.equal(ruler.positions.at(-1),0); assert.equal(ruler.positions.length,count+1);
+});
+
+test("confirmed time keeps its native axis while the same observation is fetching its new scene", () => {
+  const ruler = render();
+  ruler.rerender({ identity: "account-a:context-a:night-07" });
+  ruler.root.children.find(child => child?.type === "scroll")!.children[0]!.children[1]!.props.onClick();
+  const positions = ruler.positions.length;
+  ruler.rerender({ frames: [], pending: true, disabled: false, selectedAt: "2026-09-06T13:00:00Z" });
+  const scroll = ruler.root.children.find(child => child?.type === "scroll");
+  assert.ok(scroll, "the visible native axis must not unmount after confirming the time");
+  assert.equal(scroll.props.scrollX, false, "old availability is presentation only during the fetch");
+  assert.ok(scroll.children[0]!.children.every(child => child.props.disabled));
+  assert.equal(ruler.positions.length, positions, "pending data must not reset the axis to its first tick");
+  ruler.rerender({ frames: [{ atUtc: "2026-09-06T12:00:00Z" }, { atUtc: "2026-09-06T13:00:00Z" }], pending: false });
+  assert.equal(ruler.positions.length, positions);
+  assert.deepEqual(ruler.commits, [1]);
+});
+
+test("the astronomy host keeps confirmed time presentation while its request context is restoring", () => {
+  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.ConditionalExpression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isConditionalExpression(node) && node.whenTrue.getText(source).includes("<MapTimeRuler")) expression = node;
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  assert.ok(expression);
+  const confirmed = { selectedAtUtc: "2026-10-07T16:00:00Z", timezone: "Asia/Shanghai", localDate: "2026-10-07" };
+  for (const context of [null, confirmed]) {
+    const calendarChanges: boolean[] = [], dates: string[] = [];
+    let cancellations = 0;
+    const tree = vm.runInNewContext(ts.transpileModule(`(${expression.getText(source)});`, {
+      compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
+    }).outputText, {
+      context, timeContext: confirmed, astronomyAt: confirmed.selectedAtUtc, todayDate: confirmed.localDate,
+      dateOptions: [confirmed.localDate], selectedDate: confirmed.localDate, datePickerOpen: false, timeSaving: false,
+      timeFrames: [], timeFramesPending: true, timeFramesFailed: false, timeRulerIdentity: "same-observation",
+      skyPending: false, skyReport: {}, skyError: null, skyStale: false, temporalFailure: null,
+      onDatePickerOpenChange: (open: boolean) => calendarChanges.push(open),
+      onTimeCancel: () => { cancellations++; }, onDateCommit: (date: string) => dates.push(date),
+      onTimePreview() {}, onTimeCommit() {},
+      onTimeFramesRecover() {}, observationNightLabel: () => "观测夜",
+      ObservationDateControl: "date", MapTimeRuler: "ruler", Text: "text", StatusPanel: "status",
+      React: { Fragment: "fragment", createElement: (type: string, props: object, ...children: Element[]) => ({ type, props, children: children.flat() }) },
+    });
+    const ruler = tree.children.find((child: Element) => child?.type === "ruler");
+    assert.ok(ruler, "a confirmed time must not lose its ruler when the request Context is temporarily null");
+    assert.equal(ruler.props.selectedAt, confirmed.selectedAtUtc);
+    assert.equal(ruler.props.disabled, true);
+    const calendar = tree.children.find((child: Element) => child?.type === "date");
+    assert.equal(calendar.props.busy, !context);
+    assert.equal(calendar.props.nativeBackBoundary, false);
+    if (context) {
+      calendar.props.onOpenChange(true); calendar.props.onSelect("2026-10-08");
+      assert.deepEqual(calendarChanges, [true, false]);
+      assert.equal(cancellations, 1);
+      assert.deepEqual(dates, ["2026-10-08"]);
+    }
+  }
+});
+
+test("astronomy time availability follows its Scene owner rather than a successful sky report", () => {
+  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) && node.tagName.getText(source) === "MapTimeRuler") {
+      const attr = node.attributes.properties.find(value => ts.isJsxAttribute(value) && value.name.getText(source) === "emptyMessage") as ts.JsxAttribute;
+      expression = (attr.initializer as ts.JsxExpression).expression;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  assert.ok(expression);
+  for (const [timeFramesPending, timeFramesFailed, expected] of [[true, false, "正在加载"], [false, true, "暂不可用"], [false, false, "本观测夜暂无可选时刻"]] as const) {
+    const message = vm.runInNewContext(expression.getText(source), {
+      timeFramesPending, timeFramesFailed, timeFrames: [], skyPending: false, skyReport: {}, skyError: null, skyStale: false,
+    });
+    assert.ok(message.includes(expected), "Scene failure and waiting must not become a genuine empty night");
+  }
+});
+
+test("the astronomy presentation cannot borrow another spot or a retired Context", () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(source) === "spotTimeContext") expression = node.initializer;
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  assert.ok(expression);
+  const reference = { contextId: "ctx:confirmed-a", location: { kind: "FORMAL_SPOT", spotId: "a" } };
+  for (const [selected, timeReference, retiredObservationContextId, expected] of [
+    [{ spotId: "a" }, reference, null, reference],
+    [{ spotId: "b" }, reference, null, null],
+    [{ spotId: "a" }, reference, reference.contextId, null],
+    [{ spotId: "a" }, { ...reference, location: { kind: "MAP_CENTER" } }, null, null],
+    [null, reference, null, null],
+    [{ spotId: "a" }, null, null, null],
+  ]) {
+    assert.equal(vm.runInNewContext(expression.getText(source), { selected, timeReference, retiredObservationContextId }), expected);
+  }
+});
+
+test("a published spot keeps its guide entry while Context-dependent actions are unavailable", () => {
+  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.BinaryExpression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken && node.right.getText(source).includes('className="spot-panel__guide-row"')) expression = node;
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  // Both && and ?: are supported here because the current host uses a nullable branch.
+  let conditional: ts.ConditionalExpression | undefined;
+  const findConditional = (node: ts.Node) => {
+    if (ts.isConditionalExpression(node) && node.whenTrue.getText(source).includes('className="spot-panel__guide-row"')) conditional = node;
+    ts.forEachChild(node, findConditional);
+  };
+  findConditional(source);
+  const selected = conditional ?? expression;
+  assert.ok(selected);
+  const renderRow = (cloudReady: boolean, status: string) => vm.runInNewContext(ts.transpileModule(`(${selected.getText(source)});`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.React },
+  }).outputText, {
+    cloudReady, effectiveSpot: { status }, onEvidence() {}, Button: "button", View: "view", Text: "text",
+    React: { createElement: (type: string, props: object, ...children: Element[]) => ({ type, props, children: children.flat() }) },
+  });
+  const waiting = renderRow(false, "PUBLISHED");
+  assert.ok(waiting, "pending Context cannot remove a published spot's existing document row");
+  assert.equal(waiting.children.find((child: Element) => child.type === "button").props.disabled, true);
+  assert.equal(renderRow(true, "PUBLISHED").children.find((child: Element) => child.type === "button").props.disabled, false);
+  assert.equal(renderRow(false, "TEMPORARILY_CLOSED").children.find((child: Element) => child.type === "button").props.disabled, true);
+  assert.equal(renderRow(true, "TEMPORARILY_CLOSED").children.find((child: Element) => child.type === "button").props.disabled, false);
+  for (const status of ["DATA_INSUFFICIENT", "UNPUBLISHED", "RETIRED"]) assert.equal(renderRow(false, status), null);
+});
+
+test("waiting warning geometry never becomes old evidence or crosses the observation identity", () => {
+  const source = ts.createSourceFile("panel.tsx", readFileSync(new URL("./spot-panel.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let expression: ts.Expression | undefined, setup: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(source) === "retainWarningSpace") expression = node.initializer;
+    if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" && node.arguments[0]?.getText(source).includes("setWarningPresentation")) setup = node.arguments[0];
+    ts.forEachChild(node, visit);
+  };
+  visit(source);assert.ok(expression && setup);
+  const settledReport = {};
+  const waiting = { timeContext: {}, context: {}, skyReport: null, skyPending: true, skyRefreshing: false, timeContextPending: false, contextError: null, skyError: null, timeRulerIdentity: "a", warningPresentation: { identity: "a", height: 120, report: settledReport } };
+  assert.equal(vm.runInNewContext(expression.getText(source), waiting), true);
+  for (const changes of [{timeRulerIdentity:"b"}, {timeContext:null}, {skyPending:false}, {contextError:{}}, {skyError:{}}, {warningPresentation:{identity:"a",height:0}}]) {
+    assert.equal(vm.runInNewContext(expression.getText(source), {...waiting,...changes}), false);
+  }
+  assert.equal(vm.runInNewContext(expression.getText(source), {...waiting,skyPending:false,context:null}), false);
+  assert.equal(vm.runInNewContext(expression.getText(source), {...waiting,skyPending:false,context:null,timeContextPending:true}), true);
+  assert.equal(vm.runInNewContext(expression.getText(source), {...waiting,skyPending:false,skyReport:settledReport}), false);
+  assert.equal(vm.runInNewContext(expression.getText(source), {...waiting,skyPending:false,skyReport:settledReport,skyRefreshing:true}), true);
+  assert.equal(vm.runInNewContext(expression.getText(source), {...waiting,skyPending:false,skyReport:{}}), true,
+    "a new report retains the space only until its actual inner warning content is measured");
+  const timers = new Map<number, () => void>(), callbacks: ((rows: unknown[]) => void)[] = [], measurements: unknown[] = [];
+  let serial=0;
+  const query = {select:()=>query,boundingClientRect:()=>query,exec:(callback:(rows:unknown[])=>void)=>callbacks.push(callback)};
+  const effect = vm.runInNewContext(ts.transpileModule(`(${setup.getText(source)});`, {compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText, {
+    visible:true,skyReport:{},skyRefreshing:false,settling:false,extent:"large",timeRulerIdentity:"a",
+    setTimeout:(callback:()=>void)=>{timers.set(++serial,callback);return serial;},clearTimeout:(id:number)=>timers.delete(id),
+    Taro:{createSelectorQuery:()=>query},setWarningPresentation:(update:(previous:null)=>unknown)=>measurements.push(update(null)),
+  }) as () => (() => void);
+  const cancelled = effect();for(const callback of timers.values())callback();timers.clear();cancelled();
+  callbacks.shift()!([{height:120}]);assert.deepEqual(measurements,[],"late geometry cannot revive a departed owner");
+  effect();for(const callback of timers.values())callback();timers.clear();
+  callbacks.shift()!([{height:120}]);assert.deepEqual(JSON.parse(JSON.stringify(measurements)),[{identity:"a",height:120,report:{}}]);
+  effect();for(const callback of timers.values())callback();timers.clear();
+  callbacks.shift()!([null]);assert.deepEqual(JSON.parse(JSON.stringify(measurements.at(-1))),{identity:"a",height:0,report:{}},"a confirmed warning-free result clears the previous geometry");
+});
+
+test("a new observation or a confirmed empty response cannot reuse the previous axis", () => {
+  for (const changes of [{ identity: "account-a:context-b:night-08", pending: true }, { pending: false }]) {
+    const ruler = render();
+    ruler.rerender({ identity: "account-a:context-a:night-07" });
+    ruler.rerender({ frames: [], ...changes });
+    assert.equal(ruler.root.children.some(child => child?.type === "scroll"), false);
+    assert.ok(JSON.stringify(ruler.root).includes("当前日期没有可用的时间切片。"));
+    assert.deepEqual(ruler.commits, []);
+  }
+});
+
+test("a different observation retires an own time target even when its cadence is identical", () => {
+  const ruler = render();
+  ruler.rerender({ identity: "context-a:night-07" });
+  ruler.root.children.find(child => child?.type === "scroll")!.children[0]!.children[1]!.props.onClick();
+  ruler.rerender({ selectedAt: "2026-09-06T13:00:00Z" });
+  const positions = ruler.positions.length;
+  ruler.rerender({ identity: "context-b:night-07" });
+  assert.equal(ruler.positions.length, positions + 1);
+  assert.equal(ruler.positions.at(-1), 66);
+  assert.deepEqual(ruler.commits, [1]);
+});
 const event = { detail: { scrollLeft: 44 } };
 const singleTouch = { touches: [{ identifier: 1 }] };
 const twoTouches = { touches: [{ identifier: 1 }, { identifier: 2 }] };
+
+test("adopted shallow arc uses logical pixels and a fixed axis outside the moving track", () => {
+  const source = readFileSync(new URL("./time-ruler.tsx", import.meta.url), "utf8");
+  const parsed = ts.createSourceFile("ruler.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const declaration = parsed.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "rulerPosition")!;
+  const project = vm.runInNewContext(ts.transpileModule(declaration.getText(parsed) + "\nrulerPosition;", { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText);
+  for (const distance of [0, .5, 1, 2, 4, -1]) {
+    const actual = project(distance);
+    assert.equal(actual.offset, Math.min(12, distance * distance * 3));
+    assert.equal(actual.opacity, Math.max(.25, 1 - Math.abs(distance) * .22));
+  }
+  const ruler = render();
+  assert.ok(ruler.root.children.some(child => child?.props?.className === "map-time-ruler__center"));
+  assert.match(source, /position\.offset\}px/);
+});
 
 test("a second finger cancels preview and cannot submit through scroll completion", t => {
   t.mock.timers.enable({apis:["setTimeout"]});
@@ -108,6 +392,17 @@ test("programmatic scroll and disabled rulers cannot preview or submit", () => {
     assert.deepEqual(ruler.previews, []);
     assert.deepEqual(ruler.commits, []);
   }
+});
+
+test("touching blank ruler space or moving vertically without a scroll cannot submit", t => {
+  t.mock.timers.enable({apis:["setTimeout"]});
+  const ruler = render();
+  ruler.scroll.onTouchStart(singleTouch);
+  ruler.scroll.onTouchMove(singleTouch);
+  ruler.scroll.onTouchEnd(); ruler.scroll.onDragEnd();
+  t.mock.timers.tick(500);
+  assert.deepEqual(ruler.previews, []);
+  assert.deepEqual(ruler.commits, []);
 });
 
 test("touch cancellation rolls back and ignores subsequent momentum completion", () => {

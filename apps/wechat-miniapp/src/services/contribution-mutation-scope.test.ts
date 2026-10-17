@@ -13,7 +13,8 @@ test("all feedback mutations keep the initiating owner across session and receip
       let owner = "a", requests = 0, invalidations = 0;
       const retry = async (_owner: unknown, _input: unknown, operation: (key: string) => unknown) => operation("key");
       const receipt = { data: {} };
-      const operation = vm.runInNewContext(ts.transpileModule(node.getText(source).replace(/^export /, "") + `\n${name};`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+      const helper = name === "submitContribution" ? ["assertContributionRequestOwner", "sendContributionSubmit"].map(name => source.statements.find(item => ts.isFunctionDeclaration(item) && item.name?.text === name)!.getText(source)).join("\n") : "";
+      const operation = vm.runInNewContext(ts.transpileModule(helper + "\n" + node.getText(source).replace(/^export /, "") + `\n${name};`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
         currentDraftUserId: () => owner,
         ensureSession: async () => { if (phase === "session") owner = "b"; return { userId: owner }; },
         retryContributionCreate: retry, retryContributionUpdate: retry, retryContributionWithdraw: retry, retryContributionUpload: retry, retryContributionRemoval: retry, retryContributionSubmit: retry,
@@ -23,7 +24,11 @@ test("all feedback mutations keep the initiating owner across session and receip
         },
         invalidateApiCache: () => invalidations++, miniappQueryClient: { invalidateQueries: async () => {} },
       });
-      const invoke = () => operation("contribution:test", "upload:test", { expectedRevision: 1 });
+      const args = name === "createContributionDraft" ? [{ kind: "CORRECTION" }]
+        : name === "completeContributionUpload" ? ["contribution:test", "upload:test", { dataBase64: "image" }]
+        : name === "removeContributionUpload" ? ["contribution:test", "upload:test", 1]
+        : name === "submitContribution" ? ["contribution:test", 1] : ["contribution:test", { expectedRevision: 1 }];
+      const invoke = () => operation(...args);
       if (phase === "same") { assert.equal(await invoke(), receipt); assert.equal(invalidations, 1); }
       else { await assert.rejects(invoke(), /账号已变化/); assert.equal(invalidations, 0); }
       assert.equal(requests, phase === "session" ? 0 : 1);

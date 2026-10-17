@@ -1,5 +1,8 @@
 import { useSkyForecastQuery } from "@/hooks/use-forecast-query";
 import { SemanticIcon } from "@/components/semantic-asset";
+import { useRedLightHandoff } from "@/components/red-light-handoff";
+import { useSpotNavigationCommand } from "@/hooks/use-spot-navigation";
+import { currentNavigationResource, currentNavigationSiteResource } from "@/navigation/spot-navigation-controller";
 import { PLAN_NOTES_MAX_LENGTH, parsePlanReminders, resolvePlanTiming, type PlanReminder } from "@starward/miniapp-contracts";
 import { distanceMeters, gcj02ToWgs84 } from "@starward/coordinate-system";
 import { PlanReminderEditor } from "./plan-reminder-editor";
@@ -20,7 +23,7 @@ import { NotificationRegion } from "@/components/notification";
 import { SoftButton } from "@/components/soft-button";
 import { EMPTY_FIELD_VALUE, StatusPanel } from "@/components/status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
-import { useThemeClass } from "@/hooks/use-theme";
+import { useMotionThemeClass as useThemeClass } from "@/hooks/use-theme";
 import {
   errorMessage,
   currentDraftUserId,
@@ -31,11 +34,12 @@ import {
   getPlans,
   getSkyReport,
   MiniappApiError,
+  replaceRetiredObservationContext,
   resolveObservationContext,
   restoreObservationContext,
   setPlanChecklistCompletion,
 } from "@/services/api-client";
-import { clearObservationPlanSaveRecovery, saveObservationPlan } from "./plan-save-client";
+import { clearObservationPlanSaveRecovery, saveObservationPlan, verifyObservationPlanSave } from "./plan-save-client";
 import { useAppStore } from "@/state/app-store";
 import { resolvePlanSaveSpotId } from "./plan-save-spot";
 import { planEditorTimezone } from "./plan-editor-timezone";
@@ -45,11 +49,15 @@ import { clearPlanDraft, clearUnchangedPlanDraft, createDraftOwner, parsePlanDra
 import { spotIdFromPlanRoute } from "@/features/spot/spot-plan-route";
 import { PlanDepartureTimeFields, PlanObservationEndField, emptyPlanTiming } from "./plan-timing-fields";
 import { PlanTravelFields, emptyPlanTravel, planTravelMatchesRouteOrigin, planTravelModeLabel, planTravelNeedsExplicitOrigin } from "./plan-travel-fields";
-import { planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
+import { canAuthorizePlanReminder, planReminderRecoveryAction, planReminderStatusDetail, planReminderStatusLabel } from "./plan-reminder-status";
+import { PlanReminderSubscription } from "./plan-reminder-subscription";
+import { PlanReminderDestination } from './plan-reminder-destination';
 import { calendarDateInTimezone } from "@/utils/zoned-date";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
-import { acknowledgePlanSave, planContextIdentity, PlanSaveRecoveryError, PlanSaveReviewRequired, resolvePlanCreationId, selectPlanSaveRecovery, type PlanSaveReceipt } from "@/services/plan-save-retry";
+import { acknowledgePlanSave, pendingPlanSaves, planContextIdentity, PlanSaveRecoveryError, PlanSaveReviewRequired, resolvePlanCreationId, selectPlanSaveRecovery, type PlanSaveReceipt } from "@/services/plan-save-retry";
+import type { AccountOperation } from "@/hooks/account-operation";
 import { useNativeEditorLeaveGuard } from "@/hooks/use-editor-leave-guard";
+import { useAccountOperation } from "@/hooks/use-account-operation";
 import { AstronomicalEventModal } from "@/components/astronomical-event-modal";
 import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { eventDatePresentation } from "@/content/event/event-model";
@@ -76,11 +84,16 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const mountId = useId();
   const [, refreshIdentity] = useState(0);
   const [pageVisible, setPageVisible] = useState(true);
+  const notificationVisibility = useRef({ mounted: true, visible: true });
+  useEffect(() => {
+    notificationVisibility.current.mounted = true;
+    return () => { notificationVisibility.current.mounted = false; };
+  }, []);
   const [statusReminderId, setStatusReminderId] = useState<string | null>(null);
   // Preserve the native document offset across overlay/state updates without rendering on every scroll frame.
   const documentScrollTop = useRef(0);
-  useDidShow(() => { setPageVisible(true); refreshIdentity((value) => value + 1); });
-  useDidHide(() => { setPageVisible(false); setStatusReminderId(null); useAppStore.getState().clearNotifications("plan"); });
+  useDidShow(() => { notificationVisibility.current.visible = true; setPageVisible(true); refreshIdentity((value) => value + 1); });
+  useDidHide(() => { notificationVisibility.current.visible = false; setPageVisible(false); setStatusReminderId(null); useAppStore.getState().clearNotifications("plan"); });
   const planOwner = currentDraftUserId();
   const formOwner = useRef(planOwner);
   formOwner.current ??= planOwner;
@@ -99,6 +112,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const observationContext = useAppStore(
     (state) => state.observationContext,
   );
+  const retiredObservationContextId = useAppStore(state => state.retiredObservationContextId);
   const viewport = useAppStore((state) => state.viewport);
   const explicitNew = router.params.new === "1";
   const initialSelection = initialPlanSelection(requestedPlanId, plans, explicitNew);
@@ -149,6 +163,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           observationContext?.contextId,
           observationContext?.contextFingerprint,
           observationContext?.revision,
+          retiredObservationContextId,
           Number(viewport.center.latitude.toFixed(5)),
           Number(viewport.center.longitude.toFixed(5)),
         ],
@@ -199,13 +214,17 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         };
         return restoreSnapshot();
       }
+      const replacement = observationContext && useAppStore.getState().retiredObservationContextId === observationContext.contextId
+        ? await replaceRetiredObservationContext(observationContext, signal) : null;
+      const browsingReference = replacement?.data ?? observationContext;
       if (requestedSpotId) return resolveObservationContext({
         location: { kind: "FORMAL_SPOT", spotId: requestedSpotId },
         localDate: observationContext?.localDate ?? today(),
-        ...(observationContext?.location.kind === "MAP_POINT" ? { routeOriginContextId: observationContext.contextId }
-          : observationContext?.routeOrigin ? { routeOriginContextId: observationContext.routeOrigin.contextId } : {}),
+        ...(browsingReference?.location.kind === "MAP_POINT" ? { routeOriginContextId: browsingReference.contextId }
+          : browsingReference?.routeOrigin ? { routeOriginContextId: browsingReference.routeOrigin.contextId } : {}),
         targetProfile: "DAILY",
       }, signal);
+      if (replacement) return replacement;
       if (observationContext)
         return restoreObservationContext(observationContext, signal);
       const point = gcj02ToWgs84({
@@ -295,26 +314,42 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     enabled: pageVisible,
   });
   const [saving, setSaving] = useState(false);
+  const [verifyingSave, setVerifyingSave] = useState(false);
+  const [saveReadbackMissing, setSaveReadbackMissing] = useState(false);
+  const [saveResultVerified, setSaveResultVerified] = useState<{ planId: string; revision: number } | null>(null);
   const [checklistSaving, setChecklistSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [saveRecoveryError, setSaveRecoveryError] = useState(false);
   const [saveRecoveryReviewed, setSaveRecoveryReviewed] = useState(false);
   const [pendingSaveChoices, setPendingSaveChoices] = useState<PlanSaveRecoveryError["pending"]>([]);
   const mutationBusy = useRef(false);
+  // Route identity stays stable when this command confirms a new plan ID.
+  const operations = useAccountOperation(`plan-editor:${JSON.stringify([dedicatedEditor, requestedPlanId, requestedSpotId, explicitNew])}`, busy => {
+    mutationBusy.current = busy;
+    if (!busy) { setSaving(false); setVerifyingSave(false); setDeleting(false); setChecklistSaving(false); }
+  });
+  const formReadOnly = saving || deleting || verifyingSave || pendingSaveChoices.length > 0;
+  useEffect(() => {
+    if (!pageVisible || !editing || conflictPlan || !planOwner || scopedDraftUserId() !== planOwner) return;
+    const id = activePlanId ?? creationPlanId.current;
+    if (!id) return;
+    try { setPendingSaveChoices(pendingPlanSaves(Taro, planOwner, id)); }
+    catch { setSaveRecoveryError(true); }
+  }, [pageVisible, editing, conflictPlan, planOwner, activePlanId]);
   const planRouteOrigin = activePlan?.contextSnapshot.schemaVersion === "observation-context-snapshot-v2"
     ? activePlan.contextSnapshot.routeOrigin?.displayName ?? null : null;
   const distanceOriginMatches = planTravelMatchesRouteOrigin(activePlan?.travel, planRouteOrigin);
   const siteOverviewQuery = useResourceQuery({
     queryKey: [
       "plan-site-facts",
-      selectedSpotId,
+      activePlan?.spotId ?? null,
     ],
     queryFn: (signal) =>
       getSpotSite(
-        selectedSpotId!,
+        activePlan!.spotId,
         signal,
       ),
-    enabled: pageVisible && Boolean(activePlan && selectedSpotId && activePlan.spotId === selectedSpotId),
+    enabled: pageVisible && !editing && Boolean(activePlan),
     staleTime: 60_000,
   });
   const skyQuery = useSkyForecastQuery({
@@ -374,6 +409,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     notes,
   });
   const themeClass = useThemeClass();
+  const mode = useAppStore(state => state.mode);
   useEffect(() => { setStatusReminderId(null); }, [activePlan?.planId, editing]);
   const statusReminder = !editing ? activePlan?.reminders?.find(reminder => reminder.reminderId === statusReminderId) : null;
   const selectedReminderNotification = statusReminder
@@ -525,50 +561,50 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     );
     setLocalDate(activeContext.localDate);
   }, [activeContext, activePlan, requestedPlanId, requestedSpotId]);
-  const remindersDirty = JSON.stringify(reminders) !== JSON.stringify(activePlan?.reminders ?? []);
-  const eventsDirty = JSON.stringify(eventOccurrenceIds) !== JSON.stringify(activePlan?.eventOccurrenceIds ?? []);
-  const isDirty = remindersDirty || eventsDirty || (activePlan
-    ? activePlan.spotId !== selectedSpotId ||
-      activePlan.localDate !== localDate ||
-      activePlan.localTime !== localTime ||
-      activePlan.notes !== notes || JSON.stringify(activePlan.timing ?? emptyPlanTiming()) !== JSON.stringify(timing) ||
-      JSON.stringify(activePlan.travel ?? initialDraft.current.travel) !== JSON.stringify(travel)
-    : recoveredLocalDraft || selectedSpotId !== initialDraft.current.selectedSpotId ||
-      localDate !== initialDraft.current.localDate ||
-      localTime !== initialDraft.current.localTime ||
-      notes !== initialDraft.current.notes || JSON.stringify(timing) !== JSON.stringify(initialDraft.current.timing) ||
-      JSON.stringify(travel) !== JSON.stringify(initialDraft.current.travel) ||
-      JSON.stringify(eventOccurrenceIds) !== JSON.stringify(initialDraft.current.eventOccurrenceIds));
+  // Parsed local drafts and PG JSON can order equal nested properties differently.
+  // Compare authored fields through the same contract used by save ownership;
+  // revision conflicts remain with the separate draft/save concurrency owner.
+  const isDirty = (!activePlan && recoveredLocalDraft) || !planDraftMatchesInput(
+    { selectedSpotId, localDate, localTime, notes, timing, travel, reminders, eventOccurrenceIds },
+    activePlan ? {
+      selectedSpotId: activePlan.spotId, localDate: activePlan.localDate, localTime: activePlan.localTime,
+      notes: activePlan.notes, timing: activePlan.timing ?? emptyPlanTiming(),
+      travel: activePlan.travel ?? initialDraft.current.travel,
+      reminders: activePlan.reminders ?? [], eventOccurrenceIds: activePlan.eventOccurrenceIds ?? [],
+    } : { ...initialDraft.current, reminders: [] },
+  );
   const nativeLeaveGuard = useNativeEditorLeaveGuard(editing && isDirty, "当前计划尚未保存，确定离开吗？");
   const toggleReminderItem = async (reminderId: string, itemId: string, completed: boolean) => {
     const owner = scopedDraftUserId();
     if (!owner || !activePlan || mutationBusy.current) return;
+    const operation = operations.begin();
+    if (!operation) return;
     const noticeKey = `plan-checklist:${JSON.stringify([owner, activePlan.planId, reminderId, itemId])}`;
-    mutationBusy.current = true;
     setChecklistSaving(true);
     try {
-      await setPlanChecklistCompletion(owner, activePlan.planId, { reminderId, itemId, completed, expectedRevision: activePlan.revision });
-      if (scopedDraftUserId() !== owner) return;
+      await setPlanChecklistCompletion(owner, activePlan.planId, { reminderId, itemId, completed, expectedRevision: activePlan.revision }, operation);
+      if (!operation.isCurrent() || scopedDraftUserId() !== owner) return;
       const state = useAppStore.getState();
       const prior = state.notifications.find(item => item.owner === "plan" && item.dedupeKey === noticeKey);
       if (prior) state.dismissNotification(prior.id);
-      await planQuery.refetch();
+      if (operation.isCurrent()) await planQuery.refetch();
     } catch (error) {
-      if (scopedDraftUserId() !== owner) return;
+      if (!operation.isCurrent() || scopedDraftUserId() !== owner) return;
       notify({ owner: "plan", placement: "floating", tone: "error", title: "清单状态未确认",
         body: `${errorMessage(error)}；当前勾选保持已确认状态，可重试。`, dismissible: true, dedupeKey: noticeKey });
-      if (error instanceof MiniappApiError && error.statusCode === 409) await planQuery.refetch().catch(() => undefined);
+      if (operation.isCurrent() && error instanceof MiniappApiError && error.statusCode === 409) await planQuery.refetch().catch(() => undefined);
     } finally {
-      mutationBusy.current = false;
-      setChecklistSaving(false);
+      operation.release();
     }
   };
   const beforeLeavingEditor = () => confirmPlanEditorLeave({
     busy: mutationBusy.current,
     dirty: editing && isDirty,
-    confirm: async () => (await Taro.showModal({ title: "离开编辑？", content: draftStorageFailed
-      ? "最新修改未能存入本机草稿，离开会丢失这些修改。要继续离开吗？"
-      : "修改尚未保存。已存入本机草稿的内容可在下次打开时继续编辑。", confirmText: "离开", cancelText: "继续编辑" })).confirm,
+    confirm: async () => {
+      const choice = await Taro.showModal({ title: "离开编辑？",
+        content: "可以保留本机草稿，稍后继续。保留草稿不代表计划已保存。", confirmText: "保留退出", cancelText: "继续编辑" });
+      return choice.confirm && retainDraft({});
+    },
   });
   const siteRoute = siteOverviewQuery.data?.data.arrival ?? null;
   const sky = skyQuery.data?.data ?? null;
@@ -576,6 +612,32 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
   const selectedSpot = formalSpots.find(
     (spot) => spot.spotId === activePlan?.spotId,
   );
+  const navigationHandoff = useRedLightHandoff();
+  const planNavigation = useSpotNavigationCommand({
+    readSnapshot: () => {
+      const current = useAppStore.getState(), owner = currentDraftUserId();
+      const planResource = planQuery.readCurrent(), spotResource = spotsQuery.readCurrent(), siteResource = siteOverviewQuery.readCurrent();
+      const currentPlan = planResource.data?.data.plans.find(plan => plan.planId === activePlanId) ?? null;
+      const publishedSpot = currentPlan ? spotResource.data?.data.spots.find(spot => spot.spotId === currentPlan.spotId) ?? null : null;
+      const siteFacts = currentPlan && siteResource.data?.data.spotId === currentPlan.spotId ? siteResource.data.data : null;
+      return {
+        scope: JSON.stringify([owner, planOwner, current.accountOwnerId, current.mode, current.mapResetVersion, activePlanId]),
+        version: JSON.stringify([planResource.updatedAt, currentPlan?.revision, currentPlan?.spotId,
+          current.plans.find(plan => plan.planId === activePlanId)?.revision,
+          spotResource.updatedAt, spotResource.data?.etag, siteResource.updatedAt, siteResource.data?.etag]),
+        spot: publishedSpot,
+        safety: siteFacts?.accessAndSafety ?? null,
+        available: Boolean(pageVisible && !editing && owner && owner === planOwner && owner === formOwner.current
+          && owner === current.accountOwnerId
+          && currentPlan && activePlan && currentPlan.revision === activePlan.revision
+          && currentPlan.spotId === activePlan.spotId && currentPlan.spotId === selectedSpot?.spotId
+          && currentNavigationResource(planResource) && planResource.data?.dataState === "FRESH"
+          && currentNavigationResource(spotResource) && currentNavigationSiteResource(siteResource) && siteFacts),
+      };
+    },
+    confirmHandoff: () => navigationHandoff.confirm("微信地图界面可能较亮，无法跟随红光模式。"),
+    feedback: { owner: "plan", placement: "floating", dedupeKeyPrefix: "plan-navigation:" },
+  });
   const distanceOrigin = activePlan?.travel?.originLocation?.wgs84 ??
     (activePlan?.travel?.originLocation !== null && distanceOriginMatches ? activeContext?.routeOrigin?.wgs84 : null);
   const straightDistanceKm = selectedSpot && distanceOrigin
@@ -591,15 +653,21 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     title: string,
     body: string,
   ) => {
+    if (!notificationVisibility.current.mounted || !notificationVisibility.current.visible) return;
     notify({
       owner: "plan",
-      placement: tone === "info" ? "inline" : "floating",
+      placement: "floating",
       tone,
       title,
       body,
       dismissible: true,
       dedupeKey: `plan-${tone}-${title}-${body.slice(0, 48)}`,
     });
+  };
+  const openPlanShare = () => {
+    if (!activePlan) return;
+    void Taro.navigateTo({ url: `/content/share/index?planId=${encodeURIComponent(activePlan.planId)}` })
+      .catch(() => announce("warning", "分享页暂未打开", "请稍后重试，计划仍保留。"));
   };
   const retainDraft = (patch: Partial<PlanDraft>) => {
     appliedContextDefaults.current = true;
@@ -646,8 +714,78 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       <Text>{fieldError.message}</Text>
     </View>
   ) : null;
-  const save = async () => {
+  const installSavedPlan = (response: { data: ObservationPlan; saveReceipt: PlanSaveReceipt }, operation: AccountOperation,
+    snapshot: { key: string | null; version: string | undefined; ownsDraft: boolean }) => {
+    operation.assertCurrent();
+    savePlan(response.data);
+    operation.assertCurrent();
+    draftBaseRevision.current = response.data.revision;
+    const draftCleared = snapshot.ownsDraft && clearUnchangedPlanDraft(Taro, snapshot.key, snapshot.version);
+    if (draftCleared) { try { acknowledgePlanSave(Taro, response.saveReceipt); } catch { /* The exact receipt stays recoverable. */ } }
+    setPendingSaveChoices([]);
+    setSaveRecoveryError(false);
+    setSaveReadbackMissing(false);
+    setRecoveredLocalDraft(false);
+    hydratedPlanId.current = response.data.planId;
+    hydratedDraftScope.current = planDraftKey(scopedDraftUserId(), response.data.planId);
+    newPlanRequested.current = false;
+    setActivePlanId(response.data.planId);
+    setEditing(false);
+    return draftCleared;
+  };
+  const verifySave = async (receipt: PlanSaveReceipt) => {
+    const owner = scopedDraftUserId();
+    if (!owner || owner !== receipt.owner || mutationBusy.current) return;
+    const operation = operations.begin();
+    if (!operation) return;
+    setVerifyingSave(true);
+    setSaveReadbackMissing(false);
+    try {
+      const response = await verifyObservationPlanSave(receipt, operation);
+      if (!operation.isCurrent() || scopedDraftUserId() !== owner) return;
+      if (!response) {
+        setSaveReadbackMissing(true);
+        announce("warning", "保存结果仍待确认", "尚未取得这次请求的回执，不代表保存失败。原请求与草稿仍保留。");
+        return;
+      }
+      const input = response.input;
+      const submitted: PlanDraft = { selectedSpotId: input.spotId as SpotId, localDate: input.localDate, localTime: input.localTime,
+        notes: input.notes, ...(input.timing ? { timing: input.timing } : {}), ...(input.travel ? { travel: input.travel } : {}),
+        ...(input.reminders ? { reminders: input.reminders } : {}), ...(input.eventOccurrenceIds ? { eventOccurrenceIds: input.eventOccurrenceIds } : {}),
+        baseRevision: input.expectedRevision };
+      if (!planDraftMatchesInput(submitted, { selectedSpotId, localDate, localTime, timing, travel, reminders, eventOccurrenceIds, notes, baseRevision: draftBaseRevision.current }))
+        throw new PlanSaveReviewRequired(receipt.planId, response.data, response.data.revision, receipt);
+      const key = planDraftKey(owner, draftScopePlanId.current);
+      const value = key ? Taro.getStorageSync(key) : undefined;
+      const stored = parsePlanDraft(value);
+      const draftCleared = installSavedPlan(response, operation, { key, version: JSON.stringify(value),
+        ownsDraft: !value || Boolean(stored && planDraftMatchesInput(stored, submitted)) });
+      setSaveResultVerified({ planId: response.data.planId, revision: response.data.revision });
+      documentScrollTop.current = 0;
+      announce(draftCleared ? "success" : "warning", "保存结果已确认", draftCleared
+        ? "已只读核对原请求回执和当前计划，没有再次提交。"
+        : "已确认原请求。另一版本或未能清理的本机草稿仍保留，请继续核对。");
+    } catch (error) {
+      if (!operation.isCurrent() || scopedDraftUserId() !== owner) return;
+      if (error instanceof PlanSaveReviewRequired) {
+        recoveredSaveReceipt.current = error.receipt;
+        creationPlanId.current ??= error.planId;
+        creationConfirmed.current = true;
+        if (!retainDraft({ creationPlanId: error.planId, creationConfirmed: true })) return;
+        hydratedPlanId.current = error.planId as PlanId;
+        setActivePlanId(error.planId as PlanId);
+        setConflictPlan(error.current);
+        setPendingSaveChoices(error.current ? [] : pendingSaveChoices);
+      }
+      announce("warning", "保存核对尚未完成", errorMessage(error));
+    } finally { operation.release(); }
+  };
+  const save = async (retryReceipt?: PlanSaveReceipt) => {
     if (mutationBusy.current) return;
+    if (pendingSaveChoices.length && !retryReceipt) {
+      announce("warning", "请先确认保存结果", "原请求与草稿仍保留，核验不会再次提交。");
+      return;
+    }
     if (conflictPlan) {
       announce("warning", "请先核对当前计划", "本页草稿已保留，请核对下方最新计划后再保存。");
       return;
@@ -660,6 +798,18 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
     if (!savingOwner) {
       announce("warning", "计划未保存", "账户尚未恢复或已切换，请返回对应账户后重新打开计划。");
       return;
+    }
+    if (retryReceipt) {
+      if (retryReceipt.owner !== savingOwner || !saveReadbackMissing ||
+          !pendingSaveChoices.some(entry => entry.key === retryReceipt.key && entry.input.planId === retryReceipt.planId)) return;
+      try { selectPlanSaveRecovery(Taro, retryReceipt); }
+      catch (error) { announce("warning", "原保存记录已变化", errorMessage(error)); return; }
+    } else {
+      const id = activePlanId ?? creationPlanId.current;
+      try {
+        const pending = id ? pendingPlanSaves(Taro, savingOwner, id) : [];
+        if (pending.length) { setPendingSaveChoices(pending); announce("warning", "请先确认保存结果", "原请求与草稿仍保留，核验不会再次提交。"); return; }
+      } catch (error) { setSaveRecoveryError(true); announce("warning", "保存信息尚未解决", errorMessage(error)); return; }
     }
     if (!activeContext) {
       announce(
@@ -742,7 +892,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       eventOccurrenceIds,
       reminders: validatedReminders,
     };
-    mutationBusy.current = true;
+    const operation = operations.begin();
+    if (!operation) return;
     setSaving(true);
     const savedDraftKey = planDraftKey(scopedDraftUserId(), draftScopePlanId.current);
     try {
@@ -755,7 +906,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         if (!retainDraft({ creationPlanId: plan.planId })) return;
         if (creationConfirmed.current) {
           const current = await planQuery.refetch();
-          if (scopedDraftUserId() !== savingOwner) return;
+          if (!operation.isCurrent() || scopedDraftUserId() !== savingOwner) return;
           if (current?.dataState !== "FRESH") throw new Error("暂时无法核对上次保存的计划。");
           hydratedPlanId.current = plan.planId;
           setActivePlanId(plan.planId);
@@ -776,20 +927,10 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         draftBaseRevision.current,
         savingOwner,
         planContextIdentity(activeContext, travel),
+        operation,
       );
-      if (scopedDraftUserId() !== savingOwner) {
-        announce("warning", "账户已变化", "保存请求已返回，请回到原账户核对计划；本页不会更新当前账户的数据。");
-        return;
-      }
-      savePlan(response.data);
-      draftBaseRevision.current = response.data.revision;
-      const draftCleared = ownsDraft && clearUnchangedPlanDraft(Taro, savedDraftKey, savedDraftVersion);
-      if (draftCleared) { try { acknowledgePlanSave(Taro, response.saveReceipt); } catch { /* The original receipt stays recoverable. */ } }
-      setRecoveredLocalDraft(false);
-      hydratedPlanId.current = response.data.planId;
-      newPlanRequested.current = false;
-      setActivePlanId(response.data.planId);
-      setEditing(false);
+      if (!operation.isCurrent() || scopedDraftUserId() !== savingOwner) return;
+      const draftCleared = installSavedPlan(response, operation, { key: savedDraftKey, version: savedDraftVersion, ownsDraft });
       announce(
         draftCleared ? "success" : "warning",
         "计划已保存",
@@ -797,21 +938,30 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           ? "计划已安全保存；天气与夜空条件仍以打开页面时的最新数据为准。"
           : "计划已安全保存；本机仍有另一版本的草稿或暂时无法清理，已保留供下次核对。",
       );
-      if (dedicatedEditor) {
+      if (dedicatedEditor && operation.isCurrent()) {
         nativeLeaveGuard.suspendForProgrammaticLeave();
-        const openSavedPlan = () => Taro.redirectTo({ url: `/content/plan/detail/index?planId=${encodeURIComponent(response.data.planId)}` });
+        const openSavedPlan = () => {
+          operation.assertCurrent();
+          return Taro.redirectTo({ url: `/content/plan/detail/index?planId=${encodeURIComponent(response.data.planId)}` });
+        };
         let hasPriorPage = false;
         try { hasPriorPage = Taro.getCurrentPages().length > 1; } catch { /* No reliable back target. */ }
         try {
+          operation.assertCurrent();
           if (hasPriorPage) await Taro.navigateBack().catch(openSavedPlan);
           else await openSavedPlan();
         } catch {
+          if (!operation.isCurrent()) return;
           nativeLeaveGuard.restoreAfterFailedProgrammaticLeave();
           announce("warning", "计划已保存，暂时无法打开详情", "无需重复保存，可从观星计划列表查看。");
         }
       }
     } catch (error) {
-      if (scopedDraftUserId() !== savingOwner) return;
+      if (!operation.isCurrent() || scopedDraftUserId() !== savingOwner) return;
+      if (!(error instanceof PlanSaveReviewRequired)) {
+        try { setPendingSaveChoices(pendingPlanSaves(Taro, savingOwner, plan.planId)); }
+        catch { setSaveRecoveryError(true); }
+      }
       if (error instanceof PlanSaveRecoveryError) { setSaveRecoveryError(true); setSaveRecoveryReviewed(false); setPendingSaveChoices(error.pending); }
       if (error instanceof PlanSaveReviewRequired) {
         recoveredSaveReceipt.current = error.receipt;
@@ -821,11 +971,13 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         hydratedPlanId.current = error.planId as PlanId;
         setActivePlanId(error.planId as PlanId);
         setConflictPlan(error.current);
+        setPendingSaveChoices([]);
         announce("warning", error.current ? "请核对已保存计划" : "未找到原计划", error.message);
       } else if (error instanceof MiniappApiError && error.code === "CONFLICT") {
         const current = await planQuery.refetch().catch(() => undefined);
-        if (scopedDraftUserId() !== savingOwner) return;
+        if (!operation.isCurrent() || scopedDraftUserId() !== savingOwner) return;
         if (current) replacePlans(current.data.plans);
+        if (!operation.isCurrent()) return;
         const latestPlan = current?.dataState === "FRESH" ? current.data.plans.find((item) => item.planId === plan.planId) : null;
         if (latestPlan) {
           creationPlanId.current ??= latestPlan.planId;
@@ -848,8 +1000,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         );
       }
     } finally {
-      mutationBusy.current = false;
-      setSaving(false);
+      operation.release();
     }
   };
   const confirmPlanConflict = () => {
@@ -866,28 +1017,31 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       return;
     }
     setConflictPlan(null);
+    setPendingSaveChoices([]);
   };
   const clearSaveRecovery = async () => {
     const owner = scopedDraftUserId();
     if (!owner || mutationBusy.current) return;
-    mutationBusy.current = true; setSaving(true);
+    const operation = operations.begin();
+    if (!operation) return;
+    setSaving(true);
     try {
       const current = await planQuery.refetch();
-      if (scopedDraftUserId() !== owner) return;
+      if (!operation.isCurrent() || scopedDraftUserId() !== owner) return;
       if (current?.dataState !== "FRESH") throw new Error("当前计划尚未确认最新状态，请恢复网络后重试。");
       if (!saveRecoveryReviewed) {
         setSaveRecoveryReviewed(true);
         announce("warning", "请核对已保存计划", "列表已刷新。上次请求可能已经保存，请先查看计划列表；继续将另建一份计划。");
         return;
       }
-      const confirmation = await Taro.showModal({ title: "另建一份计划？", content: "将清理当前账号全部本机计划恢复信息。原请求可能已成功，无法撤销；继续可能保留两份计划，已保存计划不会删除。", confirmText: "另建一份", cancelText: "返回核对" });
-      if (!confirmation.confirm || scopedDraftUserId() !== owner) return;
+      const confirmation = await operation.native(() => Taro.showModal({ title: "另建一份计划？", content: "将清理当前账号全部本机计划恢复信息。原请求可能已成功，无法撤销；继续可能保留两份计划，已保存计划不会删除。", confirmText: "另建一份", cancelText: "返回核对" }));
+      if (!operation.isCurrent() || !confirmation.confirm || scopedDraftUserId() !== owner) return;
       const draftKey = planDraftKey(owner, draftScopePlanId.current);
       const newDraftKey = planDraftKey(owner, null);
       if (newDraftKey !== draftKey && newDraftKey && Taro.getStorageSync(newDraftKey))
         throw new Error("本机已有另一份新建草稿，请先处理该草稿；当前输入和恢复记录均保留。");
       if (!clearPlanDraft(Taro, draftKey)) throw new Error("原草稿无法清理，尚未开始另一份计划。");
-      clearObservationPlanSaveRecovery(owner);
+      clearObservationPlanSaveRecovery(owner, operation);
       creationPlanId.current = null;
       creationConfirmed.current = false;
       draftBaseRevision.current = null;
@@ -901,36 +1055,31 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       setSaveRecoveryError(false); setSaveRecoveryReviewed(false);
       announce("info", "已开始另一份计划", "当前输入和已保存计划保留。确认内容后再保存，不会自动提交。");
     } catch (error) {
-      if (scopedDraftUserId() === owner) {
+      if (operation.isCurrent() && scopedDraftUserId() === owner) {
         setSaveRecoveryReviewed(false);
         announce("warning", "恢复信息未清理", errorMessage(error));
       }
-    } finally { mutationBusy.current = false; setSaving(false); }
+    } finally { operation.release(); }
   };
   const remove = async () => {
     if (!activePlan || mutationBusy.current) return;
     const deletionOwner = scopedDraftUserId();
     if (!deletionOwner) return;
-    mutationBusy.current = true;
+    const operation = operations.begin();
+    if (!operation) return;
     setDeleting(true);
     try {
-      const confirmation = await Taro.showModal({
+      const confirmation = await operation.native(() => Taro.showModal({
       title: "删除观测计划？",
       content: `删除后本计划将从服务端移除${isDirty ? "，本页未保存修改也会丢弃" : ""}；取消或失败时本页内容保持不变。`,
       confirmText: "删除",
       confirmColor: "#B53A3A",
-    });
-    if (!confirmation.confirm) return;
-      if (scopedDraftUserId() !== deletionOwner) {
-        announce("warning", "计划未删除", "账户已变化，请重新打开对应计划。");
-        return;
-      }
-      const response = await deleteObservationPlan(activePlan.planId, deletionOwner);
-      if (scopedDraftUserId() !== deletionOwner) {
-        announce("warning", "账户已变化", "删除请求已返回，请回到原账户核对计划；本页不会更新当前账户的数据。");
-        return;
-      }
+    }));
+      if (!operation.isCurrent() || !confirmation.confirm || scopedDraftUserId() !== deletionOwner) return;
+      const response = await deleteObservationPlan(activePlan.planId, deletionOwner, operation);
+      if (!operation.isCurrent() || scopedDraftUserId() !== deletionOwner) return;
       replacePlans(response.data.plans);
+      if (!operation.isCurrent()) return;
       const draftKey = planDraftKey(deletionOwner, activePlan.planId);
       clearPlanDraft(Taro, draftKey);
       try {
@@ -943,21 +1092,23 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         "计划已删除",
         "计划已删除，即将返回我的。",
       );
-      await Taro.navigateBack().catch(() =>
-        Taro.switchTab({ url: "/pages/my/index" }),
-      ).catch(() => {
+      if (!operation.isCurrent()) return;
+      await Taro.navigateBack().catch(() => {
+        operation.assertCurrent();
+        return Taro.switchTab({ url: "/pages/my/index" });
+      }).catch(() => {
+        if (!operation.isCurrent()) return;
         announce("warning", "计划已删除", "自动返回暂不可用，可通过顶部返回或“我的”继续浏览。");
       });
     } catch (error) {
-      if (scopedDraftUserId() !== deletionOwner) return;
+      if (!operation.isCurrent() || scopedDraftUserId() !== deletionOwner) return;
       announce(
         "error",
-        "计划删除失败",
-        `${errorMessage(error)}；计划与本页草稿保持不变，可重试。`,
+        "暂未确认计划删除结果",
+        `${errorMessage(error)}；本页草稿仍保留，请刷新计划后核对，再决定是否重试。`,
       );
     } finally {
-      mutationBusy.current = false;
-      setDeleting(false);
+      operation.release();
     }
   };
   const showMissingRequestedPlan = Boolean(
@@ -993,6 +1144,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
       data-control="plan-editor"
     >
       {!eventModalPresent ? <FloatingNotificationHost /> : null}
+      {navigationHandoff.warning}
       <AstronomicalEventModal open={eventModalOpen} onPresenceChange={setEventModalPresent} mode={editing ? "select-one" : "browse"}
         context={activeContext} initialOccurrenceIds={eventOccurrenceIds} initialDetailId={eventDetailId}
         onClose={() => { setEventModalOpen(false); setEventDetailId(null); }}
@@ -1003,7 +1155,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           setEventModalOpen(false);
         }} : {})} />
       <CustomNav
-        title={dedicatedEditor ? (activePlanId && !newPlanRequested.current ? "编辑观星计划" : "新建观星计划") : "观星计划"}
+        title={dedicatedEditor && editing ? (activePlanId && !newPlanRequested.current ? "编辑观星计划" : "新建观星计划") : "观星计划"}
         beforeBack={beforeLeavingEditor}
         onBackAuthorized={nativeLeaveGuard.suspendForProgrammaticLeave}
         onBackFailure={nativeLeaveGuard.restoreAfterFailedProgrammaticLeave}
@@ -1027,27 +1179,29 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           detail="地点列表尚未确认最新状态，暂时显示上次列表，当前选择和输入已保留。"
           recoveryLabel="重新获取地点"
           onRecover={() => void spotsQuery.refetch()} /> : null}
+        {saving ? <StatusPanel state="LOADING" detail="正在保存计划，当前内容保持不变。" /> : null}
+        {pendingSaveChoices.map(entry => <View className="plan-save-recovery" key={entry.key} role="status">
+          <Text className="type-section">保存结果待确认 · {entry.input.localDate} {entry.input.localTime}</Text>
+          <Text className="type-body">保存结果尚未确认，原草稿仍可查看。确认时不会再次提交计划。</Text>
+          {pendingSaveChoices.length > 1 ? <Text className="type-body">{formalSpots.find(spot => spot.spotId === entry.input.spotId)?.name ?? "地点名称暂不可用"}</Text> : null}
+          <SoftButton disabled={saving || deleting || verifyingSave} loading={verifyingSave} label="确认保存结果"
+            onClick={() => void verifySave({ owner: planOwner!, key: entry.key, planId: entry.input.planId })}>确认保存结果</SoftButton>
+          <SoftButton disabled={saving || deleting || verifyingSave} label="查看本次草稿" onClick={() => {
+            setValidationAnchor(""); Taro.nextTick(() => setValidationAnchor("plan-editor-draft"));
+          }}>查看本次草稿</SoftButton>
+          {saveReadbackMissing ? <SoftButton disabled={saving || deleting || verifyingSave} label="重试原保存请求"
+            onClick={() => void save({ owner: planOwner!, key: entry.key, planId: entry.input.planId })}>重试原保存请求</SoftButton> : null}
+        </View>)}
         {saveRecoveryError ? <>
-          {pendingSaveChoices.map(entry => <View className="form-group" key={entry.key}>
-            <Text className="type-section">未确认的保存 · {entry.input.localDate} {entry.input.localTime}</Text>
-            <Text className="type-body">{formalSpots.find(spot => spot.spotId === entry.input.spotId)?.name ?? "地点名称暂不可用"}</Text>
-            <Text className="type-body">{entry.input.notes || "没有备注"}</Text>
-            <SoftButton disabled={saving || deleting} label="核对这次保存" onClick={() => {
-              const owner = scopedDraftUserId();
-              if (!owner) return;
-              try {
-                selectPlanSaveRecovery(Taro, { owner, key: entry.key, planId: entry.input.planId });
-                if (!retainDraft({ creationPlanId: entry.input.planId })) return;
-                setPendingSaveChoices([]); setSaveRecoveryError(false);
-                announce("info", "已关联原保存记录", "当前输入保留，再次保存将先核对这次请求的结果。");
-              } catch (error) { announce("warning", "暂时无法关联", errorMessage(error)); }
-            }}>核对这次保存</SoftButton>
-          </View>)}
-          <StatusPanel state="ERROR" detail="本机保存信息尚未解决，当前输入保留。请核对上方旧请求或已保存计划。"
+          <StatusPanel state="ERROR" detail="本机保存信息尚未解决，当前输入保留。请核对旧请求或已保存计划。"
             recoveryLabel={saveRecoveryReviewed ? "另建一份计划" : "刷新计划列表并核对"}
-            onRecover={saving || deleting ? undefined : () => void clearSaveRecovery()} />
+            onRecover={saving || deleting || verifyingSave ? undefined : () => void clearSaveRecovery()} />
           <SoftButton label="查看已保存计划" onClick={() => void Taro.navigateTo({ url: "/content/plan/list/index" })}>查看已保存计划</SoftButton>
         </> : null}
+        {saveResultVerified && !editing && saveResultVerified.planId === activePlan?.planId && saveResultVerified.revision === activePlan.revision ? <View className="plan-save-recovery" role="status">
+          <Text className="type-section">保存结果已确认</Text>
+          <Text className="type-body">已核对原请求回执和当前计划，以下为已保存内容。</Text>
+        </View> : null}
         <View
           className="plan-notification-state"
           data-od-id="my-plan-notification-state"
@@ -1087,12 +1241,15 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 <Text className="plan-hero__title">{selectedSpot?.name ?? "点位资料暂不可用"}</Text>
                 <SemanticIcon name="chevron-right" className="plan-hero__chevron" />
               </Button>
-              <Text className="plan-hero__subtitle">{selectedSpot?.region ?? "正式点位资料暂不可用；计划内容仍保留。"}</Text>
+              <Text className="plan-hero__subtitle">{selectedSpot?.address || selectedSpot?.region || "正式点位资料暂不可用；计划内容仍保留。"}</Text>
               <View className="plan-period" aria-label="计划观测时段">
                 <Text className="plan-period__date">{activePlan.localDate} · 观测时段</Text>
                 <View className="plan-period__time"><Text>{activePlan.localTime}</Text><Text>—</Text><Text>{activePlan.timing?.endLocalTime || "未填写"}</Text></View>
                 <Text className="plan-period__meta">{activePlan.timing?.endLocalDate && activePlan.timing.endLocalDate !== activePlan.localDate ? `至 ${activePlan.timing.endLocalDate} · ` : ""}地点当地时间 · {activePlan.contextSnapshot.timezone}</Text>
               </View>
+              {mode === "DAY" ? <SoftButton className="plan-hero__share" variant="ghost" label="分享这份行程" onClick={openPlanShare}>
+                <SemanticIcon name="share" /><Text>分享行程</Text>
+              </SoftButton> : null}
             </View>
             {planQuery.isError || planQuery.refreshError || planQuery.data?.dataState === "STALE_USABLE" ? (
               <StatusPanel
@@ -1102,49 +1259,6 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 onRecover={() => void planQuery.refetch().catch(() => {})}
               />
             ) : null}
-            <View className="plan-section plan-route" data-od-id="plan-route-nodes">
-              <View className="plan-section-heading">
-                <Text className="type-section"><Text className="plan-section-symbol">↗</Text>出行安排</Text>
-                <Text className="plan-section-caption">
-                  {activePlan.travel ? planTravelModeLabel(activePlan.travel.mode) : "待补充"}
-                </Text>
-              </View>
-              <View className="plan-route__card">
-                <View className="plan-route__timeline">
-                  <View className="plan-route__node">
-                    <View className="plan-route__dot" aria-hidden="true" />
-                    <View className="plan-route__node-copy">
-                      <Text className="plan-route__node-title">
-                        {activePlan.timing ? activePlan.timing.departureLocalDate + " " + activePlan.timing.departureLocalTime : "出发时间待补充"}
-                      </Text>
-                      <Text className="plan-route__node-detail">{activePlan.travel?.origin || "出发地待补充"}</Text>
-                    </View>
-                  </View>
-                  <View className="plan-route__node plan-route__node--summary">
-                    <View className="plan-route__dot" aria-hidden="true" />
-                    <View className="plan-route__node-copy">
-                      <Text className="plan-route__node-title">到达与停车信息</Text>
-                      <Text className="plan-route__node-detail">{siteRoute?.lastRoad || siteRoute?.parkingGuidance
-                        ? [siteRoute.lastRoad, siteRoute.parkingGuidance].filter(Boolean).join(" · ")
-                        : siteOverviewQuery.isError || siteOverviewQuery.refreshError || siteOverviewQuery.data?.dataState === "STALE_USABLE"
-                          ? "场地信息暂未获取" : EMPTY_FIELD_VALUE}</Text>
-                    </View>
-                    {straightDistanceKm != null
-                      ? <Text className="plan-route__node-meta">直线 {straightDistanceKm.toFixed(1)} km</Text> : null}
-                  </View>
-                  <View className="plan-route__node">
-                    <View className="plan-route__dot" aria-hidden="true" />
-                    <View className="plan-route__node-copy">
-                      <Text className="plan-route__node-title">{activePlan.localDate} {activePlan.localTime} · {selectedSpot?.name ?? "正式观星点"}</Text>
-                      <Text className="plan-route__node-detail">计划开始观测；到达后请核实现场开放与安全情况</Text>
-                    </View>
-                  </View>
-                </View>
-                <Text className="plan-route__source-note">时间由你安排；直线距离不代表道路里程或用时。</Text>
-                {siteOverviewQuery.isError || siteOverviewQuery.refreshError || siteOverviewQuery.data?.dataState === "STALE_USABLE"
-                  ? <SoftButton variant="ghost" label="重新获取场地信息" onClick={() => void siteOverviewQuery.refetch()} /> : null}
-              </View>
-            </View>
             {contextQuery.isError && !sky ? null : <PlanReference plan={activePlan} report={sky}
               failed={!sky && (skyQuery.isError || Boolean(skyQuery.refreshError) || skyQuery.data?.dataState === "STALE_USABLE")}
               stale={Boolean(sky && (skyQuery.refreshError || skyQuery.data?.dataState === "STALE_USABLE"))}
@@ -1160,8 +1274,57 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 onRecover={() => void contextQuery.refetch()}
               />
             ) : null}
+            <View className="plan-section plan-route" data-od-id="plan-route-nodes">
+              <View className="plan-section-heading">
+                <View className="plan-section-title">{mode === "DAY" ? <SemanticIcon name="navigation" /> : <Text className="plan-section-symbol">↗</Text>}<Text className="type-section">出行安排</Text></View>
+                {mode !== "DAY" ? <Text className="plan-section-caption">
+                  {activePlan.travel ? planTravelModeLabel(activePlan.travel.mode) : "待补充"}
+                </Text> : null}
+              </View>
+              <View className="plan-route__options">
+                {mode === "DAY" ? <Text className="plan-route__mode">{activePlan.travel ? planTravelModeLabel(activePlan.travel.mode) : "待补充"}</Text> : <View />}
+                <Button className="plan-route__external-map focus-ring" data-od-id="plan-route-external-map"
+                  aria-label="在微信地图查看当前计划地点" disabled={planNavigation.busy}
+                  onClick={() => void planNavigation.openDirect()}>{planNavigation.busy ? "打开中…" : "在微信地图查看 ›"}</Button>
+              </View>
+              <View className="plan-route__card">
+                <View className="plan-route__timeline">
+                  <View className="plan-route__node">
+                    <View className="plan-route__dot" aria-hidden="true" />
+                    <View className="plan-route__node-copy">
+                      <Text className="plan-route__node-title">
+                        <Text className="plan-route__time">{activePlan.timing?.departureLocalTime || "出发时间待补充"}</Text>{activePlan.travel?.origin || "出发地待补充"}
+                      </Text>
+                      <Text className="plan-route__node-detail">{activePlan.timing?.departureLocalDate || "出发日期待补充"} 出发</Text>
+                    </View>
+                  </View>
+                  <View className="plan-route__node plan-route__node--summary">
+                    <View className="plan-route__dot" aria-hidden="true" />
+                    <View className="plan-route__node-copy">
+                      <Text className="plan-route__node-title">{selectedSpot?.address || "到达与停车信息"}</Text>
+                      <Text className="plan-route__node-detail">{siteRoute?.lastRoad || siteRoute?.parkingGuidance
+                        ? [siteRoute.lastRoad, siteRoute.parkingGuidance].filter(Boolean).join(" · ")
+                        : siteOverviewQuery.isError || siteOverviewQuery.refreshError || siteOverviewQuery.data?.dataState === "STALE_USABLE"
+                          ? "场地信息暂未获取" : EMPTY_FIELD_VALUE}</Text>
+                    </View>
+                    {straightDistanceKm != null
+                      ? <Text className="plan-route__node-meta">直线 {straightDistanceKm.toFixed(1)} km</Text> : null}
+                  </View>
+                  <View className="plan-route__node">
+                    <View className="plan-route__dot" aria-hidden="true" />
+                    <View className="plan-route__node-copy">
+                      <Text className="plan-route__node-title"><Text className="plan-route__time">{activePlan.localTime}</Text>开始观测</Text>
+                      <Text className="plan-route__node-detail">{activePlan.localDate} · 预留停车、步行与架设器材的时间</Text>
+                    </View>
+                  </View>
+                </View>
+                <Text className="plan-route__source-note">出发时间由你安排；请在微信地图核实到达方式。{straightDistanceKm !== null ? "直线距离不代表道路里程或用时。" : ""}</Text>
+                {siteOverviewQuery.isError || siteOverviewQuery.refreshError || siteOverviewQuery.data?.dataState === "STALE_USABLE"
+                  ? <SoftButton variant="ghost" label="重新获取场地信息" onClick={() => void siteOverviewQuery.refetch()} /> : null}
+              </View>
+            </View>
             <View className="plan-section plan-events" data-od-id="plan-events">
-              <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">◌</Text>天文事件</Text></View>
+              <View className="plan-section-heading"><View className="plan-section-title">{mode === "DAY" ? <SemanticIcon name="meteor" /> : <Text className="plan-section-symbol">◌</Text>}<Text className="type-section">天文事件</Text></View></View>
               {(activePlan.eventOccurrenceIds ?? []).map(id => {
                 const event = eventCatalog.find(item => item.occurrenceId === id);
                 return <Button key={id} className="plan-event-row" onClick={() => { setEventDetailId(id); setEventModalOpen(true); }}>
@@ -1173,7 +1336,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 title="暂无关联事件" detail="编辑计划可关联一项天文事件。" /> : null}
             </View>
             <View className="plan-section plan-preparation" data-od-id="plan-preparation">
-              <View className="plan-section-heading"><Text className="type-section"><Text className="plan-section-symbol">☷</Text>提醒与清单</Text><Text className="plan-section-caption">{activePlan.reminders?.length ?? 0}/5 个提醒</Text></View>
+              <View className="plan-section-heading"><View className="plan-section-title">{mode === "DAY" ? <SemanticIcon name="checklist" /> : <Text className="plan-section-symbol">☷</Text>}<Text className="type-section">提醒与清单</Text></View><Text className="plan-section-caption">{activePlan.reminders?.length ?? 0}/5 个提醒</Text></View>
               <Text className="plan-form-footnote">通知状态按每组记录，清单可独立使用。</Text>
               {(activePlan.reminders ?? []).map(reminder => {
                 const notification = reminderNotifications.find(status => status.planId === activePlan.planId && status.reminderId === reminder.reminderId);
@@ -1195,22 +1358,6 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             <View className="plan-section plan-notes" data-od-id="plan-notes">
               <View className="plan-section-heading"><Text className="type-section">备注</Text></View>
               <Text>{activePlan.notes || "未添加备注"}</Text>
-            </View>
-            <View className="plan-actions">
-              <SoftButton variant="default" label="分享这份行程" onClick={() => {
-                void Taro.navigateTo({ url: `/content/share/index?planId=${encodeURIComponent(activePlan.planId)}` }).catch(() => announce("warning", "分享页暂未打开", "请稍后重试，计划仍保留。"));
-              }}>分享行程</SoftButton>
-              <SoftButton
-                variant="ghost"
-                label="删除观测计划"
-                disabled={deleting}
-                onClick={() => void remove()}
-              >{deleting ? "删除中…" : "删除"}</SoftButton>
-              <SoftButton variant="primary" label="编辑计划" onClick={() => {
-                void Taro.navigateTo({ url: `/content/plan/edit/index?planId=${encodeURIComponent(activePlan.planId)}` }).catch(() => announce("warning", "编辑页暂未打开", "请重试，已保存计划保持不变。"));
-              }}>
-                编辑计划
-              </SoftButton>
             </View>
             {plans.length > 1 ? (
               <View className="plan-list plan-list--secondary card" data-od-id="plan-list">
@@ -1247,18 +1394,45 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           </>
         ) : null}
         {editing ? (
-          <View className="plan-editor-form" data-od-id="plan-editor-form">
-            {isDirty && (draftStorageFailed || recoveredLocalDraft) ? <StatusPanel
-              state="PARTIAL"
-              detail={draftStorageFailed
-                ? "最新修改仅保留在当前页面，尚未存入本机草稿。请保存成功后再离开。"
-                : "已恢复未保存的草稿，请核对后保存。"}
-            /> : null}
+          <View className="plan-editor-form" id="plan-editor-draft" data-od-id="plan-editor-form">
+            {!formReadOnly ? <View className="plan-draft-status" role="status">
+              <Text>{draftStorageFailed ? "最新修改仅在当前页面，本机草稿未能保留，请继续编辑。" : recoveredLocalDraft
+                ? "已恢复本机草稿，请核对后保存。" : "当前为编辑草稿，尚未保存为计划。"}</Text>
+              <SoftButton label="保留草稿" onClick={() => {
+                if (retainDraft({})) announce("info", "本机草稿已保留", "保留草稿不代表计划已保存。");
+              }}>保留草稿</SoftButton>
+            </View> : null}
+            {conflictPlan ? (
+              <View className="plan-save-recovery">
+                <Text className="type-section">计划有新版本，本次草稿保持不变。</Text>
+                <View className="plan-save-comparison">
+                <View><Text className="type-section">最新保存</Text>
+                <Text className="type-body">地点：{formalSpots.find((spot) => spot.spotId === conflictPlan.spotId)?.name ?? "原正式观星点（名称暂不可用）"}</Text>
+                <Text className="type-body">时间：{conflictPlan.localDate} {conflictPlan.localTime}</Text>
+                <Text className="type-body">出发：{conflictPlan.timing ? `${conflictPlan.timing.departureLocalDate} ${conflictPlan.timing.departureLocalTime}` : "未填写"}</Text>
+                <Text className="type-body">备注：{conflictPlan.notes || "无"}</Text>
+                </View><View><Text className="type-section">本次草稿</Text>
+                  <Text className="type-body">地点：{formalSpots.find(spot => spot.spotId === selectedSpotId)?.name ?? "地点名称暂不可用"}</Text>
+                  <Text className="type-body">时间：{localDate} {localTime}</Text>
+                  <Text className="type-body">出发：{timing.departureLocalDate} {timing.departureLocalTime}</Text>
+                  <Text className="type-body">备注：{notes || "无"}</Text>
+                </View></View>
+                <Text className="type-caption">本页输入保持不变。确认后，下次保存会以本页内容更新这份计划。</Text>
+                <SoftButton disabled={formReadOnly} label="查看最新版本" onClick={() => {
+                  if (!retainDraft({})) return;
+                  void Taro.navigateTo({ url: `/content/plan/detail/index?planId=${encodeURIComponent(conflictPlan.planId)}` })
+                    .catch(() => announce("warning", "最新版本暂未打开", "本次草稿保持不变，请重试。"));
+                }}>查看最新版本</SoftButton>
+                <SoftButton
+                  disabled={formReadOnly}
+                  label="已核对，保留本页修改"
+                  onClick={confirmPlanConflict}
+                >已核对，保留本页修改</SoftButton>
+              </View>
+            ) : null}
+            <View className="plan-editor-section">
             <View className="plan-editor-form__heading">
               <Text className="type-section">这次去哪里</Text>
-              <Text className="type-caption">
-                保存后仍需在出发前复核天气与到达条件。
-              </Text>
             </View>
             {fieldErrorView("location")}
             <View className="form-group plan-location-field">
@@ -1301,7 +1475,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
               {formalSpots.length ? (
                 <Picker
                   mode="selector"
-                  disabled={saving || deleting}
+                  disabled={formReadOnly}
                   range={formalSpots.map(
                     (spot) => `${spot.name} · ${spot.region}`,
                   )}
@@ -1330,6 +1504,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 </View>
               ) : null}
             </View>
+            </View>
+            <View className="plan-editor-section">
             <View className="plan-editor-form__heading">
               <Text className="type-section">留给星空的时间</Text>
             </View>
@@ -1341,7 +1517,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 <Picker
                   mode="date"
                   aria-label={`观测地点当地日期：${localDate}`}
-                  disabled={saving || deleting}
+                  disabled={formReadOnly}
                   value={localDate}
                   onChange={(event) => { retainDraft({ localDate: event.detail.value }); setLocalDate(event.detail.value); clearFieldError("start"); clearFieldError("timing"); clearFieldError("departure"); }}
                 >
@@ -1352,7 +1528,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 <Picker
                   mode="time"
                   aria-label={`观测地点当地时间：${localTime}`}
-                  disabled={saving || deleting}
+                  disabled={formReadOnly}
                   value={localTime}
                   onChange={(event) => { retainDraft({ localTime: event.detail.value }); setLocalTime(event.detail.value); clearFieldError("start"); clearFieldError("timing"); clearFieldError("departure"); }}
                 >
@@ -1362,27 +1538,31 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 </Picker>
                 </View>
               </View>
-              <PlanObservationEndField value={timing} disabled={saving || deleting}
+              <PlanObservationEndField value={timing} disabled={formReadOnly}
                 onChange={(value) => { retainDraft({ timing: value }); setTiming(value); clearFieldError("timing"); }} />
             </View>
             {fieldErrorView("timing")}
             <Text className="plan-form-footnote">{timezone
               ? `观星点当地时间 · ${timezone}，支持跨日观测。`
               : "选择正式观星点后显示当地时区；支持跨日观测。"}</Text>
+            </View>
+            <View className="plan-editor-section">
             <View className="plan-editor-form__heading">
               <Text className="type-section">出发安排</Text>
             </View>
             {fieldErrorView("departure")}
             <View className="plan-fields-card">
-              <PlanDepartureTimeFields value={timing} disabled={saving || deleting}
+              <PlanDepartureTimeFields value={timing} disabled={formReadOnly}
                 onChange={(value) => { retainDraft({ timing: value }); setTiming(value); clearFieldError("departure"); }} />
               {fieldErrorView("travel")}
-              <PlanTravelFields value={travel} disabled={saving || deleting} ownerKey={`${planOwner}:${activePlanId ?? "new"}`}
+              <PlanTravelFields value={travel} disabled={formReadOnly} ownerKey={`${planOwner}:${activePlanId ?? "new"}`}
                 onChange={(value) => { retainDraft({ travel: value }); setTravel(value); clearFieldError("travel"); }} />
             </View>
             <Text className="plan-form-footnote">
               出发地、交通方式和时间由你填写。出发前可通过微信地图核实到达方式。
             </Text>
+            </View>
+            <View className="plan-editor-section">
             <View className="plan-editor-form__heading plan-editor-form__heading--row">
               <Text className="type-section">天文事件</Text>
             </View>
@@ -1397,24 +1577,28 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 state={eventsQuery.isError ? "ERROR" : "STALE"}
                 detail="事件目录暂不可用或尚未确认最新状态；已选择的事件标识仍保留。"
                 recoveryLabel="重试" onRecover={() => void eventsQuery.refetch()} /> : null}
-              <SoftButton className="plan-event-picker" disabled={saving || deleting} label="打开天象事件目录" onClick={() => {
+              <SoftButton className="plan-event-picker" disabled={formReadOnly} label="打开天象事件目录" onClick={() => {
                 retainDraft({ eventOccurrenceIds });
                 setEventDetailId(null);
                 setEventModalOpen(true);
               }}>{eventOccurrenceIds.length ? `已关联 ${eventOccurrenceIds.length} 个 ›` : "选择事件 ›"}</SoftButton>
             </View>
             <Text className="plan-form-footnote">事件目录只提供年度参考；历史多关联会原样保留，确认新选择或清除后改为最多一个。</Text>
+            </View>
+            <View className="plan-editor-section">
             <View className="plan-editor-form__heading">
               <Text className="type-section">自己的提醒清单</Text>
             </View>
             {fieldErrorView("reminders")}
-            <PlanReminderEditor reminders={reminders} onChange={value => { retainDraft({ reminders: value }); setReminders(value); clearFieldError("reminders"); }} />
+            <PlanReminderEditor disabled={formReadOnly} reminders={reminders} onChange={value => { retainDraft({ reminders: value }); setReminders(value); clearFieldError("reminders"); }} />
+            </View>
+            <View className="plan-editor-section">
             <View className="form-group plan-notes-field">
               <Text className="type-section">备注</Text>
               <Textarea
                 className="field field-textarea"
                 value={notes}
-                disabled={saving || deleting}
+                disabled={formReadOnly}
                 maxlength={PLAN_NOTES_MAX_LENGTH}
                 autoHeight={false}
                 placeholder="器材、同伴、撤离和准备事项"
@@ -1422,20 +1606,7 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
                 onInput={(event) => { retainDraft({ notes: event.detail.value }); setNotes(event.detail.value); }}
               />
             </View>
-            {conflictPlan ? (
-              <View className="form-group">
-                <Text className="type-section">核对最新计划</Text>
-                <Text className="type-body">地点：{formalSpots.find((spot) => spot.spotId === conflictPlan.spotId)?.name ?? "原正式观星点（名称暂不可用）"}</Text>
-                <Text className="type-body">时间：{conflictPlan.localDate} {conflictPlan.localTime}</Text>
-                <Text className="type-body">备注：{conflictPlan.notes || "无"}</Text>
-                <Text className="type-caption">本页输入保持不变。确认后，下次保存会以本页内容更新这份计划。</Text>
-                <SoftButton
-                  disabled={saving || deleting}
-                  label="已核对，保留本页修改"
-                  onClick={confirmPlanConflict}
-                >已核对，保留本页修改</SoftButton>
-              </View>
-            ) : null}
+            </View>
             {isDirty && !draftStorageFailed && !recoveredLocalDraft ? (
               <StatusPanel
                 state="PARTIAL"
@@ -1454,6 +1625,16 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
         ) : null}
       </View>
       </ScrollView>
+      {activePlan && !editing ? <View className="plan-actions">
+        {mode !== "DAY" ? <SoftButton variant="default" label="分享这份行程" onClick={openPlanShare}>分享行程</SoftButton> : null}
+        <SoftButton variant="ghost" label="删除观测计划" loading={deleting ? "arc" : false} disabled={deleting} onClick={() => void remove()}>
+          {deleting ? "删除中…" : "删除"}
+        </SoftButton>
+        <SoftButton variant="primary" label="编辑计划" onClick={() => {
+          void Taro.navigateTo({ url: `/content/plan/edit/index?planId=${encodeURIComponent(activePlan.planId)}` })
+            .catch(() => announce("warning", "编辑页暂未打开", "请重试，已保存计划保持不变。"));
+        }}>编辑计划</SoftButton>
+      </View> : null}
       {editing ? <View className="plan-editor-footer safe-bottom">
         <SoftButton label="取消编辑" disabled={saving || deleting} onClick={async () => {
           if (!scopedDraftUserId() || !(await beforeLeavingEditor())) return;
@@ -1477,8 +1658,8 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
           }
           setEditing(false);
         }}>取消</SoftButton>
-        <SoftButton variant="primary" disabled={saving || deleting || (!activePlan && formalSpots.length === 0)} label="保存观测计划" onClick={() => void save()}>
-          {saving ? "保存中…" : "保存计划"}
+        <SoftButton variant="primary" loading={saving} disabled={formReadOnly || Boolean(conflictPlan) || saveRecoveryError || (!activePlan && formalSpots.length === 0)} label="保存观测计划" onClick={() => void save()}>
+          {saving ? "保存中…" : conflictPlan ? "先核对最新版本" : "保存计划"}
         </SoftButton>
       </View> : null}
       <NativeBackBoundary active={Boolean(statusReminder)} onBack={() => setStatusReminderId(null)} />
@@ -1488,6 +1669,24 @@ export default function PlanEditorPage({ dedicatedEditor = false }: { dedicatedE
             onClick={event => event.stopPropagation()}>
             <Text className="plan-reminder-status-dialog__title">{planReminderStatusLabel(selectedReminderNotification)}</Text>
             <Text className="plan-reminder-status-dialog__detail">{planReminderStatusDetail(selectedReminderNotification, activePlan?.contextSnapshot.timezone)}</Text>
+            {pageVisible && planOwner && activePlan &&
+              !planQuery.isPending && !planQuery.isError && !planQuery.refreshError && planQuery.data?.dataState==='FRESH' ? <>
+              {planReminderRecoveryAction(selectedReminderNotification,activePlan.revision,statusReminder.notifyOnWechat)==='VERIFY_IDENTITY'
+                ? <PlanReminderDestination key={`${planOwner}:${activePlan.planId}:${activePlan.revision}:${statusReminder.reminderId}`} owner={planOwner} /> : null}
+              {planReminderRecoveryAction(selectedReminderNotification,activePlan.revision,statusReminder.notifyOnWechat)==='EDIT_TITLE'
+                ? <Button className="plan-reminder-status-dialog__close" onClick={()=>{
+                  setStatusReminderId(null);
+                  void Taro.navigateTo({url:`/content/plan/edit/index?planId=${encodeURIComponent(activePlan.planId)}`})
+                    .catch(()=>announce('warning','编辑页暂未打开','请重试，已保存计划保持不变。'));
+                }}>编辑提醒标题</Button> : null}
+            </> : null}
+            {pageVisible && planOwner && activePlan &&
+              !planQuery.isPending && !planQuery.isError && !planQuery.refreshError && planQuery.data?.dataState === "FRESH" &&
+              canAuthorizePlanReminder(selectedReminderNotification, activePlan.revision, statusReminder.notifyOnWechat) && selectedReminderNotification ?
+              <PlanReminderSubscription key={`${planOwner}:${activePlan.planId}:${activePlan.revision}:${statusReminder.reminderId}:${selectedReminderNotification.scheduleVersion}`}
+                owner={planOwner} planId={activePlan.planId} reminderId={statusReminder.reminderId}
+                redLight={useAppStore.getState().mode === "OBSERVATION"}
+                scheduleVersion={selectedReminderNotification.scheduleVersion} /> : null}
             <Button className="plan-reminder-status-dialog__close" onClick={() => setStatusReminderId(null)}>知道了</Button>
           </View>
         </View>

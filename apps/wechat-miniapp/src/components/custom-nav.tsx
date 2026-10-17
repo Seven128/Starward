@@ -1,6 +1,6 @@
 import Taro from "@tarojs/taro";
 import { View, Text } from "@tarojs/components";
-import { useRef, useState } from "react";
+import { usePageNavigation } from "@/hooks/use-page-navigation";
 import { nativeStatusBarHeightPx, nativeMenuClearancePx, nativeNavigationInsets } from "@/theme/native-metrics";
 import { SemanticIcon } from "./semantic-asset";
 import { SoftButton } from "./soft-button";
@@ -10,6 +10,7 @@ export function CustomNav({
   title,
   subtitle,
   back = false,
+  backPresentation = "back",
   backOdId,
   backFallbackTab = "/pages/map/index",
   odId,
@@ -21,6 +22,7 @@ export function CustomNav({
   title: string;
   subtitle?: string | undefined;
   back?: boolean | undefined;
+  backPresentation?: "back" | "dismiss" | undefined;
   backOdId?: string | undefined;
   backFallbackTab?: "/pages/map/index" | "/pages/my/index" | undefined;
   odId?: string | undefined;
@@ -31,48 +33,50 @@ export function CustomNav({
 }) {
   const statusBarHeight = nativeStatusBarHeightPx();
   const menuClearance = nativeMenuClearancePx();
-  const actionSafeTop = right ? nativeNavigationInsets().safeTop : undefined;
-  const navigationBusy = useRef(false);
-  const [backError, setBackError] = useState(false);
+  const dismiss = backPresentation === "dismiss";
+  const actionSafeTop = right || dismiss ? nativeNavigationInsets().safeTop : undefined;
+  const navigation = usePageNavigation();
+  const backError = navigation.navigationError;
   const goBack = async () => {
-    if (navigationBusy.current) return;
-    navigationBusy.current = true;
-    setBackError(false);
+    const attempt = navigation.begin({ allowUnknownStack: true });
+    if (!attempt) return;
+    if (attempt.stackReadError !== undefined)
+      reportRuntimeError("native", "navigation_page_stack_failed", attempt.stackReadError);
     const fallback = () => Taro.switchTab({ url: backFallbackTab });
-    let hasPriorPage = false;
-    try {
-      hasPriorPage = Taro.getCurrentPages().length > 1;
-    } catch (error) {
-      reportRuntimeError("native", "navigation_page_stack_failed", error);
-      // An unavailable page stack is equivalent to an unprovable back target.
-    }
     try {
       if (beforeBack && !(await beforeBack())) return;
+      if (!attempt.active()) return;
       await onBackAuthorized?.();
-      if (hasPriorPage) {
+      if (!attempt.active()) return;
+      if (attempt.stack.length > 1) {
         try {
           await Taro.navigateBack();
         } catch (error) {
           reportRuntimeError("native", "navigation_back_failed", error);
-          await fallback();
+          if (attempt.active()) await fallback();
         }
       } else {
         await fallback();
       }
     } catch (error) {
       reportRuntimeError("native", "navigation_return_failed", error);
-      try {
-        await onBackFailure?.();
-      } finally {
-        setBackError(true);
+      if (attempt.active()) {
+        try { await onBackFailure?.(); } catch { /* Still report the failed return. */ }
+        attempt.fail();
       }
     } finally {
-      navigationBusy.current = false;
+      attempt.release();
     }
   };
+  const backControl = back ? <View {...(backOdId ? { "data-od-id": backOdId } : {})}>
+    <View className="custom-nav__back-control">
+      <SoftButton variant="ghost" label={dismiss ? "关闭页面" : "返回"} onClick={goBack}>{""}</SoftButton>
+      <SemanticIcon name={dismiss ? "close" : "arrow-left"} label={dismiss ? "关闭页面" : "返回"} className="custom-nav__back-icon" />
+    </View>
+  </View> : null;
   return (
     <View
-      className={`custom-nav safe-top${right ? " custom-nav--with-action" : ""}`}
+      className={`custom-nav safe-top${right ? " custom-nav--with-action" : ""}${dismiss ? " custom-nav--dismiss" : ""}`}
       data-control="mini-primary-navigation"
       {...(odId ? { "data-od-id": odId } : {})}
       style={{
@@ -82,20 +86,7 @@ export function CustomNav({
     >
       <View className="custom-nav__bar">
         <View className="custom-nav__side">
-          {back ? (
-            <View {...(backOdId ? { "data-od-id": backOdId } : {})}>
-              <View className="custom-nav__back-control">
-                <SoftButton variant="ghost" label="返回" onClick={goBack}>
-                  {""}
-                </SoftButton>
-                <SemanticIcon
-                  name="arrow-left"
-                  label="返回"
-                  className="custom-nav__back-icon"
-                />
-              </View>
-            </View>
-          ) : null}
+          {!dismiss ? backControl : null}
         </View>
         <View className="custom-nav__title">
           <Text className="type-section">{title}</Text>
@@ -103,6 +94,7 @@ export function CustomNav({
         </View>
         <View className="custom-nav__side custom-nav__side--right">
           {right}
+          {dismiss ? backControl : null}
         </View>
       </View>
       {backError ? (

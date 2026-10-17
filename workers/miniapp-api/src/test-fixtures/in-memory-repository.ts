@@ -106,6 +106,9 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
   async listDarkSkyGridCells() {
     return [];
   }
+  async getPublishedDarkSkyDataset() {
+    return null;
+  }
   async searchSpotCandidates() {
     return [];
   }
@@ -444,6 +447,12 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
         idempotencyKey,
       );
     });
+  }
+  async getContributionSubmitReceipt(userId: UserId, submissionId: ContributionId, key: string) {
+    return this.#contributions.getSubmitReceipt(userId, submissionId, key);
+  }
+  async getFormalContributionSubmitReceipt(userId: UserId, spotId: SpotId, key: string) {
+    return this.#contributions.getFormalSubmitReceipt(userId, spotId, key);
   }
   async submitFormalContribution(userId: UserId, input: ContributionFormalSubmitRequest, idempotencyKey: string) {
     return this.#withContributionMutation(async () => {

@@ -1,7 +1,8 @@
 import type { AccountAvatarData, AccountAvatarSaveRequest, AccountProfileRecord } from "./account-profile.ts";
+import type { MapCloudSnapshot } from "./map-cloud-snapshot.ts";
 import type { FeatureFlags } from "./feature-flags.ts";
 import type { FilterGroupKey, FilterState } from "./filters.ts";
-import type { ContributionFormalProposal } from "./contribution-feedback.ts";
+import type { ContributionCandidateProfile } from "./contribution-intake.ts";
 import type { PreferenceRankingDisclosure, SpotRankingPreferences } from "./ranking.ts";
 import type {
   AccessAndSafetyState,
@@ -242,6 +243,8 @@ export interface MapLayerPolygon {
   strokeColor: string;
   strokeWidth: number;
   value: number | null;
+  /** CLOUD's actual source-hour start; absent for other layers and older servers. */
+  weatherAt?: string;
   label: string;
   state: MapProjectionState;
 }
@@ -256,14 +259,71 @@ export interface MapLayerData {
   precision: string;
   state: MapProjectionState;
   source: SourceSummary | null;
+  /** Schema-2 annual data; polygons remain for historical publications. */
+  raster?: MapLayerRaster;
+  failureCode?: "LIGHT_READ_FAILED";
+}
+
+export interface MapLayerRaster {
+  publicationId: string;
+  datasetVersion: string;
+  methodVersion: string;
+  styleVersion: string;
+  coordinateGrid: "gcj02-mercator-pixel-centres-v1";
+  imageUrl: string;
+  imageBytes: number;
+  imageSha256: string;
+  boundsGcj02: { west: number; south: number; east: number; north: number };
+  statistic: string;
+  unit: "nW/cm²/sr";
+  qualityPolicyVersion: string;
+  validPixelCount: number;
+  pixelCount: number;
+  qualitySummary: {
+    availablePixels: number; partialPixels: number; insufficientCoveragePixels: number;
+    sourceMissingPixels: number; unpublishedPixels: number; insufficientValidAreaPixels: number;
+  };
 }
 
 export type TerrainProjectionState = "AVAILABLE" | "PARTIAL" | "UNAVAILABLE";
 
-export interface TerrainOverlayRequest {
-  purpose: "MAP" | "SPOT";
-  center: { system: "GCJ02"; latitude: number; longitude: number };
-  radiusKm: number;
+export type TerrainBounds = { west: number; south: number; east: number; north: number };
+type TerrainCenter = { system: "GCJ02"; latitude: number; longitude: number };
+export type TerrainOverlayRequest =
+  | { purpose: "MAP" | "SPOT"; center: TerrainCenter; radiusKm: number; viewportBounds?: never }
+  | { purpose: "MAP"; center: TerrainCenter; viewportBounds: TerrainBounds; radiusKm?: never };
+
+export interface TerrainHorizonRequest { center: TerrainCenter }
+export interface TerrainHorizonData {
+  state: TerrainProjectionState;
+  failureCode?: "HORIZON_READ_FAILED";
+  centerGcj02: TerrainCenter;
+  publicationId: string | null;
+  derivedAt: string | null;
+  model: {
+    methodVersion: string;
+    observerWgs84: { system: "WGS84"; lat: number; lon: number };
+    observerElevationM: number | null;
+    /** Assumed height above the nearest native DSM sample, not measured eye height. */
+    observerHeightM: number;
+    stationSample: { elevationM: number | null; latitude: number; longitude: number } | null;
+    radiusM: number;
+    bearingReference: "TRUE_NORTH_CLOCKWISE";
+    sectorWidthDegrees: number;
+    earthModel: { radiusM: number; refraction: "NONE" };
+    knownSectors: number;
+    /** Maximum native sample-centre elevation in each angular sector.
+     * Negative angles are valid; null means unknown and must not become zero. */
+    sectors: readonly { bearingDegrees: number; elevationDegrees: number | null; sampleCount: number }[];
+  } | null;
+  sourceProof: readonly {
+    tileId: string; url: string; etag: string; byteSize: number; sha256: string;
+    hashScope: "RETRIEVED_RANGES";
+    ranges: readonly { offset: number; byteSize: number; sha256: string }[];
+  }[];
+  source: SourceSummary | null;
+  coverageLabel: string;
+  limitations: readonly string[];
 }
 
 export interface TerrainLightCell {
@@ -275,12 +335,26 @@ export interface TerrainLightCell {
   unit: "nW/cm²/sr";
 }
 
+/** Base elevation colour before synthetic hillshade, alpha blending and display themes. */
+export interface TerrainElevationColorEncoding {
+  format: "starward-terrain-elevation-color-v1";
+  imageSha256: string;
+  minimumM: number;
+  maximumM: number;
+  lowRgb: readonly [number, number, number];
+  highRgb: readonly [number, number, number];
+  alpha: number;
+  clipping: "CLAMP";
+  shading: "SYNTHETIC_HILLSHADE";
+}
+
 export interface TerrainOverlayData {
   state: TerrainProjectionState;
   /** Missing coverage has no failureCode; failures remain independently recoverable. */
   failureCode?: "TERRAIN_READ_FAILED";
   purpose: TerrainOverlayRequest["purpose"];
-  requestedRadiusKm: number;
+  /** Map viewports have rectangular coverage, not a Spot radius. */
+  requestedRadiusKm: number | null;
   effectiveRadiusKm: number | null;
   centerGcj02: TerrainOverlayRequest["center"];
   publicationId: string | null;
@@ -291,8 +365,15 @@ export interface TerrainOverlayData {
   derivedAt: string | null;
   coordinateTransformVersion: string | null;
   imageUrl: string | null;
+  /** Optional for compatibility with earlier immutable-image responses. */
+  imageBytes?: number;
+  imageSha256?: string;
+  /** Older publications omit this and retain elevation-colour compositing. */
+  imageStyle?: "ELEVATION_COLOR" | "RELIEF_OVERLAY";
   imageBoundsGcj02: { west: number; south: number; east: number; north: number } | null;
   elevationM: { minimum: number; maximum: number } | null;
+  /** Absent on older servers; null when no verified encoding is published or covered. */
+  elevationColorEncoding?: TerrainElevationColorEncoding | null;
   coverageLabel: string;
   limitations: readonly string[];
   /** Source and redistribution notices for the derived terrain product. */
@@ -305,11 +386,13 @@ export interface TerrainOverlayData {
     legend: readonly { label: string; color: string }[];
     source: SourceSummary | null;
     coverageLabel: string;
+    raster?: MapLayerRaster;
   };
 }
 
 /** Binary PNG body; this route intentionally does not use ApiEnvelope at runtime. */
 export type TerrainAssetData = Uint8Array;
+export type NightLightAssetData = Uint8Array;
 /** Published, currently associated image bytes; delivered directly to native Image. */
 export type ContributionImageData = Uint8Array;
 
@@ -385,6 +468,7 @@ export interface MapSceneRequest {
   viewport?: {
     center: { latitude: number; longitude: number };
     zoom: number;
+    bounds?: TerrainBounds;
   };
   preferences?: SpotRankingPreferences;
 }
@@ -441,6 +525,8 @@ export interface MapSceneData {
   debounceMs: number;
   requestCancellation: string;
   layer: MapLayerData;
+  /** Complete point provenance is carried once, rather than copied per frame. */
+  cloudSnapshot?: MapCloudSnapshot | null;
   timeFrames: readonly MapSceneTimeFrame[];
 }
 
@@ -702,6 +788,16 @@ export interface PlanSaveRequest {
   expectedRevision: number | null;
 }
 
+/** Historical result of one account/plan/idempotency key. A missing receipt
+ * does not establish failure: the original request can still be in flight. */
+export interface PlanSaveResultData {
+  receipt: ObservationPlan | null;
+}
+
+/** Historical acknowledgements of one scoped submission operation. Null remains unknown. */
+export interface ContributionSubmitResultData { receipt: ContributionSubmission | null }
+export interface ContributionFormalSubmitResultData { receipt: import("./contribution-feedback.ts").ContributionFormalSubmitResult | null }
+
 export interface PreferencesSaveRequest {
   preferences: UserPreferences;
   expectedRevision: number;
@@ -781,7 +877,7 @@ export interface ContributionDraftRequest {
   detail: string;
   rightsConfirmed: boolean;
   preciseLocationConsent: boolean;
-  candidateProfile?: ContributionFormalProposal;
+  candidateProfile?: ContributionCandidateProfile;
 }
 
 export interface ContributionUpdateRequest extends ContributionDraftRequest {
