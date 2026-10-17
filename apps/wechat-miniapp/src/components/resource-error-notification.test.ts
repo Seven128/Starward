@@ -4,17 +4,22 @@ import test from "node:test";
 import ts from "typescript";
 import vm from "node:vm";
 
-function effect(path: string, marker: string) {
+function effect(path: string, marker: string, bindings: readonly string[] = []) {
   const source = ts.createSourceFile(path, readFileSync(new URL(path, import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let callback: ts.ArrowFunction | undefined;
+  const declarations: string[] = [];
+  const bindingNames = new Set(bindings);
   const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && bindingNames.has(node.name.text))
+      declarations.push(`const ${node.getText(source)};`);
     if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" && node.getText(source).includes(marker))
       callback = node.arguments[0] as ts.ArrowFunction;
     ts.forEachChild(node, visit);
   };
   visit(source);
   assert.ok(callback, `missing notification effect ${marker}`);
-  const code = ts.transpileModule(`result = (${callback!.getText(source)})();`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  assert.equal(declarations.length, bindingNames.size, "evaluate each requested production-derived binding");
+  const code = ts.transpileModule(`${declarations.join("\n")}\nresult = (${callback!.getText(source)})();`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   return (context: Record<string, unknown>) => vm.runInNewContext(code, context);
 }
 
@@ -63,8 +68,10 @@ test("cold resource errors stay distinct from true empty results and retain retr
 
 test("independent data pages notify only while visible and keep error recovery", () => {
   const cases = [
-    { path: "../spot/data-source/index.tsx", marker: "data-source-failed", context: {
-      validRoute: true, overview: { isError: true, refreshError: null }, spotId: "spot:1" } },
+    { path: "../spot/data-source/index.tsx", marker: "data-source-failed",
+      bindings: ["enabled", "airEnvelope", "airFailed", "overviewFailed"], context: {
+        validRoute: true, overview: { isError: true, refreshError: null }, spotId: "spot:1",
+        air: { isError: false, refreshError: null }, recent: { failed: false } } },
     { path: "../spot/plan/index.tsx", marker: "plan-spot-context-failed", context: {
       query: { isError: true }, contextId: "ctx:1", spotId: "spot:1" } },
     { path: "../content/plan/list/index.tsx", marker: "plan-list-failed", context: {
@@ -74,7 +81,7 @@ test("independent data pages notify only while visible and keep error recovery",
       site: { isError: false, refreshError: null }, articleId: "article:1" } },
   ] as const;
   for (const item of cases) {
-    const run = effect(item.path, item.marker);
+    const run = effect(item.path, item.marker, "bindings" in item ? item.bindings : []);
     const notices: any[] = [], notify = (value: any) => notices.push(value);
     run({ ...item.context, pageVisible: false, notify });
     assert.equal(notices.length, 0, item.path);
@@ -92,8 +99,10 @@ test("independent data pages notify only while visible and keep error recovery",
 
 test("successful cache fallbacks still emit the shared floating data warning", () => {
   const cases = [
-    { path: "../spot/data-source/index.tsx", marker: "data-source-failed", context: {
-      validRoute: true, overview: { isError: false, refreshError: null, data: { dataState: "STALE_USABLE" } }, spotId: "spot:1" } },
+    { path: "../spot/data-source/index.tsx", marker: "data-source-failed",
+      bindings: ["enabled", "airEnvelope", "airFailed", "overviewFailed"], context: {
+        validRoute: true, overview: { isError: false, refreshError: null, data: { dataState: "STALE_USABLE" } }, spotId: "spot:1",
+        air: { isError: false, refreshError: null }, recent: { failed: false } } },
     { path: "../spot/plan/index.tsx", marker: "plan-spot-context-failed", context: {
       query: { isError: false, refreshError: null, data: { dataState: "STALE_USABLE" } }, contextId: "ctx:1", spotId: "spot:1" } },
     { path: "../content/plan/list/index.tsx", marker: "plan-list-failed", context: {
@@ -115,7 +124,7 @@ test("successful cache fallbacks still emit the shared floating data warning", (
   ] as const;
   for (const item of cases) {
     const notices: any[] = [];
-    effect(item.path, item.marker)({ ...item.context, pageVisible: true, notify: (notice: any) => notices.push(notice) });
+    effect(item.path, item.marker, "bindings" in item ? item.bindings : [])({ ...item.context, pageVisible: true, notify: (notice: any) => notices.push(notice) });
     assert.equal(notices.length, 1, item.path);
     assert.equal(notices[0].placement, "floating", item.path);
     assert.equal(notices[0].tone, "info", item.path);

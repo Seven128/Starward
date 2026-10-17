@@ -35,11 +35,14 @@ test("formal facility cards retain submitted descriptions and adopted missing-va
   };
   visit(source);
   assert.ok(expression, "render the actual formal facility card mapping");
-  const labels = source.statements.filter(node => ts.isFunctionDeclaration(node) && ["facilityLabel", "facilityStatusLabel"].includes(node.name?.text ?? "")).map(node => node.getText(source)).join("\n");
-  const rendered = vm.runInNewContext(ts.transpileModule(labels + "\n" + expression.getText(source), {
+  const FacilityCard = load("./facility-card.tsx", "FacilityCard", {
+    useAppStore: (select: (state: { mode: string }) => unknown) => select({ mode: "DAY" }),
+    Button: "Button", Image: "Image", mediaSource: (value: string) => value, FACILITY_LABEL, facilityStatusLabel,
+  });
+  const rendered = vm.runInNewContext(ts.transpileModule(expression.getText(source), {
     compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
   }).outputText, { React, Text: "Text", View: "View", Image: "Image", SemanticIcon: "SemanticIcon", mediaSource: (value: string) => value,
-    FACILITY_LABEL, facilityStatusLabel, dayMode: true,
+    FacilityCard,
     visibleFacilities: [{ type: "TOILET", status: "UNKNOWN", summary: "待核验", detail: "隔离TEST洗手间照片绑定；不是现实设施。", distanceM: null }],
     facilityPhotos: () => [], openPhoto: () => {},
   });

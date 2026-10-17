@@ -411,7 +411,11 @@ test("field evidence uses one native intake and an explicit canonical merge boun
   const adminCli = adminCliFiles.join("\n");
   assert.match(appConfig, /"contribution\/index"/u);
   assert.match(myPage, /data-od-id="my-contribution-entry"/u);
-  assert.match(detailPage, /data-od-id="spot-contribution-entry"/u);
+  const detailFeedback = detailPage.match(/<View className="spot-detail-footer">([\s\S]*?)<\/View>/u)?.[1];
+  assert.ok(detailFeedback, "The site-reading footer retains its field-feedback action");
+  assert.match(detailFeedback, /<SoftButton[\s\S]*?onClick=\{\(\) => openDetailPage\(/u);
+  assert.match(detailFeedback, /\/content\/spot-feedback\/index\?spotId=\$\{encodeURIComponent\(spotId\)\}&spotName=\$\{encodeURIComponent\(detail\.spot\.name\)\}/u);
+  assert.match(detailFeedback, />反馈现场情况<\/SoftButton>/u);
   for (const required of [
     "contribution-location-consent",
     "contribution-topic-control",
@@ -1281,7 +1285,9 @@ test("Settings keeps orientation permission per-use without fabricating a global
   assert.ok(orientationStart >= 0 && orientationEnd > orientationStart);
   const orientationRow = settings.slice(orientationStart, orientationEnd);
   assert.match(orientationRow, /label="方位天空"/u);
-  assert.match(orientationRow, /value="按页使用"/u);
+  assert.match(orientationRow, /disabled=\{blocked\s*\|\|\s*!preferencesConfirmed\}/u);
+  assert.match(orientationRow, /value=\{preferencesConfirmed\s*\?\s*"按页使用"\s*:\s*"待确认"\}/u);
+  assert.match(orientationRow, /onClick=\{\(\) => openSheet\("DIRECTION"\)\}/u);
   assert.doesNotMatch(orientationRow, /navigateTo|pages\/auth|SoftButton/u);
 });
 

@@ -31,8 +31,14 @@ test("custom modal owners share one native WEAPP Back boundary", () => {
     "avatar's native Back layer follows its visible sheet, current-account preview or media handoff");
   assert.match(avatar, /mediaHandoff\.active \? mediaHandoff\.cancel\(\) : close\(\)/u);
   assert.match(avatar, /useRedLightHandoff\(\{ nativeBackBoundary: false \}\)/u);
-  assert.match(source("../content/settings/index.tsx"), /NativeBackBoundary active=\{Boolean\(sheet\)\} onBack=\{closeSheet\}/u);
-  assert.match(source("../pages/map/search-page.tsx"), /NativeBackBoundary active=\{filterSheetOpen\} onBack=\{cancelFilters\}/u);
+  const settings = source("../content/settings/index.tsx");
+  assert.equal(settings.match(/<NativeBackBoundary\b/gu)?.length, 1, "settings login and sheet share one native owner");
+  assert.match(settings, /useWechatLogin\(\{ nativeBack: false \}\)/u);
+  assert.match(settings, /NativeBackBoundary active=\{login\.open \|\| Boolean\(sheet\)\} onBack=\{login\.open \? login\.back : closeSheet\}/u);
+  const search = source("../pages/map/search-page.tsx");
+  assert.equal(search.match(/<NativeBackBoundary\b/gu)?.length, 1, "search login and filters share one native owner");
+  assert.match(search, /useWechatLogin\(\{ nativeBack: false \}\)/u);
+  assert.match(search, /NativeBackBoundary active=\{login\.open \|\| filterSheetOpen\} onBack=\{login\.open \? login\.back : cancelFilters\}/u);
   assert.match(source("./observation-date-control.tsx"), /<NativeBackBoundary[\s\S]*active=\{open\}[\s\S]*if \(!busy\) onOpenChange\(false\)/u);
   const sky = source("../features/sky/spot-sky-page.tsx");
   assert.equal(sky.match(/<NativeBackBoundary\b/gu)?.length, 1, "date and object disclosures share one native owner");
