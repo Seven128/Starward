@@ -1,8 +1,6 @@
 {
   "repository": "Seven128/Starward",
   "branch": "codex/remote-main-20260908",
-  "headSha": "66d19aa9ba66d617aeb03970e52fba2328866b45",
-  "latestHeadSha": "328cf67ebfaf8a9b979c8e30163dcb4c0b436fcf",
   "mainUnchangedAt": "32ec61a4f5321e571d499be6430a09918d65242e",
   "push": "normal fast-forward confirmed",
   "trigger": "workflow_dispatch",
@@ -15,7 +13,8 @@
       "createdAt": "2026-10-17T22:35:03Z",
       "status": "completed",
       "conclusion": "failure",
-      "failedStep": "Test deployment owners"
+      "failedStep": "Test deployment owners",
+      "headSha": "66d19aa9ba66d617aeb03970e52fba2328866b45"
     },
     {
       "workflow": "Context structure",
@@ -23,7 +22,8 @@
       "url": "https://github.com/Seven128/Starward/actions/runs/39075668248",
       "createdAt": "2026-10-17T22:35:07Z",
       "status": "completed",
-      "conclusion": "success"
+      "conclusion": "success",
+      "headSha": "66d19aa9ba66d617aeb03970e52fba2328866b45"
     },
     {
       "workflow": "Product CI",
@@ -120,7 +120,19 @@
           "redis_namespace_removed": true
         }
       }
+    },
+    {
+      "workflow": "Context structure",
+      "id": 39079587565,
+      "headSha": "fcbd0014eb7f325d6e29644dc85dd72ee1938887",
+      "url": "https://github.com/Seven128/Starward/actions/runs/39079587565",
+      "createdAt": "2026-10-17T23:35:04Z",
+      "completedAt": "2026-10-17T23:35:30Z",
+      "status": "completed",
+      "conclusion": "success"
     }
   ],
-  "remaining": "Product CI passed at328cf67e; later changes are Context/task records only. Commit documentation and dispatch Context-only once. No staging deployment qualified. Current independent review, main synchronization and required native/data/recipient outcomes remain open."
+  "remaining": "Product and Context passed at the bound revisions; subsequent changes are task receipts only. No pending CI dispatch/tool action or staging deployment. Independent review, main synchronization and required native/real-data/recipient outcomes remain open. User deferred original-computer synchronization until waking.",
+  "productCheckedHeadSha": "328cf67ebfaf8a9b979c8e30163dcb4c0b436fcf",
+  "contextCheckedHeadSha": "fcbd0014eb7f325d6e29644dc85dd72ee1938887"
 }
