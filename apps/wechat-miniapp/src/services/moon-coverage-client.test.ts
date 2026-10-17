@@ -49,7 +49,7 @@ test("actual Moon client selects PNG contract, preserves cancellation and reject
 });
 
 test("Moon facts opt in and separate old cached data without changing other object clients",async()=>{
-  const source=ts.createSourceFile("api-client.ts",readFileSync(new URL("./api-client.ts",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true);
+  const source=ts.createSourceFile("sky-celestial-client.ts",readFileSync(new URL("./sky-celestial-client.ts",import.meta.url),"utf8"),ts.ScriptTarget.Latest,true);
   const declaration=source.statements.find((n):n is ts.FunctionDeclaration=>ts.isFunctionDeclaration(n)&&n.name?.text==="getCelestialObjectInformation")!;
   const get=vm.runInNewContext(ts.transpileModule(declaration.getText(source).replace(/^export /u,"")+"\ngetCelestialObjectInformation;",
     {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText,{

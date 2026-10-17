@@ -1,0 +1,74 @@
+import { useEffect, useState } from "react";
+import { Text, View } from "@tarojs/components";
+import Taro from "@tarojs/taro";
+import { spotNeighborhoodGroundRange, type MapCameraPoint, type MapFocusFrame } from "./map-camera";
+import { mapBoundsForNativeRegion } from "./terrain-geometry";
+
+// Temporary read-only observation. This file is copied only while building a
+// labelled private candidate, then removed and the exact Map source restored.
+export function FocusObservationProbe({ mapId, point, camera, zoom, frame, active }: {
+  mapId: string; point: MapCameraPoint | null; camera: MapCameraPoint; zoom: number;
+  frame: MapFocusFrame | null; active: boolean;
+}) {
+  const [text, setText] = useState("等待测量");
+  useEffect(() => {
+    if (!active || !point || !frame) return;
+    const controller = new AbortController(), signal = controller.signal;
+    let timer: ReturnType<typeof setTimeout>, attempts = 0;
+    const read = (invoke: (callbacks: { success(value: any): void; fail(value: unknown): void }) => any) => new Promise<any>((resolve, reject) => {
+      let done = false;
+      const finish = (ok: boolean, value: any) => {
+        if (done) return; done = true; clearTimeout(deadline); signal.removeEventListener("abort", aborted);
+        if (ok) resolve(value); else reject(value);
+      };
+      const aborted = () => finish(false, new Error("cancelled"));
+      const deadline = setTimeout(() => finish(false, new Error("native_read_timeout")), 2000);
+      signal.addEventListener("abort", aborted, { once: true });
+      if (signal.aborted) { aborted(); return; }
+      try {
+        const result = invoke({ success: value => finish(true, value), fail: value => finish(false, value) });
+        if (result && typeof result.then === "function") result.then((value: any) => finish(true, value), (value: unknown) => finish(false, value));
+      } catch (error) { finish(false, error); }
+    });
+    const sample = async () => {
+      try {
+        const context = Taro.createMapContext(mapId);
+        const rows = await read(({ success }) => {
+          const query = Taro.createSelectorQuery();
+          query.select(".native-map").boundingClientRect(); query.select(".spot-panel").boundingClientRect();
+          query.exec(success);
+        });
+        const [map, panel] = rows;
+        if (!map || !panel || map.height <= 0 || panel.top <= map.top) throw Error("not_ready");
+        const scale = await read(callbacks => context.getScale(callbacks));
+        const bounds = mapBoundsForNativeRegion(await read(callbacks => context.getRegion(callbacks)));
+        if (!bounds) throw Error("not_ready");
+        const selected = await read(callbacks => context.toScreenLocation({ ...point, ...callbacks }));
+        const northwest = await read(callbacks => context.toScreenLocation({ latitude: bounds.north, longitude: bounds.west, ...callbacks }));
+        const southeast = await read(callbacks => context.toScreenLocation({ latitude: bounds.south, longitude: bounds.east, ...callbacks }));
+        const after = mapBoundsForNativeRegion(await read(callbacks => context.getRegion(callbacks)));
+        if (signal.aborted) return;
+        const stable = JSON.stringify(bounds) === JSON.stringify(after);
+        const range = spotNeighborhoodGroundRange(bounds, { top: map.top, height: map.height, visibleBottom: panel.top }, scale.scale);
+        const x = (selected.x - northwest.x) / (southeast.x - northwest.x);
+        const y = (selected.y - northwest.y) / (southeast.y - northwest.y);
+        const expectedY = (panel.top - map.top) / map.height / 2;
+        const dx = (x - 0.5) * map.width, dy = (y - expectedY) * map.height;
+        if (![range.spanM, x, y, dx, dy].every(Number.isFinite)) throw Error("not_ready");
+        setText(`本机校准测量 ${stable ? "稳定" : "移动中"}\nzoom ${scale.scale} / ${zoom}\n范围 ${Math.round(range.widthM)} × ${Math.round(range.heightM)} m\n中心偏差 ${dx.toFixed(1)}, ${dy.toFixed(1)} px\n面板边界差 ${(frame.visibleBottom - panel.top).toFixed(1)} px`);
+        if (!stable && ++attempts < 3) timer = setTimeout(sample, 500);
+      } catch {
+        if (signal.aborted) return;
+        setText("本机校准测量：原生几何未就绪");
+        if (++attempts < 3) timer = setTimeout(sample, 500);
+      }
+    };
+    timer = setTimeout(sample, 600);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [mapId, point?.latitude, point?.longitude, camera.latitude, camera.longitude, zoom,
+    frame?.top, frame?.height, frame?.visibleBottom, active]);
+  return active ? <View style={{ position: "fixed", top: "170px", left: "8px", zIndex: 1000,
+    pointerEvents: "none", padding: "6px", background: "#ffffff", color: "#111111", border: "1px solid #888888" }}>
+    <Text style={{ fontSize: "11px", lineHeight: "15px", whiteSpace: "pre-wrap" }}>{text}</Text>
+  </View> : null;
+}

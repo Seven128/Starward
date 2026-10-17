@@ -60,7 +60,7 @@ test("the real constellation consumer prepares without pixels, then reveals towa
   const image={},images=createSkyReadyImages(),values:number[]=[];let prepares=0,failures=0,segments=0;
   const surface={prepareArtwork(){prepares++;return true;},artwork(_image:object,_registration:unknown,_view:unknown,opacity:number){values.push(opacity);return true;},segments(lines:unknown[]){segments+=lines.length;}} as unknown as SkyRenderSurface;
   const layer:SkyConstellationLayer={frame:{at:"instant",images:[{source:{id:"figure"} as never,registration}],lines:[[ray(-5,20),ray(5,20)]],labels:[]},images:new Map([["figure",image]]),enabled:true,failed(){failures++;}};
-  const view={basis:createSkyViewBasis(0,110,0)!,verticalFovDeg:115};
+  const view={basis:createSkyViewBasis(0,110,0)!,verticalFovDeg:17.5};
   const first=images.prepare(0);drawSkyConstellations(surface,layer,view,360,640,false,undefined,first);first.commit();
   assert.equal(prepares,1);assert.deepEqual(values,[]);assert.equal(failures,0);assert.ok(segments>0,"independent real lines remain visible");
   const half=images.prepare(80);drawSkyConstellations(surface,layer,view,360,640,false,undefined,half);half.commit();

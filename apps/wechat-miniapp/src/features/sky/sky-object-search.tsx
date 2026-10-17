@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { SkyStatusPanel as StatusPanel } from "@/features/sky/sky-status-panel";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { useResourceQuery } from "@/hooks/use-resource-query";
-import { searchCelestialObjects } from "@/services/api-client";
+import { searchCelestialObjects } from "@/services/sky-celestial-client";
 import { SKY_LUMINARY_CATALOG_VERSION } from "@starward/miniapp-contracts";
 import { skyObjectKindLabel, type SkyObjectIdentity } from "./sky-object-picking";
 import { SkySearchRow } from "./sky-search-row";

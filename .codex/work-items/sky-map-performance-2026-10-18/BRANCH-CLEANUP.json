@@ -1,0 +1,120 @@
+{
+  "task": "Delete branches already contained in main, preserving main and current worktree branch",
+  "recordedAtUtc": "2026-10-17T17:21:25.7610614Z",
+  "mainSha": "32ec61a4f5321e571d499be6430a09918d65242e",
+  "originMainSha": "32ec61a4f5321e571d499be6430a09918d65242e",
+  "currentBranch": "codex/remote-main-20260908",
+  "protectedBranches": [
+    "main",
+    "codex/remote-main-20260908"
+  ],
+  "worktrees": [
+    "worktree E:/dev/Starward",
+    "HEAD 32ec61a4f5321e571d499be6430a09918d65242e",
+    "branch refs/heads/main",
+    "",
+    "worktree E:/dev/worktrees/Starward/remote-main-20260908",
+    "HEAD 32ec61a4f5321e571d499be6430a09918d65242e",
+    "branch refs/heads/codex/remote-main-20260908",
+    ""
+  ],
+  "inventory": [
+    {
+      "scope": "local",
+      "ref": "refs/heads/codex/remote-main-20260908",
+      "sha": "32ec61a4f5321e571d499be6430a09918d65242e",
+      "isAncestorOfMain": true,
+      "decision": "preserve",
+      "reason": "Protected main or current worktree branch",
+      "result": "preserved_verified"
+    },
+    {
+      "scope": "local",
+      "ref": "refs/heads/main",
+      "sha": "32ec61a4f5321e571d499be6430a09918d65242e",
+      "isAncestorOfMain": true,
+      "decision": "preserve",
+      "reason": "Protected main or current worktree branch",
+      "result": "preserved_verified"
+    },
+    {
+      "scope": "origin",
+      "ref": "refs/heads/codex/miniapp-ci-dependencies-20261013",
+      "sha": "007585e28a3bf9d410ce95bfe1fcd672dce6d4e9",
+      "isAncestorOfMain": true,
+      "decision": "delete",
+      "reason": "Commit is included in latest main",
+      "result": "deleted_verified"
+    },
+    {
+      "scope": "origin",
+      "ref": "refs/heads/codex/miniapp-core-data-repair-20261013",
+      "sha": "cbc302b96833ab4b158e7b7ed9cd4b272f59ea78",
+      "isAncestorOfMain": true,
+      "decision": "delete",
+      "reason": "Commit is included in latest main",
+      "result": "deleted_verified"
+    },
+    {
+      "scope": "origin",
+      "ref": "refs/heads/codex/remote-main-20260908",
+      "sha": "32ec61a4f5321e571d499be6430a09918d65242e",
+      "isAncestorOfMain": true,
+      "decision": "preserve",
+      "reason": "Protected main or current worktree branch",
+      "result": "preserved_verified"
+    },
+    {
+      "scope": "origin",
+      "ref": "refs/heads/main",
+      "sha": "32ec61a4f5321e571d499be6430a09918d65242e",
+      "isAncestorOfMain": true,
+      "decision": "preserve",
+      "reason": "Protected main or current worktree branch",
+      "result": "preserved_verified"
+    }
+  ],
+  "execution": [
+    {
+      "atUtc": "2026-10-17T17:21:43.3409488Z",
+      "action": "Atomic remote branch deletion with explicit per-ref SHA leases",
+      "refs": [
+        "refs/heads/codex/miniapp-ci-dependencies-20261013",
+        "refs/heads/codex/miniapp-core-data-repair-20261013"
+      ],
+      "exitCode": 0,
+      "output": [
+        "To https://github.com/Seven128/Starward.git",
+        "-\t:refs/heads/codex/miniapp-ci-dependencies-20261013\t[deleted]",
+        "-\t:refs/heads/codex/miniapp-core-data-repair-20261013\t[deleted]",
+        "Done"
+      ]
+    }
+  ],
+  "verification": {
+    "atUtc": "2026-10-17T17:24:54.3115663Z",
+    "localHeads": {
+      "refs/heads/main": "32ec61a4f5321e571d499be6430a09918d65242e",
+      "refs/heads/codex/remote-main-20260908": "32ec61a4f5321e571d499be6430a09918d65242e"
+    },
+    "originHeads": {
+      "refs/heads/main": "32ec61a4f5321e571d499be6430a09918d65242e",
+      "refs/heads/codex/remote-main-20260908": "32ec61a4f5321e571d499be6430a09918d65242e"
+    },
+    "currentBranch": "codex/remote-main-20260908",
+    "worktrees": [
+      "worktree E:/dev/Starward",
+      "HEAD 32ec61a4f5321e571d499be6430a09918d65242e",
+      "branch refs/heads/main",
+      "",
+      "worktree E:/dev/worktrees/Starward/remote-main-20260908",
+      "HEAD 32ec61a4f5321e571d499be6430a09918d65242e",
+      "branch refs/heads/codex/remote-main-20260908",
+      ""
+    ],
+    "deletedLocalCount": 0,
+    "deletedRemoteCount": 2,
+    "allPlannedDeletionsVerified": true,
+    "allProtectedRefsUnchanged": true
+  }
+}

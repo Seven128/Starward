@@ -6,35 +6,44 @@ import ts from "typescript";
 
 const source = ts.createSourceFile("spot-sky-page.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
   ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-const actions = new Map<string, ts.Expression>();
+let props: ts.JsxAttributes | undefined;
 function visit(node: ts.Node) {
-  if (ts.isJsxOpeningElement(node) && node.tagName.getText(source) === "Button") {
-    const attrs = node.attributes.properties.filter(ts.isJsxAttribute);
-    const id = attrs.find(a => a.name.getText(source) === "data-od-id")?.initializer;
-    const click = attrs.find(a => a.name.getText(source) === "onClick")?.initializer;
-    if (id && ts.isStringLiteral(id) && ["sky-manual-mode", "sky-follow-mode"].includes(id.text) &&
-      click && ts.isJsxExpression(click) && click.expression) actions.set(id.text, click.expression);
-  }
+  if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(source) === "SkyBrowseControl") props = node.attributes;
   ts.forEachChild(node, visit);
 }
-visit(source);
-assert.equal(actions.size, 2);
-for (const [name, manualBasis, followRequested] of [["following", null, false], ["manual", {}, false], ["follow pending", {}, true]] as const)
-  for (const kind of ["manual", "follow"] as const)
-  test(name + " → " + kind + " is explicit and a queued callback preserves a frozen calibration", () => {
-    let mode = "auto", enters = 0, stops = 0, starts = 0, requested = false;
-    const gesture = {}, skyTapRef: { current: object | null } = { current: gesture };
-    const callback = vm.runInNewContext(ts.transpileModule("(" + actions.get("sky-" + kind + "-mode")!.getText(source) + ")",
-      { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
-      orientationController: { snapshot: () => ({ alignment: { mode, ready: true } }) }, skyTapRef,
-      manualBasisRef: { current: manualBasis }, manualBasis, followRequested,
-      skyTimeIntentCurrent: () => mode !== "editing",
-      enterManualView() { enters++; }, stopObjectTracking() { stops++; },
-      setFollowRequested(value: boolean) { requested = value; }, recoverCompass() { starts++; },
+visit(source); assert(props);
+function callback(name: string, scope: object) {
+  const prop = props!.properties.find(node => ts.isJsxAttribute(node) && node.name.getText(source) === name) as ts.JsxAttribute;
+  assert(prop?.initializer && ts.isJsxExpression(prop.initializer) && prop.initializer.expression);
+  return vm.runInNewContext(ts.transpileModule("(" + prop.initializer.expression.getText(source) + ")",
+    { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, scope);
+}
+
+for (const [name, manual, pending, editing] of [["following", false, false, false], ["manual", true, false, false],
+  ["follow pending", true, true, false], ["calibration", false, false, true]] as const)
+  test(name + ": current browse toggle preserves the painted camera and changes explicit intent", () => {
+    let visible = true, saving = false, busy = false;
+    const basis = {}, calls: unknown[] = [];
+    const action = callback("onToggle", {
+      skyPageVisibleCurrent: () => visible, get timeSaving() { return saving; }, contextSession: {get busy() { return busy; }},
+      paintedSkyObjectsRef: {current: {view: {basis}}}, orientation: {presented: {current: {}}}, INITIAL_MANUAL_SKY_VIEW: {},
+      manualBasisRef: {current: manual ? {} : null}, followRequested: pending,
+      orientationController: {snapshot: () => ({alignment: {mode: editing ? "editing" : "auto"}})},
+      cancelSkyCalibration: () => calls.push("cancel"), setSkyControlPanel: (panel: string) => calls.push(panel),
+      enterManualView: (view: object) => calls.push(view), stopObjectTracking: () => calls.push("stop"),
+      setFollowRequested: (value: boolean) => calls.push(value), recoverCompass: () => calls.push("recover"),
     });
-    mode = "editing"; callback(); assert.equal(enters + stops + starts, 0); assert.equal(skyTapRef.current, gesture); assert.equal(requested, false);
-    for (const next of ["auto", "aligned"]) { mode = next; callback(); assert.equal(skyTapRef.current, null); }
-    if (kind === "manual") { assert.equal(enters, 2); assert.equal(starts, 0); }
-    else if (!manualBasis) { assert.equal(enters + stops + starts, 0, "selecting active follow does not restart its sensor"); }
-    else { assert.equal(enters, 0); assert.equal(stops, 2); assert.equal(starts, 2); assert.equal(requested, true); }
+    visible = false; action(); visible = true; saving = true; action(); saving = false; busy = true; action(); busy = false;
+    assert.deepEqual(calls, [], "queued input cannot act after hide or during a Context update");
+    action();
+    assert.deepEqual(calls, !manual || pending || editing ? ["cancel", "menu", basis] : ["cancel", "menu", "stop", true, "recover"]);
   });
+
+test("the current calibration sidecar invokes the existing scoped start and completion owners", () => {
+  for (const editing of [false, true]) {
+    const calls: string[] = [];
+    callback("onCalibrate", {alignmentEditing: editing, finishSkyCalibration: (kind: string) => calls.push(kind),
+      setSkyControlPanel: (panel: string) => calls.push(panel), beginSkyCalibration: () => calls.push("begin")})();
+    assert.deepEqual(calls, editing ? ["commit"] : ["calibration", "begin"]);
+  }
+});

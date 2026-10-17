@@ -5,6 +5,8 @@ import vm from "node:vm";
 import ts from "typescript";
 import { sdssOpticalPublication } from "@starward/miniapp-contracts";
 import { createSkyContextSession } from "./sky-context-session";
+import { createPageBlackoutTransition } from "../../navigation/page-blackout-transition";
+import { createSkyMapLifecycle } from "../../navigation/sky-map-lifecycle";
 import { createSkyObservationTime, skyPresentedTimeCurrent } from "./sky-observation-time";
 import { skyCommandStateSetter } from "./sky-command-state";
 import { createSkyDisclosureCommands } from "./sky-disclosure-commands";
@@ -89,11 +91,30 @@ function harness() {
     Taro: Object.fromEntries(["navigateTo", "navigateBack", "switchTab"].map(kind => [kind, (options?: { url: string }) =>
       new Promise<void>((resolve, reject) => navigation.push({ kind, url: options?.url, resolve, reject }))])),
   };
+  sandbox.Taro.getCurrentPages = () => [{ route: "pages/map/index" }, { route: "sky/detail/index" }];
+  sandbox.reducedMotion = false;
+  sandbox.routeReducedMotion = false;
+  sandbox.skyMapLifecycle = createSkyMapLifecycle();
+  let exitPresentation: number | null = null;
+  const exitTimers = new Map<number, () => void>();
+  const visibility = session.visibilityRevision;
+  const exit = createPageBlackoutTransition({
+    getScope: () => session.visibilityRevision === visibility && sandbox.viewportActiveRef.current && sandbox.viewportMountedRef.current
+      ? String(visibility) : null,
+    onPresentation: id => { exitPresentation = id; },
+    schedule(callback, milliseconds) { exitTimers.set(milliseconds, callback); return () => { exitTimers.delete(milliseconds); }; },
+  });
+  sandbox.skyExit = { transition: exit };
+  const finishExit = async () => {
+    assert.notEqual(exitPresentation, null, "whole-page blackout must be committed before navigation");
+    exit.presented(exitPresentation!); exit.finishFade(exitPresentation!);
+    await new Promise(resolve => setImmediate(resolve));
+  };
   const actions = vm.runInNewContext(code, sandbox) as Record<string, (...args: any[]) => any>;
-  return { actions, sandbox, session, time, navigation, notices, runtimeErrors, ui, completion,
+  return { actions, sandbox, session, time, navigation, notices, runtimeErrors, ui, completion, finishExit, exit, exitTimers,
     credit: () => skyOpticalSourceCredit(sandbox.presentedSkyFrameRef.current.sdssOptical)!,
     replaceContext: () => { store = { ...store, observationContext: { ...context, revision: 2, contextFingerprint: "fp:2" } }; },
-    counts: () => ({ releases, calibrationCancels }), dispose: () => retirements.forEach(retire => retire()) };
+    counts: () => ({ releases, calibrationCancels }), dispose: () => { exit.dispose(); retirements.forEach(retire => retire()); } };
 }
 
 for (const boundary of ["hide", "hide-return", "unmount", "Context", "binding", "commit-lock", "calibration"] as const) {
@@ -167,33 +188,79 @@ test("current catalog metadata Sources remain usable without Canvas; an old obje
   assert.equal(page.navigation.length, 1); await stale; page.dispose();
 });
 
-test("Back closes each current disclosure before navigating, including commands before React commits", () => {
+test("Back closes each current disclosure before navigating, including commands before React commits", async () => {
   const page = harness(); page.actions.setDatePickerOpen!(true);
   page.actions.setCatalogPickChoices!([{ reference: "HR:424" }]); page.actions.setSelectedTargetId!("VENUS");
   page.actions.goBack!(); assert.equal(page.ui.date, false); assert.equal(page.navigation.length, 0);
   page.actions.goBack!(); assert.equal(page.ui.object, null); assert.equal(page.navigation.length, 0);
   assert.equal(page.ui.choices.length, 0); assert.equal(page.ui.target, null);
   assert.equal(page.navigation.length, 0, "closing an object clears mutually exclusive stale disclosure values together");
-  page.actions.goBack!(); assert.equal(page.navigation[0]?.kind, "navigateBack");
+  page.actions.goBack!(); assert.equal(page.navigation.length, 0); await page.finishExit(); assert.equal(page.navigation[0]?.kind, "navigateBack");
   page.navigation[0]!.resolve(); page.dispose();
 });
 
-test("recovery Back works without Context, prevents duplicates, and catches a failed Map fallback for retry", async () => {
+test("recovery Back fades the complete page, prevents duplicates, and retries failed Map fallback", async () => {
   const page = harness(); page.sandbox.contextComplete = false; page.sandbox.activeContext = null;
-  const first = page.actions.returnToSkyEntry!(); await page.actions.returnToSkyEntry!(); assert.equal(page.navigation.length, 1);
+  await page.actions.returnToSkyEntry!(); await page.actions.returnToSkyEntry!();
+  assert.equal(page.navigation.length, 0, "no route can race the source fade");
+  await page.finishExit(); assert.equal(page.navigation.length, 1);
   page.navigation[0]!.reject(Error("empty stack")); await new Promise(resolve => setImmediate(resolve));
-  assert.equal(page.navigation[1]?.url, "/pages/map/index"); page.navigation[1]!.reject(Error("controlled fallback failure")); await first;
+  assert.equal(page.navigation[1]?.url, "/pages/map/index");
+  page.navigation[1]!.reject(Error("controlled fallback failure")); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(page.notices.length, 1); assert.equal(page.exit.isActive(), false);
+  await page.actions.returnToSkyEntry!(); await page.finishExit();
+  assert.equal(page.navigation.length, 3); page.navigation[2]!.resolve(); page.dispose();
+});
+
+test("a replaced Map is recreated by switchTab after blackout, including an empty-Context recovery", async () => {
+  const page = harness(), journey = page.sandbox.skyMapLifecycle as ReturnType<typeof createSkyMapLifecycle>;
+  journey.beginEntry(); journey.mapUnloaded(); journey.skyMounted();
+  page.sandbox.contextComplete = false; page.sandbox.activeContext = null;
+  await page.actions.returnToSkyEntry!(); await page.finishExit();
+  assert.equal(page.navigation.length, 1);
+  assert.equal(page.navigation[0]?.kind, "switchTab");
+  assert.equal(page.navigation[0]?.url, "/pages/map/index");
+  assert.equal(journey.mapReturnPending(), true);
+  page.navigation[0]!.reject(Error("native route failure")); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(journey.mapReturnPending(), false);
   assert.equal(page.notices.length, 1);
-  const retry = page.actions.returnToSkyEntry!(); assert.equal(page.navigation.length, 3); page.navigation[2]!.resolve(); await retry; page.dispose();
+  await page.actions.returnToSkyEntry!(); await page.finishExit();
+  page.navigation[1]!.resolve(); page.dispose();
+});
+
+test("late native success after the UI timeout still restores the unloaded Map", async () => {
+  const page = harness(), journey = page.sandbox.skyMapLifecycle as ReturnType<typeof createSkyMapLifecycle>;
+  journey.beginEntry(); journey.skyMounted();
+  await page.actions.returnToSkyEntry!(); await page.finishExit();
+  page.exitTimers.get(10_000)!();
+  assert.equal(page.exit.isActive(), false, "timeout releases the blackout and permits recovery");
+  assert.equal(journey.mapReturnPending(), true, "native switch remains uncancellable");
+  journey.mapMounted(); page.navigation[0]!.resolve(); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(journey.mapReturnPending(), true, "Map still owns readiness and reveal");
+  assert.notEqual(journey.snapshot()?.mapMountedAt, undefined); page.dispose();
+});
+
+test("a timed-out native return cannot cancel a newer Map recreation when it rejects late", async () => {
+  const page = harness(), journey = page.sandbox.skyMapLifecycle as ReturnType<typeof createSkyMapLifecycle>;
+  journey.beginEntry(); journey.skyMounted();
+  await page.actions.returnToSkyEntry!(); await page.finishExit();
+  page.exitTimers.get(10_000)!();
+  assert.equal(journey.mapReturnPending(), true, "timed-out native navigation may still succeed");
+  await page.actions.returnToSkyEntry!(); await page.finishExit();
+  assert.equal(journey.mapReturnPending(), true);
+  page.navigation[0]!.reject(Error("old return rejected late")); await new Promise(resolve => setImmediate(resolve));
+  assert.equal(journey.mapReturnPending(), true, "new return still owns the saved Map presentation");
+  journey.mapMounted(); page.navigation[1]!.resolve(); page.dispose();
 });
 
 for (const boundary of ["hide", "hide-return", "unmount"] as const) {
   test(`${boundary}: old Back neither closes current disclosure nor starts a late fallback`, async () => {
-    const page = harness(), pending = page.actions.returnToSkyEntry!(); assert.equal(page.navigation.length, 1);
+    const page = harness(); await page.actions.returnToSkyEntry!(); await page.finishExit();
+    assert.equal(page.navigation.length, 1);
     if (boundary === "unmount") page.sandbox.viewportMountedRef.current = false;
     else { page.session.hide(); if (boundary === "hide-return") page.session.show(); }
     page.actions.goBack!(); assert.equal(page.ui.object, object);
-    page.navigation[0]!.reject(Error("late stack failure")); await pending;
+    page.navigation[0]!.reject(Error("late stack failure")); await new Promise(resolve => setImmediate(resolve));
     assert.equal(page.navigation.length, 1); assert.equal(page.notices.length, 0); page.dispose();
   });
 }

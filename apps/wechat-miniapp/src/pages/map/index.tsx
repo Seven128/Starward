@@ -1,7 +1,8 @@
-import { getReducedMotion, useReducedMotion } from "@/hooks/use-reduced-motion";
+import { getReducedMotion, useReducedMotion, usePageBlackoutReducedMotion } from "@/hooks/use-reduced-motion";
 import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FINDER_FIELD_PLACEHOLDER } from "./finder-field";
 import { useMapForecastQuery, useSkyForecastQuery } from "@/hooks/use-forecast-query";
+import { useMapCloudPresentation } from "@/hooks/use-map-cloud-presentation";
 import { WEATHER_ALERT_REFRESH_MS } from "@/components/weather-alert-state";
 import { MapLayerSheet } from "./map-layer-sheet";
 import { createSpotEditorPresentation, SPOT_EDITOR_ENTER_MS, SPOT_EDITOR_EXIT_MS, type SpotEditorPhase } from "./spot-editor-presentation";
@@ -117,6 +118,8 @@ import { mapRasterFiles } from "@/services/map-raster-files";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 import { createSkyEntryTransition, SKY_ENTRY_FADE_MS } from "./sky-entry-transition";
 import { reportRuntimeError } from "@/services/runtime-error";
+import { skyMapLifecycle } from "@/navigation/sky-map-lifecycle";
+import { mapSkyReturnState, type MapPanelReturnPosition } from "./sky-return-state";
 
 function panelViewportSize(): { width: number; height: number } | null {
   try {
@@ -192,9 +195,38 @@ const overlayLabels: Record<AnalysisOverlay, string> = {
 };
 
 export default function MapPage() {
+  const [initialReturn, clearInitialReturn] = useState(() => {
+    const returning = skyMapLifecycle.mapReturnPending();
+    const panel = returning ? mapSkyReturnState.take(useAppStore.getState()) : null;
+    if (!returning) mapSkyReturnState.discard();
+    return { returning, panel };
+  });
+  const [mapReturnPresentation, setMapReturnPresentation] = useState<"waiting" | "revealing" | null>(
+    initialReturn.returning ? "waiting" : null);
+  const mapReturnPhase = useRef(mapReturnPresentation);
+  const [skyEntryPresentation, setSkyEntryPresentation] = useState<number | null>(null);
+  const returnPosition = useRef(initialReturn.panel?.position ?? null);
+  const panelPosition = useRef<MapPanelReturnPosition | null>(initialReturn.panel?.position ?? null);
+  const recordPanelPosition = useCallback((position: MapPanelReturnPosition) => { panelPosition.current = position; }, []);
+  const finishMapReturn = useCallback(() => {
+    if (mapReturnPhase.current !== "revealing") return;
+    mapReturnPhase.current = null;
+    setMapReturnPresentation(null);
+    skyMapLifecycle.finishMapReturn();
+  }, []);
+  const revealReturnedMap = (ready: boolean) => {
+    if (mapReturnPhase.current !== "waiting") return;
+    if (ready) skyMapLifecycle.mapReady();
+    mapReturnPhase.current = "revealing";
+    setMapReturnPresentation("revealing");
+  };
   const themeClass = useThemeClass();
-  const primaryNavigation = usePrimaryNavigation("pages/map/index");
   const reducedMotion = useReducedMotion();
+  const preferences = useAppStore((state) => state.preferences);
+  const skyTransitionReducedMotion = usePageBlackoutReducedMotion();
+  const navigationBlackoutPhase = mapReturnPresentation ?? (skyEntryPresentation !== null ? "entering" : null);
+  const primaryNavigation = usePrimaryNavigation("pages/map/index", navigationBlackoutPhase
+    ? { phase: navigationBlackoutPhase, durationMs: skyTransitionReducedMotion ? 0 : SKY_ENTRY_FADE_MS } : null);
   const navigationHandoff = useRedLightHandoff({ nativeBackBoundary: false });
   const photoHandoff = useRedLightHandoff({ nativeBackBoundary: false, title: PHOTO_VIEWER_HANDOFF.title });
   const [coverageExpanded, setCoverageExpanded] = useState(false);
@@ -208,7 +240,6 @@ export default function MapPage() {
   const retiredObservationContextId = useAppStore((state) => state.retiredObservationContextId);
   const analysisOverlay = useAppStore((state) => state.analysisOverlay);
   const terrainEnabled = useAppStore((state) => state.terrainEnabled);
-  const preferences = useAppStore((state) => state.preferences);
   const viewport = useAppStore((state) => state.viewport);
   const selectedSpotId = useAppStore((state) => state.selectedSpotId);
   const spotOpenRequestVersion = useAppStore((state) => state.spotOpenRequestVersion);
@@ -232,6 +263,30 @@ export default function MapPage() {
   const currentNativeMapRef = useRef(nativeMap);
   currentNativeMapRef.current = nativeMap;
   const mapRuntimeError = nativeMap.error;
+  useEffect(() => {
+    skyMapLifecycle.mapMounted();
+    clearInitialReturn({ returning: false, panel: null });
+    return () => skyMapLifecycle.mapUnloaded();
+  }, []);
+  useEffect(() => {
+    if (mapReturnPresentation === null) return;
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (mapReturnPresentation === "revealing") {
+      // A JS commit can precede the native bridge's first revealing frame.
+      void Taro.nextTick(() => {
+        if (!active || mapReturnPhase.current !== "revealing") return;
+        timer = setTimeout(finishMapReturn, skyTransitionReducedMotion ? 0 : SKY_ENTRY_FADE_MS + 32);
+      });
+    } else timer = setTimeout(() => {
+      if (mapReturnPhase.current !== "waiting") return;
+      // A missing native update is a failure, never proof that Map is ready.
+      nativeMap.onError();
+      revealReturnedMap(false);
+      reportRuntimeError("native", "sky_map_return_map_timeout");
+    }, 10_000);
+    return () => { active = false; if (timer !== undefined) clearTimeout(timer); };
+  }, [mapReturnPresentation, skyTransitionReducedMotion, finishMapReturn]);
   const [announcement, setAnnouncement] = useState("");
   const [timeSaving, setTimeSaving] = useState(false);
   const [spotContextAttempt, setSpotContextAttempt] = useState<{
@@ -295,7 +350,7 @@ export default function MapPage() {
   // Packet A owns one bottom presentation coordinator. Panel extent and layer
   // sheet are mutually exclusive derived modes, never parallel booleans.
   const [bottomPresentation, setBottomPresentationState] =
-    useState<BottomPresentation>("none");
+    useState<BottomPresentation>(initialReturn.panel ? "spot-panel" : "none");
   const cancelSpotMapFocus = useRef<() => void>(() => {});
   const bottomPresentationRef = useRef<BottomPresentation>("none");
   bottomPresentationRef.current = bottomPresentation;
@@ -312,6 +367,9 @@ export default function MapPage() {
     ? JSON.stringify([currentDraftUserId(), nativeMap.mapId, mapResetVersion, navigationEpoch.current])
     : null;
   const setBottomPresentation = useCallback((presentation: BottomPresentation) => {
+    // This saved scroll command is only for the first recreated panel. A new
+    // explicit presentation uses that panel's normal position owner again.
+    returnPosition.current = null;
     if (presentation !== bottomPresentationRef.current || (presentation !== "spot-panel" && presentation !== "spot-editor")) cancelSpotMapFocus.current();
     setCalendarOwner(null);
     if (presentation !== "spot-editor") editorPresentation.cancel();
@@ -330,7 +388,7 @@ export default function MapPage() {
   const candidateSelectionVersion = useRef<number | null>(null);
   const editorLeaveGuard = useRef<ContributionLeaveGuard | null>(null);
   const editorLeaveRequest = useRef<Promise<boolean> | null>(null);
-  const [panelExtent, setPanelExtent] = useState<SpotPanelExtent>("medium");
+  const [panelExtent, setPanelExtent] = useState<SpotPanelExtent>(initialReturn.panel?.extent ?? "medium");
   const panelExtentRef = useRef<SpotPanelExtent>("medium");
   panelExtentRef.current = panelExtent;
   const [panelPhase, setPanelPhase] = useState<"idle" | "closing">("idle");
@@ -351,12 +409,13 @@ export default function MapPage() {
   const stopPanelSpring = () => { springRequest.current += 1; panelSpring.current.cancel(); springTarget.current = null; setPanelSettling(false); };
   useEffect(() => () => { springRequest.current += 1; panelSpring.current.cancel(); }, []);
   const [selectedFallback, setSelectedFallback] =
-    useState<SpotSummary | null>(null);
+    useState<SpotSummary | null>(initialReturn.panel?.selected ?? null);
   const currentContributionOwner = currentDraftUserId();
   const [selectedProposalState, setSelectedProposalState] = useState<{
     owner: string;
     submission: ContributionSubmission;
-  } | null>(null);
+  } | null>(initialReturn.panel?.proposal && currentContributionOwner
+    ? { owner: currentContributionOwner, submission: initialReturn.panel.proposal } : null);
   const selectedProposal = selectedProposalState?.owner === currentContributionOwner
     ? selectedProposalState.submission
     : null;
@@ -387,7 +446,6 @@ export default function MapPage() {
   }, []);
   const selectedProposalRef = useRef<typeof selectedProposal>(null);
   useEffect(() => { selectedProposalRef.current = selectedProposal; }, [selectedProposal]);
-  const [skyEntryPresentation, setSkyEntryPresentation] = useState<number | null>(null);
   const skyEntryScope = useRef<() => string | null>(() => null);
   const skyEntryRef = useRef<ReturnType<typeof createSkyEntryTransition> | null>(null);
   if (!skyEntryRef.current) skyEntryRef.current = createSkyEntryTransition({
@@ -402,7 +460,11 @@ export default function MapPage() {
       proposal?.submissionId, proposal?.revision, context?.contextId, context?.revision, context?.contextFingerprint]);
   };
   useEffect(() => {
-    if (skyEntryPresentation !== null) skyEntry.presented(skyEntryPresentation);
+    let active = true;
+    if (skyEntryPresentation !== null) void Taro.nextTick(() => {
+      if (active) skyEntry.presented(skyEntryPresentation);
+    });
+    return () => { active = false; };
   }, [skyEntry, skyEntryPresentation]);
   useEffect(() => {
     const hide = () => skyEntry.hide();
@@ -440,8 +502,8 @@ export default function MapPage() {
     height: number;
     geometry: PanelSnapGeometry;
   } | null>(null);
-  const lastHandledSelectedId = useRef<string | null>(null);
-  const lastHandledSpotOpenVersion = useRef(0);
+  const lastHandledSelectedId = useRef<string | null>(initialReturn.panel?.selected?.spotId ?? null);
+  const lastHandledSpotOpenVersion = useRef(initialReturn.panel ? spotOpenRequestVersion : 0);
   const detailRequestGeneration = useRef(0);
   const privateTransitionGeneration = useRef(0);
   useEffect(() => { photoHandoff.cancel(); }, [panelGeometryIdentity, pageVisible, bottomPresentation]);
@@ -747,14 +809,20 @@ export default function MapPage() {
   const selected =
     selectedFromScene ??
     (selectedFallback?.spotId === selectedSpotId ? selectedFallback : null);
-  const timeFrames = scene.data?.data.timeFrames ?? [];
+  const cloudPresentation = useMapCloudPresentation({ scene: scene.data,
+    enabled: pageVisible && analysisOverlay === "TOTAL_CLOUD",
+    scope: timeReference ? JSON.stringify([accountOwnerId, mapResetVersion, timeReference.localDate,
+      timeReference.timezone, timeReference.nightStartUtc, timeReference.nightEndUtc]) : null,
+    selectedAtUtc: timeReference?.selectedAtUtc ?? "",
+  });
+  const timeFrames = cloudPresentation?.timeFrames ?? scene.data?.data.timeFrames ?? [];
   const cloudTimeChoices = cloudTimeFrameChoices(timeFrames);
   const projectedAt = timePreviewing
     ? timeFrames[panelPreviewFrameIndex]?.atUtc ?? timeReference?.selectedAtUtc ?? ""
     : timeReference?.selectedAtUtc ?? "";
   const projectedFrame = useMemo(
-    () => mapTimeFrameAt(scene.data?.data.timeFrames ?? [], projectedAt),
-    [scene.data?.data.timeFrames, projectedAt],
+    () => mapTimeFrameAt(cloudPresentation?.timeFrames ?? scene.data?.data.timeFrames ?? [], projectedAt),
+    [cloudPresentation?.timeFrames, scene.data?.data.timeFrames, projectedAt],
   );
   const projectedEvaluations = useMemo(
     () =>
@@ -773,12 +841,13 @@ export default function MapPage() {
     ...privateContributionMarkerItems(privateMarkers, 100_000, mode, preferences.largeText),
     ...(bottomPresentation === "spot-editor" && candidateMarker ? [candidateMarker] : []),
   ], [bottomPresentation, candidateMarker, groupedMarkers, mode, preferences.largeText, privateMarkers, selectedSpotId]);
+  const geographicLayer = cloudPresentation?.layer ?? scene.data?.data.layer;
   const projectedPolygonSource = useMemo(
     () =>
-      scene.data?.data.layer.kind === mapLayerKindForOverlay(analysisOverlay)
-        ? projectedLayerPolygons(scene.data.data.layer, projectedFrame)
+      geographicLayer?.kind === mapLayerKindForOverlay(analysisOverlay)
+        ? projectedLayerPolygons(geographicLayer, projectedFrame)
         : [],
-    [projectedFrame, scene.data?.data.layer, analysisOverlay],
+    [projectedFrame, geographicLayer, analysisOverlay],
   );
   const layerPolygons = useMemo(
     () =>
@@ -1027,8 +1096,8 @@ export default function MapPage() {
   );
   const visibleLayer = layerSheetOverlay(analysisOverlay);
   const visibleLayerUnavailable = visibleLayer === "LIGHT" ? lightUnavailable && !lightReadFailed : Boolean(
-    scene.data?.data.layer.kind === mapLayerKindForOverlay(analysisOverlay) &&
-      scene.data.data.layer.state === "UNAVAILABLE",
+    geographicLayer?.kind === mapLayerKindForOverlay(analysisOverlay) &&
+      geographicLayer.state === "UNAVAILABLE",
   );
   const lightLayerState = lightLayerContentState({
     pending: scene.isPending || !nightLayer || lightImage.imagePending || lightInstallation.pending,
@@ -1036,7 +1105,7 @@ export default function MapPage() {
     hasData: Boolean(nightLayer || lightInstallation.presentedData),
     unavailable: visibleLayerUnavailable,
   });
-  const displayedLayer = visibleLayer === "LIGHT" ? displayedLightLayer : scene.data?.data.layer;
+  const displayedLayer = visibleLayer === "LIGHT" ? displayedLightLayer : geographicLayer;
   const hasGeographicLayer = layerPolygons.length > 0 || (analysisOverlay === "LIGHT" && Boolean(lightInstallation.presentedData?.raster));
   const layerSheetOwnsSceneFailure = layerSheetOwnsSceneRecovery({
     open: bottomPresentation === "layer-sheet", overlay: visibleLayer,
@@ -1952,6 +2021,7 @@ export default function MapPage() {
   };
 
   const handleMapPresentationSystemBack = async () => {
+    if (mapReturnPhase.current !== null) return;
     if (skyEntry.isActive()) { skyEntry.cancel(); return; }
     if (login.open) { login.back(); return; }
     if (photoHandoff.active) {
@@ -2142,8 +2212,29 @@ export default function MapPage() {
 
   const openSkyPage = (url: string, entry: "sky" | "proposal-sky",
     preparation = skyEntry.prepare(), acceptContext?: () => void) => preparation?.start({
-    reducedMotion: useAppStore.getState().preferences.reducedMotion,
-    navigate: current => openMapPage(url, "云观星", entry, current),
+    reducedMotion: skyTransitionReducedMotion,
+    navigate: async current => {
+      if (!current()) return false;
+      const saved = mapSkyReturnState.save(useAppStore.getState(), {
+        extent: panelExtentRef.current, selected, proposal: selectedProposalRef.current,
+        position: panelPosition.current,
+      }, changed => useAppStore.subscribe(changed));
+      const ticket = skyMapLifecycle.beginEntry();
+      try {
+        await Taro.redirectTo({ url });
+        // Success may arrive after Map has unmounted. The journey and saved
+        // presentation now belong to the return route, not this component.
+        return true;
+      } catch (error) {
+        mapSkyReturnState.discard(saved);
+        skyMapLifecycle.cancelEntry(ticket);
+        if (!current()) return false;
+        reportRuntimeError("native", "sky_entry_navigation_failed", error);
+        notify({ owner: "map", placement: "floating", tone: "warning", title: "云观星暂未打开",
+          body: "请稍后重试，当前地点和时间已保留。", dismissible: true, dedupeKey: `map-${entry}-navigation-failed` });
+        return false;
+      }
+    },
     onTimeout: () => {
       reportRuntimeError("native", "sky_entry_navigation_timeout");
       notify({ owner: "map", placement: "floating", tone: "warning", title: "云观星暂未打开",
@@ -2166,6 +2257,7 @@ export default function MapPage() {
 
   const onPanelCloud = () => {
     if (
+      useAppStore.getState().pendingObservationContextEdit ||
       !selected ||
       !activeContext ||
       !spotDetail ||
@@ -2362,7 +2454,7 @@ export default function MapPage() {
       {navigationHandoff.warning}
       {photoHandoff.warning}
       <NativeBackBoundary
-        active={pageVisible && (skyEntryPresentation !== null || login.open || eventModalOpen || eventModalPresent || bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet" || bottomPresentation === "spot-editor")}
+        active={pageVisible && (mapReturnPresentation !== null || skyEntryPresentation !== null || login.open || eventModalOpen || eventModalPresent || bottomPresentation === "spot-panel" || bottomPresentation === "layer-sheet" || bottomPresentation === "spot-editor")}
         onBack={handleMapPresentationSystemBack}
         nativeMapContent={<>{login.dialog}<AstronomicalEventModal ref={eventModalRef} open={eventModalOpen} mode="browse" onPresenceChange={setEventModalPresent}
           context={observationContext} onClose={() => setEventModalOpen(false)}
@@ -2390,8 +2482,8 @@ export default function MapPage() {
             onTap={() => { if (nativeMap.isCurrent()) onMapTap(); }}
             onMarkerTap={event => { if (nativeMap.isCurrent()) void onMarkerTap(event); }}
             onRegionChange={event => { if (nativeMap.isCurrent() && !editorPresentation.isClosing()) onRegionChange(event); }}
-            onError={nativeMap.onError}
-            onUpdated={() => { if (nativeMap.isCurrent()) { nativeMap.onUpdated(); readTerrainViewport(!mapTerrainBounds); } }}
+            onError={() => { nativeMap.onError(); revealReturnedMap(false); }}
+            onUpdated={() => { if (nativeMap.isCurrent()) { nativeMap.onUpdated(); revealReturnedMap(true); readTerrainViewport(!mapTerrainBounds); } }}
             aria-label="正式观星点地图；搜索提供等价可访问结果"
           />
 
@@ -2479,7 +2571,7 @@ export default function MapPage() {
             {activeContext?.timezoneSource && bottomPresentation === "none" ?
               <View className="map-source-attribution"><SourceAttribution compact sources={[activeContext.timezoneSource]} /></View> : null}
             {analysisOverlay === "TOTAL_CLOUD" && layerPolygons.length > 0 && bottomPresentation !== "layer-sheet" ?
-              <View className="map-source-attribution map-source-attribution--weather"><SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /></View> : null}
+              <View className="map-source-attribution map-source-attribution--weather"><SourceAttribution sources={cloudPresentation?.sources ?? []} /></View> : null}
             {(lightInstallation.presentedData?.raster || (analysisOverlay === "LIGHT" && layerPolygons.length > 0)) && bottomPresentation !== "layer-sheet" && displayedLightLayer?.source ?
               <View className="map-source-attribution"><SourceAttribution sources={[displayedLightLayer.source]} /></View> : null}
             {presentedTerrainData?.source && bottomPresentation === "none" ?
@@ -2580,6 +2672,8 @@ export default function MapPage() {
               onClick={(event) => event.stopPropagation()}
             >
               {selectedProposal ? <PendingProposalPanel
+                restorePosition={returnPosition.current}
+                onPositionChange={recordPanelPosition}
                 submission={selectedProposal}
                 variant={selectedProposal.submissionState === "PENDING_REVIEW" || selectedProposal.submissionState === "ACCEPTED" ? "PENDING" : "DRAFT"}
                 extent={panelExtent}
@@ -2600,6 +2694,8 @@ export default function MapPage() {
                 onHandleTouchCancel={onHandleTouchCancel}
                 onViewerBackHandlerChange={registerImageViewerBack}
               /> : selected ? <SpotInformationPanel
+                restorePosition={returnPosition.current}
+                onPositionChange={recordPanelPosition}
                 settling={panelSettling}
                 visible={pageVisible && bottomPresentation === "spot-panel"}
                 spot={selected}
@@ -2789,8 +2885,8 @@ export default function MapPage() {
                     <Text className={`map-layer-sheet__source-note type-caption${!scene.isPending && !mapSceneFailed ? " map-layer-sheet__source-note--ready" : ""}`}>
                       云量预报 · 仅覆盖有效数据区域
                     </Text>
-                    <SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} />
-                    {(!scene.isPending || scene.data) && !(mapSceneFailed && !scene.data) ? <ForecastCoverageNote onExpandedChange={setCoverageExpanded} scope="map" stale={mapSceneFailed} starts={cloudForecastStarts(timeFrames)}
+                    <SourceAttribution sources={cloudPresentation?.sources ?? []} />
+                    {cloudPresentation ? <ForecastCoverageNote onExpandedChange={setCoverageExpanded} scope="map" stale={mapSceneFailed} starts={cloudForecastStarts(timeFrames)}
                       timezone={activeContext?.timezone ?? "Asia/Shanghai"} scopeKey={`${activeContext?.contextId}:${activeContext?.localDate}`} /> : null}
                   </>
                 ) : lightLayerState === "LOADING" ? (
@@ -2853,6 +2949,9 @@ export default function MapPage() {
       <View className="sr-live" role="status" aria-live="polite">
         <Text>{announcement}</Text>
       </View>
+      <View className="sr-live map-sky-lifecycle" id={`map-sky-lifecycle-${encodeURIComponent(JSON.stringify({ phase: mapReturnPresentation ?? "none", journey: skyMapLifecycle.snapshot() }))}`}
+        aria-hidden="true" data-control="map-sky-lifecycle"
+        data-return-phase={mapReturnPresentation ?? "none"} data-journey={JSON.stringify(skyMapLifecycle.snapshot())} />
       <View
         className="sr-live"
         id={`map-layer-projection-${layerProjectionProbe}`}
@@ -2861,9 +2960,13 @@ export default function MapPage() {
         <Text className={timeReference ? "map-context-time-summary" : ""}>{contextTimeLabel}</Text>
       </View>
       {skyEntryPresentation !== null ? <View key={skyEntryPresentation} className="map-sky-entry-shield"
-        style={{ animationDuration: `${SKY_ENTRY_FADE_MS}ms` }} catchMove
+        style={{ animationDuration: `${skyTransitionReducedMotion ? 0 : SKY_ENTRY_FADE_MS}ms` }} catchMove
         onClick={event => event.stopPropagation()} onTouchStart={event => event.stopPropagation()}
         onAnimationEnd={() => skyEntry.finishFade(skyEntryPresentation)} /> : null}
+      {mapReturnPresentation ? <View className={`map-sky-return-shield map-sky-return-shield--${mapReturnPresentation}`}
+        style={{ animationDuration: `${skyTransitionReducedMotion ? 0 : SKY_ENTRY_FADE_MS}ms` }}
+        catchMove onTouchMove={event => event.stopPropagation()} onClick={event => event.stopPropagation()}
+        onAnimationEnd={finishMapReturn} /> : null}
     </MapPanelPresentation></>
   );
 }

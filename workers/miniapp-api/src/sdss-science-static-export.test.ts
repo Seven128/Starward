@@ -9,7 +9,7 @@ import {SDSS_OPTICAL_PUBLICATIONS,SDSS_OPTICAL_LEVELS,sdssScienceOpticalPublicat
   type SdssScienceMeanOpticalPublication} from '@starward/miniapp-contracts';
 import {SdssOpticalImageryService} from './sdss-optical-imagery';
 import {exportSkyPublicAssets} from './sky-public-asset-export';
-import {skyPublicAssetHeaders} from './sky-public-asset-headers';
+import {skyPublicAssetHeaders,skySourceManifestHeaders} from './sky-public-asset-headers';
 import {createSyntheticSdssSciencePublication} from './test-fixtures/sdss-science-publication';
 const sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
 const collect=async(owner:SdssOpticalImageryService)=>{const images=[];for await(const image of owner.publishedAssets())images.push(image);return images;};
@@ -43,15 +43,23 @@ test('standard export preserves six JPEG offers and only explicitly admitted v2/
   const exported=await exportSkyPublicAssets(join(directory,'export'),'1'.repeat(40),undefined,owner);
   const index=JSON.parse(readFileSync(join(exported.output,'index.json'),'utf8'));
   const optical=index.records.filter((row:any)=>row.route.startsWith('/v2/sky/sdss-optical/'));
-  assert.equal(optical.length,24);
+  const manifests=owner.publishedManifests();assert.equal(manifests.length,8);
+  assert.equal(optical.length,images.length+manifests.length);
   for(const image of images){const row=optical.find((value:any)=>value.route===image.descriptor.downloadUrl);assert(row);
    assert.equal(row.sha256,image.descriptor.sha256);assert.equal(row.bytes,image.bytes.length);
    assert.deepEqual(row.headers,skyPublicAssetHeaders('sdss-optical',image.contentType,image.fieldDegrees));
    assert.deepEqual(readFileSync(join(exported.output,'files',row.route)),image.bytes);
   }
+  for(const manifest of manifests){
+   const route=`/v2/sky/sdss-optical/${manifest.publicationHash}/manifest`,row=optical.find((value:any)=>value.route===route);assert(row);
+   const bytes=Buffer.from(JSON.stringify(manifest));
+   assert.equal(row.sha256,sha(bytes));assert.equal(row.bytes,bytes.length);
+   assert.deepEqual(row.headers,skySourceManifestHeaders('sdss-optical',manifest.objectRef));
+   assert.deepEqual(readFileSync(join(exported.output,'files',route)),bytes);
+  }
   const fragment=readFileSync(join(exported.output,'delivery.caddy'),'utf8');
   for(const row of optical)assert(fragment.includes(row.route));
-  assert.equal(optical.some((row:any)=>/manifest|master|\.npy|receipt|binding/u.test(row.route)),false);
+  assert.equal(optical.some((row:any)=>/master|\.npy|receipt|binding/u.test(row.route)),false);
   const file=join(nextDir,signed.levels.DETAIL.file),original=readFileSync(file),changed=Buffer.from(original);
   changed[changed.length-1]^=1;writeFileSync(file,changed);
   await assert.rejects(collect(owner),/sdss_optical_asset_invalid/u);

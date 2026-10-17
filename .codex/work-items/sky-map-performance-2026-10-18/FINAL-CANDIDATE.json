@@ -1,0 +1,47 @@
+{
+  "scope": "isolated-production-build-not-phone-runtime",
+  "bundleDirectory": "apps/wechat-miniapp/dist/weapp-check-sky-map-final-1018",
+  "sha256": "8c86bfab8ccbd95890c06f1805b2dfd7bb44728677a43ddd3de0959c2c1f9321",
+  "totalBytes": 4940248,
+  "fileCount": 338,
+  "packages": {
+    "main": {
+      "bytes": 2003762,
+      "source_map_bytes": 0
+    },
+    "content": {
+      "bytes": 1041257,
+      "source_map_bytes": 0
+    },
+    "spot": {
+      "bytes": 598333,
+      "source_map_bytes": 0
+    },
+    "sky": {
+      "bytes": 1296896,
+      "source_map_bytes": 0
+    }
+  },
+  "mainHeadroomBytes": 93390,
+  "preloadRule": {
+    "pages/map/index": {
+      "network": "wifi",
+      "packages": [
+        "sky"
+      ]
+    }
+  },
+  "staticChecks": {
+    "native_project": true,
+    "filter_population": true,
+    "curated_spots": true,
+    "capability_flags": true,
+    "no_direct_provider": true,
+    "no_html_delivery": true,
+    "recovery_semantics": true,
+    "explicit_location_only": true,
+    "response_cache_entity_identity": true,
+    "package_budget": true,
+    "route_files": true
+  }
+}

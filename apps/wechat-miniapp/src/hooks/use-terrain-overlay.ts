@@ -3,8 +3,11 @@ import { useEffect, useMemo, useRef } from "react";
 import { getTerrainOverlay } from "@/services/api-client";
 import { useResourceQuery } from "./use-resource-query";
 import { useRasterImage } from "./use-raster-image";
+import { terrainCoverageForRequest, terrainRequestForCoverage, type TerrainCoverage } from "./terrain-overlay-coverage";
 
 export function useTerrainOverlay(input: TerrainOverlayRequest, enabled: boolean, imageEnabled = enabled) {
+  const coverage = useRef<TerrainCoverage | null>(null);
+  input = terrainRequestForCoverage(input, coverage.current);
   const identity = `${input.purpose}:${input.center.latitude.toFixed(7)}:${input.center.longitude.toFixed(7)}:${input.viewportBounds
     ? [input.viewportBounds.west, input.viewportBounds.south, input.viewportBounds.east, input.viewportBounds.north].map(value => value.toFixed(7)).join(":")
     : input.radiusKm!.toFixed(1)}`;
@@ -16,6 +19,7 @@ export function useTerrainOverlay(input: TerrainOverlayRequest, enabled: boolean
     // Preserve that data without treating the failure as a day-long success.
     staleTime: value => value?.data.failureCode || value?.data.lightPollution.failureCode ? 0 : 24 * 60 * 60 * 1000,
   });
+  if (query.data) coverage.current = terrainCoverageForRequest(input, query.data.data);
   const recovery = useRef({ identity, attempted: false });
   if (recovery.current.identity !== identity) recovery.current = { identity, attempted: false };
   useEffect(() => {

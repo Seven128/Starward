@@ -1,3 +1,4 @@
+import { createMapPageTestBoundaries } from "./map-page-test-support";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -21,6 +22,7 @@ function declaration(name: string) {
 function backRuntime(presentation: "layer-sheet" | "spot-panel", busy: "none" | "saving" | "missing-context" | "mismatched-spot" = "none") {
   const effects: string[] = [];
   const scope = {
+    ...createMapPageTestBoundaries().scope,
     photoHandoff: { active: false, cancel: () => effects.push("photo-warning") },
     navigationHandoff: { active: false, cancel: () => effects.push("navigation-warning") },
     eventModalOpenRef: { current: false }, eventModalRef: { current: { back: () => effects.push("event") } },

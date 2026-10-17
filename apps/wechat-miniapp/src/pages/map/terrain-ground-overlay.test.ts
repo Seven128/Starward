@@ -3,7 +3,8 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
-import { createTerrainGroundOverlayCoordinator, terrainGroundOverlayKey, type TerrainGroundOverlayTarget } from "./terrain-ground-overlay";
+import { mapGroundOverlayKey } from "./map-ground-overlay";
+import { createTerrainGroundOverlayCoordinator, type TerrainGroundOverlayTarget } from "./terrain-ground-overlay";
 
 const target = (src: string): TerrainGroundOverlayTarget => ({
   src,
@@ -39,28 +40,40 @@ test("native file pins retire only after removal ack, including an obsolete queu
 });
 
 test("native Map failure preserves the downloaded terrain image for its ordinary retry", async () => {
-  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  let callback: ts.Node | undefined;
+  const page = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const installation = ts.createSourceFile("installation.ts", readFileSync(new URL("./use-map-raster-installation.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  let callback: ts.Node | undefined, options: ts.Node | undefined;
   const visit = (node: ts.Node) => {
-    if (ts.isBinaryExpression(node) && node.left.getText(source) === "terrainOverlayResult.current") callback = node.right;
+    if (ts.isBinaryExpression(node) && node.left.getText(installation) === "resultHandler.current") callback = node.right;
     ts.forEachChild(node, visit);
   };
-  visit(source);
-  assert.ok(callback, "exercise the production Map result handler");
+  const visitPage = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(page) === "terrainInstallation" && node.initializer && ts.isCallExpression(node.initializer))
+      options = node.initializer.arguments[0];
+    ts.forEachChild(node, visitPage);
+  };
+  visit(installation); visitPage(page);
+  assert.ok(callback && options, "exercise the current shared raster result handler with Map's actual terrain consumer");
   let imagePath: string | null = "/local/valid-terrain.png", nativeError: unknown = null, imageFailures = 0, announcement = "", imageReadable = true, delayImageRead = true;
   let lateImageFailure: ((error: Error) => void) | undefined;
-  const onResult = vm.runInNewContext(ts.transpileModule(`(${callback.getText(source)});`, {
+  const nativeMap = { mapId: "map:test", isCurrent: () => true };
+  const input = vm.runInNewContext(ts.transpileModule(`(${options.getText(page)});`, {
     compilerOptions: { target: ts.ScriptTarget.ES2022 },
   }).outputText, {
-    setTerrainNativeError: (error: unknown) => { nativeError = error; },
-    setTerrainNativeNeedsMapRecovery() {}, setTerrainInstalledKey() {}, setTerrainPresented() {}, terrainCandidates: { current: new Map() }, terrainGroundOverlayKey,
+    TERRAIN_GROUND_OVERLAY_ID: 91301, nativeMap, pageVisible: true, terrainEnabled: true, mapRuntimeError: null, terrainNativeRetry: 0,
+    terrain: { identity: "terrain:1", imagePath, data: { data: { state: "READY", imageBoundsGcj02: { south: 22, west: 113, north: 23, east: 114 } } },
+      reportImageFailure: (_error: unknown, path: string) => { assert.equal(path, imagePath); imageFailures++; imagePath = null; } },
     setAnnouncement: (text: string) => { announcement = text; },
+  });
+  const onResult = vm.runInNewContext(ts.transpileModule(`(${callback.getText(installation)});`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText, {
+    setError: (error: unknown) => { nativeError = error; },
+    setRequiresMapRecovery() {}, setInstalled() {}, setPresented() {}, candidates: { current: new Map() }, mapGroundOverlayKey,
     Taro: { getImageInfo: async () => {
       if (delayImageRead) return new Promise((_resolve, reject) => { lateImageFailure = reject; });
       if (!imageReadable) throw new Error("image decode failed"); return { width: 512, height: 512 };
-    } },
-    nativeMap: { isCurrent: () => true },
-    terrain: { reportImageFailure: () => { imageFailures++; imagePath = null; } },
+    } }, nativeMap, input,
   });
   const failure = new Error("An object could not be cloned.");
   let rejectNative = true, additions = 0;

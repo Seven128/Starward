@@ -1,3 +1,7 @@
+// Position lookups rebuild the same Sky report; this is the report's BSC
+// selection, never the selected planet/SAO/deep-sky object's own publication.
+export const ADOPTED_SKY_REPORT_CATALOG_VERSION = "bsc5p-bright-stars.v3";
+
 import { assertSkyObservationFrames, assertStellarScene, STELLAR_SCENE_FORMAT, type ApiEnvelope, type SkyReport } from "@starward/miniapp-contracts";
 import { projectSkyTargetCoordinates } from "./sky-report-targets";
 import { projectSkySolarGeometry } from "./sky-report-solar";

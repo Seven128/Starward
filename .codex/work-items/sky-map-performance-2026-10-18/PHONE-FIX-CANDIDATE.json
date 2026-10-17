@@ -1,0 +1,41 @@
+{
+  "bundleSha256": "18ba5366d67df6b62db44fa5899ceff65b8e6cdea04e66bc0e8cc2afacaa7bc6",
+  "fileCount": 338,
+  "totalBytes": 4942404,
+  "packages": {
+    "main": {
+      "bytes": 2005797,
+      "source_map_bytes": 0
+    },
+    "content": {
+      "bytes": 1041258,
+      "source_map_bytes": 0
+    },
+    "spot": {
+      "bytes": 598334,
+      "source_map_bytes": 0
+    },
+    "sky": {
+      "bytes": 1297015,
+      "source_map_bytes": 0
+    }
+  },
+  "mainHeadroomBytes": 91355,
+  "staticChecks": {
+    "native_project": true,
+    "filter_population": true,
+    "curated_spots": true,
+    "capability_flags": true,
+    "no_direct_provider": true,
+    "no_html_delivery": true,
+    "recovery_semantics": true,
+    "explicit_location_only": true,
+    "response_cache_entity_identity": true,
+    "package_budget": true,
+    "route_files": true
+  },
+  "sourceFiles": 48,
+  "bundleDirectory": "apps\\wechat-miniapp\\dist\\weapp-check-sky-map-phone-final-1018",
+  "originClass": "physical-LAN-HTTP-MEMORY_TEST",
+  "frontendFixture": false
+}

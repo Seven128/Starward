@@ -20,8 +20,14 @@ test("current-frame resolution reuses gestures, switches exact time, and never b
  assert.equal(resolveSkySceneFrame(resolved.skyScene,at[0]),first,"gestures must not recompute unchanged astronomy");
  const second=resolveSkySceneFrame(resolved.skyScene,at[1])!;
  assert.notDeepEqual(first.points,second.points);
- const revisited=resolveSkySceneFrame(resolved.skyScene,at[0]);
- assert.notEqual(revisited,first,"only current frame is retained");assert.deepEqual(revisited,first);
+ const revisited=resolveSkySceneFrame(resolved.skyScene,at[0])!;
+ assert.notEqual(revisited,first,"only current frame is retained");
+ assert.equal(revisited.at,first.at);assert.equal(revisited.state,first.state);assert.deepEqual(revisited.points,first.points);
+ assert.ok(revisited.displayTransmission && first.displayTransmission && revisited.displayDirection && first.displayDirection);
+ for(const index of [0,first.points.length-1]){
+  assert.equal(revisited.displayTransmission(index),first.displayTransmission(index));
+  assert.deepEqual(revisited.displayDirection(index),first.displayDirection(index));
+ }
  assert.equal(resolveSkySceneFrame(resolved.skyScene,"2026-09-19T13:30:00.000Z"),undefined);
  assert.equal(resolveSkySceneFrame({...resolved.skyScene,frames:[report.skyScene.frames[0]!,report.skyScene.frames[0]!] },at[0]),undefined);
  for(const change of [{catalogHash:"b".repeat(64)},{catalogVersion:"bsc5p-bright-stars.v1"}]){

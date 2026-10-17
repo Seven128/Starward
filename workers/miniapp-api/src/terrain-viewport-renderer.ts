@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { PNG } from "pngjs";
 import { gcj02ToWgs84, mercatorY, latitudeForMercatorY, WEB_MERCATOR_CIRCUMFERENCE_M } from "@starward/coordinate-system";
 import { terrainReliefRgba } from "./terrain-relief.ts";
+import { SharedReadPool } from "./shared-read-pool.ts";
 import { terrainRequestKey, terrainRenderVersion, TERRAIN_SUPPORTED_BOUNDS, type TerrainRenderer } from "./terrain-request.ts";
 import { validateTerrainPublication, terrariumAttribution, TERRARIUM_LICENSE_URL,
   TERRARIUM_MODIFIED_NOTICE, TERRARIUM_LIABILITY_NOTICE, terrainSourceSetHash, type TerrainPublicationSourceObject } from "./terrain-publication.ts";
@@ -10,17 +11,18 @@ const tileSize = 256, ttlMs = 24 * 60 * 60_000;
 const sourceRoot = "https://elevation-tiles-prod.s3.amazonaws.com/terrarium";
 const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 type Tile = { elevations: Float32Array; source: TerrainPublicationSourceObject; at: number };
-type SourceBudget = { bytes: number; reads: number; hits: number; ioMs: number; decodeMs: number };
+type SourceBudget = { bytes: number; reads: number; hits: number; joins: number; ioMs: number; decodeMs: number };
 export interface TerrainRenderMeasurement {
-  fixed: boolean; pixels: number; sourceTiles: number; sourceReads: number; sourceCacheHits: number; sourceBytes: number;
+  fixed: boolean; pixels: number; sourceTiles: number; sourceReads: number; sourceCacheHits: number; sourceSharedReads: number; sourceBytes: number;
   projectionMs: number; sourceReadWallMs: number; sourceIoSumMs: number; sourceDecodeSumMs: number;
   sampleMs: number; shadeMs: number; encodeMs: number; totalMs: number; imageBytes: number; publicationId: string;
 }
 
-/** Bounded, completed source tiles belong to one TerrainService. An abandoned
- * request never leaves a shared pending tile or source job for its successor. */
+/** Bounded source tiles belong to one TerrainService. Concurrent fixed cells
+ * share the same source read; the last consumer leaving cancels that work. */
 export function createTerrainViewportRenderer(transport: typeof fetch = fetch, measured?: (value: TerrainRenderMeasurement) => void) {
   const completed = new Map<string, Tile>();
+  const pending = new SharedReadPool<Tile>(() => new Error("terrain_source_cancelled"));
   let closed = false;
 
   async function readTile(z: number, x: number, y: number, signal: AbortSignal, budget: SourceBudget): Promise<Tile> {
@@ -30,6 +32,16 @@ export function createTerrainViewportRenderer(transport: typeof fetch = fetch, m
       completed.delete(key); completed.set(key, cached); return cached;
     }
     completed.delete(key);
+    let ownsRead = false;
+    try {
+      return await pending.run(key, controller => {
+        ownsRead = true;
+        return loadTile(key, controller.signal, budget);
+      }, signal);
+    } finally { if (!ownsRead) budget.joins++; }
+  }
+
+  async function loadTile(key: string, signal: AbortSignal, budget: SourceBudget): Promise<Tile> {
     budget.reads++;
     const ioStarted = performance.now();
     const url = `${sourceRoot}/${key}.png`;
@@ -126,7 +138,7 @@ export function createTerrainViewportRenderer(transport: typeof fetch = fetch, m
     }
     const pending: Array<{ x: number; y: number }> = [];
     for (let y = window.top; y <= window.bottom; y++) for (let x = window.left; x <= window.right; x++) pending.push({ x, y });
-    const budget: SourceBudget = { bytes: 0, reads: 0, hits: 0, ioMs: 0, decodeMs: 0 };
+    const budget: SourceBudget = { bytes: 0, reads: 0, hits: 0, joins: 0, ioMs: 0, decodeMs: 0 };
     const tiles = new Map<string, Tile>(), sources: TerrainPublicationSourceObject[] = [], unavailable: string[] = [];
     const sourceIssues: { tileId: string; reason: "NOT_FOUND" | "READ_FAILED" | "UNSUPPORTED_SOURCE" }[] = [];
     const sourceReadStarted = performance.now();
@@ -182,7 +194,7 @@ export function createTerrainViewportRenderer(transport: typeof fetch = fetch, m
     const publicationId = fixed ? `terrain:${terrainRequestKey(input)}:${sourceSetSha256}:${imageSha256}` : `terrain:${version}:${imageSha256}`;
     const encodeMs = performance.now() - encodeStarted;
     try { measured?.({ fixed: Boolean(fixed), pixels: outputSize, sourceTiles: pending.length, sourceReads: budget.reads,
-      sourceCacheHits: budget.hits, sourceBytes: budget.bytes, projectionMs, sourceReadWallMs, sourceIoSumMs: budget.ioMs,
+      sourceCacheHits: budget.hits, sourceSharedReads: budget.joins, sourceBytes: budget.bytes, projectionMs, sourceReadWallMs, sourceIoSumMs: budget.ioMs,
       sourceDecodeSumMs: budget.decodeMs, sampleMs, shadeMs, encodeMs, totalMs: performance.now() - started,
       imageBytes: bytes.length, publicationId }); } catch { /* Diagnostics cannot change a publication. */ }
     return { bytes, publication: validateTerrainPublication({
@@ -210,5 +222,5 @@ export function createTerrainViewportRenderer(transport: typeof fetch = fetch, m
         `当前影像有效高程占比${Math.round(valid / (outputSize * outputSize) * 10000) / 100}%；派生横纵像素间隔约${Math.round(centreSpacing.x)} / ${Math.round(centreSpacing.y)}m，非原始采样精度。`],
     }) };
   };
-  return { render, close: () => { closed = true; completed.clear(); } };
+  return { render, close: () => { closed = true; pending.close(new Error("terrain_service_closed")); completed.clear(); } };
 }

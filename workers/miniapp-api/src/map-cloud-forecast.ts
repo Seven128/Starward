@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { gcj02ToWgs84 } from "@starward/coordinate-system";
-import type { MapCloudSnapshot, MapLayerData, ObservationContext, SourceSummary, TerrainBounds } from "@starward/miniapp-contracts";
+import { mapCloudCellId, type MapCloudSnapshot, type MapLayerData, type ObservationContext, type SourceSummary, type TerrainBounds } from "@starward/miniapp-contracts";
 import type { CanonicalWeatherHour, ProviderResult, WeatherForecastResult, WeatherPort } from "./ports.ts";
 import { WEATHER_DEADLINES, withDeadline } from "./provider-deadline.ts";
 
@@ -15,7 +15,6 @@ export interface MapCloudSample {
 }
 
 export const MAP_CLOUD_MAX_AGE_MS = 30 * 60_000;
-const queryCellId = (point: MapCloudSample["center"]) => `cloud:query:${point.latitude.toFixed(2)}:${point.longitude.toFixed(2)}`;
 
 export function mapCloudQueryPoints(center: MapCloudSample["center"], bounds?: TerrainBounds) {
   const lat = Math.round(center.latitude * 100), lon = Math.round(center.longitude * 100);
@@ -43,7 +42,7 @@ export async function readMapCloudForecast(
   const cells = mapCloudQueryPoints(center, bounds);
   return Promise.all(cells.map(async point => {
     const startedAt = new Date().toISOString();
-    const sample: MapCloudSample = { id: queryCellId(point), center: point, forecast: null,
+    const sample: MapCloudSample = { id: mapCloudCellId(point), center: point, forecast: null,
       readStartedAt: startedAt, readEndedAt: startedAt, pureForecast: Boolean(weather.getForecastHourly) };
     const remaining = Math.min(WEATHER_DEADLINES.overallMs, deadlineAt - Date.now());
     if (remaining <= 0) return sample;
@@ -118,7 +117,7 @@ export function projectMapCloudLayer(samples: readonly MapCloudSample[], atUtc: 
     });
     if (!row || row.cloudPercent === null || !Number.isFinite(row.cloudPercent) || row.cloudPercent < 0 || row.cloudPercent > 100) return [];
     const center = forecast.acquisition?.requestedGcj02 ?? sample.center;
-    return [{ id: queryCellId(center), center, forecast, value: row.cloudPercent, weatherAt: row.at }];
+    return [{ id: mapCloudCellId(center), center, forecast, value: row.cloudPercent, weatherAt: row.at }];
   });
   // Conversion/rounding can alias planned points at the coordinate boundary.
   // Paint each actual query cell once, keeping the newest valid selected hour.

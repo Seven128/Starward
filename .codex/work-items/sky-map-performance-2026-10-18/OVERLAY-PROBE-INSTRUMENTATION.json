@@ -1,0 +1,9 @@
+{
+  "kind": "read-only-native-focus-observation",
+  "originalMapSha256": "7c77173f3b7ffbcf121566abfc76acdb273cbff762a331e606c55f53d9d1aed5",
+  "instrumentedMapSha256": "db49bf68820e773fdf0754f99d3f3fe5720867d0f4fc571c338048b86504644f",
+  "probeSha256": "91e5254b354b10593e872b54c26d5c0cda4055aa0080328c180a02a1efbb2ddf",
+  "sourceRestored": true,
+  "productionFocusOwnerChanged": false,
+  "privacy": "only metres, zoom, normalized-derived pixel residuals; no coordinates or account data displayed"
+}

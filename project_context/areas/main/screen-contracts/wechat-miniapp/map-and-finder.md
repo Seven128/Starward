@@ -2,6 +2,8 @@
 
 This on-demand subdomain node normatively continues `Cross-Control And State Invariants` for Map, dedicated Search, the spot information panel and shared Observation Context behavior.
 
+地形、云量与年度光害叠层的性能要求覆盖首次开启、拖动跨覆盖、缩放和回访：缩短真实可用覆盖的等待，减少新内容到达前的空白，保留仍有效且正确配准的旧覆盖。优化须在当前原生地图能力内按完整链路实测瓶颈，复用已有发布、采样、缓存、下载与安装责任；成熟分块、预取和渐进显示机制须先核适用性，不能把其它地图SDK的能力当作微信已支持。保地形必要细节、年度光害的版本/数值/颜色/质量与零值/缺测区分，以及云量的实际采样位置、所选时刻、来源和有效期；不得拉伸旧图填补未覆盖区、涂满未查询云格或仅隐藏loading来宣称变快。缓存、预取、并发及CDN优化仍受现有资源、供应权益和成本边界约束，实际收益与原生连续体验须有对应证据。
+
 小档静止高度必须容纳完整身份信息与固定动作，不能把采用资源的样例高度当内容上限。正式点还必须保留原采用的路线摘要与具名导航：Map 现有原生几何 owner 测量文档手柄起点到路线块末端的实际跨度，包含现有计划入口、恢复卡及其间距；私人草稿/待审提案继续测量文档手柄、身份区和动作栏，不合成正式路线。两者由 `panel-snap.panelIdentityMinimumHeight` 保留固定动作及既有内容间距，同一 CSS 内容下限同时用于面板与吸附标尺，仍受三档有序视口边界约束，保留当前已采用字号、状态和原动作。异步详情、Context 恢复或计划入口内容改变高度、真实 resize 或完整点位/账号/提案身份切换时，退休旧拖动、回弹与缓存，再读取当前标尺，迟到或无效的必需测量不得安装旧标尺。短视口边界不足不能通过裁掉有效路线或缩字掩盖；连续释放、窄屏、真机或完整设计一致性仍需各自证据。
 
 手柄与正文纵滚的竞争由 Map 现有 `panelDragging` owner 处理：有效单指按下即占有手柄操作，不等待异步几何；正式点和私人草稿/待审面板的主 ScrollView 共用 `panelDocumentScrollEnabled`，小档或手柄操作中关闭纵滚。正常结束、取消及既有页面/身份/布局失效路径释放该 owner，保留文档阅读位置并恢复可滚动档位的正文操作；横向照片相册仍由其自身 ScrollView 负责。手柄继续在原文档中随内容离开视口，三档、内容与固定动作不变。当前 WEAPP 实测原生 `catchMove` 不能单独阻止 ScrollView 的正文位移，不能把事件拦截成功当作手柄竞争已解决；自然平台取消、运动中重抓和真机连续表现仍需分别核验。
@@ -243,6 +245,8 @@ The 2026-09-09 rules for Search, My ongoing plans, arrival/reminder states, sky 
 2026-09-14 adopts WeChat default native map with no custom base-map themes, platform location picking, own published-spot search and external navigation handoff. App-owned day/night/red-light UI themes remain independent. Do not purchase or request national POI, reverse geocoding or road-routing services for this scope. Retain origin, travel preference, manual departure and observation interval, notes/checklists, actual parking/entry/observing-position distinctions and verified last-segment access facts; remove road-distance/time filters and automatic departure/arrival inference. Labeled straight-line distance does not promise access. Formal/private-draft/pending identities and action authorization still govern their existing flows.
 
 The native map tiles remain brightly colored in the current WeChat simulator even when app chrome is themed. In observation mode, cover the native map with an opaque black/red app surface and keep formal-spot Search available, including a clear explanation and a route back to the map by changing mode. Do not present the unthemed map as a red-light-safe surface. Night mode retains the adopted native map; its tile luminance is a platform limitation that needs target-device review rather than an assumed dark map theme. System status bars, native sheets and handoffs also require device-level verification of their own color behavior.
+
+2026-10-18 capability clarification: WEAPP native Tencent Map can use a configured personalized dark style; there is no confirmed built-in `dark` switch. [TencentLBS's official Mini Program guide](https://github.com/TencentLBS/tencentmap-miniprogram-skill/blob/main/references/map_component_guide.md#地图个性化样式组件) describes the paid platform capability and `subkey` plus `layer-style` (`layerStyle` in Taro). The current implementation intentionally passes neither. Entitlement/configuration has not been inspected, and dynamic style switching versus native Map recreation must be verified before adoption. This finding does not authorize purchase or change the current default-map decision; app-night chrome and a dark map base are separate responsibilities.
 
 ## Selected Event Data
 

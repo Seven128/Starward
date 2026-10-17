@@ -1,5 +1,9 @@
 import { getStellarCatalog, getConstellationCatalog, constellationAssetUrl } from "@/services/sky-catalog-api";
 import { reportRuntimeError } from "@/services/runtime-error";
+import { skyMapLifecycle } from "@/navigation/sky-map-lifecycle";
+import { PAGE_BLACKOUT_FADE_MS } from "@/navigation/page-blackout-transition";
+import { useSkyPageExit } from "./use-sky-page-exit";
+import { usePageBlackoutReducedMotion } from "@/hooks/use-reduced-motion";
 import {useSkyBodyImages} from "./use-sky-body-images";
 import {useSkyImageRecovery} from "./use-sky-image-recovery";
 import {useSkyImageFailureDiagnostics} from "./sky-image-feedback";
@@ -114,11 +118,11 @@ import {
 } from "@/utils/zoned-date";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
+import { getSkyTargetInstant } from "@/services/sky-celestial-client";
 import {
   MiniappApiError,
   getObservationContext,
   getSkyReport,
-  getSkyTargetInstant,
   getSpotOverview,
   restoreObservationContext,
   updateObservationContext,
@@ -2529,23 +2533,48 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
   };
 
   const skyReturnPendingRef = useRef<object | null>(null);
+  const routeReducedMotion = usePageBlackoutReducedMotion();
+  const skyExit = useSkyPageExit(() => skyPageVisibleCurrent()
+    ? `${contextSession.visibilityRevision}:${useAppStore.getState().accountOwnerId ?? "public"}` : null);
   const returnToSkyEntry = async () => {
     // Recovery Back is allowed without valid Context or Canvas data.
-    if (!skyPageVisibleCurrent() || skyReturnPendingRef.current) return;
-    const navigation = {};
-    skyReturnPendingRef.current = navigation;
+    if (!skyPageVisibleCurrent() || skyReturnPendingRef.current || skyExit.transition.isActive()) return;
     cancelSkyCalibration();
-    try { await Taro.navigateBack(); }
-    catch (error) {
-      reportRuntimeError("native", "sky_return_navigation_failed", error);
-      if (!skyPageVisibleCurrent()) return;
-      try { await Taro.switchTab({ url: "/pages/map/index" }); }
-      catch (error) {
-        reportRuntimeError("native", "sky_return_fallback_failed", error);
-        if (skyPageVisibleCurrent()) notify({ owner: "spot-night", placement: "floating", tone: "info",
+    skyExit.transition.start({
+      reducedMotion: routeReducedMotion,
+      onTimeout: () => {
+        // Native navigation cannot be cancelled. Keep its return intent so a
+        // late successful switch still restores Map; only release the UI lock.
+        skyReturnPendingRef.current = null;
+        notify({ owner: "spot-night", placement: "floating", tone: "info",
           title: "返回失败", body: "请再试一次", dedupeKey: "sky-return-navigation" });
-      }
-    } finally { if (skyReturnPendingRef.current === navigation) skyReturnPendingRef.current = null; }
+      },
+      navigate: async (isCurrent) => {
+        const navigation = {};
+        skyReturnPendingRef.current = navigation;
+        const restoredMap = skyMapLifecycle.beginReturn();
+        try {
+          // redirectTo removed Map. Its tab must be recreated, not popped to.
+          if (restoredMap || Taro.getCurrentPages().length <= 1) {
+            await Taro.switchTab({ url: "/pages/map/index" });
+          } else {
+            try { await Taro.navigateBack(); }
+            catch (error) {
+              reportRuntimeError("native", "sky_return_navigation_failed", error);
+              if (!isCurrent()) return false;
+              await Taro.switchTab({ url: "/pages/map/index" });
+            }
+          }
+          return true;
+        } catch (error) {
+          skyMapLifecycle.cancelReturn(restoredMap);
+          reportRuntimeError("native", "sky_return_fallback_failed", error);
+          if (isCurrent()) notify({ owner: "spot-night", placement: "floating", tone: "info",
+            title: "返回失败", body: "请再试一次", dedupeKey: "sky-return-navigation" });
+          return false;
+        } finally { if (skyReturnPendingRef.current === navigation) skyReturnPendingRef.current = null; }
+      },
+    });
   };
   const closeSkyObjectDisclosure = () => {
     setSelectedTargetId(null);
@@ -3287,6 +3316,20 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
     }
   };
   const skySceneStarCount = paintedSceneFacts.starCount;
+  useEffect(() => { skyMapLifecycle.skyMounted(); }, []);
+  useEffect(() => {
+    if (pageVisible && presentedSceneCurrent && skySceneReady) skyMapLifecycle.skyReady();
+  }, [pageVisible, presentedSceneCurrent, skySceneReady]);
+  const exitBoundary = <NativeBackBoundary active={pageVisible}
+    onBack={() => { if (!closingOverlay) return goBack(); }} />;
+  const exitShield = skyExit.presentation === null ? null : <View
+    className={`sky-page-exit-shield${routeReducedMotion ? " sky-page-exit-shield--reduced" : ""}`}
+    style={{ "--sky-page-fade-ms": `${PAGE_BLACKOUT_FADE_MS}ms` } as CSSProperties}
+    data-control="sky-page-exit-shield"
+    onAnimationEnd={() => { if (skyExit.presentation !== null) skyExit.transition.finishFade(skyExit.presentation); }}
+    onTouchMove={event => event.stopPropagation()} onClick={event => event.stopPropagation()} />;
+  const routeLifecycleProbe = <View className="sr-live sky-route-lifecycle" aria-hidden="true"
+    id={`sky-route-lifecycle-${encodeURIComponent(JSON.stringify(skyMapLifecycle.snapshot()))}`} />;
   const presentedSceneReady = presentedSceneCurrent && skySceneReady;
   const skySceneAccessibleProvenance = presentedSceneReady
     ? `，场景时刻 ${paintedSceneFacts.frameAt || "未知"}`
@@ -3317,10 +3360,14 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
         className={`${presentationClass} sky-orientation-page sky-orientation-state-page`}
         style={skyLayoutStyle}
         data-route="spot-night-context-loading"
-        data-od-id="sky-orientation-route"
+        data-sky-route-lifecycle={JSON.stringify(skyMapLifecycle.snapshot())}
+      data-od-id="sky-orientation-route"
       >
 
       <FloatingNotificationHost />
+      {exitBoundary}
+      {exitShield}
+      {routeLifecycleProbe}
         <View className="sky-orientation-state-page__canvas" aria-hidden="true" />
         {navigationMenu}
         <View className="sky-orientation-state-page__status">
@@ -3338,10 +3385,14 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
         className={`${presentationClass} sky-orientation-page sky-orientation-state-page`}
         style={skyLayoutStyle}
         data-route="spot-night-context-error"
-        data-od-id="sky-orientation-route"
+        data-sky-route-lifecycle={JSON.stringify(skyMapLifecycle.snapshot())}
+      data-od-id="sky-orientation-route"
       >
 
       <FloatingNotificationHost />
+      {exitBoundary}
+      {exitShield}
+      {routeLifecycleProbe}
         <View className="sky-orientation-state-page__canvas" aria-hidden="true" />
         {navigationMenu}
         <View className="sky-orientation-state-page__status">
@@ -3359,19 +3410,19 @@ export function SpotSkyPage({ targetOpticalPublication,opticalHipsContributions 
       style={skyLayoutStyle}
       data-route="sky/detail"
       data-spot-id={routeContext.spotId}
+      data-sky-route-lifecycle={JSON.stringify(skyMapLifecycle.snapshot())}
       data-od-id="sky-orientation-route"
     >
       <FloatingNotificationHost />
+      {exitBoundary}
+      {exitShield}
+      {routeLifecycleProbe}
       {preparedRegions.resources}
       <View className="sky-observer-meta">
         <Text className="sky-observer-meta__place">{spotName}</Text>
         <Text className="sky-observer-meta__zone">{timezoneOffsetLabel(row?.at ?? committedAt, routeContext.timezone)}</Text>
       </View>
-      <NativeBackBoundary
-        active={pageVisible && (searchMotion.present || objectMotion.present || skyHasDisclosure({ panel: skyControlPanel, list: orientationObjectListOpen,
-          date: datePickerOpen, object: Boolean(selectedTargetId || selectedCatalogObject || catalogPickChoices.length) }))}
-        onBack={() => { if (!closingOverlay) goBack(); }}
-      />
+
         <View
           className="sky-orientation-canvas"
           data-control="sky-orientation-canvas"

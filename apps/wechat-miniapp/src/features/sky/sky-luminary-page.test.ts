@@ -100,7 +100,7 @@ test("the current horizon list reuses unchanged inputs and refreshes every data/
 });
 
 test("actual Mini request opts into luminaries and never reuses the old discovery cache namespace", async () => {
-  const api = ts.createSourceFile("api-client.ts", readFileSync(new URL("../../services/api-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const api = ts.createSourceFile("sky-celestial-client.ts", readFileSync(new URL("../../services/sky-celestial-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const fn = api.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "searchCelestialObjects")!;
   assert.ok(fn);
   const code = ts.transpileModule(`${fn.getText(api).replace(/^export\s+/, "")}\nsearchCelestialObjects;`,

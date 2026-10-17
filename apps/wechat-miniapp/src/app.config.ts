@@ -62,5 +62,10 @@ export default defineAppConfig({
   },
   requiredPrivateInfos: ["getLocation", "chooseLocation"],
   lazyCodeLoading: "requiredComponents",
+  // WEAPP only supports declarative package preloading. Keep speculative
+  // downloads on Wi-Fi; cellular entry retains the normal on-demand route.
+  preloadRule: {
+    "pages/map/index": { network: "wifi", packages: ["sky"] },
+  },
   sitemapLocation: "sitemap.json",
 });

@@ -49,14 +49,28 @@ test('the actual recovery control retries only the live lookup owner and keeps r
     contextSession:session,returnToSkyEntry:()=>{returns++;},...input,
     React:{createElement:(_type:unknown,props:object)=>props}});
   const props=readProps();const panel=api(props).children[0];
-  assert.equal(panel.props.state,'ERROR');assert.equal(panel.props.recoveryLabel,'重试恢复');
+  assert.equal(panel.props.state,'ERROR');assert.equal(panel.props.recoveryLabel,'重试');
   panel.props.onRecover();assert.equal(reads,1);
   session.hide();panel.props.onRecover();assert.equal(reads,1,'hidden queued retry cannot start a request');
   session.show();state={...state,selectedSpotId:'spot:b'};panel.props.onRecover();assert.equal(reads,1,'changed-place retry cannot start an old request');
-  props.onBack();assert.equal(returns,1);
+  // Return moved to the one shared menu; the recovery panel owns only retry.
+  const branch=page.body!.statements.find(node=>ts.isIfStatement(node)&&node.expression.getText(source)==='!contextComplete || !activeContext');
+  assert(branch?.getText(source).includes('{navigationMenu}'));
+  let leave:ts.Expression|undefined;
+  const findLeave=(node:ts.Node)=>{
+    if(ts.isJsxOpeningElement(node)&&node.tagName.getText(source)==='SkyNavigationMenu'){
+      const prop=node.attributes.properties.find(item=>ts.isJsxAttribute(item)&&item.name.getText(source)==='onLeave') as ts.JsxAttribute;
+      if(prop?.initializer&&ts.isJsxExpression(prop.initializer))leave=prop.initializer.expression;
+    }ts.forEachChild(node,findLeave);
+  };findLeave(page);assert(leave);
+  vm.runInNewContext(compile('('+leave.getText(source)+')()'),{skyDisclosures:{leave:()=>{returns++;}}});
+  assert.equal(returns,1);
   for(const input of [{activeContext:{}},{contextLookupEnabled:false},{contextLookup:{isError:false,error:null}}]){
     const next=readProps(input);assert.equal(next.onRetry,undefined);
-    assert.equal(api(next).children[0].props.recoveryLabel,'返回入口');
+    const fallback=api(next).children[0];
+    assert.equal(fallback.props.recoveryLabel,undefined);
+    assert.equal(fallback.props.state,'EMPTY');
+    assert.equal(fallback.props.detail,'地点与时间不完整，请从菜单返回');
   }
   const denied=api({...props,lookupError:new Error('denied')}).children[0];
   assert.equal(denied.props.state,'ERROR');assert.equal(denied.props.recoveryLabel,'重新核验');

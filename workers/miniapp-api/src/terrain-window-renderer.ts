@@ -9,24 +9,43 @@ import { terrainSourceSetHash, validateTerrainPublication, terrariumAttribution,
 
 /** Copy already-shaded fixed cells, without resampling colours or recomputing
  * numeric terrain. The existing source/cache/reader owner resolves each cell. */
-export async function renderTerrainWindow(input: TerrainRenderRequest, signal: AbortSignal,
+export async function renderTerrainWindow(input: TerrainRenderRequest, parentSignal: AbortSignal,
   resolve: (request: TerrainRenderRequest, signal: AbortSignal) => Promise<RenderedTerrain | null>): Promise<RenderedTerrain | null> {
   const window = input.fixedWindow;
   if (!window || !input.viewportBounds) throw new Error("terrain_window_required");
+  const lifetime = new AbortController(), signal = AbortSignal.any([parentSignal, lifetime.signal]);
   const width = window.columns * 256, height = window.rows * 256, png = new PNG({ width, height });
   const cells: NonNullable<TerrainPublication["fixedWindow"]>["cells"] = [];
   const sources = new Map<string, TerrainPublicationSourceObject>(), issues = new Map<string, "NOT_FOUND" | "READ_FAILED" | "UNSUPPORTED_SOURCE">();
   let reference: TerrainPublication | null = null, validPixels = 0, minimum = Infinity, maximum = -Infinity;
   const resolutions: number[] = [];
+  // Two readers advance as each cell finishes, even if an earlier cell is
+  // slower. Cached cells between new cells must not serialize their I/O.
+  // Results are consumed in geographic order; the existing at-most-3x3 window
+  // bounds the ready results, and the service owns the two-source global limit.
+  const readCell = async (index: number) => {
+    const x = window.x + index % window.columns, y = window.y + Math.floor(index / window.columns);
+    const request = terrainFixedRequest({ grid: window.grid, zoom: window.zoom, x, y, span: 1, tilePixels: 256 });
+    if (!terrainLocationIsSupported(request)) return { result: null, failure: "NOT_FOUND" as const, supported: false };
+    try { return { result: await resolve(request, signal), failure: "NOT_FOUND" as const, supported: true }; }
+    catch { return { result: null, failure: "READ_FAILED" as const, supported: true }; }
+  };
+  const count = window.columns * window.rows;
+  const pending = new Map<number, ReturnType<typeof readCell>>();
+  let next = 0;
+  const startNext = () => {
+    if (next >= count || signal.aborted) return;
+    const index = next++;
+    pending.set(index, readCell(index).then(result => { startNext(); return result; }));
+  };
+  try {
+  startNext(); startNext();
   for (let row = 0; row < window.rows; row++) for (let column = 0; column < window.columns; column++) {
     signal.throwIfAborted();
     const x = window.x + column, y = window.y + row;
-    const request = terrainFixedRequest({ grid: window.grid, zoom: window.zoom, x, y, span: 1, tilePixels: 256 });
-    let result: RenderedTerrain | null = null;
-    let failure: "NOT_FOUND" | "READ_FAILED" = "NOT_FOUND";
-    if (terrainLocationIsSupported(request)) {
-      try { result = await resolve(request, signal); } catch { signal.throwIfAborted(); failure = "READ_FAILED"; }
-    }
+    const index = row * window.columns + column;
+    const { result, failure, supported } = await pending.get(index)!;
+    pending.delete(index); signal.throwIfAborted();
     cells.push({ x, y, publicationId: result?.publication.publicationId ?? null, file: result?.publication.image.file ?? null });
     if (result) {
       const publication = result.publication;
@@ -42,7 +61,7 @@ export async function renderTerrainWindow(input: TerrainRenderRequest, signal: A
         sources.set(source.tileId, source);
       }
       for (const issue of publication.sourceIssues ?? []) issues.set(issue.tileId, issue.reason);
-    } else if (terrainLocationIsSupported(request)) {
+    } else if (supported) {
       issues.set(`fixed/${window.zoom}/${x}/${y}`, failure);
       for (let pixelRow = 0; pixelRow < 256; pixelRow++) {
         const latitude = latitudeForMercatorY((y + (pixelRow + 0.5) / 256) / 2 ** window.zoom);
@@ -80,4 +99,9 @@ export async function renderTerrainWindow(input: TerrainRenderRequest, signal: A
     limitations: [...reference.limitations.filter(limit => !limit.startsWith("当前影像有效高程占比")),
       `当前组合影像有效高程占比${Math.round(validPixels / (width * height) * 10000) / 100}%；仅已获源小块有效，缺测小块保留缺测。`],
   }) };
+  } finally {
+    // A failed composition must retire its look-ahead consumer too. Other
+    // windows sharing that cell keep their own reader and are not cancelled.
+    lifetime.abort(new Error("terrain_window_finished"));
+  }
 }

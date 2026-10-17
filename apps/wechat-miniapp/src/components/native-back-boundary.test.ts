@@ -20,9 +20,13 @@ test("custom modal owners share one native WEAPP Back boundary", () => {
   assert.match(source("../pages/map/search-page.tsx"), /NativeBackBoundary active=\{login\.open \|\| filterSheetOpen\} onBack=\{login\.open \? login\.back : cancelFilters\}/u);
   assert.match(source("./observation-date-control.tsx"), /<NativeBackBoundary[\s\S]*active=\{open\}[\s\S]*if \(!busy\) onOpenChange\(false\)/u);
   const sky = source("../features/sky/spot-sky-page.tsx");
-  assert.equal(sky.match(/<NativeBackBoundary\b/gu)?.length, 1, "date and object disclosures share one native owner");
-  assert.match(sky, /active=\{pageVisible && \(searchMotion\.present \|\| objectMotion\.present \|\| skyHasDisclosure\(/u);
-  assert.match(sky, /onBack=\{\(\) => \{ if \(!closingOverlay\) goBack\(\); \}\}/u);
+  assert.equal(sky.match(/<NativeBackBoundary\b/gu)?.length, 1, "disclosures and whole-page exit share one native owner");
+  assert.match(sky, /const exitBoundary = <NativeBackBoundary active=\{pageVisible\}/u,
+    "Sky must intercept Back even with no open disclosure, including recovery states");
+  assert.match(sky, /onBack=\{\(\) => \{ if \(!closingOverlay\) return goBack\(\); \}\}/u);
+  assert.equal(sky.match(/\{exitBoundary\}/gu)?.length, 3, "loading, recovery and ready page branches retain the same boundary");
+  // Disclosure-first Back and asynchronous whole-page return are exercised
+  // through the production commands in sky-page-navigation-ownership.test.ts.
 });
 
 test("the astronomical event modal keeps its native Back layer outside the visible RootPortal", () => {

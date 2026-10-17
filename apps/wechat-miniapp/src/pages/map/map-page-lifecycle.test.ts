@@ -1,3 +1,4 @@
+import { createMapPageTestBoundaries } from "./map-page-test-support";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
@@ -56,7 +57,9 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
     const editorScope = {current: "visible owner" as string | null};
     let cancelledEditor = 0, presentation = "spot-editor";
     const skyLifecycle: string[] = [];
+    const boundaries = createMapPageTestBoundaries();
     vm.runInNewContext(ts.transpileModule(hooks.join("\n"), { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+      ...boundaries.scope,
       useDidShow: (callback: () => void) => { show = callback; },
       useDidHide: (callback: () => void) => { hide = callback; },
       setPageVisible: (value: boolean) => { visible = value; },
@@ -75,6 +78,7 @@ test("map foreground/hide callbacks stop pending interaction and invalidate late
     assert.equal(visible, true);
     hide();
     assert.equal(visible, false);
+    assert.deepEqual(boundaries.calls, ["focus-cancel", "location-cancel"], "hide retires pending camera and location work");
     assert.equal(stopped, 1);
     assert.equal(epoch.current, 4);
     assert.equal(drag.current, null);

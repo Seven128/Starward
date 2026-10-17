@@ -2,6 +2,7 @@ import path from "node:path";
 import { displayRasterWindowKey, type DisplayRasterWindow, type RasterBounds } from "@starward/coordinate-system";
 import { nightLightFixedLegend, type MapLayerData, type Gcj02Point } from "@starward/miniapp-contracts";
 import { ComputationCache } from "./computation-cache.ts";
+import { SharedReadPool } from "./shared-read-pool.ts";
 import type { MiniappRepositoryPort } from "./ports.ts";
 import { fixedNightLightDataset, readFixedNightLightInventory, readFixedNightLightProof,
   readFixedNightLightImage, readFixedNightLightPixel, type FixedNightLightDataset, type FixedNightLightInventory,
@@ -25,6 +26,7 @@ export class NightLightService {
   private readonly cache = new ComputationCache<Release>(8);
   private readonly shutdown = new AbortController();
   private readonly windows = new Map<string, NightLightWindow>();
+  private readonly windowReads = new SharedReadPool<NightLightWindow | null>(() => new Error("nightlight_request_cancelled"));
   private cachedImageBytes = 0;
   private activeReads = 0;
 
@@ -69,23 +71,23 @@ export class NightLightService {
     const key = `${release.dataset.datasetVersion}:${release.dataset.payload.rasterInventory.sha256}:${displayRasterWindowKey(window)}`;
     const cached = this.windows.get(key);
     if (cached) { this.windows.delete(key); this.windows.set(key, cached); return cached; }
-    // Only completed immutable results are shared. A caller cancellation cannot
-    // cancel another reader, and the existing two-read limit also bounds builds.
-    const result = await this.binaryRead(signal, combined => composeNightLightWindow(release.directory,
-      release.dataset.payload.rasterInventory.sha256, release.proofs, window, combined));
-    this.shutdown.signal.throwIfAborted(); signal?.throwIfAborted();
-    if (result) {
-      const previous = this.windows.get(key);
-      if (previous) { this.cachedImageBytes -= previous.bytes.length; this.windows.delete(key); }
-      while (this.windows.size >= 8 || this.cachedImageBytes + result.bytes.length > 16 * 1024 * 1024) {
-        const oldest = this.windows.keys().next().value!;
-        this.cachedImageBytes -= this.windows.get(oldest)!.bytes.length;
-        this.windows.delete(oldest);
+    return this.windowReads.run(key, controller => this.binaryRead(controller.signal, async combined => {
+      const result = await composeNightLightWindow(release.directory,
+        release.dataset.payload.rasterInventory.sha256, release.proofs, window, combined);
+      combined.throwIfAborted();
+      if (result) {
+        const previous = this.windows.get(key);
+        if (previous) { this.cachedImageBytes -= previous.bytes.length; this.windows.delete(key); }
+        while (this.windows.size >= 8 || this.cachedImageBytes + result.bytes.length > 16 * 1024 * 1024) {
+          const oldest = this.windows.keys().next().value!;
+          this.cachedImageBytes -= this.windows.get(oldest)!.bytes.length;
+          this.windows.delete(oldest);
+        }
+        this.windows.set(key, result);
+        this.cachedImageBytes += result.bytes.length;
       }
-      this.windows.set(key, result);
-      this.cachedImageBytes += result.bytes.length;
-    }
-    return result;
+      return result;
+    }), signal);
   }
 
   async layer(version: string, bounds: RasterBounds | undefined, signal?: AbortSignal): Promise<MapLayerData | null> {
@@ -144,5 +146,9 @@ export class NightLightService {
     return this.binaryRead(signal, combined => readFixedNightLightPixel(release.directory, proof, point, combined));
   }
 
-  close() { this.shutdown.abort(new Error("nightlight_service_closed")); this.cache.clear(); this.windows.clear(); this.cachedImageBytes = 0; }
+  close() {
+    const reason = new Error("nightlight_service_closed");
+    this.shutdown.abort(reason); this.windowReads.close(reason);
+    this.cache.clear(); this.windows.clear(); this.cachedImageBytes = 0;
+  }
 }

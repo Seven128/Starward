@@ -1,10 +1,13 @@
 import Taro from "@tarojs/taro";
 import { isPrimaryPageRoute, type PrimaryPageRoute } from "./primary-navigation";
 
+export type PrimaryNavigationBlackout = { phase: "entering" | "waiting" | "revealing"; durationMs: number };
+export const PRIMARY_NAVIGATION_BLACKOUT_OWNER = "sky-map-transition";
+
 export type PrimaryNavigationHandle = {
   show(route: PrimaryPageRoute): void;
   hide(): void;
-  cover(owner: string, active: boolean): void;
+  cover(owner: string, active: boolean, blackout?: PrimaryNavigationBlackout): void;
 };
 
 let sequence = 0;

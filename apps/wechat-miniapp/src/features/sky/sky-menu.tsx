@@ -28,7 +28,7 @@ export function SkyMenuAction({ icon, label, expanded, disabled = false, onClick
   onClick: () => void; id: string;
 }) {
   return <Button className={`sky-control-dock__button focus-ring${expanded ? " sky-control-dock__button--active" : ""}`}
-    data-od-id={id} aria-label={label} aria-expanded={expanded} disabled={disabled}
+    id={id} aria-label={label} aria-expanded={expanded} disabled={disabled}
     hoverClass="sky-menu-pressed" onClick={onClick}>
     <View className="sky-menu-circle"><SemanticIcon name={icon} /></View>
   </Button>;

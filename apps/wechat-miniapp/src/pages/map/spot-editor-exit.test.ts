@@ -1,3 +1,4 @@
+import { createMapPageTestBoundaries } from "./map-page-test-support";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -15,7 +16,7 @@ function actualMapCommand(name: string, environment: Record<string, unknown>) {
   visit(source);
   assert.ok(declaration, `production ${name} exists`);
   return vm.runInNewContext(ts.transpileModule(`const ${declaration}; ${name};`, {compilerOptions: {target: ts.ScriptTarget.ES2022}}).outputText, {
-    skyEntry: { isActive: () => false }, login: { open: false }, photoHandoff: { active: false }, datePickerVisible: false, ...environment,
+    ...createMapPageTestBoundaries().scope, photoHandoff: { active: false }, datePickerVisible: false, ...environment,
   }) as () => unknown;
 }
 

@@ -45,7 +45,7 @@ const manifestUrl = () => actualFunction("./sky-catalog-api.ts", "deepSkyManifes
 
 test("the actual information client preserves the bound Prepared BFF credit and rejects a later optical version", async () => {
   const { response, source, hash } = selected(), calls: { key: string; query: string; signal?: AbortSignal }[] = [], invalidations: string[] = [];
-  const get = actualFunction("./api-client.ts", "getCelestialObjectInformation", {
+  const get = actualFunction("./sky-celestial-client.ts", "getCelestialObjectInformation", {
     ADOPTED_SKY_REPORT_CATALOG_VERSION: "bsc5p-bright-stars.v3", matchingCelestialInformationResponse,
     requestOperation: (key: string, _operation: string, options: { query: string; signal?: AbortSignal }) => {
       calls.push({ key, ...options }); return Promise.resolve(response);
@@ -121,7 +121,7 @@ test("actual cache fallback keeps explicit missing-source facts through STALE_US
     partial.data.sources = partial.data.sources.filter(item => !(missingOptical && /^(?:prepared-)?optical-imagery:/u.test(item.id)) &&
       !(missingInfrared && item.id.startsWith("imagery:"))); partial.sources = partial.data.sources;
     const harness = transportHarness();
-    const get = actualFunction("./api-client.ts", "getCelestialObjectInformation", {
+    const get = actualFunction("./sky-celestial-client.ts", "getCelestialObjectInformation", {
       ADOPTED_SKY_REPORT_CATALOG_VERSION: "bsc5p-bright-stars.v3", matchingCelestialInformationResponse,
       invalidateApiCache: harness.invalidateApiCache,
       requestOperation: (key: string, _operation: string, options: { query: string }) => harness.request(key, "/information?" + options.query),

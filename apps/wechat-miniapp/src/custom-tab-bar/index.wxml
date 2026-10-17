@@ -1,5 +1,5 @@
-<view wx:if="{{route && !covered}}" class="theme-token-scope {{modeClass}} primary-navigation {{pageClass}}" style="{{layout}}" aria-role="navigation" aria-label="主导航">
-  <view class="primary-navigation__row">
+<view wx:if="{{route && (!covered || blackoutPhase)}}" class="theme-token-scope {{modeClass}} primary-navigation {{pageClass}}" style="{{layout}}" aria-role="navigation" aria-label="主导航">
+  <view wx:if="{{!covered}}" class="primary-navigation__row">
     <button wx:for="{{items}}" wx:key="pagePath" data-route="{{item.pagePath}}"
       class="primary-navigation__item {{item.selected ? 'primary-navigation__item--selected' : ''}}"
       aria-label="{{item.label}}" aria-pressed="{{item.selected}}" aria-busy="{{item.pending}}"
@@ -14,4 +14,6 @@
       </view>
     </button>
   </view>
+  <view wx:if="{{blackoutPhase}}" class="primary-navigation__blackout primary-navigation__blackout--{{blackoutPhase}}"
+    style="animation-duration:{{blackoutDuration}}ms" catchtap="block" catchtouchmove="block" />
 </view>

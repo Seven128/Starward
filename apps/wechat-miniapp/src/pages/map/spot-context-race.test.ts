@@ -1,8 +1,10 @@
+import { createMapPageTestBoundaries } from "./map-page-test-support";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
+import { spotNeighborhoodCamera } from "./map-camera";
 import { sameContextVersion } from "../../services/observation-context-version";
 
 function runtime(initialContext: unknown = null, initialRetiredContextId: string | null = null) {
@@ -28,14 +30,15 @@ function runtime(initialContext: unknown = null, initialRetiredContextId: string
   const functions = vm.runInNewContext(ts.transpileModule(declarations.join("\n") + "\n({resolveSpotContext, openDetail, closeSpotPanel, cancelSpotLoading, openLayerSheet});", {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
-    sameContextVersion,
+    ...createMapPageTestBoundaries().scope, sameContextVersion, spotNeighborhoodCamera,
+    setViewport() {},
     detailRequestGeneration: { current: 0 }, privateTransitionGeneration: { current: 0 }, lastHandledSelectedId: { current: null }, lastHandledSpotOpenVersion: { current: 0 },
     mapPointIntent: { current: 0 }, regionTimer: { current: null },
     failedMapRegion: { current: null },
     panelCloseTimer: { current: null }, extentBeforeLayer: { current: null }, markerTapAt: { current: 0 },
     mapResetVersion: 0, bottomPresentation: "spot-panel", panelExtent: "medium", selectedSpotId: "a", analysisOverlay: "TOTAL_CLOUD",
     useAppStore: { getState: () => ({ selectedSpotId, mapResetVersion: 0, spotOpenRequestVersion: 0, observationContext,
-      retiredObservationContextId, retireObservationContextEdit() {}, notifications: [] }) },
+      retiredObservationContextId, viewport: { zoom: 8 }, retireObservationContextEdit() {}, notifications: [] }) },
     selectSpot: (id: string | null) => { selectedSpotId = id; },
     setPanelPhase() {}, setPanelExtent: (value: string) => extents.push(value), setPanelDragOffset() {}, setSelectedFallback() {}, setSelectedProposal() {}, setAnnouncement() {}, setAnalysisOverlay() {},
     setBottomPresentation: (value: string) => presentations.push(value),
@@ -50,7 +53,7 @@ function runtime(initialContext: unknown = null, initialRetiredContextId: string
     clearTimeout: (id: number) => timers.delete(id),
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; },
   }) as { resolveSpotContext(spot: object): Promise<void>; openDetail(spot: object): Promise<void>; closeSpotPanel(): void; cancelSpotLoading(): void; openLayerSheet(): void };
-  return { ...functions, requests, replacements, restorations, contexts, attempts, presentations, extents,
+  return { ...functions, openDetail: (spot: object) => functions.openDetail({ gcj02: { latitude: 22.5, longitude: 114 }, ...spot }), requests, replacements, restorations, contexts, attempts, presentations, extents,
     selection: () => selectedSpotId,
     installCurrent: (value: unknown) => { observationContext = value; },
     fireTimers: () => { for (const callback of timers.values()) callback(); timers.clear(); } };

@@ -6,11 +6,14 @@ import ts from "typescript";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import * as contract from "../navigation/primary-navigation";
 import { createPrimaryNavigationController } from "../navigation/primary-navigation-controller";
+import { createSkyMapLifecycle } from "../navigation/sky-map-lifecycle";
+import type { PrimaryNavigationBlackout } from "../navigation/primary-navigation-cover";
 
 type Data = { route: string | null; pending: string | null; failed: string | null; modeClass: string; covered: boolean;
+  blackoutPhase: PrimaryNavigationBlackout["phase"] | null; blackoutDuration: number;
   layout: string; items: Array<{ dayIcon: string; nightIcon: string; observationIcon: string; label: string }> };
 type Bar = { data: Data; writes: number; setData(data: Partial<Data>): void;
-  show(route: string): void; hide(): void; sync(): void; cover(owner: string, active: boolean): void;
+  show(route: string): void; hide(): void; sync(): void; cover(owner: string, active: boolean, blackout?: PrimaryNavigationBlackout): void;
   open(event: { currentTarget: { dataset: { route: string } } }): void };
 type Page = { route: string; getTabBar(): Bar };
 type Options = { data: Data; methods: Record<string, Function>; lifetimes: { attached(this: Bar): void; detached(this: Bar): void };
@@ -18,6 +21,8 @@ type Options = { data: Data; methods: Record<string, Function>; lifetimes: { att
 
 function runtime() {
   let options!: Options, page: Page | undefined, mode: DisplayMode = "DAY";
+  const lifecycle = createSkyMapLifecycle();
+  const paints: Array<Data> = [];
   const listeners = new Set<(state: { mode: DisplayMode }, prior: { mode: DisplayMode }) => void>();
   const switches: string[] = [], rejected: Array<(error: Error) => void> = [];
   vm.runInNewContext(ts.transpileModule(readFileSync(new URL("./index.ts", import.meta.url), "utf8"), {
@@ -31,17 +36,20 @@ function runtime() {
         listeners.add(listener); return () => { listeners.delete(listener); };
       },
     } } : name.endsWith("primary-navigation-controller") ? { createPrimaryNavigationController }
+      : name.endsWith("primary-navigation-cover") ? { PRIMARY_NAVIGATION_BLACKOUT_OWNER: "sky-map-transition" }
+      : name.endsWith("sky-map-lifecycle") ? { skyMapLifecycle: lifecycle }
+      : name.endsWith("page-blackout-transition") ? { PAGE_BLACKOUT_FADE_MS: 220 }
       : name.endsWith("primary-navigation") ? contract : {},
   });
   function create(route: string) {
     const bar = { data: structuredClone(options.data), writes: 0,
-      setData(data: Partial<Data>) { this.writes++; Object.assign(this.data, data); }, ...options.methods } as Bar;
+      setData(data: Partial<Data>) { this.writes++; Object.assign(this.data, data); paints.push(structuredClone(this.data)); }, ...options.methods } as Bar;
     const owner = { route, getTabBar: () => bar }; page = owner;
     options.lifetimes.attached.call(bar);
     return { bar, owner, show: () => options.pageLifetimes.show.call(bar), hide: () => options.pageLifetimes.hide.call(bar),
       resize: () => options.pageLifetimes.resize.call(bar), detach: () => options.lifetimes.detached.call(bar) };
   }
-  return { create, switches, rejected, listeners, activate: (owner: Page) => { page = owner; },
+  return { create, switches, rejected, listeners, lifecycle, paints, activate: (owner: Page) => { page = owner; },
     mode(next: DisplayMode) { const prior = mode; mode = next; for (const listener of listeners) listener({ mode }, { mode: prior }); },
     tap: (bar: Bar, route: string) => bar.open({ currentTarget: { dataset: { route } } }),
   };
@@ -101,4 +109,42 @@ test("mounted overlays cover native navigation across resync and independently r
   assert.equal(my.bar.data.covered, false); assert.equal(my.bar.data.route, "pages/my/index");
   const writes = map.bar.writes; map.detach(); map.bar.cover("event", false); map.show();
   assert.equal(map.bar.writes, writes); my.detach();
+});
+
+test("route blackout retains the native bar geometry, blocks actions and releases on cancel or hide", () => {
+  const h = runtime(), map = h.create("pages/map/index"), layout = map.bar.data.layout;
+  map.bar.cover("sky-map-transition", true, { phase: "entering", durationMs: 220 });
+  map.show(); map.resize(); h.mode("NIGHT"); h.tap(map.bar, "pages/my/index");
+  assert.equal(h.switches.length, 0);
+  assert.equal(map.bar.data.layout, layout);
+  assert.equal(map.bar.data.covered, false, "a blackout paints over the bar instead of removing its native surface");
+  assert.equal(map.bar.data.blackoutPhase, "entering");
+  assert.equal(map.bar.data.blackoutDuration, 220);
+  map.bar.cover("event", true);
+  map.bar.cover("sky-map-transition", false);
+  assert.equal(map.bar.data.blackoutPhase, null);
+  assert.equal(map.bar.data.covered, true, "cancel cannot release an independent modal");
+  map.bar.cover("event", false);
+  map.bar.cover("sky-map-transition", true, { phase: "entering", durationMs: 0 });
+  map.hide(); map.show();
+  assert.equal(map.bar.data.blackoutPhase, null, "hiding retires a source blackout");
+  h.tap(map.bar, "pages/my/index"); assert.equal(h.switches.length, 1);
+  map.detach();
+});
+
+test("returning Map's first native paint is black until the Map owner reveals and completes", () => {
+  const h = runtime(); h.lifecycle.beginEntry(); h.lifecycle.skyMounted(); h.lifecycle.beginReturn();
+  const map = h.create("pages/map/index");
+  const firstVisible = h.paints.find(paint => paint.route !== null)!;
+  assert.equal(firstVisible.blackoutPhase, "waiting");
+  h.lifecycle.mapMounted(); map.show(); map.resize();
+  assert.equal(map.bar.data.blackoutPhase, "waiting");
+  h.lifecycle.mapReady();
+  map.bar.cover("sky-map-transition", true, { phase: "revealing", durationMs: 220 });
+  map.show(); h.tap(map.bar, "pages/my/index");
+  assert.equal(map.bar.data.blackoutPhase, "revealing"); assert.equal(h.switches.length, 0);
+  h.lifecycle.finishMapReturn(); map.bar.cover("sky-map-transition", false); map.show();
+  assert.equal(map.bar.data.blackoutPhase, null);
+  h.tap(map.bar, "pages/my/index"); assert.equal(h.switches.length, 1);
+  map.detach();
 });

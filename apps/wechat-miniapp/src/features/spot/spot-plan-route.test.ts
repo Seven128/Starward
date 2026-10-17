@@ -6,6 +6,7 @@ import { planDraftKey, planDraftBelongsTo } from "../../services/local-draft-key
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import { createAccountOperationOwner } from "../../hooks/account-operation";
 
 test("formal spot plan entry preserves zero, one and multiple associated plans", () => {
   const spotId = "spot:one" as SpotId;
@@ -32,10 +33,12 @@ test("the actual plan entry retires host geometry as async labels, counts and re
   const dependencies: (unknown[] | undefined)[] = [];
   let effectIndex = 0, layoutChanges = 0;
   const onLayoutChange = () => { layoutChanges++; };
+  const operations = createAccountOperationOwner(() => ({ userId: "owner:a", ownerId: "owner:a", reset: 0, page: "spot", target: "spot-plan:spot:one" }), () => {});
   const render = vm.runInNewContext(ts.transpileModule(body + "\nSpotPlanEntry;", { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText, {
     React: { createElement: (type: string, props: object, ...children: unknown[]) => ({ type, props, children }) }, Button: "Button", Text: "Text", Taro: {},
     useId: () => "entry:a", useRef: (current: unknown) => ({ current }), useState: (value: unknown) => [value, () => {}],
-    useDidShow() {}, useDidHide() {}, currentDraftUserId: () => "owner:a", useResourceQuery: () => query, spotPlanRoute,
+    useDidShow() {}, useDidHide() {}, useAccountOperation: () => operations,
+    useAccountPlans: () => ({ owner: "owner:a", query }), spotPlanRoute,
     useEffect(callback: () => void, next?: unknown[]) {
       const previous = dependencies[effectIndex];
       if (!next || !previous || next.length !== previous.length || next.some((value, index) => !Object.is(value, previous[index]))) callback();

@@ -43,7 +43,7 @@ test("a retained stale object description offers an inline retry without losing 
       return null;
     }
     if (predicate(node)) return node;
-    for (const child of node?.children ?? []) {
+    for (const child of [...(node?.children ?? []), ...(node?.props?.priority ? [node.props.priority] : [])]) {
       const found = find(child, predicate);
       if (found) return found;
     }
@@ -100,7 +100,8 @@ test("the actual object modal sends its painted publication to both details and 
   const stack = [tree];
   let button: any;
   while (stack.length) { const item = stack.pop(); if (Array.isArray(item)) stack.push(...item);
-    else if (item?.type === "SkySourceLink") { button = item; break; } else stack.push(...(item?.children ?? [])); }
+    else if (item?.type === "SkySourceLink") { button = item; break; }
+    else if (item) stack.push(...(item.children ?? []), ...(item.props?.priority ? [item.props.priority] : [])); }
   assert.ok(button); button.props.onClick();
   await new Promise(resolve => setImmediate(resolve));
   assert.deepEqual(urls, [`/sky/sources/index?reference=M%3A42&imagePublicationHash=${publicationHash}&opticalPublicationHash=${opticalPublicationHash}`]);

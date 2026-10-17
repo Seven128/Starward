@@ -112,7 +112,7 @@ test("actual Scene call binds only its selected ICRS catalog domain to the exact
     ts.forEachChild(node, find); }; find(page); assert(call);assert(selectedEntry);
   const code = ts.transpileModule(`const opticalEntry=${selectedEntry.getText(page)};\n${call.getText(page)}`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   const run = (catalog: any, candidate: any = entry, enabled = true) => vm.runInNewContext(code, { submitSkySceneScienceOptical, context: surface,
-    calibratedOptical:undefined,preparedOptical:undefined,
+    calibratedOptical:undefined,preparedOptical:undefined,readyImages:undefined,
     scienceOptical: enabled ? { surface, reference: "M:51", publicationHash: publication.publicationHash } : undefined, sdssOpticalImage: frame,
     observation: identity, artworkView: { basis: { forward: [1,0,0], right: [0,1,0], up: [0,0,1] }, verticalFovDeg: 1 },
     sdssOpticalFailed() {}, deepCatalog: catalog === null ? null : { frame: catalog, entries: [candidate] } });

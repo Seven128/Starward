@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { appendFile, cp, mkdir, readFile, readdir, realpath, rm, stat, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, readFile, readdir, realpath, rm, stat, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
@@ -7,7 +7,7 @@ import test from "node:test";
 import { executeRelease } from "./release.mjs";
 import { operatePreview } from "./operator-preview.mjs";
 import { validateOperatorPreviewEnvironment, validateReleaseEnvironment } from "./validate-release-environment.mjs";
-import { prepareSkyStaticDelivery, restoreManagedSkyStaticBackup } from "./sky-static-release.mjs";
+import { captureSkyStaticBackup, prepareSkyStaticDelivery, restoreManagedSkyStaticBackup } from "./sky-static-release.mjs";
 import { skyStaticHash, writeSkyStaticBundle } from "./sky-static-bundle.mjs";
 import { createSkyStaticBackup, readSkyStaticBackup } from "./sky-static-backup.mjs";
 import { decryptBackup, encryptBackup, executeVerifiedBackup, readBackupKeyFile } from "./verified-backup.mjs";
@@ -17,6 +17,7 @@ import { prepareReleaseCandidate } from "./prepare-release-candidate.mjs";
 import { createPromotionRequest, runPromotionRequest } from "./promotion-request.mjs";
 import { createReleaseEnvironmentFixture, createVerifiedBackupFixture, releaseRevision, releaseImageDigest } from "./test-support.mjs";
 import { dependencies, configuration } from "./operator-preview-test-support.mjs";
+import { assertSkyStaticFixtureBytes, createManagedSkyStaticFixture, skyStaticFixtureSize } from "./sky-static-test-support.mjs";
 
 const imagePublicationHash="4e07f34b96b37d7c89294ffca73ea89ce531dd0bd1cf0e8468426cd5f63e197a";
 const identity={schemaVersion:"starward-sky-static-delivery-v1",imagePublicationHash,
@@ -50,8 +51,8 @@ async function releaseSetup(t,environment="staging"){
 }
 function finalOverlay(call,d){const paths=call.args.flatMap((value,i)=>value==="-f"?[call.args[i+1]]:[]);assert.equal(paths.at(-1),d.overlayPaths[0]);}
 
-// Restore the two sealed, inherited real PNG sources into this test's private
-// directory. The output probe is readonly input, not a production OCI claim.
+// Restore two generated, sealed PNG sources through the actual archive owner.
+// Docker/PG/HTTPS are controlled test boundaries, not production OCI evidence.
 async function archivedFileBackup(validation, deploy) {
  const key = await readBackupKeyFile(validation.operations.backupKeyFile);
  try { return await executeVerifiedBackup({ validation, deploy, postgres: await readEnvironmentFile(validation.lanes.postgres), key,
@@ -61,10 +62,11 @@ async function archivedFileBackup(validation, deploy) {
    } }); } finally { key.fill(0); }
 }
 async function restoreArchivedSourceFixture({ f, store, validation, deploy }) {
- const archived = JSON.parse(await readFile(path.resolve("output/sky-offline-source-backup-1006-e2-r1/result.json"), "utf8"));
- const record = archived.publicSnapshot;
- await mkdir(f.backupDirectory, { recursive: true });
- await cp(path.resolve("output/sky-offline-source-backup-1006-e2-r1/backups", record.directory), path.join(f.backupDirectory, record.directory), { recursive: true });
+ const source = await createManagedSkyStaticFixture(path.join(f.root, "archived-sky-source"));
+ const record = await captureSkyStaticBackup({
+  validation: { ...validation, operations: { ...validation.operations, skyStaticDirectory: source.directory } },
+  deploy: { ...deploy, STARWARD_SKY_STATIC_DIRECTORY: source.directory },
+ });
  let restorationImageCalls = 0;
  const restored = await restoreManagedSkyStaticBackup({ validation: { ...validation, operations: { ...validation.operations, skyStaticDirectory: null } },
   deploy, record, outputDirectory: store, confirmPublicationHash: record.publicationHash,
@@ -132,14 +134,15 @@ test("default release uses offline-restored original sources and authenticated b
  const result = await executeRelease(s.args);
  assert.equal(result.receipt.status, "succeeded");
  assert.equal(result.receipt.backup.skyStaticAuthentication, "AES_256_GCM_BOUND_COMPONENT_VERIFIED");
- assert.equal(result.receipt.skyStaticDelivery.files, 2); assert.equal(result.receipt.skyStaticDelivery.bytes, 6838);
+ assert.equal(result.receipt.skyStaticDelivery.files, skyStaticFixtureSize.files); assert.equal(result.receipt.skyStaticDelivery.bytes, skyStaticFixtureSize.bytes);
+ await assertSkyStaticFixtureBytes(s.restored.directory);
  assert.equal(result.receipt.skyStaticDelivery.deliveryPublicationHash, s.backup.manifest.skyStaticBackup.publicationHash);
  assert.equal(result.receipt.skyStaticDelivery.revision, s.revision); assert.equal(result.receipt.skyStaticDelivery.imageDigest, s.imageDigest);
  assert((await readFile(path.join(s.store, "prepared-inventory.json"))).equals(before));
  assert.equal(s.calls.filter(c => c.step === "sky-static-image-revision").length, 1);
  assert.ok(!s.calls.some(c => c.args[0] === "create" || c.args[0] === "cp"));
  assert.deepEqual(s.http.filter(r => r.route !== "/health/ready").map(r => r.method), ["GET", "GET", "HEAD"]);
- assert.ok(result.receipt.steps.some(r => r.name === "sky-static-verification" && r.result.checkedBytes === 6838));
+ assert.ok(result.receipt.steps.some(r => r.name === "sky-static-verification" && r.result.checkedBytes === skyStaticFixtureSize.bytes));
  for (const call of s.calls.filter(c => ["release-static-compose-config", "release-migration", "release-converge", "release-worker-readiness"].includes(c.step)))
   finalOverlay(call, { overlayPaths: s.restored.overlayPaths });
  await assert.rejects(stat(path.join(s.store, "preparation.lock")), { code: "ENOENT" });
@@ -184,7 +187,7 @@ test("retained prior-image release after failed verification keeps restored old 
  assert.equal(result.receipt.skyStaticDelivery.revision, revision); assert.equal(result.receipt.skyStaticDelivery.imageDigest, imageDigest);
  assert.notEqual(result.receipt.skyStaticDelivery.imagePublicationHash, first.receipt.skyStaticDelivery.imagePublicationHash);
  assert.equal(result.receipt.skyStaticDelivery.deliveryPublicationHash, first.receipt.skyStaticDelivery.deliveryPublicationHash);
- assert.equal(result.receipt.skyStaticDelivery.files, 2); assert.equal(result.receipt.skyStaticDelivery.bytes, 6838);
+ assert.equal(result.receipt.skyStaticDelivery.files, skyStaticFixtureSize.files); assert.equal(result.receipt.skyStaticDelivery.bytes, skyStaticFixtureSize.bytes);
  assert((await readFile(path.join(s.store, "prepared-inventory.json"))).equals(pointerBefore));
  assert.equal(calls.filter(c => c.step === "sky-static-image-revision").length, 1);
  assert.ok(!calls.some(c => c.args[0] === "create" || c.args[0] === "cp"));
@@ -233,7 +236,8 @@ test("offline-restored preview publishes current only after real static verifica
  assert.equal(unavailable.receipt.status, "failed"); assert.equal(unavailable.receipt.errorCode, "sky_static_load_current_pointer_missing");
  assert.equal(calls.length, 0);
  const first = await operatePreview({ ...args, operation: "deploy" });
- assert.equal(first.receipt.status, "succeeded"); assert.equal(first.receipt.skyStaticDelivery.files, 2); assert.equal(first.receipt.skyStaticDelivery.bytes, 6838);
+ assert.equal(first.receipt.status, "succeeded"); assert.equal(first.receipt.skyStaticDelivery.files, skyStaticFixtureSize.files); assert.equal(first.receipt.skyStaticDelivery.bytes, skyStaticFixtureSize.bytes);
+ await assertSkyStaticFixtureBytes(restored.directory);
  const currentPath = path.join(dep.f.receiptDirectory, "operator-preview-current.json"), currentBefore = await readFile(currentPath);
  const manifest = JSON.parse(await readFile(first.receipt.backupManifestPath, "utf8")), key = await readBackupKeyFile(validation.operations.backupKeyFile);
  let dump;
@@ -254,7 +258,7 @@ test("offline-restored preview publishes current only after real static verifica
  assert.equal(prior.receipt.status, "succeeded"); assert.equal(prior.receipt.skyStaticDelivery.revision, "1".repeat(40));
  assert.equal(prior.receipt.skyStaticDelivery.deliveryPublicationHash, first.receipt.skyStaticDelivery.deliveryPublicationHash);
  assert.notEqual(prior.receipt.skyStaticDelivery.imagePublicationHash, first.receipt.skyStaticDelivery.imagePublicationHash);
- assert.equal(prior.receipt.skyStaticDelivery.files, 2); assert.equal(prior.receipt.skyStaticDelivery.bytes, 6838);
+ assert.equal(prior.receipt.skyStaticDelivery.files, skyStaticFixtureSize.files); assert.equal(prior.receipt.skyStaticDelivery.bytes, skyStaticFixtureSize.bytes);
  const pointer = JSON.parse(await readFile(currentPath, "utf8")); assert.equal(pointer.receiptPath, prior.receiptPath);
  const checkedPrior = await operatePreview({ ...args, operation: "check", execute: currentExecute });
  assert.equal(checkedPrior.receipt.status, "succeeded"); assert.equal(checkedPrior.receipt.skyStaticDelivery.revision, "1".repeat(40));

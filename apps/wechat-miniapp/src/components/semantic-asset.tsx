@@ -2,6 +2,9 @@ import { Image, View } from "@tarojs/components";
 import { useRouter } from "@tarojs/taro";
 import type { DisplayMode } from "@starward/miniapp-contracts";
 import { useAppStore } from "@/state/app-store";
+import mainBIcons from "./main-b-icon-files.json";
+
+const sharedMainBIcons = new Set(mainBIcons.files.filter(file => !mainBIcons.mainOnlyVariants.includes(file)));
 
 export type SemanticAssetSubject =
   | "four-point-star"
@@ -115,10 +118,14 @@ function packageAssetPrefix(pagePath: string) {
 
 export function adoptedBIconPath(name: SemanticIconName, state: SemanticIconState = "default", pagePath: string = "") {
   const prefix = packageAssetPrefix(pagePath);
+  const file = `${B_ICON_ID[name] ?? name}--day--${state}.png`;
+  // Ordinary subpackages can use main-package resources. Preserve different
+  // derivative sizes and subpackage-only icons in their current package.
+  if (sharedMainBIcons.has(file)) return `/assets/b-icons/${file}`;
   // The 36px default My avatar shares the already packaged 192px Tab asset.
   // Content pages retain their package-local derivatives.
   const directory = !prefix && name === "account-user" ? "/assets/b-icons/weapp-tabbar" : `${prefix}/assets/b-icons`;
-  return `${directory}/${B_ICON_ID[name] ?? name}--day--${state}.png`;
+  return `${directory}/${file}`;
 }
 
 const SOURCE_ICON_FILE: Partial<Record<SemanticIconName, string>> = {

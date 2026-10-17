@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { TerrainOverlayRequest, TerrainHorizonRequest } from "@starward/miniapp-contracts";
 import { ComputationCache } from "./computation-cache.ts";
+import { SharedReadPool } from "./shared-read-pool.ts";
 import { terrainImageUrl, terrainPublication, terrainRequestIsCovered, validateTerrainAsset, validateTerrainPublication,
   type TerrainPublication } from "./terrain-publication.ts";
 import { renderTerrain } from "./terrain-renderer.ts";
@@ -29,7 +30,6 @@ const viewportAssetPattern = /^terrarium-cn-v1-map-(\d+)-(\d+)-(\d+)-(\d+)-(\d+)
 const fixedAssetPattern = /^terrarium-cn-v2-fixed-(\d{1,2})-(\d+)-(\d+)-(1|2|4)-([a-f0-9]{64})-([a-f0-9]{64})\.png$/u;
 const windowAssetPattern = /^terrarium-cn-v2-window-(\d{1,2})-(\d+)-(\d+)-([1-5])-([1-5])-([a-f0-9]{64})-([a-f0-9]{64})\.png$/u;
 const ttlMs = 24 * 60 * 60_000;
-type TerrainRead<T> = { controller: AbortController; consumers: Set<symbol>; promise: Promise<T> };
 
 /** One Map/Spot source owner; each purpose has its own immutable presentation.
  * The bundled elevation-colour publication remains available to Spot/old URLs. */
@@ -43,9 +43,10 @@ export class TerrainService implements TerrainPort {
   private readonly horizonRenderer: typeof readTerrainHorizonModel;
   private readonly closeRenderer: () => void;
   private readonly active = new Set<AbortController>();
+  private readonly sourceSlotWaiters = new Set<() => void>();
   private readonly compositions = new Set<AbortController>();
-  private readonly readers = new Map<string, TerrainRead<RenderedTerrain | null>>();
-  private readonly horizonReaders = new Map<string, TerrainRead<TerrainHorizonResult>>();
+  private readonly readers = new SharedReadPool<RenderedTerrain | null>(() => new Error("terrain_request_cancelled"));
+  private readonly horizonReaders = new SharedReadPool<TerrainHorizonResult>(() => new Error("terrain_request_cancelled"));
   private cacheWrite: Promise<void> = Promise.resolve();
   private closed = false;
 
@@ -78,7 +79,7 @@ export class TerrainService implements TerrainPort {
     if (!terrainLocationIsSupported(request)) return null;
     const center = normalizeTerrainRequest(request).center;
     const key = `${HORIZON_METHOD}:${center.latitude}:${center.longitude}`;
-    const result = await this.sharedRead(key, this.horizonReaders, controller => this.horizonCache.get(key,
+    const result = await this.horizonReaders.run(key, controller => this.horizonCache.get(key,
       () => this.runBounded(controller, this.active, () => this.horizonRenderer(center, controller.signal)),
       value => Date.now() + (value?.status === "COMPLETE" ? ttlMs : value?.sourceIssues.some(issue => issue.reason === "READ_FAILED") ? 0
         : !value || value.sourceIssues.length ? 60_000 : ttlMs)), signal);
@@ -95,57 +96,22 @@ export class TerrainService implements TerrainPort {
     return (await this.resolve(input, signal))?.publication ?? null;
   }
 
-  private resolve(input: TerrainRenderRequest, signal?: AbortSignal): Promise<RenderedTerrain | null> {
+  private resolve(input: TerrainRenderRequest, signal?: AbortSignal, admittedWindow = false): Promise<RenderedTerrain | null> {
     input = normalizeTerrainRequest(input);
     const key = terrainRequestKey(input);
-    return this.sharedRead(key, this.readers, controller => this.cache.get(key, () => this.compute(input, controller),
+    return this.readers.run(key, controller => this.cache.get(key, () => this.compute(input, controller, admittedWindow),
       result => Date.now() + (result?.publication.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND") ? 0
         : result && result.publication.unavailableSourceTiles.length === 0 ? ttlMs : 60_000)), signal);
   }
 
-  private sharedRead<T>(key: string, readers: Map<string, TerrainRead<T>>,
-    read: (controller: AbortController) => Promise<T>, signal?: AbortSignal): Promise<T> {
-    if (this.closed) throw new Error("terrain_service_closed");
-    signal?.throwIfAborted();
-    const pending = readers.get(key);
-    // Let a fully abandoned source read release its slot/cache promise before
-    // a new reader of the same identity starts; never inherit its cancellation.
-    if (pending?.controller.signal.aborted)
-      return pending.promise.catch(() => null).then(() => this.sharedRead(key, readers, read, signal));
-    let job = pending;
-    if (!pending) {
-      const controller = new AbortController();
-      const promise = read(controller);
-      const owned: TerrainRead<T> = { controller, consumers: new Set<symbol>(), promise: promise.finally(() => {
-        if (readers.get(key) === owned) readers.delete(key);
-      }) };
-      readers.set(key, owned);
-      job = owned;
-    }
-    const shared = job!;
-    const consumer = Symbol();
-    shared.consumers.add(consumer);
-    return new Promise((resolve, reject) => {
-      const cleanup = () => { signal?.removeEventListener("abort", cancel); shared.consumers.delete(consumer); };
-      const cancel = () => {
-        cleanup();
-        if (shared.consumers.size === 0) shared.controller.abort(new Error("terrain_request_cancelled"));
-        reject(signal?.reason ?? new Error("terrain_request_cancelled"));
-      };
-      signal?.addEventListener("abort", cancel, { once: true });
-      shared.promise.then(value => { cleanup(); resolve(value); }, error => { cleanup(); reject(error); });
-      if (signal?.aborted) cancel();
-    });
-  }
-
-  private async compute(input: TerrainRenderRequest, controller: AbortController) {
+  private async compute(input: TerrainRenderRequest, controller: AbortController, admittedWindow: boolean) {
     controller.signal.throwIfAborted();
     const cached = await this.readCached(input);
     controller.signal.throwIfAborted();
     if (cached) return cached;
     const jobs = input.fixedWindow ? this.compositions : this.active;
     return this.runBounded(controller, jobs, async () => {
-      const result = input.fixedWindow ? await renderTerrainWindow(input, controller.signal, (request, signal) => this.resolve(request, signal))
+      const result = input.fixedWindow ? await renderTerrainWindow(input, controller.signal, (request, signal) => this.resolve(request, signal, true))
         : await this.renderer(input, controller.signal);
       controller.signal.throwIfAborted();
       if (result) {
@@ -156,12 +122,26 @@ export class TerrainService implements TerrainPort {
         await this.cacheWrite;
       }
       return result;
-    });
+    }, admittedWindow);
   }
 
-  private async runBounded<T>(controller: AbortController, jobs: Set<AbortController>, read: () => Promise<T>) {
+  private async runBounded<T>(controller: AbortController, jobs: Set<AbortController>, read: () => Promise<T>, admittedWindow = false) {
     controller.signal.throwIfAborted();
-    if (jobs.size >= 2) throw new Error("terrain_busy_retry");
+    while (jobs.size >= 2) {
+      // Only children of the at-most-two admitted window compositions may
+      // wait. Each window has two cell reads at most; public source requests
+      // retain the existing immediate busy response and global limit.
+      if (!admittedWindow || jobs !== this.active) throw new Error("terrain_busy_retry");
+      await new Promise<void>((resolve, reject) => {
+        const cleanup = () => { this.sourceSlotWaiters.delete(available); controller.signal.removeEventListener("abort", aborted); };
+        const available = () => { cleanup(); resolve(); };
+        const aborted = () => { cleanup(); reject(controller.signal.reason); };
+        this.sourceSlotWaiters.add(available);
+        controller.signal.addEventListener("abort", aborted, { once: true });
+        if (controller.signal.aborted) aborted();
+      });
+      controller.signal.throwIfAborted();
+    }
     jobs.add(controller);
     // Preserve the existing source budget and headroom below the client's 18s timeout.
     const timer = setTimeout(() => controller.abort(new Error("terrain_source_deadline_exceeded")), 16_000);
@@ -169,7 +149,10 @@ export class TerrainService implements TerrainPort {
       const result = await read();
       controller.signal.throwIfAborted();
       return result;
-    } finally { clearTimeout(timer); jobs.delete(controller); }
+    } finally {
+      clearTimeout(timer); jobs.delete(controller);
+      if (jobs === this.active) for (const available of [...this.sourceSlotWaiters]) available();
+    }
   }
 
   private async readCached(input: TerrainRenderRequest): Promise<RenderedTerrain | null> {
@@ -274,8 +257,8 @@ export class TerrainService implements TerrainPort {
 
   close() {
     this.closed = true;
-    for (const job of this.readers.values()) job.controller.abort(new Error("terrain_service_closed"));
-    for (const job of this.horizonReaders.values()) job.controller.abort(new Error("terrain_service_closed"));
+    this.readers.close(new Error("terrain_service_closed"));
+    this.horizonReaders.close(new Error("terrain_service_closed"));
     this.closeRenderer();
     this.cache.clear();
     this.horizonCache.clear();

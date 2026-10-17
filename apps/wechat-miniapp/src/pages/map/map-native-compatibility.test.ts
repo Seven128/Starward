@@ -1,3 +1,4 @@
+import { createMapPageTestBoundaries } from "./map-page-test-support";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import test from "node:test";
@@ -35,7 +36,7 @@ test("the Map root installs a native Back boundary for its non-modal bottom pres
   visit(tree); assert.ok(active);
   for (const kind of ["none", "spot-panel", "layer-sheet", "spot-editor", "event-open", "event-exit", "sky-entry"]) {
     for (const visible of [false, true]) {
-      assert.equal(vm.runInNewContext(active, {pageVisible: visible, bottomPresentation: kind,
+      assert.equal(vm.runInNewContext(active, {...createMapPageTestBoundaries().scope, pageVisible: visible, bottomPresentation: kind,
         eventModalOpen: kind === "event-open", eventModalPresent: kind === "event-exit",
         skyEntryPresentation: kind === "sky-entry" ? 1 : null}), visible && kind !== "none", `${kind}/${visible}`);
     }
@@ -48,16 +49,19 @@ test("the Map root installs a native Back boundary for its non-modal bottom pres
 
 test("terrain uses the WEAPP MapContext ground-overlay lifecycle", () => {
   const source = readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
-  const coordinator = readFileSync(new URL("./terrain-ground-overlay.ts", import.meta.url), "utf8");
+  const coordinator = readFileSync(new URL("./map-ground-overlay.ts", import.meta.url), "utf8");
+  const installation = readFileSync(new URL("./use-map-raster-installation.ts", import.meta.url), "utf8");
   const mapElement = source.match(/<Map\b[\s\S]*?\/>/u)?.[0] ?? "";
   assert.doesNotMatch(mapElement, /\bgroundOverlays=/u, "the component prop is not a WEAPP ground-overlay API");
-  assert.match(source, /Taro\.createMapContext\(mapId\)/u);
+  assert.match(installation, /Taro\.createMapContext\(nativeMap\.mapId\)/u);
   assert.match(coordinator, /\.addGroundOverlay\(/u);
-  assert.match(coordinator, /\.updateGroundOverlay\(/u);
+  assert.doesNotMatch(coordinator, /\.updateGroundOverlay\(/u,
+    "changed bounds use a separately acknowledged add, preserving the old registered image until replacement is ready");
   assert.match(coordinator, /\.removeGroundOverlay\(/u);
-  assert.match(source, /createTerrainGroundOverlayCoordinator/u);
-  assert.match(source, /southwest:[\s\S]*?bounds\.south[\s\S]*?bounds\.west/u);
-  assert.match(source, /northeast:[\s\S]*?bounds\.north[\s\S]*?bounds\.east/u);
+  assert.match(source, /const terrainInstallation = useMapRasterInstallation\(/u);
+  assert.match(installation, /createMapGroundOverlayCoordinator\(input\.id/u);
+  assert.match(installation, /southwest:[\s\S]*?bounds\.south[\s\S]*?bounds\.west/u);
+  assert.match(installation, /northeast:[\s\S]*?bounds\.north[\s\S]*?bounds\.east/u);
 });
 
 test("the Mini Program does not opt into Taro experimental CompileMode", () => {

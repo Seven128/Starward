@@ -1,0 +1,79 @@
+{
+  "mode": "existing-phone-api-real-horizon-read",
+  "input": "repository public synthetic spot coordinates; no phone position or account read",
+  "apiCode": "existing owned process, not restarted for current overlay repairs",
+  "httpStatus": 200,
+  "elapsedMs": 35.74459999999999,
+  "state": "AVAILABLE",
+  "failureCode": null,
+  "publicationId": "terrain-horizon:fbe5e4ff872259a01080e993eb4a0e2ef7ca36a119c4a84b8fd265d810fdf1df",
+  "radiusM": 20000,
+  "bearingReference": "TRUE_NORTH_CLOCKWISE",
+  "sectorWidthDegrees": 1,
+  "knownSectors": 360,
+  "totalSectors": 360,
+  "minAngleDegrees": -0.6688391252005778,
+  "maxAngleDegrees": 31.004846018966518,
+  "cardinalAngles": [
+    {
+      "bearingDegrees": 0,
+      "elevationDegrees": 6.240065085962836,
+      "sampleCount": 3966
+    },
+    {
+      "bearingDegrees": 90,
+      "elevationDegrees": -0.6684225332614839,
+      "sampleCount": 3953
+    },
+    {
+      "bearingDegrees": 180,
+      "elevationDegrees": -0.6688391252005778,
+      "sampleCount": 3951
+    },
+    {
+      "bearingDegrees": 270,
+      "elevationDegrees": 1.4823904312158862,
+      "sampleCount": 3954
+    }
+  ],
+  "observerHeightM": 2,
+  "earthModel": {
+    "radiusM": 6371008.8,
+    "refraction": "NONE"
+  },
+  "sourceProofs": [
+    {
+      "hashScope": "RETRIEVED_RANGES",
+      "etagPresent": true,
+      "rangeCount": 4,
+      "retrievedBytes": 3145728,
+      "sha256": "6e33b29de0cc91a6c9491f1940e53d14c58b1cac03458cf25159973ab722f721"
+    }
+  ],
+  "source": {
+    "provider": "Copernicus Programme / AWS Open Data",
+    "title": "Copernicus DEM GLO-30 Public AWS COG 2021",
+    "license": "Copernicus DEM GLO-30 free worldwide licence",
+    "licenseUrl": "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM",
+    "attributionStatements": [
+      "© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved",
+      "produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved",
+      "依法或受委托负责哥白尼计划的组织，不对哥白尼 WorldDEM-30 的任何使用承担责任。"
+    ],
+    "limitations": [
+      "© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved",
+      "produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved",
+      "依法或受委托负责哥白尼计划的组织，不对哥白尼 WorldDEM-30 的任何使用承担责任。",
+      "依据历史约30米级DSM估算，不能证明近处树木、围墙或建筑无遮挡。",
+      "轮廓为每个1度扇区内原始采样中心的最高视角，保留负角；缺测方向不作无遮挡判断。",
+      "观察高度采用源DSM站位上方2米的假设，含球面曲率、不含大气折射；分析范围外地形未计入。"
+    ]
+  },
+  "coverageLabel": "20 km分析范围内各方位均有高程采样。",
+  "limitations": [
+    "依据历史约30米级DSM估算，不能证明近处树木、围墙或建筑无遮挡。",
+    "轮廓为每个1度扇区内原始采样中心的最高视角，保留负角；缺测方向不作无遮挡判断。",
+    "观察高度采用源DSM站位上方2米的假设，含球面曲率、不含大气折射；分析范围外地形未计入。"
+  ],
+  "modelSha256": "eebfcaee71efed3407ec16e29369597d76774d00e1e0b73471cca0be689f482c"
+}

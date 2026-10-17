@@ -1,3 +1,4 @@
+import { createMapPageTestBoundaries } from "./map-page-test-support";
 import { panelDragHeight, panelDragOriginHeight, panelSpringFrames, type PanelSpringFrame } from "./panel-spring";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -34,7 +35,9 @@ test("panel cancellation and multi-touch never commit a pending drag", async t =
       : rows);
     if (delayed) pending.push(deliver); else deliver(geometryRows);
   } };
+  const boundaries = createMapPageTestBoundaries();
   const environment = {
+    ...boundaries.scope,
     Date: { now: () => now },
     stopPanelSpring: () => {}, panelSpringFrames,
     springTarget: { current: null }, springRequest: { current: 0 }, setPanelSettling: () => {},
@@ -52,6 +55,7 @@ test("panel cancellation and multi-touch never commit a pending drag", async t =
     delayed = true;
     handlers.onHandleTouchStart!(touch(100));
     try {
+      assert.ok(boundaries.calls.includes("focus-cancel"), "an accepted panel gesture retires pending automatic focus");
       assert.equal(dragging, true, "the native document must stop scrolling from the accepted handle start");
     } finally {
       handlers.onHandleTouchCancel!();

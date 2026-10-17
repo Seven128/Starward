@@ -49,7 +49,7 @@ function functionBody(file:URL,name:string){
 test('actual sky hook forwards immutable query policy; a changed publication remains client-valid after Query observer storage',async()=>{
   let options:any;
   const useResourceQuery=vm.runInNewContext(functionBody(new URL('../../hooks/use-resource-query.ts',import.meta.url),'useResourceQuery'),{
-    useQuery:(value:any)=>{options=value;return {data:undefined,error:null,isFetching:false};},useEffect(){},recordAcceptanceDiagnostic(){},
+    useQueryClient:()=>new QueryClient(),useQuery:(value:any)=>{options=value;return {data:undefined,error:null,isFetching:false};},useEffect(){},recordAcceptanceDiagnostic(){},
   });
   const hook=vm.runInNewContext(functionBody(new URL('./use-sky-stellar-supplement.ts',import.meta.url),'useSkyStellarSupplement'),{
     useResourceQuery,useEffect(){},useRef:(v:unknown)=>({current:v}),useState:()=>[null,()=>{}],useMemo:(f:()=>unknown)=>f(),useCallback:(f:unknown)=>f,

@@ -1,0 +1,202 @@
+{
+  "retainedByteIdenticalFiles": 261,
+  "removedDuplicateFiles": 39,
+  "removedDuplicateBytes": 647488,
+  "removed": [
+    {
+      "file": "content/assets/b-icons/arrow-left--day--default.png",
+      "bytes": 15825,
+      "replacement": "assets/b-icons/arrow-left--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/check--day--default.png",
+      "bytes": 11504,
+      "replacement": "assets/b-icons/check--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/chevron-down--day--default.png",
+      "bytes": 10738,
+      "replacement": "assets/b-icons/chevron-down--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/chevron-right--day--default.png",
+      "bytes": 8730,
+      "replacement": "assets/b-icons/chevron-right--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/close--day--default.png",
+      "bytes": 17478,
+      "replacement": "assets/b-icons/close--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/cloud--day--default.png",
+      "bytes": 18314,
+      "replacement": "assets/b-icons/cloud--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/favorite-star--day--default.png",
+      "bytes": 18503,
+      "replacement": "assets/b-icons/favorite-star--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/four-point-star--day--default.png",
+      "bytes": 12720,
+      "replacement": "assets/b-icons/four-point-star--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/info--day--default.png",
+      "bytes": 21115,
+      "replacement": "assets/b-icons/info--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/location--day--default.png",
+      "bytes": 20721,
+      "replacement": "assets/b-icons/location--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/meteor--day--default.png",
+      "bytes": 21256,
+      "replacement": "assets/b-icons/meteor--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/moon--day--default.png",
+      "bytes": 17775,
+      "replacement": "assets/b-icons/moon--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/navigation--day--default.png",
+      "bytes": 19672,
+      "replacement": "assets/b-icons/navigation--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/pencil--day--default.png",
+      "bytes": 20466,
+      "replacement": "assets/b-icons/pencil--day--default.png"
+    },
+    {
+      "file": "content/assets/b-icons/search--day--default.png",
+      "bytes": 21152,
+      "replacement": "assets/b-icons/search--day--default.png"
+    },
+    {
+      "file": "sky/assets/b-icons/arrow-left--day--default.png",
+      "bytes": 15825,
+      "replacement": "assets/b-icons/arrow-left--day--default.png"
+    },
+    {
+      "file": "sky/assets/b-icons/check--day--default.png",
+      "bytes": 11504,
+      "replacement": "assets/b-icons/check--day--default.png"
+    },
+    {
+      "file": "sky/assets/b-icons/chevron-down--day--default.png",
+      "bytes": 10738,
+      "replacement": "assets/b-icons/chevron-down--day--default.png"
+    },
+    {
+      "file": "sky/assets/b-icons/chevron-up--day--default.png",
+      "bytes": 8411,
+      "replacement": "assets/b-icons/chevron-up--day--default.png"
+    },
+    {
+      "file": "sky/assets/b-icons/close--day--default.png",
+      "bytes": 17478,
+      "replacement": "assets/b-icons/close--day--default.png"
+    },
+    {
+      "file": "sky/assets/b-icons/four-point-star--day--default.png",
+      "bytes": 12720,
+      "replacement": "assets/b-icons/four-point-star--day--default.png"
+    },
+    {
+      "file": "sky/assets/b-icons/info--day--default.png",
+      "bytes": 21115,
+      "replacement": "assets/b-icons/info--day--default.png"
+    },
+    {
+      "file": "sky/assets/b-icons/layers--day--default.png",
+      "bytes": 19629,
+      "replacement": "assets/b-icons/layers--day--default.png"
+    },
+    {
+      "file": "sky/assets/b-icons/search--day--default.png",
+      "bytes": 21152,
+      "replacement": "assets/b-icons/search--day--default.png"
+    },
+    {
+      "file": "sky/assets/b-icons/settings--day--default.png",
+      "bytes": 27813,
+      "replacement": "assets/b-icons/settings--day--default.png"
+    },
+    {
+      "file": "sky/assets/b-icons/terrain--day--default.png",
+      "bytes": 15231,
+      "replacement": "assets/b-icons/terrain--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/arrow-left--day--default.png",
+      "bytes": 15825,
+      "replacement": "assets/b-icons/arrow-left--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/bulb--day--default.png",
+      "bytes": 15668,
+      "replacement": "assets/b-icons/bulb--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/chevron-down--day--default.png",
+      "bytes": 10738,
+      "replacement": "assets/b-icons/chevron-down--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/chevron-right--day--default.png",
+      "bytes": 8730,
+      "replacement": "assets/b-icons/chevron-right--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/chevron-up--day--default.png",
+      "bytes": 8411,
+      "replacement": "assets/b-icons/chevron-up--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/close--day--default.png",
+      "bytes": 17478,
+      "replacement": "assets/b-icons/close--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/cloud--day--default.png",
+      "bytes": 18314,
+      "replacement": "assets/b-icons/cloud--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/four-point-star--day--default.png",
+      "bytes": 12720,
+      "replacement": "assets/b-icons/four-point-star--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/info--day--default.png",
+      "bytes": 21115,
+      "replacement": "assets/b-icons/info--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/location--day--default.png",
+      "bytes": 20721,
+      "replacement": "assets/b-icons/location--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/meteor--day--default.png",
+      "bytes": 21256,
+      "replacement": "assets/b-icons/meteor--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/moon--day--default.png",
+      "bytes": 17775,
+      "replacement": "assets/b-icons/moon--day--default.png"
+    },
+    {
+      "file": "spot/assets/b-icons/search--day--default.png",
+      "bytes": 21152,
+      "replacement": "assets/b-icons/search--day--default.png"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { skyNativeImageLevels } from "./sky-native-image-levels";
 import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
@@ -125,6 +126,7 @@ function world(prepared = false, display = false) {
         "@/services/prepared-optical-resource": { async getPreparedOpticalResource(...args: unknown[]) {
           metadataCalls.push(args); return resource();
         } },
+        "./sky-native-image-levels": { skyNativeImageLevels },
         "./sky-fixed-image-status": { skyFixedImageStatus },
         "./sky-target-optical-visibility": { skyTargetOpticalIntersectsView },
         "./use-sky-artwork": { useSkyNativeImages(canvas: unknown, revision: number, hash: string | undefined,

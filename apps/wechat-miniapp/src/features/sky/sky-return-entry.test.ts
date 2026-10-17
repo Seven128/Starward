@@ -4,6 +4,7 @@ import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
 import { createSkyDisclosureCommands } from "./sky-disclosure-commands";
+import { createPageBlackoutTransition } from "../../navigation/page-blackout-transition";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
   readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
@@ -34,26 +35,36 @@ visit(menu);
 assert.ok(leaveAction);
 assert.ok(errorBranch.thenStatement.getText(source).includes("{navigationMenu}"));
 
-test("context recovery returns to the actual entry before falling back to Map", async () => {
+test("context recovery recreates an unloaded Map and preserves legacy-stack fallback through the exit owner", async () => {
   assert.ok(navigation, "the recovery branch must reuse the normal Sky return owner");
   const code = ts.transpileModule(`${navigation.getText(source)}\n${disclosures.getText(source)}\n(${leaveAction})`,
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
-  for (const reject of [false, true]) {
+  for (const [restored, reject] of [[true, false], [false, false], [false, true]]) {
     const calls: string[] = [];
+    let presentation: number | null = null;
+    const transition = createPageBlackoutTransition({getScope: () => "recovery", onPresentation: id => {presentation = id;},
+      schedule: () => () => {}});
     const panel = { current: "menu" }, noop = () => {};
     const callback = vm.runInNewContext(code, { skyPageVisibleCurrent:()=>true,skyReturnPendingRef:{current:null}, createSkyDisclosureCommands,
+      skyExit: {transition}, routeReducedMotion: false,
+      skyMapLifecycle: {beginReturn: () => restored ? {} : null, cancelReturn: () => assert.fail("navigation succeeds")},
       skyTimeIntentCurrent:()=>false, skyTimeIntentRetirable:()=>true, orientationController:{snapshot:()=>({alignment:{mode:"auto"}})},
       contextComplete:false, activeContext:null, skyControlPanelRef:panel, orientationObjectListOpenRef:{current:false}, datePickerOpenRef:{current:false},
       selectedCatalogObjectRef:{current:null}, selectedTargetIdRef:{current:null}, catalogPickChoicesRef:{current:[]},
       setSkyControlPanel:(value:string|null)=>{panel.current=value as string;}, setOrientationObjectListOpen:noop,setDatePickerOpen:noop,
       closeSkyObjectDisclosure:noop,cancelSkyTimePreview:noop,pauseSkyTime:noop,
       reportRuntimeError() {}, cancelSkyCalibration: () => calls.push("calibration-cancel"), Taro: {
+      getCurrentPages: () => [{}, {}],
       navigateBack: () => { calls.push("entry"); return reject ? Promise.reject(new Error("empty stack")) : Promise.resolve(); },
       switchTab: ({ url }: { url: string }) => { calls.push(url); return Promise.resolve(); },
     } }) as () => void;
     callback();
+    assert.deepEqual(calls, ["calibration-cancel"], "navigation waits until the actual exit fade completes");
+    assert.notEqual(presentation, null); transition.finishFade(presentation!);
     await new Promise(resolve => setImmediate(resolve));
-    assert.deepEqual(calls, reject ? ["calibration-cancel", "entry", "/pages/map/index"] : ["calibration-cancel", "entry"]);
+    assert.deepEqual(calls, restored ? ["calibration-cancel", "/pages/map/index"] :
+      reject ? ["calibration-cancel", "entry", "/pages/map/index"] : ["calibration-cancel", "entry"]);
     assert.equal(panel.current, null, "the menu retires its disclosure before returning to the actual entry");
+    transition.dispose();
   }
 });

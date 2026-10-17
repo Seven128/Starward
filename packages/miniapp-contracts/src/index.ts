@@ -1,5 +1,6 @@
 export * from "./types.ts";
 export type * from "./map-cloud-snapshot.ts";
+export { mapCloudCellId } from "./map-cloud-snapshot.ts";
 export * from "./night-light-fixed-scale.ts";
 export * from "./source-records.ts";
 export * from "./plan.ts";

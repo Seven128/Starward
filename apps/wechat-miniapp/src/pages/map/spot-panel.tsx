@@ -44,7 +44,8 @@ import { SpotTerrainOverview } from "./spot-terrain-overview";
 import { ForecastCoverageNote } from "@/components/forecast-coverage-note";
 import { SpotPlanEntry } from "@/features/spot/spot-plan-entry";
 import { SpotImageViewer } from "@/components/spot-image-viewer";
-import { useSpotMediaDocumentPosition, useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
+import { usePanelReturnPosition } from "./use-panel-return-position";
+import type { MapPanelReturnPosition } from "./sky-return-state";
 import { useHiddenNativeScrollbar } from "@/components/use-hidden-native-scrollbar";
 
 export type SpotPanelExtent = "small" | "medium" | "large";
@@ -176,6 +177,8 @@ export function SpotInformationPanel({
   onEvidence,
   onViewerBackHandlerChange,
   onPhotoIntent,
+  restorePosition,
+  onPositionChange,
 }: {
   spot: SpotSummary;
   visible?: boolean;
@@ -237,6 +240,8 @@ export function SpotInformationPanel({
   onEvidence: (kind: "guides" | "field" | "sources", articleId?: string) => void;
   onViewerBackHandlerChange?: (handler: (() => void) | null) => void;
   onPhotoIntent: () => Promise<boolean>;
+  restorePosition?: MapPanelReturnPosition | null;
+  onPositionChange?: (position: MapPanelReturnPosition) => void;
 }) {
   const [viewerKind, setViewerKind] = useState<"parking" | "toilet" | null>(null);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
@@ -246,9 +251,17 @@ export function SpotInformationPanel({
   const [sectionRequest, setSectionRequest] = useState<{ id: string; spotId: string } | null>(null);
   const handledSectionRequest = useRef<typeof sectionRequest>(null);
   const [scrollAnchor, setScrollAnchor] = useState("");
+  const restoreInitialScroll = useRef(restorePosition?.identity === spot.spotId);
   const terrainOffset = useRef<number | null>(null);
   const astronomyOffset = useRef<number | null>(null);
-  const documentPosition = useSpotMediaDocumentPosition(spot.spotId);
+  const effectiveSpot = detail?.spot ?? spot;
+  const media = effectiveSpot.media.filter((item) =>
+    mediaIsRenderable(item, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__),
+  );
+  const { document: documentPosition, gallery: galleryPosition } = usePanelReturnPosition(spot.spotId,
+    `${effectiveSpot.spotId}:${media.map(item => item.id).join("|")}`, {
+      restorePosition, onPositionChange, ready: !detailPending && !settling && extent !== "small",
+    });
   const { position: lastScroll, returnTop: restoredScrollTop, setReturnTop: setRestoredScrollTop } = documentPosition;
   const wasVisible = useRef(visible);
   useEffect(() => {
@@ -303,6 +316,7 @@ export function SpotInformationPanel({
   useResize(() => setLayoutVersion(value => value + 1));
   useEffect(() => {
     setViewerIndex(null);
+    if (restoreInitialScroll.current) { restoreInitialScroll.current = false; return; }
     setRestoredScrollTop(undefined);
     setSection("spot-panel-overview");
     setSectionRequest({ id: "spot-panel-document-start", spotId: spot.spotId });
@@ -342,11 +356,6 @@ export function SpotInformationPanel({
     }, settling ? 200 : 80);
     return () => clearTimeout(timer);
   }, [sectionRequest, extent, spot.spotId, settling]);
-  const effectiveSpot = detail?.spot ?? spot;
-  const media = effectiveSpot.media.filter((item) =>
-    mediaIsRenderable(item, __MINIAPP_DEVELOPMENT_FIXTURE_MODE__),
-  );
-  const galleryPosition = useSpotMediaGalleryPosition(`${effectiveSpot.spotId}:${media.map(item => item.id).join("|")}`);
   const photoScope = JSON.stringify([effectiveSpot.spotId, media.map(item => item.id), detail?.formalMedia]);
   const currentPhotoScope = useRef(photoScope);
   currentPhotoScope.current = photoScope;
@@ -397,7 +406,7 @@ export function SpotInformationPanel({
   const renderWeatherValue = (value: number | null | undefined, unit: string, digits = 0) =>
     renderMetricValue(value, unit, digits, "type-data", skyRow?.weatherAt ? EMPTY_FIELD_VALUE : weatherMissing);
   const cloudReady = Boolean(
-    detail &&
+    detail && !timeSaving &&
       context?.location.kind === "FORMAL_SPOT" &&
       context.location.spotId === effectiveSpot.spotId,
   );

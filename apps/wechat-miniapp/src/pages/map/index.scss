@@ -1,5 +1,8 @@
 @use "./finder-field" as finder-field;
 
+// Native route creation precedes the themed content and return shield.
+page { background: #000; }
+
 .map-page {
   --map-search-top: calc(env(safe-area-inset-top) + 56Px);
   --map-search-height: max(var(--target-min), calc(var(--type-search-line) + 16Px));
@@ -8,17 +11,19 @@
   flex-direction: column;
 }
 
-.map-sky-entry-shield {
+.map-sky-entry-shield,
+.map-sky-return-shield {
   position: fixed;
   inset: 0;
-  z-index: 1201;
+  // A route blackout also covers ordinary floating notices (10040).
+  z-index: 10050;
   background: #000;
   pointer-events: auto;
-  animation: map-sky-entry-blackout 220ms ease both;
 }
+.map-sky-entry-shield { animation: map-sky-entry-blackout 220ms ease both; }
+.map-sky-return-shield--revealing { animation: map-sky-return-reveal 220ms ease both; }
 @keyframes map-sky-entry-blackout { from { opacity: 0; } to { opacity: 1; } }
-.reduced-motion .map-sky-entry-shield { animation: none; }
-@media (prefers-reduced-motion: reduce) { .map-sky-entry-shield { animation: none; } }
+@keyframes map-sky-return-reveal { from { opacity: 1; } to { opacity: 0; } }
 
 // Adopted ordinary Map notices overlay the search lane. Native capsule
 // clearance, visible reading time and page lifecycle stay with the shared host.

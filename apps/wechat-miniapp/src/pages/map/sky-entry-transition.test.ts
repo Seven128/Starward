@@ -5,6 +5,16 @@ import test from "node:test";
 import ts from "typescript";
 import { createSkyEntryTransition, SKY_ENTRY_FADE_MS, SKY_ENTRY_RECOVERY_MS } from "./sky-entry-transition";
 import { pendingProposalContextLocation, samePendingProposalIntent } from "./private-contribution-transition";
+import { createMapSkyReturnState } from "./sky-return-state";
+import { createSkyMapLifecycle } from "../../navigation/sky-map-lifecycle";
+import { pageBlackoutReducedMotion } from "../../navigation/page-blackout-transition";
+
+test("route fade keeps unknown startup distinct from an explicit reduced-motion preference", () => {
+  assert.equal(pageBlackoutReducedMotion(false, "unknown"), false);
+  assert.equal(pageBlackoutReducedMotion(false, "no-preference"), false);
+  assert.equal(pageBlackoutReducedMotion(false, "reduce"), true);
+  assert.equal(pageBlackoutReducedMotion(true, "unknown"), true);
+});
 
 function pendingSubmission() {
   return { submissionId: "owned:proposal", revision: 2, preciseLocationConsent: true,
@@ -108,9 +118,57 @@ function actualMapCommands(environment: Record<string, unknown>) {
   return vm.runInNewContext(ts.transpileModule(`${declarations.join("\n")}\n({${names.join(",")}});`,
     {compilerOptions: {target: ts.ScriptTarget.ES2022}}).outputText, {
       pendingProposalContextLocation, samePendingProposalIntent, currentDraftUserId: () => "user:owner",
-      login: { open: false }, ...environment,
+      login: { open: false }, selected: null, selectedProposalRef: { current: null }, skyTransitionReducedMotion: false,
+      panelExtentRef: { current: "medium" }, panelPosition: { current: null }, mapReturnPhase: { current: null },
+      mapSkyReturnState: createMapSkyReturnState(), skyMapLifecycle: createSkyMapLifecycle(), ...environment,
+      useAppStore: { subscribe: () => () => {}, ...(environment.useAppStore as object ?? {}) },
     });
 }
+
+function returnedMapRevealEffect(phase: "waiting" | "revealing", accountReducedMotion = false) {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"),
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let effect: ts.CallExpression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && node.expression.getText(source) === "useEffect" &&
+      node.arguments[1]?.getText(source).includes("mapReturnPresentation")) effect = node;
+    ts.forEachChild(node, visit);
+  };
+  visit(source); assert.ok(effect);
+  const nativeRenders: Array<() => void> = [], timers = new Map<number, { callback: () => void; delay: number }>();
+  let serial = 0, finished = 0, errors = 0, recovery = 0, cleanup!: () => void;
+  vm.runInNewContext(ts.transpileModule(effect!.getText(source), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
+    mapReturnPresentation: phase, mapReturnPhase: { current: phase }, reducedMotion: true,
+    skyTransitionReducedMotion: accountReducedMotion, SKY_ENTRY_FADE_MS,
+    Taro: { nextTick: (callback: () => void) => { nativeRenders.push(callback); } },
+    useEffect: (setup: () => () => void) => { cleanup = setup(); },
+    setTimeout: (callback: () => void, delay: number) => { timers.set(++serial, { callback, delay }); return serial; },
+    clearTimeout: (id: number) => { timers.delete(id); }, finishMapReturn: () => { finished++; },
+    nativeMap: { onError: () => { errors++; } }, revealReturnedMap: (ready: boolean) => { assert.equal(ready, false); recovery++; },
+    reportRuntimeError() {},
+  });
+  return { timers, flush: () => nativeRenders.splice(0).forEach(callback => callback()), cleanup: () => cleanup(),
+    result: () => ({ finished, errors, recovery }) };
+}
+
+test("Map reveal waits for the native frame and keeps Sky's account motion while the system probe is unknown", () => {
+  const h = returnedMapRevealEffect("revealing");
+  assert.equal(h.timers.size, 0, "bridge latency cannot consume the reveal duration");
+  h.flush();
+  const timer = [...h.timers.values()][0]!;
+  assert.equal(timer.delay, SKY_ENTRY_FADE_MS + 32, "fresh system unknown must not force a zero-duration Sky return");
+  timer.callback(); assert.equal(h.result().finished, 1); h.cleanup();
+  const reduced = returnedMapRevealEffect("revealing", true); reduced.flush();
+  assert.equal([...reduced.timers.values()][0]!.delay, 0); reduced.cleanup();
+});
+
+test("retired reveal acknowledgements do not schedule work and Map readiness recovery retains its original bound", () => {
+  const retired = returnedMapRevealEffect("revealing"); retired.cleanup(); retired.flush();
+  assert.equal(retired.timers.size, 0);
+  const waiting = returnedMapRevealEffect("waiting"), timer = [...waiting.timers.values()][0]!;
+  assert.equal(timer.delay, SKY_ENTRY_RECOVERY_MS);
+  timer.callback(); assert.deepEqual(waiting.result(), { finished: 0, errors: 1, recovery: 1 }); waiting.cleanup();
+});
 
 test("formal Sky action uses the shared blackout while other Map routes remain immediate", async () => {
   for (const rejected of [false, true]) {
@@ -120,7 +178,10 @@ test("formal Sky action uses the shared blackout while other Map routes remain i
     const commands = actualMapCommands({skyEntry: h.entry, selected: {spotId: "spot:a"}, activeContext: context,
       spotDetail: {decision: {inputDigest: "revision:a"}},
       useAppStore: {getState: () => ({preferences: {reducedMotion: false}, notifications: []})},
-      Taro: {navigateTo: async ({url}: {url: string}) => {routes.push(url); if (rejected) throw new Error("private native text");}},
+      Taro: {
+        redirectTo: async ({url}: {url: string}) => {routes.push(url); if (rejected) throw new Error("private native text");},
+        navigateTo: async ({url}: {url: string}) => {assert.equal(url, "/spot/search/index"); routes.push(url);},
+      },
       notify: (notice: unknown) => notices.push(notice), reportRuntimeError: (...args: unknown[]) => errors.push(args),
     });
     commands.onPanelCloud(); commands.onPanelCloud();
@@ -148,6 +209,18 @@ test("native Back during a source fade cancels only the pending Sky entry", asyn
   assert.equal(navigations, 0); assert.equal(h.entry.isActive(), false); assert.equal(h.frames.at(-1), null);
 });
 
+test("a pending observation edit cannot be retired by replacing Map with Sky", () => {
+  const h = setup(); let notices = 0;
+  const commands = actualMapCommands({ skyEntry: h.entry, selected: { spotId: "spot:a" },
+    activeContext: { location: { kind: "FORMAL_SPOT", spotId: "spot:a" } }, spotDetail: {},
+    useAppStore: { getState: () => ({ pendingObservationContextEdit: { contextId: "editing" } }) },
+    notify: () => { notices++; },
+  });
+  commands.onPanelCloud();
+  assert.equal(h.entry.isActive(), false);
+  assert.equal(notices, 1);
+});
+
 test("a private Sky entry reserves preparation before resolving Context and ignores queued repeats", async () => {
   const h = setup(), routes: string[] = [], accepted: string[] = [];
   let resolves = 0, finish!: (value: {dataState: string; data: any}) => void;
@@ -158,7 +231,7 @@ test("a private Sky entry reserves preparation before resolving Context and igno
     currentTimezoneHint: () => "Asia/Shanghai", localDateForNow: () => "2026-10-17",
     resolveObservationContext: () => {resolves++; return new Promise(resolve => {finish = resolve;});},
     setObservationContext: (next: typeof context) => {context = next; accepted.push(next.contextId); h.setScope(next.contextId);},
-    Taro: {navigateTo: async ({url}: {url: string}) => {routes.push(url);}}, notify() {assert.fail("valid entry");},
+    Taro: {redirectTo: async ({url}: {url: string}) => {routes.push(url);}}, notify() {assert.fail("valid entry");},
   });
   const entering = commands.onProposalCloud(submission);
   await commands.onProposalCloud(submission);

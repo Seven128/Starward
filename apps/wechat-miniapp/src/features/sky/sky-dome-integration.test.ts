@@ -284,22 +284,13 @@ async function calibrationEntry(initialFov:number) {
     if(ts.isVariableDeclaration(node)&&names.includes(node.name.getText(source)))declarations.push(`const ${node.getText(source)};`);
     ts.forEachChild(node,collect);
   }collect(source);
-  const buttons:Record<string,string>={};
-  function panelButtons(node:ts.Node){
-    if(ts.isJsxElement(node)&&node.openingElement.attributes.properties.some(attribute=>
-      ts.isJsxAttribute(attribute)&&attribute.name.getText(source)==='className'&&attribute.initializer?.getText(source).includes('sky-calibration-panel'))){
-      const find=(child:ts.Node)=>{
-        if(ts.isJsxElement(child)&&child.openingElement.tagName.getText(source)==='Button'){
-          const label=child.children.filter(ts.isJsxText).map(text=>text.text.trim()).join('');
-          const click=child.openingElement.attributes.properties.find(attribute=>ts.isJsxAttribute(attribute)&&attribute.name.getText(source)==='onClick') as ts.JsxAttribute;
-          if(['取消','确定','收起'].includes(label)&&click?.initializer&&ts.isJsxExpression(click.initializer)&&click.initializer.expression)
-            buttons[label]=click.initializer.expression.getText(source);
-        }ts.forEachChild(child,find);
-      };find(node);return;
-    }ts.forEachChild(node,panelButtons);
-  }panelButtons(source);
-  const menu=skyMenuProps(source);buttons['收起']=menu.expression(menu.headings.get('取消并收起校准')!,'onClose').getText(source);
-  assert.deepEqual(Object.keys(buttons).sort(),['取消','收起','确定'].sort());
+  // These are scope-owner commands, not claims that retired panel buttons
+  // still exist. The current SkyBrowseControl callbacks have a separate test.
+  const buttons:Record<string,string>={
+    '取消':'() => finishSkyCalibration("cancel")',
+    '确定':'() => finishSkyCalibration("commit")',
+    '收起':'() => skyDisclosures.close("calibration")',
+  };
   let cleanup='()=>{}';
   const findCleanup=(node:ts.Node)=>{if(ts.isCallExpression(node)&&node.expression.getText(source)==='useEffect'&&
     node.arguments[0]?.getText(source).includes('const scope = editingSkyCalibrationRef.current'))cleanup=node.arguments[0].getText(source);ts.forEachChild(node,findCleanup);};findCleanup(source);
@@ -450,7 +441,7 @@ for(const action of ['取消','确定'] as const)test(`queued calibration ${acti
     assert.equal(h.controller.snapshot().presentationRevision,current.presentationRevision);
     assert.equal(h.sandbox.skyControlPanelRef.current,'calibration');
     h.commands()[action]();assert.notEqual(h.controller.snapshot().alignment.mode,'editing');
-    assert.equal(h.sandbox.skyControlPanelRef.current,null,'current public control must finish its own edit');
+    assert.equal(h.sandbox.skyControlPanelRef.current,'menu','current owner command must finish its own edit');
   }finally{h.dispose();}
 });
 
@@ -461,7 +452,7 @@ test('actual calibration confirmation uses raw motion after its render and prese
     h.move(88,-112,42);confirm();assert.equal(h.controller.snapshot().alignment.mode,'aligned');
     for(const axis of ['right','up','forward'] as const)for(let i=0;i<3;i++)
       assert.ok(Math.abs(h.controller.snapshot().alignment.view![axis][i]!-frozen![axis][i]!)<1e-12);
-    assert.equal(h.sandbox.skyControlPanelRef.current,null);
+    assert.equal(h.sandbox.skyControlPanelRef.current,'menu');
   }finally{h.dispose();}
 });
 
@@ -470,7 +461,7 @@ test('current failed confirmation preserves editing and can still be cancelled w
   try{
     h.begin();const commands=h.commands();h.expire();commands['确定']();
     assert.equal(h.controller.snapshot().alignment.mode,'editing');assert.equal(h.sandbox.skyControlPanelRef.current,'calibration');
-    commands['取消']();assert.notEqual(h.controller.snapshot().alignment.mode,'editing');assert.equal(h.sandbox.skyControlPanelRef.current,null);
+    commands['取消']();assert.notEqual(h.controller.snapshot().alignment.mode,'editing');assert.equal(h.sandbox.skyControlPanelRef.current,'menu');
   }finally{h.dispose();}
 });
 
@@ -538,7 +529,7 @@ test('the in-flight Context lock blocks confirmation without losing the current 
       commands['确定']();assert.equal(h.controller.snapshot().alignment.mode,'editing');
       if(action==='cancel')commands['取消']();else{assert.ok(h.session.finish(ticket));commands['确定']();}
       assert.equal(h.controller.snapshot().alignment.mode,action==='cancel'?'auto':'aligned');
-      assert.equal(h.sandbox.skyControlPanelRef.current,null);
+      assert.equal(h.sandbox.skyControlPanelRef.current,'menu');
     }finally{h.dispose();}
   }
 });

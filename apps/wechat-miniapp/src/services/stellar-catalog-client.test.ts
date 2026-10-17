@@ -42,7 +42,7 @@ test("ordered magnitude optimization preserves bright identities in sorted and u
   for (const reverse of [false, true]) {
     const h = transportHarness(), envelope = fixture(h);
     const rows = envelope.data.rows.map((row, index) =>
-      [row[0], null, index < 100 ? 1 : 4, null, 0, Math.SQRT1_2, Math.SQRT1_2, 0, 0, 0] as const);
+      [row[0], null, index < 100 ? 1 : 4.8, null, 0, Math.SQRT1_2, Math.SQRT1_2, 0, 0, 0] as const);
     if (reverse) rows.reverse();
     envelope.data = { ...envelope.data, rows };
     try {

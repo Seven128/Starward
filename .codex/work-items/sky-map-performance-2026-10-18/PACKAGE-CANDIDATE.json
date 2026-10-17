@@ -1,0 +1,13 @@
+{
+  "scope": "isolated-production-build-not-live-runtime",
+  "bundleDirectory": "apps/wechat-miniapp/dist/weapp-check-package-audit-1018-final",
+  "sha256": "21d727e632853dad1aca269edfdabdf5b1aa53e4028d9bab0596206bc1ee2ab1",
+  "totalBytes": 4939626,
+  "fileCount": 338,
+  "packages": {
+    "main": 2003300,
+    "spot": 598333,
+    "sky": 1296736,
+    "content": 1041257
+  }
+}

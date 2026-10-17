@@ -3,51 +3,63 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
 import ts from "typescript";
-import { civilDateForInstant, observationDateOptions } from "../../components/observation-date";
+import { localParts } from "@starward/miniapp-contracts";
+import { observationNightForInstant } from "../../components/observation-date";
 
 const source = ts.createSourceFile("spot-sky-page.tsx", readFileSync(new URL("./spot-sky-page.tsx", import.meta.url), "utf8"),
   ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-const page = source.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "SpotSkyPage") as ts.FunctionDeclaration;
-const statements = page.body!.statements.filter(statement => ts.isVariableStatement(statement) &&
-  statement.declarationList.declarations.some(declaration => ["selectedCivilDate", "dateOptions"].includes(declaration.name.getText(source))));
-assert.equal(statements.length, 2);
-const code = ts.transpileModule(statements.map(statement => statement.getText(source)).join("\n") +
-  "\n({ selectedCivilDate, dateOptions });", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+const page = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotSkyPage") as ts.FunctionDeclaration;
+const helpers = source.statements.filter(node => ts.isFunctionDeclaration(node) &&
+  ["isDate", "isSelectedAt", "validTimezone", "observationDateFor"].includes(node.name?.text ?? ""));
+assert.equal(helpers.length, 4);
+const gate = page.body!.statements.find(node => ts.isVariableStatement(node) &&
+  node.declarationList.declarations.some(item => item.name.getText(source) === "routeContextComplete"));
+assert(gate);
+const recovery = page.body!.statements.find(node => ts.isIfStatement(node) &&
+  node.expression.getText(source) === "!contextComplete || !activeContext") as ts.IfStatement;
+assert(recovery);
+assert(recovery.thenStatement.getText(source).includes("return"));
+const timeControls = source.text.indexOf("<SkyTimeControls");
+assert(timeControls > recovery.end, "unresolved route returns before constructing civil time controls");
+const code = ts.transpileModule(helpers.map(node => node.getText(source)).join("\n") + "\n" +
+  gate.getText(source) + "\nrouteContextComplete", {compilerOptions: {target: ts.ScriptTarget.ES2022}}).outputText;
 const instant = "2026-09-28T16:00:00.000Z";
-class FixedDate extends Date { constructor() { super(instant); } }
-function derive(contextComplete: boolean, timezone: string, useMemo: (factory: () => unknown, deps: unknown[], slot: number) => unknown = factory => factory()) {
-  let slot = 0;
-  const value = vm.runInNewContext(code, { contextComplete, routeContext: { timezone }, presentedAt: instant,
-    civilDateForInstant, observationDateOptions, Date: FixedDate,
-    useMemo: (factory: () => unknown, deps: unknown[]) => useMemo(factory, deps, slot++) });
-  return { date: value.selectedCivilDate, options: [...value.dateOptions] as string[] };
-}
+const route = (timezone: string) => ({spotId: "spot:a", contextId: "ctx:a", localDate: "2026-09-28",
+  selectedAt: instant, timezone, dataRevision: "data:1"});
+const complete = (routeContext: ReturnType<typeof route>) => vm.runInNewContext(code,
+  {routeContext, observationNightForInstant, useMemo: (factory: () => unknown) => factory()});
 
-test("incomplete or invalid route time cannot throw before the existing Context recovery view", () => {
-  for (const timezone of ["", "Asia%2FShanghai", "not-a-timezone", "Asia/Shanghai"]) {
-    assert.deepEqual(derive(false, timezone), { date: "", options: [] });
-  }
+test("invalid route time stays behind Context recovery instead of constructing civil controls", () => {
+  for (const timezone of ["", "Asia%2FShanghai", "not-a-timezone"])
+    assert.equal(complete(route(timezone)), false);
+  assert.equal(complete({...route("Asia/Shanghai"), selectedAt: ""}), false);
+  assert.equal(complete(route("Asia/Shanghai")), true);
 });
 
-test("Context lookup completion refreshes memoized date choices without a timezone change", () => {
-  const slots: Array<{ deps: unknown[]; value: unknown }> = [];
-  const memo = (factory: () => unknown, deps: unknown[], slot: number) => {
-    const previous = slots[slot];
-    if (!previous || previous.deps.length !== deps.length || deps.some((item, index) => !Object.is(item, previous.deps[index]))) {
-      slots[slot] = { deps: [...deps], value: factory() };
+test("resolved route metadata becomes usable without requiring a timezone change", () => {
+  assert.equal(complete({...route("Asia/Shanghai"), dataRevision: ""}), false);
+  assert.equal(complete(route("Asia/Shanghai")), true);
+  assert.equal(complete({...route("Asia/Shanghai"), contextId: ""}), false);
+});
+
+test("current six-field time controls format the requested instant across midnight and timezone changes", () => {
+  let at = "", timezone = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(source) === "SkyTimeControls") {
+      for (const prop of node.attributes.properties) if (ts.isJsxAttribute(prop) && prop.initializer &&
+        ts.isJsxExpression(prop.initializer) && prop.initializer.expression) {
+        if (prop.name.getText(source) === "at") at = prop.initializer.expression.getText(source);
+        if (prop.name.getText(source) === "timezone") timezone = prop.initializer.expression.getText(source);
+      }
     }
-    return slots[slot]!.value;
-  };
-  assert.deepEqual(derive(false, "Asia/Shanghai", memo), { date: "", options: [] });
-  const resolved = derive(true, "Asia/Shanghai", memo);
-  assert.equal(resolved.options[7], "2026-09-29"); assert.equal(resolved.options.length, 23);
-  assert.deepEqual(derive(false, "Asia/Shanghai", memo), { date: "", options: [] });
-});
-
-test("resolved Context still uses the shared civil-date owner across midnight and timezone changes", () => {
-  const china = derive(true, "Asia/Shanghai"), utc = derive(true, "UTC");
-  assert.equal(china.date, "2026-09-29"); assert.equal(china.options[7], "2026-09-29");
-  assert.equal(utc.date, "2026-09-28"); assert.equal(utc.options[7], "2026-09-28");
-  assert.equal(china.options.length, 23); assert.equal(china.options[0], "2026-09-22");
-  assert.equal(china.options.at(-1), "2026-10-14");
+    ts.forEachChild(node, visit);
+  }; visit(source); assert.equal(at, "requestedAt"); assert.equal(timezone, "routeContext.timezone");
+  const controls = ts.createSourceFile("time.tsx", readFileSync(new URL("./sky-time-controls.tsx", import.meta.url), "utf8"),
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let parts: ts.Expression | undefined;
+  const find = (node: ts.Node) => {if (ts.isVariableDeclaration(node) && node.name.getText(controls) === "parts") parts = node.initializer;
+    ts.forEachChild(node, find);}; find(controls); assert(parts);
+  const fields = (zone: string) => vm.runInNewContext(parts!.getText(controls), {localParts, draft: instant, timezone: zone});
+  assert.equal(fields("Asia/Shanghai").day, 29); assert.equal(fields("Asia/Shanghai").hour, 0);
+  assert.equal(fields("UTC").day, 28); assert.equal(fields("UTC").hour, 16);
 });

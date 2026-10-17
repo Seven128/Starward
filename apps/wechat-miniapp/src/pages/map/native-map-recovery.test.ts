@@ -1,3 +1,4 @@
+import { createMapPageTestBoundaries } from "./map-page-test-support";
 import assert from "node:assert/strict";
 import test from "node:test";
 import fs from "node:fs";
@@ -12,11 +13,13 @@ function setup() {
   const module = { exports: {} as any };
   vm.runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText, {
     module, exports: module.exports,
-    require: () => ({
+    require: (name: string) => {
+      assert.equal(name, "react", "native recovery has an explicit hook dependency");
+      return ({
       useState(initial: any) { const i = index++; if (!(i in slots)) slots[i] = initial; return [slots[i], (v: any) => { slots[i] = v; }]; },
       useRef(initial: any) { const i = index++; return slots[i] ??= { current: initial }; },
       useEffect(effect: () => () => void) { if (!cleanup) cleanup = effect(); },
-    }),
+    }); },
     setTimeout(fn: () => void) { const id = ++sequence; timers.set(id, fn); return id; },
     clearTimeout(id: number) { timers.delete(id); },
   });
@@ -24,13 +27,13 @@ function setup() {
     unmount() { cleanup?.(); } };
 }
 
-function nativeElement(nativeMap: any, events: string[] = [], focus = { pending: false }) {
+function nativeElement(nativeMap: any, events: string[] = [], focus = { pending: false }, boundaries = createMapPageTestBoundaries()) {
   const source = fs.readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
   const jsx = source.match(/<Map\b[\s\S]*?\/>/u)?.[0];
   // Deliberately execute the real rendered native element, not a copied key rule.
   assert.ok(jsx);
   return vm.runInNewContext(ts.transpileModule(`(${jsx})`, { compilerOptions: { jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2020 } }).outputText, {
-    nativeMap, Map: "Map", viewport: { center: { latitude: 22, longitude: 113 }, zoom: 9 },
+    ...boundaries.scope, nativeMap, Map: "Map", viewport: { center: { latitude: 22, longitude: 113 }, zoom: 9 },
     markerList: [], layerPolygons: [], locationState: "GRANTED", spotEditorPhase: "open",
     editorPresentation: {isClosing: () => false},
     onMapTap: () => events.push("tap"), onMarkerTap: () => { events.push("marker"); focus.pending = true; }, onRegionChange: () => events.push("region"),
@@ -47,14 +50,17 @@ test("a marker's delayed generic native touch event cannot cancel its newly sele
 });
 
 test("retry changes the actual Map key/id, preserves viewport, and ignores old native callbacks", () => {
-  const t = setup(), events: string[] = []; const before = nativeElement(t.render(), events);
+  const t = setup(), events: string[] = [], boundaries = createMapPageTestBoundaries();
+  const before = nativeElement(t.render(), events, undefined, boundaries);
   before.onError(); assert.equal(t.render().error, true);
-  t.render().retry(); const pending = t.render(), after = nativeElement(pending, events);
+  t.render().retry(); const pending = t.render(), after = nativeElement(pending, events, undefined, boundaries);
   assert.equal(pending.pending, true); assert.notEqual(after.id, before.id); assert.notEqual(after.key, before.key);
   assert.equal(after.latitude, before.latitude); assert.equal(after.longitude, before.longitude); assert.equal(after.scale, before.scale);
   before.onUpdated(); before.onError(); before.onTap(); before.onMarkerTap({}); before.onRegionChange({});
   assert.equal(t.render().pending, true); assert.deepEqual(events, []);
-  after.onUpdated(); assert.equal(t.render().pending, false); assert.equal(t.render().error, false); assert.equal(t.timers.size, 0);
+  const revealsBeforeUpdate = boundaries.calls.filter(call => call === "map-return:true").length;
+  after.onUpdated(); assert.equal(boundaries.calls.filter(call => call === "map-return:true").length, revealsBeforeUpdate + 1);
+  assert.equal(t.render().pending, false); assert.equal(t.render().error, false); assert.equal(t.timers.size, 0);
   assert.deepEqual(events, ["viewport"], "the current Map update initiates actual viewport measurement");
   after.onTap(); assert.deepEqual(events, ["viewport", "tap"]);
 });

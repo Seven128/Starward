@@ -1,0 +1,22 @@
+{
+  "files": [
+    "arrow-left--day--default.png", "check--day--default.png",
+    "chevron-down--day--default.png", "chevron-right--day--default.png",
+    "chevron-up--day--default.png", "close--day--default.png",
+    "cloud--day--default.png", "navigation--day--default.png",
+    "four-point-star--day--default.png",
+    "favorite-star--day--default.png", "favorite-star--day--selected.png",
+    "favorite-trail--day--default.png", "favorite-satellite--day--default.png",
+    "info--day--default.png", "layers--day--default.png",
+    "bulb--day--default.png",
+    "location--day--default.png", "meteor--day--default.png", "moon--day--default.png",
+    "pencil--day--default.png",
+    "search--day--default.png", "settings--day--default.png",
+    "spot-marker--day--default.png",
+    "spot-marker--day--draft.png", "spot-marker--day--pending.png",
+    "spot-marker--day--selected.png",
+    "terrain--day--default.png", "more--day--default.png",
+    "parking--day--default.png", "restroom--day--default.png"
+  ],
+  "mainOnlyVariants": ["parking--day--default.png", "restroom--day--default.png"]
+}

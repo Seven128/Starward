@@ -2,7 +2,9 @@ import Taro from "@tarojs/taro";
 import { useAppStore } from "@/state/app-store";
 import { PRIMARY_NAVIGATION_ITEMS, isPrimaryPageRoute, primaryNavigationIconPath, primaryNavigationLayout } from "@/navigation/primary-navigation";
 import { createPrimaryNavigationController, type PrimaryNavigationState } from "@/navigation/primary-navigation-controller";
-import type { PrimaryNavigationHandle } from "@/navigation/primary-navigation-cover";
+import { PRIMARY_NAVIGATION_BLACKOUT_OWNER, type PrimaryNavigationHandle, type PrimaryNavigationBlackout } from "@/navigation/primary-navigation-cover";
+import { skyMapLifecycle } from "@/navigation/sky-map-lifecycle";
+import { PAGE_BLACKOUT_FADE_MS } from "@/navigation/page-blackout-transition";
 import "./index.scss";
 
 type NavigationItem = {
@@ -11,6 +13,7 @@ type NavigationItem = {
 };
 type Data = PrimaryNavigationState & {
   modeClass: string; pageClass: string; layout: string; items: NavigationItem[]; covered: boolean;
+  blackoutPhase: PrimaryNavigationBlackout["phase"] | null; blackoutDuration: number;
 };
 type NativeBar = PrimaryNavigationHandle & {
   data: Data;
@@ -18,18 +21,23 @@ type NativeBar = PrimaryNavigationHandle & {
   sync(): void;
   open(event: { currentTarget: { dataset: { route?: string } } }): void;
   alive?: boolean;
-  covering?: Set<string> | undefined;
+  covering?: Map<string, PrimaryNavigationBlackout | null> | undefined;
   navigation?: ReturnType<typeof createPrimaryNavigationController> | undefined;
   unsubscribe?: (() => void) | undefined;
 };
 
-const initial: Data = { route: null, pending: null, failed: null, modeClass: "", pageClass: "", layout: "", items: [], covered: false };
+const initial: Data = { route: null, pending: null, failed: null, modeClass: "", pageClass: "", layout: "", items: [], covered: false,
+  blackoutPhase: null, blackoutDuration: PAGE_BLACKOUT_FADE_MS };
 
 /** Project canonical state into native data; no React instance or second store. */
 function paint(bar: NativeBar, state: PrimaryNavigationState = bar.data) {
   if (!bar.alive) return;
   const mode = useAppStore.getState().mode;
-  bar.setData({ ...state, covered: Boolean(bar.covering?.size), modeClass: `theme-${mode.toLowerCase()}`,
+  const covers = Array.from(bar.covering?.values() ?? []);
+  const blackout = covers.find(cover => cover !== null);
+  bar.setData({ ...state, covered: covers.includes(null),
+    blackoutPhase: blackout?.phase ?? null, blackoutDuration: blackout?.durationMs ?? PAGE_BLACKOUT_FADE_MS,
+    modeClass: `theme-${mode.toLowerCase()}`,
     pageClass: state.route === "pages/map/index" ? "primary-navigation--map" : "primary-navigation--my",
     items: PRIMARY_NAVIGATION_ITEMS.map(item => {
       const selected = state.route === item.pagePath, retry = state.failed === item.pagePath;
@@ -50,7 +58,7 @@ const options = {
     attached(this: NativeBar) {
       if (this.alive) return;
       this.alive = true;
-      this.covering = new Set();
+      this.covering = new Map();
       this.navigation = createPrimaryNavigationController({
         currentPage: () => Taro.getCurrentPages().at(-1),
         switchTab: url => Taro.switchTab({ url }),
@@ -81,6 +89,10 @@ const options = {
     show(this: NativeBar, route: Parameters<PrimaryNavigationHandle["show"]>[0]) {
       const current = Taro.getCurrentPages().at(-1);
       if (!this.alive || !current || current.route !== route || current.getTabBar?.() !== this) return;
+      // This native component can attach before Map's React effects. Seed the
+      // return shield before its first visible paint; Map owns its later reveal.
+      if (route === "pages/map/index" && skyMapLifecycle.mapReturnPending() && !this.covering?.has(PRIMARY_NAVIGATION_BLACKOUT_OWNER))
+        this.covering?.set(PRIMARY_NAVIGATION_BLACKOUT_OWNER, { phase: "waiting", durationMs: PAGE_BLACKOUT_FADE_MS });
       let info;
       try { info = Taro.getWindowInfo(); } catch { /* Retain CSS safe-area fallback. */ }
       const layout = primaryNavigationLayout(route, info).style;
@@ -88,12 +100,16 @@ const options = {
       this.navigation?.show(current);
       paint(this);
     },
-    hide(this: NativeBar) { this.navigation?.hide(); },
-    cover(this: NativeBar, owner: string, active: boolean) {
+    hide(this: NativeBar) {
+      this.covering?.delete(PRIMARY_NAVIGATION_BLACKOUT_OWNER);
+      this.navigation?.hide();
+    },
+    cover(this: NativeBar, owner: string, active: boolean, blackout?: PrimaryNavigationBlackout) {
       if (!this.alive || !this.covering) return;
-      if (active) this.covering.add(owner); else this.covering.delete(owner);
+      if (active) this.covering.set(owner, blackout ?? null); else this.covering.delete(owner);
       paint(this);
     },
+    block() { /* The native blackout owns touches through the complete reveal. */ },
     open(this: NativeBar, event: Parameters<NativeBar["open"]>[0]) {
       const route = event.currentTarget.dataset.route;
       const page = Taro.getCurrentPages().at(-1);

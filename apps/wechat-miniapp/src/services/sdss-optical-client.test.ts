@@ -46,7 +46,7 @@ test("actual client requests the admitted immutable target through the existing 
 });
 
 test("source download links exist for each real target and reject forged publication identities", () => {
-  const download = vm.runInNewContext(ts.transpileModule(declaration("./api-client.ts", "deepSkyManifestUrl") + "\ndeepSkyManifestUrl;",
+  const download = vm.runInNewContext(ts.transpileModule(declaration("./sky-catalog-api.ts", "deepSkyManifestUrl") + "\ndeepSkyManifestUrl;",
     {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText, {SDSS_OPTICAL_PUBLICATIONS, MINIAPP_API_BASE_PATH,
     __MINIAPP_API_BASE__: "http://127.0.0.1:8791", ...skyResourceOriginTestOwner("http://127.0.0.1:8791")}) as (id:string)=>string|undefined;
   for (const offer of Object.values(SDSS_OPTICAL_PUBLICATIONS)) {

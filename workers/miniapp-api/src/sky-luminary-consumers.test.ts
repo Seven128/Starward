@@ -64,7 +64,15 @@ test("information shares scientific identity, real publication credit and recove
   for (const reference of ["SOLAR:SUN", "SOLAR:MOON"]) {
     const result = info.get(reference);
     matchingCelestialInformationResponse(result, reference);
-    assert.equal(result.data.sources.length, 2);
+    const body = reference === "SOLAR:SUN" ? "sun" : "moon";
+    assert.ok(result.data.sources.some(source => source.id === `nasa-nssdca-${body}-fact-sheet`));
+    assert.ok(result.data.sources.some(source => source.id === (body === "sun"
+      ? "hestroffer-magnan-1998-solar-limb" : "usgs-clementine-uv750-v2")));
+    const editorial = result.data.sources.filter(source => source.kind === "EDITORIAL_REFERENCE");
+    assert.equal(editorial.length, 1, "the adopted body introduction retains its independent credit");
+    assert.equal(editorial[0]!.license, "CC-BY-SA-4.0");
+    assert.ok(editorial[0]!.attribution?.url);
+    assert.equal(new Set(result.data.sources.map(source => source.id)).size, result.data.sources.length);
     result.data.kind = "PLANET";
     assert.throws(() => matchingCelestialInformationResponse(result, reference), /information_response_invalid/);
     assert.notEqual(info.get(reference).data.kind, "PLANET", "callers cannot poison cached facts");

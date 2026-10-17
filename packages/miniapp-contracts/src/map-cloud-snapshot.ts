@@ -1,5 +1,10 @@
 import type { DataState } from "./types.ts";
 
+/** Identity of the actual provider query cell, shared by projection and readers. */
+export function mapCloudCellId(point: { latitude: number; longitude: number }) {
+  return `cloud:query:${point.latitude.toFixed(2)}:${point.longitude.toFixed(2)}`;
+}
+
 /** An application acquisition snapshot of point forecasts, never a supplier run. */
 export interface MapCloudSnapshot {
   schemaVersion: "map-cloud-snapshot-v1";

@@ -15,7 +15,17 @@ test("both fixed Mizar introductions preserve catalogue facts, original aliases,
   assert.match(r.data.introduction!,ref==="HR:5054"?/A分量.*HR5054.*HD116656/:/B分量.*HR5055.*HD116657/);assert(r.data.limitations.some(s=>s.includes("系统")&&s.includes("分量")));
   if(ref==="HR:5055"){assert(!r.data.aliases.some(a=>a.startsWith("HIP")));assert(r.data.limitations.some(s=>s.includes("HIP")&&s.includes("缺值")));}
  }
- for(const ref of ["HR:5062","HR:5142"]){const r=info.get(ref,"zh-CN","bsc5p-bright-stars.v3"),old=basic.get(ref,"zh-CN","bsc5p-bright-stars.v3");assert.deepEqual(r.data.facts,old.data.facts);assert(!r.data.aliases.includes("开阳"));assert(!r.sources.some(s=>s.provider==="Wikipedia contributors"));}
+ for(const ref of ["HR:5062","HR:5142"]){
+  const r=info.get(ref,"zh-CN","bsc5p-bright-stars.v3"),old=basic.get(ref,"zh-CN","bsc5p-bright-stars.v3");
+  assert.deepEqual(r.data.facts,old.data.facts);assert(!r.data.aliases.includes("开阳"));
+  const editorial=r.sources.filter(s=>s.provider==="Wikipedia contributors");
+  if(ref==="HR:5062"){
+   assert.equal(editorial.length,1);assert.match(editorial[0]!.sourceUrl!,/title=Alcor/u);
+   assert.match(editorial[0]!.precision!,/HR 5062 \/ HD 116842 \/ HIP 65477/u);
+   assert.equal(editorial[0]!.license,"CC-BY-SA-4.0");assert(r.data.aliases.includes("開陽增一"));
+   assert(!editorial.some(s=>info.get("HR:5054","zh-CN","bsc5p-bright-stars.v3").sources.some(other=>other.id===s.id)),"Alcor must not borrow Mizar's introduction");
+  }else assert.equal(editorial.length,0);
+ }
 });
 test("Mizar HIP absence and exact A versus B catalogue identity reject cross-component substitution",()=>{
  const catalog=loadBsc5pStarCatalog("bsc5p-bright-stars.v3"),a=catalog.rows.find(r=>r.sourceId==="HR:5054")!,b=catalog.rows.find(r=>r.sourceId==="HR:5055")!;assert(publishedStarIntroduction(a));assert(publishedStarIntroduction(b));assert.equal(b.hip,null);

@@ -24,7 +24,7 @@ test('actual page previews the fractional public time and withholds fine target 
  preview(.25);assert.equal(time.snapshot().at,'2026-10-14T00:15:00.000Z');
  current=false;preview(.75);assert.equal(time.snapshot().at,'2026-10-14T00:15:00.000Z','retired UI cannot replace current time');
  const binding=expression('fineTargetBinding'),at=time.snapshot().at;
- const input={timePresentation:{mode:'MODEL'},timePlaying:false,timeScrubbing:true,rawReportData,requestedAt:at};
+ const input={carriedReport:null,timePresentation:{mode:'MODEL'},timePlaying:false,timeScrubbing:true,rawReportData,requestedAt:at};
  assert.equal(vm.runInNewContext(binding,input),null);
  assert.equal(vm.runInNewContext(binding,{...input,timeScrubbing:false}).at,at);
 });

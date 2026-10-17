@@ -54,7 +54,7 @@ function fixture() {
   let uploadFails = false;
   const run = evaluate(addPhotoSource, {
     baseline: { spotId: "spot:a", revision: 1 }, busy: false, uploading: false, submitted: false,
-    submitBusy: { current: false }, mediaBusy, operations, editorOwner: { current: "owner:a" },
+    submitBusy: { current: false }, pendingSubmit: { current: null }, mediaBusy, operations, editorOwner: { current: "owner:a" },
     currentDraftUserId: () => account, useAppStore: { getState: () => ({ accountOwnerId: account }) },
     mediaHandoff: { confirm: async () => true }, rightsConfirmed: true, MEDIA_RIGHTS_MODAL: {},
     Taro, choosePlatformImages, uploadIntent: intent, sessionAttempt: { current: null },

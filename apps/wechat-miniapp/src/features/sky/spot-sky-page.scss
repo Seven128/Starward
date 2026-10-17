@@ -2288,6 +2288,17 @@
 .sky-disclosure, .sky-navigation-actions, .sky-observer-meta { --text-primary: #F5F3EC; --text-secondary: #BEC2B8; --text-tertiary: #989E94; --primary: #A9B6FF; --on-primary: #202332; --border: #343830; }
 .sky-orientation-page { animation: sky-page-enter 220ms ease; }
 @keyframes sky-page-enter { from { opacity: 0; } to { opacity: 1; } }
+.sky-page-exit-shield {
+  position: fixed;
+  inset: 0;
+  // Match Map's route shield above ordinary floating notices (10040).
+  z-index: 10050;
+  background: #000;
+  opacity: 1;
+  animation: sky-page-exit var(--sky-page-fade-ms, 220ms) ease both;
+}
+@keyframes sky-page-exit { from { opacity: 0; } to { opacity: 1; } }
+.sky-page-exit-shield--reduced { animation: none; }
 .reduced-motion.sky-orientation-page { animation: none; }
 .theme-observation .sky-disclosure, .theme-observation .sky-navigation-actions, .theme-observation .sky-observer-meta { --text-primary: #FF6B58; --text-secondary: #D84A3C; --text-tertiary: #D84A3C; --primary: #D84A3C; --on-primary: #000; --border: #7A1E18; }
 .sky-menu-settings, .sky-menu-return { display: flex; align-items: center; gap: 10Px; width: 100%; min-height: 48Px; margin: 0; padding: 8Px 12Px; border: 0; border-top: 1Px solid var(--border); border-radius: 0; background: transparent; color: var(--text-primary); text-align: left; font-size: var(--type-body-secondary-size); line-height: var(--type-body-secondary-line); }

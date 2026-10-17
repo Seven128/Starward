@@ -69,6 +69,17 @@ function view(w: DisplayRasterWindow, span: number) {
 }
 const imageFile = (layer: any) => path.basename(layer.raster.imageUrl);
 
+test("simultaneous readers of the same cold published window share one bounded composition", async () => fixture(async ({ service, proofs }) => {
+  const bounds = view(window(11, 1672, 890), 2), version = proofs[0].datasetVersion;
+  const readers = await Promise.allSettled(Array.from({ length: 4 }, () => service.layer(version, bounds)));
+  assert.equal(readers.filter(result => result.status === "rejected").length, 0, "same-window readers must not consume all binary slots and return busy");
+  const layers = readers.map(result => result.status === "fulfilled" ? result.value : null);
+  assert.ok(layers.every(layer => layer?.raster?.validPixelCount === 131072));
+  assert.equal(new Set(layers.map(layer => layer!.raster!.imageSha256)).size, 1);
+  const image = await service.asset(version, imageFile(layers[0])); assert.ok(image);
+  assert.equal(hash(image.bytes), layers[0]!.raster!.imageSha256);
+}));
+
 test("cross-cell night-light views copy published pixels and survive cache loss through their immutable URL", async () => fixture(async ({ service, fresh, proofs }) => {
   const bounds = view(window(11, 1672, 890), 2), layer = await service.layer(proofs[0].datasetVersion, bounds); assert.ok(layer?.raster);
   assert.deepEqual(layer.raster.boundsGcj02, displayRasterWindowBounds({ ...window(11, 1672, 890), columns: 2 }));

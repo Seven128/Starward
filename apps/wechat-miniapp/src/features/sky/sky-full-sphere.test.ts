@@ -148,8 +148,8 @@ test("landscape pass and completed mask share the same continuous viewport-cente
 
 test("Scene draws fading real stars while keeping exiting and invalid-time remnants out of picking", () => {
   const stars = createSkyStarTransitions(), scope = { context: {}, at, mode: "NIGHT" };
-  const dimScene = { ...scene, catalog: { ...scene.catalog!, entries: [{ ...scene.catalog!.entries[0]!, magnitude: 6 }] },
-    publication: { ...scene.publication!, rows: [["HR:1", "Below", 6, null, 0, Math.SQRT1_2, -Math.SQRT1_2, 0, 0, 0]] } } as ResolvedStellarScene;
+  const dimScene = { ...scene, catalog: { ...scene.catalog!, entries: [{ ...scene.catalog!.entries[0]!, magnitude: 6.5 }] },
+    publication: { ...scene.publication!, rows: [["HR:1", "Below", 6.5, null, 0, Math.SQRT1_2, -Math.SQRT1_2, 0, 0, 0]] } } as ResolvedStellarScene;
   const data = { ...report, skyScene: dimScene }, basis = createSkyViewBasis(0, 45, 0)!;
   const paint = (now: number, fov: number, valid = true) => {
     const values: number[] = []; let snapshot: SkyPickSnapshot | null = null;

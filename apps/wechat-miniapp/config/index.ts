@@ -3,6 +3,7 @@ import { lstatSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { applyContractReexportRule, type ContractReexportChain } from "./contracts-reexports.cjs";
 import { releaseBundleLocation } from "../../../tools/miniapp/release-bundle-location.cjs";
+import mainBIcons from "../src/components/main-b-icon-files.json";
 import {
   defineConfig,
   type UserConfigExport,
@@ -25,7 +26,8 @@ const adoptedBRuntimeIconRoot = path.resolve(
 const adoptedBTabBarIconRoot = path.resolve(
   here, "../runtime-assets/tabbar",
 );
-const mainBIconVariants = new Set(["parking--day--default.png", "restroom--day--default.png"]);
+const mainBIconVariants = new Set(mainBIcons.mainOnlyVariants);
+const sharedMainBIcons = new Set(mainBIcons.files.filter(file => !mainBIconVariants.has(file)));
 const bTabBarIconFiles = [
   "map--day--default.png", "map--day--selected.png",
   "account-user--day--default.png", "account-user--day--selected.png",
@@ -63,28 +65,9 @@ const contentIconFiles = [
   "wind-night.svg", "wind-observation.svg",
 ] as const;
 const bIconFiles = {
-  main: [
-    "arrow-left--day--default.png", "check--day--default.png",
-    "chevron-down--day--default.png", "chevron-right--day--default.png",
-    "chevron-up--day--default.png", "close--day--default.png",
-    "cloud--day--default.png", "navigation--day--default.png",
-    "four-point-star--day--default.png",
-    "favorite-star--day--default.png", "favorite-star--day--selected.png",
-    "favorite-trail--day--default.png", "favorite-satellite--day--default.png",
-    "info--day--default.png", "layers--day--default.png",
-    "bulb--day--default.png",
-    // Native Map tabs use the dedicated weapp-tabbar files above. The runtime
-    // icon adapter has no map subject, so copying these larger twins is unused.
-    "location--day--default.png", "meteor--day--default.png", "moon--day--default.png",
-    "pencil--day--default.png",
-    "search--day--default.png", "settings--day--default.png",
-    "spot-marker--day--default.png",
-    "spot-marker--day--draft.png", "spot-marker--day--pending.png",
-    "spot-marker--day--selected.png",
-    "terrain--day--default.png",
-    "more--day--default.png",
-    "parking--day--default.png", "restroom--day--default.png",
-  ],
+  // One declaration also owns SemanticIcon's package resolution. Subpackages
+  // reuse identical main assets; the approved 96px variants stay main-only.
+  main: mainBIcons.files,
   content: [
     "favorite-star--day--default.png",
     // The article's shared facility cards use the same adopted package assets.
@@ -144,7 +127,8 @@ const bIconFiles = {
 
 function adoptedBIconCopyPatterns(outputRoot: string) {
   return [
-    ...Object.entries(bIconFiles).flatMap(([packageName, files]) => files.map((file) => ({
+    ...Object.entries(bIconFiles).flatMap(([packageName, files]) => files
+      .filter(file => packageName === "main" || !sharedMainBIcons.has(file)).map((file) => ({
     from: path.resolve(packageName === "main" && mainBIconVariants.has(file)
       ? path.resolve(adoptedBRuntimeIconRoot, "../b-icons-main") : adoptedBRuntimeIconRoot, file),
     to: path.resolve(

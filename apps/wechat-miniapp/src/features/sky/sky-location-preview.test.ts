@@ -12,6 +12,7 @@ import { createSkyObservationTime } from "./sky-observation-time";
 import { createSkyContextSession } from "./sky-context-session";
 import { skyObjectPositionIsCurrent } from "./sky-object-location";
 import { createSkyViewBasis } from "./sky-view-projection";
+import { createSkyBrowsingCamera } from "./sky-browsing-camera";
 import type { ContextVersion } from "../../services/observation-context-version";
 
 const source = ts.createSourceFile("spot-sky-page.tsx",
@@ -51,6 +52,10 @@ function harness(isPreviewing: boolean) {
     contextSession: createSkyContextSession(context.contextId, () => store), timeSaving: false,
     observationTime, timeBinding, committedAt: context.selectedAtUtc,
     orientationController: { snapshot: () => ({ alignment: { mode: "auto" } }) },
+    paintedSkyObjectsRef:{current:{width:390,height:844,view:{basis:createSkyViewBasis(0,90,0)!,verticalFovDeg:45}}},
+    presentedSkyFrameRef:{current:{nativeCanvasGeneration:1,frameAt:at,data:{context:reportContext}}},
+    canvasGenerationRef:{current:1}, zoomRef:{current:45}, canvasSize:{width:390,height:844},
+    browsingCamera:createSkyBrowsingCamera(),navigationRequestRef:{current:null},mode:"NIGHT",browsingDrawRef:{current:()=>{}},
     createSkyViewBasis, cancelSkyGestureRef: { current: () => {} }, SKY_VERTICAL_FOV_DEG: 45,
     setVerticalFovDeg: () => {}, enterManualView: () => {},
     objectSelection: selection, setSelectionState: () => {},
@@ -69,30 +74,30 @@ function harness(isPreviewing: boolean) {
     get tracked() { return tracking.snapshot().target?.reference === object.reference && tracking.snapshot().position === data; } };
 }
 
-test("locating and tracking a preview-time object keep the shared time ruler available to commit or cancel", () => {
+test("locating and tracking preserve the preview owner while restoring the expanded menu", () => {
   const locate = harness(true);
   assert.equal(locate.actions.locateCatalogObject(locate.data), true);
-  assert.equal(locate.panel, "time", "an uncommitted preview cannot survive a hidden time control");
+  assert.equal(locate.panel, "menu", "information closes to the adopted expanded menu");
   assert.equal(locate.previewCancelled, false, "the selected position still belongs to the visible preview time");
 
   const track = harness(true);
   track.actions.trackCatalogObject(track.data);
   assert.equal(track.tracked, true);
-  assert.equal(track.panel, "time");
+  assert.equal(track.panel, "menu");
 
   const committed = harness(false);
   assert.equal(committed.actions.locateCatalogObject(committed.data), true);
-  assert.equal(committed.panel, null, "a committed-time location may clear the time control");
+  assert.equal(committed.panel, "menu");
 });
 
 test("cross-midnight preview and cancel use the same report frame and local calendar date", () => {
   const names = ["committedAt", "committedRow", "committedIndex", "activeIndex", "row",
-    "isPreviewing", "presentedAt", "selectedCivilDate", "timePresentation"];
+    "isPreviewing", "presentedAt", "timePresentation"];
   const declarations = page.body!.statements.filter(statement => ts.isVariableStatement(statement) &&
     statement.declarationList.declarations.some(declaration => names.includes(declaration.name.getText(source))));
   assert.equal(declarations.length, names.length);
   const selection = ts.transpileModule(declarations.map(statement => statement.getText(source)).join("\n") +
-    "\n({ rowAt: row?.at, selectedCivilDate, isPreviewing, activeIndex });",
+    "\n({ rowAt: row?.at, selectedCivilDate: civilDateForInstant(presentedAt, routeContext.timezone), isPreviewing, activeIndex });",
     { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   const beforeMidnight = "2026-09-24T15:30:00Z";
   const afterMidnight = "2026-09-24T16:30:00Z";

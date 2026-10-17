@@ -4,6 +4,7 @@ These project rules apply throughout authorized research, design and development
 
 ## Development execution
 
+- **微信开发工具只保留当前有效源码入口和必要窗口。** 仓库是唯一源码事实源，按“仓库源码 → 完整编译产物 → 开发工具/手机候选”同步，不把生成产物反写源码。每次关闭当前开发项目之前完成或核验一次最新源码同步；已废弃快照直接退役，不重建旧代码。默认只开一个项目窗口，只有正在使用的明确隔离需要才多开；隔离结束立即关闭并移除旧入口。具体版本核对、独立副本改动保护、同步与清理边界由 [project source, snapshots and windows](project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows) 统一管理。
 - 子代理用完立即关闭；需要时新建，不复用旧子代理。
 - **Use the smallest useful runtime observation.** For Mini Program development/debugging, use `.codex/skills/starward-miniapp-development/SKILL.md` with the matching official DevTools skill. Choose tools that distinguish the current cause, reuse the confirmed session and valid evidence, and escalate only for a concrete capability gap. Console, Network, screenshots and profiling are options, not an every-change checklist; preserve the verification stopping rules below.
 - **先共享规则，再批量执行，最后处理例外。** 重复的数据、素材和验证工作先区分公共规则、数据差异与真正不同的机制，复用现有批处理和验证入口。代表路径只用于消除具体机制的不确定性；规则成立后转为批量准入、集中复核和异常队列。逐项继续必须有尚未覆盖的机制、质量异常或外部限制，不能只因换了对象。不得为每个对象复制代码、版本、脚本、测试和交接；增加同类数据应主要增加声明与批量结果，而不是新的开发循环。批量化不免除完整质量检查和最终验收。

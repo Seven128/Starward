@@ -20,7 +20,7 @@
     "worker:release": "node --conditions=production dist/worker.js",
     "migrate:release": "node --conditions=production dist/migrate.js",
     "typecheck": "node ../../tools/run-node.cjs ./node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.json",
-    "test": "node ../../tools/run-node.cjs --import tsx --test src/**/*.test.ts",
+    "test": "node ../../tools/run-node.cjs --import tsx --test \"src/**/*.test.ts\"",
     "test:integration": "node ../../tools/run-node.cjs --import tsx --test --test-concurrency=1 src/miniapp-infrastructure.test.ts src/postgres-pool-lifecycle.test.ts"
   },
   "dependencies": {

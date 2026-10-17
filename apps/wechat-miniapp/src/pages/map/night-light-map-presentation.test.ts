@@ -20,8 +20,11 @@ function expression(name: string, memo = false) {
 
 test("changing layer intent cannot paint retained cloud polygons as the selected annual light layer", () => {
   const polygons = [{ id: "real-cloud-sample", value: 0 }];
-  const environment = { scene: { data: { data: { layer: { kind: "CLOUD", polygons } } } }, projectedFrame: null,
+  const environment = { scene: { data: { data: { layer: { kind: "CLOUD", polygons } } } },
+    cloudPresentation: { layer: { kind: "CLOUD", polygons }, retaining: true }, projectedFrame: null,
+    geographicLayer: undefined as unknown,
     analysisOverlay: "LIGHT", projectedLayerPolygons, mapLayerKindForOverlay };
+  environment.geographicLayer = vm.runInNewContext(expression("geographicLayer"), environment);
   const render = vm.runInNewContext(expression("projectedPolygonSource", true), environment);
   assert.equal(render().length, 0);
   environment.analysisOverlay = "TOTAL_CLOUD";

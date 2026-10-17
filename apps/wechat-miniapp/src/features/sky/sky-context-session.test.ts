@@ -5,6 +5,8 @@ import vm from "node:vm";
 import ts from "typescript";
 import { createSkyContextSession } from "./sky-context-session.ts";
 import { createSkyObservationTime } from "./sky-observation-time.ts";
+import { skyCivilInstant, skyTimeInputAllowed } from "./sky-time-input";
+import { observationNightForInstant } from "../../components/observation-date";
 import { presentSkyTime } from "./sky-time-presentation.ts";
 import { createSkyTimeCommitContinuity } from "./sky-time-commit-continuity";
 import { skyForecastPresentation } from "../../services/forecast-presentation";
@@ -14,10 +16,10 @@ const source = ts.createSourceFile("sky.tsx", readFileSync(new URL("./spot-sky-p
 const page = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "SpotSkyPage") as ts.FunctionDeclaration;
 const statements = page.body!.statements;
 const commands = statements.filter(node => ts.isVariableStatement(node) && node.declarationList.declarations.some(d =>
-  ["skyInteractionRevision", "skyPageVisibleCurrent", "skyInteractionCurrent", "skyTimeIntentCurrent", "commitInstant", "commitIndex", "commitCivilDate"].includes(d.name.getText(source))));
+  ["skyInteractionRevision", "skyPageVisibleCurrent", "skyInteractionCurrent", "skyTimeIntentCurrent", "commitInstant", "commitIndex"].includes(d.name.getText(source))));
 const lookupEffect = statements.find(node => ts.isExpressionStatement(node) && ts.isCallExpression(node.expression) && node.expression.expression.getText(source) === "useEffect" && node.expression.arguments[0]?.getText(source).includes("contextLookup.data?.data"))!;
 const compile = (text: string) => ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText;
-const commandCode = compile(commands.map(node => node.getText(source)).join("\n") + "\n({commitIndex, commitCivilDate});");
+const commandCode = compile(commands.map(node => node.getText(source)).join("\n") + "\n({commitIndex, commitInstant});");
 
 const context = (id = "ctx:a", revision = 1) => ({ contextId: id as ObservationContext["contextId"], revision, contextFingerprint: `${id}:${revision}`, timezone: "Asia/Shanghai", selectedAtUtc: "2026-09-15T12:00:00.000Z" });
 function harness(initial = context()) {
@@ -34,7 +36,7 @@ function harness(initial = context()) {
     activeContext: initial, timeSaving: false, rawReportData: { hourly: [{ at: "2026-09-15T13:00:00.000Z" }] },
     pageVisible: true, viewportActiveRef: { current: true }, viewportMountedRef: { current: true }, contextComplete: true,
     timeBinding, datePickerOpenRef: { current: false }, cancelSkyCalibration: () => {},
-    presentSkyTime, observationTime, setTimeIntent: () => {},
+    presentSkyTime, skyTimeInputAllowed, observationNightForInstant, observationTime, setTimeIntent: () => {},
     timeCommitContinuity: createSkyTimeCommitContinuity(skyForecastPresentation), report: { data: undefined }, routeContext: { spotId: "spot:a" },
     committedAt: initial.selectedAtUtc, selectedCivilDate: "2026-09-15", contextSession: session,
     clampIndex: () => 0, setTimeSaving: (value: boolean) => saving.push(value),
@@ -44,10 +46,16 @@ function harness(initial = context()) {
     instantForCivilDate: (localDate: string) => ({ localDate, selectedAt: "2026-09-16T12:00:00Z" }),
     notify: (value: unknown) => notifications.push(value), errorMessage: () => "request failed", isMiniappRequestCancelled: () => false,
   };
-  const commands = vm.runInNewContext(commandCode, sandbox) as { commitIndex: (index: number) => void; commitCivilDate: (date: string) => Promise<void> };
+  const commands = vm.runInNewContext(commandCode, sandbox) as { commitIndex: (index: number) => void; commitInstant: (at: string) => Promise<void> };
   // The index event intentionally dispatches without returning the async commit.
   // Drain that real completion before asserting late-response publication.
-  const actions = { ...commands, commitIndex: async (index: number) => {
+  // Six-field civil controls and the ruler now share commitInstant. Feed the
+  // real civil conversion instead of exporting the removed page date command.
+  const actions = { ...commands, commitCivilDate: (date: string) => {
+    const [year, month, day] = date.split("-").map(Number);
+    const at = skyCivilInstant({year: year!, month: month!, day: day!, hour: 20, minute: 0, second: 0}, initial.timezone);
+    assert(at); return commands.commitInstant(at);
+  }, commitIndex: async (index: number) => {
     commands.commitIndex(index);
     await new Promise<void>(resolve => setImmediate(resolve));
   } };
@@ -161,7 +169,7 @@ test("actual page lifecycle hooks cancel publishing and reset the visible saving
   const h = harness(); let hide = () => {}, show = () => {}, dispose = () => {};
   const visible: boolean[] = [], saving: boolean[] = [], returning: boolean[] = [];
   const sourceReturnRef = { current: true };
-  const skyDisplaySettingsPendingRef = { current: {} as object | null };
+  const orientationSettingsOpeningRef = { current: {} as object | null };
   let calibrationCancelled = 0;
   vm.runInNewContext(compile([...lifecycle, ...hooks].map(node => node.getText(source)).join("\n")), {
     contextSession: h.session, setPageVisible: (value: boolean) => visible.push(value),
@@ -172,7 +180,7 @@ test("actual page lifecycle hooks cancel publishing and reset the visible saving
     hideSkyPageRef:{current:()=>{}},showSkyPageRef:{current:()=>{}},
     viewportActiveRef:h.sandbox.viewportActiveRef,viewportMountedRef:h.sandbox.viewportMountedRef,
     viewportMeasurementRevision:{current:0},opticalSourcesOpeningRef:{current:null},skyReturnPendingRef:{current:null},
-    orientationSettingsOpeningRef:{current:null}, skyDisplaySettingsPendingRef,
+    orientationSettingsOpeningRef,
     skyTapRef:{current:null},cancelSkyGestureRef:{current:()=>{}},stopBrowsingAnimation:()=>{},hideCompass:()=>{},showCompass:()=>{},
     measureBottomControls:()=>{},canvasLifecycle:{hide:()=>{}},
     useDidHide: (fn: () => void) => { hide = fn; }, useDidShow: (fn: () => void) => { show = fn; },
@@ -182,7 +190,7 @@ test("actual page lifecycle hooks cancel publishing and reset the visible saving
   assert.equal(calibrationCancelled, 1, "hiding also retires a pending normal-scale calibration action");
   assert.equal(h.session.isCurrent(old), false); assert.deepEqual(visible, [false]); assert.deepEqual(saving, [false]);
   show(); assert.equal(sourceReturnRef.current, false); assert.deepEqual(returning, [false]);
-  assert.equal(skyDisplaySettingsPendingRef.current, null, "return clears stale display Settings navigation");
+  assert.equal(orientationSettingsOpeningRef.current, null, "return clears the actual Settings navigation owner");
   const next = h.session.begin(context())!; assert.ok(next); dispose();
   assert.equal(h.session.isCurrent(next), false);
 });

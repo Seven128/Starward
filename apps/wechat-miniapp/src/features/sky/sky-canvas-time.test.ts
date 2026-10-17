@@ -126,7 +126,7 @@ test("actual page invalidation clears hit testing synchronously before React hid
   const pendingSkyPaintRef={current:{snapshot:paintedSkyObjectsRef.current} as object|null};
   let presented: object|null=paintedSkyObjectsRef.current, size={width:400,height:800};
   const invalidated=vm.runInNewContext(ts.transpileModule(`(${callback})`,{compilerOptions:{target:ts.ScriptTarget.ES2020}}).outputText,
-    {paintedSkyObjectsRef,pendingSkyPaintRef,setPresentedSkyFrame(value:object|null){presented=value;},
+    {paintedSkyObjectsRef,pendingSkyPaintRef,canvasSurfaceRef:{current:null},setPresentedSkyFrame(value:object|null){presented=value;},
       setCanvasSize(update:(value:typeof size)=>typeof size){size=update(size);}});
   invalidated();assert.equal(paintedSkyObjectsRef.current,null);
   assert.equal(pendingSkyPaintRef.current,null);assert.equal(presented,null);

@@ -106,48 +106,61 @@ test("Map retry never announces success for a failed or stale owner and leaves n
   assert.equal((await retryMap({}, true, ["fresh", "fresh"])).announcements.at(-1), "当前区域已刷新");
 });
 
-test("Map empty/error panel keeps concise recovery instead of rendering provider diagnostics", () => {
+// Follow the rendered feedback branch, including its current compact retry
+// control. A particular component name is not the recovery contract.
+function sceneFeedback(scope: Record<string, unknown>) {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let expression = "";
   const visit = (node: ts.Node) => {
-    if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(source) === "StatusPanel" &&
-      node.getText(source).includes('state={pageState}')) {
-      const detail = node.attributes.properties.find(item => ts.isJsxAttribute(item) && item.name.getText(source) === "detail") as ts.JsxAttribute;
-      expression = (detail.initializer as ts.JsxExpression).expression!.getText(source);
+    if (ts.isConditionalExpression(node) && node.condition.getText(source).includes('pageState !== "EMPTY"') &&
+      node.whenTrue.getText(source).includes("state={pageState}")) expression = node.getText(source);
+    ts.forEachChild(node, visit);
+  };
+  visit(source); assert.ok(expression, "the actual Map scene-feedback branch is exercised");
+  return vm.runInNewContext(ts.transpileModule(`(${expression});`, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React },
+  }).outputText, {
+    mapTerrainLoading: false, mapDataStale: false, layerSheetOwnsSceneFailure: false,
+    bootstrapReplacementBlocked: false, visibleSpotContextAttempt: null, bottomPresentation: "none",
+    StatusPanel: "StatusPanel", SoftButton: "SoftButton",
+    React: { createElement: (type: string, props: object) => ({ type, props }) }, ...scope,
+  });
+}
+
+test("Map empty availability and error recovery keep provider diagnostics out of visible feedback", async () => {
+  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let notice = "", search = "";
+  const visit = (node: ts.Node) => {
+    if (ts.isVariableDeclaration(node) && node.name.getText(source) === "ordinaryMapNotice") notice = node.initializer!.getText(source);
+    if (ts.isJsxElement(node) && node.openingElement.tagName.getText(source) === "Button" &&
+      node.openingElement.getText(source).includes('data-control="map-search-entry"')) {
+      const action = node.openingElement.attributes.properties.find(item => ts.isJsxAttribute(item) && item.name.getText(source) === "onClick") as ts.JsxAttribute;
+      search = (action.initializer as ts.JsxExpression).expression!.getText(source);
     }
     ts.forEachChild(node, visit);
   };
-  visit(source);
-  assert.ok(expression);
-  for (const pageState of ["EMPTY", "ERROR"]) {
-    const diagnostic = "provider_internal_diagnostic";
-    const text = vm.runInNewContext(expression, { pageState,
-      bootstrapContext: { isError: false }, scene: { isError: pageState === "ERROR", error: diagnostic, data: { warnings: [diagnostic] } },
-      isOfflineError: () => false, errorMessage: (error: unknown) => String(error),
-    });
-    assert.equal(text.includes(diagnostic), false);
-    assert.ok(text.includes(pageState === "EMPTY" ? "搜索" : "重试"));
-  }
+  visit(source); assert.ok(notice && search, "empty availability retains the real search action");
+  const diagnostic = "provider_internal_diagnostic", actions: string[] = [];
+  const failed = sceneFeedback({ pageState: "ERROR", scene: { error: diagnostic }, refreshMap: async () => actions.push("retry") });
+  assert.equal(failed.type, "SoftButton"); assert.match(failed.props.label, /刷新|重试/u);
+  assert.equal(JSON.stringify(failed.props).includes(diagnostic), false);
+  await failed.props.onClick(); assert.deepEqual(actions, ["retry"], "the compact recovery reaches the real retry owner");
+  assert.equal(sceneFeedback({ pageState: "EMPTY" }), null, "ordinary availability uses its floating message, without a persistent error card");
+  const emptyNotice = vm.runInNewContext(notice, {
+    pageVisible: true, mapRuntimeError: null, mapContextFailed: false, mapSceneFailed: false,
+    scene: { isPending: false, isFetching: false, data: { warnings: [diagnostic] } }, analysisOverlay: "NORMAL",
+    bottomPresentation: "none", pageState: "EMPTY", hasGeographicLayer: false,
+  });
+  assert.equal(emptyNotice, "当前区域暂无观星点"); assert.equal(emptyNotice.includes(diagnostic), false);
+  const openSearch = vm.runInNewContext(ts.transpileModule(`(${search});`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText,
+    { openMapPage: (route: string) => actions.push(route) });
+  openSearch({ stopPropagation() {} }); assert.deepEqual(actions, ["retry", "/spot/search/index"]);
 });
 
 test("a retained point resolution owns its pending and cancelled feedback without a phantom map loader", () => {
-  const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  let condition = "";
-  const visit = (node: ts.Node) => {
-    if (ts.isConditionalExpression(node)) {
-      let body = node.whenTrue;
-      while (ts.isParenthesizedExpression(body)) body = body.expression;
-      if (ts.isJsxSelfClosingElement(body) && body.tagName.getText(source) === "StatusPanel" && body.getText(source).includes("state={pageState}"))
-        condition = node.condition.getText(source);
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(source);
-  assert.ok(condition);
-  const shown = (pageState: string, blocked: boolean, attempt: { pending: boolean } | null, presentation = "spot-panel") => vm.runInNewContext(condition, {
-    pageState, bootstrapReplacementBlocked: blocked, visibleSpotContextAttempt: attempt,
-    bottomPresentation: presentation, mapDataStale: false, layerSheetOwnsSceneFailure: false,
-  });
+  const shown = (pageState: string, blocked: boolean, attempt: { pending: boolean } | null, presentation = "spot-panel") =>
+    sceneFeedback({ pageState, bootstrapReplacementBlocked: blocked, visibleSpotContextAttempt: attempt,
+      bottomPresentation: presentation, refreshMap() {} }) !== null;
   assert.equal(shown("LOADING", true, { pending: false }), false, "cancelled selection has an owned retry, no running map request");
   assert.equal(shown("LOADING", true, { pending: true }), false, "pending selection already explains its own loading");
   assert.equal(shown("LOADING", false, null), true, "normal cold map loading remains visible");

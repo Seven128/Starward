@@ -6,7 +6,7 @@ import { Provenance } from "@/components/provenance";
 import { SkyStatusPanel as StatusPanel } from "@/features/sky/sky-status-panel";
 import { useResourceQuery } from "@/hooks/use-resource-query";
 import { useThemeClass } from "@/hooks/use-theme";
-import { getSkyTargetInstant } from "@/services/api-client";
+import { getSkyTargetInstant } from "@/services/sky-celestial-client";
 import { skyTargetInstantQueryKey } from "@/services/sky-target-instant-response";
 import { useAppStore } from "@/state/app-store";
 import { parseSkyTargetSourceSelection, skyTargetSourceContextMatches } from "@/features/sky/sky-target-sources-route";

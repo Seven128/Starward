@@ -11,6 +11,12 @@ import { terrainFixedRequest, terrainRequestKey } from "./terrain-request.ts";
 import { createTerrainViewportRenderer } from "./terrain-viewport-renderer.ts";
 import { terrainInventoryVersion, type TerrainFixedInventory } from "./terrain-fixed-publication.ts";
 
+function deferred() {
+  let resolve!: () => void;
+  const promise = new Promise<void>(done => { resolve = done; });
+  return { promise, resolve };
+}
+
 function continuousSource() {
   let reads = 0;
   const transport: typeof fetch = async url => {
@@ -26,6 +32,129 @@ function continuousSource() {
   };
   return { transport, reads: () => reads };
 }
+
+test("overlapping fixed cells share actual source fetches and one cancelled cell does not cancel its neighbour", async () => {
+  const source = continuousSource(), gate = deferred(), calls: string[] = [];
+  const renderer = createTerrainViewportRenderer(async (url, options) => {
+    calls.push(String(url)); await gate.promise; options?.signal?.throwIfAborted();
+    return source.transport(url, options);
+  });
+  const cancelled = new AbortController(), survivor = new AbortController();
+  const request = (x: number) => terrainFixedRequest({ grid: DISPLAY_RASTER_GRID, zoom: 12, x, y: 1700, span: 1, tilePixels: 256 });
+  const first = renderer.render(request(3344), cancelled.signal), second = renderer.render(request(3345), survivor.signal);
+  const firstResult = assert.rejects(first, /superseded/u);
+  try {
+    await new Promise<void>(resolve => setImmediate(resolve));
+    assert.ok(calls.length > 0); assert.equal(calls.length, new Set(calls).size, "shared source URLs are fetched only once");
+    cancelled.abort(new Error("superseded")); await firstResult;
+    gate.resolve();
+    const result = await second; assert.ok(result?.publication.validPixelPercent);
+    assert.deepEqual(result.publication.sourceIssues, []);
+    assert.equal(survivor.signal.aborted, false);
+  } finally {
+    gate.resolve(); cancelled.abort(new Error("superseded")); survivor.abort(); renderer.close();
+    await Promise.allSettled([firstResult, second]);
+  }
+});
+
+test("a cold window overlaps two cell reads without exceeding the shared source budget", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "starward-window-overlap-"));
+  const source = continuousSource(), renderer = createTerrainViewportRenderer(source.transport);
+  const ready = deferred(), gate = deferred();
+  let active = 0, peak = 0, calls = 0;
+  const terrain = new TerrainService({ directory, renderer: async (input, signal) => {
+    active++; calls++; peak = Math.max(peak, active);
+    if (active === 2) ready.resolve();
+    try { await gate.promise; signal.throwIfAborted(); return await renderer.render(input, signal); }
+    finally { active--; }
+  } });
+  const bounds = displayRasterBounds({ grid: DISPLAY_RASTER_GRID, zoom: 12, x: 3344, y: 1700, span: 2, tilePixels: 256 });
+  const request = { purpose: "MAP" as const, center: { system: "GCJ02" as const,
+    latitude: (bounds.north + bounds.south) / 2, longitude: (bounds.west + bounds.east) / 2 }, viewportBounds: bounds };
+  const publication = terrain.getPublication(request);
+  let deadline: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([ready.promise, new Promise<never>((_, reject) => {
+      deadline = setTimeout(() => reject(new Error("second cell did not start before first completion")), 2000);
+    })]);
+    clearTimeout(deadline); assert.equal(calls, 2); assert.equal(peak, 2);
+    gate.resolve();
+    const result = await publication; assert.ok(result?.fixedWindow);
+    assert.equal(result.sourceIssues?.length ?? 0, 0);
+    assert.equal(result.fixedWindow.cells.length, result.fixedWindow.columns * result.fixedWindow.rows);
+    assert.ok(result.fixedWindow.cells.every(cell => cell.file && cell.publicationId));
+    assert.equal(peak, 2, "overlap cannot increase the existing global source limit");
+    assert.equal((await terrain.getPublication(request))?.image.sha256, result.image.sha256);
+  } finally {
+    clearTimeout(deadline); gate.resolve(); terrain.close();
+    await publication.catch(() => undefined); renderer.close(); await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("two cold windows wait for shared slots without turning capacity into missing terrain", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "starward-window-shared-slots-"));
+  const source = continuousSource(), renderer = createTerrainViewportRenderer(source.transport);
+  const ready = deferred(), gate = deferred();
+  let active = 0, peak = 0;
+  const terrain = new TerrainService({ directory, renderer: async (input, signal) => {
+    active++; peak = Math.max(peak, active);
+    if (active === 2) ready.resolve();
+    try { await gate.promise; signal.throwIfAborted(); return await renderer.render(input, signal); }
+    finally { active--; }
+  } });
+  const request = (x: number) => {
+    const bounds = displayRasterBounds({ grid: DISPLAY_RASTER_GRID, zoom: 12, x, y: 1700, span: 2, tilePixels: 256 });
+    return { purpose: "MAP" as const, center: { system: "GCJ02" as const,
+      latitude: (bounds.north + bounds.south) / 2, longitude: (bounds.west + bounds.east) / 2 }, viewportBounds: bounds };
+  };
+  const pending = Promise.all([terrain.getPublication(request(3344)), terrain.getPublication(request(3345))]);
+  let deadline: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([ready.promise, new Promise<never>((_, reject) => {
+      deadline = setTimeout(() => reject(new Error("concurrent source readers did not start")), 2000);
+    })]);
+    clearTimeout(deadline); gate.resolve();
+    const results = await pending;
+    assert.equal(peak, 2);
+    for (const result of results) {
+      assert.ok(result?.fixedWindow); assert.equal(result.sourceIssues?.length ?? 0, 0);
+      assert.ok(result.fixedWindow.cells.every(cell => cell.file && cell.publicationId));
+      assert.ok((await terrain.getAsset(result.image.file)).bytes.length > 0);
+    }
+  } finally {
+    clearTimeout(deadline); gate.resolve(); terrain.close(); await pending.catch(() => undefined);
+    renderer.close(); await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("cached cells between new neighbours do not serialize their source reads", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "starward-window-cached-neighbours-"));
+  const source = continuousSource(), renderer = createTerrainViewportRenderer(source.transport);
+  const gate = deferred(), ready = deferred(); let hold = false, started = 0;
+  const terrain = new TerrainService({ directory, renderer: async (input, signal) => {
+    if (hold) { if (++started === 2) ready.resolve(); await gate.promise; }
+    signal.throwIfAborted(); return renderer.render(input, signal);
+  } });
+  const cell = { grid: DISPLAY_RASTER_GRID, zoom: 12, x: 3344, y: 1700, span: 1 as const, tilePixels: 256 as const };
+  let publication: ReturnType<TerrainService["getPublication"]> | undefined, deadline: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await terrain.prepareFixedCell(cell); await terrain.prepareFixedCell({ ...cell, y: cell.y + 1 });
+    hold = true;
+    const bounds = displayRasterBounds({ ...cell, span: 2 });
+    publication = terrain.getPublication({ purpose: "MAP", center: { system: "GCJ02", latitude: (bounds.north + bounds.south) / 2,
+      longitude: (bounds.west + bounds.east) / 2 }, viewportBounds: bounds });
+    await Promise.race([ready.promise, new Promise<never>((_, reject) => {
+      deadline = setTimeout(() => reject(new Error("cached middle cell serialized new neighbours")), 2000);
+    })]);
+    clearTimeout(deadline); gate.resolve();
+    const result = await publication;
+    assert.equal(started, 2); assert.equal(result?.fixedWindow?.cells.length, 4);
+    assert.deepEqual(result?.sourceIssues, []);
+  } finally {
+    clearTimeout(deadline); gate.resolve(); terrain.close(); await publication?.catch(() => undefined); renderer.close();
+    assert.equal(path.dirname(directory), path.resolve(tmpdir())); await rm(directory, { recursive: true, force: true });
+  }
+});
 
 test("one fixed cell preserves identical pixels through an overlapping metatile boundary using its halo", async () => {
   const source = continuousSource(), renderer = createTerrainViewportRenderer(source.transport);

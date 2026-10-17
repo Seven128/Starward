@@ -70,7 +70,8 @@ test("real BSC5P catalog flows through a formal spot sky HTTP frame into the mat
     assert.equal(scene.catalog!.catalogVersion, "bsc5p-bright-stars.v2");
     assert.equal(scene.catalog!.entries.length, 8404);
     const frame = resolveSkySceneFrame(scene, report.data.hourly[0].at);
-    const actual = positionBsc5pCatalog({ at: report.data.hourly[0].at, ...scene.observer! }).filter(p => p.visible);
+    const actual = positionBsc5pCatalog({ at: report.data.hourly[0].at, ...scene.observer! });
+    assert.ok(actual.some(point => !point.visible), "full-sphere browsing retains real below-horizon positions");
     assert.equal(frame?.points.length, actual.length);
     frame!.points.forEach(([index, azimuth, altitude], i) => {
       assert.equal(scene.catalog!.entries[index]!.sourceId, actual[i]!.sourceId);

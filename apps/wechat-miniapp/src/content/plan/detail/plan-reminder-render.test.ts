@@ -21,7 +21,7 @@ test("saved personal reminder name remains visible beside its offset, notificati
     jsx: ts.JsxEmit.React, target: ts.ScriptTarget.ES2022,
   } }).outputText, {
     React: { createElement: (type: string, props: unknown, ...children: unknown[]) => ({ type, props, children }) },
-    View: "View", Text: "Text", Button: "Button", StatusPanel: "StatusPanel",
+    View: "View", Text: "Text", Button: "Button", StatusPanel: "StatusPanel", SemanticIcon: "SemanticIcon", mode: "DAY",
     activePlan: { planId: "plan:1", reminders: [{ reminderId: "r1", title: "出发前检查设备",
       hoursBeforeDeparture: 1, items: [{ itemId: "i1", text: "检查相机电池", completed: true }] }] },
     reminderNotifications: [], planReminderStatusLabel: () => "通知未开启",

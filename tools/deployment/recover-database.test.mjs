@@ -11,6 +11,7 @@ import { createSkyStaticBackup, readSkyStaticBackup } from "./sky-static-backup.
 import { skyStaticHash, validateSkyStaticBundle, writeSkyStaticBundle } from "./sky-static-bundle.mjs";
 import { loadSkyStaticDelivery, prepareSkyStaticDelivery } from "./sky-static-release.mjs";
 import { createReleaseEnvironmentFixture } from "./test-support.mjs";
+import { assertSkyStaticFixtureBytes, createManagedSkyStaticFixture, skyStaticFixtureSize } from "./sky-static-test-support.mjs";
 
 const revision = "a".repeat(40);
 const imageDigest = `sha256:${"b".repeat(64)}`;
@@ -138,9 +139,7 @@ async function addSkyRecoverySnapshot({ input, root }) {
 }
 
 async function cachedSkyRecovery(f, fault) {
-  const original = path.resolve("output/sky-static-owner-independent-1002-r4/normal-store");
-  const inventoryBytes = await readFile(path.join(original, "prepared-inventory.json"));
-  const inventory = JSON.parse(inventoryBytes.toString("utf8"));
+  const { directory: original, inventoryBytes, inventory } = await createManagedSkyStaticFixture(path.join(f.root, "original-sky"));
   f.input.validation.operations.backupDirectory = path.join(f.root, "backups");
   f.input.validation.operations.receiptDirectory = path.join(f.root, "receipts");
   const { record } = await createSkyStaticBackup({ bundleDirectory: path.join(original, inventory.generation, "publication"),
@@ -205,11 +204,12 @@ test("authenticated archived Sky recovery restores real PNG sources with zero or
     assert.equal(result.receipt.skyRestore.sourceAdmission, "VERIFIED_BACKUP_RESTORED_ORIGINAL_METADATA");
     assert.equal(result.receipt.skyRestore.runtimeApplied, false);
     assert.equal(result.receipt.steps[0].name, "sky-managed-prepared-restore");
-    assert.equal(result.receipt.skyRestore.files, 2); assert.equal(result.receipt.skyRestore.bytes, 6838);
+    assert.equal(result.receipt.skyRestore.files, skyStaticFixtureSize.files); assert.equal(result.receipt.skyRestore.bytes, skyStaticFixtureSize.bytes);
     assert.deepEqual(selected.imageCalls, []);
     const snapshot = await readSkyStaticBackup({ backupDirectory: f.input.validation.operations.backupDirectory, record: selected.record });
     const restored = await validateSkyStaticBundle(result.receipt.skyRestore.directory);
     assert.deepEqual(restored.records, snapshot.bundle.records);
+    await assertSkyStaticFixtureBytes(restored.directory);
     const pointer = JSON.parse(await readFile(path.join(result.receipt.skyRestore.storeDirectory, "prepared-inventory.json"), "utf8"));
     for (let i = 0; i < pointer.sources.length; i++) for (const [file, bytes] of [["index.json", snapshot.sourceMetadata[i].indexBytes],
       ["delivery.caddy", snapshot.sourceMetadata[i].fragmentBytes], ["image-artifact.json", snapshot.sourceMetadata[i].artifactBytes]])
@@ -277,7 +277,8 @@ test("managed Sky recovery admits original cached sources and restores every old
     assert.equal(result.receipt.skyRestore.sources, selected.inventory.sources.length);
     assert.equal(result.receipt.steps[0].name, "sky-managed-prepared-restore");
     const restored = await validateSkyStaticBundle(result.receipt.skyRestore.directory);
-    assert.equal(restored.files, 2); assert.equal(restored.bytes, 6838);
+    assert.equal(restored.files, skyStaticFixtureSize.files); assert.equal(restored.bytes, skyStaticFixtureSize.bytes);
+    await assertSkyStaticFixtureBytes(restored.directory);
     assert.equal(restored.publicationHash, selected.record.publicationHash);
     const pointer = JSON.parse(await readFile(path.join(f.input.skyManagedRestoreDirectory, "prepared-inventory.json"), "utf8"));
     assert.deepEqual(pointer.sources.map(({ revision, imageDigest, imagePublicationHash }) => ({ revision, imageDigest, imagePublicationHash })),

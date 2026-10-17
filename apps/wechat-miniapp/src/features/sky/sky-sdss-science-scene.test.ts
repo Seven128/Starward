@@ -23,6 +23,7 @@ import { registerSkyTanOpticalField } from "./sky-tan-optical-registration";
 import { skyExactTargetOpticalIdentity, type SkyExactTargetOpticalImage } from "./sky-target-optical-identity";
 import { submitSkySceneTargetOptical } from "./sky-target-optical-scene";
 import { preparedOpticalTestPublication } from "./sky-prepared-optical-test-support";
+import * as readyArtwork from "./sky-ready-artwork";
 import { createSkyReadyImages } from "./sky-ready-presentation";
 const preparedFixture = preparedOpticalTestPublication("scene"), prepared = preparedFixture.publication;
 const preparedRetirements: Array<() => void> = [];
@@ -163,20 +164,39 @@ test("late exact detail preserves its accepted same-source parent and advances c
   }
 });
 
-test("offscreen prepared exact fields retain the original measured-empty infrared fallback without a clock", () => {
+test("offscreen exact fields preserve an already displayed W3 fallback and reveal a newly prepared one", () => {
   const w = world(), s = surface({ qualification: empty, receipt: receipt(empty,"unknown","unknown") });
-  const ready = createSkyReadyImages().prepare(10000), base = s.actual.artworkLevels;
+  const base = s.actual.artworkLevels;
+  const infraredWeights: number[] = [];
   s.actual.artworkLevels = (levels, view, target, resolve) => {
-    assert(resolve); assert.deepEqual(resolve({ coarse: false, fine: false }), { coarse: 0, fine: 0 });
+    assert(resolve);
+    if (levels.composite === "infrared-cutout") {
+      assert.strictEqual(levels.fine?.image, infrared.image);
+      assert.equal(levels.coarse, null);
+      const weights = resolve({ fine: true, coarse: false });
+      infraredWeights.push(weights.fine);
+      return { submitted: weights.fine > 0, finePrepared: true, coarsePrepared: false };
+    }
+    assert.deepEqual(resolve({ coarse: false, fine: false }), { coarse: 0, fine: 0 });
     // The GPU must perform its actual empty qualification in this case, rather
     // than confuse offscreen fields with a visible first zero-display frame.
     return base(levels,view,target);
   };
-  const result = paint(s, w.frame, { 42: ready });
-  assert(result.sources?.sdssOptical && result.sources.sdssOptical.kind !== "legacy");
-  assert.equal(result.sources.sdssOptical.participatingFields.length, 0, "a completed empty receipt is not a visible photo credit");
+  const images = createSkyReadyImages();
+  for (const [now, weight] of [[10000, 0], [10080, .5], [10160, 1]]) {
+    const ready = images.prepare(now!), result = paint(s, w.frame, { 42: ready });
+    assert(result.sources?.sdssOptical && result.sources.sdssOptical.kind !== "legacy");
+    assert.equal(result.sources.sdssOptical.participatingFields.length, 0, "a completed empty receipt is not a visible photo credit");
+    assert.equal(infraredWeights.at(-1), weight);
+    assert.strictEqual(result.sources.deepSkyImage, weight ? infrared.image : null,
+      "only actual displayed W3 weight earns its source credit");
+    assert.deepEqual(result.failures, []); ready.commit();
+    assert.equal(ready.animating, weight !== 1);
+  }
+  const retained = images.prepare(20000), result = paint(s, w.frame, { 42: retained }); retained.commit();
+  assert.equal(infraredWeights.at(-1), 1, "another empty optical frame cannot restart valid W3 readiness");
   assert.strictEqual(result.sources?.deepSkyImage, infrared.image);
-  assert.deepEqual(result.failures, []); assert.equal(ready.animating, false); assert(s.getters.length > 0);
+  assert.equal(retained.animating, false); assert(s.getters.length > 0);
   w.retireFine(); w.retireCoarse();
 });
 type SceneArgs = Parameters<typeof drawSkyScene>;
@@ -381,6 +401,7 @@ test("bounded helper mutations expose expected-ready and exact-context regressio
     const output = ts.transpileModule(text, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
     const exports: Record<string, unknown> = {};
     vm.runInNewContext(output, { exports, require(name: string) {
+      if (name === "./sky-ready-artwork") return readyArtwork;
       if (name === "./sky-artwork-loader") return { skyNativeImageIsCurrent: () => true };
       if (name === "./sky-tan-optical-registration") return { registerSkyTanOpticalField };
       if (name === "./sky-target-optical-identity") return { skyExactTargetOpticalIdentity };

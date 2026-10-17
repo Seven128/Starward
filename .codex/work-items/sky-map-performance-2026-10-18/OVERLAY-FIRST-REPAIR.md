@@ -1,0 +1,55 @@
+# Overlay first performance batch
+
+2026-10-18. The user assigned primary implementation to `最新开发` and explicitly authorized notifying `最新开发 (2)` to stop duplicate implementation. That fork acknowledged and is idle; it was interrupted before writing a final handoff. Its existing changes were preserved and read directly. No commits, pushes, shared-service shutdown or phone-account cleanup occurred.
+
+## Evidence before this batch
+
+The prior integrated consumer-repair run completed successfully before these overlay production edits: contracts84/84; API956pass/0fail/38skip; Mini Program2599pass/0fail/1skip; SDK, assets and all three typechecks passed. These results do not cover later overlay edits. Both independent consumer reviews remain valid for their bound test-only changes.
+
+The phone was on DAY Map with terrain enabled at recovery. Guarded captures succeeded. Another active fork created recording1792269208387 while this thread received a session-busy rejection; after discovering that shared ownership, this thread stopped competing phone/source operations and the user selected one primary owner. The explicitly successful reverse-pan recording1792269362925 is copied into the existing private review directory's `overlay-baseline-1018/return-warm.mp4`. A2fps contact sheet shows valid retained terrain during movement and a subsequent loading notice, but contains only a short encoded timeline. It is not a complete wall-clock latency measurement or proof that a cold boundary was crossed.
+
+The current local API's bounded in-memory telemetry was read through its normal authenticated operations endpoint using a dedicated ephemeral LOCAL_TEST identity, after public capability verification. No phone token/storage or real WeChat login was read. Only allowlisted durations, counts, states and public-asset hashes were saved in ignored `tmp/overlay-telemetry-safe.json`; private operation/account data was discarded.
+
+- One retained cold-window metadata sample took8042ms; included source-cell derivations took3469/889/2349ms, with source I/O wall times2945/353/1770ms. The completed163743-byte asset read took2.28ms.
+- Recent warm requests reused the same asset hash, with metadata reads around0.08–0.14ms, sometimes twice after one movement.
+- The cold sample overlapped another host test workload; it is a bottleneck clue, not a clean before/after benchmark. The API uses the real terrain reader but fixture weather and an in-memory repository; the original fixed terrain/r6 environment has not been restored.
+
+## Retained server repair from the fork
+
+`terrain-window-renderer.ts` now starts at most one following cell while consuming the current cell in geographic order. `terrain-service.ts` allows children of its at-most-two admitted windows to wait for the existing two source slots instead of turning capacity contention into missing terrain. Public source requests keep their existing busy rule. The window lifetime cancels its remaining look-ahead consumer on completion/failure; shared readers retain their independent cancellation.
+
+Root reviewed the actual code against source/cancellation/byte-identity owners, preserved the implementation, and repaired the new tests' unsupported Promise.withResolvers TypeScript usage with a local deferred helper. Existing/focused checks:17/17, zero skip; API types passed. An isolated HEAD-source countercheck fails specifically because the second cell cannot start before the first completes, while current code passes. It never replaced working source. This establishes bounded overlap and protection semantics; actual phone and cold/warm source-performance improvement remain unverified.
+
+## Map coverage reuse
+
+`hooks/terrain-overlay-coverage.ts` admits only successful Map image coverage, with the issued request preserved. `use-terrain-overlay` retains that request while the newly requested buffered viewport fits the actual image bounds at the same or lower required fixed-grid level. Leaving coverage, requesting finer detail, a failed/unavailable image or Spot point/radius queries keep their actual new requests. No image is translated, stretched or claimed to cover an unqueried area; existing query freshness, source metadata, missing masks, image integrity, native pins and retries retain their owners. The one retained descriptor is retired with the hook.
+
+Tests execute the hook's real query-key/request wiring and the coverage selector, plus existing recovery/download lifecycle checks:20/20 pass, zero skip; Mini Program types passed. The initial fine-zoom fixture was already at the source grid's maximum level, so it was changed to a genuine lower-to-higher supported level instead of demanding impossible extra resolution. No production limit was changed. These software checks do not prove reduced phone waiting; a coherent new phone candidate is still needed. Independent review of this new client helper remains outstanding; earlier consumer-only reviews do not certify it.
+
+## Native focus and first client observation
+
+Generation5's explicitly instrumented build established actual Android native range3,394×3,148m, marker-centre residual0.0/0.7px and medium-panel boundary residual0.0px after a normal marker tap. Its temporary source was restored byte-exact after compilation. A reviewed drag sequence kept the user's new camera and overlapping terrain, but still displayed terrain loading; it is not a complete cold-coverage measurement. PHONE-FOCUS-VERIFICATION.md owns the conditions and remaining H1/H2 gaps. Official remote structured reads worked after this generation was actually compiled and attached; that does not repair prior generation4 evidence retroactively.
+
+## Cloud continuity and validity
+
+The old client expiry projection still tied cloud polygons to formal-spot signals. This could retain an expired geographic cell when no formal spots exist, or erase valid independent geographic cells when spot weather expired. `services/map-cloud-presentation.ts` now checks each actual query-cell/hour/value and snapshot source age; the producer and client share `mapCloudCellId`. Legacy formal-place responses retain their own source-hour path. Forecast queries consume the same policy.
+
+`use-map-cloud-presentation` retains one public acquisition at its original geographic footprints while the next viewport's MapScene is absent. It excludes old context/account/spot results, retains original source metadata, projects only the actual selected frame, expires offline, and retires on account/reset/night/layer/visibility changes. A new missing response replaces the old coverage. Main Map polygons, time choices and source attribution consume the same presented view; network requests, retries and full hourly-source caching retain their existing owners.
+
+Focused query/cloud/provider checks16/16 and affected Map consumers47/47 passed; Mini Program and API types passed. An isolated HEAD countercheck reproduces the expired-geographic-cell defect without changing working source. One existing AST consumer needed the actual `geographicLayer` binding; its light-versus-cloud assertion remains. A first test invocation from repository root missed an app-local module alias; rerunning the documented workspace entry resolved that harness issue. Real-provider H4 results and current phone cloud continuity remain unverified.
+
+## Shared source work and measured terrain pipeline
+
+The first isolated real-Terrarium comparison used the repository's public synthetic spot only as the geographic request seed, actual adopted terrain bytes, separate empty derived directories and separate process-local source caches. No phone service/database was restarted. Initial look-ahead reduced the observed cold service sample2,671→1,635ms and nearby sample1,634→1,419ms, but also increased cold upstream reads8→12 because adjacent cells requested common sources concurrently.
+
+`shared-read-pool.ts` now owns the existing in-flight identity/last-consumer cancellation rule for terrain image/horizon, Terrarium raw tiles and annual-light window composition. Domains retain their own limits/deadlines/completed caches/integrity. Source sharing removes those duplicate downloads; the cold sample returns to8 reads. Annual-light concurrent same-window consumers no longer occupy both binary slots and reject additional identical readers. Its isolated HEAD countercheck fails the new four-reader case as expected; current output remains hash-bound.
+
+Measurement also exposed cached cells between new neighbours serializing the original one-look-ahead pipeline. Two bounded readers now advance on completion while results are consumed in geographic order. A focused gated-source case proves both new neighbours start before either completes. The ready result set remains bounded by the existing3×3 window; no source/grid/detail/capacity budget changed.
+
+Latest affected server checks29/29, zero skip, and API types passed. Existing shared-cancellation, horizon deadline, source provenance, partial recovery, immutable old URLs, quality masks and byte identity assertions remain. Final real-source samples (current first, HEAD baseline second): cold2,399/1,525ms; nearby1,088/1,642ms; warm metadata both below1ms with zero source reads. Both actual output/source-set hashes match, with no missing sources. A preceding current-first cold run was3,304ms due a2.6s upstream read. **These samples establish reduced duplication and useful neighbour overlap, not a stable cold speedup**: upstream/CDN cache and network are uncontrolled, and the first owner can pay connection/network costs. Do not repeat uncontrolled measurements to find a favourable number. Detailed safe counts/timings remain in ignored `tmp/terrain-pipeline-*-measurements.json`; this is server evidence, not phone visible-gap timing.
+
+## Current next observations
+
+Plain current frontend candidate `OVERLAY-CANDIDATE.json` SHA f145747502408897948f570e54f4cc57a03d68dce9871fca9559ce6fba21f1d4 has no focus badge:338files,total4,948,410B,main2,011,813B,headroom85,339B;11 static build checks and104 source pins passed. Source pins include changed shared contracts. Context validation passed. Generation5 window was closed after preserving evidence; feedback refresh75389 is preparing the next same-account delivery. Finish that operation and observe cloud retention/current frontend on phone. API8791 still runs its earlier code and in-memory state; do not attribute new server optimizations to that phone service until an owned state-preserving replacement is established.
+
+Original r6/fixed-terrain/database migration and required human actions are deferred by the sleeping user. Preserve N05/account state. Current new client/cloud/shared-source changes still need independent review; prior consumer-only reviews do not certify them. Source publication/CDN recovery, bounded prefetch/parent coverage research where justified, full native continuous pinch/registration, real light/cloud inputs and the other H1–H8 obligations remain open. Nightlight scene decoupling has not been implemented.

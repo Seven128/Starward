@@ -301,7 +301,7 @@ for (const [name, candidateProfile, datedLocation] of [
       candidateFields: emptySpotDocumentValues(), candidateIntake: emptyCandidateIntake(), candidateMedia: {},
       candidateDocumentProposal, candidateIntakeFromProfile, spotDocumentValuesFromProposal, calendarDateInTimezone, clockTimeInTimezone,
     });
-    for (const field of ["draft", "savedAt", "pendingSubmission", "conflictDraft", "boundSpotId", "boundSpotName", "kind", "topics", "detail", "rightsConfirmed", "preciseLocationConsent", "candidateFields", "candidateIntake", "candidateMedia", "candidateMediaPreviews", "date", "time", "candidateName", "candidateRegion", "candidatePlaceLabel", "latitude", "longitude", "phase"])
+    for (const field of ["draft", "savedAt", "pendingSubmission", "submissionRetryAvailable", "conflictDraft", "boundSpotId", "boundSpotName", "kind", "topics", "detail", "rightsConfirmed", "preciseLocationConsent", "candidateFields", "candidateIntake", "candidateMedia", "candidateMediaPreviews", "date", "time", "candidateName", "candidateRegion", "candidatePlaceLabel", "latitude", "longitude", "phase"])
       context[`set${field[0]!.toUpperCase()}${field.slice(1)}`] = (value: unknown) => { context[field] = value; };
     const form = vm.runInContext(ts.transpileModule(`({ apply: ${applyText}, current: () => (${currentValueText}) });`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, context);
     const render = () => { cursor = 0; effects = []; const result = hook(form.current(), "", false); effects.forEach(effect => effect()); hide(); return result; };

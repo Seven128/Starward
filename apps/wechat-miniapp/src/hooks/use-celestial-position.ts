@@ -1,5 +1,5 @@
 import { useResourceQuery } from "./use-resource-query";
-import { getCelestialObjectPosition } from "@/services/api-client";
+import { getCelestialObjectPosition } from "@/services/sky-celestial-client";
 import type { CelestialPositionBinding } from "@/services/celestial-position-response";
 
 /** Explicit location and active tracking share the same cancellable resource. */

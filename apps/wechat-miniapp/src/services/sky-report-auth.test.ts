@@ -104,14 +104,16 @@ test("published spot sky remains publicly readable", async () => {
 });
 
 test("planet, SAO and deep-sky positions request the same report catalog as the Sky page", async () => {
-  const positionDeclaration = source.statements.find(
+  const celestialSource = ts.createSourceFile("sky-celestial-client.ts",
+    readFileSync(new URL("./sky-celestial-client.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const positionDeclaration = celestialSource.statements.find(
     (node): node is ts.FunctionDeclaration =>
       ts.isFunctionDeclaration(node) && node.name?.text === "getCelestialObjectPosition",
   );
   assert.ok(positionDeclaration);
   const getPosition = vm.runInNewContext(
     ts.transpileModule(
-      positionDeclaration.getText(source).replace(/^export /u, "") + "\ngetCelestialObjectPosition;",
+      positionDeclaration.getText(celestialSource).replace(/^export /u, "") + "\ngetCelestialObjectPosition;",
       { compilerOptions: { target: ts.ScriptTarget.ES2020 } },
     ).outputText,
     {

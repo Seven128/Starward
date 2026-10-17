@@ -1,5 +1,5 @@
 import { DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION, isCelestialObjectReference, isDeepSkyObjectReference } from "@starward/miniapp-contracts";
-import { getCelestialObjectInformation } from "@/services/api-client";
+import { getCelestialObjectInformation } from "@/services/sky-celestial-client";
 import { useResourceQuery } from "./use-resource-query";
 
 /** The object modal and its source page share one identity-bound resource. */

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { BSC5P_PROJECTION_ALGORITHM, loadBsc5pStarCatalog } from "@starward/astronomy-core/bsc5p-catalog";
+import { projectStellarMotion } from "@starward/astronomy-core/stellar-vectors";
 import { assertSkyObservationFrames, STELLAR_SCENE_FORMAT, skySceneSerializedBytes } from "@starward/miniapp-contracts";
 import { TEST_PUBLISHED_SPOT } from "@starward/miniapp-contracts/test-fixtures";
 import { buildSkyScene, createBsc5pSkyCatalogProvider, type SkyCatalogProvider } from "./sky-scene-catalog.ts";
@@ -115,7 +116,14 @@ test("v3 report, published BSC and SAO tile compose in the Mini scene while old 
   const supplement=resolveSkyStellarSupplement(sao.data,[first.data],scene,at);
   assert.equal(supplement?.catalogVersion,"sao-visual-supplement.v2");
   assert.equal(supplement?.geometry.at,at);
-  assert.equal(supplement?.points.length,4);
+  assert.ok(supplement);
+  const geometry=supplement.geometry;
+  const expected=first.data.tile.rows.map(([reference,magnitude,...motion])=>{
+   const point=projectStellarMotion(motion,geometry.julianYears,geometry.equatorialToEnu);
+   return [reference,magnitude,point.azimuthDeg,point.altitudeDeg];
+  });
+  assert.ok(expected.some(point=>Number(point[3])<0),"the delivered tile includes genuine below-horizon positions");
+  assert.deepEqual(supplement.points,expected);
   const old=await new SaoPublicationService().get();
   assert.throws(()=>supplementGeometry(old.data,scene,at),/sao_base_catalog_mismatch/u);
  }finally{await service.onModuleDestroy();}

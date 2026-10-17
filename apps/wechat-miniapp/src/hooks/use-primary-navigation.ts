@@ -1,7 +1,7 @@
 import Taro, { useDidHide, useDidShow, useResize } from "@tarojs/taro";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { primaryNavigationLayout, type PrimaryPageRoute } from "@/navigation/primary-navigation";
-import type { PrimaryNavigationHandle } from "@/navigation/primary-navigation-cover";
+import { PRIMARY_NAVIGATION_BLACKOUT_OWNER, type PrimaryNavigationHandle, type PrimaryNavigationBlackout } from "@/navigation/primary-navigation-cover";
 
 type NativePrimaryPage = { route?: string; getTabBar?(): unknown };
 function nativeBar(page: NativePrimaryPage) {
@@ -14,8 +14,10 @@ export function readPrimaryNavigationLayout(route: PrimaryPageRoute) {
 }
 
 /** Each native tab owns its own custom-bar instance; returning children resync it. */
-export function usePrimaryNavigation(route: PrimaryPageRoute) {
+export function usePrimaryNavigation(route: PrimaryPageRoute, blackout: PrimaryNavigationBlackout | null = null) {
   const [layout, setLayout] = useState(() => readPrimaryNavigationLayout(route));
+  const blackoutRef = useRef(blackout);
+  blackoutRef.current = blackout;
   const life = useRef({ alive: true, visible: false, revision: 0 });
   // Hidden theme rerenders see the global child page; retain this mount's owner.
   const page = useRef(Taro.getCurrentInstance().page).current;
@@ -23,7 +25,9 @@ export function usePrimaryNavigation(route: PrimaryPageRoute) {
     if (!life.current.alive || !life.current.visible || !page || Taro.getCurrentPages().at(-1) !== page) return;
     setLayout(readPrimaryNavigationLayout(route));
     // Native Component methods receive serializable values, never a Page object.
-    nativeBar(page)?.show(route);
+    const bar = nativeBar(page);
+    bar?.cover(PRIMARY_NAVIGATION_BLACKOUT_OWNER, blackoutRef.current !== null, blackoutRef.current ?? undefined);
+    bar?.show(route);
   };
   useDidShow(() => {
     life.current.visible = true;
@@ -37,9 +41,13 @@ export function usePrimaryNavigation(route: PrimaryPageRoute) {
     if (page) nativeBar(page)?.hide();
   });
   useResize(sync);
+  useEffect(sync, [blackout?.phase, blackout?.durationMs]);
   useEffect(() => {
     life.current.alive = true;
-    return () => { life.current.alive = false; life.current.revision++; };
+    return () => {
+      life.current.alive = false; life.current.revision++;
+      if (page) nativeBar(page)?.cover(PRIMARY_NAVIGATION_BLACKOUT_OWNER, false);
+    };
   }, []);
   return { ...layout, style: layout.style as CSSProperties };
 }

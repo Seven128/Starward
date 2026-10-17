@@ -28,7 +28,7 @@ test("actual information client partitions optical/W3 caches, propagates cancell
       introduction: null, facts: [{ label: "类型", value: "星系", unit: null }], contentState: "BASIC_ONLY", contentRevision: "info",
       limitations: [], sources: [] as object[] } };
   response.data.sources = response.sources;
-  const get = actualFunction("./api-client.ts", "getCelestialObjectInformation", {
+  const get = actualFunction("./sky-celestial-client.ts", "getCelestialObjectInformation", {
     ADOPTED_SKY_REPORT_CATALOG_VERSION: "bsc5p-bright-stars.v3",
     requestOperation: (key: string, operation: string, options: typeof requests[number]["options"]) => {
       requests.push({ key, operation, options }); return Promise.resolve(response);

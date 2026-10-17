@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ContributionSubmission } from "@starward/miniapp-contracts";
 import { SemanticIcon } from "@/components/semantic-asset";
 import { SpotImageViewer, type SpotViewerMedia } from "@/components/spot-image-viewer";
-import { useSpotMediaDocumentPosition, useSpotMediaGalleryPosition } from "@/components/spot-media-gallery-position";
+import { usePanelReturnPosition } from "./use-panel-return-position";
+import type { MapPanelReturnPosition } from "./sky-return-state";
 import { photoStripSlideWidth } from "@/components/spot-media-gallery-geometry";
 import { useHiddenNativeScrollbar } from "@/components/use-hidden-native-scrollbar";
 import { currentDraftUserId, getContributionMedia } from "@/services/api-client";
@@ -12,7 +13,7 @@ import type { SpotPanelExtent, SpotPanelPhase } from "./spot-panel";
 import { pendingProposalPanelValues } from "./pending-proposal-model";
 
 export function PendingProposalPanel({ submission, variant = "PENDING", extent, documentScrollEnabled, phase, onExtent, onClose, onCloud, onEdit, onPhotoIntent,
-  onHandleTouchStart, onHandleTouchMove, onHandleTouchEnd, onHandleTouchCancel, onViewerBackHandlerChange }: {
+  onHandleTouchStart, onHandleTouchMove, onHandleTouchEnd, onHandleTouchCancel, onViewerBackHandlerChange, restorePosition, onPositionChange }: {
   submission: ContributionSubmission;
   variant?: "DRAFT" | "PENDING";
   extent: SpotPanelExtent;
@@ -28,6 +29,8 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   onHandleTouchEnd: (event?: unknown) => void;
   onHandleTouchCancel: () => void;
   onViewerBackHandlerChange?: (handler: (() => void) | null) => void;
+  restorePosition?: MapPanelReturnPosition | null;
+  onPositionChange?: (position: MapPanelReturnPosition) => void;
 }) {
   const model = pendingProposalPanelValues(submission);
   const draft = variant === "DRAFT";
@@ -42,8 +45,9 @@ export function PendingProposalPanel({ submission, variant = "PENDING", extent, 
   const mediaScope = `${owner ?? "none"}:${submission.submissionId}:${mediaKey}`;
   const currentMediaScope = useRef(mediaScope);
   currentMediaScope.current = mediaScope;
-  const galleryPosition = useSpotMediaGalleryPosition(mediaScope);
-  const documentPosition = useSpotMediaDocumentPosition(`${owner ?? "none"}:${submission.submissionId}`);
+  const { document: documentPosition, gallery: galleryPosition } = usePanelReturnPosition(
+    `${owner ?? "none"}:${submission.submissionId}`, mediaScope,
+    { restorePosition, onPositionChange, ready: extent !== "small" });
   useHiddenNativeScrollbar("spot-proposal-scroll", extent !== "small", `${mediaScope}:${extent}`);
   useHiddenNativeScrollbar("spot-proposal-media-strip", extent === "large" && model.media.length > 1, mediaScope);
   const leadMedia = model.media[0];

@@ -1,4 +1,5 @@
 import { airQualityBoundaries, projectAirQuality, type HourlySkyRow, type MapSceneData, type MapSpotTimeSignal, type SkyReport, type SpotAirQualityData } from "@starward/miniapp-contracts";
+import { currentMapCloudFrame, mapCloudBoundaries } from "./map-cloud-presentation";
 
 const HOUR = 3_600_000;
 const hourEnd = (at: string | null) => Date.parse(at ?? "") + HOUR;
@@ -45,7 +46,7 @@ function currentSignal<T extends MapSpotTimeSignal>(signal: T, at: string, now: 
 }
 
 export const mapForecastPresentation: ForecastPresentation<MapSceneData> = {
-  boundaries: data => [Date.parse(data.forecastValidUntil ?? ""),
+  boundaries: data => [Date.parse(data.forecastValidUntil ?? ""), ...mapCloudBoundaries(data),
     ...[...Object.values(data.evaluations), ...data.timeFrames.flatMap(frame => Object.values(frame.spotSignals))]
       .map(signal => hourEnd(signal.weatherAt))].filter(Number.isFinite),
   project(data, now) {
@@ -58,12 +59,16 @@ export const mapForecastPresentation: ForecastPresentation<MapSceneData> = {
       }));
     const timeFrames = data.timeFrames.map(frame => {
       const spotSignals = signalsAt(frame.spotSignals, frame.atUtc);
-      if (Object.keys(spotSignals).every(id => spotSignals[id] === frame.spotSignals[id])) return frame;
-      // Current BFF polygons are explicitly keyed by their formal forecast
-      // sampling point. Never retain an old cell when its sample has elapsed.
+      const signalsChanged = Object.keys(spotSignals).some(id => spotSignals[id] !== frame.spotSignals[id]);
+      if (frame.dynamicLayer?.kind === "CLOUD") {
+        const current = currentMapCloudFrame(signalsChanged ? { ...frame, spotSignals } : frame, data.cloudSnapshot, now);
+        changed ||= current !== frame;
+        return current;
+      }
+      if (!signalsChanged) return frame;
+      // The historical opportunity layer remains formal-place based.
       const dynamic = frame.dynamicLayer;
-      const prefix = dynamic?.kind === "CLOUD" ? "cloud:" : "opportunity:";
-      const allowed = new Set(Object.values(spotSignals).filter(signal => signal.weatherAt).map(signal => prefix + signal.spotId));
+      const allowed = new Set(Object.values(spotSignals).filter(signal => signal.weatherAt).map(signal => "opportunity:" + signal.spotId));
       const polygons = dynamic?.polygons.filter(polygon => allowed.has(polygon.id)) ?? [];
       return { ...frame, spotSignals, dynamicLayer: dynamic ? { ...dynamic, polygons,
         state: polygons.length ? "PARTIAL" as const : "UNAVAILABLE" as const } : null };

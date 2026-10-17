@@ -60,3 +60,14 @@
 .theme-day.primary-navigation--map .primary-navigation__label { letter-spacing: -.35Px; }
 .theme-day.primary-navigation--map .primary-navigation__item:not(.primary-navigation__item--selected) .primary-navigation__label--ready > text { color: #6c7787; }
 @media (max-width: 350px) { .primary-navigation--map { padding-right: 20Px; padding-left: 20Px; } }
+.primary-navigation__blackout {
+  position: absolute;
+  // Include the bar's own top border; page-level z-index cannot cover this component.
+  inset: -1Px 0 0;
+  z-index: 1;
+  background: #000;
+}
+.primary-navigation__blackout--entering { animation: primary-navigation-blackout 220ms ease both; }
+.primary-navigation__blackout--revealing { animation: primary-navigation-reveal 220ms ease both; }
+@keyframes primary-navigation-blackout { from { opacity: 0; } to { opacity: 1; } }
+@keyframes primary-navigation-reveal { from { opacity: 1; } to { opacity: 0; } }

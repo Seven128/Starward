@@ -7,7 +7,7 @@ import test from "node:test";
 import { promoteReleaseCandidate } from "./promote-release-candidate.mjs";
 import { executeRelease } from "./release.mjs";
 import { readSkyStaticBackup } from "./sky-static-backup.mjs";
-import { skyStaticHash, writeSkyStaticBundle } from "./sky-static-bundle.mjs";
+import { assertSkyStaticFixtureBytes, skyStaticFixtureSize, writeSealedSkyStaticFixture } from "./sky-static-test-support.mjs";
 import {
   createReleaseEnvironmentFixture,
   releaseImageDigest,
@@ -49,16 +49,7 @@ test("first Sky promotion prepares once before backup and passes its lease to ba
 async function realSkyPromotionFixture(fixture, failStep) {
   const store = path.join(fixture.root, "sky-store");
   await appendFile(fixture.baseDeployPath, `STARWARD_SKY_STATIC_DIRECTORY=${store}\n`);
-  const old = JSON.parse(await readFile("output/sky-static-owner-independent-1002-r4/normal-store/prepared-inventory.json", "utf8"));
-  const oldDirectory = path.resolve("output/sky-static-owner-independent-1002-r4/normal-store", old.generation, "publication");
-  const index = JSON.parse(await readFile(path.join(oldDirectory, "index.json"), "utf8"));
-  const producer = await writeSkyStaticBundle(path.join(fixture.root, "candidate-producer"), (async function* () {
-    for (const record of index.records) yield { route: record.route, headers: record.headers,
-      bytes: await readFile(path.join(oldDirectory, `files${record.route}`)) };
-  })());
-  await writeFile(path.join(producer.output, "image-artifact.json"), JSON.stringify({ schemaVersion: "starward-sky-static-image-artifact-v1",
-    revision: releaseRevision, publicationHash: producer.publicationHash, indexSha256: skyStaticHash(await readFile(path.join(producer.output, "index.json"))),
-    fragmentSha256: skyStaticHash(await readFile(path.join(producer.output, "delivery.caddy"))) }));
+  const producer = await writeSealedSkyStaticFixture(path.join(fixture.root, "candidate-producer"), releaseRevision);
   const calls = []; let containerExists = false, leaseObservedDuringBackup = false;
   const execute = call => {
     calls.push(call.step);
@@ -106,7 +97,8 @@ test("actual first Sky promotion from an absent store uses sealed PNGs, one pref
     const manifest = JSON.parse(await readFile(result.backupManifestPath, "utf8"));
     assert.equal(manifest.schemaVersion, "starward-verified-backup-v2");
     const snapshot = await readSkyStaticBackup({ backupDirectory: fixture.backupDirectory, record: manifest.skyStaticBackup });
-    assert.equal(snapshot.bundle.files, 2); assert.equal(snapshot.bundle.bytes, 6838);
+    assert.equal(snapshot.bundle.files, skyStaticFixtureSize.files); assert.equal(snapshot.bundle.bytes, skyStaticFixtureSize.bytes);
+    await assertSkyStaticFixtureBytes(snapshot.bundle.directory);
     const receipt = JSON.parse(await readFile(result.receiptPath, "utf8"));
     for (const name of ["compose-version", "compose-config", "image-pull", "sky-static-preparation"])
       assert.equal(receipt.steps.find(s => s.name === name).executionPhase, "BEFORE_VERIFIED_BACKUP");

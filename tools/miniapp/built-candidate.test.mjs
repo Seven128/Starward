@@ -63,11 +63,13 @@ test("built production candidate follows registered routes and package limits", 
 
 });
 
-test("shared section empty icon is packaged for every Mini Program consumer", () => {
-  for (const packageName of ["main", "content", "spot", "sky"]) {
-    const prefix = packageName === "main" ? "" : packageName;
-    assert.equal(existsSync(path.join(root, prefix, "assets/b-icons/info--day--default.png")), true,
-      `${packageName} StatusPanel must resolve its adopted info icon`);
+test("subpackages reuse byte-identical main icons without duplicate copies", () => {
+  const declaration = JSON.parse(readFileSync(path.resolve("apps/wechat-miniapp/src/components/main-b-icon-files.json"), "utf8"));
+  for (const filename of declaration.files.filter(file => !declaration.mainOnlyVariants.includes(file))) {
+    assert.deepEqual(readFileSync(path.join(root, "assets/b-icons", filename)),
+      readFileSync(path.resolve("apps/wechat-miniapp/runtime-assets/b-icons", filename)), `shared bitmap ${filename}`);
+    for (const prefix of ["content", "spot", "sky"])
+      assert.equal(existsSync(path.join(root, prefix, "assets/b-icons", filename)), false, `${prefix} does not duplicate ${filename}`);
   }
 });
 

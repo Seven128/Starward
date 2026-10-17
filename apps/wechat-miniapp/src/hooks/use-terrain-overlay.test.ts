@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import { createRasterImageResources } from "../services/raster-image-resources.ts";
+import { terrainCoverageForRequest, terrainRequestForCoverage } from "./terrain-overlay-coverage.ts";
+import type { TerrainOverlayRequest } from "@starward/miniapp-contracts";
 
 function harness() {
   const ast = ts.createSourceFile("hook.ts", readFileSync(new URL("./use-terrain-overlay.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
@@ -19,11 +21,11 @@ function harness() {
   }, { maximumFiles: 8, maximumBytes: 16, maximumConcurrent: 2 });
   let stateIndex = 0, effectIndex = 0, pending: (() => void)[] = [], retries = 0, nextTimer = 0;
   const timers = new Map<number, () => void>();
-  let options: any;
+  let options: any, requestedInput: TerrainOverlayRequest | undefined;
   let fetching = false, retryOptions: any;
   let data: any = { imageUrl: "/v2/terrain/assets/tile.png", publicationId: "publication:a", lightPollution: { state: "PARTIAL", cells: [{ id: "independent-light" }] } };
   const fn = vm.runInNewContext(ts.transpileModule(imageDeclaration.getText(imageAst).replace(/^export /, "") + "\n" + declaration.getText(ast).replace(/^export /, "") + ";useTerrainOverlay;", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
-    mapRasterFiles: resources, AbortController,
+    mapRasterFiles: resources, AbortController, terrainCoverageForRequest, terrainRequestForCoverage,
     useState(value: any) { const index = stateIndex++; if (!(index in states)) states[index] = value;
       return [states[index], (next: any) => { states[index] = typeof next === "function" ? next(states[index]) : next; }]; },
     useRef(value: any) { const index = stateIndex++; if (!(index in states)) states[index] = { current: value }; return states[index]; },
@@ -35,22 +37,45 @@ function harness() {
       refetch: async (value: unknown) => { retries++; retryOptions = value; return { data }; } }; },
     setTimeout: (callback: () => void) => { const id = ++nextTimer; timers.set(id, callback); return id; },
     clearTimeout: (id: number) => timers.delete(id),
-    getTerrainOverlay() {},
+    getTerrainOverlay(input: TerrainOverlayRequest) { requestedInput = input; },
     isMiniappRequestCancelled: (error: Error) => error.message === "cancelled",
   });
   return {
     requests, get retries() { return retries; }, setPublication(id: string) { data = { ...data, publicationId: id }; },
     setFailure() { data = { ...data, imageUrl: null, failureCode: "TERRAIN_READ_FAILED" }; },
     setFetching(value: boolean) { fetching = value; }, get retryOptions() { return retryOptions; },
+    setData(value: any) { data = value; },
+    get queryKey() { return options.queryKey.join(":"); },
+    queryInput() { options.queryFn(); return requestedInput; },
     freshness() { return options.staleTime({ data }); },
     runTimers() { const scheduled = [...timers.values()]; timers.clear(); scheduled.forEach(callback => callback()); },
-    render(enabled = true, imageEnabled = true) { const input = { purpose: "SPOT", center: { latitude: 22, longitude: 114 }, radiusKm: 5 };
+    render(enabled = true, imageEnabled = true, input: TerrainOverlayRequest = {
+      purpose: "SPOT", center: { system: "GCJ02", latitude: 22, longitude: 114 }, radiusKm: 5 }) {
       stateIndex = effectIndex = 0; fn(input, enabled, imageEnabled); pending.splice(0).forEach(effect => effect());
       stateIndex = effectIndex = 0; return fn(input, enabled, imageEnabled); },
     unmount() { cleanups.forEach(cleanup => cleanup?.()); void resources.close(); },
   };
 }
 const settle = () => new Promise<void>(resolve => setImmediate(resolve));
+
+test("Map movement within an accepted image keeps the real query key and original request until coverage is left", () => {
+  const h = harness();
+  const input: TerrainOverlayRequest = { purpose: "MAP", center: { system: "GCJ02", latitude: 22, longitude: 114 },
+    viewportBounds: { west: 113.99, east: 114.01, south: 21.99, north: 22.01 } };
+  h.setData({ purpose: "MAP", state: "AVAILABLE", imageUrl: "/v2/terrain/assets/current.png", publicationId: "current",
+    imageBoundsGcj02: { west: 113.97, east: 114.03, south: 21.97, north: 22.03 }, lightPollution: {} });
+  h.render(true, false, input); const key = h.queryKey;
+  const moved: TerrainOverlayRequest = { ...input, center: { ...input.center, longitude: 114.005 },
+    viewportBounds: { ...input.viewportBounds, west: 113.995, east: 114.015 } };
+  h.render(true, false, moved);
+  assert.equal(h.queryKey, key);
+  assert.deepEqual(h.queryInput(), input);
+  const uncovered: TerrainOverlayRequest = { ...moved, center: { ...moved.center, longitude: 114.03 },
+    viewportBounds: { ...moved.viewportBounds, west: 114.02, east: 114.04 } };
+  h.render(true, false, uncovered);
+  assert.notEqual(h.queryKey, key); assert.equal(h.queryInput(), uncovered);
+  h.unmount();
+});
 
 test("a partial 200 terrain failure stays retryable and retains independent light data", async () => {
   const h = harness(); h.render(); assert.equal(h.freshness(), 24 * 60 * 60 * 1000);

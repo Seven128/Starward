@@ -1215,8 +1215,11 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   assert.match(nativeMetrics, /getWindowInfo\(\)\.statusBarHeight/u);
   assert.match(nativeMetrics, /Number\.isFinite\(height\)/u);
   assert.match(navigation, /nativeStatusBarHeightPx\(\)/u);
-  assert.match(sky, /className="sky-orientation-back-layer"/u);
-  assert.match(sky, /data-od-id="sky-orientation-back"/u);
+  const skyMenu = await text("apps", "wechat-miniapp", "src", "features", "sky", "sky-menu.tsx");
+  assert.match(sky, /<SkyNavigationMenu\b[\s\S]*?onLeave=\{\(\) => void skyDisclosures\.leave\(\)\}/u);
+  assert.match(skyMenu, /<SkyMenuAction\b[^>]*id="sky-return"[^>]*onClick=\{onLeave\}/su);
+  assert.match(skyMenu, /id=\{id\}[^>]*onClick=\{onClick\}/su);
+  assert.match(sky, /<NativeBackBoundary active=\{pageVisible\}[\s\S]*?onBack=\{\(\) => \{ if \(!closingOverlay\) return goBack\(\); \}\}/u);
   assert.match(sky, /nativeNavigationInsets\(\)/u);
   assert.match(await text("apps", "wechat-miniapp", "src", "features", "sky", "spot-sky-page.scss"), /top: var\(--sky-controls-top\)/u);
   // Copy-level regression only: this does not establish native sensor behavior.
@@ -1234,7 +1237,8 @@ test("native safe-area chrome and transient observation mode preserve DESIGN aut
   assert.match(sky, /exactSkyTimeFrame\(paintedData\?\.targetFrames, paintedAt\)/u);
   assert.match(sky, /catalog\.entries\[catalogIndex\]/u);
   assert.match(sky, /altitude <= 0/u);
-  assert.match(sky, /星图暂不可用，仍可在对象列表查看天体与事件/u);
+  assert.match(sky, /星图未能显示，仍可搜索与选择时间/u);
+  assert.match(sky, /onClick=\{retrySkyCanvas\}/u);
   assert.doesNotMatch(sky, /Math\.random/u);
   assert.match(sourceLift, /nativeNavigationInsets\(\)/u);
   assert.match(nativeMetrics, /getMenuButtonBoundingClientRect\(\)/u);

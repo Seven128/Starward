@@ -6,13 +6,13 @@ import ts from "typescript";
 
 test("My serializes competing entries and permits retry after native navigation fails", async () => {
   const source = ts.createSourceFile("my.tsx", readFileSync(new URL("./my-library-page.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-  let declaration = "";
+  const declarations: string[] = [];
   const visit = (node: ts.Node) => {
-    if (ts.isVariableDeclaration(node) && node.name.getText(source) === "openPage") declaration = `const ${node.getText(source)};`;
+    if (ts.isVariableDeclaration(node) && ["navigatePage", "openPage", "openSettings"].includes(node.name.getText(source))) declarations.push(`const ${node.getText(source)};`);
     ts.forEachChild(node, visit);
   };
   visit(source);
-  assert.ok(declaration);
+  assert.equal(declarations.length, 3, "exercise both current My entry adapters and their shared navigation owner");
   const urls: string[] = [], notices: unknown[] = [], dismissed: string[] = [];
   const calls: Array<{ resolve: () => void; reject: (error: Error) => void }> = [];
   const state = {
@@ -39,15 +39,29 @@ test("My serializes competing entries and permits retry after native navigation 
   });
     return module.exports;
   };
-  const module = load("../../hooks/use-account-navigation.ts") as { useAccountNavigation: (owner: string) => unknown };
-  const run = vm.runInNewContext(ts.transpileModule(`${declaration}\nopenPage;`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
-    navigation: module.useAccountNavigation("a"), recordAcceptanceDiagnostic: () => {},
+  const module = load("../../hooks/use-account-navigation.ts") as { useAccountNavigation: (owner: string) => {
+    open(url: string, feedback?: (phase: string) => void, authenticatedOwner?: string): Promise<void> | undefined;
+  } };
+  const navigation = module.useAccountNavigation("a");
+  let latestNavigation: Promise<void> | undefined;
+  const authenticatedOwners: string[] = [];
+  const entries = vm.runInNewContext(ts.transpileModule(`${declarations.join("\n")}\n({ openPage, openSettings });`, { compilerOptions: { target: ts.ScriptTarget.ES2020 } }).outputText, {
+    navigation: { open(...args: Parameters<typeof navigation.open>) {
+      latestNavigation = navigation.open(...args);
+      return latestNavigation;
+    } },
+    login: { requireAccount: (action: (owner: string) => void) => { authenticatedOwners.push("a"); action("a"); } },
+    recordAcceptanceDiagnostic: () => {},
     notify: (notice: unknown) => notices.push(notice),
     useAppStore: store,
   });
+  // Event adapters intentionally return void. Await their real native-navigation
+  // promise without replacing the serialization, owner checks or feedback path.
+  const run = (...args: string[]) => { latestNavigation = undefined; entries.openPage(...args); return latestNavigation; };
   const pending = run("/content/contribution/index", "反馈页面", "contribution");
-  await run("/content/settings/index", "设置", "settings");
+  entries.openSettings();
   assert.deepEqual(urls, ["/content/contribution/index"]);
+  assert.deepEqual(authenticatedOwners, ["a"], "private entries use the account gate; settings keeps its public entry");
   calls[0]!.reject(new Error("native navigation failed"));
   await pending;
   assert.equal(notices.length, 1);
