@@ -15,6 +15,8 @@ An ignored directory is not a backup. Before retiring existing tracking, archive
 
 The existing Cloud Sky task has narrow ignore exceptions for current review evidence and fixed test/publication inputs. These are required dependencies, not a precedent for tracking all scratch. Keep them until their consumers and provenance are safely migrated together. Historical scripts are archived investigations; the retained current batch scripts and `data-pipelines/` own further work. Archive location and migration evidence live in the governance work item, not in this durable Context.
 
+Portable test consumers keep their inputs with their test owners. [Reviewed introduction expectations](../../workers/miniapp-api/src/test-fixtures/celestial-introduction-reviewed-batches.json) retain independent reviewed prose fingerprints and source-retrieval expectations; historical work-item paths are provenance rather than required reads. [Sky time consumer support](../../apps/wechat-miniapp/src/features/sky/sky-time-test-support.ts) uses the actual report producer in an isolated fixed-clock test process, with the existing public spot and deterministic weather fixtures. These inputs establish software behavior, not original production-data restoration, real-provider quality or device acceptance. Explicit real-publication verification still needs its declared external inputs.
+
 ## Efficient development
 
 Install Git LFS on each development machine. Before the first authorized push, run `git lfs install` and verify the pre-push hook; preserve and integrate any existing hook rather than overwriting it. Linked worktrees may share hooks/configuration, so inspect that scope first. Merely adding `.gitattributes` does not upload objects or rewrite history.

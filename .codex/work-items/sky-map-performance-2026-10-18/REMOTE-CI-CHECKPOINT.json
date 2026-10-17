@@ -2,7 +2,7 @@
   "repository": "Seven128/Starward",
   "branch": "codex/remote-main-20260908",
   "headSha": "66d19aa9ba66d617aeb03970e52fba2328866b45",
-  "latestHeadSha": "dc7764851d53b2d7da0175b82e0735bee891bc13",
+  "latestHeadSha": "328cf67ebfaf8a9b979c8e30163dcb4c0b436fcf",
   "mainUnchangedAt": "32ec61a4f5321e571d499be6430a09918d65242e",
   "push": "normal fast-forward confirmed",
   "trigger": "workflow_dispatch",
@@ -35,7 +35,92 @@
       "conclusion": "failure",
       "failedStep": "Check release code",
       "diagnosis": "Deployment checks now pass. API999:960passed,1failed,38skipped; sole failure reads an ignored reviewed-introduction declaration. Mini Program suite not reached."
+    },
+    {
+      "workflow": "Product CI",
+      "id": 39078337145,
+      "headSha": "328cf67ebfaf8a9b979c8e30163dcb4c0b436fcf",
+      "url": "https://github.com/Seven128/Starward/actions/runs/39078337145",
+      "createdAt": "2026-10-17T23:15:49Z",
+      "status": "completed",
+      "conclusion": "success",
+      "completedAt": "2026-10-17T23:30:15Z",
+      "checks": {
+        "contracts": {
+          "failed": 0,
+          "total": 84,
+          "passed": 84
+        },
+        "api": {
+          "failed": 0,
+          "total": 999,
+          "skipped": 38,
+          "passed": 961
+        },
+        "miniapp": {
+          "failed": 0,
+          "total": 2612,
+          "skipped": 1,
+          "passed": 2611
+        },
+        "deployment": {
+          "passed": 248,
+          "total": 248
+        },
+        "releaseAndPlatform": {
+          "passed": 51,
+          "total": 51
+        },
+        "builtCandidate": {
+          "passed": 6,
+          "total": 6
+        },
+        "backendBuild": "passed",
+        "weappCiBuild": "passed",
+        "isolatedInfrastructure": "passed",
+        "ociImageBuild": "passed"
+      },
+      "infrastructureReceipt": {
+        "schema_version": "miniapp-infrastructure-session-v1",
+        "run_id": "verify_4e3051f0d7994d95",
+        "status": "passed",
+        "started_at": "2026-10-17T23:28:46.235Z",
+        "completed_at": "2026-10-17T23:29:12.891Z",
+        "services": {
+          "mode": "compose",
+          "postgres_postgis": "isolated_run_database",
+          "redis_bullmq": "isolated_key_namespace"
+        },
+        "api_admin": {
+          "conditional_etag_304": "passed",
+          "isolated_local_identity": "passed",
+          "aggregate_library_read": "passed",
+          "typed_conflict_recovery": "passed",
+          "private_media_http_upload_remove_replay": "passed",
+          "jpeg_http_sanitization_and_removal": "passed",
+          "failed_favorite_is_not_committed": "passed",
+          "no_admin_web_surface": "passed",
+          "rbac_denial": "passed",
+          "population": 3,
+          "audited_status_roundtrip": "passed",
+          "durable_operation_receipt_readback": "passed",
+          "idempotent_publication_receipt_replay": "passed",
+          "provider_cost_month_and_unknown_amount": "passed"
+        },
+        "backup_restore": {
+          "status": "restored_and_verified",
+          "sha256": "83aebb3b16ecaa9ead612d30e5775a1d963b22382fed27ac6a53819a57c8f1f8",
+          "byte_length": 1188589,
+          "fingerprint_match": true,
+          "failed_restore_cleanup_and_existing_target_preserved": true
+        },
+        "test_output_sha256": "1b95f71d71cce611d2c8b7af311af8e899338d983e1e54026ac7fb354f8985e8",
+        "cleanup": {
+          "database_dropped": true,
+          "redis_namespace_removed": true
+        }
+      }
     }
   ],
-  "remaining": "Portable reviewed-expectation and shared Sky time-fixture repairs are being checked before a single new-head Product CI dispatch. No new app candidate needed for tests only. Context controlling files unchanged; main, independent review and required device/data outcomes remain open."
+  "remaining": "Product CI passed at328cf67e; later changes are Context/task records only. Commit documentation and dispatch Context-only once. No staging deployment qualified. Current independent review, main synchronization and required native/data/recipient outcomes remain open."
 }
