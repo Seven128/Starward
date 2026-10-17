@@ -16,6 +16,7 @@
 11. [手机实际选点范围与居中](PHONE-FOCUS-VERIFICATION.md)：generation5临时只读诊断包的3.394km、0.7px与拖动接管结果；不替代未完成的连续双指、其它入口和最终普通候选。
 12. [当前山体遮挡接口摘要](HORIZON-CURRENT-API-SUMMARY.json)：现有手机API的真实COG模型及许可/假设读回，未包含站位坐标；接口读回不替代手机Canvas、缺测恢复或资料阅读验收。
 13. [叠层服务实测摘要](OVERLAY-SERVICE-MEASUREMENTS.json)保留三阶段的成功与较慢样本、输出哈希及最终源码指纹；[临时聚焦观察器源码](FOCUS-OBSERVATION-PROBE.txt)与探针回执逐字节匹配，只作为证据保存，不在生产源码或普通候选里。
+14. [远端检查点与CI回执](REMOTE-CI-CHECKPOINT.json)：已推当前分支66d19aa9，两个手动检查按准确head绑定；main仍在原整合提交，当前独立审阅和剩余用户结果未完成。
 
 执行规则与架构入口：仓库 [AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机 owner](../../../project_context/areas/main/verification/wechat-device.md)。适用技能为 `.codex/skills/starward-miniapp-development`、`.codex/skills/starward-wechat-device-verification`、`.codex/skills/uiux_design` 与已安装官方 wechatide scenes；本次 durable-goal 原文位于 `C:/Users/777/.codex/skills/durable-goal/SKILL.md`。
 

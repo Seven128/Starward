@@ -1,0 +1,14 @@
+{
+  "repository": "Seven128/Starward",
+  "branch": "codex/remote-main-20260908",
+  "headSha": "66d19aa9ba66d617aeb03970e52fba2328866b45",
+  "mainUnchangedAt": "32ec61a4f5321e571d499be6430a09918d65242e",
+  "push": "normal fast-forward confirmed",
+  "trigger": "workflow_dispatch",
+  "deploymentQualification": "The checked backend-staging definition excludes this non-main manual Product CI event.",
+  "runs": [
+    {"workflow": "Product CI", "id": 39075664368, "url": "https://github.com/Seven128/Starward/actions/runs/39075664368", "createdAt": "2026-10-17T22:35:03Z", "status": "completed", "conclusion": "failure", "failedStep": "Test deployment owners"},
+    {"workflow": "Context structure", "id": 39075668248, "url": "https://github.com/Seven128/Starward/actions/runs/39075668248", "createdAt": "2026-10-17T22:35:07Z", "status": "completed", "conclusion": "success"}
+  ],
+  "remaining": "Read these exact runs; do not dispatch duplicates. Main synchronization, current independent review and required product/device/data outcomes remain open."
+}

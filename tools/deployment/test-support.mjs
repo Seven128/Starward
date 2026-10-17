@@ -20,7 +20,7 @@ export async function createReleaseEnvironmentFixture(overrides = {}) {
   const backupDirectory = path.join(fixtureRoot, "backups");
   const receiptDirectory = path.join(fixtureRoot, "receipts");
   const backupKeyFile = path.join(fixtureRoot, "backup.key");
-  await writeFile(backupKeyFile, `${"1".repeat(64)}\n`);
+  await writeFile(backupKeyFile, `${"1".repeat(64)}\n`, { mode: 0o600, flag: "wx" });
   const lanePaths = Object.fromEntries(
     ["api", "worker", "migrate", "postgres", "redis"].map((lane) => [lane, path.join(fixtureRoot, `${lane}.env`)]),
   );

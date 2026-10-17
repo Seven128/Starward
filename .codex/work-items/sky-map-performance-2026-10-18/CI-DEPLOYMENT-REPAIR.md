@@ -22,3 +22,9 @@ Executed on the current Windows worktree with the repository Node launcher:
 The former CI fixture-setup failures are covered by these passing consumers. The complete deployment suite was run once after the repair. Raw local logs are ignored in this task's `tmp/deployment-repair-targeted.tap` and `tmp/deployment-repair-owner-suite.log`.
 
 This verifies local deterministic deployment tests. It does not claim a rerun of remote Product CI, a live deployment, a real OCI admission or target-runtime product acceptance. No old local artifact was downloaded, and no IDE, phone, Git or production environment action was performed by this repair.
+
+## Actual Linux follow-up
+
+Product CI39075664368 at source checkpoint66d19aa9 reached the deployment owner suite:238 passed and10 failed. All10 shared `backup_encryption_key_permissions_too_open`, originating from the common release fixture's default-mode `backup.key`. Windows skips this POSIX-mode guard, which explains the local pass. The existing production permission check correctly rejected the Linux fixture before its intended promotion/recovery assertions.
+
+`tools/deployment/test-support.mjs` now creates that new temporary fixture key with `mode:0o600` and exclusive creation. The real key reader and production permission requirement are unchanged. The existing10 business-facing checks already exercise the affected boundary, so no mirror test or skipped assertion was added. After the one-line repair, the full local deployment owner suite passed248/248, zero skips, in9.25s (ignored `tmp/deployment-key-mode-repair.log`). A new remote Product CI run on the subsequent fix commit is required for actual POSIX confirmation; follow REMOTE-CI-CHECKPOINT.json rather than reusing the failed run or the Windows result.
