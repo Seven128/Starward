@@ -15,6 +15,7 @@ import { exactSkyObservationFrame, skyEquatorialDirectionToEnu } from "./sky-obs
 import { registerSkyDeepSkyRegion, skyDeepSkyRegionCoordinates } from "./sky-deep-sky-region";
 import { skyTargetOpticalFrame } from "./sky-sdss-optical-frame";
 import { skyPageCanvasTestBindings } from "./sky-optical-page-test-support";
+import { skyTimeTestFixture } from "./sky-time-test-support";
 
 // Execute the production drawing function with a recorded native-canvas boundary.
 // This establishes call/data selection, not WEAPP rendering or physical pointing.
@@ -38,7 +39,7 @@ vm.runInNewContext(code, {
 
 const committed = "2026-09-05T13:00:00.000Z";
 test("fractional ruler input moves actual solar and observation geometry between supplied instants", () => {
-  const report = JSON.parse(readFileSync(new URL("../../../../../.codex/work-items/cloud-sky-native-2026-09-22/tmp/current-native-report-2026-10-01.json", import.meta.url), "utf8")).data as SkyReport;
+  const report = skyTimeTestFixture().source.data;
   const model=skyPresentationTimeModel(report);assert(model);
   const rows=report.hourly.filter(row=>row.at>=model.startAt&&row.at<=model.endAt);
   assert(rows.length>1);
@@ -62,25 +63,27 @@ test("ruler interpolation uses real adjacent durations and leaves unsupported mo
   assert.equal(skyRulerTime(rows,NaN,coverage),null);assert.equal(skyRulerTime([],0,coverage),null);
 });
 test("continuous presentation preserves the static catalog center and leaves old missing centers unknown", () => {
-  const report = JSON.parse(readFileSync(new URL("../../../../../.codex/work-items/cloud-sky-native-2026-09-22/tmp/current-native-report-2026-10-01.json", import.meta.url), "utf8")).data as SkyReport;
+  const report = skyTimeTestFixture().source.data;
   const pack = JSON.parse(readFileSync(new URL("../../../../../packages/astronomy-core/data/opengc-messier-deep-sky.v1.json", import.meta.url), "utf8"));
   const row = pack.rows.find((value: any) => value.objectRef === "M:51"); assert(row);
-  // The cached report predates the optional center contract. Supply only the
-  // source-bound catalog field here; never copy the image or time-model center.
-  const oldCatalog = report.skyScene.deepSky!.catalog!;
-  const catalog = { ...oldCatalog, entries: oldCatalog.entries.map(entry => entry.objectRef === row.objectRef
-    ? { ...entry, icrsCenter: { raDeg: row.raDeg, decDeg: row.decDeg } } : entry) };
+  const catalog = report.skyScene.deepSky!.catalog!;
+  // Explicitly retain the legacy optional-field case instead of relying on an
+  // old phone capture. The current center must come from the published catalog.
+  const oldCatalog: typeof catalog = { ...catalog, entries: catalog.entries.map(({ icrsCenter: _center, ...entry }) => entry) };
   const at = "2026-09-30T20:00:15.000Z";
   const current = presentSkyTime({ ...report, skyScene: { ...report.skyScene, deepSky: { ...report.skyScene.deepSky!, catalog } } }, at)!;
   assert.equal(current.mode, "MODEL"); assert.strictEqual(current.report.skyScene.deepSky!.catalog, catalog);
   const entry = catalog.entries.find(value => value.objectRef === "M:51")!;
+  assert.deepEqual(entry.icrsCenter, { raDeg: row.raDeg, decDeg: row.decDeg });
   const observation = exactSkyObservationFrame(current.report, at); assert(observation);
   const region = registerSkyDeepSkyRegion(entry, observation)!; assert(region); assert.equal(region.frameAt, at);
   const ra = row.raDeg * Math.PI / 180, dec = row.decDeg * Math.PI / 180;
   const center = skyEquatorialDirectionToEnu(observation.equatorialToEnu,
     [Math.cos(dec) * Math.cos(ra), Math.cos(dec) * Math.sin(ra), Math.sin(dec)]);
   assert(Math.hypot(...skyDeepSkyRegionCoordinates(region, center)!) < 1e-9);
-  const old = presentSkyTime(report, at)!; assert.equal(old.mode, "MODEL");
+  const old = presentSkyTime({ ...report,
+    skyScene: { ...report.skyScene, deepSky: { ...report.skyScene.deepSky!, catalog: oldCatalog } } }, at)!;
+  assert.equal(old.mode, "MODEL");
   assert.strictEqual(old.report.skyScene.deepSky!.catalog, oldCatalog);
   const missing = oldCatalog.entries.find(value => value.objectRef === "M:51")!;
   assert.equal(missing.icrsCenter, undefined);

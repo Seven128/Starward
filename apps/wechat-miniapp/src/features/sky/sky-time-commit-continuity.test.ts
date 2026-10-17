@@ -10,12 +10,11 @@ import { presentSkyTime, skyPresentationTimeModel } from "./sky-time-presentatio
 import { attachSkyCatalog } from "./sky-stellar-scene";
 import { confirmedObservationContextEdit, type ConfirmedObservationContextReply } from "../../services/observation-context-recovery";
 import { skyForecastPresentation } from "../../services/forecast-presentation";
+import { skyTimeTestFixture } from "./sky-time-test-support";
 
 function fixture() {
-  const root = new URL("../../../../../.codex/work-items/cloud-sky-native-2026-09-22/tmp/", import.meta.url);
-  const prior = JSON.parse(readFileSync(new URL("current-native-context-2026-10-01.json", root), "utf8")) as ApiEnvelope<ObservationContext>;
+  const { prior, source } = skyTimeTestFixture();
   const from = prior.data;
-  const source = JSON.parse(readFileSync(new URL("current-native-report-2026-10-01.json", root), "utf8")) as ApiEnvelope<SkyReport>;
   const target = { ...from, ...observationNightBounds(from), selectedAtUtc: "2026-09-30T14:15:17.000Z", revision: from.revision + 1,
     contextFingerprint: "confirmed-time-edit-fixture", weatherView: { primaryPolicy: "QWEATHER", cloudLayer: "TOTAL" as const,
       selectedModel: null, comparisonModels: [] } };

@@ -2,13 +2,40 @@
   "repository": "Seven128/Starward",
   "branch": "codex/remote-main-20260908",
   "headSha": "66d19aa9ba66d617aeb03970e52fba2328866b45",
+  "latestHeadSha": "dc7764851d53b2d7da0175b82e0735bee891bc13",
   "mainUnchangedAt": "32ec61a4f5321e571d499be6430a09918d65242e",
   "push": "normal fast-forward confirmed",
   "trigger": "workflow_dispatch",
   "deploymentQualification": "The checked backend-staging definition excludes this non-main manual Product CI event.",
   "runs": [
-    {"workflow": "Product CI", "id": 39075664368, "url": "https://github.com/Seven128/Starward/actions/runs/39075664368", "createdAt": "2026-10-17T22:35:03Z", "status": "completed", "conclusion": "failure", "failedStep": "Test deployment owners"},
-    {"workflow": "Context structure", "id": 39075668248, "url": "https://github.com/Seven128/Starward/actions/runs/39075668248", "createdAt": "2026-10-17T22:35:07Z", "status": "completed", "conclusion": "success"}
+    {
+      "workflow": "Product CI",
+      "id": 39075664368,
+      "url": "https://github.com/Seven128/Starward/actions/runs/39075664368",
+      "createdAt": "2026-10-17T22:35:03Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedStep": "Test deployment owners"
+    },
+    {
+      "workflow": "Context structure",
+      "id": 39075668248,
+      "url": "https://github.com/Seven128/Starward/actions/runs/39075668248",
+      "createdAt": "2026-10-17T22:35:07Z",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Product CI",
+      "id": 39076300542,
+      "headSha": "dc7764851d53b2d7da0175b82e0735bee891bc13",
+      "url": "https://github.com/Seven128/Starward/actions/runs/39076300542",
+      "createdAt": "2026-10-17T22:44:47Z",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedStep": "Check release code",
+      "diagnosis": "Deployment checks now pass. API999:960passed,1failed,38skipped; sole failure reads an ignored reviewed-introduction declaration. Mini Program suite not reached."
+    }
   ],
-  "remaining": "Read these exact runs; do not dispatch duplicates. Main synchronization, current independent review and required product/device/data outcomes remain open."
+  "remaining": "Portable reviewed-expectation and shared Sky time-fixture repairs are being checked before a single new-head Product CI dispatch. No new app candidate needed for tests only. Context controlling files unchanged; main, independent review and required device/data outcomes remain open."
 }

@@ -115,27 +115,22 @@ test("legacy editions retain their exact translation and missing-HIP boundaries"
 });
 
 test("reviewed batch reaches shared search and information, preserves facts and recovers failed prose", () => {
-  const batches = [
-    { file: "content-reviewed-translations-2026-10-11-r2.json", size: 46 },
-    { file: "content-reviewed-recovery-2026-10-11-draft.json", size: 224 },
-    { file: "content-reviewed-components-2026-10-11.json", size: 5 },
-    { file: "content-reviewed-system-identifiers-2026-10-11.json", size: 2 },
-  ].map(({ file, size }) => {
-    const declaration = JSON.parse(readFileSync(new URL("../../../.codex/work-items/cloud-sky-native-2026-09-22/evidence/" + file, import.meta.url), "utf8"));
-    const preflight = JSON.parse(readFileSync(new URL("../../../" + declaration.preflight.path, import.meta.url), "utf8"));
-    assert.equal(declaration.rows.length, size); assert.equal(preflight.candidates.length, size);
-    return { declaration, preflight };
-  });
-  const reviewedRows = batches.flatMap(batch => batch.declaration.rows);
-  const actualSources = new Map<string, string>(batches.flatMap(batch =>
-    batch.preflight.candidates.map((row: any) => [row.reference, row.actualHttpRetrievedAt] as [string, string])));
-  const expected: { reference: string; query: string; meaning: RegExp | string; retrievedAt: string | null; hd?: string }[] = [
+  type ReviewedRow = { reference: string; query: string; introductionSha256: string; retrievedAt: string | null; hd?: string };
+  // Independent reviewed expectations travel with the tests. Historical local
+  // work-item/preflight paths are provenance only, not runtime fixture inputs.
+  const fixture = JSON.parse(readFileSync(new URL("./test-fixtures/celestial-introduction-reviewed-batches.json", import.meta.url), "utf8")) as {
+    schemaVersion: string; batches: { expectedRows: number; rows: ReviewedRow[] }[];
+  };
+  assert.equal(fixture.schemaVersion, "starward-reviewed-introduction-test-v1");
+  assert.deepEqual(fixture.batches.map(batch => batch.expectedRows), [46, 224, 5, 2]);
+  for (const batch of fixture.batches) assert.equal(batch.rows.length, batch.expectedRows);
+  const reviewedRows = fixture.batches.flatMap(batch => batch.rows);
+  const expected: { reference: string; query: string; meaning: RegExp | { sha256: string }; retrievedAt: string | null; hd?: string }[] = [
     { reference: "HR:5359", query: "室女座λ", meaning: /双星.*金属线A型.*名称专指.*A分量/u, retrievedAt: null },
     { reference: "HR:4932", query: "太微左垣四", meaning: /G型巨星.*黄色/u, retrievedAt: null },
     { reference: "HR:1829", query: "天兔座β", meaning: /亮巨星.*物理双星.*不确定性/u, retrievedAt: null },
     { reference: "HR:8502", query: "杜鹃座α", meaning: /光谱双星.*K型巨星.*不确定性/u, retrievedAt: null },
-    ...reviewedRows.map((row: any) => ({ reference: row.reference, query: row.aliases[0], meaning: row.introduction,
-      retrievedAt: actualSources.get(row.reference)!, hd: row.identity.hd })),
+    ...reviewedRows.map(row => ({ ...row, meaning: { sha256: row.introductionSha256 } })),
   ];
   const search = new CelestialObjectSearchService(), details = new CelestialObjectInformationService();
   const basic = new CelestialObjectInformationService(undefined, undefined, undefined, undefined, () => null);
@@ -145,8 +140,8 @@ test("reviewed batch reaches shared search and information, preserves facts and 
       assert(hit, query);
       const current = details.get(reference, "zh-CN", version), old = basic.get(reference, "zh-CN", version);
       assert.equal(current.data.contentState, "READY");
-      if (typeof meaning === "string") assert.equal(current.data.introduction, meaning, reference);
-      else assert.match(current.data.introduction!, meaning);
+      if (meaning instanceof RegExp) assert.match(current.data.introduction!, meaning);
+      else assert.equal(hash(Buffer.from(current.data.introduction!, "utf8")), meaning.sha256, reference);
       assert.deepEqual(current.data.facts, old.data.facts); assert.deepEqual(current.data.aliases, hit.aliases);
       assert(old.data.aliases.every(alias => current.data.aliases.includes(alias)));
       assert.notEqual(current.data.contentRevision, old.data.contentRevision);
