@@ -2,43 +2,61 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { TerrainOverlayRequest } from "@starward/miniapp-contracts";
+import type { TerrainOverlayRequest, TerrainHorizonRequest } from "@starward/miniapp-contracts";
 import { ComputationCache } from "./computation-cache.ts";
 import { terrainImageUrl, terrainPublication, terrainRequestIsCovered, validateTerrainAsset, validateTerrainPublication,
   type TerrainPublication } from "./terrain-publication.ts";
 import { renderTerrain } from "./terrain-renderer.ts";
 import { createTerrainViewportRenderer } from "./terrain-viewport-renderer.ts";
 import { normalizeTerrainRequest, terrainRequestKey, validateTerrainRequest, terrainLocationIsSupported,
-  TERRAIN_RENDER_VERSION, TERRAIN_LEGACY_MAP_RENDER_VERSION, type RenderedTerrain, type TerrainRenderer, type TerrainRenderRequest } from "./terrain-request.ts";
+  terrainWindowViewport, terrainWindowRequest, terrainFixedRequest, TERRAIN_RENDER_VERSION, TERRAIN_LEGACY_MAP_RENDER_VERSION,
+  type RenderedTerrain, type TerrainRenderer, type TerrainRenderRequest } from "./terrain-request.ts";
+import { DISPLAY_RASTER_GRID, type DisplayRasterRegion } from "@starward/coordinate-system";
+import type { TerrainRenderMeasurement } from "./terrain-viewport-renderer.ts";
+import { renderTerrainWindow } from "./terrain-window-renderer.ts";
+import { readTerrainFixedInventory, readTerrainFixedAsset, type TerrainFixedInventory } from "./terrain-fixed-publication.ts";
+import { HORIZON_METHOD, HORIZON_RADIUS_M, readTerrainHorizonModel, type TerrainHorizonResult } from "./terrain-horizon-model.ts";
 
 export interface TerrainPort {
   getPublication(input: TerrainOverlayRequest, signal?: AbortSignal): Promise<TerrainPublication | null>;
+  getHorizon(input: TerrainHorizonRequest, signal?: AbortSignal): Promise<TerrainHorizonResult>;
   getAsset(file: string, signal?: AbortSignal): Promise<{ bytes: Buffer; publicationId: string }>;
   close(): void;
 }
 
 const assetPattern = /^glo30-cn-(v1|v2-map|v3-map)-(\d+)-(\d+)-(\d+)-([a-f0-9]{64})\.png$/u;
 const viewportAssetPattern = /^terrarium-cn-v1-map-(\d+)-(\d+)-(\d+)-(\d+)-(\d+)-(\d+)-([a-f0-9]{64})\.png$/u;
+const fixedAssetPattern = /^terrarium-cn-v2-fixed-(\d{1,2})-(\d+)-(\d+)-(1|2|4)-([a-f0-9]{64})-([a-f0-9]{64})\.png$/u;
+const windowAssetPattern = /^terrarium-cn-v2-window-(\d{1,2})-(\d+)-(\d+)-([1-5])-([1-5])-([a-f0-9]{64})-([a-f0-9]{64})\.png$/u;
 const ttlMs = 24 * 60 * 60_000;
-type TerrainRead = { controller: AbortController; consumers: Set<symbol>; promise: Promise<RenderedTerrain | null> };
+type TerrainRead<T> = { controller: AbortController; consumers: Set<symbol>; promise: Promise<T> };
 
 /** One Map/Spot source owner; each purpose has its own immutable presentation.
  * The bundled elevation-colour publication remains available to Spot/old URLs. */
 export class TerrainService implements TerrainPort {
   private readonly cache = new ComputationCache<RenderedTerrain | null>(16);
+  private readonly horizonCache = new ComputationCache<TerrainHorizonResult>(16);
   private readonly directory: string;
+  private readonly publishedDirectory: string | undefined;
+  private inventory: Promise<TerrainFixedInventory> | undefined;
   private readonly renderer: TerrainRenderer;
+  private readonly horizonRenderer: typeof readTerrainHorizonModel;
   private readonly closeRenderer: () => void;
   private readonly active = new Set<AbortController>();
-  private readonly readers = new Map<string, TerrainRead>();
+  private readonly compositions = new Set<AbortController>();
+  private readonly readers = new Map<string, TerrainRead<RenderedTerrain | null>>();
+  private readonly horizonReaders = new Map<string, TerrainRead<TerrainHorizonResult>>();
   private cacheWrite: Promise<void> = Promise.resolve();
   private closed = false;
 
-  constructor(options: { directory?: string; renderer?: TerrainRenderer } = {}) {
+  constructor(options: { directory?: string; publishedDirectory?: string; renderer?: TerrainRenderer;
+    horizonRenderer?: typeof readTerrainHorizonModel; measured?: (value: TerrainRenderMeasurement) => void } = {}) {
     const workspace = createHash("sha256").update(process.cwd()).digest("hex").slice(0, 12);
     this.directory = options.directory ?? path.join(tmpdir(), `starward-terrain-${workspace}-${TERRAIN_RENDER_VERSION}`);
-    const viewport = options.renderer ? null : createTerrainViewportRenderer();
+    this.publishedDirectory = options.publishedDirectory;
+    const viewport = options.renderer ? null : createTerrainViewportRenderer(fetch, options.measured);
     this.renderer = options.renderer ?? ((input, signal) => input.viewportBounds ? viewport!.render(input, signal) : renderTerrain(input, signal));
+    this.horizonRenderer = options.horizonRenderer ?? readTerrainHorizonModel;
     this.closeRenderer = () => viewport?.close();
   }
 
@@ -49,29 +67,59 @@ export class TerrainService implements TerrainPort {
     const bundled = await terrainPublication().catch(() => null);
     signal?.throwIfAborted();
     if (input.purpose === "SPOT" && bundled && terrainRequestIsCovered(bundled, input)) return bundled;
+    return (await this.resolve(input.viewportBounds ? terrainWindowViewport(input) : input, signal))?.publication ?? null;
+  }
+
+  async getHorizon(input: TerrainHorizonRequest, signal?: AbortSignal) {
+    const request = { purpose: "SPOT" as const, center: input.center, radiusKm: HORIZON_RADIUS_M / 1000 };
+    validateTerrainRequest(request);
+    signal?.throwIfAborted();
+    if (this.closed) throw new Error("terrain_service_closed");
+    if (!terrainLocationIsSupported(request)) return null;
+    const center = normalizeTerrainRequest(request).center;
+    const key = `${HORIZON_METHOD}:${center.latitude}:${center.longitude}`;
+    const result = await this.sharedRead(key, this.horizonReaders, controller => this.horizonCache.get(key,
+      () => this.runBounded(controller, this.active, () => this.horizonRenderer(center, controller.signal)),
+      value => Date.now() + (value?.status === "COMPLETE" ? ttlMs : value?.sourceIssues.some(issue => issue.reason === "READ_FAILED") ? 0
+        : !value || value.sourceIssues.length ? 60_000 : ttlMs)), signal);
+    // Small metadata only; callers cannot mutate a future reader's cached model.
+    return structuredClone(result);
+  }
+
+  /** Offline publisher prepares bounded units before composing a release view;
+   * each unit still uses the normal cancellation, deadline and asset owner. */
+  async prepareFixedCell(region: DisplayRasterRegion, signal?: AbortSignal) {
+    const input = terrainFixedRequest(region);
+    if (region.span !== 1) throw new Error("terrain_fixed_cell_required");
+    if (!terrainLocationIsSupported(input)) return null;
     return (await this.resolve(input, signal))?.publication ?? null;
   }
 
   private resolve(input: TerrainRenderRequest, signal?: AbortSignal): Promise<RenderedTerrain | null> {
     input = normalizeTerrainRequest(input);
+    const key = terrainRequestKey(input);
+    return this.sharedRead(key, this.readers, controller => this.cache.get(key, () => this.compute(input, controller),
+      result => Date.now() + (result?.publication.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND") ? 0
+        : result && result.publication.unavailableSourceTiles.length === 0 ? ttlMs : 60_000)), signal);
+  }
+
+  private sharedRead<T>(key: string, readers: Map<string, TerrainRead<T>>,
+    read: (controller: AbortController) => Promise<T>, signal?: AbortSignal): Promise<T> {
     if (this.closed) throw new Error("terrain_service_closed");
     signal?.throwIfAborted();
-    const key = terrainRequestKey(input);
-    const pending = this.readers.get(key);
+    const pending = readers.get(key);
     // Let a fully abandoned source read release its slot/cache promise before
     // a new reader of the same identity starts; never inherit its cancellation.
     if (pending?.controller.signal.aborted)
-      return pending.promise.catch(() => null).then(() => this.resolve(input, signal));
+      return pending.promise.catch(() => null).then(() => this.sharedRead(key, readers, read, signal));
     let job = pending;
     if (!pending) {
       const controller = new AbortController();
-      const promise = this.cache.get(key, () => this.compute(input, controller),
-        result => Date.now() + (result?.publication.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND") ? 0
-          : result && result.publication.unavailableSourceTiles.length === 0 ? ttlMs : 60_000));
-      const owned: TerrainRead = { controller, consumers: new Set<symbol>(), promise: promise.finally(() => {
-        if (this.readers.get(key) === owned) this.readers.delete(key);
+      const promise = read(controller);
+      const owned: TerrainRead<T> = { controller, consumers: new Set<symbol>(), promise: promise.finally(() => {
+        if (readers.get(key) === owned) readers.delete(key);
       }) };
-      this.readers.set(key, owned);
+      readers.set(key, owned);
       job = owned;
     }
     const shared = job!;
@@ -95,12 +143,10 @@ export class TerrainService implements TerrainPort {
     const cached = await this.readCached(input);
     controller.signal.throwIfAborted();
     if (cached) return cached;
-    if (this.active.size >= 2) throw new Error("terrain_busy_retry");
-    this.active.add(controller);
-    // Preserve the existing source budget and headroom below the client's 18s timeout.
-    const timer = setTimeout(() => controller.abort(new Error("terrain_source_deadline_exceeded")), 16_000);
-    try {
-      const result = await this.renderer(input, controller.signal);
+    const jobs = input.fixedWindow ? this.compositions : this.active;
+    return this.runBounded(controller, jobs, async () => {
+      const result = input.fixedWindow ? await renderTerrainWindow(input, controller.signal, (request, signal) => this.resolve(request, signal))
+        : await this.renderer(input, controller.signal);
       controller.signal.throwIfAborted();
       if (result) {
         validateTerrainPublication(result.publication);
@@ -110,10 +156,28 @@ export class TerrainService implements TerrainPort {
         await this.cacheWrite;
       }
       return result;
-    } finally { clearTimeout(timer); this.active.delete(controller); }
+    });
+  }
+
+  private async runBounded<T>(controller: AbortController, jobs: Set<AbortController>, read: () => Promise<T>) {
+    controller.signal.throwIfAborted();
+    if (jobs.size >= 2) throw new Error("terrain_busy_retry");
+    jobs.add(controller);
+    // Preserve the existing source budget and headroom below the client's 18s timeout.
+    const timer = setTimeout(() => controller.abort(new Error("terrain_source_deadline_exceeded")), 16_000);
+    try {
+      const result = await read();
+      controller.signal.throwIfAborted();
+      return result;
+    } finally { clearTimeout(timer); jobs.delete(controller); }
   }
 
   private async readCached(input: TerrainRenderRequest): Promise<RenderedTerrain | null> {
+    if (this.publishedDirectory && (input.fixedRaster || input.fixedWindow)) {
+      this.inventory ??= readTerrainFixedInventory(this.publishedDirectory).catch(error => { this.inventory = undefined; throw error; });
+      const entry = (await this.inventory).assets.find(asset => asset.key === terrainRequestKey(input));
+      if (entry) return readTerrainFixedAsset(this.publishedDirectory, entry);
+    }
     try {
       const manifest = path.join(this.directory, `${terrainRequestKey(input)}.json`);
       if (Date.now() - (await stat(manifest)).mtimeMs > ttlMs) return null;
@@ -164,9 +228,21 @@ export class TerrainService implements TerrainPort {
     const bundled = await terrainPublication().catch(() => null);
     signal?.throwIfAborted();
     if (bundled && file === bundled.image.file) return { bytes: validateTerrainAsset(await readFile(terrainImageUrl(file)), bundled), publicationId: bundled.publicationId };
-    const match = assetPattern.exec(file), viewport = viewportAssetPattern.exec(file);
-    if (!match && !viewport) throw new Error("terrain_asset_not_found");
-    const input: TerrainRenderRequest = viewport ? { purpose: "MAP",
+    const match = assetPattern.exec(file), viewport = viewportAssetPattern.exec(file), fixed = fixedAssetPattern.exec(file), window = windowAssetPattern.exec(file);
+    if (!match && !viewport && !fixed && !window) throw new Error("terrain_asset_not_found");
+    if (this.publishedDirectory && (fixed || window)) {
+      this.inventory ??= readTerrainFixedInventory(this.publishedDirectory).catch(error => { this.inventory = undefined; throw error; });
+      const inventory = await this.inventory;
+      const entry = [...inventory.assets, ...(inventory.retainedAssets ?? [])].find(asset => asset.file === file);
+      if (entry) {
+        const result = await readTerrainFixedAsset(this.publishedDirectory, entry);
+        signal?.throwIfAborted();
+        return { bytes: result.bytes, publicationId: result.publication.publicationId };
+      }
+    }
+    const input: TerrainRenderRequest = window ? terrainWindowRequest({ grid: DISPLAY_RASTER_GRID, tilePixels: 256,
+      zoom: Number(window[1]), x: Number(window[2]), y: Number(window[3]), columns: Number(window[4]), rows: Number(window[5]) }) : fixed ? terrainFixedRequest({ grid: DISPLAY_RASTER_GRID, tilePixels: 256,
+      zoom: Number(fixed[1]), x: Number(fixed[2]), y: Number(fixed[3]), span: Number(fixed[4]) as 1 | 2 | 4 }) : viewport ? { purpose: "MAP",
       center: { system: "GCJ02", latitude: (Number(viewport[1]) - 90e7) / 1e7, longitude: (Number(viewport[2]) - 180e7) / 1e7 },
       viewportBounds: { west: (Number(viewport[3]) - 180e7) / 1e7, south: (Number(viewport[4]) - 90e7) / 1e7,
         east: (Number(viewport[5]) - 180e7) / 1e7, north: (Number(viewport[6]) - 90e7) / 1e7 },
@@ -199,7 +275,9 @@ export class TerrainService implements TerrainPort {
   close() {
     this.closed = true;
     for (const job of this.readers.values()) job.controller.abort(new Error("terrain_service_closed"));
+    for (const job of this.horizonReaders.values()) job.controller.abort(new Error("terrain_service_closed"));
     this.closeRenderer();
     this.cache.clear();
+    this.horizonCache.clear();
   }
 }

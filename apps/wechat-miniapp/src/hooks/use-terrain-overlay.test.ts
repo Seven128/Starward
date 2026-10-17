@@ -3,19 +3,27 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import { createRasterImageResources } from "../services/raster-image-resources.ts";
 
 function harness() {
   const ast = ts.createSourceFile("hook.ts", readFileSync(new URL("./use-terrain-overlay.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
   const declaration = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useTerrainOverlay")!;
+  const imageAst = ts.createSourceFile("image.ts", readFileSync(new URL("./use-raster-image.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
+  const imageDeclaration = imageAst.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "useRasterImage")!;
   const states: any[] = [], dependencies: any[][] = [], cleanups: any[] = [];
   const requests: { url: string; signal: AbortSignal; resolve(value: string): void; reject(error: Error): void }[] = [];
+  const resources = createRasterImageResources({
+    download: (input, signal) => new Promise<string>((resolve, reject) => requests.push({ url: input.url, signal, resolve, reject }))
+      .then(path => ({ path, bytes: 1 })),
+    remove: async () => undefined,
+  }, { maximumFiles: 8, maximumBytes: 16, maximumConcurrent: 2 });
   let stateIndex = 0, effectIndex = 0, pending: (() => void)[] = [], retries = 0, nextTimer = 0;
   const timers = new Map<number, () => void>();
   let options: any;
   let fetching = false, retryOptions: any;
   let data: any = { imageUrl: "/v2/terrain/assets/tile.png", publicationId: "publication:a", lightPollution: { state: "PARTIAL", cells: [{ id: "independent-light" }] } };
-  const fn = vm.runInNewContext(ts.transpileModule(declaration.getText(ast).replace(/^export /, "") + ";useTerrainOverlay;", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
-    downloaded: new Map(), AbortController,
+  const fn = vm.runInNewContext(ts.transpileModule(imageDeclaration.getText(imageAst).replace(/^export /, "") + "\n" + declaration.getText(ast).replace(/^export /, "") + ";useTerrainOverlay;", { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, {
+    mapRasterFiles: resources, AbortController,
     useState(value: any) { const index = stateIndex++; if (!(index in states)) states[index] = value;
       return [states[index], (next: any) => { states[index] = typeof next === "function" ? next(states[index]) : next; }]; },
     useRef(value: any) { const index = stateIndex++; if (!(index in states)) states[index] = { current: value }; return states[index]; },
@@ -28,7 +36,6 @@ function harness() {
     setTimeout: (callback: () => void) => { const id = ++nextTimer; timers.set(id, callback); return id; },
     clearTimeout: (id: number) => timers.delete(id),
     getTerrainOverlay() {},
-    downloadTerrainAsset: (url: string, signal: AbortSignal) => new Promise<string>((resolve, reject) => requests.push({ url, signal, resolve, reject })),
     isMiniappRequestCancelled: (error: Error) => error.message === "cancelled",
   });
   return {
@@ -40,7 +47,7 @@ function harness() {
     render(enabled = true, imageEnabled = true) { const input = { purpose: "SPOT", center: { latitude: 22, longitude: 114 }, radiusKm: 5 };
       stateIndex = effectIndex = 0; fn(input, enabled, imageEnabled); pending.splice(0).forEach(effect => effect());
       stateIndex = effectIndex = 0; return fn(input, enabled, imageEnabled); },
-    unmount() { cleanups.forEach(cleanup => cleanup?.()); },
+    unmount() { cleanups.forEach(cleanup => cleanup?.()); void resources.close(); },
   };
 }
 const settle = () => new Promise<void>(resolve => setImmediate(resolve));
@@ -70,9 +77,9 @@ test("manual recovery beginning before the timer prevents a second automatic req
 });
 
 test("retry redownloads a failed terrain image when the metadata URL has not changed", async () => {
-  const h = harness(); h.render(); h.requests[0]!.reject(new Error("offline")); await settle();
+  const h = harness(); h.render(); await settle(); h.requests[0]!.reject(new Error("offline")); await settle();
   let result = h.render(); assert.ok(result.imageError); assert.equal(result.imagePath, null);
-  await result.refetch(); result = h.render();
+  await result.refetch(); result = h.render(); await settle();
   assert.equal(h.retries, 1); assert.equal(h.requests.length, 2);
   assert.equal(result.imagePending, true);
   h.requests[1]!.resolve("/local/recovered.png"); await settle();
@@ -81,19 +88,19 @@ test("retry redownloads a failed terrain image when the metadata URL has not cha
 });
 
 test("publication changes invalidate the same URL; cancelled late downloads cannot replace the current result", async () => {
-  const h = harness(); h.render(); h.setPublication("publication:b"); h.render();
+  const h = harness(); h.render(); await settle(); h.setPublication("publication:b"); h.render(); await settle();
   assert.equal(h.requests[0]!.signal.aborted, true);
   h.requests[1]!.resolve("/local/new.png"); await settle();
   h.requests[0]!.resolve("/local/old.png"); await settle();
   assert.equal(h.render().imagePath, "/local/new.png");
-  h.setPublication("publication:c"); const result = h.render();
+  h.setPublication("publication:c"); const result = h.render(); await settle();
   assert.equal(h.requests.length, 3); assert.equal(result.imagePath, null);
   h.unmount(); assert.equal(h.requests[2]!.signal.aborted, true);
 });
 
 test("light-only and hidden consumers do not download or expose terrain images", async () => {
   const h = harness(); assert.equal(h.render(true, false).imagePending, false); assert.equal(h.requests.length, 0);
-  h.render(); assert.equal(h.requests.length, 1);
+  h.render(); await settle(); assert.equal(h.requests.length, 1);
   const hidden = h.render(false); assert.equal(h.requests[0]!.signal.aborted, true);
   h.requests[0]!.resolve("/local/late.png"); await settle();
   assert.equal(hidden.imagePath, null); assert.equal(h.render(false).imagePath, null);
@@ -102,11 +109,12 @@ test("light-only and hidden consumers do not download or expose terrain images",
 
 test("a decoded image failure evicts the matching local path and a retry downloads it again", async () => {
   const h = harness(); h.render();
+  await settle();
   h.requests[0]!.resolve("/local/decoded-bad.png"); await settle();
   let result = h.render(); assert.equal(result.imagePath, "/local/decoded-bad.png");
   result.reportImageFailure(new Error("decode failed"), "/local/decoded-bad.png");
   result = h.render(); assert.equal(result.imagePath, null); assert.ok(result.imageError);
-  await result.refetch(); result = h.render();
+  await result.refetch(); result = h.render(); await settle();
   assert.equal(h.requests.length, 2); assert.equal(result.imagePending, true);
   h.requests[1]!.resolve("/local/decoded-good.png"); await settle();
   result = h.render(); assert.equal(result.imagePath, "/local/decoded-good.png"); assert.equal(result.imageError, null);
@@ -115,8 +123,9 @@ test("a decoded image failure evicts the matching local path and a retry downloa
 
 test("a late failure from an old publication cannot evict the current decoded image", async () => {
   const h = harness(); h.render();
+  await settle();
   h.requests[0]!.resolve("/local/old.png"); await settle();
-  h.setPublication("publication:b"); h.render();
+  h.setPublication("publication:b"); h.render(); await settle();
   h.requests[1]!.resolve("/local/current.png"); await settle();
   let result = h.render(); assert.equal(result.imagePath, "/local/current.png");
   result.reportImageFailure(new Error("late old failure"), "/local/old.png");

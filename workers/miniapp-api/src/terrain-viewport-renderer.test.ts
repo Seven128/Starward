@@ -72,8 +72,10 @@ test("one transient tile failure preserves known terrain but expires for a real 
   }) as typeof fetch);
   const terrain = new TerrainService({ directory, renderer: renderer.render });
   const service = createTestMiniappService({ terrain });
+  const recoveryRequest: TerrainOverlayRequest = { purpose: "MAP", center: { system: "GCJ02", latitude: 22.625, longitude: 114.025 },
+    viewportBounds: { west: 114.02, south: 22.62, east: 114.03, north: 22.63 } };
   try {
-    const first = await service.getTerrainOverlay(request);
+    const first = await service.getTerrainOverlay(recoveryRequest);
     assert.equal(first.data.state, "PARTIAL"); assert.ok(first.data.imageUrl);
     assert.equal(first.data.failureCode, "TERRAIN_READ_FAILED");
     const partialFile = decodeURIComponent(first.data.imageUrl.split("/").at(-1)!);
@@ -81,7 +83,7 @@ test("one transient tile failure preserves known terrain but expires for a real 
     assert.ok(partialFile.endsWith(createHash("sha256").update(partialAsset.bytes).digest("hex") + ".png"),
       "published partial bytes must be delivered before a source recovery changes the current image");
     const requestsBeforeRetry = source.requests.length;
-    const recovered = await service.getTerrainOverlay(request);
+    const recovered = await service.getTerrainOverlay(recoveryRequest);
     assert.equal(recovered.data.state, "AVAILABLE"); assert.equal(recovered.data.failureCode, undefined);
     assert.notEqual(recovered.data.imageUrl, first.data.imageUrl);
     assert.equal(source.requests.length, requestsBeforeRetry + 1, "retry retrieves the failed tile while retaining completed independent sources");

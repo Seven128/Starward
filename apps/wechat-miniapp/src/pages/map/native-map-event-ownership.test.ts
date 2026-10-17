@@ -3,6 +3,8 @@ import test from "node:test";
 import fs from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import { userMapRegionStarted } from "./map-region-event.ts";
+import { spotNeighborhoodCamera } from "./map-camera.ts";
 
 function code(name: "onRegionChange" | "onMarkerTap") {
   let source = fs.readFileSync(new URL("./index.tsx", import.meta.url), "utf8");
@@ -25,7 +27,18 @@ function code(name: "onRegionChange" | "onMarkerTap") {
   }).outputText;
 }
 
-test("debounced native region commits only while its originating Map remains current", async () => {
+test("actual native gesture begin cancels pending selection before the settled pan can commit", () => {
+  let cancellations = 0;
+  vm.runInNewContext(code("onRegionChange"), {
+    event: { type: "begin", causedBy: "gesture", detail: {} },
+    nativeMap: { isCurrent: () => true }, editorPresentation: { isClosing: () => false },
+    userMapRegionStarted, userMapRegionEnd: () => null, mapRegionEnded: () => false,
+    spotMapFocus: { cancel() { cancellations++; } },
+  });
+  assert.equal(cancellations, 1);
+});
+
+test("settled native camera commits immediately while conditions debounce keeps its Map authority", async () => {
   for (const obsolete of [true, false]) {
     let current = true, queued: (() => void) | undefined;
     const writes: unknown[] = [], resolves: unknown[] = [];
@@ -35,14 +48,18 @@ test("debounced native region commits only while its originating Map remains cur
       mapPointIntent: { current: 1 }, invalidateMapPointIntent: () => 1, currentDraftUserId: () => "owner",
       failedMapRegion: { current: null },
       userMapRegionEnd: () => ({ center: { latitude: 23, longitude: 114 }, zoom: 11 }),
+      userMapRegionStarted: () => false, spotMapFocus: { begin() {}, cancel() {} },
       candidateCameraGuard: { current: null }, regionTimer: { current: null },
       clearTimeout() {}, setTimeout(fn: () => void) { queued = fn; return 1; },
       useAppStore: { getState: () => ({ mapResetVersion: 0, viewport }) },
       setViewport: (value: object) => { writes.push(value); Object.assign(viewport, value); },
       resolveMapPoint: async (value: unknown) => { resolves.push(value); return null; }, notify() {}, errorMessage: String, Date,
     });
-    assert.ok(queued); current = !obsolete; queued();
-    assert.equal(writes.length, obsolete ? 0 : 1, "an old timer must not move the new native Map");
+    assert.ok(queued);
+    assert.equal(writes.length, 1, "the already settled native camera must be current before another selection");
+    assert.equal(resolves.length, 0, "only conditions requests remain debounced");
+    current = !obsolete; queued();
+    assert.equal(writes.length, 1, "an old timer must not move the new native Map");
     assert.equal(resolves.length, obsolete ? 0 : 1, "a current event must still submit its location intent");
   }
 });
@@ -62,8 +79,10 @@ for (const privateMarker of [false, true]) {
         groupedMarkers: [{ id: 0, spots: [{}, {}], latitude: 23, longitude: 114 }],
         privateTransitionGeneration: { current: 0 }, editorLeaveGuard: { current: {} }, markerTapAt: { current: 0 },
         viewport: { zoom: 9 }, setViewport: (value: unknown) => writes.push(value),
+        useAppStore: { getState: () => ({ viewport: { zoom: 9 } }) }, spotNeighborhoodCamera,
         setCandidatePreview() {}, selectSpot() {}, setSelectedFallback() {}, setSelectedProposal() {},
         setPanelExtent() {}, setPanelPhase() {}, setBottomPresentation() {}, setAnnouncement() {}, Date,
+        spotMapFocus: { begin() {}, cancel() {} }, currentDraftUserId: () => "owner",
       });
       current = !obsolete; release(true);
       await new Promise(resolve => setImmediate(resolve));

@@ -1036,12 +1036,22 @@
   opacity: 0;
   pointer-events: none;
 }
-.map-spot-editor-layer {
+.map-spot-editor-layer,
+.map-spot-editor-focus-ruler {
   --spot-editor-top: 230Px;
-  --embedded-editor-height: calc(var(--primary-page-height, 100vh) - var(--spot-editor-top));
   position: absolute;
-  z-index: 40;
   top: var(--spot-editor-top);
+}
+.map-spot-editor-focus-ruler {
+  left: 0;
+  width: 1Px;
+  height: 1Px;
+  opacity: 0;
+  pointer-events: none;
+}
+.map-spot-editor-layer {
+  --embedded-editor-height: calc(var(--primary-page-height, 100vh) - var(--spot-editor-top));
+  z-index: 40;
   right: 0;
   bottom: 0;
   left: 0;

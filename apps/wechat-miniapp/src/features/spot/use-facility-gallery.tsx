@@ -5,7 +5,7 @@ import { NativeBackBoundary } from "@/components/native-back-boundary";
 import { PHOTO_VIEWER_HANDOFF, useRedLightHandoff } from "@/components/red-light-handoff";
 import { SpotImageViewer } from "@/components/spot-image-viewer";
 import { useSpotMediaDocumentPosition } from "@/components/spot-media-gallery-position";
-import { facilityPhotos } from "@/utils/spot-media";
+import { facilityPhotos, sitePhotoContext } from "@/utils/spot-media";
 import { FACILITY_LABEL } from "@/utils/facility-presentation";
 import { mediaSource } from "@/utils/media-source";
 
@@ -55,7 +55,7 @@ export function useFacilityGallery({ identity, name, media, formalMedia, enabled
     {visible && selection ? <SpotImageViewer key={`${selection.scope}:${selection.type}`} name={`${name} · ${FACILITY_LABEL[selection.type]}`}
       sourceSelector={selection.source} index={index} onIndexChange={setIndex} onClose={() => setSelection(null)} onBackHandlerChange={backHandler}
       media={items.map(item => ({ id: item.id, src: mediaSource(item.localPath || item.thumbnailPath), alt: item.alt || FACILITY_LABEL[selection.type],
-        caption: item.caption || item.alt || "设施照片", attribution: `${item.photographer || "来源未注明"} · ${item.license}`, state: "ready" }))} /> : null}
+        caption: item.caption || item.alt || "设施照片", metadata: sitePhotoContext(item), attribution: `${item.photographer || "来源未注明"} · ${item.license}`, state: "ready" }))} /> : null}
   </>;
   return { photos, open, view, visible, returnTop: position.returnTop, record: position.record };
 }

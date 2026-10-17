@@ -14,18 +14,22 @@ export class ComputationCache<T> {
     key: string,
     compute: () => Promise<T>,
     expiresAt: (value: T) => number,
+    observed?: (outcome: "HIT" | "JOIN" | "MISS") => void,
   ): Promise<T> {
+    const observe = (outcome: "HIT" | "JOIN" | "MISS") => { try { observed?.(outcome); } catch {} };
     const now = this.now();
     for (const [entryKey, entry] of this.values)
       if (entry.expiresAt <= now) this.values.delete(entryKey);
     const cached = this.values.get(key);
     if (cached) {
+      observe("HIT");
       this.values.delete(key);
       this.values.set(key, cached);
       return cached.value;
     }
     const pending = this.inFlight.get(key);
-    if (pending) return pending;
+    if (pending) { observe("JOIN"); return pending; }
+    observe("MISS");
     // Bound active identities too. Excess independent work can run without
     // retention; it cannot evict or cancel another caller's shared promise.
     if (this.inFlight.size >= this.capacity) return compute();

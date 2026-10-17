@@ -9,9 +9,13 @@ import { SourceAttribution } from "@/components/source-attribution";
 import { SoftButton } from "@/components/soft-button";
 import { useAppStore } from "@/state/app-store";
 import { useTerrainOverlay } from "@/hooks/use-terrain-overlay";
+import { useTerrainHorizon } from "@/hooks/use-terrain-horizon";
+import { useRasterImage } from "@/hooks/use-raster-image";
+import { mercatorRasterCropPercent } from "@/services/raster-image-geometry";
 import { TERRAIN_RADIUS_TICKS, terrainCropPercent, terrainRadiusForSlider, terrainSliderForRadius, terrainViewportBounds } from "./terrain-geometry";
 import { terrainLayerAvailability } from "./terrain-layer-availability";
 import { formalSpotMarkerIconPath } from "./map-markers";
+import { SpotTerrainHorizon } from "./spot-terrain-horizon";
 
 export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visible: boolean }) {
   const mode = useAppStore(state => state.mode);
@@ -22,12 +26,17 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
   const updateRadius = (event: { detail: { value: number } }) => setRadiusKm(terrainRadiusForSlider(event.detail.value));
   const [terrainVisible, setTerrainVisible] = useState(true);
   const [lightVisible, setLightVisible] = useState(true);
+  const horizon = useTerrainHorizon({ center: { system: "GCJ02", latitude: spot.gcj02.latitude, longitude: spot.gcj02.longitude } }, visible);
   const terrain = useTerrainOverlay({
     purpose: "SPOT",
     center: { system: "GCJ02", latitude: spot.gcj02.latitude, longitude: spot.gcj02.longitude },
     radiusKm,
   }, visible && (terrainVisible || lightVisible), visible && terrainVisible);
   const data = terrain.data?.data;
+  const lightRaster = data?.lightPollution.raster ?? null;
+  const lightImage = useRasterImage(lightRaster ? { key: `${lightRaster.publicationId}:${lightRaster.imageUrl}`,
+    url: lightRaster.imageUrl, expectedBytes: lightRaster.imageBytes, expectedSha256: lightRaster.imageSha256 } : null,
+  visible && lightVisible && Boolean(lightRaster?.validPixelCount));
   const requested = useMemo(() => terrainViewportBounds(spot.gcj02, radiusKm), [radiusKm, spot.gcj02]);
   const cropStyle = useMemo(() => {
     const published = data?.imageBoundsGcj02;
@@ -37,13 +46,22 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
       width: `${crop.width}%`, height: `${crop.height}%`, left: `${crop.left}%`, top: `${crop.top}%`,
     } as CSSProperties;
   }, [data?.imageBoundsGcj02, requested]);
+  const lightCropStyle = useMemo(() => {
+    if (!lightRaster) return undefined;
+    const crop = mercatorRasterCropPercent(lightRaster.boundsGcj02, requested);
+    return { width: `${crop.width}%`, height: `${crop.height}%`, left: `${crop.left}%`, top: `${crop.top}%` } as CSSProperties;
+  }, [lightRaster, requested]);
   const lightCells = data?.lightPollution.cells ?? [];
   const ready = Boolean(data && data.state !== "UNAVAILABLE" && terrain.imagePath);
   const terrainShown = terrainVisible && ready && cropStyle;
-  const lightShown = lightVisible && data?.lightPollution.state !== "UNAVAILABLE" && lightCells.length > 0;
+  const lightRasterShown = lightVisible && data?.lightPollution.state !== "UNAVAILABLE" && lightImage.imagePath && lightCropStyle;
+  const lightShown = lightRasterShown || (lightVisible && !lightRaster && data?.lightPollution.state !== "UNAVAILABLE" && lightCells.length > 0);
   const displayedSources = [
     ...(terrainShown && data?.source ? [data.source] : []),
     ...(lightShown && data?.lightPollution.source ? [data.lightPollution.source] : []),
+    // The original chapter credit block covers both Copernicus derivatives;
+    // SourceAttribution deduplicates the shared mandatory notices.
+    ...(horizon.data?.data.state !== "UNAVAILABLE" && horizon.data?.data.source ? [horizon.data.data.source] : []),
   ];
   const encoding = terrainShown ? data?.elevationColorEncoding : null;
   const notify = useAppStore(state => state.notify);
@@ -51,12 +69,13 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
   const terrainAvailability = terrainLayerAvailability(data?.state, data?.failureCode, requestFailed);
   const lightAvailability = terrainLayerAvailability(data?.lightPollution.state, data?.lightPollution.failureCode, requestFailed);
   const terrainMissing = terrainAvailability === "EMPTY";
-  const lightMissing = lightAvailability === "EMPTY";
+  const lightMissing = lightAvailability === "EMPTY" || Boolean(lightRaster && lightRaster.validPixelCount === 0);
   const terrainFailed = terrainAvailability === "ERROR" || Boolean(terrain.imageError);
-  const lightFailed = lightAvailability === "ERROR";
+  const lightFailed = lightAvailability === "ERROR" || Boolean(lightImage.imageError);
   const failed = (terrainVisible && terrainFailed) || (lightVisible && lightFailed);
   const hasPicture = terrainShown || lightShown;
-  const pending = terrain.isPending || (terrainVisible && terrain.imagePending);
+  const pending = terrain.isPending || (terrainVisible && terrain.imagePending) || (lightVisible && lightImage.imagePending);
+  const retryLayers = () => { lightImage.retryImage(); void terrain.refetch(); };
   useEffect(() => {
     if (visible && failed) notify({ owner: "spot-terrain", placement: "floating", tone: "info", title: "图层数据异常",
       body: "部分图层暂时无法读取，可在地形与光污染中重试。", dedupeKey: spot.spotId });
@@ -72,7 +91,9 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
     <View className="spot-terrain__map" ariaLabel={`${spot.name}周边 ${radiusText} 公里地形概览，真北向上`}>
       {terrainShown ? <Image className="spot-terrain__image" src={terrain.imagePath!} mode="scaleToFill" style={terrainShown} aria-hidden="true"
         onError={() => terrain.reportImageFailure(new Error("terrain_image_decode_failed"), terrain.imagePath)} /> : null}
-      {lightShown ? lightCells.map(cell => {
+      {lightRasterShown ? <Image className="spot-terrain__light-image" src={lightImage.imagePath!} mode="scaleToFill" style={lightCropStyle} aria-hidden="true"
+        onError={() => lightImage.reportImageFailure(new Error("nightlight_image_decode_failed"), lightImage.imagePath)} /> : null}
+      {lightShown && !lightRaster ? lightCells.map(cell => {
         const width = requested.east - requested.west;
         const height = requested.north - requested.south;
         return <View key={cell.id} className="spot-terrain__light-cell" ariaLabel={`${cell.label}，${cell.radiance} ${cell.unit}`} style={{ left: `${(cell.boundsGcj02.west - requested.west) / width * 100}%`, top: `${(requested.north - cell.boundsGcj02.north) / height * 100}%`, width: `${(cell.boundsGcj02.east - cell.boundsGcj02.west) / width * 100}%`, height: `${(cell.boundsGcj02.north - cell.boundsGcj02.south) / height * 100}%`, backgroundColor: cell.color }} />;
@@ -86,7 +107,7 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
     </View>
     {!hasPicture && (terrainVisible || lightVisible) ? <StatusPanel state={pending ? "LOADING" : failed ? "ERROR" : "EMPTY"}
       detail={pending ? "正在加载图层…" : failed ? "图层暂时无法读取，请重试。" : "当前所选图层暂无可用数据。"}
-      recoveryLabel={failed && !pending ? "重试图层" : undefined} onRecover={failed && !pending ? () => void terrain.refetch() : undefined} /> : null}
+      recoveryLabel={failed && !pending ? "重试图层" : undefined} onRecover={failed && !pending ? retryLayers : undefined} /> : null}
     <View className="spot-terrain__coverage"><Text>外圈半径 {radiusText} km</Text><Text>{!terrainVisible ? "地形已关闭" : terrainFailed ? "地形读取失败" : terrainAvailability === "PENDING" || terrain.imagePending ? "地形加载中" : data?.state === "PARTIAL" ? "局部缺测" : data?.state === "AVAILABLE" ? "地形可用" : "地形不可用"}</Text></View>
     <View className="spot-terrain__toggles" ariaLabel="地形图层选择">
       {[{ key: "terrain", label: "地形", detail: "显示地势起伏", enabled: terrainVisible && !terrainMissing, disabled: terrainMissing, icon: "terrain" as const }, { key: "light", label: "光污染", detail: "年度卫星估算", enabled: lightVisible && !lightMissing, disabled: lightMissing, icon: "bulb" as const }].map(item => <Button key={item.key} disabled={item.disabled} className={`spot-terrain__toggle spot-terrain__toggle--${item.key}${item.enabled ? " spot-terrain__toggle--active" : ""}${!item.disabled ? " spot-terrain__toggle--ready" : ""}`} ariaLabel={`${item.label}，${item.detail}${item.disabled ? "，当前地区暂无数据" : item.enabled ? "，已开启" : "，已关闭"}`} aria-checked={item.enabled} onClick={() => item.key === "terrain" ? setTerrainVisible(value => !value) : setLightVisible(value => !value)}>
@@ -94,18 +115,22 @@ export function SpotTerrainOverview({ spot, visible }: { spot: SpotSummary; visi
       </Button>)}
     </View>
     {terrainMissing ? <Text className="spot-terrain__layer-state">地形：当前地区暂无数据</Text> : null}
-    {failed && hasPicture ? <SoftButton label="重新读取图层" onClick={() => void terrain.refetch()}>重试</SoftButton> : null}
+    {failed && hasPicture ? <SoftButton label="重新读取图层" onClick={retryLayers}>重试</SoftButton> : null}
     <View className="spot-terrain__legends">
       {encoding ? <View className="spot-terrain__elevation-key" ariaLabel="地形高程基色，低至高">
         <Text className="type-caption">地形</Text><View aria-hidden="true" style={{ background: `linear-gradient(90deg,rgb(${encoding.lowRgb}),rgb(${encoding.highRgb}))`, opacity: encoding.alpha / 255 }} /><Text className="type-caption">低 — 高</Text>
       </View> : null}
       {lightVisible ? data?.lightPollution.state === "UNAVAILABLE" ? <Text className="spot-terrain__layer-state">光污染：{lightFailed ? "暂时无法读取，请重试" : data.lightPollution.coverageLabel}</Text> : <View className="spot-terrain__legend">{data?.lightPollution.legend.map(item => <View key={item.label}><View style={{ backgroundColor: item.color }} /><Text>{item.label}</Text></View>)}</View> : null}
+      {lightVisible && lightImage.imagePending ? <Text className="spot-terrain__layer-state">光污染：正在加载年度夜光</Text> : null}
+      {lightVisible && lightRaster && lightFailed ? <Text className="spot-terrain__layer-state">光污染：暂时无法显示，请重试</Text> : null}
     </View>
+    <SpotTerrainHorizon key={spot.spotId} query={horizon} visible={visible} />
     <View className="spot-terrain__source" data-control="spot-terrain-source">
       {displayedSources.length ? <SourceAttribution sources={displayedSources} /> : null}
       {data?.datasetVersion ? <Text>{data.datasetVersion}</Text> : null}
       {data?.sourceResolution && data.derivedResolutionM !== null ? <Text>源分辨率 {data.sourceResolution} · 派生约 {data.derivedResolutionM} m · {data.coverageLabel}</Text> : null}
-      <Text>不含近处树木、围墙、临时灯及逐方向遮挡角。</Text>
+      <Text>俯视图不表示逐方向遮挡角；近处树木、围墙及临时灯仍需现场核对。</Text>
+      {lightVisible && lightRaster ? <Text>{data?.lightPollution.coverageLabel}</Text> : null}
       <SourceDisclosure key={spot.spotId} id="terrain-data-source" label="地形与夜光来源" sources={[...(data?.source ? [data.source] : []), ...(data?.lightPollution.source ? [data.lightPollution.source] : [])]} />
     </View>
   </View>;

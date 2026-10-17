@@ -1,0 +1,55 @@
+<section class="terrain-horizon-card" id="interactiveCard">
+<!-- 卡片 Header -->
+<div class="th-header">
+<div class="th-title-group">
+<h2 class="th-title">山体遮挡</h2>
+</div>
+<span class="th-badge">模型估算</span>
+</div>
+<!-- 地平线轮廓 SVG 区域 -->
+<div class="th-chart-container"><svg class="th-svg-canvas" preserveAspectRatio="none" viewBox="0 0 326 120">
+<defs>
+<pattern height="8" id="missingHatch" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse" width="8">
+<line stroke="#CFDBD5" stroke-width="2" x1="0" x2="0" y1="0" y2="8"></line>
+</pattern>
+</defs>
+<line class="th-axis-line" x1="24" x2="316" y1="100" y2="100"></line>
+<line class="th-grid-line" x1="24" x2="316" y1="65" y2="65"></line>
+<line class="th-grid-line" x1="24" x2="316" y1="30" y2="30"></line>
+<text class="th-alt-label" x="4" y="104">0°</text>
+<text class="th-alt-label" x="0" y="69">10°</text>
+<text class="th-alt-label" x="0" y="34">20°</text>
+<g id="mountainLayer">
+<polygon class="th-mountain-fill" points="24,100 24,78 40,75 60,62 80,72 97,85 120,54 145,42 170,68 200,82 220,88 230,90 255,70 280,60 290,72 300,75 316,80 316,100"></polygon>
+<path class="th-mountain-stroke" d="M 24,78 L 40,75 L 60,62 L 80,72 L 97,85 L 120,54 L 145,42 L 170,68 L 200,82 L 220,88 L 230,90 L 255,70 L 280,60 L 290,72 L 300,75 L 316,80"></path>
+</g>
+<text class="th-dir-text" x="24" y="116">北</text>
+<text class="th-dir-text" x="97" y="116">东</text>
+<text class="th-dir-text" x="170" y="116">南</text>
+<text class="th-dir-text" x="243" y="116">西</text>
+<text class="th-dir-text" x="316" y="116">北</text>
+</svg></div>
+<!-- 核心指标行 -->
+<div class="th-meta-row">
+<div class="th-meta-range">分析范围 20 km</div>
+<div class="th-meta-summary" id="metaSummary">低空轮廓估算 · 近物情况待现场核对</div>
+</div>
+<!-- 依据与真实约束声明 -->
+<p class="th-disclaimer">依据历史高程估算；近处树木、围墙需结合现场资料。</p>
+<!-- 来源及披露入口：语义化 details 结构，提供 >=44px 点击热区 -->
+<details class="th-source-details-group">
+<summary class="th-source-summary">
+<div class="th-source-left"><span>数据源：Copernicus DEM GLO-30</span></div>
+<svg class="th-source-chevron" viewBox="0 0 24 24">
+<polyline points="9 18 15 12 9 6"></polyline>
+</svg>
+</summary>
+<div class="th-source-content">空间分辨率约 30 米；基于 2011–2015 年雷达获取构建的数字表面模型 (DSM)，非现场实测。未计入近期地物、局部建筑物及林冠生长变化。来源：<a href="https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM" rel="noopener noreferrer" style="color: var(--accent-green-main); text-decoration: underline;" target="_blank">Copernicus DEM</a> (DOI: 10.5270/ESA-c5d3d65)。</div>
+</details>
+<!-- 既有现场照片只读元数据留空插槽（不伪造摄影图片） -->
+
+<!-- 加载 / 失败覆层插槽（按需显示） -->
+<div class="th-overlay-state" id="overlayState" style="display: none;" aria-live="polite">
+<!-- 内容由 JS 控制 -->
+</div>
+</section>

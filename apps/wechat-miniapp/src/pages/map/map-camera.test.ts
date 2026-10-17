@@ -1,34 +1,67 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { cameraCenterForVisibleMapTarget } from "./map-camera.ts";
+import { cameraCenterForNativeMapTarget, spotNeighborhoodGroundRange, NEIGHBORHOOD_MAX_VISIBLE_SPAN_M, type NativeMapProjection } from "./map-camera.ts";
 
-function mercatorY(latitude: number) {
-  const sin = Math.sin((latitude * Math.PI) / 180);
-  return 0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI);
-}
-
-test("camera center places a candidate in the middle of the visible map above the editor", () => {
-  const point = { latitude: 22.431234, longitude: 114.301234 };
-  const viewportHeight = 762.4;
-  const visibleMapHeight = 230;
-  const zoom = 14;
-  const center = cameraCenterForVisibleMapTarget(
-    point,
-    viewportHeight,
-    visibleMapHeight,
-    zoom,
-  );
-  const worldSize = 256 * 2 ** zoom;
-  const renderedY =
-    viewportHeight / 2 + (mercatorY(point.latitude) - mercatorY(center.latitude)) * worldSize;
-
-  assert.ok(Math.abs(renderedY - visibleMapHeight / 2) < 0.001);
-  assert.ok(center.latitude < point.latitude);
-  assert.equal(center.longitude, point.longitude);
+test("neighborhood detail follows actual visible ground coverage and preserves a finer view", () => {
+  const bounds = { west: 114.30, east: 114.40, south: 22.55, north: 22.65 };
+  const compact = { top: 30, height: 760, visibleBottom: 410 };
+  const sameFraction = { top: 20, height: 1200, visibleBottom: 620 };
+  const first = spotNeighborhoodGroundRange(bounds, compact, 14), second = spotNeighborhoodGroundRange(bounds, sameFraction, 14);
+  assert.ok(first.spanM > NEIGHBORHOOD_MAX_VISIBLE_SPAN_M); assert.ok(first.zoom > 14);
+  assert.equal(first.widthM, second.widthM); assert.equal(first.heightM, second.heightM);
+  const fine = spotNeighborhoodGroundRange({ west: 114.349, east: 114.351, south: 22.599, north: 22.601 }, compact, 18);
+  assert.equal(fine.zoom, 18); assert.ok(fine.spanM < 250);
+  assert.throws(() => spotNeighborhoodGroundRange(bounds, compact, 20), /range_unreachable/);
 });
 
-test("camera helper leaves invalid layout inputs unchanged", () => {
-  const point = { latitude: 22, longitude: 114 };
-  assert.equal(cameraCenterForVisibleMapTarget(point, 0, 230, 14), point);
-  assert.equal(cameraCenterForVisibleMapTarget(point, 500, 600, 14), point);
+test("selected point uses native projection with actual panel fraction and device pixel conversion", async () => {
+  const point = { latitude: 30.2, longitude: 120.1 };
+  const bounds = { west: 119.5, east: 120.5, south: 29.5, north: 30.5 };
+  for (const frame of [{ top: 34, height: 768, visibleBottom: 424 }, { top: 34, height: 768, visibleBottom: 264 }]) for (const pixelConversion of [1, 3]) {
+    const height = frame.height * pixelConversion;
+    const nativeY = (latitude: number) => 100 + (30.5 - latitude) * height;
+    const calls: string[] = [];
+    const projection: NativeMapProjection = {
+      toScreenLocation(options) {
+        calls.push("to"); options.success({ x: 75 + (options.longitude - 119.5) * 400 * pixelConversion, y: nativeY(options.latitude) });
+        return Promise.resolve({ x: NaN, y: NaN }); // Some adapters expose both callback and Promise; the first result owns it.
+      },
+      fromScreenLocation(options) {
+        calls.push("from"); options.success({ latitude: 30.5 - (options.y - 100) / height,
+          longitude: 119.5 + (options.x - 75) / (400 * pixelConversion) });
+      },
+    };
+    const center = await cameraCenterForNativeMapTarget(point, bounds, frame, projection, new AbortController().signal);
+    const afterMoveY = 100 + height / 2 + nativeY(point.latitude) - nativeY(center.latitude);
+    const expectedY = 100 + height * (frame.visibleBottom - frame.top) / frame.height / 2;
+    assert.ok(Math.abs(afterMoveY - expectedY) < 1e-8);
+    assert.equal(center.longitude, point.longitude); assert.deepEqual(calls, ["to", "to", "to", "from"]);
+  }
+});
+
+test("invalid or fully obscured native geometry cannot issue a projection call", async () => {
+  const point = { latitude: 30, longitude: 120 }, bounds = { west: 119, east: 121, south: 29, north: 31 };
+  let calls = 0;
+  const projection = { toScreenLocation() { calls++; }, fromScreenLocation() { calls++; } };
+  for (const frame of [{ top: 20, height: 700, visibleBottom: 20 }, { top: 20, height: 700, visibleBottom: 721 }])
+    await assert.rejects(cameraCenterForNativeMapTarget(point, bounds, frame, projection, new AbortController().signal), /map_projection_frame_invalid/u);
+  await assert.rejects(cameraCenterForNativeMapTarget(point, { ...bounds, north: NaN }, { top: 0, height: 700, visibleBottom: 300 }, projection, new AbortController().signal), /map_projection_frame_invalid/u);
+  assert.equal(calls, 0);
+});
+
+test("cancelled native projection releases its read and never continues the old chain", async () => {
+  const controller = new AbortController(); let callback: ((value: unknown) => void) | undefined, calls = 0;
+  const pending = cameraCenterForNativeMapTarget({ latitude: 30, longitude: 120 }, { west: 119, east: 121, south: 29, north: 31 },
+    { top: 0, height: 700, visibleBottom: 300 }, { toScreenLocation(options) { calls++; callback = options.success; }, fromScreenLocation() { calls++; } }, controller.signal);
+  controller.abort(); await assert.rejects(pending, { name: "AbortError" });
+  callback?.({ x: 20, y: 40 }); await Promise.resolve(); assert.equal(calls, 1);
+});
+
+test("native projection failure or invalid coordinates cannot fall back to invented geometry", async () => {
+  const point = { latitude: 30, longitude: 120 }, bounds = { west: 119, east: 121, south: 29, north: 31 };
+  const frame = { top: 0, height: 700, visibleBottom: 300 };
+  await assert.rejects(cameraCenterForNativeMapTarget(point, bounds, frame,
+    { toScreenLocation() { return Promise.reject(new Error("native_unavailable")); }, fromScreenLocation() {} }, new AbortController().signal), /native_unavailable/u);
+  await assert.rejects(cameraCenterForNativeMapTarget(point, bounds, frame,
+    { toScreenLocation(options) { options.success({ x: 1, y: NaN }); }, fromScreenLocation() {} }, new AbortController().signal), /map_projection_screen_point_invalid/u);
 });

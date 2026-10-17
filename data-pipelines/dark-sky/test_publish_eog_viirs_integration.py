@@ -16,6 +16,8 @@ from rasterio.transform import from_origin
 from psycopg.types.json import Jsonb
 
 import publish_eog_viirs as pipeline
+from test_eog_fixed_publication import prepare_fixture
+import eog_fixed_method as fixed
 
 
 def seed_spot(database_url: str, run_id: str) -> tuple[str, str]:
@@ -221,6 +223,53 @@ class EogViirsDatabaseIntegrationTest(unittest.TestCase):
             pipeline.publish(
                 conflicting, selection, thresholds, cells, self.database_url
             )
+
+    def test_fixed_publication_advances_complete_revisions_and_keeps_the_legacy_dataset_immutable(self) -> None:
+        legacy, legacy_selection, legacy_thresholds, legacy_cells = pipeline.prepare(self.manifest_path)
+        pipeline.publish(legacy, legacy_selection, legacy_thresholds, legacy_cells, self.database_url)
+        with psycopg.connect(self.database_url) as connection:
+            old_publication = connection.execute(
+                "SELECT payload FROM dark_sky_dataset_publications WHERE dataset_version = %s", (legacy.dataset_version,),
+            ).fetchone()[0]
+            old_revision = connection.execute(
+                "SELECT spot_payload, detail_payload FROM spot_revisions WHERE spot_id = %s AND revision_no = 2", (self.spot_id,),
+            ).fetchone()
+        fixture = self.root / "fixed"
+        fixture.mkdir()
+        _, manifest_path = prepare_fixture(fixture, self.dataset_version + "-fixed")
+        manifest, selection, thresholds, cells = pipeline.prepare(manifest_path)
+        first = pipeline.publish(manifest, selection, thresholds, cells, self.database_url)
+        second = pipeline.publish(manifest, selection, thresholds, cells, self.database_url)
+        self.assertEqual(first["status"], "published")
+        self.assertEqual(first["cellCount"], 0)
+        self.assertGreaterEqual(first["sampleCount"], 1)
+        self.assertEqual(second["status"], "already_published")
+        with psycopg.connect(self.database_url) as connection:
+            current = connection.execute(
+                """SELECT s.version, s.payload, r.payload, h.spot_payload, h.detail_payload
+                     FROM spots s JOIN spot_overview_read_models r USING (spot_id)
+                     JOIN spot_revisions h ON h.revision_id = s.active_revision_id
+                    WHERE s.spot_id = %s AND h.revision_no = s.version""", (self.spot_id,),
+            ).fetchone()
+            self.assertEqual(current[0], 3)
+            self.assertEqual(current[1], current[3])
+            self.assertEqual(current[2], current[4])
+            self.assertEqual(current[1]["lightPollution"]["method"], fixed.POLICY["methodVersion"])
+            self.assertEqual(current[1]["lightPollution"]["datasetVersion"], manifest.dataset_version)
+            self.assertEqual(current[1]["lightPollution"]["quality"]["requestedPixelCount"], 9)
+            self.assertEqual(connection.execute(
+                "SELECT spot_payload, detail_payload FROM spot_revisions WHERE spot_id = %s AND revision_no = 2", (self.spot_id,),
+            ).fetchone(), old_revision)
+            self.assertEqual(connection.execute(
+                "SELECT payload FROM dark_sky_dataset_publications WHERE dataset_version = %s", (legacy.dataset_version,),
+            ).fetchone()[0], old_publication)
+            new_payload = connection.execute(
+                "SELECT payload FROM dark_sky_dataset_publications WHERE dataset_version = %s", (manifest.dataset_version,),
+            ).fetchone()[0]
+            self.assertEqual(new_payload["schemaVersion"], 2)
+            self.assertEqual(new_payload["rasterInventory"]["assetCount"], 1)
+            self.assertEqual(new_payload["methodVersion"], current[1]["lightPollution"]["method"])
+            self.assertNotIn("relativeBandThresholds", new_payload)
 
     def test_missing_overview_rolls_back_the_whole_publication(self) -> None:
         manifest, selection, thresholds, cells = pipeline.prepare(self.manifest_path)

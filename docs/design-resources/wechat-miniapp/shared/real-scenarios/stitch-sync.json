@@ -1,0 +1,119 @@
+{
+  "projectId": "7144519510537620825",
+  "projectUrl": "https://stitch.withgoogle.com/projects/7144519510537620825",
+  "method": "Actual full-source browser captures saved through official Stitch UI; no regeneration",
+  "readbackAfterReload": true,
+  "current": [
+    {
+      "nodeId": "88f69cab-fe7f-4bfe-8905-89fa21b29384",
+      "name": "09｜天气与天文｜当前完整源",
+      "bitmap": [
+        {
+          "height": 2136,
+          "width": 1040
+        }
+      ],
+      "htmlScreens": 0
+    },
+    {
+      "nodeId": "4b167c2e-ec50-4777-bbc2-1a50b41ec9ab",
+      "name": "10｜登录与定位｜当前完整源",
+      "bitmap": [
+        {
+          "height": 2848,
+          "width": 1040
+        }
+      ],
+      "htmlScreens": 0
+    },
+    {
+      "nodeId": "e492d342-fc50-44f3-90ae-f1aa9233e7c3",
+      "name": "11｜消息与Loading｜当前完整源",
+      "bitmap": [
+        {
+          "height": 2136,
+          "width": 1040
+        }
+      ],
+      "htmlScreens": 0
+    },
+    {
+      "nodeId": "c5ba94e7-777b-417d-b1fa-37f752b90470",
+      "name": "12｜搜索阅读与来源｜当前完整源",
+      "bitmap": [
+        {
+          "height": 4272,
+          "width": 1040
+        }
+      ],
+      "htmlScreens": 0
+    },
+    {
+      "nodeId": "3d178009-df21-4bb5-addd-4cba240d0345",
+      "name": "13｜计划事件与提醒｜当前完整源",
+      "bitmap": [
+        {
+          "height": 4272,
+          "width": 1040
+        }
+      ],
+      "htmlScreens": 0
+    },
+    {
+      "nodeId": "1fc0b7e8-dcff-4ba8-adf4-6ef8342e3e09",
+      "name": "14｜创建分享与账户｜当前完整源",
+      "bitmap": [
+        {
+          "height": 6408,
+          "width": 1040
+        }
+      ],
+      "htmlScreens": 0
+    }
+  ],
+  "preservedMotherResources": [
+    {
+      "nodeId": "3585926f-1917-48c1-839a-e3242e0332f8",
+      "name": "02｜天气预警·图层搜索与来源"
+    },
+    {
+      "nodeId": "46a9936c70664e4381411573ab6b34da",
+      "name": "08｜共享 Info 提醒与暂无数据"
+    },
+    {
+      "nodeId": "55259bb3-00ea-4a94-a1cd-7de39e8f0b97",
+      "name": "04｜日月食与云观星"
+    },
+    {
+      "nodeId": "59c055dd-7dee-4ef1-91a5-fb5d154da4ed",
+      "name": "01｜地图与观星点｜舒适尺度"
+    },
+    {
+      "nodeId": "7757a4bc-0fe8-4621-8fda-3cc8bae433b5",
+      "name": "03｜我的·设置·计划与事件"
+    },
+    {
+      "nodeId": "a242bab0-0e30-4aec-bc36-b388edfbbb2e",
+      "name": "07｜星旅成就·行程与地点分享"
+    },
+    {
+      "nodeId": "b6c349c9-951f-4bea-9a81-3eb9530a4ebb",
+      "name": "06｜创建与反馈记录"
+    },
+    {
+      "nodeId": "eb9a1834-a8a1-4adc-9268-1ed9afb7c6c4",
+      "name": "05｜深空来源·创建反馈"
+    }
+  ],
+  "obsoleteCleanup": "COMPLETE; all 18 scoped obsolete canvas nodes absent after reload",
+  "cleanup": {
+    "preservedIdentitySetUnchanged": true,
+    "localOldResourcesRemoved": true,
+    "localCurrentHashesUnchanged": true,
+    "previouslyDeleted": 1,
+    "currentOriginalDimensionsMatch": true,
+    "remainingOld": 0,
+    "deletedThisBatch": 17,
+    "userConfirmed": true
+  }
+}

@@ -330,6 +330,22 @@ export interface LightPollutionEstimate {
   precision: string;
   state: "ESTIMATED" | "UNAVAILABLE";
   source: SourceSummary;
+  /** Schema-2 annual publication; absent on historical relative-AOI estimates. */
+  statistic?: string;
+  quality?: {
+    policyVersion: string;
+    minimumCloudFreeObservations: number;
+    minimumValidAreaFraction: number;
+    validAreaFraction: number;
+    sourceMissingAreaFraction: number;
+    insufficientCoverageAreaFraction: number;
+    publishedAreaFraction: number;
+    validPixelCount: number;
+    validZeroPixelCount: number;
+    requestedPixelCount: number;
+    state: "AVAILABLE" | "PARTIAL" | "UNAVAILABLE";
+    reason: "UNPUBLISHED" | "SOURCE_MISSING" | "INSUFFICIENT_COVERAGE" | "INSUFFICIENT_VALID_AREA" | null;
+  };
 }
 
 export interface SpotSummary {

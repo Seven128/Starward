@@ -57,6 +57,7 @@ import {
   type PlatformKind,
   type SpotRankingPreferences,
   type SpotId,
+  type TerrainHorizonRequest,
   type TerrainOverlayRequest,
   type UserPreferences,
 } from "@starward/miniapp-contracts";
@@ -919,6 +920,7 @@ export function getMapScene(
   viewport?: {
     center: { latitude: number; longitude: number };
     zoom: number;
+    bounds?: { west: number; south: number; east: number; north: number };
   },
   preferences?: SpotRankingPreferences,
   layer: MapLayerKind = "NORMAL",
@@ -936,6 +938,8 @@ export function getMapScene(
           "centerLat=" + viewport.center.latitude.toFixed(6),
           "centerLng=" + viewport.center.longitude.toFixed(6),
           "zoom=" + viewport.zoom,
+          ...(viewport.bounds ? ["viewportBounds=" + [viewport.bounds.west, viewport.bounds.south,
+            viewport.bounds.east, viewport.bounds.north].map(value => value.toFixed(7)).join(",")] : []),
         ]
       : []),
     ...(preferences
@@ -948,6 +952,14 @@ export function getMapScene(
   return requestOperation("map-scene", "mapSceneGet", {
     auth: "OPTIONAL",
     query: params,
+    ...(signal ? { signal } : {}),
+  });
+}
+
+export function getTerrainHorizon(input: TerrainHorizonRequest, signal?: AbortSignal) {
+  return requestOperation("terrain:HORIZON", "terrainHorizonGet", {
+    query: `centerLat=${input.center.latitude.toFixed(7)}&centerLng=${input.center.longitude.toFixed(7)}`,
+    cache: false,
     ...(signal ? { signal } : {}),
   });
 }
@@ -966,36 +978,6 @@ export function getTerrainOverlay(input: TerrainOverlayRequest, signal?: AbortSi
     // The query owner handles immutable successes and partial-product failures.
     cache: false,
     ...(signal ? { signal } : {}),
-  });
-}
-
-export function terrainAssetUrl(relativePath: string) {
-  if (!/^\/v2\/terrain\/assets\/[A-Za-z0-9][A-Za-z0-9.-]*\.png$/u.test(relativePath))
-    throw new Error("terrain_asset_path_invalid");
-  return __MINIAPP_API_BASE__.replace(/\/+$/u, "") + relativePath;
-}
-
-export function downloadTerrainAsset(relativePath: string, signal?: AbortSignal): Promise<string> {
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) {
-      reject(new MiniappRequestCancelled("superseded"));
-      return;
-    }
-    const task = Taro.downloadFile({
-      url: terrainAssetUrl(relativePath),
-      success(result) {
-        cleanup();
-        if (result.statusCode >= 200 && result.statusCode < 300 && result.tempFilePath) resolve(result.tempFilePath);
-        else reject(new Error(`terrain_asset_download_failed:${result.statusCode}`));
-      },
-      fail(error) {
-        cleanup();
-        reject(signal?.aborted ? new MiniappRequestCancelled("superseded") : new Error(error.errMsg || "terrain_asset_download_failed"));
-      },
-    });
-    const abort = () => task.abort();
-    const cleanup = () => signal?.removeEventListener("abort", abort);
-    signal?.addEventListener("abort", abort, { once: true });
   });
 }
 

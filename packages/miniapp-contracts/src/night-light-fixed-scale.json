@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "methodVersion": "starward-eog-fixed-radiance-v1",
+  "styleVersion": "starward-vnl-fixed-bands-v1",
+  "unit": "nW/cm²/sr",
+  "alpha": 102,
+  "geometryPolicy": {
+    "version": "gcj-dense-separated-branch-area-v1",
+    "maximumQuadratureStepDegrees": 0.0020833333333333333
+  },
+  "thresholds": [0.5, 2, 10, 40],
+  "boundaryNumericalRelativeTolerance": 7.105427357601002e-15,
+  "bands": [
+    { "id": "VERY_LOW", "label": "年度夜光很低", "color": "#87714A", "range": "0–0.5" },
+    { "id": "LOW", "label": "年度夜光较低", "color": "#A18452", "range": ">0.5–2" },
+    { "id": "MODERATE", "label": "年度夜光中等", "color": "#BE9B61", "range": ">2–10" },
+    { "id": "HIGH", "label": "年度夜光较高", "color": "#D1B577", "range": ">10–40" },
+    { "id": "VERY_HIGH", "label": "年度夜光很高", "color": "#E0C998", "range": ">40" }
+  ],
+  "qualityPolicy": {
+    "version": "eog-cf-valid-area-v1",
+    "minimumValidAreaFraction": 0.5,
+    "areaFractionNumericalTolerance": 0.0002,
+    "cloudFreeThreshold": "publication-manifest",
+    "zeroRequiresValidCoverage": true
+  },
+  "statistics": {
+    "spot": "3x3-source-pixels-area-weighted-quantiles-centred-cdf-v1",
+    "map": "valid-area-weighted-mean-before-colour-v1"
+  },
+  "meaning": "Fixed product cartography of annual satellite upward radiance; not Bortle, SQM or measured sky brightness."
+}

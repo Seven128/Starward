@@ -6,7 +6,7 @@ window.contributionPreviewHost={recordId:r.id,submitLabel:r.status==='REJECTED'?
  if(r.reason){const n=document.createElement('aside');n.className='review-reason';n.innerHTML='<strong>审核意见</strong>';const p=document.createElement('p');p.textContent=r.reason;n.append(p);document.querySelector('.form-scroll').prepend(n);}
  document.querySelector('.quiet').textContent='审核前不公开';
  }};
-const css=document.createElement('link');css.rel='stylesheet';css.href='/contributions/adopted/creation-feedback/preview/host.css';document.head.append(css);
-await import('/feedback/adopted/spot-feedback/preview/editor.mjs');
+const css=document.createElement('link');css.rel='stylesheet';css.href='/docs/design-resources/wechat-miniapp/contributions/adopted/creation-feedback/preview/host.css';document.head.append(css);
+await import('/docs/design-resources/wechat-miniapp/feedback/adopted/spot-feedback/preview/editor.mjs');
 
 const focusTitle=document.querySelector('.sheet-heading h2');focusTitle.tabIndex=-1;focusTitle.focus({preventScroll:true});

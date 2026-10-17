@@ -182,9 +182,9 @@ Revisit when: Split aggregate repositories behind the current interface before a
 
 Owner: miniapp-data-maintainers. Tracking: WECHAT-MINIAPP-MOD-007.
 
-The current operator-run publisher keeps manifest validation, raster sampling, PostGIS publication and transactional rollback in one auditable command while the first real dataset lane is established; internal stage extraction remains bounded debt.
+The operator command owns PostGIS publication, ordered row locks, immutable spot revisions and transactional rollback. `eog_raster.py` owns hash-pinned manifest/input validation and the existing relative-AOI numerical preparation. Fixed annual-radiance policy and area aggregation belong to `eog_fixed_method.py`, with its shared policy in miniapp-contracts; `eog_fixed_raster.py` owns numerical display derivation, using geometry produced through the coordinate package. `prepare_fixed_eog.py` seals assets without activating them; `eog_fixed_publication.py` validates schema-2 inventory, image/numeric identities and full-footprint spot samples before the same transaction. The API publication reader and `NightLightService` consume only matching database-published identities. The command retains its existing import/CLI surface. Splitting these stages does not change publication assessments or permit rewriting an existing dataset's meaning.
 
-Revisit when: Extract manifest/raster and database-publication stages before adding another night-light product, projection or publication mode.
+Revisit when: Another persistence or publication contract changes the database transaction. Keep numerical/coordinate derivation out of that transaction and preserve the ordered-lock/revision boundary.
 
 ## packages/miniapp-contracts/src/api-shapes.ts
 

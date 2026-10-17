@@ -1,0 +1,261 @@
+{
+  "projectId": "7144519510537620825",
+  "projectUrl": "https://stitch.withgoogle.com/projects/7144519510537620825",
+  "current": [
+    {
+      "id": "1f98910c16f84444b4aec58bb7ad741c",
+      "name": "15｜周边环境·山体遮挡｜当前局部源",
+      "kind": "editable HTML",
+      "readbackAfterReload": true
+    },
+    {
+      "id": "6259c68d-25d3-4733-a173-3707e7d2cd42",
+      "name": "16｜周边环境·完整宿主局部更新｜当前参照",
+      "kind": "actual host screenshot",
+      "readbackAfterReload": true,
+      "originalDimensions": {
+        "width": 1264,
+        "height": 922
+      }
+    }
+  ],
+  "protectedOriginals": [
+    {
+      "id": "59c055dd-7dee-4ef1-91a5-fb5d154da4ed",
+      "name": "01｜地图与观星点｜舒适尺度"
+    },
+    {
+      "id": "3585926f-1917-48c1-839a-e3242e0332f8",
+      "name": "02｜天气预警·图层搜索与来源"
+    },
+    {
+      "id": "7757a4bc-0fe8-4621-8fda-3cc8bae433b5",
+      "name": "03｜我的·设置·计划与事件"
+    },
+    {
+      "id": "55259bb3-00ea-4a94-a1cd-7de39e8f0b97",
+      "name": "04｜日月食与云观星"
+    },
+    {
+      "id": "eb9a1834-a8a1-4adc-9268-1ed9afb7c6c4",
+      "name": "05｜深空来源·创建反馈"
+    },
+    {
+      "id": "b6c349c9-951f-4bea-9a81-3eb9530a4ebb",
+      "name": "06｜创建与反馈记录"
+    },
+    {
+      "id": "a242bab0-0e30-4aec-bc36-b388edfbbb2e",
+      "name": "07｜星旅成就·行程与地点分享"
+    },
+    {
+      "id": "46a9936c70664e4381411573ab6b34da",
+      "name": "08｜共享 Info 提醒与暂无数据"
+    },
+    {
+      "id": "88f69cab-fe7f-4bfe-8905-89fa21b29384",
+      "name": "09｜天气与天文｜当前完整源"
+    },
+    {
+      "id": "4b167c2e-ec50-4777-bbc2-1a50b41ec9ab",
+      "name": "10｜登录与定位｜当前完整源"
+    },
+    {
+      "id": "e492d342-fc50-44f3-90ae-f1aa9233e7c3",
+      "name": "11｜消息与Loading｜当前完整源"
+    },
+    {
+      "id": "c5ba94e7-777b-417d-b1fa-37f752b90470",
+      "name": "12｜搜索阅读与来源｜当前完整源"
+    },
+    {
+      "id": "3d178009-df21-4bb5-addd-4cba240d0345",
+      "name": "13｜计划事件与提醒｜当前完整源"
+    },
+    {
+      "id": "1fc0b7e8-dcff-4ba8-adf4-6ef8342e3e09",
+      "name": "14｜创建分享与账户｜当前完整源"
+    },
+    {
+      "id": "5385664345158066168",
+      "name": "云观星菜单与弹窗｜已采用·完整交互·2026-10-17"
+    }
+  ],
+  "superseded": [
+    {
+      "id": "d1be0cee1a054402b6d8b0834e4ba1a9",
+      "name": "15｜周边环境·山体遮挡｜当前局部源（已替代）",
+      "reason": "Superseded by independently reviewed source without duplicate photo block",
+      "exists": false,
+      "deleted": true,
+      "deletedAt": "2026-10-17T11:15:46.269Z"
+    },
+    {
+      "id": "0f832122de7e4b1cb45358488992471f",
+      "name": "周边环境｜山体遮挡组件｜待核对",
+      "reason": "Initial draft with wrong source and invented field claims",
+      "exists": false,
+      "deleted": true,
+      "deletedAt": "2026-10-17T11:15:46.269Z"
+    },
+    {
+      "id": "b4c10366b2d74752b0102ff1f30b2fdb",
+      "name": "Generating Screen...",
+      "reason": "Static source correction but stale script",
+      "exists": false,
+      "deleted": true,
+      "deletedAt": "2026-10-17T11:15:46.269Z"
+    },
+    {
+      "id": "7c8be8b2024748f5928b74b63e920405",
+      "name": "Generating Screen...",
+      "reason": "Old smooth curve and contrast",
+      "exists": false,
+      "deleted": true,
+      "deletedAt": "2026-10-17T11:15:46.269Z"
+    },
+    {
+      "id": "1cf9b138e7214e5e9b7713e83471e924",
+      "name": "Generating Screen...",
+      "reason": "Static curve correction but old dynamic script",
+      "exists": false,
+      "deleted": true,
+      "deletedAt": "2026-10-17T11:15:46.269Z"
+    }
+  ],
+  "sources": [
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/current.html",
+      "sha256": "85a9626887b275cc814d0177d883567f99d044b71be8fd02bcfb7e7c20dd3308"
+    },
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/horizon-fragment.html",
+      "sha256": "c26756c3e7ee2374ab4073128b084617dc86a353c07677e166a18b8de2ca98a4"
+    },
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/horizon.css",
+      "sha256": "b21959f9784348d6c6fef6b4a8d339605128b144ac541b0645d9e5421c9e19e3"
+    },
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/horizon.mjs",
+      "sha256": "eca58b8bd57a547a2cbdc3b921f207a443e864e5b42de054160cb9a48af0e81f"
+    },
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/board.html",
+      "sha256": "fc52f29496ed59eb81c9d6ff7c93920c2ae2bfba0d6c2309404bdb005af44c21"
+    },
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/current-board.jpg",
+      "sha256": "de2840fe1dd340dff968b056518adccf1cb7d511b653c4b521ccc04947ae2ca1"
+    },
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/full-host-normal.jpg",
+      "sha256": "aed0ba19b1191c6c082699a53117bf03d143a7d9005009e9583fcd02a960e07d"
+    },
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/map-medium-focus.jpg",
+      "sha256": "994eaa929a95a0da547e0a172c4a3f66615f3ca7315d1e9c1ba85c3eda8be864"
+    },
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/photo-caption-detail.jpg",
+      "sha256": "d72ee4448fa8f54939656450c320fd467d25a0df7a75afd028872d5d4a1f33d4"
+    },
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/../../../shared/comfortable-scale-2026-09-22/preview/candidate.mjs",
+      "sha256": "0780f17dd131a3eb8b37c51bdb299dca611ae9610328014a5bb9ff15f3eeb3d2"
+    },
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/../../../shared/comfortable-scale-2026-09-22/preview/map-editor.mjs",
+      "sha256": "df84f2352c2c23417687c48bfe430379f6ba86de0913690e3aca900842d12bfc"
+    },
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/../../revisions/three-requirements-2026-09-13/preview/map.mjs",
+      "sha256": "9b1712f379ee1d2d1375fe1c333181f11b299b5317f4f8be1e5e27ec445d5e72"
+    },
+    {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/../../../shared/fluid-motion-2026-09-22/spot-gallery.js",
+      "sha256": "84afe51584ed2e5db4d2abde677954dbcf9cd88ae06b3b8da24d5e51a8920527"
+    }
+  ],
+  "sourceComparison": {
+    "whitespaceNormalizedEqual": true,
+    "localSha256": "85a9626887b275cc814d0177d883567f99d044b71be8fd02bcfb7e7c20dd3308",
+    "remoteReadbackSha256": "053cd4186420bb6f6a5a0d0d5d971058fbfea1d63aaf1e58764aa9b513791490"
+  },
+  "provenance": {
+    "generator": "Stitch authenticated official UI, Balanced",
+    "model": "unknown",
+    "usage": null,
+    "postExportCorrections": [
+      "Dynamic SVG path/fill agreement",
+      "Current DAY text roles and 12px metadata",
+      "Existing full-host integration and gallery metadata only",
+      "Removed redundant photo block; metadata belongs only to the existing gallery caption",
+      "Prototype iframe user-input cancellation and lifecycle cleanup"
+    ],
+    "originalReference": "01｜地图与观星点｜舒适尺度",
+    "originalReferenceId": "59c055dd-7dee-4ef1-91a5-fb5d154da4ed",
+    "import": "Corrected full HTML submitted through official composer; actual runtime snapshots pasted through official clipboard UI",
+    "downloadLimitation": "ZIP/download and file chooser events did not return a usable handle; official Copy Code and clipboard used"
+  },
+  "targetRuntimeVerified": false,
+  "cleanup": {
+    "complete": true,
+    "at": "2026-10-17T11:17:20.180Z",
+    "remoteMode": "Official UI exact single-node Delete; refresh readback",
+    "remainingNodeCount": 17,
+    "protectedOriginalCount": 15,
+    "currentCount": 2,
+    "deletedIds": [
+      "0f832122de7e4b1cb45358488992471f",
+      "b4c10366b2d74752b0102ff1f30b2fdb",
+      "1cf9b138e7214e5e9b7713e83471e924",
+      "7c8be8b2024748f5928b74b63e920405",
+      "d1be0cee1a054402b6d8b0834e4ba1a9"
+    ],
+    "localMode": "Windows Recycle Bin; six originals absent; six new recovery items read back with identical hashes",
+    "local": [
+      {
+        "file": "stitch-superseded-r3.html",
+        "sha256": "b2537b0a7aba2173400e3bde7abd72f26f07501b7e2938b8d7820ef1bfb3d841",
+        "originalAbsent": true,
+        "newRecycleBinReadback": true
+      },
+      {
+        "file": "stitch-export-late-clipboard-r3.html",
+        "sha256": "b2537b0a7aba2173400e3bde7abd72f26f07501b7e2938b8d7820ef1bfb3d841",
+        "originalAbsent": true,
+        "newRecycleBinReadback": true
+      },
+      {
+        "file": "stitch-generator-export.html",
+        "sha256": "130b9e0c4c8e7730275b4c2945adfd5b587f9b99ede32318399b1d4211b5bd7a",
+        "originalAbsent": true,
+        "newRecycleBinReadback": true
+      },
+      {
+        "file": "stitch-current-readback.html",
+        "sha256": "55ce81e0ed688bf403b4b4f1706c3ff153008bc4b02c7cd406c5cfba5c3fcf74",
+        "originalAbsent": true,
+        "newRecycleBinReadback": true
+      },
+      {
+        "file": "photo-viewer-inspection.jpg",
+        "sha256": "185c655a4daf994de373d3867314442a02397d29332876a9cfc358666ac7b852",
+        "originalAbsent": true,
+        "newRecycleBinReadback": true
+      },
+      {
+        "file": "stitch-original.html",
+        "sha256": "053cd4186420bb6f6a5a0d0d5d971058fbfea1d63aaf1e58764aa9b513791490",
+        "originalAbsent": true,
+        "newRecycleBinReadback": true
+      }
+    ],
+    "proof": {
+      "file": "docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/stitch-cleanup-proof.png",
+      "sha256": "00aca901bb97c279bb7e05294efe2df4b0e9a64f95eb3c7011dd366de6db4442"
+    },
+    "authorization": "The exact list was shown. User explicitly delegated final technical verification/decision and instructed continue. No additional targets."
+  }
+}

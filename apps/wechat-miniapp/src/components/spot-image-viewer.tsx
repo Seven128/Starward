@@ -14,6 +14,7 @@ export type SpotViewerMedia = {
   src?: string;
   alt: string;
   caption: string;
+  metadata?: string;
   attribution?: string;
   state?: "loading" | "error" | "ready";
 };
@@ -392,7 +393,7 @@ export function SpotImageViewer({ name, media, index, onIndexChange, onClose, on
           ? <Button className="spot-media-viewer__arrow spot-media-viewer__arrow--next" ariaLabel="下一张照片" onClick={() => changeIndex(index + 1)}>›</Button>
           : null}
       </View>
-      <View className="spot-media-viewer__caption"><Text>{current.caption}</Text>{current.attribution ? <Text>{current.attribution}</Text> : null}</View>
+      <View className="spot-media-viewer__caption"><Text>{current.caption}</Text>{current.metadata ? <Text className="spot-media-viewer__metadata">{current.metadata}</Text> : null}{current.attribution ? <Text>{current.attribution}</Text> : null}</View>
     </View>
     {flight ? <View className={`spot-media-viewer__flight${flight.moving ? " spot-media-viewer__flight--moving" : ""}${flight.closing ? " spot-media-viewer__flight--closing" : ""}`}
       style={{ left: `${flight.rect.left}px`, top: `${flight.rect.top}px`, width: `${flight.rect.width}px`, height: `${flight.rect.height}px` }}>

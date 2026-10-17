@@ -11,6 +11,7 @@ import rasterio
 from rasterio.transform import from_origin
 
 import publish_eog_viirs as pipeline
+import eog_raster
 
 
 class EogViirsPublisherTest(unittest.TestCase):
@@ -197,7 +198,7 @@ class EogViirsPublisherTest(unittest.TestCase):
         self.coverage[2:14:2, 2:14:2] = 12
         self._write_raster(self.coverage_path, self.coverage, "uint16")
         self._write_manifest(gridStridePixels=12)
-        with patch.object(pipeline, "MAX_NATIVE_GRID_CELLS", 10):
+        with patch.object(eog_raster, "MAX_NATIVE_GRID_CELLS", 10):
             with self.assertRaisesRegex(pipeline.PipelineError, "native_grid_cell_budget_exceeded"):
                 pipeline.prepare(self.manifest_path)
 

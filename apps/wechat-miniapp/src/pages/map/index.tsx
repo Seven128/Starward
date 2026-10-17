@@ -46,7 +46,7 @@ import { SemanticIcon } from "@/components/semantic-asset";
 import { AstronomicalEventModal, type AstronomicalEventModalHandle } from "@/components/astronomical-event-modal";
 import { StatusPanel } from "@/components/status-panel";
 import { SoftButton } from "@/components/soft-button";
-import { createTerrainGroundOverlayCoordinator, terrainGroundOverlayKey, type TerrainGroundOverlayTarget, type TerrainGroundOverlayResult, type TerrainGroundOverlayContext } from "./terrain-ground-overlay";
+import { useMapRasterInstallation } from "./use-map-raster-installation";
 import { useNativeMapRecovery } from "./native-map-recovery";
 import { reconcileFavoriteSnapshot, useFavoriteMutation } from "@/hooks/use-favorite-mutation";
 import { useWechatLogin } from "@/hooks/use-wechat-login";
@@ -69,8 +69,10 @@ import {
 import { useAppStore, type AnalysisOverlay, type LocationState } from "@/state/app-store";
 import { useContributionHistory } from "@/hooks/use-contribution-history";
 import { useTerrainOverlay } from "@/hooks/use-terrain-overlay";
+import { useRasterImage } from "@/hooks/use-raster-image";
 import { terrainLayerAvailability } from "./terrain-layer-availability";
-import { terrainBoundsForNativeRegion, type TerrainBounds } from "./terrain-geometry";
+import { bufferTerrainBounds } from "./terrain-geometry";
+import { useNativeMapRegion } from "./use-native-map-region";
 import {
   nearestMapTimeFrameIndex,
   cloudTimeFrameChoices,
@@ -84,7 +86,7 @@ import "./index.scss";
 import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date";
 import { requestOneShotLocation } from "@/services/one-shot-location";
 import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
-import { userMapRegionEnd, mapRegionEnded } from "./map-region-event";
+import { userMapRegionEnd, userMapRegionStarted, mapRegionEnded } from "./map-region-event";
 import { MapTimeRuler } from "./time-ruler";
 import { MapTemporalFeedback, type MapTemporalFailure } from "./map-temporal-feedback";
 import { ObservationDateControl } from "@/components/observation-date-control";
@@ -109,7 +111,9 @@ import {
   lightLayerContentState,
   mapLayerKindForOverlay,
 } from "./map-layer-selection";
-import { cameraCenterForVisibleMapTarget } from "./map-camera";
+import { useMapSpotFocus, type MeasuredSpotFocusFrame } from "./use-map-spot-focus";
+import { spotNeighborhoodCamera } from "./map-camera";
+import { mapRasterFiles } from "@/services/map-raster-files";
 import { currentTimezoneHint } from "@/utils/current-timezone-hint";
 
 function panelViewportSize(): { width: number; height: number } | null {
@@ -141,6 +145,7 @@ function formatContextTime(value: string, timezone: string) {
 }
 
 const TERRAIN_GROUND_OVERLAY_ID = 91301;
+const NIGHT_LIGHT_GROUND_OVERLAY_ID = 91303;
 
 function isPermissionError(error: unknown) {
   return (
@@ -222,6 +227,8 @@ export default function MapPage() {
   const login = useWechatLogin({ nativeBack: false });
   const [debouncedFinderQuery, setDebouncedFinderQuery] = useState("");
   const nativeMap = useNativeMapRecovery();
+  const currentNativeMapRef = useRef(nativeMap);
+  currentNativeMapRef.current = nativeMap;
   const mapRuntimeError = nativeMap.error;
   const [announcement, setAnnouncement] = useState("");
   const [timeSaving, setTimeSaving] = useState(false);
@@ -287,6 +294,7 @@ export default function MapPage() {
   // sheet are mutually exclusive derived modes, never parallel booleans.
   const [bottomPresentation, setBottomPresentationState] =
     useState<BottomPresentation>("none");
+  const cancelSpotMapFocus = useRef<() => void>(() => {});
   const bottomPresentationRef = useRef<BottomPresentation>("none");
   bottomPresentationRef.current = bottomPresentation;
   const [spotEditorPhase, setSpotEditorPhase] = useState<SpotEditorPhase>("open");
@@ -302,6 +310,7 @@ export default function MapPage() {
     ? JSON.stringify([currentDraftUserId(), nativeMap.mapId, mapResetVersion, navigationEpoch.current])
     : null;
   const setBottomPresentation = useCallback((presentation: BottomPresentation) => {
+    if (presentation !== bottomPresentationRef.current || (presentation !== "spot-panel" && presentation !== "spot-editor")) cancelSpotMapFocus.current();
     setCalendarOwner(null);
     if (presentation !== "spot-editor") editorPresentation.cancel();
     else if (bottomPresentationRef.current !== "spot-editor") editorPresentation.enter(getReducedMotion());
@@ -314,6 +323,9 @@ export default function MapPage() {
   const imageViewerBack = useRef<(() => void) | null>(null);
   const registerImageViewerBack = useCallback((handler: (() => void) | null) => { imageViewerBack.current = handler; }, []);
   const [spotEditorTarget, setSpotEditorTarget] = useState<{ forceNew: boolean; submissionId?: string }>({ forceNew: true });
+  const [candidatePreview, setCandidatePreview] = useState<ContributionCandidatePreview | null>(null);
+  const candidatePreviewRef = useRef<ContributionCandidatePreview | null>(null);
+  const candidateSelectionVersion = useRef<number | null>(null);
   const editorLeaveGuard = useRef<ContributionLeaveGuard | null>(null);
   const editorLeaveRequest = useRef<Promise<boolean> | null>(null);
   const [panelExtent, setPanelExtent] = useState<SpotPanelExtent>("medium");
@@ -352,6 +364,19 @@ export default function MapPage() {
   const [panelIdentityLayout, setPanelIdentityLayout] = useState<{ identity: string; height: number } | null>(null);
   const panelIdentityHeight = panelIdentityLayout?.identity === panelGeometryIdentity ? panelIdentityLayout.height : 0;
   const [panelLayoutVersion, setPanelLayoutVersion] = useState(0);
+  const [spotFocusFrame, setSpotFocusFrame] = useState<MeasuredSpotFocusFrame | null>(null);
+  const getSpotFocusScope = () => JSON.stringify([currentDraftUserId(), nativeMap.mapId, useAppStore.getState().mapResetVersion]);
+  const spotFocusScope = getSpotFocusScope();
+  const spotFocusIdentity = bottomPresentation === "spot-editor" ? `candidate:${candidatePreview?.selectionVersion ?? 0}` : panelGeometryIdentity;
+  const nativeViewport = useNativeMapRegion(nativeMap, pageVisible && (terrainEnabled || mapLayerKindForOverlay(analysisOverlay) !== "NORMAL" || bottomPresentation === "layer-sheet" || bottomPresentation === "spot-panel" || bottomPresentation === "spot-editor"),
+    viewport, panelLayoutVersion, primaryNavigation.pageHeight,
+    ((bottomPresentation === "spot-editor" && candidatePreview) || bottomPresentation === "spot-panel") ? viewport.zoom : null);
+  const mapTerrainBounds = useMemo(() => nativeViewport.bounds ? bufferTerrainBounds(nativeViewport.bounds) : null, [nativeViewport.bounds]);
+  const terrainViewportError = nativeViewport.error;
+  const readTerrainViewport = nativeViewport.read;
+  const readNativeViewportRef = useRef(nativeViewport.read);
+  readNativeViewportRef.current = nativeViewport.read;
+  const terrainReadEnabled = pageVisible && (terrainEnabled || bottomPresentation === "layer-sheet");
   const onPanelContentLayoutChange = useCallback(() => setPanelLayoutVersion(value => value + 1), []);
   useResize(() => { invalidatePanelGeometry(); setPanelLayoutVersion(value => value + 1); });
   const setSelectedProposal = useCallback((submission: ContributionSubmission | null) => {
@@ -421,6 +446,7 @@ export default function MapPage() {
 
   useDidShow(() => setPageVisible(true));
   useDidHide(() => {
+    spotMapFocus.cancel();
     cancelLocation();
     setCalendarOwner(null);
     invalidateMapPointIntent(true); stopPanelSpring(); navigationEpoch.current += 1;
@@ -574,6 +600,7 @@ export default function MapPage() {
       Number(viewport.center.latitude.toFixed(4)),
       Number(viewport.center.longitude.toFixed(4)),
       viewport.zoom,
+      nativeViewport.bounds,
       preferences.defaultPlace,
       preferences.experience,
       preferences.maxDriveMinutes,
@@ -590,7 +617,7 @@ export default function MapPage() {
         activeContext!.contextId,
         committedFilters,
         debouncedFinderQuery,
-        viewport,
+        { ...viewport, ...(nativeViewport.bounds ? { bounds: nativeViewport.bounds } : {}) },
         {
           defaultPlace: preferences.defaultPlace,
           experience: preferences.experience,
@@ -604,8 +631,8 @@ export default function MapPage() {
         signal,
       );
     },
-    enabled: pageVisible && Boolean(activeContext),
-    staleTime: 60_000,
+    enabled: pageVisible && Boolean(activeContext) && (mapLayerKindForOverlay(analysisOverlay) === "NORMAL" || Boolean(nativeViewport.bounds || nativeViewport.error)),
+    staleTime: value => value?.data.layer.failureCode ? 0 : 60_000,
   });
 
   useEffect(() => {
@@ -636,15 +663,16 @@ export default function MapPage() {
     () => privateContributionMarkers(contributionHistory.data?.data.submissions ?? []),
     [contributionHistory.data?.data.submissions],
   );
-  const [candidatePreview, setCandidatePreview] = useState<ContributionCandidatePreview | null>(null);
-  const candidateSelectionVersion = useRef(0);
-  const candidateCameraGuard = useRef<{
-    exactPoint: { latitude: number; longitude: number };
-    expiresAt: number;
-  } | null>(null);
   const handleCandidateChange = useCallback((candidate: ContributionCandidatePreview | null) => {
+    if (!candidate) {
+      candidatePreviewRef.current = null; candidateSelectionVersion.current = null; setCandidatePreview(null);
+      if (bottomPresentationRef.current === "spot-editor") spotMapFocus.cancel();
+      return;
+    }
+    if (bottomPresentationRef.current !== "spot-editor" || editorPresentation.isClosing() || !currentNativeMapRef.current.isCurrent()) return;
+    candidatePreviewRef.current = candidate;
     setCandidatePreview(candidate);
-    if (!candidate || candidate.selectionVersion <= candidateSelectionVersion.current) return;
+    if (candidateSelectionVersion.current !== null && candidate.selectionVersion <= candidateSelectionVersion.current) return;
     invalidateMapPointIntent();
     candidateSelectionVersion.current = candidate.selectionVersion;
     const point = wgs84ToGcj02({
@@ -652,27 +680,10 @@ export default function MapPage() {
       lon: candidate.longitude,
       system: "WGS84",
     });
-    const zoom = Math.max(useAppStore.getState().viewport.zoom, 14);
-    let center = { latitude: point.lat, longitude: point.lon };
-    try {
-      const windowInfo = Taro.getWindowInfo();
-      center = cameraCenterForVisibleMapTarget(
-        center,
-        primaryNavigationLayout("pages/map/index", windowInfo).pageHeight ?? windowInfo.windowHeight,
-        SPOT_EDITOR_TOP_PX,
-        zoom,
-      );
-    } catch {
-      // The exact-point center remains a safe fallback when window metrics fail.
-    }
-    candidateCameraGuard.current = {
-      exactPoint: { latitude: point.lat, longitude: point.lon },
-      expiresAt: Date.now() + 1_000,
-    };
-    setViewport({
-      center,
-      zoom,
-    });
+    const center = { latitude: point.lat, longitude: point.lon };
+    setViewport(spotNeighborhoodCamera(center, useAppStore.getState().viewport.zoom));
+    readNativeViewportRef.current(true);
+    spotMapFocus.begin(`candidate:${candidate.selectionVersion}`, center);
   }, []);
   const candidateMarker = useMemo(() => {
     if (!candidatePreview) return null;
@@ -739,10 +750,10 @@ export default function MapPage() {
   ], [bottomPresentation, candidateMarker, groupedMarkers, mode, preferences.largeText, privateMarkers, selectedSpotId]);
   const projectedPolygonSource = useMemo(
     () =>
-      scene.data?.data.layer
+      scene.data?.data.layer.kind === mapLayerKindForOverlay(analysisOverlay)
         ? projectedLayerPolygons(scene.data.data.layer, projectedFrame)
         : [],
-    [projectedFrame, scene.data?.data.layer],
+    [projectedFrame, scene.data?.data.layer, analysisOverlay],
   );
   const layerPolygons = useMemo(
     () =>
@@ -793,63 +804,6 @@ export default function MapPage() {
     // Canonical facts may be published while the retained map is hidden.
     staleTime: 0,
   });
-  const [measuredTerrainViewport, setMeasuredTerrainViewport] = useState<{ camera: string; bounds: TerrainBounds } | null>(null);
-  const terrainCamera = JSON.stringify([nativeMap.mapId, viewport.center, viewport.zoom, viewport.loadedViewport, panelLayoutVersion, primaryNavigation.pageHeight]);
-  const terrainReadEnabled = pageVisible && (terrainEnabled || bottomPresentation === "layer-sheet");
-  const [terrainViewportError, setTerrainViewportError] = useState<unknown | null>(null);
-  const terrainViewportScope = useRef("");
-  terrainViewportScope.current = terrainReadEnabled ? terrainCamera : "";
-  const terrainViewportRead = useRef<{ camera: string; pending: boolean; success: boolean; reread: boolean; attempts: number; timer: ReturnType<typeof setTimeout> | undefined } | null>(null);
-  const readTerrainViewport = useCallback(function readCurrentTerrainViewport(force = false) {
-    if (!terrainReadEnabled || !nativeMap.isCurrent()) return;
-    const camera = useAppStore.getState().viewport;
-    const cameraKey = JSON.stringify([nativeMap.mapId, camera.center, camera.zoom, camera.loadedViewport, panelLayoutVersion, primaryNavigation.pageHeight]);
-    if (terrainViewportScope.current !== cameraKey) return;
-    const previous = terrainViewportRead.current;
-    if (previous?.camera === cameraKey && previous.pending) {
-      if (force) previous.reread = true;
-      return;
-    }
-    if (previous?.camera === cameraKey && !force && (previous.success || previous.attempts >= 2)) return;
-    clearTimeout(previous?.timer);
-    const owned = { camera: cameraKey, pending: true, success: false, reread: false, attempts: previous?.camera === cameraKey ? previous.attempts + 1 : 1,
-      timer: undefined as ReturnType<typeof setTimeout> | undefined };
-    terrainViewportRead.current = owned;
-    const current = () => terrainViewportRead.current === owned && terrainViewportScope.current === cameraKey && nativeMap.isCurrent();
-    const rereadAfterSettle = () => {
-      if (!owned.reread) return false;
-      owned.pending = false; clearTimeout(owned.timer);
-      readCurrentTerrainViewport(true); return true;
-    };
-    const fail = () => {
-      if (!current() || !owned.pending) return;
-      if (rereadAfterSettle()) return;
-      owned.pending = false; clearTimeout(owned.timer);
-      setTerrainViewportError(new Error("地形视窗未能读取，请重新加载地图"));
-    };
-    const success = (actual: unknown) => {
-      if (!current() || !owned.pending) return;
-      if (rereadAfterSettle()) return;
-      const bounds = terrainBoundsForNativeRegion(actual);
-      if (!bounds || camera.center.longitude < bounds.west || camera.center.longitude > bounds.east
-        || camera.center.latitude < bounds.south || camera.center.latitude > bounds.north) { fail(); return; }
-      owned.pending = false; owned.success = true; clearTimeout(owned.timer);
-      setTerrainViewportError(null); setMeasuredTerrainViewport({ camera: cameraKey, bounds });
-    };
-    setTerrainViewportError(null);
-    owned.timer = setTimeout(fail, 10000);
-    try {
-      const reading = Taro.createMapContext(nativeMap.mapId).getRegion({ success, fail });
-      if (reading && typeof reading.then === "function") void reading.then(success, fail);
-    } catch { fail(); }
-  }, [terrainReadEnabled, nativeMap.mapId, panelLayoutVersion, primaryNavigation.pageHeight]);
-  useEffect(() => {
-    readTerrainViewport();
-    return () => { clearTimeout(terrainViewportRead.current?.timer); terrainViewportRead.current = null; };
-  }, [terrainCamera, readTerrainViewport]);
-  // Native Android's camera scale did not match the assumed 256px world grid.
-  // Only getRegion establishes Map coverage; a failed read offers recovery.
-  const mapTerrainBounds = measuredTerrainViewport?.camera === terrainCamera ? measuredTerrainViewport.bounds : null;
   const terrain = useTerrainOverlay({
     purpose: "MAP",
     center: {
@@ -861,93 +815,56 @@ export default function MapPage() {
     // window is available. Its valid centre is only a disabled-hook placeholder.
     viewportBounds: mapTerrainBounds ?? { west: -180, south: -85.05112878, east: 180, north: 85.05112878 },
   }, terrainReadEnabled && Boolean(mapTerrainBounds), pageVisible && terrainEnabled);
-  const [terrainNativeError, setTerrainNativeError] = useState<unknown | null>(null);
-  const [terrainNativeNeedsMapRecovery, setTerrainNativeNeedsMapRecovery] = useState(false);
-  const [terrainInstalledKey, setTerrainInstalledKey] = useState<string | null>(null);
-  const [terrainPresented, setTerrainPresented] = useState<{ mapId: string; key: string; data: TerrainOverlayData } | null>(null);
-  const terrainCandidates = useRef(new globalThis.Map<string, TerrainOverlayData>());
-  useEffect(() => {
-    if (!pageVisible) { setTerrainInstalledKey(null); setTerrainPresented(null); }
-  }, [pageVisible]);
   const [terrainNativeRetry, setTerrainNativeRetry] = useState(0);
-  useEffect(() => { setTerrainNativeError(null); setTerrainNativeNeedsMapRecovery(false); }, [terrain.identity, nativeMap.mapId]);
   const mapTerrainAvailability = terrainLayerAvailability(
     terrain.data?.data.state, terrain.data?.data.failureCode, Boolean(terrain.isError || terrain.refreshError),
   );
   const mapTerrainMissing = mapTerrainAvailability === "EMPTY";
+  const terrainInstallation = useMapRasterInstallation({
+    id: TERRAIN_GROUND_OVERLAY_ID, label: "地形", nativeMap, visible: pageVisible, enabled: terrainEnabled,
+    unavailable: terrain.data?.data.state === "UNAVAILABLE" && !terrain.data?.data.failureCode,
+    identity: terrain.identity, runtimeError: mapRuntimeError, retry: terrainNativeRetry,
+    src: terrain.imagePath, bounds: terrain.data?.data.imageBoundsGcj02, data: terrain.data?.data ?? null,
+    opacity: terrain.data?.data.imageStyle === "RELIEF_OVERLAY" ? 1 : .62, zIndex: 0,
+    reportImageFailure: terrain.reportImageFailure,
+    onFailure: () => setAnnouncement("地形叠加未能显示，可在图层中重试。"),
+  });
+  const terrainNativeError = terrainInstallation.error;
   const mapTerrainFailed = mapTerrainAvailability === "ERROR" || Boolean(terrain.imageError || terrainNativeError || terrainViewportError);
-  const terrainRequiresMapRecovery = terrainNativeNeedsMapRecovery || Boolean(terrainViewportError);
+  const terrainRequiresMapRecovery = terrainInstallation.requiresMapRecovery || Boolean(terrainViewportError);
   useEffect(() => {
     if (!pageVisible || (!terrainEnabled && !terrainNativeError) || !mapTerrainFailed) return;
     notify({ owner: "map-terrain", placement: "floating", tone: "info", title: "地形数据异常",
       body: "地形暂时无法显示，可在图层中重试。", dedupeKey: "map-terrain-failed" });
   }, [pageVisible, terrainEnabled, terrainNativeError, mapTerrainFailed, notify]);
-  const retainedTerrain = useRef<{ mapId: string; target: TerrainGroundOverlayTarget | null }>({ mapId: nativeMap.mapId, target: null });
-  const terrainGroundOverlay = useMemo(() => {
-    if (retainedTerrain.current.mapId !== nativeMap.mapId) {
-      retainedTerrain.current = { mapId: nativeMap.mapId, target: null }; terrainCandidates.current.clear();
-    }
-    const data = terrain.data?.data;
-    const bounds = data?.imageBoundsGcj02;
-    if (!pageVisible || !terrainEnabled || (data?.state === "UNAVAILABLE" && !data.failureCode)) {
-      retainedTerrain.current.target = null; return null;
-    }
-    // Keep the last valid image at its own actual bounds while metadata/PNG
-    // changes. A pending query is not an instruction to remove native terrain.
-    if (!terrain.imagePath || !bounds) return retainedTerrain.current.target;
-    const target = {
-      src: terrain.imagePath,
-      bounds: {
-        southwest: { latitude: bounds.south, longitude: bounds.west },
-        northeast: { latitude: bounds.north, longitude: bounds.east },
-      },
-      opacity: data?.imageStyle === "RELIEF_OVERLAY" ? 1 : 0.62,
-      zIndex: 0,
-    };
-    retainedTerrain.current.target = target;
-    terrainCandidates.current.set(terrainGroundOverlayKey(target)!, data!);
-    // Displayed, in-flight and latest candidate. Superseded candidates cannot
-    // be adopted; the displayed source also has confirmed state below.
-    while (terrainCandidates.current.size > 3) terrainCandidates.current.delete(terrainCandidates.current.keys().next().value!);
-    return target;
-  }, [pageVisible, terrain.data?.data, terrain.imagePath, terrainEnabled, nativeMap.mapId]);
-  const desiredTerrainKey = `${nativeMap.mapId}:${terrainGroundOverlayKey(terrainGroundOverlay)}`;
-  const presentedTerrainData = terrainPresented?.mapId === nativeMap.mapId ? terrainPresented.data : null;
+  const presentedTerrainData = terrainInstallation.presentedData;
   const terrainDisclosure = presentedTerrainData ?? (!terrainEnabled ? terrain.data?.data ?? null : null);
   const mapTerrainLoading = pageVisible && terrainEnabled && !nativeMap.pending && !mapRuntimeError
     && (!mapTerrainBounds ? !terrainViewportError : terrain.isPending || terrain.isFetching || terrain.imagePending
-      || (!mapTerrainMissing && !mapTerrainFailed && Boolean(terrainGroundOverlay) && terrainInstalledKey !== desiredTerrainKey));
-  const terrainOverlayResult = useRef<(result: TerrainGroundOverlayResult) => void>(() => undefined);
-  terrainOverlayResult.current = ({ error, target, isCurrent, phase, requiresMapRecovery }) => {
-    setTerrainNativeError(error);
-    setTerrainNativeNeedsMapRecovery(Boolean(requiresMapRecovery));
-    if (!error) {
-      const key = terrainGroundOverlayKey(target);
-      setTerrainInstalledKey(`${nativeMap.mapId}:${key}`);
-      const data = key ? terrainCandidates.current.get(key) : null;
-      if (!target) setTerrainPresented(null);
-      else if (data) setTerrainPresented({ mapId: nativeMap.mapId, key: key!, data });
-    }
-    if (!error) return;
-    if (target && phase !== "cleanup") void Taro.getImageInfo({ src: target.src }).catch(imageError => {
-      if (nativeMap.isCurrent() && isCurrent()) terrain.reportImageFailure(imageError, target.src);
-    });
-    setAnnouncement("地形叠加未能显示，可在图层中重试。");
-  };
-  const terrainOverlayCoordinator = useMemo(() => {
-    const mapId = nativeMap.mapId;
-    let context: TerrainGroundOverlayContext | undefined;
-    return createTerrainGroundOverlayCoordinator(
-      TERRAIN_GROUND_OVERLAY_ID,
-      () => context ??= Taro.createMapContext(mapId) as unknown as TerrainGroundOverlayContext,
-      result => { if (nativeMap.isCurrent()) terrainOverlayResult.current(result); },
-    );
-  }, [nativeMap.mapId]);
+      || (!mapTerrainMissing && !mapTerrainFailed && terrainInstallation.pending));
+  const nightLayer = scene.data?.data.layer.kind === "LIGHT_POLLUTION" ? scene.data.data.layer : null;
+  const nightRaster = nightLayer?.raster ?? null;
+  const [lightNativeRetry, setLightNativeRetry] = useState(0);
+  const lightImage = useRasterImage(nightRaster ? { key: `${nightRaster.publicationId}:${nightRaster.imageUrl}`,
+    url: nightRaster.imageUrl, expectedBytes: nightRaster.imageBytes, expectedSha256: nightRaster.imageSha256 } : null,
+  pageVisible && analysisOverlay === "LIGHT" && Boolean(nightRaster?.validPixelCount));
+  const lightUnavailable = nightLayer?.state === "UNAVAILABLE" || Boolean(nightRaster && nightRaster.validPixelCount === 0);
+  const lightInstallation = useMapRasterInstallation({
+    id: NIGHT_LIGHT_GROUND_OVERLAY_ID, label: "光污染", nativeMap, visible: pageVisible, enabled: analysisOverlay === "LIGHT",
+    unavailable: lightUnavailable && !nightLayer?.failureCode,
+    identity: nightRaster?.publicationId ?? nightLayer?.datasetVersion ?? "", runtimeError: mapRuntimeError, retry: lightNativeRetry,
+    src: lightImage.imagePath, bounds: nightRaster?.boundsGcj02, data: nightLayer,
+    opacity: 1, zIndex: 1, reportImageFailure: lightImage.reportImageFailure,
+    onFailure: () => setAnnouncement("光污染叠加未能显示，可在图层中重试。"),
+  });
+  const displayedLightLayer = lightInstallation.presentedData ?? (!nightRaster ? nightLayer : null);
+  const lightReadFailed = Boolean(nightLayer?.failureCode || lightImage.imageError || lightInstallation.error
+    || (analysisOverlay === "LIGHT" && nativeViewport.error));
   useEffect(() => {
-    void terrainOverlayCoordinator.apply(nativeMap.pending || mapRuntimeError ? null : terrainGroundOverlay,
-      pageVisible ? "display" : "suspend");
-  }, [terrainOverlayCoordinator, terrainGroundOverlay, terrainNativeRetry, nativeMap.pending, mapRuntimeError, pageVisible]);
-  useEffect(() => () => { void terrainOverlayCoordinator.dispose(); }, [terrainOverlayCoordinator]);
+    if (!pageVisible || (analysisOverlay !== "LIGHT" && !lightInstallation.error) || !lightReadFailed) return;
+    notify({ owner: "map-light", placement: "floating", tone: "info", title: "光污染数据异常",
+      body: "年度夜光叠加尚未完成，可在图层中重试或重新加载地图。", dedupeKey: "map-light-failed" });
+  }, [pageVisible, analysisOverlay, lightReadFailed, lightInstallation.error, notify]);
   const spotSky = useSkyForecastQuery({
     queryKey: [
       "spot-sky",
@@ -992,6 +909,34 @@ export default function MapPage() {
     refreshError: spotOverview.refreshError,
     dataState: spotOverview.data?.dataState,
   });
+  // Loading/recovery cards before the route change the medium panel's floor.
+  // Focus consumes only a freshly measured terminal layout, including a failed
+  // first load. Private panels and address previews do not own these resources.
+  const spotFocusContentReady = bottomPresentation === "spot-editor" || Boolean(selectedProposal) ||
+    (detailContextReady ? !spotOverviewProjection.pending && !spotOverview.isFetching : Boolean(visibleSpotContextAttempt?.error));
+  const spotFocusLayout = JSON.stringify([spotFocusScope, spotFocusIdentity, bottomPresentation, spotEditorPhase, panelIdentityHeight, panelLayoutVersion,
+    primaryNavigation.pageHeight, mode, preferences.largeText,
+    bottomPresentation === "spot-panel" && !selectedProposal ? [detailContextReady, spotFocusContentReady,
+      detailContextReady ? [activeContext?.contextId, activeContext?.contextFingerprint, activeContext?.revision] : null,
+      Boolean(visibleSpotContextAttempt?.pending), Boolean(visibleSpotContextAttempt?.error),
+      Boolean(spotOverviewProjection.error), spotOverviewProjection.stale, spotOverview.readCurrent().updatedAt] : null]);
+  const spotMapFocus = useMapSpotFocus({
+    mapId: nativeMap.mapId, identity: spotFocusIdentity, scope: spotFocusScope, layout: spotFocusLayout,
+    visible: pageVisible && (bottomPresentation === "spot-editor" ? spotEditorPhase !== "closing" : bottomPresentation === "spot-panel" && panelPhase === "idle"),
+    presentationReady: bottomPresentation === "spot-editor" ? spotEditorPhase === "open" : panelExtent === "medium",
+    contentReady: spotFocusContentReady,
+    interacting: bottomPresentation === "spot-editor" ? false : panelDragging || panelSettling,
+    isCurrent: nativeMap.isCurrent, getCamera: () => useAppStore.getState().viewport,
+    getScope: getSpotFocusScope,
+    getSelectionIdentity: () => bottomPresentationRef.current === "spot-editor" ? `candidate:${candidatePreviewRef.current?.selectionVersion ?? 0}` : selectedProposalRef.current
+      ? `proposal:${currentDraftUserId()}:${selectedProposalRef.current.submissionId}`
+      : `formal:${useAppStore.getState().selectedSpotId ?? ""}`,
+    frame: spotFocusFrame, bounds: nativeViewport.bounds, viewportError: nativeViewport.error,
+    move: (center, zoom) => setViewport({ center, ...(zoom === undefined ? {} : { zoom }) }),
+    onFailure: () => notify({ owner: "map", placement: "floating", tone: "warning", title: "地图位置未能调整",
+      body: bottomPresentationRef.current === "spot-editor" ? "所选地址已保留，可重新选择地址重试地图定位。" : "点位信息已保留，可重新点选该点重试地图定位。", dismissible: true, dedupeKey: "spot-map-focus-failed" }),
+  });
+  cancelSpotMapFocus.current = spotMapFocus.cancel;
   const spotSkyProjection = projectSpotPanelResource(detailContextReady, {
     isPending: spotSky.isPending,
     error: spotSky.error,
@@ -1056,16 +1001,18 @@ export default function MapPage() {
     (mapContextFailed && bootstrapContext.data) || (mapSceneFailed && scene.data),
   );
   const visibleLayer = layerSheetOverlay(analysisOverlay);
-  const visibleLayerUnavailable = Boolean(
+  const visibleLayerUnavailable = visibleLayer === "LIGHT" ? lightUnavailable && !lightReadFailed : Boolean(
     scene.data?.data.layer.kind === mapLayerKindForOverlay(analysisOverlay) &&
       scene.data.data.layer.state === "UNAVAILABLE",
   );
   const lightLayerState = lightLayerContentState({
-    pending: scene.isPending,
-    failed: Boolean(scene.isError || scene.refreshError || scene.data?.dataState === "STALE_USABLE"),
-    hasData: Boolean(scene.data),
+    pending: scene.isPending || !nightLayer || lightImage.imagePending || lightInstallation.pending,
+    failed: Boolean(scene.isError || scene.refreshError || scene.data?.dataState === "STALE_USABLE" || lightReadFailed),
+    hasData: Boolean(nightLayer || lightInstallation.presentedData),
     unavailable: visibleLayerUnavailable,
   });
+  const displayedLayer = visibleLayer === "LIGHT" ? displayedLightLayer : scene.data?.data.layer;
+  const hasGeographicLayer = layerPolygons.length > 0 || (analysisOverlay === "LIGHT" && Boolean(lightInstallation.presentedData?.raster));
   const layerSheetOwnsSceneFailure = layerSheetOwnsSceneRecovery({
     open: bottomPresentation === "layer-sheet", overlay: visibleLayer,
     contextFailed: mapContextFailed, sceneFailed: mapSceneFailed,
@@ -1073,10 +1020,11 @@ export default function MapPage() {
   });
   // Availability is transient; real failures keep recovery with their owner.
   const ordinaryMapNotice = !pageVisible || mapRuntimeError || mapContextFailed || mapSceneFailed || scene.isPending || scene.isFetching
+    || (analysisOverlay === "LIGHT" && (lightReadFailed || lightLayerState === "LOADING"))
     ? null
     : bottomPresentation === "layer-sheet" && visibleLayerUnavailable
       ? visibleLayer === "LIGHT" ? "当前范围暂无光污染数据" : "当前范围暂无云量预报"
-      : bottomPresentation === "none" && pageState === "EMPTY" && layerPolygons.length === 0
+      : bottomPresentation === "none" && pageState === "EMPTY" && !hasGeographicLayer
         ? "当前区域暂无观星点" : null;
   useEffect(() => {
     if (!ordinaryMapNotice) return;
@@ -1251,9 +1199,11 @@ export default function MapPage() {
 
   const finishSpotEditorPresentation = (afterExit?: () => void) => {
     if (bottomPresentationRef.current !== "spot-editor") {afterExit?.(); return;}
+    spotMapFocus.cancel();
     editorPresentation.close(() => {
       editorLeaveGuard.current = null;
       editorHandoffBack.current = null;
+      candidatePreviewRef.current = null; candidateSelectionVersion.current = null;
       setCandidatePreview(null);
       setBottomPresentation("none");
       afterExit?.();
@@ -1336,6 +1286,8 @@ export default function MapPage() {
     setSelectedProposal(null);
     selectSpot(spot.spotId);
     setBottomPresentation("spot-panel");
+    setViewport(spotNeighborhoodCamera(spot.gcj02, useAppStore.getState().viewport.zoom));
+    spotMapFocus.begin(`formal:${spot.spotId}`, spot.gcj02);
     markerTapAt.current = Date.now();
     await resolveSpotContext(spot);
   };
@@ -1359,8 +1311,9 @@ export default function MapPage() {
         setSelectedProposal(entry.submission);
         setPanelExtent("medium");
         setPanelPhase("idle");
-        setViewport({ center: { latitude: entry.latitude, longitude: entry.longitude }, zoom: Math.max(viewport.zoom, 9) });
+        setViewport(spotNeighborhoodCamera({ latitude: entry.latitude, longitude: entry.longitude }, useAppStore.getState().viewport.zoom));
         setBottomPresentation("spot-panel");
+        spotMapFocus.begin(`proposal:${currentDraftUserId()}:${entry.submission.submissionId}`, entry);
         setAnnouncement(`已选择${entry.submission.candidateProfile?.fields.name ?? entry.submission.candidateLocation?.displayName ?? (entry.state === "DRAFT" ? "草稿观星点" : "审核中观星点")}。`);
       });
       return;
@@ -1477,9 +1430,10 @@ export default function MapPage() {
       for (const selector of [".spot-panel", ".spot-panel__snap-small", ".spot-panel__snap-medium", ".spot-panel__snap-large"]) query.select(selector).boundingClientRect();
       for (const selector of [".spot-panel__handle-band--document", ".spot-panel__identity", ".spot-panel__action-lane"]) query.select(selector).boundingClientRect();
       if (!selectedProposal) query.select(".spot-panel__block--route").boundingClientRect();
+      query.select(".native-map").boundingClientRect();
       query.exec(rows => {
         if (cancelled) return;
-        const minimumHeight = panelIdentityMinimumHeight(rows.slice(4));
+        const minimumHeight = panelIdentityMinimumHeight(rows.slice(4, -1));
         if (minimumHeight === null) return;
         if (minimumHeight !== panelIdentityHeight) {
           // Re-read rulers after the shared CSS floor has rendered. Never cache
@@ -1491,10 +1445,33 @@ export default function MapPage() {
         const geometry = readPanelSnapGeometry(rows.slice(0, 4));
         const viewport = panelViewportSize();
         if (geometry && viewport) panelSnapCache.current = { identity: panelGeometryIdentity, ...viewport, geometry };
+        const map = rows[rows.length - 1], panel = rows[0];
+        if (geometry && map && panel && [map.top, map.height, panel.top, panel.height].every(Number.isFinite)) {
+          setSpotFocusFrame({ version: spotMapFocus.version, layout: spotFocusLayout,
+            top: map.top, height: map.height, visibleBottom: Math.min(map.top + map.height, panel.top + panel.height - geometry.medium) });
+        }
       });
     });
     return () => { cancelled = true; panelSnapCache.current = null; };
-  }, [bottomPresentation, panelGeometryIdentity, panelIdentityHeight, panelLayoutVersion, spotDetail, spotOverviewProjection.pending, spotOverviewProjection.error, spotOverviewProjection.stale, visibleSpotContextAttempt, selectedProposal, pageVisible, panelPhase, mode, preferences.largeText]);
+  }, [bottomPresentation, panelGeometryIdentity, panelIdentityHeight, panelLayoutVersion, spotDetail, spotOverviewProjection.pending, spotOverviewProjection.error, spotOverviewProjection.stale, visibleSpotContextAttempt, selectedProposal, pageVisible, panelPhase, mode, preferences.largeText, spotMapFocus.version, spotFocusLayout]);
+
+  useEffect(() => {
+    if (bottomPresentation !== "spot-editor" || !pageVisible || spotEditorPhase !== "open") return;
+    let cancelled = false;
+    Taro.nextTick(() => {
+      if (cancelled) return;
+      const query = Taro.createSelectorQuery();
+      for (const selector of [".native-map", ".map-spot-editor-focus-ruler"]) query.select(selector).boundingClientRect();
+      query.exec(rows => {
+        if (cancelled) return;
+        const [map, ruler] = rows;
+        if (!map || !ruler || ![map.top, map.height, ruler.top].every(Number.isFinite) || map.height <= 0 || ruler.top <= map.top) return;
+        setSpotFocusFrame({ version: spotMapFocus.version, layout: spotFocusLayout, top: map.top, height: map.height,
+          visibleBottom: Math.min(map.top + map.height, ruler.top) });
+      });
+    });
+    return () => { cancelled = true; };
+  }, [bottomPresentation, pageVisible, spotEditorPhase, spotMapFocus.version, spotFocusLayout]);
 
   const onHandleTouchCancel = () => {
     stopPanelSpring();
@@ -1524,6 +1501,7 @@ export default function MapPage() {
   }, [reducedMotion]);
 
   const onHandleTouchStart = (event: unknown) => {
+    spotMapFocus.cancel();
     if (bottomPresentation !== "spot-panel") return;
     if (!event || typeof event !== "object") return;
     const value = event as {
@@ -1716,17 +1694,9 @@ export default function MapPage() {
   const onRegionChange = (
     event: BaseEventOrig<MapProps.onRegionEventDetail>,
   ) => {
+    if (userMapRegionStarted(event)) spotMapFocus.cancel();
     const region = userMapRegionEnd(event);
     if (!region) { if (mapRegionEnded(event)) readTerrainViewport(true); return; }
-    const candidateGuard = candidateCameraGuard.current;
-    if (candidateGuard && Date.now() <= candidateGuard.expiresAt) {
-      const { exactPoint } = candidateGuard;
-      if (
-        Math.abs(region.center.latitude - exactPoint.latitude) < 0.00001 &&
-        Math.abs(region.center.longitude - exactPoint.longitude) < 0.00001
-      ) { readTerrainViewport(true); return; }
-    }
-    candidateCameraGuard.current = null;
     const intent = invalidateMapPointIntent();
     const resetVersion = useAppStore.getState().mapResetVersion;
     const selection = useAppStore.getState().selectedSpotId;
@@ -1734,13 +1704,15 @@ export default function MapPage() {
     const isCurrentRegion = () => intent === mapPointIntent.current && nativeMap.isCurrent() &&
       useAppStore.getState().mapResetVersion === resetVersion &&
       useAppStore.getState().selectedSpotId === selection && currentDraftUserId() === owner;
+    // The native gesture has already settled. Publish its camera now so a
+    // selection during the conditions debounce keeps that actual finer view.
+    setViewport({
+      center: region.center,
+      ...(region.zoom === undefined ? {} : { zoom: region.zoom }),
+      loadedViewport: "viewport:" + String(Date.now()),
+    });
     regionTimer.current = setTimeout(() => {
       if (!isCurrentRegion()) return;
-      setViewport({
-        center: region.center,
-        ...(region.zoom === undefined ? {} : { zoom: region.zoom }),
-        loadedViewport: "viewport:" + String(Date.now()),
-      });
       void resolveMapPoint(region.center, "MAP_VIEWPORT", undefined, intent).catch(
         (error) => {
           if (!isCurrentRegion()) return;
@@ -1883,6 +1855,13 @@ export default function MapPage() {
       // Query state owns the floating notification and persistent retry surface.
       setAnnouncement("刷新未完成，请重试。");
     }
+  };
+
+  const retryLightLayer = async () => {
+    if (lightInstallation.requiresMapRecovery || nativeViewport.error) { nativeMap.retry(); return; }
+    lightImage.retryImage();
+    setLightNativeRetry(value => value + 1);
+    await refreshMap();
   };
 
   const commitMapTime = async (frameIndex: number) => {
@@ -2452,8 +2431,8 @@ export default function MapPage() {
               <View className="map-source-attribution"><SourceAttribution compact sources={[activeContext.timezoneSource]} /></View> : null}
             {analysisOverlay === "TOTAL_CLOUD" && layerPolygons.length > 0 && bottomPresentation !== "layer-sheet" ?
               <View className="map-source-attribution map-source-attribution--weather"><SourceAttribution sources={scene.data?.sources.filter(source => source.kind === "THIRD_PARTY_FORECAST") ?? []} /></View> : null}
-            {analysisOverlay === "LIGHT" && layerPolygons.length > 0 && bottomPresentation !== "layer-sheet" && scene.data?.data.layer?.source ?
-              <View className="map-source-attribution"><SourceAttribution sources={[scene.data.data.layer.source]} /></View> : null}
+            {(lightInstallation.presentedData?.raster || (analysisOverlay === "LIGHT" && layerPolygons.length > 0)) && bottomPresentation !== "layer-sheet" && displayedLightLayer?.source ?
+              <View className="map-source-attribution"><SourceAttribution sources={[displayedLightLayer.source]} /></View> : null}
             {presentedTerrainData?.source && bottomPresentation === "none" ?
               <View className="map-source-attribution"><SoftButton variant="ghost" label="查看地形来源与许可" onClick={() => {
                 setTerrainSourceId(presentedTerrainData.source!.id); openLayerSheet();
@@ -2501,6 +2480,7 @@ export default function MapPage() {
             ) : null}
           </View>
 
+          {bottomPresentation === "spot-editor" ? <View className="map-spot-editor-focus-ruler" aria-hidden /> : null}
           {bottomPresentation === "spot-editor" ? (
             <View
               className={`map-spot-editor-layer map-spot-editor-layer--${spotEditorPhase}`}
@@ -2524,13 +2504,14 @@ export default function MapPage() {
                   void contributionHistory.refetch().catch(() => undefined);
                   finishSpotEditorPresentation(() => {
                     const marker = privateContributionMarkers([submission])[0];
-                    if (marker) setViewport({center: {latitude: marker.latitude, longitude: marker.longitude}, zoom: Math.max(viewport.zoom, 9)});
+                    if (marker) setViewport(spotNeighborhoodCamera({ latitude: marker.latitude, longitude: marker.longitude }, useAppStore.getState().viewport.zoom));
                     selectSpot(null);
                     setSelectedFallback(null);
                     setSelectedProposal(submission);
                     setPanelExtent("medium");
                     setPanelPhase("idle");
                     setBottomPresentation("spot-panel");
+                    if (marker) spotMapFocus.begin(`proposal:${currentDraftUserId()}:${submission.submissionId}`, marker);
                   });
                 }}
               />
@@ -2764,7 +2745,8 @@ export default function MapPage() {
                       timezone={activeContext?.timezone ?? "Asia/Shanghai"} scopeKey={`${activeContext?.contextId}:${activeContext?.localDate}`} /> : null}
                   </>
                 ) : lightLayerState === "LOADING" ? (
-                  <StatusPanel state="LOADING" detail="正在确认当前地区的光污染覆盖。" live={false} />
+                  <View><StatusPanel state="LOADING" detail="正在确认当前地区的光污染覆盖。" live={false} />
+                    {lightInstallation.presentedData?.source ? <SourceAttribution sources={[lightInstallation.presentedData.source]} /> : null}</View>
                 ) : lightLayerState === "ERROR" || lightLayerState === "STALE" ? (
                   <View>
                     <StatusPanel
@@ -2772,32 +2754,33 @@ export default function MapPage() {
                       detail={lightLayerState === "STALE"
                         ? visibleLayerUnavailable ? "光污染资料更新失败，上次无覆盖结果尚未确认。" : "光污染资料更新失败，暂时保留上次结果。"
                         : "光污染资料暂时无法获取。"}
-                      recoveryLabel="重新获取"
-                      onRecover={() => void refreshMap()}
+                      recoveryLabel={lightInstallation.requiresMapRecovery || nativeViewport.error ? "重新加载地图" : "重新获取"}
+                      onRecover={() => void retryLightLayer()}
                       live={false}
                     />
-                    {lightLayerState === "STALE" && !visibleLayerUnavailable && scene.data?.data.layer?.source ?
-                      <SourceAttribution sources={[scene.data.data.layer.source]} /> : null}
+                    {lightLayerState === "STALE" && !visibleLayerUnavailable && displayedLightLayer?.source ?
+                      <SourceAttribution sources={[displayedLightLayer.source]} /> : null}
                   </View>
                 ) : lightLayerState === "EMPTY" ? (
                   <StatusPanel
                     state="EMPTY"
                     emptyLevel="section"
                     title="暂无光污染数据"
-                    detail="当前地区尚无已发布的年度夜光网格。"
+                    detail={nightRaster?.validPixelCount === 0 ? nightLayer?.precision ?? "当前地区暂无可用的年度夜光估算。" : "当前地区尚无已发布的年度夜光资料。"}
                     live={false}
                   />
                 ) : (
                   <View>
                   <Text className="map-layer-sheet__source-note type-caption">
-                    年度夜光估算 · 不随观测时间变化
+                    {displayedLightLayer?.source?.validFrom?.slice(0, 4)} 年度夜光估算 · 不随观测时间变化
                   </Text>
-                  {scene.data?.data.layer?.source ? <SourceAttribution sources={[scene.data.data.layer.source]} /> : null}
+                  {displayedLightLayer?.source ? <SourceAttribution sources={[displayedLightLayer.source]} /> : null}
+                  {displayedLightLayer?.raster && displayedLightLayer.state === "PARTIAL" ? <Text className="type-caption">部分范围资料不足或尚未发布，空白不表示夜光为零。</Text> : null}
                   </View>
                 )}
-                {scene.data?.data.layer?.legend.length ? (
+                {displayedLayer?.legend.length ? (
                   <View className="map-layer-sheet__legend" aria-label="当前图层图例">
-                    {scene.data.data.layer.legend.slice(0, 4).map((item) => (
+                    {displayedLayer.legend.slice(0, visibleLayer === "LIGHT" ? 5 : 4).map((item) => (
                       <View className="map-layer-sheet__legend-item" key={`${item.label}-${item.range}`}>
                         <View
                           className="map-layer-sheet__legend-swatch"
@@ -2806,7 +2789,7 @@ export default function MapPage() {
                         />
                         <Text className="type-caption">
                           {visibleLayer === "LIGHT"
-                            ? item.label
+                            ? displayedLayer.raster ? `${item.label} · ${item.range}` : item.label
                             : `${item.label} · ${item.range}`}
                         </Text>
                       </View>

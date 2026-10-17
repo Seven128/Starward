@@ -3,7 +3,7 @@ import { calendarDateInTimezone, clockTimeInTimezone } from "@/utils/zoned-date"
 import { isProductSource, productSourceNames } from "@/utils/source-presentation";
 import { FACILITY_LABEL } from "@/utils/facility-presentation";
 import { FacilityCard } from "@/components/facility-card";
-import { facilityPhotos as associatedFacilityPhotos } from "@/utils/spot-media";
+import { facilityPhotos as associatedFacilityPhotos, sitePhotoContext } from "@/utils/spot-media";
 import { Block, Button, Image, ScrollView, Text, View } from "@tarojs/components";
 import type {
   MapSceneTimeFrame,
@@ -753,8 +753,9 @@ export function SpotInformationPanel({
             </View> : null}
             <View className="spot-panel__night-light" data-control="sky-light-pollution">
               <View className="spot-panel__evidence-title"><SemanticIcon name={dayMode ? "bulb" : "horizon"} /><Text className="type-label">卫星夜光估算</Text></View>
-              <Text className="spot-panel__night-light-label">{effectiveSpot.lightPollution.state === "ESTIMATED" ? effectiveSpot.lightPollution.label : "暂无数据"}</Text>
-              <Text className="type-caption">{effectiveSpot.lightPollution.radiance ? `${effectiveSpot.lightPollution.radiance.median} ${effectiveSpot.lightPollution.radiance.unit}` : "辐亮度暂无数据"}</Text>
+              <Text className="spot-panel__night-light-label">{effectiveSpot.lightPollution.state === "ESTIMATED" || effectiveSpot.lightPollution.quality ? effectiveSpot.lightPollution.label : "暂无数据"}</Text>
+              <Text className="type-caption">{/^\d{4}(?:$|-)/u.test(effectiveSpot.lightPollution.dataDate) ? `${effectiveSpot.lightPollution.dataDate.slice(0, 4)} 年 · ` : ""}{effectiveSpot.lightPollution.radiance ? `约 ${Number(effectiveSpot.lightPollution.radiance.median.toPrecision(6))} ${effectiveSpot.lightPollution.radiance.unit}` : "辐亮度暂无数据"}</Text>
+              {effectiveSpot.lightPollution.quality?.state === "PARTIAL" ? <Text className="type-caption">周边样本有效面积约 {Math.round(effectiveSpot.lightPollution.quality.validAreaFraction * 100)}%，其余范围未作估算。</Text> : null}
               <SourceAttribution compact sources={[effectiveSpot.lightPollution.source]} />
               <SourceDisclosure key={effectiveSpot.spotId} id="night-light-source" label="年度夜光来源" sources={[effectiveSpot.lightPollution.source]} />
             </View>
@@ -824,6 +825,7 @@ export function SpotInformationPanel({
           src: mediaSource(item.localPath || item.thumbnailPath),
           alt: item.alt || `${effectiveSpot.name}现场照片`,
           caption: item.caption || item.alt || "现场资料",
+          metadata: sitePhotoContext(item),
           attribution: `${item.photographer || "来源未注明"} · ${item.license}`,
           state: "ready" as const,
         }))}

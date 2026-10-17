@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import { fromCustomClient } from "geotiff";
+import { readCopernicusElevationWindow } from "./copernicus-elevation.ts";
 import { PNG } from "pngjs";
 import { terrainReliefRgba } from "./terrain-relief.ts";
 import { gcj02ToWgs84 } from "@starward/coordinate-system";
@@ -12,71 +12,12 @@ export { normalizeTerrainRequest, terrainBounds, terrainRequestKey, TERRAIN_REND
   type RenderedTerrain, type TerrainRenderer, type TerrainRenderRequest } from "./terrain-request.ts";
 import { COPERNICUS_DEM_DOI, COPERNICUS_DEM_LICENSE_URL, COPERNICUS_DEM_SOURCE_NOTICE,
   COPERNICUS_DEM_MODIFIED_PRODUCT_NOTICE, COPERNICUS_DEM_LIABILITY_NOTICE,
-  validateTerrainPublication, type TerrainPublication, type TerrainPublicationSourceObject,
-  type TerrainSourceRange } from "./terrain-publication.ts";
+  validateTerrainPublication, type TerrainPublication, type TerrainPublicationSourceObject } from "./terrain-publication.ts";
 
 const size = 512;
-const sourceRoot = "https://copernicus-dem-30m.s3.amazonaws.com";
 const hash = (data: string | Buffer) => createHash("sha256").update(data).digest("hex");
 const clamp = (value: number, low: number, high: number) => Math.max(low, Math.min(high, value));
 let encodingPromise: Promise<Omit<TerrainElevationColorEncoding, "imageSha256">> | undefined;
-
-/** Fixed public source; callers cannot supply an upstream URL. Range proofs
- * bind the bytes actually consumed and the S3 object ETag, not a full-file hash. */
-async function readTile(lat: number, lon: number, bounds: number[], resolution: number,
-  signal: AbortSignal, budget: { bytes: number }, transport: typeof fetch) {
-  const tileId = `Copernicus_DSM_COG_10_N${String(lat).padStart(2, "0")}_00_E${String(lon).padStart(3, "0")}_00_DEM`;
-  const url = `${sourceRoot}/${tileId}/${tileId}.tif`;
-  const ranges = new Map<string, TerrainSourceRange>();
-  let etag: string | null = null, objectSize = 0;
-  const client: Parameters<typeof fromCustomClient>[0] = { url, async request(options = {}) {
-    signal.throwIfAborted();
-    const headers = new Headers(options.headers);
-    if (etag) headers.set("If-Match", etag);
-    const response = await transport(url, { headers, signal, redirect: "error" });
-    if (response.status !== 206) throw new Error(`terrain_source_http_${response.status}`);
-    const match = /^bytes (\d+)-(\d+)\/(\d+)$/u.exec(response.headers.get("content-range") ?? "");
-    const currentEtag = response.headers.get("etag");
-    if (!match || !currentEtag || (etag !== null && etag !== currentEtag)) throw new Error("terrain_source_identity_invalid");
-    etag = currentEtag;
-    objectSize = Number(match[3]);
-    const length = Number(match[2]) - Number(match[1]) + 1;
-    budget.bytes += length;
-    if (budget.bytes > 24 * 1024 * 1024) throw new Error("terrain_source_budget_exceeded");
-    const data = await response.arrayBuffer();
-    signal.throwIfAborted();
-    if (data.byteLength !== length) throw new Error("terrain_source_length_invalid");
-    ranges.set(`${match[1]}:${length}`, { offset: Number(match[1]), byteSize: length, sha256: hash(Buffer.from(data)) });
-    return { status: response.status, ok: true, getHeader: name => response.headers.get(name) ?? undefined, getData: async () => data };
-  } };
-  const sourceOptions = { allowFullFile: false, blockSize: 65536, cacheSize: 32 };
-  const tiff = await fromCustomClient(client, sourceOptions, signal);
-  try {
-    const firstImage = await tiff.getImage();
-    let image = firstImage;
-    // Use an existing COG overview only when its sampling is finer than the
-    // requested output. Near views retain the original approximately 30 m grid.
-    const count = await tiff.getImageCount();
-    for (let level = 1; level < count; level++) {
-      const candidate = await tiff.getImage(level);
-      if (Math.abs(candidate.getResolution(firstImage)[1]) > resolution) break;
-      image = candidate;
-    }
-    const [west, south, east, north] = firstImage.getBoundingBox();
-    const [pixelX, pixelY] = image.getResolution(firstImage);
-    const left = clamp(Math.floor((Math.max(west, bounds[0]) - west) / pixelX), 0, image.getWidth());
-    const right = clamp(Math.ceil((Math.min(east, bounds[2]) - west) / pixelX), 0, image.getWidth());
-    const top = clamp(Math.floor((north - Math.min(north, bounds[3])) / -pixelY), 0, image.getHeight());
-    const bottom = clamp(Math.ceil((north - Math.max(south, bounds[1])) / -pixelY), 0, image.getHeight());
-    if (right <= left || bottom <= top) throw new Error("terrain_source_window_empty");
-    const values = await image.readRasters({ window: [left, top, right, bottom], samples: [0], interleave: true, signal });
-    const proof = [...ranges.values()].sort((a, b) => a.offset - b.offset || a.byteSize - b.byteSize);
-    const source: TerrainPublicationSourceObject = { tileId, url, sha256: hash(JSON.stringify(proof)), byteSize: objectSize, etag,
-      hashScope: "RETRIEVED_RANGES", ranges: proof };
-    return { source, values, left, top, width: right - left, height: bottom - top,
-      west, north, pixelX, pixelY, noData: firstImage.getGDALNoData() };
-  } finally { await tiff.close(); }
-}
 
 /** One licensed DSM sampling path. Spot retains elevation colour; the Map
  * consumes a separate relief overlay suitable for compositing on a basemap. */
@@ -103,7 +44,7 @@ export async function renderTerrain(input: TerrainRenderRequest, signal: AbortSi
       if (pending.length >= 12) throw new Error("terrain_source_extent_invalid");
       pending.push({ lat, lon });
     }
-  const tiles = await Promise.allSettled(pending.map(({ lat, lon }) => readTile(lat, lon, sourceBounds,
+  const tiles = await Promise.allSettled(pending.map(({ lat, lon }) => readCopernicusElevationWindow(lat, lon, sourceBounds,
     (sourceBounds[3] - sourceBounds[1]) / (size - 1), signal, budget, transport)));
   signal.throwIfAborted();
   const sources: TerrainPublicationSourceObject[] = [], unavailable: string[] = [];

@@ -29,5 +29,6 @@ async function request(button){busy=true;const locked=[...phone.querySelectorAll
 function toast(message){const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${esc(message)}</span><button aria-label="关闭消息">${icon('close')}</button>`;$('#toasts').append(t);while($('#toasts').children.length>3)$('#toasts').firstElementChild.remove();let timer;const dismiss=async()=>{clearTimeout(timer);if(!prefs.reducedMotion)await t.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-10px)'}],{duration:160}).finished;t.remove();};t.querySelector('button').onclick=dismiss;timer=setTimeout(dismiss,3000);}
 $('#back').onclick=()=>{if(sheet.open)return closeSheet();location.href='../../../../my/adopted/my-page/preview/index.html';};
 window.addEventListener('message',e=>{if(e.origin!==location.origin||e.source!==parent)return;if(busy)return;const s=e.data?.settingsScenario;if(DISPLAY_MODES.includes(s))setMode(s);if(s==='failure'){failNext=true;toast('下一次保存将演示失败状态');}if(s==='delete')deleteStep();});render();
+if(new URLSearchParams(location.search).has('design_scene')){const {mountSettingsScenes}=await import('./settings-scenes.mjs');mountSettingsScenes({openSheet,closeSheet,render});}
 
 

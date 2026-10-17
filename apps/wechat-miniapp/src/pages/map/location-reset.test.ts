@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 import * as installedEvents from "@tarojs/runtime/dist/dom/event.js";
-import { userMapRegionEnd } from "./map-region-event";
+import { userMapRegionEnd, userMapRegionStarted, mapRegionEnded } from "./map-region-event";
 import { transportHarness } from "../../services/api-request-test-support";
 import { isMiniappRequestCancelled } from "../../services/request-lifecycle";
 
@@ -50,7 +50,7 @@ function mapRuntime(response: Promise<{ data: object }> | (() => Promise<{ data:
     setObservationContext: (context: object) => contexts.push(context),
     setViewport: (viewport: object) => viewports.push(viewport),
     notify: (notification: object) => notifications.push(notification), errorMessage: () => "synthetic error",
-    userMapRegionEnd, regionTimer: { current: null }, candidateCameraGuard: { current: null },
+    userMapRegionEnd, userMapRegionStarted, mapRegionEnded, readTerrainViewport() {}, spotMapFocus: { cancel() {} }, regionTimer: { current: null }, candidateCameraGuard: { current: null },
     clearTimeout: (id: number) => timers.delete(id),
     setTimeout: (callback: () => void) => { timers.set(++timerId, callback); return timerId; },
   }, { timeout: 1000 }) as {
@@ -119,9 +119,10 @@ test("a superseded region callback does not publish a false failure notice", asy
 test("queued map-region event cannot restore a pre-reset viewport or request context", () => {
   const map = mapRuntime(Promise.resolve({ data: {} }));
   map.onRegionChange({ detail: { type: "end", causedBy: "drag", detail: { centerLocation: center, scale: 12 } } });
+  assert.equal(map.viewports.length, 1, "the settled camera is published before reset");
   map.reset();
   map.fireTimers();
-  assert.equal(map.viewports.length, 0);
+  assert.equal(map.viewports.length, 1, "a queued conditions timer cannot restore the pre-reset camera");
   assert.equal(map.calls, 0);
   assert.equal(map.notifications.length, 0);
 });
@@ -135,14 +136,14 @@ test("native drag through the installed Taro event bridge updates viewport and c
   assert.equal(map.calls, 1);
 });
 
-test("nested and direct detail gesture events retain the latest debounced center", () => {
+test("nested and direct detail gestures publish each settled camera and debounce only the latest conditions", () => {
   const map = mapRuntime(Promise.resolve({ data: {} }));
   map.onRegionChange({ detail: { type: "end", causedBy: "drag", detail: { centerLocation: center, scale: 11 } } });
   const latest = { latitude: 21, longitude: 111 };
   map.onRegionChange({ type: "regionchange", detail: { type: "end", causedBy: "scale", centerLocation: latest, scale: 13 } });
   map.fireTimers();
-  assert.equal(map.viewports.length, 1);
-  const viewport = map.viewports[0] as { center: Center; zoom: number; loadedViewport: string };
+  assert.equal(map.viewports.length, 2);
+  const viewport = map.viewports[1] as { center: Center; zoom: number; loadedViewport: string };
   assert.deepEqual(viewport.center, latest);
   assert.equal(viewport.zoom, 13);
   assert.match(viewport.loadedViewport, /^viewport:\d+$/);

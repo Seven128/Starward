@@ -1,6 +1,6 @@
 import {openSharing} from '/docs/design-resources/wechat-miniapp/shared/journey-sharing-2026-09-22/share-shell.mjs?v=20260922-4';
 import {spots as shareSpots} from '/docs/design-resources/wechat-miniapp/plan/revisions/three-requirements-2026-09-13/preview/plan-model.mjs';
-import {root,credit,disclosure,copyButton} from './source-ui.mjs';
+import {root,credit,disclosure,copyButton} from './source-ui.mjs?v=20261015-scenes';
 import {matteImage,replaceGraphic,applyTimeIcons} from '/docs/design-resources/wechat-miniapp/shared/icons/material-preview.mjs';
 const surface=document.body.dataset.scaleSurface;
 const $=s=>document.querySelector(s),all=s=>[...document.querySelectorAll(s)];
@@ -98,7 +98,7 @@ function layerCompliance(){
 }
 if(surface==='map')mapCompliance();if(surface==='layers')layerCompliance();
 if(surface==='my'){
- document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;let dest;if(b.getAttribute('aria-label')==='设置')dest='settings.html';if(b.closest('#submitted'))dest='contributions.html';if(b.id==='all-plans')dest='plan.html';if(dest){e.preventDefault();e.stopImmediatePropagation();location.href=root+dest;}},true);
+ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;let dest;if(b.getAttribute('aria-label')==='设置')dest='settings.html';if(b.closest('#submitted')){if(document.body.dataset.sceneGuest==='true'){e.preventDefault();e.stopImmediatePropagation();document.dispatchEvent(new Event('design-login-request'));return;}dest='contributions.html';}if(b.id==='all-plans')dest='plan.html';if(dest){e.preventDefault();e.stopImmediatePropagation();location.href=root+dest;}},true);
 }
 if(surface==='sky'){
  const back=$('#back');if(back)back.replaceChildren(matteImage('arrow-left',{size:28}));
@@ -131,4 +131,14 @@ if(surface==='map')document.addEventListener('click',e=>{
  e.preventDefault();e.stopImmediatePropagation();const name=document.querySelector('#overview h2')?.textContent.trim();const spotId=document.body.dataset.shareSpotId||shareSpots.find(s=>s.name===name)?.id||'unavailable';if(parent!==window&&parent.document.querySelector('#spot-frame,#spot-host'))parent.postMessage({type:'sharing-open',spotId},location.origin);else openSharing('page=spot&spot='+encodeURIComponent(spotId),b);
 },true);
 
+if(surface==='map'){
+ const {applyWeatherScenes}=await import('./weather-scenes.mjs?v=20261015-final');applyWeatherScenes();
+ const {adoptFacilityCards}=await import('./facility-card.mjs?v=20261015-final');adoptFacilityCards();
+}
+if(surface==='map'&&document.querySelector('#terrain')){
+ const {mountNeighborhoodHorizon}=await import('/docs/design-resources/wechat-miniapp/map/revisions/neighborhood-environment-2026-10-17/horizon.mjs');await mountNeighborhoodHorizon();
+}
 document.body.dataset.candidateReady='true';
+if(new URLSearchParams(location.search).has('design_scene')){
+ const {applyScene}=await import('./scene-states.mjs?v=20261015-scenes-3');await applyScene(surface);
+}

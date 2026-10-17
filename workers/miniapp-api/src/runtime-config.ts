@@ -6,6 +6,7 @@ import {
 import { ASTRONOMICAL_EVENT_CATALOG_VERSION } from "./astronomical-event-catalog.ts";
 import { validateDeliveryIdentityKey } from "./wechat-delivery-identity.ts";
 import { parseReminderFields, type ReminderDeliverySettings } from "./plan-reminder-delivery-config.ts";
+import path from "node:path";
 
 export type ReleaseProfile = "LOCAL" | "TRIAL" | "COMMERCIAL";
 export type StorageMode = "MEMORY_TEST" | "POSTGRES";
@@ -56,6 +57,8 @@ export interface MiniappRuntimeConfig {
   eventCatalogCheckIntervalDays: number;
   eventArticleDnsMode: EventArticleDnsMode;
   darkSkyDatasetVersion: string;
+  terrainPublicationRoot?: string | null;
+  nightLightPublicationRoot?: string | null;
   skyCatalogVersion: string;
   astronomyAlgorithmVersion: string;
   opportunityRuleVersion: string;
@@ -113,6 +116,10 @@ function selectedFlags(input: {
 }
 
 export function loadRuntimeConfig(): MiniappRuntimeConfig {
+  const terrainPublicationRoot = value("MINIAPP_TERRAIN_PUBLICATION_ROOT");
+  if (terrainPublicationRoot && !path.isAbsolute(terrainPublicationRoot)) throw new Error("runtime_config_invalid:MINIAPP_TERRAIN_PUBLICATION_ROOT");
+  const nightLightPublicationRoot = value("MINIAPP_NIGHT_LIGHT_PUBLICATION_ROOT");
+  if (nightLightPublicationRoot && !path.isAbsolute(nightLightPublicationRoot)) throw new Error("runtime_config_invalid:MINIAPP_NIGHT_LIGHT_PUBLICATION_ROOT");
   const releaseProfile = oneOf(
     "MINIAPP_RELEASE_PROFILE",
     value("MINIAPP_RELEASE_PROFILE"),
@@ -258,6 +265,8 @@ export function loadRuntimeConfig(): MiniappRuntimeConfig {
     eventCatalogCheckIntervalDays: boundedInteger("MINIAPP_EVENT_CATALOG_CHECK_INTERVAL_DAYS", 7, 1, 30),
     eventArticleDnsMode: oneOf("MINIAPP_EVENT_ARTICLE_DNS_MODE", value("MINIAPP_EVENT_ARTICLE_DNS_MODE"), ["SYSTEM", "CLOUDFLARE_DOH"], "SYSTEM"),
     darkSkyDatasetVersion,
+    terrainPublicationRoot,
+    nightLightPublicationRoot,
     skyCatalogVersion:
       value("MINIAPP_SKY_CATALOG_VERSION") ?? "iau-bright-targets-2026.1",
     astronomyAlgorithmVersion:

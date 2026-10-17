@@ -1,0 +1,560 @@
+
+  :host {
+    --bg-page: #F6F8F7;
+    --card-surface: #FFFFFF;
+    --border-subtle: #E8ECE9;
+    --border-light: #F0F3F1;
+    --text-primary: #282b29;
+    --text-regular: #282b29;
+    --text-secondary: #5e655f;
+    --text-tertiary: #6d746d;
+    --text-muted: #6d746d;
+    --accent-green-main: #5E8C73;
+    --accent-green-bg: #E8F0EB;
+    --accent-green-fill: rgba(94, 140, 115, 0.16);
+    --accent-green-stroke: #5E8C73;
+    --missing-pattern: #C8D3CD;
+    --radius-card: 18px;
+    --radius-sm: 8px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  .review-body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* 外部审阅台及说明区（组件外） */
+  .review-header {
+    max-width: 860px;
+    width: 100%;
+    margin-bottom: 28px;
+  }
+
+  .review-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 10px;
+  }
+
+  .review-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+  }
+
+  .review-tag {
+    font-size: 12px;
+    color: var(--accent-green-main);
+    background: var(--accent-green-bg);
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .review-desc {
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--text-secondary);
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 12px 16px;
+  }
+
+  .review-desc strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  /* 状态切换工具条 */
+  .state-switcher-container {
+    max-width: 860px;
+    width: 100%;
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .state-tabs {
+    display: inline-flex;
+    background: #EAEFEA;
+    padding: 4px;
+    border-radius: 100px;
+    gap: 4px;
+  }
+
+  .state-tab-btn {
+    border: none;
+    background: transparent;
+    padding: 7px 18px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .state-tab-btn.active {
+    background: #FFFFFF;
+    color: var(--text-primary);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+  }
+
+  .state-meta-hint {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  /* 390px 移动端容器边界，模拟嵌入连续抽屉的真实效果 */
+  .mobile-mockup-wrapper {
+    width: 390px;
+    background: #F9FAF9;
+    border: 1px solid var(--border-subtle);
+    border-radius: 24px;
+    padding: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  }
+
+  .drawer-context-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-left: 4px;
+  }
+  .drawer-context-label::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-green-main);
+  }
+
+  /* ========================================================
+     核心可复用组件：山体遮挡轮廓卡 (Horizon Obstruction Card)
+     ======================================================== */
+  .terrain-horizon-card {
+    width: 100%;
+    background: var(--card-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-card);
+    padding: 16px;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+
+  /* 标题行：主标题 + 模型估算标签 */
+  .th-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .th-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .th-title {
+    font-size: 16px;
+    line-height: 23px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.1px;
+  }
+
+  .th-badge {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-tertiary);
+    background: #F2F5F3;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 1px 8px;
+    font-weight: 500;
+  }
+
+  /* 图表绘图区 */
+  .th-chart-container {
+    width: 100%;
+    height: 140px;
+    position: relative;
+    background: #FCFDFC;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .th-svg-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* 网格与标尺 */
+  .th-grid-line {
+    stroke: #EDF1EE;
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+  }
+
+  .th-axis-line {
+    stroke: #D6DFDA;
+    stroke-width: 1;
+  }
+
+  .th-axis-text {
+    font-size: 10px;
+    fill: var(--text-tertiary);
+    font-family: inherit;
+  }
+
+  .th-dir-text {
+    font-size: 11px;
+    fill: var(--text-secondary);
+    font-weight: 500;
+    text-anchor: middle;
+    font-family: inherit;
+  }
+
+  .th-alt-label {
+    font-size: 9px;
+    fill: var(--text-muted);
+    text-anchor: start;
+    font-family: inherit;
+  }
+
+  /* 山体形状样式 */
+  .th-mountain-fill {
+    fill: var(--accent-green-fill);
+  }
+
+  .th-mountain-stroke {
+    fill: none;
+    stroke: var(--accent-green-stroke);
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .th-missing-zone {
+    fill: url(#missingHatch);
+    opacity: 0.85;
+  }
+
+  .th-missing-border {
+    stroke: #B5C4BC;
+    stroke-width: 1.25;
+    stroke-dasharray: 4 3;
+    fill: none;
+  }
+
+  .th-missing-text {
+    font-size: 10px;
+    fill: #788782;
+    text-anchor: middle;
+    font-weight: 500;
+  }
+
+  /* 底部说明与指标区：允许换行防止 390px 溢出 */
+  .th-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .th-meta-range {
+    font-size: 14px;
+    line-height: 21px;
+    color: var(--text-regular);
+    font-weight: 500;
+  }
+
+  .th-meta-range span {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    margin-left: 2px;
+  }
+
+  .th-meta-summary {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--accent-green-main);
+    background: var(--accent-green-bg);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+    max-width: 100%;
+  }
+
+  /* 严谨的估算及现实限制提示 */
+  .th-disclaimer {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-tertiary);
+    margin-bottom: 10px;
+  }
+
+  /* 来源入口：语义化 details/summary，保证 >=44px 点击热区 */
+  .th-source-details-group {
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    background: #F7FAF8;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .th-source-summary {
+    min-height: 44px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    touch-action: manipulation;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-secondary);
+    list-style: none;
+    user-select: none;
+    transition: background 0.15s ease;
+  }
+  .th-source-summary::-webkit-details-marker {
+    display: none;
+  }
+  .th-source-summary:hover {
+    background: #EFF4F1;
+  }
+
+  .th-source-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .th-source-chevron {
+    width: 14px;
+    height: 14px;
+    stroke: var(--text-tertiary);
+    stroke-width: 2;
+    fill: none;
+    transition: transform 0.2s ease;
+  }
+
+  .th-source-details-group[open] .th-source-chevron {
+    transform: rotate(90deg);
+  }
+
+  .th-source-content {
+    padding: 10px 12px;
+    background: #FAFCFA;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-tertiary);
+    border-top: 1px dashed var(--border-subtle);
+  }
+
+  /* 状态覆盖层（加载态与失败态） */
+  .th-overlay-state {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--radius-card);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    z-index: 10;
+  }
+
+  /* 加载指示器（延续公共三点与轻量环） */
+  .th-loading-dots {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .th-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-green-main);
+    opacity: 0.35;
+    animation: thPulse 1.2s infinite ease-in-out;
+  }
+  .th-dot:nth-child(2) { animation-delay: 0.2s; }
+  .th-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes thPulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+
+  /* 减弱动态偏好 */
+  @media (prefers-reduced-motion: reduce) {
+    .th-dot {
+      animation: none;
+      opacity: 0.6;
+    }
+    .th-source-chevron {
+      transition: none;
+    }
+  }
+
+  .th-state-title {
+    font-size: 14px;
+    line-height: 21px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .th-state-desc {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--text-tertiary);
+    max-width: 240px;
+  }
+
+  /* 重试按钮 */
+  .th-retry-btn {
+    margin-top: 14px;
+    border: 1px solid var(--border-subtle);
+    background: #FFFFFF;
+    color: var(--text-regular);
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 500;
+    min-height: 36px;
+    padding: 6px 18px;
+    border-radius: 100px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    transition: all 0.15s ease;
+    touch-action: manipulation;
+  }
+  .th-retry-btn:hover {
+    background: #F8FAF9;
+    border-color: var(--border-subtle);
+  }
+  .th-retry-btn:active {
+    transform: scale(0.97);
+  }
+
+  /* 已有现场照片真实上下文呈现（只读 caption，不生成虚构照片） */
+  .th-photo-caption-card {
+    padding: 10px 12px;
+    background: #F7FAF8;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+  }
+
+  .th-photo-meta-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+
+  .th-photo-note {
+    font-size: 12px;
+    line-height: 17px;
+    color: var(--text-secondary);
+  }
+
+  /* 四状态平铺对照面板（供审阅者一目了然） */
+  .comparison-section {
+    max-width: 860px;
+    width: 100%;
+    margin-top: 40px;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 28px;
+  }
+
+  .comparison-heading {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .comparison-sub {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 20px;
+  }
+
+  .comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 20px;
+  }
+
+  .comparison-item {
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 16px;
+  }
+
+  .comparison-item-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-regular);
+    margin-bottom: 12px;
+  }
+
+  .badge-state {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .badge-normal { background: #EBF4EF; color: #437357; }
+  .badge-partial { background: #FFF4E5; color: #9A6700; }
+  .badge-loading { background: #F0F2F5; color: #5B6B79; }
+  .badge-failed { background: #FDE8E8; color: #9E2A2B; }
+
+/* Scoped Codex correction after actual full-host comparison. */
+.th-axis-text,.th-dir-text,.th-alt-label,.th-missing-text,.th-photo-meta-header{font-size:12px;line-height:18px;fill:var(--text-tertiary)}
+.th-meta-summary{color:var(--text-secondary)}
+
+:host{display:block;margin-top:16px;font-family:inherit}
+.th-retry-btn{min-height:44px}

@@ -1,0 +1,239 @@
+{
+  "status": "EXISTING_COMPLETE_REFERENCES_UNCHANGED",
+  "source": "D:\\dev\\Starward\\docs\\design-resources\\wechat-miniapp\\shared\\comfortable-scale-2026-09-22\\review.html",
+  "count": 33,
+  "scope": "当前完整宿主：新增状态与正常表达共用现行组件；云观星内部排除。",
+  "items": [
+    {
+      "id": "ref-motion-gallery",
+      "group": "公共动效本轮",
+      "label": "公共图片查看器",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map-panel.html?extent=large&media=1&review=photos",
+      "caption": "下拉短拖回弹／快速下甩关闭；横滑切图、首尾阻力；场地与设施共享。"
+    },
+    {
+      "id": "ref-motion-ruler",
+      "group": "公共动效本轮",
+      "label": "公共时间尺 · 天文",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map-panel.html?extent=large&chapter=astronomy",
+      "caption": "轻拖精调、快速滑动投影吸附，稳定后仅提交一次；云量与云观星复用。"
+    },
+    {
+      "id": "ref-motion-mode",
+      "group": "公共动效本轮",
+      "label": "三态模式 · 阻尼",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/settings.html",
+      "caption": "可点选或拖动日间／夜间／观测；两端阻力，松手吸附相邻模式。"
+    },
+    {
+      "id": "ref-motion-panels",
+      "group": "公共动效本轮",
+      "label": "公共展开 · 图层与来源",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/layers.html",
+      "caption": "光污染／云量内容高度连续变化；展开来源后快速反向收起。"
+    },
+    {
+      "id": "ref-motion-tabs",
+      "group": "公共动效本轮",
+      "label": "公共 Tab 与按压",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map.html?new=1",
+      "caption": "各章节共用选中文字反馈；按压不改变命中区或布局。"
+    },
+    {
+      "id": "ref-achievements",
+      "group": "新增业务与动效",
+      "label": "个人行程成就",
+      "url": "/docs/design-resources/wechat-miniapp/shared/journey-sharing-2026-09-22/index.html",
+      "caption": "从“我的”进入；按已结束计划自动统计。当前2份代表计划、2个地点、1个关联天象。"
+    },
+    {
+      "id": "ref-trip-share",
+      "group": "新增业务与动效",
+      "label": "单个行程分享",
+      "url": "/docs/design-resources/wechat-miniapp/shared/journey-sharing-2026-09-22/index.html?page=trip",
+      "caption": "纸质票据构图；公开计划时段/地点/关联天象，不包含私人出发地、清单或备注。"
+    },
+    {
+      "id": "ref-spot-share",
+      "group": "新增业务与动效",
+      "label": "观星点分享",
+      "url": "/docs/design-resources/wechat-miniapp/shared/journey-sharing-2026-09-22/index.html?page=spot",
+      "caption": "公开静态地点摘要；不分享陈旧天气；保留进入与安全提示。"
+    },
+    {
+      "id": "ref-trip-poster",
+      "group": "新增业务与动效",
+      "label": "行程海报",
+      "url": "/docs/design-resources/wechat-miniapp/shared/journey-sharing-2026-09-22/index.html?page=trip&poster=1",
+      "caption": "由同一个票面实际导出PNG，来源署名保留；浏览器保存不代表微信相册/小程序码能力。"
+    },
+    {
+      "id": "ref-spot-poster",
+      "group": "新增业务与动效",
+      "label": "观星点海报",
+      "url": "/docs/design-resources/wechat-miniapp/shared/journey-sharing-2026-09-22/index.html?page=spot&poster=1",
+      "caption": "与地点分享页共用可编辑票面。"
+    },
+    {
+      "id": "ref-elastic-drawer",
+      "group": "新增业务与动效",
+      "label": "公共弹性抽屉",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map-panel.html?extent=medium",
+      "caption": "拖动顶部可见带；上下越界阻尼、速度投影选档、可中断回弹；也可聚焦把手用方向键/Home/End。"
+    },
+    {
+      "id": "ref-map",
+      "group": "地图与点位",
+      "label": "地图首页",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map.html?map=1&browse=1",
+      "caption": "完整地图入口、B 批图标和原有四个工具。"
+    },
+    {
+      "id": "ref-small",
+      "group": "地图与点位",
+      "label": "观星点 · 小档",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map-panel.html?extent=small",
+      "caption": "三档抽屉；底部动作顺序不变。"
+    },
+    {
+      "id": "ref-medium",
+      "group": "地图与点位",
+      "label": "观星点 · 中档",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map-panel.html?extent=medium",
+      "caption": "继续向上展开或在原文档中滚动。"
+    },
+    {
+      "id": "ref-large",
+      "group": "地图与点位",
+      "label": "观星点 · 大档",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map-panel.html?extent=large",
+      "caption": "基本信息 / 地形 / 天文原有 Tab 与滚动关系。"
+    },
+    {
+      "id": "ref-terrain",
+      "group": "地图与点位",
+      "label": "观星点 · 地形",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map-panel.html?extent=large&chapter=terrain",
+      "caption": "保留原地形交互及完整来源。"
+    },
+    {
+      "id": "ref-astronomy",
+      "group": "地图与点位",
+      "label": "观星点 · 天文",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map-panel.html?extent=large&chapter=astronomy",
+      "caption": "日期时间尺、月相、天气与来源。"
+    },
+    {
+      "id": "ref-layers",
+      "group": "地图与点位",
+      "label": "图层与来源",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/layers.html",
+      "caption": "夜光 / 云量单选与独立地形开关，完整声明位于滚动区。"
+    },
+    {
+      "id": "ref-search",
+      "group": "搜索与个人",
+      "label": "搜索结果",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/search.html",
+      "caption": "少云结果就近显示天气来源；删除已退役的道路时长和低云筛选。"
+    },
+    {
+      "id": "ref-filter",
+      "group": "搜索与个人",
+      "label": "搜索筛选抽屉",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/search.html?review=filter",
+      "caption": "原分组与确认逻辑，保持正常可读尺度。"
+    },
+    {
+      "id": "ref-my",
+      "group": "搜索与个人",
+      "label": "我的",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/my.html",
+      "caption": "原淡彩背景、玻璃计划卡、账号和记录入口。"
+    },
+    {
+      "id": "ref-settings",
+      "group": "搜索与个人",
+      "label": "设置",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/settings.html",
+      "caption": "三态模式与原隐私、提醒和数据操作。"
+    },
+    {
+      "id": "ref-plan",
+      "group": "计划与事件",
+      "label": "计划列表",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/plan.html",
+      "caption": "原接下来 / 过往分组。"
+    },
+    {
+      "id": "ref-plan-detail",
+      "group": "计划与事件",
+      "label": "计划详情",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/plan.html?id=p1&weather=available",
+      "caption": "手动出行安排与天气参考来源；不恢复自动路线。"
+    },
+    {
+      "id": "ref-plan-edit",
+      "group": "计划与事件",
+      "label": "编辑计划",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/plan.html?view=edit&id=p1",
+      "caption": "日期时间、交通偏好、事件、提醒清单与备注。"
+    },
+    {
+      "id": "ref-events",
+      "group": "计划与事件",
+      "label": "天文事件 · 浏览",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map.html?map=1&browse=1&review=events",
+      "caption": "共享大型 Modal；浏览模式不显示选择按钮。"
+    },
+    {
+      "id": "ref-solar",
+      "group": "计划与事件",
+      "label": "日食详情",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map.html?map=1&browse=1&review=solar",
+      "caption": "日食安全提示、事件当地日期、几何条件与独立来源。"
+    },
+    {
+      "id": "ref-lunar",
+      "group": "计划与事件",
+      "label": "月食详情",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map.html?map=1&browse=1&review=lunar",
+      "caption": "各食相时刻与高度，保留地平线以下标记。"
+    },
+    {
+      "id": "ref-article",
+      "group": "计划与事件",
+      "label": "事件附加文章",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map.html?map=1&browse=1&review=meteor&article=1",
+      "caption": "可选文章及其独立来源样式；示意文字不成为已发布内容。"
+    },
+    {
+      "id": "ref-create",
+      "group": "创建与反馈",
+      "label": "新增观星点",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/map.html?new=1",
+      "caption": "原不可拖动编辑面板与地点 / 到达 / 设施 / 说明章节。"
+    },
+    {
+      "id": "ref-feedback",
+      "group": "创建与反馈",
+      "label": "观星点反馈",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/feedback.html?mode=feedback",
+      "caption": "原差异编辑与提交行为。"
+    },
+    {
+      "id": "ref-contributions",
+      "group": "创建与反馈",
+      "label": "创建记录",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/contributions.html",
+      "caption": "草稿、审核中、已上线与审核未通过。"
+    },
+    {
+      "id": "ref-feedback-records",
+      "group": "创建与反馈",
+      "label": "反馈记录",
+      "url": "/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/contributions.html?review=feedback-records",
+      "caption": "记录筛选、原提交内容及编辑返回。"
+    }
+  ]
+}

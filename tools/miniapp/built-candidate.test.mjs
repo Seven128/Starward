@@ -88,11 +88,11 @@ test("async bitmap consumers share original spot-package assets", () => {
   for (const extension of ["js", "json", "wxml", "wxss"])
     assert.equal(existsSync(path.join(bundleRoot, `spot/native/packaged-icon/index.${extension}`)), true);
   const originals = path.resolve("docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256/platform/weapp-runtime/assets");
-  for (const name of ["temperature", "wind", "droplet", "warning", "low-cloud", "images", "plan-suv", "clock"]) {
+  for (const name of ["temperature", "wind", "droplet", "warning", "low-cloud", "images", "plan-suv", "clock", "sun", "telescope", "share"]) {
     const filename = `${name}--day--default.png`;
     assert.deepEqual(readFileSync(path.join(bundleRoot, "spot/assets/b-icons", filename)), readFileSync(path.join(originals, filename)));
   }
-  for (const name of ["images", "plan-suv", "clock"])
+  for (const name of ["images", "plan-suv", "clock", "sun", "telescope", "share"])
     assert.equal(existsSync(path.join(bundleRoot, `assets/b-icons/${name}--day--default.png`)), false);
   assert.deepEqual(readFileSync(path.join(bundleRoot, "assets/b-icons/settings--day--default.png")),
     readFileSync(path.join(originals, "settings--day--default.png")));

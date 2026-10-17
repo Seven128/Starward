@@ -15,6 +15,29 @@ const target = (src: string): TerrainGroundOverlayTarget => ({
   zIndex: 0,
 });
 
+test("native file pins retire only after removal ack, including an obsolete queued candidate", async () => {
+  const pins = new Map<string, number>();
+  let finishOldRemoval: (() => void) | undefined;
+  const coordinator = createTerrainGroundOverlayCoordinator(120, () => ({
+    addGroundOverlay: options => options.success(),
+    updateGroundOverlay: options => options.success(),
+    removeGroundOverlay: options => { if (options.id === 120 && !finishOldRemoval) finishOldRemoval = options.success; else options.success(); },
+  }), () => undefined, { retainPath: path => {
+    pins.set(path, (pins.get(path) ?? 0) + 1);
+    return () => pins.set(path, pins.get(path)! - 1);
+  } });
+  await coordinator.apply(target("a"));
+  const replacement = coordinator.apply(target("b"));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(pins.get("a"), 1); assert.equal(pins.get("b"), 1);
+  assert.ok(finishOldRemoval); finishOldRemoval(); await replacement;
+  assert.equal(pins.get("a"), 0); assert.equal(pins.get("b"), 1);
+  const obsolete = coordinator.apply(target("c")), latest = coordinator.apply(target("d"));
+  await Promise.all([obsolete, latest]);
+  assert.equal(pins.get("c"), 0); assert.equal(pins.get("d"), 1); assert.equal(pins.get("b"), 0);
+  await coordinator.dispose(); assert.equal(pins.get("d"), 0);
+});
+
 test("native Map failure preserves the downloaded terrain image for its ordinary retry", async () => {
   const source = ts.createSourceFile("map.tsx", readFileSync(new URL("./index.tsx", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   let callback: ts.Node | undefined;

@@ -1,0 +1,6 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Starward · 完整场景设计</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#fff}iframe{display:block;border:0;width:100%;height:100%}</style></head><body><iframe id="scene-host" title="现行完整设计宿主"></iframe><script type="module">
+import {hostFor} from './host.mjs';import {scenes} from './catalogue.mjs';
+const query=new URLSearchParams(location.search);let scene=query.get('scene')||'09E';const frame=document.querySelector('iframe');
+function show(id){if(!scenes.some(s=>s[0]===id))return;scene=id;query.set('scene',id);history.replaceState(null,'','?'+query);frame.src=hostFor(id,query);document.body.dataset.scene=id;}
+window.addEventListener('message',e=>{if(e.source!==frame.contentWindow||e.origin!==location.origin)return;if(e.data?.type==='design-scene-navigate'){show(e.data.id);parent.postMessage({type:'design-scene-current',id:e.data.id},location.origin);} });show(scene);
+</script></body></html>

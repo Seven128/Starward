@@ -1,10 +1,8 @@
 import type { TerrainOverlayRequest } from "@starward/miniapp-contracts";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { downloadTerrainAsset, getTerrainOverlay } from "@/services/api-client";
-import { isMiniappRequestCancelled } from "@/services/request-lifecycle";
+import { useEffect, useMemo, useRef } from "react";
+import { getTerrainOverlay } from "@/services/api-client";
 import { useResourceQuery } from "./use-resource-query";
-
-const downloaded = new Map<string, string>();
+import { useRasterImage } from "./use-raster-image";
 
 export function useTerrainOverlay(input: TerrainOverlayRequest, enabled: boolean, imageEnabled = enabled) {
   const identity = `${input.purpose}:${input.center.latitude.toFixed(7)}:${input.center.longitude.toFixed(7)}:${input.viewportBounds
@@ -28,48 +26,18 @@ export function useTerrainOverlay(input: TerrainOverlayRequest, enabled: boolean
   }, [enabled, identity, query.isFetching, query.data?.data.failureCode, query.data?.data.lightPollution.failureCode]);
   const imageUrl = query.data?.data.imageUrl ?? null;
   const imageKey = imageUrl ? `${query.data?.data.publicationId ?? ""}:${imageUrl}` : "";
-  const [imageAttempt, setImageAttempt] = useState(0);
-  const shouldReadImage = enabled && imageEnabled;
-  const [imageState, setImageState] = useState<{ url: string; path: string | null; error: unknown | null }>({ url: "", path: null, error: null });
-  useEffect(() => {
-    if (!shouldReadImage || !imageUrl) {
-      setImageState({ url: imageKey, path: null, error: null });
-      return;
-    }
-    const cached = downloaded.get(imageKey);
-    if (cached) {
-      setImageState({ url: imageKey, path: cached, error: null });
-      return;
-    }
-    const controller = new AbortController();
-    setImageState({ url: imageKey, path: null, error: null });
-    void downloadTerrainAsset(imageUrl, controller.signal).then((path) => {
-      if (controller.signal.aborted) return;
-      downloaded.set(imageKey, path);
-      while (downloaded.size > 8) downloaded.delete(downloaded.keys().next().value!);
-      setImageState({ url: imageKey, path, error: null });
-    }).catch((error) => {
-      if (!controller.signal.aborted && !isMiniappRequestCancelled(error)) setImageState({ url: imageKey, path: null, error });
-    });
-    return () => controller.abort();
-  }, [shouldReadImage, imageUrl, imageKey, imageAttempt]);
+  const imageBytes = query.data?.data.imageBytes;
+  const imageSha256 = query.data?.data.imageSha256 ?? imageUrl?.match(/-([a-f0-9]{64})\.png$/u)?.[1];
+  const image = useRasterImage(imageUrl ? { key: imageKey, url: imageUrl,
+    ...(imageBytes === undefined ? {} : { expectedBytes: imageBytes }),
+    ...(imageSha256 ? { expectedSha256: imageSha256 } : {}) } : null, enabled && imageEnabled);
   return useMemo(() => ({
     ...query,
+    ...image,
     identity,
-    imagePath: shouldReadImage && imageState.url === imageKey ? imageState.path : null,
-    imageError: shouldReadImage && imageState.url === imageKey ? imageState.error : null,
-    imagePending: Boolean(shouldReadImage && imageUrl && (imageState.url !== imageKey || (!imageState.path && !imageState.error))),
-    reportImageFailure: (error: unknown, failedPath = imageState.path) => {
-      if (downloaded.get(imageKey) === failedPath) downloaded.delete(imageKey);
-      setImageState(current => current.url === imageKey && current.path === failedPath
-        ? { url: imageKey, path: null, error } : current);
-    },
     refetch: () => {
-      if (imageState.url === imageKey && imageState.error) {
-        downloaded.delete(imageKey);
-        setImageAttempt(value => value + 1);
-      }
+      image.retryImage();
       return query.refetch();
     },
-  }), [shouldReadImage, imageState, imageUrl, imageKey, query, identity]);
+  }), [image, query, identity]);
 }

@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { RepresentativeMedia } from "@starward/miniapp-contracts";
-import { facilityPhotos } from "./spot-media";
+import { facilityPhotos, sitePhotoContext } from "./spot-media";
+
+test("photo context preserves published time precision and never fills missing evidence from another clock", () => {
+  assert.equal(sitePhotoContext({ capturedAt: null, direction: null }), "拍摄时间未提供 · 方位未提供");
+  assert.equal(sitePhotoContext({ capturedAt: " 2024-11 ", direction: " 东北 " }), "拍摄时间 2024-11 · 方位 东北");
+  assert.equal(sitePhotoContext({ capturedAt: "2024-11-08T13:20:00+08:00", direction: "0°（真北）" }),
+    "拍摄时间 2024-11-08T13:20:00+08:00 · 方位 0°（真北）");
+  assert.equal(sitePhotoContext({ capturedAt: " ", direction: "西南" }), "拍摄时间未提供 · 方位 西南");
+});
 
 const photo = (id: string, patch: Partial<RepresentativeMedia> = {}): RepresentativeMedia => ({
   id, localPath: id + ".jpg", thumbnailPath: id + "-thumb.jpg", alt: id, caption: id,

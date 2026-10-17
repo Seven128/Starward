@@ -76,11 +76,10 @@ const bIconFiles = {
     "location--day--default.png", "meteor--day--default.png", "moon--day--default.png",
     "pencil--day--default.png",
     "search--day--default.png", "settings--day--default.png",
-    "share--day--default.png", "spot-marker--day--default.png",
+    "spot-marker--day--default.png",
     "spot-marker--day--draft.png", "spot-marker--day--pending.png",
-    "spot-marker--day--selected.png", "sun--day--default.png",
+    "spot-marker--day--selected.png",
     "terrain--day--default.png",
-    "telescope--day--default.png",
     "more--day--default.png",
     "parking--day--default.png", "restroom--day--default.png",
   ],
@@ -110,7 +109,11 @@ const bIconFiles = {
     "wifi-off--day--default.png",
   ],
   spot: [
+    // Main-page cloud/share actions keep their text and use the existing
+    // asynchronous native ornament loader with these original bitmap bytes.
+    "telescope--day--default.png", "share--day--default.png",
     "clock--day--default.png",
+    "sun--day--default.png",
     "warning--day--default.png",
     "temperature--day--default.png", "wind--day--default.png", "droplet--day--default.png",
     "bulb--day--default.png", "cloud--day--default.png", "parking--day--default.png",

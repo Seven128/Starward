@@ -30,6 +30,8 @@ Map 点位的年度夜光、天气/天文、地形与夜光、空气质量和近
 
 已采用的点位文档与 DAY 事件详情通过上述两 owner 的 `disclosure` 呈现变体，把完整品牌和独立复制动作同行、完整网址另行，精度与发布／获取／适用共用事实行。卡片布局和 DAY 样式归 `Provenance` 的显式变体，不依赖 `SourceDisclosure` 展开壳；事件科学来源与补充文章来源直接复用同一变体并保持独立，目录版本留在科学来源之后。出处、许可和官方链接仍各归原复制 owner，声明原文、缺失含义和时间单位保留。默认／compact 消费者及事件非 DAY 主题沿原呈现，不能由此扩认其他页面的资源或验收。
 
+独立地点“来源与更新时间”使用同一 `Provenance` 的 `reading` 变体，按已采用完整阅读源呈连续来源段落与两列时间/精度事实；原 `default` / `disclosure` 消费者各沿其已有布局。来源页独立读取 overview、AQ 与近期天气来源，一项失败不撤下其余记录；Map 和来源页共用 `use-recent-weather-query` 的地区实时寿命、时区自然日与失败清旧值规则，不另建历史缓存。归因、原文许可、复制语义与完整记录去重仍由原 owner 负责。
+
 来源卡没有明确 `attribution` 时，只能以当前 `provider/title` 与 `sourceUrl` 呈现“复制原始出处”的阅读链接，不推断必要署名、原文声明或官方身份；数据旁的短署名仍仅取明确 attribution。已发布地形的 attribution 由 terrain publication owner 绑定 manifest 的完整权利及 WorldDEM-30 派生声明、provider和DOI；manifest未记上游获取时间时保留未知，派生时间继续由地形数据自身提供。
 
 天体资料/来源复用 `celestial-information-presentation.ts` 解释已知W3/SDSS来源缺失：保留真实目录和已取得的独立来源，明确部分可用并提供既有资料重试；未准入的光学对象没有来源不是异常。断网回退的过期状态不清除已知来源缺失，恢复后有效回复才撤提示，来源/下载不能借其它出版hash。两消费者共享身份/出版查询及条件缓存，没有自动轮询或另建资料缓存；这项开发链不认证目标微信合成或实际Back恢复。
@@ -129,7 +131,7 @@ DAY 设置消费者沿用该入口当前采用源的图标角色、行尾图标�
 
 设置偏好同步由 `hooks/use-preferences-sync` 持有页面计时器、请求与重试生命周期，`state/app-store` 持有账户偏好和修订。卸载退休计时器及待重试意图，迟到回调不得清掉替换计时器、更新页面状态或发起新读取/保存；已派发保存的有效同账户回执仍可推进共享修订。只有请求起点的偏好对象仍是当前编辑意图、值匹配且回执修订不低于当前修订时才能清除dirty；跨My读回与新设置页编辑（包括改回原值）保留本机dirty，旧回执不得倒退修订或覆盖后编辑。账户变化拒绝旧回执，冲突恢复继续使用既有新鲜读回和本机编辑保留规则。
 
-共享本机状态的账户边界由`state/app-store`负责：偏好及修订、收藏、计划和地图恢复快照只在有效会话的同一账户下恢复；认证建立、失效和删除触发绑定或隐藏，换号时各自保留未同步快照。Map/Search的场景响应含账户相关资料，两处查询键随账户更换；Map收藏回填还要校验当前账户。私人计划消费者按账户隔离查询，在身份尚未确立时不得共用固定的匿名缓存键；成就统计沿用此规则。`hooks/use-account-resource-query`统一响应账户及重置代，只有native会话与store归属一致才显示该账户结果；未定身份的独有查询可沿既有API建立身份，但其私人缓存及关联刷新错误不显示。成就/计划列表沿`use-account-plans`读取原getPlans，My沿getUserLibrary保留计划、地点及偏好，昵称/头像按同一归属切换查询与私人投影，正常受控同账户再认证期间保留编辑组件；不等待主题变化或一秒时钟才隐藏旧内容。各页保留原显示/隐藏查询和时间刷新责任，My正常一秒倒计时不承担账户响应职责。共享`hooks/use-page-navigation`统一拥有当前页面、可见生命周期、单导航attempt、锁与局部失败反馈；私人三页通过`hooks/use-account-navigation`附加账户和重置代约束；换号、隐藏或卸载退休旧页面反馈并释放旧锁，旧终态不能清理后继pending；无法证明当前页面时不派发导航。My保留原悬浮失败提示和诊断，成功仅清起点捕获且仍为同一record的旧提示；已接受跳转的清理可跨正常页面隐藏，但账户/重置变化、卸载或新attempt永久退休此后效。已经派发的native导航不能取消。源码及内存渲染回归不认证真实微信换号。本人正式反馈的投稿历史也按发起请求的认证身份隔离查询，并在请求完成时确认同一身份；认证会话与store归属尚不一致时不得冻结历史到编辑页。已打开的编辑页换号后隐藏旧正文与审核状态，要求重新打开，并在保存动作处再次检查归属。首次认证时保留本次匿名浏览的活动地图选点/时间/视野，同时绑定新账号的私人资料；失效身份清空旧账号上下文，不能借此把旧账号地图资料交给新账号。无账户标记的旧全局快照不能据当前会话推断归属，首次覆写前单独隔离保存，不自动显示或上传给新账户；服务端当前账户资料照常读取。旧快照的人工归属/恢复途径尚未设计，不能把隔离当作数据迁移完成。当前官方模拟器已抽样检查两个本机内存服务身份的切换、原身份本机存储恢复，以及有待审投稿的账户切到无投稿账户并重开同一正式反馈页后不再显示旧审核状态；同一页面实例离开再返回的抽样中，已结束计划成就与投稿记录不显示旧账号内容，正式反馈页隐藏旧正文、审核标记、章节页签和固定提交栏，明确显示账号变化，只保留正文恢复入口并能返回地图；计划详情同实例换号后隐藏旧计划，明确显示账号变化，并可从状态卡返回“我的”。首次授权匿名选点仅有共享store回归，正式持久化、真实微信换号和真机仍未验证。
+共享本机状态的账户边界由`state/app-store`负责：偏好及修订、收藏、计划和地图恢复快照只在有效会话的同一账户下恢复；认证建立、失效和删除触发绑定或隐藏，换号时各自保留未同步快照。Map/Search的场景响应含账户相关资料，两处查询键随账户更换；Map收藏回填还要校验当前账户。私人计划消费者按账户隔离查询，在身份尚未确立时不得共用固定的匿名缓存键；成就统计沿用此规则。`hooks/use-account-resource-query`统一响应账户及重置代，只有native会话与store归属一致才显示该账户结果；未定身份时私人查询及其显式刷新均不建立身份；只有页面的主动快捷登录任务可建立会话，私人查询只消费已核验的归属，其未定身份缓存及关联刷新错误不显示。成就/计划列表沿`use-account-plans`读取原getPlans，My沿getUserLibrary保留计划、地点及偏好，昵称/头像按同一归属切换查询与私人投影，正常受控同账户再认证期间保留编辑组件；不等待主题变化或一秒时钟才隐藏旧内容。各页保留原显示/隐藏查询和时间刷新责任，My正常一秒倒计时不承担账户响应职责。共享`hooks/use-page-navigation`统一拥有当前页面、可见生命周期、单导航attempt、锁与局部失败反馈；私人三页通过`hooks/use-account-navigation`附加账户和重置代约束；换号、隐藏或卸载退休旧页面反馈并释放旧锁，旧终态不能清理后继pending；无法证明当前页面时不派发导航。My保留原悬浮失败提示和诊断，成功仅清起点捕获且仍为同一record的旧提示；已接受跳转的清理可跨正常页面隐藏，但账户/重置变化、卸载或新attempt永久退休此后效。已经派发的native导航不能取消。源码及内存渲染回归不认证真实微信换号。本人正式反馈的投稿历史也按发起请求的认证身份隔离查询，并在请求完成时确认同一身份；认证会话与store归属尚不一致时不得冻结历史到编辑页。已打开的编辑页换号后隐藏旧正文与审核状态，要求重新打开，并在保存动作处再次检查归属。首次认证时保留本次匿名浏览的活动地图选点/时间/视野，同时绑定新账号的私人资料；失效身份清空旧账号上下文，不能借此把旧账号地图资料交给新账号。无账户标记的旧全局快照不能据当前会话推断归属，首次覆写前单独隔离保存，不自动显示或上传给新账户；服务端当前账户资料照常读取。旧快照的人工归属/恢复途径尚未设计，不能把隔离当作数据迁移完成。当前官方模拟器已抽样检查两个本机内存服务身份的切换、原身份本机存储恢复，以及有待审投稿的账户切到无投稿账户并重开同一正式反馈页后不再显示旧审核状态；同一页面实例离开再返回的抽样中，已结束计划成就与投稿记录不显示旧账号内容，正式反馈页隐藏旧正文、审核标记、章节页签和固定提交栏，明确显示账号变化，只保留正文恢复入口并能返回地图；计划详情同实例换号后隐藏旧计划，明确显示账号变化，并可从状态卡返回“我的”。首次授权匿名选点仅有共享store回归，正式持久化、真实微信换号和真机仍未验证。
 
 收藏关系由 `hooks/use-favorite-mutation` 统一提交：同一账户/点位串行写入最新意图，快速反向立即更新显示，旧回执与 Map 场景回填均不得覆盖尚待确认的新意图；失败只恢复该点最后确认的关系并提供重试说明。首次匿名动作先绑定真实账户，离开账户永久取消旧任务的后续写入，即使随后切回同一账户也不续写。共享 `FavoriteStar` 以单一可反向进度呈现已采用DAY四分件，其他模式沿各主题回退，减弱动效取消旋转和位移；Map可见性输入为false时取消未结束计时器并静态呈现当前意图，其他卡片/详情默认输入保持原行为。Map背景由其局部动作owner独立呈现，不改变收藏关系或让星体等待背景；成功不重复Info。Map信息面板的原生收藏按钮用有效的ariaLabel表达保存中/选中/未选，不依赖当前Taro模板未投影的aria-pressed或aria-busy。
 
@@ -143,13 +145,15 @@ DAY 设置消费者沿用该入口当前采用源的图标角色、行尾图标�
 
 权限页一次定位的结果通知须更新 Map 同一定位消息身份：成功取得有效坐标后清除“尚未重新获取位置”的旧含义，说明地图尚未移动及地图定位会重新请求；明确拒绝和暂不可用各给正确失败文案/恢复。已有一次位置后再打开微信设置，授权回执也不能重新声称尚未取得位置。2026-09-25 官方 WEAPP 受控拒绝→设置开启→一次定位成功→Map 的同一流程中，通知显示“本次位置已取得”，原生 `show-location=true` 而地图中心/缩放不变；这是受控微信API回执的消费验证，实际系统定位许可与GPS蓝点仍待真机。共享队列按 Map 现有去重身份替换该消息，其他 owner 通知不受清除。
 
-2026-09-24 设置导出生产局部状态：本机内存账户的 JSON 在官方 WEAPP 私有文件区实际生成并读回，包含当前计划/投稿且排除会话凭据等内部材料；模拟器无法完成微信文件分享时，页面报告未分享并清理这次临时文件，保留重试入口。2026-09-25 补查发现分享成功回执原会留下完整 JSON，现设置 owner 在成功回执后也删除本次临时文件；若删除失败，明确提示私人文件仍在本机及微信清理入口。官方 WEAPP 受控分享回调期间回读文件存在、回调后目录确认清除；真实微信交付、正式存储和账户删除后身份恢复仍未验证。导出临时文件由设置 owner 管理，失败不得无提示遗留完整私人 JSON。
+设置导出由 `content/settings/use-account-export` 持有两阶段任务：先读取同账户服务端快照并生成本机私人 JSON，READY 后由用户明确分享到微信，不在准备时自动交付。取消或失败保留同一文件供原任务重试，关闭、交付成功或生命周期退休才清理。`account-export-cleanup` 的共享精确路径账本跨设置页卸载保留清理责任；后继页面只能重试删除旧路径，不能读取、显示或分享旧内容，待清理文件也阻止另起导出。清理失败提供“重试本机清理”，不能把未分享写成已交付。早期内存账户局部证据仍按其当时范围使用；现有真实微信身份的本地导出、原生文件读回与受控清理失败恢复不认证手机实际交付、冷启动恢复或账户删除后的身份恢复。
 
 设置导出动作由同一 Settings owner 跨越 API、原生文件写入与微信分享持有本次账户及页面生命周期。隐藏、卸载或离开账户永久退休旧动作，即使随后返回原页/原账户也不继续派发文件；匿名显式动作只允许首次真实账户绑定，文件仍须属于服务端快照中的同一身份。已派发的原生写入/分享不能撤回，必须等待其终态后清理本次独有文件，不能早删后让晚写入遗留，也不能删除后来页面生成的文件。退休动作不发布旧成功/失败或原生导航；真实清理失败保留不含账户、路径或内容的本机隐私警告。其内存回归覆盖真实生产处理器和生命周期订阅，不证明手机原生交付、冷启动文件恢复或存储保全。
 
 账户删除的本机收口由账户 API 调用既有 `app-store.resetAfterAccountDeletion(deletedUserId)`，清理回执中已删除身份的命名恢复快照及明确属于该身份的当前快照；当前投影属于后来账户时保留，未归属/隔离数据不能被推定为已删除身份。草稿、响应缓存和 QueryClient 均按已删除身份清理；缓存等待后复核身份与 pending 登录，不执行全局查询清空。删除确认与缓存终态先读取不改变状态的 native/store 归属，明确后继账户即使凭证过期也不能被 A 的会话读取解绑，或被认作本次成功清空。当前账户成功清空后，API/session owner 保留该动作读取的精确 installation 清理意图；pending 登录存在时不阻塞删除结果，在每次登录 finally 释放自身 pending 后再次核对。后继 native/store 身份或 installation 值改变即退休旧意图，未知槽及读取失败保守保留；旧登录终态不能清理新的 pending。本机清理未全部确认与服务端删除成功分别报告。原生 auth 槽仅明确归属已删除身份时移除，读失败或非空未知槽保留并标记本机清理不完整；已删除身份仍被会话 owner 拒绝，后继未知身份登录按真实返回身份判断，不能无条件取消。服务端成功回执始终保留，本机清理或同步观察者失败不能改报未删除。设置页拥有不可复活的删除 ticket，只接受 API 同步确认的本动作成功清空身份；外部离开账户（含返回原账户）、hide/unmount 退休结果，原生弹窗终态后再次复核才导航。真实处理器的端口回归不证明微信删除/换号、真机持久化或冷启动保全。
 
 设置清理缓存沿用既有 API 临时响应/查询与 app-store 本机状态两个 owner，并发启动且等待各自终态，正常与部分失败反馈保留。Settings 持有本次页面/账户结果 ticket：任意账户离开、hide 或 unmount 永久退休，返回原页面/原账户不复活旧反馈或失败滚动；已启动清理继续完成，mounted 时解除动作锁，卸载不更新 React。现有本机持久化账户围栏保留后继账户状态，这次页面结果修复不扩张缓存删除范围、不清远端或草稿，也不以端口回归认证手机清理。
+
+账户删除的服务端成功回执与本机清理结果分开：已收到成功回执后，“重试本机清理”只继续原清理，不重新认证或再次 DELETE；后继账户和新安装身份仍受原 API/session owner 保护。偏好首次尚未确认与有旧值但刷新失败分别呈现，未确认时不能把默认值冒充已保存的账户选择；后续恢复仍由既有偏好合并规则负责。
 - `profile-link-open-copy` always retains Copy when Try Open is gated, denied or fails. URL save/open rejects dangerous schemes and invalid destinations without losing the draft. Import controls preserve edited fields across parser failure/retry. `import-spot-association` treats `spot_id` and `spot_proposal_id` as disjoint; proposal submission never creates a formal point before review.
 - `miniapp-contribution-intake` retains one form/document identity from either Panel feedback or Map new-place entry. Inline validation is inserted only for the affected field and submit focuses the first invalid control without resetting route scroll. Existing-spot feedback prefills the formal location and allows deliberate address/point correction through the same location owner; it never requests the contributor’s current device location automatically. Upload and submit state changes are local, interruptible and preserve draft, media identity and the same idempotency key across transport failure/retry; only a durable pending receipt may replace the editable submit state. A sticky final action, if used after native keyboard/safe-area proof, owns one lane and an equal scroll inset and cannot coexist with another submit control.
 - New-spot intake asks first for name, a selected geographic point, openness, legal entry, night safety and gate/responsible-party contact status. Record region/address metadata from the location owner where available instead of asking the user to duplicate it. Safety/entry answers are structured and may explicitly be unknown at intake; unknown is not permission or verified safety. Contact supports a publishable number and purpose, no applicable gate, no public number, or unknown; never force a fake phone number or expose the contributor's personal number as a site contact. Public contact ownership/permission and provenance travel with the reviewed fact.
@@ -200,9 +204,11 @@ My头像/昵称的编辑草稿随账户及重置代隔离，正常失败保留�
 
 计划编辑的保存、删除、清单勾选与明确确认的恢复记录清理共用同一单次操作owner；换号/重置、普通HTTP等待中隐藏、真实离页或卸载退休旧请求后续、提示、编辑状态、草稿确认和导航回退，返回原A仍允许新动作。删除与另建确认只在已知原生Modal期间保留合法callback/show两序，不豁免账户或页面变化。合法管线可继续时，`announce`仍按同步的页面显示与mount状态抑制隐藏/卸载通知，不等待React状态更新。稳定目标不随本次成功安装新planId而自我退休，原生导航失败只能由仍当前的票派发回退。实际plan client/API/checklist以同一service scope检查会话等待、派发、权限重试及后续读取/失效；本账户已完成的合法cache更新不声称可撤回，也不授权退休页面继续动作。保存保留原durable body/key/planId/revision、事件与完整字段、FRESH核对及精确receipt ack，另一编辑版本的草稿不能被旧成功清掉；未知/退休结果保留恢复记录。明确“另建一份”仍按既有警告清理本账户全量恢复信息，取消/退休不清理。删除未知回执只说明需刷新核对，不承诺服务端计划未变。此处是生产责任状态，源码/RAM检查不认证真实微信Modal、身份、持久服务或整族验收。
 
-公开分享页只在私有`planId`创建入口复用中立AccountOperation；首次合法身份初始化与本操作同A再认证保持，实际createPlanShare以同service scope核会话等待/派发/权限恢复/回执。旧换号/重置、普通隐藏/离页/卸载不再签发或继续旧公开读取/ready海报；已派发能力不能声称撤回。页content epoch/独有AbortController负责公共读取，TOKEN/SPOT接收仍匿名，不增加私人账户门禁。当前可见页的私有创建退休进入原错误/显式重试，旧finally/cleanup不能取消后继frame；返回前台沿原重新校验，既有转发路径、失效/有效期/公共字段与海报责任保持。此为实现责任，真实微信接收/当前WEAPP、原生权限与部署仍须各自验证，票面/海报候选采用状态未改。
+计划保存等待和未知核验使完整输入只读，提醒名称、提前量、增删和清单项沿同一 disabled/handler 围栏；清单的通知意向不因此改变。显式保留草稿与“保留并退出”复用原 plan-draft owner，当前存储失败仍留在编辑页；列表从当前账户/地点范围的原草稿键提供继续入口。只读核验沿原操作票调用新增 save-result GET，精确回执与当前计划分别判断；旧 PUT 幂等回放契约保留给明确的原请求重试及旧客户端，不用查询动作触发写入。前端这条核验链需要包含该新增 GET 的 API，旧服务不可用时保留未知与原草稿，不伪造确认。
 
-分享海报由 `components/share-poster-owner` 串行管理当前公开快照的绘制、PNG预览、导出与原生相册交接；票面布局/颜色仍沿现有绘制owner，并未采用待审整组候选。当前预览通过同一2倍PNG与Image呈现，避免首次Canvas画面空白；保存即使先于首次预览也发布有效位图，原生相册拒绝不清掉已生成预览。`share-poster-files` 独占这次海报的PNG路径：SDK临时图经原生saveFile移动到本次独有的USER_DATA_PATH文件，预览与已发相册动作各持引用，导出/移动与删除等待真实原生终态、同路径复用不被旧删除清掉。隐藏/换内容/卸载退休旧预览，迟到导出不安装旧图，排队导出发起前复核当前代；已发文件获取仍完成必要转移/清理，图片解码回执还核本次预览身份。清理失败与真实微信相册能力仍按实际运行证据限定，不能由源码或模拟器初次显示推出真机保存通过。
+公开分享页只在私有`planId`创建入口复用中立AccountOperation；首次合法身份初始化与本操作同A再认证保持，实际createPlanShare以同service scope核会话等待/派发/权限恢复/回执。旧换号/重置、普通隐藏/离页/卸载不再签发或继续旧公开读取/ready海报；已派发能力不能声称撤回。页content epoch/独有AbortController负责公共读取，TOKEN/SPOT接收仍匿名，不增加私人账户门禁。当前可见页的私有创建退休进入原错误/显式重试，旧finally/cleanup不能取消后继frame；返回前台沿原重新校验，既有转发路径、失效/有效期/公共字段与海报责任保持。DAY接收页采用现行[journey-sharing资源](../../../../../docs/design-resources/wechat-miniapp/shared/journey-sharing-2026-09-22/index.html)，其他主题沿原呈现；真实微信好友接收、原生权限与部署仍须各自验证。
+
+分享海报由 `components/share-poster-owner` 串行管理当前公开快照的绘制、PNG预览、导出与原生相册交接。DAY的 `PublicShareCard` 与 `adopted-share-poster` 共用 `public-share-presentation` 的公开字段白名单：PLAN完整起止日期/时间/时区、事件及缺失含义、有效期和来源许可；SPOT独立开放/停车/视野、进入与安全、关闭风险及来源。日食事件即使缺来源也保留完整观测安全警告，不从装饰地形图推定实际地形资料。预览通过同一2倍PNG与Image呈现；显式重新生成和返回分享页沿原代次围栏，其他主题保留既有绘制。保存即使先于首次预览也发布有效位图，原生相册拒绝不清掉已生成预览。`share-poster-files` 独占这次海报的PNG路径：SDK临时图经原生saveFile移动到本次独有的USER_DATA_PATH文件，预览与已发相册动作各持引用，导出/移动与删除等待真实原生终态、同路径复用不被旧删除清掉。隐藏/换内容/卸载退休旧预览，迟到导出不安装旧图，排队导出发起前复核当前代；`share-poster-icons` 的有界原生解码随当前帧退休，迟到图标不绘制旧图；已发文件获取仍完成必要转移/清理，图片解码回执还核本次预览身份。清理失败与真实微信相册能力仍按实际运行证据限定，不能由源码或模拟器显示推出真机保存通过。
 
 ## Shared Image Viewer And Disclosure
 
@@ -246,6 +252,21 @@ The viewer measures its actual `RootPortal` viewport for contained-image opening
 
 远端草稿回填由既有 contribution 表单 owner 用同一可编辑字段、intake 和媒体投影更新本机已保存基线；数据库对象属性顺序及兼容旧字段的投影不会产生未保存修改或虚假的本机恢复副本。真正的后续编辑仍进入原离开确认与本机恢复职责，不改变账户隔离、手动远端保存或提交规则。
 
+创建与正式反馈的未知提交在完整表单顶部保留只读核验入口，原字段、照片及提交底部同时冻结。各自 `submission-result-client` 通过既有 `api-client` transport/session/account scope 调用受认证的 submit-result GET，以原账户、原标识、原 subject 和操作类型读取精确回执，再分读 FRESH 当前记录或当前正式 baseline；旧回执不回滚最新审核状态。普通创建的恢复标识继续由 `contribution-submit-retry` 持久化，正式反馈保留当前页的原 intent，离开不声称取消请求或承诺冷启动恢复。GET 未找到回执仍是未知，只在此后提供明确“重试原提交”，沿用同一个 key/id/revision 或原 formal body，不保存修改、不生成新标识。实际发送、权限续期、缓存失效与账户退休仍归原 service owner；前端需要包含这两个新增 GET 的服务，旧服务不可用时保留未知，不用 POST 回放冒充查询。
+
 创建编辑的自定义返回和地图内关闭沿同一离开确认职责：取消保留当前输入。DAY 正式反馈及新增独立编辑的右侧关闭呈现复用 `CustomNav` 原返回执行、授权交接与失败恢复；其他调用者保留默认返回呈现。启用本机恢复的独立编辑页在明确放弃后，由本机恢复 owner 清除并退休该次输入，后续计时、隐藏或卸载不能重新写回；清除失败不授权离页，同页后续新编辑仍可进入本机恢复。地图内编辑沿原禁用本机持久化规则；两入口均不推进或删除远端保存基线。系统返回提示的真实平台回执和操作仍单独验证。
 
 创建/反馈记录列表不读取、改写或删除编辑表单的本机恢复副本，不被列表中不可见的待恢复输入阻止返回；继续编辑进入原独立表单后仍由表单负责恢复和离开确认。
+## 2026-10-15 登录、消息与加载的补充要求
+
+本次新增视觉范围限于云观星内部以外的真实消费者；云观星入口保留，内部仍沿其原采用与实现责任。
+
+用户要求可见的微信快捷登录组件，采用轻量、可关闭的表达，复用已有微信会话链。不增加手机号、头像或定位前置，不伪造微信系统权限窗；未确立账户时不展示假的私人记录。新增视觉已获用户认可，当前资源与消费者由[完整场景入口](../../../../../docs/design-resources/wechat-miniapp/shared/real-scenarios/README.md)及各页ADOPTED管理。生产是否尊重主动登录与访客选择须由既有api-client/账户查询owner落实，不能只新增入口而由背景请求抹掉用户选择。导出、删账户等原同身份再核验边界保持。
+
+普通Map无数据沿既有顶部浮动通知责任，点击或自动退场，不保留又大又无有效信息的常驻卡。真实失败仍在相应入口保留可用恢复控制。各真实加载/处理消费者须复用公共加载图形与状态，完成、取消、隐藏或卸载按owner停止，减少动态效果提供静态表达；不造百分比或把已有独立内容全部遮住。当前资源采用三点作为内容/普通按钮等待、短弧作为小按钮等待，由同一状态视觉owner呈现；既有共享通知可见计时与生命周期规则继续控制生产实现。设计原型的可点击终态与capture固定示例不代替微信回执、真实持久化、实际业务功能或目标运行验收。
+
+公共等待图形由 `components/loading-indicator` 呈现，`StatusPanel` 与 `SoftButton` 消费实际等待状态，业务锁、取消和结果确认仍由原请求 owner 控制；页面隐藏暂停装饰动画，减少动态效果静态显示。普通无动作浮动通知整条可点关闭，仍复用原队列、可见计时与当前页面宿主；附恢复动作的通知保留独立操作。Map 真空只发布短消息，原生地图和观星点请求失败保留各自重试；地点资料的显式取消即时退休该次回执，与可被图层切换打断的普通面板关闭分别处理。云观星内部继续使用原通知和等待表达。My 昵称/头像弹层复用现有 `primary-navigation-cover`，防止自定义 TabBar 遮挡弹层动作，按弹层生命周期归还。
+
+快捷登录由 `components/wechat-login` 与页面级 `use-wechat-login` 复用真实微信会话；可关闭及离页取消，权限读取、微信 code、服务回执和原任务继续均受同一意图约束。`api-client` 的访客门禁阻止后台建立身份，显式登录在微信能力未开启时不退回安装身份；既有同身份续期、删除与草稿围栏保留。账户绑定将旧观察编辑的退休与新身份一次性发布，避免半绑定通知。直接私人路由由 `content/account-entry` 在首次入场前阻止编辑器挂载，后续编辑/续期仍归原表单 owner；公开 TOKEN/SPOT 接收不加门禁。My、Map、设置私有动作和正式点消费者复用这一责任，Map/Settings 各保留自己的唯一原生返回层。
+
+一次定位与登录分别执行。Map 取得有效坐标后保留原视口，由用户明确“移动到本次位置”才应用；取消、后来地图意图、隐藏、换号或重置退休旧结果。Settings 的使用偏好仍是 ASK_ONCE / MANUAL_ONLY，不冒充系统授权；其明确定位或权限设置动作通过当前 opener 的一次 EventChannel 进入原定位页，普通路由或 URL 参数不触发 GPS。发起页面与接收页面各保持身份、地图重置代及生命周期围栏，正常导航隐藏允许有效交接，过期发起者不能在新身份下继续。微信设置返回仅回读权限，不把允许当成已获得坐标。

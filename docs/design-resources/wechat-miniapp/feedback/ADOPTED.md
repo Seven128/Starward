@@ -1,5 +1,21 @@
 # 观星点反馈与远端多草稿 · 当前采用资源
 
+## 当前采用范围与场景入口（2026-10-15）
+
+用户已认可本次新增设计，并要求原有采用部分保持完整。当前统一入口为 [完整场景审阅](../shared/real-scenarios/review.html#14E)、[单场景预览](../shared/real-scenarios/index.html?scene=14E) 与 [场景总览](../shared/real-scenarios/board.html)；[场景清单](../shared/real-scenarios/catalogue.mjs)现有111项，数量表示资源导航范围，不表示验证通过数量。本文件继续拥有本页采用范围。
+
+当前新增/反馈状态直接进入原 [map.html](../shared/comfortable-scale-2026-09-22/preview/map.html) 与 [map-editor.mjs](../shared/comfortable-scale-2026-09-22/preview/map-editor.mjs) 的完整共享表单，由 [editor-scenes.mjs](../shared/comfortable-scale-2026-09-22/preview/editor-scenes.mjs) 增量挂接。地点/到达/设施/说明四章节、横向枚举选择、原字段行、停车/洗手间/现场三组照片、原提交与存草稿/离开职责保留。公共号码用途/出处/公开许可与本次地图位置确认只补在相关字段旁。
+
+未修改反馈使用原反馈模式和 baseline 差异；冲突、不可编辑、提交中/未知、审核中、未通过与已上线保留各自语义。未知结果保留输入、禁止重复提交，核验后使用同一完整冻结表单；反馈冻结继续显示原值→修改。冻结长内容沿已批准的原值列宽换行，短值至少52px行高、补充说明至少112px且随全文增高，空值仍保持原占位语义；其 owner 仍是 candidate.mjs/refinements.css 与原表单。
+
+主执行者已查看相应当前场景分屏；同步与检查状态由[共享总入口](../shared/comfortable-scale-2026-09-22/README.md#当前同步与验证边界)统一记录。本轮截图入口修正、独立复核、本地替换和 Stitch 六组新版同步已完成；两端被替代资源清理已完成，Stitch刷新后保留14个必要资源，当前六组图像原始尺寸与本地一致。本页不单独登记最终远端节点或全局通过，仍被完整源引用的有效母版和依赖继续保留。
+
+后续续改与实现按当前可编辑源及本页范围执行。本轮设计修正的生产迁移、目标 WEAPP、真机及真实业务功能尚未验收；原有效证据保持各自范围，原 Goal 的真实数据与全部未完成要求不缩减。云观星内部排除，原主题/设备及暂停的大文字范围不扩展。
+
+## 保留的采用基础与历史记录
+
+以下按各自日期与范围保留；本轮新增状态和当前资源导航以上文为准。
+
 2026-10-11用户批准冻结只读长内容完整展开：按原值列宽自动换行，短值保持原字体、标签列及至少52px行高；补充说明保留原背景/圆角/内边距和至少112px高度，随全文增高。空值仍用原禁用控件的占位提示，填写示例不作为已提交正文。编辑态和短暂busy、枚举、照片及审核状态保持。当前可编辑实现位于[完整源 candidate.mjs](../shared/comfortable-scale-2026-09-22/preview/candidate.mjs)与[refinements.css](../shared/comfortable-scale-2026-09-22/preview/refinements.css)，原editor继续拥有冻结和表单数据；[长字段](../shared/comfortable-scale-2026-09-22/review/feedback-readonly-access.png)与[长说明](../shared/comfortable-scale-2026-09-22/review/feedback-readonly-notes.png)为390×844日间资源参考。此为经批准的本地增量，不声称原始Stitch生成或生产验收。
 
 2026-10-10 用户指定使用 Stitch 最新资源；日间新增/反馈表单与记录视觉优先按[舒适尺度完整源](../shared/comfortable-scale-2026-09-22/review.html#feedback)及其 CSS/JS 级联。下方旧源保留完整源实际引用的结构、业务/交互及未覆盖范围，旧静态图不再是整页基准。未交付主题沿原 Context；资源采用不证明生产符合。

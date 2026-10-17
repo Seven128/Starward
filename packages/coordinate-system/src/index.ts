@@ -1,4 +1,8 @@
 export { mercatorY, latitudeForMercatorY, WEB_MERCATOR_MAX_LATITUDE, WEB_MERCATOR_CIRCUMFERENCE_M } from "./mercator.ts";
+export { DISPLAY_RASTER_GRID, displayRasterBounds, displayRasterRegionForBounds, displayRasterRegionKey, validateDisplayRasterRegion } from "./raster-grid.ts";
+export type { DisplayRasterRegion, RasterBounds } from "./raster-grid.ts";
+export { displayRasterWindowForBounds, displayRasterWindowBounds, displayRasterWindowKey } from "./raster-grid.ts";
+export type { DisplayRasterWindow } from "./raster-grid.ts";
 export type Wgs84Coordinate = { lat: number; lon: number; system: "WGS84" };
 export type Gcj02Coordinate = { lat: number; lon: number; system: "GCJ-02" };
 
@@ -94,9 +98,7 @@ export function wgs84ToGcj02(input: Wgs84Coordinate): Gcj02Coordinate {
   return { ...projected, system: "GCJ-02" };
 }
 
-export function gcj02ToWgs84(input: Gcj02Coordinate): Wgs84Coordinate {
-  validate(input.lat, input.lon);
-  if (outsideGcj02Coverage(input.lat, input.lon)) return { lat: input.lat, lon: input.lon, system: "WGS84" };
+function inverseGcj02Projection(input: Gcj02Coordinate) {
   let lat = input.lat;
   let lon = input.lon;
   for (let iteration = 0; iteration < 12; iteration += 1) {
@@ -107,9 +109,32 @@ export function gcj02ToWgs84(input: Gcj02Coordinate): Wgs84Coordinate {
     lon -= lonError;
     if (Math.abs(latError) < 1e-9 && Math.abs(lonError) < 1e-9) break;
   }
-  if (outsideGcj02Coverage(lat, lon))
+  return { lat, lon, system: "WGS84" as const };
+}
+
+export function gcj02ToWgs84(input: Gcj02Coordinate): Wgs84Coordinate {
+  validate(input.lat, input.lon);
+  if (outsideGcj02Coverage(input.lat, input.lon)) return { lat: input.lat, lon: input.lon, system: "WGS84" };
+  const projected = inverseGcj02Projection(input);
+  if (outsideGcj02Coverage(projected.lat, projected.lon))
     return { lat: input.lat, lon: input.lon, system: "WGS84" };
-  return { lat, lon, system: "WGS84" };
+  return projected;
+}
+
+/** Offline raster geometry needs continuous branches across a footprint edge.
+ * Never substitute a branch for the canonical point converter in product data. */
+export function wgs84ToGcj02RasterBranches(input: Wgs84Coordinate) {
+  validate(input.lat, input.lon);
+  return { identity: { lat: input.lat, lon: input.lon, system: "GCJ-02" as const },
+    shifted: { ...projectGcj02(input.lat, input.lon), system: "GCJ-02" as const } };
+}
+
+export function gcj02ToWgs84RasterBranches(input: Gcj02Coordinate) {
+  validate(input.lat, input.lon);
+  const shifted = inverseGcj02Projection(input);
+  const useShifted = !outsideGcj02Coverage(input.lat, input.lon) && !outsideGcj02Coverage(shifted.lat, shifted.lon);
+  return { identity: { lat: input.lat, lon: input.lon, system: "WGS84" as const }, shifted,
+    selected: useShifted ? "SHIFTED" as const : "IDENTITY" as const };
 }
 
 export function distanceMeters(left: Pick<Wgs84Coordinate, "lat" | "lon">, right: Pick<Wgs84Coordinate, "lat" | "lon">): number {

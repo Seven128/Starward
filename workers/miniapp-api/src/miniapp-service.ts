@@ -66,6 +66,8 @@ import {
   type SpotSummary,
   type TerrainOverlayData,
   type TerrainOverlayRequest,
+  type TerrainHorizonData,
+  type TerrainHorizonRequest,
   type UserId,
   type UserPreferences,
   type Wgs84Point,
@@ -144,7 +146,7 @@ import {
   validateExternalUrl,
 } from "./security.ts";
 import { createWeatherPort } from "./weather-provider.ts";
-import { readMapCloudForecast, projectMapCloudLayer, mapCloudForecastEnds, type MapCloudSample } from "./map-cloud-forecast.ts";
+import { readMapCloudForecast, projectMapCloudLayer, mapCloudForecastEnds, mapCloudEvidence, mapCloudSnapshot, type MapCloudSample } from "./map-cloud-forecast.ts";
 import { QWeatherRecentWeatherAdapter, type RecentWeatherPort } from "./recent-weather-provider.ts";
 import { QWeatherAirQualityAdapter, type AirQualityPort } from "./air-quality-provider.ts";
 import { SpotEnvironmentService } from "./spot-environment-service.ts";
@@ -152,6 +154,9 @@ import { derivePlanReminderSchedules, publicReminderStatus } from "./plan-remind
 import { readFile } from "node:fs/promises";
 import { terrainPublicationSource, terrainRequestIsCovered, terrainUnavailable } from "./terrain-publication.ts";
 import { TerrainService, type TerrainPort } from "./terrain-service.ts";
+import { terrainHorizonData } from "./terrain-horizon-data.ts";
+import { NightLightService, nightLightUnavailable } from "./night-light-service.ts";
+import { terrainBounds } from "./terrain-request.ts";
 import { WEATHER_DEADLINES } from "./provider-deadline.ts";
 import {
   AstronomicalEventCatalogOwner,
@@ -634,6 +639,7 @@ export class MiniappService {
   readonly placeSearch: PlaceSearchPort;
   readonly spotEnvironment: SpotEnvironmentService;
   readonly terrain: TerrainPort;
+  readonly nightLight: NightLightService;
   private readonly weather: WeatherPort;
   readonly outbox = new MemoryOutbox();
   private readonly usageStore: PostgresVendorUsageStore | undefined;
@@ -678,8 +684,15 @@ export class MiniappService {
         throw new Error("optical_trial_scope_invalid");
     }
     this.repository = input.repository;
+    this.nightLight = new NightLightService(input.repository, input.config.nightLightPublicationRoot);
     this.weather = input.weather;
-    this.terrain = input.terrain ?? new TerrainService();
+    this.terrain = input.terrain ?? new TerrainService({
+      ...(input.config.terrainPublicationRoot ? { publishedDirectory: input.config.terrainPublicationRoot } : {}),
+      measured: value => {
+        const { publicationId, ...metrics } = value;
+        this.telemetry.event("terrain_raster_derived", { ...metrics, assetSha256: publicationId.split(":").at(-1) });
+      },
+    });
     this.config = input.config;
     this.reminderSubscriptions = input.repository instanceof PostgresMiniappRepository
       ? new PostgresReminderSubscriptionStore(input.repository.pool) : null;
@@ -784,6 +797,7 @@ export class MiniappService {
 
   async onModuleDestroy() {
     this.terrain.close();
+    this.nightLight.close();
     await this.usageStore?.close();
     await this.repository.close();
     this.astronomy.clearCaches();
@@ -1001,6 +1015,7 @@ export class MiniappService {
   }
 
   async getTerrainOverlay(input: TerrainOverlayRequest, signal?: AbortSignal): Promise<ApiEnvelope<TerrainOverlayData>> {
+    const terrainStartedAt = performance.now();
     const centerWgs84 = gcj02ToWgs84({
       lat: input.center.latitude,
       lon: input.center.longitude,
@@ -1009,19 +1024,23 @@ export class MiniappService {
     const [terrainRead, lightRead] = await Promise.allSettled([
       this.terrain.getPublication(input, signal),
       input.radiusKm !== undefined && this.repository.kind === "postgres" && this.config.darkSkyDatasetVersion !== "UNAVAILABLE"
-      ? this.repository.listDarkSkyGridCells({
-          datasetVersion: this.config.darkSkyDatasetVersion,
-          center: { system: "WGS84", latitude: centerWgs84.lat, longitude: centerWgs84.lon },
-          radiusKm: input.radiusKm,
-        })
-      : Promise.resolve([]),
+      ? (async () => {
+          const fixed = await this.nightLight.layer(this.config.darkSkyDatasetVersion, terrainBounds(input), signal);
+          const cells = fixed ? [] : await this.repository.listDarkSkyGridCells({
+            datasetVersion: this.config.darkSkyDatasetVersion,
+            center: { system: "WGS84", latitude: centerWgs84.lat, longitude: centerWgs84.lon }, radiusKm: input.radiusKm,
+          });
+          return { fixed, cells };
+        })()
+      : Promise.resolve({ fixed: null, cells: [] }),
     ]);
     signal?.throwIfAborted();
     const publication = terrainRead.status === "fulfilled" ? terrainRead.value : null;
     const terrainCovered = publication !== null && terrainRequestIsCovered(publication, input);
     const terrainReadFailed = terrainRead.status === "rejected" || Boolean(publication?.sourceIssues?.some(issue => issue.reason !== "NOT_FOUND"));
     const terrainSource = terrainCovered ? terrainPublicationSource(publication) : null;
-    const darkSkyCells = lightRead.status === "fulfilled" ? lightRead.value : [];
+    const darkSkyCells = lightRead.status === "fulfilled" ? lightRead.value.cells : [];
+    const fixedLight = lightRead.status === "fulfilled" ? lightRead.value.fixed : null;
     const colors: Record<DarkSkyGridCellRecord["productBand"], string> = {
       VERY_LOW: "#87714A99", LOW: "#A1845299", MODERATE: "#BE9B6199", HIGH: "#D1B57799", VERY_HIGH: "#E0C99899",
     };
@@ -1037,10 +1056,10 @@ export class MiniappService {
         unit: cell.radiance.unit,
       };
     });
-    const source = darkSkyCells[0]?.source ?? null;
+    const source = fixedLight?.source ?? darkSkyCells[0]?.source ?? null;
     const data: TerrainOverlayData = {
       ...(terrainCovered ? {
-      state: publication.validPixelPercent < 99.9 ? "PARTIAL" : "AVAILABLE",
+      state: publication.validPixelPercent < 99.9 || publication.sourceIssues?.length ? "PARTIAL" : "AVAILABLE",
       purpose: input.purpose,
       requestedRadiusKm: input.radiusKm ?? null,
       effectiveRadiusKm: input.radiusKm ?? null,
@@ -1053,6 +1072,8 @@ export class MiniappService {
       derivedAt: publication.derivedAt,
       coordinateTransformVersion: publication.transformVersion,
       imageUrl: `/v2/terrain/assets/${encodeURIComponent(publication.image.file)}`,
+      imageBytes: publication.image.byteSize,
+      imageSha256: publication.image.sha256,
         imageStyle: publication.imageStyle ?? "ELEVATION_COLOR",
       imageBoundsGcj02: publication.boundsGcj02,
       elevationM: publication.elevationM,
@@ -1064,26 +1085,51 @@ export class MiniappService {
       } : terrainUnavailable(input, terrainRead.status === "rejected" ? "地形数据读取失败，请重试。" : "当前地区暂无可获取的地形数据。")),
       ...(terrainReadFailed ? { failureCode: "TERRAIN_READ_FAILED" as const } : {}),
       lightPollution: {
-        state: lightCells.length ? "PARTIAL" : "UNAVAILABLE",
+        state: fixedLight ? fixedLight.state === "FRESH" ? "AVAILABLE" : fixedLight.state === "UNAVAILABLE" ? "UNAVAILABLE" : "PARTIAL"
+          : lightCells.length ? "PARTIAL" : "UNAVAILABLE",
         ...(lightRead.status === "rejected" ? { failureCode: "LIGHT_READ_FAILED" as const } : {}),
-        datasetVersion: lightCells.length ? darkSkyCells[0]!.datasetVersion : this.config.darkSkyDatasetVersion,
+        datasetVersion: fixedLight?.datasetVersion ?? (lightCells.length ? darkSkyCells[0]!.datasetVersion : this.config.darkSkyDatasetVersion),
         cells: lightCells,
-        legend: lightCells.length ? [
+        ...(fixedLight?.raster ? { raster: fixedLight.raster } : {}),
+        legend: fixedLight?.legend ?? (lightCells.length ? [
           { label: "相对较低", color: "#87714A" },
           { label: "相对中等", color: "#BE9B61" },
           { label: "相对较高", color: "#E0C998" },
-        ] : [],
+        ] : []),
         source,
         coverageLabel: input.viewportBounds ? "当前请求只读取地形；年度夜光由地图的光污染图层独立读取。"
-          : lightCells.length ? "年度卫星夜光粗网格，仅作同数据集内相对比较。" : lightRead.status === "rejected" ? "光污染数据读取失败，请重试。" : "当前范围没有已发布的年度卫星夜光网格。",
+          : fixedLight?.precision ?? (lightCells.length ? "年度卫星夜光粗网格，仅作同数据集内相对比较。" : lightRead.status === "rejected" ? "光污染数据读取失败，请重试。" : "当前范围没有已发布的年度卫星夜光网格。"),
       },
     };
-    return envelope(data, data.state === "UNAVAILABLE" && lightCells.length === 0 ? "UNAVAILABLE" : "PARTIAL", [terrainSource, source].filter((item): item is SourceSummary => item !== null),
+    this.telemetry.event("terrain_metadata_read", { milliseconds: performance.now() - terrainStartedAt, state: data.state,
+      assetSha256: publication?.image.sha256 ?? null, fixedWindow: Boolean(publication?.fixedWindow), sourceObjects: publication?.sources.length ?? 0 });
+    return envelope(data, data.state === "UNAVAILABLE" && lightCells.length === 0 && !fixedLight?.raster ? "UNAVAILABLE" : "PARTIAL", [terrainSource, source].filter((item): item is SourceSummary => item !== null),
       [...data.limitations, ...(lightRead.status === "rejected" ? [data.lightPollution.coverageLabel] : [])]);
   }
 
+  async getTerrainHorizon(input: TerrainHorizonRequest, signal?: AbortSignal): Promise<ApiEnvelope<TerrainHorizonData>> {
+    const startedAt = performance.now();
+    let data: TerrainHorizonData;
+    try { data = terrainHorizonData(input.center, await this.terrain.getHorizon(input, signal)); }
+    catch {
+      signal?.throwIfAborted();
+      data = terrainHorizonData(input.center, null, "READ_FAILED");
+    }
+    this.telemetry.event("terrain_horizon_read", { milliseconds: performance.now() - startedAt, state: data.state,
+      sourceObjects: data.sourceProof.length, knownSectors: data.model?.knownSectors ?? 0 });
+    return envelope(data, data.state === "AVAILABLE" ? "FRESH" : data.state === "PARTIAL" ? "PARTIAL" : "UNAVAILABLE",
+      data.source ? [data.source] : [], data.limitations);
+  }
+
   async getTerrainAsset(file: string, signal?: AbortSignal) {
-    return this.terrain.getAsset(file, signal);
+    const startedAt = performance.now(), asset = await this.terrain.getAsset(file, signal);
+    this.telemetry.event("terrain_asset_read", { milliseconds: performance.now() - startedAt, bytes: asset.bytes.length,
+      assetSha256: createHash("sha256").update(asset.bytes).digest("hex") });
+    return asset;
+  }
+
+  async getNightLightAsset(datasetVersion: string, file: string, signal?: AbortSignal) {
+    return this.nightLight.asset(datasetVersion, file, signal);
   }
 
   async getMapScene(input: {
@@ -1095,6 +1141,7 @@ export class MiniappService {
     viewport?: {
       center: { latitude: number; longitude: number };
       zoom: number;
+      bounds?: { west: number; south: number; east: number; north: number };
     };
     preferences?: SpotRankingPreferences;
     userId?: UserId | null;
@@ -1170,7 +1217,7 @@ export class MiniappService {
     // Start this independent spatial read inside the same overall Map budget.
     // Catalogue/filter work cannot remove or delay its geographic responsibility.
     const cloudWork = layerKind === "CLOUD" && cloudCenter
-      ? readMapCloudForecast(this.weather, cloudCenter, context, weatherDeadlineAt)
+      ? readMapCloudForecast(this.weather, cloudCenter, context, weatherDeadlineAt, input.viewport?.bounds)
       : Promise.resolve([]);
     const evaluatedAtMs = Date.now();
     const routeOrigin =
@@ -1251,6 +1298,13 @@ export class MiniappService {
     // Excluded candidates can become UNKNOWN when their hourly evidence expires.
     // Carry that boundary even when there are no visible rows or polygons.
     const cloudSamples = await cloudWork;
+    const cloudAcquisition = mapCloudSnapshot(cloudSamples, input.viewport?.bounds ?? null);
+    if (cloudAcquisition) this.telemetry.event("map_cloud_sampled", {
+      samples: cloudSamples.length, ...cloudAcquisition.requestBudget,
+      viewportAware: Boolean(input.viewport?.bounds),
+      mixedRetrievalTimes: cloudAcquisition.mixedRetrievalTimes,
+      unavailableSamples: cloudAcquisition.cells.filter(cell => cell.quality !== "AVAILABLE").length,
+    });
     const cloudEnds = mapCloudForecastEnds(cloudSamples, startedAt);
     const forecastEnds = [...cloudEnds, ...Object.values(evaluations)
       .map((evaluation) => Date.parse(evaluation.weatherAt ?? "") + 3_600_000)
@@ -1272,7 +1326,7 @@ export class MiniappService {
       : null;
     // Validate current publication facts and weather before reusing the map
     // representation. Context UUID alone cannot establish evidence freshness.
-    cacheKey += ":evidence:" + hash({ spots: queryMatched, population: allCandidates, favoriteSpotIds, evaluations, filterEvidence, cloudSamples,
+    cacheKey += ":evidence:" + hash({ spots: queryMatched, population: allCandidates, favoriteSpotIds, evaluations, filterEvidence, cloudSamples: mapCloudEvidence(cloudSamples),
       revisions: Object.values(reports).map((report) => report.data.context.dataRevision) });
     const cached = await this.cache.get<ApiEnvelope<MapSceneData>>(cacheKey);
     if (cached) {
@@ -1297,16 +1351,18 @@ export class MiniappService {
           ? "PostGIS published formal spots"
           : "explicit test fixture repository",
     };
-    const darkSkyCells =
-      layerKind === "LIGHT_POLLUTION" && this.repository.kind === "postgres"
-        ? await this.repository.listDarkSkyGridCells({
-            datasetVersion: this.config.darkSkyDatasetVersion,
-            ...(viewportCenterWgs84 && radiusKm
-              ? { center: viewportCenterWgs84, radiusKm }
-              : {}),
-          })
-        : [];
-    const layer = layerFor({
+    let fixedLightLayer: MapLayerData | null = null;
+    let darkSkyCells: readonly DarkSkyGridCellRecord[] = [];
+    if (layerKind === "LIGHT_POLLUTION" && this.repository.kind === "postgres") {
+      try {
+        fixedLightLayer = await this.nightLight.layer(this.config.darkSkyDatasetVersion, input.viewport?.bounds);
+        if (!fixedLightLayer) darkSkyCells = await this.repository.listDarkSkyGridCells({
+          datasetVersion: this.config.darkSkyDatasetVersion,
+          ...(viewportCenterWgs84 && radiusKm ? { center: viewportCenterWgs84, radiusKm } : {}),
+        });
+      } catch { fixedLightLayer = nightLightUnavailable(this.config.darkSkyDatasetVersion, true); }
+    }
+    const layer = fixedLightLayer ?? layerFor({
       kind: layerKind,
       cloudLayer,
       selectedAtUtc: context.selectedAtUtc,
@@ -1376,13 +1432,14 @@ export class MiniappService {
       ...browsingTimezoneSources(context),
       ...allCandidates.map((spot) => spot.source),
       ...Object.values(reports).flatMap((report) => report.sources),
-      ...cloudSamples.flatMap(sample => sample.forecast?.sources ?? []),
+      ...cloudSamples.flatMap(sample => sample.forecast?.sources ?? (sample.forecast ? [sample.forecast.source] : [])),
       ...(layer.source ? [layer.source] : []),
     ]);
     const result = envelope<MapSceneData>(
       {
         context,
         spots: ranked.spots,
+        cloudSnapshot: cloudAcquisition,
         forecastValidUntil,
         evaluations: visibleEvaluations,
         filterEvidence: visibleFilterEvidence,
@@ -1414,7 +1471,7 @@ export class MiniappService {
         timeFrames,
       },
       Object.values(reports).every((report) => report.dataState === "FRESH") &&
-        activeUnavailable.length === 0 && (layerKind !== "CLOUD" || layer.state === "FRESH")
+        activeUnavailable.length === 0 && (!["CLOUD", "LIGHT_POLLUTION"].includes(layerKind) || layer.state === "FRESH")
         ? "FRESH"
         : "PARTIAL",
       sources,
@@ -1439,7 +1496,7 @@ export class MiniappService {
       contextId: context.contextId,
       layer: layerKind,
     });
-    await this.cache.set(cacheKey, result, 120);
+    if (!layer.failureCode) await this.cache.set(cacheKey, result, 120);
     await this.#assertPrivateContextCurrent(context, input.userId);
     // Repository/cache waits are part of delivery too. A re-projection shares
     // the original weather budget; it must not silently buy another deadline.

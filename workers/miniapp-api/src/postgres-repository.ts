@@ -606,6 +606,18 @@ export class PostgresMiniappRepository
     return result.rows.map((row) => ({ spotId: row.spot_id, source: clone(row.source) }));
   }
 
+  async getPublishedDarkSkyDataset(datasetVersion: string) {
+    if (datasetVersion === "UNAVAILABLE") return null;
+    const result = await this.pool.query<{ dataset_version: string; radiance_sha256: string; coverage_sha256: string;
+      source: SourceSummary; payload: unknown }>(
+      `SELECT p.dataset_version, p.radiance_sha256, p.coverage_sha256, p.payload, s.payload AS source
+         FROM dark_sky_dataset_publications p JOIN data_source_registry s ON s.source_id = p.source_id
+        WHERE p.dataset_version = $1 AND p.state = 'PUBLISHED'`, [datasetVersion]);
+    const row = result.rows[0];
+    return row ? { datasetVersion: row.dataset_version, radianceSha256: row.radiance_sha256,
+      coverageSha256: row.coverage_sha256, source: clone(row.source), payload: clone(row.payload) } : null;
+  }
+
   async listDarkSkyGridCells(input: {
     datasetVersion: string;
     center?: { system: "WGS84"; latitude: number; longitude: number };

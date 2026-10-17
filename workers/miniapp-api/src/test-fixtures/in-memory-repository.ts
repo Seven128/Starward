@@ -106,6 +106,9 @@ export class InMemoryTestRepository implements MiniappRepositoryPort {
   async listDarkSkyGridCells() {
     return [];
   }
+  async getPublishedDarkSkyDataset() {
+    return null;
+  }
   async searchSpotCandidates() {
     return [];
   }

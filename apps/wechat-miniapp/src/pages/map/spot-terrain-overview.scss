@@ -6,7 +6,7 @@
 .spot-terrain__ticks { position:relative; height:28rpx; margin: -12rpx 17rpx 0; color:var(--text-tertiary); font-size:18rpx; }
 .spot-terrain__ticks > text { position:absolute; top:0; transform:translateX(-50%); }
 .spot-terrain__map { position:relative; width:100%; aspect-ratio:1; overflow:hidden; border-radius:24rpx; background:var(--terrain-bg,#e8ede5); isolation:isolate; }
-.spot-terrain__image { position:absolute; max-width:none; max-height:none; }
+.spot-terrain__image,.spot-terrain__light-image { position:absolute; max-width:none; max-height:none; }
 .spot-terrain__light-cell { position:absolute; z-index:2; border:1rpx solid var(--terrain-line,rgba(255,255,255,.38)); }
 .spot-terrain__ring { position:absolute; z-index:3; left:50%; top:50%; border:2rpx dashed var(--terrain-line,rgba(77,104,91,.34)); border-radius:50%; transform:translate(-50%,-50%); pointer-events:none; }
 .spot-terrain__ring--outer { width:calc(100% - 4rpx); height:calc(100% - 4rpx); }
@@ -32,7 +32,7 @@
 .spot-terrain__toggle text:first-child { color:var(--text-primary); font-size:24rpx; font-weight:600; }
 .spot-terrain__toggle text:last-child { color:var(--text-tertiary); font-size:19rpx; }
 .spot-terrain__toggle > .semantic-icon:last-child { padding:6rpx; border-radius:50%; background:var(--choice-selected-label); color:var(--surface); }
-.spot-terrain__legend { --brightness:.5; display:flex; justify-content:center; gap:22rpx; color:var(--text-secondary); font-size:20rpx; }
+.spot-terrain__legend { --brightness:.5; display:flex; flex-wrap:wrap; justify-content:center; gap:12rpx 22rpx; color:var(--text-secondary); font-size:20rpx; }
 .spot-terrain__legend > view { display:flex; align-items:center; gap:7rpx; }
 .spot-terrain__legend > view > view { width:16rpx; height:16rpx; border-radius:50%; }
 .spot-terrain__legends { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12Px; }
@@ -95,7 +95,7 @@
   --terrain-line:var(--text-primary);
 }
 .theme-observation {
-  .spot-terrain__image,.spot-terrain__light-cell,.spot-terrain__legend > view > view,.spot-terrain__elevation-key > view {
+  .spot-terrain__image,.spot-terrain__light-image,.spot-terrain__light-cell,.spot-terrain__legend > view > view,.spot-terrain__elevation-key > view {
     filter:grayscale(1) brightness(var(--brightness,.12)) sepia(1) saturate(6) hue-rotate(340deg) saturate(2);
   }
 }

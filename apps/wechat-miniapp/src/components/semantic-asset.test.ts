@@ -25,7 +25,7 @@ function renderer(route: string, mode = "DAY") {
 
 test("main-page adopted bitmaps keep geometry and accessible names through the shared native loader", () => {
   const render = renderer("pages/my/index");
-  for (const name of ["images", "plan-suv", "clock"]) {
+  for (const name of ["images", "plan-suv", "clock", "sun", "telescope", "share"]) {
     const icon = render({ name, decorative: false, label: "进入资料", className: "owner-size" });
     assert.equal(icon.type, "packaged-icon");
     assert.equal(icon.props.kind, name);
@@ -60,7 +60,7 @@ test("native bitmap input admits only packaged roles and withdraws an invalid pr
   });
   let src = "";
   const host = { setData: (value: { src: string }) => { src = value.src; } };
-  for (const kind of ["temperature", "wind", "droplet", "warning", "low-cloud", "images", "plan-suv", "clock"]) {
+  for (const kind of ["temperature", "wind", "droplet", "warning", "low-cloud", "images", "plan-suv", "clock", "sun", "telescope", "share"]) {
     definition.properties.kind.observer.call(host, kind);
     assert.equal(src, `/spot/assets/b-icons/${kind}--day--default.png`);
   }

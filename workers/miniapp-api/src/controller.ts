@@ -18,6 +18,7 @@ import {
 import type { FastifyReply } from "fastify";
 import { celestialObjectPosition } from "./celestial-object-position.ts";
 import { validateTerrainRequest } from "./terrain-request.ts";
+import { HORIZON_RADIUS_M } from "./terrain-horizon-model.ts";
 import {
   assertFilterState,
   DEEP_SKY_SOURCE_FINITE_IMAGE_VERSION,
@@ -127,6 +128,7 @@ function parseViewport(input: {
   centerLat?: string;
   centerLng?: string;
   zoom?: string;
+  bounds?: string;
 }) {
   const values = [input.centerLat, input.centerLng, input.zoom];
   if (
@@ -139,13 +141,17 @@ function parseViewport(input: {
     input.centerLng === undefined ||
     input.zoom === undefined
   )
-    return undefined;
+    { if (input.bounds !== undefined) throw new Error("map_viewport_incomplete"); return undefined; }
+  const parts = input.bounds?.split(",");
+  if (parts && (parts.length !== 4 || parts.some(part => !part.trim()))) throw new Error("map_viewport_invalid");
+  const bounds = parts ? { west: Number(parts[0]), south: Number(parts[1]), east: Number(parts[2]), north: Number(parts[3]) } : undefined;
   const viewport = {
     center: {
       latitude: Number(input.centerLat),
       longitude: Number(input.centerLng),
     },
     zoom: Number(input.zoom),
+    ...(bounds ? { bounds } : {}),
   };
   if (
     !Number.isFinite(viewport.center.latitude) ||
@@ -157,6 +163,10 @@ function parseViewport(input: {
     viewport.zoom > 20
   )
     throw new Error("map_viewport_invalid");
+  if (bounds && (!Object.values(bounds).every(Number.isFinite) || bounds.west < -180 || bounds.east > 180
+    || bounds.south <= -90 || bounds.north >= 90 || bounds.west >= bounds.east || bounds.south >= bounds.north
+    || viewport.center.longitude < bounds.west || viewport.center.longitude > bounds.east
+    || viewport.center.latitude < bounds.south || viewport.center.latitude > bounds.north)) throw new Error("map_viewport_invalid");
   return viewport;
 }
 
@@ -236,6 +246,7 @@ export class MiniappController {
     @Query("zoom") zoom?: string,
     @Query("preferences") preferences?: string,
     @Headers("authorization") authorization?: string,
+    @Query("viewportBounds") viewportBounds?: string,
   ) {
     const userId = await this.service.auth.optionalPrincipal(authorization);
     const parsedFilters = parseFilters(filters);
@@ -244,6 +255,7 @@ export class MiniappController {
       ...(centerLat === undefined ? {} : { centerLat }),
       ...(centerLng === undefined ? {} : { centerLng }),
       ...(zoom === undefined ? {} : { zoom }),
+      ...(viewportBounds === undefined ? {} : { bounds: viewportBounds }),
     });
     return this.service.getMapScene({
       contextId: required(contextId, "observation_context_required"),
@@ -281,6 +293,20 @@ export class MiniappController {
     return withTerrainRead(reply, signal => this.service.getTerrainOverlay(request, signal));
   }
 
+  @Get("terrain/horizon")
+  async terrainHorizon(
+    @Query("centerLat") centerLat?: string,
+    @Query("centerLng") centerLng?: string,
+    @Res({ passthrough: true }) reply?: FastifyReply,
+  ) {
+    if (typeof centerLat !== "string" || typeof centerLng !== "string" || !centerLat.trim() || !centerLng.trim())
+      throw new BadRequestException("terrain_horizon_request_invalid");
+    const center = { system: "GCJ02" as const, latitude: Number(centerLat), longitude: Number(centerLng) };
+    try { validateTerrainRequest({ purpose: "SPOT", center, radiusKm: HORIZON_RADIUS_M / 1000 }); }
+    catch { throw new BadRequestException("terrain_horizon_request_invalid"); }
+    return withTerrainRead(reply, signal => this.service.getTerrainHorizon({ center }, signal));
+  }
+
   @Get("terrain/assets/:file")
   async terrainAsset(@Param("file") file: string, @Res() reply: FastifyReply) {
     const asset = await withTerrainRead(reply, signal => this.service.getTerrainAsset(decodeURIComponent(file), signal));
@@ -288,6 +314,17 @@ export class MiniappController {
       .header("cache-control", "public, max-age=604800, immutable")
       .header("x-content-type-options", "nosniff")
       .header("x-starward-terrain-publication", asset.publicationId)
+      .send(asset.bytes);
+  }
+
+  @Get("night-light/assets/:datasetVersion/:file")
+  async nightLightAsset(@Param("datasetVersion") datasetVersion: string, @Param("file") file: string, @Res() reply: FastifyReply) {
+    const asset = await withTerrainRead(reply, signal => this.service.getNightLightAsset(datasetVersion, file, signal));
+    if (!asset) throw new NotFoundException("nightlight_asset_not_found");
+    reply.header("content-type", "image/png")
+      .header("cache-control", "public, max-age=604800, immutable")
+      .header("x-content-type-options", "nosniff")
+      .header("x-starward-night-light-publication", asset.publicationId)
       .send(asset.bytes);
   }
 

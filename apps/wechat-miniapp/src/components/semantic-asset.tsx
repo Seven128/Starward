@@ -193,7 +193,7 @@ export function SemanticIcon({
     const forecastKind = presentation === "forecast" && (name === "temperature" || name === "wind" || name === "droplet" || name === "warning" || name === "conditions")
       ? name === "conditions" ? "low-cloud" : name : null;
     // Keep icon-only controls local; these deferred ornaments have text peers.
-    const mainKind = state === "default" && !packageAssetPrefix() && (name === "images" || name === "plan-suv" || name === "clock")
+    const mainKind = state === "default" && !packageAssetPrefix() && (name === "images" || name === "plan-suv" || name === "clock" || name === "sun" || name === "telescope" || name === "share")
       ? name : null;
     const packagedKind = forecastKind ?? mainKind;
     if (packagedKind) {

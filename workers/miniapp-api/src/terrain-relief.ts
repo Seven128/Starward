@@ -4,7 +4,7 @@
  * Unlike elevation colour, a relief overlay leaves level ground transparent.
  */
 export function terrainReliefRgba(elevations: Float32Array, size: number, spacingM: number | ((row: number) => { x: number; y: number }),
-  shadowRgb: readonly [number, number, number], legacyContrast = false) {
+  shadowRgb: readonly [number, number, number], legacyContrast = false, pixelOrigin = { x: 0, y: 0 }) {
   const rgba = new Uint8Array(size * size * 4);
   const lightAzimuth = 315 * Math.PI / 180;
   const color = legacyContrast ? shadowRgb : shadowRgb.map(channel => Math.round(channel * 0.4));
@@ -15,7 +15,7 @@ export function terrainReliefRgba(elevations: Float32Array, size: number, spacin
     const index = row * size + column, center = elevations[index];
     if (!Number.isFinite(center)) {
       // A level valid pixel and missing data must remain visually distinct.
-      const stripe = (row + column) % 12 < 2;
+      const stripe = (row + column + pixelOrigin.x + pixelOrigin.y) % 12 < 2;
       rgba.set([125, 130, 125, stripe ? 90 : 0], index * 4);
       continue;
     }

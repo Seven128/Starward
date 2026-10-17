@@ -1,7 +1,8 @@
 import {eclipseMarkup,articleMarkup} from './event-details.mjs';
-import {sourceCard} from './source-ui.mjs';
+import {sourceCard} from './source-ui.mjs?v=20261015-scenes';
 // Editable design prototype. Shared by the map and plan review consumers; no production API.
 import {events} from '/docs/design-resources/wechat-miniapp/shared/comfortable-scale-2026-09-22/preview/events.mjs';
+import {sceneId,status} from './scene-ui.mjs';
 const icons=new URL('/docs/design-resources/wechat-miniapp/shared/icons/adopted/b-matte-256/assets/',location.origin);
 export const icon=(name,cls='')=>`<img class="${cls}" src="${icons}${name}--day--default.png" alt="">`;
 const short=d=>d.slice(5).replace('-','.');
@@ -73,9 +74,11 @@ export function createEventModal(){
   }
   function renderList(){
     list.innerHTML='<p class="catalogue">2026 天文事件 <span>按月份</span></p>';
+    const pending=scenario==='loading'||scenario==='list-error';$('.event-clear').disabled=pending;$('.event-confirm').disabled=pending;
+    if(scenario==='loading'){list.append(status('正在读取事件目录','','','loading'));return;}
     if(scenario==='empty'||scenario==='list-error'){
       list.innerHTML+=`<div class="event-empty">${icon('meteor')}<h3>${scenario==='empty'?'暂无可展示的事件':'事件暂时读取失败'}</h3><p>关闭后可继续浏览原页面。</p>${scenario==='list-error'?'<button class="retry-list">重试</button>':''}</div>`;
-      list.querySelector('.retry-list')?.addEventListener('click',()=>{scenario='available';renderList();});return;
+      list.querySelector('.retry-list')?.addEventListener('click',()=>{scenario='available';renderList();});if(scenario==='empty')selectionUI();return;
     }
     let month='';
     for(const e of events){
@@ -96,6 +99,7 @@ export function createEventModal(){
   return {open(options={}){
     const wasOpen=dialog.open;closing=false;if(!wasOpen){motion.forEach(a=>a.cancel());motion=[];dialog.dataset.phase='closed';}
     mode=options.mode||'browse';selection=options.value||null;onConfirm=options.onConfirm;context={...(options.context||{})};scenario=options.scenario||'available';opener=options.trigger||document.activeElement;active=null;returnFocus=null;
-    dialog.dataset.mode=mode;dialog.classList.remove('show-detail');list.inert=false;detail.inert=true;detail.innerHTML='';renderList();list.scrollTop=0;$('.event-back').hidden=true;$('#event-title').textContent='天文事件';$('.event-footer').hidden=mode!=='select-one';if(!dialog.open)dialog.showModal();animate(true).then(current=>{if(current&&!closing)dialog.dataset.phase='open';});$('.event-close').focus({preventScroll:true});const initial=events.find(e=>e.id===options.initialOccurrenceId);if(initial)openDetail(initial,list.querySelector('[data-event="'+initial.id+'"] button'));
+    if(sceneId==='13F')scenario='loading';if(sceneId==='13F-empty')scenario='empty';if(sceneId==='13F-failed')scenario='list-error';if(sceneId==='13G')scenario='error';
+    dialog.dataset.mode=mode;dialog.classList.remove('show-detail');list.inert=false;detail.inert=true;detail.innerHTML='';renderList();list.scrollTop=0;$('.event-back').hidden=true;$('#event-title').textContent='天文事件';$('.event-footer').hidden=mode!=='select-one';if(!dialog.open)dialog.showModal();animate(true).then(current=>{if(current&&!closing)dialog.dataset.phase='open';});$('.event-close').focus({preventScroll:true});const initial=events.find(e=>e.id===options.initialOccurrenceId)||(sceneId==='13G'?events.find(e=>e.kind==='METEOR_SHOWER'):null);if(initial)openDetail(initial,list.querySelector('[data-event="'+initial.id+'"] button'));
   },close};
 }

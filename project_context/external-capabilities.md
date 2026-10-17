@@ -29,7 +29,7 @@
 | 地图、定位、选点、导航交接 | 微信默认原生地图与公开平台能力；自有正式点搜索；投稿和计划起点使用平台选点，不买独立全国POI/逆地理/路线接口。底图与自有UI主题分开 | [地图、搜索与计划](areas/main/screen-contracts/wechat-miniapp/map-and-finder.md#external-location-and-travel-capabilities) |
 | 自动路线 | 当前不接道路距离、分交通方式时长、道路折线、道路范围筛选和自动倒推出发/到达；保留手动计划、交通偏好、停车/入口事实、直线距离与外部导航 | 同上 |
 | 天气 | 和风唯一主预报，保留未来逐小时总云量及对应时间尺/地图；官方预警、AQ为各自独立类别。移除小程序分层云、多模型和免费非商业源回退 | [天气含义](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#selected-weather-evidence)、[服务组合](architecture/runtime-and-domain.md#mini-program-external-capability-migration) |
-| 地形 | Spot保留指定免费许可的Copernicus DEM GLO-30 Public AWS COG 2021及2–50公里查看，覆盖内复用大湾区85km旧发布；Map整幅视窗使用Terrain Tiles Terrarium金字塔，沿同一TerrainService执行/缓存/资产owner，源证明与许可分别保存。未取得或无效像素仍缺测，不恢复逐方向分析。清单或本机读取不等于每像素完整、部署可达或运行验收 | [地形owner](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#地形以可获得数据为边界)、[来源与运行责任](../data-pipelines/terrain/README.md) |
+| 地形 | Spot保留指定免费许可的Copernicus DEM GLO-30 Public AWS COG 2021及2–50公里查看，覆盖内复用大湾区85km旧发布；Map整幅视窗使用Terrain Tiles Terrarium金字塔，沿同一TerrainService执行/缓存/资产owner，源证明与许可分别保存。未取得或无效像素仍缺测；复杂方向控件继续取消，2026-10-17批准的只读山体轮廓复用同一免费版数值源及内部计算，不新增供应商或街景接口。清单或本机读取不等于每像素完整、部署可达或运行验收 | [地形owner](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#地形以可获得数据为边界)、[来源与运行责任](../data-pipelines/terrain/README.md) |
 | 光污染 | 许可覆盖的EOG年度VIIRS夜光；年度卫星夜光估算，不等于实时天空亮度、精确波特尔等级或实测SQM | [地形与夜光发布](architecture/runtime-and-domain.md#mini-program-terrain-and-directional-light-evidence) |
 | 日月行星、晨昏、月相、几何窗口 | 复用Astronomy Engine和现有天文服务；算法计算不保证现场可见性 | [天文架构](architecture/runtime-and-domain.md) |
 | 云观星引擎 | 2026-09-22用户采用扩展现有原生Canvas/WebGL＋TWGL＋Astronomy Engine方案，对齐Stellarium Web能力；保留自主修改和自有业务代码的许可边界 | [选型理由与重评条件](#云观星引擎选型)、[能力目标](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星对齐-stellarium-web) |
@@ -42,6 +42,15 @@
 天气最多240小时的公开能力不保证当前账号和旧适配已取得相同范围；第11–15天仍可使用天文和计划，天气按实际覆盖缺失。过去保存的预报、地区历史再分析、现场实测分开。地图云量必须来自真实查询点或网格，不能把少量点伪装成全国连续高清云场。主地图保留地形开关与LIGHT/TOTAL_CLOUD选择，点位地形图保留地形/光污染两个独立开关，不因报告简写取消现有地形入口。
 
 现有地点身份、正式点发布、草稿/提案隔离、安全动作检查、计划版本、来源披露和数据失败恢复继续适用。支付、短信、原生推送、产品内AI、雷达、卫星云动画、科研级视宁度、相机AR和全天无限高清不因云观星引擎选型而新增。2026-09-14合规迁移中对空间站/彗星动态轨道的排除不再作为后续云观星能力对齐的上限；新目标见[云观星对齐Stellarium Web](areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#云观星对齐-stellarium-web)，具体数据覆盖、权益和验证仍须落实。
+
+## 地图图层增强的采用边界
+
+用户在2026-10-16提供地形、年度夜光与云量调研并授权评估采用；下列是目标决定，不表示已实现或已远端发布。原生Map、道路/地名/POI、北向无俯视、地形独立开关及LIGHT/TOTAL_CLOUD选择保持。
+
+- 地形与年度夜光的静态显示采用固定空间单元、LOD与版本化栅格发布，复用既有GroundOverlay、请求/文件生命周期；任意viewport合成可保留兼容和必要fallback，不作为静态资产唯一身份。源数值、显示派生和许可归属分离，Map Terrain Tiles与Spot GLO-30当前来源不因这一决定被冒称同一产品或立即替换。固定资产的图内GCJ变换、halo/有效掩膜和尺度继续由[坐标及地形owner](architecture/runtime-and-domain.md#mini-program-terrain-and-directional-light-evidence)持有。
+- 年度光污染沿EOG VNL V2.2的合法输入、radiance/cf_cvg与原发布事务，目标是地图/地点/筛选共享dataset、质量和统计版本及固定跨区域色义。现有AOI分位数等级是有声明的旧方法；迁移需新版本，不能原地改旧发布或只换图例。数值聚合先于着色，零与缺测分开，不新增SQM/Bortle推算。
+- 云量继续QWeather点小时预报；增强为有界视窗采样、完整来源快照和实际请求预算，不引入全国连续格点承诺或恢复分层云。供应商返回的整段小时序列跨选定时刻复用，纯云量采样不应附带无消费者的预警请求；预警现有消费者保持独立。自有快照记录每点标识/采集时间/有效时刻与年龄策略，不把tag、取得时间或快照hash解释为模式起报批次。源声明继续按[官方小时接口](https://dev.qweather.com/docs/api/weather/weather-hourly-forecast/)与[元数据](https://dev.qweather.com/docs/resource/metadata/)执行。
+- 优先复用既有rasterio/GDAL生态作离线发布与制图对照，Node保留现有服务责任；不据报告直接采购CDN、部署Python在线集群或引入小程序GIS引擎。固定粒度、样式、缓存/预取和性能参数由有限实际路径决定，技术候选数字不作为新增硬门槛。对象存储/CDN准备不等于实际部署授权，原数据获取、署名与发布条件继续适用。
 
 ## 云观星引擎选型
 

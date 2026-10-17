@@ -16,29 +16,32 @@ function mountMeasurement(selectedProposal: object | null, panelIdentityHeight =
   assert.equal(effects.length, 1, "exercise the actual Map native measurement effect");
   const effect = effects[0]!;
   const layouts: { identity: string; height: number }[] = [];
+  const focusFrames: unknown[] = [];
   const selectors: string[] = [];
   const ticks: (() => void)[] = [];
   const deliveries: ((rows: unknown[]) => void)[] = [];
   const panelSnapCache = { current: null as null | { identity: string; geometry: unknown } };
   let invalidations = 0;
-  const query = { select(selector: string) { selectors.push(selector); return query; }, boundingClientRect() { return query; }, exec(callback: (rows: unknown[]) => void) { deliveries.push(callback); } };
+  const query = { select(selector: string) { selectors.push(selector); return query; }, boundingClientRect() { return query; }, exec(callback: (rows: unknown[]) => void) { deliveries.push(rows => callback([...rows, { top: 0, height: 762 }])); } };
   const environment = { panelSnapCache, bottomPresentation: "spot-panel", pageVisible: true, panelPhase: "idle", selectedProposal,
+    spotMapFocus: { version: 1 }, spotFocusLayout: "layout-a", setSpotFocusFrame(value: unknown) { focusFrames.push(value); },
     panelIdentityHeight, panelGeometryIdentity: selectedProposal ? "proposal:owner:a" : "formal:spot:a",
     panelIdentityMinimumHeight, readPanelSnapGeometry, invalidatePanelGeometry() { invalidations++; panelSnapCache.current = null; },
     setPanelIdentityLayout(value: { identity: string; height: number }) { layouts.push({ identity: value.identity, height: value.height }); },
     panelViewportSize: () => ({ width: 390, height: 762 }), Taro: { nextTick(callback: () => void) { ticks.push(callback); }, createSelectorQuery: () => query } };
   const cleanup = vm.runInNewContext(ts.transpileModule(`(${effect.arguments[0]!.getText(source)})()`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, environment) as () => void;
-  return { selectors, layouts, ticks, deliveries, panelSnapCache, cleanup, invalidations: () => invalidations,
+  return { selectors, layouts, focusFrames, ticks, deliveries, panelSnapCache, cleanup, invalidations: () => invalidations,
     dependencies: effect.arguments[1]!.getText(source) };
 }
 
-const rulers = [{ height: 368 }, { height: 297 }, { height: 368 }, { height: 661 }];
+const rulers = [{ top: 394, height: 368 }, { height: 297 }, { height: 368 }, { height: 661 }];
 const content = [{ top: 400, height: 20 }, { top: 420, height: 78 }, { height: 50 }, { top: 572, height: 66.5 }];
 
 test("Map measures the formal route prefix and rebuilds rulers after installing its floor", () => {
   const mounted = mountMeasurement(null);
   mounted.ticks.shift()!();
-  assert.equal(mounted.selectors.at(-1), ".spot-panel__block--route");
+  assert.equal(mounted.selectors.at(-2), ".spot-panel__block--route");
+  assert.equal(mounted.selectors.at(-1), ".native-map");
   mounted.deliveries.shift()!([...rulers, ...content]);
   assert.deepEqual(mounted.layouts, [{ identity: "formal:spot:a", height: 297 }]);
   assert.equal(mounted.invalidations(), 1);
@@ -50,6 +53,7 @@ test("Map measures the formal route prefix and rebuilds rulers after installing 
   stable.ticks.shift()!(); stable.deliveries.shift()!([...rulers, ...content]);
   assert.equal(stable.panelSnapCache.current?.identity, "formal:spot:a");
   assert.deepEqual(stable.layouts, []);
+  assert.deepEqual(JSON.parse(JSON.stringify(stable.focusFrames)), [{ version: 1, layout: "layout-a", top: 0, height: 762, visibleBottom: 394 }]);
 });
 
 test("private proposals retain the existing identity floor without a fabricated route", () => {

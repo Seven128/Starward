@@ -1,6 +1,6 @@
 import {journeys,summarize} from './journey-data.mjs';
 import {spots} from '/docs/design-resources/wechat-miniapp/plan/revisions/three-requirements-2026-09-13/preview/plan-model.mjs';
-import {data,copyButton} from '../comfortable-scale-2026-09-22/preview/source-ui.mjs';
+import {data,copyButton} from '../comfortable-scale-2026-09-22/preview/source-ui.mjs?v=20261015-scenes';
 const query=new URLSearchParams(location.search),page=['trip','spot'].includes(query.get('page'))?query.get('page'):'achievements';
 const root='../comfortable-scale-2026-09-22/preview/';
 const $=s=>document.querySelector(s),all=s=>[...document.querySelectorAll(s)];
@@ -67,3 +67,4 @@ if(['error','login','expired','unpublished'].includes(state)){
  box.querySelector('button').onclick=()=>{if(state==='error'){const u=new URL(location.href);u.searchParams.delete('state');location.href=u.href;}else location.href=root+(state==='login'?'my.html':'map.html?map=1&browse=1');};
 }
 document.body.dataset.journeyReady='true';
+if(query.has('design_scene')){const {mountSharingScenes}=await import('./scene-sharing.mjs?v=20261015-current');mountSharingScenes();}

@@ -1,6 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import type { SourceSummary, TerrainElevationColorEncoding, TerrainOverlayData, TerrainOverlayRequest } from "@starward/miniapp-contracts";
+import { displayRasterBounds, displayRasterWindowBounds, displayRasterRegionKey, displayRasterWindowKey,
+  type DisplayRasterRegion, type DisplayRasterWindow } from "@starward/coordinate-system";
 
 export const COPERNICUS_DEM_LICENSE_URL = "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM";
 export const COPERNICUS_DEM_DOI = "10.5270/ESA-c5d3d65";
@@ -35,7 +37,10 @@ export interface TerrainPublicationSourceObject {
 }
 
 export interface TerrainPublication {
-  schemaVersion: "starward-terrain-publication-v1" | "starward-terrain-publication-v2" | "starward-terrain-publication-v3";
+  schemaVersion: "starward-terrain-publication-v1" | "starward-terrain-publication-v2" | "starward-terrain-publication-v3" | "starward-terrain-publication-v4";
+  fixedRaster?: DisplayRasterRegion & { haloPixels: 1; sourceSetSha256: string; styleVersion: "horn-igor-relief-v3" };
+  fixedWindow?: DisplayRasterWindow & { haloPixels: 1; sourceSetSha256: string; styleVersion: "horn-igor-relief-v3";
+    cells: { publicationId: string | null; file: string | null; x: number; y: number }[] };
   publicationId: string;
   dataset: string;
   sourceProvider: string;
@@ -57,6 +62,7 @@ export interface TerrainPublication {
   imageStyle?: "ELEVATION_COLOR" | "RELIEF_OVERLAY";
   elevationColorEncoding?: TerrainElevationColorEncoding;
   validPixelPercent: number;
+  validPixelCount?: number;
   image: { file: string; sha256: string; byteSize: number; width: number; height: number };
   sources: TerrainPublicationSourceObject[];
   unavailableSourceTiles: string[];
@@ -75,9 +81,9 @@ export function validateTerrainPublication(value: TerrainPublication) {
   const bounds = value.boundsGcj02;
   const center = value.centerGcj02;
   const image = value.image;
-  const viewportProduct = value.schemaVersion === "starward-terrain-publication-v3";
+  const viewportProduct = value.schemaVersion === "starward-terrain-publication-v3" || value.schemaVersion === "starward-terrain-publication-v4";
   if (
-    !["starward-terrain-publication-v1", "starward-terrain-publication-v2", "starward-terrain-publication-v3"].includes(value.schemaVersion)
+    !["starward-terrain-publication-v1", "starward-terrain-publication-v2", "starward-terrain-publication-v3", "starward-terrain-publication-v4"].includes(value.schemaVersion)
     || value.coordinateSystem !== "GCJ02"
     || !nonEmpty(value.publicationId)
     || !nonEmpty(value.dataset)
@@ -113,7 +119,7 @@ export function validateTerrainPublication(value: TerrainPublication) {
   if (viewportProduct) {
     if (value.licenseUrl !== TERRARIUM_LICENSE_URL || value.doi !== null
       || value.modifiedProductNotice !== TERRARIUM_MODIFIED_NOTICE || value.imageStyle !== "RELIEF_OVERLAY"
-      || value.sources.length > 12 || !value.limitations.includes(TERRARIUM_LIABILITY_NOTICE)
+      || value.sources.length > (value.fixedWindow ? 64 : 12) || !value.limitations.includes(TERRARIUM_LIABILITY_NOTICE)
       || !Array.isArray(value.sourceIssues) || value.sourceIssues.length !== value.unavailableSourceTiles.length
       || value.sourceIssues.some(issue => !value.unavailableSourceTiles.includes(issue.tileId)
         || !["NOT_FOUND", "READ_FAILED", "UNSUPPORTED_SOURCE"].includes(issue.reason))
@@ -124,6 +130,27 @@ export function validateTerrainPublication(value: TerrainPublication) {
       || value.attributionNotice !== terrariumAttribution(value.sources.flatMap(source => source.contributors!)))
       throw new Error("terrain_viewport_publication_invalid");
   }
+  if (value.schemaVersion === "starward-terrain-publication-v4") {
+    const grid = value.fixedRaster ?? value.fixedWindow;
+    if (!grid || grid.haloPixels !== 1 || grid.styleVersion !== "horn-igor-relief-v3"
+      || Boolean(value.fixedRaster) === Boolean(value.fixedWindow) || !sha256Pattern.test(grid.sourceSetSha256)
+      || image.width !== ("span" in grid ? grid.span : grid.columns) * grid.tilePixels
+      || image.height !== ("span" in grid ? grid.span : grid.rows) * grid.tilePixels
+      || Object.entries("span" in grid ? displayRasterBounds(grid) : displayRasterWindowBounds(grid))
+        .some(([key, coordinate]) => Math.abs(coordinate - bounds[key as keyof typeof bounds]) > 1e-12)
+      || grid.sourceSetSha256 !== terrainSourceSetHash(value.sources, value.sourceIssues)
+      || !Number.isSafeInteger(value.validPixelCount) || value.validPixelCount! <= 0 || value.validPixelCount! > image.width * image.height
+      || Math.round(value.validPixelCount! / (image.width * image.height) * 10000) / 100 !== value.validPixelPercent)
+      throw new Error("terrain_fixed_publication_invalid");
+    if (value.fixedWindow && (value.fixedWindow.cells.length !== value.fixedWindow.columns * value.fixedWindow.rows
+      || value.fixedWindow.cells.some((cell, index) => cell.x !== value.fixedWindow!.x + index % value.fixedWindow!.columns
+        || cell.y !== value.fixedWindow!.y + Math.floor(index / value.fixedWindow!.columns)
+        || Boolean(cell.file) !== Boolean(cell.publicationId)))) throw new Error("terrain_fixed_publication_invalid");
+    const key = "span" in grid ? `terrarium-cn-v2-fixed-${displayRasterRegionKey(grid)}` : `terrarium-cn-v2-window-${displayRasterWindowKey(grid)}`;
+    if (image.file !== `${key}-${grid.sourceSetSha256}-${image.sha256}.png`
+      || value.publicationId !== `terrain:${key}:${grid.sourceSetSha256}:${image.sha256}`
+      || value.transformVersion !== "starward-coordinate-system-gcj02-mercator-v1") throw new Error("terrain_fixed_publication_invalid");
+  } else if (value.fixedRaster || value.fixedWindow) throw new Error("terrain_fixed_publication_invalid");
   if (value.schemaVersion === "starward-terrain-publication-v2" && value.sources.some(source =>
     source.hashScope !== "RETRIEVED_RANGES" || !nonEmpty(source.etag)
     || !Array.isArray(source.ranges) || !source.ranges.length
@@ -149,6 +176,12 @@ export function validateTerrainPublication(value: TerrainPublication) {
   return value;
 }
 
+export function terrainSourceSetHash(sources: readonly TerrainPublicationSourceObject[], issues: TerrainPublication["sourceIssues"] = []) {
+  return createHash("sha256").update(JSON.stringify({ sources: sources.map(source => [source.tileId, source.sha256, source.etag])
+    .sort((a, b) => String(a[0]).localeCompare(String(b[0]), "en")),
+    issues: issues.map(issue => [issue.tileId, issue.reason]).sort((a, b) => a[0]!.localeCompare(b[0]!, "en")) })).digest("hex");
+}
+
 export async function terrainPublication() {
   publicationPromise ??= readFile(manifestUrl, "utf8").then((text) => {
     return validateTerrainPublication(JSON.parse(text) as TerrainPublication);
@@ -160,7 +193,7 @@ export async function terrainPublication() {
 }
 
 export function terrainPublicationSource(publication: TerrainPublication): SourceSummary {
-  const viewportProduct = publication.schemaVersion === "starward-terrain-publication-v3";
+  const viewportProduct = publication.schemaVersion === "starward-terrain-publication-v3" || publication.schemaVersion === "starward-terrain-publication-v4";
   const sourceUrl = viewportProduct ? TERRARIUM_DATASET_URL : `https://doi.org/${publication.doi}`;
   const liability = viewportProduct ? TERRARIUM_LIABILITY_NOTICE : COPERNICUS_DEM_LIABILITY_NOTICE;
   return {
@@ -181,7 +214,7 @@ export function terrainPublicationSource(publication: TerrainPublication): Sourc
     retrievedAt: null,
     validFrom: null,
     validTo: null,
-    state: publication.validPixelPercent < 99.9 ? "PARTIAL" : "FRESH",
+    state: publication.validPixelPercent < 99.9 || publication.sourceIssues?.length ? "PARTIAL" : "FRESH",
     confidence: null,
     precision: `${publication.sourceResolution}; derived grid approximately ${publication.derivedResolutionM} m`,
     limitations: [
@@ -205,7 +238,7 @@ export function terrainImageUrl(file: string) {
 export function terrainRequestIsCovered(publication: TerrainPublication, input: TerrainOverlayRequest) {
   if (input.viewportBounds) {
     const b = input.viewportBounds, p = publication.boundsGcj02, epsilon = 1e-7;
-    return publication.schemaVersion === "starward-terrain-publication-v3"
+    return (publication.schemaVersion === "starward-terrain-publication-v3" || publication.schemaVersion === "starward-terrain-publication-v4")
       && b.west >= p.west - epsilon && b.east <= p.east + epsilon
       && b.south >= p.south - epsilon && b.north <= p.north + epsilon;
   }
