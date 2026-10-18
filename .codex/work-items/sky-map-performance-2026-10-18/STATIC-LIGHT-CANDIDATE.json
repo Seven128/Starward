@@ -36,5 +36,6 @@
   },
   "passed": true,
   "bundleDirectory": "apps/wechat-miniapp/dist/weapp-check-overlay-static",
-  "scope": "Local ordinary isolated build; not installed on phone, not a deployable release or real r6 acceptance"
+  "scope": "Local ordinary isolated build; not installed on phone, not a deployable release or real r6 acceptance",
+  "sourceCommit": "3b0d8916e66a9e7c37ec94503b8d18b4e8e2a01a"
 }

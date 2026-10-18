@@ -279,5 +279,13 @@
     "coveredByProductRunId": 39095632949
   },
   "contextUnchangedSinceCheckedHead": false,
-  "pendingSourceChange": "Static-light independent API/Map consumer and adopted plan/Context update; prior green runs do not cover it."
+  "latestImplementationHead": "3b0d8916e66a9e7c37ec94503b8d18b4e8e2a01a",
+  "latestLocallyCheckedHead": "3b0d8916e66a9e7c37ec94503b8d18b4e8e2a01a",
+  "latestChangeVerification": {
+    "scope": "Independent static nightlight API and current Map consumer",
+    "remoteFullCi": "not rerun for this module; earlier full runs retain their original heads",
+    "local": "API14pass2skip, MiniProgram19pass, both typechecks, SDK, Context and ordinary isolated build passed",
+    "independentReview": "Earlier7627d9ad reviewed; this later module not yet independently reviewed",
+    "phone": "Generation9/old backend preserved; new module not installed"
+  }
 }
