@@ -1,0 +1,139 @@
+{
+  "schemaVersion": "starward-cross-computer-handoff-v1",
+  "createdAt": "2026-10-18T06:09:11.587Z",
+  "datasetVersion": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
+  "dataYear": 2025,
+  "nightLightPublicationVersion": "nightlight-fixed:3f659ee77d499b3aecc8cb67bba2f94bdfee1cd1765282c7f153b49dafd39dfe",
+  "nightLightInventorySha256": "d91fd8f7fcdd68d63f9a219df11fdad13673fefa2e1a99e313a148e29676c5bd",
+  "terrainPublicationVersion": "terrain-fixed:8f4e8cbf344805fe65ec247f1b1d410f2ddedca97e18eccdeef9564bafa9dcd6",
+  "packages": [
+    {
+      "path": "starward-runtime-r6-20261018.zip",
+      "bytes": 257491541,
+      "sha256": "04ff2400ddc817acaeddfb4baadc5f2bd762200b93d72e505be84253606b6570",
+      "purpose": "Public immutable runtime resources and source/license provenance",
+      "privacy": "PUBLIC_CONTENT",
+      "files": 1562,
+      "transport": "PENDING_PRIVATE_DESTINATION",
+      "remoteReadbackVerified": false
+    },
+    {
+      "path": "starward-private-r6-20261018.zip.enc",
+      "bytes": 915275,
+      "sha256": "e86385eab07e66316ef2b8c92a72887f402ada5e31490e3a3f1f43b353563965",
+      "purpose": "Encrypted PostgreSQL, media and private continuity evidence",
+      "privacy": "PRIVATE_ENCRYPTED",
+      "files": 50,
+      "plaintextZipSha256": "9e0dbc650726e5db1c16bd7a60234b393c45af7333a8ff763a3f11aa6448d8a3",
+      "algorithm": "AES-256-GCM",
+      "envelopeOwner": "tools/deployment/verified-backup.mjs",
+      "plaintextFormat": "ZIP",
+      "keyIncluded": false,
+      "transport": "PENDING_PRIVATE_DESTINATION",
+      "remoteReadbackVerified": false
+    }
+  ],
+  "databaseVerification": {
+    "mode": "POSTGRESQL_17_ISOLATED_COLD_COPY_EXPORT",
+    "schemaMigrations": [
+      "001_demo_baseline",
+      "002_current_product_chain",
+      "003_spot_publication_assessments",
+      "004_dark_sky_dataset_pipeline",
+      "005_decision_snapshot_separation",
+      "006_contribution_intake",
+      "007_operations_revisions_receipts",
+      "008_account_data_operations",
+      "009_account_erasure_guards",
+      "010_account_erasure_append_only",
+      "011_account_profile",
+      "012_formal_feedback_upload_intents",
+      "013_formal_feedback_media_review",
+      "014_formal_feedback_canonical_media",
+      "015_plan_reminder_schedules",
+      "016_account_avatar",
+      "017_astronomical_event_catalog_pipeline",
+      "018_vendor_usage_attempts",
+      "019_event_catalog_review_baseline",
+      "020_event_catalog_rollback_target",
+      "021_wechat_delivery_identity",
+      "022_plan_reminder_subscription_challenges"
+    ],
+    "tableCount": 73,
+    "allTableRowsAndSha256Equal": true,
+    "sequencesEqual": true,
+    "schemaEqual": true,
+    "publishedR6": true,
+    "originalDatabaseWritten": false,
+    "runtimeApplied": false
+  },
+  "sourceVerification": {
+    "r6Assets": 509,
+    "levels": {
+      "7": 6,
+      "8": 12,
+      "9": 30,
+      "10": 100,
+      "11": 361
+    },
+    "terrainAssets": 7,
+    "copernicusBytes": 25030462,
+    "originalRangesMatched": 9
+  },
+  "configurationNames": [
+    "DATABASE_URL",
+    "MINIAPP_STORAGE_MODE",
+    "MINIAPP_NIGHT_LIGHT_PUBLICATION_ROOT",
+    "MINIAPP_TERRAIN_PUBLICATION_ROOT",
+    "MINIAPP_DARK_SKY_DATASET_VERSION",
+    "MINIAPP_MEDIA_STORAGE_MODE",
+    "MINIAPP_MEDIA_STORAGE_ROOT",
+    "MINIAPP_AUTO_MIGRATE",
+    "WECHAT_REMINDER_DELIVERY_ENABLED"
+  ],
+  "secrets": {
+    "valuesIncluded": false,
+    "backupKeyTransport": "Separate private channel",
+    "locationMap": "Inside encrypted PRIVATE-RECOVERY.json"
+  },
+  "continuity": {
+    "n05PhoneLocalDraftPreserved": true,
+    "n05PhoneStorageExported": false,
+    "r6ReminderDeliveredPreviously": true,
+    "r6ReminderResent": false
+  },
+  "restoreOrder": [
+    "verify archive SHA-256",
+    "extract and verify runtime FILES.json",
+    "authenticate/decrypt private ZIP with separately supplied key",
+    "extract and verify private FILES.json",
+    "restore into a fresh owned starward_restore_* PostgreSQL database",
+    "configure separate normal runtime through existing credential owner",
+    "verify receiver actual consumers; no production switch"
+  ],
+  "missingOrNotTransported": [
+    "Approved private storage destination and authenticated independent remote readback",
+    "Backup key transfer through a separate private channel",
+    "Phone-local N05 storage is retained on the original phone, not exported",
+    "Global EOG originals and preparation-only geometry caches retained on the original computer; not runtime dependencies after matching DB restore",
+    "Account-wide LFS remaining allowance and zero-paid-spend ceiling unavailable with current credential scope; no LFS upload performed"
+  ],
+  "codeResponsibility": "Receiver latest-development chat retains code and overlay optimization; this branch contains only data-handoff metadata/tools",
+  "sourceMain": "32ec61a4f5321e571d499be6430a09918d65242e",
+  "receiverBranchAtInspection": "codex/remote-main-20260908",
+  "receiverHeadAtInspection": "e4bcdf38c3b1da38e198c4fff670b14dd800f82b",
+  "localArchiveReadbackVerified": true,
+  "remoteUploadPerformed": false,
+  "productionApplied": false,
+  "localVerification": {
+    "at": "2026-10-18T06:12:06.759Z",
+    "runtimeArchiveExtractedAndFilesVerified": 1562,
+    "privateArchiveAuthenticatedExtractedAndFilesVerified": 50,
+    "portableRestoreCommandExecuted": true,
+    "portableRestoreTableRowHashesVerified": 73,
+    "publishedInventoryMatched": true,
+    "originalPostgresFilesUnchanged": 1657,
+    "transferTextSecretScanFiles": 569,
+    "credentialValuesFound": 0
+  }
+}

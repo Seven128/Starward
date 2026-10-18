@@ -1,0 +1,95 @@
+Starward existing runtime-data handoff — 2026-10-18
+
+This transfers the original publication and continuity evidence. Continue code
+and overlay work in the receiver's existing codex/remote-main-20260908 branch.
+The source computer remains on main. Do not reset either checkout to a historical
+commit or republish r6 as a substitute for restoring its original database state.
+
+PUBLIC RUNTIME PACKAGE
+Dataset: eog-vnl-v22-2025-gba-fixed-20261017-r6 (EOG Annual VNL V2.2, 2025).
+It contains the unchanged sealed manifest/inventory and all 509 PNGs, six-band
+Float64 GeoTIFFs and proofs: zoom 7/8/9/10/11 counts 6/12/30/100/361.
+PUBLICATION.json holds exact coverage, methods, statistics, quality, style and
+policy identities. This is a bounded Greater Bay Area publication, not national
+coverage. Per-file bytes, SHA-256 and dependency classes are in FILES.json.
+
+terrain/ holds the fixed Map inventory and all seven PNG/proof pairs (six fixed
+cells plus one existing composition), not the old 85km display image.
+sources/ holds nine available Terrarium source images and the complete original
+N22E114 Copernicus COG version. Its full-file SHA is distinct from the historical
+range-proof hash; all nine original range hashes were checked against this file.
+The existing horizon consumer still uses its HTTPS COG reader. No new cache-root
+setting or provider adapter is introduced by this data transfer.
+
+The global EOG TIFF/GZIP inputs and preparation-only dense _geometry arrays stay
+on the source computer. They are not required by the matching PUBLISHED runtime
+record and sealed image/numeric readers. Their provenance and recorded hashes
+remain available. Do not rerun the publisher against the historical absolute raw
+input paths merely to start the restored runtime.
+
+PRIVATE PACKAGE
+The authenticated encrypted package contains a ZIP, not a direct pg_dump stream.
+It includes the original PostgreSQL custom-format dump/manifest, full restore
+proof and row hashes, eight local media files, exact original plan/Goal text,
+the current resume-actions snapshot, N01–N06 implementation and independent
+review evidence, N05 locator and R6 delivered/cleanup evidence.
+No password, token, original connection string or encryption key is included.
+The encryption key is supplied through a separate private channel. Never upload
+this package or its decrypted contents to the public repository or Git LFS.
+
+RESTORE ORDER (PowerShell 7; substitute local absolute paths)
+1. Obtain HANDOFF-MANIFEST.json and restore.mjs from the handoff Git commit.
+   Verify both archive SHA-256 values against that manifest before extraction.
+2. Expand-Archive -LiteralPath <runtime.zip> -DestinationPath <new-runtime-dir>
+   node <handoff-dir>/restore.mjs verify --directory <new-runtime-dir>
+3. node <handoff-dir>/restore.mjs decrypt --repo <repo> --input <private.zip.enc>
+      --key-file <separate-private-key-file> --sha256 <encrypted-package-sha256>
+      --output <fresh-private.zip>
+   Expand-Archive -LiteralPath <fresh-private.zip> -DestinationPath <new-private-dir>
+   node <handoff-dir>/restore.mjs verify --directory <new-private-dir>
+4. Prepare a fresh, owned local PostgreSQL 17 instance with the existing owner.
+   Put these four fields in an access-restricted JSON file, using that instance's
+   own credentials: MINIAPP_INFRA_MODE=external, MINIAPP_ADMIN_DATABASE_URL,
+   MINIAPP_INFRA_REDIS_URL and MINIAPP_POSTGRES_BIN_DIR. Values never enter logs.
+   The existing owner requires a loopback host. Choose an unused database name:
+   node <handoff-dir>/restore.mjs restore-db --repo <repo>
+      --private-root <new-private-dir> --infra-config <private-config.json>
+      --target starward_restore_r6_20261018
+   The command refuses an existing target and checks all original 73 table row
+   sets/hashes plus the exact PUBLISHED r6 inventory binding. It does not start
+   an API, reminder worker, migrations, or switch a running database.
+5. Point a separately owned local API at the restored database through its
+   existing secret configuration owner. Relevant non-secret configuration:
+   MINIAPP_NIGHT_LIGHT_PUBLICATION_ROOT=<new-runtime-dir>/nightlight
+   MINIAPP_TERRAIN_PUBLICATION_ROOT=<new-runtime-dir>/terrain
+   MINIAPP_DARK_SKY_DATASET_VERSION=eog-vnl-v22-2025-gba-fixed-20261017-r6
+   MINIAPP_MEDIA_STORAGE_MODE=LOCAL_FILESYSTEM
+   MINIAPP_MEDIA_STORAGE_ROOT=<new-private-dir>/media
+   MINIAPP_AUTO_MIGRATE=false
+   WECHAT_REMINDER_DELIVERY_ENABLED=false
+   Use the normal PostgreSQL storage mode and existing account/session/provider
+   secret owners. PRIVATE-RECOVERY.json names source storage locations, no values.
+   Check schema compatibility on this isolated target before any new migration.
+6. Verify the receiver's normal API/Map consumers against its current code and
+   candidate. Package verification and database restoration do not certify the
+   current phone or apply a production publication.
+
+CONTINUITY
+The exact A01–A15 and N01–N09 mapping remains in the private frozen plan and
+resume-actions; no inferred replacement numbering is introduced. Completed
+N01–N06 evidence remains scoped to its original inputs. Later receiver user
+decisions govern continuation, including cancellation of physical cm scaling,
+screen-reader/accessibility work and large text; old documents do not revive them.
+N05 is a phone-local draft, not part of the PostgreSQL backup. Its original phone
+storage has not been read, cleared or exported by this handoff. Use the private
+locator and current device owner; old generation bindings are historical only.
+R6's one real reminder was received and cleaned up; do not send it again.
+
+TRANSPORT AND LIMITS
+HANDOFF-MANIFEST.json distinguishes local archive/restore verification from remote
+upload/readback. A Git commit containing this metadata does not deliver the ZIPs.
+LFS account usage/budget could not be read with the existing credential scope;
+no new LFS upload, paid allowance, provider purchase or public database link is
+authorized by this metadata. Use the selected private transport destination.
+Do not delete the source release, raw inputs, original database, phone draft,
+pairing, credentials, VPN or original evidence after downloading these packages.

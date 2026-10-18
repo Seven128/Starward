@@ -1,0 +1,357 @@
+{
+  "schemaVersion": "starward-runtime-data-handoff-v1",
+  "createdAt": "2026-10-18T05:57:07.145Z",
+  "datasetVersion": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
+  "dataYear": 2025,
+  "productName": "EOG Annual VNL V2.2 2025 median-masked",
+  "publicationVersion": "nightlight-fixed:3f659ee77d499b3aecc8cb67bba2f94bdfee1cd1765282c7f153b49dafd39dfe",
+  "inventorySha256": "d91fd8f7fcdd68d63f9a219df11fdad13673fefa2e1a99e313a148e29676c5bd",
+  "releaseState": "SEALED",
+  "assets": 509,
+  "levels": {
+    "7": 6,
+    "8": 12,
+    "9": 30,
+    "10": 100,
+    "11": 361
+  },
+  "requestedCoverageWgs84": {
+    "east": 115.5,
+    "north": 24.5,
+    "south": 21.5,
+    "west": 112.5
+  },
+  "actualCoverageWgs84": {
+    "east": 115.50208569735,
+    "north": 24.502082929350003,
+    "south": 21.49791623865,
+    "west": 112.49791900665
+  },
+  "coverageMeaning": "Bounded Greater Bay Area publication, not national coverage; area of validity remains in each six-band companion",
+  "policy": {
+    "alpha": 102,
+    "bands": [
+      {
+        "color": "#87714A",
+        "id": "VERY_LOW",
+        "label": "年度夜光很低",
+        "range": "0–0.5"
+      },
+      {
+        "color": "#A18452",
+        "id": "LOW",
+        "label": "年度夜光较低",
+        "range": ">0.5–2"
+      },
+      {
+        "color": "#BE9B61",
+        "id": "MODERATE",
+        "label": "年度夜光中等",
+        "range": ">2–10"
+      },
+      {
+        "color": "#D1B577",
+        "id": "HIGH",
+        "label": "年度夜光较高",
+        "range": ">10–40"
+      },
+      {
+        "color": "#E0C998",
+        "id": "VERY_HIGH",
+        "label": "年度夜光很高",
+        "range": ">40"
+      }
+    ],
+    "boundaryNumericalRelativeTolerance": 7.105427357601002e-15,
+    "geometryPolicy": {
+      "maximumQuadratureStepDegrees": 0.0020833333333333333,
+      "version": "gcj-dense-separated-branch-area-v1"
+    },
+    "meaning": "Fixed product cartography of annual satellite upward radiance; not Bortle, SQM or measured sky brightness.",
+    "methodVersion": "starward-eog-fixed-radiance-v1",
+    "qualityPolicy": {
+      "areaFractionNumericalTolerance": 0.0002,
+      "cloudFreeThreshold": "publication-manifest",
+      "minimumValidAreaFraction": 0.5,
+      "version": "eog-cf-valid-area-v1",
+      "zeroRequiresValidCoverage": true
+    },
+    "schemaVersion": 1,
+    "statistics": {
+      "map": "valid-area-weighted-mean-before-colour-v1",
+      "spot": "3x3-source-pixels-area-weighted-quantiles-centred-cdf-v1"
+    },
+    "styleVersion": "starward-vnl-fixed-bands-v1",
+    "thresholds": [
+      0.5,
+      2,
+      10,
+      40
+    ],
+    "unit": "nW/cm²/sr"
+  },
+  "policySha256": "dcdba2b3b082d8c026778ac219a7dd828c7163f2d3e56e91f897dfc5aec1fb17",
+  "terrainPublicationVersion": "terrain-fixed:8f4e8cbf344805fe65ec247f1b1d410f2ddedca97e18eccdeef9564bafa9dcd6",
+  "terrainAssets": 7,
+  "terrainSources": [
+    {
+      "tileId": "terrarium/11/1671/889",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1671/889.png",
+      "sha256": "a8ede320978621567947d956fd0a25466744f0446f923f7e13eb9a11ad6a014e",
+      "byteSize": 47964,
+      "etag": "\"cc78c09fd262ea74dab5cb58d3440a3e\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E113.tif",
+        "srtm/N23E113.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1672/889",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1672/889.png",
+      "sha256": "f0da27517d823e2f8563d8bddc8a06b284e7ca65b78489d8ba6c5dd1913bd153",
+      "byteSize": 41133,
+      "etag": "\"bf7f2d495d6d17035b808c2e3baa0414\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "srtm/N22E113.tif",
+        "srtm/N23E113.tif",
+        "srtm/N23E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1671/890",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1671/890.png",
+      "sha256": "365769d516ee12adb481896cd80ef44d3c58e990375ea09e783f26e1fd852170",
+      "byteSize": 53104,
+      "etag": "\"f7f06896c90d81059d07b33290c6f540\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E113.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1672/890",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1672/890.png",
+      "sha256": "aa9bbc36dece3e95e436d27a0c3ab8b5844c720a3d088a774b219de2ce93bacf",
+      "byteSize": 52898,
+      "etag": "\"41dfb5a663adaeae8ecab47a9cd75488\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "srtm/N22E113.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1671/891",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1671/891.png",
+      "sha256": "de2d39968bf4a5964d0ef112530b779b70910e871486733fd087e0e434ba2c27",
+      "byteSize": 43173,
+      "etag": "\"a5a0aedfc5693e3a8865a3132a93f6e6\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E113.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1672/891",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1672/891.png",
+      "sha256": "98268cba963dbfc3b29edaded2b58e6c8a8661780debecbde6244fe66e5caf22",
+      "byteSize": 52060,
+      "etag": "\"22c90e3370905c518988a5d3b677a3bc\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "srtm/N22E113.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1673/891",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1673/891.png",
+      "sha256": "d3bf4798cd417cb32cca38d2c3d58674777b93bdb326fd24ceec7310fbe8b34a",
+      "byteSize": 52805,
+      "etag": "\"31bc2e88d468514c1f119849aa118826\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1671/892",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1671/892.png",
+      "sha256": "b58057d3c16fded7db3ddfc699bb625b0518722d266d5ee2c693cbbbf85a417d",
+      "byteSize": 19341,
+      "etag": "\"800c00c915602aef2741a25238ecb865\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E113.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1672/892",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1672/892.png",
+      "sha256": "cd4206863082bfd5126fc8640501cf58644d182c2fd7648020af49e18f185efd",
+      "byteSize": 48297,
+      "etag": "\"3d37de9b170f97b19368923eb09b5506\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "srtm/N22E113.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1673/892",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1673/892.png",
+      "sha256": "9a51932f5ea88bfac7aaba711a93aeb3cd58603af79dab93faa3bf003f7dc5f6",
+      "byteSize": 64410,
+      "etag": "\"7b60f15d26fd2b32c902dc60a024cd5e\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1671/893",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1671/893.png",
+      "sha256": "0c40a304b79b9fe12335539789191915dcb1c35fd3f7ef9a4144f28b97449138",
+      "byteSize": 12955,
+      "etag": "\"5763d8a99e732831bd8a2c837e87b967\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E113.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1672/893",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1672/893.png",
+      "sha256": "0288ecb253edc8d7e2dd41191a8e0aeb85a51f152b40d5dd0faecac53b798b55",
+      "byteSize": 57388,
+      "etag": "\"527c26e24b71a494fb86a2af4429ec8b\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "srtm/N22E113.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1673/893",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1673/893.png",
+      "sha256": "ae8b5f766d0f9d037bec62541f32243bece210260eb75aaf1e564cc989d35895",
+      "byteSize": 65836,
+      "etag": "\"081e275c4c2a2e97fc83d352a1e301c4\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1673/889",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1673/889.png",
+      "sha256": "455fa37430c3221d93eddd90128dafdc8599521b49929bacd2b4f70ebbfb94cf",
+      "byteSize": 48370,
+      "etag": "\"e35e32e5d4d4f129cd0a34c89059ce8f\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "srtm/N23E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1673/890",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1673/890.png",
+      "sha256": "f2d811075e2fcce82390126655f732462f8e2c517bd1b8cb08e17c3823a1933f",
+      "byteSize": 57904,
+      "etag": "\"d9efebb336904dbc131b41117031df4e\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1674/891",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1674/891.png",
+      "sha256": "bf1445e1c88652b594cdb0157427c2ecfab9a568a8a0638a9d65d2ba634a7df8",
+      "byteSize": 55368,
+      "etag": "\"68a00c202bd74da7e81cc26f5a0c5275\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1674/892",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1674/892.png",
+      "sha256": "3e16fbe7eaacdc5d9009d33595055ec1951f0b5dfa6ac464eedcc3e8da2395ce",
+      "byteSize": 45832,
+      "etag": "\"27eb01a2e34a42f3a228dd86aa4f752e\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    },
+    {
+      "tileId": "terrarium/11/1674/893",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1674/893.png",
+      "sha256": "511d13b492d1aa68b99d0dc74ac78c18a1578bf0d2f784a98519603b2c5c1679",
+      "byteSize": 55306,
+      "etag": "\"236d8dd70c582c383698f7319dc5f2f8\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ]
+    }
+  ],
+  "rawInputs": [
+    {
+      "role": "radiance",
+      "filename": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.median_masked.dat.tif",
+      "bytes": 11613178366,
+      "sha256": "f75cbe240966e631e0b08d16c6f8e211a0a13be0ec88af6fd8fd349144846e59",
+      "band": 1,
+      "hashEvidence": "Original publisher verified full input hashes on 2026-10-17; files retained, not rehashed during runtime-only transfer",
+      "bundled": false,
+      "runtimeRequiredAfterMatchingDatabaseRestore": false
+    },
+    {
+      "role": "cloudFreeCoverage",
+      "filename": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif",
+      "bytes": 5806858130,
+      "sha256": "76d0b8f1038f79a3cb2f3cf1e90de181df446a67c652f36e264e31616355c2a7",
+      "band": 1,
+      "hashEvidence": "Original publisher verified full input hashes on 2026-10-17; files retained, not rehashed during runtime-only transfer",
+      "bundled": false,
+      "runtimeRequiredAfterMatchingDatabaseRestore": false
+    }
+  ],
+  "excludedRebuildInputs": [
+    "Global EOG original TIFF/GZIP files",
+    "Per-window _geometry reconstruction cache, including dense coordinate arrays recorded in proof.grid.files"
+  ],
+  "exclusionMeaning": "All inventory-referenced PNG, numeric GeoTIFF and proof files are included unchanged. Raw inputs and preparation-only geometry arrays are not read by published runtime consumers; they remain on the source computer for reproduction.",
+  "databaseRequired": true,
+  "databaseTransport": "Separate encrypted private handoff",
+  "sourceRepositoryCommit": "32ec61a4f5321e571d499be6430a09918d65242e",
+  "receiverBranchAtInspection": "codex/remote-main-20260908",
+  "receiverHeadAtInspection": "e4bcdf38c3b1da38e198c4fff670b14dd800f82b",
+  "runtimeApplied": false,
+  "sourceFilesRemoved": false
+}
