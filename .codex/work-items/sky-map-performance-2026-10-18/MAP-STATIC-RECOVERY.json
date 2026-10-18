@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "starward-map-static-recovery-receipt-v1",
+  "recordedAt": "2026-10-18T13:09:24Z",
+  "status": "PRIVATE_DRIVE_READBACK_AND_ISOLATED_MAP_RESTORE_VERIFIED",
+  "lock": "data-pipelines/runtime-data/current.lock.json#mapStatic",
+  "source": {
+    "directory": "E:\\Dev\\Starward-data\\publications\\map-static-hotspots-20261018\\publication",
+    "publicationHash": "89f3491ed136bb24c18a49ce8b92cd484dd2378bf889610153ab8f52cff514d0",
+    "files": 1577,
+    "logicalBytes": 9865817,
+    "membersSha256": "c2e56b1d01e4b26e28c1e87d10f002dea61cd0bbb357f8f837e0d845895c0006",
+    "plainEntriesOnly": true,
+    "unchanged": true,
+    "exactLocalArchiveMemberVerification": "EXACT_ALL_MEMBERS"
+  },
+  "archive": {
+    "path": "E:\\Dev\\Starward-data\\backups\\map-static-20261018\\starward-map-static-hotspots-20261018-89f3491ed136.zip",
+    "filename": "starward-map-static-hotspots-20261018-89f3491ed136.zip",
+    "format": "ZIP",
+    "memberRoot": "publication",
+    "bytes": 7309548,
+    "sha256": "37ed4b7d5d6af2a6201ad5c9a69dd978429a23302f1b4ddb21cba5fd23e04bd2"
+  },
+  "remote": {
+    "provider": "GOOGLE_DRIVE",
+    "driveFileId": "1XjCm9f1MouhVJYyVX8gKwwSP411EQrle",
+    "url": "https://drive.google.com/file/d/1XjCm9f1MouhVJYyVX8gKwwSP411EQrle/view?usp=drivesdk",
+    "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+    "mimeType": "application/zip",
+    "bytes": 7309548,
+    "shared": false,
+    "permissionRoles": [
+      {
+        "type": "user",
+        "role": "owner"
+      }
+    ],
+    "metadataReadbackVerified": true,
+    "sharingChanged": false,
+    "newUniqueObject": true
+  },
+  "rawReadback": {
+    "path": "E:/Dev/Starward-data/restores/map-static-20261018/received/starward-map-static-hotspots-20261018-89f3491ed136.zip",
+    "bytes": 7309548,
+    "sha256": "37ed4b7d5d6af2a6201ad5c9a69dd978429a23302f1b4ddb21cba5fd23e04bd2",
+    "method": "google_drive_fetch download_raw_file=true include_base64=false; authenticated file_uri materialized only in memory",
+    "inlineBase64": false,
+    "authReferenceLoggedOrPersisted": false
+  },
+  "restore": {
+    "status": "RESTORED_ISOLATED_MAP_STATIC_BUNDLE",
+    "publicationHash": "89f3491ed136bb24c18a49ce8b92cd484dd2378bf889610153ab8f52cff514d0",
+    "directory": "E:\\Dev\\Starward-data\\restores\\map-static-20261018\\restored\\publication",
+    "publicPngFiles": 524,
+    "publicPngBytes": 2546488,
+    "sealedFileCount": 1577,
+    "sealedLogicalBytes": 9865817,
+    "exactAllSourceMembers": true,
+    "oldUrlsRetained": 522,
+    "allCurrentUrlsRetained": 524,
+    "sources": [
+      {
+        "family": "night-light",
+        "publicationVersion": "nightlight-fixed:3f659ee77d499b3aecc8cb67bba2f94bdfee1cd1765282c7f153b49dafd39dfe",
+        "datasetVersion": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
+        "metadataDirectory": "E:\\Dev\\Starward-data\\restores\\map-static-20261018\\restored\\publication\\publications\\night-light\\3f659ee77d499b3aecc8cb67bba2f94bdfee1cd1765282c7f153b49dafd39dfe\\449f1e980094bbbc74b1e9fdb1767841bf388cb4770498cb4196508288c9892b"
+      },
+      {
+        "family": "terrain",
+        "publicationVersion": "terrain-fixed:c84ef25094e6455c81003900636d08c515485258c3e5c884e19aa6b051908722",
+        "metadataDirectory": "E:\\Dev\\Starward-data\\restores\\map-static-20261018\\restored\\publication\\publications\\terrain\\c84ef25094e6455c81003900636d08c515485258c3e5c884e19aa6b051908722"
+      }
+    ],
+    "scientificNumericDataRestored": false,
+    "databaseRestored": false,
+    "runtimeActivated": false,
+    "unpackedDirectory": "E:/Dev/Starward-data/restores/map-static-20261018/unpacked",
+    "owner": "tools/deployment/map-static-bundle.mjs::restoreMapStaticBundle",
+    "outputWasNew": true,
+    "filesComparedAgainstUnmodifiedSource": 1577
+  },
+  "protectedLockGroups": {
+    "exactObjectComparisonAgainstBefore": true,
+    "canonicalSha256": {
+      "runtime": "08993bafce213afdf0053ea953c23040bcb0e0fefd3e0fe87f545c4b27f92c05",
+      "rebuild": "0f7f1dbddef6969a65bb0f595cbcf4db0faff8be3c47d12609edcac2933a8633",
+      "privateRecovery": "9d59b28802a3eb4a93f6fb4a7d5ec1161dcf9532c4743faf5b487aad429a0be4"
+    }
+  },
+  "checks": {
+    "backendResourceTests": {
+      "command": "node --test tools/resources/backend-data.test.mjs",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    "optionalStatusFixture": "PASS: optional mapStatic remains discoverable with a missing runtime fixture index; no optional payload load",
+    "diffCheck": "PASS_WITH_LINE_ENDING_WARNINGS_ONLY",
+    "httpReadbackRepeated": false,
+    "largeScientificFilesRead": false
+  },
+  "boundaries": {
+    "defaultDownload": false,
+    "servicesChanged": false,
+    "phoneTouched": false,
+    "databaseTouched": false,
+    "originalR6Changed": false,
+    "scientificNumericDataRestored": false,
+    "runtimeActivated": false,
+    "productionDeployed": false,
+    "cdnOrNativePerformanceClaim": false,
+    "independentReview": "MAP-RECOVERY-INDEPENDENT-REVIEW.md: NO_FINDINGS; fresh restore/member and permission checks passed",
+    "commitCreated": false
+  },
+  "retainedOwnedLocalArtifacts": [
+    "E:/Dev/Starward-data/backups/map-static-20261018",
+    "E:/Dev/Starward-data/restores/map-static-20261018"
+  ]
+}

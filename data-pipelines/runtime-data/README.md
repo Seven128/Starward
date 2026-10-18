@@ -59,6 +59,89 @@ Source validation streams SHA-256 rather than loading multi-GB files into memory
 
 Optional `officialSource` records an actually observed supplier URL/transport and its evidence state. `LISTED_NOT_DOWNLOADED_OR_HASH_VERIFIED` is a navigation aid, not file admission or a Drive backup. For compressed sources, `transport` carries the exact original GZIP path/bytes/SHA-256 separately from the locked decompressed-file identity; a rounded listing size is not an exact byte count. A multipart transport adds an ordered `parts` array with each part's exact identity and remote object locator. `locations` selects that transport's remote representation and records its independent readback state. `READBACK_PENDING` never means backed up. Reuse existing authenticated browser access without exporting credentials or assuming paid programmatic entitlement. `prepare --profile rebuild` remains a populated-cache verifier; import is explicit and neither command silently downloads the supplier locators.
 
+## Optional finite Map static recovery
+
+The optional `mapStatic` group in the same lock pins the sealed finite terrain
+and annual-light delivery artifact and its owner-only Drive ZIP. It includes
+the original inventories, proofs, public PUBLISHED record, generated Caddy
+fragment and both publication/HTTP PNG layouts. It contains no numerical TIFFs,
+global rebuild inputs, private configuration, database or credentials. Its
+derived `index.json` remains the asset list; the lock records the seal and
+archive identity rather than a second filename inventory. Normal
+`prepare`, `start`, LFS selection and source import do not download or restore
+this optional group.
+
+From the intended committed checkout with locked dependencies installed,
+read `mapStatic.archive` and its selected `locations` record. Use the connected
+Google Drive owner to confirm the exact file ID, MIME type, parent folder,
+owner-only permissions and size, then fetch that declared URL with
+`download_raw_file=true` and `include_base64=false`. Materialize the authenticated
+file reference to an external download directory without logging it; the
+repository does not provision unattended Drive authentication. Keep the declared
+archive filename. The following PowerShell 7 sequence verifies the received ZIP
+before extracting to a new external directory, then calls the existing restore
+owner:
+
+```powershell
+$mapLock = Get-Content -Raw data-pipelines/runtime-data/current.lock.json | ConvertFrom-Json
+$mapGroup = $mapLock.mapStatic
+$mapZip = Join-Path 'E:/Dev/Starward-data/downloads' $mapGroup.archive.path
+$mapUnpack = 'E:/Dev/Starward-data/restores/map-static-new/unpacked'
+$mapRestored = 'E:/Dev/Starward-data/restores/map-static-new/restored'
+if ((Get-Item -LiteralPath $mapZip).Length -ne $mapGroup.archive.bytes -or
+    (Get-FileHash -LiteralPath $mapZip -Algorithm SHA256).Hash.ToLowerInvariant() -ne $mapGroup.archive.sha256) {
+  throw 'map_archive_identity_mismatch'
+}
+if ((Test-Path -LiteralPath $mapUnpack) -or (Test-Path -LiteralPath $mapRestored)) {
+  throw 'map_fresh_recovery_directories_required'
+}
+Expand-Archive -LiteralPath $mapZip -DestinationPath $mapUnpack
+$mapBundle = Join-Path $mapUnpack $mapGroup.archive.memberRoot
+$mapRestoreScript = @'
+import fs from 'node:fs';
+import { restoreMapStaticBundle } from './tools/deployment/map-static-bundle.mjs';
+const lock = JSON.parse(fs.readFileSync('data-pipelines/runtime-data/current.lock.json', 'utf8'));
+const [bundleDirectory, outputDirectory] = process.argv.slice(1);
+const result = await restoreMapStaticBundle({
+  bundleDirectory, outputDirectory, publicationHash: lock.mapStatic.publicationHash
+});
+console.log(JSON.stringify(result, null, 2));
+'@
+node tools/run-node.cjs --input-type=module --eval $mapRestoreScript $mapBundle $mapRestored
+if ($LASTEXITCODE -ne 0) { throw 'map_static_restore_failed' }
+```
+
+The restore re-admits source inventories/proofs and their original PNG
+byte/header/URL union, requires the locked seal, and creates
+`$mapRestored/publication` without overwriting a previous artifact. A failed
+restore is not a usable release. This was exercised from the actual remote ZIP
+into fresh directories; the receipt referenced by the lock records all sealed
+members and retained old URLs. It does not certify CDN/native performance or
+remote deployment.
+
+The API prepared-window reader is opt-in through the existing private runtime
+configuration, with both values present:
+
+```text
+MINIAPP_MAP_STATIC_PUBLICATION_ROOT=/absolute/map-static-new/restored/publication
+MINIAPP_MAP_STATIC_PUBLICATION_HASH=<mapStatic.publicationHash from current.lock.json>
+```
+
+The original runtime numerical files and exact current PUBLISHED database
+inventory must still be available. This pair supplies prepared annual-light
+windows; it does not activate another dataset or select the terrain reader.
+For explicit terrain-hotspot selection, use the terrain
+`sources[].metadataDirectory` returned by discovery/restoration with the existing
+`MINIAPP_TERRAIN_PUBLICATION_ROOT` environment owner. Normal
+`dev:miniapp:published` continues to bind and guard the original `runtime`
+terrain root; use the existing environment-owned launcher/release process for
+a separately selected terrain artifact rather than weakening that check.
+Static HTTP delivery uses the existing
+[Map adapter instructions](../../infrastructure/deployment/README.md#map-final-product-static-adapter):
+keep the complete artifact read-only and serve only its admitted routes.
+The Drive recovery ZIP is not a runtime CDN, live-current pointer, database
+backup or production-activation instruction.
+
 ## Publishing a new data version
 
 1. Use the existing [nightlight publisher](../dark-sky/README.md) and terrain publication owner. Preserve retained URLs, declared coverage, numerical companions, provenance and license notices. Preparation/sealing, database publication and runtime activation are separate operations.

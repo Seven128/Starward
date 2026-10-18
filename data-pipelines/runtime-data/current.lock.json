@@ -221,6 +221,70 @@
       "state": "READBACK_VERIFIED"
     }
   },
+  "mapStatic": {
+    "scope": "FINITE_PUBLIC_MAP_STATIC_DELIVERY",
+    "defaultDownload": false,
+    "publicationHash": "89f3491ed136bb24c18a49ce8b92cd484dd2378bf889610153ab8f52cff514d0",
+    "products": {
+      "terrain": {
+        "publicationVersion": "terrain-fixed:c84ef25094e6455c81003900636d08c515485258c3e5c884e19aa6b051908722",
+        "pngCount": 13
+      },
+      "nightLight": {
+        "datasetVersion": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
+        "publicationVersion": "nightlight-fixed:3f659ee77d499b3aecc8cb67bba2f94bdfee1cd1765282c7f153b49dafd39dfe",
+        "fixedPngCount": 509,
+        "preparedWindowPngCount": 2
+      },
+      "publicPngCount": 524,
+      "publicPngBytes": 2546488,
+      "retainedPreviousUrls": 522,
+      "scope": "Original finite published annual-light region and selected terrain hotspot targets; no expanded geographic coverage."
+    },
+    "sealedDirectory": {
+      "files": 1577,
+      "bytes": 9865817
+    },
+    "archive": {
+      "format": "ZIP",
+      "path": "starward-map-static-hotspots-20261018-89f3491ed136.zip",
+      "bytes": 7309548,
+      "sha256": "37ed4b7d5d6af2a6201ad5c9a69dd978429a23302f1b4ddb21cba5fd23e04bd2",
+      "memberRoot": "publication",
+      "driveFileId": "1XjCm9f1MouhVJYyVX8gKwwSP411EQrle",
+      "url": "https://drive.google.com/file/d/1XjCm9f1MouhVJYyVX8gKwwSP411EQrle/view?usp=drivesdk"
+    },
+    "locations": [
+      {
+        "provider": "GOOGLE_DRIVE",
+        "visibility": "OWNER_ONLY",
+        "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+        "transportPath": "starward-map-static-hotspots-20261018-89f3491ed136.zip",
+        "state": "READBACK_VERIFIED",
+        "readback": {
+          "verifiedOn": "2026-10-18",
+          "method": "REMOTE_RAW_ZIP_SHA256_AND_FRESH_ISOLATED_MAP_RESTORE",
+          "exactAllSealedMembers": true,
+          "oldUrlsRetained": 522,
+          "evidence": ".codex/work-items/sky-map-performance-2026-10-18/MAP-STATIC-RECOVERY.json"
+        }
+      }
+    ],
+    "recovery": {
+      "owner": "tools/deployment/map-static-bundle.mjs",
+      "function": "restoreMapStaticBundle",
+      "requires": "Full checkout with locked dependencies and a fresh external output directory",
+      "activatesRuntime": false,
+      "scientificNumericDataRestored": false,
+      "databaseRestored": false
+    },
+    "excludes": [
+      "Scientific numerical TIFFs",
+      "Global EOG rebuild sources",
+      "Database, private media, configuration and credentials"
+    ],
+    "deliveryBoundary": "Private recovery archive only; not a runtime CDN. Current runtime/LFS/start selection and PUBLISHED database authority remain separate."
+  },
   "privateRecovery": {
     "manifest": ".codex/work-items/data-handoff-20261018/HANDOFF-MANIFEST.json",
     "instructions": ".codex/work-items/data-handoff-20261018/RESTORE.txt",

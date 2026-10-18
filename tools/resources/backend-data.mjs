@@ -378,6 +378,7 @@ export function dataStatus(cwd = root) {
   try { runtime = verifyBackendData(cwd); }
   catch (error) { runtime = {status: 'UNAVAILABLE', reason: error.message}; }
   return {runtime, runtimeTransports: lock.runtime.transports, rebuild: lock.rebuild,
+    ...(lock.mapStatic ? {mapStatic: lock.mapStatic} : {}),
     privateRecovery: lock.privateRecovery, meaning: 'Locations and hashes bind data to this commit; remote metadata is not a fresh download receipt.'};
 }
 
