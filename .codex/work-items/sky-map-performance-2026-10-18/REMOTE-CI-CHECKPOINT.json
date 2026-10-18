@@ -185,9 +185,20 @@
       "completedAt": "2026-10-18T02:34:31Z",
       "status": "completed",
       "conclusion": "success"
+    },
+    {
+      "workflow": "Product CI",
+      "id": 39095632949,
+      "url": "https://github.com/Seven128/Starward/actions/runs/39095632949",
+      "headSha": "9e5c75ef204c2206e658c5154dafaec9e7424374",
+      "createdAt": "2026-10-18T04:01:08Z",
+      "status": "in_progress",
+      "conclusion": null,
+      "jobId": 117581363376,
+      "lastObservedStep": "Check release code"
     }
   ],
-  "remaining": "Product and Context passed at d8339c48. The later Map attribution-wrapper and poster package-owner repairs have targeted checks and phone results; old full CI is not rebound to them. No pending CI dispatch/tool action or staging deployment. Independent review, main synchronization and required native/real-data/recipient outcomes remain open. User deferred original-computer synchronization until waking.",
+  "remaining": "Current combined Product CI39095632949 is in progress at9e5c75ef. Read that exact run before any dispatch retry; prior passed Product/Context checks stay bound to their recorded heads. No staging deployment. Independent review, main synchronization and required native/real-data/recipient outcomes remain open.",
   "productCheckedHeadSha": "d8339c4836b378d43a4cdea5ddc408f6c51fc50e",
   "contextCheckedHeadSha": "d8339c4836b378d43a4cdea5ddc408f6c51fc50e",
   "postCheckDelta": {
@@ -224,5 +235,6 @@
     },
     "evidence": "PHONE-VERIFICATION.md#generation9-poster-package-repair-and-native-album-save",
     "fullSuiteRerun": false
-  }
+  },
+  "pendingProductRunId": 39095632949
 }

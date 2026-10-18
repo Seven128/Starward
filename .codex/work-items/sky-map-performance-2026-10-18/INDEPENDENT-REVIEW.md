@@ -1,5 +1,21 @@
 # Independent review — Sky/Map and package optimization
 
+## Current follow-up review packet — pending
+
+No independent reviewer has reviewed the later shared overlay/clock and phone-driven repairs as a complete delivery. The historical review below remains limited to its own hashes. Current implementation checkpoint is7472659d;9e5c75ef adds evidence only, and Product CI39095632949 is checking that combined source. The root's investigation is self-review, not an independent verdict.
+
+Review the new responsibilities against REQUIREMENTS, INHERITED-REQUIREMENTS and the unchanged PLAN:
+
+- Terrain/shared reads: `workers/miniapp-api/src/shared-read-pool.ts`, terrain service/viewport/window renderers, night-light service/window and the client terrain coverage/query owners. Check last-reader cancellation, joined ownership, bounded advancing work, deadline/queue cleanup, cache publication identity and preservation of valid overlapping native coverage.
+- Cloud validity: geographic sample-cell identity, independent missing/zero meanings, the forecast/resource-query receipt clock and `use-map-cloud-presentation` retention. Check actual selected hour, source age/expiry, account/context/layer/visibility retirement and late-query receipt association. Phone time alignment must not rewrite provider timestamps or extend declared validity.
+- Current native and package consumers: reuse the earlier Map/Sky and package findings where hashes/behavior still match; review changed source/bitmap consumers, particularly the poster's mounting-page resolver. A package-size pass does not prove native decoding or user navigation.
+
+Evidence entrypoints: OVERLAY-FIRST-REPAIR, OVERLAY-SERVICE-MEASUREMENTS, CLOUD-CLOCK-REPAIR, PHONE-GEN4-REVIEW, PHONE-GEN6-VERIFICATION, PHONE-VERIFICATION and REMOTE-CI-CHECKPOINT. Current frontend inputs/bytes are pinned in OVERLAY-SOURCE-SNAPSHOT/OVERLAY-CANDIDATE; backend measurement inputs retain their separate hashes. Private phone recordings/frames remain outside Git under the existing task review root; inspect actual frames/sequences before making visual or motion claims.
+
+Material open limits must stay open in the review: no demonstrated stable cold/visible-gap speedup, no recovered original r6/fixed-terrain/database environment, remaining pinch/registration/finer/private/submitted-entry and iOS obligations, missing qualified photo metadata, desktop automation unavailable in the latest bounded attempt, no confirmed N05 identity on this environment, and no real recipient/export-file handoff. One actual SPOT poster save does not close H6. Reuse still-valid tests; request additional checks only for concrete findings or uncovered required behavior.
+
+## Historical review
+
 Review date: 2026-10-18 (Asia/Shanghai). Reviewer: delegated `performance_review`, independent of the implementation agents. Base: `32ec61a4f5321e571d499be6430a09918d65242e`. Review covers the working-tree changes identified below; it does not certify later edits automatically.
 
 ## Result

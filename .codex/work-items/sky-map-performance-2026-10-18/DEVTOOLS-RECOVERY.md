@@ -10,9 +10,11 @@ The task-opened canonical window s1 was closed through close_project_window afte
 
 Private screenshot: `desktop-focus-before.jpg` in the existing review root. This establishes desktop rendering only, not current desktop focus or a failure of the product's focus implementation.
 
+## Historical generation6 recovery
+
 This is bounded preparation evidence, not a product or device acceptance result. The unchanged generation6 remains `f145747502408897948f570e54f4cc57a03d68dce9871fca9559ce6fba21f1d4`,338files. No production source, account, phone permission, VPN, database or draft was changed by these attempts.
 
-## Current resolution
+## Generation6 resolution
 
 The official project-close command acknowledged but left the candidate watcher/automation listener active. After verifying the sole task project's watcher and unchanged runtime inputs (104 pins; only the already repaired canvas-time test differed), one official IDE quit was used instead of a process kill. A follow-up observation confirmed HTTP23977 and automation61962 stopped; backend ports8787/8791 remained. Only the exact current candidate was reopened.
 
@@ -41,7 +43,7 @@ All listed tool/exec handles are terminal. The old automation endpoint was retir
 
 The restricted Node REPL cannot load this process-dependent tooling; an earlier attempt failed before any automation launch. The temporary public CLI/SDK probe used an ordinary project Node process and the public connect interface with a finite deadline. This does not authorize reviving retired SDK/RPC paths or bypassing compatibility/foreground guards.
 
-## Resume conditions
+## Historical resume conditions
 
 Continue through the recovered official CLI channel and the currently bound generation6 device session in HANDOFF.md. Actual Android identity, current Map and guarded phone pixels established the binding; no new QR or remote invocation is needed while that session remains usable. A still-open prior page, preview compilation or listening port alone would not establish a replacement binding. If a later ordinary QR scan is needed, the existing guard does not admit arbitrary WeChat chat/gallery/scanner surfaces; do not bypass it for unattended handling.
 
