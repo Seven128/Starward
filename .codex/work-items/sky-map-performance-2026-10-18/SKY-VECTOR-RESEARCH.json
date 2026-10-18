@@ -1,0 +1,47 @@
+{
+  "scope": "ISOLATED_EXACT_VECTOR_CULLING_RESEARCH_NOT_PRODUCTION_OR_PHONE",
+  "results": [
+    {
+      "fov": 45,
+      "frames": 80,
+      "measuredFrames": 70,
+      "maximumCandidateCount": 9235,
+      "totalVisibleAcrossFrames": 32313,
+      "optimizedAngularEvaluations": 32313,
+      "maximumPixelDifference": 8.526512829121202e-13,
+      "before": {
+        "medianMs": 4.426199999999994,
+        "p95Ms": 8.18889999999999
+      },
+      "candidate": {
+        "medianMs": 1.7431000000000267,
+        "p95Ms": 3.807100000000048
+      }
+    },
+    {
+      "fov": 10.8,
+      "frames": 80,
+      "measuredFrames": 70,
+      "maximumCandidateCount": 16969,
+      "totalVisibleAcrossFrames": 31998,
+      "optimizedAngularEvaluations": 31998,
+      "maximumPixelDifference": 3.2763956890384275e-12,
+      "before": {
+        "medianMs": 8.387900000000172,
+        "p95Ms": 17.131800000000112
+      },
+      "candidate": {
+        "medianMs": 3.4601000000000113,
+        "p95Ms": 6.672299999999723
+      }
+    }
+  ],
+  "limits": [
+    "No production integration or cache/lifetime verification",
+    "No GL, React, names-layout or whole-frame speed claim",
+    "Original angle/appearance formulas retained for every visible candidate",
+    "Actual view-boundary and shared-consumer regression still required before adoption"
+  ],
+  "sourceCommit": "3de3a253035cc1f0f191ec17c91a00f1bce08ee2",
+  "inputSha256": "9ce8706d36586ed4c0cb5e074c6b66efa396ec634320a2c4015bfb4d255011b0"
+}

@@ -1,0 +1,198 @@
+{
+  "scope": "CURRENT_GEOMETRY_CONTINUITY_PROBE_NOT_DEVICE_FEEL",
+  "results": [
+    {
+      "scenario": {
+        "name": "horizon-crossing",
+        "altitude": 12,
+        "roll": 0,
+        "x": 195
+      },
+      "mode": "horizon",
+      "worstOnePixelAxisStep": {
+        "degrees": 0.0540134516632021,
+        "y": 422
+      },
+      "invalid": 0,
+      "samples": [
+        {
+          "y": 639,
+          "altitude": 11.946548340954168
+        },
+        {
+          "y": 500,
+          "altitude": 4.477401645473709
+        },
+        {
+          "y": 300,
+          "altitude": -6.316143393377047
+        },
+        {
+          "y": 100,
+          "altitude": -16.994348972140983
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "name": "horizon-crossing",
+        "altitude": 12,
+        "roll": 0,
+        "x": 195
+      },
+      "mode": "screen",
+      "worstOnePixelAxisStep": {
+        "degrees": 0.054013451649706765,
+        "y": 422
+      },
+      "invalid": 0,
+      "samples": [
+        {
+          "y": 639,
+          "altitude": 11.94654834095417
+        },
+        {
+          "y": 500,
+          "altitude": 4.477401645473709
+        },
+        {
+          "y": 300,
+          "altitude": -6.316143393377045
+        },
+        {
+          "y": 100,
+          "altitude": -16.994348972140983
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "name": "below-ground-pole",
+        "altitude": -78,
+        "roll": 0,
+        "x": 195
+      },
+      "mode": "horizon",
+      "worstOnePixelAxisStep": {
+        "degrees": 0.0540134516632021,
+        "y": 422
+      },
+      "invalid": 0,
+      "samples": [
+        {
+          "y": 639,
+          "altitude": -78.0534516590469
+        },
+        {
+          "y": 500,
+          "altitude": -85.52259835452466
+        },
+        {
+          "y": 300,
+          "altitude": -90
+        },
+        {
+          "y": 100,
+          "altitude": -90
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "name": "below-ground-pole",
+        "altitude": -78,
+        "roll": 0,
+        "x": 195
+      },
+      "mode": "screen",
+      "worstOnePixelAxisStep": {
+        "degrees": 0.054013451649706765,
+        "y": 422
+      },
+      "invalid": 0,
+      "samples": [
+        {
+          "y": 639,
+          "altitude": -78.05345165904585
+        },
+        {
+          "y": 500,
+          "altitude": -85.52259835452645
+        },
+        {
+          "y": 300,
+          "altitude": -83.6838566066231
+        },
+        {
+          "y": 100,
+          "altitude": -73.00565102785907
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "name": "rolled-ground-crossing",
+        "altitude": -65,
+        "roll": 30,
+        "x": 90
+      },
+      "mode": "horizon",
+      "worstOnePixelAxisStep": {
+        "degrees": 0.07723329805140823,
+        "y": 100
+      },
+      "invalid": 0,
+      "samples": [
+        {
+          "y": 639,
+          "altitude": -51.73518062229916
+        },
+        {
+          "y": 500,
+          "altitude": -55.5839536480927
+        },
+        {
+          "y": 300,
+          "altitude": -62.36183295050336
+        },
+        {
+          "y": 100,
+          "altitude": -70.63534293576177
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "name": "rolled-ground-crossing",
+        "altitude": -65,
+        "roll": 30,
+        "x": 90
+      },
+      "mode": "screen",
+      "worstOnePixelAxisStep": {
+        "degrees": 0.0538814763861345,
+        "y": 421
+      },
+      "invalid": 0,
+      "samples": [
+        {
+          "y": 639,
+          "altitude": -51.745882008330064
+        },
+        {
+          "y": 500,
+          "altitude": -56.421573965588166
+        },
+        {
+          "y": 300,
+          "altitude": -61.58091294916709
+        },
+        {
+          "y": 100,
+          "altitude": -63.831273499368095
+        }
+      ]
+    }
+  ],
+  "sourceCommit": "3de3a253035cc1f0f191ec17c91a00f1bce08ee2"
+}
