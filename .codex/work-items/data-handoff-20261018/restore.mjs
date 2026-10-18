@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { createReadStream, existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { closeSync, createReadStream, existsSync, openSync, readFileSync, readdirSync, statSync, unlinkSync, writeFileSync, writeSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
@@ -20,7 +20,23 @@ async function verify(directory){
   assert(filesUnder(root).length===manifest.files.length+1,'unexpected_or_missing_files');
   return {files:manifest.files.length,totalBytes:manifest.files.reduce((sum,file)=>sum+file.bytes,0),fileIndexExcludedFromTotals:true};
 }
-if(command==='verify'){
+if(command==='assemble'){
+  const manifestPath=option('--manifest');const directory=option('--directory');const output=option('--output');
+  assert(manifestPath&&directory&&output,'assemble_arguments_required');
+  const manifest=readJson(manifestPath);assert(manifest.schemaVersion==='starward-cross-computer-handoff-v1','handoff_schema_invalid');
+  const entry=manifest.packages.find(item=>item.path===(option('--package')??'starward-runtime-r6-20261018.zip'));
+  assert(entry&&Array.isArray(entry.parts)&&entry.parts.length>0,'transport_parts_missing');
+  assert(Number.isSafeInteger(entry.bytes)&&entry.bytes>0&&/^[a-f0-9]{64}$/u.test(entry.sha256),'archive_identity_invalid');
+  assert(new Set(entry.parts.map(part=>part.path)).size===entry.parts.length,'duplicate_part_path');
+  for(const part of entry.parts){assert(Number.isSafeInteger(part.bytes)&&part.bytes>0&&/^[a-f0-9]{64}$/u.test(part.sha256),'part_identity_invalid');assert(statSync(child(directory,part.path)).size===part.bytes,'part_size_mismatch');}
+  assert(entry.parts.reduce((sum,part)=>sum+part.bytes,0)===entry.bytes,'parts_total_size_mismatch');
+  const fd=openSync(output,'wx');let succeeded=false;const archiveDigest=createHash('sha256');let total=0;
+  try{
+    for(const part of entry.parts){const digest=createHash('sha256');let bytes=0;for await(const chunk of createReadStream(child(directory,part.path))){digest.update(chunk);archiveDigest.update(chunk);bytes+=chunk.length;total+=chunk.length;let written=0;while(written<chunk.length)written+=writeSync(fd,chunk,written,chunk.length-written);}assert(bytes===part.bytes&&digest.digest('hex')===part.sha256,'part_hash_mismatch');}
+    assert(total===entry.bytes&&archiveDigest.digest('hex')===entry.sha256,'assembled_archive_hash_mismatch');succeeded=true;
+  }finally{closeSync(fd);if(!succeeded)unlinkSync(output);}
+  console.log(JSON.stringify({status:'ORIGINAL_ARCHIVE_ASSEMBLED',parts:entry.parts.length,bytes:total,sha256:entry.sha256}));
+}else if(command==='verify'){
   assert(option('--directory'),'directory_required');
   console.log(JSON.stringify({status:'ALL_FILES_VERIFIED',...await verify(option('--directory'))}));
 }else if(command==='decrypt'){
@@ -55,4 +71,4 @@ if(command==='verify'){
     await client.query('COMMIT');
     console.log(JSON.stringify({status:result.status,allTableRowsAndHashesVerified:tables.length,publishedDataset:'eog-vnl-v22-2025-gba-fixed-20261017-r6',runtimeApplied:false,messagesSent:0}));
   }finally{await client.end();}
-}else throw new Error('usage: verify|decrypt|restore-db; see RESTORE.txt');
+}else throw new Error('usage: assemble|verify|decrypt|restore-db; see RESTORE.txt');

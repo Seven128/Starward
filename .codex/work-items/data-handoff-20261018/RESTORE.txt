@@ -39,7 +39,18 @@ this package or its decrypted contents to the public repository or Git LFS.
 
 RESTORE ORDER (PowerShell 7; substitute local absolute paths)
 1. Obtain HANDOFF-MANIFEST.json and restore.mjs from the handoff Git commit.
-   Verify both archive SHA-256 values against that manifest before extraction.
+   To obtain metadata without switching or resetting your existing checkout:
+   git fetch origin refs/heads/codex/data-handoff-20261018
+   git archive --format=zip --output <fresh-metadata.zip> FETCH_HEAD .codex/work-items/data-handoff-20261018
+   Expand-Archive -LiteralPath <fresh-metadata.zip> -DestinationPath <fresh-metadata-dir>
+   <handoff-dir> is the extracted .codex/work-items/data-handoff-20261018 directory.
+   Download all three original-named .part001/.part002/.part003 files from the
+   owner-only Drive data folder into one new directory. They are raw byte parts
+   of the unchanged ZIP, not independently extractable ZIP archives:
+   node <handoff-dir>/restore.mjs assemble --manifest <handoff-dir>/HANDOFF-MANIFEST.json --directory <downloaded-parts-dir> --output <fresh-runtime.zip>
+   The command verifies every part and the original ZIP's complete SHA-256 and
+   byte size, and refuses an existing output. Verify the encrypted archive SHA
+   against HANDOFF-MANIFEST.json as well; decrypt also enforces that hash.
 2. Expand-Archive -LiteralPath <runtime.zip> -DestinationPath <new-runtime-dir>
    node <handoff-dir>/restore.mjs verify --directory <new-runtime-dir>
 3. node <handoff-dir>/restore.mjs decrypt --repo <repo> --input <private.zip.enc>
@@ -88,6 +99,14 @@ R6's one real reminder was received and cleaned up; do not send it again.
 TRANSPORT AND LIMITS
 HANDOFF-MANIFEST.json distinguishes local archive/restore verification from remote
 upload/readback. A Git commit containing this metadata does not deliver the ZIPs.
+The authorized owner-only Drive data folder is:
+https://drive.google.com/drive/folders/1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz
+The transfer bridge permits at most 100 MiB per file. The runtime ZIP is therefore
+transported as three byte parts; part identities and private Drive file links are
+in HANDOFF-MANIFEST.json. The original complete ZIP hash remains unchanged.
+The encrypted private archive is a separate file in that data folder. The 65-byte
+key is a raw file in a separate owner-only Drive folder, linked only in the private
+handoff receipt. Download it without conversion and keep the local copy private.
 LFS account usage/budget could not be read with the existing credential scope;
 no new LFS upload, paid allowance, provider purchase or public database link is
 authorized by this metadata. Use the selected private transport destination.

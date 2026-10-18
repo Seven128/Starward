@@ -14,8 +14,34 @@
       "purpose": "Public immutable runtime resources and source/license provenance",
       "privacy": "PUBLIC_CONTENT",
       "files": 1562,
-      "transport": "PENDING_PRIVATE_DESTINATION",
-      "remoteReadbackVerified": false
+      "transport": "GOOGLE_DRIVE_PRIVATE_BYTE_PARTS",
+      "remoteReadbackVerified": true,
+      "parts": [
+        {
+          "path": "starward-runtime-r6-20261018.zip.part001",
+          "bytes": 94371840,
+          "sha256": "ec7628c2112a9fe07e90657c65643aab65ab8cb079a1714f6ea1b328ef4d1098",
+          "driveFileId": "1IQ7WH8IOu8UHItxRQg8TgYmfkC9lgMTl",
+          "url": "https://drive.google.com/file/d/1IQ7WH8IOu8UHItxRQg8TgYmfkC9lgMTl/view",
+          "remoteReadbackVerified": true
+        },
+        {
+          "path": "starward-runtime-r6-20261018.zip.part002",
+          "bytes": 94371840,
+          "sha256": "b5bf9bb6193feb8f1850c1285665ce0668c15ba31ad38c47df96a8dcdafef0e3",
+          "driveFileId": "1e669XE8xIcBGmEPMIpAfgpaMAXgWKJ6k",
+          "url": "https://drive.google.com/file/d/1e669XE8xIcBGmEPMIpAfgpaMAXgWKJ6k/view",
+          "remoteReadbackVerified": true
+        },
+        {
+          "path": "starward-runtime-r6-20261018.zip.part003",
+          "bytes": 68747861,
+          "sha256": "ec547c1886f46780d11b87183a6b9432fc73712a494c7437bb37dbfbfdd6b860",
+          "driveFileId": "1GeFit7JYLVmpx7NdXiLgFRB_1DyMEgYK",
+          "url": "https://drive.google.com/file/d/1GeFit7JYLVmpx7NdXiLgFRB_1DyMEgYK/view",
+          "remoteReadbackVerified": true
+        }
+      ]
     },
     {
       "path": "starward-private-r6-20261018.zip.enc",
@@ -29,8 +55,10 @@
       "envelopeOwner": "tools/deployment/verified-backup.mjs",
       "plaintextFormat": "ZIP",
       "keyIncluded": false,
-      "transport": "PENDING_PRIVATE_DESTINATION",
-      "remoteReadbackVerified": false
+      "transport": "GOOGLE_DRIVE_PRIVATE",
+      "remoteReadbackVerified": true,
+      "driveFileId": "1Vn3leWGFagKK6xzhWmY9m3Q8xZjOeldH",
+      "url": "https://drive.google.com/file/d/1Vn3leWGFagKK6xzhWmY9m3Q8xZjOeldH/view"
     }
   ],
   "databaseVerification": {
@@ -93,8 +121,9 @@
   ],
   "secrets": {
     "valuesIncluded": false,
-    "backupKeyTransport": "Separate private channel",
-    "locationMap": "Inside encrypted PRIVATE-RECOVERY.json"
+    "backupKeyTransport": "Separate owner-only Google Drive folder; location in private handoff receipt",
+    "locationMap": "Inside encrypted PRIVATE-RECOVERY.json",
+    "backupKeyRemoteBytesVerified": true
   },
   "continuity": {
     "n05PhoneLocalDraftPreserved": true,
@@ -103,6 +132,7 @@
     "r6ReminderResent": false
   },
   "restoreOrder": [
+    "download original-named runtime byte parts and assemble against this manifest",
     "verify archive SHA-256",
     "extract and verify runtime FILES.json",
     "authenticate/decrypt private ZIP with separately supplied key",
@@ -112,8 +142,6 @@
     "verify receiver actual consumers; no production switch"
   ],
   "missingOrNotTransported": [
-    "Approved private storage destination and authenticated independent remote readback",
-    "Backup key transfer through a separate private channel",
     "Phone-local N05 storage is retained on the original phone, not exported",
     "Global EOG originals and preparation-only geometry caches retained on the original computer; not runtime dependencies after matching DB restore",
     "Account-wide LFS remaining allowance and zero-paid-spend ceiling unavailable with current credential scope; no LFS upload performed"
@@ -123,7 +151,7 @@
   "receiverBranchAtInspection": "codex/remote-main-20260908",
   "receiverHeadAtInspection": "e4bcdf38c3b1da38e198c4fff670b14dd800f82b",
   "localArchiveReadbackVerified": true,
-  "remoteUploadPerformed": false,
+  "remoteUploadPerformed": true,
   "productionApplied": false,
   "localVerification": {
     "at": "2026-10-18T06:12:06.759Z",
@@ -135,5 +163,39 @@
     "originalPostgresFilesUnchanged": 1657,
     "transferTextSecretScanFiles": 569,
     "credentialValuesFound": 0
+  },
+  "privateStorage": {
+    "provider": "Google Drive",
+    "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+    "url": "https://drive.google.com/drive/folders/1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+    "sharing": "OWNER_ONLY",
+    "permissionMetadataReadback": true
+  },
+  "remoteVerification": {
+    "at": "2026-10-18T06:30:22.104Z",
+    "method": "Google Drive authenticated raw file fetch, new local download, full SHA-256, fresh extraction and per-file verification",
+    "runtimeTransportParts": 3,
+    "runtimeTransportBytes": 257491541,
+    "originalRuntimeZipIdentityMatched": true,
+    "runtimeExtractedFilesIncludingIndex": 1562,
+    "runtimeIndexedPayloadBytes": 260990217,
+    "encryptedPrivateBytes": 915275,
+    "privateAuthenticationWithSeparatelyDownloadedKey": true,
+    "privateExtractedFilesIncludingIndex": 50,
+    "privateIndexedPayloadBytes": 1783041,
+    "transportPayloadBytesExcludingKey": 258406816,
+    "keyBytes": 65,
+    "keyBytesEqual": true,
+    "allUploadedFilesOwnerOnly": true,
+    "receiverRuntimeAcceptance": false
+  },
+  "independentReview": {
+    "at": "2026-10-18T06:30:22.104Z",
+    "reviewer": "handoff_readonly_review",
+    "scope": "Read-only review of portable assembly/decryption/restore and actual runtime dependency owners",
+    "restoreSha256": "ee6be9350d27f747761815ac47f906af57161797f7ec9a2a58a62058c836df6a",
+    "result": "No material blocker found",
+    "runtimeReadbackEvidence": "Separate root-executed remote download and file verification",
+    "receiverAcceptanceNotClaimed": true
   }
 }
