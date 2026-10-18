@@ -1,3 +1,4 @@
+import type { MapNightLightRequest, MapSceneRequest } from "@starward/miniapp-contracts";
 import { CelestialObjectSearchService } from "./celestial-object-search.ts";
 import {
   PLAN_NOTES_MAX_LENGTH,
@@ -446,15 +447,75 @@ function dynamicLayerColor(baseColor: string, value: number | null) {
   return `${baseColor}${alpha.toString(16).padStart(2, "0").toUpperCase()}`;
 }
 
+function legacyNightLightLayer(darkSkyCells: readonly DarkSkyGridCellRecord[], datasetVersion: string): MapLayerData {
+  if (darkSkyCells.length) {
+    const colors: Record<DarkSkyGridCellRecord["productBand"], string> = {
+      VERY_LOW: "#87714A66",
+      LOW: "#A1845266",
+      MODERATE: "#BE9B6166",
+      HIGH: "#D1B57766",
+      VERY_HIGH: "#E0C99866",
+    };
+    const source = darkSkyCells[0]!.source;
+    return {
+      kind: "LIGHT_POLLUTION",
+      cloudLayer: null,
+      polygons: darkSkyCells.map((gridCell) => {
+        const { west, south, east, north } = gridCell.boundsWgs84;
+        const points = [
+          { lat: south, lon: west },
+          { lat: south, lon: east },
+          { lat: north, lon: east },
+          { lat: north, lon: west },
+        ].map((point) => {
+          const converted = wgs84ToGcj02({ ...point, system: "WGS84" });
+          return { latitude: converted.lat, longitude: converted.lon };
+        });
+        return {
+          id: `light:${gridCell.cellId}`,
+          points,
+          fillColor: colors[gridCell.productBand],
+          strokeColor: colors[gridCell.productBand],
+          strokeWidth: 1,
+          value: gridCell.radiance.median,
+          label: gridCell.label,
+          state: "PARTIAL" as const,
+        };
+      }),
+      legend: [
+        { label: "相对较低", color: "#87714A", range: "试点区夜光低值" },
+        { label: "相对中等", color: "#BE9B61", range: "试点区夜光中值" },
+        { label: "相对较高", color: "#E0C998", range: "试点区夜光高值" },
+      ],
+      validAt: source.validFrom,
+      datasetVersion: darkSkyCells[0]!.datasetVersion,
+      precision:
+        `${source.precision.trim() || "已发布年度夜光粗网格"}；等级只在同一试点区和同一数据集内相对比较，不是 Bortle、SQM 或现场实测`,
+      state: "PARTIAL",
+      source,
+    };
+  }
+  return {
+    kind: "LIGHT_POLLUTION",
+    cloudLayer: null,
+    polygons: [],
+    legend: [],
+    validAt: null,
+    datasetVersion: datasetVersion,
+    precision: "当前视野没有可用的已发布卫星夜光网格",
+    state: "UNAVAILABLE",
+    source: null,
+  };
+}
+
 function layerFor(input: {
-  kind: MapLayerKind;
+  kind: Exclude<MapLayerKind, "LIGHT_POLLUTION">;
   cloudLayer: ObservationContext["weatherView"]["cloudLayer"];
   selectedAtUtc: string;
   spots: readonly SpotSummary[];
   reports: Readonly<Record<string, ApiEnvelope<AstronomyDecisionReport>>>;
   evaluations: Readonly<Record<string, MapSpotEvaluation>>;
   config: MiniappRuntimeConfig;
-  darkSkyCells: readonly DarkSkyGridCellRecord[];
   cloudSamples?: readonly MapCloudSample[];
 }): MapLayerData {
   if (input.kind === "NORMAL")
@@ -469,66 +530,6 @@ function layerFor(input: {
       state: "FRESH",
       source: null,
     };
-  if (input.kind === "LIGHT_POLLUTION") {
-    if (input.darkSkyCells.length) {
-      const colors: Record<DarkSkyGridCellRecord["productBand"], string> = {
-        VERY_LOW: "#87714A66",
-        LOW: "#A1845266",
-        MODERATE: "#BE9B6166",
-        HIGH: "#D1B57766",
-        VERY_HIGH: "#E0C99866",
-      };
-      const source = input.darkSkyCells[0]!.source;
-      return {
-        kind: input.kind,
-        cloudLayer: null,
-        polygons: input.darkSkyCells.map((gridCell) => {
-          const { west, south, east, north } = gridCell.boundsWgs84;
-          const points = [
-            { lat: south, lon: west },
-            { lat: south, lon: east },
-            { lat: north, lon: east },
-            { lat: north, lon: west },
-          ].map((point) => {
-            const converted = wgs84ToGcj02({ ...point, system: "WGS84" });
-            return { latitude: converted.lat, longitude: converted.lon };
-          });
-          return {
-            id: `light:${gridCell.cellId}`,
-            points,
-            fillColor: colors[gridCell.productBand],
-            strokeColor: colors[gridCell.productBand],
-            strokeWidth: 1,
-            value: gridCell.radiance.median,
-            label: gridCell.label,
-            state: "PARTIAL" as const,
-          };
-        }),
-        legend: [
-          { label: "相对较低", color: "#87714A", range: "试点区夜光低值" },
-          { label: "相对中等", color: "#BE9B61", range: "试点区夜光中值" },
-          { label: "相对较高", color: "#E0C998", range: "试点区夜光高值" },
-        ],
-        validAt: source.validFrom,
-        datasetVersion: input.darkSkyCells[0]!.datasetVersion,
-        precision:
-          `${source.precision.trim() || "已发布年度夜光粗网格"}；等级只在同一试点区和同一数据集内相对比较，不是 Bortle、SQM 或现场实测`,
-        state: "PARTIAL",
-        source,
-      };
-    }
-    return {
-      kind: input.kind,
-      cloudLayer: null,
-      polygons: [],
-      legend: [],
-      validAt: null,
-      datasetVersion: input.config.darkSkyDatasetVersion,
-      precision: "当前视野没有可用的已发布卫星夜光网格",
-      state: "UNAVAILABLE",
-      source: null,
-    };
-  }
   const reportEntries = input.spots
     .map((spot) => ({
       spot,
@@ -1137,6 +1138,37 @@ export class MiniappService {
     return this.nightLight.asset(datasetVersion, file, signal);
   }
 
+  /** Same publication and legacy reader for both old Scenes and the independent
+   * public layer. No observation context, catalogue or weather work belongs here. */
+  private async readMapNightLight(viewport?: MapSceneRequest["viewport"], signal?: AbortSignal): Promise<MapLayerData> {
+    signal?.throwIfAborted();
+    const version = this.config.darkSkyDatasetVersion;
+    if (this.repository.kind !== "postgres") return legacyNightLightLayer([], version);
+    try {
+      const fixed = await this.nightLight.layer(version, viewport?.bounds, signal);
+      if (fixed) return fixed;
+      const center = viewport ? gcj02ToWgs84({ system: "GCJ-02",
+        lat: viewport.center.latitude, lon: viewport.center.longitude }) : null;
+      const cells = await this.repository.listDarkSkyGridCells({ datasetVersion: version,
+        ...(center && viewport ? { center: { system: "WGS84" as const, latitude: center.lat, longitude: center.lon },
+          radiusKm: viewportRadiusKm(viewport.zoom) } : {}),
+      });
+      signal?.throwIfAborted();
+      return legacyNightLightLayer(cells, version);
+    } catch {
+      signal?.throwIfAborted();
+      return nightLightUnavailable(version, true);
+    }
+  }
+
+  async getMapNightLight(input: MapNightLightRequest, signal?: AbortSignal): Promise<ApiEnvelope<MapLayerData>> {
+    const startedAt = performance.now();
+    const layer = await this.readMapNightLight(input.viewport, signal);
+    this.telemetry.event("nightlight_metadata_read", { milliseconds: performance.now() - startedAt,
+      state: layer.state, assetSha256: layer.raster?.imageSha256 ?? null });
+    return envelope(layer, layer.state, layer.source ? [layer.source] : [], layer.source?.limitations ?? []);
+  }
+
   async getMapScene(input: {
     contextId: string;
     filters?: FilterState;
@@ -1356,18 +1388,7 @@ export class MiniappService {
           ? "PostGIS published formal spots"
           : "explicit test fixture repository",
     };
-    let fixedLightLayer: MapLayerData | null = null;
-    let darkSkyCells: readonly DarkSkyGridCellRecord[] = [];
-    if (layerKind === "LIGHT_POLLUTION" && this.repository.kind === "postgres") {
-      try {
-        fixedLightLayer = await this.nightLight.layer(this.config.darkSkyDatasetVersion, input.viewport?.bounds);
-        if (!fixedLightLayer) darkSkyCells = await this.repository.listDarkSkyGridCells({
-          datasetVersion: this.config.darkSkyDatasetVersion,
-          ...(viewportCenterWgs84 && radiusKm ? { center: viewportCenterWgs84, radiusKm } : {}),
-        });
-      } catch { fixedLightLayer = nightLightUnavailable(this.config.darkSkyDatasetVersion, true); }
-    }
-    const layer = fixedLightLayer ?? layerFor({
+    const layer = layerKind === "LIGHT_POLLUTION" ? await this.readMapNightLight(input.viewport) : layerFor({
       kind: layerKind,
       cloudLayer,
       selectedAtUtc: context.selectedAtUtc,
@@ -1375,7 +1396,6 @@ export class MiniappService {
       reports,
       evaluations,
       config: this.config,
-      darkSkyCells,
       cloudSamples,
     });
     const visibleEvaluations = Object.fromEntries(
@@ -1414,7 +1434,6 @@ export class MiniappService {
           reports,
           evaluations,
           config: this.config,
-          darkSkyCells: [],
           cloudSamples,
         });
         return {

@@ -14,11 +14,11 @@ test("layer sheet defaults an unopened or legacy selection to cloud", () => {
   assert.equal(layerSheetOverlay("LIGHT"), "LIGHT");
 });
 
-test("a visible light failure has one local recovery, including the first failed read", () => {
+test("independent light recovery cannot hide the Scene weather and marker recovery", () => {
   const input = { open: true, overlay: "LIGHT" as const, contextFailed: false,
     sceneFailed: true, lightState: "ERROR" as const, cloudTimeChoiceCount: 0 };
-  assert.equal(layerSheetOwnsSceneRecovery(input), true);
-  assert.equal(layerSheetOwnsSceneRecovery({ ...input, lightState: "STALE" }), true);
+  assert.equal(layerSheetOwnsSceneRecovery(input), false);
+  assert.equal(layerSheetOwnsSceneRecovery({ ...input, lightState: "STALE" }), false);
   assert.equal(layerSheetOwnsSceneRecovery({ ...input, open: false }), false);
   assert.equal(layerSheetOwnsSceneRecovery({ ...input, contextFailed: true }), false);
   assert.equal(layerSheetOwnsSceneRecovery({ ...input, sceneFailed: false }), false);

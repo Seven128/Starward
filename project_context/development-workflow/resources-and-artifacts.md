@@ -32,6 +32,8 @@ GitHub Free is the selected hosting tier; no paid overage is authorized. Its doc
 
 Runtime delivery continues through the existing publication/export and static-service owners; LFS is development storage, not the application image CDN. Reassess external object storage/DVC only when verified volume, collaborators, processing or delivery requirements justify it.
 
+Sealed terrain/night-light releases are runtime publication inputs, even when their producer wrote them below an ignored `output/` directory. Git/LFS preparation supplies only tracked resources. Cross-computer recovery must pair the complete hash-verified release with its publication authority: [annual night light](../../data-pipelines/dark-sky/README.md) requires the matching PostgreSQL PUBLISHED record as well as files. Keep manifests/rights/recovery instructions in ordinary Git; admit immutable public bytes into LFS only through its current policy and measured allowance, or use the selected artifact/object storage. Database backups and private account/draft evidence use the existing private backup/transfer owner. A local archive is not off-host backup, and uploading bytes does not activate a production release.
+
 ## Cloud Sky image processing
 
 供给和加工规模参考[云端影像库存估算](../deployment/decisions-and-verification.md#cloud-sky-image-inventory-estimate-2026-10-10)，由部署容量owner统一持有数量区间、体积与保留副本假设及重评条件。按合格目标/天区成品计量，原始输入、LOD文件和重复版次分开统计；该估算不替代覆盖与图质要求，实际加工/复核/采用进度留任务交接及库存。

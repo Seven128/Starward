@@ -1,10 +1,14 @@
 # Independent review — Sky/Map and package optimization
 
-## Current follow-up review packet — pending
+## Follow-up independent review — completed at 7627d9ad
 
-No independent reviewer has reviewed the later shared overlay/clock and phone-driven repairs as a complete delivery. The historical review below remains limited to its own hashes. Current implementation checkpoint is7472659d;9e5c75ef adds evidence only, and Product CI39095632949 passed for that combined source, including the clean Linux tests, builds and isolated infrastructure checks. The root's investigation is self-review, not an independent verdict.
+The human explicitly authorized a new read-only reviewer. `overlay_delivery_readonly_review` reviewed HEAD7627d9ad and returned no confirmed actionable new defect in the following scope. It checked112 frontend pins and5 backend measurement hashes, all matching, and independently read Product CI39095632949 success at9e5c75ef; product/tool/workflow code did not change between that head and7627d9ad. The reviewer changed no files, operated no phone/IDE/service and ran no tests or new CI. It finished and was retired rather than reused.
 
-Review the new responsibilities against REQUIREMENTS, INHERITED-REQUIREMENTS and the unchanged PLAN:
+It verified shared-reader cancellation/last-reader retirement and same-key successors, bounded terrain window/source work, nightlight version+inventory+window identity, coverage containment/detail, cloud receipt-time pairing and lifecycle retirement, and the poster mounting-page asset resolver. Existing regression assertions were inspected. Actual saved images reviewed: generation7 cloud-pan contact sheet, generation6 cross-window terrain contact sheet and horizon card, generation8 attribution frame, generation9 poster/native-save toast. These support only the bounded observations in their evidence owners. The historical generation4 motion review was reused within its original scope; complete videos were not newly reviewed.
+
+**This verdict excludes the subsequent architecture-plan revision and new independent nightlight endpoint/client integration.** Those later changes need their own applicable verification and independent review before substantial delivery. The earlier green CI is also not proof for later production edits.
+
+The reviewed packet compared REQUIREMENTS, INHERITED-REQUIREMENTS and the then-current PLAN:
 
 - Terrain/shared reads: `workers/miniapp-api/src/shared-read-pool.ts`, terrain service/viewport/window renderers, night-light service/window and the client terrain coverage/query owners. Check last-reader cancellation, joined ownership, bounded advancing work, deadline/queue cleanup, cache publication identity and preservation of valid overlapping native coverage.
 - Cloud validity: geographic sample-cell identity, independent missing/zero meanings, the forecast/resource-query receipt clock and `use-map-cloud-presentation` retention. Check actual selected hour, source age/expiry, account/context/layer/visibility retirement and late-query receipt association. Phone time alignment must not rewrite provider timestamps or extend declared validity.

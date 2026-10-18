@@ -278,5 +278,6 @@
     "fullSuiteRerun": true,
     "coveredByProductRunId": 39095632949
   },
-  "contextUnchangedSinceCheckedHead": true
+  "contextUnchangedSinceCheckedHead": false,
+  "pendingSourceChange": "Static-light independent API/Map consumer and adopted plan/Context update; prior green runs do not cover it."
 }

@@ -13,6 +13,12 @@ export function mapLayerKindForOverlay(overlay: AnalysisOverlay): MapLayerKind {
   return "NORMAL";
 }
 
+/** Static annual light loads independently; the Scene still owns weather-based
+ * marker/filter evidence, and must not compose the same raster a second time. */
+export function mapSceneLayerForOverlay(overlay: AnalysisOverlay): MapLayerKind {
+  return overlay === "LIGHT" ? "NORMAL" : mapLayerKindForOverlay(overlay);
+}
+
 export function lightLayerContentState(input: {
   pending: boolean;
   failed: boolean;
@@ -24,9 +30,8 @@ export function lightLayerContentState(input: {
   return input.unavailable ? "EMPTY" : "READY";
 }
 
-/** A visible local recovery takes the scene's feedback, but cannot recover a
- * failed Context or native Map. Cloud slices with retained data lack a local
- * retry, so their scene recovery remains on the map. */
+/** The independent light retry cannot recover weather/marker Scene data.
+ * Empty cloud slices still use their Scene recovery inside the sheet. */
 export function layerSheetOwnsSceneRecovery(input: {
   open: boolean;
   overlay: LayerSheetOverlay;
@@ -36,7 +41,5 @@ export function layerSheetOwnsSceneRecovery(input: {
   cloudTimeChoiceCount: number;
 }): boolean {
   if (!input.open || input.contextFailed || !input.sceneFailed) return false;
-  return input.overlay === "LIGHT"
-    ? input.lightState === "ERROR" || input.lightState === "STALE"
-    : input.cloudTimeChoiceCount === 0;
+  return input.overlay !== "LIGHT" && input.cloudTimeChoiceCount === 0;
 }

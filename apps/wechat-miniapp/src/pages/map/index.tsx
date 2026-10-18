@@ -3,6 +3,7 @@ import { SystemMotionProbe } from "@/components/system-motion-probe";
 import { FINDER_FIELD_PLACEHOLDER } from "./finder-field";
 import { useMapForecastQuery, useSkyForecastQuery } from "@/hooks/use-forecast-query";
 import { useMapCloudPresentation } from "@/hooks/use-map-cloud-presentation";
+import { useMapNightLight } from "@/hooks/use-map-night-light";
 import { WEATHER_ALERT_REFRESH_MS } from "@/components/weather-alert-state";
 import { MapLayerSheet } from "./map-layer-sheet";
 import { createSpotEditorPresentation, SPOT_EDITOR_ENTER_MS, SPOT_EDITOR_EXIT_MS, type SpotEditorPhase } from "./spot-editor-presentation";
@@ -112,6 +113,7 @@ import {
   layerSheetOwnsSceneRecovery,
   lightLayerContentState,
   mapLayerKindForOverlay,
+  mapSceneLayerForOverlay,
 } from "./map-layer-selection";
 import { useMapSpotFocus, type MeasuredSpotFocusFrame } from "./use-map-spot-focus";
 import { spotNeighborhoodCamera } from "./map-camera";
@@ -695,7 +697,7 @@ export default function MapPage() {
       preferences.requiredFacilities,
       preferences.equipment,
       preferences.capturePreference,
-      analysisOverlay,
+      mapSceneLayerForOverlay(analysisOverlay),
     ],
     queryFn: (signal) => {
       // Retain the confirmed cached markers while selection resolves, without
@@ -714,14 +716,18 @@ export default function MapPage() {
           equipment: preferences.equipment,
           capturePreference: preferences.capturePreference,
         },
-        mapLayerKindForOverlay(analysisOverlay),
+        mapSceneLayerForOverlay(analysisOverlay),
         activeContext!.weatherView.cloudLayer,
         signal,
       );
     },
-    enabled: pageVisible && Boolean(activeContext) && (mapLayerKindForOverlay(analysisOverlay) === "NORMAL" || Boolean(nativeViewport.bounds || nativeViewport.error)),
+    enabled: pageVisible && Boolean(activeContext) && (mapSceneLayerForOverlay(analysisOverlay) === "NORMAL" || Boolean(nativeViewport.bounds || nativeViewport.error)),
     staleTime: value => value?.data.layer.failureCode ? 0 : 60_000,
   });
+
+  const nightLight = useMapNightLight(nativeViewport.bounds ? { ...viewport, bounds: nativeViewport.bounds } : null,
+    pageVisible && analysisOverlay === "LIGHT");
+  const nightLayer = analysisOverlay === "LIGHT" ? nightLight.data?.data ?? null : null;
 
   useEffect(() => {
     if (accountOwnerId !== currentDraftUserId()) return;
@@ -843,7 +849,7 @@ export default function MapPage() {
     ...privateContributionMarkerItems(privateMarkers, 100_000, mode, preferences.largeText),
     ...(bottomPresentation === "spot-editor" && candidateMarker ? [candidateMarker] : []),
   ], [bottomPresentation, candidateMarker, groupedMarkers, mode, preferences.largeText, privateMarkers, selectedSpotId]);
-  const geographicLayer = cloudPresentation?.layer ?? scene.data?.data.layer;
+  const geographicLayer = analysisOverlay === "LIGHT" ? nightLayer : cloudPresentation?.layer ?? scene.data?.data.layer;
   const projectedPolygonSource = useMemo(
     () =>
       geographicLayer?.kind === mapLayerKindForOverlay(analysisOverlay)
@@ -938,7 +944,6 @@ export default function MapPage() {
   const mapTerrainLoading = pageVisible && terrainEnabled && !nativeMap.pending && !mapRuntimeError
     && (!mapTerrainBounds ? !terrainViewportError : terrain.isPending || terrain.isFetching || terrain.imagePending
       || (!mapTerrainMissing && !mapTerrainFailed && terrainInstallation.pending));
-  const nightLayer = scene.data?.data.layer.kind === "LIGHT_POLLUTION" ? scene.data.data.layer : null;
   const nightRaster = nightLayer?.raster ?? null;
   const [lightNativeRetry, setLightNativeRetry] = useState(0);
   const lightImage = useRasterImage(nightRaster ? { key: `${nightRaster.publicationId}:${nightRaster.imageUrl}`,
@@ -954,7 +959,7 @@ export default function MapPage() {
     onFailure: () => setAnnouncement("光污染叠加未能显示，可在图层中重试。"),
   });
   const displayedLightLayer = lightInstallation.presentedData ?? (!nightRaster ? nightLayer : null);
-  const lightReadFailed = Boolean(nightLayer?.failureCode || lightImage.imageError || lightInstallation.error
+  const lightReadFailed = Boolean(nightLight.isError || nightLight.refreshError || nightLayer?.failureCode || lightImage.imageError || lightInstallation.error
     || (analysisOverlay === "LIGHT" && nativeViewport.error));
   useEffect(() => {
     if (!pageVisible || (analysisOverlay !== "LIGHT" && !lightInstallation.error) || !lightReadFailed) return;
@@ -1102,8 +1107,8 @@ export default function MapPage() {
       geographicLayer.state === "UNAVAILABLE",
   );
   const lightLayerState = lightLayerContentState({
-    pending: scene.isPending || !nightLayer || lightImage.imagePending || lightInstallation.pending,
-    failed: Boolean(scene.isError || scene.refreshError || scene.data?.dataState === "STALE_USABLE" || lightReadFailed),
+    pending: nightLight.isPending || !nightLayer || lightImage.imagePending || lightInstallation.pending,
+    failed: Boolean(nightLight.data?.dataState === "STALE_USABLE" || lightReadFailed),
     hasData: Boolean(nightLayer || lightInstallation.presentedData),
     unavailable: visibleLayerUnavailable,
   });
@@ -1901,6 +1906,8 @@ export default function MapPage() {
 
   const refreshMap = async () => {
     setAnnouncement("正在刷新当前区域");
+    const lightRefresh = analysisOverlay === "LIGHT" && nativeViewport.bounds
+      ? nightLight.refetch({ cancelRefetch: false }).catch(() => undefined) : null;
     try {
       if (selected && (bootstrapReplacementBlocked || visibleSpotContextAttempt?.error)) {
         await resolveSpotContext(selected);
@@ -1942,6 +1949,11 @@ export default function MapPage() {
       });
       if (!current()) return;
       if (!refreshed.result) throw new Error("map_refresh_unavailable");
+      if (lightRefresh) {
+        const refreshedLight = await lightRefresh;
+        if (!current()) return;
+        if (!refreshedLight || refreshedLight.data.failureCode) throw new Error("map_light_refresh_unavailable");
+      }
       setAnnouncement(refreshed.contextChanged
         ? "观测上下文已恢复，正在更新当前区域。"
         : refreshed.result.dataState === "STALE_USABLE"
@@ -1957,7 +1969,7 @@ export default function MapPage() {
     if (lightInstallation.requiresMapRecovery || nativeViewport.error) { nativeMap.retry(); return; }
     lightImage.retryImage();
     setLightNativeRetry(value => value + 1);
-    await refreshMap();
+    await nightLight.refetch();
   };
 
   const commitMapTime = async (frameIndex: number) => {
@@ -2779,8 +2791,8 @@ export default function MapPage() {
                     return (
                       <Button
                         key={overlay}
-                        className={`map-layer-sheet__choice${selectedLayer ? " map-layer-sheet__choice--active" : ""}${activeContext && !scene.isPending && !timeSaving ? " map-layer-sheet__choice--ready" : ""}`}
-                        disabled={!activeContext || scene.isPending || timeSaving}
+                        className={`map-layer-sheet__choice${selectedLayer ? " map-layer-sheet__choice--active" : ""}${activeContext && !timeSaving ? " map-layer-sheet__choice--ready" : ""}`}
+                        disabled={!activeContext || timeSaving}
                         aria-label={`${overlayLabels[overlay]}${selectedLayer ? "，已选择" : ""}`}
                         onClick={() => {
                           if (overlay === "LIGHT") setDatePickerOpen(false);

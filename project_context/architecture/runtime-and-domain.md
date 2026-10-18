@@ -191,6 +191,14 @@ Rollback creates a bounded unique catalog version; HTTP routing must accept the 
 
 `packages/coordinate-system` owns WGS84↔GCJ-02 conversion for the Mini Program, its API and the existing native map consumer. The earlier rectangle was only a quick rejection bound and included neighboring places such as Islamabad, causing a WeChat-selected coordinate to shift by hundreds of metres when saved as WGS84. The shared converter now also checks an approximate 69-point GCJ-02 distortion footprint before applying the shift; locations outside it retain their numerical coordinates. This footprint is technical coverage, not a political boundary. Its point data comes from [PRCoords' CC0 source](https://github.com/Artoria2e5/PRCoords/blob/master/js/misc/insane_is_in_china.js) under the project's [CC0/GPL dual license](https://github.com/Artoria2e5/PRCoords#license); only the CC0 permission is used and no runtime dependency was added. The inverse and map-view provenance use conversion version v3. Border-adjacent provider behaviour and actual phone GPS/map alignment still require device evidence; revise the footprint if those inputs show a mismatch rather than assuming this approximation is exact.
 
+### Main Map overlay delivery
+
+主地图继续使用微信原生map，静态地形/年度夜光和动态点位云量分责。`GET /v2/map/night-light`由同一NightLightService及数据库发布身份提供当前视窗的公开年度资料，独立于观测Context、筛选、天气和天文计算；原MapScene的LIGHT合同通过相同静态reader兼容旧客户端。新Map通过`use-map-night-light`读取图片、图例、来源和失败状态，地点/筛选仍读取普通Scene，避免重复组合夜光。图层重试只恢复静态metadata/图片/原生安装，不能遮掉独立Scene失败的恢复入口。固定图片仍走原共享下载、有效覆盖和native退役owner；部署须先提供新增BFF接口再交付依赖它的新客户端，旧手机候选与服务不会自动升级。
+
+采用的后续优化方向是让相机只决定需要的固定空间集合，把已有静态成品的源读取/加工移出交互关键路径。客户端与服务端共用网格/LOD规则，保原请求与实际coverage，Spot半径业务不合并成Map身份。恢复现有发布后，按实际目标范围预发布可信基础成品和热点细节、冷区有界补齐；原始DEM缓存与最终可显示资产分别计量。对象存储/CDN通过现有部署和发布责任适配地图产品，保不可变URL、权利、校验、旧版与回滚，不能直接套用Sky专用包身份或以采购代替上线读回。
+
+整窗仍是当前渲染方式；少量固定512像素图块是有条件的候选。先以相同范围/内容/总像素做Android与iOS对照，核内部配准、接缝、双栅格透明叠加、原生调用/内存和释放。无mask/成组原子切换保证时，不把半透明父子重叠当作正确过渡；无净收益则保整窗或少量合成范围。覆盖、细节、空缺持续时间、重复字节和资源回落分别判断，回调不等于可见帧；编码缓存容量与native纹理预算分开。预取、源HTTP和CPU背压按实测瓶颈及现预算调整，不将外部报告示例值或DAU直接变为并发/资源承诺。
+
 ### Mini Program terrain and directional-light evidence
 
 2026-09-13用户确认以可获得数据为范围；2026-10-12进一步明确国内真实云层与地形为核心用户功能，须实际取数并在普通入口显示/操作，不能以样本逻辑或可读空态宣称通过。产品主图与分项未知状态由[地形owner](../areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md#地形以可获得数据为边界)维护。Map/Spot经同一`TerrainService`拥有生命周期、身份及预算：Spot按2–50km半径使用真实Copernicus DEM GLO-30，覆盖内保留大湾区85km旧高程发布；Map按实际视窗矩形使用Terrain Tiles Terrarium金字塔。旧Map半径资产保留原Copernicus生产器，不硬编码验收样点。Map采用适合道路底图叠加的坡向阴影，不能以覆盖矩形着色代替可读地势；缺测与平坦地形分别表达，不承诺每个像素完整或20%误差。

@@ -271,6 +271,26 @@ export class MiniappController {
     });
   }
 
+  @Get("map/night-light")
+  async mapNightLight(
+    @Query("centerLat") centerLat?: string,
+    @Query("centerLng") centerLng?: string,
+    @Query("zoom") zoom?: string,
+    @Query("viewportBounds") viewportBounds?: string,
+    @Res({ passthrough: true }) reply?: FastifyReply,
+  ) {
+    const viewport = parseViewport({
+      ...(centerLat === undefined ? {} : { centerLat }),
+      ...(centerLng === undefined ? {} : { centerLng }),
+      ...(zoom === undefined ? {} : { zoom }),
+      ...(viewportBounds === undefined ? {} : { bounds: viewportBounds }),
+    });
+    if (!viewport?.bounds) throw new BadRequestException("map_viewport_required");
+    return withTerrainRead(reply, signal => this.service.getMapNightLight({
+      viewport: { ...viewport, bounds: viewport.bounds! },
+    }, signal));
+  }
+
   @Get("terrain/overlay")
   async terrainOverlay(
     @Query("purpose") purpose?: string,

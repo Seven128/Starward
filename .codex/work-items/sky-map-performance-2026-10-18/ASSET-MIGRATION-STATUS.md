@@ -24,6 +24,6 @@ Before choosing Git LFS versus the existing release-artifact storage for any new
 
 ## Current transfer state
 
-The user has now deferred the other-computer light/necessary production-data synchronization until after waking. No question or transfer action is pending for immediate response. Continue independent implementation and retain these prerequisites for one later handoff; do not cancel the original publication/environment obligations.
+The user has returned with a request for an executable prompt for the original computer. OTHER-COMPUTER-DATA-HANDOFF-PROMPT.md now specifies inventory, storage admission, upload/readback and isolated recovery. No original-computer execution receipt or source data has arrived yet. Continue independent implementation; this prompt does not establish an upload, entitlement, restored database or activated publication.
 
 MISSING: original paths, verified release bundle/database recovery input, transferred hashes and successful isolated readback. This does not block independent source/performance work, but it prevents claiming that real r6/nightlight and the original business environment were reproduced on this computer. No data release, new LFS upload, database restoration or source re-acquisition was performed by this record.

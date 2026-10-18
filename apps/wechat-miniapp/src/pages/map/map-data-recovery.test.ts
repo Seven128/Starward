@@ -40,8 +40,8 @@ function renderFailure(owner: "scene" | "context", cached: boolean, visible = tr
   return { ...result, notices };
 }
 
-test("light and cloud layer failures own their visible retries while a failed map context keeps global recovery", () => {
-  assert.equal(renderFailure("scene", true, true, "layer-sheet", "LIGHT").recovery, false);
+test("static light leaves Scene recovery available while cloud retains its existing local retry", () => {
+  assert.equal(renderFailure("scene", true, true, "layer-sheet", "LIGHT").recovery, true);
   assert.equal(renderFailure("context", true, true, "layer-sheet", "LIGHT").recovery, true);
   assert.equal(renderFailure("scene", true, true, "layer-sheet", "TOTAL_CLOUD").recovery, false);
   assert.equal(renderFailure("context", true, true, "layer-sheet", "TOTAL_CLOUD").recovery, true);
@@ -81,6 +81,7 @@ async function retryMap(activeContext: object | null, mapContextFailed: boolean,
     compilerOptions: { target: ts.ScriptTarget.ES2020 },
   }).outputText, {
     activeContext: activeContext ? confirmed : null, mapContextFailed, bootstrapReplacementBlocked: false, selected: null,
+    analysisOverlay: "NONE", nativeViewport: { bounds: null },
     navigationEpoch: { current: 0 }, retryObservationScene,
     useAppStore: { getState: () => ({ accountOwnerId: "owner", mapResetVersion: 0 }) },
     failedMapRegion: { current: null }, mapPointIntent: { current: 0 },

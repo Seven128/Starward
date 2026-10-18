@@ -1,0 +1,40 @@
+{
+  "bundleSha256": "649874f95fe478cacd4c44a29b2065f22af1235feee11f1f35e37aeb9db4f62e",
+  "fileCount": 338,
+  "totalBytes": 4950358,
+  "packages": {
+    "main": {
+      "bytes": 2013644,
+      "source_map_bytes": 0
+    },
+    "content": {
+      "bytes": 1041379,
+      "source_map_bytes": 0
+    },
+    "spot": {
+      "bytes": 598334,
+      "source_map_bytes": 0
+    },
+    "sky": {
+      "bytes": 1297001,
+      "source_map_bytes": 0
+    }
+  },
+  "mainHeadroomBytes": 83508,
+  "staticChecks": {
+    "native_project": true,
+    "filter_population": true,
+    "curated_spots": true,
+    "capability_flags": true,
+    "no_direct_provider": true,
+    "no_html_delivery": true,
+    "recovery_semantics": true,
+    "explicit_location_only": true,
+    "response_cache_entity_identity": true,
+    "package_budget": true,
+    "route_files": true
+  },
+  "passed": true,
+  "bundleDirectory": "apps/wechat-miniapp/dist/weapp-check-overlay-static",
+  "scope": "Local ordinary isolated build; not installed on phone, not a deployable release or real r6 acceptance"
+}

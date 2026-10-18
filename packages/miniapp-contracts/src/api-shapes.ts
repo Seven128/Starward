@@ -473,6 +473,12 @@ export interface MapSceneRequest {
   preferences?: SpotRankingPreferences;
 }
 
+/** Public annual-light products depend on the actual view, not a user's
+ * observation time, weather, filters or account. */
+export interface MapNightLightRequest {
+  viewport: NonNullable<MapSceneRequest["viewport"]> & { bounds: TerrainBounds };
+}
+
 export interface RouteEstimateRequest {
   contextId: ObservationContext["contextId"];
   spotId: SpotSummary["spotId"];
