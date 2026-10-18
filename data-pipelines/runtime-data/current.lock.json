@@ -84,7 +84,7 @@
         "neededFor": "EOG algorithm changes, republishing and original-pixel comparisons"
       }
     ],
-    "receipt": "Original publisher identity; not downloaded or rehashed on the receiving computer. Off-host upload remains required.",
+    "receipt": "Original publisher identity; not downloaded or rehashed on the receiving computer. Exact originals may be acquired through authorized official EOG access or a verified existing copy. A verified Drive mirror remains pending.",
     "targetStorage": {
       "provider": "GOOGLE_DRIVE",
       "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",

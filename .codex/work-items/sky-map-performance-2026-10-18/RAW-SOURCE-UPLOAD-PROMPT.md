@@ -1,8 +1,10 @@
 # 给原电脑：补齐 EOG 重建数据的远端记录
 
+此提示词是原电脑上传的备选路径。接收端也可经 EOG 官方账号下载相同原始版本并校验；若接收端已补齐同一文件的 Drive 记录，直接复用，不再重复上传。官方 GZIP 只是传输格式，解压后的 TIFF 必须与锁清单完全一致。
+
 请承接 Starward 已建立的数据同步流程，补齐原电脑上的两个 EOG 2025 全局原始 TIFF 的私有 Drive 存储和 Git 记录。当前 r6 运行成品、固定地形和数据库已在接收端恢复，不要重新生产 r6，不重做产品验证，不再打包整库/数据库/密钥。
 
-先读取当前仓库规则，以及接收端提交 `95aeb06606cdc9967e42b8015020ce45e9c47da9` 的 `data-pipelines/runtime-data/README.md`、`current.lock.json` 和对应资源 Context。可 fetch `codex/remote-main-20260908` 后用 `git show`/定向归档只取元资料，不切换、重置或覆盖你当前工作。`current.lock.json` 的 `rebuild.files` 已记录两个文件的精确原名、字节数、SHA-256，合计 17,420,036,496 字节，目前为 `NOT_UPLOADED`。从原发布的 source manifest/既有路径找到它们并校验，不用另一个年份、GZIP 或重下载的新输入冒充这两个 TIFF。
+先读取当前仓库规则，以及接收端分支 `codex/remote-main-20260908` 当前的 `data-pipelines/runtime-data/README.md`、`current.lock.json` 和对应资源 Context（流程初始提交为 `95aeb06606cdc9967e42b8015020ce45e9c47da9`）。可 fetch 后用 `git show`/定向归档只取元资料，不切换、重置或覆盖你当前工作。`current.lock.json` 的 `rebuild.files` 已记录两个文件的精确原名、字节数、SHA-256，合计 17,420,036,496 字节。以当前记录判断是否已上传；从原发布的 source manifest/既有路径找到它们并校验，不用另一个年份/修订或未解压核验的 GZIP 冒充这两个 TIFF。
 
 目标是现有所有者私有数据目录：
 https://drive.google.com/drive/folders/1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz
