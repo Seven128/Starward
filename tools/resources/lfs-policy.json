@@ -6,6 +6,10 @@
       "workers/miniapp-api/assets/**/*.webp",
       "workers/miniapp-api/assets/**/*.zip"
     ],
+    "map-data": [
+      "data-pipelines/runtime-data/releases/**/*.png",
+      "data-pipelines/runtime-data/releases/**/*.tif"
+    ],
     "catalogs": [
       "workers/miniapp-api/assets/sao/catalog.json",
       "workers/miniapp-api/assets/sao/[0-9]*.json",

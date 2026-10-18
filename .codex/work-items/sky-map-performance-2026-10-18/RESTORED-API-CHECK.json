@@ -1,0 +1,92 @@
+{
+  "sourceRevision": "e4bcdf38c3b1da38e198c4fff670b14dd800f82b",
+  "runtimeDataLock": "data-pipelines/runtime-data/current.lock.json",
+  "port": 8794,
+  "storage": "POSTGRES",
+  "autoMigrate": false,
+  "remindersEnabled": false,
+  "samples": [
+    {
+      "path": "night-light-image",
+      "http": 200,
+      "ms": 44,
+      "bytes": 4276,
+      "sha256": "b6f09db480cb146e50acdb7a16e4d9567fb2751727136cbb6d6aa0288047be7a",
+      "matchesPublished": true,
+      "cache": "public, max-age=604800, immutable"
+    },
+    {
+      "path": "night-light-warm",
+      "http": 200,
+      "ms": 6,
+      "state": "FRESH",
+      "datasetVersion": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
+      "raster": true,
+      "keys": [
+        "kind",
+        "cloudLayer",
+        "polygons",
+        "legend",
+        "validAt",
+        "datasetVersion",
+        "state",
+        "source",
+        "precision",
+        "raster"
+      ]
+    },
+    {
+      "path": "night-light-unpublished",
+      "http": 200,
+      "ms": 5,
+      "state": "UNAVAILABLE",
+      "datasetVersion": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
+      "raster": false,
+      "keys": [
+        "kind",
+        "cloudLayer",
+        "polygons",
+        "legend",
+        "validAt",
+        "datasetVersion",
+        "precision",
+        "state",
+        "source"
+      ]
+    },
+    {
+      "path": "fixed-terrain",
+      "http": 200,
+      "ms": 9,
+      "state": "AVAILABLE",
+      "datasetVersion": "Terrain Tiles Terrarium / source pyramid z11",
+      "raster": false,
+      "keys": [
+        "state",
+        "purpose",
+        "requestedRadiusKm",
+        "effectiveRadiusKm",
+        "centerGcj02",
+        "publicationId",
+        "datasetVersion",
+        "sourceProvider",
+        "sourceResolution",
+        "derivedResolutionM",
+        "derivedAt",
+        "coordinateTransformVersion",
+        "imageUrl",
+        "imageBytes",
+        "imageSha256",
+        "imageStyle",
+        "imageBoundsGcj02",
+        "elevationM",
+        "elevationColorEncoding",
+        "coverageLabel",
+        "limitations",
+        "source",
+        "lightPollution"
+      ]
+    }
+  ],
+  "meaning": "Local current-code HTTP verification; not phone rendering or production latency."
+}

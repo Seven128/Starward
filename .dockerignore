@@ -10,6 +10,7 @@ node_modules
 **/dist
 artifacts
 output
+data-pipelines/runtime-data/releases
 tmp
 project_context
 tests

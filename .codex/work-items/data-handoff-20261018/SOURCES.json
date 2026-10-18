@@ -1,0 +1,188 @@
+{
+  "copernicus": [
+    {
+      "file": "copernicus/Copernicus_DSM_COG_10_N22_00_E114_00_DEM.tif",
+      "url": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N22_00_E114_00_DEM/Copernicus_DSM_COG_10_N22_00_E114_00_DEM.tif",
+      "bytes": 25030462,
+      "sha256": "b950ab75642d6684fe08c82b6aa3bb087c1d35acd229ef0e6e6586e1b0868fa3",
+      "hashScope": "FULL_FILE",
+      "etag": "\"d5f15f41941d3cb909551ddd5e6bdec4\"",
+      "acquiredForHandoffAt": "2026-10-18T06:05:31.834Z",
+      "originalRangeProofSha256": "e46d545f1f72c2c8c216a9acbba71cbb941d30de92c861ec9f07fe12871fc9c0",
+      "originalRangeHashScope": "RETRIEVED_RANGES",
+      "originalRangesVerified": 9,
+      "rangeProof": [
+        {
+          "offset": 0,
+          "byteSize": 65536,
+          "sha256": "817803ee22d8c6f6440639b51b5366071565122a20af30bbc7d5996d429761bc"
+        },
+        {
+          "offset": 6488064,
+          "byteSize": 3145728,
+          "sha256": "7485c5875365042ba70032e95dec34eea88a96e9fd7f6297f3bfceb5582f41ed"
+        },
+        {
+          "offset": 9568256,
+          "byteSize": 393216,
+          "sha256": "a73ce0911b2222e69a230cda1c105d6b58d90a7da562ab444ce55dfed8403f4c"
+        },
+        {
+          "offset": 9633792,
+          "byteSize": 3080192,
+          "sha256": "519b4a1deed5260d3c20dda333a50d05658f4bfc21a878cb5370c88741ad6abd"
+        },
+        {
+          "offset": 16908288,
+          "byteSize": 851968,
+          "sha256": "b3d49beca42c87aaca2d6b053218e3dd10fd556cf101181acd69c012623b3689"
+        },
+        {
+          "offset": 16908288,
+          "byteSize": 2949120,
+          "sha256": "10d4c559c2e7aa5290c14461ecc269246675daf13c0136e85a8467791f8896f2"
+        },
+        {
+          "offset": 19857408,
+          "byteSize": 1835008,
+          "sha256": "8c47134704d95beb6ef7e4926e6a8e8aeb5211440063c898fcd3683260800db7"
+        },
+        {
+          "offset": 22806528,
+          "byteSize": 1769472,
+          "sha256": "cf8597683eb106ca55f8f091448d0137587465046c733f2fb715a1eb938547de"
+        },
+        {
+          "offset": 24576000,
+          "byteSize": 393216,
+          "sha256": "8dfb9b35432fca021e968026ad097484110971c7a149c1ca2015c64b73f01792"
+        }
+      ]
+    }
+  ],
+  "terrarium": [
+    {
+      "tileId": "terrarium/11/1672/893",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1672/893.png",
+      "sha256": "0288ecb253edc8d7e2dd41191a8e0aeb85a51f152b40d5dd0faecac53b798b55",
+      "byteSize": 57388,
+      "etag": "\"527c26e24b71a494fb86a2af4429ec8b\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "srtm/N22E113.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ],
+      "file": "sources/terrarium/0288ecb253edc8d7e2dd41191a8e0aeb85a51f152b40d5dd0faecac53b798b55.png"
+    },
+    {
+      "tileId": "terrarium/11/1674/892",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1674/892.png",
+      "sha256": "3e16fbe7eaacdc5d9009d33595055ec1951f0b5dfa6ac464eedcc3e8da2395ce",
+      "byteSize": 45832,
+      "etag": "\"27eb01a2e34a42f3a228dd86aa4f752e\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ],
+      "file": "sources/terrarium/3e16fbe7eaacdc5d9009d33595055ec1951f0b5dfa6ac464eedcc3e8da2395ce.png"
+    },
+    {
+      "tileId": "terrarium/11/1674/893",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1674/893.png",
+      "sha256": "511d13b492d1aa68b99d0dc74ac78c18a1578bf0d2f784a98519603b2c5c1679",
+      "byteSize": 55306,
+      "etag": "\"236d8dd70c582c383698f7319dc5f2f8\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ],
+      "file": "sources/terrarium/511d13b492d1aa68b99d0dc74ac78c18a1578bf0d2f784a98519603b2c5c1679.png"
+    },
+    {
+      "tileId": "terrarium/11/1672/891",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1672/891.png",
+      "sha256": "98268cba963dbfc3b29edaded2b58e6c8a8661780debecbde6244fe66e5caf22",
+      "byteSize": 52060,
+      "etag": "\"22c90e3370905c518988a5d3b677a3bc\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "srtm/N22E113.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ],
+      "file": "sources/terrarium/98268cba963dbfc3b29edaded2b58e6c8a8661780debecbde6244fe66e5caf22.png"
+    },
+    {
+      "tileId": "terrarium/11/1673/892",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1673/892.png",
+      "sha256": "9a51932f5ea88bfac7aaba711a93aeb3cd58603af79dab93faa3bf003f7dc5f6",
+      "byteSize": 64410,
+      "etag": "\"7b60f15d26fd2b32c902dc60a024cd5e\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ],
+      "file": "sources/terrarium/9a51932f5ea88bfac7aaba711a93aeb3cd58603af79dab93faa3bf003f7dc5f6.png"
+    },
+    {
+      "tileId": "terrarium/11/1673/893",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1673/893.png",
+      "sha256": "ae8b5f766d0f9d037bec62541f32243bece210260eb75aaf1e564cc989d35895",
+      "byteSize": 65836,
+      "etag": "\"081e275c4c2a2e97fc83d352a1e301c4\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ],
+      "file": "sources/terrarium/ae8b5f766d0f9d037bec62541f32243bece210260eb75aaf1e564cc989d35895.png"
+    },
+    {
+      "tileId": "terrarium/11/1674/891",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1674/891.png",
+      "sha256": "bf1445e1c88652b594cdb0157427c2ecfab9a568a8a0638a9d65d2ba634a7df8",
+      "byteSize": 55368,
+      "etag": "\"68a00c202bd74da7e81cc26f5a0c5275\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ],
+      "file": "sources/terrarium/bf1445e1c88652b594cdb0157427c2ecfab9a568a8a0638a9d65d2ba634a7df8.png"
+    },
+    {
+      "tileId": "terrarium/11/1672/892",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1672/892.png",
+      "sha256": "cd4206863082bfd5126fc8640501cf58644d182c2fd7648020af49e18f185efd",
+      "byteSize": 48297,
+      "etag": "\"3d37de9b170f97b19368923eb09b5506\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "srtm/N22E113.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ],
+      "file": "sources/terrarium/cd4206863082bfd5126fc8640501cf58644d182c2fd7648020af49e18f185efd.png"
+    },
+    {
+      "tileId": "terrarium/11/1673/891",
+      "url": "https://elevation-tiles-prod.s3.amazonaws.com/terrarium/11/1673/891.png",
+      "sha256": "d3bf4798cd417cb32cca38d2c3d58674777b93bdb326fd24ceec7310fbe8b34a",
+      "byteSize": 52805,
+      "etag": "\"31bc2e88d468514c1f119849aa118826\"",
+      "hashScope": "FULL_FILE",
+      "contributors": [
+        "srtm/N22E114.tif",
+        "gmted/10N090E_20101117_gmted_mea075.tif"
+      ],
+      "file": "sources/terrarium/d3bf4798cd417cb32cca38d2c3d58674777b93bdb326fd24ceec7310fbe8b34a.png"
+    }
+  ],
+  "optionalTerrariumSourcesNotInThisCache": 9,
+  "meaning": "Final fixed terrain assets are complete. Source caches are separate rebuild inputs. This full COG reproduces the original N22E114 range bytes; it does not create a national DEM cache or configure a new runtime adapter.",
+  "horizonRuntime": "Existing TerrainService uses its public HTTPS COG reader. No new local-cache environment variable or provider replacement is introduced by this transfer."
+}

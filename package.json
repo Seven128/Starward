@@ -77,11 +77,18 @@
     "assets:prepare": "node tools/run-node.cjs tools/resources/assets.mjs prepare",
     "assets:audit": "node tools/run-node.cjs tools/resources/assets.mjs audit",
     "assets:rules": "node tools/run-node.cjs tools/resources/assets.mjs rules",
-    "test:resources": "node tools/run-node.cjs --test tools/resources/assets.test.mjs",
+    "test:resources": "node tools/run-node.cjs --import tsx --test tools/resources/assets.test.mjs tools/resources/backend-data.test.mjs",
     "prebuild:miniapp:release": "npm run assets:verify",
     "precheck:miniapp:release-code": "npm run assets:verify",
     "predev:miniapp": "npm run assets:verify",
-    "predev:miniapp:api": "npm run assets:verify"
+    "predev:miniapp:api": "npm run assets:verify",
+    "backend:data:status": "node tools/run-node.cjs --import tsx tools/resources/backend-data.mjs status",
+    "backend:data:prepare": "node tools/run-node.cjs --import tsx tools/resources/backend-data.mjs prepare",
+    "backend:data:verify": "node tools/run-node.cjs --import tsx tools/resources/backend-data.mjs verify",
+    "backend:data:import": "node tools/run-node.cjs --import tsx tools/resources/backend-data.mjs import",
+    "backend:data:env": "node tools/run-node.cjs --import tsx tools/resources/backend-data.mjs env",
+    "backend:data:check-db": "node tools/run-node.cjs --import tsx tools/resources/backend-data.mjs check-db",
+    "dev:miniapp:published": "node tools/run-node.cjs --import tsx tools/resources/backend-data.mjs start"
   },
   "keywords": [
     "stargazing",

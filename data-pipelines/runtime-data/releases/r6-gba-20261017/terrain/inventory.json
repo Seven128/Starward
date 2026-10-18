@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "starward-fixed-terrain-inventory-v1",
+  "publicationVersion": "terrain-fixed:8f4e8cbf344805fe65ec247f1b1d410f2ddedca97e18eccdeef9564bafa9dcd6",
+  "createdAt": "2026-10-16T16:55:09.248Z",
+  "targets": [
+    {
+      "boundsGcj02": {
+        "east": 114.2,
+        "south": 22.52,
+        "west": 113.95,
+        "north": 22.8
+      },
+      "name": "深圳公开区域地形技术发布"
+    }
+  ],
+  "assets": [
+    {
+      "key": "terrarium-cn-v2-fixed-11-1672-890-1",
+      "file": "terrarium-cn-v2-fixed-11-1672-890-1-c73210b038bcb9b1de43fe15d520ba1876b5923f431970d54890ae00e30add4d-b6ba646b758b7cc258d4c9f23f9d007b6589d5084f03f49ae79547cad76f2292.png",
+      "publicationSha256": "f27aa80fd81bfa348e7e94b64335e0f4c195028a9b493d3dfdb8be0491eeeb53"
+    },
+    {
+      "key": "terrarium-cn-v2-fixed-11-1672-891-1",
+      "file": "terrarium-cn-v2-fixed-11-1672-891-1-c004e2c0c1f0692c45ab1cfe941d8a8222c71b73302b9c3ace1bd36c2890b3b8-f6598577f49b7fb2708b6d4e506bfc77f0024cdef473fba40368c71f52a01bea.png",
+      "publicationSha256": "23572a0a31251ff68ad813c45670cef5969ce948cd74308bc6a9df8ebc6cc3fc"
+    },
+    {
+      "key": "terrarium-cn-v2-fixed-11-1672-892-1",
+      "file": "terrarium-cn-v2-fixed-11-1672-892-1-deac114faf7ce0bc7c6aa9dfb6ef69b9157b21805520c2bc0211ba642e382545-7b512fbb2c3402d9a2e096d861b931e6b10d6889cf57cf3dcac1fe15e42ab28d.png",
+      "publicationSha256": "e1b2cf445c1ca26f6e674cc50220acb54657472ad855cd4d0f4ec328b9f82cf7"
+    },
+    {
+      "key": "terrarium-cn-v2-fixed-11-1673-890-1",
+      "file": "terrarium-cn-v2-fixed-11-1673-890-1-c514f60891607e7e37a29c1963a2948a249a00da03fcf3227c6d398421e3f33a-946ddac2aca4a10aa14c0601bdeb69ee93c84ad55a3b083ce3f9e054fa7fc71b.png",
+      "publicationSha256": "951220bb61efac4024f25b2f9d48dc7279e0754b6ee22011efab36a3412a9cff"
+    },
+    {
+      "key": "terrarium-cn-v2-fixed-11-1673-891-1",
+      "file": "terrarium-cn-v2-fixed-11-1673-891-1-c24b5f58498db7c154d2ee29103274f8049b0b117b1ca9fcc7fe9d54c5f754f5-dfb1548f96f2c60efe98b55d57747248a795dfa1a781321b7761650cce741f34.png",
+      "publicationSha256": "ae114e1abef4dae608b86731f5c41ab4b5ac7934654ae446d16864405cc97dd2"
+    },
+    {
+      "key": "terrarium-cn-v2-fixed-11-1673-892-1",
+      "file": "terrarium-cn-v2-fixed-11-1673-892-1-af47daa8072425ad99edbf7c658ec4b19f0316a325782b48ee08207b25a25387-4f788c59878aaf32b2c501bd79f5809adf2b28d5f7780c4f000bbdc69e75227f.png",
+      "publicationSha256": "16a79710b76809b1bfdb16ee587c34ba5eed9e1e2c1675c7d82a44b0fe23756d"
+    },
+    {
+      "key": "terrarium-cn-v2-window-11-1672-890-2-3",
+      "file": "terrarium-cn-v2-window-11-1672-890-2-3-85d85369288ff3783b1a6f381dee81294b983ed72105ff9d84a6fb702289e6ed-dc613b0006b82c1122ecb314d3f5a66d2f68c718305aeb722b7e0f296ce5cfd2.png",
+      "publicationSha256": "04df588948952cfb2d0c3e654828bdd13244cee646e91cd25d81a119f6e1c9b5"
+    }
+  ]
+}

@@ -190,7 +190,7 @@ triggers = ["environment change admission", "workflow decision", "repository ver
 path = "project_context/development-workflow/resources-and-artifacts.md"
 role = "verification"
 read_policy = "on-demand"
-triggers = ["Git LFS", "resource storage", "asset preparation", "资源治理", "静态资源", "重复记录", "归档", "批量素材"]
+triggers = ["Git LFS", "resource storage", "asset preparation", "backend data", "Google Drive data", "后端数据同步", "换电脑", "资源治理", "静态资源", "重复记录", "归档", "批量素材"]
 
 # Product Surface Contract continuations.
 [[context]]

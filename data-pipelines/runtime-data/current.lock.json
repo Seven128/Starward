@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "starward-backend-data-lock-v1",
+  "runtime": {
+    "directory": "data-pipelines/runtime-data/releases/r6-gba-20261017",
+    "index": {
+      "path": "FILES.json",
+      "bytes": 596603,
+      "sha256": "1830a1870ed858b199ad9da5268629e7487f5687276538b9ee0c019093340bd1"
+    },
+    "nightLight": {
+      "datasetVersion": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
+      "publicationVersion": "nightlight-fixed:3f659ee77d499b3aecc8cb67bba2f94bdfee1cd1765282c7f153b49dafd39dfe",
+      "inventorySha256": "d91fd8f7fcdd68d63f9a219df11fdad13673fefa2e1a99e313a148e29676c5bd",
+      "assetCount": 509
+    },
+    "terrain": {
+      "publicationVersion": "terrain-fixed:8f4e8cbf344805fe65ec247f1b1d410f2ddedca97e18eccdeef9564bafa9dcd6",
+      "inventorySha256": "7fa2db157000d8718ea7ea0a7833c8624ae5540eac13e8344a11a0fbd4c99a56"
+    },
+    "transports": [
+      {
+        "provider": "GIT_LFS",
+        "scope": "PUBLIC_IMMUTABLE_RUNTIME_BINARIES",
+        "repository": "https://github.com/Seven128/Starward",
+        "selection": "current-commit"
+      },
+      {
+        "provider": "GOOGLE_DRIVE",
+        "visibility": "OWNER_ONLY",
+        "archive": {
+          "path": "starward-runtime-r6-20261018.zip",
+          "bytes": 257491541,
+          "sha256": "04ff2400ddc817acaeddfb4baadc5f2bd762200b93d72e505be84253606b6570",
+          "parts": [
+            {
+              "path": "starward-runtime-r6-20261018.zip.part001",
+              "bytes": 94371840,
+              "sha256": "ec7628c2112a9fe07e90657c65643aab65ab8cb079a1714f6ea1b328ef4d1098",
+              "driveFileId": "1IQ7WH8IOu8UHItxRQg8TgYmfkC9lgMTl",
+              "url": "https://drive.google.com/file/d/1IQ7WH8IOu8UHItxRQg8TgYmfkC9lgMTl/view"
+            },
+            {
+              "path": "starward-runtime-r6-20261018.zip.part002",
+              "bytes": 94371840,
+              "sha256": "b5bf9bb6193feb8f1850c1285665ce0668c15ba31ad38c47df96a8dcdafef0e3",
+              "driveFileId": "1e669XE8xIcBGmEPMIpAfgpaMAXgWKJ6k",
+              "url": "https://drive.google.com/file/d/1e669XE8xIcBGmEPMIpAfgpaMAXgWKJ6k/view"
+            },
+            {
+              "path": "starward-runtime-r6-20261018.zip.part003",
+              "bytes": 68747861,
+              "sha256": "ec547c1886f46780d11b87183a6b9432fc73712a494c7437bb37dbfbfdd6b860",
+              "driveFileId": "1GeFit7JYLVmpx7NdXiLgFRB_1DyMEgYK",
+              "url": "https://drive.google.com/file/d/1GeFit7JYLVmpx7NdXiLgFRB_1DyMEgYK/view"
+            }
+          ]
+        },
+        "memberRoot": "",
+        "purpose": "Exact original runtime archive; import only the selected public members",
+        "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz"
+      }
+    ],
+    "materialization": "CHECKOUT"
+  },
+  "rebuild": {
+    "datasetVersion": "eog-vnl-v22-2025-gba-fixed-20261017-r6",
+    "scope": "GLOBAL_EOG_VNL_V22_2025_INPUTS",
+    "defaultDownload": false,
+    "files": [
+      {
+        "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.median_masked.dat.tif",
+        "bytes": 11613178366,
+        "sha256": "f75cbe240966e631e0b08d16c6f8e211a0a13be0ec88af6fd8fd349144846e59",
+        "state": "NOT_UPLOADED",
+        "locations": [],
+        "neededFor": "EOG algorithm changes, republishing and original-pixel comparisons"
+      },
+      {
+        "path": "VNL_npp_2025_global_vcmslcfg_v2_c202604011200.cf_cvg.dat.tif",
+        "bytes": 5806858130,
+        "sha256": "76d0b8f1038f79a3cb2f3cf1e90de181df446a67c652f36e264e31616355c2a7",
+        "state": "NOT_UPLOADED",
+        "locations": [],
+        "neededFor": "EOG algorithm changes, republishing and original-pixel comparisons"
+      }
+    ],
+    "receipt": "Original publisher identity; not downloaded or rehashed on the receiving computer. Off-host upload remains required.",
+    "targetStorage": {
+      "provider": "GOOGLE_DRIVE",
+      "folderId": "1tA2Ue4oSAVXG7VIYvUMDz0tlen293pjz",
+      "visibility": "OWNER_ONLY",
+      "state": "UPLOAD_PENDING"
+    }
+  },
+  "privateRecovery": {
+    "manifest": ".codex/work-items/data-handoff-20261018/HANDOFF-MANIFEST.json",
+    "instructions": ".codex/work-items/data-handoff-20261018/RESTORE.txt",
+    "scope": "One-time encrypted PostgreSQL/media/evidence bootstrap; never restored by prepare/start; key managed separately."
+  }
+}

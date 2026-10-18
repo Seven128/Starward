@@ -89,7 +89,7 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .git/lfs/objects
-          key: ${{ runner.os }}-starward-lfs-${{ hashFiles('tools/resources/lfs-policy.json', 'workers/miniapp-api/assets/**', 'packages/astronomy-core/data/**') }}
+          key: ${{ runner.os }}-starward-lfs-${{ hashFiles('tools/resources/lfs-policy.json', 'workers/miniapp-api/assets/**', 'packages/astronomy-core/data/**', 'data-pipelines/runtime-data/current.lock.json') }}
           restore-keys: |
             ${{ runner.os }}-starward-lfs-
       - name: Prepare current resource versions
