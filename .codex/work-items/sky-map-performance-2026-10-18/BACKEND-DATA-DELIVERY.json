@@ -68,5 +68,65 @@
       "repair": "Existing map-page-test-support supplies real scene-layer policy and explicit static read boundaries; existing behavioral assertions retained; 28 focused tests and typecheck pass"
     }
   },
-  "recoveryFix": "8e86f8627582caa2138b14b2767d659d1e3978ac"
+  "recoveryFix": "8e86f8627582caa2138b14b2767d659d1e3978ac",
+  "fixtureRepair": "581a5a9b5f44b8047afc2410108ffae0337c37d0",
+  "followupCi": {
+    "product": {
+      "id": 39108911384,
+      "url": "https://github.com/Seven128/Starward/actions/runs/39108911384",
+      "headSha": "581a5a9b5f44b8047afc2410108ffae0337c37d0",
+      "status": "COMPLETED",
+      "conclusion": "success"
+    },
+    "context": {
+      "id": 39108915196,
+      "url": "https://github.com/Seven128/Starward/actions/runs/39108915196",
+      "headSha": "581a5a9b5f44b8047afc2410108ffae0337c37d0",
+      "status": "COMPLETED",
+      "conclusion": "success"
+    }
+  },
+  "currentImplementation": "581a5a9b5f44b8047afc2410108ffae0337c37d0",
+  "finalChecks": {
+    "productCI": "PASS",
+    "contextCI": "PASS",
+    "independentReview": "one P2 addressed with scoped regression and actual isolated recovery",
+    "files": "1544 verified locally and by remote CI",
+    "database": "73 tables /22 migrations /r6 PUBLISHED binding verified",
+    "service": "current-code local nightlight + terrain metadata and original PNG hashes verified",
+    "device": "current physical candidate is still generation9; not the restored API/new static-light candidate",
+    "ciCounts": {
+      "resources": {
+        "pass": 11,
+        "fail": 0
+      },
+      "deployment": {
+        "pass": 248,
+        "fail": 0
+      },
+      "contracts": {
+        "pass": 84,
+        "fail": 0
+      },
+      "api": {
+        "pass": 962,
+        "fail": 0,
+        "skip": 38
+      },
+      "miniapp": {
+        "pass": 2617,
+        "fail": 0,
+        "skip": 1
+      },
+      "releaseAndPlatform": {
+        "pass": 53,
+        "fail": 0
+      },
+      "builtCandidate": {
+        "pass": 6,
+        "fail": 0
+      }
+    },
+    "meaning": "39 retained environment skips and remaining native/device/user journeys are not certified by green CI."
+  }
 }

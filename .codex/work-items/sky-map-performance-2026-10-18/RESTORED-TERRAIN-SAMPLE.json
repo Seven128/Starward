@@ -1,0 +1,40 @@
+{
+  "apiPort": 8794,
+  "apiCodeUnchangedSince": "3b0d8916e66a9e7c37ec94503b8d18b4e8e2a01a",
+  "dataLock": "data-pipelines/runtime-data/current.lock.json",
+  "records": [
+    {
+      "condition": "first-narrow-published-region-read",
+      "http": 200,
+      "ms": 3926,
+      "state": "AVAILABLE",
+      "publicationId": "terrain:terrarium-cn-v2-window-12-3345-1783-2-1:ed43d5435846d5506c81d54b4684be68d3c6277af0c76cae3cc5e3c274c279de:5941cec8fbe7eae568c08045351e4d9c362da579befb3a161c7ec1a3ccc6f406",
+      "imageBytes": 157168,
+      "derivedResolutionM": 35.3,
+      "sourceResolution": "随视野选取的地形金字塔；SRTM标称约30m，GMTED2010/ETOPO1更粗，放大不增加原始细节",
+      "imageBounds": {
+        "west": 113.994140625,
+        "east": 114.169921875,
+        "north": 22.67484735118852,
+        "south": 22.59372606392931
+      }
+    },
+    {
+      "condition": "same-request-repeat",
+      "http": 200,
+      "ms": 6,
+      "state": "AVAILABLE",
+      "publicationId": "terrain:terrarium-cn-v2-window-12-3345-1783-2-1:ed43d5435846d5506c81d54b4684be68d3c6277af0c76cae3cc5e3c274c279de:5941cec8fbe7eae568c08045351e4d9c362da579befb3a161c7ec1a3ccc6f406",
+      "imageBytes": 157168,
+      "derivedResolutionM": 35.3,
+      "sourceResolution": "随视野选取的地形金字塔；SRTM标称约30m，GMTED2010/ETOPO1更粗，放大不增加原始细节",
+      "imageBounds": {
+        "west": 113.994140625,
+        "east": 114.169921875,
+        "north": 22.67484735118852,
+        "south": 22.59372606392931
+      }
+    }
+  ],
+  "meaning": "Public-area roughly 4 km HTTP sample; no phone/network/native-install timing or percentile claim."
+}

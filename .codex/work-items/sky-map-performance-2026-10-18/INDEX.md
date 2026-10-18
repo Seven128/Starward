@@ -28,6 +28,8 @@
 
 22. [数据流程独立审查及修复](BACKEND-DATA-REVIEW.md)、[非默认端口真实隔离恢复](RESTORE-PORT-CHECK.json)、[交付与 CI](BACKEND-DATA-DELIVERY.json)、[原机补传 EOG 原始数据提示词](RAW-SOURCE-UPLOAD-PROMPT.md)。
 
+23. [恢复数据后的约4km地形实际服务样本](RESTORED-TERRAIN-SAMPLE.json)：粗档固定包不含所请求z12细档，首次3.926s、重复6ms；属于后续叠层性能责任，不能把恢复/API通过当真机优化已验收。
+
 执行规则与架构入口：仓库 [AGENTS](../../../AGENTS.md)、[global](../../../project_context/global.md)、[运行时/领域责任](../../../project_context/architecture/runtime-and-domain.md)、[Map/Sky合同](../../../project_context/areas/main/screen-contracts/wechat-miniapp/spot-and-sky.md)、[开发工具源码/窗口规则](../../../project_context/development-workflow/development-feedback.md#project-source-snapshots-and-windows)、[手机 owner](../../../project_context/areas/main/verification/wechat-device.md)。适用技能为 `.codex/skills/starward-miniapp-development`、`.codex/skills/starward-wechat-device-verification`、`.codex/skills/uiux_design` 与已安装官方 wechatide scenes；本次 durable-goal 原文位于 `C:/Users/777/.codex/skills/durable-goal/SKILL.md`。
 
 恢复顺序：get_goal → 本索引 → REQUIREMENTS、PLAN、HANDOFF → 当前模块证据；先核后续用户是否明确开始，再检查源码/候选/服务/窗口实际状态。已有方案变更遵守 durable-goal 的明确授权边界。不要根据临时 PID、过期截图、旧录屏或旧生成目录直接输入手机。没有密钥、二维码、手机定位或设备标识写在这里。
