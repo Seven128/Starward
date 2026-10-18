@@ -132,3 +132,7 @@ Generation8's device session/input grant was retired by refresh. Historical obse
 ### Cleanup
 
 Returned to Map; existing permissions, N05/account/storage, services, pairing and VPN were preserved. One newly saved test poster remains in the phone album for the remaining handoff; its exact filename was not enumerated, so no broad gallery cleanup was attempted. The feedback owner removed generation8, and its generated wrapper backup was moved to Recycle Bin after the same exact scope checks (4,949,072B). Cumulative obsolete wrapper recycling is10directories/49,458,478B; current generation9 and private evidence remain. Final task-resource cleanup is still pending.
+
+### Read-only plan availability follow-up
+
+The same generation9 subsequently opened My → 观星计划 through normal UI. Both 接下来 and 过往 showed a successful empty list with no general 继续本机草稿 entry. The production list reads only its account/route-scoped draft key; this observation does not enumerate spot-specific/edited-plan drafts, establish the original N05 identity, or prove that historical data was deleted. No new editor, save, import, cleanup, account reset or reminder action was invoked. Returned through My to the existing selected Map panel. Private frames: generation9/plans-upcoming-current.png and plans-past-current.png. The original record/account/database handoff remains needed to continue the specified N05-based PLAN journey.

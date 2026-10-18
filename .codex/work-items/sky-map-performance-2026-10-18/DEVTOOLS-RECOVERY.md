@@ -1,5 +1,15 @@
 # Current-candidate control recovery — 2026-10-18
 
+## Later canonical desktop focus attempt
+
+At the7472659d source checkpoint, one official lite-mode window was opened for the canonical repository project to address the inherited desktop focus gap. Its current watch output included the poster's page-owned icon resolver. A fresh official simulator screenshot showed the actual DAY Map at a coarse Greater Bay Area view, but automation_runtime_info timed out.
+
+The single conditional official `cli auto` trial used a newly allocated local port65433 and returned exit0 with an official-IDE-owned listener. One subsequent official runtime-info call still ended with timeout waiting for automator response. No selection input, native geometry or centring result was obtained. No retired61962 endpoint, old SDK adapter, private RPC, arbitrary handler call or new diagnostic product build was used. The temporary desktop focus reader was prepared but never executed because readiness was absent.
+
+The task-opened canonical window s1 was closed through close_project_window after checking the current emitted poster call. The automation listener remained in the official IDE process25564; preserve the private `tmp/canonical-auto-receipt.json` for later exact cleanup and revalidate live ownership before acting. Backend listeners8787/8791 remained in their existing processes. No tool call is pending. Phone generation9 and its ordinary preview are unaffected. Do not repeat this unchanged failed automation sequence as a new product check; the earlier generation6 phone measurements retain their own validity.
+
+Private screenshot: `desktop-focus-before.jpg` in the existing review root. This establishes desktop rendering only, not current desktop focus or a failure of the product's focus implementation.
+
 This is bounded preparation evidence, not a product or device acceptance result. The unchanged generation6 remains `f145747502408897948f570e54f4cc57a03d68dce9871fca9559ce6fba21f1d4`,338files. No production source, account, phone permission, VPN, database or draft was changed by these attempts.
 
 ## Current resolution
